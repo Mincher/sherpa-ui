@@ -26,14 +26,16 @@ export class SherpaBarchart extends SherpaElement {
     new URL('./sherpa-barchart.css', import.meta.url),
   ];
   static override html = new URL('./sherpa-barchart.html', import.meta.url);
-  static override asks: DataAsk = { shape: 'segments' };
+  static override asks: DataAsk = { shape: 'segments', stacks: true };
 
   // A host's aria-label names the chart. TRAP T-a-host-label-must-reach-its-control
   static override labelTarget = '.plot';
   static override props = {
     ...SUMMARY_PROPS,
+    // Each bar stacked by this field's values, in their colours: its Secondary. Will, TODO 548
+    'data-stack-field': { type: 'string', kind: 'style' },
     'data-legend': SHARED_PROPS['data-legend'],
-    'data-axis-label': { type: 'string', kind: 'content', to: '.axis-label-y' },
+    'data-axis-label': { type: 'string', kind: 'content', to: '.axis-label-value' },
     'data-max': { type: 'number', kind: 'behaviour' },
     'data-ticks': { type: 'number', kind: 'behaviour' },
   } as const;
@@ -72,6 +74,13 @@ export class SherpaBarchart extends SherpaElement {
     const bars = this.$('.bars');
     const tpl = this.$<HTMLTemplateElement>('template.bar-tpl');
     const partTpl = this.$<HTMLTemplateElement>('template.bar-part-tpl');
+    const pieceTpl = this.$<HTMLTemplateElement>('template.bar-piece-tpl');
+    /** A run of parts: each its share of what holds it. */
+    const partsOf = (parts: readonly BarDatum[] | undefined): HTMLElement[] => (parts ?? []).flatMap((p) => {
+      const one = this.clone(partTpl);
+      one?.style.setProperty('--_p', String(Math.abs(p.value)));
+      return one ? [one] : [];
+    });
     if (!bars || !tpl) return;
 
     const shown = this.#data.map((d, i) => ({ d, i }));
@@ -96,9 +105,9 @@ export class SherpaBarchart extends SherpaElement {
     this.style.setProperty('--_zero', `${zero}%`);
 
     // The value axis, and the gridline bands the CSS draws from it.
-    const steps = renderValueAxis(this.$('.y-axis'), this.$<HTMLTemplateElement>('template.ytick-tpl'), scale, ticks > 0 && shown.length > 0);
+    const steps = renderValueAxis(this.$('.value-axis'), this.$<HTMLTemplateElement>('template.ytick-tpl'), scale, ticks > 0 && shown.length > 0);
     this.style.setProperty('--_bands', String(steps));
-    this.toggleState('has-y-axis', steps > 0);
+    this.toggleState('has-value-axis', steps > 0);
 
     // The zero line is the bars' own child, so it survives the re-stamp.
     const zeroLine = bars.querySelector('.bars-zero');
@@ -118,22 +127,27 @@ export class SherpaBarchart extends SherpaElement {
       bar.style.setProperty('--_h', `${Math.abs(at - zero)}%`);
       bar.style.setProperty('--_base', `${zero}%`);
       if (d.matched != null) bar.style.setProperty('--_m', `${d.value ? Math.min(100, Math.abs(d.matched / d.value) * 100) : 0}%`);
-      // GROUPED: each part its share of the bar, in the bar's own colour. TODO 548
-      bar.querySelector('.bar-parts')?.replaceChildren(...(d.parts ?? []).flatMap((p) => {
-        const one = this.clone(partTpl);
-        one?.style.setProperty('--_p', String(Math.abs(p.value)));
-        return one ? [one] : [];
+      /* STACKED by its Secondary: each piece its share, in ITS colour, its parts in
+         it; else GROUPED, each part its share in the bar's own colour. TODO 548 */
+      bar.querySelector('.bar-stack')?.replaceChildren(...(d.stack ?? []).flatMap((p, j) => {
+        const piece = this.clone(pieceTpl);
+        if (!piece) return [];
+        piece.style.setProperty('--_p', String(Math.abs(p.value)));
+        paintSeries(piece, j, p.colorIndex);
+        piece.querySelector('.bar-parts')?.replaceChildren(...partsOf(p.parts));
+        return [piece];
       }));
+      bar.querySelector(':scope > .bar-parts')?.replaceChildren(...(d.stack ? [] : partsOf(d.parts)));
       paintSeries(bar, i, d.colorIndex);
       pairAnchor(`--bar-mark-${i}`, col);
-      fillTip(col, d.label, d.value, d.parts);
+      fillTip(col, d.label, d.value, d.stack ?? d.parts);
       // The tip is hidden until hover, so it names nothing: the bar says it itself.
-      const parts = partsSaid(d.parts);
+      const parts = partsSaid(d.stack ?? d.parts);
       col.setAttribute('aria-label', `${d.label}: ${col.querySelector('.sherpa-tip-value')!.textContent}${parts ? ` (${parts})` : ''}`);
       bars.appendChild(col);
     }
-    // A SIBLING of the plot, so it lands below the baseline.
-    this.renderItems('.x-axis-row', 'template.xlabel-tpl', this.#data);
+    // A SIBLING of the plot, so each label sits beside its bar.
+    this.renderItems('.category-axis', 'template.xlabel-tpl', this.#data);
   }
 
   /** A bar was clicked: report which. */

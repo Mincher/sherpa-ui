@@ -1,11 +1,13 @@
 <!--
-  sherpa-barchart — a vertical bar chart for categorical comparison.
+  sherpa-barchart — a HORIZONTAL bar chart for categorical comparison: one bar
+  a row, its category on the left, its value along the bottom. Will, TODO 548
 
   Public API:
-    data-max         explicit y-max (else derived from the data)
-    data-axis-label  y-axis caption (shown when set)
-    data-ticks       number of y gridlines/values (default 4)
+    data-max         explicit value-axis max (else derived from the data)
+    data-axis-label  the value axis's caption, under it (shown when set)
+    data-ticks       number of value gridlines (default 4)
     data-segment-field  ASKED of its provider: one bar per value of this field
+    data-stack-field    each bar stacked by this field's values, in their colours
     data-aggregate      count (default) | sum | mean | min | max | distinct, per value
     data-field          the number that aggregate reads
     data-bands          a number segment-field cut at these edges, "0,20,40" — a histogram
@@ -23,8 +25,9 @@
       <span class="title"><slot name="heading" data-accepts="text"></slot></span>
     </figcaption>
     <div class="chart-body">
-      <span class="axis-label axis-label-y" part="axis-label"></span>
-      <div class="y-axis" part="y-axis" aria-hidden="true"></div>
+      <!-- A sibling COLUMN, not inside .bar-col: it mirrors .bars, so label N
+           sits beside bar N and a long label cannot shrink the bars. -->
+      <div class="category-axis" part="category-axis" aria-hidden="true"></div>
 
       <div class="plot" part="plot" role="group" aria-label="Bar chart">
         <div class="gridlines" part="gridlines" aria-hidden="true"></div>
@@ -34,16 +37,15 @@
         </div>
       </div>
 
-      <!-- Sibling row, not inside .bar-col: a flex row that mirrors .bars, so a
-           long label cannot shrink the bars. -->
-      <div class="x-axis-row" part="x-axis" aria-hidden="true"></div>
+      <div class="value-axis" part="value-axis" aria-hidden="true"></div>
+      <span class="axis-label axis-label-value" part="axis-label"></span>
     </div>
 
     <slot name="legend" data-accepts="legend"></slot>
   </figure>
 
   <template class="ytick-tpl">
-    <span class="y-tick sherpa-truncate"><span class="y-value"></span></span>
+    <span class="value-tick"><span class="y-value"></span></span>
   </template>
 
   <!-- The tip is a CHILD of the button so one hover covers target and anchor.
@@ -51,9 +53,11 @@
   <template class="bar-tpl">
     <button class="bar-col sherpa-anchor" type="button">
       <!-- The BAR is the anchor, not the column: a .bar-col is the full plot
-           height, so anchoring to it puts the tip far above a short bar. -->
+           width, so anchoring to it puts the tip far from a short bar. -->
       <span class="bar sherpa-anchor-el" part="bar">
-        <!-- Grouped, its parts, stacked from its base. TODO 548 -->
+        <!-- Stacked by its Secondary: its pieces, each in its own colour. TODO 548 -->
+        <span class="bar-stack" part="bar-stack"></span>
+        <!-- Grouped, its parts, from its base. TODO 548 -->
         <span class="bar-parts" part="bar-parts"></span>
         <!-- The part the highlight's driver matches. TODO 441 -->
         <span class="bar-match" part="bar-match"></span>
@@ -66,8 +70,10 @@
     </button>
   </template>
 
-  <!-- One part of a grouped bar: its share of the bar. TODO 548 -->
+  <!-- One part of a grouped bar, or of a piece: its share of it. TODO 548 -->
   <template class="bar-part-tpl"><span class="bar-part" part="bar-part"></span></template>
+  <!-- One piece of a stacked bar: its share, in its own colour, and its parts. TODO 548 -->
+  <template class="bar-piece-tpl"><span class="bar-piece" part="bar-piece"><span class="bar-parts"></span></span></template>
 
   <template class="xlabel-tpl">
     <span class="bar-label sherpa-truncate" part="bar-label" data-text="label"></span>

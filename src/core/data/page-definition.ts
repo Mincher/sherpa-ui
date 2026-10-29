@@ -36,8 +36,8 @@ export interface ScopeDefinition {
    *  the scope — `{ "id": "high-risk", "label": "High risk", "where": { … } }`,
    *  `where` in the plain form. Will, TODO 493 · TRAP T-a-preset-is-its-own-part */
   presets?: readonly { id: string; label: string; where: Readonly<Record<string, Condition>> }[];
-  /** What its slot shows until the reader changes it: a chart's `primary` (what it
-   *  counts) and `secondary` (what it splits by). Will, TODO 548 */
+  /** What its slot shows until the reader changes it: a chart's `primary` (its X
+   *  axis, a bar a value) and `secondary` (its Y axis, its distinct values counted). Will, TODO 548 */
   presentation?: Presentation;
 }
 

@@ -65,6 +65,9 @@ export interface DataAsk {
   /** It draws its field's BANDS — a gauge's zones — so they come with its value.
    *  TRAP T-a-threshold-is-a-fact-of-the-field */
   thresholds?: boolean;
+  /** It STACKS each segment by a Secondary — a bar chart: `data-stack-field`, or
+   *  its slot's secondary. Will, TODO 548 */
+  stacks?: boolean;
 }
 
 /** A component's data, in the shape it declared — pushed on every change. */

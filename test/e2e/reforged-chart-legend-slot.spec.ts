@@ -167,7 +167,8 @@ test('sherpa-barchart: a SHORT host shrinks the plot; an unsized one keeps 180px
       const sr = chart.shadowRoot!;
       return {
         plot: Math.round(sr.querySelector('.plot')!.getBoundingClientRect().height),
-        axisBottom: sr.querySelector('.x-axis-row')!.getBoundingClientRect().bottom,
+        // The value axis is its lowest row now. Will, TODO 548
+        axisBottom: sr.querySelector('.value-axis')!.getBoundingClientRect().bottom,
         legendTop: legend.getBoundingClientRect().top,
       };
     };

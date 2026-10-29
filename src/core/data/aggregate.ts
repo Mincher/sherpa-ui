@@ -255,7 +255,11 @@ export interface SummarySpec {
   keepEmpty?: boolean;
   /** Hand its value field's thresholds beside it as zones: a gauge. */
   zones?: boolean;
-  /** Each segment's rows again, by this field: its `parts`. Not for bands. TODO 548 */
+  /** Each segment's rows again, by this field: its `stack` — a bar chart's
+   *  Secondary, its colours and legend. Not for bands. Will, TODO 548 */
+  stack?: string;
+  /** Each segment's rows again — each stack piece's, where it stacks — by this
+   *  field: its `parts`. Not for bands. TODO 548 */
   group?: string;
   /** The segments by value; none keeps their declared order. TODO 548 */
   sort?: SortDirection;
@@ -342,6 +346,22 @@ function distinctParts(rows: readonly Row[], group: string, field: string, order
   return labels.map((label) => ({ label, value: homes.get(label) ?? 0, colorIndex: rank(label) + 1 }));
 }
 
+/** Each segment stacked by the stack field — its pieces, in that field's order
+ *  and colours — and each piece's parts by the group. Will, TODO 548 */
+function withStack(rows: readonly Row[], segments: ChartDatum[], spec: SummarySpec & { segment: string; stack: string },
+  domain: (field: string) => readonly unknown[]): ChartDatum[] {
+  const bySegment = new Map(groupRows(rows, spec.segment).map((g) => [g.key, g.rows]));
+  const declared = domain(spec.stack).map(valueKey);
+  const order = declared.length ? declared : groupRows(rows, spec.stack).map((g) => g.key);
+  const kind = spec.aggregate ?? 'count';
+  return segments.map((s) => {
+    const own = bySegment.get(s.label) ?? [];
+    const pieces = aggregateBy(own, spec.stack, kind, spec.field, { order });
+    // Each piece's rows are its segment's of that stack value: its parts are theirs.
+    return { ...s, stack: spec.group ? withParts(own, pieces, { ...spec, segment: spec.stack, group: spec.group }, domain) : pieces };
+  });
+}
+
 /** The segments by value; none keeps their order. Each keeps its colour. TODO 548 */
 function sortSegments(segments: ChartDatum[], sort?: SortDirection): ChartDatum[] {
   if (!sort) return segments;
@@ -368,7 +388,9 @@ export function summarise(
     const order = domain(spec.segment).map(valueKey);
     const segments = aggregateBy(rows, spec.segment, kind, spec.field,
       order.length ? { order, includeEmpty: spec.keepEmpty ?? false } : {});
-    return sortSegments(spec.group ? withParts(rows, segments, { ...spec, segment: spec.segment, group: spec.group }, domain) : segments, spec.sort);
+    const split = spec.stack ? withStack(rows, segments, { ...spec, segment: spec.segment, stack: spec.stack }, domain)
+      : spec.group ? withParts(rows, segments, { ...spec, segment: spec.segment, group: spec.group }, domain) : segments;
+    return sortSegments(split, spec.sort);
   }
   const value = reduceRows(rows, kind, spec.field);
   if (!spec.over) return spec.shape === 'aggregate' ? value : { labels: [], series: [] };

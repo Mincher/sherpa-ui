@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-barchart",
-  "$description": "a vertical bar chart for categorical comparison.",
+  "$description": "a HORIZONTAL bar chart for categorical comparison: one bar a row, its category on the left, its value along the bottom. Will, TODO 548",
   "element": {
     "$type": "element",
     "tag": "figure",
@@ -43,14 +43,9 @@
             "class": "chart-body",
             "children": [
               {
-                "el": "span",
-                "class": "axis-label axis-label-y",
-                "part": "axis-label"
-              },
-              {
                 "el": "div",
-                "class": "y-axis",
-                "part": "y-axis",
+                "class": "category-axis",
+                "part": "category-axis",
                 "attrs": {
                   "aria-hidden": "true"
                 }
@@ -91,11 +86,16 @@
               },
               {
                 "el": "div",
-                "class": "x-axis-row",
-                "part": "x-axis",
+                "class": "value-axis",
+                "part": "value-axis",
                 "attrs": {
                   "aria-hidden": "true"
                 }
+              },
+              {
+                "el": "span",
+                "class": "axis-label axis-label-value",
+                "part": "axis-label"
               }
             ]
           },
@@ -113,7 +113,7 @@
         "children": [
           {
             "el": "span",
-            "class": "y-tick sherpa-truncate",
+            "class": "value-tick",
             "children": [
               {
                 "el": "span",
@@ -139,6 +139,11 @@
                 "class": "bar sherpa-anchor-el",
                 "part": "bar",
                 "children": [
+                  {
+                    "el": "span",
+                    "class": "bar-stack",
+                    "part": "bar-stack"
+                  },
                   {
                     "el": "span",
                     "class": "bar-parts",
@@ -191,6 +196,23 @@
       },
       {
         "el": "template",
+        "class": "bar-piece-tpl",
+        "children": [
+          {
+            "el": "span",
+            "class": "bar-piece",
+            "part": "bar-piece",
+            "children": [
+              {
+                "el": "span",
+                "class": "bar-parts"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
         "class": "xlabel-tpl",
         "children": [
           {
@@ -231,7 +253,7 @@
       "observed": true,
       "declared": true,
       "kind": "content",
-      "description": "y-axis caption (shown when set)"
+      "description": "the value axis's caption, under it (shown when set)"
     },
     {
       "$type": "prop",
@@ -283,7 +305,7 @@
       "observed": true,
       "declared": true,
       "kind": "behaviour",
-      "description": "explicit y-max (else derived from the data)"
+      "description": "explicit value-axis max (else derived from the data)"
     },
     {
       "$type": "prop",
@@ -304,13 +326,22 @@
     },
     {
       "$type": "prop",
+      "name": "data-stack-field",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "each bar stacked by this field's values, in their colours"
+    },
+    {
+      "$type": "prop",
       "name": "data-ticks",
       "type": "number",
       "observed": true,
       "declared": true,
       "kind": "behaviour",
       "default": "4",
-      "description": "number of y gridlines/values"
+      "description": "number of value gridlines"
     },
     {
       "$type": "prop",
@@ -351,6 +382,11 @@
     },
     {
       "$type": "state",
+      "name": "axis-label",
+      "selector": ":host([data-axis-label])"
+    },
+    {
+      "$type": "state",
       "name": "focus-visible",
       "selector": ".bar-col:focus-visible"
     }
@@ -373,29 +409,32 @@
     }
   ],
   "tokens": {
+    "chart-body.flex": "{sherpa.display-mode-space-2xs}",
+    "chart-body.column-gap": "{sherpa.display-mode-space-xs}",
     "bars.gap": "{sherpa.display-mode-space-xs}",
-    "bars.border-block-end": "{sherpa.display-mode-border-width-base}",
-    "x-axis-row.gap": "{sherpa.display-mode-space-xs}",
-    "x-axis-row.margin-block-start": "{sherpa.display-mode-space-2xs}",
-    "bar.border-radius": "{sherpa.display-mode-border-rounding-sm}",
+    "bars.border-inline-start": "{sherpa.display-mode-border-width-base}",
+    "category-axis.gap": "{sherpa.display-mode-space-xs}",
+    "bar.border-start-end-radius": "{sherpa.display-mode-border-rounding-sm}",
+    "bar.border-end-end-radius": "{sherpa.display-mode-border-rounding-sm}",
     "bar.border-width": "{sherpa.display-mode-border-width-base}",
     "bar.border-color": "{sherpa.data-viz-series-1}",
     "bar.background": "{sherpa.data-viz-series-1}",
+    "bar-piece.border-width": "{sherpa.display-mode-border-width-base}",
+    "bar-piece.border-color": "{sherpa.data-viz-series-1}",
+    "bar-piece.background": "{sherpa.data-viz-series-1}",
     "bar-label.font-family": "{sherpa.font-family-mono}",
     "bar-label.font-size": "{sherpa.font-size-body-small}",
     "bar-label.line-height": "{sherpa.theme-content-line-height-small}",
     "bar-label.color": "{sherpa.theme-content-body-1}",
-    "chart-body.flex": "{sherpa.display-mode-space-2xs}",
     "gridlines.background-image": "{sherpa.style-border-base}",
-    "gridlines.border-block-start": "{sherpa.border-top}",
-    "y-axis.inline-size": "{sherpa.display-mode-size-lg}",
-    "y-axis.padding-inline-end": "{sherpa.display-mode-space-sm}",
-    "y-axis.border-inline-end": "{sherpa.border-right}",
-    "y-axis.font-family": "{sherpa.font-family-mono}",
-    "y-axis.font-size": "{sherpa.font-size-body-small}",
-    "y-axis.font-weight": "{sherpa.font-weight-regular}",
-    "y-axis.line-height": "{sherpa.theme-content-line-height-small}",
-    "y-axis.color": "{sherpa.theme-content-body-1}"
+    "gridlines.border-inline-end": "{sherpa.border-right}",
+    "value-axis.block-size": "{sherpa.theme-content-line-height-small}",
+    "value-axis.margin-block-start": "{sherpa.display-mode-space-2xs}",
+    "value-axis.font-family": "{sherpa.font-family-mono}",
+    "value-axis.font-size": "{sherpa.font-size-body-small}",
+    "value-axis.font-weight": "{sherpa.font-weight-regular}",
+    "value-axis.line-height": "{sherpa.theme-content-line-height-small}",
+    "value-axis.color": "{sherpa.theme-content-body-1}"
   },
   "$extensions": {
     "sherpa": {

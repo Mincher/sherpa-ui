@@ -26,7 +26,9 @@ export interface ChartDatum {
   colorIndex?: number;
   /** The part the highlight's driver matches; absent, nothing is highlighted. TODO 441 */
   matched?: number;
-  /** Its rows again, by a group field: a stacked bar's or a split section's parts. TODO 548 */
+  /** Its rows again, by a stack field: a bar's stacked pieces, each in its own colour. TODO 548 */
+  stack?: ChartDatum[];
+  /** Its rows again, by a group field: a bar's, a piece's or a slice's sections. TODO 548 */
   parts?: ChartDatum[];
 }
 

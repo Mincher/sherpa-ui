@@ -156,11 +156,13 @@ export interface ScopeDescription {
   /** Its bar's filter Switch is OFF. TRAP T-the-filter-switch-keeps-what-it-turned-off */
   suspended?: boolean;
   /** A SLOT: a chart draws here, and its Group and Sort are its presentation's, not the
-   *  rows'. `chartFields` its Primary and Secondary may pick; `primaryField` and `secondaryField` are in force. TODO 548 */
+   *  rows'. `chartFields` its Primary and Secondary may pick; `primaryField` and `secondaryField` are in force;
+   *  `stacks`, its chart takes a Secondary — a bar chart. TODO 548 */
   presents?: boolean;
   chartFields?: OrganiseColumn[];
   primaryField?: string;
   secondaryField?: string;
+  stacks?: boolean;
 }
 
 export interface ViewState {
@@ -237,6 +239,8 @@ export interface AttachFacts {
   /** A chart's own presentation, by its attributes: what its slot shows until
    *  the reader changes it. Will, TODO 548 */
   shows?: Presentation;
+  /** It stacks each segment by a Secondary — a bar chart. Will, TODO 548 */
+  stacks?: boolean;
 }
 
 /** What a bound component is told of the view; `undefined` is none. The binder

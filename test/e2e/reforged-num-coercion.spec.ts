@@ -91,7 +91,8 @@ for (const tag of ['sherpa-barchart', 'sherpa-line-chart'] as const) {
           : { labels: ['a', 'b', 'c'], series: [{ label: 's', values: [10, 20, 30] }] },
       );
       await window.__settled();
-      return el.shadowRoot!.querySelectorAll('.y-axis > *').length;
+      // A bar chart's value axis runs along its bottom. Will, TODO 548
+      return el.shadowRoot!.querySelectorAll(t === 'sherpa-barchart' ? '.value-axis > *' : '.y-axis > *').length;
     }, tag);
     // Before the fix `Number('')` was 0, so the axis rendered zero ticks and the
     // chart silently lost its scale.
@@ -118,7 +119,8 @@ for (const tag of ['sherpa-barchart', 'sherpa-line-chart'] as const) {
           : { labels: ['a', 'b', 'c'], series: [{ label: 's', values: [10, 20, 30] }] },
       );
       await window.__settled();
-      return el.shadowRoot!.querySelectorAll('.y-axis > *').length;
+      // A bar chart's value axis runs along its bottom. Will, TODO 548
+      return el.shadowRoot!.querySelectorAll(t === 'sherpa-barchart' ? '.value-axis > *' : '.y-axis > *').length;
     }, tag);
     expect(ticks).toBe(0);
   });

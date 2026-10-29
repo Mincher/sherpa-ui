@@ -1091,7 +1091,7 @@ export class SherpaProvider extends SherpaElement {
     const zoned = asks.thresholds && spec?.field ? spec.field : undefined;
     const unbind = bindSource(source, el as Populatable, {
       ...(zoned ? { free: [zoned] } : {}),
-      ...(spec && typeof scope === 'string' ? { shows: this.#shows(el) } : {}),
+      ...(spec && typeof scope === 'string' ? { shows: this.#shows(el), ...(asks.stacks ? { stacks: true } : {}) } : {}),
       ...(fields ? { fields } : {}),
       rows: spec || asks.shape === 'all' ? 'all' : 'page',
       // A pager and a filter bar steer; the rows are not theirs to draw.
@@ -1125,7 +1125,8 @@ export class SherpaProvider extends SherpaElement {
     this.#fetchFields(el, source);
     const unpick = spec && asks.picks ? this.#picks(el as Picker, source, spec.segment ?? '', asks.picks) : undefined;
     const unown = this.#own(el, source);
-    const unshow = typeof scope === 'string' && shownAs(el) ? this.#followPresentation(asked, source, scope, !spec) : undefined;
+    // A chart, a grid and a legend in a slot follow its presentation: a legend lists a stack. TODO 548
+    const unshow = typeof scope === 'string' && (spec || shownAs(el)) ? this.#followPresentation(asked, source, scope, !spec) : undefined;
     asked.unbind = () => {
       unshow?.();
       unown?.();
@@ -1221,13 +1222,18 @@ export class SherpaProvider extends SherpaElement {
     if (asks.keepEmpty) spec['keepEmpty'] = true;
     // Its field's bands come with its value. TRAP T-a-threshold-is-a-fact-of-the-field
     if (asks.thresholds) spec['zones'] = true;
-    /* Its SLOT's presentation, as the Query keeps it, over its own attributes: its
-       segmentation, what it counts — a primary's distinct values — its parts and
-       its order. Will, TODO 548 */
+    /* Its SLOT's presentation, as the Query keeps it, over its own attributes: the
+       primary its first split (a bar or slice a value), the secondary a bar
+       chart's stack, the group the sections in each, and its order. A stacked
+       chart's legend lists its stack. Will, TODO 548 */
     const slot = this.#inherited(el, 'data-scope');
     const shown = slot && !/\s/.test(slot) ? source.query.presented(slot) : {};
-    if (shown.secondary) spec['segment'] = shown.secondary;
-    if (shown.primary) Object.assign(spec, { aggregate: 'distinct', field: shown.primary });
+    if (shown.primary) spec['segment'] = shown.primary;
+    const host = asks.picks ? up(el) : null;
+    const stacks = asks.stacks || !!(host?.constructor as { asks?: DataAsk } | undefined)?.asks?.stacks;
+    const stack = stacks ? shown.secondary ?? this.#inherited(el, 'data-stack-field') : null;
+    if (stack && asks.picks) spec['segment'] = stack;
+    else if (stack) spec['stack'] = stack;
     if (shown.group) spec['group'] = shown.group;
     if (shown.sort) spec['sort'] = shown.sort;
     return spec as unknown as SummarySpec;
@@ -1257,12 +1263,12 @@ export class SherpaProvider extends SherpaElement {
     const parked = this.#parked.get(slot);
     const want = parked && shownAs(parked) === kind ? undefined : SHOWN_BY[kind];
     if (!parked && !want) return false;
-    // A chart splits by its segment field: one made from a grid takes the slot's secondary.
-    const segment = shown.secondary ?? el.getAttribute('data-segment-field');
+    // A chart's X axis is its segment field: one made from a grid takes the slot's primary.
+    const segment = shown.primary ?? el.getAttribute('data-segment-field');
     if (want && !segment) {
       report({
-        code: 'presentation-without-secondary',
-        message: `sherpa-provider: slot "${slot}" cannot be shown as a ${kind} chart: it names no secondary field to split by.`,
+        code: 'presentation-without-primary',
+        message: `sherpa-provider: slot "${slot}" cannot be shown as a ${kind} chart: it names no primary field for its X axis.`,
         at: { scope: slot, kind },
       });
       return false;
@@ -1300,9 +1306,8 @@ export class SherpaProvider extends SherpaElement {
   /** What a chart shows by its own attributes: its slot's default. Will, TODO 548 */
   #shows(el: Element): Presentation {
     const segment = this.#inherited(el, 'data-segment-field');
-    const field = this.#inherited(el, 'data-field');
-    const counts = field && this.#inherited(el, 'data-aggregate') === 'distinct';
-    return { ...(segment ? { secondary: segment } : {}), ...(counts ? { primary: field } : {}) };
+    const stack = this.#inherited(el, 'data-stack-field');
+    return { ...(segment ? { primary: segment } : {}), ...(stack ? { secondary: stack } : {}) };
   }
 
   /** A slot's kept presentation moved: its chart is answered again, with it. Will, TODO 548 */

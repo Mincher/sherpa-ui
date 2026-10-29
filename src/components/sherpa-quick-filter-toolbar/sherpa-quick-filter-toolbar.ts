@@ -60,7 +60,7 @@ export interface OrganiseDef {
   /** A Sort with no column to pick: it orders what a chart draws, by value. TODO 548 */
   order?: boolean;
   /** A chart's Primary and Secondary: the fields it may count and split by, and those it does. TODO 548 */
-  chart?: { fields: OrganiseColumn[]; primary?: string; secondary?: string };
+  chart?: { fields: OrganiseColumn[]; primary?: string; secondary?: string; stacks?: true };
 }
 
 export type { OrganiseColumn } from '../../core/data/data-source.js';
@@ -2626,7 +2626,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // its divider rule floating.
     this.toggleState('has-organise', group.length > 0 || sort.length > 0 || order);
     if (chart?.fields.length) {
-      zone.append(this.#chartChip('primary', chart.fields, chart.primary), this.#chartChip('secondary', chart.fields, chart.secondary));
+      zone.append(this.#chartChip('primary', chart.fields, chart.primary));
+      // Secondary where the chart stacks by one: a bar chart. Will, TODO 548
+      if (chart.stacks) zone.append(this.#chartChip('secondary', chart.fields, chart.secondary));
     }
 
     /* BORN NAMING ITS COLUMN. The bar may already be grouped or sorted — a
@@ -2663,7 +2665,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     for (const kind of ['group', 'sort'] as const) arrangeFrom(this, this.#organiser(kind), kind);
   }
 
-  /** A chart's Primary — what it counts — or Secondary — what it splits by: a
+  /** A chart's Primary — its first split, a bar or slice a value — or Secondary —
+   *  a bar chart's stack, its colours and legend: a
    *  Group chip's gesture, its menu a field, its body on or off (off, the chart's
    *  own). Drawn ON at the field in force. Will, TODO 548 */
   #chartChip(id: 'primary' | 'secondary', fields: OrganiseColumn[], on: string | undefined): HTMLElement {

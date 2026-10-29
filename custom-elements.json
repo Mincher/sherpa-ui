@@ -746,7 +746,7 @@
           "name": "SherpaBarchart",
           "tagName": "sherpa-barchart",
           "customElement": true,
-          "description": "a vertical bar chart for categorical comparison.",
+          "description": "a HORIZONTAL bar chart for categorical comparison: one bar a row, its category on the left, its value along the bottom. Will, TODO 548",
           "attributes": [
             {
               "name": "data-aggregate",
@@ -758,7 +758,7 @@
             },
             {
               "name": "data-axis-label",
-              "description": "y-axis caption (shown when set)",
+              "description": "the value axis's caption, under it (shown when set)",
               "type": {
                 "text": "string"
               }
@@ -791,7 +791,7 @@
             },
             {
               "name": "data-max",
-              "description": "explicit y-max (else derived from the data)",
+              "description": "explicit value-axis max (else derived from the data)",
               "type": {
                 "text": "number"
               }
@@ -810,8 +810,15 @@
               }
             },
             {
+              "name": "data-stack-field",
+              "description": "each bar stacked by this field's values, in their colours",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
               "name": "data-ticks",
-              "description": "number of y gridlines/values",
+              "description": "number of value gridlines",
               "type": {
                 "text": "number"
               },
@@ -862,7 +869,16 @@
               "name": "bar-parts"
             },
             {
+              "name": "bar-piece"
+            },
+            {
+              "name": "bar-stack"
+            },
+            {
               "name": "bars"
+            },
+            {
+              "name": "category-axis"
             },
             {
               "name": "figure"
@@ -880,10 +896,7 @@
               "name": "tip"
             },
             {
-              "name": "x-axis"
-            },
-            {
-              "name": "y-axis"
+              "name": "value-axis"
             },
             {
               "name": "zero-line"

@@ -1,40 +1,62 @@
 /**
- * sherpa-barchart.css — vertical bars for categorical comparison.
- * JS writes each bar's height as --_h; CSS owns the rest.
+ * sherpa-barchart.css — HORIZONTAL bars for categorical comparison: a bar a
+ * row, its category on the left, its value along the bottom. JS writes each
+ * bar's length as --_h; CSS owns the rest. Will, TODO 548
  */
 
 /* No `@property` for --_h. JS sets it as a finished string ("50%") and CSS
    only reads it back — and a component sheet is ADOPTED, where @property does
    not register at all. TRAP T-at-property-needs-the-document. */
 
-/* ── The legend ────────────────────────────────────────────────────────── */
-
+/* ── The chart grid ──────────────────────────────────────────────────────
+   Column 1 the category labels, column 2 the plot; row 1 the drawing area,
+   row 2 the value axis, row 3 its caption. The labels and the plot are cells
+   of the SAME ROW, so CSS keeps them the same height. */
+.chart-body {
+  display: grid;
+  grid-template-columns: fit-content(40%) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "categories plot"
+    ".          values"
+    ".          caption";
+  /* --_plot-height is a flex BASIS, not a track floor: it shrinks in a short
+     card and holds in an unsized host. The addend is the value axis row — MUST
+     match its margin and line-height.
+     TRAP T-a-percentage-floor-needs-a-definite-parent */
+  flex: 1 1 calc(var(--_plot-height) + var(--sherpa-display-mode-space-2xs, 4px) + var(--sherpa-theme-content-line-height-small, 16px));
+  min-block-size: 0;
+  min-inline-size: 0;
+  column-gap: var(--sherpa-display-mode-space-xs, 8px);
+}
 /* A grid item has no flex basis, so beside a vertical legend the floor is a track. */
 :host([data-legend="vertical"]) .chart-body {
-  grid-template-rows: minmax(var(--_plot-height), 1fr) auto;
+  grid-template-rows: minmax(var(--_plot-height), 1fr) auto auto;
 }
 
 .plot {
+  grid-area: plot;
   position: relative;
   min-inline-size: 0;
 }
 
 .bars {
   display: flex;
+  flex-direction: column;
   align-items: stretch;
-  /* MUST match .x-axis-row's gap — the two rows mirror each other. */
+  /* MUST match .category-axis's gap — the two columns mirror each other. */
   gap: var(--sherpa-display-mode-space-xs, 8px);
   block-size: 100%;
-  /* The baseline under the bars. */
-  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base, #b3b3c3);
+  /* The baseline the bars grow from. */
+  border-inline-start: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base, #b3b3c3);
 }
 
 .bar-col {
   flex: 1 1 0;
-  min-inline-size: 0;
+  min-block-size: 0;
   display: flex;
-  flex-direction: column;
-  block-size: 100%;
+  align-items: center;
+  inline-size: 100%;
   padding: 0;
   border: none;
   background: none;
@@ -42,45 +64,45 @@
   cursor: pointer;
 }
 
-/* THE ZERO LINE, where the scale dips below zero. `--_zero` is how far UP the
-   plot zero sits; without a negative value it is 0 and this rule never fires,
-   so an ordinary chart draws exactly as before.
-   TRAP T-a-bar-hangs-from-the-zero-line */
+/* THE ZERO LINE, where the scale dips below zero. `--_zero` is how far ALONG
+   the plot zero sits; without a negative value it is 0 and this rule never
+   fires. TRAP T-a-bar-hangs-from-the-zero-line */
 .bars-zero {
   display: none;
 }
 :host(:state(below-zero)) .bars-zero {
   display: block;
   position: absolute;
-  inset-inline: 0;
-  inset-block-end: var(--_zero, 0%);
-  border-block-start: var(--sherpa-display-mode-border-width-base, 1px) solid
+  inset-block: 0;
+  inset-inline-start: var(--_zero, 0%);
+  border-inline-start: var(--sherpa-display-mode-border-width-base, 1px) solid
     var(--sherpa-style-border-base, #b3b3c3);
 }
 /* The baseline moves ONTO that line, so the axis is not drawn twice. */
 :host(:state(below-zero)) .bars {
   position: relative;
-  border-block-end: none;
+  border-inline-start: none;
 }
 
-/* The category-label row mirrors `.bars` exactly — same flex, same gap, same
-   `flex: 1 1 0` — so label N sits under bar N. */
-.x-axis-row {
+/* The category labels mirror `.bars` exactly — same flex, same gap, same
+   `flex: 1 1 0` — so label N sits beside bar N. */
+.category-axis {
+  grid-area: categories;
   display: flex;
+  flex-direction: column;
   /* MUST match `.bars` gap. */
   gap: var(--sherpa-display-mode-space-xs, 8px);
-  margin-block-start: var(--sherpa-display-mode-space-2xs, 4px); /* also in .chart-body's flex basis */
+  min-inline-size: 0;
 }
 
 /* Figma Data Field: translucent fill, solid 1px stroke in the same series hue. */
 .bar {
-  align-self: center;
-  inline-size: 100%;
-  max-inline-size: 48px;
-  margin-block-start: auto; /* push to the bottom of the flexible area */
-  block-size: var(--_h, 0%);
-  min-block-size: 2px; /* off-grid-ok — a zero bar stays visible; a stroke, not spacing */
-  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px) var(--sherpa-display-mode-border-rounding-sm, 2px) 0 0;
+  block-size: 100%;
+  max-block-size: 48px;
+  inline-size: var(--_h, 0%);
+  min-inline-size: 2px; /* off-grid-ok — a zero bar stays visible; a stroke, not spacing */
+  border-start-end-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
+  border-end-end-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
   /* The border is the series' OWN token at full strength, not the fill —
      --_hue here inherits the fill's 50% and the outline vanishes. */
   border: var(--sherpa-display-mode-border-width-base, 1px) solid
@@ -89,51 +111,74 @@
      Figma), so a component-side 60% multiplies down to 30%. */
   background: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
   box-sizing: border-box;
-  transition: filter 100ms ease, block-size 300ms ease;
+  transition: filter 100ms ease, inline-size 300ms ease;
 }
 
-/* BELOW ZERO: flex cannot place a bar that starts part-way up the plot, so the
-   bar is positioned against the column instead. Only in this mode — a chart of
-   positive values keeps the flex layout untouched.
+/* BELOW ZERO: flex cannot place a bar that starts part-way along the plot, so
+   the bar is positioned against its row instead. Only in this mode.
    TRAP T-a-bar-hangs-from-the-zero-line */
 :host(:state(below-zero)) .bar-col { position: relative; }
 :host(:state(below-zero)) .bar {
   position: absolute;
-  inset-inline: 0;
-  margin: 0 auto;
-  /* Grows UP from the zero line. */
-  inset-block-end: var(--_base, 0%);
+  inset-block: 0;
+  margin-block: auto;
+  /* Grows RIGHT from the zero line. */
+  inset-inline-start: var(--_base, 0%);
 }
-/* A NEGATIVE bar hangs BELOW the line: its top edge is the line, so it is
-   placed from the top instead, and its rounded corners are at the bottom. */
+/* A NEGATIVE bar grows LEFT of the line: its end edge is the line, and its
+   rounded corners are at its start. */
 :host(:state(below-zero)) .bar-col[data-sign="-"] .bar {
-  inset-block-end: auto;
-  inset-block-start: calc(100% - var(--_base, 0%));
-  border-radius: 0 0 var(--sherpa-display-mode-border-rounding-sm, 2px)
-    var(--sherpa-display-mode-border-rounding-sm, 2px);
+  inset-inline-start: auto;
+  inset-inline-end: calc(100% - var(--_base, 0%));
+  border-radius: 0;
+  border-start-start-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
+  border-end-start-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
 }
 
-/* GROUPED: a bar's parts, stacked from its base in its own colour, a line between
-   each — they have no key of their own; the tip names them. Will, TODO 548 */
+/* STACKED by its Secondary: each piece its share, in ITS colour, from the base;
+   the bar itself draws nothing. Will, TODO 548 */
+.bar:has(> .bar-stack:not(:empty)) {
+  position: relative;
+  background: none;
+  border-color: transparent;
+}
+.bar-stack { display: none; }
+.bar-stack:not(:empty) {
+  display: flex;
+  position: absolute;
+  inset: 0;
+}
+.bar-col[data-sign="-"] .bar-stack { flex-direction: row-reverse; }
+.bar-piece {
+  flex: var(--_p, 1) 1 0;
+  min-inline-size: 0;
+  position: relative;
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid
+    var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
+  background: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
+  box-sizing: border-box;
+}
+
+/* GROUPED: a bar's — or a piece's — parts, from its base in its own colour, a
+   line between each: they have no key of their own; the tip names them. TODO 548 */
 .bar-parts { display: none; }
 .bar:has(> .bar-parts:not(:empty)) { position: relative; }
 .bar-parts:not(:empty) {
   display: flex;
-  flex-direction: column-reverse;
   position: absolute;
   inset: 0;
 }
-.bar-col[data-sign="-"] .bar-parts { flex-direction: column; }
-.bar-part { flex: var(--_p, 1) 1 0; min-block-size: 0; }
-/* The line sits on the edge a part shares with the one before it: below it,
-   as the stack runs up from the base; above it, on a bar that hangs down. */
+.bar-col[data-sign="-"] .bar-parts { flex-direction: row-reverse; }
+.bar-part { flex: var(--_p, 1) 1 0; min-inline-size: 0; }
+/* The line sits on the edge a part shares with the one before it: its start,
+   as the run grows from the base; its end, on a bar that grows left. */
 .bar-part + .bar-part {
-  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid
+  border-inline-start: var(--sherpa-display-mode-border-width-base, 1px) solid
     var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
 }
 .bar-col[data-sign="-"] .bar-part + .bar-part {
-  border-block-end: 0;
-  border-block-start: var(--sherpa-display-mode-border-width-base, 1px) solid
+  border-inline-start: 0;
+  border-inline-end: var(--sherpa-display-mode-border-width-base, 1px) solid
     var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
 }
 
@@ -148,14 +193,14 @@
 :host(:state(highlighting)) .bar-match {
   display: block;
   position: absolute;
-  inset-inline: 0;
-  inset-block-end: 0;
-  block-size: var(--_m, 0%);
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: var(--_m, 0%);
   background: var(--_border, var(--sherpa-data-viz-series-1, #8364c8));
 }
 :host(:state(highlighting)) .bar-col[data-sign="-"] .bar-match {
-  inset-block-end: auto;
-  inset-block-start: 0;
+  inset-inline-start: auto;
+  inset-inline-end: 0;
 }
 
 .bar-col:hover .bar { filter: brightness(1.08); }
@@ -167,7 +212,11 @@
 
 .bar-label {
   flex: 1 1 0;
-  text-align: center;
+  min-block-size: 0;
+  /* A BLOCK, centred by align-content: a flex box would not truncate its text. */
+  display: block;
+  align-content: center;
+  text-align: end;
   /* MONOSPACED — tabular figures stop digits jittering as values change. */
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-variant-numeric: tabular-nums;
@@ -180,80 +229,57 @@
   max-inline-size: 100%;
 }
 
-/* ── Axes ────────────────────────────────────────────────────────────────
+/* ── The value axis ──────────────────────────────────────────────────────
    ONE SOURCE OF TRUTH: every tick label is placed at the SAME percentage its
-   gridline is drawn at, on a box the exact height of the plot. Stacking the
-   labels in flex cannot work — `space-between` places N+1 boundaries against
-   N−1 interior gridlines.
-
-   THE CHART GRID: column 1 rotated caption, column 2 value labels, column 3
-   plot; row 1 the drawing area, row 2 the category labels. The y-axis and the
-   plot are cells of the SAME ROW, so CSS keeps them the same height. */
-.chart-body {
-  display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) auto;
-  /* --_plot-height is a flex BASIS, not a track floor: it shrinks in a short
-     card and holds in an unsized host. The addend is the x-axis row — MUST
-     match its margin and label line-height.
-     TRAP T-a-percentage-floor-needs-a-definite-parent */
-  flex: 1 1 calc(var(--_plot-height) + var(--sherpa-display-mode-space-2xs, 4px) + var(--sherpa-theme-content-line-height-small, 16px));
-  min-block-size: 0;
-  /* NO column gap: the axis LINE is the y-axis box's trailing border, so a gap
-     floats it away from the plot. Breathing room lives in .y-axis's padding. */
-  column-gap: 0;
-  min-inline-size: 0;
-}
-
-.x-axis-row { grid-area: 2 / 3; }
-
-/* Gridlines — one gradient rather than N elements, so lines cannot fall out of
-   step. A `to top` repeat draws at the START of every band and nothing at 100%,
-   so the top line is the box's own border. Do NOT shrink the box to make room:
-   that shrinks the band and moves every interior line. */
+   gridline is drawn at, on a box the exact width of the plot. */
 .gridlines {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  /* A `to right` repeat draws at the START of every band and nothing at 100%,
+     so the last line is the box's own border. */
   background-image: repeating-linear-gradient(
-    to top,
+    to right,
     var(--sherpa-style-border-base, #b3b3c3) 0,
     var(--sherpa-style-border-base, #b3b3c3) var(--sherpa-display-mode-border-width-sm, 0.5px),
     transparent var(--sherpa-display-mode-border-width-sm, 0.5px),
     transparent calc(100% / var(--_bands, 4))
   );
-  /* The final line, at exactly 100% — the one the repeat cannot reach. */
-  border-block-start: var(--sherpa-border-top, 0.5px) solid
-    var(--sherpa-style-border-base, #b3b3c3);
-  /* Keeps the border OUTSIDE the painted area, so it cannot eat into the
-     gradient's height. */
-  box-sizing: content-box;
-}
-:host(:not(:state(has-y-axis))) .gridlines { display: none; }
-
-.y-axis {
-  display: none;
-  position: relative;
-  flex: 0 0 auto;
-  /* From the GRID ROW, not --_plot-height: that var is only the row's minimum,
-     so a hard 180px axis strands its labels above a taller run of bars. */
-  block-size: 100%;
-  /* A FIXED width. The labels inside are ABSOLUTE, so they contribute nothing
-     and the `auto` track collapses to 0; sizing from the longest label instead
-     makes the plot wiggle as values cross a digit boundary. */
-  inline-size: var(--sherpa-display-mode-size-lg, 24px);
-  /* Gap between the LABELS and the rule — the far side has none by design. */
-  padding-inline-end: var(--sherpa-display-mode-space-sm, 12px);
-  box-sizing: content-box;
   border-inline-end: var(--sherpa-border-right, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
+  box-sizing: content-box;
+}
+:host(:not(:state(has-value-axis))) .gridlines { display: none; }
+
+.value-axis {
+  grid-area: values;
+  display: none;
+  position: relative;
+  /* One line tall: the labels inside are ABSOLUTE, so they size nothing. */
+  block-size: var(--sherpa-theme-content-line-height-small, 16px);
+  margin-block-start: var(--sherpa-display-mode-space-2xs, 4px); /* also in .chart-body's flex basis */
   /* MONOSPACED — tabular figures stop digits jittering as values change. */
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-variant-numeric: tabular-nums;
-  /* Same size as the x-axis labels — the two axes are one scale. */
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
   color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
+:host(:state(has-value-axis)) .value-axis { display: block; }
 
+/* Each label sits at its own --_at percentage, centred on that line. */
+.value-tick {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: var(--_at, 0%);
+  translate: -50% 0;
+  white-space: nowrap;
+}
+
+/* The value axis's caption, under it. */
+.axis-label-value {
+  grid-area: caption;
+  justify-self: center;
+}
+:host([data-axis-label]) .axis-label-value { display: block; }

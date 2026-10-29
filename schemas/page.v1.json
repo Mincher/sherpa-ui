@@ -120,8 +120,22 @@
           "description": "Group and Sort arrange its rows: its Organise chips. Left out, a scope a page of rows is drawn in does, and the View does not.",
           "type": "boolean"
         },
+        "presets": {
+          "description": "The app's own named conditions, each a boolean chip leading the scope, its where in the plain form.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "label", "where"],
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" },
+              "where": { "type": "object", "additionalProperties": { "$ref": "#/$defs/condition" } }
+            }
+          }
+        },
         "presentation": {
-          "description": "What its slot shows until the reader changes it: a chart's primary (what it counts, its distinct values) and secondary (what it splits by).",
+          "description": "What its slot shows until the reader changes it: its kind, its primary (the first split: a bar, a slice or a grid's pinned column a value), its secondary (a bar chart's stack: its colours and legend) and its group (the sections in each).",
           "type": "object",
           "additionalProperties": false,
           "properties": {

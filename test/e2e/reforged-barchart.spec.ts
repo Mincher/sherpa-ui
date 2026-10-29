@@ -116,7 +116,7 @@ test('bars use the data-viz series ramp: translucent fill, solid 1px stroke', as
   expect(a!['borderColor']).not.toMatch(/\/ 0\./);
 });
 
-test('the y axis labels its gridlines and lines up with the plot', async ({ page }) => {
+test('the value axis labels its gridlines along the bottom, the width of the plot (Will, TODO 548)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-barchart') as HTMLElement & {
       rendered?: Promise<void>;
@@ -132,85 +132,62 @@ test('the y axis labels its gridlines and lines up with the plot', async ({ page
     await window.__settled();
 
     const sr = el.shadowRoot!;
-    const axis = sr.querySelector('.y-axis')!;
-    const ticks = Array.from(sr.querySelectorAll('.y-tick'));
+    const axis = sr.querySelector('.value-axis')!;
+    const ticks = Array.from(sr.querySelectorAll('.value-tick'));
     const plot = sr.querySelector('.plot')!;
-    const caption = sr.querySelector('.axis-label-y')!;
+    const caption = sr.querySelector('.axis-label-value')!;
 
     const measure = (): Record<string, unknown> => ({
       shown: getComputedStyle(axis).display !== 'none',
       values: ticks.map((t) => t.querySelector('.y-value')!.textContent),
-      // The axis must be EXACTLY as tall as the plot, or a value misses the
+      // The axis must be EXACTLY as wide as the plot, or a value misses the
       // gridline it belongs to.
-      heightsMatch:
-        Math.abs(axis.getBoundingClientRect().height - plot.getBoundingClientRect().height) < 1,
-      // The axis rule is the .y-axis box's own trailing border. It used to be each
-      // label cell's border, back when the labels stacked in flow; now they are
-      // absolutely placed at their `--_at` percentage, so the single box owns it —
-      // one rule that spans the whole axis instead of N stacked segments.
-      tickBorder: getComputedStyle(axis).borderInlineEndStyle,
+      widthsMatch: Math.abs(axis.getBoundingClientRect().width - plot.getBoundingClientRect().width) < 1,
+      // Under the plot.
+      below: axis.getBoundingClientRect().top >= plot.getBoundingClientRect().bottom - 0.5,
       captionShown: getComputedStyle(caption).display !== 'none',
       captionText: caption.textContent,
-      // Rotated to run up the axis.
-      captionMode: getComputedStyle(caption).writingMode,
-      // THE thing the user reported twice: a label's centre must sit on its own
-      // gridline. Both come off tickPercent(i, bands), so measure the rendered
-      // result rather than trusting that they share a formula.
+      captionBelow: caption.getBoundingClientRect().top >= axis.getBoundingClientRect().bottom - 0.5,
+      // A label's centre sits on its own gridline. Both come off tickPercent(i,
+      // bands), so measure the rendered result.
       offsets: ticks.map((t) => {
         const a = axis.getBoundingClientRect();
         const b = t.getBoundingClientRect();
         const at = parseFloat(getComputedStyle(t).getPropertyValue('--_at')) || 0;
-        const gridlineY = a.bottom - (a.height * at) / 100;
-        return Math.abs(b.top + b.height / 2 - gridlineY).toFixed(1);
+        const gridlineX = a.left + (a.width * at) / 100;
+        return Math.abs(b.left + b.width / 2 - gridlineX).toFixed(1);
       }),
-      // The axis must reserve real WIDTH. Its labels are absolutely positioned, so
-      // a zero-width track let every number hang outside the chart.
-      axisWidth: axis.getBoundingClientRect().width > 8,
-      ticksInsideAxis: ticks.every(
-        (t) => t.getBoundingClientRect().left >= axis.getBoundingClientRect().left - 0.5,
-      ),
     });
     const withTicks = measure();
 
-    // data-ticks="0" must remove the axis — an ABSENT attribute means "default 4",
-    // so the state has to be written by the JS rather than inferred by a selector.
+    // data-ticks="0" removes the axis — an ABSENT attribute means "default 4",
+    // so the state is written by the JS rather than inferred by a selector.
     el.setAttribute('data-ticks', '0');
     await window.__settled();
     const noTicks = {
       shown: getComputedStyle(axis).display !== 'none',
-      flag: el.matches(':state(has-y-axis)'),
+      flag: el.matches(':state(has-value-axis)'),
     };
     return { withTicks, noTicks };
   });
 
   expect(r.withTicks['shown']).toBe(true);
-  // 4 gridlines → 5 boundaries, stamped 0 → max in DOM order.
-  //
-  // The order flipped when the axis stopped stacking its labels in flex. Each label
-  // is now absolutely placed at its own `--_at` percentage (the SAME percentage its
-  // gridline is drawn at), so DOM order carries no meaning and ascending is the
-  // natural loop. On screen the max still renders at the top — the `offsets` check
-  // below is what actually guards the visual result.
+  // 4 gridlines → 5 boundaries, 0 → max, each at its own --_at.
   expect(r.withTicks['values']).toEqual(['0', '10', '20', '30', '40']);
-  // Every label's centre lands on its gridline (sub-pixel).
   for (const off of r.withTicks['offsets'] as string[]) expect(Number(off)).toBeLessThan(1);
-  // The axis takes real width, so the numbers stay inside the chart.
-  expect(r.withTicks['axisWidth']).toBe(true);
-  expect(r.withTicks['ticksInsideAxis']).toBe(true);
-  expect(r.withTicks['heightsMatch']).toBe(true);
-  expect(r.withTicks['tickBorder']).toBe('solid');
+  expect(r.withTicks['widthsMatch']).toBe(true);
+  expect(r.withTicks['below']).toBe(true);
   expect(r.withTicks['captionShown']).toBe(true);
   expect(r.withTicks['captionText']).toBe('Alerts');
-  expect(r.withTicks['captionMode']).toBe('vertical-rl');
+  expect(r.withTicks['captionBelow']).toBe(true);
 
   expect(r.noTicks.shown).toBe(false);
   expect(r.noTicks.flag).toBe(false);
 });
 
-test('the x axis labels sit BELOW the baseline, one per bar', async ({ page }) => {
-  // The labels used to live inside .bar-col, which put them ABOVE the baseline rule
-  // (inside the drawing area) and let a long label steal height from the bars. They
-  // are now a sibling row of the plot in the chart grid.
+test('the category labels sit LEFT of the baseline, one beside each bar (Will, TODO 548)', async ({ page }) => {
+  // The labels are a sibling column of the plot, so a long label never steals
+  // length from the bars.
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-barchart') as HTMLElement & {
       rendered?: Promise<void>;
@@ -226,28 +203,26 @@ test('the x axis labels sit BELOW the baseline, one per bar', async ({ page }) =
     await window.__settled();
 
     const sr = el.shadowRoot!;
-    const row = sr.querySelector('.x-axis-row')!;
+    const column = sr.querySelector('.category-axis')!;
     const bars = Array.from(sr.querySelectorAll('.bar-col'));
-    const labels = Array.from(row.children);
-    const baseline = sr.querySelector('.bars')!.getBoundingClientRect().bottom;
+    const labels = Array.from(column.children);
+    const baseline = sr.querySelector('.bars')!.getBoundingClientRect().left;
     return {
       texts: labels.map((l) => l.textContent),
-      // No label may live inside a bar column any more.
       insideBarCol: sr.querySelectorAll('.bar-col .bar-label').length,
-      // Every label starts below where the bars end.
-      allBelowBaseline: labels.every((l) => l.getBoundingClientRect().top >= baseline - 0.5),
-      // Label N is centred under bar N: the two rows mirror each other's flex.
+      allLeftOfBaseline: labels.every((l) => l.getBoundingClientRect().right <= baseline + 0.5),
+      // Label N is centred beside bar N: the two columns mirror each other's flex.
       centreOffsets: labels.map((l, i) => {
         const a = l.getBoundingClientRect();
         const b = bars[i]!.getBoundingClientRect();
-        return Math.abs(a.left + a.width / 2 - (b.left + b.width / 2)).toFixed(1);
+        return Math.abs(a.top + a.height / 2 - (b.top + b.height / 2)).toFixed(1);
       }),
     };
   });
 
   expect(r.texts).toEqual(['Disk', 'CPU', 'Memory']);
   expect(r.insideBarCol).toBe(0);
-  expect(r.allBelowBaseline).toBe(true);
+  expect(r.allLeftOfBaseline).toBe(true);
   for (const off of r.centreOffsets) expect(Number(off)).toBeLessThan(1);
 });
 
@@ -301,11 +276,12 @@ test('the tooltip shows the value in full; the axis still compacts', async ({ pa
  *
  * TRAP T-a-bar-hangs-from-the-zero-line
  */
-test('a NEGATIVE value hangs below a lifted zero line', async ({ page }) => {
+test('a NEGATIVE value grows left of a moved zero line (Will, TODO 548)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-barchart') as HTMLElement & {
       rendered?: Promise<void>; populate?: (d: unknown) => void;
     };
+    el.style.inlineSize = '400px';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!([
@@ -315,40 +291,41 @@ test('a NEGATIVE value hangs below a lifted zero line', async ({ page }) => {
 
     const plot = el.shadowRoot!.querySelector('.bars')!.getBoundingClientRect();
     const line = el.shadowRoot!.querySelector('.bars-zero')!;
-    const up = (n: number): number => Math.round(plot.bottom - n);
+    const along = (n: number): number => Math.round(n - plot.left);
 
     return {
       flagged: el.matches(':state(below-zero)'),
       lineShown: getComputedStyle(line).display,
-      // The scale runs -5..20, so zero sits a fifth of the way up.
-      lineAt: up(line.getBoundingClientRect().bottom),
-      plotH: Math.round(plot.height),
+      // The scale runs -5..20, so zero sits a fifth of the way along.
+      lineAt: along(line.getBoundingClientRect().left),
+      plotW: Math.round(plot.width),
       bars: [...el.shadowRoot!.querySelectorAll<HTMLElement>('.bar-col')].map((c) => {
         const box = c.querySelector('.bar')!.getBoundingClientRect();
-        return { sign: c.dataset['sign'], top: up(box.top), bottom: up(box.bottom) };
+        return { sign: c.dataset['sign'], start: along(box.left), end: along(box.right) };
       }),
     };
   });
 
   expect(r.flagged).toBe(true);
   expect(r.lineShown).toBe('block');
-  // -5 of a 25 span is a fifth: 36 of 180.
-  expect(r.lineAt).toBe(Math.round(r.plotH * 0.2));
+  // -5 of a 25 span is a fifth.
+  expect(Math.abs(r.lineAt - Math.round(r.plotW * 0.2))).toBeLessThanOrEqual(1);
 
-  // A hangs BELOW: its top is the line, its bottom is the floor.
+  // A grows LEFT: its end is the line, its start the plot's edge.
   expect(r.bars[0]!.sign).toBe('-');
-  expect(r.bars[0]!.top).toBe(r.lineAt);
-  expect(r.bars[0]!.bottom).toBe(0);
+  expect(Math.abs(r.bars[0]!.end - r.lineAt)).toBeLessThanOrEqual(1);
+  expect(r.bars[0]!.start).toBe(0);
 
-  // B and C stand ON the line, and C is exactly twice B.
-  expect(r.bars[1]!.bottom).toBe(r.lineAt);
-  expect(r.bars[2]!.bottom).toBe(r.lineAt);
-  const b = r.bars[1]!.top - r.bars[1]!.bottom;
-  const c = r.bars[2]!.top - r.bars[2]!.bottom;
-  expect(c, 'twice the value is twice the bar').toBe(b * 2);
+  // B and C start ON the line, and C is twice B.
+  expect(Math.abs(r.bars[1]!.start - r.lineAt)).toBeLessThanOrEqual(1);
+  expect(Math.abs(r.bars[2]!.start - r.lineAt)).toBeLessThanOrEqual(1);
+  const b = r.bars[1]!.end - r.bars[1]!.start;
+  const c = r.bars[2]!.end - r.bars[2]!.start;
+  expect(Math.abs(c - b * 2), 'twice the value is twice the bar').toBeLessThanOrEqual(1);
 });
 
-test('a chart of POSITIVE values is untouched — no line, bars on the floor', async ({ page }) => {
+
+test('a chart of POSITIVE values is untouched — no line, bars on the baseline', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-barchart') as HTMLElement & {
       rendered?: Promise<void>; populate?: (d: unknown) => void;
@@ -363,9 +340,9 @@ test('a chart of POSITIVE values is untouched — no line, bars on the floor', a
     return {
       flagged: el.matches(':state(below-zero)'),
       lineShown: getComputedStyle(line).display,
-      // Bars sit on the plot floor, within the 1px baseline border.
+      // Bars start at the baseline, within its 1px border.
       feet: [...el.shadowRoot!.querySelectorAll('.bar')]
-        .map((n) => Math.round(plot.bottom - n.getBoundingClientRect().bottom)),
+        .map((n) => Math.round(n.getBoundingClientRect().left - plot.left)),
     };
   });
 
@@ -383,7 +360,7 @@ test('a bar draws the part the highlight matches, and none without one', async (
     await el.rendered;
     const read = () => ({
       on: el.matches(':state(highlighting)'),
-      parts: [...el.shadowRoot!.querySelectorAll<HTMLElement>('.bar-match')].map((m) => Math.round(m.getBoundingClientRect().height / m.parentElement!.clientHeight * 100)),
+      parts: [...el.shadowRoot!.querySelectorAll<HTMLElement>('.bar-match')].map((m) => Math.round(m.getBoundingClientRect().width / m.parentElement!.clientWidth * 100)),
     });
     el.populate!([{ label: 'A', value: 40, matched: 10 }, { label: 'B', value: 20, matched: 20 }, { label: 'C', value: 30, matched: 0 }]);
     await window.__settled();
@@ -409,14 +386,14 @@ test('a grouped bar stacks its parts in its own colour, each its share; the tip 
     const cols = [...el.shadowRoot!.querySelectorAll<HTMLElement>('.bar-col')];
     const parts = [...cols[0]!.querySelectorAll<HTMLElement>('.bar-part')];
     const bar = cols[0]!.querySelector('.bar')!.getBoundingClientRect();
-    const heights = parts.map((p) => Math.round(p.getBoundingClientRect().height));
+    const widths = parts.map((p) => Math.round(p.getBoundingClientRect().width));
     return {
       parts: parts.length, none: cols[1]!.querySelectorAll('.bar-part').length,
-      // From the base up: Free (1 of 3), then Pro (2 of 3).
-      share: heights.map((h) => Math.round((h / bar.height) * 3)),
-      bottomFirst: parts[0]!.getBoundingClientRect().bottom >= parts[1]!.getBoundingClientRect().bottom,
-      // The line is on the edge the parts SHARE: Pro's bottom, never its top.
-      line: [getComputedStyle(parts[1]!).borderBottomStyle, getComputedStyle(parts[1]!).borderTopStyle],
+      // From the base along: Free (1 of 3), then Pro (2 of 3).
+      share: widths.map((w) => Math.round((w / bar.width) * 3)),
+      baseFirst: parts[0]!.getBoundingClientRect().left <= parts[1]!.getBoundingClientRect().left,
+      // The line is on the edge the parts SHARE: Pro's start, never its end.
+      line: [getComputedStyle(parts[1]!).borderLeftStyle, getComputedStyle(parts[1]!).borderRightStyle],
       tip: cols[0]!.querySelector('.chart-tip-parts')!.textContent,
       name: cols[0]!.getAttribute('aria-label'),
       plain: cols[1]!.getAttribute('aria-label'),
@@ -435,10 +412,39 @@ test('a grouped bar stacks its parts in its own colour, each its share; the tip 
   expect(r.parts).toBe(2);
   expect(r.none).toBe(0);
   expect(r.share).toEqual([1, 2]);
-  expect(r.bottomFirst).toBe(true);
+  expect(r.baseFirst).toBe(true);
   expect(r.line).toEqual(['solid', 'none']);
   expect(r.tip).toBe('Free 1\nPro 2');
   expect(r.under).toEqual({ below: true, lines: 2 });
   expect(r.name).toBe('active: 3 (Free 1 · Pro 2)');
   expect(r.plain).toBe('trial: 1');
+});
+
+test('a stacked bar draws its Secondary pieces, each its share in ITS colour, and each piece\'s parts in it (Will, TODO 548)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<HTMLElement & { populate(d: unknown): Promise<void> }>('sherpa-barchart', undefined, { style: 'inline-size: 400px; block-size: 240px' });
+    await el.populate([
+      { label: 'Pro', value: 3, colorIndex: 1, stack: [
+        { label: 'active', value: 2, colorIndex: 1, parts: [{ label: '10', value: 1 }, { label: '5', value: 1 }] },
+        { label: 'churned', value: 1, colorIndex: 3 },
+      ] },
+    ]);
+    await window.__settled();
+    const col = el.shadowRoot!.querySelector<HTMLElement>('.bar-col')!;
+    const bar = col.querySelector<HTMLElement>('.bar')!;
+    const pieces = [...col.querySelectorAll<HTMLElement>('.bar-piece')];
+    return {
+      share: pieces.map((p) => Math.round((p.getBoundingClientRect().width / bar.getBoundingClientRect().width) * 3)),
+      // Each piece its own series colour: the bar paints nothing of its own.
+      colours: pieces.map((p) => getComputedStyle(p).backgroundColor),
+      bar: getComputedStyle(bar).backgroundColor,
+      parts: pieces.map((p) => p.querySelectorAll('.bar-part').length),
+      name: col.getAttribute('aria-label'),
+    };
+  });
+  expect(r.share).toEqual([2, 1]);
+  expect(r.colours[0]).not.toBe(r.colours[1]);
+  expect(r.bar).toBe('rgba(0, 0, 0, 0)');
+  expect(r.parts).toEqual([2, 0]);
+  expect(r.name).toBe('Pro: 3 (active 2 · churned 1)');
 });

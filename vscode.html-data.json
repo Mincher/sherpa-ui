@@ -201,7 +201,7 @@
     },
     {
       "name": "sherpa-barchart",
-      "description": "a vertical bar chart for categorical comparison.",
+      "description": "a HORIZONTAL bar chart for categorical comparison: one bar a row, its category on the left, its value along the bottom. Will, TODO 548",
       "attributes": [
         {
           "name": "data-aggregate",
@@ -229,7 +229,7 @@
         },
         {
           "name": "data-axis-label",
-          "description": "y-axis caption (shown when set)"
+          "description": "the value axis's caption, under it (shown when set)"
         },
         {
           "name": "data-bands",
@@ -266,7 +266,7 @@
         },
         {
           "name": "data-max",
-          "description": "explicit y-max (else derived from the data)"
+          "description": "explicit value-axis max (else derived from the data)"
         },
         {
           "name": "data-over-field"
@@ -276,8 +276,12 @@
           "description": "ASKED of its provider: one bar per value of this field"
         },
         {
+          "name": "data-stack-field",
+          "description": "each bar stacked by this field's values, in their colours"
+        },
+        {
           "name": "data-ticks",
-          "description": "number of y gridlines/values"
+          "description": "number of value gridlines"
         },
         {
           "name": "data-where"

@@ -8,7 +8,7 @@
 
 | Component | What it is |
 |---|---|
-| [sherpa-barchart](sherpa-barchart.md) | A vertical bar chart for categorical comparison. |
+| [sherpa-barchart](sherpa-barchart.md) | A HORIZONTAL bar chart for categorical comparison: one bar a row, its category on the left, its value along the bottom. |
 | [sherpa-chart-legend](sherpa-chart-legend.md) | A legend for charts. |
 | [sherpa-gauge-chart](sherpa-gauge-chart.md) | A half-circle gauge for a single value on a 0–100 scale. |
 | [sherpa-line-chart](sherpa-line-chart.md) | A line/area chart over a numeric series. |

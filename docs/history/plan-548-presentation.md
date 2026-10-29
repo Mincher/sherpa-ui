@@ -97,6 +97,30 @@ Saved Views, export and a reload carry it, as `definitionOf` carries any scope k
 
 Each phase is its own commit series, test first. Each one ships without the ones after it.
 
+## The model, settled (Will, 2026-10-29, late)
+
+This replaces the earlier reading of primary and secondary below.
+
+- **Primary** is the first split, always:
+  - a grid: its first, pinned column;
+  - a bar chart: one bar per value, on the Y axis — bars run HORIZONTALLY, always (Will: A);
+  - a donut or pie: one slice per value.
+- **Secondary** is one more level, only where there is room for it — a bar chart today (a grid's pivot, later): each bar is stacked by its values, in their colours.
+- **Group** is the sections inside each piece: each Primary piece, or, where a Secondary stacks, each Secondary piece.
+- **The legend** lists Secondary where the chart uses it, else Primary.
+- **A bar's length** is its row count, so its parts always add up (Will: A).
+- **The Secondary chip** shows only for a bar chart.
+- **D4 is B:** Data Grid in a chart card is the rows — Primary its pinned first column, grouped by Group.
+
+### Phase F, from here
+
+| Step | What |
+|---|---|
+| F1 | The data layer: a summary's `stack` (the Secondary) — each segment's stack pieces, each piece's parts by the group; primary → segment, secondary → stack, never a distinct count |
+| F2 | The bar chart runs horizontally: Primary on the Y axis, the count along the X axis; it draws stacks, and parts in them |
+| F3 | The legend follows Secondary in a stacked bar; the Secondary chip only for a bar chart; Group offers neither field in use |
+| F4 | D4: Data Grid in a chart card; the Demos pages |
+
 ## Will's answers, 2026-10-29
 
 1. **A grouped chart's legend: B.** The legend keeps listing the segment values ("By status": the statuses) and toggles whole segments. The parts have no key of their own; a part's tip says its group value and its number.

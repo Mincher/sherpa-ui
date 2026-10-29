@@ -68,3 +68,17 @@ test('a distinct count\'s parts add up to it: each value counted once, in the gr
   assert.deepEqual(active.parts.map((p) => [p.label, p.value, p.colorIndex]), [['Free', 2, 1], ['Pro', 1, 2]]);
   assert.equal(active.parts.reduce((n, p) => n + p.value, 0), active.value);
 });
+
+test('stacked by a Secondary, each bar holds its pieces — in that field\'s colours — and each piece its parts by the group (Will, TODO 548)', () => {
+  const out = summarise(ROWS, { shape: 'segments', segment: 'plan', stack: 'status', group: 'seats' }, domain);
+  const pro = out.find((s) => s.label === 'Pro');
+  // A bar a plan, its row count; stacked by status, in the status order and colours.
+  assert.equal(pro.value, 3);
+  assert.deepEqual(pro.stack.map((p) => [p.label, p.value, p.colorIndex]), [['active', 2, 1], ['churned', 1, 3]]);
+  assert.equal(pro.stack.reduce((n, p) => n + p.value, 0), pro.value);
+  // Each piece's sections, by the group.
+  assert.deepEqual(pro.stack[0].parts.map((p) => [p.label, p.value]), [['10', 1], ['5', 1]]);
+  // No group: pieces, no parts.
+  const plain = summarise(ROWS, { shape: 'segments', segment: 'plan', stack: 'status' }, domain);
+  assert.equal(plain.some((s) => s.stack.some((p) => 'parts' in p)), false);
+});

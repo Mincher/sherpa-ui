@@ -247,7 +247,7 @@ test('a gauge draws its field\'s thresholds, and a bar chart cuts at them', asyn
   expect(r['bars']).toEqual([['Low', 2], ['Mid', 1], ['High', 1]]);
 });
 
-test('a chart in a SLOT draws what the slot\'s kept presentation says: its segments, parts, order and what it counts (Will, TODO 548)', async ({ page }) => {
+test('a chart in a SLOT draws what the slot\'s kept presentation says: its bars, its stack, its parts and its order (Will, TODO 548)', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     provider.innerHTML = \`
@@ -265,10 +265,10 @@ test('a chart in a SLOT draws what the slot\'s kept presentation says: its segme
     source.query.present('by-plan', { group: 'day' });
     await settle();
     at.grouped = bars();
-    source.query.present('by-plan', { group: undefined, sort: 'desc', primary: 'day' });
+    source.query.present('by-plan', { group: undefined, sort: 'desc', secondary: 'day' });
     await settle();
     at.counted = bars();
-    source.query.present('by-plan', { sort: undefined, primary: undefined, secondary: 'day' });
+    source.query.present('by-plan', { sort: undefined, secondary: undefined, primary: 'day' });
     await settle();
     at.resegmented = bars();
     return at;
@@ -277,9 +277,9 @@ test('a chart in a SLOT draws what the slot\'s kept presentation says: its segme
   expect(r['first']).toEqual(['Free: 1', 'Pro: 2', 'Enterprise: 1']);
   // Grouped by day: each bar's parts.
   expect(r['grouped']).toEqual(['Free: 1 (Tue 1)', 'Pro: 2 (Mon 1 · Wed 1)', 'Enterprise: 1 (Mon 1)']);
-  // Counting each plan's distinct days, largest first.
-  expect(r['counted']).toEqual(['Pro: 2', 'Free: 1', 'Enterprise: 1']);
-  // Segmented by day instead.
+  // Its Secondary, a bar chart's stack: each plan's rows by day, largest first.
+  expect(r['counted']).toEqual(['Pro: 2 (Mon 1 · Wed 1)', 'Free: 1 (Tue 1)', 'Enterprise: 1 (Mon 1)']);
+  // Its Primary: a bar a day instead.
   expect(r['resegmented']).toEqual(['Mon: 2', 'Tue: 1', 'Wed: 1']);
 });
 
@@ -341,7 +341,7 @@ test('a chart\'s bar in its SLOT: Group splits its bars, Sort has no menu and cy
   expect(r['again']).toEqual({ kept: { sort: 'asc' }, first: 'Free: 1' });
 });
 
-test('a chart\'s Primary picks what it counts and its Secondary what it splits by — its chart\'s own until picked, and off goes back (Will, TODO 548)', async ({ page }) => {
+test('a chart\'s Primary is its bars and its Secondary their stack — its chart\'s own until picked, and off goes back (Will, TODO 548)', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     provider.innerHTML = \`
@@ -369,25 +369,25 @@ test('a chart\'s Primary picks what it counts and its Secondary what it splits b
     };
     const groups = () => [...chip('group').querySelectorAll('sherpa-menu input')].map((i) => i.value).filter(Boolean);
     const at = { order: zone().map((c) => c.dataset.id), first: { primary: said('primary'), secondary: said('secondary'), groups: groups(), bars: bars() } };
-    await pick('secondary', 'day');
-    at.split = { secondary: said('secondary'), kept: source.query.presentation('by-plan'), bars: bars() };
-    await pick('primary', 'plan');
-    at.counted = { primary: said('primary'), kept: source.query.presentation('by-plan'), bars: bars() };
+    await pick('primary', 'day');
+    at.split = { primary: said('primary'), kept: source.query.presentation('by-plan'), bars: bars() };
+    await pick('secondary', 'plan');
+    at.counted = { secondary: said('secondary'), kept: source.query.presentation('by-plan'), bars: bars() };
     // Its body OFF: back to counting rows.
-    chip('primary').shadowRoot.querySelector('.body').click();
+    chip('secondary').shadowRoot.querySelector('.body').click();
     await settle();
-    at.off = { primary: said('primary').on, kept: source.query.presentation('by-plan'), bars: bars() };
+    at.off = { secondary: said('secondary').on, kept: source.query.presentation('by-plan'), bars: bars() };
     return at;
   })()`) as Record<string, unknown>;
   // Primary and Secondary lead, before Group and Sort.
   expect(r['order']).toEqual(['primary', 'secondary', 'group', 'sort']);
-  // As its chart says: split by plan, counting rows; Group offers no plan.
-  expect(r['first']).toEqual({ primary: { on: false, field: '' }, secondary: { on: true, field: 'plan' }, groups: ['day'], bars: ['Free: 1', 'Pro: 3', 'Enterprise: 1'] });
-  // By day: one bar a day.
-  expect(r['split']).toEqual({ secondary: { on: true, field: 'day' }, kept: { secondary: 'day' }, bars: ['Mon: 3', 'Tue: 1', 'Wed: 1'] });
-  // Counting plans: each day's different plans.
-  expect(r['counted']).toEqual({ primary: { on: true, field: 'plan' }, kept: { primary: 'plan', secondary: 'day' }, bars: ['Mon: 2', 'Tue: 1', 'Wed: 1'] });
-  expect(r['off']).toEqual({ primary: false, kept: { secondary: 'day' }, bars: ['Mon: 3', 'Tue: 1', 'Wed: 1'] });
+  // As its chart says: a bar a plan on its X axis, counting rows; Group offers no plan.
+  expect(r['first']).toEqual({ primary: { on: true, field: 'plan' }, secondary: { on: false, field: '' }, groups: ['day'], bars: ['Free: 1', 'Pro: 3', 'Enterprise: 1'] });
+  // Primary day: a bar a day, named by it.
+  expect(r['split']).toEqual({ primary: { on: true, field: 'day' }, kept: { primary: 'day' }, bars: ['Mon: 3', 'Tue: 1', 'Wed: 1'] });
+  // Secondary plan: each day's bar stacked by plan.
+  expect(r['counted']).toEqual({ secondary: { on: true, field: 'plan' }, kept: { primary: 'day', secondary: 'plan' }, bars: ['Mon: 3 (Pro 2 · Enterprise 1)', 'Tue: 1 (Free 1)', 'Wed: 1 (Pro 1)'] });
+  expect(r['off']).toEqual({ secondary: false, kept: { primary: 'day' }, bars: ['Mon: 3', 'Tue: 1', 'Wed: 1'] });
 });
 
 test('a card\'s Show as swaps its chart over the same data, keeps what it was arranged by, and Default goes back (Will, TODO 548)', async ({ page }) => {
@@ -434,7 +434,7 @@ test('a card\'s Show as swaps its chart over the same data, keeps what it was ar
   expect(r['back']).toEqual({ tag: 'sherpa-barchart', type: null, marks: ['Free: 1 (Tue 1)', 'Pro: 2 (Mon 1 · Wed 1)', 'Enterprise: 1 (Mon 1)'], shown: 'default', kept: { group: 'day' } });
 });
 
-test('a grid card\'s Show as draws its slot as a chart — what its definition counts, split as it says — and Default puts back the very grid (Will, TODO 548)', async ({ page }) => {
+test('a grid card\'s Show as draws its slot as a chart — bars and stack as its definition says — and Default puts back the very grid (Will, TODO 548)', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     provider.innerHTML = \`
@@ -449,8 +449,8 @@ test('a grid card\'s Show as draws its slot as a chart — what its definition c
     const source = new DataSource({ store: new ArrayStore([...rows, { id: 5, plan: 'Pro', spend: 1, day: 'Mon' }], { key: 'id' }) });
     source.declareValues('plan', PLANS);
     source.declareValues('day', ['Mon', 'Tue', 'Wed']);
-    // Its page's definition: count each plan's different days.
-    source.query.declarePresentation('data', { primary: 'day', secondary: 'plan' });
+    // Its page's definition: a bar a plan, stacked by day.
+    source.query.declarePresentation('data', { primary: 'plan', secondary: 'day' });
     provider.provide({ sources: { sales: source } });
     await source.load();
     await settle();
@@ -474,8 +474,8 @@ test('a grid card\'s Show as draws its slot as a chart — what its definition c
     return at;
   })()`) as Record<string, Record<string, unknown>>;
   expect(r['first']).toEqual({ tag: 'sherpa-data-grid', rows: 5 });
-  // Each plan's different days: three Pro rows, on Mon and Wed.
-  expect(r['bar']).toEqual({ tag: 'sherpa-barchart', scope: 'data', id: '', shown: 'bar', marks: ['Free: 1', 'Pro: 2', 'Enterprise: 1'], legend: 3 });
+  // A bar a plan, its rows stacked by day; its legend lists the days.
+  expect(r['bar']).toEqual({ tag: 'sherpa-barchart', scope: 'data', id: '', shown: 'bar', marks: ['Free: 1 (Tue 1)', 'Pro: 3 (Mon 2 · Wed 1)', 'Enterprise: 1 (Mon 1)'], legend: 3 });
   // The page's own grid, with its columns, and its rows again.
   expect(r['back']).toEqual({ same: true, shown: 'default', rows: 5, reports: [] });
 });

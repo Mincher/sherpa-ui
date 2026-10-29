@@ -25,6 +25,7 @@
  * - .drawPanelReading — Tell each control over several scopes one field's reading in a scope.
  * - .drawReading — Tell each control over a field's home its reading.
  * - .drawBars — Draw every bar over one scope, as the panel draws it.
+ * - .stacksIn — Does a slot's chart stack by a Secondary — a bar chart?
  * - .shownIn — What a slot's chart shows by its own attributes.
  * - .tellView — Tell each component in one scope its view again, and nothing more.
  * - .drawBarsBehind — Draw each bar over one scope that does not hold what the scope holds now: a scope two bars draw — a strip and…
@@ -61,6 +62,8 @@ export interface Bound {
   free?: readonly string[];
   /** See AttachFacts.shows. */
   shows?: Presentation;
+  /** See AttachFacts.stacks. */
+  stacks?: boolean;
   /** Where its view, rows and pending fields go. */
   sink: BindSink;
 }
@@ -114,6 +117,7 @@ export class SourceBinding {
       ...(facts.fields ? { fields: [...facts.fields] } : {}),
       ...(facts.free?.length ? { free: [...facts.free].sort() } : {}),
       ...(facts.shows ? { shows: facts.shows } : {}),
+      ...(facts.stacks ? { stacks: true } : {}),
     });
   }
 
@@ -245,6 +249,11 @@ export class SourceBinding {
    *  that came from somewhere else (the panel) changed what it holds. */
   drawBars(scope: string): void {
     for (const [el, { scope: s }] of this.#bound) if (s === scope && el.drawScope) void el.drawScope(...this.#slice(scope));
+  }
+
+  /** Does a slot's chart stack by a Secondary — a bar chart? TODO 548 */
+  stacksIn(scope: string): boolean {
+    return [...this.#bound.values()].some((b) => b.scope === scope && b.stacks);
   }
 
   /** What a slot's chart shows by its own attributes. TODO 548 */

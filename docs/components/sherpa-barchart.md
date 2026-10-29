@@ -2,7 +2,7 @@
 
 # sherpa-barchart
 
-A vertical bar chart for categorical comparison.
+A HORIZONTAL bar chart for categorical comparison: one bar a row, its category on the left, its value along the bottom. Will, TODO 548
 
 |  |  |
 |---|---|
@@ -47,15 +47,16 @@ For comparing values across categories, one bar each; `data-bands` cuts a number
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
 | `data-aggregate` | `count` `sum` `mean` `min` `max` `distinct` | `count` | count \| sum \| mean \| min \| max \| distinct, per value |
-| `data-axis-label` | text |  | y-axis caption (shown when set) |
+| `data-axis-label` | text |  | the value axis's caption, under it (shown when set) |
 | `data-bands` | text |  | a number segment-field cut at these edges, "0,20,40" — a histogram |
 | `data-bucket` | `day` `month` `year` |  |  |
 | `data-field` | text |  | the number that aggregate reads |
 | `data-legend` | `horizontal` `vertical` |  |  |
-| `data-max` | number |  | explicit y-max (else derived from the data) |
+| `data-max` | number |  | explicit value-axis max (else derived from the data) |
 | `data-over-field` | text |  |  |
 | `data-segment-field` | text |  | ASKED of its provider: one bar per value of this field |
-| `data-ticks` | number | `4` | number of y gridlines/values |
+| `data-stack-field` | text |  | each bar stacked by this field's values, in their colours |
+| `data-ticks` | number | `4` | number of value gridlines |
 | `data-where` | text |  |  |
 
 ## Events
@@ -77,7 +78,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`axis-label`, `bar`, `bar-label`, `bar-match`, `bar-part`, `bar-parts`, `bars`, `figure`, `gridlines`, `header`, `plot`, `tip`, `x-axis`, `y-axis`, `zero-line`
+`axis-label`, `bar`, `bar-label`, `bar-match`, `bar-part`, `bar-parts`, `bar-piece`, `bar-stack`, `bars`, `category-axis`, `figure`, `gridlines`, `header`, `plot`, `tip`, `value-axis`, `zero-line`
 
 ## CSS custom properties it reads
 
@@ -85,29 +86,32 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-display-mode-space-2xs` | `.chart-body` | `flex` |
+| `--sherpa-display-mode-space-xs` | `.chart-body` | `column-gap` |
 | `--sherpa-display-mode-space-xs` | `.bars` | `gap` |
-| `--sherpa-display-mode-border-width-base` | `.bars` | `border-block-end` |
-| `--sherpa-display-mode-space-xs` | `.x-axis-row` | `gap` |
-| `--sherpa-display-mode-space-2xs` | `.x-axis-row` | `margin-block-start` |
-| `--sherpa-display-mode-border-rounding-sm` | `.bar` | `border-radius` |
+| `--sherpa-display-mode-border-width-base` | `.bars` | `border-inline-start` |
+| `--sherpa-display-mode-space-xs` | `.category-axis` | `gap` |
+| `--sherpa-display-mode-border-rounding-sm` | `.bar` | `border-start-end-radius` |
+| `--sherpa-display-mode-border-rounding-sm` | `.bar` | `border-end-end-radius` |
 | `--sherpa-display-mode-border-width-base` | `.bar` | `border-width` |
 | `--sherpa-data-viz-series-1` | `.bar` | `border-color` |
 | `--sherpa-data-viz-series-1` | `.bar` | `background` |
+| `--sherpa-display-mode-border-width-base` | `.bar-piece` | `border-width` |
+| `--sherpa-data-viz-series-1` | `.bar-piece` | `border-color` |
+| `--sherpa-data-viz-series-1` | `.bar-piece` | `background` |
 | `--sherpa-font-family-mono` | `.bar-label` | `font-family` |
 | `--sherpa-font-size-body-small` | `.bar-label` | `font-size` |
 | `--sherpa-theme-content-line-height-small` | `.bar-label` | `line-height` |
 | `--sherpa-theme-content-body-1` | `.bar-label` | `color` |
-| `--sherpa-display-mode-space-2xs` | `.chart-body` | `flex` |
 | `--sherpa-style-border-base` | `.gridlines` | `background-image` |
-| `--sherpa-border-top` | `.gridlines` | `border-block-start` |
-| `--sherpa-display-mode-size-lg` | `.y-axis` | `inline-size` |
-| `--sherpa-display-mode-space-sm` | `.y-axis` | `padding-inline-end` |
-| `--sherpa-border-right` | `.y-axis` | `border-inline-end` |
-| `--sherpa-font-family-mono` | `.y-axis` | `font-family` |
-| `--sherpa-font-size-body-small` | `.y-axis` | `font-size` |
-| `--sherpa-font-weight-regular` | `.y-axis` | `font-weight` |
-| `--sherpa-theme-content-line-height-small` | `.y-axis` | `line-height` |
-| `--sherpa-theme-content-body-1` | `.y-axis` | `color` |
+| `--sherpa-border-right` | `.gridlines` | `border-inline-end` |
+| `--sherpa-theme-content-line-height-small` | `.value-axis` | `block-size` |
+| `--sherpa-display-mode-space-2xs` | `.value-axis` | `margin-block-start` |
+| `--sherpa-font-family-mono` | `.value-axis` | `font-family` |
+| `--sherpa-font-size-body-small` | `.value-axis` | `font-size` |
+| `--sherpa-font-weight-regular` | `.value-axis` | `font-weight` |
+| `--sherpa-theme-content-line-height-small` | `.value-axis` | `line-height` |
+| `--sherpa-theme-content-body-1` | `.value-axis` | `color` |
 
 ## populate()
 

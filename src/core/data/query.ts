@@ -99,9 +99,9 @@ export const PRESENTATION_KINDS = ['bar', 'donut', 'pie', 'grid'] as const;
 /** A slot's presentation: a chart or a grid; a chart's two fields, its parts and its order. TODO 548 */
 export interface Presentation {
   kind?: (typeof PRESENTATION_KINDS)[number];
-  /** What a chart counts: its distinct values in each segment. */
+  /** A chart's X axis: one bar or slice per value, named by it. Will, TODO 548 */
   primary?: string;
-  /** A chart's segmentation: one bar or slice per value. */
+  /** A chart's Y axis: its distinct values, counted in each segment. */
   secondary?: string;
   /** Each segment's parts, by this field. */
   group?: string;

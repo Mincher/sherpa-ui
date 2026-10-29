@@ -537,17 +537,21 @@ export class DataSource extends EventTarget {
         out.sortDirection = first.direction ?? 'asc';
       }
     } else if (this.#binding.presentsIn(scope)) {
-      /* A SLOT: its chart's parts by a list field, its two fields, and its order —
-         kept in the Query, never the rows'. Will, TODO 548 */
+      /* A SLOT: its Primary, its Secondary where its chart stacks — a bar chart —
+         its Group, by list fields, and its order: kept in the Query, never the
+         rows'. Will, TODO 548 */
       const lists = this.#catalogue.known().map((field) => ({ field, label: this.#catalogue.get(field)?.label ?? field })).filter(groupable);
       // Its chart's own, under what the reader changed.
       const shown = { ...this.#binding.shownIn(scope), ...this.#context.presented(scope) };
+      const stacks = this.#binding.stacksIn(scope);
+      const secondary = stacks ? shown.secondary : undefined;
       Object.assign(out, {
-        presents: true, group: lists.filter((c) => c.field !== shown.secondary), chartFields: lists,
+        presents: true, group: lists.filter((c) => c.field !== shown.primary && c.field !== secondary), chartFields: lists,
+        ...(stacks ? { stacks: true } : {}),
         ...(shown.group ? { groupField: shown.group } : {}),
         ...(shown.sort ? { sortDirection: shown.sort } : {}),
         ...(shown.primary ? { primaryField: shown.primary } : {}),
-        ...(shown.secondary ? { secondaryField: shown.secondary } : {}),
+        ...(secondary ? { secondaryField: secondary } : {}),
       });
     }
     return out;
