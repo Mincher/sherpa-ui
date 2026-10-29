@@ -238,6 +238,8 @@ export interface BoundView {
   /** `''` while the sort is suspended. */
   sortDirection: SortDirection | '' | undefined;
   groupField: string | undefined;
+  /** The scope whose Group and Sort arrange the rows: only its controls are told them. None, every one is. */
+  arrangedIn: string | undefined;
   /** WHICH fields the filter touches, not the filter. */
   filterFields: readonly string[];
   /** What it matched on, one a line. TRAP T-a-needle-comes-from-either-direction */

@@ -7839,8 +7839,9 @@ binds one, or that scope arranges.
 page, loaded once. The sort, the group, a suspended sort and the search are
 in the Query, in the ONE scope that arranges — the scope `sort-change`,
 `group-change` or `search-change` names, or their binding does; written in
-another scope, they move there. So only that scope's Organise chips show it,
-and a save, a saved View and a reload carry it (366 steps 8, 9). A View that names no arrangement keeps the one
+another scope, they move there. So only that scope's Organise chips show it —
+the binder writes `data-sort-*` and `data-group-field` only on a control over
+that scope (`BoundView.arrangedIn`, TODO 523 S6) — and a save, a saved View and a reload carry it (366 steps 8, 9). A View that names no arrangement keeps the one
 on screen; one that names it — `sort: []` too — sets it. `export()` names it,
 none too, so a View saved from it puts the rows back as they were. A change to
 the arrangement compiles nothing and counts nothing: the walk reads the Query
@@ -7857,6 +7858,7 @@ a load each — not built until a page has two.
 - Site: `test/unit/the-arrangement-is-in-the-query.test.mjs`
 - Site: `test/unit/the-search-is-in-the-query.test.mjs`
 - Site: `src/core/data/query-context.ts`
+- Site: `src/core/ui/bind-source.ts`
 
 ### T-a-bar-offers-only-what-its-scope-holds
 

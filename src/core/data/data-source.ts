@@ -2053,6 +2053,7 @@ export class DataSource extends EventTarget {
       sortField: shown?.field,
       sortDirection: first ? (first.direction ?? 'asc') : (sortSuspended ? '' : undefined),
       groupField: group ?? undefined,
+      arrangedIn: this.#arrangedIn(),
       filterFields: filterFields(filter, (c) => [...this.#fetchedKeys].find(([, got]) => got.clause === c)?.[0]),
       /* …and WHAT it matched on, so a component can point at the hit, whichever
          control set the filter. TRAP T-a-needle-comes-from-either-direction */

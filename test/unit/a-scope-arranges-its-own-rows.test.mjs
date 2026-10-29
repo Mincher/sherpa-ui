@@ -87,3 +87,26 @@ test('only a LIST field is offered to Group; any field to Sort (Will, TODO 523 S
   assert.deepEqual(d.group.map((c) => c.field), ['plan']);
   assert.deepEqual(d.sort.map((c) => c.field), ['plan', 'seats', 'at', 'name']);
 });
+
+test('only the scope that arranges is TOLD its sort: a bar over another scope is not (TODO 523 S6)', async () => {
+  const { source, grid } = page();
+  source.query.declareScope('view', { arranges: true });
+  // The binder writes what it is told as attributes: record them.
+  const told = () => {
+    const attrs = new Map();
+    return Object.assign(control(), { attrs, setAttribute: (n, v) => attrs.set(n, v), removeAttribute: (n) => attrs.delete(n) });
+  };
+  const viewBar = told(), dataBar = told();
+  bindSource(source, viewBar, { scope: 'view', steerOnly: true });
+  bindSource(source, dataBar, { scope: 'data', steerOnly: true });
+  grid.dispatchEvent(new CustomEvent('sort-change', { detail: { field: 'name', direction: 'desc' } }));
+  await source.load();
+  assert.equal(dataBar.attrs.get('data-sort-field'), 'name');
+  assert.equal(dataBar.attrs.get('data-sort-direction'), 'desc');
+  assert.equal(viewBar.attrs.get('data-sort-field'), undefined);
+  // Grouped from the View: now the View's alone.
+  source.query.setGroup('plan', 'view');
+  await source.load();
+  assert.equal(viewBar.attrs.get('data-group-field'), 'plan');
+  assert.equal(dataBar.attrs.get('data-group-field'), undefined);
+});

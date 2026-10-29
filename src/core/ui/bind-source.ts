@@ -132,9 +132,11 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
 
 /** The view as attributes, so CSS can select on it. TRAP T-push-writes-state-as-attributes */
 function writeView(el: Element, view: BoundView, scope?: string | readonly string[]): void {
-  setAttr(el, 'data-sort-field', view.sortField);
-  setAttr(el, 'data-sort-direction', view.sortDirection);
-  setAttr(el, 'data-group-field', view.groupField);
+  // A control over another scope is not told its arrangement. TODO 523 S6 · TRAP T-group-and-sort-are-component-scope
+  const mine = typeof scope !== 'string' || !view.arrangedIn || scope === view.arrangedIn;
+  setAttr(el, 'data-sort-field', mine ? view.sortField : undefined);
+  setAttr(el, 'data-sort-direction', mine ? view.sortDirection : undefined);
+  setAttr(el, 'data-group-field', mine ? view.groupField : undefined);
   setAttr(el, 'data-filter-fields', view.filterFields.length ? view.filterFields.join(' ') : undefined);
   setAttr(el, 'data-needles', view.needles || undefined);
   // On a bar over the driver's scope: which chip drives the highlight. TODO 441

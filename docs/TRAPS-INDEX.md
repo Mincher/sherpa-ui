@@ -246,7 +246,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (81)
+## The join and the app layer (82)
 
 - [T-a-band-is-a-value-of-its-field](TRAPS.md#t-a-band-is-a-value-of-its-field) — provider
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — bind-source
@@ -297,6 +297,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-bind-locks-what-it-owns](TRAPS.md#t-bind-locks-what-it-owns) — bind-source
 - [T-configuration-is-not-data](TRAPS.md#t-configuration-is-not-data) — provider
 - [T-every-close-reports-or-the-toolbars-stay-hidden](TRAPS.md#t-every-close-reports-or-the-toolbars-stay-hidden) — provider
+- [T-group-and-sort-are-component-scope](TRAPS.md#t-group-and-sort-are-component-scope) — bind-source
 - [T-grouped-paging-belongs-to-the-view](TRAPS.md#t-grouped-paging-belongs-to-the-view) — bind-source
 - [T-ignore-is-the-scalpel](TRAPS.md#t-ignore-is-the-scalpel) — bind-source
 - [T-into-merges-on-the-element](TRAPS.md#t-into-merges-on-the-element) — bind-source
