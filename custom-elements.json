@@ -3045,6 +3045,22 @@
               "type": {
                 "text": "string"
               }
+            },
+            {
+              "name": "data-presentation",
+              "description": "default | bar | donut | pie — Show as, a menu at the end, with what the card shows ticked; its provider writes it",
+              "type": {
+                "text": "'default'"
+              }
+            }
+          ],
+          "events": [
+            {
+              "name": "presentation-change",
+              "description": "A Show as pick, a request",
+              "type": {
+                "text": "CustomEvent<{ kind: string }>"
+              }
             }
           ],
           "slots": [
@@ -3082,6 +3098,9 @@
             },
             {
               "name": "metadata"
+            },
+            {
+              "name": "presentation"
             },
             {
               "name": "title"

@@ -11,6 +11,7 @@
  * Map:
  * - Query — Every scope's setup, as plain data — what a page's data is under.
  * - ScopeQuery — One scope: the fields it holds, each one's reading, and how it arranges rows.
+ * - PRESENTATION_KINDS — Each way a slot can show its data.
  * - Presentation — A slot's presentation: a chart or a grid; a chart's two fields, its parts and its order.
  * - Arrangement — How a Query arranges its rows: the ONE scope that sorts, groups, keeps a suspended sort or searches.
  * - ARRANGE_KEYS — The keys that arrange a scope's rows, written once.
@@ -92,9 +93,12 @@ export interface ScopeQuery {
   presentation?: Presentation;
 }
 
+/** Each way a slot can show its data. TODO 548 */
+export const PRESENTATION_KINDS = ['bar', 'donut', 'pie', 'grid'] as const;
+
 /** A slot's presentation: a chart or a grid; a chart's two fields, its parts and its order. TODO 548 */
 export interface Presentation {
-  kind?: 'bar' | 'donut' | 'pie' | 'grid';
+  kind?: (typeof PRESENTATION_KINDS)[number];
   /** What a chart counts: its distinct values in each segment. */
   primary?: string;
   /** A chart's segmentation: one bar or slice per value. */

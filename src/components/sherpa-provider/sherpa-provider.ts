@@ -117,6 +117,20 @@ const nameOf = (el: Element): string =>
   ?? containerOf(el)?.querySelector(':scope > [slot="header"]')?.getAttribute('data-heading')
   ?? '';
 
+/** The component each presentation is drawn by — its type where one draws two —
+ *  loaded when first shown. Will, TODO 548 */
+const SHOWN_BY: Readonly<Record<string, { tag: string; type?: string; load: () => Promise<unknown> }>> = {
+  bar: { tag: 'sherpa-barchart', load: () => import('../sherpa-barchart/sherpa-barchart.js') },
+  donut: { tag: 'sherpa-radial-chart', type: 'donut', load: () => import('../sherpa-radial-chart/sherpa-radial-chart.js') },
+  pie: { tag: 'sherpa-radial-chart', type: 'pie', load: () => import('../sherpa-radial-chart/sherpa-radial-chart.js') },
+};
+
+/** The presentation a component draws, where it is one. */
+function shownAs(el: Element): string | undefined {
+  if (el.localName === 'sherpa-radial-chart') return el.getAttribute('data-type') ?? 'donut';
+  return Object.keys(SHOWN_BY).find((kind) => SHOWN_BY[kind]?.tag === el.localName);
+}
+
 /** One component that asked, and how to stop answering it. */
 interface Asked {
   request: ContextRequestEvent<unknown>;
@@ -138,6 +152,8 @@ export class SherpaProvider extends SherpaElement {
   #sources: Record<string, DataSource> = {};
   /** Every component that asked, by the element that asked. */
   #asked = new Map<Element, Asked>();
+  /** The presentation a swapped component's page drew it as: what Default goes back to. */
+  #authored = new WeakMap<Element, string>();
 
   constructor() {
     super();
@@ -154,6 +170,8 @@ export class SherpaProvider extends SherpaElement {
       this.hideUnmatched = !!(event as CustomEvent<{ on?: boolean }>).detail?.on;
     });
     this.addEventListener('panel-room-change', this.#modes.room);
+    // A card's Show as: its slot's presentation, kept in the Query. Will, TODO 548
+    this.addEventListener('presentation-change', this.#onShowAs);
     /* A container's Retry, and a bar's Refresh: load again. Its Clear filters:
        every bar resets. TRAP T-a-container-shows-its-datas-state */
     this.addEventListener('data-refresh', (event) => {
@@ -1070,6 +1088,8 @@ export class SherpaProvider extends SherpaElement {
     // are a LIST, even of one (`data-column`). TRAP T-panel-mode-hides-what-the-panel-answers
     const scopes = (this.#inherited(el, 'data-scope') ?? '').split(/\s+/).filter(Boolean);
     const scope = scopes.length > 1 || isColumn(el) ? scopes : scopes[0];
+    // Its slot shows another way: swapped for that one, which asks again. Will, TODO 548
+    if (spec && typeof scope === 'string' && this.#swapped(el, scope, source)) return;
     // The fields it reads from a row: a summary's, or what it says. TRAP T-a-held-set-reads-the-pages-fields
     const fields = spec ? [spec.field, spec.segment, spec.over].filter((f): f is string => !!f) : asks.fields?.(el);
     /* A chart over its field's ZONES is free of that field: its filter lights the
@@ -1217,6 +1237,41 @@ export class SherpaProvider extends SherpaElement {
     if (shown.group) spec['group'] = shown.group;
     if (shown.sort) spec['sort'] = shown.sort;
     return spec as unknown as SummarySpec;
+  }
+
+  /** A Show as pick: its card's slot keeps it; Default keeps none. Will, TODO 548 */
+  #onShowAs = (event: Event): void => {
+    const from = event.target as Element;
+    const slot = this.#inherited(from, 'data-scope');
+    const source = this.#resolve(from);
+    if (!slot || /\s/.test(slot) || !source) return;
+    event.stopPropagation();
+    const kind = (event as CustomEvent<{ kind?: string }>).detail?.kind;
+    source.query.present(slot, { kind: kind && kind !== 'default' ? kind : undefined });
+  };
+
+  /** Swap a chart for the one its slot shows, where that differs; its card's Show
+   *  as is told either way. True when swapped. Will, TODO 548 */
+  #swapped(el: Element, slot: string, source: DataSource): boolean {
+    const kept = source.query.presentation(slot).kind;
+    for (const head of el.closest('[data-scope]')?.querySelectorAll('[data-presentation]') ?? []) {
+      head.setAttribute('data-presentation', kept ?? 'default');
+    }
+    const authored = this.#authored.get(el) ?? shownAs(el);
+    const want = SHOWN_BY[kept ?? authored ?? ''];
+    if (!authored || !want || (kept ?? authored) === shownAs(el)) return false;
+    this.#asked.delete(el);
+    // A component made by the provider's own act, not structure. PRINCIPLES 17
+    void want.load().then(() => {
+      if (!el.isConnected) return;
+      const next = document.createElement(want.tag);
+      for (const { name, value } of [...el.attributes]) if (name !== 'data-type') next.setAttribute(name, value);
+      if (want.type) next.setAttribute('data-type', want.type);
+      next.append(...el.childNodes);
+      this.#authored.set(next, authored);
+      el.replaceWith(next);
+    });
+    return true;
   }
 
   /** What a chart shows by its own attributes: its slot's default. Will, TODO 548 */

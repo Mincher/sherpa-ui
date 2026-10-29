@@ -13,81 +13,138 @@
     "default"
   ],
   "anatomy": {
-    "root": {
-      "el": "header",
-      "class": "header",
-      "part": "header",
-      "children": [
-        {
-          "el": "span",
-          "class": "left",
-          "part": "left",
-          "attrs": {
-            "aria-hidden": "true"
-          },
-          "children": [
-            {
-              "slot": "leading",
-              "attrs": {
-                "data-accepts": "icon"
-              },
-              "children": [
-                {
-                  "el": "i",
-                  "class": "icon sherpa-icon-box",
-                  "part": "icon"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "el": "div",
-          "class": "labels",
-          "part": "labels",
-          "children": [
-            {
-              "el": "span",
-              "class": "title sherpa-truncate",
-              "part": "title"
+    "roots": [
+      {
+        "el": "header",
+        "class": "header",
+        "part": "header",
+        "children": [
+          {
+            "el": "span",
+            "class": "left",
+            "part": "left",
+            "attrs": {
+              "aria-hidden": "true"
             },
-            {
-              "el": "div",
-              "class": "metadata",
-              "part": "metadata",
-              "children": [
-                {
-                  "slot": "metadata",
-                  "attrs": {
-                    "data-accepts": "content"
-                  },
-                  "children": [
-                    {
-                      "el": "span",
-                      "class": "description sherpa-truncate",
-                      "part": "description"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "el": "div",
-          "class": "actions",
-          "part": "actions",
-          "children": [
-            {
-              "slot": "actions",
-              "attrs": {
-                "data-accepts": "control"
+            "children": [
+              {
+                "slot": "leading",
+                "attrs": {
+                  "data-accepts": "icon"
+                },
+                "children": [
+                  {
+                    "el": "i",
+                    "class": "icon sherpa-icon-box",
+                    "part": "icon"
+                  }
+                ]
               }
+            ]
+          },
+          {
+            "el": "div",
+            "class": "labels",
+            "part": "labels",
+            "children": [
+              {
+                "el": "span",
+                "class": "title sherpa-truncate",
+                "part": "title"
+              },
+              {
+                "el": "div",
+                "class": "metadata",
+                "part": "metadata",
+                "children": [
+                  {
+                    "slot": "metadata",
+                    "attrs": {
+                      "data-accepts": "content"
+                    },
+                    "children": [
+                      {
+                        "el": "span",
+                        "class": "description sherpa-truncate",
+                        "part": "description"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "el": "div",
+            "class": "actions",
+            "part": "actions",
+            "children": [
+              {
+                "slot": "actions",
+                "attrs": {
+                  "data-accepts": "control"
+                }
+              },
+              {
+                "el": "sherpa-button",
+                "class": "presentation",
+                "part": "presentation",
+                "attrs": {
+                  "data-type": "icon",
+                  "data-size": "sm",
+                  "data-look": "transparent",
+                  "data-icon-start": "insights",
+                  "aria-label": "Show as",
+                  "aria-haspopup": "dialog"
+                },
+                "children": [
+                  {
+                    "el": "sherpa-menu",
+                    "class": "presentation-menu",
+                    "attrs": {
+                      "slot": "menu",
+                      "data-select": "single",
+                      "data-align": "end",
+                      "data-heading": "Show as"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "words",
+        "children": [
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "default"
             }
-          ]
-        }
-      ]
-    }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "bar"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "donut"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "pie"
+            }
+          }
+        ]
+      }
+    ]
   },
   "props": [
     {
@@ -128,6 +185,18 @@
       "declared": true,
       "kind": "content",
       "description": "a glyph before the title (else the leading slot)"
+    },
+    {
+      "$type": "prop",
+      "name": "data-presentation",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "values": [
+        "default"
+      ],
+      "description": "default | bar | donut | pie — Show as, a menu at the end, with what the card shows ticked; its provider writes it"
     }
   ],
   "slots": [
@@ -157,7 +226,7 @@
     }
   ],
   "populate": {
-    "shape": "{ description?, divider?, heading?, icon? }",
+    "shape": "{ description?, divider?, heading?, icon?, presentation? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -175,6 +244,23 @@
       "$type": "state",
       "name": "description",
       "selector": ":host([data-description])"
+    },
+    {
+      "$type": "state",
+      "name": "presentation",
+      "selector": ":host([data-presentation])"
+    }
+  ],
+  "events": [
+    {
+      "$type": "event",
+      "name": "presentation-change",
+      "description": "A Show as pick, a request",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "kind": "string"
+      }
     }
   ],
   "tokens": {

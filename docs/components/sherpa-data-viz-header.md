@@ -26,6 +26,15 @@ For the header strip of a metric's or a chart's card: a small heading, a descrip
 | `data-divider` | `none` |  | the rule under it; shown by DEFAULT — "none" hides it (a metric's) |
 | `data-heading` | text |  | the title — small, light, in CAPS |
 | `data-icon` | text |  | a glyph before the title (else the leading slot) |
+| `data-presentation` | `default` |  | default \| bar \| donut \| pie — Show as, a menu at the end, with what the card shows ticked; its provider writes it |
+
+## Events
+
+Each one bubbles.
+
+| Event | Detail | What it means |
+|---|---|---|
+| `presentation-change` | `{ kind: string }` | A Show as pick, a request |
 
 ## Slots
 
@@ -39,7 +48,7 @@ For the header strip of a metric's or a chart's card: a small heading, a descrip
 
 Style these from outside with `::part()`:
 
-`actions`, `description`, `header`, `icon`, `labels`, `left`, `metadata`, `title`
+`actions`, `description`, `header`, `icon`, `labels`, `left`, `metadata`, `presentation`, `title`
 
 ## CSS custom properties it reads
 
@@ -65,6 +74,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ description?, divider?, heading?, icon? }`
+`{ description?, divider?, heading?, icon?, presentation? }`
 
 Its declared props by name: `label` sets data-label.

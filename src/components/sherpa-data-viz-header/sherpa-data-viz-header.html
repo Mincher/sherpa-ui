@@ -7,13 +7,16 @@
     data-description  a line under it (else the metadata slot)
     data-icon         a glyph before the title (else the leading slot)
     data-divider      the rule under it; shown by DEFAULT — "none" hides it (a metric's)
+    data-presentation default | bar | donut | pie — Show as, a menu at the end, with
+                      what the card shows ticked; its provider writes it
 
   Slots:
     leading   a custom leading icon
     metadata  what sits under the title
     actions   icon-only controls at the end
 
-  Fires: nothing by itself — its controls are the host's.
+  Fires:
+    presentation-change  (detail: { kind }) — a Show as pick, a request
 -->
 <template id="default">
   <header class="header" part="header">
@@ -30,6 +33,19 @@
     </div>
     <div class="actions" part="actions">
       <slot name="actions" data-accepts="control"></slot>
+      <!-- SHOW AS: how the card shows its data. Will, TODO 548 -->
+      <sherpa-button class="presentation" part="presentation" data-type="icon" data-size="sm"
+                     data-look="transparent" data-icon-start="insights"
+                     aria-label="Show as" aria-haspopup="dialog">
+        <sherpa-menu slot="menu" class="presentation-menu" data-select="single" data-align="end"
+                     data-heading="Show as"></sherpa-menu>
+      </sherpa-button>
     </div>
   </header>
+  <template class="words">
+    <span data-word="default">Default</span>
+    <span data-word="bar">Bar chart</span>
+    <span data-word="donut">Donut chart</span>
+    <span data-word="pie">Pie chart</span>
+  </template>
 </template>

@@ -1128,6 +1128,15 @@
         {
           "name": "data-icon",
           "description": "a glyph before the title (else the leading slot)"
+        },
+        {
+          "name": "data-presentation",
+          "description": "default | bar | donut | pie — Show as, a menu at the end, with what the card shows ticked; its provider writes it",
+          "values": [
+            {
+              "name": "default"
+            }
+          ]
         }
       ]
     },

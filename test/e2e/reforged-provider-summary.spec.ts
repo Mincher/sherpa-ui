@@ -385,3 +385,47 @@ test('a chart\'s Compare picks what it counts and what it splits by: one of each
   // Counting plans: each day's different plans.
   expect(r['counted']).toEqual({ ticked: ['count:plan', 'by:day'], kept: { primary: 'plan', secondary: 'day' }, bars: ['Mon: 2', 'Tue: 1', 'Wed: 1'] });
 });
+
+test('a card\'s Show as swaps its chart over the same data, keeps what it was arranged by, and Default goes back (Will, TODO 548)', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-container data-scope="by-plan">
+        <sherpa-data-viz-header slot="header" data-heading="By plan" data-presentation="default"></sherpa-data-viz-header>
+        <sherpa-barchart id="slotted" data-segment-field="plan"></sherpa-barchart>
+      </sherpa-container>\`;
+    const source = make();
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    const head = provider.querySelector('sherpa-data-viz-header');
+    const pick = async (kind) => {
+      const box = [...head.shadowRoot.querySelectorAll('.presentation-menu input')].find((i) => i.value === kind);
+      box.checked = true;
+      box.dispatchEvent(new Event('change', { bubbles: true }));
+      await settle();
+      await settle();
+    };
+    const chart = () => provider.querySelector('#slotted');
+    const said = () => {
+      const el = chart();
+      const marks = el.localName === 'sherpa-barchart' ? '.bar-col' : '.slice';
+      return { tag: el.localName, type: el.getAttribute('data-type'), marks: [...el.shadowRoot.querySelectorAll(marks)].map((m) => m.getAttribute('aria-label')),
+        shown: head.dataset.presentation, kept: source.query.presentation('by-plan') };
+    };
+    const at = { first: said() };
+    source.query.present('by-plan', { group: 'day' });
+    await settle();
+    await pick('pie');
+    at.pie = said();
+    await pick('default');
+    at.back = said();
+    return at;
+  })()`) as Record<string, Record<string, unknown>>;
+  expect(r['first']).toEqual({ tag: 'sherpa-barchart', type: null, marks: ['Free: 1', 'Pro: 2', 'Enterprise: 1'], shown: 'default', kept: {} });
+  // A pie, the same plans, still split by day.
+  expect(r['pie']).toMatchObject({ tag: 'sherpa-radial-chart', type: 'pie', shown: 'pie', kept: { kind: 'pie', group: 'day' } });
+  expect((r['pie']?.['marks'] as string[]).length).toBe(3);
+  // Default: the bar its page drew, its group kept.
+  expect(r['back']).toEqual({ tag: 'sherpa-barchart', type: null, marks: ['Free: 1 (Tue 1)', 'Pro: 2 (Mon 1 · Wed 1)', 'Enterprise: 1 (Mon 1)'], shown: 'default', kept: { group: 'day' } });
+});
