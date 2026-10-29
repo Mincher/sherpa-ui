@@ -107,6 +107,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 30w | 566 | BUG, later (Will, 2026-10-29) — an overflow (⋮) menu button with no menu rows is hidden: the filter toolbar's, and any other | bug |
 | ⬜ | 30x | 567 | CHARTS, with 548 (Will, 2026-10-29) — a chart card's title follows its presentation: "Primary by Secondary, grouped by Group", each part only where it is set | charts |
 | ⬜ | 30y | 568 | PRESENTATION, later if needed (Will, 2026-10-29) — a definition may hide the reader's Primary and Secondary chips, so a page controls what its chart shows | feature |
+| ⬜ | 30z | 569 | EXPERIMENT, later (Will, 2026-10-29) — an UNFURL GRAPH tool in the canvas toolbar (560): lay the nodes out by an iterative, WEIGHTED VORONOI — an invisible cell per node, the node's centre at its cell's centroid; a cell's weight its connections in and out, each connection on a socket counted; two connected nodes' cells must bisect. Anchor the node with the most connections at the centre (weight × its connections); spread its neighbours evenly round it, weighted by their connections, each nearer or further by its weight ratio to the anchor (a closer ratio, further away), turning them to keep a Delaunay edge; then each next generation, moving an earlier one where a weight needs it. The result: a weighted Delaunay triangulation of the whole graph — a physics-like unfurl, fast and cheap. Will's words in 78's section | explore |
 | ✅ | 30 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised. Will, 2026-10-27: A. DONE 2026-10-27: `open()` takes a `key`, and the outlet passes the Context's name: Views, saved filters, the kept Query and drafts are all kept under it. The `outlet-view-key` report is gone | bug |
 | ✅ | 31 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
 | ✅ | 32 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later). Probed 2026-10-27 in Demos Records (the View's Date chip, one month and a range): already right — the title left and f(x) at the end on row 1, the Month/Year group the full width on row 2. Nothing to change | look |
@@ -10739,6 +10740,29 @@ toolbar with a placeholder Save; 561 Undo and Redo; 562 the Zip Tie tool.
 shows every row of the node again, as one value with the canvas's row; a row
 an incoming route drives is read-only and says "From …", and a row whose value
 goes out says "To …", with the socket marks beside it.
+**Will, 2026-10-29 — an experiment for later, TODO 569 (Unfurl graph), in his words:**
+*"Add an unfurl graph tool to the toolbar. It should iteratively create an
+invisible weighted voronoi cell for each node on the canvas. Node centre points
+are positioned at the centroid for each cell. Adjust the weight of a cell
+centroid based on the number of connectors attached to it (both in and out). Be
+sure to count multiple connections on the same socket. A connection between 2
+nodes means that their cells must bisect. Start at the node with most
+connections. Place it's centroid at the centre and multiply it's weight by the
+number of connections. We will use this centroid as an anchor for unfurling.
+Then equally distribute each connected node's centroid around the start
+centroid. Set their weights based on total connections. Then, using the weight
+ratio between each centroid and the start centroid, move each secondary centroid
+closer or further away from the start centroid. Closer weight ratios move
+further away. Maintain a delauney edge by adjusting the secondary centroid
+angles in relation to the start centroid if needed. Then do the next iteration
+of node centroids. If a node weight requires a previous generations centroids
+to move then we should do that. Each iteration of centroids and weights forces
+new accommodations for them. Eventually we should have a weighted delauney
+triangulation for all nodes in the graph. Having an anchored centroid and
+weighted max delauney edge lengths means this is almost like a physics driven
+unfurling. Using voronoi to set the distribution and balance will hopefully
+make this fast and cheap to do."*
+
 **Will, 2026-10-29 — §5:** a text row with a routed input MIRRORS the
 incoming value and is read only; a change is made only by an operation node on
 the route. The row's own typed value is kept, hidden, and back when the route
