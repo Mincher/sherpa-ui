@@ -411,19 +411,25 @@
             "el": "button",
             "class": "action-item",
             "attrs": {
-              "type": "button"
+              "type": "button",
+              "data-attr-value": "id",
+              "data-when-danger": "danger"
             },
             "children": [
               {
                 "el": "i",
                 "class": "action-icon",
                 "attrs": {
-                  "aria-hidden": "true"
+                  "aria-hidden": "true",
+                  "data-icon": "icon"
                 }
               },
               {
                 "el": "span",
-                "class": "action-label"
+                "class": "action-label",
+                "attrs": {
+                  "data-text": "label"
+                }
               }
             ]
           }

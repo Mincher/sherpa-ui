@@ -290,7 +290,7 @@ test('the Other row carries a breakdown menu that commits on Apply', async ({ pa
         value: i.value,
         checked: i.checked,
       })),
-      labels: Array.from(menu.querySelectorAll('.rollup-row-label')).map((l) => l.textContent),
+      labels: Array.from(menu.querySelectorAll('.menu-row-label')).map((l) => l.textContent),
     };
 
     // Untick two, and confirm the menu is STILL open — the whole point of the
@@ -853,7 +853,7 @@ test('unticking a folded category puts it in the OFF set, and reports', async ({
 
     const menu = sr.querySelector('.rollup-menu')!;
     const boxes = [...menu.querySelectorAll<HTMLInputElement>('input[type=checkbox]')];
-    const folded = [...menu.querySelectorAll('.rollup-row-label')].map((n) => n.textContent);
+    const folded = [...menu.querySelectorAll('.menu-row-label')].map((n) => n.textContent);
 
     // Untick the FIRST folded row, then Apply.
     boxes[0]!.click();

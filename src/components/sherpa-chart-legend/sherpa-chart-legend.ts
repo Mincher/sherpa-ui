@@ -22,6 +22,7 @@ import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
+import { REST_WAIT } from '../../core/ui/shared-constants.js';
 
 const MAX_ITEMS = 6;
 
@@ -29,8 +30,6 @@ const MAX_ITEMS = 6;
 export type LegendItem = LegendDatum;
 
 /** @tier sub-component — renders inside charts; excluded from the public catalog. */
-/** How long a pointer rests on a row before it previews, as a chip's. */
-const REST_WAIT = 150;
 
 export class SherpaChartLegend extends SherpaElement {
   static override css = new URL('./sherpa-chart-legend.css', import.meta.url);
@@ -313,22 +312,12 @@ export class SherpaChartLegend extends SherpaElement {
     });
   }
 
-  /** One checkbox row per folded category, plus its Apply. */
+  /** One checkbox row per folded category, plus its Apply: the menu's own rows, from data. */
   #buildBreakdown(wrapper: HTMLElement): void {
     const menu = wrapper.querySelector<SherpaMenu>('.rollup-menu');
-    const rowTpl = this.$<HTMLTemplateElement>('template.rollup-row-tpl');
-    if (!menu || !rowTpl) return;
-
-    for (const { index, item } of this.#rolled) {
-      const row = this.clone(rowTpl);
-      if (!row) break;
-      const input = row.querySelector('input')!;
-      // The SOURCE index, not the row's position.
-      input.value = String(index);
-      input.checked = this.#rolledActive.has(index);
-      row.querySelector('.rollup-row-label')!.textContent = item.label;
-      menu.appendChild(row);
-    }
+    if (!menu) return;
+    // The SOURCE index, not the row's position.
+    menu.items(this.#rolled.map(({ index, item }) => ({ value: String(index), label: item.label, selected: this.#rolledActive.has(index) })));
 
     /* sherpa-button OPENS its own slotted menu and keeps aria-expanded.
        Hand-rolling the open lost the light-dismiss race: the menu opened once

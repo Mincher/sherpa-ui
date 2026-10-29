@@ -8,7 +8,7 @@
  * - OrganiseDef — The columns the leading Group / Sort chips offer.
  */
 import { DATA_PROPS, SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
-import { NON_VALUE_ROWS, ORGANISE_ICONS, VIEW_CHIP } from '../../core/ui/shared-constants.js';
+import { NON_VALUE_ROWS, ORGANISE_ICONS, REST_WAIT, VIEW_CHIP } from '../../core/ui/shared-constants.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
 import { advancedOf, arranges, kindOf, oneChipList } from '../../core/ui/filter-kind.js';
 import { FILTER_MENU_HTML, menuFor } from '../../core/ui/filter-menu.js';
@@ -49,8 +49,6 @@ import type { SherpaSwitch } from '../sherpa-switch/sherpa-switch.js';
 
 /** A filter chip, in the run or in a set. TRAP T-a-filter-set-groups-or-chains */
 const CHIP = '.chips > .chip';
-/** How long a pointer rests on a chip before it previews the highlight. TODO 449 */
-const HOVER_WAIT = 150;
 
 /** The columns the leading Group / Sort chips offer. */
 export interface OrganiseDef {
@@ -330,7 +328,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const id = String((event as CustomEvent).detail?.value ?? '');
     const add = this.pathFind(event, '.add-btn');
     const into = add?.querySelector<SherpaMenu>('sherpa-menu');
-    const chip = id ? this.#chips().find((c) => c.dataset['id'] === id) ?? null : null;
+    const chip = id ? this.#chipById(id) ?? null : null;
     if (!add || !into || !chip) return;
     event.stopPropagation();
     // Back stays one level deep, never a chain.
@@ -482,7 +480,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#hoverWait = setTimeout(() => {
       this.#previewing = true;
       this.#askPreview(at.chip, true, at.value);
-    }, HOVER_WAIT);
+    }, REST_WAIT);
   };
 
   /** What a pointer rests on: ONE value — a section's value chip, or a value row
@@ -811,7 +809,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-a-silent-write-still-needs-a-way-to-report
    */
   #setChipActive(id: string, on: boolean): void {
-    const chip = this.#chips().find((c) => c.dataset['id'] === id);
+    const chip = this.#chipById(id);
     if (chip) chip.current = on;
     this.#syncOneRows();
   }
@@ -1091,7 +1089,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        the add's own report waits for, and is queued first — so that report
        carries the answer instead of clearing it.
        TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
-    const chip = this.#chips().find((c) => c.dataset['id'] === id);
+    const chip = this.#chipById(id);
     const menu = (chip as SherpaQuickFilter | undefined)?.menu;
     if (chip && (!chip.shadowRoot?.childElementCount || (menu && !menu.shadowRoot?.childElementCount))) {
       /* Only the LATEST held draw of a field lands, and a draw made meanwhile
@@ -1138,7 +1136,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Is the reader working in this chip's menu — open, with a draft not applied? */
   #drafting(id: string): boolean {
-    const chip = this.#chips().find((c) => c.dataset['id'] === id) as SherpaQuickFilter | undefined;
+    const chip = this.#chipById(id);
     return !!chip?.hasAttribute('data-open') && !!chip.drafting;
   }
 
@@ -1235,6 +1233,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** The filter chips in the run — not Group, Sort or More — a set's among them. */
   #chips(): SherpaQuickFilter[] {
     return this.$$<SherpaQuickFilter>(CHIP);
+  }
+
+  /** One chip, by its id. */
+  #chipById(id: string): SherpaQuickFilter | undefined {
+    return this.#chips().find((c) => c.dataset['id'] === id);
   }
 
   /** A def, by its chip id. */
@@ -2099,7 +2102,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // A preset's whole answer is its on. TODO 493 · TRAP T-a-preset-is-its-own-part
       if (preset) {
         answered.add(field);
-        this.#chips().find((c) => c.dataset['id'] === field)?.toggleAttribute('data-current', !!active);
+        this.#chipById(field)?.toggleAttribute('data-current', !!active);
         continue;
       }
       if (!state) continue;
@@ -2110,7 +2113,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     /* THE WHOLE SCOPE: a chip it does not answer is EMPTY — a View is a clean
        slate. A superseded chip keeps the reader's own picks. TRAP T-a-view-is-json */
     for (const def of this.#filters) {
-      const chip = this.#chips().find((c) => c.dataset['id'] === def.id);
+      const chip = this.#chipById(def.id);
       if (!chip || answered.has(def.id) || persistent.has(def.id)) continue;
       if (this.#painted.get(def.id) === null || this.#drafting(def.id)) continue;
       if (chip.hasAttribute('data-superseded')) continue;
@@ -2426,7 +2429,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const still = this.#filtersSuspended;
     for (const id of this.#oneRows.ids) {
       const on = want.has(id);
-      const chip = this.#chips().find((c) => c.dataset['id'] === id);
+      const chip = this.#chipById(id);
       // `flip` LAST: it records.
       if (!chip || chip.hasAttribute('data-persistent') || still || !this.#oneRows.flip(id, on)) continue;
       if (!chip.hasAttribute('data-locked')) chip.current = on;
@@ -2452,7 +2455,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** A chip turned on or off elsewhere: its row is ticked as it is, while the menu is shut. */
   #syncOneRows(): void {
     const menu = this.$('.add-btn')?.querySelector<SherpaMenu>('sherpa-menu');
-    this.#oneRows.follow(menu, (id) => !!this.#chips().find((c) => c.dataset['id'] === id)?.current);
+    this.#oneRows.follow(menu, (id) => !!this.#chipById(id)?.current);
   }
 
   /**

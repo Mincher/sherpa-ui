@@ -85,6 +85,12 @@ interface CellValue { field: string; kind: string; value: unknown; key: string; 
 /** A selection box — a `sherpa-select-checkbox`, or the one-row `sherpa-select-radio`; NOT `HTMLInputElement`. */
 type SelectBox = HTMLElement & { checked: boolean; indeterminate: boolean };
 
+/** A select-all box says all, some or none of `of` ticked. */
+function tickAll(box: SelectBox, on: number, of: number): void {
+  box.checked = on > 0 && on === of;
+  box.indeterminate = on > 0 && on < of;
+}
+
 /** One action a row offers. TRAP T-grid-actions-are-declared-once-used-twice. */
 export interface GridAction {
   /** What `row-action` carries back. */
@@ -633,9 +639,7 @@ export class SherpaDataGrid extends SherpaElement {
     const sorted = sortable && col.field === sortField && sortDir !== '';
     if (sorted) th.dataset['sort'] = sortDir ?? 'asc';
     else delete th.dataset['sort'];
-    // The grid's CSS paints nothing from `active`; a host may style it.
-    if (sorted || this.#isFiltered(col.field)) th.dataset['status'] = 'active';
-    else delete th.dataset['status'];
+    this.#lightHeading(th, col.field);
 
     /* GROUP by a list field only: the source's rule, read from the filter it gave;
        alone, not a number or a date. Will, TODOs 500, 523 */
@@ -1203,11 +1207,16 @@ export class SherpaDataGrid extends SherpaElement {
       const th = cell as HTMLElement;
       const field = th.dataset['field'];
       if (!field) continue;
-      const lit = th.hasAttribute('data-sort') || this.#isFiltered(field);
-      if (lit) th.dataset['status'] = 'active';
-      else delete th.dataset['status'];
+      this.#lightHeading(th, field);
       this.#lightFilterChip(th, field);
     }
+  }
+
+  /** A heading is ACTIVE while its column sorts or filters. The grid's CSS paints
+   *  nothing from it; a host may style it. */
+  #lightHeading(th: HTMLElement, field: string): void {
+    if (th.hasAttribute('data-sort') || this.#isFiltered(field)) th.dataset['status'] = 'active';
+    else delete th.dataset['status'];
   }
 
   /**
@@ -1261,12 +1270,9 @@ export class SherpaDataGrid extends SherpaElement {
         }
       }
 
-      const tr = rowTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      // Its icons upgraded too. TRAP T-a-cloned-prototype-needs-its-icons-upgraded
+      const tr = this.clone(rowTpl)!;
       this.#rowOf.set(tr, record);
-
-      // Cloned from a prototype, so its icons are still bare <i>.
-      // TRAP T-a-cloned-prototype-needs-its-icons-upgraded
-      this.upgradeClonedIcons(tr);
       tr.dataset['index'] = String(offset + i);
       /* Only the box this mode shows stays: a hidden one still upgrades and stamps,
          and a mode change draws the rows again. TRAP T-a-row-holds-two-selection-boxes
@@ -1836,27 +1842,12 @@ export class SherpaDataGrid extends SherpaElement {
     const record = this.#recordFor(trigger);
     if (!record || !this.#actions.length) return;
     const menu = this.$<SherpaMenu>('.actions-menu');
-    const tpl = this.$<HTMLTemplateElement>('template.action-item-tpl');
-    if (!menu || !tpl) return;
+    if (!menu) return;
 
     this.#actionRow = record;
     // SLOTTED light-DOM buttons, which is what gives them Enter, Space and
-    // focus for nothing — T-menu-rows-stay-native-controls.
-    menu.replaceChildren();
-    for (const action of this.#actions) {
-      const item = this.clone(tpl);
-      if (!item) continue;
-      item.setAttribute('value', action.id);
-      item.toggleAttribute('data-danger', !!action.danger);
-      const icon = item.querySelector('.action-icon');
-      if (icon) {
-        // DRAWN: a class paints nothing.
-        if (action.icon) this.writeIcon(icon, action.icon);
-        else icon.remove();
-      }
-      item.querySelector('.action-label')!.textContent = action.label;
-      menu.appendChild(item);
-    }
+    // focus for nothing — T-menu-rows-stay-native-controls. The prototype says what fills what.
+    this.renderItems('.actions-menu', 'template.action-item-tpl', this.#actions);
 
     trigger.setAttribute('aria-expanded', 'true');
     menu.show?.(trigger);
@@ -2245,9 +2236,7 @@ export class SherpaDataGrid extends SherpaElement {
       const box = groupRow.querySelector<SelectBox>('.group-select');
       if (!box || key == null) continue;
       const rows = this.$$<HTMLElement>('.row').filter((r) => r.dataset['groupKey'] === key);
-      const checked = rows.filter((r) => this.#rowBox(r)?.checked).length;
-      box.checked = checked > 0 && checked === rows.length;
-      box.indeterminate = checked > 0 && checked < rows.length;
+      tickAll(box, rows.filter((r) => this.#rowBox(r)?.checked).length, rows.length);
     }
   }
 
@@ -2316,9 +2305,7 @@ export class SherpaDataGrid extends SherpaElement {
     for (const box of all) box.closest('.row')?.toggleAttribute('data-selected', box.checked);
     const selectAll = this.$<SelectBox>('.select-all');
     if (!selectAll) return;
-    const checked = all.filter((b) => b.checked).length;
-    selectAll.checked = checked > 0 && checked === all.length;
-    selectAll.indeterminate = checked > 0 && checked < all.length;
+    tickAll(selectAll, all.filter((b) => b.checked).length, all.length);
   }
 
   /**

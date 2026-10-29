@@ -85,31 +85,12 @@
                     "attrs": {
                       "slot": "menu",
                       "data-heading": "Breakdown",
+                      "data-select": "multiple",
+                      "data-no-select-all": "",
                       "data-commit": ""
                     }
                   }
                 ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "el": "template",
-        "class": "rollup-row-tpl",
-        "children": [
-          {
-            "el": "label",
-            "children": [
-              {
-                "el": "input",
-                "attrs": {
-                  "type": "checkbox"
-                }
-              },
-              {
-                "el": "span",
-                "class": "rollup-row-label"
               }
             ]
           }

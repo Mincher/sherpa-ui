@@ -6295,12 +6295,13 @@ goes in front of it (TODO 149). Nothing in TS marks it with a class (TODO 344).
 The legend hears only its chips' `quick-filter-click`, so a click on the menu
 button toggles nothing and needs no `stopPropagation()`.
 
-The breakdown is CHECKBOX rows plus `data-commit`, which is the point — the
-reader ticks several categories and the menu stays open until Apply rather than
-closing after every click. `sherpa-menu` already holds the rows as a draft and
-restores them on Cancel, so nothing here manages that. Each checkbox's
-`value` is the SOURCE index, so Apply can name the right series back to the
-chart without a second lookup.
+The breakdown is the menu's own CHECKBOX rows (`data-select="multiple"`),
+handed as data through `menu.items()` (TODO 523 P2), plus `data-commit`, which
+is the point — the reader ticks several categories and the menu stays open until
+Apply rather than closing after every click. `sherpa-menu` already holds the
+rows as a draft and restores them on Cancel, so nothing here manages that. Each
+row's `value` is the SOURCE index, so Apply can name the right series back to
+the chart without a second lookup.
 
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 

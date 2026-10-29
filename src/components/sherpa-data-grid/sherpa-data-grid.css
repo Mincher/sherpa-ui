@@ -530,6 +530,8 @@
   text-align: center;
   flex: none;
 }
+/* An action with no icon draws none, and keeps no room for one. */
+.action-icon:empty { display: none; }
 /* The SECOND pinned cell clears the first. `--_pin-offset` is the measured
    width of everything pinned before it; 0 when the selection column is hidden,
    so the same rule is correct either way. */

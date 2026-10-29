@@ -579,10 +579,8 @@ export class SherpaMenu extends SherpaElement {
   /** Stamp one row from the prototype, populate its three selects, append it. */
   #addRow(seed?: FieldCondition): HTMLElement | null {
     const region = this.$('.condition-rows');
-    const tpl = this.$<HTMLTemplateElement>('.condition-row-tpl');
-    if (!region || !tpl) return null;
-    const row = tpl.content.firstElementChild?.cloneNode(true) as HTMLElement | null;
-    if (!row) return null;
+    const row = this.clone('.condition-row-tpl');
+    if (!region || !row) return null;
     region.append(row);
     this.#fillRow(row, seed);
     this.#readonlyRows([row]);
