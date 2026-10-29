@@ -101,3 +101,11 @@
   fill: var(--_border, var(--sherpa-data-viz-series-1, #8364c8));
   pointer-events: none;
 }
+/* GROUPED: a spoke between a slice's parts, in the slice's own colour — they
+   have no key of their own; the tip names them. Will, TODO 548 */
+.slice-spoke {
+  fill: none;
+  stroke: var(--_border, var(--sherpa-data-viz-series-1, #8364c8));
+  pointer-events: none;
+}
+.chart-tip-parts:empty { display: none; }

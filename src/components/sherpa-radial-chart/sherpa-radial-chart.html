@@ -59,6 +59,10 @@
   <template class="match-tpl">
     <svg><path class="slice-match" /></svg>
   </template>
+  <!-- Grouped, a spoke at each boundary between a slice's parts. TODO 548 -->
+  <template class="spoke-tpl">
+    <svg><path class="slice-spoke" /></svg>
+  </template>
 
   <!--
     Per slice: a zero-size anchor point plus its tooltip. JS sets --_dot-angle; CSS
@@ -71,6 +75,7 @@
     <span class="sherpa-tip" popover="manual" role="tooltip">
       <span class="chart-tip-label"></span>
       <span class="sherpa-tip-value"></span>
+      <span class="chart-tip-parts"></span>
     </span>
   </template>
 </template>

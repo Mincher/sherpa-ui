@@ -9,6 +9,7 @@
  * - chartScale — The axis a set of values needs.
  * - tickPercent — Where the i-th of `steps` divisions sits, as a percentage UP from the bottom.
  * - radialArea — The `position-area` on the OUTWARD side of a radial mark.
+ * - ringSpokePath — The `d` for one SPOKE across a ring, inner to outer, at an angle: the line between two parts of a slice.
  * - RingSegmentOptions — the radii, angles and corner rounding of one donut slice
  * - ringSegmentPath — The `d` for a CLOSED ring segment — a donut slice — with four rounded corners.
  * - seriesVar — The custom property a mark paints with.
@@ -213,6 +214,15 @@ const RADIAL_AREAS = [
 function polar(cx: number, cy: number, r: number, deg: number): [number, number] {
   const rad = ((deg - 90) * Math.PI) / 180;
   return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
+}
+
+/** The `d` for one SPOKE across a ring, inner to outer, at an angle: the line
+ *  between two parts of a slice. TODO 548 */
+export function ringSpokePath(options: { cx: number; cy: number; inner: number; outer: number; deg: number }): string {
+  const { cx, cy, inner, outer, deg } = options;
+  const [x1, y1] = polar(cx, cy, inner, deg);
+  const [x2, y2] = polar(cx, cy, outer, deg);
+  return `M ${x1} ${y1} L ${x2} ${y2}`;
 }
 
 export interface RingSegmentOptions {

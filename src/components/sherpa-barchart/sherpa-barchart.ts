@@ -11,7 +11,7 @@ import type { ChartDatum } from '../../core/data/chart-datum.js';
 import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { chartScale } from '../../core/data/format-tick.js';
-import { fillTip, pairAnchor, paintSeries, renderValueAxis } from '../../core/ui/chart-parts.js';
+import { fillTip, pairAnchor, paintSeries, partsSaid, renderValueAxis } from '../../core/ui/chart-parts.js';
 import { rovingFocus, type Roving } from '../../core/ui/roving-focus.js';
 import { DEFAULT_TICKS } from '../../core/ui/shared-constants.js';
 
@@ -128,7 +128,7 @@ export class SherpaBarchart extends SherpaElement {
       pairAnchor(`--bar-mark-${i}`, col);
       fillTip(col, d.label, d.value, d.parts);
       // The tip is hidden until hover, so it names nothing: the bar says it itself.
-      const parts = col.querySelector('.chart-tip-parts')!.textContent;
+      const parts = partsSaid(d.parts);
       col.setAttribute('aria-label', `${d.label}: ${col.querySelector('.sherpa-tip-value')!.textContent}${parts ? ` (${parts})` : ''}`);
       bars.appendChild(col);
     }

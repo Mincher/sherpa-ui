@@ -128,6 +128,21 @@
       },
       {
         "el": "template",
+        "class": "spoke-tpl",
+        "children": [
+          {
+            "el": "svg",
+            "children": [
+              {
+                "el": "path",
+                "class": "slice-spoke"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
         "class": "hotspot-tpl",
         "children": [
           {
@@ -149,6 +164,10 @@
               {
                 "el": "span",
                 "class": "sherpa-tip-value"
+              },
+              {
+                "el": "span",
+                "class": "chart-tip-parts"
               }
             ]
           }
@@ -368,7 +387,8 @@
     "sub.font-size": "{sherpa.font-size-body-xs}",
     "sub.line-height": "{sherpa.theme-content-line-height-xs}",
     "sub.color": "{sherpa.theme-content-body-1}",
-    "slice-match.fill": "{sherpa.data-viz-series-1}"
+    "slice-match.fill": "{sherpa.data-viz-series-1}",
+    "slice-spoke.stroke": "{sherpa.data-viz-series-1}"
   },
   "$extensions": {
     "sherpa": {

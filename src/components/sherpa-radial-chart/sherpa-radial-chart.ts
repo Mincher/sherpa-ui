@@ -14,8 +14,8 @@
 import { datumTotal, type ChartDatum } from '../../core/data/chart-datum.js';
 import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
-import { formatValue, radialArea, ringSegmentPath } from '../../core/data/format-tick.js';
-import { fillTip, pairAnchor, paintSeries } from '../../core/ui/chart-parts.js';
+import { formatValue, radialArea, ringSegmentPath, ringSpokePath } from '../../core/data/format-tick.js';
+import { fillTip, pairAnchor, paintSeries, partsSaid } from '../../core/ui/chart-parts.js';
 import { rovingFocus, type Roving } from '../../core/ui/roving-focus.js';
 import { RADIAL_CENTRE as CENTRE, RADIAL_CORNER as CORNER,
   RADIAL_OUTLINE as OUTLINE, RADIAL_INNER_RATIO } from '../../core/ui/shared-constants.js';
@@ -119,6 +119,7 @@ export class SherpaRadialChart extends SherpaElement {
     const marking = this.#slices.some((s) => s.matched != null);
     this.toggleState('highlighting', marking);
     const matchTpl = this.$<HTMLTemplateElement>('template.match-tpl');
+    const spokeTpl = this.$<HTMLTemplateElement>('template.spoke-tpl');
 
     let acc = 0;
     this.#slices.forEach((slice, i) => {
@@ -161,9 +162,21 @@ export class SherpaRadialChart extends SherpaElement {
       /* The path IS the datum, not a control; the ring is its one tab stop.
          TRAP T-a-chart-datum-is-reachable-without-a-pointer */
       arc.setAttribute('role', 'img');
-      arc.setAttribute('aria-label', `${slice.label}: ${slice.value}`);
+      const parts = partsSaid(slice.parts);
+      arc.setAttribute('aria-label', `${slice.label}: ${slice.value}${parts ? ` (${parts})` : ''}`);
       group.appendChild(arc);
       if (match) group.appendChild(match);
+      // GROUPED: a spoke at each boundary between its parts, in its own colour. TODO 548
+      let within = 0;
+      for (const p of (slice.parts ?? []).filter((one) => one.value > 0).slice(0, -1)) {
+        within += value ? p.value / value : 0;
+        const spoke = spokeTpl ? this.clone<SVGPathElement>(spokeTpl, '.slice-spoke') : null;
+        if (!spoke) break;
+        spoke.setAttribute('d', ringSpokePath({ cx: CENTRE, cy: CENTRE, inner, outer, deg: sweepStart + (acc + share * within) * sweep }));
+        spoke.setAttribute('stroke-width', String(OUTLINE));
+        paintSeries(spoke, i, slice.colorIndex);
+        group.appendChild(spoke);
+      }
 
       if (hotspots && hotTpl) {
         const frag = hotTpl.content.cloneNode(true) as DocumentFragment;
@@ -175,7 +188,7 @@ export class SherpaRadialChart extends SherpaElement {
         dot.style.setProperty('--_dot-angle', `${mid}deg`);
         tip.style.setProperty('--_area', radialArea(mid));
         pairAnchor(`--radial-slice-${i}`, dot, tip);
-        fillTip(tip, slice.label, slice.value);
+        fillTip(tip, slice.label, slice.value, slice.parts);
         hotspots.append(dot, tip);
       }
 

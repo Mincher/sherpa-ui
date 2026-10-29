@@ -8,6 +8,7 @@
  * - paintSwatch — Give a value its swatch: a series from 1, or a band's status.
  * - pairAnchor — Name the anchor a dot and its tip share.
  * - fillTip — Write a tip's label and exact value.
+ * - partsSaid — A grouped segment's parts, as words: "Free 1 · Pro 2".
  */
 import {
   formatTick, formatValue, seriesBorderVar, seriesVar, statusBorderVar, statusVar, tickPercent, type ChartScale,
@@ -67,5 +68,10 @@ export function fillTip(tip: ParentNode, label: string, value: number | string, 
   tip.querySelector('.sherpa-tip-value')!.textContent = typeof value === 'number' ? formatValue(value) : value;
   // …and a grouped segment's parts, each by its group value. TODO 548
   const said = tip.querySelector('.chart-tip-parts');
-  if (said) said.textContent = (parts ?? []).map((p) => `${p.label} ${formatValue(p.value)}`).join(' · ');
+  if (said) said.textContent = partsSaid(parts);
+}
+
+/** A grouped segment's parts, as words: "Free 1 · Pro 2". TODO 548 */
+export function partsSaid(parts?: readonly { label: string; value: number }[]): string {
+  return (parts ?? []).map((p) => `${p.label} ${formatValue(p.value)}`).join(' · ');
 }

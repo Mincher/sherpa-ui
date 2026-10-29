@@ -103,6 +103,7 @@ What each class's base rule reads:
 | `--sherpa-theme-content-line-height-xs` | `.sub` | `line-height` |
 | `--sherpa-theme-content-body-1` | `.sub` | `color` |
 | `--sherpa-data-viz-series-1` | `.slice-match` | `fill` |
+| `--sherpa-data-viz-series-1` | `.slice-spoke` | `stroke` |
 
 ## populate()
 

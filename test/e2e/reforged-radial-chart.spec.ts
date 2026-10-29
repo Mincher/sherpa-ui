@@ -462,3 +462,27 @@ test('a slice draws the part the highlight matches over it, and none without one
   // A's half of its half of the ring; B matches nothing, so it has no part.
   expect(r).toEqual({ on: true, parts: [25], after: 0, off: false });
 });
+
+test('a grouped slice is split by a spoke at each boundary between its parts, donut or pie; its name lists them (Will, TODO 548)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const out: Record<string, unknown> = {};
+    for (const type of ['donut', 'pie']) {
+      const el = await window.__mount<HTMLElement & { populate(d: unknown): Promise<void> }>('sherpa-radial-chart', undefined, { 'data-type': type });
+      await el.populate([
+        { label: 'active', value: 6, colorIndex: 1, parts: [{ label: 'Free', value: 1 }, { label: 'Pro', value: 3 }, { label: 'Team', value: 2 }] },
+        { label: 'trial', value: 2, colorIndex: 2 },
+      ]);
+      await window.__settled();
+      const sr = el.shadowRoot!;
+      out[type] = {
+        spokes: sr.querySelectorAll('.slice-spoke').length,
+        name: sr.querySelector('.slice')!.getAttribute('aria-label'),
+        tip: sr.querySelector('.chart-tip-parts')!.textContent,
+      };
+    }
+    return out;
+  });
+  for (const type of ['donut', 'pie']) {
+    expect(r[type]).toEqual({ spokes: 2, name: 'active: 6 (Free 1 · Pro 3 · Team 2)', tip: 'Free 1 · Pro 3 · Team 2' });
+  }
+});
