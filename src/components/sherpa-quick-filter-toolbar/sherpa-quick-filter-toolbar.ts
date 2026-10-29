@@ -1282,6 +1282,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Rebuild the chip run from `#filters`, keeping what the reader did. */
   #render(): void {
+    if (this.#laying) {
+      this.#owed = true;
+      return;
+    }
+    this.#owed = false;
     const list = this.$('.chips');
     const tpl = this.$<HTMLTemplateElement>('template.qf-tpl');
     if (!list || !tpl) return;
@@ -2030,31 +2035,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       .map((f) => f.field ?? f.id);
   }
 
-  /**
-   * drawScope(scope, live) — draw what a scope holds, SILENTLY, from the
-   * description the panel is drawn each of: its chips and each field's answer.
-   * Nothing is reported — the source already holds all of it. A PERSISTENT
-   * chip (the View) is the host's to set, so it is left alone.
-   * TRAP T-one-query-one-owner · TRAP T-a-reload-replays-the-readers-answers
-   */
-  async drawScope(scope: ScopeDescription, live?: () => ScopeDescription): Promise<void> {
-    this.#scoped = true;
-    this.nameScope(scope);
-    // A list this bar kept before a source drew it goes to the source, below.
-    const handover = this.#switchedOff;
-    this.#switchedOff = null;
-    /* The Switch FIRST, before the waits, so a report meanwhile says it. An off
-       it cannot show — hidden, or the panel answering — goes back on.
-       TRAP T-the-filter-switch-keeps-what-it-turned-off */
-    const resume = !!scope.suspended && (!this.#switchable || this.hasAttribute('data-panel-mode'));
-    if (resume && !this.#switchable) {
-      report({
-        code: 'filter-switch-hidden',
-        message: `Scope "${scope.scope}" is switched off, and its bar shows no Switch, so it is switched back on. Add data-switchable to offer it.`,
-        at: { scope: scope.scope },
-      });
-    }
-    this.#drawSwitch(!!scope.suspended && !resume);
+  /** While a scope is laid out, a draw is OWED, not done: one draw at its end. */
+  #laying = false;
+  /** A draw was asked for while laying out. */
+  #owed = false;
+
+  /** A scope's chips, sets, Group and Sort, order and ways, laid out SILENTLY. */
+  #layOut(scope: ScopeDescription): void {
     this.groupSets(scope.sets ?? []);
     // Its Group and Sort, where the scope arranges — drawn again only when they change.
     // TRAP T-group-and-sort-are-component-scope
@@ -2095,6 +2082,41 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (add.length && !drafting) this.#addFilters(add, { silent: true });
     this.#orderAs(fields.map((f) => this.#idOf(f.id)));
     this.#takeWays(fields);
+  }
+
+  /**
+   * drawScope(scope, live) — draw what a scope holds, SILENTLY, from the
+   * description the panel is drawn each of: its chips and each field's answer.
+   * Nothing is reported — the source already holds all of it. A PERSISTENT
+   * chip (the View) is the host's to set, so it is left alone.
+   * TRAP T-one-query-one-owner · TRAP T-a-reload-replays-the-readers-answers
+   */
+  async drawScope(scope: ScopeDescription, live?: () => ScopeDescription): Promise<void> {
+    this.#scoped = true;
+    this.nameScope(scope);
+    // A list this bar kept before a source drew it goes to the source, below.
+    const handover = this.#switchedOff;
+    this.#switchedOff = null;
+    /* The Switch FIRST, before the waits, so a report meanwhile says it. An off
+       it cannot show — hidden, or the panel answering — goes back on.
+       TRAP T-the-filter-switch-keeps-what-it-turned-off */
+    const resume = !!scope.suspended && (!this.#switchable || this.hasAttribute('data-panel-mode'));
+    if (resume && !this.#switchable) {
+      report({
+        code: 'filter-switch-hidden',
+        message: `Scope "${scope.scope}" is switched off, and its bar shows no Switch, so it is switched back on. Add data-switchable to offer it.`,
+        at: { scope: scope.scope },
+      });
+    }
+    this.#drawSwitch(!!scope.suspended && !resume);
+    // Laid out first, drawn ONCE: each step below would draw the bar. TODO 523 U12
+    this.#laying = true;
+    try {
+      this.#layOut(scope);
+    } finally {
+      this.#laying = false;
+    }
+    if (this.#owed) this.#render();
     // A rebuilt bar reads empty until its menus stamp. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
     await this.#settled();
     await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
