@@ -299,9 +299,7 @@ export class SherpaDataGrid extends SherpaElement {
       case 'data-total-pages': case 'data-locked': case 'data-column-filters':
         return;
       case 'data-none-shows-all':
-        for (const menu of this.$$<HTMLElement>('.head-filter > sherpa-menu')) {
-          menu.toggleAttribute('data-empties', this.#empties(menu));
-        }
+        this.#renderHead();
         return;
       case 'data-needles':
         this.#syncNeedles();
@@ -605,8 +603,9 @@ export class SherpaDataGrid extends SherpaElement {
     if (!def) return JSON.stringify([col.type ?? 'text', false]);
     const { options: _options, min: _min, max: _max, availableDates: _days, ...shape } = def;
     // TRAP T-a-default-is-not-an-override
+    // …and the flags its menu is made under: whether None shows all is menuFor's one rule. TODO 523 U20
     return JSON.stringify([col.type ?? 'text', true, { ...shape, range: !!def.range },
-      this.dataset['bounds'] ?? '', this.dataset['applyOn'] ?? '']);
+      this.dataset['bounds'] ?? '', this.dataset['applyOn'] ?? '', this.hasAttribute('data-none-shows-all')]);
   }
   /** Each heading cell's key, as it was made. */
   #cellKeys = new WeakMap<HTMLElement, string>();
@@ -1403,12 +1402,6 @@ export class SherpaDataGrid extends SherpaElement {
   /** A heading's own menu, by its field. */
   #headMenu(field: string): HTMLElement | null {
     return this.$(`.head-cell[data-field="${CSS.escape(field)}"] .head-filter > sherpa-menu`);
-  }
-
-  /** Does a heading's menu answer none when its reader leaves it empty? A LIST, while the app's
-   *  "Select none shows all data" is off. TODO 489 */
-  #empties(menu: HTMLElement): boolean {
-    return !this.hasAttribute('data-none-shows-all') && menu.dataset['select'] === 'multiple' && !menu.dataset['body'];
   }
 
   /** A field with no list to tick answers by conditions only: its value is an "Is" row. */

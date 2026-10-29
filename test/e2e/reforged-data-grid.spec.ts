@@ -3134,3 +3134,30 @@ test('a banded heading builds its clause from the bands it is given, never "equa
   });
   expect(r).toEqual(['score', 'lt', 10]);
 });
+
+test('a list heading empties to None until None shows all, by the one rule its menu is built with (TODO 523 U20)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<HTMLElement>('sherpa-data-grid', {
+      columns: [{ field: 'plan', header: 'Plan' }, { field: 'name', header: 'Name' }],
+      rows: [{ id: 1, plan: 'Pro', name: 'Ana' }, { id: 2, plan: 'Free', name: 'Ben' }],
+      filters: {
+        plan: { id: 'plan', label: 'Plan', options: [{ value: 'Pro', label: 'Pro' }, { value: 'Free', label: 'Free' }] },
+        name: { id: 'name', label: 'Name', advanced: 'only' },
+      },
+    }, { 'data-column-filters': '' });
+    await window.__settled();
+    const empties = () => ['plan', 'name'].map((f) => el.shadowRoot!
+      .querySelector(`.head-cell[data-field="${f}"] .head-filter > sherpa-menu`)?.hasAttribute('data-empties') ?? null);
+    const before = empties();
+    el.setAttribute('data-none-shows-all', '');
+    await window.__settled();
+    const shows = empties();
+    el.removeAttribute('data-none-shows-all');
+    await window.__settled();
+    return { before, shows, back: empties() };
+  });
+  expect(r.before).toEqual([true, false]);
+  expect(r.shows).toEqual([false, false]);
+  // A field answered by typing alone never empties to None, flip or not.
+  expect(r.back).toEqual([true, false]);
+});
