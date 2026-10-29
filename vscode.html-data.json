@@ -109,11 +109,6 @@
           "valueSet": "v"
         },
         {
-          "name": "data-suggest",
-          "description": "show \"Suggest filters\", beside Ask N-zo. Will, TODO 425",
-          "valueSet": "v"
-        },
-        {
           "name": "data-theme-mode",
           "description": "light | dark — the mode on screen; the button offers the other",
           "values": [
@@ -2885,6 +2880,11 @@
         {
           "name": "data-sort-field",
           "description": "the field the Sort chip points at (the standard name)"
+        },
+        {
+          "name": "data-suggest",
+          "description": "show \"Suggest filters\", left of Edit. Will, TODO 527",
+          "valueSet": "v"
         },
         {
           "name": "data-switchable",
