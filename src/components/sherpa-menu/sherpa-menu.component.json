@@ -520,7 +520,9 @@
                         "data-size": "sm",
                         "data-icon-start": "function",
                         "aria-label": "Advanced",
-                        "aria-pressed": "false"
+                        "aria-pressed": "false",
+                        "data-swap-on": "data-mode=advanced",
+                        "data-swap-aria-pressed": "true"
                       }
                     }
                   ]

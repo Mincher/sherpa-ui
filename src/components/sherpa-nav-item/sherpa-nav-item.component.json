@@ -114,7 +114,9 @@
           "attrs": {
             "type": "button",
             "aria-label": "Expand",
-            "aria-expanded": "false"
+            "aria-expanded": "false",
+            "data-swap-on": "data-expanded",
+            "data-swap-aria-expanded": "true"
           },
           "children": [
             {

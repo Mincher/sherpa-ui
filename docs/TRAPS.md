@@ -1435,6 +1435,7 @@ TS must never also write a swapped attribute: one owner.
 - Site: `scripts/check-props.mjs`
 - Site: `scripts/check-usage.mjs`
 - Site: `test/e2e/reforged-swaps.spec.ts`
+- Site: `test/e2e/reforged-a-state-follows-its-host-attribute.spec.ts`
 
 ### T-no-attribute-is-the-default-variant
 

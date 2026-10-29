@@ -43,7 +43,6 @@ export class SherpaListItem extends SherpaElement {
 
   override onRender(): void {
     this.#syncSelected();
-    this.#syncExpanded();
     this.addEventListener('click', this.#onClick);
     this.$('.expand')?.addEventListener('click', this.#onExpand);
     this.$('.checkbox')?.addEventListener('change', this.#onSelect);
@@ -51,9 +50,8 @@ export class SherpaListItem extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    // Not textContent writes, so the declared props cannot do these.
-    if (name === 'data-expanded') this.#syncExpanded();
-    else if (name === 'data-selected') this.#syncSelected();
+    // Not a textContent write, so the declared props cannot do it.
+    if (name === 'data-selected') this.#syncSelected();
   }
 
   /* ── Sync ─────────────────────────────────────────────────────── */
@@ -62,11 +60,6 @@ export class SherpaListItem extends SherpaElement {
   #syncSelected(): void {
     const box = this.$<HTMLInputElement>('.checkbox');
     if (box) box.checked = this.hasAttribute('data-selected');
-  }
-
-  /** Tell assistive tech whether the row is expanded. */
-  #syncExpanded(): void {
-    this.$('.expand')?.setAttribute('aria-expanded', String(this.hasAttribute('data-expanded')));
   }
 
   /* ── Interaction ──────────────────────────────────────────────── */

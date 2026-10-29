@@ -49,7 +49,9 @@
                 "type": "button",
                 "tabindex": "-1",
                 "aria-expanded": "false",
-                "aria-label": "Expand"
+                "aria-label": "Expand",
+                "data-swap-on": "data-expanded",
+                "data-swap-aria-expanded": "true"
               },
               "children": [
                 {

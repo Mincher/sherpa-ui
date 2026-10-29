@@ -114,13 +114,9 @@ export class SherpaNavItem extends SherpaElement {
       else el.removeAttribute('aria-current');
     }
 
-    // CSS owns the chevron rotation; this is the a11y half.
-    const expand = this.$('.expand');
-    if (expand) {
-      const open = this.hasAttribute('data-expanded');
-      expand.setAttribute('aria-expanded', String(open));
-      expand.setAttribute('aria-label', `${this.word(open ? 'collapse' : 'expand')} ${this.dataset['label'] ?? ''}`.trim());
-    }
+    // CSS owns the chevron rotation and a swap its aria-expanded; its name says the row.
+    const open = this.hasAttribute('data-expanded');
+    this.$('.expand')?.setAttribute('aria-label', `${this.word(open ? 'collapse' : 'expand')} ${this.dataset['label'] ?? ''}`.trim());
   }
 
   /**

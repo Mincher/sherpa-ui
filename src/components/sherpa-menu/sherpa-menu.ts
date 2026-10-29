@@ -318,11 +318,6 @@ export class SherpaMenu extends SherpaElement {
     return this.hasAttribute('data-advanced-only');
   }
 
-  /** The Advanced button is ON in advanced mode. */
-  #syncModeButton(): void {
-    this.$('.use-advanced')?.setAttribute('aria-pressed', String(this.mode === 'advanced'));
-  }
-
   set mode(next: ConditionType) {
     const to = modeAttr(next);
     /* A field that did not opt in has no Advanced mode to be in — the button
@@ -339,7 +334,6 @@ export class SherpaMenu extends SherpaElement {
       if (!this.#rowEls().length) this.#addRow();
       this.#seedFromPicks();
     }
-    this.#syncModeButton();
     this.#syncDirty();
   }
 
@@ -397,7 +391,7 @@ export class SherpaMenu extends SherpaElement {
    * door to it — a section's ⋮. TODO 425
    */
   switchMode(next: ConditionType = this.mode === 'advanced' ? 'simple' : 'advanced'): void {
-    if (!this.#offersAdvanced() || this.#advancedOnly() || next === this.mode) return this.#syncModeButton();
+    if (!this.#offersAdvanced() || this.#advancedOnly() || next === this.mode) return;
     this.mode = next;
     // An Advanced mode with no rows has nothing to answer with.
     if (next === 'advanced' && !this.#rowEls().length) this.#addRow();
@@ -1816,7 +1810,6 @@ export class SherpaMenu extends SherpaElement {
     this.#enforceMode();
     this.#syncCrumb();
     this.#syncConditions();
-    this.#syncModeButton();
     // The name must reach a screen reader even when no heading is drawn.
     // TRAP T-calendar-header-has-no-heading
     // ALWAYS named: the card is a dialog, and a dialog with no name is a failure.
