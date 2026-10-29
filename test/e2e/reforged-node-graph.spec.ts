@@ -120,3 +120,67 @@ test('a filter toolbar\'s ⋮ menu offers Node Editor (beta) only where the host
   expect(r.on.rows.at(-1)).toBe('Node Editor (beta)');
   expect(r.on.heard).toEqual(['node-editor-open']);
 });
+
+test('drawGraph tells its host each edit — a select picked, a switch flipped — and writes nothing itself', async ({ page }) => {
+  await page.evaluate(async () => {
+    const { drawGraph } = await import('/dist/app.js');
+    const canvas = document.getElementById('root')!.querySelector('sherpa-layout-canvas') as Drawable;
+    const heard: unknown[] = [];
+    (window as unknown as { heard: unknown[] }).heard = heard;
+    drawGraph(canvas, { routes: [], nodes: [{
+      id: 'c', kind: 'condition', heading: 'Status', icon: 'function', x: 0, y: 0, ref: { scope: 'view', field: 'status' },
+      rows: [
+        { name: 'op', label: 'Condition', field: 'condition', value: 'eq', editable: true,
+          choices: [{ value: 'eq', label: 'Equals' }, { value: 'ne', label: 'Does not equal' }] },
+        { name: 'on', label: 'Filters', field: 'switch', value: true, editable: true },
+        { name: 'fixed', label: 'Fixed', field: 'text', value: 'x' },
+      ],
+    }] }, { onEdit: ({ node, row, value }) => heard.push([node.id, row.name, value]) });
+    await window.__settled();
+  });
+  await page.locator('#root sherpa-node-row select').selectOption('ne');
+  // On its TRACK: the switch spans the row, and its middle is bare.
+  await page.locator('#root sherpa-node-row sherpa-switch .track').click();
+  const r = await page.evaluate(() => ({
+    heard: (window as unknown as { heard: unknown[] }).heard,
+    fixed: document.querySelector<HTMLElement & { value: string }>('#root sherpa-input-text[name="fixed"]')!.hasAttribute('readonly'),
+  }));
+  expect(r).toEqual({ heard: [['c', 'op', 'ne'], ['c', 'on', false]], fixed: true });
+});
+
+test('bindQueryEditor ASKS the Query through a chip\'s doors: a reading, the Switch, Group', async ({ page }) => {
+  await page.evaluate(async () => {
+    const { bindQueryEditor } = await import('/dist/app.js');
+    const { readingsOf } = await import('/dist/data.js');
+    const canvas = document.getElementById('root')!.querySelector('sherpa-layout-canvas') as Drawable;
+    const asked: unknown[] = [];
+    (window as unknown as { asked: unknown[] }).asked = asked;
+    const query = Object.assign(new EventTarget(), {
+      draft: { v: 1, scopes: {
+        view: { holds: ['region'], readings: readingsOf({ region: { in: ['EMEA', 'APAC'] } }) },
+        data: { holds: ['status'], readings: {}, sort: [{ field: 'name', direction: 'asc' }] },
+      } },
+      setReading: (scope: string, field: string, reading: unknown) => asked.push(['setReading', scope, field, reading]),
+      suspend: (scope: string, field: string | null, on: boolean) => asked.push(['suspend', scope, field, on]),
+      setGroup: (field: string | null, scope: string) => asked.push(['setGroup', field, scope]),
+      setSort: (field: string | null, direction: string, scope: string) => asked.push(['setSort', field, direction, scope]),
+    });
+    const definition = { v: 1 as const, id: 'records', source: { store: 'customers', fields: { name: { label: 'Name' }, plan: { label: 'Plan' } } } };
+    bindQueryEditor(canvas, { query } as never, { definition });
+    await window.__settled();
+  });
+  await page.locator('#root sherpa-node-row:has(sherpa-input-text[name="op"]) select').selectOption('notin');
+  await page.locator('#root sherpa-node-row:has(sherpa-input-text[name="group"]) select').selectOption('plan');
+  await page.locator('#root sherpa-node-row sherpa-switch .track').first().click();
+  const r = await page.evaluate(async () => {
+    const { whereOf } = await import('/dist/data.js');
+    const asked = (window as unknown as { asked: unknown[][] }).asked;
+    // A reading reads back as the plain condition it says.
+    return asked.map((a) => (a[0] === 'setReading' ? [a[0], a[1], a[2], whereOf({ [a[2] as string]: a[3] as never })[a[2] as string]] : a));
+  });
+  expect(r).toEqual([
+    ['setReading', 'view', 'region', { notin: ['EMEA', 'APAC'] }],
+    ['setGroup', 'plan', 'data'],
+    ['suspend', 'view', null, true],
+  ]);
+});

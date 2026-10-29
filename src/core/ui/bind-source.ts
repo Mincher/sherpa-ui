@@ -9,6 +9,7 @@
  * - bindSource — Point a component at a source: rows and `data-*` down, steering events back.
  * - SteeringEvent — One of them.
  * - SteerBind — What steering needs of one binding: its scope.
+ * - ask — A control's request, to its context's doors; a list is one change.
  * - steer — Turn one component's event into its source's call.
  */
 import { report } from '../data/report.js';
@@ -246,7 +247,7 @@ function hasScope(request: QueryRequest): boolean {
 
 /** A control's request, to its context's doors; a list is one change. With
  *  `commit`, its Apply: the one field it named, else its scope. 366 step 18 */
-function ask(query: QueryContext, request: QueryRequest, scope: string): void {
+export function ask(query: QueryContext, request: QueryRequest, scope: string): void {
   if (Array.isArray(request)) {
     query.batch(() => { for (const one of request as readonly QueryRequest[]) ask(query, one, scope); });
     return;

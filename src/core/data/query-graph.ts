@@ -7,10 +7,12 @@
  * - QUERY_KINDS — What each node of a Query IS: its header, its sockets and its fixed rows.
  * - GraphComponent — One component a scope's rows reach: its id, its label and how it shows them.
  * - QueryGraphFacts — What drawing a Query needs that the Query does not say.
+ * - editedCondition — A condition node's rows, edited, as the condition they say: the other half of drawing one.
  * - queryGraph — A page's Query as nodes and routes, laid out in columns by depth.
  */
 import type { PageDefinition } from './page-definition.js';
 import { PRESENTATION_KINDS, VIEW, arranging, type Query } from './query.js';
+import { OP_LABELS, OPS_FOR_TYPE, type FilterOp } from './store.js';
 import { whereOf, type Condition } from './where.js';
 import type { DrawnGraph, GraphNode, GraphRow, NodeKind, WorkflowRoute } from './workflow.js';
 
@@ -80,13 +82,22 @@ export interface QueryGraphFacts {
   label?: (field: string) => string | undefined;
   /** The components the page binds, so each scope reaches its own. */
   components?: readonly GraphComponent[];
+  /** A field's type — text, number or date — which picks its operators. */
+  type?: (field: string) => string | undefined;
 }
+
+/** The operators a field's condition may take: its type's, and a pick list's. */
+const PICK_OPS: readonly FilterOp[] = ['in', 'notin', 'eq', 'ne'];
+
+/** The scope's filter Switch: a row of its own, before its fields. Not a field's name. */
+const SWITCH = '#filters';
 
 /** The keys of a condition that say HOW it holds, not what it compares. */
 const NOT_OPS = new Set(['unit', 'off', 'band', 'all', 'and', 'or']);
 
-/** One condition's operator and value, as its rows show them. */
-function conditionRows(field: string, condition: Condition): GraphRow[] {
+/** One condition's operator and value, as its rows show them — the operator and a
+ *  plain value editable, as a chip's are; a chain, a band or All read only. */
+function conditionRows(field: string, condition: Condition, type: string | undefined): GraphRow[] {
   const list = condition.and ?? condition.or;
   const op = list ? (condition.and ? 'and' : 'or')
     : condition.all ? 'all'
@@ -97,7 +108,23 @@ function conditionRows(field: string, condition: Condition): GraphRow[] {
     : op === 'last' || op === 'next' ? `${String(condition[op])} ${condition.unit ?? 'day'}`
     : condition[op as keyof Condition];
   const value = Array.isArray(raw) ? raw.join(', ') : raw !== null && typeof raw === 'object' ? JSON.stringify(raw) : raw;
-  return rowsOf('condition', { field, op, value: value ?? '' });
+  const plain = op in OP_LABELS;
+  const ops = [...new Set([...(OPS_FOR_TYPE[type ?? ''] ?? PICK_OPS), ...(plain ? [op as FilterOp] : [])])];
+  return rowsOf('condition', { field, op, value: value ?? '' }).map((row) => row.name === 'op' && plain
+    ? { ...row, editable: true, choices: ops.map((o) => ({ value: o, label: OP_LABELS[o] })) }
+    : row.name === 'value' && plain ? { ...row, editable: true } : row);
+}
+
+/** A condition node's rows, edited, as the condition they say: the other half of drawing one. */
+export function editedCondition(op: string, text: string, type?: string): Condition {
+  const one = (v: string): string | number => (type === 'number' && v !== '' && Number.isFinite(Number(v)) ? Number(v) : v);
+  const list = text.split(',').map((v) => v.trim()).filter(Boolean).map(one);
+  if (op === 'in' || op === 'notin' || op === 'between' || op === 'notbetween') return { [op]: list };
+  if (op === 'last' || op === 'next') {
+    const [n = '1', unit = 'day'] = text.trim().split(/\s+/);
+    return { [op]: Number(n), unit: unit.replace(/s$/, '') as NonNullable<Condition['unit']> };
+  }
+  return { [op]: one(text.trim()) };
 }
 
 /** A kind's fixed rows, each with its value. */
@@ -108,6 +135,10 @@ function rowsOf(kind: string, values: Readonly<Record<string, unknown>>): GraphR
 /** A page's Query as nodes and routes, laid out in columns by depth. */
 export function queryGraph(query: Query, definition: PageDefinition, facts: QueryGraphFacts = {}): DrawnGraph {
   const label = (field: string): string => facts.label?.(field) ?? definition.source?.fields?.[field]?.label ?? field;
+  const typeOf = (field: string): string | undefined => facts.type?.(field) ?? definition.source?.fields?.[field]?.type;
+  // Every field a Sort or Group may pick: the declared ones, then any a scope holds.
+  const known = [...new Set([...Object.keys(definition.source?.fields ?? {}), ...Object.values(query.scopes).flatMap((s) => s.holds)])];
+  const keys = [{ value: '', label: 'None' }, ...known.map((f) => ({ value: f, label: label(f) }))];
   const components = facts.components ?? [];
   const scopes = Object.entries(query.scopes);
   const scopeOf = (c: GraphComponent): string => c.scope ?? (c.id in query.scopes ? c.id : VIEW);
@@ -144,15 +175,21 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     // Its name: the definition's, else the one component that reads it.
     const named = definition.source?.scopes?.[id]?.label
       ?? (components.find((c) => c.id === id) ?? (shows.length === 1 ? shows[0] : undefined))?.label;
-    const node = add(top ? 3 : 5, `scope-${id}`, 'scope', fields.map((f) => ({ name: f, label: label(f), input: 'value' })), {
+    const rows: GraphRow[] = [
+      { name: SWITCH, label: 'Filters', field: 'switch', value: !scope.suspended, editable: true },
+      ...fields.map((f): GraphRow => ({ name: f, label: label(f), input: 'value' })),
+    ];
+    const node = add(top ? 3 : 5, `scope-${id}`, 'scope', rows, {
       heading: named ?? (top ? 'View' : id),
       description: `${scope.holds.length} held${scope.suspended ? ' · filters off' : ''}`,
+      ref: { scope: id },
     });
     routes.push({ from: top || !view ? 'source' : `scope-${VIEW}`, to: node });
     for (const [field, condition] of Object.entries(where)) {
-      const when = add(top ? 2 : 4, `when-${id}-${field}`, 'condition', conditionRows(field, condition), {
+      const when = add(top ? 2 : 4, `when-${id}-${field}`, 'condition', conditionRows(field, condition, typeOf(field)), {
         heading: label(field),
         description: condition.off ? 'Off: kept, not applied.' : 'Applied.',
+        ref: { scope: id, field },
       });
       routes.push({ from: when, to: `${node}/${field}` });
     }
@@ -160,9 +197,13 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     let out = node;
     if (arranging(scope)) {
       const first = scope.sort?.[0];
+      const directions = [{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }];
+      // Sort and Group change as their chips do; Search stays the toolbar's.
       out = add(6, `arrange-${id}`, 'arrange', rowsOf('arrange', {
-        sort: first?.field, direction: first?.direction ?? (first ? 'asc' : undefined), group: scope.group ?? undefined, search: scope.search,
-      }));
+        sort: first?.field ?? '', direction: first?.direction ?? 'asc', group: scope.group ?? '', search: scope.search,
+      }).map((row) => (row.name === 'search' ? row : { ...row, editable: true, choices: row.name === 'direction' ? directions : keys })), {
+        ref: { scope: id },
+      });
       routes.push({ from: node, to: out });
     }
     // Each component its own Presentation: its slot's, where the scope is its own, else its definition's.

@@ -10,8 +10,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { queryGraph } = await import(new URL('query-graph.js', core));
-const { readingsOf } = await import(new URL('where.js', core));
+const { queryGraph, editedCondition } = await import(new URL('query-graph.js', core));
+const { readingsOf, whereOf } = await import(new URL('where.js', core));
 
 const definition = {
   v: 1, id: 'records',
@@ -61,13 +61,17 @@ test('the Records page\'s Query: Store, Source, each scope, its conditions, Arra
 test('each node shows what the Query and the definition say', () => {
   assert.equal(node('store').heading, 'customers');
   assert.deepEqual(values('source'), { pageSize: 25, search: 'name, email', applyOn: 'change' });
-  assert.deepEqual(node('scope-view').rows.map((r) => [r.name, r.label, r.input]), [['region', 'Region', 'value'], ['created', 'created', 'value']]);
+  // The filter Switch first, then each held field with a socket for its condition.
+  assert.deepEqual(node('scope-view').rows.map((r) => [r.name, r.label, r.input, r.field, r.value]), [
+    ['#filters', 'Filters', undefined, 'switch', true], ['region', 'Region', 'value', undefined, undefined], ['created', 'created', 'value', undefined, undefined],
+  ]);
   // A scope's name is the definition's, else its one component's, else its id.
   assert.deepEqual([node('scope-view').heading, node('scope-data').heading, node('scope-r-bar').heading], ['View Context', 'Customer records', 'By status']);
   assert.equal(values('show-r-donut').kind, 'donut');
   assert.deepEqual(values('when-view-region'), { field: 'region', op: 'in', value: 'EMEA, APAC' });
   assert.deepEqual([node('when-view-region').heading, node('when-data-status').description], ['Region', 'Off: kept, not applied.']);
   assert.deepEqual(values('arrange-data'), { sort: 'name', direction: 'desc', group: 'plan', search: undefined });
+  assert.deepEqual([node('when-view-region').ref, node('arrange-data').ref, node('scope-data').ref], [{ scope: 'view', field: 'region' }, { scope: 'data' }, { scope: 'data' }]);
   assert.deepEqual(values('show-r-bar'), { kind: 'donut', primary: undefined, secondary: 'status', group: undefined, sort: undefined });
   assert.equal(node('component-grid').heading, 'Customer records');
 });
@@ -102,3 +106,32 @@ test('the graph is DERIVED: the same Query draws the same graph, and a changed o
   changed.scopes.view.readings = readingsOf({ region: { in: ['EMEA'] } });
   assert.equal(queryGraph(changed, definition, { components }).nodes.find((n) => n.id === 'when-view-region').rows[2].value, 'EMEA');
 });
+
+test('what a reader may change, as a chip may: a condition\'s operator and value, Sort, Group and the Switch', () => {
+  const editable = (id) => Object.fromEntries(node(id).rows.map((r) => [r.name, !!r.editable]));
+  assert.deepEqual(editable('when-view-region'), { field: false, op: true, value: true });
+  assert.deepEqual(editable('arrange-data'), { sort: true, direction: true, group: true, search: false });
+  assert.deepEqual(editable('scope-view')['#filters'], true);
+  assert.deepEqual(editable('source'), { pageSize: false, search: false, applyOn: false });
+  // A pick list's operators, by their words; a number field's are its type's.
+  assert.deepEqual(node('when-view-region').rows[1].choices.map((c) => c.value), ['in', 'notin', 'eq', 'ne']);
+  const typed = queryGraph({ v: 1, scopes: { view: { holds: ['seats'], readings: readingsOf({ seats: { gt: 5 } }) } } },
+    { ...definition, source: { ...definition.source, fields: { seats: { type: 'number' } } } });
+  assert.deepEqual(typed.nodes.find((n) => n.id === 'when-view-seats').rows[1].choices.map((c) => c.label),
+    ['Equals', 'Does not equal', 'Greater than', 'At least', 'Less than', 'At most', 'Between', 'Not between']);
+  assert.deepEqual(node('arrange-data').rows[1].choices, [{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }]);
+  assert.equal(node('arrange-data').rows[0].choices[0].label, 'None');
+});
+
+test('an edited condition reads back as the condition its rows say', () => {
+  assert.deepEqual(editedCondition('in', 'EMEA, APAC'), { in: ['EMEA', 'APAC'] });
+  assert.deepEqual(editedCondition('gt', '5', 'number'), { gt: 5 });
+  assert.deepEqual(editedCondition('last', '12 months'), { last: 12, unit: 'month' });
+  assert.deepEqual(editedCondition('eq', ' active '), { eq: 'active' });
+  // The round trip a chip makes: rows → condition → reading → the plain form.
+  for (const [op, text] of [['notin', 'EMEA, APAC'], ['contains', 'north']]) {
+    const reading = readingsOf({ region: editedCondition(op, text) }).region;
+    assert.deepEqual(whereOf({ region: reading }).region, editedCondition(op, text));
+  }
+});
+

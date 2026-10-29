@@ -25,7 +25,7 @@ import { report } from './report.js';
 export type SocketCarries = 'value' | 'object';
 
 /** The field a row draws: text, a number, a select of keys, conditions or stores. */
-export type RowField = 'text' | 'number' | 'key' | 'condition' | 'direction' | 'store' | 'presentation';
+export type RowField = 'text' | 'number' | 'key' | 'condition' | 'direction' | 'store' | 'presentation' | 'switch';
 
 /** One row a kind draws: its name, its label, its field and its sockets. */
 export interface RowKind {
@@ -194,9 +194,13 @@ export function checkWorkflow(
   return !problems.length;
 }
 
-/** One row as drawn: its kind's parts, and the value it shows. */
+/** One row as drawn: its kind's parts, the value it shows, and whether a reader may change it. */
 export interface GraphRow extends RowKind {
   value?: unknown;
+  /** A select's choices, by value. */
+  choices?: readonly { value: string; label: string }[];
+  /** A reader may change it; else it is read only. */
+  editable?: boolean;
 }
 
 /** One node as drawn: its header, its sockets, its rows and its place. */
@@ -211,6 +215,8 @@ export interface GraphNode {
   rows: readonly GraphRow[];
   x: number;
   y: number;
+  /** What it stands for, for whoever takes its edits: a Query node's scope and field. */
+  ref?: Readonly<Record<string, string>>;
 }
 
 /** Nodes and routes, ready to draw: a workflow's, or a page's Query. */

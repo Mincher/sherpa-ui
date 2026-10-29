@@ -18817,8 +18817,13 @@ change made in it is a `QueryRequest`, as a chip's is.
   the scope is its own, else its definition's kind. A scope is named by the
   definition, else by the one component that reads it.
 - **`drawGraph` places a node ONCE**; after that its place is the reader's, and
-  a redraw only updates what it shows. Its fields are read only until Q3: a
-  change is a `QueryRequest`, never a write into the field.
+  a redraw only updates what it shows. It WRITES NOTHING: a field's change is
+  an edit it hands its host (`onEdit`). `bindQueryEditor` turns each into the
+  door a chip asks through — a reading through `ask()`, the Switch as a
+  suspend, Sort and Group as `setSort` and `setGroup` — so whether it applies
+  at once or waits for Apply is the Query's, as for any chip (Q3). What a row
+  may change is the graph's to say (`editable`, its `choices`); the rest is
+  read only.
 
 - Site: `src/core/data/query-graph.ts`
 - Site: `src/data.ts`

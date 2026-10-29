@@ -4,18 +4,23 @@
  * TRAP T-the-node-editor-asks-the-query
  *
  * Map:
+ * - GraphEdit — One row a reader changed: its node, its row and the new value.
+ * - DrawOptions — What a drawing tells its host: each edit, which the host makes.
  * - drawGraph — Draw a graph on a canvas: each node by id, kept where the reader moved it; then its routes.
  * - QueryEditorOptions — What drawing a page's Query needs beyond its source: the definition, and the page's components.
- * - bindQueryEditor — Keep a page's Query drawn on a canvas, read only, as it changes; returns the undo.
+ * - bindQueryEditor — Keep a page's Query drawn on a canvas as it changes, and ask it for each edit; returns the undo.
  */
 import '../../components/sherpa-input-text/sherpa-input-text.js';
 import '../../components/sherpa-node/sherpa-node.js';
 import '../../components/sherpa-node-row/sherpa-node-row.js';
+import '../../components/sherpa-switch/sherpa-switch.js';
 import type { SherpaLayoutCanvas } from '../../components/sherpa-layout-canvas/sherpa-layout-canvas.js';
 import type { SocketSide } from '../../components/sherpa-node/node-sockets.js';
 import type { DataSource } from '../data/data-source.js';
 import type { PageDefinition } from '../data/page-definition.js';
-import { queryGraph, type QueryGraphFacts } from '../data/query-graph.js';
+import { editedCondition, queryGraph, type QueryGraphFacts } from '../data/query-graph.js';
+import { readingsOf } from '../data/where.js';
+import { ask } from './bind-source.js';
 import { OP_LABELS, type FilterOp } from '../data/store.js';
 import type { DrawnGraph, GraphNode, GraphRow, WorkflowRoute } from '../data/workflow.js';
 
@@ -24,10 +29,29 @@ const SVG = 'http://www.w3.org/2000/svg';
 /** Anything with a socket to join: a node's header, or one of its rows. */
 type HasSockets = HTMLElement & { socketRect(side: SocketSide): DOMRect | null };
 
+/** One row a reader changed: its node, its row and the new value. */
+export interface GraphEdit {
+  node: GraphNode;
+  row: GraphRow;
+  value: unknown;
+}
+
+/** What a drawing tells its host: each edit, which the host makes — the drawing writes nothing. */
+export interface DrawOptions {
+  onEdit?: (edit: GraphEdit) => void;
+}
+
+/** A field a row draws: a text field or a select, or a switch. */
+type Field = HTMLElement & { value: string; checked?: boolean; populate?(items: unknown): void };
+
 /** What a canvas has drawn: each node and row by its address, the lines, and the routes they draw. */
 interface Drawn {
+  graph: DrawnGraph;
+  options: DrawOptions;
   nodes: Map<string, HTMLElement>;
   rows: Map<string, HTMLElement>;
+  /** Each row element's address, for an edit to name. */
+  addresses: WeakMap<HTMLElement, [string, string]>;
   shapes: Map<string, string>;
   lines: SVGSVGElement;
   routes: readonly WorkflowRoute[];
@@ -52,21 +76,31 @@ function put(el: Element, name: string, value: string | undefined): void {
   else el.setAttribute(name, value);
 }
 
+/** A row's field: a switch, a select of its choices, or a text or number field — read only unless it may change. */
+function fieldFor(row: GraphRow): Field {
+  if (row.field === 'switch') return document.createElement('sherpa-switch') as Field;
+  const field = document.createElement('sherpa-input-text') as Field;
+  field.setAttribute('name', row.name);
+  if (row.choices) field.setAttribute('data-type', 'select');
+  else if (row.field === 'number') field.setAttribute('data-type', 'number');
+  if (!row.editable) field.setAttribute(row.choices ? 'disabled' : 'readonly', '');
+  return field;
+}
+
 /** One node's rows, made again when their shape changed and given their values. */
 function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
-  const shape = node.rows.map((r) => `${r.name}:${r.field ?? ''}:${r.input ?? ''}:${r.output ?? ''}`).join('|');
+  const shape = JSON.stringify(node.rows.map((r) => [r.name, r.field, r.input, r.output, r.editable, r.choices]));
   if (drawn.shapes.get(node.id) !== shape) {
     drawn.shapes.set(node.id, shape);
     for (const key of [...drawn.rows.keys()]) if (key.startsWith(`${node.id}/`)) drawn.rows.delete(key);
     el.replaceChildren(...node.rows.map((row) => {
       const line = document.createElement('sherpa-node-row');
       drawn.rows.set(`${node.id}/${row.name}`, line);
+      drawn.addresses.set(line, [node.id, row.name]);
       if (row.field) {
-        const field = document.createElement('sherpa-input-text');
-        field.setAttribute('name', row.name);
-        // Read only: the editor shows the Query; a change is the Query's to make (Q3).
-        field.setAttribute('readonly', '');
+        const field = fieldFor(row);
         line.append(field);
+        if (row.choices) field.populate?.(row.choices);
       }
       return line;
     }));
@@ -75,10 +109,12 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
     const line = drawn.rows.get(`${node.id}/${row.name}`)!;
     put(line, 'data-input-socket', row.input);
     put(line, 'data-output-socket', row.output);
-    const field = line.firstElementChild as (HTMLElement & { value: string }) | null;
+    const field = line.firstElementChild as Field | null;
     if (field) {
       field.setAttribute('data-label', row.label);
-      field.value = shown(row);
+      if (row.field === 'switch') field.checked = !!row.value;
+      // A select holds its value's KEY, and shows its label itself.
+      else field.value = row.choices ? String(row.value ?? '') : shown(row);
     } else {
       line.setAttribute('data-label', row.field === undefined && row.value !== undefined ? `${row.label}: ${shown(row)}` : row.label);
     }
@@ -129,7 +165,8 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     + ' stroke: var(--sherpa-style-border-base, #b3b3c3); stroke-width: 2px');
   canvas.prepend(lines);
   const made: Drawn = {
-    nodes: new Map(), rows: new Map(), shapes: new Map(), lines, routes: [], fitted: false,
+    graph: { nodes: [], routes: [] }, options: {},
+    nodes: new Map(), rows: new Map(), addresses: new WeakMap(), shapes: new Map(), lines, routes: [], fitted: false,
     // A node's height lands when its parts render: the lines follow, and the first fits the view.
     sizes: new ResizeObserver(() => {
       drawRoutes(canvas, made);
@@ -137,14 +174,26 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     }),
   };
   canvas.addEventListener('node-move', () => drawRoutes(canvas, made));
+  // A field's change, as an EDIT for the host: the drawing writes nothing itself.
+  canvas.addEventListener('change', (event) => {
+    const line = event.composedPath().find((n): n is HTMLElement => n instanceof HTMLElement && made.addresses.has(n));
+    const [id, name] = line ? made.addresses.get(line)! : [];
+    const node = made.graph.nodes.find((n) => n.id === id);
+    const row = node?.rows.find((r) => r.name === name);
+    if (!node || !row?.editable) return;
+    const field = line!.firstElementChild as Field;
+    made.options.onEdit?.({ node, row, value: row.field === 'switch' ? !!field.checked : field.value });
+  });
   drawnOn.set(canvas, made);
   drawn = made;
   return drawn;
 }
 
 /** Draw a graph on a canvas: each node by id, kept where the reader moved it; then its routes. */
-export function drawGraph(canvas: SherpaLayoutCanvas, graph: DrawnGraph): void {
+export function drawGraph(canvas: SherpaLayoutCanvas, graph: DrawnGraph, options: DrawOptions = {}): void {
   const drawn = drawnFor(canvas);
+  drawn.graph = graph;
+  drawn.options = options;
   const ids = new Set(graph.nodes.map((n) => n.id));
   for (const [id, el] of drawn.nodes) {
     if (ids.has(id)) continue;
@@ -180,15 +229,36 @@ export interface QueryEditorOptions extends QueryGraphFacts {
   definition: PageDefinition;
 }
 
-/** Keep a page's Query drawn on a canvas, read only, as it changes; returns the undo.
- *  It draws what the controls show — the draft — and asks for nothing yet. */
+/** Keep a page's Query drawn on a canvas as it changes, and ask it for each edit; returns the undo.
+ *  It draws what the controls show — the draft — and ASKS through the doors a chip
+ *  asks through: whether a change applies at once or waits for Apply is the Query's. */
 export function bindQueryEditor(
   canvas: SherpaLayoutCanvas,
   source: Pick<DataSource, 'query'>,
   { definition, ...facts }: QueryEditorOptions,
 ): () => void {
-  const draw = (): void => drawGraph(canvas, queryGraph(source.query.draft, definition, facts));
+  const query = source.query;
+  const onEdit = ({ node, row, value }: GraphEdit): void => {
+    const scope = node.ref?.['scope'];
+    if (!scope) return;
+    const was = Object.fromEntries(node.rows.map((r) => [r.name, r.value]));
+    if (node.kind === 'scope') {
+      ask(query, { scope, suspended: !value }, scope);
+    } else if (node.kind === 'condition') {
+      const field = node.ref?.['field'] ?? '';
+      const op = String(row.name === 'op' ? value : was['op']);
+      const text = String(row.name === 'value' ? value : was['value'] ?? '');
+      const type = facts.type?.(field) ?? definition.source?.fields?.[field]?.type;
+      const reading = readingsOf({ [field]: editedCondition(op, text, type) })[field] ?? null;
+      ask(query, { scope, field, reading }, scope);
+    } else if (node.kind === 'arrange') {
+      const pick = (name: string): string => String(row.name === name ? value : was[name] ?? '');
+      if (row.name === 'group') query.setGroup(pick('group') || null, scope);
+      else query.setSort(pick('sort') || null, pick('direction') === 'desc' ? 'desc' : 'asc', scope);
+    }
+  };
+  const draw = (): void => drawGraph(canvas, queryGraph(query.draft, definition, facts), { onEdit });
   draw();
-  source.query.addEventListener('query-change', draw);
-  return () => source.query.removeEventListener('query-change', draw);
+  query.addEventListener('query-change', draw);
+  return () => query.removeEventListener('query-change', draw);
 }
