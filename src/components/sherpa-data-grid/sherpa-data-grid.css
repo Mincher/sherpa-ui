@@ -828,29 +828,24 @@
     + var(--sherpa-display-mode-size-md, 20px));
 }
 
-/* A row that OPENS on its own rows: its toggle, in its first cell — a chevron
-   that points down while open — and the sub-grid under it. Will, TODO 570 */
+/* A row that OPENS on its own rows: its toggle, a tertiary button in its first
+   cell — a chevron that points down while open — and the sub-grid under it.
+   Will, TODOs 570, 576 */
 .row-open {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   vertical-align: middle;
-  inline-size: var(--sherpa-display-mode-size-sm, 16px);
-  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  /* Its box overhangs the line, so an opening row is no taller than the rest. */
+  margin-block: calc((var(--sherpa-theme-content-line-height-base, 20px) - var(--sherpa-button-size-height, 24px)) / 2);
   margin-inline-end: var(--sherpa-display-mode-space-2xs, 4px);
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  cursor: pointer;
-  transition: rotate 120ms ease;
-
-  &:focus-visible {
-    outline: var(--sherpa-focus-ring);
-    outline-offset: var(--sherpa-focus-offset);
-  }
 }
-.row[data-open] .row-open { rotate: 90deg; }
+.row-open > .sherpa-icon-box {
+  inline-size: var(--sherpa-button-size-icon, 16px);
+  block-size: var(--sherpa-button-size-icon, 16px);
+  transition: rotate 120ms ease;
+}
+.row[data-open] .row-open > .sherpa-icon-box { rotate: 90deg; }
 .detail-cell {
   padding: var(--sherpa-display-mode-space-xs, 8px);
   padding-inline-start: var(--sherpa-display-mode-space-lg, 24px);

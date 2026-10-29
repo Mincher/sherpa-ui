@@ -259,13 +259,28 @@ What each class's base rule reads:
 | `--sherpa-theme-content-size-small` | `.cell-tag` | `font-size` |
 | `--sherpa-theme-content-line-height-small` | `.cell-tag` | `line-height` |
 | `--sherpa-theme-content-size-small` | `.tag-tick` | `--_checkbox-size` |
-| `--sherpa-display-mode-size-sm` | `.row-open` | `inline-size` |
-| `--sherpa-display-mode-size-sm` | `.row-open` | `block-size` |
+| `--sherpa-theme-content-line-height-base` | `.row-open` | `margin-block` |
 | `--sherpa-display-mode-space-2xs` | `.row-open` | `margin-inline-end` |
 | `--sherpa-display-mode-space-xs` | `.detail-cell` | `padding` |
 | `--sherpa-display-mode-space-lg` | `.detail-cell` | `padding-inline-start` |
 | `--sherpa-style-surface-base-1` | `.detail-cell` | `background` |
 | `--sherpa-border-bottom` | `.detail-cell` | `border-block-end` |
+| `--sherpa-button-size-height` | `.row-open` | `min-block-size` |
+| `--sherpa-button-space-padding` | `.row-open` | `padding-inline` |
+| `--sherpa-style-border-base-1` | `.row-open` | `border-color` |
+| `--sherpa-border-top` | `.row-open` | `border-block-start-width` |
+| `--sherpa-border-bottom` | `.row-open` | `border-block-end-width` |
+| `--sherpa-border-left` | `.row-open` | `border-inline-start-width` |
+| `--sherpa-border-right` | `.row-open` | `border-inline-end-width` |
+| `--sherpa-border-rounding-top-left` | `.row-open` | `border-start-start-radius` |
+| `--sherpa-border-rounding-top-right` | `.row-open` | `border-start-end-radius` |
+| `--sherpa-border-rounding-bottom-left` | `.row-open` | `border-end-start-radius` |
+| `--sherpa-border-rounding-bottom-right` | `.row-open` | `border-end-end-radius` |
+| `--sherpa-button-font-size` | `.row-open` | `font-size` |
+| `--sherpa-structure-font-weight` | `.row-open` | `font-weight` |
+| `--sherpa-button-font-line-height` | `.row-open` | `line-height` |
+| `--sherpa-style-content-base` | `.row-open` | `color` |
+| `--sherpa-style-surface-base` | `.row-open` | `background` |
 
 ## populate()
 

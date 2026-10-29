@@ -248,10 +248,12 @@
 
   <!-- A GROUP row — Figma Grid Cell `Type=group` (926:35309). The grouped
        column's own cells and header are DROPPED from the rows below. -->
-  <!-- A row that OPENS on its own rows: its toggle, in its first cell, and the
-       sub-grid under it — this grid's part, filled from here. Will, TODO 570 -->
+  <!-- A row that OPENS on its own rows: its toggle, in its first cell — a
+       tertiary button, so its hover says a click there is not the row's — and
+       the sub-grid under it, this grid's part, filled from here. Will, TODOs 570, 576 -->
   <template class="row-open-tpl">
-    <button class="row-open" type="button" aria-expanded="false" aria-label="Its rows">
+    <button class="row-open sherpa-button" type="button" data-type="icon" data-look="transparent" data-size="sm"
+            aria-expanded="false" aria-label="Its rows">
       <i class="sherpa-icon-box" data-icon="chevron-right" aria-hidden="true"></i>
     </button>
   </template>
