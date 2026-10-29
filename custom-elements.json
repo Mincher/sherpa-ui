@@ -6506,6 +6506,127 @@
     },
     {
       "kind": "javascript-module",
+      "path": "dist/components/sherpa-node/sherpa-node.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "SherpaNode",
+          "tagName": "sherpa-node",
+          "customElement": true,
+          "description": "one node of a node editor: a card on a sherpa-layout-canvas, at its data-x and data-y. Its header drags it. Will, TODO 78. TRAP T-a-node-moves-itself-and-reports",
+          "attributes": [
+            {
+              "name": "data-current",
+              "description": "the selected node; the HOST writes it, one node of many",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-description",
+              "description": "a line under the name",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "data-heading",
+              "description": "the node's name, in its header",
+              "type": {
+                "text": "string"
+              },
+              "default": "\"Node\""
+            },
+            {
+              "name": "data-icon",
+              "description": "a glyph before the name",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "data-locked",
+              "description": "the host owns the place: a drag or a key reports, and moves nothing",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-x",
+              "description": "where it sits across the canvas, in plane px",
+              "type": {
+                "text": "number"
+              },
+              "default": "\"0\""
+            },
+            {
+              "name": "data-y",
+              "description": "where it sits down the canvas, in plane px",
+              "type": {
+                "text": "number"
+              },
+              "default": "\"0\""
+            }
+          ],
+          "events": [
+            {
+              "name": "node-move",
+              "description": "It moved, or was asked to: a drag on its header, or an arrow key there.",
+              "type": {
+                "text": "CustomEvent<{ x: number; y: number }>"
+              }
+            },
+            {
+              "name": "node-select",
+              "description": "It was pressed: a click on it, or Enter or Space on its header.",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "slots": [
+            {
+              "name": "",
+              "description": "the node's body (accepts: content)"
+            }
+          ],
+          "cssParts": [
+            {
+              "name": "body"
+            },
+            {
+              "name": "header"
+            },
+            {
+              "name": "heading"
+            },
+            {
+              "name": "root"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "SherpaNode",
+          "declaration": {
+            "name": "SherpaNode",
+            "module": "dist/components/sherpa-node/sherpa-node.js"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "sherpa-node",
+          "declaration": {
+            "name": "SherpaNode",
+            "module": "dist/components/sherpa-node/sherpa-node.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "dist/components/sherpa-notifications/sherpa-notifications.js",
       "declarations": [
         {

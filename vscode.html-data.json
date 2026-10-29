@@ -2473,6 +2473,42 @@
       ]
     },
     {
+      "name": "sherpa-node",
+      "description": "one node of a node editor: a card on a sherpa-layout-canvas, at its data-x and data-y. Its header drags it. Will, TODO 78. TRAP T-a-node-moves-itself-and-reports",
+      "attributes": [
+        {
+          "name": "data-current",
+          "description": "the selected node; the HOST writes it, one node of many",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-description",
+          "description": "a line under the name"
+        },
+        {
+          "name": "data-heading",
+          "description": "the node's name, in its header"
+        },
+        {
+          "name": "data-icon",
+          "description": "a glyph before the name"
+        },
+        {
+          "name": "data-locked",
+          "description": "the host owns the place: a drag or a key reports, and moves nothing",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-x",
+          "description": "where it sits across the canvas, in plane px"
+        },
+        {
+          "name": "data-y",
+          "description": "where it sits down the canvas, in plane px"
+        }
+      ]
+    },
+    {
       "name": "sherpa-notifications",
       "description": "the bell's list.",
       "attributes": [

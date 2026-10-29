@@ -2,7 +2,7 @@
 
 # Components
 
-66 components. Each page is written from the component's spec and its example. 66 of 66 say when to use them.
+67 components. Each page is written from the component's spec and its example. 67 of 67 say when to use them.
 
 ## Chart
 
@@ -111,6 +111,7 @@
 | [sherpa-data-viz-header](sherpa-data-viz-header.md) | The header strip of a metric or a chart's card. |
 | [sherpa-layout-canvas](sherpa-layout-canvas.md) | An infinite canvas content area: it pans and zooms with no edge, on a crosshair grid. |
 | [sherpa-metric-group](sherpa-metric-group.md) | One row of 1 to 4 metrics, across every column of the layout grid. |
+| [sherpa-node](sherpa-node.md) | One node of a node editor: a card on a [sherpa-layout-canvas](sherpa-layout-canvas.md), at its data-x and data-y. |
 | [sherpa-outlet](sherpa-outlet.md) | Where the route's Context is drawn. |
 | [sherpa-provider](sherpa-provider.md) | The data layer, over a SUBTREE of the page. |
 | [sherpa-router](sherpa-router.md) | The ONE owner of the URL, on the Navigation API. |

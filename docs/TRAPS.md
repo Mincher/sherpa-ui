@@ -11211,6 +11211,7 @@ value belongs.
 - Site: `src/components/sherpa-container-footer/sherpa-container-footer.css`
 - Site: `test/e2e/reforged-container-footer.spec.ts`
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
+- Site: `src/components/sherpa-node/sherpa-node.css`
 
 ### T-a-panel-chrome-row-never-shrinks
 
@@ -17415,9 +17416,16 @@ and a change to the value it just wrote is not heard as a host's.
   (`data-panning`, which also turns the content's own pointer events off) or
   it is the middle button. Ctrl or ⌘ with the wheel — a trackpad's pinch —
   zooms about the pointer; a plain wheel pans.
+- **The keys are the view's own.** The canvas hears them only when the view
+  itself has focus: a key in the content — a node's arrows, a `-` typed in a
+  field — never pans or zooms it.
 - **The minimap is PART of the canvas.** A second element would be a second
   owner of one value. It draws each piece of content and the view, scaled
-  to the box round both; a press or a drag on it puts the view's middle there.
+  to the box round both, and redraws when a piece's `style` changes, as a
+  moved piece says where it is there. A press puts the view's middle there; a
+  drag on the frame keeps its hold. The map HOLDS STILL while a drag lasts,
+  and the frame stops at its edge: re-scaling to the moving view made the map
+  run away under the pointer (Will, 2026-10-29).
 - `setPointerCapture` throws on a synthetic pointer in Firefox; both drags
   catch it and follow the pointer's own events.
 
@@ -17425,6 +17433,30 @@ and a change to the value it just wrote is not heard as a host's.
 - Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.html`
 - Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.css`
 - Site: `test/e2e/reforged-layout-canvas.spec.ts`
+
+### T-a-node-moves-itself-and-reports
+
+**A node MOVES ITSELF and reports each move; a press only ASKS to select it.**
+Will, TODO 78. Its place is `data-x` and `data-y`, in plane px, and it writes
+them as the canvas's `--x` and `--y`. A drag on its header, or an arrow key
+there, writes the new place and fires `node-move { x, y }` — as the canvas owns
+its view and reports it. With `data-locked` the host owns the place: the node
+reports where it was asked to go, and moves nothing.
+
+- **A drag is in PLANE px.** The canvas scales the node, so a screen px is
+  `1 / zoom` plane px. The node reads its zoom from its own box, the drawn
+  width over the laid-out one, and never asks the canvas: two components never
+  speak.
+- **Selection is one node of many**, and only the host sees them all. So a
+  click on the node, or Enter or Space on its header, fires `node-select`, and
+  the HOST writes `data-current` — on that node, and off the others. The node
+  pins Style=active for it and tells assistive tech (`aria-current`).
+- A drag's end is a click too: a dragged node asks to be selected, as in most
+  editors.
+
+- Site: `src/components/sherpa-node/sherpa-node.ts`
+- Site: `src/components/sherpa-node/sherpa-node.html`
+- Site: `test/e2e/reforged-node.spec.ts`
 
 ### T-a-templater-owns-the-files
 

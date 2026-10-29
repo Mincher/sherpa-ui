@@ -146,3 +146,52 @@ test('Fit puts every piece of content in view; the minimap moves the view and hi
   }, canvas);
   expect(r).toEqual({ zoom: true, inView: true, moved: true, hidden: 'none', label: 'Show minimap' });
 });
+
+test('a drag on the minimap\'s frame keeps its hold, stops at the minimap\'s edge, and the map holds still', async ({ page }) => {
+  const r = await page.evaluate((sel) => {
+    const el = eval(sel) as Canvas;
+    const sr = el.shadowRoot!;
+    el.fit();
+    const map = sr.querySelector<HTMLElement>('.minimap')!;
+    const frame = () => sr.querySelector('.minimap-view')!.getBoundingClientRect();
+    const items = () => [...sr.querySelectorAll('.minimap-item')].map((i) => i.getBoundingClientRect().left);
+    const at = (type: string, x: number, y: number) => map.dispatchEvent(
+      new PointerEvent(type, { pointerId: 5, button: 0, buttons: 1, clientX: x, clientY: y, bubbles: true }));
+    const f = frame();
+    const before = items();
+    // Take hold off the frame's middle: it must not jump to centre on the pointer.
+    at('pointerdown', f.left + 2, f.top + 2);
+    const held = Math.round(frame().left - f.left);
+    at('pointermove', f.left + 2000, f.top + 2000);
+    const m = map.getBoundingClientRect();
+    const g = frame();
+    const still = items().every((x, i) => Math.abs(x - before[i]!) < 0.5);
+    at('pointerup', f.left + 2000, f.top + 2000);
+    return { held, inside: g.right <= m.right + 0.5 && g.bottom <= m.bottom + 0.5, still };
+  }, canvas);
+  expect(r).toEqual({ held: 0, inside: true, still: true });
+});
+
+test('a key in the content is the content\'s: the canvas neither pans nor zooms', async ({ page }) => {
+  const r = await page.evaluate((sel) => {
+    const el = eval(sel) as Canvas;
+    const before = { ...el.view };
+    for (const key of ['ArrowLeft', '-', '0']) {
+      el.querySelector('#a')!.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, composed: true }));
+    }
+    return { same: JSON.stringify(el.view) === JSON.stringify(before) };
+  }, canvas);
+  expect(r.same).toBe(true);
+});
+
+test('a piece that moves moves its minimap item', async ({ page }) => {
+  const r = await page.evaluate(async (sel) => {
+    const el = eval(sel) as Canvas;
+    const item = () => el.shadowRoot!.querySelector('.minimap-item')!.getBoundingClientRect().left;
+    const before = item();
+    el.querySelector<HTMLElement>('#a')!.style.setProperty('--x', '700px');
+    await new Promise((done) => setTimeout(done));
+    return { moved: item() !== before };
+  }, canvas);
+  expect(r.moved).toBe(true);
+});

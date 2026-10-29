@@ -883,14 +883,14 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](TRAPS.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (109)
+## Other components (110)
 
 - [T-a-bar-offers-only-what-its-scope-holds](TRAPS.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — button
 - [T-a-canvas-owns-its-view](TRAPS.md#t-a-canvas-owns-its-view) — layout-canvas
 - [T-a-click-does-not-clear-indeterminate](TRAPS.md#t-a-click-does-not-clear-indeterminate) — select-checkbox
 - [T-a-click-in-a-slotted-menu-is-not-a-press](TRAPS.md#t-a-click-in-a-slotted-menu-is-not-a-press) — button
-- [T-a-composed-chrome-row-takes-its-inline-padding-from-its-container](TRAPS.md#t-a-composed-chrome-row-takes-its-inline-padding-from-its-container) — container-footer
+- [T-a-composed-chrome-row-takes-its-inline-padding-from-its-container](TRAPS.md#t-a-composed-chrome-row-takes-its-inline-padding-from-its-container) — container-footer, node
 - [T-a-composed-native-event-goes-out-twice](TRAPS.md#t-a-composed-native-event-goes-out-twice) — input-text
 - [T-a-container-shows-its-datas-state](TRAPS.md#t-a-container-shows-its-datas-state) — container
 - [T-a-context-has-a-fixed-region](TRAPS.md#t-a-context-has-a-fixed-region) — app-shell
@@ -914,6 +914,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-metric-group-knows-it-is-stuck](TRAPS.md#t-a-metric-group-knows-it-is-stuck) — metric-group
 - [T-a-native-name-where-a-native-element-does-the-job](TRAPS.md#t-a-native-name-where-a-native-element-does-the-job) — slider
 - [T-a-native-wears-the-button-class](TRAPS.md#t-a-native-wears-the-button-class) — button
+- [T-a-node-moves-itself-and-reports](TRAPS.md#t-a-node-moves-itself-and-reports) — node
 - [T-a-number-input-wears-sherpas-steppers](TRAPS.md#t-a-number-input-wears-sherpas-steppers) — input-text, slider
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](TRAPS.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — metric-group
 - [T-a-range-is-bounded-by-the-data](TRAPS.md#t-a-range-is-bounded-by-the-data) — calendar

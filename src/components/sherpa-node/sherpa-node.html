@@ -1,0 +1,30 @@
+<!--
+  sherpa-node — one node of a node editor: a card on a sherpa-layout-canvas, at
+  its data-x and data-y. Its header drags it. Will, TODO 78.
+  TRAP T-a-node-moves-itself-and-reports
+
+  Public API:
+    data-heading      the node's name, in its header
+    data-icon         a glyph before the name
+    data-description  a line under the name
+    data-x            where it sits across the canvas, in plane px (default 0)
+    data-y            where it sits down the canvas, in plane px (default 0)
+    data-current      the selected node; the HOST writes it, one node of many
+    data-locked       the host owns the place: a drag or a key reports, and moves nothing
+
+  Slots:
+    (default)   the node's body
+
+  Fires:
+    node-move — it moved, or was asked to: a drag on its header, or an arrow key there. detail: { x, y }
+    node-select — it was pressed: a click on it, or Enter or Space on its header.
+-->
+<template id="default">
+  <div class="root" part="root">
+    <!-- The HEADER is the handle: a drag moves the node, the arrows move it, Enter selects it. -->
+    <div class="header" part="header" role="button" tabindex="0" aria-roledescription="node">
+      <sherpa-container-header class="heading" part="heading" data-heading="Node"></sherpa-container-header>
+    </div>
+    <div class="body" part="body"><slot data-accepts="content"></slot></div>
+  </div>
+</template>

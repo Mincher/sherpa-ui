@@ -48,8 +48,14 @@ export class SherpaLayoutCanvas extends SherpaElement {
   /** The drag in progress: where it started, and the view then. */
   #drag: { id: number; x: number; y: number; from: [number, number] } | null = null;
 
+  /** A minimap drag: the map it started on, held still, and where it took the view's frame. */
+  #mapDrag: { id: number; box: Box; scale: number; grab: [number, number] } | null = null;
+
   /** Redraws the minimap when the canvas changes size. */
   #observer: ResizeObserver | null = null;
+
+  /** Redraws the minimap when a piece of content moves. */
+  #moves: MutationObserver | null = null;
 
   override onRender(): void {
     // TRAP T-a-toolbar-moves-by-arrow-and-keeps-its-tabs
@@ -67,8 +73,9 @@ export class SherpaLayoutCanvas extends SherpaElement {
     this.$('.zoom-out')?.addEventListener('button-click', () => this.zoomBy(1 / ZOOM_STEP));
     this.$('.options')?.addEventListener('menu-select', this.#onOption);
     const minimap = this.$<HTMLElement>('.minimap');
-    minimap?.addEventListener('pointerdown', this.#onMinimap);
-    minimap?.addEventListener('pointermove', this.#onMinimap);
+    for (const type of ['pointerdown', 'pointermove', 'pointerup', 'pointercancel']) {
+      minimap?.addEventListener(type, this.#onMinimap as EventListener);
+    }
     this.$('slot')?.addEventListener('slotchange', () => this.#drawMinimap());
     this.#zoom = this.#clamp(coerceNum(this.dataset['zoom'], 1));
     this.#apply(false);
@@ -77,11 +84,18 @@ export class SherpaLayoutCanvas extends SherpaElement {
   override onConnect(): void {
     this.#observer = new ResizeObserver(() => this.#drawMinimap());
     this.#observer.observe(this);
+    // A piece says where it sits in its own style; the canvas writes only its own.
+    this.#moves = new MutationObserver((records) => {
+      if (records.some((r) => r.target.parentElement === this)) this.#drawMinimap();
+    });
+    this.#moves.observe(this, { attributes: true, attributeFilter: ['style'], subtree: true });
   }
 
   override onDisconnect(): void {
     this.#observer?.disconnect();
     this.#observer = null;
+    this.#moves?.disconnect();
+    this.#moves = null;
   }
 
   override onChange(name: string, _old: string | null, value: string | null): void {
@@ -215,8 +229,9 @@ export class SherpaLayoutCanvas extends SherpaElement {
     this.toggleState('dragging', false);
   };
 
-  /** The arrows pan; + and - zoom; 0 is 100%. */
+  /** The arrows pan; + and - zoom; 0 is 100%. Content keeps its own keys. */
   #onKey = (event: KeyboardEvent): void => {
+    if (event.target !== event.currentTarget) return;
     const step = event.shiftKey ? PAN_STEP * 4 : PAN_STEP;
     const moves: Record<string, [number, number]> = {
       ArrowLeft: [step, 0], ArrowRight: [-step, 0], ArrowUp: [0, step], ArrowDown: [0, -step],
@@ -272,10 +287,11 @@ export class SherpaLayoutCanvas extends SherpaElement {
     return { left, top, right: left + width / this.#zoom, bottom: top + height / this.#zoom };
   }
 
-  /** How the minimap maps the plane: the box it shows and its scale. */
+  /** How the minimap maps the plane: the box it shows and its scale. A drag holds it still. */
   #minimapScale(): { box: Box; scale: number } | null {
     const map = this.$<HTMLElement>('.minimap');
     if (!map || this.hasAttribute('data-no-minimap')) return null;
+    if (this.#mapDrag) return { box: this.#mapDrag.box, scale: this.#mapDrag.scale };
     const content = this.#contentBox();
     const view = this.#viewBox();
     const box = content ? {
@@ -307,22 +323,51 @@ export class SherpaLayoutCanvas extends SherpaElement {
     place(viewEl, this.#viewBox());
   }
 
-  /** A press or a drag on the minimap puts the view's middle there. */
+  /** A press puts the view's middle there; a drag on the frame keeps its hold. Either
+   *  stops at the minimap's edge, and the map holds still until the pointer lets go. */
   #onMinimap = (event: PointerEvent): void => {
-    if (event.type === 'pointermove' && !(event.buttons & 1)) return;
-    const mapped = this.#minimapScale();
-    if (!mapped) return;
+    const map = event.currentTarget as HTMLElement;
     if (event.type === 'pointerdown') {
+      const mapped = this.#minimapScale();
+      if (!mapped || event.button !== 0) return;
       try {
-        (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+        map.setPointerCapture(event.pointerId);
       } catch { /* a synthetic pointer */ }
+      const view = this.#viewBox();
+      const at = this.#onMap(event, mapped);
+      const inFrame = at[0] >= view.left && at[0] <= view.right && at[1] >= view.top && at[1] <= view.bottom;
+      const grab: [number, number] = inFrame
+        ? [at[0] - view.left, at[1] - view.top]
+        : [(view.right - view.left) / 2, (view.bottom - view.top) / 2];
+      this.#mapDrag = { id: event.pointerId, ...mapped, grab };
     }
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    const px = mapped.box.left + (event.clientX - rect.left) / mapped.scale;
-    const py = mapped.box.top + (event.clientY - rect.top) / mapped.scale;
-    const { width, height } = this.#size();
-    this.panTo(width / 2 - px * this.#zoom, height / 2 - py * this.#zoom);
+    const drag = this.#mapDrag;
+    if (!drag || event.pointerId !== drag.id) return;
+    if (event.type === 'pointerup' || event.type === 'pointercancel') {
+      this.#mapDrag = null;
+      this.#drawMinimap();
+      return;
+    }
+    const at = this.#onMap(event, drag);
+    const view = this.#viewBox();
+    const w = view.right - view.left;
+    const h = view.bottom - view.top;
+    // The whole minimap, on the plane: the frame stays inside it.
+    const right = drag.box.left + map.clientWidth / drag.scale;
+    const bottom = drag.box.top + map.clientHeight / drag.scale;
+    const left = Math.min(Math.max(at[0] - drag.grab[0], drag.box.left), right - w);
+    const top = Math.min(Math.max(at[1] - drag.grab[1], drag.box.top), bottom - h);
+    this.panTo(-left * this.#zoom, -top * this.#zoom);
   };
+
+  /** Where a pointer on the minimap is, on the plane. */
+  #onMap(event: PointerEvent, mapped: { box: Box; scale: number }): [number, number] {
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    return [
+      mapped.box.left + (event.clientX - rect.left) / mapped.scale,
+      mapped.box.top + (event.clientY - rect.top) / mapped.scale,
+    ];
+  }
 }
 
 define('sherpa-layout-canvas', SherpaLayoutCanvas);

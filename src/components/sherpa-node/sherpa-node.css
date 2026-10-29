@@ -1,0 +1,38 @@
+/**
+ * sherpa-node.css — a node's card, its header (the handle) and its body. The
+ * canvas places it by `--x` and `--y`, which the node writes from `data-x` and `data-y`.
+ */
+
+:host {
+  display: block;
+  inline-size: 15rem;
+  /* A composed header's inset. TRAP T-a-composed-chrome-row-takes-its-inline-padding-from-its-container */
+  --_pad-inline: var(--sherpa-card-pad);
+  background: var(--_surface);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  color: var(--sherpa-style-content-base, #0c0b11);
+}
+
+/* ── The header: always there, as it is the handle ───────────────────── */
+.header {
+  display: block;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  border-start-start-radius: inherit;
+  border-start-end-radius: inherit;
+}
+:host(:state(dragging)) .header { cursor: grabbing; }
+.header:focus-visible {
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
+}
+
+/* ── The body: only when something fills it ─────────────────────────── */
+.body {
+  display: none;
+  padding: var(--_pad);
+}
+:host(:state(has-content-slot)) .body { display: block; }
+:host(:not(:state(has-content-slot))) .heading { border-block-end: none; }

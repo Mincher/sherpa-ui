@@ -1,0 +1,9 @@
+{
+  "html": [
+    "<sherpa-layout-canvas style=\"inline-size: 640px; block-size: 360px\">",
+    "<sherpa-node data-heading=\"Start\" data-icon=\"play\" data-x=\"40\" data-y=\"40\">A trigger starts the flow.</sherpa-node>",
+    "<sherpa-node data-heading=\"Step\" data-icon=\"gear\" data-x=\"320\" data-y=\"40\" data-current>One step does the work.</sherpa-node>",
+    "</sherpa-layout-canvas>"
+  ],
+  "use": "For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by its header, which reports each move and asks to be selected. The host writes `data-current` on the one it selects. For a card in the page flow, use `sherpa-container`."
+}

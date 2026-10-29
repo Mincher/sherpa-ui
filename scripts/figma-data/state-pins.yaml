@@ -144,6 +144,11 @@ sherpa-calendar-cell:
   '&[data-state="range-mid"]': active
   '&[data-state="range-end"]': active
 
+sherpa-node:
+  # No Figma component yet (TODO 78). The card pins Style=default; the selected node, active.
+  '&': default
+  '&[data-current]': active
+
 sherpa-notifications:
   # No Figma component. The unread pip wears the active mode's border.
   '& .notification-pip': active
