@@ -12311,12 +12311,18 @@ badge at its total. Now `groups()` counts the load itself, which is whole
 whenever it is grouped or unpaged, and turns to `#allRows` only for a page.
 The grid counts for itself only when nobody told it.
 
+
+**A chart's group is the same idea** (TODO 548): a summary with a `group` hands
+each segment its `parts` — the segment's rows again, by the group field, in that
+field's ONE order, so a value is one colour in every segment. The chart draws
+them; it never works them out.
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/unit/groups-are-a-data-concept.test.mjs`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/unit/parity-sweep.test.mjs`
+- Site: `test/unit/a-summary-groups-and-sorts.test.mjs`
 
 ### T-a-panel-builds-its-own-menus
 

@@ -26,6 +26,8 @@ export interface ChartDatum {
   colorIndex?: number;
   /** The part the highlight's driver matches; absent, nothing is highlighted. TODO 441 */
   matched?: number;
+  /** Its rows again, by a group field: a stacked bar's or a split section's parts. TODO 548 */
+  parts?: ChartDatum[];
 }
 
 /** The statuses a band or a legend row may name — one list, in the gauge's order. */

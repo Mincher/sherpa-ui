@@ -1,0 +1,53 @@
+/**
+ * A SUMMARY GROUPS AND SORTS — Will, TODO 548 (plan phase A). A chart grouped by
+ * another field draws each segment SUBDIVIDED by it: the data layer hands each
+ * segment its `parts`, as it hands a grid its groups. Sort orders the segments
+ * by value; none keeps their declared order. A part keeps its group value's
+ * colour, and a segment its own, wherever it sorts to.
+ * TRAP T-a-group-is-a-data-layer-concept
+ *
+ *   node --test test/unit/a-summary-groups-and-sorts.test.mjs
+ */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+
+import { summarise } from '../../dist/core/data/aggregate.js';
+
+const ROWS = [
+  { id: 1, status: 'active', plan: 'Pro', seats: 10 },
+  { id: 2, status: 'active', plan: 'Pro', seats: 5 },
+  { id: 3, status: 'active', plan: 'Free', seats: 1 },
+  { id: 4, status: 'trial', plan: 'Free', seats: 2 },
+  { id: 5, status: 'churned', plan: 'Pro', seats: 7 },
+];
+const DOMAIN = { status: ['active', 'trial', 'churned'], plan: ['Free', 'Pro'] };
+const domain = (field) => DOMAIN[field] ?? [];
+
+test('grouped, each segment carries its parts — by the group field, in its declared order and colour', () => {
+  const out = summarise(ROWS, { shape: 'segments', segment: 'status', group: 'plan' }, domain);
+  assert.deepEqual(out.map((s) => [s.label, s.value, s.colorIndex]), [['active', 3, 1], ['trial', 1, 2], ['churned', 1, 3]]);
+  assert.deepEqual(out[0].parts, [{ label: 'Free', value: 1, colorIndex: 1 }, { label: 'Pro', value: 2, colorIndex: 2 }]);
+  // A part a segment has no rows of is not drawn; its colour stays its value's.
+  assert.deepEqual(out[2].parts, [{ label: 'Pro', value: 1, colorIndex: 2 }]);
+});
+
+test('a measured field is summed in each part, and the parts add up to their segment', () => {
+  const out = summarise(ROWS, { shape: 'segments', segment: 'status', group: 'plan', aggregate: 'sum', field: 'seats' }, domain);
+  const active = out.find((s) => s.label === 'active');
+  assert.equal(active.value, 16);
+  assert.deepEqual(active.parts.map((p) => [p.label, p.value]), [['Free', 1], ['Pro', 15]]);
+  assert.equal(active.parts.reduce((n, p) => n + p.value, 0), active.value);
+});
+
+test('sorted, the segments run by value — each keeps its own colour; none keeps the declared order', () => {
+  const by = (sort) => summarise(ROWS, { shape: 'segments', segment: 'status', aggregate: 'sum', field: 'seats', ...(sort ? { sort } : {}) }, domain)
+    .map((s) => `${s.label}:${s.value}:${s.colorIndex}`);
+  assert.deepEqual(by('desc'), ['active:16:1', 'churned:7:3', 'trial:2:2']);
+  assert.deepEqual(by('asc'), ['trial:2:2', 'churned:7:3', 'active:16:1']);
+  assert.deepEqual(by(), ['active:16:1', 'trial:2:2', 'churned:7:3']);
+});
+
+test('ungrouped, a segment has no parts — nothing changes for a chart that does not ask', () => {
+  const out = summarise(ROWS, { shape: 'segments', segment: 'status' }, domain);
+  assert.equal(out.some((s) => 'parts' in s), false);
+});

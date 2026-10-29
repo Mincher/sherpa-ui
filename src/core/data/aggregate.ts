@@ -28,7 +28,7 @@
  * - summariseBanded — Rows into the declared shape, with the fields' bands: a segments cut, and zones.
  * - summariseMarked — The same, and each segment's part the highlight's driver matches.
  */
-import { compareValues, readField, groupRows, valueKey, type Row } from './store.js';
+import { compareValues, readField, groupRows, valueKey, type Row, type SortDirection } from './store.js';
 import type { ChartDatum } from './chart-datum.js';
 import { bandEdges, type Threshold } from './threshold.js';
 
@@ -255,6 +255,10 @@ export interface SummarySpec {
   keepEmpty?: boolean;
   /** Hand its value field's thresholds beside it as zones: a gauge. */
   zones?: boolean;
+  /** Each segment's rows again, by this field: its `parts`. Not for bands. TODO 548 */
+  group?: string;
+  /** The segments by value; none keeps their declared order. TODO 548 */
+  sort?: SortDirection;
 }
 
 /** What `summarise` hands a component, by the shape it asked for. */
@@ -300,6 +304,23 @@ function pointsOf(rows: readonly Row[], over: string, bucket: Bucket | undefined
   return out;
 }
 
+/** Each segment's rows again, by the group field: its parts, in the group's ONE
+ *  order — declared, else first seen — so a value is one colour in every segment. TODO 548 */
+function withParts(rows: readonly Row[], segments: ChartDatum[], spec: SummarySpec & { segment: string; group: string },
+  domain: (field: string) => readonly unknown[]): ChartDatum[] {
+  const bySegment = new Map(groupRows(rows, spec.segment).map((g) => [g.key, g.rows]));
+  const declared = domain(spec.group).map(valueKey);
+  const order = declared.length ? declared : groupRows(rows, spec.group).map((g) => g.key);
+  return segments.map((s) => ({ ...s, parts: aggregateBy(bySegment.get(s.label) ?? [], spec.group, spec.aggregate ?? 'count', spec.field, { order }) }));
+}
+
+/** The segments by value; none keeps their order. Each keeps its colour. TODO 548 */
+function sortSegments(segments: ChartDatum[], sort?: SortDirection): ChartDatum[] {
+  if (!sort) return segments;
+  const way = sort === 'desc' ? -1 : 1;
+  return [...segments].sort((a, b) => way * (a.value - b.value));
+}
+
 /**
  * Rows into the shape a component declared — one door for every chart and
  * tile, so a page writes attributes instead of an `as` adapter. `domain` is a
@@ -315,10 +336,11 @@ export function summarise(
   const opts = spec.field ? { kind, valueField: spec.field } : { kind };
   if (spec.shape === 'segments') {
     if (!spec.segment) return [];
-    if (spec.bands?.length) return bandBy(rows, spec.segment, spec.bands, spec.bandLabels ? { labels: spec.bandLabels } : {});
+    if (spec.bands?.length) return sortSegments(bandBy(rows, spec.segment, spec.bands, spec.bandLabels ? { labels: spec.bandLabels } : {}), spec.sort);
     const order = domain(spec.segment).map(valueKey);
-    return aggregateBy(rows, spec.segment, kind, spec.field,
+    const segments = aggregateBy(rows, spec.segment, kind, spec.field,
       order.length ? { order, includeEmpty: spec.keepEmpty ?? false } : {});
+    return sortSegments(spec.group ? withParts(rows, segments, { ...spec, segment: spec.segment, group: spec.group }, domain) : segments, spec.sort);
   }
   const value = reduceRows(rows, kind, spec.field);
   if (!spec.over) return spec.shape === 'aggregate' ? value : { labels: [], series: [] };
