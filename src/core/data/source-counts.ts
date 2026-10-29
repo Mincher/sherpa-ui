@@ -263,6 +263,8 @@ export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'tot
       }));
   const count = (filters: readonly Filter[]): Promise<number> => later(reads.totalCount({ filter: andFilter(filters)! }));
   const ends = new Map<string, { filter: Filter | undefined; narrowed: boolean }>();
+  // Each scope's last step in force: its count is the rows the scope ends with.
+  const lastOn = new Map<string, string>();
   const fills: Array<() => void> = [];
   for (const sc of plan.scopes) {
     const from = sc.after !== null ? ends.get(sc.after) : undefined;
@@ -309,6 +311,7 @@ export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'tot
       if (step.on && final) {
         before.push(final);
         narrowed = true;
+        lastOn.set(sc.scope, step.id);
       }
     }
     tap(sc.steps.length);
@@ -329,7 +332,12 @@ export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'tot
   }
   for (const fill of fills) fill();
   await Promise.all(pending);
-  // The taps' lists, in the order the plan gives them.
-  for (const sc of plan.scopes) out.spent[sc.scope] = sc.taps.filter((t) => out.spent[sc.scope]!.includes(t.field)).map((t) => t.field);
+  for (const sc of plan.scopes) {
+    // The taps' lists, in the order the plan gives them.
+    out.spent[sc.scope] = sc.taps.filter((t) => out.spent[sc.scope]!.includes(t.field)).map((t) => t.field);
+    const on = lastOn.get(sc.scope);
+    const end = on ? out.results[sc.scope]![on] : sc.after !== null ? out.ends[sc.after] : undefined;
+    if (end != null) out.ends[sc.scope] = end;
+  }
   return out;
 }

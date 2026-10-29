@@ -1313,8 +1313,8 @@
         {
           "$type": "method",
           "name": "drawResults",
-          "args": "results: Readonly<Record<string, number>>",
-          "description": "drawResults(results) — each answered chip's results, from its source: the rows that reach it — the filters before it — and match its answer, by field. SILENT. A chip with none shows no number. Will, TODO 60."
+          "args": "results: Readonly<Record<string, number>>, _scope?: string, end?: number",
+          "description": "drawResults(results, scope, end) — each answered chip's results, from its source: the rows that reach it — the filters before it — and match its answer, by field; `end`, the rows its filters leave. SILENT. A chip with none shows no number. Will, TODO 60."
         },
         {
           "$type": "method",

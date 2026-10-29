@@ -78,6 +78,14 @@ test('OFF counts what it would match within the filters before it, and narrows n
   assert.deepEqual(w.aside.view, {});
 });
 
+test('OFF last: the scope ends with the last ON one\'s rows, row by row and step by step', async () => {
+  const q = query({ view: { holds: ['customer', 'region'], readings: { customer: { picked: ['Contoso'] }, region: { picked: ['EMEA'], suspended: true } } } });
+  assert.deepEqual(walk(q).results.view, { customer: 4, region: 1 });
+  assert.equal(walk(q).ends.view, 4);
+  // Never the OFF one's 1: a shut section's badge says this. TODO 523 F2
+  assert.equal((await walkStepwise(new ArrayStore(ROWS, { key: 'id' }), planWalk(q, facts()))).ends.view, 4);
+});
+
 test('Limit on: an earlier pick limits a later field, never the other way', () => {
   // AW, then LATAM: LATAM has no AW row, so LATAM is set aside — AW stands.
   const q = query({ view: { holds: ['customer', 'region'], readings: { customer: { picked: ['Adventure Works'] }, region: { picked: ['LATAM', 'EMEA'] } } } });
@@ -266,8 +274,12 @@ test('the property: the walk, a plain walk and the step-by-step walk agree on 20
     const limit = seed % 2 === 0;
     const sets = seed % 3 === 0 ? () => [{ id: 's', mode: 'serial', fields: ['region', 'customer', 'status'] }] : () => [];
     const plan = planWalk(q, facts({ limit, sets }));
-    const one = strip(walkInOrder(ROWS, plan));
+    const rows = walkInOrder(ROWS, plan);
+    const one = strip(rows);
     assert.deepEqual(one, strip(referenceWalk(ROWS, plan)), `seed ${seed}: the walk and the plain walk`);
-    assert.deepEqual(one, strip(await walkStepwise(new ArrayStore(ROWS, { key: 'id' }), plan)), `seed ${seed}: step by step`);
+    const steps = await walkStepwise(new ArrayStore(ROWS, { key: 'id' }), plan);
+    assert.deepEqual(one, strip(steps), `seed ${seed}: step by step`);
+    // Each end step by step — where a step in force gives one — is the walk's. TODO 523 F2
+    for (const [scope, n] of Object.entries(steps.ends)) assert.equal(n, rows.ends[scope], `seed ${seed}: ${scope}'s end`);
   }
 });

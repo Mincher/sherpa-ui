@@ -2712,6 +2712,46 @@ test('in portrait, a SHUT scope with a chip on wears the on fill on its header o
   expect(r.discardKept).toBe(true);
 });
 
+test('in portrait, a SHUT scope says the rows its filters leave — never an OFF last chip\'s count (TODO 523 F2)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { ArrayStore, openSource, bindSource } = await import('/dist/index.js') as unknown as {
+      ArrayStore: new (r: unknown[], o: object) => unknown;
+      openSource(d: object, s: unknown): Promise<{ describe(s: string): { filters: unknown[] }; load(): Promise<void>;
+        query: { setReading(s: string, f: string, r: object | null): void; commit(): void } }>;
+      bindSource(s: unknown, el: Element, o: object): void;
+    };
+    const rows = [
+      { id: 1, plan: 'Pro', region: 'EMEA' }, { id: 2, plan: 'Pro', region: 'AMER' },
+      { id: 3, plan: 'Pro', region: 'AMER' }, { id: 4, plan: 'Free', region: 'EMEA' },
+    ];
+    const src = await openSource({
+      store: 'rows', fields: { plan: { label: 'Plan' }, region: { label: 'Region' } },
+      scopes: { view: { label: 'View', holds: ['plan', 'region'] } },
+    }, new ArrayStore(rows, { key: 'id' }));
+    const bar = await window.__mount('sherpa-quick-filter-toolbar', src.describe('view').filters, { 'data-orientation': 'portrait' });
+    bindSource(src, bar, { steerOnly: true, scope: 'view' });
+    const set = async (plan: object | null, region: object | null) => {
+      src.query.setReading('view', 'plan', plan);
+      src.query.setReading('view', 'region', region);
+      src.query.commit();
+      await src.load();
+      await window.__settled();
+      await new Promise((done) => setTimeout(done, 150));
+    };
+    const sr = bar.shadowRoot!;
+    (sr.querySelector('sherpa-accordion.scope') as HTMLElement & { open: boolean }).open = false;
+    const head = () => ({ badge: sr.querySelector<HTMLElement>('.scope-results')!.dataset['count'] ?? null,
+      tip: sr.querySelector<HTMLElement>('.scope-tip')!.dataset['text'] ?? '' });
+    await set({ picked: ['Pro'] }, { picked: ['EMEA'], suspended: true });
+    const offLast = head();
+    // Nothing in force: nothing to say.
+    await set(null, { picked: ['EMEA'], suspended: true });
+    return { offLast, noneOn: head() };
+  });
+  expect(r.offLast).toEqual({ badge: '3', tip: 'Plan - 3 matches\nRegion - 1 match' });
+  expect(r.noneOn.badge).toBeNull();
+});
+
 test('a site pick held before the bar draws is reported by its key (TODO 523 F16)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {

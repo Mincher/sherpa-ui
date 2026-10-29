@@ -1873,7 +1873,7 @@ export class DataSource extends EventTarget {
       Object.fromEntries(Object.entries(of ?? {}).map(([f, keys]) => [f, [...keys]]));
     for (const { el, scopes } of drawn) {
       for (const scope of scopes) {
-        el.drawResults?.({ ...walk.results[scope] }, scope);
+        el.drawResults?.({ ...walk.results[scope] }, scope, this.#filtering([scope]) ? walk.ends[scope] : undefined);
         // A control that draws a chip per VALUE is told each picked value's own too.
         el.drawValueResults?.(Object.fromEntries(Object.entries(walk.values[scope] ?? {}).map(([f, v]) => [f, { ...v }])), scope);
         el.drawPresent?.(lists(walk.present[scope]), scope);

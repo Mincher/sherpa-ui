@@ -271,8 +271,9 @@ export interface BoundControl {
   drawScope?: (scope: ScopeDescription, live?: () => ScopeDescription) => void | Promise<void>;
   /** The fields a bar holds now, in its order. */
   readonly heldFields?: readonly string[];
-  /** Each answered chip's results — the rows its own answer matches. */
-  drawResults?: (results: Readonly<Record<string, number>>, scope?: string) => void;
+  /** Each answered chip's results — the rows its own answer matches; `end`, the rows the
+   *  scope's filters leave, only while one there is in force. */
+  drawResults?: (results: Readonly<Record<string, number>>, scope?: string, end?: number) => void;
   /** What each field that waits for Apply holds APPLIED — every one named, an empty answer where
    *  nothing is — so a control that draws a chip per value marks only those its draft changed.
    *  TODO 424 · TRAP T-a-pending-chip-reads-as-a-warning */

@@ -8525,9 +8525,23 @@
                   "type": {
                     "text": "Readonly<Record<string, number>>"
                   }
+                },
+                {
+                  "name": "_scope",
+                  "type": {
+                    "text": "string"
+                  },
+                  "optional": true
+                },
+                {
+                  "name": "end",
+                  "type": {
+                    "text": "number"
+                  },
+                  "optional": true
                 }
               ],
-              "description": "drawResults(results) — each answered chip's results, from its source: the rows that reach it — the filters before it — and match its answer, by field. SILENT. A chip with none shows no number. Will, TODO 60."
+              "description": "drawResults(results, scope, end) — each answered chip's results, from its source: the rows that reach it — the filters before it — and match its answer, by field; `end`, the rows its filters leave. SILENT. A chip with none shows no number. Will, TODO 60."
             },
             {
               "kind": "method",

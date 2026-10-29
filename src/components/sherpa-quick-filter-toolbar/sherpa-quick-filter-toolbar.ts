@@ -900,12 +900,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * drawResults(results) — each answered chip's results, from its source: the
-   * rows that reach it — the filters before it — and match its answer, by field.
-   * SILENT. A chip with none shows no number. Will, TODO 60. TRAP T-a-chip-counts-within-the-filters-before-it
+   * drawResults(results, scope, end) — each answered chip's results, from its
+   * source: the rows that reach it — the filters before it — and match its
+   * answer, by field; `end`, the rows its filters leave. SILENT. A chip with
+   * none shows no number. Will, TODO 60. TRAP T-a-chip-counts-within-the-filters-before-it
    */
-  drawResults(results: Readonly<Record<string, number>>): void {
+  drawResults(results: Readonly<Record<string, number>>, _scope?: string, end?: number): void {
     this.#results = results;
+    this.#end = end;
     const shown = this.#shownResults;
     for (const chip of this.#chips()) {
       const id = chip.dataset['id'] ?? '';
@@ -920,9 +922,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     return this.hasAttribute('data-no-results') ? {} : this.#results;
   }
 
-  /** A SHUT portrait section's badge: the rows its filters leave — the last
-   *  answered one's results — and each one's in its tip, as a panel's shut
-   *  scope says them. TODO 425 */
+  /** The rows its filters leave, as its source counts them; none while none is in force. */
+  #end: number | undefined;
+
+  /** A SHUT portrait section's badge: the rows its filters leave, and each
+   *  one's in its tip, as a panel's shut scope says them. TODO 425 */
   #syncScopeBadge(): void {
     const tip = this.$<HTMLElement>('.scope-tip');
     const badge = this.$<HTMLElement>('.scope-results');
@@ -932,7 +936,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const n = def ? this.#shownResults[def.field ?? def.id] ?? this.#shownResults[def.id] : undefined;
       return def && n != null && !chip.hasAttribute('data-persistent') ? [{ label: def.label, n }] : [];
     });
-    const said = drawCount(badge, answered.at(-1)?.n, ['match', 'matches']);
+    const said = drawCount(badge, this.hasAttribute('data-no-results') ? undefined : this.#end, ['match', 'matches']);
     if (said == null) delete badge.dataset['count'];
     else badge.dataset['count'] = said;
     tip.dataset['text'] = answered.map((one) => `${one.label} - ${countSaid(one.n, ['match', 'matches']).label}`).join('\n');
@@ -1379,7 +1383,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
     const above = held.supersede ?? this.#above;
     if (above) this.supersede(above.ids, above.at);
-    this.drawResults(this.#results);
+    this.drawResults(this.#results, undefined, this.#end);
 
     /* THE ADD MENU LISTS WHAT IS HELD, so it follows the run. `populate()` is
        deferred, so a host calling `available()` first had nothing to tick.
@@ -1817,7 +1821,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
     if (name === 'data-applied' || name === 'data-count-applied') this.#drawApplied();
     if (name === 'data-no-results') {
-      this.drawResults(this.#results);
+      this.drawResults(this.#results, undefined, this.#end);
       this.#drawValueResults();
     }
     // A column draws once it opens. TRAP T-a-shut-column-draws-nothing

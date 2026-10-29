@@ -1676,6 +1676,12 @@ badge sits right of the title. A chart's own scope is counted too. The panel
 KEEPS each scope's last results and draws them again after a redraw: a redraw
 builds new headers and chips, and no load follows it.
 
+**A SHUT section says the rows its filters LEAVE** — the walk's `ends`, drawn
+as `drawResults`' `end` while a filter there is in force; none in force, no
+badge. Never the last chip's count: that chip may be OFF, and an off chip
+counts what it WOULD match (TODO 523 F2). Step by step, a scope ends with its
+last step in force's count, so no request is added for it.
+
 **In the panel, each PICKED value chip wears its own count** — Will, TODO
 172: *"For multi value filters in the filter panel each chip should show
 their own count badge."* A field drawn as a run has no one chip, so its

@@ -100,7 +100,7 @@ export interface Walk {
   aside: Record<string, Record<string, string[]>>;
   /** The tapped fields with no value left. */
   spent: Record<string, string[]>;
-  /** The rows each scope ends with — a walk over rows only: step by step, the load's total is that number. */
+  /** The rows each scope ends with. Step by step, its last step in force's count — none in force, the one before's. */
   ends: Record<string, number>;
 }
 

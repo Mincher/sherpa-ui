@@ -92,7 +92,8 @@ test('asked step by step, a path is judged by its customer: kept while its custo
   // Every path of a customer that is there: none greyed that its customer is not.
   assert.ok(w.present.view.customer.includes(key('Northwind', 'Boston')));
   assert.ok(!w.present.view.customer.includes(key('Tailspin', 'Paris')));
-  assert.equal(w.ends.view, undefined);
+  // It ends with its last step in force's rows.
+  assert.equal(w.ends.view, w.results.view.customer);
 });
 
 test('a path pick at the top of a chain narrows what the field below offers', () => {
