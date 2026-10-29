@@ -3327,3 +3327,22 @@ test('with data-heading-hover, a heading\'s buttons show only on hover; a sorted
   await page.locator('sherpa-data-grid .head-cell[data-field="name"]').hover();
   expect(await sort('name')).toBe('visible');
 });
+
+test('a row\'s actions button says shut once its menu shuts, picked or not (TODO 523 P8)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & { rendered?: Promise<void>; populate(d: unknown): Promise<void> | void };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    await el.populate({ key: 'id', columns: [{ field: 'name', header: 'Name' }], rows: [{ id: 1, name: 'Ada' }], actions: [{ id: 'edit', label: 'Edit' }] });
+    await window.__settled();
+    const trigger = el.shadowRoot!.querySelector<HTMLElement>('.row .actions-trigger')!;
+    trigger.click();
+    await window.__settled();
+    const open = trigger.getAttribute('aria-expanded');
+    // Shut with no pick: Escape, a click outside.
+    (el.shadowRoot!.querySelector('sherpa-menu.actions-menu') as HTMLElement & { hide(): void }).hide();
+    await window.__settled();
+    return { open, shut: trigger.getAttribute('aria-expanded') };
+  });
+  expect(r).toEqual({ open: 'true', shut: 'false' });
+});

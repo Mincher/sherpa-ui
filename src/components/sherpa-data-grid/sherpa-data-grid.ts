@@ -290,6 +290,7 @@ export class SherpaDataGrid extends SherpaElement {
     // Delegated: the body is replaced per render. The menu sits outside it.
     this.$('.body')?.addEventListener('click', this.#onActionsClick);
     this.$('.actions-menu')?.addEventListener('menu-select', this.#onActionSelect);
+    this.$('.actions-menu')?.addEventListener('menu-close', this.#onActionsShut);
     this.$('.body')?.addEventListener('pointerover', this.#onCellOver);
     this.$('.body')?.addEventListener('pointerleave', this.#onBodyLeave);
     this.$('.body')?.addEventListener('focusin', this.#tipTag);
@@ -1995,12 +1996,16 @@ export class SherpaDataGrid extends SherpaElement {
     this.emit('row-action', { id, records: [record] });
   };
 
-  /** Shut the menu and put the trigger's aria-expanded back. */
+  /** Shut the menu; its `menu-close` puts the trigger back. */
   #closeActions(): void {
     this.#actionRow = null;
-    for (const t of this.$$('.actions-trigger')) t.setAttribute('aria-expanded', 'false');
     this.$<SherpaMenu>('.actions-menu')?.hide?.();
   }
+
+  /** The menu shut, picked or not — Escape, a click outside: the trigger says so. TODO 523 */
+  #onActionsShut = (): void => {
+    for (const t of this.$$('.actions-trigger')) t.setAttribute('aria-expanded', 'false');
+  };
 
   /**
    * The actions for the CURRENT selection — one row: all; two or more: only
