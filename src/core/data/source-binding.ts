@@ -80,8 +80,8 @@ export interface BindHost {
   only(id: string): Filter | undefined;
   /** A component scope's own answer. */
   scoped(scope: string): Filter | undefined;
-  /** What the highlight's driver matches, where it reaches a component in `scope`. */
-  highlight(scope?: string | readonly string[]): Filter | undefined;
+  /** What the highlight's driver matches, where it reaches a component `el` in `scope`. */
+  highlight(scope?: string | readonly string[], el?: object): Filter | undefined;
   /** A bind id no other bind in its context has. */
   mintId(): string;
 }
@@ -204,7 +204,7 @@ export class SourceBinding {
     const own = free ? filterWithout(narrows, free) : narrows;
     // …and the highlight, which moves no row; and a free field's picks, which light it. TODO 441, 479
     const lit = entry.free?.map((f) => this.#host.pickedFor(el, f)) ?? null;
-    const ownKey = JSON.stringify([own ?? null, this.#host.highlight(entry.scope) ?? null, lit]);
+    const ownKey = JSON.stringify([own ?? null, this.#host.highlight(entry.scope, el) ?? null, lit]);
     if (entry.lastRows === base && entry.lastOwn === ownKey) return;
     entry.lastRows = base;
     entry.lastOwn = ownKey;

@@ -1085,7 +1085,7 @@ export class SherpaProvider extends SherpaElement {
       ...(scope ? { scope } : {}),
       /* A summary SHOWS the data and never steers it. TRAP T-aggregation-is-data */
       ...(spec ? { readonly: true, as: (rows, src) => {
-        const summary = summariseMarked(rows, spec, (f) => src.valuesFor(f), (f) => src.fieldFacts(f), src.highlightFor(scope));
+        const summary = summariseMarked(rows, spec, (f) => src.valuesFor(f), (f) => src.fieldFacts(f), src.highlightFor(scope, el));
         return zoned && summary && typeof summary === 'object' && 'zones' in summary
           ? { ...summary, picked: src.pickedFor(el as Populatable, zoned) } : summary;
       } } : {}),

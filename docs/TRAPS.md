@@ -19119,8 +19119,12 @@ source has the field (`facts.has`); one without it marks nothing.
 TODO 520 (Will: *"Match highlighting should only apply to content in the same
 scope as the filter."*), so the whole page lights only when an app turns it on.
 Off, a component outside the driver's scope is given no test
-(`highlightFor(scope)`), and the binding's push key carries that answer, so
-flipping it pushes again. A View driver is every scope's, on or off.
+(`highlightFor(scope, el)`), and the binding's push key carries that answer, so
+flipping it pushes again. A View driver is every scope's, on or off. A CHART's
+own scope (its legend's part) is in a scope of its own, while the chart is bound
+in the page's: so the part reaches the one component it narrows (`only`), and
+the push key asks with the element too, or the chart is never drawn again
+(Will, TODO 529).
 
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`

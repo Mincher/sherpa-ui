@@ -119,7 +119,7 @@ export class DataSource extends EventTarget {
     pickedFor: (el, field) => this.pickedFor(el, field),
     only: (id) => this.#only[id],
     scoped: (s) => this.#scoped[s],
-    highlight: (scope) => (this.#reaches(scope) ? this.#highlight : undefined),
+    highlight: (scope, el) => (this.#reaches(scope, el) ? this.#highlight : undefined),
     mintId: () => this.#member.mintId(),
   });
   /** The last load's answer: the rows, and the total before paging. */
@@ -421,17 +421,19 @@ export class DataSource extends EventTarget {
     return picks(this.#applied.scopes[VIEW]?.readings[field]);
   }
 
-  /** The highlight's test for a component in `scope`: null where it stays in its
-   *  driver's scope and this is not it. Will, TODO 467 */
-  highlightFor(scope?: string | readonly string[]): ((row: Row) => boolean) | null {
-    return this.#reaches(scope) ? this.highlight : null;
+  /** The highlight's test for a component `el` in `scope`: null where it stays in
+   *  its driver's scope and this is not it. Will, TODO 467 */
+  highlightFor(scope?: string | readonly string[], el?: object): ((row: Row) => boolean) | null {
+    return this.#reaches(scope, el) ? this.highlight : null;
   }
 
   /** Does the highlight reach a component in `scope`? Across every scope, or a
-   *  View driver: yes. TRAP T-the-highlight-reaches-the-whole-page */
-  #reaches(scope?: string | readonly string[]): boolean {
+   *  View driver: yes — and a chart's own scope reaches the chart it narrows
+   *  (Will, TODO 529). TRAP T-the-highlight-reaches-the-whole-page */
+  #reaches(scope?: string | readonly string[], el?: object): boolean {
     const driver = (this.#context.previewed ?? this.#context.highlighted)?.scope;
     if (this.#across || !driver || driver === VIEW) return true;
+    if (el && this.#narrowing.get(driver)?.only === el) return true;
     return typeof scope === 'string' ? scope === driver : !!scope?.includes(driver);
   }
 
