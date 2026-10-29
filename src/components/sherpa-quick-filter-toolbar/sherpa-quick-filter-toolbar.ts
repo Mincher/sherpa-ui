@@ -935,9 +935,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const n = def ? this.#shownResults[def.field ?? def.id] ?? this.#shownResults[def.id] : undefined;
       return def && n != null && !chip.hasAttribute('data-persistent') ? [{ label: def.label, n }] : [];
     });
-    const said = drawCount(badge, this.hasAttribute('data-no-results') ? undefined : this.#end, ['match', 'matches']);
-    if (said == null) delete badge.dataset['count'];
-    else badge.dataset['count'] = said;
+    drawCount(badge, this.hasAttribute('data-no-results') ? undefined : this.#end, ['match', 'matches']);
     tip.dataset['text'] = answered.map((one) => `${one.label} - ${countSaid(one.n, ['match', 'matches']).label}`).join('\n');
   }
 
@@ -2214,12 +2212,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #drawApplied(): void {
     const n = Number(this.dataset['applied']) || 0;
     const counting = this.hasAttribute('data-count-applied');
-    const badge = this.$<HTMLElement>('.applied-count');
-    const said = counting ? drawCount(badge, n || null, ['filter applied', 'filters applied']) : null;
-    if (badge) {
-      if (said == null) delete badge.dataset['count'];
-      else badge.dataset['count'] = said;
-    }
+    drawCount(this.$('.applied-count'), counting && n ? n : null, ['filter applied', 'filters applied']);
   }
 
   /** A saved set ticked in the Saved menu takes it; unticked, takes it off. TODO 436 */

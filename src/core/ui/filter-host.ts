@@ -81,21 +81,20 @@ export function limitField(
 }
 
 /** A count on a badge that is not a chip's — a panel field's or scope's: its
- *  number, as a chip says it, and its words for a reader. `null` leaves it
- *  unsaid. Gives what it wrote. TODO 424 */
+ *  number, as a chip says it, and its words for a reader. `null` empties it, and
+ *  an empty badge hides itself. TODOs 424, 523 P4 */
 export function drawCount(
   badge: Element | null | undefined, n: number | null | undefined, noun?: readonly [one: string, many: string],
-): string | null {
+): void {
+  if (!badge) return;
   if (n == null) {
-    badge?.removeAttribute('aria-label');
-    return null;
+    badge.replaceChildren();
+    badge.removeAttribute('aria-label');
+    return;
   }
   const { said, label } = countSaid(n, noun);
-  if (badge) {
-    badge.textContent = said;
-    badge.setAttribute('aria-label', label);
-  }
-  return said;
+  badge.textContent = said;
+  badge.setAttribute('aria-label', label);
 }
 
 /** What changed this frame — a field, a chip — handed over ONCE, the frame

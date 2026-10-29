@@ -2740,7 +2740,7 @@ test('in portrait, a SHUT scope says the rows its filters leave — never an OFF
     };
     const sr = bar.shadowRoot!;
     (sr.querySelector('sherpa-accordion.scope') as HTMLElement & { open: boolean }).open = false;
-    const head = () => ({ badge: sr.querySelector<HTMLElement>('.scope-results')!.dataset['count'] ?? null,
+    const head = () => ({ badge: sr.querySelector<HTMLElement>('.scope-results')!.textContent || null,
       tip: sr.querySelector<HTMLElement>('.scope-tip')!.dataset['text'] ?? '' });
     await set({ picked: ['Pro'] }, { picked: ['EMEA'], suspended: true });
     const offLast = head();

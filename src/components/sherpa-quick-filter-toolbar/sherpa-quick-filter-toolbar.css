@@ -321,8 +321,6 @@ sherpa-accordion.scope::part(actions) {
   z-index: 2;
   margin-inline-end: var(--sherpa-theme-padding-lg, 16px);
 }
-/* Its matches, while shut and only while some filter answers. TODO 418 */
-.scope-results:not([data-count]) { display: none; }
 :host([data-orientation="portrait"]) .actions-zone {
   gap: var(--sherpa-display-mode-space-2xs, 4px);
   margin-inline-start: 0;
@@ -450,7 +448,6 @@ sherpa-accordion.scope::part(actions) {
   font-weight: var(--sherpa-font-weight-medium, 500);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
-.applied-count:not([data-count]) { display: none; }
 /* ONE SIZE UP: the panel area's own chrome. */
 .head::part(icon) {
   inline-size: var(--sherpa-theme-content-size-large, 16px);
