@@ -876,13 +876,11 @@ export class SherpaProvider extends SherpaElement {
   }
 
   override onConnect(): void {
-    window.addEventListener('online', this.#onBack);
-    document.addEventListener('visibilitychange', this.#onBack);
+    this.on(window, 'online', this.#onBack);
+    this.on(document, 'visibilitychange', this.#onBack);
   }
 
   override onDisconnect(): void {
-    window.removeEventListener('online', this.#onBack);
-    document.removeEventListener('visibilitychange', this.#onBack);
     this.#page?.abort();
     this.#pages.stopViews();
     for (const asked of this.#asked.values()) asked.unbind?.();

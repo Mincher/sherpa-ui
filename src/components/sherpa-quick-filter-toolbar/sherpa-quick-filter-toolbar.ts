@@ -475,9 +475,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     /* LEFT is the page's pointermove off this bar: a bar in the panel's column
        heard no pointerout either. TRAP T-a-hovered-chip-previews-the-highlight */
     this.#leaving = new AbortController();
-    document.addEventListener('pointermove', (e) => {
+    this.on(document, 'pointermove', (e) => {
       if (!e.composedPath().includes(this)) this.#leaveChip();
-    }, { signal: this.#leaving.signal });
+    }, { while: this.#leaving.signal });
     this.#hoverWait = setTimeout(() => {
       this.#previewing = true;
       this.#askPreview(at.chip, true, at.value);
@@ -2314,10 +2314,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** One listener for the whole cluster — the action is read off `data-act`. */
   #onAction = (event: Event): void => {
-    const path = event.composedPath();
-    const btn = path.find(
-      (n): n is HTMLElement => n instanceof HTMLElement && !!n.dataset['act'],
-    );
+    const btn = this.pathFind(event, '[data-act]');
     if (!btn) return;
     if (btn.dataset['act'] === 'overflow') this.#openMore(btn);
     else this.#act(btn.dataset['act'] ?? '');

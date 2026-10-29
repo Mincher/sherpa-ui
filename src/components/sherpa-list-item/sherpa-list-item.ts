@@ -74,10 +74,7 @@ export class SherpaListItem extends SherpaElement {
   /** A click on the row — unless it landed on its expand, select or drag control. */
   #onClick = (event: Event): void => {
     // A leading affordance handles its own click; don't also activate the row.
-    const path = event.composedPath();
-    if (path.some((n) => n instanceof HTMLElement && (n.classList.contains('expand') || n.classList.contains('control') || n.classList.contains('drag')))) {
-      return;
-    }
+    if (this.pathFind(event, '.expand, .control, .drag')) return;
     this.#activate();
   };
 
