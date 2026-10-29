@@ -68,7 +68,7 @@
 import {
   andFilter, DEFAULT_OP, filterFields, filterNeedles, filterRows, filterTest, filterWithout, groupSummaries, readField, valueKey,
 } from './store.js';
-import { modeOf, readingClause } from './filter-state.js';
+import { modeOf, readingClause, ruleOut } from './filter-state.js';
 import { FieldCatalogue } from './field-catalogue.js';
 import { SourceBinding, tagOf } from './source-binding.js';
 import { answerOrder, planWalk, presentUnder, walkStepwise } from './source-counts.js';
@@ -201,6 +201,10 @@ export class DataSource extends EventTarget {
       raws: (field, picked) => {
         const declared = this.#catalogue.byKey(field);
         return picked.map((v) => declared.get(valueKey(v)) ?? v);
+      },
+      ruledOut: (scope, field) => {
+        const walk = this.#walk?.walk;
+        return walk ? ruleOut(walk.present[scope]?.[field] ?? null, walk.offered[scope]?.[field] ?? null) : undefined;
       },
     });
     this.#autoLoad = options.autoLoad ?? true;

@@ -4041,8 +4041,9 @@ the app's life. An app hands its outlet the SAME store object each time
 
 Figma's data Filter Toolbar starts with a Switch. It is optional, for legacy
 reasons, so a bar shows it only with `data-switchable` (Will, TODO 338). OFF
-stops every filter in the bar at once and keeps each one's value; ON brings back
-exactly the ones it stopped.
+stops every filter in the bar at once and keeps each one's value — less the
+picks the filters before it rule out (`T-a-ruled-out-value-is-greyed`, TODO 523
+F3); ON brings back exactly the ones it stopped.
 
 **The Query owns it**, not the bar: `ScopeQuery.suspended` lists the fields the
 Switch turned off. Its presence IS "off". One flag would not
@@ -8007,9 +8008,12 @@ marked only an unoffered one, and no rule hid even that (TODO 448).
 a menu marks its rows again after each tick, so the one let go is refused —
 and, hiding, goes — at once; an on value chip, or a chip whose every pick is
 ruled out, takes one press to go off (`#refused()`, and no `pointer-events:
-none` while `data-current`). Turned off by its body, a chip DROPS each pick the
-filters before it rule out — off otherwise keeps an answer, which left a pick
-in the Query that could only come back matching nothing (TODO 465).
+none` while `data-current`). Turned OFF — by its chip, the scope's Switch or
+the Filters menu — an answer DROPS each pick the filters before it rule out, and
+clears with none left: off otherwise keeps an answer, which left a pick in the
+Query that could only come back matching nothing (TODO 465). The Query decides,
+from its source's last walk (`QueryMember.ruledOut`), so every way off agrees
+(Will, TODO 523 F3 A).
 
 - Site: `src/core/data/query-context.ts`
 - Site: `src/core/ui/filter-host.ts`

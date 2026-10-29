@@ -82,7 +82,7 @@ import {
 } from './query-edits.js';
 import { readingsOf, type Where } from './where.js';
 import { valueKey, type SortDirection, type SortSpec } from './store.js';
-import { asRows, holdsRows, withRows, withoutRows, type FieldReading } from './filter-state.js';
+import { asRows, holdsRows, modeOf, withRows, withoutRows, type FieldReading, type RuledOut } from './filter-state.js';
 import { report } from './report.js';
 
 /** What the context did, as each member hears it: the follow-ups are the member's. */
@@ -129,6 +129,8 @@ export interface QueryMember {
   readingsOf(where: Where): Record<string, FieldReading>;
   /** The values its rows hold for these picks: a KEY maps to its value. TRAP T-a-value-can-be-an-object */
   raws(field: string, picked: readonly unknown[]): unknown[];
+  /** Its last walk's test of a field's value keys in a scope: why one is ruled out, null if it stands. */
+  ruledOut?(scope: string, field: string): ((key: string) => RuledOut) | undefined;
 }
 
 /** A change to the arrangement: what it names, and nothing else. */
@@ -550,12 +552,17 @@ export class QueryContext extends EventTarget {
    * TRAP T-a-filter-applies-down-its-scope
    */
   #select(field: string, picked: readonly unknown[], reading: FieldReading = {}): void {
+    this.#put(field, picked, reading);
+    this.#tell({ kind: 'select', field });
+  }
+
+  /** Write a field's answer, telling no one. */
+  #put(field: string, picked: readonly unknown[], reading: FieldReading = {}): void {
     // Its OWN copy: a caller that edits its object after changes nothing here.
     const next: FieldReading = copyReading(this.#raw(field, picked, reading));
     /* CONDITIONS count. A field answered only by rows has no picked values and
        no typed text. TRAP T-many-conditions-are-one-reading */
     setReading(this.#live.draft, field, readingAnswered(next) ? next : undefined);
-    this.#tell({ kind: 'select', field });
   }
 
   /**
@@ -568,10 +575,18 @@ export class QueryContext extends EventTarget {
     const entry = scopeEntry(this.#live.draft, scope);
     let fields: string[];
     if (suspended) {
+      // Each answer drops what the filters before it rule out, as one field's OFF does. TODO 523 F3
+      const dropped: string[] = [];
+      for (const [field, reading] of Object.entries(entry.readings)) {
+        const kept = reading.suspended ? null : this.#standing(scope, field, reading);
+        if (!kept || kept.length >= (reading.picked?.length ?? 0)) continue;
+        this.#put(field, kept, kept.length ? reading : {});
+        dropped.push(field);
+      }
       entry.suspended = { fields: [] };
       // Compiling lists what the Switch turned off.
       this.#tell({ kind: 'recompose' });
-      fields = [...entry.suspended.fields];
+      fields = [...new Set([...entry.suspended.fields, ...dropped])];
     } else {
       const off = entry.suspended!;
       delete entry.suspended;
@@ -604,7 +619,19 @@ export class QueryContext extends EventTarget {
     const held = readingOf(this.#live.draft, field);
     if (!held || !!held.suspended === off) return;
     const { suspended: _was, ...on } = held;
-    this.#select(field, held.picked ?? [], off ? { ...on, suspended: true } : on);
+    if (!off) return this.#select(field, held.picked ?? [], on);
+    const kept = this.#standing(homes(this.#live.draft).get(field) ?? scope, field, held);
+    // None left, the field clears.
+    if (held.picked?.length && !kept.length) this.#select(field, []);
+    else this.#select(field, kept, { ...on, suspended: true });
+  }
+
+  /** A field's picks less those the filters before it rule out: going OFF, they go —
+   *  they could never come back on (TODO 462). Conditions stay. Will, TODOs 465, 523 F3 */
+  #standing(scope: string, field: string, reading: FieldReading): unknown[] {
+    const picked = reading.picked ?? [];
+    const out = modeOf(reading) === 'advanced' ? undefined : this.#knows(field)?.ruledOut?.(scope, field);
+    return out ? picked.filter((v) => out(valueKey(v)) === null) : [...picked];
   }
 
   /** Say what a scope holds now. An empty list forgets the scope. */

@@ -68,7 +68,7 @@
     "rows": 25,
     "cells": 375,
     "compiles": 1,
-    "clones": 12,
+    "clones": 10,
     "scans": 3
   },
   "records/switch-on": {
@@ -77,10 +77,10 @@
     "distinct": 0,
     "changes": 0,
     "fields": 0,
-    "rows": 0,
-    "cells": 0,
+    "rows": 4,
+    "cells": 60,
     "compiles": 1,
-    "clones": 5,
+    "clones": 4,
     "scans": 3
   },
   "records/sort": {
@@ -89,8 +89,8 @@
     "distinct": 0,
     "changes": 0,
     "fields": 0,
-    "rows": 59,
-    "cells": 885,
+    "rows": 63,
+    "cells": 945,
     "compiles": 0,
     "clones": 1,
     "scans": 2
@@ -101,8 +101,8 @@
     "distinct": 0,
     "changes": 0,
     "fields": 0,
-    "rows": 0,
-    "cells": 0,
+    "rows": 1,
+    "cells": 15,
     "compiles": 1,
     "clones": 1,
     "scans": 3
@@ -128,7 +128,7 @@
     "rows": 22,
     "cells": 330,
     "compiles": 1,
-    "clones": 22,
+    "clones": 21,
     "scans": 4
   },
   "records/clear": {
@@ -137,8 +137,8 @@
     "distinct": 0,
     "changes": 0,
     "fields": 0,
-    "rows": 69,
-    "cells": 1035,
+    "rows": 71,
+    "cells": 1065,
     "compiles": 3,
     "clones": 1,
     "scans": 4
