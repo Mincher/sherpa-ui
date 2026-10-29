@@ -6,7 +6,7 @@ built through the Node Editor interface."* And TODO 551: *"Node positions, and
 properties, should survive a page reload and only be lost on session end
 unless the user has saved to the definition."*
 
-**Status: a PLAN. Nothing is built until Will rules on D1–D4 (§7).**
+**Status: RULED, 2026-10-29 — Will picked A for D1, D2, D3 and D4 (§7). Building W1–W5.**
 
 ## 1. What the data layer already has
 
