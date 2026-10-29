@@ -248,6 +248,19 @@
 
   <!-- A GROUP row — Figma Grid Cell `Type=group` (926:35309). The grouped
        column's own cells and header are DROPPED from the rows below. -->
+  <!-- A row that OPENS on its own rows: its toggle, in its first cell, and the
+       sub-grid under it — this grid's part, filled from here. Will, TODO 570 -->
+  <template class="row-open-tpl">
+    <button class="row-open" type="button" aria-expanded="false" aria-label="Its rows">
+      <i class="sherpa-icon-box" data-icon="chevron-right" aria-hidden="true"></i>
+    </button>
+  </template>
+  <template class="detail-tpl">
+    <tr class="detail-row">
+      <td class="detail-cell"><div class="detail-area" part="detail"><sherpa-data-grid class="detail-grid"></sherpa-data-grid></div></td>
+    </tr>
+  </template>
+
   <template class="group-row-tpl">
     <tr class="group-row">
       <!-- The <td> stays a real cell so its colspan keeps reserving every

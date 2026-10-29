@@ -104,6 +104,13 @@ export interface GridAction {
   danger?: boolean;
 }
 
+/** What a row opens on: the sub-grid's columns and key, and each row's rows by its key. TODO 570 */
+interface GridDetail {
+  columns: GridColumn[];
+  key?: string;
+  rows: Record<string, GridRow[]>;
+}
+
 interface GridConfig {
   columns: GridColumn[];
   rows: GridRow[];
@@ -120,6 +127,9 @@ interface GridConfig {
    * TRAP T-a-group-is-a-data-layer-concept
    */
   groups?: GroupSummary[];
+  /** Each row's OWN rows, by its key: a row OPENS on a sub-grid of them, under
+   *  these columns. Will, TODO 570 */
+  detail?: GridDetail;
   /** Each filterable column's FILTER as its source defines it, by field — so a
    *  heading opens the chip's own menu, the whole value list with it.
    *  TRAP T-a-heading-opens-the-chips-menu */
@@ -218,6 +228,10 @@ export class SherpaDataGrid extends SherpaElement {
   #columns: GridColumn[] = [];
   /** The rows, as populated. */
   #rows: GridRow[] = [];
+  /** What each row opens on, where it opens. TODO 570 */
+  #detail: GridDetail | null = null;
+  /** The rows open on their sub-grids, by key: kept across draws. */
+  #opened = new Set<string>();
   /** The per-row actions, which reveal the pinned actions column. */
   #actions: GridAction[] = [];
   /** The row whose menu is open. A RECORD, because an index moves on a sort. */
@@ -255,6 +269,12 @@ export class SherpaDataGrid extends SherpaElement {
   #currentKey: string | null = null;
 
   override onRender(): void {
+    /* A row's SUB-GRID is this grid's part: it is filled from here, and never
+       asks the provider — it would join this grid's scope. TODO 570 ·
+       TRAP T-an-inner-event-stops-at-its-host */
+    this.root.addEventListener('context-request', (event) => {
+      if ((event.target as Element | null)?.closest?.('.detail-row')) event.stopPropagation();
+    });
     // TRAP T-grid-header-needs-capture — the chip's stopPropagation() hides the
     // click that IS the sort from a bubbling listener.
     this.$('.head-row')?.addEventListener('click', this.#onHeaderClick, true);
@@ -391,6 +411,8 @@ export class SherpaDataGrid extends SherpaElement {
     this.#syncNeedles();
     this.#actions = Array.isArray(cfg.actions) ? cfg.actions : [];
     this.#groups = Array.isArray(cfg.groups) ? cfg.groups : null;
+    this.#detail = cfg.detail ?? null;
+    this.toggleState('detail', !!this.#detail);
     this.toggleState('actions', this.#actions.length > 0);
     // TRAP T-grid-populate-keeps-column-filters — column filters drop only where
     // the COLUMN went, selection re-resolves by KEY.
@@ -1231,6 +1253,37 @@ export class SherpaDataGrid extends SherpaElement {
     return group ? ordered.filter((c) => c.field !== group) : ordered;
   }
 
+  /** A row that opens: its toggle in its first cell, and, open, the sub-grid of
+   *  its own rows under it, filled from here. Will, TODO 570 */
+  #drawOpen(tr: HTMLElement, record: GridRow, body: Element, columnCount: number): void {
+    const detail = this.#detail;
+    if (!detail) return;
+    const key = valueKey(this.#key ? record[this.#key] : '');
+    const toggle = this.clone('template.row-open-tpl');
+    tr.querySelector('td[data-field]')?.prepend(...(toggle ? [toggle] : []));
+    const open = this.#opened.has(key);
+    tr.toggleAttribute('data-open', open);
+    toggle?.setAttribute('aria-expanded', String(open));
+    if (!open) return;
+    const row = this.clone('template.detail-tpl');
+    const cell = row?.querySelector<HTMLTableCellElement>('.detail-cell');
+    if (!row || !cell) return;
+    // Every column, the selection's and the actions' too, as a group row spans them.
+    cell.colSpan = columnCount + 1 + (this.#actions.length ? 1 : 0);
+    const sub = row.querySelector<HTMLElement & { populate?(d: unknown): Promise<void> }>('.detail-grid');
+    void sub?.populate?.({ columns: detail.columns, key: detail.key ?? null, rows: detail.rows[key] ?? [] });
+    body.appendChild(row);
+  }
+
+  /** Open a row on its rows, or shut it, and draw again. */
+  #toggleOpen(tr: HTMLElement | null): void {
+    const record = tr ? this.#rowOf.get(tr) : undefined;
+    if (!record) return;
+    const key = valueKey(this.#key ? record[this.#key] : '');
+    if (!this.#opened.delete(key)) this.#opened.add(key);
+    this.#renderBody();
+  }
+
   /** Draw the rows — with a group heading at each change, when grouped. */
   #renderBody(): void {
     const body = this.$('.body');
@@ -1309,6 +1362,7 @@ export class SherpaDataGrid extends SherpaElement {
       const actionsCell = tr.querySelector('.actions-cell');
       if (actionsCell) tr.appendChild(actionsCell);
       body.appendChild(tr);
+      if (this.#detail) this.#drawOpen(tr, record, body, columns.length);
     });
 
     if (group) this.#syncGroupVisibility();
@@ -1963,6 +2017,10 @@ export class SherpaDataGrid extends SherpaElement {
   #onRowClick = (event: Event): void => {
     // A click on a selection checkbox is selection, not row activation.
     if ((event.target as HTMLElement).closest('.select-cell')) return;
+    // A row's toggle opens it on its rows; its sub-grid is its own. TODO 570
+    const open = (event.target as HTMLElement).closest<HTMLElement>('.row-open');
+    if (open) return this.#toggleOpen(open.closest<HTMLElement>('.row'));
+    if ((event.target as HTMLElement).closest('.detail-row')) return;
     /* …and a click in the ACTIONS cell is the menu. Guarded HERE, not by
        stopPropagation there: both listeners sit on `.body` and fire in
        REGISTRATION order, so stopping it later is too late. */

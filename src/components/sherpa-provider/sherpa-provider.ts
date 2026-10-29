@@ -21,7 +21,7 @@ import { report } from '../../core/data/report.js';
 import { summarise, summariseMarked, type SummarySpec } from '../../core/data/aggregate.js';
 import type { ChartDatum } from '../../core/data/chart-datum.js';
 import { bindSelection } from '../../core/data/bind-selection.js';
-import { valueKey, type Row, type Store } from '../../core/data/store.js';
+import { groupRows, valueKey, type Row, type Store } from '../../core/data/store.js';
 import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.js';
 import type { DraftMode } from '../../core/browser/view-drafts.js';
 import { openSource, savedFiltersOf, type PageDefinition } from '../../core/data/page-definition.js';
@@ -134,8 +134,8 @@ function shownAs(el: Element): string | undefined {
   return Object.keys(SHOWN_BY).find((kind) => SHOWN_BY[kind]?.tag === el.localName);
 }
 
-/** A grid's Secondary — a pivot — is off until its rows open on a sub-grid. Will, TODO 570 */
-const PIVOTS = false;
+/** A grid's column, as a pivot hands it on to a row's sub-grid. */
+type GridColumnLike = { field: string; header?: string; type?: string };
 
 /** What a chart made from a grid keeps of it: where it sits, and its slot. */
 const KEPT_FROM_GRID = ['slot', 'data-grow', 'data-scope', 'style'] as const;
@@ -1118,7 +1118,7 @@ export class SherpaProvider extends SherpaElement {
         return zoned && summary && typeof summary === 'object' && 'zones' in summary
           ? { ...summary, picked: src.pickedFor(el as Populatable, zoned) } : summary;
       } } : {}),
-      ...(pivot ? { readonly: true, as: (rows, src) => this.#pivotOf(rows, pivot, src) } : {}),
+      ...(pivot ? { readonly: true, as: (rows, src) => this.#pivotOf(el, rows, pivot, src) } : {}),
       // A page of rows arrives WITH its groups: a group is the data layer's.
       // TRAP T-a-group-is-a-data-layer-concept
       ...(asks.shape === 'rows' && !pivot
@@ -1323,36 +1323,51 @@ export class SherpaProvider extends SherpaElement {
   /** A grid's pivot, where its slot names a Secondary: its Primary — else its first
    *  column — a row a value, the Secondary's values its columns. Will, TODO 548 */
   #pivotSpec(el: Element, slot: string, source: DataSource): (SummarySpec & { segment: string; stack: string }) | undefined {
-    // Off until its rows open on a sub-grid: a kept Secondary must not strand a grid. Will, TODO 570
-    if (!PIVOTS) return undefined;
     const shown = source.query.presented(slot, 'grid');
     const lead = shown.primary ?? (el as Element & { columns?: { field: string }[] }).columns?.[0]?.field;
     if (!shown.secondary || !lead) return undefined;
-    return { shape: 'segments', segment: lead, stack: shown.secondary, ...(shown.sort ? { sort: shown.sort } : {}) };
+    return {
+      shape: 'segments', segment: lead, stack: shown.secondary,
+      ...(shown.group ? { group: shown.group } : {}), ...(shown.sort ? { sort: shown.sort } : {}),
+    };
   }
 
-  /** A pivot's rows and columns, for its grid: the Primary, a column a Secondary
-   *  value, and the total — every cell a row count. Will, TODO 548 */
-  #pivotOf(rows: readonly Row[], spec: SummarySpec & { segment: string; stack: string }, src: DataSource): unknown {
-    const segments = summarise(rows, spec, (f) => src.valuesFor(f)) as ChartDatum[];
+  /** A pivot for its grid: a row a Primary value — a row a Group value and
+   *  Primary value, where it groups — a column a Secondary value, and the total,
+   *  every cell a row count; each row OPENS on its own rows, under the grid's own
+   *  columns. Will, TODOs 548, 570 */
+  #pivotOf(el: Element, rows: readonly Row[], spec: SummarySpec & { segment: string; stack: string }, src: DataSource): unknown {
+    const { group, ...pivot } = spec;
+    const sets = group ? groupRows(rows, group).map((g) => ({ key: g.key, rows: g.rows })) : [{ key: '', rows }];
     const declared = src.valuesFor(spec.stack).map(valueKey);
-    const seen = segments.flatMap((s) => (s.stack ?? []).map((p) => p.label));
+    const summed = sets.map((set) => ({ ...set, segments: summarise(set.rows, pivot, (f) => src.valuesFor(f)) as ChartDatum[] }));
+    const seen = summed.flatMap((set) => set.segments.flatMap((s) => (s.stack ?? []).map((p) => p.label)));
     const values = declared.length ? declared.filter((v) => seen.includes(v)) : [...new Set(seen)];
     const cell = (v: string): string => `pivot:${v}`;
     const total = 'pivot:total';
+    // One key a row: a Primary value, inside its Group value where it groups.
+    const keyOf = (set: string, primary: string): string => (group ? `${set}\u0000${primary}` : primary);
     const label = (f: string): string => src.fieldFacts(f).label ?? f;
+    const own = el as Element & { columns?: GridColumnLike[]; key?: string | null };
     return { pivot: {
-      key: spec.segment,
+      key: 'pivot:key',
       columns: [
         { field: spec.segment, header: label(spec.segment) },
         ...values.map((v) => ({ field: cell(v), header: v, type: 'number' })),
         { field: total, header: this.word('total'), type: 'number' },
       ],
-      rows: segments.map((s) => ({
+      rows: summed.flatMap((set) => set.segments.map((s) => ({
+        'pivot:key': keyOf(set.key, s.label),
         [spec.segment]: s.label,
+        ...(group ? { [group]: set.key } : {}),
         ...Object.fromEntries(values.map((v) => [cell(v), s.stack?.find((p) => p.label === v)?.value ?? 0])),
         [total]: s.value,
-      })),
+      }))),
+      detail: {
+        columns: own.columns ?? [],
+        ...(own.key ? { key: own.key } : {}),
+        rows: Object.fromEntries(summed.flatMap((set) => groupRows(set.rows, spec.segment).map((g) => [keyOf(set.key, g.key), g.rows]))),
+      },
     } };
   }
 

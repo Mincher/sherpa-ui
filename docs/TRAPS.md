@@ -17608,6 +17608,7 @@ every bare component: 24 leaks without the stopper, 0 with it.
 
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/e2e/reforged-only-own-events.spec.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-markup-is-checked-against-the-spec
 

@@ -3125,3 +3125,37 @@ test('a banded heading builds its clause from the bands it is given, never "equa
   });
   expect(r).toEqual(['score', 'lt', 10]);
 });
+
+test('a row OPENS on a sub-grid of its own rows, and shuts again (Will, TODO 570)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<HTMLElement & { populate(d: unknown): Promise<void> }>('sherpa-data-grid');
+    await el.populate({
+      key: 'plan',
+      columns: [{ field: 'plan', header: 'Plan' }, { field: 'n', header: 'Rows', type: 'number' }],
+      rows: [{ plan: 'Pro', n: 2 }, { plan: 'Free', n: 1 }],
+      detail: {
+        key: 'id',
+        columns: [{ field: 'name', header: 'Name' }],
+        rows: { Pro: [{ id: 1, name: 'Ada' }, { id: 2, name: 'Bo' }], Free: [{ id: 3, name: 'Cy' }] },
+      },
+    });
+    await window.__settled();
+    const sr = el.shadowRoot!;
+    const read = () => ({
+      open: [...sr.querySelectorAll<HTMLElement>('.body > .row')].map((row) => row.hasAttribute('data-open')),
+      sub: [...sr.querySelectorAll<HTMLElement>('.detail-grid')].map((g) =>
+        [...g.shadowRoot!.querySelectorAll('.body .row')].map((row) => row.textContent!.trim())),
+    });
+    const toggles = sr.querySelectorAll<HTMLElement>('.row-open').length;
+    sr.querySelector<HTMLElement>('.row-open')!.click();
+    await window.__settled();
+    await window.__settled();
+    const opened = read();
+    sr.querySelector<HTMLElement>('.row-open')!.click();
+    await window.__settled();
+    return { toggles, opened, shut: read() };
+  });
+  expect(r.toggles).toBe(2);
+  expect(r.opened).toEqual({ open: [true, false], sub: [['Ada', 'Bo']] });
+  expect(r.shut).toEqual({ open: [false, false], sub: [] });
+});

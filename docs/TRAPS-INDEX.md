@@ -600,7 +600,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-unavailable-value-sorts-below-a-divider](TRAPS.md#t-unavailable-value-sorts-below-a-divider) — menu
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — menu
 
-## The data grid (96)
+## The data grid (97)
 
 - [T-a-cell-chip-is-one-and-moves](TRAPS.md#t-a-cell-chip-is-one-and-moves) — data-grid
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — data-grid
@@ -639,6 +639,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — data-grid
 - [T-advanced-checkbox-widens-the-select-column](TRAPS.md#t-advanced-checkbox-widens-the-select-column) — data-grid
 - [T-an-external-chip-caret-must-open-its-condition](TRAPS.md#t-an-external-chip-caret-must-open-its-condition) — data-grid
+- [T-an-inner-event-stops-at-its-host](TRAPS.md#t-an-inner-event-stops-at-its-host) — data-grid
 - [T-bind-locks-what-it-owns](TRAPS.md#t-bind-locks-what-it-owns) — data-grid, pagination
 - [T-both-answers-are-kept](TRAPS.md#t-both-answers-are-kept) — data-grid
 - [T-col-width-not-inline-size](TRAPS.md#t-col-width-not-inline-size) — data-grid

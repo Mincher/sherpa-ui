@@ -537,14 +537,14 @@ export class DataSource extends EventTarget {
         out.sortField = first.field;
         out.sortDirection = first.direction ?? 'asc';
       }
-      /* …and a grid's Primary — its leading column, pinned. Its Secondary waits for
-         rows that open on a sub-grid: Will, TODO 570. */
+      /* …and a grid's Primary — its leading column, pinned — and Secondary: a pivot,
+         each row opening on its own rows. Will, TODOs 548, 570 */
       const shown = this.#context.presented(scope, 'grid');
       const lead = shown.primary ?? cols[0]?.field;
       // Small until the reader picks one: a grid's bar is full already. Will, TODO 548
       const picked = this.#context.presentation(scope);
       Object.assign(out, {
-        chartFields: cols.filter(groupable), compact: true,
+        chartFields: cols.filter(groupable), stacks: true, compact: true,
         ...(lead ? { primaryField: lead } : {}),
         ...(shown.secondary ? { secondaryField: shown.secondary } : {}),
         ...(picked.primary ? { primaryPicked: true } : {}),

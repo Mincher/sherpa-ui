@@ -175,7 +175,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `empty`, `grid`, `head`, `no-matches`, `resize-grip`, `scroller`, `tag-tip`
+`body`, `detail`, `empty`, `grid`, `head`, `no-matches`, `resize-grip`, `scroller`, `tag-tip`
 
 ## CSS custom properties it reads
 
@@ -259,6 +259,13 @@ What each class's base rule reads:
 | `--sherpa-theme-content-size-small` | `.cell-tag` | `font-size` |
 | `--sherpa-theme-content-line-height-small` | `.cell-tag` | `line-height` |
 | `--sherpa-theme-content-size-small` | `.tag-tick` | `--_checkbox-size` |
+| `--sherpa-display-mode-size-sm` | `.row-open` | `inline-size` |
+| `--sherpa-display-mode-size-sm` | `.row-open` | `block-size` |
+| `--sherpa-display-mode-space-2xs` | `.row-open` | `margin-inline-end` |
+| `--sherpa-display-mode-space-xs` | `.detail-cell` | `padding` |
+| `--sherpa-display-mode-space-lg` | `.detail-cell` | `padding-inline-start` |
+| `--sherpa-style-surface-base-1` | `.detail-cell` | `background` |
+| `--sherpa-border-bottom` | `.detail-cell` | `border-block-end` |
 
 ## populate()
 

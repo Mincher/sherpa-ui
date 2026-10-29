@@ -2995,6 +2995,9 @@
               "name": "body"
             },
             {
+              "name": "detail"
+            },
+            {
               "name": "empty"
             },
             {

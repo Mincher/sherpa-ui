@@ -480,7 +480,7 @@ test('a grid card\'s Show as draws its slot as a chart — bars and stack as its
   expect(r['back']).toEqual({ same: true, shown: 'default', rows: 5, reports: [] });
 });
 
-test.skip('a grid in a slot: its Primary leads its columns, and a Secondary makes it a PIVOT — a row a Primary value, a column a Secondary value, row counts — until let go (Will, TODO 548)', async ({ page }) => {
+test('a grid in a slot: its Primary leads its columns; a Secondary makes it a PIVOT whose rows OPEN on their own rows; Group sections it (Will, TODOs 548, 570)', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     provider.innerHTML = \`
@@ -489,21 +489,28 @@ test.skip('a grid in a slot: its Primary leads its columns, and a Secondary make
         <sherpa-data-grid id="grid" data-scope="data"></sherpa-data-grid>
       </sherpa-container>\`;
     const grid = provider.querySelector('#grid');
-    grid.columns = [{ field: 'plan', header: 'Plan' }, { field: 'day', header: 'Day' }];
+    grid.columns = [{ field: 'plan', header: 'Plan' }, { field: 'day', header: 'Day' }, { field: 'region', header: 'Region' }];
     grid.key = 'id';
-    const source = make();
-    source.declareField('plan', { label: 'Plan' });
-    source.declareField('day', { label: 'Day' });
-    source.query.offer('data', ['plan', 'day']);
-    source.query.hold('data', ['plan', 'day']);
+    const source = new DataSource({ store: new ArrayStore([
+      { id: 1, plan: 'Pro', day: 'Mon', region: 'EU' }, { id: 2, plan: 'Free', day: 'Tue', region: 'EU' },
+      { id: 3, plan: 'Pro', day: 'Wed', region: 'US' }, { id: 4, plan: 'Enterprise', day: 'Mon', region: 'US' },
+    ], { key: 'id' }) });
+    source.declareValues('plan', PLANS);
+    source.declareValues('day', ['Mon', 'Tue', 'Wed']);
+    for (const [f, label] of [['plan', 'Plan'], ['day', 'Day'], ['region', 'Region']]) source.declareField(f, { label });
+    source.query.offer('data', ['plan', 'day', 'region']);
+    source.query.hold('data', ['plan', 'day', 'region']);
     provider.provide({ sources: { sales: source } });
     await source.load();
     await settle();
     const bar = provider.querySelector('sherpa-quick-filter-toolbar');
+    const cells = (row) => [...row.querySelectorAll('td')].map((td) => td.textContent.trim()).filter(Boolean).join('|');
     const read = () => ({
       chips: [...bar.shadowRoot.querySelectorAll('.organise-zone > .organise-chip')].map((c) => c.dataset.id + (c.hasAttribute('data-current') ? ':' + c.column : '')),
       heads: [...grid.shadowRoot.querySelectorAll('.head-cell .head-label')].map((h) => h.textContent.trim()),
-      rows: [...grid.shadowRoot.querySelectorAll('.body .row')].map((row) => [...row.querySelectorAll('td')].map((td) => td.textContent.trim()).filter(Boolean).join('|')),
+      rows: [...grid.shadowRoot.querySelectorAll('.body > .row')].map(cells),
+      groups: [...grid.shadowRoot.querySelectorAll('.body > .group-row .group-label')].map((g) => g.textContent.trim()),
+      sub: [...grid.shadowRoot.querySelectorAll('.detail-grid')].map((g) => [...g.shadowRoot.querySelectorAll('.body > .row')].map(cells)),
     });
     const at = { first: read() };
     source.query.present('data', { primary: 'day' });
@@ -512,21 +519,32 @@ test.skip('a grid in a slot: its Primary leads its columns, and a Secondary make
     source.query.present('data', { secondary: 'plan' });
     await settle(); await settle();
     at.pivot = read();
-    source.query.present('data', { secondary: undefined });
+    grid.shadowRoot.querySelector('.row-open').click();
+    await settle(); await settle();
+    at.opened = read();
+    source.query.present('data', { group: 'region' });
+    await settle(); await settle();
+    at.grouped = read();
+    source.query.present('data', { secondary: undefined, group: undefined });
     await settle(); await settle();
     at.back = read();
     return at;
-  })()`) as Record<string, { chips: string[]; heads: string[]; rows: string[] }>;
+  })()`) as Record<string, { chips: string[]; heads: string[]; rows: string[]; groups: string[]; sub: string[][] }>;
   // Its first column is its Primary, on — small until picked; Secondary waits for a picked Primary.
   expect(r['first']!.chips).toEqual(['primary:plan', 'group', 'sort']);
+  expect(r['first']!.heads).toEqual(['Plan', 'Day', 'Region']);
+  // Primary day: that column leads, and Secondary is offered.
+  expect(r['led']!.heads).toEqual(['Day', 'Plan', 'Region']);
   expect(r['led']!.chips).toEqual(['primary:day', 'secondary', 'group', 'sort']);
-  expect(r['first']!.heads).toEqual(['Plan', 'Day']);
-  // Primary day: that column leads.
-  expect(r['led']!.heads).toEqual(['Day', 'Plan']);
   // Secondary plan: a row a day, a column a plan, row counts, and their total.
   expect(r['pivot']!.heads).toEqual(['Day', 'Free', 'Pro', 'Enterprise', 'Total']);
   expect(r['pivot']!.rows).toEqual(['Mon|0|1|1|2', 'Tue|1|0|0|1', 'Wed|0|1|0|1']);
+  // Its Monday row opens on Monday's own rows, under the grid's own columns.
+  expect(r['opened']!.sub).toEqual([['Pro|Mon|EU', 'Enterprise|Mon|US']]);
+  // Group by region: a section a region, each its own days.
+  expect(r['grouped']!.groups).toEqual(['EU', 'US']);
+  expect(r['grouped']!.rows).toEqual(['Mon|0|1|0|1', 'Tue|1|0|0|1', 'Mon|0|0|1|1', 'Wed|0|1|0|1']);
   // Let go: its own columns and its rows again.
-  expect(r['back']!.heads).toEqual(['Day', 'Plan']);
+  expect(r['back']!.heads).toEqual(['Day', 'Plan', 'Region']);
   expect(r['back']!.rows.length).toBe(4);
 });

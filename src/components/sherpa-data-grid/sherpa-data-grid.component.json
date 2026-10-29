@@ -436,6 +436,60 @@
       },
       {
         "el": "template",
+        "class": "row-open-tpl",
+        "children": [
+          {
+            "el": "button",
+            "class": "row-open",
+            "attrs": {
+              "type": "button",
+              "aria-expanded": "false",
+              "aria-label": "Its rows"
+            },
+            "children": [
+              {
+                "el": "i",
+                "class": "sherpa-icon-box",
+                "attrs": {
+                  "data-icon": "chevron-right",
+                  "aria-hidden": "true"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "detail-tpl",
+        "children": [
+          {
+            "el": "tr",
+            "class": "detail-row",
+            "children": [
+              {
+                "el": "td",
+                "class": "detail-cell",
+                "children": [
+                  {
+                    "el": "div",
+                    "class": "detail-area",
+                    "part": "detail",
+                    "children": [
+                      {
+                        "el": "sherpa-data-grid",
+                        "class": "detail-grid"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
         "class": "group-row-tpl",
         "children": [
           {
@@ -1043,7 +1097,14 @@
     "cell-tag.color": "{sherpa.style-content-base}",
     "cell-tag.font-size": "{sherpa.theme-content-size-small}",
     "cell-tag.line-height": "{sherpa.theme-content-line-height-small}",
-    "tag-tick.--_checkbox-size": "{sherpa.theme-content-size-small}"
+    "tag-tick.--_checkbox-size": "{sherpa.theme-content-size-small}",
+    "row-open.inline-size": "{sherpa.display-mode-size-sm}",
+    "row-open.block-size": "{sherpa.display-mode-size-sm}",
+    "row-open.margin-inline-end": "{sherpa.display-mode-space-2xs}",
+    "detail-cell.padding": "{sherpa.display-mode-space-xs}",
+    "detail-cell.padding-inline-start": "{sherpa.display-mode-space-lg}",
+    "detail-cell.background": "{sherpa.style-surface-base-1}",
+    "detail-cell.border-block-end": "{sherpa.border-bottom}"
   },
   "$extensions": {
     "sherpa": {
