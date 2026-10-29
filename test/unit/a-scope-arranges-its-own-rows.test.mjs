@@ -74,7 +74,7 @@ test('a SAVED View puts the sort where export() does: in the scope that set it',
   assert.deepEqual(saved.data.sort, source.query.export().query.scopes.data.sort);
 });
 
-test('only a LIST field is offered to Group; any field to Sort (Will, TODO 523 S5)', async () => {
+test('Group offers any field that names things — a typed one, a name, too — never a number or a date; Sort any field (Will, TODOs 523 S5, 548)', async () => {
   const source = new DataSource({ store: new ArrayStore([{ id: 1, plan: 'Pro', seats: 3, at: '2026-01-02', name: 'Ada' }], { key: 'id' }) });
   source.declareField('plan', { label: 'Plan' });
   source.declareField('seats', { label: 'Seats', type: 'number' });
@@ -84,7 +84,7 @@ test('only a LIST field is offered to Group; any field to Sort (Will, TODO 523 S
   bindSource(source, control(), { scope: 'data' });
   await source.load();
   const d = source.describe('data');
-  assert.deepEqual(d.group.map((c) => c.field), ['plan']);
+  assert.deepEqual(d.group.map((c) => c.field), ['plan', 'name']);
   assert.deepEqual(d.sort.map((c) => c.field), ['plan', 'seats', 'at', 'name']);
 });
 

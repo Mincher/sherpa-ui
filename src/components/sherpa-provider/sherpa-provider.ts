@@ -18,9 +18,10 @@ import {
   DATA_CONTEXT, SOURCE_CONTEXT, type ContextRequestEvent, type DataAsk,
 } from '../../core/ui/context.js';
 import { report } from '../../core/data/report.js';
-import { summariseMarked, type SummarySpec } from '../../core/data/aggregate.js';
+import { summarise, summariseMarked, type SummarySpec } from '../../core/data/aggregate.js';
+import type { ChartDatum } from '../../core/data/chart-datum.js';
 import { bindSelection } from '../../core/data/bind-selection.js';
-import { valueKey, type Store } from '../../core/data/store.js';
+import { valueKey, type Row, type Store } from '../../core/data/store.js';
 import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.js';
 import type { DraftMode } from '../../core/browser/view-drafts.js';
 import { openSource, savedFiltersOf, type PageDefinition } from '../../core/data/page-definition.js';
@@ -1084,16 +1085,26 @@ export class SherpaProvider extends SherpaElement {
     const scope = scopes.length > 1 || isColumn(el) ? scopes : scopes[0];
     // Its slot shows another way: swapped for that one, which asks again. Will, TODO 548
     if (typeof scope === 'string' && shownAs(el) && this.#swapped(el, scope, source)) return;
+    // A grid's Primary leads its columns. Will, TODO 548
+    if (typeof scope === 'string' && shownAs(el) === 'grid') {
+      const lead = source.query.presented(scope, 'grid').primary;
+      if (lead) el.setAttribute('data-primary-field', lead);
+      else el.removeAttribute('data-primary-field');
+    }
+    /* Its Secondary set, a grid is a PIVOT: a row a Primary value, a column a
+       Secondary value, row counts in the cells. Will, TODO 548 */
+    const pivot = typeof scope === 'string' && shownAs(el) === 'grid' ? this.#pivotSpec(el, scope, source) : undefined;
     // The fields it reads from a row: a summary's, or what it says. TRAP T-a-held-set-reads-the-pages-fields
-    const fields = spec ? [spec.field, spec.segment, spec.over].filter((f): f is string => !!f) : asks.fields?.(el);
+    const fields = pivot ? [pivot.segment, pivot.stack] : spec ? [spec.field, spec.segment, spec.over].filter((f): f is string => !!f) : asks.fields?.(el);
     /* A chart over its field's ZONES is free of that field: its filter lights the
        zones and never moves the value. Will, TODO 479. TRAP T-a-chart-is-free-of-its-own-field */
     const zoned = asks.thresholds && spec?.field ? spec.field : undefined;
     const unbind = bindSource(source, el as Populatable, {
       ...(zoned ? { free: [zoned] } : {}),
       ...(spec && typeof scope === 'string' ? { shows: this.#shows(el), ...(asks.stacks ? { stacks: true } : {}) } : {}),
+      ...(pivot ? { shows: { primary: pivot.segment }, stacks: true } : {}),
       ...(fields ? { fields } : {}),
-      rows: spec || asks.shape === 'all' ? 'all' : 'page',
+      rows: spec || pivot || asks.shape === 'all' ? 'all' : 'page',
       // A pager and a filter bar steer; the rows are not theirs to draw.
       steerOnly: asks.shape === 'state' || asks.shape === 'scope',
       ...(asks.own ? { ignore: asks.own } : {}),
@@ -1104,9 +1115,10 @@ export class SherpaProvider extends SherpaElement {
         return zoned && summary && typeof summary === 'object' && 'zones' in summary
           ? { ...summary, picked: src.pickedFor(el as Populatable, zoned) } : summary;
       } } : {}),
+      ...(pivot ? { readonly: true, as: (rows, src) => this.#pivotOf(rows, pivot, src) } : {}),
       // A page of rows arrives WITH its groups: a group is the data layer's.
       // TRAP T-a-group-is-a-data-layer-concept
-      ...(asks.shape === 'rows'
+      ...(asks.shape === 'rows' && !pivot
         ? { as: (rows, src) => {
           const filtered = asks.filters?.(el);
           // Its columns' values are needed now. TRAP T-a-field-reads-its-values-when-needed
@@ -1126,7 +1138,7 @@ export class SherpaProvider extends SherpaElement {
     const unpick = spec && asks.picks ? this.#picks(el as Picker, source, spec.segment ?? '', asks.picks) : undefined;
     const unown = this.#own(el, source);
     // A chart, a grid and a legend in a slot follow its presentation: a legend lists a stack. TODO 548
-    const unshow = typeof scope === 'string' && (spec || shownAs(el)) ? this.#followPresentation(asked, source, scope, !spec) : undefined;
+    const unshow = typeof scope === 'string' && (spec || shownAs(el)) ? this.#followPresentation(asked, source, scope, !spec && !pivot) : undefined;
     asked.unbind = () => {
       unshow?.();
       unown?.();
@@ -1227,7 +1239,7 @@ export class SherpaProvider extends SherpaElement {
        chart's stack, the group the sections in each, and its order. A stacked
        chart's legend lists its stack. Will, TODO 548 */
     const slot = this.#inherited(el, 'data-scope');
-    const shown = slot && !/\s/.test(slot) ? source.query.presented(slot) : {};
+    const shown = slot && !/\s/.test(slot) ? source.query.presented(slot, 'chart') : {};
     if (shown.primary) spec['segment'] = shown.primary;
     const host = asks.picks ? up(el) : null;
     const stacks = asks.stacks || !!(host?.constructor as { asks?: DataAsk } | undefined)?.asks?.stacks;
@@ -1263,8 +1275,10 @@ export class SherpaProvider extends SherpaElement {
     const parked = this.#parked.get(slot);
     const want = parked && shownAs(parked) === kind ? undefined : SHOWN_BY[kind];
     if (!parked && !want) return false;
-    // A chart's X axis is its segment field: one made from a grid takes the slot's primary.
-    const segment = shown.primary ?? el.getAttribute('data-segment-field');
+    // A chart's first split is its segment field: one made from a grid takes the
+    // slot's Primary, else the grid's first column — its Primary too. Will, TODO 548
+    const segment = source.query.presented(slot, 'chart').primary ?? el.getAttribute('data-segment-field')
+      ?? (el as Element & { columns?: { field: string }[] }).columns?.[0]?.field ?? null;
     if (want && !segment) {
       report({
         code: 'presentation-without-primary',
@@ -1303,6 +1317,40 @@ export class SherpaProvider extends SherpaElement {
     return next;
   }
 
+  /** A grid's pivot, where its slot names a Secondary: its Primary — else its first
+   *  column — a row a value, the Secondary's values its columns. Will, TODO 548 */
+  #pivotSpec(el: Element, slot: string, source: DataSource): (SummarySpec & { segment: string; stack: string }) | undefined {
+    const shown = source.query.presented(slot, 'grid');
+    const lead = shown.primary ?? (el as Element & { columns?: { field: string }[] }).columns?.[0]?.field;
+    if (!shown.secondary || !lead) return undefined;
+    return { shape: 'segments', segment: lead, stack: shown.secondary, ...(shown.sort ? { sort: shown.sort } : {}) };
+  }
+
+  /** A pivot's rows and columns, for its grid: the Primary, a column a Secondary
+   *  value, and the total — every cell a row count. Will, TODO 548 */
+  #pivotOf(rows: readonly Row[], spec: SummarySpec & { segment: string; stack: string }, src: DataSource): unknown {
+    const segments = summarise(rows, spec, (f) => src.valuesFor(f)) as ChartDatum[];
+    const declared = src.valuesFor(spec.stack).map(valueKey);
+    const seen = segments.flatMap((s) => (s.stack ?? []).map((p) => p.label));
+    const values = declared.length ? declared.filter((v) => seen.includes(v)) : [...new Set(seen)];
+    const cell = (v: string): string => `pivot:${v}`;
+    const total = 'pivot:total';
+    const label = (f: string): string => src.fieldFacts(f).label ?? f;
+    return { pivot: {
+      key: spec.segment,
+      columns: [
+        { field: spec.segment, header: label(spec.segment) },
+        ...values.map((v) => ({ field: cell(v), header: v, type: 'number' })),
+        { field: total, header: this.word('total'), type: 'number' },
+      ],
+      rows: segments.map((s) => ({
+        [spec.segment]: s.label,
+        ...Object.fromEntries(values.map((v) => [cell(v), s.stack?.find((p) => p.label === v)?.value ?? 0])),
+        [total]: s.value,
+      })),
+    } };
+  }
+
   /** What a chart shows by its own attributes: its slot's default. Will, TODO 548 */
   #shows(el: Element): Presentation {
     const segment = this.#inherited(el, 'data-segment-field');
@@ -1312,8 +1360,11 @@ export class SherpaProvider extends SherpaElement {
 
   /** A slot's kept presentation moved: its chart is answered again, with it. Will, TODO 548 */
   #followPresentation(asked: Asked, source: DataSource, slot: string, kindOnly: boolean): () => void {
-    // A grid draws rows, not a summary: only its kind moves it.
-    const read = (): string => JSON.stringify(kindOnly ? source.query.presented(slot).kind : source.query.presented(slot));
+    // A grid draws rows, not a summary: only its kind, its Primary and its Secondary move it.
+    const read = (): string => {
+      const shown = source.query.presented(slot);
+      return JSON.stringify(kindOnly ? [shown.kind, shown.primary, shown.secondary] : shown);
+    };
     const was = read();
     const stop = new AbortController();
     source.query.addEventListener('query-change', (e) => {

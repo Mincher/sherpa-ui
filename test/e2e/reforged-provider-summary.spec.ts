@@ -449,8 +449,8 @@ test('a grid card\'s Show as draws its slot as a chart — bars and stack as its
     const source = new DataSource({ store: new ArrayStore([...rows, { id: 5, plan: 'Pro', spend: 1, day: 'Mon' }], { key: 'id' }) });
     source.declareValues('plan', PLANS);
     source.declareValues('day', ['Mon', 'Tue', 'Wed']);
-    // Its page's definition: a bar a plan, stacked by day.
-    source.query.declarePresentation('data', { primary: 'plan', secondary: 'day' });
+    // Its page's definition: its Primary, plan. No Secondary: a grid would pivot.
+    source.query.declarePresentation('data', { primary: 'plan' });
     provider.provide({ sources: { sales: source } });
     await source.load();
     await settle();
@@ -474,8 +474,59 @@ test('a grid card\'s Show as draws its slot as a chart — bars and stack as its
     return at;
   })()`) as Record<string, Record<string, unknown>>;
   expect(r['first']).toEqual({ tag: 'sherpa-data-grid', rows: 5 });
-  // A bar a plan, its rows stacked by day; its legend lists the days.
-  expect(r['bar']).toEqual({ tag: 'sherpa-barchart', scope: 'data', id: '', shown: 'bar', marks: ['Free: 1 (Tue 1)', 'Pro: 3 (Mon 2 · Wed 1)', 'Enterprise: 1 (Mon 1)'], legend: 3 });
+  // A bar a plan, its row count; its legend lists the plans.
+  expect(r['bar']).toEqual({ tag: 'sherpa-barchart', scope: 'data', id: '', shown: 'bar', marks: ['Free: 1', 'Pro: 3', 'Enterprise: 1'], legend: 3 });
   // The page's own grid, with its columns, and its rows again.
   expect(r['back']).toEqual({ same: true, shown: 'default', rows: 5, reports: [] });
+});
+
+test('a grid in a slot: its Primary leads its columns, and a Secondary makes it a PIVOT — a row a Primary value, a column a Secondary value, row counts — until let go (Will, TODO 548)', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-container data-scope="data">
+        <sherpa-quick-filter-toolbar></sherpa-quick-filter-toolbar>
+        <sherpa-data-grid id="grid" data-scope="data"></sherpa-data-grid>
+      </sherpa-container>\`;
+    const grid = provider.querySelector('#grid');
+    grid.columns = [{ field: 'plan', header: 'Plan' }, { field: 'day', header: 'Day' }];
+    grid.key = 'id';
+    const source = make();
+    source.declareField('plan', { label: 'Plan' });
+    source.declareField('day', { label: 'Day' });
+    source.query.offer('data', ['plan', 'day']);
+    source.query.hold('data', ['plan', 'day']);
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    const bar = provider.querySelector('sherpa-quick-filter-toolbar');
+    const read = () => ({
+      chips: [...bar.shadowRoot.querySelectorAll('.organise-zone > .organise-chip')].map((c) => c.dataset.id + (c.hasAttribute('data-current') ? ':' + c.column : '')),
+      heads: [...grid.shadowRoot.querySelectorAll('.head-cell .head-label')].map((h) => h.textContent.trim()),
+      rows: [...grid.shadowRoot.querySelectorAll('.body .row')].map((row) => [...row.querySelectorAll('td')].map((td) => td.textContent.trim()).filter(Boolean).join('|')),
+    });
+    const at = { first: read() };
+    source.query.present('data', { primary: 'day' });
+    await settle(); await settle();
+    at.led = read();
+    source.query.present('data', { secondary: 'plan' });
+    await settle(); await settle();
+    at.pivot = read();
+    source.query.present('data', { secondary: undefined });
+    await settle(); await settle();
+    at.back = read();
+    return at;
+  })()`) as Record<string, { chips: string[]; heads: string[]; rows: string[] }>;
+  // Its first column is its Primary, on — small until picked; Secondary waits for a picked Primary.
+  expect(r['first']!.chips).toEqual(['primary:plan', 'group', 'sort']);
+  expect(r['led']!.chips).toEqual(['primary:day', 'secondary', 'group', 'sort']);
+  expect(r['first']!.heads).toEqual(['Plan', 'Day']);
+  // Primary day: that column leads.
+  expect(r['led']!.heads).toEqual(['Day', 'Plan']);
+  // Secondary plan: a row a day, a column a plan, row counts, and their total.
+  expect(r['pivot']!.heads).toEqual(['Day', 'Free', 'Pro', 'Enterprise', 'Total']);
+  expect(r['pivot']!.rows).toEqual(['Mon|0|1|1|2', 'Tue|1|0|0|1', 'Wed|0|1|0|1']);
+  // Let go: its own columns and its rows again.
+  expect(r['back']!.heads).toEqual(['Day', 'Plan']);
+  expect(r['back']!.rows.length).toBe(4);
 });

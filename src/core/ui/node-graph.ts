@@ -5,7 +5,7 @@
  *
  * Map:
  * - GraphEdit — One row a reader changed: its node, its row and the new value.
- * - DrawOptions — What a drawing tells its host: each edit, and each node a reader picks.
+ * - DrawOptions — What a drawing tells its host: each edit, each node a reader picks, and each new route.
  * - drawGraph — Draw a graph on a canvas: each node by id, kept where the reader moved it; then its routes.
  * - markNode — Mark one node as the one picked, or none.
  * - InspectOptions — What an inspector shows beside a node's rows, and whom it tells of an edit.
@@ -27,7 +27,8 @@ import type { PageDefinition } from '../data/page-definition.js';
 import { editedCondition, queryGraph, type QueryGraphFacts } from '../data/query-graph.js';
 import { VIEW } from '../data/query.js';
 import { OP_LABELS, valueKey, type FilterOp } from '../data/store.js';
-import { readingsOf } from '../data/where.js';
+import { report } from '../data/report.js';
+import { readingsOf, whereOf } from '../data/where.js';
 import type { DrawnGraph, GraphNode, GraphRow, WorkflowRoute } from '../data/workflow.js';
 import { ask } from './bind-source.js';
 
@@ -43,10 +44,13 @@ export interface GraphEdit {
   value: unknown;
 }
 
-/** What a drawing tells its host: each edit, and each node a reader picks — the drawing writes nothing. */
+/** What a drawing tells its host: each edit, each node a reader picks, and each route a
+ *  reader draws — the drawing writes nothing. */
 export interface DrawOptions {
   onEdit?: (edit: GraphEdit) => void;
   onSelect?: (node: GraphNode) => void;
+  /** A line dragged from an output socket and let go on an input socket. */
+  onConnect?: (route: WorkflowRoute) => void;
 }
 
 /** A field a row draws: a text field or a select, a set of ticks, or a switch. */
@@ -63,6 +67,8 @@ interface Drawn {
   shapes: Map<string, string>;
   lines: SVGSVGElement;
   routes: readonly WorkflowRoute[];
+  /** The line a reader is drawing, kept over each redraw of the routes. */
+  draft: SVGPathElement | null;
   sizes: ResizeObserver;
   fitted: boolean;
 }
@@ -156,6 +162,12 @@ function onPlane(canvas: SherpaLayoutCanvas, rect: DOMRect): [number, number] {
   return [(rect.left + rect.width / 2 - box.left - x) / zoom, (rect.top + rect.height / 2 - box.top - y) / zoom];
 }
 
+/** A route's curve on the plane: out of one socket, into the next. */
+function curve([x1, y1]: [number, number], [x2, y2]: [number, number]): string {
+  const bend = Math.max(40, Math.abs(x2 - x1) / 2);
+  return `M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`;
+}
+
 /** A curve for each route, from its output socket to its input socket. */
 function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
   const end = (address: string, side: SocketSide): DOMRect | null => {
@@ -167,16 +179,70 @@ function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
     const a = end(from, 'output');
     const b = end(to, 'input');
     if (!a || !b) return [];
-    const [x1, y1] = onPlane(canvas, a);
-    const [x2, y2] = onPlane(canvas, b);
-    const bend = Math.max(40, Math.abs(x2 - x1) / 2);
     const path = document.createElementNS(SVG, 'path');
-    path.setAttribute('d', `M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`);
+    path.setAttribute('d', curve(onPlane(canvas, a), onPlane(canvas, b)));
     path.dataset['from'] = from;
     path.dataset['to'] = to;
     return [path];
   });
-  drawn.lines.replaceChildren(...paths);
+  drawn.lines.replaceChildren(...paths, ...(drawn.draft ? [drawn.draft] : []));
+}
+
+/** Where a drawn node or row is: `node`, or `node/row`. */
+function addressOf(drawn: Drawn, el: HTMLElement): string | null {
+  const row = drawn.addresses.get(el);
+  if (row) return `${row[0]}/${row[1]}`;
+  return [...drawn.nodes].find(([, node]) => node === el)?.[0] ?? null;
+}
+
+/** The input socket nearest a point on the screen, within reach, or none. */
+function inputAt(drawn: Drawn, x: number, y: number): string | null {
+  const REACH = 16;
+  let best: [string, number] | null = null;
+  for (const [address, el] of [...drawn.nodes, ...drawn.rows]) {
+    const rect = (el as HasSockets).socketRect?.('input');
+    if (!rect) continue;
+    const far = Math.hypot(rect.left + rect.width / 2 - x, rect.top + rect.height / 2 - y);
+    if (far <= REACH && (!best || far < best[1])) best = [address, far];
+  }
+  return best?.[0] ?? null;
+}
+
+/** A press on an OUTPUT socket draws a new route: the line follows the pointer, and let
+ *  go on an input socket, the host is asked to join them. It never moves the node or the view. */
+function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEvent): void {
+  const path = event.composedPath();
+  if (event.button !== 0 || !(path[0] instanceof Element) || !path[0].classList.contains('socket-out')) return;
+  const owner = path.find((n): n is HTMLElement => n instanceof HTMLElement && addressOf(drawn, n) !== null);
+  const from = owner ? addressOf(drawn, owner) : null;
+  const start = (owner as HasSockets | undefined)?.socketRect?.('output');
+  if (!from || !start) return;
+  event.preventDefault();
+  event.stopPropagation();
+  const draft = document.createElementNS(SVG, 'path');
+  draft.setAttribute('class', 'graph-draft');
+  draft.setAttribute('stroke-dasharray', '6 4');
+  drawn.draft = draft;
+  drawn.lines.append(draft);
+  const begin = onPlane(canvas, start);
+  const follow = (e: PointerEvent): void => {
+    const box = canvas.getBoundingClientRect();
+    const { x, y, zoom } = canvas.view;
+    draft.setAttribute('d', curve(begin, [(e.clientX - box.left - x) / zoom, (e.clientY - box.top - y) / zoom]));
+  };
+  const stop = (e: PointerEvent): void => {
+    window.removeEventListener('pointermove', follow);
+    window.removeEventListener('pointerup', stop);
+    window.removeEventListener('pointercancel', stop);
+    draft.remove();
+    drawn.draft = null;
+    const to = e.type === 'pointerup' ? inputAt(drawn, e.clientX, e.clientY) : null;
+    // Let go on the bare canvas, or on its own node: nothing is joined.
+    if (to && to.split('/')[0] !== from.split('/')[0]) drawn.options.onConnect?.({ from, to });
+  };
+  window.addEventListener('pointermove', follow);
+  window.addEventListener('pointerup', stop);
+  window.addEventListener('pointercancel', stop);
 }
 
 /** What a canvas has drawn, made the first time. */
@@ -194,7 +260,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
   canvas.prepend(lines);
   const made: Drawn = {
     graph: { nodes: [], routes: [] }, options: {},
-    nodes: new Map(), rows: new Map(), addresses: new WeakMap(), shapes: new Map(), lines, routes: [], fitted: false,
+    nodes: new Map(), rows: new Map(), addresses: new WeakMap(), shapes: new Map(), lines, routes: [], draft: null, fitted: false,
     // A node's height lands when its parts render: the lines follow, and the first fits the view.
     sizes: new ResizeObserver(() => {
       drawRoutes(canvas, made);
@@ -202,6 +268,8 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     }),
   };
   canvas.addEventListener('node-move', () => drawRoutes(canvas, made));
+  // Before the node and the view hear it: a drag from an output socket is a new route.
+  canvas.addEventListener('pointerdown', (event) => connectFrom(canvas, made, event), { capture: true });
   // A field's change, as an EDIT for the host: the drawing writes nothing itself.
   canvas.addEventListener('change', (event) => {
     const line = event.composedPath().find((n): n is HTMLElement => n instanceof HTMLElement && made.addresses.has(n));
@@ -372,6 +440,33 @@ export function bindQueryEditor(
       query.present(scope, { [row.name]: value ? String(value) : undefined });
     }
   };
+  /* A NEW ROUTE, as the Query can take one: a condition into a field of a scope. The
+     same field in another scope MOVES it there; another field takes it, keeping the
+     values that field has. Anything else is no route the Query has. */
+  const onConnect = ({ from, to }: WorkflowRoute): void => {
+    const was = graph.nodes.find((n) => n.id === from.split('/')[0]);
+    const [into = '', field = ''] = to.split('/');
+    const target = graph.nodes.find((n) => n.id === into);
+    const scope = was?.ref?.['scope'];
+    const old = was?.ref?.['field'];
+    const there = target?.ref?.['scope'];
+    if (was?.kind !== 'condition' || target?.kind !== 'scope' || !field || !scope || !old || !there) {
+      report({ code: 'query-route', message: `The Query has no route from "${was?.heading ?? from}" to "${target?.heading ?? to}": a condition goes into a field of a scope.` });
+      return;
+    }
+    if (scope === there && old === field) return;
+    const rows = Object.fromEntries(was.rows.map((r) => [r.name, r.value]));
+    let given = rows['value'] as string | string[];
+    const known = values(field);
+    if (field !== old && known && Array.isArray(given)) given = given.filter((v) => known.includes(v));
+    const reading = readingsOf({ [field]: editedCondition(String(rows['op']), given ?? '', typeOf(field)) })[field] ?? null;
+    // It must still SAY something there: an empty pick filters nothing, so nothing moves.
+    if (!reading || !whereOf({ [field]: reading })[field]) {
+      report({ code: 'query-route', message: `Nothing "${was.heading}" picks is a value of "${field}": tick its values there.` });
+      return;
+    }
+    ask(query, [{ scope, field: old, reading: null }, { scope: there, field, reading }], there);
+  };
   // The node in the inspector, and its live visual: kept while the same component is shown.
   let picked: string | null = null;
   let visual: { id: string; el: HTMLElement } | null = null;
@@ -410,7 +505,7 @@ export function bindQueryEditor(
   inspector?.addEventListener('panel-close', onClose);
   const draw = (): void => {
     graph = queryGraph(query.draft, definition, { ...facts, values });
-    drawGraph(canvas, graph, { onEdit, onSelect });
+    drawGraph(canvas, graph, { onEdit, onSelect, onConnect });
     if (inspector?.open) show(graph);
   };
   draw();

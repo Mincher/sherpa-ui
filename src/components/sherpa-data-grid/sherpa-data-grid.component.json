@@ -699,6 +699,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-primary-field",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "its slot's Primary: that column leads, pinned. Set by its provider. TODO 548"
+    },
+    {
+      "$type": "prop",
       "name": "data-scope",
       "type": "string",
       "observed": false,

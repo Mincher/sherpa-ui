@@ -99,6 +99,7 @@ For a table of records that can be sorted, filtered, grouped and selected. It re
 | `data-needles` | text |  | what an EXTERNAL filter MATCHED on, so its hits mark in the cells: `field:op:value` per entry, NEWLINE separated. Written by SherpaDataSource beside data-filter-fields. Only substring ops appear — `eq` matched the whole value and `ne` matched by absence, so neither leaves a span to point at. TRAP T-a-needle-comes-from-either-direction |
 | `data-page` | number |  | the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and never writes data-page itself. |
 | `data-page-size` | number |  | the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and never writes data-page itself. |
+| `data-primary-field` | text |  | its slot's Primary: that column leads, pinned. Set by its provider. TODO 548 |
 | `data-scope` | text |  | ASKED of its provider: the Query scope its headings answer |
 | `data-scroll-shadow` | boolean | `false` | an inner shadow on each edge its rows (the top one is the header's, TODO 421) is scrolled past |
 | `data-select` | `single` `multiple` | `multiple` | multiple \| single — single draws RADIOS, holds one row, and shows no control in the header: "select all" is meaningless where only one can be chosen |

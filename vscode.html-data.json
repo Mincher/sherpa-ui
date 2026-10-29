@@ -1062,6 +1062,10 @@
           "description": "the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and never writes data-page itself."
         },
         {
+          "name": "data-primary-field",
+          "description": "its slot's Primary: that column leads, pinned. Set by its provider. TODO 548"
+        },
+        {
           "name": "data-scope",
           "description": "ASKED of its provider: the Query scope its headings answer"
         },

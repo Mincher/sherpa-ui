@@ -13,6 +13,7 @@
  * - ScopeQuery — One scope: the fields it holds, each one's reading, and how it arranges rows.
  * - PRESENTATION_KINDS — Each way a slot can show its data.
  * - Presentation — A slot's presentation: a chart or a grid; a chart's two fields, its parts and its order.
+ * - PresentationDefinition — What a page DEFINES a slot shows: a presentation, and a default per view — its grid's, its charts' — over it.
  * - Arrangement — How a Query arranges its rows: the ONE scope that sorts, groups, keeps a suspended sort or searches.
  * - ARRANGE_KEYS — The keys that arrange a scope's rows, written once.
  * - stripArrangement — A scope without its arrangement, in place.
@@ -107,6 +108,13 @@ export interface Presentation {
   group?: string;
   /** The segments by value; none keeps their order. */
   sort?: SortDirection;
+}
+
+/** What a page DEFINES a slot shows: a presentation, and a default per view —
+ *  its grid's, its charts' — over it. Will, TODO 548 */
+export interface PresentationDefinition extends Presentation {
+  grid?: Presentation;
+  chart?: Presentation;
 }
 
 /** How a Query arranges its rows: the ONE scope that sorts, groups, keeps a suspended sort or searches. */

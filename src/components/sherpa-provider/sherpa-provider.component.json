@@ -129,6 +129,12 @@
             "attrs": {
               "data-word": "app-context"
             }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "total"
+            }
           }
         ]
       }

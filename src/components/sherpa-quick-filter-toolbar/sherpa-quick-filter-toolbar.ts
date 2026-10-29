@@ -60,7 +60,7 @@ export interface OrganiseDef {
   /** A Sort with no column to pick: it orders what a chart draws, by value. TODO 548 */
   order?: boolean;
   /** A chart's Primary and Secondary: the fields it may count and split by, and those it does. TODO 548 */
-  chart?: { fields: OrganiseColumn[]; primary?: string; secondary?: string; stacks?: true };
+  chart?: { fields: OrganiseColumn[]; primary?: string; secondary?: string; stacks?: true; compact?: { primary: boolean; secondary: boolean } };
 }
 
 export type { OrganiseColumn } from '../../core/data/data-source.js';
@@ -2626,9 +2626,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // its divider rule floating.
     this.toggleState('has-organise', group.length > 0 || sort.length > 0 || order);
     if (chart?.fields.length) {
-      zone.append(this.#chartChip('primary', chart.fields, chart.primary));
-      // Secondary where the chart stacks by one: a bar chart. Will, TODO 548
-      if (chart.stacks) zone.append(this.#chartChip('secondary', chart.fields, chart.secondary));
+      zone.append(this.#chartChip('primary', chart.fields, chart.primary, chart.compact?.primary));
+      /* Secondary where it stacks by one, once a Primary is set: a grid's waits for
+         the reader's Primary. Will, TODO 548 */
+      if (chart.stacks && !chart.compact?.primary) zone.append(this.#chartChip('secondary', chart.fields, chart.secondary, chart.compact?.secondary));
     }
 
     /* BORN NAMING ITS COLUMN. The bar may already be grouped or sorted — a
@@ -2669,10 +2670,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  a bar chart's stack, its colours and legend: a
    *  Group chip's gesture, its menu a field, its body on or off (off, the chart's
    *  own). Drawn ON at the field in force. Will, TODO 548 */
-  #chartChip(id: 'primary' | 'secondary', fields: OrganiseColumn[], on: string | undefined): HTMLElement {
+  #chartChip(id: 'primary' | 'secondary', fields: OrganiseColumn[], on: string | undefined, small = false): HTMLElement {
     const chip = this.clone(`template.organise-${id}-tpl`);
     if (!chip) throw new Error(`sherpa-quick-filter-toolbar: template.organise-${id}-tpl is missing or empty`);
     if (on) chip.dataset['column'] = on;
+    // A grid's, small until the reader picks one: just its menu button, named. Will, TODO 548
+    chip.toggleAttribute('data-icon-only', small);
+    if (small) chip.setAttribute('aria-label', chip.dataset['label'] ?? id);
     this.#addMenu(chip, { id, label: chip.dataset['label'] ?? '', select: 'single', options: organiseOptions(fields, on) });
     this.#lock(chip);
     (chip as SherpaQuickFilter).arrangeBy?.(on ?? '');

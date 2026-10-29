@@ -143,7 +143,9 @@
             "primary": { "type": "string" },
             "secondary": { "type": "string" },
             "group": { "type": "string" },
-            "sort": { "enum": ["asc", "desc"] }
+            "sort": { "enum": ["asc", "desc"] },
+            "grid": { "description": "Its grid's own default, over the slot's: a grid's Primary is its pinned first column.", "$ref": "#/$defs/view" },
+            "chart": { "description": "Its charts' own default, over the slot's.", "$ref": "#/$defs/view" }
           }
         },
         "sets": {
@@ -161,6 +163,17 @@
             }
           }
         }
+      }
+    },
+    "view": {
+      "description": "A view's default presentation: its Primary, Secondary, Group and order.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "primary": { "type": "string" },
+        "secondary": { "type": "string" },
+        "group": { "type": "string" },
+        "sort": { "enum": ["asc", "desc"] }
       }
     },
     "savedFilter": {

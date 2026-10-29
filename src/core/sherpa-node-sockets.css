@@ -21,7 +21,12 @@
   pointer-events: none;
 }
 .socket-in { inset-inline-start: 0; }
-.socket-out { inset-inline-start: 100%; }
+/* An OUTPUT takes the pointer: a drag from it draws a new route. Will, TODO 555 */
+.socket-out {
+  inset-inline-start: 100%;
+  pointer-events: auto;
+  cursor: crosshair;
+}
 :host([data-input-socket]) .socket-in,
 :host([data-output-socket]) .socket-out { display: block; }
 

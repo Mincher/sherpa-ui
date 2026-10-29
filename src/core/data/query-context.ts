@@ -78,7 +78,7 @@
 import type { BoundControl, FilterSet, QueryState } from './data-source-types.js';
 import {
   answerOf, arrangementOf, copyQuery, copyReading, eachScope, emptyScope, freezeReading, readingAnswered, sameReading, stripArrangement, VIEW,
-  type Arrangement, type Presentation, type Query, type QueryDefaults, type ScopeQuery,
+  type Arrangement, type Presentation, type PresentationDefinition, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
 import {
   answerIn, copyField, copyScope, definitionOf, holderOf, holdsField, homes, moveHold, prune, readingOf, rehome,
@@ -1085,19 +1085,23 @@ export class QueryContext extends EventTarget {
     return { ...this.#live.applied.scopes[scope]?.presentation };
   }
 
-  /** What its page DEFINES a slot shows — a chart's two fields — under what is kept.
-   *  Not in the Query: only what the reader changed is. Will, TODO 548 */
-  declarePresentation(scope: string, presentation: Presentation): void {
-    this.#defined.set(scope, { ...presentation });
+  /** What its page DEFINES a slot shows — and a default per view, its grid's and
+   *  its charts' — under what is kept. Not in the Query: only what the reader
+   *  changed is. Will, TODO 548 */
+  declarePresentation(scope: string, presentation: PresentationDefinition): void {
+    this.#defined.set(scope, structuredClone(presentation));
   }
 
-  /** A slot's presentation as shown: what is kept, over its definition. TODO 548 */
-  presented(scope: string): Presentation {
-    return { ...this.#defined.get(scope), ...this.presentation(scope) };
+  /** A slot's presentation as shown in a view: what is kept, over that view's
+   *  definition, over the slot's. The reader's pick wins. Will, TODO 548 */
+  presented(scope: string, view?: 'grid' | 'chart'): Presentation {
+    const { grid, chart, ...base } = this.#defined.get(scope) ?? {};
+    const own = view === 'grid' ? grid : view === 'chart' ? chart : undefined;
+    return { ...base, ...own, ...this.presentation(scope) };
   }
 
   /** Each slot's definition. */
-  readonly #defined = new Map<string, Presentation>();
+  readonly #defined = new Map<string, PresentationDefinition>();
 
   /** Change a slot's presentation, at once in BOTH copies — it filters nothing, so
    *  no Apply waits. A key given `undefined` goes back to the definition. Will, TODO 548 */

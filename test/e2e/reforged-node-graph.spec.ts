@@ -234,3 +234,73 @@ test('a picked node opens its inspector: its rows again, their routes, and an ed
   });
   expect(r).toEqual({ open: true, heading: 'Status', current: ['Status'], value: [true, 'From A'], heard: [['op', 'ne']] });
 });
+
+/** The middle of a drawn node's or row's socket, on the screen. */
+const SOCKET = `(el, side) => { const r = el.socketRect(side); return [r.left + r.width / 2, r.top + r.height / 2]; }`;
+
+test('a drag from an OUTPUT socket draws a new route: let go on an input socket, the host is asked; on bare canvas, nothing', async ({ page }) => {
+  await page.evaluate(async () => {
+    const { drawGraph } = await import('/dist/app.js');
+    const canvas = document.getElementById('root')!.querySelector('sherpa-layout-canvas') as Drawable;
+    const asked: unknown[] = [];
+    (window as unknown as { asked: unknown[] }).asked = asked;
+    drawGraph(canvas, { routes: [], nodes: [
+      { id: 'a', kind: 'value', heading: 'A', icon: 'function', output: 'value', x: 0, y: 0, rows: [] },
+      { id: 'b', kind: 'filter', heading: 'B', icon: 'filter', x: 360, y: 0, rows: [{ name: 'x', label: 'X', field: 'text', input: 'value', editable: true }] },
+    ] }, { onConnect: (route) => asked.push(route) });
+    await window.__settled();
+  });
+  const at = (selector: string, side: string) => page.evaluate(([sel, s, socket]) => eval(socket!)(document.querySelector(sel!), s), [selector, side, SOCKET]) as Promise<[number, number]>;
+  const [ax, ay] = await at('#root sherpa-node[data-heading="A"]', 'output');
+  const [bx, by] = await at('#root sherpa-node[data-heading="B"] sherpa-node-row', 'input');
+  const before = await page.evaluate(() => [document.querySelector('#root sherpa-node[data-heading="A"]')!.getAttribute('data-x'),
+    JSON.stringify((document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { view: unknown }).view)]);
+  // Onto B's input: a route is asked for.
+  await page.mouse.move(ax, ay);
+  await page.mouse.down();
+  await page.mouse.move((ax + bx) / 2, by + 40, { steps: 4 });
+  const drafting = await page.evaluate(() => document.querySelectorAll('#root svg.graph-routes path.graph-draft').length);
+  await page.mouse.move(bx, by, { steps: 4 });
+  await page.mouse.up();
+  // Onto the bare canvas: nothing.
+  await page.mouse.move(ax, ay);
+  await page.mouse.down();
+  await page.mouse.move(ax + 120, ay + 200, { steps: 4 });
+  await page.mouse.up();
+  const r = await page.evaluate(() => ({
+    asked: (window as unknown as { asked: unknown[] }).asked,
+    drafts: document.querySelectorAll('#root svg.graph-routes path.graph-draft').length,
+    after: [document.querySelector('#root sherpa-node[data-heading="A"]')!.getAttribute('data-x'),
+      JSON.stringify((document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { view: unknown }).view)],
+  }));
+  expect(drafting).toBe(1);
+  expect(r).toEqual({ asked: [{ from: 'a', to: 'b/x' }], drafts: 0, after: before });
+});
+
+test('a condition dragged into the same field of another scope MOVES there, as one change through a chip\'s doors', async ({ page }) => {
+  await page.evaluate(async () => {
+    const { bindQueryEditor } = await import('/dist/app.js');
+    const { readingsOf } = await import('/dist/data.js');
+    const canvas = document.getElementById('root')!.querySelector('sherpa-layout-canvas') as Drawable;
+    const asked: unknown[] = [];
+    (window as unknown as { asked: unknown[] }).asked = asked;
+    const query = Object.assign(new EventTarget(), {
+      draft: { v: 1, scopes: {
+        view: { holds: ['region'], readings: readingsOf({ region: { in: ['EMEA'] } }) },
+        data: { holds: ['region'], readings: {} },
+      } },
+      batch: (fn: () => void) => { asked.push('batch'); fn(); },
+      setReading: (scope: string, field: string, reading: unknown) => asked.push([scope, field, reading === null ? null : 'reading']),
+    });
+    bindQueryEditor(canvas, { query } as never, { definition: { v: 1 as const, id: 'records', source: { store: 'customers' } } });
+    await window.__settled();
+  });
+  const at = (selector: string, side: string) => page.evaluate(([sel, s, socket]) => eval(socket!)(document.querySelector(sel!), s), [selector, side, SOCKET]) as Promise<[number, number]>;
+  const [ax, ay] = await at('#root sherpa-node[data-icon="function"]', 'output');
+  const [bx, by] = await at('#root sherpa-node[data-heading="data"] sherpa-node-row[data-label="region"]', 'input');
+  await page.mouse.move(ax, ay);
+  await page.mouse.down();
+  await page.mouse.move(bx, by, { steps: 6 });
+  await page.mouse.up();
+  expect(await page.evaluate(() => (window as unknown as { asked: unknown[] }).asked)).toEqual(['batch', ['view', 'region', null], ['data', 'region', 'reading']]);
+});

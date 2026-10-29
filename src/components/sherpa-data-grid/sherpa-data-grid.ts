@@ -153,6 +153,8 @@ export class SherpaDataGrid extends SherpaElement {
     'data-heading-hover': { type: 'boolean', kind: 'style' },
     // A column's `tags` draw, and its heading menu joins their lists. Will, TODO 490
     'data-multi-field': { type: 'boolean', kind: 'behaviour' },
+    // Its slot's Primary: the column that leads, pinned. Written by its provider. Will, TODO 548
+    'data-primary-field': { type: 'string', kind: 'behaviour' },
     'data-locked': DATA_PROPS['data-locked'],
     'data-apply-on': DATA_PROPS['data-apply-on'],
     'data-sort-field': DATA_PROPS['data-sort-field'],
@@ -293,6 +295,9 @@ export class SherpaDataGrid extends SherpaElement {
         this.#syncColumnFilterStatus();
         this.#syncEmpty();
         return;
+      case 'data-primary-field':
+        this.#render();
+        return;
       // Read when asked, or drawn by CSS.
       case 'data-total-pages': case 'data-locked': case 'data-column-filters':
         return;
@@ -374,8 +379,11 @@ export class SherpaDataGrid extends SherpaElement {
   protected override renderData(data: unknown): void {
     this.#awaitingData = false;
     // Rows alone — a bind with no adapter — are rows, under the columns the page set. TODO 518
-    const cfg = (Array.isArray(data) ? { columns: this.columns, key: this.key, actions: this.actions, rows: data }
-      : data ?? {}) as Partial<GridConfig>;
+    const given = (Array.isArray(data) ? { columns: this.columns, key: this.key, actions: this.actions, rows: data }
+      : data ?? {}) as Partial<GridConfig> & { pivot?: Partial<GridConfig> };
+    /* A PIVOT draws its own rows and columns while its slot names a Secondary,
+       and never keeps them: its own come back after. Will, TODO 548 */
+    const cfg = given.pivot ? { ...given.pivot, actions: [] } : given;
     this.#columns = Array.isArray(cfg.columns) ? cfg.columns : [];
     this.#rows = Array.isArray(cfg.rows) ? cfg.rows : [];
     this.#key = typeof cfg.key === 'string' ? cfg.key : null;
@@ -1217,8 +1225,10 @@ export class SherpaDataGrid extends SherpaElement {
    */
   #shownColumns(): GridColumn[] {
     const group = this.dataset['groupField'];
-    if (!group) return this.#columns;
-    return this.#columns.filter((c) => c.field !== group);
+    // Its PRIMARY leads, where the first column is pinned. Will, TODO 548
+    const lead = this.dataset['primaryField'];
+    const ordered = lead ? [...this.#columns].sort((a, b) => Number(b.field === lead) - Number(a.field === lead)) : this.#columns;
+    return group ? ordered.filter((c) => c.field !== group) : ordered;
   }
 
   /** Draw the rows — with a group heading at each change, when grouped. */

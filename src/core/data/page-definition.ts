@@ -15,7 +15,7 @@ import { DataSource, type FieldDeclaration, type FilterSet } from './data-source
 import { report } from './report.js';
 import type { Store } from './store.js';
 import type { QueryContext } from './query-context.js';
-import { isSavedFilter, type Presentation, type SavedFilter } from './query.js';
+import { isSavedFilter, type PresentationDefinition, type SavedFilter } from './query.js';
 import type { Condition } from './where.js';
 
 /** One scope: its name, and the fields it offers and holds at the start. */
@@ -36,9 +36,9 @@ export interface ScopeDefinition {
    *  the scope — `{ "id": "high-risk", "label": "High risk", "where": { … } }`,
    *  `where` in the plain form. Will, TODO 493 · TRAP T-a-preset-is-its-own-part */
   presets?: readonly { id: string; label: string; where: Readonly<Record<string, Condition>> }[];
-  /** What its slot shows until the reader changes it: a chart's `primary` (its X
-   *  axis, a bar a value) and `secondary` (its Y axis, its distinct values counted). Will, TODO 548 */
-  presentation?: Presentation;
+  /** What its slot shows until the reader changes it — its `primary`, `secondary`
+   *  and `group` — and a default per view, `grid` and `chart`, over it. Will, TODO 548 */
+  presentation?: PresentationDefinition;
 }
 
 /** A page's source: which store, how it pages and searches, its fields and

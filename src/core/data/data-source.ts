@@ -515,11 +515,12 @@ export class DataSource extends EventTarget {
       available: this.addable(scope), ...(sets.length ? { sets } : {}),
       ...(q.suspended ? { suspended: true } : {}),
     };
-    /* GROUP by a list field only — by its declaration, so before its values come:
-       never a number, a date, or one answered by typing alone. Will, TODOs 500, 523 */
+    /* GROUP, PRIMARY and SECONDARY by any field that names things — by its
+       declaration, so before its values come: never a number or a date. A typed
+       field, a name, is one too. Will, TODOs 500, 523, 548 */
     const groupable = (c: { field: string }): boolean => {
       const facts = this.#catalogue.get(c.field);
-      return facts?.type !== 'number' && facts?.type !== 'date' && facts?.advanced !== 'only';
+      return facts?.type !== 'number' && facts?.type !== 'date';
     };
     /* HOW its rows are arranged — only in a scope that arranges, and its own
        arrangement only. TRAP T-group-and-sort-are-component-scope */
@@ -536,13 +537,26 @@ export class DataSource extends EventTarget {
         out.sortField = first.field;
         out.sortDirection = first.direction ?? 'asc';
       }
+      /* …and a grid's Primary — its leading column, pinned — and Secondary, a
+         pivot's columns. Will, TODO 548 */
+      const shown = this.#context.presented(scope, 'grid');
+      const lead = shown.primary ?? cols[0]?.field;
+      // Small until the reader picks one: a grid's bar is full already. Will, TODO 548
+      const picked = this.#context.presentation(scope);
+      Object.assign(out, {
+        chartFields: cols.filter(groupable), stacks: true, compact: true,
+        ...(lead ? { primaryField: lead } : {}),
+        ...(shown.secondary ? { secondaryField: shown.secondary } : {}),
+        ...(picked.primary ? { primaryPicked: true } : {}),
+        ...(picked.secondary ? { secondaryPicked: true } : {}),
+      });
     } else if (this.#binding.presentsIn(scope)) {
       /* A SLOT: its Primary, its Secondary where its chart stacks — a bar chart —
          its Group, by list fields, and its order: kept in the Query, never the
          rows'. Will, TODO 548 */
       const lists = this.#catalogue.known().map((field) => ({ field, label: this.#catalogue.get(field)?.label ?? field })).filter(groupable);
       // Its chart's own, under what the reader changed.
-      const shown = { ...this.#binding.shownIn(scope), ...this.#context.presented(scope) };
+      const shown = { ...this.#binding.shownIn(scope), ...this.#context.presented(scope, 'chart') };
       const stacks = this.#binding.stacksIn(scope);
       const secondary = stacks ? shown.secondary : undefined;
       Object.assign(out, {
