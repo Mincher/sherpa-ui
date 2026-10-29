@@ -5,7 +5,7 @@
     "fetched": 0
   },
   "components.js": {
-    "js": 926243,
+    "js": 928307,
     "files": 112,
     "fetched": 208813
   },
@@ -30,7 +30,7 @@
     "fetched": 0
   },
   "components/sherpa-barchart/sherpa-barchart.js": {
-    "js": 259374,
+    "js": 260780,
     "files": 15,
     "fetched": 0
   },
@@ -60,7 +60,7 @@
     "fetched": 0
   },
   "components/sherpa-chart-legend/sherpa-chart-legend.js": {
-    "js": 423989,
+    "js": 424292,
     "files": 36,
     "fetched": 0
   },
@@ -95,7 +95,7 @@
     "fetched": 0
   },
   "components/sherpa-data-grid/sherpa-data-grid.js": {
-    "js": 556131,
+    "js": 556434,
     "files": 52,
     "fetched": 0
   },
@@ -120,7 +120,7 @@
     "fetched": 0
   },
   "components/sherpa-gauge-chart/sherpa-gauge-chart.js": {
-    "js": 261335,
+    "js": 261638,
     "files": 16,
     "fetched": 0
   },
@@ -150,7 +150,7 @@
     "fetched": 0
   },
   "components/sherpa-line-chart/sherpa-line-chart.js": {
-    "js": 259505,
+    "js": 259808,
     "files": 15,
     "fetched": 0
   },
@@ -180,7 +180,7 @@
     "fetched": 0
   },
   "components/sherpa-metric/sherpa-metric.js": {
-    "js": 260209,
+    "js": 260512,
     "files": 15,
     "fetched": 0
   },
@@ -245,17 +245,17 @@
     "fetched": 0
   },
   "components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js": {
-    "js": 555778,
+    "js": 556081,
     "files": 51,
     "fetched": 0
   },
   "components/sherpa-quick-filter/sherpa-quick-filter.js": {
-    "js": 299511,
+    "js": 299814,
     "files": 22,
     "fetched": 0
   },
   "components/sherpa-radial-chart/sherpa-radial-chart.js": {
-    "js": 257772,
+    "js": 258733,
     "files": 16,
     "fetched": 0
   },
@@ -295,7 +295,7 @@
     "fetched": 0
   },
   "components/sherpa-sparkline/sherpa-sparkline.js": {
-    "js": 250985,
+    "js": 251288,
     "files": 13,
     "fetched": 0
   },
@@ -345,7 +345,7 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 1111007,
+    "js": 1113071,
     "files": 154,
     "fetched": 208813
   }
