@@ -480,7 +480,7 @@ test('a grid card\'s Show as draws its slot as a chart — bars and stack as its
   expect(r['back']).toEqual({ same: true, shown: 'default', rows: 5, reports: [] });
 });
 
-test('a grid in a slot: its Primary leads its columns; a Secondary makes it a PIVOT whose rows OPEN on their own rows; Group sections it (Will, TODOs 548, 570)', async ({ page }) => {
+test('a grid in a slot: its Primary leads its columns; a Secondary makes it a PIVOT whose rows OPEN on their own rows; Group groups those — a chain (Will, TODOs 548, 570, 574)', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     provider.innerHTML = \`
@@ -511,6 +511,7 @@ test('a grid in a slot: its Primary leads its columns; a Secondary makes it a PI
       rows: [...grid.shadowRoot.querySelectorAll('.body > .row')].map(cells),
       groups: [...grid.shadowRoot.querySelectorAll('.body > .group-row .group-label')].map((g) => g.textContent.trim()),
       sub: [...grid.shadowRoot.querySelectorAll('.detail-grid')].map((g) => [...g.shadowRoot.querySelectorAll('.body > .row')].map(cells)),
+      subGroups: [...grid.shadowRoot.querySelectorAll('.detail-grid')].map((g) => [...g.shadowRoot.querySelectorAll('.body > .group-row .group-label')].map((l) => l.textContent.trim())),
     });
     const at = { first: read() };
     source.query.present('data', { primary: 'day' });
@@ -522,28 +523,33 @@ test('a grid in a slot: its Primary leads its columns; a Secondary makes it a PI
     grid.shadowRoot.querySelector('.row-open').click();
     await settle(); await settle();
     at.opened = read();
-    source.query.present('data', { group: 'region' });
+    source.query.setGroup('region', 'data');
     await settle(); await settle();
     at.grouped = read();
-    source.query.present('data', { secondary: undefined, group: undefined });
+    source.query.setGroup(null, 'data');
+    source.query.present('data', { secondary: undefined });
     await settle(); await settle();
     at.back = read();
     return at;
-  })()`) as Record<string, { chips: string[]; heads: string[]; rows: string[]; groups: string[]; sub: string[][] }>;
+  })()`) as Record<string, { chips: string[]; heads: string[]; rows: string[]; groups: string[]; sub: string[][]; subGroups: string[][] }>;
   // Its first column is its Primary, on — small until picked; Secondary waits for a picked Primary.
   expect(r['first']!.chips).toEqual(['primary:plan', 'group', 'sort']);
   expect(r['first']!.heads).toEqual(['Plan', 'Day', 'Region']);
   // Primary day: that column leads, and Secondary is offered.
   expect(r['led']!.heads).toEqual(['Day', 'Plan', 'Region']);
   expect(r['led']!.chips).toEqual(['primary:day', 'secondary', 'group', 'sort']);
-  // Secondary plan: a row a day, a column a plan, row counts, and their total.
+  // Secondary plan: a row a day, a column a plan, row counts, and their total — its scope a grid's still.
+  expect(r['pivot']!.chips).toEqual(['primary:day', 'secondary:plan', 'group', 'sort']);
   expect(r['pivot']!.heads).toEqual(['Day', 'Free', 'Pro', 'Enterprise', 'Total']);
   expect(r['pivot']!.rows).toEqual(['Mon|0|1|1|2', 'Tue|1|0|0|1', 'Wed|0|1|0|1']);
   // Its Monday row opens on Monday's own rows, under the grid's own columns but its Primary. TODO 578
   expect(r['opened']!.sub).toEqual([['Pro|EU', 'Enterprise|US']]);
-  // Group by region: a section a region, each its own days.
-  expect(r['grouped']!.groups).toEqual(['EU', 'US']);
-  expect(r['grouped']!.rows).toEqual(['Mon|0|1|0|1', 'Tue|1|0|0|1', 'Mon|0|0|1|1', 'Wed|0|1|0|1']);
+  // Group by region groups each row's own rows, not the pivot: Primary, Secondary, Group are a chain.
+  expect(r['grouped']!.chips).toEqual(['primary:day', 'secondary:plan', 'group:region', 'sort']);
+  expect(r['grouped']!.groups).toEqual([]);
+  expect(r['grouped']!.rows).toEqual(['Mon|0|1|1|2', 'Tue|1|0|0|1', 'Wed|0|1|0|1']);
+  expect(r['grouped']!.sub).toEqual([['Pro', 'Enterprise']]);
+  expect(r['grouped']!.subGroups).toEqual([['EU', 'US']]);
   // Let go: its own columns and its rows again.
   expect(r['back']!.heads).toEqual(['Day', 'Plan', 'Region']);
   expect(r['back']!.rows.length).toBe(4);

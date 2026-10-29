@@ -106,11 +106,13 @@ export interface GridAction {
   danger?: boolean;
 }
 
-/** What a row opens on: the sub-grid's columns and key, and each row's rows by its key. TODO 570 */
+/** What a row opens on: the sub-grid's columns and key, and each row's rows — and
+ *  their groups, where its grid groups — by its key. TODOs 570, 574 */
 interface GridDetail {
   columns: GridColumn[];
   key?: string;
   rows: Record<string, GridRow[]>;
+  groups?: Record<string, GroupSummary[]>;
 }
 
 interface GridConfig {
@@ -143,14 +145,18 @@ interface GridConfig {
 const FILTERABLE: ReadonlySet<string> = new Set(['text', 'number', 'date']);
 const filters = (col: GridColumn): boolean => col.filterable !== false && FILTERABLE.has(col.type ?? 'text');
 
-/** What a row's sub-grid sends: none leaves the grid but its filter, which is the
- *  grid's own. TODO 570, 571 · TRAP T-an-inner-event-stops-at-its-host */
+/** What a row's sub-grid sends: none leaves the grid but its filter, sort and
+ *  group, which are the grid's own. TODOs 570, 571, 574 · TRAP T-an-inner-event-stops-at-its-host */
 const DETAIL_EVENTS = ['context-request', 'column-filter-change', 'column-resize', 'sort-change', 'row-select',
   'selection-change', 'group-toggle', 'group-change', 'row-action', 'page-change', 'grid-pages-change', 'select-all-request'];
+const DETAIL_ASKS = ['column-filter-change', 'sort-change', 'group-change'] as const;
+/** A literal type, so the spec reads the names it emits. */
+const asks = (type: string): type is typeof DETAIL_ASKS[number] => (DETAIL_ASKS as readonly string[]).includes(type);
 
-/** What a row's sub-grid is told of its grid: its filters' look and limits. TODO 571 */
+/** What a row's sub-grid is told of its grid: its filters' look and limits, and
+ *  its Group and Sort, which arrange the sub-grid's rows. TODOs 571, 574 */
 const DETAIL_ATTRS = ['data-column-filters', 'data-filter-fields', 'data-needles', 'data-limit-options',
-  'data-hide-unmatched', 'data-remote', 'data-apply-on'];
+  'data-hide-unmatched', 'data-remote', 'data-apply-on', 'data-group-field', 'data-sort-field', 'data-sort-direction'];
 
 
 export class SherpaDataGrid extends SherpaElement {
@@ -282,13 +288,13 @@ export class SherpaDataGrid extends SherpaElement {
 
   override onRender(): void {
     /* A row's SUB-GRID is this grid's part: it is filled from here, and never
-       asks the provider — it would join this grid's scope. Its filter is this
-       grid's: the same rows, organised. TODO 570, 571 ·
+       asks the provider — it would join this grid's scope. Its filter, sort and
+       group are this grid's: the same rows, organised. TODOs 570, 571, 574 ·
        TRAP T-an-inner-event-stops-at-its-host */
     for (const type of DETAIL_EVENTS) this.root.addEventListener(type, (event) => {
       if (!(event.target as Element | null)?.closest?.('.detail-row')) return;
       event.stopPropagation();
-      if (type === 'column-filter-change') this.emit(type, (event as CustomEvent).detail);
+      if (asks(type)) this.emit(type, (event as CustomEvent).detail);
     });
     // TRAP T-grid-header-needs-capture — the chip's stopPropagation() hides the
     // click that IS the sort from a bubbling listener.
@@ -1265,7 +1271,7 @@ export class SherpaDataGrid extends SherpaElement {
    * group heading — but `#columns` stays intact, so un-grouping needs no populate.
    */
   #shownColumns(): GridColumn[] {
-    const group = this.dataset['groupField'];
+    const group = this.#groupField;
     // Its PRIMARY leads, where the first column is pinned. Will, TODO 548
     const lead = this.dataset['primaryField'];
     const ordered = lead ? [...this.#columns].sort((a, b) => Number(b.field === lead) - Number(a.field === lead)) : this.#columns;
@@ -1293,8 +1299,15 @@ export class SherpaDataGrid extends SherpaElement {
     body.appendChild(row);
     if (!sub) return;
     this.#tellDetail(sub);
-    void sub.populate({ columns: detail.columns, key: detail.key ?? null, rows: detail.rows[key] ?? [], filters: this.#givenFilters })
+    void sub.populate({ columns: detail.columns, key: detail.key ?? null, rows: detail.rows[key] ?? [],
+      groups: detail.groups?.[key] ?? null, filters: this.#givenFilters })
       .then(() => this.#tellDetail(sub));
+  }
+
+  /** What this grid groups by: nothing where its rows open — its Group groups each
+   *  row's sub-grid. Primary, Secondary, Group are a chain. Will, TODO 574 */
+  get #groupField(): string | undefined {
+    return this.#detail ? undefined : this.dataset['groupField'];
   }
 
   /** The open rows' sub-grids. */
@@ -1340,7 +1353,7 @@ export class SherpaDataGrid extends SherpaElement {
     const cellTpl = this.$<HTMLTemplateElement>('template.cell-tpl');
     if (!body || !rowTpl || !cellTpl) return;
 
-    const group = this.dataset['groupField'];
+    const group = this.#groupField;
     const columns = this.#shownColumns();
     // A column draws tags: every row is two lines, so the values align. Will, TODO 509
     this.toggleState('multi-field', columns.some((c) => this.#tagsOf(c).length > 0));
@@ -1830,7 +1843,7 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** Whether the grid — not the store — is deciding where a page ends. */
   get #paginates(): boolean {
-    return Boolean(this.dataset['groupField']) && this.#pageSize > 0;
+    return Boolean(this.#groupField) && this.#pageSize > 0;
   }
 
   /**
@@ -1862,7 +1875,7 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** The page's rows plus their offset, so data-index stays TRUE after a slice. */
   #pageWindow(rows: GridRow[]): { rows: GridRow[]; offset: number; pages: number } {
-    const field = this.dataset['groupField'];
+    const field = this.#groupField;
     const size = this.#pageSize;
     if (!field || size <= 0) return { rows, offset: 0, pages: 1 };
 
@@ -1984,8 +1997,9 @@ export class SherpaDataGrid extends SherpaElement {
   /** The rows on screen, in order: `data-index` is a place in this list. A drawn
    *  row's record is `#rowOf`'s, so a lookup never orders the rows again. */
   #visibleRows(): GridRow[] {
-    // Bound, its source ordered them: drawn as given. Alone, it orders them. TODO 523 · TRAP T-bind-locks-what-it-owns
-    return this.hasAttribute('data-locked') ? this.#rows : this.#sortRows(this.#rows);
+    /* Bound, its source ordered them: drawn as given. Alone, it orders them. Its
+       rows OPEN, its order is its sub-grids'. TODOs 523, 574 · TRAP T-bind-locks-what-it-owns */
+    return this.hasAttribute('data-locked') || this.#detail ? this.#rows : this.#sortRows(this.#rows);
   }
 
   /**
@@ -1996,7 +2010,7 @@ export class SherpaDataGrid extends SherpaElement {
     // SUSPENDED: the column is remembered, the sort is not applied — an empty
     // direction is what says so. TRAP T-a-suspended-sort-is-one-owners-job.
     const field = this.dataset['sortDirection'] === '' ? undefined : this.dataset['sortField'];
-    const group = this.dataset['groupField'];
+    const group = this.#groupField;
     if (!field && !group) return rows;
     /* The shared reader, not a second spelling of it. `?? 'asc'` is the
        DEFAULT for a column with no direction yet; the suspend is handled on

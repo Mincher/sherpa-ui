@@ -245,6 +245,9 @@ export interface AttachFacts {
   shows?: Presentation;
   /** It stacks each segment by a Secondary — a bar chart. Will, TODO 548 */
   stacks?: boolean;
+  /** Its scope's rows are ARRANGED here, though it reads every row: a grid's
+   *  pivot, whose rows' sub-grids its Group and Sort arrange. Will, TODO 574 */
+  arranges?: boolean;
 }
 
 /** What a bound component is told of the view; `undefined` is none. The binder

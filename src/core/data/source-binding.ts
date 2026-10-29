@@ -17,8 +17,8 @@
  * - .freeSets — Each set of fields a bind is free of, once.
  * - .wantsAllRows — Is any bind asking for the unpaged set?
  * - .componentOf — The tag of the first component drawn rows in a scope.
- * - .pagedIn — Is a page of rows drawn in this scope?
- * - .presentsIn — Does a chart draw a summary in this scope — is it a SLOT?
+ * - .pagedIn — Is a page of rows drawn in this scope — or a pivot of them?
+ * - .presentsIn — Does a chart draw a summary in this scope — is it a SLOT? Not a grid's pivot.
  * - .publish — Push rows and state to every bound component.
  * - .push — Give one component the rows and the view state.
  * - .pushTo — Push to the components bound by these ids.
@@ -64,6 +64,8 @@ export interface Bound {
   shows?: Presentation;
   /** See AttachFacts.stacks. */
   stacks?: boolean;
+  /** See AttachFacts.arranges. */
+  arranges?: boolean;
   /** Where its view, rows and pending fields go. */
   sink: BindSink;
 }
@@ -118,6 +120,7 @@ export class SourceBinding {
       ...(facts.free?.length ? { free: [...facts.free].sort() } : {}),
       ...(facts.shows ? { shows: facts.shows } : {}),
       ...(facts.stacks ? { stacks: true } : {}),
+      ...(facts.arranges ? { arranges: true } : {}),
     });
   }
 
@@ -181,14 +184,14 @@ export class SourceBinding {
     return tagOf([...this.#bound].find(([, b]) => b.scope === scope && !b.steerOnly)?.[0]);
   }
 
-  /** Is a page of rows drawn in this scope? TODO 341 */
+  /** Is a page of rows drawn in this scope — or a pivot of them? TODOs 341, 574 */
   pagedIn(scope: string): boolean {
-    return [...this.#bound.values()].some((b) => b.scope === scope && !b.steerOnly && b.rows === 'page');
+    return [...this.#bound.values()].some((b) => b.scope === scope && !b.steerOnly && (b.rows === 'page' || b.arranges));
   }
 
-  /** Does a chart draw a summary in this scope — is it a SLOT? Will, TODO 548 */
+  /** Does a chart draw a summary in this scope — is it a SLOT? Not a grid's pivot. Will, TODOs 548, 574 */
   presentsIn(scope: string): boolean {
-    return [...this.#bound.values()].some((b) => b.scope === scope && b.rows === 'all' && b.readonly);
+    return [...this.#bound.values()].some((b) => b.scope === scope && b.rows === 'all' && b.readonly && !b.arranges);
   }
 
   /** Push rows and state to every bound component. */

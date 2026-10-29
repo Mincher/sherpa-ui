@@ -21,7 +21,7 @@ import { report } from '../../core/data/report.js';
 import { summarise, summariseMarked, type SummarySpec } from '../../core/data/aggregate.js';
 import type { ChartDatum } from '../../core/data/chart-datum.js';
 import { bindSelection } from '../../core/data/bind-selection.js';
-import { groupRows, valueKey, type Row, type Store } from '../../core/data/store.js';
+import { groupRows, groupSummaries, valueKey, type Row, type Store } from '../../core/data/store.js';
 import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.js';
 import type { DraftMode } from '../../core/browser/view-drafts.js';
 import { openSource, savedFiltersOf, type PageDefinition } from '../../core/data/page-definition.js';
@@ -137,8 +137,9 @@ function shownAs(el: Element): string | undefined {
 /** A grid's column, as a pivot hands it on to a row's sub-grid. */
 type GridColumnLike = { field: string; header?: string; type?: string };
 
-/** What a pivot steers: a filter, from a heading or a cell — its own or a row's sub-grid's. TODO 571 */
-const PIVOT_STEERS = ['column-filter-change', 'filter-apply', 'filter-discard'] as const;
+/** What a pivot steers: a filter, from a heading or a cell — its own or a row's
+ *  sub-grid's — and its sub-grids' sort and group. TODOs 571, 574 */
+const PIVOT_STEERS = ['column-filter-change', 'filter-apply', 'filter-discard', 'sort-change', 'group-change'] as const;
 
 /** What a chart made from a grid keeps of it: where it sits, and its slot. */
 const KEPT_FROM_GRID = ['slot', 'data-grow', 'data-scope', 'style'] as const;
@@ -1108,7 +1109,8 @@ export class SherpaProvider extends SherpaElement {
     const unbind = bindSource(source, el as Populatable, {
       ...(zoned ? { free: [zoned] } : {}),
       ...(spec && typeof scope === 'string' ? { shows: this.#shows(el), ...(asks.stacks ? { stacks: true } : {}) } : {}),
-      ...(pivot ? { shows: { primary: pivot.segment }, stacks: true } : {}),
+      // A pivot is its scope's grid still: its Group and Sort arrange its rows' sub-grids. TODO 574
+      ...(pivot ? { arranges: true } : {}),
       ...(fields ? { fields } : {}),
       rows: spec || pivot || asks.shape === 'all' ? 'all' : 'page',
       // A pager and a filter bar steer; the rows are not theirs to draw.
@@ -1330,53 +1332,50 @@ export class SherpaProvider extends SherpaElement {
     const shown = source.query.presented(slot, 'grid');
     const lead = shown.primary ?? (el as Element & { columns?: { field: string }[] }).columns?.[0]?.field;
     if (!shown.secondary || !lead) return undefined;
-    return {
-      shape: 'segments', segment: lead, stack: shown.secondary,
-      ...(shown.group ? { group: shown.group } : {}), ...(shown.sort ? { sort: shown.sort } : {}),
-    };
+    return { shape: 'segments', segment: lead, stack: shown.secondary, ...(shown.sort ? { sort: shown.sort } : {}) };
   }
 
-  /** A pivot for its grid: a row a Primary value — a row a Group value and
-   *  Primary value, where it groups — a column a Secondary value, and the total,
-   *  every cell a row count; each row OPENS on its own rows, under the grid's own
-   *  columns. Will, TODOs 548, 570 */
+  /** A pivot for its grid: a row a Primary value, a column a Secondary value, and
+   *  the total, every cell a row count. Each row OPENS on its own rows, under the
+   *  grid's own columns, its Group grouping them: Primary, Secondary, Group are a
+   *  chain. Will, TODOs 548, 570, 574 */
   #pivotOf(el: Element, rows: readonly Row[], spec: SummarySpec & { segment: string; stack: string }, src: DataSource, filtered: readonly string[]): unknown {
-    const { group, ...pivot } = spec;
-    const sets = group ? groupRows(rows, group).map((g) => ({ key: g.key, rows: g.rows })) : [{ key: '', rows }];
+    const segments = summarise(rows, spec, (f) => src.valuesFor(f)) as ChartDatum[];
     const declared = src.valuesFor(spec.stack).map(valueKey);
-    const summed = sets.map((set) => ({ ...set, segments: summarise(set.rows, pivot, (f) => src.valuesFor(f)) as ChartDatum[] }));
-    const seen = summed.flatMap((set) => set.segments.flatMap((s) => (s.stack ?? []).map((p) => p.label)));
+    const seen = segments.flatMap((s) => (s.stack ?? []).map((p) => p.label));
     const values = declared.length ? declared.filter((v) => seen.includes(v)) : [...new Set(seen)];
     const cell = (v: string): string => `pivot:${v}`;
     const total = 'pivot:total';
-    // One key a row: a Primary value, inside its Group value where it groups.
-    const keyOf = (set: string, primary: string): string => (group ? `${set}\u0000${primary}` : primary);
     const label = (f: string): string => src.fieldFacts(f).label ?? f;
     const own = el as Element & { columns?: GridColumnLike[]; key?: string | null };
     // Its Primary filters as the grid's own column does; a count filters nothing. TODO 571
     const primary = own.columns?.find((c) => c.field === spec.segment);
     const fields = [...new Set([...filtered, spec.segment])];
     src.readValues(fields);
+    // Each row's own rows, a group's together where it groups.
+    const group = src.state.group;
+    const opens = groupRows(rows, spec.segment).map((g) => ({
+      key: g.key, rows: group ? groupRows(g.rows, group).flatMap((part) => part.rows) : g.rows,
+    }));
     return { pivot: {
-      key: 'pivot:key',
+      key: spec.segment,
       columns: [
         { ...primary, field: spec.segment, header: primary?.header ?? label(spec.segment), sortable: false },
         ...values.map((v) => ({ field: cell(v), header: v, type: 'number', sortable: false, filterable: false })),
         { field: total, header: this.word('total'), type: 'number', sortable: false, filterable: false },
       ],
       filters: Object.fromEntries(fields.map((f) => [f, src.filterDef(f)])),
-      rows: summed.flatMap((set) => set.segments.map((s) => ({
-        'pivot:key': keyOf(set.key, s.label),
+      rows: segments.map((s) => ({
         [spec.segment]: s.label,
-        ...(group ? { [group]: set.key } : {}),
         ...Object.fromEntries(values.map((v) => [cell(v), s.stack?.find((p) => p.label === v)?.value ?? 0])),
         [total]: s.value,
-      }))),
+      })),
       detail: {
         // Not its Primary: every row under a row holds that row's. Will, TODO 578
         columns: (own.columns ?? []).filter((c) => c.field !== spec.segment),
         ...(own.key ? { key: own.key } : {}),
-        rows: Object.fromEntries(summed.flatMap((set) => groupRows(set.rows, spec.segment).map((g) => [keyOf(set.key, g.key), g.rows]))),
+        rows: Object.fromEntries(opens.map((o) => [o.key, o.rows])),
+        ...(group ? { groups: Object.fromEntries(opens.map((o) => [o.key, groupSummaries(o.rows, group)])) } : {}),
       },
     } };
   }
