@@ -55,9 +55,7 @@ Each content place on a page (a chart container, the grid) is a SLOT with a stab
 
 ### 5. The swap
 
-- A small app-layer element, `sherpa-presentation`, wraps one slot. Its template holds one prototype per kind: bar, donut, pie, grid. A pick clones that prototype in place of the old one (rule 17: everything it shows is in its template).
-- The slot's attributes (primary and secondary field, scope) sit on the wrapper, and the component inherits them. The provider's existing ask (connect asks, disconnect lets go) binds the new component. There is no new binding path.
-- **The panel follows** because the scope is the slot's. A chart presentation draws its legend field. A grid draws its local filters.
+The provider swaps a slot's component when its kept `kind` moves; see "Phase C and D in detail" (no new component). **The panel follows** because the scope is the slot's: a chart draws its legend field, a grid its local filters.
 
 ### 6. Primary and secondary in the definition
 
@@ -77,10 +75,11 @@ Why not the existing `group` and `sort` keys? They are the ROW arrangement:
 
 Saved Views, export and a reload carry it, as `definitionOf` carries any scope key (Will: A).
 
-**The slot is the wrapper**, so phase D's `sherpa-presentation` comes before phase C's toolbar:
-- It carries `data-scope`, the definition's `kind`, `primary` and `secondary`, and the chart attributes its child inherits.
-- The provider reads the slot's `presentation` from the Query and builds the summary from it: the secondary is the segment, the primary is a `distinct` count unless an aggregate is named, and group and sort are passed straight through.
-- A change of it asks again, as an attribute change does today.
+**No new component** (Will, 2026-10-29: *"Ensure that sherpa-presentation isn't duplicate work or something that can be done in an existing component"*). Each job already has a home:
+- **The slot** is the chart's own container, carrying `data-scope`. The provider reads a chart's attributes from its ancestors already (`#inherited`).
+- **The primary** is already expressible: `data-aggregate="distinct" data-field="customer"`. The secondary is `data-segment-field`.
+- **The data and the swap** belong to the provider, which binds every chart and reads the Query. `#spec` lays the slot's kept presentation over the attributes, and a change answers the chart again (`#followPresentation`; C2 ✅). A swap is another answer; donut and pie are one component already.
+- **The menu** is an optional built-in button in the container header and in the grid's bar, as the bar's Suggest is.
 
 **The chart toolbar** is the existing bar, bound to the slot's scope, showing only its organise zone: Compare, Group, Sort.
 - Its chips send ONE request, `{ presentation: { … } }`, through the same `quick-filter-change` door as any chip, to a `QueryContext.present(scope, patch)` door.
@@ -92,7 +91,7 @@ Saved Views, export and a reload carry it, as `definitionOf` carries any scope k
 |---|---|---|
 | A ✅ | The data layer: `group` and `sort` on a summary (step 2) | Unit tests on `summarise`; check:bench |
 | B ✅ | The bar stacks parts, the donut and pie split a slice by spokes, in the segment's own colour; tips list the parts; the legend is unchanged (Will: B) | e2e in 3 engines; pixels read back |
-| C | `ScopeQuery.presentation` and `QueryContext.present` (data layer); the slot wrapper `sherpa-presentation`; the provider builds a chart's summary from it | unit tests; e2e: a grouped slot draws parts; a reload keeps them |
+| C ✅ | `ScopeQuery.presentation` and `QueryContext.present` (C1); the provider builds a slotted chart's summary from it, and answers it again when it moves (C2) | unit tests; e2e: a slot's group, sort, primary and secondary redraw its chart |
 | D | The chart toolbar (Compare, Group, Sort) and the presentation menu; the swap; primary and secondary in the definition | e2e: each swap draws the same data |
 | E | The panel follows a swap; Demos pages moved | Demos tests; full suites |
 

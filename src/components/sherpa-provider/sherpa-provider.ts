@@ -24,7 +24,7 @@ import { valueKey, type Store } from '../../core/data/store.js';
 import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.js';
 import type { DraftMode } from '../../core/browser/view-drafts.js';
 import { openSource, savedFiltersOf, type PageDefinition } from '../../core/data/page-definition.js';
-import { QueryContext } from '../../core/data/query-context.js';
+import { QueryContext, type QueryChangeDetail } from '../../core/data/query-context.js';
 import { VIEW } from '../../core/data/query.js';
 import type { Failure } from '../../core/data/failure.js';
 import type { DataChangeDetail, DataSource, QueryState } from '../../core/data/data-source.js';
@@ -1060,7 +1060,7 @@ export class SherpaProvider extends SherpaElement {
       }
       return;
     }
-    const spec = SUMMARIES.has(asks.shape) ? this.#spec(el, asks) : undefined;
+    const spec = SUMMARIES.has(asks.shape) ? this.#spec(el, asks, source) : undefined;
     if (SUMMARIES.has(asks.shape) && !spec) return;
     const leave = (): void => {
       asked.unbind?.();
@@ -1110,7 +1110,9 @@ export class SherpaProvider extends SherpaElement {
     this.#fetchFields(el, source);
     const unpick = spec && asks.picks ? this.#picks(el as Picker, source, spec.segment ?? '', asks.picks) : undefined;
     const unown = this.#own(el, source);
+    const unshow = spec && typeof scope === 'string' ? this.#followPresentation(asked, source, scope) : undefined;
     asked.unbind = () => {
+      unshow?.();
       unown?.();
       unpick?.();
       unbind();
@@ -1184,7 +1186,7 @@ export class SherpaProvider extends SherpaElement {
   }
 
   /** The summary a component declared, as JSON — or none, and it waits. */
-  #spec(el: Element, asks: DataAsk): SummarySpec | undefined {
+  #spec(el: Element, asks: DataAsk, source: DataSource): SummarySpec | undefined {
     const spec: Record<string, unknown> = { shape: asks.shape };
     for (const [key, attr] of SPEC_KEYS) {
       const value = this.#inherited(el, attr);
@@ -1204,7 +1206,27 @@ export class SherpaProvider extends SherpaElement {
     if (asks.keepEmpty) spec['keepEmpty'] = true;
     // Its field's bands come with its value. TRAP T-a-threshold-is-a-fact-of-the-field
     if (asks.thresholds) spec['zones'] = true;
+    /* Its SLOT's presentation, as the Query keeps it, over its own attributes: its
+       segmentation, what it counts — a primary's distinct values — its parts and
+       its order. Will, TODO 548 */
+    const slot = this.#inherited(el, 'data-scope');
+    const shown = slot && !/\s/.test(slot) ? source.query.presentation(slot) : {};
+    if (shown.secondary) spec['segment'] = shown.secondary;
+    if (shown.primary) Object.assign(spec, { aggregate: 'distinct', field: shown.primary });
+    if (shown.group) spec['group'] = shown.group;
+    if (shown.sort) spec['sort'] = shown.sort;
     return spec as unknown as SummarySpec;
+  }
+
+  /** A slot's kept presentation moved: its chart is answered again, with it. Will, TODO 548 */
+  #followPresentation(asked: Asked, source: DataSource, slot: string): () => void {
+    const was = JSON.stringify(source.query.presentation(slot));
+    const stop = new AbortController();
+    source.query.addEventListener('query-change', (e) => {
+      const moved = (e as CustomEvent<QueryChangeDetail>).detail.scopes.includes(slot);
+      if (moved && JSON.stringify(source.query.presentation(slot)) !== was) this.#answer(asked);
+    }, { signal: stop.signal });
+    return () => stop.abort();
   }
 
   /**

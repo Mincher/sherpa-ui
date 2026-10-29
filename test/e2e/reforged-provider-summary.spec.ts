@@ -246,3 +246,39 @@ test('a gauge draws its field\'s thresholds, and a bar chart cuts at them', asyn
   expect(r['reports']).toEqual([]);
   expect(r['bars']).toEqual([['Low', 2], ['Mid', 1], ['High', 1]]);
 });
+
+test('a chart in a SLOT draws what the slot\'s kept presentation says: its segments, parts, order and what it counts (Will, TODO 548)', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-container data-scope="by-plan">
+        <sherpa-barchart id="slotted" data-segment-field="plan"></sherpa-barchart>
+      </sherpa-container>\`;
+    const source = make();
+    source.declareValues('day', ['Mon', 'Tue', 'Wed']);
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    const bars = () => [...provider.querySelector('#slotted').shadowRoot.querySelectorAll('.bar-col')]
+      .map((c) => c.getAttribute('aria-label'));
+    const at = { first: bars() };
+    source.query.present('by-plan', { group: 'day' });
+    await settle();
+    at.grouped = bars();
+    source.query.present('by-plan', { group: undefined, sort: 'desc', primary: 'day' });
+    await settle();
+    at.counted = bars();
+    source.query.present('by-plan', { sort: undefined, primary: undefined, secondary: 'day' });
+    await settle();
+    at.resegmented = bars();
+    return at;
+  })()`) as Record<string, string[]>;
+  // As defined: one bar per plan, counting rows.
+  expect(r['first']).toEqual(['Free: 1', 'Pro: 2', 'Enterprise: 1']);
+  // Grouped by day: each bar's parts.
+  expect(r['grouped']).toEqual(['Free: 1 (Tue 1)', 'Pro: 2 (Mon 1 · Wed 1)', 'Enterprise: 1 (Mon 1)']);
+  // Counting each plan's distinct days, largest first.
+  expect(r['counted']).toEqual(['Pro: 2', 'Free: 1', 'Enterprise: 1']);
+  // Segmented by day instead.
+  expect(r['resegmented']).toEqual(['Mon: 2', 'Tue: 1', 'Wed: 1']);
+});
