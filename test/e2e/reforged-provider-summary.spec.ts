@@ -341,7 +341,7 @@ test('a chart\'s bar in its SLOT: Group splits its bars, Sort has no menu and cy
   expect(r['again']).toEqual({ kept: { sort: 'asc' }, first: 'Free: 1' });
 });
 
-test('a chart\'s Primary is its bars and its Secondary their stack — its chart\'s own until picked, and off goes back (Will, TODO 548)', async ({ page }) => {
+test('a chart\'s Primary is its bars and its Secondary their stack — its chart\'s own until picked, and off goes back; Primary has no None, and its default says so (Will, TODOs 548, 572)', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     provider.innerHTML = \`
@@ -369,6 +369,8 @@ test('a chart\'s Primary is its bars and its Secondary their stack — its chart
     };
     const groups = () => [...chip('group').querySelectorAll('sherpa-menu input')].map((i) => i.value).filter(Boolean);
     const at = { order: zone().map((c) => c.dataset.id), first: { primary: said('primary'), secondary: said('secondary'), groups: groups(), bars: bars() } };
+    const menu = chip('primary').querySelector('sherpa-menu');
+    at.menu = { none: menu.hasAttribute('data-none'), rows: [...menu.querySelectorAll('input')].map((i) => i.closest('label, .menu-row').textContent.trim()) };
     await pick('primary', 'day');
     at.split = { primary: said('primary'), kept: source.query.presentation('by-plan'), bars: bars() };
     await pick('secondary', 'plan');
@@ -377,6 +379,9 @@ test('a chart\'s Primary is its bars and its Secondary their stack — its chart
     chip('secondary').shadowRoot.querySelector('.body').click();
     await settle();
     at.off = { secondary: said('secondary').on, kept: source.query.presentation('by-plan'), bars: bars() };
+    // Its default picked again: no pick kept, so the definition rules.
+    await pick('primary', 'plan');
+    at.back = { primary: said('primary'), kept: source.query.presentation('by-plan'), bars: bars() };
     return at;
   })()`) as Record<string, unknown>;
   // Primary and Secondary lead, before Group and Sort.
@@ -388,6 +393,9 @@ test('a chart\'s Primary is its bars and its Secondary their stack — its chart
   // Secondary plan: each day's bar stacked by plan.
   expect(r['counted']).toEqual({ secondary: { on: true, field: 'plan' }, kept: { primary: 'day', secondary: 'plan' }, bars: ['Mon: 3 (Pro 2 · Enterprise 1)', 'Tue: 1 (Free 1)', 'Wed: 1 (Pro 1)'] });
   expect(r['off']).toEqual({ secondary: false, kept: { primary: 'day' }, bars: ['Mon: 3', 'Tue: 1', 'Wed: 1'] });
+  // Primary is always set: no None, and its chart's own field reads as the Default.
+  expect(r['menu']).toEqual({ none: false, rows: ['plan (Default)', 'day'] });
+  expect(r['back']).toEqual({ primary: { on: true, field: 'plan' }, kept: {}, bars: ['Free: 1', 'Pro: 3', 'Enterprise: 1'] });
 });
 
 test('a card\'s Show as swaps its chart over the same data, keeps what it was arranged by, and Default goes back (Will, TODO 548)', async ({ page }) => {

@@ -161,6 +161,8 @@ export interface ScopeDescription {
   presents?: boolean;
   chartFields?: OrganiseColumn[];
   primaryField?: string;
+  /** The Primary its definition names: what Default picks. Will, TODO 572 */
+  primaryDefault?: string;
   secondaryField?: string;
   stacks?: boolean;
   /** A grid's: its Primary and Secondary chips are small until the reader picks one. Will, TODO 548 */

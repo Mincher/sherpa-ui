@@ -60,7 +60,7 @@ export interface OrganiseDef {
   /** A Sort with no column to pick: it orders what a chart draws, by value. TODO 548 */
   order?: boolean;
   /** A chart's Primary and Secondary: the fields it may count and split by, and those it does. TODO 548 */
-  chart?: { fields: OrganiseColumn[]; primary?: string; secondary?: string; stacks?: true; compact?: { primary: boolean; secondary: boolean } };
+  chart?: { fields: OrganiseColumn[]; primary?: string; primaryDefault?: string; secondary?: string; stacks?: true; compact?: { primary: boolean; secondary: boolean } };
 }
 
 export type { OrganiseColumn } from '../../core/data/data-source.js';
@@ -2626,7 +2626,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // its divider rule floating.
     this.toggleState('has-organise', group.length > 0 || sort.length > 0 || order);
     if (chart?.fields.length) {
-      zone.append(this.#chartChip('primary', chart.fields, chart.primary, chart.compact?.primary));
+      zone.append(this.#chartChip('primary', chart.fields, chart.primary, chart.compact?.primary, chart.primaryDefault));
       /* Secondary where it stacks by one, once a Primary is set: a grid's waits for
          the reader's Primary. Will, TODO 548 */
       if (chart.stacks && !chart.compact?.primary) zone.append(this.#chartChip('secondary', chart.fields, chart.secondary, chart.compact?.secondary));
@@ -2669,15 +2669,18 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** A chart's Primary — its first split, a bar or slice a value — or Secondary —
    *  a bar chart's stack, its colours and legend: a
    *  Group chip's gesture, its menu a field, its body on or off (off, the chart's
-   *  own). Drawn ON at the field in force. Will, TODO 548 */
-  #chartChip(id: 'primary' | 'secondary', fields: OrganiseColumn[], on: string | undefined, small = false): HTMLElement {
+   *  own). Drawn ON at the field in force. A Primary is never unset: no None, and
+   *  its definition's field reads "Name (Default)". Will, TODOs 548, 572 */
+  #chartChip(id: 'primary' | 'secondary', fields: OrganiseColumn[], on: string | undefined, small = false, fallback?: string): HTMLElement {
     const chip = this.clone(`template.organise-${id}-tpl`);
     if (!chip) throw new Error(`sherpa-quick-filter-toolbar: template.organise-${id}-tpl is missing or empty`);
     if (on) chip.dataset['column'] = on;
     // A grid's, small until the reader picks one: just its menu button, named. Will, TODO 548
     chip.toggleAttribute('data-icon-only', small);
     if (small) chip.setAttribute('aria-label', chip.dataset['label'] ?? id);
-    this.#addMenu(chip, { id, label: chip.dataset['label'] ?? '', select: 'single', options: organiseOptions(fields, on) });
+    const options = organiseOptions(fields, on)
+      .map((o) => (o.value === fallback ? { ...o, label: `${o.label} ${this.word('default')}` } : o));
+    this.#addMenu(chip, { id, label: chip.dataset['label'] ?? '', select: 'single', options, ...(id === 'primary' ? { persistent: true } : {}) });
     this.#lock(chip);
     (chip as SherpaQuickFilter).arrangeBy?.(on ?? '');
     return chip;
@@ -2691,7 +2694,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (id !== 'primary' && id !== 'secondary') return;
     event.stopImmediatePropagation();
     const field = (event as CustomEvent<{ field?: string | null }>).detail?.field;
-    this.#ask({ presentation: { [id]: field || undefined } }, 'free');
+    // Its definition's field is no pick: the definition rules again. TODO 572
+    const fallback = id === 'primary' ? this.#organise.chart?.primaryDefault : undefined;
+    this.#ask({ presentation: { [id]: field && field !== fallback ? field : undefined } }, 'free');
   };
 
   /** One organise chip, from its own prototype: a menu chip with single-select rows. */

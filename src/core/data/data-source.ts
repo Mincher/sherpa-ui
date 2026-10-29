@@ -541,11 +541,13 @@ export class DataSource extends EventTarget {
          each row opening on its own rows. Will, TODOs 548, 570 */
       const shown = this.#context.presented(scope, 'grid');
       const lead = shown.primary ?? cols[0]?.field;
+      const fallback = this.#context.presented(scope, 'grid', false).primary ?? cols[0]?.field;
       // Small until the reader picks one: a grid's bar is full already. Will, TODO 548
       const picked = this.#context.presentation(scope);
       Object.assign(out, {
         chartFields: cols.filter(groupable), stacks: true, compact: true,
         ...(lead ? { primaryField: lead } : {}),
+        ...(fallback ? { primaryDefault: fallback } : {}),
         ...(shown.secondary ? { secondaryField: shown.secondary } : {}),
         ...(picked.primary ? { primaryPicked: true } : {}),
         ...(picked.secondary ? { secondaryPicked: true } : {}),
@@ -557,6 +559,7 @@ export class DataSource extends EventTarget {
       const lists = this.#catalogue.known().map((field) => ({ field, label: this.#catalogue.get(field)?.label ?? field })).filter(groupable);
       // Its chart's own, under what the reader changed.
       const shown = { ...this.#binding.shownIn(scope), ...this.#context.presented(scope, 'chart') };
+      const fallback = { ...this.#binding.shownIn(scope), ...this.#context.presented(scope, 'chart', false) }.primary;
       const stacks = this.#binding.stacksIn(scope);
       const secondary = stacks ? shown.secondary : undefined;
       Object.assign(out, {
@@ -565,6 +568,7 @@ export class DataSource extends EventTarget {
         ...(shown.group ? { groupField: shown.group } : {}),
         ...(shown.sort ? { sortDirection: shown.sort } : {}),
         ...(shown.primary ? { primaryField: shown.primary } : {}),
+        ...(fallback ? { primaryDefault: fallback } : {}),
         ...(secondary ? { secondaryField: secondary } : {}),
       });
     }

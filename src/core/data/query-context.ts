@@ -66,7 +66,7 @@
  * - .setGroup — Group by a field, or stop.
  * - .presentation — A slot's presentation, as kept: a copy; none, an empty one.
  * - .declarePresentation — What its page DEFINES a slot shows — a chart's two fields — under what is kept.
- * - .presented — A slot's presentation as shown: what is kept, over its definition.
+ * - .presented — A slot's presentation as shown: what is kept, over its definition; or its definition alone.
  * - .present — Change a slot's presentation, at once in BOTH copies — it filters nothing, so no Apply waits.
  * - .setSearch — The rows' free-text search, with the arrangement.
  * - .setQuery — Restore a whole Query — a reload, a View, a saved filter.
@@ -1093,11 +1093,12 @@ export class QueryContext extends EventTarget {
   }
 
   /** A slot's presentation as shown in a view: what is kept, over that view's
-   *  definition, over the slot's. The reader's pick wins. Will, TODO 548 */
-  presented(scope: string, view?: 'grid' | 'chart'): Presentation {
+   *  definition, over the slot's. The reader's pick wins. `kept` false: the
+   *  definition alone, what Default picks. Will, TODOs 548, 572 */
+  presented(scope: string, view?: 'grid' | 'chart', kept = true): Presentation {
     const { grid, chart, ...base } = this.#defined.get(scope) ?? {};
     const own = view === 'grid' ? grid : view === 'chart' ? chart : undefined;
-    return { ...base, ...own, ...this.presentation(scope) };
+    return { ...base, ...own, ...(kept ? this.presentation(scope) : {}) };
   }
 
   /** Each slot's definition. */
