@@ -32,6 +32,7 @@
  * - compareValues — Compare two field values.
  * - sortRows — Sort by specs, first wins and later ones break ties.
  * - filterFields — Every FIELD a filter touches, first-appearance order; a clause that stands for a field is named by it.
+ * - MARKABLE_OPS — The operators that leave a span to POINT AT: `eq` matched the whole value and `ne` matched by absence.
  * - filterNeedles — every substring clause in a filter, so a view can mark what matched
  * - matchesFilter — Does one row satisfy one filter? For one row; a loop makes its test once, with `filterTest`.
  * - filterTest — A filter as ONE test, worked out once, so each row is only read and compared.
@@ -374,16 +375,16 @@ export function filterFields(filter: Filter | undefined, standsFor?: (clause: Fi
   return out;
 }
 
+/** The operators that leave a span to POINT AT: `eq` matched the whole value and
+ *  `ne` matched by absence. TRAP T-a-needle-comes-from-either-direction */
+export const MARKABLE_OPS: ReadonlySet<string> = new Set<FilterOp>(['contains', 'startswith', 'endswith']);
+
 /**
  * Every SUBSTRING clause in a filter, as `field:op:value`, NEWLINE separated —
- * a typed value may hold a comma or a space.
- *
- * Only the markable ops: `eq` matched the whole value and `ne` matched by
- * absence, so neither leaves a span to point at.
+ * a typed value may hold a comma or a space. Only the markable ops.
  * TRAP T-a-needle-comes-from-either-direction
  */
 export function filterNeedles(filter: Filter | undefined): string {
-  const MARKABLE = new Set(['contains', 'startswith', 'endswith']);
   const out: string[] = [];
   const seen = new Set<string>();
   const walk = (f: Filter | undefined): void => {
@@ -394,7 +395,7 @@ export function filterNeedles(filter: Filter | undefined): string {
       return;
     }
     const [field, op, value] = f as FilterClause;
-    if (typeof field !== 'string' || !MARKABLE.has(op) || value == null) return;
+    if (typeof field !== 'string' || !MARKABLE_OPS.has(op) || value == null) return;
     const text = String(value);
     // A newline in the value itself would split one entry into two.
     const entry = `${field}:${op}:${text.replace(/\n/g, ' ')}`;

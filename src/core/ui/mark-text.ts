@@ -7,14 +7,7 @@
  * - markNeedles — Mark every hit of every needle in `el`, or write plain text when there is nothing to point at.
  * - markMatch — Rebuild `el` as before + `<mark class="match">` + after, around one hit.
  */
-
-/**
- * Which operators leave something to POINT AT in a cell — only the substring
- * family. `eq` would circle the whole value; `ne` matched by NOT being there.
- * TRAP T-a-needle-comes-from-either-direction
- */
-const MARKABLE_OPS: ReadonlySet<string> =
-  new Set(['contains', 'startswith', 'endswith']);
+import { MARKABLE_OPS } from '../data/store.js';
 
 /**
  * Mark every hit of every needle in `el`, or write plain text when there is

@@ -769,7 +769,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (113)
+## SherpaElement and the shared sheets (112)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -792,7 +792,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-list-takes-its-children-as-data](TRAPS.md#t-a-list-takes-its-children-as-data) — sherpa-element
 - [T-a-native-control-brings-its-own-margin](TRAPS.md#t-a-native-control-brings-its-own-margin) — sherpa-base
 - [T-a-native-wears-the-button-class](TRAPS.md#t-a-native-wears-the-button-class) — sherpa-button-look
-- [T-a-needle-comes-from-either-direction](TRAPS.md#t-a-needle-comes-from-either-direction) — mark-text
 - [T-a-page-loads-the-bundle](TRAPS.md#t-a-page-loads-the-bundle) — render-icon
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](TRAPS.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — sherpa-element, templater
 - [T-a-pending-chip-reads-as-a-warning](TRAPS.md#t-a-pending-chip-reads-as-a-warning) — shared-constants

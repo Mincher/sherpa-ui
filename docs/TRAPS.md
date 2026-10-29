@@ -4588,7 +4588,6 @@ needle-or-nothing, then `markMatch`. See `T-mark-match-is-one-shape`.
 
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/data-source.ts`
-- Site: `src/core/ui/mark-text.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
