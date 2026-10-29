@@ -2468,10 +2468,9 @@ in [history/review-518-filters.md](history/review-518-filters.md). Phase 0 is
 Will's 519 and 520; 1 the bugs against rules already made; 2 the same
 behaviour, simpler; 3 each component alone, after Will's two choices.
 
-**❓ For Will:** R2 (one shared ask-to-bind helper, or the provider stays the
-only join), R4 (flip the provider-only defaults' attributes, or leave them),
-U1 (every site ticked: paths everywhere, or the parent everywhere), U9 (Apply
-with one end of a date range: that day everywhere, or clear everywhere).
+**❓ For Will:** R2, R4 (revised 2026-10-29), U1, U9 and 521's question — each
+with its background and my pick in
+[history/report-518-523.md](history/report-518-523.md), the report of this work.
 
 ### `[x]` ✅ 517 — BUG: letting go of a value empties the panel
 
