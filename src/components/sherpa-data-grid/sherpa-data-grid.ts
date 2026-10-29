@@ -1352,8 +1352,8 @@ export class SherpaDataGrid extends SherpaElement {
 
     rows.forEach((record, i) => {
       if (group) {
-        const value = record[group];
-        const key = value == null ? '' : String(value);
+        // Keyed as the data layer keys a group, so a told count is found. TODO 523
+        const key = valueKey(record[group]);
         if (key !== lastGroup) {
           lastGroup = key;
           // The COUNT spans every page, so a group split by a boundary still
@@ -1818,7 +1818,7 @@ export class SherpaDataGrid extends SherpaElement {
   #groupSize(rows: GridRow[], field: string, key: string): number {
     const told = this.#filters.size ? undefined : this.#groups?.find((g) => g.key === key);
     if (told) return told.count;
-    return rows.filter((r) => String(r[field] ?? '') === key).length;
+    return rows.filter((r) => valueKey(r[field]) === key).length;
   }
 
   /* ── Visual paging ──────────────────────────────────────────────────
@@ -1856,7 +1856,7 @@ export class SherpaDataGrid extends SherpaElement {
     let lastGroup: string | null = null;
 
     for (let i = 0; i < rows.length; i += 1) {
-      const key = String(rows[i]![field] ?? '');
+      const key = valueKey(rows[i]![field]);
       // A shut group's ROWS are drawn but hidden: its first one pays for the heading.
       const cost = this.#collapsed.has(key) ? (key !== lastGroup ? 1 : 0) : 1;
       if (cost > 0 && slots + cost > size && slots > 0) {

@@ -3359,3 +3359,16 @@ test('a heading holds "last 7 days" as a row, never as text (TODO 523 F4)', asyn
   });
   expect(r).toEqual(['created', 'last', { n: 7, unit: 'day' }]);
 });
+
+test('rows grouped by a value that is an object fall into one group per value (TODO 523 S4)', async ({ page }) => {
+  const heads = await page.evaluate(async () => {
+    const el = await window.__mount<HTMLElement>('sherpa-data-grid', {
+      key: 'id',
+      columns: [{ field: 'id', header: 'Id' }],
+      rows: [{ id: 1, at: { city: 'Leeds' } }, { id: 2, at: { city: 'Paris' } }, { id: 3, at: { city: 'Leeds' } }],
+    }, { 'data-group-field': 'at' });
+    await window.__settled();
+    return [...el.shadowRoot!.querySelectorAll<HTMLElement>('.group-row')].map((r) => r.querySelector('.group-count')?.textContent);
+  });
+  expect(heads).toEqual(['2', '1']);
+});
