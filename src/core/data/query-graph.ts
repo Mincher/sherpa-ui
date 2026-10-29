@@ -11,7 +11,7 @@
  * - queryGraph — A page's Query as nodes and routes, laid out in columns by depth.
  */
 import type { PageDefinition } from './page-definition.js';
-import { PRESENTATION_KINDS, VIEW, arranging, type Query } from './query.js';
+import { PRESENTATION_KINDS, VIEW, arranging, type Presentation, type Query } from './query.js';
 import { OP_LABELS, OPS_FOR_TYPE, type FilterOp } from './store.js';
 import { whereOf, type Condition } from './where.js';
 import type { DrawnGraph, GraphNode, GraphRow, NodeKind, WorkflowRoute } from './workflow.js';
@@ -84,6 +84,8 @@ export interface QueryGraphFacts {
   components?: readonly GraphComponent[];
   /** A field's type — text, number or date — which picks its operators. */
   type?: (field: string) => string | undefined;
+  /** Every value a field may take, for a condition to pick from rather than type. */
+  values?: (field: string) => readonly string[] | undefined;
 }
 
 /** The operators a field's condition may take: its type's, and a pick list's. */
@@ -92,12 +94,23 @@ const PICK_OPS: readonly FilterOp[] = ['in', 'notin', 'eq', 'ne'];
 /** The scope's filter Switch: a row of its own, before its fields. Not a field's name. */
 const SWITCH = '#filters';
 
+/** Why a row is read only: nothing outside the editor takes its change yet. */
+const FROM_DEFINITION = 'The page definition sets it: Save will change it (later).';
+
+/** The operators that pick several values; the ones that pick one. */
+const MANY = new Set(['in', 'notin']);
+const ONE = new Set(['eq', 'ne']);
+
 /** The keys of a condition that say HOW it holds, not what it compares. */
 const NOT_OPS = new Set(['unit', 'off', 'band', 'all', 'and', 'or']);
 
-/** One condition's operator and value, as its rows show them — the operator and a
- *  plain value editable, as a chip's are; a chain, a band or All read only. */
-function conditionRows(field: string, condition: Condition, type: string | undefined): GraphRow[] {
+/** One condition's field, operator and value, as its rows show them — each editable, as
+ *  a chip's are; a value the field's own values can say is PICKED, not typed. A chain,
+ *  a band or All is read only. */
+function conditionRows(
+  field: string, condition: Condition, type: string | undefined,
+  fields: readonly { value: string; label: string }[], values: readonly string[] | undefined,
+): GraphRow[] {
   const list = condition.and ?? condition.or;
   const op = list ? (condition.and ? 'and' : 'or')
     : condition.all ? 'all'
@@ -110,14 +123,31 @@ function conditionRows(field: string, condition: Condition, type: string | undef
   const value = Array.isArray(raw) ? raw.join(', ') : raw !== null && typeof raw === 'object' ? JSON.stringify(raw) : raw;
   const plain = op in OP_LABELS;
   const ops = [...new Set([...(OPS_FOR_TYPE[type ?? ''] ?? PICK_OPS), ...(plain ? [op as FilterOp] : [])])];
-  return rowsOf('condition', { field, op, value: value ?? '' }).map((row) => row.name === 'op' && plain
-    ? { ...row, editable: true, choices: ops.map((o) => ({ value: o, label: OP_LABELS[o] })) }
-    : row.name === 'value' && plain ? { ...row, editable: true } : row);
+  const picks = values?.length ? values.map((v) => ({ value: v, label: v })) : undefined;
+  /* A field whose values are known is PICKED, as its chip picks: ticks, Is one of or
+     Is not one of. Equals is Is one of with one tick — the Query writes it so — and
+     reads back as that. */
+  if (picks && (ONE.has(op) || MANY.has(op))) {
+    const many = op === 'ne' || op === 'notin' ? 'notin' : 'in';
+    const ticked = (Array.isArray(raw) ? raw : raw === undefined || raw === '' ? [] : [raw]).map(String);
+    return rowsOf('condition', { field, op: many, value: ticked }).map((row): GraphRow => (row.name === 'field'
+      ? { ...row, editable: true, choices: fields }
+      : row.name === 'op' ? { ...row, editable: true, choices: [...MANY].map((o) => ({ value: o, label: OP_LABELS[o as FilterOp] })) }
+      : { ...row, field: 'values', editable: true, choices: picks }));
+  }
+  return rowsOf('condition', { field, op, value: value ?? '' }).map((row): GraphRow => {
+    if (!plain) return row;
+    if (row.name === 'field') return { ...row, editable: true, choices: fields };
+    if (row.name === 'op') return { ...row, editable: true, choices: ops.map((o) => ({ value: o, label: OP_LABELS[o] })) };
+    return { ...row, editable: true };
+  });
 }
 
-/** A condition node's rows, edited, as the condition they say: the other half of drawing one. */
-export function editedCondition(op: string, text: string, type?: string): Condition {
+/** A condition node's rows, edited, as the condition they say: the other half of drawing one.
+ *  A value is typed text, or the values picked. */
+export function editedCondition(op: string, given: string | readonly string[], type?: string): Condition {
   const one = (v: string): string | number => (type === 'number' && v !== '' && Number.isFinite(Number(v)) ? Number(v) : v);
+  const text = Array.isArray(given) ? given.join(',') : String(given);
   const list = text.split(',').map((v) => v.trim()).filter(Boolean).map(one);
   if (op === 'in' || op === 'notin' || op === 'between' || op === 'notbetween') return { [op]: list };
   if (op === 'last' || op === 'next') {
@@ -125,6 +155,18 @@ export function editedCondition(op: string, text: string, type?: string): Condit
     return { [op]: Number(n), unit: unit.replace(/s$/, '') as NonNullable<Condition['unit']> };
   }
   return { [op]: one(text.trim()) };
+}
+
+/** A presentation's rows: editable where it has a slot to keep them, its kind the definition's by default. */
+function presentationRows(
+  presented: Presentation, kind: string | undefined,
+  keys: readonly { value: string; label: string }[], slot: boolean,
+): GraphRow[] {
+  const kinds = [{ value: '', label: kind ? `Default (${kind})` : 'Default' }, ...PRESENTATION_KINDS.map((k) => ({ value: k, label: k[0]!.toUpperCase() + k.slice(1) }))];
+  const sorts = [{ value: '', label: 'None' }, { value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }];
+  return rowsOf('presentation', { ...presented, kind: presented.kind ?? '' }).map((row): GraphRow => (slot
+    ? { ...row, editable: true, choices: row.name === 'kind' ? kinds : row.name === 'sort' ? sorts : keys, value: String(row.value ?? '') }
+    : { ...row, value: row.name === 'kind' ? kind : row.value, hint: 'It shares the View: no slot keeps its own.' }));
 }
 
 /** A kind's fixed rows, each with its value. */
@@ -159,9 +201,10 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   // Store ─▶ Source ─▶ the View.
   const source = definition.source;
   add(0, 'store', 'store', [], { heading: source?.store ?? 'Store' });
+  // Its page size changes live; the rest is the definition's, until Save.
   add(1, 'source', 'source', rowsOf('source', {
     pageSize: source?.pageSize, search: source?.search?.join(', '), applyOn: source?.applyOn ?? 'change',
-  }));
+  }).map((row) => (row.name === 'pageSize' ? { ...row, editable: true } : { ...row, hint: FROM_DEFINITION })));
   routes.push({ from: 'store', to: 'source' });
 
   // Each scope: its held fields as rows, and a condition into each field it answers.
@@ -185,8 +228,9 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       ref: { scope: id },
     });
     routes.push({ from: top || !view ? 'source' : `scope-${VIEW}`, to: node });
+    const held = fields.map((f) => ({ value: f, label: label(f) }));
     for (const [field, condition] of Object.entries(where)) {
-      const when = add(top ? 2 : 4, `when-${id}-${field}`, 'condition', conditionRows(field, condition, typeOf(field)), {
+      const when = add(top ? 2 : 4, `when-${id}-${field}`, 'condition', conditionRows(field, condition, typeOf(field), held, facts.values?.(field)), {
         heading: label(field),
         description: condition.off ? 'Off: kept, not applied.' : 'Applied.',
         ref: { scope: id, field },
@@ -198,28 +242,29 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     if (arranging(scope)) {
       const first = scope.sort?.[0];
       const directions = [{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }];
-      // Sort and Group change as their chips do; Search stays the toolbar's.
+      // Sort, Group and Search change as their chips do.
       out = add(6, `arrange-${id}`, 'arrange', rowsOf('arrange', {
-        sort: first?.field ?? '', direction: first?.direction ?? 'asc', group: scope.group ?? '', search: scope.search,
-      }).map((row) => (row.name === 'search' ? row : { ...row, editable: true, choices: row.name === 'direction' ? directions : keys })), {
+        sort: first?.field ?? '', direction: first?.direction ?? 'asc', group: scope.group ?? '', search: scope.search ?? '',
+      }).map((row) => (row.name === 'search' ? { ...row, editable: true } : { ...row, editable: true, choices: row.name === 'direction' ? directions : keys })), {
         ref: { scope: id },
       });
       routes.push({ from: node, to: out });
     }
-    // Each component its own Presentation: its slot's, where the scope is its own, else its definition's.
+    // Each component its own Presentation: its SLOT's — its card's scope, kept in the
+    // Query — and changed as Show as, Group and Sort change it. On the View it has no slot.
     for (const c of shows) {
-      const presented = c.id === id || shows.length === 1 ? scope.presentation : undefined;
-      const kind = presented?.kind ?? c.kind;
+      const slot = !top && (c.id === id || shows.length === 1);
+      const presented = slot ? scope.presentation : undefined;
       let to = out;
-      if (presented || kind) {
-        to = add(7, `show-${c.id}`, 'presentation', rowsOf('presentation', { ...presented, kind }));
+      if (presented || c.kind) {
+        to = add(7, `show-${c.id}`, 'presentation', presentationRows(presented ?? {}, c.kind, keys, slot), slot ? { ref: { scope: id } } : {});
         routes.push({ from: out, to });
       }
-      routes.push({ from: to, to: add(8, `component-${c.id}`, 'component', [], { heading: c.label }) });
+      routes.push({ from: to, to: add(8, `component-${c.id}`, 'component', [], { heading: c.label, ref: { component: c.id, scope: id } }) });
     }
     // A slot's presentation with no component named to show it is still drawn.
     if (scope.presentation && !shows.length) {
-      routes.push({ from: out, to: add(7, `show-${id}`, 'presentation', rowsOf('presentation', { ...scope.presentation })) });
+      routes.push({ from: out, to: add(7, `show-${id}`, 'presentation', presentationRows(scope.presentation, undefined, keys, !top), { ref: { scope: id } }) });
     }
   }
 

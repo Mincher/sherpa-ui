@@ -1224,6 +1224,8 @@ native `popover="auto"` does: the panel keeps a static set of the panels open
 now and hides the rest on `show()`. A set, not a `document` query, so a panel
 inside a shadow root is found too. A shut panel still fires `panel-close`, so
 its host hears it. The Assistant and the Records details panel are the pair.
+A panel opened INSIDE another leaves its holder open: it sits over it, as the
+Node Editor's inspector sits over the editor (TODO 555).
 
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
 - Site: `test/e2e/reforged-records-details.spec.ts`
@@ -18822,8 +18824,20 @@ change made in it is a `QueryRequest`, as a chip's is.
   door a chip asks through — a reading through `ask()`, the Switch as a
   suspend, Sort and Group as `setSort` and `setGroup` — so whether it applies
   at once or waits for Apply is the Query's, as for any chip (Q3). What a row
-  may change is the graph's to say (`editable`, its `choices`); the rest is
-  read only.
+  may change is the graph's to say (`editable`, its `choices`).
+- **Read only is the exception** (Will, 2026-10-29): a row a route drives
+  MIRRORS what comes in; a row nothing outside takes yet (the Source's search
+  fields, its Apply on; a presentation on the View, which has no slot) says why
+  in its hint. Everything else edits, through its door: page size, Field, a
+  value, Search, a slot's Show as, Primary, Secondary, Group and Sort.
+- **A field whose values are known is PICKED**, as its chip picks: ticks, Is one
+  of or Is not one of. Equals is Is one of with one tick — the Query writes it
+  so — and reads back as that.
+- **A picked node opens the INSPECTOR**: its rows again, the same values and the
+  same edits, with where each comes from and goes to. A component's node shows a
+  live COPY of the page's component, with no ids, which asks the provider as the
+  page's does — so it draws what the Query says. The editor sits inside the
+  provider for that.
 
 - Site: `src/core/data/query-graph.ts`
 - Site: `src/data.ts`

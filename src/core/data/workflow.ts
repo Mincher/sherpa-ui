@@ -25,7 +25,7 @@ import { report } from './report.js';
 export type SocketCarries = 'value' | 'object';
 
 /** The field a row draws: text, a number, a select of keys, conditions or stores. */
-export type RowField = 'text' | 'number' | 'key' | 'condition' | 'direction' | 'store' | 'presentation' | 'switch';
+export type RowField = 'text' | 'number' | 'key' | 'condition' | 'direction' | 'store' | 'presentation' | 'switch' | 'values';
 
 /** One row a kind draws: its name, its label, its field and its sockets. */
 export interface RowKind {
@@ -201,6 +201,8 @@ export interface GraphRow extends RowKind {
   choices?: readonly { value: string; label: string }[];
   /** A reader may change it; else it is read only. */
   editable?: boolean;
+  /** A line under it: what it is, or why it is read only. */
+  hint?: string;
 }
 
 /** One node as drawn: its header, its sockets, its rows and its place. */

@@ -184,3 +184,53 @@ test('bindQueryEditor ASKS the Query through a chip\'s doors: a reading, the Swi
     ['suspend', 'view', null, true],
   ]);
 });
+
+test('a row a route drives MIRRORS what comes in, read only; one with no route stays editable', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { drawGraph } = await import('/dist/app.js');
+    const canvas = document.getElementById('root')!.querySelector('sherpa-layout-canvas') as Drawable;
+    const row = { label: 'Value', field: 'text' as const, input: 'value' as const, editable: true };
+    drawGraph(canvas, { routes: [{ from: 'a', to: 'b/fed' }], nodes: [
+      { id: 'a', kind: 'value', heading: 'A', icon: 'function', output: 'value', x: 0, y: 0, rows: [] },
+      { id: 'b', kind: 'filter', heading: 'B', icon: 'filter', x: 360, y: 0, rows: [{ ...row, name: 'fed', value: '1' }, { ...row, name: 'free', value: '2' }] },
+    ] });
+    await window.__settled();
+    const ro = (name: string) => document.querySelector(`#root sherpa-input-text[name="${name}"]`)!.hasAttribute('readonly');
+    return { fed: ro('fed'), free: ro('free') };
+  });
+  expect(r).toEqual({ fed: true, free: false });
+});
+
+test('a picked node opens its inspector: its rows again, their routes, and an edit there reaches the host', async ({ page }) => {
+  await page.evaluate(async () => {
+    const { drawGraph, inspectNode } = await import('/dist/app.js');
+    const canvas = document.getElementById('root')!.querySelector('sherpa-layout-canvas') as Drawable;
+    const panel = document.createElement('sherpa-overlay-panel') as HTMLElement & { show(): void };
+    document.getElementById('root')!.append(panel);
+    const heard: unknown[] = [];
+    (window as unknown as { heard: unknown[] }).heard = heard;
+    const graph = { routes: [{ from: 'a', to: 'b/value' }], nodes: [
+      { id: 'a', kind: 'value', heading: 'A', icon: 'function', output: 'value' as const, x: 0, y: 0, rows: [] },
+      { id: 'b', kind: 'condition', heading: 'Status', icon: 'function', x: 360, y: 0, rows: [
+        { name: 'op', label: 'Condition', field: 'condition' as const, value: 'eq', editable: true, choices: [{ value: 'eq', label: 'Equals' }, { value: 'ne', label: 'Does not equal' }] },
+        { name: 'value', label: 'Value', field: 'text' as const, input: 'value' as const, value: 'x', editable: true },
+      ] },
+    ] };
+    const onEdit = ({ row, value }: { row: { name: string }; value: unknown }) => heard.push([row.name, value]);
+    drawGraph(canvas, graph, { onEdit, onSelect: (node) => { inspectNode(panel, node, graph, { onEdit }); panel.show(); } });
+    await window.__settled();
+  });
+  await page.locator('#root sherpa-node[data-heading="Status"]').click({ position: { x: 40, y: 12 } });
+  await page.locator('#root sherpa-overlay-panel sherpa-input-text[name="op"] select').selectOption('ne');
+  const r = await page.evaluate(() => {
+    const panel = document.querySelector('#root sherpa-overlay-panel') as HTMLElement & { open: boolean };
+    const value = panel.querySelector('sherpa-input-text[name="value"]')!;
+    return {
+      open: panel.open, heading: panel.dataset['heading'],
+      current: [...document.querySelectorAll('#root sherpa-node[data-current]')].map((n) => n.getAttribute('data-heading')),
+      value: [value.hasAttribute('readonly'), value.getAttribute('data-description')],
+      heard: (window as unknown as { heard: unknown[] }).heard,
+    };
+  });
+  expect(r).toEqual({ open: true, heading: 'Status', current: ['Status'], value: [true, 'From A'], heard: [['op', 'ne']] });
+});

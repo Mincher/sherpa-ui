@@ -265,3 +265,23 @@ test('maximise fills the window and shows the trail; minimise brings the panel b
   expect(r.after).toEqual(r.before);
   expect(r.told).toEqual([{ maximised: true }, { maximised: false }]);
 });
+
+test('a panel opened INSIDE a panel leaves its holder open; one beside them shuts both', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const make = (): PanelEl & { show(): void; open: boolean } => document.createElement('sherpa-overlay-panel') as PanelEl & { show(): void; open: boolean };
+    const outer = make();
+    const inner = make();
+    const beside = make();
+    outer.append(inner);
+    document.getElementById('root')!.append(outer, beside);
+    await window.__settled();
+    outer.show();
+    inner.show();
+    const nested = [outer.open, inner.open];
+    beside.show();
+    await window.__settled();
+    return { nested, after: [outer.open, inner.open, beside.open] };
+  });
+  // The Node Editor's inspector sits inside the editor. TODO 555
+  expect(r).toEqual({ nested: [true, true], after: [false, false, true] });
+});

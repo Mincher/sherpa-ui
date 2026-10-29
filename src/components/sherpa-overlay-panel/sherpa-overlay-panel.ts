@@ -42,7 +42,8 @@ export class SherpaOverlayPanel extends SherpaElement {
   /** The native dialog the panel draws in, NON-modal. */
   #surface = new DialogSurface(this, () => this.$<HTMLDialogElement>('.root'), {
     open: (dialog) => {
-      for (const other of SherpaOverlayPanel.#shown) if (other !== this) other.hide();
+      // …but never one that HOLDS this one: a panel opened inside a panel sits over it. TODO 555
+      for (const other of SherpaOverlayPanel.#shown) if (other !== this && !other.contains(this)) other.hide();
       SherpaOverlayPanel.#shown.add(this);
       dialog.show();
       // A focusable separator must state its value: the width it is drawn at.
