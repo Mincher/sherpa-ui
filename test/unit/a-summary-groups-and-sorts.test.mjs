@@ -51,3 +51,20 @@ test('ungrouped, a segment has no parts — nothing changes for a chart that doe
   const out = summarise(ROWS, { shape: 'segments', segment: 'status' }, domain);
   assert.equal(out.some((s) => 'parts' in s), false);
 });
+
+test('a distinct count\'s parts add up to it: each value counted once, in the group most of its rows are in (Will, TODO 548)', () => {
+  // Acme has two Pro rows and one Free row in "active": it is one customer, a Pro one.
+  const rows = [
+    { id: 1, status: 'active', plan: 'Pro', customer: 'Acme' },
+    { id: 2, status: 'active', plan: 'Pro', customer: 'Acme' },
+    { id: 3, status: 'active', plan: 'Free', customer: 'Acme' },
+    { id: 4, status: 'active', plan: 'Free', customer: 'Globex' },
+    // A tie goes to the first plan in order: Free.
+    { id: 5, status: 'active', plan: 'Pro', customer: 'Initech' },
+    { id: 6, status: 'active', plan: 'Free', customer: 'Initech' },
+  ];
+  const [active] = summarise(rows, { shape: 'segments', segment: 'status', group: 'plan', aggregate: 'distinct', field: 'customer' }, domain);
+  assert.equal(active.value, 3);
+  assert.deepEqual(active.parts.map((p) => [p.label, p.value, p.colorIndex]), [['Free', 2, 1], ['Pro', 1, 2]]);
+  assert.equal(active.parts.reduce((n, p) => n + p.value, 0), active.value);
+});

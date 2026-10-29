@@ -97,7 +97,6 @@ For a table of records that can be sorted, filtered, grouped and selected. It re
 | `data-locked` | boolean |  |  |
 | `data-multi-field` | boolean |  | a column's `tags` draw as a second row in its cells, each pressed to filter by its value, and its heading menu joins their lists. Set by its provider. TODO 490 |
 | `data-needles` | text |  | what an EXTERNAL filter MATCHED on, so its hits mark in the cells: `field:op:value` per entry, NEWLINE separated. Written by SherpaDataSource beside data-filter-fields. Only substring ops appear — `eq` matched the whole value and `ne` matched by absence, so neither leaves a span to point at. TRAP T-a-needle-comes-from-either-direction |
-| `data-none-shows-all` | boolean |  | a heading's list with nothing ticked is every row. Without it, a list its reader leaves empty asks for no rows. Set by its provider. TODO 489 |
 | `data-page` | number |  | the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and never writes data-page itself. |
 | `data-page-size` | number |  | the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and never writes data-page itself. |
 | `data-scope` | text |  | ASKED of its provider: the Query scope its headings answer |

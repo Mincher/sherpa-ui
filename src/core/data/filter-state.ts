@@ -123,8 +123,6 @@ export interface FilterState {
    * TRAP T-one-condition-system
    */
   rows: readonly FieldCondition[];
-  /** Nothing picked, on purpose: it matches no row. Will, TODO 403 · TRAP T-none-is-an-answer */
-  none?: boolean;
   /** Every value ticked, on purpose: it filters nothing. Will, TODO 489 · TRAP T-all-is-an-answer */
   all?: boolean;
 }
@@ -207,9 +205,6 @@ export interface FieldReading {
   /** Picks KEPT and not in force: a tiered parent switched off keeps its
    *  children's picks for when it comes on. TODO 369 · TRAP T-a-parent-pick-is-the-parent */
   off?: readonly unknown[];
-  /** Nothing picked, ON PURPOSE: no rows — a fetching list's Select All off.
-   *  Will, TODO 403 · TRAP T-none-is-an-answer */
-  none?: boolean;
   /** EVERY value ticked, on purpose — Select all on, or a list that starts so —
    *  whatever values come: no filter. Will, TODO 489 · TRAP T-all-is-an-answer */
   all?: boolean;
@@ -319,9 +314,9 @@ export function rowsFromPicks(
 /* ── A PRESET's rows in a field's answer — Will, TODO 510 · TRAP T-a-preset-is-its-own-part ── */
 
 /** A reading as condition rows — the answer it puts in force, Simple's picks as
- *  their rows; none while it is off, All or none. */
+ *  their rows; none while it is off, or All. */
 export function asRows(reading: FieldReading | undefined, type?: 'number' | 'date'): FieldCondition[] {
-  if (!reading || reading.suspended || reading.all || reading.none) return [];
+  if (!reading || reading.suspended || reading.all) return [];
   if (modeOf(reading) === 'advanced') return readingRows(reading);
   const picked = reading.picked ?? [];
   if (reading.range && picked.length === 2) return [{ op: 'between', picked: [...picked] }];
@@ -355,7 +350,7 @@ function rowsOfRuns(runs: readonly (readonly FieldCondition[])[]): FieldConditio
  *  in force, as Advanced rows; its Simple picks are kept for a switch back. */
 export function withRows(reading: FieldReading | undefined, rows: readonly FieldCondition[], type?: 'number' | 'date'): FieldReading {
   const own = asRows(reading, type);
-  const { suspended: _off, all: _all, none: _none, ...base } = reading ?? {};
+  const { suspended: _off, all: _all, ...base } = reading ?? {};
   const runs = own.length ? runsOf(own) : [[]];
   return { ...base, conditions: rowsOfRuns(runs.map((run) => [...run, ...rows])), mode: 'advanced' };
 }
@@ -448,13 +443,12 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
   const tops = parentOf ? values.filter((v) => !v.parent) : values;
   const chosen = tops.filter((v) => v.state === 'picked').length;
   const paths = parentOf ? values.filter((v) => v.parent && own(v)).length : 0;
-  // Nothing ticked on purpose: an answer, of no rows. TRAP T-none-is-an-answer
-  const none = !!reading.none && !takesText && type !== 'date' && chosen + paths === 0;
-  const answered = none || (takesText
+  // Nothing ticked filters nothing. Will, TODO 550
+  const answered = takesText
     ? text !== ''
     : !facts.values || type === 'date'
       ? chosen + paths > 0
-      : (chosen > 0 && chosen < tops.length) || paths > 0);
+      : (chosen > 0 && chosen < tops.length) || paths > 0;
 
   /* ROWS answer for themselves. A row is answered when its op has what it
      needs — text typed, or a value picked — so a half-built row narrows
@@ -491,7 +485,6 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
     values,
     condition: !rows.length ? null : advanced ? 'advanced' : 'simple',
     rows,
-    ...(none && mode !== 'advanced' ? { none: true } : {}),
     ...(every ? { all: true } : {}),
   };
 }
@@ -506,7 +499,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
  */
 export function stateClause(state: FilterState): Filter | undefined {
   if (state.fieldState !== 'active') return undefined;
-  return state.none ? [state.field, 'in', []] : chainRows(state);
+  return chainRows(state);
 }
 
 /**

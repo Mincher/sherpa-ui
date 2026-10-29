@@ -95,7 +95,7 @@
 .act-divider,
 .chips > .chip[data-persistent]::after,
 .chips > .chip[data-preset]::after,
-.organise-chip[data-id="compare"]::after,
+.organise-chip[data-id="secondary"]::after,
 :host(:state(has-view)) .view-zone::after,
 :host(:state(has-organise)) .organise-zone::after,
 :host([data-switchable]:not([data-type="view"])) .switch-zone::after {
@@ -120,9 +120,9 @@
   margin-inline-start: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* A chart's Compare, then how it is grouped and sorted: a divider between, on
-   the bar only. Will, TODO 548 */
-:host(:not([data-orientation="portrait"])) .organise-chip[data-id="compare"]:has(~ .organise-chip)::after {
+/* A chart's Primary and Secondary, then how it is grouped and sorted: a divider
+   between, on the bar only. Will, TODO 548 */
+:host(:not([data-orientation="portrait"])) .organise-chip[data-id="secondary"]:has(~ .organise-chip)::after {
   content: "";
   display: block;
   flex: 0 0 auto;
@@ -431,6 +431,18 @@ sherpa-accordion.scope::part(actions) {
   text-overflow: ellipsis;
   white-space: nowrap;
   line-height: var(--sherpa-display-mode-size-lg, 24px);
+}
+/* Organise's chips wrap in the VALUE column, every line: the label column holds
+   its heading only. Will, TODO 548 */
+:host([data-orientation="portrait"][data-label-column]:state(has-organise):not([data-no-sections])) .organise-zone {
+  position: relative;
+  padding-inline-start: calc(var(--sherpa-quick-filter-label-size, 96px) + var(--sherpa-display-mode-space-xs, 8px));
+}
+:host([data-orientation="portrait"][data-label-column]:state(has-organise):not([data-no-sections])) .organise-zone::before {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: var(--sherpa-quick-filter-label-size, 96px);
 }
 
 /* ── COLUMN — portrait over several scopes: the panel area's. It opens and

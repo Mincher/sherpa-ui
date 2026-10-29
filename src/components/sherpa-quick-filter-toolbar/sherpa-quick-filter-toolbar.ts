@@ -59,8 +59,8 @@ export interface OrganiseDef {
   sort?: OrganiseColumn[];
   /** A Sort with no column to pick: it orders what a chart draws, by value. TODO 548 */
   order?: boolean;
-  /** A chart's Compare: the fields it may count and split by, and those it does. TODO 548 */
-  compare?: { fields: OrganiseColumn[]; primary?: string; secondary?: string };
+  /** A chart's Primary and Secondary: the fields it may count and split by, and those it does. TODO 548 */
+  chart?: { fields: OrganiseColumn[]; primary?: string; secondary?: string };
 }
 
 export type { OrganiseColumn } from '../../core/data/data-source.js';
@@ -159,8 +159,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-waits': { type: 'boolean', kind: 'style' },
     // …or each field applies on its own: its menu's, or its section's, Apply. Will, TODO 451
     'data-field-apply': { type: 'boolean', kind: 'style' },
-    // A list with nothing ticked is every row, not none. Will, TODO 489 · TRAP T-none-is-an-answer
-    'data-none-shows-all': { type: 'boolean', kind: 'behaviour' },
     'data-dirty': { type: 'boolean', kind: 'behaviour' },
     // The FIELDS whose own read failed: a system error, not 0 matches. TODO 411
     'data-failed': { type: 'string', kind: 'behaviour' },
@@ -592,6 +590,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.$('.filters-switch')?.addEventListener('change', this.#onSwitch);
     // CAPTURE — see #onChipChange.
     this.addEventListener('quick-filter-change', this.#onChipChange, true);
+    this.addEventListener('group-change', this.#onChartChip, true);
     this.addEventListener('quick-filter-change', this.#onFoldedCountsChanged);
     this.addEventListener('menu-change', this.#onFoldedCountsChanged);
     // A committing menu fires nothing while rows are ticked; their native
@@ -1441,7 +1440,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #chipKey(f: FilterDef): string {
     const { state: _state, appliedAt: _at, sendTo: _to, active: _active, ...made } = f as FilterDef & Record<string, unknown>;
     return JSON.stringify([made, this.dataset['bounds'] ?? '', this.hasAttribute('data-remote'), this.dataset['applyOn'] ?? '',
-      this.hasAttribute('data-waits'), this.hasAttribute('data-field-apply'), this.hasAttribute('data-none-shows-all')]);
+      this.hasAttribute('data-waits'), this.hasAttribute('data-field-apply')]);
   }
   /** Each chip's key, as it was built. */
   #built = new WeakMap<Element, string>();
@@ -1453,7 +1452,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       live: this.dataset['applyOn'] === 'input', waits: this.hasAttribute('data-waits'),
       // Each field applies on its own: its menu has Apply. TODO 451
       applies: this.hasAttribute('data-field-apply'),
-      empties: !this.hasAttribute('data-none-shows-all'),
     };
   }
 
@@ -1844,7 +1842,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       this.#emitChange({ suspended: false });
     }
     // Local or remote decides which menus wait for Apply, so they are rebuilt.
-    if ((name === 'data-remote' || name === 'data-apply-on' || name === 'data-waits' || name === 'data-field-apply' || name === 'data-none-shows-all')
+    if ((name === 'data-remote' || name === 'data-apply-on' || name === 'data-waits' || name === 'data-field-apply')
       && this.#filters.length) this.#render();
     if (name === 'data-pending' || name === 'data-failed') this.#syncPending();
     // Apply is on while something in the scope waits for it. TODO 406
@@ -2615,12 +2613,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const group = this.#organise.group ?? [];
     const sort = this.#organise.sort ?? [];
     const order = !!this.#organise.order;
-    const compare = this.#organise.compare;
+    const chart = this.#organise.chart;
     zone.replaceChildren();
     // CSS cannot see whether the zone has children, and an empty one would leave
     // its divider rule floating.
     this.toggleState('has-organise', group.length > 0 || sort.length > 0 || order);
-    if (compare?.fields.length) zone.appendChild(this.#compareChip(compare));
+    if (chart?.fields.length) {
+      zone.append(this.#chartChip('primary', chart.fields, chart.primary), this.#chartChip('secondary', chart.fields, chart.secondary));
+    }
 
     /* BORN NAMING ITS COLUMN. The bar may already be grouped or sorted — a
        reload restores both — so the chip is built on that column rather than
@@ -2656,28 +2656,29 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     for (const kind of ['group', 'sort'] as const) arrangeFrom(this, this.#organiser(kind), kind);
   }
 
-  /** A chart's Compare: one pick in each of two lists — what it counts, and
-   *  what it splits by. A pick is ONE request. Will, TODO 548 */
-  #compareChip({ fields, primary, secondary }: NonNullable<OrganiseDef['compare']>): HTMLElement {
-    const chip = this.clone('template.organise-compare-tpl');
-    if (!chip) throw new Error('sherpa-quick-filter-toolbar: template.organise-compare-tpl is missing or empty');
-    const list = (part: 'count' | 'by', on: string | undefined): FilterOption[] => fields.map((c) => ({
-      value: `${part}:${c.field}`, label: c.label, section: this.word(part), group: part, selected: c.field === on,
-    }));
-    this.#addMenu(chip, {
-      id: 'compare', label: chip.dataset['label'] ?? '', select: 'single', persistent: true,
-      options: [...list('count', primary), ...list('by', secondary)],
-    });
+  /** A chart's Primary — what it counts — or Secondary — what it splits by: a
+   *  Group chip's gesture, its menu a field, its body on or off (off, the chart's
+   *  own). Drawn ON at the field in force. Will, TODO 548 */
+  #chartChip(id: 'primary' | 'secondary', fields: OrganiseColumn[], on: string | undefined): HTMLElement {
+    const chip = this.clone(`template.organise-${id}-tpl`);
+    if (!chip) throw new Error(`sherpa-quick-filter-toolbar: template.organise-${id}-tpl is missing or empty`);
+    if (on) chip.dataset['column'] = on;
+    this.#addMenu(chip, { id, label: chip.dataset['label'] ?? '', select: 'single', options: organiseOptions(fields, on) });
     this.#lock(chip);
+    (chip as SherpaQuickFilter).arrangeBy?.(on ?? '');
     return chip;
   }
 
-  /** The Compare chip's picks, as the slot's presentation. */
-  #onCompare(chip: SherpaQuickFilter): void {
-    const pick = (part: string): string | undefined =>
-      chip.values.find((v) => v.startsWith(`${part}:`))?.slice(part.length + 1);
-    this.#ask({ presentation: { primary: pick('count'), secondary: pick('by') } }, 'free');
-  }
+  /** A Primary or Secondary pick: the slot's presentation, never the rows' group.
+   *  Registered in CAPTURE, before a host hears it as a Group. TODO 548 */
+  #onChartChip = (event: Event): void => {
+    const chip = this.pathFind<SherpaQuickFilter>(event, '.organise-chip:is([data-id="primary"], [data-id="secondary"])');
+    const id = chip?.dataset['id'];
+    if (id !== 'primary' && id !== 'secondary') return;
+    event.stopImmediatePropagation();
+    const field = (event as CustomEvent<{ field?: string | null }>).detail?.field;
+    this.#ask({ presentation: { [id]: field || undefined } }, 'free');
+  };
 
   /** One organise chip, from its own prototype: a menu chip with single-select rows. */
   #organiseChip(
@@ -2714,12 +2715,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     /* This hears the chips' quick-filter-change AND the toolbar's own, emit()
        being composed. Registered in CAPTURE so it stops a chip's before a host
        reads it. TRAP T-capture-beats-registration-order */
-    const compare = this.pathFind<SherpaQuickFilter>(event, '.organise-chip[data-id="compare"]');
-    if (compare) {
-      event.stopImmediatePropagation();
-      this.#onCompare(compare);
-      return;
-    }
     const chip = this.#chipOf(event);
     if (!chip) return;
     event.stopImmediatePropagation();

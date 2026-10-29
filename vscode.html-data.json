@@ -1050,11 +1050,6 @@
           "description": "what an EXTERNAL filter MATCHED on, so its hits mark in the cells: `field:op:value` per entry, NEWLINE separated. Written by SherpaDataSource beside data-filter-fields. Only substring ops appear — `eq` matched the whole value and `ne` matched by absence, so neither leaves a span to point at. TRAP T-a-needle-comes-from-either-direction"
         },
         {
-          "name": "data-none-shows-all",
-          "description": "a heading's list with nothing ticked is every row. Without it, a list its reader leaves empty asks for no rows. Set by its provider. TODO 489",
-          "valueSet": "v"
-        },
-        {
           "name": "data-page",
           "description": "the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and never writes data-page itself."
         },
@@ -2085,10 +2080,6 @@
           "description": "names the list that was replaced — the breadcrumb's text"
         },
         {
-          "name": "data-empties",
-          "valueSet": "v"
-        },
-        {
           "name": "data-has-value",
           "description": "written BY the menu: the typed value is not empty, so the input's Clear button shows."
         },
@@ -2909,11 +2900,6 @@
         },
         {
           "name": "data-no-sections",
-          "valueSet": "v"
-        },
-        {
-          "name": "data-none-shows-all",
-          "description": "a list with nothing ticked is every row. Without it, a reader who leaves a list empty asks for no rows. Set by its provider. TODO 489",
           "valueSet": "v"
         },
         {

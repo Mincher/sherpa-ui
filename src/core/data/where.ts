@@ -90,9 +90,9 @@ function readingOf(field: string, given: Condition, facts?: Omit<FieldFacts, 'fi
     return undefined;
   }
   const condition = { ...rest, ...named };
-  // `in: []` is none, on purpose: no rows. TRAP T-none-is-an-answer
+  // `in: []` is nothing picked: it filters nothing. Will, TODO 550
   if (Array.isArray(condition.in) && !condition.in.length && Object.keys(condition).length === 1) {
-    return { picked: [], none: true, ...(off ? { suspended: true } : {}) };
+    return { picked: [], ...(off ? { suspended: true } : {}) };
   }
   const type = facts?.type;
   const clause = clauseOf(field, condition);

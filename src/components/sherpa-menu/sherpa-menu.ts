@@ -70,8 +70,6 @@ export interface MenuItem {
   count?: number;
   /** A tiered field's child value: its parent value's key. TODO 369 */
   parent?: string;
-  /** In a single list, its OWN radio group: one pick per group — a chart's two fields. TODO 548 */
-  group?: string;
   /** A row that DOES something — no tick box: a button, reported as `menu-select`. TODO 427 */
   action?: boolean;
 }
@@ -103,8 +101,6 @@ export class SherpaMenu extends SherpaElement {
     // A list of filters: no Select all. Read when the items stamp.
     'data-no-select-all': { type: 'boolean', kind: 'style' },
     'data-none': { type: 'boolean', kind: 'behaviour' },
-    // Its picks FETCH: its host reads nothing ticked, while on, as no rows. Will, TODO 403
-    'data-empties': { type: 'boolean', kind: 'behaviour' },
     // Its rows are still being read. TODO 345
     'data-loading': { type: 'boolean', kind: 'visibility' },
     /* FILTER type only — which ops its condition dropdown offers, and which
@@ -1590,7 +1586,7 @@ export class SherpaMenu extends SherpaElement {
     if (box) {
       box.value = item.value;
       box.checked = held ? held.has(item.value) : !!item.selected;
-      if (this.dataset['select'] === 'single') box.name = item.group ? `${this.#group}-${item.group}` : this.#group;
+      if (this.dataset['select'] === 'single') box.name = this.#group;
     }
     const label = item.label ?? item.value;
     row.querySelector('.menu-row-label')!.textContent = label;
@@ -2033,13 +2029,11 @@ export class SherpaMenu extends SherpaElement {
     if (!this.#commits) this.emit('menu-change', { values: this.values, ...this.#said() });
   }
 
-  /** What a reader's act says beyond its ticks. ALL: Select all on. NONE: the list
-   *  left empty — no rows, unless the app's "Select none shows all data" is on;
-   *  Clear is not one. Will, TODO 489 · TRAP T-none-is-an-answer · TRAP T-all-is-an-answer */
-  #said(): { none?: true; all?: true } {
+  /** What a reader's act says beyond its ticks. ALL: Select all on. A list left
+   *  empty says nothing: it filters nothing (Will, TODO 550). TRAP T-all-is-an-answer */
+  #said(): { all?: true } {
     if (this.mode === 'advanced') return {};
-    if (this.#all) return { all: true };
-    return !this.values.length && this.hasAttribute('data-empties') ? { none: true } : {};
+    return this.#all ? { all: true } : {};
   }
 
   /** EVERY value ticked, on purpose — Select all on, or its host's answer: a row

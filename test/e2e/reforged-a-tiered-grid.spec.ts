@@ -69,7 +69,8 @@ test('a Site cell chip picks its path on Customer, and a second press lets it go
   await expect(cell.locator('.cell-filter')).toHaveAttribute('data-current', '');
   await cell.hover();
   await cell.locator('.cell-filter .caret').click();
-  await expect.poll(async () => ((await heard()).at(-1) as { reading: unknown }).reading).toEqual({ picked: [], mode: 'simple', none: true });
+  // The last let go filters nothing. Will, TODO 550
+  await expect.poll(async () => ((await heard()).at(-1) as { reading: unknown }).reading).toBeNull();
 });
 
 test('a Site cell chip is inactive while the View holds Customer, and refuses', async ({ page }) => {

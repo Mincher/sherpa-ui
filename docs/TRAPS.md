@@ -14435,49 +14435,6 @@ that follows is what makes it read as unset.
 - Site: `src/core/data/source-counts.ts`
 - Site: `test/unit/a-raise-narrows-at-once.test.mjs`
 
-### T-none-is-an-answer
-
-Will, TODO 403: *"the Select All in the off state should select none and return
-no results … all Customer and Region data is fetched on page load which would be
-horrible in a real app."* Then TODO 489: *"Add a filtering setting to have
-'Select none shows all data'. Have this setting off by default. When off, if
-Select All isn't ticked for a filter then no data is returned for that filter."*
-
-Then TODO 517 (Will, 2026-10-28): *"If no values are selected then the field
-should be no longer included in the query."* In the panel, none looked like the
-start (every value chip off) and emptied the page and every field after it. So
-the app's "Select none shows all data" is ON by default
-(`provider.noneShowsAll`, written as `data-none-shows-all` on each bar, panel
-and grid): nothing ticked leaves the query — every row, as 480 had it
-(`T-everything-on-is-no-filter`). Off, a reader who leaves a LIST empty asks
-for NO rows — Select all turned off, the last row let go, an Apply with nothing
-ticked, the last value chip or cell value let go (489, Will A: "however it
-came"). A bar, panel or grid with no provider has no attribute, so it is off.
-
-It is said on purpose, in the reading: `{ picked: [], none: true }`, compiled to
-`[field, 'in', []]`, and written plainly as `{ in: [] }`. Nothing else may mean
-it: a bar or panel reports every field at once, and an UNTOUCHED field read as
-none would empty the page. So only a reader's act asks for it: the menu wears
-`data-empties` (a multi list, the setting off) and says `none` in its
-`menu-change` and `menu-apply`; the chip keeps it (`#none`) — a locked chip too,
-whose host reads its answer — and a grid heading holds it. Clear is not one: it
-removes the filter.
-
-At none the chip stays on, wears 0, and is not the amber "filtering nothing".
-Its body then toggles it: OFF asks for every row, as any chip does (Will's
-pick). A pick outranks none; a date, a range and a typed answer have none.
-
-- Site: `src/core/data/filter-state.ts`
-- Site: `src/core/data/where.ts`
-- Site: `src/core/ui/filter-menu.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `test/unit/none-is-an-answer.test.mjs`
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `test/e2e/reforged-menu.spec.ts`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-
 ### T-the-panel-is-the-bar-in-portrait
 
 Will, TODO 425: *"The elements are the same across both so they should really
@@ -14563,8 +14520,8 @@ first field's values are read already; each after it asks `presentUnder`.
 The start is the QUERY's (`query.startWith`), taken in place as the page opens,
 and taken again wherever the Query leaves that field unanswered: a View pick
 (a View resets every field that does not carry over), a restore, and Reset —
-so none of them asks for every row. An answer the reader made — off, or none
-(`T-none-is-an-answer`) — is kept, never replaced.
+so none of them asks for every row. An answer the reader made — off — is kept,
+never replaced. (Nothing ticked is no answer: it filters nothing. Will, TODO 550.)
 
 A control bound AFTER the Query holds answers is drawn them at the end of
 `attach`, after the flags that rebuild a bar's chips (`data-waits`): drawn

@@ -95,9 +95,9 @@ One JSON document per page. The same rule as a View: **a definition is data**
 - **A FETCHING list opens on its first value** — a list the View holds, or any
   on a remote source — so a page never asks for every row as it opens; a View,
   a restore or Reset that leaves it empty puts it back. `"start": "all"` opens
-  it on ALL instead: every value ticked, on, and no filter. Nothing ticked is NO
-  rows, unless the app's "Select none shows all data" is on
-  (`T-a-fetching-list-opens-on-its-first-value`, `T-all-is-an-answer`, `T-none-is-an-answer`).
+  it on ALL instead: every value ticked, on, and no filter. Nothing ticked is no
+  filter either (Will, TODO 550)
+  (`T-a-fetching-list-opens-on-its-first-value`, `T-all-is-an-answer`).
 - **A scope's `presets`** are the app's own named conditions, each a boolean
   chip leading its scope: `"presets": [{ "id": "high-risk", "label": "High
   risk", "where": { "health": { "lt": 60 }, "openTickets": { "gt": 0 } } }]`.

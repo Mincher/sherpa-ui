@@ -81,7 +81,7 @@ Saved Views, export and a reload carry it, as `definitionOf` carries any scope k
 - **The data and the swap** belong to the provider, which binds every chart and reads the Query. `#spec` lays the slot's kept presentation over the attributes, and a change answers the chart again (`#followPresentation`; C2 ✅). A swap is another answer; donut and pie are one component already.
 - **The menu** is an optional built-in button in the container header and in the grid's bar, as the bar's Suggest is.
 
-**The chart toolbar** is the existing bar, bound to the slot's scope, showing only its organise zone: Compare, Group, Sort.
+**The chart toolbar** is the existing bar, bound to the slot's scope, showing only its organise zone: Primary, Secondary, Group, Sort.
 - Its chips send ONE request, `{ presentation: { … } }`, through the same `quick-filter-change` door as any chip, to a `QueryContext.present(scope, patch)` door.
 - A Sort chip with no menu cycles with `nextSort`.
 
@@ -92,7 +92,7 @@ Saved Views, export and a reload carry it, as `definitionOf` carries any scope k
 | A ✅ | The data layer: `group` and `sort` on a summary (step 2) | Unit tests on `summarise`; check:bench |
 | B ✅ | The bar stacks parts, the donut and pie split a slice by spokes, in the segment's own colour; tips list the parts; the legend is unchanged (Will: B) | e2e in 3 engines; pixels read back |
 | C ✅ | `ScopeQuery.presentation` and `QueryContext.present` (C1); the provider builds a slotted chart's summary from it, and answers it again when it moves (C2) | unit tests; e2e: a slot's group, sort, primary and secondary redraw its chart |
-| D | The chart toolbar (Compare, Group, Sort) and the presentation menu; the swap; primary and secondary in the definition. D1 ✅: a bar in a slot draws Group and a Sort with no menu, and they go to `present()`; Clear all clears them. D2 ✅: Compare, one pick in each of Count and By, sent as one `{ presentation }` request; the chart's own attributes are the ticks until a pick (`shows` on its bind). D3 ✅: `sherpa-data-viz-header[data-presentation]` draws Show as; its `presentation-change` is the provider's, which keeps the kind and swaps the chart (bar, donut, pie), its children moved; Default goes back to the page's own. D5 ✅: Show as in `sherpa-container-header` and `sherpa-toolbar` too, from one family file; a scope's definition names its `presentation` (`declarePresentation`, `presented()`); a grid card swaps to a chart and back — the page's own element is kept aside, so Default puts back the very grid. D4 (Data Grid in a chart card) waits for Will | e2e: each swap draws the same data |
+| D | The chart toolbar (Compare, Group, Sort) and the presentation menu; the swap; primary and secondary in the definition. D1 ✅: a bar in a slot draws Group and a Sort with no menu, and they go to `present()`; Clear all clears them. D2 ✅: Compare, one pick in each of Count and By, sent as one `{ presentation }` request; the chart's own attributes are the ticks until a pick (`shows` on its bind). D3 ✅: `sherpa-data-viz-header[data-presentation]` draws Show as; its `presentation-change` is the provider's, which keeps the kind and swaps the chart (bar, donut, pie), its children moved; Default goes back to the page's own. D5 ✅: Show as in `sherpa-container-header` and `sherpa-toolbar` too, from one family file; a scope's definition names its `presentation` (`declarePresentation`, `presented()`); a grid card swaps to a chart and back — the page's own element is kept aside, so Default puts back the very grid. Follow-ups ✅: Compare split into Primary and Secondary; a distinct count's parts add up. D4 (Data Grid in a chart card) waits for Will | e2e: each swap draws the same data |
 | E | The panel follows a swap; Demos pages moved. ✅ 2026-10-29: a swapped chart's section keeps its place (a part keeps the order it was first declared) and names its new kind (`tagOf` reads `data-type`: Donut Chart, Pie Chart); the Dashboard's two charts and Records' grid are slots | Demos tests; full suites |
 
 Each phase is its own commit series, test first. Each one ships without the ones after it.
@@ -108,8 +108,8 @@ Each phase is its own commit series, test first. Each one ships without the ones
 - **Primary:** what a chart COUNTS. Each segment's value is the number of DIFFERENT primary values among its rows, unless the definition names an aggregate (a sum of seats). It defaults to the grid's leading column. Records names `customer`, so "By status" counts the customers in each status.
 - **Secondary:** the segmentation. One bar or one slice per value.
 - **Group:** the parts inside each segment.
-- **The chart's toolbar** under its header holds Compare, Group and Sort, in that order:
-  - **Compare** picks the primary and the secondary (two lists in one menu).
+- **The chart's toolbar** under its header holds Primary, Secondary, Group and Sort, in that order (Will, 2026-10-29: the one Compare chip split in two):
+  - **Primary** picks what it counts, **Secondary** what it splits by; each is a Group chip's gesture, and off is the chart's own.
   - **Group** picks the parts.
   - **Sort** cycles ascending, descending, none.
 

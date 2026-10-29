@@ -74,9 +74,6 @@ export interface FilterMenuOptions {
   waits?: boolean | undefined;
   /** …and each field applies on its own: its menu has Apply too. Will, TODO 451 */
   applies?: boolean | undefined;
-  /** A list with nothing ticked answers NO rows — unless the app's "Select none
-   *  shows all data" is on. Will, TODOs 403, 489 · TRAP T-none-is-an-answer */
-  empties?: boolean | undefined;
 }
 
 /**
@@ -125,7 +122,6 @@ export function menuFor(
   // A single LIST leads with None, its "nothing" — no Clear in any footer. Will, TODO 394
   if (one && !hasOwnBody(kind) && !def.persistent) menu.setAttribute('data-none', '');
   if (def.loading) menu.setAttribute('data-loading', '');
-  if (opts.empties && kind === 'multi') menu.setAttribute('data-empties', '');
 
   /* THE MENU OWNS ITS BODY. This says WHICH and hands over the numbers; the
      switch, the field, the slider and their rules are the menu's.

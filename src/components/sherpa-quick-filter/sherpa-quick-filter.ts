@@ -354,26 +354,18 @@ export class SherpaQuickFilter extends SherpaElement {
     const menu = this.#fieldMenu();
     if (!menu) return null;
     const own = menu.reading;
-    // ON at NONE: no rows. Will, TODOs 403, 489 · TRAP T-none-is-an-answer
-    const none = this.current && this.#none && this.#empties() && !(own.picked ?? []).length && own.mode !== 'advanced' && !(own.text ?? '').trim();
     // ALL: every value, whichever come — no filter; OFF keeps it, as it keeps picks. TRAP T-all-is-an-answer
     const all = this.#all && own.mode !== 'advanced' && !(own.text ?? '').trim();
     // A tiered parent switched OFF keeps its picks. TODO 369, 425 · TRAP T-a-parent-pick-is-the-parent
     const off = this.#off.size ? { off: [...this.#off] } : {};
-    return { ...own, ...off, ...(none ? { none: true } : {}), ...(all ? { picked: [], all: true } : {}), ...(this.current ? {} : { suspended: true }) };
+    return { ...own, ...off, ...(all ? { picked: [], all: true } : {}), ...(this.current ? {} : { suspended: true }) };
   }
 
   /** Picks a tiered parent switched OFF keeps for when it comes back on, by key. */
   #off = new Set<string>();
-  /** NONE was asked — Select all off, or drawn so: ON with nothing ticked. Will, TODO 480 */
-  #none = false;
   /** ALL was asked — Select all on, or drawn so: ON with every value ticked. Will, TODO 489 */
   #all = false;
 
-  /** Nothing ticked, while on, answers no rows. TODO 489 */
-  #empties(): boolean {
-    return !!this.#fieldMenu()?.hasAttribute('data-empties');
-  }
   set reading(next: FieldReading) {
     const menu = this.#fieldMenu();
     if (!menu) return;
@@ -418,13 +410,12 @@ export class SherpaQuickFilter extends SherpaElement {
     }
     // By KEY: a site pick is an object, and String() makes it "[object Object]". TODO 422
     this.#off = new Set((next.off ?? []).map(valueKey));
-    this.#setPicks((next.picked ?? []).map(valueKey), next.suspended, next.none, next.all);
+    this.#setPicks((next.picked ?? []).map(valueKey), next.suspended, next.all);
   }
 
-  /** Picks, and OFF where there are none or the answer is suspended — ON for none.
-   *  TRAP T-everything-on-is-no-filter · TRAP T-none-is-an-answer */
-  #setPicks(picks: readonly string[], off = false, none = false, all = false): void {
-    this.#none = none && !off;
+  /** Picks, and OFF where there are none or the answer is suspended. Nothing
+   *  ticked filters nothing: Will, TODO 550. TRAP T-everything-on-is-no-filter */
+  #setPicks(picks: readonly string[], off = false, all = false): void {
     this.values = picks;
     // ALL ticks every value its menu has, and every one that comes. TRAP T-all-is-an-answer
     this.#all = all;
@@ -433,7 +424,7 @@ export class SherpaQuickFilter extends SherpaElement {
       menu.all = true;
       this.#applySelection(menu.values ?? []);
     }
-    if ((none || all) && !off) this.current = true;
+    if (all && !off) this.current = true;
     else if (!picks.length || off) this.current = false;
   }
 
@@ -474,17 +465,17 @@ export class SherpaQuickFilter extends SherpaElement {
     for (const input of this.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
   }
 
-  /** Does the chip hold an answer — a pick, a day, a number, typing or a row, or
-   *  none (on, where picks fetch)? Whether it is ON after its menu applies: ONE
-   *  rule for the chip and every host. TODO 424 · TRAP T-none-is-an-answer */
+  /** Does the chip hold an answer — a pick, a day, a number, typing or a row?
+   *  Whether it is ON after its menu applies: ONE rule for the chip and every
+   *  host. Nothing ticked is no answer: Will, TODO 550. TODO 424 */
   get answered(): boolean {
     return this.#answers(this.values);
   }
 
   /** The rule, over the picks as given. */
   #answers(values: readonly string[]): boolean {
-    // A TYPING condition answers with text; NONE too. TODOs 480, 489
-    return values.length > 0 || this.#hasTypedAnswer() || (this.#none && this.#empties()) || this.#all;
+    // A TYPING condition answers with text. TODO 480
+    return values.length > 0 || this.#hasTypedAnswer() || this.#all;
   }
 
   /** Does its menu hold a change not yet sent — a draft its Apply would send?
@@ -725,10 +716,8 @@ export class SherpaQuickFilter extends SherpaElement {
     /* A CONDITIONED chip has no ticks and is NOT empty — its rows are its
        answer. Its body toggles, like any other answered chip.
        TRAP T-toggling-a-conditioned-chip-suspends-its-condition */
-    // ON at none is answered: it toggles too (TRAP T-none-is-an-answer); a section's value
-    // chip's body is its toggle, its caret its Sites (TODO 425).
-    if (menu && this.values.length === 0 && this.dataset['condition'] !== 'advanced' && !(this.current && this.#none && this.#empties())
-      && this.slot !== 'values') {
+    // A section's value chip's body is its toggle, its caret its Sites (TODO 425).
+    if (menu && this.values.length === 0 && this.dataset['condition'] !== 'advanced' && this.slot !== 'values') {
       // Opening a menu is not a toggle — the bar must not see one.
       event.stopPropagation();
       this.#openMenu();
@@ -805,8 +794,6 @@ export class SherpaQuickFilter extends SherpaElement {
        reports by its own name. A filter waits for Apply.
        TRAP T-a-chip-knows-what-kind-it-is */
     if (this.#arranges()) { this.#arrangeFromMenu(); return; }
-    // Select all off asks for none; any other change does not — locked or not. TODO 480
-    this.#none = !!(event as CustomEvent).detail?.none;
     this.#all = !!(event as CustomEvent).detail?.all;
     // A locked chip's menu rows are not its values: relay, change nothing.
     if (this.hasAttribute('data-locked')) {
@@ -861,7 +848,7 @@ export class SherpaQuickFilter extends SherpaElement {
        "Contains Ravi" filters, and painting it as "filtering nothing" is a
        lie. TRAP T-an-operator-decides-pick-or-type */
     const empty = !!menu && this.current && !advanced
-      && (menu.values?.length ?? 0) === 0 && !this.#hasTypedAnswer() && !(this.#none && this.#empties()) && !this.#all;
+      && (menu.values?.length ?? 0) === 0 && !this.#hasTypedAnswer() && !this.#all;
 
     this.set('data-filters-nothing', empty);
     /* AND CHECK AGAIN. `data-filters-nothing` is the AMBER warning, and a rebuilt menu

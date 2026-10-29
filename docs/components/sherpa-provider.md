@@ -45,7 +45,6 @@ Put it round the part of a page whose components need data: each component insid
 | `reorderFilters` | `boolean` | read and write |  |
 | `labelColumn` | `boolean` | read and write |  |
 | `countEveryValue` | `boolean` | read and write |  |
-| `noneShowsAll` | `boolean` | read and write |  |
 | `headingGroup` | `boolean` | read and write |  |
 | `headingHover` | `boolean` | read and write |  |
 | `multiFieldColumns` | `boolean` | read and write |  |

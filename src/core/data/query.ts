@@ -289,7 +289,7 @@ export function heldInView(query: Query): ReadonlySet<string> {
 
 // Every key of FieldReading, once: one added there and not here is a type error. TRAP T-both-answers-are-kept
 const READING_KEYS = Object.keys({
-  picked: 0, present: 0, op: 0, text: 0, conditions: 0, mode: 0, mirror: 0, range: 0, suspended: 0, off: 0, none: 0, all: 0,
+  picked: 0, present: 0, op: 0, text: 0, conditions: 0, mode: 0, mirror: 0, range: 0, suspended: 0, off: 0, all: 0,
 } satisfies Record<keyof FieldReading, 0>) as (keyof FieldReading)[];
 
 /** The ANSWER keys of a reading only — a bar's reading also carries its label
@@ -336,8 +336,8 @@ export function freezeReading(reading: FieldReading): FieldReading {
  *  rows has no picks and no text — but an EMPTY row does not: a cleared menu
  *  keeps one. TRAP T-many-conditions-are-one-reading */
 export function readingAnswered(reading: FieldReading): boolean {
-  // Picks kept OFF are an answer too: the Query keeps them (TODO 369); so are none (403) and all (489).
-  return (reading.picked ?? []).length > 0 || (reading.off ?? []).length > 0 || reading.none === true || reading.all === true
+  // Picks kept OFF are an answer too: the Query keeps them (TODO 369); so is all (489).
+  return (reading.picked ?? []).length > 0 || (reading.off ?? []).length > 0 || reading.all === true
     || (reading.text ?? '').trim() !== ''
     || (reading.conditions ?? []).some((r) => (r.text ?? '').trim() !== '' || (r.picked ?? []).length > 0);
 }

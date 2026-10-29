@@ -543,7 +543,7 @@ export class DataSource extends EventTarget {
       // Its chart's own, under what the reader changed.
       const shown = { ...this.#binding.shownIn(scope), ...this.#context.presented(scope) };
       Object.assign(out, {
-        presents: true, group: lists.filter((c) => c.field !== shown.secondary), compare: lists,
+        presents: true, group: lists.filter((c) => c.field !== shown.secondary), chartFields: lists,
         ...(shown.group ? { groupField: shown.group } : {}),
         ...(shown.sort ? { sortDirection: shown.sort } : {}),
         ...(shown.primary ? { primaryField: shown.primary } : {}),
@@ -1207,7 +1207,7 @@ export class DataSource extends EventTarget {
         this.#binding.drawBars(change.scope);
         return;
       case 'presented':
-        // A slot's presentation moved: its bar is told its Group and Sort, and draws its Compare. TODO 548
+        // A slot's presentation moved: its bar is told its Group and Sort, and draws its Primary and Secondary. TODO 548
         this.#binding.tellView(change.scope);
         this.#binding.drawBars(change.scope);
         return;

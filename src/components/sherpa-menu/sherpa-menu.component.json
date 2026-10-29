@@ -1207,14 +1207,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-empties",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour"
-    },
-    {
-      "$type": "prop",
       "name": "data-has-value",
       "type": "string",
       "observed": false,
@@ -1611,7 +1603,6 @@
       "composed": true,
       "detail": {
         "all": "true",
-        "none": "true",
         "values": "string[]"
       }
     },
@@ -1630,7 +1621,6 @@
       "composed": true,
       "detail": {
         "all": "true",
-        "none": "true",
         "values": "string[]"
       }
     },

@@ -2878,22 +2878,13 @@ test.describe('a cell filter chip', () => {
     await cell(page, 'team', 1).hover();
     await chipOf(page, 'team', 1).locator('.caret').click();
     await expect.poll(async () => (await heard(page)).at(-1)).toEqual({ picked: ['Blue', 'Red'], mode: 'simple' });
-    // …and a press on an ON value takes it off; the last one let go is NONE, no rows. TODO 489
+    // …and a press on an ON value takes it off; the last one let go ends the filter. Will, TODO 550
     await chipOf(page, 'team', 1).locator('.caret').click();
     await cell(page, 'team', 0).hover();
     await chipOf(page, 'team', 0).locator('.caret').click();
-    expect((await heard(page)).slice(-2)).toEqual([{ picked: ['Blue'], mode: 'simple' }, { picked: [], mode: 'simple', none: true }]);
+    expect((await heard(page)).slice(-2)).toEqual([{ picked: ['Blue'], mode: 'simple' }, null]);
     // A press is a filter, not a row.
     expect(await page.evaluate(() => (window as unknown as { rowSelects: number }).rowSelects)).toBe(0);
-  });
-
-  test('with "Select none shows all data", the last value let go ends the filter (TODO 489)', async ({ page }) => {
-    await page.evaluate(() => document.querySelector('sherpa-data-grid')!.setAttribute('data-none-shows-all', ''));
-    await cell(page, 'team', 0).hover();
-    await chipOf(page, 'team', 0).locator('.caret').click();
-    await expect.poll(() => heard(page)).toEqual([{ picked: ['Blue'], mode: 'simple' }]);
-    await chipOf(page, 'team', 0).locator('.caret').click();
-    await expect.poll(async () => (await heard(page)).at(-1)).toBeNull();
   });
 
   test('ON, the cell chip reads as Discard: a cross, in critical (TODO 416)', async ({ page }) => {
@@ -3133,31 +3124,4 @@ test('a banded heading builds its clause from the bands it is given, never "equa
     return el.columnClause('score');
   });
   expect(r).toEqual(['score', 'lt', 10]);
-});
-
-test('a list heading empties to None until None shows all, by the one rule its menu is built with (TODO 523 U20)', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const el = await window.__mount<HTMLElement>('sherpa-data-grid', {
-      columns: [{ field: 'plan', header: 'Plan' }, { field: 'name', header: 'Name' }],
-      rows: [{ id: 1, plan: 'Pro', name: 'Ana' }, { id: 2, plan: 'Free', name: 'Ben' }],
-      filters: {
-        plan: { id: 'plan', label: 'Plan', options: [{ value: 'Pro', label: 'Pro' }, { value: 'Free', label: 'Free' }] },
-        name: { id: 'name', label: 'Name', advanced: 'only' },
-      },
-    }, { 'data-column-filters': '' });
-    await window.__settled();
-    const empties = () => ['plan', 'name'].map((f) => el.shadowRoot!
-      .querySelector(`.head-cell[data-field="${f}"] .head-filter > sherpa-menu`)?.hasAttribute('data-empties') ?? null);
-    const before = empties();
-    el.setAttribute('data-none-shows-all', '');
-    await window.__settled();
-    const shows = empties();
-    el.removeAttribute('data-none-shows-all');
-    await window.__settled();
-    return { before, shows, back: empties() };
-  });
-  expect(r.before).toEqual([true, false]);
-  expect(r.shows).toEqual([false, false]);
-  // A field answered by typing alone never empties to None, flip or not.
-  expect(r.back).toEqual([true, false]);
 });

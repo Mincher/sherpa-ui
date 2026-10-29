@@ -341,7 +341,7 @@ test('a chart\'s bar in its SLOT: Group splits its bars, Sort has no menu and cy
   expect(r['again']).toEqual({ kept: { sort: 'asc' }, first: 'Free: 1' });
 });
 
-test('a chart\'s Compare picks what it counts and what it splits by: one of each, its chart\'s own until picked (Will, TODO 548)', async ({ page }) => {
+test('a chart\'s Primary picks what it counts and its Secondary what it splits by — its chart\'s own until picked, and off goes back (Will, TODO 548)', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     provider.innerHTML = \`
@@ -357,33 +357,37 @@ test('a chart\'s Compare picks what it counts and what it splits by: one of each
     await settle();
     const bar = provider.querySelector('sherpa-quick-filter-toolbar');
     const zone = () => [...bar.shadowRoot.querySelectorAll('.organise-zone > .organise-chip')];
-    const compare = () => zone().find((c) => c.dataset.id === 'compare');
-    const boxes = () => [...compare().querySelectorAll('sherpa-menu input')];
-    const ticked = () => boxes().filter((i) => i.checked).map((i) => i.value);
+    const chip = (id) => zone().find((c) => c.dataset.id === id);
+    const said = (id) => ({ on: chip(id).hasAttribute('data-current'), field: chip(id).column });
     const bars = () => [...provider.querySelector('#slotted').shadowRoot.querySelectorAll('.bar-col')]
       .map((c) => c.getAttribute('aria-label'));
-    const pick = async (value) => {
-      const box = boxes().find((i) => i.value === value);
+    const pick = async (id, value) => {
+      const box = [...chip(id).querySelectorAll('sherpa-menu input')].find((i) => i.value === value);
       box.checked = true;
       box.dispatchEvent(new Event('change', { bubbles: true }));
       await settle();
     };
-    const groups = () => [...zone().find((c) => c.dataset.id === 'group').querySelectorAll('sherpa-menu input')].map((i) => i.value).filter(Boolean);
-    const at = { order: zone().map((c) => c.dataset.id), first: { ticked: ticked(), groups: groups(), bars: bars() } };
-    await pick('by:day');
-    at.split = { ticked: ticked(), kept: source.query.presentation('by-plan'), bars: bars() };
-    await pick('count:plan');
-    at.counted = { ticked: ticked(), kept: source.query.presentation('by-plan'), bars: bars() };
+    const groups = () => [...chip('group').querySelectorAll('sherpa-menu input')].map((i) => i.value).filter(Boolean);
+    const at = { order: zone().map((c) => c.dataset.id), first: { primary: said('primary'), secondary: said('secondary'), groups: groups(), bars: bars() } };
+    await pick('secondary', 'day');
+    at.split = { secondary: said('secondary'), kept: source.query.presentation('by-plan'), bars: bars() };
+    await pick('primary', 'plan');
+    at.counted = { primary: said('primary'), kept: source.query.presentation('by-plan'), bars: bars() };
+    // Its body OFF: back to counting rows.
+    chip('primary').shadowRoot.querySelector('.body').click();
+    await settle();
+    at.off = { primary: said('primary').on, kept: source.query.presentation('by-plan'), bars: bars() };
     return at;
   })()`) as Record<string, unknown>;
-  // Compare leads, before Group and Sort.
-  expect(r['order']).toEqual(['compare', 'group', 'sort']);
+  // Primary and Secondary lead, before Group and Sort.
+  expect(r['order']).toEqual(['primary', 'secondary', 'group', 'sort']);
   // As its chart says: split by plan, counting rows; Group offers no plan.
-  expect(r['first']).toEqual({ ticked: ['by:plan'], groups: ['day'], bars: ['Free: 1', 'Pro: 3', 'Enterprise: 1'] });
+  expect(r['first']).toEqual({ primary: { on: false, field: '' }, secondary: { on: true, field: 'plan' }, groups: ['day'], bars: ['Free: 1', 'Pro: 3', 'Enterprise: 1'] });
   // By day: one bar a day.
-  expect(r['split']).toEqual({ ticked: ['by:day'], kept: { secondary: 'day' }, bars: ['Mon: 3', 'Tue: 1', 'Wed: 1'] });
+  expect(r['split']).toEqual({ secondary: { on: true, field: 'day' }, kept: { secondary: 'day' }, bars: ['Mon: 3', 'Tue: 1', 'Wed: 1'] });
   // Counting plans: each day's different plans.
-  expect(r['counted']).toEqual({ ticked: ['count:plan', 'by:day'], kept: { primary: 'plan', secondary: 'day' }, bars: ['Mon: 2', 'Tue: 1', 'Wed: 1'] });
+  expect(r['counted']).toEqual({ primary: { on: true, field: 'plan' }, kept: { primary: 'plan', secondary: 'day' }, bars: ['Mon: 2', 'Tue: 1', 'Wed: 1'] });
+  expect(r['off']).toEqual({ primary: false, kept: { secondary: 'day' }, bars: ['Mon: 3', 'Tue: 1', 'Wed: 1'] });
 });
 
 test('a card\'s Show as swaps its chart over the same data, keeps what it was arranged by, and Default goes back (Will, TODO 548)', async ({ page }) => {

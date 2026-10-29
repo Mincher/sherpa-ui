@@ -311,7 +311,35 @@ function withParts(rows: readonly Row[], segments: ChartDatum[], spec: SummarySp
   const bySegment = new Map(groupRows(rows, spec.segment).map((g) => [g.key, g.rows]));
   const declared = domain(spec.group).map(valueKey);
   const order = declared.length ? declared : groupRows(rows, spec.group).map((g) => g.key);
-  return segments.map((s) => ({ ...s, parts: aggregateBy(bySegment.get(s.label) ?? [], spec.group, spec.aggregate ?? 'count', spec.field, { order }) }));
+  const kind = spec.aggregate ?? 'count';
+  return segments.map((s) => {
+    const own = bySegment.get(s.label) ?? [];
+    return { ...s, parts: kind === 'distinct' && spec.field ? distinctParts(own, spec.group, spec.field, order) : aggregateBy(own, spec.group, kind, spec.field, { order }) };
+  });
+}
+
+/** A distinct count's parts, which ADD UP to their segment: each value counted
+ *  once, in the group most of its rows are in — a tie, the first in order. A
+ *  customer in two plans is one customer. Will, TODO 548 */
+function distinctParts(rows: readonly Row[], group: string, field: string, order: readonly string[]): ChartDatum[] {
+  const tally = new Map<string, Map<string, number>>();
+  for (const { key, rows: inGroup } of groupRows(rows, group)) {
+    for (const row of inGroup) {
+      const v = readField(row, field);
+      if (v == null || v === '') continue;
+      const by = tally.get(valueKey(v)) ?? new Map<string, number>();
+      by.set(key, (by.get(key) ?? 0) + 1);
+      tally.set(valueKey(v), by);
+    }
+  }
+  const rank = (g: string): number => (order.includes(g) ? order.indexOf(g) : order.length);
+  const homes = new Map<string, number>();
+  for (const by of tally.values()) {
+    const [home] = [...by].sort(([a, n], [b, m]) => m - n || rank(a) - rank(b))[0] ?? [];
+    if (home !== undefined) homes.set(home, (homes.get(home) ?? 0) + 1);
+  }
+  const labels = [...order.filter((g) => homes.has(g)), ...[...homes.keys()].filter((g) => !order.includes(g))];
+  return labels.map((label) => ({ label, value: homes.get(label) ?? 0, colorIndex: rank(label) + 1 }));
 }
 
 /** The segments by value; none keeps their order. Each keeps its colour. TODO 548 */

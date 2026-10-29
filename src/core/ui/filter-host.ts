@@ -4,7 +4,7 @@
  *
  * Map:
  * - organiseOptions — A Group or Sort chip's rows: each column, the one in force ticked.
- * - organiseOf — A scope's leading chips, as its description says: Group and Sort, and a chart's Compare and order.
+ * - organiseOf — A scope's leading chips, as its description says: Group and Sort, and a chart's Primary, Secondary and order.
  * - arrangeFrom — Follow the host's arrangement onto its Group or Sort chip; the chip knows how.
  * - pendingFields — The fields the host's source says wait for their Apply, or could not be fetched.
  * - markField — One field's chips and menus, told whether it waits for Apply and whether its read failed.
@@ -28,18 +28,18 @@ export function organiseOptions(cols: readonly OrganiseColumn[] | undefined, on:
 }
 
 /** A scope's leading chips, as its description says: Group and Sort, and — a
- *  chart's slot — its Compare and a Sort with no column. Every host draws it from
+ *  chart's slot — its Primary, Secondary and a Sort with no column. Every host draws it from
  *  here, so none leaves one out. Will, TODO 548 */
 export function organiseOf(scope: ScopeDescription): {
   group: OrganiseColumn[]; sort: OrganiseColumn[]; order?: true;
-  compare?: { fields: OrganiseColumn[]; primary?: string; secondary?: string };
+  chart?: { fields: OrganiseColumn[]; primary?: string; secondary?: string };
 } {
   return {
     group: scope.group ?? [], sort: scope.sort ?? [],
     ...(scope.presents ? {
       order: true as const,
-      compare: {
-        fields: scope.compare ?? [],
+      chart: {
+        fields: scope.chartFields ?? [],
         ...(scope.primaryField ? { primary: scope.primaryField } : {}),
         ...(scope.secondaryField ? { secondary: scope.secondaryField } : {}),
       },

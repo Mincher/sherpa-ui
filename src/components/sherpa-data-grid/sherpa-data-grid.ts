@@ -147,8 +147,6 @@ export class SherpaDataGrid extends SherpaElement {
     'data-fetch-fields': { type: 'string', kind: 'behaviour' },
     'data-total-pages': DATA_PROPS['data-total-pages'],
     'data-column-filters': { type: 'boolean', kind: 'style' },
-    // A list with nothing ticked is every row, not none. Will, TODO 489 · TRAP T-none-is-an-answer
-    'data-none-shows-all': { type: 'boolean', kind: 'behaviour' },
     // A heading offers Group by its field. Will, TODO 500
     'data-heading-group': { type: 'boolean', kind: 'style' },
     // A heading shows its buttons only while hovered or focused. Will, TODO 501
@@ -297,9 +295,6 @@ export class SherpaDataGrid extends SherpaElement {
         return;
       // Read when asked, or drawn by CSS.
       case 'data-total-pages': case 'data-locked': case 'data-column-filters':
-        return;
-      case 'data-none-shows-all':
-        this.#renderHead();
         return;
       case 'data-needles':
         this.#syncNeedles();
@@ -603,9 +598,9 @@ export class SherpaDataGrid extends SherpaElement {
     if (!def) return JSON.stringify([col.type ?? 'text', false]);
     const { options: _options, min: _min, max: _max, availableDates: _days, ...shape } = def;
     // TRAP T-a-default-is-not-an-override
-    // …and the flags its menu is made under: whether None shows all is menuFor's one rule. TODO 523 U20
+    // …and the flags its menu is made under. TODO 523 U20
     return JSON.stringify([col.type ?? 'text', true, { ...shape, range: !!def.range },
-      this.dataset['bounds'] ?? '', this.dataset['applyOn'] ?? '', this.hasAttribute('data-none-shows-all')]);
+      this.dataset['bounds'] ?? '', this.dataset['applyOn'] ?? '']);
   }
   /** Each heading cell's key, as it was made. */
   #cellKeys = new WeakMap<HTMLElement, string>();
@@ -679,7 +674,7 @@ export class SherpaDataGrid extends SherpaElement {
     if (!chip) return;
     // A top-layer popover escapes the scroller, inside the HOST's named region.
     const { menu } = menuFor(this.root, def, {
-      bounds: this.dataset['bounds'], live: this.dataset['applyOn'] === 'input', empties: !this.hasAttribute('data-none-shows-all'),
+      bounds: this.dataset['bounds'], live: this.dataset['applyOn'] === 'input',
     });
     // Clear empties the controls and keeps the menu open; Remove drops the clause.
     menu.setAttribute('data-removable', '');
@@ -868,9 +863,7 @@ export class SherpaDataGrid extends SherpaElement {
     if (joined) return this.#commitJoined(chip, field, joined, event.type === 'menu-clear');
 
     const cleared = event.type === 'menu-clear';
-    // A list left empty by its reader: none, no rows. TODO 489 · TRAP T-none-is-an-answer
-    const none = !cleared && !!(event as CustomEvent).detail?.none;
-    const held = cleared ? null : none ? { picked: [], none: true } : this.#readColumnFilter(chip);
+    const held = cleared ? null : this.#readColumnFilter(chip);
     // Only an explicit CLEAR empties the controls: Apply lands here on a
     // half-built range, which is unfinished, not wrong.
     if (cleared) this.#emptyMenu(chip);
@@ -1399,11 +1392,6 @@ export class SherpaDataGrid extends SherpaElement {
     return values.some((v) => valueKey(v) === at.key);
   }
 
-  /** A heading's own menu, by its field. */
-  #headMenu(field: string): HTMLElement | null {
-    return this.$(`.head-cell[data-field="${CSS.escape(field)}"] .head-filter > sherpa-menu`);
-  }
-
   /** A field with no list to tick answers by conditions only: its value is an "Is" row. */
   #byConditions(field: string): boolean {
     const col = this.#columns.find((c) => c.field === field);
@@ -1417,14 +1405,14 @@ export class SherpaDataGrid extends SherpaElement {
     const at = td?.matches('td.cell') ? this.#cellValue(td) : null;
     // A field the View holds is changed there.
     if (!at || at.held) return;
-    this.#toggleValue(at, this.#cellOn(at), false);
+    this.#toggleValue(at, this.#cellOn(at));
   };
 
   /** Add a value to its field's answer, or take it off. The last let go of a list
-   *  is none, as its menu says it (TODO 489) — from a tag, `clears`: no filter. */
-  #toggleValue(at: CellValue, on: boolean, clears: boolean): void {
-    // All and none end here: a value is picked or let go. TODO 489
-    const { all: _all, none: _none, ...held } = this.#columnFilters.get(at.field) ?? {};
+   *  filters nothing (Will, TODO 550). */
+  #toggleValue(at: CellValue, on: boolean): void {
+    // All ends here: a value is picked or let go. TODO 489
+    const { all: _all, ...held } = this.#columnFilters.get(at.field) ?? {};
     let next: FieldReading;
     if (this.#byConditions(at.field)) {
       // Its value is an "Is" row, OR'd with the others: the shape its chip holds.
@@ -1437,9 +1425,8 @@ export class SherpaDataGrid extends SherpaElement {
          (Simple holds one, Will, 375), a single pick. */
       const one = at.kind === 'date' || at.kind === 'number' || this.#givenFilters[at.field]?.select === 'single';
       const picked = on ? rest : one ? [at.value] : [...rest, at.value];
-      // The last value let go of a list: none, as its menu says it. TODO 489
-      const none = !clears && !one && !picked.length && !!this.#headMenu(at.field)?.hasAttribute('data-empties');
-      next = { ...held, picked, mode: 'simple', ...(at.kind === 'number' ? { range: false } : {}), ...(none ? { none: true } : {}) };
+      // The last value let go of a list filters nothing. Will, TODO 550
+      next = { ...held, picked, mode: 'simple', ...(at.kind === 'number' ? { range: false } : {}) };
     }
     delete next.suspended;
     const reading = answersAnything(next) ? next : null;
@@ -1546,7 +1533,7 @@ export class SherpaDataGrid extends SherpaElement {
       const mine = picks.filter((k) => keyField(k) === f);
       const before = new Set(was.filter((k) => keyField(k) === f));
       if (mine.length === before.size && mine.every((k) => before.has(k))) continue;
-      const { all: _all, none: _none, suspended: _off, ...base } = this.#columnFilters.get(f) ?? {};
+      const { all: _all, suspended: _off, ...base } = this.#columnFilters.get(f) ?? {};
       changed.push([f, mine.length ? { ...base, picked: mine.map(keyValue), mode: 'simple' } : null]);
     }
     this.#drawn.set(field, picks.length ? { picked: picks } : null);
@@ -1612,7 +1599,7 @@ export class SherpaDataGrid extends SherpaElement {
     if (!field || key == null || !row || this.#superseded.has(field)) return;
     const at: CellValue = { field, kind: 'text', value: this.#rowOf.get(row)?.[field], key, header: this.#fieldLabel(field),
       text: tag.textContent?.trim() ?? '', held: false };
-    this.#toggleValue(at, this.#tagOn(field, key), true);
+    this.#toggleValue(at, this.#tagOn(field, key));
   }
 
   /* ── FIND ── Will, TODO 136. TRAP T-a-find-asks-its-host-to-step */
@@ -2423,7 +2410,7 @@ export class SherpaDataGrid extends SherpaElement {
    */
   #isFiltered(field: string): boolean {
     const held = this.#columnFilters.get(field);
-    if (held && !held.suspended && (held.none || this.#inForce(field, held).rows.length)) return true;
+    if (held && !held.suspended && this.#inForce(field, held).rows.length) return true;
     const external = this.dataset['filterFields'];
     // TRAP T-grid-filter-fields-match-whole — `includes` lights `status` for `substatus`.
     return !!external && external.split(/\s+/).includes(field);
@@ -2440,5 +2427,5 @@ function isRows(reading: FieldReading): FieldCondition[] {
 /** Does a reading hold ANY answer — a tick, typed text or a row — in either mode? */
 function answersAnything(reading: FieldReading): boolean {
   return (reading.picked ?? []).length > 0 || (reading.text ?? '').trim() !== ''
-    || readingRows(reading).length > 0 || !!reading.none;
+    || readingRows(reading).length > 0;
 }

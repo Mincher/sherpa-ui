@@ -945,43 +945,35 @@ test('a filter menu offers Highlight matches where its host asks, and reports a 
   expect(r).toEqual({ hidden: 'none', shown: 'flex', heard: [{ on: true }], changed: false, on: true, off: false });
 });
 
-/* NONE: a reader who leaves a list empty asks for no rows — Select all off or
-   the last row let go — unless "Select none shows all data" is on. Clear is not
-   one. Will, TODOs 403, 489 · TRAP T-none-is-an-answer */
-for (const empties of [true, false]) {
-  test(`a list menu ${empties ? 'says none whenever its reader leaves it empty' : 'with "Select none shows all data" never says none'}`, async ({ page }) => {
-    const r = await page.evaluate(async (empties) => {
-      const { menuFor } = await import('/dist/core/ui/filter-menu.js');
-      const g = document.createElement('sherpa-data-grid') as HTMLElement & { rendered: Promise<void> };
-      document.body.append(g);
-      await g.rendered;
-      const { menu, items } = menuFor(g.shadowRoot!, {
-        id: 'region', label: 'Region', select: 'multiple',
-        options: [{ value: 'EMEA', label: 'EMEA' }, { value: 'APAC', label: 'APAC' }],
-      } as never, { empties, remote: false });
-      document.getElementById('root')!.replaceChildren(menu);
-      const m = menu as HTMLElement & { rendered: Promise<void>; items?(i: unknown): void };
-      await m.rendered;
-      m.items?.(items);
-      await window.__settled();
-      const heard: unknown[] = [];
-      m.addEventListener('menu-change', (e) => heard.push((e as CustomEvent).detail));
-      const box = (v: string) => m.querySelector<HTMLInputElement>(`.menu-row input[value="${v}"]`)!;
-      box('EMEA').click();
-      box('EMEA').click();
-      const all = m.querySelector<HTMLInputElement>('.qf-all input')!;
-      all.click();
-      all.click();
-      box('APAC').click();
-      m.shadowRoot!.querySelector<HTMLElement>('.reset')!.click();
-      return heard;
-    }, empties);
-    const none = empties ? { none: true } : {};
-    // Select all ON says ALL, either way. TODO 489 · TRAP T-all-is-an-answer
-    expect(r).toEqual([
-      { values: ['EMEA'] }, { values: [], ...none },
-      { values: ['EMEA', 'APAC'], all: true }, { values: [], ...none },
-      { values: ['APAC'] }, { values: [] },
-    ]);
+/* A list left empty says nothing: it filters nothing. Select all ON says ALL.
+   Will, TODOs 489, 550 · TRAP T-all-is-an-answer */
+test('a list menu left empty says nothing; Select all on says all', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { menuFor } = await import('/dist/core/ui/filter-menu.js');
+    const g = document.createElement('sherpa-data-grid') as HTMLElement & { rendered: Promise<void> };
+    document.body.append(g);
+    await g.rendered;
+    const { menu, items } = menuFor(g.shadowRoot!, {
+      id: 'region', label: 'Region', select: 'multiple',
+      options: [{ value: 'EMEA', label: 'EMEA' }, { value: 'APAC', label: 'APAC' }],
+    } as never, { remote: false });
+    document.getElementById('root')!.replaceChildren(menu);
+    const m = menu as HTMLElement & { rendered: Promise<void>; items?(i: unknown): void };
+    await m.rendered;
+    m.items?.(items);
+    await window.__settled();
+    const heard: unknown[] = [];
+    m.addEventListener('menu-change', (e) => heard.push((e as CustomEvent).detail));
+    const box = (v: string) => m.querySelector<HTMLInputElement>(`.menu-row input[value="${v}"]`)!;
+    box('EMEA').click();
+    box('EMEA').click();
+    const all = m.querySelector<HTMLInputElement>('.qf-all input')!;
+    all.click();
+    all.click();
+    return heard;
   });
-}
+  expect(r).toEqual([
+    { values: ['EMEA'] }, { values: [] },
+    { values: ['EMEA', 'APAC'], all: true }, { values: [] },
+  ]);
+});

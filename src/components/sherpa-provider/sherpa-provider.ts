@@ -421,18 +421,6 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: count every value. */
   #countEvery = false;
 
-  /** A list with nothing ticked leaves the query: every row. Off, a reader who
-   *  leaves a list empty asks for no rows. On by default; the app sets it, from
-   *  its session. Will, TODOs 489, 517 · TRAP T-none-is-an-answer */
-  get noneShowsAll(): boolean {
-    return this.#noneShowsAll;
-  }
-  set noneShowsAll(on: boolean) {
-    this.#noneShowsAll = on;
-    this.#offerAll();
-  }
-  /** The app's choice: nothing ticked shows every row. */
-  #noneShowsAll = true;
 
   /** A grid's column heading offers Group by its field; a group row, Ungroup.
    *  On unless the app says not, from its session. Will, TODO 500 */
@@ -553,7 +541,6 @@ export class SherpaProvider extends SherpaElement {
     el.toggleAttribute('data-reorder', this.#reorder);
     el.toggleAttribute('data-label-column', this.#labelColumn);
     el.toggleAttribute('data-every-count', this.#countEvery);
-    el.toggleAttribute('data-none-shows-all', this.#noneShowsAll);
     // A grid's headings and tags. TODOs 500, 501, 490
     if ('supersedeColumns' in el) {
       el.toggleAttribute('data-heading-group', this.#headingGroup);

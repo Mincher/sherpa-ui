@@ -2486,13 +2486,6 @@
               }
             },
             {
-              "name": "data-none-shows-all",
-              "description": "a heading's list with nothing ticked is every row. Without it, a list its reader leaves empty asks for no rows. Set by its provider. TODO 489",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
               "name": "data-page",
               "description": "the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and never writes data-page itself.",
               "type": {
@@ -5247,12 +5240,6 @@
               }
             },
             {
-              "name": "data-empties",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
               "name": "data-has-value",
               "description": "written BY the menu: the typed value is not empty, so the input's Clear button shows.",
               "type": {
@@ -5635,7 +5622,7 @@
               "name": "menu-change",
               "description": "The selection was COMMITTED.",
               "type": {
-                "text": "CustomEvent<{ all: true; none: true; values: string[] }>"
+                "text": "CustomEvent<{ all: true; values: string[] }>"
               }
             },
             {
@@ -5649,7 +5636,7 @@
               "name": "menu-apply",
               "description": "Apply was clicked.",
               "type": {
-                "text": "CustomEvent<{ all: true; none: true; values: string[] }>"
+                "text": "CustomEvent<{ all: true; values: string[] }>"
               }
             },
             {
@@ -7947,13 +7934,6 @@
             },
             {
               "kind": "field",
-              "name": "noneShowsAll",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
               "name": "headingGroup",
               "type": {
                 "text": "boolean"
@@ -8455,13 +8435,6 @@
             },
             {
               "name": "data-no-sections",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "name": "data-none-shows-all",
-              "description": "a list with nothing ticked is every row. Without it, a reader who leaves a list empty asks for no rows. Set by its provider. TODO 489",
               "type": {
                 "text": "boolean"
               }
