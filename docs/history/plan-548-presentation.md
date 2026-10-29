@@ -63,14 +63,37 @@ Each content place on a page (a chart container, the grid) is a SLOT with a stab
 
 Each slot in the page JSON names `presentation` (the default), `secondary` (the segment field), `primary` (what is measured: `aggregate` and `field`, a count when none) and its grid columns. The Records and Dashboard pages in Demos are moved to it.
 
+## Phase C and D in detail (2026-10-29, after Will's answers)
+
+**A slot's presentation is ONE object in its scope**, not the row arrangement's keys:
+- `ScopeQuery.presentation = { kind?, primary?, secondary?, group?, sort? }`.
+- `kind` is bar, donut, pie or grid. `sort` is asc or desc; none is no key.
+- Only what differs from the definition is kept.
+
+Why not the existing `group` and `sort` keys? They are the ROW arrangement:
+- They live in ONE scope per source (TODO 523 S1).
+- Setting them strips them from every other scope.
+- A chart's group and sort shape its SUMMARY, not the rows, so two charts and a grid each keep their own. A separate key keeps the row machinery as it is.
+
+Saved Views, export and a reload carry it, as `definitionOf` carries any scope key (Will: A).
+
+**The slot is the wrapper**, so phase D's `sherpa-presentation` comes before phase C's toolbar:
+- It carries `data-scope`, the definition's `kind`, `primary` and `secondary`, and the chart attributes its child inherits.
+- The provider reads the slot's `presentation` from the Query and builds the summary from it: the secondary is the segment, the primary is a `distinct` count unless an aggregate is named, and group and sort are passed straight through.
+- A change of it asks again, as an attribute change does today.
+
+**The chart toolbar** is the existing bar, bound to the slot's scope, showing only its organise zone: Compare, Group, Sort.
+- Its chips send ONE request, `{ presentation: { … } }`, through the same `quick-filter-change` door as any chip, to a `QueryContext.present(scope, patch)` door.
+- A Sort chip with no menu cycles with `nextSort`.
+
 ## Phases
 
 | Phase | What | Proof |
 |---|---|---|
-| A | The data layer: `group` and `sort` on a summary (step 2) | Unit tests on `summarise`; check:bench |
-| B | The bar, donut and pie draw parts; the legend toggles group values (step 3) | e2e in 3 engines; pixels read back |
-| C | Each slot's scope; the chart toolbar's Group and Sort; where they are kept (question 2) | e2e; a reload keeps them |
-| D | `sherpa-presentation` and the menu; primary and secondary in the definition (steps 5, 6) | e2e: each swap draws the same data |
+| A ✅ | The data layer: `group` and `sort` on a summary (step 2) | Unit tests on `summarise`; check:bench |
+| B ✅ | The bar stacks parts, the donut and pie split a slice by spokes, in the segment's own colour; tips list the parts; the legend is unchanged (Will: B) | e2e in 3 engines; pixels read back |
+| C | `ScopeQuery.presentation` and `QueryContext.present` (data layer); the slot wrapper `sherpa-presentation`; the provider builds a chart's summary from it | unit tests; e2e: a grouped slot draws parts; a reload keeps them |
+| D | The chart toolbar (Compare, Group, Sort) and the presentation menu; the swap; primary and secondary in the definition | e2e: each swap draws the same data |
 | E | The panel follows a swap; Demos pages moved | Demos tests; full suites |
 
 Each phase is its own commit series, test first. Each one ships without the ones after it.
