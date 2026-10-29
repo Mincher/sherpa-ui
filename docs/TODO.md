@@ -115,7 +115,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 42 | 223 | DEFERRED — server rendering with declarative shadow DOM, after 208 | explore |
 | ⬜ | 43 | 76 | FUTURE (Will, 2026-10-14) — WebMCP: agents do UI tasks through Sherpa's own contracts — not critical now | explore |
 | ⬜ | 44 | 77 | LATER, important — UX patterns DEFINED by contract, so a consumer adds its own; never baked into Sherpa | explore |
-| ⬜ | 45 | 78 | LATER, large — node components and their logic in Sherpa; the workflow creator is an app on the canvas and nodes | explore |
+| 🚧 | 45 | 78 | LATER, large — node components and their logic in Sherpa; the workflow creator is an app on the canvas and nodes. The sandbox is up: Demos' Node Editor (2026-10-29) | explore |
 | ⬜ | 46 | 170 | MAJOR, LAST, and only when Will says — the data layer runs on the client, the server, or both, whole or in parts | explore |
 | ⬜ | 47 | 514 | DATA (from 341, Will 2026-10-27: 3 B, its own item) — two colour words in formatted data: `colorIndex` (aggregate.ts, on `ChartDatum`) and a part's `swatch` (data-source.ts). Each is the value's place in its field's declared order, 1-based: name it that, an ordinal, and let the chart pick the colour. Large public churn: `ChartDatum` and every chart | refactor |
 | ⬜ | 48 | 522 | LOOK, later (Will, 2026-10-28) — with the accessibility setting on ("Show state by shape", `html[data-toggle-shapes]`, TODO 497/503), the checkbox inside a chip is a bit too small and its check icon is hard to read | look |
@@ -10639,7 +10639,7 @@ composes, which states it has, what an agent may change. An agent composes
 patterns; it never invents a layout. The CRUD flow, Settings pages as forms,
 and the filter scopes are the first ones this repo already has in prose.
 
-### `[ ]` ⬜ 78 — A node-based WORKFLOW creator
+### `[~]` 🚧 78 — A node-based WORKFLOW creator
 
 *"A node based workflow creator that can be used to create, edit, and view the
 core patterns, as well as any generated workflows in an app, so that we can
@@ -10655,6 +10655,14 @@ logic in sherpa. So that is what we'll have to do here. Again, large piece of
 work to do later."* So the Sherpa work is the NODE components and their
 logic, beside `sherpa-layout-canvas`; the creator itself is an app built on
 them.
+
+**🚧 The sandbox, 2026-10-29 (Will: *"setting up the sandbox for working on
+this together"*).** Demos' Node Editor Context (`?context=node-editor`, nav
+section Workflows; Demos `2f93abe`): the canvas, three stand-in nodes and two
+connectors. A node is a `sherpa-container` card, sized `block-size: auto` as
+the plane gives it no height; a connector is an SVG path that
+`contexts/node-editor.js` draws between its two nodes. Swap each stand-in for
+the real component as it is built.
 
 ## L — The code review
 
