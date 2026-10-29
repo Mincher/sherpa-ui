@@ -2556,8 +2556,6 @@ The CHIP label says "Sort" and never moves; the COLUMN reads in the caret button
 (Figma State=menu, 150:3408). Folded together as "Sort: Region" it re-flowed the
 bar on every pick.
 
-
-
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ### T-a-chip-body-cycles-its-states
