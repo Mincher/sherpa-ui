@@ -59,7 +59,12 @@
   <template class="match-tpl">
     <svg><path class="slice-match" /></svg>
   </template>
-  <!-- Grouped, a spoke at each boundary between a slice's parts. TODO 548 -->
+  <!-- Stacked by its Secondary, a slice's rings, from the centre out, each in
+       its own colour. TODO 548 -->
+  <template class="ring-tpl">
+    <svg><path class="slice-ring chart-segment" /></svg>
+  </template>
+  <!-- Grouped, a spoke at each boundary between a slice's — or a ring's — parts. TODO 548 -->
   <template class="spoke-tpl">
     <svg><path class="slice-spoke" /></svg>
   </template>

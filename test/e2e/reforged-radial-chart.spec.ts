@@ -486,3 +486,36 @@ test('a grouped slice is split by a spoke at each boundary between its parts, do
     expect(r[type]).toEqual({ spokes: 2, name: 'active: 6 (Free 1 · Pro 3 · Team 2)', tip: 'Free 1\nPro 3\nTeam 2' });
   }
 });
+
+test('a stacked slice draws its Secondary as rings from the centre out, each its share in ITS colour, and each ring\'s Group as spokes (Will, TODO 548)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<HTMLElement & { populate(d: unknown): Promise<void> }>('sherpa-radial-chart', undefined, { style: 'inline-size: 300px; block-size: 300px' });
+    await el.populate([
+      { label: 'Pro', value: 4, colorIndex: 1, stack: [
+        { label: 'active', value: 3, colorIndex: 1, parts: [{ label: 'EMEA', value: 1 }, { label: 'APAC', value: 2 }] },
+        { label: 'churned', value: 1, colorIndex: 3 },
+      ] },
+      { label: 'Free', value: 4, colorIndex: 2 },
+    ]);
+    await window.__settled();
+    const sr = el.shadowRoot!;
+    const rings = [...sr.querySelectorAll<SVGPathElement>('.slice-ring')];
+    const box = (p: SVGPathElement) => p.getBBox();
+    return {
+      rings: rings.length,
+      // The first ring is inside the second: the second reaches further out.
+      outward: box(rings[1]!).width > box(rings[0]!).width,
+      colours: rings.map((p) => getComputedStyle(p).fill),
+      // One spoke between active's two parts; none for the unstacked Free.
+      spokes: sr.querySelectorAll('.slice-spoke').length,
+      stacked: [...sr.querySelectorAll('.slice')].map((s) => s.hasAttribute('data-stacked')),
+      name: sr.querySelector('.slice')!.getAttribute('aria-label'),
+    };
+  });
+  expect(r.rings).toBe(2);
+  expect(r.outward).toBe(true);
+  expect(r.colours[0]).not.toBe(r.colours[1]);
+  expect(r.spokes).toBe(1);
+  expect(r.stacked).toEqual([true, false]);
+  expect(r.name).toBe('Pro: 4 (active 3 · churned 1)');
+});

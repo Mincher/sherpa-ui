@@ -1993,11 +1993,15 @@ export class DataSource extends EventTarget {
     const scope = typeof facts.scope === 'string' ? facts.scope : undefined;
     const arranged = scope ? this.#context.arranges(scope) : false;
     const presents = scope ? this.#binding.presentsIn(scope) : false;
+    const stacks = scope ? this.#binding.stacksIn(scope) : false;
     this.#binding.add(el, facts, sink);
     this.#rescope(had);
-    /* A grid joined, so its scope arranges now — or a chart, so it is a slot: its
-       bars and panel draw Group and Sort. TODO 99, 548 */
-    if (scope && ((!arranged && this.#context.arranges(scope)) || (!presents && this.#binding.presentsIn(scope)))) {
+    /* A grid joined, so its scope arranges now — or a chart, so it is a slot, or
+       one that stacks, so it takes a Secondary: its bars and panel draw Group and
+       Sort. A legend may join before its chart. TODO 99, 548 */
+    const changed = scope && ((!arranged && this.#context.arranges(scope)) || (!presents && this.#binding.presentsIn(scope))
+      || (!stacks && this.#binding.stacksIn(scope)));
+    if (scope && changed) {
       this.#binding.drawBars(scope);
       this.#binding.drawScopesSoon();
     }

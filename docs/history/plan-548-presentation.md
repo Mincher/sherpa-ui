@@ -119,6 +119,9 @@ This replaces the earlier reading of primary and secondary below.
 | F1 | The data layer: a summary's `stack` (the Secondary) — each segment's stack pieces, each piece's parts by the group; primary → segment, secondary → stack, never a distinct count |
 | F2 | The bar chart runs horizontally: Primary on the Y axis, the count along the X axis; it draws stacks, and parts in them |
 | F3 | The legend follows Secondary in a stacked bar; the Secondary chip only for a bar chart; Group offers neither field in use |
+| F1–F3 ✅ | Committed 2026-10-29 (c2154119) |
+| F5 ✅ | Donut and pie take a Secondary too (Will, 2026-10-29): each slice is cut, from the centre out, into a ring a Secondary value, its thickness its share, in its colour; Group cuts each ring by spokes. The legend lists the Secondary |
+| F6 | The grid takes Primary and Secondary (Will, 2026-10-29): Secondary set, it is a PIVOT — a row a Primary value, a column a Secondary value, row counts in the cells; Group sections its rows |
 | F4 | D4: Data Grid in a chart card; the Demos pages |
 
 ## Will's answers, 2026-10-29

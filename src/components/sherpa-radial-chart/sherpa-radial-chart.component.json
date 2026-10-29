@@ -128,6 +128,21 @@
       },
       {
         "el": "template",
+        "class": "ring-tpl",
+        "children": [
+          {
+            "el": "svg",
+            "children": [
+              {
+                "el": "path",
+                "class": "slice-ring chart-segment"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
         "class": "spoke-tpl",
         "children": [
           {

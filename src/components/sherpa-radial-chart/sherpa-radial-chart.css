@@ -108,3 +108,10 @@
   stroke: var(--_border, var(--sherpa-data-viz-series-1, #8364c8));
   pointer-events: none;
 }
+
+/* STACKED by its Secondary: its rings carry the colour; the slice keeps its
+   outline only, for its name and its focus. Will, TODO 548 */
+.slice[data-stacked] {
+  fill: none;
+  stroke: none;
+}

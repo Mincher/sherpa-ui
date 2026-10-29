@@ -32,7 +32,7 @@ export class SherpaRadialChart extends SherpaElement {
     new URL('./sherpa-radial-chart.css', import.meta.url),
   ];
   static override html = new URL('./sherpa-radial-chart.html', import.meta.url);
-  static override asks: DataAsk = { shape: 'segments' };
+  static override asks: DataAsk = { shape: 'segments', stacks: true };
   // A host's aria-label names the chart. TRAP T-a-host-label-must-reach-its-control
   static override labelTarget = '.ring';
   static override props = {
@@ -120,6 +120,21 @@ export class SherpaRadialChart extends SherpaElement {
     this.toggleState('highlighting', marking);
     const matchTpl = this.$<HTMLTemplateElement>('template.match-tpl');
     const spokeTpl = this.$<HTMLTemplateElement>('template.spoke-tpl');
+    const ringTpl = this.$<HTMLTemplateElement>('template.ring-tpl');
+    /** A spoke at each boundary between parts, across one band, in a colour. */
+    const spokes = (parts: readonly { value: number }[] | undefined, whole: number, from: number, to: number,
+      startDeg: number, spanDeg: number, index: number, colorIndex?: number): void => {
+      let within = 0;
+      for (const p of (parts ?? []).filter((one) => one.value > 0).slice(0, -1)) {
+        within += whole ? p.value / whole : 0;
+        const spoke = spokeTpl ? this.clone<SVGPathElement>(spokeTpl, '.slice-spoke') : null;
+        if (!spoke) break;
+        spoke.setAttribute('d', ringSpokePath({ cx: CENTRE, cy: CENTRE, inner: from, outer: to, deg: startDeg + spanDeg * within }));
+        spoke.setAttribute('stroke-width', String(OUTLINE));
+        paintSeries(spoke, index, colorIndex);
+        group.appendChild(spoke);
+      }
+    };
 
     let acc = 0;
     this.#slices.forEach((slice, i) => {
@@ -149,6 +164,7 @@ export class SherpaRadialChart extends SherpaElement {
       );
       arc.setAttribute('stroke-width', String(OUTLINE));
       paintSeries(arc, i, slice.colorIndex);
+      arc.toggleAttribute('data-stacked', !!slice.stack?.length);
       // The part the highlight's driver matches: from the slice's start. TODO 441
       const part = value && slice.matched ? Math.min(1, Math.max(0, slice.matched) / value) : 0;
       const match = marking && part && matchTpl ? this.clone<SVGPathElement>(matchTpl, '.slice-match') : null;
@@ -162,20 +178,31 @@ export class SherpaRadialChart extends SherpaElement {
       /* The path IS the datum, not a control; the ring is its one tab stop.
          TRAP T-a-chart-datum-is-reachable-without-a-pointer */
       arc.setAttribute('role', 'img');
-      const parts = partsSaid(slice.parts);
+      const parts = partsSaid(slice.stack ?? slice.parts);
       arc.setAttribute('aria-label', `${slice.label}: ${slice.value}${parts ? ` (${parts})` : ''}`);
       group.appendChild(arc);
       if (match) group.appendChild(match);
-      // GROUPED: a spoke at each boundary between its parts, in its own colour. TODO 548
-      let within = 0;
-      for (const p of (slice.parts ?? []).filter((one) => one.value > 0).slice(0, -1)) {
-        within += value ? p.value / value : 0;
-        const spoke = spokeTpl ? this.clone<SVGPathElement>(spokeTpl, '.slice-spoke') : null;
-        if (!spoke) break;
-        spoke.setAttribute('d', ringSpokePath({ cx: CENTRE, cy: CENTRE, inner, outer, deg: sweepStart + (acc + share * within) * sweep }));
-        spoke.setAttribute('stroke-width', String(OUTLINE));
-        paintSeries(spoke, i, slice.colorIndex);
-        group.appendChild(spoke);
+      const startDeg = sweepStart + acc * sweep;
+      const spanDeg = share * sweep;
+      if (slice.stack?.length) {
+        /* STACKED by its Secondary: a ring each, from the centre out, its
+           thickness its share, in ITS colour; each ring's Group a spoke at each
+           boundary. Will, TODO 548 */
+        let from = inner;
+        for (const [j, ring] of slice.stack.entries()) {
+          const to = from + (outer - inner) * (value ? Math.max(0, ring.value) / value : 0);
+          const band = ringTpl ? this.clone<SVGPathElement>(ringTpl, '.slice-ring') : null;
+          if (!band) break;
+          band.setAttribute('d', ringSegmentPath({ cx: CENTRE, cy: CENTRE, inner: from, outer: to, startDeg, endDeg: startDeg + spanDeg, radius: 0 }));
+          band.setAttribute('stroke-width', String(OUTLINE));
+          paintSeries(band, j, ring.colorIndex);
+          group.appendChild(band);
+          spokes(ring.parts, Math.max(0, ring.value), from, to, startDeg, spanDeg, j, ring.colorIndex);
+          from = to;
+        }
+      } else {
+        // GROUPED: a spoke at each boundary between its parts, in its own colour. TODO 548
+        spokes(slice.parts, value, inner, outer, startDeg, spanDeg, i, slice.colorIndex);
       }
 
       if (hotspots && hotTpl) {
@@ -188,7 +215,7 @@ export class SherpaRadialChart extends SherpaElement {
         dot.style.setProperty('--_dot-angle', `${mid}deg`);
         tip.style.setProperty('--_area', radialArea(mid));
         pairAnchor(`--radial-slice-${i}`, dot, tip);
-        fillTip(tip, slice.label, slice.value, slice.parts);
+        fillTip(tip, slice.label, slice.value, slice.stack ?? slice.parts);
         hotspots.append(dot, tip);
       }
 
