@@ -1919,8 +1919,9 @@ Four things that are not obvious:
 
 **Reset puts every filter back to ITS own default; Reset to default puts the
 page back as the View on screen DEFINES it** — Will, TODO 109. Only the
-provider knows that: the bar and the panel send `view-reset` (an intent) from
-their "Reset all on view" row, and `provider.resetView()` answers
+provider knows that: the View's bar and the panel send `view-reset` (an intent)
+from their "Reset all on view" row — a local bar has none (`resetRows`, Will,
+TODO 524) — and `provider.resetView()` answers
 — the page's first Query (kept at `open()`, before any kept one), then the
 View's Query as a pick puts it on. So a filter the reader ADDED since goes, as
 it is not the View's. A page may call `resetView()` itself. Both Resets, and

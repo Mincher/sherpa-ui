@@ -10,6 +10,8 @@ import { test, expect } from './harness';
 const mount = (kind: string, attr: string): string => `
   const el = document.createElement('sherpa-quick-filter-toolbar');
   el.setAttribute('${attr}', '');
+  // "Reset all on view" is the View's bar's, or a column's. TODO 524
+  if ('${kind}' === 'bar') el.setAttribute('data-type', 'view');
   if ('${kind}' === 'column') {
     el.setAttribute('data-orientation', 'portrait');
     el.setAttribute('data-column', '');

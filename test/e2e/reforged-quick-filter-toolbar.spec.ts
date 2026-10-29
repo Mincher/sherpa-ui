@@ -282,7 +282,8 @@ test('the action cluster is built in, Refresh left of the ⋮; the View\'s ★ a
     expect(t.add).toBe(true);
     expect(t.ai).toBe(false);
     expect(t.clear).toBe(false);
-    expect(t.actions).toEqual(['reset', 'reset-default']);
+    // "Reset all on view" only over the View. Will, TODO 524
+    expect(t.actions).toEqual(t === r.view ? ['reset', 'reset-default'] : ['reset']);
     expect(t.saveSet).toBe(false);
     expect(t.configure).toBe(false);
     expect(t.refresh).toBe(true);

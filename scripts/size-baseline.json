@@ -355,7 +355,7 @@
   "src/core/ui/icons/wireless-router.ts": 5,
   "src/core/ui/icons/workstation.ts": 5,
   "src/core/ui/mark-text.ts": 74,
-  "src/core/ui/more-menu.ts": 185,
+  "src/core/ui/more-menu.ts": 189,
   "src/core/ui/radio-group.ts": 21,
   "src/core/ui/render-icon.ts": 136,
   "src/core/ui/roving-focus.ts": 199,

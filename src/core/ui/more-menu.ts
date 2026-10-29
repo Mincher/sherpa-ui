@@ -20,6 +20,7 @@
  */
 
 import type { SherpaMenu } from '../../components/sherpa-menu/sherpa-menu.js';
+import { VIEW } from '../data/query.js';
 import { report } from '../data/report.js';
 import { saves } from './filters-button.js';
 
@@ -33,9 +34,12 @@ export function folded(el: Element | null): boolean {
   return !!el && getComputedStyle(el).display === 'none';
 }
 
-/** Reset filters, then Reset all on view — off where they would change nothing. TODO 231 */
+/** Reset filters, then Reset all on view — off where they would change nothing (TODO 231),
+ *  and the second only over the View: its bar, or a column that holds it. Will, TODO 524 */
 export function resetRows(host: HTMLElement): MoreRow[] {
-  return [['reset', host.hasAttribute('data-nothing-to-reset')], ['reset-default', host.hasAttribute('data-at-default')]];
+  const atView = host.dataset['type'] === 'view' || host.hasAttribute('data-column')
+    || (host.dataset['scope'] ?? '').split(/\s+/).includes(VIEW);
+  return [['reset', host.hasAttribute('data-nothing-to-reset')], ...(atView ? [['reset-default', host.hasAttribute('data-at-default')] as MoreRow] : [])];
 }
 
 /** Limit is on, and hides what it rules out. Will, TODO 205. */
