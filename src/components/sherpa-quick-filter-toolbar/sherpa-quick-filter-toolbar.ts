@@ -11,10 +11,10 @@ import { DATA_PROPS, SHARED_PROPS, SherpaElement, define } from '../../core/ui/s
 import { NON_VALUE_ROWS, ORGANISE_ICONS, REST_WAIT, VIEW_CHIP } from '../../core/ui/shared-constants.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
 import { advancedOf, arranges, kindOf, oneChipList } from '../../core/ui/filter-kind.js';
-import { FILTER_MENU_HTML, menuFor } from '../../core/ui/filter-menu.js';
+import { FILTER_MENU_HTML, menuFor, type FilterMenuOptions } from '../../core/ui/filter-menu.js';
 import type { FilterDef, FilterOption } from '../../core/ui/filter-def.js';
 import {
-  MANAGE_SETS, MenuDrill, OneRows, SavedSets, drawFiltersButton, saves, type AddedFilter, type SavedSet,
+  MANAGE_SETS, MenuDrill, OneRows, SavedSets, drawFiltersButton, hangFiltersMenu, saves, type AddedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
   FILTER_ACTIONS, askSwitches, drawFilterActions, extraRows, folded, hidesUnmatched, openMore, pickMore,
@@ -1427,18 +1427,23 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** Each chip's key, as it was built. */
   #built = new WeakMap<Element, string>();
 
-  /** Give a chip its value menu — real checkbox/radio rows in the chip's light DOM. */
-  #addMenu(chip: HTMLElement, def: FilterDef, picked?: Set<string>): void {
-    /* ONE DEF, ONE MENU. The panel and a column heading build theirs the same
-       way, so a field cannot open with a different control in each.
-       TRAP T-one-field-one-filter-menu */
-    const { menu, items } = menuFor(this.root, def, {
+  /** The flags this bar's menus are made under. */
+  #menuFlags(): FilterMenuOptions {
+    return {
       bounds: this.dataset['bounds'], remote: this.hasAttribute('data-remote'),
       live: this.dataset['applyOn'] === 'input', waits: this.hasAttribute('data-waits'),
       // Each field applies on its own: its menu has Apply. TODO 451
       applies: this.hasAttribute('data-field-apply'),
       empties: !this.hasAttribute('data-none-shows-all'),
-    });
+    };
+  }
+
+  /** Give a chip its value menu — real checkbox/radio rows in the chip's light DOM. */
+  #addMenu(chip: HTMLElement, def: FilterDef, picked?: Set<string>): void {
+    /* ONE DEF, ONE MENU. The panel and a column heading build theirs the same
+       way, so a field cannot open with a different control in each.
+       TRAP T-one-field-one-filter-menu */
+    const { menu, items } = menuFor(this.root, def, this.#menuFlags());
 
     // TRAP T-persistent-chip-is-a-selector — no pick at all falls back to the
     // FIRST option, or the chip paints as an empty warning.
@@ -2188,10 +2193,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (!def) return;
     this.#drawApplied();
     this.#header.drawSaved();
-    this.#addMenu(add, def);
+    // The ONE Filters menu, as the column makes its own. TODO 523 U13
+    const menu = hangFiltersMenu(this.root, add, def, hidesUnmatched(this), this.#menuFlags());
     // The Edit menu leads with Reset. Will, TODO 454
-    drawFilterActions(this, this.root, add.querySelector('sherpa-menu'));
-    add.querySelector('sherpa-menu')?.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
+    drawFilterActions(this, this.root, menu);
     this.#header.drawSave();
     this.#syncOverflowActive();
   }

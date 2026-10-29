@@ -13,6 +13,7 @@
  * - SavedSet — One saved set of filters, as the Filters menu lists it.
  * - AddedFilter — One filter the view holds.
  * - drawFiltersButton — The ONE Filters button, redrawn: the old menu gone; never off.
+ * - hangFiltersMenu — The ONE Filters menu, made from its def and hung on its button — the bar's and the column's alike: `hide`, Li…
  * - savedMenuDef — The Saved button's menu, split from Filters: the saved sets, a tick taking one.
  * - saves — Does this host save filters: `data-saveable`, and its provider allows it here?
  * - SavedSets — The reader's saved sets, as the host last drew them, and the one taken.
@@ -34,7 +35,7 @@
  * - .out — Put the rows home and the Filters menu's own list back.
  */
 import type { FilterDef } from './filter-def.js';
-import type { FilterMenuItem } from './filter-menu.js';
+import { menuFor, type FilterMenuItem, type FilterMenuOptions } from './filter-menu.js';
 import type { SherpaMenu } from '../../components/sherpa-menu/sherpa-menu.js';
 
 const FILTERS_LABEL = 'Filters';
@@ -138,6 +139,16 @@ export function drawFiltersButton(
     commit: true,
     options,
   };
+}
+
+/** The ONE Filters menu, made from its def and hung on its button — the bar's and the
+ *  column's alike: `hide`, Limit hides what it rules out; `opts`, the host's menu flags. TODO 523 U13 */
+export function hangFiltersMenu(root: ParentNode, btn: HTMLElement, def: FilterDef, hide: boolean, opts: FilterMenuOptions = {}): SherpaMenu {
+  const { menu, items } = menuFor(root, def, opts);
+  menu.toggleAttribute('data-hide-unavailable', hide);
+  btn.append(menu);
+  menu.items?.(items);
+  return menu;
 }
 
 /** The SAVED button's menu, where the app splits it from Filters: the saved
