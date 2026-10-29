@@ -44,10 +44,6 @@
     <span data-word="raise">Move to View Context</span>
     <span data-word="lower">Move to</span>
     <span data-word="return">Return to</span>
-    <span data-word="advanced">Advanced</span>
-    <span data-word="simple">Simple</span>
-    <span data-word="highlight">Highlight matches</span>
-    <span data-word="unhighlight">Stop highlighting</span>
     <!-- The panel's heading over a scope's presets; the bar needs none. Will, TODO 493 -->
     <span data-word="presets">Presets</span>
     <!-- What a panel scope narrows, under its name, where its tag says it badly. Will, TODO 457 -->
@@ -69,10 +65,11 @@
     <sherpa-button slot="more" class="field-more" data-type="icon" data-size="sm" data-status="default"
                    data-icon-start="ellipses-vertical" aria-haspopup="dialog">
       <sherpa-menu slot="menu" class="field-menu" data-align="end">
-        <button class="more-item" type="button" value="advanced"><span class="more-label"></span></button>
+        <!-- Both ways, and CSS says the one it goes now. TODO 523 P7 -->
+        <button class="more-item" type="button" value="advanced"><span class="more-label">Advanced</span><span class="more-label more-on">Simple</span></button>
         <button class="more-item" type="button" value="raise"><span class="more-label"></span></button>
         <button class="more-item" type="button" value="lower"><span class="more-label"></span></button>
-        <button class="more-item" type="button" value="highlight"><span class="more-label"></span></button>
+        <button class="more-item" type="button" value="highlight"><span class="more-label">Highlight matches</span><span class="more-label more-on">Stop highlighting</span></button>
         <button class="more-item" type="button" value="clear"><span class="more-label">Reset</span></button>
         <button class="more-item" type="button" value="remove"><span class="more-label">Remove</span></button>
       </sherpa-menu>

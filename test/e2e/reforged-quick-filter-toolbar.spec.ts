@@ -2636,22 +2636,28 @@ test('Highlight matches: each chip menu offers it but a picker\'s, the driver we
 test('in portrait, a section\'s ⋮ offers Highlight matches, asks it, and says Stop once it drives', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-orientation': 'portrait', 'data-highlight-matches': '' });
-    el.populate!([{ id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }, { value: 'free', label: 'Free' }] }]);
+    el.populate!([{ id: 'plan', label: 'Plan', advanced: true, options: [{ value: 'pro', label: 'Pro' }, { value: 'free', label: 'Free' }] }]);
     await window.__settled();
     const chip = el.shadowRoot!.querySelector<HTMLElement>('.chips > .chip[data-id="plan"]')!;
-    const row = () => chip.querySelector<HTMLElement>(':scope > .field-more .more-item[value="highlight"]')!;
-    const before = { layout: chip.dataset['layout'], shown: getComputedStyle(row()).display !== 'none', label: row().textContent!.trim() };
+    const row = (value: string) => chip.querySelector<HTMLElement>(`:scope > .field-more .more-item[value="${value}"]`)!;
+    // The word CSS shows: both are in the row's markup. TODO 523 P7
+    const said = (value: string) => [...row(value).querySelectorAll('.more-label')].find((s) => getComputedStyle(s).display !== 'none')?.textContent;
+    const before = { layout: chip.dataset['layout'], shown: getComputedStyle(row('highlight')).display !== 'none', label: said('highlight'), mode: said('advanced') };
     const asked: unknown[] = [];
     el.addEventListener('quick-filter-change', (e) => asked.push((e as CustomEvent).detail.request));
     chip.querySelector(':scope > .field-more sherpa-menu')!.dispatchEvent(
       new CustomEvent('menu-select', { detail: { value: 'highlight' }, bubbles: true, composed: true }));
     el.setAttribute('data-highlight-field', 'plan');
     await window.__settled();
-    return { before, asked, after: row().textContent!.trim() };
+    const heard = [...asked];
+    (chip.querySelector(':scope > sherpa-menu') as HTMLElement & { switchMode(m: string): void }).switchMode('advanced');
+    await window.__settled();
+    return { before, asked: heard, after: said('highlight'), mode: said('advanced') };
   });
-  expect(r.before).toEqual({ layout: 'section', shown: true, label: 'Highlight matches' });
+  expect(r.before).toEqual({ layout: 'section', shown: true, label: 'Highlight matches', mode: 'Advanced' });
   expect(r.asked).toEqual([{ field: 'plan', highlight: true }]);
   expect(r.after).toBe('Stop highlighting');
+  expect(r.mode).toBe('Simple');
 });
 
 // TODO 415 (6). TRAP T-a-rebuild-keeps-every-answer

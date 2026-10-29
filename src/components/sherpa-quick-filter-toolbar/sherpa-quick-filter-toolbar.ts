@@ -436,8 +436,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // A section's ⋮ says it too: its values are chips, and its menu stays shut.
       const more = chip.querySelector(':scope > .field-more');
       more?.toggleAttribute('data-highlightable', offer);
-      const label = more?.querySelector('.more-item[value="highlight"] .more-label');
-      if (label) label.textContent = this.word(drives ? 'unhighlight' : 'highlight');
     }
   }
 
@@ -592,7 +590,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.addEventListener('change', this.#onFoldedCountsChanged);
     this.addEventListener('menu-select', this.#onMenuSelect);
     this.addEventListener('menu-change', this.#onSavedPick);
-    this.addEventListener('menu-open', this.#onFieldMoreOpen);
+    this.addEventListener('menu-open', this.#onEditOpen);
     // A calendar commits through its own events — it has no Apply button.
     this.addEventListener('datetime-change', this.#onDatePicked);
     this.addEventListener('range-select', this.#onDatePicked);
@@ -1631,24 +1629,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // Advanced only where the field offers it. Will, TODO 425 G14
     more.toggleAttribute('data-advanced-ok', !!chip.querySelector(':scope > sherpa-menu')?.hasAttribute('data-advanced'));
     more.setAttribute('aria-label', `${def.label} options`);
-    this.#labelMode(chip);
   }
 
-  /** A section's ⋮ offers the OTHER mode: Advanced, or back to Simple. */
-  #labelMode(chip: Element): void {
-    const label = chip.querySelector(':scope > .field-more .more-item[value="advanced"] .more-label');
-    const mode = chip.querySelector<SherpaMenu>(':scope > sherpa-menu')?.mode;
-    if (label) label.textContent = this.word(mode === 'advanced' ? 'simple' : 'advanced');
-  }
-
-  /** A section's ⋮ opened: its mode row says the other mode, as it is now. The
-   *  Edit menu opened: its Reset rows say whether there is anything to reset. */
-  #onFieldMoreOpen = (event: Event): void => {
+  /** The Edit menu opened: its Reset rows say whether there is anything to reset. */
+  #onEditOpen = (event: Event): void => {
     const edit = this.pathFind(event, '.add-btn');
     if (edit) drawFilterActions(this, this.root, edit.querySelector('sherpa-menu'));
-    const more = this.pathFind(event, '.field-more');
-    const chip = more?.closest('sherpa-quick-filter');
-    if (chip) this.#labelMode(chip);
   };
 
   /** A "Remove" row. `menu-select` is for ACTION rows; value rows commit via `menu-change`. */
