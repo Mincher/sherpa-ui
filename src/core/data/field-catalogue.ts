@@ -15,6 +15,7 @@
  * - .carriesOver — Does this field keep its answer across Views?
  * - .copyOf — A copy of a field's declaration.
  * - .declared — Every declared field, live.
+ * - .known — Every field declared, or whose values are, in the order first told.
  * - .facts — What a field's clause needs to know: its values, kind and label.
  * - .stateFor — One field's state from a reading.
  * - .filterDef — A field's filter, as any bar or panel draws it.
@@ -125,6 +126,11 @@ export class FieldCatalogue {
   /** Every declared field, live. */
   declared(): Iterable<[string, FieldDeclaration]> {
     return this.#fields.entries();
+  }
+
+  /** Every field declared, or whose values are, in the order first told. TODO 548 */
+  known(): string[] {
+    return [...new Set([...this.#fields.keys(), ...this.#domains.keys()])];
   }
 
   /** What a field's clause needs to know: its values, kind and label.

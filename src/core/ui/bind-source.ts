@@ -14,7 +14,7 @@
 import { report } from '../data/report.js';
 import type { AttachFacts, BoundView, DataSource } from '../data/data-source.js';
 import type { FieldReading } from '../data/filter-state.js';
-import { VIEW, type QueryRequest } from '../data/query.js';
+import { VIEW, type Presentation, type QueryRequest } from '../data/query.js';
 import type { QueryContext } from '../data/query-context.js';
 import type { Row } from '../data/store.js';
 import type { Populatable } from './apply-state.js';
@@ -96,7 +96,7 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
   options.signal?.addEventListener('abort', () => source.unbind(el), { once: true });
 
   source.attach(el, options, {
-    view: (view) => writeView(el, view, options.scope),
+    view: (view) => writeView(el, view, options.scope, slotOf(source, options.scope)),
     rows: (rows) => {
       // populate() waits for the first render itself, so a component bound
       // before it upgraded still gets its rows.
@@ -131,12 +131,14 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
 }
 
 /** The view as attributes, so CSS can select on it. TRAP T-push-writes-state-as-attributes */
-function writeView(el: Element, view: BoundView, scope?: string | readonly string[]): void {
+function writeView(el: Element, view: BoundView, scope?: string | readonly string[], slot?: Presentation): void {
   // A control over another scope is not told its arrangement. TODO 523 S6 · TRAP T-group-and-sort-are-component-scope
   const mine = typeof scope !== 'string' || !view.arrangedIn || scope === view.arrangedIn;
-  setAttr(el, 'data-sort-field', mine ? view.sortField : undefined);
-  setAttr(el, 'data-sort-direction', mine ? view.sortDirection : undefined);
-  setAttr(el, 'data-group-field', mine ? view.groupField : undefined);
+  // A SLOT's are its chart's: a sort by each segment's value. Will, TODO 548
+  const sort = slot ? (slot.sort ? SLOT_SORT : undefined) : mine ? view.sortField : undefined;
+  setAttr(el, 'data-sort-field', sort);
+  setAttr(el, 'data-sort-direction', slot ? slot.sort : mine ? view.sortDirection : undefined);
+  setAttr(el, 'data-group-field', slot ? slot.group : mine ? view.groupField : undefined);
   setAttr(el, 'data-filter-fields', view.filterFields.length ? view.filterFields.join(' ') : undefined);
   setAttr(el, 'data-needles', view.needles || undefined);
   // On a bar over the driver's scope: which chip drives the highlight. TODO 441
@@ -144,6 +146,14 @@ function writeView(el: Element, view: BoundView, scope?: string | readonly strin
   setAttr(el, 'data-page', view.paging ? String(view.paging.page) : undefined);
   setAttr(el, 'data-total-pages', view.paging ? String(view.paging.totalPages) : undefined);
   setAttr(el, 'data-page-size', view.paging ? String(view.paging.pageSize) : undefined);
+}
+
+/** What a slot's chart sorts by: each segment's value. TODO 548 */
+const SLOT_SORT = 'value';
+
+/** A slot's kept presentation, where `scope` is one. TODO 548 */
+function slotOf(source: DataSource, scope: string | readonly string[] | undefined): Presentation | undefined {
+  return typeof scope === 'string' && source.presents(scope) ? source.query.presentation(scope) : undefined;
 }
 
 /** Write or remove an attribute. `undefined` removes, so CSS stops matching. */
@@ -259,6 +269,14 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
 
   switch (type) {
     case 'sort-change': {
+      const at = arranger(detail, bind);
+      /* A SLOT: its sort is its chart's order, kept as its presentation, never the
+         rows'; off or forgotten, none. Will, TODO 548 */
+      if (at && source.presents(at)) {
+        const on = typeof detail['field'] === 'string' && detail['field'] && detail['clear'] !== true;
+        source.query.present(at, { sort: on ? (detail['direction'] === 'desc' ? 'desc' : 'asc') : undefined });
+        return;
+      }
       // None: no sort at all, not one kept to resume. TODO 407
       if (detail['clear'] === true) {
         source.query.clearSort(arranger(detail, bind));
@@ -270,8 +288,11 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
       return;
     }
     case 'group-change': {
-      const field = detail['field'];
-      source.query.setGroup(typeof field === 'string' && field ? field : null, arranger(detail, bind));
+      const field = typeof detail['field'] === 'string' && detail['field'] ? detail['field'] : null;
+      const at = arranger(detail, bind);
+      // A SLOT's group is its chart's parts. Will, TODO 548
+      if (at && source.presents(at)) source.query.present(at, { group: field ?? undefined });
+      else source.query.setGroup(field, at);
       return;
     }
     case 'quick-filter-change': {

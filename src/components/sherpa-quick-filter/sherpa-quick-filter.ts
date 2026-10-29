@@ -669,7 +669,8 @@ export class SherpaQuickFilter extends SherpaElement {
     const field = this.column;
     const row = this.querySelector<HTMLElement>(`[slot="menu"] input[value="${CSS.escape(field)}"]`)
       ?.closest<HTMLElement>('label, .menu-row');
-    this.valueLabel = field ? (row?.textContent ?? '').trim() || field : '';
+    // With no menu, nothing was picked: the tip says only the way. TODO 548
+    this.valueLabel = field && this.menu ? (row?.textContent ?? '').trim() || field : '';
     const dir = this.dataset['kind'] === 'sort' ? this.direction : null;
     if (this.dataset['kind'] === 'sort') {
       this.set('data-icon-start', dir === null ? ORGANISE_ICONS.sortNone
@@ -678,7 +679,7 @@ export class SherpaQuickFilter extends SherpaElement {
     // The tip says the column, and for a sort which WAY. Will, TODO 125.
     // Its words are in its template: before the stamp, the draw on connect says the way.
     const way = dir && this.hasRendered ? this.word(dir) : '';
-    this.#said = this.current && this.valueLabel ? [this.valueLabel, way].filter(Boolean).join(', ') : '';
+    this.#said = this.current ? [this.valueLabel, way].filter(Boolean).join(', ') : '';
     this.#writeTip();
   }
 

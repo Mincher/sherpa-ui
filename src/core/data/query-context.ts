@@ -932,6 +932,11 @@ export class QueryContext extends EventTarget {
         this.clearSort(scope);
         this.setGroup(null, scope);
       }
+      // …and a SLOT's own Group and Sort, its chart's. TODO 548
+      for (const id of options.organise ? scopes : []) {
+        const shown = this.presentation(id);
+        if (shown.group || shown.sort) this.present(id, { group: undefined, sort: undefined });
+      }
     });
   }
 

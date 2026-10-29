@@ -47,6 +47,9 @@ import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 import type { SherpaQuickFilter } from '../sherpa-quick-filter/sherpa-quick-filter.js';
 import type { SherpaSwitch } from '../sherpa-switch/sherpa-switch.js';
 
+/** What a chart's Sort orders by: each segment's value, as the binding names it. TODO 548 */
+const ORDER_BY = 'value';
+
 /** A filter chip, in the run or in a set. TRAP T-a-filter-set-groups-or-chains */
 const CHIP = '.chips > .chip';
 
@@ -54,6 +57,8 @@ const CHIP = '.chips > .chip';
 export interface OrganiseDef {
   group?: OrganiseColumn[];
   sort?: OrganiseColumn[];
+  /** A Sort with no column to pick: it orders what a chart draws, by value. TODO 548 */
+  order?: boolean;
 }
 
 export type { OrganiseColumn } from '../../core/data/data-source.js';
@@ -2048,7 +2053,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.groupSets(scope.sets ?? []);
     // Its Group and Sort, where the scope arranges — drawn again only when they change.
     // TRAP T-group-and-sort-are-component-scope
-    const organise = { group: scope.group ?? [], sort: scope.sort ?? [] };
+    const organise: OrganiseDef = { group: scope.group ?? [], sort: scope.sort ?? [], ...(scope.presents ? { order: true } : {}) };
     if (scope.group && JSON.stringify(organise) !== JSON.stringify(this.#organise)) this.organise(organise);
     const fields = scope.filters;
     // A field whose values have just come draws its chip again, with them. TRAP T-a-field-reads-its-values-when-needed
@@ -2532,6 +2537,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #clearOrganise(): void {
     // The chip clears its own column and way. TODO 424
     for (const chip of this.$$<SherpaQuickFilter>('.organise-chip')) chip.clear();
+    // A chart's Sort picks no column: it is built on one. TODO 548
+    const order = this.#organise.order ? this.#organiser('sort') : null;
+    if (order) order.dataset['column'] = ORDER_BY;
   }
 
   /* ── Organise: the leading Group / Sort chips ───────────────────────── */
@@ -2600,10 +2608,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     const group = this.#organise.group ?? [];
     const sort = this.#organise.sort ?? [];
+    const order = !!this.#organise.order;
     zone.replaceChildren();
     // CSS cannot see whether the zone has children, and an empty one would leave
     // its divider rule floating.
-    this.toggleState('has-organise', group.length > 0 || sort.length > 0);
+    this.toggleState('has-organise', group.length > 0 || sort.length > 0 || order);
 
     /* BORN NAMING ITS COLUMN. The bar may already be grouped or sorted — a
        reload restores both — so the chip is built on that column rather than
@@ -2613,7 +2622,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       zone.appendChild(this.#organiseChip('group',
         SherpaQuickFilterToolbar.#icons.group, organiseOptions(group, on.group), on.group));
     }
-    if (sort.length) {
+    if (order) {
+      // A chart's: no column to pick, so no menu — the body cycles. Will, TODO 548
+      const chip = this.clone('template.organise-sort-tpl');
+      if (!chip) throw new Error('sherpa-quick-filter-toolbar: template.organise-sort-tpl is missing or empty');
+      chip.dataset['column'] = ORDER_BY;
+      chip.setAttribute('data-icon-start', SherpaQuickFilterToolbar.#icons.sortNone);
+      this.#lock(chip);
+      zone.appendChild(chip);
+    } else if (sort.length) {
       // The MENU picks the column, the BODY cycles direction. Built OFF, with
       // the sort-none glyph, until the host's arrangement turns it on below.
       /* NO `data-direction` here. `chip.direction` answers `asc` for a chip that

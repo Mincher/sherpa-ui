@@ -282,3 +282,61 @@ test('a chart in a SLOT draws what the slot\'s kept presentation says: its segme
   // Segmented by day instead.
   expect(r['resegmented']).toEqual(['Mon: 2', 'Tue: 1', 'Wed: 1']);
 });
+
+test('a chart\'s bar in its SLOT: Group splits its bars, Sort has no menu and cycles up, down, none — and no row is arranged (Will, TODO 548)', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-container data-scope="by-plan">
+        <sherpa-quick-filter-toolbar data-heading="By plan"></sherpa-quick-filter-toolbar>
+        <sherpa-barchart id="slotted" data-segment-field="plan"></sherpa-barchart>
+      </sherpa-container>\`;
+    const source = make();
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    const bar = provider.querySelector('sherpa-quick-filter-toolbar');
+    const chip = (id) => bar.shadowRoot.querySelector('.organise-chip[data-id="' + id + '"]');
+    const bars = () => [...provider.querySelector('#slotted').shadowRoot.querySelectorAll('.bar-col')]
+      .map((c) => c.getAttribute('aria-label'));
+    const at = {
+      offered: [...chip('group').querySelectorAll('sherpa-menu input')].map((i) => i.value).filter(Boolean),
+      sortMenu: !!chip('sort').querySelector('sherpa-menu'),
+    };
+    const input = [...chip('group').querySelectorAll('sherpa-menu input')].find((i) => i.value === 'day');
+    input.checked = true;
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    await settle();
+    at.grouped = { bars: bars(), on: chip('group').hasAttribute('data-current'), told: bar.dataset.groupField };
+    const order = [];
+    for (let i = 0; i < 3; i++) {
+      chip('sort').shadowRoot.querySelector('.body').click();
+      await settle();
+      order.push({ first: bars()[0], dir: chip('sort').direction, kept: source.query.presentation('by-plan').sort ?? null });
+    }
+    at.order = order;
+    at.rows = { group: source.state.group ?? null, sort: source.state.sort ?? [] };
+    // Cleared, it still has its one way to sort: the next press is up.
+    bar.clearAll();
+    await settle();
+    chip('sort').shadowRoot.querySelector('.body').click();
+    await settle();
+    at.again = { kept: source.query.presentation('by-plan'), first: bars()[0] };
+    return at;
+  })()`) as Record<string, unknown>;
+  // Its Group offers the list fields, and its Sort has no field to pick.
+  expect(r['offered']).toContain('day');
+  expect(r['sortMenu']).toBe(false);
+  // Grouped by day: each bar's parts, and the chip says so.
+  expect(r['grouped']).toEqual({ bars: ['Free: 1 (Tue 1)', 'Pro: 2 (Mon 1 · Wed 1)', 'Enterprise: 1 (Mon 1)'], on: true, told: 'day' });
+  // Up, down, none: the order the chart keeps.
+  expect(r['order']).toEqual([
+    { first: 'Free: 1 (Tue 1)', dir: 'asc', kept: 'asc' },
+    { first: 'Pro: 2 (Mon 1 · Wed 1)', dir: 'desc', kept: 'desc' },
+    { first: 'Free: 1 (Tue 1)', dir: null, kept: null },
+  ]);
+  // The ROWS are not arranged: a chart's Group and Sort are its own.
+  expect(r['rows']).toEqual({ group: null, sort: [] });
+  // Clear all ungroups it; its Sort still sorts.
+  expect(r['again']).toEqual({ kept: { sort: 'asc' }, first: 'Free: 1' });
+});

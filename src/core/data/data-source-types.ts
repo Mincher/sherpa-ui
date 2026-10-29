@@ -155,6 +155,12 @@ export interface ScopeDescription {
   sortDirection?: SortDirection;
   /** Its bar's filter Switch is OFF. TRAP T-the-filter-switch-keeps-what-it-turned-off */
   suspended?: boolean;
+  /** A SLOT: a chart draws here, and its Group and Sort are its presentation's, not the
+   *  rows'. `compare` offers its two fields; `primaryField` and `secondaryField` are kept ones. TODO 548 */
+  presents?: boolean;
+  compare?: OrganiseColumn[];
+  primaryField?: string;
+  secondaryField?: string;
 }
 
 export interface ViewState {

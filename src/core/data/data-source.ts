@@ -22,6 +22,7 @@
  * - .totalPages — Pages at the current size, at least 1.
  * - .highlight — Does a row match the highlight's driver?
  * - .pickedFor — A field's picks in force on one component: its own part's, else the View's.
+ * - .presents — Is this scope a SLOT — does a chart draw a summary in it?
  * - .highlightFor — The highlight's test for a component in `scope`: null where it stays in its driver's scope and this is not it.
  * - .highlightAcross — The highlight reaches every component — or, off, those in its driver's scope alone.
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
@@ -421,6 +422,12 @@ export class DataSource extends EventTarget {
     return picks(this.#applied.scopes[VIEW]?.readings[field]);
   }
 
+  /** Is this scope a SLOT — does a chart draw a summary in it? Its Group and Sort are
+   *  then its presentation's, never the rows'. Will, TODO 548 */
+  presents(scope: string): boolean {
+    return this.#binding.presentsIn(scope);
+  }
+
   /** The highlight's test for a component `el` in `scope`: null where it stays in
    *  its driver's scope and this is not it. Will, TODO 467 */
   highlightFor(scope?: string | readonly string[], el?: object): ((row: Row) => boolean) | null {
@@ -508,17 +515,18 @@ export class DataSource extends EventTarget {
       available: this.addable(scope), ...(sets.length ? { sets } : {}),
       ...(q.suspended ? { suspended: true } : {}),
     };
+    /* GROUP by a list field only — by its declaration, so before its values come:
+       never a number, a date, or one answered by typing alone. Will, TODOs 500, 523 */
+    const groupable = (c: { field: string }): boolean => {
+      const facts = this.#catalogue.get(c.field);
+      return facts?.type !== 'number' && facts?.type !== 'date' && facts?.advanced !== 'only';
+    };
     /* HOW its rows are arranged — only in a scope that arranges, and its own
        arrangement only. TRAP T-group-and-sort-are-component-scope */
     if (this.#context.arranges(scope) && this.#context.fields(scope).length) {
       const cols = this.#context.fields(scope).filter((f) => this.#catalogue.has(f))
         .map((f) => ({ field: f, label: this.#catalogue.get(f)?.label ?? f }));
-      /* GROUP by a list field only — by its declaration, so before its values come:
-         never a number, a date, or one answered by typing alone. Will, TODOs 500, 523 */
-      out.group = cols.filter((c) => {
-        const facts = this.#catalogue.get(c.field);
-        return facts?.type !== 'number' && facts?.type !== 'date' && facts?.advanced !== 'only';
-      });
+      out.group = cols.filter(groupable);
       out.sort = cols;
       const arranged = this.#arrangement();
       const mine = (this.#arrangedIn() ?? scope) === scope;
@@ -528,6 +536,18 @@ export class DataSource extends EventTarget {
         out.sortField = first.field;
         out.sortDirection = first.direction ?? 'asc';
       }
+    } else if (this.#binding.presentsIn(scope)) {
+      /* A SLOT: its chart's parts by a list field, its two fields, and its order —
+         kept in the Query, never the rows'. Will, TODO 548 */
+      const lists = this.#catalogue.known().map((field) => ({ field, label: this.#catalogue.get(field)?.label ?? field })).filter(groupable);
+      const shown = this.#context.presentation(scope);
+      Object.assign(out, {
+        presents: true, group: lists, compare: lists,
+        ...(shown.group ? { groupField: shown.group } : {}),
+        ...(shown.sort ? { sortDirection: shown.sort } : {}),
+        ...(shown.primary ? { primaryField: shown.primary } : {}),
+        ...(shown.secondary ? { secondaryField: shown.secondary } : {}),
+      });
     }
     return out;
   }
@@ -1182,6 +1202,10 @@ export class DataSource extends EventTarget {
         return;
       case 'bars':
         this.#binding.drawBars(change.scope);
+        return;
+      case 'presented':
+        // A slot's presentation moved: its bar is told its Group and Sort. TODO 548
+        this.#binding.tellView(change.scope);
         return;
       case 'arranged':
         // The old count was measured against the OLD grouping. Drop it and wait for
@@ -1960,10 +1984,12 @@ export class DataSource extends EventTarget {
     const had = this.#binding.componentScopes();
     const scope = typeof facts.scope === 'string' ? facts.scope : undefined;
     const arranged = scope ? this.#context.arranges(scope) : false;
+    const presents = scope ? this.#binding.presentsIn(scope) : false;
     this.#binding.add(el, facts, sink);
     this.#rescope(had);
-    // A grid joined, so its scope arranges now: its bars and panel draw Group and Sort. TODO 99
-    if (scope && !arranged && this.#context.arranges(scope)) {
+    /* A grid joined, so its scope arranges now — or a chart, so it is a slot: its
+       bars and panel draw Group and Sort. TODO 99, 548 */
+    if (scope && ((!arranged && this.#context.arranges(scope)) || (!presents && this.#binding.presentsIn(scope)))) {
       this.#binding.drawBars(scope);
       this.#binding.drawScopesSoon();
     }

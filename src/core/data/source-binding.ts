@@ -18,12 +18,14 @@
  * - .wantsAllRows — Is any bind asking for the unpaged set?
  * - .componentOf — The tag of the first component drawn rows in a scope.
  * - .pagedIn — Is a page of rows drawn in this scope?
+ * - .presentsIn — Does a chart draw a summary in this scope — is it a SLOT?
  * - .publish — Push rows and state to every bound component.
  * - .push — Give one component the rows and the view state.
  * - .pushTo — Push to the components bound by these ids.
  * - .drawPanelReading — Tell each control over several scopes one field's reading in a scope.
  * - .drawReading — Tell each control over a field's home its reading.
  * - .drawBars — Draw every bar over one scope, as the panel draws it.
+ * - .tellView — Tell each component in one scope its view again, and nothing more.
  * - .drawBarsBehind — Draw each bar over one scope that does not hold what the scope holds now: a scope two bars draw — a strip and…
  * - .drawEveryBar — Draw every bar over one scope each; settles when all have drawn.
  * - .drawScopesSoon — Draw each control over several scopes WHOLE, once per moment.
@@ -176,6 +178,11 @@ export class SourceBinding {
     return [...this.#bound.values()].some((b) => b.scope === scope && !b.steerOnly && b.rows === 'page');
   }
 
+  /** Does a chart draw a summary in this scope — is it a SLOT? Will, TODO 548 */
+  presentsIn(scope: string): boolean {
+    return [...this.#bound.values()].some((b) => b.scope === scope && b.rows === 'all' && b.readonly);
+  }
+
   /** Push rows and state to every bound component. */
   publish(): void {
     for (const [el] of this.#bound) this.push(el);
@@ -234,6 +241,11 @@ export class SourceBinding {
    *  that came from somewhere else (the panel) changed what it holds. */
   drawBars(scope: string): void {
     for (const [el, { scope: s }] of this.#bound) if (s === scope && el.drawScope) void el.drawScope(...this.#slice(scope));
+  }
+
+  /** Tell each component in one scope its view again, and nothing more. TODO 548 */
+  tellView(scope: string): void {
+    for (const { scope: s, sink } of this.#bound.values()) if (s === scope) sink.view(this.#host.view());
   }
 
   /** Draw each bar over one scope that does not hold what the scope holds now:
