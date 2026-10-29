@@ -640,11 +640,14 @@ export class SherpaDataGrid extends SherpaElement {
     if (sorted || this.#isFiltered(col.field)) th.dataset['status'] = 'active';
     else delete th.dataset['status'];
 
-    // GROUP by it: a list column, not a number or a date. Will, TODO 500
+    /* GROUP by a list field only: the source's rule, read from the filter it gave;
+       alone, not a number or a date. Will, TODOs 500, 523 */
     const groupChip = th.querySelector<HTMLElement>('.head-group');
     if (groupChip) {
       groupChip.dataset['iconStart'] = SherpaDataGrid.icons.group;
-      groupChip.toggleAttribute('data-unsupported', col.type === 'number' || col.type === 'date');
+      const given = this.#givenFilters[col.field];
+      const list = col.type !== 'number' && col.type !== 'date' && (!given || advancedOf(given) !== 'only');
+      groupChip.toggleAttribute('data-unsupported', !list);
       groupChip.setAttribute('aria-label', `${this.word('group-by')} ${col.header ?? col.field}`);
     }
 

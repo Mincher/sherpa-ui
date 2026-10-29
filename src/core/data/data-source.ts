@@ -507,7 +507,12 @@ export class DataSource extends EventTarget {
     if (this.#context.arranges(scope) && this.#context.fields(scope).length) {
       const cols = this.#context.fields(scope).filter((f) => this.#catalogue.has(f))
         .map((f) => ({ field: f, label: this.#catalogue.get(f)?.label ?? f }));
-      out.group = cols;
+      /* GROUP by a list field only — by its declaration, so before its values come:
+         never a number, a date, or one answered by typing alone. Will, TODOs 500, 523 */
+      out.group = cols.filter((c) => {
+        const facts = this.#catalogue.get(c.field);
+        return facts?.type !== 'number' && facts?.type !== 'date' && facts?.advanced !== 'only';
+      });
       out.sort = cols;
       const arranged = this.#arrangement();
       const mine = (this.#arrangedIn() ?? scope) === scope;

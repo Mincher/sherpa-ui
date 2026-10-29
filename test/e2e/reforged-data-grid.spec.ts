@@ -3101,3 +3101,21 @@ test('rows grouped by a value that is an object fall into one group per value (T
   });
   expect(heads).toEqual(['2', '1']);
 });
+
+test('a heading offers Group only for a field its source says is a list (Will, TODO 523 S5)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & { rendered?: Promise<void>; populate(d: unknown): void };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({
+      columns: [{ field: 'plan', header: 'Plan' }, { field: 'name', header: 'Name' }, { field: 'seats', header: 'Seats', type: 'number' }],
+      rows: [{ plan: 'Pro', name: 'Ada', seats: 3 }],
+      // The source's own filters: a list, and a field answered by typing alone.
+      filters: { plan: { id: 'plan', label: 'Plan', options: [{ value: 'Pro', label: 'Pro' }] }, name: { id: 'name', label: 'Name', advanced: 'only' } },
+    });
+    await window.__settled();
+    const off = (f: string) => el.shadowRoot!.querySelector(`.head-cell[data-field="${f}"] .head-group`)!.hasAttribute('data-unsupported');
+    return { plan: off('plan'), name: off('name'), seats: off('seats') };
+  });
+  expect(r).toEqual({ plan: false, name: true, seats: true });
+});
