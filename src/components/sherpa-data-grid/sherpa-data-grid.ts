@@ -28,13 +28,13 @@ import {
   type Filter, type GroupSummary, type SortDirection, type SortSpec,
 } from '../../core/data/store.js';
 import {
-  OP_LABELS, OP_TAKES, valueKey, type FilterOp,
+  valueKey, type FilterOp,
 } from '../../core/data/store.js';
 import {
   fieldState, readingClause, readingRows,
   type FieldCondition, type FieldFacts, type FieldReading, type FieldType, type FilterState,
 } from '../../core/data/filter-state.js';
-import { spellConditions } from '../../core/data/filter-face.js';
+import { filterFace } from '../../core/data/filter-face.js';
 import { readingAnswered, sameReading } from '../../core/data/query.js';
 import { clauseReading } from '../../core/data/where.js';
 import { coalesce } from '../../core/data/timing.js';
@@ -916,22 +916,13 @@ export class SherpaDataGrid extends SherpaElement {
     const header = col?.header ?? field;
     // TRAP T-grid-number-clause-must-coerce — the clause is the data layer's.
     const clause = held ? this.#columnClause(field, held) : null;
-    const lead = held ? this.#inForce(field, held).rows[0] : undefined;
-    const single = !!clause && clause[0] !== 'and' && clause[0] !== 'or';
-    const ends = lead?.op === 'between' ? (lead.picked ?? []).map(String) : null;
-    const one = (lead?.picked ?? []).length === 1 ? String(lead!.picked![0]) : '';
-    const value = held && !ends ? (lead?.text ?? one) : null;
     this.emit('column-filter-change', {
       field,
       header,
-      op: single ? String(clause![1]) : (lead?.op ?? null),
-      value,
-      from: ends?.[0] ?? null,
-      to: ends?.[1] ?? null,
       clause,
       // …and as a READING, which the data layer keeps. TRAP T-one-query-one-owner
       reading: held ? { ...held } : null,
-      // What a toolbar chip shows: "Contains: ana". The field half is `header`.
+      // What a toolbar chip says of it. The field half is `header`.
       label: held ? this.#columnFilterLabel(field, held) : null,
     });
   }
@@ -987,21 +978,9 @@ export class SherpaDataGrid extends SherpaElement {
     return (readingClause(this.#facts(field), { ...held, suspended: false }) as unknown[] | undefined) ?? null;
   }
 
-  /** One column filter as a chip reads it — "Contains: ana", "Between: 10 - 20". */
+  /** One column filter as a chip says it: the chip's own words, `filterFace`. TODO 523 */
   #columnFilterLabel(field: string, held: FieldReading): string {
-    const state = this.#inForce(field, held);
-    // An Advanced answer says itself: `contains(Da) OR startsWith(R)`. Will, TODO 409
-    if (state.condition === 'advanced') return spellConditions({ ...state, conditions: state.rows });
-    const row = state.rows[0];
-    if (!row) return '';
-    const picks = (row.picked ?? []).map(String);
-    // Several picks read as the clause does: "Is one of", "Is not one of".
-    const op = picks.length > 1 && row.op === 'eq' ? 'in' : picks.length > 1 && row.op === 'ne' ? 'notin' : row.op;
-    const name = OP_LABELS[op as keyof typeof OP_LABELS] ?? op;
-    if (row.op === 'between') return `${name}: ${picks[0]} - ${picks[1]}`;
-    if ((OP_TAKES[row.op] ?? 'list') === 'text') return `${name}: ${row.text ?? ''}`;
-    // A COUNT, not a list: "Is one of: 4" beats a chip that runs off the bar.
-    return picks.length === 1 ? `${name}: ${picks[0]}` : `${name}: ${picks.length}`;
+    return filterFace(this.#inForce(field, held)).tip;
   }
 
   /**

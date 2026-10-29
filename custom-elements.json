@@ -2916,7 +2916,7 @@
             {
               "name": "column-filter-change",
               "type": {
-                "text": "CustomEvent<{ clause: null | unknown[]; field: string; from: null | string; header: string; label: null | string; op: null | string; reading: object; to: null | string; value: null | string }>"
+                "text": "CustomEvent<{ clause: null | unknown[]; field: string; header: string; label: null | string; reading: object }>"
               }
             },
             {

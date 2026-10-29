@@ -2288,6 +2288,7 @@ not.
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/core/data/filter-face.ts`
 - Site: `test/unit/filter-face.test.mjs`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-a-made-up-key-never-leaves-the-data-layer
 

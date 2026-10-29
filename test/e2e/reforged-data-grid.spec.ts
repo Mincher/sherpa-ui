@@ -1495,7 +1495,8 @@ test('a DATE column filters with a calendar, one day or a span', async ({ page }
   // One day: equality, because that is the only thing a clicked day can mean.
   const day = r.events[0] as Record<string, unknown>;
   expect(day['clause']).toEqual(['created', 'eq', '2026-01-05']);
-  expect(day['label']).toBe('Equals: 2026-01-05');
+  // In the chip's own words. TODO 523 · TRAP T-a-date-reads-one-way
+  expect(day['label']).toBe('05 Jan 2026');
 
   // The switch turns the calendar itself into its two-click mode.
   expect(r.calType).toBe('range');
@@ -1504,7 +1505,7 @@ test('a DATE column filters with a calendar, one day or a span', async ({ page }
   // correctly date-wise, and coercing them would turn them into NaN.
   const span = r.events[r.events.length - 1] as Record<string, unknown>;
   expect(span['clause']).toEqual(['created', 'between', ['2026-01-01', '2026-01-31']]);
-  expect(span['label']).toBe('Between: 2026-01-01 - 2026-01-31');
+  expect(span['label']).toBe('01 to 31 Jan 2026');
 });
 
 test('a TEXT column filter MARKS its matches; number and date cells stay plain', async ({ page }) => {

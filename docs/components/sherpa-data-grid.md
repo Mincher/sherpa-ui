@@ -156,7 +156,7 @@ Each one bubbles.
 | `sort-change` | `{ direction: SortDirection \| null; field: null \| string }` |  |
 | `row-select` | `{ index: number; row: GridRow \| undefined }` |  |
 | `selection-change` | `{ records: GridRow[]; selected: string[] }` |  |
-| `column-filter-change` | `{ clause: null \| unknown[]; field: string; from: null \| string; header: string; label: null \| string; op: null \| string; reading: object; to: null \| string; value: null \| string }` |  |
+| `column-filter-change` | `{ clause: null \| unknown[]; field: string; header: string; label: null \| string; reading: object }` |  |
 | `group-toggle` | `{ collapsed: boolean; value: string }` |  |
 | `group-change` | `{ field: null \| string }` | A heading's Group, or a group row's Ungroup (`field: null`): a REQUEST to group by it. |
 | `row-action` | `{ id: string; records: GridRow[] }` | An action was chosen, from the row menu or a host's bulk bar. |
