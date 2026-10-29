@@ -43,7 +43,7 @@ Each content place on a page (a chart container, the grid) is a SLOT with a stab
 
 - **The bar chart** stacks a segment's parts. Each part takes its group value's colour.
 - **The donut and the pie** split a section into its parts.
-- **The legend** lists the GROUP values while grouped, and toggles those parts in every segment (question 1).
+- **The legend** keeps listing the SEGMENT values and toggles whole segments (Will: B). A part's tip names its group value.
 - **The highlight's `matched`** stays the inner mark of a part.
 
 ### 4. A filter toolbar per chart, and the presentation menu
@@ -75,14 +75,26 @@ Each slot in the page JSON names `presentation` (the default), `secondary` (the 
 
 Each phase is its own commit series, test first. Each one ships without the ones after it.
 
-## Choices for Will
+## Will's answers, 2026-10-29
 
-1. **What a grouped chart's legend lists.** Example: "By status", grouped by Plan. Each Status bar stacks its Plan parts.
-   - **A (my pick):** the legend lists the PLAN values, the parts' colours. A toggle hides that part in every bar. This is how a stacked chart is usually read.
-   - **B:** the legend keeps listing the Status values and toggles whole bars. The parts have no key.
-2. **Where a slot's presentation, group and sort are kept.**
-   - **A (my pick):** in the Query, in the slot's scope. A saved View and a reload keep them, as they keep a grid's sort.
-   - **B:** on the component only. A reload goes back to the definition.
-3. **What "primary field" means.**
-   - **A (my pick):** what is MEASURED: the aggregate and its field, a count when none. The secondary is the segmentation.
-   - **B:** the grid's leading column, which a chart would count by.
+1. **A grouped chart's legend: B.** The legend keeps listing the segment values ("By status": the statuses) and toggles whole segments. The parts have no key of their own; a part's tip says its group value and its number.
+2. **Where a slot's presentation, group and sort are kept: A.** In the Query, in the slot's scope. A saved View and a reload keep them.
+3. **Primary: B, unless a definition says otherwise.** The primary defaults to the grid's leading column; a definition may name another, since "it wouldn't make sense to use Name field from the Customer Records grid as the Primary". **And a Compare chip**, before Group, lets the reader choose the two fields that drive the chart.
+
+### What that means in the design (my reading, for now)
+
+- **Primary:** what a chart COUNTS. Each segment's value is the number of DIFFERENT primary values among its rows, unless the definition names an aggregate (a sum of seats). It defaults to the grid's leading column. Records names `customer`, so "By status" counts the customers in each status.
+- **Secondary:** the segmentation. One bar or one slice per value.
+- **Group:** the parts inside each segment.
+- **The chart's toolbar** under its header holds Compare, Group and Sort, in that order:
+  - **Compare** picks the primary and the secondary (two lists in one menu).
+  - **Group** picks the parts.
+  - **Sort** cycles ascending, descending, none.
+
+All three are kept in the slot's scope in the Query (answer 2).
+
+## Choices for Will (asked 2026-10-29, answered above)
+
+1. What a grouped chart's legend lists: A the group values; B the segment values, toggling whole segments.
+2. Where a slot's presentation, group and sort are kept: A the Query; B the component only.
+3. What "primary field" means: A what is measured; B the grid's leading column.
