@@ -202,7 +202,7 @@ export class SherpaProvider extends SherpaElement {
     this.#limit = on;
     for (const source of Object.values(this.#sources)) source.limitOptions = on;
     // Every bar and panel offers the switch in its ⋮, showing where it stands. TODO 178.
-    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#offerAll();
   }
 
   /** While Limit is on, a value it rules out is HIDDEN, not greyed — on every
@@ -212,7 +212,7 @@ export class SherpaProvider extends SherpaElement {
   }
   set hideUnmatched(on: boolean) {
     this.#hide = on;
-    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#offerAll();
   }
   /** The app's choice: hide what Limit rules out. */
   #hide = false;
@@ -224,7 +224,7 @@ export class SherpaProvider extends SherpaElement {
   }
   set results(on: boolean) {
     this.#results = on;
-    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#offerAll();
   }
   /** The app's choice: say the match counts. */
   #results = true;
@@ -236,7 +236,7 @@ export class SherpaProvider extends SherpaElement {
   }
   set countApplied(on: boolean) {
     this.#countApplied = on;
-    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#offerAll();
   }
   /** The app's choice: count the filters applied. */
   #countApplied = false;
@@ -249,7 +249,7 @@ export class SherpaProvider extends SherpaElement {
   }
   set savedMenu(on: boolean) {
     this.#savedMenu = on;
-    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#offerAll();
   }
   /** The app's choice: a Saved menu of its own. */
   #savedMenu = false;
@@ -263,7 +263,7 @@ export class SherpaProvider extends SherpaElement {
   }
   set saveAnyScope(on: boolean) {
     this.#saveAny = on;
-    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#offerAll();
     this.#pages.savesChanged();
   }
   /** The app's choice: saved filters at any scope. */
@@ -276,7 +276,7 @@ export class SherpaProvider extends SherpaElement {
   }
   set switchable(on: boolean) {
     this.#switchable = on;
-    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#offerAll();
   }
   /** The app's choice: the Switch — or null, each bar's own. */
   #switchable: boolean | null = null;
@@ -288,7 +288,7 @@ export class SherpaProvider extends SherpaElement {
   }
   set contextLabel(on: boolean) {
     this.#contextLabel = on;
-    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#offerAll();
   }
   /** The app's choice: the View Context label. */
   #contextLabel = true;
@@ -300,7 +300,7 @@ export class SherpaProvider extends SherpaElement {
   }
   set sections(on: boolean) {
     this.#sections = on;
-    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#offerAll();
   }
   /** The app's choice: the section headings. */
   #sections = true;
@@ -312,7 +312,7 @@ export class SherpaProvider extends SherpaElement {
   }
   set highlight(on: boolean) {
     this.#highlight = on;
-    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#offerAll();
   }
   /** The app's choice: Highlight matches. */
   #highlight = false;
@@ -324,7 +324,7 @@ export class SherpaProvider extends SherpaElement {
   }
   set highlightOnHover(on: boolean) {
     this.#highlightHover = on;
-    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#offerAll();
     // …and a legend that picks: a rest on a row previews it. Will, TODO 495
     for (const el of this.#pickers) el.toggleAttribute('data-highlight-hover', on);
   }
@@ -353,7 +353,7 @@ export class SherpaProvider extends SherpaElement {
   }
   set singleApply(on: boolean) {
     this.#singleApply = on;
-    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#offerAll();
   }
   /** The app's choice: Single Apply & Discard. */
   #singleApply = true;
@@ -365,7 +365,7 @@ export class SherpaProvider extends SherpaElement {
   }
   set reorderFilters(on: boolean) {
     this.#reorder = on;
-    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#offerAll();
   }
   /** The app's choice: drag filters into a new order. */
   #reorder = false;
@@ -377,7 +377,7 @@ export class SherpaProvider extends SherpaElement {
   }
   set labelColumn(on: boolean) {
     this.#labelColumn = on;
-    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#offerAll();
   }
   /** The app's choice: headings in a column. */
   #labelColumn = true;
@@ -391,7 +391,7 @@ export class SherpaProvider extends SherpaElement {
   set countEveryValue(on: boolean) {
     this.#countEvery = on;
     for (const source of Object.values(this.#sources)) source.countEveryValue = on;
-    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#offerAll();
   }
   /** The app's choice: count every value. */
   #countEvery = false;
@@ -404,7 +404,7 @@ export class SherpaProvider extends SherpaElement {
   }
   set noneShowsAll(on: boolean) {
     this.#noneShowsAll = on;
-    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#offerAll();
   }
   /** The app's choice: nothing ticked shows every row. */
   #noneShowsAll = true;
@@ -416,7 +416,7 @@ export class SherpaProvider extends SherpaElement {
   }
   set headingGroup(on: boolean) {
     this.#headingGroup = on;
-    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#offerAll();
   }
   /** The app's choice: Group in a heading. */
   #headingGroup = true;
@@ -428,7 +428,7 @@ export class SherpaProvider extends SherpaElement {
   }
   set headingHover(on: boolean) {
     this.#headingHover = on;
-    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#offerAll();
   }
   /** The app's choice: heading buttons on hover. */
   #headingHover = true;
@@ -440,7 +440,7 @@ export class SherpaProvider extends SherpaElement {
   }
   set multiFieldColumns(on: boolean) {
     this.#multiField = on;
-    for (const el of this.#limited()) this.#offerLimit(el);
+    this.#offerAll();
   }
   /** The app's choice: multi-field columns. */
   #multiField = true;
@@ -503,6 +503,11 @@ export class SherpaProvider extends SherpaElement {
   /** Every control with a filter menu: a bar, a panel, a grid's headings. TODO 305 */
   #limited(): Element[] {
     return [...this.#asked.keys()].filter((el) => 'drawScope' in el || 'drawPresent' in el);
+  }
+
+  /** Every such control, told the app's filter settings again: a setting changed. */
+  #offerAll(): void {
+    for (const el of this.#limited()) this.#offerLimit(el);
   }
 
   /** One control, told the app's filter settings: Limit, and the counts. */
