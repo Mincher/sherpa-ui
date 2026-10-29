@@ -95,6 +95,12 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 30k | 554 | DEMOS (Will, 2026-10-29) — Customers, Sites, Region and Date Range are held at the VIEW Context scope: they cannot be moved down to a local scope. A local scope may still add these fields and their filters, but its options come from what the View scope's filter on that field allows | demos |
 | ⬜ | 30l | 555 | NODE EDITOR FOR QUERIES (Will, 2026-10-29) — view, edit and build a page's Query as nodes: Store, Source, Scope (its held fields as rows), Condition, Arrange (sort, group, search), Presentation, Component. Opened from the filter toolbar's overflow menu as "Node Editor (beta)". The editor ASKS: a change is a QueryRequest, as a chip's is. PLAN: docs/history/plan-78-query-editor.md (Q1–Q5; ❓ Q1 where it opens — A, a maximised overlay over the page). WAITS for 548 to be done (Will) | feature |
 | ⬜ | 30m | 556 | LATER, after 555's core (Will, 2026-10-29) — fuzzy AI nodes, to turn contextual processing into a decision-model-like output; and MCP, Tool, Skill, Context and Memory nodes. Kinds on the same engine (`runWorkflow`) | explore |
+| ⬜ | 30n | 557 | NODE EDITOR, AFTER the workflow is on the data layer (78 W2–W5, 555) (Will, 2026-10-29) — a connector's end dragged off a socket and dropped on another socket REROUTES it | feature |
+| ⬜ | 30o | 558 | NODE EDITOR, AFTER the workflow is on the data layer (78 W2–W5, 555) (Will, 2026-10-29) — a connector's end released over the bare canvas BREAKS the route; so does a click on a connector, then Delete or Backspace | feature |
+| ⬜ | 30p | 559 | NODE EDITOR, AFTER the workflow is on the data layer (78 W2–W5, 555) (Will, 2026-10-29) — a click on a blank part of the canvas deselects every node and shuts the overlay panel | feature |
+| ⬜ | 30q | 560 | NODE EDITOR, AFTER the workflow is on the data layer (78 W2–W5, 555) (Will, 2026-10-29) — a floating TOOLBAR at the canvas's top left: a horizontal group of icon buttons, in the style and offset of the canvas controls (bottom right). In it: a placeholder Save, then Undo and Redo | feature |
+| ⬜ | 30r | 561 | NODE EDITOR, AFTER the workflow is on the data layer (78 W2–W5, 555) (Will, 2026-10-29) — UNDO and REDO, the toolbar's (560): each edit is a plain function on the draft (plan-78-workflow-data §4), so each one can be stepped back and forward | feature |
+| ⬜ | 30s | 562 | NODE EDITOR, AFTER the workflow is on the data layer (78 W2–W5, 555) (Will, 2026-10-29) — a ZIP TIE tool in the toolbar (560). With it on, a line dragged across one or more connectors adds a zip tie, at right angles to them, that funnels them through it with a small gap between each. A dragged tie moves, and its connectors route through it as it moves. It can never go past the horizontal place of the nodes its SHORTEST tied connector joins. A connector may pass through any number of ties | feature |
 | ✅ | 30 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised. Will, 2026-10-27: A. DONE 2026-10-27: `open()` takes a `key`, and the outlet passes the Context's name: Views, saved filters, the kept Query and drafts are all kept under it. The `outlet-view-key` report is gone | bug |
 | ✅ | 31 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
 | ✅ | 32 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later). Probed 2026-10-27 in Demos Records (the View's Date chip, one month and a range): already right — the title left and f(x) at the end on row 1, the Month/Year group the full width on row 2. Nothing to change | look |
@@ -10716,6 +10722,12 @@ throws. `T-a-workflow-is-its-definition`; node tests
 `a-workflow-is-its-definition`. **Then Will (2026-10-29): queries in the Node
 Editor — TODO 555, after 548; AI and agent nodes — TODO 556, later.** W2–W5
 wait with 555: they share its binding, sockets and connectors.
+
+**Will, 2026-10-29 — queued for AFTER the workflow is on the data layer:**
+557 reroute a connector by dragging its end to another socket; 558 break one by
+releasing it over the canvas, or by Delete or Backspace on a clicked one; 559 a
+click on blank canvas deselects and shuts the panel; 560 a top-left canvas
+toolbar with a placeholder Save; 561 Undo and Redo; 562 the Zip Tie tool.
 
 ## L — The code review
 
