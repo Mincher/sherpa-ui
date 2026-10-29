@@ -116,7 +116,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 30zf | 575 | GRID (Will, 2026-10-29) — a column has a sensible max width in CSS `ch` units (about 200ch?), so a sub-grid's columns are not very wide; a min width the same way, where one is not set already | grid |
 | ⬜ | 30zg | 576 | GRID, for 570 (Will, 2026-10-29) — a row's open chevron is a TERTIARY button, so its hover shows a click there differs from a click on the row | grid |
 | ⬜ | 30zh | 577 | BUG (Will, 2026-10-29) — the Site column cannot be filtered, by its heading or its cells | bug |
-| ⬜ | 30zi | 578 | GRID, for 570 (Will, 2026-10-29) — a pivot row's sub-grid does not show the Primary column: every row in it has the same value, its row's. "That makes no sense" | grid |
+| ✅ | 30zi | 578 | GRID, for 570 (Will, 2026-10-29) — a pivot row's sub-grid does not show the Primary column: every row in it has the same value, its row's. "That makes no sense". DONE 2026-10-29: a pivot's sub-grid takes the grid's columns but its Primary | grid |
 | ⬜ | 30zj | 579 | GRID (Will, 2026-10-29) — a cell does not show a multi-value TAG of the field the grid groups by: its group heading says it already | grid |
 | ⬜ | 30zk | 580 | GRID, for 570 (Will, 2026-10-29) — multi-value cell tags go where their columns are: down to a pivot row's sub-grid when their columns are there, and back up to the main grid when not | grid |
 | ⬜ | 30zl | 581 | PRESENTATION (Will, 2026-10-29) — Limit and Hide work across the Primary → Secondary → Group chain: a field set on one link is ruled out in the others — greyed, or hidden while Hide is on. No field is on two links at once | feature |

@@ -539,8 +539,8 @@ test('a grid in a slot: its Primary leads its columns; a Secondary makes it a PI
   // Secondary plan: a row a day, a column a plan, row counts, and their total.
   expect(r['pivot']!.heads).toEqual(['Day', 'Free', 'Pro', 'Enterprise', 'Total']);
   expect(r['pivot']!.rows).toEqual(['Mon|0|1|1|2', 'Tue|1|0|0|1', 'Wed|0|1|0|1']);
-  // Its Monday row opens on Monday's own rows, under the grid's own columns.
-  expect(r['opened']!.sub).toEqual([['Pro|Mon|EU', 'Enterprise|Mon|US']]);
+  // Its Monday row opens on Monday's own rows, under the grid's own columns but its Primary. TODO 578
+  expect(r['opened']!.sub).toEqual([['Pro|EU', 'Enterprise|US']]);
   // Group by region: a section a region, each its own days.
   expect(r['grouped']!.groups).toEqual(['EU', 'US']);
   expect(r['grouped']!.rows).toEqual(['Mon|0|1|0|1', 'Tue|1|0|0|1', 'Mon|0|0|1|1', 'Wed|0|1|0|1']);
@@ -613,10 +613,10 @@ test('a pivot filters as its grid does: its Primary heading and cells, and its r
   })()`) as Record<string, unknown> & Record<'first' | 'region' | 'tue', { region: string[] | null; day: string[] | null; heads: string[]; rows: string[]; sub: string[] | null; subRegion: boolean | null }>;
   // Its Primary filters; its counts do not.
   expect(r['first']!.heads).toEqual(['Day*', 'Free', 'Pro', 'Enterprise', 'Total']);
-  expect(r['first']!.sub).toEqual(['Pro|Mon|EU', 'Enterprise|Mon|US']);
+  expect(r['first']!.sub).toEqual(['Pro|EU', 'Enterprise|US']);
   // A sub-grid's cell filters the grid's rows: EU only, its row still open, its heading on.
   expect(r['pressed']).toBe(true);
-  expect(r['region']).toMatchObject({ region: ['EU'], rows: ['Mon|0|1|1', 'Tue|1|0|1'], sub: ['Pro|Mon|EU'], subRegion: true });
+  expect(r['region']).toMatchObject({ region: ['EU'], rows: ['Mon|0|1|1', 'Tue|1|0|1'], sub: ['Pro|EU'], subRegion: true });
   expect(r['count']).toBe(false);
   // The pivot's own Day cell: Tuesday, over EU.
   expect(r['day']).toBe(true);

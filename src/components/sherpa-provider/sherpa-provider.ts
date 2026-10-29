@@ -1373,7 +1373,8 @@ export class SherpaProvider extends SherpaElement {
         [total]: s.value,
       }))),
       detail: {
-        columns: own.columns ?? [],
+        // Not its Primary: every row under a row holds that row's. Will, TODO 578
+        columns: (own.columns ?? []).filter((c) => c.field !== spec.segment),
         ...(own.key ? { key: own.key } : {}),
         rows: Object.fromEntries(summed.flatMap((set) => groupRows(set.rows, spec.segment).map((g) => [keyOf(set.key, g.key), g.rows]))),
       },
