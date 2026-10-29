@@ -321,7 +321,7 @@ export class DataSource extends EventTarget {
     if (holds(at) !== holds(this.#applied)) return false;
     // How the rows are arranged, wherever: a sort switched off is no sort.
     const arranged = (q: Query): string => {
-      const { sort, group, search } = arrangementOf(q);
+      const { sort, group, search } = arrangementOf(q, this.#mine);
       return JSON.stringify([sort, group, search]);
     };
     return arranged(at) === arranged(this.#applied);

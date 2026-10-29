@@ -261,7 +261,7 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
     case 'sort-change': {
       // None: no sort at all, not one kept to resume. TODO 407
       if (detail['clear'] === true) {
-        source.query.clearSort();
+        source.query.clearSort(arranger(detail, bind));
         return;
       }
       const field = detail['field'];

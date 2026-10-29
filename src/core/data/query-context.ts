@@ -895,10 +895,11 @@ export class QueryContext extends EventTarget {
           else this.#select(field, []);
         }
       }
-      const { scope } = arrangementOf(this.#live.applied);
-      if (options.organise && scope && scopes.includes(scope)) {
-        this.clearSort();
-        this.setGroup(null);
+      // The arrangement in a scope it resets, never another source's. TODO 523 S3
+      const { scope } = arrangementOf(this.#live.applied, (id) => scopes.includes(id));
+      if (options.organise && scope) {
+        this.clearSort(scope);
+        this.setGroup(null, scope);
       }
     });
   }
@@ -1001,23 +1002,29 @@ export class QueryContext extends EventTarget {
     if (field) this.#arrange({ sort: [{ field, direction }], sortSuspended: undefined }, scope);
     else {
       // A second suspend in a row must not overwrite the memory with nothing.
-      const live = arrangementOf(this.#live.applied).sort[0];
+      const live = this.#arrangedFor(scope).sort[0];
       this.#arrange({ sort: [], ...(live ? { sortSuspended: live } : {}) }, scope);
     }
     this.#tell({ kind: 'arranged', group: false });
   }
 
-  /** Resume the suspended sort. No-op when there is none. */
-  resumeSort(): void {
-    const held = arrangementOf(this.#live.applied).sortSuspended;
+  /** Resume the suspended sort — the scope's source's. No-op when there is none. */
+  resumeSort(scope?: string): void {
+    const held = this.#arrangedFor(scope).sortSuspended;
     if (!held) return;
-    this.setSort(held.field, held.direction ?? 'asc');
+    this.setSort(held.field, held.direction ?? 'asc', scope);
   }
 
   /** Forget the sort entirely — the gesture that is NOT a suspend. */
-  clearSort(): void {
-    this.#arrange({ sort: [], sortSuspended: undefined });
+  clearSort(scope?: string): void {
+    this.#arrange({ sort: [], sortSuspended: undefined }, scope);
     this.#tell({ kind: 'arranged', group: false });
+  }
+
+  /** The arrangement of the source that draws in `scope`: another's is not read. TODO 523 S3 */
+  #arrangedFor(scope?: string): Arrangement {
+    const theirs = this.#theirs(scope);
+    return arrangementOf(this.#live.applied, (id) => !theirs(id));
   }
 
   /** Group by a field, or stop. A grid draws it; the Query holds it. */
@@ -1121,8 +1128,7 @@ export class QueryContext extends EventTarget {
   #arrange(next: ArrangeEdit, scope?: string): void {
     /* ONE arranging scope per SOURCE: a scope another source draws a page in
        keeps its own. With one source, every scope is its. 366 step 25 */
-    const owner = scope ? this.#owner(scope) : undefined;
-    const theirs = (id: string): boolean => !!owner && !!this.#owner(id) && this.#owner(id) !== owner;
+    const theirs = this.#theirs(scope);
     const now = arrangementOf(this.#live.applied, (id) => !theirs(id));
     const at = scope ?? now.scope ?? VIEW;
     const sort = next.sort ?? now.sort;
@@ -1152,6 +1158,12 @@ export class QueryContext extends EventTarget {
   /** The source that draws a page of rows in a scope; none for a scope of the page's. */
   #owner(scope: string): QueryMember | undefined {
     return [...this.#members].find((m) => m.pagedIn(scope));
+  }
+
+  /** Is a scope ANOTHER source's than the one that draws in `scope`? None given, none is. */
+  #theirs(scope?: string): (id: string) => boolean {
+    const owner = scope ? this.#owner(scope) : undefined;
+    return (id) => !!owner && !!this.#owner(id) && this.#owner(id) !== owner;
   }
 
   /** A View's plain conditions as readings: each field by the member that knows it. */

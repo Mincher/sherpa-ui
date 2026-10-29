@@ -88,6 +88,24 @@ test('each source sorts its own rows', async () => {
   assert.deepEqual(customers.rows.map((r) => r.name), ['Contoso', 'Litware', 'Tailspin']);
 });
 
+test('a clear, a suspend, a resume and a reset touch only their own source\'s sort (TODO 523 S3)', async () => {
+  const { query, alerts, customers } = await page();
+  query.setSort('severity', 'desc', 'alerts');
+  query.setSort('name', 'asc', 'customers');
+  const sorts = () => [alerts.state.sort, customers.state.sort].map((s) => s.map((one) => one.field).join() || '-');
+  // Suspended in Customers: Alerts keeps its sort, and Customers resumes its OWN.
+  query.setSort(null, 'asc', 'customers');
+  assert.deepEqual(sorts(), ['severity', '-']);
+  query.resumeSort('customers');
+  assert.deepEqual(sorts(), ['severity', 'name']);
+  query.clearSort('alerts');
+  assert.deepEqual(sorts(), ['-', 'name']);
+  query.setSort('severity', 'desc', 'alerts');
+  // A reset of Customers clears its arrangement only.
+  query.reset(['customers'], { organise: true });
+  assert.deepEqual(sorts(), ['severity', '-']);
+});
+
 test('bind ids never clash across the sources', async () => {
   const { alerts, customers } = await page();
   const a = alerts.debugState().bound.map((b) => b.id);
