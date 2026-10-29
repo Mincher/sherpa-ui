@@ -62,7 +62,10 @@ export function pairAnchor(name: string, ...els: HTMLElement[]): void {
 
 /** Write a tip's label and value: a number prints EXACTLY, never compacted as
  *  the axis is; text prints as given. TRAP T-a-tooltip-is-not-an-axis */
-export function fillTip(tip: ParentNode, label: string, value: number | string): void {
+export function fillTip(tip: ParentNode, label: string, value: number | string, parts?: readonly { label: string; value: number }[]): void {
   tip.querySelector('.chart-tip-label')!.textContent = label;
   tip.querySelector('.sherpa-tip-value')!.textContent = typeof value === 'number' ? formatValue(value) : value;
+  // …and a grouped segment's parts, each by its group value. TODO 548
+  const said = tip.querySelector('.chart-tip-parts');
+  if (said) said.textContent = (parts ?? []).map((p) => `${p.label} ${formatValue(p.value)}`).join(' · ');
 }

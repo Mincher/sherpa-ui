@@ -71,6 +71,7 @@ export class SherpaBarchart extends SherpaElement {
   #draw(): void {
     const bars = this.$('.bars');
     const tpl = this.$<HTMLTemplateElement>('template.bar-tpl');
+    const partTpl = this.$<HTMLTemplateElement>('template.bar-part-tpl');
     if (!bars || !tpl) return;
 
     const shown = this.#data.map((d, i) => ({ d, i }));
@@ -117,11 +118,18 @@ export class SherpaBarchart extends SherpaElement {
       bar.style.setProperty('--_h', `${Math.abs(at - zero)}%`);
       bar.style.setProperty('--_base', `${zero}%`);
       if (d.matched != null) bar.style.setProperty('--_m', `${d.value ? Math.min(100, Math.abs(d.matched / d.value) * 100) : 0}%`);
+      // GROUPED: each part its share of the bar, in the bar's own colour. TODO 548
+      bar.querySelector('.bar-parts')?.replaceChildren(...(d.parts ?? []).flatMap((p) => {
+        const one = this.clone(partTpl);
+        one?.style.setProperty('--_p', String(Math.abs(p.value)));
+        return one ? [one] : [];
+      }));
       paintSeries(bar, i, d.colorIndex);
       pairAnchor(`--bar-mark-${i}`, col);
-      fillTip(col, d.label, d.value);
+      fillTip(col, d.label, d.value, d.parts);
       // The tip is hidden until hover, so it names nothing: the bar says it itself.
-      col.setAttribute('aria-label', `${d.label}: ${col.querySelector('.sherpa-tip-value')!.textContent}`);
+      const parts = col.querySelector('.chart-tip-parts')!.textContent;
+      col.setAttribute('aria-label', `${d.label}: ${col.querySelector('.sherpa-tip-value')!.textContent}${parts ? ` (${parts})` : ''}`);
       bars.appendChild(col);
     }
     // A SIBLING of the plot, so it lands below the baseline.

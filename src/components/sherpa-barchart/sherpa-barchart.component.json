@@ -141,6 +141,11 @@
                 "children": [
                   {
                     "el": "span",
+                    "class": "bar-parts",
+                    "part": "bar-parts"
+                  },
+                  {
+                    "el": "span",
                     "class": "bar-match",
                     "part": "bar-match"
                   }
@@ -162,10 +167,25 @@
                   {
                     "el": "span",
                     "class": "sherpa-tip-value"
+                  },
+                  {
+                    "el": "span",
+                    "class": "chart-tip-parts"
                   }
                 ]
               }
             ]
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "bar-part-tpl",
+        "children": [
+          {
+            "el": "span",
+            "class": "bar-part",
+            "part": "bar-part"
           }
         ]
       },

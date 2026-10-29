@@ -113,6 +113,31 @@
     var(--sherpa-display-mode-border-rounding-sm, 2px);
 }
 
+/* GROUPED: a bar's parts, stacked from its base in its own colour, a line between
+   each — they have no key of their own; the tip names them. Will, TODO 548 */
+.bar-parts { display: none; }
+.bar:has(> .bar-parts:not(:empty)) { position: relative; }
+.bar-parts:not(:empty) {
+  display: flex;
+  flex-direction: column-reverse;
+  position: absolute;
+  inset: 0;
+}
+.bar-col[data-sign="-"] .bar-parts { flex-direction: column; }
+.bar-part { flex: var(--_p, 1) 1 0; min-block-size: 0; }
+/* The line sits on the edge a part shares with the one before it: below it,
+   as the stack runs up from the base; above it, on a bar that hangs down. */
+.bar-part + .bar-part {
+  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid
+    var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
+}
+.bar-col[data-sign="-"] .bar-part + .bar-part {
+  border-block-end: 0;
+  border-block-start: var(--sherpa-display-mode-border-width-base, 1px) solid
+    var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
+}
+.chart-tip-parts:empty { display: none; }
+
 /* HIGHLIGHTING: the whole bar pale, the part the driver matches in the series'
    full colour, from the zero line. Will, TODO 441 */
 .bar-match { display: none; }

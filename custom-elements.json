@@ -856,6 +856,12 @@
               "name": "bar-match"
             },
             {
+              "name": "bar-part"
+            },
+            {
+              "name": "bar-parts"
+            },
+            {
               "name": "bars"
             },
             {

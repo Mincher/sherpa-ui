@@ -397,3 +397,37 @@ test('a bar draws the part the highlight matches, and none without one', async (
   r.marked.parts.forEach((p, i) => expect(Math.abs(p - [25, 100, 0][i]!)).toBeLessThanOrEqual(2));
   expect(r.plain).toEqual({ on: false, parts: [0, 0] });
 });
+
+test('a grouped bar stacks its parts in its own colour, each its share; the tip and the name list them (Will, TODO 548)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<HTMLElement & { populate(d: unknown): Promise<void> }>('sherpa-barchart', undefined, { style: 'inline-size: 400px; block-size: 240px' });
+    await el.populate([
+      { label: 'active', value: 3, colorIndex: 1, parts: [{ label: 'Free', value: 1, colorIndex: 1 }, { label: 'Pro', value: 2, colorIndex: 2 }] },
+      { label: 'trial', value: 1, colorIndex: 2 },
+    ]);
+    await window.__settled();
+    const cols = [...el.shadowRoot!.querySelectorAll<HTMLElement>('.bar-col')];
+    const parts = [...cols[0]!.querySelectorAll<HTMLElement>('.bar-part')];
+    const bar = cols[0]!.querySelector('.bar')!.getBoundingClientRect();
+    const heights = parts.map((p) => Math.round(p.getBoundingClientRect().height));
+    return {
+      parts: parts.length, none: cols[1]!.querySelectorAll('.bar-part').length,
+      // From the base up: Free (1 of 3), then Pro (2 of 3).
+      share: heights.map((h) => Math.round((h / bar.height) * 3)),
+      bottomFirst: parts[0]!.getBoundingClientRect().bottom >= parts[1]!.getBoundingClientRect().bottom,
+      // The line is on the edge the parts SHARE: Pro's bottom, never its top.
+      line: [getComputedStyle(parts[1]!).borderBottomStyle, getComputedStyle(parts[1]!).borderTopStyle],
+      tip: cols[0]!.querySelector('.chart-tip-parts')!.textContent,
+      name: cols[0]!.getAttribute('aria-label'),
+      plain: cols[1]!.getAttribute('aria-label'),
+    };
+  });
+  expect(r.parts).toBe(2);
+  expect(r.none).toBe(0);
+  expect(r.share).toEqual([1, 2]);
+  expect(r.bottomFirst).toBe(true);
+  expect(r.line).toEqual(['solid', 'none']);
+  expect(r.tip).toBe('Free 1 · Pro 2');
+  expect(r.name).toBe('active: 3 (Free 1 · Pro 2)');
+  expect(r.plain).toBe('trial: 1');
+});

@@ -53,15 +53,21 @@
       <!-- The BAR is the anchor, not the column: a .bar-col is the full plot
            height, so anchoring to it puts the tip far above a short bar. -->
       <span class="bar sherpa-anchor-el" part="bar">
+        <!-- Grouped, its parts, stacked from its base. TODO 548 -->
+        <span class="bar-parts" part="bar-parts"></span>
         <!-- The part the highlight's driver matches. TODO 441 -->
         <span class="bar-match" part="bar-match"></span>
       </span>
       <span class="sherpa-tip" popover="manual" part="tip" role="tooltip">
         <span class="chart-tip-label"></span>
         <span class="sherpa-tip-value"></span>
+        <span class="chart-tip-parts"></span>
       </span>
     </button>
   </template>
+
+  <!-- One part of a grouped bar: its share of the bar. TODO 548 -->
+  <template class="bar-part-tpl"><span class="bar-part" part="bar-part"></span></template>
 
   <template class="xlabel-tpl">
     <span class="bar-label sherpa-truncate" part="bar-label" data-text="label"></span>
