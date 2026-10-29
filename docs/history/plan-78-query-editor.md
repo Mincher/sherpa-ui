@@ -70,6 +70,10 @@ editor for THAT page's Query.
 |---|---|---|
 | **Q1** Where the editor shows | A maximised overlay panel over the page: the page stays behind it, live, and shut, the reader is where they were | It goes to the Node Editor Context with this page's Query |
 
+The inspector does what the workflow's does (plan-78-workflow-data.md §6b):
+every row of the selected node again — a scope's held fields, a condition's
+operator and value — each marked when a route drives it or takes its value.
+
 ## 5. The places of the nodes
 
 A Query has no places. The editor lays the graph out in columns by depth (as

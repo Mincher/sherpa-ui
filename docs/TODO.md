@@ -99,7 +99,7 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ⬜ | 30o | 558 | NODE EDITOR, AFTER the workflow is on the data layer (78 W2–W5, 555) (Will, 2026-10-29) — a connector's end released over the bare canvas BREAKS the route; so does a click on a connector, then Delete or Backspace | feature |
 | ⬜ | 30p | 559 | NODE EDITOR, AFTER the workflow is on the data layer (78 W2–W5, 555) (Will, 2026-10-29) — a click on a blank part of the canvas deselects every node and shuts the overlay panel | feature |
 | ⬜ | 30q | 560 | NODE EDITOR, AFTER the workflow is on the data layer (78 W2–W5, 555) (Will, 2026-10-29) — a floating TOOLBAR at the canvas's top left: a horizontal group of icon buttons, in the style and offset of the canvas controls (bottom right). In it: a placeholder Save, then Undo and Redo | feature |
-| ⬜ | 30r | 561 | NODE EDITOR, AFTER the workflow is on the data layer (78 W2–W5, 555) (Will, 2026-10-29) — UNDO and REDO, the toolbar's (560): each edit is a plain function on the draft (plan-78-workflow-data §4), so each one can be stepped back and forward | feature |
+| ⬜ | 30r | 561 | NODE EDITOR, AFTER the workflow is on the data layer (78 W2–W5, 555) (Will, 2026-10-29) — UNDO and REDO, the toolbar's (560): each edit is a plain function on the draft (plan-78-workflow-data §4), so each one can be stepped back and forward. Will: leverage the data layer's change history (`T-a-store-keeps-its-history`). It is FOLDED and cannot step back alone, but each update already holds the row before and after: an opt-in, capped JOURNAL there gives `store.undo()` and `store.redo()` to any store — the draft's, and a Records edit's. Plan §4 | feature |
 | ⬜ | 30s | 562 | NODE EDITOR, AFTER the workflow is on the data layer (78 W2–W5, 555) (Will, 2026-10-29) — a ZIP TIE tool in the toolbar (560). With it on, a line dragged across one or more connectors adds a zip tie, at right angles to them, that funnels them through it with a small gap between each. A dragged tie moves, and its connectors route through it as it moves. It can never go past the horizontal place of the nodes its SHORTEST tied connector joins. A connector may pass through any number of ties | feature |
 | ⬜ | 30t | 563 | LOOK, found 2026-10-29 (548) — the Records toolbar's Find box measures 34px tall; the buttons beside it (Add customer, Show as) are 32px, the base size. Measure, then make Find 32 | look |
 | ⬜ | 30u | 564 | CHARTS, after 548's core (Will, 2026-10-29) — a grouped chart's parts are a shade or tint of their segment's colour, one per group: the larger a part, the darker its shade | charts |
@@ -10731,6 +10731,15 @@ wait with 555: they share its binding, sockets and connectors.
 releasing it over the canvas, or by Delete or Backspace on a clicked one; 559 a
 click on blank canvas deselects and shuts the panel; 560 a top-left canvas
 toolbar with a placeholder Save; 561 Undo and Redo; 562 the Zip Tie tool.
+
+**Will, 2026-10-29 — added to the plan (§6b, in W3 and W4):** the inspector
+shows every row of the node again, as one value with the canvas's row; a row
+an incoming route drives is read-only and says "From …", and a row whose value
+goes out says "To …", with the socket marks beside it.
+**Will, 2026-10-29 — §5:** a text row with a routed input MIRRORS the
+incoming value and is read only; a change is made only by an operation node on
+the route. The row's own typed value is kept, hidden, and back when the route
+is cut.
 
 ## L — The code review
 

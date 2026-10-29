@@ -85,14 +85,40 @@ definition (in a Store) ──open──▶ DRAFT (SessionStore, this tab) ─�
 - **Save** writes the draft to the store and drops the draft. **Discard**
   drops the draft. The App Header's Save is this page's Save.
 
+### Undo and Redo — on the store's own history (Will, 2026-10-29; TODO 561)
+
+*"We implemented change history in the data layer a long time ago. We might be
+able to leverage that!"* — `StoreHistory` (`T-a-store-keeps-its-history`).
+
+- What it is today: one clock per store, and the number of the last change
+  that moved each field. It is FOLDED on purpose (Will, 2026-10-20): it never
+  grows, and it cannot list the changes one by one. So it cannot step back by
+  itself.
+- What it already holds: at each update, `BaseStore` has the OLD row and the
+  NEW one, to work out `changedFields`. That is all an undo needs.
+- So: an opt-in JOURNAL beside the history, at that same point — each change's
+  key, its row before and its row after, capped (say 100) — with
+  `store.undo()` and `store.redo()`, each an ordinary update, so the history,
+  the readers and the page move as they do for any edit. Off by default, so
+  no store pays for it unasked.
+- The workflow's DRAFT is then a row in a per-tab store (551), and Undo and
+  Redo are that store's. Any other page's store can switch the journal on and
+  have Undo too: a Records edit, say.
+
 ## 5. Routes
 
 - A route joins an output socket to an input socket of the same kind (value to
   value, object to object). An input takes one route; an output, many.
 - `checkWorkflow` reports what is wrong, never throws: a route to a gone
   socket, two routes into one input, a kind mismatch, a loop.
-- A CONNECTED input's field shows the value that comes in, and cannot be
-  typed in. Cut the route, and the typed value is back (off is not gone).
+- **A CONNECTED input MIRRORS its value, read only** (Will, 2026-10-29: *"Text
+  input rows should mirror any connected input values and be read only.
+  Changes can only be done via operations."*). Its field shows the value that
+  comes in, live, and cannot be typed in — on the canvas and in the
+  inspector. To change that value, the reader puts an OPERATION node on its
+  route (a Pick, a Filter, a transform); a typed value never overrides a
+  routed one. Cut the route, and the row's own typed value is back (off is
+  not gone): it is kept in the draft, and not shown while routed.
 
 ## 6. Running
 
@@ -102,6 +128,30 @@ definition (in a Store) ──open──▶ DRAFT (SessionStore, this tab) ─�
 - The page runs again after each edit, once per tick, and writes each value
   where it shows: the Value row's incoming value, Matches' count, the output
   in a grid.
+
+## 6b. The inspector: the node's rows, again (Will, 2026-10-29)
+
+*"Node row inputs should be duplicated in the overlay panel properties along
+with some indication if they are driven by an incoming value and sending an
+outcoming value."*
+
+- Under the node's own properties (Name, Description, X, Y), the inspector
+  shows EVERY ROW of the node, in its order: the same field (text, select or
+  number), with the same label and value. A row with no field shows its value
+  read-only (Matches: 37).
+- **One owner.** The row on the canvas and its copy in the inspector are two
+  views of ONE value in the draft. Each reports an edit to the draft, and both
+  draw what the draft says. Neither copies the other.
+- **Driven by an incoming value**: the row's input socket has a route. Its
+  field MIRRORS the incoming value, read only (§5) — a change is made by an
+  operation on the route, never here — and it says where the value comes from: an input socket mark before the field, and the words
+  "From Value › Value" under it. Cut the route, and the typed value is back.
+- **Sending an outgoing value**: the row's output socket has a route. An
+  output socket mark after the field, and the words "To Filter › Value",
+  one line per route.
+- The marks are the canvas's own socket shapes, a circle for a value and a
+  diamond for an object, filled when routed. The words say the same thing, so
+  the state never rests on a shape alone.
 
 ## 7. The decisions — Will
 
@@ -118,8 +168,8 @@ definition (in a Store) ──open──▶ DRAFT (SessionStore, this tab) ─�
 |---|---|---|
 | W1 | `schemas/workflow.v1.json`; `workflow.ts`: the types, the kinds as data, `checkWorkflow` | node tests: a good definition passes; each fault is reported |
 | W2 | Demos loads `active-customers.json`; the nodes, rows and routes are DRAWN from it; Condition from `OP_LABELS`, Key from the field catalogue | the sandbox looks as now, from JSON; Chromium spec |
-| W3 | `workflow-edits.ts`; the draft in `SessionStore` (551); Save and Discard | a move, a value and a route survive a reload; a new session starts from the definition; Save keeps them |
-| W4 | `sherpa-node-socket`, `sherpa-connector`; connect and cut, by pointer and by keys; a connected field shows its input | Chromium spec; a11y |
+| W3 | `workflow-edits.ts`; the draft as a row in a per-tab store (551) — or in `SessionStore`, if the journal waits; Save and Discard; the inspector's copy of each row (§6b), writing the draft | a move, a value and a route survive a reload; a new session starts from the definition; Save keeps them |
+| W4 | `sherpa-node-socket`, `sherpa-connector`; connect and cut, by pointer and by keys; a connected field shows it — on the canvas and in the inspector, with its From and To (§6b)s input | Chromium spec; a11y |
 | W5 | `runWorkflow`; live values in the rows; the output in a grid | node tests over the customers' rows; the counts match a Records filter of the same clause |
 
 Not in this plan: running on a server (TODO 170 waits for Will), and a
