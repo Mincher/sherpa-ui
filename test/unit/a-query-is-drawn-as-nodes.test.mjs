@@ -15,7 +15,11 @@ const { readingsOf } = await import(new URL('where.js', core));
 
 const definition = {
   v: 1, id: 'records',
-  source: { store: 'customers', pageSize: 25, search: ['name', 'email'], fields: { region: { label: 'Region' }, status: { label: 'Status' } } },
+  source: {
+    store: 'customers', pageSize: 25, search: ['name', 'email'],
+    fields: { region: { label: 'Region' }, status: { label: 'Status' } },
+    scopes: { view: { label: 'View Context' } },
+  },
 };
 const query = {
   v: 1,
@@ -31,6 +35,9 @@ const query = {
 const components = [
   { id: 'grid', label: 'Customer records', scope: 'data' },
   { id: 'r-bar', label: 'By status', kind: 'bar' },
+  // Two charts on the View: each its own Presentation, of its own kind.
+  { id: 'r-donut', label: 'By plan', kind: 'donut', scope: 'view' },
+  { id: 'r-line', label: 'Over time', scope: 'view' },
 ];
 const graph = queryGraph(query, definition, { components });
 const node = (id) => graph.nodes.find((n) => n.id === id);
@@ -39,12 +46,13 @@ const values = (id) => Object.fromEntries(node(id).rows.map((r) => [r.name, r.va
 test('the Records page\'s Query: Store, Source, each scope, its conditions, Arrange, Presentation, each component', () => {
   assert.deepEqual(graph.nodes.map((n) => `${n.kind}:${n.id}`), [
     'store:store', 'source:source',
-    'scope:scope-view', 'condition:when-view-region',
+    'scope:scope-view', 'condition:when-view-region', 'presentation:show-r-donut', 'component:component-r-donut', 'component:component-r-line',
     'scope:scope-data', 'condition:when-data-status', 'arrange:arrange-data', 'component:component-grid',
     'scope:scope-r-bar', 'presentation:show-r-bar', 'component:component-r-bar',
   ]);
   assert.deepEqual(graph.routes.map((r) => `${r.from} → ${r.to}`), [
     'store → source', 'source → scope-view', 'when-view-region → scope-view/region',
+    'scope-view → show-r-donut', 'show-r-donut → component-r-donut', 'scope-view → component-r-line',
     'scope-view → scope-data', 'when-data-status → scope-data/status', 'scope-data → arrange-data', 'arrange-data → component-grid',
     'scope-view → scope-r-bar', 'scope-r-bar → show-r-bar', 'show-r-bar → component-r-bar',
   ]);
@@ -54,7 +62,9 @@ test('each node shows what the Query and the definition say', () => {
   assert.equal(node('store').heading, 'customers');
   assert.deepEqual(values('source'), { pageSize: 25, search: 'name, email', applyOn: 'change' });
   assert.deepEqual(node('scope-view').rows.map((r) => [r.name, r.label, r.input]), [['region', 'Region', 'value'], ['created', 'created', 'value']]);
-  assert.deepEqual([node('scope-data').heading, node('scope-r-bar').heading], ['data', 'By status']);
+  // A scope's name is the definition's, else its one component's, else its id.
+  assert.deepEqual([node('scope-view').heading, node('scope-data').heading, node('scope-r-bar').heading], ['View Context', 'Customer records', 'By status']);
+  assert.equal(values('show-r-donut').kind, 'donut');
   assert.deepEqual(values('when-view-region'), { field: 'region', op: 'in', value: 'EMEA, APAC' });
   assert.deepEqual([node('when-view-region').heading, node('when-data-status').description], ['Region', 'Off: kept, not applied.']);
   assert.deepEqual(values('arrange-data'), { sort: 'name', direction: 'desc', group: 'plan', search: undefined });

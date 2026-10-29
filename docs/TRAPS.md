@@ -18812,9 +18812,19 @@ change made in it is a `QueryRequest`, as a chip's is.
 - **Laid out by depth**, in columns: conditions left of their scope, the View's
   scopes right of it. The reader moves what overlaps.
 
+- **The page passes its components** (`facts.components`): a source keeps its
+  binds private. Each chart gets its own Presentation node: its slot's, where
+  the scope is its own, else its definition's kind. A scope is named by the
+  definition, else by the one component that reads it.
+- **`drawGraph` places a node ONCE**; after that its place is the reader's, and
+  a redraw only updates what it shows. Its fields are read only until Q3: a
+  change is a `QueryRequest`, never a write into the field.
+
 - Site: `src/core/data/query-graph.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/a-query-is-drawn-as-nodes.test.mjs`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `test/e2e/reforged-node-graph.spec.ts`
 
 ### T-an-app-is-its-definition
 

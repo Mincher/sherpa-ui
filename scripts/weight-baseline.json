@@ -1,11 +1,11 @@
 {
   "app.js": {
-    "js": 474917,
-    "files": 64,
+    "js": 597352,
+    "files": 79,
     "fetched": 0
   },
   "components.js": {
-    "js": 947105,
+    "js": 947395,
     "files": 116,
     "fetched": 211883
   },
@@ -255,7 +255,7 @@
     "fetched": 0
   },
   "components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js": {
-    "js": 563345,
+    "js": 563635,
     "files": 52,
     "fetched": 0
   },
@@ -350,13 +350,13 @@
     "fetched": 0
   },
   "data.js": {
-    "js": 164324,
+    "js": 164496,
     "files": 42,
     "fetched": 0
   },
   "index.js": {
-    "js": 1145764,
-    "files": 160,
+    "js": 1149802,
+    "files": 161,
     "fetched": 211883
   }
 }

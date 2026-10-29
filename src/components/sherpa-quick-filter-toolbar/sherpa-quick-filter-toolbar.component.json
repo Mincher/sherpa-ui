@@ -833,6 +833,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-node-editor",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "show \"Node Editor (beta)\" in the ⋮ menu: the host opens the page's Query as nodes. Will, TODO 555"
+    },
+    {
+      "$type": "prop",
       "name": "data-nothing-to-reset",
       "type": "boolean",
       "observed": true,
@@ -1268,6 +1277,13 @@
       "$type": "event",
       "name": "ai-filter-request",
       "description": "Suggest filters was pressed.",
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "$type": "event",
+      "name": "node-editor-open",
+      "description": "Node Editor (beta) was picked in the ⋮ menu: the host opens the page's Query as nodes.",
       "bubbles": true,
       "composed": true
     }

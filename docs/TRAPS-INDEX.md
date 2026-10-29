@@ -766,7 +766,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (112)
+## SherpaElement and the shared sheets (113)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -873,6 +873,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-temporal-is-the-date-model](TRAPS.md#t-temporal-is-the-date-model) — temporal
 - [T-the-app-layer-is-opt-in](TRAPS.md#t-the-app-layer-is-opt-in) — components, index
 - [T-the-base-class-names-nothing-visual](TRAPS.md#t-the-base-class-names-nothing-visual) — sherpa-element
+- [T-the-node-editor-asks-the-query](TRAPS.md#t-the-node-editor-asks-the-query) — node-graph
 - [T-the-shared-vocabulary-is-declared-once](TRAPS.md#t-the-shared-vocabulary-is-declared-once) — sherpa-element
 - [T-the-templates-text-is-the-default](TRAPS.md#t-the-templates-text-is-the-default) — sherpa-element
 - [T-the-text-is-in-the-js](TRAPS.md#t-the-text-is-in-the-js) — templater

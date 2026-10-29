@@ -19,6 +19,8 @@ export {
   type PersistOptions as SessionPersistOptions,
 } from './core/browser/session.js';
 export { bindSettings, followSettings, type Setting } from './core/ui/bind-settings.js';
+/* A graph of nodes on a canvas, and a page's Query kept drawn there — the Node Editor. TODO 555 */
+export { bindQueryEditor, drawGraph, type QueryEditorOptions } from './core/ui/node-graph.js';
 // Saved Views: the reader's own, the View chip's options, a pick applied.
 export {
   persistView, clearViewState, applyViewSnapshot, captureView,

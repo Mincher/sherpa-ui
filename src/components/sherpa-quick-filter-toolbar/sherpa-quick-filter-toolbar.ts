@@ -150,6 +150,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-saveable': { type: 'boolean', kind: 'style' },
     /* Suggest filters, left of Edit. Will, TODO 527 */
     'data-suggest': { type: 'boolean', kind: 'style' },
+    /* "Node Editor (beta)" in the ⋮ menu: the host opens the page's Query as nodes. Will, TODO 555 */
+    'data-node-editor': { type: 'boolean', kind: 'style' },
     // Its source fetches from outside: menus wait for Apply. TRAP T-commit-follows-select-mode
     'data-remote': { type: 'boolean', kind: 'behaviour' },
     'data-apply-on': DATA_PROPS['data-apply-on'],
@@ -2386,6 +2388,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       case 'suggest':
         this.emit('ai-filter-request', {});
         break;
+      case 'node-editor':
+        this.emit('node-editor-open', {});
+        break;
       default:
         // Reset all on view, and the save rows: the header's, as its column's. TODO 415
         this.#header.act(act);
@@ -2439,8 +2444,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const tail: MoreRow[] = [...(this.hasAttribute('data-suggest') && gone('suggest') ? [['suggest'] as const] : []),
       ...(gone('refresh') ? [['refresh'] as const] : [])];
     const saves = this.hasAttribute('data-saved-menu') ? [] : saveRows(this, this.#saved.applied);
+    // Last, apart: the page's Query as nodes, where the host offers it. Will, TODO 555
+    const editor: MoreRow[] = this.hasAttribute('data-node-editor') ? [['node-editor']] : [];
     // Reset is the Edit menu's. Will, TODO 454
-    openMore(this, this.root, trigger, [saves, extraRows(this), tail]);
+    openMore(this, this.root, trigger, [saves, extraRows(this), tail, editor]);
   }
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */

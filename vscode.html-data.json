@@ -2903,6 +2903,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-node-editor",
+          "description": "show \"Node Editor (beta)\" in the ⋮ menu: the host opens the page's Query as nodes. Will, TODO 555",
+          "valueSet": "v"
+        },
+        {
           "name": "data-nothing-to-reset",
           "description": "nothing is left to clear: Reset is inactive. Written by the provider. TODO 231.",
           "valueSet": "v"

@@ -140,9 +140,12 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     const top = id === VIEW;
     const where = whereOf(scope.readings);
     const fields = [...scope.holds, ...Object.keys(where).filter((f) => !scope.holds.includes(f))];
-    const own = components.find((c) => c.id === id);
+    const shows = components.filter((c) => scopeOf(c) === id);
+    // Its name: the definition's, else the one component that reads it.
+    const named = definition.source?.scopes?.[id]?.label
+      ?? (components.find((c) => c.id === id) ?? (shows.length === 1 ? shows[0] : undefined))?.label;
     const node = add(top ? 3 : 5, `scope-${id}`, 'scope', fields.map((f) => ({ name: f, label: label(f), input: 'value' })), {
-      heading: top ? 'View' : own?.label ?? id,
+      heading: named ?? (top ? 'View' : id),
       description: `${scope.holds.length} held${scope.suspended ? ' · filters off' : ''}`,
     });
     routes.push({ from: top || !view ? 'source' : `scope-${VIEW}`, to: node });
@@ -162,17 +165,20 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       }));
       routes.push({ from: node, to: out });
     }
-    const shows = components.filter((c) => scopeOf(c) === id);
-    const presented = scope.presentation ?? (shows.find((c) => c.kind) ? {} : undefined);
-    if (presented) {
-      const show = add(7, `show-${id}`, 'presentation', rowsOf('presentation', {
-        ...presented, kind: presented.kind ?? shows.find((c) => c.kind)?.kind,
-      }));
-      routes.push({ from: out, to: show });
-      out = show;
-    }
+    // Each component its own Presentation: its slot's, where the scope is its own, else its definition's.
     for (const c of shows) {
-      routes.push({ from: out, to: add(8, `component-${c.id}`, 'component', [], { heading: c.label }) });
+      const presented = c.id === id || shows.length === 1 ? scope.presentation : undefined;
+      const kind = presented?.kind ?? c.kind;
+      let to = out;
+      if (presented || kind) {
+        to = add(7, `show-${c.id}`, 'presentation', rowsOf('presentation', { ...presented, kind }));
+        routes.push({ from: out, to });
+      }
+      routes.push({ from: to, to: add(8, `component-${c.id}`, 'component', [], { heading: c.label }) });
+    }
+    // A slot's presentation with no component named to show it is still drawn.
+    if (scope.presentation && !shows.length) {
+      routes.push({ from: out, to: add(7, `show-${id}`, 'presentation', rowsOf('presentation', { ...scope.presentation })) });
     }
   }
 
