@@ -217,8 +217,8 @@
   pointer-events: none;
 }
 
-/* A Badge count, as Figma draws it: its text is the template's
-   .sherpa-text-mono-base, as sherpa-badge's is. */
+/* A Badge count, as Figma draws it: its edges and text are the template's
+   .sherpa-border-edges and .sherpa-text-mono-base, as sherpa-badge's are. */
 .count { display: none; }
 :host([data-count]) .count {
   display: inline-flex;
@@ -227,12 +227,7 @@
   min-inline-size: var(--sherpa-display-mode-size-sm, 16px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   padding-inline: var(--sherpa-display-mode-space-3xs, 2px);
-  border-style: solid;
   border-color: var(--sherpa-style-border-base, #b3b3c3);
-  border-block-start-width: var(--sherpa-border-top, 0.5px);
-  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
-  border-inline-start-width: var(--sherpa-border-left, 0.5px);
-  border-inline-end-width: var(--sherpa-border-right, 0.5px);
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-style-content-base, #0c0b11);

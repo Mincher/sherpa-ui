@@ -53,7 +53,7 @@
             },
             {
               "el": "span",
-              "class": "count sherpa-text-mono-base",
+              "class": "count sherpa-border-edges sherpa-text-mono-base",
               "part": "count",
               "attrs": {
                 "role": "img"
