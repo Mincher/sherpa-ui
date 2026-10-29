@@ -15,6 +15,9 @@
  * - Socket — A socket address, read: its node, and its row or none for the header's.
  * - socketOf — Read a socket address: `node`, the header's, or `node/row`.
  * - checkWorkflow — Check every node, kind and route; each fault reports. True when none is.
+ * - GraphRow — One row as drawn: its kind's parts, and the value it shows.
+ * - GraphNode — One node as drawn: its header, its sockets, its rows and its place.
+ * - DrawnGraph — Nodes and routes, ready to draw: a workflow's, or a page's Query.
  */
 import { report } from './report.js';
 
@@ -22,7 +25,7 @@ import { report } from './report.js';
 export type SocketCarries = 'value' | 'object';
 
 /** The field a row draws: text, a number, a select of keys, conditions or stores. */
-export type RowField = 'text' | 'number' | 'key' | 'condition' | 'direction' | 'store';
+export type RowField = 'text' | 'number' | 'key' | 'condition' | 'direction' | 'store' | 'presentation';
 
 /** One row a kind draws: its name, its label, its field and its sockets. */
 export interface RowKind {
@@ -189,4 +192,29 @@ export function checkWorkflow(
     report({ code: 'workflow-definition', message: `checkWorkflow: ${problem}.`, at: { workflow: workflow?.id } });
   }
   return !problems.length;
+}
+
+/** One row as drawn: its kind's parts, and the value it shows. */
+export interface GraphRow extends RowKind {
+  value?: unknown;
+}
+
+/** One node as drawn: its header, its sockets, its rows and its place. */
+export interface GraphNode {
+  id: string;
+  kind: string;
+  heading: string;
+  icon: string;
+  description?: string;
+  input?: SocketCarries;
+  output?: SocketCarries;
+  rows: readonly GraphRow[];
+  x: number;
+  y: number;
+}
+
+/** Nodes and routes, ready to draw: a workflow's, or a page's Query. */
+export interface DrawnGraph {
+  nodes: readonly GraphNode[];
+  routes: readonly WorkflowRoute[];
 }

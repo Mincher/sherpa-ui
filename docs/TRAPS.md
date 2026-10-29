@@ -18834,6 +18834,31 @@ routes between their sockets — checked by `schemas/workflow.v1.json` and by
 - Site: `src/data.ts`
 - Site: `test/unit/a-workflow-is-its-definition.test.mjs`
 
+### T-the-node-editor-asks-the-query
+
+**The Node Editor is one more VIEW of a page's Query, and it ASKS.** Will, TODO
+555; plan-78-query-editor.md. `queryGraph(query, definition, facts)` draws the
+Store, the Source, each scope with its held fields as rows, a Condition into
+each answered field, the scope's Arrange, its Presentation and its components
+— from the LIVE Query, each time it changes. It keeps no Query of its own; a
+change made in it is a `QueryRequest`, as a chip's is.
+
+- **Derived, not stored.** The same Query draws the same graph. Only the nodes'
+  places are the editor's (kept per tab). A second view that kept its own copy
+  of what the first answered caused six filter bugs (the old panel).
+- **A field is a ROW of the scope that holds it**, not a node: moving a field
+  between scopes is moving its row, as Send to View is. A field the View
+  answers but no bar holds still gets a row, so its condition has a socket.
+- **Conditions are read in the plain form** (`whereOf`,
+  `T-one-way-to-write-a-condition`), so the editor shows what the field filters
+  by, never what a control keeps for itself; an `off` one is kept, not applied.
+- **Laid out by depth**, in columns: conditions left of their scope, the View's
+  scopes right of it. The reader moves what overlaps.
+
+- Site: `src/core/data/query-graph.ts`
+- Site: `src/data.ts`
+- Site: `test/unit/a-query-is-drawn-as-nodes.test.mjs`
+
 ### T-an-app-is-its-definition
 
 **An app names its Contexts ONCE, in `app.json`** (TODO 190; Will, 183 choice

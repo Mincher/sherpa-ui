@@ -106,7 +106,12 @@ export {
   type WorkflowDefinition,
   type WorkflowNode,
   type WorkflowRoute,
+  type DrawnGraph,
+  type GraphNode,
+  type GraphRow,
 } from './core/data/workflow.js';
+/* A page's QUERY, drawn as nodes for the Node Editor. TODO 555 · TRAP T-the-node-editor-asks-the-query */
+export { QUERY_KINDS, queryGraph, type GraphComponent, type QueryGraphFacts } from './core/data/query-graph.js';
 /* An APP, set up from one JSON document. TRAP T-an-app-is-its-definition */
 export {
   checkApp,
