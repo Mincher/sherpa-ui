@@ -126,17 +126,12 @@
   margin-inline-start: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* The scope's name — "View Context" — over the View's first filter, as the
-   panel heads them. Clipped across, never above. Will, TODO 440 */
-:host([data-type="view"]:not([data-panel-mode])) .chips { overflow: clip visible; }
-:host([data-type="view"]:not([data-panel-mode])) .chips > .chip:nth-child(1 of [data-context]:not([data-persistent], [data-folded-away])) {
-  position: relative;
-}
+/* The scope's name — "View Context" — LEFT of the View's first filter, in the
+   row, as the panel heads them. Will, TODOs 440, 543 */
 :host([data-type="view"]:not([data-panel-mode], [data-no-context-label])) .chips > .chip:nth-child(1 of [data-context]:not([data-persistent], [data-folded-away]))::before {
   content: attr(data-context);
-  position: absolute;
-  inset-block-end: calc(100% + var(--sherpa-display-mode-space-2xs, 4px));
-  inset-inline-start: 0;
+  align-self: center;
+  margin-inline-end: var(--sherpa-display-mode-space-xs, 8px);
   color: var(--sherpa-style-content-secondary, #35353d);
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);

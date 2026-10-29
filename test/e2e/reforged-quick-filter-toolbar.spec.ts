@@ -2559,6 +2559,10 @@ test('a View bar sets its View chip apart by a divider, and names its scope over
       label: ['customer', 'region'].map((id) => getComputedStyle(chip(id), '::before').content),
     });
     const toolbar = read();
+    // LEFT of the chip, in the row: the chip's own box starts after it, on the same line. Will, TODO 543
+    const host = chip('customer').getBoundingClientRect();
+    const inner = chip('customer').shadowRoot!.querySelector('.chip')!.getBoundingClientRect();
+    const beside = { after: inner.left - host.left > 20, sameLine: Math.round(inner.top) === Math.round(host.top) };
     // The app's "off", from its provider. TODO 436
     el.setAttribute('data-no-context-label', '');
     const off = read().label[0];
@@ -2566,10 +2570,11 @@ test('a View bar sets its View chip apart by a divider, and names its scope over
     // Panel mode: the View chip alone, so neither.
     el.setAttribute('data-panel-mode', '');
     await window.__settled();
-    return { toolbar, off, panel: read() };
+    return { toolbar, beside, off, panel: read() };
   });
   // Will, TODOs 433 and 440
   expect(r.toolbar).toEqual({ divider: '""', centred: 'center', label: ['"View Context"', 'none'] });
+  expect(r.beside).toEqual({ after: true, sameLine: true });
   expect(r.off).toBe('none');
   expect(r.panel).toMatchObject({ divider: 'none', label: ['none', 'none'] });
 });

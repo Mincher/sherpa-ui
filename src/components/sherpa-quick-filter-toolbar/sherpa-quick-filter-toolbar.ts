@@ -490,7 +490,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  counted, for its whole answer. Will, TODO 459 */
   #hoverTarget(event: Event): { chip: HTMLElement; value?: string } | null {
     const chip = this.#chipOf(event);
-    if (!chip || chip.hasAttribute('data-persistent')) return null;
+    // On the chip's own box, outside it: the View Context label. TODO 543
+    if (!chip || chip.hasAttribute('data-persistent') || event.composedPath()[0] === chip) return null;
     const one = this.pathFind(event, '.value');
     if (one?.parentElement === chip && one.dataset['value']) return { chip, value: one.dataset['value'] };
     const row = this.pathFind(event, '.menu-row');
