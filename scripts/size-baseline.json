@@ -355,7 +355,7 @@
   "src/core/ui/icons/wireless-router.ts": 5,
   "src/core/ui/icons/workstation.ts": 5,
   "src/core/ui/mark-text.ts": 81,
-  "src/core/ui/more-menu.ts": 192,
+  "src/core/ui/more-menu.ts": 185,
   "src/core/ui/radio-group.ts": 21,
   "src/core/ui/render-icon.ts": 136,
   "src/core/ui/roving-focus.ts": 199,
@@ -419,7 +419,7 @@
   "src/components/sherpa-progress-step-tracker/sherpa-progress-step-tracker.css": 116,
   "src/components/sherpa-prompt-composer/sherpa-prompt-composer.css": 115,
   "src/components/sherpa-provider/sherpa-provider.css": 7,
-  "src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css": 515,
+  "src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css": 545,
   "src/components/sherpa-quick-filter/sherpa-quick-filter.css": 442,
   "src/components/sherpa-radial-chart/sherpa-radial-chart.css": 104,
   "src/components/sherpa-router/sherpa-router.css": 7,
@@ -450,7 +450,6 @@
   "src/core/sherpa-chart-frame.css": 73,
   "src/core/sherpa-chart-segments.css": 45,
   "src/core/sherpa-container-regions.css": 38,
-  "src/core/sherpa-filter-more.css": 35,
   "src/components/sherpa-accordion/sherpa-accordion.html": 45,
   "src/components/sherpa-app-header/sherpa-app-header.html": 170,
   "src/components/sherpa-app-shell/sherpa-app-shell.html": 77,
@@ -499,7 +498,7 @@
   "src/components/sherpa-prompt-composer/sherpa-prompt-composer.html": 38,
   "src/components/sherpa-provider/sherpa-provider.html": 46,
   "src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html": 280,
-  "src/components/sherpa-quick-filter-toolbar/toolbar-rows.html": 69,
+  "src/components/sherpa-quick-filter-toolbar/toolbar-rows.html": 82,
   "src/components/sherpa-quick-filter/sherpa-quick-filter.html": 157,
   "src/components/sherpa-radial-chart/sherpa-radial-chart.html": 77,
   "src/components/sherpa-router/sherpa-router.html": 30,
@@ -518,6 +517,5 @@
   "src/components/sherpa-toolbar/sherpa-toolbar.html": 20,
   "src/components/sherpa-tooltip/sherpa-tooltip.html": 30,
   "src/components/sherpa-transfer-list/sherpa-transfer-list.html": 44,
-  "src/core/sherpa-filter-menu.html": 8,
-  "src/core/sherpa-filter-more.html": 22
+  "src/core/sherpa-filter-menu.html": 8
 }

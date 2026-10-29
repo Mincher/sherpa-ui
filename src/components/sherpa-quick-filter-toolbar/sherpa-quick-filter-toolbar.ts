@@ -17,7 +17,7 @@ import {
   MANAGE_SETS, MenuDrill, OneRows, SavedSets, drawFiltersButton, saves, type AddedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
-  FILTER_ACTIONS, MORE_MENU, askSwitches, drawFilterActions, extraRows, folded, hidesUnmatched, openMore, pickMore,
+  FILTER_ACTIONS, askSwitches, drawFilterActions, extraRows, folded, hidesUnmatched, openMore, pickMore,
   saveRows, syncHide,
   type MoreRow,
 } from '../../core/ui/more-menu.js';
@@ -62,9 +62,9 @@ export type { OrganiseColumn } from '../../core/data/data-source.js';
 export type { SortDirection } from '../../core/data/store.js';
 
 export class SherpaQuickFilterToolbar extends SherpaElement {
-  static override css = [MORE_MENU.css, new URL('./sherpa-quick-filter-toolbar.css', import.meta.url)];
+  static override css = new URL('./sherpa-quick-filter-toolbar.css', import.meta.url);
   static override html = [
-    FILTER_MENU_HTML, MORE_MENU.html, new URL('./toolbar-rows.html', import.meta.url),
+    FILTER_MENU_HTML, new URL('./toolbar-rows.html', import.meta.url),
     new URL('./sherpa-quick-filter-toolbar.html', import.meta.url),
   ];
 

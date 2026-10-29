@@ -5,7 +5,6 @@
  *
  * Map:
  * - MoreRow — One ⋮ row: the value of its prototype in a `template.more-rows-tpl`, whether it is off, and a name it says.
- * - MORE_MENU — The ⋮ menu's own markup and sheet: a host lists each FIRST.
  * - folded — Is this element folded away at this width?
  * - resetRows — Reset filters, then Reset all on view — off where they would change nothing.
  * - hidesUnmatched — Limit is on, and hides what it rules out.
@@ -26,12 +25,6 @@ import { saves } from './filters-button.js';
 
 /** One ⋮ row: the value of its prototype in a `template.more-rows-tpl`, and whether it is off. */
 export type MoreRow = readonly [value: string, disabled?: boolean, name?: string];
-
-/** The ⋮ menu's own markup and sheet: a host lists each FIRST. TRAP T-a-family-shares-markup */
-export const MORE_MENU = {
-  html: new URL('../sherpa-filter-more.html', import.meta.url),
-  css: new URL('../sherpa-filter-more.css', import.meta.url),
-} as const;
 
 const EXTRA = 'extra:';
 
@@ -128,7 +121,7 @@ export function syncHide(host: HTMLElement, root: ParentNode): void {
   if (box) box.disabled = host.dataset['limitOptions'] !== 'on';
 }
 
-/** A row's prototype, by value, from any more-rows-tpl: the family's or its host's own. */
+/** A row's prototype, by value, from its host's more-rows-tpl. */
 function row(root: ParentNode, value: string): HTMLElement | null {
   for (const tpl of root.querySelectorAll<HTMLTemplateElement>('template.more-rows-tpl')) {
     const hit = tpl.content.querySelector(`[value="${value}"]`)?.closest('.more-item, .more-check');

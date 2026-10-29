@@ -190,6 +190,12 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-display-mode-space-xs` | `.more-item` | `padding` |
+| `--sherpa-style-content-base` | `.more-item` | `color` |
+| `--sherpa-font-size-body-base` | `.more-item` | `font-size` |
+| `--sherpa-theme-content-line-height-base` | `.more-item` | `line-height` |
+| `--sherpa-display-mode-space-3xs` | `.more-divider` | `margin` |
+| `--sherpa-style-border-base` | `.more-divider` | `border-block-start` |
 | `--sherpa-display-mode-space-xs` | `.bar` | `gap` |
 | `--sherpa-display-mode-space-2xs` | `.bar` | `padding-block` |
 | `--sherpa-theme-padding-none` | `.bar` | `padding-inline` |

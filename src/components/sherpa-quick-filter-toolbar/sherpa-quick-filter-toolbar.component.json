@@ -1048,6 +1048,11 @@
       "$type": "state",
       "name": "not-saveable",
       "selector": ":host(:not([data-saveable]))"
+    },
+    {
+      "$type": "state",
+      "name": "focus-visible",
+      "selector": ".more-item:focus-visible"
     }
   ],
   "capabilities": [
@@ -1227,6 +1232,12 @@
     }
   ],
   "tokens": {
+    "more-item.padding": "{sherpa.display-mode-space-xs}",
+    "more-item.color": "{sherpa.style-content-base}",
+    "more-item.font-size": "{sherpa.font-size-body-base}",
+    "more-item.line-height": "{sherpa.theme-content-line-height-base}",
+    "more-divider.margin": "{sherpa.display-mode-space-3xs}",
+    "more-divider.border-block-start": "{sherpa.style-border-base}",
     "bar.gap": "{sherpa.display-mode-space-xs}",
     "bar.padding-block": "{sherpa.display-mode-space-2xs}",
     "bar.padding-inline": "{sherpa.theme-padding-none}",

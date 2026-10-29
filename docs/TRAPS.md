@@ -1373,10 +1373,10 @@ a page sheet, on its own hosts (TODO 402,
 **Markup a shared helper needs lives in a FAMILY file, not in TS** (Will, TODO
 344). `menuFor()` builds a field's menu for the toolbar, the panel and the
 grid; its menu is `template.filter-menu-tpl` in `src/core/sherpa-filter-menu.html`.
-The ⋮ menu a bar and the panel share is `src/core/sherpa-filter-more.html` and
-its sheet, `src/core/sherpa-filter-more.css`: the menu, and every row it can
-draw, words included, picked by `value`; a bar's own rows are in its own
-`template.more-rows-tpl`.
+The ⋮ menu was a family too, while the bar and the panel both drew it; with the
+panel gone (476) it is the bar's own, in `toolbar-rows.html` and the bar's
+sheet (TODO 523): the menu, and every row it can draw, words included, picked
+by `value`, in ONE `template.more-rows-tpl`.
 
 A host lists the family file FIRST in its `static html`, as a family sheet is
 listed first in `static css`:
@@ -1399,7 +1399,6 @@ family's markup is not a component's anatomy.
 - Site: `test/e2e/reforged-advanced-rows.spec.ts`
 - Site: `scripts/check-size.mjs`
 - Site: `scripts/check-traps.mjs`
-- Site: `src/core/ui/more-menu.ts`
 - Site: `src/core/sherpa-filter-menu.html`
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-rows.html`
 
@@ -2107,8 +2106,8 @@ provider) — so the bar's ⋮ shows at any width then. Ticking it REPORTS
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/core/ui/more-menu.ts`
-- Site: `src/core/sherpa-filter-more.html`
-- Site: `src/core/sherpa-filter-more.css`
+- Site: `src/components/sherpa-quick-filter-toolbar/toolbar-rows.html`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-rows.html`
 
 ### T-a-number-is-reset-not-cleared

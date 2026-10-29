@@ -349,7 +349,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-conditions-only-menu-cannot-be-drilled](TRAPS.md#t-a-conditions-only-menu-cannot-be-drilled) — quick-filter-toolbar
 - [T-a-control-sends-one-request](TRAPS.md#t-a-control-sends-one-request) — quick-filter-toolbar
 - [T-a-divider-needs-a-neighbour-on-both-sides](TRAPS.md#t-a-divider-needs-a-neighbour-on-both-sides) — quick-filter-toolbar
-- [T-a-family-shares-markup](TRAPS.md#t-a-family-shares-markup) — filter-menu, more-menu, quick-filter-toolbar, sherpa-filter-menu
+- [T-a-family-shares-markup](TRAPS.md#t-a-family-shares-markup) — filter-menu, quick-filter-toolbar, sherpa-filter-menu
 - [T-a-field-can-carry-over-views](TRAPS.md#t-a-field-can-carry-over-views) — filter-def, quick-filter-toolbar
 - [T-a-field-reads-its-values-when-needed](TRAPS.md#t-a-field-reads-its-values-when-needed) — quick-filter-toolbar
 - [T-a-filter-answers-by-values-conditions-or-both](TRAPS.md#t-a-filter-answers-by-values-conditions-or-both) — filter-kind, filter-menu
@@ -474,7 +474,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-fold-measures-a-chip-that-has-not-drawn-itself](TRAPS.md#t-the-fold-measures-a-chip-that-has-not-drawn-itself) — quick-filter-toolbar
 - [T-the-header-chips-must-reach-the-query](TRAPS.md#t-the-header-chips-must-reach-the-query) — quick-filter-toolbar
 - [T-the-local-context-waits-for-the-view](TRAPS.md#t-the-local-context-waits-for-the-view) — quick-filter-toolbar
-- [T-the-more-menu-holds-what-folded](TRAPS.md#t-the-more-menu-holds-what-folded) — more-menu, quick-filter-toolbar, sherpa-filter-more
+- [T-the-more-menu-holds-what-folded](TRAPS.md#t-the-more-menu-holds-what-folded) — more-menu, quick-filter-toolbar
 - [T-the-panel-is-the-bar-in-portrait](TRAPS.md#t-the-panel-is-the-bar-in-portrait) — quick-filter-toolbar
 - [T-the-panel-is-the-toolbar-in-a-column](TRAPS.md#t-the-panel-is-the-toolbar-in-a-column) — filter-def
 - [T-the-view-chip-stays-on-the-header](TRAPS.md#t-the-view-chip-stays-on-the-header) — quick-filter-toolbar
