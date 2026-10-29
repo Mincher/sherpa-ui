@@ -35,7 +35,7 @@ export class SherpaContainerHeader extends SherpaElement {
   #showAs(): void {
     showAs(this.root, this.dataset['presentation'], (kind) => {
       if (kind !== this.dataset['presentation']) this.emit('presentation-change', { kind });
-    });
+    }, true);
   }
 
   override onRender(): void {

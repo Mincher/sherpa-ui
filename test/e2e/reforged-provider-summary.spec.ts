@@ -463,14 +463,15 @@ test('a grid card\'s Show as draws its slot as a chart — what its definition c
     await pick('bar');
     const chart = card();
     at.bar = { tag: chart.localName, scope: chart.dataset.scope, id: chart.id, shown: bar.dataset.presentation,
-      marks: [...chart.shadowRoot.querySelectorAll('.bar-col')].map((c) => c.getAttribute('aria-label')) };
+      marks: [...chart.shadowRoot.querySelectorAll('.bar-col')].map((c) => c.getAttribute('aria-label')),
+      legend: [...chart.querySelector(':scope > sherpa-chart-legend[slot="legend"]')?.shadowRoot?.querySelectorAll('.item') ?? []].length };
     await pick('default');
     at.back = { same: card() === grid, shown: bar.dataset.presentation, rows: grid.shadowRoot.querySelectorAll('.body .row').length, reports };
     return at;
   })()`) as Record<string, Record<string, unknown>>;
   expect(r['first']).toEqual({ tag: 'sherpa-data-grid', rows: 5 });
   // Each plan's different days: three Pro rows, on Mon and Wed.
-  expect(r['bar']).toEqual({ tag: 'sherpa-barchart', scope: 'data', id: '', shown: 'bar', marks: ['Free: 1', 'Pro: 2', 'Enterprise: 1'] });
+  expect(r['bar']).toEqual({ tag: 'sherpa-barchart', scope: 'data', id: '', shown: 'bar', marks: ['Free: 1', 'Pro: 2', 'Enterprise: 1'], legend: 3 });
   // The page's own grid, with its columns, and its rows again.
   expect(r['back']).toEqual({ same: true, shown: 'default', rows: 5, reports: [] });
 });

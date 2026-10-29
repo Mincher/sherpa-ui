@@ -51,6 +51,71 @@
       },
       {
         "el": "template",
+        "class": "shown-bar-tpl",
+        "children": [
+          {
+            "el": "sherpa-barchart",
+            "attrs": {
+              "data-legend": "horizontal"
+            },
+            "children": [
+              {
+                "el": "sherpa-chart-legend",
+                "attrs": {
+                  "slot": "legend",
+                  "data-orientation": "horizontal"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "shown-donut-tpl",
+        "children": [
+          {
+            "el": "sherpa-radial-chart",
+            "attrs": {
+              "data-type": "donut",
+              "data-legend": "vertical"
+            },
+            "children": [
+              {
+                "el": "sherpa-chart-legend",
+                "attrs": {
+                  "slot": "legend",
+                  "data-orientation": "vertical"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "shown-pie-tpl",
+        "children": [
+          {
+            "el": "sherpa-radial-chart",
+            "attrs": {
+              "data-type": "pie",
+              "data-legend": "vertical"
+            },
+            "children": [
+              {
+                "el": "sherpa-chart-legend",
+                "attrs": {
+                  "slot": "legend",
+                  "data-orientation": "vertical"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
         "class": "words",
         "children": [
           {

@@ -31,7 +31,7 @@ export class SherpaDataVizHeader extends SherpaElement {
   #showAs(): void {
     showAs(this.root, this.dataset['presentation'], (kind) => {
       if (kind !== this.dataset['presentation']) this.emit('presentation-change', { kind });
-    });
+    }, true);
   }
 }
 

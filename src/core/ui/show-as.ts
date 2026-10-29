@@ -19,9 +19,9 @@ export const SHOW_AS_HTML = new URL('../sherpa-show-as.html', import.meta.url);
 export const SHOW_AS = ['default', ...PRESENTATION_KINDS.filter((k) => k !== 'grid')] as const;
 
 /** Show as where the host offers it — `on`, its `data-presentation`: put in its
- *  `.show-as` once, each pick to `pick` (a request), what it shows ticked. Not
+ *  `.show-as` once — `bare`, a header's — each pick to `pick` (a request), what it shows ticked. Not
  *  offered, nothing is made: every toolbar would carry a menu. */
-export function showAs(root: ParentNode, on: string | undefined, pick: (kind: string) => void): void {
+export function showAs(root: ParentNode, on: string | undefined, pick: (kind: string) => void, bare = false): void {
   if (on === undefined) return;
   const at = root.querySelector('.show-as');
   const tpl = root.querySelector<HTMLTemplateElement>('template.show-as-tpl');
@@ -32,6 +32,13 @@ export function showAs(root: ParentNode, on: string | undefined, pick: (kind: st
     return;
   }
   at.append(document.importNode(tpl.content, true));
+  /* A header's icon actions are small and bare; a toolbar's button wears the
+     default look and size, as its neighbours do. Will, TODO 548 */
+  const button = at.querySelector('.presentation');
+  if (bare) {
+    button?.setAttribute('data-look', 'transparent');
+    button?.setAttribute('data-size', 'sm');
+  }
   const words = root.querySelector<HTMLTemplateElement>('template.show-as-words')?.content;
   const menu = at.querySelector<SherpaMenu>('.presentation-menu');
   menu?.items?.(SHOW_AS.map((kind) => ({

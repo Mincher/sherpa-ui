@@ -56,7 +56,7 @@
   "src/components/sherpa-prompt-composer/sherpa-prompt-composer.ts": 121,
   "src/components/sherpa-provider/provider-mode.ts": 198,
   "src/components/sherpa-provider/provider-page.ts": 787,
-  "src/components/sherpa-provider/sherpa-provider.ts": 1426,
+  "src/components/sherpa-provider/sherpa-provider.ts": 1428,
   "src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts": 2746,
   "src/components/sherpa-quick-filter-toolbar/toolbar-column.ts": 280,
   "src/components/sherpa-quick-filter-toolbar/toolbar-header.ts": 89,
@@ -366,7 +366,7 @@
   "src/core/ui/settled.ts": 83,
   "src/core/ui/shared-constants.ts": 125,
   "src/core/ui/sherpa-element.ts": 1237,
-  "src/core/ui/show-as.ts": 47,
+  "src/core/ui/show-as.ts": 54,
   "src/core/ui/swap.ts": 57,
   "src/core/ui/templater.ts": 320,
   "src/core/ui/temporal.ts": 113,
@@ -505,7 +505,7 @@
   "src/components/sherpa-progress-bar/sherpa-progress-bar.html": 19,
   "src/components/sherpa-progress-step-tracker/sherpa-progress-step-tracker.html": 31,
   "src/components/sherpa-prompt-composer/sherpa-prompt-composer.html": 38,
-  "src/components/sherpa-provider/sherpa-provider.html": 46,
+  "src/components/sherpa-provider/sherpa-provider.html": 64,
   "src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html": 287,
   "src/components/sherpa-quick-filter-toolbar/toolbar-rows.html": 87,
   "src/components/sherpa-quick-filter/sherpa-quick-filter.html": 162,
@@ -527,5 +527,5 @@
   "src/components/sherpa-tooltip/sherpa-tooltip.html": 27,
   "src/components/sherpa-transfer-list/sherpa-transfer-list.html": 44,
   "src/core/sherpa-filter-menu.html": 8,
-  "src/core/sherpa-show-as.html": 21
+  "src/core/sherpa-show-as.html": 22
 }

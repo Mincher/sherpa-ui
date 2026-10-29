@@ -117,12 +117,12 @@ const nameOf = (el: Element): string =>
   ?? containerOf(el)?.querySelector(':scope > [slot="header"]')?.getAttribute('data-heading')
   ?? '';
 
-/** The component each presentation is drawn by — its type where one draws two —
- *  loaded when first shown. Will, TODO 548 */
-const SHOWN_BY: Readonly<Record<string, { tag: string; type?: string; load: () => Promise<unknown> }>> = {
-  bar: { tag: 'sherpa-barchart', load: () => import('../sherpa-barchart/sherpa-barchart.js') },
-  donut: { tag: 'sherpa-radial-chart', type: 'donut', load: () => import('../sherpa-radial-chart/sherpa-radial-chart.js') },
-  pie: { tag: 'sherpa-radial-chart', type: 'pie', load: () => import('../sherpa-radial-chart/sherpa-radial-chart.js') },
+/** The component each chart presentation is drawn by, loaded when first shown;
+ *  its prototype, legend and all, is the template's `shown-<kind>-tpl`. Will, TODO 548 */
+const SHOWN_BY: Readonly<Record<string, { tag: string; load: () => Promise<unknown> }>> = {
+  bar: { tag: 'sherpa-barchart', load: () => Promise.all([import('../sherpa-barchart/sherpa-barchart.js'), import('../sherpa-chart-legend/sherpa-chart-legend.js')]) },
+  donut: { tag: 'sherpa-radial-chart', load: () => Promise.all([import('../sherpa-radial-chart/sherpa-radial-chart.js'), import('../sherpa-chart-legend/sherpa-chart-legend.js')]) },
+  pie: { tag: 'sherpa-radial-chart', load: () => Promise.all([import('../sherpa-radial-chart/sherpa-radial-chart.js'), import('../sherpa-chart-legend/sherpa-chart-legend.js')]) },
 };
 
 /** The presentation a component draws, where it is one. A grid is only ever
@@ -1284,10 +1284,11 @@ export class SherpaProvider extends SherpaElement {
     void (want?.load() ?? Promise.resolve()).then(() => {
       if (!el.isConnected) return;
       // Back to the page's own: the very element, a grid with its columns.
-      const next = want ? this.#chartFor(el, want, segment ?? '') : parked!;
+      const next = want ? this.#chartFor(el, kind, segment ?? '') : parked;
+      if (!next) return;
       if (!want) this.#parked.delete(slot);
-      // A chart's children — its legend — go with it.
-      if (shownAs(next) !== 'grid' && shownAs(el) !== 'grid') next.append(...el.childNodes);
+      // Back to the page's own chart: its legend goes home.
+      if (!want && shownAs(next) !== 'grid' && shownAs(el) !== 'grid') next.append(...el.childNodes);
       if (!this.#authored.has(el) && shownAs(el) === authored) this.#parked.set(slot, el);
       if (next !== parked) this.#authored.set(next, authored);
       el.replaceWith(next);
@@ -1295,16 +1296,17 @@ export class SherpaProvider extends SherpaElement {
     return true;
   }
 
-  /** A chart for a slot: a chart's attributes, or a grid's place, and its split.
-   *  A component made by the provider's act, not structure. PRINCIPLES 17 */
-  #chartFor(el: Element, want: (typeof SHOWN_BY)[string], segment: string): Element {
-    const next = document.createElement(want.tag);
+  /** A chart for a slot, from its prototype, its legend with it: a chart's own
+   *  attributes and legend, or a grid's place and its split. Will, TODO 548 */
+  #chartFor(el: Element, kind: string, segment: string): Element | null {
+    const next = this.clone(`template.shown-${kind}-tpl`);
+    if (!next) return null;
     const fromGrid = shownAs(el) === 'grid';
     for (const { name, value } of [...el.attributes]) {
       if (name !== 'data-type' && (!fromGrid || (KEPT_FROM_GRID as readonly string[]).includes(name))) next.setAttribute(name, value);
     }
-    if (want.type) next.setAttribute('data-type', want.type);
     if (fromGrid) next.setAttribute('data-segment-field', segment);
+    else if (el.querySelector(':scope > [slot="legend"]')) next.replaceChildren(...el.childNodes);
     return next;
   }
 
