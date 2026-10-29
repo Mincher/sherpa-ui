@@ -1142,6 +1142,8 @@ export class DataSource extends EventTarget {
         // Sent up, the View holds its field — and draws only a field it knows.
         if (change.kind === 'part' && change.field && !this.#catalogue.has(change.field)) this.declareField(change.field);
         this.#binding.drawScopesSoon();
+        // …and its own section, which names the chart it narrows: Show as swaps it. TODO 548
+        if (change.kind === 'part' && change.field) this.#binding.drawBars(change.scope);
         return;
       case 'write':
         this.#recompose();

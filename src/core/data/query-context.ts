@@ -438,10 +438,19 @@ export class QueryContext extends EventTarget {
    */
   declarePart(scope: string, part: { field: string; only: BoundControl; label?: string } | undefined): void {
     this.#walks++;
-    if (part) this.#live.parts.set(scope, part);
-    else this.#live.parts.delete(scope);
+    const parts = this.#live.parts;
+    if (part) parts.set(scope, part);
+    else parts.delete(scope);
+    /* A part keeps the place it was first given: a chart swapped by Show as binds
+       its legend again, and its panel section must not move. Will, TODO 548 */
+    if (!this.#partOrder.includes(scope)) this.#partOrder.push(scope);
+    const placed = [...parts].sort(([a], [b]) => this.#partOrder.indexOf(a) - this.#partOrder.indexOf(b));
+    parts.clear();
+    for (const [key, value] of placed) parts.set(key, value);
     this.#tell({ kind: 'part', scope, ...(part ? { field: part.field } : {}) });
   }
+  /** Each part's scope, in the order first declared. */
+  readonly #partOrder: string[] = [];
 
   /** Name a scope as a reader sees it — a panel's section, an Add list's note — and say if it arranges. */
   declareScope(scope: string, facts: { label?: string; arranges?: boolean }): void {

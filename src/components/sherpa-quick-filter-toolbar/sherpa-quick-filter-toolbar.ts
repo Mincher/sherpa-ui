@@ -969,11 +969,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     else box?.removeAttribute('data-description');
   }
 
-  /** A component's name, as the markup's words say it — else from its tag. */
-  #componentName(tag: string): string {
-    for (const tpl of this.$$<HTMLTemplateElement>('template.words')) {
-      const hit = tpl.content.querySelector(`[data-word="${CSS.escape(tag)}"]`);
-      if (hit) return hit.textContent?.trim() ?? '';
+  /** A component's name, as the markup's words say it — its `tag:type`, else its
+   *  tag — else from its tag. */
+  #componentName(named: string): string {
+    const [tag = named] = named.split(':');
+    for (const key of [named, tag]) {
+      for (const tpl of this.$$<HTMLTemplateElement>('template.words')) {
+        const hit = tpl.content.querySelector(`[data-word="${CSS.escape(key)}"]`);
+        if (hit) return hit.textContent?.trim() ?? '';
+      }
     }
     return tag.replace(/^sherpa-/, '').split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   }

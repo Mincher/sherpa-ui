@@ -349,8 +349,12 @@ export class SourceBinding {
   }
 }
 
-/** A bound control's tag, where it is an element. No DOM: it is only read. */
+/** A bound control's tag, where it is an element, and its `data-type` where it
+ *  has one — `sherpa-radial-chart:pie`, so a panel names a swapped chart. No DOM:
+ *  it is only read. Will, TODO 548 */
 export function tagOf(control: unknown): string | undefined {
-  const tag = (control as { localName?: unknown } | undefined)?.localName;
-  return typeof tag === 'string' ? tag : undefined;
+  const el = control as { localName?: unknown; getAttribute?: (name: string) => string | null } | undefined;
+  if (typeof el?.localName !== 'string') return undefined;
+  const type = el.getAttribute?.('data-type');
+  return type ? `${el.localName}:${type}` : el.localName;
 }
