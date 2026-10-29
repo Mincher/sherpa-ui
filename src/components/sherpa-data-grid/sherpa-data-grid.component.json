@@ -420,8 +420,7 @@
                 "el": "i",
                 "class": "action-icon",
                 "attrs": {
-                  "aria-hidden": "true",
-                  "data-icon": "icon"
+                  "aria-hidden": "true"
                 }
               },
               {

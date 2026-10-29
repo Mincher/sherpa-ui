@@ -1839,8 +1839,11 @@ export class SherpaDataGrid extends SherpaElement {
 
     this.#actionRow = record;
     // SLOTTED light-DOM buttons, which is what gives them Enter, Space and
-    // focus for nothing — T-menu-rows-stay-native-controls. The prototype says what fills what.
-    this.renderItems('.actions-menu', 'template.action-item-tpl', this.#actions);
+    // focus for nothing — T-menu-rows-stay-native-controls. The prototype says what fills what;
+    // its icon is DRAWN here, as a field name in the markup reads as an icon name.
+    this.renderItems('.actions-menu', 'template.action-item-tpl', this.#actions, {
+      after: (item, action) => { if (action.icon) this.writeIcon(item.querySelector('.action-icon')!, action.icon); },
+    });
 
     trigger.setAttribute('aria-expanded', 'true');
     menu.show?.(trigger);
