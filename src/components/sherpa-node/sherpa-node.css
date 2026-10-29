@@ -26,6 +26,16 @@
   border-start-end-radius: inherit;
 }
 :host(:state(dragging)) .header { cursor: grabbing; }
+/* DRAGGED: lifted, as Elevation=md draws it, and its edge one ring stronger —
+   a ring, not a wider border, so nothing inside moves. Will, TODO 552 */
+:host(:state(dragging)) {
+  /* Over the nodes it passes. */
+  z-index: 1;
+  box-shadow:
+    0 0 0 var(--sherpa-display-mode-border-width-base, 1px) var(--_border),
+    var(--sherpa-display-mode-size-2xs, 8px) var(--sherpa-display-mode-size-2xs, 8px)
+    var(--sherpa-display-mode-size-sm, 16px) -4px var(--sherpa-style-surface-shadow, #35353d4c);
+}
 .header:focus-visible {
   outline: var(--sherpa-focus-ring);
   outline-offset: var(--sherpa-focus-offset);

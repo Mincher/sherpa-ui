@@ -19,6 +19,8 @@ const ZOOM_STEP = 1.25;
 const PAN_STEP = 32;
 /** What Fit leaves round the content, in screen px. */
 const FIT_PADDING = 48;
+/** How much of the minimap the content takes on its longer side: the rest is room for the frame. */
+const MINIMAP_CONTENT = 0.5;
 
 /** A box on the plane, in plane px. */
 interface Box { left: number; top: number; right: number; bottom: number }
@@ -48,8 +50,8 @@ export class SherpaLayoutCanvas extends SherpaElement {
   /** The drag in progress: where it started, and the view then. */
   #drag: { id: number; x: number; y: number; from: [number, number] } | null = null;
 
-  /** A minimap drag: the map it started on, held still, and where it took the view's frame. */
-  #mapDrag: { id: number; box: Box; scale: number; grab: [number, number] } | null = null;
+  /** A minimap drag: the pointer, and where it took the view's frame. */
+  #mapDrag: { id: number; grab: [number, number] } | null = null;
 
   /** Redraws the minimap when the canvas changes size. */
   #observer: ResizeObserver | null = null;
@@ -287,19 +289,20 @@ export class SherpaLayoutCanvas extends SherpaElement {
     return { left, top, right: left + width / this.#zoom, bottom: top + height / this.#zoom };
   }
 
-  /** How the minimap maps the plane: the box it shows and its scale. A drag holds it still. */
+  /** How the minimap maps the plane: the box it shows — all of it — and its scale. It
+   *  follows the CONTENT, never the view, so a zoom resizes the frame and the content holds still. */
   #minimapScale(): { box: Box; scale: number } | null {
     const map = this.$<HTMLElement>('.minimap');
     if (!map || this.hasAttribute('data-no-minimap')) return null;
-    if (this.#mapDrag) return { box: this.#mapDrag.box, scale: this.#mapDrag.scale };
-    const content = this.#contentBox();
-    const view = this.#viewBox();
-    const box = content ? {
-      left: Math.min(content.left, view.left), top: Math.min(content.top, view.top),
-      right: Math.max(content.right, view.right), bottom: Math.max(content.bottom, view.bottom),
-    } : view;
-    const scale = Math.min(map.clientWidth / Math.max(1, box.right - box.left), map.clientHeight / Math.max(1, box.bottom - box.top));
-    return Number.isFinite(scale) && scale > 0 ? { box, scale } : null;
+    const around = this.#contentBox() ?? this.#viewBox();
+    const w = Math.max(1, around.right - around.left);
+    const h = Math.max(1, around.bottom - around.top);
+    const scale = MINIMAP_CONTENT * Math.min(map.clientWidth / w, map.clientHeight / h);
+    if (!Number.isFinite(scale) || scale <= 0) return null;
+    // The content in the middle of the map.
+    const left = around.left + (w - map.clientWidth / scale) / 2;
+    const top = around.top + (h - map.clientHeight / scale) / 2;
+    return { box: { left, top, right: left + map.clientWidth / scale, bottom: top + map.clientHeight / scale }, scale };
   }
 
   /** Draw the content and the view, small. */
@@ -324,14 +327,14 @@ export class SherpaLayoutCanvas extends SherpaElement {
   }
 
   /** A press puts the view's middle there; a drag on the frame keeps its hold. Either
-   *  stops at the minimap's edge, and the map holds still until the pointer lets go. */
+   *  stops at the minimap's edge — or, for a frame larger than the map, keeps it covered. */
   #onMinimap = (event: PointerEvent): void => {
-    const map = event.currentTarget as HTMLElement;
+    const mapped = this.#minimapScale();
+    if (!mapped) return;
     if (event.type === 'pointerdown') {
-      const mapped = this.#minimapScale();
-      if (!mapped || event.button !== 0) return;
+      if (event.button !== 0) return;
       try {
-        map.setPointerCapture(event.pointerId);
+        (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
       } catch { /* a synthetic pointer */ }
       const view = this.#viewBox();
       const at = this.#onMap(event, mapped);
@@ -339,7 +342,7 @@ export class SherpaLayoutCanvas extends SherpaElement {
       const grab: [number, number] = inFrame
         ? [at[0] - view.left, at[1] - view.top]
         : [(view.right - view.left) / 2, (view.bottom - view.top) / 2];
-      this.#mapDrag = { id: event.pointerId, ...mapped, grab };
+      this.#mapDrag = { id: event.pointerId, grab };
     }
     const drag = this.#mapDrag;
     if (!drag || event.pointerId !== drag.id) return;
@@ -348,15 +351,14 @@ export class SherpaLayoutCanvas extends SherpaElement {
       this.#drawMinimap();
       return;
     }
-    const at = this.#onMap(event, drag);
+    const at = this.#onMap(event, mapped);
     const view = this.#viewBox();
-    const w = view.right - view.left;
-    const h = view.bottom - view.top;
-    // The whole minimap, on the plane: the frame stays inside it.
-    const right = drag.box.left + map.clientWidth / drag.scale;
-    const bottom = drag.box.top + map.clientHeight / drag.scale;
-    const left = Math.min(Math.max(at[0] - drag.grab[0], drag.box.left), right - w);
-    const top = Math.min(Math.max(at[1] - drag.grab[1], drag.box.top), bottom - h);
+    const { box } = mapped;
+    // Between the map's two edges, whichever way round the frame's size puts them.
+    const keep = (want: number, start: number, end: number, size: number): number =>
+      Math.min(Math.max(want, Math.min(start, end - size)), Math.max(start, end - size));
+    const left = keep(at[0] - drag.grab[0], box.left, box.right, view.right - view.left);
+    const top = keep(at[1] - drag.grab[1], box.top, box.bottom, view.bottom - view.top);
     this.panTo(-left * this.#zoom, -top * this.#zoom);
   };
 

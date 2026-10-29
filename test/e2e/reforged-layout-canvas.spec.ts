@@ -195,3 +195,19 @@ test('a piece that moves moves its minimap item', async ({ page }) => {
   }, canvas);
   expect(r.moved).toBe(true);
 });
+
+test('a zoom resizes the minimap\'s frame; the content on the minimap holds its size and place (Will, TODO 549)', async ({ page }) => {
+  const r = await page.evaluate((sel) => {
+    const el = eval(sel) as Canvas;
+    const sr = el.shadowRoot!;
+    const frame = () => Math.round(sr.querySelector('.minimap-view')!.getBoundingClientRect().width);
+    const items = () => [...sr.querySelectorAll('.minimap-item')].map((i) => { const b = i.getBoundingClientRect(); return [b.left, b.top, b.width].map(Math.round).join(); });
+    el.fit();
+    const fitted = { frame: frame(), items: items() };
+    el.zoomTo(el.view.zoom * 2);
+    const nearer = { frame: frame(), items: items() };
+    el.panTo(el.view.x - 300, el.view.y - 200);
+    return { halved: Math.abs(nearer.frame - fitted.frame / 2) <= 1, held: nearer.items.join() === fitted.items.join() && items().join() === fitted.items.join() };
+  }, canvas);
+  expect(r).toEqual({ halved: true, held: true });
+});

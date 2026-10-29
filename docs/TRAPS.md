@@ -17420,12 +17420,14 @@ and a change to the value it just wrote is not heard as a host's.
   itself has focus: a key in the content — a node's arrows, a `-` typed in a
   field — never pans or zooms it.
 - **The minimap is PART of the canvas.** A second element would be a second
-  owner of one value. It draws each piece of content and the view, scaled
-  to the box round both, and redraws when a piece's `style` changes, as a
-  moved piece says where it is there. A press puts the view's middle there; a
-  drag on the frame keeps its hold. The map HOLDS STILL while a drag lasts,
-  and the frame stops at its edge: re-scaling to the moving view made the map
-  run away under the pointer (Will, 2026-10-29).
+  owner of one value. It is scaled to the CONTENT alone, which takes half the
+  map, in its middle: a zoom resizes the frame, and the content on the map
+  holds still (Will, TODO 549). Scaled to the box round the content AND the
+  view, the content shrank as the reader zoomed, and the map ran away under a
+  dragged frame. It redraws when a piece's `style` changes, as a moved piece
+  says where it is there. A press puts the view's middle there; a drag on the
+  frame keeps its hold, and stops at the map's edge — or, for a frame larger
+  than the map, keeps the map covered.
 - `setPointerCapture` throws on a synthetic pointer in Firefox; both drags
   catch it and follow the pointer's own events.
 

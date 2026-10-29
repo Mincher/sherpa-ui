@@ -164,3 +164,22 @@ test('the header and each row draw their sockets on the card\'s edges, a value a
     shapes: ['diamond', 'circle', 'circle', 'diamond'],
   });
 });
+
+test('a node being dragged is lifted — a shadow, a stronger edge, over the others — and lands plain', async ({ page }) => {
+  const r = await page.evaluate((sel) => {
+    const el = eval(sel) as Canvas;
+    const a = el.querySelector<Node>('#a')!;
+    const header = a.shadowRoot!.querySelector<HTMLElement>('.header')!;
+    const at = (type: string, x: number, y: number) => header.dispatchEvent(new PointerEvent(type,
+      { pointerId: 4, button: 0, buttons: 1, clientX: x, clientY: y, bubbles: true, composed: true }));
+    // The ring outside its border, and the lift.
+    const look = () => { const s = getComputedStyle(a); return [s.boxShadow.includes('0px 0px 0px 1px'), s.boxShadow.includes('8px 8px 16px -4px'), s.zIndex]; };
+    const before = getComputedStyle(a).boxShadow;
+    at('pointerdown', 100, 100);
+    at('pointermove', 140, 120);
+    const during = look();
+    at('pointerup', 140, 120);
+    return { before, during, after: getComputedStyle(a).boxShadow };
+  }, canvas);
+  expect(r).toEqual({ before: 'none', during: [true, true, '1'], after: 'none' });
+});

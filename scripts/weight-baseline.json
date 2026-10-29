@@ -5,7 +5,7 @@
     "fetched": 0
   },
   "components.js": {
-    "js": 944107,
+    "js": 944327,
     "files": 115,
     "fetched": 211883
   },
@@ -140,7 +140,7 @@
     "fetched": 0
   },
   "components/sherpa-layout-canvas/sherpa-layout-canvas.js": {
-    "js": 389423,
+    "js": 389358,
     "files": 28,
     "fetched": 0
   },
@@ -205,7 +205,7 @@
     "fetched": 0
   },
   "components/sherpa-node/sherpa-node.js": {
-    "js": 265084,
+    "js": 265369,
     "files": 15,
     "fetched": 0
   },
@@ -355,7 +355,7 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 1132928,
+    "js": 1133148,
     "files": 157,
     "fetched": 211883
   }
