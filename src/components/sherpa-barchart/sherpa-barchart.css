@@ -136,7 +136,6 @@
   border-block-start: var(--sherpa-display-mode-border-width-base, 1px) solid
     var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
 }
-.chart-tip-parts:empty { display: none; }
 
 /* HIGHLIGHTING: the whole bar pale, the part the driver matches in the series'
    full colour, from the zero line. Will, TODO 441 */

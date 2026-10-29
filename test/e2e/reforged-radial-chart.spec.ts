@@ -483,6 +483,6 @@ test('a grouped slice is split by a spoke at each boundary between its parts, do
     return out;
   });
   for (const type of ['donut', 'pie']) {
-    expect(r[type]).toEqual({ spokes: 2, name: 'active: 6 (Free 1 · Pro 3 · Team 2)', tip: 'Free 1 · Pro 3 · Team 2' });
+    expect(r[type]).toEqual({ spokes: 2, name: 'active: 6 (Free 1 · Pro 3 · Team 2)', tip: 'Free 1\nPro 3\nTeam 2' });
   }
 });

@@ -420,6 +420,16 @@ test('a grouped bar stacks its parts in its own colour, each its share; the tip 
       tip: cols[0]!.querySelector('.chart-tip-parts')!.textContent,
       name: cols[0]!.getAttribute('aria-label'),
       plain: cols[1]!.getAttribute('aria-label'),
+      // Open, its parts sit UNDER its name and total, a line each. Will, TODO 548
+      under: await (async () => {
+        const tip = cols[0]!.querySelector<HTMLElement>('.sherpa-tip')!;
+        tip.showPopover();
+        await window.__settled();
+        const box = (s: string) => tip.querySelector(s)!.getBoundingClientRect();
+        const out = { below: box('.chart-tip-parts').top >= box('.chart-tip-label').bottom - 1, lines: Math.round(box('.chart-tip-parts').height / 16) };
+        tip.hidePopover();
+        return out;
+      })(),
     };
   });
   expect(r.parts).toBe(2);
@@ -427,7 +437,8 @@ test('a grouped bar stacks its parts in its own colour, each its share; the tip 
   expect(r.share).toEqual([1, 2]);
   expect(r.bottomFirst).toBe(true);
   expect(r.line).toEqual(['solid', 'none']);
-  expect(r.tip).toBe('Free 1 · Pro 2');
+  expect(r.tip).toBe('Free 1\nPro 2');
+  expect(r.under).toEqual({ below: true, lines: 2 });
   expect(r.name).toBe('active: 3 (Free 1 · Pro 2)');
   expect(r.plain).toBe('trial: 1');
 });

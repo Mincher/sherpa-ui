@@ -108,4 +108,3 @@
   stroke: var(--_border, var(--sherpa-data-viz-series-1, #8364c8));
   pointer-events: none;
 }
-.chart-tip-parts:empty { display: none; }

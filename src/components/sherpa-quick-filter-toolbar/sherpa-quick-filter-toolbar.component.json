@@ -1083,6 +1083,11 @@
     },
     {
       "$type": "state",
+      "name": "not-portrait",
+      "selector": ":host(:not([data-orientation=\"portrait\"]))"
+    },
+    {
+      "$type": "state",
       "name": "not-saveable",
       "selector": ":host(:not([data-saveable]))"
     },

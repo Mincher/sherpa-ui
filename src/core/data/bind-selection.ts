@@ -73,6 +73,10 @@ export interface SelectionBinding<T> {
    * TRAP T-a-component-part-narrows-one-component
    */
   only?: BoundControl;
+  /** A scope that HOLDS the field: the control shows and changes that scope's
+   *  answer, and has no part of its own — a chart Show as made from a grid, whose
+   *  filters are already there. Will, TODO 548 */
+  home?: string;
   /** Drop the wiring when this aborts. TRAP T-signal-not-a-teardown-list */
   signal?: AbortSignal;
 }
@@ -119,6 +123,8 @@ export function bindSelection<T extends EventTarget>(
    *  over ONE component shows it and changes it, and keeps none of its own.
    *  TRAP T-a-legend-follows-the-view-when-it-holds-the-field */
   const raised = (): boolean => reach === 'component' && source.query.holds(VIEW, field);
+  /** Its home scope, while that holds the field. */
+  const home = (): string | undefined => (options.home && source.query.holds(options.home, field) ? options.home : undefined);
 
   /**
    * What this control draws. A VIEW binding shows the field's one selection, so
@@ -127,6 +133,8 @@ export function bindSelection<T extends EventTarget>(
    * reader had picked something they did not.
    */
   const picked = (): string[] => {
+    const at = home();
+    if (at) return (source.query.reading(at, field)?.picked ?? []).map(valueKey);
     // ITS OWN SCOPE's answer, from the source — so a restored Query draws it.
     // By KEY, as every control reads a pick: an object's String is "[object Object]". TODO 422, 518
     if (reach === 'component' && !raised()) return (source.query.reading(key, field)?.picked ?? []).map(valueKey);
@@ -141,6 +149,11 @@ export function bindSelection<T extends EventTarget>(
     const want = next.filter((v) => known.has(v));
     // EVERYTHING picked is no constraint. TRAP T-everything-on-is-no-filter
     const answer = want.length === values.length ? [] : want;
+    const at = home();
+    if (at) {
+      source.query.setReading(at, field, answer.length ? { picked: answer } : null);
+      return;
+    }
     if (raised()) {
       // Its picks are Simple's: rows the View kept stay kept, and out of force.
       const held = source.query.reading(VIEW, field);

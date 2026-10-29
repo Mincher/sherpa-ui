@@ -48,6 +48,7 @@ import type { QueryChangeDetail, QueryContext } from '../../core/data/query-cont
 import { VIEW, emptyScope, sameReading, type Query, type QueryDefaults, type SavedFilter, type ScopeQuery } from '../../core/data/query.js';
 import { dropSet, layShared, sharedOf, takeSet, type SharedView } from '../../core/data/query-edits.js';
 import { VIEW_CHIP } from '../../core/ui/shared-constants.js';
+import { organiseOf } from '../../core/ui/filter-host.js';
 import type { ProvideOptions } from './sherpa-provider.js';
 
 /** A filter bar, as the provider draws it. */
@@ -475,7 +476,7 @@ export class ProviderPage {
       // Its sets first, so one render draws them. TRAP T-a-filter-set-groups-or-chains
       bar.groupSets?.(described.sets ?? []);
       await bar.populate([...picker, ...described.filters]);
-      if (described.group) bar.organise?.({ group: described.group, sort: described.sort ?? [] });
+      if (described.group) bar.organise?.(organiseOf(described));
     }));
     if (!only) this.#barsDrawn = true;
     this.#offer(only);

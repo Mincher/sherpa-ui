@@ -70,3 +70,13 @@
 
   &:empty { display: none; }
 }
+
+/* A grouped segment's tip: its name and total, then each part on a line of its
+   own under them. Will, TODO 548 */
+.sherpa-tip:popover-open:has(> .chart-tip-parts:not(:empty)) { flex-wrap: wrap; }
+.chart-tip-parts {
+  flex-basis: 100%;
+  white-space: pre-line;
+  text-align: start;
+}
+.chart-tip-parts:empty { display: none; }

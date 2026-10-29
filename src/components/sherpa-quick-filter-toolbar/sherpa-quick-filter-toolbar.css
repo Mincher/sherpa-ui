@@ -95,6 +95,7 @@
 .act-divider,
 .chips > .chip[data-persistent]::after,
 .chips > .chip[data-preset]::after,
+.organise-chip[data-id="compare"]::after,
 :host(:state(has-view)) .view-zone::after,
 :host(:state(has-organise)) .organise-zone::after,
 :host([data-switchable]:not([data-type="view"])) .switch-zone::after {
@@ -115,6 +116,16 @@
   display: block;
   flex: 0 0 auto;
   /* The chip does not centre its items: 16 tall in a 24 chip sat at its top. TODO 442 */
+  align-self: center;
+  margin-inline-start: var(--sherpa-display-mode-space-xs, 8px);
+}
+
+/* A chart's Compare, then how it is grouped and sorted: a divider between, on
+   the bar only. Will, TODO 548 */
+:host(:not([data-orientation="portrait"])) .organise-chip[data-id="compare"]:has(~ .organise-chip)::after {
+  content: "";
+  display: block;
+  flex: 0 0 auto;
   align-self: center;
   margin-inline-start: var(--sherpa-display-mode-space-xs, 8px);
 }

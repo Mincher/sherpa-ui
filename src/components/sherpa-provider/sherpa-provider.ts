@@ -1350,6 +1350,11 @@ export class SherpaProvider extends SherpaElement {
     const only = picks.narrows === 'host' ? up(el) : el;
     // One part per component, or the second would replace the first.
     const key = `picks:${el.id || field}`;
+    /* A chart in a slot that HOLDS its field — a grid's, shown as a chart — picks
+       in that scope: its filters are there already, so no part, no new panel
+       section. Will, TODO 548 */
+    const slot = this.#inherited(el, 'data-scope');
+    const home = slot && !/\s/.test(slot) && slot !== VIEW && source.query.holds(slot, field) ? slot : undefined;
     const unbind = bindSelection(el, source, {
       field,
       values,
@@ -1358,6 +1363,7 @@ export class SherpaProvider extends SherpaElement {
       event: picks.event,
       reach: 'component',
       ...(only ? { only } : {}),
+      ...(home ? { home } : {}),
       key,
     }).destroy;
     // No host to narrow: bindSelection said so, and bound nothing.
@@ -1365,17 +1371,17 @@ export class SherpaProvider extends SherpaElement {
     /* The chart's OWN scope, so a filter panel draws it — named as the chart
        is. TRAP T-a-chart-scope-is-its-legend-field */
     const label = nameOf(only);
-    source.query.declarePart(key, { field, only: only as Populatable, ...(label ? { label } : {}) });
+    if (!home) source.query.declarePart(key, { field, only: only as Populatable, ...(label ? { label } : {}) });
     // What the filters before it leave, so the legend greys the rest. TRAP T-a-ruled-out-value-is-greyed
     const hear = (event: Event): void => {
-      const left = (event as CustomEvent<{ byScope: Record<string, Record<string, string[]>> }>).detail.byScope[key];
+      const left = (event as CustomEvent<{ byScope: Record<string, Record<string, string[]>> }>).detail.byScope[home ?? key];
       (el as Picker & { present?: readonly string[] | null }).present = left?.[field] ?? null;
     };
     source.addEventListener('present', hear);
     /* A rest on a row previews its value's matches, as a chip's value does — in
        the View where the View holds the field. Will, TODO 495
        TRAP T-a-hovered-chip-previews-the-highlight */
-    const scope = (): string => (source.query.scope(VIEW).includes(field) ? VIEW : key);
+    const scope = (): string => (source.query.scope(VIEW).includes(field) ? VIEW : home ?? key);
     const rest = (event: Event): void => {
       const { label, on } = (event as CustomEvent<{ label: string; on: boolean }>).detail;
       source.query.preview(scope(), field, on, label);
@@ -1388,7 +1394,7 @@ export class SherpaProvider extends SherpaElement {
       this.#pickers.delete(el);
       el.removeAttribute('data-highlight-hover');
       source.removeEventListener('present', hear);
-      source.query.declarePart(key, undefined);
+      if (!home) source.query.declarePart(key, undefined);
       unbind();
     };
   }

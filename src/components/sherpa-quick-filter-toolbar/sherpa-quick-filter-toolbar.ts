@@ -21,7 +21,7 @@ import {
   saveRows, syncHide,
   type MoreRow,
 } from '../../core/ui/more-menu.js';
-import { answerWhenDrawn, arrangeFrom, drawCount, limitField, markField, NextFrame, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
+import { answerWhenDrawn, arrangeFrom, drawCount, limitField, markField, NextFrame, organiseOf, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { report } from '../../core/data/report.js';
 import { countSaid } from '../../core/data/filter-face.js';
 import { DEFAULT_OP, valueKey, type SortDirection } from '../../core/data/store.js';
@@ -2059,12 +2059,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.groupSets(scope.sets ?? []);
     // Its Group and Sort, where the scope arranges — drawn again only when they change.
     // TRAP T-group-and-sort-are-component-scope
-    const compare = scope.presents ? {
-      fields: scope.compare ?? [],
-      ...(scope.primaryField ? { primary: scope.primaryField } : {}),
-      ...(scope.secondaryField ? { secondary: scope.secondaryField } : {}),
-    } : undefined;
-    const organise: OrganiseDef = { group: scope.group ?? [], sort: scope.sort ?? [], ...(compare ? { order: true, compare } : {}) };
+    const organise: OrganiseDef = organiseOf(scope);
     if (scope.group && JSON.stringify(organise) !== JSON.stringify(this.#organise)) this.organise(organise);
     const fields = scope.filters;
     // A field whose values have just come draws its chip again, with them. TRAP T-a-field-reads-its-values-when-needed

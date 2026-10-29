@@ -66,9 +66,9 @@ export function pairAnchor(name: string, ...els: HTMLElement[]): void {
 export function fillTip(tip: ParentNode, label: string, value: number | string, parts?: readonly { label: string; value: number }[]): void {
   tip.querySelector('.chart-tip-label')!.textContent = label;
   tip.querySelector('.sherpa-tip-value')!.textContent = typeof value === 'number' ? formatValue(value) : value;
-  // …and a grouped segment's parts, each by its group value. TODO 548
+  // …and a grouped segment's parts, each by its group value, a line each. TODO 548
   const said = tip.querySelector('.chart-tip-parts');
-  if (said) said.textContent = partsSaid(parts);
+  if (said) said.textContent = (parts ?? []).map((p) => `${p.label} ${formatValue(p.value)}`).join('\n');
 }
 
 /** A grouped segment's parts, as words: "Free 1 · Pro 2". TODO 548 */
