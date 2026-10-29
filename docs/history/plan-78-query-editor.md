@@ -7,7 +7,7 @@ should be able to access the workflow from the filter-toolbars overflow menu.
 Label the menu item "Node Editor (beta)". … Let's plan for this but wait for
 the presentation switching work to be completed by the other agent first."*
 
-**Status: a PLAN. It WAITS for TODO 548 (presentation switching) to be done.**
+**Status: a PLAN. It WAITS for TODO 548 (presentation switching) to be done. Q1 ruled: A (Will, 2026-10-29).**
 548 is still changing the Presentation and its slots, which this draws.
 
 ## 1. The one rule: the editor ASKS, it never keeps a copy
@@ -69,6 +69,8 @@ editor for THAT page's Query.
 | | A (my pick) | B |
 |---|---|---|
 | **Q1** Where the editor shows | A maximised overlay panel over the page: the page stays behind it, live, and shut, the reader is where they were | It goes to the Node Editor Context with this page's Query |
+
+**Will, 2026-10-29: A, for now.**
 
 The inspector does what the workflow's does (plan-78-workflow-data.md §6b):
 every row of the selected node again — a scope's held fields, a condition's
