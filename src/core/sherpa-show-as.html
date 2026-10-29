@@ -1,0 +1,20 @@
+<!-- sherpa-show-as.html — Show as: an icon-only menu of the ways a card can show
+     its data. A host with data-presentation lists it first in its static html,
+     and showAs() puts it in the host's `.show-as`. Will, TODO 548 ·
+     TRAP T-a-family-shares-markup -->
+<template id="default">
+  <template class="show-as-tpl">
+    <sherpa-button class="presentation" part="presentation" data-type="icon" data-size="sm"
+                   data-look="transparent" data-icon-start="insights"
+                   aria-label="Show as" aria-haspopup="dialog">
+      <sherpa-menu slot="menu" class="presentation-menu" data-select="single" data-align="end"
+                   data-heading="Show as"></sherpa-menu>
+    </sherpa-button>
+  </template>
+  <template class="show-as-words">
+    <span data-word="default">Default</span>
+    <span data-word="bar">Bar chart</span>
+    <span data-word="donut">Donut chart</span>
+    <span data-word="pie">Pie chart</span>
+  </template>
+</template>

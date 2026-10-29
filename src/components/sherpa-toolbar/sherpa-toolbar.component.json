@@ -43,6 +43,11 @@
           "part": "trailing",
           "children": [
             {
+              "el": "span",
+              "class": "show-as",
+              "part": "show-as"
+            },
+            {
               "slot": "trailing",
               "attrs": {
                 "data-accepts": "content"
@@ -66,6 +71,18 @@
       ],
       "default": "comfortable",
       "description": "comfortable | compact (tighter block padding)"
+    },
+    {
+      "$type": "prop",
+      "name": "data-presentation",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "values": [
+        "default"
+      ],
+      "description": "default | bar | donut | pie — Show as, a menu before the trailing controls, with what the card shows ticked; its provider writes it"
     },
     {
       "$type": "prop",
@@ -101,7 +118,7 @@
     }
   ],
   "populate": {
-    "shape": "{ type? }",
+    "shape": "{ presentation?, type? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -114,6 +131,23 @@
       "$type": "state",
       "name": "bordered",
       "selector": ":host([data-type=\"bordered\"])"
+    },
+    {
+      "$type": "state",
+      "name": "presentation",
+      "selector": ":host([data-presentation])"
+    }
+  ],
+  "events": [
+    {
+      "$type": "event",
+      "name": "presentation-change",
+      "description": "A Show as pick, a request.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "kind": "string"
+      }
     }
   ],
   "$extensions": {

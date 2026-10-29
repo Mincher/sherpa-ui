@@ -120,6 +120,18 @@
           "description": "Group and Sort arrange its rows: its Organise chips. Left out, a scope a page of rows is drawn in does, and the View does not.",
           "type": "boolean"
         },
+        "presentation": {
+          "description": "What its slot shows until the reader changes it: a chart's primary (what it counts, its distinct values) and secondary (what it splits by).",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "enum": ["bar", "donut", "pie", "grid"] },
+            "primary": { "type": "string" },
+            "secondary": { "type": "string" },
+            "group": { "type": "string" },
+            "sort": { "enum": ["asc", "desc"] }
+          }
+        },
         "sets": {
           "description": "Fields drawn as one group. A serial set chains them: each offers only what the answers of the fields above it leave.",
           "type": "array",

@@ -14,6 +14,8 @@
     data-dismissible  show the close button
     data-collapsible  show the collapse toggle
     data-collapsed    collapsed state (opt-in; absent = expanded default; the toggle reflects it)
+    data-presentation default | bar | donut | pie — Show as, a menu before close, with
+                      what the card shows ticked; its provider writes it
 
   Slots:
     heading   — custom heading element (replaces the default .title)
@@ -25,6 +27,7 @@
     header-dismiss   (detail: {})
     header-collapse  (detail: { collapsed })
     header-drag      (detail: {})
+    presentation-change  (detail: { kind }) — a Show as pick, a request
 -->
 <template id="default">
   <!-- ONE GRID, as Figma's Container Header is (912:33355): LEFT · TITLE ·
@@ -55,6 +58,8 @@
 
     <div class="actions" part="actions">
       <slot name="actions" data-accepts="control,input"></slot>
+      <!-- SHOW AS, from its family file, where data-presentation offers it. Will, TODO 548 -->
+      <span class="show-as" part="show-as"></span>
       <sherpa-button class="close" part="close" data-type="icon" data-size="sm"
                      data-look="transparent" data-icon-start="cross"
                      aria-label="Close"></sherpa-button>

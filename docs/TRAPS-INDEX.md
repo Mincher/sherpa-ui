@@ -703,7 +703,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-field-type-decides-the-clause](TRAPS.md#t-the-field-type-decides-the-clause) — data-grid
 - [T-the-last-row-draws-no-rule](TRAPS.md#t-the-last-row-draws-no-rule) — data-grid
 
-## Charts (63)
+## Charts (64)
 
 - [T-a-bar-hangs-from-the-zero-line](TRAPS.md#t-a-bar-hangs-from-the-zero-line) — barchart
 - [T-a-breakdown-pick-is-a-legend-pick](TRAPS.md#t-a-breakdown-pick-is-a-legend-pick) — chart-legend
@@ -712,6 +712,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-chart-is-free-of-its-own-field](TRAPS.md#t-a-chart-is-free-of-its-own-field) — gauge-chart
 - [T-a-datum-focus-ring-is-for-the-keyboard-only](TRAPS.md#t-a-datum-focus-ring-is-for-the-keyboard-only) — sherpa-chart-segments
 - [T-a-delta-is-derived-not-declared](TRAPS.md#t-a-delta-is-derived-not-declared) — metric
+- [T-a-family-shares-markup](TRAPS.md#t-a-family-shares-markup) — sherpa-show-as
 - [T-a-format-is-the-platforms](TRAPS.md#t-a-format-is-the-platforms) — metric
 - [T-a-gauge-composes-the-ring](TRAPS.md#t-a-gauge-composes-the-ring) — gauge-chart, radial-chart
 - [T-a-gauge-names-its-zones-once](TRAPS.md#t-a-gauge-names-its-zones-once) — gauge-chart

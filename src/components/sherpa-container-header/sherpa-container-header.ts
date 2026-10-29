@@ -7,11 +7,12 @@
  * @tier sub-component — renders inside sherpa-container; excluded from the public catalog.
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { SHOW_AS, SHOW_AS_HTML, showAs } from '../../core/ui/show-as.js';
 import '../sherpa-button/sherpa-button.js';
 
 export class SherpaContainerHeader extends SherpaElement {
   static override css = new URL('./sherpa-container-header.css', import.meta.url);
-  static override html = new URL('./sherpa-container-header.html', import.meta.url);
+  static override html = [SHOW_AS_HTML, new URL('./sherpa-container-header.html', import.meta.url)];
   static override props = {
     'data-collapsible': { type: 'boolean', kind: 'style' },
     'data-dismissible': { type: 'boolean', kind: 'style' },
@@ -22,9 +23,23 @@ export class SherpaContainerHeader extends SherpaElement {
     // Beside the icon slot, never in it: a slotted icon wins by CSS. TRAP T-slot-guards-only-when-filled
     'data-icon': { type: 'string', kind: 'content', to: '.glyph', as: 'icon' },
     'data-collapsed': { type: 'boolean', kind: 'style' },
+    // Show as, and what the card shows: a pick is a REQUEST, its provider writes this. Will, TODO 548
+    'data-presentation': { type: 'enum', kind: 'behaviour', values: [...SHOW_AS] },
   } as const;
 
+  override onChange(name: string): void {
+    if (name === 'data-presentation') this.#showAs();
+  }
+
+  /** Show as: a pick is a request; its provider writes what the card shows. */
+  #showAs(): void {
+    showAs(this.root, this.dataset['presentation'], (kind) => {
+      if (kind !== this.dataset['presentation']) this.emit('presentation-change', { kind });
+    });
+  }
+
   override onRender(): void {
+    this.#showAs();
     // `button-click`, not `click` — a disabled sherpa-button suppresses its own event.
     this.$('.close')?.addEventListener('button-click', this.#onDismiss);
     this.$('.toggle')?.addEventListener('button-click', this.#onToggle);

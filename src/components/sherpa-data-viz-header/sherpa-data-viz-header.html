@@ -33,19 +33,8 @@
     </div>
     <div class="actions" part="actions">
       <slot name="actions" data-accepts="control"></slot>
-      <!-- SHOW AS: how the card shows its data. Will, TODO 548 -->
-      <sherpa-button class="presentation" part="presentation" data-type="icon" data-size="sm"
-                     data-look="transparent" data-icon-start="insights"
-                     aria-label="Show as" aria-haspopup="dialog">
-        <sherpa-menu slot="menu" class="presentation-menu" data-select="single" data-align="end"
-                     data-heading="Show as"></sherpa-menu>
-      </sherpa-button>
+      <!-- SHOW AS, from its family file, where data-presentation offers it. Will, TODO 548 -->
+      <span class="show-as" part="show-as"></span>
     </div>
   </header>
-  <template class="words">
-    <span data-word="default">Default</span>
-    <span data-word="bar">Bar chart</span>
-    <span data-word="donut">Donut chart</span>
-    <span data-word="pie">Pie chart</span>
-  </template>
 </template>

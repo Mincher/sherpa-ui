@@ -799,6 +799,15 @@
           "description": "a glyph before the title (shows the icon slot)"
         },
         {
+          "name": "data-presentation",
+          "description": "default | bar | donut | pie — Show as, a menu before close, with what the card shows ticked; its provider writes it",
+          "values": [
+            {
+              "name": "default"
+            }
+          ]
+        },
+        {
           "name": "data-type",
           "description": "default | panel",
           "values": [
@@ -3940,6 +3949,15 @@
             },
             {
               "name": "compact"
+            }
+          ]
+        },
+        {
+          "name": "data-presentation",
+          "description": "default | bar | donut | pie — Show as, a menu before the trailing controls, with what the card shows ticked; its provider writes it",
+          "values": [
+            {
+              "name": "default"
             }
           ]
         },

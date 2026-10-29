@@ -541,7 +541,7 @@ export class DataSource extends EventTarget {
          kept in the Query, never the rows'. Will, TODO 548 */
       const lists = this.#catalogue.known().map((field) => ({ field, label: this.#catalogue.get(field)?.label ?? field })).filter(groupable);
       // Its chart's own, under what the reader changed.
-      const shown = { ...this.#binding.shownIn(scope), ...this.#context.presentation(scope) };
+      const shown = { ...this.#binding.shownIn(scope), ...this.#context.presented(scope) };
       Object.assign(out, {
         presents: true, group: lists.filter((c) => c.field !== shown.secondary), compare: lists,
         ...(shown.group ? { groupField: shown.group } : {}),

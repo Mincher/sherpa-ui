@@ -66,5 +66,5 @@
   gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 :host(:is(:state(has-actions), [data-presentation])) .actions { display: flex; }
-.presentation { display: none; }
-:host([data-presentation]) .presentation { display: inline-flex; }
+.show-as { display: none; }
+:host([data-presentation]) .show-as { display: inline-flex; }

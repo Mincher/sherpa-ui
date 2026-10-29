@@ -125,11 +125,16 @@ const SHOWN_BY: Readonly<Record<string, { tag: string; type?: string; load: () =
   pie: { tag: 'sherpa-radial-chart', type: 'pie', load: () => import('../sherpa-radial-chart/sherpa-radial-chart.js') },
 };
 
-/** The presentation a component draws, where it is one. */
+/** The presentation a component draws, where it is one. A grid is only ever
+ *  the page's own, put back. */
 function shownAs(el: Element): string | undefined {
+  if (el.localName === 'sherpa-data-grid') return 'grid';
   if (el.localName === 'sherpa-radial-chart') return el.getAttribute('data-type') ?? 'donut';
   return Object.keys(SHOWN_BY).find((kind) => SHOWN_BY[kind]?.tag === el.localName);
 }
+
+/** What a chart made from a grid keeps of it: where it sits, and its slot. */
+const KEPT_FROM_GRID = ['slot', 'data-grow', 'data-scope', 'style'] as const;
 
 /** One component that asked, and how to stop answering it. */
 interface Asked {
@@ -154,6 +159,8 @@ export class SherpaProvider extends SherpaElement {
   #asked = new Map<Element, Asked>();
   /** The presentation a swapped component's page drew it as: what Default goes back to. */
   #authored = new WeakMap<Element, string>();
+  /** Each slot's own element, kept aside while another shows its data. */
+  #parked = new Map<string, Element>();
 
   constructor() {
     super();
@@ -1089,7 +1096,7 @@ export class SherpaProvider extends SherpaElement {
     const scopes = (this.#inherited(el, 'data-scope') ?? '').split(/\s+/).filter(Boolean);
     const scope = scopes.length > 1 || isColumn(el) ? scopes : scopes[0];
     // Its slot shows another way: swapped for that one, which asks again. Will, TODO 548
-    if (spec && typeof scope === 'string' && this.#swapped(el, scope, source)) return;
+    if (typeof scope === 'string' && shownAs(el) && this.#swapped(el, scope, source)) return;
     // The fields it reads from a row: a summary's, or what it says. TRAP T-a-held-set-reads-the-pages-fields
     const fields = spec ? [spec.field, spec.segment, spec.over].filter((f): f is string => !!f) : asks.fields?.(el);
     /* A chart over its field's ZONES is free of that field: its filter lights the
@@ -1131,7 +1138,7 @@ export class SherpaProvider extends SherpaElement {
     this.#fetchFields(el, source);
     const unpick = spec && asks.picks ? this.#picks(el as Picker, source, spec.segment ?? '', asks.picks) : undefined;
     const unown = this.#own(el, source);
-    const unshow = spec && typeof scope === 'string' ? this.#followPresentation(asked, source, scope) : undefined;
+    const unshow = typeof scope === 'string' && shownAs(el) ? this.#followPresentation(asked, source, scope, !spec) : undefined;
     asked.unbind = () => {
       unshow?.();
       unown?.();
@@ -1231,7 +1238,7 @@ export class SherpaProvider extends SherpaElement {
        segmentation, what it counts — a primary's distinct values — its parts and
        its order. Will, TODO 548 */
     const slot = this.#inherited(el, 'data-scope');
-    const shown = slot && !/\s/.test(slot) ? source.query.presentation(slot) : {};
+    const shown = slot && !/\s/.test(slot) ? source.query.presented(slot) : {};
     if (shown.secondary) spec['segment'] = shown.secondary;
     if (shown.primary) Object.assign(spec, { aggregate: 'distinct', field: shown.primary });
     if (shown.group) spec['group'] = shown.group;
@@ -1253,25 +1260,52 @@ export class SherpaProvider extends SherpaElement {
   /** Swap a chart for the one its slot shows, where that differs; its card's Show
    *  as is told either way. True when swapped. Will, TODO 548 */
   #swapped(el: Element, slot: string, source: DataSource): boolean {
-    const kept = source.query.presentation(slot).kind;
-    for (const head of el.closest('[data-scope]')?.querySelectorAll('[data-presentation]') ?? []) {
-      head.setAttribute('data-presentation', kept ?? 'default');
+    const shown = source.query.presented(slot);
+    for (const host of this.querySelectorAll('[data-presentation]')) {
+      if (this.#inherited(host, 'data-scope') === slot) host.setAttribute('data-presentation', source.query.presentation(slot).kind ?? 'default');
     }
     const authored = this.#authored.get(el) ?? shownAs(el);
-    const want = SHOWN_BY[kept ?? authored ?? ''];
-    if (!authored || !want || (kept ?? authored) === shownAs(el)) return false;
+    const kind = shown.kind ?? authored;
+    if (!authored || !kind || kind === shownAs(el)) return false;
+    const parked = this.#parked.get(slot);
+    const want = parked && shownAs(parked) === kind ? undefined : SHOWN_BY[kind];
+    if (!parked && !want) return false;
+    // A chart splits by its segment field: one made from a grid takes the slot's secondary.
+    const segment = shown.secondary ?? el.getAttribute('data-segment-field');
+    if (want && !segment) {
+      report({
+        code: 'presentation-without-secondary',
+        message: `sherpa-provider: slot "${slot}" cannot be shown as a ${kind} chart: it names no secondary field to split by.`,
+        at: { scope: slot, kind },
+      });
+      return false;
+    }
     this.#asked.delete(el);
-    // A component made by the provider's own act, not structure. PRINCIPLES 17
-    void want.load().then(() => {
+    void (want?.load() ?? Promise.resolve()).then(() => {
       if (!el.isConnected) return;
-      const next = document.createElement(want.tag);
-      for (const { name, value } of [...el.attributes]) if (name !== 'data-type') next.setAttribute(name, value);
-      if (want.type) next.setAttribute('data-type', want.type);
-      next.append(...el.childNodes);
-      this.#authored.set(next, authored);
+      // Back to the page's own: the very element, a grid with its columns.
+      const next = want ? this.#chartFor(el, want, segment ?? '') : parked!;
+      if (!want) this.#parked.delete(slot);
+      // A chart's children — its legend — go with it.
+      if (shownAs(next) !== 'grid' && shownAs(el) !== 'grid') next.append(...el.childNodes);
+      if (!this.#authored.has(el) && shownAs(el) === authored) this.#parked.set(slot, el);
+      if (next !== parked) this.#authored.set(next, authored);
       el.replaceWith(next);
     });
     return true;
+  }
+
+  /** A chart for a slot: a chart's attributes, or a grid's place, and its split.
+   *  A component made by the provider's act, not structure. PRINCIPLES 17 */
+  #chartFor(el: Element, want: (typeof SHOWN_BY)[string], segment: string): Element {
+    const next = document.createElement(want.tag);
+    const fromGrid = shownAs(el) === 'grid';
+    for (const { name, value } of [...el.attributes]) {
+      if (name !== 'data-type' && (!fromGrid || (KEPT_FROM_GRID as readonly string[]).includes(name))) next.setAttribute(name, value);
+    }
+    if (want.type) next.setAttribute('data-type', want.type);
+    if (fromGrid) next.setAttribute('data-segment-field', segment);
+    return next;
   }
 
   /** What a chart shows by its own attributes: its slot's default. Will, TODO 548 */
@@ -1283,12 +1317,14 @@ export class SherpaProvider extends SherpaElement {
   }
 
   /** A slot's kept presentation moved: its chart is answered again, with it. Will, TODO 548 */
-  #followPresentation(asked: Asked, source: DataSource, slot: string): () => void {
-    const was = JSON.stringify(source.query.presentation(slot));
+  #followPresentation(asked: Asked, source: DataSource, slot: string, kindOnly: boolean): () => void {
+    // A grid draws rows, not a summary: only its kind moves it.
+    const read = (): string => JSON.stringify(kindOnly ? source.query.presented(slot).kind : source.query.presented(slot));
+    const was = read();
     const stop = new AbortController();
     source.query.addEventListener('query-change', (e) => {
       const moved = (e as CustomEvent<QueryChangeDetail>).detail.scopes.includes(slot);
-      if (moved && JSON.stringify(source.query.presentation(slot)) !== was) this.#answer(asked);
+      if (moved && read() !== was) this.#answer(asked);
     }, { signal: stop.signal });
     return () => stop.abort();
   }

@@ -15,7 +15,7 @@ import { DataSource, type FieldDeclaration, type FilterSet } from './data-source
 import { report } from './report.js';
 import type { Store } from './store.js';
 import type { QueryContext } from './query-context.js';
-import { isSavedFilter, type SavedFilter } from './query.js';
+import { isSavedFilter, type Presentation, type SavedFilter } from './query.js';
 import type { Condition } from './where.js';
 
 /** One scope: its name, and the fields it offers and holds at the start. */
@@ -36,6 +36,9 @@ export interface ScopeDefinition {
    *  the scope — `{ "id": "high-risk", "label": "High risk", "where": { … } }`,
    *  `where` in the plain form. Will, TODO 493 · TRAP T-a-preset-is-its-own-part */
   presets?: readonly { id: string; label: string; where: Readonly<Record<string, Condition>> }[];
+  /** What its slot shows until the reader changes it: a chart's `primary` (what it
+   *  counts) and `secondary` (what it splits by). Will, TODO 548 */
+  presentation?: Presentation;
 }
 
 /** A page's source: which store, how it pages and searches, its fields and
@@ -105,6 +108,7 @@ export async function openSource(def: SourceDefinition, store: Store, options: {
       source.declareOwn(scope, facts.holds);
     }
     if (facts.where) source.query.declareStart(scope, source.readingsOf(facts.where));
+    if (facts.presentation) source.query.declarePresentation(scope, facts.presentation);
     if (facts.presets?.length) {
       source.declarePresets(scope, facts.presets.map((p) => ({ id: p.id, label: p.label, readings: source.readingsOf(p.where) })));
     }

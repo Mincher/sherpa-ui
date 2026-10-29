@@ -429,3 +429,48 @@ test('a card\'s Show as swaps its chart over the same data, keeps what it was ar
   // Default: the bar its page drew, its group kept.
   expect(r['back']).toEqual({ tag: 'sherpa-barchart', type: null, marks: ['Free: 1 (Tue 1)', 'Pro: 2 (Mon 1 · Wed 1)', 'Enterprise: 1 (Mon 1)'], shown: 'default', kept: { group: 'day' } });
 });
+
+test('a grid card\'s Show as draws its slot as a chart — what its definition counts, split as it says — and Default puts back the very grid (Will, TODO 548)', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-container data-scope="data">
+        <sherpa-toolbar slot="header" data-presentation="default"></sherpa-toolbar>
+        <sherpa-data-grid id="grid" data-scope="data" data-grow></sherpa-data-grid>
+      </sherpa-container>\`;
+    const grid = provider.querySelector('#grid');
+    grid.columns = [{ field: 'plan', header: 'Plan' }];
+    grid.key = 'id';
+    // A second Pro on Monday: three Pro rows, on two days.
+    const source = new DataSource({ store: new ArrayStore([...rows, { id: 5, plan: 'Pro', spend: 1, day: 'Mon' }], { key: 'id' }) });
+    source.declareValues('plan', PLANS);
+    source.declareValues('day', ['Mon', 'Tue', 'Wed']);
+    // Its page's definition: count each plan's different days.
+    source.query.declarePresentation('data', { primary: 'day', secondary: 'plan' });
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    const bar = provider.querySelector('sherpa-toolbar');
+    const pick = async (kind) => {
+      const box = [...bar.shadowRoot.querySelectorAll('.presentation-menu input')].find((i) => i.value === kind);
+      box.checked = true;
+      box.dispatchEvent(new Event('change', { bubbles: true }));
+      await settle();
+      await settle();
+    };
+    const card = () => provider.querySelector('sherpa-container > :not([slot])');
+    const at = { first: { tag: card().localName, rows: grid.shadowRoot.querySelectorAll('.body .row').length } };
+    await pick('bar');
+    const chart = card();
+    at.bar = { tag: chart.localName, scope: chart.dataset.scope, id: chart.id, shown: bar.dataset.presentation,
+      marks: [...chart.shadowRoot.querySelectorAll('.bar-col')].map((c) => c.getAttribute('aria-label')) };
+    await pick('default');
+    at.back = { same: card() === grid, shown: bar.dataset.presentation, rows: grid.shadowRoot.querySelectorAll('.body .row').length, reports };
+    return at;
+  })()`) as Record<string, Record<string, unknown>>;
+  expect(r['first']).toEqual({ tag: 'sherpa-data-grid', rows: 5 });
+  // Each plan's different days: three Pro rows, on Mon and Wed.
+  expect(r['bar']).toEqual({ tag: 'sherpa-barchart', scope: 'data', id: '', shown: 'bar', marks: ['Free: 1', 'Pro: 2', 'Enterprise: 1'] });
+  // The page's own grid, with its columns, and its rows again.
+  expect(r['back']).toEqual({ same: true, shown: 'default', rows: 5, reports: [] });
+});

@@ -65,6 +65,8 @@
  * - .clearSort — Forget the sort entirely — the gesture that is NOT a suspend.
  * - .setGroup — Group by a field, or stop.
  * - .presentation — A slot's presentation, as kept: a copy; none, an empty one.
+ * - .declarePresentation — What its page DEFINES a slot shows — a chart's two fields — under what is kept.
+ * - .presented — A slot's presentation as shown: what is kept, over its definition.
  * - .present — Change a slot's presentation, at once in BOTH copies — it filters nothing, so no Apply waits.
  * - .setSearch — The rows' free-text search, with the arrangement.
  * - .setQuery — Restore a whole Query — a reload, a View, a saved filter.
@@ -1073,6 +1075,20 @@ export class QueryContext extends EventTarget {
   presentation(scope: string): Presentation {
     return { ...this.#live.applied.scopes[scope]?.presentation };
   }
+
+  /** What its page DEFINES a slot shows — a chart's two fields — under what is kept.
+   *  Not in the Query: only what the reader changed is. Will, TODO 548 */
+  declarePresentation(scope: string, presentation: Presentation): void {
+    this.#defined.set(scope, { ...presentation });
+  }
+
+  /** A slot's presentation as shown: what is kept, over its definition. TODO 548 */
+  presented(scope: string): Presentation {
+    return { ...this.#defined.get(scope), ...this.presentation(scope) };
+  }
+
+  /** Each slot's definition. */
+  readonly #defined = new Map<string, Presentation>();
 
   /** Change a slot's presentation, at once in BOTH copies — it filters nothing, so
    *  no Apply waits. A key given `undefined` goes back to the definition. Will, TODO 548 */

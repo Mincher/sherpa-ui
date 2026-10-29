@@ -13,138 +13,86 @@
     "default"
   ],
   "anatomy": {
-    "roots": [
-      {
-        "el": "header",
-        "class": "header",
-        "part": "header",
-        "children": [
-          {
-            "el": "span",
-            "class": "left",
-            "part": "left",
-            "attrs": {
-              "aria-hidden": "true"
-            },
-            "children": [
-              {
-                "slot": "leading",
-                "attrs": {
-                  "data-accepts": "icon"
-                },
-                "children": [
-                  {
-                    "el": "i",
-                    "class": "icon sherpa-icon-box",
-                    "part": "icon"
-                  }
-                ]
-              }
-            ]
+    "root": {
+      "el": "header",
+      "class": "header",
+      "part": "header",
+      "children": [
+        {
+          "el": "span",
+          "class": "left",
+          "part": "left",
+          "attrs": {
+            "aria-hidden": "true"
           },
-          {
-            "el": "div",
-            "class": "labels",
-            "part": "labels",
-            "children": [
-              {
-                "el": "span",
-                "class": "title sherpa-truncate",
-                "part": "title"
+          "children": [
+            {
+              "slot": "leading",
+              "attrs": {
+                "data-accepts": "icon"
               },
-              {
-                "el": "div",
-                "class": "metadata",
-                "part": "metadata",
-                "children": [
-                  {
-                    "slot": "metadata",
-                    "attrs": {
-                      "data-accepts": "content"
-                    },
-                    "children": [
-                      {
-                        "el": "span",
-                        "class": "description sherpa-truncate",
-                        "part": "description"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "el": "div",
-            "class": "actions",
-            "part": "actions",
-            "children": [
-              {
-                "slot": "actions",
-                "attrs": {
-                  "data-accepts": "control"
+              "children": [
+                {
+                  "el": "i",
+                  "class": "icon sherpa-icon-box",
+                  "part": "icon"
                 }
-              },
-              {
-                "el": "sherpa-button",
-                "class": "presentation",
-                "part": "presentation",
-                "attrs": {
-                  "data-type": "icon",
-                  "data-size": "sm",
-                  "data-look": "transparent",
-                  "data-icon-start": "insights",
-                  "aria-label": "Show as",
-                  "aria-haspopup": "dialog"
-                },
-                "children": [
-                  {
-                    "el": "sherpa-menu",
-                    "class": "presentation-menu",
-                    "attrs": {
-                      "slot": "menu",
-                      "data-select": "single",
-                      "data-align": "end",
-                      "data-heading": "Show as"
+              ]
+            }
+          ]
+        },
+        {
+          "el": "div",
+          "class": "labels",
+          "part": "labels",
+          "children": [
+            {
+              "el": "span",
+              "class": "title sherpa-truncate",
+              "part": "title"
+            },
+            {
+              "el": "div",
+              "class": "metadata",
+              "part": "metadata",
+              "children": [
+                {
+                  "slot": "metadata",
+                  "attrs": {
+                    "data-accepts": "content"
+                  },
+                  "children": [
+                    {
+                      "el": "span",
+                      "class": "description sherpa-truncate",
+                      "part": "description"
                     }
-                  }
-                ]
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "el": "div",
+          "class": "actions",
+          "part": "actions",
+          "children": [
+            {
+              "slot": "actions",
+              "attrs": {
+                "data-accepts": "control"
               }
-            ]
-          }
-        ]
-      },
-      {
-        "el": "template",
-        "class": "words",
-        "children": [
-          {
-            "el": "span",
-            "attrs": {
-              "data-word": "default"
+            },
+            {
+              "el": "span",
+              "class": "show-as",
+              "part": "show-as"
             }
-          },
-          {
-            "el": "span",
-            "attrs": {
-              "data-word": "bar"
-            }
-          },
-          {
-            "el": "span",
-            "attrs": {
-              "data-word": "donut"
-            }
-          },
-          {
-            "el": "span",
-            "attrs": {
-              "data-word": "pie"
-            }
-          }
-        ]
-      }
-    ]
+          ]
+        }
+      ]
+    }
   },
   "props": [
     {

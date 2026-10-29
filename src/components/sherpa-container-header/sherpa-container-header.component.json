@@ -105,6 +105,11 @@
               }
             },
             {
+              "el": "span",
+              "class": "show-as",
+              "part": "show-as"
+            },
+            {
               "el": "sherpa-button",
               "class": "close",
               "part": "close",
@@ -206,6 +211,18 @@
     },
     {
       "$type": "prop",
+      "name": "data-presentation",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "values": [
+        "default"
+      ],
+      "description": "default | bar | donut | pie — Show as, a menu before close, with what the card shows ticked; its provider writes it"
+    },
+    {
+      "$type": "prop",
       "name": "data-type",
       "type": "enum",
       "observed": true,
@@ -255,7 +272,7 @@
     }
   ],
   "populate": {
-    "shape": "{ collapsed?, collapsible?, description?, dismissible?, draggable?, heading?, icon?, type? }",
+    "shape": "{ collapsed?, collapsible?, description?, dismissible?, draggable?, heading?, icon?, presentation?, type? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -291,6 +308,11 @@
     },
     {
       "$type": "state",
+      "name": "presentation",
+      "selector": ":host([data-presentation])"
+    },
+    {
+      "$type": "state",
       "name": "panel",
       "selector": ":host([data-type=\"panel\"])"
     }
@@ -316,6 +338,16 @@
       "name": "header-drag",
       "bubbles": true,
       "composed": true
+    },
+    {
+      "$type": "event",
+      "name": "presentation-change",
+      "description": "A Show as pick, a request",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "kind": "string"
+      }
     }
   ],
   "tokens": {

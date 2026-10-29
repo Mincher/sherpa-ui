@@ -48,7 +48,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`actions`, `description`, `header`, `icon`, `labels`, `left`, `metadata`, `presentation`, `title`
+`actions`, `description`, `header`, `icon`, `labels`, `left`, `metadata`, `show-as`, `title`
 
 ## CSS custom properties it reads
 

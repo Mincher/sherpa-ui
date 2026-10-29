@@ -2100,6 +2100,13 @@
               }
             },
             {
+              "name": "data-presentation",
+              "description": "default | bar | donut | pie — Show as, a menu before close, with what the card shows ticked; its provider writes it",
+              "type": {
+                "text": "'default'"
+              }
+            },
+            {
               "name": "data-type",
               "description": "default | panel",
               "type": {
@@ -2125,6 +2132,13 @@
               "name": "header-drag",
               "type": {
                 "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "presentation-change",
+              "description": "A Show as pick, a request",
+              "type": {
+                "text": "CustomEvent<{ kind: string }>"
               }
             }
           ],
@@ -2173,6 +2187,9 @@
             },
             {
               "name": "metadata"
+            },
+            {
+              "name": "show-as"
             },
             {
               "name": "title"
@@ -3100,7 +3117,7 @@
               "name": "metadata"
             },
             {
-              "name": "presentation"
+              "name": "show-as"
             },
             {
               "name": "title"
@@ -11778,12 +11795,28 @@
               "default": "\"comfortable\""
             },
             {
+              "name": "data-presentation",
+              "description": "default | bar | donut | pie — Show as, a menu before the trailing controls, with what the card shows ticked; its provider writes it",
+              "type": {
+                "text": "'default'"
+              }
+            },
+            {
               "name": "data-type",
               "description": "plain | bordered (adds a bottom rule)",
               "type": {
                 "text": "'plain' | 'bordered'"
               },
               "default": "\"plain\""
+            }
+          ],
+          "events": [
+            {
+              "name": "presentation-change",
+              "description": "A Show as pick, a request.",
+              "type": {
+                "text": "CustomEvent<{ kind: string }>"
+              }
             }
           ],
           "slots": [
@@ -11802,6 +11835,9 @@
             },
             {
               "name": "leading"
+            },
+            {
+              "name": "show-as"
             },
             {
               "name": "trailing"

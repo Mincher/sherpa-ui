@@ -25,7 +25,16 @@ For a strip of controls in one row, in a `leading` and a `trailing` slot. It is 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
 | `data-density` | `comfortable` `compact` | `comfortable` | comfortable \| compact (tighter block padding) |
+| `data-presentation` | `default` |  | default \| bar \| donut \| pie — Show as, a menu before the trailing controls, with what the card shows ticked; its provider writes it |
 | `data-type` | `plain` `bordered` | `plain` | plain \| bordered (adds a bottom rule) |
+
+## Events
+
+Each one bubbles.
+
+| Event | Detail | What it means |
+|---|---|---|
+| `presentation-change` | `{ kind: string }` | A Show as pick, a request. |
 
 ## Slots
 
@@ -38,10 +47,10 @@ For a strip of controls in one row, in a `leading` and a `trailing` slot. It is 
 
 Style these from outside with `::part()`:
 
-`bar`, `leading`, `trailing`
+`bar`, `leading`, `show-as`, `trailing`
 
 ## populate()
 
-`{ type? }`
+`{ presentation?, type? }`
 
 Its declared props by name: `label` sets data-label.

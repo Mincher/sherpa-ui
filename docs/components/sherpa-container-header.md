@@ -31,17 +31,19 @@ For the header row in a `sherpa-container`'s `header` slot: a heading, an icon, 
 | `data-draggable` | boolean |  | show the drag handle |
 | `data-heading` | text |  | heading text (rendered into .title) |
 | `data-icon` | text |  | a glyph before the title (shows the icon slot) |
+| `data-presentation` | `default` |  | default \| bar \| donut \| pie — Show as, a menu before close, with what the card shows ticked; its provider writes it |
 | `data-type` | `default` `panel` | `default` | default \| panel |
 
 ## Events
 
 Each one bubbles.
 
-| Event | Detail |
-|---|---|
-| `header-dismiss` |  |
-| `header-collapse` | `{ collapsed: boolean }` |
-| `header-drag` |  |
+| Event | Detail | What it means |
+|---|---|---|
+| `header-dismiss` |  |  |
+| `header-collapse` | `{ collapsed: boolean }` |  |
+| `header-drag` |  |  |
+| `presentation-change` | `{ kind: string }` | A Show as pick, a request |
 
 ## Slots
 
@@ -56,7 +58,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`actions`, `close`, `description`, `drag`, `header`, `icon`, `labels`, `left`, `metadata`, `title`, `toggle`
+`actions`, `close`, `description`, `drag`, `header`, `icon`, `labels`, `left`, `metadata`, `show-as`, `title`, `toggle`
 
 ## CSS custom properties it reads
 
@@ -92,6 +94,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ collapsed?, collapsible?, description?, dismissible?, draggable?, heading?, icon?, type? }`
+`{ collapsed?, collapsible?, description?, dismissible?, draggable?, heading?, icon?, presentation?, type? }`
 
 Its declared props by name: `label` sets data-label.

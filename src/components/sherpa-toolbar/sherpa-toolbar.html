@@ -4,16 +4,24 @@
   Public API:
     data-type   plain (default) | bordered (adds a bottom rule)
     data-density   comfortable (default) | compact (tighter block padding)
+    data-presentation  default | bar | donut | pie — Show as, a menu before the
+                   trailing controls, with what the card shows ticked; its provider writes it
 
   Slots:
     leading   — the primary action / actions cluster (hugs, sits at the start)
     trailing  — item count, search, overflow (grows; content pushed to the end)
 
-  Fires: nothing — it's a layout surface; consumers wire their own controls.
+  Fires:
+    presentation-change  (detail: { kind }) — a Show as pick, a request. Nothing else:
+                         it is a layout surface, its consumers wire their own controls.
 -->
 <template id="default">
   <div class="bar" part="bar" role="toolbar">
     <div class="zone leading" part="leading"><slot name="leading" data-accepts="control"></slot></div>
-    <div class="zone trailing" part="trailing"><slot name="trailing" data-accepts="content"></slot></div>
+    <div class="zone trailing" part="trailing">
+      <!-- SHOW AS, from its family file, where data-presentation offers it. Will, TODO 548 -->
+      <span class="show-as" part="show-as"></span>
+      <slot name="trailing" data-accepts="content"></slot>
+    </div>
   </div>
 </template>

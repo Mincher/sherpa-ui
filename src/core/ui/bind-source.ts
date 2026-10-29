@@ -153,7 +153,7 @@ const SLOT_SORT = 'value';
 
 /** A slot's kept presentation, where `scope` is one. TODO 548 */
 function slotOf(source: DataSource, scope: string | readonly string[] | undefined): Presentation | undefined {
-  return typeof scope === 'string' && source.presents(scope) ? source.query.presentation(scope) : undefined;
+  return typeof scope === 'string' && source.presents(scope) ? source.query.presented(scope) : undefined;
 }
 
 /** Write or remove an attribute. `undefined` removes, so CSS stops matching. */

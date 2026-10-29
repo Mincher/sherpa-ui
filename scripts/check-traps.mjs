@@ -106,7 +106,7 @@ const AREAS = [
     ui('top-layer-tips', 'disclosure')]],
   ['The data grid', [comp('data-grid', 'pagination')]],
   ['Charts', [comp('barchart', 'line-chart', 'gauge-chart', 'radial-chart', 'sparkline', 'chart-legend', 'metric'),
-    ui('chart-parts'), /^src\/core\/sherpa-chart-/]],
+    ui('chart-parts', 'show-as'), /^src\/core\/sherpa-chart-/, /^src\/core\/sherpa-show-as\.html$/]],
   ['SherpaElement and the shared sheets', [/^src\/core\/ui\//, /^src\/core\/[^/]+\.css$/, /^src\/(index|components)\.ts$/]],
   ['Other components', [/^src\/components\//]],
   ['Build, tools and the MCP', [/^scripts\//, /^bin\//, /^mcp-server\//, /^playwright\.config\.ts$/]],

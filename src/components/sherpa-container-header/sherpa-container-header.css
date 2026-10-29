@@ -126,7 +126,9 @@ slot[name="heading"] { display: contents; }
 :host([data-dismissible]) .close { display: inline-flex; }
 :host([data-collapsed]) .toggle { transform: rotate(180deg); }
 
-:host(:not(:state(has-actions)):not([data-dismissible])) .actions { display: none; }
+:host(:not(:state(has-actions)):not([data-dismissible]):not([data-presentation])) .actions { display: none; }
+.show-as { display: none; }
+:host([data-presentation]) .show-as { display: inline-flex; }
 
 /* ── Metadata strip — the description first, then whatever is slotted ─── */
 .metadata {

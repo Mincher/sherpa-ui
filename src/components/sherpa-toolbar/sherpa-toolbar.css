@@ -49,4 +49,6 @@
 
 /* The base class sets a `has-<slot>` state on the host. */
 :host(:not(:state(has-leading))) .leading { display: none; }
-:host(:not(:state(has-trailing))) .trailing { display: none; }
+:host(:not(:state(has-trailing)):not([data-presentation])) .trailing { display: none; }
+.show-as { display: none; }
+:host([data-presentation]) .show-as { display: inline-flex; }

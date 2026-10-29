@@ -1406,6 +1406,7 @@ family's markup is not a component's anatomy.
 - Site: `scripts/check-traps.mjs`
 - Site: `src/core/sherpa-filter-menu.html`
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-rows.html`
+- Site: `src/core/sherpa-show-as.html`
 
 ### T-a-swapped-label-is-in-the-markup
 
