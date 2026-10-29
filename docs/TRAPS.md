@@ -12226,13 +12226,17 @@ Advanced, the section chip sets `data-inline` on its own menu, so the rows sit
 under the heading in place of the values, answered or not; Simple puts the card
 back. The menu's host is `display: contents`, so in the section's grid the CARD
 is the item — it spans the row itself — and inline it drops its empty heading
-row from the header grid.
+row from the header grid. In a LABEL-COLUMN section (three columns: title,
+answer, actions) the section's `::slotted(sherpa-menu[data-inline])` makes the
+host the item instead, in the answer's column, beside the title: a rule from
+outside beats the menu's own `:host`. Will, TODO 525
 
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 
 ### T-a-percentage-floor-needs-a-definite-parent
 

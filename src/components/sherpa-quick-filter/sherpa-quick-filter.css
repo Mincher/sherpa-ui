@@ -162,6 +162,15 @@
   grid-column: 2;
 }
 :host([data-layout="section"][data-label-start]) .more-slot { grid-column: 3; }
+/* …and an Advanced field's rows in the answer's column too, never under its
+   title: three columns, title, answer, actions. The menu's host is the item
+   here, not its card. Will, TODO 525 · TRAP T-an-inline-menu-is-the-same-menu */
+:host([data-layout="section"][data-label-start]) ::slotted(sherpa-menu[data-inline]) {
+  display: block;
+  grid-row: 1;
+  grid-column: 2;
+  min-inline-size: 0;
+}
 
 /* Snapped: flat right corners on the body (Structure ext `snap-right-edge`). */
 :host([data-menu]) .body {

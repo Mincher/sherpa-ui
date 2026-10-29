@@ -420,7 +420,7 @@
   "src/components/sherpa-prompt-composer/sherpa-prompt-composer.css": 115,
   "src/components/sherpa-provider/sherpa-provider.css": 7,
   "src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css": 548,
-  "src/components/sherpa-quick-filter/sherpa-quick-filter.css": 431,
+  "src/components/sherpa-quick-filter/sherpa-quick-filter.css": 440,
   "src/components/sherpa-radial-chart/sherpa-radial-chart.css": 104,
   "src/components/sherpa-router/sherpa-router.css": 7,
   "src/components/sherpa-section-header/sherpa-section-header.css": 95,

@@ -2771,3 +2771,28 @@ test('a site pick held before the bar draws is reported by its key (TODO 523 F16
   });
   expect(r).toEqual(['Contoso', '{customer:Northwind,site:Leeds}']);
 });
+
+test('in a label-column panel, an Advanced section\'s rows sit in the answer column, never under its title (Will, TODO 525)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined,
+      { 'data-orientation': 'portrait', 'data-label-column': '', style: 'inline-size: 480px' });
+    const opts = [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }];
+    el.populate!([{ id: 'plan', label: 'Plan', advanced: true, options: opts }, { id: 'tier', label: 'Tier', options: opts }]);
+    await window.__settled();
+    const sr = el.shadowRoot!;
+    const plan = sr.querySelector<HTMLElement & { menu: HTMLElement & { switchMode(m: string): void } }>('.chips > .chip[data-id="plan"]')!;
+    const tier = sr.querySelector<HTMLElement>('.chips > .chip[data-id="tier"]')!;
+    plan.menu.switchMode('advanced');
+    await window.__settled();
+    await new Promise((done) => setTimeout(done, 150));
+    const title = plan.shadowRoot!.querySelector('.body')!.getBoundingClientRect();
+    const rows = plan.menu.getBoundingClientRect();
+    const values = tier.shadowRoot!.querySelector('.values')!.getBoundingClientRect();
+    return { inline: plan.menu.hasAttribute('data-inline'), left: Math.round(rows.left), answer: Math.round(values.left),
+      beside: Math.round(rows.left) >= Math.round(title.right), sameRow: Math.round(rows.top) === Math.round(title.top) };
+  });
+  expect(r.inline).toBe(true);
+  expect(r.left).toBe(r.answer);
+  expect(r.beside).toBe(true);
+  expect(r.sameRow).toBe(true);
+});
