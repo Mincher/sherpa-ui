@@ -2860,3 +2860,22 @@ test('a panel section, hovered, wears a grid row\'s hover fill — on or off (Wi
   expect(on).toBe(row);
   expect(row).not.toBe('rgba(0, 0, 0, 0)');
 });
+
+test('Limit to matching filters and Hide invalid filters are offered at the View scope only (Will, TODO 553)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const offered = async (attrs: Record<string, string>): Promise<string[]> => {
+      const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-limit-options': 'on', 'data-hide-unmatched': 'off', ...attrs });
+      el.populate!([{ id: 'status', label: 'Status', options: [{ value: 'a', label: 'A' }] }]);
+      await window.__settled();
+      const more = el.shadowRoot!.querySelector('[data-act="overflow"]') as HTMLElement & { shadowRoot: ShadowRoot };
+      more.shadowRoot.querySelector<HTMLElement>('button')!.click();
+      await window.__settled();
+      const rows = [...el.shadowRoot!.querySelectorAll<HTMLInputElement>('.more-menu input[type="checkbox"]')].map((i) => i.value);
+      el.remove();
+      return rows;
+    };
+    return { view: await offered({ 'data-type': 'view' }), local: await offered({ 'data-scope': 'data' }) };
+  });
+  expect(r.view).toEqual(['limit-options', 'hide-unmatched']);
+  expect(r.local).toEqual([]);
+});

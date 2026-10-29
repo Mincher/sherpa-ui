@@ -18,7 +18,7 @@ export {
   type ListOptions as SessionListOptions,
   type PersistOptions as SessionPersistOptions,
 } from './core/browser/session.js';
-export { bindSettings } from './core/ui/bind-settings.js';
+export { bindSettings, followSettings, type Setting } from './core/ui/bind-settings.js';
 // Saved Views: the reader's own, the View chip's options, a pick applied.
 export {
   persistView, clearViewState, applyViewSnapshot, captureView,

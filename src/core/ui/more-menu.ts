@@ -34,12 +34,16 @@ export function folded(el: Element | null): boolean {
   return !!el && getComputedStyle(el).display === 'none';
 }
 
-/** Reset filters, then Reset all on view — off where they would change nothing (TODO 231),
- *  and the second only over the View: its bar, or a column that holds it. Will, TODO 524 */
-export function resetRows(host: HTMLElement): MoreRow[] {
-  const atView = host.dataset['type'] === 'view' || host.hasAttribute('data-column')
+/** Is this host over the View: its bar, or a column that holds it? */
+function atView(host: HTMLElement): boolean {
+  return host.dataset['type'] === 'view' || host.hasAttribute('data-column')
     || (host.dataset['scope'] ?? '').split(/\s+/).includes(VIEW);
-  return [['reset', host.hasAttribute('data-nothing-to-reset')], ...(atView ? [['reset-default', host.hasAttribute('data-at-default')] as MoreRow] : [])];
+}
+
+/** Reset filters, then Reset all on view — off where they would change nothing (TODO 231),
+ *  and the second only over the View. Will, TODO 524 */
+export function resetRows(host: HTMLElement): MoreRow[] {
+  return [['reset', host.hasAttribute('data-nothing-to-reset')], ...(atView(host) ? [['reset-default', host.hasAttribute('data-at-default')] as MoreRow] : [])];
 }
 
 /** Limit is on, and hides what it rules out. Will, TODO 205. */
@@ -69,7 +73,8 @@ export function openMore(host: HTMLElement, root: ParentNode, trigger: HTMLEleme
   if (!menu || !divider) return;
   const drawn = groups.map((rows) => drawRows(host, root, rows));
   const limit = host.dataset['limitOptions'];
-  if (limit) {
+  // The app's setting: offered over the View only. Will, TODO 553
+  if (limit && atView(host)) {
     // …and below it, whether what Limit rules out is shown at all. Will, TODOs 205 and 376
     drawn.push([check(root, 'limit-options', limit === 'on'), check(root, 'hide-unmatched', host.dataset['hideUnmatched'] === 'on')]
       .filter((n): n is HTMLElement => !!n));
