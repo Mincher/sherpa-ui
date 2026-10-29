@@ -1,11 +1,11 @@
 {
   "app.js": {
-    "js": 457698,
+    "js": 457770,
     "files": 61,
     "fetched": 0
   },
   "components.js": {
-    "js": 933278,
+    "js": 933394,
     "files": 111,
     "fetched": 208813
   },
@@ -15,7 +15,7 @@
     "fetched": 0
   },
   "components/sherpa-app-header/sherpa-app-header.js": {
-    "js": 382984,
+    "js": 383056,
     "files": 27,
     "fetched": 0
   },
@@ -60,7 +60,7 @@
     "fetched": 0
   },
   "components/sherpa-chart-legend/sherpa-chart-legend.js": {
-    "js": 428102,
+    "js": 428174,
     "files": 37,
     "fetched": 0
   },
@@ -95,7 +95,7 @@
     "fetched": 0
   },
   "components/sherpa-data-grid/sherpa-data-grid.js": {
-    "js": 565547,
+    "js": 565663,
     "files": 52,
     "fetched": 0
   },
@@ -130,7 +130,7 @@
     "fetched": 0
   },
   "components/sherpa-input-text/sherpa-input-text.js": {
-    "js": 371251,
+    "js": 371323,
     "files": 26,
     "fetched": 0
   },
@@ -140,7 +140,7 @@
     "fetched": 0
   },
   "components/sherpa-layout-canvas/sherpa-layout-canvas.js": {
-    "js": 384388,
+    "js": 384460,
     "files": 28,
     "fetched": 0
   },
@@ -170,7 +170,7 @@
     "fetched": 0
   },
   "components/sherpa-menu/sherpa-menu.js": {
-    "js": 371251,
+    "js": 371323,
     "files": 26,
     "fetched": 0
   },
@@ -200,12 +200,12 @@
     "fetched": 0
   },
   "components/sherpa-notifications/sherpa-notifications.js": {
-    "js": 382362,
+    "js": 382434,
     "files": 28,
     "fetched": 0
   },
   "components/sherpa-outlet/sherpa-outlet.js": {
-    "js": 296933,
+    "js": 297005,
     "files": 27,
     "fetched": 0
   },
@@ -215,7 +215,7 @@
     "fetched": 0
   },
   "components/sherpa-pagination/sherpa-pagination.js": {
-    "js": 384606,
+    "js": 384678,
     "files": 28,
     "fetched": 0
   },
@@ -240,17 +240,17 @@
     "fetched": 0
   },
   "components/sherpa-provider/sherpa-provider.js": {
-    "js": 400708,
+    "js": 400780,
     "files": 42,
     "fetched": 0
   },
   "components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js": {
-    "js": 558693,
+    "js": 558765,
     "files": 51,
     "fetched": 0
   },
   "components/sherpa-quick-filter/sherpa-quick-filter.js": {
-    "js": 303315,
+    "js": 303387,
     "files": 23,
     "fetched": 0
   },
@@ -270,17 +270,17 @@
     "fetched": 0
   },
   "components/sherpa-select-card/sherpa-select-card.js": {
-    "js": 391034,
+    "js": 391106,
     "files": 30,
     "fetched": 0
   },
   "components/sherpa-select-checkbox/sherpa-select-checkbox.js": {
-    "js": 379767,
+    "js": 379839,
     "files": 27,
     "fetched": 0
   },
   "components/sherpa-select-group/sherpa-select-group.js": {
-    "js": 389820,
+    "js": 389892,
     "files": 30,
     "fetched": 0
   },
@@ -290,7 +290,7 @@
     "fetched": 0
   },
   "components/sherpa-slider/sherpa-slider.js": {
-    "js": 380526,
+    "js": 380598,
     "files": 27,
     "fetched": 0
   },
@@ -340,12 +340,12 @@
     "fetched": 0
   },
   "data.js": {
-    "js": 152618,
+    "js": 152690,
     "files": 40,
     "fetched": 0
   },
   "index.js": {
-    "js": 1120770,
+    "js": 1120886,
     "files": 154,
     "fetched": 208813
   }

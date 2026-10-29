@@ -3407,11 +3407,16 @@ LAST because the page is a window onto the final order, and `total` has to count
 the MATCHES, not the page.
 
 **Grouping is deliberately NOT applied here.** A grouped view still needs the
-FLAT rows — `sherpa-data-grid` sorts by the group field and stamps a heading row
-when the value changes — so the group field is applied as a LEADING SORT and the
-consumer decides what to draw. That leading spec puts rows sharing a group value
-adjacent so a consumer can find each group in one pass, and the caller's own sort
-specs then order rows WITHIN their group.
+FLAT rows — `sherpa-data-grid` stamps a heading row when the value changes — so
+the group field is applied as a LEADING SORT and the consumer decides what to
+draw. That leading spec puts rows sharing a group value adjacent so a consumer
+can find each group in one pass, and the caller's own sort specs then order rows
+WITHIN their group.
+
+**Sorted BY the grouped field, the groups go that way** (TODO 523). It was A to Z
+here and the sort's way in the grid, so a bound grid drew Z to A over rows its
+source had in A to Z, and `groups()` disagreed with both. The rule is here now,
+once; a bound grid draws its rows as given and sorts only when it is alone.
 
 `groupRows` exists for a consumer that does want the buckets, and preserves the
 order rows ARRIVE in: rows are grouped AFTER sorting, so the groups come out in
@@ -3419,6 +3424,7 @@ sort order and the rows within each keep theirs. `Map.groupBy` keeps insertion
 order, which is exactly that.
 
 - Site: `src/core/data/store.ts`
+- Site: `test/unit/a-group-follows-its-own-sort.test.mjs`
 
 ### T-grid-active-flag-is-not-a-tint
 

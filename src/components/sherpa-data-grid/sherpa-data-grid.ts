@@ -2016,7 +2016,8 @@ export class SherpaDataGrid extends SherpaElement {
    * back to a record must use this — data-index is a position in THIS list.
    */
   #visibleRows(): GridRow[] {
-    return this.#sortRows(this.#filteredRows());
+    // Bound, its source ordered them: drawn as given. Alone, it orders them. TODO 523 · TRAP T-bind-locks-what-it-owns
+    return this.hasAttribute('data-locked') ? this.#filteredRows() : this.#sortRows(this.#filteredRows());
   }
 
   /**

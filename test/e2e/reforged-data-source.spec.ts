@@ -999,3 +999,31 @@ test('a grid bound with no adapter keeps the columns its page set: rows alone ar
   });
   expect(r).toEqual({ heads: ['name', 'plan'], rows: 2 });
 });
+
+test('a bound grid draws its rows in the order its source gives them — it never sorts them again (TODO 523 S1)', async ({ page }) => {
+  const names = await page.evaluate(async () => {
+    const { DataSource, bindSource } = await import('/dist/index.js');
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const grid = document.createElement('sherpa-data-grid') as HTMLElement & { rendered?: Promise<void>; columns: unknown[] };
+    root.appendChild(grid);
+    await grid.rendered;
+    grid.columns = [{ field: 'name', header: 'Name' }];
+    // A store that answers in its OWN order, as a server does.
+    const rows = [{ id: 1, name: 'Bo' }, { id: 2, name: 'Ada' }, { id: 3, name: 'Cy' }];
+    const store = Object.assign(new EventTarget(), {
+      key: 'id',
+      async load() { return { rows: rows.map((r) => ({ ...r })), total: rows.length }; },
+      async totalCount() { return rows.length; },
+      async byKey(k: unknown) { return rows.find((r) => r.id === k); },
+      async insert() { return rows[0]!; }, async update() { return rows[0]!; }, async remove() {},
+    });
+    const source = new DataSource({ store });
+    bindSource(source, grid, { scope: 'view' });
+    source.query.setSort('name', 'asc');
+    await source.load();
+    await window.__settled();
+    return [...grid.shadowRoot!.querySelectorAll('.row')].map((r) => r.querySelector('[data-field="name"]')?.textContent?.trim());
+  });
+  expect(names).toEqual(['Bo', 'Ada', 'Cy']);
+});

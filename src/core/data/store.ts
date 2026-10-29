@@ -671,10 +671,13 @@ export function applyOptions(rows: readonly Row[], options: LoadOptions = {}): L
   if (options.search) out = searchRows(out, options.search, options.searchFields);
   if (options.filter) out = filterRows(out, options.filter);
 
-  // Grouping is a SORT: the group field sorts FIRST.
+  /* Grouping is a SORT: the group field sorts FIRST — the way a sort on that
+     field says, else A to Z. The rule the grid drew, now the one place. TODO 523 */
+  const sort = options.sort ?? [];
+  const own = options.group ? sort.find((s) => s.field === options.group) : undefined;
   const specs: SortSpec[] = options.group
-    ? [{ field: options.group, direction: 'asc' }, ...(options.sort ?? [])]
-    : (options.sort ?? []);
+    ? [{ field: options.group, direction: own?.direction ?? 'asc' }, ...sort.filter((s) => s !== own)]
+    : sort;
   if (specs.length) out = sortRows(out, specs);
 
   const total = out.length;
