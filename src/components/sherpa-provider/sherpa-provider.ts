@@ -25,7 +25,7 @@ import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.j
 import type { DraftMode } from '../../core/browser/view-drafts.js';
 import { openSource, savedFiltersOf, type PageDefinition } from '../../core/data/page-definition.js';
 import { QueryContext, type QueryChangeDetail } from '../../core/data/query-context.js';
-import { VIEW } from '../../core/data/query.js';
+import { VIEW, type Presentation } from '../../core/data/query.js';
 import type { Failure } from '../../core/data/failure.js';
 import type { DataChangeDetail, DataSource, QueryState } from '../../core/data/data-source.js';
 import type { Where } from '../../core/data/where.js';
@@ -1077,6 +1077,7 @@ export class SherpaProvider extends SherpaElement {
     const zoned = asks.thresholds && spec?.field ? spec.field : undefined;
     const unbind = bindSource(source, el as Populatable, {
       ...(zoned ? { free: [zoned] } : {}),
+      ...(spec && typeof scope === 'string' ? { shows: this.#shows(el) } : {}),
       ...(fields ? { fields } : {}),
       rows: spec || asks.shape === 'all' ? 'all' : 'page',
       // A pager and a filter bar steer; the rows are not theirs to draw.
@@ -1216,6 +1217,14 @@ export class SherpaProvider extends SherpaElement {
     if (shown.group) spec['group'] = shown.group;
     if (shown.sort) spec['sort'] = shown.sort;
     return spec as unknown as SummarySpec;
+  }
+
+  /** What a chart shows by its own attributes: its slot's default. Will, TODO 548 */
+  #shows(el: Element): Presentation {
+    const segment = this.#inherited(el, 'data-segment-field');
+    const field = this.#inherited(el, 'data-field');
+    const counts = field && this.#inherited(el, 'data-aggregate') === 'distinct';
+    return { ...(segment ? { secondary: segment } : {}), ...(counts ? { primary: field } : {}) };
   }
 
   /** A slot's kept presentation moved: its chart is answered again, with it. Will, TODO 548 */

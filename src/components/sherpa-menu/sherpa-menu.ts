@@ -70,6 +70,8 @@ export interface MenuItem {
   count?: number;
   /** A tiered field's child value: its parent value's key. TODO 369 */
   parent?: string;
+  /** In a single list, its OWN radio group: one pick per group — a chart's two fields. TODO 548 */
+  group?: string;
   /** A row that DOES something — no tick box: a button, reported as `menu-select`. TODO 427 */
   action?: boolean;
 }
@@ -1588,7 +1590,7 @@ export class SherpaMenu extends SherpaElement {
     if (box) {
       box.value = item.value;
       box.checked = held ? held.has(item.value) : !!item.selected;
-      if (this.dataset['select'] === 'single') box.name = this.#group;
+      if (this.dataset['select'] === 'single') box.name = item.group ? `${this.#group}-${item.group}` : this.#group;
     }
     const label = item.label ?? item.value;
     row.querySelector('.menu-row-label')!.textContent = label;

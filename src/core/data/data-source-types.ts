@@ -20,7 +20,7 @@
  */
 import type { Filter, FilterOp, LoadResult, Row, SortDirection, SortSpec, Store } from './store.js';
 import type { FieldReading, FieldType } from './filter-state.js';
-import type { Query } from './query.js';
+import type { Presentation, Query } from './query.js';
 import type { QueryContext } from './query-context.js';
 import type { Threshold } from './threshold.js';
 
@@ -234,6 +234,9 @@ export interface AttachFacts {
    *  less any clause on them, its own part's too — a gauge over its own zones,
    *  which they only light. Will, TODO 479. TRAP T-a-chart-is-free-of-its-own-field */
   free?: readonly string[];
+  /** A chart's own presentation, by its attributes: what its slot shows until
+   *  the reader changes it. Will, TODO 548 */
+  shows?: Presentation;
 }
 
 /** What a bound component is told of the view; `undefined` is none. The binder

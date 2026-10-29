@@ -25,6 +25,7 @@
  * - .drawPanelReading — Tell each control over several scopes one field's reading in a scope.
  * - .drawReading — Tell each control over a field's home its reading.
  * - .drawBars — Draw every bar over one scope, as the panel draws it.
+ * - .shownIn — What a slot's chart shows by its own attributes.
  * - .tellView — Tell each component in one scope its view again, and nothing more.
  * - .drawBarsBehind — Draw each bar over one scope that does not hold what the scope holds now: a scope two bars draw — a strip and…
  * - .drawEveryBar — Draw every bar over one scope each; settles when all have drawn.
@@ -35,7 +36,7 @@
  * - .debug — Each bind, for a bug report.
  * - tagOf — A bound control's tag, where it is an element.
  */
-import { VIEW } from './query.js';
+import { VIEW, type Presentation } from './query.js';
 import { andFilter, filterRows, filterWithout, type Filter, type Row } from './store.js';
 import { coalesce } from './timing.js';
 import type { AttachFacts, BindSink, BoundControl, BoundView, ScopeDescription } from './data-source-types.js';
@@ -58,6 +59,8 @@ export interface Bound {
   fields?: readonly string[];
   /** See AttachFacts.free. */
   free?: readonly string[];
+  /** See AttachFacts.shows. */
+  shows?: Presentation;
   /** Where its view, rows and pending fields go. */
   sink: BindSink;
 }
@@ -110,6 +113,7 @@ export class SourceBinding {
       ...(facts.scope ? { scope: facts.scope } : {}),
       ...(facts.fields ? { fields: [...facts.fields] } : {}),
       ...(facts.free?.length ? { free: [...facts.free].sort() } : {}),
+      ...(facts.shows ? { shows: facts.shows } : {}),
     });
   }
 
@@ -241,6 +245,11 @@ export class SourceBinding {
    *  that came from somewhere else (the panel) changed what it holds. */
   drawBars(scope: string): void {
     for (const [el, { scope: s }] of this.#bound) if (s === scope && el.drawScope) void el.drawScope(...this.#slice(scope));
+  }
+
+  /** What a slot's chart shows by its own attributes. TODO 548 */
+  shownIn(scope: string): Presentation {
+    return [...this.#bound.values()].find((b) => b.scope === scope && b.shows)?.shows ?? {};
   }
 
   /** Tell each component in one scope its view again, and nothing more. TODO 548 */

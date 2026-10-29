@@ -540,9 +540,10 @@ export class DataSource extends EventTarget {
       /* A SLOT: its chart's parts by a list field, its two fields, and its order —
          kept in the Query, never the rows'. Will, TODO 548 */
       const lists = this.#catalogue.known().map((field) => ({ field, label: this.#catalogue.get(field)?.label ?? field })).filter(groupable);
-      const shown = this.#context.presentation(scope);
+      // Its chart's own, under what the reader changed.
+      const shown = { ...this.#binding.shownIn(scope), ...this.#context.presentation(scope) };
       Object.assign(out, {
-        presents: true, group: lists, compare: lists,
+        presents: true, group: lists.filter((c) => c.field !== shown.secondary), compare: lists,
         ...(shown.group ? { groupField: shown.group } : {}),
         ...(shown.sort ? { sortDirection: shown.sort } : {}),
         ...(shown.primary ? { primaryField: shown.primary } : {}),
@@ -1204,8 +1205,9 @@ export class DataSource extends EventTarget {
         this.#binding.drawBars(change.scope);
         return;
       case 'presented':
-        // A slot's presentation moved: its bar is told its Group and Sort. TODO 548
+        // A slot's presentation moved: its bar is told its Group and Sort, and draws its Compare. TODO 548
         this.#binding.tellView(change.scope);
+        this.#binding.drawBars(change.scope);
         return;
       case 'arranged':
         // The old count was measured against the OLD grouping. Drop it and wait for

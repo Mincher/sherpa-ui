@@ -59,6 +59,8 @@ export interface OrganiseDef {
   sort?: OrganiseColumn[];
   /** A Sort with no column to pick: it orders what a chart draws, by value. TODO 548 */
   order?: boolean;
+  /** A chart's Compare: the fields it may count and split by, and those it does. TODO 548 */
+  compare?: { fields: OrganiseColumn[]; primary?: string; secondary?: string };
 }
 
 export type { OrganiseColumn } from '../../core/data/data-source.js';
@@ -2053,7 +2055,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.groupSets(scope.sets ?? []);
     // Its Group and Sort, where the scope arranges — drawn again only when they change.
     // TRAP T-group-and-sort-are-component-scope
-    const organise: OrganiseDef = { group: scope.group ?? [], sort: scope.sort ?? [], ...(scope.presents ? { order: true } : {}) };
+    const compare = scope.presents ? {
+      fields: scope.compare ?? [],
+      ...(scope.primaryField ? { primary: scope.primaryField } : {}),
+      ...(scope.secondaryField ? { secondary: scope.secondaryField } : {}),
+    } : undefined;
+    const organise: OrganiseDef = { group: scope.group ?? [], sort: scope.sort ?? [], ...(compare ? { order: true, compare } : {}) };
     if (scope.group && JSON.stringify(organise) !== JSON.stringify(this.#organise)) this.organise(organise);
     const fields = scope.filters;
     // A field whose values have just come draws its chip again, with them. TRAP T-a-field-reads-its-values-when-needed
@@ -2609,10 +2616,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const group = this.#organise.group ?? [];
     const sort = this.#organise.sort ?? [];
     const order = !!this.#organise.order;
+    const compare = this.#organise.compare;
     zone.replaceChildren();
     // CSS cannot see whether the zone has children, and an empty one would leave
     // its divider rule floating.
     this.toggleState('has-organise', group.length > 0 || sort.length > 0 || order);
+    if (compare?.fields.length) zone.appendChild(this.#compareChip(compare));
 
     /* BORN NAMING ITS COLUMN. The bar may already be grouped or sorted — a
        reload restores both — so the chip is built on that column rather than
@@ -2646,6 +2655,29 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** Follow the host's arrangement onto the Group and Sort chips. The chip knows how. */
   #syncArrangement(): void {
     for (const kind of ['group', 'sort'] as const) arrangeFrom(this, this.#organiser(kind), kind);
+  }
+
+  /** A chart's Compare: one pick in each of two lists — what it counts, and
+   *  what it splits by. A pick is ONE request. Will, TODO 548 */
+  #compareChip({ fields, primary, secondary }: NonNullable<OrganiseDef['compare']>): HTMLElement {
+    const chip = this.clone('template.organise-compare-tpl');
+    if (!chip) throw new Error('sherpa-quick-filter-toolbar: template.organise-compare-tpl is missing or empty');
+    const list = (part: 'count' | 'by', on: string | undefined): FilterOption[] => fields.map((c) => ({
+      value: `${part}:${c.field}`, label: c.label, section: this.word(part), group: part, selected: c.field === on,
+    }));
+    this.#addMenu(chip, {
+      id: 'compare', label: chip.dataset['label'] ?? '', select: 'single', persistent: true,
+      options: [...list('count', primary), ...list('by', secondary)],
+    });
+    this.#lock(chip);
+    return chip;
+  }
+
+  /** The Compare chip's picks, as the slot's presentation. */
+  #onCompare(chip: SherpaQuickFilter): void {
+    const pick = (part: string): string | undefined =>
+      chip.values.find((v) => v.startsWith(`${part}:`))?.slice(part.length + 1);
+    this.#ask({ presentation: { primary: pick('count'), secondary: pick('by') } }, 'free');
   }
 
   /** One organise chip, from its own prototype: a menu chip with single-select rows. */
@@ -2683,6 +2715,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     /* This hears the chips' quick-filter-change AND the toolbar's own, emit()
        being composed. Registered in CAPTURE so it stops a chip's before a host
        reads it. TRAP T-capture-beats-registration-order */
+    const compare = this.pathFind<SherpaQuickFilter>(event, '.organise-chip[data-id="compare"]');
+    if (compare) {
+      event.stopImmediatePropagation();
+      this.#onCompare(compare);
+      return;
+    }
     const chip = this.#chipOf(event);
     if (!chip) return;
     event.stopImmediatePropagation();

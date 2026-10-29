@@ -179,6 +179,8 @@ export type QueryRequest =
   | { scope?: string; order: readonly string[] }
   /** A preset on or off. TODO 493 */
   | { scope?: string; preset: string; on: boolean; commit?: true }
+  /** A slot's presentation: what its chart counts and splits by. TODO 548 */
+  | { scope?: string; presentation: Partial<Record<keyof Presentation, string | undefined>> }
   | readonly QueryRequest[];
 
 /** A saved filter: a name, and each scope's filters as a View writes them —

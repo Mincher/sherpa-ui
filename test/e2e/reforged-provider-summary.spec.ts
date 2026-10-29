@@ -340,3 +340,48 @@ test('a chart\'s bar in its SLOT: Group splits its bars, Sort has no menu and cy
   // Clear all ungroups it; its Sort still sorts.
   expect(r['again']).toEqual({ kept: { sort: 'asc' }, first: 'Free: 1' });
 });
+
+test('a chart\'s Compare picks what it counts and what it splits by: one of each, its chart\'s own until picked (Will, TODO 548)', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-container data-scope="by-plan">
+        <sherpa-quick-filter-toolbar></sherpa-quick-filter-toolbar>
+        <sherpa-barchart id="slotted" data-segment-field="plan"></sherpa-barchart>
+      </sherpa-container>\`;
+    const source = new DataSource({ store: new ArrayStore([...rows, { id: 5, plan: 'Pro', spend: 1, day: 'Mon' }], { key: 'id' }) });
+    source.declareValues('plan', PLANS);
+    source.declareValues('day', ['Mon', 'Tue', 'Wed']);
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    const bar = provider.querySelector('sherpa-quick-filter-toolbar');
+    const zone = () => [...bar.shadowRoot.querySelectorAll('.organise-zone > .organise-chip')];
+    const compare = () => zone().find((c) => c.dataset.id === 'compare');
+    const boxes = () => [...compare().querySelectorAll('sherpa-menu input')];
+    const ticked = () => boxes().filter((i) => i.checked).map((i) => i.value);
+    const bars = () => [...provider.querySelector('#slotted').shadowRoot.querySelectorAll('.bar-col')]
+      .map((c) => c.getAttribute('aria-label'));
+    const pick = async (value) => {
+      const box = boxes().find((i) => i.value === value);
+      box.checked = true;
+      box.dispatchEvent(new Event('change', { bubbles: true }));
+      await settle();
+    };
+    const groups = () => [...zone().find((c) => c.dataset.id === 'group').querySelectorAll('sherpa-menu input')].map((i) => i.value).filter(Boolean);
+    const at = { order: zone().map((c) => c.dataset.id), first: { ticked: ticked(), groups: groups(), bars: bars() } };
+    await pick('by:day');
+    at.split = { ticked: ticked(), kept: source.query.presentation('by-plan'), bars: bars() };
+    await pick('count:plan');
+    at.counted = { ticked: ticked(), kept: source.query.presentation('by-plan'), bars: bars() };
+    return at;
+  })()`) as Record<string, unknown>;
+  // Compare leads, before Group and Sort.
+  expect(r['order']).toEqual(['compare', 'group', 'sort']);
+  // As its chart says: split by plan, counting rows; Group offers no plan.
+  expect(r['first']).toEqual({ ticked: ['by:plan'], groups: ['day'], bars: ['Free: 1', 'Pro: 3', 'Enterprise: 1'] });
+  // By day: one bar a day.
+  expect(r['split']).toEqual({ ticked: ['by:day'], kept: { secondary: 'day' }, bars: ['Mon: 3', 'Tue: 1', 'Wed: 1'] });
+  // Counting plans: each day's different plans.
+  expect(r['counted']).toEqual({ ticked: ['count:plan', 'by:day'], kept: { primary: 'plan', secondary: 'day' }, bars: ['Mon: 2', 'Tue: 1', 'Wed: 1'] });
+});

@@ -30,6 +30,10 @@
   </template>
 
   <!-- The Group and Sort chips: not a `.chip`, so the filter code passes them by. -->
+  <!-- A chart's Compare: what it counts, and what it splits by. Will, TODO 548 -->
+  <template class="organise-compare-tpl">
+    <sherpa-quick-filter class="organise-chip" data-id="compare" data-kind="single" data-label="Compare"></sherpa-quick-filter>
+  </template>
   <template class="organise-group-tpl">
     <sherpa-quick-filter class="organise-chip" data-id="group" data-kind="group" data-label="Group"></sherpa-quick-filter>
   </template>
@@ -47,6 +51,9 @@
     <span data-word="return">Return to</span>
     <!-- The panel's heading over a scope's presets; the bar needs none. Will, TODO 493 -->
     <span data-word="presets">Presets</span>
+    <!-- A chart's Compare, its two lists. Will, TODO 548 -->
+    <span data-word="count">Count</span>
+    <span data-word="by">By</span>
     <!-- What a panel scope narrows, under its name, where its tag says it badly. Will, TODO 457 -->
     <span data-word="sherpa-barchart">Bar Chart</span>
   </template>

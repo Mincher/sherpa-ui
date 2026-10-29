@@ -27,6 +27,8 @@ export interface FilterOption {
   swatch?: number | string;
   /** A tiered field's child value: its parent value's key. TODO 369 */
   parent?: string;
+  /** In a single list, its own radio group. TODO 548 */
+  group?: string;
 }
 
 /** One filter, as a bar or the panel draws it. */
