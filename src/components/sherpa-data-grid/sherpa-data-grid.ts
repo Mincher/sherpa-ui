@@ -31,7 +31,7 @@ import {
   valueKey, type FilterOp,
 } from '../../core/data/store.js';
 import {
-  fieldState, readingClause, readingRows,
+  fieldState, modeOf, readingClause, readingRows,
   type FieldCondition, type FieldFacts, type FieldReading, type FieldType, type FilterState,
 } from '../../core/data/filter-state.js';
 import { filterFace } from '../../core/data/filter-face.js';
@@ -947,19 +947,22 @@ export class SherpaDataGrid extends SherpaElement {
     return fieldState(this.#facts(field), { ...held, suspended: false });
   }
 
-  /** What the grid knows of a field: its name, its column type — and, for a
-   *  tiered field, its child and each child pick's parent and name. TODO 369 */
+  /** What the grid knows of a field: its column type and the filter it was given,
+   *  whole — its bands, time, range and names, as the data layer reads them; for a
+   *  tiered field, each child pick's parent and name too. TODOs 369, 523 F7 */
   #facts(field: string): FieldFacts {
     const type = this.#columns.find((c) => c.field === field)?.type;
-    const given = this.#givenFilters[field];
-    const kids = given?.child ? (given.options ?? []).filter((o) => o.parent) : [];
+    const { label, time, range, thresholds, labels, child, options } = this.#givenFilters[field] ?? {};
+    const kids = child ? (options ?? []).filter((o) => o.parent) : [];
+    const named = { ...labels, ...Object.fromEntries(kids.map((o) => [o.value, o.label])) };
     return {
       field, ...(type ? { type: type as FieldType } : {}),
-      ...(given?.child && kids.length ? {
-        child: given.child,
-        parentOf: new Map(kids.map((o) => [o.value, o.parent!])),
-        labels: Object.fromEntries(kids.map((o) => [o.value, o.label])),
-      } : {}),
+      ...(child && kids.length ? { child, parentOf: new Map(kids.map((o) => [o.value, o.parent!])) } : {}),
+      ...(Object.keys(named).length ? { labels: named } : {}),
+      ...(time ? { time: true } : {}),
+      ...(range ? { range: true } : {}),
+      ...(thresholds ? { thresholds } : {}),
+      ...(label ? { label } : {}),
     };
   }
 
@@ -1035,10 +1038,11 @@ export class SherpaDataGrid extends SherpaElement {
    * TRAP T-a-view-held-heading-shows-and-refuses
    */
   supersedeColumns(readings: Readonly<Record<string, FieldReading>>, appliedAt?: string): void {
-    // The same answer again rebuilds nothing — a host sends it on every change.
-    const key = JSON.stringify([readings, appliedAt ?? null]);
-    if (key === this.#supersededKey) return;
-    this.#supersededKey = key;
+    // The same answer again rebuilds nothing — a host sends it on every change. TODO 523 F8
+    const was = this.#superseded;
+    const fields = Object.entries(readings);
+    if (appliedAt === this.#supersededAt && fields.length === was.size
+      && fields.every(([field, reading]) => was.has(field) && sameReading(was.get(field), reading))) return;
     this.#superseded = new Map(Object.entries(readings));
     this.#supersededAt = appliedAt;
     this.#renderHead();
@@ -1052,9 +1056,6 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** Where they are held, for each chip's tip. */
   #supersededAt: string | undefined;
-
-  /** What `supersedeColumns` was last given, as one comparable string. */
-  #supersededKey = '';
 
   /** What a heading SHOWS: a higher scope's answer when it holds the field, else its own. */
   #shown(field: string): FieldReading | undefined {
@@ -1393,7 +1394,7 @@ export class SherpaDataGrid extends SherpaElement {
   #cellOn(at: CellValue): boolean {
     const held = this.#shown(at.field);
     if (!held || held.suspended) return false;
-    const rows = held.mode ? held.mode === 'advanced' : readingRows(held).length > 0;
+    const rows = modeOf(held) === 'advanced';
     const values = rows ? isRows(held).flatMap((r) => r.picked ?? []) : held.picked ?? [];
     return values.some((v) => valueKey(v) === at.key);
   }
@@ -1527,7 +1528,7 @@ export class SherpaDataGrid extends SherpaElement {
    *  conditions; under All, every one when `every` asks. */
   #picksOf(field: string, every: boolean): readonly unknown[] {
     const held = this.#shown(field);
-    if (!held || held.suspended || (held.mode ? held.mode === 'advanced' : readingRows(held).length > 0)) return [];
+    if (!held || held.suspended || modeOf(held) === 'advanced') return [];
     if (held.all) return every ? this.#optionsOf(field).map((o) => o.value) : [];
     return held.picked ?? [];
   }
@@ -1902,10 +1903,8 @@ export class SherpaDataGrid extends SherpaElement {
     return count === 1 ? [...this.#actions] : this.#actions.filter((a) => a.multi);
   }
 
-  /**
-   * The rows on screen: filtered, then sorted. Anything mapping a row INDEX
-   * back to a record must use this — data-index is a position in THIS list.
-   */
+  /** The rows on screen, in order: `data-index` is a place in this list. A drawn
+   *  row's record is `#rowOf`'s, so a lookup never orders the rows again. */
   #visibleRows(): GridRow[] {
     // Bound, its source ordered them: drawn as given. Alone, it orders them. TODO 523 · TRAP T-bind-locks-what-it-owns
     return this.hasAttribute('data-locked') ? this.#rows : this.#sortRows(this.#rows);
@@ -1977,11 +1976,11 @@ export class SherpaDataGrid extends SherpaElement {
       this.#flush();
     }
 
-    // The INTENT, always. `field: null` on a suspend is what the query hears;
-    // the source remembers the column.
+    // The INTENT, always, in the Sort chip's shape: `field: null` on a suspend is
+    // what the query hears; the source remembers the column. TODO 523 S10
     this.emit('sort-change', {
       field: next.direction === null ? null : next.field,
-      direction: next.direction,
+      direction: next.direction ?? 'asc',
     });
   };
 
@@ -2011,10 +2010,9 @@ export class SherpaDataGrid extends SherpaElement {
 
     const tr = (event.target as HTMLElement).closest<HTMLElement>('.row');
     const raw = tr?.dataset['index'];
-    if (raw == null) return;
+    if (!tr || raw == null) return;
     const index = Number(raw);
-    // Resolve against the VISIBLE list — data-index is a position in that list.
-    const record = this.#visibleRows()[index];
+    const record = this.#rowOf.get(tr);
     this.#currentKey = record ? this.#keyOf(record) ?? null : null;
     this.#syncCurrent();
     this.emit('row-select', { index, row: record });
@@ -2022,9 +2020,8 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** Mark the CURRENT row — one of many, the house word; CSS owns the tint. */
   #syncCurrent(): void {
-    const rows = this.#visibleRows();
     for (const tr of this.$$<HTMLElement>('.row')) {
-      const row = rows[coerceNum(tr.dataset['index'], -1, { int: true })];
+      const row = this.#rowOf.get(tr);
       tr.toggleAttribute('data-current', !!row && this.#currentKey !== null && this.#keyOf(row) === this.#currentKey);
     }
   }
@@ -2229,11 +2226,10 @@ export class SherpaDataGrid extends SherpaElement {
     return this.$$<SelectBox>(this.#single ? '.row-one' : '.row-multi');
   }
 
-  /** The record a row control belongs to, resolved through the VISIBLE list. */
+  /** The record a row control belongs to, as its row was drawn. */
   #recordFor(el: HTMLElement): GridRow | undefined {
-    const raw = el.closest<HTMLElement>('.row')?.dataset['index'];
-    if (raw == null) return undefined;
-    return this.#visibleRows()[Number(raw)];
+    const tr = el.closest<HTMLElement>('.row');
+    return tr ? this.#rowOf.get(tr) : undefined;
   }
 
   /** Set every row in one group to match its group checkbox, then broadcast. */
@@ -2321,9 +2317,7 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** The records the body actually drew — one page when the grid pages. */
   #pageRecords(): GridRow[] {
-    return this.$$<HTMLElement>('.row')
-      .map((tr) => this.#visibleRows()[coerceNum(tr.dataset['index'], -1, { int: true })])
-      .filter((r): r is GridRow => r !== undefined);
+    return this.$$<HTMLElement>('.row').map((tr) => this.#rowOf.get(tr)).filter((r): r is GridRow => r !== undefined);
   }
 
   /** Mark each ticked ROW, which CSS paints, and reflect all / some / none on

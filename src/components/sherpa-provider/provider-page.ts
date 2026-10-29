@@ -45,7 +45,7 @@ import {
 import type { SavedSet } from '../../core/ui/filters-button.js';
 import type { DataSource } from '../../core/data/data-source.js';
 import type { QueryChangeDetail, QueryContext } from '../../core/data/query-context.js';
-import { VIEW, emptyScope, type Query, type QueryDefaults, type SavedFilter, type ScopeQuery } from '../../core/data/query.js';
+import { VIEW, emptyScope, sameReading, type Query, type QueryDefaults, type SavedFilter, type ScopeQuery } from '../../core/data/query.js';
 import { dropSet, layShared, sharedOf, takeSet, type SharedView } from '../../core/data/query-edits.js';
 import { VIEW_CHIP } from '../../core/ui/shared-constants.js';
 import type { ProvideOptions } from './sherpa-provider.js';
@@ -780,7 +780,7 @@ function redraft(source: DataSource, draft: Query, skip?: string): void {
     const was = applied.scopes[scope]?.readings ?? {};
     for (const field of new Set([...Object.keys(s.readings), ...Object.keys(was)])) {
       const want = s.readings[field] ?? null;
-      if (JSON.stringify(want) !== JSON.stringify(was[field] ?? null)) source.query.setReading(scope, field, want);
+      if (!sameReading(want, was[field])) source.query.setReading(scope, field, want);
     }
   }
 }

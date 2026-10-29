@@ -25,7 +25,7 @@ import { answerWhenDrawn, arrangeFrom, drawCount, limitField, markField, NextFra
 import { report } from '../../core/data/report.js';
 import { countSaid } from '../../core/data/filter-face.js';
 import { DEFAULT_OP, valueKey, type SortDirection } from '../../core/data/store.js';
-import { VIEW, readingAnswered, type QueryRequest } from '../../core/data/query.js';
+import { VIEW, readingAnswered, sameReading, type QueryRequest } from '../../core/data/query.js';
 import {
   modeOf, readingRows,
   type FieldReading,
@@ -1126,17 +1126,18 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  none of it. The answer it last painted is not painted again, so an open
    *  menu keeps its draft. 366 step 22 · TRAP T-grid-suspend-is-not-clear */
   #drawChip(id: string, reading: FieldReading): void {
-    const said = readingAnswered(reading) ? JSON.stringify(reading) : '';
+    // The same answer, its picks in any order, is not painted again. TODO 523 F8
+    const said = readingAnswered(reading) ? reading : null;
     const was = this.#painted.get(id);
-    if (was === said || (was === undefined && this.#drafting(id))) return;
+    if (was === undefined ? this.#drafting(id) : sameReading(was, said)) return;
     this.#paintReading(id, reading);
     if (reading.suspended) this.#setChipActive(id, false);
     this.#painted.set(id, said);
   }
 
-  /** What each chip was last drawn, by id — `''` for empty. A door's own paint
+  /** What each chip was last drawn, by id — null for empty. A door's own paint
    *  drops it; a new chip has none. */
-  #painted = new Map<string, string>();
+  #painted = new Map<string, FieldReading | null>();
 
   /** Is the reader working in this chip's menu — open, with a draft not applied? */
   #drafting(id: string): boolean {
@@ -1887,7 +1888,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #emptyChip(chip: SherpaQuickFilter): void {
     const id = chip.dataset['id'] ?? '';
     this.#pendingAnswers.delete(id);
-    this.#painted.set(id, '');
+    this.#painted.set(id, null);
     // Back to the condition its def opens on. TRAP T-empty-is-every-kind-of-answer
     chip.clear(this.#defOf(chip)?.op ?? DEFAULT_OP);
   }
@@ -2126,7 +2127,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     for (const def of this.#filters) {
       const chip = this.#chips().find((c) => c.dataset['id'] === def.id);
       if (!chip || answered.has(def.id) || persistent.has(def.id)) continue;
-      if (this.#painted.get(def.id) === '' || this.#drafting(def.id)) continue;
+      if (this.#painted.get(def.id) === null || this.#drafting(def.id)) continue;
       if (chip.hasAttribute('data-superseded')) continue;
       this.#emptyChip(chip);
     }
@@ -2507,7 +2508,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (!organise || this.hasAttribute('data-locked')) return;
     // Typed as its Group and Sort chips' own, which this bar carries too. TODO 424
     this.emit('group-change', { field: null as string | null });
-    this.emit('sort-change', { field: null as string | null, direction: 'asc' as SortDirection });
+    // Forgotten, not suspended: the Sort chip's None says the same. TODO 523 S10
+    this.emit('sort-change', { field: null as string | null, direction: 'asc' as SortDirection, clear: true });
   }
 
   /** Group and Sort off, and the Sort's way forgotten. */
@@ -2547,30 +2549,32 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#renderOrganise();
   }
 
-  /** The column the grid is grouped by — null when the chip is OFF, radio or no radio. */
+  /** The column the grid is grouped by — null when the chip is OFF. */
   get groupField(): string | null {
-    const chip = this.$<HTMLElement>('.organise-chip[data-id="group"]');
-    if (!chip || !chip.hasAttribute('data-current')) return null;
-    return this.#menuValue('group') ?? null;
+    const chip = this.#organiser('group');
+    return (chip?.current && chip.column) || null;
   }
 
   /** The column the grid is sorted by — null while SUSPENDED, though the chip remembers it. */
   get sortField(): string | null {
-    const chip = this.$<HTMLElement>('.organise-chip[data-id="sort"]');
-    if (!chip || !chip.hasAttribute('data-current')) return null;
-    return this.#menuValue('sort') ?? null;
+    const chip = this.#organiser('sort');
+    return (chip?.current && chip.column) || null;
   }
 
   /** Which way that sort runs. Defaults to ascending. */
   get sortDirection(): SortDirection {
-    const chip = this.$<HTMLElement>('.organise-chip[data-id="sort"]');
-    return chip?.dataset['direction'] === 'desc' ? 'desc' : 'asc';
+    return this.#organiser('sort')?.direction ?? 'asc';
   }
 
   /** Whether the sort is suspended — a column is picked but not being applied. */
   get sortSuspended(): boolean {
-    const chip = this.$<HTMLElement>('.organise-chip[data-id="sort"]');
-    return !!chip && !chip.hasAttribute('data-current') && !!this.#menuValue('sort');
+    const chip = this.#organiser('sort');
+    return !!chip && !chip.current && !!chip.column;
+  }
+
+  /** The Group or Sort chip: it knows its own column, direction and state. TRAP T-a-chip-knows-what-kind-it-is */
+  #organiser(kind: 'group' | 'sort'): SherpaQuickFilter | null {
+    return this.$<SherpaQuickFilter>(`.organise-chip[data-id="${kind}"]`);
   }
 
   /** Stamp the Group and Sort chips into the organise zone. Both single-select. */
@@ -2608,9 +2612,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Follow the host's arrangement onto the Group and Sort chips. The chip knows how. */
   #syncArrangement(): void {
-    for (const kind of ['group', 'sort'] as const) {
-      arrangeFrom(this, this.$<SherpaQuickFilter>(`.organise-chip[data-id="${kind}"]`), kind);
-    }
+    for (const kind of ['group', 'sort'] as const) arrangeFrom(this, this.#organiser(kind), kind);
   }
 
   /** One organise chip, from its own prototype: a menu chip with single-select rows. */
@@ -2640,13 +2642,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const id = chip.dataset['id'] ?? '';
     const kept = chip.classList.contains('organise-chip') || this.#fieldFor(id) != null;
     chip.toggleAttribute('data-locked', chip.hasAttribute('data-persistent') || (this.hasAttribute('data-locked') && kept));
-  }
-
-  /** The committed value of one organise chip's menu. */
-  #menuValue(id: string): string | undefined {
-    const chip = this.$(`.organise-chip[data-id="${id}"]`);
-    const checked = chip?.querySelector<HTMLInputElement>('input:checked');
-    return checked?.value;
   }
 
   /** A filter chip committed: its event reports one chip; it is swapped for the

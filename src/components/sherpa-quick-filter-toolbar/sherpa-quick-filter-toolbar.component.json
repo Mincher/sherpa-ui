@@ -1096,6 +1096,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
+        "clear": "true",
         "direction": "SortDirection",
         "field": "null | string"
       }

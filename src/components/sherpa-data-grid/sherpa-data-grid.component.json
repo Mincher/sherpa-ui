@@ -807,7 +807,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "direction": "SortDirection | null",
+        "direction": "SortDirection",
         "field": "null | string"
       }
     },

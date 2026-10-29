@@ -3120,3 +3120,17 @@ test('a heading offers Group only for a field its source says is a list (Will, T
   });
   expect(r).toEqual({ plan: false, name: true, seats: true });
 });
+
+test('a banded heading builds its clause from the bands it is given, never "equals Low" (TODO 523 F7)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<HTMLElement & { drawReading(f: string, r: object): void; columnClause(f: string): unknown[] | null }>('sherpa-data-grid', {
+      columns: [{ field: 'score', header: 'Score', type: 'number' }],
+      rows: [{ id: 1, score: 5 }, { id: 2, score: 50 }],
+      filters: { score: { id: 'score', label: 'Score', thresholds: [{ to: 10, label: 'Low' }, { to: 100, label: 'High' }] } },
+    }, { 'data-column-filters': '' });
+    el.drawReading('score', { picked: ['Low'] });
+    await window.__settled();
+    return el.columnClause('score');
+  });
+  expect(r).toEqual(['score', 'lt', 10]);
+});

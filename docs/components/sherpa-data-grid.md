@@ -153,7 +153,7 @@ Each one bubbles.
 | Event | Detail | What it means |
 |---|---|---|
 | `column-resize` | `{ field: string; width: number \| undefined }` |  |
-| `sort-change` | `{ direction: SortDirection \| null; field: null \| string }` |  |
+| `sort-change` | `{ direction: SortDirection; field: null \| string }` |  |
 | `row-select` | `{ index: number; row: GridRow \| undefined }` |  |
 | `selection-change` | `{ records: GridRow[]; selected: string[] }` |  |
 | `column-filter-change` | `{ clause: null \| unknown[]; field: string; header: string; label: null \| string; reading: object }` |  |
