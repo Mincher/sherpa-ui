@@ -58,6 +58,7 @@
     data-sort-field      the field the Sort chip points at (the standard name)
     data-sort-direction  asc (default) | desc
     data-group-field     the field the Group chip points at (the standard name)
+    data-suggest     show "Suggest filters", left of Edit. Will, TODO 527
     data-saveable    the host SAVES filters: its ⋮ offers Save filters, or "Save
                   <name>" over the set last taken with Save filters as and
                   Delete filters. Its `savedSets` fill the Filters menu's Saved
@@ -104,6 +105,7 @@
     hide-unmatched-change — the ⋮ menu's "Hide invalid filters" row, while Limit is on. detail: { on }
     filter-panel-close   — a column shut, and why: the reader, the width or the page. detail: { reason }
     data-refresh         — Refresh: load the page's data again. detail: {}
+    ai-filter-request    — Suggest filters was pressed. detail: {}
 
   The trailing action cluster is BUILT IN (Figma "Filter Toolbar" 150:3688) and
   follows Figma's `Type` axis. Every control exists in the template from the
@@ -160,6 +162,9 @@
            in the Filters menu. Will, TODO 383 -->
       <sherpa-button class="act save-set" data-act="filters-save" data-size="sm"
                      data-icon-start="upload">Save&nbsp;<span class="save-name"></span></sherpa-button>
+      <!-- SUGGEST filters, left of Edit, where the app offers it. Will, TODOs 425, 527 -->
+      <sherpa-button class="act suggest" data-act="suggest" data-size="sm" data-type="icon"
+                     data-icon-start="wand-magic-sparkles" aria-label="Suggest filters"></sherpa-button>
       <!-- EDIT opens the Filters menu. Will, TODO 445 -->
       <sherpa-button class="act add-btn" data-act="add" data-size="sm"
                      data-icon-start="pencil" data-icon-end="triangle-down"
@@ -245,6 +250,8 @@
       <span slot="heading" class="column-heading" part="heading">Filters<sherpa-badge class="applied-count" role="img"></sherpa-badge></span>
       <sherpa-button slot="actions" class="column-save" part="save" data-size="sm"
                      data-icon-start="upload">Save&nbsp;<span class="save-name"></span></sherpa-button>
+      <sherpa-button slot="actions" class="column-suggest suggest" part="suggest" data-size="sm" data-type="icon"
+                     data-icon-start="wand-magic-sparkles" aria-label="Suggest filters"></sherpa-button>
       <sherpa-button slot="actions" class="column-filters" part="filters" data-size="sm"
                      data-icon-start="pencil" data-icon-end="triangle-down"
                      aria-haspopup="dialog">Edit</sherpa-button>

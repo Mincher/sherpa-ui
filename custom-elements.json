@@ -271,13 +271,6 @@
               }
             },
             {
-              "name": "data-suggest",
-              "description": "show \"Suggest filters\", beside Ask N-zo. Will, TODO 425",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
               "name": "data-theme-mode",
               "description": "light | dark — the mode on screen; the button offers the other",
               "type": {
@@ -338,13 +331,6 @@
             },
             {
               "name": "ai-click",
-              "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
-              "name": "ai-filter-request",
-              "description": "Suggest filters was pressed.",
               "type": {
                 "text": "CustomEvent"
               }
@@ -496,9 +482,6 @@
             },
             {
               "name": "row-history"
-            },
-            {
-              "name": "suggest"
             },
             {
               "name": "theme-toggle"
@@ -8290,6 +8273,13 @@
               }
             },
             {
+              "name": "data-suggest",
+              "description": "show \"Suggest filters\", left of Edit. Will, TODO 527",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-switchable",
               "description": "show Figma's leading filter Switch, on a data bar: off stops every filter in the bar and keeps its value. Hidden by default, for legacy reasons. Will, TODO 338.",
               "type": {
@@ -8894,6 +8884,13 @@
               "type": {
                 "text": "CustomEvent"
               }
+            },
+            {
+              "name": "ai-filter-request",
+              "description": "Suggest filters was pressed.",
+              "type": {
+                "text": "CustomEvent"
+              }
             }
           ],
           "slots": [
@@ -8960,6 +8957,9 @@
             },
             {
               "name": "sections"
+            },
+            {
+              "name": "suggest"
             },
             {
               "name": "switch"

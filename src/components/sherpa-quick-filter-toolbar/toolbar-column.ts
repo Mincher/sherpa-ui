@@ -24,7 +24,7 @@ import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 import { ToolbarHeader } from './toolbar-header.js';
 
 /** What a column says: its toolbar's own events. */
-export type ColumnEvent = 'filters-save' | 'filters-save-as' | 'filters-delete' | 'filters-apply' | 'filters-dismiss' | 'filters-manage'
+export type ColumnEvent = 'filters-save' | 'filters-save-as' | 'filters-delete' | 'filters-apply' | 'filters-dismiss' | 'filters-manage' | 'ai-filter-request'
   | 'filter-add' | 'filter-remove' | 'quick-filter-change' | 'view-reset' | 'limit-options-change' | 'hide-unmatched-change';
 
 /** What the column asks of its toolbar. */
@@ -84,6 +84,7 @@ export class ToolbarColumn {
     saved?.addEventListener('menu-change', this.#onSavedPick);
     saved?.addEventListener('menu-select', this.#onSavedAction);
     this.#$('.column-save')?.addEventListener('button-click', () => this.#host.emit('filters-save'));
+    this.#$('.column-suggest')?.addEventListener('button-click', () => this.#host.emit('ai-filter-request'));
     this.#$('.column-save-as')?.addEventListener('button-click', () => this.#host.emit('filters-save-as'));
     this.#$('.column-more')?.addEventListener('button-click', this.#onMore);
     this.#$('.more-menu')?.addEventListener('menu-select', this.#onMoreRow);

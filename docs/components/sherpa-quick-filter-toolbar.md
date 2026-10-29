@@ -95,6 +95,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-scroll-shadow` | boolean | `false` | an inner shadow on each edge its column is scrolled past |
 | `data-sort-direction` | `asc` `desc` `""` | `asc` | asc \| desc |
 | `data-sort-field` | text |  | the field the Sort chip points at (the standard name) |
+| `data-suggest` | boolean |  | show "Suggest filters", left of Edit. Will, TODO 527 |
 | `data-switchable` | boolean |  | show Figma's leading filter Switch, on a data bar: off stops every filter in the bar and keeps its value. Hidden by default, for legacy reasons. Will, TODO 338. |
 | `data-type` | `view` `data` | `data` | data \| view |
 | `data-waits` | boolean |  | its scope waits for ONE Apply, this bar's: its menus keep Discard alone. Set by a bound source. TODO 406 |
@@ -170,6 +171,7 @@ Each one bubbles.
 | `hide-unmatched-change` | `{ on: boolean }` | The ⋮ menu's "Hide invalid filters" row, while Limit is on. |
 | `filter-panel-close` | `{ reason: 'page' \| 'reader' \| 'width' }` | A column shut, and why: the reader, the width or the page. |
 | `data-refresh` |  | Refresh: load the page's data again. |
+| `ai-filter-request` |  | Suggest filters was pressed. |
 
 ## Slots
 
@@ -182,7 +184,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`actions`, `bar`, `chips`, `column`, `filters`, `find`, `head`, `heading`, `local-heading`, `local-scopes`, `more`, `organise`, `save`, `saved`, `saved-group`, `scope`, `scope-rule`, `sections`, `switch`, `view-scope`, `view-zone`
+`actions`, `bar`, `chips`, `column`, `filters`, `find`, `head`, `heading`, `local-heading`, `local-scopes`, `more`, `organise`, `save`, `saved`, `saved-group`, `scope`, `scope-rule`, `sections`, `suggest`, `switch`, `view-scope`, `view-zone`
 
 ## CSS custom properties it reads
 

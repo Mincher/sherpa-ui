@@ -125,6 +125,17 @@
                 },
                 {
                   "el": "sherpa-button",
+                  "class": "act suggest",
+                  "attrs": {
+                    "data-act": "suggest",
+                    "data-size": "sm",
+                    "data-type": "icon",
+                    "data-icon-start": "wand-magic-sparkles",
+                    "aria-label": "Suggest filters"
+                  }
+                },
+                {
+                  "el": "sherpa-button",
                   "class": "act add-btn",
                   "attrs": {
                     "data-act": "add",
@@ -438,6 +449,18 @@
                       "class": "save-name"
                     }
                   ]
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "column-suggest suggest",
+                  "part": "suggest",
+                  "attrs": {
+                    "slot": "actions",
+                    "data-size": "sm",
+                    "data-type": "icon",
+                    "data-icon-start": "wand-magic-sparkles",
+                    "aria-label": "Suggest filters"
+                  }
                 },
                 {
                   "el": "sherpa-button",
@@ -947,6 +970,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-suggest",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "show \"Suggest filters\", left of Edit. Will, TODO 527"
+    },
+    {
+      "$type": "prop",
       "name": "data-switchable",
       "type": "boolean",
       "observed": true,
@@ -1013,6 +1045,11 @@
       "$type": "state",
       "name": "view",
       "selector": ":host([data-type=\"view\"])"
+    },
+    {
+      "$type": "state",
+      "name": "suggest",
+      "selector": ":host([data-suggest])"
     },
     {
       "$type": "state",
@@ -1228,6 +1265,13 @@
       "$type": "event",
       "name": "data-refresh",
       "description": "Refresh: load the page's data again.",
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "$type": "event",
+      "name": "ai-filter-request",
+      "description": "Suggest filters was pressed.",
       "bubbles": true,
       "composed": true
     }

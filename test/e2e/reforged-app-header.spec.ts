@@ -91,7 +91,6 @@ test('every header action fires its event', async ({ page }) => {
     const actions: ReadonlyArray<readonly [string, string]> = [
       ['.back', 'back-click'],
       ['.ai', 'ai-click'],
-      ['.suggest', 'ai-filter-request'],
       ['.labs', 'labs-click'],
       ['.theme-toggle', 'theme-toggle'],
       ['.notif-btn', 'notifications-click'],

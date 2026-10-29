@@ -299,17 +299,26 @@ test('every cluster button fires the event Figma names for it', async ({ page })
 
     const seen: string[] = [];
     for (const ev of ['ai-filter-request', 'filter-add']) el.addEventListener(ev, () => seen.push(ev));
+    const suggest = el.shadowRoot!.querySelector<HTMLElement>('.suggest')!;
+    const hidden = getComputedStyle(suggest).display === 'none';
+    // Offered, it sits left of Edit. Will, TODO 527
+    el.setAttribute('data-suggest', '');
+    await window.__settled();
+    const left = suggest.getBoundingClientRect().right <= el.shadowRoot!.querySelector('.add-btn')!.getBoundingClientRect().left;
+    suggest.shadowRoot!.querySelector('button')!.click();
 
     // ADD is deliberately absent from this list. It is a single button now, and
     // clicking it OPENS THE MENU rather than announcing anything — `filter-add`
     // fires when the menu commits, which its own test covers.
     const add = el.shadowRoot!.querySelector('.add-btn') as HTMLElement;
     const expanded = () => add.shadowRoot!.querySelector('button')!.getAttribute('aria-expanded');
-    return { seen, addIsButton: add.localName, addExpanded: expanded() };
+    return { seen, hidden, left, addIsButton: add.localName, addExpanded: expanded() };
   });
 
-  // Suggest filters is the App Header's now (TODO 425): nothing here announces.
-  expect(r.seen).toEqual([]);
+  // Suggest filters is the bar's, left of Edit, where the app offers it (TODO 527); Edit announces nothing.
+  expect(r.hidden).toBe(true);
+  expect(r.left).toBe(true);
+  expect(r.seen).toEqual(['ai-filter-request']);
   // A plain button, announcing itself as a menu trigger.
   expect(r.addIsButton).toBe('sherpa-button');
   // Nothing has opened it, so the trigger has not yet said either way.
@@ -327,7 +336,7 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
   const r = await page.evaluate(async () => {
     // Eight chips at 620px: every action folds (the fold test's own setup).
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined,
-      { 'data-type': 'view', style: 'inline-size: 620px' });
+      { 'data-type': 'view', style: 'inline-size: 620px', 'data-suggest': '' });
     const extra = document.createElement('sherpa-button');
     extra.slot = 'actions';
     extra.setAttribute('aria-label', 'View as filter panel');
@@ -355,6 +364,8 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
       await settle();
     };
     el.addEventListener('data-refresh', () => heard.push('data-refresh'));
+    el.addEventListener('ai-filter-request', () => heard.push('ai-filter-request'));
+    await pick('Suggest filters');
     await pick('Refresh data');
     await pick('View as filter panel');
     // The shared Reset row runs the bar's own Reset; the star row toggles both ways. TODO 344
@@ -366,8 +377,9 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
   });
 
   expect(r.collapse).toBe(3);
-  expect(r.rows).toEqual(['View as filter panel', '---', 'Refresh data']);
-  expect(r.heard).toEqual(['data-refresh', 'extra', 'clear']);
+  // Suggest folds too, before Refresh. Will, TODO 527
+  expect(r.rows).toEqual(['View as filter panel', '---', 'Suggest filters', 'Refresh data']);
+  expect(r.heard).toEqual(['ai-filter-request', 'data-refresh', 'extra', 'clear']);
 });
 
 test('a trigger button goes active while its menu is open, and back on a second click', async ({ page }) => {
@@ -2795,4 +2807,21 @@ test('in a label-column panel, an Advanced section\'s rows sit in the answer col
   expect(r.left).toBe(r.answer);
   expect(r.beside).toBe(true);
   expect(r.sameRow).toBe(true);
+});
+
+test('the panel column offers Suggest filters left of its Edit, where the app offers it (Will, TODO 527)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const column = await window.__mount<HTMLElement & { drawScopes(s: unknown): void }>('sherpa-quick-filter-toolbar', undefined,
+      { 'data-orientation': 'portrait', 'data-column': true, open: true, keep: true, 'data-suggest': '' });
+    column.drawScopes([]);
+    await window.__settled();
+    const seen: string[] = [];
+    column.addEventListener('ai-filter-request', () => seen.push('ai-filter-request'));
+    const suggest = column.shadowRoot!.querySelector<HTMLElement>('.column-suggest')!;
+    const edit = column.shadowRoot!.querySelector<HTMLElement>('.column-filters')!;
+    const left = suggest.getBoundingClientRect().right <= edit.getBoundingClientRect().left;
+    suggest.shadowRoot!.querySelector('button')!.click();
+    return { shown: getComputedStyle(suggest).display !== 'none', left, seen };
+  });
+  expect(r).toEqual({ shown: true, left: true, seen: ['ai-filter-request'] });
 });

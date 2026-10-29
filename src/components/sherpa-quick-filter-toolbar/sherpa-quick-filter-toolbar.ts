@@ -141,6 +141,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-group-field': DATA_PROPS['data-group-field'],
     // The host saves filters: its ⋮ offers Save filters. TRAP T-saved-filters-are-every-scope
     'data-saveable': { type: 'boolean', kind: 'style' },
+    /* Suggest filters, left of Edit. Will, TODO 527 */
+    'data-suggest': { type: 'boolean', kind: 'style' },
     // Its source fetches from outside: menus wait for Apply. TRAP T-commit-follows-select-mode
     'data-remote': { type: 'boolean', kind: 'behaviour' },
     'data-apply-on': DATA_PROPS['data-apply-on'],
@@ -2371,6 +2373,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       case 'add':
         // sherpa-button opens its own slotted menu; nothing to do here.
         break;
+      case 'suggest':
+        this.emit('ai-filter-request', {});
+        break;
       default:
         // Reset all on view, and the save rows: the header's, as its column's. TODO 415
         this.#header.act(act);
@@ -2419,10 +2424,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * Header's (TODO 425). TRAP T-the-more-menu-holds-what-folded
    */
   #openMore(trigger: HTMLElement): void {
-    const refresh: MoreRow[] = folded(this.$('.act[data-act="refresh"]')) ? [['refresh']] : [];
+    // A folded button's row: Suggest, where offered (TODO 527), and Refresh.
+    const gone = (act: string): boolean => folded(this.$(`.act[data-act="${act}"]`));
+    const tail: MoreRow[] = [...(this.hasAttribute('data-suggest') && gone('suggest') ? [['suggest'] as const] : []),
+      ...(gone('refresh') ? [['refresh'] as const] : [])];
     const saves = this.hasAttribute('data-saved-menu') ? [] : saveRows(this, this.#saved.applied);
     // Reset is the Edit menu's. Will, TODO 454
-    openMore(this, this.root, trigger, [saves, extraRows(this), refresh]);
+    openMore(this, this.root, trigger, [saves, extraRows(this), tail]);
   }
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */
