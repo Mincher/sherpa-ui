@@ -641,7 +641,8 @@ function endOf(value: unknown): string | undefined {
   return undefined;
 }
 
-/** A held CLAUSE op as a reader's ROW op: several `eq` picks are `in`. */
+/** A held CLAUSE op as a reader's ROW op: several `eq` picks are `in`, several
+ *  `ne` picks `notin`. TRAP T-a-held-clause-op-is-not-a-reading-op */
 const ROW_OPS: Readonly<Record<string, FilterOp>> = { in: 'eq', notin: 'ne' };
 
 /** One clause leaf as a row, or undefined when it is not one. */

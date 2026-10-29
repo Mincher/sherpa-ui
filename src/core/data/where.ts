@@ -8,6 +8,7 @@
  * - Where — Each field's condition, by field.
  * - whereOf — Readings in the plain form: what each field filters by, nothing a control keeps for itself.
  * - readingsOf — The plain form as readings.
+ * - clauseReading — A held clause as the reading a control holds: one row as Simple holds it, a chain as its rows.
  */
 import {
   clauseConditions, fieldState, isRanged, stateClause,
@@ -106,6 +107,14 @@ function readingOf(field: string, given: Condition, facts?: Omit<FieldFacts, 'fi
   }
   const reading = rows.length === 1 ? rowReading(rows[0]!, type) : rows.length ? { conditions: rows } : {};
   return off ? { ...reading, suspended: true } : reading;
+}
+
+/** A held clause as the reading a control holds — one row as Simple holds it, a
+ *  chain as its rows; undefined for a shape rows cannot say. TODO 523 */
+export function clauseReading(clause: Filter, type?: FieldType): FieldReading | undefined {
+  const rows = clauseConditions(clause);
+  if (!rows) return undefined;
+  return rows.length === 1 ? rowReading(rows[0]!, type) : { conditions: rows, mode: 'advanced' };
 }
 
 /** One row as the reading a Simple control would hold. */

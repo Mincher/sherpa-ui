@@ -3346,3 +3346,16 @@ test('a row\'s actions button says shut once its menu shuts, picked or not (TODO
   });
   expect(r).toEqual({ open: 'true', shut: 'false' });
 });
+
+test('a heading holds "last 7 days" as a row, never as text (TODO 523 F4)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<HTMLElement & { setColumnFilter(f: string, c: unknown[] | null): void; columnClause(f: string): unknown }>('sherpa-data-grid', {
+      columns: [{ field: 'created', header: 'Created', type: 'date' }],
+      rows: [{ created: '2026-10-01' }],
+    }, { 'data-column-filters': true });
+    el.setColumnFilter('created', ['created', 'last', { n: 7, unit: 'day' }]);
+    await window.__settled();
+    return el.columnClause('created');
+  });
+  expect(r).toEqual(['created', 'last', { n: 7, unit: 'day' }]);
+});

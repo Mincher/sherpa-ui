@@ -15161,7 +15161,7 @@ clause the HOST got was wrong.
 `state.condition` honest: `between` is a clause op, not an Advanced one, so a
 range reads Simple, as it does on a toolbar chip.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/core/data/filter-state.ts`
 - Site: `test/e2e/reforged-advanced-condition-words.spec.ts`
 
 ### T-up-is-open-down-is-closed

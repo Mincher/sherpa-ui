@@ -28,14 +28,15 @@ import {
   type Filter, type GroupSummary, type SortDirection, type SortSpec,
 } from '../../core/data/store.js';
 import {
-  DEFAULT_OP, OP_LABELS, OP_TAKES, valueKey, type FilterOp,
+  OP_LABELS, OP_TAKES, valueKey, type FilterOp,
 } from '../../core/data/store.js';
 import {
-  clauseConditions, fieldState, readingClause, readingRows,
+  fieldState, readingClause, readingRows,
   type FieldCondition, type FieldFacts, type FieldReading, type FieldType, type FilterState,
 } from '../../core/data/filter-state.js';
 import { spellConditions } from '../../core/data/filter-face.js';
-import { sameReading } from '../../core/data/query.js';
+import { readingAnswered, sameReading } from '../../core/data/query.js';
+import { clauseReading } from '../../core/data/where.js';
 import { coalesce } from '../../core/data/timing.js';
 import { hidesUnmatched } from '../../core/ui/more-menu.js';
 import type { DataAsk } from '../../core/ui/context.js';
@@ -44,12 +45,6 @@ import { isStaleKey, keyRow, rowKey } from '../../core/data/row-key.js';
 
 /** The `fx` glyph a CONDITION wears, wherever one is drawn. */
 const CONDITION_ICON = 'function';
-
-/** A held CLAUSE op as the op a reader picked: several `eq` picks are `in`,
- *  several `ne` picks `notin`, two ends `between`.
- *  TRAP T-a-held-clause-op-is-not-a-reading-op */
-const READING_OPS: Readonly<Record<string, FilterOp>> = { in: 'eq', notin: 'ne', between: DEFAULT_OP };
-const readingOp = (op: string): FilterOp => READING_OPS[op] ?? (op as FilterOp);
 
 /** A joined menu's row: its field, then its value. TODO 490 */
 const JOIN = '\u001f';
@@ -1066,38 +1061,27 @@ export class SherpaDataGrid extends SherpaElement {
     this.#renderBody();
   }
 
-  /** A clause as what a heading HOLDS, or null when it filters by nothing. */
+  /** A clause as what a heading HOLDS, or null when it filters by nothing — the
+   *  data layer's one reading of a clause. TODO 523 · TRAP T-a-heading-holds-a-whole-reading */
   #readingFromClause(field: string, clause: unknown[]): FieldReading | null {
-    /* A CHAIN — `['or', a, b]` from a chip's rows — held as its rows.
-       TRAP T-a-heading-holds-a-whole-reading */
-    if (clause[0] === 'and' || clause[0] === 'or') {
-      const rows = clauseConditions(clause as Filter);
-      if (!rows) {
-        report({
-          code: 'unheld-column-clause',
-          message: 'setColumnFilter: a chained clause these rows cannot say was not held.',
-          at: { field, clause: JSON.stringify(clause) },
-        });
-        return null;
-      }
-      return { conditions: rows, mode: 'advanced' };
-    }
     const [, clauseOp, value] = clause as [string, string, unknown];
-    if ((clauseOp === 'between' || clauseOp === 'notbetween') && Array.isArray(value)) {
-      const [from, to] = value.map((v) => String(v ?? ''));
-      if (!from || !to) return null;
-      // A date's range is its Simple answer; any other is an Advanced row. TODO 375
-      const dated = this.#columns.find((c) => c.field === field)?.type === 'date';
-      return dated && clauseOp === 'between' ? { picked: [from, to], range: true }
-        : { conditions: [{ op: clauseOp, picked: [from, to] }], mode: 'advanced' };
+    // A range with an end missing filters by nothing here.
+    if ((clauseOp === 'between' || clauseOp === 'notbetween') && Array.isArray(value) && value.some((v) => v == null || v === '')) return null;
+    const held = clauseReading(clause as Filter, this.#columns.find((c) => c.field === field)?.type as FieldType | undefined);
+    if (!held) {
+      report({
+        code: 'unheld-column-clause',
+        message: 'setColumnFilter: a clause these rows cannot say was not held.',
+        at: { field, clause: JSON.stringify(clause) },
+      });
+      return null;
     }
-    const op = readingOp(clauseOp);
-    const picked = (Array.isArray(value) ? value : [value]).map((v) => String(v ?? '')).filter(Boolean);
-    if (!picked.length) return null;
-    if ((OP_TAKES[op] ?? 'list') === 'text') return { op, text: picked[0]!, range: false };
-    // `eq` is Simple's ticks; `ne` and the rest stay an op over the picks.
-    return op === DEFAULT_OP ? { picked, range: false } : { op, picked, range: false };
+    // Its picks as the menu's values: text, none empty.
+    const picked = held.picked?.map((v) => String(v ?? '')).filter(Boolean);
+    const out = picked ? { ...held, picked } : held;
+    return readingAnswered(out) ? out : null;
   }
+
 
   /**
    * supersedeColumns(readings, appliedAt) — the fields a HIGHER scope holds,
