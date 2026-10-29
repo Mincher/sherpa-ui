@@ -974,3 +974,19 @@ test('the Other row opens a breakdown menu that is actually drawn', async ({ pag
   });
   expect(r).toEqual({ open: true, drawn: true, rows: 3 });
 });
+
+test('a row is ruled out as a filter compares, case aside (TODO 523 F13)', async ({ page }) => {
+  const out = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
+      rendered?: Promise<void>; populate?: (d: unknown) => void; present?: string[] | null;
+    };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate!([{ label: 'Active' }, { label: 'Trial' }]);
+    // The source's values are spelled as the data holds them. TRAP T-loose-equal-is-case-insensitive
+    el.present = ['active'];
+    await window.__settled();
+    return [...el.shadowRoot!.querySelectorAll<HTMLElement>('.item .entry')].map((c) => c.hasAttribute('data-unavailable'));
+  });
+  expect(out).toEqual([false, true]);
+});

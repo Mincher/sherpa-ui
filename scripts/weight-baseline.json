@@ -5,7 +5,7 @@
     "fetched": 0
   },
   "components.js": {
-    "js": 933498,
+    "js": 933549,
     "files": 111,
     "fetched": 208813
   },
@@ -60,7 +60,7 @@
     "fetched": 0
   },
   "components/sherpa-chart-legend/sherpa-chart-legend.js": {
-    "js": 428203,
+    "js": 428254,
     "files": 37,
     "fetched": 0
   },
@@ -345,7 +345,7 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 1120990,
+    "js": 1121041,
     "files": 154,
     "fetched": 208813
   }

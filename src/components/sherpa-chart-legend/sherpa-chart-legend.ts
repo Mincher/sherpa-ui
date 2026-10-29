@@ -14,6 +14,7 @@
  * - LegendItem — One legend row —
  */
 import { datumTotal, type LegendDatum } from '../../core/data/chart-datum.js';
+import { ruleOut } from '../../core/data/filter-state.js';
 import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
 // Each row is a key chip, and the roll-up a real button + menu; the page may not have imported them.
@@ -64,18 +65,23 @@ export class SherpaChartLegend extends SherpaElement {
    * `null` limits nothing. Will, TODO 179. TRAP T-a-ruled-out-value-is-greyed
    */
   set present(values: readonly string[] | null) {
-    this.#present = values ? new Set(values) : null;
+    this.#present = values ? [...values] : null;
+    // As a filter compares, case aside: the one test every control greys by. TODO 523
+    const rule = ruleOut(values);
+    this.#out = (label) => rule(label) !== null;
     if (this.#items.length) this.#render();
   }
   get present(): readonly string[] | null {
-    return this.#present ? [...this.#present] : null;
+    return this.#present;
   }
   /** What the filters before it leave; `null` is everything. */
-  #present: Set<string> | null = null;
+  #present: string[] | null = null;
+  /** Is this row ruled out by them? */
+  #out: (label: string) => boolean = () => false;
   /** It draws something when on: a row the filters before it rule out, or a
    *  filter emptied, does not — so it does not keep the chart from going empty. */
   #draws(label: string): boolean {
-    return (!this.#present || this.#present.has(label)) && Number(this.#seen.get(label)?.value ?? 1) !== 0;
+    return !this.#out(label) && Number(this.#seen.get(label)?.value ?? 1) !== 0;
   }
   /**
    * The rows toggled OFF, by LABEL. By label and not by index because a
@@ -298,7 +304,7 @@ export class SherpaChartLegend extends SherpaElement {
          TRAP T-a-legend-row-goes-inactive-it-never-vanishes */
       cell.toggleAttribute('data-empty', Number(item.value) === 0);
       // Ruled out by the filters before it: inactive, and its chip says why. TRAP T-a-ruled-out-value-is-greyed
-      const out = !isRollup && !!this.#present && !this.#present.has(item.label);
+      const out = !isRollup && this.#out(item.label);
       cell.toggleAttribute('data-unavailable', out);
       entry.toggleAttribute('data-unavailable', out);
       if (!isRollup) return void list.appendChild(cell);

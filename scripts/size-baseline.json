@@ -11,7 +11,7 @@
   "src/components/sherpa-calendar-cell/sherpa-calendar-cell.ts": 57,
   "src/components/sherpa-calendar/sherpa-calendar.ts": 559,
   "src/components/sherpa-callout/sherpa-callout.ts": 41,
-  "src/components/sherpa-chart-legend/sherpa-chart-legend.ts": 428,
+  "src/components/sherpa-chart-legend/sherpa-chart-legend.ts": 434,
   "src/components/sherpa-chat-message/sherpa-chat-message.ts": 44,
   "src/components/sherpa-chip/sherpa-chip.ts": 36,
   "src/components/sherpa-code-block/sherpa-code-block.ts": 84,

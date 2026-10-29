@@ -3398,6 +3398,7 @@ comparison rather than rejected.
 
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/walk.ts`
+- Site: `test/e2e/reforged-chart-legend.spec.ts`
 
 ### T-pipeline-order-and-no-grouping
 
