@@ -2,12 +2,10 @@
   sherpa-data-grid — a sortable, filterable, groupable data table.
 
   populate({ columns, rows, actions?, key? }) stamps header cells and body rows
-  from cloning prototypes. Selection, filter row, actions column and group rows
-  all exist in the template always; CSS reveals them off host attributes.
-
-  Filtering is done HERE, over the held rows, so a keystroke does not cost the
-  caller a re-populate (and their sort/selection). filter-change still fires for
-  a server-side query.
+  from cloning prototypes. Selection, actions column and group rows all exist in
+  the template always; CSS reveals them off host attributes. Its filters are its
+  headings' and the cell chip's, through its source; a page's local filter
+  toolbar is the row of filters (Will, TODO 523).
 
   While data-group-field is set the grid pages itself: a page is data-page-size
   ROWS, as ungrouped, and a shut group is one slot whatever it holds. A store's
@@ -25,7 +23,6 @@
     data-select     multiple (default) | single — single draws RADIOS, holds one
                     row, and shows no control in the header: "select all" is
                     meaningless where only one can be chosen
-    data-filterable                          show a secondary header row of filter inputs
     data-column-filters                      a filter button in each column heading, and a
                                              filter chip in the cell under the pointer: it
                                              adds or takes off that cell's value
@@ -92,7 +89,6 @@
                        for a SAVED selection read `selectedKeys`, since an index
                        means something different after any sort)
     column-filter-change — detail: { field, header, op, value, from, to, clause, label }
-    filter-change    — detail: { field, value, filters, visible }
     group-toggle     — detail: { value, collapsed }
     group-change     — detail: { field }   a heading's Group, or a group row's Ungroup
                        (`field: null`): a REQUEST to group by it. TODO 500
@@ -141,10 +137,6 @@
         <th class="actions-cell actions-head" scope="col">
           <span class="actions-label sherpa-truncate">Actions</span>
         </th>
-      </tr>
-      <tr class="filter-row">
-        <th class="select-cell filter-spacer" scope="col" aria-hidden="true"></th>
-        <th class="actions-cell filter-spacer" scope="col" aria-hidden="true"></th>
       </tr>
     </thead>
     <tbody class="body" part="body"></tbody>
@@ -207,19 +199,6 @@
   <!-- One per drawn column. JS sets its inline-size; see .cols in the CSS. -->
   <template class="col-tpl">
     <col class="col" />
-  </template>
-
-  <!-- The clear button exists from the start; CSS reveals it off the cell's
-       data-has-value flag, which the input handler writes. -->
-  <template class="filter-cell-tpl">
-    <th class="filter-cell" scope="col">
-      <span class="filter-field sherpa-border-edges sherpa-border-corners">
-        <input class="filter-input" type="text" />
-        <button class="filter-clear sherpa-border-corners" type="button">
-          <i class="sherpa-icon-box" data-icon="cross" aria-hidden="true"></i>
-        </button>
-      </span>
-    </th>
   </template>
 
   <template class="row-tpl">

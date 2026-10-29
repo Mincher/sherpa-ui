@@ -2425,13 +2425,6 @@
               }
             },
             {
-              "name": "data-filterable",
-              "description": "show a secondary header row of filter inputs",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
               "name": "data-group-field",
               "description": "group rows by this column",
               "type": {
@@ -2924,12 +2917,6 @@
               "name": "column-filter-change",
               "type": {
                 "text": "CustomEvent<{ clause: null | unknown[]; field: string; from: null | string; header: string; label: null | string; op: null | string; reading: object; to: null | string; value: null | string }>"
-              }
-            },
-            {
-              "name": "filter-change",
-              "type": {
-                "text": "CustomEvent<{ field: string; filters: { [k: string]: string; }; value: string; visible: number }>"
               }
             },
             {

@@ -17,7 +17,7 @@ For a table of records that can be sorted, filtered, grouped and selected. It re
 ## Example
 
 ```html
-<div style="block-size: 320px"><sherpa-data-grid data-selectable data-column-filters data-filterable></sherpa-data-grid></div>
+<div style="block-size: 320px"><sherpa-data-grid data-selectable data-column-filters></sherpa-data-grid></div>
 ```
 
 `populate()` is given, on `sherpa-data-grid`:
@@ -89,7 +89,6 @@ For a table of records that can be sorted, filtered, grouped and selected. It re
 | `data-column-filters` | boolean |  | a filter button in each column heading, and a filter chip in the cell under the pointer: it adds or takes off that cell's value |
 | `data-fetch-fields` | text |  | the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider. |
 | `data-filter-fields` | text |  | space-separated fields an EXTERNAL filter is narrowing; those columns' headings take data-status="active". Written by SherpaDataSource — a host driving the grid by hand can write it too. |
-| `data-filterable` | boolean |  | show a secondary header row of filter inputs |
 | `data-group-field` | text |  | group rows by this column |
 | `data-heading-group` | boolean |  | a Group button in each list column's heading: it groups by that column; a group row offers Ungroup. Set by its provider. TODO 500 |
 | `data-heading-hover` | boolean |  | a heading shows its buttons only while hovered or focused; one that is on stays. TODO 501 |
@@ -158,7 +157,6 @@ Each one bubbles.
 | `row-select` | `{ index: number; row: GridRow \| undefined }` |  |
 | `selection-change` | `{ records: GridRow[]; selected: string[] }` |  |
 | `column-filter-change` | `{ clause: null \| unknown[]; field: string; from: null \| string; header: string; label: null \| string; op: null \| string; reading: object; to: null \| string; value: null \| string }` |  |
-| `filter-change` | `{ field: string; filters: { [k: string]: string; }; value: string; visible: number }` |  |
 | `group-toggle` | `{ collapsed: boolean; value: string }` |  |
 | `group-change` | `{ field: null \| string }` | A heading's Group, or a group row's Ungroup (`field: null`): a REQUEST to group by it. |
 | `row-action` | `{ id: string; records: GridRow[] }` | An action was chosen, from the row menu or a host's bulk bar. |
@@ -187,28 +185,11 @@ What each class's base rule reads:
 |---|---|---|
 | `--sherpa-style-surface-base-1` | `.head` | `background` |
 | `--sherpa-style-surface-base-1` | `.head-row` | `background` |
-| `--sherpa-style-surface-base-1` | `.filter-row` | `background` |
 | `--sherpa-display-mode-space-2xl` | `.select-cell` | `inline-size` |
 | `--sherpa-display-mode-space-2xs` | `.select-cell` | `padding` |
 | `--sherpa-display-mode-space-2xl` | `.select-col` | `width` |
 | `--sherpa-style-surface-base-1` | `.select-head` | `background` |
 | `--sherpa-border-bottom` | `.select-head` | `border-block-end` |
-| `--sherpa-display-mode-space-2xs` | `.filter-cell` | `padding` |
-| `--sherpa-style-surface-base-1` | `.filter-cell` | `background` |
-| `--sherpa-border-bottom` | `.filter-cell` | `border-block-end` |
-| `--sherpa-style-surface-base-1` | `.filter-spacer` | `background` |
-| `--sherpa-border-bottom` | `.filter-spacer` | `border-block-end` |
-| `--sherpa-display-mode-space-2xs` | `.filter-field` | `padding` |
-| `--sherpa-font-family-body` | `.filter-input` | `font-family` |
-| `--sherpa-font-size-body-base` | `.filter-input` | `font-size` |
-| `--sherpa-font-weight-regular` | `.filter-input` | `font-weight` |
-| `--sherpa-theme-content-line-height-base` | `.filter-input` | `line-height` |
-| `--sherpa-style-content-base` | `.filter-input` | `color` |
-| `--sherpa-theme-size-icon-xs` | `.filter-clear` | `inline-size` |
-| `--sherpa-theme-size-icon-xs` | `.filter-clear` | `block-size` |
-| `--sherpa-display-mode-space-3xs` | `.filter-clear` | `margin-inline-start` |
-| `--sherpa-theme-content-body-1` | `.filter-clear` | `color` |
-| `--sherpa-theme-content-size-small` | `.filter-clear` | `font-size` |
 | `--sherpa-display-mode-space-xs` | `.no-matches` | `padding` |
 | `--sherpa-theme-content-body-1` | `.no-matches` | `color` |
 | `--sherpa-font-size-body-small` | `.no-matches` | `font-size` |

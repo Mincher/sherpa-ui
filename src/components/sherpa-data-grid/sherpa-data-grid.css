@@ -78,14 +78,12 @@
 }
 /* A `background` on a <thead> is not painted in every engine's table model, so
    the rows repeat it as the reliable layer. */
-.head-row,
-.filter-row {
+.head-row {
   background: var(--sherpa-style-surface-base-1, #e8e8f6);
 }
 /* Each header CELL sticks too. A z-index on the <thead> does not lift its cells
    out of the table's stacking order, so they must be positioned themselves. */
-.head-row > *,
-.filter-row > * {
+.head-row > * {
   position: sticky;
   z-index: 3;
   background: var(--sherpa-style-surface-base-1, #e8e8f6);
@@ -120,8 +118,7 @@
   /* …and the BOTTOM edge over every column, pinned too: the rows below run on
      under all of them. Will, TODO 486 */
   :host([data-scroll-shadow]) .scroller::after { z-index: 3; }
-  :host(:not([data-filterable])) .head-row > :is([data-pinned], .actions-head)::after,
-  :host([data-filterable]) .filter-row > :is([data-pinned], .actions-cell)::after {
+  .head-row > :is([data-pinned], .actions-head)::after {
     content: '';
     position: absolute;
     inset-block-start: 100%;
@@ -135,8 +132,7 @@
     animation-range: 0 var(--sherpa-display-mode-space-base, 16px);
   }
   /* Over the last pinned cell's see-through edge too, or it splits the shadow. */
-  :host(:not([data-filterable])) .head-row > [data-pin-last]::after,
-  :host([data-filterable]) .filter-row > [data-pin-last]::after {
+  .head-row > [data-pin-last]::after {
     inset-inline-end: calc(-1 * var(--sherpa-border-right, 0.5px));
   }
 }
@@ -192,10 +188,6 @@
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
 }
-/* The FILTER row has no rule of its own; `.select-head` restates the header's. */
-.filter-row > .select-cell {
-  border-block-end: none;
-}
 .select-head {
   background: var(--sherpa-style-surface-base-1, #e8e8f6);
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid var(--sherpa-style-border-base, #b3b3c3);
@@ -214,28 +206,10 @@
 :host([data-select="single"]) .row-multi { display: none; }
 :host([data-select="single"]) .row-one { display: inline-flex; }
 
-/* ── Filter row (opt-in) ───────────────────────────────────────────── */
-.filter-row { display: none; }
-:host([data-filterable]) .filter-row { display: table-row; }
-
-/* Figma Grid Cell `Type=filter`: fill base +1, padding 4 block / 0 inline. */
-.filter-cell {
-  position: relative;
-  padding: var(--sherpa-display-mode-space-2xs, 4px) 0;
-  background: var(--sherpa-style-surface-base-1, #e8e8f6);
-  border-block-end: var(--sherpa-border-bottom, 0.5px) solid
-    var(--sherpa-style-border-base, #b3b3c3);
-}
-.filter-spacer {
-  background: var(--sherpa-style-surface-base-1, #e8e8f6);
-  border-block-end: var(--sherpa-border-bottom, 0.5px) solid
-    var(--sherpa-style-border-base, #b3b3c3);
-}
-
-/* ── Header / filter side dividers ──────────────────────────────────────────
+/* ── Header side dividers ──────────────────────────────────────────
  * 12px dividers, not full borders — a border cannot be shortened, so these are
  * pseudo-elements. LEADING edge only: a pair doubled every boundary. */
-:is(.head-cell, .filter-cell)::before {
+.head-cell::before {
   content: "";
   position: absolute;
   inset-block-start: 50%;
@@ -248,81 +222,9 @@
 /* No divider on the first drawn column: it marks a boundary BETWEEN columns,
    and the first column's leading edge is the grid's own frame. */
 .head-row > :first-child::before,
-.filter-row > :first-child::before,
-:host([data-selectable]) .head-row > :nth-child(2)::before,
-:host([data-selectable]) .filter-row > :nth-child(2)::before { content: none; }
-/* THE FIELD IS THE INPUT'S BOX — border, padding, radius and ring live here,
-   not on the <input>, so the clear button sits inside the box. */
-.filter-field {
-  display: flex;
-  align-items: center;
-  inline-size: 100%;
-  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
-  border-style: solid;
-  border-color: transparent;
-  background: transparent;
-  box-sizing: border-box;
-}
-
-.filter-input {
-  flex: 1 1 auto;
-  min-inline-size: 0;
-  /* No padding, border or radius: the field owns them. */
-  padding: 0;
-  border: 0;
-  background: transparent;
-  /* Every font part stated explicitly: `font: inherit` picks up the UA's bold
-     <th> default, which rendered the filter text at weight 700. */
-  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  font-style: normal;
-  font-weight: var(--sherpa-font-weight-regular, 400);
-  line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  text-align: start;
-  color: var(--sherpa-style-content-base, #0c0b11);
-
-  /* The ring is drawn on the field, so the input must not draw its own. */
-  &:focus-visible { outline: none; }
-}
-/* Placeholder: grey hint, regular weight — the inherited <th> bold must be
-   beaten here too. */
-.filter-input::placeholder {
-  color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
-  font-weight: var(--sherpa-font-weight-regular, 400);
-  font-style: normal;
-}
-
-/* Clear button — shown once the cell carries data-has-value (written by JS). */
-.filter-clear {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  inline-size: var(--sherpa-theme-size-icon-xs, 14px);
-  block-size: var(--sherpa-theme-size-icon-xs, 14px);
-  margin-inline-start: var(--sherpa-display-mode-space-3xs, 2px);
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
-  font-size: var(--sherpa-theme-content-size-small, 12px);
-  line-height: 1;
-  cursor: pointer;
-
-  @supports (color: color-mix(in oklab, red, blue)) {
-    &:hover {
-      background: color-mix(in oklab, var(--sherpa-style-surface-base-1, #e8e8f6) 88%, currentColor);
-    }
-  }
-  &:focus-visible {
-    outline: var(--sherpa-focus-ring);
-    outline-offset: var(--sherpa-focus-offset);
-  }
-}
-.filter-cell[data-has-value] .filter-clear { display: inline-flex; }
-
-/* A filter that hides every row keeps the header and filter row up — the user
-   is mid-keystroke in one of those inputs. The message goes below instead. */
+:host([data-selectable]) .head-row > :nth-child(2)::before { content: none; }
+/* A filter that hides every row keeps the header up, with its filters. The
+   message goes below instead. */
 .no-matches {
   display: none;
   padding: var(--sherpa-display-mode-space-xs, 8px);
@@ -331,13 +233,6 @@
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
 :host(:state(no-matches)) .no-matches { display: block; }
-/* Focus lights the whole FIELD. `:focus-within` so it also fires for the clear
-   button inside it, rather than drawing a second ring around it. */
-.filter-field:focus-within {
-  border-color: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */
-  outline: var(--sherpa-focus-ring);
-  outline-offset: var(--sherpa-focus-offset);
-}
 
 /* ── Header ────────────────────────────────────────────────────────── */
 /* Figma Grid Cell `Type=header` (926:34253): fill base +1, padding 4 block / 0
@@ -501,10 +396,6 @@
   justify-content: flex-end;
   text-align: end;
 }
-/* …and so does its filter input. */
-.filter-cell[data-type="number"] .filter-input {
-  text-align: end;
-}
 
 
 /* ── Pinned (frozen) columns ────────────────────────────────────────
@@ -512,7 +403,7 @@
  * shifts without data-selectable. Body cell 2, header 3, pinned header 4 (the
  * corner where both stick). Sticky only moves the box, so a pinned cell needs
  * its own opaque fill and takes the row's transparent tint on top. */
-:is(.head-cell, .filter-cell, .cell, .select-cell)[data-pinned] {
+:is(.head-cell, .cell, .select-cell)[data-pinned] {
   position: sticky;
   inset-inline-start: 0;
   z-index: 2;
@@ -557,7 +448,7 @@
 /* A pinned head cell must clear its row's scrolling siblings AND the pinned
    body cells beneath it — same `z-index: 4` as the leading pinned headers.
    Without it the "Actions" label scrolled away under the data columns. */
-:host(:state(actions)) :is(.actions-head, .filter-row > .actions-cell) {
+:host(:state(actions)) .actions-head {
   z-index: 4;
 }
 
@@ -567,9 +458,6 @@
   background: var(--sherpa-style-surface-base-1, #e8e8f6);
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
-}
-:host(:state(actions)) .filter-row > .actions-cell {
-  background: var(--sherpa-style-surface-base, #ffffff);
 }
 
 /* The head label, matching `.head-label` on every other column. */
@@ -645,7 +533,7 @@
 /* The SECOND pinned cell clears the first. `--_pin-offset` is the measured
    width of everything pinned before it; 0 when the selection column is hidden,
    so the same rule is correct either way. */
-:is(.head-cell, .filter-cell, .cell)[data-pinned] {
+:is(.head-cell, .cell)[data-pinned] {
   inset-inline-start: var(--_pin-offset, 0px);
 }
 
@@ -658,7 +546,7 @@
 
 /* The header corner: sticks in BOTH axes, so it outranks its own row and the
    body column it heads. */
-:is(.head-cell, .filter-cell, .select-head, .filter-spacer)[data-pinned] { z-index: 4; }
+:is(.head-cell, .select-head)[data-pinned] { z-index: 4; }
 
 /* The pinned edge, drawn only while content is actually scrolled under it.
    `scroll-state()` is a container query on scroll position — no listener, no JS

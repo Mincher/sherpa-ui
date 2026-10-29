@@ -127,28 +127,6 @@
                             ]
                           }
                         ]
-                      },
-                      {
-                        "el": "tr",
-                        "class": "filter-row",
-                        "children": [
-                          {
-                            "el": "th",
-                            "class": "select-cell filter-spacer",
-                            "attrs": {
-                              "scope": "col",
-                              "aria-hidden": "true"
-                            }
-                          },
-                          {
-                            "el": "th",
-                            "class": "actions-cell filter-spacer",
-                            "attrs": {
-                              "scope": "col",
-                              "aria-hidden": "true"
-                            }
-                          }
-                        ]
                       }
                     ]
                   },
@@ -303,51 +281,6 @@
           {
             "el": "col",
             "class": "col"
-          }
-        ]
-      },
-      {
-        "el": "template",
-        "class": "filter-cell-tpl",
-        "children": [
-          {
-            "el": "th",
-            "class": "filter-cell",
-            "attrs": {
-              "scope": "col"
-            },
-            "children": [
-              {
-                "el": "span",
-                "class": "filter-field sherpa-border-edges sherpa-border-corners",
-                "children": [
-                  {
-                    "el": "input",
-                    "class": "filter-input",
-                    "attrs": {
-                      "type": "text"
-                    }
-                  },
-                  {
-                    "el": "button",
-                    "class": "filter-clear sherpa-border-corners",
-                    "attrs": {
-                      "type": "button"
-                    },
-                    "children": [
-                      {
-                        "el": "i",
-                        "class": "sherpa-icon-box",
-                        "attrs": {
-                          "data-icon": "cross",
-                          "aria-hidden": "true"
-                        }
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
           }
         ]
       },
@@ -610,15 +543,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-filterable",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "description": "show a secondary header row of filter inputs"
-    },
-    {
-      "$type": "prop",
       "name": "data-group-field",
       "type": "string",
       "observed": true,
@@ -825,11 +749,6 @@
     },
     {
       "$type": "state",
-      "name": "filterable",
-      "selector": ":host([data-filterable])"
-    },
-    {
-      "$type": "state",
       "name": "selectable",
       "selector": ":host([data-selectable])"
     },
@@ -855,13 +774,8 @@
     },
     {
       "$type": "state",
-      "name": "not-filterable",
-      "selector": ":host(:not([data-filterable]))"
-    },
-    {
-      "$type": "state",
       "name": "focus-visible",
-      "selector": ".filter-input:focus-visible"
+      "selector": ".actions-trigger:focus-visible"
     }
   ],
   "capabilities": [
@@ -936,18 +850,6 @@
     },
     {
       "$type": "event",
-      "name": "filter-change",
-      "bubbles": true,
-      "composed": true,
-      "detail": {
-        "field": "string",
-        "filters": "{ [k: string]: string; }",
-        "value": "string",
-        "visible": "number"
-      }
-    },
-    {
-      "$type": "event",
       "name": "group-toggle",
       "bubbles": true,
       "composed": true,
@@ -1013,28 +915,11 @@
   "tokens": {
     "head.background": "{sherpa.style-surface-base-1}",
     "head-row.background": "{sherpa.style-surface-base-1}",
-    "filter-row.background": "{sherpa.style-surface-base-1}",
     "select-cell.inline-size": "{sherpa.display-mode-space-2xl}",
     "select-cell.padding": "{sherpa.display-mode-space-2xs}",
     "select-col.width": "{sherpa.display-mode-space-2xl}",
     "select-head.background": "{sherpa.style-surface-base-1}",
     "select-head.border-block-end": "{sherpa.border-bottom}",
-    "filter-cell.padding": "{sherpa.display-mode-space-2xs}",
-    "filter-cell.background": "{sherpa.style-surface-base-1}",
-    "filter-cell.border-block-end": "{sherpa.border-bottom}",
-    "filter-spacer.background": "{sherpa.style-surface-base-1}",
-    "filter-spacer.border-block-end": "{sherpa.border-bottom}",
-    "filter-field.padding": "{sherpa.display-mode-space-2xs}",
-    "filter-input.font-family": "{sherpa.font-family-body}",
-    "filter-input.font-size": "{sherpa.font-size-body-base}",
-    "filter-input.font-weight": "{sherpa.font-weight-regular}",
-    "filter-input.line-height": "{sherpa.theme-content-line-height-base}",
-    "filter-input.color": "{sherpa.style-content-base}",
-    "filter-clear.inline-size": "{sherpa.theme-size-icon-xs}",
-    "filter-clear.block-size": "{sherpa.theme-size-icon-xs}",
-    "filter-clear.margin-inline-start": "{sherpa.display-mode-space-3xs}",
-    "filter-clear.color": "{sherpa.theme-content-body-1}",
-    "filter-clear.font-size": "{sherpa.theme-content-size-small}",
     "no-matches.padding": "{sherpa.display-mode-space-xs}",
     "no-matches.color": "{sherpa.theme-content-body-1}",
     "no-matches.font-size": "{sherpa.font-size-body-small}",

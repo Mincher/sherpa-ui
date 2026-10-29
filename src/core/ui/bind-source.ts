@@ -191,7 +191,6 @@ const STEERING_EVENTS = [
   // One field's own Apply or Discard.
   'filter-apply',
   'filter-discard',
-  'filter-change',
   'page-change',
   'page-size-change',
   'search-change',
@@ -332,19 +331,6 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
       const at = typeof field === 'string' ? { field } : {};
       if (type === 'filter-apply') source.query.commit(at);
       else source.query.discard(at);
-      return;
-    }
-    case 'filter-change': {
-      // The grid's per-column filter box. One field at a time, substring.
-      const field = detail['field'];
-      const value = detail['value'];
-      if (typeof field !== 'string') return;
-      /* PARAMETERS, not a clause, and the FIELD's own slot — `setFilter`
-         replaced the whole query, so typing in one column heading wiped
-         every chip and every component part.
-         TRAP T-one-query-builder-in-the-data-layer */
-      const text = value == null ? '' : String(value);
-      source.query.setReading(VIEW, field, { op: 'contains', text });
       return;
     }
     case 'page-change': {

@@ -138,7 +138,6 @@ test('every cell type uses the Figma label typography, not the UA <th> bold', as
       rendered?: Promise<void>;
       populate(config: unknown): void;
     };
-    grid.setAttribute('data-filterable', '');
     grid.setAttribute('data-selectable', '');
     document.getElementById('root')!.appendChild(grid);
     await grid.rendered;
@@ -159,7 +158,7 @@ test('every cell type uses the Figma label typography, not the UA <th> bold', as
       return { weight: s.fontWeight, style: s.fontStyle, size: s.fontSize,
                lh: s.lineHeight, align: s.textAlign };
     };
-    return { headBtn: read('.head-name'), filterInput: read('.filter-input'), cell: read('.body .row .cell') };
+    return { headBtn: read('.head-name'), cell: read('.body .row .cell') };
   });
 
   // Figma binds the label on EVERY Grid Cell type (group / header / cell / filter)
@@ -167,10 +166,8 @@ test('every cell type uses the Figma label typography, not the UA <th> bold', as
   // start-aligned and never italic. The header reads as a header because of its
   // darker surface band, not a heavier weight.
   //
-  // A <th> ships `font-weight: bold` + `text-align: center` from the UA stylesheet,
-  // and the filter input's `font: inherit` faithfully inherited that — so the
-  // secondary header rendered at 700 while the header button sat at a hand-set 600.
-  for (const [name, got] of Object.entries({ headBtn: r.headBtn, filterInput: r.filterInput, cell: r.cell })) {
+  // A <th> ships `font-weight: bold` + `text-align: center` from the UA stylesheet.
+  for (const [name, got] of Object.entries({ headBtn: r.headBtn, cell: r.cell })) {
     expect(got['missing'], `${name} selector found`).toBeUndefined();
     expect(got['weight'], `${name} weight`).toBe('400');
     expect(got['style'], `${name} style`).toBe('normal');
@@ -204,6 +201,7 @@ const FILTER_CONFIG = {
 interface GridEl extends HTMLElement {
   rendered?: Promise<void>;
   populate(config: unknown): void;
+  setColumnFilter(field: string, clause: unknown[] | null): void;
 }
 declare global {
   interface Window {
@@ -217,7 +215,7 @@ async function installBuilder(page: import('@playwright/test').Page): Promise<vo
       const root = document.getElementById('root')!;
       root.innerHTML = '';
       const el = document.createElement('sherpa-data-grid') as GridEl;
-      el.setAttribute('data-filterable', '');
+      el.setAttribute('data-column-filters', '');
       root.appendChild(el);
       await el.rendered;
       el.populate(config);
@@ -226,70 +224,6 @@ async function installBuilder(page: import('@playwright/test').Page): Promise<vo
     };
   });
 }
-
-test('typing in a filter narrows rows to substring matches in THAT column', async ({ page }) => {
-  await installBuilder(page);
-  const r = await page.evaluate(async (config) => {
-    const el = await window.__buildGrid(config);
-    const sr = el.shadowRoot!;
-    const cell = (field: string): HTMLElement =>
-      sr.querySelector(`.filter-cell[data-field="${field}"]`) as HTMLElement;
-    const type = async (field: string, value: string): Promise<void> => {
-      const input = cell(field).querySelector<HTMLInputElement>('.filter-input')!;
-      input.value = value;
-      input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-      await window.__settled();
-    };
-    const names = (): (string | null)[] =>
-      Array.from(sr.querySelectorAll('.body .row')).map((row) => row.children[1]!.textContent);
-
-    const events: unknown[] = [];
-    el.addEventListener('filter-change', (e) => events.push((e as CustomEvent).detail));
-
-    await type('name', 'ar'); // substring, not prefix: Marcus AND Omar
-    const substring = names();
-
-    await type('name', 'MARCUS'); // case-insensitive
-    const insensitive = names();
-
-    await type('name', ''); // cleared → everything back
-    const cleared = names();
-
-    // A second column ANDs with the first.
-    await type('status', 'trial');
-    const oneFilter = names();
-    await type('name', 'omar');
-    const twoFilters = names();
-
-    // A numeric column filters on its stringified value.
-    await type('name', '');
-    await type('status', '');
-    await type('spend', '80');
-    const numeric = names();
-
-    return { substring, insensitive, cleared, oneFilter, twoFilters, numeric, events };
-  }, FILTER_CONFIG);
-
-  // Substring, so "ar" finds both "Marcus" and "Omar" — a table filter is a find,
-  // not a prefix match.
-  expect(r.substring).toEqual(['Marcus Reyes', 'Omar Haddad']);
-  expect(r.insensitive).toEqual(['Marcus Reyes']);
-  expect(r.cleared).toHaveLength(4);
-
-  // Several filters must ALL match.
-  expect(r.oneFilter).toEqual(['Marcus Reyes', 'Omar Haddad']);
-  expect(r.twoFilters).toEqual(['Omar Haddad']);
-
-  // Values are stringified, so a numeric column filters as readily as a text one.
-  expect(r.numeric).toEqual(['Omar Haddad']);
-
-  // The event still fires for callers driving a server-side query, and carries the
-  // whole filter set plus the resulting count.
-  const last = r.events[r.events.length - 1] as Record<string, unknown>;
-  expect(last['field']).toBe('spend');
-  expect(last['visible']).toBe(1);
-  expect(last['filters']).toEqual({ spend: '80' });
-});
 
 test('a SORTED or FILTERED column FLAGS its header, and the CHIPS say so — no tint', async ({ page }) => {
   // A sort orders what the grid shows; a filter narrows it. Both are the column
@@ -308,22 +242,15 @@ test('a SORTED or FILTERED column FLAGS its header, and the CHIPS say so — no 
     const el = await window.__buildGrid(config);
     const sr = el.shadowRoot!;
     const settle = () => window.__settled();
+    // A heading's filter: the grid's own row of filters went (TODO 523).
     const type = async (field: string, value: string): Promise<void> => {
-      const input = sr
-        .querySelector(`.filter-cell[data-field="${field}"]`)!
-        .querySelector<HTMLInputElement>('.filter-input')!;
-      input.value = value;
-      input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+      el.setColumnFilter(field, value ? [field, 'contains', value] : null);
       await settle();
     };
     // Which FIELDS carry the mode — a count alone cannot tell the sorted column
-    // from the filtered one once both are lit. `filters` should stay EMPTY
-    // throughout: the secondary filter row never takes the mode.
+    // from the filtered one once both are lit.
     const status = () => ({
       heads: Array.from(sr.querySelectorAll<HTMLElement>('.head-cell'))
-        .filter((th) => th.dataset['status'] === 'active')
-        .map((th) => th.dataset['field']),
-      filters: Array.from(sr.querySelectorAll<HTMLElement>('.filter-cell'))
         .filter((th) => th.dataset['status'] === 'active')
         .map((th) => th.dataset['field']),
     });
@@ -351,8 +278,7 @@ test('a SORTED or FILTERED column FLAGS its header, and the CHIPS say so — no 
     await settle();
     const sorted = { ...status(), paint: paint('spend') };
 
-    // FILTER a DIFFERENT column: now two columns are acting on the view, and
-    // only the filtered one lights its filter cell.
+    // FILTER a DIFFERENT column: now two columns are acting on the view.
     await type('name', 'ar');
     const both = { ...status(), paint: paint('name') };
 
@@ -383,11 +309,9 @@ test('a SORTED or FILTERED column FLAGS its header, and the CHIPS say so — no 
 
   // Nothing acting on the view: no column carries the mode.
   expect(r.clean.heads).toEqual([]);
-  expect(r.clean.filters).toEqual([]);
 
   // A sort FLAGS the heading.
   expect(r.sorted.heads).toEqual(['spend']);
-  expect(r.sorted.filters).toEqual([]);
   // The chip is what shows it.
   expect(r.sorted.paint.sortOn).toBe(true);
   // And the heading itself is untouched — same surface, same ink as at rest.
@@ -396,20 +320,15 @@ test('a SORTED or FILTERED column FLAGS its header, and the CHIPS say so — no 
 
   // Two columns can be active at once for two different reasons.
   expect(r.both.heads.sort()).toEqual(['name', 'spend']);
-  // The secondary FILTER row is never lit — not even the column being filtered.
-  // That row already says what it is doing: the text is in the box.
-  expect(r.both.filters).toEqual([]);
   // A FILTERED heading is no more painted than a sorted one.
   expect(r.both.paint.background).toBe(r.clean.paint.background);
   expect(r.both.paint.label).toBe(r.clean.paint.label);
 
   // Clearing the filter drops that column back; the sorted one holds.
   expect(r.filterCleared.heads).toEqual(['spend']);
-  expect(r.filterCleared.filters).toEqual([]);
 
   // Sorted AND filtered is still ONE flag on one heading, and still no paint.
   expect(r.sortedAndFiltered.heads).toEqual(['spend']);
-  expect(r.sortedAndFiltered.filters).toEqual([]);
   expect(r.sortedAndFiltered.paint.background).toBe(r.clean.spendPaint.background);
   expect(r.sortedAndFiltered.paint.label).toBe(r.clean.spendPaint.label);
 
@@ -418,140 +337,19 @@ test('a SORTED or FILTERED column FLAGS its header, and the CHIPS say so — no 
   expect(r.unsortable.heads).toEqual([]);
 });
 
-test('a populated filter shows a clear button that empties only its own column', async ({ page }) => {
+test('row-click resolves against the list it SHOWS, not the one it was given', async ({ page }) => {
   await installBuilder(page);
   const r = await page.evaluate(async (config) => {
     const el = await window.__buildGrid(config);
     const sr = el.shadowRoot!;
-    const cell = (field: string): HTMLElement =>
-      sr.querySelector(`.filter-cell[data-field="${field}"]`) as HTMLElement;
-    const clear = (field: string): HTMLElement =>
-      cell(field).querySelector('.filter-clear') as HTMLElement;
-    const shown = (el2: Element): boolean => getComputedStyle(el2).display !== 'none';
-    const type = async (field: string, value: string): Promise<void> => {
-      const input = cell(field).querySelector<HTMLInputElement>('.filter-input')!;
-      input.value = value;
-      input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-      await window.__settled();
-    };
-
-    const empty = { clearShown: shown(clear('name')), flag: cell('name').hasAttribute('data-has-value') };
-
-    await type('name', 'ar');
-    await type('status', 'trial');
-    const populated = {
-      clearShown: shown(clear('name')),
-      flag: cell('name').hasAttribute('data-has-value'),
-      // It sits INSIDE the input's box, at its trailing edge. The box (border,
-      // padding, radius, focus ring) is on `.filter-field`, not the <input>, which
-      // is what puts the button within the border rather than beside it.
-      insideBorder: (() => {
-        const f = cell('name').querySelector('.filter-field')!.getBoundingClientRect();
-        const c = clear('name').getBoundingClientRect();
-        return c.left >= f.left && c.right <= f.right && c.top >= f.top && c.bottom <= f.bottom;
-      })(),
-      // …and the text stops before it, so a long value cannot run underneath.
-      textStopsBeforeButton: (() => {
-        const i = cell('name').querySelector('.filter-input')!.getBoundingClientRect();
-        const c = clear('name').getBoundingClientRect();
-        return i.right <= c.left + 1;
-      })(),
-      // The <input> must carry no box of its own, or there would be two.
-      inputHasNoBox: (() => {
-        const cs = getComputedStyle(cell('name').querySelector('.filter-input')!);
-        return cs.borderTopWidth === '0px' && cs.paddingLeft === '0px';
-      })(),
-      rows: sr.querySelectorAll('.body .row').length,
-    };
-
-    clear('name').click();
-    await window.__settled();
-    const afterClear = {
-      nameValue: cell('name').querySelector<HTMLInputElement>('.filter-input')!.value,
-      nameClearShown: shown(clear('name')),
-      // The OTHER column's filter must survive.
-      statusValue: cell('status').querySelector<HTMLInputElement>('.filter-input')!.value,
-      rows: sr.querySelectorAll('.body .row').length,
-    };
-
-    return { empty, populated, afterClear };
-  }, FILTER_CONFIG);
-
-  // Hidden until there is something to clear.
-  expect(r.empty.clearShown).toBe(false);
-  expect(r.empty.flag).toBe(false);
-
-  expect(r.populated.clearShown).toBe(true);
-  expect(r.populated.flag).toBe(true);
-  expect(r.populated.insideBorder).toBe(true);
-  expect(r.populated.textStopsBeforeButton).toBe(true);
-  expect(r.populated.inputHasNoBox).toBe(true);
-  expect(r.populated.rows).toBe(2); // name "ar" AND status "trial"
-
-  // Clearing empties ITS field only; the status filter still applies, so the two
-  // trial rows remain rather than all four.
-  expect(r.afterClear.nameValue).toBe('');
-  expect(r.afterClear.nameClearShown).toBe(false);
-  expect(r.afterClear.statusValue).toBe('trial');
-  expect(r.afterClear.rows).toBe(2);
-});
-
-test('a filter matching nothing keeps the filter row usable', async ({ page }) => {
-  await installBuilder(page);
-  const r = await page.evaluate(async (config) => {
-    const el = await window.__buildGrid(config);
-    const sr = el.shadowRoot!;
-    const input = sr.querySelector<HTMLInputElement>(
-      '.filter-cell[data-field="name"] .filter-input',
-    )!;
-    input.value = 'zzzzzz';
-    input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-    await window.__settled();
-
-    const shown = (sel: string): boolean => {
-      const node = sr.querySelector(sel);
-      return !!node && getComputedStyle(node).display !== 'none';
-    };
-    return {
-      rows: sr.querySelectorAll('.body .row').length,
-      // data-empty would hide the whole <table> and take the input with it.
-      hostEmpty: el.matches(':state(empty)'),
-      hostNoMatches: el.matches(':state(no-matches)'),
-      tableShown: shown('.grid'),
-      filterRowShown: shown('.filter-row'),
-      noMatchesShown: shown('.no-matches'),
-      emptyShown: shown('.empty'),
-      // The field the user is typing in must still hold focus-worthy state.
-      inputValue: input.value,
-    };
-  }, FILTER_CONFIG);
-
-  expect(r.rows).toBe(0);
-  // The distinction that matters: no-matches is NOT empty.
-  expect(r.hostEmpty).toBe(false);
-  expect(r.hostNoMatches).toBe(true);
-  expect(r.tableShown).toBe(true);
-  expect(r.filterRowShown).toBe(true);
-  expect(r.noMatchesShown).toBe(true);
-  expect(r.emptyShown).toBe(false);
-  expect(r.inputValue).toBe('zzzzzz');
-});
-
-test('row-click resolves against the FILTERED list, not the full one', async ({ page }) => {
-  await installBuilder(page);
-  const r = await page.evaluate(async (config) => {
-    const el = await window.__buildGrid(config);
-    const sr = el.shadowRoot!;
-    const input = sr.querySelector<HTMLInputElement>(
-      '.filter-cell[data-field="status"] .filter-input',
-    )!;
-    input.value = 'active'; // leaves Jane (index 2) and Nina (index 3) of the full list
-    input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    // Alone, it orders its rows: Jane (index 2 of the given list) comes first.
+    el.dataset['sortField'] = 'name';
+    el.dataset['sortDirection'] = 'asc';
     await window.__settled();
 
     const clicks: unknown[] = [];
     el.addEventListener('row-select', (e) => clicks.push((e as CustomEvent).detail));
-    // Click the FIRST visible row. Its data-index is 0, which in the UNFILTERED
+    // Click the FIRST visible row. Its data-index is 0, which in the GIVEN
     // list would be Marcus — the wrong record.
     (sr.querySelector('.body .row .cell') as HTMLElement).click();
     await window.__settled();
@@ -562,38 +360,6 @@ test('row-click resolves against the FILTERED list, not the full one', async ({ 
   const detail = r.clicks[0] as { index: number; row: Record<string, unknown> };
   expect(detail.index).toBe(0);
   expect(detail.row['name']).toBe('Jane Okafor');
-});
-
-test('re-populating clears stale filters', async ({ page }) => {
-  await installBuilder(page);
-  const r = await page.evaluate(async (config) => {
-    const el = await window.__buildGrid(config);
-    const sr = el.shadowRoot!;
-    const input = sr.querySelector<HTMLInputElement>(
-      '.filter-cell[data-field="name"] .filter-input',
-    )!;
-    input.value = 'marcus';
-    input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-    await window.__settled();
-    const filtered = sr.querySelectorAll('.body .row').length;
-
-    // New data may not even have that column. Carrying the filter over would hide
-    // rows against a filter the user can no longer see.
-    el.populate({
-      columns: [{ field: 'other', header: 'Other' }],
-      rows: [{ other: 'x' }, { other: 'y' }],
-    });
-    await window.__settled();
-    return {
-      filtered,
-      afterRepopulate: sr.querySelectorAll('.body .row').length,
-      anyValueFlag: !!sr.querySelector('.filter-cell[data-has-value]'),
-    };
-  }, FILTER_CONFIG);
-
-  expect(r.filtered).toBe(1);
-  expect(r.afterRepopulate).toBe(2);
-  expect(r.anyValueFlag).toBe(false);
 });
 
 test('data-group-field bunches the rows, hides that column, and folds', async ({ page }) => {
@@ -867,7 +633,6 @@ test('a numeric column right-aligns its HEADER with its digits', async ({ page }
       rendered?: Promise<void>;
       populate(d: unknown): void;
     };
-    grid.setAttribute('data-filterable', '');
     document.getElementById('root')!.appendChild(grid);
     await grid.rendered;
     grid.populate({
@@ -885,9 +650,6 @@ test('a numeric column right-aligns its HEADER with its digits', async ({ page }
       return {
         type: th.dataset['type'] ?? null,
         header: getComputedStyle(th.querySelector('.head-name')!).justifyContent,
-        filter: getComputedStyle(
-          sr.querySelector(`.filter-cell[data-field="${field}"] .filter-input`)!,
-        ).textAlign,
       };
     };
     const cell = sr.querySelector('.cell[data-type="number"]') as HTMLElement;
@@ -899,8 +661,6 @@ test('a numeric column right-aligns its HEADER with its digits', async ({ page }
   expect(r.cellAlign).toBe('end');
   expect(r.seats.type).toBe('number');
   expect(r.seats.header).toBe('flex-end');
-  // …and the filter input above them agrees, for the same reason.
-  expect(r.seats.filter).toBe('end');
 
   // A text column is untouched.
   expect(r.name.type).toBe(null);
@@ -3026,37 +2786,6 @@ test('a View-held heading marks the View\'s matches, not its own old answer', as
 /* Will, TODO 165: "The badge count on a filtered data grids group rows should
    show the number of actual rows shown." The data layer's count is every row
    in the group; the grid's own filter row hides some, and only the grid knows. */
-test('a group badge counts the rows SHOWN under the grid\'s own filter row', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const rows = ['Gold', 'Silver'].flatMap((tier) => [1, 2, 3, 12].map((n) => ({ name: `${tier}-${n}`, tier })));
-    const grid = await window.__mount<HTMLElement>('sherpa-data-grid', {
-      columns: [{ field: 'name' }, { field: 'tier' }],
-      rows,
-      // As a bound source hands them over: every row in the group.
-      groups: [{ key: 'Gold', value: 'Gold', count: 4 }, { key: 'Silver', value: 'Silver', count: 4 }],
-    }, { 'data-filterable': true, 'data-group-field': 'tier' });
-    await window.__settled();
-    const sr = grid.shadowRoot!;
-    const badges = (): string[] => [...sr.querySelectorAll('.group-count')].map((b) => b.textContent ?? '');
-    const type = async (value: string): Promise<void> => {
-      const input = sr.querySelector<HTMLInputElement>('.filter-cell[data-field="name"] .filter-input')!;
-      input.value = value;
-      input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-      await window.__settled();
-    };
-    const told = badges();
-    await type('-1');
-    const filtered = badges();
-    await type('');
-    return { told, filtered, cleared: badges() };
-  });
-
-  expect(r.told).toEqual(['4', '4']);
-  // "-1" keeps Gold-1, Gold-12, Silver-1, Silver-12.
-  expect(r.filtered).toEqual(['2', '2']);
-  expect(r.cleared).toEqual(['4', '4']);
-});
-
 /** A card WIDER than its columns: they fill it, in proportion; a dragged one
  *  keeps its width. Narrower, they keep theirs and the box scrolls. Will, TODO 96. */
 test('few columns fill a wide card; a dragged one keeps its width; a narrow card scrolls', async ({ page }) => {

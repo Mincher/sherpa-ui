@@ -995,11 +995,6 @@
           "description": "space-separated fields an EXTERNAL filter is narrowing; those columns' headings take data-status=\"active\". Written by SherpaDataSource — a host driving the grid by hand can write it too."
         },
         {
-          "name": "data-filterable",
-          "description": "show a secondary header row of filter inputs",
-          "valueSet": "v"
-        },
-        {
           "name": "data-group-field",
           "description": "group rows by this column"
         },

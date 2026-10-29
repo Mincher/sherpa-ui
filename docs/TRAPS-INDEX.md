@@ -246,7 +246,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (82)
+## The join and the app layer (81)
 
 - [T-a-band-is-a-value-of-its-field](TRAPS.md#t-a-band-is-a-value-of-its-field) — provider
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — bind-source
@@ -303,7 +303,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-nav-child-rows-carry-no-icon](TRAPS.md#t-nav-child-rows-carry-no-icon) — outlet
 - [T-navigating-sets-up-the-page](TRAPS.md#t-navigating-sets-up-the-page) — provider
 - [T-none-is-an-answer](TRAPS.md#t-none-is-an-answer) — provider
-- [T-one-query-builder-in-the-data-layer](TRAPS.md#t-one-query-builder-in-the-data-layer) — bind-source
 - [T-one-query-one-owner](TRAPS.md#t-one-query-one-owner) — bind-source
 - [T-one-way-to-build-an-element](TRAPS.md#t-one-way-to-build-an-element) — apply-state
 - [T-one-way-to-write-a-condition](TRAPS.md#t-one-way-to-write-a-condition) — provider
@@ -603,7 +602,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-unavailable-value-sorts-below-a-divider](TRAPS.md#t-unavailable-value-sorts-below-a-divider) — menu
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — menu
 
-## The data grid (98)
+## The data grid (97)
 
 - [T-a-cell-chip-is-one-and-moves](TRAPS.md#t-a-cell-chip-is-one-and-moves) — data-grid
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — data-grid
@@ -660,7 +659,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-grid-column-width-bounds](TRAPS.md#t-grid-column-width-bounds) — data-grid
 - [T-grid-empty-clause-is-null](TRAPS.md#t-grid-empty-clause-is-null) — data-grid
 - [T-grid-filter-fields-match-whole](TRAPS.md#t-grid-filter-fields-match-whole) — data-grid
-- [T-grid-filter-row-uses-store-filterrows](TRAPS.md#t-grid-filter-row-uses-store-filterrows) — data-grid
 - [T-grid-grip-captures-the-pointer](TRAPS.md#t-grid-grip-captures-the-pointer) — data-grid
 - [T-grid-group-drops-the-column](TRAPS.md#t-grid-group-drops-the-column) — data-grid
 - [T-grid-header-needs-capture](TRAPS.md#t-grid-header-needs-capture) — data-grid
@@ -1072,7 +1070,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-tokens-css-never-reaches-shadow](TRAPS.md#t-tokens-css-never-reaches-shadow) — project-tokens
 - [T-writing-a-child-is-not-owning-yourself](TRAPS.md#t-writing-a-child-is-not-owning-yourself) — check-ownership
 
-## Tests only (12)
+## Tests only (13)
 
 - [T-a-col-element-has-no-computed-width-in-webkit](TRAPS.md#t-a-col-element-has-no-computed-width-in-webkit) — reforged-data-grid.spec
 - [T-a-current-row-opens-its-details](TRAPS.md#t-a-current-row-opens-its-details) — reforged-records-details.spec
@@ -1083,6 +1081,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-wall-of-values-is-not-a-filter](TRAPS.md#t-a-wall-of-values-is-not-a-filter) — reforged-data-grid.spec
 - [T-an-svg-path-box-rounds-by-a-hundredth](TRAPS.md#t-an-svg-path-box-rounds-by-a-hundredth) — reforged-icon-sizes.spec
 - [T-chromium-pointer-starts-on-the-page](TRAPS.md#t-chromium-pointer-starts-on-the-page) — e2e-fixture.test, fixture, harness
+- [T-one-query-builder-in-the-data-layer](TRAPS.md#t-one-query-builder-in-the-data-layer) — harness, one-query-builder.test, raw-data-is-untouched.test
 - [T-scroll-width-under-clip-is-engine-dependent](TRAPS.md#t-scroll-width-under-clip-is-engine-dependent) — reforged-data-grid.spec
 - [T-the-a11y-gate-reads-shadow-roots](TRAPS.md#t-the-a11y-gate-reads-shadow-roots) — a11y.spec
 - [T-the-fold-measures-whatever-font-is-loaded](TRAPS.md#t-the-fold-measures-whatever-font-is-loaded) — harness

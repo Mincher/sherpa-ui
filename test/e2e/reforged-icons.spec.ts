@@ -163,7 +163,6 @@ test('icons stamped from a cloning prototype are drawn', async ({ page }) => {
     const el = document.createElement('sherpa-data-grid') as HTMLElement & {
       rendered?: Promise<void>; populate?: (c: unknown) => void;
     };
-    el.setAttribute('data-filterable', '');
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
     el.populate!({
@@ -182,7 +181,7 @@ test('icons stamped from a cloning prototype are drawn', async ({ page }) => {
     };
   });
 
-  // The grid draws a row-actions trigger, a filter clear and a group chevron.
+  // The grid draws a row-actions trigger and a group chevron.
   expect(r.total).toBeGreaterThan(3);
   expect(r.blank, `data-icon elements with no drawing:\n${r.blank.join('\n')}`).toEqual([]);
 });

@@ -76,30 +76,3 @@ test('a request\'s picks are parameters, not a clause; the ticks riding along as
     ['Dana', 'Pia'],
   );
 });
-
-test('a column filter narrows, and does NOT wipe what else is applied', async () => {
-  const src = await source();
-  const el = bar();
-  bindSource(src, el, { steerOnly: true });
-
-  // Two fields' selections are both live.
-  src.query.setReading('view', 'seats', { mode: 'advanced', conditions: [{ op: 'lt', text: '500' }], picked: [] });
-  src.query.setReading('view', 'owner', { picked: ['Dana', 'Ravi'] });
-  await settle();
-  assert.deepEqual(ids(src), [1, 2]);
-
-  // Typing in one column heading used to replace BOTH.
-  el.dispatchEvent(new CustomEvent('filter-change', {
-    detail: { field: 'owner', value: 'Rav' },
-  }));
-  await settle();
-
-  assert.deepEqual(ids(src), [2]);
-  assert.equal(src.selection('seats').condition, 'advanced');
-
-  // Emptying the box clears that field only.
-  el.dispatchEvent(new CustomEvent('filter-change', { detail: { field: 'owner', value: '' } }));
-  await settle();
-  assert.deepEqual(ids(src), [1, 2]);
-  assert.equal(src.selection('seats').condition, 'advanced');
-});

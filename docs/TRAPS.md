@@ -4380,41 +4380,6 @@ Do not reintroduce a measured offset here.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
-### T-grid-filter-row-uses-store-filterrows
-
-The secondary header row's filters are built as a real FILTER TREE and handed to
-the store's `filterRows`, so the row means exactly what a `contains` clause means
-everywhere else.
-
-It used to hand-roll the substring match, which is one more place for "what does
-contains mean" to drift — the same duplication
-`T-filter-is-data-not-a-predicate` forbids. Substring rather than prefix because
-a table filter is a "find" — typing "example" should find an address that merely
-contains it — and values are stringified first so a numeric column filters as
-readily as a text one.
-
-A blank input never reaches here: `#applyFilter` drops an empty needle, so no
-clause matches everything by accident. One clause goes through bare; several are
-wrapped in `['and', ...]`.
-
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-
-(none — cites existing traps)
-
-NOTE: `T-one-collator-for-the-library` does not list this file yet — it is in
-the SITE LINES TO ADD MANUALLY section at the top.
-`T-pipeline-order-and-no-grouping` does not list it either, but I have NOT
-requested a Site line for it: the citation below names only
-`T-one-collator-for-the-library`, so nothing is owed. I mention the pipeline
-trap in the prose because the reader will want it, not as a citation.
-
-Both halves of this docblock are already in the doc:
-`T-one-collator-for-the-library` owns the null-pinning and the "weaker of two
-copies" history ("one passed `{ numeric: true }` and one did not, so item 2 and
-item 10 ordered differently"), and `T-pipeline-order-and-no-grouping` owns the
-GROUP-FIRST leading-sort rule and the one-pass boundary scan. A third copy here
-is what those traps exist to prevent.
-
 ### T-grid-sort-is-tri-state
 
 A column header's sort is TRI-STATE, and only its Sort button cycles it: the
@@ -11993,7 +11958,8 @@ The proof it was dead weight: `../Sherpa Demos/app/contexts/records.js` had to s
 off, twice, with `ignore: ['quick-filter-change']` and `ignore: ['filter-change']`.
 An app working around the data layer is the data layer being wrong.
 
-Both now go through the one door. A control with a `readings` getter is ASKED
+Both now go through the one door. (The grid's filter row and its
+`filter-change` went in TODO 523: a page's local filter toolbar does that job.) A control with a `readings` getter is ASKED
 for it; one without has its `{ field: [values] }` read as READINGS, never as a
 clause. `picksClause` then had no callers left in `data-source.ts` at all.
 
@@ -12002,7 +11968,6 @@ clause. `picksClause` then had no callers left in `data-source.ts` at all.
 data back. Transforming never writes to the raw rows; only create, update and
 remove do. `test/unit/raw-data-is-untouched.test.mjs` holds that half.
 
-- Site: `src/core/ui/bind-source.ts`
 - Site: `test/unit/raw-data-is-untouched.test.mjs`
 - Site: `test/unit/one-query-builder.test.mjs`
 - Site: `test/reforged/harness.html`
