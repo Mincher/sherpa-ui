@@ -137,6 +137,9 @@ function shownAs(el: Element): string | undefined {
 /** A grid's column, as a pivot hands it on to a row's sub-grid. */
 type GridColumnLike = { field: string; header?: string; type?: string };
 
+/** What a pivot steers: a filter, from a heading or a cell — its own or a row's sub-grid's. TODO 571 */
+const PIVOT_STEERS = ['column-filter-change', 'filter-apply', 'filter-discard'] as const;
+
 /** What a chart made from a grid keeps of it: where it sits, and its slot. */
 const KEPT_FROM_GRID = ['slot', 'data-grow', 'data-scope', 'style'] as const;
 
@@ -1118,7 +1121,8 @@ export class SherpaProvider extends SherpaElement {
         return zoned && summary && typeof summary === 'object' && 'zones' in summary
           ? { ...summary, picked: src.pickedFor(el as Populatable, zoned) } : summary;
       } } : {}),
-      ...(pivot ? { readonly: true, as: (rows, src) => this.#pivotOf(el, rows, pivot, src) } : {}),
+      // …and its headings and cells filter its rows, its rows' sub-grids too. TODO 571
+      ...(pivot ? { readonly: true, steers: PIVOT_STEERS, as: (rows, src) => this.#pivotOf(el, rows, pivot, src, asks.filters?.(el) ?? []) } : {}),
       // A page of rows arrives WITH its groups: a group is the data layer's.
       // TRAP T-a-group-is-a-data-layer-concept
       ...(asks.shape === 'rows' && !pivot
@@ -1336,7 +1340,7 @@ export class SherpaProvider extends SherpaElement {
    *  Primary value, where it groups — a column a Secondary value, and the total,
    *  every cell a row count; each row OPENS on its own rows, under the grid's own
    *  columns. Will, TODOs 548, 570 */
-  #pivotOf(el: Element, rows: readonly Row[], spec: SummarySpec & { segment: string; stack: string }, src: DataSource): unknown {
+  #pivotOf(el: Element, rows: readonly Row[], spec: SummarySpec & { segment: string; stack: string }, src: DataSource, filtered: readonly string[]): unknown {
     const { group, ...pivot } = spec;
     const sets = group ? groupRows(rows, group).map((g) => ({ key: g.key, rows: g.rows })) : [{ key: '', rows }];
     const declared = src.valuesFor(spec.stack).map(valueKey);
@@ -1349,13 +1353,18 @@ export class SherpaProvider extends SherpaElement {
     const keyOf = (set: string, primary: string): string => (group ? `${set}\u0000${primary}` : primary);
     const label = (f: string): string => src.fieldFacts(f).label ?? f;
     const own = el as Element & { columns?: GridColumnLike[]; key?: string | null };
+    // Its Primary filters as the grid's own column does; a count filters nothing. TODO 571
+    const primary = own.columns?.find((c) => c.field === spec.segment);
+    const fields = [...new Set([...filtered, spec.segment])];
+    src.readValues(fields);
     return { pivot: {
       key: 'pivot:key',
       columns: [
-        { field: spec.segment, header: label(spec.segment) },
-        ...values.map((v) => ({ field: cell(v), header: v, type: 'number' })),
-        { field: total, header: this.word('total'), type: 'number' },
+        { ...primary, field: spec.segment, header: primary?.header ?? label(spec.segment), sortable: false },
+        ...values.map((v) => ({ field: cell(v), header: v, type: 'number', sortable: false, filterable: false })),
+        { field: total, header: this.word('total'), type: 'number', sortable: false, filterable: false },
       ],
+      filters: Object.fromEntries(fields.map((f) => [f, src.filterDef(f)])),
       rows: summed.flatMap((set) => set.segments.map((s) => ({
         'pivot:key': keyOf(set.key, s.label),
         [spec.segment]: s.label,

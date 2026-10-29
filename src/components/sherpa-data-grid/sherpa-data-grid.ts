@@ -68,6 +68,8 @@ export interface GridColumn extends OffersAdvanced {
   /** number → right-aligned mono cells; anything else → default text. */
   type?: string;
   sortable?: boolean;
+  /** false: its heading and cells offer no filter — a count, not a field. TODO 571 */
+  filterable?: boolean;
   /** Which condition this column OPENS on — `'contains'` for free text. */
   op?: FilterOp;
   /** Drawn width in px, clamped. A user drag overrides it for the grid's life. */
@@ -139,6 +141,16 @@ interface GridConfig {
 /** The column types a heading can filter. Every body is the menu's own.
     TRAP T-a-menu-owns-its-own-bodies */
 const FILTERABLE: ReadonlySet<string> = new Set(['text', 'number', 'date']);
+const filters = (col: GridColumn): boolean => col.filterable !== false && FILTERABLE.has(col.type ?? 'text');
+
+/** What a row's sub-grid sends: none leaves the grid but its filter, which is the
+ *  grid's own. TODO 570, 571 · TRAP T-an-inner-event-stops-at-its-host */
+const DETAIL_EVENTS = ['context-request', 'column-filter-change', 'column-resize', 'sort-change', 'row-select',
+  'selection-change', 'group-toggle', 'group-change', 'row-action', 'page-change', 'grid-pages-change', 'select-all-request'];
+
+/** What a row's sub-grid is told of its grid: its filters' look and limits. TODO 571 */
+const DETAIL_ATTRS = ['data-column-filters', 'data-filter-fields', 'data-needles', 'data-limit-options',
+  'data-hide-unmatched', 'data-remote', 'data-apply-on'];
 
 
 export class SherpaDataGrid extends SherpaElement {
@@ -191,7 +203,7 @@ export class SherpaDataGrid extends SherpaElement {
     shape: 'rows',
     // Its headings' FILTERS, as the source defines them. TRAP T-a-heading-opens-the-chips-menu
     filters: (el) => [...new Set(((el as unknown as { columns?: GridColumn[] }).columns ?? [])
-      .flatMap((c) => [...(FILTERABLE.has(c.type ?? 'text') ? [c.field] : []), ...c.tags ?? []]))],
+      .flatMap((c) => [...(filters(c) ? [c.field] : []), ...c.tags ?? []]))],
     // What its cells read, tags too, and its row key; no columns yet, every field. TRAP T-a-held-set-reads-the-pages-fields
     fields: (el) => {
       const { columns = [], key } = el as unknown as { columns?: GridColumn[]; key?: string | null };
@@ -270,10 +282,13 @@ export class SherpaDataGrid extends SherpaElement {
 
   override onRender(): void {
     /* A row's SUB-GRID is this grid's part: it is filled from here, and never
-       asks the provider — it would join this grid's scope. TODO 570 ·
+       asks the provider — it would join this grid's scope. Its filter is this
+       grid's: the same rows, organised. TODO 570, 571 ·
        TRAP T-an-inner-event-stops-at-its-host */
-    this.root.addEventListener('context-request', (event) => {
-      if ((event.target as Element | null)?.closest?.('.detail-row')) event.stopPropagation();
+    for (const type of DETAIL_EVENTS) this.root.addEventListener(type, (event) => {
+      if (!(event.target as Element | null)?.closest?.('.detail-row')) return;
+      event.stopPropagation();
+      if (type === 'column-filter-change') this.emit(type, (event as CustomEvent).detail);
     });
     // TRAP T-grid-header-needs-capture — the chip's stopPropagation() hides the
     // click that IS the sort from a bubbling listener.
@@ -416,7 +431,8 @@ export class SherpaDataGrid extends SherpaElement {
     this.toggleState('actions', this.#actions.length > 0);
     // TRAP T-grid-populate-keeps-column-filters — column filters drop only where
     // the COLUMN went, selection re-resolves by KEY.
-    const fields = new Set(this.#columns.map((c) => c.field));
+    // …or the sub-grid's, which shows them too. TODO 571
+    const fields = new Set([...this.#columns, ...this.#detail?.columns ?? []].map((c) => c.field));
     for (const field of this.#columnFilters.keys()) {
       if (!fields.has(field)) this.#columnFilters.delete(field);
     }
@@ -589,7 +605,7 @@ export class SherpaDataGrid extends SherpaElement {
       const join = this.#join(col);
       const held = join ? join.held : this.#shown(col.field);
       // A tiered field's CHILD has no filter of its own: its picks are its parent's. TODO 369
-      const def = join?.def ?? (FILTERABLE.has(col.type ?? 'text') && !this.#parentOf(col.field) ? this.#filterDef(col, held) : null);
+      const def = join?.def ?? (filters(col) && !this.#parentOf(col.field) ? this.#filterDef(col, held) : null);
       const key = this.#cellKey(col, def);
       let th = kept.get(col.field);
       kept.delete(col.field);
@@ -820,6 +836,7 @@ export class SherpaDataGrid extends SherpaElement {
   drawPresent(present: Readonly<Record<string, readonly string[]>>): void {
     this.#present = present;
     for (const cell of this.$$<HTMLElement>('.head-cell[data-field]')) this.#markPresent(cell);
+    this.#tellDetails();
   }
 
   /** drawHighlight(test) — a bound source says which rows the highlight's
@@ -827,6 +844,7 @@ export class SherpaDataGrid extends SherpaElement {
   drawHighlight(matches: ((row: GridRow) => boolean) | null): void {
     this.#highlight = matches;
     for (const tr of this.$$<HTMLElement>('.row')) tr.toggleAttribute('data-highlight', !!matches?.(this.#rowOf.get(tr) ?? {}));
+    for (const sub of this.#subGrids()) sub.drawHighlight(matches);
   }
   /** The highlight's test, as last drawn. */
   #highlight: ((row: GridRow) => boolean) | null = null;
@@ -836,6 +854,7 @@ export class SherpaDataGrid extends SherpaElement {
   drawOffered(offered: Readonly<Record<string, readonly string[]>>): void {
     this.#offered = offered;
     for (const cell of this.$$<HTMLElement>('.head-cell[data-field]')) this.#markPresent(cell);
+    this.#tellDetails();
   }
   /** What each chained field offers, as last drawn. */
   #offered: Readonly<Record<string, readonly string[]>> = {};
@@ -1270,9 +1289,39 @@ export class SherpaDataGrid extends SherpaElement {
     if (!row || !cell) return;
     // Every column, the selection's and the actions' too, as a group row spans them.
     cell.colSpan = columnCount + 1 + (this.#actions.length ? 1 : 0);
-    const sub = row.querySelector<HTMLElement & { populate?(d: unknown): Promise<void> }>('.detail-grid');
-    void sub?.populate?.({ columns: detail.columns, key: detail.key ?? null, rows: detail.rows[key] ?? [] });
+    const sub = row.querySelector<SherpaDataGrid>('.detail-grid');
     body.appendChild(row);
+    if (!sub) return;
+    this.#tellDetail(sub);
+    void sub.populate({ columns: detail.columns, key: detail.key ?? null, rows: detail.rows[key] ?? [], filters: this.#givenFilters })
+      .then(() => this.#tellDetail(sub));
+  }
+
+  /** The open rows' sub-grids. */
+  #subGrids(): SherpaDataGrid[] {
+    return this.$$<SherpaDataGrid>('.detail-grid');
+  }
+
+  /** Tell each open sub-grid what this grid holds, as it changes. */
+  #tellDetails(): void {
+    for (const sub of this.#subGrids()) if (sub.hasRendered) this.#tellDetail(sub);
+  }
+
+  /** A sub-grid is told what this grid holds, so its headings and cells filter
+   *  the same rows: each field's answer, what the View holds, and what the
+   *  filters before each field leave. TODO 571 */
+  #tellDetail(sub: SherpaDataGrid): void {
+    for (const name of DETAIL_ATTRS) {
+      const value = this.getAttribute(name);
+      if (value == null) sub.removeAttribute(name);
+      else sub.setAttribute(name, value);
+    }
+    if (!sub.hasRendered) return;
+    sub.supersedeColumns(Object.fromEntries(this.#superseded), this.#supersededAt);
+    for (const [field, reading] of this.#columnFilters) sub.drawReading(field, reading);
+    sub.drawPresent(this.#present);
+    sub.drawOffered(this.#offered);
+    sub.drawHighlight(this.#highlight);
   }
 
   /** Open a row on its rows, or shut it, and draw again. */
@@ -1425,7 +1474,7 @@ export class SherpaDataGrid extends SherpaElement {
     const field = td.dataset['field']!;
     const col = this.#columns.find((c) => c.field === field);
     const kind = col?.type ?? 'text';
-    if (!col || !FILTERABLE.has(kind)) return null;
+    if (!col || !filters(col)) return null;
     const row = this.#rowOf.get(td.parentElement!);
     const raw = row?.[field];
     if (raw == null || raw === '') return null;
@@ -1543,7 +1592,7 @@ export class SherpaDataGrid extends SherpaElement {
   #join(col: GridColumn): { def: FilterMenuDef; held: FieldReading | undefined } | null {
     const tags = this.#tagsOf(col);
     if (!tags.length) return null;
-    const own = FILTERABLE.has(col.type ?? 'text') && !this.#parentOf(col.field) ? this.#filterDef(col, undefined) : null;
+    const own = filters(col) && !this.#parentOf(col.field) ? this.#filterDef(col, undefined) : null;
     const fields = [...(own && kindOf(own) === 'multi' ? [col.field] : []), ...tags].filter((f) => !this.#superseded.has(f));
     if (!fields.length) return null;
     this.#joined.set(col.field, fields);

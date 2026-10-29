@@ -548,3 +548,79 @@ test('a grid in a slot: its Primary leads its columns; a Secondary makes it a PI
   expect(r['back']!.heads).toEqual(['Day', 'Plan', 'Region']);
   expect(r['back']!.rows.length).toBe(4);
 });
+
+test('a pivot filters as its grid does: its Primary heading and cells, and its rows\' sub-grids\' — the same rows, organised (Will, TODO 571)', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-container data-scope="data">
+        <sherpa-quick-filter-toolbar></sherpa-quick-filter-toolbar>
+        <sherpa-data-grid id="grid" data-scope="data" data-column-filters></sherpa-data-grid>
+      </sherpa-container>\`;
+    const grid = provider.querySelector('#grid');
+    grid.columns = [{ field: 'plan', header: 'Plan' }, { field: 'day', header: 'Day' }, { field: 'region', header: 'Region' }];
+    grid.key = 'id';
+    const source = new DataSource({ store: new ArrayStore([
+      { id: 1, plan: 'Pro', day: 'Mon', region: 'EU' }, { id: 2, plan: 'Free', day: 'Tue', region: 'EU' },
+      { id: 3, plan: 'Pro', day: 'Wed', region: 'US' }, { id: 4, plan: 'Enterprise', day: 'Mon', region: 'US' },
+    ], { key: 'id' }) });
+    source.declareValues('plan', PLANS);
+    source.declareValues('day', ['Mon', 'Tue', 'Wed']);
+    for (const [f, label] of [['plan', 'Plan'], ['day', 'Day'], ['region', 'Region']]) source.declareField(f, { label });
+    source.query.offer('data', ['plan', 'day', 'region']);
+    source.query.hold('data', ['plan', 'day', 'region']);
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    source.query.present('data', { primary: 'day', secondary: 'plan' });
+    await settle(); await settle();
+    let leaked = 0;
+    grid.addEventListener('context-request', () => leaked++);
+    grid.shadowRoot.querySelector('.row-open').click();
+    await settle(); await settle();
+    const cells = (row) => [...row.querySelectorAll('td')].map((td) => td.textContent.trim()).filter(Boolean).join('|');
+    const sub = () => grid.shadowRoot.querySelector('.detail-grid');
+    // A cell's chip, pressed as a reader does: over its cell, then its body.
+    const press = async (el, field, text) => {
+      const td = [...el.shadowRoot.querySelectorAll('.body > .row > td[data-field="' + field + '"]')].find((c) => c.textContent.trim() === text);
+      td.dispatchEvent(new PointerEvent('pointerover', { bubbles: true, composed: true }));
+      const chip = el.shadowRoot.querySelector('.cell-filter');
+      if (chip.parentElement !== td) return false;
+      chip.shadowRoot.querySelector('.body').click();
+      await settle(); await settle();
+      return true;
+    };
+    const read = () => ({
+      region: source.query.reading('data', 'region')?.picked ?? null,
+      day: source.query.reading('data', 'day')?.picked ?? null,
+      heads: [...grid.shadowRoot.querySelectorAll('.head-cell')].map((h) => h.querySelector('.head-label').textContent.trim()
+        + (h.querySelector('.head-filter')?.hasAttribute('data-unsupported') ? '' : '*')),
+      rows: [...grid.shadowRoot.querySelectorAll('.body > .row')].map(cells),
+      sub: sub() ? [...sub().shadowRoot.querySelectorAll('.body > .row')].map(cells) : null,
+      subRegion: sub()?.shadowRoot.querySelector('.head-cell[data-field="region"] .head-filter')?.hasAttribute('data-current') ?? null,
+    });
+    const at = { first: read() };
+    // Monday's sub-grid: its EU cell filters the grid's Region.
+    at.pressed = await press(sub(), 'region', 'EU');
+    at.region = read();
+    // A count is not a field: its cell offers nothing.
+    at.count = await press(grid, 'pivot:Pro', '1');
+    // The pivot's own Primary cell: Tuesday.
+    at.day = await press(grid, 'day', 'Tue');
+    at.tue = read();
+    at.leaked = leaked;
+    return at;
+  })()`) as Record<string, unknown> & Record<'first' | 'region' | 'tue', { region: string[] | null; day: string[] | null; heads: string[]; rows: string[]; sub: string[] | null; subRegion: boolean | null }>;
+  // Its Primary filters; its counts do not.
+  expect(r['first']!.heads).toEqual(['Day*', 'Free', 'Pro', 'Enterprise', 'Total']);
+  expect(r['first']!.sub).toEqual(['Pro|Mon|EU', 'Enterprise|Mon|US']);
+  // A sub-grid's cell filters the grid's rows: EU only, its row still open, its heading on.
+  expect(r['pressed']).toBe(true);
+  expect(r['region']).toMatchObject({ region: ['EU'], rows: ['Mon|0|1|1', 'Tue|1|0|1'], sub: ['Pro|Mon|EU'], subRegion: true });
+  expect(r['count']).toBe(false);
+  // The pivot's own Day cell: Tuesday, over EU.
+  expect(r['day']).toBe(true);
+  expect(r['tue']).toMatchObject({ region: ['EU'], day: ['Tue'], rows: ['Tue|1|1'] });
+  // A sub-grid never asks the provider.
+  expect(r['leaked']).toBe(0);
+});

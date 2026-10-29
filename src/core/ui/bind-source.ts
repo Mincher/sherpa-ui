@@ -28,6 +28,8 @@ export interface BindOptions extends AttachFacts {
   signal?: AbortSignal;
   /** Events the source must NOT act on. TRAP T-ignore-is-the-scalpel */
   ignore?: readonly string[];
+  /** The events a READONLY bind still steers: a pivot's filters. TODO 571 */
+  steers?: readonly SteeringEvent[];
   /** Reshape the rows before they reach this component. TRAP T-adapter-lives-at-the-binding */
   as?: (rows: Row[], source: DataSource) => unknown;
   /** Where its data GOES, instead of `populate()` — a provider answering a
@@ -60,26 +62,25 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
   }
 
   const { as: adapt, deliver, into } = options;
-  if (!(options.readonly ?? false)) steered.add(el as unknown as object);
   const readonly = options.readonly ?? false;
+  const steers = readonly ? options.steers ?? [] : STEERING_EVENTS;
+  if (steers.length) steered.add(el as unknown as object);
   const steering: SteerBind = options.scope ? { scope: options.scope } : {};
   const listeners: Array<[string, EventListener]> = [];
   const ignored = new Set(options.ignore ?? []);
-  if (!readonly) {
-    for (const type of STEERING_EVENTS) {
-      // TRAP T-ignore-is-the-scalpel — no listener at all, not an early return.
-      if (ignored.has(type)) continue;
-      const handler = ((event: Event) => {
-        /* A control bound INSIDE this one — a panel's section bar — steers through
-           its own binding: heard here too, it was asked twice. TODO 512
-           TRAP T-a-nested-control-steers-through-its-own-binding */
-        const origin = event.composedPath()[0];
-        if (origin !== el && steered.has(origin as object)) return;
-        steer(source, el, steering, type, event as CustomEvent);
-      }) as EventListener;
-      el.addEventListener(type, handler);
-      listeners.push([type, handler]);
-    }
+  for (const type of steers) {
+    // TRAP T-ignore-is-the-scalpel — no listener at all, not an early return.
+    if (ignored.has(type)) continue;
+    const handler = ((event: Event) => {
+      /* A control bound INSIDE this one — a panel's section bar — steers through
+         its own binding: heard here too, it was asked twice. TODO 512
+         TRAP T-a-nested-control-steers-through-its-own-binding */
+      const origin = event.composedPath()[0];
+      if (origin !== el && steered.has(origin as object)) return;
+      steer(source, el, steering, type, event as CustomEvent);
+    }) as EventListener;
+    el.addEventListener(type, handler);
+    listeners.push([type, handler]);
   }
 
   /* LOCKED: the source now owns this element's view state, so it reports its
