@@ -453,6 +453,7 @@ export class SherpaQuickFilter extends SherpaElement {
     if (this.#arranges()) {
       this.set('data-current', null);
       this.set('data-direction', null);
+      this.set('data-column', null);
       for (const input of this.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
       return;
     }

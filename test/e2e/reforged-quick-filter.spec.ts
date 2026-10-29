@@ -918,3 +918,21 @@ test('a section value on and ruled out says "no matches", as its menu row does (
   });
   expect(tip).toBe('Limited by the filters before it: no matches.');
 });
+
+test('a Sort chip cleared forgets its column, as None does (TODO 523 S9)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter') as HTMLElement & {
+      rendered?: Promise<void>; clear(): void; column: string | null; arrangeBy(field: string | null, dir?: string | null): void };
+    el.setAttribute('data-label', 'Sort');
+    el.setAttribute('data-kind', 'sort');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.arrangeBy('plan', 'desc');
+    await window.__settled();
+    const before = el.column;
+    el.clear();
+    await window.__settled();
+    return { before, after: el.column, attr: el.getAttribute('data-column') };
+  });
+  expect(r).toEqual({ before: 'plan', after: '', attr: null });
+});
