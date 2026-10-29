@@ -724,8 +724,6 @@ draft until Apply: the bar asks for nothing on a pick in a committing menu.
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/core/ui/filter-def.ts`
 
-(none — `T-custom-element-upgrade` already exists and already lists this file as a Site.)
-
 ### T-reflow-resets-before-measuring
 
 `#reflow` fits the bar to its width. ONE LINE, always: the answer to "these do
@@ -2508,27 +2506,18 @@ template.
 
 ### T-group-chip-body-toggles-grouping
 
-**An organise chip needs its own branch in `#onChipClick`, and Group did not
-have one.**
-
-The handler finds the Sort chip by `data-id`, cycles it, and returns. Everything
-after that looks for `.chip` — and an organise chip is a `.organise-chip`. So a
-click on the Group chip's body flipped its own `data-current` off, made it look
-ungrouped, and **told nobody**. The grid stayed grouped while the chip said it
-was not.
-
-Reported as "the Group chip doesn't toggle grouping", and it was exactly that:
-the chip toggled, and nothing downstream heard.
+**A Group or Sort chip owns its body click** (`#arrange`); the bar's
+`#onChipClick` never sees it. Once, the bar's handler found only the Sort chip,
+so a click on the Group chip's body flipped it off and **told nobody**: the
+grid stayed grouped while the chip said it was not.
 
 It is a TWO-state toggle, not the tri-state Sort is (`T-sort-is-tri-state`).
-Grouping is running or it is not, so turning it off **clears the pick** — a chip
-remembering a column it is not grouping by would report a grouping that is not
-running, and `groupField` reads that radio.
+Turning it off KEEPS the pick (`T-a-chip-body-cycles-its-states`): `group-change`
+carries `field: null`, and the bar's `groupField` reads the chip — on, and its
+column.
 
-**Turning it ON with nothing picked keeps it OFF.** The host writes
-`data-group-field=""` straight back and `#syncGroupFromAttrs` corrects the chip
-a tick later, which reads as a flicker. A column is chosen in the menu; the body
-only switches an existing pick on and off.
+**With nothing picked, the body opens the menu.** A column is chosen in the
+menu; the body only switches an existing pick on and off.
 
 The chip REPORTS `group-change` as every chip reports. The host owns the
 grouping and writes the attribute back — `T-grid-reports-never-combines`, the
@@ -2546,11 +2535,9 @@ suspended, so the bar shows at a glance whether the sort is doing anything.
 
 Three things that each broke it:
 
-- **The chip has ALREADY flipped its own `data-current`** by the time
-  `quick-filter-click` arrives (a chip is a two-state toggle by default), so
-  `#cycleSort` must undo that first. Without it the flip and the cycle fought
-  each other and the chip never left ascending: every click flipped it off, then
-  the cycle's "suspended → on" branch put it straight back.
+- **The chip cycles before anything flips**: `#arrange` → `nextSort` →
+  `#applySort`. Once the chip flipped its own `data-current` first, the cycle
+  fought it, and the chip never left ascending.
 - **The direction must rewind to `asc` on the way into suspended.** Leaving
   `desc` in place meant click 4 read desc→suspend and click 5 read
   suspend→on-at-desc, so the chip ping-ponged between descending and off and
@@ -2570,7 +2557,6 @@ The CHIP label says "Sort" and never moves; the COLUMN reads in the caret button
 bar on every pick.
 
 
-(none — `T-tokens-css-never-reaches-shadow` already exists and already lists this file as a Site. This extraction only compresses the surrounding prose; the citation already present is kept verbatim.)
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
@@ -2602,9 +2588,8 @@ sorting from a column header left the chip saying nothing. `groupField` was
 likewise readable and completely UNWRITABLE, so a saved view could restore a
 sort and not a grouping — the parity sweep found it.
 
-Both chips derive their column from their menu's ticked radio, so syncing means
-ticking that radio. A label write would be overwritten by `#syncSortLabel`
-anyway.
+Both chips derive their column from their menu's ticked radio: `arrangeBy`
+names `data-column`, then ticks the radio, and `#drawArrangement` draws the caret.
 
 **NEITHER emits an event.** The write came from outside, and echoing it back
 would bounce the value between a host wired both ways.
@@ -4241,18 +4226,6 @@ as a menu, not as "this column can be sorted".
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
-(none — cites existing traps)
-
-NOTE: Neither `T-filter-is-data-not-a-predicate` nor
-`T-ops-follow-the-column-type` lists this file yet. Both are in the
-SITE LINES TO ADD MANUALLY section at the top.
-
-`T-filter-is-data-not-a-predicate` already states the exact fact this comment
-carried — "the KEYS ARE the operators, so a control builds its picker from this
-map and whatever it reports back is already a clause the store understands. No
-translation table exists to drift … the data grid's column menu today, a Filter
-Panel later." Writing it again here would be the second copy that trap warns
-about. `T-ops-follow-the-column-type` owns the per-type split.
 
 ### T-grid-slider-spans-real-values
 
@@ -4419,16 +4392,15 @@ asc, so **once a column was sorted there was no way back to unsorted** without
 picking a different one. Two controls for one value must agree about how many
 states that value has.
 
-`sort-change` therefore carries `field: null, direction: null` on the third
-click.
+`sort-change` therefore carries `field: null, direction: 'asc'` on the third
+click — the Sort chip's shape (TODO 523 S10).
 
 **ONLY ONE COLUMN AT A TIME.** `data-sort-field` holds a single field, so sorting
 a new column replaces the old one rather than stacking.
 
-**Not the same third state as the chip's.** `T-sort-is-tri-state` is the
-toolbar's version, whose third step SUSPENDS — it keeps the column, because the
-chip's menu still holds it. A header has no menu to remember a column in, so its
-third step CLEARS. Same count of states, different meaning; do not unify them.
+**The same third state as the chip's** (`T-sort-is-tri-state`): it SUSPENDS,
+from the same `nextSort`. Unbound, the grid keeps `data-sort-field` with an empty
+direction; bound, the Query keeps `sortSuspended`.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
@@ -6614,8 +6586,6 @@ invented one.
 
 - Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
 
-(none — cites the EXISTING trap; see SITE LINES TO ADD MANUALLY above)
-
 ### T-header-owns-the-filter-bar-surface
 
 The quick-filter toolbar is slotted in the LIGHT DOM, so a host CAN reach it
@@ -8388,10 +8358,8 @@ So when `data-sort-field` names the same column as `data-group-field`,
 `data-sort-direction` orders the GROUPS. There is nothing left for it to order
 inside one — every row in a group holds the same value for that column.
 
-The two opt-in features that mirror the Figma Grid Cell (926:34253) are
-`data-selectable` (a leading checkbox column, a select-all in the header, and
-`selection-change`) and `data-filterable` (a secondary header row of per-column
-filter inputs, and `filter-change`).
+The opt-in that mirrors the Figma Grid Cell (926:34253) is `data-selectable`
+(a leading checkbox column, a select-all in the header, and `selection-change`).
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
@@ -8626,7 +8594,7 @@ group open, the pages now match the ungrouped ones.
 `#pageStarts` walks the visible rows once and records the index each page opens
 at. A page is then a plain slice, and `data-index` stays an index into the FULL
 visible list (`#renderBody` adds the slice's `offset`) — so selection, row-click
-and `#syncFocused` keep resolving against the same list they always did. Change
+and `#syncCurrent` keep resolving against the same list they always did. Change
 that and a click on page 2 returns a page-1 record.
 
 **A group split by a page boundary redraws its heading**, because a page that
@@ -8705,8 +8673,7 @@ every matching row.
 a count measured against the old grouping describes groups that no longer exist.
 
 The cost is honest and bounded: a grouped view holds the whole result set in the
-browser. That is the price of letting the reader fold, and it is the same price
-the grid's own sort and column filters already pay.
+browser. That is the price of letting the reader fold.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/ui/bind-source.ts`
@@ -11413,8 +11380,8 @@ values are what the reader came for, however many they may pick. Group and Sort
 answer HOW the rows are arranged — not a filter at all — and read as the two
 controls a toolbar already shows.
 
-So the split is by JOB, not by `select`. An Advanced field's rows go in the
-accordion section too, in its own `.field-body`, replacing the chips.
+So the split is by JOB, not by `select`. A field answered by conditions alone
+stays one chip: it has no values to lay out.
 
 **Except a LONG list** — Will, TODO 89: more than 16 values (`EXPLODE_AT`,
 `oneChipList()` in `filter-kind.ts`) is ONE chip with its values in its menu,
@@ -12339,8 +12306,7 @@ and those are the VIEW's rows, without the grid's own scope
 (`T-only-the-view-trickles-down`) — so a filter on the Records bar left every
 badge at its total. Now `groups()` counts the load itself, which is whole
 whenever it is grouped or unpaged, and turns to `#allRows` only for a page.
-And the grid's own FILTER ROW hides rows the data layer never hears of: while
-it holds a filter, the grid counts what it shows.
+The grid counts for itself only when nobody told it.
 
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/data-source.ts`
@@ -13516,9 +13482,9 @@ column; the direction says whether it is being applied:
 | neither attribute | no sort at all |
 
 Three things read it and all three must agree: `#sortRows` (does not sort),
-`#renderHead` (glyph back to `sortNone`, `data-sort` removed), and the toolbar's
-`#syncSortFromAttrs` (chip off, direction rewound to `asc` so a resume starts
-ascending rather than at the stale `desc`).
+`#renderHead` (glyph back to `sortNone`, `data-sort` removed), and the Sort
+chip's `arrangeBy`, through `arrangeFrom` (chip off, direction rewound to `asc`
+so a resume starts ascending rather than at the stale `desc`).
 
 `setSort(null)` suspends; `clearSort()` forgets. A caller that means "throw it
 away" must say so — and a NEW sort drops the memory rather than shadowing it,
@@ -13590,14 +13556,11 @@ state keeps, which is precisely what
 re-reads from a document is a rule that drifts; a function is not.
 
 `src/core/data/cycle.ts` holds it: `nextSort`, `sortDirectionAttr`,
-`sortDirectionFrom`, `nextToggle`. Pure, DOM-free, on the lint boundary —
+`sortDirectionFrom`. Pure, DOM-free, on the lint boundary —
 they take the current state and return the next one. **Reading it off an
 attribute and writing the result back is not their job**, because for a bound
 component that belongs to the source (`T-bind-locks-what-it-owns`).
 
-`nextToggle` is one line and is there on purpose: the two-state and three-state
-cases then read the same way at every call site, and "off is a state, not a
-delete" is stated once for both.
 
 - Site: `src/core/data/cycle.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
