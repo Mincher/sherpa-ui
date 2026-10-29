@@ -5,12 +5,12 @@
  *
  * Map:
  * - HeldSet — A remote store's whole set, asked on the client; its rows go out as copies.
- * - .size — How many rows it holds.
- * - .rows — Every row it holds, in place — to keep a copy, never to change.
- * - .refused — What the schema refused when the set was read.
  * - .fields — The fields its rows were read with, or null — every field.
  * - .covers — Do its rows carry these fields? null asks for every field.
  * - .join — Take a column read in: each row's fields, by its key; false when the rows are not the same rows.
+ * - .size — How many rows it holds.
+ * - .rows — Every row it holds, in place — to keep a copy, never to change.
+ * - .refused — What the schema refused when the set was read.
  * - .patch — Take one store change in place; false when it cannot, and the set must be read again.
  * - .load — What a load asks, each row a copy keyed as its original, so a host's edit never reaches the set.
  * - .totalCount — The matches, unpaged and unsorted.
@@ -18,7 +18,7 @@
  * - .distinct — Each field's values among the matches, read in place.
  */
 import {
-  applyOptions, distinctOf, readField, sameKey, valueKey, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail,
+  applyOptions, distinctOf, matchesOnly, readField, sameKey, valueKey, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail,
 } from './store.js';
 import { carryKey, isMadeUpKey, keyRow, rowKey } from './row-key.js';
 
@@ -156,8 +156,7 @@ export class HeldSet {
 
   /** The matches, unpaged and unsorted. */
   totalCount(options: LoadOptions = {}): Promise<number> {
-    const { skip: _skip, take: _take, sort: _sort, group: _group, ...rest } = options;
-    return Promise.resolve(applyOptions(this.#rows, rest).total);
+    return Promise.resolve(applyOptions(this.#rows, matchesOnly(options)).total);
   }
 
   /** Every row, in place. */
@@ -167,8 +166,7 @@ export class HeldSet {
 
   /** Each field's values among the matches, read in place. */
   distinct(fields: readonly string[], options: LoadOptions = {}): Promise<Record<string, unknown[]>> {
-    const { skip: _skip, take: _take, sort: _sort, group: _group, ...rest } = options;
-    return Promise.resolve(distinctOf(applyOptions(this.#rows, rest).rows, fields));
+    return Promise.resolve(distinctOf(applyOptions(this.#rows, matchesOnly(options)).rows, fields));
   }
 }
 

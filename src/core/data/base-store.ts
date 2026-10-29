@@ -7,7 +7,7 @@
  * - StoreOptions — Options every store shares.
  * - BaseStore — what every store shares: key, time, schema guard, change events
  */
-import { applyOptions, readField, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail } from './store.js';
+import { applyOptions, matchesOnly, readField, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail } from './store.js';
 import { carryKey, keyRow } from './row-key.js';
 import { StoreHistory } from './store-history.js';
 import {
@@ -86,10 +86,8 @@ export abstract class BaseStore extends EventTarget implements Store {
 
   /** Matching rows before paging — what a pager counts pages from. */
   async totalCount(options?: LoadOptions): Promise<number> {
-    // skip/take dropped: a COUNT is of the matches, not of one page.
-    const { skip: _skip, take: _take, ...rest } = options ?? {};
-    const result = await this.load(rest);
-    return result.total;
+    // A COUNT is of the matches, not of one page, in no order.
+    return (await this.load(matchesOnly(options))).total;
   }
 
   /** Check a row, THROWING if it fails; returns the PARSED value. TRAP T-schema-guard-belongs-at-the-store */

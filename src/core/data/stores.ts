@@ -17,6 +17,7 @@
 import {
   absoluteDates,
   distinctOf,
+  matchesOnly,
   readField,
   sameKey,
   type LoadOptions,
@@ -77,14 +78,12 @@ export class ArrayStore extends BaseStore {
 
   /** A count hands out no rows, so it copies none. TRAP T-array-store-copies-both-ways */
   override async totalCount(options: LoadOptions = {}): Promise<number> {
-    const { skip: _skip, take: _take, sort: _sort, group: _group, ...rest } = options;
-    return (await this.page(this.#rows, rest)).total;
+    return (await this.page(this.#rows, matchesOnly(options))).total;
   }
 
   /** Each field's values among the matching rows, read in place: no row is copied out. TRAP T-a-ruled-out-value-is-greyed */
   async distinct(fields: readonly string[], options: LoadOptions = {}): Promise<Record<string, unknown[]>> {
-    const { skip: _skip, take: _take, sort: _sort, group: _group, ...rest } = options;
-    return distinctOf((await this.page(this.#rows, rest)).rows, fields);
+    return distinctOf((await this.page(this.#rows, matchesOnly(options))).rows, fields);
   }
 
   /** Every row the schema accepts, in place: no row is copied, for a reader that

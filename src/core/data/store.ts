@@ -47,6 +47,7 @@
  * - GroupSummary — One group as the DATA LAYER sees it: the value, and how many rows carry it.
  * - groupSummaries — Group by a field, keeping arrival order.
  * - groupRows — rows grouped by a field, in the order they arrive
+ * - matchesOnly — What a count or a tally asks: the matches alone — no order, no group, no page.
  * - applyOptions — Apply search → filter → sort, then page.
  */
 import type { FieldDomain } from './validate.js';
@@ -663,6 +664,12 @@ export function groupRows(rows: readonly Row[], field: string): RowGroup[] {
 }
 
 /* ── The pipeline ──────────────────────────────────────────────────────── */
+
+/** What a count or a tally asks: the matches alone — no order, no group, no page. */
+export function matchesOnly(options: LoadOptions = {}): LoadOptions {
+  const { skip: _skip, take: _take, sort: _sort, group: _group, ...rest } = options;
+  return rest;
+}
 
 /** Apply search → filter → sort, then page. TRAP T-pipeline-order-and-no-grouping */
 export function applyOptions(rows: readonly Row[], options: LoadOptions = {}): LoadResult {
