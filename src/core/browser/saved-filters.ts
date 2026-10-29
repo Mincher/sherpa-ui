@@ -13,7 +13,7 @@
  * - loadApplied — The set last taken in this tab: what "Save <name>" saves over.
  * - keepApplied — Remember the set last taken in this tab, or that none is.
  */
-import { isSavedFilter, type QueryDefaults, type SavedFilter, type ViewScope } from '../data/query.js';
+import { isSavedFilter, stripArrangement, type QueryDefaults, type SavedFilter, type ViewScope } from '../data/query.js';
 import {
   isPlainObject, labelId, readJson, removeKey, storageKind, writeJson,
 } from './web-storage.js';
@@ -75,7 +75,8 @@ export function renameSavedFilter(
 export function filtersOf(view: QueryDefaults): QueryDefaults {
   const scopes: Record<string, Partial<ViewScope>> = {};
   for (const [id, scope] of Object.entries(view.scopes)) {
-    const { sort: _sort, group: _group, sortSuspended: _off, search: _search, superseded: _kept, ...filters } = scope as ViewScope;
+    const { superseded: _kept, ...filters } = scope as ViewScope;
+    stripArrangement(filters);
     scopes[id] = filters;
   }
   return { v: 1, scopes: scopes as QueryDefaults['scopes'] };

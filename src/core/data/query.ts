@@ -101,7 +101,7 @@ export interface Arrangement {
 export const ARRANGE_KEYS = ['sort', 'group', 'sortSuspended', 'search'] as const;
 
 /** A scope without its arrangement, in place. */
-export function stripArrangement(s: ScopeQuery): void {
+export function stripArrangement(s: object): void {
   for (const key of ARRANGE_KEYS) Reflect.deleteProperty(s, key);
 }
 
@@ -129,7 +129,8 @@ export function arrangementOf(query: Query, mine?: (scope: string) => boolean): 
 export function withoutArrangement(query: Query): Query {
   const scopes: Record<string, ScopeQuery> = {};
   for (const [id, s] of Object.entries(query.scopes)) {
-    const { sort: _s, group: _g, sortSuspended: _o, search: _f, ...rest } = s;
+    const rest = { ...s };
+    stripArrangement(rest);
     const bare = Object.keys(rest).length === 2 && !rest.holds.length && !Object.keys(rest.readings).length;
     if (!(bare && arranging(s))) scopes[id] = rest;
   }

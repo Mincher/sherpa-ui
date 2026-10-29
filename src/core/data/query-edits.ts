@@ -286,7 +286,7 @@ export interface DefinitionFacts {
 }
 
 /** The keys a scope keeps, beside its readings. */
-const SCOPE_KEYS = new Set(['holds', 'narrows', 'from', 'suspended', 'sort', 'group', 'sortSuspended', 'search', 'superseded']);
+const SCOPE_KEYS = new Set<string>(['holds', 'narrows', 'from', 'suspended', ...ARRANGE_KEYS, 'superseded']);
 
 /**
  * A definition as a whole Query; its sort, group and search stay in it, in
@@ -416,12 +416,9 @@ export function dropSet(now: Query, set: QueryDefaults, own: ReadonlySet<string>
 }
 
 /** A scope's sort, group, suspended sort and search — those it has. */
-function arrangementIn(scope: ScopeQuery | undefined): Pick<ScopeQuery, 'sort' | 'group' | 'sortSuspended' | 'search'> {
+function arrangementIn(scope: ScopeQuery | undefined): Pick<ScopeQuery, (typeof ARRANGE_KEYS)[number]> {
   if (!scope || !arranging(scope)) return {};
-  return {
-    ...(scope.sort ? { sort: scope.sort } : {}), ...(scope.group != null ? { group: scope.group } : {}),
-    ...(scope.sortSuspended ? { sortSuspended: scope.sortSuspended } : {}), ...(scope.search ? { search: scope.search } : {}),
-  };
+  return Object.fromEntries(ARRANGE_KEYS.filter((key) => scope[key] != null && scope[key] !== '').map((key) => [key, scope[key]]));
 }
 
 /** One scope with no filters on: its chips and arrangement stay. */
