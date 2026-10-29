@@ -134,6 +134,24 @@
           "attrs": {
             "aria-hidden": "true"
           }
+        },
+        {
+          "el": "template",
+          "class": "words",
+          "children": [
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "expand"
+              }
+            },
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "collapse"
+              }
+            }
+          ]
         }
       ],
       "promo": [

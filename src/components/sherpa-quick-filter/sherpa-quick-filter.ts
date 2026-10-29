@@ -678,7 +678,8 @@ export class SherpaQuickFilter extends SherpaElement {
         : dir === 'desc' ? ORGANISE_ICONS.sortDesc : ORGANISE_ICONS.sortAsc);
     }
     // The tip says the column, and for a sort which WAY. Will, TODO 125.
-    const way = dir === 'desc' ? 'descending' : dir === 'asc' ? 'ascending' : '';
+    // Its words are in its template: before the stamp, the draw on connect says the way.
+    const way = dir && this.hasRendered ? this.word(dir) : '';
     this.#said = this.current && this.valueLabel ? [this.valueLabel, way].filter(Boolean).join(', ') : '';
     this.#writeTip();
   }

@@ -25,9 +25,6 @@ import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 
 const MAX_ITEMS = 6;
 
-/** The roll-up row's name, before its `(n)` count is appended. */
-const ROLLUP_LABEL = 'Other';
-
 /** One legend row — TRAP T-chart-datum-aliases-are-not-copies. */
 export type LegendItem = LegendDatum;
 
@@ -266,7 +263,7 @@ export class SherpaChartLegend extends SherpaElement {
         /* HOW MANY it folded, in the label: "Other (3)" says what the row
            stands for, where a bare "Other" could be one category or twenty.
            TRAP T-legend-caps-at-six-and-rolls-up */
-        label: `${ROLLUP_LABEL} (${rest.length})`,
+        label: `${this.word('other')} (${rest.length})`,
         colorIndex: MAX_ITEMS,
         ...(total != null ? { value: total } : {}),
       },
@@ -356,7 +353,7 @@ export class SherpaChartLegend extends SherpaElement {
          two. `indices` is what a roll-up row always reports. */
       this.emit('legend-item-click', {
         index: this.#items.length - 1,
-        label: this.#items.at(-1)?.label ?? 'Other',
+        label: this.#items.at(-1)?.label ?? this.word('other'),
         active: on.size > 0,
         indices: [...on].sort((a, b) => a - b),
       });

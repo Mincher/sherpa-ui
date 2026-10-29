@@ -392,7 +392,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-trigger-click-follows-light-dismiss](TRAPS.md#t-a-trigger-click-follows-light-dismiss) — quick-filter
 - [T-a-value-before-the-first-render-is-held](TRAPS.md#t-a-value-before-the-first-render-is-held) — quick-filter, quick-filter-toolbar
 - [T-a-view-is-json](TRAPS.md#t-a-view-is-json) — quick-filter-toolbar
-- [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — quick-filter-toolbar
+- [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — quick-filter, quick-filter-toolbar
 - [T-actions-were-a-slot](TRAPS.md#t-actions-were-a-slot) — quick-filter-toolbar
 - [T-add-menu-batches](TRAPS.md#t-add-menu-batches) — filters-button, quick-filter-toolbar
 - [T-all-is-an-answer](TRAPS.md#t-all-is-an-answer) — quick-filter, quick-filter-toolbar
@@ -703,7 +703,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-field-type-decides-the-clause](TRAPS.md#t-the-field-type-decides-the-clause) — data-grid
 - [T-the-last-row-draws-no-rule](TRAPS.md#t-the-last-row-draws-no-rule) — data-grid
 
-## Charts (63)
+## Charts (64)
 
 - [T-a-bar-hangs-from-the-zero-line](TRAPS.md#t-a-bar-hangs-from-the-zero-line) — barchart
 - [T-a-breakdown-pick-is-a-legend-pick](TRAPS.md#t-a-breakdown-pick-is-a-legend-pick) — chart-legend
@@ -738,6 +738,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-trend-line-is-one-shape](TRAPS.md#t-a-trend-line-is-one-shape) — sparkline
 - [T-a-trigger-click-follows-light-dismiss](TRAPS.md#t-a-trigger-click-follows-light-dismiss) — chart-legend
 - [T-a-value-before-the-first-render-is-held](TRAPS.md#t-a-value-before-the-first-render-is-held) — chart-legend
+- [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — chart-legend
 - [T-at-property-needs-the-document](TRAPS.md#t-at-property-needs-the-document) — barchart, gauge-chart, sparkline
 - [T-chart-datum-aliases-are-not-copies](TRAPS.md#t-chart-datum-aliases-are-not-copies) — barchart, chart-legend
 - [T-chart-tip-is-a-sibling-of-its-dot](TRAPS.md#t-chart-tip-is-a-sibling-of-its-dot) — chart-parts, sparkline
@@ -932,7 +933,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-trigger-shows-what-it-opened](TRAPS.md#t-a-trigger-shows-what-it-opened) — app-header
 - [T-a-value-before-the-first-render-is-held](TRAPS.md#t-a-value-before-the-first-render-is-held) — input-text, prompt-composer
 - [T-a-value-is-data-the-ticks-are-drawn](TRAPS.md#t-a-value-is-data-the-ticks-are-drawn) — file-upload, select-group
-- [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — input-text, nav
+- [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — input-text, nav, nav-item
 - [T-a-wrapping-span-hides-its-own-row](TRAPS.md#t-a-wrapping-span-hides-its-own-row) — layout-grid
 - [T-abort-controller-per-connect](TRAPS.md#t-abort-controller-per-connect) — layout-grid, slider
 - [T-advanced-checkbox-is-a-snapped-pair](TRAPS.md#t-advanced-checkbox-is-a-snapped-pair) — select-checkbox

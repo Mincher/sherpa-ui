@@ -119,7 +119,7 @@ export class SherpaNavItem extends SherpaElement {
     if (expand) {
       const open = this.hasAttribute('data-expanded');
       expand.setAttribute('aria-expanded', String(open));
-      expand.setAttribute('aria-label', `${open ? 'Collapse' : 'Expand'} ${this.dataset['label'] ?? ''}`.trim());
+      expand.setAttribute('aria-label', `${this.word(open ? 'collapse' : 'expand')} ${this.dataset['label'] ?? ''}`.trim());
     }
   }
 

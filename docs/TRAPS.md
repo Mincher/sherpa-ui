@@ -1331,6 +1331,9 @@ data is.
 - Site: `src/components/sherpa-provider/sherpa-provider.html`
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-rows.html`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
+- Site: `src/components/sherpa-nav-item/sherpa-nav-item.html`
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.html`
 
 ### T-a-page-sheet-is-for-what-a-component-puts-in-the-page
 

@@ -223,6 +223,24 @@
               }
             }
           ]
+        },
+        {
+          "el": "template",
+          "class": "words",
+          "children": [
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "asc"
+              }
+            },
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "desc"
+              }
+            }
+          ]
         }
       ]
     }

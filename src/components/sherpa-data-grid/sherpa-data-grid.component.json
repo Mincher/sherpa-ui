@@ -201,6 +201,54 @@
             "attrs": {
               "data-word": "group-by"
             }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "sort-by"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "sorted-by"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "asc"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "desc"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "expand"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "collapse"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "no-group"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "ungrouped"
+            }
           }
         ]
       },

@@ -662,12 +662,9 @@ export class SherpaDataGrid extends SherpaElement {
       sortChip.toggleAttribute('data-current', sorted);
       sortChip.toggleAttribute('data-unsupported', !sortable);
       const name = col.header ?? col.field;
-      sortChip.setAttribute(
-        'aria-label',
-        !sorted
-          ? `Sort by ${name}`
-          : `Sorted by ${name}, ${sortDir === 'desc' ? 'descending' : 'ascending'}`,
-      );
+      sortChip.setAttribute('aria-label', sorted
+        ? `${this.word('sorted-by')} ${name}, ${this.word(sortDir === 'desc' ? 'desc' : 'asc')}`
+        : `${this.word('sort-by')} ${name}`);
     }
   }
 
@@ -1816,13 +1813,16 @@ export class SherpaDataGrid extends SherpaElement {
        data-selectable reveals it; +1 again for the trailing actions column when
        shown. A short colspan leaves the pinned cell floating over a gap. */
     cell.colSpan = columnCount + 1 + (this.#actions.length ? 1 : 0);
-    tr.querySelector('.group-label')!.textContent = key === '' ? '(none)' : key;
+    tr.querySelector('.group-label')!.textContent = key === '' ? this.word('no-group') : key;
     tr.querySelector('.group-count')!.textContent = String(size);
-
-    const toggle = tr.querySelector('.group-toggle')!;
-    toggle.setAttribute('aria-expanded', String(!collapsed));
-    toggle.setAttribute('aria-label', `${collapsed ? 'Expand' : 'Collapse'} ${key || 'ungrouped'}`);
+    this.#sayToggle(tr.querySelector('.group-toggle'), key, collapsed);
     return tr;
+  }
+
+  /** A group's toggle says whether it is open, and what pressing it does. */
+  #sayToggle(toggle: Element | null, key: string, collapsed: boolean): void {
+    toggle?.setAttribute('aria-expanded', String(!collapsed));
+    toggle?.setAttribute('aria-label', `${this.word(collapsed ? 'expand' : 'collapse')} ${key || this.word('ungrouped')}`);
   }
 
   /* ── Row actions ─────────────────────────────────────────────────── */
@@ -2071,9 +2071,7 @@ export class SherpaDataGrid extends SherpaElement {
     if (collapsed) this.#collapsed.add(key);
     else this.#collapsed.delete(key);
 
-    const toggle = groupRow.querySelector('.group-toggle');
-    toggle?.setAttribute('aria-expanded', String(!collapsed));
-    toggle?.setAttribute('aria-label', `${collapsed ? 'Expand' : 'Collapse'} ${key || 'ungrouped'}`);
+    this.#sayToggle(groupRow.querySelector('.group-toggle'), key, collapsed);
 
     // A sibling selector cannot reach past a group row, so each row carries its
     // own shut/open flag.
