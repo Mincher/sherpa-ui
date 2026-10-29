@@ -48,8 +48,9 @@ export function prune(query: Query): void {
     // A scope switched off is kept: its Switch is still OFF. TRAP T-the-filter-switch-keeps-what-it-turned-off
     // …and one that arranges the rows keeps its sort. 366 step 8
     // …and one that keeps an answer the View holds over it. D2 A
+    // …and a slot's presentation. TODO 548
     if (!scope.holds.length && !Object.keys(scope.readings).length && !scope.suspended
-      && !arranging(scope) && !scope.superseded) {
+      && !arranging(scope) && !scope.superseded && !scope.presentation) {
       Reflect.deleteProperty(query.scopes, id);
     }
   }
@@ -286,7 +287,7 @@ export interface DefinitionFacts {
 }
 
 /** The keys a scope keeps, beside its readings. */
-const SCOPE_KEYS = new Set<string>(['holds', 'narrows', 'from', 'suspended', ...ARRANGE_KEYS, 'superseded']);
+const SCOPE_KEYS = new Set<string>(['holds', 'narrows', 'from', 'suspended', ...ARRANGE_KEYS, 'superseded', 'presentation']);
 
 /**
  * A definition as a whole Query; its sort, group and search stay in it, in

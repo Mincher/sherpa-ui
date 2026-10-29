@@ -11,6 +11,7 @@
  * Map:
  * - Query — Every scope's setup, as plain data — what a page's data is under.
  * - ScopeQuery — One scope: the fields it holds, each one's reading, and how it arranges rows.
+ * - Presentation — A slot's presentation: a chart or a grid; a chart's two fields, its parts and its order.
  * - Arrangement — How a Query arranges its rows: the ONE scope that sorts, groups, keeps a suspended sort or searches.
  * - ARRANGE_KEYS — The keys that arrange a scope's rows, written once.
  * - stripArrangement — A scope without its arrangement, in place.
@@ -43,7 +44,7 @@
  * - presetClause — A preset's own conditions as one clause — its chip's count.
  * - compile — Turn a Query into what the source runs — the ONE place a Query becomes a filter.
  */
-import { andFilter, valueKey, type Filter, type SortSpec } from './store.js';
+import { andFilter, valueKey, type Filter, type SortDirection, type SortSpec } from './store.js';
 import { readingClause, type FieldFacts, type FieldReading } from './filter-state.js';
 import type { Where } from './where.js';
 
@@ -86,6 +87,22 @@ export interface ScopeQuery {
   /** The field whose chip DRIVES the highlight: its answer filters and marks
    *  the rows it matches. One in the whole Query. Will, TODO 441 */
   highlight?: string;
+  /** How its SLOT shows the rows — not the row arrangement above: each slot keeps
+   *  its own. Only what differs from its definition. Will, TODO 548 */
+  presentation?: Presentation;
+}
+
+/** A slot's presentation: a chart or a grid; a chart's two fields, its parts and its order. TODO 548 */
+export interface Presentation {
+  kind?: 'bar' | 'donut' | 'pie' | 'grid';
+  /** What a chart counts: its distinct values in each segment. */
+  primary?: string;
+  /** A chart's segmentation: one bar or slice per value. */
+  secondary?: string;
+  /** Each segment's parts, by this field. */
+  group?: string;
+  /** The segments by value; none keeps their order. */
+  sort?: SortDirection;
 }
 
 /** How a Query arranges its rows: the ONE scope that sorts, groups, keeps a suspended sort or searches. */

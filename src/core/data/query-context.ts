@@ -64,6 +64,8 @@
  * - .resumeSort — Resume the suspended sort.
  * - .clearSort — Forget the sort entirely — the gesture that is NOT a suspend.
  * - .setGroup — Group by a field, or stop.
+ * - .presentation — A slot's presentation, as kept: a copy; none, an empty one.
+ * - .present — Change a slot's presentation, at once in BOTH copies — it filters nothing, so no Apply waits.
  * - .setSearch — The rows' free-text search, with the arrangement.
  * - .setQuery — Restore a whole Query — a reload, a View, a saved filter.
  * - .startWith — The answer a field opens on where nothing answers it — a fetching list's first value.
@@ -74,7 +76,7 @@
 import type { BoundControl, FilterSet, QueryState } from './data-source-types.js';
 import {
   answerOf, arrangementOf, copyQuery, copyReading, eachScope, emptyScope, freezeReading, readingAnswered, sameReading, stripArrangement, VIEW,
-  type Arrangement, type Query, type QueryDefaults, type ScopeQuery,
+  type Arrangement, type Presentation, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
 import {
   answerIn, copyField, copyScope, definitionOf, holderOf, holdsField, homes, moveHold, prune, readingOf, rehome,
@@ -108,6 +110,8 @@ export type QueryChange =
   | { kind: 'bars'; scope: string }
   /** The rows were re-arranged: page one, and a load. */
   | { kind: 'arranged'; group: boolean }
+  /** A slot's presentation moved: its chart is asked again; no row moves. TODO 548 */
+  | { kind: 'presented'; scope: string }
   /** A whole Query came in, over `was`; `before` are the fields answered before. Settles once drawn. */
   | { kind: 'query'; was: Arrangement; before: string[] };
 
@@ -1060,6 +1064,26 @@ export class QueryContext extends EventTarget {
     this.#tell({ kind: 'arranged', group: true });
   }
 
+  /** A slot's presentation, as kept: a copy; none, an empty one. TODO 548 */
+  presentation(scope: string): Presentation {
+    return { ...this.#live.applied.scopes[scope]?.presentation };
+  }
+
+  /** Change a slot's presentation, at once in BOTH copies — it filters nothing, so
+   *  no Apply waits. A key given `undefined` goes back to the definition. Will, TODO 548 */
+  present(scope: string, patch: Partial<Record<keyof Presentation, string | undefined>>): void {
+    for (const query of new Set([this.#live.applied, this.#live.draft])) {
+      const entry = scopeEntry(query, scope);
+      const merged: Record<string, unknown> = { ...entry.presentation, ...patch };
+      const next = Object.fromEntries(Object.entries(merged).filter(([, value]) => value != null && value !== ''));
+      if (Object.keys(next).length) entry.presentation = next as Presentation;
+      else delete entry.presentation;
+    }
+    prune(this.#live.applied);
+    if (this.#live.draft !== this.#live.applied) prune(this.#live.draft);
+    this.#tell({ kind: 'presented', scope });
+  }
+
   /** The rows' free-text search, with the arrangement. */
   setSearch(term: string, scope?: string): void {
     this.#arrange({ search: term }, scope);
@@ -1231,7 +1255,7 @@ export class QueryContext extends EventTarget {
       switch (change.kind) {
         case 'write': case 'select': return { fields: [change.field], scopes: [] };
         case 'drawn': return { fields: change.fields, scopes: [] };
-        case 'offer': case 'hold': case 'order': return { fields: [], scopes: [change.scope] };
+        case 'offer': case 'hold': case 'order': case 'presented': return { fields: [], scopes: [change.scope] };
         case 'move': return { fields: [], scopes: change.scopes };
         case 'arranged': return { fields: [], scopes: this.scopes };
         // An Apply is a change to the page too: what keeps the Query hears it. TODO 406
