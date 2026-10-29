@@ -614,7 +614,8 @@
   /* Hover — one step lighter than the focused state it previews. */
   &:hover {
     --_row-tint: var(--sherpa-style-surface-base-1, #e8e8f6);
-    --_row-tint-amount: 20%;
+    /* The shared amount, over the row's own base: a selected row stays selected. TODO 531 */
+    --_row-tint-amount: var(--sherpa-hover-amount, 20%);
   }
 
   /* FOCUSED: the +2 step — +1 at 20% was invisible against white. */

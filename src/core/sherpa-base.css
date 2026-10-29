@@ -37,6 +37,12 @@
   --sherpa-focus-ring: 2px solid var(--sherpa-theme-border-accent-2, #3b4ccd);
   --sherpa-focus-offset: -3px;
 
+  /* The HOVER fill — the +1 step at 20% over the base — that a grid row, a panel's
+     filter section and a chip all wear, in whatever mode is pinned. Will, TODO 531 */
+  --sherpa-hover-amount: 20%;
+  --sherpa-hover-fill: color-mix(in srgb, var(--sherpa-style-surface-base-1, #e8e8f6) var(--sherpa-hover-amount),
+    var(--sherpa-style-surface-base, #ffffff));
+
   /* A CARD's four values — the box that holds other things. Six components had
      these four lines verbatim: accordion, container, dialog, overlay-panel,
      panel, select-card.

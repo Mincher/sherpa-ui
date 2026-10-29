@@ -6,6 +6,9 @@
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
+  /* The bar's own hover fill, kept under a name a chip does not declare: a
+     section ON is pinned to its on-colours, and its hover stays the bar's. TODO 531 */
+  --_bar-hover: var(--sherpa-hover-fill);
 }
 
 /* ── The ⋮ menu's rows. TRAP T-the-more-menu-holds-what-folded ── */
@@ -497,6 +500,9 @@ sherpa-accordion.scope::part(actions) {
 .view-scope:empty ~ :is(.scope-rule, .local-heading),
 .local-scopes:empty,
 .sections:has(.local-scopes:empty) :is(.scope-rule, .local-heading) { display: none; }
+
+/* A panel's filter section wears the shared hover fill, as a grid row does. Will, TODO 531 */
+.chips > .chip[data-layout="section"]:hover { background: var(--_bar-hover); }
 
 /* A section's ⋮ offers only what applies to its field, said by the bar. */
 .field-more:not([data-move="raise"]) .more-item[value="raise"],

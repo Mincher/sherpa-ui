@@ -178,8 +178,9 @@
   border-end-end-radius: 0;
 }
 
-/* Style base / +1 / +2 are default / hover / down, in whatever mode is pinned. */
-:is(.body, .caret):hover { background: var(--sherpa-style-surface-base-1, #e8e8f6); }
+/* Style base / +2 are default / down, in whatever mode is pinned; HOVER is the
+   shared fill a grid row and a panel section wear. Will, TODO 531 */
+:is(.body, .caret):hover { background: var(--sherpa-hover-fill); }
 :is(.body, .caret):active { background: var(--sherpa-style-surface-base-2, #b3b3c3); }
 
 /* ── ON ──────────────────────────────────────────────────────────────────

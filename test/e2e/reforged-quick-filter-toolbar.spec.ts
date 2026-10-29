@@ -2830,3 +2830,33 @@ test('the panel column offers Suggest filters left of its Edit, where the app of
   });
   expect(r).toEqual({ shown: true, left: true, seen: ['ai-filter-request'] });
 });
+
+test('a panel section, hovered, wears a grid row\'s hover fill — on or off (Will, TODO 531)', async ({ page }) => {
+  await page.evaluate(async () => {
+    const opts = [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }];
+    const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-orientation': 'portrait', id: 'bar', style: 'inline-size: 420px' });
+    bar.populate!([{ id: 'plan', label: 'Plan', options: opts }, { id: 'tier', label: 'Tier', options: opts }]);
+    (bar as unknown as { setChipValues(id: string, v: string[]): void }).setChipValues('tier', ['a']);
+    const grid = document.createElement('sherpa-data-grid') as HTMLElement & { populate(p: unknown): Promise<void> };
+    grid.id = 'grid';
+    document.getElementById('root')!.append(grid);
+    await grid.populate({ columns: [{ field: 'n', header: 'N' }], rows: [{ id: 1, n: 'x' }] });
+    await window.__settled();
+  });
+  const hoverFill = async (pick: string): Promise<string> => {
+    const at = await page.evaluate((js) => {
+      const el = new Function(`return ${js}`)() as HTMLElement;
+      const r = el.getBoundingClientRect();
+      return { x: r.right - 6, y: r.top + 6 };
+    }, pick);
+    await page.mouse.move(at.x, at.y);
+    await page.waitForTimeout(150);
+    return page.evaluate((js) => getComputedStyle(new Function(`return ${js}`)() as HTMLElement).backgroundColor, pick);
+  };
+  const row = await hoverFill(`document.getElementById('grid').shadowRoot.querySelector('.row')`);
+  const off = await hoverFill(`document.getElementById('bar').shadowRoot.querySelector('.chips > .chip[data-id="plan"]')`);
+  const on = await hoverFill(`document.getElementById('bar').shadowRoot.querySelector('.chips > .chip[data-id="tier"]')`);
+  expect(off).toBe(row);
+  expect(on).toBe(row);
+  expect(row).not.toBe('rgba(0, 0, 0, 0)');
+});
