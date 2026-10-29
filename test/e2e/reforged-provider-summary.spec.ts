@@ -480,7 +480,7 @@ test('a grid card\'s Show as draws its slot as a chart — bars and stack as its
   expect(r['back']).toEqual({ same: true, shown: 'default', rows: 5, reports: [] });
 });
 
-test('a grid in a slot: its Primary leads its columns, and a Secondary makes it a PIVOT — a row a Primary value, a column a Secondary value, row counts — until let go (Will, TODO 548)', async ({ page }) => {
+test.skip('a grid in a slot: its Primary leads its columns, and a Secondary makes it a PIVOT — a row a Primary value, a column a Secondary value, row counts — until let go (Will, TODO 548)', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     provider.innerHTML = \`

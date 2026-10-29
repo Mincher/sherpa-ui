@@ -134,6 +134,9 @@ function shownAs(el: Element): string | undefined {
   return Object.keys(SHOWN_BY).find((kind) => SHOWN_BY[kind]?.tag === el.localName);
 }
 
+/** A grid's Secondary — a pivot — is off until its rows open on a sub-grid. Will, TODO 570 */
+const PIVOTS = false;
+
 /** What a chart made from a grid keeps of it: where it sits, and its slot. */
 const KEPT_FROM_GRID = ['slot', 'data-grow', 'data-scope', 'style'] as const;
 
@@ -1320,6 +1323,8 @@ export class SherpaProvider extends SherpaElement {
   /** A grid's pivot, where its slot names a Secondary: its Primary — else its first
    *  column — a row a value, the Secondary's values its columns. Will, TODO 548 */
   #pivotSpec(el: Element, slot: string, source: DataSource): (SummarySpec & { segment: string; stack: string }) | undefined {
+    // Off until its rows open on a sub-grid: a kept Secondary must not strand a grid. Will, TODO 570
+    if (!PIVOTS) return undefined;
     const shown = source.query.presented(slot, 'grid');
     const lead = shown.primary ?? (el as Element & { columns?: { field: string }[] }).columns?.[0]?.field;
     if (!shown.secondary || !lead) return undefined;
