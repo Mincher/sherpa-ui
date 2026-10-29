@@ -17739,42 +17739,49 @@ with layout containment, and every card is one (`container-type` gives it) —
 so a tip was cut at its card's or its panel's edge. "Send Region to Customer
 records" read "Send Region to Custome". The top layer has no ancestor.
 
-**CSS still shows and places it; JS only lifts it.** `sherpa-anchor.css`
-decides `display` off `:hover` / `:focus-visible` and places it by CSS anchor
-positioning, as before — an anchor and its tip share a shadow root, so the
-name resolves from the top layer too. `core/ui/top-layer-tips.ts` hears
-`pointerover` and `focusin` on the DOCUMENT, once, finds the anchor under the
-deepest target and calls `showPopover()`. With no JS the tip still shows, in
-the page. The browser's own popover box (`inset: 0`, `overflow: auto`) is
-undone in the shared rule, or the tip is placed by it instead.
+**A tip shows ONLY while it is open** (TODO 364): `.sherpa-tip:popover-open`
+is the one rule that shows it, so it can never show in place, where a box
+clips it. CSS places it, by anchor positioning — an anchor and its tip share a
+shadow root, so the name resolves from the top layer too. The browser's own
+popover box (`inset: 0`, `overflow: auto`) is undone in the shared rule, or
+the tip is placed by it instead.
+
+Until 364, CSS showed a tip off `:hover` / `:focus-visible` and JS only
+LIFTED it. Wherever the lift missed, the tip still showed, in the page, and its
+card cut it. It missed whenever the pointer landed first on a part in another
+tree: a button's `sherpa-badge`, or a slotted label (`closest()` stops at a
+shadow or slot boundary). Measured in all three engines: shown, not open,
+clipped.
+
+**Each shadow root hears its own tips; the document hears none** (TODOs 381,
+364). A `pointerover`, `pointerout`, `focusin` or `focusout` whose target and
+related target are in ONE shadow root stops at that root: outside it, both ends
+are the same host, so the browser dispatches nothing further. Heard on the
+document, the first donut slice hovered showed its tip and the next showed
+none. The root is always on the path, so `liftTipsIn` is all there is. It walks
+`composedPath()` to the first anchor in ITS root, and stops at an element with
+a `popover` (a menu the anchor holds is not the anchor).
+
+**A tip is found three ways:** the sibling after its anchor, one inside it, or,
+for a chart SEGMENT (an SVG path, which no selector crosses), the tip of its
+`data-index` (TODO 283).
+
+**One tip is open at a time,** and a tip its host's CSS hides — empty,
+`data-no-tip`, under an open menu — is shut again at once, never held open.
+Keyboard focus opens a tip only when it shows (`:focus-visible`): a press
+opened it already, by hover.
 
 **It drops a frame after `pointerout`.** Firefox still matches `:hover` while
-the event is heard, so a check made at once left every tip open.
-
-**A chart SEGMENT is the exception: the lift SHOWS its tip.** A donut slice
-or a gauge band is an SVG path, so no sibling selector crosses from it to its
-tip, and `:has()` needed one rule per index — radial tips stopped at 11 slices,
-gauge tips at 6 zones (TODO 283). The lift finds the tip by the segment's
-`data-index` and `.hotspots > .sherpa-tip:popover-open` shows it, in the segments
-sheet. Before this, `ANCHOR` never matched a segment, so those tips were never
-lifted at all and a card could clip them (TODO 307). The cost: a re-render under
-a still pointer shows no tip until the pointer moves.
-
-**Each shadow root hears them too** (TODO 381). A `pointerover`, `pointerout`,
-`focusin` or `focusout` whose target and related target are in ONE shadow root
-stops at that root: outside it, both ends are the same host, so the browser
-dispatches nothing further. Heard on the document alone, the first segment
-hovered showed its tip, and a move to the next showed none and left the first
-up — in all three engines. So every component's root gets the same four
-listeners (`liftTipsIn`); an event that reaches both is shown once, as the lift
-checks `:popover-open` first.
+the event is heard, so a check made at once left every tip open. Still focused
+means the deepest focused element is inside the anchor AS DRAWN (through slots).
+The cost: a re-render under a still pointer shows no tip until the pointer
+moves.
 
 `sherpa-tooltip` lifts its own bubble: `T-a-tooltip-is-always-in-the-top-layer`.
 
 - Site: `src/core/ui/top-layer-tips.ts`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/core/sherpa-anchor.css`
-- Site: `src/core/sherpa-chart-segments.css`
 - Site: `test/e2e/reforged-button-tip.spec.ts`
 
 
@@ -17920,8 +17927,8 @@ with no name shows none; one whose menu is open shows none; a host that
 composes the button and says the action itself sets `data-no-tip`.
 
 It is the SHARED anchored tip (`.sherpa-tip` in `sherpa-anchor.css`), not a
-nested `sherpa-tooltip` per button: pure CSS on `:hover` / `:focus-visible`,
-anchored to the button's own `.trigger`. With no room above — a button at the
+nested `sherpa-tooltip` per button: opened on hover or keyboard focus
+(`T-a-tip-lives-in-the-top-layer`), anchored to the button's own `.trigger`. With no room above — a button at the
 top of the page — `position-try-fallbacks` moves it to the side; a test that
 asserts "above" must give the button room first.
 

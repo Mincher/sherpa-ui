@@ -1,4 +1,17 @@
-import { test, expect } from './harness';
+import { test, expect, type Page } from './harness';
+
+/** The colour a READER sees at one point of the page — never what CSS says. */
+async function pixelAt(page: Page, x: number, y: number): Promise<number[]> {
+  const shot = await page.screenshot({ clip: { x: Math.round(x), y: Math.round(y), width: 2, height: 2 } });
+  return page.evaluate(async (b64) => {
+    const img = new Image();
+    img.src = `data:image/png;base64,${b64}`;
+    await img.decode();
+    const c = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d')!;
+    c.drawImage(img, 0, 0);
+    return [...c.getImageData(0, 0, 1, 1).data].slice(0, 3);
+  }, shot.toString('base64'));
+}
 
 /**
  * A BUTTON WITH NO VISIBLE LABEL SAYS ITS ACTION IN A TIP — its name, or
@@ -97,16 +110,7 @@ test('a tip is lifted to the top layer, so a box that clips its button does not 
   expect(up.left).toBeLessThan(up.boxLeft);
   expect(up.right).toBeGreaterThan(up.boxRight);
   // …and DRAWN there: outside the box the pixels are the tip's dark fill, not the page's white.
-  const shot = await page.screenshot({ clip: { x: Math.round(up.left) + 6, y: Math.round(up.y) - 1, width: 2, height: 2 } });
-  const pixel = await page.evaluate(async (b64) => {
-    const img = new Image();
-    img.src = `data:image/png;base64,${b64}`;
-    await img.decode();
-    const c = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d')!;
-    c.drawImage(img, 0, 0);
-    return [...c.getImageData(0, 0, 1, 1).data].slice(0, 3);
-  }, shot.toString('base64'));
-  expect(Math.max(...pixel)).toBeLessThan(80);
+  expect(Math.max(...await pixelAt(page, up.left + 6, up.y - 1))).toBeLessThan(80);
 
   // Un-hovered, it leaves the top layer again.
   await page.mouse.move(0, 0);
@@ -150,4 +154,69 @@ test('moving from one donut slice to the next shows the next slice\'s tip, and d
   await expect.poll(open).toEqual([true, false, false]);
   await page.mouse.move(inside[1]!.x, inside[1]!.y);
   await expect.poll(open).toEqual([false, true, false]);
+});
+
+/* The pointer can land FIRST on a part in another tree: the button's badge, or
+   a slotted label. Its tip still opens in the top layer, and CSS shows a tip
+   only while it is open, so it never shows where its card clips it. TODO 364
+   TRAP T-a-tip-lives-in-the-top-layer */
+test('a tip shows only from the top layer, wherever on its button the pointer lands', async ({ page }) => {
+  await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.style.cssText = 'padding: 120px 160px; background: rgb(255, 255, 255); display: flex; gap: 200px; align-items: start';
+    // A CARD: it clips, and it is a container — so it holds a fixed child.
+    const card = 'inline-size: 120px; overflow: hidden; container-type: inline-size; padding: 4px';
+    root.innerHTML = `<div id="card-badge" style="${card}"><sherpa-button id="badged" data-badge="3"`
+      + ' data-tip="Open every message sent to the team">Inbox</sherpa-button></div>'
+      + `<div id="card-slot" style="${card}"><sherpa-button id="slotted"`
+      + ' data-tip="Apply every change to every row"><b id="word">Apply</b></sherpa-button></div>';
+    await window.__settled();
+  });
+  const where = (id: string, part: string) => page.evaluate(([one, sel]) => {
+    const host = document.getElementById(one)!;
+    const el = sel === 'badge' ? host.shadowRoot!.querySelector('sherpa-badge')! : document.querySelector(sel)!;
+    const r = el.getBoundingClientRect();
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+  }, [id, part] as const);
+  const tipOf = (id: string, card: string) => page.evaluate(([one, box]) => {
+    const tip = document.getElementById(one)!.shadowRoot!.querySelector<HTMLElement>('.tip')!;
+    const r = tip.getBoundingClientRect();
+    return { open: tip.matches(':popover-open'), shown: getComputedStyle(tip).display !== 'none',
+      // In its PADDING, clear of the text.
+      x: r.x + 3, y: r.y + r.height / 2, cardTop: document.getElementById(box)!.getBoundingClientRect().top };
+  }, [id, card] as const);
+
+  for (const [id, part, card] of [['badged', 'badge', 'card-badge'], ['slotted', '#word', 'card-slot']] as const) {
+    const at = await where(id, part);
+    await page.mouse.move(at.x, at.y);
+    await expect.poll(async () => (await tipOf(id, card)).open, `${id}: open`).toBe(true);
+    const up = await tipOf(id, card);
+    expect(up.shown).toBe(true);
+    // ABOVE its card, where the card would clip it: the reader sees the tip's dark fill.
+    expect(up.y).toBeLessThan(up.cardTop);
+    expect(Math.max(...await pixelAt(page, up.x, up.y)), `${id}: drawn`).toBeLessThan(80);
+    await page.mouse.move(0, 0);
+    await expect.poll(async () => (await tipOf(id, card)).shown, `${id}: gone`).toBe(false);
+  }
+});
+
+/* ONE tip at a time: a hover shuts the tip keyboard focus opened. A tip its
+   host hides (data-no-tip) is never held open. TODO 364 · TRAP T-a-tip-lives-in-the-top-layer */
+test('one tip is open at a time, and a tip turned off is never held open', async ({ page }) => {
+  await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.style.cssText = 'padding: 80px; display: flex; gap: 120px';
+    root.innerHTML = '<sherpa-button id="one" data-type="icon" data-icon-start="gear" aria-label="First"></sherpa-button>'
+      + '<sherpa-button id="two" data-type="icon" data-icon-start="gear" aria-label="Second"></sherpa-button>'
+      + '<sherpa-button id="off" data-type="icon" data-icon-start="gear" aria-label="Off" data-no-tip></sherpa-button>';
+    await window.__settled();
+  });
+  const open = () => page.evaluate(() => ['one', 'two', 'off'].map((id) =>
+    document.getElementById(id)!.shadowRoot!.querySelector('.tip')!.matches(':popover-open')));
+  await page.locator('#one .trigger').focus();
+  await expect.poll(open).toEqual([true, false, false]);
+  await page.locator('#two .trigger').hover();
+  await expect.poll(open).toEqual([false, true, false]);
+  await page.locator('#off .trigger').hover();
+  await expect.poll(open).toEqual([false, false, false]);
 });

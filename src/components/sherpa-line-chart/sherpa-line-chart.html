@@ -66,7 +66,7 @@
 
   <!-- Two siblings, cloned together. The tip must stay OUT of the dot and any
        positioned wrapper: an absolute ancestor breaks anchor positioning for the
-       fixed tip. `.sherpa-anchor:hover + .sherpa-tip` pairs them. -->
+       fixed tip. The tip after its anchor is its own. -->
   <template class="hotspot-tpl">
     <button class="hotspot sherpa-anchor" type="button" tabindex="-1"></button>
     <span class="sherpa-tip" popover="manual" role="tooltip">

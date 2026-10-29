@@ -6,9 +6,9 @@
 
 .sherpa-tip {
   position: fixed;
-  /* A tip is a `popover`, LIFTED to the top layer while it shows, so no box it
-     sits in clips it. The browser's own popover box is undone here, so it is
-     placed exactly as it was. TRAP T-a-tip-lives-in-the-top-layer */
+  /* A tip is a `popover`, open in the top layer while it shows, so no box it
+     sits in clips it. The browser's own popover box is undone here.
+     TRAP T-a-tip-lives-in-the-top-layer */
   inset: auto;
   overflow: visible;
   position-anchor: var(--_anchor);
@@ -55,11 +55,13 @@
   transition: opacity 120ms ease;
 }
 
-.sherpa-anchor:is(:hover, :focus-visible) + .sherpa-tip,
-.sherpa-anchor:is(:hover, :focus-visible) .sherpa-tip {
+/* OPEN is the only way a tip shows: never in place, where a box clips it. */
+.sherpa-tip:popover-open {
   display: flex;
   opacity: 1;
 }
+
+.sherpa-tip:empty { display: none; }
 
 /* Zero-size anchor point: an SVG element cannot be a CSS anchor in Chromium. */
 .sherpa-anchor-point {

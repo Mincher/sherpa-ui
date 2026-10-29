@@ -1,14 +1,11 @@
 /**
- * top-layer-tips.ts — lift a hovered or focused anchor's tip into the TOP LAYER.
+ * top-layer-tips.ts — open a hovered or focused anchor's tip in the TOP LAYER.
  *
- * CSS shows and places a tip (`sherpa-anchor.css`); this lifts it, so no box it
- * sits in can clip it. A chart SEGMENT's tip is the exception: no selector can
- * reach it from the path, so the lift is what shows it.
- * TRAP T-a-tip-lives-in-the-top-layer
+ * CSS places a tip and shows it only while it is open (`sherpa-anchor.css`), so
+ * no box it sits in can clip it. TRAP T-a-tip-lives-in-the-top-layer
  *
  * Map:
- * - liftTipsIn — …and in one shadow root: a move between two of its elements never reaches the document.
- * - liftTips — Hear every hover and focus in the document, once, and lift the tip concerned.
+ * - liftTipsIn — Hear every hover and focus in one shadow root, and open or shut the tip concerned.
  */
 
 const ANCHOR = '.sherpa-anchor';
@@ -16,57 +13,77 @@ const TIP = '.sherpa-tip';
 /** A donut slice or gauge band: an SVG path, its tip paired by index. */
 const SEGMENT = '.chart-segment[data-index]';
 
-/** Installed once per page. */
-let lifting = false;
+/** The one tip open now: a new one shuts it. */
+let shown: HTMLElement | null = null;
 
-/** The anchor an event landed in, and its tip — the sibling after it, one
- *  inside it, or, for a segment, the tip of its index. */
-function tipOf(event: Event): { anchor: Element; tip: HTMLElement } | null {
-  // The DEEPEST target: a tip and its anchor share one shadow root.
-  const at = event.composedPath()[0];
-  if (!(at instanceof Element)) return null;
-  const segment = at.closest(SEGMENT);
-  const anchor = segment ?? at.closest(ANCHOR);
+/** The anchor an event landed in, in THIS root, and its tip: the sibling after
+ *  it, one inside it, or a segment's by index. */
+function tipOf(root: ShadowRoot, event: Event): { anchor: Element; tip: HTMLElement } | null {
+  // The PATH, not `closest()`: the target may be a slotted label or a badge's own part.
+  let anchor: Element | null = null;
+  for (const node of event.composedPath()) {
+    if (node === root) break;
+    if (!(node instanceof Element)) continue;
+    // A menu or a dialog the anchor holds is not the anchor.
+    if (node.hasAttribute('popover')) return null;
+    if (node.getRootNode() === root && node.matches(`${SEGMENT}, ${ANCHOR}`)) {
+      anchor = node;
+      break;
+    }
+  }
   if (!anchor) return null;
+  const index = anchor.matches(SEGMENT) ? anchor.getAttribute('data-index') : null;
   const next = anchor.nextElementSibling;
-  const tip = segment
-    ? (segment.getRootNode() as ParentNode).querySelector(`.sherpa-tip[data-index="${segment.getAttribute('data-index')}"]`)
+  const tip = index != null ? root.querySelector(`${TIP}[data-index="${index}"]`)
     : next?.matches(TIP) ? next : anchor.querySelector(TIP);
   return tip instanceof HTMLElement && tip.popover === 'manual' ? { anchor, tip } : null;
 }
 
-const lift = (event: Event): void => {
-  const found = tipOf(event);
-  if (found && !found.tip.matches(':popover-open')) found.tip.showPopover();
-};
+/** The focused element, however deep, when it shows keyboard focus. */
+function keyboardFocus(): Element | null {
+  let at = document.activeElement;
+  while (at?.shadowRoot?.activeElement) at = at.shadowRoot.activeElement;
+  return at?.matches(':focus-visible') ? at : null;
+}
 
-const drop = (event: Event): void => {
-  const found = tipOf(event);
+/** Is `node` inside `anchor` as drawn: through slots and shadow roots. */
+function drawnIn(anchor: Element, node: Node | null): boolean {
+  for (let at = node; at; at = (at instanceof Element && at.assignedSlot) || at.parentNode || (at instanceof ShadowRoot ? at.host : null)) {
+    if (at === anchor) return true;
+  }
+  return false;
+}
+
+function lift(this: ShadowRoot, event: Event): void {
+  const found = tipOf(this, event);
+  // A focus that does not SHOW — a press — opens nothing; the hover already did.
+  if (!found || (event.type === 'focusin' && !keyboardFocus())) return;
+  const { tip } = found;
+  if (shown !== tip && shown?.matches(':popover-open')) shown.hidePopover();
+  if (!tip.matches(':popover-open')) tip.showPopover();
+  shown = tip;
+  // One its host's CSS hides — empty, turned off, under its open menu — is never held open.
+  if (getComputedStyle(tip).display === 'none') tip.hidePopover();
+}
+
+function drop(this: ShadowRoot, event: Event): void {
+  const found = tipOf(this, event);
   if (!found) return;
   /* A FRAME LATER: Firefox still matches `:hover` while `pointerout` is heard.
      Still hovered, or still focused, then: the other of the two keeps it up. */
   requestAnimationFrame(() => {
     const { anchor, tip } = found;
-    if (tip.matches(':popover-open') && !anchor.matches(':hover, :focus-visible')) tip.hidePopover();
+    if (!tip.matches(':popover-open') || anchor.matches(':hover') || drawnIn(anchor, keyboardFocus())) return;
+    tip.hidePopover();
   });
-};
+}
 
-/** …and in one shadow root. A hover or focus that moves between two of its
- *  elements never reaches the document: the browser stops an event whose two
- *  ends are one host. TODO 381. TRAP T-a-tip-lives-in-the-top-layer */
+/** Hear every hover and focus in one shadow root, and open or shut the tip
+ *  concerned. The ROOT, never the document: a move between two of its elements
+ *  stops at its host. TRAP T-a-tip-lives-in-the-top-layer */
 export function liftTipsIn(root: ShadowRoot): void {
   root.addEventListener('pointerover', lift, { capture: true, passive: true });
   root.addEventListener('pointerout', drop, { capture: true, passive: true });
   root.addEventListener('focusin', lift, true);
   root.addEventListener('focusout', drop, true);
-}
-
-/** Hear every hover and focus in the document, once, and lift the tip concerned. */
-export function liftTips(): void {
-  if (lifting) return;
-  lifting = true;
-  document.addEventListener('pointerover', lift, { capture: true, passive: true });
-  document.addEventListener('pointerout', drop, { capture: true, passive: true });
-  document.addEventListener('focusin', lift, true);
-  document.addEventListener('focusout', drop, true);
 }
