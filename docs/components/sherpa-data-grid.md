@@ -87,7 +87,6 @@ For a table of records that can be sorted, filtered, grouped and selected. It re
 | `data-apply-on` | `change` `input` |  |  |
 | `data-bounds` | text |  |  |
 | `data-column-filters` | boolean |  | a filter button in each column heading, and a filter chip in the cell under the pointer: it adds or takes off that cell's value |
-| `data-column-values` | text |  | the WHOLE column's values, so a filter menu offers them all even when the drawn rows carry only some: `field:a\|b\|c` per entry, NEWLINE separated. A value no drawn row carries sorts below a divider, dimmed but still selectable — that is how a reader broadens a filter back out. TRAP T-unavailable-value-sorts-below-a-divider |
 | `data-fetch-fields` | text |  | the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider. |
 | `data-filter-fields` | text |  | space-separated fields an EXTERNAL filter is narrowing; those columns' headings take data-status="active". Written by SherpaDataSource — a host driving the grid by hand can write it too. |
 | `data-filterable` | boolean |  | show a secondary header row of filter inputs |

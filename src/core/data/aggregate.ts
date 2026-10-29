@@ -28,7 +28,7 @@
  * - summariseBanded — Rows into the declared shape, with the fields' bands: a segments cut, and zones.
  * - summariseMarked — The same, and each segment's part the highlight's driver matches.
  */
-import { readField, groupRows, valueKey, type Row } from './store.js';
+import { compareValues, readField, groupRows, valueKey, type Row } from './store.js';
 import type { ChartDatum } from './chart-datum.js';
 import { bandEdges, type Threshold } from './threshold.js';
 
@@ -281,9 +281,6 @@ function step(key: string, bucket: Bucket): string {
   return new Date(Date.parse(`${key}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
 }
 
-const ascending = (a: unknown, b: unknown): number =>
-  (a as string) < (b as string) ? -1 : (a as string) > (b as string) ? 1 : 0;
-
 /**
  * The points a series runs over: the field's declared values, or else every
  * bucket from the first to the last — a quiet month is zero, never missing.
@@ -291,9 +288,10 @@ const ascending = (a: unknown, b: unknown): number =>
  */
 function pointsOf(rows: readonly Row[], over: string, bucket: Bucket | undefined, declared: readonly unknown[]): unknown[] {
   const keyOf = (v: unknown): unknown => (bucket ? cut(v, bucket) : v);
-  if (declared.length) return bucket ? [...new Set(declared.map(keyOf))].sort(ascending) : [...declared];
+  // In the library's one order. TRAP T-one-collator-for-the-library
+  if (declared.length) return bucket ? [...new Set(declared.map(keyOf))].sort(compareValues) : [...declared];
   const seen = [...new Set(rows.map((r) => readField(r, over)).filter((v) => v != null && v !== '').map(keyOf))]
-    .sort(ascending);
+    .sort(compareValues);
   if (!bucket || seen.length < 2) return seen;
   const out: string[] = [];
   const last = seen[seen.length - 1] as string;

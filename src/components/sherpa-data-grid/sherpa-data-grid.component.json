@@ -592,15 +592,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-column-values",
-      "type": "string",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour",
-      "description": "the WHOLE column's values, so a filter menu offers them all even when the drawn rows carry only some: `field:a|b|c` per entry, NEWLINE separated. A value no drawn row carries sorts below a divider, dimmed but still selectable — that is how a reader broadens a filter back out. TRAP T-unavailable-value-sorts-below-a-divider"
-    },
-    {
-      "$type": "prop",
       "name": "data-fetch-fields",
       "type": "string",
       "observed": true,

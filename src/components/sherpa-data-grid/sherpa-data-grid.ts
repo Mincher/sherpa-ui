@@ -24,7 +24,7 @@ import { ORGANISE_ICONS, movedTo } from '../../core/ui/shared-constants.js';
 import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/data/cycle.js';
 import { reduceRows } from '../../core/data/aggregate.js';
 import {
-  filterRows, sortRows,
+  compareValues, distinctOf, filterRows, sortRows,
   type Filter, type GroupSummary, type SortDirection, type SortSpec,
 } from '../../core/data/store.js';
 import {
@@ -165,7 +165,6 @@ export class SherpaDataGrid extends SherpaElement {
     // What a toolbar chip is matching on, so its hits mark in the cells.
     'data-needles': { type: 'string', kind: 'behaviour' },
     // The WHOLE column's values, so a filter menu is never a one-way door.
-    'data-column-values': { type: 'string', kind: 'behaviour' },
     'data-selectable': { type: 'boolean', kind: 'style' },
     // Single vs multiple changes the CONTROL each row draws, so it re-renders.
     'data-select': { type: 'enum', kind: 'style', values: ['single', 'multiple'] },
@@ -317,10 +316,6 @@ export class SherpaDataGrid extends SherpaElement {
       case 'data-page': case 'data-page-size':
         this.#invalidate('body');
         return;
-      case 'data-column-values':
-        this.#syncColumnValues();
-        this.#invalidate('head');
-        return;
       case 'data-sort-field': case 'data-sort-direction':
         this.#invalidate('head');
         this.#invalidate('body');
@@ -330,7 +325,6 @@ export class SherpaDataGrid extends SherpaElement {
         return;
       default:
         this.#syncNeedles();
-        this.#syncColumnValues();
         this.#invalidate('all');
     }
   }
@@ -399,7 +393,6 @@ export class SherpaDataGrid extends SherpaElement {
     this.#key = typeof cfg.key === 'string' ? cfg.key : null;
     this.#givenFilters = cfg.filters ?? {};
     this.#syncNeedles();
-    this.#syncColumnValues();
     this.#actions = Array.isArray(cfg.actions) ? cfg.actions : [];
     this.#groups = Array.isArray(cfg.groups) ? cfg.groups : null;
     this.toggleState('actions', this.#actions.length > 0);
@@ -776,7 +769,7 @@ export class SherpaDataGrid extends SherpaElement {
     const given = this.#givenFilters[col.field];
     // Its values only where a list shows them: the work is not done to be thrown away. TODO 355
     const listed = !given && kind === 'text' && kindOf(col) !== 'advanced';
-    const values = listed ? this.#columnValues.get(col.field) ?? this.#presentValues(col.field).sort() : [];
+    const values = listed ? this.#presentValues(col.field) : [];
     const own: FilterMenuDef = given ? { ...given } : {
       // No offer is Advanced too, for a text column.
       ...(kind === 'text'
@@ -850,32 +843,14 @@ export class SherpaDataGrid extends SherpaElement {
   /** What the filters before each field leave, as the source last said. */
   #present: Readonly<Record<string, readonly string[]>> = {};
 
-  /** The values the ROWS on screen carry. */
+  /** The values the ROWS on screen carry — the data layer's distinct values, in
+   *  the library's one order. A whole column comes in `filters`. TODO 523 · TRAP T-one-collator-for-the-library */
   #presentValues(field: string): string[] {
-    return [...new Set(this.#rows.map((row) => row[field]).filter((v) => v != null && v !== '').map((v) => String(v)))];
+    return (distinctOf(this.#rows, [field])[field] ?? []).filter((v) => v != null && v !== '').sort(compareValues).map(valueKey);
   }
-
-  /** The WHOLE column's values, by field, from `data-column-values`. */
-  #columnValues = new Map<string, string[]>();
 
   /** Each heading's filter as its source defines it, as the last populate gave them. */
   #givenFilters: Readonly<Record<string, FieldFilter>> = {};
-
-  /**
-   * Parse `data-column-values`: `field:a|b|c` per entry, newline separated.
-   *
-   * A pipe inside an entry and a newline between them, because a value may
-   * hold a comma or a space — a customer name is exactly that.
-   */
-  #syncColumnValues(): void {
-    this.#columnValues.clear();
-    for (const entry of (this.dataset['columnValues'] ?? '').split('\n')) {
-      const at = entry.indexOf(':');
-      if (at < 1) continue;
-      const values = entry.slice(at + 1).split('|').filter(Boolean);
-      if (values.length) this.#columnValues.set(entry.slice(0, at), values);
-    }
-  }
 
   /** REMOVE FILTER — ends a column's filter. Reported as a clear, so a host has one path. */
   #onColumnFilterRemove = (event: Event): void => {
@@ -1613,7 +1588,7 @@ export class SherpaDataGrid extends SherpaElement {
   #optionsOf(field: string): readonly FilterMenuItem[] {
     const given = this.#givenFilters[field]?.options;
     if (given?.length) return given;
-    return (this.#columnValues.get(field) ?? this.#presentValues(field).sort()).map((v) => ({ value: v, label: v }));
+    return this.#presentValues(field).map((v) => ({ value: v, label: v }));
   }
 
   /** A field's name, as its heading says it: its column's, else its source's. */

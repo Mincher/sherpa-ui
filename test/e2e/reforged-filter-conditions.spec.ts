@@ -653,9 +653,6 @@ test('a column menu offers the WHOLE column, never just the drawn rows', async (
       rendered?: Promise<void>; populate(d: unknown): void;
     };
     el.setAttribute('data-column-filters', '');
-    /* The WHOLE column, which only the host knows: the grid is handed a PAGE.
-       TRAP T-unavailable-value-sorts-below-a-divider */
-    el.setAttribute('data-column-values', 'owner:Ravi Menon|Dana Whitlock|Unassigned');
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
 
@@ -671,10 +668,16 @@ test('a column menu offers the WHOLE column, never just the drawn rows', async (
         : `${n.querySelector('.menu-row-label')?.textContent}${
           n.hasAttribute('data-unavailable') ? ' [dim]' : ''}`);
 
+    /* The WHOLE column, which only the host knows, comes as its filter: the grid
+       is handed a PAGE. TRAP T-unavailable-value-sorts-below-a-divider */
+    const filters = { owner: { id: 'owner', label: 'Owner', select: 'multiple', options: [
+      { value: 'Ravi Menon', label: 'Ravi Menon' }, { value: 'Dana Whitlock', label: 'Dana Whitlock' },
+      { value: 'Unassigned', label: 'Unassigned' }] } };
     // EVERY owner is on the page.
     el.populate({
       columns: [{ field: 'owner', header: 'Owner' }],
       rows: [{ owner: 'Ravi Menon' }, { owner: 'Dana Whitlock' }, { owner: 'Unassigned' }],
+      filters,
     });
     await settle();
     const whole = read();
@@ -683,6 +686,7 @@ test('a column menu offers the WHOLE column, never just the drawn rows', async (
     el.populate({
       columns: [{ field: 'owner', header: 'Owner' }],
       rows: [{ owner: 'Ravi Menon' }],
+      filters,
     });
     await settle();
     const narrowed = read();
@@ -920,4 +924,19 @@ test('an Advanced row greys no value: after an AND row, or where the filters bef
   });
   expect(r.and).toEqual(['gold', 'silver']);
   expect(r.limited).toEqual([['gold', 'silver'], ['gold', 'silver']]);
+});
+
+test('a heading lists its values in the library\'s one order — 9 before 10 (TODO 523 S13)', async ({ page }) => {
+  const labels = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & { rendered?: Promise<void>; populate(d: unknown): void };
+    el.setAttribute('data-column-filters', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({ columns: [{ field: 'n', header: 'N' }], rows: [{ n: 10 }, { n: 9 }, { n: 100 }] });
+    await window.__settled();
+    const menu = el.shadowRoot!.querySelector('.head-cell[data-field="n"] .head-filter sherpa-menu')!;
+    return [...menu.children].filter((n) => !n.classList.contains('qf-all')).map((n) => n.querySelector('.menu-row-label')?.textContent);
+  });
+  // TRAP T-one-collator-for-the-library
+  expect(labels).toEqual(['9', '10', '100']);
 });

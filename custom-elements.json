@@ -2411,13 +2411,6 @@
               }
             },
             {
-              "name": "data-column-values",
-              "description": "the WHOLE column's values, so a filter menu offers them all even when the drawn rows carry only some: `field:a|b|c` per entry, NEWLINE separated. A value no drawn row carries sorts below a divider, dimmed but still selectable — that is how a reader broadens a filter back out. TRAP T-unavailable-value-sorts-below-a-divider",
-              "type": {
-                "text": "string"
-              }
-            },
-            {
               "name": "data-fetch-fields",
               "description": "the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider.",
               "type": {

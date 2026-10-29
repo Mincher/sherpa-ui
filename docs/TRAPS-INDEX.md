@@ -138,7 +138,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-number-of-null-is-zero](TRAPS.md#t-number-of-null-is-zero) — aggregate
 - [T-numeric-keys-compare-as-strings](TRAPS.md#t-numeric-keys-compare-as-strings) — store, stores
 - [T-one-class-to-catch](TRAPS.md#t-one-class-to-catch) — base-store, stores, validate
-- [T-one-collator-for-the-library](TRAPS.md#t-one-collator-for-the-library) — store
+- [T-one-collator-for-the-library](TRAPS.md#t-one-collator-for-the-library) — aggregate, store
 - [T-one-comparator-one-source](TRAPS.md#t-one-comparator-one-source) — data-source
 - [T-one-comparison-rule-for-query-and-ui](TRAPS.md#t-one-comparison-rule-for-query-and-ui) — data-source, filter-state, store
 - [T-one-condition-system](TRAPS.md#t-one-condition-system) — data, filter-face, filter-state
@@ -603,7 +603,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-unavailable-value-sorts-below-a-divider](TRAPS.md#t-unavailable-value-sorts-below-a-divider) — menu
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — menu
 
-## The data grid (99)
+## The data grid (98)
 
 - [T-a-cell-chip-is-one-and-moves](TRAPS.md#t-a-cell-chip-is-one-and-moves) — data-grid
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — data-grid
@@ -703,7 +703,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-column-chip-is-the-only-signal](TRAPS.md#t-the-column-chip-is-the-only-signal) — data-grid
 - [T-the-field-type-decides-the-clause](TRAPS.md#t-the-field-type-decides-the-clause) — data-grid
 - [T-the-last-row-draws-no-rule](TRAPS.md#t-the-last-row-draws-no-rule) — data-grid
-- [T-unavailable-value-sorts-below-a-divider](TRAPS.md#t-unavailable-value-sorts-below-a-divider) — data-grid
 
 ## Charts (63)
 

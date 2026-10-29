@@ -3365,6 +3365,8 @@ Null `direction` is treated as ascending, matching `data-sort-direction`.
 
 - Site: `src/core/data/store.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/core/data/aggregate.ts`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
 ### T-filter-fields-flattens-the-tree
 
@@ -8099,14 +8101,14 @@ only while "limit options" is on, and never one the reader picked:
 **A COLUMN heading's menu follows the same rule**, and could not at first: it
 built its list from `this.#rows`, which is the PAGE the grid was handed. Filter
 on another field and three of four owners vanished from the Owner menu. Only
-the host knows the whole column, so it hands it over in `data-column-values`.
+the host knows the whole column, so it hands it over.
 
 The WHOLE column comes from the data layer: the grid asks for each column's
 filter (`DataAsk.filters`), whose options are the field's whole list
-(`T-a-heading-opens-the-chips-menu`). `data-column-values` stays for a host
-with no provider.
+(`T-a-heading-opens-the-chips-menu`). A host with no provider passes the same
+`filters` to `populate()`; the `data-column-values` attribute, a second door for
+it that nothing wrote, went in TODO 523.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
