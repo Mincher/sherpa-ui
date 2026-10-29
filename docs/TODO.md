@@ -93,6 +93,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | ✅ | 30i | 552 | LOOK (Will, 2026-10-29) — the node being dragged wears a shadow, and its border is stronger — DONE 2026-10-29: Elevation=md's shadow and a 1px ring outside its border (nothing inside moves), over the nodes it passes | look |
 | ⬜ | 30j | 553 | BUG (Will, 2026-10-29) — the filter toolbar's "Limit to matching filters" and "Hide invalid filter options" change nothing in a field's menu or its values. Offer both at the VIEW scope only. Turning one on there turns the setting on app wide, and the Settings page shows it. Settings go through ONE handler, if they do not already | filters |
 | ⬜ | 30k | 554 | DEMOS (Will, 2026-10-29) — Customers, Sites, Region and Date Range are held at the VIEW Context scope: they cannot be moved down to a local scope. A local scope may still add these fields and their filters, but its options come from what the View scope's filter on that field allows | demos |
+| ⬜ | 30l | 555 | NODE EDITOR FOR QUERIES (Will, 2026-10-29) — view, edit and build a page's Query as nodes: Store, Source, Scope (its held fields as rows), Condition, Arrange (sort, group, search), Presentation, Component. Opened from the filter toolbar's overflow menu as "Node Editor (beta)". The editor ASKS: a change is a QueryRequest, as a chip's is. PLAN: docs/history/plan-78-query-editor.md (Q1–Q5; ❓ Q1 where it opens — A, a maximised overlay over the page). WAITS for 548 to be done (Will) | feature |
+| ⬜ | 30m | 556 | LATER, after 555's core (Will, 2026-10-29) — fuzzy AI nodes, to turn contextual processing into a decision-model-like output; and MCP, Tool, Skill, Context and Memory nodes. Kinds on the same engine (`runWorkflow`) | explore |
 | ✅ | 30 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised. Will, 2026-10-27: A. DONE 2026-10-27: `open()` takes a `key`, and the outlet passes the Context's name: Views, saved filters, the kept Query and drafts are all kept under it. The `outlet-view-key` report is gone | bug |
 | ✅ | 31 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
 | ✅ | 32 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later). Probed 2026-10-27 in Demos Records (the View's Date chip, one month and a range): already right — the title left and f(x) at the end on row 1, the Month/Year group the full width on row 2. Nothing to change | look |
@@ -10704,6 +10706,16 @@ schema; node KINDS run over the data layer's own functions (`filterRows`,
 definition is a row in a Store; the library ships the generic kinds; a
 `bindWorkflow()` helper draws and binds; a route is a drag from socket to
 socket. Steps W1–W5, one commit each.
+
+**W1 DONE 2026-10-29.** `schemas/workflow.v1.json`; `src/core/data/workflow.ts`:
+the types, `NODE_KINDS` (source, value, pick, filter, sort, group, count,
+output) as data, `socketOf`, and `checkWorkflow`, which reports each fault —
+a duplicate id, an unknown kind, a value for no row, a route to no socket, a
+value joined to an object, two routes into one input, a loop — and never
+throws. `T-a-workflow-is-its-definition`; node tests
+`a-workflow-is-its-definition`. **Then Will (2026-10-29): queries in the Node
+Editor — TODO 555, after 548; AI and agent nodes — TODO 556, later.** W2–W5
+wait with 555: they share its binding, sockets and connectors.
 
 ## L — The code review
 

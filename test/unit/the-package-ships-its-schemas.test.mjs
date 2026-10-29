@@ -13,7 +13,7 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 test('npm pack carries every schema', () => {
   const out = execFileSync('npm', ['pack', '--dry-run', '--json', '--ignore-scripts'], { cwd: ROOT, encoding: 'utf8' });
   const files = new Set(JSON.parse(out)[0].files.map((f) => f.path));
-  for (const name of ['schemas/page.v1.json', 'schemas/app.v1.json', 'schemas/component.v1.json']) assert.ok(files.has(name), `${name} is not packed`);
+  for (const name of ['schemas/page.v1.json', 'schemas/app.v1.json', 'schemas/component.v1.json', 'schemas/workflow.v1.json']) assert.ok(files.has(name), `${name} is not packed`);
 });
 
 test('a schema resolves by the package name', () => {

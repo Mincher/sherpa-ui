@@ -18809,6 +18809,30 @@ condition rows, so it reports `unreadable-condition` and filters nothing.
 - Site: `test/unit/one-way-to-write-a-condition.test.mjs`
 - Site: `src/core/data/query-edits.ts`
 
+### T-a-workflow-is-its-definition
+
+**A workflow is ONE JSON document** — its nodes, each node's values, and the
+routes between their sockets — checked by `schemas/workflow.v1.json` and by
+`checkWorkflow`. Will, TODO 78; plan-78-workflow-data.md.
+
+- **A node holds only what the reader may change**: its place, its own name and
+  line, and each row's value by the row's name. What it IS — its header, its
+  sockets, its rows — is its KIND's. So a kind can gain a row and every saved
+  workflow still loads.
+- **The library ships the generic kinds** (Will, D2 A), each over a data-layer
+  function it already has; an app adds its own beside them, as `{ ...NODE_KINDS,
+  mine }`. Sherpa stays app agnostic.
+- **A socket is `node` or `node/row`**: the header's, for the whole node, or a
+  row's. A route joins an output to an input that carries the same thing, a
+  value or an object; an input takes one route, and no route may close a loop,
+  or nothing would run first.
+- **`checkWorkflow` reports each fault and never throws**, as `checkApp` does: a
+  definition from a store or an agent may be wrong, and the page still opens.
+
+- Site: `src/core/data/workflow.ts`
+- Site: `src/data.ts`
+- Site: `test/unit/a-workflow-is-its-definition.test.mjs`
+
 ### T-an-app-is-its-definition
 
 **An app names its Contexts ONCE, in `app.json`** (TODO 190; Will, 183 choice

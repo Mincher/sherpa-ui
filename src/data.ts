@@ -93,6 +93,20 @@ export {
   type ScopeDefinition,
   type SourceDefinition,
 } from './core/data/page-definition.js';
+/* A WORKFLOW, set up from one JSON document. TRAP T-a-workflow-is-its-definition */
+export {
+  NODE_KINDS,
+  checkWorkflow,
+  socketOf,
+  type NodeKind,
+  type RowField,
+  type RowKind,
+  type Socket,
+  type SocketCarries,
+  type WorkflowDefinition,
+  type WorkflowNode,
+  type WorkflowRoute,
+} from './core/data/workflow.js';
 /* An APP, set up from one JSON document. TRAP T-an-app-is-its-definition */
 export {
   checkApp,

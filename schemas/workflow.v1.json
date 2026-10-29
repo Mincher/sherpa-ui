@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sherpa-ui.dev/schema/workflow/v1.json",
+  "title": "Sherpa-UI workflow definition",
+  "description": "One workflow, as JSON: its nodes, their values, and the routes between their sockets. What each node IS comes from its kind. checkWorkflow() reads it. docs/history/plan-78-workflow-data.md",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["v", "id", "nodes"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "v": { "const": 1 },
+    "id": {
+      "description": "The workflow's id: its row in the store, and its draft, are filed under it.",
+      "type": "string", "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "label": { "description": "Its name, as a reader sees it.", "type": "string" },
+    "nodes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/node" }
+    },
+    "routes": {
+      "description": "Each joins an output socket to an input socket of the same kind. An input takes one route.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/route" }
+    }
+  },
+  "$defs": {
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "x", "y"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "kind": { "description": "What the node is: a kind the library ships (source, value, pick, filter, sort, group, count, output), or one the app adds.", "type": "string" },
+        "x": { "description": "Its place across the canvas, in plane px.", "type": "number" },
+        "y": { "description": "Its place down the canvas, in plane px.", "type": "number" },
+        "heading": { "description": "Its own name, in place of its kind's.", "type": "string" },
+        "description": { "description": "Its own line, in place of its kind's.", "type": "string" },
+        "values": {
+          "description": "Each row's value, by the row's name.",
+          "type": "object"
+        }
+      }
+    },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to"],
+      "properties": {
+        "from": { "$ref": "#/$defs/socket" },
+        "to": { "$ref": "#/$defs/socket" }
+      }
+    },
+    "socket": {
+      "description": "A node's header socket, \"node\", or a row's, \"node/row\".",
+      "type": "string", "pattern": "^[a-z][a-z0-9-]*(/[a-z][a-z0-9-]*)?$"
+    }
+  }
+}
