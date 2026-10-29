@@ -145,8 +145,9 @@
          or takes off that cell's value. Will, TODO 373. TRAP T-a-cell-chip-is-one-and-moves -->
     <span class="cell-filter-home"><sherpa-quick-filter class="cell-filter" data-icon-only
       data-no-value data-locked></sherpa-quick-filter></span>
-    <!-- ONE tip for every tag the View holds, moved to the one under the pointer. TODO 490 -->
-    <sherpa-tooltip class="tag-tip"></sherpa-tooltip>
+    <!-- ONE tip for every tag the View holds: each is aria-describedby it, and
+         the shared tip moves to the one hovered. TODO 490 -->
+    <span id="tag-tip" class="tag-tip sherpa-tip" part="tag-tip" popover="manual" role="tooltip"></span>
   </div>
   </div>
   <div class="empty" part="empty" role="status">
@@ -278,7 +279,7 @@
     <span class="cell-tags"></span>
   </template>
   <template class="cell-tag-tpl">
-    <button class="cell-tag" type="button">
+    <button class="cell-tag sherpa-anchor" type="button">
       <span class="tag-tick sherpa-checkbox" aria-hidden="true"></span>
       <span class="tag-label"></span>
     </button>

@@ -1,14 +1,13 @@
 <!--
   sherpa-tooltip — a hover/focus tooltip wrapping a trigger.
 
-  The bubble is a popover in the TOP LAYER, opened on hover or focus and
-  placed from measured coordinates, so no box it sits in clips it. When its
-  side does not fit, it takes the opposite one.
+  The bubble is the SHARED tip every component uses (core/sherpa-anchor.css): it
+  opens in the TOP LAYER on hover or keyboard focus, and CSS anchors it to the
+  trigger. When its side has no room, it takes another.
 
   Public API:
     data-text       tip text (or use the `tip` slot)
     data-placement  top (default) | bottom | left | right
-    data-anchor     a selector for the box it describes, when it does not wrap one
 
   Slots:
     (default) — the trigger element the tooltip describes
@@ -17,13 +16,11 @@
   Fires: nothing.
 -->
 <template id="default">
-  <span class="anchor" part="anchor">
+  <span class="anchor sherpa-anchor" part="anchor">
     <slot data-accepts="content"></slot>
   </span>
-  <!-- `popover=manual`: `auto` would dismiss it on an outside click. -->
-  <span class="bubble" part="bubble" role="tooltip" popover="manual">
+  <span class="bubble sherpa-tip" part="bubble" role="tooltip" popover="manual">
     <span class="tip-text"></span>
     <slot name="tip" data-accepts="content"></slot>
-    <span class="arrow" part="arrow" aria-hidden="true"></span>
   </span>
 </template>

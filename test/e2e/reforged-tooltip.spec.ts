@@ -1,33 +1,26 @@
 import { test, expect } from './harness';
 
 /**
- * sherpa-tooltip on the reforged base — a CSS-driven hover/focus tooltip. Show/hide
- * is pure CSS (:hover / :focus-within); JS only mirrors data-text into the bubble
- * and wires aria-describedby. Proves the bubble is hidden by default, revealed on
- * hover, carries the text, and sets the a11y association.
+ * sherpa-tooltip — a hover/focus tooltip wrapping a trigger. Its bubble is the
+ * SHARED tip every component uses: opened in the top layer by its root's
+ * listeners, placed by CSS anchor positioning. TODO 364.
+ * TRAP T-a-tooltip-is-always-in-the-top-layer
  */
 
-
-test('mirrors data-text into the bubble and sets aria-describedby', async ({ page }) => {
+test('mirrors data-text into the bubble, which is the shared tip', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-tooltip') as HTMLElement & { rendered?: Promise<void> };
     el.setAttribute('data-text', 'Delete this item');
     el.innerHTML = '<button>Trash</button>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    const bubble = el.shadowRoot!.querySelector('.bubble')!;
-    return {
-      text: el.shadowRoot!.querySelector('.tip-text')!.textContent,
-      describedby: el.getAttribute('aria-describedby'),
-      bubbleId: bubble.id,
-    };
+    const bubble = el.shadowRoot!.querySelector<HTMLElement>('.bubble')!;
+    return { text: bubble.textContent!.trim(), shared: bubble.matches('.sherpa-tip'), popover: bubble.popover };
   });
-  expect(r.text).toBe('Delete this item');
-  expect(r.describedby).toBeTruthy();
-  expect(r.describedby).toBe(r.bubbleId); // association points at the bubble
+  expect(r).toEqual({ text: 'Delete this item', shared: true, popover: 'manual' });
 });
 
-test('the bubble is shut by default and opens in the top layer on hover', async ({ page }) => {
+test('the bubble is shut by default and opens in the top layer on hover and on keyboard focus', async ({ page }) => {
   await page.evaluate(async () => {
     const t = document.createElement('sherpa-tooltip') as HTMLElement & { rendered?: Promise<void> };
     t.setAttribute('data-text', 'Hi there');
@@ -37,23 +30,19 @@ test('the bubble is shut by default and opens in the top layer on hover', async 
   });
   const bubble = () => page.evaluate(() => {
     const b = document.querySelector('sherpa-tooltip')!.shadowRoot!.querySelector('.bubble') as HTMLElement;
-    const r = b.getBoundingClientRect();
-    return { open: b.matches(':popover-open'), visibility: getComputedStyle(b).visibility, width: r.width };
+    return { open: b.matches(':popover-open'), shown: getComputedStyle(b).display !== 'none', width: b.getBoundingClientRect().width };
   });
-  expect(await bubble()).toMatchObject({ open: false, width: 0 });
+  expect(await bubble()).toMatchObject({ open: false, shown: false, width: 0 });
   await page.locator('#trig').hover();
-  await expect.poll(bubble).toMatchObject({ open: true, visibility: 'visible' });
+  await expect.poll(bubble).toMatchObject({ open: true, shown: true });
   expect((await bubble()).width).toBeGreaterThan(0);
   await page.mouse.move(600, 400);
   await expect.poll(bubble).toMatchObject({ open: false });
+  await page.locator('#trig').focus();
+  await expect.poll(bubble).toMatchObject({ open: true, shown: true });
 });
 
-/**
- * NOT CLIPPED: a tooltip in a box with `overflow: hidden` is drawn whole — the
- * bubble is in the top layer. It was a closed popover with no rule to open it,
- * so an ordinary tooltip never showed at all.
- * TRAP T-a-tooltip-is-always-in-the-top-layer
- */
+/** NOT CLIPPED: in a box with `overflow: hidden` it is drawn whole, above the box. */
 test('a tooltip inside an overflow box shows whole, above the box', async ({ page }) => {
   await page.evaluate(async () => {
     document.getElementById('root')!.innerHTML = '<div id="clip" style="overflow:hidden;block-size:32px;inline-size:100px;margin:80px">'
@@ -61,92 +50,58 @@ test('a tooltip inside an overflow box shows whole, above the box', async ({ pag
     await (document.querySelector('sherpa-tooltip') as HTMLElement & { rendered: Promise<void> }).rendered;
   });
   await page.locator('#trig').hover();
+  await expect.poll(() => page.evaluate(() => document.querySelector('sherpa-tooltip')!.shadowRoot!
+    .querySelector('.bubble')!.matches(':popover-open'))).toBe(true);
   const r = await page.evaluate(() => {
-    const b = document.querySelector('sherpa-tooltip')!.shadowRoot!.querySelector('.bubble') as HTMLElement;
-    const box = b.getBoundingClientRect();
+    const box = document.querySelector('sherpa-tooltip')!.shadowRoot!.querySelector('.bubble')!.getBoundingClientRect();
     const clip = document.getElementById('clip')!.getBoundingClientRect();
-    return { open: b.matches(':popover-open'), wider: box.width > clip.width, above: box.bottom <= clip.top };
+    return { wider: box.width > clip.width, above: box.bottom <= clip.top };
   });
-  expect(r).toEqual({ open: true, wider: true, above: true });
+  expect(r).toEqual({ wider: true, above: true });
 });
 
-test('it takes the opposite side when its own does not fit, and the arrow follows', async ({ page }) => {
-  await page.evaluate(async () => {
-    document.getElementById('root')!.innerHTML = '<sherpa-tooltip data-text="Below, then" data-placement="top" style="position:fixed;inset-block-start:2px;inset-inline-start:200px">'
-      + '<button id="trig">x</button></sherpa-tooltip>';
-    await (document.querySelector('sherpa-tooltip') as HTMLElement & { rendered: Promise<void> }).rendered;
-  });
-  await page.locator('#trig').hover();
-  const r = await page.evaluate(() => {
-    const t = document.querySelector('sherpa-tooltip') as HTMLElement;
-    const b = t.shadowRoot!.querySelector('.bubble')!.getBoundingClientRect();
-    const trig = document.getElementById('trig')!.getBoundingClientRect();
-    return { below: b.top >= trig.bottom, bottomState: t.matches(':state(side-bottom)'), topState: t.matches(':state(side-top)') };
-  });
-  expect(r).toEqual({ below: true, bottomState: true, topState: false });
-});
-
-/** The default is read, never written. TODO 344 */
-test('with no data-placement, or an empty one, it opens on top and writes nothing', async ({ page }) => {
-  for (const attr of ['', ' data-placement=""']) {
-    await page.evaluate(async (a) => {
-      document.getElementById('root')!.innerHTML = `<sherpa-tooltip data-text="Above"${a} style="position:fixed;inset-block-start:200px;inset-inline-start:200px"><button id="trig">x</button></sherpa-tooltip>`;
+/** Its side: above by default and written nowhere (TODO 344); below when asked;
+ *  and with no room above, another side. */
+test('it opens above by default, below when asked, and elsewhere when its side has no room', async ({ page }) => {
+  for (const [attr, top, want] of [['', 200, 'above'], [' data-placement=""', 200, 'above'],
+    [' data-placement="bottom"', 200, 'below'], [' data-placement="top"', 2, 'not above']] as const) {
+    await page.evaluate(async ([a, y]) => {
+      document.getElementById('root')!.innerHTML = `<sherpa-tooltip data-text="A tip"${a} style="position:fixed;`
+        + `inset-block-start:${y}px;inset-inline-start:200px"><button id="trig">x</button></sherpa-tooltip>`;
       await (document.querySelector('sherpa-tooltip') as HTMLElement & { rendered: Promise<void> }).rendered;
-    }, attr);
+    }, [attr, top] as const);
     await page.locator('#trig').hover();
-    await page.waitForFunction(() => document.querySelector('sherpa-tooltip')!.matches(':state(side-top), :state(side-bottom), :state(side-left), :state(side-right)'));
+    await expect.poll(() => page.evaluate(() => document.querySelector('sherpa-tooltip')!.shadowRoot!
+      .querySelector('.bubble')!.matches(':popover-open'))).toBe(true);
     const r = await page.evaluate(() => {
       const t = document.querySelector('sherpa-tooltip') as HTMLElement;
       const b = t.shadowRoot!.querySelector('.bubble')!.getBoundingClientRect();
-      return { written: t.getAttribute('data-placement') || null, above: b.bottom <= document.getElementById('trig')!.getBoundingClientRect().top, top: t.matches(':state(side-top)') };
+      const trig = document.getElementById('trig')!.getBoundingClientRect();
+      return { written: t.getAttribute('data-placement'), above: b.bottom <= trig.top + 1, below: b.top >= trig.bottom - 1 };
     });
-    expect(r).toEqual({ written: null, above: true, top: true });
+    if (want === 'above') expect(r).toMatchObject({ above: true, written: attr ? '' : null });
+    if (want === 'below') expect(r.below).toBe(true);
+    if (want === 'not above') expect(r.above).toBe(false);
     await page.mouse.move(600, 400);
   }
 });
 
-test('text property reflects to data-text and the bubble', async ({ page }) => {
+test('text property reflects to data-text and the bubble; with no text it never shows', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-tooltip') as HTMLElement & {
-      rendered?: Promise<void>;
-      text?: string;
-    };
-    el.innerHTML = '<button>x</button>';
+    const el = document.createElement('sherpa-tooltip') as HTMLElement & { rendered?: Promise<void>; text?: string };
+    el.innerHTML = '<button id="trig">x</button>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.text = 'Set via property';
     await window.__settled();
-    return {
-      attr: el.getAttribute('data-text'),
-      bubble: el.shadowRoot!.querySelector('.tip-text')!.textContent,
-    };
+    const said = { attr: el.getAttribute('data-text'), bubble: el.shadowRoot!.querySelector('.tip-text')!.textContent };
+    el.text = '';
+    await window.__settled();
+    return { ...said, cleared: el.getAttribute('data-text') };
   });
-  expect(r.attr).toBe('Set via property');
-  expect(r.bubble).toBe('Set via property');
-});
-
-test('a new data-anchor moves what it hears: the old box opens it no more', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const root = document.getElementById('root')!;
-    root.innerHTML = '<div class="a">A</div><div class="b">B</div>';
-    const el = document.createElement('sherpa-tooltip') as HTMLElement & { rendered?: Promise<void> };
-    el.setAttribute('data-text', 'Tip');
-    el.setAttribute('data-anchor', '.a');
-    root.appendChild(el);
-    await el.rendered;
-    const open = (): boolean => el.shadowRoot!.querySelector('.bubble')!.matches(':popover-open');
-    const enter = async (sel: string): Promise<boolean> => {
-      root.querySelector(sel)!.dispatchEvent(new PointerEvent('pointerenter'));
-      await new Promise((res) => setTimeout(res, 700));
-      const was = open();
-      root.querySelector(sel)!.dispatchEvent(new PointerEvent('pointerleave'));
-      await new Promise((res) => setTimeout(res, 50));
-      return was;
-    };
-    const first = await enter('.a');
-    el.setAttribute('data-anchor', '.b');
-    return { first, oldBox: await enter('.a'), newBox: await enter('.b') };
-  });
-  // A section's tip is its header's, not its value chips'. Will, TODO 437
-  expect(r).toEqual({ first: true, oldBox: false, newBox: true });
+  expect(r).toEqual({ attr: 'Set via property', bubble: 'Set via property', cleared: null });
+  await page.locator('#trig').hover();
+  await page.evaluate(() => new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res))));
+  expect(await page.evaluate(() => getComputedStyle(document.querySelector('sherpa-tooltip')!.shadowRoot!
+    .querySelector('.bubble')!).display)).toBe('none');
 });

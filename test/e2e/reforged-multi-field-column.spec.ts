@@ -112,11 +112,12 @@ test('a tag whose field the View holds is greyed, refused, and says where it wen
     const menu = sr.querySelector('.head-cell[data-field="name"] sherpa-menu');
     return {
       held: tag.hasAttribute('data-superseded'), reading: reading('plan'),
-      tip: tip.shadowRoot.querySelector('.bubble').matches(':popover-open') ? tip.dataset.text : null,
+      tip: tip.matches(':popover-open') ? tip.textContent : null,
+      describes: tag.getAttribute('aria-describedby') === tip.id,
       sections: [...menu.querySelectorAll('.menu-section')].map((h) => h.textContent.trim()),
     };
   })()`) as Record<string, unknown>;
-  expect(r).toEqual({ held: true, reading: null, tip: 'Filter moved to View scope.', sections: ['Status'] });
+  expect(r).toEqual({ held: true, reading: null, tip: 'Filter moved to View scope.', describes: true, sections: ['Status'] });
 });
 
 /* With a multi-field column, EVERY cell is two lines and starts at the first,

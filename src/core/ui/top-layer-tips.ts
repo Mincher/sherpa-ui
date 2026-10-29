@@ -16,8 +16,12 @@ const SEGMENT = '.chart-segment[data-index]';
 /** The one tip open now: a new one shuts it. */
 let shown: HTMLElement | null = null;
 
-/** The anchor an event landed in, in THIS root, and its tip: the sibling after
- *  it, one inside it, or a segment's by index. */
+/** The anchor a SHARED tip is on now. */
+const sharedOn = new WeakMap<HTMLElement, HTMLElement>();
+
+/** The anchor an event landed in, in THIS root, and its tip: the first tip
+ *  after it, one inside it, a segment's by index, or the one it is
+ *  `aria-describedby`, shared by many anchors. */
 function tipOf(root: ShadowRoot, event: Event): { anchor: Element; tip: HTMLElement } | null {
   // The PATH, not `closest()`: the target may be a slotted label or a badge's own part.
   let anchor: Element | null = null;
@@ -33,10 +37,22 @@ function tipOf(root: ShadowRoot, event: Event): { anchor: Element; tip: HTMLElem
   }
   if (!anchor) return null;
   const index = anchor.matches(SEGMENT) ? anchor.getAttribute('data-index') : null;
-  const next = anchor.nextElementSibling;
+  const named = anchor.getAttribute('aria-describedby');
+  let after = anchor.nextElementSibling;
+  while (after && !after.matches(TIP)) after = after.nextElementSibling;
   const tip = index != null ? root.querySelector(`${TIP}[data-index="${index}"]`)
-    : next?.matches(TIP) ? next : anchor.querySelector(TIP);
-  return tip instanceof HTMLElement && tip.popover === 'manual' ? { anchor, tip } : null;
+    : after ?? anchor.querySelector(TIP) ?? (named ? root.getElementById(named) : null);
+  return tip instanceof HTMLElement && tip.matches(TIP) && tip.popover === 'manual' ? { anchor, tip } : null;
+}
+
+/** A tip SHARED by many anchors takes the anchor's name from the last one. TODO 490 */
+function share(anchor: Element, tip: HTMLElement): void {
+  if (!(anchor instanceof HTMLElement) || anchor.getAttribute('aria-describedby') !== tip.id) return;
+  const name = `--sherpa-tip-${tip.id}`;
+  sharedOn.get(tip)?.style.removeProperty('--_anchor');
+  anchor.style.setProperty('--_anchor', name);
+  tip.style.setProperty('--_anchor', name);
+  sharedOn.set(tip, anchor);
 }
 
 /** The focused element, however deep, when it shows keyboard focus. */
@@ -58,12 +74,14 @@ function lift(this: ShadowRoot, event: Event): void {
   const found = tipOf(this, event);
   // A focus that does not SHOW — a press — opens nothing; the hover already did.
   if (!found || (event.type === 'focusin' && !keyboardFocus())) return;
-  const { tip } = found;
-  if (shown !== tip && shown?.matches(':popover-open')) shown.hidePopover();
+  const { anchor, tip } = found;
+  share(anchor, tip);
   if (!tip.matches(':popover-open')) tip.showPopover();
+  // One its host's CSS hides — empty, turned off, under its open menu — is
+  // never held open, and shuts no other.
+  if (getComputedStyle(tip).display === 'none') return tip.hidePopover();
+  if (shown !== tip && shown?.matches(':popover-open')) shown.hidePopover();
   shown = tip;
-  // One its host's CSS hides — empty, turned off, under its open menu — is never held open.
-  if (getComputedStyle(tip).display === 'none') tip.hidePopover();
 }
 
 function drop(this: ShadowRoot, event: Event): void {

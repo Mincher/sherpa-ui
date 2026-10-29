@@ -2992,6 +2992,9 @@
             },
             {
               "name": "scroller"
+            },
+            {
+              "name": "tag-tip"
             }
           ]
         }
@@ -9486,6 +9489,9 @@
               "name": "tick"
             },
             {
+              "name": "tip"
+            },
+            {
               "name": "values"
             }
           ]
@@ -11564,13 +11570,6 @@
           "description": "a hover/focus tooltip wrapping a trigger.",
           "attributes": [
             {
-              "name": "data-anchor",
-              "description": "a selector for the box it describes, when it does not wrap one",
-              "type": {
-                "text": "string"
-              }
-            },
-            {
               "name": "data-placement",
               "description": "top | bottom | left | right",
               "type": {
@@ -11593,19 +11592,6 @@
               "type": {
                 "text": "string"
               }
-            },
-            {
-              "kind": "method",
-              "name": "showFor",
-              "parameters": [
-                {
-                  "name": "el",
-                  "type": {
-                    "text": "HTMLElement"
-                  }
-                }
-              ],
-              "description": "showFor(el) — open the bubble beside `el` now, and shut it when the pointer or focus leaves `el`: ONE tip for many boxes, as a grid's tags. TODO 490"
             }
           ],
           "slots": [
@@ -11621,9 +11607,6 @@
           "cssParts": [
             {
               "name": "anchor"
-            },
-            {
-              "name": "arrow"
             },
             {
               "name": "bubble"

@@ -12,19 +12,18 @@ A hover/focus tooltip wrapping a trigger.
 
 ## When to use it
 
-For a short hint on hover or focus, such as on an icon-only button. It does not name its trigger, so an icon-only trigger still needs its own `aria-label`.
+For a short hint on hover or focus, on any trigger. It does not name its trigger, so an icon-only trigger still needs its own `aria-label`; a `sherpa-button` inside one takes `data-no-tip`, or both say it.
 
 ## Example
 
 ```html
-<sherpa-tooltip data-text="Delete this item"><sherpa-button data-type="icon" data-icon-start="trash" aria-label="Delete"></sherpa-button></sherpa-tooltip>
+<sherpa-tooltip data-text="Delete this item"><sherpa-button data-type="icon" data-icon-start="trash" aria-label="Delete" data-no-tip></sherpa-button></sherpa-tooltip>
 ```
 
 ## Attributes
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
-| `data-anchor` | text |  | a selector for the box it describes, when it does not wrap one |
 | `data-placement` | `top` `bottom` `left` `right` | `top` | top \| bottom \| left \| right |
 | `data-text` | text |  | tip text (or use the `tip` slot) |
 
@@ -33,12 +32,6 @@ For a short hint on hover or focus, such as on an icon-only button. It does not 
 | Property | Type | Access | What it is |
 |---|---|---|---|
 | `text` | `string` | read and write |  |
-
-## Methods
-
-| Method | What it does |
-|---|---|
-| `showFor(el: HTMLElement)` | showFor(el) — open the bubble beside `el` now, and shut it when the pointer or focus leaves `el`: ONE tip for many boxes, as a grid's tags. TODO 490 |
 
 ## Slots
 
@@ -51,27 +44,10 @@ For a short hint on hover or focus, such as on an icon-only button. It does not 
 
 Style these from outside with `::part()`:
 
-`anchor`, `arrow`, `bubble`
-
-## CSS custom properties it reads
-
-What each class's base rule reads:
-
-| Custom property | Class | Property |
-|---|---|---|
-| `--sherpa-style-content-base` | `.bubble` | `--_bg` |
-| `--sherpa-style-surface-base` | `.bubble` | `--_fg` |
-| `--sherpa-display-mode-space-2xs` | `.bubble` | `padding` |
-| `--sherpa-font-family-body` | `.bubble` | `font-family` |
-| `--sherpa-font-size-body-small` | `.bubble` | `font-size` |
-| `--sherpa-font-weight-regular` | `.bubble` | `font-weight` |
-| `--sherpa-theme-content-line-height-small` | `.bubble` | `line-height` |
-| `--sherpa-display-mode-border-rounding-base` | `.bubble` | `border-radius` |
-| `--sherpa-shadow-md` | `.bubble` | `box-shadow` |
-| `--sherpa-motion-base` | `.bubble` | `transition` |
+`anchor`, `bubble`
 
 ## populate()
 
-`{ anchor?, placement?, text? }`
+`{ placement?, text? }`
 
 Its declared props by name: `label` sets data-label.

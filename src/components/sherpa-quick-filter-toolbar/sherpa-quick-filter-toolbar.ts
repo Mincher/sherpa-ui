@@ -42,6 +42,7 @@ import '../sherpa-button/sherpa-button.js';
 import '../sherpa-switch/sherpa-switch.js';
 import '../sherpa-input-text/sherpa-input-text.js';
 import '../sherpa-badge/sherpa-badge.js';
+import '../sherpa-tooltip/sherpa-tooltip.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 import type { SherpaQuickFilter } from '../sherpa-quick-filter/sherpa-quick-filter.js';
 import type { SherpaSwitch } from '../sherpa-switch/sherpa-switch.js';

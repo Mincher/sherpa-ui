@@ -486,7 +486,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](TRAPS.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](TRAPS.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (114)
+## Menus, tips and overlays (113)
 
 - [T-a-band-is-a-value-of-its-field](TRAPS.md#t-a-band-is-a-value-of-its-field) — menu
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](TRAPS.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
@@ -503,7 +503,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-full-range-is-still-a-range](TRAPS.md#t-a-full-range-is-still-a-range) — menu
 - [T-a-gap-click-is-the-menus-own](TRAPS.md#t-a-gap-click-is-the-menus-own) — menu
 - [T-a-hidden-sibling-still-counts-as-first-child](TRAPS.md#t-a-hidden-sibling-still-counts-as-first-child) — menu
-- [T-a-layout-read-belongs-in-a-frame](TRAPS.md#t-a-layout-read-belongs-in-a-frame) — menu, tooltip
+- [T-a-layout-read-belongs-in-a-frame](TRAPS.md#t-a-layout-read-belongs-in-a-frame) — menu
 - [T-a-menu-is-a-dialog-of-native-controls](TRAPS.md#t-a-menu-is-a-dialog-of-native-controls) — menu
 - [T-a-menu-owns-its-own-bodies](TRAPS.md#t-a-menu-owns-its-own-bodies) — menu
 - [T-a-menu-takes-no-grouping](TRAPS.md#t-a-menu-takes-no-grouping) — menu
@@ -532,7 +532,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-value-select-waits-for-the-rows](TRAPS.md#t-a-value-select-waits-for-the-rows) — menu
 - [T-a-view-held-heading-shows-and-refuses](TRAPS.md#t-a-view-held-heading-shows-and-refuses) — menu
 - [T-a-word-is-in-the-markup](TRAPS.md#t-a-word-is-in-the-markup) — menu
-- [T-abort-controller-per-connect](TRAPS.md#t-abort-controller-per-connect) — dialog, tooltip
+- [T-abort-controller-per-connect](TRAPS.md#t-abort-controller-per-connect) — dialog
 - [T-add-condition-sits-below-the-rows](TRAPS.md#t-add-condition-sits-below-the-rows) — menu
 - [T-all-is-an-answer](TRAPS.md#t-all-is-an-answer) — menu
 - [T-an-action-row-can-keep-its-menu-open](TRAPS.md#t-an-action-row-can-keep-its-menu-open) — menu
@@ -547,7 +547,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-overlay-panel-resizes-from-its-left-edge](TRAPS.md#t-an-overlay-panel-resizes-from-its-left-edge) — overlay-panel
 - [T-an-unanswered-row-survives-a-redraw](TRAPS.md#t-an-unanswered-row-survives-a-redraw) — menu
 - [T-an-untouched-select-is-not-an-answer](TRAPS.md#t-an-untouched-select-is-not-an-answer) — menu
-- [T-anchor-cross-root](TRAPS.md#t-anchor-cross-root) — menu, tooltip
+- [T-anchor-cross-root](TRAPS.md#t-anchor-cross-root) — menu
 - [T-both-answers-are-kept](TRAPS.md#t-both-answers-are-kept) — menu
 - [T-bounds-clamp-to-the-viewport](TRAPS.md#t-bounds-clamp-to-the-viewport) — menu
 - [T-calendar-header-has-no-heading](TRAPS.md#t-calendar-header-has-no-heading) — menu
@@ -591,7 +591,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-row-one-is-data-op](TRAPS.md#t-row-one-is-data-op) — menu
 - [T-rows-changed-re-places-next-frame](TRAPS.md#t-rows-changed-re-places-next-frame) — menu
 - [T-saved-filters-are-the-last-section](TRAPS.md#t-saved-filters-are-the-last-section) — menu
-- [T-scope-does-not-stop-inheritance](TRAPS.md#t-scope-does-not-stop-inheritance) — tooltip
 - [T-select-all-is-not-a-value](TRAPS.md#t-select-all-is-not-a-value) — menu
 - [T-select-all-ticks-boxes-not-values](TRAPS.md#t-select-all-ticks-boxes-not-values) — menu
 - [T-show-then-measure](TRAPS.md#t-show-then-measure) — menu

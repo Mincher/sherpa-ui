@@ -22,7 +22,7 @@ test('a failed field\'s chip is critical and its tip says it could not fetch; re
       const cs = getComputedStyle(chip(id).shadowRoot!.querySelector('.body')!);
       return {
         failed: chip(id).hasAttribute('data-failed'), edge: cs.borderTopColor,
-        tip: chip(id).shadowRoot!.querySelector<HTMLElement>('.count-wrap')!.dataset['text'] ?? '',
+        tip: chip(id).shadowRoot!.querySelector('.tip')!.textContent ?? '',
       };
     };
     const before = await look('region');

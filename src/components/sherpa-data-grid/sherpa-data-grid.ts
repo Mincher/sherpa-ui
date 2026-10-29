@@ -57,8 +57,6 @@ import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-select-checkbox/sherpa-select-checkbox.js';
 import '../sherpa-select-radio/sherpa-select-radio.js';
-import '../sherpa-tooltip/sherpa-tooltip.js';
-import type { SherpaTooltip } from '../sherpa-tooltip/sherpa-tooltip.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 import type { SherpaQuickFilter } from '../sherpa-quick-filter/sherpa-quick-filter.js';
 
@@ -279,7 +277,6 @@ export class SherpaDataGrid extends SherpaElement {
     this.$('.actions-menu')?.addEventListener('menu-close', this.#onActionsShut);
     this.$('.body')?.addEventListener('pointerover', this.#onCellOver);
     this.$('.body')?.addEventListener('pointerleave', this.#onBodyLeave);
-    this.$('.body')?.addEventListener('focusin', this.#tipTag);
     this.#cellChip = this.$<SherpaQuickFilter>('.cell-filter');
     this.#cellChip?.addEventListener('quick-filter-click', this.#onCellFilter);
     if (this.#columns.length) this.#render();
@@ -1237,6 +1234,8 @@ export class SherpaDataGrid extends SherpaElement {
     // The cell chip goes home first: it would leave with its row. TRAP T-a-cell-chip-is-one-and-moves
     if (this.#cellChip) this.$('.cell-filter-home')?.appendChild(this.#cellChip);
     body.replaceChildren();
+    const tagTip = this.$('.tag-tip');
+    if (tagTip) tagTip.textContent = this.#superseded.size ? movedTo(this.#supersededAt) : '';
 
     // Each <tr>'s index is its place in the FILTERED, SORTED list, so row-click
     // and selection-change name the row the user sees.
@@ -1332,7 +1331,6 @@ export class SherpaDataGrid extends SherpaElement {
     const { clientX: x, clientY: y } = event as PointerEvent;
     this.#pointer = { x, y };
     this.#placeCellChip(event.target as Element);
-    this.#tipTag(event);
   };
 
   /** The pointer left the rows. */
@@ -1592,7 +1590,9 @@ export class SherpaDataGrid extends SherpaElement {
       tag.toggleAttribute('data-superseded', held);
       tag.setAttribute('aria-pressed', String(on));
       tag.setAttribute('aria-label', `${this.#fieldLabel(field)}: ${label}`);
+      // Held: it says where its filter went, in the one tag tip. TODO 490
       if (held) tag.setAttribute('aria-disabled', 'true');
+      if (held) tag.setAttribute('aria-describedby', 'tag-tip');
       row.appendChild(tag);
     }
     td.toggleAttribute('data-tags', true);
@@ -1615,15 +1615,6 @@ export class SherpaDataGrid extends SherpaElement {
       text: tag.textContent?.trim() ?? '', held: false };
     this.#toggleValue(at, this.#tagOn(field, key), true);
   }
-
-  /** A tag the View holds says where its filter went, on hover or focus — ONE tip, moved. */
-  #tipTag = (event: Event): void => {
-    const tag = (event.target as Element | null)?.closest?.<HTMLElement>('.cell-tag[data-superseded]');
-    const tip = this.$<SherpaTooltip>('.tag-tip');
-    if (!tag || !tip) return;
-    tip.dataset['text'] = movedTo(this.#supersededAt);
-    tip.showFor(tag);
-  };
 
   /* ── FIND ── Will, TODO 136. TRAP T-a-find-asks-its-host-to-step */
 

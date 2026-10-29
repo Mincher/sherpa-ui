@@ -27,7 +27,7 @@ test('a remote chip is pending while its menu holds a draft; Apply makes it acti
       // Pending as its source says, or a draft in its own menu: the chip's own state (TODO 415).
       return { pending: chip(id).hasAttribute('data-pending') || chip(id).matches(':state(drafting)'), bg: cs.backgroundColor, edge: cs.borderTopColor };
     };
-    const tip = (id: string) => chip(id).shadowRoot!.querySelector<HTMLElement>('.count-wrap')!.dataset['text'] ?? '';
+    const tip = (id: string) => chip(id).shadowRoot!.querySelector('.tip')!.textContent ?? '';
     const off = await look('plan');
     const on = await look('tier');
     const menu = chip('plan').querySelector('sherpa-menu') as HTMLElement & { show(): void; shadowRoot: ShadowRoot };

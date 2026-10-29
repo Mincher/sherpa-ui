@@ -1,8 +1,8 @@
 {
   "html": [
     "<sherpa-tooltip data-text=\"Delete this item\">",
-    "<sherpa-button data-type=\"icon\" data-icon-start=\"trash\" aria-label=\"Delete\"></sherpa-button>",
+    "<sherpa-button data-type=\"icon\" data-icon-start=\"trash\" aria-label=\"Delete\" data-no-tip></sherpa-button>",
     "</sherpa-tooltip>"
   ],
-  "use": "For a short hint on hover or focus, such as on an icon-only button. It does not name its trigger, so an icon-only trigger still needs its own `aria-label`."
+  "use": "For a short hint on hover or focus, on any trigger. It does not name its trigger, so an icon-only trigger still needs its own `aria-label`; a `sherpa-button` inside one takes `data-no-tip`, or both say it."
 }

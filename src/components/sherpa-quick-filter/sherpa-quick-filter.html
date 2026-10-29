@@ -101,12 +101,7 @@
 -->
 <template id="default">
   <div class="chip" part="chip">
-    <!-- Sibling of the buttons, not a wrapper: wrapping would break every
-         :host(…) .body rule. data-anchor points it at the whole chip — a
-         SECTION's at its header, not its value chips. Will, TODO 437 -->
-    <sherpa-tooltip class="count-wrap" data-anchor=".chip"
-                    data-swap-on="data-layout=section" data-swap-data-anchor=".body"></sherpa-tooltip>
-    <button class="body sherpa-border-corners" part="body" type="button">
+    <button class="body sherpa-anchor sherpa-border-corners" part="body" type="button">
       <!-- ON or OFF, by a shape too, where the page asks: the Checkbox's box,
            ticked as this button is pressed. Will, TODOs 497, 503 -->
       <span class="tick sherpa-checkbox" part="tick" aria-hidden="true"></span>
@@ -118,7 +113,7 @@
       <span class="label" part="label"><slot data-accepts="text"></slot></span>
     </button>
 
-    <button class="caret" part="caret" type="button" aria-haspopup="dialog" aria-expanded="false"
+    <button class="caret sherpa-anchor" part="caret" type="button" aria-haspopup="dialog" aria-expanded="false"
             aria-label="Choose values">
       <!-- The SELECTED value, not the field. Empty when nothing is picked. -->
       <span class="caret-label sherpa-truncate" part="caret-label"></span>
@@ -131,6 +126,10 @@
            JS writes the FA class (#syncText); CSS picks which <i> is visible. -->
       <span class="caret-icon sherpa-icon-box" part="caret-icon" aria-hidden="true"></span>
     </button>
+    <!-- Its answer, the shared tip, after both buttons: the whole chip's — a
+         SECTION's its header's, not its value chips'. aria-hidden: .body's
+         aria-description says it. Will, TODOs 130, 437 -->
+    <span class="tip sherpa-tip" part="tip" popover="manual" aria-hidden="true"></span>
 
     <!-- A SECTION's values: one value chip per menu row, the answer still the
          menu's. Shown only in `data-layout="section"`. TODO 425 -->

@@ -206,19 +206,9 @@
 }
 
 /* Count chip — Figma "Indicator (atom)/Type=count" at Style=DEFAULT: neutral,
-   deliberately NOT the active tint. */
-.count-wrap {
-  /* ALWAYS laid out and zero-sized. `display: none` would take its anchor's
-     listeners with it, and they are wired once at render — a chip that gained a
-     count later would never show a tip again. Only the TIP TEXT comes and goes. */
-  position: absolute;
-  inline-size: 0;
-  block-size: 0;
-  pointer-events: none;
-}
-
-/* A Badge count, as Figma draws it: its edges and text are the template's
-   .sherpa-border-edges and .sherpa-text-mono-base, as sherpa-badge's are. */
+   deliberately NOT the active tint. A Badge count, as Figma draws it: its edges
+   and text are the template's .sherpa-border-edges and .sherpa-text-mono-base,
+   as sherpa-badge's are. */
 .count { display: none; }
 :host([data-count]) .count {
   display: inline-flex;
@@ -233,9 +223,13 @@
   color: var(--sherpa-style-content-base, #0c0b11);
 }
 
-/* The value tooltip is a composed <sherpa-tooltip> in FLOATING mode: nothing to
-   style here. An absolute bubble was clipped by `.chips { overflow: clip }` at
-   any z-index — a clip is not a stacking question. */
+/* Its tip — the shared one — is the WHOLE chip's; a section's, its header's,
+   never its value chips'. Will, TODO 437. TRAP T-a-chip-says-its-own-answer */
+:host { --_anchor: --sherpa-chip-tip; }
+:is(.body, .caret) { anchor-name: none; }
+.chip { anchor-name: var(--_anchor); }
+:host([data-layout="section"]) .chip { anchor-name: none; }
+:host([data-layout="section"]) .body { anchor-name: var(--_anchor); }
 
 /* Leading SWATCH — Figma "Legend Swatch", as a chart's legend draws it: the
    series hue, and a solid stroke of it. JS sets --_hue and --_border. */

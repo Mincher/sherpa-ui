@@ -610,7 +610,7 @@ test('the badge is legible, and the tooltip COUNTS the conditions', async ({ pag
       // Figma's Badge count: mono 14, regular — legible without bold.
       size: getComputedStyle(chip.shadowRoot!.querySelector('.count')!).fontSize,
       weight: getComputedStyle(chip.shadowRoot!.querySelector('.count')!).fontWeight,
-      tip: chip.shadowRoot!.querySelector<HTMLElement>('.count-wrap')?.dataset['text'] ?? null,
+      tip: chip.shadowRoot!.querySelector('.tip')?.textContent ?? null,
     });
 
     const gold = [...menu.querySelectorAll('input')].find((i) => i.value === 'gold')!;

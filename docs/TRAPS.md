@@ -36,7 +36,6 @@ measurement layer looks like reinventing the platform. It is not.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `src/components/sherpa-tooltip/sherpa-tooltip.ts`
 
 ### T-custom-element-upgrade
 
@@ -174,7 +173,6 @@ inherits too. A metric pins its status on its host, so every chart tip and the
 `sherpa-tooltip` bubble pin Style=default in `scripts/figma-data/state-pins.yaml`.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `src/components/sherpa-tooltip/sherpa-tooltip.css`
 
 ### T-indeterminate-reports-false
 
@@ -497,7 +495,6 @@ Related: a variant re-stamp does NOT abort it. See `T-restamp-does-not-abort`.
 
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-slider/sherpa-slider.ts`
-- Site: `src/components/sherpa-tooltip/sherpa-tooltip.ts`
 - Site: `src/components/sherpa-dialog/sherpa-dialog.ts`
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
@@ -1032,6 +1029,12 @@ source draws results to the panel too, scope by scope, so its one-chip fields
 and saved filters say theirs. A panel VALUE chip is one value of a run and
 has no count of its own yet (TODO 133).
 
+The tip is the shared one (`T-a-tip-lives-in-the-top-layer`, TODO 364), after
+both its buttons, which are its anchors. CSS names the WHOLE chip as the place
+it points to; a SECTION names its header, so its value chips never open it
+(Will, TODO 437: *"The section tooltip should only show when hovering over the
+section header"*) — a section has no caret to hover.
+
 **The chip has ONE door for its answer too**: `reading`, get and set, and
 `clear()`. Reading a chip's answer, drawing one, emptying one and asking if it
 is on were each written in the toolbar and again in the panel, and each asked
@@ -1057,6 +1060,7 @@ uses the chip's.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/data/filter-face.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 - Site: `test/e2e/reforged-chip-tips.spec.ts`
 - Site: `test/unit/filter-face.test.mjs`
 
@@ -15379,8 +15383,7 @@ produced 100 `getBoundingClientRect()` calls**. After throttling, **2**.
 
 `SherpaElement.onFrame(target, type, handler, options)` coalesces to one call
 per animation frame. `on()` is the same without the throttle, for a handler
-that reads no layout — `sherpa-tooltip` HIDES on scroll rather than re-placing,
-so it takes `on()`.
+that reads no layout.
 
 Both carry the element's disconnect signal, so nothing needs removing. That
 replaced 22 hand-paired add/remove sites across seven files, two of which
@@ -15399,7 +15402,6 @@ listeners on `window` both before and after five open/close cycles.
 
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-tooltip/sherpa-tooltip.ts`
 - Site: `test/e2e/reforged-menu.spec.ts`
 
 ### T-a-tooltip-is-not-an-axis
@@ -17762,9 +17764,12 @@ none. The root is always on the path, so `liftTipsIn` is all there is. It walks
 `composedPath()` to the first anchor in ITS root, and stops at an element with
 a `popover` (a menu the anchor holds is not the anchor).
 
-**A tip is found three ways:** the sibling after its anchor, one inside it, or,
-for a chart SEGMENT (an SVG path, which no selector crosses), the tip of its
-`data-index` (TODO 283).
+**A tip is found four ways:** the first tip after its anchor among its
+siblings (a chip's after both its buttons), one inside it, for a chart SEGMENT
+(an SVG path, which no selector crosses) the tip of its `data-index` (TODO 283),
+or the one its anchor is `aria-describedby`. That last is SHARED by many
+anchors — the grid's one tag tip (TODO 490) — and the lift moves the anchor
+name to the anchor that opens it, so the words reach a screen reader too.
 
 **One tip is open at a time,** and a tip its host's CSS hides — empty,
 `data-no-tip`, under an open menu — is shut again at once, never held open.
@@ -17777,7 +17782,7 @@ means the deepest focused element is inside the anchor AS DRAWN (through slots).
 The cost: a re-render under a still pointer shows no tip until the pointer
 moves.
 
-`sherpa-tooltip` lifts its own bubble: `T-a-tooltip-is-always-in-the-top-layer`.
+`sherpa-tooltip`'s bubble is this tip too: `T-a-tooltip-is-always-in-the-top-layer`.
 
 - Site: `src/core/ui/top-layer-tips.ts`
 - Site: `src/core/ui/sherpa-element.ts`
@@ -17901,18 +17906,18 @@ where it was meant to show, a box with `overflow` would have cut it.
 Nothing in the library used the ordinary mode, so only an app met it.
 
 The ordinary mode is gone, and `data-floating` with it (`T-a-rename-drops-the-old-name`).
-The element opens the bubble on `pointerenter` and `focusin` of its trigger (or
-of the `data-anchor` box) and places it from measured coordinates: on
-`data-placement`'s side, or the opposite one when that does not fit, centred,
-inside the viewport. The side it landed on is a custom state, `side-top`,
-`side-bottom`, `side-left` or `side-right`, which the arrow reads.
 
-**The other tips were fine.** Every `.sherpa-tip` is lifted by
-`top-layer-tips.ts` (`T-a-tip-lives-in-the-top-layer`); a probe over all 66
-component pages found each one opens, and the charts' and the sparkline's land
-beside their marks in all three engines. A first probe that hovered the
-middle of each anchor said otherwise, and was wrong: it found tips that open
-when the pointer is on the mark, not on a gap in it.
+**Since TODO 364 its bubble IS the shared tip** — one tooltip system for every
+component (Will: *"1 tooltip system for all components rather than any
+duplication and deviation"*). The bubble is a `.sherpa-tip` after its
+`.sherpa-anchor`, so its root's listeners open it and CSS anchors it
+(`T-a-tip-lives-in-the-top-layer`); `data-placement` is only the preferred
+`--_area`. Its own engine went: listeners on its anchor, measured placement,
+hide-on-scroll (a tip now follows its anchor), the arrow and its `side-*`
+states, `data-anchor` and `showFor()`. The chip and the grid's tag tip, which
+used those two, carry the shared tip in their own roots. A `sherpa-button`
+inside one takes `data-no-tip`, or the button's own tip wins: its root hears
+last, and one tip is open at a time.
 
 - Site: `src/components/sherpa-tooltip/sherpa-tooltip.ts`
 - Site: `src/components/sherpa-tooltip/sherpa-tooltip.css`
@@ -19566,7 +19571,8 @@ its empty section would wipe the bar's Advanced answer.
 Simple only: no Advanced and no Select all (every value of every field answers
 nothing). A field the View holds is LEFT OUT of the menu, since a menu is
 read-only whole or not at all; its tags are greyed, refuse a press, and ONE
-moved tooltip (`showFor()`) says where the filter went.
+tip says where the filter went: each held tag is `aria-describedby` it, and the
+shared tip moves to the one hovered (`T-a-tip-lives-in-the-top-layer`).
 
 A TAG is its value's toggle. Pressed, its value is picked — out of All too, so
 "filter by this" narrows even where the field opens on every value; pressed

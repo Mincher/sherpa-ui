@@ -287,13 +287,11 @@ test('hovering the chip reveals a bubble ABOVE it listing the chosen values', as
   });
 
   const badge = page.locator('#qf').locator('.count');
-  // The bubble belongs to a composed <sherpa-tooltip> wrapping the WHOLE CHIP,
-  // so hovering any part of it shows the list — a 16px badge is a small target
-  // to demand. It runs in FLOATING mode: the bar's chip run clips, and a
-  // tooltip stands outside the box it belongs to by definition, so an absolute
-  // bubble was cut off entirely.
+  // The tip is the WHOLE CHIP's, so hovering any part of it shows the list — a
+  // 16px badge is a small target to demand. It opens in the TOP LAYER: the
+  // bar's chip run clips, and a tip stands outside its box by definition.
   const chip = page.locator('#qf').locator('.chip');
-  const tip = page.locator('#qf').locator('.count-wrap').locator('.bubble');
+  const tip = page.locator('#qf').locator('.chip > .tip');
 
   // The bubble carries the value TEXT, not the raw values.
   await expect(tip).toHaveText('EMEA, Americas');
@@ -626,7 +624,7 @@ test('a superseded chip says where its field is filtered instead', async ({ page
       await new Promise((res) => setTimeout(res, 60));
     };
     const tip = (): string =>
-      (el.shadowRoot!.querySelector('.count-wrap') as HTMLElement | null)?.dataset['text'] ?? '';
+      el.shadowRoot!.querySelector('.tip')?.textContent ?? '';
 
     const bare = tip();
 
@@ -914,7 +912,7 @@ test('a section value on and ruled out says "no matches", as its menu row does (
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     await window.__settled();
-    return el.shadowRoot!.querySelector<HTMLElement>('.count-wrap')?.dataset['text'];
+    return el.shadowRoot!.querySelector('.tip')?.textContent;
   });
   expect(tip).toBe('Limited by the filters before it: no matches.');
 });

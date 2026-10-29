@@ -2361,7 +2361,7 @@ test('a chip steered with conditions redraws its value and tip', async ({ page }
     const face = (id: string) => {
       const c = el.shadowRoot!.querySelector<HTMLElement & { valueLabel: string }>(`.chip[data-id="${id}"]`)!;
       return { on: c.hasAttribute('data-current'), condition: c.getAttribute('data-condition'),
-        value: c.valueLabel, tip: c.shadowRoot!.querySelector<HTMLElement>('.count-wrap')?.dataset['text'] };
+        value: c.valueLabel, tip: c.shadowRoot!.querySelector('.tip')?.textContent };
     };
     return { owner: face('owner'), email: face('email') };
   });
@@ -2431,7 +2431,7 @@ test('a Reset leaves a chip the View holds as it is, and empties the rest', asyn
         held: chip.hasAttribute('data-superseded'), at: chip.getAttribute('data-applied-at'),
         on: chip.hasAttribute('data-current'),
         value: chip.shadowRoot!.querySelector('.caret-label')!.textContent,
-        tip: chip.shadowRoot!.querySelector<HTMLElement>('.count-wrap')!.dataset['text'],
+        tip: chip.shadowRoot!.querySelector('.tip')!.textContent,
         ticked: [...chip.querySelectorAll<HTMLInputElement>('input:checked')].map((i) => i.value),
       };
     };

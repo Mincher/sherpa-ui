@@ -113,7 +113,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `caret`, `caret-icon`, `caret-label`, `chip`, `count`, `icon`, `indicator`, `label`, `more`, `moved`, `swatch`, `tick`, `values`
+`body`, `caret`, `caret-icon`, `caret-label`, `chip`, `count`, `icon`, `indicator`, `label`, `more`, `moved`, `swatch`, `tick`, `tip`, `values`
 
 ## CSS custom properties it reads
 

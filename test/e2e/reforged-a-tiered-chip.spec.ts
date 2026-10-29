@@ -65,7 +65,7 @@ async function act(page: Page, steps: Array<['tick' | 'untick' | 'open', string]
     const src = (window as unknown as { __src: { rows: { id: number }[] } }).__src;
     return {
       face: chip.valueLabel,
-      tip: chip.shadowRoot!.querySelector<HTMLElement>('.count-wrap')!.dataset['text'] ?? '',
+      tip: chip.shadowRoot!.querySelector('.tip')!.textContent ?? '',
       rows: src.rows.map((r) => r.id).sort((a, b) => a - b),
     };
   }, steps);

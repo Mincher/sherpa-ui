@@ -15,8 +15,6 @@ import { countSaid, filterFace } from '../../core/data/filter-face.js';
 import { NON_VALUE_ROWS, NOT_AVAILABLE, ORGANISE_ICONS, RULED_OUT, SET_ASIDE, UNAPPLIED, UNFETCHED, movedTo, unusedHere } from '../../core/ui/shared-constants.js';
 import { arranges, FILTER_KINDS, type FilterKind } from '../../core/ui/filter-kind.js';
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
-// Floating, so the count tooltip escapes the toolbar's clipping chip run.
-import '../sherpa-tooltip/sherpa-tooltip.js';
 import { paintSwatch } from '../../core/ui/chart-parts.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 import { today } from '../../core/ui/temporal.js';
@@ -946,9 +944,8 @@ export class SherpaQuickFilter extends SherpaElement {
     /* A chip with NO WORDS on it — a grid heading's sort button — says its
        name in the tip, as an icon button does: "Sorted by Name, descending". */
     const name = this.hasAttribute('data-icon-only') ? this.getAttribute('aria-label') ?? '' : '';
-    // `data-text` is sherpa-tooltip's own API — the component writes the bubble.
-    const tip = this.$<HTMLElement>('.count-wrap');
-    if (tip) tip.dataset['text'] = said || name;
+    const tip = this.$('.tip');
+    if (tip) tip.textContent = said || name;
     // For a screen reader the name is said already; only the answer describes.
     const body = this.$('.body');
     if (said) body?.setAttribute('aria-description', said);

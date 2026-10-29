@@ -2732,7 +2732,7 @@ test('a view-held heading shows the view\'s answer, read-only, and is released a
         readonly: menu.hasAttribute('data-readonly'),
         inert: !!menu.shadowRoot?.querySelector('.rows')?.hasAttribute('inert'),
         ticked: menu.values,
-        tip: chip.shadowRoot?.querySelector<HTMLElement>('.count-wrap')?.dataset['text'] ?? null,
+        tip: chip.shadowRoot?.querySelector('.tip')?.textContent ?? null,
         own: grid.columnClause('region'),
       };
     };

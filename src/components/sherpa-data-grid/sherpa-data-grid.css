@@ -824,5 +824,3 @@
   block-size: calc(3 * var(--sherpa-display-mode-space-2xs, 4px) + var(--sherpa-theme-content-line-height-base, 20px)
     + var(--sherpa-display-mode-size-md, 20px));
 }
-/* The one tip is placed by measure: its own box takes no room. */
-.tag-tip { position: absolute; }

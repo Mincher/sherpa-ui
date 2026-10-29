@@ -3859,10 +3859,6 @@
       "description": "a hover/focus tooltip wrapping a trigger.",
       "attributes": [
         {
-          "name": "data-anchor",
-          "description": "a selector for the box it describes, when it does not wrap one"
-        },
-        {
           "name": "data-placement",
           "description": "top | bottom | left | right",
           "values": [

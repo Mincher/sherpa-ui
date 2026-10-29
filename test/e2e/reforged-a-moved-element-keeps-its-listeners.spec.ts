@@ -67,7 +67,7 @@ test('once moved, a slider, a tooltip, a nav and a dialog still hear', async ({ 
     range.value = '70';
     range.dispatchEvent(new Event('change', { bubbles: true }));
 
-    tooltip.dispatchEvent(new PointerEvent('pointerenter'));
+    tooltip.querySelector('button')!.dispatchEvent(new PointerEvent('pointerover', { bubbles: true, composed: true }));
     await frames();
     const tip = tooltip.shadowRoot!.querySelector('.bubble')!.matches(':popover-open');
 

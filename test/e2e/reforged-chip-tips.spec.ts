@@ -22,7 +22,7 @@ test('a toolbar chip says a number, a range and a date — and its matches, on o
     ], { style: 'inline-size: 1200px' });
     await window.__settled();
     const chip = (id: string): Chip => bar.shadowRoot!.querySelector(`.chip[data-id="${id}"]`)!;
-    const tip = (id: string): string => chip(id).shadowRoot!.querySelector<HTMLElement>('.count-wrap')!.dataset['text'] ?? '';
+    const tip = (id: string): string => chip(id).shadowRoot!.querySelector('.tip')!.textContent ?? '';
     const value = (id: string): string => chip(id).shadowRoot!.querySelector('.caret-label')!.textContent ?? '';
     const settle = async (): Promise<void> => { await window.__settled(); await eval(wait); };
 
@@ -64,7 +64,7 @@ test('a Sort chip says its column and which way; Group its column', async ({ pag
     bar.organise({ group: [{ field: 'plan', label: 'Plan' }], sort: [{ field: 'name', label: 'Name' }, { field: 'plan', label: 'Plan' }] });
     await window.__settled();
     const org = (kind: string): Chip => bar.shadowRoot!.querySelector(`.organise-chip[data-kind="${kind}"]`)!;
-    const tip = (kind: string): string => org(kind).shadowRoot!.querySelector<HTMLElement>('.count-wrap')!.dataset['text'] ?? '';
+    const tip = (kind: string): string => org(kind).shadowRoot!.querySelector('.tip')!.textContent ?? '';
     const none = [tip('sort'), tip('group')];
     // As a bound source writes it: the bar follows its attributes through the chip.
     bar.setAttribute('data-sort-field', 'name');
@@ -91,7 +91,7 @@ test('a grid heading\'s sort button says its column, and which way once it sorts
     }, { 'data-column-filters': '' });
     await window.__settled();
     const tip = (): string => grid.shadowRoot!.querySelector('.head-cell[data-field="name"] .head-sort')!
-      .shadowRoot!.querySelector<HTMLElement>('.count-wrap')!.dataset['text'] ?? '';
+      .shadowRoot!.querySelector('.tip')!.textContent ?? '';
     const before = tip();
     grid.setAttribute('data-sort-field', 'name');
     grid.setAttribute('data-sort-direction', 'desc');
@@ -111,10 +111,9 @@ test('a chip switched OFF still shows its tooltip — on or off has no bearing (
   });
   const body = page.locator('sherpa-quick-filter-toolbar .chip[data-id="plan"] .body');
   const open = (): Promise<boolean> => page.evaluate(() => document.querySelector('sherpa-quick-filter-toolbar')!
-    .shadowRoot!.querySelector('.chip[data-id="plan"]')!.shadowRoot!.querySelector('.count-wrap')!
-    .shadowRoot!.querySelector('.bubble')!.matches(':popover-open'));
+    .shadowRoot!.querySelector('.chip[data-id="plan"]')!.shadowRoot!.querySelector('.tip')!.matches(':popover-open'));
   const text = (): Promise<string> => page.evaluate(() => document.querySelector('sherpa-quick-filter-toolbar')!
-    .shadowRoot!.querySelector('.chip[data-id="plan"]')!.shadowRoot!.querySelector<HTMLElement>('.count-wrap')!.dataset['text'] ?? '');
+    .shadowRoot!.querySelector('.chip[data-id="plan"]')!.shadowRoot!.querySelector('.tip')!.textContent ?? '');
   await body.hover();
   await expect.poll(open).toBe(true);
   // Switched OFF, then hovered again: the same tip.
@@ -124,6 +123,35 @@ test('a chip switched OFF still shows its tooltip — on or off has no bearing (
   await body.hover();
   await expect.poll(open).toBe(true);
   expect(await text()).toBe('Pro, Free');
+});
+
+/* A SECTION's tip is its header's: over a value chip, only that chip's own tip
+   shows. Will, TODO 437 */
+test('a section shows its tip over its header, never over its value chips', async ({ page }) => {
+  await page.evaluate(async () => {
+    const bar = await window.__mount<Bar & { setChipReading(id: string, reading: unknown): void }>('sherpa-quick-filter-toolbar',
+      undefined, { 'data-orientation': 'portrait' });
+    bar.populate!([{ id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }, { value: 'free', label: 'Free' }] }]);
+    await window.__settled();
+    bar.setChipReading('plan', { picked: ['pro'] });
+    await window.__settled();
+  });
+  const section = page.locator('sherpa-quick-filter-toolbar .chips > .chip[data-id="plan"]');
+  const open = (): Promise<boolean> => section.evaluate((s) => s.shadowRoot!.querySelector('.tip')!.matches(':popover-open'));
+  expect(await section.getAttribute('data-layout')).toBe('section');
+  const centre = (inValue: boolean) => section.evaluate((s, v) => {
+    const host = v ? s.querySelector('.value')! : s;
+    const r = host.shadowRoot!.querySelector('.body')!.getBoundingClientRect();
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+  }, inValue);
+  const value = await centre(true);
+  await page.mouse.move(value.x, value.y);
+  await expect.poll(open).toBe(false);
+  const header = await centre(false);
+  await page.mouse.move(header.x, header.y);
+  await expect.poll(open).toBe(true);
+  await page.mouse.move(value.x, value.y);
+  await expect.poll(open).toBe(false);
 });
 
 test('a RESET leaves a date chip with no value — a kept range holds no ends, never `undefined`; its face reads Today', async ({ page }) => {

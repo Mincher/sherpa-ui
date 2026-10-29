@@ -19,17 +19,8 @@
       "part": "chip",
       "children": [
         {
-          "el": "sherpa-tooltip",
-          "class": "count-wrap",
-          "attrs": {
-            "data-anchor": ".chip",
-            "data-swap-on": "data-layout=section",
-            "data-swap-data-anchor": ".body"
-          }
-        },
-        {
           "el": "button",
-          "class": "body sherpa-border-corners",
+          "class": "body sherpa-anchor sherpa-border-corners",
           "part": "body",
           "attrs": {
             "type": "button"
@@ -92,7 +83,7 @@
         },
         {
           "el": "button",
-          "class": "caret",
+          "class": "caret sherpa-anchor",
           "part": "caret",
           "attrs": {
             "type": "button",
@@ -131,6 +122,15 @@
               }
             }
           ]
+        },
+        {
+          "el": "span",
+          "class": "tip sherpa-tip",
+          "part": "tip",
+          "attrs": {
+            "popover": "manual",
+            "aria-hidden": "true"
+          }
         },
         {
           "el": "div",

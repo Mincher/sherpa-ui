@@ -175,7 +175,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `empty`, `grid`, `head`, `no-matches`, `resize-grip`, `scroller`
+`body`, `empty`, `grid`, `head`, `no-matches`, `resize-grip`, `scroller`, `tag-tip`
 
 ## CSS custom properties it reads
 

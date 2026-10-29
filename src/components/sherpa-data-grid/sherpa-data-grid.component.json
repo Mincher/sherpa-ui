@@ -153,8 +153,14 @@
                 ]
               },
               {
-                "el": "sherpa-tooltip",
-                "class": "tag-tip"
+                "el": "span",
+                "class": "tag-tip sherpa-tip",
+                "part": "tag-tip",
+                "attrs": {
+                  "id": "tag-tip",
+                  "popover": "manual",
+                  "role": "tooltip"
+                }
               }
             ]
           }
@@ -519,7 +525,7 @@
         "children": [
           {
             "el": "button",
-            "class": "cell-tag",
+            "class": "cell-tag sherpa-anchor",
             "attrs": {
               "type": "button"
             },

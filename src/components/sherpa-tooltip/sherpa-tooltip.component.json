@@ -16,7 +16,7 @@
     "roots": [
       {
         "el": "span",
-        "class": "anchor",
+        "class": "anchor sherpa-anchor",
         "part": "anchor",
         "children": [
           {
@@ -29,7 +29,7 @@
       },
       {
         "el": "span",
-        "class": "bubble",
+        "class": "bubble sherpa-tip",
         "part": "bubble",
         "attrs": {
           "role": "tooltip",
@@ -45,14 +45,6 @@
             "attrs": {
               "data-accepts": "content"
             }
-          },
-          {
-            "el": "span",
-            "class": "arrow",
-            "part": "arrow",
-            "attrs": {
-              "aria-hidden": "true"
-            }
           }
         ]
       }
@@ -61,20 +53,11 @@
   "props": [
     {
       "$type": "prop",
-      "name": "data-anchor",
-      "type": "string",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "description": "a selector for the box it describes, when it does not wrap one"
-    },
-    {
-      "$type": "prop",
       "name": "data-placement",
       "type": "enum",
       "observed": true,
       "declared": true,
-      "kind": "behaviour",
+      "kind": "style",
       "values": [
         "top",
         "bottom",
@@ -113,44 +96,36 @@
     }
   ],
   "populate": {
-    "shape": "{ anchor?, placement?, text? }",
+    "shape": "{ placement?, text? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
+  "states": [
+    {
+      "$type": "state",
+      "name": "bottom",
+      "selector": ":host([data-placement=\"bottom\"])"
+    },
+    {
+      "$type": "state",
+      "name": "left",
+      "selector": ":host([data-placement=\"left\"])"
+    },
+    {
+      "$type": "state",
+      "name": "right",
+      "selector": ":host([data-placement=\"right\"])"
+    }
+  ],
   "capabilities": [
     {
       "$type": "capability",
       "api": "js-property-mirror",
       "description": "read/write JS properties (text). See $extensions.sherpa.jsProps."
-    },
-    {
-      "$type": "capability",
-      "api": "js-methods",
-      "description": "callable from a view definition's state block (showFor). See $extensions.sherpa.methods."
     }
   ],
-  "tokens": {
-    "bubble.--_bg": "{sherpa.style-content-base}",
-    "bubble.--_fg": "{sherpa.style-surface-base}",
-    "bubble.padding": "{sherpa.display-mode-space-2xs}",
-    "bubble.font-family": "{sherpa.font-family-body}",
-    "bubble.font-size": "{sherpa.font-size-body-small}",
-    "bubble.font-weight": "{sherpa.font-weight-regular}",
-    "bubble.line-height": "{sherpa.theme-content-line-height-small}",
-    "bubble.border-radius": "{sherpa.display-mode-border-rounding-base}",
-    "bubble.box-shadow": "{sherpa.shadow-md}",
-    "bubble.transition": "{sherpa.motion-base}"
-  },
   "$extensions": {
     "sherpa": {
       "figmaName": "Tooltip (atom)",
-      "methods": [
-        {
-          "$type": "method",
-          "name": "showFor",
-          "args": "el: HTMLElement",
-          "description": "showFor(el) — open the bubble beside `el` now, and shut it when the pointer or focus leaves `el`: ONE tip for many boxes, as a grid's tags. TODO 490"
-        }
-      ],
       "category": "container",
       "jsProps": [
         {
