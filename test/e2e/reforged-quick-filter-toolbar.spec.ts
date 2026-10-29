@@ -2711,3 +2711,16 @@ test('in portrait, a SHUT scope with a chip on wears the on fill on its header o
   expect(r.open).toBe(r.shutOff);
   expect(r.discardKept).toBe(true);
 });
+
+test('a site pick held before the bar draws is reported by its key (TODO 523 F16)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>; setChipReading(id: string, r: unknown): void; values: Record<string, string[]> };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    // Before populate(): held, for the first draw to replay. TRAP T-a-value-before-the-first-render-is-held
+    el.setChipReading('customer', { picked: ['Contoso', { customer: 'Northwind', site: 'Leeds' }] });
+    return el.values['customer'];
+  });
+  expect(r).toEqual(['Contoso', '{customer:Northwind,site:Leeds}']);
+});

@@ -2011,6 +2011,7 @@ does not draw is not its to hold.
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
 ### T-a-value-is-data-the-ticks-are-drawn
 

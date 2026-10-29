@@ -1050,10 +1050,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** What `values` will report once the held steers land. */
   #heldValues(): Record<string, string[]> {
-    const out = new Map(Object.entries(this.#held.values ?? {}).map(([id, picks]) => [id, picks.map(String)]));
+    // By KEY, as a drawn chip reports: a site pick is an object. TODO 422, 523
+    const out = new Map(Object.entries(this.#held.values ?? {}).map(([id, picks]) => [id, picks.map(valueKey)]));
     for (const [id, steer] of this.#held.chips) {
       const picks = 'picks' in steer ? steer.picks : steer.reading.suspended ? [] : steer.reading.picked ?? [];
-      out.set(id, picks.map(String));
+      out.set(id, picks.map(valueKey));
     }
     for (const id of this.#held.supersede?.ids ?? []) out.delete(id);
     return Object.fromEntries([...out].filter(([, picks]) => picks.length));
