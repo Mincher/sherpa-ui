@@ -89,6 +89,8 @@ ones restored from git are the table's last group and `✅ Done — the full rec
 | 🚧 | 30e | 548 | PRESENTATION — PRIORITY (Will, 2026-10-29: "it shifts the fundamentals for a lot of the filtering and data layer work") — (1) an icon-only menu button right of each chart container's header, and in the grid's toolbar before its search, picks how the data shows: Default (the definition's), Bar chart, Donut chart, Pie chart, Data Grid; picking swaps the component for that one, over the same data. (2) Group and Sort for EVERY presentation: a chart grouped by another field draws each segment SUBDIVIDED by that field (stacked bars; split donut and pie sections); its legend items stay and toggle those sections in each segment. Each chart container gets a filter toolbar under its header with Group and Sort chips; a chart's Sort has no field menu, it cycles ascending, descending, none. (3) Every presentation is defined with a primary and a secondary field: the secondary is a chart's segmentation, the group its sections. (4) The filter panel follows a presentation change of its content. A plan comes first — PLAN 2026-10-29: docs/history/plan-548-presentation.md — one slot and scope per content, a summary that groups and sorts (phase A, started), charts that draw parts, a chart toolbar, a `sherpa-presentation` swap, the panel following. Will, 2026-10-29: legend B (segment values, whole segments), kept in the Query (A), primary B (the grid's leading column unless a definition names one — Records: customer), and a Compare chip before Group picks the two fields. Phase A DONE (a summary groups and sorts); B and C DONE (the charts draw parts; a slot keeps its presentation in the Query, and its chart draws it); D1 DONE 2026-10-29: a chart's bar in its slot has Group and a Sort with no menu (up, down, none), kept as the slot's presentation, never the rows'; D2 DONE 2026-10-29: its Compare chip leads, one pick in each of Count and By (a menu row's `group` is its own radio set), its chart's own fields ticked until picked | feature |
 | ⬜ | 30f | 549 | LOOK (Will, 2026-10-29) — the minimap's purple frame scales as the reader zooms in and out; the content drawn on the minimap holds its scale, and does not scale with the zoom | look |
 | ⬜ | 30g | 550 | FILTERS (Will, 2026-10-29) — "Select none shows all data" is ON by default, and the inverse goes: a None pick takes the field OUT of the query, and no value's rows are hidden or blocked. Remove the setting and the logic for "None shows no data" (`data-none-shows-all` on the bar and the grid, menuFor's `empties`, the Settings row) | filters |
+| ⬜ | 30h | 551 | NODES (Will, 2026-10-29) — a node's place and properties survive a reload, and go only when the session ends — unless the reader saved them to the definition (not built yet) | feature |
+| ⬜ | 30i | 552 | LOOK (Will, 2026-10-29) — the node being dragged wears a shadow, and its border is stronger | look |
 | ✅ | 30 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised. Will, 2026-10-27: A. DONE 2026-10-27: `open()` takes a `key`, and the outlet passes the Context's name: Views, saved filters, the kept Query and drafts are all kept under it. The `outlet-view-key` report is gone | bug |
 | ✅ | 31 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
 | ✅ | 32 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later). Probed 2026-10-27 in Demos Records (the View's Date chip, one month and a range): already right — the title left and f(x) at the end on row 1, the Month/Year group the full width on row 2. Nothing to change | look |
@@ -10676,6 +10678,20 @@ reports `node-move`; a press reports `node-select`, and the host writes
 Demos selects a pressed node and opens an inspector overlay panel: Name,
 Description, X and Y write the node, and ID, Inputs and Outputs describe it.
 The connectors are still stand-ins.
+
+**Round 3, 2026-10-29 (Will) — rows and sockets.** Plan:
+[plan-78-node-rows.md](history/plan-78-node-rows.md). What a node showed is its
+HEADER; below it, its rows. **`sherpa-node-row`**: an input socket, a field (a
+`sherpa-input-text`: text, select or number) and an output socket, each
+optional; a row with no field names itself with `data-label`.
+`data-input-socket` and `data-output-socket` (`value`, a circle | `object`, a
+diamond) are on the node for its header and on a row (`SHARED_PROPS`); each
+draws them from `sherpa-node-sockets.css`, on the card's edges, and
+`socketRect(side)` says where one is. A drag is no press: its closing click
+selects nothing (Will). Demos' Filter node picks a Key and a Condition, takes a
+Value from a Value node's row, and reports Matches; its stand-in connectors now
+join sockets. NEXT (Will): the data layer — load a definition, edit routes and
+values, run the flow.
 
 ## L — The code review
 

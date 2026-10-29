@@ -1,0 +1,33 @@
+/*
+ * sherpa-node-sockets.css — a node's sockets: its header's, and each row's.
+ * Adopted before their own sheet by sherpa-node and sherpa-node-row. It draws
+ * them on the host's start and end edges; each host places them down its box.
+ */
+
+:host {
+  --_socket: var(--sherpa-display-mode-size-xs, 12px);
+}
+
+/* Half outside the card: its middle is on the edge. */
+.socket {
+  display: none;
+  position: absolute;
+  inline-size: var(--_socket);
+  block-size: var(--_socket);
+  margin-inline-start: calc(var(--_socket) / -2);
+  border: var(--sherpa-display-mode-border-width-lg, 2px) solid var(--sherpa-style-content-secondary, #35353d);
+  border-radius: 50%;
+  background: var(--sherpa-style-surface-base, #ffffff);
+  pointer-events: none;
+}
+.socket-in { inset-inline-start: 0; }
+.socket-out { inset-inline-start: 100%; }
+:host([data-input-socket]) .socket-in,
+:host([data-output-socket]) .socket-out { display: block; }
+
+/* An OBJECT is a diamond; a value stays a circle. */
+:host([data-input-socket="object"]) .socket-in,
+:host([data-output-socket="object"]) .socket-out {
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
+  rotate: 45deg;
+}

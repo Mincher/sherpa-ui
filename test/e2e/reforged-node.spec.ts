@@ -51,7 +51,7 @@ test('it sits where data-x and data-y say, with its name, icon and body', async 
       header: a!.shadowRoot!.querySelector('.header')!.getAttribute('role'),
     };
   }, canvas);
-  expect(r).toEqual({ place: [40, 40, 400], heading: ['Start', 'play'], body: ['block', 'none'], header: 'button' });
+  expect(r).toEqual({ place: [40, 40, 400], heading: ['Start', 'play'], body: ['flex', 'none'], header: 'button' });
 });
 
 test('a drag on the header moves it in plane px at any zoom, reports each move, and pans nothing', async ({ page }) => {
@@ -107,5 +107,60 @@ test('the arrows move it; Enter and a click ask to select it; the host\'s data-c
   expect(r).toEqual({
     at: ['48', '72'], panned: false, selects: 2,
     current: { attr: false, aria: null }, aria: 'true', tinted: true,
+  });
+});
+
+test('a drag is no press: the click it ends with selects nothing, and the next click does', async ({ page }) => {
+  const r = await page.evaluate(([sel, drag]) => {
+    const el = eval(sel!) as Canvas;
+    const a = el.querySelector<Node>('#a')!;
+    let selects = 0;
+    a.addEventListener('node-select', () => { selects += 1; });
+    eval(drag!)(a, 30, 10);
+    a.click();
+    const afterDrag = selects;
+    a.click();
+    return { afterDrag, after: selects };
+  }, [canvas, DRAG]);
+  expect(r).toEqual({ afterDrag: 0, after: 1 });
+});
+
+test('the header and each row draw their sockets on the card\'s edges, a value a circle and an object a diamond', async ({ page }) => {
+  const r = await page.evaluate(async (sel) => {
+    const el = eval(sel) as Canvas;
+    el.insertAdjacentHTML('beforeend', '<sherpa-node id="c" data-heading="Filter" data-x="40" data-y="240" data-input-socket="object" data-output-socket="value">'
+      + '<sherpa-node-row id="key"><sherpa-input-text data-label="Key" name="key"></sherpa-input-text></sherpa-node-row>'
+      + '<sherpa-node-row id="value" data-input-socket="value"><sherpa-input-text data-label="Value" name="value"></sherpa-input-text></sherpa-node-row>'
+      + '<sherpa-node-row id="matches" data-label="Matches" data-output-socket="object"></sherpa-node-row></sherpa-node>');
+    const c = el.querySelector<Node & { socketRect(side: string): DOMRect | null }>('#c')!;
+    await c.rendered;
+    const rows = ['key', 'value', 'matches'].map((id) => el.querySelector<Node & { socketRect(side: string): DOMRect | null }>(`#${id}`)!);
+    await Promise.all(rows.map((row) => row.rendered));
+    await window.__settled();
+    const box = c.getBoundingClientRect();
+    const mid = (rect: DOMRect | null) => rect && [Math.round(rect.left + rect.width / 2), Math.round(rect.top + rect.height / 2)];
+    const shape = (host: Element, cls: string) => {
+      const s = getComputedStyle(host.shadowRoot!.querySelector(cls)!);
+      return s.rotate === '45deg' ? 'diamond' : s.borderRadius === '50%' ? 'circle' : s.borderRadius;
+    };
+    const control = (row: Element) => {
+      const r = row.querySelector('sherpa-input-text')!.shadowRoot!.querySelector('.control-row, .control')!.getBoundingClientRect();
+      return Math.round(r.top + r.height / 2);
+    };
+    const header = mid(c.socketRect('input'))!;
+    const value = mid(rows[1]!.socketRect('input'))!;
+    const matches = mid(rows[2]!.socketRect('output'))!;
+    return {
+      none: [rows[0]!.socketRect('input'), rows[0]!.socketRect('output'), rows[1]!.socketRect('output')],
+      // Within the card's hairline border and a rounding.
+      onEdges: [header[0]! - box.left, value[0]! - box.left, matches[0]! - box.right].map((d) => Math.abs(d) <= 1),
+      headerFirst: header[1]! < value[1]!,
+      onControl: Math.abs(value[1]! - control(rows[1]!)) <= 1,
+      shapes: [shape(c, '.socket-in'), shape(c, '.socket-out'), shape(rows[1]!, '.socket-in'), shape(rows[2]!, '.socket-out')],
+    };
+  }, canvas);
+  expect(r).toEqual({
+    none: [null, null, null], onEdges: [true, true, true], headerFirst: true, onControl: true,
+    shapes: ['diamond', 'circle', 'circle', 'diamond'],
   });
 });

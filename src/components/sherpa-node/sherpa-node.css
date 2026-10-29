@@ -1,6 +1,7 @@
 /**
- * sherpa-node.css — a node's card, its header (the handle) and its body. The
- * canvas places it by `--x` and `--y`, which the node writes from `data-x` and `data-y`.
+ * sherpa-node.css — a node's card, its header (the handle, with the whole node's
+ * sockets) and its rows. The canvas places it by `--x` and `--y`, which the node
+ * writes from `data-x` and `data-y`.
  */
 
 :host {
@@ -17,6 +18,7 @@
 /* ── The header: always there, as it is the handle ───────────────────── */
 .header {
   display: block;
+  position: relative;
   cursor: grab;
   user-select: none;
   touch-action: none;
@@ -29,10 +31,20 @@
   outline-offset: var(--sherpa-focus-offset);
 }
 
-/* ── The body: only when something fills it ─────────────────────────── */
+/* The whole node's sockets, on the header's edges. */
+.socket {
+  inset-block-start: 50%;
+  margin-block-start: calc(var(--_socket) / -2);
+}
+
+/* ── The rows: only when there are some. Each spans the card, so its
+   sockets sit on the card's edges; it takes its inset from --_pad-inline. ── */
 .body {
   display: none;
-  padding: var(--_pad);
+  flex-direction: column;
+  gap: var(--sherpa-theme-gap-md, 8px);
+  padding-block: var(--sherpa-theme-gap-md, 8px) var(--_pad);
 }
-:host(:state(has-content-slot)) .body { display: block; }
+:host(:state(has-content-slot)) .body { display: flex; }
+.body ::slotted(:not(sherpa-node-row)) { padding-inline: var(--_pad-inline); }
 :host(:not(:state(has-content-slot))) .heading { border-block-end: none; }

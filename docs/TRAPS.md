@@ -17451,8 +17451,13 @@ reports where it was asked to go, and moves nothing.
   click on the node, or Enter or Space on its header, fires `node-select`, and
   the HOST writes `data-current` — on that node, and off the others. The node
   pins Style=active for it and tells assistive tech (`aria-current`).
-- A drag's end is a click too: a dragged node asks to be selected, as in most
-  editors.
+- **A drag is no press** (Will, 2026-10-29). A press becomes a drag once the
+  pointer goes 4px; the click a drag ends with then selects nothing, and the
+  next press clears the mark, so a click with no drag after it is never lost.
+- **Its sockets are its host's to draw** — the header's for the whole node,
+  each `sherpa-node-row`'s for its field — from one family sheet,
+  `sherpa-node-sockets.css`, on the card's edges. A connector asks
+  `socketRect(side)` where one is, and never reaches into a shadow root.
 
 - Site: `src/components/sherpa-node/sherpa-node.ts`
 - Site: `src/components/sherpa-node/sherpa-node.html`

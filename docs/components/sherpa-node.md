@@ -2,7 +2,7 @@
 
 # sherpa-node
 
-One node of a node editor: a card on a [sherpa-layout-canvas](sherpa-layout-canvas.md), at its data-x and data-y. Its header drags it. Will, TODO 78. TRAP T-a-node-moves-itself-and-reports
+One node of a node editor: a card on a [sherpa-layout-canvas](sherpa-layout-canvas.md), at its data-x and data-y. Its HEADER names it, drags it and may carry the whole node's sockets; its content holds its rows. Will, TODO 78. TRAP T-a-node-moves-itself-and-reports
 
 |  |  |
 |---|---|
@@ -10,12 +10,12 @@ One node of a node editor: a card on a [sherpa-layout-canvas](sherpa-layout-canv
 
 ## When to use it
 
-For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by its header, which reports each move and asks to be selected. The host writes `data-current` on the one it selects. For a card in the page flow, use `sherpa-container`.
+For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by its header, which reports each move and asks to be selected. Its header names it and may carry the whole node's sockets; its rows are `sherpa-node-row`. The host writes `data-current` on the one it selects. For a card in the page flow, use `sherpa-container`.
 
 ## Example
 
 ```html
-<sherpa-layout-canvas style="inline-size: 640px; block-size: 360px"><sherpa-node data-heading="Start" data-icon="play" data-x="40" data-y="40">A trigger starts the flow.</sherpa-node><sherpa-node data-heading="Step" data-icon="gear" data-x="320" data-y="40" data-current>One step does the work.</sherpa-node></sherpa-layout-canvas>
+<sherpa-layout-canvas style="inline-size: 720px; block-size: 360px"><sherpa-node data-heading="Start" data-icon="play" data-x="40" data-y="40" data-output-socket="object"></sherpa-node><sherpa-node data-heading="Filter" data-icon="filter" data-x="360" data-y="40" data-input-socket="object" data-output-socket="object" data-current><sherpa-node-row data-input-socket="value"><sherpa-input-text data-label="Value" name="value" value="active"></sherpa-input-text></sherpa-node-row><sherpa-node-row data-label="Matches" data-output-socket="value"></sherpa-node-row></sherpa-node></sherpa-layout-canvas>
 ```
 
 ## Attributes
@@ -26,9 +26,17 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | `data-description` | text |  | a line under the name |
 | `data-heading` | text | `Node` | the node's name, in its header |
 | `data-icon` | text |  | a glyph before the name |
+| `data-input-socket` | `value` `object` |  | the whole node's input socket, on its header: value (a circle) \| object (a diamond) |
 | `data-locked` | boolean |  | the host owns the place: a drag or a key reports, and moves nothing |
+| `data-output-socket` | `value` `object` |  | the whole node's output socket, on its header: value (a circle) \| object (a diamond) |
 | `data-x` | number | `0` | where it sits across the canvas, in plane px |
 | `data-y` | number | `0` | where it sits down the canvas, in plane px |
+
+## Methods
+
+| Method | What it does |
+|---|---|
+| `socketRect(side: SocketSide)` | A header socket's box on the screen, for a connector to join; null when it has none. |
 
 ## Events
 
@@ -43,16 +51,25 @@ Each one bubbles.
 
 | Slot | Accepts | What it holds |
 |---|---|---|
-| (default) | content | the node's body |
+| (default) | item | the node's rows: each a [sherpa-node-row](sherpa-node-row.md) |
 
 ## Parts
 
 Style these from outside with `::part()`:
 
-`body`, `header`, `heading`, `root`
+`body`, `header`, `heading`, `root`, `socket-in`, `socket-out`
+
+## CSS custom properties it reads
+
+What each class's base rule reads:
+
+| Custom property | Class | Property |
+|---|---|---|
+| `--sherpa-theme-gap-md` | `.body` | `gap` |
+| `--sherpa-theme-gap-md` | `.body` | `padding-block` |
 
 ## populate()
 
-`{ current?, description?, heading?, icon?, locked?, x?, y? }`
+`{ current?, description?, heading?, icon?, inputSocket?, locked?, outputSocket?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.

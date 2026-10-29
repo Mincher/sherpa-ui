@@ -7,16 +7,20 @@
  * A press only REPORTS (`node-select`): the host writes `data-current`, as only
  * it sees every node. TRAP T-a-node-moves-itself-and-reports
  */
-import { DATA_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { DATA_PROPS, SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 // Defined before the template stamps it.
 import '../sherpa-container-header/sherpa-container-header.js';
+import { SOCKETS, socketRect, type SocketSide } from './node-sockets.js';
 
 /** One arrow key's move, in plane px; Shift moves four times as far. */
 const MOVE_STEP = 8;
+/** How far a pointer goes, in screen px, before a press is a drag. */
+const DRAG_SLOP = 4;
 
 export class SherpaNode extends SherpaElement {
   static override css = [
     new URL('../../core/sherpa-container-regions.css', import.meta.url),
+    new URL('../../core/sherpa-node-sockets.css', import.meta.url),
     new URL('./sherpa-node.css', import.meta.url),
   ];
   static override html = new URL('./sherpa-node.html', import.meta.url);
@@ -25,6 +29,8 @@ export class SherpaNode extends SherpaElement {
     'data-heading': { type: 'string', kind: 'content', to: '.heading', as: 'attr' },
     'data-icon': { type: 'string', kind: 'content', to: '.heading', as: 'attr' },
     'data-description': { type: 'string', kind: 'content', to: '.heading', as: 'attr' },
+    'data-input-socket': SHARED_PROPS['data-input-socket'],
+    'data-output-socket': SHARED_PROPS['data-output-socket'],
     'data-x': { type: 'number', kind: 'behaviour' },
     'data-y': { type: 'number', kind: 'behaviour' },
     'data-current': { type: 'boolean', kind: 'style' },
@@ -33,6 +39,9 @@ export class SherpaNode extends SherpaElement {
 
   /** The drag in progress: the pointer, where it took hold, the place then, and the canvas's zoom. */
   #drag: { id: number; x: number; y: number; from: [number, number]; zoom: number } | null = null;
+
+  /** The last press was a drag: the click it ends with is no press. */
+  #dragged = false;
 
   override onRender(): void {
     const header = this.$<HTMLElement>('.header');
@@ -49,6 +58,11 @@ export class SherpaNode extends SherpaElement {
   override onChange(name: string): void {
     if (name === 'data-x' || name === 'data-y') this.#place();
     else if (name === 'data-current') this.#sync();
+  }
+
+  /** A header socket's box on the screen, for a connector to join; null when it has none. */
+  socketRect(side: SocketSide): DOMRect | null {
+    return socketRect(this.$<HTMLElement>(`.header ${SOCKETS[side]}`));
   }
 
   /** Where the canvas puts it. */
@@ -78,6 +92,7 @@ export class SherpaNode extends SherpaElement {
   /** A drag on the header takes hold. */
   #onPointerDown = (event: PointerEvent): void => {
     if (event.button !== 0) return;
+    this.#dragged = false;
     // A zoomed canvas scales the node: a screen px is 1/zoom plane px.
     const zoom = this.offsetWidth ? this.getBoundingClientRect().width / this.offsetWidth : 1;
     this.#drag = {
@@ -95,6 +110,8 @@ export class SherpaNode extends SherpaElement {
     const drag = this.#drag;
     if (!drag || event.pointerId !== drag.id) return;
     if (event.type === 'pointermove') {
+      if (!this.#dragged && Math.hypot(event.clientX - drag.x, event.clientY - drag.y) < DRAG_SLOP) return;
+      this.#dragged = true;
       this.toggleState('dragging', true);
       this.#move(drag.from[0] + (event.clientX - drag.x) / drag.zoom, drag.from[1] + (event.clientY - drag.y) / drag.zoom);
       return;
@@ -116,8 +133,12 @@ export class SherpaNode extends SherpaElement {
     event.preventDefault();
   };
 
-  /** A press anywhere on it asks to select it. */
+  /** A press anywhere on it asks to select it; the click a drag ends with does not. */
   #onClick = (): void => {
+    if (this.#dragged) {
+      this.#dragged = false;
+      return;
+    }
     this.emit('node-select');
   };
 }

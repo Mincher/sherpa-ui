@@ -1,0 +1,10 @@
+{
+  "html": [
+    "<sherpa-node data-heading=\"Filter\" data-icon=\"filter\" data-input-socket=\"object\">",
+    "<sherpa-node-row><sherpa-input-text data-label=\"Key\" name=\"key\" data-type=\"select\"></sherpa-input-text></sherpa-node-row>",
+    "<sherpa-node-row data-input-socket=\"value\"><sherpa-input-text data-label=\"Value\" name=\"value\" value=\"active\"></sherpa-input-text></sherpa-node-row>",
+    "<sherpa-node-row data-label=\"Matches\" data-output-socket=\"value\"></sherpa-node-row>",
+    "</sherpa-node>"
+  ],
+  "use": "For one row of a `sherpa-node`: an input socket, a field and an output socket, each one optional. The field is a `sherpa-input-text` — text, a select or a number — and names itself; a row with no field names itself with `data-label`. For the whole node's sockets, set them on the node."
+}

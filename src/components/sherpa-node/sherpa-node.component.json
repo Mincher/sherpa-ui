@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-node",
-  "$description": "one node of a node editor: a card on a sherpa-layout-canvas, at its data-x and data-y. Its header drags it. Will, TODO 78. TRAP T-a-node-moves-itself-and-reports",
+  "$description": "one node of a node editor: a card on a sherpa-layout-canvas, at its data-x and data-y. Its HEADER names it, drags it and may carry the whole node's sockets; its content holds its rows. Will, TODO 78. TRAP T-a-node-moves-itself-and-reports",
   "element": {
     "$type": "element",
     "tag": "div",
@@ -35,6 +35,22 @@
               "attrs": {
                 "data-heading": "Node"
               }
+            },
+            {
+              "el": "span",
+              "class": "socket socket-in",
+              "part": "socket-in",
+              "attrs": {
+                "aria-hidden": "true"
+              }
+            },
+            {
+              "el": "span",
+              "class": "socket socket-out",
+              "part": "socket-out",
+              "attrs": {
+                "aria-hidden": "true"
+              }
             }
           ]
         },
@@ -46,7 +62,7 @@
             {
               "slot": "",
               "attrs": {
-                "data-accepts": "content"
+                "data-accepts": "item"
               }
             }
           ]
@@ -94,12 +110,38 @@
     },
     {
       "$type": "prop",
+      "name": "data-input-socket",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "values": [
+        "value",
+        "object"
+      ],
+      "description": "the whole node's input socket, on its header: value (a circle) | object (a diamond)"
+    },
+    {
+      "$type": "prop",
       "name": "data-locked",
       "type": "boolean",
       "observed": true,
       "declared": true,
       "kind": "style",
       "description": "the host owns the place: a drag or a key reports, and moves nothing"
+    },
+    {
+      "$type": "prop",
+      "name": "data-output-socket",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "values": [
+        "value",
+        "object"
+      ],
+      "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond)"
     },
     {
       "$type": "prop",
@@ -127,13 +169,13 @@
       "$type": "slot",
       "name": "",
       "accepts": [
-        "content"
+        "item"
       ],
-      "description": "the node's body"
+      "description": "the node's rows: each a sherpa-node-row"
     }
   ],
   "populate": {
-    "shape": "{ current?, description?, heading?, icon?, locked?, x?, y? }",
+    "shape": "{ current?, description?, heading?, icon?, inputSocket?, locked?, outputSocket?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -141,6 +183,13 @@
       "$type": "state",
       "name": "focus-visible",
       "selector": ".header:focus-visible"
+    }
+  ],
+  "capabilities": [
+    {
+      "$type": "capability",
+      "api": "js-methods",
+      "description": "callable from a view definition's state block (socketRect). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -162,5 +211,21 @@
       "bubbles": true,
       "composed": true
     }
-  ]
+  ],
+  "tokens": {
+    "body.gap": "{sherpa.theme-gap-md}",
+    "body.padding-block": "{sherpa.theme-gap-md}"
+  },
+  "$extensions": {
+    "sherpa": {
+      "methods": [
+        {
+          "$type": "method",
+          "name": "socketRect",
+          "args": "side: SocketSide",
+          "description": "A header socket's box on the screen, for a connector to join; null when it has none."
+        }
+      ]
+    }
+  }
 }

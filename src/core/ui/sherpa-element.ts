@@ -155,6 +155,9 @@ export const SHARED_PROPS = {
   'data-bounds': { type: 'string', kind: 'style' },
   /** An inner shadow on each edge its scroll box is scrolled past. Off by default. TODO 401 */
   'data-scroll-shadow': { type: 'boolean', kind: 'style' },
+  /** A node's sockets, on its header or a row: a value is a circle, an object a diamond. TODO 78 */
+  'data-input-socket': { type: 'enum', kind: 'style', values: ['value', 'object'] },
+  'data-output-socket': { type: 'enum', kind: 'style', values: ['value', 'object'] },
 } as const satisfies PropMap;
 
 /**

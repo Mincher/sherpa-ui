@@ -6506,6 +6506,95 @@
     },
     {
       "kind": "javascript-module",
+      "path": "dist/components/sherpa-node-row/sherpa-node-row.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "SherpaNodeRow",
+          "tagName": "sherpa-node-row",
+          "customElement": true,
+          "description": "one row of a sherpa-node: an input socket, a field and an output socket. Any of the three may be absent. Will, TODO 78.",
+          "attributes": [
+            {
+              "name": "data-input-socket",
+              "description": "an input socket on the start edge: value (a circle) | object (a diamond)",
+              "type": {
+                "text": "'value' | 'object'"
+              }
+            },
+            {
+              "name": "data-label",
+              "description": "the row's name, when it has no field: a field names itself",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "data-output-socket",
+              "description": "an output socket on the end edge: value (a circle) | object (a diamond)",
+              "type": {
+                "text": "'value' | 'object'"
+              }
+            }
+          ],
+          "members": [
+            {
+              "kind": "method",
+              "name": "socketRect",
+              "parameters": [
+                {
+                  "name": "side",
+                  "type": {
+                    "text": "SocketSide"
+                  }
+                }
+              ],
+              "description": "A socket's box on the screen, for a connector to join; null when the row has none."
+            }
+          ],
+          "slots": [
+            {
+              "name": "",
+              "description": "the field: a sherpa-input-text — a text field, a select or a number (accepts: input)"
+            }
+          ],
+          "cssParts": [
+            {
+              "name": "label"
+            },
+            {
+              "name": "row"
+            },
+            {
+              "name": "socket-in"
+            },
+            {
+              "name": "socket-out"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "SherpaNodeRow",
+          "declaration": {
+            "name": "SherpaNodeRow",
+            "module": "dist/components/sherpa-node-row/sherpa-node-row.js"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "sherpa-node-row",
+          "declaration": {
+            "name": "SherpaNodeRow",
+            "module": "dist/components/sherpa-node-row/sherpa-node-row.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "dist/components/sherpa-node/sherpa-node.js",
       "declarations": [
         {
@@ -6513,7 +6602,7 @@
           "name": "SherpaNode",
           "tagName": "sherpa-node",
           "customElement": true,
-          "description": "one node of a node editor: a card on a sherpa-layout-canvas, at its data-x and data-y. Its header drags it. Will, TODO 78. TRAP T-a-node-moves-itself-and-reports",
+          "description": "one node of a node editor: a card on a sherpa-layout-canvas, at its data-x and data-y. Its HEADER names it, drags it and may carry the whole node's sockets; its content holds its rows. Will, TODO 78. TRAP T-a-node-moves-itself-and-reports",
           "attributes": [
             {
               "name": "data-current",
@@ -6545,10 +6634,24 @@
               }
             },
             {
+              "name": "data-input-socket",
+              "description": "the whole node's input socket, on its header: value (a circle) | object (a diamond)",
+              "type": {
+                "text": "'value' | 'object'"
+              }
+            },
+            {
               "name": "data-locked",
               "description": "the host owns the place: a drag or a key reports, and moves nothing",
               "type": {
                 "text": "boolean"
+              }
+            },
+            {
+              "name": "data-output-socket",
+              "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond)",
+              "type": {
+                "text": "'value' | 'object'"
               }
             },
             {
@@ -6566,6 +6669,21 @@
                 "text": "number"
               },
               "default": "\"0\""
+            }
+          ],
+          "members": [
+            {
+              "kind": "method",
+              "name": "socketRect",
+              "parameters": [
+                {
+                  "name": "side",
+                  "type": {
+                    "text": "SocketSide"
+                  }
+                }
+              ],
+              "description": "A header socket's box on the screen, for a connector to join; null when it has none."
             }
           ],
           "events": [
@@ -6587,7 +6705,7 @@
           "slots": [
             {
               "name": "",
-              "description": "the node's body (accepts: content)"
+              "description": "the node's rows: each a sherpa-node-row (accepts: item)"
             }
           ],
           "cssParts": [
@@ -6602,6 +6720,12 @@
             },
             {
               "name": "root"
+            },
+            {
+              "name": "socket-in"
+            },
+            {
+              "name": "socket-out"
             }
           ]
         }
