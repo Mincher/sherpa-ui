@@ -20,7 +20,7 @@ import {
   DATE_OP_LABELS, DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp, valueKey, valueSet,
 } from '../../core/data/store.js';
 import {
-  modeOf, readingRows, rowAnswered, rowsFromPicks, ruleOut, type ConditionType, type FieldCondition, type FieldReading,
+  goesFromList, modeOf, readingRows, rowAnswered, rowsFromPicks, ruleOut, type ConditionType, type FieldCondition, type FieldReading,
 } from '../../core/data/filter-state.js';
 import { NON_VALUE_ROWS, RULED_OUT, SET_ASIDE } from '../../core/ui/shared-constants.js';
 import { hiddenRows } from '../../core/ui/tree-rows.js';
@@ -1478,10 +1478,10 @@ export class SherpaMenu extends SherpaElement {
     const inForce = ticked.length > 0 && ticked.every(outOf);
     for (const box of this.#inputs()) {
       const row = box.closest<HTMLElement>('.menu-row');
-      const why = limit(box.value);
-      const ruled = given.get(box.value)?.available === false || why === 'unmatched';
-      row?.toggleAttribute('data-removed', (why === 'unoffered' || (hides && ruled)) && !box.checked);
-      const out = ruled || why === 'unoffered';
+      // A value its def says is unavailable is ruled out as one the filters leave none of.
+      const why = limit(box.value) ?? (given.get(box.value)?.available === false ? 'unmatched' : null);
+      row?.toggleAttribute('data-removed', goesFromList(why, hides, box.checked));
+      const out = why !== null;
       // INACTIVE refuses a tick ON; one still ticked may be let go, once (Will, TODO 462).
       // Only ever undo its OWN refusal.
       if (out && !box.checked) box.disabled = true;

@@ -27,6 +27,7 @@
  * - rowAnswered — Does this condition row have what its op needs to narrow anything?
  * - RuledOut — Why the source rules a value out: not offered, or not matched.
  * - ruleOut — A field's limits as one test: what its chain offers first, then what the filters before it leave.
+ * - goesFromList — Does a ruled-out value GO from its list: one its chain does not offer, and, hiding unmatched, any ruled out —…
  * - readingRows — a reading's Advanced answer as rows, old single-condition forms included
  * - modeOf — which answer a reading puts in force: its `mode`, else Advanced where rows answer
  * - rowsFromPicks — Simple's answer as Advanced's rows, for a mode switch to carry over
@@ -246,6 +247,12 @@ export function ruleOut(present: Iterable<string> | null | undefined, offered?: 
   const left = looseSet(present);
   const offers = looseSet(offered);
   return (value) => (offers && !offers(value) ? 'unoffered' : left && !left(value) ? 'unmatched' : null);
+}
+
+/** Does a ruled-out value GO from its list: one its chain does not offer, and,
+ *  hiding unmatched, any ruled out — never one still picked. TODO 448 */
+export function goesFromList(why: RuledOut, hide: boolean, picked: boolean): boolean {
+  return !picked && (why === 'unoffered' || (hide && why !== null));
 }
 
 /** A list of value keys as a test, case aside. */

@@ -15,7 +15,7 @@
  * - answerWhenDrawn — Give a menu an answer once it has drawn, and redraw its chip.
  */
 import type { OrganiseColumn } from '../data/data-source.js';
-import { ruleOut, type FieldReading } from '../data/filter-state.js';
+import { goesFromList, ruleOut, type FieldReading } from '../data/filter-state.js';
 import { countSaid } from '../data/filter-face.js';
 import type { SherpaMenu } from '../../components/sherpa-menu/sherpa-menu.js';
 import type { FilterOption } from './filter-def.js';
@@ -69,7 +69,7 @@ export function limitField(
   for (const chip of values) {
     const why = out(chip.dataset['value'] ?? '');
     // Hiding unmatched, one it rules out goes too, as a menu row does. TODO 448
-    chip.toggleAttribute('data-removed', (why === 'unoffered' || (limits.hide && why !== null)) && !chip.hasAttribute('data-current'));
+    chip.toggleAttribute('data-removed', goesFromList(why, limits.hide, chip.hasAttribute('data-current')));
     chip.toggleAttribute('data-unavailable', why !== null);
   }
   for (const menu of menus) {
