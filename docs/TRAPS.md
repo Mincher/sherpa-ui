@@ -18838,6 +18838,14 @@ change made in it is a `QueryRequest`, as a chip's is.
   live COPY of the page's component, with no ids, which asks the provider as the
   page's does — so it draws what the Query says. The editor sits inside the
   provider for that.
+- **A drag from an OUTPUT socket draws a new route** (Will, 2026-10-29). The
+  drawing hears the press first, at the canvas, so it neither moves the node nor
+  pans the view; let go within reach of an input socket, and the HOST is asked
+  (`onConnect`). The Query takes a condition into a field of a scope: the same
+  field in another scope MOVES it there; another field takes it, keeping only
+  the values that field has. A route the Query has no meaning for — or one that
+  would then say nothing — is REFUSED and reported (`query-route`): nothing
+  moves.
 
 - Site: `src/core/data/query-graph.ts`
 - Site: `src/data.ts`

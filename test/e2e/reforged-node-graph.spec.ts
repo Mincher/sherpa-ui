@@ -304,3 +304,30 @@ test('a condition dragged into the same field of another scope MOVES there, as o
   await page.mouse.up();
   expect(await page.evaluate(() => (window as unknown as { asked: unknown[] }).asked)).toEqual(['batch', ['view', 'region', null], ['data', 'region', 'reading']]);
 });
+
+test('a condition dragged onto a field none of its values fit is REFUSED, and says why: nothing moves', async ({ page }) => {
+  await page.evaluate(async () => {
+    const { bindQueryEditor } = await import('/dist/app.js');
+    const { readingsOf, onReport } = await import('/dist/data.js');
+    const canvas = document.getElementById('root')!.querySelector('sherpa-layout-canvas') as Drawable;
+    const asked: unknown[] = [];
+    (window as unknown as { asked: unknown[] }).asked = asked;
+    onReport((r) => asked.push(r.code));
+    const query = Object.assign(new EventTarget(), {
+      draft: { v: 1, scopes: { view: { holds: ['status', 'plan'], readings: readingsOf({ status: { in: ['trial'] } }) } } },
+      batch: (fn: () => void) => { asked.push('batch'); fn(); },
+      setReading: (scope: string, field: string) => asked.push([scope, field]),
+    });
+    const values = (field: string) => (field === 'status' ? ['trial', 'active'] : ['Free', 'Pro']);
+    bindQueryEditor(canvas, { query } as never, { definition: { v: 1 as const, id: 'records', source: { store: 'customers' } }, values });
+    await window.__settled();
+  });
+  const at = (selector: string, side: string) => page.evaluate(([sel, s, socket]) => eval(socket!)(document.querySelector(sel!), s), [selector, side, SOCKET]) as Promise<[number, number]>;
+  const [ax, ay] = await at('#root sherpa-node[data-icon="function"]', 'output');
+  const [bx, by] = await at('#root sherpa-node[data-heading="View"] sherpa-node-row[data-label="plan"]', 'input');
+  await page.mouse.move(ax, ay);
+  await page.mouse.down();
+  await page.mouse.move(bx, by, { steps: 6 });
+  await page.mouse.up();
+  expect(await page.evaluate(() => (window as unknown as { asked: unknown[] }).asked)).toEqual(['query-route']);
+});
