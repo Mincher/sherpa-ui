@@ -8053,7 +8053,7 @@
               "kind": "field",
               "name": "savedFilterSets",
               "type": {
-                "text": "{ id: string; label: string; applied: boolean; own: boolean }[]"
+                "text": "{ id: string; label: string; added: boolean; own: boolean }[]"
               },
               "readonly": true
             },
@@ -8181,8 +8181,7 @@
                   "name": "label",
                   "type": {
                     "text": "string"
-                  },
-                  "optional": true
+                  }
                 },
                 {
                   "name": "scope",
@@ -8203,9 +8202,16 @@
                   "type": {
                     "text": "string"
                   }
+                },
+                {
+                  "name": "from",
+                  "type": {
+                    "text": "string"
+                  },
+                  "optional": true
                 }
               ],
-              "description": "TAKE a saved set: every scope matches it; one it does not name has no filters — without `saveAnyScope`, keeps them."
+              "description": "ADD a saved set to a bar: a preset of the reader's, on. `from`, the local scope of the bar it goes on where the set names several. Will, TODO 605"
             },
             {
               "kind": "method",
@@ -8218,7 +8224,7 @@
                   }
                 }
               ],
-              "description": "TAKE a saved set OFF: the scopes it names lose their filters."
+              "description": "TAKE a saved set off its bar: its chip goes, and what it held."
             },
             {
               "kind": "method",
@@ -8228,11 +8234,10 @@
                   "name": "id",
                   "type": {
                     "text": "string"
-                  },
-                  "optional": true
+                  }
                 }
               ],
-              "description": "DELETE a reader's saved set — the one last taken unless named; never a page's own. Its filters stay on screen."
+              "description": "DELETE a reader's saved set, never a page's own: its chip goes, and what it held."
             },
             {
               "kind": "method",
@@ -8523,7 +8528,7 @@
             },
             {
               "name": "data-orientation",
-              "description": "landscape | portrait — PORTRAIT is the panel's column. Over ONE scope, the scope is an accordion — its name, its matches while shut, its Apply and Discard — holding Group and Sort, then each list field as a SECTION of value chips; nothing folds. Over SEVERAL scopes (`data-scope=\"view data\"`) it is the COLUMN: ONE header — Save <name>, one Filters menu for every scope, the page's buttons, ⋮ and the search — over one such accordion per scope. A column opens and shuts as a panel does. TODO 425",
+              "description": "landscape | portrait — PORTRAIT is the panel's column. Over ONE scope, the scope is an accordion — its name, its matches while shut, its Apply and Discard — holding Group and Sort, then each list field as a SECTION of value chips; nothing folds. Over SEVERAL scopes (`data-scope=\"view data\"`) it is the COLUMN: ONE header — one Filters menu for every scope, the page's buttons, ⋮ and the search — over one such accordion per scope. A column opens and shuts as a panel does. TODO 425",
               "type": {
                 "text": "'landscape' | 'portrait'"
               },
@@ -9152,21 +9157,21 @@
             },
             {
               "name": "filters-apply",
-              "description": "A saved set's row was ticked: take it, so the filters match it.",
+              "description": "A saved set's row was ticked: add it to this bar as a preset, on.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "filters-dismiss",
-              "description": "A saved set's row was unticked: the scopes it names lose their filters.",
+              "description": "A saved set's row was unticked: its chip goes, and what it held.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "filters-save",
-              "description": "Save filters: over the set last taken (\"Save <name>\"), else under a new name.",
+              "description": "Save filters: under a new name.",
               "type": {
                 "text": "CustomEvent"
               }
@@ -9174,13 +9179,6 @@
             {
               "name": "filters-save-as",
               "description": "Save filters as: a new set, by name.",
-              "type": {
-                "text": "CustomEvent"
-              }
-            },
-            {
-              "name": "filters-delete",
-              "description": "Delete filters: forget the set last taken.",
               "type": {
                 "text": "CustomEvent"
               }
@@ -9281,9 +9279,6 @@
             },
             {
               "name": "organise"
-            },
-            {
-              "name": "save"
             },
             {
               "name": "saved"

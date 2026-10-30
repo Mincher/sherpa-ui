@@ -10,10 +10,12 @@
  * - deleteSavedFilter — Forget one set, and hand back what is left.
  * - renameSavedFilter — Rename one set in its place — its id follows its name — and hand back the whole store.
  * - filtersOf — The filter half of a View's JSON: each scope's filters, and no arrangement.
- * - loadApplied — The set last taken in this tab: what "Save <name>" saves over.
- * - keepApplied — Remember the set last taken in this tab, or that none is.
+ * - conditionsOf — A saved set as one preset's conditions: what each scope it names asks for.
+ * - loadAdded — The sets added to a bar in this tab, each with the scope its chip is on.
+ * - keepAdded — Remember the sets added in this tab.
  */
 import { isSavedFilter, stripArrangement, type QueryDefaults, type SavedFilter, type ViewScope } from '../data/query.js';
+import type { Where } from '../data/where.js';
 import {
   isPlainObject, labelId, readJson, removeKey, storageKind, writeJson,
 } from './web-storage.js';
@@ -29,7 +31,7 @@ export interface SavedFilterOptions {
 
 /** Key prefixes, so a host's own storage keys cannot collide with these. */
 const PREFIX = 'sherpa:filter-sets:';
-/** The set last taken, per tab: a reload keeps "Save <name>". */
+/** The sets added to a bar, per tab: a reload keeps their chips. */
 const ON_PREFIX = 'sherpa:filter-set-on:';
 
 /** Read a page's saved sets. A broken entry is dropped, never handed on. TRAP T-storage-access-throws */
@@ -82,16 +84,22 @@ export function filtersOf(view: QueryDefaults): QueryDefaults {
   return { v: 1, scopes: scopes as QueryDefaults['scopes'] };
 }
 
-/** The set last taken in this tab, by id: what "Save <name>" saves over, after
- *  the chips change too. Will, 366. TRAP T-saved-filters-are-every-scope */
-export function loadApplied(page: string): string | null {
-  const held = readJson<{ id: string } | null>('session', ON_PREFIX + page, null,
-    (v): v is { id: string } => isPlainObject(v) && typeof v['id'] === 'string');
-  return held?.id ?? null;
+/** A saved set as ONE preset's conditions: what each scope it names asks for. A
+ *  filter the reader had off asks nothing. Will, TODO 605 · TRAP T-saved-filters-are-every-scope */
+export function conditionsOf(set: SavedFilter): Where {
+  const scopes = Object.values(set.query.scopes) as ViewScope[];
+  return Object.fromEntries(scopes.flatMap((scope) => Object.entries(scope.where ?? {}))
+    .filter(([, condition]) => !(condition as { off?: boolean }).off));
 }
 
-/** Remember the set last taken in this tab, or that none is. */
-export function keepApplied(page: string, id: string | null): void {
-  if (id) writeJson('session', ON_PREFIX + page, { id });
+/** The sets added to a bar in this tab, each with the scope its chip is on. */
+export function loadAdded(page: string): Record<string, string> {
+  return readJson<Record<string, string>>('session', ON_PREFIX + page, {},
+    (v): v is Record<string, string> => isPlainObject(v) && Object.values(v).every((scope) => typeof scope === 'string'));
+}
+
+/** Remember the sets added in this tab. */
+export function keepAdded(page: string, added: Readonly<Record<string, string>>): void {
+  if (Object.keys(added).length) writeJson('session', ON_PREFIX + page, added);
   else removeKey('session', ON_PREFIX + page);
 }

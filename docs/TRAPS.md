@@ -14907,81 +14907,43 @@ words.
 
 ### T-saved-filters-are-every-scope
 
-**Save filters keeps EVERY scope's filters under one name** — Will, TODO
-105: *"this button should be a 'Save filters' (plural) button that saves a
-definition of the current state of the filter scopes."* A set is `{ label,
-query }`, the query in a View's own JSON form with no arrangement — the filter
-half of a View — kept with the PAGE beside its Views (`saveFilterAs`,
-`sherpa:filter-sets:<page>`).
+**A saved filter is a preset the reader made** — Will, TODO 605: *"Adding a Saved
+filter definition should add it as a Preset filter chip in the Preset section of the
+toolbar. Saved filter configurations are essentially user created presets rather than
+definition created presets."* That replaces 366, where a set loaded into the ordinary
+chips and one was taken at a time; the "Save <name>" button that went with it is gone.
 
-No chip names a set (Will, 366): *"Selecting a saved filter definition should
-just apply the state, fields, and values to the filter chip components to match
-the query definition."*
+Save filters keeps EVERY scope's filters under one name (Will, TODO 105). A set is
+`{ label, query }`, the query in a View's own JSON form with no arrangement, kept with
+the PAGE beside its Views (`saveFilterAs`, `sherpa:filter-sets:<page>`). A page may ship
+its own (`savedFilters`), which are never saved over or deleted.
 
-- **Taking**: a set's row in the Filters menu's Saved section asks
-  `filters-apply`. Every scope then MATCHES it: each scope it names takes its
-  filters, and every other scope's filters go — its chips and arrangement stay
-  (`takeSet`). A component's own scope (`declareDefault`) is what it is, and
-  stays. The values load into the ordinary chips.
-- **ONE at a time** (Will, 366: *"Only 1 saved filter definition can be applied
-  at a time."*): the Filters menu ticks only the set TAKEN. Ticking another
-  takes it in its place; unticking the one taken makes the scopes it names lose
-  their filters (`dropSet`, `filters-dismiss { id }`). A first try ticked every
-  set that matched the screen, and two showed ticked.
-- **The set taken** — applied or saved — is remembered in the tab
-  (`sherpa:filter-set-on:<page>`) through a change and a reload, until another
-  is taken, it is unticked or deleted, or the View changes or resets. A "Save
-  <name>" button, active, then sits before Filters and saves over it, change
-  and all; the ⋮ rows hold Save <name>, Save filters as and Delete filters
-  (Will, TODO 430; the Filters menu's until then, TODO 383). With none
-  taken, its Save filters row asks for a name.
-- **Saving**: each control asks with `filters-save`, `filters-save-as` or
-  `filters-delete`; the HOST names it, confirms an overwrite by name, and calls
-  `saveFilters(label?)` or `deleteFilters(id?)`.
+- **Adding**: a set's row in the Filters menu's Saved section asks `filters-apply`
+  (`provider.applyFilters`). The provider declares it as a preset of one scope,
+  `saved:<id>` (`#layPresets`, `conditionsOf`), and turns it on. From there it IS a
+  preset (`T-a-preset-is-its-own-part`): its chip leads the bar, a chip already there
+  goes blue, its values are held, and it adds no chip. Its scope is the one scope the
+  set asks anything of, else the bar that asked, else the View.
+- **Several at once**: each row ticked adds its chip, and each unticked
+  (`filters-dismiss`) takes the chip off and what it held. The chip's own press turns it
+  off and leaves it there. The chips added are kept in the tab
+  (`sherpa:filter-set-on:<page>`), and declared BEFORE the Query is restored, which
+  holds their rows. Another View or Reset all on view takes them off: they are one
+  View's chips, as its other chips are.
+- **Saving**: `filters-save` and `filters-save-as` ask the HOST for a name, which
+  confirms an overwrite by name and calls `saveFilters(label)`. The new chip joins the
+  bar that saved it, OFF, because the bar's own filters still say the same.
 - **A Saved menu of its own** (Will, TODO 436, where the app asks:
-  `provider.savedMenu`, `data-saved-menu`): a split beside Edit, as the App
-  Header's Save (TODO 446). "Save", a filter icon, asks `filters-save-as`,
-  where the filters may be saved; the icon-only ▾ holds the sets, a tick
-  taking one AT ONCE (no Apply), then the save rows, then Manage. Alone, the ▾
-  is solo (`data-swap-on="data-saveable"`). The Edit menu and the ⋮ hold none
-  of them. It stays when the bar folds its actions, as Edit does.
-- **Managing** (Will, TODO 427): where the host saves and the reader has sets
-  of their own, the Saved section leads with Manage Saved Filters — a menu
-  ACTION row (`MenuItem.action`), no tick box — which asks `filters-manage`.
-  The HOST's dialog renames and removes, and keeps nothing until its Apply:
-  `deleteFilters(id)`, then `renameFilters(id, label)`. A rename keeps the
-  set's place and its id follows its name (`renameSavedFilter`), so the set
-  taken stays taken. A page's own is never renamed.
-- **Old saved filters** — one scope's, kept per DATA before TODO 105 — are
-  not read: Sherpa keeps no shim for an app's old stored data (Will, D4,
-  2026-10-14). The per-scope card's Edit filter, Save and Delete went with
-  them: a set is changed by saving again (Will, A; 186 closed with it).
-
-**Saved at a LOCAL scope** (Will, TODO 485: *"By default it is off which will
-mean we can only save filter definitions at a local scope (and also only apply
-them at a local scope)"*). `provider.saveAnyScope`, OFF unless the app says:
-- A set is ONE scope's, not the View's. Save keeps the asking bar's scope alone
-  — the provider hears `filters-save` and `filters-save-as` in CAPTURE, before
-  the host names the set, and remembers which bar asked (or the host passes
-  `saveFilters(label, scope)`).
-- Each bar is told only the sets that name its scope and no other; "Save
-  <name>" saves over the taken set only there. A set naming several scopes, or
-  the View, is listed nowhere — it waits for the setting.
-- Taking one changes ITS scope; every other scope keeps its filters
-  (`takeSet(…, local)`). Still one taken at a time.
-- The View's bar and the panel (a column, over every scope) save nothing: the
-  provider sets `data-no-saves`, and `saves(host)` — `data-saveable` and not
-  `data-no-saves` — is the one test every Save row, the Saved split and Manage
-  read. `data-saveable` stays the app's: two writers would fight over it.
-On, all of the above is as it was: every scope in one set, from any bar.
-
-**A page's OWN saved filters** (366 S2) are the same shape, in its JSON
-(`savedFilters`), checked as it opens (`savedFiltersOf`: one that is not a name
-and a query is reported, `saved-filter-invalid`). They are listed beside a
-reader's on EVERY bar — a reader's only where the host saves — and taken the
-same way. A page's own is never saved over or deleted: taken, Save filters
-asks for a name, and a name that is the page's gets a copy's (`- Copy-001`). A
-reader's set under a page id is the reader's.
+  `provider.savedMenu`, `data-saved-menu`): a split beside Edit, as the App Header's
+  Save (TODO 446). "Save", a filter icon, asks `filters-save-as`; the icon-only ▾ holds
+  the sets, a tick adding one AT ONCE (no Apply), then the save row, then Manage. Alone,
+  the ▾ is solo (`data-swap-on="data-saveable"`). The Edit menu and the ⋮ hold none of
+  them. It stays when the bar folds its actions, as Edit does.
+- **Managing** (Will, TODO 427): where the host saves and the reader has sets of their
+  own, the Saved section leads with Manage Saved Filters — a menu ACTION row
+  (`MenuItem.action`), no tick box — which asks `filters-manage`. The HOST's dialog
+  renames and removes, and keeps nothing until its Apply. A rename keeps the chip, on or
+  off; a delete takes it off, and what it held.
 
 - Site: `src/core/browser/saved-filters.ts`
 - Site: `src/core/data/page-definition.ts`
@@ -14991,7 +14953,6 @@ reader's set under a page id is the reader's.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `test/e2e/reforged-provider-saves-filters.spec.ts`
-- Site: `src/core/data/query-edits.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
 - Site: `test/unit/a-saved-filter-is-a-query.test.mjs`
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-column.ts`

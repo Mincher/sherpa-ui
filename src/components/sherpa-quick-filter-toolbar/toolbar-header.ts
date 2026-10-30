@@ -1,15 +1,15 @@
 /**
  * toolbar-header.ts — a filter toolbar's header actions, ONE for the bar and its
- * column: the Saved menu, a set ticked there, "Save <name>", and the acts both
- * send. Each is told its own selectors. TODO 415
+ * column: the Saved menu, a set ticked there, and the acts both send. Each is
+ * told its own selectors. TODO 415
  *
  * Map:
  * - HeaderEvent — What the header says: its toolbar's own events.
  * - HeaderHost — What the header asks of its toolbar.
- * - ToolbarHeader — The Saved menu, its pick, Save <name>, and the shared filter acts.
+ * - ToolbarHeader — The Saved menu, its pick, its Save, and the shared filter acts.
  * - .drawSaved — The Saved menu, where the app splits it from Filters: the sets, the save rows, Manage.
- * - .pick — A set ticked in the Saved or Filters menu takes it; unticked, takes it off.
- * - .drawSave — "Save <name>" while a saved set is taken.
+ * - .pick — A set ticked in the Saved or Filters menu adds its chip; unticked, takes it off.
+ * - .drawSave — Save, off while the filters are the View's own.
  * - .act — A filter act both templates send; false for one that is not.
  */
 import { menuFor } from '../../core/ui/filter-menu.js';
@@ -17,7 +17,7 @@ import { MANAGE_SETS, savedMenuDef, saves, type SavedSets } from '../../core/ui/
 import { drawSaveActions } from '../../core/ui/more-menu.js';
 
 /** What the header says: its toolbar's own events, named so a checker reads them. */
-export type HeaderEvent = 'filters-apply' | 'filters-dismiss' | 'view-reset' | 'filters-delete' | 'filters-save'
+export type HeaderEvent = 'filters-apply' | 'filters-dismiss' | 'view-reset' | 'filters-save'
   | 'filters-save-as' | typeof MANAGE_SETS;
 
 /** What the header asks of its toolbar. */
@@ -28,17 +28,17 @@ export interface HeaderHost {
   toggleState(name: string, on: boolean): void;
 }
 
-/** The Saved menu, its pick, Save <name>, and the shared filter acts. */
+/** The Saved menu, its pick, its Save, and the shared filter acts. */
 export class ToolbarHeader {
   constructor(
     private readonly host: HeaderHost,
     private readonly saved: SavedSets,
-    /** Its Saved button, its Save <name> button and its Save button. */
-    private readonly at: { saved: string; save: string; saveAs: string },
+    /** Its Saved button and its Save button. */
+    private readonly at: { saved: string; saveAs: string },
   ) {}
 
   /** THE SAVED MENU, where the app splits it from Filters: the sets — a tick
-   *  takes one — then the save rows, then Manage. Will, TODO 436 */
+   *  adds one — then the save rows, then Manage. Will, TODO 436 */
   drawSaved(): void {
     const { el } = this.host;
     this.host.toggleState('has-sets', this.saved.listed.length > 0);
@@ -50,29 +50,20 @@ export class ToolbarHeader {
     btn.append(menu);
     menu.items?.(items);
     const manage = saves(el) && this.saved.listed.some((s) => s.own);
-    drawSaveActions(el, this.host.root(), menu, this.saved.applied, manage);
+    drawSaveActions(el, this.host.root(), menu, manage);
   }
 
-  /** A saved set ticked takes it; unticked, takes it off. Its rows leave `values`:
-   *  what is left is the fields' answer. TODOs 436, 597 */
+  /** A saved set ticked adds its chip; unticked, takes it off. Its rows leave `values`:
+   *  what is left is the fields' answer. TODOs 436, 597, 605 */
   pick(values: Set<string>): void {
-    const set = this.saved.pick(values);
-    if (set.apply) this.host.emit('filters-apply', { id: set.apply });
-    else if (set.dismiss) this.host.emit('filters-dismiss', { id: set.dismiss });
+    const { apply, dismiss } = this.saved.pick(values);
+    for (const id of dismiss) this.host.emit('filters-dismiss', { id });
+    for (const id of apply) this.host.emit('filters-apply', { id });
   }
 
-  /** "Save <name>" while a saved set is taken; it and Save are off while the
-   *  filters are the View's own, as Reset all is. Will, 366, 382 */
+  /** Save is off while the filters are the View's own, as Reset all is. Will, 382 */
   drawSave(): void {
-    const applied = this.saved.applied;
-    this.host.toggleState('set-taken', !!applied);
-    const save = this.host.root().querySelector(this.at.save);
-    const name = save?.querySelector('.save-name');
-    if (name) name.textContent = applied?.label ?? '';
-    save?.toggleAttribute('data-status', false);
-    if (applied) save?.setAttribute('data-status', 'active');
-    const same = this.host.el.hasAttribute('data-at-default');
-    for (const btn of [save, this.host.root().querySelector(this.at.saveAs)]) btn?.toggleAttribute('disabled', same);
+    this.host.root().querySelector(this.at.saveAs)?.toggleAttribute('disabled', this.host.el.hasAttribute('data-at-default'));
   }
 
   /** A filter act both templates send; false for one that is not. Reset is each
@@ -81,7 +72,6 @@ export class ToolbarHeader {
     // The View's OWN filters — only its provider knows them; CANCELABLE.
     // TRAP T-reset-to-default-is-the-views-own
     if (act === 'reset-default') this.host.emit('view-reset', {}, { cancelable: true });
-    else if (act === 'filters-delete') this.host.emit('filters-delete', { id: this.saved.applied?.id });
     else if (act === 'filters-save' || act === 'filters-save-as' || act === MANAGE_SETS) this.host.emit(act);
     else return false;
     return true;

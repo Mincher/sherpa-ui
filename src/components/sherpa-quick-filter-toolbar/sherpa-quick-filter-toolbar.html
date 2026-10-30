@@ -29,7 +29,7 @@
                     holding Group and Sort, then each list field as a SECTION
                     of value chips; nothing folds. Over SEVERAL scopes
                     (`data-scope="view data"`) it is the COLUMN: ONE header —
-                    Save <name>, one Filters menu for every scope, the page's
+                    one Filters menu for every scope, the page's
                     buttons, ⋮ and the search — over one such accordion per
                     scope. A column opens and shuts as a panel does. TODO 425
     open           a column is showing. A host writes it; every close reports
@@ -93,11 +93,10 @@
     view-reset           — Reset all on view: put back the View's own filters, in every scope. Cancelable
     filter-apply         — Apply, where the scope waits: send every change held in it. detail: { }
     filter-discard       — Discard, where the scope waits: put back the applied answer — a menu's, its field's; the bar's, every field's. detail: { field? }
-    filters-apply        — a saved set's row was ticked: take it, so the filters match it. detail: { id }
-    filters-dismiss      — a saved set's row was unticked: the scopes it names lose their filters. detail: { id }
-    filters-save         — Save filters: over the set last taken ("Save <name>"), else under a new name. detail: { }
+    filters-apply        — a saved set's row was ticked: add it to this bar as a preset, on. detail: { id }
+    filters-dismiss      — a saved set's row was unticked: its chip goes, and what it held. detail: { id }
+    filters-save         — Save filters: under a new name. detail: { }
     filters-save-as      — Save filters as: a new set, by name. detail: { }
-    filters-delete       — Delete filters: forget the set last taken. detail: { id }
     filters-manage       — Manage Saved Filters: the host opens its dialog, to rename and remove the reader's sets. detail: { }
     limit-options-change — the ⋮ menu's "Limit to matching filters". detail: { on }
     hide-unmatched-change — the ⋮ menu's "Hide invalid filters" row, while Limit is on. detail: { on }
@@ -157,10 +156,6 @@
         A <sherpa-menu> here must go in the button's `menu` SLOT — in the
         default slot it lands inside the label and widens the box.
       -->
-      <!-- "Save <name>" while a saved set is taken; every other filter action is
-           in the Filters menu. Will, TODO 383 -->
-      <sherpa-button class="act save-set" data-act="filters-save" data-size="sm"
-                     data-icon-start="upload">Save&nbsp;<span class="save-name"></span></sherpa-button>
       <!-- SUGGEST filters, left of Edit, where the app offers it. Will, TODOs 425, 527 -->
       <sherpa-button class="act suggest" data-act="suggest" data-size="sm" data-type="icon"
                      data-icon-start="wand-magic-sparkles" aria-label="Suggest filters"></sherpa-button>
@@ -247,8 +242,6 @@
     <sherpa-container-header slot="header" class="head" part="head" data-icon="filter" data-heading="Filters">
       <!-- Its title, and the filters applied beside it, where the app counts them. Will, TODO 436 -->
       <span slot="heading" class="column-heading" part="heading">Filters<sherpa-badge class="applied-count" role="img"></sherpa-badge></span>
-      <sherpa-button slot="actions" class="column-save" part="save" data-size="sm"
-                     data-icon-start="upload">Save&nbsp;<span class="save-name"></span></sherpa-button>
       <sherpa-button slot="actions" class="column-suggest suggest" part="suggest" data-size="sm" data-type="icon"
                      data-icon-start="wand-magic-sparkles" aria-label="Suggest filters"></sherpa-button>
       <sherpa-button slot="actions" class="column-filters" part="filters" data-size="sm"

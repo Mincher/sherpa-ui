@@ -1002,8 +1002,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /**
    * savedSets — the reader's saved sets of filters. The Filters menu's Saved
-   * section lists them, each on screen ticked; the ⋮ says "Save <name>" over
-   * the one last taken. Drawn, never reported. Will, TODO 105, 366.
+   * section lists them, each on a bar ticked. Drawn, never reported. Will, TODOs 105, 605.
    * TRAP T-saved-filters-are-every-scope
    */
   set savedSets(sets: readonly SavedSet[]) {
@@ -1016,13 +1015,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
   /** The reader's saved sets. */
   #saved = new SavedSets(this);
-  /** Its header's Saved menu, Save <name> and filter acts — its column's too. TODO 415 */
+  /** Its header's Saved menu, Save and filter acts — its column's too. TODO 415 */
   readonly #header = new ToolbarHeader({
     el: this,
     root: () => this.root,
     emit: (name, detail, options) => { this.emit(name, detail, options); },
     toggleState: (name, on) => this.toggleState(name, on),
-  }, this.#saved, { saved: '.saved-btn', save: '.save-set', saveAs: '.save-as-btn' });
+  }, this.#saved, { saved: '.saved-btn', saveAs: '.save-as-btn' });
 
   /** Steers given before `populate()` drew a chip, for `#render()` to replay in
    *  order. TRAP T-a-value-before-the-first-render-is-held */
@@ -2057,7 +2056,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const want = new Set(fields.map((f) => this.#idOf(f.id)));
     // A chip that answers no field here is no scope's to hold, so none takes it off.
     for (const def of [...this.#filters]) {
-      if (!want.has(def.id) && def.removable && def.field !== null) this.#removeFilter(def.id, { silent: true });
+      // …and a preset no longer declared, a saved set's taken off. Will, TODO 605
+      if (!want.has(def.id) && (def.removable || def.preset) && def.field !== null) this.#removeFilter(def.id, { silent: true });
     }
     /* A field the scope holds that this bar does not offer — a chart's own,
        sent up to the View — is drawn from the scope's own description. TODO 426 */
@@ -2428,7 +2428,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const gone = (act: string): boolean => folded(this.$(`.act[data-act="${act}"]`));
     const tail: MoreRow[] = [...(this.hasAttribute('data-suggest') && gone('suggest') ? [['suggest'] as const] : []),
       ...(gone('refresh') ? [['refresh'] as const] : [])];
-    const saves = this.hasAttribute('data-saved-menu') ? [] : saveRows(this, this.#saved.applied);
+    const saves = this.hasAttribute('data-saved-menu') ? [] : saveRows(this);
     // Last, apart: the page's Query as nodes, where the host offers it. Will, TODO 555
     const editor: MoreRow[] = this.hasAttribute('data-node-editor') ? [['node-editor']] : [];
     return [saves, extraRows(this), tail, editor];

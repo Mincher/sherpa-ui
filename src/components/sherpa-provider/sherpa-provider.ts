@@ -848,24 +848,23 @@ export class SherpaProvider extends SherpaElement {
    * to save — and nothing from the View's bar or the panel. TODO 485
    * TRAP T-saved-filters-are-every-scope
    */
-  saveFilters(label?: string, scope?: string): string | undefined {
+  saveFilters(label: string, scope?: string): string | undefined {
     return this.#pages.saveFilters(label, scope);
   }
 
-  /** TAKE a saved set: every scope matches it; one it does not name has no
-   *  filters — without `saveAnyScope`, keeps them. TRAP T-saved-filters-are-every-scope */
-  applyFilters(id: string): Promise<boolean> {
-    return this.#pages.applyFilters(id);
+  /** ADD a saved set to a bar: a preset of the reader's, on. `from`, the local scope
+   *  of the bar it goes on where the set names several. Will, TODO 605 · TRAP T-saved-filters-are-every-scope */
+  applyFilters(id: string, from?: string): boolean {
+    return this.#pages.applyFilters(id, from ?? null);
   }
 
-  /** TAKE a saved set OFF: the scopes it names lose their filters. */
-  dismissFilters(id: string): Promise<boolean> {
+  /** TAKE a saved set off its bar: its chip goes, and what it held. */
+  dismissFilters(id: string): boolean {
     return this.#pages.dismissFilters(id);
   }
 
-  /** DELETE a reader's saved set — the one last taken unless named; never a
-   *  page's own. Its filters stay on screen. */
-  deleteFilters(id?: string): boolean {
+  /** DELETE a reader's saved set, never a page's own: its chip goes, and what it held. */
+  deleteFilters(id: string): boolean {
     return this.#pages.deleteFilters(id);
   }
 
@@ -875,9 +874,9 @@ export class SherpaProvider extends SherpaElement {
     return this.#pages.renameFilters(id, label);
   }
 
-  /** The page's saved sets — its own, then the reader's (`own`) — and the ONE
-   *  taken: what a host asks before it saves over a name, or deletes one. */
-  get savedFilterSets(): { id: string; label: string; applied: boolean; own: boolean }[] {
+  /** The page's saved sets — its own, then the reader's (`own`) — and those on a bar
+   *  (`added`): what a host asks before it saves over a name. */
+  get savedFilterSets(): { id: string; label: string; added: boolean; own: boolean }[] {
     return this.#pages.savedFilterSets;
   }
 

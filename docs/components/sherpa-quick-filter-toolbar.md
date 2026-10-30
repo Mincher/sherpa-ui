@@ -82,7 +82,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-no-sections` | boolean |  |  |
 | `data-node-editor` | boolean |  | show "Node Editor (beta)" in the ⋮ menu: the host opens the page's Query as nodes. Will, TODO 555 |
 | `data-nothing-to-reset` | boolean |  | nothing is left to clear: Reset is inactive. Written by the provider. TODO 231. |
-| `data-orientation` | `landscape` `portrait` | `landscape` | landscape \| portrait — PORTRAIT is the panel's column. Over ONE scope, the scope is an accordion — its name, its matches while shut, its Apply and Discard — holding Group and Sort, then each list field as a SECTION of value chips; nothing folds. Over SEVERAL scopes (`data-scope="view data"`) it is the COLUMN: ONE header — Save &lt;name>, one Filters menu for every scope, the page's buttons, ⋮ and the search — over one such accordion per scope. A column opens and shuts as a panel does. TODO 425 |
+| `data-orientation` | `landscape` `portrait` | `landscape` | landscape \| portrait — PORTRAIT is the panel's column. Over ONE scope, the scope is an accordion — its name, its matches while shut, its Apply and Discard — holding Group and Sort, then each list field as a SECTION of value chips; nothing folds. Over SEVERAL scopes (`data-scope="view data"`) it is the COLUMN: ONE header — one Filters menu for every scope, the page's buttons, ⋮ and the search — over one such accordion per scope. A column opens and shuts as a panel does. TODO 425 |
 | `data-panel-mode` | boolean |  | a filter PANEL is answering for this bar: Reset, the panel toggle and Filters are hidden, and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers |
 | `data-pending` | text |  | the FIELDS changed and not yet applied, space-separated. Set by a bound source; each chip wears the pending look, as one with a draft in its open menu does. |
 | `data-remote` | boolean |  | its source fetches from outside the data layer: a multi-select or range menu waits for Apply. Without it, every pick applies at once. Set by a bound source. |
@@ -160,11 +160,10 @@ Each one bubbles.
 | `view-reset` |  | Reset all on view: put back the View's own filters, in every scope. |
 | `filter-apply` |  | Apply, where the scope waits: send every change held in it. |
 | `filter-discard` | `{ field: string }` | Discard, where the scope waits: put back the applied answer — a menu's, its field's; the bar's, every field's. |
-| `filters-apply` |  | A saved set's row was ticked: take it, so the filters match it. |
-| `filters-dismiss` |  | A saved set's row was unticked: the scopes it names lose their filters. |
-| `filters-save` |  | Save filters: over the set last taken ("Save &lt;name>"), else under a new name. |
+| `filters-apply` |  | A saved set's row was ticked: add it to this bar as a preset, on. |
+| `filters-dismiss` |  | A saved set's row was unticked: its chip goes, and what it held. |
+| `filters-save` |  | Save filters: under a new name. |
 | `filters-save-as` |  | Save filters as: a new set, by name. |
-| `filters-delete` |  | Delete filters: forget the set last taken. |
 | `filters-manage` |  | Manage Saved Filters: the host opens its dialog, to rename and remove the reader's sets. |
 | `limit-options-change` | `{ on: boolean }` | The ⋮ menu's "Limit to matching filters". |
 | `hide-unmatched-change` | `{ on: boolean }` | The ⋮ menu's "Hide invalid filters" row, while Limit is on. |
@@ -184,7 +183,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`actions`, `bar`, `chips`, `column`, `filters`, `find`, `head`, `heading`, `local-heading`, `local-scopes`, `more`, `organise`, `save`, `saved`, `saved-group`, `scope`, `scope-rule`, `sections`, `suggest`, `switch`, `view-scope`, `view-zone`
+`actions`, `bar`, `chips`, `column`, `filters`, `find`, `head`, `heading`, `local-heading`, `local-scopes`, `more`, `organise`, `saved`, `saved-group`, `scope`, `scope-rule`, `sections`, `suggest`, `switch`, `view-scope`, `view-zone`
 
 ## CSS custom properties it reads
 

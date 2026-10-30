@@ -4,11 +4,11 @@
  * TRAP T-the-more-menu-holds-what-folded
  *
  * Map:
- * - MoreRow — One ⋮ row: the value of its prototype in a `template.more-rows-tpl`, whether it is off, and a name it says.
+ * - MoreRow — One ⋮ row: the value of its prototype in a `template.more-rows-tpl`, whether it is off.
  * - folded — Is this element folded away at this width?
  * - resetRows — Reset filters, then Reset all on view — off where they would change nothing.
  * - hidesUnmatched — Limit is on, and hides what it rules out.
- * - saveRows — Save filters, or "Save <name>" with Save as and Delete; none unless the host saves.
+ * - saveRows — Save filters; none unless the host saves.
  * - extraRows — The page's own buttons in the `actions` slot that have folded away.
  * - offersMore — Would the ⋮ menu hold anything: these rows, or the host's own switches?
  * - openMore — Draw the ⋮ menu from groups of rows, and show it at the trigger.
@@ -26,7 +26,7 @@ import { report } from '../data/report.js';
 import { saves } from './filters-button.js';
 
 /** One ⋮ row: the value of its prototype in a `template.more-rows-tpl`, and whether it is off. */
-export type MoreRow = readonly [value: string, disabled?: boolean, name?: string];
+export type MoreRow = readonly [value: string, disabled?: boolean];
 
 const EXTRA = 'extra:';
 
@@ -52,13 +52,10 @@ export function hidesUnmatched(host: HTMLElement): boolean {
   return host.dataset['limitOptions'] === 'on' && host.dataset['hideUnmatched'] === 'on';
 }
 
-/** Save filters — or "Save <name>", over the set last taken, then Save filters
- *  as and Delete filters — none unless the host saves; the two saves off while
- *  the filters are the View's own, as Reset all is. TODO 105 · Will, 366, 382 */
-export function saveRows(host: HTMLElement, applied?: { label: string }): MoreRow[] {
-  if (!saves(host)) return [];
-  const same = host.hasAttribute('data-at-default');
-  return applied ? [['filters-save', same, applied.label], ['filters-save-as', same], ['filters-delete']] : [['filters-save', same]];
+/** Save filters, none unless the host saves; off while the filters are the View's
+ *  own, as Reset all is. TODO 105 · Will, 382 */
+export function saveRows(host: HTMLElement): MoreRow[] {
+  return saves(host) ? [['filters-save', host.hasAttribute('data-at-default')]] : [];
 }
 
 /** The page's own buttons in the `actions` slot that have folded away — the panel switch is one. */
@@ -91,20 +88,17 @@ export function openMore(host: HTMLElement, root: ParentNode, trigger: HTMLEleme
   menu.show?.(trigger);
 }
 
-/** Each row, cloned from its prototype: off where it says, and naming what it acts on. */
+/** Each row, cloned from its prototype: off where it says. */
 function drawRows(host: HTMLElement, root: ParentNode, rows: readonly MoreRow[]): HTMLElement[] {
-  return rows.flatMap(([value, disabled, name]) => {
+  return rows.flatMap(([value, disabled]) => {
     const one = value.startsWith(EXTRA) ? pageRow(host, root, value) : row(root, value);
     one?.toggleAttribute('disabled', !!disabled);
-    // A row that names what it acts on: "Save At risk". Its own word stays otherwise.
-    const said = name ? one?.querySelector('.more-name') : null;
-    if (said) said.textContent = name!;
     return one ? [one] : [];
   });
 }
 
 /** The rows the Filters menu ends with: its filter actions. Will, TODO 383 */
-export const FILTER_ACTIONS = new Set(['reset', 'reset-default', 'filters-save', 'filters-save-as', 'filters-delete']);
+export const FILTER_ACTIONS = new Set(['reset', 'reset-default', 'filters-save', 'filters-save-as']);
 
 /** Lead a Filters menu with Reset and Reset all on view, in place of the ones it
  *  had; its save rows are the ⋮'s, or the Saved menu's. Will, TODOs 383, 454 */
@@ -119,11 +113,10 @@ export function drawFilterActions(host: HTMLElement, root: ParentNode, menu: Ele
 
 /** End a Saved menu — split from Filters — with its save rows, then Manage
  *  Saved Filters, each after a divider: below its sets. Will, TODO 436 */
-export function drawSaveActions(host: HTMLElement, root: ParentNode, menu: Element | null | undefined,
-  applied?: { label: string }, manage = false): void {
+export function drawSaveActions(host: HTMLElement, root: ParentNode, menu: Element | null | undefined, manage = false): void {
   if (!menu) return;
   for (const old of menu.querySelectorAll(':scope > .save-action')) old.remove();
-  const groups = [drawRows(host, root, saveRows(host, applied)), manage ? drawRows(host, root, [['filters-manage']]) : []];
+  const groups = [drawRows(host, root, saveRows(host)), manage ? drawRows(host, root, [['filters-manage']]) : []];
   const rows = groups.filter((g) => g.length).flatMap((g) => [cloneFirst(root, 'template.more-divider-tpl'), ...g])
     .filter((n): n is HTMLElement => !!n);
   for (const one of rows) one.classList.add('save-action');

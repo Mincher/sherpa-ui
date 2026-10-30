@@ -67,7 +67,7 @@ One JSON document per page. The same rule as a View: **a definition is data**
 - **`savedFilters`** — the saved filters the page ships: each a name and a
   query definition, every scope's `where` (DATA-SOURCE-RULES §2) and `holds`,
   as a reader's saved filter is. Listed beside the reader's on every bar, and
-  taken as theirs are — into the field chips; never saved over or deleted.
+  added as theirs are — as a preset chip; never saved over or deleted.
   One that is not `{ label, query: { v: 1, scopes } }` is reported
   (`saved-filter-invalid`) and left out. `T-saved-filters-are-every-scope`
 - **A scope's `sets`** draw fields as one group:

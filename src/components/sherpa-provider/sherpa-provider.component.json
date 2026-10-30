@@ -271,26 +271,26 @@
         {
           "$type": "method",
           "name": "saveFilters",
-          "args": "label?: string, scope?: string",
+          "args": "label: string, scope?: string",
           "description": "SAVE FILTERS — every scope's filters under a name, kept with the page beside its Views. A set of the same name is saved over, so a host asks first; a page's own name gets a copy's. With none, over the reader's set last taken (\"Save <name>\"); none answers undefined. The set's id. Will, TODO 105, 366. Without `saveAnyScope`, ONE local scope's — `scope`, or the bar that asked to save — and nothing from the View's bar or the panel. TODO 485"
         },
         {
           "$type": "method",
           "name": "applyFilters",
-          "args": "id: string",
-          "description": "TAKE a saved set: every scope matches it; one it does not name has no filters — without `saveAnyScope`, keeps them."
+          "args": "id: string, from?: string",
+          "description": "ADD a saved set to a bar: a preset of the reader's, on. `from`, the local scope of the bar it goes on where the set names several. Will, TODO 605"
         },
         {
           "$type": "method",
           "name": "dismissFilters",
           "args": "id: string",
-          "description": "TAKE a saved set OFF: the scopes it names lose their filters."
+          "description": "TAKE a saved set off its bar: its chip goes, and what it held."
         },
         {
           "$type": "method",
           "name": "deleteFilters",
-          "args": "id?: string",
-          "description": "DELETE a reader's saved set — the one last taken unless named; never a page's own. Its filters stay on screen."
+          "args": "id: string",
+          "description": "DELETE a reader's saved set, never a page's own: its chip goes, and what it held."
         },
         {
           "$type": "method",
@@ -450,7 +450,7 @@
         },
         {
           "name": "savedFilterSets",
-          "type": "{ id: string; label: string; applied: boolean; own: boolean }[]",
+          "type": "{ id: string; label: string; added: boolean; own: boolean }[]",
           "access": "read"
         },
         {

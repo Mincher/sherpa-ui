@@ -45,7 +45,7 @@ export { ArrayStore } from './src/core/data/stores.ts';
 export { fakeRemote } from './src/core/data/fake-remote.ts';
 export { onReport } from './src/core/data/report.ts';
 export { bindSource } from './src/core/ui/bind-source.ts';
-export { takeSet } from './src/core/data/query-edits.ts';
+export { conditionsOf } from './src/core/browser/saved-filters.ts';
 `;
 
 /** Each pass over a set of rows — a filter, a sort and page, a tally — wherever it runs; one
@@ -284,8 +284,12 @@ const ACTS = {
   narrow: (p) => p.view.answer({ customer: { picked: ['Customer 01'] } }),
   aside: (p) => p.data.answer({ status: { picked: ['paused'] }, plan: { picked: ['free'] }, tier: { picked: ['gold'] },
     owner: { picked: ['Owner 03', 'Owner 01'] } }),
-  // A page's own saved filter TAKEN, as the provider takes it: a whole write, not a toggle. 366
-  'apply-saved': (p) => p.source.query.setQuery(p.L.takeSet(p.source.query.applied, p.saved['at-risk'].query, new Set())),
+  // A page's own saved filter ADDED, as the provider adds it: a preset declared, then on. TODO 605
+  'apply-saved': (p) => {
+    const readings = p.source.readingsOf(p.L.conditionsOf(p.saved['at-risk']));
+    p.source.declarePresets('view', [{ id: 'saved:at-risk', label: p.saved['at-risk'].label, readings }]);
+    p.source.query.setPreset('view', 'saved:at-risk', true, true);
+  },
   // The tiered page: a Site pick is a PATH; one beside a whole customer; a row edit that moves only a site walks again.
   'pick-site': (p) => p.view.answer({ customer: { picked: [{ customer: 'Customer 01', site: 'Site 2' }] } }),
   'pick-both': (p) => p.view.answer({ customer: { picked: ['Customer 02', { customer: 'Customer 01', site: 'Site 2' }] } }),

@@ -218,12 +218,9 @@
  * FURTHER via the `collapse-<step>` states, as these breakpoints are guesses.
  * Each step subsumes the ones before it, and so do its states.
  */
-/* "Save <name>" only while a saved set is taken. TODO 383 */
-.save-set { display: none; }
 /* Suggest filters, where the app offers it. Will, TODO 527 */
 .suggest { display: none; }
 :host([data-suggest]) .suggest { display: inline-flex; }
-:host(:state(set-taken)) .save-set { display: inline-flex; }
 
 /* Steps 1 and 2 — Refresh, and the host's own buttons. The View's ★ and Save
    are the App Header's (TODOs 425 G9, 428). */
@@ -483,17 +480,6 @@ sherpa-accordion.scope::part(actions) {
   margin-block-start: var(--sherpa-theme-gap-md, 8px);
 }
 .find { flex: 1 1 auto; }
-/* "Save <name>" only while a saved set is taken. Will, 366 */
-.column-save { display: none; }
-:host(:state(set-taken)) .column-save { display: inline-flex; }
-.column-save .save-name {
-  display: inline-block;
-  max-inline-size: 10em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: bottom;
-}
-.column-save,
 .column-filters { white-space: nowrap; }
 .sections {
   display: flex;
@@ -568,7 +554,7 @@ sherpa-accordion.scope::part(actions) {
    also carries are hidden here: Filters, with its actions. Two of each
    is two answers to one question. A DATA bar has nothing left, so it goes entirely.
    TRAP T-panel-mode-hides-what-the-panel-answers */
-:host([data-panel-mode]) :is(.add-btn, .save-set, .suggest) { display: none; }
+:host([data-panel-mode]) :is(.add-btn, .suggest) { display: none; }
 :host([data-panel-mode]:not([data-type="view"])) { display: none; }
 
 /* The PANEL draws every filter of this scope instead, so the bar keeps only

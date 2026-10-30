@@ -54,7 +54,7 @@ Put it round the part of a page whose components need data: each component insid
 | `appContext` | `boolean` | read and write |  |
 | `applyEvery` | `boolean` | read and write |  |
 | `reach` | `{ reach: 'ok' \| 'unreached' \| 'down'; failure?: Failure }` | read only |  |
-| `savedFilterSets` | `{ id: string; label: string; applied: boolean; own: boolean }[]` | read only |  |
+| `savedFilterSets` | `{ id: string; label: string; added: boolean; own: boolean }[]` | read only |  |
 | `customView` | `boolean` | read only |  |
 | `view` | `string \| undefined` | read only |  |
 
@@ -69,10 +69,10 @@ Put it round the part of a page whose components need data: each component insid
 | `close(options: { next?: boolean } = {})` | Leave the page, or one still opening: its source goes, and nothing in the subtree reaches it. `next`: another page follows at once, and says whether the panel stays. |
 | `saveView(label?: string, options: { stay?: boolean } = {})` | Save what is on screen as a View of the open page, and put it on the View chip. With a name, a NEW View — a name any View has already gets ` - Copy-001`. With none, over the reader's own View on screen; a preset is never overwritten, so that answers undefined. The saved View's id, else undefined. `stay`: keep it for later, and stay on the View on screen — the save before a Reset all on view. |
 | `deleteView(id?: string)` | Delete the reader's own View — the one on screen unless named — and go to the first. A preset is never deleted. |
-| `saveFilters(label?: string, scope?: string)` | SAVE FILTERS — every scope's filters under a name, kept with the page beside its Views. A set of the same name is saved over, so a host asks first; a page's own name gets a copy's. With none, over the reader's set last taken ("Save &lt;name>"); none answers undefined. The set's id. Will, TODO 105, 366. Without `saveAnyScope`, ONE local scope's — `scope`, or the bar that asked to save — and nothing from the View's bar or the panel. TODO 485 |
-| `applyFilters(id: string)` | TAKE a saved set: every scope matches it; one it does not name has no filters — without `saveAnyScope`, keeps them. |
-| `dismissFilters(id: string)` | TAKE a saved set OFF: the scopes it names lose their filters. |
-| `deleteFilters(id?: string)` | DELETE a reader's saved set — the one last taken unless named; never a page's own. Its filters stay on screen. |
+| `saveFilters(label: string, scope?: string)` | SAVE FILTERS — every scope's filters under a name, kept with the page beside its Views. A set of the same name is saved over, so a host asks first; a page's own name gets a copy's. With none, over the reader's set last taken ("Save &lt;name>"); none answers undefined. The set's id. Will, TODO 105, 366. Without `saveAnyScope`, ONE local scope's — `scope`, or the bar that asked to save — and nothing from the View's bar or the panel. TODO 485 |
+| `applyFilters(id: string, from?: string)` | ADD a saved set to a bar: a preset of the reader's, on. `from`, the local scope of the bar it goes on where the set names several. Will, TODO 605 |
+| `dismissFilters(id: string)` | TAKE a saved set off its bar: its chip goes, and what it held. |
+| `deleteFilters(id: string)` | DELETE a reader's saved set, never a page's own: its chip goes, and what it held. |
 | `renameFilters(id: string, label: string)` | RENAME a reader's saved set — never a page's own. Its id follows its name, and a name another set has gains a copy's. Its new id. Will, TODO 427 |
 | `resetView()` | Put the filters back as the View on screen DEFINES them: the page's first Query, then the View's, as a pick puts it on. A filter the reader added since goes. What "Reset all on view" does. |
 | `export()` | This subtree's whole state as JSON — each source's question, and the View on screen — for a link, another service or an agent. |

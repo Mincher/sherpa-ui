@@ -168,7 +168,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-rest-update-is-patch-not-put](TRAPS.md#t-rest-update-is-patch-not-put) — stores
 - [T-result-is-the-hosts-half](TRAPS.md#t-result-is-the-hosts-half) — data-source
 - [T-ring-segment-needs-two-radius-clamps](TRAPS.md#t-ring-segment-needs-two-radius-clamps) — format-tick
-- [T-saved-filters-are-every-scope](TRAPS.md#t-saved-filters-are-every-scope) — page-definition, query, query-edits
+- [T-saved-filters-are-every-scope](TRAPS.md#t-saved-filters-are-every-scope) — page-definition, query
 - [T-schema-guard-belongs-at-the-store](TRAPS.md#t-schema-guard-belongs-at-the-store) — base-store, stores
 - [T-schema-sample-cost](TRAPS.md#t-schema-sample-cost) — base-store
 - [T-select-all-is-the-visible-rows](TRAPS.md#t-select-all-is-the-visible-rows) — data-source

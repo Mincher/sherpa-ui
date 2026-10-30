@@ -28,8 +28,6 @@
  * - viewHeldReadings — Each field the View holds, with its answer unless suspended.
  * - DefinitionFacts — What turning a definition into a Query needs from its source.
  * - definitionOf — A definition as a whole Query.
- * - takeSet — A saved filter TAKEN: the screen then matches it exactly; every other scope's filters go, unless it is local.
- * - dropSet — A saved filter TAKEN OFF: the scopes it names lose their filters.
  * - answerIn — One field's answer in one copy of the Query, wherever it lives, or null.
  */
 import { ARRANGE_KEYS, answerOf, arrangementOf, arranging, copyReading, eachScope, emptyScope, readingAnswered, stripArrangement, VIEW, type Query, type QueryDefaults, type ScopeQuery, type ViewScope } from './query.js';
@@ -387,47 +385,6 @@ export function definitionOf(
     }
   }
   return next;
-}
-
-/** A saved filter TAKEN: the screen then matches it exactly (Will, 366). Each
- *  scope it names takes its filters, and keeps what it held plus what it answers
- *  unless the set says its holds; every OTHER scope's filters go, its chips and
- *  arrangement kept — unless it is LOCAL: then they stay too (TODO 485). A
- *  component's `own` scope is what it IS, and stays.
- *  TRAP T-saved-filters-are-every-scope */
-export function takeSet(now: Query, set: QueryDefaults, own: ReadonlySet<string> = new Set(), local = false): QueryDefaults {
-  const scopes: QueryDefaults['scopes'] = {};
-  for (const [id, scope] of Object.entries(now.scopes)) scopes[id] = own.has(id) || (local && !(id in set.scopes)) ? scope : unfiltered(scope);
-  for (const [id, scope] of Object.entries(structuredClone(set.scopes))) {
-    if (own.has(id)) continue;
-    const named = Object.keys(scope.where ?? {});
-    // The arrangement of the scope it replaces stays, unless the set names one.
-    scopes[id] = { ...arrangementIn(now.scopes[id]), ...scope, holds: scope.holds ?? [...new Set([...(now.scopes[id]?.holds ?? []), ...named])] };
-  }
-  return { v: 1, scopes };
-}
-
-/** A saved filter TAKEN OFF — its row unticked: the scopes it names lose their
- *  filters, and keep their chips. Will, 366. TRAP T-saved-filters-are-every-scope */
-export function dropSet(now: Query, set: QueryDefaults, own: ReadonlySet<string> = new Set()): QueryDefaults {
-  const scopes: QueryDefaults['scopes'] = { ...now.scopes };
-  for (const id of Object.keys(set.scopes)) {
-    const scope = now.scopes[id];
-    if (scope && !own.has(id)) scopes[id] = unfiltered(scope);
-  }
-  return { v: 1, scopes };
-}
-
-/** A scope's sort, group, suspended sort and search — those it has. */
-function arrangementIn(scope: ScopeQuery | undefined): Pick<ScopeQuery, (typeof ARRANGE_KEYS)[number]> {
-  if (!scope || !arranging(scope)) return {};
-  return Object.fromEntries(ARRANGE_KEYS.filter((key) => scope[key] != null && scope[key] !== '').map((key) => [key, scope[key]]));
-}
-
-/** One scope with no filters on: its chips and arrangement stay. */
-function unfiltered(scope: ScopeQuery): ScopeQuery {
-  const { suspended: _off, superseded: _kept, ...rest } = scope;
-  return { ...rest, readings: {} };
 }
 
 /** One field's answer in one copy of the Query, wherever it lives, or null. */

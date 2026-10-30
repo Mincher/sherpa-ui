@@ -452,28 +452,3 @@ test('appliedCount: the fields that filter by their applied readings; an arrange
   src.query.setReading('view', 'status', { picked: [] });
   assert.equal(src.appliedCount(), 1);
 });
-
-test('a saved filter set taken clears a scope it does not name, and holds what it answers (Will, 366)', async () => {
-  const { takeSet, dropSet } = await import(new URL('../../dist/core/data/query-edits.js', import.meta.url));
-  const now = { v: 1, scopes: {
-    [VIEW]: { holds: ['region'], readings: { region: { picked: ['EMEA'] } }, sort: [{ field: 'name', dir: 'asc' }] },
-    grid: { holds: ['status'], readings: { status: { picked: ['active'] } } },
-    chart: { holds: [], readings: { plan: { picked: ['Pro'] } } },
-  } };
-  const own = new Set(['chart']);
-  const taken = takeSet(now, { v: 1, scopes: { grid: { where: { owner: 'Dana Whitlock' } } } }, own);
-  // Not named: its filters go, its chips and its arrangement stay.
-  assert.deepEqual(taken.scopes[VIEW], { holds: ['region'], readings: {}, sort: [{ field: 'name', dir: 'asc' }] });
-  assert.deepEqual(taken.scopes.grid.holds, ['status', 'owner']);
-  assert.deepEqual(taken.scopes.grid.where, { owner: 'Dana Whitlock' });
-  // A component's own scope is what it is: it stays.
-  assert.deepEqual(taken.scopes.chart, now.scopes.chart);
-  // A set that says its holds keeps them as it says.
-  assert.deepEqual(takeSet(now, { v: 1, scopes: { grid: { holds: ['plan'] } } }).scopes.grid.holds, ['plan']);
-  // Taken OFF: only the scopes it names lose their filters.
-  const off = dropSet(now, { v: 1, scopes: { grid: { where: {} }, chart: {} } }, own);
-  assert.deepEqual(off.scopes.grid.readings, {});
-  assert.deepEqual(off.scopes[VIEW], now.scopes[VIEW]);
-  assert.deepEqual(off.scopes.chart, now.scopes.chart);
-});
-

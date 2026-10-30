@@ -16,12 +16,11 @@
  * - hangFiltersMenu — The ONE Filters menu, made from its def and hung on its button — the bar's and the column's alike: `hide`, Li…
  * - savedMenuDef — The Saved button's menu, split from Filters: the saved sets, a tick taking one.
  * - saves — Does this host save filters: `data-saveable`, and its provider allows it here?
- * - SavedSets — The reader's saved sets, as the host last drew them, and the one taken.
+ * - SavedSets — The reader's saved sets, as the host last drew them, and those on a bar.
  * - .set — Keep a copy of the host's sets.
  * - .all — A copy of each set, as kept.
- * - .applied — The one set taken: ticked, what "Save <name>" saves over and Delete deletes.
  * - .listed — What the Filters menu lists: nothing unless the host saves.
- * - .pick — A Filters menu's ticks, as a saved-set request: take one newly ticked, or take off the one unticked.
+ * - .pick — A Filters menu's ticks, as saved-set requests: add each newly ticked, take off each unticked.
  * - OneRows — What each ONE-value row was told — on or off.
  * - .tell — Remember what a fresh Filters list tells its one-value rows.
  * - .has — Is this a one-value row?
@@ -62,19 +61,17 @@ export interface ListedFilter {
   spent?: boolean;
 }
 
-/** One saved set of filters, as the menu and the Saved chip draw it: the one
- *  ON is applied, and `edited` when its filters have changed since. TODO 105 */
+/** One saved set of filters, as the menu draws it. TODO 105 */
 export interface SavedSet {
   id: string;
   label: string;
-  /** The ONE set taken — applied or saved: its row is ticked, and "Save <name>"
-   *  saves over it while it is the reader's. Will, 366. */
-  applied?: boolean;
+  /** Its chip is on a bar: its row is ticked. Will, TODO 605 */
+  added?: boolean;
   /** The reader's own: a page's own is never saved over or deleted. */
   own?: boolean;
 }
 
-/** A saved set's row value: this, then its id. Its tick APPLIES it. */
+/** A saved set's row value: this, then its id. Its tick ADDS its chip. */
 const SET_ROW = 'set:';
 
 /** One filter the view holds. */
@@ -117,8 +114,8 @@ function filtersMenuItems(
     })),
     // Led by Manage Saved Filters, where the reader has sets of their own. Will, TODO 427
     ...(manage && sets.some((s) => s.own) ? [{ value: MANAGE_SETS, label: MANAGE_LABEL, section: SAVED_SECTION, action: true }] : []),
-    // A reader's saved SETS: a tick takes one, and the ONE taken is ticked. TODO 105 · Will, 366
-    ...sets.map((s) => ({ value: `${SET_ROW}${s.id}`, label: s.label, section: SAVED_SECTION, selected: !!s.applied })),
+    // A reader's saved SETS: ticked while its chip is on a bar. TODO 105 · Will, TODO 605
+    ...sets.map((s) => ({ value: `${SET_ROW}${s.id}`, label: s.label, section: SAVED_SECTION, selected: !!s.added })),
   ];
 }
 
@@ -152,13 +149,13 @@ export function hangFiltersMenu(root: ParentNode, btn: HTMLElement, def: FilterD
 }
 
 /** The SAVED button's menu, where the app splits it from Filters: the saved
- *  sets, a tick taking one — its save rows and Manage are the host's to draw
+ *  sets, a tick adding one — its save rows and Manage are the host's to draw
  *  below them (`drawSaveActions`). Will, TODO 436 */
 export function savedMenuDef(sets: readonly SavedSet[]): FilterDef {
   return {
-    // A tick takes a set at once: no Apply. TODO 436
+    // A tick adds a set at once: no Apply. TODO 436
     id: 'saved', label: SAVED_SECTION, select: 'multiple', selectAll: false, commit: false,
-    options: sets.map((s) => ({ value: `${SET_ROW}${s.id}`, label: s.label, selected: !!s.applied })),
+    options: sets.map((s) => ({ value: `${SET_ROW}${s.id}`, label: s.label, selected: !!s.added })),
   };
 }
 
@@ -170,9 +167,8 @@ export function saves(host: Element): boolean {
   return host.hasAttribute('data-saveable') && !host.hasAttribute('data-no-saves');
 }
 
-/** The reader's saved sets, as the host last drew them, and the ONE taken. No
- *  chip names it: a set taken LOADS into the chips. Will, 366.
- *  TODO 105 · TRAP T-saved-filters-are-every-scope */
+/** The reader's saved sets, as the host last drew them, and those on a bar: each
+ *  a preset of the reader's. Will, TODO 605. TODO 105 · TRAP T-saved-filters-are-every-scope */
 export class SavedSets {
   /** The sets, copied. */
   #sets: SavedSet[] = [];
@@ -193,28 +189,20 @@ export class SavedSets {
     return this.#sets.map((set) => ({ ...set }));
   }
 
-  /** The one set taken while it is the reader's: what "Save <name>" saves over and Delete deletes. */
-  get applied(): SavedSet | undefined {
-    return saves(this.#host) ? this.#sets.find((set) => set.applied && set.own) : undefined;
-  }
-
   /** What the Filters menu lists: the page's own always; the reader's while the host saves. */
   get listed(): readonly SavedSet[] {
     if (this.#host.hasAttribute('data-no-saves')) return [];
     return saves(this.#host) ? this.#sets : this.#sets.filter((set) => !set.own);
   }
 
-  /** A Filters menu's ticks, as a saved-set request: a set newly ticked is
-   *  TAKEN, in place of the one taken; the one taken, unticked, is taken OFF.
-   *  ONE at a time (Will, 366). The set rows are taken out of `want`, so the
-   *  rest is the held filters' answer. */
-  pick(want: Set<string>): { apply?: string; dismiss?: string } {
-    const taken = this.#sets.find((set) => set.applied)?.id;
+  /** A Filters menu's ticks, as saved-set requests: each set newly ticked is added,
+   *  each unticked comes off. The set rows are taken out of `want`, so the rest is
+   *  the held filters' answer. Will, TODO 605 */
+  pick(want: Set<string>): { apply: string[]; dismiss: string[] } {
+    const added = this.listed.filter((set) => set.added).map((set) => set.id);
     const picked = [...want].filter((v) => v.startsWith(SET_ROW)).map((v) => v.slice(SET_ROW.length));
     for (const id of picked) want.delete(`${SET_ROW}${id}`);
-    const apply = picked.find((id) => id !== taken);
-    if (apply) return { apply };
-    return taken && !picked.includes(taken) ? { dismiss: taken } : {};
+    return { apply: picked.filter((id) => !added.includes(id)), dismiss: added.filter((id) => !picked.includes(id)) };
   }
 }
 

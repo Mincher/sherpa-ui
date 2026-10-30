@@ -265,8 +265,6 @@ test('the action cluster is built in, Refresh left of the ⋮; the View\'s ★ a
         clear: !!sr.querySelector('[data-act="clear"], .reset-group'),
         // Reset leads the Edit menu (Will, TODO 454); Save is the ⋮'s (TODO 430).
         actions: [...sr.querySelectorAll<HTMLButtonElement>('.add-btn sherpa-menu > .filter-action')].map((b) => b.value),
-        // "Save <name>" only while a saved set is taken.
-        saveSet: shown('.save-set'),
         // The panel switch is the PAGE's, never the bar's own. TRAP T-the-mode-switch-is-the-pages-own
         configure: !!sr.querySelector('[data-act="configure"]'),
         overflow: shown('[data-act="overflow"]'),
@@ -285,7 +283,6 @@ test('the action cluster is built in, Refresh left of the ⋮; the View\'s ★ a
     expect(t.clear).toBe(false);
     // "Reset all on view" only over the View. Will, TODO 524
     expect(t.actions).toEqual(t === r.view ? ['reset', 'reset-default'] : ['reset']);
-    expect(t.saveSet).toBe(false);
     expect(t.configure).toBe(false);
     expect(t.refresh).toBe(true);
     expect(t.viewActions).toBe(false);

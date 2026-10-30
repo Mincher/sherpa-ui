@@ -1,6 +1,6 @@
 /**
  * toolbar-column.ts — a portrait toolbar over SEVERAL scopes: the panel area's
- * column. Under ONE header — Save <name>, ONE Filters menu for every scope, ⋮
+ * column. Under ONE header — ONE Filters menu for every scope, ⋮
  * and the search — the View Context, a rule, then the Local Context: a
  * portrait toolbar per component scope. TODO 425, 435 · TRAP T-the-panel-is-the-bar-in-portrait
  *
@@ -13,7 +13,7 @@
  * - .opened — It opened: what it was told while shut is drawn now.
  * - .present — What the filters before a scope's fields leave: an offer with nothing left is spent.
  * - .drawReading — A chart's own answer, told the column as a panel: its section draws it.
- * - .saved — The reader's saved sets: the Filters menu's Saved section, and Save <name>.
+ * - .saved — The reader's saved sets: the Filters menu's Saved section.
  * - .moreRows — What its ⋮ holds.
  */
 import { VIEW } from '../../core/data/query.js';
@@ -25,7 +25,7 @@ import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 import { ToolbarHeader } from './toolbar-header.js';
 
 /** What a column says: its toolbar's own events. */
-export type ColumnEvent = 'filters-save' | 'filters-save-as' | 'filters-delete' | 'filters-apply' | 'filters-dismiss' | 'filters-manage' | 'ai-filter-request'
+export type ColumnEvent = 'filters-save' | 'filters-save-as' | 'filters-apply' | 'filters-dismiss' | 'filters-manage' | 'ai-filter-request'
   | 'filter-add' | 'filter-remove' | 'quick-filter-change' | 'view-reset' | 'limit-options-change' | 'hide-unmatched-change';
 
 /** What the column asks of its toolbar. */
@@ -59,9 +59,9 @@ export class ToolbarColumn {
   constructor(host: ColumnHost) {
     this.#host = host;
     this.#saved = new SavedSets(host.el);
-    this.#header = new ToolbarHeader(host, this.#saved, { saved: '.column-saved', save: '.column-save', saveAs: '.column-save-as' });
+    this.#header = new ToolbarHeader(host, this.#saved, { saved: '.column-saved', saveAs: '.column-save-as' });
   }
-  /** Its header's Saved menu, Save <name> and filter acts — the bar's too. TODO 415 */
+  /** Its header's Saved menu, Save and filter acts — the bar's too. TODO 415 */
   readonly #header: ToolbarHeader;
 
   /** One element of the column's own tree. */
@@ -84,7 +84,6 @@ export class ToolbarColumn {
     const saved = this.#$('.column-saved');
     saved?.addEventListener('menu-change', this.#onSavedPick);
     saved?.addEventListener('menu-select', this.#onSavedAction);
-    this.#$('.column-save')?.addEventListener('button-click', () => this.#host.emit('filters-save'));
     this.#$('.column-suggest')?.addEventListener('button-click', () => this.#host.emit('ai-filter-request'));
     this.#$('.column-save-as')?.addEventListener('button-click', () => this.#host.emit('filters-save-as'));
     this.#$('.column-more')?.addEventListener('button-click', this.#onMore);
@@ -148,7 +147,7 @@ export class ToolbarColumn {
     bar?.drawReading?.(field, reading);
   }
 
-  /** The reader's saved sets: the Filters menu's Saved section, and Save <name>. TRAP T-saved-filters-are-every-scope */
+  /** The reader's saved sets: the Filters menu's Saved section. TRAP T-saved-filters-are-every-scope */
   saved(sets: readonly SavedSet[]): void {
     this.#saved.set(sets);
     this.#header.drawSave();
@@ -267,7 +266,7 @@ export class ToolbarColumn {
   /** What its ⋮ holds. Reset is the Edit menu's. Will, TODO 454 */
   moreRows(): MoreRow[][] {
     const el = this.#host.el;
-    return [el.hasAttribute('data-saved-menu') ? [] : saveRows(el, this.#saved.applied), extraRows(el)];
+    return [el.hasAttribute('data-saved-menu') ? [] : saveRows(el), extraRows(el)];
   }
 
   /** A ⋮ row: a filter action, or a page button folded away. */

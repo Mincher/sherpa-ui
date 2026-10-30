@@ -252,16 +252,16 @@
     "scans": 3
   },
   "records/apply-saved": {
-    "loads": 1,
+    "loads": 2,
     "counts": 0,
     "distinct": 0,
     "changes": 0,
     "fields": 0,
-    "rows": 25,
-    "cells": 375,
-    "compiles": 1,
-    "clones": 14,
-    "scans": 3
+    "rows": 35,
+    "cells": 525,
+    "compiles": 3,
+    "clones": 19,
+    "scans": 4
   },
   "remote/open": {
     "loads": 1,
@@ -523,8 +523,8 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 1,
-    "clones": 23,
+    "compiles": 4,
+    "clones": 19,
     "scans": 4
   },
   "remote/apply-fetch": {
@@ -536,7 +536,7 @@
     "rows": 9162,
     "cells": 9162,
     "compiles": 3,
-    "clones": 31,
+    "clones": 27,
     "scans": 5
   },
   "remote/fetch-off": {
@@ -823,8 +823,8 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 1,
-    "clones": 23,
+    "compiles": 4,
+    "clones": 19,
     "scans": 4
   },
   "rest/missed-change": {

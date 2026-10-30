@@ -275,7 +275,7 @@ export async function init(root, { source, query, session, view, signal, header,
 - A View is JSON: each scope's `where`, `holds`, `sort`, `group`.
 - A page's own **saved filters** are query definitions — each scope's `where`
   and `holds`, under a name. The Filters menu lists them beside the reader's;
-  taken, one fills the field chips. It is never saved over or deleted.
+  ticked, one is a preset chip on the bar. It is never saved over or deleted.
   `T-saved-filters-are-every-scope`
   The first View is the Context's own; the URL leaves it out.
   `T-a-view-is-json`
@@ -324,15 +324,12 @@ session.persist('/nav/pinned');
 
 ```js
 const named = document.getElementById('save-filters');
-const taken = () => provider.savedFilterSets.find((set) => set.applied);
 const saveAs = async () => {
   const label = await named.prompt('');
   if (label) provider.saveFilters(label);
 };
-// "Save <name>" saves over the set last taken; with none, it asks for a name.
-provider.addEventListener('filters-save', () => (taken() ? provider.saveFilters() : saveAs()));
+provider.addEventListener('filters-save', saveAs);
 provider.addEventListener('filters-save-as', saveAs);
-provider.addEventListener('filters-delete', () => provider.deleteFilters());
 ```
 
 - `dialog.prompt(value)` and `dialog.confirm({ heading, words, action })` ask
@@ -344,10 +341,10 @@ provider.addEventListener('filters-delete', () => provider.deleteFilters());
   component owns modality and `open`. An add or edit flow is that dialog, its
   fields read on save, and a `sherpa-toast` to say it is done.
 - **Save filters** keeps EVERY scope's filters under one name, with the page
-  beside its Views. The Filters menu's Saved section takes one: every scope
-  then matches it, and its values load into the chips. No chip names it; Save
-  filters reads "Save <name>" and saves over it. Ask before you save over a name
-  that exists. `T-saved-filters-are-every-scope`
+  beside its Views. A saved filter is a preset the reader made: ticked in the
+  Filters menu's Saved section, its chip joins the bar's presets, on; unticked, it
+  goes, with what it held. Several may be on. Ask before you save over a name that
+  exists. `T-saved-filters-are-every-scope`
 
 ## 11. Start
 
