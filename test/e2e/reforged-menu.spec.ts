@@ -947,3 +947,16 @@ test('a list menu left empty says nothing; Select all on says all', async ({ pag
     { values: ['EMEA', 'APAC'], all: true }, { values: [] },
   ]);
 });
+
+// The browser's `toggle` fires a task after show().
+test('Escape straight after show() shuts the menu, before the browser fires toggle', async ({ page }) => {
+  await installBuilder(page);
+  const r = await page.evaluate(async () => {
+    const { menu, trigger } = await window.__buildMenu('top:100px; left:100px;');
+    menu.show(trigger);
+    const shown = menu.open;
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    return { shown, afterEscape: menu.open };
+  });
+  expect(r).toEqual({ shown: true, afterEscape: false });
+});

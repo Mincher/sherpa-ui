@@ -1200,6 +1200,7 @@ export class SherpaMenu extends SherpaElement {
     if (!wasOpen && this.open) {
       this.#takeBaseline();
       this.#syncDirty();
+      this.#listenWhileOpen();
     }
     this.#place();
   }
@@ -1946,6 +1947,38 @@ export class SherpaMenu extends SherpaElement {
     this.hide();
   };
 
+  /** What an OPEN menu listens to. show() calls it too: `toggle` fires a task later, and an Escape in that gap was lost. */
+  #listenWhileOpen(): void {
+    if (this.#openAc) return;
+    /* These live while the menu is OPEN, which is shorter than the element's
+       life — `while` is that shorter lifetime, and the base class ANDs it
+       with its own disconnect signal.
+
+       `onFrame`, not `on`: #place() reads two boxes, and a scroll listener
+       runs per EVENT. Measured before this, 50 scroll events produced 100
+       getBoundingClientRect() calls.
+       capture: an ancestor's scroll does not bubble.
+       TRAP T-a-layout-read-belongs-in-a-frame
+       TRAP T-open-menu-resize-closes */
+    this.#openAc = new AbortController();
+    const whileOpen = { while: this.#openAc.signal, passive: true } as const;
+    this.onFrame(window, 'scroll', this.#reposition, { ...whileOpen, capture: true });
+    this.on(window, 'resize', this.#onViewportResize, whileOpen);
+    this.#cardResize ??= new ResizeObserver(() => this.#place());
+    const card = this.#card();
+    if (card) this.#cardResize.observe(card);
+
+    /* THE MENU OWNS ITS OWN DISMISS. `popover="manual"` because the rows are
+       SLOTTED: the browser reads the DOM tree for light-dismiss, where they
+       are children of THIS element and outside the card, so ticking one shut
+       the menu with nothing chosen. The composed path says what is really
+       inside. TRAP T-a-slotted-row-is-outside-its-own-popover */
+    this.on(document, 'pointerdown', this.#onOutsidePointer, {
+      ...whileOpen, capture: true,
+    });
+    this.on(document, 'keydown', this.#onEscape, whileOpen);
+  }
+
   /** Opened: remember the picks Discard restores. Closed: settle them. */
   #onToggle = (event: Event): void => {
     const open = (event as ToggleEvent).newState === 'open';
@@ -1954,33 +1987,7 @@ export class SherpaMenu extends SherpaElement {
       // An open that did not come through show().
       if (!this.#baselineHeld) this.#takeBaseline();
       this.#syncDirty();
-      /* These live while the menu is OPEN, which is shorter than the element's
-         life — `while` is that shorter lifetime, and the base class ANDs it
-         with its own disconnect signal.
-
-         `onFrame`, not `on`: #place() reads two boxes, and a scroll listener
-         runs per EVENT. Measured before this, 50 scroll events produced 100
-         getBoundingClientRect() calls.
-         capture: an ancestor's scroll does not bubble.
-         TRAP T-a-layout-read-belongs-in-a-frame
-         TRAP T-open-menu-resize-closes */
-      this.#openAc = new AbortController();
-      const whileOpen = { while: this.#openAc.signal, passive: true } as const;
-      this.onFrame(window, 'scroll', this.#reposition, { ...whileOpen, capture: true });
-      this.on(window, 'resize', this.#onViewportResize, whileOpen);
-      this.#cardResize ??= new ResizeObserver(() => this.#place());
-      const card = this.#card();
-      if (card) this.#cardResize.observe(card);
-
-      /* THE MENU OWNS ITS OWN DISMISS. `popover="manual"` because the rows are
-         SLOTTED: the browser reads the DOM tree for light-dismiss, where they
-         are children of THIS element and outside the card, so ticking one shut
-         the menu with nothing chosen. The composed path says what is really
-         inside. TRAP T-a-slotted-row-is-outside-its-own-popover */
-      this.on(document, 'pointerdown', this.#onOutsidePointer, {
-        ...whileOpen, capture: true,
-      });
-      this.on(document, 'keydown', this.#onEscape, whileOpen);
+      this.#listenWhileOpen();
     } else {
       /* A COMMITTING menu holds ticks as a DRAFT until Apply. Closing any other
          way — clicking away, Escape — discards them, as Discard does.
@@ -2027,6 +2034,7 @@ export class SherpaMenu extends SherpaElement {
   override onDisconnect(): void {
     // The viewport listeners carry their own signals; only the observer is manual.
     this.#openAc?.abort();
+    this.#openAc = null;
     this.#cardResize?.disconnect();
     clearTimeout(this.#hoverTimer);
   }

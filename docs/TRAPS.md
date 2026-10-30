@@ -2091,6 +2091,10 @@ runs the task later than Chromium, so only Firefox showed it. `toggle` still
 takes one for an open that did not come through `show()`; a close clears the
 flag.
 
+An open menu's listeners start in `show()` for the same reason. An Escape in the
+gap reached no listener, and the menu stayed open (found by `reforged-nav`, which
+failed 1 run in 3).
+
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 
