@@ -2,8 +2,8 @@ import { test, expect } from './harness';
 
 /**
  * A TIERED FIELD IN THE GRID — TODO 369. The Customer heading's menu is the
- * tree of Customers and their Sites; Site has no heading filter of its own;
- * a Site cell's chip picks that cell's PATH on Customer, and a second press
+ * tree of Customers and their Sites; Site has no heading filter of its own,
+ * and shows Customer's while the View holds it (TODO 577); a Site cell's chip picks that cell's PATH on Customer, and a second press
  * takes it off. TRAP T-a-parent-pick-is-the-parent
  */
 const LONDON = '{customer:Northwind,site:London}';
@@ -71,6 +71,36 @@ test('a Site cell chip picks its path on Customer, and a second press lets it go
   await cell.locator('.cell-filter .caret').click();
   // The last let go filters nothing. Will, TODO 550
   await expect.poll(async () => ((await heard()).at(-1) as { reading: unknown }).reading).toBeNull();
+});
+
+test('Site\'s heading shows greyed while the View holds Customer: what Customer holds of it, refused; let go, it has no filter again (Will, TODO 577)', async ({ page }) => {
+  const r = await page.evaluate(async (london) => {
+    const el = document.querySelector('sherpa-data-grid') as HTMLElement & { supersedeColumns(h: unknown, at?: string): void };
+    const read = () => {
+      const chip = el.shadowRoot!.querySelector<HTMLElement>('.head-cell[data-field="site"] .head-filter')!;
+      const menu = chip.querySelector('sherpa-menu');
+      return { unsupported: chip.hasAttribute('data-unsupported'), superseded: chip.hasAttribute('data-superseded'), at: chip.getAttribute('data-applied-at'),
+        readonly: menu?.hasAttribute('data-readonly') ?? false,
+        ticked: menu ? [...menu.querySelectorAll<HTMLInputElement>('input')].filter((i) => i.checked).map((i) => i.value) : [] };
+    };
+    const at: Record<string, unknown> = { first: read() };
+    el.supersedeColumns({ customer: {} }, 'View Context');
+    await window.__settled();
+    at.held = read();
+    // Northwind whole is no site; a path is.
+    el.supersedeColumns({ customer: { picked: ['Contoso', london] } }, 'View Context');
+    await window.__settled();
+    at.path = read();
+    el.supersedeColumns({});
+    await window.__settled();
+    at.released = read();
+    return at;
+  }, LONDON);
+  const none = { unsupported: true, superseded: false, at: null, readonly: false, ticked: [] };
+  expect(r['first']).toEqual(none);
+  expect(r['held']).toEqual({ unsupported: false, superseded: true, at: 'View Context', readonly: true, ticked: [] });
+  expect(r['path']).toEqual({ unsupported: false, superseded: true, at: 'View Context', readonly: true, ticked: ['London'] });
+  expect(r['released']).toEqual(none);
 });
 
 test('a Site cell chip is inactive while the View holds Customer, and refuses', async ({ page }) => {

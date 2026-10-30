@@ -619,8 +619,10 @@ export class SherpaDataGrid extends SherpaElement {
       // A multi-field column's menu JOINS its fields' lists. Will, TODO 490
       const join = this.#join(col);
       const held = join ? join.held : this.#shown(col.field);
-      // A tiered field's CHILD has no filter of its own: its picks are its parent's. TODO 369
-      const def = join?.def ?? (filters(col) && !this.#parentOf(col.field) ? this.#filterDef(col, held) : null);
+      /* A tiered field's CHILD has no filter of its own: its picks are its parent's
+         (TODO 369). While a higher scope holds that parent it shows, greyed. Will, TODO 577 */
+      const parent = this.#parentOf(col.field);
+      const def = join?.def ?? (filters(col) && (!parent || this.#superseded.has(parent)) ? this.#filterDef(col, held) : null);
       const key = this.#cellKey(col, def);
       let th = kept.get(col.field);
       kept.delete(col.field);
@@ -755,7 +757,7 @@ export class SherpaDataGrid extends SherpaElement {
     /* HELD HIGHER: shown, greyed, and refused here — the reader changes it where
        it is held. TRAP T-a-view-held-heading-shows-and-refuses */
     // A joined menu leaves out what the View holds. TODO 490
-    const superseded = !this.#joined.has(col.field) && this.#superseded.has(col.field);
+    const superseded = !this.#joined.has(col.field) && this.#heldAbove(col.field);
     const was = chip.hasAttribute('data-superseded');
     chip.toggleAttribute('data-superseded', superseded);
     if (superseded && this.#supersededAt) chip.setAttribute('data-applied-at', this.#supersededAt);
@@ -881,7 +883,7 @@ export class SherpaDataGrid extends SherpaElement {
     const field = cell.dataset['field']!;
     const menu = cell.querySelector<SherpaMenu>('.head-filter sherpa-menu');
     const joined = this.#joined.get(field);
-    if (!menu || (!joined && this.#superseded.has(field))) return;
+    if (!menu || (!joined && this.#heldAbove(field))) return;
     menu.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
     menu.present = joined ? this.#joinedLimit(joined, this.#present) : this.#present[field] ?? null;
     menu.offered = joined ? this.#joinedLimit(joined, this.#offered) : this.#offered[field] ?? null;
@@ -1111,9 +1113,30 @@ export class SherpaDataGrid extends SherpaElement {
   /** Where they are held, for each chip's tip. */
   #supersededAt: string | undefined;
 
-  /** What a heading SHOWS: a higher scope's answer when it holds the field, else its own. */
+  /** What a heading SHOWS: a higher scope's answer when it holds the field — a
+   *  tiered child, what its parent's holds of it — else its own. */
   #shown(field: string): FieldReading | undefined {
+    const parent = this.#parentOf(field);
+    const above = parent ? this.#superseded.get(parent) : undefined;
+    if (parent && above) return { picked: this.#childPicks(parent, field, above), ...(above.suspended ? { suspended: true } : {}) };
     return this.#superseded.get(field) ?? this.#columnFilters.get(field);
+  }
+
+  /** Does a higher scope hold this field: itself, or as a tiered child its parent? TODO 577 */
+  #heldAbove(field: string): boolean {
+    const parent = this.#parentOf(field);
+    return this.#superseded.has(field) || (!!parent && this.#superseded.has(parent));
+  }
+
+  /** What a tiered parent's answer holds of its child: each path's child, by name. TODO 577 */
+  #childPicks(parent: string, field: string, reading: FieldReading): string[] {
+    const { labels, parentOf } = this.#facts(parent);
+    return [...new Set((reading.picked ?? []).flatMap((pick) => {
+      const own = (pick as Record<string, unknown> | null)?.[field];
+      if (own != null) return [String(own)];
+      const key = valueKey(pick);
+      return parentOf?.has(key) ? [labels?.[key] ?? key] : [];
+    }))];
   }
 
   /**
@@ -2547,6 +2570,9 @@ export class SherpaDataGrid extends SherpaElement {
   #isFiltered(field: string): boolean {
     const held = this.#columnFilters.get(field);
     if (held && !held.suspended && this.#inForce(field, held).rows.length) return true;
+    // A tiered child, while its parent's answer holds it. TODO 577
+    const shown = this.#parentOf(field) ? this.#shown(field) : undefined;
+    if (shown?.picked?.length && !shown.suspended) return true;
     const external = this.dataset['filterFields'];
     // TRAP T-grid-filter-fields-match-whole — `includes` lights `status` for `substatus`.
     return !!external && external.split(/\s+/).includes(field);

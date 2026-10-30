@@ -18109,6 +18109,12 @@ alone (`compile`, "one field, one scope"), and the grid marks the View's
 matches, not the heading's own. The heading keeps its answer for when the View
 lets the field go.
 
+**A tiered field's CHILD is held with its parent** (TODO 577, Will: A). Site has
+no filter of its own (TODO 369), yet while a higher scope holds Customer its
+heading shows what Customer's answer holds of it — each path's child — greyed and
+refused. It is picked in the View's Customer chip. Let go, its heading has no
+filter again.
+
 A CELL's chip on such a field shows inactive and refuses before a pick (374),
 and does not show on a value the View filters by: it has nothing to take off
 there (Will, TODO 456).
