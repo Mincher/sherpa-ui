@@ -24,7 +24,7 @@ export class SherpaContainerHeader extends SherpaElement {
     'data-icon': { type: 'string', kind: 'content', to: '.glyph', as: 'icon' },
     'data-collapsed': { type: 'boolean', kind: 'style' },
     // Show as, and what the card shows: a pick is a REQUEST, its provider writes this. Will, TODO 548
-    'data-presentation': { type: 'enum', kind: 'behaviour', values: [...SHOW_AS] },
+    'data-presentation': { type: 'enum', kind: 'behaviour', values: [...SHOW_AS, 'off'] },
   } as const;
 
   override onChange(name: string): void {

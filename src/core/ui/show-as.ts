@@ -20,9 +20,9 @@ export const SHOW_AS = ['default', ...PRESENTATION_KINDS.filter((k) => k !== 'gr
 
 /** Show as where the host offers it — `on`, its `data-presentation`: put in its
  *  `.show-as` once — `bare`, a header's — each pick to `pick` (a request), what it shows ticked. Not
- *  offered, nothing is made: every toolbar would carry a menu. */
+ *  offered, or `off` (the app's setting, TODO 582), nothing is made: every toolbar would carry a menu. */
 export function showAs(root: ParentNode, on: string | undefined, pick: (kind: string) => void, bare = false): void {
-  if (on === undefined) return;
+  if (on === undefined || on === 'off') return;
   const at = root.querySelector('.show-as');
   const tpl = root.querySelector<HTMLTemplateElement>('template.show-as-tpl');
   if (!at || !tpl) return;

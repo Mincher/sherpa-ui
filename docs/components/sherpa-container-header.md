@@ -31,7 +31,7 @@ For the header row in a `sherpa-container`'s `header` slot: a heading, an icon, 
 | `data-draggable` | boolean |  | show the drag handle |
 | `data-heading` | text |  | heading text (rendered into .title) |
 | `data-icon` | text |  | a glyph before the title (shows the icon slot) |
-| `data-presentation` | `default` |  | default \| bar \| donut \| pie — Show as, a menu before close, with what the card shows ticked; its provider writes it |
+| `data-presentation` | `default` `off` |  | default \| bar \| donut \| pie \| off — Show as, a menu before close, with what the card shows ticked; off, none. Its provider writes it |
 | `data-type` | `default` `panel` | `default` | default \| panel |
 
 ## Events

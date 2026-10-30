@@ -169,7 +169,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, results, countApplied, savedMenu, saveAnyScope, switchable, contextLabel, sections, highlight, highlightOnHover, highlightAcross, singleApply, reorderFilters, labelColumn, countEveryValue, headingGroup, headingHover, multiFieldColumns, appContext, applyEvery, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, results, countApplied, savedMenu, saveAnyScope, switchable, contextLabel, sections, highlight, highlightOnHover, highlightAcross, singleApply, reorderFilters, labelColumn, countEveryValue, headingGroup, headingHover, multiFieldColumns, showAs, axisChips, appContext, applyEvery, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -403,6 +403,16 @@
         },
         {
           "name": "multiFieldColumns",
+          "type": "boolean",
+          "access": "read-write"
+        },
+        {
+          "name": "showAs",
+          "type": "boolean",
+          "access": "read-write"
+        },
+        {
+          "name": "axisChips",
           "type": "boolean",
           "access": "read-write"
         },

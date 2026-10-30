@@ -142,9 +142,10 @@
       "declared": true,
       "kind": "behaviour",
       "values": [
-        "default"
+        "default",
+        "off"
       ],
-      "description": "default | bar | donut | pie — Show as, a menu at the end, with what the card shows ticked; its provider writes it"
+      "description": "default | bar | donut | pie | off — Show as, a menu at the end, with what the card shows ticked; off, none. Its provider writes it"
     }
   ],
   "slots": [
@@ -197,6 +198,11 @@
       "$type": "state",
       "name": "presentation",
       "selector": ":host([data-presentation])"
+    },
+    {
+      "$type": "state",
+      "name": "off",
+      "selector": ":host([data-presentation=\"off\"])"
     }
   ],
   "events": [

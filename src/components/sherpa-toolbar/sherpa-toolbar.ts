@@ -16,7 +16,7 @@ export class SherpaToolbar extends SherpaElement {
   static override props = {
     'data-type': { type: 'enum', kind: 'style', values: ['plain', 'bordered'] },
     // Show as, before the trailing controls — a grid card's. A pick is a REQUEST. Will, TODO 548
-    'data-presentation': { type: 'enum', kind: 'behaviour', values: [...SHOW_AS] },
+    'data-presentation': { type: 'enum', kind: 'behaviour', values: [...SHOW_AS, 'off'] },
   } as const;
 
   override onRender(): void {

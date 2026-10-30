@@ -16,7 +16,7 @@ export class SherpaDataVizHeader extends SherpaElement {
     // A slotted icon wins over the data-icon glyph.
     'data-icon': { type: 'string', kind: 'content', to: '.icon', as: 'icon' },
     // Show as, and what the card shows: a pick is a REQUEST, its provider writes this. Will, TODO 548
-    'data-presentation': { type: 'enum', kind: 'behaviour', values: [...SHOW_AS] },
+    'data-presentation': { type: 'enum', kind: 'behaviour', values: [...SHOW_AS, 'off'] },
   } as const;
 
   override onRender(): void {

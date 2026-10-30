@@ -58,6 +58,8 @@
  * - .valueResults — Each picked value's own results: the rows that reach its field and match that one value.
  * - .limitOptions — Does each list field offer only the values the filters before it leave? Settable, unlike applyOn.
  * - .countEveryValue — Every value of a list field is counted, picked or not, on or off — where the rows are held: a store is never…
+ * - .showAs — A reader's Show as pick is shown — off, kept and not shown.
+ * - .axisChips — The Primary and Secondary chips are offered, and a reader's picks in them shown — off, kept and not shown.
  * - .present — Each list field's values its ruler leaves in a scope: the filters before it, or the View's subset.
  * - .offered — What each field below the top of a SERIAL set offers: the values the rows hold at its place.
  * - .attach — Take a component its binder has wired, and send it what is already loaded.
@@ -545,7 +547,8 @@ export class DataSource extends EventTarget {
       // Small until the reader picks one: a grid's bar is full already. Will, TODO 548
       const picked = this.#context.presentation(scope);
       Object.assign(out, {
-        chartFields: cols.filter(groupable), stacks: true, compact: true,
+        // Off, no chip offers them; the chain stays, so Group greys its Primary. TODO 583
+        chartFields: this.#context.honours('axes') ? cols.filter(groupable) : [], stacks: true, compact: true,
         ...(lead ? { primaryField: lead } : {}),
         ...(fallback ? { primaryDefault: fallback } : {}),
         ...(shown.secondary ? { secondaryField: shown.secondary } : {}),
@@ -563,7 +566,7 @@ export class DataSource extends EventTarget {
       const stacks = this.#binding.stacksIn(scope);
       const secondary = stacks ? shown.secondary : undefined;
       Object.assign(out, {
-        presents: true, group: lists, chartFields: lists,
+        presents: true, group: lists, chartFields: this.#context.honours('axes') ? lists : [],
         ...(stacks ? { stacks: true } : {}),
         ...(shown.group ? { groupField: shown.group } : {}),
         ...(shown.sort ? { sortDirection: shown.sort } : {}),
@@ -1972,6 +1975,26 @@ export class DataSource extends EventTarget {
   }
   /** The setting: count every value? */
   #countEvery = false;
+
+  /** A reader's Show as pick is shown — off, kept and not shown. The app's
+   *  setting. Will, TODO 582 */
+  get showAs(): boolean {
+    return this.#context.honours('kind');
+  }
+  set showAs(on: boolean) {
+    this.#context.honour('kind', on);
+  }
+
+  /** The Primary and Secondary chips are offered, and a reader's picks in them
+   *  shown — off, kept and not shown. The app's setting. Will, TODO 583 */
+  get axisChips(): boolean {
+    return this.#context.honours('axes');
+  }
+  set axisChips(on: boolean) {
+    if (on === this.axisChips) return;
+    this.#context.honour('axes', on);
+    void this.#binding.drawEveryBar();
+  }
 
   /**
    * Each list field's values its RULER leaves in a scope, as value keys: with

@@ -156,7 +156,8 @@ export interface ScopeDescription {
   /** Its bar's filter Switch is OFF. TRAP T-the-filter-switch-keeps-what-it-turned-off */
   suspended?: boolean;
   /** A SLOT: a chart draws here, and its Group and Sort are its presentation's, not the
-   *  rows'. `chartFields` its Primary and Secondary may pick; `primaryField` and `secondaryField` are in force;
+   *  rows'. `chartFields` its Primary and Secondary may pick — none while the app turns them off (TODO 583);
+   *  `primaryField` and `secondaryField` are in force;
    *  `stacks`, its chart takes a Secondary — a bar chart. TODO 548 */
   presents?: boolean;
   chartFields?: OrganiseColumn[];

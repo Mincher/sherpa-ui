@@ -498,6 +498,82 @@ test('a card\'s Show as swaps its chart over the same data, keeps what it was ar
   expect(r['back']).toEqual({ tag: 'sherpa-barchart', type: null, marks: ['Free: 1 (Tue 1)', 'Pro: 2 (Mon 1 · Wed 1)', 'Enterprise: 1 (Mon 1)'], shown: 'default', kept: { group: 'day' } });
 });
 
+test('the app may turn Show as off: no card offers it, and a kept pick is set aside, not lost (Will, TODO 582)', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-container data-scope="by-plan">
+        <sherpa-data-viz-header slot="header" data-heading="By plan" data-presentation="default"></sherpa-data-viz-header>
+        <sherpa-barchart id="slotted" data-segment-field="plan"></sherpa-barchart>
+      </sherpa-container>\`;
+    const source = make();
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    const head = provider.querySelector('sherpa-data-viz-header');
+    const said = () => ({ tag: provider.querySelector('#slotted').localName, shown: head.dataset.presentation,
+      offered: getComputedStyle(head.shadowRoot.querySelector('.show-as')).display !== 'none', kept: source.query.presentation('by-plan') });
+    const box = [...head.shadowRoot.querySelectorAll('.presentation-menu input')].find((i) => i.value === 'pie');
+    box.checked = true;
+    box.dispatchEvent(new Event('change', { bubbles: true }));
+    await settle();
+    await settle();
+    const at = { pie: said() };
+    provider.showAs = false;
+    await settle();
+    await settle();
+    at.off = said();
+    provider.showAs = true;
+    await settle();
+    await settle();
+    at.on = said();
+    return at;
+  })()`) as Record<string, unknown>;
+  expect(r['pie']).toEqual({ tag: 'sherpa-radial-chart', shown: 'pie', offered: true, kept: { kind: 'pie' } });
+  // Off: the bar its page drew, no Show as — and the pie kept.
+  expect(r['off']).toEqual({ tag: 'sherpa-barchart', shown: 'off', offered: false, kept: { kind: 'pie' } });
+  expect(r['on']).toEqual({ tag: 'sherpa-radial-chart', shown: 'pie', offered: true, kept: { kind: 'pie' } });
+});
+
+test('the app may turn the Primary and Secondary chips off: no bar offers them, a kept pick is set aside, and Group still greys the Primary (Will, TODO 583)', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-container data-scope="by-plan">
+        <sherpa-quick-filter-toolbar></sherpa-quick-filter-toolbar>
+        <sherpa-barchart id="slotted" data-segment-field="plan"></sherpa-barchart>
+      </sherpa-container>\`;
+    const source = make();
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    const bar = provider.querySelector('sherpa-quick-filter-toolbar');
+    const chip = (id) => bar.shadowRoot.querySelector('.organise-chip[data-id="' + id + '"]');
+    const said = () => ({
+      chips: [...bar.shadowRoot.querySelectorAll('.organise-zone > .organise-chip')].map((c) => c.dataset.id),
+      bars: [...provider.querySelector('#slotted').shadowRoot.querySelectorAll('.bar-col')].map((c) => c.getAttribute('aria-label')),
+      greyed: [...chip('group').querySelectorAll('sherpa-menu input')].filter((i) => i.value && i.closest('.menu-row').hasAttribute('data-unavailable')).map((i) => i.value),
+      kept: source.query.presentation('by-plan'),
+    });
+    const box = [...chip('primary').querySelectorAll('sherpa-menu input')].find((i) => i.value === 'day');
+    box.checked = true;
+    box.dispatchEvent(new Event('change', { bubbles: true }));
+    await settle();
+    const at = { day: said() };
+    provider.axisChips = false;
+    await settle();
+    at.off = said();
+    provider.axisChips = true;
+    await settle();
+    at.on = said();
+    return at;
+  })()`) as Record<string, unknown>;
+  expect(r['day']).toEqual({ chips: ['primary', 'secondary', 'group', 'sort'], bars: ['Mon: 2', 'Tue: 1', 'Wed: 1'], greyed: ['day'], kept: { primary: 'day' } });
+  // Off: no Primary or Secondary, the bars its page drew — and day kept. Group greys the page's Primary.
+  expect(r['off']).toEqual({ chips: ['group', 'sort'], bars: ['Free: 1', 'Pro: 2', 'Enterprise: 1'], greyed: ['plan'], kept: { primary: 'day' } });
+  expect(r['on']).toEqual(r['day']);
+});
+
 test('a grid card\'s Show as draws its slot as a chart — bars and stack as its definition says — and Default puts back the very grid (Will, TODO 548)', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}

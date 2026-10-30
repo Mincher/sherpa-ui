@@ -67,6 +67,8 @@
  * - .presentation — A slot's presentation, as kept: a copy; none, an empty one.
  * - .declarePresentation — What its page DEFINES a slot shows — a chart's two fields — under what is kept.
  * - .presented — A slot's presentation as shown: what is kept, over its definition; or its definition alone.
+ * - .honour — Which picks are in force: `kind` (Show as), `axes` (Primary, Secondary). Off, kept, not shown.
+ * - .honours — Is that kind of pick in force?
  * - .present — Change a slot's presentation, at once in BOTH copies — it filters nothing, so no Apply waits.
  * - .setSearch — The rows' free-text search, with the arrangement.
  * - .setQuery — Restore a whole Query — a reload, a View, a saved filter.
@@ -1098,7 +1100,34 @@ export class QueryContext extends EventTarget {
   presented(scope: string, view?: 'grid' | 'chart', kept = true): Presentation {
     const { grid, chart, ...base } = this.#defined.get(scope) ?? {};
     const own = view === 'grid' ? grid : view === 'chart' ? chart : undefined;
-    return { ...base, ...own, ...(kept ? this.presentation(scope) : {}) };
+    return { ...base, ...own, ...(kept ? this.#inForce(this.presentation(scope)) : {}) };
+  }
+
+  /** Which of the reader's picks are in force — off, one is KEPT and not shown:
+   *  `kind` Show as's, `axes` the Primary and Secondary chips'. The app's setting.
+   *  Will, TODOs 582, 583 */
+  honour(picks: 'kind' | 'axes', on: boolean): void {
+    if (this.#honoured[picks] === on) return;
+    this.#honoured[picks] = on;
+    for (const [scope, entry] of Object.entries(this.#live.applied.scopes)) {
+      if (entry?.presentation) this.#tell({ kind: 'presented', scope });
+    }
+  }
+
+  /** Is that kind of pick in force? */
+  honours(picks: 'kind' | 'axes'): boolean {
+    return this.#honoured[picks];
+  }
+
+  /** The app's settings: which picks are in force. */
+  readonly #honoured = { kind: true, axes: true };
+
+  /** A kept presentation, less the picks not in force. */
+  #inForce(kept: Presentation): Presentation {
+    const { kind, primary, secondary, ...rest } = kept;
+    const axes = this.#honoured.axes;
+    return { ...rest, ...(this.#honoured.kind && kind ? { kind } : {}),
+      ...(axes && primary ? { primary } : {}), ...(axes && secondary ? { secondary } : {}) };
   }
 
   /** Each slot's definition. */

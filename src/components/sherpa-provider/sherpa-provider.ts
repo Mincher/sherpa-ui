@@ -466,6 +466,41 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: multi-field columns. */
   #multiField = true;
 
+  /** A card offers Show as, and a reader's pick is shown — off, kept and not
+   *  shown. On unless the app says not, from its session. Will, TODO 582 */
+  get showAs(): boolean {
+    return this.#showAs;
+  }
+  set showAs(on: boolean) {
+    this.#showAs = on;
+    for (const source of Object.values(this.#sources)) source.showAs = on;
+    for (const host of this.querySelectorAll('[data-presentation]')) {
+      const slot = this.#inherited(host, 'data-scope');
+      const source = this.#resolve(host);
+      if (slot && source) host.setAttribute('data-presentation', this.#showAsOf(source, slot));
+    }
+  }
+  /** The app's choice: Show as. */
+  #showAs = true;
+
+  /** What a slot's Show as says: what it shows — or off. TODO 582 */
+  #showAsOf(source: DataSource, slot: string): string {
+    return this.#showAs ? source.query.presentation(slot).kind ?? 'default' : 'off';
+  }
+
+  /** The Primary and Secondary chips are offered, and a reader's picks in them
+   *  shown — off, kept and not shown. On unless the app says not, from its
+   *  session. Will, TODO 583 */
+  get axisChips(): boolean {
+    return this.#axisChips;
+  }
+  set axisChips(on: boolean) {
+    this.#axisChips = on;
+    for (const source of Object.values(this.#sources)) source.axisChips = on;
+  }
+  /** The app's choice: Primary and Secondary chips. */
+  #axisChips = true;
+
   /** The View Context is the APP Context: one answer for every page, kept in
    *  the session; a page without a field it holds shows that filter inactive.
    *  Off, each page has its own again. The app sets it, from its session.
@@ -592,6 +627,8 @@ export class SherpaProvider extends SherpaElement {
       source.limitOptions = this.#limit;
       source.highlightAcross = this.#across;
       source.countEveryValue = this.#countEvery;
+      source.showAs = this.#showAs;
+      source.axisChips = this.#axisChips;
     }
     for (const made of this.#made) if (!this.#provides(made)) this.#closeMade(made);
     // BEFORE answering: an answer binds, and a bind starts the first load.
@@ -1276,7 +1313,7 @@ export class SherpaProvider extends SherpaElement {
   #swapped(el: Element, slot: string, source: DataSource): boolean {
     const shown = source.query.presented(slot);
     for (const host of this.querySelectorAll('[data-presentation]')) {
-      if (this.#inherited(host, 'data-scope') === slot) host.setAttribute('data-presentation', source.query.presentation(slot).kind ?? 'default');
+      if (this.#inherited(host, 'data-scope') === slot) host.setAttribute('data-presentation', this.#showAsOf(source, slot));
     }
     const authored = this.#authored.get(el) ?? shownAs(el);
     const kind = shown.kind ?? authored;

@@ -129,6 +129,9 @@ slot[name="heading"] { display: contents; }
 :host(:not(:state(has-actions)):not([data-dismissible]):not([data-presentation])) .actions { display: none; }
 .show-as { display: none; }
 :host([data-presentation]) .show-as { display: inline-flex; }
+/* Off, the app's setting: no Show as, and no room kept for it. TODO 582 */
+:host([data-presentation="off"]) .show-as { display: none; }
+:host(:not(:state(has-actions)):not([data-dismissible])[data-presentation="off"]) .actions { display: none; }
 
 /* ── Metadata strip — the description first, then whatever is slotted ─── */
 .metadata {
