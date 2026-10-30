@@ -1217,7 +1217,7 @@ export class SherpaProvider extends SherpaElement {
     this.#fetchFields(el, source);
     const unpick = spec && asks.picks ? this.#picks(el as Picker, source, spec.segment ?? '', asks.picks) : undefined;
     const unown = this.#own(el, source);
-    // A chart, a grid and a legend in a slot follow its presentation: a legend lists a stack. TODO 548
+    // A chart, a grid and a legend in a slot follow its presentation. TODO 548
     const unshow = typeof scope === 'string' && (spec || shownAs(el)) ? this.#followPresentation(asked, source, scope, !spec && !pivot && !made) : undefined;
     const refilter = made ? new AbortController() : undefined;
     /* A filter in it is its slot's, in the Query, and narrows it alone: asked plainly,
@@ -1330,8 +1330,8 @@ export class SherpaProvider extends SherpaElement {
     if (asks.thresholds) spec['zones'] = true;
     /* Its SLOT's presentation, as the Query keeps it, over its own attributes: the
        primary its first split (a bar or slice a value), the secondary a bar
-       chart's stack, the group the sections in each, and its order. A stacked
-       chart's legend lists its stack. Will, TODO 548 */
+       chart's stack, the group the sections in each, and its order. A legend lists
+       the secondary; with none, the primary. Will, TODOs 548, 633 */
     const slot = this.#inherited(el, 'data-scope');
     const shown = slot && !/\s/.test(slot) ? source.query.presented(slot, 'chart') : {};
     if (shown.primary) spec['segment'] = shown.primary;
