@@ -210,17 +210,27 @@ test('a chained clause comes back as the rows that made it', () => {
     { op: 'ne', picked: ['Ravi Menon'], join: 'and' },
   ];
   const clause = readingClause({ field: 'owner' }, { conditions: rows });
-  // `A or (B and C)`, the precedence the chain uses.
-  assert.deepEqual(clause, ['or', ['owner', 'contains', 'Da'],
-    ['and', ['owner', 'startswith', 'R'], ['owner', 'ne', 'Ravi Menon']]]);
+  // Left to right: `(A or B) and C`. Will, TODO 594
+  assert.deepEqual(clause, ['and', ['or', ['owner', 'contains', 'Da'], ['owner', 'startswith', 'R']],
+    ['owner', 'ne', 'Ravi Menon']]);
   assert.deepEqual(clauseConditions(clause), rows);
+  // A group can lead: its order is no matter. A second group needs nesting. TODO 595
+  const a = ['owner', 'contains', 'A'];
+  const b = ['owner', 'contains', 'B'];
+  const c = ['owner', 'contains', 'C'];
+  assert.deepEqual(clauseConditions(['or', a, ['and', b, c]]),
+    [{ op: 'contains', text: 'B' }, { op: 'contains', text: 'C', join: 'and' }, { op: 'contains', text: 'A', join: 'or' }]);
+  assert.equal(clauseConditions(['or', ['and', a, b], ['and', b, c]]), undefined);
 });
 
 test('clauseConditions reads picks as a list row, and refuses what rows cannot say', () => {
   assert.deepEqual(clauseConditions(['status', 'in', ['active', 'trial']]),
     [{ op: 'eq', picked: ['active', 'trial'] }]);
-  // An `and` INSIDE an `or` inside an `and` is no chain of rows.
-  assert.equal(clauseConditions(['and', ['or', ['a', 'eq', 1], ['a', 'eq', 2]], ['a', 'eq', 3]]), undefined);
+  // An `or` inside an `and` is what rows read as. TODO 594
+  assert.deepEqual(clauseConditions(['and', ['or', ['a', 'eq', 1], ['a', 'eq', 2]], ['a', 'eq', 3]]),
+    [{ op: 'eq', picked: [1] }, { op: 'eq', picked: [2], join: 'or' }, { op: 'eq', picked: [3], join: 'and' }]);
+  // Two groups are no chain of rows, until they nest. TODO 595
+  assert.equal(clauseConditions(['or', ['and', ['a', 'gt', 1], ['a', 'lt', 2]], ['and', ['a', 'gt', 3], ['a', 'lt', 4]]]), undefined);
 });
 
 

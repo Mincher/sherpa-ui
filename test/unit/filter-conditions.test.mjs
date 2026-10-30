@@ -45,19 +45,17 @@ test('two rows joined by AND become a group', () => {
   );
 });
 
-test('AND binds tighter than OR — A or B and C is A or (B and C)', () => {
-  /* The precedence every other language uses. Reading it left to right without
-     precedence would give ((A or B) and C), which is a different question and
-     not the one the rows say. */
+test('rows read left to right — A or B and C is (A or B) and C (Will, TODO 594)', () => {
+  /* Each row joins all before it, as a reader reads a stack: the AND reaches both. */
   assert.deepEqual(
     clause({ conditions: [
       { op: 'contains', text: 'a' },
       { join: 'or', op: 'startswith', text: 'B' },
       { join: 'and', op: 'contains', text: 'o' },
     ] }),
-    ['or',
-      ['name', 'contains', 'a'],
-      ['and', ['name', 'startswith', 'B'], ['name', 'contains', 'o']]],
+    ['and',
+      ['or', ['name', 'contains', 'a'], ['name', 'startswith', 'B']],
+      ['name', 'contains', 'o']],
   );
 });
 

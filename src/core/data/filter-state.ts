@@ -292,9 +292,11 @@ export function modeOf(reading: FieldReading, rows: readonly FieldCondition[] = 
 export function rowsFromPicks(
   body: 'number' | 'date' | undefined, simple: FieldReading, bands?: readonly Threshold[],
 ): FieldCondition[] | undefined {
-  // A band is its two ends; `A or B and C` reads A or (B and C). Will, TODO 477
+  /* A band is its two ends. Ascending, so left to right they read as the bands:
+     `gte a and lt b or gte c and lt d` keeps both and nothing between. Will, TODOs 477, 594 */
   if (bands?.length) {
-    const ends = (simple.picked ?? []).map((name) => bandCondition(bands, String(name)) as { gte?: number; lt?: number } | undefined)
+    const order = (name: unknown): number => bands.findIndex((t) => t.label === String(name));
+    const ends = [...simple.picked ?? []].sort((a, b) => order(a) - order(b)).map((name) => bandCondition(bands, String(name)) as { gte?: number; lt?: number } | undefined)
       .filter((c) => !!c)
       .map((c) => [...(c.gte != null ? [{ op: 'gte' as const, text: String(c.gte) }] : []), ...(c.lt != null ? [{ op: 'lt' as const, text: String(c.lt) }] : [])]);
     return ends.flatMap((band, i) => band.map((row, j): FieldCondition => (i || j ? { ...row, join: j ? 'and' : 'or' } : row)));
@@ -654,36 +656,40 @@ function leafRow(leaf: Filter): FieldCondition | undefined {
  * TRAP T-a-heading-holds-a-whole-reading
  */
 export function clauseConditions(filter: Filter): FieldCondition[] | undefined {
-  const groups = Array.isArray(filter) && filter[0] === 'or'
-    ? (filter.slice(1) as Filter[]) : [filter];
-  const rows: FieldCondition[] = [];
-  for (const [g, group] of groups.entries()) {
-    const leaves = Array.isArray(group) && group[0] === 'and' ? (group.slice(1) as Filter[]) : [group];
-    for (const [l, leaf] of leaves.entries()) {
-      const row = leafRow(leaf);
-      if (!row) return undefined;
-      if (g > 0 && l === 0) row.join = 'or';
-      else if (l > 0) row.join = 'and';
-      rows.push(row);
-    }
+  const head = Array.isArray(filter) ? filter[0] : undefined;
+  if (head !== 'and' && head !== 'or') {
+    const row = leafRow(filter);
+    return row ? [row] : undefined;
+  }
+  const parts = filter.slice(1) as Filter[];
+  const isGroup = (f: Filter): boolean => Array.isArray(f) && (f[0] === 'and' || f[0] === 'or');
+  /* Rows read left to right, so one group can lead them, and order is no matter
+     in a group. A second group needs nesting. TODO 595 · TRAP T-many-conditions-are-one-reading */
+  const groups = parts.filter(isGroup);
+  if (groups.length > 1) return undefined;
+  const rows = groups[0] ? clauseConditions(groups[0]) : [];
+  if (!rows) return undefined;
+  for (const part of parts.filter((p) => !isGroup(p))) {
+    const row = leafRow(part);
+    if (!row) return undefined;
+    rows.push(rows.length ? { ...row, join: head } : row);
   }
   return rows.length ? rows : undefined;
 }
 
 /**
- * The rows as ONE filter, joined left to right with `and` binding tighter than
- * `or` — the precedence every other language uses, so a reader who writes
- * `A or B and C` gets `A or (B and C)`. TRAP T-many-conditions-are-one-reading
+ * The rows as ONE filter, read left to right: each row joins all before it, so
+ * `A or B and C` is `(A or B) and C`. Will, TODO 594. TRAP T-many-conditions-are-one-reading
  */
 function chainRows(state: FilterState): Filter | undefined {
-  const runs: Filter[][] = [];
+  let chain: Filter | undefined;
+  let last: 'and' | 'or' | undefined;
   for (const row of state.rows) {
     const one = rowClause(state, row);
     if (!one) continue;
-    if (!runs.length || row.join === 'or') runs.push([one]);
-    else runs[runs.length - 1]!.push(one);
+    const join = row.join === 'or' ? 'or' : 'and';
+    chain = !chain ? one : last === join ? [...chain as unknown[], one] as Filter : [join, chain, one] as Filter;
+    if (chain !== one) last = join;
   }
-  const anded = runs.map((run) => (run.length > 1 ? (['and', ...run] as Filter) : run[0]!));
-  if (!anded.length) return undefined;
-  return anded.length === 1 ? anded[0]! : (['or', ...anded] as Filter);
+  return chain;
 }

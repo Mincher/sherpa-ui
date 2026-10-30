@@ -34,7 +34,7 @@ test('each answer a control holds is ONE plain condition, and reads back as it w
   assert.deepEqual(readingsOf(where, facts), readings);
 });
 
-test('Advanced rows: several ops all hold, `or` takes a list, and AND binds tighter', () => {
+test('Advanced rows: several ops all hold, `or` takes a list, and they read left to right', () => {
   const both = { conditions: [{ op: 'gte', text: '10' }, { join: 'and', op: 'lt', text: '60' }] };
   const either = { conditions: [{ op: 'lt', text: '10' }, { join: 'or', op: 'gt', text: '90' }] };
   const mixed = { conditions: [
@@ -44,7 +44,7 @@ test('Advanced rows: several ops all hold, `or` takes a list, and AND binds tigh
   assert.deepEqual(where, {
     health: { gte: 10, lt: 60 },
     openTickets: { or: [{ lt: 10 }, { gt: 90 }] },
-    seats: { or: [{ lt: 10 }, { gt: 50, lt: 60 }] },
+    seats: { and: [{ or: [{ lt: 10 }, { gt: 50 }] }, { lt: 60 }] },
   });
   assert.deepEqual(readingsOf(where), { health: both, openTickets: either, seats: mixed });
   // The same op twice cannot share one object, so it is a list.
@@ -89,7 +89,7 @@ test('what rows cannot show, and what is not an op, reports', () => {
   const seen = [];
   const undo = onReport((r) => seen.push(r.code));
   try {
-    assert.deepEqual(readingsOf({ health: { gt: 0, or: [{ lt: 10 }, { gt: 90 }] } }), {});
+    assert.deepEqual(readingsOf({ health: { or: [{ gt: 0, lt: 10 }, { gt: 50, lt: 90 }] } }), {});
     assert.deepEqual(readingsOf({ health: { lt: 60, over: 3 } }), { health: { op: 'lt', text: '60' } });
   } finally {
     undo();

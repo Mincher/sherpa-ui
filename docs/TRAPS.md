@@ -10774,9 +10774,11 @@ is still ONE reading of ONE field, so it stays in the field's single slot and
 Splitting it across two writers would be the bug `T-one-state-per-filtered-field`
 already names, and a control drawing the field would have to ask twice.
 
-**`and` binds tighter than `or`.** `A or B and C` is `A or (B and C)` — the
-precedence every other language uses. Reading the rows left to right without it
-gives `(A or B) and C`, a different question from the one the reader wrote.
+**Rows read left to right.** `A or B and C` is `(A or B) and C`: each row joins
+every row before it, as a reader reads a stack of rows. Will, TODO 594: `Equals Ravi
+OR Equals Signe AND Contains "Khan"` let rows through with no Khan, when AND bound
+tighter. A banded field's rows rely on this being in ascending order, so
+`rowsFromPicks` sorts them. An AND for one row alone needs nesting, which is TODO 595.
 
 **A half-built row narrows nothing, and is dropped.** A row whose op has no
 value yet — no text typed, nothing picked — is not a filter. A field whose rows

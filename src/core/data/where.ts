@@ -100,7 +100,7 @@ function readingOf(field: string, given: Condition, facts?: Omit<FieldFacts, 'fi
   if (!rows) {
     report({
       code: 'unreadable-condition',
-      message: `where: the condition on "${field}" has an "or" inside an "and", which condition rows cannot show, so it filters nothing.`,
+      message: `where: the condition on "${field}" joins two groups, which condition rows cannot show, so it filters nothing.`,
       at: { field, condition: JSON.stringify(given) },
     });
     return undefined;

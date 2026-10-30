@@ -102,7 +102,7 @@
   "src/core/data/fake-remote.ts": 91,
   "src/core/data/field-catalogue.ts": 270,
   "src/core/data/filter-face.ts": 176,
-  "src/core/data/filter-state.ts": 690,
+  "src/core/data/filter-state.ts": 696,
   "src/core/data/format-date.ts": 43,
   "src/core/data/format-tick.ts": 351,
   "src/core/data/held-set.ts": 179,

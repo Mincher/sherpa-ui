@@ -39,6 +39,8 @@ const COMPONENTS = 'src/components';
  * `platform` — the platform forbids a write path. Not a gap.
  */
 const KNOWN = {
+  // What a bar sends to turn its presets off: a request, not a state. Will, TODO 592
+  'sherpa-quick-filter.presetsOff': 'read only: the presets are turned off through the Query',
   'sherpa-calendar-cell.value': 'ok: data-value attribute',
   'sherpa-code-block.code': 'ok: data-code attribute',
   'sherpa-metric.series': 'ok: populate({ values }) — the series it was given',
