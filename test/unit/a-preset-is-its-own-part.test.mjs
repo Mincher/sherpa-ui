@@ -64,7 +64,7 @@ test('on, it puts its conditions on the fields, adds no chip, and never goes Adv
   await act(source, () => source.query.setPreset('data', 'high-risk', true));
   assert.deepEqual(ids(source), [1, 4]);
   assert.equal(on(source), true);
-  assert.deepEqual(readings(source).health.byPreset, { 'high-risk': { label: 'High risk', rows: [{ op: 'lt', text: '60' }] } });
+  assert.deepEqual(readings(source).health.byPreset, { 'high-risk': { label: 'High risk', scope: 'data', rows: [{ op: 'lt', text: '60' }] } });
   assert.deepEqual(readings(source).tickets.byPreset['high-risk'].rows, [{ op: 'gt', text: '0' }]);
   assert.equal(readings(source).health.mode, undefined);
   assert.equal(readings(source).health.conditions, undefined);

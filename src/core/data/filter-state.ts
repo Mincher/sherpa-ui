@@ -209,10 +209,10 @@ export interface FieldReading {
   /** EVERY value ticked, on purpose — Select all on, or a list that starts so —
    *  whatever values come: no filter. Will, TODO 489 · TRAP T-all-is-an-answer */
   all?: boolean;
-  /** What each PRESET on holds of this field, by its id: its name and its rows,
-   *  ANDed with the answer. The answer and its mode stay the reader's. Will,
-   *  TODO 521 · TRAP T-a-preset-is-its-own-part */
-  byPreset?: Readonly<Record<string, { label: string; rows: readonly FieldCondition[] }>>;
+  /** What each PRESET on holds of this field, by its id: its name, its scope and
+   *  its rows, ANDed with the answer. The answer and its mode stay the reader's.
+   *  Will, TODO 521 · TRAP T-a-preset-is-its-own-part */
+  byPreset?: Readonly<Record<string, { label: string; scope: string; rows: readonly FieldCondition[] }>>;
 }
 
 /** One row of a multi-condition filter. */
@@ -330,7 +330,7 @@ export function asRows(reading: FieldReading | undefined, type?: 'number' | 'dat
 }
 
 /** A reading with one preset's rows on it, or, with none, off it. TODOs 521, 526 */
-export function withPreset(reading: FieldReading | undefined, id: string, preset: { label: string; rows: readonly FieldCondition[] } | null): FieldReading {
+export function withPreset(reading: FieldReading | undefined, id: string, preset: NonNullable<FieldReading['byPreset']>[string] | null): FieldReading {
   const { [id]: _was, ...others } = reading?.byPreset ?? {};
   const byPreset = preset ? { ...others, [id]: preset } : others;
   // A Switch off stops every answer; a preset turned on is in force.

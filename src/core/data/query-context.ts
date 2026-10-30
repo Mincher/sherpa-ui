@@ -903,7 +903,8 @@ export class QueryContext extends EventTarget {
    */
   setPreset(scope: string, id: string, on: boolean, commit = false): void {
     const preset = this.#presets.get(scope)?.get(id);
-    if (!preset || this.presetOn(scope, id) === on) return;
+    // Off goes on: a field suspended reads it off, and still holds its rows.
+    if (!preset || (on && this.presetOn(scope, id))) return;
     this.batch(() => {
       const moved: string[] = [];
       for (const [field, given] of Object.entries(preset.readings)) {
@@ -912,7 +913,7 @@ export class QueryContext extends EventTarget {
         const entry = scopeEntry(this.#live.draft, this.scopeOf(field) ?? scope);
         const now = entry.readings[field];
         if (!on && !now?.byPreset?.[id]) continue;
-        const next = withPreset(now, id, on ? { label: preset.label, rows } : null);
+        const next = withPreset(now, id, on ? { label: preset.label, scope, rows } : null);
         if (readingAnswered(next)) entry.readings[field] = copyReading(next);
         else Reflect.deleteProperty(entry.readings, field);
         prune(this.#live.draft);

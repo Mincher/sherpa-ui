@@ -1710,9 +1710,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if ((event as CustomEvent).detail?.picked) return this.#emitChange(this.#answerRequest(chip));
     const field = this.#fieldFor(chip.dataset['id'] ?? '');
     const on = chip.hasAttribute('data-locked') ? !chip.current : chip.current;
+    /* Toggled off, a chip or value a preset holds: its conditions no longer stand,
+       so the preset goes. Will, TODO 592 · TRAP T-a-preset-is-its-own-part */
+    const going = on ? [] : (chip as SherpaQuickFilter).presetsOff;
+    if (going?.length && ((event as CustomEvent).detail?.release || !readingAnswered({ ...chip.reading, suspended: false }))) return this.#emitChange(going);
     if (field == null || !chip.reading) return this.#emitChange(undefined);
     // OFF, its source drops the picks the filters before it rule out. Will, TODOs 465, 523 F3
-    this.#emitChange({ field, suspended: !on });
+    this.#emitChange(going?.length ? [...going, { field, suspended: true }] : { field, suspended: !on });
   };
 
   /** The Switch flipped: its own act, so the bar's `change` listeners never hear it. */

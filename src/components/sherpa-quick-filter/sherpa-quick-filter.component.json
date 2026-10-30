@@ -726,7 +726,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (current, valueLabel, menu, values, reading, presets, answered, drafting, column, direction, applied, valueResults, results). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (current, valueLabel, menu, values, reading, presets, presetsOff, answered, drafting, column, direction, applied, valueResults, results). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -742,8 +742,9 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "active": "boolean | true",
-        "picked": "true"
+        "active": "boolean | false | true",
+        "picked": "true",
+        "release": "true"
       },
       "trigger": {
         "on": "click",
@@ -884,6 +885,11 @@
           "name": "presets",
           "type": "FieldReading['byPreset']",
           "access": "write"
+        },
+        {
+          "name": "presetsOff",
+          "type": "{ scope: string; preset: string; on: false }[]",
+          "access": "read"
         },
         {
           "name": "answered",

@@ -9596,6 +9596,14 @@
             },
             {
               "kind": "field",
+              "name": "presetsOff",
+              "type": {
+                "text": "{ scope: string; preset: string; on: false }[]"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
               "name": "answered",
               "type": {
                 "text": "boolean"
@@ -9707,7 +9715,7 @@
               "name": "quick-filter-click",
               "description": "The chip body is toggled.",
               "type": {
-                "text": "CustomEvent<{ active: boolean | true; picked: true }>"
+                "text": "CustomEvent<{ active: boolean | false | true; picked: true; release: true }>"
               }
             },
             {

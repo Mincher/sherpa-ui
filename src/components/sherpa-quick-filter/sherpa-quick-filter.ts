@@ -387,13 +387,21 @@ export class SherpaQuickFilter extends SherpaElement {
   /** What presets on hold of this field: it says so, in blue. A host that paints
    *  its menu itself, a grid heading, says it here. Will, TODO 521 */
   set presets(held: FieldReading['byPreset']) {
-    this.#presets = Object.values(held ?? {});
+    this.#held = held ?? {};
+    this.#presets = Object.values(this.#held);
     this.set('data-by-preset', this.#presets.map((p) => p.label).join(', ') || null);
     const menu = this.#fieldMenu();
     if (menu) menu.heldByPreset = this.#presets.length ? this.#heldBy : null;
   }
-  /** What each preset on holds of this field: its name and its rows. */
+  /** What each preset on holds of this field, by its id. */
+  #held: NonNullable<FieldReading['byPreset']> = {};
+  /** …and as a list: its name, its scope and its rows. */
   #presets: NonNullable<FieldReading['byPreset']>[string][] = [];
+
+  /** The requests that turn off each preset on that holds this field. Will, TODO 592 */
+  get presetsOff(): { scope: string; preset: string; on: false }[] {
+    return Object.entries(this.#held).map(([preset, { scope }]) => ({ scope, preset, on: false }));
+  }
 
   /** The presets on whose rows touch a value, by name; none, ''. Will, TODOs 521, 590 */
   #heldBy = (value: string): string => this.#presets
@@ -765,7 +773,9 @@ export class SherpaQuickFilter extends SherpaElement {
        answer. Its body toggles, like any other answered chip.
        TRAP T-toggling-a-conditioned-chip-suspends-its-condition */
     // A section's value chip's body is its toggle, its caret its Sites (TODO 425).
-    if (menu && this.values.length === 0 && this.dataset['condition'] !== 'advanced' && this.slot !== 'values') {
+    // …unless a preset holds it on: then a press is a toggle off. An icon-only chip has no toggle. TODO 592
+    const held = this.hasAttribute('data-by-preset') && !this.hasAttribute('data-icon-only');
+    if (menu && !held && this.values.length === 0 && this.dataset['condition'] !== 'advanced' && this.slot !== 'values') {
       // Opening a menu is not a toggle — the bar must not see one.
       event.stopPropagation();
       this.#openMenu();
@@ -1176,8 +1186,11 @@ export class SherpaQuickFilter extends SherpaElement {
     const one = event.target as HTMLElement;
     if (one === this || one.parentElement !== this || !one.classList.contains('value')) return;
     event.stopPropagation();
-    // A preset holds it: only the preset's own chip lets it go. Will, TODO 521
-    if (one.hasAttribute('data-by-preset')) return;
+    // A preset holds it: toggled off, its conditions no longer stand, so the preset goes. Will, TODO 592
+    if (one.hasAttribute('data-by-preset')) {
+      this.emit('quick-filter-click', { active: false, release: true });
+      return;
+    }
     // Inactive is not interactive. TRAP T-a-ruled-out-value-is-greyed
     const menu = this.#fieldMenu();
     // …but one still ON may be let go. TODO 462

@@ -19546,8 +19546,7 @@ and it cannot lose the reader's own picks. Until 521 ON wrote them into
 and OFF had to work out which rows were its own.
 
 OFF takes them off. A reader's answer
-replaces only the answer (`#keepPresets`), so it never turns a preset off; only
-the preset's own chip does, and Reset, which clears them. A saved filter replaces
+replaces only the answer (`#keepPresets`), so a pick never turns a preset off. A saved filter replaces
 the reading whole, so it replaces these too.
 
 **Its ON is read from the fields** (`presetOn`): its rows on every field it names,
@@ -19560,8 +19559,11 @@ a scope does not have, dropped and reported once (D4).
 "On by the preset ‹name›." Its face reads the rows where the reader has no answer
 of their own. In a panel section each value chip the rows touch goes blue
 (`presetTouches`: a list value they keep, a band they overlap, so `!equals(churned)`
-colours the other three), and refuses a press (Will: B); no chip is added. In a menu
-the row is ticked, refused and says why; `NON_VALUE_ROWS` leaves it out of the menu's values, so it is never read
+colours the other three); no chip is added. **Toggled off, a blue chip or value
+turns its presets off**: their conditions no longer stand (Will, TODO 592; it is the
+one thing that does, beside the preset's own chip and Reset). An icon-only heading
+chip has no toggle: its press opens its menu. In a menu the row is ticked, refused
+and says why; `NON_VALUE_ROWS` leaves it out of the menu's values, so it is never read
 back as the reader's. A grid heading tells its chip through `chip.presets`.
 
 The walk counts each preset ON first in its scope, with its own clause

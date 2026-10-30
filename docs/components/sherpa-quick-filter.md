@@ -72,6 +72,7 @@ One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. 
 | `values` | `string[]` | read and write |  |
 | `reading` | `FieldReading \| null` | read and write |  |
 | `presets` | `FieldReading['byPreset']` | read and write |  |
+| `presetsOff` | `{ scope: string; preset: string; on: false }[]` | read only |  |
 | `answered` | `boolean` | read only |  |
 | `drafting` | `boolean` | read only |  |
 | `column` | `string` | read only |  |
@@ -95,7 +96,7 @@ Each one bubbles.
 
 | Event | Detail | What it means |
 |---|---|---|
-| `quick-filter-click` | `{ active: boolean \| true; picked: true }` | The chip body is toggled. |
+| `quick-filter-click` | `{ active: boolean \| false \| true; picked: true; release: true }` | The chip body is toggled. |
 | `quick-filter-change` | `{ scope: 'chip'; values: string[] }` | The menu selection changed. |
 | `jump-select` | `{ label: string; value: string }` | A jump row was picked, and its target scrolled into view. |
 | `group-change` | `{ field: null \| string }` | A GROUP chip picked or cleared its column. |
