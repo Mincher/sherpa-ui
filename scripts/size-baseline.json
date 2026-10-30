@@ -83,7 +83,7 @@
   "src/core/browser/persist-view.ts": 581,
   "src/core/browser/route.ts": 72,
   "src/core/browser/saved-filters.ts": 98,
-  "src/core/browser/session.ts": 266,
+  "src/core/browser/session.ts": 293,
   "src/core/browser/view-drafts.ts": 80,
   "src/core/browser/view-files.ts": 35,
   "src/core/browser/view-markup.ts": 148,
