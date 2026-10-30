@@ -13,7 +13,7 @@ A NON-modal floating panel on native &lt;dialog>. show(), not showModal(): no ba
 
 ## When to use it
 
-For a quick peek while the page behind stays live: no scrim, no focus trap, and one panel at a time. For a fixed panel beside the Context, use a `sherpa-app-shell` panel area; for a task that blocks the page, use `sherpa-dialog`.
+For a quick peek while the page behind stays live: no scrim, no focus trap, and one panel at a time. `data-poppable` lets the reader pop it into a `sherpa-app-shell`'s end panel area as a fixed panel, and out again. For a fixed panel that stays beside the Context, use a panel area; for a task that blocks the page, use `sherpa-dialog`.
 
 ## Example
 
@@ -32,9 +32,11 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 | `data-dismissible` | boolean |  | show the close button |
 | `data-expandable` | boolean |  | show the maximise / minimise button |
 | `data-external` | boolean |  | show the external-link button |
+| `data-fixed` | boolean |  | a fixed panel, in the end panel area of the page's [sherpa-app-shell](sherpa-app-shell.md); it floats again where there is no room for one |
 | `data-heading` | text |  | header title text (rendered into .title) |
 | `data-icon` | text |  | a glyph before the title (shows the icon slot area) |
 | `data-maximised` | boolean |  | full-overlay state: the panel fills the window and shows its breadcrumbs |
+| `data-poppable` | boolean |  | show the Pop in / Pop out button (needs a [sherpa-app-shell](sherpa-app-shell.md) with room) |
 | `data-status` | text |  | status colour cascade (critical \| warning \| success \| info \| urgent) Toolbar buttons are shown by opt-in data-* flags (CSS-gated): |
 | `open` | boolean, native | `false` | native boolean (read reflects dialog.open; set → show()/close()) |
 
@@ -70,6 +72,7 @@ Each one bubbles.
 | `panel-collapse` | `{ collapsed: boolean }` |  |
 | `panel-expand` | `{ maximised: boolean }` |  |
 | `panel-external` |  |  |
+| `panel-pop` | `{ fixed: boolean }` | The reader pressed Pop in or Pop out |
 | `panel-close` |  |  |
 | `panel-resize` | `{ width: number }` | Its left edge was dragged, or moved by the keys |
 
@@ -88,7 +91,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `expand`, `external`, `footer`, `header`, `resize`, `root`, `toolbar`, `trail`, `view-modes`
+`body`, `expand`, `external`, `footer`, `header`, `pop`, `resize`, `root`, `toolbar`, `trail`, `view-modes`
 
 ## CSS custom properties it reads
 
@@ -108,6 +111,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ collapsed?, collapsible?, dismissible?, expandable?, external?, heading?, icon?, maximised? }`
+`{ collapsed?, collapsible?, dismissible?, expandable?, external?, fixed?, heading?, icon?, maximised?, poppable? }`
 
 Its declared props by name: `label` sets data-label.

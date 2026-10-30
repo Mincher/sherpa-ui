@@ -60,6 +60,19 @@
 }
 :host([data-maximised]) .resize { display: none; }
 
+/* Fixed: a card in the flow of the shell's end area, which owns its width and
+   its edge. TRAP T-a-panel-pops-into-the-end-area */
+:host(:state(in-area)) { display: block; }
+:host(:state(in-area)) .root {
+  position: static;
+  inline-size: 100%;
+  block-size: 100%;
+  box-shadow: none;
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
+}
+:host(:state(in-area)) :is(.resize, .expand) { display: none; }
+
 /* The trail shows only while maximised, and only when one is given. */
 .trail {
   display: none;
@@ -114,11 +127,16 @@
 }
 :host(:not([data-expandable])) .expand { display: none; }
 :host(:not([data-external])) .external { display: none; }
-:host(:not([data-expandable]):not([data-external])) .view-modes { display: none; }
+:host(:not([data-expandable]):not([data-external])) .view-modes,
+:host(:state(in-area):not([data-external])) .view-modes { display: none; }
+:host(:not([data-poppable])) .pop,
+:host(:state(no-area)) .pop,
+:host([data-maximised]) .pop { display: none; }
 
 /* One of the pair alone is a whole button, not half a group. */
 :host(:not([data-external])) .expand,
-:host(:not([data-expandable])) .external {
+:host(:not([data-expandable])) .external,
+:host(:state(in-area)) .external {
   --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
   --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
   --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
@@ -135,8 +153,8 @@
   block-size: var(--sherpa-theme-content-size-xs, 10px);
   background: var(--sherpa-style-border-base, #b3b3c3);
 }
-:host(:state(has-actions):is([data-expandable], [data-external])) .after-actions,
-:host(:is(:state(has-actions), [data-expandable], [data-external]):is([data-dismissible], [data-collapsible])) .before-close {
+:host(:state(has-actions):is([data-expandable], [data-external], [data-poppable]:not(:state(no-area)))) .after-actions,
+:host(:is(:state(has-actions), [data-expandable], [data-external], [data-poppable]:not(:state(no-area))):is([data-dismissible], [data-collapsible])) .before-close {
   display: block;
 }
 

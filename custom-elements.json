@@ -7167,6 +7167,13 @@
               }
             },
             {
+              "name": "data-fixed",
+              "description": "a fixed panel, in the end panel area of the page's sherpa-app-shell; it floats again where there is no room for one",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-heading",
               "description": "header title text (rendered into .title)",
               "type": {
@@ -7183,6 +7190,13 @@
             {
               "name": "data-maximised",
               "description": "full-overlay state: the panel fills the window and shows its breadcrumbs",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-poppable",
+              "description": "show the Pop in / Pop out button (needs a sherpa-app-shell with room)",
               "type": {
                 "text": "boolean"
               }
@@ -7251,6 +7265,13 @@
               }
             },
             {
+              "name": "panel-pop",
+              "description": "The reader pressed Pop in or Pop out",
+              "type": {
+                "text": "CustomEvent<{ fixed: boolean }>"
+              }
+            },
+            {
               "name": "panel-close",
               "type": {
                 "text": "CustomEvent"
@@ -7305,6 +7326,9 @@
             },
             {
               "name": "header"
+            },
+            {
+              "name": "pop"
             },
             {
               "name": "resize"

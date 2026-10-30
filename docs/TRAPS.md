@@ -909,6 +909,50 @@ under the pointer or focus.
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
 - Site: `test/e2e/reforged-overlay-panel.spec.ts`
 
+### T-a-panel-pops-into-the-end-area
+
+**Pop in moves an overlay panel INTO the app shell's end panel area, as a fixed
+panel. Pop out takes it back to the place it left.** Will, TODO 636.
+`data-poppable` shows the button; it stands alone before the view-mode pair, so
+the pair's corner rules do not grow. `data-fixed` is the state AND the door: set
+it and the panel moves, so a caller needs no pointer. A press also reports
+`panel-pop { fixed }`, which a host may keep. It is a real move to
+`slot="panel-end"`, not a drawing over the area: so the shell gives it the width,
+the edge and the reflow, and its `open` shuts the area, as for any panel. No Figma
+design for the button yet.
+
+**Fixed, it is a card in the flow:** static, every corner rounded, no shadow. No
+left-edge handle, as the area's edge resizes it. No maximise, which needs the
+whole window. It leaves the panels on the right edge, so one opening beside it
+leaves it open and sits over it (`T-one-overlay-panel-at-a-time`); popped out, it
+takes the edge again.
+
+**The button shows only where a press can work.** The panel finds the page's
+`sherpa-app-shell` by its tag, as an app keeps its panels outside the shell so a
+Context swap cannot take them. With no shell, no room
+(`T-the-panel-is-desktop-only`), or a host's own panel in the area, the button
+goes and `data-fixed` floats. It hears `panel-room-change` on the document: room
+lost, it floats; room back, it goes in again. A lost room is not the reader's
+choice, so `data-fixed` stays and `panel-pop` does not fire. One panel to an area:
+the second sends the first back.
+
+**A move is a disconnect and a connect,** for the panel and all inside it.
+`SherpaElement` keeps the shadow tree and runs `onConnect` again, so a listener on
+anything outside goes there, not in `onRender`. `moveBefore` keeps focus and
+scroll, in Chromium 153 and Firefox 155. WebKit 26.6 has none: focus is handed
+back in a microtask, after the slotchange, since the area is not drawn before it
+and a hidden box takes no focus (measured). A scroller inside goes back to its
+top there.
+
+**The room rule counts ONE area.** With the filter panel open too, the Context
+gets 312px at a 1280 window and 632px at 1600, under the tablet width that rule
+keeps (measured). TODO 640.
+
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.html`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
+- Site: `test/e2e/reforged-overlay-panel.spec.ts`
+
 ### T-a-tree-rule-beats-slotted
 
 **A rule in the tree a slotted element lives in beats the component's own

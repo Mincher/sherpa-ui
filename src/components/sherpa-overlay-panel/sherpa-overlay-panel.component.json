@@ -91,6 +91,20 @@
                   }
                 },
                 {
+                  "el": "sherpa-button",
+                  "class": "pop",
+                  "part": "pop",
+                  "attrs": {
+                    "data-type": "icon",
+                    "data-size": "sm",
+                    "data-icon-start": "sidebar-flip",
+                    "aria-label": "Pop in",
+                    "data-swap-on": "data-fixed",
+                    "data-swap-data-icon-start": "monitor-w-floating-window",
+                    "data-swap-aria-label": "Pop out"
+                  }
+                },
+                {
                   "el": "sherpa-group",
                   "class": "view-modes",
                   "part": "view-modes",
@@ -213,6 +227,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-fixed",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "a fixed panel, in the end panel area of the page's sherpa-app-shell; it floats again where there is no room for one"
+    },
+    {
+      "$type": "prop",
       "name": "data-heading",
       "type": "string",
       "observed": true,
@@ -237,6 +260,15 @@
       "declared": true,
       "kind": "style",
       "description": "full-overlay state: the panel fills the window and shows its breadcrumbs"
+    },
+    {
+      "$type": "prop",
+      "name": "data-poppable",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "show the Pop in / Pop out button (needs a sherpa-app-shell with room)"
     },
     {
       "$type": "prop",
@@ -308,7 +340,7 @@
     }
   ],
   "populate": {
-    "shape": "{ collapsed?, collapsible?, dismissible?, expandable?, external?, heading?, icon?, maximised? }",
+    "shape": "{ collapsed?, collapsible?, dismissible?, expandable?, external?, fixed?, heading?, icon?, maximised?, poppable? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -331,6 +363,11 @@
       "$type": "state",
       "name": "not-external",
       "selector": ":host(:not([data-external]))"
+    },
+    {
+      "$type": "state",
+      "name": "not-poppable",
+      "selector": ":host(:not([data-poppable]))"
     },
     {
       "$type": "state",
@@ -379,6 +416,16 @@
       "name": "panel-external",
       "bubbles": true,
       "composed": true
+    },
+    {
+      "$type": "event",
+      "name": "panel-pop",
+      "description": "The reader pressed Pop in or Pop out",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "fixed": "boolean"
+      }
     },
     {
       "$type": "event",

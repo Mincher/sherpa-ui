@@ -15,6 +15,19 @@ import '../sherpa-container-footer/sherpa-container-footer.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-group/sherpa-group.js';
 
+/** Move a node and keep its focus. A browser with no `moveBefore` drops it on the way. */
+function moveInto(parent: Node, node: ChildNode, before: ChildNode | null): void {
+  if ('moveBefore' in parent) {
+    (parent as ParentNode).moveBefore(node, before);
+    return;
+  }
+  let active = document.activeElement;
+  while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement;
+  parent.insertBefore(node, before);
+  // After the slotchange: the shell's area is not drawn yet, and a hidden box takes no focus.
+  if (active instanceof HTMLElement) queueMicrotask(() => (active as HTMLElement).focus());
+}
+
 export class SherpaOverlayPanel extends SherpaElement {
   static override css = new URL('./sherpa-overlay-panel.css', import.meta.url);
   static override html = new URL('./sherpa-overlay-panel.html', import.meta.url);
@@ -32,6 +45,9 @@ export class SherpaOverlayPanel extends SherpaElement {
     'data-maximised': { type: 'boolean', kind: 'style' },
     'data-collapsible': { type: 'boolean', kind: 'style' },
     'data-dismissible': { type: 'boolean', kind: 'style' },
+    'data-poppable': { type: 'boolean', kind: 'style' },
+    // A fixed panel, in the app shell's end area. TRAP T-a-panel-pops-into-the-end-area
+    'data-fixed': { type: 'boolean', kind: 'behaviour' },
   } as const;
   static override observed = ['open'];
 
@@ -42,9 +58,8 @@ export class SherpaOverlayPanel extends SherpaElement {
   /** The native dialog the panel draws in, NON-modal. */
   #surface = new DialogSurface(this, () => this.$<HTMLDialogElement>('.root'), {
     open: (dialog) => {
-      // …but never one that HOLDS this one: a panel opened inside a panel sits over it. TODO 555
-      for (const other of SherpaOverlayPanel.#shown) if (other !== this && !other.contains(this)) other.hide();
-      SherpaOverlayPanel.#shown.add(this);
+      this.#place();
+      if (!this.#home) this.#takeTheEdge();
       dialog.show();
       // A focusable separator must state its value: the width it is drawn at.
       this.$('.resize')?.setAttribute('aria-valuenow', String(Math.round(dialog.getBoundingClientRect().width)));
@@ -64,6 +79,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     // `button-click`, not `click` — a disabled sherpa-button still gets raw clicks.
     this.$('.expand')?.addEventListener('button-click', this.#onExpand);
     this.$('.external')?.addEventListener('button-click', this.#onExternal);
+    this.$('.pop')?.addEventListener('button-click', this.#onPop);
     /* The LEFT edge: dragged, it moves as far as the pointer does, and
        ArrowLeft widens. TRAP T-an-overlay-panel-resizes-from-its-left-edge
        TRAP T-an-edge-resizes-its-box */
@@ -88,12 +104,19 @@ export class SherpaOverlayPanel extends SherpaElement {
     }
   }
 
+  // Each connect: a move cancels what the last one listened to.
+  override onConnect(): void {
+    this.on(document, 'panel-room-change', this.#place);
+    this.#place();
+  }
+
   override onDisconnect(): void {
     SherpaOverlayPanel.#shown.delete(this);
   }
 
   override onChange(name: string): void {
     if (name === 'open') this.#surface.follow();
+    else if (name === 'data-fixed') this.#place();
     else if (name !== 'data-maximised') this.#syncHeader();
   }
 
@@ -120,6 +143,57 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.hide();
   }
 
+  /** Where the panel sat before it popped in; null while it floats. */
+  #home: { parent: ParentNode; before: ChildNode | null } | null = null;
+
+  /** Take the right edge: the other panels there shut. TRAP T-one-overlay-panel-at-a-time */
+  #takeTheEdge(): void {
+    // …but never one that HOLDS this one: a panel opened inside a panel sits over it. TODO 555
+    for (const other of SherpaOverlayPanel.#shown) if (other !== this && !other.contains(this)) other.hide();
+    SherpaOverlayPanel.#shown.add(this);
+  }
+
+  /** The shell whose end area can take a panel: none, no room, or the host's own panel there says no. */
+  #area(): Element | null {
+    const shell = document.querySelector('sherpa-app-shell');
+    if (!shell || shell.hasAttribute('data-no-room')) return null;
+    const held = shell.querySelector(':scope > [slot="panel-end"]');
+    return held && !(held instanceof SherpaOverlayPanel) ? null : shell;
+  }
+
+  /** Put the panel where `data-fixed` and the room say. TRAP T-a-panel-pops-into-the-end-area */
+  #place = (): void => {
+    if (!this.isConnected) return;
+    const shell = this.#area();
+    this.toggleState('no-area', !shell);
+    if (shell && this.hasAttribute('data-fixed')) this.#popIn(shell);
+    else this.#popOut();
+    this.toggleState('in-area', !!this.#home);
+  };
+
+  /** Into the end area, with the place it left noted. One panel to an area. */
+  #popIn(shell: Element): void {
+    const parent = this.parentNode;
+    if (this.#home || !parent) return;
+    const held = shell.querySelector(':scope > [slot="panel-end"]');
+    if (held !== this) held?.removeAttribute('data-fixed');
+    SherpaOverlayPanel.#shown.delete(this);
+    this.#home = { parent, before: this.nextSibling };
+    this.slot = 'panel-end';
+    moveInto(shell, this, null);
+  }
+
+  /** Back to the place it left, or the page's end if that has gone. */
+  #popOut(): void {
+    if (!this.#home) return;
+    const { parent, before } = this.#home;
+    this.#home = null;
+    this.removeAttribute('slot');
+    const back = parent.isConnected ? parent : document.body;
+    moveInto(back, this, before?.parentNode === back ? before : null);
+    if (this.open) this.#takeTheEdge();
+  }
+
   /** Mirror the panel's attributes onto the composed header. */
   #syncHeader(): void {
     const header = this.$('.header');
@@ -144,6 +218,13 @@ export class SherpaOverlayPanel extends SherpaElement {
     const maximised = !this.hasAttribute('data-maximised');
     this.set('data-maximised', maximised);
     this.emit('panel-expand', { maximised });
+  };
+
+  /** Pop in or out, and report it: a press is the reader's choice, a lost room is not. */
+  #onPop = (): void => {
+    const fixed = !this.hasAttribute('data-fixed');
+    this.set('data-fixed', fixed);
+    this.emit('panel-pop', { fixed });
   };
 
   /** The open-elsewhere button — the host decides where. */

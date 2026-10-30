@@ -2627,6 +2627,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-fixed",
+          "description": "a fixed panel, in the end panel area of the page's sherpa-app-shell; it floats again where there is no room for one",
+          "valueSet": "v"
+        },
+        {
           "name": "data-heading",
           "description": "header title text (rendered into .title)"
         },
@@ -2637,6 +2642,11 @@
         {
           "name": "data-maximised",
           "description": "full-overlay state: the panel fills the window and shows its breadcrumbs",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-poppable",
+          "description": "show the Pop in / Pop out button (needs a sherpa-app-shell with room)",
           "valueSet": "v"
         },
         {

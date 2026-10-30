@@ -8,12 +8,15 @@
     open              native boolean (read reflects dialog.open; set → show()/close())
     data-collapsed    collapsed state (body/footer hidden; the collapse toggle reflects it)
     data-maximised    full-overlay state: the panel fills the window and shows its breadcrumbs
+    data-fixed        a fixed panel, in the end panel area of the page's sherpa-app-shell;
+                      it floats again where there is no room for one
     data-status       status colour cascade (critical | warning | success | info | urgent)
 
   Toolbar buttons are shown by opt-in data-* flags (CSS-gated):
     data-collapsible  show the collapse toggle
     data-expandable   show the maximise / minimise button
     data-external     show the external-link button
+    data-poppable     show the Pop in / Pop out button (needs a sherpa-app-shell with room)
     data-dismissible  show the close button
 
   Slots:
@@ -30,6 +33,7 @@
     panel-collapse   (detail: { collapsed })
     panel-expand     (detail: { maximised })
     panel-external   (detail: { })
+    panel-pop        (detail: { fixed })  the reader pressed Pop in or Pop out
     panel-close      (detail: { })
     panel-resize     (detail: { width })  its left edge was dragged, or moved by the keys
 -->
@@ -54,6 +58,11 @@
       <span slot="actions" class="toolbar" part="toolbar">
         <slot name="actions" data-accepts="control"></slot>
         <span class="divider after-actions" aria-hidden="true"></span>
+        <!-- Pop in: a fixed panel in the shell's end area. TRAP T-a-panel-pops-into-the-end-area -->
+        <sherpa-button class="pop" part="pop" data-type="icon" data-size="sm"
+                       data-icon-start="sidebar-flip" aria-label="Pop in"
+                       data-swap-on="data-fixed" data-swap-data-icon-start="monitor-w-floating-window"
+                       data-swap-aria-label="Pop out"></sherpa-button>
         <sherpa-group class="view-modes" part="view-modes">
           <sherpa-button class="expand" part="expand" data-type="icon" data-size="sm"
                          data-icon-start="fullscreen" aria-label="Maximise"
