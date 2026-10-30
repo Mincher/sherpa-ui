@@ -43,6 +43,7 @@
  * - .valuesFor — What `declareValues` was told, as the data holds it.
  * - .groups — THE GROUPS IN FORCE — each value, and how many rows carry it.
  * - .selection — one field's whole state, ready for any control to draw
+ * - .fieldStatus — What a field is now, seen from a scope: the one answer for every control.
  * - .selectedFields — Every field currently selected.
  * - .debugState — EVERYTHING THIS SOURCE THINKS IS TRUE, in one object.
  * - .remote — Do this source's loads reach outside the data layer?
@@ -83,6 +84,7 @@ import {
 import {
   cameFrom, definitionOf, homeOf, keepOff, readingOf, viewHeldReadings,
 } from './query-edits.js';
+import { fieldStatus, type FieldStatus } from './field-status.js';
 import { coalesce, Latest } from './timing.js';
 import { QueryContext, type QueryChange, type QueryHandle } from './query-context.js';
 import { readingsOf, whereOf, type Condition, type Where } from './where.js';
@@ -941,6 +943,18 @@ export class DataSource extends EventTarget {
    */
   selection(field: string, label?: string): FilterState {
     return this.#catalogue.stateFor(field, readingOf(this.#draft, field) ?? {}, label);
+  }
+
+  /** What a field is now, seen from a scope: the one answer for every control. TRAP T-one-field-one-status */
+  fieldStatus(field: string, scope: string = VIEW): FieldStatus {
+    return fieldStatus({
+      draft: this.#draft,
+      applied: this.#applied,
+      state: (f, reading) => this.#catalogue.stateFor(f, reading),
+      pending: (f) => this.#context.pending(f),
+      failed: (f) => this.#failed.has(f),
+      label: (s) => this.#context.scopeLabel(s),
+    }, field, scope);
   }
 
   /** Every field currently selected. */

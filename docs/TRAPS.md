@@ -19746,3 +19746,18 @@ controls it binds to steer, and a binding skips an event whose ORIGIN
 
 - Site: `src/core/ui/bind-source.ts`
 - Site: `test/e2e/reforged-nested-binding.spec.ts`
+
+### T-one-field-one-status
+
+**One function says what a field is now, seen from a scope: `fieldStatus`.** Eight
+channels told a control parts of this, and each control worked out the rest, so a
+fix reached some chips and missed others: a preset's field no toolbar held wore the
+amber "on, filtering nothing" on its heading (TODO 611). The Query tells every
+control; no control asks another (Will, 2026-10-30). "Held above" comes from the
+hierarchy, the View scope over a local scope over a component. So `above` is read
+from the draft, as a raise shows at once, and `on` from the Query as applied. See
+docs/DATA-LAYER-PLAN.md, Step 3.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/field-status.ts`
+- Site: `test/unit/one-field-one-status.test.mjs`

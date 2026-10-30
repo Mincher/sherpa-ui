@@ -145,6 +145,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-one-cycle-for-one-value](TRAPS.md#t-one-cycle-for-one-value) — cycle
 - [T-one-datum-shape-for-chart-and-legend](TRAPS.md#t-one-datum-shape-for-chart-and-legend) — chart-datum
 - [T-one-field-one-filter-menu](TRAPS.md#t-one-field-one-filter-menu) — bind-selection, data, query-context
+- [T-one-field-one-status](TRAPS.md#t-one-field-one-status) — data-source, field-status
 - [T-one-function-places-label-and-gridline](TRAPS.md#t-one-function-places-label-and-gridline) — format-tick
 - [T-one-query-one-owner](TRAPS.md#t-one-query-one-owner) — data, data-source, query, query-context
 - [T-one-scale-for-every-chart](TRAPS.md#t-one-scale-for-every-chart) — format-tick
