@@ -196,6 +196,8 @@ export class SherpaProvider extends SherpaElement {
     this.addEventListener('panel-room-change', this.#modes.room);
     // A card's Show as: its slot's presentation, kept in the Query. Will, TODO 548
     this.addEventListener('presentation-change', this.#onShowAs);
+    // A card's filter toolbar, shown or shut. Will, TODO 629
+    this.addEventListener('filter-toolbar-change', this.#onToolbarToggle);
     /* A container's Retry, and a bar's Refresh: load again. Its Clear filters:
        every bar resets. TRAP T-a-container-shows-its-datas-state */
     this.addEventListener('data-refresh', (event) => {
@@ -232,6 +234,10 @@ export class SherpaProvider extends SherpaElement {
     rendered: () => this.rendered,
     changed: (mode) => {
       this.emit('filter-mode-change', { mode });
+    },
+    stepped: (bar) => {
+      const slot = this.#inherited(bar, 'data-scope');
+      if (slot) this.#drawToolbars(slot);
     },
   });
 
@@ -701,6 +707,7 @@ export class SherpaProvider extends SherpaElement {
       source?.query.wait(VIEW);
       // …and, where the app asks, every scope the page declares. Will, TODO 436
       this.#scopes = Object.keys(def?.scopes ?? {});
+      this.#pageId = definition.id;
       this.#pageFields = Object.keys(def?.fields ?? {});
       if (this.#applyEvery) for (const scope of this.#scopes) source?.query.wait(scope);
       // Shared, the View is the App Context, and keeps its answer there. TODO 453
@@ -1349,6 +1356,36 @@ export class SherpaProvider extends SherpaElement {
     source.query.present(slot, { kind: kind && kind !== 'default' ? kind : undefined });
   };
 
+  /** A card's toggle: its filter toolbar shown or shut, kept in the session. Will, TODO 629 */
+  #onToolbarToggle = (event: Event): void => {
+    const slot = this.#inherited(event.target as Element, 'data-scope');
+    if (!slot || /\s/.test(slot)) return;
+    event.stopPropagation();
+    const { shown } = (event as CustomEvent<{ shown: boolean }>).detail;
+    this.#session?.set(this.#toolbarKey(slot), shown);
+    this.#drawToolbars(slot, shown);
+  };
+
+  /** Where the session keeps a card's toolbar, as a slot's name is its page's. */
+  #toolbarKey(slot: string): string {
+    return `/cards/toolbars/${this.#pageId}/${slot}`;
+  }
+
+  /** A slot's filter toolbars and its toggles: as asked, else as the reader left them,
+   *  else as its page's markup does. A bar stepped back for the panel has no toggle:
+   *  it would do nothing. TRAP T-a-card-toggles-its-own-toolbar */
+  #drawToolbars(slot: string, asked?: boolean): void {
+    const inSlot = (selector: string): Element[] => [...this.querySelectorAll(selector)].filter((el) => this.#inherited(el, 'data-scope') === slot);
+    const toggles = inSlot('[data-filter-toolbar]');
+    if (!toggles.length) return;
+    const bars = inSlot('sherpa-quick-filter-toolbar');
+    const kept = this.#session?.get(this.#toolbarKey(slot));
+    const shown = asked ?? (typeof kept === 'boolean' ? kept : bars.some((bar) => !bar.hasAttribute('hidden')));
+    for (const bar of bars) bar.toggleAttribute('hidden', !shown);
+    const off = !bars.length || bars.every((bar) => bar.hasAttribute('data-panel-mode'));
+    for (const toggle of toggles) toggle.setAttribute('data-filter-toolbar', off ? 'off' : shown ? 'shown' : 'shut');
+  }
+
   /** A chart card's title follows what the reader set: "Primary by Secondary,
    *  grouped by Group", each part only where it is set. Set nothing, its page's
    *  own. Will, TODO 567 */
@@ -1374,6 +1411,9 @@ export class SherpaProvider extends SherpaElement {
     }
   }
 
+  /** The open page's id: a slot's name is its own. */
+  #pageId = '';
+
   /** The fields the open page declares: a row opened in a grid made from a chart shows them. */
   #pageFields: string[] = [];
 
@@ -1391,6 +1431,7 @@ export class SherpaProvider extends SherpaElement {
       if (own) host.setAttribute('data-presentation-default', own);
       host.setAttribute('data-presentation', this.#showAsOf(source, slot));
     }
+    this.#drawToolbars(slot);
     this.#retitle(el, slot, source);
     const kind = shown.kind ?? authored;
     if (!authored || !kind || kind === shownAs(el)) return false;

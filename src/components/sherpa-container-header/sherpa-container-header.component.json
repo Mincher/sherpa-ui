@@ -105,6 +105,21 @@
               }
             },
             {
+              "el": "sherpa-button",
+              "class": "toolbar-toggle",
+              "part": "toolbar-toggle",
+              "attrs": {
+                "data-type": "icon",
+                "data-size": "sm",
+                "data-look": "transparent",
+                "data-icon-start": "filter",
+                "aria-label": "Show filter toolbar",
+                "aria-pressed": "false",
+                "data-swap-on": "data-filter-toolbar=shown",
+                "data-swap-aria-pressed": "true"
+              }
+            },
+            {
               "el": "span",
               "class": "show-as",
               "part": "show-as"
@@ -190,6 +205,20 @@
       "declared": true,
       "kind": "style",
       "description": "show the drag handle"
+    },
+    {
+      "$type": "prop",
+      "name": "data-filter-toolbar",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "values": [
+        "shown",
+        "shut",
+        "off"
+      ],
+      "description": "shown | shut | off — a toggle for its card's filter toolbar; absent or off, none. Its provider writes it"
     },
     {
       "$type": "prop",
@@ -282,7 +311,7 @@
     }
   ],
   "populate": {
-    "shape": "{ collapsed?, collapsible?, description?, dismissible?, draggable?, heading?, icon?, presentation?, presentationDefault?, type? }",
+    "shape": "{ collapsed?, collapsible?, description?, dismissible?, draggable?, filterToolbar?, heading?, icon?, presentation?, presentationDefault?, type? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -315,6 +344,16 @@
       "$type": "state",
       "name": "collapsed",
       "selector": ":host([data-collapsed])"
+    },
+    {
+      "$type": "state",
+      "name": "shown",
+      "selector": ":host([data-filter-toolbar=\"shown\"])"
+    },
+    {
+      "$type": "state",
+      "name": "shut",
+      "selector": ":host([data-filter-toolbar=\"shut\"])"
     },
     {
       "$type": "state",
@@ -362,6 +401,16 @@
       "composed": true,
       "detail": {
         "kind": "string"
+      }
+    },
+    {
+      "$type": "event",
+      "name": "filter-toolbar-change",
+      "description": "The toolbar toggle, a request",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "shown": "boolean"
       }
     }
   ],

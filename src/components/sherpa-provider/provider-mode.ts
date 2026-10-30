@@ -39,6 +39,8 @@ export interface ModeHost {
   rendered(): Promise<void>;
   /** The reader switched the mode. */
   changed(mode: 'toolbars' | 'panel'): void;
+  /** A bar stepped back for the panel, or forward. */
+  stepped(bar: Element): void;
 }
 
 /** The panel or the bars, for one provider. */
@@ -180,6 +182,7 @@ export class ProviderMode {
    *  stays a toolbar. Will, TODO 436. TRAP T-panel-mode-hides-what-the-panel-answers */
   #stepBack(bar: Element): void {
     bar.toggleAttribute('data-panel-mode', this.#mode === 'panel' && this.#answered(bar) && (bar as HTMLElement).dataset['orientation'] !== 'portrait');
+    this.#host.stepped(bar);
   }
 
   /** Does a column answer this bar — hold its scope? */

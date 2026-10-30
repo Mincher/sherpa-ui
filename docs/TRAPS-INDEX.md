@@ -249,10 +249,11 @@ files. An entry that only tests cite is under Tests only.
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (83)
+## The join and the app layer (84)
 
 - [T-a-band-is-a-value-of-its-field](TRAPS.md#t-a-band-is-a-value-of-its-field) — provider
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — bind-source
+- [T-a-card-toggles-its-own-toolbar](TRAPS.md#t-a-card-toggles-its-own-toolbar) — provider
 - [T-a-chart-is-free-of-its-own-field](TRAPS.md#t-a-chart-is-free-of-its-own-field) — provider
 - [T-a-chart-scope-is-its-legend-field](TRAPS.md#t-a-chart-scope-is-its-legend-field) — provider
 - [T-a-closed-source-hears-nothing](TRAPS.md#t-a-closed-source-hears-nothing) — provider
@@ -445,8 +446,8 @@ files. An entry that only tests cite is under Tests only.
 - [T-one-cycle-for-one-value](TRAPS.md#t-one-cycle-for-one-value) — quick-filter, quick-filter-toolbar
 - [T-one-field-does-not-own-the-whole-map](TRAPS.md#t-one-field-does-not-own-the-whole-map) — quick-filter-toolbar
 - [T-one-field-one-filter-menu](TRAPS.md#t-one-field-one-filter-menu) — filter-menu, quick-filter-toolbar
-- [T-one-filters-button](TRAPS.md#t-one-filters-button) — filters-button, quick-filter-toolbar
 - [T-one-field-one-status](TRAPS.md#t-one-field-one-status) — filter-host
+- [T-one-filters-button](TRAPS.md#t-one-filters-button) — filters-button, quick-filter-toolbar
 - [T-one-pick-reads-field-and-value](TRAPS.md#t-one-pick-reads-field-and-value) — quick-filter
 - [T-one-query-one-owner](TRAPS.md#t-one-query-one-owner) — quick-filter-toolbar
 - [T-one-state-per-filtered-field](TRAPS.md#t-one-state-per-filtered-field) — quick-filter
@@ -1062,8 +1063,8 @@ files. An entry that only tests cite is under Tests only.
 - [T-motion-is-owned-here](TRAPS.md#t-motion-is-owned-here) — lint-css
 - [T-no-attribute-is-the-default-variant](TRAPS.md#t-no-attribute-is-the-default-variant) — project-tokens
 - [T-nothing-downloads-to-serve](TRAPS.md#t-nothing-downloads-to-serve) — playwright.config, sherpa-ui
-- [T-one-walk-counts-and-limits-in-order](TRAPS.md#t-one-walk-counts-and-limits-in-order) — check-bench
 - [T-one-field-one-status](TRAPS.md#t-one-field-one-status) — check-ownership
+- [T-one-walk-counts-and-limits-in-order](TRAPS.md#t-one-walk-counts-and-limits-in-order) — check-bench
 - [T-private-state-is-a-custom-state](TRAPS.md#t-private-state-is-a-custom-state) — check-props
 - [T-snap-vscode-breaks-webkit](TRAPS.md#t-snap-vscode-breaks-webkit) — playwright.config
 - [T-the-app-layer-is-opt-in](TRAPS.md#t-the-app-layer-is-opt-in) — check-weight

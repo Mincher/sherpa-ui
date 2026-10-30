@@ -14699,6 +14699,20 @@ headings stuck, and a wide sub-grid broke out of its parent. So:
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
+### T-a-card-toggles-its-own-toolbar
+
+**A card's header toggles the filter toolbars of its slot.** Will, TODO 629. The header
+asks, in `filter-toolbar-change`; the provider owns the answer, sets the bars' native
+`hidden` and writes `data-filter-toolbar` back. It is kept in the session under the page
+and the slot, as a slot's name means nothing on another page. Its bar stays bound while
+hidden, so a filter it holds still applies.
+
+Where the panel answers for its scope a bar has `data-panel-mode`, so hiding it would do
+nothing to see: the toggle reads `off` and goes, and `ProviderMode` says when a bar steps.
+
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `test/e2e/reforged-provider-summary.spec.ts`
+
 ### T-a-horizontal-legend-is-three-by-two
 
 A horizontal legend was a wrapping flex row, so it put a different number of
@@ -19811,12 +19825,12 @@ hierarchy, the View scope over a local scope over a component. So `above` is rea
 from the draft, as a raise shows at once, and `on` from the Query as applied. See
 docs/DATA-LAYER-PLAN.md, Step 3.
 
+- Site: `scripts/check-ownership.mjs`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/field-status.ts`
-- Site: `test/unit/one-field-one-status.test.mjs`
-- Site: `scripts/check-ownership.mjs`
 - Site: `src/core/ui/filter-host.ts`
+- Site: `test/unit/one-field-one-status.test.mjs`
 
 ### T-a-rule-names-its-clock-and-its-language
 

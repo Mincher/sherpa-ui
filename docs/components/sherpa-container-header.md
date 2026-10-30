@@ -29,6 +29,7 @@ For the header row in a `sherpa-container`'s `header` slot: a heading, an icon, 
 | `data-description` | text |  | secondary text (rendered into .description) |
 | `data-dismissible` | boolean |  | show the close button |
 | `data-draggable` | boolean |  | show the drag handle |
+| `data-filter-toolbar` | `shown` `shut` `off` |  | shown \| shut \| off — a toggle for its card's filter toolbar; absent or off, none. Its provider writes it |
 | `data-heading` | text |  | heading text (rendered into .title) |
 | `data-icon` | text |  | a glyph before the title (shows the icon slot) |
 | `data-presentation` | `default` `off` |  | default \| bar \| donut \| pie \| grid \| off — Show as, a menu before close, with what the card shows ticked; off, none. Its provider writes it |
@@ -45,6 +46,7 @@ Each one bubbles.
 | `header-collapse` | `{ collapsed: boolean }` |  |
 | `header-drag` |  |  |
 | `presentation-change` | `{ kind: string }` | A Show as pick, a request |
+| `filter-toolbar-change` | `{ shown: boolean }` | The toolbar toggle, a request |
 
 ## Slots
 
@@ -59,7 +61,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`actions`, `close`, `description`, `drag`, `header`, `icon`, `labels`, `left`, `metadata`, `show-as`, `title`, `toggle`
+`actions`, `close`, `description`, `drag`, `header`, `icon`, `labels`, `left`, `metadata`, `show-as`, `title`, `toggle`, `toolbar-toggle`
 
 ## CSS custom properties it reads
 
@@ -95,6 +97,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ collapsed?, collapsible?, description?, dismissible?, draggable?, heading?, icon?, presentation?, presentationDefault?, type? }`
+`{ collapsed?, collapsible?, description?, dismissible?, draggable?, filterToolbar?, heading?, icon?, presentation?, presentationDefault?, type? }`
 
 Its declared props by name: `label` sets data-label.

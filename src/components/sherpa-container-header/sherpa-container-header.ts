@@ -27,6 +27,8 @@ export class SherpaContainerHeader extends SherpaElement {
     'data-presentation': { type: 'enum', kind: 'behaviour', values: [...SHOW_AS, 'off'] },
     // What Default draws: the menu's first row names it. Its provider writes this. Will, TODO 620
     'data-presentation-default': { type: 'string', kind: 'behaviour' },
+    // Its card's filter toolbar: a press is a REQUEST, its provider writes this. Will, TODO 629
+    'data-filter-toolbar': { type: 'enum', kind: 'behaviour', values: ['shown', 'shut', 'off'] },
   } as const;
 
   override onChange(name: string): void {
@@ -45,6 +47,7 @@ export class SherpaContainerHeader extends SherpaElement {
     // `button-click`, not `click` — a disabled sherpa-button suppresses its own event.
     this.$('.close')?.addEventListener('button-click', this.#onDismiss);
     this.$('.toggle')?.addEventListener('button-click', this.#onToggle);
+    this.$('.toolbar-toggle')?.addEventListener('button-click', this.#onToolbarToggle);
     this.$('.drag')?.addEventListener('pointerdown', this.#onDrag);
   }
 
@@ -56,6 +59,11 @@ export class SherpaContainerHeader extends SherpaElement {
     const collapsed = !this.hasAttribute('data-collapsed');
     this.set('data-collapsed', collapsed);
     this.emit('header-collapse', { collapsed });
+  };
+
+  /** Ask for its card's filter toolbar, shown or shut. */
+  #onToolbarToggle = (): void => {
+    this.emit('filter-toolbar-change', { shown: this.dataset['filterToolbar'] !== 'shown' });
   };
 
   /** The drag handle was grabbed. */

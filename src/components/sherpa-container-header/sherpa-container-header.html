@@ -17,6 +17,8 @@
     data-presentation default | bar | donut | pie | grid | off — Show as, a menu before close, with
                       what the card shows ticked; off, none. Its provider writes it
     data-presentation-default  what Default draws, which the menu's first row names. Its provider writes it
+    data-filter-toolbar  shown | shut | off — a toggle for its card's filter toolbar; absent or off,
+                      none. Its provider writes it
 
   Slots:
     heading   — custom heading element (replaces the default .title)
@@ -29,6 +31,7 @@
     header-collapse  (detail: { collapsed })
     header-drag      (detail: {})
     presentation-change  (detail: { kind }) — a Show as pick, a request
+    filter-toolbar-change  (detail: { shown }) — the toolbar toggle, a request
 -->
 <template id="default">
   <!-- ONE GRID, as Figma's Container Header is (912:33355): LEFT · TITLE ·
@@ -59,6 +62,11 @@
 
     <div class="actions" part="actions">
       <slot name="actions" data-accepts="control,input"></slot>
+      <!-- Its card's filter toolbar. Will, TODO 629 -->
+      <sherpa-button class="toolbar-toggle" part="toolbar-toggle" data-type="icon" data-size="sm"
+                     data-look="transparent" data-icon-start="filter"
+                     aria-label="Show filter toolbar" aria-pressed="false"
+                     data-swap-on="data-filter-toolbar=shown" data-swap-aria-pressed="true"></sherpa-button>
       <!-- SHOW AS, from its family file, where data-presentation offers it. Will, TODO 548 -->
       <span class="show-as" part="show-as"></span>
       <sherpa-button class="close" part="close" data-type="icon" data-size="sm"

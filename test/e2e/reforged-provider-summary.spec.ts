@@ -658,7 +658,7 @@ test('a grid card\'s Show as draws its slot as a chart — bars and stack as its
     ${SETUP}
     provider.innerHTML = \`
       <sherpa-container data-scope="data">
-        <sherpa-toolbar slot="header" data-presentation="default"></sherpa-toolbar>
+        <sherpa-container-header slot="header" data-presentation="default"></sherpa-container-header>
         <sherpa-data-grid id="grid" data-scope="data" data-grow></sherpa-data-grid>
       </sherpa-container>\`;
     const grid = provider.querySelector('#grid');
@@ -673,7 +673,7 @@ test('a grid card\'s Show as draws its slot as a chart — bars and stack as its
     provider.provide({ sources: { sales: source } });
     await source.load();
     await settle();
-    const bar = provider.querySelector('sherpa-toolbar');
+    const bar = provider.querySelector('sherpa-container-header');
     const pick = async (kind) => {
       const box = [...bar.shadowRoot.querySelectorAll('.presentation-menu input')].find((i) => i.value === kind);
       box.checked = true;
@@ -910,4 +910,45 @@ test('a pivot filters as its grid does: its Primary heading and cells, and its r
   expect(r['tue']).toMatchObject({ region: ['EU'], day: ['Tue'], rows: ['Tue|1|1'] });
   // A sub-grid never asks the provider.
   expect(r['leaked']).toBe(0);
+});
+
+// A card's header toggles its filter toolbar: the provider answers. Will, TODO 629
+// TRAP T-a-card-toggles-its-own-toolbar
+test('a card\'s header shows and shuts its own filter toolbar, and the other card\'s stays', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-container data-scope="one">
+        <sherpa-container-header id="h1" slot="header" data-heading="One" data-filter-toolbar="shut"></sherpa-container-header>
+        <sherpa-quick-filter-toolbar id="b1" hidden data-no-actions data-no-saves></sherpa-quick-filter-toolbar>
+        <sherpa-barchart id="c1" data-segment-field="plan"></sherpa-barchart>
+      </sherpa-container>
+      <sherpa-container data-scope="two">
+        <sherpa-container-header id="h2" slot="header" data-heading="Two" data-filter-toolbar="shown"></sherpa-container-header>
+        <sherpa-quick-filter-toolbar id="b2" data-no-actions data-no-saves></sherpa-quick-filter-toolbar>
+        <sherpa-barchart id="c2" data-segment-field="plan"></sherpa-barchart>
+      </sherpa-container>\`;
+    const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }) });
+    source.declareValues('plan', PLANS);
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    const read = () => ({
+      h1: provider.querySelector('#h1').dataset.filterToolbar, b1: provider.querySelector('#b1').hidden,
+      h2: provider.querySelector('#h2').dataset.filterToolbar, b2: provider.querySelector('#b2').hidden,
+      pressed: provider.querySelector('#h1').shadowRoot.querySelector('.toolbar-toggle').getAttribute('aria-pressed'),
+    });
+    const first = read();
+    provider.querySelector('#h1').shadowRoot.querySelector('.toolbar-toggle').shadowRoot.querySelector('button').click();
+    await settle();
+    const opened = read();
+    provider.querySelector('#h1').shadowRoot.querySelector('.toolbar-toggle').shadowRoot.querySelector('button').click();
+    await settle();
+    return { first, opened, shut: read() };
+  })()`);
+  expect(r).toEqual({
+    first: { h1: 'shut', b1: true, h2: 'shown', b2: false, pressed: 'false' },
+    opened: { h1: 'shown', b1: false, h2: 'shown', b2: false, pressed: 'true' },
+    shut: { h1: 'shut', b1: true, h2: 'shown', b2: false, pressed: 'false' },
+  });
 });

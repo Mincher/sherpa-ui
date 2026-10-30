@@ -43,11 +43,6 @@
           "part": "trailing",
           "children": [
             {
-              "el": "span",
-              "class": "show-as",
-              "part": "show-as"
-            },
-            {
               "slot": "trailing",
               "attrs": {
                 "data-accepts": "content"
@@ -71,28 +66,6 @@
       ],
       "default": "comfortable",
       "description": "comfortable | compact (tighter block padding)"
-    },
-    {
-      "$type": "prop",
-      "name": "data-presentation",
-      "type": "enum",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour",
-      "values": [
-        "default",
-        "off"
-      ],
-      "description": "default | bar | donut | pie | grid | off — Show as, a menu before the trailing controls, with what the card shows ticked; off, none. Its provider writes it"
-    },
-    {
-      "$type": "prop",
-      "name": "data-presentation-default",
-      "type": "string",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour",
-      "description": "what Default draws, which the menu's first row names. Its provider writes it"
     },
     {
       "$type": "prop",
@@ -128,7 +101,7 @@
     }
   ],
   "populate": {
-    "shape": "{ presentation?, presentationDefault?, type? }",
+    "shape": "{ type? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -141,28 +114,6 @@
       "$type": "state",
       "name": "bordered",
       "selector": ":host([data-type=\"bordered\"])"
-    },
-    {
-      "$type": "state",
-      "name": "presentation",
-      "selector": ":host([data-presentation])"
-    },
-    {
-      "$type": "state",
-      "name": "off",
-      "selector": ":host([data-presentation=\"off\"])"
-    }
-  ],
-  "events": [
-    {
-      "$type": "event",
-      "name": "presentation-change",
-      "description": "A Show as pick, a request.",
-      "bubbles": true,
-      "composed": true,
-      "detail": {
-        "kind": "string"
-      }
     }
   ],
   "$extensions": {

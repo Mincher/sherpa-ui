@@ -777,6 +777,21 @@
           "valueSet": "v"
         },
         {
+          "name": "data-filter-toolbar",
+          "description": "shown | shut | off — a toggle for its card's filter toolbar; absent or off, none. Its provider writes it",
+          "values": [
+            {
+              "name": "shown"
+            },
+            {
+              "name": "shut"
+            },
+            {
+              "name": "off"
+            }
+          ]
+        },
+        {
           "name": "data-heading",
           "description": "heading text (rendered into .title)"
         },
@@ -984,6 +999,9 @@
           "valueSet": "v"
         },
         {
+          "name": "data-failed"
+        },
+        {
           "name": "data-fetch-fields",
           "description": "the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider."
         },
@@ -998,9 +1016,6 @@
         {
           "name": "data-heading-group",
           "description": "a Group button in each list column's heading: it groups by that column; a group row offers Ungroup. Set by its provider. TODO 500",
-        {
-          "name": "data-failed"
-        },
           "valueSet": "v"
         },
         {
@@ -1054,6 +1069,9 @@
           "description": "the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and never writes data-page itself."
         },
         {
+          "name": "data-pending"
+        },
+        {
           "name": "data-primary-field",
           "description": "its slot's Primary: that column leads, pinned. Set by its provider. TODO 548"
         },
@@ -1068,9 +1086,6 @@
         },
         {
           "name": "data-select",
-        {
-          "name": "data-pending"
-        },
           "description": "multiple | single — single draws RADIOS, holds one row, and shows no control in the header: \"select all\" is meaningless where only one can be chosen",
           "values": [
             {
@@ -3921,22 +3936,6 @@
               "name": "compact"
             }
           ]
-        },
-        {
-          "name": "data-presentation",
-          "description": "default | bar | donut | pie | grid | off — Show as, a menu before the trailing controls, with what the card shows ticked; off, none. Its provider writes it",
-          "values": [
-            {
-              "name": "default"
-            },
-            {
-              "name": "off"
-            }
-          ]
-        },
-        {
-          "name": "data-presentation-default",
-          "description": "what Default draws, which the menu's first row names. Its provider writes it"
         },
         {
           "name": "data-type",

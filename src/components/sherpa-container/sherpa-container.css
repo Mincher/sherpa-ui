@@ -126,6 +126,12 @@
   min-block-size: 0;
 }
 
+/* A filter toolbar leading the body: half the body's top padding moves under it, as
+   what follows has none, so it sits as far from each. Will, TODO 632 */
+.body ::slotted(sherpa-quick-filter-toolbar) {
+  margin-block: calc(var(--_pad) / -2) calc(var(--_pad) / 2);
+}
+
 /* ── State overlay. A neutral scrim, deliberately never a status tint. ── */
 .state {
   display: none;
