@@ -53,9 +53,10 @@ export class ToolbarHeader {
     drawSaveActions(el, this.host.root(), menu, this.saved.applied, manage);
   }
 
-  /** A saved set ticked takes it; unticked, takes it off. TODO 436 */
-  pick(values: readonly string[]): void {
-    const set = this.saved.pick(new Set(values));
+  /** A saved set ticked takes it; unticked, takes it off. Its rows leave `values`:
+   *  what is left is the fields' answer. TODOs 436, 597 */
+  pick(values: Set<string>): void {
+    const set = this.saved.pick(values);
     if (set.apply) this.host.emit('filters-apply', { id: set.apply });
     else if (set.dismiss) this.host.emit('filters-dismiss', { id: set.dismiss });
   }

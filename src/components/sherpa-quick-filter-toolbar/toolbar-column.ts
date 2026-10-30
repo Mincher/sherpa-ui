@@ -208,7 +208,7 @@ export class ToolbarColumn {
 
   /** A saved set ticked in the Saved menu takes it; unticked, takes it off. TODO 436 */
   #onSavedPick = (event: Event): void => {
-    this.#header.pick((event as CustomEvent).detail?.values ?? []);
+    this.#header.pick(new Set((event as CustomEvent).detail?.values ?? []));
   };
 
   /** A Saved menu row: a save row, or Manage. TODO 436 */
@@ -223,13 +223,17 @@ export class ToolbarColumn {
    *  asked of the scope its row names. A saved set's row takes it. TODO 105, 366 */
   #onFiltersCommit = (event: Event): void => {
     const want = new Set(((event as CustomEvent).detail?.values ?? []) as string[]);
-    this.#header.pick([...want]);
+    /* WHAT IS HELD NOW, before a set is taken: a chip it adds is no row the reader
+       unticked. TODO 597 */
+    const removes: { scope: string; id: string }[] = [];
     const adds = new Map<string, string[]>();
     for (const [value, { scope, id }] of this.#rows) {
       const held = this.#scopes.find((s) => s.scope === scope)?.filters.some((f) => f.id === id && f.removable) ?? false;
-      if (held && !want.has(value)) this.#host.emit('filter-remove', { scope, id });
+      if (held && !want.has(value)) removes.push({ scope, id });
       if (!held && want.has(value)) adds.set(scope, [...adds.get(scope) ?? [], id]);
     }
+    this.#header.pick(want);
+    for (const remove of removes) this.#host.emit('filter-remove', remove);
     for (const [scope, ids] of adds) this.#host.emit('filter-add', { scope, ids });
   };
 

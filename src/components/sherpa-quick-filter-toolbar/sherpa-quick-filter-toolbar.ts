@@ -2221,7 +2221,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** A saved set ticked in the Saved menu takes it; unticked, takes it off. TODO 436 */
   #onSavedPick = (event: Event): void => {
-    if (this.pathFind(event, '.saved-btn')) this.#header.pick((event as CustomEvent).detail?.values ?? []);
+    if (this.pathFind(event, '.saved-btn')) this.#header.pick(new Set((event as CustomEvent).detail?.values ?? []));
   };
 
   /** Is an offered field spent — the source tallied it, and found no value left? */
@@ -2445,8 +2445,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        is its chip's on/off instead, and its × removes it.
        TRAP T-the-add-menu-is-the-whole-list */
     const want = new Set(((event as CustomEvent).detail?.values ?? []) as string[]);
+    /* WHAT IS HELD NOW, before a set is taken: a chip it adds is no row the reader
+       unticked, and removing it would drop the set's filter. TODO 597 */
+    const ones = this.#oneRows;
+    const held = new Set(this.#filters.filter((f) => f.removable && !ones.has(f.id)).map((f) => f.id));
     // A saved set's row takes it, or — unticked — takes it off. TODO 105, 366
-    this.#header.pick([...want]);
+    this.#header.pick(want);
     // Only a row the reader CHANGED: a stale tick never undoes a chip. TODO 54
     const flips: QueryRequest[] = [];
     let flipped = false;
@@ -2463,8 +2467,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (field != null && chip.reading) flips.push({ field, suspended: !on });
     }
     if (still) this.#syncOneRows();
-    const ones = this.#oneRows;
-    const held = new Set(this.#filters.filter((f) => f.removable && !ones.has(f.id)).map((f) => f.id));
     const added = [...want].filter((id) => !held.has(id) && !ones.has(id));
     const gone = [...held].filter((id) => !want.has(id));
     for (const id of gone) this.#removeFilter(id);
