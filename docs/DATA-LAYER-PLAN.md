@@ -209,6 +209,19 @@ rows and throws them away (`store-cache.ts:356`). `RestStore` has no `totalCount
 - A row is checked against its schema once, not on every read.
 - Finding a row by key, and a tiered field's tree, no longer walk every row each time.
 
+Time in the data layer, before and after, on one machine, without drawing:
+
+| Act | Rows | Before | After |
+|---|---|---|---|
+| Turn a page | 1M | 157 ms | 5 ms |
+| Open, with tiered fields | 1M | 4,908 ms | 2,624 ms |
+| Add a row | 1M | 719 ms | 447 ms |
+| Remote: Apply a saved filter | 100k | 595 ms | 29 ms |
+| Remote: a heading's filter | 100k | 210 ms | 35 ms |
+
+5 ms is the bench's floor. A remote set of 100k is held now, which is most of the
+gain there.
+
 **Not done yet:**
 
 - A 100k row in the bench. It counts and never times
