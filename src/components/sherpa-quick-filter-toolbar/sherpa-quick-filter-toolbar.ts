@@ -53,6 +53,9 @@ const ORDER_BY = 'value';
 /** A filter chip, in the run or in a set. TRAP T-a-filter-set-groups-or-chains */
 const CHIP = '.chips > .chip';
 
+/** What the scope above holds, as last told. */
+type Above = { ids: readonly string[]; readings: Readonly<Record<string, FieldReading>>; at?: string };
+
 /** The columns the leading Group / Sort chips offer. */
 export interface OrganiseDef {
   group?: OrganiseColumn[];
@@ -1028,7 +1031,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #held: {
     values?: Record<string, readonly string[]>;
     chips: Map<string, { picks: readonly string[] } | { reading: FieldReading }>;
-    supersede?: { ids: readonly string[]; at?: string };
+    supersede?: Above;
   } = { chips: new Map() };
 
   /** What `values` will report once the held steers land. */
@@ -1150,7 +1153,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * supersede([...ids]) — the VIEW now owns these fields.
+   * supersede(readings) — the VIEW now owns these fields, each with its answer there.
    *
    * The chips are SUSPENDED, never removed: each keeps its value and its place,
    * and comes back the moment the view lets the field go. Removing them would
@@ -1162,31 +1165,36 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *
    * TRAP T-a-superseded-chip-suspends-it-is-never-removed
    */
-  supersede(ids: readonly string[], appliedAt?: string): void {
+  supersede(readings: Readonly<Record<string, FieldReading>>, appliedAt?: string): void {
     // KEPT, so a chip a rebuild remakes is held above again. Will, TODO 479
-    this.#above = { ids: [...ids], ...(appliedAt ? { at: appliedAt } : {}) };
+    const ids = Object.keys(readings);
+    this.#above = { ids, readings, ...(appliedAt ? { at: appliedAt } : {}) };
     if (!this.#chips().length) {
       this.#held.supersede = this.#above;
       return;
     }
     // By field or by id: a chip named for its question answers its def's field.
-    const taken = new Set(ids.map((f) => this.#idOf(f)));
+    const taken = new Map(ids.map((f) => [this.#idOf(f), readings[f]!]));
     for (const chip of this.#chips()) {
       const id = chip.dataset['id'];
       if (!id) continue;
-      const held = taken.has(id);
-      chip.toggleAttribute('data-superseded', held);
+      const held = taken.get(id);
+      const was = chip.hasAttribute('data-superseded');
+      chip.toggleAttribute('data-superseded', !!held);
       /* WHERE it is filtered instead. Only the host knows — this bar cannot
          see the one that took the field. An off chip with no explanation reads
          as "your filter vanished".
          TRAP T-an-inactive-chip-says-where-its-filter-went */
       if (held && appliedAt) chip.setAttribute('data-applied-at', appliedAt);
       else chip.removeAttribute('data-applied-at');
+      // A preset's hold on it there shows here too: the Query says so, not the preset's chip. TODO 613
+      if (held) (chip as SherpaQuickFilter).presets = held.byPreset;
+      else if (was) (chip as SherpaQuickFilter).presets = undefined;
     }
   }
 
   /** The fields the View holds, as last told: every rebuild draws them again. */
-  #above: { ids: string[]; at?: string } | null = null;
+  #above: Above | null = null;
 
   /** The ids this bar currently has suspended. */
   get superseded(): string[] {
@@ -1376,7 +1384,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       else this.#paintReading(id, steer.reading);
     }
     const above = held.supersede ?? this.#above;
-    if (above) this.supersede(above.ids, above.at);
+    if (above) this.supersede(above.readings, above.at);
     this.drawResults(this.#results, undefined, this.#end);
 
     /* THE ADD MENU LISTS WHAT IS HELD, so it follows the run. `populate()` is

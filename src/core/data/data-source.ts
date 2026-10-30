@@ -884,7 +884,7 @@ export class DataSource extends EventTarget {
   #draw(field: string): void {
     const home = homeOf(this.#draft, field);
     // A View answer shows in every grid's heading too.
-    if (home === VIEW) this.#syncColumns();
+    if (home === VIEW) this.#syncHeld();
     const state = this.selection(field);
     const off = state.fieldState === 'suspended';
     // Suspended, its values are not "picked" in the state: they are the reading's own.
@@ -973,15 +973,10 @@ export class DataSource extends EventTarget {
    * coupled to a toolbar. Held in the Query. TRAP T-a-scope-is-a-place-not-a-reach
    */
 
-  /** Each grid below the View is told the fields the View holds, as APPLIED. */
-  #syncColumns(): void {
-    this.#binding.supersedeColumns(viewHeldReadings(this.#applied));
-  }
-
-  /** Tell each grid and each bar below the View what the View holds now. */
-  #syncSuperseded(): void {
-    this.#syncColumns();
-    this.#binding.supersede(this.#context.scope(VIEW));
+  /** Each control below the View is told what the View holds: from the draft, as a
+   *  raise shows at once, each with its answer in force. TRAP T-one-field-one-status */
+  #syncHeld(): void {
+    this.#binding.supersede(viewHeldReadings(this.#draft, this.#applied));
   }
 
   /* ── What a scope MAY hold ─────────────────────────────────────────────
@@ -1214,7 +1209,7 @@ export class DataSource extends EventTarget {
         this.readValues(this.#context.scope(change.scope));
         if (change.moved.length) this.#recompose();
         for (const field of change.moved) this.#draw(field);
-        if (change.scope === VIEW) this.#syncSuperseded();
+        if (change.scope === VIEW) this.#syncHeld();
         this.#binding.drawBarsBehind(change.scope);
         this.#binding.drawScopesSoon();
         return;
@@ -1242,7 +1237,7 @@ export class DataSource extends EventTarget {
       case 'commit':
         this.#recompose();
         // The headings show what is APPLIED.
-        this.#syncColumns();
+        this.#syncHeld();
         return;
       case 'drawn':
         for (const field of change.fields) this.#draw(field);
@@ -1285,7 +1280,7 @@ export class DataSource extends EventTarget {
     for (const field of new Set([...before, ...this.selectedFields])) this.#draw(field);
     await this.#binding.drawEveryBar();
     // Drawn, never reported: the Query is already the answer.
-    this.#syncSuperseded();
+    this.#syncHeld();
     this.#binding.drawScopesSoon();
   }
 
@@ -2079,12 +2074,9 @@ export class DataSource extends EventTarget {
     // …and whether its scope waits, and what in it does. TODO 406
     if (facts.scope && this.#context.waiting()) this.#syncPending();
     if (Array.isArray(facts.scope) && el.drawScopes) this.#binding.drawScopesSoon();
-    if (typeof facts.scope === 'string' && el.supersedeColumns) this.#syncColumns();
-    /* …and a bar below the View, what the View holds: one bound after the last
-       word — a column's section drawn later — never heard it. Will, TODO 479 */
-    if (typeof facts.scope === 'string' && facts.scope !== VIEW && el.supersede) {
-      el.supersede(this.#context.scope(VIEW), this.#context.scopeLabel(VIEW));
-    }
+    /* …and what the View holds: one bound after the last word — a column's section
+       drawn later — never heard it. Will, TODO 479 */
+    if (typeof facts.scope === 'string' && facts.scope !== VIEW && el.supersede) this.#syncHeld();
     /* …and the answers the Query holds already — a fetching list's start — LAST:
        a bar told its scope waits rebuilds its chips. TODO 403 */
     if (facts.scope && el.drawReading) for (const field of this.selectedFields) this.#draw(field);

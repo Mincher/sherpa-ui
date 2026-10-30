@@ -183,7 +183,7 @@ function control(tag, id, holds = []) {
     };
   }
   // A bar supersedes only its own chips.
-  if (has('supersede')) el.supersede = (fields) => { counters.draws++; el.superseded = (fields ?? []).filter((f) => el.holds.includes(f)); };
+  if (has('supersede')) el.supersede = (held) => { counters.draws++; el.superseded = Object.keys(held ?? {}).filter((f) => el.holds.includes(f)); };
   // As the toolbar draws a scope: its fields, and each one's answer.
   if (has('drawScope')) {
     el.drawScope = (d) => {

@@ -16939,7 +16939,7 @@ reading)`, then `commit({ field })` — and a field no scope holds is held in
 the grid's scope first, so its bar is drawn the field's normal chip, from the
 Query. A BOUND heading asks, then is drawn: it writes neither its filters nor
 what it drew before it reports, and `drawReading` fills them (366 step 23). A field the View holds is sent to every grid below it with its
-APPLIED answer (`supersedeColumns`), shown read-only; the source sends it
+APPLIED answer (`supersede`), shown read-only; the source sends it
 when the View's holds change, when a View answer is drawn, and on commit.
 
 Only a SCOPED grid: an unscoped one has no place for it in the Query, so its
@@ -18084,7 +18084,7 @@ Region heading (the query's `data-filter-fields`), but its menu showed nothing
 ticked — so a reader could pick a contradicting value there. His ruling:
 shown, but held higher.
 
-`supersedeColumns(readings, appliedAt)` names the fields a higher scope holds,
+`supersede(readings, appliedAt)` names the fields a higher scope holds,
 each with its answer. Such a heading draws that answer — handed to its menu as
 a reading, as its own is — with the chip's superseded look and tip ("Filter moved to View scope. This chip
 holds EMEA."), and its menu `data-readonly`: rows and conditions `inert`, no
@@ -18214,7 +18214,7 @@ writes plain picks; rows the View kept stay kept, in Simple mode.
 
 **What the source hands out is the Query's own, frozen; what it takes in is
 copied** (366 step 6, finishing 319). `select()` and `write()` copied one layer,
-so a caller's condition rows became the Query's, and `supersedeColumns` handed
+so a caller's condition rows became the Query's, and `supersede` handed
 a grid the APPLIED readings, which the grid kept: an edit on either side moved
 the other, with no event.
 
@@ -19761,3 +19761,4 @@ docs/DATA-LAYER-PLAN.md, Step 3.
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/field-status.ts`
 - Site: `test/unit/one-field-one-status.test.mjs`
+- Site: `src/core/data/data-source-types.ts`

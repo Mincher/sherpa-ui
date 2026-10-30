@@ -1089,13 +1089,13 @@ export class SherpaDataGrid extends SherpaElement {
 
 
   /**
-   * supersedeColumns(readings, appliedAt) — the fields a HIGHER scope holds,
+   * supersede(readings, appliedAt) — the fields a HIGHER scope holds,
    * each with the answer it holds there. A named heading SHOWS that answer,
    * read-only, with the superseded look and tip, so no contradicting pick can
    * be made in it; a heading not named is released. Will, 2026-09-26.
    * TRAP T-a-view-held-heading-shows-and-refuses
    */
-  supersedeColumns(readings: Readonly<Record<string, FieldReading>>, appliedAt?: string): void {
+  supersede(readings: Readonly<Record<string, FieldReading>>, appliedAt?: string): void {
     // The same answer again rebuilds nothing — a host sends it on every change. TODO 523 F8
     const was = this.#superseded;
     const fields = Object.entries(readings);
@@ -1364,7 +1364,7 @@ export class SherpaDataGrid extends SherpaElement {
       else sub.setAttribute(name, value);
     }
     if (!sub.hasRendered) return;
-    sub.supersedeColumns(Object.fromEntries(this.#superseded), this.#supersededAt);
+    sub.supersede(Object.fromEntries(this.#superseded), this.#supersededAt);
     for (const [field, reading] of this.#columnFilters) sub.drawReading(field, reading);
     sub.drawPresent(this.#present);
     sub.drawOffered(this.#offered);

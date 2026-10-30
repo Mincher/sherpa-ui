@@ -2723,7 +2723,7 @@ test('a heading holds a chain: set from outside, or typed in, it shows and appli
  */
 test('a view-held heading shows the view\'s answer, read-only, and is released after', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    type Grid = HTMLElement & { supersedeColumns(r: Record<string, unknown>, at?: string): void;
+    type Grid = HTMLElement & { supersede(r: Record<string, unknown>, at?: string): void;
       columnClause(f: string): unknown };
     const grid = await window.__mount<Grid>('sherpa-data-grid', {
       columns: [{ field: 'region', header: 'Region' }],
@@ -2741,11 +2741,11 @@ test('a view-held heading shows the view\'s answer, read-only, and is released a
         own: grid.columnClause('region'),
       };
     };
-    grid.supersedeColumns({ region: { picked: ['EMEA'] } }, 'App header');
+    grid.supersede({ region: { picked: ['EMEA'] } }, 'App header');
     await window.__settled();
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
     const held = read();
-    grid.supersedeColumns({});
+    grid.supersede({});
     await window.__settled();
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
     return { held, released: read() };
@@ -2757,12 +2757,12 @@ test('a view-held heading shows the view\'s answer, read-only, and is released a
 
 test('a pointer opens a held heading\'s menu, read-only, and its tip still says why (Will, TODO 598)', async ({ page }) => {
   await page.evaluate(async () => {
-    type Grid = HTMLElement & { supersedeColumns(r: Record<string, unknown>, at?: string): void };
+    type Grid = HTMLElement & { supersede(r: Record<string, unknown>, at?: string): void };
     const grid = await window.__mount<Grid>('sherpa-data-grid', {
       columns: [{ field: 'region', header: 'Region' }],
       rows: [{ region: 'EMEA' }, { region: 'APAC' }],
     }, { 'data-column-filters': true });
-    grid.supersedeColumns({ region: { picked: ['EMEA'] } }, 'App header');
+    grid.supersede({ region: { picked: ['EMEA'] } }, 'App header');
     await window.__settled();
   });
   const chip = page.locator('sherpa-data-grid .head-cell[data-field="region"] .head-filter');
@@ -2806,7 +2806,7 @@ test('a View-held heading marks the View\'s matches, not its own old answer', as
   const r = await page.evaluate(async () => {
     const grid = await window.__mount<HTMLElement & {
       setColumnFilter(f: string, c: unknown[] | null): void;
-      supersedeColumns(r: Record<string, unknown>, at?: string): void;
+      supersede(r: Record<string, unknown>, at?: string): void;
     }>('sherpa-data-grid', {
       columns: [{ field: 'owner', header: 'Owner' }],
       rows: [{ owner: 'Dana' }, { owner: 'Ravi' }],
@@ -2817,10 +2817,10 @@ test('a View-held heading marks the View\'s matches, not its own old answer', as
     grid.setColumnFilter('owner', ['owner', 'contains', 'Da']);
     await window.__settled();
     const own = marks();
-    grid.supersedeColumns({ owner: { op: 'contains', text: 'Ra' } }, 'App header');
+    grid.supersede({ owner: { op: 'contains', text: 'Ra' } }, 'App header');
     await window.__settled();
     const held = marks();
-    grid.supersedeColumns({});
+    grid.supersede({});
     await window.__settled();
     return { own, held, released: marks() };
   });
@@ -2999,7 +2999,7 @@ test.describe('a cell filter chip', () => {
 
   test('an INACTIVE chip on a field the View holds, that refuses; none on a value it filters by, or where headings do not filter', async ({ page }) => {
     const hold = (picked: string[]) => page.evaluate((p) => (document.querySelector('sherpa-data-grid') as HTMLElement & {
-      supersedeColumns(r: Record<string, unknown>, at?: string): void }).supersedeColumns({ team: { picked: p } }, 'App header'), picked);
+      supersede(r: Record<string, unknown>, at?: string): void }).supersede({ team: { picked: p } }, 'App header'), picked);
     await hold([]);
     await cell(page, 'team', 1).hover();
     const held = chipOf(page, 'team', 1);

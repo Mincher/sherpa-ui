@@ -270,11 +270,11 @@ export function sharedOf(
   };
 }
 
-/** Each field the View holds, with its answer unless suspended. */
-export function viewHeldReadings(query: Query): Record<string, FieldReading> {
-  const view = query.scopes[VIEW] ?? emptyScope();
-  return Object.fromEntries(view.holds.map((f) => {
-    const r = view.readings[f];
+/** Each field the View holds now, with its answer in force unless suspended. */
+export function viewHeldReadings(draft: Query, applied: Query): Record<string, FieldReading> {
+  const view = applied.scopes[VIEW];
+  return Object.fromEntries((draft.scopes[VIEW]?.holds ?? []).map((f) => {
+    const r = view?.readings[f];
     return [f, r && !r.suspended ? r : {}];
   }));
 }

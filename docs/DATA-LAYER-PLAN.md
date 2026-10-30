@@ -83,8 +83,7 @@ fails.
   only its own scope, so no rows change. Tickets then hears its reading and goes
   blue, with its tip and a read-only menu.
 - **The missing pin.** ON and held is inactive, and blue while a preset holds it
-  (D1). A toolbar chip does not hear a preset on a field the View holds, so it reads
-  inactive where its heading reads blue. That is an honest look, and Step 3 joins them.
+  (D1). A toolbar chip heard the same in Step 3.
 - **The resting ink** of a held heading (D2).
 
 ### Step 2 (612): wrong answers the engine cannot live with — done
@@ -127,11 +126,14 @@ The heart of it, and what Will asked for. Two small pieces:
 The source tells every bound control the status of its fields whenever a field
 changes. Controls never hear from each other (Will, 2026-10-30): a preset chip and a
 View chip know nothing of one another, and each simply draws what the Query says. So
-a toolbar chip hears `byPreset` on a field the View holds as its heading does, where
-today `supersede` hands a bar only field names and `supersedeColumns` hands a grid
-the readings. Those two doors go. The hierarchy already says who holds a field (View
-scope, then local scope, then the component), so "held above" is one part of one
-status, for every control (Will, 2026-10-30).
+a toolbar chip hears `byPreset` on a field the View holds as its heading does. The
+hierarchy already says who holds a field (View scope, then local scope, then the
+component), so "held above" is one part of one status, for every control (Will,
+2026-10-30).
+
+**Done so far:** `fieldStatus` and its matrix (`one-field-one-status`). `supersede` and
+`supersedeColumns` are one door, `supersede(readings, at)`, so a toolbar chip and its
+heading now say the same. Next: the painter, then the rest of the channels into it.
 
 Then move one control at a time, deleting what each replaces: heading, toolbar chip,
 panel value chip, cell chip, tag, legend key, menu row. A gate then blocks a

@@ -26,12 +26,12 @@ test('select copies the caller\'s rows: a change to them leaves the Query as it 
   assert.deepEqual(source.query.applied.scopes.view.readings.owner.conditions, [{ op: 'contains', text: 'Da' }]);
 });
 
-/** A grid below the View: what supersedeColumns hands it. */
+/** A grid below the View: what supersede hands it. */
 function grid(source) {
   const got = [];
   const el = Object.assign(new EventTarget(), {
     setAttribute() {}, removeAttribute() {}, hasAttribute: () => false, populate() {},
-    supersedeColumns: (readings) => got.push(readings),
+    supersede: (readings) => got.push(readings),
   });
   bindSource(source, el, { scope: 'data' });
   return got;

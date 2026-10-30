@@ -598,7 +598,7 @@ export class SherpaProvider extends SherpaElement {
     el.toggleAttribute('data-label-column', this.#labelColumn);
     el.toggleAttribute('data-every-count', this.#countEvery);
     // A grid's headings and tags. TODOs 500, 501, 490
-    if ('supersedeColumns' in el) {
+    if ('columnClause' in el) {
       el.toggleAttribute('data-heading-group', this.#headingGroup);
       el.toggleAttribute('data-heading-hover', this.#headingHover);
       el.toggleAttribute('data-multi-field', this.#multiField);

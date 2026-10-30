@@ -910,7 +910,7 @@ test('a grid heading answers through the source, and is told what the View holds
     setAttribute() {}, removeAttribute() {}, hasAttribute: () => false, ...extra });
   const columns = [];
   const barDrawn = [];
-  const grid = stub({ supersedeColumns: (held, at) => columns.push([held, at]) });
+  const grid = stub({ supersede: (held, at) => columns.push([held, at]) });
   const bar = stub({ drawScope: (scope) => barDrawn.push(scope.filters.map((f) => f.id)) });
   bindSource(source, grid, { scope: 'data' });
   bindSource(source, bar, { steerOnly: true, scope: 'data' });

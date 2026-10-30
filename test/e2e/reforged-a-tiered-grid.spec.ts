@@ -75,7 +75,7 @@ test('a Site cell chip picks its path on Customer, and a second press lets it go
 
 test('Site\'s heading shows greyed while the View holds Customer: what Customer holds of it, refused; let go, it has no filter again (Will, TODO 577)', async ({ page }) => {
   const r = await page.evaluate(async (london) => {
-    const el = document.querySelector('sherpa-data-grid') as HTMLElement & { supersedeColumns(h: unknown, at?: string): void };
+    const el = document.querySelector('sherpa-data-grid') as HTMLElement & { supersede(h: unknown, at?: string): void };
     const read = () => {
       const chip = el.shadowRoot!.querySelector<HTMLElement>('.head-cell[data-field="site"] .head-filter')!;
       const menu = chip.querySelector('sherpa-menu');
@@ -84,14 +84,14 @@ test('Site\'s heading shows greyed while the View holds Customer: what Customer 
         ticked: menu ? [...menu.querySelectorAll<HTMLInputElement>('input')].filter((i) => i.checked).map((i) => i.value) : [] };
     };
     const at: Record<string, unknown> = { first: read() };
-    el.supersedeColumns({ customer: {} }, 'View Context');
+    el.supersede({ customer: {} }, 'View Context');
     await window.__settled();
     at.held = read();
     // Northwind whole is no site; a path is.
-    el.supersedeColumns({ customer: { picked: ['Contoso', london] } }, 'View Context');
+    el.supersede({ customer: { picked: ['Contoso', london] } }, 'View Context');
     await window.__settled();
     at.path = read();
-    el.supersedeColumns({});
+    el.supersede({});
     await window.__settled();
     at.released = read();
     return at;
@@ -105,7 +105,7 @@ test('Site\'s heading shows greyed while the View holds Customer: what Customer 
 
 test('a Site cell chip is inactive while the View holds Customer, and refuses', async ({ page }) => {
   await page.evaluate(() => (document.querySelector('sherpa-data-grid') as HTMLElement & {
-    supersedeColumns(r: Record<string, unknown>, at?: string): void }).supersedeColumns({ customer: { picked: ['Contoso'] } }, 'View filters'));
+    supersede(r: Record<string, unknown>, at?: string): void }).supersede({ customer: { picked: ['Contoso'] } }, 'View filters'));
   const cell = page.locator('sherpa-data-grid .row >> nth=1').locator('td.cell[data-field="site"]');
   await cell.hover();
   const chip = cell.locator('.cell-filter');

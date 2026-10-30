@@ -311,10 +311,9 @@ export interface BoundControl {
   drawOffered?: (offered: Readonly<Record<string, readonly string[]>>, scope: string) => void;
   /** A control over SEVERAL scopes — the panel — drawn each one whole. */
   drawScopes?: (scopes: ScopeDescription[]) => void | Promise<void>;
-  /** Told which of its fields a scope ABOVE it holds now, and that scope's name. */
-  supersede?: (fields: readonly string[], appliedAt?: string) => void;
-  /** A grid: those fields WITH their answers there, shown read-only in its headings. */
-  supersedeColumns?: (readings: Readonly<Record<string, FieldReading>>, appliedAt?: string) => void;
+  /** Told the fields a scope ABOVE it holds now, each with its answer there, and that
+   *  scope's name. A field not named is free. TRAP T-one-field-one-status */
+  supersede?: (readings: Readonly<Record<string, FieldReading>>, appliedAt?: string) => void;
   /** Announce its whole answer again. */
   report?: () => void;
 }

@@ -2428,7 +2428,7 @@ test('adding a second Advanced filter keeps the first one\'s rows in every repor
  */
 test('a Reset leaves a chip the View holds as it is, and empties the rest', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    type Steer = Bar & { supersede(ids: string[], at?: string): void; clearAll(): void };
+    type Steer = Bar & { supersede(readings: Record<string, unknown>, at?: string): void; clearAll(): void };
     const bar = await window.__mount<Steer>('sherpa-quick-filter-toolbar', [
       { id: 'status', label: 'Status', active: true, options: [
         { value: 'active', label: 'active', selected: true }, { value: 'trial', label: 'trial' }] },
@@ -2436,7 +2436,7 @@ test('a Reset leaves a chip the View holds as it is, and empties the rest', asyn
         { value: 'Pro', label: 'Pro', selected: true }, { value: 'Free', label: 'Free' }] },
     ], { style: 'inline-size: 1200px' });
     await window.__settled();
-    bar.supersede(['status'], 'View filters');
+    bar.supersede({ status: {} }, 'View filters');
     await window.__settled();
     const look = (id: string) => {
       const chip = bar.shadowRoot!.querySelector<HTMLElement>(`.chip[data-id="${id}"]`)!;

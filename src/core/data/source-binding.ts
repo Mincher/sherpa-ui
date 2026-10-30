@@ -31,8 +31,7 @@
  * - .drawBarsBehind — Draw each bar over one scope that does not hold what the scope holds now: a scope two bars draw — a strip and…
  * - .drawEveryBar — Draw every bar over one scope each; settles when all have drawn.
  * - .drawScopesSoon — Draw each control over several scopes WHOLE, once per moment.
- * - .supersedeColumns — Tell each grid below the View the fields the View holds.
- * - .supersede — Tell each bar below the View which of its fields the View holds now.
+ * - .supersede — Tell each control below the View the fields the View holds, each with its answer there.
  * - .syncPending — Tell each control over a scope its pending fields and whether it is dirty.
  * - .debug — Each bind, for a bug report.
  * - tagOf — A bound control's tag, where it is an element.
@@ -311,27 +310,16 @@ export class SourceBinding {
   });
 
   /**
-   * Each grid below the View is told the fields the View holds, each with its
-   * answer as APPLIED — shown in its heading, read-only, so a heading cannot
-   * contradict it. TRAP T-a-view-held-heading-shows-and-refuses
-   */
-  supersedeColumns(held: Readonly<Record<string, FieldReading>>): void {
-    for (const [el, { scope }] of this.#bound) {
-      if (typeof scope === 'string' && scope !== VIEW) el.supersedeColumns?.(held, this.#host.scopeLabel(VIEW));
-    }
-  }
-
-  /**
-   * Tell each bar below the View which of its fields the View holds now — it
-   * keeps the chip, suspended, and says where it went. One whose set changed
-   * reports again: without the field raised, or with its own kept answer back.
+   * Tell each control below the View the fields the View holds now, each with its
+   * answer there. A bar keeps its chip, suspended, and says where it went; a grid
+   * shows the answer in its heading, read-only, so it cannot be contradicted.
+   * TRAP T-a-view-held-heading-shows-and-refuses
    * TRAP T-a-superseded-chip-suspends-it-is-never-removed
    * TRAP T-an-inactive-chip-says-where-its-filter-went
    */
-  supersede(above: readonly string[]): void {
+  supersede(held: Readonly<Record<string, FieldReading>>): void {
     for (const [el, { scope }] of this.#bound) {
-      if (typeof scope !== 'string' || scope === VIEW || !el.supersede) continue;
-      el.supersede(above, this.#host.scopeLabel(VIEW));
+      if (typeof scope === 'string' && scope !== VIEW) el.supersede?.(held, this.#host.scopeLabel(VIEW));
     }
   }
 

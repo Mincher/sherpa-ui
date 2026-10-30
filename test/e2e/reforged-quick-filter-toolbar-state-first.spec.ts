@@ -11,7 +11,7 @@ type Bar = HTMLElement & {
   superseded: string[];
   setChipValues(id: string, picks: string[]): void;
   setChipReading(id: string, reading: Reading): void;
-  supersede(ids: string[], appliedAt?: string): void;
+  supersede(readings: Record<string, unknown>, appliedAt?: string): void;
   drawResults(results: Record<string, number>): void;
 };
 const DEFS = [
@@ -37,7 +37,7 @@ test('one chip\'s picks, a reading and a supersede set before populate all land'
     const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     bar.setChipValues('plan', ['pro']);
     bar.setChipReading('region', { picked: ['emea'] });
-    bar.supersede(['tier'], 'the View');
+    bar.supersede({ tier: {} }, 'the View');
     const before = bar.superseded;
     await bar.populate(defs);
     await window.__settled();

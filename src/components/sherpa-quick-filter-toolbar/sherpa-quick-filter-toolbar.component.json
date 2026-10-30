@@ -1366,8 +1366,8 @@
         {
           "$type": "method",
           "name": "supersede",
-          "args": "ids: readonly string[], appliedAt?: string",
-          "description": "supersede([...ids]) — the VIEW now owns these fields."
+          "args": "readings: Readonly<Record<string, FieldReading>>, appliedAt?: string",
+          "description": "supersede(readings) — the VIEW now owns these fields, each with its answer there."
         },
         {
           "$type": "method",

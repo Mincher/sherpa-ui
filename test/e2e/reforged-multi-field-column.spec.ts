@@ -120,7 +120,7 @@ test('the heading menu joins its fields, a section each; Apply answers each that
 test('a tag whose field the View holds is greyed, refused, and says where it went', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
-    grid.supersedeColumns({ plan: { picked: ['Pro'] } }, 'View filters');
+    grid.supersede({ plan: { picked: ['Pro'] } }, 'View filters');
     await settle();
     const tag = sr.querySelector('.row .cell-tag[data-field="plan"]');
     tag.click();
