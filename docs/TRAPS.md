@@ -14663,11 +14663,13 @@ by the tests below.
 
 **A filter in a grid made from a chart stays in its card.** Will, TODO 621: *"scoped to
 the local scope for the chart. Right now they're affecting the Customer Records data
-grid toolbar and columns."* A slot's rows are the View's, so a reading in its scope
-narrows nothing; and steered, a heading's answer went to the scope that holds its
-field, which is Customer Records. So it is not steered at all. The provider keeps each
-grid's clauses by field, narrows that grid's rows and answers it again. The event stops
-at the grid. It is kept while the grid is shown, and a new grid starts with none.
+grid toolbar and columns."* Steered, a heading's answer goes to the scope that holds its
+field (one home), which is Customer Records. So the provider asks with `only`:
+`setReading(slot, field, reading, { only })` keeps it in the Query, in the slot's scope,
+and narrows that one grid. Its rows and its cells' on state come back from the source,
+as any grid's do, and its sub-grids are told as ever (Will: *"all of the state, and
+conditions, are coming from the data layer"*). The event stops at the grid. `only` names
+one element, so when the grid is swapped away its readings go with it.
 
 **Its rows are a table, not the records** (Will, TODOs 622, 625): a row a value of the
 first axis, its Group, a column a Secondary value, and a Total, and a row opens on its
@@ -14676,6 +14678,26 @@ mean of one field, so nothing totals: it shows its records, named by the first c
 the page's own grid, and that field.
 
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
+
+### T-a-sub-grid-sticks-under-its-parent
+
+**A sub-grid stays its parent's width, scrolls sideways for itself, and its headings stay
+under the parent's as the parent scrolls, with its cells passing under them.** Will, TODOs
+626, 627. CSS cannot do all of that: a scroll box on one axis is one on both, so a
+sub-grid that scrolls sideways is what its `sticky` sticks to. Without a scroll box the
+headings stuck, and a wide sub-grid broke out of its parent. So:
+
+- **It scrolls on one axis.** `--_detail-block: hidden` on the parent's `.detail-cell`
+  stops the block axis; its height is its rows', so nothing is cut.
+- **JS moves its headings,** coalesced per frame: `translate` by how far the parent's foot
+  is past the sub-grid's top, capped so they stop at its last row. No `--_head-stuck`, and
+  `translate` is invalid, so no other grid has its stacking context.
+- **`isolation: isolate` on the cell.** Both `.head`s are `z-index: 3`, and the later one
+  in the document drew over the parent's headings.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-a-horizontal-legend-is-three-by-two
 

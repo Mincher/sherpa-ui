@@ -44,6 +44,7 @@
   flex: 1 1 auto;
   min-block-size: 0;
   overflow: auto;
+  overflow-y: var(--_detail-block, auto);
   /* The scroll container the pinned edges query — see `scroll-state()` below. */
   container-type: scroll-state;
   container-name: grid-scroll;
@@ -78,6 +79,9 @@
 .head {
   position: sticky;
   inset-block-start: 0;
+  /* A sub-grid's, stuck under its parent's. No fallback, so no other grid has a
+     translate, nor the stacking context it makes. */
+  translate: 0 var(--_head-stuck);
   z-index: 3;
   /* An OPAQUE fill on the SECTION as well as the cells: the two header rows
      meet at a fractional boundary and a sub-pixel seam let a scrolling row
@@ -854,7 +858,12 @@
   transition: rotate 120ms ease;
 }
 .row[data-open] .row-open > .sherpa-icon-box { rotate: 90deg; }
+/* A row's sub-grid stays this grid's width, and scrolls sideways for itself and never
+   up and down. `isolate`: the same z-index would draw its headings over this grid's.
+   Will, TODOs 626, 627. TRAP T-a-sub-grid-sticks-under-its-parent */
 .detail-cell {
+  isolation: isolate;
+  --_detail-block: hidden;
   padding: var(--sherpa-display-mode-space-xs, 8px);
   padding-inline-start: var(--sherpa-display-mode-space-lg, 24px);
   background: var(--sherpa-style-surface-base-1, #e8e8f6);

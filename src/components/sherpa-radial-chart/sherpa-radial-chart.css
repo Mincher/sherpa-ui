@@ -20,9 +20,10 @@
   column-gap: var(--sherpa-display-mode-space-lg, 20px);
 }
 
-/* The ring's cell: fills its row, so `max-block-size: 100%` on the ring
-   resolves against the row and not against itself. */
+/* The ring's cell, and what it measures: both axes, so it is a circle whichever
+   runs out first. */
 .chart-body {
+  container-type: size;
   display: grid;
   grid-template-rows: minmax(0, 1fr);
   align-items: center;
@@ -42,14 +43,7 @@
 
 .ring-wrap {
   position: relative;
-  /* Sized from the HEIGHT, width as the cap: a derived height ignores
-     `max-block-size`. No min-inline-size — `--_size` is not a floor. */
-  block-size: 100%;
-  inline-size: auto;
-  min-inline-size: 0;
-  min-block-size: 0;
-  max-inline-size: min(100%, var(--_max-size, 320px));
-  max-block-size: min(100%, var(--_max-size, 320px));
+  inline-size: min(100cqi, 100cqb, var(--_max-size, 320px));
   aspect-ratio: 1;
 }
 .ring {

@@ -3214,3 +3214,62 @@ test('a row OPENS on a sub-grid of its own rows, and shuts again (Will, TODO 570
   expect(r.opened).toEqual({ open: [true, false], sub: [['Ada', 'Bo']] });
   expect(r.shut).toEqual({ open: [false, false], sub: [] });
 });
+
+// A sub-grid's headings stick under its parent's, and its cells pass under them.
+// Will, TODO 626. TRAP T-a-sub-grid-sticks-under-its-parent
+test('a sub-grid\'s headings stick under the parent\'s as it scrolls, and never draw over them', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const grid = document.createElement('sherpa-data-grid') as HTMLElement & { populate(d: unknown): Promise<void>; rendered?: Promise<void> };
+    grid.style.cssText = 'display:flex;inline-size:600px;block-size:300px';
+    root.appendChild(grid);
+    await grid.rendered;
+    const rows = Array.from({ length: 40 }, (_, i) => ({ name: `Name ${i}`, seats: i }));
+    await grid.populate({
+      columns: [{ field: 'team', header: 'Team' }],
+      key: 'team',
+      rows: [{ team: 'Blue' }, { team: 'Red' }],
+      // Wider than the grid: it must not break out of it. TODO 627
+      detail: { columns: ['name', 'seats', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map((field) => ({ field, header: field })), rows: { Blue: rows, Red: rows } },
+    });
+    await window.__settled();
+    (grid.shadowRoot!.querySelector('.row .row-open') as HTMLElement).click();
+    await window.__settled();
+    const sub = grid.shadowRoot!.querySelector('.detail-grid') as HTMLElement;
+    await window.__settled();
+    const head = grid.shadowRoot!.querySelector('.head')!;
+    const subHead = sub.shadowRoot!.querySelector('.head')!;
+    const scroller = grid.shadowRoot!.querySelector('.scroller') as HTMLElement;
+    const subScroller = sub.shadowRoot!.querySelector('.scroller') as HTMLElement;
+    scroller.scrollTop = 400;
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(res))));
+    const headBox = head.getBoundingClientRect();
+    const subBox = subHead.getBoundingClientRect();
+    // What is drawn on top, at the middle of the parent's headings and of the sub-grid's.
+    const topOf = (y: number) => {
+      const x = headBox.left + 200;
+      const outer = grid.shadowRoot!.elementFromPoint(x, y);
+      const inner = outer === sub ? sub.shadowRoot!.elementFromPoint(x, y) : null;
+      return inner ? (inner.closest('.head') ? 'sub-head' : 'sub-body') : (outer?.closest('.head') ? 'head' : 'other');
+    };
+    return {
+      scrolled: scroller.scrollTop,
+      block: getComputedStyle(subScroller).overflowY,
+      contained: scroller.scrollWidth <= scroller.clientWidth && sub.getBoundingClientRect().right <= scroller.getBoundingClientRect().right,
+      sideways: subScroller.scrollWidth > subScroller.clientWidth,
+      gap: Math.round(subBox.top - headBox.bottom),
+      atHead: topOf(headBox.top + headBox.height / 2),
+      atSubHead: topOf(subBox.top + subBox.height / 2),
+      under: topOf(subBox.bottom + 12),
+    };
+  });
+  expect(r.scrolled).toBe(400);
+  expect(r.block).toBe('hidden');
+  expect(r.contained).toBe(true);
+  expect(r.sideways).toBe(true);
+  expect(r.gap).toBe(0);
+  expect(r.atHead).toBe('head');
+  expect(r.atSubHead).toBe('sub-head');
+  expect(r.under).toBe('sub-body');
+});

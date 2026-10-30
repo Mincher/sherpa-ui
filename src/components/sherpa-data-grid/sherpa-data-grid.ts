@@ -326,6 +326,8 @@ export class SherpaDataGrid extends SherpaElement {
     this.$('.actions-menu')?.addEventListener('menu-close', this.#onActionsShut);
     this.$('.body')?.addEventListener('pointerover', this.#onCellOver);
     this.$('.body')?.addEventListener('pointerleave', this.#onBodyLeave);
+    const scroller = this.$('.scroller');
+    if (scroller) this.onFrame(scroller, 'scroll', this.#stickDetails);
     this.#cellChip = this.$<SherpaQuickFilter>('.cell-filter');
     this.#cellChip?.addEventListener('quick-filter-click', this.#onCellFilter);
     if (this.#columns.length) this.#render();
@@ -1335,8 +1337,27 @@ export class SherpaDataGrid extends SherpaElement {
     this.#tellDetail(sub);
     void sub.populate({ columns: detail.columns, key: detail.key ?? null, rows: detail.rows[key] ?? [],
       groups: detail.groups?.[key] ?? null, filters: this.#givenFilters })
-      .then(() => this.#tellDetail(sub));
+      .then(() => {
+        this.#tellDetail(sub);
+        this.#stickDetails();
+      });
   }
+
+  /** Each open sub-grid's headings stay under this grid's as it scrolls. `sticky` cannot:
+   *  a scroll box on one axis is one on both, and it scrolls sideways for itself. Will,
+   *  TODOs 626, 627. TRAP T-a-sub-grid-sticks-under-its-parent */
+  #stickDetails = (): void => {
+    const foot = this.$('.head')?.getBoundingClientRect().bottom;
+    if (foot === undefined) return;
+    for (const sub of this.#subGrids()) {
+      const head = sub.$<HTMLElement>('.head');
+      const table = sub.$('.grid')?.getBoundingClientRect();
+      if (!head || !table) continue;
+      const by = Math.min(foot - table.top, table.height - head.offsetHeight);
+      if (by > 0) sub.style.setProperty('--_head-stuck', `${by}px`);
+      else sub.style.removeProperty('--_head-stuck');
+    }
+  };
 
   /** What this grid groups by: nothing where its rows open — its Group groups each
    *  row's sub-grid. Primary, Secondary, Group are a chain. Will, TODO 574 */

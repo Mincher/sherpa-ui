@@ -603,7 +603,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-unavailable-value-sorts-below-a-divider](TRAPS.md#t-unavailable-value-sorts-below-a-divider) — menu
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — menu
 
-## The data grid (97)
+## The data grid (98)
 
 - [T-a-cell-chip-is-one-and-moves](TRAPS.md#t-a-cell-chip-is-one-and-moves) — data-grid
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — data-grid
@@ -635,6 +635,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-sideways-scroll-shadow-is-its-frames](TRAPS.md#t-a-sideways-scroll-shadow-is-its-frames) — data-grid
 - [T-a-state-colour-binds-the-style-mode](TRAPS.md#t-a-state-colour-binds-the-style-mode) — data-grid
 - [T-a-stuck-header-casts-a-shadow](TRAPS.md#t-a-stuck-header-casts-a-shadow) — data-grid
+- [T-a-sub-grid-sticks-under-its-parent](TRAPS.md#t-a-sub-grid-sticks-under-its-parent) — data-grid
 - [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — data-grid
 - [T-a-toggle-shows-its-state-by-a-shape](TRAPS.md#t-a-toggle-shows-its-state-by-a-shape) — data-grid
 - [T-a-trigger-click-follows-light-dismiss](TRAPS.md#t-a-trigger-click-follows-light-dismiss) — data-grid

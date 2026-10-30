@@ -21,12 +21,13 @@ import { report } from '../../core/data/report.js';
 import { summarise, summariseMarked, type SummarySpec } from '../../core/data/aggregate.js';
 import type { ChartDatum } from '../../core/data/chart-datum.js';
 import { bindSelection } from '../../core/data/bind-selection.js';
-import { andFilter, filterRows, groupRows, groupSummaries, valueKey, type Filter, type Row, type Store } from '../../core/data/store.js';
+import { groupRows, groupSummaries, valueKey, type Row, type Store } from '../../core/data/store.js';
 import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.js';
 import type { DraftMode } from '../../core/browser/view-drafts.js';
 import { openSource, savedFiltersOf, type PageDefinition } from '../../core/data/page-definition.js';
 import { QueryContext, type QueryChangeDetail } from '../../core/data/query-context.js';
 import { VIEW, type Presentation } from '../../core/data/query.js';
+import type { FieldReading } from '../../core/data/filter-state.js';
 import type { Failure } from '../../core/data/failure.js';
 import type { DataChangeDetail, DataSource, QueryState } from '../../core/data/data-source.js';
 import type { Where } from '../../core/data/where.js';
@@ -1212,15 +1213,17 @@ export class SherpaProvider extends SherpaElement {
     // A chart, a grid and a legend in a slot follow its presentation: a legend lists a stack. TODO 548
     const unshow = typeof scope === 'string' && (spec || shownAs(el)) ? this.#followPresentation(asked, source, scope, !spec && !pivot && !made) : undefined;
     const refilter = made ? new AbortController() : undefined;
-    // A filter in it stays in it: asked of nothing, and heard by nothing above. Will, TODO 621
+    /* A filter in it is its slot's, in the Query, and narrows it alone: asked plainly,
+       a field that Customer Records holds would be answered there. Its rows and its
+       cells' state come back from the source. Will, TODO 621
+       TRAP T-a-grid-from-a-chart-keeps-to-its-card */
     if (refilter) el.addEventListener('column-filter-change', (e) => {
       e.stopPropagation();
-      const { field, clause } = (e as CustomEvent<{ field: string; clause: Filter | null }>).detail;
-      const held = this.#madeFilters.get(el) ?? new Map<string, Filter>();
-      this.#madeFilters.set(el, held);
-      if (clause) held.set(field, clause);
-      else held.delete(field);
-      this.#answer(asked);
+      const { field, reading } = (e as CustomEvent<{ field: string; reading: FieldReading | null }>).detail;
+      source.query.setReading(made as string, field, reading, { only: el as Populatable });
+      source.query.commit({ field });
+      // A field's home draws its controls: this scope is not its home, so it is told here.
+      (el as Element & { drawReading(f: string, r: FieldReading): void }).drawReading(field, source.query.reading(made as string, field) ?? {});
     }, { signal: refilter.signal });
     asked.unbind = () => {
       refilter?.abort();
@@ -1421,6 +1424,10 @@ export class SherpaProvider extends SherpaElement {
       if (!want && shownAs(next) !== 'grid' && shownAs(el) !== 'grid') next.append(...el.childNodes);
       // A grid has no legend: it waits with the page's own chart.
       if (want && kind === 'grid' && parked && shownAs(el) !== 'grid') parked.append(...el.childNodes);
+      // A grid made from a chart takes its filters with it: they narrow it alone.
+      if (shownAs(el) === 'grid' && this.#authored.has(el)) {
+        for (const c of (el as Element & { columns?: GridColumnLike[] }).columns ?? []) source.query.setReading(slot, c.field, null, { only: el as Populatable });
+      }
       if (!this.#authored.has(el) && shownAs(el) === authored) this.#parked.set(slot, el);
       if (next !== parked) this.#authored.set(next, authored);
       el.replaceWith(next);
@@ -1477,13 +1484,10 @@ export class SherpaProvider extends SherpaElement {
 
   /** What a grid made from a chart draws: its axes and its Group, no more, and a Total.
    *  A row a value of its first axis, its cells the count the chart draws, and each
-   *  row opens on its own rows. A line's first axis is what it runs over. Its filters
-   *  are its own, so they narrow its rows and reach nothing else. Will, TODOs 621, 622, 625.
-   *  TRAP T-a-grid-from-a-chart-keeps-to-its-card */
-  #madeTable(el: Element, all: readonly Row[], slot: string, source: DataSource): unknown {
+   *  row opens on its own rows. A line's first axis is what it runs over. Will, TODOs
+   *  622, 625. TRAP T-a-grid-from-a-chart-keeps-to-its-card */
+  #madeTable(el: Element, rows: readonly Row[], slot: string, source: DataSource): unknown {
     const own = el as Element & { columns?: GridColumnLike[] };
-    const narrowing = [...this.#madeFilters.get(el)?.values() ?? []];
-    const rows = narrowing.length ? filterRows(all, andFilter(narrowing)) : all;
     const label = (f: string): string => source.fieldFacts(f).label ?? f;
     const fields = (own.columns ?? []).map((c) => c.field);
     source.readValues(fields);
@@ -1529,9 +1533,6 @@ export class SherpaProvider extends SherpaElement {
       },
     } };
   }
-
-  /** A grid made from a chart: what its headings and cells hold, by field. TODO 621 */
-  readonly #madeFilters = new WeakMap<Element, Map<string, Filter>>();
 
   /** A grid's pivot, where its slot names a Secondary: its Primary — else its first
    *  column — a row a value, the Secondary's values its columns. Will, TODO 548 */
