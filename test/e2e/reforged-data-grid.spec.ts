@@ -824,11 +824,16 @@ test('the header grip resizes a column, clamps it, and does not sort', async ({ 
   // The drag must NOT have sorted the column it grabbed.
   expect(await sortField()).toBeNull();
 
-  // Clamped at both ends, on the 8px grid.
+  // Clamped at both ends: 11ch and 50ch, as its CSS sets them. Will, TODO 575
+  const [min, max] = await page.evaluate(() => {
+    const cs = getComputedStyle(document.querySelector('sherpa-data-grid')!.shadowRoot!.querySelector('.col-bounds')!);
+    return [parseFloat(cs.minInlineSize), parseFloat(cs.maxInlineSize)];
+  });
+  expect(min / max).toBeCloseTo(11 / 50, 2);
   await drag(0, -500);
-  expect(await width(0)).toBe(96);
+  expect(Math.abs(await width(0) - min)).toBeLessThanOrEqual(1);
   await drag(0, 900);
-  expect(await width(0)).toBe(480);
+  expect(Math.abs(await width(0) - max)).toBeLessThanOrEqual(1);
 
   // …and a REAL header click straight after a resize still sorts. The click
   // suppressor is `once`, so it eats the synthesised click and nothing more.
@@ -2828,6 +2833,15 @@ test('few columns fill a wide card; a dragged one keeps its width; a narrow card
   await mount(300);
   const narrow = await read();
   expect(narrow).toMatchObject({ name: 160, score: 160, scrolls: true });
+
+  // Far wider: each stops at its maximum, 50ch, and the room left stays empty. Will, TODO 575
+  await mount(2000);
+  const far = await read();
+  const max = await page.evaluate(() => parseFloat(getComputedStyle(document.querySelector('sherpa-data-grid')!
+    .shadowRoot!.querySelector('.col-bounds')!).maxInlineSize));
+  expect(Math.abs(far.name - max)).toBeLessThanOrEqual(1);
+  expect(Math.abs(far.score - max)).toBeLessThanOrEqual(1);
+  expect(far.box - far.name - far.score).toBeGreaterThan(400);
 });
 
 /**

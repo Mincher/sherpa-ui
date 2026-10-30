@@ -109,6 +109,8 @@
   <!-- Its FRAME draws the side edges of a sideways scroll. TODO 478 -->
   <div class="scroll-frame sherpa-scroll-frame">
   <span class="sherpa-scroll-edge-start" aria-hidden="true"></span><span class="sherpa-scroll-edge-end" aria-hidden="true"></span>
+  <!-- A column's bounds: CSS sets them in `ch`, and JS reads them. TODO 575 -->
+  <span class="col-bounds" hidden></span>
   <div class="scroller sherpa-scroll-shadow" part="scroller">
   <table class="grid" part="grid">
     <!-- With `table-layout: fixed` a column's width comes from its <col>, so a

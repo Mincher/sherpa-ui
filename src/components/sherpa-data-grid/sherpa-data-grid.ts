@@ -238,10 +238,11 @@ export class SherpaDataGrid extends SherpaElement {
   // data-selectable is observed though CSS owns its reveal: the pin offset is a
   // MEASURED width, so it must re-run #measure().
 
-  /* TRAP T-grid-column-width-bounds — 96/480/160 are measured, not chosen. */
-  static readonly MIN_COL_WIDTH = 96;
-  static readonly MAX_COL_WIDTH = 480;
+  /* TRAP T-grid-column-width-bounds — CSS sets the bounds in `ch`; 160 is measured, not chosen. */
   static readonly DEFAULT_COL_WIDTH = 160;
+
+  /** A column's narrowest and widest, in px: `.col-bounds` sets them in `ch`. Will, TODO 575 */
+  #bounds = { min: 96, max: 440 };
 
   /** The columns, as populated. */
   #columns: GridColumn[] = [];
@@ -492,11 +493,12 @@ export class SherpaDataGrid extends SherpaElement {
   #measure(force = false): void {
     const box = this.$('.scroller');
     if (!box) return;
+    this.#readBounds();
     const selectable = this.hasAttribute('data-selectable');
     const shown = this.#shownColumns();
     const base = shown.map((col) => this.#widthFor(col));
     const key = JSON.stringify([shown.map((c) => c.field), base, [...this.#widths], selectable,
-      this.#rows.length > 0, this.#actions.length > 0]);
+      this.#rows.length > 0, this.#actions.length > 0, this.#bounds.max]);
     if (!force && key === this.#measuredFor) return;
     // READ, all at once. TRAP T-grid-pin-offset-needs-subpixel — offsetWidth rounds the
     // 0.5px-bordered 32px cell and leaves a hairline under the pin.
@@ -516,8 +518,10 @@ export class SherpaDataGrid extends SherpaElement {
     const widths = shown.map((col, i) => {
       const el = this.$<HTMLElement>(`.cols > .col[data-field="${CSS.escape(col.field)}"]`);
       const grow = slack > 0 && free[i] && share > 0 ? Math.floor((slack * base[i]!) / share) : 0;
-      if (el) el.style.width = `${base[i]! + grow}px`;
-      return base[i]! + grow;
+      // A share of a wide card stops at the maximum: the room left stays empty. Will, TODO 575
+      const width = Math.min(base[i]! + grow, this.#bounds.max);
+      if (el) el.style.width = `${width}px`;
+      return width;
     });
     // A sideways scroll's start edge sits past the pinned columns. TRAP T-a-sideways-scroll-shadow-is-its-frames
     this.style.setProperty('--_scroll-inset-start', `${offset + (widths[0] ?? 0)}px`);
@@ -558,17 +562,21 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** Drawn width: a dragged width wins, then the config, then the default. */
   #widthFor(col: GridColumn): number {
-    const dragged = this.#widths.get(col.field);
-    // A drag may END above the maximum: one that began on a column the card had filled.
-    if (dragged != null) return Math.max(SherpaDataGrid.MIN_COL_WIDTH, Math.round(dragged));
-    return this.#clampWidth(col.width ?? SherpaDataGrid.DEFAULT_COL_WIDTH);
+    return this.#clampWidth(this.#widths.get(col.field) ?? col.width ?? SherpaDataGrid.DEFAULT_COL_WIDTH);
   }
 
   /** A column width held between the minimum and the maximum. */
   #clampWidth(n: number): number {
-    const { MIN_COL_WIDTH, MAX_COL_WIDTH, DEFAULT_COL_WIDTH } = SherpaDataGrid;
-    if (!Number.isFinite(n)) return DEFAULT_COL_WIDTH;
-    return clampNum(Math.round(n), { min: MIN_COL_WIDTH, max: MAX_COL_WIDTH });
+    if (!Number.isFinite(n)) return SherpaDataGrid.DEFAULT_COL_WIDTH;
+    return clampNum(Math.round(n), this.#bounds);
+  }
+
+  /** The bounds, read off `.col-bounds` as px: CSS owns them, in `ch`. Will, TODO 575 */
+  #readBounds(): void {
+    const probe = this.$('.col-bounds');
+    if (!probe) return;
+    const { minInlineSize, maxInlineSize } = getComputedStyle(probe);
+    this.#bounds = { min: parseFloat(minInlineSize) || this.#bounds.min, max: parseFloat(maxInlineSize) || this.#bounds.max };
   }
 
   /** Stamp one <col> per column. Must run BEFORE the header cells are rebuilt. */
@@ -2229,12 +2237,7 @@ export class SherpaDataGrid extends SherpaElement {
   #onGripMove = (event: PointerEvent): void => {
     if (!this.#drag) return;
     const { field, startX, startWidth } = this.#drag;
-    /* A column the card FILLED past the maximum shrinks from where it is drawn,
-       and grows no wider — it does not jump down to the maximum. TODO 96 */
-    const next = clampNum(Math.round(startWidth + (event.clientX - startX)), {
-      min: SherpaDataGrid.MIN_COL_WIDTH, max: Math.max(SherpaDataGrid.MAX_COL_WIDTH, startWidth),
-    });
-    this.#widths.set(field, next);
+    this.#widths.set(field, this.#clampWidth(startWidth + (event.clientX - startX)));
     /* The COLGROUP only: a #render() per pointermove rebuilds the body 60x/s.
        The columns not dragged re-share what is left. */
     this.#measure(true);

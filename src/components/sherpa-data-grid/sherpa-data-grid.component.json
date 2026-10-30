@@ -33,6 +33,13 @@
             }
           },
           {
+            "el": "span",
+            "class": "col-bounds",
+            "attrs": {
+              "hidden": ""
+            }
+          },
+          {
             "el": "div",
             "class": "scroller sherpa-scroll-shadow",
             "part": "scroller",

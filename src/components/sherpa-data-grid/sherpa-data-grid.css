@@ -64,6 +64,14 @@
   border-spacing: 0;
 }
 
+/* A column's bounds, in characters of the grid's face. JS reads them, and holds
+   every width inside: config, a wide card's share, a drag. Will, TODO 575 ·
+   TRAP T-grid-column-width-bounds */
+.col-bounds {
+  min-inline-size: 11ch;
+  max-inline-size: 50ch;
+}
+
 /* The WHOLE <thead> sticks as one block. Per-cell sticking needs a second
    offset for the filter row, and a sticky offset is measured from the
    scrollport — so it applied at scroll 0 too and left a phantom band. */

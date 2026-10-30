@@ -4081,19 +4081,25 @@ arranged again. Its search stays. The Switch sits left of the Group chip.
 - Site: `src/core/data/query-context.ts`
 ### T-grid-column-width-bounds
 
-`MIN_COL_WIDTH = 96`, `MAX_COL_WIDTH = 480`, `DEFAULT_COL_WIDTH = 160`. All
-three are on the 8px grid, and each number is a measurement, not a taste:
+A column is never narrower than `11ch` nor wider than `50ch`; it starts at
+`DEFAULT_COL_WIDTH = 160` px. CSS sets the bounds on `.col-bounds`, in characters
+of the grid's own face, and JS reads them back as px — `getComputedStyle` gives a
+`ch` length in px — the way `sherpa-app-shell` reads its panel's minimum. Will,
+TODO 575.
 
-- **96** is about six characters of the 14px body face plus its padding.
-  Narrower than that and a heading is pure ellipsis.
-- **480** is wide enough for a long address without one column owning the panel.
+- **11ch** (about 97px in 14px Inter) is six characters plus padding. Narrower
+  than that and a heading is pure ellipsis.
+- **50ch** (about 440px) holds a long name or an email. A column that grows to
+  fill a wide card stops there too, and the room left over stays empty: a
+  sub-grid of two columns gave each half the card.
 - **160** fits a name, a date or a mid-length status without clipping, which is
   most of what a grid holds.
 
-Every route into a width is clamped, so a caller's `width: 4` cannot produce a
-column too thin to read.
+Every route into a width is clamped — a config width, a wide card's share, a
+drag — so a caller's `width: 4` cannot produce a column too thin to read.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 
 ### T-grid-header-needs-capture
 
