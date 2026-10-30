@@ -6,7 +6,7 @@
   "$description": "a donut / pie / arc for part-to-whole data.",
   "element": {
     "$type": "element",
-    "tag": "figure",
+    "tag": "div",
     "provides": []
   },
   "templates": [
@@ -15,84 +15,90 @@
   "anatomy": {
     "roots": [
       {
-        "el": "figure",
-        "class": "chart-figure",
-        "part": "figure",
+        "el": "div",
+        "class": "chart-shape",
         "children": [
           {
-            "el": "div",
-            "class": "chart-header",
-            "part": "header",
-            "children": [
-              {
-                "el": "span",
-                "class": "title",
-                "children": [
-                  {
-                    "slot": "heading",
-                    "attrs": {
-                      "data-accepts": "text"
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "el": "div",
-            "class": "chart-body",
+            "el": "figure",
+            "class": "chart-figure",
+            "part": "figure",
             "children": [
               {
                 "el": "div",
-                "class": "ring-wrap",
+                "class": "chart-header",
+                "part": "header",
                 "children": [
                   {
-                    "el": "svg",
-                    "class": "ring",
-                    "part": "ring",
-                    "attrs": {
-                      "viewBox": "0 0 100 100",
-                      "role": "group",
-                      "aria-label": "Donut chart",
-                      "preserveAspectRatio": "xMidYMid meet"
-                    },
+                    "el": "span",
+                    "class": "title",
                     "children": [
                       {
-                        "el": "g",
-                        "class": "slices"
-                      }
-                    ]
-                  },
-                  {
-                    "el": "div",
-                    "class": "hotspots",
-                    "part": "hotspots"
-                  },
-                  {
-                    "el": "div",
-                    "class": "centre",
-                    "children": [
-                      {
-                        "el": "span",
-                        "class": "value",
-                        "part": "value"
-                      },
-                      {
-                        "el": "span",
-                        "class": "sub",
-                        "part": "sub"
+                        "slot": "heading",
+                        "attrs": {
+                          "data-accepts": "text"
+                        }
                       }
                     ]
                   }
                 ]
+              },
+              {
+                "el": "div",
+                "class": "chart-body",
+                "children": [
+                  {
+                    "el": "div",
+                    "class": "ring-wrap",
+                    "children": [
+                      {
+                        "el": "svg",
+                        "class": "ring",
+                        "part": "ring",
+                        "attrs": {
+                          "viewBox": "0 0 100 100",
+                          "role": "group",
+                          "aria-label": "Donut chart",
+                          "preserveAspectRatio": "xMidYMid meet"
+                        },
+                        "children": [
+                          {
+                            "el": "g",
+                            "class": "slices"
+                          }
+                        ]
+                      },
+                      {
+                        "el": "div",
+                        "class": "hotspots",
+                        "part": "hotspots"
+                      },
+                      {
+                        "el": "div",
+                        "class": "centre",
+                        "children": [
+                          {
+                            "el": "span",
+                            "class": "value",
+                            "part": "value"
+                          },
+                          {
+                            "el": "span",
+                            "class": "sub",
+                            "part": "sub"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "slot": "legend",
+                "attrs": {
+                  "data-accepts": "legend"
+                }
               }
             ]
-          },
-          {
-            "slot": "legend",
-            "attrs": {
-              "data-accepts": "legend"
-            }
           }
         ]
       },
@@ -259,19 +265,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-legend",
-      "type": "enum",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "values": [
-        "horizontal",
-        "vertical"
-      ],
-      "description": "horizontal (default: below the ring) | vertical (beside it)"
-    },
-    {
-      "$type": "prop",
       "name": "data-over-field",
       "type": "string",
       "observed": true,
@@ -353,7 +346,7 @@
       "accepts": [
         "legend"
       ],
-      "description": "an optional legend: below the ring, or beside it with data-legend=\"vertical\""
+      "description": "an optional legend: wider than square, beside the ring; square or narrower, below it"
     }
   ],
   "populate": {
@@ -361,11 +354,6 @@
     "description": "the slices."
   },
   "states": [
-    {
-      "$type": "state",
-      "name": "vertical",
-      "selector": ":host([data-legend=\"vertical\"])"
-    },
     {
       "$type": "state",
       "name": "pie",
@@ -394,6 +382,7 @@
     }
   ],
   "tokens": {
+    "chart-figure.column-gap": "{sherpa.display-mode-space-lg}",
     "value.font-size": "{sherpa.theme-content-size-h1}",
     "value.font-weight": "{sherpa.font-weight-regular}",
     "value.line-height": "{sherpa.theme-content-line-height-h1}",

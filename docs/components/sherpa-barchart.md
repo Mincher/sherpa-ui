@@ -51,7 +51,6 @@ For comparing values across categories, one bar each; `data-bands` cuts a number
 | `data-bands` | text |  | a number segment-field cut at these edges, "0,20,40" — a histogram |
 | `data-bucket` | `day` `month` `year` |  |  |
 | `data-field` | text |  | the number that aggregate reads |
-| `data-legend` | `horizontal` `vertical` |  |  |
 | `data-max` | number |  | explicit value-axis max (else derived from the data) |
 | `data-over-field` | text |  |  |
 | `data-segment-field` | text |  | ASKED of its provider: one bar per value of this field |
@@ -86,7 +85,6 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
-| `--sherpa-display-mode-space-2xs` | `.chart-body` | `flex` |
 | `--sherpa-display-mode-space-xs` | `.chart-body` | `column-gap` |
 | `--sherpa-display-mode-space-xs` | `.bars` | `gap` |
 | `--sherpa-display-mode-border-width-base` | `.bars` | `border-inline-start` |

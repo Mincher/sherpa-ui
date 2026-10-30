@@ -873,7 +873,7 @@
   /* Row spans — a child N grid rows tall. Only meaningful where the rows HAVE
      a height, which is data-rows="fixed" or "fit"; in the default mode rows are
      auto and a span collapses to the content. */
-  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span] { grid-row: span clamp(1, attr(data-row-span type(<integer>), 1), 12); }
+  :is(.sherpa-grid, sherpa-layout-grid) > [data-row-span] { --sherpa-layout-grid-row-span: clamp(1, attr(data-row-span type(<integer>), 1), 12); grid-row: span var(--sherpa-layout-grid-row-span); }
 
   /* ── Row sizing — two variants, and the default is neither ───────────────
      No attribute: rows size to their CONTENT and the page scrolls, which is
@@ -967,125 +967,125 @@
 
   @media (min-width: 0px) and (max-width: 767.98px) {
     :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :is(:not([slot]), [slot="context-header"]), sherpa-app-shell > :is(:not([slot]), [slot="context-header"]) *)) {
-      & > [data-col-span='full'] { grid-column: span 4; }
-      & > [data-col-span='reading'] { grid-column: span 4; }
-      & > [data-col-span='large'] { grid-column: span 4; }
-      & > [data-col-span='medium'] { grid-column: span 4; }
-      & > [data-col-span='small'] { grid-column: span 4; }
-      & > [data-col-span='xsmall'] { grid-column: span 1; }
-      & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])) { grid-column: 1 / -1; }
+      & > [data-col-span='full'] { --sherpa-layout-grid-col-span: 4; grid-column: span 4; }
+      & > [data-col-span='reading'] { --sherpa-layout-grid-col-span: 4; grid-column: span 4; }
+      & > [data-col-span='large'] { --sherpa-layout-grid-col-span: 4; grid-column: span 4; }
+      & > [data-col-span='medium'] { --sherpa-layout-grid-col-span: 4; grid-column: span 4; }
+      & > [data-col-span='small'] { --sherpa-layout-grid-col-span: 4; grid-column: span 4; }
+      & > [data-col-span='xsmall'] { --sherpa-layout-grid-col-span: 1; grid-column: span 1; }
+      & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])) { --sherpa-layout-grid-col-span: 4; grid-column: 1 / -1; }
     }
   }
 
   @media (min-width: 768px) and (max-width: 1279.98px) {
     :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :is(:not([slot]), [slot="context-header"]), sherpa-app-shell > :is(:not([slot]), [slot="context-header"]) *)) {
-      & > [data-col-span='full'] { grid-column: span 8; }
-      & > [data-col-span='reading'] { grid-column: span 8; }
-      & > [data-col-span='large'] { grid-column: span 8; }
-      & > [data-col-span='medium'] { grid-column: span 4; }
-      & > [data-col-span='medium']:nth-last-child(1 of [data-col-span='medium']):nth-child(2n + 1 of [data-col-span='medium']):not(:nth-child(1 of [data-col-span='medium'])):not([data-col-span-8]) { grid-column: 1 / -1; }
-      & > [data-col-span='small'] { grid-column: span 4; }
-      & > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(2n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])):not([data-col-span-8]) { grid-column: 1 / -1; }
-      & > [data-col-span='xsmall'] { grid-column: span 2; }
-      & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])):not([data-col-span-8]) { grid-column: 1 / -1; }
-      & > [data-col-span-8] { grid-column: span clamp(1, attr(data-col-span-8 type(<integer>), 1), 8); }
-      & > [data-row-span-8] { --_rows: clamp(1, attr(data-row-span-8 type(<integer>), 1), 12); grid-row: span var(--_rows); block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }
+      & > [data-col-span='full'] { --sherpa-layout-grid-col-span: 8; grid-column: span 8; }
+      & > [data-col-span='reading'] { --sherpa-layout-grid-col-span: 8; grid-column: span 8; }
+      & > [data-col-span='large'] { --sherpa-layout-grid-col-span: 8; grid-column: span 8; }
+      & > [data-col-span='medium'] { --sherpa-layout-grid-col-span: 4; grid-column: span 4; }
+      & > [data-col-span='medium']:nth-last-child(1 of [data-col-span='medium']):nth-child(2n + 1 of [data-col-span='medium']):not(:nth-child(1 of [data-col-span='medium'])):not([data-col-span-8]) { --sherpa-layout-grid-col-span: 8; grid-column: 1 / -1; }
+      & > [data-col-span='small'] { --sherpa-layout-grid-col-span: 4; grid-column: span 4; }
+      & > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(2n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])):not([data-col-span-8]) { --sherpa-layout-grid-col-span: 8; grid-column: 1 / -1; }
+      & > [data-col-span='xsmall'] { --sherpa-layout-grid-col-span: 2; grid-column: span 2; }
+      & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])):not([data-col-span-8]) { --sherpa-layout-grid-col-span: 8; grid-column: 1 / -1; }
+      & > [data-col-span-8] { --sherpa-layout-grid-col-span: clamp(1, attr(data-col-span-8 type(<integer>), 1), 8); grid-column: span var(--sherpa-layout-grid-col-span); }
+      & > [data-row-span-8] { --_rows: clamp(1, attr(data-row-span-8 type(<integer>), 1), 12); --sherpa-layout-grid-row-span: var(--_rows); grid-row: span var(--_rows); block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }
     }
   }
 
   @media (min-width: 1280px) and (max-width: 1919.98px) {
     :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :is(:not([slot]), [slot="context-header"]), sherpa-app-shell > :is(:not([slot]), [slot="context-header"]) *)) {
-      & > [data-col-span='full'] { grid-column: span 12; }
-      & > [data-col-span='reading'] { grid-column: span 8; }
-      & > [data-col-span='large'] { grid-column: span 6; }
-      & > [data-col-span='large']:nth-last-child(1 of [data-col-span='large']):nth-child(2n + 1 of [data-col-span='large']):not(:nth-child(1 of [data-col-span='large'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span='medium'] { grid-column: span 4; }
-      & > [data-col-span='medium']:nth-last-child(1 of [data-col-span='medium']):nth-child(3n + 1 of [data-col-span='medium']):not(:nth-child(1 of [data-col-span='medium'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span='small'] { grid-column: span 3; }
-      & > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(4n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span='xsmall'] { grid-column: span 3; }
-      & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span-12] { grid-column: span clamp(1, attr(data-col-span-12 type(<integer>), 1), 12); }
-      & > [data-row-span-12] { --_rows: clamp(1, attr(data-row-span-12 type(<integer>), 1), 12); grid-row: span var(--_rows); block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }
+      & > [data-col-span='full'] { --sherpa-layout-grid-col-span: 12; grid-column: span 12; }
+      & > [data-col-span='reading'] { --sherpa-layout-grid-col-span: 8; grid-column: span 8; }
+      & > [data-col-span='large'] { --sherpa-layout-grid-col-span: 6; grid-column: span 6; }
+      & > [data-col-span='large']:nth-last-child(1 of [data-col-span='large']):nth-child(2n + 1 of [data-col-span='large']):not(:nth-child(1 of [data-col-span='large'])):not([data-col-span-12]) { --sherpa-layout-grid-col-span: 12; grid-column: 1 / -1; }
+      & > [data-col-span='medium'] { --sherpa-layout-grid-col-span: 4; grid-column: span 4; }
+      & > [data-col-span='medium']:nth-last-child(1 of [data-col-span='medium']):nth-child(3n + 1 of [data-col-span='medium']):not(:nth-child(1 of [data-col-span='medium'])):not([data-col-span-12]) { --sherpa-layout-grid-col-span: 12; grid-column: 1 / -1; }
+      & > [data-col-span='small'] { --sherpa-layout-grid-col-span: 3; grid-column: span 3; }
+      & > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(4n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])):not([data-col-span-12]) { --sherpa-layout-grid-col-span: 12; grid-column: 1 / -1; }
+      & > [data-col-span='xsmall'] { --sherpa-layout-grid-col-span: 3; grid-column: span 3; }
+      & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])):not([data-col-span-12]) { --sherpa-layout-grid-col-span: 12; grid-column: 1 / -1; }
+      & > [data-col-span-12] { --sherpa-layout-grid-col-span: clamp(1, attr(data-col-span-12 type(<integer>), 1), 12); grid-column: span var(--sherpa-layout-grid-col-span); }
+      & > [data-row-span-12] { --_rows: clamp(1, attr(data-row-span-12 type(<integer>), 1), 12); --sherpa-layout-grid-row-span: var(--_rows); grid-row: span var(--_rows); block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }
     }
   }
 
   @media (min-width: 1920px) {
     :is(.sherpa-grid, sherpa-layout-grid):where(:not(sherpa-app-shell > :is(:not([slot]), [slot="context-header"]), sherpa-app-shell > :is(:not([slot]), [slot="context-header"]) *)) {
-      & > [data-col-span='full'] { grid-column: span 12; }
-      & > [data-col-span='reading'] { grid-column: span 8; }
-      & > [data-col-span='large'] { grid-column: span 6; }
-      & > [data-col-span='large']:nth-last-child(1 of [data-col-span='large']):nth-child(2n + 1 of [data-col-span='large']):not(:nth-child(1 of [data-col-span='large'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span='medium'] { grid-column: span 4; }
-      & > [data-col-span='medium']:nth-last-child(1 of [data-col-span='medium']):nth-child(3n + 1 of [data-col-span='medium']):not(:nth-child(1 of [data-col-span='medium'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span='small'] { grid-column: span 3; }
-      & > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(4n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span='xsmall'] { grid-column: span 3; }
-      & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span-12] { grid-column: span clamp(1, attr(data-col-span-12 type(<integer>), 1), 12); }
-      & > [data-row-span-12] { --_rows: clamp(1, attr(data-row-span-12 type(<integer>), 1), 12); grid-row: span var(--_rows); block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }
+      & > [data-col-span='full'] { --sherpa-layout-grid-col-span: 12; grid-column: span 12; }
+      & > [data-col-span='reading'] { --sherpa-layout-grid-col-span: 8; grid-column: span 8; }
+      & > [data-col-span='large'] { --sherpa-layout-grid-col-span: 6; grid-column: span 6; }
+      & > [data-col-span='large']:nth-last-child(1 of [data-col-span='large']):nth-child(2n + 1 of [data-col-span='large']):not(:nth-child(1 of [data-col-span='large'])):not([data-col-span-12]) { --sherpa-layout-grid-col-span: 12; grid-column: 1 / -1; }
+      & > [data-col-span='medium'] { --sherpa-layout-grid-col-span: 4; grid-column: span 4; }
+      & > [data-col-span='medium']:nth-last-child(1 of [data-col-span='medium']):nth-child(3n + 1 of [data-col-span='medium']):not(:nth-child(1 of [data-col-span='medium'])):not([data-col-span-12]) { --sherpa-layout-grid-col-span: 12; grid-column: 1 / -1; }
+      & > [data-col-span='small'] { --sherpa-layout-grid-col-span: 3; grid-column: span 3; }
+      & > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(4n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])):not([data-col-span-12]) { --sherpa-layout-grid-col-span: 12; grid-column: 1 / -1; }
+      & > [data-col-span='xsmall'] { --sherpa-layout-grid-col-span: 3; grid-column: span 3; }
+      & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])):not([data-col-span-12]) { --sherpa-layout-grid-col-span: 12; grid-column: 1 / -1; }
+      & > [data-col-span-12] { --sherpa-layout-grid-col-span: clamp(1, attr(data-col-span-12 type(<integer>), 1), 12); grid-column: span var(--sherpa-layout-grid-col-span); }
+      & > [data-row-span-12] { --_rows: clamp(1, attr(data-row-span-12 type(<integer>), 1), 12); --sherpa-layout-grid-row-span: var(--_rows); grid-row: span var(--_rows); block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }
     }
   }
 
   @container sherpa-context (min-width: 0px) and (max-width: 727.98px) {
     :is(.sherpa-grid, sherpa-layout-grid) {
-      & > [data-col-span='full'] { grid-column: span 4; }
-      & > [data-col-span='reading'] { grid-column: span 4; }
-      & > [data-col-span='large'] { grid-column: span 4; }
-      & > [data-col-span='medium'] { grid-column: span 4; }
-      & > [data-col-span='small'] { grid-column: span 4; }
-      & > [data-col-span='xsmall'] { grid-column: span 1; }
-      & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])) { grid-column: 1 / -1; }
+      & > [data-col-span='full'] { --sherpa-layout-grid-col-span: 4; grid-column: span 4; }
+      & > [data-col-span='reading'] { --sherpa-layout-grid-col-span: 4; grid-column: span 4; }
+      & > [data-col-span='large'] { --sherpa-layout-grid-col-span: 4; grid-column: span 4; }
+      & > [data-col-span='medium'] { --sherpa-layout-grid-col-span: 4; grid-column: span 4; }
+      & > [data-col-span='small'] { --sherpa-layout-grid-col-span: 4; grid-column: span 4; }
+      & > [data-col-span='xsmall'] { --sherpa-layout-grid-col-span: 1; grid-column: span 1; }
+      & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])) { --sherpa-layout-grid-col-span: 4; grid-column: 1 / -1; }
     }
   }
 
   @container sherpa-context (min-width: 728px) and (max-width: 1239.98px) {
     :is(.sherpa-grid, sherpa-layout-grid) {
-      & > [data-col-span='full'] { grid-column: span 8; }
-      & > [data-col-span='reading'] { grid-column: span 8; }
-      & > [data-col-span='large'] { grid-column: span 8; }
-      & > [data-col-span='medium'] { grid-column: span 4; }
-      & > [data-col-span='medium']:nth-last-child(1 of [data-col-span='medium']):nth-child(2n + 1 of [data-col-span='medium']):not(:nth-child(1 of [data-col-span='medium'])):not([data-col-span-8]) { grid-column: 1 / -1; }
-      & > [data-col-span='small'] { grid-column: span 4; }
-      & > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(2n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])):not([data-col-span-8]) { grid-column: 1 / -1; }
-      & > [data-col-span='xsmall'] { grid-column: span 2; }
-      & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])):not([data-col-span-8]) { grid-column: 1 / -1; }
-      & > [data-col-span-8] { grid-column: span clamp(1, attr(data-col-span-8 type(<integer>), 1), 8); }
-      & > [data-row-span-8] { --_rows: clamp(1, attr(data-row-span-8 type(<integer>), 1), 12); grid-row: span var(--_rows); block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }
+      & > [data-col-span='full'] { --sherpa-layout-grid-col-span: 8; grid-column: span 8; }
+      & > [data-col-span='reading'] { --sherpa-layout-grid-col-span: 8; grid-column: span 8; }
+      & > [data-col-span='large'] { --sherpa-layout-grid-col-span: 8; grid-column: span 8; }
+      & > [data-col-span='medium'] { --sherpa-layout-grid-col-span: 4; grid-column: span 4; }
+      & > [data-col-span='medium']:nth-last-child(1 of [data-col-span='medium']):nth-child(2n + 1 of [data-col-span='medium']):not(:nth-child(1 of [data-col-span='medium'])):not([data-col-span-8]) { --sherpa-layout-grid-col-span: 8; grid-column: 1 / -1; }
+      & > [data-col-span='small'] { --sherpa-layout-grid-col-span: 4; grid-column: span 4; }
+      & > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(2n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])):not([data-col-span-8]) { --sherpa-layout-grid-col-span: 8; grid-column: 1 / -1; }
+      & > [data-col-span='xsmall'] { --sherpa-layout-grid-col-span: 2; grid-column: span 2; }
+      & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])):not([data-col-span-8]) { --sherpa-layout-grid-col-span: 8; grid-column: 1 / -1; }
+      & > [data-col-span-8] { --sherpa-layout-grid-col-span: clamp(1, attr(data-col-span-8 type(<integer>), 1), 8); grid-column: span var(--sherpa-layout-grid-col-span); }
+      & > [data-row-span-8] { --_rows: clamp(1, attr(data-row-span-8 type(<integer>), 1), 12); --sherpa-layout-grid-row-span: var(--_rows); grid-row: span var(--_rows); block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }
     }
   }
 
   @container sherpa-context (min-width: 1240px) and (max-width: 1879.98px) {
     :is(.sherpa-grid, sherpa-layout-grid) {
-      & > [data-col-span='full'] { grid-column: span 12; }
-      & > [data-col-span='reading'] { grid-column: span 8; }
-      & > [data-col-span='large'] { grid-column: span 6; }
-      & > [data-col-span='large']:nth-last-child(1 of [data-col-span='large']):nth-child(2n + 1 of [data-col-span='large']):not(:nth-child(1 of [data-col-span='large'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span='medium'] { grid-column: span 4; }
-      & > [data-col-span='medium']:nth-last-child(1 of [data-col-span='medium']):nth-child(3n + 1 of [data-col-span='medium']):not(:nth-child(1 of [data-col-span='medium'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span='small'] { grid-column: span 3; }
-      & > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(4n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span='xsmall'] { grid-column: span 3; }
-      & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span-12] { grid-column: span clamp(1, attr(data-col-span-12 type(<integer>), 1), 12); }
-      & > [data-row-span-12] { --_rows: clamp(1, attr(data-row-span-12 type(<integer>), 1), 12); grid-row: span var(--_rows); block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }
+      & > [data-col-span='full'] { --sherpa-layout-grid-col-span: 12; grid-column: span 12; }
+      & > [data-col-span='reading'] { --sherpa-layout-grid-col-span: 8; grid-column: span 8; }
+      & > [data-col-span='large'] { --sherpa-layout-grid-col-span: 6; grid-column: span 6; }
+      & > [data-col-span='large']:nth-last-child(1 of [data-col-span='large']):nth-child(2n + 1 of [data-col-span='large']):not(:nth-child(1 of [data-col-span='large'])):not([data-col-span-12]) { --sherpa-layout-grid-col-span: 12; grid-column: 1 / -1; }
+      & > [data-col-span='medium'] { --sherpa-layout-grid-col-span: 4; grid-column: span 4; }
+      & > [data-col-span='medium']:nth-last-child(1 of [data-col-span='medium']):nth-child(3n + 1 of [data-col-span='medium']):not(:nth-child(1 of [data-col-span='medium'])):not([data-col-span-12]) { --sherpa-layout-grid-col-span: 12; grid-column: 1 / -1; }
+      & > [data-col-span='small'] { --sherpa-layout-grid-col-span: 3; grid-column: span 3; }
+      & > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(4n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])):not([data-col-span-12]) { --sherpa-layout-grid-col-span: 12; grid-column: 1 / -1; }
+      & > [data-col-span='xsmall'] { --sherpa-layout-grid-col-span: 3; grid-column: span 3; }
+      & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])):not([data-col-span-12]) { --sherpa-layout-grid-col-span: 12; grid-column: 1 / -1; }
+      & > [data-col-span-12] { --sherpa-layout-grid-col-span: clamp(1, attr(data-col-span-12 type(<integer>), 1), 12); grid-column: span var(--sherpa-layout-grid-col-span); }
+      & > [data-row-span-12] { --_rows: clamp(1, attr(data-row-span-12 type(<integer>), 1), 12); --sherpa-layout-grid-row-span: var(--_rows); grid-row: span var(--_rows); block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }
     }
   }
 
   @container sherpa-context (min-width: 1880px) {
     :is(.sherpa-grid, sherpa-layout-grid) {
-      & > [data-col-span='full'] { grid-column: span 12; }
-      & > [data-col-span='reading'] { grid-column: span 8; }
-      & > [data-col-span='large'] { grid-column: span 6; }
-      & > [data-col-span='large']:nth-last-child(1 of [data-col-span='large']):nth-child(2n + 1 of [data-col-span='large']):not(:nth-child(1 of [data-col-span='large'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span='medium'] { grid-column: span 4; }
-      & > [data-col-span='medium']:nth-last-child(1 of [data-col-span='medium']):nth-child(3n + 1 of [data-col-span='medium']):not(:nth-child(1 of [data-col-span='medium'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span='small'] { grid-column: span 3; }
-      & > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(4n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span='xsmall'] { grid-column: span 3; }
-      & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])):not([data-col-span-12]) { grid-column: 1 / -1; }
-      & > [data-col-span-12] { grid-column: span clamp(1, attr(data-col-span-12 type(<integer>), 1), 12); }
-      & > [data-row-span-12] { --_rows: clamp(1, attr(data-row-span-12 type(<integer>), 1), 12); grid-row: span var(--_rows); block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }
+      & > [data-col-span='full'] { --sherpa-layout-grid-col-span: 12; grid-column: span 12; }
+      & > [data-col-span='reading'] { --sherpa-layout-grid-col-span: 8; grid-column: span 8; }
+      & > [data-col-span='large'] { --sherpa-layout-grid-col-span: 6; grid-column: span 6; }
+      & > [data-col-span='large']:nth-last-child(1 of [data-col-span='large']):nth-child(2n + 1 of [data-col-span='large']):not(:nth-child(1 of [data-col-span='large'])):not([data-col-span-12]) { --sherpa-layout-grid-col-span: 12; grid-column: 1 / -1; }
+      & > [data-col-span='medium'] { --sherpa-layout-grid-col-span: 4; grid-column: span 4; }
+      & > [data-col-span='medium']:nth-last-child(1 of [data-col-span='medium']):nth-child(3n + 1 of [data-col-span='medium']):not(:nth-child(1 of [data-col-span='medium'])):not([data-col-span-12]) { --sherpa-layout-grid-col-span: 12; grid-column: 1 / -1; }
+      & > [data-col-span='small'] { --sherpa-layout-grid-col-span: 3; grid-column: span 3; }
+      & > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(4n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])):not([data-col-span-12]) { --sherpa-layout-grid-col-span: 12; grid-column: 1 / -1; }
+      & > [data-col-span='xsmall'] { --sherpa-layout-grid-col-span: 3; grid-column: span 3; }
+      & > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])):not([data-col-span-12]) { --sherpa-layout-grid-col-span: 12; grid-column: 1 / -1; }
+      & > [data-col-span-12] { --sherpa-layout-grid-col-span: clamp(1, attr(data-col-span-12 type(<integer>), 1), 12); grid-column: span var(--sherpa-layout-grid-col-span); }
+      & > [data-row-span-12] { --_rows: clamp(1, attr(data-row-span-12 type(<integer>), 1), 12); --sherpa-layout-grid-row-span: var(--_rows); grid-row: span var(--_rows); block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }
     }
   }
 

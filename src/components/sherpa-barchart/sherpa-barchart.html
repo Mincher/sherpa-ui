@@ -14,12 +14,13 @@
 
   Slots:
     heading — heading above the chart
-    legend  — a <sherpa-chart-legend> for the series. Horizontal → below the plot;
-              vertical → beside it.
+    legend  — a <sherpa-chart-legend> for the series. Wider than square, beside the
+              plot; square or narrower, below it.
 
   Fires: bar-click — detail: { index, label, value }
 -->
 <template id="default">
+  <div class="chart-shape">
   <figure class="chart-figure" part="figure">
     <figcaption class="chart-header" part="header">
       <span class="title"><slot name="heading" data-accepts="text"></slot></span>
@@ -43,6 +44,7 @@
 
     <slot name="legend" data-accepts="legend"></slot>
   </figure>
+  </div>
 
   <template class="ytick-tpl">
     <span class="value-tick"><span class="y-value"></span></span>

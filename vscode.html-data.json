@@ -254,17 +254,6 @@
           "description": "the number that aggregate reads"
         },
         {
-          "name": "data-legend",
-          "values": [
-            {
-              "name": "horizontal"
-            },
-            {
-              "name": "vertical"
-            }
-          ]
-        },
-        {
           "name": "data-max",
           "description": "explicit value-axis max (else derived from the data)"
         },
@@ -563,7 +552,7 @@
     },
     {
       "name": "sherpa-chart-legend",
-      "description": "a legend for charts. Figma \"Chart Legend\" (1098:37846).",
+      "description": "a legend for charts. Figma \"Chart Legend\" (1098:37846). A list, or a strip when its chart is square or narrower: its chart says.",
       "attributes": [
         {
           "name": "data-aggregate",
@@ -617,18 +606,6 @@
           "name": "data-highlight-hover",
           "description": "a rest on a row says legend-hover. Set by its provider. TODO 495",
           "valueSet": "v"
-        },
-        {
-          "name": "data-orientation",
-          "description": "vertical | horizontal",
-          "values": [
-            {
-              "name": "horizontal"
-            },
-            {
-              "name": "vertical"
-            }
-          ]
         },
         {
           "name": "data-over-field"
@@ -809,7 +786,7 @@
         },
         {
           "name": "data-presentation",
-          "description": "default | bar | donut | pie | off — Show as, a menu before close, with what the card shows ticked; off, none. Its provider writes it",
+          "description": "default | bar | donut | pie | grid | off — Show as, a menu before close, with what the card shows ticked; off, none. Its provider writes it",
           "values": [
             {
               "name": "default"
@@ -818,6 +795,10 @@
               "name": "off"
             }
           ]
+        },
+        {
+          "name": "data-presentation-default",
+          "description": "what Default draws, which the menu's first row names. Its provider writes it"
         },
         {
           "name": "data-type",
@@ -1151,7 +1132,7 @@
         },
         {
           "name": "data-presentation",
-          "description": "default | bar | donut | pie | off — Show as, a menu at the end, with what the card shows ticked; off, none. Its provider writes it",
+          "description": "default | bar | donut | pie | grid | off — Show as, a menu at the end, with what the card shows ticked; off, none. Its provider writes it",
           "values": [
             {
               "name": "default"
@@ -1160,6 +1141,10 @@
               "name": "off"
             }
           ]
+        },
+        {
+          "name": "data-presentation-default",
+          "description": "what Default draws, which the menu's first row names. Its provider writes it"
         }
       ]
     },
@@ -1358,17 +1343,6 @@
         {
           "name": "data-label",
           "description": "the MIDPOINT tick above the arc. Defaults to the middle of the"
-        },
-        {
-          "name": "data-legend",
-          "values": [
-            {
-              "name": "horizontal"
-            },
-            {
-              "name": "vertical"
-            }
-          ]
         },
         {
           "name": "data-over-field"
@@ -1840,17 +1814,6 @@
         {
           "name": "data-field",
           "description": "the number that aggregate reads"
-        },
-        {
-          "name": "data-legend",
-          "values": [
-            {
-              "name": "horizontal"
-            },
-            {
-              "name": "vertical"
-            }
-          ]
         },
         {
           "name": "data-max",
@@ -3322,18 +3285,6 @@
           "description": "centre big text"
         },
         {
-          "name": "data-legend",
-          "description": "horizontal (default: below the ring) | vertical (beside it)",
-          "values": [
-            {
-              "name": "horizontal"
-            },
-            {
-              "name": "vertical"
-            }
-          ]
-        },
-        {
           "name": "data-over-field"
         },
         {
@@ -3967,7 +3918,7 @@
         },
         {
           "name": "data-presentation",
-          "description": "default | bar | donut | pie | off — Show as, a menu before the trailing controls, with what the card shows ticked; off, none. Its provider writes it",
+          "description": "default | bar | donut | pie | grid | off — Show as, a menu before the trailing controls, with what the card shows ticked; off, none. Its provider writes it",
           "values": [
             {
               "name": "default"
@@ -3976,6 +3927,10 @@
               "name": "off"
             }
           ]
+        },
+        {
+          "name": "data-presentation-default",
+          "description": "what Default draws, which the menu's first row names. Its provider writes it"
         },
         {
           "name": "data-type",

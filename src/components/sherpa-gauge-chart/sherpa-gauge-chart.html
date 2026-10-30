@@ -30,13 +30,14 @@
   Slots:
     heading  — heading above the gauge
     legend   — a <sherpa-chart-legend> naming the zones; the gauge fills it
-               from zones that are named. Horizontal → below the gauge;
-               vertical → beside it.
+               from zones that are named. Wider than square, beside the gauge;
+               square or narrower, below it.
     caption  — rich caption below the gauge; overrides data-caption
 
   Fires: nothing — display only.
 -->
 <template id="default">
+  <div class="chart-shape">
   <figure class="chart-figure" part="figure">
   <div class="chart-header" part="header">
     <span class="title"><slot name="heading" data-accepts="text"></slot></span>
@@ -91,6 +92,7 @@
        below the gauge here; vertical is switched to a two-column grid by CSS. -->
   <slot name="legend" data-accepts="legend"></slot>
   </figure>
+  </div>
 
   <!--
     One zone's segment. Wrapped in an <svg> so the HTML parser switches to the SVG

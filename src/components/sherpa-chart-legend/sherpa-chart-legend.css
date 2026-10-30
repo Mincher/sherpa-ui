@@ -28,27 +28,6 @@
   padding: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* THREE COLUMNS, TWO ROWS — six cells, which is `MAX_ITEMS`, so the last one
-   is the roll-up with its breakdown menu. A wrapping flex row put a different
-   number on each line at every width; a fixed grid reads the same everywhere.
-
-   `1fr` columns, not `auto`: three equal cells keep the second row's entries
-   under the first row's, which is what makes it a grid rather than three
-   ragged columns. TRAP T-a-horizontal-legend-is-three-by-two */
-:host([data-orientation="horizontal"]) .legend {
-  /* ONE column where its chart is narrow: the chart says so.
-     TRAP T-a-narrow-chart-stacks-its-legend */
-  grid-template-columns: repeat(var(--sherpa-chart-legend-columns, 3), 1fr);
-  justify-content: stretch;
-  column-gap: var(--sherpa-display-mode-space-base, 16px);
-  row-gap: var(--sherpa-display-mode-space-xs, 8px);
-  /* A KEY, not a row of the page: across a 12-column card the three cells sat
-     a third of the page apart. Capped in rem, so it follows the text size, and
-     centred. Will, 2026-09-26. TRAP T-a-horizontal-legend-is-three-by-two */
-  max-inline-size: 40rem;
-  margin-inline: auto;
-}
-
 /* An ENTRY takes the first two tracks and leaves the button's empty; the
    ROLL-UP takes all three, and its toggle the two inside that. */
 .item {
@@ -65,15 +44,52 @@
 }
 .entry { justify-self: start; }
 
-/* Each entry owns ONE cell: the chip shrinks, so its label truncates before
-   its value moves. CENTRED in the cell, because a two-row grid leaves a cell
-   taller than its entry wherever a label wraps. */
-:host([data-orientation="horizontal"]) .item {
-  grid-column: auto;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-content: center;
-  min-inline-size: 0;
-  column-gap: var(--sherpa-display-mode-space-xs, 8px);
+/* BELOW its chart it is a strip, and its chart says so: WebKit will not let a size
+   query in this sheet read a box inside the chart. Alone, a list.
+   TRAP T-a-chart-shape-places-its-legend */
+@container style(--sherpa-chart-legend-strip: 1) {
+  /* THREE COLUMNS, TWO ROWS — six cells, which is `MAX_ITEMS`, so the last one
+     is the roll-up with its breakdown menu. A wrapping flex row put a different
+     number on each line at every width; a fixed grid reads the same everywhere.
+
+     `1fr` columns, not `auto`: three equal cells keep the second row's entries
+     under the first row's, which is what makes it a grid rather than three
+     ragged columns. TRAP T-a-horizontal-legend-is-three-by-two */
+  .legend {
+    /* ONE column where its chart is narrow: the chart says so. */
+    grid-template-columns: repeat(var(--sherpa-chart-legend-columns, 3), 1fr);
+    justify-content: stretch;
+    column-gap: var(--sherpa-display-mode-space-base, 16px);
+    row-gap: var(--sherpa-display-mode-space-xs, 8px);
+    /* A KEY, not a row of the page: across a 12-column card the three cells sat
+       a third of the page apart. Capped in rem, so it follows the text size, and
+       centred. Will, 2026-09-26. TRAP T-a-horizontal-legend-is-three-by-two */
+    max-inline-size: 40rem;
+    margin-inline: auto;
+  }
+
+  /* Each entry owns ONE cell: the chip shrinks, so its label truncates before
+     its value moves. CENTRED in the cell, because a two-row grid leaves a cell
+     taller than its entry wherever a label wraps. */
+  .item {
+    grid-column: auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-content: center;
+    min-inline-size: 0;
+    column-gap: var(--sherpa-display-mode-space-xs, 8px);
+  }
+
+  /* THE LAST CELL of the 3x2 grid: the Other row and its breakdown button,
+     side by side, centred like every other entry.
+     TRAP T-a-horizontal-legend-is-three-by-two */
+  .rollup {
+    grid-column: auto;
+    display: flex;
+    align-self: center;
+    min-inline-size: 0;
+    column-gap: var(--sherpa-display-mode-space-2xs, 4px);
+  }
+  .rollup > .item { flex: 1 1 auto; }
 }
 
 /* CHIPS: each row a value chip, as a filter panel draws it, and they wrap. TODO 586 */
@@ -83,8 +99,10 @@
   column-gap: var(--sherpa-display-mode-space-xs, 8px);
   row-gap: var(--sherpa-display-mode-space-xs, 8px);
 }
-:host([data-chips]:not([data-orientation="horizontal"])) .legend { flex-direction: column; align-items: start; }
-:host([data-chips][data-orientation="horizontal"]) .legend { justify-content: center; }
+:host([data-chips]) .legend { flex-direction: column; align-items: start; }
+@container style(--sherpa-chart-legend-strip: 1) {
+  :host([data-chips]) .legend { flex-direction: row; align-items: normal; justify-content: center; }
+}
 :host([data-chips]) :is(.item, .rollup) {
   display: inline-flex;
   align-items: center;
@@ -123,18 +141,6 @@
 /* ── The "Other" roll-up row ────────────────────────────────────────────────
  * A WRAPPER: the menu button may not sit inside the chip's button, so the row
  * and the button are siblings. */
-
-/* THE LAST CELL of the 3x2 grid: the Other row and its breakdown button,
-   side by side, centred like every other entry.
-   TRAP T-a-horizontal-legend-is-three-by-two */
-:host([data-orientation="horizontal"]) .rollup {
-  grid-column: auto;
-  display: flex;
-  align-self: center;
-  min-inline-size: 0;
-  column-gap: var(--sherpa-display-mode-space-2xs, 4px);
-}
-:host([data-orientation="horizontal"]) .rollup > .item { flex: 1 1 auto; }
 
 /* The breakdown button sits after the value, and hugs. */
 .rollup-menu-btn {

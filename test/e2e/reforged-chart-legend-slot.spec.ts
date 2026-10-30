@@ -1,37 +1,32 @@
 import { test, expect } from './harness';
 
 /**
- * The CHART owns the split with its own legend — not the card around it.
- *
- * Every chart takes a `legend` slot and a `data-legend` attribute saying what it
- * does about it: horizontal puts the legend BELOW the plot, vertical puts it
- * BESIDE. Before this the page wrapped the chart and the legend in its own div
- * and wrote the ratio there, so the pair could not move between cards without
- * carrying a stylesheet along.
+ * The CHART owns the split with its own legend, and its SHAPE decides: wider than
+ * square, the legend sits BESIDE the plot; square or narrower, BELOW it. No
+ * attribute says where. In a layout grid, its card's spans are its shape, not its
+ * pixels. Will, TODO 623. TRAP T-a-chart-shape-places-its-legend
  *
  * These assertions read MEASURED BOXES, never a class name. The split is CSS, so
- * "the rule is in the file" proves nothing about whether it applied — and the
- * first attempt at this used `:host(:has(…))`, which does not parse at all and
- * dropped all twelve rules silently.
+ * "the rule is in the file" proves nothing about whether it applied.
  */
 
 const CHARTS = ['sherpa-barchart', 'sherpa-line-chart', 'sherpa-gauge-chart', 'sherpa-radial-chart'] as const;
 
-/** Build one chart in a fixed box, 600x400 unless told, with a legend slotted in. */
-async function build(page: import('@playwright/test').Page, tag: string, orientation: string, width = 600) {
+/** One chart filling a box, as a card's body fills it, with a legend slotted in. */
+async function build(page: import('@playwright/test').Page, tag: string, width: number, height: number) {
   return page.evaluate(
-    async ([t, o, w]) => {
+    async ([t, w, h]) => {
       const root = document.getElementById('root')!;
       root.innerHTML = '';
       const box = document.createElement('div');
-      box.style.cssText = `inline-size:${w}px;block-size:400px`;
+      box.id = 'box';
+      box.style.cssText = `display:flex;flex-direction:column;inline-size:${w}px;block-size:${h}px`;
       const chart = document.createElement(t) as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
-      chart.setAttribute('data-legend', o);
+      chart.style.cssText = 'flex:1 1 auto;min-block-size:0';
       const legend = document.createElement('sherpa-chart-legend') as HTMLElement & {
         rendered?: Promise<void>; populate?: (d: unknown) => void;
       };
       legend.setAttribute('slot', 'legend');
-      legend.setAttribute('data-orientation', o);
       chart.appendChild(legend);
       box.appendChild(chart);
       root.appendChild(box);
@@ -53,73 +48,70 @@ async function build(page: import('@playwright/test').Page, tag: string, orienta
       // Every chart frames its plot in a .chart-body (TODO 283, 308).
       const body = chart.shadowRoot!.querySelector('.chart-body') as HTMLElement;
       const items = [...legend.shadowRoot!.querySelectorAll('.item')].map(r);
-      return { chart: r(chart), legend: r(legend), body: r(body), items, hostDisplay: getComputedStyle(chart).display };
+      return { chart: r(chart), legend: r(legend), body: r(body), items };
     },
-    [tag, orientation, width] as const,
+    [tag, width, height] as const,
   );
 }
 
-/* Will, TODO 162: "Have data viz charts and legends go from horizontal layout
-   to vertical layout as their container gets narrower. Use container queries.
-   If a layout is set to vertical by default in it's template then this won't
-   apply." TRAP T-a-narrow-chart-stacks-its-legend */
-for (const tag of CHARTS) {
-  test(`${tag}: NARROW, a legend beside the plot goes below it`, async ({ page }) => {
-    const wide = await build(page, tag, 'vertical');
-    expect(wide.legend.x).toBeGreaterThanOrEqual(wide.body.x + wide.body.w - 1);
-    const narrow = await build(page, tag, 'vertical', 300);
-    expect(narrow.legend.y).toBeGreaterThanOrEqual(narrow.body.y + narrow.body.h - 1);
-    expect(narrow.legend.x).toBeLessThan(narrow.body.x + narrow.body.w);
-    // Nothing is pushed out of the chart.
-    expect(narrow.legend.x + narrow.legend.w).toBeLessThanOrEqual(narrow.chart.x + narrow.chart.w + 1);
-  });
-}
-for (const tag of CHARTS) {
-  test(`${tag}: NARROW, a legend strip becomes a list`, async ({ page }) => {
-    const wide = await build(page, tag, 'horizontal');
-    expect(wide.items[1]!.y).toBe(wide.items[0]!.y);
-    const narrow = await build(page, tag, 'horizontal', 300);
-    expect(narrow.items[1]!.y).toBeGreaterThan(narrow.items[0]!.y);
-    expect(narrow.items[1]!.x).toBe(narrow.items[0]!.x);
-    // Still below the plot: a stacked chart stays stacked.
-    expect(narrow.legend.y).toBeGreaterThanOrEqual(narrow.body.y + narrow.body.h - 1);
-  });
-}
+type Built = Awaited<ReturnType<typeof build>>;
+const beside = (r: Built) => r.legend.x >= r.body.x + r.body.w - 1 && r.legend.y < r.body.y + r.body.h;
+const below = (r: Built) => r.legend.y >= r.body.y + r.body.h - 1 && r.legend.x < r.body.x + r.body.w;
 
 for (const tag of CHARTS) {
-  test(`${tag}: a HORIZONTAL legend sits BELOW the plot`, async ({ page }) => {
-    const r = await build(page, tag, 'horizontal');
-    // BELOW: the legend starts at or after the plot's bottom edge. That is the
-    // whole claim — a stacked pair, not a side-by-side one.
-    expect(r.legend.y).toBeGreaterThanOrEqual(r.body.y + r.body.h - 1);
-    // And it is NOT beside: the two overlap horizontally rather than sitting in
-    // separate columns.
-    expect(r.legend.x).toBeLessThan(r.body.x + r.body.w);
-    // It runs the host's full width — which is why a legend below needs only
-    // height. (The gauge's own BODY is centred and narrower than the host, since
-    // the ring caps at 320px, so this compares against the CHART, not the body.)
-    expect(r.legend.w).toBeGreaterThan(r.chart.w * 0.8);
-  });
-
-  test(`${tag}: a VERTICAL legend sits BESIDE the plot at roughly 70/30`, async ({ page }) => {
-    const r = await build(page, tag, 'vertical');
-    expect(r.hostDisplay).toBe('grid');
-    // Beside: the legend starts after the plot's right edge, and they overlap
-    // vertically rather than stacking.
-    expect(r.legend.x).toBeGreaterThanOrEqual(r.body.x + r.body.w - 1);
-    expect(r.legend.y).toBeLessThan(r.body.y + r.body.h);
+  test(`${tag}: WIDER than square, the legend sits beside the plot, a list, at roughly 70/30`, async ({ page }) => {
+    const r = await build(page, tag, 600, 400);
+    expect(beside(r)).toBe(true);
+    expect(r.items[1]!.y).toBeGreaterThan(r.items[0]!.y);
     // The plot takes the larger share. 7fr/3fr with a gap, so allow a band.
     const share = r.body.w / r.chart.w;
     expect(share).toBeGreaterThan(0.55);
     expect(share).toBeLessThan(0.8);
+    // It takes the whole height, and the legend no more room than it was given.
+    expect(r.body.h).toBeGreaterThan(r.chart.h * 0.9);
+    expect(r.legend.w).toBeGreaterThan(0);
   });
 
-  test(`${tag}: with NO legend the plot takes the whole chart`, async ({ page }) => {
+  test(`${tag}: SQUARE, the legend sits below the plot, a strip`, async ({ page }) => {
+    const r = await build(page, tag, 400, 400);
+    expect(below(r)).toBe(true);
+    expect(r.items[1]!.y).toBe(r.items[0]!.y);
+    // It runs the host's full width. (The gauge's own BODY is centred and narrower
+    // than the host, since the ring caps at 320px, so this reads the CHART.)
+    expect(r.legend.w).toBeGreaterThan(r.chart.w * 0.8);
+  });
+
+  test(`${tag}: NARROWER than square, below, and under 22rem the strip is a list`, async ({ page }) => {
+    const r = await build(page, tag, 300, 400);
+    expect(below(r)).toBe(true);
+    expect(r.items[1]!.y).toBeGreaterThan(r.items[0]!.y);
+    expect(r.items[1]!.x).toBe(r.items[0]!.x);
+    // Nothing is pushed out of the chart.
+    expect(r.legend.x + r.legend.w).toBeLessThanOrEqual(r.chart.x + r.chart.w + 1);
+  });
+
+  test(`${tag}: the edge is square, and a chart turns as its box does`, async ({ page }) => {
+    expect(beside(await build(page, tag, 401, 400))).toBe(true);
+    expect(below(await build(page, tag, 400, 400))).toBe(true);
+    const turned = await page.evaluate(async (t) => {
+      const chart = document.querySelector(t)!;
+      const read = () => {
+        const body = chart.shadowRoot!.querySelector('.chart-body')!.getBoundingClientRect();
+        return chart.querySelector('sherpa-chart-legend')!.getBoundingClientRect().x >= body.right - 1;
+      };
+      (document.getElementById('box') as HTMLElement).style.inlineSize = '700px';
+      await window.__settled();
+      return read();
+    }, tag);
+    expect(turned).toBe(true);
+  });
+
+  test(`${tag}: with NO legend the plot takes the whole chart, wide or not`, async ({ page }) => {
     const r = await page.evaluate(async (t) => {
       const root = document.getElementById('root')!;
       root.innerHTML = '';
       const box = document.createElement('div');
-      box.style.cssText = 'inline-size:600px;block-size:400px';
+      box.style.cssText = 'inline-size:600px';
       const chart = document.createElement(t) as HTMLElement & { rendered?: Promise<void> };
       box.appendChild(chart);
       root.appendChild(box);
@@ -133,10 +125,68 @@ for (const tag of CHARTS) {
       };
     }, tag);
     expect(r.hasLegend).toBe(false);
-    // No 30% column reserved for a legend that is not there: the plot's cell
-    // spans the chart. (A radial host is a one-column grid, so its ring has a
-    // real row height — the width is the fact, not the display.)
     expect(r.bodyW).toBeGreaterThan(r.chartW * 0.95);
+  });
+}
+
+// In a layout grid, the spans decide: a 4x4 card measures wide and reads square.
+test('in a layout grid, a card\'s spans place its legend, whatever its pixels', async ({ page }) => {
+  const read = (attrs: Record<string, string>) => page.evaluate(async (given) => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const grid = document.createElement('sherpa-layout-grid');
+    grid.setAttribute('data-rows', 'fixed');
+    grid.style.inlineSize = '1500px';
+    const card = document.createElement('sherpa-container');
+    for (const [name, value] of Object.entries(given)) card.setAttribute(name, value);
+    const chart = document.createElement('sherpa-barchart') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+    const legend = document.createElement('sherpa-chart-legend') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+    legend.setAttribute('slot', 'legend');
+    chart.appendChild(legend);
+    card.appendChild(chart);
+    grid.appendChild(card);
+    root.appendChild(grid);
+    await chart.rendered;
+    await legend.rendered;
+    chart.populate?.([{ label: 'a', value: 1 }, { label: 'b', value: 2 }]);
+    legend.populate?.([{ label: 'Alpha' }, { label: 'Beta' }]);
+    await window.__settled();
+    const box = chart.getBoundingClientRect();
+    const body = chart.shadowRoot!.querySelector('.chart-body')!.getBoundingClientRect();
+    const items = [...legend.shadowRoot!.querySelectorAll('.item')].map((i) => i.getBoundingClientRect());
+    return {
+      beside: legend.getBoundingClientRect().x >= body.right - 1,
+      strip: items[0]!.y === items[1]!.y,
+      wider: box.width > box.height,
+    };
+  }, attrs);
+  // Wider by span.
+  expect(await read({ 'data-col-span': 'medium', 'data-row-span': '3' })).toMatchObject({ beside: true, strip: false });
+  expect(await read({ 'data-col-span': 'full', 'data-row-span': '4' })).toMatchObject({ beside: true, strip: false });
+  // Square by span, wide in pixels: the spans win.
+  expect(await read({ 'data-col-span': 'medium', 'data-row-span': '4' })).toEqual({ beside: false, strip: true, wider: true });
+  // Narrower by span. A DRAGGED width counts, as it is what the card spans now.
+  expect(await read({ 'data-col-span': 'medium', 'data-col-span-12': '2', 'data-row-span': '3' })).toMatchObject({ beside: false });
+  // No row span, no ratio: its pixels decide.
+  expect((await read({ 'data-col-span': 'full' })).beside).toBe(true);
+});
+
+// A size container takes no height from its content, so each family names it.
+for (const [tag, natural] of [['sherpa-barchart', 212], ['sherpa-line-chart', 212], ['sherpa-gauge-chart', 208], ['sherpa-radial-chart', 300]] as const) {
+  test(`${tag}: unsized, it keeps its natural height of ${natural}px`, async ({ page }) => {
+    const h = await page.evaluate(async (t) => {
+      const root = document.getElementById('root')!;
+      root.innerHTML = '';
+      const box = document.createElement('div');
+      box.style.cssText = 'inline-size:600px';
+      const chart = document.createElement(t) as HTMLElement & { rendered?: Promise<void> };
+      box.appendChild(chart);
+      root.appendChild(box);
+      await chart.rendered;
+      await window.__settled();
+      return Math.round(chart.getBoundingClientRect().height);
+    }, tag);
+    expect(h).toBe(natural);
   });
 }
 
@@ -147,15 +197,13 @@ test('sherpa-barchart: a SHORT host shrinks the plot; an unsized one keeps 180px
   const r = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
     root.innerHTML = '';
-    const measure = async (blockSize: string) => {
+    const measure = async (inlineSize: string, blockSize: string) => {
       const box = document.createElement('div');
-      box.style.cssText = 'inline-size:600px';
+      box.style.inlineSize = inlineSize;
       const chart = document.createElement('sherpa-barchart') as HTMLElement & { rendered?: Promise<void>; populate(d: unknown): void };
-      chart.setAttribute('data-legend', 'horizontal');
       chart.style.blockSize = blockSize;
       const legend = document.createElement('sherpa-chart-legend') as HTMLElement & { rendered?: Promise<void>; populate(d: unknown): void };
       legend.setAttribute('slot', 'legend');
-      legend.setAttribute('data-orientation', 'horizontal');
       chart.appendChild(legend);
       box.appendChild(chart);
       root.appendChild(box);
@@ -170,36 +218,14 @@ test('sherpa-barchart: a SHORT host shrinks the plot; an unsized one keeps 180px
         // The value axis is its lowest row now. Will, TODO 548
         axisBottom: sr.querySelector('.value-axis')!.getBoundingClientRect().bottom,
         legendTop: legend.getBoundingClientRect().top,
+        hostBottom: chart.getBoundingClientRect().bottom,
       };
     };
-    // 220px is the Records card's host: less than the 180px plot + axis + legend.
-    return { short: await measure('220px'), unsized: await measure('') };
+    // Square, so its legend is below: the axis must clear it.
+    return { short: await measure('220px', '220px'), unsized: await measure('600px', '') };
   });
   expect(r.short.axisBottom).toBeLessThanOrEqual(r.short.legendTop);
   expect(r.short.plot).toBeLessThan(180);
   expect(r.unsized.plot).toBe(180);
-  expect(r.unsized.axisBottom).toBeLessThanOrEqual(r.unsized.legendTop);
-});
-
-test('the split is declared on the CHART, not read from the legend', async ({ page }) => {
-  // A guard against the bug this replaced: `:host(:has(…))` does not parse, so a
-  // chart that tried to read the legend's own data-orientation got NO rule at
-  // all. If someone puts that back, this test fails — the chart would stay a
-  // flex column even though the legend says vertical.
-  const r = await page.evaluate(async () => {
-    const root = document.getElementById('root')!;
-    root.innerHTML = '';
-    const chart = document.createElement('sherpa-barchart') as HTMLElement & { rendered?: Promise<void> };
-    chart.setAttribute('data-legend', 'vertical');
-    const legend = document.createElement('sherpa-chart-legend');
-    legend.setAttribute('slot', 'legend');
-    // Deliberately NOT matching the chart — the chart's own attribute decides.
-    legend.setAttribute('data-orientation', 'horizontal');
-    chart.appendChild(legend);
-    root.appendChild(chart);
-    await chart.rendered;
-    await window.__settled();
-    return { display: getComputedStyle(chart).display };
-  });
-  expect(r.display).toBe('grid');
+  expect(r.unsized.axisBottom).toBeLessThanOrEqual(r.unsized.hostBottom);
 });

@@ -14,15 +14,14 @@
     data-aggregate      count (default) | sum | mean | min | max | distinct, per value
     data-field          the number that aggregate reads
 
-    data-legend    horizontal (default: below the ring) | vertical (beside it)
-
   Slots:
     heading — heading above the ring
-    legend  — an optional legend: below the ring, or beside it with data-legend="vertical"
+    legend  — an optional legend: wider than square, beside the ring; square or narrower, below it
 
   Fires: slice-click — a slice is clicked. detail: { index, label, value }
 -->
 <template id="default">
+  <div class="chart-shape">
   <figure class="chart-figure" part="figure">
     <div class="chart-header" part="header">
       <span class="title"><slot name="heading" data-accepts="text"></slot></span>
@@ -46,6 +45,7 @@
     </div>
     <slot name="legend" data-accepts="legend"></slot>
   </figure>
+  </div>
 
   <!--
     WRAPPED IN AN <svg> on purpose: without it the parser builds an

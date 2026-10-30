@@ -20,18 +20,12 @@
     "categories plot"
     ".          values"
     ".          caption";
-  /* --_plot-height is a flex BASIS, not a track floor: it shrinks in a short
-     card and holds in an unsized host. The addend is the value axis row — MUST
-     match its margin and line-height.
-     TRAP T-a-percentage-floor-needs-a-definite-parent */
-  flex: 1 1 calc(var(--_plot-height) + var(--sherpa-display-mode-space-2xs, 4px) + var(--sherpa-theme-content-line-height-small, 16px));
+  /* It takes what the legend leaves, with no track floor: a floor overflows a
+     short card. TRAP T-a-percentage-floor-needs-a-definite-parent */
+  flex: 1 1 0;
   min-block-size: 0;
   min-inline-size: 0;
   column-gap: var(--sherpa-display-mode-space-xs, 8px);
-}
-/* A grid item has no flex basis, so beside a vertical legend the floor is a track. */
-:host([data-legend="vertical"]) .chart-body {
-  grid-template-rows: minmax(var(--_plot-height), 1fr) auto auto;
 }
 
 .plot {

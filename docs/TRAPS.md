@@ -14273,7 +14273,7 @@ in their specs for as long as the cells or an alias existed.
 
 An attribute more than one component declares is a SHARED contract, and it was
 being spelled once per component. Measured across the 58: `data-heading` in 9,
-`data-type` in 8, `data-size` and `data-legend` in 3 each.
+`data-type` in 8, `data-size` in 3.
 
 Two of those groups are fine as they are. A `kind: 'content'` entry differs
 only in its `to:` selector — `.title` vs `.heading-text` vs `.heading` — and
@@ -14292,7 +14292,7 @@ is what an agent reads.
 | | |
 |---|---|
 | `DATA_PROPS` | the seven attributes `SourceBinding.push` writes on every bound component, plus `data-locked`. A component declares one to say it READS it |
-| `SHARED_PROPS` | style attributes whose shape is identical wherever they appear — `data-size`, `data-orientation`, `data-legend` |
+| `SHARED_PROPS` | style attributes whose shape is identical wherever they appear — `data-size`, `data-orientation` |
 
 `scripts/check-ownership.mjs` reads `DATA_PROPS` out of that file rather than
 keeping its own list, which was a fifth copy of the same seven names. Verified
@@ -14614,37 +14614,68 @@ through the same sync.
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
 - Site: `test/e2e/reforged-gauge-chart.spec.ts`
 
-### T-a-narrow-chart-stacks-its-legend
+### T-a-chart-shape-places-its-legend
 
-**Below 22rem of its own width, a chart puts a legend that was BESIDE it
-below it, and a legend STRIP becomes a list** — Will, TODO 162: *"go from
-horizontal layout to vertical layout as their container gets narrower. Use
-container queries."* A chart already stacked is left alone. 22rem, so the
-Records page at 1280 with the filter panel shut (a 363px chart) is as it was.
+**A chart wider than square puts its legend beside it, a list; square or narrower,
+below it, a strip.** Will, TODO 623: *"Use CSS aspect ratio, of a chart's container
+(container query)… Wider containers get the legend to the side. Square or narrower
+place it below."* **In a layout grid, its card's column and row spans decide, not
+its pixels.** Will, TODO 623: *"use the column and row span ratios, instead of aspect
+ratio"*. So a 4x4 card that measures 470x289 is square, and its legend goes below.
+Nothing else says where: `data-legend` on a chart and `data-orientation` on its
+legend are gone. Under 22rem of its own width, a strip becomes a list (Will, TODO 162).
 
-Three things that are not obvious:
+Six things that are not obvious:
 
-- **The HOST is the container, and a container cannot restyle itself.** Every
-  chart — bar, line, gauge and radial, all on the frame sheet — puts the
-  side-by-side grid on `:host`, so the
-  narrow query cannot take the grid away. It re-places what is IN the grid
-  instead: the plot and the legend each span both columns, and the legend
-  takes a third row.
-- **The rule must be LAST.** The plot's `grid-column: 1` lived in each
-  chart's own sheet, which is adopted after its family's — so it beat the
-  family's narrow rule. It is in the frame sheet now, above the query.
-- **The legend is TOLD, it does not measure.** Beside a chart it hugs its
-  content, and an inline-size container has no content width: as its own
-  container it would collapse. The chart's query sets
-  `--sherpa-chart-legend-columns: 1` on its slotted legend, and the legend's
-  3-by-2 grid reads its column count from that.
+- **`.chart-shape` is the box the query reads.** The whole chart, or in a layout grid
+  a box of one pixel per span: 4x3px. One query answers both, and `.chart-figure`
+  escapes it with `position: absolute`, onto the host. `container-type` gives no
+  layout containment in all three engines, measured, so the host stays its
+  containing block.
+- **The grid publishes the spans.** `--sherpa-layout-grid-col-span` and `-row-span`
+  sit beside each `grid-column` and `grid-row` in the generated grid rules, so they
+  follow the breakpoint, a lone last child and a drag, and a card inherits them. Read
+  with NO fallback, on purpose. A card with no row span leaves `.chart-shape` `auto`,
+  so its pixels decide.
+- **`size`, not `inline-size`.** An aspect ratio reads both axes. A size container
+  takes no height from its content, so each family names what an unsized chart
+  measures, in `contain-intrinsic-block-size`: bar and line 212px, gauge 208px, radial
+  300px. Those are what each measured before. A line had no real one.
+- **The HOST is a container, and a container cannot restyle itself.** So the figure
+  is what the query turns: a flex column, or the 7:3 grid.
+- **The legend is TOLD, by a style query.** WebKit walks from a slotted legend's sheet
+  to the chart's HOST and never to a box inside the chart, so a size query there read
+  the wrong box. A name is tree-scoped too. The chart's sheet sets
+  `--sherpa-chart-legend-strip` on it, which works in all three, and
+  `@container style()` reads it. Measured in Chromium 153, Firefox 155, WebKit 26.6.
+  Outside a chart it is unset, so a list.
+- **`:state(has-legend)` guards the split.** With no legend, a wide chart keeps one
+  column and its plot takes the whole chart.
 
-`::slotted()` inside an `@container` on the host works in Chromium, WebKit
-and Firefox — measured, by the tests below.
+`::slotted()` inside an `@container` works in Chromium, WebKit and Firefox, measured
+by the tests below.
 
 - Site: `src/core/sherpa-chart-frame.css`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`
 - Site: `test/e2e/reforged-chart-legend-slot.spec.ts`
+
+### T-a-grid-from-a-chart-keeps-to-its-card
+
+**A filter in a grid made from a chart stays in its card.** Will, TODO 621: *"scoped to
+the local scope for the chart. Right now they're affecting the Customer Records data
+grid toolbar and columns."* A slot's rows are the View's, so a reading in its scope
+narrows nothing; and steered, a heading's answer went to the scope that holds its
+field, which is Customer Records. So it is not steered at all. The provider keeps each
+grid's clauses by field, narrows that grid's rows and answers it again. The event stops
+at the grid. It is kept while the grid is shown, and a new grid starts with none.
+
+**Its rows are a table, not the records** (Will, TODOs 622, 625): a row a value of the
+first axis, its Group, a column a Secondary value, and a Total, and a row opens on its
+records. A line's first axis is what it runs over, its split the columns. A gauge is one
+mean of one field, so nothing totals: it shows its records, named by the first column of
+the page's own grid, and that field.
+
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
 ### T-a-horizontal-legend-is-three-by-two
 
@@ -19758,7 +19789,7 @@ hierarchy, the View scope over a local scope over a component. So `above` is rea
 from the draft, as a raise shows at once, and `on` from the Query as applied. See
 docs/DATA-LAYER-PLAN.md, Step 3.
 
+- Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/field-status.ts`
 - Site: `test/unit/one-field-one-status.test.mjs`
-- Site: `src/core/data/data-source-types.ts`

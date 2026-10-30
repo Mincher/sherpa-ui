@@ -6,7 +6,7 @@
   "$description": "a line/area chart over a numeric series.",
   "element": {
     "$type": "element",
-    "tag": "figure",
+    "tag": "div",
     "provides": []
   },
   "templates": [
@@ -15,99 +15,105 @@
   "anatomy": {
     "roots": [
       {
-        "el": "figure",
-        "class": "chart-figure",
-        "part": "figure",
+        "el": "div",
+        "class": "chart-shape",
         "children": [
           {
-            "el": "figcaption",
-            "class": "chart-header",
-            "part": "header",
+            "el": "figure",
+            "class": "chart-figure",
+            "part": "figure",
             "children": [
               {
-                "el": "span",
-                "class": "title",
+                "el": "figcaption",
+                "class": "chart-header",
+                "part": "header",
                 "children": [
                   {
-                    "slot": "heading",
-                    "attrs": {
-                      "data-accepts": "text"
-                    }
+                    "el": "span",
+                    "class": "title",
+                    "children": [
+                      {
+                        "slot": "heading",
+                        "attrs": {
+                          "data-accepts": "text"
+                        }
+                      }
+                    ]
                   }
                 ]
-              }
-            ]
-          },
-          {
-            "el": "div",
-            "class": "chart-body",
-            "children": [
-              {
-                "el": "span",
-                "class": "axis-label axis-label-y",
-                "part": "axis-label"
               },
               {
                 "el": "div",
-                "class": "y-axis",
-                "part": "y-axis",
-                "attrs": {
-                  "aria-hidden": "true"
-                }
-              },
-              {
-                "el": "div",
-                "class": "plot",
-                "part": "plot",
-                "attrs": {
-                  "role": "group",
-                  "aria-label": "Line chart"
-                },
+                "class": "chart-body",
                 "children": [
                   {
-                    "el": "svg",
-                    "class": "svg",
-                    "part": "svg",
+                    "el": "span",
+                    "class": "axis-label axis-label-y",
+                    "part": "axis-label"
+                  },
+                  {
+                    "el": "div",
+                    "class": "y-axis",
+                    "part": "y-axis",
                     "attrs": {
-                      "viewBox": "0 0 100 100",
-                      "preserveAspectRatio": "none",
                       "aria-hidden": "true"
+                    }
+                  },
+                  {
+                    "el": "div",
+                    "class": "plot",
+                    "part": "plot",
+                    "attrs": {
+                      "role": "group",
+                      "aria-label": "Line chart"
                     },
                     "children": [
                       {
-                        "el": "g",
-                        "class": "grid"
+                        "el": "svg",
+                        "class": "svg",
+                        "part": "svg",
+                        "attrs": {
+                          "viewBox": "0 0 100 100",
+                          "preserveAspectRatio": "none",
+                          "aria-hidden": "true"
+                        },
+                        "children": [
+                          {
+                            "el": "g",
+                            "class": "grid"
+                          },
+                          {
+                            "el": "g",
+                            "class": "series-layer"
+                          }
+                        ]
                       },
                       {
-                        "el": "g",
-                        "class": "series-layer"
+                        "el": "div",
+                        "class": "hotspots",
+                        "part": "hotspots"
+                      },
+                      {
+                        "el": "div",
+                        "class": "x-axis",
+                        "part": "x-axis"
+                      },
+                      {
+                        "el": "span",
+                        "class": "axis-label axis-label-x",
+                        "part": "x-axis-label"
                       }
                     ]
-                  },
-                  {
-                    "el": "div",
-                    "class": "hotspots",
-                    "part": "hotspots"
-                  },
-                  {
-                    "el": "div",
-                    "class": "x-axis",
-                    "part": "x-axis"
-                  },
-                  {
-                    "el": "span",
-                    "class": "axis-label axis-label-x",
-                    "part": "x-axis-label"
                   }
                 ]
+              },
+              {
+                "slot": "legend",
+                "attrs": {
+                  "data-accepts": "legend"
+                }
               }
             ]
-          },
-          {
-            "slot": "legend",
-            "attrs": {
-              "data-accepts": "legend"
-            }
           }
         ]
       },
@@ -285,18 +291,6 @@
       "declared": true,
       "kind": "style",
       "description": "the number that aggregate reads"
-    },
-    {
-      "$type": "prop",
-      "name": "data-legend",
-      "type": "enum",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "values": [
-        "horizontal",
-        "vertical"
-      ]
     },
     {
       "$type": "prop",

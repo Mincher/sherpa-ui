@@ -52,7 +52,6 @@ For parts of a whole, as a donut (the default) or a pie. For one value on a scal
 | `data-field` | text |  | the number that aggregate reads |
 | `data-inner` | text |  | hole size, a FRACTION of the outer radius (0–1). A pie ignores it — a pie has no hole by definition. |
 | `data-label` | text |  | centre big text |
-| `data-legend` | `horizontal` `vertical` |  | horizontal (default: below the ring) \| vertical (beside it) |
 | `data-over-field` | text |  |  |
 | `data-segment-field` | text |  | ASKED of its provider: one slice per value of this field |
 | `data-sublabel` | text |  | centre small text |
@@ -80,7 +79,7 @@ Each one bubbles.
 | Slot | Accepts | What it holds |
 |---|---|---|
 | `heading` | text | heading above the ring |
-| `legend` | legend | an optional legend: below the ring, or beside it with data-legend="vertical" |
+| `legend` | legend | an optional legend: wider than square, beside the ring; square or narrower, below it |
 
 ## Parts
 
@@ -94,6 +93,7 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-display-mode-space-lg` | `.chart-figure` | `column-gap` |
 | `--sherpa-theme-content-size-h1` | `.value` | `font-size` |
 | `--sherpa-font-weight-regular` | `.value` | `font-weight` |
 | `--sherpa-theme-content-line-height-h1` | `.value` | `line-height` |

@@ -55,15 +55,11 @@
         "children": [
           {
             "el": "sherpa-barchart",
-            "attrs": {
-              "data-legend": "horizontal"
-            },
             "children": [
               {
                 "el": "sherpa-chart-legend",
                 "attrs": {
-                  "slot": "legend",
-                  "data-orientation": "horizontal"
+                  "slot": "legend"
                 }
               }
             ]
@@ -77,15 +73,13 @@
           {
             "el": "sherpa-radial-chart",
             "attrs": {
-              "data-type": "donut",
-              "data-legend": "vertical"
+              "data-type": "donut"
             },
             "children": [
               {
                 "el": "sherpa-chart-legend",
                 "attrs": {
-                  "slot": "legend",
-                  "data-orientation": "vertical"
+                  "slot": "legend"
                 }
               }
             ]
@@ -99,18 +93,29 @@
           {
             "el": "sherpa-radial-chart",
             "attrs": {
-              "data-type": "pie",
-              "data-legend": "vertical"
+              "data-type": "pie"
             },
             "children": [
               {
                 "el": "sherpa-chart-legend",
                 "attrs": {
-                  "slot": "legend",
-                  "data-orientation": "vertical"
+                  "slot": "legend"
                 }
               }
             ]
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "shown-grid-tpl",
+        "children": [
+          {
+            "el": "sherpa-data-grid",
+            "attrs": {
+              "data-column-filters": "",
+              "data-scroll-shadow": ""
+            }
           }
         ]
       },

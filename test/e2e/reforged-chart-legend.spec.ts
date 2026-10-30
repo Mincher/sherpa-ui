@@ -762,7 +762,8 @@ test('a HORIZONTAL legend is a 3x2 grid, roll-up in the last cell', async ({ pag
     const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
       rendered?: Promise<void>; populate?: (d: unknown) => void;
     };
-    el.setAttribute('data-orientation', 'horizontal');
+    // A strip, as a chart below which it sits would say.
+    el.style.setProperty('--sherpa-chart-legend-strip', '1');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     // EIGHT, so the roll-up fires — six cells cannot hold eight entries.
@@ -961,7 +962,7 @@ test('a horizontal legend is capped and centred, and fills a narrow box', async 
   const read = (width: number) => page.evaluate(async (w) => {
     const el = await window.__mount<HTMLElement & { populate(d: unknown): void }>(
       'sherpa-chart-legend', undefined,
-      { 'data-orientation': 'horizontal', style: `inline-size: ${w}px` });
+      { style: `inline-size: ${w}px; --sherpa-chart-legend-strip: 1` });
     el.populate([{ label: 'Free', value: 10 }, { label: 'Pro', value: 20 }, { label: 'Team', value: 30 }]);
     await window.__settled();
     const host = el.getBoundingClientRect();
@@ -987,7 +988,7 @@ test('a horizontal legend is capped and centred, and fills a narrow box', async 
 test('the Other row opens a breakdown menu that is actually drawn', async ({ page }) => {
   await page.evaluate(async () => {
     const el = await window.__mount<HTMLElement & { populate(d: unknown): void }>(
-      'sherpa-chart-legend', undefined, { 'data-orientation': 'horizontal', style: 'inline-size: 900px; margin-top: 40px' });
+      'sherpa-chart-legend', undefined, { style: 'inline-size: 900px; margin-top: 40px; --sherpa-chart-legend-strip: 1' });
     el.populate(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((label, i) => ({ label, value: 10 - i })));
     await window.__settled();
   });

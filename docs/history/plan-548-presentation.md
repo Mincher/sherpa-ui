@@ -122,7 +122,7 @@ This replaces the earlier reading of primary and secondary below.
 | F1–F3 ✅ | Committed 2026-10-29 (c2154119) |
 | F5 ✅ | Donut and pie take a Secondary too (Will, 2026-10-29): each slice is cut, from the centre out, into a ring a Secondary value, its thickness its share, in its colour; Group cuts each ring by spokes. The legend lists the Secondary |
 | F6 | The grid takes Primary and Secondary (Will, 2026-10-29). Primary leads its columns, pinned; a definition gives a default per view (`grid`, `chart`), and the reader's pick wins (Will: B). Its Primary and Secondary chips are small until picked, and Secondary waits for a Primary (Will: B). Any field that names things — Name too — may be Primary, Secondary or Group. A counts-only pivot was tried; Will: it needs expandable parent rows, each a sub-grid — DONE (TODO 570): a pivot row opens on its own rows. Primary, Secondary and Group are a CHAIN (Will, TODO 574): Primary the pinned column, Secondary the pivot, Group the rows inside each sub-grid — the main grid's only where no Secondary is set |
-| F4 | D4: Data Grid in a chart card; the Demos pages |
+| F4 ✅ | D4: Data Grid in a chart card; the Demos pages. Committed 2026-10-30. Will moved D4 from the rows to a table: TODOs 622, 625 and `T-a-grid-from-a-chart-keeps-to-its-card` |
 
 ## Will's answers, 2026-10-29
 

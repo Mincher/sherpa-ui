@@ -6,7 +6,7 @@
   "$description": "a half-circle gauge for a single value on a 0–100 scale. Each band is a closed SVG path, as sherpa-radial-chart draws a slice, so the band itself is the hover target and the hollow centre is not hittable.",
   "element": {
     "$type": "element",
-    "tag": "figure",
+    "tag": "div",
     "provides": []
   },
   "templates": [
@@ -15,141 +15,147 @@
   "anatomy": {
     "roots": [
       {
-        "el": "figure",
-        "class": "chart-figure",
-        "part": "figure",
+        "el": "div",
+        "class": "chart-shape",
         "children": [
           {
-            "el": "div",
-            "class": "chart-header",
-            "part": "header",
-            "children": [
-              {
-                "el": "span",
-                "class": "title",
-                "children": [
-                  {
-                    "slot": "heading",
-                    "attrs": {
-                      "data-accepts": "text"
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "el": "div",
-            "class": "chart-body",
+            "el": "figure",
+            "class": "chart-figure",
+            "part": "figure",
             "children": [
               {
                 "el": "div",
-                "class": "centre",
+                "class": "chart-header",
+                "part": "header",
                 "children": [
                   {
                     "el": "span",
-                    "class": "value",
-                    "part": "value"
-                  }
-                ]
-              },
-              {
-                "el": "div",
-                "class": "gauge-wrap",
-                "children": [
-                  {
-                    "el": "div",
-                    "class": "gauge",
-                    "part": "gauge",
-                    "attrs": {
-                      "role": "group",
-                      "aria-label": "Gauge chart"
-                    },
+                    "class": "title",
                     "children": [
                       {
-                        "el": "svg",
-                        "class": "ring",
-                        "part": "ring",
+                        "slot": "heading",
                         "attrs": {
-                          "viewBox": "0 0 100 50",
-                          "role": "none"
-                        },
-                        "children": [
-                          {
-                            "el": "g",
-                            "class": "zones"
-                          }
-                        ]
-                      },
-                      {
-                        "el": "div",
-                        "class": "hub",
-                        "children": [
-                          {
-                            "el": "div",
-                            "class": "needle",
-                            "part": "needle"
-                          },
-                          {
-                            "el": "div",
-                            "class": "needle-match",
-                            "part": "needle-match"
-                          }
-                        ]
-                      },
-                      {
-                        "el": "div",
-                        "class": "hub-cap",
-                        "part": "hub"
-                      }
-                    ]
-                  },
-                  {
-                    "el": "div",
-                    "class": "hotspots",
-                    "part": "hotspots"
-                  }
-                ]
-              },
-              {
-                "el": "div",
-                "class": "scale",
-                "part": "scale",
-                "children": [
-                  {
-                    "el": "span",
-                    "class": "min"
-                  },
-                  {
-                    "el": "figcaption",
-                    "class": "caption",
-                    "part": "caption",
-                    "children": [
-                      {
-                        "el": "span",
-                        "class": "caption-text"
-                      },
-                      {
-                        "slot": "caption",
-                        "attrs": {
-                          "data-accepts": "content"
+                          "data-accepts": "text"
                         }
                       }
                     ]
-                  },
-                  {
-                    "el": "span",
-                    "class": "max"
                   }
                 ]
+              },
+              {
+                "el": "div",
+                "class": "chart-body",
+                "children": [
+                  {
+                    "el": "div",
+                    "class": "centre",
+                    "children": [
+                      {
+                        "el": "span",
+                        "class": "value",
+                        "part": "value"
+                      }
+                    ]
+                  },
+                  {
+                    "el": "div",
+                    "class": "gauge-wrap",
+                    "children": [
+                      {
+                        "el": "div",
+                        "class": "gauge",
+                        "part": "gauge",
+                        "attrs": {
+                          "role": "group",
+                          "aria-label": "Gauge chart"
+                        },
+                        "children": [
+                          {
+                            "el": "svg",
+                            "class": "ring",
+                            "part": "ring",
+                            "attrs": {
+                              "viewBox": "0 0 100 50",
+                              "role": "none"
+                            },
+                            "children": [
+                              {
+                                "el": "g",
+                                "class": "zones"
+                              }
+                            ]
+                          },
+                          {
+                            "el": "div",
+                            "class": "hub",
+                            "children": [
+                              {
+                                "el": "div",
+                                "class": "needle",
+                                "part": "needle"
+                              },
+                              {
+                                "el": "div",
+                                "class": "needle-match",
+                                "part": "needle-match"
+                              }
+                            ]
+                          },
+                          {
+                            "el": "div",
+                            "class": "hub-cap",
+                            "part": "hub"
+                          }
+                        ]
+                      },
+                      {
+                        "el": "div",
+                        "class": "hotspots",
+                        "part": "hotspots"
+                      }
+                    ]
+                  },
+                  {
+                    "el": "div",
+                    "class": "scale",
+                    "part": "scale",
+                    "children": [
+                      {
+                        "el": "span",
+                        "class": "min"
+                      },
+                      {
+                        "el": "figcaption",
+                        "class": "caption",
+                        "part": "caption",
+                        "children": [
+                          {
+                            "el": "span",
+                            "class": "caption-text"
+                          },
+                          {
+                            "slot": "caption",
+                            "attrs": {
+                              "data-accepts": "content"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "el": "span",
+                        "class": "max"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "slot": "legend",
+                "attrs": {
+                  "data-accepts": "legend"
+                }
               }
             ]
-          },
-          {
-            "slot": "legend",
-            "attrs": {
-              "data-accepts": "legend"
-            }
           }
         ]
       },
@@ -279,18 +285,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-legend",
-      "type": "enum",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "values": [
-        "horizontal",
-        "vertical"
-      ]
-    },
-    {
-      "$type": "prop",
       "name": "data-over-field",
       "type": "string",
       "observed": true,
@@ -409,11 +403,6 @@
   "states": [
     {
       "$type": "state",
-      "name": "vertical",
-      "selector": ":host([data-legend=\"vertical\"])"
-    },
-    {
-      "$type": "state",
       "name": "caption",
       "selector": ":host([data-caption])"
     }
@@ -426,6 +415,7 @@
     }
   ],
   "tokens": {
+    "chart-figure.gap": "{sherpa.theme-gap-sm}",
     "chart-body.gap": "{sherpa.theme-gap-sm}",
     "needle.inline-size": "{sherpa.display-mode-border-width-base}",
     "needle.background": "{sherpa.theme-content-body-2}",

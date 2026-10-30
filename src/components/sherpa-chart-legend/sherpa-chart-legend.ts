@@ -15,7 +15,7 @@
  */
 import { datumTotal, type LegendDatum } from '../../core/data/chart-datum.js';
 import { ruleOut } from '../../core/data/filter-state.js';
-import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
 // Each row is a key chip, and the roll-up a real button + menu; the page may not have imported them.
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
@@ -46,7 +46,6 @@ export class SherpaChartLegend extends SherpaElement {
 
   static override props = {
     ...SUMMARY_PROPS,
-    'data-orientation': SHARED_PROPS['data-orientation'],
     /* Report clicks, never toggle a series — the host owns the selection. */
     'data-readonly': { type: 'boolean', kind: 'style' },
     // A rest on a row says so, for its provider's highlight. Will, TODO 495

@@ -127,7 +127,7 @@ if (problems.length) {
       '— invisible to the TS, to the generated spec and to an agent reading either.\n\n' +
       'Declare it, even when only CSS reads it:\n\n' +
       "    static override props = {\n" +
-      "      'data-legend': { type: 'enum', kind: 'style', values: ['horizontal', 'vertical'] },\n" +
+      "      'data-size': { type: 'enum', kind: 'style', values: ['sm', 'md', 'lg'] },\n" +
       "    } as const;\n\n" +
       '`kind: style` generates no DOM writes — it says the attribute is real.\n' +
       'See T-a-host-attribute-is-declared-once.',

@@ -31,7 +31,8 @@ For the header row in a `sherpa-container`'s `header` slot: a heading, an icon, 
 | `data-draggable` | boolean |  | show the drag handle |
 | `data-heading` | text |  | heading text (rendered into .title) |
 | `data-icon` | text |  | a glyph before the title (shows the icon slot) |
-| `data-presentation` | `default` `off` |  | default \| bar \| donut \| pie \| off — Show as, a menu before close, with what the card shows ticked; off, none. Its provider writes it |
+| `data-presentation` | `default` `off` |  | default \| bar \| donut \| pie \| grid \| off — Show as, a menu before close, with what the card shows ticked; off, none. Its provider writes it |
+| `data-presentation-default` | text |  | what Default draws, which the menu's first row names. Its provider writes it |
 | `data-type` | `default` `panel` | `default` | default \| panel |
 
 ## Events
@@ -94,6 +95,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ collapsed?, collapsible?, description?, dismissible?, draggable?, heading?, icon?, presentation?, type? }`
+`{ collapsed?, collapsible?, description?, dismissible?, draggable?, heading?, icon?, presentation?, presentationDefault?, type? }`
 
 Its declared props by name: `label` sets data-label.

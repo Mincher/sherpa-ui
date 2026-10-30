@@ -2,7 +2,7 @@
 
 # sherpa-chart-legend
 
-A legend for charts. Figma "Chart Legend" (1098:37846).
+A legend for charts. Figma "Chart Legend" (1098:37846). A list, or a strip when its chart is square or narrower: its chart says.
 
 |  |  |
 |---|---|
@@ -17,7 +17,7 @@ For the colour key of a chart, in the chart's `legend` slot. Its rows are toggle
 ## Example
 
 ```html
-<sherpa-chart-legend data-orientation="horizontal"></sherpa-chart-legend>
+<sherpa-chart-legend></sherpa-chart-legend>
 ```
 
 `populate()` is given, on `sherpa-chart-legend`:
@@ -52,7 +52,6 @@ For the colour key of a chart, in the chart's `legend` slot. Its rows are toggle
 | `data-chips` | boolean |  | each row a value chip, as a filter panel draws it: its swatch, its label, its count. Set by its provider. Will, TODO 586 |
 | `data-field` | text |  |  |
 | `data-highlight-hover` | boolean |  | a rest on a row says legend-hover. Set by its provider. TODO 495 |
-| `data-orientation` | `horizontal` `vertical` | `vertical` | vertical \| horizontal |
 | `data-over-field` | text |  |  |
 | `data-readonly` | boolean |  | a KEY, not a filter: its rows do not toggle |
 | `data-segment-field` | text |  | ASKED of its provider, or read off its chart: one row per value. A click narrows its chart alone |
@@ -90,6 +89,9 @@ What each class's base rule reads:
 | `--sherpa-display-mode-space-xs` | `.legend` | `column-gap` |
 | `--sherpa-display-mode-space-2xs` | `.legend` | `row-gap` |
 | `--sherpa-display-mode-space-xs` | `.legend` | `padding` |
+| `--sherpa-chart-legend-columns` | `.legend` | `grid-template-columns` |
+| `--sherpa-display-mode-space-xs` | `.item` | `column-gap` |
+| `--sherpa-display-mode-space-2xs` | `.rollup` | `column-gap` |
 | `--sherpa-theme-content-body-base` | `.value` | `color` |
 | `--sherpa-font-family-mono` | `.value` | `font-family` |
 | `--sherpa-theme-content-size-small` | `.value` | `font-size` |

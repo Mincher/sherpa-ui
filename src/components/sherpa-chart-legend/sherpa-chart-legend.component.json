@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-chart-legend",
-  "$description": "a legend for charts. Figma \"Chart Legend\" (1098:37846).",
+  "$description": "a legend for charts. Figma \"Chart Legend\" (1098:37846). A list, or a strip when its chart is square or narrower: its chart says.",
   "element": {
     "$type": "element",
     "tag": "div",
@@ -202,20 +202,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-orientation",
-      "type": "enum",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "values": [
-        "horizontal",
-        "vertical"
-      ],
-      "default": "vertical",
-      "description": "vertical | horizontal"
-    },
-    {
-      "$type": "prop",
       "name": "data-over-field",
       "type": "string",
       "observed": true,
@@ -254,11 +240,6 @@
     "description": ". Keeps the off-set."
   },
   "states": [
-    {
-      "$type": "state",
-      "name": "horizontal",
-      "selector": ":host([data-orientation=\"horizontal\"])"
-    },
     {
       "$type": "state",
       "name": "chips",
@@ -305,6 +286,9 @@
     "legend.column-gap": "{sherpa.display-mode-space-xs}",
     "legend.row-gap": "{sherpa.display-mode-space-2xs}",
     "legend.padding": "{sherpa.display-mode-space-xs}",
+    "legend.grid-template-columns": "{sherpa.chart-legend-columns}",
+    "item.column-gap": "{sherpa.display-mode-space-xs}",
+    "rollup.column-gap": "{sherpa.display-mode-space-2xs}",
     "value.color": "{sherpa.theme-content-body-base}",
     "value.font-family": "{sherpa.font-family-mono}",
     "value.font-size": "{sherpa.theme-content-size-small}",

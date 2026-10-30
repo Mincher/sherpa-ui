@@ -6,7 +6,7 @@
   "$description": "a HORIZONTAL bar chart for categorical comparison: one bar a row, its category on the left, its value along the bottom. Will, TODO 548",
   "element": {
     "$type": "element",
-    "tag": "figure",
+    "tag": "div",
     "provides": []
   },
   "templates": [
@@ -15,69 +15,27 @@
   "anatomy": {
     "roots": [
       {
-        "el": "figure",
-        "class": "chart-figure",
-        "part": "figure",
+        "el": "div",
+        "class": "chart-shape",
         "children": [
           {
-            "el": "figcaption",
-            "class": "chart-header",
-            "part": "header",
+            "el": "figure",
+            "class": "chart-figure",
+            "part": "figure",
             "children": [
               {
-                "el": "span",
-                "class": "title",
+                "el": "figcaption",
+                "class": "chart-header",
+                "part": "header",
                 "children": [
                   {
-                    "slot": "heading",
-                    "attrs": {
-                      "data-accepts": "text"
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "el": "div",
-            "class": "chart-body",
-            "children": [
-              {
-                "el": "div",
-                "class": "category-axis",
-                "part": "category-axis",
-                "attrs": {
-                  "aria-hidden": "true"
-                }
-              },
-              {
-                "el": "div",
-                "class": "plot",
-                "part": "plot",
-                "attrs": {
-                  "role": "group",
-                  "aria-label": "Bar chart"
-                },
-                "children": [
-                  {
-                    "el": "div",
-                    "class": "gridlines",
-                    "part": "gridlines",
-                    "attrs": {
-                      "aria-hidden": "true"
-                    }
-                  },
-                  {
-                    "el": "div",
-                    "class": "bars",
-                    "part": "bars",
+                    "el": "span",
+                    "class": "title",
                     "children": [
                       {
-                        "el": "div",
-                        "class": "bars-zero",
-                        "part": "zero-line",
+                        "slot": "heading",
                         "attrs": {
-                          "aria-hidden": "true"
+                          "data-accepts": "text"
                         }
                       }
                     ]
@@ -86,24 +44,72 @@
               },
               {
                 "el": "div",
-                "class": "value-axis",
-                "part": "value-axis",
-                "attrs": {
-                  "aria-hidden": "true"
-                }
+                "class": "chart-body",
+                "children": [
+                  {
+                    "el": "div",
+                    "class": "category-axis",
+                    "part": "category-axis",
+                    "attrs": {
+                      "aria-hidden": "true"
+                    }
+                  },
+                  {
+                    "el": "div",
+                    "class": "plot",
+                    "part": "plot",
+                    "attrs": {
+                      "role": "group",
+                      "aria-label": "Bar chart"
+                    },
+                    "children": [
+                      {
+                        "el": "div",
+                        "class": "gridlines",
+                        "part": "gridlines",
+                        "attrs": {
+                          "aria-hidden": "true"
+                        }
+                      },
+                      {
+                        "el": "div",
+                        "class": "bars",
+                        "part": "bars",
+                        "children": [
+                          {
+                            "el": "div",
+                            "class": "bars-zero",
+                            "part": "zero-line",
+                            "attrs": {
+                              "aria-hidden": "true"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "el": "div",
+                    "class": "value-axis",
+                    "part": "value-axis",
+                    "attrs": {
+                      "aria-hidden": "true"
+                    }
+                  },
+                  {
+                    "el": "span",
+                    "class": "axis-label axis-label-value",
+                    "part": "axis-label"
+                  }
+                ]
               },
               {
-                "el": "span",
-                "class": "axis-label axis-label-value",
-                "part": "axis-label"
+                "slot": "legend",
+                "attrs": {
+                  "data-accepts": "legend"
+                }
               }
             ]
-          },
-          {
-            "slot": "legend",
-            "attrs": {
-              "data-accepts": "legend"
-            }
           }
         ]
       },
@@ -288,18 +294,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-legend",
-      "type": "enum",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "values": [
-        "horizontal",
-        "vertical"
-      ]
-    },
-    {
-      "$type": "prop",
       "name": "data-max",
       "type": "number",
       "observed": true,
@@ -377,11 +371,6 @@
   "states": [
     {
       "$type": "state",
-      "name": "vertical",
-      "selector": ":host([data-legend=\"vertical\"])"
-    },
-    {
-      "$type": "state",
       "name": "axis-label",
       "selector": ":host([data-axis-label])"
     },
@@ -409,7 +398,6 @@
     }
   ],
   "tokens": {
-    "chart-body.flex": "{sherpa.display-mode-space-2xs}",
     "chart-body.column-gap": "{sherpa.display-mode-space-xs}",
     "bars.gap": "{sherpa.display-mode-space-xs}",
     "bars.border-inline-start": "{sherpa.display-mode-border-width-base}",

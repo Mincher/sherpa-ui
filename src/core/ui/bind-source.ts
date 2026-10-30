@@ -143,9 +143,11 @@ function writeView(el: Element, view: BoundView, scope?: string | readonly strin
   setAttr(el, 'data-group-field', slot ? slot.group : mine ? view.groupField : undefined);
   setAttr(el, 'data-filter-fields', view.filterFields.length ? view.filterFields.join(' ') : undefined);
   setAttr(el, 'data-needles', view.needles || undefined);
-  setAttr(el, 'data-page', view.paging ? String(view.paging.page) : undefined);
-  setAttr(el, 'data-total-pages', view.paging ? String(view.paging.totalPages) : undefined);
-  setAttr(el, 'data-page-size', view.paging ? String(view.paging.pageSize) : undefined);
+  // A SLOT draws every row it counts: a grid made from its chart has no pager to step.
+  const paging = slot ? undefined : view.paging;
+  setAttr(el, 'data-page', paging ? String(paging.page) : undefined);
+  setAttr(el, 'data-total-pages', paging ? String(paging.totalPages) : undefined);
+  setAttr(el, 'data-page-size', paging ? String(paging.pageSize) : undefined);
 }
 
 /** What a slot's chart sorts by: each segment's value. TODO 548 */

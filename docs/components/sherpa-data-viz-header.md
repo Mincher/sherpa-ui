@@ -26,7 +26,8 @@ For the header strip of a metric's or a chart's card: a small heading, a descrip
 | `data-divider` | `none` |  | the rule under it; shown by DEFAULT — "none" hides it (a metric's) |
 | `data-heading` | text |  | the title — small, light, in CAPS |
 | `data-icon` | text |  | a glyph before the title (else the leading slot) |
-| `data-presentation` | `default` `off` |  | default \| bar \| donut \| pie \| off — Show as, a menu at the end, with what the card shows ticked; off, none. Its provider writes it |
+| `data-presentation` | `default` `off` |  | default \| bar \| donut \| pie \| grid \| off — Show as, a menu at the end, with what the card shows ticked; off, none. Its provider writes it |
+| `data-presentation-default` | text |  | what Default draws, which the menu's first row names. Its provider writes it |
 
 ## Events
 
@@ -74,6 +75,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ description?, divider?, heading?, icon?, presentation? }`
+`{ description?, divider?, heading?, icon?, presentation?, presentationDefault? }`
 
 Its declared props by name: `label` sets data-label.

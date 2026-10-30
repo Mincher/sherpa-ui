@@ -146,8 +146,6 @@ export const SHARED_PROPS = {
    */
   'data-size': { type: 'enum', kind: 'style', values: ['sm', 'md', 'lg'] },
   'data-orientation': { type: 'enum', kind: 'style', values: ['horizontal', 'vertical'] },
-  /** Where a chart puts its legend. */
-  'data-legend': { type: 'enum', kind: 'style', values: ['horizontal', 'vertical'] },
   /**
    * The box a popover must stay inside, passed DOWN from the host. Absent, it
    * falls back to the viewport — wrong inside a scroller.

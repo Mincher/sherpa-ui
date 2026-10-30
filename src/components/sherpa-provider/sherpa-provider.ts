@@ -21,7 +21,7 @@ import { report } from '../../core/data/report.js';
 import { summarise, summariseMarked, type SummarySpec } from '../../core/data/aggregate.js';
 import type { ChartDatum } from '../../core/data/chart-datum.js';
 import { bindSelection } from '../../core/data/bind-selection.js';
-import { groupRows, groupSummaries, valueKey, type Row, type Store } from '../../core/data/store.js';
+import { andFilter, filterRows, groupRows, groupSummaries, valueKey, type Filter, type Row, type Store } from '../../core/data/store.js';
 import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.js';
 import type { DraftMode } from '../../core/browser/view-drafts.js';
 import { openSource, savedFiltersOf, type PageDefinition } from '../../core/data/page-definition.js';
@@ -124,12 +124,14 @@ const SHOWN_BY: Readonly<Record<string, { tag: string; load: () => Promise<unkno
   bar: { tag: 'sherpa-barchart', load: () => Promise.all([import('../sherpa-barchart/sherpa-barchart.js'), import('../sherpa-chart-legend/sherpa-chart-legend.js')]) },
   donut: { tag: 'sherpa-radial-chart', load: () => Promise.all([import('../sherpa-radial-chart/sherpa-radial-chart.js'), import('../sherpa-chart-legend/sherpa-chart-legend.js')]) },
   pie: { tag: 'sherpa-radial-chart', load: () => Promise.all([import('../sherpa-radial-chart/sherpa-radial-chart.js'), import('../sherpa-chart-legend/sherpa-chart-legend.js')]) },
+  grid: { tag: 'sherpa-data-grid', load: () => import('../sherpa-data-grid/sherpa-data-grid.js') },
 };
 
-/** The presentation a component draws, where it is one. A grid is only ever
- *  the page's own, put back. */
+/** The presentation a component draws, where it is one. A gauge and a line chart
+ *  are only ever the page's own, put back. */
 function shownAs(el: Element): string | undefined {
-  if (el.localName === 'sherpa-data-grid') return 'grid';
+  if (el.localName === 'sherpa-gauge-chart') return 'gauge';
+  if (el.localName === 'sherpa-line-chart') return 'line';
   if (el.localName === 'sherpa-radial-chart') return el.getAttribute('data-type') ?? 'donut';
   return Object.keys(SHOWN_BY).find((kind) => SHOWN_BY[kind]?.tag === el.localName);
 }
@@ -141,8 +143,14 @@ type GridColumnLike = { field: string; header?: string; type?: string; tags?: st
  *  sub-grid's — and its sub-grids' sort and group. TODOs 571, 574 */
 const PIVOT_STEERS = ['column-filter-change', 'filter-apply', 'filter-discard', 'sort-change', 'group-change'] as const;
 
-/** What a chart made from a grid keeps of it: where it sits, and its slot. */
-const KEPT_FROM_GRID = ['slot', 'data-grow', 'data-scope', 'style'] as const;
+/** What a chart made from a grid, or a grid from a chart, keeps of it: where it sits, and its slot. */
+const KEPT_ACROSS = ['slot', 'data-grow', 'data-scope', 'style'] as const;
+
+/** What a chart's axes read: a grid made from it carries them, to name its columns. TODO 622 */
+const CHART_AXES = ['data-over-field', 'data-stack-field', 'data-field', 'data-aggregate'] as const;
+
+/** What only a line chart reads: another chart made from it drops them. */
+const LINE_ONLY = ['data-type', 'data-over-field', 'data-bucket'] as const;
 
 /** One component that asked, and how to stop answering it. */
 interface Asked {
@@ -692,6 +700,7 @@ export class SherpaProvider extends SherpaElement {
       source?.query.wait(VIEW);
       // …and, where the app asks, every scope the page declares. Will, TODO 436
       this.#scopes = Object.keys(def?.scopes ?? {});
+      this.#pageFields = Object.keys(def?.fields ?? {});
       if (this.#applyEvery) for (const scope of this.#scopes) source?.query.wait(scope);
       // Shared, the View is the App Context, and keeps its answer there. TODO 453
       this.#session = options.session;
@@ -1141,15 +1150,19 @@ export class SherpaProvider extends SherpaElement {
     const scope = scopes.length > 1 || isColumn(el) ? scopes : scopes[0];
     // Its slot shows another way: swapped for that one, which asks again. Will, TODO 548
     if (typeof scope === 'string' && shownAs(el) && this.#swapped(el, scope, source)) return;
-    // A grid's Primary leads its columns. Will, TODO 548
+    /* A grid made from a chart: every row its chart counts, with no pager, so its
+       scope stays a slot and its Group and Sort its presentation's. D4 B, TODO 624 */
+    const made = typeof scope === 'string' && shownAs(el) === 'grid' && (this.#authored.get(el) ?? 'grid') !== 'grid' ? scope : undefined;
+    if (made) (el as Element & { columns?: GridColumnLike[] }).columns = this.#madeColumns(el, source);
+    // A grid's Primary leads its columns; a grid made from a chart, its first axis. Will, TODO 548
     if (typeof scope === 'string' && shownAs(el) === 'grid') {
-      const lead = source.query.presented(scope, 'grid').primary;
+      const lead = made ? this.#madeLead(el, made, source) : source.query.presented(scope, 'grid').primary;
       if (lead) el.setAttribute('data-primary-field', lead);
       else el.removeAttribute('data-primary-field');
     }
     /* Its Secondary set, a grid is a PIVOT: a row a Primary value, a column a
        Secondary value, row counts in the cells. Will, TODO 548 */
-    const pivot = typeof scope === 'string' && shownAs(el) === 'grid' ? this.#pivotSpec(el, scope, source) : undefined;
+    const pivot = typeof scope === 'string' && shownAs(el) === 'grid' && !made ? this.#pivotSpec(el, scope, source) : undefined;
     // The fields it reads from a row: a summary's, or what it says. TRAP T-a-held-set-reads-the-pages-fields
     const fields = pivot ? [pivot.segment, pivot.stack] : spec ? [spec.field, spec.segment, spec.over].filter((f): f is string => !!f) : asks.fields?.(el);
     /* A chart over its field's ZONES is free of that field: its filter lights the
@@ -1161,7 +1174,7 @@ export class SherpaProvider extends SherpaElement {
       // A pivot is its scope's grid still: its Group and Sort arrange its rows' sub-grids. TODO 574
       ...(pivot ? { arranges: true } : {}),
       ...(fields ? { fields } : {}),
-      rows: spec || pivot || asks.shape === 'all' ? 'all' : 'page',
+      rows: spec || pivot || made || asks.shape === 'all' ? 'all' : 'page',
       // A pager and a filter bar steer; the rows are not theirs to draw.
       steerOnly: asks.shape === 'state' || asks.shape === 'scope',
       ...(asks.own ? { ignore: asks.own } : {}),
@@ -1174,9 +1187,10 @@ export class SherpaProvider extends SherpaElement {
       } } : {}),
       // …and its headings and cells filter its rows, its rows' sub-grids too. TODO 571
       ...(pivot ? { readonly: true, steers: PIVOT_STEERS, as: (rows, src) => this.#pivotOf(el, rows, pivot, src, asks.filters?.(el) ?? []) } : {}),
+      ...(made ? { readonly: true, as: (rows) => this.#madeTable(el, rows, made, source) } : {}),
       // A page of rows arrives WITH its groups: a group is the data layer's.
       // TRAP T-a-group-is-a-data-layer-concept
-      ...(asks.shape === 'rows' && !pivot
+      ...(asks.shape === 'rows' && !pivot && !made
         ? { as: (rows, src) => {
           const filtered = asks.filters?.(el);
           // Its columns' values are needed now. TRAP T-a-field-reads-its-values-when-needed
@@ -1196,8 +1210,20 @@ export class SherpaProvider extends SherpaElement {
     const unpick = spec && asks.picks ? this.#picks(el as Picker, source, spec.segment ?? '', asks.picks) : undefined;
     const unown = this.#own(el, source);
     // A chart, a grid and a legend in a slot follow its presentation: a legend lists a stack. TODO 548
-    const unshow = typeof scope === 'string' && (spec || shownAs(el)) ? this.#followPresentation(asked, source, scope, !spec && !pivot) : undefined;
+    const unshow = typeof scope === 'string' && (spec || shownAs(el)) ? this.#followPresentation(asked, source, scope, !spec && !pivot && !made) : undefined;
+    const refilter = made ? new AbortController() : undefined;
+    // A filter in it stays in it: asked of nothing, and heard by nothing above. Will, TODO 621
+    if (refilter) el.addEventListener('column-filter-change', (e) => {
+      e.stopPropagation();
+      const { field, clause } = (e as CustomEvent<{ field: string; clause: Filter | null }>).detail;
+      const held = this.#madeFilters.get(el) ?? new Map<string, Filter>();
+      this.#madeFilters.set(el, held);
+      if (clause) held.set(field, clause);
+      else held.delete(field);
+      this.#answer(asked);
+    }, { signal: refilter.signal });
     asked.unbind = () => {
+      refilter?.abort();
       unshow?.();
       unown?.();
       unpick?.();
@@ -1345,6 +1371,9 @@ export class SherpaProvider extends SherpaElement {
     }
   }
 
+  /** The fields the open page declares: a row opened in a grid made from a chart shows them. */
+  #pageFields: string[] = [];
+
   /** Each chart card's title: its page's own, and what was last written. */
   readonly #titled = new WeakMap<Element, { page: string; wrote: string }>();
 
@@ -1352,20 +1381,25 @@ export class SherpaProvider extends SherpaElement {
    *  as is told either way. True when swapped. Will, TODO 548 */
   #swapped(el: Element, slot: string, source: DataSource): boolean {
     const shown = source.query.presented(slot);
+    const authored = this.#authored.get(el) ?? shownAs(el);
+    const own = source.query.presented(slot, undefined, false).kind ?? authored;
     for (const host of this.querySelectorAll('[data-presentation]')) {
-      if (this.#inherited(host, 'data-scope') === slot) host.setAttribute('data-presentation', this.#showAsOf(source, slot));
+      if (this.#inherited(host, 'data-scope') !== slot) continue;
+      if (own) host.setAttribute('data-presentation-default', own);
+      host.setAttribute('data-presentation', this.#showAsOf(source, slot));
     }
     this.#retitle(el, slot, source);
-    const authored = this.#authored.get(el) ?? shownAs(el);
     const kind = shown.kind ?? authored;
     if (!authored || !kind || kind === shownAs(el)) return false;
     const parked = this.#parked.get(slot);
     const want = parked && shownAs(parked) === kind ? undefined : SHOWN_BY[kind];
     if (!parked && !want) return false;
     // A chart's first split is its segment field: one made from a grid takes the
-    // slot's Primary, else the grid's first column — its Primary too. Will, TODO 548
+    // slot's Primary, else the grid's first column — its Primary too. A gauge splits
+    // nothing, so only a grid is made from it, led by its field. Will, TODO 548
     const segment = source.query.presented(slot, 'chart').primary ?? el.getAttribute('data-segment-field')
-      ?? (el as Element & { columns?: { field: string }[] }).columns?.[0]?.field ?? null;
+      ?? (el as Element & { columns?: { field: string }[] }).columns?.[0]?.field
+      ?? (kind === 'grid' ? el.getAttribute('data-field') : null);
     if (want && !segment) {
       report({
         code: 'presentation-without-primary',
@@ -1378,11 +1412,15 @@ export class SherpaProvider extends SherpaElement {
     void (want?.load() ?? Promise.resolve()).then(() => {
       if (!el.isConnected) return;
       // Back to the page's own: the very element, a grid with its columns.
-      const next = want ? this.#chartFor(el, kind, segment ?? '') : parked;
+      // A grid made from a chart holds nothing of it: another chart comes from the page's own.
+      const from = shownAs(el) === 'grid' && parked && shownAs(parked) !== 'grid' ? parked : el;
+      const next = !want ? parked : kind === 'grid' ? this.#gridFor(el, segment ?? '') : this.#chartFor(from, kind, segment ?? '');
       if (!next) return;
       if (!want) this.#parked.delete(slot);
       // Back to the page's own chart: its legend goes home.
       if (!want && shownAs(next) !== 'grid' && shownAs(el) !== 'grid') next.append(...el.childNodes);
+      // A grid has no legend: it waits with the page's own chart.
+      if (want && kind === 'grid' && parked && shownAs(el) !== 'grid') parked.append(...el.childNodes);
       if (!this.#authored.has(el) && shownAs(el) === authored) this.#parked.set(slot, el);
       if (next !== parked) this.#authored.set(next, authored);
       el.replaceWith(next);
@@ -1397,12 +1435,103 @@ export class SherpaProvider extends SherpaElement {
     if (!next) return null;
     const fromGrid = shownAs(el) === 'grid';
     for (const { name, value } of [...el.attributes]) {
-      if (name !== 'data-type' && (!fromGrid || (KEPT_FROM_GRID as readonly string[]).includes(name))) next.setAttribute(name, value);
+      if (!(LINE_ONLY as readonly string[]).includes(name) && (!fromGrid || (KEPT_ACROSS as readonly string[]).includes(name))) next.setAttribute(name, value);
     }
     if (fromGrid) next.setAttribute('data-segment-field', segment);
     else if (el.querySelector(':scope > [slot="legend"]')) next.replaceChildren(...el.childNodes);
     return next;
   }
+
+  /** A grid for a chart's slot: where it sits, its id, and its axes, which name its
+   *  columns as it binds. Its legend stays with the chart. D4 B, TODO 624 */
+  #gridFor(el: Element, segment: string): Element | null {
+    const next = this.clone('template.shown-grid-tpl');
+    if (!next) return null;
+    for (const name of [...KEPT_ACROSS, ...CHART_AXES, 'id']) {
+      const value = el.getAttribute(name);
+      if (value !== null) next.setAttribute(name, value);
+    }
+    next.setAttribute('data-segment-field', segment);
+    return next;
+  }
+
+  /** What a grid made from a chart can show: every field of the page, as a row opened
+   *  on its own rows shows them. A gauge splits nothing, so it shows its rows: what
+   *  names a row, from the page's own grid, and the number it reads. Will, TODO 625 */
+  #madeColumns(el: Element, source: DataSource): GridColumnLike[] {
+    const page = this.querySelector<Element & { columns?: GridColumnLike[] }>('sherpa-data-grid:not([data-segment-field])');
+    const fields = this.#authored.get(el) === 'gauge'
+      ? [page?.columns?.[0]?.field, el.getAttribute('data-field')].filter((field): field is string => !!field)
+      : this.#pageFields;
+    return fields.map((field) => {
+      const facts = source.fieldFacts(field);
+      return { field, header: facts.label ?? field, sortable: true, ...(facts.type ? { type: facts.type } : {}) };
+    });
+  }
+
+  /** A grid made from a chart: its first axis, which leads its columns. */
+  #madeLead(el: Element, slot: string, source: DataSource): string | null {
+    if (this.#authored.get(el) === 'gauge') return (el as Element & { columns?: GridColumnLike[] }).columns?.[0]?.field ?? null;
+    return el.getAttribute('data-over-field') ?? source.query.presented(slot, 'chart').primary ?? el.getAttribute('data-segment-field');
+  }
+
+  /** What a grid made from a chart draws: its axes and its Group, no more, and a Total.
+   *  A row a value of its first axis, its cells the count the chart draws, and each
+   *  row opens on its own rows. A line's first axis is what it runs over. Its filters
+   *  are its own, so they narrow its rows and reach nothing else. Will, TODOs 621, 622, 625.
+   *  TRAP T-a-grid-from-a-chart-keeps-to-its-card */
+  #madeTable(el: Element, all: readonly Row[], slot: string, source: DataSource): unknown {
+    const own = el as Element & { columns?: GridColumnLike[] };
+    const narrowing = [...this.#madeFilters.get(el)?.values() ?? []];
+    const rows = narrowing.length ? filterRows(all, andFilter(narrowing)) : all;
+    const label = (f: string): string => source.fieldFacts(f).label ?? f;
+    const fields = (own.columns ?? []).map((c) => c.field);
+    source.readValues(fields);
+    const filters = Object.fromEntries(fields.map((f) => [f, source.filterDef(f)]));
+    // A gauge's number is one mean: no count to total, so its rows, as they are.
+    if (this.#authored.get(el) === 'gauge') return { rows, groups: null, filters };
+
+    const { primary, secondary, group, sort } = source.query.presented(slot, 'chart');
+    const over = el.getAttribute('data-over-field');
+    const lead = this.#madeLead(el, slot, source) ?? '';
+    const stack = (over ? primary ?? el.getAttribute('data-segment-field') : secondary ?? el.getAttribute('data-stack-field')) || undefined;
+    const aggregate = el.getAttribute('data-aggregate') as SummarySpec['aggregate'] | null;
+    const field = el.getAttribute('data-field');
+    const spec: SummarySpec = {
+      shape: 'segments', segment: lead, ...(stack ? { stack } : {}), ...(aggregate ? { aggregate } : {}), ...(field ? { field } : {}), ...(sort ? { sort } : {}),
+    };
+    const parts = group ? groupRows(rows, group).map((g) => ({ of: g.key, rows: g.rows })) : [{ of: '', rows }];
+    const made = parts.flatMap((part) => (summarise(part.rows, spec, (f) => source.valuesFor(f)) as ChartDatum[]).map((datum) => ({ part, datum })));
+    const seen = made.flatMap(({ datum }) => (datum.stack ?? []).map((p) => p.label));
+    const declared = stack ? source.valuesFor(stack).map(valueKey) : [];
+    const values = declared.length ? declared.filter((v) => seen.includes(v)) : [...new Set(seen)];
+    const key = (part: string, value: string): string => `${part}\u0000${value}`;
+    return { pivot: {
+      key: 'made:key',
+      columns: [
+        { field: lead, header: label(lead), sortable: false },
+        ...(group ? [{ field: group, header: label(group), sortable: false }] : []),
+        ...values.map((v) => ({ field: `made:${v}`, header: v, type: 'number', sortable: false, filterable: false })),
+        { field: 'made:total', header: this.word('total'), type: 'number', sortable: false, filterable: false },
+      ],
+      filters,
+      rows: made.map(({ part, datum }) => ({
+        'made:key': key(part.of, datum.label),
+        [lead]: datum.label,
+        ...(group ? { [group]: part.of } : {}),
+        ...Object.fromEntries(values.map((v) => [`made:${v}`, datum.stack?.find((p) => p.label === v)?.value ?? 0])),
+        'made:total': datum.value,
+      })),
+      detail: {
+        // Not what its row says: every row under it holds that. Will, TODO 578
+        columns: (own.columns ?? []).filter((c) => c.field !== lead && c.field !== group),
+        rows: Object.fromEntries(parts.flatMap((part) => groupRows(part.rows, lead).map((g) => [key(part.of, g.key), g.rows]))),
+      },
+    } };
+  }
+
+  /** A grid made from a chart: what its headings and cells hold, by field. TODO 621 */
+  readonly #madeFilters = new WeakMap<Element, Map<string, Filter>>();
 
   /** A grid's pivot, where its slot names a Secondary: its Primary — else its first
    *  column — a row a value, the Secondary's values its columns. Will, TODO 548 */

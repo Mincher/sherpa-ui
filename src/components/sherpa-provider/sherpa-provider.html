@@ -40,19 +40,23 @@
   <!-- SHOW AS: each chart a slot can show its data as, its legend with it. A chart
        swapped from another keeps that one's own legend. Will, TODO 548 -->
   <template class="shown-bar-tpl">
-    <sherpa-barchart data-legend="horizontal">
-      <sherpa-chart-legend slot="legend" data-orientation="horizontal"></sherpa-chart-legend>
+    <sherpa-barchart>
+      <sherpa-chart-legend slot="legend"></sherpa-chart-legend>
     </sherpa-barchart>
   </template>
   <template class="shown-donut-tpl">
-    <sherpa-radial-chart data-type="donut" data-legend="vertical">
-      <sherpa-chart-legend slot="legend" data-orientation="vertical"></sherpa-chart-legend>
+    <sherpa-radial-chart data-type="donut">
+      <sherpa-chart-legend slot="legend"></sherpa-chart-legend>
     </sherpa-radial-chart>
   </template>
   <template class="shown-pie-tpl">
-    <sherpa-radial-chart data-type="pie" data-legend="vertical">
-      <sherpa-chart-legend slot="legend" data-orientation="vertical"></sherpa-chart-legend>
+    <sherpa-radial-chart data-type="pie">
+      <sherpa-chart-legend slot="legend"></sherpa-chart-legend>
     </sherpa-radial-chart>
+  </template>
+
+  <template class="shown-grid-tpl">
+    <sherpa-data-grid data-column-filters data-scroll-shadow></sherpa-data-grid>
   </template>
 
   <!-- The words its code hands on as data. TRAP T-a-word-is-in-the-markup -->

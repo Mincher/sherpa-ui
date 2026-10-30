@@ -10,9 +10,8 @@
    TRAP T-at-property-needs-the-document. */
 
 :host {
-  align-items: center;
-  justify-content: center;
-  gap: var(--sherpa-theme-gap-sm, 4px);
+  /* An unsized gauge: its ring at --_max-size, with its scale and caption. */
+  contain-intrinsic-block-size: 208px;
   --_max-size: 320px;
   /* Band thickness as a FRACTION OF THE RADIUS (mirrors RING_WIDTH in the TS).
      Unitless: a `%` would resolve against whichever box it landed in. */
@@ -24,7 +23,13 @@
   --_angle: -90deg;
 }
 
-/* Ring + scale + caption as ONE column, so a vertical legend sits beside the
+.chart-figure {
+  align-items: center;
+  justify-content: center;
+  gap: var(--sherpa-theme-gap-sm, 4px);
+}
+
+/* Ring + scale + caption as ONE column, so a legend beside it sits beside the
    whole gauge, not just the ring. */
 .chart-body {
   display: flex;
@@ -40,16 +45,14 @@
   flex: 1 1 auto;
 }
 
-/* The legend opts out of the host's centring, to span the chart's width. */
+/* The legend opts out of the figure's centring, to span the chart's width. */
 ::slotted([slot="legend"]) { align-self: stretch; }
 
-/* Legend BESIDE: the frame sheet splits the host; each cell centres. */
-:host([data-legend="vertical"]) { justify-items: center; }
-
-:host([data-legend="vertical"]) .chart-body {
-  /* A CELL, not a flex item: filling it sizes the ring against the card. */
-  inline-size: 100%;
-  block-size: 100%;
+/* Legend BESIDE: the frame sheet splits the figure; the gauge centres in its cell,
+   and the legend fills its own: contained, it has no width to hug. */
+@container sherpa-chart-shape (aspect-ratio > 1 / 1) {
+  :host(:state(has-legend)) .chart-figure { justify-items: center; }
+  ::slotted([slot="legend"]) { align-self: center; justify-self: stretch; }
 }
 
 /* ── Gauge ─────────────────────────────────────────────────────────────

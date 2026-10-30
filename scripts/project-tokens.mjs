@@ -1515,7 +1515,7 @@ const colBlock = (mode, cols, min, max, kind = 'media') => {
     if (!span) continue;
     const sel = "[data-col-span='" + name + "']";
     rules.push('      & > ' + sel
-      + ' { grid-column: span ' + span + '; }');
+      + ' { --sherpa-layout-grid-col-span: ' + span + '; grid-column: span ' + span + '; }');
     const across = Math.floor(cols / span);
     // One per row already fills it — nothing to rescue.
     if (across < 2) continue;
@@ -1523,14 +1523,14 @@ const colBlock = (mode, cols, min, max, kind = 'media') => {
       + ':nth-child(' + across + 'n + 1 of ' + sel + ')'
       + ':not(:nth-child(1 of ' + sel + '))'
       + (counted ? ':not([data-col-span-' + cols + '])' : '')
-      + ' { grid-column: 1 / -1; }');
+      + ' { --sherpa-layout-grid-col-span: ' + cols + '; grid-column: 1 / -1; }');
   }
   if (counted) {
     /* AFTER the names, at the same weight, so a count wins. ONE rule each: the
        attribute's own number, read by typed attr(). Will, 2026-10-22 */
-    rules.push(`      & > [data-col-span-${cols}] { grid-column: span clamp(1, attr(data-col-span-${cols} type(<integer>), 1), ${cols}); }`);
+    rules.push(`      & > [data-col-span-${cols}] { --sherpa-layout-grid-col-span: clamp(1, attr(data-col-span-${cols} type(<integer>), 1), ${cols}); grid-column: span var(--sherpa-layout-grid-col-span); }`);
     // Sized in EVERY row mode: a counted row is a real height.
-    rules.push(`      & > [data-row-span-${cols}] { --_rows: clamp(1, attr(data-row-span-${cols} type(<integer>), 1), 12); grid-row: span var(--_rows); `
+    rules.push(`      & > [data-row-span-${cols}] { --_rows: clamp(1, attr(data-row-span-${cols} type(<integer>), 1), 12); --sherpa-layout-grid-row-span: var(--_rows); grid-row: span var(--_rows); `
       + 'block-size: calc(var(--_rows) * var(--sherpa-layout-grid-row-height, 88px) + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)); }');
   }
   if (!rules.length) return null;
@@ -1705,7 +1705,7 @@ const gridUtilityBlock = `  /* Layout grid — the track system views place thei
   /* Row spans — a child N grid rows tall. Only meaningful where the rows HAVE
      a height, which is data-rows="fixed" or "fit"; in the default mode rows are
      auto and a span collapses to the content. */
-  ${GRID_SEL} > [data-row-span] { grid-row: span clamp(1, attr(data-row-span type(<integer>), 1), 12); }
+  ${GRID_SEL} > [data-row-span] { --sherpa-layout-grid-row-span: clamp(1, attr(data-row-span type(<integer>), 1), 12); grid-row: span var(--sherpa-layout-grid-row-span); }
 
   /* ── Row sizing — two variants, and the default is neither ───────────────
      No attribute: rows size to their CONTENT and the page scrolls, which is

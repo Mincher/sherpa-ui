@@ -83,7 +83,16 @@
         "default",
         "off"
       ],
-      "description": "default | bar | donut | pie | off — Show as, a menu before the trailing controls, with what the card shows ticked; off, none. Its provider writes it"
+      "description": "default | bar | donut | pie | grid | off — Show as, a menu before the trailing controls, with what the card shows ticked; off, none. Its provider writes it"
+    },
+    {
+      "$type": "prop",
+      "name": "data-presentation-default",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "what Default draws, which the menu's first row names. Its provider writes it"
     },
     {
       "$type": "prop",
@@ -119,7 +128,7 @@
     }
   ],
   "populate": {
-    "shape": "{ presentation?, type? }",
+    "shape": "{ presentation?, presentationDefault?, type? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [

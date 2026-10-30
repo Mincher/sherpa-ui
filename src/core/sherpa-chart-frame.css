@@ -5,63 +5,71 @@
  */
 
 :host {
-  /* `flex`, not `inline-flex`: an inline box cannot shrink, so a y-axis column
-     pushed the plot past the panel edge. */
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  position: relative;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  container: sherpa-chart / inline-size;
+  /* `size`: its content does not size it, so each chart's family names its
+     `contain-intrinsic-block-size`. */
+  container: sherpa-chart / size;
 }
 
-/* Figure semantics without a layout box — children stay items of the host. */
+/* THE BOX ITS SHAPE IS READ FROM, as a container cannot restyle itself: the whole
+   chart, or, in a layout grid, a pixel per span of its card. No fallback, and
+   `x / x` is 1: with either span unset both are invalid, so `auto`, so the whole
+   chart. TRAP T-a-chart-shape-places-its-legend */
+.chart-shape {
+  container: sherpa-chart-shape / size;
+  inline-size: calc(var(--sherpa-layout-grid-col-span) * (var(--sherpa-layout-grid-row-span) / var(--sherpa-layout-grid-row-span)) * 1px);
+  block-size: calc(var(--sherpa-layout-grid-row-span) * (var(--sherpa-layout-grid-col-span) / var(--sherpa-layout-grid-col-span)) * 1px);
+}
+
+/* Out of that box, onto the host: the shape decides, and the chart fills. */
 .chart-figure {
-  display: contents;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
   margin: 0;
 }
 
 ::slotted([slot="legend"]) {
   flex: 0 0 auto;
   min-inline-size: 0;
+  --sherpa-chart-legend-strip: 1;
 }
 
-/* Legend BESIDE: the split reads the chart's own `data-legend`, not the legend's
-   `data-orientation` — `:host(:has(…))` does not parse and is dropped silently.
-   `minmax(0, Nfr)`: a bare fr floors at min-content, so a long label would break
-   the ratio instead of truncating. The legend's floor is its min-content for a
-   legend of CHIPS, which take the room they need; contained, a key row's is 0. TODO 586 */
-:host([data-legend="vertical"]) {
-  display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(min-content, 3fr);
-  grid-template-rows: auto minmax(0, 1fr);
-  align-items: center;
-}
-
-:host([data-legend="vertical"]) .chart-header {
-  grid-column: 1 / -1;
-  grid-row: 1;
-}
-
-:host([data-legend="vertical"]) .chart-body {
-  grid-column: 1;
-  grid-row: 2;
-}
-
-:host([data-legend="vertical"]) ::slotted([slot="legend"]) {
-  grid-column: 2;
-  grid-row: 2;
-}
-:host([data-legend="vertical"]) ::slotted([slot="legend"]:not([data-chips])) { contain: inline-size; }
-
-/* NARROW: a legend BESIDE the chart goes below it, and a legend strip becomes
-   a list. The host is the container, so only what is IN it can turn.
-   TRAP T-a-narrow-chart-stacks-its-legend */
-@container sherpa-chart (max-width: 22rem) {
-  :host([data-legend="vertical"]) .chart-body { grid-column: 1 / -1; }
-  :host([data-legend="vertical"]) ::slotted([slot="legend"]) {
-    grid-column: 1 / -1;
-    grid-row: 3;
-    justify-self: center;
+/* WIDER THAN SQUARE: the legend goes beside the chart, a list; square or narrower,
+   below, a strip. `minmax(0, Nfr)`: a bare fr floors at min-content, so a long label
+   would break the ratio instead of truncating. The legend's floor is its min-content
+   for a legend of CHIPS, which take the room they need; contained, a key row's is 0.
+   TODO 586 */
+@container sherpa-chart-shape (aspect-ratio > 1 / 1) {
+  :host(:state(has-legend)) .chart-figure {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(min-content, 3fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    align-items: center;
   }
+  :host(:state(has-legend)) .chart-header {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+  :host(:state(has-legend)) .chart-body {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: stretch;
+  }
+  ::slotted([slot="legend"]) {
+    grid-column: 2;
+    grid-row: 2;
+    --sherpa-chart-legend-strip: 0;
+  }
+  ::slotted([slot="legend"]:not([data-chips])) { contain: inline-size; }
+}
+
+/* NARROW: a legend strip below its chart becomes a list. Will, TODO 162 */
+@container sherpa-chart (max-width: 22rem) {
   ::slotted([slot="legend"]) { --sherpa-chart-legend-columns: 1; }
 }
 

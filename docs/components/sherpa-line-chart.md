@@ -62,7 +62,6 @@ For one or more series of numbers along an x axis, as lines or, with `data-type=
 | `data-bands` | text |  |  |
 | `data-bucket` | `day` `month` `year` |  | a date over-field, cut to day \| month \| year |
 | `data-field` | text |  | the number that aggregate reads |
-| `data-legend` | `horizontal` `vertical` |  |  |
 | `data-max` | number |  | y-scale bounds (else derived) |
 | `data-min` | number |  | y-scale bounds (else derived) |
 | `data-over-field` | text |  | ASKED of its provider: the x axis runs over this field |

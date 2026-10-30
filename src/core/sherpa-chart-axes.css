@@ -5,12 +5,14 @@
  */
 
 :host {
-  gap: var(--sherpa-display-mode-space-sm, 12px);
-  /* The plot's NATURAL height, not a floor — see .chart-body. */
   --_plot-height: 180px;
-  /* Fill a sized parent; keep natural height in an unsized one. */
+  /* An unsized chart: its plot, the gap above it, and the value axis row, whose
+     margin and line-height these MUST match. */
+  contain-intrinsic-block-size: calc(var(--_plot-height) + var(--sherpa-display-mode-space-sm, 12px) + var(--sherpa-display-mode-space-2xs, 4px) + var(--sherpa-theme-content-line-height-small, 16px));
   min-block-size: 0;
 }
+
+.chart-figure { gap: var(--sherpa-display-mode-space-sm, 12px); }
 
 /* The rotated caption needs clearing from the numbers. */
 .axis-label-y {
