@@ -1127,8 +1127,6 @@ export class DataSource extends EventTarget {
       const { rows } = await this.store.load({ ...(clause ? { filter: clause } : {}), ...projected, ...(this.#pinned ? { now: this.#now() } : {}) });
       if (this.#fetching.get(field) !== answer || this.#closed) return;
       this.#fetchedKeys.set(field, { answer, clause: [this.store.key!, 'in', rows.map((row) => readField(row, this.store.key!))] });
-      // Its counts go by these keys now.
-      this.#walkAge++;
       this.#setFailed([field], false);
     } catch (error) {
       this.#setFailed([field], true);

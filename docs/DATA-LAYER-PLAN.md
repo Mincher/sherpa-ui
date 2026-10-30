@@ -100,6 +100,7 @@ otherwise.
 | `setQuery` rehomed the draft and not the applied Query. In a waiting scope, the chip and the rows disagreed | `query-context.ts` | Rehomed before the copy |
 | A search while the Switch was off destroyed the kept sort and group | `query-context.ts`, `#arrange` | Kept |
 | The grid had its own test of "answered" | `sherpa-data-grid.ts` | Gone: it uses `readingAnswered` |
+| A chip counted a field the store answers against rows that do not carry it: 0, with 2 rows shown | `source-counts.ts`, `planWalk` | Counts by the keys the store matched, as its rows do |
 
 Checked, and not bugs:
 
