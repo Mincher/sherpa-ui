@@ -135,7 +135,7 @@ function shownAs(el: Element): string | undefined {
 }
 
 /** A grid's column, as a pivot hands it on to a row's sub-grid. */
-type GridColumnLike = { field: string; header?: string; type?: string };
+type GridColumnLike = { field: string; header?: string; type?: string; tags?: string[] };
 
 /** What a pivot steers: a filter, from a heading or a cell — its own or a row's
  *  sub-grid's — and its sub-grids' sort and group. TODOs 571, 574 */
@@ -1349,7 +1349,15 @@ export class SherpaProvider extends SherpaElement {
     const label = (f: string): string => src.fieldFacts(f).label ?? f;
     const own = el as Element & { columns?: GridColumnLike[]; key?: string | null };
     // Its Primary filters as the grid's own column does; a count filters nothing. TODO 571
-    const primary = own.columns?.find((c) => c.field === spec.segment);
+    const { tags: moved, ...primary } = own.columns?.find((c) => c.field === spec.segment) ?? { field: spec.segment };
+    /* Its rows' TAGS go where their columns are: down to the sub-grid, the
+       Primary's on its first column — and never the Primary's own, which every
+       row there holds. Will, TODO 580 */
+    const details = (own.columns ?? []).filter((c) => c.field !== spec.segment).map((c, i) => {
+      const tags = [...new Set([...c.tags ?? [], ...(i === 0 ? moved ?? [] : [])])].filter((f) => f !== spec.segment);
+      const { tags: _tags, ...rest } = c;
+      return tags.length ? { ...rest, tags } : rest;
+    });
     const fields = [...new Set([...filtered, spec.segment])];
     src.readValues(fields);
     // Each row's own rows, a group's together where it groups.
@@ -1360,7 +1368,7 @@ export class SherpaProvider extends SherpaElement {
     return { pivot: {
       key: spec.segment,
       columns: [
-        { ...primary, field: spec.segment, header: primary?.header ?? label(spec.segment), sortable: false },
+        { ...primary, field: spec.segment, header: primary.header ?? label(spec.segment), sortable: false },
         ...values.map((v) => ({ field: cell(v), header: v, type: 'number', sortable: false, filterable: false })),
         { field: total, header: this.word('total'), type: 'number', sortable: false, filterable: false },
       ],
@@ -1372,7 +1380,7 @@ export class SherpaProvider extends SherpaElement {
       })),
       detail: {
         // Not its Primary: every row under a row holds that row's. Will, TODO 578
-        columns: (own.columns ?? []).filter((c) => c.field !== spec.segment),
+        columns: details,
         ...(own.key ? { key: own.key } : {}),
         rows: Object.fromEntries(opens.map((o) => [o.key, o.rows])),
         ...(group ? { groups: Object.fromEntries(opens.map((o) => [o.key, groupSummaries(o.rows, group)])) } : {}),

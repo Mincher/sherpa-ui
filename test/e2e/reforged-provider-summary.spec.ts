@@ -563,6 +563,68 @@ test('a grid in a slot: its Primary leads its columns; a Secondary makes it a PI
   expect(r['back']!.rows.length).toBe(4);
 });
 
+test('a pivot\'s tags go where their columns are: down to its rows\' sub-grids, never its Primary\'s or its Group\'s, and back up when it goes (Will, TODOs 579, 580)', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-container data-scope="data">
+        <sherpa-quick-filter-toolbar></sherpa-quick-filter-toolbar>
+        <sherpa-data-grid id="grid" data-scope="data" data-multi-field></sherpa-data-grid>
+      </sherpa-container>\`;
+    const grid = provider.querySelector('#grid');
+    grid.columns = [{ field: 'name', header: 'Name', tags: ['plan', 'day', 'region'] },
+      { field: 'plan', header: 'Plan' }, { field: 'day', header: 'Day' }, { field: 'region', header: 'Region' }];
+    grid.key = 'id';
+    const source = new DataSource({ store: new ArrayStore([
+      { id: 1, name: 'a', plan: 'Pro', day: 'Mon', region: 'EU' }, { id: 2, name: 'b', plan: 'Free', day: 'Tue', region: 'EU' },
+      { id: 3, name: 'c', plan: 'Pro', day: 'Wed', region: 'US' }, { id: 4, name: 'd', plan: 'Enterprise', day: 'Mon', region: 'US' },
+    ], { key: 'id' }) });
+    source.declareValues('plan', PLANS);
+    source.declareValues('day', ['Mon', 'Tue', 'Wed']);
+    for (const [f, label] of [['name', 'Name'], ['plan', 'Plan'], ['day', 'Day'], ['region', 'Region']]) source.declareField(f, { label });
+    source.query.offer('data', ['name', 'plan', 'day', 'region']);
+    source.query.hold('data', ['plan', 'day', 'region']);
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    // Each row's cells that draw tags: the column, then its tags' fields.
+    const tags = (g) => [...g.shadowRoot.querySelectorAll('.body > .row')].map((tr) => [...tr.querySelectorAll('td')]
+      .filter((td) => td.querySelector('.cell-tag'))
+      .map((td) => td.dataset.field + '>' + [...td.querySelectorAll('.cell-tag')].map((t) => t.dataset.field).join(',')).join(' '));
+    const read = () => ({ main: tags(grid), sub: [...grid.shadowRoot.querySelectorAll('.detail-grid')].map(tags) });
+    const settled = async () => { await settle(); await settle(); };
+    const at = { first: read() };
+    source.query.present('data', { primary: 'day', secondary: 'plan' });
+    await settled();
+    grid.shadowRoot.querySelector('.row-open').click();
+    await settled();
+    at.byDay = read();
+    source.query.present('data', { primary: 'name' });
+    await settled();
+    grid.shadowRoot.querySelector('.row-open').click();
+    await settled();
+    at.byName = read();
+    source.query.setGroup('region', 'data');
+    await settled();
+    at.grouped = read();
+    source.query.setGroup(null, 'data');
+    source.query.present('data', { secondary: undefined });
+    await settled();
+    at.back = read();
+    return at;
+  })()`) as Record<string, { main: string[]; sub: string[][] }>;
+  // Its own: Name's tags on every row.
+  expect(r['first']!.main[0]).toBe('name>plan,day,region');
+  // A pivot by day: its rows hold counts, no tags; Monday's rows keep Name's, but not the day's.
+  expect(r['byDay']).toEqual({ main: ['', '', ''], sub: [['name>plan,region', 'name>plan,region']] });
+  // By name: Name is the pivot's, so its tags go down to the sub-grid's first column.
+  expect(r['byName']).toEqual({ main: ['', '', '', ''], sub: [['plan>day,region']] });
+  // Grouped by region: no Region tag where its heading says it. TODO 579
+  expect(r['grouped']!.sub).toEqual([['plan>day']]);
+  // Let go: back up on Name.
+  expect(r['back']!.main[0]).toBe('name>plan,day,region');
+});
+
 test('a pivot filters as its grid does: its Primary heading and cells, and its rows\' sub-grids\' — the same rows, organised (Will, TODO 571)', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}

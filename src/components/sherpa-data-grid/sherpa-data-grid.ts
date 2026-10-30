@@ -153,10 +153,11 @@ const DETAIL_ASKS = ['column-filter-change', 'sort-change', 'group-change'] as c
 /** A literal type, so the spec reads the names it emits. */
 const asks = (type: string): type is typeof DETAIL_ASKS[number] => (DETAIL_ASKS as readonly string[]).includes(type);
 
-/** What a row's sub-grid is told of its grid: its filters' look and limits, and
- *  its Group and Sort, which arrange the sub-grid's rows. TODOs 571, 574 */
+/** What a row's sub-grid is told of its grid: its filters' look and limits, its
+ *  Group and Sort, which arrange the sub-grid's rows, and its tags. TODOs 571, 574, 580 */
 const DETAIL_ATTRS = ['data-column-filters', 'data-filter-fields', 'data-needles', 'data-limit-options',
-  'data-hide-unmatched', 'data-remote', 'data-apply-on', 'data-group-field', 'data-sort-field', 'data-sort-direction'];
+  'data-hide-unmatched', 'data-remote', 'data-apply-on', 'data-group-field', 'data-sort-field', 'data-sort-direction',
+  'data-multi-field'];
 
 
 export class SherpaDataGrid extends SherpaElement {
@@ -1415,7 +1416,8 @@ export class SherpaDataGrid extends SherpaElement {
         if (c === 0) this.#markPinned(td, true);
         const value = record[col.field];
         this.#fillCell(td, value == null ? '' : String(value), col);
-        const tags = this.#tagsOf(col);
+        // No tag of the field it groups by: its heading says it. Will, TODO 579
+        const tags = this.#tagsOf(col).filter((f) => f !== group);
         if (tags.length) this.#drawTags(td, record, tags, looks);
         tr.appendChild(td);
       });

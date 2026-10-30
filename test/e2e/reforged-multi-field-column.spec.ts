@@ -60,6 +60,24 @@ test('a cell draws its tags in the plain Tag look; off, none', async ({ page }) 
   expect(r.off).toBe(0);
 });
 
+test('a cell shows no tag of the field its grid is grouped by: its heading says it (Will, TODO 579)', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const fields = () => [...new Set([...sr.querySelectorAll('.cell[data-field="name"] .cell-tag')].map((t) => t.dataset.field))];
+    const out = { first: fields() };
+    grid.setAttribute('data-group-field', 'plan');
+    await settle();
+    out.grouped = { fields: fields(), grouped: sr.querySelectorAll('.group-row').length > 0 };
+    grid.removeAttribute('data-group-field');
+    await settle();
+    out.back = fields();
+    return out;
+  })()`) as Record<string, unknown>;
+  expect(r['first']).toEqual(['plan', 'status']);
+  expect(r['grouped']).toEqual({ fields: ['status'], grouped: true });
+  expect(r['back']).toEqual(['plan', 'status']);
+});
+
 test('a tag filters by its value, and pressed again lets it go', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
