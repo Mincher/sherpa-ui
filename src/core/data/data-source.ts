@@ -440,7 +440,7 @@ export class DataSource extends EventTarget {
    *  View driver: yes — and a chart's own scope reaches the chart it narrows
    *  (Will, TODO 529). TRAP T-the-highlight-reaches-the-whole-page */
   #reaches(scope?: string | readonly string[], el?: object): boolean {
-    const driver = (this.#context.previewed ?? this.#context.highlighted)?.scope;
+    const driver = this.#context.previewed?.scope;
     if (this.#across || !driver || driver === VIEW) return true;
     if (el && this.#narrowing.get(driver)?.only === el) return true;
     return typeof scope === 'string' ? scope === driver : !!scope?.includes(driver);
@@ -1059,7 +1059,7 @@ export class DataSource extends EventTarget {
     this.#viewFilter = viewed;
     this.#scoped = scoped;
     // A new mark — or driver — moves no row, so nothing loads: each component is pushed it. TODO 441
-    const marked = JSON.stringify([this.#context.previewed ?? this.#context.highlighted, filterKey(highlight)]);
+    const marked = JSON.stringify([this.#context.previewed, filterKey(highlight)]);
     this.#highlight = highlight;
     if (marked !== this.#marked) this.#binding.publish();
     this.#marked = marked;
@@ -2143,7 +2143,6 @@ export class DataSource extends EventTarget {
       /* …and WHAT it matched on, so a component can point at the hit, whichever
          control set the filter. TRAP T-a-needle-comes-from-either-direction */
       needles: [filterNeedles(filter), this.#searchNeedles()].filter(Boolean).join('\n'),
-      highlight: this.#context.highlighted ?? undefined,
       paging: pageSize ? { page, totalPages: this.totalPages, pageSize } : undefined,
     };
   }

@@ -143,8 +143,6 @@ function writeView(el: Element, view: BoundView, scope?: string | readonly strin
   setAttr(el, 'data-group-field', slot ? slot.group : mine ? view.groupField : undefined);
   setAttr(el, 'data-filter-fields', view.filterFields.length ? view.filterFields.join(' ') : undefined);
   setAttr(el, 'data-needles', view.needles || undefined);
-  // On a bar over the driver's scope: which chip drives the highlight. TODO 441
-  setAttr(el, 'data-highlight-field', view.highlight && scope === view.highlight.scope ? view.highlight.field : undefined);
   setAttr(el, 'data-page', view.paging ? String(view.paging.page) : undefined);
   setAttr(el, 'data-total-pages', view.paging ? String(view.paging.totalPages) : undefined);
   setAttr(el, 'data-page-size', view.paging ? String(view.paging.pageSize) : undefined);
@@ -256,7 +254,6 @@ export function ask(query: QueryContext, request: QueryRequest, scope: string): 
   const one = request as Exclude<QueryRequest, readonly QueryRequest[]>;
   const at = one.scope ?? scope;
   if ('reset' in one) query.reset([at], one.reset);
-  else if ('highlight' in one) query.highlight(at, one.field, one.highlight);
   else if ('preview' in one) query.preview(at, one.field, one.preview, one.value);
   else if ('order' in one) query.order(at, one.order);
   else if ('preset' in one) query.setPreset(at, one.preset, one.on, !!one.commit);

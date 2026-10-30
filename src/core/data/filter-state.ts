@@ -33,12 +33,14 @@
  * - rowsFromPicks — Simple's answer as Advanced's rows, for a mode switch to carry over
  * - asRows — A reading as condition rows — the answer it puts in force.
  * - withPreset — A reading with one preset's rows on it, or, with none, off it.
+ * - presetTouches — Do a preset's rows touch this value of a field: a list value they keep, or a band they overlap?
  * - fieldState — work out one field's whole state — the only place that decides it
  * - stateClause — One field's state as a ready `FilterClause`, or `undefined`.
  * - readingClause — a reading as a clause, for a control holding its own field facts
  * - clauseConditions — a one-field chained clause back as its rows — the inverse of the chain
  */
 import {
+  matchesFilter,
   DEFAULT_OP, END_OF_DAY, OP_TAKES,
   picksClause, valueSet, valueKey,
   type Duration, type Filter, type FilterClause, type FilterOp,
@@ -211,8 +213,6 @@ export interface FieldReading {
    *  ANDed with the answer. The answer and its mode stay the reader's. Will,
    *  TODO 521 · TRAP T-a-preset-is-its-own-part */
   byPreset?: Readonly<Record<string, { label: string; rows: readonly FieldCondition[] }>>;
-  /** A preset on put this field on its bar: it goes with the last. Will, TODO 526 */
-  presetAdded?: boolean;
 }
 
 /** One row of a multi-condition filter. */
@@ -329,14 +329,33 @@ export function asRows(reading: FieldReading | undefined, type?: 'number' | 'dat
   return rowsFromPicks(type, reading) ?? [];
 }
 
-/** A reading with one preset's rows on it, or, with none, off it. Off, a field a
- *  preset put on its bar forgets that with the last preset. TODO 521, 526 */
+/** A reading with one preset's rows on it, or, with none, off it. TODOs 521, 526 */
 export function withPreset(reading: FieldReading | undefined, id: string, preset: { label: string; rows: readonly FieldCondition[] } | null): FieldReading {
   const { [id]: _was, ...others } = reading?.byPreset ?? {};
   const byPreset = preset ? { ...others, [id]: preset } : others;
   // A Switch off stops every answer; a preset turned on is in force.
   const { byPreset: _old, suspended, ...base } = reading ?? {};
   return { ...base, ...(suspended && !preset ? { suspended } : {}), ...(Object.keys(byPreset).length ? { byPreset } : {}) };
+}
+
+/** Do a preset's rows touch this value of a field: a list value they keep, or a
+ *  band they overlap? Will, TODO 590 · TRAP T-a-preset-is-its-own-part */
+export function presetTouches(rows: readonly FieldCondition[], value: string, bands?: readonly Threshold[]): boolean {
+  const band = bands?.length ? bandCondition(bands, value) as { gte?: number; lt?: number } | undefined : undefined;
+  if (!band) return matchesFilter({ value }, stateClause(fieldState({ field: 'value' }, { conditions: rows, mode: 'advanced' })));
+  const low = band.gte ?? -Infinity;
+  const high = band.lt ?? Infinity;
+  return rows.every((row) => {
+    const [a = NaN, b = NaN] = (row.picked?.length ? row.picked : [row.text]).map(Number);
+    switch (row.op) {
+      case 'lt': return low < a;
+      case 'lte': return low <= a;
+      case 'gt': case 'gte': return high > a;
+      case 'eq': return a >= low && a < high;
+      case 'between': return low <= b && high > a;
+      default: return true;
+    }
+  });
 }
 
 /**

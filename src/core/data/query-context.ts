@@ -56,8 +56,6 @@
  * - .batch — The doors one act calls are ONE change to the page.
  * - .commit — SEND the draft — Apply, where a scope waits.
  * - .discard — Put the applied answers back over the draft — Discard, where a scope waits.
- * - .highlighted — The chip that drives the highlight, if one does.
- * - .highlight — Make a field's chip the highlight's driver, or let it go.
  * - .previewed — The chip hovered, while it previews the highlight.
  * - .preview — Preview a field's chip as the driver, or stop: never in the Query.
  * - .setSort — Order by one field, or stop; `null` suspends.
@@ -886,7 +884,7 @@ export class QueryContext extends EventTarget {
     const entries = Object.entries(preset.readings).filter(([, given]) => asRows(given).length);
     // Each at its field's home, where setPreset writes it.
     return entries.length > 0 && entries.every(([field]) => {
-      const held = readingOf(query, field);
+      const held = query.scopes[holderOf(query, field) ?? scope]?.readings[field];
       return !!held?.byPreset?.[id] && !held.suspended;
     });
   }
@@ -897,11 +895,11 @@ export class QueryContext extends EventTarget {
   }
 
   /**
-   * setPreset(scope, id, on) — a preset ON puts its conditions on each field, at
-   * the field's home (or held here), ANDed with what it holds; the field's answer
-   * and mode stay the reader's. OFF takes them off, and a field it put on the bar
-   * with them. Its on is read from the fields. With `commit`, the fields it moved
-   * are applied at once. Will, TODOs 510 (A), 521, 526 · TRAP T-a-preset-is-its-own-part
+   * setPreset(scope, id, on) — a preset ON puts its conditions on each field, ANDed
+   * with what it holds, where the field is held; where no scope holds it, in this
+   * scope, and it adds no chip. The field's answer and mode stay the reader's. OFF
+   * takes them off. Its on is read from the fields. With `commit`, the fields it
+   * moved are applied at once. Will, TODOs 510 (A), 521, 526, 590 · TRAP T-a-preset-is-its-own-part
    */
   setPreset(scope: string, id: string, on: boolean, commit = false): void {
     const preset = this.#presets.get(scope)?.get(id);
@@ -911,21 +909,14 @@ export class QueryContext extends EventTarget {
       for (const [field, given] of Object.entries(preset.readings)) {
         const rows = asRows(given);
         if (!rows.length) continue;
-        const now = readingOf(this.#live.draft, field);
+        const entry = scopeEntry(this.#live.draft, this.scopeOf(field) ?? scope);
+        const now = entry.readings[field];
         if (!on && !now?.byPreset?.[id]) continue;
-        // At its home — held here, where nothing holds it and this scope may.
-        const fresh = on && scope !== VIEW && !this.scopeOf(field) && this.canHold(scope, field);
-        if (fresh) this.hold(scope, [...this.scope(scope), field]);
-        const home = this.scopeOf(field) ?? scope;
         const next = withPreset(now, id, on ? { label: preset.label, rows } : null);
-        // Off, with no other preset and no answer of the reader's: its chip goes too.
-        const { presetAdded, ...kept } = next;
-        const gone = !on && !readingAnswered(kept);
-        const added = fresh || !!presetAdded;
-        if (gone && added) this.hold(home, this.scope(home).filter((f) => f !== field));
-        setReading(this.#live.draft, field, readingAnswered(kept) ? { ...kept, ...(added && kept.byPreset ? { presetAdded: true } : {}) } : undefined);
+        if (readingAnswered(next)) entry.readings[field] = copyReading(next);
+        else Reflect.deleteProperty(entry.readings, field);
+        prune(this.#live.draft);
         this.#tell({ kind: 'select', field });
-        if (fresh || (gone && added)) this.#tell({ kind: 'bars', scope: home });
         moved.push(field);
       }
       if (commit) for (const field of moved) this.commit({ field });
@@ -943,12 +934,11 @@ export class QueryContext extends EventTarget {
         const s = this.#live.draft.scopes[id];
         if (!s) continue;
         if (s.suspended) s.suspended = { fields: [] };
-        // A preset goes with the rest, and a field it put on the bar. TODO 526
+        // A preset goes with the rest. TODO 526
         for (const [field, reading] of Object.entries(s.readings)) {
           if (!reading.byPreset) continue;
-          const { byPreset: _rows, presetAdded, ...own } = reading;
+          const { byPreset: _rows, ...own } = reading;
           s.readings[field] = own;
-          if (presetAdded && !readingAnswered(own)) this.hold(id, this.scope(id).filter((f) => f !== field));
         }
         for (const field of Object.keys(s.readings)) {
           if (options.carry && this.#knows(field)?.carriesOver(field)) continue;
@@ -1023,25 +1013,6 @@ export class QueryContext extends EventTarget {
     else if (at.scope) copyScope(this.#live.applied, this.#live.draft, at.scope);
     else this.#live.draft = structuredClone(this.#live.applied);
     this.#tell({ kind: 'drawn', fields: [...new Set([...before, ...this.#answered()])], pending: true });
-  }
-
-  /** The chip that drives the highlight, if one does. TODO 441 */
-  get highlighted(): { scope: string; field: string } | null {
-    for (const [scope, s] of Object.entries(this.#live.draft.scopes)) if (s.highlight) return { scope, field: s.highlight };
-    return null;
-  }
-
-  /** Make a field's chip the highlight's driver, or let it go: ONE in the Query,
-   *  in both copies, as a mark is no answer to Apply. Will, TODO 441 */
-  highlight(scope: string, field: string, on: boolean): void {
-    const was = this.highlighted;
-    if (on ? was?.scope === scope && was.field === field : was?.field !== field) return;
-    for (const query of new Set([this.#live.applied, this.#live.draft])) {
-      for (const s of Object.values(query.scopes)) delete s.highlight;
-      if (on) scopeEntry(query, scope).highlight = field;
-    }
-    this.#tell({ kind: 'recompose' });
-    this.#tell({ kind: 'drawn', fields: [...new Set([field, ...(was ? [was.field] : [])])] });
   }
 
   /** The chip hovered — or one value of it — while it previews the highlight. TODOs 449, 459 */
@@ -1285,10 +1256,10 @@ export class QueryContext extends EventTarget {
 
   /** A reader's answer replaces the answer, never what presets hold of the field. TODO 521 */
   #keepPresets(field: string, next: FieldReading): FieldReading {
-    const { byPreset, presetAdded } = readingOf(this.#live.draft, field) ?? {};
+    const byPreset = readingOf(this.#live.draft, field)?.byPreset;
     if (!byPreset) return next;
     // An answer emptied leaves the presets', in force.
-    return { ...(readingAnswered(next) ? next : {}), byPreset, ...(presetAdded ? { presetAdded } : {}) };
+    return { ...(readingAnswered(next) ? next : {}), byPreset };
   }
 
   /** A reading's answer, its picks as the values the rows hold: a control hands

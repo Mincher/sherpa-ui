@@ -9,7 +9,7 @@ import {
   DEFAULT_OP, OP_TAKES, valueKey, type FilterOp, type SortDirection,
 } from '../../core/data/store.js';
 import {
-  fieldState, readingRows, rowAnswered, type FieldCondition, type FieldReading, type FilterState,
+  fieldState, presetTouches, readingRows, rowAnswered, type FieldCondition, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
 import { countSaid, filterFace, spellConditions } from '../../core/data/filter-face.js';
 import { NON_VALUE_ROWS, NOT_AVAILABLE, ORGANISE_ICONS, RULED_OUT, SET_ASIDE, UNAPPLIED, UNFETCHED, movedTo, onByPreset, unusedHere } from '../../core/ui/shared-constants.js';
@@ -109,8 +109,6 @@ export class SherpaQuickFilter extends SherpaElement {
     'data-label': { type: 'string', kind: 'content' },
     'data-icon-start': { type: 'string', kind: 'content' },
     'data-current': { type: 'boolean', kind: 'style' },
-    // It DRIVES the highlight: it wears the highlighter. Its bar writes it. TODO 441
-    'data-highlight': { type: 'boolean', kind: 'style' },
   } as const;
 
   // data-label is hand-written: an absent attribute must leave the template's
@@ -392,29 +390,19 @@ export class SherpaQuickFilter extends SherpaElement {
     this.#presets = Object.values(held ?? {});
     this.set('data-by-preset', this.#presets.map((p) => p.label).join(', ') || null);
     const menu = this.#fieldMenu();
-    if (menu) menu.heldByPreset = this.#heldValues();
+    if (menu) menu.heldByPreset = this.#presets.length ? this.#heldBy : null;
   }
   /** What each preset on holds of this field: its name and its rows. */
   #presets: NonNullable<FieldReading['byPreset']>[string][] = [];
 
-  /** Each value a preset on picks, with who holds it. TODO 521 */
-  #heldValues(): Map<string, string> {
-    const held = new Map<string, string>();
-    for (const { label, rows } of this.#presets) {
-      for (const row of rows.filter((r) => r.op === DEFAULT_OP)) {
-        for (const value of row.picked ?? []) {
-          const key = valueKey(value);
-          held.set(key, [held.get(key), label].filter(Boolean).join(', '));
-        }
-      }
-    }
-    return held;
-  }
+  /** The presets on whose rows touch a value, by name; none, ''. Will, TODOs 521, 590 */
+  #heldBy = (value: string): string => this.#presets
+    .filter((p) => presetTouches(p.rows, value, this.#fieldMenu()?.bands)).map((p) => p.label).join(', ');
 
   /** What the presets on hold, in words: their picks, or their conditions. */
   #presetSaid(): string {
     const rows = this.#presets.flatMap((p) => p.rows);
-    return rows.every((r) => r.op === DEFAULT_OP) ? [...this.#heldValues().keys()].join(', ') : this.#spell(rows);
+    return rows.every((r) => r.op === DEFAULT_OP) ? rows.flatMap((r) => r.picked ?? []).map(valueKey).join(', ') : this.#spell(rows);
   }
 
   /** Rows as an Advanced answer reads, for a field of this chip's kind. */
@@ -1086,7 +1074,6 @@ export class SherpaQuickFilter extends SherpaElement {
     // What is APPLIED, told while the field waits: only a value its draft changed reads as pending. TODO 425
     const waiting = this.#applied != null;
     const was = new Set((this.#applied && !this.#applied.suspended ? this.#applied.picked ?? [] : []).map(valueKey));
-    const held = this.#heldValues();
     for (const item of tops) {
       const one = mine.get(item.value) ?? this.clone('template.value-chip-tpl');
       if (!one) return;
@@ -1097,34 +1084,16 @@ export class SherpaQuickFilter extends SherpaElement {
       // A chart's value leads with its series' swatch, as its legend does.
       if (item.swatch) one.dataset['swatch'] = String(item.swatch);
       const kids = [item.value, ...items.filter((k) => k.parent === item.value).map((k) => k.value)];
-      one.toggleAttribute('data-current', held.has(item.value) || kids.some((k) => picked.has(k)));
-      one.toggleAttribute('data-by-preset', held.has(item.value));
-      if (held.has(item.value)) one.dataset['byPreset'] = held.get(item.value)!;
+      // Blue where a preset on touches it. Will, TODOs 521, 590
+      const by = this.#heldBy(item.value);
+      one.toggleAttribute('data-current', !!by || kids.some((k) => picked.has(k)));
+      one.toggleAttribute('data-by-preset', !!by);
+      if (by) one.dataset['byPreset'] = by;
       one.toggleAttribute('data-pending', waiting && kids.some((k) => picked.has(k) !== was.has(k)));
       (one as SherpaQuickFilter).results = this.#valueResults?.[item.value] ?? null;
       this.#syncKids(one, item.value, items, picked);
       // In the menu's order: appending one already here moves it.
       this.append(one);
-    }
-    /* A preset's row no value says — a number's, or `not churned` — is a value chip
-       of its own, on and refused. Will, TODO 521 · TRAP T-a-preset-is-its-own-part */
-    if (this.dataset['layout'] === 'section') {
-      for (const { label, rows } of this.#presets) {
-        for (const row of rows) {
-          if (row.op === DEFAULT_OP && tops.some((t) => (row.picked ?? []).some((v) => valueKey(v) === t.value))) continue;
-          const said = this.#spell([row]);
-          const key = `preset:${label}:${said}`;
-          const one = mine.get(key) ?? this.clone('template.value-chip-tpl');
-          if (!one) return;
-          mine.delete(key);
-          one.dataset['value'] = key;
-          one.dataset['id'] = this.dataset['id'] ?? '';
-          one.setAttribute('data-label', said);
-          one.toggleAttribute('data-current', true);
-          one.dataset['byPreset'] = label;
-          this.append(one);
-        }
-      }
     }
     for (const gone of mine.values()) gone.remove();
     // A value of it waits: said on the section itself. TRAP T-each-field-can-apply-on-its-own

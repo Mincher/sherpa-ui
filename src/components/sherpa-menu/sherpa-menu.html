@@ -28,8 +28,6 @@
                     footer, no Add condition, no Advanced button
     data-heading  optional heading (rendered upper-case at 10/16)
     data-search   show a search input under the heading that filters the rows
-    data-highlightable  a "Highlight matches" switch above the footer (TODO 441)
-    data-highlight  this field drives the highlight: the switch is on
     data-removable  show a "Remove" button in the footer (after Today);
                     it emits menu-select with value="remove"
     data-no-select-all  a multi-select list with no Select all row — the Filters
@@ -116,7 +114,6 @@
                   `conditions` is EVERY row, in order. TRAP T-many-conditions-are-one-reading
     condition-mode-change — the mode button was pressed. detail: { mode } — simple | advanced
     menu-range-change — a number or date body's Range switch flipped. detail: { range }
-    menu-highlight-change — its Highlight matches switch flipped: a request, which the host answers. detail: { on }
     menu-items — its items were stamped, so a host can read its face. detail: { values }
     menu-back — a drilled menu's back arrow or crumb. detail: {}
 -->
@@ -248,12 +245,6 @@
          bar's Move. Shown while filled. Will, TODO 450 -->
     <div class="body-actions" part="body-actions">
       <slot name="actions" data-accepts="control"></slot>
-    </div>
-    <!-- HIGHLIGHT MATCHES: this field's answer drives the highlight, where the
-         host offers it. Will, TODO 441 -->
-    <div class="body-highlight" part="body-highlight">
-      <sherpa-switch class="body-highlight-switch" data-type="simple" aria-label="Highlight matches"></sherpa-switch>
-      <span class="body-highlight-label">Highlight matches</span>
     </div>
 
     <sherpa-container-footer class="footer" part="footer" data-align="end">
@@ -456,12 +447,6 @@
          bar's Move. Shown while filled. Will, TODO 450 -->
     <div class="body-actions" part="body-actions">
       <slot name="actions" data-accepts="control"></slot>
-    </div>
-    <!-- HIGHLIGHT MATCHES: this field's answer drives the highlight, where the
-         host offers it. Will, TODO 441 -->
-    <div class="body-highlight" part="body-highlight">
-      <sherpa-switch class="body-highlight-switch" data-type="simple" aria-label="Highlight matches"></sherpa-switch>
-      <span class="body-highlight-label">Highlight matches</span>
     </div>
 
     <sherpa-container-footer class="footer" part="footer" data-align="end">

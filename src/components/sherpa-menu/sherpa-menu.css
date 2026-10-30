@@ -669,18 +669,7 @@
   border-block-start: var(--sherpa-border-bottom, 0.5px) solid var(--sherpa-style-border-base, #b3b3c3);
 }
 
-/* "Highlight matches", above the footer, where the host offers it. TODO 441 */
-.body-highlight { display: none; }
-:host([data-highlightable]:not([data-readonly])) .body-highlight {
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-display-mode-space-xs, 8px);
-  padding: var(--sherpa-display-mode-space-xs, 8px);
-  border-block-start: var(--sherpa-border-bottom, 0.5px) solid var(--sherpa-style-border-base, #b3b3c3);
-}
-
-.body-range-label,
-.body-highlight-label {
+.body-range-label {
   color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-size: var(--sherpa-theme-content-size-base, 14px);
 }

@@ -2621,63 +2621,6 @@ test('in portrait, each SECTION is headed once: a named run of chips, a lone chi
   expect(r.off).toEqual(['none', 'none']);
 });
 
-test('Highlight matches: each chip menu offers it but a picker\'s, the driver wears it, and a press asks its field', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-highlight-matches': '' });
-    el.style.inlineSize = '900px';
-    el.populate!([
-      { id: 'view', label: 'View', persistent: true, options: [{ value: 'all', label: 'All' }] },
-      { id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] },
-      { id: 'tier', label: 'Tier', options: [{ value: 'gold', label: 'Gold' }] },
-    ]);
-    await window.__settled();
-    const sr = el.shadowRoot!;
-    const chip = (id: string) => sr.querySelector<HTMLElement>(`.chips > .chip[data-id="${id}"]`)!;
-    const menu = (id: string) => chip(id).querySelector<HTMLElement>(':scope > sherpa-menu')!;
-    const offered = ['view', 'plan', 'tier'].map((id) => menu(id).hasAttribute('data-highlightable'));
-    const asked: unknown[] = [];
-    el.addEventListener('quick-filter-change', (e) => asked.push((e as CustomEvent).detail.request));
-    menu('tier').dispatchEvent(new CustomEvent('menu-highlight-change', { detail: { on: true }, bubbles: true, composed: true }));
-    // Its source answers: the bar is told which chip drives.
-    el.setAttribute('data-highlight-field', 'tier');
-    await window.__settled();
-    return {
-      offered, asked,
-      driver: ['plan', 'tier'].map((id) => [chip(id).hasAttribute('data-highlight'), menu(id).hasAttribute('data-highlight')]),
-    };
-  });
-  expect(r.offered).toEqual([false, true, true]);
-  expect(r.asked).toEqual([{ field: 'tier', highlight: true }]);
-  expect(r.driver).toEqual([[false, false], [true, true]]);
-});
-
-test('in portrait, a section\'s ⋮ offers Highlight matches, asks it, and says Stop once it drives', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-orientation': 'portrait', 'data-highlight-matches': '' });
-    el.populate!([{ id: 'plan', label: 'Plan', advanced: true, options: [{ value: 'pro', label: 'Pro' }, { value: 'free', label: 'Free' }] }]);
-    await window.__settled();
-    const chip = el.shadowRoot!.querySelector<HTMLElement>('.chips > .chip[data-id="plan"]')!;
-    const row = (value: string) => chip.querySelector<HTMLElement>(`:scope > .field-more .more-item[value="${value}"]`)!;
-    // The word CSS shows: both are in the row's markup. TODO 523 P7
-    const said = (value: string) => [...row(value).querySelectorAll('.more-label')].find((s) => getComputedStyle(s).display !== 'none')?.textContent;
-    const before = { layout: chip.dataset['layout'], shown: getComputedStyle(row('highlight')).display !== 'none', label: said('highlight'), mode: said('advanced') };
-    const asked: unknown[] = [];
-    el.addEventListener('quick-filter-change', (e) => asked.push((e as CustomEvent).detail.request));
-    chip.querySelector(':scope > .field-more sherpa-menu')!.dispatchEvent(
-      new CustomEvent('menu-select', { detail: { value: 'highlight' }, bubbles: true, composed: true }));
-    el.setAttribute('data-highlight-field', 'plan');
-    await window.__settled();
-    const heard = [...asked];
-    (chip.querySelector(':scope > sherpa-menu') as HTMLElement & { switchMode(m: string): void }).switchMode('advanced');
-    await window.__settled();
-    return { before, asked: heard, after: said('highlight'), mode: said('advanced') };
-  });
-  expect(r.before).toEqual({ layout: 'section', shown: true, label: 'Highlight matches', mode: 'Advanced' });
-  expect(r.asked).toEqual([{ field: 'plan', highlight: true }]);
-  expect(r.after).toBe('Stop highlighting');
-  expect(r.mode).toBe('Simple');
-});
-
 // TODO 415 (6). TRAP T-a-rebuild-keeps-every-answer
 test('a rebuild MOVES a chip built from the same def, and remakes only one whose def changed', async ({ page }) => {
   const r = await page.evaluate(async () => {

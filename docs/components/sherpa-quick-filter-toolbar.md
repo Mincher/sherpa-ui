@@ -70,9 +70,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-group-field` | text |  | the field the Group chip points at (the standard name) |
 | `data-heading` | text |  | its scope's name, written by its source: a portrait bar's heading. |
 | `data-hide-unmatched` | `on` `off` |  | on \| off — the host hides what Limit rules out, when it is on |
-| `data-highlight-field` | text |  |  |
 | `data-highlight-hover` | boolean |  |  |
-| `data-highlight-matches` | boolean |  |  |
 | `data-label-column` | boolean |  |  |
 | `data-limit-options` | `on` `off` |  | on \| off — the host offers "Limit to matching filters": the ⋮ always shows, and over the View its menu holds the switch. Written by the provider. Will, TODOs 178, 553. |
 | `data-locked` | boolean |  | the host owns the state; report, never self-set |

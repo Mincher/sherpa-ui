@@ -267,8 +267,6 @@ export interface BoundView {
   filterFields: readonly string[];
   /** What it matched on, one a line. TRAP T-a-needle-comes-from-either-direction */
   needles: string;
-  /** The chip that drives the highlight. TODO 441 */
-  highlight: { scope: string; field: string } | undefined;
   paging: { page: number; totalPages: number; pageSize: number } | undefined;
 }
 

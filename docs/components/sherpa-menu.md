@@ -45,8 +45,6 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `data-has-value` | text |  | written BY the menu: the typed value is not empty, so the input's Clear button shows. |
 | `data-heading` | text |  | optional heading (rendered upper-case at 10/16) |
 | `data-hide-unavailable` | boolean |  |  |
-| `data-highlight` | boolean |  | this field drives the highlight: the switch is on |
-| `data-highlightable` | boolean |  | a "Highlight matches" switch above the footer (TODO 441) |
 | `data-inline` | boolean |  | draw in the FLOW rather than the top layer — the same menu, always open, for a filter PANEL. The popover attribute is dropped, so Escape and outside-click no longer apply, and show()/hide() become no-ops. TRAP T-an-inline-menu-is-the-same-menu |
 | `data-loading` | boolean |  | its rows are on their way: a Loading row shows |
 | `data-max` | text |  |  |
@@ -83,7 +81,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `dirty` | `boolean` | read only |  |
 | `itemData` | `Array<{ value: string; label: string; parent?: string; swatch?: number \| string }>` | read only |  |
 | `present` | `readonly string[] \| null` | read and write |  |
-| `heldByPreset` | `ReadonlyMap<string, string>` | read and write |  |
+| `heldByPreset` | `((value: string) => string) \| null` | read and write |  |
 | `offered` | `readonly string[] \| null` | read and write |  |
 | `all` | `boolean` | read and write |  |
 
@@ -120,7 +118,6 @@ Each one bubbles.
 | `condition-change` | `{ conditions: FieldCondition[]; op: FilterOp; value: string }` | The condition or its typed value changed. |
 | `condition-mode-change` | `{ mode: ConditionType }` | The mode button was pressed. |
 | `menu-range-change` | `{ range: boolean }` | A number or date body's Range switch flipped. |
-| `menu-highlight-change` | `{ on: boolean }` | Its Highlight matches switch flipped: a request, which the host answers. |
 | `menu-items` | `{ values: string[] }` | Its items were stamped, so a host can read its face. |
 | `menu-back` |  | A drilled menu's back arrow or crumb. |
 
@@ -137,7 +134,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`add-condition`, `apply`, `body-actions`, `body-highlight`, `body-number`, `body-range`, `condition-rows`, `discard`, `drill-back`, `drill-crumbs`, `drill-trail`, `footer`, `header`, `heading`, `loading`, `menu`, `no-matches`, `remove`, `reset`, `rows`, `search`, `today`, `use-condition`
+`add-condition`, `apply`, `body-actions`, `body-number`, `body-range`, `condition-rows`, `discard`, `drill-back`, `drill-crumbs`, `drill-trail`, `footer`, `header`, `heading`, `loading`, `menu`, `no-matches`, `remove`, `reset`, `rows`, `search`, `today`, `use-condition`
 
 ## CSS custom properties it reads
 
@@ -166,8 +163,6 @@ What each class's base rule reads:
 | `--sherpa-display-mode-space-2xs` | `.rows` | `--_scroll-shadow-gap` |
 | `--sherpa-theme-content-body-1` | `.body-range-label` | `color` |
 | `--sherpa-theme-content-size-base` | `.body-range-label` | `font-size` |
-| `--sherpa-theme-content-body-1` | `.body-highlight-label` | `color` |
-| `--sherpa-theme-content-size-base` | `.body-highlight-label` | `font-size` |
 
 ## populate()
 

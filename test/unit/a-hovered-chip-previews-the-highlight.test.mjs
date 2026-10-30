@@ -1,10 +1,9 @@
 /**
- * ONE CHIP DRIVES THE HIGHLIGHT — Will, TODO 441. Its answer filters AND
- * marks: the Query keeps the driver, `compile()` gives what it matches, and
- * the source pushes a component the rows again with the test, though no row
- * moved.
+ * A CHIP HOVERED DRIVES THE HIGHLIGHT — Will, TODOs 449, 589. Never in the Query:
+ * `compile()` gives what it matches, and the source pushes a component the rows
+ * again with the test, though no row moved.
  *
- *   node --test test/unit/a-chip-drives-the-highlight.test.mjs
+ *   node --test test/unit/a-hovered-chip-previews-the-highlight.test.mjs
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -24,36 +23,19 @@ const marker = (id) => {
   });
 };
 
-test('compile gives what the driver matches, and still filters by it', () => {
-  const query = { v: 1, scopes: { [VIEW]: { holds: ['plan'], readings: { plan: { picked: ['Pro'] } }, highlight: 'plan' } } };
-  const out = compile(query);
+test('compile gives what the chip hovered matches, and still filters by it; hovered nothing, it marks nothing', () => {
+  const query = { v: 1, scopes: { [VIEW]: { holds: ['plan'], readings: { plan: { picked: ['Pro'] } } } } };
+  const out = compile(query, { highlight: { scope: VIEW, field: 'plan' } });
   assert.deepEqual(out.highlight, out.filter);
-  assert.equal(compile({ v: 1, scopes: { [VIEW]: { holds: ['plan'], readings: { plan: { picked: ['Pro'] } } } } }).highlight, undefined);
-  // A suspended answer applies nothing, and marks nothing.
-  query.scopes[VIEW].readings.plan.suspended = true;
   assert.equal(compile(query).highlight, undefined);
 });
 
-// Will, TODO 496: a chip hovered OFF previews what it holds; the Query's own driver, off, marks nothing.
+// Will, TODO 496: a chip hovered OFF previews what it holds.
 test('a hovered chip that is OFF previews what it holds', () => {
   const query = { v: 1, scopes: { [VIEW]: { holds: ['plan'], readings: { plan: { picked: ['Pro'], suspended: true } } } } };
   assert.equal(compile(query).filter, undefined);
   const out = compile(query, { highlight: { scope: VIEW, field: 'plan' } });
   assert.deepEqual(out.highlight, ['plan', 'eq', 'Pro']);
-});
-
-test('the Query holds ONE driver: a second takes over, and only the driver lets go', () => {
-  const query = new QueryContext();
-  query.hold(VIEW, ['plan', 'region']);
-  query.highlight(VIEW, 'plan', true);
-  assert.deepEqual(query.highlighted, { scope: VIEW, field: 'plan' });
-  query.highlight(VIEW, 'region', true);
-  assert.deepEqual(query.highlighted, { scope: VIEW, field: 'region' });
-  assert.equal(query.applied.scopes[VIEW].highlight, 'region');
-  query.highlight(VIEW, 'plan', false);
-  assert.deepEqual(query.highlighted, { scope: VIEW, field: 'region' });
-  query.highlight(VIEW, 'region', false);
-  assert.equal(query.highlighted, null);
 });
 
 test('a chip asks for it by request; the source tests a row, and pushes the mark though no row moved', async () => {
@@ -71,23 +53,19 @@ test('a chip asks for it by request; the source tests a row, and pushes the mark
   await source.load();
   assert.equal(source.highlight, null);
   const before = grid.pushes;
-  bar.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { request: { field: 'plan', highlight: true } } }));
-  assert.deepEqual(query.highlighted, { scope: 'data', field: 'plan' });
+  bar.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { request: { field: 'plan', preview: true } } }));
+  assert.deepEqual(query.previewed, { scope: 'data', field: 'plan' });
   assert.equal(source.highlight(ROWS[0]), true);
   assert.equal(source.highlight(ROWS[1]), false);
   assert.ok(grid.pushes > before, 'pushed again');
   assert.equal(grid.test(ROWS[2]), true);
-  // The bar over the driver's scope is told which chip drives; the grid is not.
-  assert.equal(bar.attrs.get('data-highlight-field'), 'plan');
-  assert.equal(grid.attrs.has('data-highlight-field'), false);
-  bar.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { request: { field: 'plan', highlight: false } } }));
+  bar.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { request: { field: 'plan', preview: false } } }));
   assert.equal(source.highlight, null);
   assert.equal(grid.test, null);
-  assert.equal(bar.attrs.has('data-highlight-field'), false);
 });
 
 // TRAP T-a-hovered-chip-previews-the-highlight
-test('a chip HOVERED previews the highlight: never in the Query, no query-change, no load; the driver comes back (TODO 449)', async () => {
+test('a chip HOVERED previews the highlight: never in the Query, no query-change, no load; left, it lets go (TODO 449)', async () => {
   const query = new QueryContext();
   const store = new ArrayStore(ROWS, { key: 'id' });
   const source = new DataSource({ store, query });
@@ -101,8 +79,6 @@ test('a chip HOVERED previews the highlight: never in the Query, no query-change
   query.setReading('data', 'plan', { picked: ['Pro'] });
   query.setReading('data', 'region', { picked: ['EMEA'] });
   await source.load();
-  query.highlight('data', 'plan', true);
-  await source.load();
   let changes = 0;
   query.addEventListener('query-change', () => changes++);
   let loads = 0;
@@ -112,14 +88,12 @@ test('a chip HOVERED previews the highlight: never in the Query, no query-change
 
   ask(true);
   assert.deepEqual(query.previewed, { scope: 'data', field: 'region' });
-  assert.deepEqual(query.highlighted, { scope: 'data', field: 'plan' }, 'the driver stays');
-  assert.equal(query.applied.scopes.data.highlight, 'plan', 'never in the Query');
+  assert.equal(JSON.stringify(query.applied).includes('"highlight"'), false, 'never in the Query');
   assert.equal(grid.test(ROWS[1]), true, 'EMEA, Free');
   assert.equal(grid.test(ROWS[2]), false, 'AMER');
   ask(false);
   assert.equal(query.previewed, null);
-  assert.equal(grid.test(ROWS[1]), false, 'the driver again: Free');
-  assert.equal(grid.test(ROWS[2]), true, 'Pro');
+  assert.equal(grid.test, null, 'left: nothing is lit');
   await new Promise((r) => setTimeout(r, 20));
   assert.deepEqual({ changes, loads }, { changes: 0, loads: 0 });
 });
@@ -186,7 +160,7 @@ test('across every scope, or only the driver\'s: off, a local driver lights its 
   query.setReading('data', 'plan', { picked: ['Pro'] });
   query.setReading(VIEW, 'region', { picked: ['EMEA', 'AMER'] });
   await source.load();
-  query.highlight('data', 'plan', true);
+  query.preview('data', 'plan', true);
   await source.load();
   // Off by default: a filter's matches stay in its own scope. Will, TODO 520
   assert.equal(source.highlightAcross, false, 'off by default');
@@ -199,11 +173,11 @@ test('across every scope, or only the driver\'s: off, a local driver lights its 
   assert.equal(source.highlightFor(VIEW), null);
   assert.equal(source.highlightFor(['data', VIEW])(ROWS[2]), true);
   // A View driver is every scope's.
-  query.highlight(VIEW, 'region', true);
+  query.preview(VIEW, 'region', true);
   await source.load();
   assert.equal(grid.test(ROWS[0]), true);
   assert.equal(own.test(ROWS[0]), true);
-  query.highlight('data', 'plan', true);
+  query.preview('data', 'plan', true);
   await source.load();
   source.highlightAcross = true;
   assert.equal(grid.test(ROWS[2]), true, 'on again: pushed again');
@@ -213,13 +187,14 @@ test('across every scope, or only the driver\'s: off, a local driver lights its 
 test('another source\'s scope drives this one\'s highlight, where it has the field (TODO 458)', () => {
   const query = { v: 1, scopes: {
     [VIEW]: { holds: ['region'], readings: {} },
-    data: { holds: ['plan'], readings: { plan: { picked: ['Pro'] } }, highlight: 'plan' },
+    data: { holds: ['plan'], readings: { plan: { picked: ['Pro'] } } },
   } };
   // This source owns the View alone: `data` is another's, so it filters nothing here…
   const mine = (id) => id === VIEW;
-  const out = compile(query, { mine });
+  const hovered = { scope: 'data', field: 'plan' };
+  const out = compile(query, { mine, highlight: hovered });
   assert.equal(out.filter, undefined);
   assert.deepEqual(out.highlight, ['plan', 'eq', 'Pro']);
   // …and a source with no `plan` marks nothing.
-  assert.equal(compile(query, { mine, has: (f) => f !== 'plan' }).highlight, undefined);
+  assert.equal(compile(query, { mine, highlight: hovered, has: (f) => f !== 'plan' }).highlight, undefined);
 });

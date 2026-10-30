@@ -19237,18 +19237,18 @@ the push key asks with the element too, or the chart is never drawn again
 
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`
-- Site: `test/unit/a-chip-drives-the-highlight.test.mjs`
+- Site: `test/unit/a-hovered-chip-previews-the-highlight.test.mjs`
 
 ### T-a-hovered-chip-previews-the-highlight
 
-**A chip hovered PREVIEWS the highlight; it never drives it** (Will, TODO 449,
+**A chip hovered PREVIEWS the highlight** (Will, TODO 449,
 "Highlight matches on hover"). Resting 150ms on an applied chip whose matches
 are counted (`results` is not null: not pending, not a draft) asks
 `{ field, preview: true }`; leaving the chip, or the bar, asks it off. The
 preview is the QueryContext's (`preview()`, `previewed`), NOT the Query's: a
-hover is never saved, never a `query-change`, and a driver picked in a menu
-(TODO 441) comes back when it ends. `compile()` takes it as
-`facts.highlight`, in place of the Query's own driver.
+hover is never saved and never a `query-change`. `compile()` takes it as
+`facts.highlight`. It is the only highlight: the driver a menu's "Highlight
+matches" switch kept in the Query (TODO 441) went in TODO 589, Will: not useful.
 
 **It tells `mark`, not `recompose`.** A recompose re-queries, and a re-query
 sets the page to 1 and loads: every hover sent the grid back to page 1. A mark
@@ -19282,13 +19282,12 @@ from an empty one.
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `test/unit/a-chip-drives-the-highlight.test.mjs`
+- Site: `test/unit/a-hovered-chip-previews-the-highlight.test.mjs`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
 A chip switched OFF previews what it holds too (Will, TODO 496 A), where the
 rows are held here — not on a bar whose source is remote: compile lifts the
-held answer's `suspended` for a preview only; the Query's own driver, off,
-still marks nothing.
+held answer's `suspended` for the preview.
 
 A LEGEND row is a value too (Will, TODO 495): while the provider's
 `highlightOnHover` is on, it writes `data-highlight-hover` on each legend that
@@ -19537,15 +19536,16 @@ definition lists `presets` (`{ id, label, where }`), kept by the Query
 
 **Its rows sit beside the answer, never in it** — Will, TODOs 521, 526. ON puts its
 name and rows on each field's reading, as `byPreset`, at the field's HOME (a
-View-held Health goes to the View), or held in its own scope where nothing holds
-it and it may. `stateClause` ANDs them with the answer: `(A or B) and P`. The
+View-held Health goes to the View). Where no scope holds the field they stay in the
+preset's own scope, in `readings` and not `holds`, so they filter that scope alone
+and add NO chip or section (Will, TODO 590; `rehome` leaves them). `stateClause` ANDs
+them with the answer: `(A or B) and P`. The
 answer and its mode stay the reader's, so a preset never turns a field Advanced,
 and it cannot lose the reader's own picks. Until 521 ON wrote them into
 `conditions` and forced Advanced, so Enterprise trials flipped Plan and Status,
 and OFF had to work out which rows were its own.
 
-OFF takes them off. A field the preset put on the bar (`presetAdded`) goes with
-the last preset, unless the reader answered it meanwhile. A reader's answer
+OFF takes them off. A reader's answer
 replaces only the answer (`#keepPresets`), so it never turns a preset off; only
 the preset's own chip does, and Reset, which clears them. A saved filter replaces
 the reading whole, so it replaces these too.
@@ -19555,13 +19555,13 @@ in force. The Switch off, it reads off. A View whose own filters happen to match
 preset does not turn it on. No `presets` flag is kept: an old stored one is a key
 a scope does not have, dropped and reported once (D4).
 
-**Every control reads `byPreset`, so toolbar and panel agree.** A chip wears
+**Every control reads `byPreset`, so toolbar and panel agree.** A chip already there wears
 `data-by-preset`, the preset's names: on, blue (the `info` pin), and its tip says
 "On by the preset ‹name›." Its face reads the rows where the reader has no answer
-of their own. In a panel section a value a preset picks is its own value chip in
-blue, and a row no value says (`lessThan(60)`, `!equals(churned)`) gets a value
-chip too; both refuse a press (Will: B). In a menu the row is ticked, refused and
-says why; `NON_VALUE_ROWS` leaves it out of the menu's values, so it is never read
+of their own. In a panel section each value chip the rows touch goes blue
+(`presetTouches`: a list value they keep, a band they overlap, so `!equals(churned)`
+colours the other three), and refuses a press (Will: B); no chip is added. In a menu
+the row is ticked, refused and says why; `NON_VALUE_ROWS` leaves it out of the menu's values, so it is never read
 back as the reader's. A grid heading tells its chip through `chip.presets`.
 
 The walk counts each preset ON first in its scope, with its own clause

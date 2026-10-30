@@ -736,23 +736,7 @@
     },
     {
       "$type": "prop",
-      "name": "data-highlight-field",
-      "type": "string",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour"
-    },
-    {
-      "$type": "prop",
       "name": "data-highlight-hover",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour"
-    },
-    {
-      "$type": "prop",
-      "name": "data-highlight-matches",
       "type": "boolean",
       "observed": true,
       "declared": true,

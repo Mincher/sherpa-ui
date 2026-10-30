@@ -86,9 +86,6 @@ export interface ScopeQuery {
    *  kept, not in force, and given back when the View lets go — `{}` for none.
    *  Will, D2 A. TRAP T-a-superseded-chip-suspends-it-is-never-removed */
   superseded?: Record<string, FieldReading>;
-  /** The field whose chip DRIVES the highlight: its answer filters and marks
-   *  the rows it matches. One in the whole Query. Will, TODO 441 */
-  highlight?: string;
   /** How its SLOT shows the rows — not the row arrangement above: each slot keeps
    *  its own. Only what differs from its definition. Will, TODO 548 */
   presentation?: Presentation;
@@ -186,7 +183,6 @@ export type QueryRequest =
   | { scope?: string; field: string; suspended: boolean; commit?: true }
   | { scope?: string; suspended: boolean; commit?: true }
   | { scope?: string; reset: { carry?: boolean; organise?: boolean }; commit?: true }
-  | { scope?: string; field: string; highlight: boolean }
   | { scope?: string; field: string; preview: boolean; value?: string }
   | { scope?: string; order: readonly string[] }
   /** A preset on or off. TODO 493 */
@@ -297,7 +293,7 @@ export function heldInView(query: Query): ReadonlySet<string> {
 
 // Every key of FieldReading, once: one added there and not here is a type error. TRAP T-both-answers-are-kept
 const READING_KEYS = Object.keys({
-  picked: 0, present: 0, op: 0, text: 0, conditions: 0, mode: 0, mirror: 0, range: 0, suspended: 0, off: 0, all: 0, byPreset: 0, presetAdded: 0,
+  picked: 0, present: 0, op: 0, text: 0, conditions: 0, mode: 0, mirror: 0, range: 0, suspended: 0, off: 0, all: 0, byPreset: 0,
 } satisfies Record<keyof FieldReading, 0>) as (keyof FieldReading)[];
 
 /** The ANSWER keys of a reading only — a bar's reading also carries its label
@@ -442,11 +438,11 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
     /* The highlight reaches the whole page: another source's scope drives it
        here too, where this one has the field. Will, TODO 458.
        TRAP T-the-highlight-reaches-the-whole-page */
-    const drives = facts.highlight ? (facts.highlight.scope === id ? facts.highlight.field : undefined) : scope.highlight;
+    const drives = facts.highlight?.scope === id ? facts.highlight.field : undefined;
     const one = drives ? facts.highlight?.value : undefined;
     const held = drives ? scope.readings[drives] : undefined;
     // A chip hovered OFF previews what it holds. Will, TODO 496 · TRAP T-a-hovered-chip-previews-the-highlight
-    const driver = one !== undefined ? { picked: [one] } : held && facts.highlight ? { ...held, suspended: false } : held;
+    const driver = one !== undefined ? { picked: [one] } : held ? { ...held, suspended: false } : undefined;
     if (driver && !highlight && (!facts.has || facts.has(drives!))) {
       highlight = andFilter(scopeClauses(id, { ...scope, readings: { [drives!]: driver } }, viewHolds, facts));
     }

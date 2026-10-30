@@ -147,8 +147,6 @@ export class SherpaMenu extends SherpaElement {
     /* A DATE body offers two days; `data-commit` holds its Apply until asked. */
     'data-range': { type: 'boolean', kind: 'style' },
     // A "Highlight matches" switch, where the host offers it; on while its field drives. TODO 441
-    'data-highlightable': { type: 'boolean', kind: 'visibility' },
-    'data-highlight': { type: 'boolean', kind: 'behaviour' },
     'data-commit': { type: 'boolean', kind: 'style' },
     // Discard without Apply: the scope waits for its bar's ONE Apply. TODO 406
     'data-discard': { type: 'boolean', kind: 'style' },
@@ -229,7 +227,6 @@ export class SherpaMenu extends SherpaElement {
     /* THE MENU OWNS ITS RANGE SWITCH. Both hosts had one, spelled differently,
        listened for separately. TRAP T-a-menu-owns-its-own-bodies */
     this.$('.body-range-switch')?.addEventListener('change', this.#onRangeSwitch);
-    this.$('.body-highlight-switch')?.addEventListener('change', this.#onHighlightSwitch);
     this.$('.body-op')?.addEventListener('change', this.#onBodyOp);
     this.$('.body-number')?.addEventListener('change', this.#onBodyChange);
     this.$('.body-number')?.addEventListener('input', this.#onBodyChange);
@@ -344,12 +341,6 @@ export class SherpaMenu extends SherpaElement {
     if (!value) return;
     this.set('data-op', value);
     this.#emitConditions(true);
-  };
-
-  /** "Highlight matches": a REQUEST — the host says which field drives. TODO 441 */
-  #onHighlightSwitch = (event: Event): void => {
-    event.stopPropagation();
-    this.emit('menu-highlight-change', { on: !!(event.target as SherpaSwitch).checked });
   };
 
   /** Range ON is two ends, OFF is one value; both shapes keep what they hold.
@@ -1439,21 +1430,21 @@ export class SherpaMenu extends SherpaElement {
   /** What the filters before it leave; `null` is everything. */
   #present: Set<string> | null = null;
 
-  /** The values presets on hold, each with who: ticked, refused, and saying why;
-   *  no answer of the reader's, so its values leave them out. Will, TODO 521 */
-  set heldByPreset(held: ReadonlyMap<string, string>) {
+  /** Who among the presets on holds a value: its row is ticked, refused and says
+   *  why; no answer of the reader's, so its values leave it out. Will, TODOs 521, 590 */
+  set heldByPreset(held: ((value: string) => string) | null) {
     this.#heldBy = held;
     this.#markHeld();
   }
-  /** Each value presets on hold, with who. */
-  #heldBy: ReadonlyMap<string, string> = new Map();
+  /** Who holds a value; `null` while no preset does. */
+  #heldBy: ((value: string) => string) | null = null;
 
   /** Mark each row a preset holds, and let go of each it no longer does. */
   #markHeld(): void {
     for (const row of this.querySelectorAll<HTMLElement>('.menu-row')) {
       const box = row.querySelector<HTMLInputElement>(':scope > input');
       if (!box) continue;
-      const by = this.#heldBy.get(box.value);
+      const by = this.#heldBy?.(box.value);
       const was = row.hasAttribute('data-by-preset');
       if (!by && !was) continue;
       row.toggleAttribute('data-by-preset', !!by);
@@ -1823,9 +1814,6 @@ export class SherpaMenu extends SherpaElement {
 
   /** Bring the body, the inline state, the mode and the drill trail into line. */
   #sync(): void {
-    // On while its field drives the highlight: the host says. TODO 441
-    const highlight = this.$<SherpaSwitch>('.body-highlight-switch');
-    if (highlight) highlight.checked = this.hasAttribute('data-highlight');
     this.#syncReadonly();
     this.#syncBody();
     this.#syncInline();

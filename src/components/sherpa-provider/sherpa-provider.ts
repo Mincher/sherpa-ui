@@ -338,18 +338,6 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: the section headings. */
   #sections = true;
 
-  /** Each chip's menu offers "Highlight matches", to drive the highlight. The
-   *  app sets it, from its session. Will, TODO 441 */
-  get highlight(): boolean {
-    return this.#highlight;
-  }
-  set highlight(on: boolean) {
-    this.#highlight = on;
-    this.#offerAll();
-  }
-  /** The app's choice: Highlight matches. */
-  #highlight = false;
-
   /** A chip hovered previews what it matches, where its matches are counted.
    *  The app sets it, from its session. Will, TODO 449 */
   get highlightOnHover(): boolean {
@@ -603,7 +591,6 @@ export class SherpaProvider extends SherpaElement {
     if (this.#switchable !== null) el.toggleAttribute('data-switchable', this.#switchable);
     el.toggleAttribute('data-no-context-label', !this.#contextLabel);
     el.toggleAttribute('data-no-sections', !this.#sections);
-    el.toggleAttribute('data-highlight-matches', this.#highlight);
     el.toggleAttribute('data-highlight-hover', this.#highlightHover);
     el.toggleAttribute('data-field-apply', !this.#singleApply);
     el.toggleAttribute('data-reorder', this.#reorder);

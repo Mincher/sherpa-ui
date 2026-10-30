@@ -24,9 +24,6 @@ sherpa-quick-filter:
   # A PERSISTENT chip — the View chip, a picker — is always on, so it wears no
   # on look, active or green. Will, TODO 432.
   '&[data-current]:not([data-persistent])': active @filter-on
-  # The chip that DRIVES the highlight wears the highlighter, on or off. Will, TODO 441
-  '&[data-highlight]': saturated/warning
-  '&[data-current][data-highlight]': saturated/warning
   # On but holding no values — the contradiction reads as a warning.
   '&[data-current][data-filters-nothing]': warning
   # ON BY A PRESET: a downstream chip or value, blue, and its tip says which. Will, TODO 521

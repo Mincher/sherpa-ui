@@ -1,9 +1,9 @@
 /**
  * A PRESET IS A WRAPPER ROUND ITS FIELDS' CONDITIONS — Will, TODOs 493 (A), 510
- * (A), 521, 526. A scope's definition names its presets: the app's own conditions,
- * over several fields, each a boolean chip. On, it puts them on each field, apart
- * from its answer and ANDed with it, so every control shows them and the field
- * keeps its mode; off, it takes them off, and any chip it added.
+ * (A), 521, 526, 590. A scope's definition names its presets: the app's own
+ * conditions, over several fields, each a boolean chip. On, it puts them on each
+ * field, apart from its answer and ANDed with it, so a chip there shows them and
+ * the field keeps its mode. It adds no chip. Off, it takes them off.
  *
  *   node --test test/unit/a-preset-is-its-own-part.test.mjs
  *
@@ -59,7 +59,7 @@ test('a preset leads its scope as a boolean chip, off at the start', async () =>
   assert.deepEqual(ids(source), [1, 2, 3, 4]);
 });
 
-test('on, it puts its conditions on the fields — held here, as chips, never Advanced — and off takes them, and those chips, away', async () => {
+test('on, it puts its conditions on the fields, adds no chip, and never goes Advanced; off takes them away', async () => {
   const source = await page();
   await act(source, () => source.query.setPreset('data', 'high-risk', true));
   assert.deepEqual(ids(source), [1, 4]);
@@ -68,7 +68,7 @@ test('on, it puts its conditions on the fields — held here, as chips, never Ad
   assert.deepEqual(readings(source).tickets.byPreset['high-risk'].rows, [{ op: 'gt', text: '0' }]);
   assert.equal(readings(source).health.mode, undefined);
   assert.equal(readings(source).health.conditions, undefined);
-  assert.deepEqual(source.describe('data').filters.map((f) => f.id), ['preset:high-risk', 'plan', 'health', 'tickets']);
+  assert.deepEqual(source.describe('data').filters.map((f) => f.id), ['preset:high-risk', 'plan']);
   // A field's own answer narrows beside them.
   await act(source, () => source.query.setReading('data', 'plan', { picked: ['free'] }));
   assert.deepEqual(ids(source), [4]);
@@ -77,7 +77,6 @@ test('on, it puts its conditions on the fields — held here, as chips, never Ad
   assert.equal(on(source), false);
   assert.equal(readings(source).health, undefined);
   assert.equal(readings(source).tickets, undefined);
-  // The chips it added go with it; the page's own stays.
   assert.deepEqual(source.describe('data').filters.map((f) => f.id), ['preset:high-risk', 'plan']);
 });
 

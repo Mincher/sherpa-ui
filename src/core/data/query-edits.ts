@@ -132,6 +132,8 @@ export function rehome(query: Query): void {
     for (const [field, reading] of Object.entries(scope.readings)) {
       const home = homeOf(query, field);
       if (home === id) continue;
+      // A preset's rows on a field no scope holds stay in its scope: no chip. Will, TODO 590
+      if (reading.byPreset && !holderOf(query, field)) continue;
       Reflect.deleteProperty(scope.readings, field);
       scopeEntry(query, home).readings[field] = reading;
     }

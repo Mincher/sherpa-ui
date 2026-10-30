@@ -359,25 +359,6 @@
               ]
             },
             {
-              "el": "div",
-              "class": "body-highlight",
-              "part": "body-highlight",
-              "children": [
-                {
-                  "el": "sherpa-switch",
-                  "class": "body-highlight-switch",
-                  "attrs": {
-                    "data-type": "simple",
-                    "aria-label": "Highlight matches"
-                  }
-                },
-                {
-                  "el": "span",
-                  "class": "body-highlight-label"
-                }
-              ]
-            },
-            {
               "el": "sherpa-container-footer",
               "class": "footer",
               "part": "footer",
@@ -968,25 +949,6 @@
               ]
             },
             {
-              "el": "div",
-              "class": "body-highlight",
-              "part": "body-highlight",
-              "children": [
-                {
-                  "el": "sherpa-switch",
-                  "class": "body-highlight-switch",
-                  "attrs": {
-                    "data-type": "simple",
-                    "aria-label": "Highlight matches"
-                  }
-                },
-                {
-                  "el": "span",
-                  "class": "body-highlight-label"
-                }
-              ]
-            },
-            {
               "el": "sherpa-container-footer",
               "class": "footer",
               "part": "footer",
@@ -1229,24 +1191,6 @@
       "observed": true,
       "declared": true,
       "kind": "behaviour"
-    },
-    {
-      "$type": "prop",
-      "name": "data-highlight",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "behaviour",
-      "description": "this field drives the highlight: the switch is on"
-    },
-    {
-      "$type": "prop",
-      "name": "data-highlightable",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "visibility",
-      "description": "a \"Highlight matches\" switch above the footer (TODO 441)"
     },
     {
       "$type": "prop",
@@ -1705,16 +1649,6 @@
     },
     {
       "$type": "event",
-      "name": "menu-highlight-change",
-      "description": "Its Highlight matches switch flipped: a request, which the host answers.",
-      "bubbles": true,
-      "composed": true,
-      "detail": {
-        "on": "boolean"
-      }
-    },
-    {
-      "$type": "event",
       "name": "menu-items",
       "description": "Its items were stamped, so a host can read its face.",
       "bubbles": true,
@@ -1752,9 +1686,7 @@
     "rows.gap": "{sherpa.display-mode-space-2xs}",
     "rows.--_scroll-shadow-gap": "{sherpa.display-mode-space-2xs}",
     "body-range-label.color": "{sherpa.theme-content-body-1}",
-    "body-range-label.font-size": "{sherpa.theme-content-size-base}",
-    "body-highlight-label.color": "{sherpa.theme-content-body-1}",
-    "body-highlight-label.font-size": "{sherpa.theme-content-size-base}"
+    "body-range-label.font-size": "{sherpa.theme-content-size-base}"
   },
   "$extensions": {
     "sherpa": {
@@ -1894,7 +1826,7 @@
         },
         {
           "name": "heldByPreset",
-          "type": "ReadonlyMap<string, string>",
+          "type": "((value: string) => string) | null",
           "access": "write"
         },
         {

@@ -5290,20 +5290,6 @@
               }
             },
             {
-              "name": "data-highlight",
-              "description": "this field drives the highlight: the switch is on",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "name": "data-highlightable",
-              "description": "a \"Highlight matches\" switch above the footer (TODO 441)",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
               "name": "data-inline",
               "description": "draw in the FLOW rather than the top layer — the same menu, always open, for a filter PANEL. The popover attribute is dropped, so Escape and outside-click no longer apply, and show()/hide() become no-ops. TRAP T-an-inline-menu-is-the-same-menu",
               "type": {
@@ -5528,7 +5514,7 @@
               "kind": "field",
               "name": "heldByPreset",
               "type": {
-                "text": "ReadonlyMap<string, string>"
+                "text": "((value: string) => string) | null"
               }
             },
             {
@@ -5738,13 +5724,6 @@
               }
             },
             {
-              "name": "menu-highlight-change",
-              "description": "Its Highlight matches switch flipped: a request, which the host answers.",
-              "type": {
-                "text": "CustomEvent<{ on: boolean }>"
-              }
-            },
-            {
               "name": "menu-items",
               "description": "Its items were stamped, so a host can read its face.",
               "type": {
@@ -5786,9 +5765,6 @@
             },
             {
               "name": "body-actions"
-            },
-            {
-              "name": "body-highlight"
             },
             {
               "name": "body-number"
@@ -7922,13 +7898,6 @@
             },
             {
               "kind": "field",
-              "name": "highlight",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
               "name": "highlightOnHover",
               "type": {
                 "text": "boolean"
@@ -8434,19 +8403,7 @@
               }
             },
             {
-              "name": "data-highlight-field",
-              "type": {
-                "text": "string"
-              }
-            },
-            {
               "name": "data-highlight-hover",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "name": "data-highlight-matches",
               "type": {
                 "text": "boolean"
               }
@@ -9419,12 +9376,6 @@
             },
             {
               "name": "data-full-value",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "name": "data-highlight",
               "type": {
                 "text": "boolean"
               }

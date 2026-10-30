@@ -351,14 +351,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-highlight",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style"
-    },
-    {
-      "$type": "prop",
       "name": "data-icon",
       "type": "string",
       "observed": false,

@@ -38,7 +38,6 @@ Put it round the part of a page whose components need data: each component insid
 | `switchable` | `boolean` | read and write |  |
 | `contextLabel` | `boolean` | read and write |  |
 | `sections` | `boolean` | read and write |  |
-| `highlight` | `boolean` | read and write |  |
 | `highlightOnHover` | `boolean` | read and write |  |
 | `legendChips` | `boolean` | read and write |  |
 | `highlightAcross` | `boolean` | read and write |  |
