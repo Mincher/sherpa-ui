@@ -329,10 +329,26 @@ export function compareValues(a: unknown, b: unknown): number {
   if (typeof a === 'number' && typeof b === 'number') return a - b;
   if (typeof a === 'boolean' && typeof b === 'boolean') return Number(a) - Number(b);
   if (a instanceof Date && b instanceof Date) return a.getTime() - b.getTime();
+  if (typeof a !== typeof b) {
+    const mixed = compareAsRow(a, b);
+    if (mixed !== null) return mixed;
+  }
   // An object sorts by its own fields — a dotted path picks the one that reads.
   // TRAP T-a-value-can-be-an-object
   return collator.compare(valueKey(a), valueKey(b));
 }
+
+/** A number or Date beside text that can be one: a typed value is text, and a
+ *  rule's always is. Locale text would pass 1.25 for `gt 1.5`. TODO 612 */
+function compareAsRow(a: unknown, b: unknown): number | null {
+  const read = typeof a === 'number' || typeof b === 'number' ? asNumber
+    : a instanceof Date || b instanceof Date ? asTime : null;
+  if (!read) return null;
+  const gap = read(a) - read(b);
+  return Number.isNaN(gap) ? null : gap;
+}
+const asNumber = (v: unknown): number => (typeof v === 'number' ? v : typeof v === 'string' && v.trim() ? Number(v) : NaN);
+const asTime = (v: unknown): number => (v instanceof Date ? v.getTime() : typeof v === 'string' ? Date.parse(v) : NaN);
 
 /** Sort by specs, first wins and later ones break ties. `toSorted`, never `sort`. */
 export function sortRows(rows: readonly Row[], specs: readonly SortSpec[]): Row[] {

@@ -232,6 +232,8 @@ export interface FieldCondition {
  *  untouched row is not an answer. TRAP T-an-untouched-select-is-not-an-answer */
 export function rowAnswered(row: FieldCondition): boolean {
   const takes = OP_TAKES[row.op] ?? 'list';
+  // A span of no length has no clause: "in the last 0" answers nothing. TODO 612
+  if (row.op === 'last' || row.op === 'next') return Number((row.text ?? '').trim()) > 0;
   if (takes === 'text') return (row.text ?? '').trim() !== '';
   // A range is BOTH its ends: one alone narrows nothing. TODO 375
   return (row.picked ?? []).length >= (takes === 'range' ? 2 : 1);

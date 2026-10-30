@@ -1599,7 +1599,13 @@ export class DataSource extends EventTarget {
 
   /** A Refresh: the store's set is read again before it is used — never by a closed source. */
   #letGo(): void {
-    if (!this.#closed) this.#cache?.letGo();
+    if (this.#closed) return;
+    this.#cache?.letGo();
+    // The keys a server field matched are of the set let go: they are asked again. TODO 612
+    if (!this.#fetchedKeys.size) return;
+    this.#fetchedKeys.clear();
+    this.#fetching.clear();
+    this.#compileNow();
   }
 
   /** The load in flight, for a caller that asks the same question again. */

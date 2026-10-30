@@ -996,7 +996,7 @@ export class SherpaDataGrid extends SherpaElement {
     const reading = menu.reading;
     // A RANGE of days needs both ends: one is unfinished, not wrong.
     if (menu.dataset['body'] === 'date' && reading.range && (reading.picked ?? []).length < 2) return null;
-    return answersAnything(reading) ? reading : null;
+    return readingAnswered(reading) ? reading : null;
   }
 
   /** One column's answer IN FORCE, as the data layer reads it. */
@@ -1164,7 +1164,7 @@ export class SherpaDataGrid extends SherpaElement {
   drawReading(field: string, reading: FieldReading): void {
     /* HELD AS IT IS — both answers and the mode. Through a clause only the
        answer in force came back. TRAP T-both-answers-are-kept */
-    if (!answersAnything(reading)) {
+    if (!readingAnswered(reading)) {
       this.#clearColumns(field);
       return;
     }
@@ -1592,7 +1592,7 @@ export class SherpaDataGrid extends SherpaElement {
       next = { ...held, picked, mode: 'simple', ...(at.kind === 'number' ? { range: false } : {}) };
     }
     delete next.suspended;
-    const reading = answersAnything(next) ? next : null;
+    const reading = readingAnswered(next) ? next : null;
     if (reading) this.#columnFilters.set(at.field, reading);
     else this.#columnFilters.delete(at.field);
     // The heading's menu is told by the redraw: what it holds no longer matches.
@@ -2597,8 +2597,3 @@ function isRows(reading: FieldReading): FieldCondition[] {
   return readingRows(reading).filter((r) => r.op === 'eq');
 }
 
-/** Does a reading hold ANY answer — a tick, typed text or a row, in either mode, or a preset's? */
-function answersAnything(reading: FieldReading): boolean {
-  return (reading.picked ?? []).length > 0 || (reading.text ?? '').trim() !== ''
-    || readingRows(reading).length > 0 || Object.keys(reading.byPreset ?? {}).length > 0;
-}

@@ -3380,6 +3380,10 @@ Two rules the comparator encodes, both easy to "simplify" wrongly:
 
 Null `direction` is treated as ascending, matching `data-sort-direction`.
 
+A number or a Date beside text that can be one compares as that kind, not as text:
+locale text passed 1.25 for `gt "1.5"`, and a typed value and a rule's value are text
+(TODO 612).
+
 - Site: `src/core/data/store.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/data/aggregate.ts`

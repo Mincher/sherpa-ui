@@ -136,13 +136,14 @@ export function stripArrangement(s: object): void {
 export const arranging = (s: ScopeQuery): boolean =>
   !!s.sort?.length || s.group != null || !!s.sortSuspended || !!s.search;
 
-/** How a Query arranges its rows; none, an empty arrangement. 366 step 8 */
-export function arrangementOf(query: Query, mine?: (scope: string) => boolean): Arrangement {
+/** How a Query arranges its rows; none, an empty arrangement. `kept`: what a
+ *  Switch holds off, for a write that must not lose it. 366 step 8 */
+export function arrangementOf(query: Query, mine?: (scope: string) => boolean, kept = false): Arrangement {
   for (const [scope, s] of Object.entries(query.scopes)) {
     // Another source's own scope arranges that source's rows. 366 step 25
     if (!arranging(s) || (mine && !mine(scope))) continue;
     // Its filter Switch OFF: its sort and group are kept, not in force. Will, TODO 398
-    if (s.suspended) return { sort: [], group: null, search: s.search ?? '', scope };
+    if (s.suspended && !kept) return { sort: [], group: null, search: s.search ?? '', scope };
     return {
       sort: s.sort ?? [], group: s.group ?? null, ...(s.sortSuspended ? { sortSuspended: s.sortSuspended } : {}),
       search: s.search ?? '', scope,

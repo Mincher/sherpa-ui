@@ -1173,9 +1173,10 @@ export class QueryContext extends EventTarget {
     this.#fillStarts(next);
     const was = arrangementOf(this.#live.applied);
     const before = this.#answered();
+    // Before the copy: a waiting scope's rows and chips read the same homes. TODO 612
+    rehome(next);
     this.#live.applied = next;
     this.#live.draft = this.waiting() ? structuredClone(next) : next;
-    rehome(this.#live.draft);
     await Promise.all([...this.#members].map((m) => m.heard({ kind: 'query', was, before })));
     this.#announce({
       fields: [...new Set([...before, ...this.#answered()])], scopes: this.scopes, ...(options.by ? { by: options.by } : {}),
@@ -1236,7 +1237,8 @@ export class QueryContext extends EventTarget {
     /* ONE arranging scope per SOURCE: a scope another source draws a page in
        keeps its own. With one source, every scope is its. 366 step 25 */
     const theirs = this.#theirs(scope);
-    const now = arrangementOf(this.#live.applied, (id) => !theirs(id));
+    // What a Switch keeps off is kept through this write too. TODO 612
+    const now = arrangementOf(this.#live.applied, (id) => !theirs(id), true);
     const at = scope ?? now.scope ?? VIEW;
     const sort = next.sort ?? now.sort;
     const group = 'group' in next ? next.group ?? null : now.group;

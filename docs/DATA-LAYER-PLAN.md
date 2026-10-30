@@ -87,19 +87,32 @@ fails.
   inactive where its heading reads blue. That is an honest look, and Step 3 joins them.
 - **The resting ink** of a held heading (D2).
 
-### Step 2 (612): wrong answers the engine cannot live with — small each
+### Step 2 (612): wrong answers the engine cannot live with — done
 
-| Bug | Where | Proof |
+Tests: `test/unit/one-question-one-answer.test.mjs`. Each failed first, unless it says
+otherwise.
+
+| Was wrong | Where | Now |
 |---|---|---|
-| A number compared with text falls to locale text. `gt "1.5"` passes 1.25, and `gt "-3"` passes -5 and fails -1. A node's Value row is text, so this is the normal case for a rule | `store.ts:325` | RUN |
-| A Date row never matches `between` with ISO text | `store.ts:325` | RUN |
-| "In the last 0": chip on, nothing filters | `filter-state.ts:460`, `:545` | RUN: `active`, not in `filterFields`, 100 rows before and after |
-| Five definitions of "answered": a half-built Between is kept by a bar and cleared by a heading | `query.ts:343`, `filter-state.ts`, `sherpa-data-grid.ts:2601` | READ |
-| `#fetchedKeys` is never cleared, so even Refresh keeps old keys | `data-source.ts:1126` | READ: nothing deletes from it |
-| `setQuery` rehomes the draft and not the applied Query. In a waiting scope, a saved filter on a raised field shows on the chip and is not in the rows | `query-context.ts:1176` | READ |
-| Export keeps one arrangement, but each source may have its own, so a second source's sort is lost | `query-edits.ts:329`, `query-context.ts:1236` | READ |
-| A search while the Switch is off destroys the kept sort and group | `query.ts:145`, `query-context.ts:1239` | READ. Our probe did not reach the off state |
-| After a remote raise, bars read the draft and headings read the applied Query, until Apply | `data-source.ts:957` | READ |
+| A number compared with text fell to locale text: `gt "1.5"` passed 1.25, and `gt "-3"` passed -5 and failed -1. A node's Value row is text, so this was the normal case for a rule | `store.ts`, `compareValues` | Compares as the row's kind. Text that is no number stays a text compare |
+| A Date row never matched `between` with ISO text | `store.ts`, `compareValues` | Compares as dates |
+| "In the last 0": chip on, nothing filters | `filter-state.ts`, `rowAnswered` | Answers nothing, so the chip is off |
+| `#fetchedKeys` was never cleared, so a Refresh kept a server field's old keys | `data-source.ts`, `#letGo` | Let go with the set, and asked again |
+| `setQuery` rehomed the draft and not the applied Query. In a waiting scope, the chip and the rows disagreed | `query-context.ts` | Rehomed before the copy |
+| A search while the Switch was off destroyed the kept sort and group | `query-context.ts`, `#arrange` | Kept |
+| The grid had its own test of "answered" | `sherpa-data-grid.ts` | Gone: it uses `readingAnswered` |
+
+Checked, and not bugs:
+
+- **Export losing a second source's sort.** It does not lose it. The test stays, as a
+  guard.
+- **A half-built Between.** A heading and a toolbar held it differently, but the menu
+  draws only finished rows in both, so nothing a reader sees changed. Two tests of
+  "answered" stay, because they ask two questions: `readingAnswered`, does the Query
+  keep this; `rowAnswered`, does this row narrow anything.
+
+Moved to Step 3: after a remote raise, bars read the draft and headings read the
+applied Query, until Apply. One status ends that.
 
 ### Step 3 (613): one answer for a field's state — medium
 
@@ -110,6 +123,15 @@ The heart of it, and what Will asked for. Two small pieces:
    It has one test matrix, every state by every scope.
 2. **One painter** in `core/ui/filter-host.ts`, beside `markField`: status in,
    attributes out, for any chip-like control. The order of looks lives in one place.
+
+The source tells every bound control the status of its fields whenever a field
+changes. Controls never hear from each other (Will, 2026-10-30): a preset chip and a
+View chip know nothing of one another, and each simply draws what the Query says. So
+a toolbar chip hears `byPreset` on a field the View holds as its heading does, where
+today `supersede` hands a bar only field names and `supersedeColumns` hands a grid
+the readings. Those two doors go. The hierarchy already says who holds a field (View
+scope, then local scope, then the component), so "held above" is one part of one
+status, for every control (Will, 2026-10-30).
 
 Then move one control at a time, deleting what each replaces: heading, toolbar chip,
 panel value chip, cell chip, tag, legend key, menu row. A gate then blocks a
