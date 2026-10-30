@@ -946,7 +946,7 @@ top there.
 
 **The room rule counts ONE area.** With the filter panel open too, the Context
 gets 312px at a 1280 window and 632px at 1600, under the tablet width that rule
-keeps (measured). TODO 640.
+keeps (measured). TODO 650.
 
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.html`
