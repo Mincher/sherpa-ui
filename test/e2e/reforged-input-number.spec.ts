@@ -139,7 +139,27 @@ test('a narrow number field narrows its steppers, so its digits show', async ({ 
     };
     return { wide: read('.wide'), narrow: read('.narrow') };
   });
-  expect(r.wide).toEqual({ step: 32, fits: true });
-  expect(r.narrow.step).toBeLessThan(32);
+  // Inside the row's two 1px borders, so the row is the base 32. TODO 563
+  expect(r.wide).toEqual({ step: 30, fits: true });
+  expect(r.narrow.step).toBeLessThan(30);
   expect(r.narrow.fits).toBe(true);
+});
+
+test('a field is the base size with a button in its row: a number, a find, a slotted action; a sized action keeps its size (Will, TODO 563)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    const action = (size = ''): string => `<sherpa-button slot="actions" data-type="icon" data-look="transparent" data-icon-start="cross" aria-label="x"${size}></sherpa-button>`;
+    root.innerHTML = `<sherpa-input-text class="plain" aria-label="a"></sherpa-input-text>
+      <sherpa-input-text class="number" data-type="number" aria-label="b"></sherpa-input-text>
+      <sherpa-input-text class="find" data-type="find" aria-label="c"></sherpa-input-text>
+      <sherpa-input-text class="action" aria-label="d">${action()}</sherpa-input-text>
+      <sherpa-input-text class="sized" aria-label="e">${action(' data-size="lg"')}</sherpa-input-text>`;
+    await window.__settled();
+    const row = (sel: string): number => Math.round(root.querySelector(sel)!.shadowRoot!.querySelector('.control-row')!.getBoundingClientRect().height);
+    const button = (sel: string): number => Math.round(root.querySelector(sel)!.getBoundingClientRect().height);
+    return { rows: ['.plain', '.number', '.find', '.action'].map(row), action: button('.action sherpa-button'), sized: button('.sized sherpa-button') };
+  });
+  expect(r.rows).toEqual([32, 32, 32, 32]);
+  expect(r.action).toBe(30);
+  expect(r.sized).toBeGreaterThan(30);
 });

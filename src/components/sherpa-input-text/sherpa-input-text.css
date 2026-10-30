@@ -82,6 +82,14 @@
 }
 /* Snapped 32x32 action buttons sit flush against the box edge. */
 :host(:state(has-actions)) .control-row { padding-inline-end: 0; }
+/* A button in the row stands INSIDE its border, so the row stays 32px: a
+   number's or a find's steppers, and a slotted action of no size of its own.
+   2px, not the tokens: a 0.5px border can draw 1px. Below a narrow number's
+   `.step`, which shrinks them further. Will, TODO 563 */
+:where(.steppers) > sherpa-button,
+.actions ::slotted(sherpa-button:not([data-size])) {
+  --sherpa-button-size-height: calc(var(--sherpa-display-mode-size-2xl, 32px) - 2px);
+}
 
 /* The native control is borderless — the row owns the box. */
 .control {
