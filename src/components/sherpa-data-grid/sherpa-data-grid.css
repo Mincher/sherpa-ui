@@ -820,7 +820,7 @@
     outline-offset: var(--sherpa-focus-offset);
   }
 }
-.cell-tag[data-superseded] { cursor: not-allowed; }
+.cell-tag:is([data-superseded], [data-held-out]) { cursor: not-allowed; }
 /* ON or OFF, by a shape too, where the page asks: the Checkbox's box, ticked as
    the tag is pressed. TODOs 497, 503 · TRAP T-a-toggle-shows-its-state-by-a-shape */
 .tag-tick {

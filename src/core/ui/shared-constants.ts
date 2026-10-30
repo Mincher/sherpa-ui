@@ -8,6 +8,7 @@
  * Map:
  * - movedTo — What a filter another scope holds says: `Filter moved to View scope.`
  * - onByPreset — What a chip or a value a preset on holds says.
+ * - heldByPreset — What a preset's field says of its values while the preset is on.
  * - RULED_OUT — What a value the filters before it rule out says, on its chip and its menu row
  * - SET_ASIDE — What a PICKED value a later filter rules out says
  * - NOT_AVAILABLE — What a disabled chip says
@@ -37,6 +38,11 @@ export function movedTo(scope?: string | null): string {
 /** What a chip or a value a preset on holds says. Will, TODO 521 */
 export function onByPreset(names: string): string {
   return `On by the preset ${names}.`;
+}
+
+/** What a preset's field says of its values while the preset is on. Will, TODO 601 */
+export function heldByPreset(names: string): string {
+  return `Held by the preset ${names}.`;
 }
 
 /** What a value the filters before it rule out says, on its chip and its menu

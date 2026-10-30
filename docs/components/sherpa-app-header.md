@@ -114,7 +114,7 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
-| `--sherpa-display-mode-space-base` | `.content` | `gap` |
+| `--sherpa-display-mode-space-sm` | `.content` | `gap` |
 | `--sherpa-theme-gap-md` | `.content` | `padding` |
 | `--sherpa-display-mode-space-xs` | `.row-history` | `gap` |
 | `--sherpa-display-mode-size-lg` | `.row-history` | `min-block-size` |

@@ -683,7 +683,7 @@ the intermittent amber view chip: whether it appeared depended only on whether
 the host remembered to mark an option `selected`.
 
 
-**It keeps its pick through `data-reset-on-populate`.** A reset is of the filters, and a selector answers none. A View that changed what the View scope holds rebuilt the bar, and the chip fell back to the first View. Will, TODO 599.
+**It keeps its pick through `data-reset-on-populate`, while its def is the same.** A changed def names the pick: saving or deleting a View moves the chip so. A reset is of the filters, and a selector answers none. A View that changed what the View scope holds rebuilt the bar, and the chip fell back to the first View. Will, TODO 599.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/ui/filter-def.ts`
@@ -5193,7 +5193,9 @@ and `toggle()` re-opens the thing the user just closed.
 
 The button reads its own `data-open` flag instead. That is set from
 `menu-open` / `menu-close`, so it is still true at `pointerdown`, and the
-handler clears it before deciding.
+handler clears it before deciding. Removing a popover shuts it and fires NO
+`toggle`, so a chip moved while its menu is open clears the flag as it leaves
+(TODO 599: a View pick moved the View chip, and its next press did nothing).
 
 It then calls `hide()` — it does not merely decline to `show()`. A click that
 did NOT dismiss leaves the menu open, and only the explicit `hide()` closes it.
@@ -19624,7 +19626,11 @@ of their own. In a panel section each value chip the rows touch goes blue
 colours the other three); no chip is added. **Toggled off, a blue chip or value
 turns its presets off**: their conditions no longer stand (Will, TODO 592; it is the
 one thing that does, beside the preset's own chip and Reset). An icon-only heading
-chip has no toggle: its press opens its menu. In a menu the row is ticked, refused
+chip has no toggle: its press opens its menu. **Its values cannot change while the
+preset is on** (Will, TODO 601): its menu is `data-readonly` and its `title` says why, a
+panel section's other values wear `data-held-out` (inactive, and they say why), a
+section's ⋮ offers no Advanced or Reset, and a grid's cell offers nothing and its tags
+refuse. TODO 602 is the setting that will let them. In a menu the row is ticked, refused
 and says why; `NON_VALUE_ROWS` leaves it out of the menu's values, so it is never read
 back as the reader's. A grid heading tells its chip through `chip.presets`.
 

@@ -29,6 +29,9 @@ sherpa-quick-filter:
   # ON BY A PRESET: a downstream chip or value, blue, and its tip says which. Will, TODO 521
   '&[data-by-preset]': info
   '&[data-current][data-by-preset]': info
+  # …and a value it leaves out, in a field it holds: refused. Will, TODO 601
+  '&[data-held-out]': inactive
+  '&[data-current][data-held-out]': inactive
   # An ADVANCED chip takes no pin of its own: it is ON, so it is active, as a
   # Simple one. Will, 2026-09-30 (TODO 156). TRAP T-a-conditioned-chip-reads-as-active
   # PENDING: changed, not yet applied — the WARNING look, whatever it was. It
@@ -69,6 +72,8 @@ sherpa-menu:
 .cell-tag:
   '&[data-current]': active @filter-on
   '&[data-superseded]': inactive
+  # …or by a preset on. Will, TODO 601
+  '&[data-held-out]': inactive
 
 # A MENU ROW — a Menu List Item, slotted light DOM, so a class key: it lives in
 # its menu's tree, not the menu's shadow root. One the filters before it rule out

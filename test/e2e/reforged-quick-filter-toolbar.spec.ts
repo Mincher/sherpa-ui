@@ -2858,8 +2858,35 @@ test('a rebuild with data-reset-on-populate forgets the filters, never what a se
     await window.__settled();
     el.populate!([view, tier, plan]);
     await window.__settled();
-    return { view: el.values['view'], plan: el.values['plan'] ?? [] };
+    const kept = { view: el.values['view'], plan: el.values['plan'] ?? [] };
+    // A changed def names the pick: a saved View moves the chip so.
+    el.populate!([{ ...view, options: [...view.options, { value: 'c', label: 'C', selected: true }] }, plan]);
+    await window.__settled();
+    return { ...kept, named: el.values['view'] };
   });
-  expect(r).toEqual({ view: ['b'], plan: [] });
+  expect(r).toEqual({ view: ['b'], plan: [], named: ['c'] });
+});
+
+test('a chip moved while its menu is open opens at the next press: removal shuts it and fires no toggle (Will, TODO 599)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const view = { id: 'view', label: 'View', persistent: true, options: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }] };
+    const plan = { id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] };
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-reset-on-populate': '' });
+    el.populate!([view]);
+    await window.__settled();
+    const chip = el.shadowRoot!.querySelector<HTMLElement>('.chip[data-id="view"]')!;
+    const menu = chip.querySelector('sherpa-menu') as HTMLElement & { open: boolean };
+    const caret = chip.shadowRoot!.querySelector<HTMLElement>('.caret')!;
+    caret.click();
+    await window.__settled();
+    const opened = menu.open;
+    el.populate!([view, plan]);
+    await window.__settled();
+    const moved = { same: el.shadowRoot!.querySelector('.chip[data-id="view"]') === chip, open: menu.open };
+    caret.click();
+    await window.__settled();
+    return { opened, moved, again: menu.open };
+  });
+  expect(r).toEqual({ opened: true, moved: { same: true, open: false }, again: true });
 });
 

@@ -12,7 +12,7 @@ import {
   fieldState, presetTouches, readingRows, rowAnswered, type FieldCondition, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
 import { countSaid, filterFace, spellConditions } from '../../core/data/filter-face.js';
-import { NON_VALUE_ROWS, NOT_AVAILABLE, ORGANISE_ICONS, RULED_OUT, SET_ASIDE, UNAPPLIED, UNFETCHED, movedTo, onByPreset, unusedHere } from '../../core/ui/shared-constants.js';
+import { NON_VALUE_ROWS, NOT_AVAILABLE, ORGANISE_ICONS, RULED_OUT, SET_ASIDE, UNAPPLIED, UNFETCHED, heldByPreset, movedTo, onByPreset, unusedHere } from '../../core/ui/shared-constants.js';
 import { arranges, FILTER_KINDS, type FilterKind } from '../../core/ui/filter-kind.js';
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 import { paintSwatch } from '../../core/ui/chart-parts.js';
@@ -59,6 +59,8 @@ export class SherpaQuickFilter extends SherpaElement {
     'data-superseded': { type: 'boolean', kind: 'style' },
     /* The presets on that hold this field or value, by name: blue, and it says so. Will, TODO 521 */
     'data-by-preset': { type: 'string', kind: 'behaviour' },
+    /* A value a preset on leaves out, in a field it holds: refused, by name. Will, TODO 601 */
+    'data-held-out': { type: 'string', kind: 'behaviour' },
     // A section whose every value its host hides says why. Will, TODO 517
     'data-spent': { type: 'boolean', kind: 'style' },
     'data-unused': { type: 'boolean', kind: 'behaviour' },
@@ -178,6 +180,12 @@ export class SherpaQuickFilter extends SherpaElement {
    * TRAP T-chip-empty-check-waits-for-onconnect — the slotted menu may not exist
    * yet at `onRender`, and pre-ticked values fire no event. Replay them here.
    */
+  /** Removal shuts a popover and fires no toggle: moved, its menu is shut, so it must
+   *  not read open. TRAP T-a-trigger-click-follows-light-dismiss */
+  override onDisconnect(): void {
+    this.set('data-open', null);
+  }
+
   override onConnect(): void {
     this.#syncEmpty();
     /* GROUP and SORT draw their OWN column and glyph, from the state they were
@@ -208,7 +216,7 @@ export class SherpaQuickFilter extends SherpaElement {
     }
     if (['data-current', 'data-readonly', 'data-type', 'data-persistent', 'aria-label'].includes(name)) this.#syncPressed();
     // A greyed chip says why. Will, TODO 176.
-    if (name === 'data-unavailable' || name === 'disabled' || name === 'data-superseded' || name === 'data-current') this.#syncGrey();
+    if (name === 'data-unavailable' || name === 'disabled' || name === 'data-superseded' || name === 'data-current' || name === 'data-held-out') this.#syncGrey();
     if (name === 'data-unavailable' || name === 'disabled' || name === 'data-unused') return this.#writeTip();
     /* THE CHIP DRAWS ITSELF. A host says what the state IS — on, which way,
        which column — and never paints the caret or the glyph for it. Two hosts
@@ -223,7 +231,7 @@ export class SherpaQuickFilter extends SherpaElement {
     /* The tooltip says WHY a chip is off, so it must follow the two attributes
        that decide that — neither touches the values, so nothing else re-syncs
        it. TRAP T-an-inactive-chip-says-where-its-filter-went */
-    else if (name === 'data-by-preset') this.#writeTip();
+    else if (name === 'data-by-preset' || name === 'data-held-out') this.#writeTip();
     else if (name === 'data-superseded' || name === 'data-applied-at') {
       this.#syncCountTip(this.menu?.values ?? []);
       this.#drawMoved();
@@ -243,7 +251,7 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** A greyed chip's buttons hear no pointer: its box shows its tip. Will, TODO 585 */
   #syncGrey(): void {
-    this.$('.chip')?.classList.toggle('sherpa-anchor', this.hasAttribute('data-superseded') || this.hasAttribute('disabled')
+    this.$('.chip')?.classList.toggle('sherpa-anchor', this.hasAttribute('data-superseded') || this.hasAttribute('disabled') || this.hasAttribute('data-held-out')
       || (this.hasAttribute('data-unavailable') && !this.hasAttribute('data-current')));
   }
 
@@ -387,11 +395,22 @@ export class SherpaQuickFilter extends SherpaElement {
   /** What presets on hold of this field: it says so, in blue. A host that paints
    *  its menu itself, a grid heading, says it here. Will, TODO 521 */
   set presets(held: FieldReading['byPreset']) {
+    const was = this.#presets.length > 0;
     this.#held = held ?? {};
     this.#presets = Object.values(this.#held);
-    this.set('data-by-preset', this.#presets.map((p) => p.label).join(', ') || null);
+    const names = this.#presets.map((p) => p.label).join(', ');
+    this.set('data-by-preset', names || null);
     const menu = this.#fieldMenu();
-    if (menu) menu.heldByPreset = this.#presets.length ? this.#heldBy : null;
+    if (!menu) return;
+    menu.heldByPreset = names ? this.#heldBy : null;
+    // Its values are the preset's while it is on: shown, refused, and the menu says why. Will, TODO 601
+    if (names) {
+      menu.setAttribute('data-readonly', '');
+      menu.setAttribute('title', heldByPreset(names));
+    } else if (was) {
+      menu.removeAttribute('title');
+      if (!this.hasAttribute('data-superseded')) menu.removeAttribute('data-readonly');
+    }
   }
   /** What each preset on holds of this field, by its id. */
   #held: NonNullable<FieldReading['byPreset']> = {};
@@ -880,6 +899,7 @@ export class SherpaQuickFilter extends SherpaElement {
       const moved = movedTo(this.dataset['appliedAt']);
       return values ? `${moved} This chip holds ${values}.` : moved;
     }
+    if (this.dataset['heldOut']) return heldByPreset(this.dataset['heldOut']);
     // Why it is on, then what the reader's own answer adds. Will, TODO 521
     const by = this.dataset['byPreset'];
     if (by) return [onByPreset(by), this.#presets.length ? this.#presetSaid() : '', values].filter(Boolean).join(' ');
@@ -1099,6 +1119,9 @@ export class SherpaQuickFilter extends SherpaElement {
       one.toggleAttribute('data-current', !!by || kids.some((k) => picked.has(k)));
       one.toggleAttribute('data-by-preset', !!by);
       if (by) one.dataset['byPreset'] = by;
+      // The rest of a field a preset holds are refused too. Will, TODO 601
+      if (this.#presets.length && !by) one.dataset['heldOut'] = this.#presets.map((p) => p.label).join(', ');
+      else delete one.dataset['heldOut'];
       one.toggleAttribute('data-pending', waiting && kids.some((k) => picked.has(k) !== was.has(k)));
       (one as SherpaQuickFilter).results = this.#valueResults?.[item.value] ?? null;
       this.#syncKids(one, item.value, items, picked);
@@ -1153,6 +1176,7 @@ export class SherpaQuickFilter extends SherpaElement {
       one.append(menu);
       one.setAttribute('data-menu', '');
     }
+    menu.toggleAttribute('data-readonly', this.#presets.length > 0);
     const whole = picked.has(parent);
     const given = kids.map((k) => ({ value: k.value, label: k.label, selected: whole || picked.has(k.value) }));
     // The same list does nothing: a new one would close what the reader has open.
@@ -1191,6 +1215,8 @@ export class SherpaQuickFilter extends SherpaElement {
       this.emit('quick-filter-click', { active: false, release: true });
       return;
     }
+    // …and the rest of its field refuse. Will, TODO 601
+    if (one.hasAttribute('data-held-out')) return;
     // Inactive is not interactive. TRAP T-a-ruled-out-value-is-greyed
     const menu = this.#fieldMenu();
     // …but one still ON may be let go. TODO 462

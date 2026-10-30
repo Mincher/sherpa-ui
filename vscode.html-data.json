@@ -3103,6 +3103,9 @@
           "valueSet": "v"
         },
         {
+          "name": "data-held-out"
+        },
+        {
           "name": "data-icon",
           "description": "start leading icon — an FA class list (Figma default is a funnel)"
         },

@@ -734,7 +734,7 @@
     }
   ],
   "tokens": {
-    "content.gap": "{sherpa.display-mode-space-base}",
+    "content.gap": "{sherpa.display-mode-space-sm}",
     "content.padding": "{sherpa.theme-gap-md}",
     "row-history.gap": "{sherpa.display-mode-space-xs}",
     "row-history.min-block-size": "{sherpa.display-mode-size-lg}",

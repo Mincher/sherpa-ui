@@ -1285,24 +1285,27 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        its def. TRAP T-a-rebuild-keeps-every-answer */
     const reset = this.hasAttribute('data-reset-on-populate');
     const kept = reset ? {} : this.#answers();
-    for (const chip of this.#chips()) {
-      const id = chip.dataset['id'];
-      // A reset is of the filters. A selector answers none, so it keeps its pick. Will, TODO 599
-      if (!id || (reset && !chip.hasAttribute('data-persistent'))) continue;
-      live.set(id, {
-        on: chip.hasAttribute('data-current'),
-        picked: new Set(this.#chipPicks(chip)),
-      });
+    if (!reset) {
+      for (const chip of this.#chips()) {
+        const id = chip.dataset['id'];
+        if (!id) continue;
+        live.set(id, {
+          on: chip.hasAttribute('data-current'),
+          picked: new Set(this.#chipPicks(chip)),
+        });
+      }
     }
 
     /* A chip built from the same def, under the same flags, is MOVED, not
        remade: its menu, its answer and its draft go with it. Only a new or
-       changed one is built, and only it takes back a kept answer. TODO 415 */
+       changed one is built, and only it takes back a kept answer. TODO 415.
+       A reset is of the filters: a selector's same def moves it, with its pick, and
+       a changed def names the pick. Will, TODO 599 */
     const was = new Map(this.#chips().filter((c) => !reset || c.hasAttribute('data-persistent')).map((c) => [c.dataset['id'] ?? '', c] as const));
     const moved = new Set<string>();
     list.replaceChildren();
     // A chip that stays shows what it was drawn; a new one has been drawn nothing.
-    for (const id of this.#painted.keys()) if (!live.has(id)) this.#painted.delete(id);
+    for (const id of this.#painted.keys()) if (!was.has(id)) this.#painted.delete(id);
     /* The allow-list applies to the chips already ON the bar, not only to what
        Add offers: a field a reader may not filter by must not appear at all.
        No list → every filter, which is the default. */

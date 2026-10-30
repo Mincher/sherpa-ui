@@ -534,6 +534,9 @@ sherpa-accordion.scope::part(actions) {
 .field-more:not([data-advanced-ok]) .more-item[value="advanced"] { display: none; }
 /* …and with none to offer it is not shown: no Move, Remove or Advanced, and nothing to Reset. Will, TODO 566 */
 .chips > .chip:not([data-current]) > .field-more:not([data-move], [data-removable], [data-advanced-ok]) { display: none; }
+/* A preset holds its values: no Advanced, and nothing to Reset. Will, TODO 601 */
+.chip[data-by-preset] > .field-more .more-item:is([value="advanced"], [value="clear"]) { display: none; }
+.chips > .chip[data-by-preset] > .field-more:not([data-move], [data-removable]) { display: none; }
 /* A ⋮ with no row to show is not shown. Will, TODO 566 */
 :host(:state(no-more)) :is(.act[data-act="overflow"], .column-more) { display: none; }
 /* A section's ⋮ offers Reset only once there is something to clear. */

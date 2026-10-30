@@ -20,7 +20,7 @@ import {
   DATA_PROPS, SHARED_PROPS, SherpaElement, coerceNum, clampNum, define,
 } from '../../core/ui/sherpa-element.js';
 import { markNeedles } from '../../core/ui/mark-text.js';
-import { ORGANISE_ICONS, movedTo } from '../../core/ui/shared-constants.js';
+import { ORGANISE_ICONS, heldByPreset, movedTo } from '../../core/ui/shared-constants.js';
 import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/data/cycle.js';
 import { reduceRows } from '../../core/data/aggregate.js';
 import {
@@ -1529,6 +1529,8 @@ export class SherpaDataGrid extends SherpaElement {
     /* A CHILD's cell picks its PATH on the parent field: this site of this
        customer. TODO 369 · TRAP T-a-parent-pick-is-the-parent */
     const parent = this.#parentOf(field);
+    // A preset holds its values: no cell changes them. Will, TODO 601
+    if (this.#shown(parent ?? field)?.byPreset) return null;
     if (parent) {
       const value = { [parent]: row?.[parent], [field]: raw };
       return { field: parent, kind, value, key: valueKey(value), header: this.#givenFilters[parent]?.label ?? parent,
@@ -1641,7 +1643,7 @@ export class SherpaDataGrid extends SherpaElement {
     const tags = this.#tagsOf(col);
     if (!tags.length) return null;
     const own = filters(col) && !this.#parentOf(col.field) ? this.#filterDef(col, undefined) : null;
-    const fields = [...(own && kindOf(own) === 'multi' ? [col.field] : []), ...tags].filter((f) => !this.#superseded.has(f));
+    const fields = [...(own && kindOf(own) === 'multi' ? [col.field] : []), ...tags].filter((f) => !this.#superseded.has(f) && !this.#shown(f)?.byPreset);
     if (!fields.length) return null;
     this.#joined.set(col.field, fields);
     const options = fields.flatMap((f) => this.#optionsOf(f)
@@ -1740,6 +1742,13 @@ export class SherpaDataGrid extends SherpaElement {
       // Held: it says where its filter went, in the one tag tip. TODO 490
       if (held) tag.setAttribute('aria-disabled', 'true');
       if (held) tag.setAttribute('aria-describedby', 'tag-tip');
+      // A preset holds it: refused, and it says why. Will, TODO 601
+      const by = Object.values(this.#shown(field)?.byPreset ?? {}).map((p) => p.label).join(', ');
+      tag.toggleAttribute('data-held-out', !!by);
+      if (by) {
+        tag.setAttribute('aria-disabled', 'true');
+        tag.setAttribute('title', heldByPreset(by));
+      }
       row.appendChild(tag);
     }
     td.toggleAttribute('data-tags', true);
@@ -1757,7 +1766,7 @@ export class SherpaDataGrid extends SherpaElement {
     const field = tag.dataset['field'];
     const key = tag.dataset['value'];
     const row = tag.closest('.row');
-    if (!field || key == null || !row || this.#superseded.has(field)) return;
+    if (!field || key == null || !row || this.#superseded.has(field) || this.#shown(field)?.byPreset) return;
     const at: CellValue = { field, kind: 'text', value: this.#rowOf.get(row)?.[field], key, header: this.#fieldLabel(field),
       text: tag.textContent?.trim() ?? '', held: false };
     this.#toggleValue(at, this.#tagOn(field, key));
