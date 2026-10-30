@@ -263,6 +263,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-by-preset",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-column",
       "type": "string",
       "observed": true,
@@ -726,7 +734,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (current, valueLabel, menu, values, reading, answered, drafting, column, direction, applied, valueResults, results). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (current, valueLabel, menu, values, reading, presets, answered, drafting, column, direction, applied, valueResults, results). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -879,6 +887,11 @@
           "name": "reading",
           "type": "FieldReading | null",
           "access": "read-write"
+        },
+        {
+          "name": "presets",
+          "type": "FieldReading['byPreset']",
+          "access": "write"
         },
         {
           "name": "answered",

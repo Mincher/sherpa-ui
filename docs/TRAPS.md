@@ -10819,6 +10819,9 @@ higher scope".
 The tooltip follows `data-superseded` and `data-applied-at` from `onChange`,
 because neither touches the VALUES and nothing else re-syncs it.
 
+
+**It must hear the pointer.** A greyed chip's `.body` and `.caret` take `pointer-events: none`, so a hover lands on `.chip`, which holds neither. While greyed, `.chip` is itself a `.sherpa-anchor`, so its tip opens. Will, TODO 585.
+
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter.spec.ts`
@@ -19530,21 +19533,36 @@ The face says "All" for the flag only: a list ticked by hand says its values.
 that get injected into the overall filter query. The filter query component
 should broadcast the changes out to all other UI components."* A scope's
 definition lists `presets` (`{ id, label, where }`), kept by the Query
-(`declarePresets`); each is a boolean chip that leads its scope. ON writes its
-conditions into each field's answer, as Advanced rows ANDed into every run of
-what the field holds — `(A or B) and P` — at the field's HOME (a View-held
-Health goes to the View), or held in its own scope where nothing holds it and it
-may; OFF takes them out, and a field left with only its own Simple picks is
-Simple again. So every control shows them: the Health chip reads `lessThan(60)`.
-With `commit`, the fields it moved apply at once — a scope that waits still
-waits for its Apply.
+(`declarePresets`); each is a boolean chip that leads its scope.
 
-**Its ON is read from the fields** (`presetOn`): every row it writes still in
-its field's answer, in force. Edit one away and it is off; the Switch off, it
-reads off; Reset clears the fields, so it is off. No `presets` flag is kept: an
-old stored one is a key a scope does not have, dropped and reported once (D4).
-Until 510 the Query kept `presets: { id: true }` and compile added the clauses
-apart (`presetClauses`) — the rows narrowed, and no chip said why.
+**Its rows sit beside the answer, never in it** — Will, TODOs 521, 526. ON puts its
+name and rows on each field's reading, as `byPreset`, at the field's HOME (a
+View-held Health goes to the View), or held in its own scope where nothing holds
+it and it may. `stateClause` ANDs them with the answer: `(A or B) and P`. The
+answer and its mode stay the reader's, so a preset never turns a field Advanced,
+and it cannot lose the reader's own picks. Until 521 ON wrote them into
+`conditions` and forced Advanced, so Enterprise trials flipped Plan and Status,
+and OFF had to work out which rows were its own.
+
+OFF takes them off. A field the preset put on the bar (`presetAdded`) goes with
+the last preset, unless the reader answered it meanwhile. A reader's answer
+replaces only the answer (`#keepPresets`), so it never turns a preset off; only
+the preset's own chip does, and Reset, which clears them. A saved filter replaces
+the reading whole, so it replaces these too.
+
+**Its ON is read from the fields** (`presetOn`): its rows on every field it names,
+in force. The Switch off, it reads off. A View whose own filters happen to match a
+preset does not turn it on. No `presets` flag is kept: an old stored one is a key
+a scope does not have, dropped and reported once (D4).
+
+**Every control reads `byPreset`, so toolbar and panel agree.** A chip wears
+`data-by-preset`, the preset's names: on, blue (the `info` pin), and its tip says
+"On by the preset ‹name›." Its face reads the rows where the reader has no answer
+of their own. In a panel section a value a preset picks is its own value chip in
+blue, and a row no value says (`lessThan(60)`, `!equals(churned)`) gets a value
+chip too; both refuse a press (Will: B). In a menu the row is ticked, refused and
+says why; `NON_VALUE_ROWS` leaves it out of the menu's values, so it is never read
+back as the reader's. A grid heading tells its chip through `chip.presets`.
 
 The walk counts each preset ON first in its scope, with its own clause
 (`presetClause`), narrowing nothing — its rows are in its fields' steps.
@@ -19556,6 +19574,7 @@ preset on the bar (482); the panel heads them "Presets" (a word in the
 toolbar's markup), stacked in the value column, or side by side under the
 heading. The held fields that 452 called "presets" are `own` now.
 
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/query-context.ts`

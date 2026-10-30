@@ -764,6 +764,8 @@ export class SherpaDataGrid extends SherpaElement {
     else chip.removeAttribute('data-applied-at');
     menu.toggleAttribute('data-readonly', superseded);
     chip.setAttribute('aria-label', `Filter ${def.label}`);
+    // A preset holds it: it says so, as a bar's chip does. Will, TODO 521
+    (chip as SherpaQuickFilter).presets = held?.byPreset;
     // Its values, its ends, its days — told only when they moved, so the search text stays.
     const items = this.#columnItems(def.options ?? [], held);
     const itemsKey = JSON.stringify(items.map((it) => [it.value, it.label]));
@@ -2586,8 +2588,8 @@ function isRows(reading: FieldReading): FieldCondition[] {
   return readingRows(reading).filter((r) => r.op === 'eq');
 }
 
-/** Does a reading hold ANY answer — a tick, typed text or a row — in either mode? */
+/** Does a reading hold ANY answer — a tick, typed text or a row, in either mode, or a preset's? */
 function answersAnything(reading: FieldReading): boolean {
   return (reading.picked ?? []).length > 0 || (reading.text ?? '').trim() !== ''
-    || readingRows(reading).length > 0;
+    || readingRows(reading).length > 0 || Object.keys(reading.byPreset ?? {}).length > 0;
 }

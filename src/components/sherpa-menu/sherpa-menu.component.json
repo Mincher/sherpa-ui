@@ -1586,7 +1586,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (values, mode, reading, conditions, op, conditionValue, open, dirty, itemData, present, offered, all). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (values, mode, reading, conditions, op, conditionValue, open, dirty, itemData, present, heldByPreset, offered, all). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -1891,6 +1891,11 @@
           "name": "present",
           "type": "readonly string[] | null",
           "access": "read-write"
+        },
+        {
+          "name": "heldByPreset",
+          "type": "ReadonlyMap<string, string>",
+          "access": "write"
         },
         {
           "name": "offered",

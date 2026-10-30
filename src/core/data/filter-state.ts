@@ -32,10 +32,7 @@
  * - modeOf — which answer a reading puts in force: its `mode`, else Advanced where rows answer
  * - rowsFromPicks — Simple's answer as Advanced's rows, for a mode switch to carry over
  * - asRows — A reading as condition rows — the answer it puts in force.
- * - sameRow — Two rows say the same thing: op, typed text, unit and picks.
- * - withRows — A field's answer with these rows ANDed into every run, in force.
- * - withoutRows — …and without them; only its own picks left, Simple again; nothing, null.
- * - holdsRows — Does this answer hold every one of these rows, in force?
+ * - withPreset — A reading with one preset's rows on it, or, with none, off it.
  * - fieldState — work out one field's whole state — the only place that decides it
  * - stateClause — One field's state as a ready `FilterClause`, or `undefined`.
  * - readingClause — a reading as a clause, for a control holding its own field facts
@@ -87,6 +84,8 @@ export interface FilterState {
   /** What a reader calls the field. */
   label: string;
   fieldState: FieldState;
+  /** Each preset on's rows, apart from the answer's `rows`. TODO 521 */
+  heldRows?: readonly (readonly FieldCondition[])[];
   /** The condition. `eq` unless a reader picked another. */
   op: FilterOp;
   /** What was TYPED, for a condition that takes text rather than a pick. */
@@ -208,6 +207,12 @@ export interface FieldReading {
   /** EVERY value ticked, on purpose — Select all on, or a list that starts so —
    *  whatever values come: no filter. Will, TODO 489 · TRAP T-all-is-an-answer */
   all?: boolean;
+  /** What each PRESET on holds of this field, by its id: its name and its rows,
+   *  ANDed with the answer. The answer and its mode stay the reader's. Will,
+   *  TODO 521 · TRAP T-a-preset-is-its-own-part */
+  byPreset?: Readonly<Record<string, { label: string; rows: readonly FieldCondition[] }>>;
+  /** A preset on put this field on its bar: it goes with the last. Will, TODO 526 */
+  presetAdded?: boolean;
 }
 
 /** One row of a multi-condition filter. */
@@ -324,56 +329,14 @@ export function asRows(reading: FieldReading | undefined, type?: 'number' | 'dat
   return rowsFromPicks(type, reading) ?? [];
 }
 
-/** Two rows say the same thing: op, typed text, unit and picks — never their join. */
-export function sameRow(a: FieldCondition, b: FieldCondition): boolean {
-  const picks = (r: FieldCondition): string => JSON.stringify([...(r.picked ?? [])].map(String).sort());
-  return a.op === b.op && (a.text ?? '').trim() === (b.text ?? '').trim() && (a.unit ?? '') === (b.unit ?? '') && picks(a) === picks(b);
-}
-
-/** Rows split at each `or`: `A or B and C` is [[A], [B, C]]. */
-function runsOf(rows: readonly FieldCondition[]): FieldCondition[][] {
-  const runs: FieldCondition[][] = [];
-  for (const row of rows) {
-    if (!runs.length || row.join === 'or') runs.push([row]);
-    else runs[runs.length - 1]!.push(row);
-  }
-  return runs;
-}
-
-/** Runs back as rows: each run's first `or`, the rest `and`, the very first none. */
-function rowsOfRuns(runs: readonly (readonly FieldCondition[])[]): FieldCondition[] {
-  return runs.flatMap((run, i) => run.map(({ join: _join, ...row }, j) => (
-    i === 0 && j === 0 ? row : { ...row, join: j === 0 ? 'or' as const : 'and' as const })));
-}
-
-/** A field's answer with these rows ANDed into EVERY run — `(A or B) and P` —
- *  in force, as Advanced rows; its Simple picks are kept for a switch back. */
-export function withRows(reading: FieldReading | undefined, rows: readonly FieldCondition[], type?: 'number' | 'date'): FieldReading {
-  const own = asRows(reading, type);
-  const { suspended: _off, all: _all, ...base } = reading ?? {};
-  const runs = own.length ? runsOf(own) : [[]];
-  return { ...base, conditions: rowsOfRuns(runs.map((run) => [...run, ...rows])), mode: 'advanced' };
-}
-
-/** …and without them: each row equal to one of `rows` goes, and a run left empty
- *  with it. Only its own Simple picks left: Simple again. Nothing left: null. */
-export function withoutRows(reading: FieldReading, rows: readonly FieldCondition[], type?: 'number' | 'date'): FieldReading | null {
-  const runs = runsOf(readingRows(reading))
-    .map((run) => run.filter((row) => !rows.some((one) => sameRow(row, one))))
-    .filter((run) => run.length);
-  const left = rowsOfRuns(runs);
-  const { conditions: _rows, mode: _mode, ...base } = reading;
-  const picks = (base.picked ?? []).length ? asRows({ ...base, mode: 'simple' }, type) : [];
-  if (!left.length) return picks.length ? { ...base, mode: 'simple' } : null;
-  if (picks.length === left.length && picks.every((row, i) => sameRow(row, left[i]!))) return { ...base, mode: 'simple' };
-  return { ...base, conditions: left, mode: 'advanced' };
-}
-
-/** Does this answer hold every one of these rows, in force? */
-export function holdsRows(reading: FieldReading | undefined, rows: readonly FieldCondition[]): boolean {
-  if (!reading || reading.suspended || modeOf(reading) !== 'advanced') return false;
-  const own = readingRows(reading);
-  return rows.every((one) => own.some((row) => sameRow(row, one)));
+/** A reading with one preset's rows on it, or, with none, off it. Off, a field a
+ *  preset put on its bar forgets that with the last preset. TODO 521, 526 */
+export function withPreset(reading: FieldReading | undefined, id: string, preset: { label: string; rows: readonly FieldCondition[] } | null): FieldReading {
+  const { [id]: _was, ...others } = reading?.byPreset ?? {};
+  const byPreset = preset ? { ...others, [id]: preset } : others;
+  // A Switch off stops every answer; a preset turned on is in force.
+  const { byPreset: _old, suspended, ...base } = reading ?? {};
+  return { ...base, ...(suspended && !preset ? { suspended } : {}), ...(Object.keys(byPreset).length ? { byPreset } : {}) };
 }
 
 /**
@@ -468,11 +431,12 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
       : takesText ? [{ op, text }]
         : [{ op: range && ends.length >= 2 ? 'between' : op, picked: ends }];
   const advanced = mode === 'advanced' || op !== DEFAULT_OP;
+  const heldRows = Object.values(reading.byPreset ?? {}).map((p) => p.rows);
 
   return {
     field: facts.field,
     label: facts.label ?? facts.field,
-    fieldState: !rows.length ? 'off' : reading.suspended ? 'suspended' : 'active',
+    fieldState: !rows.length && !heldRows.length ? 'off' : reading.suspended ? 'suspended' : 'active',
     op,
     text,
     conditions,
@@ -485,6 +449,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
     values,
     condition: !rows.length ? null : advanced ? 'advanced' : 'simple',
     rows,
+    ...(heldRows.length ? { heldRows } : {}),
     ...(every ? { all: true } : {}),
   };
 }
@@ -499,7 +464,9 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
  */
 export function stateClause(state: FilterState): Filter | undefined {
   if (state.fieldState !== 'active') return undefined;
-  return chainRows(state);
+  // Each preset's rows AND with the answer: `(A or B) and P`. TRAP T-a-preset-is-its-own-part
+  const all = [state.rows, ...state.heldRows ?? []].map((rows) => chainRows({ ...state, rows })).filter((f): f is Filter => !!f);
+  return all.length > 1 ? (['and', ...all] as Filter) : all[0];
 }
 
 /**

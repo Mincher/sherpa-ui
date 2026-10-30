@@ -58,6 +58,42 @@ test('a toolbar chip says a number, a range and a date — and its matches, on o
   expect(r.described).toBe('Pro, Free - 1 match');
 });
 
+test('a greyed chip still says why on hover: held above, or off; its buttons hear no pointer, its box does (Will, TODO 585)', async ({ page }) => {
+  await page.evaluate(async () => {
+    await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
+      { id: 'plan', label: 'Plan', options: [{ value: 'Pro', label: 'Pro' }], active: true },
+    ], { style: 'inline-size: 1200px' });
+    await window.__settled();
+  });
+  const chip = page.locator('sherpa-quick-filter-toolbar .chip[data-id="plan"]');
+  const said = async (): Promise<{ open: boolean; text: string }> => {
+    const box = (await chip.locator('.body').first().boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.evaluate(() => window.__settled());
+    const out = await chip.evaluate((c) => {
+      const tip = c.shadowRoot!.querySelector<HTMLElement>('.tip')!;
+      return { open: tip.matches(':popover-open'), text: (tip.textContent ?? '').trim() };
+    });
+    await page.mouse.move(0, 0);
+    await page.evaluate(() => window.__settled());
+    return out;
+  };
+  await chip.evaluate((c) => {
+    c.setAttribute('data-superseded', '');
+    c.setAttribute('data-applied-at', 'View Context');
+  });
+  expect(await said()).toEqual({ open: true, text: 'Filter moved to View Context scope.' });
+  await chip.evaluate((c) => {
+    c.removeAttribute('data-superseded');
+    c.setAttribute('disabled', '');
+  });
+  expect((await said()).open).toBe(true);
+  // Gone when the pointer leaves, and a chip back in use opens its own as ever.
+  expect(await chip.evaluate((c) => c.shadowRoot!.querySelector<HTMLElement>('.tip')!.matches(':popover-open'))).toBe(false);
+  await chip.evaluate((c) => c.removeAttribute('disabled'));
+  expect(await chip.evaluate((c) => c.shadowRoot!.querySelector('.chip')!.classList.contains('sherpa-anchor'))).toBe(false);
+});
+
 test('a Sort chip says its column and which way; Group its column', async ({ page }) => {
   const r = await page.evaluate(async (wait) => {
     const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [], { style: 'inline-size: 1200px' });

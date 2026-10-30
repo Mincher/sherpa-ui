@@ -88,7 +88,7 @@ import {
 } from './query-edits.js';
 import { readingsOf, type Where } from './where.js';
 import { valueKey, type SortDirection, type SortSpec } from './store.js';
-import { asRows, holdsRows, modeOf, withRows, withoutRows, type FieldReading, type RuledOut } from './filter-state.js';
+import { asRows, modeOf, withPreset, type FieldReading, type RuledOut } from './filter-state.js';
 import { report } from './report.js';
 
 /** What the context did, as each member hears it: the follow-ups are the member's. */
@@ -576,7 +576,7 @@ export class QueryContext extends EventTarget {
   /** Write a field's answer, telling no one. */
   #put(field: string, picked: readonly unknown[], reading: FieldReading = {}): void {
     // Its OWN copy: a caller that edits its object after changes nothing here.
-    const next: FieldReading = copyReading(this.#raw(field, picked, reading));
+    const next: FieldReading = copyReading(this.#keepPresets(field, this.#raw(field, picked, reading)));
     /* CONDITIONS count. A field answered only by rows has no picked values and
        no typed text. TRAP T-many-conditions-are-one-reading */
     setReading(this.#live.draft, field, readingAnswered(next) ? next : undefined);
@@ -836,7 +836,7 @@ export class QueryContext extends EventTarget {
     const fresh = !!reading && scope !== VIEW && !this.scopeOf(field) && this.canHold(scope, field);
     if (fresh) this.hold(scope, [...this.scope(scope), field]);
     const picked = reading?.picked ?? [];
-    const next = this.#raw(field, picked, reading ?? {});
+    const next = this.#keepPresets(field, this.#raw(field, picked, reading ?? {}));
     if (!sameReading(readingOf(this.#live.draft, field), readingAnswered(next) ? next : undefined)) this.#select(field, picked, reading ?? {});
     if (fresh) this.#tell({ kind: 'bars', scope });
   }
@@ -877,15 +877,18 @@ export class QueryContext extends EventTarget {
     return [...this.#presets.get(scope) ?? []].map(([id, p]) => ({ id, label: p.label, readings: p.readings }));
   }
 
-  /** Is this preset ON: every row it writes still in its field's answer, in force —
-   *  the draft's, or with `applied`, what the rows are under. TODO 510 */
+  /** Is this preset ON: its rows held on every field it names, in force — the
+   *  draft's, or with `applied`, what the rows are under. TODOs 510, 521 */
   presetOn(scope: string, id: string, applied = false): boolean {
     const preset = this.#presets.get(scope)?.get(id);
     if (!preset) return false;
     const query = applied ? this.#live.applied : this.#live.draft;
     const entries = Object.entries(preset.readings).filter(([, given]) => asRows(given).length);
-    // Each at its field's home, where setReading writes it.
-    return entries.length > 0 && entries.every(([field, given]) => holdsRows(readingOf(query, field), asRows(given)));
+    // Each at its field's home, where setPreset writes it.
+    return entries.length > 0 && entries.every(([field]) => {
+      const held = readingOf(query, field);
+      return !!held?.byPreset?.[id] && !held.suspended;
+    });
   }
 
   /** The scopes whose presets write this field: its answer moving moves their on. */
@@ -894,11 +897,11 @@ export class QueryContext extends EventTarget {
   }
 
   /**
-   * setPreset(scope, id, on) — a preset ON writes its conditions into each field's
-   * answer, at the field's home (or held here), ANDed with what it holds; OFF
-   * takes them out. Its on is read from the fields — editing one away turns it
-   * off. With `commit`, the fields it moved are applied at once. Will, TODO 510 (A)
-   * TRAP T-a-preset-is-its-own-part
+   * setPreset(scope, id, on) — a preset ON puts its conditions on each field, at
+   * the field's home (or held here), ANDed with what it holds; the field's answer
+   * and mode stay the reader's. OFF takes them off, and a field it put on the bar
+   * with them. Its on is read from the fields. With `commit`, the fields it moved
+   * are applied at once. Will, TODOs 510 (A), 521, 526 · TRAP T-a-preset-is-its-own-part
    */
   setPreset(scope: string, id: string, on: boolean, commit = false): void {
     const preset = this.#presets.get(scope)?.get(id);
@@ -908,11 +911,21 @@ export class QueryContext extends EventTarget {
       for (const [field, given] of Object.entries(preset.readings)) {
         const rows = asRows(given);
         if (!rows.length) continue;
-        // At its home — held here, where nothing holds it and this scope may.
-        const home = this.scopeOf(field) ?? scope;
         const now = readingOf(this.#live.draft, field);
-        if (!on && !now) continue;
-        this.setReading(home, field, on ? withRows(now, rows) : withoutRows(now!, rows));
+        if (!on && !now?.byPreset?.[id]) continue;
+        // At its home — held here, where nothing holds it and this scope may.
+        const fresh = on && scope !== VIEW && !this.scopeOf(field) && this.canHold(scope, field);
+        if (fresh) this.hold(scope, [...this.scope(scope), field]);
+        const home = this.scopeOf(field) ?? scope;
+        const next = withPreset(now, id, on ? { label: preset.label, rows } : null);
+        // Off, with no other preset and no answer of the reader's: its chip goes too.
+        const { presetAdded, ...kept } = next;
+        const gone = !on && !readingAnswered(kept);
+        const added = fresh || !!presetAdded;
+        if (gone && added) this.hold(home, this.scope(home).filter((f) => f !== field));
+        setReading(this.#live.draft, field, readingAnswered(kept) ? { ...kept, ...(added && kept.byPreset ? { presetAdded: true } : {}) } : undefined);
+        this.#tell({ kind: 'select', field });
+        if (fresh || (gone && added)) this.#tell({ kind: 'bars', scope: home });
         moved.push(field);
       }
       if (commit) for (const field of moved) this.commit({ field });
@@ -930,6 +943,13 @@ export class QueryContext extends EventTarget {
         const s = this.#live.draft.scopes[id];
         if (!s) continue;
         if (s.suspended) s.suspended = { fields: [] };
+        // A preset goes with the rest, and a field it put on the bar. TODO 526
+        for (const [field, reading] of Object.entries(s.readings)) {
+          if (!reading.byPreset) continue;
+          const { byPreset: _rows, presetAdded, ...own } = reading;
+          s.readings[field] = own;
+          if (presetAdded && !readingAnswered(own)) this.hold(id, this.scope(id).filter((f) => f !== field));
+        }
         for (const field of Object.keys(s.readings)) {
           if (options.carry && this.#knows(field)?.carriesOver(field)) continue;
           const start = this.#starts.get(id)?.get(field);
@@ -1261,6 +1281,14 @@ export class QueryContext extends EventTarget {
       if (sortSuspended) s.sortSuspended = { ...sortSuspended };
       if (search) s.search = search;
     }
+  }
+
+  /** A reader's answer replaces the answer, never what presets hold of the field. TODO 521 */
+  #keepPresets(field: string, next: FieldReading): FieldReading {
+    const { byPreset, presetAdded } = readingOf(this.#live.draft, field) ?? {};
+    if (!byPreset) return next;
+    // An answer emptied leaves the presets', in force.
+    return { ...(readingAnswered(next) ? next : {}), byPreset, ...(presetAdded ? { presetAdded } : {}) };
   }
 
   /** A reading's answer, its picks as the values the rows hold: a control hands

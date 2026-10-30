@@ -7,6 +7,7 @@
  *
  * Map:
  * - movedTo — What a filter another scope holds says: `Filter moved to View scope.`
+ * - onByPreset — What a chip or a value a preset on holds says.
  * - RULED_OUT — What a value the filters before it rule out says, on its chip and its menu row
  * - SET_ASIDE — What a PICKED value a later filter rules out says
  * - NOT_AVAILABLE — What a disabled chip says
@@ -31,6 +32,11 @@
 export function movedTo(scope?: string | null): string {
   const name = (scope ?? '').replace(/\s+filters$/i, '').trim();
   return `Filter moved to ${name || 'a higher'} scope.`;
+}
+
+/** What a chip or a value a preset on holds says. Will, TODO 521 */
+export function onByPreset(names: string): string {
+  return `On by the preset ${names}.`;
 }
 
 /** What a value the filters before it rule out says, on its chip and its menu
@@ -82,7 +88,7 @@ export const ORGANISE_ICONS = {
  *
  * TRAP T-non-value-rows-is-one-selector
  */
-export const NON_VALUE_ROWS = '.qf-all, .qf-none';
+export const NON_VALUE_ROWS = '.qf-all, .qf-none, [data-by-preset]';
 
 
 /**

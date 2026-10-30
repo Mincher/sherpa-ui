@@ -27,6 +27,7 @@ One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. 
 |---|---|---|---|
 | `aria-label` | text |  | the name of a chip that shows no label. Its tooltip says it. TRAP T-a-chip-says-its-own-answer |
 | `data-applied-at` | text |  |  |
+| `data-by-preset` | text |  |  |
 | `data-column` | text |  | which column a group or sort chip arranges by, for a host that draws the choice without a menu. A menu, where there is one, is the answer. |
 | `data-condition` | `simple` `advanced` |  | written BY the chip: simple \| advanced — which condition it holds, absent when it holds none. No colour follows it: an Advanced chip is active, as a Simple one. TRAP T-a-conditioned-chip-reads-as-active |
 | `data-count` | text |  | written BY the chip: its RESULTS, the rows its answer matches, once its host tells it `results` — never a count of its picks. TODOs 60, 123 |
@@ -71,6 +72,7 @@ One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. 
 | `menu` | `SherpaMenu \| null` | read only |  |
 | `values` | `string[]` | read and write |  |
 | `reading` | `FieldReading \| null` | read and write |  |
+| `presets` | `FieldReading['byPreset']` | read and write |  |
 | `answered` | `boolean` | read only |  |
 | `drafting` | `boolean` | read only |  |
 | `column` | `string` | read only |  |

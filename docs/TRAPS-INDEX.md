@@ -368,7 +368,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-panel-builds-its-own-menus](TRAPS.md#t-a-panel-builds-its-own-menus) — filter-def, filter-menu
 - [T-a-parent-pick-is-the-parent](TRAPS.md#t-a-parent-pick-is-the-parent) — quick-filter
 - [T-a-pending-chip-reads-as-a-warning](TRAPS.md#t-a-pending-chip-reads-as-a-warning) — filter-host, quick-filter, quick-filter-toolbar
-- [T-a-preset-is-its-own-part](TRAPS.md#t-a-preset-is-its-own-part) — filter-def, quick-filter-toolbar
+- [T-a-preset-is-its-own-part](TRAPS.md#t-a-preset-is-its-own-part) — filter-def, quick-filter, quick-filter-toolbar
 - [T-a-rebuild-keeps-every-answer](TRAPS.md#t-a-rebuild-keeps-every-answer) — filter-host, quick-filter-toolbar
 - [T-a-rebuilt-bar-reads-empty-until-its-menus-stamp](TRAPS.md#t-a-rebuilt-bar-reads-empty-until-its-menus-stamp) — quick-filter, quick-filter-toolbar
 - [T-a-rebuilt-row-reads-empty-for-a-tick](TRAPS.md#t-a-rebuilt-row-reads-empty-for-a-tick) — filter-host, quick-filter, quick-filter-toolbar

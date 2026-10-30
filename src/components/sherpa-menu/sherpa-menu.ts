@@ -22,7 +22,7 @@ import {
 import {
   goesFromList, modeOf, readingRows, rowAnswered, rowsFromPicks, ruleOut, type ConditionType, type FieldCondition, type FieldReading,
 } from '../../core/data/filter-state.js';
-import { NON_VALUE_ROWS, RULED_OUT, SET_ASIDE } from '../../core/ui/shared-constants.js';
+import { NON_VALUE_ROWS, RULED_OUT, SET_ASIDE, onByPreset } from '../../core/ui/shared-constants.js';
 import { hiddenRows } from '../../core/ui/tree-rows.js';
 import type { Threshold } from '../../core/data/threshold.js';
 import { TreePicks } from '../../core/ui/tree-picks.js';
@@ -1439,6 +1439,31 @@ export class SherpaMenu extends SherpaElement {
   /** What the filters before it leave; `null` is everything. */
   #present: Set<string> | null = null;
 
+  /** The values presets on hold, each with who: ticked, refused, and saying why;
+   *  no answer of the reader's, so its values leave them out. Will, TODO 521 */
+  set heldByPreset(held: ReadonlyMap<string, string>) {
+    this.#heldBy = held;
+    this.#markHeld();
+  }
+  /** Each value presets on hold, with who. */
+  #heldBy: ReadonlyMap<string, string> = new Map();
+
+  /** Mark each row a preset holds, and let go of each it no longer does. */
+  #markHeld(): void {
+    for (const row of this.querySelectorAll<HTMLElement>('.menu-row')) {
+      const box = row.querySelector<HTMLInputElement>(':scope > input');
+      if (!box) continue;
+      const by = this.#heldBy.get(box.value);
+      const was = row.hasAttribute('data-by-preset');
+      if (!by && !was) continue;
+      row.toggleAttribute('data-by-preset', !!by);
+      box.checked = !!by;
+      box.disabled = !!by;
+      if (by) row.setAttribute('title', onByPreset(by));
+      else row.removeAttribute('title');
+    }
+  }
+
   /** What a serial set's chain OFFERS; a row it does not is removed, unless
    *  ticked. `null` is everything. TRAP T-a-filter-set-groups-or-chains */
   set offered(values: readonly string[] | null) {
@@ -1456,6 +1481,7 @@ export class SherpaMenu extends SherpaElement {
    *  A row the chain does not offer goes, unless it is ticked — and, hiding
    *  unmatched, so does one they rule out. */
   #markPresent(): void {
+    this.#markHeld();
     const given = new Map(this.#items.map((i) => [i.value, i]));
     const hides = this.hasAttribute('data-hide-unavailable');
     const limit = ruleOut(this.#present, this.#offered);

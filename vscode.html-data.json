@@ -3052,6 +3052,9 @@
           "name": "data-applied-at"
         },
         {
+          "name": "data-by-preset"
+        },
+        {
           "name": "data-column",
           "description": "which column a group or sort chip arranges by, for a host that draws the choice without a menu. A menu, where there is one, is the answer."
         },

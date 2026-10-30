@@ -1,9 +1,9 @@
 /**
  * A PRESET IS A WRAPPER ROUND ITS FIELDS' CONDITIONS — Will, TODOs 493 (A), 510
- * (A). A scope's definition names its presets: the app's own conditions, over
- * several fields, each a boolean chip. On, it WRITES them into each field's
- * answer, ANDed with what the field holds, so every control shows them; off, it
- * takes them out. It reads on while every one is still there.
+ * (A), 521, 526. A scope's definition names its presets: the app's own conditions,
+ * over several fields, each a boolean chip. On, it puts them on each field, apart
+ * from its answer and ANDed with it, so every control shows them and the field
+ * keeps its mode; off, it takes them off, and any chip it added.
  *
  *   node --test test/unit/a-preset-is-its-own-part.test.mjs
  *
@@ -59,13 +59,15 @@ test('a preset leads its scope as a boolean chip, off at the start', async () =>
   assert.deepEqual(ids(source), [1, 2, 3, 4]);
 });
 
-test('on, it writes its conditions into the fields — held here, as chips — and off takes them out', async () => {
+test('on, it puts its conditions on the fields — held here, as chips, never Advanced — and off takes them, and those chips, away', async () => {
   const source = await page();
   await act(source, () => source.query.setPreset('data', 'high-risk', true));
   assert.deepEqual(ids(source), [1, 4]);
   assert.equal(on(source), true);
-  assert.deepEqual(readings(source).health.conditions, [{ op: 'lt', text: '60' }]);
-  assert.deepEqual(readings(source).tickets.conditions, [{ op: 'gt', text: '0' }]);
+  assert.deepEqual(readings(source).health.byPreset, { 'high-risk': { label: 'High risk', rows: [{ op: 'lt', text: '60' }] } });
+  assert.deepEqual(readings(source).tickets.byPreset['high-risk'].rows, [{ op: 'gt', text: '0' }]);
+  assert.equal(readings(source).health.mode, undefined);
+  assert.equal(readings(source).health.conditions, undefined);
   assert.deepEqual(source.describe('data').filters.map((f) => f.id), ['preset:high-risk', 'plan', 'health', 'tickets']);
   // A field's own answer narrows beside them.
   await act(source, () => source.query.setReading('data', 'plan', { picked: ['free'] }));
@@ -75,6 +77,8 @@ test('on, it writes its conditions into the fields — held here, as chips — a
   assert.equal(on(source), false);
   assert.equal(readings(source).health, undefined);
   assert.equal(readings(source).tickets, undefined);
+  // The chips it added go with it; the page's own stays.
+  assert.deepEqual(source.describe('data').filters.map((f) => f.id), ['preset:high-risk', 'plan']);
 });
 
 test('its rows are ANDed with a field\'s own; off, the field\'s own is all that is left', async () => {
@@ -83,18 +87,26 @@ test('its rows are ANDed with a field\'s own; off, the field\'s own is all that 
   assert.deepEqual(ids(source), [1, 3]);
   await act(source, () => source.query.setPreset('data', 'high-risk', true));
   assert.deepEqual(ids(source), [1]);
-  assert.deepEqual(readings(source).tickets.conditions, [{ op: 'gt', text: '1' }, { op: 'gt', text: '0', join: 'and' }]);
+  // The reader's answer and its mode stay as they were, beside the preset's.
+  assert.deepEqual(readings(source).tickets.conditions, undefined);
+  assert.equal(readings(source).tickets.text, '1');
+  assert.equal(readings(source).tickets.mode, undefined);
   await act(source, () => source.query.setPreset('data', 'high-risk', false));
   assert.deepEqual(ids(source), [1, 3]);
+  assert.equal(readings(source).tickets.text, '1');
+  assert.equal(readings(source).tickets.byPreset, undefined);
+  assert.ok(source.describe('data').filters.some((f) => f.id === 'tickets'));
 });
 
-test('a row of its edited away turns it off; the Switch shows it off while the fields are off', async () => {
+test('a reader\'s answer on its field, or a clear of it, leaves it on; the Switch shows it off while the fields are off; Reset takes it off', async () => {
   const source = await page();
   await act(source, () => source.query.setPreset('data', 'high-risk', true));
   await act(source, () => source.query.setReading('data', 'health', { conditions: [{ op: 'lt', text: '50' }], mode: 'advanced' }));
-  assert.equal(on(source), false);
-  await act(source, () => source.query.setPreset('data', 'high-risk', true));
   assert.equal(on(source), true);
+  assert.deepEqual(ids(source), [1]);
+  await act(source, () => source.query.setReading('data', 'health', null));
+  assert.equal(on(source), true);
+  assert.deepEqual(ids(source), [1, 4]);
   source.query.suspend('data', null, true);
   await source.load();
   await settle();

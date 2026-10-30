@@ -9,10 +9,10 @@ import {
   DEFAULT_OP, OP_TAKES, valueKey, type FilterOp, type SortDirection,
 } from '../../core/data/store.js';
 import {
-  fieldState, readingRows, rowAnswered, type FieldReading, type FilterState,
+  fieldState, readingRows, rowAnswered, type FieldCondition, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
-import { countSaid, filterFace } from '../../core/data/filter-face.js';
-import { NON_VALUE_ROWS, NOT_AVAILABLE, ORGANISE_ICONS, RULED_OUT, SET_ASIDE, UNAPPLIED, UNFETCHED, movedTo, unusedHere } from '../../core/ui/shared-constants.js';
+import { countSaid, filterFace, spellConditions } from '../../core/data/filter-face.js';
+import { NON_VALUE_ROWS, NOT_AVAILABLE, ORGANISE_ICONS, RULED_OUT, SET_ASIDE, UNAPPLIED, UNFETCHED, movedTo, onByPreset, unusedHere } from '../../core/ui/shared-constants.js';
 import { arranges, FILTER_KINDS, type FilterKind } from '../../core/ui/filter-kind.js';
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 import { paintSwatch } from '../../core/ui/chart-parts.js';
@@ -57,6 +57,8 @@ export class SherpaQuickFilter extends SherpaElement {
        it keeps its value and comes back when the view lets the field go.
        TRAP T-a-superseded-chip-suspends-it-is-never-removed */
     'data-superseded': { type: 'boolean', kind: 'style' },
+    /* The presets on that hold this field or value, by name: blue, and it says so. Will, TODO 521 */
+    'data-by-preset': { type: 'string', kind: 'behaviour' },
     // A section whose every value its host hides says why. Will, TODO 517
     'data-spent': { type: 'boolean', kind: 'style' },
     'data-unused': { type: 'boolean', kind: 'behaviour' },
@@ -116,6 +118,7 @@ export class SherpaQuickFilter extends SherpaElement {
   static override observed = ['aria-label', 'disabled'];
 
   override onRender(): void {
+    this.#syncGrey();
     this.#syncText();
     this.#drawLabel();
     this.#drawMoved();
@@ -207,6 +210,7 @@ export class SherpaQuickFilter extends SherpaElement {
     }
     if (['data-current', 'data-readonly', 'data-type', 'data-persistent', 'aria-label'].includes(name)) this.#syncPressed();
     // A greyed chip says why. Will, TODO 176.
+    if (name === 'data-unavailable' || name === 'disabled' || name === 'data-superseded' || name === 'data-current') this.#syncGrey();
     if (name === 'data-unavailable' || name === 'disabled' || name === 'data-unused') return this.#writeTip();
     /* THE CHIP DRAWS ITSELF. A host says what the state IS — on, which way,
        which column — and never paints the caret or the glyph for it. Two hosts
@@ -221,6 +225,7 @@ export class SherpaQuickFilter extends SherpaElement {
     /* The tooltip says WHY a chip is off, so it must follow the two attributes
        that decide that — neither touches the values, so nothing else re-syncs
        it. TRAP T-an-inactive-chip-says-where-its-filter-went */
+    else if (name === 'data-by-preset') this.#writeTip();
     else if (name === 'data-superseded' || name === 'data-applied-at') {
       this.#syncCountTip(this.menu?.values ?? []);
       this.#drawMoved();
@@ -236,6 +241,12 @@ export class SherpaQuickFilter extends SherpaElement {
     if (!moved) return;
     moved.textContent = this.hasAttribute('data-superseded') ? movedTo(this.dataset['appliedAt'])
       : this.hasAttribute('data-spent') ? RULED_OUT : '';
+  }
+
+  /** A greyed chip's buttons hear no pointer: its box shows its tip. Will, TODO 585 */
+  #syncGrey(): void {
+    this.$('.chip')?.classList.toggle('sherpa-anchor', this.hasAttribute('data-superseded') || this.hasAttribute('disabled')
+      || (this.hasAttribute('data-unavailable') && !this.hasAttribute('data-current')));
   }
 
   /** Give the swatch its series' hue and stroke — the legend's own paint. A
@@ -367,6 +378,54 @@ export class SherpaQuickFilter extends SherpaElement {
   #all = false;
 
   set reading(next: FieldReading) {
+    this.presets = next.byPreset;
+    this.#takeReading(next);
+    // A preset holds it on, whatever the reader's own answer. TRAP T-a-preset-is-its-own-part
+    if (this.#presets.length && !next.suspended) this.current = true;
+    this.#syncValues();
+    this.refresh();
+  }
+
+  /** What presets on hold of this field: it says so, in blue. A host that paints
+   *  its menu itself, a grid heading, says it here. Will, TODO 521 */
+  set presets(held: FieldReading['byPreset']) {
+    this.#presets = Object.values(held ?? {});
+    this.set('data-by-preset', this.#presets.map((p) => p.label).join(', ') || null);
+    const menu = this.#fieldMenu();
+    if (menu) menu.heldByPreset = this.#heldValues();
+  }
+  /** What each preset on holds of this field: its name and its rows. */
+  #presets: NonNullable<FieldReading['byPreset']>[string][] = [];
+
+  /** Each value a preset on picks, with who holds it. TODO 521 */
+  #heldValues(): Map<string, string> {
+    const held = new Map<string, string>();
+    for (const { label, rows } of this.#presets) {
+      for (const row of rows.filter((r) => r.op === DEFAULT_OP)) {
+        for (const value of row.picked ?? []) {
+          const key = valueKey(value);
+          held.set(key, [held.get(key), label].filter(Boolean).join(', '));
+        }
+      }
+    }
+    return held;
+  }
+
+  /** What the presets on hold, in words: their picks, or their conditions. */
+  #presetSaid(): string {
+    const rows = this.#presets.flatMap((p) => p.rows);
+    return rows.every((r) => r.op === DEFAULT_OP) ? [...this.#heldValues().keys()].join(', ') : this.#spell(rows);
+  }
+
+  /** Rows as an Advanced answer reads, for a field of this chip's kind. */
+  #spell(rows: readonly FieldCondition[]): string {
+    const body = this.#fieldMenu()?.dataset['body'];
+    const type = body === 'number' || body === 'date' ? { type: body as 'number' | 'date' } : {};
+    return spellConditions(fieldState({ field: this.dataset['id'] ?? '', ...type }, { conditions: rows, mode: 'advanced' }));
+  }
+
+  /** The reader's own answer, into the menu: both modes, each body by its own door. */
+  #takeReading(next: FieldReading): void {
     const menu = this.#fieldMenu();
     if (!menu) return;
     const body = menu.dataset['body'];
@@ -437,6 +496,7 @@ export class SherpaQuickFilter extends SherpaElement {
   clear(op: FilterOp = DEFAULT_OP): void {
     this.#off.clear();
     this.#all = false;
+    this.presets = undefined;
     /* GROUP or SORT: no column, and no way — FORGOTTEN, not written: the chip
        answers `asc` for one with none. TODO 424 · TRAP T-one-cycle-for-one-value */
     if (this.#arranges()) {
@@ -822,6 +882,9 @@ export class SherpaQuickFilter extends SherpaElement {
       const moved = movedTo(this.dataset['appliedAt']);
       return values ? `${moved} This chip holds ${values}.` : moved;
     }
+    // Why it is on, then what the reader's own answer adds. Will, TODO 521
+    const by = this.dataset['byPreset'];
+    if (by) return [onByPreset(by), this.#presets.length ? this.#presetSaid() : '', values].filter(Boolean).join(' ');
     return values;
   }
 
@@ -863,7 +926,7 @@ export class SherpaQuickFilter extends SherpaElement {
   /** A chip that answers a filter — not a selector, not an arrangement. Locked
    *  too: its host draws its answer, and it still says what that answer is. */
   #answersForItself(): boolean {
-    return !this.hasAttribute('data-persistent') && !this.#arranges();
+    return !this.hasAttribute('data-persistent') && !this.#arranges() && !this.hasAttribute('data-by-preset');
   }
 
   /**
@@ -1023,6 +1086,7 @@ export class SherpaQuickFilter extends SherpaElement {
     // What is APPLIED, told while the field waits: only a value its draft changed reads as pending. TODO 425
     const waiting = this.#applied != null;
     const was = new Set((this.#applied && !this.#applied.suspended ? this.#applied.picked ?? [] : []).map(valueKey));
+    const held = this.#heldValues();
     for (const item of tops) {
       const one = mine.get(item.value) ?? this.clone('template.value-chip-tpl');
       if (!one) return;
@@ -1033,12 +1097,34 @@ export class SherpaQuickFilter extends SherpaElement {
       // A chart's value leads with its series' swatch, as its legend does.
       if (item.swatch) one.dataset['swatch'] = String(item.swatch);
       const kids = [item.value, ...items.filter((k) => k.parent === item.value).map((k) => k.value)];
-      one.toggleAttribute('data-current', kids.some((k) => picked.has(k)));
+      one.toggleAttribute('data-current', held.has(item.value) || kids.some((k) => picked.has(k)));
+      one.toggleAttribute('data-by-preset', held.has(item.value));
+      if (held.has(item.value)) one.dataset['byPreset'] = held.get(item.value)!;
       one.toggleAttribute('data-pending', waiting && kids.some((k) => picked.has(k) !== was.has(k)));
       (one as SherpaQuickFilter).results = this.#valueResults?.[item.value] ?? null;
       this.#syncKids(one, item.value, items, picked);
       // In the menu's order: appending one already here moves it.
       this.append(one);
+    }
+    /* A preset's row no value says — a number's, or `not churned` — is a value chip
+       of its own, on and refused. Will, TODO 521 · TRAP T-a-preset-is-its-own-part */
+    if (this.dataset['layout'] === 'section') {
+      for (const { label, rows } of this.#presets) {
+        for (const row of rows) {
+          if (row.op === DEFAULT_OP && tops.some((t) => (row.picked ?? []).some((v) => valueKey(v) === t.value))) continue;
+          const said = this.#spell([row]);
+          const key = `preset:${label}:${said}`;
+          const one = mine.get(key) ?? this.clone('template.value-chip-tpl');
+          if (!one) return;
+          mine.delete(key);
+          one.dataset['value'] = key;
+          one.dataset['id'] = this.dataset['id'] ?? '';
+          one.setAttribute('data-label', said);
+          one.toggleAttribute('data-current', true);
+          one.dataset['byPreset'] = label;
+          this.append(one);
+        }
+      }
     }
     for (const gone of mine.values()) gone.remove();
     // A value of it waits: said on the section itself. TRAP T-each-field-can-apply-on-its-own
@@ -1121,6 +1207,8 @@ export class SherpaQuickFilter extends SherpaElement {
     const one = event.target as HTMLElement;
     if (one === this || one.parentElement !== this || !one.classList.contains('value')) return;
     event.stopPropagation();
+    // A preset holds it: only the preset's own chip lets it go. Will, TODO 521
+    if (one.hasAttribute('data-by-preset')) return;
     // Inactive is not interactive. TRAP T-a-ruled-out-value-is-greyed
     const menu = this.#fieldMenu();
     // …but one still ON may be let go. TODO 462
@@ -1226,7 +1314,7 @@ export class SherpaQuickFilter extends SherpaElement {
     this.set('data-label', field);
 
     const face = filterFace(this.#state(this.#orDefault(values)));
-    this.valueLabel = face.value;
+    this.valueLabel = face.value || (this.#presets.length ? this.#presetSaid() : '');
     this.#syncBadge();
   }
 

@@ -83,6 +83,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `dirty` | `boolean` | read only |  |
 | `itemData` | `Array<{ value: string; label: string; parent?: string; swatch?: number \| string }>` | read only |  |
 | `present` | `readonly string[] \| null` | read and write |  |
+| `heldByPreset` | `ReadonlyMap<string, string>` | read and write |  |
 | `offered` | `readonly string[] \| null` | read and write |  |
 | `all` | `boolean` | read and write |  |
 

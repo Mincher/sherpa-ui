@@ -502,7 +502,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // On the chip's own box, outside it: the View Context label. TODO 543
     if (!chip || chip.hasAttribute('data-persistent') || event.composedPath()[0] === chip) return null;
     const one = this.pathFind(event, '.value');
-    if (one?.parentElement === chip && one.dataset['value']) return { chip, value: one.dataset['value'] };
+    if (one?.parentElement === chip && one.dataset['value']) return one.dataset['value'].startsWith('preset:') ? null : { chip, value: one.dataset['value'] };
     const row = this.pathFind(event, '.menu-row');
     if (row) {
       const box = row.querySelector<HTMLInputElement>(':scope > input');
@@ -1083,7 +1083,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const field = this.#fieldOf(id);
     if (!(chip as SherpaQuickFilter).menu || chip.hasAttribute('data-superseded')) return;
     // A section's value chips are greyed too. TODO 425
-    const values = [...chip.querySelectorAll<HTMLElement>(':scope > .value')];
+    // What a preset holds is its own: no limit rules it out. TODO 521
+    const values = [...chip.querySelectorAll<HTMLElement>(':scope > .value:not([data-by-preset])')];
     limitField(values, [(chip as SherpaQuickFilter).menu],
       { present: this.#present[field] ?? null, offered: this.#offered[field] ?? null, hide: hidesUnmatched(this) });
     // Every value hidden: the section says why, not an empty row. Will, TODO 517

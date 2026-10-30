@@ -297,7 +297,7 @@ export function heldInView(query: Query): ReadonlySet<string> {
 
 // Every key of FieldReading, once: one added there and not here is a type error. TRAP T-both-answers-are-kept
 const READING_KEYS = Object.keys({
-  picked: 0, present: 0, op: 0, text: 0, conditions: 0, mode: 0, mirror: 0, range: 0, suspended: 0, off: 0, all: 0,
+  picked: 0, present: 0, op: 0, text: 0, conditions: 0, mode: 0, mirror: 0, range: 0, suspended: 0, off: 0, all: 0, byPreset: 0, presetAdded: 0,
 } satisfies Record<keyof FieldReading, 0>) as (keyof FieldReading)[];
 
 /** The ANSWER keys of a reading only — a bar's reading also carries its label
@@ -346,6 +346,7 @@ export function freezeReading(reading: FieldReading): FieldReading {
 export function readingAnswered(reading: FieldReading): boolean {
   // Picks kept OFF are an answer too: the Query keeps them (TODO 369); so is all (489).
   return (reading.picked ?? []).length > 0 || (reading.off ?? []).length > 0 || reading.all === true
+    || Object.keys(reading.byPreset ?? {}).length > 0
     || (reading.text ?? '').trim() !== ''
     || (reading.conditions ?? []).some((r) => (r.text ?? '').trim() !== '' || (r.picked ?? []).length > 0);
 }

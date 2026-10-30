@@ -5526,6 +5526,13 @@
             },
             {
               "kind": "field",
+              "name": "heldByPreset",
+              "type": {
+                "text": "ReadonlyMap<string, string>"
+              }
+            },
+            {
+              "kind": "field",
               "name": "offered",
               "type": {
                 "text": "readonly string[] | null"
@@ -9355,6 +9362,12 @@
               }
             },
             {
+              "name": "data-by-preset",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
               "name": "data-column",
               "description": "which column a group or sort chip arranges by, for a host that draws the choice without a menu. A menu, where there is one, is the answer.",
               "type": {
@@ -9621,6 +9634,13 @@
               "name": "reading",
               "type": {
                 "text": "FieldReading | null"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "presets",
+              "type": {
+                "text": "FieldReading['byPreset']"
               }
             },
             {
