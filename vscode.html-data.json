@@ -998,6 +998,9 @@
         {
           "name": "data-heading-group",
           "description": "a Group button in each list column's heading: it groups by that column; a group row offers Ungroup. Set by its provider. TODO 500",
+        {
+          "name": "data-failed"
+        },
           "valueSet": "v"
         },
         {
@@ -1065,6 +1068,9 @@
         },
         {
           "name": "data-select",
+        {
+          "name": "data-pending"
+        },
           "description": "multiple | single — single draws RADIOS, holds one row, and shows no control in the header: \"select all\" is meaningless where only one can be chosen",
           "values": [
             {

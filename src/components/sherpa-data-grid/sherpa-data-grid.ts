@@ -23,6 +23,7 @@ import { markNeedles } from '../../core/ui/mark-text.js';
 import { ORGANISE_ICONS, heldByPreset, movedTo } from '../../core/ui/shared-constants.js';
 import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/data/cycle.js';
 import { reduceRows } from '../../core/data/aggregate.js';
+import { markField, markHeld, pendingFields } from '../../core/ui/filter-host.js';
 import {
   compareValues, distinctOf, sortRows,
   type Filter, type GroupSummary, type SortDirection, type SortSpec,
@@ -155,7 +156,7 @@ const asks = (type: string): type is typeof DETAIL_ASKS[number] => (DETAIL_ASKS 
 
 /** What a row's sub-grid is told of its grid: its filters' look and limits, its
  *  Group and Sort, which arrange the sub-grid's rows, and its tags. TODOs 571, 574, 580 */
-const DETAIL_ATTRS = ['data-column-filters', 'data-filter-fields', 'data-needles', 'data-limit-options',
+const DETAIL_ATTRS = ['data-column-filters', 'data-filter-fields', 'data-pending', 'data-failed', 'data-needles', 'data-limit-options',
   'data-hide-unmatched', 'data-remote', 'data-apply-on', 'data-group-field', 'data-sort-field', 'data-sort-direction',
   'data-multi-field'];
 
@@ -192,6 +193,9 @@ export class SherpaDataGrid extends SherpaElement {
     // Fields an EXTERNAL filter narrows — the only way a column filtered from
     // outside can light its own header.
     'data-filter-fields': DATA_PROPS['data-filter-fields'],
+    // The fields its source says wait for Apply, or could not be read: its headings say so.
+    'data-pending': { type: 'string', kind: 'behaviour' },
+    'data-failed': { type: 'string', kind: 'behaviour' },
     'data-page': DATA_PROPS['data-page'],
     'data-page-size': DATA_PROPS['data-page-size'],
     // What a toolbar chip is matching on, so its hits mark in the cells.
@@ -339,6 +343,9 @@ export class SherpaDataGrid extends SherpaElement {
       case 'data-filter-fields':
         this.#syncColumnFilterStatus();
         this.#syncEmpty();
+        return;
+      case 'data-pending': case 'data-failed':
+        this.#syncColumnFilterStatus();
         return;
       case 'data-primary-field':
         this.#render();
@@ -761,9 +768,7 @@ export class SherpaDataGrid extends SherpaElement {
     // A joined menu leaves out what the View holds. TODO 490
     const superseded = !this.#joined.has(col.field) && this.#heldAbove(col.field);
     const was = chip.hasAttribute('data-superseded');
-    chip.toggleAttribute('data-superseded', superseded);
-    if (superseded && this.#supersededAt) chip.setAttribute('data-applied-at', this.#supersededAt);
-    else chip.removeAttribute('data-applied-at');
+    markHeld(chip, superseded, this.#supersededAt);
     menu.toggleAttribute('data-readonly', superseded);
     chip.setAttribute('aria-label', `Filter ${def.label}`);
     // A preset holds it: it says so, as a bar's chip does. Will, TODO 521
@@ -1267,6 +1272,8 @@ export class SherpaDataGrid extends SherpaElement {
     // A joined menu is on while it ticks anything. TODO 490
     const joined = this.#joined.get(field);
     chip.toggleAttribute('data-current', joined ? joined.some((f) => this.#picksOf(f, true).length > 0) : this.#isFiltered(field));
+    // Waiting for Apply, or unread: it says so, as a toolbar's chip does. TODO 613
+    markField([chip], [], { pending: pendingFields(this).has(field), failed: pendingFields(this, 'failed').has(field) });
     /* THE GLYPH SAYS WHICH KIND. A column answered by a CONDITION — "contains",
        "starts with" — wears the `fx` glyph, so a reader can tell a typed rule from a ticked list without opening it.
        An icon-only chip falls back to its funnel when no icon is named.
@@ -1531,9 +1538,7 @@ export class SherpaDataGrid extends SherpaElement {
     if (on) chip.setAttribute('data-icon-start', 'cross');
     else chip.removeAttribute('data-icon-start');
     // HELD HIGHER: shown inactive, as its heading is. Will, 374. TRAP T-a-view-held-heading-shows-and-refuses
-    chip.toggleAttribute('data-superseded', at.held);
-    if (at.held && this.#supersededAt) chip.setAttribute('data-applied-at', this.#supersededAt);
-    else chip.removeAttribute('data-applied-at');
+    markHeld(chip, at.held, this.#supersededAt);
     chip.setAttribute('aria-label', `Filter ${at.header}: ${at.text}`);
   }
 
@@ -1757,7 +1762,7 @@ export class SherpaDataGrid extends SherpaElement {
       const on = this.#tagOn(field, key);
       const held = this.#superseded.has(field);
       tag.toggleAttribute('data-current', on);
-      tag.toggleAttribute('data-superseded', held);
+      markHeld(tag, held);
       tag.setAttribute('aria-pressed', String(on));
       tag.setAttribute('aria-label', `${this.#fieldLabel(field)}: ${label}`);
       // Held: it says where its filter went, in the one tag tip. TODO 490

@@ -89,6 +89,16 @@ for (const file of globSync('src/components/*/*.ts', { cwd: ROOT })) {
   });
 }
 
+/* ONE WRITER: what a chip says of a scope above is written by `markHeld` alone, so a
+   fix reaches every control. TRAP T-one-field-one-status */
+const WRITES_HELD = /\b(?:setAttribute|toggleAttribute|removeAttribute|set)\(\s*'data-(?:superseded|applied-at)'/;
+for (const file of globSync('src/{components,core}/**/*.ts', { cwd: ROOT })) {
+  if (file.endsWith('core/ui/filter-host.ts')) continue;
+  readFileSync(join(ROOT, file), 'utf8').split('\n').forEach((line, i) => {
+    if (WRITES_HELD.test(line)) problems.push(`${file}:${i + 1} writes what a chip says of a scope above. Call markHeld.`);
+  });
+}
+
 if (problems.length) {
   console.error(`check-ownership: ${problems.length} problem(s)\n`);
   for (const p of problems) console.error(`  ✗ ${p}\n`);

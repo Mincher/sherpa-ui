@@ -125,6 +125,7 @@ export class DataSource extends EventTarget {
     only: (id) => this.#only[id],
     scoped: (s) => this.#scoped[s],
     highlight: (scope, el) => (this.#reaches(scope, el) ? this.#highlight : undefined),
+    now: () => this.#now(),
     mintId: () => this.#member.mintId(),
   });
   /** The last load's answer: the rows, and the total before paging. */
@@ -179,6 +180,10 @@ export class DataSource extends EventTarget {
    * TRAP T-a-remote-source-holds-its-whole-set · TRAP T-a-store-has-one-cache */
   /** The most rows it holds; 0 holds none. */
   readonly #holdRows: number;
+  /** The clock its relative dates read. */
+  readonly #now: () => Date;
+  /** Was a clock named? Then each read says which. */
+  readonly #pinned: boolean;
   /** Its store's ONE held set, shared with every source over it — remote only. */
   readonly #cache: StoreCache | null;
   /** How many whole reads had landed when it was made: a set from before may miss a writer. */
@@ -217,6 +222,8 @@ export class DataSource extends EventTarget {
     this.#applyOn = options.applyOn ?? 'change';
     this.#debounce = options.debounce ?? 300;
     this.#holdRows = options.holdRows ?? 50_000;
+    this.#now = options.now ?? ((): Date => new Date());
+    this.#pinned = !!options.now;
     this.#searchFields = options.searchFields;
     this.#pageFields = options.pageFields ?? false;
     this.#state = {
@@ -407,7 +414,7 @@ export class DataSource extends EventTarget {
   /** Does a row match the highlight's driver? Null while no chip drives it. Will, TODO 441 */
   get highlight(): ((row: Row) => boolean) | null {
     const filter = this.#highlight;
-    return filter ? filterTest(filter) : null;
+    return filter ? filterTest(filter, this.#now()) : null;
   }
 
   /** A field's picks in force on one component, as value keys: its own part's,
@@ -1120,7 +1127,7 @@ export class DataSource extends EventTarget {
     try {
       // The KEYS alone, where the store can send just them. 345 phase 7
       const projected = this.store.projects ? { fields: [this.store.key] } : {};
-      const { rows } = await this.store.load({ ...(clause ? { filter: clause } : {}), ...projected });
+      const { rows } = await this.store.load({ ...(clause ? { filter: clause } : {}), ...projected, ...(this.#pinned ? { now: this.#now() } : {}) });
       if (this.#fetching.get(field) !== answer || this.#closed) return;
       this.#fetchedKeys.set(field, { answer, clause: [this.store.key!, 'in', rows.map((row) => readField(row, this.store.key!))] });
       this.#setFailed([field], false);
@@ -1368,7 +1375,13 @@ export class DataSource extends EventTarget {
    *  so a move between them — the shared filter the same — loads again. 366 step 7 */
   #stateKey(): string {
     const unpaged = this.#binding.wantsAllRows() ? [this.#viewFilter ?? null, this.#scoped] : null;
-    return JSON.stringify(unpaged ? [this.#loadOptions(), unpaged] : this.#loadOptions());
+    // The day too: "last 7 days" means other rows tomorrow. TRAP T-a-rule-names-its-clock-and-its-language
+    return JSON.stringify([this.#day(), ...(unpaged ? [this.#loadOptions(), unpaged] : [this.#loadOptions()])]);
+  }
+
+  /** Today, as a relative date reads it. */
+  #day(): string {
+    return this.#now().toISOString().slice(0, 10);
   }
 
   /** Build the load options the store is asked with. */
@@ -1376,7 +1389,7 @@ export class DataSource extends EventTarget {
     const { page, pageSize } = this.#state;
     const { sort, group, search } = this.#arrangement();
     const filter = this.#filter;
-    const options: LoadOptions = {};
+    const options: LoadOptions = this.#pinned ? { now: this.#now() } : {};
     if (filter) options.filter = filter;
     if (sort.length) options.sort = sort;
     if (group) options.group = group;
@@ -1772,7 +1785,7 @@ export class DataSource extends EventTarget {
   #walkKey(): string {
     const components = [...this.#binding.componentScopes()].sort();
     const parts = [...this.#narrowing].map(([s, p]) => [s, p.field, this.#hostOf(p.only)]);
-    return JSON.stringify([this.#age, this.#member.walkVersion(), this.#walkAge, this.#limitOptions, this.#countEvery, withoutArrangement(this.#applied),
+    return JSON.stringify([this.#day(), this.#age, this.#member.walkVersion(), this.#walkAge, this.#limitOptions, this.#countEvery, withoutArrangement(this.#applied),
       components, [...this.#defaults.keys()].sort(), parts,
       [...this.#offers]]);
   }
@@ -1802,7 +1815,7 @@ export class DataSource extends EventTarget {
       fixed: new Set(this.#defaults.keys()),
       narrowing,
       limit: this.#limitOptions,
-      now: new Date(),
+      now: this.#now(),
       mine: this.#mine,
       has: this.#has,
       ...(this.#countEvery ? { countAll: true } : {}),
@@ -2104,7 +2117,7 @@ export class DataSource extends EventTarget {
     const { rows } = await this.#reads.load(options);
     const entry = el ? this.#binding.get(el) : undefined;
     const own = entry ? this.#only[entry.id] : undefined;
-    return own ? filterRows(rows, own) : rows;
+    return own ? filterRows(rows, own, this.#now()) : rows;
   }
 
   /** Stop steering and stop populating this component. */

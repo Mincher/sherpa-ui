@@ -2446,6 +2446,12 @@
             {
               "name": "data-group-field",
               "description": "group rows by this column",
+            {
+              "name": "data-failed",
+              "type": {
+                "text": "string"
+              }
+            },
               "type": {
                 "text": "string"
               }
@@ -2529,6 +2535,12 @@
             {
               "name": "data-scroll-shadow",
               "description": "an inner shadow on each edge its rows (the top one is the header's, TODO 421) is scrolled past",
+            {
+              "name": "data-pending",
+              "type": {
+                "text": "string"
+              }
+            },
               "type": {
                 "text": "boolean"
               },

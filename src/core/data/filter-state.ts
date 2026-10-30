@@ -146,6 +146,9 @@ export function isRanged(type: FieldType | undefined): boolean {
 
 /** What a caller knows about a field before anything is chosen. */
 export interface FieldFacts {
+  /** Every value ticked still filters: a rule says what it says, and a new value does
+   *  not slip through. For a reader, all ticked is no filter. TODO 614 */
+  literal?: boolean;
   field: string;
   label?: string;
   /** Its KIND, which decides how picks become a clause: two picks on a number
@@ -434,7 +437,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
     ? text !== ''
     : !facts.values || type === 'date'
       ? chosen + paths > 0
-      : (chosen > 0 && chosen < tops.length) || paths > 0;
+      : (chosen > 0 && (facts.literal || chosen < tops.length)) || paths > 0;
 
   /* ROWS answer for themselves. A row is answered when its op has what it
      needs — text typed, or a value picked — so a half-built row narrows

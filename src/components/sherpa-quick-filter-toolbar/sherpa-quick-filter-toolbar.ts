@@ -21,7 +21,7 @@ import {
   saveRows, syncHide,
   type MoreRow,
 } from '../../core/ui/more-menu.js';
-import { answerWhenDrawn, arrangeFrom, drawCount, limitField, markField, NextFrame, organiseOf, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
+import { answerWhenDrawn, arrangeFrom, drawCount, markHeld, limitField, markField, NextFrame, organiseOf, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
 import { report } from '../../core/data/report.js';
 import { countSaid } from '../../core/data/filter-face.js';
 import { DEFAULT_OP, valueKey, type SortDirection } from '../../core/data/store.js';
@@ -1180,13 +1180,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (!id) continue;
       const held = taken.get(id);
       const was = chip.hasAttribute('data-superseded');
-      chip.toggleAttribute('data-superseded', !!held);
       /* WHERE it is filtered instead. Only the host knows — this bar cannot
          see the one that took the field. An off chip with no explanation reads
          as "your filter vanished".
          TRAP T-an-inactive-chip-says-where-its-filter-went */
-      if (held && appliedAt) chip.setAttribute('data-applied-at', appliedAt);
-      else chip.removeAttribute('data-applied-at');
+      markHeld(chip, !!held, appliedAt);
       // A preset's hold on it there shows here too: the Query says so, not the preset's chip. TODO 613
       if (held) (chip as SherpaQuickFilter).presets = held.byPreset;
       else if (was) (chip as SherpaQuickFilter).presets = undefined;

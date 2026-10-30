@@ -15,6 +15,7 @@ export {
   groupSummaries,
   matchesFilter,
   filterTest,
+  setCollation,
   andFilter,
   picksClause,
   readField,

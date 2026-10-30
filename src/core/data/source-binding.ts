@@ -75,6 +75,8 @@ export interface BindHost {
   describe(scope: string): ScopeDescription;
   /** A scope's reader-facing name. */
   scopeLabel(scope: string): string;
+  /** The clock its relative dates read. */
+  now(): Date;
   /** Each declared part's scope. */
   partScopes(): Iterable<string>;
   /** The view state every bound component is pushed. */
@@ -225,7 +227,7 @@ export class SourceBinding {
     if (entry.lastRows === base && entry.lastOwn === ownKey) return;
     entry.lastRows = base;
     entry.lastOwn = ownKey;
-    entry.sink.rows(own ? filterRows(base, own) : base);
+    entry.sink.rows(own ? filterRows(base, own, this.#host.now()) : base);
   }
 
   /** Push to the components bound by these ids. */

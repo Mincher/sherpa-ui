@@ -12,7 +12,7 @@
  * - planWalk — Each scope's steps and taps, in order, from the applied Query.
  * - walkStepwise — The same walk asked of a store, step by step, for a set not held.
  */
-import { andFilter, readField, valueKey, type Filter, type Store } from './store.js';
+import { absoluteDates, andFilter, readField, valueKey, type Filter, type Store } from './store.js';
 import { readingClause, type FieldFacts, type FieldReading } from './filter-state.js';
 import {
   appliesIn, heldInView, narrowsOne, presetClause, scopeClauses, VIEW, withoutDropped,
@@ -244,7 +244,7 @@ export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'tot
       const fields = new Set<string>();
       const asked = Promise.resolve().then(() => {
         batches.delete(key);
-        return presentUnder(reads, [...fields], filter);
+        return presentUnder(reads, [...fields], filter && absoluteDates(filter, plan.now));
       });
       batch = { filter, fields, asked };
       batches.set(key, batch);
@@ -261,7 +261,8 @@ export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'tot
         const low = new Set(k.map((x) => x.toLowerCase()));
         return [...k, ...[...tier.parentOf].filter(([, p]) => low.has(p.toLowerCase())).map(([path]) => path)];
       }));
-  const count = (filters: readonly Filter[]): Promise<number> => later(reads.totalCount({ filter: andFilter(filters)! }));
+  // The walk's one clock: a store's is never read. TRAP T-a-rule-names-its-clock-and-its-language
+  const count = (filters: readonly Filter[]): Promise<number> => later(reads.totalCount({ filter: absoluteDates(andFilter(filters)!, plan.now) }));
   const ends = new Map<string, { filter: Filter | undefined; narrowed: boolean }>();
   // Each scope's last step in force: its count is the rows the scope ends with.
   const lastOn = new Map<string, string>();

@@ -87,6 +87,7 @@ For a table of records that can be sorted, filtered, grouped and selected. It re
 | `data-apply-on` | `change` `input` |  |  |
 | `data-bounds` | text |  |  |
 | `data-column-filters` | boolean |  | a filter button in each column heading, and a filter chip in the cell under the pointer: it adds or takes off that cell's value |
+| `data-failed` | text |  |  |
 | `data-fetch-fields` | text |  | the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider. |
 | `data-filter-fields` | text |  | space-separated fields an EXTERNAL filter is narrowing; those columns' headings take data-status="active". Written by SherpaDataSource — a host driving the grid by hand can write it too. |
 | `data-group-field` | text |  | group rows by this column |
@@ -99,6 +100,7 @@ For a table of records that can be sorted, filtered, grouped and selected. It re
 | `data-needles` | text |  | what an EXTERNAL filter MATCHED on, so its hits mark in the cells: `field:op:value` per entry, NEWLINE separated. Written by SherpaDataSource beside data-filter-fields. Only substring ops appear — `eq` matched the whole value and `ne` matched by absence, so neither leaves a span to point at. TRAP T-a-needle-comes-from-either-direction |
 | `data-page` | number |  | the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and never writes data-page itself. |
 | `data-page-size` | number |  | the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and never writes data-page itself. |
+| `data-pending` | text |  |  |
 | `data-primary-field` | text |  | its slot's Primary: that column leads, pinned. Set by its provider. TODO 548 |
 | `data-scope` | text |  | ASKED of its provider: the Query scope its headings answer |
 | `data-scroll-shadow` | boolean | `false` | an inner shadow on each edge its rows (the top one is the header's, TODO 421) is scrolled past |

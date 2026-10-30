@@ -648,6 +648,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-failed",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-fetch-fields",
       "type": "string",
       "observed": true,
@@ -760,6 +768,14 @@
       "declared": true,
       "kind": "style",
       "description": "the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and never writes data-page itself."
+    },
+    {
+      "$type": "prop",
+      "name": "data-pending",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
     },
     {
       "$type": "prop",

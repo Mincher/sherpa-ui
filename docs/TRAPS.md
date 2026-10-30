@@ -19815,3 +19815,22 @@ docs/DATA-LAYER-PLAN.md, Step 3.
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/field-status.ts`
 - Site: `test/unit/one-field-one-status.test.mjs`
+- Site: `scripts/check-ownership.mjs`
+- Site: `src/core/ui/filter-host.ts`
+
+### T-a-rule-names-its-clock-and-its-language
+
+**What a rule reads beyond its input is named: the clock and the sort language.**
+`last` and `next` read the clock, and `Intl.Collator(undefined)` the machine's
+language: `z` and `ä` swap between German and Swedish, which moves a sort and `lt` and
+`gt`. Same input, other output, and nothing says why. So `filterTest`, `filterRows`
+and `LoadOptions` take `now`, a `DataSource` takes `now: () => Date`, a walk asked of a
+store sends the dates of its own clock, and `setCollation` names the language. Left
+alone, both are the reader's, as a page wants. The day is in the source's keys, or a
+load after midnight would be skipped as the same question (TODO 614).
+
+- Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/source-counts.ts`
+- Site: `src/core/data/store.ts`
+- Site: `test/unit/same-input-same-output.test.mjs`

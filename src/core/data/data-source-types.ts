@@ -190,6 +190,8 @@ export interface ViewState {
 
 export interface DataSourceOptions {
   store: Store;
+  /** The clock its relative dates read. Left out, the machine's. TRAP T-a-rule-names-its-clock-and-its-language */
+  now?: () => Date;
   /** The QueryContext it joins. Left out, it makes its own. 366 step 12 */
   query?: QueryContext;
   /** Rows per page. Omit for no paging. */

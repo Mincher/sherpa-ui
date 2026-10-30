@@ -113,7 +113,7 @@ Checked, and not bugs:
 Moved to Step 3: after a remote raise, bars read the draft and headings read the
 applied Query, until Apply. One status ends that.
 
-### Step 3 (613): one answer for a field's state — medium
+### Step 3 (613): one answer for a field's state — done
 
 The heart of it, and what Will asked for. Two small pieces:
 
@@ -131,30 +131,50 @@ hierarchy already says who holds a field (View scope, then local scope, then the
 component), so "held above" is one part of one status, for every control (Will,
 2026-10-30).
 
-**Done so far:** `fieldStatus` and its matrix (`one-field-one-status`). `supersede` and
-`supersedeColumns` are one door, `supersede(readings, at)`, so a toolbar chip and its
-heading now say the same. Next: the painter, then the rest of the channels into it.
+**Done:**
+
+- `fieldStatus` and its matrix (`test/unit/one-field-one-status.test.mjs`).
+- `supersede` and `supersedeColumns` are one door, `supersede(readings, at)`, so a
+  toolbar chip and its heading now say the same.
+- `markHeld` is the one writer of "held above", and `check:ownership` blocks any other.
+- A heading says a field waits for Apply or failed to read, as a toolbar chip does.
+- `reforged-one-field-one-status` (Demos) sets each state through the Query alone, and
+  checks a toolbar chip, a heading and a panel section against `fieldStatus`.
+
+**Decided, not built:** the other channels stay. Moving them all into one message was
+the plan, but the parity test now catches a control that disagrees, and it passes. So
+a rewrite would add risk and fix nothing a reader sees. If the test finds a new
+disagreement, that channel moves then. Cell chips, tags and legend keys are not in the
+parity test yet.
+
+Two rules the test holds on purpose: a chip held above keeps its OWN answer for when
+the field comes back, so its tick is its own; and a chip waiting for Apply shows its
+draft, in the warning look.
 
 Then move one control at a time, deleting what each replaces: heading, toolbar chip,
 panel value chip, cell chip, tag, legend key, menu row. A gate then blocks a
 component writing these attributes itself. If a control is left half moved, the app
 still works, because old and new paint the same attributes.
 
-### Step 4 (614): same input, same output — small
+### Step 4 (614): same input, same output — done
 
-What a rules engine needs. READ unless marked.
+What a rules engine needs. Tests: `test/unit/same-input-same-output.test.mjs`, which ends
+in a replay: one Query sent as JSON, one set of rows, one clock, byte-equal rows.
 
-- **The clock.** `new Date()` is at `store.ts:152`, `store.ts:167` and
-  `data-source.ts:1783`, and nothing can pin it. Add `now` to `filterTest` and
-  `LoadOptions`. The day also goes in the cache keys, or counts and rows disagree
-  after midnight.
-- **The locale.** `Intl.Collator(undefined)` makes `z` and `ä` swap between German
-  and Swedish (RUN), which moves sort and `lt`/`gt`. Pass it in.
-- **Tick every value** compiles to no filter, so a new value passes until a reload.
-  Right for a reader, wrong for a rule. Add a literal compile flag for the engine.
-- **`report`** is one global sink, and `checkWorkflow` returns only a boolean. Return
-  the problems.
-- **A replay test:** one Query, one set of rows, one clock, byte-equal rows.
+- **The clock.** `filterTest`, `filterRows`, `matchesFilter` and `LoadOptions` take `now`.
+  A `DataSource` takes `now: () => Date`, and reads it for its rows, its walk, its
+  highlight and its server fields. A walk asked of a store sends the dates of its own
+  clock. The day is in the source's keys, so a load after midnight is not skipped as
+  the same question.
+- **The language.** `setCollation(locale)` names it. `Intl.Collator(undefined)` swapped
+  `z` and `ä` between German and Swedish (RUN), which moved sort and `lt`/`gt`.
+- **Tick every value** compiles to no filter, so a new value passed until a reload.
+  Right for a reader, wrong for a rule: `FieldFacts.literal` keeps it a filter.
+
+Left alone, the clock and the language are the reader's, so no page changes.
+
+Left for the engine plan, as they only matter to it: `report` is one global sink, and
+`checkWorkflow` returns only a boolean.
 
 ### Step 5 (615): scale — small first, then medium
 

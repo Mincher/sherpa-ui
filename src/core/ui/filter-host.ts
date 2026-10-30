@@ -8,6 +8,7 @@
  * - arrangeFrom — Follow the host's arrangement onto its Group or Sort chip; the chip knows how.
  * - pendingFields — The fields the host's source says wait for their Apply, or could not be fetched.
  * - markField — One field's chips and menus, told whether it waits for Apply and whether its read failed.
+ * - markHeld — One chip told whether a scope above holds its field, and that scope's name.
  * - limitField — One field's value chips and menus, told what the filters before it leave and what its chain offers.
  * - drawCount — A count on a badge that is not a chip's: its number, and its words for a reader.
  * - NextFrame — What changed this frame, handed over ONCE, the frame after.
@@ -79,6 +80,14 @@ export function markField(
     chip.toggleAttribute('data-failed', said.failed);
   }
   for (const menu of menus) menu?.toggleAttribute('data-pending', said.pending);
+}
+
+/** One chip told whether a scope above holds its field, and that scope's name: it
+ *  reads inactive and says where it went. The one writer of these. TRAP T-one-field-one-status */
+export function markHeld(chip: Element, held: boolean, at?: string): void {
+  chip.toggleAttribute('data-superseded', held);
+  if (held && at) chip.setAttribute('data-applied-at', at);
+  else chip.removeAttribute('data-applied-at');
 }
 
 /** One field's value chips — a panel run's — and its menus, told what the

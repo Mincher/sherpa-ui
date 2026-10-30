@@ -234,7 +234,7 @@ export function passOver(rows: readonly Row[], scan: Scan, from: number): Uint32
   const n = steps.length;
   // Each test made once for the pass, not read again for each row. TODO 291
   const tests = scan.tests.map((t) => t && filterTest(t));
-  const eachTests = scan.eachTests.map((e) => e?.map(filterTest) ?? null);
+  const eachTests = scan.eachTests.map((e) => e?.map((f) => filterTest(f)) ?? null);
   const stopped = new Uint32Array(rows.length);
   for (let r = 0; r < rows.length; r++) {
     const row = rows[r]!;

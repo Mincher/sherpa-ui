@@ -29,6 +29,7 @@
  * - StoreChangeDetail — Fired after an insert, update or remove.
  * - readField — Read a field, following dots (`'customer.name'`) into nested objects.
  * - distinctOf — Each field's values among rows, one per value key: the last raw, in first-seen order.
+ * - setCollation — Name the language values sort in.
  * - compareValues — Compare two field values.
  * - sortRows — Sort by specs, first wins and later ones break ties.
  * - filterFields — Every FIELD a filter touches, first-appearance order; a clause that stands for a field is named by it.
@@ -186,6 +187,8 @@ export interface LoadOptions {
   /** Free-text search across `searchFields`, or every string field. */
   search?: string;
   searchFields?: string[];
+  /** The clock a relative date reads. Left out, the machine's. TRAP T-a-rule-names-its-clock-and-its-language */
+  now?: Date;
   /** Paging. `skip` rows in, `take` rows out. */
   skip?: number;
   take?: number;
@@ -319,7 +322,14 @@ export function distinctOf(rows: readonly Row[], fields: readonly string[]): Rec
 /* ── Comparison ────────────────────────────────────────────────────────── */
 
 /** ONE comparator for the whole library. TRAP T-one-collator-for-the-library */
-const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+const collatorFor = (locale?: string): Intl.Collator => new Intl.Collator(locale, { numeric: true, sensitivity: 'base' });
+let collator = collatorFor();
+
+/** Name the language values sort in. Left alone, the reader's: a rule names one, so
+ *  it sorts alike on every machine. TRAP T-a-rule-names-its-clock-and-its-language */
+export function setCollation(locale?: string): void {
+  collator = collatorFor(locale);
+}
 
 /** Compare two field values. Nulls sort LAST in EITHER direction. */
 export function compareValues(a: unknown, b: unknown): number {
@@ -425,17 +435,17 @@ export function filterNeedles(filter: Filter | undefined): string {
 }
 
 /** Does one row satisfy one filter? For one row; a loop makes its test once, with `filterTest`. */
-export function matchesFilter(row: Row, filter: Filter | undefined): boolean {
-  return filterTest(filter)(row);
+export function matchesFilter(row: Row, filter: Filter | undefined, now?: Date): boolean {
+  return filterTest(filter, now)(row);
 }
 
 /** A filter as ONE test, worked out once — its values read, its dates made
  *  absolute, a range ordered — so each row is only read and compared. TODO 291 */
-export function filterTest(filter: Filter | undefined): (row: Row) => boolean {
+export function filterTest(filter: Filter | undefined, now: Date = new Date()): (row: Row) => boolean {
   if (!filter) return () => true;
   const [head, ...rest] = filter;
   if (head === 'and' || head === 'or') {
-    const tests = (rest as Filter[]).map(filterTest);
+    const tests = (rest as Filter[]).map((f) => filterTest(f, now));
     return head === 'and' ? (row) => tests.every((t) => t(row)) : (row) => tests.some((t) => t(row));
   }
   const [field, op, value] = filter as FilterClause;
@@ -476,10 +486,10 @@ export function filterTest(filter: Filter | undefined): (row: Row) => boolean {
       return Array.isArray(value) ? (row) => !inList(read(row), value) : () => true;
     case 'last':
     case 'next':
-      return filterTest(absoluteDates(filter));
+      return filterTest(absoluteDates(filter, now), now);
     // Outside the two ends — and, as `ne` does, a row with no value. TODO 375
     case 'notbetween': {
-      const within = filterTest([field, 'between', value]);
+      const within = filterTest([field, 'between', value], now);
       return (row) => !within(row);
     }
     case 'between': {
@@ -615,8 +625,8 @@ export function picksClause(
 }
 
 /** Rows matching a filter. */
-export function filterRows(rows: readonly Row[], filter?: Filter): Row[] {
-  return filter ? rows.filter(filterTest(filter)) : [...rows];
+export function filterRows(rows: readonly Row[], filter?: Filter, now?: Date): Row[] {
+  return filter ? rows.filter(filterTest(filter, now)) : [...rows];
 }
 
 /** Rows matching a free-text search — `fields` when given, else every value. */
@@ -693,7 +703,7 @@ export function applyOptions(rows: readonly Row[], options: LoadOptions = {}): L
   let out: Row[] = [...rows];
 
   if (options.search) out = searchRows(out, options.search, options.searchFields);
-  if (options.filter) out = filterRows(out, options.filter);
+  if (options.filter) out = filterRows(out, options.filter, options.now);
 
   /* Grouping is a SORT: the group field sorts FIRST — the way a sort on that
      field says, else A to Z. The rule the grid drew, now the one place. TODO 523 */
