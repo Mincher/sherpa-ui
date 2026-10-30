@@ -150,7 +150,15 @@ export class SherpaQuickFilter extends SherpaElement {
     this.addEventListener('menu-open', this.#onMenuToggle as EventListener);
     this.addEventListener('menu-close', this.#onMenuToggle as EventListener);
     this.addEventListener('menu-select', this.#onJump as EventListener);
+    this.addEventListener('menu-change', this.#onSelectorPick);
   }
+
+  /** A selector's menu shuts on its pick, as a native select's does: a pick that
+   *  redraws the bar shut it, and one that did not left it open. TODO 607 */
+  #onSelectorPick = (event: Event): void => {
+    const menu = this.menu;
+    if (event.target === menu && menu?.open && this.hasAttribute('data-persistent') && menu.dataset['select'] === 'single') menu.hide();
+  };
 
   /**
    * populate([{ value, label }]) — a JUMP chip's places, as action rows in its

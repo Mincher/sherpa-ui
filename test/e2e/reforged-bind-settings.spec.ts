@@ -41,6 +41,26 @@ test('bindSettings draws each control from the session, writes its change back, 
 
 /* A NEW switch — its key holds no value yet — still writes a boolean, never its
    `value` "on": an app's `=== true` read it as off. TODO 331's Demos setting. */
+test('a setting that needs another is disabled until that one is on, and keeps its value (Will, TODO 606)', async ({ page }) => {
+  await page.goto('/test/reforged/harness.html');
+  await page.waitForFunction(() => window.__reforgedReady === true);
+  const r = await page.evaluate(`(async () => {
+    const { SessionStore, bindSettings } = await import('/dist/index.js');
+    const root = document.getElementById('root');
+    root.innerHTML = '<sherpa-switch data-setting="/a/across" data-setting-needs="/a/hover"></sherpa-switch>';
+    const sw = root.firstElementChild;
+    await sw.rendered;
+    const session = new SessionStore({ a: { hover: false, across: true } });
+    bindSettings(root, session);
+    const off = sw.disabled;
+    session.set('/a/hover', true);
+    const on = sw.disabled;
+    session.set('/a/hover', false);
+    return { off, on, again: sw.disabled, kept: sw.checked };
+  })()`) as Record<string, unknown>;
+  expect(r).toEqual({ off: true, on: false, again: true, kept: true });
+});
+
 test('a switch whose key holds nothing yet writes true and false', async ({ page }) => {
   await page.goto('/test/reforged/harness.html');
   await page.waitForFunction(() => window.__reforgedReady === true);

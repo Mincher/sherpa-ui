@@ -32,6 +32,7 @@ export const EVERYWHERE = [
   'data-source', 'data-scope',
   // Read by bindSettings, on any control. TRAP T-a-setting-is-a-pointer
   'data-setting',
+  'data-setting-needs',
 ];
 
 /** Each component's props, by tag, from its spec. */

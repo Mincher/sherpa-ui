@@ -2867,6 +2867,28 @@ test('a rebuild with data-reset-on-populate forgets the filters, never what a se
   expect(r).toEqual({ view: ['b'], plan: [], named: ['c'] });
 });
 
+test('a selector\'s menu shuts on its pick, and its next press opens it (TODO 607)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const view = { id: 'view', label: 'View', persistent: true, select: 'single', options: [{ value: 'a', label: 'A', selected: true }, { value: 'b', label: 'B' }] };
+    const el = await window.__mount<Bar & { values: Record<string, string[]> }>('sherpa-quick-filter-toolbar');
+    el.populate!([view]);
+    await window.__settled();
+    const chip = el.shadowRoot!.querySelector<HTMLElement>('.chip[data-id="view"]')!;
+    const menu = chip.querySelector('sherpa-menu') as HTMLElement & { open: boolean };
+    const caret = chip.shadowRoot!.querySelector<HTMLElement>('.caret')!;
+    caret.click();
+    await window.__settled();
+    const opened = menu.open;
+    menu.querySelector<HTMLInputElement>('input[value="b"]')!.click();
+    await window.__settled();
+    const picked = { open: menu.open, value: el.values['view'] };
+    caret.click();
+    await window.__settled();
+    return { opened, picked, again: menu.open };
+  });
+  expect(r).toEqual({ opened: true, picked: { open: false, value: ['b'] }, again: true });
+});
+
 test('a chip moved while its menu is open opens at the next press: removal shuts it and fires no toggle (Will, TODO 599)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const view = { id: 'view', label: 'View', persistent: true, options: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }] };

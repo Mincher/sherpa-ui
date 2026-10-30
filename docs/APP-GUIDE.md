@@ -302,7 +302,8 @@ session.persist('/nav/pinned');
   across reloads; with no guard, the default's type is the guard.
   `T-session-persist-defaults-shared`
 - A control bound to a pointer says so in its markup — the outlet binds it:
-  `<sherpa-switch data-setting="/nav/hierarchy">`. `T-a-setting-is-a-pointer`
+  `<sherpa-switch data-setting="/nav/hierarchy">`. One that depends on another adds
+  `data-setting-needs="/pointer"`: disabled until that one is on. `T-a-setting-is-a-pointer`
 - A demo or onboarding page may lay its own settings over the app's: `session.overlay({ '/filters/limit': true })` on entering it, `session.overlay(null)` on leaving. While on, those pointers read and write there, and nothing is stored, so a change never carries over to another page. Not how an app sets a setting.
 - Recents and Favorites name each View; `/nav/views: false` lists each Context
   once instead. `T-the-outlet-keeps-the-nav`

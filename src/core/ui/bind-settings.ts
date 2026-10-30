@@ -14,7 +14,8 @@ import type { SessionStore } from '../browser/session.js';
 type Control = HTMLElement & { checked?: boolean; value?: string };
 
 /** Bind every `[data-setting]` control under `root` to the session, until `signal` aborts.
- *  A boolean is a switch's `checked`; anything else is its `value`, kept a number if it was one. */
+ *  A boolean is a switch's `checked`; anything else is its `value`, kept a number if it was one.
+ *  `data-setting-needs="/pointer"`: disabled, keeping its value, until that setting is on. Will, TODO 606 */
 export function bindSettings(root: ParentNode, session: SessionStore, options: { signal?: AbortSignal } = {}): void {
   const { signal } = options;
   for (const el of root.querySelectorAll<Control>('[data-setting]')) {
@@ -26,6 +27,13 @@ export function bindSettings(root: ParentNode, session: SessionStore, options: {
     draw(session.get(pointer));
     const stop = session.subscribe(pointer, draw);
     signal?.addEventListener('abort', stop, { once: true });
+    const needs = el.dataset['settingNeeds'];
+    if (needs) {
+      const allow = (value: unknown): void => { el.toggleAttribute('disabled', value !== true); };
+      allow(session.get(needs));
+      const stopNeeds = session.subscribe(needs, allow);
+      signal?.addEventListener('abort', stopNeeds, { once: true });
+    }
     el.addEventListener('change', (event) => {
       const detail = (event as CustomEvent<{ checked?: boolean; value?: unknown } | null>).detail ?? {};
       const was = session.get(pointer);

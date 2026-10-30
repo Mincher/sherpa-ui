@@ -18954,6 +18954,8 @@ The app calls it AFTER a page's `init()`, so a select is given its choices
 first. A setting that is more than one value stays hand-wired: Drafts and
 "Keep them across sessions", where the second means nothing without the first.
 `check:usage` knows `data-setting` on any component, as it knows `data-scope`.
+`data-setting-needs="/pointer"` says it depends on another setting: disabled until
+that one is on, and it keeps its value (Will, TODO 606).
 
 - Site: `src/core/ui/bind-settings.ts`
 - Site: `scripts/check-usage.mjs`
