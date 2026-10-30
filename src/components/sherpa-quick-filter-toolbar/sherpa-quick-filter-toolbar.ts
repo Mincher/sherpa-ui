@@ -2664,6 +2664,21 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** Follow the host's arrangement onto the Group and Sort chips. The chip knows how. */
   #syncArrangement(): void {
     for (const kind of ['group', 'sort'] as const) arrangeFrom(this, this.#organiser(kind), kind);
+    this.#markChain();
+  }
+
+  /** Primary, Secondary and Group are a chain: a field on one link is ruled out on
+   *  the others — greyed, or gone while Hide is on. Will, TODO 581 */
+  #markChain(): void {
+    const chart = this.#organise.chart;
+    if (!chart) return;
+    const links = { primary: chart.primary, secondary: chart.secondary, group: this.dataset['groupField'] || undefined };
+    for (const id of ['primary', 'secondary', 'group'] as const) {
+      const taken = new Set(Object.entries(links).filter(([link]) => link !== id).map(([, field]) => field));
+      const fields = (id === 'group' ? this.#organise.group : chart.fields) ?? [];
+      limitField([], [this.$<SherpaQuickFilter>(`.organise-chip[data-id="${id}"]`)?.menu],
+        { present: fields.map((c) => c.field).filter((f) => !taken.has(f)), offered: null, hide: hidesUnmatched(this) });
+    }
   }
 
   /** A chart's Primary — its first split, a bar or slice a value — or Secondary —

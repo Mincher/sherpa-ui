@@ -386,8 +386,8 @@ test('a chart\'s Primary is its bars and its Secondary their stack — its chart
   })()`) as Record<string, unknown>;
   // Primary and Secondary lead, before Group and Sort.
   expect(r['order']).toEqual(['primary', 'secondary', 'group', 'sort']);
-  // As its chart says: a bar a plan on its X axis, counting rows; Group offers no plan.
-  expect(r['first']).toEqual({ primary: { on: true, field: 'plan' }, secondary: { on: false, field: '' }, groups: ['day'], bars: ['Free: 1', 'Pro: 3', 'Enterprise: 1'] });
+  // As its chart says: a bar a plan on its X axis, counting rows; Group lists plan, greyed (TODO 581).
+  expect(r['first']).toEqual({ primary: { on: true, field: 'plan' }, secondary: { on: false, field: '' }, groups: ['plan', 'day'], bars: ['Free: 1', 'Pro: 3', 'Enterprise: 1'] });
   // Primary day: a bar a day, named by it.
   expect(r['split']).toEqual({ primary: { on: true, field: 'day' }, kept: { primary: 'day' }, bars: ['Mon: 3', 'Tue: 1', 'Wed: 1'] });
   // Secondary plan: each day's bar stacked by plan.
@@ -396,6 +396,62 @@ test('a chart\'s Primary is its bars and its Secondary their stack — its chart
   // Primary is always set: no None, and its chart's own field reads as the Default.
   expect(r['menu']).toEqual({ none: false, rows: ['plan (Default)', 'day'] });
   expect(r['back']).toEqual({ primary: { on: true, field: 'plan' }, kept: {}, bars: ['Free: 1', 'Pro: 3', 'Enterprise: 1'] });
+});
+
+test('Primary, Secondary and Group are a chain: a field one holds is greyed and refused on the others, and gone while Hide is on (Will, TODO 581)', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-container data-scope="by-plan">
+        <sherpa-quick-filter-toolbar></sherpa-quick-filter-toolbar>
+        <sherpa-barchart id="slotted" data-segment-field="plan"></sherpa-barchart>
+      </sherpa-container>\`;
+    const source = new DataSource({ store: new ArrayStore(rows.map((row, i) => ({ ...row, region: i % 2 ? 'EU' : 'US' })), { key: 'id' }) });
+    source.declareValues('plan', PLANS);
+    source.declareValues('day', ['Mon', 'Tue', 'Wed']);
+    source.declareValues('region', ['EU', 'US']);
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    const bar = provider.querySelector('sherpa-quick-filter-toolbar');
+    const chip = (id) => bar.shadowRoot.querySelector('.organise-chip[data-id="' + id + '"]');
+    const boxes = (id) => [...chip(id).querySelectorAll('sherpa-menu input')].filter((i) => i.value);
+    const rowOf = (box) => box.closest('.menu-row');
+    const read = () => Object.fromEntries(['primary', 'secondary', 'group'].map((id) => [id, {
+      out: boxes(id).filter((b) => rowOf(b).hasAttribute('data-unavailable')).map((b) => b.value),
+      gone: boxes(id).filter((b) => rowOf(b).hasAttribute('data-removed')).map((b) => b.value),
+    }]));
+    const pick = async (id, value) => {
+      const box = boxes(id).find((i) => i.value === value);
+      box.checked = true;
+      box.dispatchEvent(new Event('change', { bubbles: true }));
+      await settle();
+    };
+    const at = { first: read() };
+    await pick('secondary', 'day');
+    at.stacked = read();
+    await pick('group', 'region');
+    at.grouped = { ...read(), refused: boxes('primary').find((b) => b.value === 'region').disabled };
+    bar.setAttribute('data-limit-options', 'on');
+    bar.setAttribute('data-hide-unmatched', 'on');
+    await settle();
+    at.hidden = read();
+    return at;
+  })()`) as Record<string, unknown>;
+  // Primary holds plan: Secondary and Group grey it.
+  expect(r['first']).toEqual({ primary: { out: [], gone: [] }, secondary: { out: ['plan'], gone: [] }, group: { out: ['plan'], gone: [] } });
+  // Secondary takes day: Primary greys it, and Group greys both.
+  expect(r['stacked']).toEqual({ primary: { out: ['day'], gone: [] }, secondary: { out: ['plan'], gone: [] }, group: { out: ['plan', 'day'], gone: [] } });
+  // Group takes region: Primary and Secondary grey it too, and refuse a tick on it.
+  expect(r['grouped']).toEqual({
+    primary: { out: ['day', 'region'], gone: [] }, secondary: { out: ['plan', 'region'], gone: [] },
+    group: { out: ['plan', 'day'], gone: [] }, refused: true,
+  });
+  // Hide on: each greyed row goes.
+  expect(r['hidden']).toEqual({
+    primary: { out: ['day', 'region'], gone: ['day', 'region'] }, secondary: { out: ['plan', 'region'], gone: ['plan', 'region'] },
+    group: { out: ['plan', 'day'], gone: ['plan', 'day'] },
+  });
 });
 
 test('a card\'s Show as swaps its chart over the same data, keeps what it was arranged by, and Default goes back (Will, TODO 548)', async ({ page }) => {

@@ -563,7 +563,7 @@ export class DataSource extends EventTarget {
       const stacks = this.#binding.stacksIn(scope);
       const secondary = stacks ? shown.secondary : undefined;
       Object.assign(out, {
-        presents: true, group: lists.filter((c) => c.field !== shown.primary && c.field !== secondary), chartFields: lists,
+        presents: true, group: lists, chartFields: lists,
         ...(stacks ? { stacks: true } : {}),
         ...(shown.group ? { groupField: shown.group } : {}),
         ...(shown.sort ? { sortDirection: shown.sort } : {}),
