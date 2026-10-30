@@ -7924,7 +7924,7 @@
             },
             {
               "kind": "field",
-              "name": "contextLabel",
+              "name": "sectionLabels",
               "type": {
                 "text": "boolean"
               }
@@ -8487,12 +8487,6 @@
               }
             },
             {
-              "name": "data-no-context-label",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
               "name": "data-no-results",
               "description": "its chips say no match counts — the app's choice, written by its provider",
               "type": {
@@ -8502,6 +8496,12 @@
             },
             {
               "name": "data-no-saves",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-no-section-labels",
               "type": {
                 "text": "boolean"
               }

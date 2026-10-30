@@ -63,7 +63,10 @@
             {
               "el": "div",
               "class": "organise-zone",
-              "part": "organise"
+              "part": "organise",
+              "attrs": {
+                "data-section": "Organise"
+              }
             },
             {
               "el": "div",
@@ -371,7 +374,10 @@
             {
               "el": "div",
               "class": "organise-zone",
-              "part": "organise"
+              "part": "organise",
+              "attrs": {
+                "data-section": "Organise"
+              }
             },
             {
               "el": "div",
@@ -760,14 +766,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-no-context-label",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "visibility"
-    },
-    {
-      "$type": "prop",
       "name": "data-no-results",
       "type": "boolean",
       "observed": true,
@@ -783,6 +781,14 @@
       "observed": true,
       "declared": true,
       "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-no-section-labels",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "visibility"
     },
     {
       "$type": "prop",

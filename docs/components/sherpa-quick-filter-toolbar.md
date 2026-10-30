@@ -76,9 +76,9 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-locked` | boolean |  | the host owns the state; report, never self-set |
 | `data-move-filters` | boolean |  |  |
 | `data-no-actions` | boolean |  | hide the built-in cluster entirely (host owns the trailing end) |
-| `data-no-context-label` | boolean |  |  |
 | `data-no-results` | boolean | `false` | its chips say no match counts — the app's choice, written by its provider |
 | `data-no-saves` | boolean |  |  |
+| `data-no-section-labels` | boolean |  |  |
 | `data-no-sections` | boolean |  |  |
 | `data-node-editor` | boolean |  | show "Node Editor (beta)" in the ⋮ menu: the host opens the page's Query as nodes. Will, TODO 555 |
 | `data-nothing-to-reset` | boolean |  | nothing is left to clear: Reset is inactive. Written by the provider. TODO 231. |

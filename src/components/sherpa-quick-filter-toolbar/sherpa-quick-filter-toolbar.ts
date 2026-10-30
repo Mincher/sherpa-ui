@@ -99,8 +99,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-saved-menu': { type: 'boolean', kind: 'behaviour' },
     // Its provider keeps saving off it: no sets, no Save. Will, TODO 485
     'data-no-saves': { type: 'boolean', kind: 'style' },
-    // No "View Context" over the View's first filter, in toolbar mode. Will, TODO 436
-    'data-no-context-label': { type: 'boolean', kind: 'visibility' },
+    // No section names in the bar, in toolbar mode. Will, TODOs 436, 610
+    'data-no-section-labels': { type: 'boolean', kind: 'visibility' },
     // No section names over its filters, in portrait. Will, TODO 436
     'data-no-sections': { type: 'boolean', kind: 'visibility' },
     // A chip hovered previews what it matches: the app's choice. Will, TODO 449
@@ -469,7 +469,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  counted, for its whole answer. Will, TODO 459 */
   #hoverTarget(event: Event): { chip: HTMLElement; value?: string } | null {
     const chip = this.#chipOf(event);
-    // On the chip's own box, outside it: the View Context label. TODO 543
+    // On the chip's own box, outside it: its section's label. TODO 543
     if (!chip || chip.hasAttribute('data-persistent') || event.composedPath()[0] === chip) return null;
     const one = this.pathFind(event, '.value');
     if (one?.parentElement === chip && one.dataset['value']) return { chip, value: one.dataset['value'] };
@@ -1259,11 +1259,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     return this.pathFind<SherpaQuickFilter>(event, CHIP);
   }
 
-  /** The scope's name, on a chip, for CSS to put over the first: "View Context". Will, TODO 440 */
-  #nameContext(chip: HTMLElement): void {
-    const name = this.dataset['heading'];
-    if (name) chip.setAttribute('data-context', name);
-    else chip.removeAttribute('data-context');
+  /** The section's name, on a chip, for CSS to put before the first: a View bar's own fields are its scope. Will, TODOs 440, 610 */
+  #nameSection(chip: HTMLElement): void {
+    const name = this.#defOf(chip)?.preset ? this.word('presets')
+      : this.dataset['type'] === 'view' ? this.dataset['heading'] : this.word('custom');
+    if (name) chip.setAttribute('data-section', name);
+    else chip.removeAttribute('data-section');
   }
 
   /** Rebuild the chip run from `#filters`, keeping what the reader did. */
@@ -1313,7 +1314,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const old = was.get(f.id);
       if (old && this.#built.get(old) === key) {
         list.appendChild(old);
-        this.#nameContext(old);
+        this.#nameSection(old);
         // A preset's on is its source's: drawn each time. TODO 493
         if (f.preset) old.toggleAttribute('data-current', !!f.active);
         moved.add(f.id);
@@ -1325,7 +1326,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const prior = live.get(f.id);
       chip.dataset['id'] = f.id;
       chip.setAttribute('data-label', f.label);
-      this.#nameContext(chip);
+      this.#nameSection(chip);
       if (f.type) chip.setAttribute('data-type', f.type);
       // Live state wins; an untouched chip falls back to `active`.
       if (prior ? prior.on : f.active) chip.setAttribute('data-current', '');
@@ -1788,7 +1789,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   override onChange(name?: string): void {
-    if (name === 'data-heading') for (const chip of this.#chips()) this.#nameContext(chip);
+    if (name === 'data-heading') for (const chip of this.#chips()) this.#nameSection(chip);
     if (name === 'data-saved-menu') {
       if (this.#columned) this.#column.saved(this.#saved.all);
       else this.#renderAvailable();

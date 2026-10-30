@@ -2268,7 +2268,7 @@ test('a FOLDED advanced-only filter opens its own menu, not a blank drill', asyn
  */
 test('a resize that folds nothing new keeps the open Filters menu; a real unfold rebuilds it', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'style': 'max-inline-size: 260px' });
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'style': 'max-inline-size: 260px', 'data-no-section-labels': true });
     el.populate([
       { id: 'status', label: 'Status', select: 'multiple', options: [{ value: 'a', label: 'a' }] },
       { id: 'email', label: 'Email', advanced: 'only', op: 'contains' },
@@ -2564,9 +2564,9 @@ test('a View bar sets its View chip apart by a divider, and names its scope over
     const inner = chip('customer').shadowRoot!.querySelector('.chip')!.getBoundingClientRect();
     const beside = { after: inner.left - host.left > 20, sameLine: Math.round(inner.top) === Math.round(host.top) };
     // The app's "off", from its provider. TODO 436
-    el.setAttribute('data-no-context-label', '');
+    el.setAttribute('data-no-section-labels', '');
     const off = read().label[0];
-    el.removeAttribute('data-no-context-label');
+    el.removeAttribute('data-no-section-labels');
     // Panel mode: the View chip alone, so neither.
     el.setAttribute('data-panel-mode', '');
     await window.__settled();
@@ -2577,6 +2577,36 @@ test('a View bar sets its View chip apart by a divider, and names its scope over
   expect(r.beside).toEqual({ after: true, sameLine: true });
   expect(r.off).toBe('none');
   expect(r.panel).toMatchObject({ divider: 'none', label: ['none', 'none'] });
+});
+
+test('each section of a bar names itself at its start: Organise, Presets, Custom; a View bar\'s own fields are its scope (Will, TODO 610)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const filters = [
+      { id: 'risky', label: 'High risk', preset: true, options: [] },
+      { id: 'big', label: 'Big', preset: true, options: [] },
+      { id: 'plan', label: 'Plan', options: [{ value: 'a', label: 'A' }] },
+      { id: 'tier', label: 'Tier', options: [{ value: 'b', label: 'B' }] },
+    ];
+    type Organising = Bar & { organise(o: Record<string, unknown>): void };
+    const local = await window.__mount<Organising>('sherpa-quick-filter-toolbar');
+    local.style.inlineSize = '1000px';
+    local.populate!(filters);
+    local.organise({ group: [{ field: 'plan', label: 'Plan' }] });
+    await window.__settled();
+    const labels = (bar: HTMLElement) => [bar.shadowRoot!.querySelector('.organise-zone')!, ...bar.shadowRoot!.querySelectorAll('.chips > .chip')]
+      .map((el) => getComputedStyle(el, '::before').content);
+    const on = labels(local);
+    local.setAttribute('data-no-section-labels', '');
+    const off = labels(local);
+    const view = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'view', 'data-heading': 'View Context' });
+    view.style.inlineSize = '1000px';
+    view.populate!(filters);
+    await window.__settled();
+    return { local: on, off, view: labels(view) };
+  });
+  expect(r.local).toEqual(['"Organise"', '"Presets"', 'none', '"Custom"', 'none']);
+  expect(r.view).toEqual(['none', '"Presets"', 'none', '"View Context"', 'none']);
+  expect(r.off).toEqual(['none', 'none', 'none', 'none', 'none']);
 });
 
 test('Discard says its word, in every layout', async ({ page }) => {

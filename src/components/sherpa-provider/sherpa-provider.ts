@@ -314,17 +314,17 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: the Switch — or null, each bar's own. */
   #switchable: boolean | null = null;
 
-  /** The View's name over its first filter, in toolbar mode. The app sets it,
-   *  from its session. Will, TODO 436 */
-  get contextLabel(): boolean {
-    return this.#contextLabel;
+  /** Each section's name at its start, in toolbar mode. The app sets it, from
+   *  its session. Will, TODOs 436, 610 */
+  get sectionLabels(): boolean {
+    return this.#sectionLabels;
   }
-  set contextLabel(on: boolean) {
-    this.#contextLabel = on;
+  set sectionLabels(on: boolean) {
+    this.#sectionLabels = on;
     this.#offerAll();
   }
-  /** The app's choice: the View Context label. */
-  #contextLabel = true;
+  /** The app's choice: the filter toolbars' section labels. */
+  #sectionLabels = true;
 
   /** Each section's name over its filters, in panel mode. The app sets it,
    *  from its session. Will, TODO 436 */
@@ -589,7 +589,7 @@ export class SherpaProvider extends SherpaElement {
     // Off, the View's bar and the panel save nothing. TODO 485
     if ('drawScope' in el) el.toggleAttribute('data-no-saves', !this.#saveAny && (isColumn(el) || this.#inherited(el, 'data-scope') === VIEW));
     if (this.#switchable !== null) el.toggleAttribute('data-switchable', this.#switchable);
-    el.toggleAttribute('data-no-context-label', !this.#contextLabel);
+    el.toggleAttribute('data-no-section-labels', !this.#sectionLabels);
     el.toggleAttribute('data-no-sections', !this.#sections);
     el.toggleAttribute('data-highlight-hover', this.#highlightHover);
     el.toggleAttribute('data-field-apply', !this.#singleApply);

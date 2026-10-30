@@ -36,7 +36,7 @@ Put it round the part of a page whose components need data: each component insid
 | `savedMenu` | `boolean` | read and write |  |
 | `saveAnyScope` | `boolean` | read and write |  |
 | `switchable` | `boolean` | read and write |  |
-| `contextLabel` | `boolean` | read and write |  |
+| `sectionLabels` | `boolean` | read and write |  |
 | `sections` | `boolean` | read and write |  |
 | `highlightOnHover` | `boolean` | read and write |  |
 | `legendChips` | `boolean` | read and write |  |

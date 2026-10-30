@@ -140,10 +140,12 @@
   margin-inline-start: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* The scope's name — "View Context" — LEFT of the View's first filter, in the
-   row, as the panel heads them. Will, TODOs 440, 543 */
-:host([data-type="view"]:not([data-panel-mode], [data-no-context-label])) .chips > .chip:nth-child(1 of [data-context]:not([data-persistent], [data-folded-away]))::before {
-  content: attr(data-context);
+/* A section's name — "View Context", "Organise", "Presets", "Custom" — LEFT of
+   its first chip, in the row, as the panel heads them. Will, TODOs 440, 543, 610 */
+:host(:not([data-panel-mode], [data-orientation="portrait"], [data-no-section-labels])) .chips > .chip:nth-child(1 of [data-preset]:not([data-folded-away]))::before,
+:host(:not([data-panel-mode], [data-orientation="portrait"], [data-no-section-labels])) .chips > .chip:nth-child(1 of [data-section]:not([data-preset], [data-persistent], [data-folded-away]))::before,
+:host(:state(has-organise):not([data-panel-mode], [data-orientation="portrait"], [data-no-section-labels])) .organise-zone::before {
+  content: attr(data-section);
   align-self: center;
   margin-inline-end: var(--sherpa-display-mode-space-xs, 8px);
   color: var(--sherpa-style-content-secondary, #35353d);
@@ -152,6 +154,9 @@
   white-space: nowrap;
   pointer-events: none;
 }
+
+/* Its zone already spaces its children. */
+.organise-zone::before { margin-inline-end: 0; }
 
 /* ONE Apply and its Discard, where the scope waits for it; the panel has its own. TODO 406 */
 .apply-all,
