@@ -1598,6 +1598,13 @@
               }
             },
             {
+              "name": "data-chips",
+              "description": "each row a value chip, as a filter panel draws it: its swatch, its label, its count. Set by its provider. Will, TODO 586",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-field",
               "type": {
                 "text": "string"
@@ -7922,6 +7929,13 @@
             },
             {
               "kind": "field",
+              "name": "legendChips",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
               "name": "highlightAcross",
               "type": {
                 "text": "boolean"
@@ -7937,6 +7951,13 @@
             {
               "kind": "field",
               "name": "reorderFilters",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "moveFilters",
               "type": {
                 "text": "boolean"
               }
@@ -8439,6 +8460,12 @@
             {
               "name": "data-locked",
               "description": "the host owns the state; report, never self-set",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-move-filters",
               "type": {
                 "text": "boolean"
               }

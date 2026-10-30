@@ -27,10 +27,11 @@
 /* Legend BESIDE: the split reads the chart's own `data-legend`, not the legend's
    `data-orientation` — `:host(:has(…))` does not parse and is dropped silently.
    `minmax(0, Nfr)`: a bare fr floors at min-content, so a long label would break
-   the ratio instead of truncating. */
+   the ratio instead of truncating. The legend's floor is its min-content for a
+   legend of CHIPS, which take the room they need; contained, a key row's is 0. TODO 586 */
 :host([data-legend="vertical"]) {
   display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+  grid-template-columns: minmax(0, 7fr) minmax(min-content, 3fr);
   grid-template-rows: auto minmax(0, 1fr);
   align-items: center;
 }
@@ -49,6 +50,7 @@
   grid-column: 2;
   grid-row: 2;
 }
+:host([data-legend="vertical"]) ::slotted([slot="legend"]:not([data-chips])) { contain: inline-size; }
 
 /* NARROW: a legend BESIDE the chart goes below it, and a legend strip becomes
    a list. The host is the container, so only what is IN it can turn.

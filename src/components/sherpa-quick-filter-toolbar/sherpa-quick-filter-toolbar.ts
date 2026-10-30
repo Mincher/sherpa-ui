@@ -111,6 +111,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-highlight-hover': { type: 'boolean', kind: 'behaviour' },
     // A chip, or a section, is dragged into its place in the query: the app's choice. Will, TODO 452
     'data-reorder': { type: 'boolean', kind: 'behaviour' },
+    // A filter's menu, and its section's ⋮, offer to move it between scopes: the app's choice. Will, TODO 587
+    'data-move-filters': { type: 'boolean', kind: 'behaviour' },
     // In portrait, each field's heading in a column at its start: the app's choice. Will, TODO 460
     'data-label-column': { type: 'boolean', kind: 'behaviour' },
     // Every value's count, in a chip's menu too, picked or not: the app's choice. Will, TODO 466
@@ -1588,7 +1590,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const { sendTo: _was, ...rest } = d;
       return to ? { ...rest, sendTo: to } : rest;
     });
-    if (!moved) return;
+    if (moved) this.#redoMoves();
+  }
+
+  /** Each chip's Move, in its menu and its section's ⋮, said again. */
+  #redoMoves(): void {
     for (const chip of this.#chips()) {
       const def = this.#defOf(chip);
       const menu = chip.querySelector<HTMLElement>(':scope > sherpa-menu');
@@ -1615,7 +1621,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  Sort, a selector. */
   #moveLabel(def: FilterDef): string {
     // A chart's own field moves up too: elevated, it narrows every component. Will, TODO 52
-    if (!this.#scope || def.persistent || arranges(kindOf(def))) return '';
+    if (!this.hasAttribute('data-move-filters') || !this.#scope || def.persistent || arranges(kindOf(def))) return '';
     if (this.#scope !== VIEW) return this.word('raise');
     const to = def.sendTo;
     return to ? `${this.word(to.origin ? 'return' : 'lower')} ${to.label}` : '';
@@ -1831,6 +1837,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // A column draws once it opens. TRAP T-a-shut-column-draws-nothing
     if (name === 'open' && this.#columned && this.hasAttribute('open')) this.#column.opened();
     if (name === 'data-label-column') this.#syncLayout();
+    if (name === 'data-move-filters') this.#redoMoves();
     if (name === 'data-every-count') this.#drawValueResults();
     if (name === 'data-orientation') {
       this.#syncLayout();

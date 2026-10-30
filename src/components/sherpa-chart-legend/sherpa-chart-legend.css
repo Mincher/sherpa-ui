@@ -76,6 +76,25 @@
   column-gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
+/* CHIPS: each row a value chip, as a filter panel draws it, and they wrap. TODO 586 */
+:host([data-chips]) .legend {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--sherpa-display-mode-space-xs, 8px);
+  row-gap: var(--sherpa-display-mode-space-xs, 8px);
+}
+:host([data-chips]:not([data-orientation="horizontal"])) .legend { flex-direction: column; align-items: start; }
+:host([data-chips][data-orientation="horizontal"]) .legend { justify-content: center; }
+:host([data-chips]) :is(.item, .rollup) {
+  display: inline-flex;
+  align-items: center;
+  column-gap: var(--sherpa-display-mode-space-2xs, 4px);
+  /* Inside its chart: a long name truncates, in the chip. */
+  min-inline-size: 0;
+  max-inline-size: 100%;
+}
+:host([data-chips]) .value:empty { display: none; }
+
 /* Darker than its label by design: the number is the fact, the name its
    caption. MONOSPACED, as the key chip is. An entry with no value leaves the
    track empty, so the other entries stay aligned. */

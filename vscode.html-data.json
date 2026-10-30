@@ -606,6 +606,11 @@
           ]
         },
         {
+          "name": "data-chips",
+          "description": "each row a value chip, as a filter panel draws it: its swatch, its label, its count. Set by its provider. Will, TODO 586",
+          "valueSet": "v"
+        },
+        {
           "name": "data-field"
         },
         {
@@ -2892,6 +2897,10 @@
         {
           "name": "data-locked",
           "description": "the host owns the state; report, never self-set",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-move-filters",
           "valueSet": "v"
         },
         {

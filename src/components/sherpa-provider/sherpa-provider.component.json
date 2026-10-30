@@ -135,6 +135,18 @@
             "attrs": {
               "data-word": "total"
             }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "by"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "grouped-by"
+            }
           }
         ]
       }
@@ -169,7 +181,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, results, countApplied, savedMenu, saveAnyScope, switchable, contextLabel, sections, highlight, highlightOnHover, highlightAcross, singleApply, reorderFilters, labelColumn, countEveryValue, headingGroup, headingHover, multiFieldColumns, showAs, axisChips, appContext, applyEvery, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, results, countApplied, savedMenu, saveAnyScope, switchable, contextLabel, sections, highlight, highlightOnHover, legendChips, highlightAcross, singleApply, reorderFilters, moveFilters, labelColumn, countEveryValue, headingGroup, headingHover, multiFieldColumns, showAs, axisChips, appContext, applyEvery, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -367,6 +379,11 @@
           "access": "read-write"
         },
         {
+          "name": "legendChips",
+          "type": "boolean",
+          "access": "read-write"
+        },
+        {
           "name": "highlightAcross",
           "type": "boolean",
           "access": "read-write"
@@ -378,6 +395,11 @@
         },
         {
           "name": "reorderFilters",
+          "type": "boolean",
+          "access": "read-write"
+        },
+        {
+          "name": "moveFilters",
           "type": "boolean",
           "access": "read-write"
         },

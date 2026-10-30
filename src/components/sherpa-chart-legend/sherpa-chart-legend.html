@@ -6,6 +6,8 @@
     data-segment-field  ASKED of its provider, or read off its chart: one row per value.
                         A click narrows its chart alone
     data-readonly     a KEY, not a filter: its rows do not toggle
+    data-chips        each row a value chip, as a filter panel draws it: its swatch,
+                      its label, its count. Set by its provider. Will, TODO 586
     data-highlight-hover  a rest on a row says legend-hover. Set by its provider. TODO 495
 
   Fires:
@@ -22,6 +24,15 @@
       <sherpa-quick-filter class="entry" data-type="key" data-locked data-current>
         <span class="label sherpa-truncate" part="label"></span>
       </sherpa-quick-filter>
+      <span class="value" part="value"></span>
+    </div>
+  </template>
+
+  <!-- One row with `data-chips`: the value chip a filter panel draws, its number
+       in its count; a value that is no number, a band's range, beside it. TODO 586 -->
+  <template class="chip-tpl">
+    <div class="item">
+      <sherpa-quick-filter class="entry" slot="values" data-locked data-current></sherpa-quick-filter>
       <span class="value" part="value"></span>
     </div>
   </template>

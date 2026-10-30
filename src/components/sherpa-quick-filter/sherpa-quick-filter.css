@@ -398,6 +398,19 @@
   pointer-events: none;
 }
 
+/* A VALUE chip shrinks: a long name truncates inside its box. TODO 586 */
+:host([slot="values"]) {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+}
+:host([slot="values"]) :is(.chip, .body) { min-inline-size: 0; }
+:host([slot="values"]) :is(.tick, .count, .swatch) { flex: none; }
+:host([slot="values"]) .label {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ── KEY — a chart legend's row (Figma "Chart Legend", 1099:37879) ──────
  * No border, no fill, mono 12 on 16: it reads as part of the chart's numeric
  * run. Its ON is SHOWN; off, or ruled out, it takes the inactive ink and a

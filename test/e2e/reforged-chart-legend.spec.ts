@@ -59,6 +59,33 @@ test('renders a row per item with label + value and categorical swatches', async
   expect(r.fill1).toContain('0.5');
 });
 
+test('with data-chips, a number is the chip\'s count, a value that is none stays beside it, and a long name truncates in its chip (Will, TODO 586)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-chart-legend') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+    el.setAttribute('data-chips', '');
+    el.style.inlineSize = '160px';
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate!([
+      { label: 'A very long name that cannot fit in a narrow legend at all', value: 12, colorIndex: 1 },
+      { label: 'Healthy', value: '0–20%', colorIndex: 2 },
+    ]);
+    await window.__settled();
+    const rows = Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.item'));
+    const end = el.getBoundingClientRect().right;
+    return rows.map((row) => {
+      const chip = row.querySelector('.entry') as HTMLElement & { results?: number | null };
+      const value = row.querySelector('.value')!;
+      return { count: chip.results ?? null, said: value.textContent, valueShows: getComputedStyle(value).display !== 'none',
+        inside: chip.getBoundingClientRect().right <= end + 1 };
+    });
+  });
+  expect(r).toEqual([
+    { count: 12, said: '', valueShows: false, inside: true },
+    { count: null, said: '0–20%', valueShows: true, inside: true },
+  ]);
+});
+
 test('clicking an entry fires legend-item-click and toggles its chip\'s aria-pressed', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-chart-legend') as HTMLElement & {

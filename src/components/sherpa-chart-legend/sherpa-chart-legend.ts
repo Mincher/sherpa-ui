@@ -22,6 +22,7 @@ import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
+import type { SherpaQuickFilter } from '../sherpa-quick-filter/sherpa-quick-filter.js';
 import { REST_WAIT } from '../../core/ui/shared-constants.js';
 
 const MAX_ITEMS = 6;
@@ -50,7 +51,13 @@ export class SherpaChartLegend extends SherpaElement {
     'data-readonly': { type: 'boolean', kind: 'style' },
     // A rest on a row says so, for its provider's highlight. Will, TODO 495
     'data-highlight-hover': { type: 'boolean', kind: 'behaviour' },
+    // Each row a value chip. Will, TODO 586
+    'data-chips': { type: 'boolean', kind: 'behaviour' },
   } as const;
+
+  override onChange(name: string): void {
+    if (name === 'data-chips' && this.#items.length) this.#render();
+  }
 
   /** The legend rows, as populated. */
   #items: LegendItem[] = [];
@@ -275,17 +282,20 @@ export class SherpaChartLegend extends SherpaElement {
     if (!list) return;
 
     const readonly = this.hasAttribute('data-readonly');
+    // A key is no filter: it stays a key. Will, TODO 586
+    const chips = this.hasAttribute('data-chips') && !readonly;
     list.replaceChildren();
     this.#items.forEach((item, i) => {
       const isRollup = this.#rolledUp && !readonly && i === this.#items.length - 1;
-      const cell = this.clone('template.item-tpl');
+      const cell = this.clone(chips ? 'template.chip-tpl' : 'template.item-tpl');
       if (!cell) return;
       const entry = cell.querySelector<HTMLElement>('.entry')!;
       cell.dataset['index'] = String(i);
       if (item.status) cell.dataset['status'] = item.status;
       // The band's own pair, never the `--_status-*` cascade.
       entry.dataset['swatch'] = item.status ?? String(item.colorIndex ?? i + 1);
-      cell.querySelector('.label')!.textContent = item.label;
+      if (chips) entry.setAttribute('data-label', item.label);
+      else cell.querySelector('.label')!.textContent = item.label;
       /* Remembered across a re-populate, so a source push does not clear it.
          A roll-up row is ON while ANY of its folded categories is. */
       const on = readonly || (isRollup
@@ -293,7 +303,10 @@ export class SherpaChartLegend extends SherpaElement {
         : !this.#off.has(item.label));
       entry.toggleAttribute('data-current', on);
       entry.toggleAttribute('data-readonly', readonly);
-      cell.querySelector('.value')!.textContent = item.value != null ? String(item.value) : '';
+      const said = item.value != null ? String(item.value) : '';
+      const count = chips && said !== '' && Number.isFinite(Number(said)) ? Number(said) : null;
+      if (chips) (entry as SherpaQuickFilter).results = count;
+      cell.querySelector('.value')!.textContent = count == null ? said : '';
       /* A category a FILTER emptied: still there, still toggleable, but drawn
          inactive so a reader can see it is contributing nothing. Removing the
          row instead loses the way back — the legend IS how it comes on again.

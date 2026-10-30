@@ -76,6 +76,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-label-column` | boolean |  |  |
 | `data-limit-options` | `on` `off` |  | on \| off — the host offers "Limit to matching filters": the ⋮ always shows, and over the View its menu holds the switch. Written by the provider. Will, TODOs 178, 553. |
 | `data-locked` | boolean |  | the host owns the state; report, never self-set |
+| `data-move-filters` | boolean |  |  |
 | `data-no-actions` | boolean |  | hide the built-in cluster entirely (host owns the trailing end) |
 | `data-no-context-label` | boolean |  |  |
 | `data-no-results` | boolean | `false` | its chips say no match counts — the app's choice, written by its provider |

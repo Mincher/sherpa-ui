@@ -1622,6 +1622,8 @@ so its path holds no `.move`. A bar sends the same request,
 `filter-add { scope, ids, from }`: bindSource reads a `filter-add` carrying
 `from` as a request whatever the bar's own scope.
 
+**Offering it is the app's choice**, off by default: `provider.moveFilters` → `data-move-filters`, Will, TODO 587. Off, `#moveLabel` says nothing, so neither a chip's menu nor a section's ⋮ has the row. Edit filters still adds a field at another scope.
+
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/send-down.test.mjs`
 - Site: `src/core/data/query.ts`
@@ -6303,6 +6305,8 @@ row always stays on (`T-a-legend-keeps-one-row-on`). The chip says
 `aria-pressed` from its `data-current`. A row a filter EMPTIED is the legend's
 own state, so the legend dims it through the chip's `::part(body)` and
 `::part(swatch)`.
+
+**With `data-chips` a row is a VALUE chip**, as a filter panel draws it: `provider.legendChips`, Will, TODO 586. Its number is the chip's count; a value that is no number, a band's range, stays beside it. Beside a chart the 7:3 split's legend track floors at its min-content, so chips keep their names; a key row is contained, floors at 0, and truncates as before. A read-only legend is no filter, so it stays a key.
 
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`

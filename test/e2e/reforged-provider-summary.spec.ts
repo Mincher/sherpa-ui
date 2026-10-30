@@ -95,6 +95,49 @@ test('a legend reads its chart\'s field; its pick narrows that chart alone', asy
 /* With "Highlight matches on hover", a rest on a legend row previews its
    value's matches, as a chip's value does — with no row toggled first, when
    the chart's own scope is not made yet. Will, TODOs 495, 513 */
+test('with its provider\'s Legend items as chips, a legend row is a value chip: its swatch, label and count; its press still picks (Will, TODO 586)', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-barchart id="slotted" data-segment-field="plan">
+        <sherpa-chart-legend slot="legend"></sherpa-chart-legend>
+      </sherpa-barchart>\`;
+    const source = make();
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    const legend = provider.querySelector('sherpa-chart-legend');
+    const read = () => [...legend.shadowRoot.querySelectorAll('.entry')].map((c) => ({
+      type: c.getAttribute('data-type'), label: c.getAttribute('data-label') ?? c.textContent.trim(), swatch: c.dataset.swatch, on: c.hasAttribute('data-current'), results: c.results ?? null,
+    }));
+    const value = () => legend.shadowRoot.querySelector('.value').textContent;
+    const at = { key: read()[0], keyValue: value() };
+    provider.legendChips = true;
+    await settle();
+    at.chips = read();
+    at.value = value();
+    legend.shadowRoot.querySelector('.entry').shadowRoot.querySelector('.body').click();
+    await settle();
+    at.picked = { on: read().map((c) => c.on), off: legend.off };
+    provider.legendChips = false;
+    await settle();
+    at.back = read()[0];
+    return at;
+  })()`) as Record<string, unknown>;
+  expect(r['key']).toEqual({ type: 'key', label: 'Free', swatch: '1', on: true, results: null });
+  expect(r['keyValue']).toBe('1');
+  expect(r['chips']).toEqual([
+    { type: null, label: 'Free', swatch: '1', on: true, results: 1 },
+    { type: null, label: 'Pro', swatch: '2', on: true, results: 2 },
+    { type: null, label: 'Enterprise', swatch: '3', on: true, results: 1 },
+  ]);
+  // Its number is in its count, not beside it.
+  expect(r['value']).toBe('');
+  expect(r['picked']).toEqual({ on: [false, true, true], off: ['Free'] });
+  // Off again: the key row, and what was picked stays picked.
+  expect(r['back']).toEqual({ type: 'key', label: 'Free', swatch: '1', on: false, results: null });
+});
+
 test('a rest on a legend row previews its value while Highlight matches on hover is on', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
@@ -496,6 +539,42 @@ test('a card\'s Show as swaps its chart over the same data, keeps what it was ar
   expect((r['pie']?.['marks'] as string[]).length).toBe(3);
   // Default: the bar its page drew, its group kept.
   expect(r['back']).toEqual({ tag: 'sherpa-barchart', type: null, marks: ['Free: 1 (Tue 1)', 'Pro: 2 (Mon 1 · Wed 1)', 'Enterprise: 1 (Mon 1)'], shown: 'default', kept: { group: 'day' } });
+});
+
+test('a chart card\'s title follows what the reader set: Primary by Secondary, grouped by Group; set nothing, its page\'s own (Will, TODO 567)', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-container data-scope="by-plan">
+        <sherpa-data-viz-header slot="header" data-heading="Sales by plan" data-presentation="default"></sherpa-data-viz-header>
+        <sherpa-barchart id="slotted" data-segment-field="plan"></sherpa-barchart>
+      </sherpa-container>\`;
+    const source = new DataSource({ store: new ArrayStore(rows.map((row, i) => ({ ...row, region: i % 2 ? 'EU' : 'US' })), { key: 'id' }) });
+    source.declareValues('plan', PLANS);
+    source.declareValues('day', ['Mon', 'Tue', 'Wed']);
+    source.declareValues('region', ['EU', 'US']);
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    const head = provider.querySelector('sherpa-data-viz-header');
+    const set = async (patch) => { source.query.present('by-plan', patch); await settle(); await settle(); return head.dataset.heading; };
+    const at = { first: head.dataset.heading };
+    at.primary = await set({ primary: 'day' });
+    at.secondary = await set({ secondary: 'plan' });
+    at.group = await set({ group: 'region' });
+    at.lessPrimary = await set({ primary: undefined, secondary: 'day' });
+    at.back = await set({ secondary: undefined, group: undefined });
+    return at;
+  })()`) as Record<string, unknown>;
+  expect(r).toEqual({
+    first: 'Sales by plan',
+    primary: 'day',
+    secondary: 'day by plan',
+    group: 'day by plan, grouped by region',
+    // Its Primary back to its page's: still named, for the rest is set.
+    lessPrimary: 'plan by day, grouped by region',
+    back: 'Sales by plan',
+  });
 });
 
 test('the app may turn Show as off: no card offers it, and a kept pick is set aside, not lost (Will, TODO 582)', async ({ page }) => {

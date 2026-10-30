@@ -62,6 +62,32 @@
       },
       {
         "el": "template",
+        "class": "chip-tpl",
+        "children": [
+          {
+            "el": "div",
+            "class": "item",
+            "children": [
+              {
+                "el": "sherpa-quick-filter",
+                "class": "entry",
+                "attrs": {
+                  "slot": "values",
+                  "data-locked": "",
+                  "data-current": ""
+                }
+              },
+              {
+                "el": "span",
+                "class": "value",
+                "part": "value"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
         "class": "rollup-tpl",
         "children": [
           {
@@ -150,6 +176,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-chips",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "each row a value chip, as a filter panel draws it: its swatch, its label, its count. Set by its provider. Will, TODO 586"
+    },
+    {
+      "$type": "prop",
       "name": "data-field",
       "type": "string",
       "observed": true,
@@ -223,6 +258,11 @@
       "$type": "state",
       "name": "horizontal",
       "selector": ":host([data-orientation=\"horizontal\"])"
+    },
+    {
+      "$type": "state",
+      "name": "chips",
+      "selector": ":host([data-chips])"
     }
   ],
   "capabilities": [

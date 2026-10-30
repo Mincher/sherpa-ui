@@ -790,6 +790,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-move-filters",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-no-actions",
       "type": "boolean",
       "observed": true,

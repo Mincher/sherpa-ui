@@ -363,6 +363,18 @@ export class SherpaProvider extends SherpaElement {
   }
   /** Each legend that picks — a field's values, as a chip's. */
   #pickers = new Set<Element>();
+
+  /** A legend's rows are value chips, as a filter panel draws them — off, key
+   *  rows. Off unless the app says, from its session. Will, TODO 586 */
+  get legendChips(): boolean {
+    return this.#legendChips;
+  }
+  set legendChips(on: boolean) {
+    this.#legendChips = on;
+    for (const el of this.#pickers) el.toggleAttribute('data-chips', on);
+  }
+  /** The app's choice: a legend's rows as chips. */
+  #legendChips = false;
   /** The app's choice: Highlight matches on hover. */
   #highlightHover = false;
 
@@ -402,6 +414,19 @@ export class SherpaProvider extends SherpaElement {
   }
   /** The app's choice: drag filters into a new order. */
   #reorder = false;
+
+  /** A filter's menu, and its section's ⋮, offer to move it between scopes. Off
+   *  unless the app says, from its session: Edit filters still adds one at
+   *  another scope. Will, TODO 587 */
+  get moveFilters(): boolean {
+    return this.#moveFilters;
+  }
+  set moveFilters(on: boolean) {
+    this.#moveFilters = on;
+    this.#offerAll();
+  }
+  /** The app's choice: Move between scopes. */
+  #moveFilters = false;
 
   /** In the panel, each filter's heading in a column at its start, its values
    *  beside it. The app sets it, from its session. Will, TODO 460 */
@@ -582,6 +607,7 @@ export class SherpaProvider extends SherpaElement {
     el.toggleAttribute('data-highlight-hover', this.#highlightHover);
     el.toggleAttribute('data-field-apply', !this.#singleApply);
     el.toggleAttribute('data-reorder', this.#reorder);
+    el.toggleAttribute('data-move-filters', this.#moveFilters);
     el.toggleAttribute('data-label-column', this.#labelColumn);
     el.toggleAttribute('data-every-count', this.#countEvery);
     // A grid's headings and tags. TODOs 500, 501, 490
@@ -1308,6 +1334,34 @@ export class SherpaProvider extends SherpaElement {
     source.query.present(slot, { kind: kind && kind !== 'default' ? kind : undefined });
   };
 
+  /** A chart card's title follows what the reader set: "Primary by Secondary,
+   *  grouped by Group", each part only where it is set. Set nothing, its page's
+   *  own. Will, TODO 567 */
+  #retitle(el: Element, slot: string, source: DataSource): void {
+    if (shownAs(el) === 'grid') return;
+    const shown = source.query.presented(slot, 'chart');
+    const own = source.query.presented(slot, 'chart', false);
+    const set = shown.primary !== own.primary || shown.secondary !== own.secondary || shown.group !== own.group;
+    const name = (field: string | null | undefined): string => (field ? source.fieldFacts(field).label ?? field : '');
+    const stacks = (el.constructor as { asks?: DataAsk }).asks?.stacks;
+    const by = stacks && shown.secondary ? ` ${this.word('by')} ${name(shown.secondary)}` : '';
+    const grouped = shown.group ? `, ${this.word('grouped-by')} ${name(shown.group)}` : '';
+    const title = `${name(shown.primary ?? el.getAttribute('data-segment-field'))}${by}${grouped}`;
+    for (const host of this.querySelectorAll(':is(sherpa-data-viz-header, sherpa-container-header)[slot="header"]')) {
+      if (this.#inherited(host, 'data-scope') !== slot) continue;
+      const now = host.getAttribute('data-heading') ?? '';
+      const was = this.#titled.get(host);
+      // A heading its page changed since is its page's own now.
+      const page = was?.wrote === now ? was.page : now;
+      const next = set ? title : page;
+      this.#titled.set(host, { page, wrote: next });
+      if (next !== now) host.setAttribute('data-heading', next);
+    }
+  }
+
+  /** Each chart card's title: its page's own, and what was last written. */
+  readonly #titled = new WeakMap<Element, { page: string; wrote: string }>();
+
   /** Swap a chart for the one its slot shows, where that differs; its card's Show
    *  as is told either way. True when swapped. Will, TODO 548 */
   #swapped(el: Element, slot: string, source: DataSource): boolean {
@@ -1315,6 +1369,7 @@ export class SherpaProvider extends SherpaElement {
     for (const host of this.querySelectorAll('[data-presentation]')) {
       if (this.#inherited(host, 'data-scope') === slot) host.setAttribute('data-presentation', this.#showAsOf(source, slot));
     }
+    this.#retitle(el, slot, source);
     const authored = this.#authored.get(el) ?? shownAs(el);
     const kind = shown.kind ?? authored;
     if (!authored || !kind || kind === shownAs(el)) return false;
@@ -1506,10 +1561,12 @@ export class SherpaProvider extends SherpaElement {
     el.addEventListener('legend-hover', rest);
     this.#pickers.add(el);
     el.toggleAttribute('data-highlight-hover', this.#highlightHover);
+    el.toggleAttribute('data-chips', this.#legendChips);
     return () => {
       el.removeEventListener('legend-hover', rest);
       this.#pickers.delete(el);
       el.removeAttribute('data-highlight-hover');
+      el.removeAttribute('data-chips');
       source.removeEventListener('present', hear);
       if (!home) source.query.declarePart(key, undefined);
       unbind();
