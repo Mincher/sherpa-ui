@@ -170,6 +170,7 @@
 .bar-part {
   flex: var(--_p, 1) 1 0;
   min-inline-size: 0;
+  position: relative;
   box-sizing: border-box;
   /* Thinner than its segment's, which holds it. Will, TODO 635 */
   border: var(--sherpa-border-bottom, 0.5px) solid
@@ -184,6 +185,13 @@
 :host(:state(highlighting)) .bar {
   background: color-mix(in srgb, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)) 35%, transparent);
 }
+/* Split, each piece and section marks its own, from its own start: the whole bar's
+   would start at the base, wherever the match sits. Will, TODO 638 */
+:host(:state(highlighting)) :is(.bar-piece, .bar-part) {
+  background: color-mix(in srgb, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)) 35%, transparent);
+}
+:host(:state(highlighting)) :is(.bar, .bar-piece):has(> :is(.bar-stack, .bar-parts):not(:empty)) { background: none; }
+:host(:state(highlighting)) :is(.bar, .bar-piece):has(> :is(.bar-stack, .bar-parts):not(:empty)) > .bar-match { display: none; }
 /* Below zero a bar is placed absolutely already, which holds its part too. */
 :host(:state(highlighting):not(:state(below-zero))) .bar { position: relative; }
 :host(:state(highlighting)) .bar-match {

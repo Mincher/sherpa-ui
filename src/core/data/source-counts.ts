@@ -103,6 +103,8 @@ export interface WalkFacts {
   /** Limit to matching filters. */
   limit: boolean;
   now: Date;
+  /** A field the store answers: its answer as the keys it matched, once fetched. */
+  fetched?: (field: string, reading: FieldReading) => Filter | undefined;
   /** Is a scope this source's, and does it have a field? As compile asks. TRAP T-a-source-compiles-only-what-it-has */
   mine?: (scope: string) => boolean;
   has?: (field: string) => boolean;
@@ -160,7 +162,8 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
       const reading = q?.readings[f];
       const { suspended, ...answer } = reading ?? {};
       const fieldFacts = facts.field(f);
-      const clause = reading ? readingClause({ field: f, ...fieldFacts }, answer) : undefined;
+      // A field the store answers counts by the keys it matched, as its rows do. TODO 612
+      const clause = reading ? facts.fetched?.(f, answer) ?? readingClause({ field: f, ...fieldFacts }, answer) : undefined;
       const list = facts.isList(f);
       const rule = list ? ruleOf(scope) : undefined;
       const step: WalkStep = {

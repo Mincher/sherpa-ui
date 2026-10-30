@@ -709,7 +709,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-field-type-decides-the-clause](TRAPS.md#t-the-field-type-decides-the-clause) — data-grid
 - [T-the-last-row-draws-no-rule](TRAPS.md#t-the-last-row-draws-no-rule) — data-grid
 
-## Charts (65)
+## Charts (66)
 
 - [T-a-bar-hangs-from-the-zero-line](TRAPS.md#t-a-bar-hangs-from-the-zero-line) — barchart
 - [T-a-breakdown-pick-is-a-legend-pick](TRAPS.md#t-a-breakdown-pick-is-a-legend-pick) — chart-legend
@@ -731,6 +731,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-legend-row-goes-inactive-it-never-vanishes](TRAPS.md#t-a-legend-row-goes-inactive-it-never-vanishes) — chart-legend
 - [T-a-legend-row-is-a-key-chip](TRAPS.md#t-a-legend-row-is-a-key-chip) — chart-legend
 - [T-a-legend-toggle-is-a-filter](TRAPS.md#t-a-legend-toggle-is-a-filter) — chart-legend
+- [T-a-match-marks-its-own-mark](TRAPS.md#t-a-match-marks-its-own-mark) — barchart
 - [T-a-metric-condenses-by-wrapping](TRAPS.md#t-a-metric-condenses-by-wrapping) — metric
 - [T-a-metric-group-knows-it-is-stuck](TRAPS.md#t-a-metric-group-knows-it-is-stuck) — metric
 - [T-a-metric-is-one-row-at-every-density](TRAPS.md#t-a-metric-is-one-row-at-every-density) — metric

@@ -19,6 +19,13 @@ import { DEFAULT_TICKS } from '../../core/ui/shared-constants.js';
 /** One bar. TRAP T-chart-datum-aliases-are-not-copies — an alias, not a copy. */
 export type BarDatum = ChartDatum;
 
+/** How much of a mark the highlight's driver matches. Each piece and section says
+ *  its own, so a match covers its own start and end. Will, TODOs 441, 638.
+ *  TRAP T-a-match-marks-its-own-mark */
+function markMatch(el: HTMLElement, d: BarDatum): void {
+  if (d.matched != null) el.style.setProperty('--_m', `${d.value ? Math.min(100, Math.abs(d.matched / d.value) * 100) : 0}%`);
+}
+
 export class SherpaBarchart extends SherpaElement {
   static override css = [
     new URL('../../core/sherpa-chart-frame.css', import.meta.url),
@@ -80,6 +87,7 @@ export class SherpaBarchart extends SherpaElement {
       if (!one) return [];
       one.style.setProperty('--_p', String(Math.abs(p.value)));
       paintTone(one, Math.abs(p.value), (parts ?? []).map((all) => Math.abs(all.value)));
+      markMatch(one, p);
       return [one];
     });
     if (!bars || !tpl) return;
@@ -127,7 +135,7 @@ export class SherpaBarchart extends SherpaElement {
       col.dataset['sign'] = d.value < 0 ? '-' : '+';
       bar.style.setProperty('--_h', `${Math.abs(at - zero)}%`);
       bar.style.setProperty('--_base', `${zero}%`);
-      if (d.matched != null) bar.style.setProperty('--_m', `${d.value ? Math.min(100, Math.abs(d.matched / d.value) * 100) : 0}%`);
+      markMatch(bar, d);
       /* STACKED by its Secondary: each piece its share, in ITS colour, its parts in
          it; else GROUPED, each part its share in the bar's own colour. TODO 548 */
       bar.querySelector('.bar-stack')?.replaceChildren(...(d.stack ?? []).flatMap((p, j) => {
@@ -135,6 +143,7 @@ export class SherpaBarchart extends SherpaElement {
         if (!piece) return [];
         piece.style.setProperty('--_p', String(Math.abs(p.value)));
         paintSeries(piece, j, p.colorIndex);
+        markMatch(piece, p);
         piece.querySelector('.bar-parts')?.replaceChildren(...partsOf(p.parts));
         return [piece];
       }));

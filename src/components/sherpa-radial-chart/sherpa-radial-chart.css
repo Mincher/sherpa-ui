@@ -108,9 +108,12 @@
   stroke: color-mix(in oklab, var(--_border, var(--sherpa-data-viz-series-1, #8364c8)), black var(--_shade, 0%));
   pointer-events: none;
 }
-:host(:state(highlighting)) .slice-part {
+:host(:state(highlighting)) :is(.slice-part, .slice-ring) {
   fill: color-mix(in srgb, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)) 35%, transparent);
 }
+/* Split, each ring and section marks its own, from its own start. Will, TODO 638 */
+:host(:state(highlighting)) :is(.slice, .slice-ring)[data-split] { fill: transparent; }
+:host(:state(highlighting)) .slice[data-stacked] { fill: none; }
 /* Over its parts, their outline. Painted, so it still takes the pointer. */
 :is(.slice, .slice-ring)[data-split] { fill: transparent; }
 

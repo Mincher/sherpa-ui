@@ -108,3 +108,25 @@ test('a Refresh asks a server field again: its old keys are of the set let go', 
   await settle();
   assert.deepEqual(source.rows.map((r) => r.id).sort(), [1, 2, 3]);
 });
+
+test('a chip counts a field the store answers as its rows do, by the keys the store matched', async () => {
+  const inner = new ArrayStore(ROWS.map((r) => ({ ...r })), { key: 'id' });
+  const store = fakeRemote(inner, { delay: 0 });
+  const load = store.load.bind(store);
+  // `score` lives on the server alone: rows 2 and 3 match.
+  store.load = (o) => load(JSON.stringify(o?.filter ?? '').includes('"score"') ? { ...o, filter: ['id', 'in', [2, 3]] } : o);
+  const source = await openSource({
+    store: 'rows',
+    fields: { score: { label: 'Score', type: 'number', fetch: 'server' } },
+    scopes: { data: { label: 'Rows', holds: ['score'] } },
+  }, store);
+  bindSource(source, { populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {} }, { scope: 'data' });
+  source.query.setReading('data', 'score', { conditions: [{ op: 'gt', text: '40' }], mode: 'advanced' });
+  source.query.commit({ scope: 'data' });
+  await source.load();
+  await settle();
+  await source.load();
+  await settle();
+  assert.deepEqual(source.rows.map((r) => r.id).sort(), [2, 3]);
+  assert.deepEqual(await source.results('data'), { score: 2 });
+});

@@ -14771,6 +14771,17 @@ angle measured at the band's middle, so a gap is true there and a little wider a
 
 - Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
 
+### T-a-match-marks-its-own-mark
+
+**A highlight covers the mark that matches: its own start to its own end.** Will, TODO 638.
+A matched count alone says how much, and not where. Drawn across a whole stacked bar it
+started at the base, so hovering the third value lit the first. So `summariseMarked` says
+`matched` on every piece and section, and each draws its own part from its own start. A bar
+or slice with nothing inside it still fills from its base: its match has no position.
+
+- Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
+- Site: `test/unit/aggregate.test.mjs`
+
 ### T-a-horizontal-legend-is-three-by-two
 
 A horizontal legend was a wrapping flex row, so it put a different number of

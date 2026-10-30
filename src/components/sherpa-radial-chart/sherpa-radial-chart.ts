@@ -130,7 +130,17 @@ export class SherpaRadialChart extends SherpaElement {
     const sectionPad = SECTION_GAP * unit;
     /** A band's parts: each a shade or tint of its colour by its weight there, a gap
      *  between, none at the band's own edges, which its outline holds. Will, TODOs 548, 564, 635 */
-    const partsIn = (parts: readonly { value: number }[] | undefined, whole: number, from: number, to: number,
+    /** What the driver matches of one mark, from its own start: over all the marks. Will, TODO 638 */
+    const matches: SVGPathElement[] = [];
+    const matchIn = (mark: { value: number; matched?: number }, from: number, to: number, start: number, end: number, index: number, colorIndex?: number): void => {
+      const part = mark.value && mark.matched ? Math.min(1, Math.max(0, mark.matched) / mark.value) : 0;
+      const path = marking && part && matchTpl ? this.clone<SVGPathElement>(matchTpl, '.slice-match') : null;
+      if (!path) return;
+      path.setAttribute('d', ringSegmentPath({ cx: CENTRE, cy: CENTRE, inner: from, outer: to, startDeg: start, endDeg: start + (end - start) * part }));
+      paintSeries(path, index, colorIndex);
+      matches.push(path);
+    };
+    const partsIn = (parts: readonly { value: number; matched?: number }[] | undefined, whole: number, from: number, to: number,
       startDeg: number, spanDeg: number, index: number, colorIndex?: number): void => {
       const shown = (parts ?? []).filter((one) => one.value > 0);
       let within = 0;
@@ -140,14 +150,14 @@ export class SherpaRadialChart extends SherpaElement {
         const part = partTpl ? this.clone<SVGPathElement>(partTpl, '.slice-part') : null;
         if (!part) return;
         const [start, end] = ringInset(startDeg + spanDeg * begins, startDeg + spanDeg * within, from, to, sectionPad);
-        part.setAttribute('d', ringSegmentPath({
-          cx: CENTRE, cy: CENTRE, inner: from, outer: to,
-          startDeg: n ? start : startDeg + spanDeg * begins, endDeg: n < shown.length - 1 ? end : startDeg + spanDeg * within,
-        }));
+        const startsAt = n ? start : startDeg + spanDeg * begins;
+        const endsAt = n < shown.length - 1 ? end : startDeg + spanDeg * within;
+        part.setAttribute('d', ringSegmentPath({ cx: CENTRE, cy: CENTRE, inner: from, outer: to, startDeg: startsAt, endDeg: endsAt }));
         part.setAttribute('stroke-width', String(SECTION_GAP * unit));
         paintSeries(part, index, colorIndex);
         paintTone(part, p.value, shown.map((one) => one.value));
         group.appendChild(part);
+        matchIn(p, from, to, startsAt, endsAt, index, colorIndex);
       });
     };
 
@@ -185,16 +195,6 @@ export class SherpaRadialChart extends SherpaElement {
       paintSeries(arc, i, slice.colorIndex);
       arc.toggleAttribute('data-stacked', !!slice.stack?.length);
       arc.toggleAttribute('data-split', !slice.stack?.length && !!slice.parts?.some((one) => one.value > 0));
-      // The part the highlight's driver matches: from the slice's start. TODO 441
-      const part = value && slice.matched ? Math.min(1, Math.max(0, slice.matched) / value) : 0;
-      const match = marking && part && matchTpl ? this.clone<SVGPathElement>(matchTpl, '.slice-match') : null;
-      if (match) {
-        match.setAttribute('d', ringSegmentPath({
-          cx: CENTRE, cy: CENTRE, inner, outer, radius: pie ? 0 : CORNER,
-          startDeg: gapStart, endDeg: gapStart + (gapEnd - gapStart) * part,
-        }));
-        paintSeries(match, i, slice.colorIndex);
-      }
       /* The path IS the datum, not a control; the ring is its one tab stop.
          TRAP T-a-chart-datum-is-reachable-without-a-pointer */
       arc.setAttribute('role', 'img');
@@ -225,6 +225,7 @@ export class SherpaRadialChart extends SherpaElement {
           path.toggleAttribute('data-split', !!band.parts?.some((one) => one.value > 0));
           if (!path.hasAttribute('data-split')) group.appendChild(path);
           partsIn(band.parts, Math.max(0, band.value), near, far, startDeg, spanDeg, j, band.colorIndex);
+          if (!path.hasAttribute('data-split')) matchIn(band, near, far, startDeg, startDeg + spanDeg, j, band.colorIndex);
           if (path.hasAttribute('data-split')) group.appendChild(path);
           from = to;
         }
@@ -233,7 +234,8 @@ export class SherpaRadialChart extends SherpaElement {
         partsIn(slice.parts, value, inner, outer, startDeg, spanDeg, i, slice.colorIndex);
       }
       if (split) group.appendChild(arc);
-      if (match) group.appendChild(match);
+      // Whole, it marks its own; split, each ring and section does. TODO 638
+      if (!split && !slice.stack?.length) matchIn(slice, inner, outer, gapStart, gapEnd, i, slice.colorIndex);
 
       if (hotspots && hotTpl) {
         const frag = hotTpl.content.cloneNode(true) as DocumentFragment;
@@ -251,6 +253,7 @@ export class SherpaRadialChart extends SherpaElement {
 
       acc += share;
     });
+    group.append(...matches);
   }
 
   /**

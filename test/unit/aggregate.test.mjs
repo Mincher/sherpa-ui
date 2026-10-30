@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 
 // The DATA tier — src/core is split by where a module can run.
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { aggregateBy, countBy, bandBy, seriesBy, reduceRows, summarise } =
+const { aggregateBy, countBy, bandBy, seriesBy, reduceRows, summarise, summariseMarked } =
   await import(new URL('aggregate.js', core));
 
 const ROWS = [
@@ -212,3 +212,16 @@ test('summarise: a declared date domain is cut to its bucket; a year steps acros
   assert.deepEqual(span.labels, ['2023-12-30', '2023-12-31', '2024-01-01', '2024-01-02']);
 });
 
+
+// A match says where as well as how much: each piece and section has its own. Will, TODO 638
+// TRAP T-a-match-marks-its-own-mark
+test('summariseMarked says what is matched of every segment, piece and section', () => {
+  const rows = [
+    { s: 'a', p: 'x', g: 'm' }, { s: 'a', p: 'y', g: 'm' }, { s: 'a', p: 'y', g: 'n' }, { s: 'b', p: 'y', g: 'n' },
+  ];
+  const [a, b] = summariseMarked(rows, { shape: 'segments', segment: 's', stack: 'p', group: 'g' }, () => [], () => ({}), (r) => r.p === 'y');
+  assert.equal(a.matched, 2);
+  assert.equal(b.matched, 1);
+  assert.deepEqual(a.stack.map((d) => [d.label, d.value, d.matched]), [['x', 1, 0], ['y', 2, 2]]);
+  assert.deepEqual(a.stack[1].parts.map((d) => [d.label, d.value, d.matched]), [['m', 1, 1], ['n', 1, 1]]);
+});

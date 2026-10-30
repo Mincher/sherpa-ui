@@ -446,6 +446,21 @@ export function summariseBanded(
   return { ...(typeof value === 'number' ? { value } : value), zones };
 }
 
+/** Each datum, and what is inside it, with its share of the driver's matches: a
+ *  piece or a section draws its own. Will, TODO 638 */
+function markedAll(all: readonly ChartDatum[], part: readonly ChartDatum[] = []): ChartDatum[] {
+  const by = new Map(part.map((d) => [d.label, d]));
+  return all.map((d) => {
+    const own = by.get(d.label);
+    return {
+      ...d,
+      matched: own?.value ?? 0,
+      ...(d.stack ? { stack: markedAll(d.stack, own?.stack) } : {}),
+      ...(d.parts ? { parts: markedAll(d.parts, own?.parts) } : {}),
+    };
+  });
+}
+
 /** The same, and what the highlight's driver matches, as `matched`: each
  *  segment's part, each series point's, or a value's own. The rows summed
  *  twice. Will, TODO 441 */
@@ -459,10 +474,7 @@ export function summariseMarked(
   const all = summariseBanded(rows, spec, domain, bands);
   if (!matches || typeof all === 'number') return all;
   const part = summariseBanded(rows.filter(matches), spec, domain, bands);
-  if (Array.isArray(all)) {
-    const by = new Map((part as ChartDatum[]).map((d) => [d.label, d.value]));
-    return all.map((d) => ({ ...d, matched: by.get(d.label) ?? 0 }));
-  }
+  if (Array.isArray(all)) return markedAll(all, part as ChartDatum[]);
   if ('series' in all && Array.isArray(all.series)) {
     const { labels, series } = part as { labels: string[]; series: Series[] };
     return {

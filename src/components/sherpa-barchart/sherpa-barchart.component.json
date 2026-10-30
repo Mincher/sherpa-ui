@@ -196,7 +196,14 @@
           {
             "el": "span",
             "class": "bar-part",
-            "part": "bar-part"
+            "part": "bar-part",
+            "children": [
+              {
+                "el": "span",
+                "class": "bar-match",
+                "part": "bar-match"
+              }
+            ]
           }
         ]
       },
@@ -209,6 +216,11 @@
             "class": "bar-piece",
             "part": "bar-piece",
             "children": [
+              {
+                "el": "span",
+                "class": "bar-match",
+                "part": "bar-match"
+              },
               {
                 "el": "span",
                 "class": "bar-parts"
