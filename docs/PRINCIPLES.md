@@ -258,7 +258,7 @@ template literal is OUTPUT, and a comment-stripper eats it.
 **The RULES are the markdown files in this table, and code reads all but this one.** The
 rest of `docs/` is record, not rule: the designs (`QUERY-DESIGN`,
 `PROVIDER-DESIGN`, `PAGE-DEFINITION`), the code review's plan
-(`CODE-REVIEW-PLAN`), the approved names (`LEXICON`), the ledger (`TODO`, the one
+(`CODE-REVIEW-PLAN`), the data layer's plan (`DATA-LAYER-PLAN`), the approved names (`LEXICON`), the ledger (`TODO`, the one
 list of open work) and `TRAPS-INDEX`, which is made from `TRAPS`. The four old
 reviews are in `docs/history/`: `COMPONENT-AUDIT`, `FILTER-REVIEW`,
 `COMPONENT-API-AUDIT` and `CONSUMER-REVIEW`. Where one disagrees with the code,
