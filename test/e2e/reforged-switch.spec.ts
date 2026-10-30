@@ -217,3 +217,17 @@ test('data-label and data-description draw beside the track, and their click tog
     on: true, sameInk: true, bareText: 'none',
   });
 });
+
+test('a long description cannot squeeze the track: it keeps its width (Will, TODO 608)', async ({ page }) => {
+  const width = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-switch') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-label', 'Single Apply and Discard');
+    el.setAttribute('data-description', 'A long description that needs every pixel it can take from the track beside it, and then wraps again and again.');
+    el.style.inlineSize = '240px';
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    await window.__settled();
+    return el.shadowRoot!.querySelector('.track')!.getBoundingClientRect().width;
+  });
+  expect(width).toBe(48);
+});

@@ -74,6 +74,7 @@ What each class's base rule reads:
 | Custom property | Class | Property |
 |---|---|---|
 | `--sherpa-switch-size-width` | `.track` | `inline-size` |
+| `--sherpa-switch-size-width` | `.track` | `min-inline-size` |
 | `--sherpa-switch-size-height` | `.track` | `min-block-size` |
 | `--sherpa-switch-size-padding` | `.track` | `padding-block-start` |
 | `--sherpa-switch-size-padding` | `.track` | `padding-block-end` |

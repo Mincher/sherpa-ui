@@ -52,6 +52,7 @@
   /* No gap: the label centres its text in what the thumb leaves, so the space
      between them shrinks to fit OFF rather than pushing it out of the track. */
   inline-size: var(--sherpa-switch-size-width, 48px);
+  min-inline-size: var(--sherpa-switch-size-width, 48px);
   min-block-size: var(--sherpa-switch-size-height, 20px);
   /* Figma's stroke is INSIDE and takes no room, so the padding gives it back —
      the room compact needs for OFF. */

@@ -202,6 +202,7 @@
   ],
   "tokens": {
     "track.inline-size": "{switch.switch-size.width}",
+    "track.min-inline-size": "{switch.switch-size.width}",
     "track.min-block-size": "{switch.switch-size.height}",
     "track.padding-block-start": "{switch.switch-size.padding}",
     "track.padding-block-end": "{switch.switch-size.padding}",
