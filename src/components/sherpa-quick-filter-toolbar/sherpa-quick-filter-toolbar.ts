@@ -17,7 +17,7 @@ import {
   MANAGE_SETS, MenuDrill, OneRows, SavedSets, drawFiltersButton, hangFiltersMenu, saves, type AddedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
 import {
-  FILTER_ACTIONS, askSwitches, drawFilterActions, extraRows, folded, hidesUnmatched, openMore, pickMore,
+  FILTER_ACTIONS, askSwitches, drawFilterActions, offersMore, extraRows, folded, hidesUnmatched, openMore, pickMore,
   saveRows, syncHide,
   type MoreRow,
 } from '../../core/ui/more-menu.js';
@@ -258,6 +258,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const bar = this.$('.bar');
     const chips = this.$('.chips');
     if (!bar || !chips) return;
+    // Measured with its ⋮: its rows may come with what folds.
+    this.toggleState('no-more', false);
     const was = { collapse: this.#collapse, folded: this.#folded };
 
     // Cumulative: step 2 sets collapse-1 and collapse-2. TRAP T-private-state-is-a-custom-state
@@ -283,6 +285,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         if (!this.#overflowing()) break;
       }
     }
+    this.#syncMore();
     // Nothing moved: the open menus stay. TRAP T-a-reflow-that-moves-nothing-keeps-its-menus
     if (this.#collapse === was.collapse
       && folded.length === was.folded.length && folded.every((c, i) => c === was.folded[i])) return;
@@ -1804,6 +1807,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (name === 'open' && this.#columned && this.hasAttribute('open')) this.#column.opened();
     if (name === 'data-label-column') this.#syncLayout();
     if (name === 'data-move-filters') this.#redoMoves();
+    if (name === 'data-limit-options' || name === 'data-saved-menu' || name === 'data-saveable' || name === 'data-no-saves'
+      || name === 'data-node-editor' || name === 'data-suggest' || name === 'data-orientation') this.#syncMore();
     if (name === 'data-every-count') this.#drawValueResults();
     if (name === 'data-orientation') {
       this.#syncLayout();
@@ -2412,6 +2417,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * Header's (TODO 425). TRAP T-the-more-menu-holds-what-folded
    */
   #openMore(trigger: HTMLElement): void {
+    openMore(this, this.root, trigger, this.#moreRows());
+  }
+
+  /** What the ⋮ holds at this width. Reset is the Edit menu's. Will, TODO 454 */
+  #moreRows(): MoreRow[][] {
     // A folded button's row: Suggest, where offered (TODO 527), and Refresh.
     const gone = (act: string): boolean => folded(this.$(`.act[data-act="${act}"]`));
     const tail: MoreRow[] = [...(this.hasAttribute('data-suggest') && gone('suggest') ? [['suggest'] as const] : []),
@@ -2419,8 +2429,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const saves = this.hasAttribute('data-saved-menu') ? [] : saveRows(this, this.#saved.applied);
     // Last, apart: the page's Query as nodes, where the host offers it. Will, TODO 555
     const editor: MoreRow[] = this.hasAttribute('data-node-editor') ? [['node-editor']] : [];
-    // Reset is the Edit menu's. Will, TODO 454
-    openMore(this, this.root, trigger, [saves, extraRows(this), tail, editor]);
+    return [saves, extraRows(this), tail, editor];
+  }
+
+  /** A ⋮ with no row to show is not shown, on the bar or its column. Will, TODO 566 */
+  #syncMore(): void {
+    if (!this.hasRendered) return;
+    const portrait = this.dataset['orientation'] === 'portrait';
+    this.toggleState('no-more', !offersMore(this, portrait ? this.#column.moreRows() : this.#moreRows()));
   }
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */

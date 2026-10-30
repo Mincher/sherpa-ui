@@ -251,7 +251,8 @@ test('the action cluster is built in, Refresh left of the ⋮; the View\'s ★ a
   const r = await page.evaluate(async () => {
     const probe = async (type?: string) => {
       // Filled, though empty: the Filters menu draws then.
-      const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [], type ? { 'data-type': type } : {});
+      // It saves, so its ⋮ has a row to show. TODO 566
+      const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [], { 'data-saveable': '', ...(type ? { 'data-type': type } : {}) });
       const sr = el.shadowRoot!;
       const shown = (sel: string) => {
         const n = sr.querySelector(sel) as HTMLElement | null;
@@ -1176,6 +1177,8 @@ test('the bar folds its actions, then its chips, and never wraps', async ({ page
       rendered?: Promise<void>;
       populate(d: unknown): void;
     };
+    // It saves, so its ⋮ has a row to show, at every width. TODO 566
+    el.setAttribute('data-saveable', '');
     const box = document.createElement('div');
     box.style.inlineSize = '1400px';
     box.appendChild(el);
@@ -2821,4 +2824,23 @@ test('Limit to matching filters and Hide invalid filters are offered at the View
   });
   expect(r.view).toEqual(['limit-options', 'hide-unmatched']);
   expect(r.local).toEqual([]);
+});
+
+test('a ⋮ with no row to show is not shown; a row to show brings it back (Will, TODO 566)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-scope': 'data' });
+    el.style.inlineSize = '1400px';
+    el.populate!([{ id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] }]);
+    await window.__settled();
+    const shown = (): boolean => getComputedStyle(el.shadowRoot!.querySelector('.act[data-act="overflow"]')!).display !== 'none';
+    const at: Record<string, boolean> = { nothing: shown() };
+    el.setAttribute('data-saveable', '');
+    await window.__settled();
+    at.saves = shown();
+    el.setAttribute('data-saved-menu', '');
+    await window.__settled();
+    at.savedApart = shown();
+    return at;
+  });
+  expect(r).toEqual({ nothing: false, saves: true, savedApart: false });
 });

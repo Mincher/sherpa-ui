@@ -10,6 +10,7 @@
  * - hidesUnmatched — Limit is on, and hides what it rules out.
  * - saveRows — Save filters, or "Save <name>" with Save as and Delete; none unless the host saves.
  * - extraRows — The page's own buttons in the `actions` slot that have folded away.
+ * - offersMore — Would the ⋮ menu hold anything: these rows, or the host's own switches?
  * - openMore — Draw the ⋮ menu from groups of rows, and show it at the trigger.
  * - FILTER_ACTIONS — The rows the Filters menu ends with: its filter actions.
  * - drawFilterActions — Lead a Filters menu with Reset and Reset all on view.
@@ -63,6 +64,11 @@ export function saveRows(host: HTMLElement, applied?: { label: string }): MoreRo
 /** The page's own buttons in the `actions` slot that have folded away — the panel switch is one. */
 export function extraRows(host: HTMLElement): MoreRow[] {
   return extras(host).flatMap((extra, i): MoreRow[] => (folded(extra) ? [[`${EXTRA}${i}`]] : []));
+}
+
+/** Would the ⋮ menu hold anything: these rows, or the host's own switches? Will, TODO 566 */
+export function offersMore(host: HTMLElement, groups: readonly MoreRow[][]): boolean {
+  return groups.some((rows) => rows.length) || (!!host.dataset['limitOptions'] && atView(host));
 }
 
 /** Draw the ⋮ menu from groups of rows — a divider between each — then the

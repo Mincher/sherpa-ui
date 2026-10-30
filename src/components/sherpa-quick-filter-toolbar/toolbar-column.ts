@@ -14,12 +14,13 @@
  * - .present — What the filters before a scope's fields leave: an offer with nothing left is spent.
  * - .drawReading — A chart's own answer, told the column as a panel: its section draws it.
  * - .saved — The reader's saved sets: the Filters menu's Saved section, and Save <name>.
+ * - .moreRows — What its ⋮ holds.
  */
 import { VIEW } from '../../core/data/query.js';
 import type { ScopeDescription } from '../../core/data/data-source.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import { MANAGE_SETS, SavedSets, drawFiltersButton, hangFiltersMenu, saves, type AddedFilter, type ListedFilter, type SavedSet } from '../../core/ui/filters-button.js';
-import { FILTER_ACTIONS, askSwitches, drawFilterActions, extraRows, hidesUnmatched, openMore, pickMore, saveRows } from '../../core/ui/more-menu.js';
+import { FILTER_ACTIONS, askSwitches, drawFilterActions, extraRows, hidesUnmatched, openMore, pickMore, saveRows, type MoreRow } from '../../core/ui/more-menu.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 import { ToolbarHeader } from './toolbar-header.js';
 
@@ -260,11 +261,14 @@ export class ToolbarColumn {
    *  away, then Limit. No Suggest filters or Refresh: those are the App
    *  Header's. Will, TODO 425 G11 */
   #onMore = (event: Event): void => {
-    const el = this.#host.el;
-    const saves = el.hasAttribute('data-saved-menu') ? [] : saveRows(el, this.#saved.applied);
-    // Reset is the Edit menu's. Will, TODO 454
-    openMore(el, this.#host.root(), event.currentTarget as HTMLElement, [saves, extraRows(el)]);
+    openMore(this.#host.el, this.#host.root(), event.currentTarget as HTMLElement, this.moreRows());
   };
+
+  /** What its ⋮ holds. Reset is the Edit menu's. Will, TODO 454 */
+  moreRows(): MoreRow[][] {
+    const el = this.#host.el;
+    return [el.hasAttribute('data-saved-menu') ? [] : saveRows(el, this.#saved.applied), extraRows(el)];
+  }
 
   /** A ⋮ row: a filter action, or a page button folded away. */
   #onMoreRow = (event: Event): void => {

@@ -2121,6 +2121,9 @@ the host says it offers one (`data-limit-options="on|off"`, written by the
 provider) — so the bar's ⋮ shows at any width then. Ticking it REPORTS
 `limit-options-change`; the provider owns the setting, and the app keeps it.
 
+
+**With no row to show it is not shown** (`offersMore`, Will, TODO 566). What folds decides that, so a reflow measures with the ⋮ in place and decides after: its rows may come with what folds.
+
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/core/ui/more-menu.ts`
