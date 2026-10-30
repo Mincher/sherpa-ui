@@ -682,6 +682,9 @@ the chip reads as "on but filtering by nothing" and paints WARNING. That was
 the intermittent amber view chip: whether it appeared depended only on whether
 the host remembered to mark an option `selected`.
 
+
+**It keeps its pick through `data-reset-on-populate`.** A reset is of the filters, and a selector answers none. A View that changed what the View scope holds rebuilt the bar, and the chip fell back to the first View. Will, TODO 599.
+
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/ui/filter-def.ts`
 

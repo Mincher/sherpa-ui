@@ -2844,3 +2844,22 @@ test('a ⋮ with no row to show is not shown; a row to show brings it back (Will
   });
   expect(r).toEqual({ nothing: false, saves: true, savedApart: false });
 });
+
+test('a rebuild with data-reset-on-populate forgets the filters, never what a selector picked (Will, TODO 599)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const view = { id: 'view', label: 'View', persistent: true, options: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }] };
+    const plan = { id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] };
+    const tier = { id: 'tier', label: 'Tier', options: [{ value: 'gold', label: 'Gold' }] };
+    const el = await window.__mount<Bar & { values: Record<string, string[]>; setChipValues(id: string, v: string[]): void }>('sherpa-quick-filter-toolbar', undefined, { 'data-reset-on-populate': '' });
+    el.populate!([view, plan]);
+    await window.__settled();
+    el.setChipValues('view', ['b']);
+    el.setChipValues('plan', ['pro']);
+    await window.__settled();
+    el.populate!([view, tier, plan]);
+    await window.__settled();
+    return { view: el.values['view'], plan: el.values['plan'] ?? [] };
+  });
+  expect(r).toEqual({ view: ['b'], plan: [] });
+});
+

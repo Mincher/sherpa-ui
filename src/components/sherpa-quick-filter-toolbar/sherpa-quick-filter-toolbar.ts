@@ -1283,23 +1283,22 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const live = new Map<string, { on: boolean; picked: Set<string> }>();
     /* AND THE REST OF EACH ANSWER — op, typing, rows. A new menu starts from
        its def. TRAP T-a-rebuild-keeps-every-answer */
-    const kept = this.hasAttribute('data-reset-on-populate') ? {} : this.#answers();
-    if (!this.hasAttribute('data-reset-on-populate')) {
-      for (const chip of this.#chips()) {
-        const id = chip.dataset['id'];
-        if (!id) continue;
-        live.set(id, {
-          on: chip.hasAttribute('data-current'),
-          picked: new Set(this.#chipPicks(chip)),
-        });
-      }
+    const reset = this.hasAttribute('data-reset-on-populate');
+    const kept = reset ? {} : this.#answers();
+    for (const chip of this.#chips()) {
+      const id = chip.dataset['id'];
+      // A reset is of the filters. A selector answers none, so it keeps its pick. Will, TODO 599
+      if (!id || (reset && !chip.hasAttribute('data-persistent'))) continue;
+      live.set(id, {
+        on: chip.hasAttribute('data-current'),
+        picked: new Set(this.#chipPicks(chip)),
+      });
     }
 
     /* A chip built from the same def, under the same flags, is MOVED, not
        remade: its menu, its answer and its draft go with it. Only a new or
        changed one is built, and only it takes back a kept answer. TODO 415 */
-    const fresh = !this.hasAttribute('data-reset-on-populate');
-    const was = new Map(fresh ? this.#chips().map((c) => [c.dataset['id'] ?? '', c] as const) : []);
+    const was = new Map(this.#chips().filter((c) => !reset || c.hasAttribute('data-persistent')).map((c) => [c.dataset['id'] ?? '', c] as const));
     const moved = new Set<string>();
     list.replaceChildren();
     // A chip that stays shows what it was drawn; a new one has been drawn nothing.
