@@ -18084,7 +18084,8 @@ shown, but held higher.
 each with its answer. Such a heading draws that answer — handed to its menu as
 a reading, as its own is — with the chip's superseded look and tip ("Filter moved to View scope. This chip
 holds EMEA."), and its menu `data-readonly`: rows and conditions `inert`, no
-footer, no Add condition, no Advanced button. The heading's own filter is
+footer, no Add condition, no Advanced button. A pointer opens that menu, as a
+key does (Will, TODO 598). A bar's held chip refuses both. The heading's own filter is
 never set by it (`columnClause` stays null), so nothing applies twice. A field
 not named is released.
 

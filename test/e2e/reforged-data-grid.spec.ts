@@ -2755,6 +2755,47 @@ test('a view-held heading shows the view\'s answer, read-only, and is released a
   expect(r.released).toMatchObject({ superseded: false, readonly: false, inert: false, ticked: [], own: null });
 });
 
+test('a pointer opens a held heading\'s menu, read-only, and its tip still says why (Will, TODO 598)', async ({ page }) => {
+  await page.evaluate(async () => {
+    type Grid = HTMLElement & { supersedeColumns(r: Record<string, unknown>, at?: string): void };
+    const grid = await window.__mount<Grid>('sherpa-data-grid', {
+      columns: [{ field: 'region', header: 'Region' }],
+      rows: [{ region: 'EMEA' }, { region: 'APAC' }],
+    }, { 'data-column-filters': true });
+    grid.supersedeColumns({ region: { picked: ['EMEA'] } }, 'App header');
+    await window.__settled();
+  });
+  const chip = page.locator('sherpa-data-grid .head-cell[data-field="region"] .head-filter');
+  const caret = chip.locator('.caret');
+  await caret.hover();
+  await expect.poll(() => chip.evaluate((c) => {
+    const tip = c.shadowRoot!.querySelector<HTMLElement>('.tip')!;
+    return { shown: tip.checkVisibility(), text: tip.textContent };
+  })).toEqual({ shown: true, text: 'Filter moved to App header scope. This chip holds EMEA.' });
+  await caret.click();
+  const menu = chip.locator('sherpa-menu');
+  await expect(menu.locator('.menu')).toBeVisible();
+  await expect(menu).toHaveAttribute('data-readonly', '');
+  expect(await menu.evaluate((m) => (m as HTMLElement & { values: string[] }).values)).toEqual(['EMEA']);
+  await expect(menu.locator('.rows')).toHaveAttribute('inert', '');
+  // A second press shuts it.
+  await caret.click();
+  await expect(menu.locator('.menu')).toBeHidden();
+});
+
+test('a bar\'s held chip still refuses a pointer: only a heading opens (TODO 598)', async ({ page }) => {
+  await page.evaluate(async () => {
+    const chip = document.createElement('sherpa-quick-filter');
+    chip.setAttribute('data-label', 'Region');
+    chip.setAttribute('data-menu', '');
+    chip.setAttribute('data-superseded', '');
+    document.getElementById('root')!.appendChild(chip);
+    await window.__settled();
+  });
+  const seen = await page.locator('sherpa-quick-filter .caret').evaluate((c) => getComputedStyle(c).pointerEvents);
+  expect(seen).toBe('none');
+});
+
 /**
  * A heading that ALREADY held its own filter when the View took its field:
  * the View's answer is what filters, so the View's matches are marked — and

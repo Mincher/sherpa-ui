@@ -389,6 +389,11 @@
   cursor: not-allowed;
   pointer-events: none;
 }
+/* A grid heading's menu still opens, read-only, to show the answer. Will, TODO 598 */
+:host([data-superseded][data-no-value][data-menu]) .caret {
+  cursor: pointer;
+  pointer-events: auto;
+}
 
 /* ── Disabled — the INACTIVE mode, pinned in state-pins.yaml; never opacity ── */
 /* Ruled out and ON, it can still be let go. Will, TODO 462. Left out by a preset, not. TODO 601 */
