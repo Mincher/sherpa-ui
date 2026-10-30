@@ -119,3 +119,15 @@ test('a reader\'s answer on its field, or a clear of it, leaves it on; the Switc
   assert.deepEqual(ids(source), [1, 2, 3, 4]);
   assert.equal(on(source), false);
 });
+
+test('on a field no scope holds, its reading is read where it sits: the state says on, not off (Will, TODO 611)', async () => {
+  const source = await page();
+  assert.equal(source.query.scopeOf('tickets'), null);
+  await act(source, () => source.query.setPreset('data', 'high-risk', true));
+  assert.equal(source.selection('tickets').fieldState, 'active');
+  // Still its scope's alone: it never moved to the View.
+  assert.ok(source.query.applied.scopes.data.readings.tickets);
+  assert.equal(source.query.applied.scopes.view?.readings.tickets, undefined);
+  await act(source, () => source.query.setPreset('data', 'high-risk', false));
+  assert.equal(source.selection('tickets').fieldState, 'off');
+});

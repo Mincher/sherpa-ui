@@ -934,3 +934,52 @@ test('a Sort chip cleared forgets its column, as None does (TODO 523 S9)', async
   });
   expect(r).toEqual({ before: 'plan', after: '', attr: null });
 });
+
+test('a held chip reads inactive, ON too; a preset holding it reads info and says why (Will, TODO 611)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-label', 'Status');
+    el.setAttribute('data-menu', '');
+    el.setAttribute('data-applied-at', 'View Context');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const caret = el.shadowRoot!.querySelector('.caret')!;
+    const read = async (attrs: Record<string, string>) => {
+      for (const a of ['data-current', 'data-superseded', 'data-by-preset']) el.removeAttribute(a);
+      for (const [a, v] of Object.entries(attrs)) el.setAttribute(a, v);
+      await window.__settled();
+      // A chip's colours ease in: read them when they land.
+      await Promise.all(caret.getAnimations().map((t) => t.finished));
+      const s = getComputedStyle(caret);
+      return { border: s.borderTopColor, ink: s.color, tip: el.shadowRoot!.querySelector('.tip')?.textContent };
+    };
+    return {
+      held: await read({ 'data-superseded': '' }),
+      heldOn: await read({ 'data-superseded': '', 'data-current': '' }),
+      heldByPreset: await read({ 'data-superseded': '', 'data-current': '', 'data-by-preset': 'High risk' }),
+    };
+  });
+  expect(r.heldOn.border).toBe(r.held.border);
+  expect(r.heldOn.ink).toBe(r.held.ink);
+  expect(r.heldByPreset.border).toBe('rgb(0, 139, 186)');
+  expect(r.heldByPreset.tip).toContain('High risk');
+});
+
+test('a held grid heading with no answer has a lighter ink, so it reads as moved (Will, TODO 611)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter') as HTMLElement & { rendered?: Promise<void> };
+    for (const a of ['data-icon-only', 'data-menu', 'data-no-value', 'data-plain', 'data-locked']) el.setAttribute(a, '');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const caret = el.shadowRoot!.querySelector('.caret')!;
+    const ink = async () => {
+      await Promise.all(caret.getAnimations().map((t) => t.finished));
+      return getComputedStyle(caret).color;
+    };
+    const free = await ink();
+    el.setAttribute('data-superseded', '');
+    return { free, held: await ink() };
+  });
+  expect(r.free).toBe('rgb(12, 11, 17)');
+  expect(r.held).toBe('rgb(179, 179, 195)');
+});

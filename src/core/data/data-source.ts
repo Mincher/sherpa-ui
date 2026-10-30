@@ -895,7 +895,14 @@ export class DataSource extends EventTarget {
     const { conditions: _raw, ...held } = answerOf(readingOf(this.#draft, field) ?? {});
     const reading = { ...held, picked, ...(state.conditions.length ? { conditions: state.conditions } : {}) };
     this.#binding.drawReading(field, reading, home);
+    // A preset's field no scope holds has no home once it goes: where it sat hears that. TODO 611
+    const sat = this.#presetAt.get(field);
+    if (sat && sat !== home) this.#binding.drawReading(field, reading, sat);
+    if (held.byPreset && !this.#context.scopeOf(field)) this.#presetAt.set(field, home);
+    else this.#presetAt.delete(field);
   }
+  /** Where a preset put each field no scope holds. */
+  #presetAt = new Map<string, string>();
 
   /**
    * THE GROUPS IN FORCE — each value, and how many rows carry it.

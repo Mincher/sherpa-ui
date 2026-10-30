@@ -9,7 +9,7 @@
  * - keepOff — A scope switched OFF applies nothing: what comes into force there is switched off and listed.
  * - holdsField — Is this field held in this scope?
  * - holderOf — Which scope holds this field, or null — the View first, when it does.
- * - homeOf — Where a field's reading lives: its holder, else the View.
+ * - homeOf — Where a field's reading lives: its holder, else a preset's scope, else the View.
  * - readingOf — One field's reading, or undefined.
  * - setReading — Write one field's reading at its home, or remove it.
  * - rehome — Move each reading to its home after a hold moved fields.
@@ -106,9 +106,13 @@ export function holderOf(query: Query, field: string): string | null {
 }
 
 /** Where a field's reading lives: the View when it holds the field, else the
- *  one component scope that does, else the View — which narrows everyone. */
+ *  one component scope that does, else where a preset put it, else the View —
+ *  which narrows everyone. TRAP T-a-preset-is-its-own-part */
 export function homeOf(query: Query, field: string): string {
-  return holderOf(query, field) ?? VIEW;
+  const holder = holderOf(query, field);
+  if (holder) return holder;
+  for (const [name, scope] of eachScope(query)) if (scope.readings[field]?.byPreset) return name;
+  return VIEW;
 }
 
 /** One field's reading, or undefined. */
@@ -118,8 +122,9 @@ export function readingOf(query: Query, field: string): FieldReading | undefined
 
 /** Write one field's reading at its home, or remove it. */
 export function setReading(query: Query, field: string, reading: FieldReading | undefined): void {
+  const home = homeOf(query, field);
   for (const [, scope] of eachScope(query)) Reflect.deleteProperty(scope.readings, field);
-  if (reading) scopeEntry(query, homeOf(query, field)).readings[field] = reading;
+  if (reading) scopeEntry(query, home).readings[field] = reading;
   prune(query);
 }
 

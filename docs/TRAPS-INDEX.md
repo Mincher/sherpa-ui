@@ -62,7 +62,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-parent-pick-is-the-parent](TRAPS.md#t-a-parent-pick-is-the-parent) — filter-state, source-counts
 - [T-a-path-is-judged-by-its-parent-when-stepwise](TRAPS.md#t-a-path-is-judged-by-its-parent-when-stepwise) — source-counts
 - [T-a-pending-chip-reads-as-a-warning](TRAPS.md#t-a-pending-chip-reads-as-a-warning) — data-source-types
-- [T-a-preset-is-its-own-part](TRAPS.md#t-a-preset-is-its-own-part) — data-source, filter-state, page-definition, query, query-context, source-counts
+- [T-a-preset-is-its-own-part](TRAPS.md#t-a-preset-is-its-own-part) — data-source, filter-state, page-definition, query, query-context, query-edits, source-counts
 - [T-a-projected-row-is-checked-on-what-it-was-sent](TRAPS.md#t-a-projected-row-is-checked-on-what-it-was-sent) — base-store, store
 - [T-a-range-is-bounded-by-the-data](TRAPS.md#t-a-range-is-bounded-by-the-data) — data-source-types
 - [T-a-read-is-planned](TRAPS.md#t-a-read-is-planned) — data-source, data-source-types, read-plan, store-cache

@@ -2746,7 +2746,7 @@
     --_status-icon: var(--sherpa-style-critical-indicator-accent);
   }
 
-  sherpa-quick-filter[data-superseded] {
+  sherpa-quick-filter[data-superseded]:not([data-by-preset]) {
     --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
     --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
     --sherpa-style-border-width: var(--sherpa-style-inactive-border-width);

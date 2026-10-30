@@ -19612,17 +19612,23 @@ preset on the bar (482); the panel heads them "Presets" (a word in the
 toolbar's markup), stacked in the value column, or side by side under the
 heading. The held fields that 452 called "presets" are `own` now.
 
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `src/core/data/filter-state.ts`
-- Site: `src/core/data/query.ts`
-- Site: `src/core/data/query-context.ts`
-- Site: `src/core/data/data-source.ts`
-- Site: `src/core/data/source-counts.ts`
+On a field no scope holds, its reading sits in the preset's scope, so `homeOf`
+looks there before it falls back to the View. Without that, `selection()` read the
+View and said off while the rows were filtered, and a heading wore the amber
+"on, filtering nothing" (TODO 611).
+
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/page-definition.ts`
+- Site: `src/core/data/query-context.ts`
+- Site: `src/core/data/query-edits.ts`
+- Site: `src/core/data/query.ts`
+- Site: `src/core/data/source-counts.ts`
+- Site: `src/core/ui/filter-def.ts`
 - Site: `test/unit/a-preset-is-its-own-part.test.mjs`
 - Site: `test/unit/a-saved-filter-is-a-query.test.mjs`
-- Site: `src/core/ui/filter-def.ts`
-- Site: `src/core/data/page-definition.ts`
 
 ### T-heading-buttons-show-on-hover
 

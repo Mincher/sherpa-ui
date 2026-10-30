@@ -902,14 +902,14 @@ export class SherpaQuickFilter extends SherpaElement {
     if (this.hasAttribute('data-unavailable')) return this.current && !this.#isKey() && this.slot !== 'values' ? SET_ASIDE : RULED_OUT;
     if (this.hasAttribute('data-unused')) return unusedHere(this.dataset['label']);
     if (this.hasAttribute('disabled')) return NOT_AVAILABLE;
-    if (this.hasAttribute('data-superseded')) {
+    const by = this.dataset['byPreset'];
+    if (this.hasAttribute('data-superseded') && !by) {
       // The VALUES too where there are any: they come back when the field is free.
       const moved = movedTo(this.dataset['appliedAt']);
       return values ? `${moved} This chip holds ${values}.` : moved;
     }
     if (this.dataset['heldOut']) return heldByPreset(this.dataset['heldOut']);
     // Why it is on, then what the reader's own answer adds. Will, TODO 521
-    const by = this.dataset['byPreset'];
     if (by) return [onByPreset(by), this.#presets.length ? this.#presetSaid() : '', values].filter(Boolean).join(' ');
     return values;
   }

@@ -394,6 +394,10 @@
   cursor: pointer;
   pointer-events: auto;
 }
+/* With no answer it has no fill or border: only its ink can say it moved. TODO 611 */
+:host([data-superseded][data-no-value][data-menu]:not([data-current])) .caret {
+  color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
+}
 
 /* ── Disabled — the INACTIVE mode, pinned in state-pins.yaml; never opacity ── */
 /* Ruled out and ON, it can still be let go. Will, TODO 462. Left out by a preset, not. TODO 601 */

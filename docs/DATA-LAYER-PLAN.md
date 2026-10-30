@@ -83,7 +83,8 @@ fails.
   only its own scope, so no rows change. Tickets then hears its reading and goes
   blue, with its tip and a read-only menu.
 - **The missing pin.** ON and held is inactive, and blue while a preset holds it
-  (D1). A toolbar chip gets `by-preset` as a heading does.
+  (D1). A toolbar chip does not hear a preset on a field the View holds, so it reads
+  inactive where its heading reads blue. That is an honest look, and Step 3 joins them.
 - **The resting ink** of a held heading (D2).
 
 ### Step 2 (612): wrong answers the engine cannot live with — small each
@@ -160,7 +161,7 @@ the bench's 10k hides all this. It counts and never times
 (`T-the-bench-counts-and-never-times`), and that stays.
 
 Medium: a cached ordered set, so a page turn is a slice and not a filter and a sort.
-Over the target in D3, a Web Worker is the next question, and it meets row 170.
+The target is 100k rows in the browser (D3). A Web Worker is for much later.
 
 ### Step 6 (616): the node engine — medium
 
@@ -197,10 +198,12 @@ Editor's door; clause order. No import cycles, and almost no dead code.
 
 ## Decisions for Will
 
-| # | Question | Options | Pick |
-|---|---|---|---|
-| D1 | The View holds a field and a preset holds it too. Which look? | Blue, or grey | **Blue.** It says the most: this is on, and why. The heading does this today |
-| D2 | A held heading with no answer looks almost normal: its ink is `rgb(53,53,61)`, and normal ink is `rgb(12,11,17)` | A lighter ink on it, or leave it | **Lighter**, so "moved" can be seen |
-| D3 | How many rows must the browser hold? | 100k, with more on the server; or 1M in the browser | **100k.** An engine should run on a server in the end, and 1M needs a Web Worker first |
-| D4 | Chip counts ignore the search box, so they can differ from the rows | Keep, or count the search too | **Keep.** A count says what a filter gives |
-| D5 | Row 555, the Node Editor for Queries, waits on 548, and Presentation is parked | Lift the wait, or finish 548 first | **Lift it**, if 548's model parts are done. To check when we reach it |
+Will decided all five on 2026-10-30.
+
+| # | Question | Decision |
+|---|---|---|
+| D1 | The View holds a field and a preset holds it too. Which look? | **Blue** |
+| D2 | A held heading with no answer looks almost normal: its ink is `rgb(53,53,61)`, and normal ink is `rgb(12,11,17)` | **Lighter** |
+| D3 | How many rows must the browser hold? | **100k.** "We can look at web workers for apps much later" |
+| D4 | Chip counts ignore the search box, so they can differ from the rows | **Keep** |
+| D5 | Row 555, the Node Editor for Queries, waits on 548, and Presentation is parked | **Lift the wait.** "Presentation switching isn't key to building graphs with presentation nodes" |
