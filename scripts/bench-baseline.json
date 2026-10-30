@@ -973,7 +973,7 @@
   },
   "notheld/report": {
     "loads": 1,
-    "counts": 7,
+    "counts": 5,
     "distinct": 4,
     "changes": 0,
     "fields": 11,
@@ -981,11 +981,11 @@
     "cells": 375,
     "compiles": 3,
     "clones": 1,
-    "scans": 15
+    "scans": 14
   },
   "notheld/save": {
     "loads": 2,
-    "counts": 7,
+    "counts": 5,
     "distinct": 4,
     "changes": 0,
     "fields": 11,
@@ -993,7 +993,7 @@
     "cells": 150375,
     "compiles": 0,
     "clones": 1,
-    "scans": 16
+    "scans": 15
   },
   "notheld/save-same": {
     "loads": 2,
@@ -1021,7 +1021,7 @@
   },
   "notheld/add": {
     "loads": 2,
-    "counts": 7,
+    "counts": 5,
     "distinct": 4,
     "changes": 0,
     "fields": 11,
@@ -1029,11 +1029,11 @@
     "cells": 150390,
     "compiles": 0,
     "clones": 1,
-    "scans": 16
+    "scans": 15
   },
   "notheld/delete": {
     "loads": 2,
-    "counts": 7,
+    "counts": 5,
     "distinct": 4,
     "changes": 0,
     "fields": 11,
@@ -1041,7 +1041,7 @@
     "cells": 150375,
     "compiles": 0,
     "clones": 1,
-    "scans": 16
+    "scans": 15
   },
   "notheld/add-field": {
     "loads": 0,
@@ -1114,6 +1114,54 @@
     "compiles": 0,
     "clones": 1,
     "scans": 3
+  },
+  "plain/open": {
+    "loads": 8,
+    "counts": 0,
+    "distinct": 0,
+    "changes": 0,
+    "fields": 0,
+    "rows": 33882,
+    "cells": 388089,
+    "compiles": 0,
+    "clones": 25,
+    "scans": 6
+  },
+  "plain/report": {
+    "loads": 10,
+    "counts": 0,
+    "distinct": 0,
+    "changes": 0,
+    "fields": 0,
+    "rows": 28469,
+    "cells": 107208,
+    "compiles": 3,
+    "clones": 1,
+    "scans": 10
+  },
+  "plain/add": {
+    "loads": 11,
+    "counts": 0,
+    "distinct": 0,
+    "changes": 0,
+    "fields": 0,
+    "rows": 38476,
+    "cells": 257239,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 11
+  },
+  "plain/delete": {
+    "loads": 11,
+    "counts": 0,
+    "distinct": 0,
+    "changes": 0,
+    "fields": 0,
+    "rows": 38469,
+    "cells": 257208,
+    "compiles": 0,
+    "clones": 1,
+    "scans": 11
   },
   "wide/open": {
     "loads": 1,

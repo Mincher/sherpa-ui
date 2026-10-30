@@ -10,7 +10,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { ArrayStore, DataSource, RestStore, applyOptions, fakeRemote, onReport } from '../../dist/data.js';
-import { presentUnder } from '../../dist/core/data/source-counts.js';
+import { presentUnder, walkStepwise } from '../../dist/core/data/source-counts.js';
 
 const settle = () => new Promise((r) => setTimeout(r, 30));
 
@@ -63,6 +63,29 @@ test('a count from a store that says its total asks one row', async () => {
   const total = await withFetch(fetch, () => new RestStore({ url: 'https://example.test/rows', rowsPath: 'rows', totalPath: 'total', key: 'id' }).totalCount());
   assert.equal(total, 500);
   assert.deepEqual(sent, [1]);
+});
+
+test('a count from a store with no total sends only keys', async () => {
+  const asked = [];
+  const store = new ArrayStore([{ id: 1, plan: 'Pro' }, { id: 2, plan: 'Free' }], { key: 'id' });
+  const load = store.load.bind(store);
+  store.load = (o) => { asked.push(o); return load(o); };
+  Object.defineProperty(store, 'totalCount', { value: Object.getPrototypeOf(Object.getPrototypeOf(store)).totalCount });
+  assert.equal(await store.totalCount({ filter: ['plan', 'eq', 'Pro'], take: 1, sort: [{ field: 'id' }] }), 1);
+  assert.deepEqual(asked, [{ filter: ['plan', 'eq', 'Pro'], fields: ['id'] }]);
+});
+
+test('a walk asks one question once', async () => {
+  const asked = [];
+  const reads = {
+    load: async () => ({ rows: [], total: 0 }),
+    totalCount: async (o) => { asked.push(JSON.stringify(o.filter)); return 0; },
+  };
+  const clause = ['plan', 'eq', 'Pro'];
+  const step = { field: 'plan', clause, on: true, counts: true, each: [['Pro', clause]] };
+  await walkStepwise(reads, { now: new Date(), scopes: [{ scope: 'data', after: null, steps: [step], taps: [] }] });
+  assert.ok(asked.length > 0);
+  assert.equal(new Set(asked).size, asked.length, asked.join(' '));
 });
 
 test('a tally from a store that can project asks only its fields', async () => {

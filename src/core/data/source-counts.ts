@@ -263,7 +263,18 @@ export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'tot
         return [...k, ...[...tier.parentOf].filter(([, p]) => low.has(p.toLowerCase())).map(([path]) => path)];
       }));
   // The walk's one clock: a store's is never read. TRAP T-a-rule-names-its-clock-and-its-language
-  const count = (filters: readonly Filter[]): Promise<number> => later(reads.totalCount({ filter: absoluteDates(andFilter(filters)!, plan.now) }));
+  const counts = new Map<string, Promise<number>>();
+  // One question, asked once a walk. TRAP T-a-page-turn-is-a-slice
+  const count = (filters: readonly Filter[]): Promise<number> => {
+    const filter = absoluteDates(andFilter(filters)!, plan.now);
+    const key = JSON.stringify(filter);
+    let asked = counts.get(key);
+    if (!asked) {
+      asked = later(reads.totalCount({ filter }));
+      counts.set(key, asked);
+    }
+    return asked;
+  };
   const ends = new Map<string, { filter: Filter | undefined; narrowed: boolean }>();
   // Each scope's last step in force: its count is the rows the scope ends with.
   const lastOn = new Map<string, string>();

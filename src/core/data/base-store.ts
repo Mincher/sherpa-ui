@@ -94,8 +94,9 @@ export abstract class BaseStore extends EventTarget implements Store {
 
   /** Matching rows before paging — what a pager counts pages from. */
   async totalCount(options?: LoadOptions): Promise<number> {
-    // A COUNT is of the matches, not of one page, in no order.
-    return (await this.load(matchesOnly(options))).total;
+    // A COUNT is of the matches, not of one page, in no order. Its rows are only counted:
+    // their keys, where it can send just them. TRAP T-a-page-turn-is-a-slice
+    return (await this.load({ ...matchesOnly(options), ...(this.projects ? { fields: [this.key] } : {}) })).total;
   }
 
   /** What the schema said of each row it has read. */

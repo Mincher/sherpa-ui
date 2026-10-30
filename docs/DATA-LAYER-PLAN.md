@@ -176,7 +176,7 @@ Left alone, the clock and the language are the reader's, so no page changes.
 Left for the engine plan, as they only matter to it: `report` is one global sink, and
 `checkWorkflow` returns only a boolean.
 
-### Step 5 (615): scale — small first, then medium
+### Step 5 (615): scale — done
 
 The data layer's own time, from the bench's acts on one machine. Drawing is not
 counted; that is TODO 350.
@@ -222,12 +222,13 @@ Time in the data layer, before and after, on one machine, without drawing:
 5 ms is the bench's floor. A remote set of 100k is held now, which is most of the
 gain there.
 
-**Not done yet:**
+A bench page, `plain`, now holds the worst case: a store not held that can only send
+rows. On it, one filter act fell from 12 reads and 297,000 cells sent to 10 reads and
+107,000, because a walk asks one question once and a count sends only keys.
 
-- A 100k row in the bench. It counts and never times
-  (`T-the-bench-counts-and-never-times`), and that stays. Its blind spots are real:
-  `fakeRemote` keeps `ArrayStore`'s cheap count, and it has no schema.
-- Coalescing a burst of store changes: not measured yet.
+Measured and left alone: a burst of writes in one go causes one read, on every kind of
+store. Writes spaced apart cause one read each, about 1 ms apart in the test. That
+only matters for a very fast live feed.
 
 The target is 100k rows in the browser (D3). A Web Worker is for much later.
 

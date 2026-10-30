@@ -200,7 +200,7 @@ function control(tag, id, holds = []) {
 
 /** The page, opened and bound as the provider binds it. A tiered page's Customer has Sites:
  *  six, from the row's id, so the other pages' rows stay as they are. */
-async function open(L, { page: path = PAGE, remote, announcesAll, holdRows, tiered, fetch }) {
+async function open(L, { page: path = PAGE, remote, announcesAll, holdRows, tiered, fetch, plain }) {
   const whole = JSON.parse(readFileSync(path, 'utf8'));
   const def = whole.source;
   if (holdRows != null) def.holdRows = holdRows;
@@ -216,6 +216,11 @@ async function open(L, { page: path = PAGE, remote, announcesAll, holdRows, tier
   if (fake?.changes) {
     const changes = fake.changes;
     fake.changes = (since) => { counters.changes++; return changes(since); };
+  }
+  // A store with no cheap count and no distinct, as a plain REST one is: each answer is rows sent.
+  if (plain) {
+    delete fake.distinct;
+    fake.totalCount = async ({ filter, search } = {}) => (await fake.load({ ...(filter ? { filter } : {}), ...(search ? { search } : {}), fields: [fake.key] })).total;
   }
   const seen = fake || store;
   // The fields its grid shows, as the provider names them. 345 phase 8
@@ -329,6 +334,8 @@ const PAGES = {
   // A remote store not held: every count and tally is a request.
   notheld: { remote: true, holdRows: 0, acts: ['report', 'save', 'save-same', 'save-unread', 'add', 'delete', 'add-field', 'add-field-again'] },
   tiered: { remote: false, tiered: true, acts: ['pick-site', 'pick-both', 'move-site'] },
+  // Not held, and it can only send rows: what a question costs a real server. TODO 615
+  plain: { remote: true, holdRows: 0, plain: true, acts: ['report', 'add', 'delete'] },
   // A wide store: the page reads 10 of its 15 fields. 345 phase 8
   wide: { page: LEAN, remote: true, acts: ['add-field', 'add-column', 'add-column-again', 'show-all'] },
 };
