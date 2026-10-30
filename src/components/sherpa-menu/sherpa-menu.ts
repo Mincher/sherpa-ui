@@ -22,6 +22,7 @@ import {
 import {
   goesFromList, modeOf, readingRows, rowAnswered, rowsFromPicks, ruleOut, type ConditionType, type FieldCondition, type FieldReading,
 } from '../../core/data/filter-state.js';
+import { sameAnswer } from '../../core/data/query.js';
 import { NON_VALUE_ROWS, RULED_OUT, SET_ASIDE, onByPreset } from '../../core/ui/shared-constants.js';
 import { hiddenRows } from '../../core/ui/tree-rows.js';
 import type { Threshold } from '../../core/data/threshold.js';
@@ -888,6 +889,8 @@ export class SherpaMenu extends SherpaElement {
 
   /** What Discard restores, captured on open beside `#baseline`. */
   #conditionBaseline: FieldCondition[] = [];
+  /** What it held when the menu opened, whole: what a mode switch is judged against. */
+  #readingBaseline: FieldReading = {};
   /** Whether the rows mirrored the picks when the menu opened. */
   #mirrorBaseline = false;
   /** The mode the menu opened in. */
@@ -917,6 +920,7 @@ export class SherpaMenu extends SherpaElement {
     this.#conditionBaseline = this.conditions;
     this.#mirrorBaseline = this.#mirror;
     this.#modeBaseline = this.mode;
+    this.#readingBaseline = this.reading;
     this.#baselineHeld = true;
   }
 
@@ -1237,8 +1241,8 @@ export class SherpaMenu extends SherpaElement {
     if (!this.#commits || !this.open) return false;
     const key = (values: readonly string[]): string => [...values].sort().join('\u0000');
     if (key(this.values) !== key(this.#baseline)) return true;
-    // A switch between Simple and Advanced changes what filters. TRAP T-both-answers-are-kept
-    if (this.mode !== this.#modeBaseline) return true;
+    // A switch between Simple and Advanced changes what filters only if its rows differ. Will, TODO 593
+    if (this.mode !== this.#modeBaseline) return !sameAnswer(this.#readingBaseline, this.reading);
     return this.mode === 'advanced'
       && JSON.stringify(this.conditions) !== JSON.stringify(this.#conditionBaseline);
   }

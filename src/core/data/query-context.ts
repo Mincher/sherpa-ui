@@ -77,7 +77,7 @@
  */
 import type { BoundControl, FilterSet, QueryState } from './data-source-types.js';
 import {
-  answerOf, arrangementOf, copyQuery, copyReading, eachScope, emptyScope, freezeReading, readingAnswered, sameReading, stripArrangement, VIEW,
+  answerOf, arrangementOf, copyQuery, copyReading, eachScope, emptyScope, freezeReading, readingAnswered, sameAnswer, sameReading, stripArrangement, VIEW,
   type Arrangement, type Presentation, type PresentationDefinition, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
 import {
@@ -414,7 +414,7 @@ export class QueryContext extends EventTarget {
   /** Has this field been changed and not yet applied? Never, where nothing waits. */
   pending(field: string): boolean {
     if (!this.waiting()) return false;
-    return !sameReading(answerIn(this.#live.applied, field), answerIn(this.#live.draft, field));
+    return !sameAnswer(answerIn(this.#live.applied, field), answerIn(this.#live.draft, field));
   }
 
   /** Has anything in this scope — or in any scope — been changed and not applied?
@@ -426,7 +426,7 @@ export class QueryContext extends EventTarget {
     return ids.some((id) => {
       const was = applied.scopes[id]?.readings ?? {};
       const now = draft.scopes[id]?.readings ?? {};
-      return [...new Set([...Object.keys(was), ...Object.keys(now)])].some((f) => !sameReading(was[f], now[f]));
+      return [...new Set([...Object.keys(was), ...Object.keys(now)])].some((f) => !sameAnswer(was[f], now[f]));
     });
   }
 

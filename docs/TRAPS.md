@@ -2383,6 +2383,10 @@ number chip reads its body's reading whatever its menu's type, or "> 2"
 filtered and its face stayed blank (TODO 82). And on a rebuild the READER'S kept answer wins over the def's opening
 one, or a def's typed condition came back on every rebuild.
 
+
+**A switch of mode is judged by the answer in force** (`sameAnswer`, Will, TODO 593): rows carried over from the picks say what the picks say, so a switch alone asks no Apply and marks nothing pending. Rows that say something else still ask.
+
+- Site: `test/unit/a-mode-switch-asks-no-apply.test.mjs`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/query.ts`
 - Site: `test/unit/both-answers-are-kept.test.mjs`

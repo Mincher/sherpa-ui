@@ -39,6 +39,7 @@
  * - freezeReading — Freeze a reading all the way down — what the Query keeps and hands out.
  * - readingAnswered — Does a reading answer anything? An empty condition row does not.
  * - sameReading — Do two readings give the same answer? Only the answer keys count.
+ * - sameAnswer — Do two readings put the same answer IN FORCE?
  * - filterKey — A filter as one string, its AND and OR children in one order.
  * - sameFilter — Two filters, or two filters by id, the same in any clause order.
  * - appliesIn — Does a scope's reading of a field apply?
@@ -46,8 +47,8 @@
  * - presetClause — A preset's own conditions as one clause — its chip's count.
  * - compile — Turn a Query into what the source runs — the ONE place a Query becomes a filter.
  */
-import { andFilter, valueKey, type Filter, type SortDirection, type SortSpec } from './store.js';
-import { readingClause, type FieldFacts, type FieldReading } from './filter-state.js';
+import { DEFAULT_OP, andFilter, valueKey, type Filter, type SortDirection, type SortSpec } from './store.js';
+import { asRows, readingClause, type FieldFacts, type FieldReading } from './filter-state.js';
 import type { Where } from './where.js';
 
 /** Every scope's setup, as plain data — what a page's data is under. */
@@ -350,6 +351,22 @@ export function readingAnswered(reading: FieldReading): boolean {
 /** Do two readings give the same answer? Only the answer keys count. */
 export function sameReading(a: FieldReading | null | undefined, b: FieldReading | null | undefined): boolean {
   return JSON.stringify(a ? canon(answerOf(a)) : null) === JSON.stringify(b ? canon(answerOf(b)) : null);
+}
+
+/** Do two readings put the same answer IN FORCE? A switch of mode that carries its
+ *  rows over is no change, and neither is the answer the other mode keeps: so it
+ *  asks no Apply. Will, TODO 593 · TRAP T-both-answers-are-kept */
+export function sameAnswer(a: FieldReading | null | undefined, b: FieldReading | null | undefined): boolean {
+  const said = (r: FieldReading | null | undefined): string => {
+    if (!r) return JSON.stringify([[], false, [], false, null]);
+    // Rows that still mirror the picks say what the picks say.
+    const rows = asRows({ ...r, suspended: false, ...(r.mirror ? { mode: 'simple' as const } : {}) });
+    // A list ORed is a set: its picks in any order are one answer.
+    const set = rows.every((row) => row.op === DEFAULT_OP && row.join !== 'and');
+    const held = set ? rows.flatMap((row) => row.picked ?? []).map(valueKey).sort() : canon({ conditions: rows }).conditions;
+    return JSON.stringify([held, !!r.suspended, canon({ off: r.off ?? [] }).off, !!r.all, r.byPreset ?? null]);
+  };
+  return said(a) === said(b);
 }
 
 /** The same picks in any order, or written as a key, are the same answer: a bar's
