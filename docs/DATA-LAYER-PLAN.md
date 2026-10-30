@@ -187,7 +187,11 @@ the bench's 10k hides all this. It counts and never times
 Medium: a cached ordered set, so a page turn is a slice and not a filter and a sort.
 The target is 100k rows in the browser (D3). A Web Worker is for much later.
 
-### Step 6 (616): the node engine — medium
+### Step 6 (616): the node engine — HELD
+
+Will, 2026-10-30: "Don't implement anything for the node editor just yet. I want to
+plan it out for a bit." This section is what the read found, for that planning. It
+is not a go.
 
 `runWorkflow`, `workflow-edits.ts` and `NodeKind.run` exist only in
 [the workflow plan](history/plan-78-workflow-data.md): only W1 is built. Build W5 over
