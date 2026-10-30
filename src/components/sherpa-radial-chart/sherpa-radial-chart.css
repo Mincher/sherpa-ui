@@ -101,13 +101,18 @@
   fill: var(--_border, var(--sherpa-data-viz-series-1, #8364c8));
   pointer-events: none;
 }
-/* GROUPED: a spoke between a slice's parts, in the slice's own colour — they
-   have no key of their own; the tip names them. Will, TODO 548 */
-.slice-spoke {
-  fill: none;
-  stroke: var(--_border, var(--sherpa-data-viz-series-1, #8364c8));
+/* GROUPED: a slice's or a ring's parts fill it, each a shade or tint of its colour by
+   its weight there: they have no key of their own; the tip names them. Will, TODO 564 */
+.slice-part {
+  fill: color-mix(in oklab, color-mix(in oklab, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)), white var(--_tint, 0%)), black var(--_shade, 0%));
+  stroke: color-mix(in oklab, var(--_border, var(--sherpa-data-viz-series-1, #8364c8)), black var(--_shade, 0%));
   pointer-events: none;
 }
+:host(:state(highlighting)) .slice-part {
+  fill: color-mix(in srgb, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)) 35%, transparent);
+}
+/* Over its parts, their outline. Painted, so it still takes the pointer. */
+:is(.slice, .slice-ring)[data-split] { fill: transparent; }
 
 /* STACKED by its Secondary: its rings carry the colour; the slice keeps its
    outline only, for its name and its focus. Will, TODO 548 */

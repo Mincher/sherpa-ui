@@ -97,6 +97,9 @@ What each class's base rule reads:
 | `--sherpa-display-mode-border-width-base` | `.bar-piece` | `border-width` |
 | `--sherpa-data-viz-series-1` | `.bar-piece` | `border-color` |
 | `--sherpa-data-viz-series-1` | `.bar-piece` | `background` |
+| `--sherpa-border-bottom` | `.bar-part` | `border-width` |
+| `--sherpa-data-viz-series-1` | `.bar-part` | `border-color` |
+| `--sherpa-data-viz-series-1` | `.bar-part` | `background` |
 | `--sherpa-font-family-mono` | `.bar-label` | `font-family` |
 | `--sherpa-font-size-body-small` | `.bar-label` | `font-size` |
 | `--sherpa-theme-content-line-height-small` | `.bar-label` | `line-height` |

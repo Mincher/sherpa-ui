@@ -766,6 +766,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-no-organise-labels",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "visibility"
+    },
+    {
+      "$type": "prop",
       "name": "data-no-results",
       "type": "boolean",
       "observed": true,
@@ -1012,6 +1020,11 @@
       "$type": "state",
       "name": "view",
       "selector": ":host([data-type=\"view\"])"
+    },
+    {
+      "$type": "state",
+      "name": "no-organise-labels",
+      "selector": ":host([data-no-organise-labels])"
     },
     {
       "$type": "state",

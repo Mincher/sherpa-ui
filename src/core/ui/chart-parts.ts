@@ -5,6 +5,9 @@
  * Map:
  * - renderValueAxis — Stamp the value axis from its scale, min to max, when shown; the bands it drew.
  * - paintSeries — Give one mark its category's hue and border.
+ * - paintTone — Give a part its shade or tint of its segment's colour, by its weight there.
+ * - unitsPerPixel — A ring's viewBox units in one CSS pixel, at the size it draws.
+ * - redrawOnResize — Draw a ring again when its size changes.
  * - paintSwatch — Give a value its swatch: a series from 1, or a band's status.
  * - pairAnchor — Name the anchor a dot and its tip share.
  * - fillTip — Write a tip's label and exact value.
@@ -44,6 +47,43 @@ export function renderValueAxis(
 export function paintSeries(el: HTMLElement | SVGElement, index: number, colorIndex?: number): void {
   el.style.setProperty('--_hue', seriesVar(index, colorIndex));
   el.style.setProperty('--_border', seriesBorderVar(index, colorIndex));
+}
+
+/** Give a part its shade or tint of its segment's colour, by its weight among
+ *  `values`: the largest darkest, the smallest lightest; all equal, its colour.
+ *  The chart's sheet mixes them. Will, TODO 564 */
+export function paintTone(el: HTMLElement | SVGElement, value: number, values: readonly number[]): void {
+  const most = Math.max(...values);
+  const least = Math.min(...values);
+  const weight = most > least ? (value - least) / (most - least) : null;
+  el.style.setProperty('--_shade', weight === null ? '0%' : `${Math.round(weight * PART_SHADE)}%`);
+  el.style.setProperty('--_tint', weight === null ? '0%' : `${Math.round((1 - weight) * PART_TINT)}%`);
+}
+
+/** How far a part's tone goes: black in its colour at the largest, white at the smallest. */
+const PART_SHADE = 30;
+const PART_TINT = 55;
+
+/** A ring's viewBox units in one CSS pixel, at the size it draws: a gap is in pixels.
+ *  Not laid out yet, a typical ring: `redrawOnResize` corrects it. */
+export function unitsPerPixel(svg: Element | null, box = 100): number {
+  return box / (svg?.getBoundingClientRect().width || UNSIZED_RING);
+}
+
+/** What a ring is taken to measure before it is laid out, in px. */
+const UNSIZED_RING = 240;
+
+/** Draw a ring again when its size changes, as its gaps are in pixels. */
+export function redrawOnResize(svg: Element, draw: () => void): ResizeObserver {
+  let was = svg.getBoundingClientRect().width;
+  const watch = new ResizeObserver(() => {
+    const now = svg.getBoundingClientRect().width;
+    if (Math.abs(now - was) < 1) return;
+    was = now;
+    draw();
+  });
+  watch.observe(svg);
+  return watch;
 }
 
 /** Give a value its swatch — a data-viz series from 1, or a band's STATUS — as

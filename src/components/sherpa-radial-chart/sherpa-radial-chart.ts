@@ -14,11 +14,11 @@
 import { datumTotal, type ChartDatum } from '../../core/data/chart-datum.js';
 import { SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
-import { formatValue, radialArea, ringSegmentPath, ringSpokePath } from '../../core/data/format-tick.js';
-import { fillTip, pairAnchor, paintSeries, partsSaid } from '../../core/ui/chart-parts.js';
+import { formatValue, radialArea, ringInset, ringSegmentPath } from '../../core/data/format-tick.js';
+import { fillTip, pairAnchor, paintSeries, paintTone, redrawOnResize, unitsPerPixel, partsSaid } from '../../core/ui/chart-parts.js';
 import { rovingFocus, type Roving } from '../../core/ui/roving-focus.js';
 import { RADIAL_CENTRE as CENTRE, RADIAL_CORNER as CORNER,
-  RADIAL_OUTLINE as OUTLINE, RADIAL_INNER_RATIO } from '../../core/ui/shared-constants.js';
+  RADIAL_OUTLINE as OUTLINE, DONUT_INNER_RATIO, SEGMENT_GAP, SECTION_GAP } from '../../core/ui/shared-constants.js';
 
 /** One slice — an alias of the shared `ChartDatum`. */
 export type RadialSlice = ChartDatum;
@@ -118,21 +118,37 @@ export class SherpaRadialChart extends SherpaElement {
     const marking = this.#slices.some((s) => s.matched != null);
     this.toggleState('highlighting', marking);
     const matchTpl = this.$<HTMLTemplateElement>('template.match-tpl');
-    const spokeTpl = this.$<HTMLTemplateElement>('template.spoke-tpl');
+    const partTpl = this.$<HTMLTemplateElement>('template.part-tpl');
     const ringTpl = this.$<HTMLTemplateElement>('template.ring-tpl');
-    /** A spoke at each boundary between parts, across one band, in a colour. */
-    const spokes = (parts: readonly { value: number }[] | undefined, whole: number, from: number, to: number,
+    /* Real gaps, in px at the size it draws: each side gives up half a gap and the
+       half of its outline that lands outside its path. Will, TODO 635
+       TRAP T-a-chart-gap-is-real-space */
+    const ring = this.$('.ring');
+    if (ring) this.#sized ??= redrawOnResize(ring, () => this.#drawRing());
+    const unit = unitsPerPixel(ring);
+    const segmentPad = (SEGMENT_GAP * unit + OUTLINE) / 2;
+    const sectionPad = SECTION_GAP * unit;
+    /** A band's parts: each a shade or tint of its colour by its weight there, a gap
+     *  between, none at the band's own edges, which its outline holds. Will, TODOs 548, 564, 635 */
+    const partsIn = (parts: readonly { value: number }[] | undefined, whole: number, from: number, to: number,
       startDeg: number, spanDeg: number, index: number, colorIndex?: number): void => {
+      const shown = (parts ?? []).filter((one) => one.value > 0);
       let within = 0;
-      for (const p of (parts ?? []).filter((one) => one.value > 0).slice(0, -1)) {
+      shown.forEach((p, n) => {
+        const begins = within;
         within += whole ? p.value / whole : 0;
-        const spoke = spokeTpl ? this.clone<SVGPathElement>(spokeTpl, '.slice-spoke') : null;
-        if (!spoke) break;
-        spoke.setAttribute('d', ringSpokePath({ cx: CENTRE, cy: CENTRE, inner: from, outer: to, deg: startDeg + spanDeg * within }));
-        spoke.setAttribute('stroke-width', String(OUTLINE));
-        paintSeries(spoke, index, colorIndex);
-        group.appendChild(spoke);
-      }
+        const part = partTpl ? this.clone<SVGPathElement>(partTpl, '.slice-part') : null;
+        if (!part) return;
+        const [start, end] = ringInset(startDeg + spanDeg * begins, startDeg + spanDeg * within, from, to, sectionPad);
+        part.setAttribute('d', ringSegmentPath({
+          cx: CENTRE, cy: CENTRE, inner: from, outer: to,
+          startDeg: n ? start : startDeg + spanDeg * begins, endDeg: n < shown.length - 1 ? end : startDeg + spanDeg * within,
+        }));
+        part.setAttribute('stroke-width', String(SECTION_GAP * unit));
+        paintSeries(part, index, colorIndex);
+        paintTone(part, p.value, shown.map((one) => one.value));
+        group.appendChild(part);
+      });
     };
 
     let acc = 0;
@@ -140,6 +156,11 @@ export class SherpaRadialChart extends SherpaElement {
       const value = Math.max(0, slice.value);
       const share = Math.max(value / total, MIN_SHARE);
 
+      // A lone slice closes the ring, and has no neighbour to clear.
+      const [gapStart, gapEnd] = this.#slices.length > 1
+        ? ringInset(sweepStart + acc * sweep, sweepStart + (acc + share) * sweep, inner, outer, segmentPad)
+        : [sweepStart + acc * sweep, sweepStart + (acc + share) * sweep];
+      const edges = { startDeg: gapStart, endDeg: gapEnd };
       // No -90deg transform: ringSegmentPath already measures from 12 o'clock.
       const arc = this.clone<SVGPathElement>(tpl, '.slice');
       if (!arc) return;
@@ -151,8 +172,7 @@ export class SherpaRadialChart extends SherpaElement {
           cy: CENTRE,
           inner,
           outer,
-          startDeg: sweepStart + acc * sweep,
-          endDeg: sweepStart + (acc + share) * sweep,
+          ...edges,
           /* A PIE SLICE HAS NO ROUNDING. Its two straight edges meet at the
              centre, and a corner radius there rounds the point off — the path
              started at 49 rather than the centre's 50. A donut's corners round
@@ -164,13 +184,14 @@ export class SherpaRadialChart extends SherpaElement {
       arc.setAttribute('stroke-width', String(OUTLINE));
       paintSeries(arc, i, slice.colorIndex);
       arc.toggleAttribute('data-stacked', !!slice.stack?.length);
+      arc.toggleAttribute('data-split', !slice.stack?.length && !!slice.parts?.some((one) => one.value > 0));
       // The part the highlight's driver matches: from the slice's start. TODO 441
       const part = value && slice.matched ? Math.min(1, Math.max(0, slice.matched) / value) : 0;
       const match = marking && part && matchTpl ? this.clone<SVGPathElement>(matchTpl, '.slice-match') : null;
       if (match) {
         match.setAttribute('d', ringSegmentPath({
           cx: CENTRE, cy: CENTRE, inner, outer, radius: pie ? 0 : CORNER,
-          startDeg: sweepStart + acc * sweep, endDeg: sweepStart + (acc + share * part) * sweep,
+          startDeg: gapStart, endDeg: gapStart + (gapEnd - gapStart) * part,
         }));
         paintSeries(match, i, slice.colorIndex);
       }
@@ -179,30 +200,40 @@ export class SherpaRadialChart extends SherpaElement {
       arc.setAttribute('role', 'img');
       const parts = partsSaid(slice.stack ?? slice.parts);
       arc.setAttribute('aria-label', `${slice.label}: ${slice.value}${parts ? ` (${parts})` : ''}`);
-      group.appendChild(arc);
-      if (match) group.appendChild(match);
-      const startDeg = sweepStart + acc * sweep;
-      const spanDeg = share * sweep;
+      const startDeg = gapStart;
+      const spanDeg = gapEnd - gapStart;
+      const split = !slice.stack?.length && !!slice.parts?.some((one) => one.value > 0);
+      // Under its parts, unless it has them: then it is their outline, and takes the pointer.
+      if (!split) group.appendChild(arc);
       if (slice.stack?.length) {
         /* STACKED by its Secondary: a ring each, from the centre out, its
            thickness its share, in ITS colour; each ring's Group a spoke at each
            boundary. Will, TODO 548 */
         let from = inner;
-        for (const [j, ring] of slice.stack.entries()) {
-          const to = from + (outer - inner) * (value ? Math.max(0, ring.value) / value : 0);
-          const band = ringTpl ? this.clone<SVGPathElement>(ringTpl, '.slice-ring') : null;
-          if (!band) break;
-          band.setAttribute('d', ringSegmentPath({ cx: CENTRE, cy: CENTRE, inner: from, outer: to, startDeg, endDeg: startDeg + spanDeg, radius: 0 }));
-          band.setAttribute('stroke-width', String(OUTLINE));
-          paintSeries(band, j, ring.colorIndex);
-          group.appendChild(band);
-          spokes(ring.parts, Math.max(0, ring.value), from, to, startDeg, spanDeg, j, ring.colorIndex);
+        const last = slice.stack.length - 1;
+        for (const [j, band] of slice.stack.entries()) {
+          const to = from + (outer - inner) * (value ? Math.max(0, band.value) / value : 0);
+          const path = ringTpl ? this.clone<SVGPathElement>(ringTpl, '.slice-ring') : null;
+          if (!path) break;
+          // A real gap to the ring beside it, where it is thick enough to give one.
+          const thick = to - from > segmentPad * 4;
+          const near = j && thick ? from + segmentPad : from;
+          const far = j < last && thick ? to - segmentPad : to;
+          path.setAttribute('d', ringSegmentPath({ cx: CENTRE, cy: CENTRE, inner: near, outer: far, startDeg, endDeg: startDeg + spanDeg, radius: CORNER }));
+          path.setAttribute('stroke-width', String(OUTLINE));
+          paintSeries(path, j, band.colorIndex);
+          path.toggleAttribute('data-split', !!band.parts?.some((one) => one.value > 0));
+          if (!path.hasAttribute('data-split')) group.appendChild(path);
+          partsIn(band.parts, Math.max(0, band.value), near, far, startDeg, spanDeg, j, band.colorIndex);
+          if (path.hasAttribute('data-split')) group.appendChild(path);
           from = to;
         }
       } else {
-        // GROUPED: a spoke at each boundary between its parts, in its own colour. TODO 548
-        spokes(slice.parts, value, inner, outer, startDeg, spanDeg, i, slice.colorIndex);
+        // GROUPED: its parts, in tones of its own colour. TODO 548
+        partsIn(slice.parts, value, inner, outer, startDeg, spanDeg, i, slice.colorIndex);
       }
+      if (split) group.appendChild(arc);
+      if (match) group.appendChild(match);
 
       if (hotspots && hotTpl) {
         const frag = hotTpl.content.cloneNode(true) as DocumentFragment;
@@ -227,6 +258,15 @@ export class SherpaRadialChart extends SherpaElement {
    * 0.5 rather than a unit in this component's private 100-unit box.
    * A pie has none, and says so by being a pie.
    */
+  /** Draws it again at a new size: its gaps are in pixels. */
+  #sized: ResizeObserver | undefined;
+
+  override onDisconnect(): void {
+    this.#sized?.disconnect();
+    this.#sized = undefined;
+  }
+
+  /** The hole's radius: none in a pie; else its `data-inner`, or a donut's own. */
   #inner(pie: boolean, outer: number): number {
     if (pie) return 0;
     const raw = this.dataset['inner'];
@@ -235,7 +275,7 @@ export class SherpaRadialChart extends SherpaElement {
       // Clamped: a hole wider than the ring is not a ring.
       if (Number.isFinite(frac)) return Math.min(Math.max(frac, 0), 1) * outer;
     }
-    return CENTRE * RADIAL_INNER_RATIO + OUTLINE / 2;
+    return CENTRE * DONUT_INNER_RATIO + OUTLINE / 2;
   }
 
   /**

@@ -6,13 +6,14 @@
  */
 import { SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
-import { formatTick, radialArea, ringSegmentPath, statusBorderVar, statusVar } from '../../core/data/format-tick.js';
+import { redrawOnResize, unitsPerPixel } from '../../core/ui/chart-parts.js';
+import { formatTick, radialArea, ringSegmentPath, ringInset, statusBorderVar, statusVar } from '../../core/data/format-tick.js';
 import { isStatus } from '../../core/data/chart-datum.js';
 import type { Threshold } from '../../core/data/threshold.js';
 import { fillTip, pairAnchor } from '../../core/ui/chart-parts.js';
 import { rovingFocus, type Roving } from '../../core/ui/roving-focus.js';
 import { RADIAL_CENTRE as CENTRE, RADIAL_CORNER as CORNER,
-  RADIAL_OUTLINE as OUTLINE, RADIAL_INNER_RATIO } from '../../core/ui/shared-constants.js';
+  RADIAL_OUTLINE as OUTLINE, RADIAL_INNER_RATIO, SEGMENT_GAP } from '../../core/ui/shared-constants.js';
 
 /** One resolved zone band, as a fraction (0–1) of the scale and a colour. */
 interface Zone {
@@ -295,6 +296,8 @@ export class SherpaGaugeChart extends SherpaElement {
    * The last band is the grey filler, so there is no separate track element.
    */
   #renderArcs(zones: Zone[], frac: number): Zone[] {
+    this.#zonesNow = zones;
+    this.#fracNow = frac;
     const host = this.$('.zones');
     const tpl = this.$<HTMLTemplateElement>('template.zone-tpl');
     if (!host || !tpl) return [];
@@ -326,9 +329,15 @@ export class SherpaGaugeChart extends SherpaElement {
     const drawn: Zone[] = [];
     // Counts only bands that REACHED the screen, so the dot indices have no holes.
     let index = 0;
+    // A real 1px gap between bands, each keeping its full outline. Will, TODO 635
+    const ring = this.$('.ring');
+    if (ring) this.#sized ??= redrawOnResize(ring, () => this.#renderArcs(this.#zonesNow, this.#fracNow));
+    const pad = (SEGMENT_GAP * unitsPerPixel(ring) + OUTLINE) / 2;
+    const reached = bands.filter((one) => one.to > one.from);
     bands.forEach((band) => {
       if (band.to <= band.from) return;
       const i = index++;
+      const [gapStart, gapEnd] = ringInset(START_DEG + band.from * SPAN_DEG, START_DEG + band.to * SPAN_DEG, inner, outer, pad);
       const arc = this.clone<SVGPathElement>(tpl, '.zone');
       if (!arc) return;
       arc.setAttribute(
@@ -338,8 +347,8 @@ export class SherpaGaugeChart extends SherpaElement {
           cy: CENTRE,
           inner,
           outer,
-          startDeg: START_DEG + band.from * SPAN_DEG,
-          endDeg: START_DEG + band.to * SPAN_DEG,
+          startDeg: i ? gapStart : START_DEG + band.from * SPAN_DEG,
+          endDeg: i < reached.length - 1 ? gapEnd : START_DEG + band.to * SPAN_DEG,
           radius: CORNER,
         }),
       );
@@ -356,6 +365,18 @@ export class SherpaGaugeChart extends SherpaElement {
       if (band.zone) drawn.push(band.zone);
     });
     return drawn;
+  }
+
+  /** Draws its bands again at a new size: their gaps are in pixels. */
+  #sized: ResizeObserver | undefined;
+  /** The zones last drawn, for that. */
+  #zonesNow: Zone[] = [];
+  /** The value last drawn, for that. */
+  #fracNow = 0;
+
+  override onDisconnect(): void {
+    this.#sized?.disconnect();
+    this.#sized = undefined;
   }
 }
 

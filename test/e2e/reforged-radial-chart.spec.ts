@@ -155,7 +155,7 @@ test('pie variant fills to the centre (no hole)', async ({ page }) => {
   // Donut: the band is the outer 30% of the radius (Figma innerRadius 0.7), so
   // the segment traces an inner arc at 35 as well as the rim at 50.
   expect(r.donut['outer']).toBe(50);
-  expect(r.donut['inner']).toBe(35);
+  expect(r.donut['inner']).toBe(28);
 
   // Pie: the wedge runs to a POINT at the centre, so there is no inner arc to
   // trace at all. No hole — and no mask, there is no mask any more.
@@ -463,11 +463,11 @@ test('a slice draws the part the highlight matches over it, and none without one
   expect(r).toEqual({ on: true, parts: [25], after: 0, off: false });
 });
 
-test('a grouped slice is split by a spoke at each boundary between its parts, donut or pie; its name lists them (Will, TODO 548)', async ({ page }) => {
+test('a grouped slice is split into its parts, each a tone by its weight, donut or pie; its name lists them (Will, TODOs 548, 564)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const out: Record<string, unknown> = {};
     for (const type of ['donut', 'pie']) {
-      const el = await window.__mount<HTMLElement & { populate(d: unknown): Promise<void> }>('sherpa-radial-chart', undefined, { 'data-type': type });
+      const el = await window.__mount<HTMLElement & { populate(d: unknown): Promise<void> }>('sherpa-radial-chart', undefined, { 'data-type': type, style: 'inline-size: 300px; block-size: 300px' });
       await el.populate([
         { label: 'active', value: 6, colorIndex: 1, parts: [{ label: 'Free', value: 1 }, { label: 'Pro', value: 3 }, { label: 'Team', value: 2 }] },
         { label: 'trial', value: 2, colorIndex: 2 },
@@ -475,7 +475,7 @@ test('a grouped slice is split by a spoke at each boundary between its parts, do
       await window.__settled();
       const sr = el.shadowRoot!;
       out[type] = {
-        spokes: sr.querySelectorAll('.slice-spoke').length,
+        parts: [...sr.querySelectorAll<SVGPathElement>('.slice-part')].map((p) => [p.style.getPropertyValue('--_shade'), p.style.getPropertyValue('--_tint')]),
         name: sr.querySelector('.slice')!.getAttribute('aria-label'),
         tip: sr.querySelector('.chart-tip-parts')!.textContent,
       };
@@ -483,11 +483,54 @@ test('a grouped slice is split by a spoke at each boundary between its parts, do
     return out;
   });
   for (const type of ['donut', 'pie']) {
-    expect(r[type]).toEqual({ spokes: 2, name: 'active: 6 (Free 1 · Pro 3 · Team 2)', tip: 'Free 1\nPro 3\nTeam 2' });
+    // The largest darkest, the smallest lightest.
+    expect(r[type]).toEqual({
+      parts: [['0%', '55%'], ['30%', '0%'], ['15%', '28%']],
+      name: 'active: 6 (Free 1 · Pro 3 · Team 2)', tip: 'Free 1\nPro 3\nTeam 2',
+    });
   }
 });
 
-test('a stacked slice draws its Secondary as rings from the centre out, each its share in ITS colour, and each ring\'s Group as spokes (Will, TODO 548)', async ({ page }) => {
+// A REAL gap: nothing is painted over an edge, so a segment keeps its whole outline. Will, TODO 635
+test('segments stand 1px apart and keep their full outline; sections 0.5px, with a thinner one', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<HTMLElement & { populate(d: unknown): Promise<void> }>('sherpa-radial-chart', undefined, { style: 'inline-size: 300px; block-size: 300px' });
+    await el.populate([
+      { label: 'a', value: 2, colorIndex: 1, parts: [{ label: 'x', value: 1 }, { label: 'y', value: 1 }] },
+      { label: 'b', value: 2, colorIndex: 2 },
+    ]);
+    await window.__settled();
+    const sr = el.shadowRoot!;
+    const svg = sr.querySelector<SVGSVGElement>('.ring')!;
+    // Two equal slices meet at 180deg (straight down); a's parts at 90deg (to the right).
+    const at = (deg: number) => {
+      const p = svg.createSVGPoint();
+      const rad = (deg - 90) * (Math.PI / 180);
+      p.x = 50 + 38 * Math.cos(rad);
+      p.y = 50 + 38 * Math.sin(rad);
+      return p;
+    };
+    const covers = (selector: string, deg: number) => [...sr.querySelectorAll<SVGPathElement>(selector)]
+      .some((path) => path.isPointInFill(at(deg)) || path.isPointInStroke(at(deg)));
+    const unit = 100 / svg.getBoundingClientRect().width;
+    return {
+      segmentEdge: covers('.slice, .slice-part', 180),
+      sectionEdge: covers('.slice-part', 90),
+      insideA: covers('.slice-part', 45),
+      insideB: covers('.slice', 270),
+      outline: Number(sr.querySelectorAll('.slice')[1]!.getAttribute('stroke-width')),
+      section: Number(sr.querySelector('.slice-part')!.getAttribute('stroke-width')) / unit,
+    };
+  });
+  expect(r.segmentEdge).toBe(false);
+  expect(r.sectionEdge).toBe(false);
+  expect(r.insideA).toBe(true);
+  expect(r.insideB).toBe(true);
+  expect(r.outline).toBe(0.5);
+  expect(r.section).toBeCloseTo(0.5, 1);
+});
+
+test('a stacked slice draws its Secondary as rings from the centre out, each its share in ITS colour, and each ring\'s Group as parts (Will, TODO 548)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<HTMLElement & { populate(d: unknown): Promise<void> }>('sherpa-radial-chart', undefined, { style: 'inline-size: 300px; block-size: 300px' });
     await el.populate([
@@ -506,8 +549,8 @@ test('a stacked slice draws its Secondary as rings from the centre out, each its
       // The first ring is inside the second: the second reaches further out.
       outward: box(rings[1]!).width > box(rings[0]!).width,
       colours: rings.map((p) => getComputedStyle(p).fill),
-      // One spoke between active's two parts; none for the unstacked Free.
-      spokes: sr.querySelectorAll('.slice-spoke').length,
+      // Active's two parts; none for the unstacked Free.
+      parts: sr.querySelectorAll('.slice-part').length,
       stacked: [...sr.querySelectorAll('.slice')].map((s) => s.hasAttribute('data-stacked')),
       name: sr.querySelector('.slice')!.getAttribute('aria-label'),
     };
@@ -515,7 +558,7 @@ test('a stacked slice draws its Secondary as rings from the centre out, each its
   expect(r.rings).toBe(2);
   expect(r.outward).toBe(true);
   expect(r.colours[0]).not.toBe(r.colours[1]);
-  expect(r.spokes).toBe(1);
+  expect(r.parts).toBe(2);
   expect(r.stacked).toEqual([true, false]);
   expect(r.name).toBe('Pro: 4 (active 3 · churned 1)');
 });

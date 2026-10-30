@@ -68,8 +68,8 @@ test('value sets the band sweep and needle angle', async ({ page }) => {
   expect(r.zero.restFrac).toBe(1);
   expect(r.zero.angle).toBe('-90deg');
 
-  expect(r.half.valueFrac).toBe(0.5);
-  expect(r.half.restFrac).toBe(0.5);
+  expect(r.half.valueFrac).toBeCloseTo(0.5, 1); // less its share of the 1px gap
+  expect(r.half.restFrac).toBeCloseTo(0.5, 1);
   expect(r.half.angle).toBe('0deg');
 
   expect(r.full.valueFrac).toBe(1);
@@ -103,7 +103,7 @@ test('data-status re-points the fill colour and a custom min/max scales', async 
       max: el.shadowRoot!.querySelector('.max')!.textContent,
     };
   }, FRAC_FN);
-  expect(r.valueFrac).toBe(0.5);
+  expect(r.valueFrac).toBeCloseTo(0.5, 1);
   expect(r.fill.toLowerCase()).toBe('#ff856d'); // strong critical status surface (--_status-surface-strong → critical-color-2)
   expect(r.max).toBe('20');
 });
@@ -206,12 +206,12 @@ test('grey fills only the scale the bands leave uncovered', async ({ page }) => 
 
   // Zones stopping at 80 leave a fifth of the scale, whatever the value.
   expect(r.short.coloured).toBe(2);
-  expect(r.short.fillerFrac).toBe(0.2);
+  expect(r.short.fillerFrac).toBeCloseTo(0.2, 1);
 
   // With NO zones the band is the READING, so it stops at the value and the
   // grey pads what is left.
   expect(r.bare.coloured).toBe(1);
-  expect(r.bare.fillerFrac).toBe(0.75);
+  expect(r.bare.fillerFrac).toBeCloseTo(0.75, 1);
   // …and at 100 there is nothing left to pad.
   expect(r.bareFull.coloured).toBe(1);
   expect(r.bareFull.fillerFrac).toBeNull();

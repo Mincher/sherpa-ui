@@ -2607,9 +2607,9 @@ export class SherpaDataGrid extends SherpaElement {
   #isFiltered(field: string): boolean {
     const held = this.#columnFilters.get(field);
     if (held && !held.suspended && this.#inForce(field, held).rows.length) return true;
-    // A tiered child, while its parent's answer holds it. TODO 577
-    const shown = this.#parentOf(field) ? this.#shown(field) : undefined;
-    if (shown?.picked?.length && !shown.suspended) return true;
+    // A tiered child, while a higher scope holds its parent: on as its parent is. TODOs 577, 640
+    const parent = this.#parentOf(field);
+    if (parent && this.#superseded.has(parent) && this.#isFiltered(parent)) return true;
     const external = this.dataset['filterFields'];
     // TRAP T-grid-filter-fields-match-whole — `includes` lights `status` for `substatus`.
     return !!external && external.split(/\s+/).includes(field);

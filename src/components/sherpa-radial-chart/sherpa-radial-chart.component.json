@@ -149,14 +149,14 @@
       },
       {
         "el": "template",
-        "class": "spoke-tpl",
+        "class": "part-tpl",
         "children": [
           {
             "el": "svg",
             "children": [
               {
                 "el": "path",
-                "class": "slice-spoke"
+                "class": "slice-part"
               }
             ]
           }
@@ -392,7 +392,8 @@
     "sub.line-height": "{sherpa.theme-content-line-height-xs}",
     "sub.color": "{sherpa.theme-content-body-1}",
     "slice-match.fill": "{sherpa.data-viz-series-1}",
-    "slice-spoke.stroke": "{sherpa.data-viz-series-1}"
+    "slice-part.fill": "{sherpa.data-viz-series-1}",
+    "slice-part.stroke": "{sherpa.data-viz-series-1}"
   },
   "$extensions": {
     "sherpa": {

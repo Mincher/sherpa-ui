@@ -11,7 +11,7 @@ import type { ChartDatum } from '../../core/data/chart-datum.js';
 import { SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { chartScale } from '../../core/data/format-tick.js';
-import { fillTip, pairAnchor, paintSeries, partsSaid, renderValueAxis } from '../../core/ui/chart-parts.js';
+import { fillTip, pairAnchor, paintSeries, paintTone, partsSaid, renderValueAxis } from '../../core/ui/chart-parts.js';
 import { rovingFocus, type Roving } from '../../core/ui/roving-focus.js';
 import { DEFAULT_TICKS } from '../../core/ui/shared-constants.js';
 
@@ -77,8 +77,10 @@ export class SherpaBarchart extends SherpaElement {
     /** A run of parts: each its share of what holds it. */
     const partsOf = (parts: readonly BarDatum[] | undefined): HTMLElement[] => (parts ?? []).flatMap((p) => {
       const one = this.clone(partTpl);
-      one?.style.setProperty('--_p', String(Math.abs(p.value)));
-      return one ? [one] : [];
+      if (!one) return [];
+      one.style.setProperty('--_p', String(Math.abs(p.value)));
+      paintTone(one, Math.abs(p.value), (parts ?? []).map((all) => Math.abs(all.value)));
+      return [one];
     });
     if (!bars || !tpl) return;
 

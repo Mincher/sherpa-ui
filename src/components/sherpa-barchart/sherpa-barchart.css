@@ -141,6 +141,7 @@
   display: flex;
   position: absolute;
   inset: 0;
+  gap: 1px; /* off-grid-ok: a gap between segments, not spacing. Will, TODO 635 */
 }
 .bar-col[data-sign="-"] .bar-stack { flex-direction: row-reverse; }
 .bar-piece {
@@ -153,31 +154,32 @@
   box-sizing: border-box;
 }
 
-/* GROUPED: a bar's — or a piece's — parts, from its base in its own colour, a
-   line between each: they have no key of their own; the tip names them. TODO 548 */
+/* GROUPED: a bar's — or a piece's — parts fill it from its base, each a shade or tint
+   of its colour by its weight there: they have no key of their own; the tip names them.
+   Will, TODOs 548, 564 */
 .bar-parts { display: none; }
 .bar:has(> .bar-parts:not(:empty)) { position: relative; }
+:is(.bar, .bar-piece):has(> .bar-parts:not(:empty)) { background: none; }
 .bar-parts:not(:empty) {
   display: flex;
   position: absolute;
   inset: 0;
+  gap: 0.5px; /* off-grid-ok: a gap between sections, not spacing. Will, TODO 635 */
 }
 .bar-col[data-sign="-"] .bar-parts { flex-direction: row-reverse; }
-.bar-part { flex: var(--_p, 1) 1 0; min-inline-size: 0; }
-/* The line sits on the edge a part shares with the one before it: its start,
-   as the run grows from the base; its end, on a bar that grows left. */
-.bar-part + .bar-part {
-  border-inline-start: var(--sherpa-display-mode-border-width-base, 1px) solid
-    var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
-}
-.bar-col[data-sign="-"] .bar-part + .bar-part {
-  border-inline-start: 0;
-  border-inline-end: var(--sherpa-display-mode-border-width-base, 1px) solid
-    var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
+.bar-part {
+  flex: var(--_p, 1) 1 0;
+  min-inline-size: 0;
+  box-sizing: border-box;
+  /* Thinner than its segment's, which holds it. Will, TODO 635 */
+  border: var(--sherpa-border-bottom, 0.5px) solid
+    color-mix(in oklab, var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880))), black var(--_shade, 0%));
+  background: color-mix(in oklab, color-mix(in oklab, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)), white var(--_tint, 0%)), black var(--_shade, 0%));
 }
 
 /* HIGHLIGHTING: the whole bar pale, the part the driver matches in the series'
    full colour, from the zero line. Will, TODO 441 */
+
 .bar-match { display: none; }
 :host(:state(highlighting)) .bar {
   background: color-mix(in srgb, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)) 35%, transparent);

@@ -7972,6 +7972,13 @@
             },
             {
               "kind": "field",
+              "name": "hideOrganiseLabels",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
               "name": "sections",
               "type": {
                 "text": "boolean"
@@ -8523,6 +8530,12 @@
             {
               "name": "data-no-actions",
               "description": "hide the built-in cluster entirely (host owns the trailing end)",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-no-organise-labels",
               "type": {
                 "text": "boolean"
               }

@@ -752,7 +752,7 @@ test('a grid in a slot: its Primary leads its columns; a Secondary makes it a PI
     return at;
   })()`) as Record<string, { chips: string[]; heads: string[]; rows: string[]; groups: string[]; sub: string[][]; subGroups: string[][] }>;
   // Its first column is its Primary, on — small until picked; Secondary waits for a picked Primary.
-  expect(r['first']!.chips).toEqual(['primary:plan', 'group', 'sort']);
+  expect(r['first']!.chips).toEqual(['primary:plan', 'secondary', 'group', 'sort']);
   expect(r['first']!.heads).toEqual(['Plan', 'Day', 'Region']);
   // Primary day: that column leads, and Secondary is offered.
   expect(r['led']!.heads).toEqual(['Day', 'Plan', 'Region']);
@@ -951,4 +951,21 @@ test('a card\'s header shows and shuts its own filter toolbar, and the other car
     opened: { h1: 'shown', b1: false, h2: 'shown', b2: false, pressed: 'true' },
     shut: { h1: 'shut', b1: true, h2: 'shown', b2: false, pressed: 'false' },
   });
+});
+
+// Sort goes by count at every level: segments, then what is inside each. Will, TODO 651
+test('a chart\'s Sort orders its segments, their pieces and their sections by count', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    const { summarise } = await import('/dist/data.js');
+    const rows = [
+      ...Array(1).fill({ s: 'a', p: 'x', g: 'm' }), ...Array(3).fill({ s: 'a', p: 'y', g: 'm' }), ...Array(2).fill({ s: 'a', p: 'y', g: 'n' }),
+      ...Array(1).fill({ s: 'b', p: 'x', g: 'n' }),
+    ];
+    const names = (list) => list.map((d) => d.label + d.value);
+    const of = (sort) => summarise(rows, { shape: 'segments', segment: 's', stack: 'p', group: 'g', sort });
+    const asc = of('asc');
+    const desc = of('desc');
+    return { asc: names(asc), desc: names(desc), pieces: names(desc[0].stack), parts: names(desc[0].stack[0].parts), piecesUp: names(asc[1].stack) };
+  })()`);
+  expect(r).toEqual({ asc: ['b1', 'a6'], desc: ['a6', 'b1'], pieces: ['y5', 'x1'], parts: ['m3', 'n2'], piecesUp: ['x1', 'y5'] });
 });

@@ -14757,6 +14757,20 @@ nothing to see: the toggle reads `off` and goes, and `ProviderMode` says when a 
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/e2e/reforged-provider-summary.spec.ts`
 
+### T-a-chart-gap-is-real-space
+
+**The gap between a chart's segments is space, not a line.** Will, TODO 635: segments stand
+1px apart and keep their full outline; sections 0.5px, with a thinner one. A line of the
+card's surface along the shared edge was tried first and sent back: it is painted over both
+outlines, so it thins them. So each path moves in from its neighbour by half the gap and the
+half of its outline that falls outside it.
+
+An SVG draws in units and a gap is in pixels, so a ring reads its own size as it draws
+(`unitsPerPixel`) and draws again when that changes (`redrawOnResize`). The edges move by an
+angle measured at the band's middle, so a gap is true there and a little wider at the rim.
+
+- Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
+
 ### T-a-horizontal-legend-is-three-by-two
 
 A horizontal legend was a wrapping flex row, so it put a different number of

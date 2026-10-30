@@ -24,6 +24,9 @@
  * - RADIAL_CORNER — Segment corner radius.
  * - RADIAL_OUTLINE — Outline thickness, aligned INSIDE as in Figma.
  * - RADIAL_INNER_RATIO — The hole, as a FRACTION of the outer radius.
+ * - DONUT_INNER_RATIO — A donut's hole: smaller than a gauge's, so a split slice has room.
+ * - SEGMENT_GAP — The gap between a chart's segments, in px.
+ * - SECTION_GAP — The gap between a segment's sections, and a section's outline, in px.
  * - DEFAULT_TICKS — Gridlines a cartesian chart draws when `data-ticks` is absent.
  */
 
@@ -128,6 +131,15 @@ export const RADIAL_OUTLINE = 0.5;
  * moved. TRAP T-a-gauge-composes-the-ring
  */
 export const RADIAL_INNER_RATIO = 0.7;
+
+/** A donut's hole: smaller than a gauge's, so its bands and sections have room. Will, TODO 635 */
+export const DONUT_INNER_RATIO = 0.55;
+
+/** The gap between a chart's segments, in px: each keeps its full outline. Will, TODO 635 */
+export const SEGMENT_GAP = 1;
+
+/** The gap between a segment's sections, and a section's outline, in px. Will, TODO 635 */
+export const SECTION_GAP = 0.5;
 
 /**
  * Gridlines a cartesian chart draws when `data-ticks` is absent.

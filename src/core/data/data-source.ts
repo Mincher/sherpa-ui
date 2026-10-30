@@ -554,16 +554,12 @@ export class DataSource extends EventTarget {
       const shown = this.#context.presented(scope, 'grid');
       const lead = shown.primary ?? cols[0]?.field;
       const fallback = this.#context.presented(scope, 'grid', false).primary ?? cols[0]?.field;
-      // Small until the reader picks one: a grid's bar is full already. Will, TODO 548
-      const picked = this.#context.presentation(scope);
       Object.assign(out, {
         // Off, no chip offers them; the chain stays, so Group greys its Primary. TODO 583
-        chartFields: this.#context.honours('axes') ? cols.filter(groupable) : [], stacks: true, compact: true,
+        chartFields: this.#context.honours('axes') ? cols.filter(groupable) : [], stacks: true,
         ...(lead ? { primaryField: lead } : {}),
         ...(fallback ? { primaryDefault: fallback } : {}),
         ...(shown.secondary ? { secondaryField: shown.secondary } : {}),
-        ...(picked.primary ? { primaryPicked: true } : {}),
-        ...(picked.secondary ? { secondaryPicked: true } : {}),
       });
     } else if (this.#binding.presentsIn(scope)) {
       /* A SLOT: its Primary, its Secondary where its chart stacks — a bar chart —

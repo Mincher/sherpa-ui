@@ -9,7 +9,7 @@
  * - chartScale — The axis a set of values needs.
  * - tickPercent — Where the i-th of `steps` divisions sits, as a percentage UP from the bottom.
  * - radialArea — The `position-area` on the OUTWARD side of a radial mark.
- * - ringSpokePath — The `d` for one SPOKE across a ring, inner to outer, at an angle: the line between two parts of a slice.
+ * - ringInset — A band's two edges, moved in from its neighbours by `pad` units.
  * - RingSegmentOptions — the radii, angles and corner rounding of one donut slice
  * - ringSegmentPath — The `d` for a CLOSED ring segment — a donut slice — with four rounded corners.
  * - seriesVar — The custom property a mark paints with.
@@ -216,13 +216,14 @@ function polar(cx: number, cy: number, r: number, deg: number): [number, number]
   return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
 }
 
-/** The `d` for one SPOKE across a ring, inner to outer, at an angle: the line
- *  between two parts of a slice. TODO 548 */
-export function ringSpokePath(options: { cx: number; cy: number; inner: number; outer: number; deg: number }): string {
-  const { cx, cy, inner, outer, deg } = options;
-  const [x1, y1] = polar(cx, cy, inner, deg);
-  const [x2, y2] = polar(cx, cy, outer, deg);
-  return `M ${x1} ${y1} L ${x2} ${y2}`;
+/** A band's two edges, moved in from its neighbours by `pad` units measured at its
+ *  middle: a real gap, with room for its outline. Never past a quarter of its span. */
+export function ringInset(startDeg: number, endDeg: number, inner: number, outer: number, pad: number): [number, number] {
+  const span = endDeg - startDeg;
+  const middle = (inner + outer) / 2;
+  if (span >= 359.999 || middle <= 0) return [startDeg, endDeg];
+  const by = Math.min((pad / middle) * (180 / Math.PI), span / 4);
+  return [startDeg + by, endDeg - by];
 }
 
 export interface RingSegmentOptions {

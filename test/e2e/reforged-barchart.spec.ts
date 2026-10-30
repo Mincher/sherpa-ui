@@ -392,8 +392,9 @@ test('a grouped bar stacks its parts in its own colour, each its share; the tip 
       // From the base along: Free (1 of 3), then Pro (2 of 3).
       share: widths.map((w) => Math.round((w / bar.width) * 3)),
       baseFirst: parts[0]!.getBoundingClientRect().left <= parts[1]!.getBoundingClientRect().left,
-      // The line is on the edge the parts SHARE: Pro's start, never its end.
-      line: [getComputedStyle(parts[1]!).borderLeftStyle, getComputedStyle(parts[1]!).borderRightStyle],
+      // A tone by its weight, the larger darker, and a 0.5px gap between. TODOs 564, 635
+      tones: parts.map((p) => p.style.getPropertyValue('--_shade')),
+      gap: getComputedStyle(parts[0]!.parentElement!).columnGap,
       tip: cols[0]!.querySelector('.chart-tip-parts')!.textContent,
       name: cols[0]!.getAttribute('aria-label'),
       plain: cols[1]!.getAttribute('aria-label'),
@@ -413,7 +414,8 @@ test('a grouped bar stacks its parts in its own colour, each its share; the tip 
   expect(r.none).toBe(0);
   expect(r.share).toEqual([1, 2]);
   expect(r.baseFirst).toBe(true);
-  expect(r.line).toEqual(['solid', 'none']);
+  expect(r.tones).toEqual(['0%', '30%']);
+  expect(r.gap).toBe('0.5px');
   expect(r.tip).toBe('Free 1\nPro 2');
   expect(r.under).toEqual({ below: true, lines: 2 });
   expect(r.name).toBe('active: 3 (Free 1 · Pro 2)');

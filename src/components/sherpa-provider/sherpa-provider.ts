@@ -341,6 +341,17 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: the filter toolbars' section labels. */
   #sectionLabels = true;
 
+  /** Organise chips show their icons, and no name. The app sets it, from its session. Will, TODO 634 */
+  get hideOrganiseLabels(): boolean {
+    return this.#hideOrganiseLabels;
+  }
+  set hideOrganiseLabels(on: boolean) {
+    this.#hideOrganiseLabels = on;
+    this.#offerAll();
+  }
+  /** The app's choice: the Organise chips' names. */
+  #hideOrganiseLabels = false;
+
   /** Each section's name over its filters, in panel mode. The app sets it,
    *  from its session. Will, TODO 436 */
   get sections(): boolean {
@@ -605,6 +616,7 @@ export class SherpaProvider extends SherpaElement {
     if ('drawScope' in el) el.toggleAttribute('data-no-saves', !this.#saveAny && (isColumn(el) || this.#inherited(el, 'data-scope') === VIEW));
     if (this.#switchable !== null) el.toggleAttribute('data-switchable', this.#switchable);
     el.toggleAttribute('data-no-section-labels', !this.#sectionLabels);
+    el.toggleAttribute('data-no-organise-labels', this.#hideOrganiseLabels);
     el.toggleAttribute('data-no-sections', !this.#sections);
     el.toggleAttribute('data-highlight-hover', this.#highlightHover);
     el.toggleAttribute('data-field-apply', !this.#singleApply);
@@ -1396,7 +1408,8 @@ export class SherpaProvider extends SherpaElement {
     const set = shown.primary !== own.primary || shown.secondary !== own.secondary || shown.group !== own.group;
     const name = (field: string | null | undefined): string => (field ? source.fieldFacts(field).label ?? field : '');
     const stacks = (el.constructor as { asks?: DataAsk }).asks?.stacks;
-    const by = stacks && shown.secondary ? ` ${this.word('by')} ${name(shown.secondary)}` : '';
+    const secondary = shown.secondary ?? el.getAttribute('data-stack-field');
+    const by = stacks && secondary ? ` ${this.word('by')} ${name(secondary)}` : '';
     const grouped = shown.group ? `, ${this.word('grouped-by')} ${name(shown.group)}` : '';
     const title = `${name(shown.primary ?? el.getAttribute('data-segment-field'))}${by}${grouped}`;
     for (const host of this.querySelectorAll(':is(sherpa-data-viz-header, sherpa-container-header)[slot="header"]')) {

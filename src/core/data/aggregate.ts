@@ -366,7 +366,12 @@ function withStack(rows: readonly Row[], segments: ChartDatum[], spec: SummarySp
 function sortSegments(segments: ChartDatum[], sort?: SortDirection): ChartDatum[] {
   if (!sort) return segments;
   const way = sort === 'desc' ? -1 : 1;
-  return [...segments].sort((a, b) => way * (a.value - b.value));
+  const inner = (s: ChartDatum): ChartDatum => ({
+    ...s,
+    ...(s.stack ? { stack: sortSegments(s.stack, sort) } : {}),
+    ...(s.parts ? { parts: sortSegments(s.parts, sort) } : {}),
+  });
+  return segments.map(inner).sort((a, b) => way * (a.value - b.value));
 }
 
 /**

@@ -709,12 +709,13 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-field-type-decides-the-clause](TRAPS.md#t-the-field-type-decides-the-clause) — data-grid
 - [T-the-last-row-draws-no-rule](TRAPS.md#t-the-last-row-draws-no-rule) — data-grid
 
-## Charts (64)
+## Charts (65)
 
 - [T-a-bar-hangs-from-the-zero-line](TRAPS.md#t-a-bar-hangs-from-the-zero-line) — barchart
 - [T-a-breakdown-pick-is-a-legend-pick](TRAPS.md#t-a-breakdown-pick-is-a-legend-pick) — chart-legend
 - [T-a-category-keeps-its-colour](TRAPS.md#t-a-category-keeps-its-colour) — chart-parts
 - [T-a-chart-datum-is-reachable-without-a-pointer](TRAPS.md#t-a-chart-datum-is-reachable-without-a-pointer) — gauge-chart, radial-chart
+- [T-a-chart-gap-is-real-space](TRAPS.md#t-a-chart-gap-is-real-space) — radial-chart
 - [T-a-chart-is-free-of-its-own-field](TRAPS.md#t-a-chart-is-free-of-its-own-field) — gauge-chart
 - [T-a-chart-shape-places-its-legend](TRAPS.md#t-a-chart-shape-places-its-legend) — chart-legend, sherpa-chart-frame
 - [T-a-datum-focus-ring-is-for-the-keyboard-only](TRAPS.md#t-a-datum-focus-ring-is-for-the-keyboard-only) — sherpa-chart-segments

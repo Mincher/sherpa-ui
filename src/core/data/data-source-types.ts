@@ -166,10 +166,6 @@ export interface ScopeDescription {
   primaryDefault?: string;
   secondaryField?: string;
   stacks?: boolean;
-  /** A grid's: its Primary and Secondary chips are small until the reader picks one. Will, TODO 548 */
-  compact?: boolean;
-  primaryPicked?: boolean;
-  secondaryPicked?: boolean;
 }
 
 export interface ViewState {
