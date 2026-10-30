@@ -73,6 +73,8 @@ export interface MenuItem {
   parent?: string;
   /** A row that DOES something — no tick box: a button, reported as `menu-select`. TODO 427 */
   action?: boolean;
+  /** An action row: the place the reader is on now. */
+  current?: boolean;
 }
 
 /** How long a pointer RESTS on a row before its child menu opens. */
@@ -157,6 +159,7 @@ export class SherpaMenu extends SherpaElement {
     // Shows an answer held ELSEWHERE, unchangeable here. TRAP T-a-view-held-heading-shows-and-refuses
     'data-readonly': { type: 'boolean', kind: 'style' },
     'data-align': { type: 'enum', kind: 'behaviour', values: ['start', 'end'] },
+    'data-placement': { type: 'enum', kind: 'behaviour', values: ['right'] },
     'data-search': { type: 'boolean', kind: 'style' },
     'data-clearable': { type: 'boolean', kind: 'style' },
     'data-removable': { type: 'boolean', kind: 'style' },
@@ -1599,6 +1602,7 @@ export class SherpaMenu extends SherpaElement {
       if (!act) return null;
       act.value = item.value;
       act.querySelector('.menu-row-label')!.textContent = item.label ?? item.value;
+      if (item.current) act.setAttribute('aria-current', 'true');
       return act;
     }
     const row = (item.pickable === false ? this.clone('template.menu-bare-tpl') : null) ?? this.clone(tpl);
@@ -1894,6 +1898,14 @@ export class SherpaMenu extends SherpaElement {
     const bounds = this.#bounds();
     const vw = bounds.right;
     const vh = bounds.bottom;
+
+    // Beside the trigger, level with it, and up from the foot if it must.
+    if (this.dataset['placement'] === 'right') {
+      card.style.setProperty('--_max-h', `${Math.max(120, Math.round(vh - bounds.top - gap * 2))}px`);
+      card.style.setProperty('--_x', `${Math.round(Math.min(t.right + gap, vw - c.width - gap))}px`);
+      card.style.setProperty('--_y', `${Math.round(Math.max(bounds.top + gap, Math.min(t.top, vh - c.height - gap)))}px`);
+      return;
+    }
 
     // Below the trigger, unless there is no room and there IS room above.
     const below = vh - t.bottom - gap * 2;

@@ -78,6 +78,8 @@ sherpa-menu:
   '&[data-unavailable]': inactive
   # A value a preset on holds: blue, ticked and refused. Will, TODO 521
   '&[data-by-preset]': info
+  # The place the reader is on, as a current nav row wears it. TODO 600
+  '&[aria-current]': active
 
 sherpa-button:
   # A look is the button's own pin, as a nested Figma Button pins its look.

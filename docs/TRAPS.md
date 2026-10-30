@@ -19101,12 +19101,62 @@ a request (`view-favorite`); the outlet toggles the favourite and writes
 A re-draw keeps the open Areas — the nav's own state (TODO 116) — and opens
 the one holding the page. The rail's pin is `/nav/pinned`; the settings button
 is an INTENT to open or leave Settings; an Area's row names the header. An
-app declares `nav: { pinned, favorites, recent, hierarchy, views }` in its session's
+app declares `nav: { pinned, favorites, recent, hierarchy, views, hover }` in its session's
 defaults, and calls `outlet.refreshNav()` after it saves or deletes a View.
 
 - Site: `src/components/sherpa-outlet/outlet-nav.ts`
 - Site: `src/components/sherpa-outlet/sherpa-outlet.ts`
 - Site: `test/e2e/reforged-outlet.spec.ts`
+
+### T-a-rail-may-stay-shut
+
+**With "Expand navigation on hover" off, the rail opens only to its Pin** (Will,
+TODO 600). `/nav/hover: false` in the session; the outlet writes `data-no-hover`
+on the nav, so a nav built by hand takes the attribute alone. Neither a pointer
+nor focus opens it, and a pointer leaving shuts nothing.
+
+**Settings and Pin stay at the foot in EVERY state, and are one pair of buttons,
+moved by CSS** (Will: pinned, they do not jump back to the header). With hover
+off, `.header` and `.brand` are `display: contents`, so each part is a cell of the
+rail's own grid, and `.actions` has the row above the foot. A second pair at the
+foot would be two controls for one state. Tab still meets them first: a grid area
+moves the box, never the focus order. Open, they are a row at the bottom right.
+Shut, the rail is one row wide, so they are a column: `data-group` goes
+`vertical-start` and `vertical-end`, written by `#applyState`.
+
+**A row with no children says its name in a tip**: the shared tip, in the row's
+own root, shown by the inherited `--_row-tip` the rail sets
+(`T-a-tip-lives-in-the-top-layer`). A row hides it otherwise.
+
+**A row with children lists them in a `sherpa-menu` to its right**
+(`data-placement="right"`), headed by its name, with the current one marked. Those
+are the rows the hierarchy gives a Context, AND Recent and Favorites, whatever the
+hierarchy says: an Area in a shut rail can reach its children no other way. The
+nav knows only that a row has children.
+
+- It opens after 120 ms at rest, or a pointer crossing a row on its way to the
+  menu would swap it. It shuts 200 ms after the pointer is off both.
+- A press opens it too, as a thumb and a keyboard have no hover. The press stops
+  in capture, so the Area's open or shut is left for the open rail. A keyboard's
+  press carries `detail: 0`: focus goes into the menu, and comes back on close.
+- A pick PRESSES the real row (`item.press()`), hidden as it is. One route: the
+  row's href, `item-select`, `nav-select` and the lit row.
+
+**A shut rail hides child rows, so the top row lights for one.** With the
+hierarchy on, `data-current-id` names a View's row, and nothing would show where
+the reader is.
+
+**The search icon opens the rail** to type in, in `hover`, and focus leaving shuts
+it: it is the one row with no menu and no name to give. Leaving Settings goes to
+`collapsed`, not `hover`. The Figma Navigation set has no frame for this foot.
+
+- Site: `src/components/sherpa-nav/sherpa-nav.ts`
+- Site: `src/components/sherpa-nav/sherpa-nav.html`
+- Site: `src/components/sherpa-nav/sherpa-nav.css`
+- Site: `src/components/sherpa-nav-item/sherpa-nav-item.html`
+- Site: `src/components/sherpa-nav-item/sherpa-nav-item.css`
+- Site: `src/components/sherpa-outlet/outlet-nav.ts`
+- Site: `test/e2e/reforged-nav.spec.ts`
 
 ### T-the-mcp-reads-sherpa-ui-through-one-door
 

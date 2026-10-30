@@ -208,6 +208,62 @@
   margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
 }
 
+/* ── Hover off: Settings and Pin live at the foot ──────────────────────── */
+/* In every state, open or shut. The two boxes around them step aside, so each
+   part is a cell of the rail's own grid: one pair of buttons, never a copy.
+   TRAP T-a-rail-may-stay-shut */
+:host([data-no-hover]) .rail {
+  display: grid;
+  grid-template-columns: var(--sherpa-display-mode-size-3xl, 40px) minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto auto;
+  grid-template-areas:
+    "brand   product"
+    "quick   quick"
+    "content content"
+    "footer  footer"
+    "actions actions"
+    "menu    menu";
+}
+:host([data-no-hover]) :is(.header, .brand) { display: contents; }
+:host([data-no-hover]) .brand-icon { grid-area: brand; }
+:host([data-no-hover]) .product {
+  grid-area: product;
+  align-self: center;
+  padding-inline: var(--sherpa-display-mode-space-sm, 12px) var(--sherpa-display-mode-space-xs, 8px);
+}
+:host([data-no-hover]) .quick-zone {
+  grid-area: quick;
+  /* The header's own foot. */
+  margin-block-end: var(--sherpa-display-mode-space-xs, 8px);
+}
+:host([data-no-hover]) .content { grid-area: content; }
+:host([data-no-hover]) .footer { grid-area: footer; }
+:host([data-no-hover]) .menu-foot { grid-area: menu; }
+:host([data-no-hover]:not([data-menu])) .actions {
+  grid-area: actions;
+  display: inline-flex;
+  justify-self: end;
+  padding: var(--sherpa-display-mode-space-xs, 8px);
+}
+/* SHUT: the rail is one row wide, so they are a column, and a tip goes beside. */
+:host([data-no-hover]:is([data-nav-state="collapsed"], :not([data-nav-state]))) { --_row-tip: flex; }
+:host([data-no-hover]:is([data-nav-state="collapsed"], :not([data-nav-state]))) .actions {
+  --_area: inline-end;
+  flex-direction: column;
+  justify-self: center;
+  padding-inline: var(--sherpa-display-mode-space-none, 0px);
+}
+:host([data-no-hover]:is([data-nav-state="collapsed"], :not([data-nav-state]))) .actions > :not(:first-child),
+:host([data-no-hover]:is([data-nav-state="collapsed"], :not([data-nav-state]))) .actions ::slotted(*) {
+  margin-inline-start: var(--sherpa-display-mode-space-none, 0px);
+  margin-block-start: var(--sherpa-structure-space-snapped, 0px);
+}
+:host([data-no-hover]:is([data-nav-state="collapsed"], :not([data-nav-state]))) .search { cursor: pointer; }
+/* Past the rail's edge: the row stops one inset short of it. */
+.flyout::part(menu) { margin-inline-start: var(--sherpa-display-mode-space-xs, 8px); }
+/* It has no search, so the gap under the heading would lead to an empty row. */
+.flyout::part(header) { row-gap: var(--sherpa-display-mode-space-none, 0px); }
+
 /* ── Quick zone ────────────────────────────────────────────────────────── */
 /* `align-items: stretch` — a column flex container otherwise shrink-wraps the
    search field and quick rows to their content. */

@@ -247,7 +247,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (81)
+## The join and the app layer (82)
 
 - [T-a-band-is-a-value-of-its-field](TRAPS.md#t-a-band-is-a-value-of-its-field) — provider
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — bind-source
@@ -277,6 +277,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-panel-asks-for-its-scopes](TRAPS.md#t-a-panel-asks-for-its-scopes) — bind-source
 - [T-a-persistent-chip-reports-on-every-change](TRAPS.md#t-a-persistent-chip-reports-on-every-change) — provider
 - [T-a-provider-keeps-the-views](TRAPS.md#t-a-provider-keeps-the-views) — provider
+- [T-a-rail-may-stay-shut](TRAPS.md#t-a-rail-may-stay-shut) — outlet
 - [T-a-reach-banner-takes-no-room](TRAPS.md#t-a-reach-banner-takes-no-room) — outlet
 - [T-a-reload-replays-the-readers-answers](TRAPS.md#t-a-reload-replays-the-readers-answers) — provider
 - [T-a-remote-store-says-what-changed](TRAPS.md#t-a-remote-store-says-what-changed) — provider
@@ -883,7 +884,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](TRAPS.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (110)
+## Other components (111)
 
 - [T-a-bar-offers-only-what-its-scope-holds](TRAPS.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — button
@@ -917,6 +918,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-node-moves-itself-and-reports](TRAPS.md#t-a-node-moves-itself-and-reports) — node
 - [T-a-number-input-wears-sherpas-steppers](TRAPS.md#t-a-number-input-wears-sherpas-steppers) — input-text, slider
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](TRAPS.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — metric-group
+- [T-a-rail-may-stay-shut](TRAPS.md#t-a-rail-may-stay-shut) — nav, nav-item
 - [T-a-range-is-bounded-by-the-data](TRAPS.md#t-a-range-is-bounded-by-the-data) — calendar
 - [T-a-row-span-is-keyed-by-value](TRAPS.md#t-a-row-span-is-keyed-by-value) — container
 - [T-a-saved-view-is-the-readers-own](TRAPS.md#t-a-saved-view-is-the-readers-own) — app-header

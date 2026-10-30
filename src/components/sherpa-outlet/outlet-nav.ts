@@ -2,6 +2,7 @@
  * outlet-nav.ts — the nav an outlet keeps: its rows from app.json, the Recent
  * and Favorites Areas, the ★, a Context's Views as rows, the lit row and the pin.
  * TRAP T-the-outlet-keeps-the-nav
+ * TRAP T-a-rail-may-stay-shut
  *
  * Map:
  * - NavHost — what the nav asks of its outlet: the Context, the Settings page, the Views
@@ -93,7 +94,9 @@ export class OutletNav {
       this.#recents.subscribe(() => void this.refresh()),
       at.session.subscribe('/nav/hierarchy', () => { this.syncCurrent(); void this.refresh(); }),
       at.session.subscribe('/nav/views', () => { this.syncStar(); void this.refresh(); }),
+      at.session.subscribe('/nav/hover', () => this.#syncHover()),
     ];
+    this.#syncHover();
     at.signal.addEventListener('abort', () => { for (const stop of stops) stop(); }, { once: true });
     const { signal } = at;
     nav.addEventListener('nav-state-change', this.#onState, { signal });
@@ -153,6 +156,8 @@ export class OutletNav {
 
   /** A Context has loaded: its View enters Recents — Home's never does — and the ★ follows. */
   loaded(): void {
+    // Its Views are known only now: with the hierarchy on, the lit row is its View's.
+    this.syncCurrent();
     this.viewed();
     this.syncStar();
   }
@@ -179,6 +184,11 @@ export class OutletNav {
     this.syncCurrent();
     // Left by the settings button, the rail has moved already; by anything else, move it.
     if (this.#nav.state === 'settings') this.#nav.state = this.#session.get('/nav/pinned') === true ? 'pinned' : 'collapsed';
+  }
+
+  /** "Expand navigation on hover": on unless the session says off. */
+  #syncHover(): void {
+    this.#nav.toggleAttribute('data-no-hover', this.#session.get('/nav/hover') === false);
   }
 
   /** The rows app.json gives: Home is the default Context, Recent and Favorites

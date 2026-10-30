@@ -26,6 +26,7 @@ const MATCH = 'sherpa-nav-match';
 export class SherpaNavItem extends SherpaElement {
   static override css = new URL('./sherpa-nav-item.css', import.meta.url);
   static override html = new URL('./sherpa-nav-item.html', import.meta.url);
+  static override delegatesFocus = true;
 
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */
@@ -90,6 +91,7 @@ export class SherpaNavItem extends SherpaElement {
       setAll('.promo-description', this.dataset['description'] ?? '');
     } else {
       setAll('.badge', this.dataset['badge'] ?? '');
+      setAll('.tip', this.dataset['label'] ?? '');
       // NAMED, because a collapsed rail hides the label and leaves the icon alone.
       const name = [this.dataset['label'], this.dataset['badge']].filter(Boolean).join(', ');
       for (const row of this.$$('.nav')) {
@@ -177,6 +179,11 @@ export class SherpaNavItem extends SherpaElement {
   override onDisconnect(): void {
     // The registry is document-level — leave no orphan entry.
     this.#clearHighlight();
+  }
+
+  /** Press this row as a reader does: a link follows its href. */
+  press(): void {
+    this.$<HTMLElement>(this.dataset['href'] ? '.nav-link' : '.nav-button')?.click();
   }
 
   /** Report a click on a destination row. */

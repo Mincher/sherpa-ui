@@ -3,6 +3,7 @@
  * Fill it with populate(config), a NavConfig.
  *
  * TRAP T-nav-state-writes-only-the-attribute
+ * TRAP T-a-rail-may-stay-shut
  *
  * Map:
  * - NavRowInfo — What a stamped row shows.
@@ -16,8 +17,11 @@ import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { hasIcon, renderIcon } from '../../core/ui/render-icon.js';
 import { hiddenRows } from '../../core/ui/tree-rows.js';
 import '../sherpa-nav-item/sherpa-nav-item.js';
+import type { SherpaNavItem } from '../sherpa-nav-item/sherpa-nav-item.js';
 import { report } from '../../core/data/report.js';
 import '../sherpa-button/sherpa-button.js';
+import '../sherpa-menu/sherpa-menu.js';
+import type { MenuItem, SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 
 /** What a stamped row shows. `icon` is undefined on a child row. */
 export interface NavRowInfo {
@@ -68,6 +72,10 @@ export type NavState = 'collapsed' | 'hover' | 'default' | 'pinned' | 'settings'
 const OPEN: ReadonlySet<string> = new Set<NavState>(['hover', 'default', 'pinned', 'settings']);
 /** Modes that latch the rail open — a pointer leave must not collapse these. */
 const LATCHED: ReadonlySet<string> = new Set<NavState>(['pinned', 'settings']);
+/** How long a pointer rests on a parent row before its menu opens: one crossing the rail to a menu must not swap it. */
+const FLYOUT_OPENS_AFTER = 120;
+/** How long a pointer may be off both the row and its menu. */
+const FLYOUT_SHUTS_AFTER = 200;
 
 export class SherpaNav extends SherpaElement {
   static override css = new URL('./sherpa-nav.css', import.meta.url);
@@ -75,6 +83,8 @@ export class SherpaNav extends SherpaElement {
   static override props = {
     /* The PHONE's menu — written by openMenu() / closeMenu(). TRAP T-the-nav-is-a-menu-on-a-phone */
     'data-menu': { type: 'boolean', kind: 'visibility' },
+    /* Hover off: the rail opens only to its Pin. TRAP T-a-rail-may-stay-shut */
+    'data-no-hover': { type: 'boolean', kind: 'visibility' },
     'data-current-id': { type: 'string', kind: 'behaviour' },
     // A host may set it; a product turns it on.
     'data-searchable': { type: 'boolean', kind: 'visibility' },
@@ -85,11 +95,25 @@ export class SherpaNav extends SherpaElement {
   #config: NavConfig = {};
   /** The mode Settings was entered from, so leaving it goes back there. */
   #beforeSettings: NavState = 'collapsed';
+  /** The parent row whose children the menu lists now. */
+  #flyoutRow: HTMLElement | null = null;
+  /** Focus went into the menu, so it comes back to the row. */
+  #flyoutHoldsFocus = false;
+  /** The menu's next open or shut, while the pointer settles. */
+  #flyoutTimer: ReturnType<typeof setTimeout> | undefined;
 
   override onRender(): void {
     // Delegated — rows come and go, these listeners stay.
     this.$('.rail')?.addEventListener('item-select', this.#onItemClick as EventListener);
     this.$('.rail')?.addEventListener('item-expand', this.#onItemExpand as EventListener);
+    // Capture: a shut rail's parent row opens its menu, and must not toggle.
+    this.$('.rail')?.addEventListener('click', this.#onParentClick, true);
+    this.$('.rail')?.addEventListener('pointerover', this.#onRailOver);
+    this.$('.search')?.addEventListener('click', this.#onSearchIcon);
+    const flyout = this.$('.flyout');
+    flyout?.addEventListener('pointerover', this.#holdFlyout);
+    flyout?.addEventListener('menu-select', this.#onFlyoutPick);
+    flyout?.addEventListener('menu-close', this.#onFlyoutClose);
     this.$<HTMLInputElement>('.search-input')?.addEventListener('input', this.#onSearch);
     this.$('.search-clear')?.addEventListener('click', this.#onSearchClear);
     this.$('.pin')?.addEventListener('click', this.#onPin);
@@ -110,6 +134,11 @@ export class SherpaNav extends SherpaElement {
 
   override onChange(name: string, oldValue: string | null, newValue: string | null): void {
     if (name === 'data-current-id') this.#applyActive();
+    if (name === 'data-no-hover') {
+      // Turned off under the pointer: an open rail does not wait for it to leave.
+      if (newValue !== null && this.state === 'hover') this.#setState('collapsed');
+      this.#applyState();
+    }
     if (name === 'data-nav-state') {
       this.#applyState();
       // Only the settings edge re-stamps; every other mode is CSS.
@@ -195,30 +224,46 @@ export class SherpaNav extends SherpaElement {
         state === 'settings' ? this.word('settings') : (this.#config.product?.name ?? '');
     }
     this.$('.rail')?.setAttribute('aria-expanded', String(OPEN.has(state)));
+    // Shut, Settings and Pin are a column.
+    const shut = this.#staysShut();
+    this.$('.settings')?.setAttribute('data-group', shut ? 'vertical-start' : 'start');
+    this.$('.pin')?.setAttribute('data-group', shut ? 'vertical-end' : 'end');
+    if (!shut) this.#shutFlyout();
+    this.#applyActive();
   }
 
-  /** The pointer arrived: open to hover, unless pinned or in Settings. */
+  /** The pointer arrived: open to hover, unless pinned, in Settings, or hover is off. */
   #onEnter = (): void => {
-    if (!LATCHED.has(this.state)) this.#setState('hover');
+    if (!LATCHED.has(this.state) && !this.hasAttribute('data-no-hover')) this.#setState('hover');
   };
 
-  /** The pointer left: collapse, unless pinned, in Settings, or a menu. */
-  #onLeave = (): void => {
-    if (!LATCHED.has(this.state) && !this.hasAttribute('data-menu')) this.#setState('collapsed');
+  /** The pointer left: collapse — or, with hover off, its menu goes. */
+  #onLeave = (event: Event): void => {
+    if (!this.hasAttribute('data-no-hover')) this.#collapse();
+    else if ((event as PointerEvent).pointerType !== 'touch') this.#flyoutLater(this.#shutFlyout, FLYOUT_SHUTS_AFTER);
   };
 
-  /** Focus left the nav: collapse as if the pointer did. */
+  /** Focus left the nav: collapse. */
   #onFocusOut = (event: FocusEvent): void => {
     const next = event.relatedTarget as Node | null;
     if (next && this.contains(next)) return;
-    this.#onLeave();
+    this.#collapse();
   };
 
-  /** Pin or unpin — and from Settings, go back to hover. */
+  /** Back to the icons, unless pinned, in Settings, or a menu. */
+  #collapse(): void {
+    if (!LATCHED.has(this.state) && !this.hasAttribute('data-menu')) this.#setState('collapsed');
+  }
+
+  /** Where the rail goes when Settings lets go: hover, as the pointer is on it — if it may. */
+  #released(): NavState {
+    return this.hasAttribute('data-no-hover') ? 'collapsed' : 'hover';
+  }
+
+  /** Pin or unpin — and from Settings, let go. */
   #onPin = (): void => {
-    // Leaving settings goes to hover, not collapsed — the pointer is still on the rail.
     if (this.state === 'settings') {
-      this.#setState('hover');
+      this.#setState(this.#released());
       return;
     }
     this.#setState(this.state === 'pinned' ? 'collapsed' : 'pinned');
@@ -230,9 +275,104 @@ export class SherpaNav extends SherpaElement {
       this.#setState('settings');
       return;
     }
-    // Unpinned before → hover, not collapsed: the pointer is still on the rail.
-    this.#setState(this.#beforeSettings === 'pinned' ? 'pinned' : 'hover');
+    this.#setState(this.#beforeSettings === 'pinned' ? 'pinned' : this.#released());
   };
+
+  /* ── Hover off: a rail that stays shut ──────────────────────────────── */
+
+  /** Hover is off and the rail is shut: icons only, until its Pin. */
+  #staysShut(): boolean {
+    return this.hasAttribute('data-no-hover') && this.state === 'collapsed';
+  }
+
+  /** The search icon opens the rail to type in; focus leaving shuts it. */
+  #onSearchIcon = (): void => {
+    if (!this.#staysShut()) return;
+    this.#setState('hover');
+    this.$<HTMLInputElement>('.search-input')?.focus();
+  };
+
+  /** The row an event landed on, when it has children to list. */
+  #parentRowOf(event: Event): HTMLElement | null {
+    const row = (event.target as HTMLElement).closest<HTMLElement>('.nav-row');
+    return row?.querySelector('sherpa-nav-item[data-expandable]') ? row : null;
+  }
+
+  /** Act once the pointer has settled, unless a later move overtakes this. */
+  #flyoutLater(act: () => void, after: number): void {
+    clearTimeout(this.#flyoutTimer);
+    this.#flyoutTimer = setTimeout(act, after);
+  }
+
+  /** The pointer moved on the rail: a parent row's menu opens; anywhere else, it goes. */
+  #onRailOver = (event: Event): void => {
+    if (!this.#staysShut() || (event as PointerEvent).pointerType === 'touch') return;
+    const row = this.#parentRowOf(event);
+    if (row && row === this.#flyoutRow) clearTimeout(this.#flyoutTimer);
+    else if (row) this.#flyoutLater(() => this.#openFlyout(row), FLYOUT_OPENS_AFTER);
+    else this.#flyoutLater(this.#shutFlyout, FLYOUT_SHUTS_AFTER);
+  };
+
+  /** A parent row pressed: a thumb and a keyboard have no hover. A keyboard's press carries no pointer, and goes into the menu. */
+  #onParentClick = (event: Event): void => {
+    const row = this.#staysShut() ? this.#parentRowOf(event) : null;
+    if (!row) return;
+    event.stopPropagation();
+    this.#openFlyout(row, (event as MouseEvent).detail === 0);
+  };
+
+  /** List a parent row's children in the menu beside it. */
+  #openFlyout(row: HTMLElement, focus = false): void {
+    const flyout = this.$<SherpaMenu>('.flyout');
+    if (!flyout || !this.#staysShut()) return;
+    clearTimeout(this.#flyoutTimer);
+    this.#flyoutRow = row;
+    this.#flyoutHoldsFocus = focus;
+    flyout.dataset['heading'] = row.querySelector<HTMLElement>('sherpa-nav-item')?.dataset['label'] ?? '';
+    flyout.items(this.#childItems(row.dataset['id'] ?? ''));
+    flyout.show(row);
+    if (focus) flyout.querySelector<HTMLElement>('.menu-row')?.focus();
+  }
+
+  /** The rows under a parent, as menu rows. An Area among them heads its own, as a section. */
+  #childItems(parent: string, section?: string): MenuItem[] {
+    return this.$$<HTMLElement>('.nav-row').filter((row) => row.dataset['parent'] === parent).flatMap((row): MenuItem[] => {
+      const id = row.dataset['id'] ?? '';
+      const item = row.querySelector<HTMLElement>('sherpa-nav-item');
+      const label = item?.dataset['label'] ?? '';
+      if (item?.hasAttribute('data-expandable')) return this.#childItems(id, label);
+      return [{ value: id, label, action: true, current: id === this.dataset['currentId'], ...(section ? { section } : {}) }];
+    });
+  }
+
+  /** The pointer reached the menu: it stays, and no other row's opens. */
+  #holdFlyout = (): void => {
+    clearTimeout(this.#flyoutTimer);
+  };
+
+  /** Shut the menu, if it is open. */
+  #shutFlyout = (): void => {
+    const flyout = this.$<SherpaMenu>('.flyout');
+    if (flyout?.open) flyout.hide();
+  };
+
+  /** A menu row chosen: the real row is pressed, so a pick and a click are one route. */
+  #onFlyoutPick = (event: Event): void => {
+    const id = (event as CustomEvent<{ value: string }>).detail.value;
+    this.$$<HTMLElement>('.nav-row').find((row) => row.dataset['id'] === id)
+      ?.querySelector<SherpaNavItem>('sherpa-nav-item')?.press();
+  };
+
+  /** The menu shut: focus it took goes back to its row. */
+  #onFlyoutClose = (): void => {
+    if (this.#flyoutHoldsFocus) this.#flyoutRow?.querySelector<HTMLElement>('sherpa-nav-item')?.focus();
+    this.#flyoutHoldsFocus = false;
+    this.#flyoutRow = null;
+  };
+
+  override onDisconnect(): void {
+    clearTimeout(this.#flyoutTimer);
+  }
 
   /* ── Content ────────────────────────────────────────────────────── */
 
@@ -381,8 +521,14 @@ export class SherpaNav extends SherpaElement {
 
   /** Mark the row `data-current-id` names. */
   #applyActive(): void {
-    const active = this.dataset['currentId'];
-    for (const row of this.$$('.nav-row')) {
+    let active = this.dataset['currentId'];
+    const rows = this.$$('.nav-row');
+    // A rail that stays shut shows no child row, so its top row lights for it.
+    if (this.#staysShut()) {
+      const parents = new Map(rows.map((row) => [row.dataset['id'], row.dataset['parent']]));
+      while (active && parents.get(active)) active = parents.get(active);
+    }
+    for (const row of rows) {
       const item = row.querySelector('sherpa-nav-item');
       item?.toggleAttribute('data-current', row.dataset['id'] === active);
     }

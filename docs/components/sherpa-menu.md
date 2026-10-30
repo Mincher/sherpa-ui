@@ -54,6 +54,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `data-none` | boolean |  | a SINGLE list leads with a None row: its nothing (Will, TODO 394) |
 | `data-op` | text |  | FILTER type only: which condition is picked. Defaults to `eq`. The FIRST row's op — a menu in condition mode holds many. |
 | `data-pending` | boolean |  | its answer is changed and not applied: Discard is on |
+| `data-placement` | `right` |  | right: beside the trigger, level with it, not below it |
 | `data-range` | boolean |  |  |
 | `data-readonly` | boolean |  | SHOW an answer held elsewhere — rows and conditions inert, no footer, no Add condition, no Advanced button |
 | `data-removable` | boolean |  | show a "Remove" button in the footer (after Today); it emits menu-select with value="remove" |

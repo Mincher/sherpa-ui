@@ -26,7 +26,7 @@
       "default": [
         {
           "el": "button",
-          "class": "nav nav-button",
+          "class": "nav nav-button sherpa-anchor",
           "part": "row",
           "attrs": {
             "type": "button"
@@ -69,7 +69,7 @@
         },
         {
           "el": "a",
-          "class": "nav nav-link",
+          "class": "nav nav-link sherpa-anchor",
           "part": "row",
           "children": [
             {
@@ -134,6 +134,15 @@
           "class": "dot",
           "part": "dot",
           "attrs": {
+            "aria-hidden": "true"
+          }
+        },
+        {
+          "el": "span",
+          "class": "tip sherpa-tip",
+          "part": "tip",
+          "attrs": {
+            "popover": "manual",
             "aria-hidden": "true"
           }
         },
@@ -440,7 +449,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (highlight). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (focus, highlight, press). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -512,9 +521,21 @@
       "methods": [
         {
           "$type": "method",
+          "name": "focus",
+          "args": "options?: FocusOptions",
+          "description": "Focus its control: the first focusable part inside."
+        },
+        {
+          "$type": "method",
           "name": "highlight",
           "args": "query: string | null",
           "description": "Mark a substring of this row's label as a search match. Null/empty clears it."
+        },
+        {
+          "$type": "method",
+          "name": "press",
+          "args": "",
+          "description": "Press this row as a reader does: a link follows its href."
         }
       ],
       "category": "nav",

@@ -215,6 +215,15 @@
         ]
       },
       {
+        "el": "sherpa-menu",
+        "class": "flyout",
+        "part": "flyout",
+        "attrs": {
+          "data-placement": "right",
+          "data-no-select-all": ""
+        }
+      },
+      {
         "el": "template",
         "class": "section-tpl",
         "children": [
@@ -348,6 +357,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-no-hover",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "visibility",
+      "description": "the rail does not open to a pointer: Settings and Pin stay at its foot, and, while it is shut, a row says its name in a tip and a parent row lists its children in a menu beside it"
+    },
+    {
+      "$type": "prop",
       "name": "data-searchable",
       "type": "boolean",
       "observed": true,
@@ -398,6 +416,11 @@
       "$type": "state",
       "name": "menu",
       "selector": ":host([data-menu])"
+    },
+    {
+      "$type": "state",
+      "name": "no-hover",
+      "selector": ":host([data-no-hover])"
     },
     {
       "$type": "state",

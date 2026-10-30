@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import { test, expect } from './harness';
 
 /**
@@ -1042,4 +1043,196 @@ test('a populate keeps the Areas a reader opened and shut; the config may open m
   expect(r.kept).toEqual(['b']);
   expect(r.more).toEqual(['b', 'c']);
   expect(r.hidden).toEqual(['a1']);
+});
+
+/* ── Hover off. TRAP T-a-rail-may-stay-shut ──────────────────────────────── */
+
+type RailNav = HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+
+/** A nav with hover off: a plain row, and an Area of two children. */
+async function hoverOff(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    const nav = document.createElement('sherpa-nav') as RailNav;
+    nav.setAttribute('data-no-hover', '');
+    nav.style.blockSize = '500px';
+    document.getElementById('root')!.appendChild(nav);
+    await nav.rendered;
+    nav.populate!({
+      product: { name: 'Sherpa' },
+      quickItems: [{ id: 'home', label: 'Home', icon: 'home' }],
+      sections: [{ label: 'Main', items: [
+        { id: 'reports', label: 'Reports', icon: 'star', href: '#reports' },
+        { id: 'records', label: 'Records', icon: 'group', children: [
+          { id: 'records:all', label: 'All customers', href: '#all' },
+          { id: 'records:risk', label: 'At risk', href: '#risk' },
+        ] },
+      ] }],
+    });
+    await window.__settled();
+  });
+}
+
+const navState = (page: Page): Promise<string | undefined> => page.evaluate(() =>
+  document.querySelector<HTMLElement>('sherpa-nav')!.dataset['navState']);
+
+test('hover off: neither a pointer nor focus opens the rail', async ({ page }) => {
+  await hoverOff(page);
+  await page.locator('sherpa-nav .nav-row[data-id="reports"] sherpa-nav-item').hover();
+  expect(await navState(page) ?? 'collapsed').toBe('collapsed');
+  await page.locator('sherpa-nav .pin').focus();
+  expect(await navState(page) ?? 'collapsed').toBe('collapsed');
+  expect((await page.locator('sherpa-nav').boundingBox())!.width).toBe(40);
+});
+
+test('hover off: Settings and Pin stay at the foot — a column shut, a row at the bottom right pinned', async ({ page }) => {
+  await hoverOff(page);
+  const nav = (await page.locator('sherpa-nav').boundingBox())!;
+  const settings = (await page.locator('sherpa-nav .settings').boundingBox())!;
+  const pin = (await page.locator('sherpa-nav .pin').boundingBox())!;
+  expect(settings.x).toBe(pin.x);
+  expect(settings.x + settings.width / 2).toBeCloseTo(nav.x + nav.width / 2, 0);
+  expect(pin.y).toBeCloseTo(settings.y + settings.height, 0);
+  expect(nav.y + nav.height - (pin.y + pin.height)).toBe(8);
+  expect(await page.locator('sherpa-nav .settings').getAttribute('data-group')).toBe('vertical-start');
+  expect(await page.locator('sherpa-nav .pin').getAttribute('data-group')).toBe('vertical-end');
+
+  await page.locator('sherpa-nav .pin').click();
+  expect(await navState(page)).toBe('pinned');
+  await expect.poll(async () => (await page.locator('sherpa-nav').boundingBox())!.width).toBe(320);
+  // Still at the foot, now a row at the right. Never back in the header.
+  const open = (await page.locator('sherpa-nav').boundingBox())!;
+  const setRow = (await page.locator('sherpa-nav .settings').boundingBox())!;
+  const pinRow = (await page.locator('sherpa-nav .pin').boundingBox())!;
+  expect(pinRow.y + pinRow.height).toBe(open.y + open.height - 8);
+  expect(pinRow.x + pinRow.width).toBe(open.x + open.width - 8);
+  expect(setRow.y).toBe(pinRow.y);
+  expect(setRow.x + setRow.width).toBeCloseTo(pinRow.x, 0);
+  expect(await page.locator('sherpa-nav .settings').getAttribute('data-group')).toBe('start');
+  expect(await page.locator('sherpa-nav .pin').getAttribute('data-group')).toBe('end');
+  // The header keeps its icon and the product's name.
+  expect((await page.locator('sherpa-nav .product').boundingBox())!.y).toBeLessThan(open.y + 40);
+
+  await page.locator('sherpa-nav .pin').click();
+  expect(await navState(page)).toBe('collapsed');
+  await expect.poll(async () => (await page.locator('sherpa-nav').boundingBox())!.width).toBe(40);
+  await expect.poll(async () => (await page.locator('sherpa-nav .pin').boundingBox())!.y).toBe(pin.y);
+});
+
+test('hover off: the rows do not move when the rail is pinned', async ({ page }) => {
+  await hoverOff(page);
+  const shut = (await page.locator('sherpa-nav .nav-row[data-id="home"]').boundingBox())!;
+  await page.locator('sherpa-nav .pin').click();
+  await expect.poll(async () => (await page.locator('sherpa-nav').boundingBox())!.width).toBe(320);
+  // Pinned, the search field keeps its height, so the same row sits at the same place.
+  expect((await page.locator('sherpa-nav .nav-row[data-id="home"]').boundingBox())!.y).toBe(shut.y);
+});
+
+test('hover off: a plain row says its name in a tip, to its right; hover on, it does not', async ({ page }) => {
+  await hoverOff(page);
+  const row = page.locator('sherpa-nav .nav-row[data-id="reports"] sherpa-nav-item');
+  await row.hover();
+  const tip = page.locator('sherpa-nav .nav-row[data-id="reports"] sherpa-nav-item .tip');
+  await expect(tip).toBeVisible();
+  await expect(tip).toHaveText('Reports');
+  expect((await tip.boundingBox())!.x).toBeGreaterThanOrEqual((await row.boundingBox())!.x + 24);
+  await page.mouse.move(600, 400);
+  await expect(tip).toBeHidden();
+
+  await page.evaluate(() => document.querySelector('sherpa-nav')!.removeAttribute('data-no-hover'));
+  await row.hover();
+  await expect.poll(() => navState(page)).toBe('hover');
+  await expect(tip).toBeHidden();
+});
+
+test('hover off: a parent row lists its children in a menu to its right, headed by its name', async ({ page }) => {
+  await hoverOff(page);
+  const row = page.locator('sherpa-nav .nav-row[data-id="records"] sherpa-nav-item');
+  await row.hover();
+  const card = page.locator('sherpa-nav .flyout .menu');
+  await expect(card).toBeVisible();
+  await expect(page.locator('sherpa-nav .flyout .heading')).toHaveText('Records');
+  expect(await page.locator('sherpa-nav .flyout .menu-row').allTextContents()).toEqual(['All customers', 'At risk']);
+  await expect(row.locator('.tip')).toBeHidden();
+  const box = (await card.boundingBox())!;
+  const rail = (await page.locator('sherpa-nav').boundingBox())!;
+  expect(box.x).toBeGreaterThanOrEqual(rail.x + rail.width);
+  expect(box.y).toBe((await row.boundingBox())!.y);
+
+  // The way across does not shut it.
+  await page.mouse.move(box.x + 20, box.y + 10, { steps: 4 });
+  await page.waitForTimeout(300); // Past the time it would shut in.
+  await expect(card).toBeVisible();
+
+  // Off both, it goes.
+  await page.mouse.move(700, 450);
+  await expect(card).toBeHidden();
+});
+
+test('hover off: a menu row presses the real row, and the parent row lights for it', async ({ page }) => {
+  await hoverOff(page);
+  await page.evaluate(() => document.addEventListener('nav-select', (e) => {
+    (window as unknown as { picked: unknown }).picked = (e as CustomEvent).detail;
+  }));
+  const records = page.locator('sherpa-nav .nav-row[data-id="records"] sherpa-nav-item');
+  await records.hover();
+  await page.locator('sherpa-nav .flyout .menu-row', { hasText: 'At risk' }).click();
+  await expect(page.locator('sherpa-nav .flyout .menu')).toBeHidden();
+  expect(await page.evaluate(() => (window as unknown as { picked: { id: string; label: string } }).picked))
+    .toMatchObject({ id: 'records:risk', label: 'At risk' });
+  await expect.poll(() => page.evaluate(() => location.hash)).toBe('#risk');
+  await expect(records).toHaveAttribute('data-current', '');
+
+  // The menu marks it, on the next open.
+  await page.mouse.move(700, 450);
+  await records.hover();
+  await expect(page.locator('sherpa-nav .flyout .menu-row[aria-current]')).toHaveText('At risk');
+
+  // The Area was not opened by any of this, and pinned the child row is the lit one.
+  await page.locator('sherpa-nav .pin').click();
+  await expect(records).not.toHaveAttribute('data-expanded', '');
+  await expect(records).not.toHaveAttribute('data-current', '');
+  await expect(page.locator('sherpa-nav .nav-row[data-id="records:risk"] sherpa-nav-item')).toHaveAttribute('data-current', '');
+});
+
+test('hover off: a keyboard press opens the menu and goes into it; Escape comes back to the row', async ({ page }) => {
+  await hoverOff(page);
+  const records = page.locator('sherpa-nav .nav-row[data-id="records"] sherpa-nav-item');
+  await records.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('sherpa-nav .flyout .menu')).toBeVisible();
+  await expect(page.locator('sherpa-nav .flyout .menu-row').first()).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('sherpa-nav .flyout .menu')).toBeHidden();
+  await expect(records.locator('.nav').first()).toBeFocused();
+  await expect(records).not.toHaveAttribute('data-expanded', '');
+});
+
+test('hover off: the search icon opens the rail to type in; focus leaving shuts it', async ({ page }) => {
+  await hoverOff(page);
+  await page.locator('sherpa-nav .rail .search').click();
+  expect(await navState(page)).toBe('hover');
+  await expect(page.locator('sherpa-nav .search-input')).toBeFocused();
+  // A pointer leaving does not shut it while the reader types.
+  await page.mouse.move(700, 450);
+  expect(await navState(page)).toBe('hover');
+  await page.mouse.click(700, 450);
+  await expect.poll(() => navState(page)).toBe('collapsed');
+});
+
+test('hover off: leaving Settings goes back to the shut rail; turned off under the pointer, an open rail shuts', async ({ page }) => {
+  await hoverOff(page);
+  await page.locator('sherpa-nav .settings').click();
+  expect(await navState(page)).toBe('settings');
+  // Open in Settings too, the pair stays at the foot.
+  const open = (await page.locator('sherpa-nav').boundingBox())!;
+  const pin = (await page.locator('sherpa-nav .pin').boundingBox())!;
+  expect(pin.y + pin.height).toBe(open.y + open.height - 8);
+  await page.locator('sherpa-nav .settings').click();
+  expect(await navState(page)).toBe('collapsed');
+
+  await page.evaluate(() => document.querySelector('sherpa-nav')!.removeAttribute('data-no-hover'));
+  await page.locator('sherpa-nav').hover();
+  await expect.poll(() => navState(page)).toBe('hover');
+  await page.evaluate(() => document.querySelector('sherpa-nav')!.setAttribute('data-no-hover', ''));
+  await expect.poll(() => navState(page)).toBe('collapsed');
 });

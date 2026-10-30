@@ -73,6 +73,7 @@ For the app's side navigation rail, filled by `populate()`: an entry with `child
 | `data-current-id` | text |  | id of the current Context |
 | `data-menu` | boolean |  | the PHONE's menu: the whole screen, no Pin, Settings at the bottom, and Cancel — openMenu() / closeMenu() |
 | `data-nav-state` | `collapsed` `hover` `default` `pinned` `settings` | `collapsed` | collapsed \| hover \| default \| pinned \| settings |
+| `data-no-hover` | boolean |  | the rail does not open to a pointer: Settings and Pin stay at its foot, and, while it is shut, a row says its name in a tip and a parent row lists its children in a menu beside it |
 | `data-searchable` | boolean |  | show the search field (auto-set when a product is given) |
 
 ## Properties
@@ -117,7 +118,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`actions`, `brand`, `brand-icon`, `content`, `footer`, `header`, `menu-foot`, `pin`, `product`, `quick`, `quick-zone`, `rail`, `search`, `search-clear`, `search-input`, `section-label`, `settings`
+`actions`, `brand`, `brand-icon`, `content`, `flyout`, `footer`, `header`, `menu-foot`, `pin`, `product`, `quick`, `quick-zone`, `rail`, `search`, `search-clear`, `search-input`, `section-label`, `settings`
 
 ## CSS custom properties it reads
 

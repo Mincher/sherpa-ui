@@ -26,6 +26,9 @@
     data-nav-state  collapsed (default) | hover | default | pinned | settings
     data-current-id  id of the current Context
     data-searchable show the search field (auto-set when a product is given)
+    data-no-hover   the rail does not open to a pointer: Settings and Pin stay at
+                    its foot, and, while it is shut, a row says its name in a tip
+                    and a parent row lists its children in a menu beside it
     data-menu       the PHONE's menu: the whole screen, no Pin, Settings at the
                     bottom, and Cancel — openMenu() / closeMenu()
 
@@ -91,6 +94,9 @@
       <sherpa-button class="menu-cancel">Cancel</sherpa-button>
     </div>
   </nav>
+
+  <!-- A shut rail's parent row lists its children here. TRAP T-a-rail-may-stay-shut -->
+  <sherpa-menu class="flyout" part="flyout" data-placement="right" data-no-select-all></sherpa-menu>
 
   <!-- Cloning prototypes — no id, so the template parser ignores them. -->
   <template class="section-tpl">

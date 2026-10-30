@@ -1277,6 +1277,18 @@
     },
     {
       "$type": "prop",
+      "name": "data-placement",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "values": [
+        "right"
+      ],
+      "description": "right: beside the trigger, level with it, not below it"
+    },
+    {
+      "$type": "prop",
       "name": "data-range",
       "type": "boolean",
       "observed": true,

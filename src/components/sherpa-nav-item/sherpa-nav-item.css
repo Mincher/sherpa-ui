@@ -199,6 +199,13 @@
   translate: 0 -50%;
 }
 
+/* Its name in a tip, to its right, only where a rail that stays shut asks. A
+   parent row's name heads its menu instead. TRAP T-a-rail-may-stay-shut */
+:host { --_anchor: --sherpa-nav-item-tip; }
+.tip { --_area: inline-end; }
+:host .tip:popover-open { display: var(--_row-tip, none); }
+:host([data-expandable]) .tip:popover-open { display: none; }
+
 /* ── Hover / focus — on the BOX, so the whole row lights up ────────────── */
 /* Style base / +1 / +2 are default / hover / down, in whatever mode is pinned. */
 :host(:hover) { background: var(--sherpa-style-surface-base-1, #e8e8f64d); }

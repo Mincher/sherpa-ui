@@ -31,7 +31,7 @@
   Fires: item-expand — detail: { expanded } — the chevron was clicked
 -->
 <template id="default">
-  <button class="nav nav-button" part="row" type="button">
+  <button class="nav nav-button sherpa-anchor" part="row" type="button">
     <span class="icon sherpa-icon-box" part="icon" aria-hidden="true"></span>
     <span class="content" part="content">
       <span class="label sherpa-truncate" part="label"></span>
@@ -39,7 +39,7 @@
     </span>
   </button>
 
-  <a class="nav nav-link" part="row">
+  <a class="nav nav-link sherpa-anchor" part="row">
     <span class="icon sherpa-icon-box" part="icon" aria-hidden="true"></span>
     <span class="content" part="content">
       <span class="label sherpa-truncate" part="label"></span>
@@ -56,6 +56,8 @@
 
   <!-- Indicator (atom)/Type=dot — outside `content`, so it survives collapse. -->
   <span class="dot" part="dot" aria-hidden="true"></span>
+  <!-- Its name, where the rail hides the label and asks for it. TRAP T-a-rail-may-stay-shut -->
+  <span class="tip sherpa-tip" popover="manual" part="tip" aria-hidden="true"></span>
   <!-- The words its code hands on as data. TRAP T-a-word-is-in-the-markup -->
   <template class="words">
     <span data-word="expand">Expand</span>

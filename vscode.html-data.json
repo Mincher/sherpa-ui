@@ -2158,6 +2158,15 @@
           "valueSet": "v"
         },
         {
+          "name": "data-placement",
+          "description": "right: beside the trigger, level with it, not below it",
+          "values": [
+            {
+              "name": "right"
+            }
+          ]
+        },
+        {
           "name": "data-range",
           "valueSet": "v"
         },
@@ -2482,6 +2491,11 @@
               "name": "settings"
             }
           ]
+        },
+        {
+          "name": "data-no-hover",
+          "description": "the rail does not open to a pointer: Settings and Pin stay at its foot, and, while it is shut, a row says its name in a tip and a parent row lists its children in a menu beside it",
+          "valueSet": "v"
         },
         {
           "name": "data-searchable",

@@ -50,7 +50,9 @@ For one row in a nav you build by hand; `sherpa-nav` makes its own rows. `data-h
 
 | Method | What it does |
 |---|---|
+| `focus(options?: FocusOptions)` | Focus its control: the first focusable part inside. |
 | `highlight(query: string \| null)` | Mark a substring of this row's label as a search match. Null/empty clears it. |
+| `press()` | Press this row as a reader does: a link follows its href. |
 
 ## Events
 
@@ -71,7 +73,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`badge`, `chevron`, `content`, `description`, `dot`, `expand`, `heading`, `icon`, `label`, `row`
+`badge`, `chevron`, `content`, `description`, `dot`, `expand`, `heading`, `icon`, `label`, `row`, `tip`
 
 ## CSS custom properties it reads
 

@@ -571,6 +571,12 @@
 ::slotted([data-unavailable]:hover),
 ::slotted([data-unavailable]:active) { background: transparent; }
 
+/* The place the reader is on now: the look a current nav row wears. */
+::slotted(button[aria-current]) {
+  background: var(--sherpa-style-surface-base, #e8e8f6);
+  color: var(--sherpa-style-content-base, #0c0b11);
+}
+
 /* ── The footer ── a composed <sherpa-container-footer> that owns its own
  * padding, gap and top stroke; this only says WHEN it appears. `display: none`
  * beats the component's own [has-content-slot] rule.

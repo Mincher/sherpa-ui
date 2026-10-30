@@ -306,6 +306,8 @@ session.persist('/nav/pinned');
 - A demo or onboarding page may lay its own settings over the app's: `session.overlay({ '/filters/limit': true })` on entering it, `session.overlay(null)` on leaving. While on, those pointers read and write there, and nothing is stored, so a change never carries over to another page. Not how an app sets a setting.
 - Recents and Favorites name each View; `/nav/views: false` lists each Context
   once instead. `T-the-outlet-keeps-the-nav`
+- The nav opens to a pointer; `/nav/hover: false` keeps it as icons until its Pin.
+  `T-a-rail-may-stay-shut`
 
 ## 10. Questions and saved filters
 

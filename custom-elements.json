@@ -5351,6 +5351,13 @@
               }
             },
             {
+              "name": "data-placement",
+              "description": "right: beside the trigger, level with it, not below it",
+              "type": {
+                "text": "'right'"
+              }
+            },
+            {
               "name": "data-range",
               "type": {
                 "text": "boolean"
@@ -6175,6 +6182,20 @@
             },
             {
               "kind": "method",
+              "name": "focus",
+              "parameters": [
+                {
+                  "name": "options",
+                  "type": {
+                    "text": "FocusOptions"
+                  },
+                  "optional": true
+                }
+              ],
+              "description": "Focus its control: the first focusable part inside."
+            },
+            {
+              "kind": "method",
               "name": "highlight",
               "parameters": [
                 {
@@ -6185,6 +6206,12 @@
                 }
               ],
               "description": "Mark a substring of this row's label as a search match. Null/empty clears it."
+            },
+            {
+              "kind": "method",
+              "name": "press",
+              "parameters": [],
+              "description": "Press this row as a reader does: a link follows its href."
             }
           ],
           "events": [
@@ -6238,6 +6265,9 @@
             },
             {
               "name": "row"
+            },
+            {
+              "name": "tip"
             }
           ]
         }
@@ -6348,6 +6378,13 @@
                 "text": "'collapsed' | 'hover' | 'default' | 'pinned' | 'settings'"
               },
               "default": "\"collapsed\""
+            },
+            {
+              "name": "data-no-hover",
+              "description": "the rail does not open to a pointer: Settings and Pin stay at its foot, and, while it is shut, a row says its name in a tip and a parent row lists its children in a menu beside it",
+              "type": {
+                "text": "boolean"
+              }
             },
             {
               "name": "data-searchable",
@@ -6478,6 +6515,9 @@
             },
             {
               "name": "content"
+            },
+            {
+              "name": "flyout"
             },
             {
               "name": "footer"
