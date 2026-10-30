@@ -7,7 +7,7 @@
  * - StoreOptions — Options every store shares.
  * - BaseStore — what every store shares: key, time, schema guard, change events
  */
-import { applyOptions, matchesOnly, readField, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail } from './store.js';
+import { applyOptions, matchesOnly, orderKey, pageOf, readField, withoutPage, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail } from './store.js';
 import { carryKey, keyRow } from './row-key.js';
 import { StoreHistory } from './store-history.js';
 import {
@@ -30,6 +30,14 @@ export interface StoreOptions {
 }
 
 /** Shared plumbing. EventTarget so `change` is a real event a DataSource can subscribe to. */
+/** One question's matches in their order, and what they were worked out from. */
+interface KeptOrder extends Pick<LoadResult, 'dropped' | 'issues'> {
+  key: string;
+  of: readonly Row[];
+  age: number;
+  rows: readonly Row[];
+}
+
 export abstract class BaseStore extends EventTarget implements Store {
   readonly key: string;
   readonly time: string | undefined;
@@ -90,6 +98,9 @@ export abstract class BaseStore extends EventTarget implements Store {
     return (await this.load(matchesOnly(options))).total;
   }
 
+  /** What the schema said of each row it has read. */
+  #checked = new WeakMap<object, Awaited<ReturnType<typeof validate>>>();
+
   /** Check a row, THROWING if it fails; returns the PARSED value. TRAP T-schema-guard-belongs-at-the-store */
   protected async check(values: Row): Promise<Row> {
     if (!this.schema) return values;
@@ -119,7 +130,12 @@ export abstract class BaseStore extends EventTarget implements Store {
     const issues: Issue[] = [];
     for (let i = 0; i < limit; i++) {
       const row = result.rows[i]!;
-      const checked = await validate(this.schema, row);
+      // A row is read far oftener than it changes. TRAP T-a-page-turn-is-a-slice
+      let checked = this.#checked.get(row);
+      if (!checked) {
+        checked = await validate(this.schema, row);
+        this.#checked.set(row, checked);
+      }
       if (checked.issues) issues.push(...checked.issues);
       else rows.push(this.keyed((checked.value ?? row) as Row, row));
     }
@@ -166,13 +182,33 @@ export abstract class BaseStore extends EventTarget implements Store {
    * total changed from page to page. TRAP T-a-refused-row-never-shortens-a-page
    */
   protected async page(rows: readonly Row[], options: LoadOptions = {}): Promise<LoadResult> {
-    const { rows: accepted, dropped, issues } = await this.checkRows({ rows: [...rows], total: rows.length });
-    const paged = applyOptions(accepted, options);
+    const key = orderKey(options);
+    const kept = this.#order;
+    // The same question over the same rows: a page turn is a slice. TRAP T-a-page-turn-is-a-slice
+    const order = kept?.key === key && kept.of === rows && kept.age === this.#age ? kept : await this.#ordered(rows, options, key);
+    const { dropped, issues } = order;
+    const paged = pageOf(order.rows, options);
     // A projection sends the fields it names, each row by its original's key.
     const fields = options.fields;
     const result = fields ? { ...paged, rows: paged.rows.map((r) => this.keyed(this.project(r, fields), r)) } : paged;
     return dropped ? { ...result, dropped, ...(issues ? { issues } : {}) } : result;
   }
+
+  /** A question's matches, checked and in order, kept for its next page. */
+  async #ordered(rows: readonly Row[], options: LoadOptions, key: string): Promise<KeptOrder> {
+    const age = this.#age;
+    const { rows: accepted, dropped, issues } = await this.checkRows({ rows: [...rows], total: rows.length });
+    const order: KeptOrder = {
+      key, of: rows, age, rows: applyOptions(accepted, withoutPage(options)).rows,
+      ...(dropped ? { dropped } : {}), ...(issues ? { issues } : {}),
+    };
+    this.#order = order;
+    return order;
+  }
+  /** The last question's matches, in order, and what they were worked out from. */
+  #order: KeptOrder | undefined;
+  /** Moved by each change this store announces. */
+  #age = 0;
 
   /**
    * A row goes out KEYED — by its own key field, or by a key made up BESIDE it,
@@ -187,6 +223,7 @@ export abstract class BaseStore extends EventTarget implements Store {
 
   /** Tell every listener the records changed — noted in the History first. */
   protected announce(detail: StoreChangeDetail): void {
+    this.#age++;
     this.history.record(detail, this.key);
     this.dispatchEvent(new CustomEvent('change', { detail }));
   }

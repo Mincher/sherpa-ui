@@ -18,7 +18,7 @@
  * - .distinct — Each field's values among the matches, read in place.
  */
 import {
-  applyOptions, distinctOf, matchesOnly, readField, sameKey, valueKey, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail,
+  applyOptions, distinctOf, matchesOnly, orderKey, pageOf, readField, sameKey, valueKey, withoutPage, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail,
 } from './store.js';
 import { carryKey, isMadeUpKey, keyRow, rowKey } from './row-key.js';
 
@@ -51,6 +51,7 @@ export class HeldSet {
   /** Take a column read in: each row's `fields`, found by its `key`. False, and
    *  nothing taken, when the read is not the same rows — a change it never heard. */
   join(rows: readonly Row[], fields: readonly string[], key: string): boolean {
+    this.#order = undefined;
     if (rows.length !== this.#rows.length) return false;
     const read = new Map(rows.map((r) => [valueKey(readField(r, key)), r]));
     const found = this.#rows.map((r) => read.get(valueKey(readField(r, key))));
@@ -89,6 +90,7 @@ export class HeldSet {
    * read again. TRAP T-a-held-set-takes-a-change-in-place
    */
   patch(change: StoreChangeDetail, store: Pick<Store, 'key' | 'rowOrder'>): boolean {
+    this.#order = undefined;
     const { type, key, row } = change;
     const field = store.key;
     if (key == null) return false;
@@ -148,9 +150,15 @@ export class HeldSet {
     return place;
   }
 
+  /** The last question's matches, in order, until a row changes. */
+  #order: { key: string; rows: readonly Row[] } | undefined;
+
   /** What a load asks, each row a copy keyed as its original, so a host's edit never reaches the set. */
   load(options: LoadOptions = {}): Promise<LoadResult> {
-    const result = applyOptions(this.#rows, options);
+    // The same question over the same rows: a page turn is a slice. TRAP T-a-page-turn-is-a-slice
+    const key = orderKey(options);
+    if (this.#order?.key !== key) this.#order = { key, rows: applyOptions(this.#rows, withoutPage(options)).rows };
+    const result = pageOf(this.#order.rows, options);
     return Promise.resolve({ ...result, ...this.#refused, rows: result.rows.map((r) => carryKey(r, { ...r })) });
   }
 

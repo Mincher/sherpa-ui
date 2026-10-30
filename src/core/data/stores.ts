@@ -20,6 +20,7 @@ import {
   matchesOnly,
   readField,
   sameKey,
+  valueKey,
   type LoadOptions,
   type LoadResult,
   type Row,
@@ -29,7 +30,7 @@ import {
 } from './store.js';
 // Its own module so IdbStore reaches it too.
 import { BaseStore, type StoreOptions } from './base-store.js';
-import { isMadeUpKey, rowKey } from './row-key.js';
+import { rowKey } from './row-key.js';
 import { changedFields } from './store-history.js';
 export { BaseStore, type StoreOptions };
 
@@ -67,6 +68,7 @@ export class ArrayStore extends BaseStore {
   /** Replace every record. Used by JsonStore once its fetch lands. */
   setRows(rows: readonly Row[]): void {
     this.#rows = this.#trim(rows.map((r) => this.keyed({ ...r })));
+    this.#places = null;
     this.announce({ type: 'update' });
   }
 
@@ -95,9 +97,26 @@ export class ArrayStore extends BaseStore {
   /** Where a row is, by its key field — or by the key made up for it. */
   #at(key: unknown): number {
     // TRAP T-numeric-keys-compare-as-strings — `'7' === 7` is false.
-    return this.#rows.findIndex((r) => sameKey(readField(r, this.key), key)
-      || (isMadeUpKey(key) && rowKey(r) === key));
+    return key == null ? -1 : this.#byKey().get(valueKey(key)) ?? -1;
   }
+
+  /** Each row's place, by its key and any key made up for it: found once, for a burst of writes. */
+  #byKey(): Map<string, number> {
+    if (this.#places) return this.#places;
+    const places = new Map<string, number>();
+    const add = (key: string | undefined, i: number): void => {
+      if (key != null && !places.has(key)) places.set(key, i);
+    };
+    this.#rows.forEach((r, i) => {
+      const own = readField(r, this.key);
+      add(own == null ? undefined : valueKey(own), i);
+      add(rowKey(r), i);
+    });
+    this.#places = places;
+    return places;
+  }
+  /** Each row's place, until a row comes, goes or changes its key. */
+  #places: Map<string, number> | null = null;
 
   byKey(key: unknown): Promise<Row | undefined> {
     const row = this.#rows[this.#at(key)];
@@ -112,6 +131,7 @@ export class ArrayStore extends BaseStore {
     const kept = this.#trim(this.#rows);
     const trimmed = this.#rows.slice(0, this.#rows.length - kept.length).map((r) => readField(r, this.key) ?? rowKey(r));
     this.#rows = kept;
+    this.#places = null;
     this.announce({ type: 'insert', key: readField(row, this.key) ?? rowKey(row), row: this.keyed({ ...row }, row), ...(trimmed.length ? { trimmed } : {}) });
     return this.keyed({ ...row }, row);
   }
@@ -128,6 +148,7 @@ export class ArrayStore extends BaseStore {
       throw new Error(`ArrayStore: another row already has ${this.key} ${String(now)}`);
     }
     this.#rows[i] = row;
+    if (!sameKey(now, readField(old, this.key))) this.#places = null;
     this.announce({ type: 'update', key, row: this.keyed({ ...row }, row), fields: changedFields(old, row, values) });
     return this.keyed({ ...row }, row);
   }
@@ -136,6 +157,7 @@ export class ArrayStore extends BaseStore {
     const i = this.#at(key);
     if (i < 0) return Promise.reject(new Error(`ArrayStore: no row with ${this.key} ${String(key)}`));
     this.#rows.splice(i, 1);
+    this.#places = null;
     this.announce({ type: 'remove', key });
     return Promise.resolve();
   }
@@ -307,6 +329,18 @@ export class RestStore extends BaseStore {
   /** Only a `totalPath` says how many rows match: without one, the total is the rows sent. */
   override get reportsTotal(): boolean {
     return !!this.#options.totalPath;
+  }
+
+  /** One row says how many there are. */
+  get totalFirst(): boolean {
+    return this.reportsTotal;
+  }
+
+  /** It says its total, so a count asks one row, never the matches. TRAP T-a-page-turn-is-a-slice */
+  override async totalCount(options?: LoadOptions): Promise<number> {
+    if (!this.reportsTotal) return super.totalCount(options);
+    const { total, totalUnknown } = await this.load({ ...matchesOnly(options), take: 1 });
+    return totalUnknown ? super.totalCount(options) : total;
   }
 
   /** The server's order, when the app says it. */

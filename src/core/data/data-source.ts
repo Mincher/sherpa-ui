@@ -221,7 +221,8 @@ export class DataSource extends EventTarget {
     this.#limitOptions = options.limitOptions ?? false;
     this.#applyOn = options.applyOn ?? 'change';
     this.#debounce = options.debounce ?? 300;
-    this.#holdRows = options.holdRows ?? 50_000;
+    // Will's target: 100k rows in the browser. D3
+    this.#holdRows = options.holdRows ?? 100_000;
     this.#now = options.now ?? ((): Date => new Date());
     this.#pinned = !!options.now;
     this.#searchFields = options.searchFields;

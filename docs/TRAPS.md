@@ -19848,3 +19848,21 @@ load after midnight would be skipped as the same question (TODO 614).
 - Site: `src/core/data/source-counts.ts`
 - Site: `src/core/data/store.ts`
 - Site: `test/unit/same-input-same-output.test.mjs`
+
+### T-a-page-turn-is-a-slice
+
+**Do a question's work once; ask a store for what the answer needs.** A page turn ran
+the filter and the sort again over every row; a read checked every row against its
+schema again; a count downloaded the matches; a tally downloaded whole rows; and a set
+too big was sent whole, up to the cap, only to be refused and thrown away. Measured at
+1M rows: a page turn 157 ms, all of it this. So a store and a held set keep the last
+question's order and slice it, a store that says its total is asked that first, and a
+row is checked once. The kept order goes when the rows change, or the day does, as
+"last 7 days" means other rows tomorrow (TODO 615).
+
+- Site: `src/core/data/base-store.ts`
+- Site: `src/core/data/held-set.ts`
+- Site: `src/core/data/source-counts.ts`
+- Site: `src/core/data/store-cache.ts`
+- Site: `src/core/data/stores.ts`
+- Site: `test/unit/scale-asks-less.test.mjs`

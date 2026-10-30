@@ -51,6 +51,9 @@
  * - groupRows — rows grouped by a field, in the order they arrive
  * - matchesOnly — What a count or a tally asks: the matches alone — no order, no group, no page.
  * - applyOptions — Apply search → filter → sort, then page.
+ * - pageOf — One page of rows already in their order, and how many there are.
+ * - withoutPage — A question with no page in it: which rows, in what order.
+ * - orderKey — What makes two questions the same rows in the same order: a page, and the fields it sends, are not part of it.
  */
 import type { FieldDomain } from './validate.js';
 import type { StoreHistory } from './store-history.js';
@@ -250,6 +253,8 @@ export interface Store extends EventTarget {
   /** A load's `total` counts every match, not just the rows it sent — so a
    *  remote store's whole set can be held. TRAP T-a-remote-source-holds-its-whole-set */
   readonly reportsTotal?: boolean;
+  /** Its total costs one row: ask that before the whole set, which may be too big to hold. */
+  readonly totalFirst?: boolean;
   /** A read checks only its first rows against the schema: a long read's tail is unchecked. */
   readonly sampled?: boolean;
   /** The order a whole read returns its rows in, asked no sort: as inserted, or by
@@ -714,13 +719,24 @@ export function applyOptions(rows: readonly Row[], options: LoadOptions = {}): L
     : sort;
   if (specs.length) out = sortRows(out, specs);
 
-  const total = out.length;
+  return pageOf(out, options);
+}
 
-  const skip = options.skip ?? 0;
-  const take = options.take;
-  if (skip > 0 || take != null) {
-    out = out.slice(skip, take == null ? undefined : skip + take);
-  }
+/** One page of rows already in their order, and how many there are. */
+export function pageOf(rows: readonly Row[], { skip = 0, take }: LoadOptions): LoadResult {
+  const paged = skip > 0 || take != null;
+  return { rows: paged ? rows.slice(skip, take == null ? undefined : skip + take) : [...rows], total: rows.length };
+}
 
-  return { rows: out, total };
+/** A question with no page in it: which rows, in what order. */
+export function withoutPage(options: LoadOptions): LoadOptions {
+  const { skip: _skip, take: _take, ...rest } = options;
+  return rest;
+}
+
+/** What makes two questions the same rows in the same order: a page, and the fields
+ *  it sends, are not part of it. Today is: "last 7 days" means other rows tomorrow. */
+export function orderKey(options: LoadOptions): string {
+  const { skip: _skip, take: _take, fields: _fields, now, ...rest } = options;
+  return JSON.stringify([rest, (now ?? new Date()).toISOString().slice(0, 10)]);
 }

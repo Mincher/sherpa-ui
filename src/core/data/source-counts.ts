@@ -24,7 +24,7 @@ import { bandOf, type Threshold } from './threshold.js';
 
 /** Each field's distinct values, as value keys, among the rows a filter matches. */
 export async function presentUnder(
-  store: Pick<Store, 'load' | 'distinct'>, fields: readonly string[], filter: Filter | undefined,
+  store: Pick<Store, 'load' | 'distinct' | 'projects'>, fields: readonly string[], filter: Filter | undefined,
 ): Promise<Record<string, string[]>> {
   const options = filter ? { filter } : {};
   const keys = (values: readonly unknown[]): string[] => [...new Set(values
@@ -33,7 +33,8 @@ export async function presentUnder(
     const found = await store.distinct(fields, options);
     return Object.fromEntries(fields.map((f) => [f, keys(found[f] ?? [])]));
   }
-  const { rows } = await store.load(options);
+  // Only its fields, where the store can send just them. TRAP T-a-page-turn-is-a-slice
+  const { rows } = await store.load({ ...options, ...(store.projects ? { fields } : {}) });
   return Object.fromEntries(fields.map((f) => [f, keys(rows.map((r) => readField(r, f)))]));
 }
 

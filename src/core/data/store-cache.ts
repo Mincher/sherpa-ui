@@ -17,8 +17,8 @@
  * - .failedAt — The cap the last whole read failed at, or 0.
  * - .failure — Why the last whole read failed, while it stands — its kind and message.
  * - .never — The store's own facts forbid holding it.
- * - .tracks — A page that opens again, or a tab shown, asks the store what moved, not for the whole set.
  * - .over — The largest cap a set was refused at, for its size.
+ * - .tracks — A page that opens again, or a tab shown, asks the store what moved, not for the whole set.
  * - .recheck — Read the set again BEHIND the one held, which stays meanwhile.
  * - .keep — Keep the set beyond the session, and start from the copy kept last time.
  * - .drop — Hold nothing; `forget`, and the kept copy goes too, and nothing more is kept.
@@ -351,6 +351,17 @@ export class StoreCache extends EventTarget {
     const age = this.#age;
     try {
       const fields = this.#projection();
+      /* A store that says its total is asked that first, once: a set too big is never
+         sent whole, only to be thrown away. TRAP T-a-page-turn-is-a-slice */
+      if (!this.#set && this.store.totalFirst) {
+        const { total, totalUnknown } = await this.store.load({ take: 1 });
+        if (age !== this.#age) return;
+        if (!totalUnknown && total > cap) {
+          this.#over = Math.max(this.#over, cap);
+          if (cap >= this.#widest) void this.#keep?.forget();
+          return this.#unheld(() => this.#say(`it holds ${total} rows, more than ${cap} (holdRows)`, cap, { rows: 1, total }));
+        }
+      }
       // The mark, asked as the read is sent: a change after it is asked of next time.
       const marking = this.tracks ? this.store.changes!().then((c) => c.at, () => undefined) : undefined;
       const { rows, total, totalUnknown, dropped, issues } = await this.store.load({ take: cap + 1, ...(fields ? { fields } : {}) });

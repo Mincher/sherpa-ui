@@ -9,7 +9,7 @@
     "cells": 1410,
     "compiles": 1,
     "clones": 13,
-    "scans": 8
+    "scans": 7
   },
   "records/pick": {
     "loads": 2,
@@ -21,7 +21,7 @@
     "cells": 1260,
     "compiles": 1,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "records/repick": {
     "loads": 0,
@@ -45,7 +45,7 @@
     "cells": 375,
     "compiles": 0,
     "clones": 1,
-    "scans": 1
+    "scans": 0
   },
   "records/report": {
     "loads": 1,
@@ -129,7 +129,7 @@
     "cells": 330,
     "compiles": 1,
     "clones": 21,
-    "scans": 4
+    "scans": 3
   },
   "records/clear": {
     "loads": 2,
@@ -153,7 +153,7 @@
     "cells": 1410,
     "compiles": 1,
     "clones": 11,
-    "scans": 4
+    "scans": 3
   },
   "records/add": {
     "loads": 2,
@@ -165,7 +165,7 @@
     "cells": 1410,
     "compiles": 0,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "records/save": {
     "loads": 2,
@@ -177,7 +177,7 @@
     "cells": 1410,
     "compiles": 0,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "records/save-same": {
     "loads": 2,
@@ -189,7 +189,7 @@
     "cells": 1410,
     "compiles": 0,
     "clones": 1,
-    "scans": 2
+    "scans": 1
   },
   "records/save-unread": {
     "loads": 2,
@@ -201,7 +201,7 @@
     "cells": 1410,
     "compiles": 0,
     "clones": 1,
-    "scans": 2
+    "scans": 1
   },
   "records/delete": {
     "loads": 2,
@@ -213,7 +213,7 @@
     "cells": 1410,
     "compiles": 0,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "records/reopen": {
     "loads": 2,
@@ -225,7 +225,7 @@
     "cells": 1410,
     "compiles": 1,
     "clones": 13,
-    "scans": 8
+    "scans": 7
   },
   "records/narrow": {
     "loads": 0,
@@ -273,7 +273,7 @@
     "cells": 150000,
     "compiles": 0,
     "clones": 25,
-    "scans": 15
+    "scans": 14
   },
   "remote/pick": {
     "loads": 0,
@@ -285,7 +285,7 @@
     "cells": 0,
     "compiles": 2,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "remote/repick": {
     "loads": 0,
@@ -309,7 +309,7 @@
     "cells": 0,
     "compiles": 0,
     "clones": 1,
-    "scans": 1
+    "scans": 0
   },
   "remote/report": {
     "loads": 0,
@@ -417,7 +417,7 @@
     "cells": 0,
     "compiles": 1,
     "clones": 8,
-    "scans": 4
+    "scans": 3
   },
   "remote/add": {
     "loads": 0,
@@ -429,7 +429,7 @@
     "cells": 0,
     "compiles": 0,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "remote/save": {
     "loads": 0,
@@ -441,7 +441,7 @@
     "cells": 0,
     "compiles": 0,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "remote/save-same": {
     "loads": 0,
@@ -453,7 +453,7 @@
     "cells": 0,
     "compiles": 0,
     "clones": 1,
-    "scans": 2
+    "scans": 1
   },
   "remote/save-unread": {
     "loads": 0,
@@ -465,7 +465,7 @@
     "cells": 0,
     "compiles": 0,
     "clones": 1,
-    "scans": 2
+    "scans": 1
   },
   "remote/delete": {
     "loads": 0,
@@ -477,7 +477,7 @@
     "cells": 0,
     "compiles": 0,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "remote/reopen": {
     "loads": 0,
@@ -489,7 +489,7 @@
     "cells": 0,
     "compiles": 0,
     "clones": 25,
-    "scans": 14
+    "scans": 12
   },
   "remote/narrow": {
     "loads": 0,
@@ -501,7 +501,7 @@
     "cells": 0,
     "compiles": 1,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "remote/aside": {
     "loads": 0,
@@ -573,7 +573,7 @@
     "cells": 150000,
     "compiles": 0,
     "clones": 25,
-    "scans": 15
+    "scans": 14
   },
   "rest/pick": {
     "loads": 0,
@@ -585,7 +585,7 @@
     "cells": 0,
     "compiles": 2,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "rest/repick": {
     "loads": 0,
@@ -609,7 +609,7 @@
     "cells": 0,
     "compiles": 0,
     "clones": 1,
-    "scans": 1
+    "scans": 0
   },
   "rest/report": {
     "loads": 0,
@@ -717,7 +717,7 @@
     "cells": 0,
     "compiles": 1,
     "clones": 8,
-    "scans": 4
+    "scans": 3
   },
   "rest/add": {
     "loads": 0,
@@ -729,7 +729,7 @@
     "cells": 0,
     "compiles": 0,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "rest/save": {
     "loads": 0,
@@ -741,7 +741,7 @@
     "cells": 0,
     "compiles": 0,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "rest/save-same": {
     "loads": 0,
@@ -753,7 +753,7 @@
     "cells": 0,
     "compiles": 0,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "rest/save-unread": {
     "loads": 0,
@@ -765,7 +765,7 @@
     "cells": 0,
     "compiles": 0,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "rest/delete": {
     "loads": 0,
@@ -777,7 +777,7 @@
     "cells": 0,
     "compiles": 0,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "rest/reopen": {
     "loads": 1,
@@ -789,7 +789,7 @@
     "cells": 150000,
     "compiles": 0,
     "clones": 26,
-    "scans": 19
+    "scans": 16
   },
   "rest/narrow": {
     "loads": 0,
@@ -801,7 +801,7 @@
     "cells": 0,
     "compiles": 1,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "rest/aside": {
     "loads": 0,
@@ -873,7 +873,7 @@
     "cells": 37170,
     "compiles": 1,
     "clones": 10,
-    "scans": 6
+    "scans": 5
   },
   "lean/change-unused": {
     "loads": 2,
@@ -885,7 +885,7 @@
     "cells": 37170,
     "compiles": 0,
     "clones": 1,
-    "scans": 2
+    "scans": 1
   },
   "lean/change-shown": {
     "loads": 2,
@@ -897,7 +897,7 @@
     "cells": 37170,
     "compiles": 0,
     "clones": 1,
-    "scans": 2
+    "scans": 1
   },
   "lean/change-held": {
     "loads": 2,
@@ -909,7 +909,7 @@
     "cells": 37170,
     "compiles": 0,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "lean/answer-held": {
     "loads": 1,
@@ -969,7 +969,7 @@
     "cells": 150375,
     "compiles": 0,
     "clones": 25,
-    "scans": 14
+    "scans": 12
   },
   "notheld/report": {
     "loads": 1,
@@ -981,7 +981,7 @@
     "cells": 375,
     "compiles": 3,
     "clones": 1,
-    "scans": 16
+    "scans": 15
   },
   "notheld/save": {
     "loads": 2,
@@ -993,7 +993,7 @@
     "cells": 150375,
     "compiles": 0,
     "clones": 1,
-    "scans": 17
+    "scans": 16
   },
   "notheld/save-same": {
     "loads": 2,
@@ -1029,7 +1029,7 @@
     "cells": 150390,
     "compiles": 0,
     "clones": 1,
-    "scans": 17
+    "scans": 16
   },
   "notheld/delete": {
     "loads": 2,
@@ -1041,7 +1041,7 @@
     "cells": 150375,
     "compiles": 0,
     "clones": 1,
-    "scans": 17
+    "scans": 16
   },
   "notheld/add-field": {
     "loads": 0,
@@ -1077,7 +1077,7 @@
     "cells": 1504,
     "compiles": 1,
     "clones": 13,
-    "scans": 8
+    "scans": 7
   },
   "tiered/pick-site": {
     "loads": 2,
@@ -1089,7 +1089,7 @@
     "cells": 448,
     "compiles": 1,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "tiered/pick-both": {
     "loads": 2,
@@ -1101,7 +1101,7 @@
     "cells": 1536,
     "compiles": 1,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "tiered/move-site": {
     "loads": 2,
@@ -1113,7 +1113,7 @@
     "cells": 1536,
     "compiles": 0,
     "clones": 1,
-    "scans": 4
+    "scans": 3
   },
   "wide/open": {
     "loads": 1,
@@ -1125,7 +1125,7 @@
     "cells": 110000,
     "compiles": 0,
     "clones": 19,
-    "scans": 11
+    "scans": 10
   },
   "wide/add-field": {
     "loads": 0,
@@ -1149,7 +1149,7 @@
     "cells": 20000,
     "compiles": 0,
     "clones": 1,
-    "scans": 2
+    "scans": 1
   },
   "wide/add-column-again": {
     "loads": 0,
@@ -1173,6 +1173,6 @@
     "cells": 150000,
     "compiles": 0,
     "clones": 1,
-    "scans": 5
+    "scans": 3
   }
 }

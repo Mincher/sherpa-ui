@@ -144,8 +144,9 @@ export class FieldCatalogue {
     const paths = this.#paths(field);
     const childLabels = facts.child ? this.#fields.get(facts.child)?.labels : undefined;
     // …and its values are the TREE: each parent, then its paths.
-    const tree = paths.length && values
-      ? values.flatMap((v) => [v, ...paths.filter((p) => p.parent === valueKey(v)).map((p) => p.path)]) : values;
+    const under = new Map<string, unknown[]>();
+    for (const p of paths) under.set(p.parent, [...under.get(p.parent) ?? [], p.path]);
+    const tree = paths.length && values ? values.flatMap((v) => [v, ...under.get(valueKey(v)) ?? []]) : values;
     // Its own values' names, and its paths'. TODO 518
     const labels = { ...facts.labels, ...Object.fromEntries(paths.map((p) => [p.key, childLabels?.[valueKey(p.child)] ?? valueKey(p.child)])) };
     return {

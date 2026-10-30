@@ -46,6 +46,7 @@ test('each chip counts within the filters before it; the last in force is the to
   assert.deepEqual(await source.results('view'), { region: 4 });
   // Status within the View's four; Plan within those three open.
   assert.deepEqual(await source.results('data'), { status: 3, plan: 2 });
+  await source.load();
   assert.equal(source.debugState().total, 2);
 });
 

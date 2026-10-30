@@ -199,12 +199,23 @@ over the rows (Apply with a fetched field, 641 ms). The first read fetches 50,00
 rows and throws them away (`store-cache.ts:356`). `RestStore` has no `totalCount` or
 `distinct`, so counts download the matches (`base-store.ts:88`).
 
-Small fixes: remember validated rows; memoise tiered facts; coalesce a burst of store
-changes; a count asks `take: 0`; tallies ask only their fields; a 100k bench row, as
-the bench's 10k hides all this. It counts and never times
-(`T-the-bench-counts-and-never-times`), and that stays.
+**Done** (tests: `test/unit/scale-asks-less.test.mjs`):
 
-Medium: a cached ordered set, so a page turn is a slice and not a filter and a sort.
+- A remote set of up to 100k rows is held (D3). It was 50,000.
+- A page turn is a slice: a store and a held set keep the last question's order, so a
+  second page runs no filter and no sort. The bench's passes fell across the board.
+- A store whose total costs one row is asked that first, so a set too big is never sent
+  whole. A count asks one row too. A tally asks only its fields.
+- A row is checked against its schema once, not on every read.
+- Finding a row by key, and a tiered field's tree, no longer walk every row each time.
+
+**Not done yet:**
+
+- A 100k row in the bench. It counts and never times
+  (`T-the-bench-counts-and-never-times`), and that stays. Its blind spots are real:
+  `fakeRemote` keeps `ArrayStore`'s cheap count, and it has no schema.
+- Coalescing a burst of store changes: not measured yet.
+
 The target is 100k rows in the browser (D3). A Web Worker is for much later.
 
 ### Step 6 (616): the node engine — HELD
