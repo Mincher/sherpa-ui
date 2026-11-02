@@ -104,6 +104,8 @@ export interface FieldDomain {
   values?: unknown[];
   min?: number;
   max?: number;
+  /** Each value's look, a Style mode — a status field's (plan 683). */
+  statuses?: Record<string, string>;
 }
 
 /** The rules that bound a field, and how. */

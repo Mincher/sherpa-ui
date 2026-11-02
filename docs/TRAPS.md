@@ -15152,6 +15152,40 @@ field's values as chips (674) draws none for an unlisted field.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/unit/a-list-has-a-limit.test.mjs`
 
+### T-a-status-is-worked-out-by-the-data
+
+**A status field's value is named by conditions on a row's OTHER fields, and the
+data works it out** (Will, plan 683: *"It all comes from the data."*).
+`statusFields(store, { health: { type: 'status', values: [...] } })` wraps any
+store. Each value has `when`: a list of conditions in the one condition language
+(`T-one-way-to-write-a-condition`) — the value matches when ANY holds, each when
+ALL its fields do, as that language joins fields with AND alone. The first value
+that matches is the row's; one with no `when` takes the rest; a row none take has
+no value.
+
+**Each value is made its own filter**: its conditions, and NOT any value before
+it (De Morgan, each operator's opposite). Row values are tested with those same
+filters, so a row's value and a filter on it never disagree — even on an empty
+field, which neither side of `lt` takes. An operator with no opposite
+(`startswith`) before another value is refused when the store is made.
+
+**A filter on it is conditions on the fields it reads**: each clause on the field
+is tested against every value's name — `ne`, `in`, `contains` alike — and becomes
+the OR of those values' filters. The store under it never hears of the field, so
+a server answers it. A field's kind is read from its condition: a number is a
+number, `last`/`next` a date (made absolute for today), else as written — with
+no kind, `60` compiled as the text "60".
+
+**It sorts and groups as any list field does, A to Z** — the store under it
+cannot, so such a read is ordered over its matches here. It says its values in
+order, each with its look, as its domain (`statuses`). A change to a field it
+reads is a change to it, in a change event and in `changes()`. A write that names
+it is refused. Under `fakeRemote` and a worker's `HeldStore`, the held rows carry
+the value, and a page filters by it.
+
+- Site: `src/core/data/status-field.ts`
+- Site: `test/unit/a-status-is-worked-out-by-the-data.test.mjs`
+
 ### T-a-horizontal-legend-is-three-by-two
 
 A horizontal legend was a wrapping flex row, so it put a different number of

@@ -79,7 +79,7 @@ Demos, the account's `score` (today's number) and its open tickets; Will may set
 
 Answered, 2026-11-02: all A.
 
-**Waits for plan 652** (Will, 2026-11-02): *"these status fields might be useful with other things like preset filters, organise criteria... We should look into this after the Service Worker stuff is settled."* So S1 starts once 652 is settled, and the plan then looks at presets and Organise too.
+**Was to wait for plan 652** (Will, 2026-11-02) — then, after S9 and D10, Will picked it to go first: *"these status fields might be useful with other things like preset filters, organise criteria... We should look into this after the Service Worker stuff is settled."* So S1 starts once 652 is settled, and the plan then looks at presets and Organise too.
 
 | # | Question | A (my pick) | B |
 |---|---|---|---|
@@ -95,7 +95,7 @@ Each step is measured in the running app. Each step deletes what it makes redund
 
 | Step | What | Done when | What it makes redundant |
 |---|---|---|---|
-| S1 | The data layer: the definition, `statusFields(store, defs)` — the value on each row, filters turned into conditions, the values and statuses as its domain, counts, changes, writes refused | Node: over an `ArrayStore`, a `fakeRemote` and the worker's `HeldStore`, a page filters, counts and sorts by a status field, and no filter that reaches a remote store names it | Nothing yet |
+| S1 ✅ | **Done 2026-11-02**, Will moved it ahead of 652's S10: `statusFields(store, defs)` in `status-field.ts`, each value its own filter (its conditions, and not the values before it), 8 Node tests (`T-a-status-is-worked-out-by-the-data`). The data layer: the definition, `statusFields(store, defs)` — the value on each row, filters turned into conditions, the values and statuses as its domain, counts, changes, writes refused | Node: over an `ArrayStore`, a `fakeRemote` and the worker's `HeldStore`, a page filters, counts and sorts by a status field, and no filter that reaches a remote store names it | Nothing yet |
 | S2 | The controls: the catalogue lists a status field's values, each in its status — chips, menus, legend swatches; an Advanced row on it asks *is* and *is not* | Records' chips, panel and legend pick Health's values, and the counts and Limit speak them | The catalogue's and the walk's banded branches |
 | S3 | The gauge (D4) | The Records gauge's zones and legend come from Health; a legend pick filters Health and highlights its zone | The gauge's `thresholds` ask and the provider's banded legend binding |
 | S4 | Demos: `score`, the number, and `health`, the status field over `score` and `openTickets`, in `records-data.js`; the grid's Health column; the presets, Views, "At risk", the Learn Filtering pages; the Dashboard's storage gauge | The grid's Health column reads At risk, Watch or Healthy on every row; Demos all green, in three engines | `thresholds` in Demos' definitions; `{ band: … }` in its Views |

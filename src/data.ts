@@ -129,6 +129,8 @@ export {
 export { RequestStore, openRequestStore, type RequestStoreOptions } from './core/data/request-store.js';
 // A remote store's ONE held set, for a Service Worker to answer every tab from. Plan 652 S5b
 export { HeldStore, type HeldStoreOptions, type LostWrite } from './core/data/held-store.js';
+// A status field: each value named by conditions on a row's other fields. Plan 683
+export { statusFields, type StatusField, type StatusValue } from './core/data/status-field.js';
 // A write made offline waits, and is sent once. Plan 652 S7a
 export { memoryOutbox, outboxEntry, type OutboxEntry, type OutboxPort } from './core/data/outbox.js';
 // What is new, said to every tab: a fact, never a request to show it. Plan 652 S6
