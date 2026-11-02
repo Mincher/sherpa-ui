@@ -423,6 +423,18 @@ export class SherpaMenu extends SherpaElement {
    *  the rows as its ends. TRAP T-a-band-is-a-value-of-its-field */
   bands: readonly Threshold[] | undefined;
 
+  /** listed — the values its Equals rows list where it has no value rows of its
+   *  own: a number's, from its field. Will, TODO 668 */
+  get listed(): { value: string; label: string }[] {
+    return [...this.#listed];
+  }
+  set listed(values: readonly { value: string; label: string }[]) {
+    this.#listed = [...values];
+    this.#refillPicks();
+  }
+  /** What `listed` was given. */
+  #listed: { value: string; label: string }[] = [];
+
   /** A pick moved: rows that still MIRROR the picks follow it. */
   #followPicks(): void {
     if (this.#mirror && this.#offersAdvanced()) this.#seedFromPicks();
@@ -724,11 +736,11 @@ export class SherpaMenu extends SherpaElement {
     return this.#typesItsPicks() ? 'text' : takes;
   }
 
-  /** A row with NO list to pick from types its Equals — a number, or a field
-   *  whose values are not listed (Advanced only). It answers as the one value
-   *  it picks. Will, TODO 112. TRAP T-one-number-is-a-pick-under-equals */
+  /** A row with NO list to pick from types its Equals — a field whose values
+   *  are not listed (Advanced only), or a number not yet given its own. It answers
+   *  as the one value it picks. Will, TODOs 112, 668. TRAP T-one-number-is-a-pick-under-equals */
   #typesItsPicks(): boolean {
-    return this.#numeric() || !this.#fieldValues().length;
+    return !this.#fieldValues().length;
   }
 
   /** The ops this menu offers, from `data-conditions` or the text set. */
@@ -756,13 +768,15 @@ export class SherpaMenu extends SherpaElement {
   /** The field's own values, read from the menu's rows. */
   #fieldValues(): { value: string; label: string }[] {
     // Its own value ROWS: a nested menu's group is not one. TRAP T-a-nested-menu-answers-for-itself
-    return this.#rows()
+    const own = this.#rows()
       .filter((row) => !row.matches(NON_VALUE_ROWS) && !row.querySelector('sherpa-menu'))
       .map((row) => ({
         value: row.querySelector<HTMLInputElement>('input')?.value ?? '',
         label: (row.textContent ?? '').trim(),
       }))
       .filter((o) => o.value !== '');
+    // A number has none: its field's own, where it was given them. TODO 668
+    return own.length ? own : [...this.#listed];
   }
 
   /** Row ONE has no join. A flag, so CSS hides it and nothing is removed —

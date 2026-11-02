@@ -5499,6 +5499,13 @@
             },
             {
               "kind": "field",
+              "name": "listed",
+              "type": {
+                "text": "{ value: string; label: string }[]"
+              }
+            },
+            {
+              "kind": "field",
               "name": "reading",
               "type": {
                 "text": "FieldReading"

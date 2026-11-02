@@ -2475,6 +2475,15 @@ empty — WebKit would not even open it. Its Equals and Not equals are TYPED
 now, as a number's are, and answer as the one value they pick
 (`#typesItsPicks()`). Rows ask again whenever the values come or go.
 
+**A number lists its values too** — Will, TODO 668: *"Advanced filter 'EQUALS' rows
+are not showing a Select input to choose from a list of unique values in the filter
+field."* An Advanced number keeps the distinct values its rows hold, in number order,
+as `listed` in its filter definition — NOT `options`, which a grid and a bar draw as
+rows to tick, so its Simple body grew a list under the number box. The menu takes
+them as `listed`, and its Equals and Not equals pick from them; `>`, `<` and Between
+stay typed. The catalogue keeps them apart from the field's domain, so it is still a
+number to every chip, count and clause. A number with no values yet still types.
+
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-number-filter-reports.spec.ts`
 - Site: `test/e2e/reforged-advanced-rows.spec.ts`

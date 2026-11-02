@@ -4,7 +4,8 @@ import { test, expect } from './harness';
  * EVERY ADVANCED ROW, ASKED AS A READER ASKS IT — TODO 112. For each kind of
  * field and each condition it offers, the row shows the inputs that condition
  * takes, and what is typed or picked there is the clause the data layer runs.
- * Equals picks from the field's own values — or, where it lists none, is typed.
+ * Equals picks from the field's own values — a number's too, once it has them
+ * (Will, TODO 668) — or, where it lists none, is typed.
  * TRAP T-one-number-is-a-pick-under-equals
  */
 
@@ -13,6 +14,8 @@ const KINDS = {
     options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }] }, facts: {} },
   only: { def: { id: 'name', label: 'Name', advanced: 'only' }, facts: {} },
   number: { def: { id: 'seats', label: 'Seats', kind: 'number', advanced: true, min: 0, max: 100 }, facts: { type: 'number' } },
+  listed: { def: { id: 'seats', label: 'Seats', kind: 'number', advanced: true, min: 0, max: 100,
+    listed: [{ value: '42', label: '42' }, { value: '99', label: '99' }] }, facts: { type: 'number' } },
   date: { def: { id: 'created', label: 'Created', kind: 'date', advanced: true }, facts: { type: 'date' } },
   time: { def: { id: 'seen', label: 'Seen', kind: 'date', advanced: true, time: true }, facts: { type: 'date', time: true } },
 };
@@ -41,6 +44,15 @@ const WANT: Record<string, [string, unknown]> = {
   // A number's range: From, To and the slider under them. Will, TODO 375
   'number:between': ['condition-value+condition-value-to+condition-slider', ['seats', 'between', [42, 99]]],
   'number:notbetween': ['condition-value+condition-value-to+condition-slider', ['seats', 'notbetween', [42, 99]]],
+  // Given its values, a number's Equals picks from them; the rest are as before. Will, TODO 668
+  'listed:eq': ['condition-pick', ['seats', 'eq', 42]],
+  'listed:ne': ['condition-pick', ['seats', 'ne', 42]],
+  'listed:gt': ['condition-value', ['seats', 'gt', 42]],
+  'listed:gte': ['condition-value', ['seats', 'gte', 42]],
+  'listed:lt': ['condition-value', ['seats', 'lt', 42]],
+  'listed:lte': ['condition-value', ['seats', 'lte', 42]],
+  'listed:between': ['condition-value+condition-value-to+condition-slider', ['seats', 'between', [42, 99]]],
+  'listed:notbetween': ['condition-value+condition-value-to+condition-slider', ['seats', 'notbetween', [42, 99]]],
   'date:eq': ['condition-date', ['created', 'eq', '2026-09-03']],
   'date:lt': ['condition-date', ['created', 'lt', '2026-09-03']],
   'date:gt': ['condition-date', ['created', 'gt', '2026-09-03']],
@@ -90,7 +102,8 @@ test('every Advanced row shows what its condition takes, and answers the clause 
           .filter((c) => c !== 'condition' && c !== 'drop-condition');
         for (const cls of shown) {
           const inner = row.querySelector(`.${cls}`)!.shadowRoot?.querySelector<HTMLInputElement | HTMLSelectElement>('input, select');
-          const value = cls === 'condition-value' ? (kind === 'number' ? '42' : 'Ada') : FILL[cls];
+          const numbered = kind === 'number' || kind === 'listed';
+          const value = cls === 'condition-value' ? (numbered ? '42' : 'Ada') : cls === 'condition-pick' && numbered ? '42' : FILL[cls];
           if (!inner || value == null) continue;
           inner.value = value;
           inner.dispatchEvent(new Event('input', { bubbles: true }));

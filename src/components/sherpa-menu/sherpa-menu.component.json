@@ -1542,7 +1542,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (values, mode, reading, conditions, op, conditionValue, open, dirty, itemData, present, heldByPreset, offered, all). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (values, mode, listed, reading, conditions, op, conditionValue, open, dirty, itemData, present, heldByPreset, offered, all). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -1794,6 +1794,11 @@
         {
           "name": "mode",
           "type": "ConditionType",
+          "access": "read-write"
+        },
+        {
+          "name": "listed",
+          "type": "{ value: string; label: string }[]",
           "access": "read-write"
         },
         {

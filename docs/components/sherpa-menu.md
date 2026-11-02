@@ -74,6 +74,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 |---|---|---|---|
 | `values` | `string[]` | read and write | the checked row values (read/write) |
 | `mode` | `ConditionType` | read and write |  |
+| `listed` | `{ value: string; label: string }[]` | read and write |  |
 | `reading` | `FieldReading` | read and write |  |
 | `conditions` | `FieldCondition[]` | read and write |  |
 | `op` | `FilterOp` | read and write |  |

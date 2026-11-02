@@ -44,6 +44,8 @@ export interface FilterMenuDef extends KindSource {
   step?: number;
   /** A banded number's bands. TODO 477 */
   thresholds?: readonly Threshold[];
+  /** A number's own values, for its Equals rows. TODO 668 */
+  listed?: readonly { value: string; label: string }[];
   availableDates?: readonly string[];
   range?: boolean;
   /** A DATE that holds times: its Advanced rows offer a time box. TODO 21d */
@@ -140,6 +142,8 @@ export function menuFor(
       menu.setAttribute('data-type', 'filter');
       menu.setAttribute('data-advanced', '');
       menu.setAttribute('data-conditions', (OPS_FOR_TYPE['number'] ?? []).join(','));
+      // Its Equals rows list the field's own values. Will, TODO 668
+      if (def.listed?.length) menu.listed = def.listed;
     }
     return { menu, kind, items: [] };
   }

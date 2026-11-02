@@ -47,6 +47,9 @@ export class FieldCatalogue {
   /** A tiered field's CHILD values, by its parent value's key — apart from its
    *  domain, so a chart or a legend never sees one. TRAP T-a-value-holds-child-values */
   #children = new Map<string, Map<string, unknown[]>>();
+  /** An Advanced number's values, which only its Equals rows list — apart from its
+   *  domain, so it stays a number to every chip, count and clause. Will, TODO 668 */
+  #equals = new Map<string, number[]>();
 
   /** Keep a tiered field's child values per parent, from the rows' [parent,
    *  child] pairs: once per key, in order. TODO 369 */
@@ -190,12 +193,15 @@ export class FieldCatalogue {
       kids.set(p.parent, list);
     }
     const options = values.flatMap((v) => [{ value: v, label: labels?.[v] ?? v }, ...(kids.get(v) ?? [])]);
+    // A number's values are its Equals rows' list, never rows to tick. Will, TODO 668
+    const listed = (type === 'number' ? this.#equals.get(field) ?? [] : []).map((n) => ({ value: String(n), label: String(n) }));
     return {
       id: field, label: label ?? field, ...rest,
       // The store answers it, once per Apply: its menus wait for theirs. 345 phase 6
       ...(rest.fetch === 'server' ? { commit: true } : {}),
       ...(body ? { kind: body } : {}),
       ...(options.length ? { options } : {}),
+      ...(listed.length ? { listed } : {}),
       ...(days.length ? { availableDates: days } : {}),
     };
   }
@@ -236,7 +242,7 @@ export class FieldCatalogue {
   async fromRows(fields: readonly string[], read: (open: readonly string[]) => Promise<Record<string, unknown[]>>): Promise<void> {
     const open = fields.filter((f) => {
       const facts = this.#fields.get(f) ?? {};
-      if (facts.type === 'number') return facts.min == null || facts.max == null;
+      if (facts.type === 'number') return facts.min == null || facts.max == null || (facts.advanced === true && !this.#equals.has(f));
       return facts.advanced !== 'only' && !this.#domains.has(f);
     });
     let found: Record<string, unknown[]> = {};
@@ -261,6 +267,7 @@ export class FieldCatalogue {
         continue;
       }
       const nums = held.map(Number).filter(Number.isFinite);
+      if (facts.advanced === true && nums.length) this.#equals.set(field, [...new Set(nums)].sort((a, b) => a - b));
       const min = facts.min ?? (nums.length ? Math.floor(nums.reduce((a, b) => Math.min(a, b))) : undefined);
       const max = facts.max ?? (nums.length ? Math.ceil(nums.reduce((a, b) => Math.max(a, b))) : undefined);
       if (min == null || max == null) continue;

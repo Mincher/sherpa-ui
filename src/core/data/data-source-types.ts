@@ -77,6 +77,8 @@ export interface FieldFilter extends Omit<FieldDeclaration, 'type'> {
    *  band's status. `parent`: a tiered field's child value names its parent's
    *  key (TODO 369). */
   options?: { value: string; label: string; swatch?: number | string; parent?: string }[];
+  /** A number's own values, which only its Equals rows list: never rows to tick. Will, TODO 668 */
+  listed?: { value: string; label: string }[];
   /** Its values are still being read: a menu shows a loading row. 345 phase 5 */
   loading?: boolean;
   /** A date's days that have records — every other day draws inactive. */
