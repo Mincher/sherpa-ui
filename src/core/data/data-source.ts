@@ -1460,13 +1460,20 @@ export class DataSource extends EventTarget {
    */
   get reach(): 'ok' | 'unreached' | 'down' {
     if (this.#down) return 'down';
-    const failure = this.#closed ? null : this.#cache?.failure;
-    return failure && unreached(failure) && this.#held.plan === 'held-stale' ? 'unreached' : 'ok';
+    const failure = this.#staleBy();
+    return failure && unreached(failure) && (this.store.holds || this.#held.plan === 'held-stale') ? 'unreached' : 'ok';
   }
 
   /** Why the store could not be reached, while it cannot — its kind and message — else null. */
   get failure(): Failure | null {
-    return this.#down ?? (this.reach === 'unreached' ? this.#cache?.failure ?? null : null);
+    return this.#down ?? (this.reach === 'unreached' ? this.#staleBy() : null);
+  }
+
+  /** Why the rows shown are unconfirmed: the held set's failure — or, over a store
+   *  that holds its own set, what its last answer said. D8 */
+  #staleBy(): Failure | null {
+    if (this.#closed) return null;
+    return (this.store.holds ? this.store.stale : this.#cache?.failure) ?? null;
   }
 
   /** Try the store again: `down`, a fresh read; `unreached`, a read behind the rows
@@ -1477,6 +1484,15 @@ export class DataSource extends EventTarget {
     const reach = this.reach;
     const cache = this.#closed ? null : this.#cache;
     if (reach === 'down') void this.load({ force: true });
+    /* A store that holds its own set reads its source again, then this asks it
+       anew; the rows shown stay meanwhile. D8 */
+    else if (reach === 'unreached' && this.store.holds) {
+      void this.store.recheck?.().then(() => {
+        this.#age++;
+        this.#rowsAge++;
+        void this.#reask();
+      });
+    }
     // The rows stay, and say they are unconfirmed, until the read lands.
     else if (reach === 'unreached' || (cache?.tracks && cache.set && this.#held.plan === 'held')) this.#held.recheck();
   }
@@ -1543,16 +1559,23 @@ export class DataSource extends EventTarget {
     return [...need].sort();
   }
 
-  /** A Refresh: the store's set is read again before it is used — never by a closed source. */
+  /** A Refresh: the store's set is read again before it is used — never by a closed source.
+   *  A store that holds its own set reads its source again, and the next ask waits. D8 */
   #letGo(): void {
     if (this.#closed) return;
     this.#cache?.letGo();
+    if (this.store.holds) this.#freshen = this.store.recheck?.() ?? null;
     // The keys a server field matched are of the set let go: they are asked again. TODO 612
     if (!this.#fetchedKeys.size) return;
     this.#fetchedKeys.clear();
     this.#fetching.clear();
     this.#compileNow();
   }
+
+  /** A store that holds its own set, reading its source again for a Refresh. */
+  #freshen: Promise<void> | null = null;
+  /** This page has had the set of a store that holds its own checked once. */
+  #confirmed = false;
 
   /** The load in flight, for a caller that asks the same question again. */
   #asking: Promise<LoadResult> | null = null;
@@ -1567,6 +1590,19 @@ export class DataSource extends EventTarget {
 
     try {
       await this.#hold();
+      // A Refresh of a store that holds its own set waits for it to read again.
+      if (this.#freshen) await this.#freshen.catch(() => undefined).finally(() => { this.#freshen = null; });
+      /* A new page over a store that holds its own set — one that may miss a writer —
+         has that set checked behind once, as a page's own held set was (D8): its rows
+         answer at once, and are asked again when the check lands. */
+      else if (this.store.holds && !this.store.announcesAll && !this.#confirmed) {
+        this.#confirmed = true;
+        void this.store.recheck?.().then(() => {
+          this.#age++;
+          this.#rowsAge++;
+          void this.#reask();
+        });
+      }
       // Overtaken while it waited: the newer ask answers, and this one asks no one.
       if (!this.#inFlight.is(ticket)) return await (this.#asking ?? Promise.resolve(this.#result));
       /* What the filters before each pick rule out is set aside BEFORE the load,

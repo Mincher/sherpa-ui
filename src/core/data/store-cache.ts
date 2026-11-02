@@ -177,6 +177,13 @@ export class StoreCache extends EventTarget {
   keep(port: CacheKeep): void {
     this.#keep = port;
     this.#noRestore = false;
+    this.#restore(port);
+    // Written once a set is confirmed this session.
+    if (this.#gen > 0) this.#write();
+  }
+
+  /** Show the copy kept last time, where one is and nothing better has landed. */
+  #restore(port: CacheKeep): void {
     this.#restoring = port.read().then((kept) => {
       // A set landed first, or a refusal or a sign-out came first: the copy is not shown.
       if (!kept || this.#set || this.#noRestore || this.#keep !== port) return;
@@ -193,8 +200,6 @@ export class StoreCache extends EventTarget {
     }, () => undefined).finally(() => {
       this.#restoring = null;
     });
-    // Written once a set is confirmed this session.
-    if (this.#gen > 0) this.#write();
   }
 
   /** Hold nothing; `forget`, and the kept copy goes too, and nothing more is
@@ -223,6 +228,10 @@ export class StoreCache extends EventTarget {
   async hold(cap: number, fields: readonly string[] | null = null): Promise<void> {
     this.#widest = Math.max(this.#widest, cap);
     this.#want(fields);
+    /* None held, and none read this session: a copy kept since it last looked — by
+       another tab, or the worker's page — is looked for once more. A worker lives
+       on past the page that kept it. Plan 652 S5 */
+    if (!this.#set && this.#gen === 0 && this.#keep && !this.#noRestore && !this.#restoring && !this.#reading) this.#restore(this.#keep);
     // A kept copy on its way is worth a moment: not long.
     if (this.#restoring) {
       let timer: ReturnType<typeof setTimeout> | undefined;

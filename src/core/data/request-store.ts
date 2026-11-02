@@ -9,7 +9,8 @@
  * - openRequestStore — A request store, with its facts asked first.
  */
 import { BaseStore } from './base-store.js';
-import { DATA_QUERY_TYPE, DATA_VERSION, encodeQuery, keySegment, type DataQuery, type StoreFacts } from './data-handler.js';
+import { DATA_QUERY_TYPE, DATA_VERSION, STALE, encodeQuery, keySegment, type DataQuery, type StoreFacts } from './data-handler.js';
+import type { Failure } from './failure.js';
 import { HttpError } from './stores.js';
 import { readField, type LoadOptions, type LoadResult, type Row, type RowOrder, type StoreChanges } from './store.js';
 import { ValidationError, type FieldDomain, type Issue } from './validate.js';
@@ -26,6 +27,8 @@ export interface RequestStoreOptions {
   /** The origin its URLs are made on: a page's own, for `fetch`. A handler in the
    *  page reads only the path. Default `http://localhost`. */
   origin?: string;
+  /** Headers each request carries — a sign-in, an app's own say — read at each request. */
+  headers?: () => Record<string, string>;
 }
 
 /** A store whose every read and write is one request to a data handler. Its rows
@@ -33,6 +36,8 @@ export interface RequestStoreOptions {
 export class RequestStore extends BaseStore {
   /** Where a request goes. */
   readonly #send: RequestStoreOptions['send'];
+  /** What each request carries besides. */
+  readonly #headers: () => Record<string, string>;
   /** The store's own URL. */
   readonly #url: string;
   /** What the store said of itself. */
@@ -40,13 +45,29 @@ export class RequestStore extends BaseStore {
 
   /** What moved since a mark — only where the store says. */
   readonly changes?: (since?: unknown) => Promise<StoreChanges>;
+  /** Read its source again, behind the set it holds — only a store that holds one. S5b */
+  readonly recheck?: () => Promise<void>;
+  /** Why its last answer's rows were unconfirmed, as it said, else null. */
+  #stale: Failure | null = null;
 
   constructor(options: RequestStoreOptions, facts: StoreFacts) {
     super({ key: facts.key, ...(facts.time ? { time: facts.time } : {}) });
     this.#send = options.send;
+    this.#headers = options.headers ?? ((): Record<string, string> => ({}));
     this.#url = urlOf(options);
     this.#facts = facts;
     if (facts.changes) this.changes = (since) => this.#ask('GET', `?since=${encodeURIComponent(since === undefined ? '' : JSON.stringify(since))}`);
+    if (facts.holds) this.recheck = () => this.#ask('GET', '?recheck');
+  }
+
+  /** It holds its own set, so a reader over it holds none. */
+  get holds(): boolean {
+    return this.#facts.holds ?? false;
+  }
+  /** Why the rows it last answered are unconfirmed — its source could not be
+   *  reached — else null. */
+  get stale(): Failure | null {
+    return this.#stale;
   }
 
   get remote(): boolean {
@@ -119,9 +140,13 @@ export class RequestStore extends BaseStore {
    *  would: a write's issues as a `ValidationError`, else an `HttpError`. */
   async #ask<T>(method: string, tail: string, body?: unknown, type = 'application/json'): Promise<T> {
     const url = this.#url + tail;
-    const headers: Record<string, string> = { 'Sherpa-Data': String(DATA_VERSION), ...(body !== undefined ? { 'Content-Type': type } : {}) };
+    const headers: Record<string, string> = {
+      ...this.#headers(), 'Sherpa-Data': String(DATA_VERSION), ...(body !== undefined ? { 'Content-Type': type } : {}),
+    };
     const response = await this.#send(new Request(url, { method, headers, ...(body !== undefined ? { body: JSON.stringify(body) } : {}) }));
     if (!response) throw new HttpError(404, 'no data handler answered', url);
+    const stale = response.headers.get(STALE);
+    this.#stale = stale ? (JSON.parse(decodeURIComponent(stale)) as Failure) : null;
     if (!response.ok) {
       const said = (await response.json().catch(() => null)) as { error?: { message?: string; issues?: Issue[] } } | null;
       if (said?.error?.issues?.length) throw new ValidationError(said.error.issues);
@@ -140,7 +165,7 @@ function urlOf(options: RequestStoreOptions): string {
 /** A request store, with its facts asked first: they are read at once, as a store's are. */
 export async function openRequestStore(options: RequestStoreOptions): Promise<RequestStore> {
   const url = urlOf(options);
-  const response = await options.send(new Request(url, { method: 'GET', headers: { 'Sherpa-Data': String(DATA_VERSION) } }));
+  const response = await options.send(new Request(url, { method: 'GET', headers: { ...options.headers?.(), 'Sherpa-Data': String(DATA_VERSION) } }));
   if (!response?.ok) throw new HttpError(response?.status ?? 404, response?.statusText || 'no data handler answered', url);
   return new RequestStore(options, (await response.json()) as StoreFacts);
 }

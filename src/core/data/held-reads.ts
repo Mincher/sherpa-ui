@@ -54,7 +54,8 @@ export class HeldReads {
     this.#store = store;
     this.cap = options.cap;
     this.#need = options.need;
-    this.cache = store.remote && options.cap > 0 ? cacheOf(store) : null;
+    // A store that holds its own set — a worker's — is held once, there. D8
+    this.cache = store.remote && !store.holds && options.cap > 0 ? cacheOf(store) : null;
     this.since = this.cache?.gen ?? 0;
   }
 

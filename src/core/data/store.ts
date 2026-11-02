@@ -57,6 +57,7 @@
  */
 import type { FieldDomain } from './validate.js';
 import type { StoreHistory } from './store-history.js';
+import type { Failure } from './failure.js';
 
 /** One record. Plain object — structuredClone cannot clone a class instance. */
 export type Row = Record<string, unknown>;
@@ -281,6 +282,15 @@ export interface Store extends EventTarget {
    *  none, the mark now. Asked when a page opens again or its tab is shown,
    *  never on a toggle. TRAP T-a-remote-store-says-what-changed */
   changes?(since?: unknown): Promise<StoreChanges>;
+  /** It holds its own whole set — a Service Worker's held store — so a reader over
+   *  it holds none. Plan 652 S5b, D8 */
+  readonly holds?: boolean;
+  /** Why the rows it answers are unconfirmed — its source could not be reached —
+   *  else null: a reader over it says so. Said by a store that `holds`. */
+  readonly stale?: Failure | null;
+  /** Read its source again, behind the rows it answers: settles once that read
+   *  lands or fails. A store that `holds` has it. */
+  recheck?(): Promise<void>;
 }
 
 /** The order a whole read returns rows in, asked no sort. */

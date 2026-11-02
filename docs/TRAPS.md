@@ -14901,6 +14901,39 @@ only by that copy. Change notices for every tab are S6.
 - Site: `src/worker.ts`
 - Site: `test/unit/the-worker-answers-the-data.test.mjs`
 
+### T-a-worker-holds-the-set
+
+**A remote store's ONE held set lives in the Service Worker, for every tab**
+(plan 652 S5, D8). `new HeldStore(source)` holds its source's whole set through
+`HeldReads` and answers every reader from it; it says `holds`, so a page over it
+(a `RequestStore`, through `openWorkerStore`) holds no second copy. Measured
+2026-11-02 with Demos' remote mode (800 ms a read): tab one waited once, 805 ms;
+tab two's every read came back in about 1 ms (Chromium; 813 and 128 ms at most in
+WebKit; Firefox reports 0 for a worker's answer, so it cannot be read this way).
+
+**It stays REMOTE to the page, as before (Will, D8: A).** Drafts and Apply, the
+loading state and "Unable to reach data" all stay. The page learns why its rows
+are unconfirmed from each answer's `Sherpa-Stale` header (`store.stale`); Retry
+and Refresh ask the worker to read its source again (`GET …?recheck`), and the
+page asks anew once that lands.
+
+**A new page checks the worker's set once, behind** — where the store may miss a
+writer (`announcesAll` unsaid) — as a page's own held set was checked on every
+open: a worker lives on past a reload, so without it a page reloaded with the
+server down showed old rows and no warning.
+
+**The set holds the fields its readers ask for**, as a page's did: a copy kept by
+a page holds that page's fields, and a worker that asked for every field read the
+source again instead of showing it.
+
+**A kept copy is looked for again until a set is read.** The worker started — and
+looked for the copy — before the page that kept it had written it, and lived on;
+the keep's port remembered its empty first look. Now an empty look looks again,
+and a hold with nothing held and nothing read this session restores once more.
+
+- Site: `src/core/data/held-store.ts`
+- Site: `test/unit/a-worker-holds-the-set.test.mjs`
+
 ### T-a-horizontal-legend-is-three-by-two
 
 A horizontal legend was a wrapping flex row, so it put a different number of

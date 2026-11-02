@@ -6,6 +6,7 @@
  * Map:
  * - DATA_QUERY_TYPE — The media type of a Sherpa data query, sent with `QUERY`.
  * - DATA_VERSION — The protocol's version, in the `Sherpa-Data` header.
+ * - STALE — The header that says an answer's rows are unconfirmed, and why.
  * - DataQuery — A store read as JSON: what `load` or `totalCount` is asked.
  * - StoreFacts — What a store says of itself, as JSON.
  * - DataHandlerOptions — The stores it answers for, by name, and the path they sit under.
@@ -23,6 +24,10 @@ export const DATA_QUERY_TYPE = 'application/vnd.sherpa.query+json';
 
 /** The protocol's version, in the `Sherpa-Data` header. */
 export const DATA_VERSION = 1;
+
+/** The header that says an answer's rows are unconfirmed, and why: a `Failure`, as
+ *  JSON, URI-encoded. */
+export const STALE = 'Sherpa-Stale';
 
 /** A store read as JSON: what `load` or `totalCount` is asked. `now` is an ISO
  *  time; `total` asks for the count alone. */
@@ -42,7 +47,7 @@ export interface DataQuery {
 
 /** What a store says of itself, as JSON. */
 export type StoreFacts = Pick<Store, 'key' | 'time' | 'remote' | 'projects' | 'reportsTotal' | 'totalFirst'
-  | 'sampled' | 'rowOrder' | 'announcesAll' | 'domains'> & { changes: boolean };
+  | 'sampled' | 'rowOrder' | 'announcesAll' | 'domains' | 'holds'> & { changes: boolean };
 
 /** The stores it answers for, by name, and the path they sit under. */
 export interface DataHandlerOptions {
@@ -150,8 +155,10 @@ export function createDataHandler(options: DataHandlerOptions): DataHandler {
     if (request.method === 'OPTIONS') return answer(204, null, { Allow: allow, 'Accept-Query': DATA_QUERY_TYPE });
     if (!allow.split(', ').includes(request.method)) return problem(405, 'invalid', `${request.method} is not allowed here`, { Allow: allow });
     try {
-      if (allow === ON_ROW) return await onRow(store, keyFrom(key!), request);
-      return await onStore(store, url, request);
+      const response = allow === ON_ROW ? await onRow(store, keyFrom(key!), request) : await onStore(store, url, request);
+      // Old rows answer while the source cannot be reached: the reader says so. S5b
+      if (store.stale) response.headers.set(STALE, encodeURIComponent(JSON.stringify(store.stale)));
+      return response;
     } catch (error) {
       const failure = failureOf(error);
       // A refused write says which fields, as the store's own error does. Plan 652 S2
@@ -164,6 +171,11 @@ export function createDataHandler(options: DataHandlerOptions): DataHandler {
 /** A read of the store, its facts, its changes, or a new row. */
 async function onStore(store: Store, url: URL, request: Request): Promise<Response> {
   if (request.method === 'GET') {
+    // Read the source again, behind the set it holds. S5b
+    if (url.searchParams.has('recheck')) {
+      await store.recheck?.();
+      return answer(204, null);
+    }
     const since = url.searchParams.get('since');
     if (since === null) return answer(200, factsOf(store));
     if (!store.changes) return problem(404, 'invalid', 'this store says nothing of its changes');
@@ -200,7 +212,7 @@ async function onRow(store: Store, key: unknown, request: Request): Promise<Resp
 }
 
 /** The facts a store may say of itself, beside its key. */
-const FACTS = ['time', 'remote', 'projects', 'reportsTotal', 'totalFirst', 'sampled', 'rowOrder', 'announcesAll', 'domains'] as const;
+const FACTS = ['time', 'remote', 'projects', 'reportsTotal', 'totalFirst', 'sampled', 'rowOrder', 'announcesAll', 'domains', 'holds'] as const;
 
 /** What a store says of itself: what it does not say is left out. */
 function factsOf(store: Store): StoreFacts {

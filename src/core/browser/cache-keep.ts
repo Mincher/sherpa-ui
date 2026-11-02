@@ -109,7 +109,13 @@ export function keepCache(store: Store, options: KeepOptions): { ready: Promise<
   let readOnce: Promise<KeptSet | null> | null = null;
   const port: CacheKeep = {
     read(): Promise<KeptSet | null> {
-      return (readOnce ??= readKept());
+      // A look that found nothing looks again next time: another tab, or a worker's
+      // page, may have kept one since. Plan 652 S5
+      readOnce ??= readKept().then((kept) => {
+        if (!kept) readOnce = null;
+        return kept;
+      });
+      return readOnce;
     },
     write(take): void {
       if (full || closed) return;

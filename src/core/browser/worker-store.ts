@@ -19,14 +19,17 @@ export interface WorkerStoreOptions {
   fallback: DataHandler;
   /** Default `/sherpa/data/`. */
   base?: string;
+  /** Headers each request carries, read at each request. */
+  headers?: () => Record<string, string>;
 }
 
 /** The store, through the worker where it can answer, else through the page's own handler. */
 export async function openWorkerStore(options: WorkerStoreOptions): Promise<RequestStore> {
-  const { name, fallback, base } = options;
+  const { name, fallback, base, headers } = options;
+  const shared = { name, ...(base ? { base } : {}), ...(headers ? { headers } : {}) };
   if (navigator.serviceWorker?.controller) {
     try {
-      return await openRequestStore({ name, ...(base ? { base } : {}), origin: location.origin, send: (request) => fetch(request) });
+      return await openRequestStore({ ...shared, origin: location.origin, send: (request) => fetch(request) });
     } catch (error) {
       // A worker that does not answer the data yet, as one installed before it could.
       report({
@@ -36,5 +39,5 @@ export async function openWorkerStore(options: WorkerStoreOptions): Promise<Requ
       });
     }
   }
-  return openRequestStore({ name, ...(base ? { base } : {}), send: fallback });
+  return openRequestStore({ ...shared, send: fallback });
 }
