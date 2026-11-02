@@ -53,6 +53,8 @@ const KNOWN = {
   'sherpa-router.route': 'ok: go(changes) — the URL is the value, and go() writes it',
   // Whether its stores answer is theirs to say; a caller asks again. TRAP T-the-provider-says-the-pages-reach
   'sherpa-provider.reach': 'ok: recheck() — the stores say it; recheck() asks them again',
+  // What rests under the pointer: the page's, never the Query's. TODO 655
+  'sherpa-provider.hovered': 'ok: hover(scope, field, on, value) — what a rest on a chip or legend row does',
   /* A group or sort chip's arrangement. Both are DECLARED props, so a host
      writes them and the chip draws itself from them.
      TRAP T-a-chip-knows-what-kind-it-is */

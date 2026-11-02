@@ -239,7 +239,7 @@ worker in all three engines (`context.serviceWorkers()`, `context.setOffline()`)
 
 ## Decisions for Will
 
-Answered, 2026-11-02: all A. Nothing is open.
+Answered, 2026-11-02: all A. Nothing is open. D7 changes how D4 is met, not what it asks: the app still names its stores; its worker script imports their code.
 
 | # | Question | A (picked) | B |
 |---|---|---|---|
@@ -249,3 +249,4 @@ Answered, 2026-11-02: all A. Nothing is open.
 | D4 | How an app names its stores for the worker | A JSON definition, as pages are | A script the app writes |
 | D5 | Does Refresh data also take in a new app version? | No. It takes in new data only. A new version shows in the banner with its own Reload button: a reload can lose what the reader has open. Will added: an item in the Notifications menu too, which stays, while the banner can be dismissed or time out | Yes. One button takes in both, and reloads the page for a new version |
 | D6 | Where does a component's counting run? | On the page, in the binding the component asks for, with the shared helpers. Components do not change, and a chart still draws a plain summary when it stands alone | In each component's own class. Each chart and chip takes rows and counts them itself |
+| D7 | D4 met a wall: a Service Worker may not `import()` at runtime — measured 2026-11-02, refused in all three engines. How does the worker get its stores? (Will: A) | The app's worker script imports its store modules and hands them to `sherpa-ui/worker`. The app definition still names the stores, so the page and the worker agree; rules and a made seed stay code, written once | Stores become pure JSON: kind, key, rules in a JSON vocabulary, seed rows in a file. No code, but a made seed (Demos' dates follow today) becomes a fixed file |
