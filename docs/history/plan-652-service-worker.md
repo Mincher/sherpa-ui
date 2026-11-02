@@ -2,39 +2,70 @@
 
 Will, 2026-11-02: *"Let's plan for the Service Worker. Getting the data layer right is
 a huge part of building solid apps with Sherpa. I like that the Service Worker can
-offload some work and also handle it async/offline."* And: *"would it be bad if there
-was a client side server where the data layer, and all its source, store, and query
-components, lived? Or is a per-page data layer better?"*
+offload some work and also handle it async/offline."*
 
-Will, 2026-11-02, on the decisions: *"your picks work for me. We can start making that a
-reality."* D1 to D4 are A. Built so far: **S1** (below).
+Will, on D1 to D4: *"your picks work for me. We can start making that a reality."* They
+are A. **S1 is built.** Will, on D5 and D6: A, and a new version is an item in the
+Notifications menu too.
 
 ---
 
-## The answer: split it by what each part is
+## Will's rules for this plan
 
-Neither all of it in the worker, nor all of it per page.
+Will, 2026-11-02, second pass. Each one is held below.
+
+1. **The data layer answers data, and nothing about how it is shown.** It answers a
+   first read, a query and a change. *"The data layer components shouldn't know, or
+   care, about how UI components present data to the user (other than possibly being
+   aware of State if we need that)."* That was the aim of one standard query and one
+   standard query handler.
+2. **A component computes what it draws** — a grid's rows, counts, sub-totals — from
+   what the data layer answers.
+3. **The data layer may also give counts.** A component may show them. It never
+   highlights from them: it highlights from its own.
+4. **Highlighting is a broadcast between components.** A hover in one goes out; each
+   component that highlights tests its own rows. Nothing goes through the data layer.
+   Row 655.
+5. **An update notice is heard, never ordered.** The worker says that new data waits. It
+   never tells the app to show a banner. A component registers to hear it: in Demos, an
+   info banner. The Refresh data button takes the update in.
+6. **A component's own narrowing travels in its own request.** A legend that narrows its
+   chart adds its reading to the chart's request. No element is named, so nothing needs
+   an id (TODO 518).
+7. **The perks, all yes:** fast loads and offline use, a fake backend, one connection for
+   all tabs, push notifications, an installable app, background sync.
+8. **`POST` is the fallback for `QUERY`, not `GET`.** Built in S1.
+9. **A server needs the page definition**, for each field's type, label and thresholds.
+   It is JSON already (D4).
+
+---
+
+## The shape: split by what each part is (D1)
 
 | Where | What | Why there |
 |---|---|---|
-| **The worker, one for the app** | What is DATA: the stores, the held sets (`StoreCache`, `HeldSet`), the copy kept in IndexedDB, remote reads and writes, live feeds, the offline outbox, and the heavy work over rows: filter, sort, group, the counts walk, summaries | One copy of the rows for every tab, one connection to the server, and it keeps working while the network is down |
-| **The page, one per page** | What is INTENT: the Query (scopes, readings, drafts, presentation), the bindings, the controls, and a mirror of what controls read at once (field facts, values, filter menus) | The Query is the reader's, in this tab. It must answer at once and survive the worker being stopped |
+| **The worker, one for the app** | DATA: the stores, the held sets (`StoreCache`, `HeldSet`), the copy kept in IndexedDB, remote reads and writes, live feeds, push, the offline outbox, the app's files. And the work over rows: filter, sort, page, search, a field's values and their counts | One copy of the rows for every tab, one connection, offline use, and the work is off the page's thread |
+| **The page, one per tab** | STATE: the Query (scopes, readings, drafts), its bindings and the controls. PRESENTATION: each component computes what it draws from its answers | The Query is the reader's, in this tab: only saved filters cross tabs (TODO 370). It must answer at once, and live on when the browser stops the worker |
+
+**The worker sees no presentation.** It reads the protocol S1 built: a filter, a sort, a
+page, a search, the fields. No chip, no scope, no chart, no highlight. The page turns its
+State into that filter. This is rule 1, and the protocol already holds it.
 
 **Why not everything in the worker**
 
-1. **The worker is shared by every tab.** A reader's Query is per tab: only saved filters cross tabs (TODO 370). In the worker, every Query must be kept by tab, and a tab that closes must be cleaned up.
-2. **The browser stops an idle worker** (about 30 seconds) and its memory goes. A Query kept there must be written to IndexedDB on every change, or it is lost mid-task.
-3. **Controls read 43 things at once** from `DataSource` (values, filter menus, groups, field facts), and 18 that wait. In the worker, every one of them waits, and every component that draws from them changes.
-4. **The page and the worker update apart.** A page can talk to an older worker. One protocol with a version stops that being a silent bug.
+1. The worker is shared by every tab, and a Query is per tab. Each Query must be kept by tab, and cleaned up when its tab shuts.
+2. The browser stops an idle worker (about 30 seconds), and its memory goes. A Query kept there must be written to IndexedDB on every change.
+3. Controls read 43 things at once from `DataSource`, and 18 that wait. In the worker, all 61 wait.
+4. The page and the worker update apart. One protocol with a version stops that being a silent bug.
 
-**Why not a data layer per page, as now**
+**Why not a data layer per page, as now:** each tab opens its own stores and holds its own
+copy of a remote set. Two tabs read the server twice, hold 100k rows twice, and lose
+everything offline.
 
-Each tab opens its own stores and holds its own copy of a remote set. Two tabs read the server twice, hold 100k rows twice, and lose everything offline.
-
-**Today is halfway there.** Stores are already the app's (`options.stores`), and
-`StoreCache` already holds *"one held set per remote store, shared by every page over
-it"*, kept in IndexedDB (`CacheKeep`). The worker widens that from one tab to the whole
-app. And rule 13 already keeps the data layer free of the DOM, so it can move.
+**Today is halfway there.** Stores are already the app's (`options.stores`). `StoreCache`
+already holds *"one held set per remote store, shared by every page over it"*, kept in
+IndexedDB (`CacheKeep`). The worker widens that from one tab to the whole app. Rule 13
+already keeps the data layer free of the DOM, so it can move.
 
 ---
 
@@ -53,18 +84,18 @@ Chromium 153, Firefox 155, WebKit 26.6, on localhost.
 | BroadcastChannel, Web Locks, `storage.persist()`, module workers | yes | yes | yes |
 
 The data layer is about 13,300 lines. Fetching and posting are about 300 of them
-(`RestStore`, `JsonStore`). So a worker does not remove much code. What it gives is a
-shared, offline, off-thread home for the data. The Query logic travels with it unchanged.
+(`RestStore`, `JsonStore`). So a worker does not remove much code. It gives the data a
+shared, offline, off-thread home.
 
-Not measured yet: a worker in Firefox's private windows, and on iOS. Both must have a
-fallback anyway (below).
+Not measured yet: a worker in Firefox's private windows and on iOS, push, and install.
+Each has a fallback or is marked below.
 
 ---
 
-## One engine, three hosts: the progressive enhancement
+## One engine, three hosts
 
 The handler is one plain function, `handle(request: Request): Promise<Response>`, in
-`src/core/data/`: no DOM, as rule 13 requires. Three hosts run the same function.
+`src/core/data/`: no DOM, as rule 13 requires. Three hosts run it.
 
 | Host | When | What it is |
 |---|---|---|
@@ -72,51 +103,80 @@ The handler is one plain function, `handle(request: Request): Promise<Response>`
 | **B, the Service Worker** | The worker controls the page | A `sherpa-ui/worker` entry. It routes `/sherpa/data/*` to `handle()` |
 | **C, a server** (row 170, later) | The app has a server | Node runs the same `handle()`. A `RestStore` sends it `QUERY` |
 
-The page works with no worker, and works better with one. That is Sherpa's
-progressive enhancement, at the data layer.
-
-**Sherpa stays app-agnostic.** The worker holds no app code. An app names its stores in
-a definition (as it names its pages), and the worker opens them.
+The page works with no worker, and better with one: progressive enhancement, at the data
+layer. **Sherpa stays app-agnostic:** the worker holds no app code. An app names its
+stores in a JSON definition (D4), and the worker opens them.
 
 ---
 
-## The two seams
+## What a component asks, and what it gets
 
-**1. The Store seam.** `Store` is already the interface: `load`, `totalCount`,
-`byKey`, `insert`, `update`, `remove`, `changes`. A `WorkerStore` in the page speaks it
-over the protocol: `QUERY` to read, `POST`, `PATCH` and `DELETE` to write. Nothing above
-it changes. It gives the shared set, offline reads, offline writes and `QUERY` to remote
-servers. **It does not take work off the page.** A set the page does not hold is asked
-step by step (`walkStepwise`), about 10 trips for one filter act.
+**The Store seam (S4).** `Store` is the interface already: `load`, `totalCount`, `byKey`,
+`insert`, `update`, `remove`, `changes`. A `WorkerStore` in the page speaks it over the
+protocol. Nothing above it changes. It gives the shared set, offline reads and writes, and
+`QUERY` to remote servers.
 
-**2. The Query seam.** Each component asks for itself: its own `QUERY`, with its scope,
-its own narrowing, and what it draws — a page of rows, its chips' counts, its chart's
-summary. The worker answers each from one pass over the rows for that version of the
-Query, so ten components cost one pass, not ten. Every component still sees every change;
-only the work moves. This takes the heavy work off the page. It needs the pure halves
-(`source-counts.ts`, `aggregate.ts`, `compile`) to be the only path.
+**The answer seam (S9).** Each component asks for the rows it needs, in its own request:
+the filter its scope makes plus its own narrowing, a sort, a page or all of them, and the
+fields it reads. What it gets:
 
-Will, 2026-11-02, and so the design:
+| It asks for | It gets |
+|---|---|
+| A page of rows: a grid, a list | The rows and the total |
+| Every row, to count: a chart, a metric | Only the fields it reads, as columns: each field's values once, and a code for each row in a typed array, which moves to the page with no copy |
+| A field's values over rows the page does not hold: a chip's menu, a group's count across pages | Each value and its count, as data. A component may show them, and never highlights from them (rule 3) |
+| A change | Which rows changed, so it asks again |
 
-- **A component's own narrowing travels in its own request.** A legend that narrows its
-  chart adds its reading to the chart's request. No element is named, so nothing needs an
-  id. TODO 518's rule holds: each component works alone with the data layer.
-- **Highlighting is the component's.** A grid row or a marked string is tested on the page,
-  with no trip. A chart that needs the matched part of each segment asks for it in its
-  request, the hovered value as plain data: a fast trip to the worker, too slow to a remote
-  server, so there the chart asks for its breakdown ahead.
-- **A server needs the page definition** for each field's type, label and thresholds. It
-  is JSON already (D4).
+The component counts, sums, groups and highlights from that. The shared pure helpers
+(`aggregate.ts`, `compile`) do the math, on the page, in the binding each component
+asks for (D6, Will: A). The components do not change.
+
+**Why columns.** 100k rows as objects is a slow copy from the worker to the page. Two
+fields as codes in typed arrays is about 400 KB, and moves free. Not measured yet: S9
+measures it, and stops if it does not win.
+
+The worker still shares its work: ten components on one filter cost one pass.
 
 ---
 
-## Offline and async
+## Highlighting (row 655)
 
-- **Reads offline:** from the copy kept in IndexedDB, which `StoreCache` already keeps. The worker owns it. The page says so through `reach`, which already exists.
-- **Writes offline:** an outbox in IndexedDB, each write with the time it was made. It is sent when the worker starts or the browser goes `online`. **Not Background Sync:** only Chromium has it. Web Locks keep two tabs from sending the same outbox twice.
-- **A change, to every tab:** the worker tells each tab on a `BroadcastChannel`. That replaces each tab's own change events and its `changes(since)` asks.
-- **Live feeds:** one Server-Sent Events or WebSocket connection in the worker for all tabs, where today each tab opens its own.
-- **Kept data:** `navigator.storage.persist()`, so the browser does not clear it under storage pressure.
+A legend item or a chip says what the pointer rests on: a field and a value. The provider
+sends that to every component on the page that asked to highlight. It is a broadcast: no
+element is named. Each component tests its own rows and draws its own match — a grid row,
+a marked string, its part of a segment or a section (`T-a-match-marks-its-own-mark`).
+There is no trip, so it is as fast with a remote server as with none.
+
+Today the hover goes into the Query (`QueryContext.preview`), and the data layer tests it
+(`DataSource.highlightFor`). Row 655 takes it out of the data layer. A chip set to
+Highlight is different: it is the reader's State, so it stays in the Query, and each
+component tests it in the same way.
+
+---
+
+## Update notices
+
+1. The worker learns that newer data waits: from a live feed, a push, or a check when a tab comes back.
+2. The reader's own writes, from any tab, show in every tab at once. Changes from the server WAIT, so a grid does not move under the reader. A store can say to take its changes at once, for a live board.
+3. The worker sends a notice on a channel: which store, and how many rows. It names no element, and asks for nothing to be shown.
+4. A component registers to hear it, in its own attribute, and the provider answers it. In Demos: an info banner, `sherpa-callout data-type="banner"` (row 656), at the top of each layout grid, before the metrics row, across all 12 columns. CSS shows it while a notice waits. An app can pick another component.
+5. The Refresh data button (`data-refresh`, in the header's toolbar) takes the waiting changes in. Every component asks again.
+6. A new app version (the worker has new files) is a notice of its own kind (D5, Will: A). Refresh data does not take it in. Two components hear it:
+   - **The banner** says a new version is ready, with its own Reload button. The reader can dismiss it. It can also close itself after a time, with `data-duration` as `sherpa-toast` names it; off by default.
+   - **An item in the App Header's Notifications menu** says the same, and stays after the banner goes. A press on it reloads. It goes when the new version runs. In Demos the menu is `sherpa-notifications`, fed from a store, so the item is a row the listener writes there.
+
+---
+
+## The perks
+
+| Perk | How | Engines |
+|---|---|---|
+| **Fast loads, offline use** | The worker keeps the app's files when it installs, and answers from its cache. Sherpa's build puts each template and sheet in the JS, so the list is short. A new version installs in the background and waits. `navigator.storage.persist()` stops the browser clearing the kept data | All three |
+| **A fake backend** | The worker answers a REST API from a JSON definition: seed rows, a delay, a failure rate. Demos and tests run the real remote path (`RestStore`, the held set, paging, errors) with no server. The app names its routes and seed files | All three |
+| **One connection for all tabs** | One held set and one live feed, in the worker. Each tab is told on a `BroadcastChannel`, where today each tab asks `changes(since)` for itself | All three |
+| **Push notifications** | The worker hears a Web Push. It shows a notification, if the reader allowed it, and sends an update notice. A press on the notification opens the app. The app's server sends the push, with its own keys: Sherpa ships the worker's half | Not measured. On iOS, only for an installed app |
+| **An installable app** | A web app manifest and the worker. The app owns its manifest (name, icons). `create-sherpa-ui` writes one, and Demos gets one | Not measured. Firefox on the desktop may not offer it |
+| **Background sync** | An outbox in IndexedDB, each write with its time. Chromium: the `sync` event sends it after the network comes back, with the tab shut. Firefox and WebKit: it is sent when the worker starts or the page goes online. Web Locks stop two tabs sending it twice | `sync`: Chromium only (measured). The fallback: all three |
 
 ---
 
@@ -126,25 +186,30 @@ Each step is measured in the running app, and the plan can stop after any of the
 
 | Step | What | Done when |
 |---|---|---|
-| S1 ✅ | The protocol and `handle()`: the `QUERY` body, the answers, a `Failure` kind for each HTTP status, a version header | Node tests over every store kind. **Done 2026-11-02:** `createDataHandler` in `src/core/data/data-handler.ts`, from `sherpa-ui/data`; 9 Node tests. `T-a-data-request-is-the-store-interface` |
-| S2 | Host A: `DataSource` reads one Demos page through the protocol, in the page | Every test green, nothing changes for the reader |
-| S3 | Host B and the Store seam: `sherpa-ui/worker`, its routes, the fallback to A; Records on it | Two tabs read the server once; Records works offline |
-| S4 | The Query seam: each component's own `QUERY`, the worker sharing one pass | INP and LCP at 4x CPU with 100k rows beat S3 (TODO 350's targets). If not, S4 stops |
-| S5 | Offline writes: the outbox, Web Locks, what a conflict does | A save made offline lands after reconnecting, once |
-| S6 | Live feeds in the worker, sent to every tab | One connection for many tabs |
-| S7 | `RestStore` sends `QUERY` to real servers. Where a proxy refuses it, a `POST` of the same body (Will, 2026-11-02); `GET` only for a server that takes nothing else. Host C's shape for row 170 | A long filter that breaks a URL works |
+| S1 ✅ | The protocol and `handle()`: the `QUERY` body, the answers, a `Failure` kind for each HTTP status, a version header, and a `POST` of a query answered as the query | **Done 2026-11-02:** `createDataHandler` in `src/core/data/data-handler.ts`, from `sherpa-ui/data`; 10 Node tests. `T-a-data-request-is-the-store-interface` |
+| S2 | Host A: `DataSource` reads one Demos page through the protocol, in the page | Every test green. Nothing changes for the reader |
+| S3 | The worker and the app's files: `sherpa-ui/worker` keeps them; Demos gets a manifest | Demos opens offline and installs. A second load's LCP falls |
+| S4 | Host B and the Store seam: the data routes, one held set for all tabs, the fallback to A. Records on it | Two tabs read the server once. Records reads offline |
+| S5 | The fake backend, from a JSON definition, with a delay and failures | Records runs on `RestStore` through it, with no server |
+| S6 | Changes and update notices: every tab told, server changes wait, the notice, Demos' banner, Refresh data, a new version's banner and Notifications item | A change in one tab shows in another. A server change shows the banner, and Refresh data takes it in. A new build shows the banner and an item in Notifications; the item stays after the banner is dismissed |
+| S7 | Offline writes: the outbox, Web Locks, Background Sync where it is, D3's rule | A save made offline lands once, after the network comes back |
+| S8 | Live feeds and push: one feed in the worker for all tabs; a push makes a notice and a notification | One connection for many tabs. A push shows the banner |
+| S9 | The answer seam: answers as columns, each component counting from them | INP and LCP at 4x CPU with 100k rows beat S4 (TODO 350's targets). If not, S9 stops |
+| S10 | `RestStore` sends `QUERY` to real servers; a `POST` of the same body where a proxy refuses it; `GET` only for a server that takes nothing else. Host C's shape, for row 170 | A long filter that breaks a URL works |
 
-Playwright can test the worker (`context.serviceWorkers()`, `context.setOffline()`),
-in all three engines.
+Rows 655 (highlighting) and 656 (the banner) need no worker, so they go before S2. Playwright can test the
+worker in all three engines (`context.serviceWorkers()`, `context.setOffline()`).
 
 ---
 
 ## Risks
 
-- **The worker stops and starts.** Its held set must come back from IndexedDB quickly. Measure the wake-up cost in S3.
+- **The worker stops and starts.** Its held set must come back from IndexedDB quickly. S4 measures the wake-up cost.
 - **Version skew.** A page newer than its worker uses Host A until the worker updates.
+- **A kept file goes stale.** Each build names its file list, and a new list is an update notice (D5).
 - **Harder to debug.** The worker has its own devtools. `debugState()` must answer from both sides.
 - **No worker at all:** private windows, some embedded browsers. Host A covers them. That is why A comes first.
+- **Push needs a server** and its keys. Sherpa can only ship the worker's half, and the fake backend can only pretend.
 - **Cross-origin `QUERY`** to a remote server needs a CORS preflight. The page to its own worker needs none.
 
 ---
@@ -152,18 +217,25 @@ in all three engines.
 ## How it meets the other rows
 
 - **170**, the client/server split: Host C is its server, with the same `handle()`.
-- **350**, load and interaction speed: S4 is measured against its targets.
+- **350**, load and interaction speed: S3 and S9 are measured against its targets.
 - **615**, scale: 100k rows held once for the app, not once per tab.
-- **616**, the node engine: a workflow could run in the worker, off the page. Will is planning 616, so this plan does not touch it.
+- **616**, the node engine: a workflow could run in the worker. Will is planning 616, so this plan does not touch it.
 - **392**, a customer's sites read when their row opens: a worker route can answer it.
+- **495, 638**: a hover's highlight. Row 655 moves it out of the data layer.
+- **653, 654**: a chart is Primary by Secondary, each axis as counts or names. Components count for themselves, so the data layer does not change for them.
+- **656**: the banner is a variant of `sherpa-callout`, as Figma's Banner. S6 needs it.
 
 ---
 
 ## Decisions for Will
 
-| # | Question | A (my pick) | B |
+Answered, 2026-11-02: all A. Nothing is open.
+
+| # | Question | A (picked) | B |
 |---|---|---|---|
 | D1 | The shape | Split: data in the worker, the Query per page | Everything in the worker |
-| D2 | The first seam | The Store seam first (S2, S3), then measure the Query seam (S4) | The Query seam at once |
+| D2 | The first seam | The Store seam first, then measure the answer seam | The answer seam at once |
 | D3 | A write made offline that clashes with a newer one | The newer write wins, and the reader is told | The reader chooses each time |
 | D4 | How an app names its stores for the worker | A JSON definition, as pages are | A script the app writes |
+| D5 | Does Refresh data also take in a new app version? | No. It takes in new data only. A new version shows in the banner with its own Reload button: a reload can lose what the reader has open. Will added: an item in the Notifications menu too, which stays, while the banner can be dismissed or time out | Yes. One button takes in both, and reloads the page for a new version |
+| D6 | Where does a component's counting run? | On the page, in the binding the component asks for, with the shared helpers. Components do not change, and a chart still draws a plain summary when it stands alone | In each component's own class. Each chart and chip takes rows and counts them itself |
