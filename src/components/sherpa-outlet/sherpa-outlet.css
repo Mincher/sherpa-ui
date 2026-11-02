@@ -24,8 +24,6 @@
   position: absolute;
   inset-block-start: var(--sherpa-layout-grid-padding, 16px);
   inset-inline: var(--sherpa-layout-grid-padding, 16px);
-  box-shadow: var(--sherpa-display-mode-size-2xs, 8px) var(--sherpa-display-mode-size-2xs, 8px)
-    var(--sherpa-display-mode-size-sm, 16px) -4px var(--sherpa-style-surface-shadow, #0000001f);
 }
 /* The Context's own z-indexes stay inside it: a grid's sticky heading never paints over the banner. */
 ::slotted(*) { isolation: isolate; }

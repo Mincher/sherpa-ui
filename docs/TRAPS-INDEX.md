@@ -1089,7 +1089,7 @@ files. An entry that only tests cite is under Tests only.
 
 - [T-a-col-element-has-no-computed-width-in-webkit](TRAPS.md#t-a-col-element-has-no-computed-width-in-webkit) — reforged-data-grid.spec
 - [T-a-current-row-opens-its-details](TRAPS.md#t-a-current-row-opens-its-details) — reforged-records-details.spec
-- [T-a-hairline-resolves-by-density](TRAPS.md#t-a-hairline-resolves-by-density) — reforged-border-edges.spec
+- [T-a-hairline-resolves-by-density](TRAPS.md#t-a-hairline-resolves-by-density) — reforged-border-edges.spec, reforged-callout.spec
 - [T-a-rename-drops-the-old-name](TRAPS.md#t-a-rename-drops-the-old-name) — reforged-advanced-condition-words.spec, reforged-metric.spec, reforged-num-coercion.spec, the-def-speaks-the-new-words.test
 - [T-a-test-must-click-what-the-listener-is-on](TRAPS.md#t-a-test-must-click-what-the-listener-is-on) — reforged-data-grid.spec
 - [T-a-text-range-box-differs-by-half-a-pixel](TRAPS.md#t-a-text-range-box-differs-by-half-a-pixel) — reforged-quick-filter.spec

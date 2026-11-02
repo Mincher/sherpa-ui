@@ -1491,6 +1491,13 @@
               }
             },
             {
+              "name": "data-duration",
+              "description": "auto-dismiss delay in ms",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
               "name": "data-heading",
               "description": "heading text (rendered into .title)",
               "type": {
@@ -1503,6 +1510,14 @@
               "type": {
                 "text": "'info' | 'success' | 'warning' | 'critical' | 'urgent'"
               }
+            },
+            {
+              "name": "data-type",
+              "description": "callout | banner — banner: one row across its parent, a link in its words",
+              "type": {
+                "text": "'callout' | 'banner'"
+              },
+              "default": "\"callout\""
             }
           ],
           "members": [

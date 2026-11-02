@@ -16178,6 +16178,7 @@ what the test was written for. Verified by planting `border-width: medium` on
 `sherpa-tag` and watching it fail.
 
 - Site: `test/e2e/reforged-border-edges.spec.ts`
+- Site: `test/e2e/reforged-callout.spec.ts`
 
 ### T-a-grid-group-needs-css-if
 

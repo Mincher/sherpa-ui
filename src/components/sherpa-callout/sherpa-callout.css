@@ -70,3 +70,36 @@
 :host(:not(:state(has-content-slot))) .message { display: none; }
 
 :host(:not([data-dismissible])) .close { display: none; }
+
+/* ── BANNER — Figma Banner (62:274): one row across its parent, a 10px status icon,
+   its words and any link in them, then the close. Surface base +1 in a 0.5px border
+   all round, radius 4, padding 8 by 16, the lg shadow. Will, TODO 656 ── */
+:host([data-type="banner"]) {
+  --_surface: var(--sherpa-style-surface-base-1, #e8e8f6);
+  --_content: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
+}
+:host([data-type="banner"]) .box {
+  align-items: center;
+  padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-base, 16px);
+  border: var(--sherpa-display-mode-border-width-sm, 0.5px) solid var(--_border);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  box-shadow: var(--sherpa-shadow-lg, 8px 8px 32px -8px #35353d4c);
+}
+:host([data-type="banner"]) .icon {
+  --_icon-size: var(--sherpa-theme-size-icon-2xs, 10px);
+  margin-block-start: 0;
+}
+/* A heading, where it has one, leads its words on the same line. */
+:host([data-type="banner"]) .content {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--sherpa-display-mode-space-2xs, 4px);
+}
+:host([data-type="banner"]) .message {
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
+}
+:host([data-type="banner"]) ::slotted(a) {
+  color: var(--sherpa-theme-content-link-1, #2b34b4); /* theme-direct */
+}

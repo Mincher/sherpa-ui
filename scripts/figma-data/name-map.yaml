@@ -95,6 +95,7 @@ map:
   sherpa-callout:
     figma: Callout
     status: matched
+    # One set (1686:30452) since 2026-11-02: Type=Callout (27:733), Type=Banner (62:274) = data-type="banner". TODO 656
   sherpa-toast:
     figma: Toast
     status: matched
@@ -223,9 +224,6 @@ figmaOnly:
   - { figma: Panel, nodeId: "1003:33690", note: "split from Container; code = sherpa-panel" }
   - { figma: "Overlay Panel", nodeId: "1003:33705", note: "split from Container; code = sherpa-overlay-panel (native <dialog> non-modal)" }
   # --- new standalone Figma components with no code yet ---
-  - figma: Banner
-    nodeId: '62:274'
-    note: no code component yet — full-width status banner (hasLink, textProps message)
   - figma: Chip
     nodeId: '62:1732'
     note: >-

@@ -25,8 +25,10 @@ For a status message that stays on the page: info, success, warning, critical or
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
 | `data-dismissible` | boolean |  | show the close button (fires callout-dismiss) |
+| `data-duration` | number |  | auto-dismiss delay in ms |
 | `data-heading` | text |  | heading text (rendered into .title) |
 | `data-status` | `info` `success` `warning` `critical` `urgent` |  | info \| success \| warning \| critical \| urgent (default: neutral/info) |
+| `data-type` | `callout` `banner` | `callout` | callout \| banner — banner: one row across its parent, a link in its words |
 
 ## Methods
 
@@ -76,6 +78,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ dismissible?, heading? }`
+`{ dismissible?, duration?, heading?, type? }`
 
 Its declared props by name: `label` sets data-label.

@@ -535,6 +535,10 @@
           "valueSet": "v"
         },
         {
+          "name": "data-duration",
+          "description": "auto-dismiss delay in ms"
+        },
+        {
           "name": "data-heading",
           "description": "heading text (rendered into .title)"
         },
@@ -556,6 +560,18 @@
             },
             {
               "name": "urgent"
+            }
+          ]
+        },
+        {
+          "name": "data-type",
+          "description": "callout | banner — banner: one row across its parent, a link in its words",
+          "values": [
+            {
+              "name": "callout"
+            },
+            {
+              "name": "banner"
             }
           ]
         }

@@ -36,14 +36,14 @@
   <!-- UNABLE TO REACH DATA, floating over the top of the content: no height, so
        it never moves the Context (Will, W1 A). TRAP T-a-reach-banner-takes-no-room -->
   <div class="reach" part="reach">
-    <sherpa-callout class="reach-unreached" data-status="warning" role="note" data-heading="Unable to reach data">
+    <sherpa-callout class="reach-unreached" data-type="banner" data-status="warning" role="note" data-heading="Unable to reach data">
       <span>The last data is still shown, and may be out of date. <span class="reach-why"></span></span>
       <span class="reach-actions">
         <sherpa-button class="retry" data-size="sm" data-label="Retry"></sherpa-button>
         <sherpa-button class="dismiss" data-size="sm" data-look="transparent" data-label="Dismiss"></sherpa-button>
       </span>
     </sherpa-callout>
-    <sherpa-callout class="reach-down" data-status="critical" role="alert" data-heading="Unable to reach data">
+    <sherpa-callout class="reach-down" data-type="banner" data-status="critical" role="alert" data-heading="Unable to reach data">
       <span>There is no data to show until it can be reached. <span class="reach-why"></span></span>
       <span class="reach-actions">
         <sherpa-button class="retry" data-size="sm" data-label="Retry"></sherpa-button>

@@ -157,3 +157,60 @@ test('clicking close fires callout-dismiss and removes the element', async ({ pa
   expect(r.fired).toBe(1);
   expect(r.connected).toBe(false);
 });
+
+// Figma Banner (62:274) is the callout's banner type: one row, a 10px status icon,
+// surface base +1 in a 0.5px border all round, radius 4, padding 8 by 16. Will, TODO 656
+test('data-type="banner" is one row: a 10px icon, a 0.5px border all round, radius 4, padding 8 by 16', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-callout') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-type', 'banner');
+    el.setAttribute('data-heading', 'Heads up');
+    el.innerHTML = 'A new version is ready. <a href="#">Reload</a>';
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const box = getComputedStyle(el.shadowRoot!.querySelector('.box')!);
+    const icon = el.shadowRoot!.querySelector('.icon')!.getBoundingClientRect();
+    const title = el.shadowRoot!.querySelector('.title')!.getBoundingClientRect();
+    const message = el.shadowRoot!.querySelector('.message')!.getBoundingClientRect();
+    // What this engine makes of 0.5px. TRAP T-a-hairline-resolves-by-density
+    const probe = document.createElement('div');
+    probe.style.cssText = 'border: 0.5px solid';
+    document.getElementById('root')!.appendChild(probe);
+    const hair = getComputedStyle(probe).borderTopWidth;
+    probe.remove();
+    return {
+      hair,
+      border: [box.borderTopWidth, box.borderLeftWidth, box.borderRightWidth, box.borderBottomWidth],
+      radius: box.borderTopLeftRadius,
+      padding: [box.paddingTop, box.paddingLeft],
+      shadow: box.boxShadow !== 'none',
+      icon: Math.round(icon.width),
+      oneRow: Math.abs(title.top - message.top) < 4,
+    };
+  });
+  expect(r.border).toEqual([r.hair, r.hair, r.hair, r.hair]);
+  expect(Number.parseFloat(r.hair)).toBeLessThanOrEqual(1);
+  expect(r.radius).toBe('4px');
+  expect(r.padding).toEqual(['8px', '16px']);
+  expect(r.shadow).toBe(true);
+  expect(r.icon).toBe(10);
+  expect(r.oneRow).toBe(true);
+});
+
+test('data-duration dismisses it after that many ms; without it, it stays', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const mk = (duration?: string) => {
+      const el = document.createElement('sherpa-callout');
+      if (duration) el.setAttribute('data-duration', duration);
+      document.getElementById('root')!.appendChild(el);
+      return el;
+    };
+    const timed = mk('50');
+    const kept = mk();
+    let heard = false;
+    timed.addEventListener('callout-dismiss', () => { heard = true; });
+    await new Promise((done) => setTimeout(done, 200));
+    return { timedGone: !timed.isConnected, heard, kept: kept.isConnected };
+  });
+  expect(r).toEqual({ timedGone: true, heard: true, kept: true });
+});

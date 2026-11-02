@@ -120,6 +120,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-duration",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "auto-dismiss delay in ms"
+    },
+    {
+      "$type": "prop",
       "name": "data-heading",
       "type": "string",
       "observed": true,
@@ -141,6 +150,20 @@
         "urgent"
       ],
       "description": "info | success | warning | critical | urgent (default: neutral/info)"
+    },
+    {
+      "$type": "prop",
+      "name": "data-type",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "values": [
+        "callout",
+        "banner"
+      ],
+      "default": "callout",
+      "description": "callout | banner — banner: one row across its parent, a link in its words"
     }
   ],
   "slots": [
@@ -154,10 +177,15 @@
     }
   ],
   "populate": {
-    "shape": "{ dismissible?, heading? }",
+    "shape": "{ dismissible?, duration?, heading?, type? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
+    {
+      "$type": "state",
+      "name": "banner",
+      "selector": ":host([data-type=\"banner\"])"
+    },
     {
       "$type": "state",
       "name": "not-heading",

@@ -27,7 +27,10 @@ set `variable.scopes` explicitly** (default `ALL_SCOPES` pollutes every picker �
 `["TEXT_FILL"]`, `["GAP"]`, `["CORNER_RADIUS"]`, `["FRAME_FILL","SHAPE_FILL"]`, etc.);
 COLOR *variable values* take `{r,g,b,a}` but *paint* colors take `{r,g,b}` (opacity at
 paint level); `resize()` resets sizing modes to FIXED so call it BEFORE setting them;
-scripts are **atomic** (a thrown error changes nothing — fix then retry, never blind-retry).
+a thrown error is **not** an undo once the script has awaited: measured 2026-11-02, a merge
+that threw in its final check, after an `await`, stayed in the file. Snapshot what you
+will change in a read-only script first, and read the file back after any throw (never
+blind-retry).
 Note: the official docs do NOT cover extension collections — that gap is filled below.
 
 ---
@@ -553,6 +556,7 @@ master, screenshot an untouched sibling component that uses it.
 |---|---|---|
 | 8 components on one page, 5 pages "empty" | createComponent/combine parented to `currentPage`, not the looked-up page | Gate A + `setCurrentPageAsync(page)` + `page.appendChild` before combine |
 | `combineAsVariants` throws "same page as parent" | variants not appended to target page first | §5 sequence |
+| A check threw, yet the merge was live in the file | a throw after an `await` does not undo what ran before it; and every instance gains the new VARIANT property, so a check of its property list fails | snapshot first in a read-only script; read back after a throw; a check allows the new variant property |
 | Fill/stroke won't bind, no error | wrong var name → `setBoundVariableForPaint` returns unbound paint silently | `V()` throws on miss + Gate B |
 | Icon renders as empty/box, or colour won't change | double-nested instance (Icon wrapper) | single-level glyph instance, bind inner Vector |
 | strokeWeight ignored | `setBoundVariable('strokeWeight')` no-ops | bind 4 per-side weights |
