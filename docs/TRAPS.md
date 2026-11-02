@@ -18529,7 +18529,8 @@ legend. With no bar, the legend draws the chips itself (`data-chips`, TODO 586).
 In the bar it is its values alone (`data-layout="values"`, Will, TODO 674): a value
 chip each, its swatch and a badge with its CHART's number, which the provider hands
 the bar from the legend (`drawCounts`) — the walk's counts are rows, not what the
-chart counts. Its row is its own, under the Organise chips, and wraps, never folds.
+chart counts. It sits in the bar's one row and, short of room, folds whole into Edit
+(TODO 675).
 
 SENT UP, the answer goes to the View with its field and the chart lets go of
 it; its section then says where the filter went. The View draws only a field

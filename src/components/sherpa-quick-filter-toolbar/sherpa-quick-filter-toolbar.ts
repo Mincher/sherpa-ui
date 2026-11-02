@@ -274,6 +274,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     for (let step = 1; step <= SherpaQuickFilterToolbar.COLLAPSE_STEPS; step++) this.toggleState(`collapse-${step}`, false);
     this.#collapse = 0;
     this.set('data-folded', null);
+    // …and Edit, the door to what folds, where the bar shows no actions. TODO 675
+    this.toggleState('folded', false);
     this.#showAllChips();
 
     for (let step = 1; step <= SherpaQuickFilterToolbar.COLLAPSE_STEPS; step++) {
@@ -290,6 +292,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         chip.toggleAttribute('data-folded-away', true);
         folded.unshift(chip);
         this.set('data-folded', String(folded.length));
+        this.toggleState('folded', true);
         if (!this.#overflowing()) break;
       }
     }
@@ -439,8 +442,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         chip.querySelector(':scope > .field-more')?.remove();
       }
     }
-    // A chart's legend takes a row of its own, under the Organise chips. Will, TODO 670
-    this.toggleState('values-row', !portrait && this.#chips().some((c) => c.dataset['layout'] === 'values'));
     this.#markSections();
   }
 

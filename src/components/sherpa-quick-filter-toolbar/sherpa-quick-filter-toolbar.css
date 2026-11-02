@@ -53,14 +53,6 @@
      actions share. */
   container: qf-bar / inline-size;
 }
-/* A chart's legend in its card's bar: its value chips take a row of their own,
-   under the Organise chips and the actions, so they do not fold away. The run
-   still folds, never wraps. Will, TODO 670 */
-:host(:state(values-row)) .bar { flex-wrap: wrap; }
-:host(:state(values-row)) .chips {
-  order: 1;
-  flex-basis: 100%;
-}
 
 /* The view bar bottom-aligns to the nav's first quick row; data centres. */
 :host([data-type="view"]) .bar {
@@ -160,18 +152,22 @@
 }
 
 /* A section's name — "View Context", "Organise", "Presets", "Custom" — LEFT of
-   its first chip, in the row, as the panel heads them. Will, TODOs 440, 543, 610 */
-:host(:not([data-panel-mode], [data-orientation="portrait"], [data-no-section-labels])) .chips > .chip:nth-child(1 of [data-preset]:not([data-folded-away]))::before,
-:host(:not([data-panel-mode], [data-orientation="portrait"], [data-no-section-labels])) .chips > .chip:nth-child(1 of [data-section]:not([data-preset], [data-persistent], [data-folded-away]))::before,
-:host(:state(has-organise):not([data-panel-mode], [data-orientation="portrait"], [data-no-section-labels])) .organise-zone::before {
-  content: attr(data-section);
-  align-self: center;
-  margin-inline-end: var(--sherpa-display-mode-space-xs, 8px);
-  color: var(--sherpa-style-content-secondary, #35353d);
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  line-height: var(--sherpa-theme-content-line-height-small, 16px);
-  white-space: nowrap;
-  pointer-events: none;
+   its first chip, in the row, as the panel heads them. Will, TODOs 440, 543, 610.
+   Only in a bar wider than its actions' first fold: a narrow one, a chart card's,
+   keeps the room for its chips. Will, TODO 676 */
+@container qf-bar (min-width: 761px) {
+  :host(:not([data-panel-mode], [data-orientation="portrait"], [data-no-section-labels])) .chips > .chip:nth-child(1 of [data-preset]:not([data-folded-away]))::before,
+  :host(:not([data-panel-mode], [data-orientation="portrait"], [data-no-section-labels])) .chips > .chip:nth-child(1 of [data-section]:not([data-preset], [data-persistent], [data-folded-away]))::before,
+  :host(:state(has-organise):not([data-panel-mode], [data-orientation="portrait"], [data-no-section-labels])) .organise-zone::before {
+    content: attr(data-section);
+    align-self: center;
+    margin-inline-end: var(--sherpa-display-mode-space-xs, 8px);
+    color: var(--sherpa-style-content-secondary, #35353d);
+    font-size: var(--sherpa-font-size-body-small, 12px);
+    line-height: var(--sherpa-theme-content-line-height-small, 16px);
+    white-space: nowrap;
+    pointer-events: none;
+  }
 }
 
 /* Its zone already spaces its children. */
@@ -282,6 +278,10 @@
 
 /* The Saved chip, while a set is on. TODO 105 */
 :host([data-no-actions]) .actions-zone { display: none; }
+/* …but chips folded for want of room keep their door: Edit, the Filters menu,
+   alone. Will, TODO 675 */
+:host([data-no-actions]:state(folded)) .actions-zone { display: flex; }
+:host([data-no-actions]:state(folded)) .actions-zone > :not(.add-btn) { display: none; }
 
 
 /* A folded chip. NOT `display: none`: its menu is still live as a submenu, and
