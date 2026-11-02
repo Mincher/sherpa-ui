@@ -151,7 +151,8 @@ export const DEFAULT_OP: FilterOp = 'eq';
 /** A span of time from today, for `last` and `next`. */
 export interface Duration {
   n: number;
-  unit: 'day' | 'week' | 'month';
+  /** `year`: Will, TODO 688. */
+  unit: 'day' | 'week' | 'month' | 'year';
 }
 
 /** The days a `last` or `next` clause spans, from today, as ISO days — in UTC,
@@ -161,7 +162,8 @@ export function durationSpan(op: 'last' | 'next', { n, unit }: Duration, today =
   const from = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
   const to = new Date(from);
   const step = op === 'last' ? -n : n;
-  if (unit === 'month') to.setUTCMonth(to.getUTCMonth() + step);
+  // A year is twelve months, from the same day. TODO 688
+  if (unit === 'month' || unit === 'year') to.setUTCMonth(to.getUTCMonth() + step * (unit === 'year' ? 12 : 1));
   else to.setUTCDate(to.getUTCDate() + step * (unit === 'week' ? 7 : 1));
   return op === 'last' ? [day(to), day(from)] : [day(from), day(to)];
 }

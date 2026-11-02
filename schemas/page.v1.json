@@ -255,7 +255,7 @@
         "notbetween": { "type": "array", "minItems": 2, "maxItems": 2 },
         "last": { "description": "A date in the last n units, from today.", "type": "number" },
         "next": { "description": "A date in the next n units, from today.", "type": "number" },
-        "unit": { "enum": ["day", "week", "month"] },
+        "unit": { "enum": ["day", "week", "month", "year"] },
         "band": { "description": "One of the field's thresholds, by name.", "type": "string" },
         "and": { "type": "array", "items": { "$ref": "#/$defs/condition" } },
         "or": { "type": "array", "items": { "$ref": "#/$defs/condition" } },

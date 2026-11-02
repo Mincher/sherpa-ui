@@ -133,7 +133,7 @@
   "src/core/data/status-field.ts": 238,
   "src/core/data/store-cache.ts": 489,
   "src/core/data/store-history.ts": 85,
-  "src/core/data/store.ts": 776,
+  "src/core/data/store.ts": 778,
   "src/core/data/stores.ts": 588,
   "src/core/data/threshold.ts": 45,
   "src/core/data/timing.ts": 55,

@@ -93,7 +93,7 @@ const CONTROL = 'a[href], button, input, select, textarea, label, summary, [cont
 const modeAttr = (raw: string | undefined): ConditionType => (raw === 'advanced' ? 'advanced' : 'simple');
 
 /** What a date's In the last and In the next count. */
-const DATE_UNITS = ['day', 'week', 'month'] as const;
+const DATE_UNITS = ['day', 'week', 'month', 'year'] as const;
 type DateUnit = (typeof DATE_UNITS)[number];
 
 /** Each menu's own radio group number. */

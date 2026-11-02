@@ -41,6 +41,9 @@ test('a date menu offers Advanced rows that ask a date\'s questions, and reads t
       takes: [...m.shadowRoot!.querySelectorAll<HTMLElement>('.condition-row')].map((row) => row.dataset['takes']),
       shown: [...m.shadowRoot!.querySelectorAll('.condition-row')].map(shown),
       labels,
+      // In the last / next count days, weeks, months and years. Will, TODO 688
+      units: [...m.shadowRoot!.querySelectorAll('.condition-row')[1]!.querySelector('.condition-unit')!
+        .shadowRoot!.querySelectorAll('option')].map((o) => o.textContent),
       back: m.conditions,
       calendarHidden: getComputedStyle(m.shadowRoot!.querySelector('.rows')!).display === 'none',
     };
@@ -54,6 +57,7 @@ test('a date menu offers Advanced rows that ask a date\'s questions, and reads t
     ['join', 'condition', 'condition-date', 'condition-date-to', 'drop-condition'],
   ]);
   expect(r.labels).toEqual(['On', 'Before', 'After', 'Between', 'In the last', 'In the next']);
+  expect(r.units).toEqual(['days', 'weeks', 'months', 'years']);
   expect(r.back).toEqual(ROWS);
   expect(r.calendarHidden).toBe(true);
 });

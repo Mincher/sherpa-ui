@@ -24,6 +24,9 @@ test('a span from today is whole days, in UTC', () => {
   assert.deepEqual(durationSpan('last', { n: 7, unit: 'day' }, TODAY), ['2026-10-06', '2026-10-13']);
   assert.deepEqual(durationSpan('next', { n: 2, unit: 'week' }, TODAY), ['2026-10-13', '2026-10-27']);
   assert.deepEqual(durationSpan('last', { n: 1, unit: 'month' }, TODAY), ['2026-09-13', '2026-10-13']);
+  // A year is twelve months from the same day. Will, TODO 688
+  assert.deepEqual(durationSpan('last', { n: 1, unit: 'year' }, TODAY), ['2025-10-13', '2026-10-13']);
+  assert.deepEqual(durationSpan('next', { n: 2, unit: 'year' }, TODAY), ['2026-10-13', '2028-10-13']);
 });
 
 test('a relative clause is the between it means today, for a store that cannot work one out', () => {
@@ -82,6 +85,10 @@ test('a date row reads in its own words', () => {
   ]));
   // Each condition's word and its value in brackets. Will, TODO 409
   assert.equal(spellConditions(state), 'before(03 Sep 2026) OR last(7 days) OR on(01 Oct 2026)');
+  // …and Years, one and many. Will, TODO 688
+  const years = (text) => spellConditions(fieldState({ field: 'created', type: 'date' }, rows([{ op: 'next', text, unit: 'year' }])));
+  assert.equal(years('1'), 'next(1 year)');
+  assert.equal(years('2'), 'next(2 years)');
 });
 
 test('a source filters by a date from today', async () => {

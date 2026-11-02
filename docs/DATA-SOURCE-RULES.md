@@ -78,7 +78,7 @@ The operators, in full:
 | text | `contains` `notcontains` `startswith` `endswith` |
 | set | `in` `notin` |
 | range | `between` `notbetween` (value is `[from, to]`; `notbetween` is every value outside them, and a row with none) |
-| a date from today | `last` `next` (value is `{ n: 7, unit: "day" }` — `day`, `week` or `month`) |
+| a date from today | `last` `next` (value is `{ n: 7, unit: "day" }` — `day`, `week`, `month` or `year`) |
 
 **A server never gets `last` or `next`.** They stay relative in a saved View,
 so "the last 7 days" does not freeze on the day it was saved; a `RestStore`
