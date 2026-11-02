@@ -187,6 +187,8 @@ async function onStore(store: Store, url: URL, request: Request, notifies: boole
       await store.recheck?.();
       return answer(204, null);
     }
+    // Take in the newer rows that wait. S6c
+    if (url.searchParams.has('take')) return answer(200, { took: (await store.take?.()) ?? false });
     const since = url.searchParams.get('since');
     if (since === null) return answer(200, { ...factsOf(store), ...(notifies ? { notifies: true } : {}) });
     if (!store.changes) return problem(404, 'invalid', 'this store says nothing of its changes');

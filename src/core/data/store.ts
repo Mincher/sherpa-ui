@@ -291,6 +291,9 @@ export interface Store extends EventTarget {
   /** Read its source again, behind the rows it answers: settles once that read
    *  lands or fails. A store that `holds` has it. */
   recheck?(): Promise<void>;
+  /** Take in the newer rows its source gave behind the ones it answers, which wait
+   *  so a page does not move under its reader: true if any waited. S6c */
+  take?(): Promise<boolean>;
 }
 
 /** The order a whole read returns rows in, asked no sort. */

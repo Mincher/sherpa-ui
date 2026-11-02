@@ -47,6 +47,8 @@ export class RequestStore extends BaseStore {
   readonly changes?: (since?: unknown) => Promise<StoreChanges>;
   /** Read its source again, behind the set it holds — only a store that holds one. S5b */
   readonly recheck?: () => Promise<void>;
+  /** Take in the newer rows that wait behind the set it holds. S6c */
+  readonly take?: () => Promise<boolean>;
   /** Why its last answer's rows were unconfirmed, as it said, else null. */
   #stale: Failure | null = null;
 
@@ -57,7 +59,10 @@ export class RequestStore extends BaseStore {
     this.#url = urlOf(options);
     this.#facts = facts;
     if (facts.changes) this.changes = (since) => this.#ask('GET', `?since=${encodeURIComponent(since === undefined ? '' : JSON.stringify(since))}`);
-    if (facts.holds) this.recheck = () => this.#ask('GET', '?recheck');
+    if (facts.holds) {
+      this.recheck = () => this.#ask('GET', '?recheck');
+      this.take = () => this.#ask<{ took: boolean }>('GET', '?take').then((said) => !!said?.took);
+    }
     /* Its host says every change, to every tab — its own writes too, so it says
        none of them itself. S6 · TRAP T-every-tab-hears-a-change */
     if (facts.notifies && typeof BroadcastChannel === 'function') {

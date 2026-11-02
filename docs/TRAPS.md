@@ -14984,6 +14984,37 @@ after its banner is dismissed and reloads when picked (Will, D5).
 - Site: `src/core/browser/updates.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
+### T-a-server-change-waits
+
+**Newer rows the source gives behind the ones shown WAIT, so no page moves under
+its reader** (Will, plan 652 S6c). A `HeldStore` keeps its OWN copy of the rows
+its readers see. After each read behind it compares the live set with that copy;
+rows that differ wait, and it says `waiting`. `serveData` says that as a data
+notice, `{ kind: 'data', store, rows }`, and the listening banner shows. Refresh
+data takes them in: the page's Refresh asks `take()` first (`GET …?take`), and
+reads the source again only when nothing waited. Measured 2026-11-02 in Demos'
+remote mode: a customer's owner changed on the server; the grid kept the old
+owner and the banner showed, and Refresh data showed the new owner, in all three
+engines.
+
+**It must be a COPY.** A store that says what moved (`changes()`, as
+`fakeRemote` does from its History) has the changed fields joined into the SAME
+set, in place. Measured: the set the readers saw changed under them, and no
+`waiting` was ever said.
+
+**Each check that finds rows waiting says so again**, so a tab opened since — or
+one whose banner was dismissed — hears it. The rows shown are the same in every
+tab, as there is one set; a Refresh in one tab takes the rows in for every tab.
+
+**A write made through the app shows at once:** each change the store hears is
+patched into the copy too. A write the copy cannot place makes the next set show
+at once, as the write did. `new HeldStore(source, { waits: false })` takes newer
+rows at once: a live board.
+
+- Site: `src/core/data/held-store.ts`
+- Site: `src/core/worker/serve-data.ts`
+- Site: `test/unit/a-server-change-waits.test.mjs`
+
 ### T-a-horizontal-legend-is-three-by-two
 
 A horizontal legend was a wrapping flex row, so it put a different number of

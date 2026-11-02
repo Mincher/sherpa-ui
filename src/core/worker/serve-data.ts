@@ -8,6 +8,7 @@
  * - serveData — Answer the data layer's requests in the worker, from the stores the app hands it.
  */
 import { DATA_CHANNEL, createDataHandler, type DataHandlerOptions } from '../data/data-handler.js';
+import { sayNotice } from '../data/notices.js';
 import type { WorkerFetchEvent, WorkerScope } from './app-files.js';
 
 /** The stores the worker answers for, and what each request waits for. */
@@ -27,6 +28,12 @@ export function serveData(scope: WorkerScope, options: ServeDataOptions): void {
   // Open as long as the worker: in Node, it keeps nothing running.
   (channel as { unref?: () => void }).unref?.();
   for (const [name, store] of Object.entries(options.stores)) {
+    /* Newer rows wait behind the ones shown: said as a fact, to every tab; whatever
+       listens shows it. S6c · TRAP T-a-server-change-waits */
+    store.addEventListener('waiting', (event) => {
+      const rows = (event as CustomEvent<{ rows?: number } | undefined>).detail?.rows;
+      sayNotice({ kind: 'data', store: name, ...(rows !== undefined ? { rows } : {}) });
+    });
     store.addEventListener('change', (event) => {
       const change = (event as CustomEvent).detail;
       try {

@@ -1494,6 +1494,9 @@ export class DataSource extends EventTarget {
         void this.#reask();
       });
     }
+    /* A tab back, or the network: a store that holds its own set checks it behind;
+       newer rows wait, and are said, never shown at once. S6c */
+    else if (this.store.holds) void this.store.recheck?.();
     // The rows stay, and say they are unconfirmed, until the read lands.
     else if (reach === 'unreached' || (cache?.tracks && cache.set && this.#held.plan === 'held')) this.#held.recheck();
   }
@@ -1565,7 +1568,14 @@ export class DataSource extends EventTarget {
   #letGo(): void {
     if (this.#closed) return;
     this.#cache?.letGo();
-    if (this.store.holds) this.#freshen = this.store.recheck?.() ?? null;
+    /* …newer rows that wait are taken in first; with none waiting, it reads again.
+       Refresh data. S6c */
+    if (this.store.holds) {
+      const store = this.store;
+      this.#freshen = store.take
+        ? store.take().then((took) => (took ? undefined : store.recheck?.()))
+        : store.recheck?.() ?? null;
+    }
     // The keys a server field matched are of the set let go: they are asked again. TODO 612
     if (!this.#fetchedKeys.size) return;
     this.#fetchedKeys.clear();
