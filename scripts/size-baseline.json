@@ -1,5 +1,5 @@
 {
-  "src/app.ts": 65,
+  "src/app.ts": 67,
   "src/components.ts": 126,
   "src/components/sherpa-accordion/sherpa-accordion.ts": 75,
   "src/components/sherpa-app-header/sherpa-app-header.ts": 205,
@@ -379,10 +379,10 @@
   "src/core/ui/tree-picks.ts": 109,
   "src/core/ui/tree-rows.ts": 27,
   "src/core/ui/trusted-html.ts": 39,
-  "src/core/worker/app-files.ts": 123,
+  "src/core/worker/app-files.ts": 124,
   "src/data.ts": 307,
   "src/index.ts": 10,
-  "src/worker.ts": 7,
+  "src/worker.ts": 9,
   "src/components/sherpa-accordion/sherpa-accordion.css": 158,
   "src/components/sherpa-app-header/sherpa-app-header.css": 240,
   "src/components/sherpa-app-shell/sherpa-app-shell.css": 276,
@@ -534,5 +534,7 @@
   "src/components/sherpa-tooltip/sherpa-tooltip.html": 27,
   "src/components/sherpa-transfer-list/sherpa-transfer-list.html": 44,
   "src/core/sherpa-filter-menu.html": 8,
-  "src/core/sherpa-show-as.html": 25
+  "src/core/sherpa-show-as.html": 25,
+  "src/core/worker/serve-data.ts": 35,
+  "src/core/browser/worker-store.ts": 41
 }

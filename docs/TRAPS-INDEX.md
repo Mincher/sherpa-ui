@@ -200,7 +200,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-up-is-open-down-is-closed](TRAPS.md#t-up-is-open-down-is-closed) — data, data-source, query-context
 - [T-view-state-lives-in-one-object](TRAPS.md#t-view-state-lives-in-one-object) — data-source
 
-## Storage, saved Views and the URL (49)
+## Storage, saved Views and the URL (50)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — view-files
 - [T-a-changed-key-moves-the-row](TRAPS.md#t-a-changed-key-moves-the-row) — idb-store
@@ -248,6 +248,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-storage-access-throws](TRAPS.md#t-storage-access-throws) — idb-store, persist-view, saved-filters, session, web-storage
 - [T-sync-pushes-a-snapshot-not-a-diff](TRAPS.md#t-sync-pushes-a-snapshot-not-a-diff) — view-sync
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — route
+- [T-the-worker-answers-the-data](TRAPS.md#t-the-worker-answers-the-data) — serve-data, worker, worker-store
 - [T-values-carries-two-shapes](TRAPS.md#t-values-carries-two-shapes) — persist-view
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view

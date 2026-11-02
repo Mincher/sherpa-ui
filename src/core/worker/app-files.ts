@@ -4,6 +4,7 @@
  *
  * Map:
  * - WorkerScope — The part of a Service Worker's global scope this reads.
+ * - WorkerFetchEvent — A request the worker may answer.
  * - AppFilesOptions — The app's version, the files kept at install, and how fresh it keeps them.
  * - APP_CACHE_PREFIX — What every cache of an app's files is named from.
  * - keepAppFiles — Keep an app's files in the worker: its install, activate and fetch.
@@ -22,7 +23,7 @@ interface ExtendableEvent extends Event {
 }
 
 /** A request the worker may answer. */
-interface FetchEvent extends ExtendableEvent {
+export interface WorkerFetchEvent extends ExtendableEvent {
   readonly request: Request;
   respondWith(response: Response | Promise<Response>): void;
 }
@@ -71,13 +72,13 @@ export function keepAppFiles(scope: WorkerScope, options: AppFilesOptions): void
   });
 
   scope.addEventListener('fetch', (event) => {
-    const { request } = event as FetchEvent;
+    const { request } = event as WorkerFetchEvent;
     if (request.method !== 'GET') return;
     const url = new URL(request.url);
     if (url.origin !== scope.location.origin || skip.some((path) => url.pathname.startsWith(path))) return;
     // A live feed stays open: it is never a file.
     if (request.headers.get('accept')?.includes('text/event-stream')) return;
-    (event as FetchEvent).respondWith(fast ? cacheFirst(name, request) : networkFirst(name, request, timeout));
+    (event as WorkerFetchEvent).respondWith(fast ? cacheFirst(name, request) : networkFirst(name, request, timeout));
   });
 }
 

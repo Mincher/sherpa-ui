@@ -62,3 +62,5 @@ export {
   type ContextInit,
   type ContextModule,
 } from './core/data/app-definition.js';
+// A store the app's Service Worker answers, else the page's own handler. Plan 652 S4
+export { openWorkerStore, type WorkerStoreOptions } from './core/browser/worker-store.js';

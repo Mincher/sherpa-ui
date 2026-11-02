@@ -14868,6 +14868,36 @@ offline by stopping a server of your own, never by `setOffline` alone.
 - Site: `src/core/worker/app-files.ts`
 - Site: `src/worker.ts`
 
+### T-the-worker-answers-the-data
+
+**The data layer's own requests are answered in the Service Worker** (plan 652
+S4): one copy of each store for every tab, and offline. The app's worker script
+imports its store modules and hands them to `serveData(self, { stores, ready })`;
+a worker cannot `import()` at runtime — refused in all three engines, measured
+2026-11-02 — so a JSON file cannot name a store's code (D7, Will: A). Each
+request waits for `ready`, a first seed written.
+
+**The page asks the worker only where it can answer.** `openWorkerStore({ name,
+fallback })` reads by `fetch`, through the worker, while one controls the page,
+and asks for the store's facts first: a worker older than the page — S3's, which
+kept files and answered no data — fails that ask, is reported
+(`worker-store-fallback`), and the page's own handler answers. So does a first
+visit, which no worker controls yet, and a private window that refuses one.
+
+**A store module the worker imports names the data entry by its URL**
+(`/dist/bundle/data.js`): a worker has no import map. In the page it is the URL
+the map gives `sherpa-ui/data`, so the very same module, not a copy.
+
+**Two copies of a store over one database agree on rows, not on news.** The page
+may still hold the same `IdbStore` (a Dashboard reads it directly): IndexedDB is
+read fresh on every load, so both see every row, but a write in one is announced
+only by that copy. Change notices for every tab are S6.
+
+- Site: `src/core/worker/serve-data.ts`
+- Site: `src/core/browser/worker-store.ts`
+- Site: `src/worker.ts`
+- Site: `test/unit/the-worker-answers-the-data.test.mjs`
+
 ### T-a-horizontal-legend-is-three-by-two
 
 A horizontal legend was a wrapping flex row, so it put a different number of
