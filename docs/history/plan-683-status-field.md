@@ -54,8 +54,10 @@ Demos, the account's `score` (today's number) and its open tickets; Will may set
 ```
 
 - **The grid's Health column shows each row's status** — At risk, Watch, Healthy — never a
-  number (Will). It is the field's value, so the cell draws it as it draws any list
-  value, in its status. The score is a column of its own, where a page wants it.
+  number (Will): **its status icon and its plain label, in a row within the cell** (Will,
+  2026-11-02). The score is a column of its own, where a page wants it.
+- **Demos' rules** (Will, 2026-11-02: score + tickets): At risk — score below 60, or 5 or
+  more open tickets; Watch — score below 80, or any open ticket; Healthy — the rest.
 
 - **The first value whose conditions match is the row's.** `when` is a list of conditions
   in the one condition language every View and preset writes
