@@ -164,7 +164,7 @@
   display: flex;
   position: absolute;
   inset: 0;
-  gap: 0.5px; /* off-grid-ok: a gap between sections, not spacing. Will, TODO 635 */
+  gap: 1px; /* off-grid-ok: a gap between sections, not spacing. Will, TODOs 635, 686 */
 }
 .bar-col[data-sign="-"] .bar-parts { flex-direction: row-reverse; }
 .bar-part {

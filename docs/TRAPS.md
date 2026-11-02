@@ -14778,7 +14778,7 @@ no bar at all it reads `off` and goes. `ProviderMode` says when a bar steps.
 ### T-a-chart-gap-is-real-space
 
 **The gap between a chart's segments is space, not a line.** Will, TODO 635: segments stand
-1px apart and keep their full outline; sections 0.5px, with a thinner one. A line of the
+1px apart and keep their full outline; sections 1px too (TODO 686), with a thinner one, 0.5px. A line of the
 card's surface along the shared edge was tried first and sent back: it is painted over both
 outlines, so it thins them. So each path moves in from its neighbour by half the gap and the
 half of its outline that falls outside it.

@@ -392,7 +392,7 @@ test('a grouped bar stacks its parts in its own colour, each its share; the tip 
       // From the base along: Free (1 of 3), then Pro (2 of 3).
       share: widths.map((w) => Math.round((w / bar.width) * 3)),
       baseFirst: parts[0]!.getBoundingClientRect().left <= parts[1]!.getBoundingClientRect().left,
-      // A tone by its weight, the larger darker, and a 0.5px gap between. TODOs 564, 635
+      // A tone by its weight, the larger darker, and a 1px gap between. TODOs 564, 635, 686
       tones: parts.map((p) => p.style.getPropertyValue('--_shade')),
       gap: getComputedStyle(parts[0]!.parentElement!).columnGap,
       tip: cols[0]!.querySelector('.chart-tip-parts')!.textContent,
@@ -415,7 +415,7 @@ test('a grouped bar stacks its parts in its own colour, each its share; the tip 
   expect(r.share).toEqual([1, 2]);
   expect(r.baseFirst).toBe(true);
   expect(r.tones).toEqual(['0%', '30%']);
-  expect(r.gap).toBe('0.5px');
+  expect(r.gap).toBe('1px');
   expect(r.tip).toBe('Free 1\nPro 2');
   expect(r.under).toEqual({ below: true, lines: 2 });
   expect(r.name).toBe('active: 3 (Free 1 · Pro 2)');

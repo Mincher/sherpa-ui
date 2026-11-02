@@ -379,7 +379,7 @@
   "src/core/ui/render-icon.ts": 136,
   "src/core/ui/roving-focus.ts": 199,
   "src/core/ui/settled.ts": 83,
-  "src/core/ui/shared-constants.ts": 149,
+  "src/core/ui/shared-constants.ts": 153,
   "src/core/ui/sherpa-element.ts": 1252,
   "src/core/ui/show-as.ts": 58,
   "src/core/ui/swap.ts": 57,

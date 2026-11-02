@@ -18,7 +18,7 @@ import { formatValue, radialArea, ringSegmentPath, type RingSegmentOptions } fro
 import { fillTip, pairAnchor, paintSeries, paintTone, redrawOnResize, unitsPerPixel, partsSaid } from '../../core/ui/chart-parts.js';
 import { rovingFocus, type Roving } from '../../core/ui/roving-focus.js';
 import { RADIAL_CENTRE as CENTRE, RADIAL_CORNER as CORNER,
-  RADIAL_OUTLINE as OUTLINE, DONUT_INNER_RATIO, SEGMENT_GAP, SECTION_GAP } from '../../core/ui/shared-constants.js';
+  RADIAL_OUTLINE as OUTLINE, DONUT_INNER_RATIO, SEGMENT_GAP, SECTION_GAP, SECTION_OUTLINE } from '../../core/ui/shared-constants.js';
 
 /** One slice — an alias of the shared `ChartDatum`. */
 export type RadialSlice = ChartDatum;
@@ -133,7 +133,7 @@ export class SherpaRadialChart extends SherpaElement {
     if (ring) this.#sized ??= redrawOnResize(ring, () => this.#drawRing());
     const unit = unitsPerPixel(ring);
     const segmentPad = (SEGMENT_GAP * unit + OUTLINE) / 2;
-    const sectionPad = SECTION_GAP * unit;
+    const sectionPad = (SECTION_GAP + SECTION_OUTLINE) * unit / 2;
     /** A band's parts: each a shade or tint of its colour by its weight there, a gap
      *  between, none at the band's own edges, which its outline holds. Will, TODOs 548, 564, 635 */
     /** What the driver matches of one mark, from its own start: over all the marks. Will, TODO 638 */
@@ -160,7 +160,7 @@ export class SherpaRadialChart extends SherpaElement {
         const own: Edges = { startDeg: edges.startDeg + spanDeg * begins, endDeg: edges.startDeg + spanDeg * within,
           startGap: n ? sectionPad : edges.startGap, endGap: n < shown.length - 1 ? sectionPad : edges.endGap };
         part.setAttribute('d', ringSegmentPath({ cx: CENTRE, cy: CENTRE, inner: from, outer: to, ...own }));
-        part.setAttribute('stroke-width', String(SECTION_GAP * unit));
+        part.setAttribute('stroke-width', String(SECTION_OUTLINE * unit));
         paintSeries(part, index, colorIndex);
         paintTone(part, p.value, shown.map((one) => one.value));
         group.appendChild(part);

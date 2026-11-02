@@ -502,7 +502,7 @@ test('a grouped slice is split into its parts, each a tone by its weight, donut 
 });
 
 // A REAL gap: nothing is painted over an edge, so a segment keeps its whole outline. Will, TODO 635
-test('segments stand 1px apart and keep their full outline; sections 0.5px, with a thinner one', async ({ page }) => {
+test('segments stand 1px apart and keep their full outline; sections 1px too, with a thinner one (Will, TODOs 635, 686)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<HTMLElement & { populate(d: unknown): Promise<void> }>('sherpa-radial-chart', undefined, { style: 'inline-size: 300px; block-size: 300px' });
     await el.populate([
@@ -526,6 +526,8 @@ test('segments stand 1px apart and keep their full outline; sections 0.5px, with
     return {
       segmentEdge: covers('.slice, .slice-part', 180),
       sectionEdge: covers('.slice-part', 90),
+      // 0.4px either side of the sections' shared edge is gap: a 1px one, not 0.5px. TODO 686
+      sectionGap: [89.8, 90.2].some((deg) => covers('.slice-part', deg)),
       insideA: covers('.slice-part', 45),
       insideB: covers('.slice', 270),
       outline: Number(sr.querySelectorAll('.slice')[1]!.getAttribute('stroke-width')),
@@ -534,6 +536,7 @@ test('segments stand 1px apart and keep their full outline; sections 0.5px, with
   });
   expect(r.segmentEdge).toBe(false);
   expect(r.sectionEdge).toBe(false);
+  expect(r.sectionGap).toBe(false);
   expect(r.insideA).toBe(true);
   expect(r.insideB).toBe(true);
   expect(r.outline).toBe(0.5);
