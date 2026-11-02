@@ -125,6 +125,8 @@ export {
   type DataQuery,
   type StoreFacts,
 } from './core/data/data-handler.js';
+// A store reached by that protocol: a handler in the page, then a Service Worker. Plan 652 S2
+export { RequestStore, openRequestStore, type RequestStoreOptions } from './core/data/request-store.js';
 /* A page's QUERY, drawn as nodes for the Node Editor. TODO 555 · TRAP T-the-node-editor-asks-the-query */
 export { QUERY_KINDS, queryGraph, type GraphComponent, type QueryGraphFacts } from './core/data/query-graph.js';
 /* An APP, set up from one JSON document. TRAP T-an-app-is-its-definition */

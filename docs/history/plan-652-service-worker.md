@@ -5,8 +5,8 @@ a huge part of building solid apps with Sherpa. I like that the Service Worker c
 offload some work and also handle it async/offline."*
 
 Will, on D1 to D4: *"your picks work for me. We can start making that a reality."* They
-are A. **S1 is built.** Will, on D5 and D6: A, and a new version is an item in the
-Notifications menu too.
+are A. **S1 and S2 are built.** Will, on D5 and D6: A, and a new version is an item in
+the Notifications menu too.
 
 ---
 
@@ -194,7 +194,7 @@ it, and say so. A step is not done while its old path is still there beside the 
 | Step | What | Done when | What it should make redundant: check, then delete |
 |---|---|---|---|
 | S1 ✅ | The protocol and `handle()`: the `QUERY` body, the answers, a `Failure` kind for each HTTP status, a version header, and a `POST` of a query answered as the query | **Done 2026-11-02:** `createDataHandler` in `src/core/data/data-handler.ts`, from `sherpa-ui/data`; 10 Node tests. `T-a-data-request-is-the-store-interface` | Nothing yet: it is new |
-| S2 | Host A: `DataSource` reads one Demos page through the protocol, in the page | Every test green. Nothing changes for the reader | Once every page reads this way, `DataSource`'s direct calls to a `Store`: one path, the protocol, in the page or in the worker |
+| S2 ✅ | Host A: `DataSource` reads one Demos page through the protocol, in the page | Every test green. Nothing changes for the reader. **Done 2026-11-02:** `RequestStore` (`openRequestStore`, from `sherpa-ui/data`): each read a `QUERY`, each write a request, its rows keyed, its own writes announced, a refused write's `issues` carried by field. Demos' Records reads through it, over a handler in the page; Demos 282 of 283 in Chromium (the one is a peer's open work). 6 Node tests | Once every page reads this way, `DataSource`'s direct calls to a `Store`: one path, the protocol, in the page or in the worker. Not yet: the Dashboard still reads its store directly |
 | S3 | The worker and the app's files: `sherpa-ui/worker` keeps them; Demos gets a manifest | Demos opens offline and installs. A second load's LCP falls | Any app-side preload or file-cache code the worker's cache now does |
 | S4 | Host B and the Store seam: the data routes, one held set for all tabs, the fallback to A. Records on it | Two tabs read the server once. Records reads offline | The page's own `StoreCache`, `HeldSet` and `CacheKeep`: the worker holds the set; the page keeps only a mirror of what controls read at once. Each tab's own `changes(since)` asks |
 | S5 | The fake backend, from a JSON definition, with a delay and failures | Records runs on `RestStore` through it, with no server | Demos' stand-in data paths: stores built and seeded in the page (`app/stores/*`, the seed before bind), where the fake backend now serves the same rows |

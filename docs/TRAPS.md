@@ -14834,7 +14834,9 @@ not `application/vnd.sherpa.query+json`, 422 when it is not a read. A store's ow
 comes back as its `Failure` kind, with its HTTP status where it had one.
 
 - Site: `src/core/data/data-handler.ts`
+- Site: `src/core/data/request-store.ts`
 - Site: `test/unit/a-data-request-is-the-store-interface.test.mjs`
+- Site: `test/unit/a-request-store-acts-as-its-store.test.mjs`
 
 ### T-a-horizontal-legend-is-three-by-two
 

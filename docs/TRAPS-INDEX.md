@@ -30,7 +30,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-conditioned-chip-answers-with-its-clause](TRAPS.md#t-a-conditioned-chip-answers-with-its-clause) — data-source
 - [T-a-container-shows-its-datas-state](TRAPS.md#t-a-container-shows-its-datas-state) — data-source, field-catalogue
 - [T-a-context-holds-the-only-query](TRAPS.md#t-a-context-holds-the-only-query) — query-context
-- [T-a-data-request-is-the-store-interface](TRAPS.md#t-a-data-request-is-the-store-interface) — data-handler
+- [T-a-data-request-is-the-store-interface](TRAPS.md#t-a-data-request-is-the-store-interface) — data-handler, request-store
 - [T-a-date-chip-names-its-field](TRAPS.md#t-a-date-chip-names-its-field) — field-catalogue
 - [T-a-date-picks-days-unless-it-says-range](TRAPS.md#t-a-date-picks-days-unless-it-says-range) — data-source-types, filter-state
 - [T-a-date-reads-one-way](TRAPS.md#t-a-date-reads-one-way) — data, filter-face, format-date

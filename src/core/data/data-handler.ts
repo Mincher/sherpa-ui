@@ -154,7 +154,9 @@ export function createDataHandler(options: DataHandlerOptions): DataHandler {
       return await onStore(store, url, request);
     } catch (error) {
       const failure = failureOf(error);
-      return problem(failure.status ?? (failure.kind === 'invalid' ? 422 : 500), failure.kind, failure.message);
+      // A refused write says which fields, as the store's own error does. Plan 652 S2
+      const issues = (error as { issues?: unknown }).issues;
+      return problem(failure.status ?? (failure.kind === 'invalid' ? 422 : 500), failure.kind, failure.message, {}, Array.isArray(issues) ? { issues } : {});
     }
   };
 }
@@ -223,7 +225,8 @@ function answer(status: number, value: unknown, headers: Record<string, string> 
   return new Response(JSON.stringify(value), { status, headers: { ...head, 'Content-Type': 'application/json' } });
 }
 
-/** An answer that says what went wrong, as a `Failure`'s kind and message. */
-function problem(status: number, kind: string, message: string, headers: Record<string, string> = {}): Response {
-  return answer(status, { error: { kind, message } }, headers);
+/** An answer that says what went wrong, as a `Failure`'s kind and message — and
+ *  a refused write's `issues`, by field. */
+function problem(status: number, kind: string, message: string, headers: Record<string, string> = {}, more: Record<string, unknown> = {}): Response {
+  return answer(status, { error: { kind, message, ...more } }, headers);
 }
