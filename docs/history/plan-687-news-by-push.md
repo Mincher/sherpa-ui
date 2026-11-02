@@ -60,6 +60,8 @@ way to say "something changed".
 
 ## Decisions for Will
 
+Answered, 2026-11-02: both A (Will: "your picks").
+
 | # | Question | A (my pick) | B |
 |---|---|---|---|
 | U-D1 | The feed's transport | Server-Sent Events: one-way, reconnects and replays by itself (`Last-Event-ID`), as `EventStore` does | WebSocket: two-way, which this does not need |
