@@ -26,6 +26,12 @@
   html[data-toggle-shapes] {
     --sherpa-toggle-shape: inline-flex;
   }
+  /* VALUE BORDER: an on filter chip's value half wears its look's border only, its
+     fill and ink the default Style's — the page's choice. Will, TODO 669 */
+  html[data-filter-value-border] {
+    --sherpa-filter-value-surface: var(--sherpa-style-default-surface-base, #ffffff);
+    --sherpa-filter-value-content: var(--sherpa-style-default-content-base, #0c0b11);
+  }
   /* The shell is the page's frame, so it inherits the full height rather than
      each app re-declaring it. :is() keeps this at class specificity. */
   body > sherpa-app-shell,

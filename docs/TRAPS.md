@@ -674,6 +674,8 @@ menu changes WHICH one and its body has nothing to turn off. In one place:
 | survives reset — `clearAll` skips it, PICK included | `clearAll` |
 | on when empty — an empty pick is still a view | `#onOrganiseChange` |
 | follows a pick — a definition may name the view it is | `values` setter |
+| reads on in its VALUE half only: its label never fills (Will, TODO 667) | `state-pins.yaml`, its `.caret` pin |
+| a Group-kind one — a chart's Primary, a held Secondary — opens its menu on a body press | `#onClick` in `sherpa-quick-filter` |
 
 A persistent chip always holds exactly one value, so if neither the live picks
 nor the definition names one, `#addMenu` defaults to the FIRST option. Without

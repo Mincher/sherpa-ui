@@ -766,7 +766,8 @@ export class SherpaQuickFilter extends SherpaElement {
        TRAP T-a-chip-knows-what-kind-it-is */
     if (this.#arranges()) {
       event.stopPropagation();
-      if (!this.column) { this.#openMenu(); return; }
+      // No column yet, or one it may never let go — a chart's Primary: it opens its menu. Will, TODO 667
+      if (!this.column || this.hasAttribute('data-persistent')) { this.#openMenu(); return; }
       this.#arrange();
       return;
     }

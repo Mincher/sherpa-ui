@@ -24,6 +24,9 @@ sherpa-quick-filter:
   # A PERSISTENT chip — the View chip, a picker — is always on, so it wears no
   # on look, active or green. Will, TODO 432.
   '&[data-current]:not([data-persistent])': active @filter-on
+  # …and one that cannot be toggled — the View chip, a chart's Primary: never its
+  # field label, only its value half, while it holds one. Will, TODO 667
+  '&[data-current][data-persistent]:not([disabled]) .caret': active @filter-on
   # On but holding no values — the contradiction reads as a warning.
   '&[data-current][data-filters-nothing]': warning
   # ON BY A PRESET: a downstream chip or value, blue, and its tip says which. Will, TODO 521

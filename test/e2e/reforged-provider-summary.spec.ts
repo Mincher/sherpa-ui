@@ -386,7 +386,7 @@ test('a chart\'s bar in its SLOT: Group splits its bars, Sort has no menu and cy
   expect(r['again']).toEqual({ kept: { sort: 'asc' }, first: 'Free: 1' });
 });
 
-test('a chart\'s Primary is its bars and its Secondary their stack — its chart\'s own until picked, and off goes back; Primary has no None, and its default says so (Will, TODOs 548, 572)', async ({ page }) => {
+test('a chart\'s Primary is its bars and its Secondary their stack — its chart\'s own until picked; Primary has no None or toggle, and its default says so; a held Secondary neither (Will, TODOs 548, 572, 663, 667)', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     provider.innerHTML = \`
@@ -416,17 +416,20 @@ test('a chart\'s Primary is its bars and its Secondary their stack — its chart
     const at = { order: zone().map((c) => c.dataset.id), first: { primary: said('primary'), secondary: said('secondary'), groups: groups(), bars: bars() } };
     const menu = chip('primary').querySelector('sherpa-menu');
     at.menu = { none: menu.hasAttribute('data-none'), rows: [...menu.querySelectorAll('input')].map((i) => i.closest('label, .menu-row').textContent.trim()) };
+    const persistent = () => ['primary', 'secondary'].map((id) => chip(id).hasAttribute('data-persistent'));
+    at.persistent = persistent();
     await pick('primary', 'day');
     at.split = { primary: said('primary'), kept: source.query.presentation('by-plan'), bars: bars() };
-    await pick('secondary', 'plan');
-    at.counted = { secondary: said('secondary'), kept: source.query.presentation('by-plan'), bars: bars() };
-    // Its body OFF: back to counting rows.
-    chip('secondary').shadowRoot.querySelector('.body').click();
-    await settle();
-    at.off = { secondary: said('secondary').on, kept: source.query.presentation('by-plan'), bars: bars() };
     // Its default picked again: no pick kept, so the definition rules.
     await pick('primary', 'plan');
     at.back = { primary: said('primary'), kept: source.query.presentation('by-plan'), bars: bars() };
+    await pick('primary', 'day');
+    await pick('secondary', 'plan');
+    at.counted = { secondary: said('secondary'), kept: source.query.presentation('by-plan'), bars: bars(), persistent: persistent() };
+    // Its body: a chart's Secondary is never unset, so it opens its menu and changes nothing. TODO 667
+    chip('secondary').shadowRoot.querySelector('.body').click();
+    await settle();
+    at.pressed = { secondary: said('secondary'), open: chip('secondary').hasAttribute('data-open'), kept: source.query.presentation('by-plan'), bars: bars() };
     return at;
   })()`) as Record<string, unknown>;
   // Primary and Secondary lead, before Group and Sort.
@@ -435,9 +438,11 @@ test('a chart\'s Primary is its bars and its Secondary their stack — its chart
   expect(r['first']).toEqual({ primary: { on: true, field: 'plan' }, secondary: { on: false, field: '' }, groups: ['plan', 'day'], bars: ['Free: 1', 'Pro: 3', 'Enterprise: 1'] });
   // Primary day: a bar a day, named by it.
   expect(r['split']).toEqual({ primary: { on: true, field: 'day' }, kept: { primary: 'day' }, bars: ['Mon: 3', 'Tue: 1', 'Wed: 1'] });
-  // Secondary plan: each day's bar stacked by plan.
-  expect(r['counted']).toEqual({ secondary: { on: true, field: 'plan' }, kept: { primary: 'day', secondary: 'plan' }, bars: ['Mon: 3 (Pro 2 · Enterprise 1)', 'Tue: 1 (Free 1)', 'Wed: 1 (Pro 1)'] });
-  expect(r['off']).toEqual({ secondary: false, kept: { primary: 'day' }, bars: ['Mon: 3', 'Tue: 1', 'Wed: 1'] });
+  // Primary never lets go, so it has no toggle; a Secondary has one until it holds a field. TODO 667
+  expect(r['persistent']).toEqual([true, false]);
+  // Secondary plan: each day's bar stacked by plan — and now no toggle either (663, 667).
+  expect(r['counted']).toEqual({ secondary: { on: true, field: 'plan' }, kept: { primary: 'day', secondary: 'plan' }, bars: ['Mon: 3 (Pro 2 · Enterprise 1)', 'Tue: 1 (Free 1)', 'Wed: 1 (Pro 1)'], persistent: [true, true] });
+  expect(r['pressed']).toEqual({ secondary: { on: true, field: 'plan' }, open: true, kept: { primary: 'day', secondary: 'plan' }, bars: ['Mon: 3 (Pro 2 · Enterprise 1)', 'Tue: 1 (Free 1)', 'Wed: 1 (Pro 1)'] });
   // Primary is always set: no None, and its chart's own field reads as the Default.
   expect(r['menu']).toEqual({ none: false, rows: ['plan (Default)', 'day'] });
   expect(r['back']).toEqual({ primary: { on: true, field: 'plan' }, kept: {}, bars: ['Free: 1', 'Pro: 3', 'Enterprise: 1'] });

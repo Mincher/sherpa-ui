@@ -189,8 +189,16 @@
  * at a glance across a bar of twelve.
  * NO weight change — see the trap.
  * TRAP T-an-active-chip-is-heavier-and-more-strongly-drawn */
-:host([data-current]:not([data-persistent])) :is(.body, .caret) {
+:host([data-current]:not([data-persistent])) :is(.body, .caret),
+:host([data-current][data-persistent]:not([disabled])) .caret {
   border-width: var(--sherpa-display-mode-border-width-base, 1px);
+}
+/* The PAGE's choice: an on chip's value half wears its look's border only, its
+   fill and ink the default's, so the half that toggles is the filled one. An
+   icon-only chip is all value half; an AI one keeps its accent. Will, TODO 669 */
+:host([data-current]:not([data-icon-only], [data-type="ai"])) .caret:not(:hover, :active) {
+  background: var(--sherpa-filter-value-surface, var(--sherpa-style-surface-base, #ffffff));
+  color: var(--sherpa-filter-value-content, var(--sherpa-style-content-base, #0c0b11));
 }
 
 /* PENDING: changed, not yet applied — the warning look; FAILED to fetch, the

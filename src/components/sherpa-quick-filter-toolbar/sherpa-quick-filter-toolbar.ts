@@ -2698,6 +2698,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const chip = this.clone(`template.organise-${id}-tpl`);
     if (!chip) throw new Error(`sherpa-quick-filter-toolbar: template.organise-${id}-tpl is missing or empty`);
     if (on) chip.dataset['column'] = on;
+    // Never unset, so no toggle: its body opens its menu, and only its value half reads on. Will, TODO 667
+    chip.toggleAttribute('data-persistent', id === 'primary' || required);
     const options = organiseOptions(fields, on)
       .map((o) => (o.value === fallback ? { ...o, label: `${o.label} ${this.word('default')}` } : o));
     this.#addMenu(chip, { id, label: chip.dataset['label'] ?? '', select: 'single', options, ...(id === 'primary' || required ? { persistent: true } : {}) });
