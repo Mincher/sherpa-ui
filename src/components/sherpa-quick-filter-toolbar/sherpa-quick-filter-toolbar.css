@@ -162,6 +162,9 @@
     clip-path: inset(50%);
     white-space: nowrap;
   }
+  /* …and a Primary the page fixes, inactive, goes: it says nothing a reader can
+     change. Wider, it shows (664). Will, TODO 682 */
+  .organise-chip[data-id="primary"][disabled] { display: none; }
 }
 
 /* A section's name — "View Context", "Organise", "Presets", "Custom" — LEFT of
