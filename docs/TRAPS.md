@@ -15155,6 +15155,27 @@ deliver a push in a test.
 - Site: `src/core/worker/serve-data.ts`
 - Site: `test/unit/a-push-is-a-check-behind.test.mjs`
 
+### T-a-query-falls-back-to-post
+
+**A read is a `QUERY` with its query as a BODY, so a long filter never breaks a
+URL; where a server or a proxy refuses it, the same body goes as `POST`** (plan
+652 S10). `RequestStore` sends `QUERY` (the Sherpa protocol, Host C's shape); a
+405 or 501 sends the same body as `POST`, and every read after it is `POST` — the
+handler takes a `POST` of a query as the query (S1). A read that fails at the
+network tries `POST` once and keeps it only if that answers: a CORS preflight that
+refuses `QUERY` looks exactly like offline, and offline must not stick.
+`method: 'POST'` starts there.
+
+**`RestStore`, for a server that is not Sherpa's, sends `GET` with query
+parameters by default** — most take nothing else. `method: 'QUERY'` (or `'POST'`)
+sends the Sherpa query as the body, with the same fallback; its answer is read
+by `rowsPath` and `totalPath` as before. Measured in Node: a 20,000-character
+filter went as a body, refused `QUERY` fell back to `POST`, and stayed there.
+
+- Site: `src/core/data/request-store.ts`
+- Site: `src/core/data/stores.ts`
+- Site: `test/unit/a-query-falls-back-to-post.test.mjs`
+
 ### T-a-list-has-a-limit
 
 **A field with more values than a filter lists offers its Advanced conditions

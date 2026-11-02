@@ -33,6 +33,8 @@ import {
 import { BaseStore, type StoreOptions } from './base-store.js';
 import { rowKey } from './row-key.js';
 import { changedFields } from './store-history.js';
+import { DATA_QUERY_TYPE, encodeQuery } from './data-handler.js';
+import { failureOf } from './failure.js';
 export { BaseStore, type StoreOptions };
 
 /**
@@ -297,6 +299,11 @@ export interface RestStoreOptions extends StoreOptions {
   /** What moved since a mark: `GET <changesUrl>?since=<at>` answers `{ at, rows, fields }`.
    *  Without it, a page opened again reads the whole set. TRAP T-a-remote-store-says-what-changed */
   changesUrl?: string;
+  /** How a read is sent: `GET` with query parameters — the default, as most servers
+   *  take nothing else — or the Sherpa query as a BODY, so a long filter never breaks
+   *  a URL: `QUERY`, falling back to `POST` where a server or proxy refuses it, or
+   *  `POST` from the start. Plan 652 S10 · TRAP T-a-query-falls-back-to-post */
+  method?: 'GET' | 'QUERY' | 'POST';
 }
 
 /** A write's time as HTTP says it: a server refuses it, 412, where the row
@@ -355,12 +362,41 @@ export class RestStore extends BaseStore {
     return this.#options.rowOrder;
   }
 
+  /** A read sends its query as `POST`: asked so, or `QUERY` was refused. */
+  #post = false;
+
+  /** A read as a body: `QUERY`, else — refused, or blocked on the way — the same body as
+   *  `POST`, from then on. One that fails at the network keeps `POST` only if it answers. */
+  async #read(options: LoadOptions): Promise<unknown> {
+    const init = (method: string): RequestInit => ({
+      method, headers: { 'content-type': DATA_QUERY_TYPE }, body: JSON.stringify(encodeQuery(options)),
+    });
+    if (this.#post || this.#options.method === 'POST') return this.#request<unknown>(this.#options.url, init('POST'));
+    try {
+      return await this.#request<unknown>(this.#options.url, init('QUERY'));
+    } catch (error) {
+      const refused = error instanceof HttpError && (error.status === 405 || error.status === 501);
+      if (!refused && failureOf(error).kind !== 'offline') throw error;
+      let body: unknown;
+      try {
+        body = await this.#request<unknown>(this.#options.url, init('POST'));
+      } catch {
+        throw error;
+      }
+      this.#post = true;
+      return body;
+    }
+  }
+
   async load(options: LoadOptions = {}): Promise<LoadResult> {
     // A relative date reaches the server as the days it means today. TRAP T-a-relative-date-stays-relative
     const sent = options.filter ? { ...options, filter: absoluteDates(options.filter, options.now) } : options;
-    const query = (this.#options.buildQuery ?? defaultQuery)(sent);
-    const suffix = query.size ? `?${query}` : '';
-    const body = await this.#request<unknown>(`${this.#options.url}${suffix}`, { method: 'GET' });
+    let body: unknown;
+    if ((this.#options.method ?? 'GET') === 'GET') {
+      const query = (this.#options.buildQuery ?? defaultQuery)(sent);
+      const suffix = query.size ? `?${query}` : '';
+      body = await this.#request<unknown>(`${this.#options.url}${suffix}`, { method: 'GET' });
+    } else body = await this.#read(sent);
     const rows = rowsAt(body, this.#options.rowsPath);
     // A reported total is believed; otherwise the page length —
     // TRAP T-rest-update-is-patch-not-put

@@ -1,6 +1,6 @@
 {
   "app.js": {
-    "js": 690958,
+    "js": 691842,
     "files": 95,
     "fetched": 0
   },
@@ -350,12 +350,12 @@
     "fetched": 0
   },
   "data.js": {
-    "js": 195106,
+    "js": 195990,
     "files": 52,
     "fetched": 0
   },
   "index.js": {
-    "js": 1244634,
+    "js": 1245518,
     "files": 173,
     "fetched": 221610
   }

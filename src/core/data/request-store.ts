@@ -10,7 +10,7 @@
  */
 import { BaseStore } from './base-store.js';
 import { DATA_CHANNEL, DATA_QUERY_TYPE, DATA_VERSION, STALE, encodeQuery, keySegment, type DataQuery, type StoreFacts } from './data-handler.js';
-import type { Failure } from './failure.js';
+import { failureOf, type Failure } from './failure.js';
 import { HttpError } from './stores.js';
 import { readField, type LoadOptions, type LoadResult, type Row, type RowOrder, type StoreChangeDetail, type StoreChanges } from './store.js';
 import { ValidationError, type FieldDomain, type Issue } from './validate.js';
@@ -29,6 +29,9 @@ export interface RequestStoreOptions {
   origin?: string;
   /** Headers each request carries — a sign-in, an app's own say — read at each request. */
   headers?: () => Record<string, string>;
+  /** How a read is sent: `QUERY` (the default), falling back to `POST` of the same
+   *  body where a server or a proxy refuses it — or `POST` from the start. Plan 652 S10 */
+  method?: 'QUERY' | 'POST';
 }
 
 /** A store whose every read and write is one request to a data handler. Its rows
@@ -55,6 +58,7 @@ export class RequestStore extends BaseStore {
   constructor(options: RequestStoreOptions, facts: StoreFacts) {
     super({ key: facts.key, ...(facts.time ? { time: facts.time } : {}) });
     this.#send = options.send;
+    this.#post = options.method === 'POST';
     this.#headers = options.headers ?? ((): Record<string, string> => ({}));
     this.#url = urlOf(options);
     this.#facts = facts;
@@ -156,9 +160,29 @@ export class RequestStore extends BaseStore {
     this.#wrote({ type: 'remove', key });
   }
 
-  /** A read, as `QUERY`. */
-  #query<T>(query: DataQuery): Promise<T> {
-    return this.#ask<T>('QUERY', '', query, DATA_QUERY_TYPE);
+  /** A read sends its query as `POST`: asked so, or `QUERY` was refused. */
+  #post = false;
+
+  /** A read, as `QUERY` — or, where a server or a proxy refuses it, a `POST` of the
+   *  same body, from then on. One that fails at the network tries `POST` once, and
+   *  keeps it only if it answers: a CORS preflight refused looks like offline.
+   *  TRAP T-a-query-falls-back-to-post */
+  async #query<T>(query: DataQuery): Promise<T> {
+    if (this.#post) return this.#ask<T>('POST', '', query, DATA_QUERY_TYPE);
+    try {
+      return await this.#ask<T>('QUERY', '', query, DATA_QUERY_TYPE);
+    } catch (error) {
+      const refused = error instanceof HttpError && (error.status === 405 || error.status === 501);
+      if (!refused && failureOf(error).kind !== 'offline') throw error;
+      let answer: T;
+      try {
+        answer = await this.#ask<T>('POST', '', query, DATA_QUERY_TYPE);
+      } catch {
+        throw error;
+      }
+      this.#post = true;
+      return answer;
+    }
   }
 
   /** One request, its answer as JSON. A refusal throws as the store's own error
