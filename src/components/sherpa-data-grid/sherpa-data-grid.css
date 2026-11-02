@@ -793,6 +793,17 @@
   inset-block-start: calc(var(--sherpa-display-mode-space-2xs, 4px) + var(--sherpa-theme-content-line-height-base, 20px) / 2);
 }
 
+/* A STATUS cell: its icon, then its label, in a row. Will, plan 683 */
+.cell-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-theme-gap-sm, 4px);
+}
+.status-icon {
+  inline-size: var(--sherpa-theme-content-size-base, 14px);
+  flex: none;
+}
+
 /* ── A MULTI-FIELD cell's tags: a second row in the plain Tag look; ON, the
    filters' on colours (its pin). Will, TODOs 490, 507 ── */
 .cell-tags {

@@ -15183,7 +15183,13 @@ reads is a change to it, in a change event and in `changes()`. A write that name
 it is refused. Under `fakeRemote` and a worker's `HeldStore`, the held rows carry
 the value, and a page filters by it.
 
+**On the page** (S2): a status field's domain says each value's look, and the
+catalogue gives each option it as its `swatch`. A grid cell whose field's options
+wear a look draws its status icon and its plain label, in a row (Will).
+
 - Site: `src/core/data/status-field.ts`
+- Site: `src/core/data/field-catalogue.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/unit/a-status-is-worked-out-by-the-data.test.mjs`
 
 ### T-a-horizontal-legend-is-three-by-two

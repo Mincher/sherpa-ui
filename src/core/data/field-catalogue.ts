@@ -200,7 +200,9 @@ export class FieldCatalogue {
       list.push({ value: p.key, label: childLabels?.[valueKey(p.child)] ?? valueKey(p.child), parent: p.parent });
       kids.set(p.parent, list);
     }
-    const options = values.flatMap((v) => [{ value: v, label: labels?.[v] ?? v }, ...(kids.get(v) ?? [])]);
+    // A status field's values each wear their look. Plan 683 · TRAP T-a-status-is-worked-out-by-the-data
+    const looks = rest.statuses;
+    const options = values.flatMap((v) => [{ value: v, label: labels?.[v] ?? v, ...(looks?.[v] ? { swatch: looks[v] } : {}) }, ...(kids.get(v) ?? [])]);
     // A number's values are its Equals rows' list, never rows to tick. Will, TODO 668
     const listed = (type === 'number' ? this.#equals.get(field) ?? [] : []).map((n) => ({ value: String(n), label: String(n) }));
     return {

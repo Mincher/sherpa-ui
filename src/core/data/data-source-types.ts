@@ -32,6 +32,8 @@ export interface FieldDeclaration {
   select?: 'single' | 'multiple';
   /** Advanced conditions beside its values (`true`), or instead of them (`'only'`). */
   advanced?: boolean | 'only';
+  /** Each value's look, a Style mode — a status field's, as its store says. Plan 683 */
+  statuses?: Record<string, string>;
   /** The condition its filter opens on. */
   op?: FilterOp;
   /** A DATE that holds a time of day: its Advanced rows offer a time too. TODO 21d */

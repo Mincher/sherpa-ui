@@ -580,6 +580,29 @@
       },
       {
         "el": "template",
+        "class": "cell-status-tpl",
+        "children": [
+          {
+            "el": "span",
+            "class": "cell-status",
+            "children": [
+              {
+                "el": "i",
+                "class": "status-icon",
+                "attrs": {
+                  "aria-hidden": "true"
+                }
+              },
+              {
+                "el": "span",
+                "class": "status-label"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
         "class": "cell-tags-tpl",
         "children": [
           {
@@ -1111,6 +1134,8 @@
     "empty.padding": "{sherpa.display-mode-space-2xl}",
     "empty.color": "{sherpa.theme-content-body-1}",
     "cell-filter.inset-inline-end": "{sherpa.display-mode-space-2xs}",
+    "cell-status.gap": "{sherpa.theme-gap-sm}",
+    "status-icon.inline-size": "{sherpa.theme-content-size-base}",
     "cell-tags.gap": "{sherpa.theme-gap-sm}",
     "cell-tags.padding-block-start": "{sherpa.display-mode-space-2xs}",
     "cell-tag.gap": "{sherpa.theme-gap-sm}",

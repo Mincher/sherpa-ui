@@ -89,6 +89,12 @@ interface CellValue { field: string; kind: string; value: unknown; key: string; 
 
 /** A selection box — a `sherpa-select-checkbox`, or the one-row `sherpa-select-radio`; NOT `HTMLInputElement`. */
 type SelectBox = HTMLElement & { checked: boolean; indeterminate: boolean };
+/** A status value's look and label, as its cell draws them. Plan 683 */
+interface StatusMark { status: string; label: string }
+/** Each status's icon. */
+const STATUS_ICONS: Record<string, string> = {
+  success: 'status-ok', warning: 'status-warning', critical: 'status-critical', info: 'status-info', urgent: 'status-urgent',
+};
 
 /** A select-all box says all, some or none of `of` ticked. */
 function tickAll(box: SelectBox, on: number, of: number): void {
@@ -1448,6 +1454,7 @@ export class SherpaDataGrid extends SherpaElement {
     let lastGroup: string | null = null;
     // Each tag field's value names, read once a draw.
     const looks = new Map<string, Map<string, string>>();
+    const marks = new Map<string, Map<string, StatusMark>>();
     // Each row's selection cell is drawn frozen: no caller has to pin it after.
     const selectable = this.hasAttribute('data-selectable');
 
@@ -1490,7 +1497,10 @@ export class SherpaDataGrid extends SherpaElement {
         td.dataset['field'] = col.field;
         if (c === 0) this.#markPinned(td, true);
         const value = record[col.field];
-        this.#fillCell(td, value == null ? '' : String(value), col);
+        // A STATUS field's value draws its icon and label. Will, plan 683 · TRAP T-a-status-is-worked-out-by-the-data
+        const status = value == null ? undefined : this.#statusOf(col.field, valueKey(value), marks);
+        if (status) this.#drawStatus(td, status);
+        else this.#fillCell(td, value == null ? '' : String(value), col);
         // No tag of the field it groups by: its heading says it. Will, TODO 579
         const tags = this.#tagsOf(col).filter((f) => f !== group);
         if (tags.length) this.#drawTags(td, record, tags, looks);
@@ -1793,6 +1803,28 @@ export class SherpaDataGrid extends SherpaElement {
     }
     td.toggleAttribute('data-tags', true);
     td.appendChild(row);
+  }
+
+  /** A value's status on its field — its look and its label — where its field's values
+   *  have looks: a status field's. Asked once per field per draw. */
+  #statusOf(field: string, key: string, marks: Map<string, Map<string, StatusMark>>): StatusMark | undefined {
+    let mark = marks.get(field);
+    if (!mark) {
+      mark = new Map(this.#optionsOf(field).flatMap((o) =>
+        (typeof o.swatch === 'string' ? [[o.value, { status: o.swatch, label: o.label ?? o.value }] as const] : [])));
+      marks.set(field, mark);
+    }
+    return mark.get(key);
+  }
+
+  /** A status cell: its status icon, then its plain label. */
+  #drawStatus(td: HTMLElement, mark: StatusMark): void {
+    const cell = this.clone('template.cell-status-tpl');
+    if (!cell) return;
+    this.writeIcon(cell.querySelector('.status-icon')!, STATUS_ICONS[mark.status] ?? 'status-neutral');
+    cell.querySelector('.status-label')!.textContent = mark.label;
+    td.dataset['status'] = mark.status;
+    td.appendChild(cell);
   }
 
   /** Is this value picked on its field — by its reader, not by All? */

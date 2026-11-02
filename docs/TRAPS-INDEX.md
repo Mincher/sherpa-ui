@@ -87,7 +87,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-server-change-waits](TRAPS.md#t-a-server-change-waits) — held-store
 - [T-a-server-field-is-asked-once-per-answer](TRAPS.md#t-a-server-field-is-asked-once-per-answer) — data-source, data-source-types
 - [T-a-source-compiles-only-what-it-has](TRAPS.md#t-a-source-compiles-only-what-it-has) — data-source, query, source-counts
-- [T-a-status-is-worked-out-by-the-data](TRAPS.md#t-a-status-is-worked-out-by-the-data) — status-field
+- [T-a-status-is-worked-out-by-the-data](TRAPS.md#t-a-status-is-worked-out-by-the-data) — field-catalogue, status-field
 - [T-a-store-has-one-cache](TRAPS.md#t-a-store-has-one-cache) — data-source, held-reads, store, store-cache
 - [T-a-store-keeps-its-history](TRAPS.md#t-a-store-keeps-its-history) — base-store, data, fake-remote, live-stores, store, store-history
 - [T-a-summary-binds-to-all-the-rows](TRAPS.md#t-a-summary-binds-to-all-the-rows) — data-source, data-source-types, source-binding
@@ -629,7 +629,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-unavailable-value-sorts-below-a-divider](TRAPS.md#t-unavailable-value-sorts-below-a-divider) — menu
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — menu
 
-## The data grid (99)
+## The data grid (100)
 
 - [T-a-cell-chip-is-one-and-moves](TRAPS.md#t-a-cell-chip-is-one-and-moves) — data-grid
 - [T-a-chip-body-cycles-its-states](TRAPS.md#t-a-chip-body-cycles-its-states) — data-grid
@@ -661,6 +661,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — data-grid
 - [T-a-sideways-scroll-shadow-is-its-frames](TRAPS.md#t-a-sideways-scroll-shadow-is-its-frames) — data-grid
 - [T-a-state-colour-binds-the-style-mode](TRAPS.md#t-a-state-colour-binds-the-style-mode) — data-grid
+- [T-a-status-is-worked-out-by-the-data](TRAPS.md#t-a-status-is-worked-out-by-the-data) — data-grid
 - [T-a-stuck-header-casts-a-shadow](TRAPS.md#t-a-stuck-header-casts-a-shadow) — data-grid
 - [T-a-sub-grid-sticks-under-its-parent](TRAPS.md#t-a-sub-grid-sticks-under-its-parent) — data-grid
 - [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — data-grid

@@ -248,6 +248,8 @@ What each class's base rule reads:
 | `--sherpa-display-mode-space-2xl` | `.empty` | `padding` |
 | `--sherpa-theme-content-body-1` | `.empty` | `color` |
 | `--sherpa-display-mode-space-2xs` | `.cell-filter` | `inset-inline-end` |
+| `--sherpa-theme-gap-sm` | `.cell-status` | `gap` |
+| `--sherpa-theme-content-size-base` | `.status-icon` | `inline-size` |
 | `--sherpa-theme-gap-sm` | `.cell-tags` | `gap` |
 | `--sherpa-display-mode-space-2xs` | `.cell-tags` | `padding-block-start` |
 | `--sherpa-theme-gap-sm` | `.cell-tag` | `gap` |

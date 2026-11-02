@@ -104,3 +104,11 @@ test('through the worker: a page filters by it, and is told its values and looks
   const { rows } = await store.load({ filter: ['health', 'eq', 'At risk'] });
   assert.deepEqual(rows.map((r) => r.id), [1, 2]);
 });
+
+test('a page lists its values in order, each in its look: a filter, a menu, a cell', async () => {
+  const { store } = stores();
+  const source = new DataSource({ store });
+  await source.load();
+  assert.deepEqual(source.filterDef('health').options.map((o) => [o.value, o.swatch]),
+    [['At risk', 'critical'], ['Watch', 'warning'], ['Healthy', 'success']]);
+});
