@@ -89,11 +89,24 @@ it changes. It gives the shared set, offline reads, offline writes and `QUERY` t
 servers. **It does not take work off the page.** A set the page does not hold is asked
 step by step (`walkStepwise`), about 10 trips for one filter act.
 
-**2. The Query seam.** One `QUERY` for one act. Its body is the applied Query, compiled:
-each scope's filter and the walk's plan (`planWalk`, already pure), the page asked for,
-and the summaries the charts ask for. Its answer is the page's rows, every count and
-every summary. This takes the heavy work off the page, in one trip. It needs the pure
-halves (`source-counts.ts`, `aggregate.ts`, `compile`) to be the only path.
+**2. The Query seam.** Each component asks for itself: its own `QUERY`, with its scope,
+its own narrowing, and what it draws — a page of rows, its chips' counts, its chart's
+summary. The worker answers each from one pass over the rows for that version of the
+Query, so ten components cost one pass, not ten. Every component still sees every change;
+only the work moves. This takes the heavy work off the page. It needs the pure halves
+(`source-counts.ts`, `aggregate.ts`, `compile`) to be the only path.
+
+Will, 2026-11-02, and so the design:
+
+- **A component's own narrowing travels in its own request.** A legend that narrows its
+  chart adds its reading to the chart's request. No element is named, so nothing needs an
+  id. TODO 518's rule holds: each component works alone with the data layer.
+- **Highlighting is the component's.** A grid row or a marked string is tested on the page,
+  with no trip. A chart that needs the matched part of each segment asks for it in its
+  request, the hovered value as plain data: a fast trip to the worker, too slow to a remote
+  server, so there the chart asks for its breakdown ahead.
+- **A server needs the page definition** for each field's type, label and thresholds. It
+  is JSON already (D4).
 
 ---
 
@@ -116,7 +129,7 @@ Each step is measured in the running app, and the plan can stop after any of the
 | S1 ✅ | The protocol and `handle()`: the `QUERY` body, the answers, a `Failure` kind for each HTTP status, a version header | Node tests over every store kind. **Done 2026-11-02:** `createDataHandler` in `src/core/data/data-handler.ts`, from `sherpa-ui/data`; 9 Node tests. `T-a-data-request-is-the-store-interface` |
 | S2 | Host A: `DataSource` reads one Demos page through the protocol, in the page | Every test green, nothing changes for the reader |
 | S3 | Host B and the Store seam: `sherpa-ui/worker`, its routes, the fallback to A; Records on it | Two tabs read the server once; Records works offline |
-| S4 | The Query seam: one `QUERY` an act | INP and LCP at 4x CPU with 100k rows beat S3 (TODO 350's targets). If not, S4 stops |
+| S4 | The Query seam: each component's own `QUERY`, the worker sharing one pass | INP and LCP at 4x CPU with 100k rows beat S3 (TODO 350's targets). If not, S4 stops |
 | S5 | Offline writes: the outbox, Web Locks, what a conflict does | A save made offline lands after reconnecting, once |
 | S6 | Live feeds in the worker, sent to every tab | One connection for many tabs |
 | S7 | `RestStore` sends `QUERY` to real servers. Where a proxy refuses it, a `POST` of the same body (Will, 2026-11-02); `GET` only for a server that takes nothing else. Host C's shape for row 170 | A long filter that breaks a URL works |
