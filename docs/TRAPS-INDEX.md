@@ -209,12 +209,13 @@ files. An entry that only tests cite is under Tests only.
 - [T-up-is-open-down-is-closed](TRAPS.md#t-up-is-open-down-is-closed) — data, data-source, query-context
 - [T-view-state-lives-in-one-object](TRAPS.md#t-view-state-lives-in-one-object) — data-source
 
-## Storage, saved Views and the URL (57)
+## Storage, saved Views and the URL (58)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — view-files
 - [T-a-changed-key-moves-the-row](TRAPS.md#t-a-changed-key-moves-the-row) — idb-store
 - [T-a-field-can-carry-over-views](TRAPS.md#t-a-field-can-carry-over-views) — persist-view
 - [T-a-kept-set-is-checked-each-session](TRAPS.md#t-a-kept-set-is-checked-each-session) — cache-keep
+- [T-a-new-build-is-a-new-worker](TRAPS.md#t-a-new-build-is-a-new-worker) — updates
 - [T-a-newer-write-wins](TRAPS.md#t-a-newer-write-wins) — notice-keep, serve-data, updates
 - [T-a-notice-is-heard-never-ordered](TRAPS.md#t-a-notice-is-heard-never-ordered) — updates
 - [T-a-persistent-chip-reports-on-every-change](TRAPS.md#t-a-persistent-chip-reports-on-every-change) — persist-view

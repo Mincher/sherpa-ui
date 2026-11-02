@@ -7,6 +7,7 @@
  *
  * Map:
  * - onUpdate — Hear each notice; the function it returns stops hearing.
+ * - watchForUpdates — Ask the browser now and then for the app's new worker; the function it returns stops asking.
  * - noticeSeen — The reader has seen a kept notice: the worker forgets it.
  */
 import { NOTICE_CHANNEL, type NoticeAsk, type UpdateNotice } from '../data/notices.js';
@@ -40,6 +41,29 @@ export function onUpdate(listener: (notice: UpdateNotice) => void): () => void {
   return () => {
     stop.abort();
     channel.close();
+  };
+}
+
+/** Ask the browser now and then for the app's new worker — every few minutes, and
+ *  when the tab is shown again or back online — or it looks only when a page loads,
+ *  or once a day. A new one takes the page over, and `onUpdate` hears that. The app's
+ *  server must change its worker script with each build. Will, plan 652
+ *  TRAP T-a-new-build-is-a-new-worker */
+export function watchForUpdates(options: { every?: number } = {}): () => void {
+  const workers = navigator.serviceWorker;
+  if (!workers) return () => undefined;
+  const check = (): void => {
+    void workers.getRegistration().then((registration) => registration?.update()).catch(() => undefined);
+  };
+  const stop = new AbortController();
+  const timer = setInterval(check, options.every ?? 300_000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') check();
+  }, { signal: stop.signal });
+  window.addEventListener('online', check, { signal: stop.signal });
+  return () => {
+    clearInterval(timer);
+    stop.abort();
   };
 }
 

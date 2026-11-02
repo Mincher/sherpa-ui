@@ -14984,6 +14984,30 @@ after its banner is dismissed and reloads when picked (Will, D5).
 - Site: `src/core/browser/updates.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
+### T-a-new-build-is-a-new-worker
+
+**An open page hears a new build only when a NEW worker takes it over** (Will, plan
+652). Its banner and Notifications item come from `controllerchange` — never the
+first, which is no news. But the browser looks for a new worker only when a page
+loads, or about once a day, and only finds one when the worker SCRIPT's bytes
+changed: a build that changes the app's files alone changes nothing there.
+
+So two halves. **The page asks** — `watchForUpdates()`: `registration.update()`
+every few minutes (default 5), when the tab is shown again, and back online. **The
+app's server stamps the worker script with each build**, so a new build is new
+bytes: Demos serves `/sw.js` with `// build <newest file time>` on its first line.
+The new worker skips waiting and claims its pages (`keepAppFiles`, fresh), so the
+open page hears it at once, with no reload. Measured 2026-11-02 in all three
+engines: a deploy, the tab shown again, and the banner and the item show.
+
+**A test's deploy reaches its own browser alone:** each Demos browser registers
+`/sw.js?client=<its id>`, and `POST /debug/build?client=<id>` stamps that one. A
+server-wide stamp replaced every parallel test's worker mid-test, and lost its
+held set. Not a cookie: Chromium sends none with a worker script's request
+(measured).
+
+- Site: `src/core/browser/updates.ts`
+
 ### T-a-server-change-waits
 
 **Newer rows the source gives behind the ones shown WAIT, so no page moves under

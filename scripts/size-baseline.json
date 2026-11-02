@@ -87,7 +87,7 @@
   "src/core/browser/saved-filters.ts": 106,
   "src/core/browser/session.ts": 293,
   "src/core/browser/share-feed.ts": 41,
-  "src/core/browser/updates.ts": 51,
+  "src/core/browser/updates.ts": 75,
   "src/core/browser/view-drafts.ts": 80,
   "src/core/browser/view-files.ts": 35,
   "src/core/browser/view-markup.ts": 148,
