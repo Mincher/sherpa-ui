@@ -149,7 +149,7 @@ export class FieldCatalogue {
    *  it has no values at all. TRAP T-the-field-type-decides-the-clause */
   facts(field: string, label?: string): Omit<FieldFacts, 'field'> {
     const facts = this.#fields.get(field) ?? {};
-    const values = this.#bandNames(field) ?? this.#domains.get(field);
+    const values = this.#domains.get(field);
     const named = label ?? facts.label;
     // A tiered field's children: each path's parent and its own name. TODO 369
     const paths = this.#paths(field);
@@ -167,7 +167,6 @@ export class FieldCatalogue {
       ...(facts.type ? { type: facts.type } : {}),
       ...(facts.time ? { time: true } : {}),
       ...(facts.range ? { range: true } : {}),
-      ...(facts.thresholds ? { thresholds: facts.thresholds } : {}),
       ...(named ? { label: named } : {}),
     };
   }
@@ -180,14 +179,6 @@ export class FieldCatalogue {
   /** A field's filter, as any bar or panel draws it. */
   filterDef(field: string): FieldFilter {
     const { type, label, labels, ...rest } = this.#fields.get(field) ?? {};
-    // A banded number is a LIST of its bands, each in its status; Advanced asks the number questions. Will, TODO 477
-    const bands = this.#bands(field);
-    if (bands) {
-      return {
-        id: field, label: label ?? field, ...rest,
-        options: bands.map((b) => ({ value: b.label, label: b.label, ...(b.status ? { swatch: b.status } : {}) })),
-      };
-    }
     const body = type === 'number' || type === 'date' ? type : undefined;
     const many = this.unlisted(field);
     const values = body || many || rest.advanced === 'only' ? [] : this.valuesFor(field).map(valueKey);
@@ -218,20 +209,9 @@ export class FieldCatalogue {
     };
   }
 
-  /** A copy of a field's declared values — a banded number's are its bands' names. */
+  /** A copy of a field's declared values. */
   valuesFor(field: string): unknown[] {
-    return [...(this.#bandNames(field) ?? this.#domains.get(field) ?? [])];
-  }
-
-  /** A NUMBER's bands, where it declares them: its values. TRAP T-a-band-is-a-value-of-its-field */
-  #bands(field: string): readonly Threshold[] | undefined {
-    const facts = this.#fields.get(field);
-    return facts?.type === 'number' && facts.thresholds?.length ? facts.thresholds : undefined;
-  }
-
-  /** A banded number's values: its bands' names, in order. */
-  #bandNames(field: string): string[] | undefined {
-    return this.#bands(field)?.map((b) => b.label);
+    return [...(this.#domains.get(field) ?? [])];
   }
 
   /** A field's declared values, by their string key — a tiered field's paths too. */
@@ -245,7 +225,6 @@ export class FieldCatalogue {
   /** A field whose values are a list a control offers one by one. */
   isList(field: string): boolean {
     const facts = this.#fields.get(field) ?? {};
-    if (this.#bands(field)) return true;
     return this.#domains.has(field) && facts.type !== 'number' && facts.type !== 'date'
       && facts.advanced !== 'only' && !this.unlisted(field);
   }
@@ -253,11 +232,11 @@ export class FieldCatalogue {
   /** A number's zones, from the status field whose values are ranges of it — each
    *  value one of its conditions alone on the number (`lt`/`lte`), the last none —
    *  and that field's name: a gauge draws them, and its legend picks that field.
-   *  A number that declares `thresholds` keeps its own. Will, plan 683 S3
+   *  Will, plan 683 S3
    *  TRAP T-a-status-is-worked-out-by-the-data */
-  zonesOf(field: string): { from: string; thresholds: Threshold[] } | undefined {
+  zonesOf(field: string): { from: string; zones: Threshold[] } | undefined {
     const facts = this.#fields.get(field);
-    if (facts?.type !== 'number' || facts.thresholds?.length) return undefined;
+    if (facts?.type !== 'number') return undefined;
     const top = (branch: Readonly<Record<string, unknown>>): number | undefined => {
       if (Object.keys(branch).length !== 1) return undefined;
       const said = Object.entries((branch[field] ?? {}) as Record<string, unknown>);
@@ -274,7 +253,7 @@ export class FieldCatalogue {
         if (to === undefined || (zones.length && to <= zones.at(-1)!.to)) break;
         zones.push({ to, label: value, ...(status.statuses[value] ? { status: status.statuses[value] } : {}) });
       }
-      if (values.length && zones.length === values.length) return { from, thresholds: zones };
+      if (values.length && zones.length === values.length) return { from, zones };
     }
     return undefined;
   }

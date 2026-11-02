@@ -21,14 +21,7 @@
       "seats": { "label": "Seats", "type": "number", "advanced": true },
       "spend": { "label": "Spend", "type": "number", "advanced": true },
       "openTickets": { "label": "Tickets", "type": "number", "advanced": true },
-      "health": {
-        "label": "Health", "type": "number", "advanced": true,
-        "thresholds": [
-          { "to": 60, "label": "At risk", "status": "critical" },
-          { "to": 80, "label": "Watch", "status": "warning" },
-          { "to": 100, "label": "Healthy", "status": "success" }
-        ]
-      },
+      "health": { "label": "Health", "select": "multiple", "advanced": true },
       "created": { "label": "Date", "type": "date", "icon": "calendar" },
       "lastSeen": { "label": "Last seen", "type": "date" }
     },
@@ -43,7 +36,7 @@
   },
   "savedFilters": {
     "has-tickets": { "label": "Has open tickets", "query": { "v": 1, "scopes": { "data": { "where": { "openTickets": { "gt": 0 } } } } } },
-    "at-risk": { "label": "At risk", "query": { "v": 1, "scopes": { "data": { "where": { "health": { "band": "At risk" } } } } } },
+    "at-risk": { "label": "At risk", "query": { "v": 1, "scopes": { "data": { "where": { "health": { "in": ["At risk"] } } } } } },
     "unassigned": { "label": "Unassigned", "query": { "v": 1, "scopes": { "data": { "where": { "owner": { "eq": "Unassigned" } } } } } }
   },
   "ui": {

@@ -62,9 +62,9 @@ export interface DataAsk {
   /** The fields it reads from a row; none, and it reads every field.
    *  TRAP T-a-held-set-reads-the-pages-fields */
   fields?: (el: Element) => readonly string[] | undefined;
-  /** It draws its field's BANDS — a gauge's zones — so they come with its value.
-   *  TRAP T-a-threshold-is-a-fact-of-the-field */
-  thresholds?: boolean;
+  /** It draws its field's ZONES — a gauge's, from a status field — so they come
+   *  with its value. TRAP T-a-status-is-worked-out-by-the-data */
+  zones?: boolean;
   /** It STACKS each segment by a Secondary — a bar chart: `data-stack-field`, or
    *  its slot's secondary. Will, TODO 548 */
   stacks?: boolean;

@@ -11,17 +11,21 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, bindSource, openSource } from '../../dist/data.js';
+import { ArrayStore, bindSource, openSource, statusFields } from '../../dist/data.js';
 import { filterWithout } from '../../dist/core/data/store.js';
 
-const HEALTH = [
-  { to: 60, label: 'At risk', status: 'critical' },
-  { to: 80, label: 'Watch', status: 'warning' },
-  { to: 100, label: 'Healthy', status: 'success' },
-];
+/** Health, worked out from the score: the gauge's zones (plan 683). */
+const HEALTH = {
+  type: 'status',
+  values: [
+    { value: 'At risk', status: 'critical', when: [{ score: { lt: 60 } }] },
+    { value: 'Watch', status: 'warning', when: [{ score: { lt: 80 } }] },
+    { value: 'Healthy', status: 'success' },
+  ],
+};
 const ROWS = [
-  { id: 1, health: 50, region: 'EMEA' }, { id: 2, health: 70, region: 'EMEA' },
-  { id: 3, health: 90, region: 'EMEA' }, { id: 4, health: 95, region: 'APAC' },
+  { id: 1, score: 50, region: 'EMEA' }, { id: 2, score: 70, region: 'EMEA' },
+  { id: 3, score: 90, region: 'EMEA' }, { id: 4, score: 95, region: 'APAC' },
 ];
 const settle = () => new Promise((res) => setTimeout(res, 20));
 
@@ -39,9 +43,9 @@ test('a filter less a field: an and drops its parts on it; an or goes only when 
 test('a chart free of its field is narrowed by the View\'s other filters, never by its own; its picks are told', async () => {
   const source = await openSource({
     store: 'rows',
-    fields: { health: { label: 'Health', type: 'number', thresholds: HEALTH }, region: { label: 'Region', start: 'all' } },
+    fields: { health: { label: 'Health', select: 'multiple' }, region: { label: 'Region', start: 'all' } },
     scopes: { view: { label: 'View', holds: ['region', 'health'] } },
-  }, new ArrayStore(ROWS, { key: 'id' }));
+  }, statusFields(new ArrayStore(ROWS, { key: 'id' }), { health: HEALTH }));
   const seen = [];
   const gauge = { populate(d) { seen.push(d.map((r) => r.id)); }, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {} };
   const grid = { populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {} };

@@ -16,7 +16,6 @@ import {
 } from './filter-state.js';
 import { DEFAULT_OP, OP_TAKES, picksClause, type Duration, type Filter, type FilterOp } from './store.js';
 import { report } from './report.js';
-import { bandCondition } from './threshold.js';
 
 /** One field's condition, as a definition or a View writes it. Several ops
  *  all hold; `and` and `or` take a list. */
@@ -27,9 +26,6 @@ export type Condition = { [op in FilterOp]?: unknown } & {
   unit?: Duration['unit'];
   /** Kept, not applied: off is not gone. */
   off?: boolean;
-  /** One of the field's bands, by name: `{ health: { band: 'At risk' } }`.
-   *  TRAP T-a-threshold-is-a-fact-of-the-field */
-  band?: string;
   /** Every value, on purpose — Select all on: `{ region: { all: true } }`. TRAP T-all-is-an-answer */
   all?: boolean;
 };
@@ -48,9 +44,7 @@ export function whereOf(readings: Readonly<Record<string, FieldReading>>, facts?
     const state = fieldState({ field, ...facts?.(field) }, { ...reading, suspended: false });
     /* …but a TIERED field's is two fields, which a condition cannot say: it is
        written as its pick list, which reads back as itself. TODO 369 */
-    /* …and a BANDED number's picks are its bands' names, which read back as
-       picks. Will, TODO 477 · TRAP T-a-band-is-a-value-of-its-field */
-    const listed = (state.child || state.bands) && state.mode === 'simple' && state.rows[0]?.picked
+    const listed = state.child && state.mode === 'simple' && state.rows[0]?.picked
       ? conditionOf(picksClause(field, state.rows[0].picked, state.op === 'ne' ? 'ne' : 'eq')!) : undefined;
     // ALL filters nothing, so it says nothing: a start puts it back. TRAP T-all-is-an-answer
     const clause = listed ? undefined : stateClause(state);
@@ -73,23 +67,8 @@ export function readingsOf(
 }
 
 function readingOf(field: string, given: Condition, facts?: Omit<FieldFacts, 'field'>): FieldReading | undefined {
-  const { off, band, all, ...rest } = given;
+  const { off, all, ...condition } = given;
   if (all) return { picked: [], all: true, ...(off ? { suspended: true } : {}) };
-  // A band NAMES its ends; the field's thresholds say them. TRAP T-a-threshold-is-a-fact-of-the-field
-  const named = band == null ? {} : bandCondition(facts?.thresholds ?? [], band);
-  // A banded NUMBER's band is one of its values: a pick. Will, TODO 477
-  if (named && band != null && facts?.type === 'number' && !Object.keys(rest).length) {
-    return { picked: [band], ...(off ? { suspended: true } : {}) };
-  }
-  if (!named) {
-    report({
-      code: 'unknown-band',
-      message: `where: "${field}" has no band called "${band}", so it filters nothing. Declare it in the field's thresholds.`,
-      at: { field, band: String(band) },
-    });
-    return undefined;
-  }
-  const condition = { ...rest, ...named };
   // `in: []` is nothing picked: it filters nothing. Will, TODO 550
   if (Array.isArray(condition.in) && !condition.in.length && Object.keys(condition).length === 1) {
     return { picked: [], ...(off ? { suspended: true } : {}) };

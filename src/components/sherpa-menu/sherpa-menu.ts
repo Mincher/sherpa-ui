@@ -25,7 +25,6 @@ import {
 import { sameAnswer } from '../../core/data/query.js';
 import { NON_VALUE_ROWS, RULED_OUT, SET_ASIDE, onByPreset } from '../../core/ui/shared-constants.js';
 import { hiddenRows } from '../../core/ui/tree-rows.js';
-import type { Threshold } from '../../core/data/threshold.js';
 import { TreePicks } from '../../core/ui/tree-picks.js';
 import { renderIcon } from '../../core/ui/render-icon.js';
 import { paintSwatch } from '../../core/ui/chart-parts.js';
@@ -61,7 +60,7 @@ export interface MenuItem {
   note?: string;
   /** A word after its label, in this row only — a chart chip's "(Default)". Will, TODO 684 */
   suffix?: string;
-  /** The data-viz series a chart draws it in, from 1, or a band's status: a value chip's swatch. TODOs 425, 477 */
+  /** The data-viz series a chart draws it in, from 1, or a status value's status: a value chip's swatch. TODO 425, plan 683 */
   swatch?: number | string;
   /** The section it is in. A heading is drawn where the section changes.
    *  TRAP T-saved-filters-are-the-last-section */
@@ -418,7 +417,7 @@ export class SherpaMenu extends SherpaElement {
     if (!this.#mirror && this.conditions.some(rowAnswered)) return;
     // A number or a date carries its BODY over. TRAP T-a-number-has-advanced-rows
     const body = this.#dated() ? 'date' : this.#numeric() ? 'number' : undefined;
-    const rows = rowsFromPicks(body, body ? this.#bodyReading() : { picked: this.values }, this.bands);
+    const rows = rowsFromPicks(body, body ? this.#bodyReading() : { picked: this.values });
     if (rows) this.conditions = rows;
     if (!body) this.#mirror = true;
   }
@@ -426,10 +425,6 @@ export class SherpaMenu extends SherpaElement {
   /** The rows still copy the picks — until the reader edits a row.
    *  TRAP T-both-answers-are-kept */
   #mirror = false;
-
-  /** bands — a banded number's: its values name them, and a pick carries into
-   *  the rows as its ends. TRAP T-a-band-is-a-value-of-its-field */
-  bands: readonly Threshold[] | undefined;
 
   /** listed — the values its Equals rows list where it has no value rows of its
    *  own: a number's, from its field. Will, TODO 668 */

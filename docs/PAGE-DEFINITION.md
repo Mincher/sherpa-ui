@@ -112,12 +112,13 @@ One JSON document per page. The same rule as a View: **a definition is data**
   holds, at the field's home — so their chips show them; off takes them out; it
   reads on while all its conditions are still there. The panel heads them
   "Presets"; none moves scope (`T-a-preset-is-its-own-part`).
-- **A number field's `thresholds`** are its bands, declared once:
-  `"health": { "type": "number", "thresholds": [{ "to": 60, "label": "At risk", "status": "critical" }, …] }`.
-  A gauge over the field draws them, a bar chart is cut at them, and a saved
-  filter names one: `{ "health": { "band": "At risk" } }`
-  (`T-a-threshold-is-a-fact-of-the-field`). They are the field's VALUES: its
-  filter picks them, and a gauge's legend does too (`T-a-band-is-a-value-of-its-field`).
+- **A status field** — Health: At risk, Watch, Healthy — is defined with the
+  STORE, not here: `statusFields(store, { health: { type: 'status', values: […] } })`,
+  each value named by conditions on the row's other fields. The page declares it as a
+  list (`"health": { "label": "Health", "select": "multiple" }`); its values and their
+  looks come from the store, a filter names one as any value (`{ "health": { "in":
+  ["At risk"] } }`), and a gauge over a number it ranges over draws its zones
+  (`T-a-status-is-worked-out-by-the-data`).
 - **`applyOn: "input"`** makes the source's filters apply LIVE: a number does
   not wait for Apply, and a value reports while it moves. The source loads
   `debounce` ms (default 300) after the last move. The default, `"change"`,

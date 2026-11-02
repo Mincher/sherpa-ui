@@ -1,7 +1,6 @@
 /**
  * A PICK THAT MATCHES ROWS IS NEVER RULED OUT — TODO 518 (D2). The walk ruled a
- * pick out by its tally of keys, which holds a banded field's band names only and
- * no blank, so a number picked on a banded field, or a blank, read as "no
+ * pick out by its tally of keys, which holds no blank, so a blank read as "no
  * matches" — and 512 then let it go. A pick is ruled out only when its own
  * clause, the filter's own test, matches no row that reaches it.
  *
@@ -31,11 +30,6 @@ async function picked(declare, picks) {
   await settle();
   return { picked: source.query.reading(VIEW, 'score')?.picked, total: source.total };
 }
-
-test('a number picked beside a band keeps its rows', async () => {
-  const r = await picked((s) => s.declareField('score', { type: 'number', thresholds: [{ to: 10, label: 'Low' }, { to: 100, label: 'High' }] }), ['Low', 50]);
-  assert.deepEqual(r, { picked: ['Low', 50], total: 3 });
-});
 
 test('a blank picked beside a value keeps its rows', async () => {
   const r = await picked((s) => { s.declareField('score', {}); s.declareValues('score', [null, 5, 7, 50, 90]); }, [null, 5]);

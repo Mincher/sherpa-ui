@@ -1037,7 +1037,7 @@ export class SherpaDataGrid extends SherpaElement {
    *  tiered field, each child pick's parent and name too. TODOs 369, 523 F7 */
   #facts(field: string): FieldFacts {
     const type = this.#columns.find((c) => c.field === field)?.type;
-    const { label, time, range, thresholds, labels, child, options } = this.#givenFilters[field] ?? {};
+    const { label, time, range, labels, child, options } = this.#givenFilters[field] ?? {};
     const kids = child ? (options ?? []).filter((o) => o.parent) : [];
     const named = { ...labels, ...Object.fromEntries(kids.map((o) => [o.value, o.label])) };
     return {
@@ -1046,7 +1046,6 @@ export class SherpaDataGrid extends SherpaElement {
       ...(Object.keys(named).length ? { labels: named } : {}),
       ...(time ? { time: true } : {}),
       ...(range ? { range: true } : {}),
-      ...(thresholds ? { thresholds } : {}),
       ...(label ? { label } : {}),
     };
   }

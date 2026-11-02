@@ -198,30 +198,3 @@ test('Equals offers the field\'s values on the bar; a field with none types it',
   expect(r.onBar.owner.list).toEqual(['', 'Dana', 'Ravi']);
   expect(r.onBar.name.list).toBe('typed');
 });
-
-/* A BANDED number's picks are its bands; to Advanced, each carries over as its
-   ends, and its rows ask the number questions. Will, TODO 477 · TRAP T-a-band-is-a-value-of-its-field */
-test('a band picked carries into the Advanced rows as its ends', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const { menuFor } = await import('/dist/core/ui/filter-menu.js');
-    const host = (await (async () => { const g = document.createElement('sherpa-data-grid') as HTMLElement & { rendered: Promise<void> }; document.body.append(g); await g.rendered; return g.shadowRoot!; })());
-    const settle = async () => { await window.__settled(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); };
-    const thresholds = [{ to: 60, label: 'At risk', status: 'critical' }, { to: 80, label: 'Watch', status: 'warning' }, { to: 100, label: 'Healthy', status: 'success' }];
-    const { menu, items } = menuFor(host, {
-      id: 'health', label: 'Health', select: 'multiple', advanced: true, thresholds,
-      options: thresholds.map((t) => ({ value: t.label, label: t.label, swatch: t.status })),
-    } as never);
-    document.getElementById('root')!.replaceChildren(menu);
-    const m = menu as HTMLElement & { rendered: Promise<void>; values: string[]; conditions: unknown[]; items?(i: unknown): void; switchMode(n: string): void };
-    await m.rendered;
-    m.items?.(items);
-    await settle();
-    m.values = ['At risk', 'Healthy'];
-    // The reader's door: the menu's own Advanced button.
-    m.switchMode('advanced');
-    await settle();
-    return { ops: m.dataset['conditions'], rows: m.conditions };
-  });
-  expect(r.ops).toBe('eq,ne,gt,gte,lt,lte,between,notbetween');
-  expect(r.rows).toEqual([{ op: 'lt', text: '60' }, { op: 'gte', text: '80', join: 'or' }]);
-});

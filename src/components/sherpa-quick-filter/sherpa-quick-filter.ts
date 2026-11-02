@@ -432,7 +432,7 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** The presets on whose rows touch a value, by name; none, ''. Will, TODOs 521, 590 */
   #heldBy = (value: string): string => this.#presets
-    .filter((p) => presetTouches(p.rows, value, this.#fieldMenu()?.bands)).map((p) => p.label).join(', ');
+    .filter((p) => presetTouches(p.rows, value)).map((p) => p.label).join(', ');
 
   /** What the presets on hold, in words: their picks, or their conditions. */
   #presetSaid(): string {

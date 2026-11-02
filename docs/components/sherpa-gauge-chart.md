@@ -35,7 +35,7 @@ For one value on a scale (0–100 by default), read by a needle, with optional t
 | `data-bucket` | `day` `month` `year` |  |  |
 | `data-caption` | text |  | caption text shown below the arc (e.g. "30GB of 60GB used") |
 | `data-field` | text |  | the number that aggregate reads |
-| `data-invert` | boolean |  | it reads its value from the TOP — max − value, as risk is 100 − health — and turns its field's thresholds round. TRAP T-a-threshold-is-a-fact-of-the-field |
+| `data-invert` | boolean |  | it reads its value from the TOP — max − value, as risk is 100 − score — and turns its field's zones round. |
 | `data-label` | text |  | the MIDPOINT tick above the arc. Defaults to the middle of the |
 | `data-no-legend` | boolean |  |  |
 | `data-over-field` | text |  |  |
@@ -43,7 +43,7 @@ For one value on a scale (0–100 by default), read by a needle, with optional t
 | `data-status` | `critical` `warning` `success` `info` |  | critical \| warning \| success \| info (single-colour fill) |
 | `data-unit` | text |  | suffix for all three scale ticks, e.g. "%" → 0% / 50% / 100% |
 | `data-where` | text |  |  |
-| `data-zones` | text |  | threshold bands — "0-50:success,50-80:warning,80-100:critical" (compact) OR a JSON array [{to,color}\|{from,to,color}]. Colours are status names (success\|warning\|urgent\|critical\|info) or any CSS colour. Left out, its provider draws its field's thresholds (TODO 150); with none, the single-colour sweep. TRAP T-a-threshold-is-a-fact-of-the-field A band may be NAMED — "0-50:success:Low", or `label` in the JSON — and the name is its tooltip's and its legend row's. |
+| `data-zones` | text |  | threshold bands — "0-50:success,50-80:warning,80-100:critical" (compact) OR a JSON array [{to,color}\|{from,to,color}]. Colours are status names (success\|warning\|urgent\|critical\|info) or any CSS colour. Left out, its provider draws its field's zones, from a status field (plan 683); with none, the single-colour sweep. TRAP T-a-status-is-worked-out-by-the-data A band may be NAMED — "0-50:success:Low", or `label` in the JSON — and the name is its tooltip's and its legend row's. |
 | `max` | number, native |  | scale bounds shown beneath (default 0 / 100) |
 | `min` | number, native |  | scale bounds shown beneath (default 0 / 100) |
 | `value` | number, native |  | number on the scale (drives the fill sweep + needle angle) |
@@ -97,4 +97,4 @@ What each class's base rule reads:
 
 `number \| { value, zones?, picked? }`
 
-set the value. `zones` are its field's thresholds, drawn where `data-zones` says none; `picked`, the zones its field's filter keeps — the rest fade, and the needle stays.
+set the value. `zones` are its field's, from a status field, drawn where `data-zones` says none; `picked`, the zones that field's filter keeps — the rest fade, and the needle stays.

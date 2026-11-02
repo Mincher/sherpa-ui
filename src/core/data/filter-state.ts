@@ -33,7 +33,7 @@
  * - rowsFromPicks — Simple's answer as Advanced's rows, for a mode switch to carry over
  * - asRows — A reading as condition rows — the answer it puts in force.
  * - withPreset — A reading with one preset's rows on it, or, with none, off it.
- * - presetTouches — Do a preset's rows touch this value of a field: a list value they keep, or a band they overlap?
+ * - presetTouches — Do a preset's rows touch this value of a field: a list value they keep?
  * - fieldState — work out one field's whole state — the only place that decides it
  * - stateClause — One field's state as a ready `FilterClause`, or `undefined`.
  * - readingClause — a reading as a clause, for a control holding its own field facts
@@ -45,7 +45,6 @@ import {
   picksClause, valueSet, valueKey,
   type Duration, type Filter, type FilterClause, type FilterOp,
 } from './store.js';
-import { bandCondition, type Threshold } from './threshold.js';
 
 /** What a field's selection is doing. */
 export type FieldState =
@@ -108,8 +107,6 @@ export interface FilterState {
   range: boolean;
   /** A TIERED field's child field: a pick may be a path over both. TODO 369 */
   child?: string;
-  /** A banded NUMBER's bands: a pick that names one is its range. Will, TODO 477 */
-  bands?: readonly Threshold[];
   /** EVERY value the field has — never only the reachable ones. */
   values: ValueEntry[];
   /**
@@ -165,8 +162,6 @@ export interface FieldFacts {
   time?: boolean;
   /** A DATE whose picks are two ENDS unless a reading says not. TRAP T-a-date-picks-days-unless-it-says-range */
   range?: boolean;
-  /** A number's bands, for a condition that names one. TRAP T-a-threshold-is-a-fact-of-the-field */
-  thresholds?: readonly Threshold[];
   /** A TIERED field's child field, and each child pick's (path's) parent, by key. TODO 369 */
   child?: string;
   parentOf?: ReadonlyMap<string, string>;
@@ -295,17 +290,8 @@ export function modeOf(reading: FieldReading, rows: readonly FieldCondition[] = 
 /** Simple's answer as Advanced's rows, for a mode switch to carry over; undefined
  *  when a body has nothing to carry. TRAP T-a-mode-switch-carries-the-answer-over */
 export function rowsFromPicks(
-  body: 'number' | 'date' | undefined, simple: FieldReading, bands?: readonly Threshold[],
+  body: 'number' | 'date' | undefined, simple: FieldReading,
 ): FieldCondition[] | undefined {
-  /* A band is its two ends. Ascending, so left to right they read as the bands:
-     `gte a and lt b or gte c and lt d` keeps both and nothing between. Will, TODOs 477, 594 */
-  if (bands?.length) {
-    const order = (name: unknown): number => bands.findIndex((t) => t.label === String(name));
-    const ends = [...simple.picked ?? []].sort((a, b) => order(a) - order(b)).map((name) => bandCondition(bands, String(name)) as { gte?: number; lt?: number } | undefined)
-      .filter((c) => !!c)
-      .map((c) => [...(c.gte != null ? [{ op: 'gte' as const, text: String(c.gte) }] : []), ...(c.lt != null ? [{ op: 'lt' as const, text: String(c.lt) }] : [])]);
-    return ends.flatMap((band, i) => band.map((row, j): FieldCondition => (i || j ? { ...row, join: j ? 'and' : 'or' } : row)));
-  }
   const [a, b] = (simple.picked ?? []).map(String);
   // A date: one day is On it, two are Between them. TODO 21d
   if (body === 'date') {
@@ -345,24 +331,10 @@ export function withPreset(reading: FieldReading | undefined, id: string, preset
   return { ...base, ...(suspended && !preset ? { suspended } : {}), ...(Object.keys(byPreset).length ? { byPreset } : {}) };
 }
 
-/** Do a preset's rows touch this value of a field: a list value they keep, or a
- *  band they overlap? Will, TODO 590 · TRAP T-a-preset-is-its-own-part */
-export function presetTouches(rows: readonly FieldCondition[], value: string, bands?: readonly Threshold[]): boolean {
-  const band = bands?.length ? bandCondition(bands, value) as { gte?: number; lt?: number } | undefined : undefined;
-  if (!band) return matchesFilter({ value }, stateClause(fieldState({ field: 'value' }, { conditions: rows, mode: 'advanced' })));
-  const low = band.gte ?? -Infinity;
-  const high = band.lt ?? Infinity;
-  return rows.every((row) => {
-    const [a = NaN, b = NaN] = (row.picked?.length ? row.picked : [row.text]).map(Number);
-    switch (row.op) {
-      case 'lt': return low < a;
-      case 'lte': return low <= a;
-      case 'gt': case 'gte': return high > a;
-      case 'eq': return a >= low && a < high;
-      case 'between': return low <= b && high > a;
-      default: return true;
-    }
-  });
+/** Do a preset's rows touch this value of a field: a list value they keep?
+ *  Will, TODO 590 · TRAP T-a-preset-is-its-own-part */
+export function presetTouches(rows: readonly FieldCondition[], value: string): boolean {
+  return matchesFilter({ value }, stateClause(fieldState({ field: 'value' }, { conditions: rows, mode: 'advanced' })));
 }
 
 /**
@@ -471,7 +443,6 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
     mode,
     range,
     ...(parentOf && facts.child ? { child: facts.child } : {}),
-    ...(type === 'number' && facts.thresholds?.length ? { bands: facts.thresholds } : {}),
     values,
     condition: !rows.length ? null : advanced ? 'advanced' : 'simple',
     rows,
@@ -568,7 +539,6 @@ function rowClause(state: FilterState, row: FieldCondition): Filter | undefined 
   if (takes === 'range') return rangeClause(state.field, state.type, picked, row.op);
   // A tiered field's picks: parents, and paths over both fields. TODO 369
   if (state.child) return tierClause(state.field, state.child, picked, ROW_OPS[row.op] ?? row.op);
-  if (state.bands) return bandsClause(state.field, state.bands, picked, row.op === 'ne' || row.op === 'notin');
   /* A row's `in` / `notin` is its `eq` / `ne` over several picks: as given, `notin`
      with two picks compiled to `in`, and with one matched every row. TODO 386 */
   return picksClause(state.field, cast(picked, state.type), ROW_OPS[row.op] ?? row.op);
@@ -601,28 +571,6 @@ function tierClause(field: string, child: string, picked: readonly unknown[], op
   }
   if (parts.length < 2) return parts[0];
   return [not ? 'and' : 'or', ...parts];
-}
-
-/**
- * A banded number's picks: each band NAMED is its range, several either — or,
- * `not`, the bands NOT named. A pick that names no band is a number, as given.
- * Will, TODO 477. TRAP T-a-band-is-a-value-of-its-field
- */
-function bandsClause(field: string, bands: readonly Threshold[], picked: readonly unknown[], not: boolean): Filter | undefined {
-  const named = new Set(picked.map(String).filter((p) => bands.some((b) => b.label === p)));
-  const numbers = picked.filter((p) => !named.has(String(p)));
-  const take = bands.filter((b) => named.has(b.label) !== not);
-  const parts = take.flatMap((b) => {
-    const { gte, lt } = bandCondition(bands, b.label) as { gte?: number; lt?: number };
-    const ends: FilterClause[] = [...(gte != null ? [[field, 'gte', gte] as FilterClause] : []), ...(lt != null ? [[field, 'lt', lt] as FilterClause] : [])];
-    return ends.length > 1 ? [['and', ...ends] as Filter] : ends;
-  });
-  const listed = picksClause(field, cast(numbers, 'number'), not ? 'ne' : 'eq');
-  if (!named.size) return listed;
-  // Every band ruled out matches no row.
-  const either = parts.length > 1 ? (['or', ...parts] as Filter) : parts[0] ?? ([field, 'in', []] as FilterClause);
-  if (!listed) return either;
-  return [not ? 'and' : 'or', either, listed];
 }
 
 /** The last moment of a day (`2026-09-03`) or a minute (`2026-09-03T14:00`);

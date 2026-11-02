@@ -267,9 +267,9 @@ test('a named zone is called the same in its tooltip and in the legend', async (
 });
 
 /* INVERTED — Will, TODO 150 (A). Risk is health read from the top: 100 − 30
-   is 70, and health's bands turn round, so "At risk" (health below 60) is
-   risk 40 to 100, on the right. TRAP T-a-threshold-is-a-fact-of-the-field */
-test('an inverted gauge reads its value from the top, and turns its field\'s bands round', async ({ page }) => {
+   is 70, and health's zones turn round, so "At risk" (health below 60) is
+   risk 40 to 100, on the right. TRAP T-a-status-is-worked-out-by-the-data */
+test('an inverted gauge reads its value from the top, and turns its zones round', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<HTMLElement & { populate(d: unknown): Promise<void> }>(
       'sherpa-gauge-chart', undefined, { 'data-invert': '', 'min': '0', 'max': '100' });

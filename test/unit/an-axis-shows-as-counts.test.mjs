@@ -45,7 +45,7 @@ test('with no other axis, or a chart that sums, an axis shown as counts shows as
 
 test('the highlight counts its own distinct values in each segment', () => {
   const axes = chartAxes('customer', 'status', 'primary');
-  const out = summariseMarked(ROWS, { shape: 'segments', ...axes }, () => [], () => ({}), (row) => row.plan === 'Pro');
+  const out = summariseMarked(ROWS, { shape: 'segments', ...axes }, () => [], () => undefined, (row) => row.plan === 'Pro');
   // Active Pro people are in Acme and Bolt; the one trial is Bolt's, on Pro.
   assert.deepEqual(out.map((s) => [s.label, s.value, s.matched]), [['active', 2, 2], ['trial', 1, 1], ['churned', 1, 0]]);
 });

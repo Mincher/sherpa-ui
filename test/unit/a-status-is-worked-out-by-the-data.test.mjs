@@ -124,10 +124,8 @@ test('a number gets its zones from the status field whose values are ranges of i
   await source.load();
   assert.deepEqual(source.zonesOf('score'), {
     from: 'health',
-    thresholds: [{ to: 60, label: 'At risk', status: 'critical' }, { to: 80, label: 'Watch', status: 'warning' }, { to: 100, label: 'Healthy', status: 'success' }],
+    zones: [{ to: 60, label: 'At risk', status: 'critical' }, { to: 80, label: 'Watch', status: 'warning' }, { to: 100, label: 'Healthy', status: 'success' }],
   });
-  // A field no status ranges over has none; one that declares its own keeps them.
+  // A field no status ranges over has none.
   assert.equal(source.zonesOf('openTickets'), undefined);
-  source.declareField('score', { type: 'number', thresholds: [{ to: 50, label: 'Low' }] });
-  assert.equal(source.zonesOf('score'), undefined);
 });

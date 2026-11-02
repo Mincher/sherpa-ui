@@ -62,20 +62,6 @@
         "min": { "type": "number" },
         "max": { "type": "number" },
         "step": { "type": "number", "exclusiveMinimum": 0 },
-        "thresholds": {
-          "description": "A number's BANDS, low to high: each one's top, name and status. A gauge's zones, a bar chart's bands and a saved filter's band all read them.",
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["to", "label"],
-            "properties": {
-              "to": { "type": "number" },
-              "label": { "type": "string" },
-              "status": { "type": "string" }
-            }
-          }
-        },
         "icon": { "type": "string" },
         "section": {
           "description": "The named section its chip sits in, where a bar heads its sections (a portrait one). Chips of one section sit together under its name; a chip with none is a section of its own, named for it.",
@@ -256,7 +242,6 @@
         "last": { "description": "A date in the last n units, from today.", "type": "number" },
         "next": { "description": "A date in the next n units, from today.", "type": "number" },
         "unit": { "enum": ["day", "week", "month", "year"] },
-        "band": { "description": "One of the field's thresholds, by name.", "type": "string" },
         "and": { "type": "array", "items": { "$ref": "#/$defs/condition" } },
         "or": { "type": "array", "items": { "$ref": "#/$defs/condition" } },
         "off": { "description": "Kept, not applied.", "type": "boolean" }

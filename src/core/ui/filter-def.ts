@@ -9,7 +9,6 @@
  */
 import type { FieldReading } from '../data/filter-state.js';
 import type { FilterOp } from '../data/store.js';
-import type { Threshold } from '../data/threshold.js';
 import type { FilterKind, OffersAdvanced } from './filter-kind.js';
 
 /** One value a filter offers: a row in a chip's menu, or one of the panel's chips. */
@@ -26,7 +25,7 @@ export interface FilterOption {
   suffix?: string;
   /** The section its menu row is in, headed where it changes. */
   section?: string;
-  /** The data-viz series a chart draws this value in, from 1, or a band's status — its chip's swatch. */
+  /** The data-viz series a chart draws this value in, from 1, or a status value's status — its chip's swatch. */
   swatch?: number | string;
   /** A tiered field's child value: its parent value's key. TODO 369 */
   parent?: string;
@@ -53,9 +52,6 @@ export interface FilterDef extends OffersAdvanced {
   icon?: string;
   /** The named SECTION it sits in, in portrait; none, a section of its own. Will, TODO 438 */
   section?: string;
-  /** A banded NUMBER's bands: its values are their names, and its Advanced
-   *  rows ask the number questions. Will, TODO 477 */
-  thresholds?: readonly Threshold[];
   /** A number filter's box clamp, and a range row's slider ends. Default 0..100. */
   min?: number;
   max?: number;

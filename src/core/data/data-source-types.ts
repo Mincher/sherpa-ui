@@ -22,7 +22,6 @@ import type { Filter, FilterOp, LoadResult, Row, SortDirection, SortSpec, Store 
 import type { FieldReading, FieldType } from './filter-state.js';
 import type { Presentation, Query } from './query.js';
 import type { QueryContext } from './query-context.js';
-import type { Threshold } from './threshold.js';
 
 /** What a field IS, said once — its kind, its name, and how a control answers
  *  it. JSON. TRAP T-a-field-is-declared-once */
@@ -47,9 +46,6 @@ export interface FieldDeclaration {
   min?: number;
   max?: number;
   step?: number;
-  /** A number's BANDS, low to high — declared once, read by a gauge's zones, a
-   *  bar chart's bands and a saved filter's `band`. TRAP T-a-threshold-is-a-fact-of-the-field */
-  thresholds?: readonly Threshold[];
   /** Its chip's glyph. TRAP T-only-five-filter-chips-carry-an-icon */
   icon?: string;
   /** The named SECTION its chip sits in, where a bar heads its sections; none,

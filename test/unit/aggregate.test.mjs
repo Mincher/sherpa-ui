@@ -219,7 +219,7 @@ test('summariseMarked says what is matched of every segment, piece and section',
   const rows = [
     { s: 'a', p: 'x', g: 'm' }, { s: 'a', p: 'y', g: 'm' }, { s: 'a', p: 'y', g: 'n' }, { s: 'b', p: 'y', g: 'n' },
   ];
-  const [a, b] = summariseMarked(rows, { shape: 'segments', segment: 's', stack: 'p', group: 'g' }, () => [], () => ({}), (r) => r.p === 'y');
+  const [a, b] = summariseMarked(rows, { shape: 'segments', segment: 's', stack: 'p', group: 'g' }, () => [], () => undefined, (r) => r.p === 'y');
   assert.equal(a.matched, 2);
   assert.equal(b.matched, 1);
   assert.deepEqual(a.stack.map((d) => [d.label, d.value, d.matched]), [['x', 1, 0], ['y', 2, 2]]);

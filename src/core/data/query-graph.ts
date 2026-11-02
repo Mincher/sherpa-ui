@@ -102,11 +102,11 @@ const MANY = new Set(['in', 'notin']);
 const ONE = new Set(['eq', 'ne']);
 
 /** The keys of a condition that say HOW it holds, not what it compares. */
-const NOT_OPS = new Set(['unit', 'off', 'band', 'all', 'and', 'or']);
+const NOT_OPS = new Set(['unit', 'off', 'all', 'and', 'or']);
 
 /** One condition's field, operator and value, as its rows show them — each editable, as
- *  a chip's are; a value the field's own values can say is PICKED, not typed. A chain,
- *  a band or All is read only. */
+ *  a chip's are; a value the field's own values can say is PICKED, not typed. A chain
+ *  or All is read only. */
 function conditionRows(
   field: string, condition: Condition, type: string | undefined,
   fields: readonly { value: string; label: string }[], values: readonly string[] | undefined,
@@ -114,10 +114,8 @@ function conditionRows(
   const list = condition.and ?? condition.or;
   const op = list ? (condition.and ? 'and' : 'or')
     : condition.all ? 'all'
-    : condition.band !== undefined ? 'band'
     : Object.keys(condition).find((key) => !NOT_OPS.has(key)) ?? '';
   const raw = list ? `${list.length} conditions`
-    : op === 'band' ? condition.band
     : op === 'last' || op === 'next' ? `${String(condition[op])} ${condition.unit ?? 'day'}`
     : condition[op as keyof Condition];
   const value = Array.isArray(raw) ? raw.join(', ') : raw !== null && typeof raw === 'object' ? JSON.stringify(raw) : raw;

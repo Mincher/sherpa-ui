@@ -1,44 +1,16 @@
 /**
- * threshold.ts — a number field's BANDS, declared once as a fact of the field
- * and read by a gauge's zones, a bar chart's bands and a saved filter's `band`.
- * DOM-free. Will, TODO 150. TRAP T-a-threshold-is-a-fact-of-the-field
+ * threshold.ts — a ZONE of a number: its top, its name, its status. A gauge
+ * draws a number's zones, made from the status field whose values are ranges of
+ * it (`zonesOf`, plan 683). DOM-free. TRAP T-a-status-is-worked-out-by-the-data
  *
  * Map:
- * - Threshold — One band, as a field declares it: its top, its name, its status.
- * - bandEdges — The edges a histogram cuts at: the field's lowest, then each band's top.
- * - bandCondition — A band as a condition: from the top below it, up to its own.
- * - bandOf — The band a value falls in, by name — as a histogram cuts it.
+ * - Threshold — One zone: its top, its name, its status.
  */
-import type { Condition } from './where.js';
 
-/** One band, as a field declares it: its TOP, its name, its status. The first
- *  runs up from the bottom of the scale; each after it, from the top below. */
+/** One zone: its TOP, its name, its status. The first runs up from the bottom of
+ *  the scale; each after it, from the top below. */
 export interface Threshold {
   to: number;
   label: string;
   status?: string;
-}
-
-/** The edges a histogram cuts at: the field's lowest, then each band's top. */
-export function bandEdges(thresholds: readonly Threshold[], min: number): number[] {
-  return [min, ...thresholds.map((t) => t.to)];
-}
-
-/** A band as a condition — half-open, as a histogram's are: the first has no
- *  floor and the last no top. `undefined` for a name no band has. */
-export function bandCondition(thresholds: readonly Threshold[], name: string): Condition | undefined {
-  const at = thresholds.findIndex((t) => t.label === name);
-  if (at < 0) return undefined;
-  const below = thresholds[at - 1];
-  const last = at === thresholds.length - 1;
-  return { ...(below ? { gte: below.to } : {}), ...(last ? {} : { lt: thresholds[at]!.to }) };
-}
-
-/** The band a value falls in, by name — half-open, as `bandCondition` reads it;
- *  undefined for no number. TRAP T-a-band-is-a-value-of-its-field */
-export function bandOf(thresholds: readonly Threshold[], value: unknown): string | undefined {
-  if (value == null || value === '') return undefined;
-  const n = Number(value);
-  if (!Number.isFinite(n)) return undefined;
-  return thresholds.find((t, i) => n < t.to || i === thresholds.length - 1)?.label;
 }

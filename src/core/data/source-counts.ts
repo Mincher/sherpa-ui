@@ -20,7 +20,6 @@ import {
 } from './query.js';
 import { emptyWalk, holdsKey, type Walk, type WalkPlan, type WalkScope, type WalkStep, type WalkTap, type WalkTier } from './walk.js';
 import type { FilterSet } from './data-source-types.js';
-import { bandOf, type Threshold } from './threshold.js';
 
 /** Each field's distinct values, as value keys, among the rows a filter matches. */
 export async function presentUnder(
@@ -138,10 +137,8 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
   for (const id of facts.components) if (!others.includes(id) && !facts.narrowing.has(id)) others.push(id);
   const base = andFilter(page);
   const ruleOf = (scope: string): 'here' | 'start' | undefined => (facts.limit ? 'here' : scope !== VIEW ? 'start' : undefined);
-  const tierOf = (ff: Omit<FieldFacts, 'field'>): { tier?: WalkTier; bands?: readonly Threshold[] } => ({
+  const tierOf = (ff: Omit<FieldFacts, 'field'>): { tier?: WalkTier } => ({
     ...(ff.child && ff.parentOf ? { tier: { child: ff.child, parentOf: ff.parentOf } } : {}),
-    // A banded number counts by band. TODO 477
-    ...(ff.type === 'number' && ff.thresholds?.length ? { bands: ff.thresholds } : {}),
   });
 
   const stepsOf = (scope: string): WalkStep[] => {
@@ -178,7 +175,7 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
         // ONE value, no list beside it; a path is its two fields; a parent not picked counts its picked children. TRAP T-everything-on-is-no-filter · TRAP T-a-parent-pick-is-the-parent
         const kids = Map.groupBy(reading.picked.filter((v) => parentOf.has(valueKey(v))), (v) => parentOf.get(valueKey(v))!);
         step.each = [...reading.picked.map((v) => [valueKey(v), [v]] as const), ...[...kids].filter(([p]) => !keys.has(p))].flatMap(([key, picked]) => {
-          const own = readingClause({ field: f, ...(type ? { type } : {}), ...step.tier, ...(step.bands ? { thresholds: step.bands } : {}) }, { picked: [...picked], range: false });
+          const own = readingClause({ field: f, ...(type ? { type } : {}), ...step.tier }, { picked: [...picked], range: false });
           return own ? [[key, own] as const] : [];
         });
         if (list) {
@@ -258,10 +255,8 @@ export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'tot
   };
   /* No pairs from a store tallied field by field: a path stands with its parent.
      TRAP T-a-path-is-judged-by-its-parent-when-stepwise */
-  const withPaths = (keys: Promise<string[]>, { tier, bands }: { tier?: WalkTier; bands?: readonly Threshold[] }): Promise<string[]> => (
-    // A banded number's numbers are its bands. TODO 477
-    bands ? keys.then((k) => [...new Set(k.flatMap((x) => bandOf(bands, x) ?? []))])
-      : !tier ? keys : keys.then((k) => {
+  const withPaths = (keys: Promise<string[]>, { tier }: { tier?: WalkTier }): Promise<string[]> => (
+    !tier ? keys : keys.then((k) => {
         const low = new Set(k.map((x) => x.toLowerCase()));
         return [...k, ...[...tier.parentOf].filter(([, p]) => low.has(p.toLowerCase())).map(([path]) => path)];
       }));

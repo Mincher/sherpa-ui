@@ -47,8 +47,8 @@ export function isStatus(name: string): name is Status {
 export interface LegendDatum extends Omit<ChartDatum, 'value'> {
   /** Preformatted is allowed here — a legend prints, it does not plot. */
   value?: string | number;
-  /** A STATUS swatch instead of a categorical one — a gauge's bands are
-   *  thresholds, not a series. Set this OR colorIndex, not both. */
+  /** A STATUS swatch instead of a categorical one — a gauge's zones are a
+   *  status field's values, not a series. Set this OR colorIndex, not both. */
   status?: Status;
 }
 

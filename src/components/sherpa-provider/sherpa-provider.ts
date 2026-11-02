@@ -32,7 +32,6 @@ import { VIEW, type Presentation } from '../../core/data/query.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import type { Failure } from '../../core/data/failure.js';
 import type { DataChangeDetail, DataSource, QueryState } from '../../core/data/data-source.js';
-import type { FieldDeclaration } from '../../core/data/data-source-types.js';
 import type { Where } from '../../core/data/where.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
 import { bindSource } from '../../core/ui/bind-source.js';
@@ -1236,11 +1235,11 @@ export class SherpaProvider extends SherpaElement {
     // Nothing declared: it is the page's to populate.
     const needs = DECLARED_BY[asks.shape];
     if (needs && !this.#inherited(el, needs)) {
-      /* …but a legend in a chart over a BANDED field — a gauge's — picks its
-         bands; the chart draws its rows. Zones from a status field pick THAT field's
-         values, as any legend does. TRAP T-a-band-is-a-value-of-its-field */
+      /* …but a legend in a chart over a ZONED number — a gauge's — picks the status
+         field its zones come from, as any legend picks its values; the chart draws
+         its rows. Plan 683 · TRAP T-a-status-is-worked-out-by-the-data */
       const field = asks.picks && !el.hasAttribute('data-readonly') ? this.#inherited(el, 'data-field') : null;
-      const picked = field ? source.zonesOf(field)?.from ?? (source.fieldFacts(field).thresholds?.length ? field : null) : null;
+      const picked = field ? source.zonesOf(field)?.from ?? null : null;
       if (picked) {
         const unpick = this.#picks(el as Picker, source, picked, asks.picks!);
         if (unpick) asked.unbind = unpick;
@@ -1276,7 +1275,7 @@ export class SherpaProvider extends SherpaElement {
     const fields = pivot ? [pivot.segment, pivot.stack] : spec ? [spec.field, spec.segment, spec.over].filter((f): f is string => !!f) : asks.fields?.(el);
     /* A chart over its field's ZONES is free of that field: its filter lights the
        zones and never moves the value. Will, TODO 479. TRAP T-a-chart-is-free-of-its-own-field */
-    const zoned = asks.thresholds && spec?.field ? source.zonesOf(spec.field)?.from ?? spec.field : undefined;
+    const zoned = asks.zones && spec?.field ? source.zonesOf(spec.field)?.from ?? spec.field : undefined;
     /* What it drew last, so a hover draws it again with no load: a summary marks its
        own part of each segment; a grid marks its own rows. Will, TODO 655 */
     let last: Row[] | null = null;
@@ -1284,13 +1283,8 @@ export class SherpaProvider extends SherpaElement {
       last = rows;
       const test = this.#lit(el, scope, src);
       this.#shown.set(el, test);
-      // A number's zones, its own or a status field's. Plan 683 S3
-      const bands = (f: string): FieldDeclaration => {
-        const facts = src.fieldFacts(f);
-        const zones = facts.thresholds ? undefined : src.zonesOf(f);
-        return zones ? { ...facts, thresholds: zones.thresholds } : facts;
-      };
-      const summary = summariseMarked(rows, spec, (f) => src.valuesFor(f), bands, test);
+      // A number's zones, from a status field. Plan 683 S3
+      const summary = summariseMarked(rows, spec, (f) => src.valuesFor(f), (f) => src.zonesOf(f)?.zones, test);
       return zoned && summary && typeof summary === 'object' && 'zones' in summary
         ? { ...summary, picked: src.pickedFor(el as Populatable, zoned) } : summary;
     } : undefined;
@@ -1464,8 +1458,8 @@ export class SherpaProvider extends SherpaElement {
     // "0,20,40" — a histogram's edges, as numbers.
     if (typeof spec['bands'] === 'string') spec['bands'] = spec['bands'].split(',').map(Number);
     if (asks.keepEmpty) spec['keepEmpty'] = true;
-    // Its field's bands come with its value. TRAP T-a-threshold-is-a-fact-of-the-field
-    if (asks.thresholds) spec['zones'] = true;
+    // Its field's zones come with its value. TRAP T-a-status-is-worked-out-by-the-data
+    if (asks.zones) spec['zones'] = true;
     /* Its SLOT's presentation, as the Query keeps it, over its own attributes: the
        primary its first split (a bar or slice a value), the secondary a bar
        chart's stack, the group the sections in each, and its order. An axis shown

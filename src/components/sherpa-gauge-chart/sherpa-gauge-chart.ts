@@ -44,7 +44,7 @@ export class SherpaGaugeChart extends SherpaElement {
     new URL('./sherpa-gauge-chart.css', import.meta.url),
   ];
   static override html = new URL('./sherpa-gauge-chart.html', import.meta.url);
-  static override asks: DataAsk = { shape: 'aggregate', thresholds: true };
+  static override asks: DataAsk = { shape: 'aggregate', zones: true };
 
   // A host's aria-label names the chart. TRAP T-a-host-label-must-reach-its-control
   static override labelTarget = '.gauge';
@@ -78,9 +78,9 @@ export class SherpaGaugeChart extends SherpaElement {
   }
 
   /** populate(number | { value, zones?, picked? }) — set the value. `zones` are
-   *  its field's thresholds, drawn where `data-zones` says none; `picked`, the
-   *  zones its field's filter keeps — the rest fade, and the needle stays.
-   *  TRAP T-a-threshold-is-a-fact-of-the-field · TRAP T-a-chart-is-free-of-its-own-field */
+   *  its field's, from a status field, drawn where `data-zones` says none; `picked`,
+   *  the zones that field's filter keeps — the rest fade, and the needle stays.
+   *  TRAP T-a-status-is-worked-out-by-the-data · TRAP T-a-chart-is-free-of-its-own-field */
   protected override renderData(data: unknown): void {
     const given = data as { value?: unknown; zones?: readonly Threshold[]; matched?: unknown; picked?: unknown } | null;
     const value = typeof data === 'number' ? data : given?.value;
@@ -92,7 +92,7 @@ export class SherpaGaugeChart extends SherpaElement {
     this.#sync();
   }
 
-  /** Its field's thresholds, as its provider handed them. */
+  /** Its field's zones, as its provider handed them. */
   #given: readonly Threshold[] = [];
   /** The zones its field's filter keeps, by name; none, every zone shows. TODO 479 */
   #picked: string[] = [];

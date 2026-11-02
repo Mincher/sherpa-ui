@@ -24,14 +24,14 @@
  * - Summary — What `summarise` hands a component, by the shape it asked for.
  * - chartAxes — A chart's two axes as a summary reads them: one shown as counts splits nothing.
  * - summarise — Rows into the shape a component declared — one door for every chart and tile.
- * - BandFacts — A field's bands, as a summary reads them: its thresholds, and the bottom of its scale.
- * - Zoned — A summary with its value field's bands beside it: a gauge's zones.
- * - summariseBanded — Rows into the declared shape, with the fields' bands: a segments cut, and zones.
+ * - ZoneFacts — A field's zones, as a summary reads them: a status field's ranges of it.
+ * - Zoned — A summary with its value field's zones beside it: a gauge.
+ * - summariseZoned — Rows into the declared shape, with its value field's zones beside it: a gauge.
  * - summariseMarked — The same, and each segment's part the highlight's driver matches.
  */
 import { compareValues, readField, groupRows, valueKey, type Row, type SortDirection } from './store.js';
 import type { ChartDatum } from './chart-datum.js';
-import { bandEdges, type Threshold } from './threshold.js';
+import type { Threshold } from './threshold.js';
 
 /* ── Reducers ──────────────────────────────────────────────────────────── */
 
@@ -246,15 +246,13 @@ export interface SummarySpec {
   /** A NUMBER segment field cut at these ascending edges — a histogram.
    *  TRAP T-the-last-band-includes-its-top */
   bands?: number[];
-  /** Each band's name, where its field's thresholds give one. TODO 150 */
-  bandLabels?: string[];
   /** A series runs over this field's values. */
   over?: string;
   bucket?: Bucket;
   /** Keep every declared category, at zero — a legend.
    *  TRAP T-a-legend-row-goes-inactive-it-never-vanishes */
   keepEmpty?: boolean;
-  /** Hand its value field's thresholds beside it as zones: a gauge. */
+  /** Hand its value field's zones beside it: a gauge. */
   zones?: boolean;
   /** Each segment's rows again, by this field: its `stack` — a bar chart's
    *  Secondary, its colours and legend. Not for bands. Will, TODO 548 */
@@ -405,7 +403,7 @@ export function summarise(
   const opts = spec.field ? { kind, valueField: spec.field } : { kind };
   if (spec.shape === 'segments') {
     if (!spec.segment) return [];
-    if (spec.bands?.length) return sortSegments(bandBy(rows, spec.segment, spec.bands, spec.bandLabels ? { labels: spec.bandLabels } : {}), spec.sort);
+    if (spec.bands?.length) return sortSegments(bandBy(rows, spec.segment, spec.bands), spec.sort);
     const order = domain(spec.segment).map(valueKey);
     const segments = aggregateBy(rows, spec.segment, kind, spec.field,
       order.length ? { order, includeEmpty: spec.keepEmpty ?? false } : {});
@@ -438,26 +436,22 @@ export function summarise(
   };
 }
 
-/** A field's bands, as a summary reads them: its thresholds, and the bottom of its scale. */
-export type BandFacts = (field: string) => { thresholds?: readonly Threshold[]; min?: number };
+/** A field's zones, as a summary reads them: a status field's ranges of it (`zonesOf`). */
+export type ZoneFacts = (field: string) => readonly Threshold[] | undefined;
 
-/** A summary with its value field's bands beside it: a gauge's zones. */
+/** A summary with its value field's zones beside it: a gauge. */
 export type Zoned = Record<string, unknown> & { zones: readonly Threshold[] };
 
-/** Rows into the declared shape, with the fields' BANDS: a segments summary cut
- *  at its field's thresholds, and zones beside a value. TRAP T-a-threshold-is-a-fact-of-the-field */
-export function summariseBanded(
+/** Rows into the declared shape, with its value field's ZONES beside it: a gauge.
+ *  Plan 683 · TRAP T-a-status-is-worked-out-by-the-data */
+export function summariseZoned(
   rows: readonly Row[],
   spec: SummarySpec,
   domain: (field: string) => readonly unknown[] = () => [],
-  bands: BandFacts = () => ({}),
+  zonesOf: ZoneFacts = () => undefined,
 ): Summary | Zoned {
-  const segment = spec.segment ? bands(spec.segment) : {};
-  const cut = spec.shape === 'segments' && !spec.bands && segment.thresholds?.length && segment.min != null
-    ? { ...spec, bands: bandEdges(segment.thresholds, segment.min), bandLabels: segment.thresholds.map((t) => t.label) }
-    : spec;
-  const value = summarise(rows, cut, domain);
-  const zones = spec.zones && spec.field ? bands(spec.field).thresholds : undefined;
+  const value = summarise(rows, spec, domain);
+  const zones = spec.zones && spec.field ? zonesOf(spec.field) : undefined;
   if (!zones?.length) return value;
   return { ...(typeof value === 'number' ? { value } : value), zones };
 }
@@ -484,12 +478,12 @@ export function summariseMarked(
   rows: readonly Row[],
   spec: SummarySpec,
   domain: (field: string) => readonly unknown[] = () => [],
-  bands: BandFacts = () => ({}),
+  zonesOf: ZoneFacts = () => undefined,
   matches: ((row: Row) => boolean) | null = null,
 ): Summary | Zoned {
-  const all = summariseBanded(rows, spec, domain, bands);
+  const all = summariseZoned(rows, spec, domain, zonesOf);
   if (!matches || typeof all === 'number') return all;
-  const part = summariseBanded(rows.filter(matches), spec, domain, bands);
+  const part = summariseZoned(rows.filter(matches), spec, domain, zonesOf);
   if (Array.isArray(all)) return markedAll(all, part as ChartDatum[]);
   if ('series' in all && Array.isArray(all.series)) {
     const { labels, series } = part as { labels: string[]; series: Series[] };

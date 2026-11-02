@@ -13,14 +13,13 @@
     data-zones    threshold bands — "0-50:success,50-80:warning,80-100:critical"
                   (compact) OR a JSON array [{to,color}|{from,to,color}]. Colours
                   are status names (success|warning|urgent|critical|info) or any
-                  CSS colour. Left out, its provider draws its field's
-                  thresholds (TODO 150); with none, the single-colour sweep.
-                  TRAP T-a-threshold-is-a-fact-of-the-field
+                  CSS colour. Left out, its provider draws its field's zones,
+                  from a status field (plan 683); with none, the single-colour
+                  sweep. TRAP T-a-status-is-worked-out-by-the-data
                   A band may be NAMED — "0-50:success:Low", or `label` in
                   the JSON — and the name is its tooltip's and its legend row's.
     data-invert   it reads its value from the TOP — max − value, as risk is
-                  100 − health — and turns its field's thresholds round.
-                  TRAP T-a-threshold-is-a-fact-of-the-field
+                  100 − score — and turns its field's zones round.
     data-caption  caption text shown below the arc (e.g. "30GB of 60GB used")
     data-status   critical | warning | success | info  (single-colour fill)
     min / max             scale bounds shown beneath (default 0 / 100)
