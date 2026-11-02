@@ -214,7 +214,8 @@ test('a RESET leaves a date chip with no value — a kept range holds no ends, n
     bar.setChipValues('created', []);
     await settle();
     const now = new Date();
-    return { fresh, set, emptied: face(), range: menu.hasAttribute('data-range'), today: `${now.getDate()} ${now.getFullYear()}` };
+    // A day reads with two digits, "03 Sep 2026", as formatDate writes it.
+    return { fresh, set, emptied: face(), range: menu.hasAttribute('data-range'), today: `${String(now.getDate()).padStart(2, '0')} ${now.getFullYear()}` };
   }, frames);
   // No value; the face reads the default day, Today. TODO 394
   const [day, year] = r.today.split(' ');
