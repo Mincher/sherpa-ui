@@ -127,7 +127,7 @@ slot[name="heading"] { display: contents; }
 :host([data-dismissible]) .close { display: inline-flex; }
 :host([data-collapsed]) .toggle { transform: rotate(180deg); }
 
-:host(:is([data-filter-toolbar="shown"], [data-filter-toolbar="shut"])) .toolbar-toggle { display: inline-flex; }
+:host(:is([data-filter-toolbar="shown"], [data-filter-toolbar="shut"], [data-filter-toolbar="panel"])) .toolbar-toggle { display: inline-flex; }
 
 :host(:not(:state(has-actions)):not([data-dismissible]):not([data-presentation]):not([data-filter-toolbar])) .actions { display: none; }
 .show-as { display: none; }

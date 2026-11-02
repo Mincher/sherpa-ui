@@ -29,7 +29,7 @@ For the header row in a `sherpa-container`'s `header` slot: a heading, an icon, 
 | `data-description` | text |  | secondary text (rendered into .description) |
 | `data-dismissible` | boolean |  | show the close button |
 | `data-draggable` | boolean |  | show the drag handle |
-| `data-filter-toolbar` | `shown` `shut` `off` |  | shown \| shut \| off — a toggle for its card's filter toolbar; absent or off, none. Its provider writes it |
+| `data-filter-toolbar` | `shown` `shut` `panel` `off` |  | shown \| shut \| off — a toggle for its card's filter toolbar; absent or off, none. Its provider writes it |
 | `data-heading` | text |  | heading text (rendered into .title) |
 | `data-icon` | text |  | a glyph before the title (shows the icon slot) |
 | `data-presentation` | `default` `off` |  | default \| bar \| donut \| pie \| grid \| off — Show as, a menu before close, with what the card shows ticked; off, none. Its provider writes it |

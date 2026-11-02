@@ -1470,8 +1470,8 @@ export class SherpaProvider extends SherpaElement {
   }
 
   /** A slot's filter toolbars and its toggles: as asked, else as the reader left them,
-   *  else as its page's markup does. A bar stepped back for the panel has no toggle:
-   *  it would do nothing. TRAP T-a-card-toggles-its-own-toolbar */
+   *  else as its page's markup does. A bar stepped back for the panel leaves its toggle
+   *  inactive: a press would hide the panel. Will, TODO 672 · TRAP T-a-card-toggles-its-own-toolbar */
   #drawToolbars(slot: string, asked?: boolean): void {
     const inSlot = (selector: string): Element[] => [...this.querySelectorAll(selector)].filter((el) => this.#inherited(el, 'data-scope') === slot);
     const toggles = inSlot('[data-filter-toolbar]');
@@ -1480,8 +1480,9 @@ export class SherpaProvider extends SherpaElement {
     const kept = this.#session?.get(this.#toolbarKey(slot));
     const shown = asked ?? (typeof kept === 'boolean' ? kept : bars.some((bar) => !bar.hasAttribute('hidden')));
     for (const bar of bars) bar.toggleAttribute('hidden', !shown);
-    const off = !bars.length || bars.every((bar) => bar.hasAttribute('data-panel-mode'));
-    for (const toggle of toggles) toggle.setAttribute('data-filter-toolbar', off ? 'off' : shown ? 'shown' : 'shut');
+    const panel = bars.length > 0 && bars.every((bar) => bar.hasAttribute('data-panel-mode'));
+    const state = !bars.length ? 'off' : panel ? 'panel' : shown ? 'shown' : 'shut';
+    for (const toggle of toggles) toggle.setAttribute('data-filter-toolbar', state);
   }
 
   /** A chart card's title follows what the reader set: "Primary by Secondary,

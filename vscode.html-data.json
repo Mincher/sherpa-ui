@@ -814,6 +814,9 @@
               "name": "shut"
             },
             {
+              "name": "panel"
+            },
+            {
               "name": "off"
             }
           ]
@@ -2868,6 +2871,10 @@
           "valueSet": "v"
         },
         {
+          "name": "data-fixed-primary",
+          "valueSet": "v"
+        },
+        {
           "name": "data-flat",
           "description": "portrait: its scope is a HEADING, not an accordion — the column's View",
           "valueSet": "v"
@@ -2928,10 +2935,6 @@
         },
         {
           "name": "data-no-organise-labels",
-          "valueSet": "v"
-        },
-        {
-          "name": "data-no-primary",
           "valueSet": "v"
         },
         {

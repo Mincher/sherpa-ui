@@ -66,6 +66,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-failed` | text |  | the FIELDS whose own read failed, space-separated: each chip says so in critical. Set by a bound source. TODO 411 |
 | `data-fetch-fields` | text |  | the fields the STORE answers, space-separated: each Apply asks it once for the keys they match. Read by the provider. |
 | `data-field-apply` | boolean |  |  |
+| `data-fixed-primary` | boolean |  |  |
 | `data-flat` | boolean | `false` | portrait: its scope is a HEADING, not an accordion — the column's View |
 | `data-group-field` | text |  | the field the Group chip points at (the standard name) |
 | `data-heading` | text |  | its scope's name, written by its source: a portrait bar's heading. |
@@ -77,7 +78,6 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-move-filters` | boolean |  |  |
 | `data-no-actions` | boolean |  | hide the built-in cluster entirely (host owns the trailing end) |
 | `data-no-organise-labels` | boolean |  |  |
-| `data-no-primary` | boolean |  |  |
 | `data-no-results` | boolean | `false` | its chips say no match counts — the app's choice, written by its provider |
 | `data-no-saves` | boolean |  |  |
 | `data-no-section-labels` | boolean |  |  |

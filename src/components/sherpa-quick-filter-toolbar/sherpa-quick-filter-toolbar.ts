@@ -107,8 +107,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-no-section-labels': { type: 'boolean', kind: 'visibility' },
     // Its Organise chips show their icons, and no name. Will, TODO 634
     'data-no-organise-labels': { type: 'boolean', kind: 'visibility' },
-    // No Primary chip: its chart's Primary is fixed. Will, TODO 653
-    'data-no-primary': { type: 'boolean', kind: 'visibility' },
+    // Its chart's Primary is the page's: its chip shows it, inactive. Will, TODOs 653, 664
+    'data-fixed-primary': { type: 'boolean', kind: 'behaviour' },
     // No section names over its filters, in portrait. Will, TODO 436
     'data-no-sections': { type: 'boolean', kind: 'visibility' },
     // A chip hovered previews what it matches: the app's choice. Will, TODO 449
@@ -1819,6 +1819,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // A column draws once it opens. TRAP T-a-shut-column-draws-nothing
     if (name === 'open' && this.#columned && this.hasAttribute('open')) this.#column.opened();
     if (name === 'data-label-column') this.#syncLayout();
+    if (name === 'data-fixed-primary') this.$('.organise-chip[data-id="primary"]')?.toggleAttribute('disabled', this.hasAttribute(name));
     if (name === 'data-move-filters') this.#redoMoves();
     if (name === 'data-limit-options' || name === 'data-saved-menu' || name === 'data-saveable' || name === 'data-no-saves'
       || name === 'data-node-editor' || name === 'data-suggest' || name === 'data-orientation') this.#syncMore();
@@ -2700,6 +2701,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (on) chip.dataset['column'] = on;
     // Never unset, so no toggle: its body opens its menu, and only its value half reads on. Will, TODO 667
     chip.toggleAttribute('data-persistent', id === 'primary' || required);
+    // The page's Primary: shown, never changed here. Will, TODO 664
+    chip.toggleAttribute('disabled', id === 'primary' && this.hasAttribute('data-fixed-primary'));
     const options = organiseOptions(fields, on)
       .map((o) => (o.value === fallback ? { ...o, label: `${o.label} ${this.word('default')}` } : o));
     this.#addMenu(chip, { id, label: chip.dataset['label'] ?? '', select: 'single', options, ...(id === 'primary' || required ? { persistent: true } : {}) });

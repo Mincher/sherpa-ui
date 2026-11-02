@@ -216,6 +216,7 @@
       "values": [
         "shown",
         "shut",
+        "panel",
         "off"
       ],
       "description": "shown | shut | off — a toggle for its card's filter toolbar; absent or off, none. Its provider writes it"
@@ -354,6 +355,11 @@
       "$type": "state",
       "name": "shut",
       "selector": ":host([data-filter-toolbar=\"shut\"])"
+    },
+    {
+      "$type": "state",
+      "name": "panel",
+      "selector": ":host([data-filter-toolbar=\"panel\"])"
     },
     {
       "$type": "state",

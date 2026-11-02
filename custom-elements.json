@@ -2116,7 +2116,7 @@
               "name": "data-filter-toolbar",
               "description": "shown | shut | off — a toggle for its card's filter toolbar; absent or off, none. Its provider writes it",
               "type": {
-                "text": "'shown' | 'shut' | 'off'"
+                "text": "'shown' | 'shut' | 'panel' | 'off'"
               }
             },
             {
@@ -8533,6 +8533,12 @@
               }
             },
             {
+              "name": "data-fixed-primary",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-flat",
               "description": "portrait: its scope is a HEADING, not an accordion — the column's View",
               "type": {
@@ -8602,12 +8608,6 @@
             },
             {
               "name": "data-no-organise-labels",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "name": "data-no-primary",
               "type": {
                 "text": "boolean"
               }

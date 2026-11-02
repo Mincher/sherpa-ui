@@ -670,6 +670,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-fixed-primary",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-flat",
       "type": "boolean",
       "observed": true,
@@ -767,14 +775,6 @@
     {
       "$type": "prop",
       "name": "data-no-organise-labels",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "visibility"
-    },
-    {
-      "$type": "prop",
-      "name": "data-no-primary",
       "type": "boolean",
       "observed": true,
       "declared": true,
@@ -1028,11 +1028,6 @@
       "$type": "state",
       "name": "view",
       "selector": ":host([data-type=\"view\"])"
-    },
-    {
-      "$type": "state",
-      "name": "no-primary",
-      "selector": ":host([data-no-primary])"
     },
     {
       "$type": "state",

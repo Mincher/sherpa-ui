@@ -27,12 +27,15 @@ export class SherpaContainerHeader extends SherpaElement {
     'data-presentation': { type: 'enum', kind: 'behaviour', values: [...SHOW_AS, 'off'] },
     // What Default draws: the menu's first row names it. Its provider writes this. Will, TODO 620
     'data-presentation-default': { type: 'string', kind: 'behaviour' },
-    // Its card's filter toolbar: a press is a REQUEST, its provider writes this. Will, TODO 629
-    'data-filter-toolbar': { type: 'enum', kind: 'behaviour', values: ['shown', 'shut', 'off'] },
+    // Its card's filter toolbar: a press is a REQUEST, its provider writes this. `panel`:
+    // the panel shows it, so the button is inactive. Will, TODOs 629, 672
+    'data-filter-toolbar': { type: 'enum', kind: 'behaviour', values: ['shown', 'shut', 'panel', 'off'] },
   } as const;
 
   override onChange(name: string): void {
     if (name === 'data-presentation' || name === 'data-presentation-default') this.#showAs();
+    // A press would hide the panel by accident. Will, TODO 672
+    if (name === 'data-filter-toolbar') this.$('.toolbar-toggle')?.toggleAttribute('disabled', this.dataset['filterToolbar'] === 'panel');
   }
 
   /** Show as: a pick is a request; its provider writes what the card shows. */

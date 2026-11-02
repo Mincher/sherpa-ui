@@ -14765,8 +14765,9 @@ asks, in `filter-toolbar-change`; the provider owns the answer, sets the bars' n
 and the slot, as a slot's name means nothing on another page. Its bar stays bound while
 hidden, so a filter it holds still applies.
 
-Where the panel answers for its scope a bar has `data-panel-mode`, so hiding it would do
-nothing to see: the toggle reads `off` and goes, and `ProviderMode` says when a bar steps.
+Where the panel answers for its scope a bar has `data-panel-mode`, and a press could hide
+the panel by accident: the toggle reads `panel`, shown and inactive (Will, TODO 672). With
+no bar at all it reads `off` and goes. `ProviderMode` says when a bar steps.
 
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/e2e/reforged-provider-summary.spec.ts`

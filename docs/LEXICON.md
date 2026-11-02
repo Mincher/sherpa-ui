@@ -167,6 +167,12 @@ its one toggle — Maximise (`fullscreen`), then Minimise (`fullscreen-exit`) �
 and a host may set it too. **Not `data-expanded`:** that is a row's children
 shown. First use: `sherpa-overlay-panel` (TODO 303).
 
+## 11. A fixed Primary — Will, 2026-11-02
+
+**Move (1).** quick-filter-toolbar `data-no-primary` → **`data-fixed-primary`**:
+the chip shows again, inactive, since the page's definition sets the Primary
+(TODO 664). Not hidden, so not a `data-no-*` name.
+
 ---
 
 ## What a yes does

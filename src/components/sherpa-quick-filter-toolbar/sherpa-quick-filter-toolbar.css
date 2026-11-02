@@ -140,9 +140,6 @@
   margin-inline-start: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* Its chart's Primary is fixed, so no chip offers it. Will, TODO 653 */
-:host([data-no-primary]) .organise-chip[data-id="primary"] { display: none; }
-
 /* Its Organise chips' icons say what they are; the word stays for a reader with no
    sight of them. Will, TODO 634 */
 :host([data-no-organise-labels]) .organise-chip::part(label) {
