@@ -1,5 +1,5 @@
 {
-  "src/app.ts": 67,
+  "src/app.ts": 69,
   "src/components.ts": 126,
   "src/components/sherpa-accordion/sherpa-accordion.ts": 75,
   "src/components/sherpa-app-header/sherpa-app-header.ts": 205,
@@ -10,7 +10,7 @@
   "src/components/sherpa-button/sherpa-button.ts": 206,
   "src/components/sherpa-calendar-cell/sherpa-calendar-cell.ts": 57,
   "src/components/sherpa-calendar/sherpa-calendar.ts": 559,
-  "src/components/sherpa-callout/sherpa-callout.ts": 74,
+  "src/components/sherpa-callout/sherpa-callout.ts": 80,
   "src/components/sherpa-chart-legend/sherpa-chart-legend.ts": 432,
   "src/components/sherpa-chat-message/sherpa-chat-message.ts": 44,
   "src/components/sherpa-chip/sherpa-chip.ts": 36,
@@ -56,7 +56,7 @@
   "src/components/sherpa-prompt-composer/sherpa-prompt-composer.ts": 121,
   "src/components/sherpa-provider/provider-mode.ts": 201,
   "src/components/sherpa-provider/provider-page.ts": 823,
-  "src/components/sherpa-provider/sherpa-provider.ts": 1881,
+  "src/components/sherpa-provider/sherpa-provider.ts": 1906,
   "src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts": 2799,
   "src/components/sherpa-quick-filter-toolbar/toolbar-column.ts": 287,
   "src/components/sherpa-quick-filter-toolbar/toolbar-header.ts": 80,
@@ -380,7 +380,7 @@
   "src/core/ui/tree-rows.ts": 27,
   "src/core/ui/trusted-html.ts": 39,
   "src/core/worker/app-files.ts": 124,
-  "src/data.ts": 309,
+  "src/data.ts": 311,
   "src/index.ts": 10,
   "src/worker.ts": 9,
   "src/components/sherpa-accordion/sherpa-accordion.css": 158,
@@ -538,5 +538,7 @@
   "src/core/worker/serve-data.ts": 51,
   "src/core/browser/worker-store.ts": 44,
   "src/core/data/held-reads.ts": 134,
-  "src/core/data/held-store.ts": 114
+  "src/core/data/held-store.ts": 114,
+  "src/core/data/notices.ts": 30,
+  "src/core/browser/updates.ts": 34
 }

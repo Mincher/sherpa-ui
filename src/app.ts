@@ -64,3 +64,5 @@ export {
 } from './core/data/app-definition.js';
 // A store the app's Service Worker answers, else the page's own handler. Plan 652 S4
 export { openWorkerStore, type WorkerStoreOptions } from './core/browser/worker-store.js';
+// Hear what is new — a new version's files, a store's rows waiting. Plan 652 S6
+export { onUpdate } from './core/browser/updates.js';

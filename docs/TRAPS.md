@@ -14957,6 +14957,33 @@ hold the test run open for ever: each is `unref()`'d where it can be.
 - Site: `src/core/data/request-store.ts`
 - Site: `test/unit/every-tab-hears-a-change.test.mjs`
 
+### T-a-notice-is-heard-never-ordered
+
+**What is new is SAID as a fact, and HEARD by what asked to hear it** (Will, plan
+652: *"The data layer, or service worker, shouldn't tell the app to show a banner.
+The banner (or the consumers chosen UI component) should register as listening
+for update notifications."*). The data side says a notice on `NOTICE_CHANNEL`
+(`sherpa-notices`): `{ kind: 'data', store }` — newer data waits — with
+`sayNotice()`. A new version is the page's own news: a NEW Service Worker taking
+the page over (`controllerchange`, never the first one, which is no news).
+`onUpdate(listener)` hears both.
+
+**An element registers by its markup:** `data-listens="app"` or `"data"`. The
+provider hears every notice and shows each listening element under it for that
+kind (`hidden` off) — it names no banner, and the element's own words say what.
+A listening `sherpa-callout` is `data-locked`, so its close REPORTS and it stays:
+the provider hides it until the next notice. Its `data-duration` timer runs only
+while it shows (`hidden` is watched), or a banner hidden at load timed out unseen.
+
+**Demos:** two info banners at the top of each Context's layout grid, before the
+metrics, across all 12 columns — Reload for a new version, Refresh data for
+waiting rows — and a new version is an item in Notifications too, which stays
+after its banner is dismissed and reloads when picked (Will, D5).
+
+- Site: `src/core/data/notices.ts`
+- Site: `src/core/browser/updates.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+
 ### T-a-horizontal-legend-is-three-by-two
 
 A horizontal legend was a wrapping flex row, so it put a different number of

@@ -20,6 +20,10 @@ export class SherpaCallout extends SherpaElement {
     'data-type': { type: 'enum', kind: 'style', values: ['callout', 'banner'] },
     // It dismisses itself after this many ms, as `sherpa-toast` does. Off by default.
     'data-duration': { type: 'number', kind: 'behaviour' },
+    // Its host owns whether it stays: a dismiss is reported, and it stays. PRINCIPLES 21
+    'data-locked': { type: 'boolean', kind: 'behaviour' },
+    // Shown again, its timer starts again: a banner hidden until a notice waits.
+    'hidden': { type: 'boolean', kind: 'behaviour' },
   } as const;
 
   static override aria = { role: 'status' };
@@ -40,21 +44,23 @@ export class SherpaCallout extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name === 'data-duration') this.#time();
+    if (name === 'data-duration' || name === 'hidden') this.#time();
   }
 
-  /** Dismiss the callout: emit the event and remove the element. */
+  /** Dismiss the callout: emit the event and remove the element — unless it is
+   *  locked, when its host decides. */
   dismiss(): void {
     this.#stop();
     this.emit('callout-dismiss');
-    this.remove();
+    if (!this.hasAttribute('data-locked')) this.remove();
   }
 
   /** Start the auto-dismiss timer again, where it has a duration. */
   #time(): void {
     this.#stop();
     const duration = this.num('data-duration', 0);
-    if (duration > 0) this.#timer = setTimeout(() => this.dismiss(), duration);
+    // Only while it shows: hidden, nobody could read it.
+    if (duration > 0 && !this.hidden) this.#timer = setTimeout(() => this.dismiss(), duration);
   }
 
   /** Stop the auto-dismiss timer. */

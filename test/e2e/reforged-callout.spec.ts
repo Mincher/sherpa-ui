@@ -214,3 +214,26 @@ test('data-duration dismisses it after that many ms; without it, it stays', asyn
   });
   expect(r).toEqual({ timedGone: true, heard: true, kept: true });
 });
+
+// A host that listens owns whether it stays: a locked callout reports its close,
+// and its timer runs only while it shows. sherpa-ui plan 652 S6
+test('data-locked: a dismiss is reported and it stays; hidden, its timer waits until it shows', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-callout') as HTMLElement & { dismiss(): void; rendered?: Promise<void> };
+    el.setAttribute('data-locked', '');
+    el.setAttribute('data-duration', '60');
+    el.hidden = true;
+    let heard = 0;
+    el.addEventListener('callout-dismiss', () => { heard++; });
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    await new Promise((done) => setTimeout(done, 150));
+    const whileHidden = heard;
+    el.hidden = false;
+    await new Promise((done) => setTimeout(done, 150));
+    const afterShown = heard;
+    el.dismiss();
+    return { whileHidden, afterShown, afterDismiss: heard, stays: el.isConnected };
+  });
+  expect(r).toEqual({ whileHidden: 0, afterShown: 1, afterDismiss: 2, stays: true });
+});

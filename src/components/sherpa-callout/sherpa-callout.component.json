@@ -138,6 +138,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-locked",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-status",
       "type": "enum",
       "observed": false,
@@ -164,6 +172,16 @@
       ],
       "default": "callout",
       "description": "callout | banner — banner: one row across its parent, a link in its words"
+    },
+    {
+      "$type": "prop",
+      "name": "hidden",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "native": true,
+      "kind": "behaviour",
+      "default": false
     }
   ],
   "slots": [
@@ -177,7 +195,7 @@
     }
   ],
   "populate": {
-    "shape": "{ dismissible?, duration?, heading?, type? }",
+    "shape": "{ dismissible?, duration?, heading?, locked?, type? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -239,7 +257,7 @@
           "$type": "method",
           "name": "dismiss",
           "args": "",
-          "description": "Dismiss the callout: emit the event and remove the element."
+          "description": "Dismiss the callout: emit the event and remove the element — unless it is locked, when its host decides."
         }
       ],
       "category": "container"

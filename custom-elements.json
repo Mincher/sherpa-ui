@@ -1511,6 +1511,12 @@
               }
             },
             {
+              "name": "data-locked",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-status",
               "description": "info | success | warning | critical | urgent (default: neutral/info)",
               "type": {
@@ -1524,6 +1530,13 @@
                 "text": "'callout' | 'banner'"
               },
               "default": "\"callout\""
+            },
+            {
+              "name": "hidden",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
             }
           ],
           "members": [
@@ -1531,7 +1544,7 @@
               "kind": "method",
               "name": "dismiss",
               "parameters": [],
-              "description": "Dismiss the callout: emit the event and remove the element."
+              "description": "Dismiss the callout: emit the event and remove the element — unless it is locked, when its host decides."
             }
           ],
           "events": [

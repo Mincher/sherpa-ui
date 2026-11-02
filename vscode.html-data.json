@@ -547,6 +547,10 @@
           "description": "heading text (rendered into .title)"
         },
         {
+          "name": "data-locked",
+          "valueSet": "v"
+        },
+        {
           "name": "data-status",
           "description": "info | success | warning | critical | urgent (default: neutral/info)",
           "values": [
@@ -578,6 +582,10 @@
               "name": "banner"
             }
           ]
+        },
+        {
+          "name": "hidden",
+          "valueSet": "v"
         }
       ]
     },
