@@ -8,7 +8,7 @@
  * - BarDatum — one bar: its label and value
  */
 import type { ChartDatum } from '../../core/data/chart-datum.js';
-import { STACK_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { FRAME_PROPS, STACK_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { chartScale } from '../../core/data/format-tick.js';
 import { fillTip, pairAnchor, paintSeries, paintTone, partsSaid, renderValueAxis } from '../../core/ui/chart-parts.js';
@@ -39,6 +39,7 @@ export class SherpaBarchart extends SherpaElement {
   static override labelTarget = '.plot';
   static override props = {
     ...SUMMARY_PROPS,
+    ...FRAME_PROPS,
     // Each bar stacked by its Secondary's values, in their colours. Will, TODOs 548, 653
     ...STACK_PROPS,
     'data-axis-label': { type: 'string', kind: 'content', to: '.axis-label-value' },

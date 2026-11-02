@@ -109,6 +109,9 @@ export interface HeldFilter extends FieldFilter {
   active?: boolean;
   /** The App Context holds it; this page has no such field. TODO 453 */
   unused?: boolean;
+  /** The scope its answer is in, where not its bar's: a chart's legend, drawn in its
+   *  card's toolbar. Will, TODO 670 */
+  answeredIn?: string;
   /** A scope ABOVE holds it now — that scope's name. It keeps its place here,
    *  and its `state` is this scope's own answer: kept, not in force.
    *  TRAP T-a-superseded-chip-suspends-it-is-never-removed */

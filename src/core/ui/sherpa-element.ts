@@ -11,6 +11,7 @@
  * - DATA_PROPS — What `DataSource.#push` writes onto every component it binds, plus the guard.
  * - SUMMARY_PROPS — What a chart or tile DECLARES it needs — its provider hands back that shape.
  * - STACK_PROPS — A chart's Secondary, for one that splits by two axes: a bar chart and a radial.
+ * - FRAME_PROPS — A chart in the shared frame: bar, line, gauge and radial.
  * - SHARED_PROPS — Shared style attributes whose shape is identical wherever they appear.
  * - coerceNum — Coerce a raw attribute string to a number, or return `fallback`.
  * - clampNum — Apply the min/max bounds from `opts`, if any.
@@ -142,6 +143,12 @@ export const STACK_PROPS = {
   /** The axis shown as COUNTS: each value of the other is the number of its distinct
    *  values there. Absent, both show as names. Will, TODO 653 */
   'data-count-axis': { type: 'enum', kind: 'style', values: ['primary', 'secondary'] },
+} as const satisfies PropMap;
+
+/** A chart in the shared frame: bar, line, gauge and radial. */
+export const FRAME_PROPS = {
+  /** Its legend is drawn elsewhere — its card's filter toolbar: no room kept for it. Will, TODO 670 */
+  'data-no-legend': { type: 'boolean', kind: 'visibility' },
 } as const satisfies PropMap;
 
 /**

@@ -285,6 +285,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-no-legend",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "visibility"
+    },
+    {
+      "$type": "prop",
       "name": "data-over-field",
       "type": "string",
       "observed": true,

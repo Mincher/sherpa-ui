@@ -88,6 +88,9 @@ export interface FilterDef extends OffersAdvanced {
   note?: string;
   /** Its answer survives a View change. TRAP T-a-field-can-carry-over-views */
   carryOver?: boolean;
+  /** The scope its answer is in, where not its bar's: a chart's legend, drawn in its
+   *  card's toolbar. Its requests name it. Will, TODO 670 */
+  answeredIn?: string;
   /** The bar's: a chip that cannot be switched OFF. TRAP T-persistent-chip-is-a-selector */
   persistent?: boolean;
   /** The bar's: `false` — its menu has no Select all row. */

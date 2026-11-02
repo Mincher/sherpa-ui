@@ -12,7 +12,7 @@
  * - RadialSlice — One slice — an alias of the shared `ChartDatum`.
  */
 import { datumTotal, type ChartDatum } from '../../core/data/chart-datum.js';
-import { STACK_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { FRAME_PROPS, STACK_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { formatValue, radialArea, ringSegmentPath, type RingSegmentOptions } from '../../core/data/format-tick.js';
 import { fillTip, pairAnchor, paintSeries, paintTone, redrawOnResize, unitsPerPixel, partsSaid } from '../../core/ui/chart-parts.js';
@@ -40,6 +40,7 @@ export class SherpaRadialChart extends SherpaElement {
   static override labelTarget = '.ring';
   static override props = {
     ...SUMMARY_PROPS,
+    ...FRAME_PROPS,
     // Each slice's rings by its Secondary's values. TODO 653
     ...STACK_PROPS,
     'data-label': { type: 'string', kind: 'content' },

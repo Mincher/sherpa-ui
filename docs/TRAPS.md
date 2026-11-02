@@ -6381,7 +6381,7 @@ row always stays on (`T-a-legend-keeps-one-row-on`). The chip says
 own state, so the legend dims it through the chip's `::part(body)` and
 `::part(swatch)`.
 
-**With `data-chips` a row is a VALUE chip**, as a filter panel draws it: `provider.legendChips`, Will, TODO 586. Its number is the chip's count; a value that is no number, a band's range, stays beside it. Beside a chart the 7:3 split's legend track floors at its min-content, so chips keep their names; a key row is contained, floors at 0, and truncates as before. A read-only legend is no filter, so it stays a key.
+**With `data-chips` a row is a VALUE chip**, as a filter panel draws it: `provider.legendChips`, Will, TODO 586 — where its card has no filter toolbar; with one, the chips go there (TODO 670). Its number is the chip's count; a value that is no number, a band's range, stays beside it. Beside a chart the 7:3 split's legend track floors at its min-content, so chips keep their names; a key row is contained, floors at 0, and truncates as before. A read-only legend is no filter, so it stays a key.
 
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`
@@ -18403,6 +18403,13 @@ Three things follow from the declaring, and each was a hole without it:
 A panel draws the parts after the View and before every other scope. The
 swatch is the value's place in the field's declared values, from 1 — the same
 number the chart paints by.
+
+**Shown in its card's bar** (Will, TODO 670). With legend chips on and a filter
+toolbar in its slot, the part is declared `shownIn: <slot>`. The slot's `describe()`
+lists its one filter with `answeredIn: <part>`, so the bar's requests for it name
+that scope and it still narrows its chart alone; the bar is drawn its answers, counts
+and limits with its own. The chart takes `data-no-legend` and keeps no room for the
+legend. With no bar, the legend draws the chips itself (`data-chips`, TODO 586).
 
 SENT UP, the answer goes to the View with its field and the chart lets go of
 it; its section then says where the filter went. The View draws only a field

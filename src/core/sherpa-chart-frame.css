@@ -38,6 +38,8 @@
   min-inline-size: 0;
   --sherpa-chart-legend-strip: 1;
 }
+/* Its legend drawn elsewhere — its card's filter toolbar: no room kept. Will, TODO 670 */
+:host([data-no-legend]) ::slotted([slot="legend"]) { display: none; }
 
 /* WIDER THAN SQUARE: the legend goes beside the chart, a list; square or narrower,
    below, a strip. `minmax(0, Nfr)`: a bare fr floors at min-content, so a long label
@@ -45,17 +47,17 @@
    for a legend of CHIPS, which take the room they need; contained, a key row's is 0.
    TODO 586 */
 @container sherpa-chart-shape (aspect-ratio > 1 / 1) {
-  :host(:state(has-legend)) .chart-figure {
+  :host(:state(has-legend):not([data-no-legend])) .chart-figure {
     display: grid;
     grid-template-columns: minmax(0, 7fr) minmax(min-content, 3fr);
     grid-template-rows: auto minmax(0, 1fr);
     align-items: center;
   }
-  :host(:state(has-legend)) .chart-header {
+  :host(:state(has-legend):not([data-no-legend])) .chart-header {
     grid-column: 1 / -1;
     grid-row: 1;
   }
-  :host(:state(has-legend)) .chart-body {
+  :host(:state(has-legend):not([data-no-legend])) .chart-body {
     grid-column: 1;
     grid-row: 2;
     align-self: stretch;

@@ -37,6 +37,7 @@ For one value on a scale (0–100 by default), read by a needle, with optional t
 | `data-field` | text |  | the number that aggregate reads |
 | `data-invert` | boolean |  | it reads its value from the TOP — max − value, as risk is 100 − health — and turns its field's thresholds round. TRAP T-a-threshold-is-a-fact-of-the-field |
 | `data-label` | text |  | the MIDPOINT tick above the arc. Defaults to the middle of the |
+| `data-no-legend` | boolean |  |  |
 | `data-over-field` | text |  |  |
 | `data-segment-field` | text |  |  |
 | `data-status` | `critical` `warning` `success` `info` |  | critical \| warning \| success \| info (single-colour fill) |

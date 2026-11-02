@@ -53,6 +53,7 @@ For parts of a whole, as a donut (the default) or a pie. For one value on a scal
 | `data-field` | text |  | the number that aggregate reads |
 | `data-inner` | text |  | hole size, a FRACTION of the outer radius (0–1). A pie ignores it — a pie has no hole by definition. |
 | `data-label` | text |  | centre big text |
+| `data-no-legend` | boolean |  |  |
 | `data-over-field` | text |  |  |
 | `data-segment-field` | text |  | ASKED of its provider: one slice per value of this field |
 | `data-stack-field` | text |  |  |

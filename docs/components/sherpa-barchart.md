@@ -53,6 +53,7 @@ For comparing values across categories, one bar each; `data-bands` cuts a number
 | `data-count-axis` | `primary` `secondary` |  |  |
 | `data-field` | text |  | the number that aggregate reads |
 | `data-max` | number |  | explicit value-axis max (else derived from the data) |
+| `data-no-legend` | boolean |  |  |
 | `data-over-field` | text |  |  |
 | `data-segment-field` | text |  | ASKED of its provider: one bar per value of this field |
 | `data-stack-field` | text |  | each bar stacked by this field's values, in their colours |

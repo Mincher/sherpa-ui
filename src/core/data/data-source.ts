@@ -116,6 +116,7 @@ export class DataSource extends EventTarget {
     describe: (s) => this.describe(s),
     scopeLabel: (s) => this.#context.scopeLabel(s),
     partScopes: () => this.#narrowing.keys(),
+    partsIn: (s) => this.#partsIn(s),
     view: () => this.#boundView(),
     rows: (w) => (w === 'all' ? this.#allRows : this.#result.rows),
     freeRows: (fields) => this.#freeRows.get(fields.join('\n'))?.rows ?? this.#allRows,
@@ -162,7 +163,7 @@ export class DataSource extends EventTarget {
   get #defaults(): Map<string, ScopeQuery> { return this.#member.live().defaults; }
   get #sets(): Map<string, FilterSet[]> { return this.#member.live().sets; }
   get #offers(): Map<string, string[]> { return this.#member.live().offers; }
-  get #narrowing(): Map<string, { field: string; only: BoundControl; label?: string }> { return this.#member.live().parts; }
+  get #narrowing(): Map<string, { field: string; only: BoundControl; label?: string; shownIn?: string }> { return this.#member.live().parts; }
   /** The last compile, so a load does not redo it. Written by `#compileNow`. */
   #filter: Filter | undefined;
   /** What a component OUTSIDE every component scope is under — the View alone.
@@ -488,7 +489,9 @@ export class DataSource extends EventTarget {
     const sets = this.#context.sets(scope);
     const out: ScopeDescription = {
       scope, label: this.#context.scopeLabel(scope), ...(component ? { component } : {}),
-      filters: [...presets, ...fields, ...(this.#unused.get(scope) ?? []).map((u) => ({ ...u, field: u.id, unused: true }))],
+      filters: [...presets, ...fields, ...(this.#unused.get(scope) ?? []).map((u) => ({ ...u, field: u.id, unused: true })),
+        // A chart's legend its bar draws, answered in its own scope. Will, TODO 670
+        ...this.#partsIn(scope).flatMap((key) => this.describe(key).filters.map((f) => ({ ...f, answeredIn: key })))],
       available: this.addable(scope), ...(sets.length ? { sets } : {}),
       ...(q.suspended ? { suspended: true } : {}),
     };
@@ -558,6 +561,11 @@ export class DataSource extends EventTarget {
       });
     }
     return out;
+  }
+
+  /** The parts a scope's bar draws: a chart's legend, in its card's toolbar. Will, TODO 670 */
+  #partsIn(scope: string): string[] {
+    return [...this.#narrowing].flatMap(([key, part]) => (part.shownIn === scope ? [key] : []));
   }
 
   /** The ONE scope a View field is sent down to: the one it came UP from,
@@ -1159,6 +1167,8 @@ export class DataSource extends EventTarget {
         this.#binding.drawScopesSoon();
         // …and its own section, which names the chart it narrows: Show as swaps it. TODO 548
         if (change.kind === 'part' && change.field) this.#binding.drawBars(change.scope);
+        // …and the bar it left: its chip goes. TODO 670
+        if (change.kind === 'part' && change.left) this.#binding.drawBars(change.left);
         return;
       case 'write':
         this.#recompose();
@@ -1919,7 +1929,8 @@ export class DataSource extends EventTarget {
     const parts = [...this.#narrowing.keys()];
     if (!drawn.length && !parts.length) return;
     // Drawn already, for this walk and these controls: a sort, a page or a search moves nothing.
-    const key = JSON.stringify([this.#walkKey(), drawn.map(({ el, scopes }) => [this.#binding.get(el)?.id, scopes]), parts]);
+    const key = JSON.stringify([this.#walkKey(), drawn.map(({ el, scopes }) => [this.#binding.get(el)?.id, scopes]),
+      parts.map((p) => [p, this.#narrowing.get(p)?.shownIn])]);
     if (key === this.#drawnFor) return;
     this.#drawnFor = key;
     const ticket = this.#drawing.next();
@@ -1931,11 +1942,14 @@ export class DataSource extends EventTarget {
       Object.fromEntries(Object.entries(of ?? {}).map(([f, keys]) => [f, [...keys]]));
     for (const { el, scopes } of drawn) {
       for (const scope of scopes) {
-        el.drawResults?.({ ...walk.results[scope] }, scope, this.#filtering([scope]) ? walk.ends[scope] : undefined);
+        // A bar draws the parts it shows with its own: their counts and limits too. Will, TODO 670
+        const also = typeof this.#binding.get(el)?.scope === 'string' ? this.#partsIn(scope) : [];
+        const own = <T>(of: Readonly<Record<string, T | undefined>>): T => Object.assign({}, of[scope], ...also.map((p) => of[p])) as T;
+        el.drawResults?.({ ...own(walk.results) }, scope, this.#filtering([scope]) ? walk.ends[scope] : undefined);
         // A control that draws a chip per VALUE is told each picked value's own too.
-        el.drawValueResults?.(Object.fromEntries(Object.entries(walk.values[scope] ?? {}).map(([f, v]) => [f, { ...v }])), scope);
-        el.drawPresent?.(lists(walk.present[scope]), scope);
-        el.drawOffered?.(lists(walk.offered[scope]), scope);
+        el.drawValueResults?.(Object.fromEntries(Object.entries(own(walk.values) ?? {}).map(([f, v]) => [f, { ...v }])), scope);
+        el.drawPresent?.(lists(own(walk.present)), scope);
+        el.drawOffered?.(lists(own(walk.offered)), scope);
       }
     }
     const byScope = Object.fromEntries([...new Set([...drawn.flatMap((d) => d.scopes), ...parts])]

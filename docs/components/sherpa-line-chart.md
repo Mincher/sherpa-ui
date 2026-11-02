@@ -64,6 +64,7 @@ For one or more series of numbers along an x axis, as lines or, with `data-type=
 | `data-field` | text |  | the number that aggregate reads |
 | `data-max` | number |  | y-scale bounds (else derived) |
 | `data-min` | number |  | y-scale bounds (else derived) |
+| `data-no-legend` | boolean |  |  |
 | `data-over-field` | text |  | ASKED of its provider: the x axis runs over this field |
 | `data-segment-field` | text |  | one line per value of this field |
 | `data-ticks` | number | `4` | number of y gridlines/values |

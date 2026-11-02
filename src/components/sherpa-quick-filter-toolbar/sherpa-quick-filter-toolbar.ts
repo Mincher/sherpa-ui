@@ -1873,14 +1873,23 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  Apply, 451); `free`, as it is — a highlight, a preview, an order. */
   #ask(request: QueryRequest | undefined, how: 'auto' | 'commit' | 'free' = 'auto'): void {
     const held = how === 'free' || (how === 'auto' && this.hasAttribute('data-waits'));
+    const asked = request && this.#answeredIn(request);
     this.emit('quick-filter-change', {
       // TRAP T-values-carries-two-shapes — `scope` says WHICH shape this is.
       scope: 'bar',
-      request: request && (held ? request : applied(request)),
+      request: asked && (held ? asked : applied(asked)),
       active: this.active,
       // APPLIED: only ON chips.
       values: this.values,
     });
+  }
+
+  /** A chip answered in another scope — a chart's legend, drawn here — asks there. Will, TODO 670 */
+  #answeredIn(request: QueryRequest): QueryRequest {
+    if (Array.isArray(request)) return (request as readonly QueryRequest[]).map((one) => this.#answeredIn(one));
+    const field = 'field' in request ? request.field : undefined;
+    const at = field ? this.#filters.find((d) => d.id === field)?.answeredIn : undefined;
+    return at && !('scope' in request && request.scope) ? { ...request, scope: at } as QueryRequest : request;
   }
 
   /**

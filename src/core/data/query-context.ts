@@ -91,7 +91,7 @@ import { report } from './report.js';
 
 /** What the context did, as each member hears it: the follow-ups are the member's. */
 export type QueryChange =
-  | { kind: 'part'; scope: string; field?: string }
+  | { kind: 'part'; scope: string; field?: string; left?: string }
   | { kind: 'sets'; scope: string }
   | { kind: 'offer'; scope: string }
   | { kind: 'write'; scope: string; field: string; narrows: string[] }
@@ -189,7 +189,8 @@ export interface QueryLive {
   readonly offers: Map<string, string[]>;
   /** Each PART: the one field it answers, and the one component it narrows.
    *  TRAP T-a-chart-scope-is-its-legend-field */
-  readonly parts: Map<string, { field: string; only: BoundControl; label?: string }>;
+  /** `shownIn`: the slot whose bar draws it — a chart's legend, in its card's toolbar. TODO 670 */
+  readonly parts: Map<string, { field: string; only: BoundControl; label?: string; shownIn?: string }>;
 }
 
 /** What a member holds of its context. */
@@ -434,9 +435,12 @@ export class QueryContext extends EventTarget {
    * write to it from anywhere narrows that component. `undefined` forgets it.
    * TRAP T-a-chart-scope-is-its-legend-field
    */
-  declarePart(scope: string, part: { field: string; only: BoundControl; label?: string } | undefined): void {
+  declarePart(scope: string, part: { field: string; only: BoundControl; label?: string; shownIn?: string } | undefined): void {
     this.#walks++;
     const parts = this.#live.parts;
+    // The bar that drew it, if another draws it now or none. TODO 670
+    const was = parts.get(scope)?.shownIn;
+    const left = was && was !== part?.shownIn ? was : undefined;
     if (part) parts.set(scope, part);
     else parts.delete(scope);
     /* A part keeps the place it was first given: a chart swapped by Show as binds
@@ -445,7 +449,7 @@ export class QueryContext extends EventTarget {
     const placed = [...parts].sort(([a], [b]) => this.#partOrder.indexOf(a) - this.#partOrder.indexOf(b));
     parts.clear();
     for (const [key, value] of placed) parts.set(key, value);
-    this.#tell({ kind: 'part', scope, ...(part ? { field: part.field } : {}) });
+    this.#tell({ kind: 'part', scope, ...(part ? { field: part.field } : {}), ...(left ? { left } : {}) });
   }
   /** Each part's scope, in the order first declared. */
   readonly #partOrder: string[] = [];

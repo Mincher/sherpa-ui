@@ -385,19 +385,20 @@ export class SherpaProvider extends SherpaElement {
     this.#highlightHover = on;
     this.#offerAll();
     // …and a legend that picks: a rest on a row previews it. Will, TODO 495
-    for (const el of this.#pickers) el.toggleAttribute('data-highlight-hover', on);
+    for (const el of this.#pickers.keys()) el.toggleAttribute('data-highlight-hover', on);
   }
-  /** Each legend that picks — a field's values, as a chip's. */
-  #pickers = new Set<Element>();
+  /** Each legend that picks — a field's values, as a chip's — and how it lays out its chips. */
+  #pickers = new Map<Element, () => void>();
 
-  /** A legend's rows are value chips, as a filter panel draws them — off, key
-   *  rows. Off unless the app says, from its session. Will, TODO 586 */
+  /** A legend's rows are filter chips: in its card's filter toolbar, the legend
+   *  gone, where the card has one; else in the legend. Off, key rows. Off unless the
+   *  app says, from its session. Will, TODOs 586, 670 */
   get legendChips(): boolean {
     return this.#legendChips;
   }
   set legendChips(on: boolean) {
     this.#legendChips = on;
-    for (const el of this.#pickers) el.toggleAttribute('data-chips', on);
+    for (const lay of this.#pickers.values()) lay();
   }
   /** The app's choice: a legend's rows as chips. */
   #legendChips = false;
@@ -1801,7 +1802,18 @@ export class SherpaProvider extends SherpaElement {
     /* The chart's OWN scope, so a filter panel draws it — named as the chart
        is. TRAP T-a-chart-scope-is-its-legend-field */
     const label = nameOf(only);
-    if (!home) source.query.declarePart(key, { field, only: only as Populatable, ...(label ? { label } : {}) });
+    /* Chips, in its card's filter toolbar where it has one: the part is drawn there,
+       answered in its own scope still, and the chart keeps no room for its legend.
+       Will, TODO 670 */
+    const bar = !home && slot && !/\s/.test(slot) && slot !== VIEW
+      && [...this.querySelectorAll('sherpa-quick-filter-toolbar')].some((b) => this.#inherited(b, 'data-scope') === slot);
+    const lay = (): void => {
+      const inBar = this.#legendChips && !!bar;
+      if (!home) source.query.declarePart(key, { field, only: only as Populatable, ...(label ? { label } : {}), ...(inBar ? { shownIn: slot! } : {}) });
+      el.toggleAttribute('data-chips', this.#legendChips && !inBar);
+      only.toggleAttribute('data-no-legend', inBar);
+    };
+    lay();
     // What the filters before it leave, so the legend greys the rest. TRAP T-a-ruled-out-value-is-greyed
     const hear = (event: Event): void => {
       const left = (event as CustomEvent<{ byScope: Record<string, Record<string, string[]>> }>).detail.byScope[home ?? key];
@@ -1817,14 +1829,14 @@ export class SherpaProvider extends SherpaElement {
       this.hover(scope(), field, on, label);
     };
     el.addEventListener('legend-hover', rest);
-    this.#pickers.add(el);
+    this.#pickers.set(el, lay);
     el.toggleAttribute('data-highlight-hover', this.#highlightHover);
-    el.toggleAttribute('data-chips', this.#legendChips);
     return () => {
       el.removeEventListener('legend-hover', rest);
       this.#pickers.delete(el);
       el.removeAttribute('data-highlight-hover');
       el.removeAttribute('data-chips');
+      only.removeAttribute('data-no-legend');
       source.removeEventListener('present', hear);
       if (!home) source.query.declarePart(key, undefined);
       unbind();

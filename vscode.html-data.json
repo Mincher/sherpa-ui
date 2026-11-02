@@ -269,6 +269,10 @@
           "description": "explicit value-axis max (else derived from the data)"
         },
         {
+          "name": "data-no-legend",
+          "valueSet": "v"
+        },
+        {
           "name": "data-over-field"
         },
         {
@@ -1396,6 +1400,10 @@
           "description": "the MIDPOINT tick above the arc. Defaults to the middle of the"
         },
         {
+          "name": "data-no-legend",
+          "valueSet": "v"
+        },
+        {
           "name": "data-over-field"
         },
         {
@@ -1873,6 +1881,10 @@
         {
           "name": "data-min",
           "description": "y-scale bounds (else derived)"
+        },
+        {
+          "name": "data-no-legend",
+          "valueSet": "v"
         },
         {
           "name": "data-over-field",
@@ -3363,6 +3375,10 @@
         {
           "name": "data-label",
           "description": "centre big text"
+        },
+        {
+          "name": "data-no-legend",
+          "valueSet": "v"
         },
         {
           "name": "data-over-field"

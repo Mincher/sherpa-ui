@@ -22,7 +22,7 @@
  * - .publish — Push rows and state to every bound component.
  * - .push — Give one component the rows and the view state.
  * - .pushTo — Push to the components bound by these ids.
- * - .drawPanelReading — Tell each control over several scopes one field's reading in a scope.
+ * - .drawPanelReading — Tell each control over several scopes, and each bar that draws a part, one field's reading in a scope.
  * - .drawReading — Tell each control over a field's home its reading.
  * - .drawBars — Draw every bar over one scope, as the panel draws it.
  * - .stacksIn — Does a slot's chart stack by a Secondary — a bar chart?
@@ -79,6 +79,8 @@ export interface BindHost {
   now(): Date;
   /** Each declared part's scope. */
   partScopes(): Iterable<string>;
+  /** The parts a scope's bar draws: a chart's legend, in its card's toolbar. TODO 670 */
+  partsIn(scope: string): string[];
   /** The view state every bound component is pushed. */
   view(): BoundView;
   /** The rows a bind is under: the page, or every row. */
@@ -233,15 +235,21 @@ export class SourceBinding {
     for (const [el, b] of this.#bound) if (ids.includes(b.id)) this.push(el);
   }
 
-  /** Tell each control over several scopes one field's reading in a scope. */
+  /** Tell each control over several scopes, and each bar that draws a part, one field's reading in a scope. */
   drawPanelReading(field: string, reading: FieldReading, scope: string): void {
-    for (const [el, b] of this.#bound) if (Array.isArray(b.scope)) el.drawReading?.(field, reading, scope);
+    for (const [el, b] of this.#bound) {
+      // A bar draws a chart's legend in its own. TODO 670
+      const draws = Array.isArray(b.scope) || (typeof b.scope === 'string' && this.#host.partsIn(b.scope).includes(scope));
+      if (draws) el.drawReading?.(field, reading, scope);
+    }
   }
 
-  /** Tell each control over a field's home its reading. */
+  /** Tell each control over a field's home its reading — and each bar that draws
+   *  that home, a part, in its own. TODO 670 */
   drawReading(field: string, reading: FieldReading, home: string): void {
     for (const [el, { scope }] of this.#bound) {
-      if (scope === home || (Array.isArray(scope) && scope.includes(home))) {
+      if (scope === home || (Array.isArray(scope) && scope.includes(home))
+        || (typeof scope === 'string' && this.#host.partsIn(scope).includes(home))) {
         el.drawReading?.(field, reading, home);
       }
     }
@@ -250,7 +258,11 @@ export class SourceBinding {
   /** Draw every bar over one scope, as the panel draws it — after a request
    *  that came from somewhere else (the panel) changed what it holds. */
   drawBars(scope: string): void {
-    for (const [el, { scope: s }] of this.#bound) if (s === scope && el.drawScope) void el.drawScope(...this.#slice(scope));
+    for (const [el, { scope: s }] of this.#bound) {
+      if (typeof s !== 'string' || !el.drawScope) continue;
+      // …and a bar that draws it, a part, in its own. TODO 670
+      if (s === scope || this.#host.partsIn(s).includes(scope)) void el.drawScope(...this.#slice(s));
+    }
   }
 
   /** Does a slot's chart stack by a Secondary — a bar chart? TODO 548 */
