@@ -68,7 +68,11 @@ test('its values, in its own order, as the rows hold them; and as a domain with 
   assert.deepEqual((await store.distinct(['health'])).health, ['At risk', 'Watch', 'Healthy']);
   assert.deepEqual((await store.distinct(['health'], { filter: ['score', 'gte', 90] })).health, ['At risk', 'Watch', 'Healthy']);
   assert.deepEqual((await store.distinct(['health'], { filter: ['openTickets', 'eq', 0] })).health, ['At risk', 'Watch', 'Healthy']);
-  assert.deepEqual(store.domains.health, { values: ['At risk', 'Watch', 'Healthy'], statuses: { 'At risk': 'critical', Watch: 'warning', Healthy: 'success' } });
+  assert.deepEqual(store.domains.health, {
+    values: ['At risk', 'Watch', 'Healthy'],
+    statuses: { 'At risk': 'critical', Watch: 'warning', Healthy: 'success' },
+    when: { 'At risk': HEALTH.values[0].when, Watch: HEALTH.values[1].when },
+  });
 });
 
 test('no write names it; a write to a field it reads moves it, and says so', async () => {
@@ -111,4 +115,19 @@ test('a page lists its values in order, each in its look: a filter, a menu, a ce
   await source.load();
   assert.deepEqual(source.filterDef('health').options.map((o) => [o.value, o.swatch]),
     [['At risk', 'critical'], ['Watch', 'warning'], ['Healthy', 'success']]);
+});
+
+test('a number gets its zones from the status field whose values are ranges of it — a gauge draws them, its legend picks that field', async () => {
+  const { store } = stores();
+  const source = new DataSource({ store });
+  source.declareField('score', { type: 'number' });
+  await source.load();
+  assert.deepEqual(source.zonesOf('score'), {
+    from: 'health',
+    thresholds: [{ to: 60, label: 'At risk', status: 'critical' }, { to: 80, label: 'Watch', status: 'warning' }, { to: 100, label: 'Healthy', status: 'success' }],
+  });
+  // A field no status ranges over has none; one that declares its own keeps them.
+  assert.equal(source.zonesOf('openTickets'), undefined);
+  source.declareField('score', { type: 'number', thresholds: [{ to: 50, label: 'Low' }] });
+  assert.equal(source.zonesOf('score'), undefined);
 });

@@ -15211,6 +15211,16 @@ the value, and a page filters by it.
 catalogue gives each option it as its `swatch`. A grid cell whose field's options
 wear a look draws its status icon and its plain label, in a row (Will).
 
+**A gauge's zones come from it** (S3): its domain also carries each value's
+conditions (`when`), and `zonesOf(number)` finds the status field whose values are
+each one condition alone on that number (`lt`/`lte`) — the last none — and makes
+them zones, in order: At risk below 60, Watch below 80, Healthy the rest. The gauge
+over `score` draws them; its legend picks the STATUS field's values, as any legend
+does, and the gauge is free of that field. A number that declares `thresholds`
+keeps its own. A status field the View holds opens on every value (`start: all`):
+a list the View holds otherwise opens on its first, and Records opened on At risk
+alone (measured).
+
 - Site: `src/core/data/status-field.ts`
 - Site: `src/core/data/field-catalogue.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`

@@ -106,6 +106,8 @@ export interface FieldDomain {
   max?: number;
   /** Each value's look, a Style mode — a status field's (plan 683). */
   statuses?: Record<string, string>;
+  /** Each value's conditions, as written — a status field's: a gauge reads its zones there. */
+  when?: Record<string, readonly Record<string, unknown>[]>;
 }
 
 /** The rules that bound a field, and how. */

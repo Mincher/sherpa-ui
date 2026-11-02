@@ -32,6 +32,7 @@ import { VIEW, type Presentation } from '../../core/data/query.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import type { Failure } from '../../core/data/failure.js';
 import type { DataChangeDetail, DataSource, QueryState } from '../../core/data/data-source.js';
+import type { FieldDeclaration } from '../../core/data/data-source-types.js';
 import type { Where } from '../../core/data/where.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
 import { bindSource } from '../../core/ui/bind-source.js';
@@ -1236,10 +1237,12 @@ export class SherpaProvider extends SherpaElement {
     const needs = DECLARED_BY[asks.shape];
     if (needs && !this.#inherited(el, needs)) {
       /* …but a legend in a chart over a BANDED field — a gauge's — picks its
-         bands; the chart draws its rows. TRAP T-a-band-is-a-value-of-its-field */
+         bands; the chart draws its rows. Zones from a status field pick THAT field's
+         values, as any legend does. TRAP T-a-band-is-a-value-of-its-field */
       const field = asks.picks && !el.hasAttribute('data-readonly') ? this.#inherited(el, 'data-field') : null;
-      if (field && source.fieldFacts(field).thresholds?.length) {
-        const unpick = this.#picks(el as Picker, source, field, asks.picks!);
+      const picked = field ? source.zonesOf(field)?.from ?? (source.fieldFacts(field).thresholds?.length ? field : null) : null;
+      if (picked) {
+        const unpick = this.#picks(el as Picker, source, picked, asks.picks!);
         if (unpick) asked.unbind = unpick;
       }
       return;
@@ -1273,7 +1276,7 @@ export class SherpaProvider extends SherpaElement {
     const fields = pivot ? [pivot.segment, pivot.stack] : spec ? [spec.field, spec.segment, spec.over].filter((f): f is string => !!f) : asks.fields?.(el);
     /* A chart over its field's ZONES is free of that field: its filter lights the
        zones and never moves the value. Will, TODO 479. TRAP T-a-chart-is-free-of-its-own-field */
-    const zoned = asks.thresholds && spec?.field ? spec.field : undefined;
+    const zoned = asks.thresholds && spec?.field ? source.zonesOf(spec.field)?.from ?? spec.field : undefined;
     /* What it drew last, so a hover draws it again with no load: a summary marks its
        own part of each segment; a grid marks its own rows. Will, TODO 655 */
     let last: Row[] | null = null;
@@ -1281,7 +1284,13 @@ export class SherpaProvider extends SherpaElement {
       last = rows;
       const test = this.#lit(el, scope, src);
       this.#shown.set(el, test);
-      const summary = summariseMarked(rows, spec, (f) => src.valuesFor(f), (f) => src.fieldFacts(f), test);
+      // A number's zones, its own or a status field's. Plan 683 S3
+      const bands = (f: string): FieldDeclaration => {
+        const facts = src.fieldFacts(f);
+        const zones = facts.thresholds ? undefined : src.zonesOf(f);
+        return zones ? { ...facts, thresholds: zones.thresholds } : facts;
+      };
+      const summary = summariseMarked(rows, spec, (f) => src.valuesFor(f), bands, test);
       return zoned && summary && typeof summary === 'object' && 'zones' in summary
         ? { ...summary, picked: src.pickedFor(el as Populatable, zoned) } : summary;
     } : undefined;

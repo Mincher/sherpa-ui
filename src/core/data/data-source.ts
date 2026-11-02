@@ -34,6 +34,7 @@
  * - .declareChildren — A tiered field's child values, from the rows the source holds: one pass.
  * - .readValues — Read these fields' values now, where they wait; the controls over them are drawn again.
  * - .fieldFacts — What `declareField` was told.
+ * - .zonesOf — A number's zones, from the status field whose values are ranges of it, and that field.
  * - .whereOf — Readings in the plain form a definition or a View writes, by this source's field types.
  * - .readingsOf — The plain form as readings, by this source's field types.
  * - .filterDef — A field's filter, as every bar, panel and heading draws it.
@@ -801,6 +802,12 @@ export class DataSource extends EventTarget {
   /** What `declareField` was told. */
   fieldFacts(field: string): FieldDeclaration {
     return this.#catalogue.copyOf(field);
+  }
+
+  /** A number's zones, from the status field whose values are ranges of it, and that
+   *  field: a gauge draws them, and its legend picks that field. Plan 683 S3 */
+  zonesOf(field: string): ReturnType<FieldCatalogue['zonesOf']> {
+    return this.#catalogue.zonesOf(field);
   }
 
   /** Readings in the plain form a definition or a View writes, by this source's

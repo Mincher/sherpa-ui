@@ -23,6 +23,7 @@
  * - .valuesFor — A copy of a field's declared values.
  * - .byKey — A field's declared values, by their string key.
  * - .isList — A field whose values are a list a control offers one by one.
+ * - .zonesOf — A number's zones, from the status field whose values are ranges of it.
  * - .unlisted — A field with more values than a filter lists: Advanced alone.
  * - .fromRows — Declare each field its schema says nothing of from the values the rows hold.
  */
@@ -247,6 +248,35 @@ export class FieldCatalogue {
     if (this.#bands(field)) return true;
     return this.#domains.has(field) && facts.type !== 'number' && facts.type !== 'date'
       && facts.advanced !== 'only' && !this.unlisted(field);
+  }
+
+  /** A number's zones, from the status field whose values are ranges of it — each
+   *  value one of its conditions alone on the number (`lt`/`lte`), the last none —
+   *  and that field's name: a gauge draws them, and its legend picks that field.
+   *  A number that declares `thresholds` keeps its own. Will, plan 683 S3
+   *  TRAP T-a-status-is-worked-out-by-the-data */
+  zonesOf(field: string): { from: string; thresholds: Threshold[] } | undefined {
+    const facts = this.#fields.get(field);
+    if (facts?.type !== 'number' || facts.thresholds?.length) return undefined;
+    const top = (branch: Readonly<Record<string, unknown>>): number | undefined => {
+      if (Object.keys(branch).length !== 1) return undefined;
+      const said = Object.entries((branch[field] ?? {}) as Record<string, unknown>);
+      const [op, to] = said[0] ?? [];
+      return said.length === 1 && (op === 'lt' || op === 'lte') && typeof to === 'number' ? to : undefined;
+    };
+    for (const [from, status] of this.#fields) {
+      if (!status.statuses || !status.when) continue;
+      const values = (this.#domains.get(from) ?? []).map(String);
+      const zones: Threshold[] = [];
+      for (const [i, value] of values.entries()) {
+        const branches = status.when[value];
+        const to = branches ? branches.map(top).find((n) => n !== undefined) : i === values.length - 1 ? facts.max ?? 100 : undefined;
+        if (to === undefined || (zones.length && to <= zones.at(-1)!.to)) break;
+        zones.push({ to, label: value, ...(status.statuses[value] ? { status: status.statuses[value] } : {}) });
+      }
+      if (values.length && zones.length === values.length) return { from, thresholds: zones };
+    }
+    return undefined;
   }
 
   /** A field with more values than a filter lists: Advanced alone. TRAP T-a-list-has-a-limit */

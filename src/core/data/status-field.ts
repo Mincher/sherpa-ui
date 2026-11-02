@@ -156,6 +156,7 @@ export function statusFields(store: Store, fields: Readonly<Record<string, Statu
     domains[field] = {
       values: def.values.map((v) => v.value),
       statuses: Object.fromEntries(def.values.flatMap((v) => (v.status ? [[v.value, v.status]] : []))),
+      when: Object.fromEntries(def.values.flatMap((v) => (v.when?.length ? [[v.value, v.when as readonly Record<string, unknown>[]]] : []))),
     };
   }
 
