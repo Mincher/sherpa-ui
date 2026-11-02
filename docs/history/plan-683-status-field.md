@@ -67,6 +67,10 @@ A **status field** is defined once, with the data, as JSON:
 
 ## Decisions for Will
 
+Answered, 2026-11-02: all A.
+
+**Waits for plan 652** (Will, 2026-11-02): *"these status fields might be useful with other things like preset filters, organise criteria... We should look into this after the Service Worker stuff is settled."* So S1 starts once 652 is settled, and the plan then looks at presets and Organise too.
+
 | # | Question | A (my pick) | B |
 |---|---|---|---|
 | D1 | Its name. A field's `advanced: true` already means "its filter offers Advanced conditions" | A **status** field: `"type": "status"`. Your word "Advanced" stays with the filter | An **advanced** field. Today's `advanced: true` is renamed in the same change |
