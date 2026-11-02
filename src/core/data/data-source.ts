@@ -1414,7 +1414,8 @@ export class DataSource extends EventTarget {
     // Not in a History it can trust: any field may have moved.
     if (!history || !this.#trusts(event, since)) {
       this.#age++;
-      void (this.#cache ? this.#reask() : this.load({ force: true }));
+      // A store that holds its own set has taken the change: it is asked again, never read again. S6
+      void (this.#cache || this.store.holds ? this.#reask() : this.load({ force: true }));
       return;
     }
     // The walk runs again only when a field it reads, or the rows, moved. TRAP T-a-change-redoes-only-what-reads-it

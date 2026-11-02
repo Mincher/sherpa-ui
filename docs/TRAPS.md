@@ -14934,6 +14934,29 @@ and a hold with nothing held and nothing read this session restores once more.
 - Site: `src/core/data/held-store.ts`
 - Site: `test/unit/a-worker-holds-the-set.test.mjs`
 
+### T-every-tab-hears-a-change
+
+**One tab's write is every tab's news** (plan 652 S6). `serveData` says each
+store's change on one `BroadcastChannel`, `DATA_CHANNEL` (`sherpa-data`), as
+`{ store, change }`, and tells a page so in its facts (`notifies`). A
+`RequestStore` over such a host listens, and announces each change for its store
+to its page. Measured 2026-11-02: a customer added in one Records tab shows in
+another — 100 rows, then 101, then 100 when removed — in all three engines.
+
+**Its own writes too, once.** The worker's word reaches the tab that wrote, so a
+`RequestStore` that hears its host announces none of its own writes itself; one
+with no such host (the page's own handler) still does.
+
+**A store that holds its own set is asked again, never read again**, on a change:
+a forced load would have made the worker read its source.
+
+**A channel lives as long as its page, or its worker** — and in Node it would
+hold the test run open for ever: each is `unref()`'d where it can be.
+
+- Site: `src/core/worker/serve-data.ts`
+- Site: `src/core/data/request-store.ts`
+- Site: `test/unit/every-tab-hears-a-change.test.mjs`
+
 ### T-a-horizontal-legend-is-three-by-two
 
 A horizontal legend was a wrapping flex row, so it put a different number of

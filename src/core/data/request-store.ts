@@ -9,10 +9,10 @@
  * - openRequestStore — A request store, with its facts asked first.
  */
 import { BaseStore } from './base-store.js';
-import { DATA_QUERY_TYPE, DATA_VERSION, STALE, encodeQuery, keySegment, type DataQuery, type StoreFacts } from './data-handler.js';
+import { DATA_CHANNEL, DATA_QUERY_TYPE, DATA_VERSION, STALE, encodeQuery, keySegment, type DataQuery, type StoreFacts } from './data-handler.js';
 import type { Failure } from './failure.js';
 import { HttpError } from './stores.js';
-import { readField, type LoadOptions, type LoadResult, type Row, type RowOrder, type StoreChanges } from './store.js';
+import { readField, type LoadOptions, type LoadResult, type Row, type RowOrder, type StoreChangeDetail, type StoreChanges } from './store.js';
 import { ValidationError, type FieldDomain, type Issue } from './validate.js';
 
 /** Where its requests go, and the store's name there. */
@@ -58,6 +58,26 @@ export class RequestStore extends BaseStore {
     this.#facts = facts;
     if (facts.changes) this.changes = (since) => this.#ask('GET', `?since=${encodeURIComponent(since === undefined ? '' : JSON.stringify(since))}`);
     if (facts.holds) this.recheck = () => this.#ask('GET', '?recheck');
+    /* Its host says every change, to every tab — its own writes too, so it says
+       none of them itself. S6 · TRAP T-every-tab-hears-a-change */
+    if (facts.notifies && typeof BroadcastChannel === 'function') {
+      this.#heard = true;
+      const channel = new BroadcastChannel(DATA_CHANNEL);
+      channel.addEventListener('message', (event) => {
+        const said = (event as MessageEvent<{ store?: string; change?: StoreChangeDetail }>).data;
+        if (said?.store === options.name) this.announce(said.change ?? { type: 'update' });
+      });
+      // Open as long as the page: in Node, it keeps nothing running.
+      (channel as { unref?: () => void }).unref?.();
+    }
+  }
+
+  /** Its host says its changes, its own writes among them. */
+  #heard = false;
+
+  /** A write of its own, said unless its host says it to every tab. */
+  #wrote(change: StoreChangeDetail): void {
+    if (!this.#heard) this.announce(change);
   }
 
   /** It holds its own set, so a reader over it holds none. */
@@ -116,19 +136,19 @@ export class RequestStore extends BaseStore {
 
   async insert(values: Row): Promise<Row> {
     const row = this.keyed(await this.#ask<Row>('POST', '', values));
-    this.announce({ type: 'insert', key: readField(row, this.key), row });
+    this.#wrote({ type: 'insert', key: readField(row, this.key), row });
     return row;
   }
 
   async update(key: unknown, values: Row): Promise<Row> {
     const row = this.keyed(await this.#ask<Row>('PATCH', `/${keySegment(key)}`, values));
-    this.announce({ type: 'update', key, row });
+    this.#wrote({ type: 'update', key, row });
     return row;
   }
 
   async remove(key: unknown): Promise<void> {
     await this.#ask('DELETE', `/${keySegment(key)}`);
-    this.announce({ type: 'remove', key });
+    this.#wrote({ type: 'remove', key });
   }
 
   /** A read, as `QUERY`. */

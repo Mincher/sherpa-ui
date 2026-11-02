@@ -7,6 +7,7 @@
  * - DATA_QUERY_TYPE — The media type of a Sherpa data query, sent with `QUERY`.
  * - DATA_VERSION — The protocol's version, in the `Sherpa-Data` header.
  * - STALE — The header that says an answer's rows are unconfirmed, and why.
+ * - DATA_CHANNEL — The channel a host that notifies says each store's change on, to every tab.
  * - DataQuery — A store read as JSON: what `load` or `totalCount` is asked.
  * - StoreFacts — What a store says of itself, as JSON.
  * - DataHandlerOptions — The stores it answers for, by name, and the path they sit under.
@@ -29,6 +30,10 @@ export const DATA_VERSION = 1;
  *  JSON, URI-encoded. */
 export const STALE = 'Sherpa-Stale';
 
+/** The `BroadcastChannel` a host that `notifies` says each store's change on, to
+ *  every tab: `{ store, change }`. S6 */
+export const DATA_CHANNEL = 'sherpa-data';
+
 /** A store read as JSON: what `load` or `totalCount` is asked. `now` is an ISO
  *  time; `total` asks for the count alone. */
 export interface DataQuery {
@@ -47,13 +52,19 @@ export interface DataQuery {
 
 /** What a store says of itself, as JSON. */
 export type StoreFacts = Pick<Store, 'key' | 'time' | 'remote' | 'projects' | 'reportsTotal' | 'totalFirst'
-  | 'sampled' | 'rowOrder' | 'announcesAll' | 'domains' | 'holds'> & { changes: boolean };
+  | 'sampled' | 'rowOrder' | 'announcesAll' | 'domains' | 'holds'> & {
+  changes: boolean;
+  /** Its host says every change on `DATA_CHANNEL`, so a reader hears another tab's. */
+  notifies?: boolean;
+};
 
 /** The stores it answers for, by name, and the path they sit under. */
 export interface DataHandlerOptions {
   stores: Readonly<Record<string, Store>>;
   /** Default `/sherpa/data/`. */
   base?: string;
+  /** Its host says each store's change on `DATA_CHANNEL`: a Service Worker. S6 */
+  notifies?: boolean;
 }
 
 /** Answer one request, or null where it is not the data layer's: its host passes it on. */
@@ -155,7 +166,7 @@ export function createDataHandler(options: DataHandlerOptions): DataHandler {
     if (request.method === 'OPTIONS') return answer(204, null, { Allow: allow, 'Accept-Query': DATA_QUERY_TYPE });
     if (!allow.split(', ').includes(request.method)) return problem(405, 'invalid', `${request.method} is not allowed here`, { Allow: allow });
     try {
-      const response = allow === ON_ROW ? await onRow(store, keyFrom(key!), request) : await onStore(store, url, request);
+      const response = allow === ON_ROW ? await onRow(store, keyFrom(key!), request) : await onStore(store, url, request, !!options.notifies);
       // Old rows answer while the source cannot be reached: the reader says so. S5b
       if (store.stale) response.headers.set(STALE, encodeURIComponent(JSON.stringify(store.stale)));
       return response;
@@ -169,7 +180,7 @@ export function createDataHandler(options: DataHandlerOptions): DataHandler {
 }
 
 /** A read of the store, its facts, its changes, or a new row. */
-async function onStore(store: Store, url: URL, request: Request): Promise<Response> {
+async function onStore(store: Store, url: URL, request: Request, notifies: boolean): Promise<Response> {
   if (request.method === 'GET') {
     // Read the source again, behind the set it holds. S5b
     if (url.searchParams.has('recheck')) {
@@ -177,7 +188,7 @@ async function onStore(store: Store, url: URL, request: Request): Promise<Respon
       return answer(204, null);
     }
     const since = url.searchParams.get('since');
-    if (since === null) return answer(200, factsOf(store));
+    if (since === null) return answer(200, { ...factsOf(store), ...(notifies ? { notifies: true } : {}) });
     if (!store.changes) return problem(404, 'invalid', 'this store says nothing of its changes');
     return answer(200, await store.changes(since === '' ? undefined : JSON.parse(since)));
   }
