@@ -8,7 +8,7 @@
  * - BindOptions — What a component may do with the source it is bound to.
  * - bindSource — Point a component at a source: rows and `data-*` down, steering events back.
  * - SteeringEvent — One of them.
- * - SteerBind — What steering needs of one binding: its scope.
+ * - SteerBind — What steering needs of one binding: its scope, and where a hover goes.
  * - ask — A control's request, to its context's doors; a list is one change.
  * - steer — Turn one component's event into its source's call.
  */
@@ -36,6 +36,9 @@ export interface BindOptions extends AttachFacts {
    *  component's request through the callback it asked with.
    *  TRAP T-a-component-asks-its-provider */
   deliver?: (payload: unknown) => void;
+  /** Where a bar's rest on a chip, or one value of it, GOES: a hover lights its
+   *  matches, and is the page's, never the Query's. Will, TODO 655 */
+  hover?: (hovered: { scope: string; field: string; on: boolean; value?: string }) => void;
 }
 
 /**
@@ -65,7 +68,7 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
   const readonly = options.readonly ?? false;
   const steers = readonly ? options.steers ?? [] : STEERING_EVENTS;
   if (steers.length) steered.add(el as unknown as object);
-  const steering: SteerBind = options.scope ? { scope: options.scope } : {};
+  const steering: SteerBind = { ...(options.scope ? { scope: options.scope } : {}), ...(options.hover ? { hover: options.hover } : {}) };
   const listeners: Array<[string, EventListener]> = [];
   const ignored = new Set(options.ignore ?? []);
   for (const type of steers) {
@@ -106,7 +109,6 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
       // Through the callback it ASKED with, when a provider bound it.
       const give = deliver ?? ((p: unknown): void => { void el.populate?.(p); });
       give(into ? mergeInto(el, into, payload) : payload);
-      el.drawHighlight?.(source.highlightFor(options.scope, el));
     },
     pending: (fields, dirty, waits, failed, applied) => {
       // What is applied first, so the flags that follow are read against it. TODO 424
@@ -221,6 +223,7 @@ export type SteeringEvent = (typeof STEERING_EVENTS)[number];
 /** What steering needs of one binding: its scope. */
 export interface SteerBind {
   scope?: string | readonly string[];
+  hover?: BindOptions['hover'];
 }
 
 /** Which scope a Group or Sort came from: the event's, else its one bound scope. TODO 99 */
@@ -256,7 +259,8 @@ export function ask(query: QueryContext, request: QueryRequest, scope: string): 
   const one = request as Exclude<QueryRequest, readonly QueryRequest[]>;
   const at = one.scope ?? scope;
   if ('reset' in one) query.reset([at], one.reset);
-  else if ('preview' in one) query.preview(at, one.field, one.preview, one.value);
+  // A hover is the page's, never the Query's: `steer` hands it to the host. TODO 655
+  else if ('preview' in one) return;
   else if ('order' in one) query.order(at, one.order);
   else if ('preset' in one) query.setPreset(at, one.preset, one.on, !!one.commit);
   else if ('reading' in one) query.setReading(at, one.field, one.reading);
@@ -304,6 +308,12 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
       const request = detail['request'] as QueryRequest | undefined;
       if (!request) return;
       const at = typeof bind?.scope === 'string' ? bind.scope : undefined;
+      // A hover goes to the page. TODO 655 · TRAP T-a-hovered-chip-previews-the-highlight
+      if (!Array.isArray(request) && 'preview' in request) {
+        const scope = request.scope ?? at;
+        if (scope) bind?.hover?.({ scope, field: request.field, on: request.preview, ...(request.value != null ? { value: request.value } : {}) });
+        return;
+      }
       if (at || hasScope(request)) ask(source.query, request, at ?? VIEW);
       else reportUnscoped(el);
       return;

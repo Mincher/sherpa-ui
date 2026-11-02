@@ -56,8 +56,6 @@
  * - .batch — The doors one act calls are ONE change to the page.
  * - .commit — SEND the draft — Apply, where a scope waits.
  * - .discard — Put the applied answers back over the draft — Discard, where a scope waits.
- * - .previewed — The chip hovered, while it previews the highlight.
- * - .preview — Preview a field's chip as the driver, or stop: never in the Query.
  * - .setSort — Order by one field, or stop; `null` suspends.
  * - .resumeSort — Resume the suspended sort.
  * - .clearSort — Forget the sort entirely — the gesture that is NOT a suspend.
@@ -102,8 +100,6 @@ export type QueryChange =
   | { kind: 'move'; scopes: string[]; moved: boolean }
   /** The Query moved: compile it. */
   | { kind: 'recompose' }
-  /** Only the highlight's driver moved: mark again, and load nothing. TODO 449 */
-  | { kind: 'mark' }
   /** Only a scope's ORDER moved: count again in it. TODO 452 */
   | { kind: 'order'; scope: string }
   /** A scope's preset went on or off. TODO 493 */
@@ -1017,23 +1013,6 @@ export class QueryContext extends EventTarget {
     else this.#live.draft = structuredClone(this.#live.applied);
     this.#tell({ kind: 'drawn', fields: [...new Set([...before, ...this.#answered()])], pending: true });
   }
-
-  /** The chip hovered — or one value of it — while it previews the highlight. TODOs 449, 459 */
-  get previewed(): { scope: string; field: string; value?: string } | null {
-    return this.#preview;
-  }
-
-  /** Preview a field's chip as the highlight's driver, or stop. Never in the
-   *  Query, so never saved, and it moves no row: no load. Will, TODO 449.
-   *  TRAP T-a-hovered-chip-previews-the-highlight */
-  preview(scope: string, field: string, on: boolean, value?: string): void {
-    const was = this.#preview;
-    if (on ? was?.scope === scope && was.field === field && was.value === value : !was || was.scope !== scope || was.field !== field) return;
-    this.#preview = on ? { scope, field, ...(value != null ? { value } : {}) } : null;
-    this.#tell({ kind: 'mark' });
-  }
-  /** The chip hovered, or null. */
-  #preview: { scope: string; field: string; value?: string } | null = null;
 
   /**
    * Order by one field, or stop. Every re-ordering returns to page 1.

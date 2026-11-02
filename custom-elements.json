@@ -8035,6 +8035,14 @@
             },
             {
               "kind": "field",
+              "name": "hovered",
+              "type": {
+                "text": "{ scope: string; field: string; value?: string } | null"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
               "name": "singleApply",
               "type": {
                 "text": "boolean"
@@ -8148,6 +8156,36 @@
                 "text": "string | undefined"
               },
               "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "hover",
+              "parameters": [
+                {
+                  "name": "scope",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "field",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "on",
+                  "optional": true
+                },
+                {
+                  "name": "value",
+                  "type": {
+                    "text": "string"
+                  },
+                  "optional": true
+                }
+              ],
+              "description": "Light what a field of a scope matches — or one value of it — as a rest on its chip or legend row does; `on: false` stops. Will, TODO 655"
             },
             {
               "kind": "method",

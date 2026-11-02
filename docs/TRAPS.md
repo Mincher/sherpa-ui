@@ -19453,19 +19453,19 @@ A page with SEVERAL sources compiles only its own scopes (`facts.mine`), so
 source has the field (`facts.has`); one without it marks nothing.
 
 **Or only within the filter's scope** — TODO 467, the app's setting,
-`highlightAcross` on the provider and the source. It is OFF by default since
-TODO 520 (Will: *"Match highlighting should only apply to content in the same
-scope as the filter."*), so the whole page lights only when an app turns it on.
-Off, a component outside the driver's scope is given no test
-(`highlightFor(scope, el)`), and the binding's push key carries that answer, so
-flipping it pushes again. A View driver is every scope's, on or off. A CHART's
-own scope (its legend's part) is in a scope of its own, while the chart is bound
-in the page's: so the part reaches the one component it narrows (`only`), and
-the push key asks with the element too, or the chart is never drawn again
-(Will, TODO 529).
+`highlightAcross` on the provider. It is OFF by default since TODO 520 (Will:
+*"Match highlighting should only apply to content in the same scope as the
+filter."*), so the whole page lights only when an app turns it on. Off, a
+component outside the driver's scope is given no test, and flipping the setting
+draws again only what changed. A View driver is every scope's, on or off. A
+CHART's own scope (its legend's part) is in a scope of its own, while the chart
+is bound in the page's: so the part reaches the one component it narrows
+(`partFacts(scope).only`), or the chart is never lit (Will, TODO 529).
 
-- Site: `src/core/data/data-source.ts`
-- Site: `src/core/data/query.ts`
+**Who it reaches is the PROVIDER's** since TODO 655 (`#lit`): the hover is the
+page's, and the data layer is only asked what it matches, once per source.
+
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/unit/a-hovered-chip-previews-the-highlight.test.mjs`
 
 ### T-a-hovered-chip-previews-the-highlight
@@ -19473,16 +19473,21 @@ the push key asks with the element too, or the chart is never drawn again
 **A chip hovered PREVIEWS the highlight** (Will, TODO 449,
 "Highlight matches on hover"). Resting 150ms on an applied chip whose matches
 are counted (`results` is not null: not pending, not a draft) asks
-`{ field, preview: true }`; leaving the chip, or the bar, asks it off. The
-preview is the QueryContext's (`preview()`, `previewed`), NOT the Query's: a
-hover is never saved and never a `query-change`. `compile()` takes it as
-`facts.highlight`. It is the only highlight: the driver a menu's "Highlight
-matches" switch kept in the Query (TODO 441) went in TODO 589, Will: not useful.
+`{ field, preview: true }`; leaving the chip, or the bar, asks it off. It is the
+only highlight: the driver a menu's "Highlight matches" switch kept in the Query
+(TODO 441) went in TODO 589, Will: not useful.
 
-**It tells `mark`, not `recompose`.** A recompose re-queries, and a re-query
-sets the page to 1 and loads: every hover sent the grid back to page 1. A mark
-compiles again and pushes each component its test; no row moves, so nothing
-loads.
+**The hover is the PAGE's, never the data layer's** (Will, TODO 655: *"Highlighting
+should also just be a response to a broadcast 'on hover' event from another UI
+component."*). `bindSource` hands a bar's preview request to its host's `hover`
+callback, and never to the Query; a legend's `legend-hover` goes to the provider
+too. The provider keeps it (`hovered`, `hover()`), asks each source once what it
+matches (`highlightTest`, by the pure `highlightOf`), and draws again only the
+components whose test changed: a summary from the rows it last gave them, a grid
+by `drawHighlight`. Nothing is saved, nothing is a `query-change`, and nothing
+loads: a re-query would set the page to 1, and every hover once sent the grid back
+to page 1. Until 655 it was the QueryContext's (`preview()`, `previewed`) and
+`compile()`'s (`facts.highlight`).
 
 **It follows `pointermove`, never `pointerover`** (TODO 463). Inside a bar
 Chromium sent ONE `pointerover` — the first element entered — and none after,
@@ -19507,9 +19512,8 @@ chart's own scope is made at its legend's first toggle, and `compile` built the
 highlight only from scopes the Query had — so a rest before any toggle asked a
 preview and lit nothing. A rested value whose scope is not made yet is compiled
 from an empty one.
-- Site: `src/core/data/query-context.ts`
+- Site: `src/core/ui/bind-source.ts`
 - Site: `src/core/data/query.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/a-hovered-chip-previews-the-highlight.test.mjs`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`

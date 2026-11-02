@@ -42,6 +42,7 @@ Put it round the part of a page whose components need data: each component insid
 | `highlightOnHover` | `boolean` | read and write |  |
 | `legendChips` | `boolean` | read and write |  |
 | `highlightAcross` | `boolean` | read and write |  |
+| `hovered` | `{ scope: string; field: string; value?: string } \| null` | read only |  |
 | `singleApply` | `boolean` | read and write |  |
 | `reorderFilters` | `boolean` | read and write |  |
 | `moveFilters` | `boolean` | read and write |  |
@@ -63,6 +64,7 @@ Put it round the part of a page whose components need data: each component insid
 
 | Method | What it does |
 |---|---|
+| `hover(scope: string, field: string, on = true, value?: string)` | Light what a field of a scope matches — or one value of it — as a rest on its chip or legend row does; `on: false` stops. Will, TODO 655 |
 | `provide(options: ProvideOptions)` | Give this subtree its sources — and its Views. Every component already asking is answered again: a Context that swaps its source swaps it for everything in it. Settles once the kept Query, or the start View, is on. |
 | `open(definition: PageDefinition, options: OpenOptions)` | Set up a page from its DEFINITION: its source over the app's store, every filter bar drawn from its scope — the View chip, the fields it holds, what it may add — and all of it provided. The source, or undefined for a page with no data. |
 | `prepare(definition: PageDefinition \| null)` | A page is about to be drawn from this definition, or from none: take its filter mode NOW — the panel open or shut — so its content is never drawn twice. `open()` follows. |

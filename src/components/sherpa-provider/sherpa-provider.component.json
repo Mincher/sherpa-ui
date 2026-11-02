@@ -186,12 +186,12 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, results, countApplied, savedMenu, saveAnyScope, switchable, sectionLabels, hideOrganiseLabels, sections, highlightOnHover, legendChips, highlightAcross, singleApply, reorderFilters, moveFilters, labelColumn, countEveryValue, headingGroup, headingHover, multiFieldColumns, showAs, axisChips, appContext, applyEvery, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, results, countApplied, savedMenu, saveAnyScope, switchable, sectionLabels, hideOrganiseLabels, sections, highlightOnHover, legendChips, highlightAcross, hovered, singleApply, reorderFilters, moveFilters, labelColumn, countEveryValue, headingGroup, headingHover, multiFieldColumns, showAs, axisChips, appContext, applyEvery, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (provide, open, prepare, recheck, close, saveView, deleteView, saveFilters, applyFilters, dismissFilters, deleteFilters, renameFilters, resetView, export, import). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (hover, provide, open, prepare, recheck, close, saveView, deleteView, saveFilters, applyFilters, dismissFilters, deleteFilters, renameFilters, resetView, export, import). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -231,6 +231,12 @@
   "$extensions": {
     "sherpa": {
       "methods": [
+        {
+          "$type": "method",
+          "name": "hover",
+          "args": "scope: string, field: string, on = true, value?: string",
+          "description": "Light what a field of a scope matches — or one value of it — as a rest on its chip or legend row does; `on: false` stops. Will, TODO 655"
+        },
         {
           "$type": "method",
           "name": "provide",
@@ -392,6 +398,11 @@
           "name": "highlightAcross",
           "type": "boolean",
           "access": "read-write"
+        },
+        {
+          "name": "hovered",
+          "type": "{ scope: string; field: string; value?: string } | null",
+          "access": "read"
         },
         {
           "name": "singleApply",

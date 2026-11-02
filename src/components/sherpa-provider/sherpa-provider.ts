@@ -412,10 +412,54 @@ export class SherpaProvider extends SherpaElement {
   }
   set highlightAcross(on: boolean) {
     this.#across = on;
-    for (const source of Object.values(this.#sources)) source.highlightAcross = on;
+    this.#light();
   }
   /** The app's choice: highlight across every scope. */
   #across = false;
+
+  /** What the pointer rests on while it lights its matches: a chip, one value of
+   *  it, or a legend row. The page's, never the Query's: nothing loads, nothing is
+   *  saved. Will, TODOs 449, 655 · TRAP T-a-hovered-chip-previews-the-highlight */
+  #hovered: { scope: string; field: string; value?: string } | null = null;
+  /** This hover's test, asked once of each source. */
+  #tests = new Map<DataSource, ((row: Row) => boolean) | null>();
+  /** Each component that draws a hover's matches, and how it draws them again. */
+  #lights = new Map<Element, () => void>();
+  /** The test each of them was last drawn with. */
+  #shown = new WeakMap<Element, ((row: Row) => boolean) | null>();
+
+  /** What the pointer rests on while it lights its matches, or null. */
+  get hovered(): { scope: string; field: string; value?: string } | null {
+    return this.#hovered ? { ...this.#hovered } : null;
+  }
+
+  /** Light what a field of a scope matches — or one value of it — as a rest on its
+   *  chip or legend row does; `on: false` stops. Will, TODO 655 */
+  hover(scope: string, field: string, on = true, value?: string): void {
+    const was = this.#hovered;
+    if (on ? was?.scope === scope && was.field === field && was.value === value : !was || was.scope !== scope || was.field !== field) return;
+    this.#hovered = on ? { scope, field, ...(value != null ? { value } : {}) } : null;
+    this.#tests.clear();
+    this.#light();
+  }
+
+  /** Every component that draws the hover, drawn again where its test changed. */
+  #light(): void {
+    for (const relight of this.#lights.values()) relight();
+  }
+
+  /** The hover's test for one component, where it reaches it: across every scope,
+   *  from the View, in its own scope, or a chart's own part. TODOs 467, 520, 529.
+   *  TRAP T-the-highlight-reaches-the-whole-page */
+  #lit(el: Element, scope: string | readonly string[] | undefined, source: DataSource): ((row: Row) => boolean) | null {
+    const hovered = this.#hovered;
+    if (!hovered) return null;
+    const reaches = this.#across || hovered.scope === VIEW || source.query.partFacts(hovered.scope)?.only === el
+      || (typeof scope === 'string' ? scope === hovered.scope : !!scope?.includes(hovered.scope));
+    if (!reaches) return null;
+    if (!this.#tests.has(source)) this.#tests.set(source, source.highlightTest(hovered));
+    return this.#tests.get(source) ?? null;
+  }
 
   /** ONE Apply and Discard for a scope that waits — or, off, each field's own,
    *  in its menu or its panel section. The app sets it, from its session. Will, TODO 451 */
@@ -675,9 +719,11 @@ export class SherpaProvider extends SherpaElement {
       this.#pages.end();
     }
     this.#sources = { ...options.sources };
+    // A rest on the page that went goes with it.
+    this.#hovered = null;
+    this.#tests.clear();
     for (const source of Object.values(this.#sources)) {
       source.limitOptions = this.#limit;
-      source.highlightAcross = this.#across;
       source.countEveryValue = this.#countEvery;
       source.showAs = this.#showAs;
       source.axisChips = this.#axisChips;
@@ -1200,6 +1246,22 @@ export class SherpaProvider extends SherpaElement {
     /* A chart over its field's ZONES is free of that field: its filter lights the
        zones and never moves the value. Will, TODO 479. TRAP T-a-chart-is-free-of-its-own-field */
     const zoned = asks.thresholds && spec?.field ? spec.field : undefined;
+    /* What it drew last, so a hover draws it again with no load: a summary marks its
+       own part of each segment; a grid marks its own rows. Will, TODO 655 */
+    let last: Row[] | null = null;
+    const summarised = spec ? (rows: Row[], src: DataSource): unknown => {
+      last = rows;
+      const test = this.#lit(el, scope, src);
+      this.#shown.set(el, test);
+      const summary = summariseMarked(rows, spec, (f) => src.valuesFor(f), (f) => src.fieldFacts(f), test);
+      return zoned && summary && typeof summary === 'object' && 'zones' in summary
+        ? { ...summary, picked: src.pickedFor(el as Populatable, zoned) } : summary;
+    } : undefined;
+    const drawsHighlight = 'drawHighlight' in el;
+    const draw = (test: ((row: Row) => boolean) | null): void => {
+      this.#shown.set(el, test);
+      (el as { drawHighlight?: (test: ((row: Row) => boolean) | null) => void }).drawHighlight?.(test);
+    };
     const unbind = bindSource(source, el as Populatable, {
       ...(zoned ? { free: [zoned] } : {}),
       ...(spec && typeof scope === 'string' ? { shows: this.#shows(el), ...(asks.stacks ? { stacks: true } : {}) } : {}),
@@ -1212,11 +1274,7 @@ export class SherpaProvider extends SherpaElement {
       ...(asks.own ? { ignore: asks.own } : {}),
       ...(scope ? { scope } : {}),
       /* A summary SHOWS the data and never steers it. TRAP T-aggregation-is-data */
-      ...(spec ? { readonly: true, as: (rows, src) => {
-        const summary = summariseMarked(rows, spec, (f) => src.valuesFor(f), (f) => src.fieldFacts(f), src.highlightFor(scope, el));
-        return zoned && summary && typeof summary === 'object' && 'zones' in summary
-          ? { ...summary, picked: src.pickedFor(el as Populatable, zoned) } : summary;
-      } } : {}),
+      ...(summarised ? { readonly: true, as: summarised } : {}),
       // …and its headings and cells filter its rows, its rows' sub-grids too. TODO 571
       ...(pivot ? { readonly: true, steers: PIVOT_STEERS, as: (rows, src) => this.#pivotOf(el, rows, pivot, src, asks.filters?.(el) ?? []) } : {}),
       ...(made ? { readonly: true, as: (rows) => this.#madeTable(el, rows, made, source) } : {}),
@@ -1236,8 +1294,21 @@ export class SherpaProvider extends SherpaElement {
           };
         } }
         : {}),
-      deliver: (payload) => callback(payload, leave),
+      deliver: (payload) => {
+        callback(payload, leave);
+        if (drawsHighlight) draw(this.#lit(el, scope, source));
+      },
+      hover: ({ scope: at, field, on, value }) => this.hover(at, field, on, value),
     });
+    // A hover lights it again from what it has: nothing loads. TODO 655
+    if (summarised || drawsHighlight) {
+      this.#lights.set(el, () => {
+        const test = this.#lit(el, scope, source);
+        if (test === (this.#shown.get(el) ?? null)) return;
+        if (summarised && last) callback(summarised(last, source), leave);
+        else draw(test);
+      });
+    }
     this.#fetchFields(el, source);
     const unpick = spec && asks.picks ? this.#picks(el as Picker, source, spec.segment ?? '', asks.picks) : undefined;
     const unown = this.#own(el, source);
@@ -1257,6 +1328,7 @@ export class SherpaProvider extends SherpaElement {
       (el as Element & { drawReading(f: string, r: FieldReading): void }).drawReading(field, source.query.reading(made as string, field) ?? {});
     }, { signal: refilter.signal });
     asked.unbind = () => {
+      this.#lights.delete(el);
       refilter?.abort();
       unshow?.();
       unown?.();
@@ -1741,7 +1813,7 @@ export class SherpaProvider extends SherpaElement {
     const scope = (): string => (source.query.scope(VIEW).includes(field) ? VIEW : home ?? key);
     const rest = (event: Event): void => {
       const { label, on } = (event as CustomEvent<{ label: string; on: boolean }>).detail;
-      source.query.preview(scope(), field, on, label);
+      this.hover(scope(), field, on, label);
     };
     el.addEventListener('legend-hover', rest);
     this.#pickers.add(el);

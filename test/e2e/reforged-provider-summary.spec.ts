@@ -155,7 +155,7 @@ test('a rest on a legend row previews its value while Highlight matches on hover
       (type === 'over' ? item() : legend.shadowRoot.querySelector('.legend'))
         .dispatchEvent(new PointerEvent(type === 'over' ? 'pointerover' : 'pointerleave', { bubbles: true, composed: true }));
       await new Promise((done) => setTimeout(done, 250));
-      return source.query.previewed;
+      return provider.hovered;
     };
     const off = await rest('over');
     await rest('leave');
@@ -163,16 +163,18 @@ test('a rest on a legend row previews its value while Highlight matches on hover
     const marked = legend.hasAttribute('data-highlight-hover');
     const on = await rest('over');
     // Its matches LIGHT, not only asked for: nothing was toggled. TODO 513
-    const lit = source.highlight ? [...new Set(source.rows.filter((row) => source.highlight(row)).map((row) => row.plan))] : null;
+    // The chart marks them from its own rows: the hover is the page's. TODO 655
+    const donut = provider.querySelector('#donut');
+    const lit = donut.slices.filter((s) => s.matched > 0).map((s) => s.label);
     const left = await rest('leave');
-    return { off, marked, on, lit, left, after: source.highlight };
+    return { off, marked, on, lit, left, after: donut.slices.some((s) => s.matched != null) };
   })()`) as Record<string, unknown>;
   expect(r['off']).toBeNull();
   expect(r['marked']).toBe(true);
   expect(r['on']).toMatchObject({ field: 'plan', value: 'Free' });
   expect(r['lit']).toEqual(['Free']);
   expect(r['left']).toBeNull();
-  expect(r['after']).toBeNull();
+  expect(r['after']).toBe(false);
 });
 
 test('a child uses the nearest data-source above it; a new declaration asks again; a bad one is loud', async ({ page }) => {

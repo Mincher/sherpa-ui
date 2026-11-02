@@ -20,11 +20,9 @@
  * - .rows — The last load's rows, LIVE — state, query and result are copies
  * - .total — Matching rows before paging.
  * - .totalPages — Pages at the current size, at least 1.
- * - .highlight — Does a row match the highlight's driver?
+ * - .highlightTest — What a hover lights, as a row test: asked by the page, kept nowhere.
  * - .pickedFor — A field's picks in force on one component: its own part's, else the View's.
  * - .presents — Is this scope a SLOT — does a chart draw a summary in it?
- * - .highlightFor — The highlight's test for a component in `scope`: null where it stays in its driver's scope and this is not it.
- * - .highlightAcross — The highlight reaches every component — or, off, those in its driver's scope alone.
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
  * - .declareValues — every value a field can take, so each control offers the same list
  * - .declareOwn — A scope's own fields, as its page definition holds them: never dragged.
@@ -78,7 +76,7 @@ import { SourceBinding, tagOf } from './source-binding.js';
 import { answerOrder, planWalk, presentUnder, walkStepwise } from './source-counts.js';
 import { emptyWalk, walkInOrder, walkReads, type Walk, type WalkPlan } from './walk.js';
 import {
-  answerOf, arrangementOf, compile, eachScope, emptyScope, filterKey, freezeReading, offerAxis, readingAnswered, sameFilter,
+  answerOf, arrangementOf, compile, eachScope, emptyScope, filterKey, freezeReading, highlightOf, offerAxis, readingAnswered, sameFilter,
   VIEW, withoutArrangement, type Arrangement, type CompileFacts, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
 import {
@@ -124,7 +122,6 @@ export class DataSource extends EventTarget {
     pickedFor: (el, field) => this.pickedFor(el, field),
     only: (id) => this.#only[id],
     scoped: (s) => this.#scoped[s],
-    highlight: (scope, el) => (this.#reaches(scope, el) ? this.#highlight : undefined),
     now: () => this.#now(),
     mintId: () => this.#member.mintId(),
   });
@@ -407,14 +404,11 @@ export class DataSource extends EventTarget {
 
   /** What `compile` narrows each bound component by, alone — by bind id. */
   #only: Record<string, Filter> = {};
-  /** What the highlight's driver matches. TODO 441 */
-  #highlight: Filter | undefined;
-  /** The driver and its mark, as last pushed. */
-  #marked = '';
-
-  /** Does a row match the highlight's driver? Null while no chip drives it. Will, TODO 441 */
-  get highlight(): ((row: Row) => boolean) | null {
-    const filter = this.#highlight;
+  /** What a hover lights, as a row test: one value of a scope's field, or the whole
+   *  reading it holds. Asked by the page, once per hover, and kept nowhere: the
+   *  highlight is the page's. Null where this source lacks the field. Will, TODO 655 */
+  highlightTest(hovered: { scope: string; field: string; value?: string }): ((row: Row) => boolean) | null {
+    const filter = highlightOf(this.#applied, hovered, this.#compileFacts());
     return filter ? filterTest(filter, this.#now()) : null;
   }
 
@@ -439,35 +433,6 @@ export class DataSource extends EventTarget {
   presents(scope: string): boolean {
     return this.#binding.presentsIn(scope);
   }
-
-  /** The highlight's test for a component `el` in `scope`: null where it stays in
-   *  its driver's scope and this is not it. Will, TODO 467 */
-  highlightFor(scope?: string | readonly string[], el?: object): ((row: Row) => boolean) | null {
-    return this.#reaches(scope, el) ? this.highlight : null;
-  }
-
-  /** Does the highlight reach a component in `scope`? Across every scope, or a
-   *  View driver: yes — and a chart's own scope reaches the chart it narrows
-   *  (Will, TODO 529). TRAP T-the-highlight-reaches-the-whole-page */
-  #reaches(scope?: string | readonly string[], el?: object): boolean {
-    const driver = this.#context.previewed?.scope;
-    if (this.#across || !driver || driver === VIEW) return true;
-    if (el && this.#narrowing.get(driver)?.only === el) return true;
-    return typeof scope === 'string' ? scope === driver : !!scope?.includes(driver);
-  }
-
-  /** The highlight reaches every component — or, off (the default), those in
-   *  its driver's scope alone. The app's setting. Will, TODOs 467, 520 */
-  get highlightAcross(): boolean {
-    return this.#across;
-  }
-  set highlightAcross(on: boolean) {
-    if (on === this.#across) return;
-    this.#across = on;
-    this.#binding.publish();
-  }
-  /** The setting: does the highlight reach every scope? */
-  #across = false;
 
   /**
    * One scope as a control draws it WHOLE: each field it holds — a field held
@@ -1077,7 +1042,7 @@ export class DataSource extends EventTarget {
   /** Compile the applied Query. Says whether the SHARED filter
    *  stood still, and — where a scope waits — whether nothing a load reads moved. */
   #compileNow(): { still: boolean; same: boolean } {
-    const { filter, view, scoped, only, highlight, skipped } = compile(this.#applied, this.#compileFacts());
+    const { filter, view, scoped, only, skipped } = compile(this.#applied, this.#compileFacts());
     this.#skipped = skipped ?? [];
     const next = filter;
     const viewed = view;
@@ -1089,11 +1054,6 @@ export class DataSource extends EventTarget {
     this.#filter = next;
     this.#viewFilter = viewed;
     this.#scoped = scoped;
-    // A new mark — or driver — moves no row, so nothing loads: each component is pushed it. TODO 441
-    const marked = JSON.stringify([this.#context.previewed, filterKey(highlight)]);
-    this.#highlight = highlight;
-    if (marked !== this.#marked) this.#binding.publish();
-    this.#marked = marked;
     return { still, same };
   }
 
@@ -1108,7 +1068,6 @@ export class DataSource extends EventTarget {
       mine: this.#mine,
       has: this.#has,
       fetched: this.#fetched,
-      ...(this.#context.previewed ? { highlight: this.#context.previewed } : {}),
     };
   }
 
@@ -1244,10 +1203,6 @@ export class DataSource extends EventTarget {
         if (this.#loaded) this.#walkSoon();
         this.#binding.drawBarsBehind(change.scope);
         this.#binding.drawScopesSoon();
-        return;
-      case 'mark':
-        // A chip hovered moves no row: mark it, and load nothing. TRAP T-a-hovered-chip-previews-the-highlight
-        this.#compileNow();
         return;
       case 'commit':
         this.#recompose();

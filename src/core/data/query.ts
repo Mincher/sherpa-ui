@@ -50,6 +50,7 @@
  * - scopeClauses — One scope's clauses: each reading that applies, each saved filter on.
  * - presetClause — A preset's own conditions as one clause — its chip's count.
  * - compile — Turn a Query into what the source runs — the ONE place a Query becomes a filter.
+ * - highlightOf — What a hover lights: one field of a scope, as that scope reads it.
  */
 import { DEFAULT_OP, andFilter, valueKey, type Filter, type SortDirection, type SortSpec } from './store.js';
 import { asRows, readingClause, type FieldFacts, type FieldReading } from './filter-state.js';
@@ -265,9 +266,6 @@ export interface CompileFacts {
   has?: (field: string) => boolean;
   /** A field the STORE answers: its answer as the keys it matched, once fetched. */
   fetched?: (field: string, reading: FieldReading) => Filter | undefined;
-  /** The highlight's driver for now — a chip hovered — in place of the Query's;
-   *  with `value`, that one value of it. TODOs 449, 459 */
-  highlight?: { scope: string; field: string; value?: string };
 }
 
 /** A reading without the picks set aside. */
@@ -288,8 +286,6 @@ export interface Compiled {
   scoped: Record<string, Filter>;
   /** Per bound component id, what narrows it alone. */
   only: Record<string, Filter>;
-  /** What the highlight's driver matches. TODO 441 */
-  highlight?: Filter;
   sort: SortSpec[];
   group: string | null;
   search: string;
@@ -477,21 +473,9 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
   const only: Record<string, Filter[]> = {};
   const viewHolds = heldInView(query);
   const skipped: string[] = [];
-  let highlight: Filter | undefined;
 
   for (const [id, scope] of Object.entries(query.scopes)) {
     const mine = !facts.mine || facts.mine(id);
-    /* The highlight reaches the whole page: another source's scope drives it
-       here too, where this one has the field. Will, TODO 458.
-       TRAP T-the-highlight-reaches-the-whole-page */
-    const drives = facts.highlight?.scope === id ? facts.highlight.field : undefined;
-    const one = drives ? facts.highlight?.value : undefined;
-    const held = drives ? scope.readings[drives] : undefined;
-    // A chip hovered OFF previews what it holds. Will, TODO 496 · TRAP T-a-hovered-chip-previews-the-highlight
-    const driver = one !== undefined ? { picked: [one] } : held ? { ...held, suspended: false } : undefined;
-    if (driver && !highlight && (!facts.has || facts.has(drives!))) {
-      highlight = andFilter(scopeClauses(id, { ...scope, readings: { [drives!]: driver } }, viewHolds, facts));
-    }
     if (!mine && id !== VIEW) {
       skipped.push(id);
       continue;
@@ -511,14 +495,6 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
     }
   }
 
-  /* A value rested on in a scope the Query has not made yet — a chart's own,
-     made at its first toggle — previews from an empty one.
-     TODO 513 · TRAP T-a-hovered-chip-previews-the-highlight */
-  const rested = facts.highlight;
-  if (!highlight && rested?.value !== undefined && !(rested.scope in query.scopes) && (!facts.has || facts.has(rested.field))) {
-    highlight = andFilter(scopeClauses(rested.scope, { ...emptyScope(), readings: { [rested.field]: { picked: [rested.value] } } }, viewHolds, facts));
-  }
-
   const out: Compiled = {
     scoped,
     only: Object.fromEntries(Object.entries(only)
@@ -531,7 +507,21 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
   if (filter) out.filter = filter;
   const viewed = andFilter(view);
   if (viewed) out.view = viewed;
-  if (highlight) out.highlight = highlight;
   if (skipped.length) out.skipped = skipped;
   return out;
+}
+
+/** What a hover lights: one field of a scope, as that scope reads it — one value of
+ *  it, or the whole reading it holds, off or on. From an empty scope where the Query
+ *  has not made it yet (TODO 513); nothing where this source lacks the field (TODO
+ *  458). The page asks each source for it, once per hover. Will, TODOs 449, 459, 655
+ *  TRAP T-a-hovered-chip-previews-the-highlight */
+export function highlightOf(query: Query, hovered: { scope: string; field: string; value?: string }, facts: CompileFacts = {}): Filter | undefined {
+  const { scope: id, field, value } = hovered;
+  if (facts.has && !facts.has(field)) return undefined;
+  const scope = query.scopes[id] ?? emptyScope();
+  const held = scope.readings[field];
+  const reading = value !== undefined ? { picked: [value] } : held ? { ...held, suspended: false } : undefined;
+  if (!reading) return undefined;
+  return andFilter(scopeClauses(id, { ...scope, readings: { [field]: reading } }, heldInView(query), facts));
 }
