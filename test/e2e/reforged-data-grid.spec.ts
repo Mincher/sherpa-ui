@@ -3167,6 +3167,31 @@ test('a heading offers Group only for a field its source says is a list (Will, T
   expect(r).toEqual({ plan: false, name: true, seats: true });
 });
 
+test('a heading offers Group only for a field its app\'s Group offers — `available`, less `unavailable` (Will, TODO 662)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & { rendered?: Promise<void>; populate(d: unknown): void };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    const columns = [{ field: 'plan', header: 'Plan' }, { field: 'name', header: 'Name' }, { field: 'tier', header: 'Tier' }];
+    const off = (f: string) => el.shadowRoot!.querySelector(`.head-cell[data-field="${f}"] .head-group`)!.hasAttribute('data-unsupported');
+    const read = () => Object.fromEntries(columns.map((c) => [c.field, off(c.field)]));
+    el.populate({ columns, rows: [{ plan: 'Pro', name: 'Ada', tier: 'Gold' }], groupOffer: { unavailable: ['name'] } });
+    await window.__settled();
+    const unavailable = read();
+    el.populate({ columns, rows: [{ plan: 'Pro', name: 'Ada', tier: 'Gold' }], groupOffer: { available: ['tier'] } });
+    await window.__settled();
+    const available = read();
+    el.populate({ columns, rows: [{ plan: 'Pro', name: 'Ada', tier: 'Gold' }] });
+    await window.__settled();
+    return { unavailable, available, none: read() };
+  });
+  expect(r).toEqual({
+    unavailable: { plan: false, name: true, tier: false },
+    available: { plan: true, name: true, tier: false },
+    none: { plan: false, name: false, tier: false },
+  });
+});
+
 test('a banded heading builds its clause from the bands it is given, never "equals Low" (TODO 523 F7)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<HTMLElement & { drawReading(f: string, r: object): void; columnClause(f: string): unknown[] | null }>('sherpa-data-grid', {

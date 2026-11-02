@@ -779,6 +779,26 @@ test('a grid in a slot: its Primary leads its columns; a Secondary makes it a PI
   expect(r['back']!.rows.length).toBe(4);
 });
 
+test('a grid\'s headings offer Group as its page\'s `axes` say: a field the app makes unavailable has no Group button (Will, TODO 662)', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = '<sherpa-data-grid id="grid" data-scope="data"></sherpa-data-grid>';
+    const grid = provider.querySelector('#grid');
+    grid.columns = [{ field: 'plan', header: 'Plan' }, { field: 'day', header: 'Day' }];
+    grid.key = 'id';
+    const source = make();
+    for (const [f, label] of [['plan', 'Plan'], ['day', 'Day']]) source.declareField(f, { label });
+    source.query.offer('data', ['plan', 'day']);
+    source.query.declareAxes({ grid: { group: { unavailable: ['day'] } } });
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle(); await settle();
+    const off = (f) => grid.shadowRoot.querySelector('.head-cell[data-field="' + f + '"] .head-group').hasAttribute('data-unsupported');
+    return { plan: off('plan'), day: off('day') };
+  })()`);
+  expect(r).toEqual({ plan: false, day: true });
+});
+
 test('a grid\'s Secondary switched off keeps its field: the pivot goes, the chip still names it, and on again brings it back (Will, TODO 666)', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}

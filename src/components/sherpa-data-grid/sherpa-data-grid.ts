@@ -23,6 +23,7 @@ import { markNeedles } from '../../core/ui/mark-text.js';
 import { ORGANISE_ICONS, heldByPreset, movedTo } from '../../core/ui/shared-constants.js';
 import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/data/cycle.js';
 import { reduceRows } from '../../core/data/aggregate.js';
+import { offerAxis, type AxisOffer } from '../../core/data/query.js';
 import { markField, markHeld, pendingFields } from '../../core/ui/filter-host.js';
 import {
   compareValues, distinctOf, sortRows,
@@ -139,6 +140,9 @@ interface GridConfig {
    *  heading opens the chip's own menu, the whole value list with it.
    *  TRAP T-a-heading-opens-the-chips-menu */
   filters?: Readonly<Record<string, FieldFilter>>;
+  /** The fields its Group offers, as its app's `axes` leave them: a heading's Group
+   *  button too. Will, TODO 662 */
+  groupOffer?: AxisOffer;
 }
 
 /** The column types a heading can filter. Every body is the menu's own.
@@ -440,6 +444,7 @@ export class SherpaDataGrid extends SherpaElement {
     this.#rows = Array.isArray(cfg.rows) ? cfg.rows : [];
     this.#key = typeof cfg.key === 'string' ? cfg.key : null;
     this.#givenFilters = cfg.filters ?? {};
+    this.#groupOffer = cfg.groupOffer;
     this.#syncNeedles();
     this.#actions = Array.isArray(cfg.actions) ? cfg.actions : [];
     this.#groups = Array.isArray(cfg.groups) ? cfg.groups : null;
@@ -713,7 +718,9 @@ export class SherpaDataGrid extends SherpaElement {
     if (groupChip) {
       groupChip.dataset['iconStart'] = SherpaDataGrid.icons.group;
       const given = this.#givenFilters[col.field];
-      const list = col.type !== 'number' && col.type !== 'date' && (!given || advancedOf(given) !== 'only');
+      const list = col.type !== 'number' && col.type !== 'date' && (!given || advancedOf(given) !== 'only')
+        // …and one the app's Group offers. Will, TODO 662
+        && offerAxis([col], this.#groupOffer).length > 0;
       groupChip.toggleAttribute('data-unsupported', !list);
       groupChip.setAttribute('aria-label', `${this.word('group-by')} ${col.header ?? col.field}`);
     }
@@ -908,6 +915,8 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** Each heading's filter as its source defines it, as the last populate gave them. */
   #givenFilters: Readonly<Record<string, FieldFilter>> = {};
+  /** What its Group offers, as the app's `axes` leave it; none, every list column. TODO 662 */
+  #groupOffer: AxisOffer | undefined;
 
   /** REMOVE FILTER — ends a column's filter. Reported as a clear, so a host has one path. */
   #onColumnFilterRemove = (event: Event): void => {
@@ -1343,7 +1352,7 @@ export class SherpaDataGrid extends SherpaElement {
     if (!sub) return;
     this.#tellDetail(sub);
     void sub.populate({ columns: detail.columns, key: detail.key ?? null, rows: detail.rows[key] ?? [],
-      groups: detail.groups?.[key] ?? null, filters: this.#givenFilters })
+      groups: detail.groups?.[key] ?? null, filters: this.#givenFilters, ...(this.#groupOffer ? { groupOffer: this.#groupOffer } : {}) })
       .then(() => {
         this.#tellDetail(sub);
         this.#stickDetails();

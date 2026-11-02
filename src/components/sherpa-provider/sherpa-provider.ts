@@ -1286,9 +1286,12 @@ export class SherpaProvider extends SherpaElement {
           const filtered = asks.filters?.(el);
           // Its columns' values are needed now. TRAP T-a-field-reads-its-values-when-needed
           if (filtered) src.readValues(filtered);
+          // A heading's Group button offers what the app's `axes` leave. Will, TODO 662
+          const groupOffer = typeof scope === 'string' ? src.query.axesOf(scope, 'grid').group : undefined;
           return {
             rows,
             groups: src.state.group && src.loaded ? src.groups() : null,
+            ...(groupOffer ? { groupOffer } : {}),
             /* Each FILTER as the source defines it, as a chip's is — the whole
                column too, which one page cannot say. TRAP T-a-heading-opens-the-chips-menu */
             ...(filtered ? { filters: Object.fromEntries(filtered.map((f) => [f, src.filterDef(f)])) } : {}),
