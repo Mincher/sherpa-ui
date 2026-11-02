@@ -169,8 +169,11 @@ async function onStore(store: Store, url: URL, request: Request): Promise<Respon
   }
   const body = await read(request);
   if ('problem' in body) return body.problem;
-  if (request.method === 'POST') return answer(201, await store.insert(body.value as Row));
-  if (!(request.headers.get('Content-Type') ?? '').startsWith(DATA_QUERY_TYPE)) {
+  /* A POST of a query IS a query: the fallback where a proxy refuses QUERY, with
+     the same body. Any other POST adds a row. Will, 2026-11-02 */
+  const isQuery = (request.headers.get('Content-Type') ?? '').startsWith(DATA_QUERY_TYPE);
+  if (request.method === 'POST' && !isQuery) return answer(201, await store.insert(body.value as Row));
+  if (!isQuery) {
     return problem(415, 'invalid', `a QUERY is ${DATA_QUERY_TYPE}`, { 'Accept-Query': DATA_QUERY_TYPE });
   }
   const read_ = decodeQuery(body.value);

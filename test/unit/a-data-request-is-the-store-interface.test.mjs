@@ -124,3 +124,15 @@ test('it answers only under its own path, and names no store it does not have', 
   assert.equal((await ask('QUERY', 'ghosts', encodeQuery())).status, 404);
   assert.equal((await ask('GET', 'people', undefined, { 'Sherpa-Data': '2' })).status, 400);
 });
+
+// Where a proxy refuses QUERY, a POST carries the same body and is answered the same. Will, 2026-11-02
+test('a POST of a query is answered as the QUERY; a POST of a row still adds it', async () => {
+  const { ask, people } = setup();
+  const asked = encodeQuery({ filter: ['plan', 'eq', 'Pro'] });
+  const viaQuery = await json(await ask('QUERY', 'people', asked));
+  const viaPost = await json(await ask('POST', 'people', asked, { 'Content-Type': DATA_QUERY_TYPE }));
+  assert.deepEqual(viaPost, viaQuery);
+  assert.equal(await people.totalCount(), 3);
+  assert.equal((await ask('POST', 'people', { id: 7, name: 'Ed', plan: 'Free', seats: 1 }, { 'Content-Type': 'application/json' })).status, 201);
+  assert.equal(await people.totalCount(), 4);
+});

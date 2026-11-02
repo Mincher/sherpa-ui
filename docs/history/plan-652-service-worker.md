@@ -119,7 +119,7 @@ Each step is measured in the running app, and the plan can stop after any of the
 | S4 | The Query seam: one `QUERY` an act | INP and LCP at 4x CPU with 100k rows beat S3 (TODO 350's targets). If not, S4 stops |
 | S5 | Offline writes: the outbox, Web Locks, what a conflict does | A save made offline lands after reconnecting, once |
 | S6 | Live feeds in the worker, sent to every tab | One connection for many tabs |
-| S7 | `RestStore` sends `QUERY` to real servers, with a `GET` fallback on 405 or 501. Host C's shape for row 170 | A long filter that breaks a URL works |
+| S7 | `RestStore` sends `QUERY` to real servers. Where a proxy refuses it, a `POST` of the same body (Will, 2026-11-02); `GET` only for a server that takes nothing else. Host C's shape for row 170 | A long filter that breaks a URL works |
 
 Playwright can test the worker (`context.serviceWorkers()`, `context.setOffline()`),
 in all three engines.

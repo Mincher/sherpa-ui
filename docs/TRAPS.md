@@ -14803,6 +14803,9 @@ Four things that are not obvious:
 - **The browser's Cache API refuses a `QUERY`** in all three engines (measured 2026-11-02),
   so a worker caches answers itself, keyed by the body.
 
+A `POST` whose body is a query is answered as the `QUERY`: the fallback where a proxy refuses
+the method, with the same body. Any other `POST` adds a row.
+
 A bad body is refused before the store is asked: 400 when it is not JSON, 415 when it is
 not `application/vnd.sherpa.query+json`, 422 when it is not a read. A store's own failure
 comes back as its `Failure` kind, with its HTTP status where it had one.
