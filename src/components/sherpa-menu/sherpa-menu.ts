@@ -430,7 +430,8 @@ export class SherpaMenu extends SherpaElement {
   }
   set listed(values: readonly { value: string; label: string }[]) {
     this.#listed = [...values];
-    this.#refillPicks();
+    // Before it draws there are no rows, nor the words they read: each row reads them as it is made.
+    if (this.#rowEls().length) this.#refillPicks();
   }
   /** What `listed` was given. */
   #listed: { value: string; label: string }[] = [];

@@ -96,7 +96,7 @@ const ui = (...names) => new RegExp(`^src/core/ui/(${names.join('|')})\\.ts$`);
 const TESTS = 'Tests only';
 const AREAS = [
   ['The data layer', [/^src\/core\/data\//, /^src\/data\.ts$/]],
-  ['Storage, saved Views and the URL', [/^src\/core\/browser\//]],
+  ['Storage, saved Views and the URL', [/^src\/core\/browser\//, /^src\/core\/worker\//, /^src\/worker\.ts$/]],
   ['The join and the app layer', [comp('provider', 'router', 'outlet'),
     ui('bind-source', 'context', 'apply-state', 'bind-settings'), /^src\/app\.ts$/]],
   ['Filters', [comp('quick-filter', 'quick-filter-toolbar'),

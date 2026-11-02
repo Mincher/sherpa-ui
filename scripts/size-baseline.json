@@ -36,7 +36,7 @@
   "src/components/sherpa-list-item/sherpa-list-item.ts": 103,
   "src/components/sherpa-list/sherpa-list.ts": 105,
   "src/components/sherpa-loader/sherpa-loader.ts": 23,
-  "src/components/sherpa-menu/sherpa-menu.ts": 2471,
+  "src/components/sherpa-menu/sherpa-menu.ts": 2472,
   "src/components/sherpa-metric-group/sherpa-metric-group.ts": 18,
   "src/components/sherpa-metric/sherpa-metric.ts": 203,
   "src/components/sherpa-nav-item/sherpa-nav-item.ts": 222,
@@ -532,5 +532,7 @@
   "src/components/sherpa-tooltip/sherpa-tooltip.html": 27,
   "src/components/sherpa-transfer-list/sherpa-transfer-list.html": 44,
   "src/core/sherpa-filter-menu.html": 8,
-  "src/core/sherpa-show-as.html": 25
+  "src/core/sherpa-show-as.html": 25,
+  "src/core/worker/app-files.ts": 123,
+  "src/worker.ts": 7
 }

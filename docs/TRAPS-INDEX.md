@@ -200,7 +200,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-up-is-open-down-is-closed](TRAPS.md#t-up-is-open-down-is-closed) — data, data-source, query-context
 - [T-view-state-lives-in-one-object](TRAPS.md#t-view-state-lives-in-one-object) — data-source
 
-## Storage, saved Views and the URL (48)
+## Storage, saved Views and the URL (49)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — view-files
 - [T-a-changed-key-moves-the-row](TRAPS.md#t-a-changed-key-moves-the-row) — idb-store
@@ -213,6 +213,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-view-is-json](TRAPS.md#t-a-view-is-json) — persist-view, view-files
 - [T-a-view-keeps-a-draft](TRAPS.md#t-a-view-keeps-a-draft) — persist-view, view-drafts
 - [T-a-views-markup-lives-in-a-template](TRAPS.md#t-a-views-markup-lives-in-a-template) — persist-view, view-files
+- [T-a-worker-keeps-the-apps-files](TRAPS.md#t-a-worker-keeps-the-apps-files) — app-files, worker
 - [T-apply-degrades-never-throws](TRAPS.md#t-apply-degrades-never-throws) — persist-view
 - [T-attributes-are-the-state-channel](TRAPS.md#t-attributes-are-the-state-channel) — persist-view
 - [T-capture-is-the-save-button](TRAPS.md#t-capture-is-the-save-button) — persist-view

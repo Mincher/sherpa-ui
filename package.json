@@ -26,6 +26,10 @@
       "types": "./dist/components.d.ts",
       "default": "./dist/components.js"
     },
+    "./worker": {
+      "types": "./dist/worker.d.ts",
+      "default": "./dist/worker.js"
+    },
     "./bundle": {
       "types": "./dist/index.d.ts",
       "default": "./dist/bundle/index.js"
@@ -41,6 +45,10 @@
     "./bundle/components": {
       "types": "./dist/components.d.ts",
       "default": "./dist/bundle/components.js"
+    },
+    "./bundle/worker": {
+      "types": "./dist/worker.d.ts",
+      "default": "./dist/bundle/worker.js"
     },
     "./css": "./dist/styles/tokens/tokens.css",
     "./css/page": "./dist/styles/tokens/page.css",

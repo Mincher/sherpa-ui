@@ -14839,6 +14839,35 @@ comes back as its `Failure` kind, with its HTTP status where it had one.
 - Site: `test/unit/a-data-request-is-the-store-interface.test.mjs`
 - Site: `test/unit/a-request-store-acts-as-its-store.test.mjs`
 
+### T-a-worker-keeps-the-apps-files
+
+**A Service Worker keeps the app's own files, so it opens offline and installs**
+(plan 652 S3). `keepAppFiles(self, { version, files, strategy, skip })`, from
+`sherpa-ui/worker`: the `files` are kept when it installs, and every other file
+of the app's own origin as the page asks for it. A new `version` is a new cache;
+the old ones go when it takes over.
+
+**FRESH by default: the network first.** An app in development rebuilds all day,
+and a cache-first worker would serve the last build until a second reload — the
+page Will has open on :4200 would run old code. Fresh, the network answers
+whenever it can, and the cache only when it cannot (after `timeout`, 4 s). `fast`
+is the cache first, the network behind it: a page opens at once and a new build
+shows next time — an app's choice once it has update notices (S6).
+
+**Never kept:** a request that is not a `GET` (a `QUERY` to the data layer), the
+data layer's own path (`/sherpa/data/`), a live feed (`text/event-stream`, and
+Demos' `/live/`), and another origin's files. A page's query string only names a
+Context, so a page asked for offline is matched by its path too.
+
+**Playwright's offline mode lies in WebKit.** `context.setOffline(true)` failed
+every WebKit request — even a file the worker held — before the worker heard it.
+Measured 2026-11-02: with the server truly stopped instead, WebKit, Firefox and
+Chromium each opened a NEW Records page from the worker, all 100 rows. Test
+offline by stopping a server of your own, never by `setOffline` alone.
+
+- Site: `src/core/worker/app-files.ts`
+- Site: `src/worker.ts`
+
 ### T-a-horizontal-legend-is-three-by-two
 
 A horizontal legend was a wrapping flex row, so it put a different number of

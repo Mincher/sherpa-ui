@@ -169,7 +169,7 @@ if (!DEV) {
    folder, so a module's own URL — tokens.css beside components.js — is moved to
    point from there. A DEV build writes each entry as a pass-through to the
    modules, so the same path serves live reload. TRAP T-a-page-loads-the-bundle */
-const BUNDLED = ['index', 'data', 'app', 'components'];
+const BUNDLED = ['index', 'data', 'app', 'components', 'worker'];
 const BUNDLE = join(OUT, 'bundle');
 /** The two entries that draw components: each is first given the icons they draw. */
 const DRAWS = ['index', 'components'];
