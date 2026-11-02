@@ -7,6 +7,7 @@
  *
  * Map:
  * - OUTBOX_SYNC — The Background Sync tag the worker sends its stores' waiting writes on.
+ * - PushSaid — What a push says, as Sherpa reads it: a store that changed on the server, and a notification.
  * - ServeDataOptions — The stores the worker answers for, and what each request waits for.
  * - serveData — Answer the data layer's requests in the worker, from the stores the app hands it.
  */
@@ -18,6 +19,23 @@ import type { WorkerFetchEvent, WorkerScope } from './app-files.js';
 
 /** The Background Sync tag the worker sends its stores' waiting writes on. */
 export const OUTBOX_SYNC = 'sherpa-outbox';
+
+/** What a push says, as Sherpa reads it: a store that changed on the server, and a
+ *  notification. The app's server sends it, with its own keys. Plan 652 S8 */
+export interface PushSaid {
+  /** A store that changed on the server: a held one is read again behind, and its
+   *  newer rows wait (S6c); any other says newer data waits. */
+  store?: string;
+  /** Shown where the reader allowed notifications; a press opens `url`. */
+  notification?: { title: string; body?: string; url?: string };
+}
+
+/** A push, or a press on a notification. */
+interface WorkerPushEvent extends Event {
+  readonly data?: { json(): unknown } | null;
+  readonly notification?: { close(): void; readonly data?: { url?: string } };
+  waitUntil(promise: Promise<unknown>): void;
+}
 
 /** A page's message to the worker: it starts the worker, as a channel cannot. */
 interface WorkerMessageEvent extends Event {
@@ -67,6 +85,30 @@ export function serveData(scope: WorkerScope, options: ServeDataOptions): void {
     const ask = (event as WorkerMessageEvent).data as NoticeAsk | undefined;
     if (ask?.sherpa === 'notices') (event as WorkerMessageEvent).waitUntil(kept.read().then((all) => all.forEach(sayNotice)));
     if (ask?.sherpa === 'seen') (event as WorkerMessageEvent).waitUntil(kept.remove(ask.id));
+  });
+  /* A PUSH from the app's server: the store it names is checked behind, so its newer
+     rows wait and the banner shows; a notification shows where allowed, and its
+     press opens the app. S8 · TRAP T-a-push-is-a-check-behind */
+  scope.addEventListener('push', (event) => {
+    let said: PushSaid = {};
+    try {
+      said = ((event as WorkerPushEvent).data?.json() ?? {}) as PushSaid;
+    } catch { /* not JSON: nothing Sherpa reads */ }
+    const store = said.store ? options.stores[said.store] : undefined;
+    const checked = store?.recheck ? store.recheck() : said.store ? Promise.resolve(sayNotice({ kind: 'data', store: said.store })) : undefined;
+    const { title, body, url } = said.notification ?? {};
+    const shown = title ? scope.registration?.showNotification?.(title, { ...(body ? { body } : {}), data: { url: url ?? '/' } }) : undefined;
+    (event as WorkerPushEvent).waitUntil(Promise.all([checked, shown?.catch(() => undefined)]));
+  });
+  scope.addEventListener('notificationclick', (event) => {
+    const pressed = event as WorkerPushEvent;
+    pressed.notification?.close();
+    const url = pressed.notification?.data?.url ?? '/';
+    pressed.waitUntil((async () => {
+      const [tab] = (await scope.clients.matchAll?.({ type: 'window' })) ?? [];
+      if (tab) await tab.focus();
+      else await scope.clients.openWindow?.(url);
+    })());
   });
   for (const [name, store] of Object.entries(options.stores)) {
     store.addEventListener('lost', (event) => {

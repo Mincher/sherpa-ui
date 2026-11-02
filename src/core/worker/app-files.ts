@@ -13,10 +13,18 @@
 /** The part of a Service Worker's global scope this reads: the DOM library has no worker types. */
 export interface WorkerScope extends EventTarget {
   readonly location: { readonly origin: string };
-  readonly clients: { claim(): Promise<void> };
+  readonly clients: {
+    claim(): Promise<void>;
+    /** The app's open tabs, and a new one: where a notification's press lands. */
+    matchAll?(options: { type: 'window' }): Promise<ReadonlyArray<{ focus(): Promise<unknown>; navigate?(url: string): Promise<unknown> }>>;
+    openWindow?(url: string): Promise<unknown>;
+  };
   skipWaiting(): Promise<void>;
-  /** Background Sync, where the engine has it: Chromium. */
-  readonly registration?: { readonly sync?: { register(tag: string): Promise<void> } };
+  /** Background Sync, where the engine has it: Chromium. A notification, where the reader allowed it. */
+  readonly registration?: {
+    readonly sync?: { register(tag: string): Promise<void> };
+    showNotification?(title: string, options?: { body?: string; data?: unknown; tag?: string }): Promise<void>;
+  };
 }
 
 /** A worker event that holds the worker open until its promise settles. */

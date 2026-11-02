@@ -90,8 +90,21 @@ abstract class LiveStore extends EventTarget implements Store {
     this.dispatchEvent(new CustomEvent('connection', { detail: { connected: value } }));
   }
 
-  /** Apply a message. TRAP T-push-handler-never-throws — a throw kills the handler. */
+  /** A message off the wire: said as `message`, so another tab can be told
+   *  (`shareFeed`), then applied. TRAP T-one-feed-for-every-tab */
   protected receive(raw: unknown): void {
+    this.dispatchEvent(new CustomEvent('message', { detail: raw }));
+    this.#take(raw);
+  }
+
+  /** Apply a message the tab that holds the feed heard: as if it came here, and
+   *  told no one. Plan 652 S8 · TRAP T-one-feed-for-every-tab */
+  hear(raw: unknown): void {
+    this.#take(raw);
+  }
+
+  /** Apply a message. TRAP T-push-handler-never-throws — a throw kills the handler. */
+  #take(raw: unknown): void {
     let message: PushMessage | undefined;
     try {
       message = this.options.parse ? this.options.parse(raw) : (raw as PushMessage);

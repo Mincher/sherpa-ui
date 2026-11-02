@@ -15087,6 +15087,50 @@ after a reload, and once picked the worker keeps none.
 - Site: `src/core/worker/serve-data.ts`
 - Site: `test/unit/a-newer-write-wins.test.mjs`
 
+### T-one-feed-for-every-tab
+
+**One live feed for every tab, held by a TAB, not the Service Worker** (plan 652
+S8). A worker is stopped when it is idle, in every engine, and a feed held there
+would drop with it. So `shareFeed(feed, name)`: the tab that holds the Web Lock
+`sherpa-feed:<name>` opens the feed and passes each wire message on the channel
+`sherpa-feed:<name>`; every other tab applies it with `feed.hear(raw)`, which
+tells no one. When that tab shuts, the browser lets go of its lock, and the next
+tab waiting takes it and opens the feed. With no Web Locks a tab opens its own,
+as before. Measured 2026-11-02 in Demos' Dashboard (`?live`): two tabs, one
+`/live/alerts` connection, both tiles follow it; the first tab shut, the second
+opened the feed and went on — in all three engines.
+
+**A message in the hand-over can be lost:** the next tab opens a new feed. A
+Server-Sent Events server that keeps `Last-Event-ID` can replay it.
+
+A live store says each message off the wire as `message` (its raw data) before it
+applies it; `hear()` applies one without saying it, or two tabs would pass one
+message back and forth.
+
+- Site: `src/core/data/live-stores.ts`
+- Site: `src/core/browser/share-feed.ts`
+- Site: `test/unit/one-feed-for-every-tab.test.mjs`
+
+### T-a-push-is-a-check-behind
+
+**A push from the app's server says a store changed, and the worker checks behind**
+(plan 652 S8). `serveData` reads a push as `PushSaid`: `{ store, notification }`.
+A held store is read again behind (`recheck`), so its newer rows WAIT and the
+data notice is said — the banner shows (`T-a-server-change-waits`); a store not
+held says the notice itself. A `notification` is shown where the reader allowed
+it, and its press focuses an open tab, else opens its `url`. The app's server
+sends the push, with its own keys: Sherpa ships the worker's half.
+
+Measured 2026-11-02 in Chromium, the push delivered by DevTools
+(`ServiceWorker.deliverPushMessage`): a record changed on the server unheard, the
+push named its store, and the banner showed. **Headless Chromium refuses every
+notification**, granted or not (`Notification.permission` stays `denied`), so the
+test reads that the worker ASKS to show it. Firefox and WebKit have no way to
+deliver a push in a test.
+
+- Site: `src/core/worker/serve-data.ts`
+- Site: `test/unit/a-push-is-a-check-behind.test.mjs`
+
 ### T-a-horizontal-legend-is-three-by-two
 
 A horizontal legend was a wrapping flex row, so it put a different number of
