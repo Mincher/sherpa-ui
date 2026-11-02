@@ -1094,7 +1094,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (drawScopes, show, hide, close, toggle, setChipValues, setChipReading, drawApplied, drawValueResults, drawResults, nameScope, search, drawPresent, drawOffered, drawReading, supersede, report, available, addFilters, removeFilter, groupSets, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (drawScopes, show, hide, close, toggle, setChipValues, setChipReading, drawApplied, drawValueResults, drawCounts, drawResults, nameScope, search, drawPresent, drawOffered, drawReading, supersede, report, available, addFilters, removeFilter, groupSets, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -1347,6 +1347,12 @@
           "name": "drawValueResults",
           "args": "results: Readonly<Record<string, Readonly<Record<string, number>>>>",
           "description": "drawValueResults(results, scope) — each picked value's own count, by field then value: a section's value chips wear them. SILENT. TODO 425"
+        },
+        {
+          "$type": "method",
+          "name": "drawCounts",
+          "args": "field: string, counts: Readonly<Record<string, number>> | null",
+          "description": "drawCounts(field, counts) — a chart's legend drawn here: each value's number, as its chart counts it, for its value chip's badge; null lets it go. Will, TODO 670"
         },
         {
           "$type": "method",

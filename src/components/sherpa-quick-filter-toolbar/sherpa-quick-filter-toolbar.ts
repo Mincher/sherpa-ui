@@ -425,7 +425,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const list = !!def && menu?.getAttribute('data-type') === 'filter' && !menu.dataset['body']
         && !menu.hasAttribute('data-advanced-only')
         && !chip.hasAttribute('data-persistent') && !arranges(kindOf(def)) && !oneChipList(def);
-      if (portrait && list) {
+      // A chart's legend in its card's bar: its values alone, a chip each. Will, TODO 670
+      if (!portrait && list && def?.answeredIn) {
+        chip.setAttribute('data-layout', 'values');
+        chip.removeAttribute('data-label-start');
+      } else if (portrait && list) {
         chip.setAttribute('data-layout', 'section');
         chip.toggleAttribute('data-label-start', this.hasAttribute('data-label-column'));
         this.#syncFieldMore(chip);
@@ -435,6 +439,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         chip.querySelector(':scope > .field-more')?.remove();
       }
     }
+    // A chart's legend takes a row of its own, under the Organise chips. Will, TODO 670
+    this.toggleState('values-row', !portrait && this.#chips().some((c) => c.dataset['layout'] === 'values'));
     this.#markSections();
   }
 
@@ -875,15 +881,28 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** Each field's value counts, as the source last said. */
   #valueResults: Readonly<Record<string, Readonly<Record<string, number>>>> = {};
 
-  /** Give each section chip its field's value counts; a chip that is no section, none. */
+  /** Give each chip that lays out its values its field's value counts — a chart's
+   *  legend, its chart's numbers; any other, none. */
   #drawValueResults(): void {
     const results = this.hasAttribute('data-no-results') ? {} : this.#valueResults;
     for (const chip of this.#chips()) {
       const field = this.#fieldOf(chip.dataset['id'] ?? '');
-      const shown = chip.dataset['layout'] === 'section' || this.hasAttribute('data-every-count');
-      chip.valueResults = shown ? results[field] ?? null : null;
+      const laid = chip.dataset['layout'] === 'section' || chip.dataset['layout'] === 'values';
+      const shown = laid || this.hasAttribute('data-every-count');
+      const legend = chip.dataset['layout'] === 'values' ? this.#counts.get(field) : undefined;
+      chip.valueResults = shown ? legend ?? results[field] ?? null : null;
     }
   }
+
+  /** drawCounts(field, counts) — a chart's legend drawn here: each value's number,
+   *  as its chart counts it, for its value chip's badge; null lets it go. Will, TODO 670 */
+  drawCounts(field: string, counts: Readonly<Record<string, number>> | null): void {
+    if (counts) this.#counts.set(field, { ...counts });
+    else this.#counts.delete(field);
+    this.#drawValueResults();
+  }
+  /** Each legend's numbers, by field, as its provider last said. */
+  #counts = new Map<string, Readonly<Record<string, number>>>();
 
   /**
    * drawResults(results, scope, end) — each answered chip's results, from its
@@ -1272,7 +1291,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** The section's name, on a chip, for CSS to put before the first: a View bar's own fields are its scope. Will, TODOs 440, 610 */
   #nameSection(chip: HTMLElement): void {
-    const name = this.#defOf(chip)?.preset ? this.word('presets')
+    const def = this.#defOf(chip);
+    // A chart's legend is named for its field. Will, TODO 670
+    const name = def?.preset ? this.word('presets') : def?.answeredIn ? def.label
       : this.dataset['type'] === 'view' ? this.dataset['heading'] : this.word('custom');
     if (name) chip.setAttribute('data-section', name);
     else chip.removeAttribute('data-section');

@@ -87,6 +87,22 @@
    it: the toggle part is its heading, the menu part opens its menu, and its
    values are value chips below. TODO 425 */
 .values { display: none; }
+/* VALUES: its values alone, each a value chip, in a bar's row — a chart's legend in
+   its card's toolbar. No heading and no menu button. Will, TODO 670 */
+:host([data-layout="values"]) :is(.body, .caret) { display: none; }
+/* …and, short of room, they wrap, as a legend does, rather than fold away. */
+:host([data-layout="values"]) { max-inline-size: 100%; }
+:host([data-layout="values"]) .chip {
+  block-size: auto;
+  min-inline-size: 0;
+}
+:host([data-layout="values"]) .values {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
+  min-inline-size: 0;
+}
 :host([data-layout="section"]) {
   display: flex;
   inline-size: 100%;

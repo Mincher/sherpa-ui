@@ -392,6 +392,8 @@ export class SherpaProvider extends SherpaElement {
   }
   /** Each legend that picks — a field's values, as a chip's — and how it lays out its chips. */
   #pickers = new Map<Element, () => void>();
+  /** Each legend drawn in its card's bar, telling the bar its numbers. TODO 670 */
+  #legendCounts = new Map<Element, (payload: unknown) => void>();
 
   /** A legend's rows are filter chips: in its card's filter toolbar, the legend
    *  gone, where the card has one; else in the legend. Off, key rows. Off unless the
@@ -1326,6 +1328,8 @@ export class SherpaProvider extends SherpaElement {
       deliver: (payload) => {
         callback(payload, leave);
         if (drawsHighlight) draw(this.#lit(el, scope, source));
+        // A legend drawn in its card's bar: its numbers are its value chips' counts. TODO 670
+        this.#legendCounts.get(el)?.(payload);
       },
       hover: ({ scope: at, field, on, value }) => this.hover(at, field, on, value),
     });
@@ -1835,11 +1839,20 @@ export class SherpaProvider extends SherpaElement {
        Will, TODO 670 */
     const bar = !home && slot && !/\s/.test(slot) && slot !== VIEW
       && [...this.querySelectorAll('sherpa-quick-filter-toolbar')].some((b) => this.#inherited(b, 'data-scope') === slot);
+    const bars = (): (Element & { drawCounts?(field: string, counts: Record<string, number> | null): void })[] =>
+      [...this.querySelectorAll('sherpa-quick-filter-toolbar')].filter((b) => this.#inherited(b, 'data-scope') === slot);
     const lay = (): void => {
       const inBar = this.#legendChips && !!bar;
       if (!home) source.query.declarePart(key, { field, only: only as Populatable, ...(label ? { label } : {}), ...(inBar ? { shownIn: slot! } : {}) });
       el.toggleAttribute('data-chips', this.#legendChips && !inBar);
       only.toggleAttribute('data-no-legend', inBar);
+      // Its value chips count what its chart counts, each its legend row's number. Will, TODO 670
+      if (inBar) {
+        this.#legendCounts.set(el, (payload) => {
+          const items = Array.isArray(payload) ? (payload as { label: string; value: number }[]) : [];
+          for (const b of bars()) b.drawCounts?.(field, Object.fromEntries(items.map((i) => [i.label, i.value])));
+        });
+      } else if (this.#legendCounts.delete(el)) for (const b of bars()) b.drawCounts?.(field, null);
     };
     lay();
     // What the filters before it leave, so the legend greys the rest. TRAP T-a-ruled-out-value-is-greyed
@@ -1865,6 +1878,7 @@ export class SherpaProvider extends SherpaElement {
       el.removeAttribute('data-highlight-hover');
       el.removeAttribute('data-chips');
       only.removeAttribute('data-no-legend');
+      if (this.#legendCounts.delete(el)) for (const b of bars()) b.drawCounts?.(field, null);
       source.removeEventListener('present', hear);
       if (!home) source.query.declarePart(key, undefined);
       unbind();

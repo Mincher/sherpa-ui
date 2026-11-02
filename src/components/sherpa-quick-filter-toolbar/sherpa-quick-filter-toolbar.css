@@ -53,6 +53,14 @@
      actions share. */
   container: qf-bar / inline-size;
 }
+/* A chart's legend in its card's bar: its value chips take a row of their own,
+   under the Organise chips and the actions, so they do not fold away. The run
+   still folds, never wraps. Will, TODO 670 */
+:host(:state(values-row)) .bar { flex-wrap: wrap; }
+:host(:state(values-row)) .chips {
+  order: 1;
+  flex-basis: 100%;
+}
 
 /* The view bar bottom-aligns to the nav's first quick row; data centres. */
 :host([data-type="view"]) .bar {

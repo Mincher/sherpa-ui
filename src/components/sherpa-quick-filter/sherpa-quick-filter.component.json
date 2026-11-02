@@ -446,7 +446,8 @@
       "kind": "behaviour",
       "values": [
         "chip",
-        "section"
+        "section",
+        "values"
       ],
       "description": "chip | section — a SECTION is a field's whole answer in the flow, as a portrait bar draws it: its toggle part is the heading, its menu part still opens the menu, and each menu row is a VALUE chip below, whose press picks that row. TODO 425"
     },
@@ -643,6 +644,11 @@
       "$type": "state",
       "name": "open",
       "selector": ":host([data-open])"
+    },
+    {
+      "$type": "state",
+      "name": "values",
+      "selector": ":host([data-layout=\"values\"])"
     },
     {
       "$type": "state",

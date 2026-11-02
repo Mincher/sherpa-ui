@@ -9008,6 +9008,25 @@
             },
             {
               "kind": "method",
+              "name": "drawCounts",
+              "parameters": [
+                {
+                  "name": "field",
+                  "type": {
+                    "text": "string"
+                  }
+                },
+                {
+                  "name": "counts",
+                  "type": {
+                    "text": "Readonly<Record<string, number>> | null"
+                  }
+                }
+              ],
+              "description": "drawCounts(field, counts) — a chart's legend drawn here: each value's number, as its chart counts it, for its value chip's badge; null lets it go. Will, TODO 670"
+            },
+            {
+              "kind": "method",
               "name": "drawResults",
               "parameters": [
                 {
@@ -9637,7 +9656,7 @@
               "name": "data-layout",
               "description": "chip | section — a SECTION is a field's whole answer in the flow, as a portrait bar draws it: its toggle part is the heading, its menu part still opens the menu, and each menu row is a VALUE chip below, whose press picks that row. TODO 425",
               "type": {
-                "text": "'chip' | 'section'"
+                "text": "'chip' | 'section' | 'values'"
               }
             },
             {

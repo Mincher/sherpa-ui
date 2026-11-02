@@ -86,7 +86,7 @@ export class SherpaQuickFilter extends SherpaElement {
     'data-applied-at': { type: 'string', kind: 'behaviour' },
     'data-count': { type: 'string', kind: 'content', to: '.count' },
     // A field's whole answer in the flow: its menu's rows as value chips. TODO 425
-    'data-layout': { type: 'enum', kind: 'behaviour', values: ['chip', 'section'] },
+    'data-layout': { type: 'enum', kind: 'behaviour', values: ['chip', 'section', 'values'] },
     'data-label-start': { type: 'boolean', kind: 'style' },
     /* WHICH FIELD this chip filters. The toolbar writes it on every chip and
        selects on it; the chip reads it to name its own state. */
@@ -1106,7 +1106,8 @@ export class SherpaQuickFilter extends SherpaElement {
    */
   #syncValues(): void {
     const menu = this.#fieldMenu();
-    const items = this.dataset['layout'] === 'section' && menu && !menu.dataset['body'] ? menu.itemData ?? [] : [];
+    // A section's values, or its values alone — a chart's legend in a bar. Will, TODO 670
+    const items = this.#laysValues() && menu && !menu.dataset['body'] ? menu.itemData ?? [] : [];
     const tops = items.filter((i) => i.parent === undefined);
     const mine = new Map([...this.querySelectorAll<HTMLElement>(':scope > .value')].map((c) => [c.dataset['value'] ?? '', c]));
     const picked = new Set(menu?.values ?? []);
@@ -1142,6 +1143,11 @@ export class SherpaQuickFilter extends SherpaElement {
     this.toggleState('values-pending', !!this.querySelector(':scope > .value[data-pending]'));
   }
 
+  /** Its values are laid out as value chips: a section's, or its values alone. */
+  #laysValues(): boolean {
+    return this.dataset['layout'] === 'section' || this.dataset['layout'] === 'values';
+  }
+
   /** A SECTION's applied answer while its field waits, null while it does not:
    *  its host says it. TODO 425 */
   get applied(): FieldReading | null {
@@ -1161,7 +1167,7 @@ export class SherpaQuickFilter extends SherpaElement {
   set valueResults(results: Readonly<Record<string, number>> | null) {
     this.#valueResults = results;
     // A chip's own menu draws them on its rows; a section's are its value chips. TODO 466
-    this.menu?.setMatches?.(this.dataset['layout'] === 'section' ? null : results);
+    this.menu?.setMatches?.(this.#laysValues() ? null : results);
     this.#syncValues();
   }
   /** Each value's count, as its host last said. */
