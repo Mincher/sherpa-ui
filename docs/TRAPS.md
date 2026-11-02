@@ -15016,6 +15016,40 @@ rows at once: a live board.
 - Site: `src/core/worker/serve-data.ts`
 - Site: `test/unit/a-server-change-waits.test.mjs`
 
+### T-a-write-made-offline-waits
+
+**A write made while the source is offline waits on the device, and is sent once**
+(plan 652 S7a). `new HeldStore(source, { outbox: keepOutbox(name) })`: a write its
+source cannot send — a `TypeError` from the fetch, `offline` — goes into the outbox,
+is laid over the held set and the rows shown at once, and is said as a change to
+every tab. The writer gets the row as it will be. Only `offline` waits: a timeout or
+a server's failure may have landed, so it fails as before, and is never sent twice.
+
+**Sent in order, once.** `send()` reads the outbox again under `alone()` — a Web
+Lock, `sherpa-outbox:<name>` — so a second sender finds nothing left. It is called
+when the worker starts, before each read behind (`recheck()` — a tab shown, back
+online, Retry), and on Chromium's Background Sync (`OUTBOX_SYNC`, registered when a
+write waits), which may run with every tab shut; a send still offline rejects, so
+the browser tries the sync again. Firefox and WebKit have no Background Sync: there
+the next start or check sends it.
+
+**Laid over every set until sent.** A whole read behind replaces the set, so each
+landing lays the waiting writes again; a worker that starts reads them from the
+device and lays them over its first set.
+
+**One the source refuses when sent is dropped and said** (`lost`, and a report):
+the set is read again and shown at once, so no row shows a write that never landed.
+How the reader is told, and D3's newer-write rule, are S7b.
+
+**The kept entries share one object store** (`sherpa-outbox`, `entries`), each in
+the slot `<name>|<id>`: two outboxes can make one id in the same ms.
+
+- Site: `src/core/data/outbox.ts`
+- Site: `src/core/browser/outbox-keep.ts`
+- Site: `src/core/data/held-store.ts`
+- Site: `src/core/worker/serve-data.ts`
+- Site: `test/unit/a-write-made-offline-waits.test.mjs`
+
 ### T-a-horizontal-legend-is-three-by-two
 
 A horizontal legend was a wrapping flex row, so it put a different number of

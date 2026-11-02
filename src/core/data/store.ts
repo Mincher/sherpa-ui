@@ -294,6 +294,9 @@ export interface Store extends EventTarget {
   /** Take in the newer rows its source gave behind the ones it answers, which wait
    *  so a page does not move under its reader: true if any waited. S6c */
   take?(): Promise<boolean>;
+  /** Send the writes that wait — made while its source was offline — in order,
+   *  once: true when none waits now. S7a */
+  send?(): Promise<boolean>;
 }
 
 /** The order a whole read returns rows in, asked no sort. */

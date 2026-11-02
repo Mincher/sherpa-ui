@@ -1,15 +1,26 @@
 /**
  * serve-data.ts — the data layer's own requests, answered in the Service Worker:
- * one copy of each store for every tab, and offline. Plan 652 S4
+ * one copy of each store for every tab, and offline; the writes made offline sent
+ * when it starts, and on Background Sync. Plan 652 S4
  * TRAP T-the-worker-answers-the-data
  *
  * Map:
+ * - OUTBOX_SYNC — The Background Sync tag the worker sends its stores' waiting writes on.
  * - ServeDataOptions — The stores the worker answers for, and what each request waits for.
  * - serveData — Answer the data layer's requests in the worker, from the stores the app hands it.
  */
 import { DATA_CHANNEL, createDataHandler, type DataHandlerOptions } from '../data/data-handler.js';
 import { sayNotice } from '../data/notices.js';
 import type { WorkerFetchEvent, WorkerScope } from './app-files.js';
+
+/** The Background Sync tag the worker sends its stores' waiting writes on. */
+export const OUTBOX_SYNC = 'sherpa-outbox';
+
+/** A Background Sync: Chromium's, with every tab perhaps shut. */
+interface SyncEvent extends Event {
+  readonly tag: string;
+  waitUntil(promise: Promise<unknown>): void;
+}
 
 /** The stores the worker answers for, and what each request waits for. */
 export interface ServeDataOptions extends DataHandlerOptions {
@@ -27,7 +38,23 @@ export function serveData(scope: WorkerScope, options: ServeDataOptions): void {
   const channel = new BroadcastChannel(DATA_CHANNEL);
   // Open as long as the worker: in Node, it keeps nothing running.
   (channel as { unref?: () => void }).unref?.();
+  /* The writes made offline, sent: when the worker starts, and on Chromium's sync.
+     A send still offline rejects, so the browser tries the sync again. S7a
+     TRAP T-a-write-made-offline-waits */
+  const sendAll = async (): Promise<void> => {
+    await options.ready?.catch(() => undefined);
+    const sent = await Promise.all(Object.values(options.stores).map((store) => store.send?.() ?? true));
+    if (sent.includes(false)) throw new Error('serveData: a write made offline is still waiting.');
+  };
+  void sendAll().catch(() => undefined);
+  scope.addEventListener('sync', (event) => {
+    if ((event as SyncEvent).tag === OUTBOX_SYNC) (event as SyncEvent).waitUntil(sendAll());
+  });
   for (const [name, store] of Object.entries(options.stores)) {
+    // A write waits: the browser sends it once back online, if it can — with no tab open.
+    store.addEventListener('queued', () => {
+      void scope.registration?.sync?.register(OUTBOX_SYNC).catch(() => undefined);
+    });
     /* Newer rows wait behind the ones shown: said as a fact, to every tab; whatever
        listens shows it. S6c · TRAP T-a-server-change-waits */
     store.addEventListener('waiting', (event) => {

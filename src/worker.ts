@@ -5,4 +5,4 @@
  */
 export { APP_CACHE_PREFIX, keepAppFiles, type AppFilesOptions, type WorkerScope } from './core/worker/app-files.js';
 // The data layer's own requests, answered here for every tab. S4 · TRAP T-the-worker-answers-the-data
-export { serveData, type ServeDataOptions } from './core/worker/serve-data.js';
+export { OUTBOX_SYNC, serveData, type ServeDataOptions } from './core/worker/serve-data.js';

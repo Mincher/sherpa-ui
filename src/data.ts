@@ -129,6 +129,8 @@ export {
 export { RequestStore, openRequestStore, type RequestStoreOptions } from './core/data/request-store.js';
 // A remote store's ONE held set, for a Service Worker to answer every tab from. Plan 652 S5b
 export { HeldStore, type HeldStoreOptions } from './core/data/held-store.js';
+// A write made offline waits, and is sent once. Plan 652 S7a
+export { memoryOutbox, outboxEntry, type OutboxEntry, type OutboxPort } from './core/data/outbox.js';
 // What is new, said to every tab: a fact, never a request to show it. Plan 652 S6
 export { NOTICE_CHANNEL, sayNotice, type UpdateNotice } from './core/data/notices.js';
 /* A page's QUERY, drawn as nodes for the Node Editor. TODO 555 · TRAP T-the-node-editor-asks-the-query */
@@ -283,6 +285,7 @@ export { fakeRemote, type FakeRemoteOptions } from './core/data/fake-remote.js';
 export { StoreHistory, changedFields } from './core/data/store-history.js';
 export { failureOf, unreached, type Failure, type FailureKind } from './core/data/failure.js';
 export { keepCache, clearKept, type KeepOptions } from './core/browser/cache-keep.js';
+export { keepOutbox } from './core/browser/outbox-keep.js';
 
 /* ONE CHANNEL for "your assumption was wrong" — a host routes it, silences it
    or lets it warn. TRAP T-a-broken-assumption-reports */

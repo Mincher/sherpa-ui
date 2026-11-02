@@ -2,26 +2,32 @@
  * held-store.ts — a store that holds its remote source's whole set itself and
  * answers every reader from it: ONE copy for every tab, in a Service Worker. A
  * reader over it holds none, and stays remote (D8). Newer rows its source gives
- * wait until taken (S6c). DOM-free. Plan 652 S5b
- * TRAP T-a-worker-holds-the-set · TRAP T-a-server-change-waits
+ * wait until taken (S6c); a write it cannot send, offline, waits in its outbox
+ * (S7a). DOM-free. Plan 652 S5b
+ * TRAP T-a-worker-holds-the-set · TRAP T-a-server-change-waits · TRAP T-a-write-made-offline-waits
  *
  * Map:
- * - HeldStoreOptions — The most rows it holds, and whether its source's changes wait.
+ * - HeldStoreOptions — The most rows it holds, whether its source's changes wait, and where its writes wait offline.
  * - HeldStore — A store that holds its source's whole set and answers every reader from it.
  */
-import { unreached, type Failure } from './failure.js';
+import { failureOf, unreached, type Failure } from './failure.js';
 import { HeldReads } from './held-reads.js';
 import { HeldSet } from './held-set.js';
+import { outboxEntry, type OutboxEntry, type OutboxPort } from './outbox.js';
+import { report } from './report.js';
 import { keyRow } from './row-key.js';
-import { readField, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail, type StoreChanges } from './store.js';
+import { readField, sameKey, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail, type StoreChanges } from './store.js';
 
-/** The most rows it holds, and whether its source's changes wait. */
+/** The most rows it holds, whether its source's changes wait, and where its writes wait offline. */
 export interface HeldStoreOptions {
   /** Default 100,000, a source's own. */
   cap?: number;
   /** Newer rows its source gives behind WAIT until taken, so no page moves under its
    *  reader — `false` takes them at once: a live board. Default true. S6c */
   waits?: boolean;
+  /** Where a write it cannot send, as its source is offline, waits — shown at once,
+   *  and sent in order, once, when it is reached. None: the write fails, as before. S7a */
+  outbox?: OutboxPort;
 }
 
 /** A store that holds its source's whole set and answers every reader from it. */
@@ -46,12 +52,22 @@ export class HeldStore extends EventTarget implements Store {
   #waiting = false;
   /** A write its set could not place: the next set shows at once, as the write did. */
   #owed = false;
+  /** Where its writes wait offline, or null. */
+  readonly #outbox: OutboxPort | null;
+  /** The writes that wait, in order: laid over every set until sent. */
+  #pending: OutboxEntry[] = [];
+  /** Settles once the writes kept last time are read. */
+  readonly #read: Promise<void>;
 
   constructor(source: Store, options: HeldStoreOptions = {}) {
     super();
     this.#source = source;
     this.#reads = new HeldReads(source, { cap: options.cap ?? 100_000, need: () => this.#need });
     this.#waits = options.waits ?? true;
+    this.#outbox = options.outbox ?? null;
+    this.#read = this.#outbox
+      ? this.#outbox.read().then((entries) => { this.#pending = entries; this.#relay(); }, () => undefined)
+      : Promise.resolve();
     if (source.changes) this.changes = (since) => source.changes!(since);
     // A change its set takes — or its source says — is its readers' to hear.
     const pass = (event: Event): void => {
@@ -64,7 +80,10 @@ export class HeldStore extends EventTarget implements Store {
       this.dispatchEvent(new CustomEvent('change', { detail: change }));
     };
     (this.#reads.cache ?? source).addEventListener('change', pass);
-    this.#reads.cache?.addEventListener('set', () => this.#landed());
+    this.#reads.cache?.addEventListener('set', () => {
+      this.#relay();
+      this.#landed();
+    });
   }
 
   /** A set landed — or was joined in place: the first is shown; newer rows that
@@ -124,6 +143,7 @@ export class HeldStore extends EventTarget implements Store {
 
   async load(options?: LoadOptions): Promise<LoadResult> {
     if (options?.fields) this.#need = options.fields;
+    await this.#read;
     await this.#reads.hold();
     return this.#answers.load(options);
   }
@@ -143,20 +163,119 @@ export class HeldStore extends EventTarget implements Store {
   byKey(key: unknown): Promise<Row | undefined> {
     return this.#source.byKey(key);
   }
-  /* A write goes to the source; the set takes it as it hears it. */
-  insert(values: Row): Promise<Row> {
-    return this.#source.insert(values);
+  /* A write goes to the source; the set takes it as it hears it. Offline, it waits. */
+  async insert(values: Row): Promise<Row> {
+    try {
+      return await this.#source.insert(values);
+    } catch (error) {
+      await this.#wait(error, { type: 'insert', key: readField(values, this.key), values });
+      return values;
+    }
   }
-  update(key: unknown, values: Row): Promise<Row> {
-    return this.#source.update(key, values);
+  async update(key: unknown, values: Row): Promise<Row> {
+    try {
+      return await this.#source.update(key, values);
+    } catch (error) {
+      await this.#wait(error, { type: 'update', key, values });
+      return { ...this.#held(key), ...values };
+    }
   }
-  remove(key: unknown): Promise<void> {
-    return this.#source.remove(key);
+  async remove(key: unknown): Promise<void> {
+    try {
+      await this.#source.remove(key);
+    } catch (error) {
+      await this.#wait(error, { type: 'remove', key });
+    }
   }
 
-  /** Read its source again behind the set it answers; settles when that read lands
-   *  or fails — either way the set says so. */
+  /** How many writes wait to be sent. */
+  get pending(): number {
+    return this.#pending.length;
+  }
+
+  /** A write that never left — its source offline — waits in the outbox, and shows
+   *  at once; any other failure is the writer's, as before. A timeout may have
+   *  landed, so it is never sent twice. */
+  async #wait(error: unknown, write: Omit<OutboxEntry, 'id' | 'at'>): Promise<void> {
+    if (!this.#outbox || failureOf(error).kind !== 'offline' || write.key == null) throw error;
+    await this.#read;
+    const entry = outboxEntry(write);
+    await this.#outbox.add(entry);
+    this.#pending.push(entry);
+    const change = this.#lay(entry);
+    if (change) this.dispatchEvent(new CustomEvent('change', { detail: change }));
+    this.dispatchEvent(new CustomEvent('queued', { detail: { pending: this.#pending.length } }));
+  }
+
+  /** The row its set holds for a key, or none. */
+  #held(key: unknown): Row | undefined {
+    return this.#reads.cache?.set?.rows.find((row) => sameKey(readField(row, this.key), key));
+  }
+
+  /** Lay a waiting write over the set and the rows shown: the change it makes, or null. */
+  #lay(entry: OutboxEntry): StoreChangeDetail | null {
+    const { type, key, values } = entry;
+    const row = type === 'remove' ? undefined : { ...(type === 'update' ? this.#held(key) : undefined), ...values };
+    if (type === 'update' && !this.#held(key)) return null;
+    const change: StoreChangeDetail = { type, key, ...(row ? { row } : {}), ...(type === 'update' && values ? { fields: Object.keys(values) } : {}) };
+    this.#reads.cache?.set?.patch(change, this.#source);
+    this.#shown?.patch(change, this.#source);
+    return change;
+  }
+
+  /** Every write that waits, laid again over a set that landed. */
+  #relay(): void {
+    for (const entry of this.#pending) this.#lay(entry);
+  }
+
+  /** Send the writes that wait, in order, once, with no other sender at once: true
+   *  when none waits now. One its source refuses is dropped, and said (`lost`). */
+  async send(): Promise<boolean> {
+    const outbox = this.#outbox;
+    if (!outbox) return true;
+    await this.#read;
+    if (!this.#pending.length) return true;
+    return outbox.alone(async () => {
+      // Read again: another sender may have sent some.
+      let lost = false;
+      for (const entry of await outbox.read()) {
+        try {
+          if (entry.type === 'insert') await this.#source.insert(entry.values ?? {});
+          else if (entry.type === 'update') await this.#source.update(entry.key, entry.values ?? {});
+          else await this.#source.remove(entry.key);
+        } catch (error) {
+          const failure = failureOf(error);
+          if (unreached(failure)) {
+            this.#pending = await outbox.read();
+            return false;
+          }
+          lost = true;
+          report({
+            code: 'outbox-write-lost',
+            message: `A write made offline (${entry.type} ${String(entry.key)}) was refused when sent (${failure.kind}: ${failure.message}), so it was dropped.`,
+            at: { type: entry.type, key: String(entry.key), kind: failure.kind },
+          });
+          this.dispatchEvent(new CustomEvent('lost', { detail: { type: entry.type, key: entry.key, failure } }));
+        }
+        await outbox.remove(entry.id);
+      }
+      // A write made meanwhile waits for the next send.
+      this.#pending = await outbox.read();
+      /* A dropped write was laid over the set: it is read again, and shown at once,
+         so no row shows a write that never landed. */
+      if (lost) {
+        this.#owed = true;
+        this.#reads.cache?.addEventListener('set', () => this.dispatchEvent(new CustomEvent('change', { detail: { type: 'update' } })), { once: true });
+        this.#reads.recheck();
+      }
+      return !this.#pending.length;
+    });
+  }
+
+  /** Read its source again behind the set it answers — the writes that wait sent
+   *  first; settles when that read lands or fails — either way the set says so. */
   async recheck(): Promise<void> {
+    await this.send().catch(() => false);
     const cache = this.#reads.cache;
     if (!cache) return;
     const landed = new Promise<void>((done) => cache.addEventListener('set', () => done(), { once: true }));

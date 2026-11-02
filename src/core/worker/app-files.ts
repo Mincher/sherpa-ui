@@ -15,6 +15,8 @@ export interface WorkerScope extends EventTarget {
   readonly location: { readonly origin: string };
   readonly clients: { claim(): Promise<void> };
   skipWaiting(): Promise<void>;
+  /** Background Sync, where the engine has it: Chromium. */
+  readonly registration?: { readonly sync?: { register(tag: string): Promise<void> } };
 }
 
 /** A worker event that holds the worker open until its promise settles. */

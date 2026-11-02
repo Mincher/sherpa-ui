@@ -16,7 +16,8 @@ import type { LoadOptions, LoadResult, Row, Store, StoreChanges } from './store.
 export interface FakeRemoteOptions {
   /** Milliseconds each load and count waits. Default 800. */
   delay?: number | (() => number);
-  /** The share of loads that fail, 0 to 1, as a network failure (a `TypeError`). Default 0. */
+  /** The share of loads — and writes, which then never reach the store — that
+   *  fail, 0 to 1, as a network failure (a `TypeError`). Default 0. */
   fail?: number | (() => number);
   /** Does it act as a store whose every change is announced? Default: the store's own say. */
   announcesAll?: boolean;
@@ -83,8 +84,9 @@ export function fakeRemote(store: Store, options: FakeRemoteOptions = {}): Store
       },
     } : {}),
     byKey: (key: unknown) => store.byKey(key),
-    insert: (values: Row) => store.insert(values),
-    update: (key: unknown, values: Row) => store.update(key, values),
-    remove: (key: unknown) => store.remove(key),
+    // Offline, a write never leaves, as a fetch's would not. Plan 652 S7a
+    insert: async (values: Row) => (failed(), store.insert(values)),
+    update: async (key: unknown, values: Row) => (failed(), store.update(key, values)),
+    remove: async (key: unknown) => (failed(), store.remove(key)),
   });
 }
