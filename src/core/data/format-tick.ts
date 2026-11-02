@@ -9,8 +9,7 @@
  * - chartScale — The axis a set of values needs.
  * - tickPercent — Where the i-th of `steps` divisions sits, as a percentage UP from the bottom.
  * - radialArea — The `position-area` on the OUTWARD side of a radial mark.
- * - ringInset — A band's two edges, moved in from its neighbours by `pad` units.
- * - RingSegmentOptions — the radii, angles and corner rounding of one donut slice
+ * - RingSegmentOptions — the radii, angles, edge gaps and corner rounding of one donut slice
  * - ringSegmentPath — The `d` for a CLOSED ring segment — a donut slice — with four rounded corners.
  * - seriesVar — The custom property a mark paints with.
  * - seriesBorderVar — the property a mark's OUTLINE paints with — the series' identity
@@ -216,14 +215,16 @@ function polar(cx: number, cy: number, r: number, deg: number): [number, number]
   return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
 }
 
-/** A band's two edges, moved in from its neighbours by `pad` units measured at its
- *  middle: a real gap, with room for its outline. Never past a quarter of its span. */
-export function ringInset(startDeg: number, endDeg: number, inner: number, outer: number, pad: number): [number, number] {
-  const span = endDeg - startDeg;
-  const middle = (inner + outer) / 2;
-  if (span >= 359.999 || middle <= 0) return [startDeg, endDeg];
-  const by = Math.min((pad / middle) * (180 / Math.PI), span / 4);
-  return [startDeg + by, endDeg - by];
+/** Where two straight edges meet, from the centre: each edge parallel to its
+ *  boundary, `startGap` and `endGap` in from it. Angles in degrees; span under 180. */
+function edgesMeet(startDeg: number, endDeg: number, startGap: number, endGap: number): [number, number] {
+  const a = (startDeg * Math.PI) / 180;
+  const b = (endDeg * Math.PI) / 180;
+  const sin = Math.sin(b - a);
+  return [
+    (startGap * Math.sin(b) + endGap * Math.sin(a)) / sin,
+    -(startGap * Math.cos(b) + endGap * Math.cos(a)) / sin,
+  ];
 }
 
 export interface RingSegmentOptions {
@@ -240,6 +241,10 @@ export interface RingSegmentOptions {
   endDeg: number;
   /** Corner rounding, viewBox units. Clamped to what the segment can hold. */
   radius?: number;
+  /** How far each straight edge moves in from its boundary, square to it, in viewBox
+   *  units. Half a gap: the same width from the rim to the centre. */
+  startGap?: number;
+  endGap?: number;
 }
 
 /**
@@ -262,26 +267,36 @@ export function ringSegmentPath(options: RingSegmentOptions): string {
     return inner > 0 ? `${ring(outer, 1)} ${ring(inner, 0)}` : ring(outer, 1);
   }
 
-  const band = outer - inner;
+  const toDeg = 180 / Math.PI;
   // Degrees of arc that `r` units span at radius `rad`.
   const degFor = (r: number, rad: number): number =>
-    rad <= 0 ? 0 : (r / rad) * (180 / Math.PI);
+    rad <= 0 ? 0 : (r / rad) * toDeg;
+
+  /* Each edge moves in square to itself, so a gap keeps one width to the centre.
+     Capped so the edges meet inside half the radius. TRAP T-a-chart-gap-is-real-space */
+  const cap = (outer / 2) * Math.sin((Math.min(span, 180) * Math.PI) / 360);
+  const startGap = Math.min(Math.max(options.startGap ?? 0, 0), cap);
+  const endGap = Math.min(Math.max(options.endGap ?? 0, 0), cap);
+  const meet = span < 180 ? edgesMeet(startDeg, endDeg, startGap, endGap) : null;
+  const fits = !!meet && Math.hypot(...meet) <= outer;
+  // Past a half circle the edges never meet: the gaps' ends leave a hub.
+  const hole = fits ? inner : Math.max(inner, startGap, endGap);
+  // A pie's edges meet at one point, so its inner corners collapse.
+  const tip: [number, number] | null = fits && Math.hypot(...meet!) >= hole ? meet! : hole <= 0 ? [0, 0] : null;
+  // An edge's angle where it crosses radius `rad`.
+  const startAt = (rad: number): number => startDeg + Math.asin(Math.min(1, startGap / rad)) * toDeg;
+  const endAt = (rad: number): number => endDeg - Math.asin(Math.min(1, endGap / rad)) * toDeg;
 
   // Both clamps — TRAP T-ring-segment-needs-two-radius-clamps.
   const asked = options.radius ?? 0;
-  const byBand = band / 4;
-  const arcAt = (inner > 0 ? inner : outer) * ((span * Math.PI) / 180);
+  const byBand = (outer - hole) / 4;
+  const arcAt = tip ? outer * ((endAt(outer) - startAt(outer)) / toDeg) : hole * ((endAt(hole) - startAt(hole)) / toDeg);
   const r = Math.max(0, Math.min(asked, byBand, arcAt / 4));
 
-  const outerInset = degFor(r, outer);
-  const innerInset = degFor(r, inner);
-  // A pie's inner "arc" is one point, so its corners collapse.
-  const pie = inner <= 0;
-
-  const oStart = startDeg + outerInset;
-  const oEnd = endDeg - outerInset;
-  const iStart = startDeg + innerInset;
-  const iEnd = endDeg - innerInset;
+  const oStart = startAt(outer) + degFor(r, outer);
+  const oEnd = endAt(outer) - degFor(r, outer);
+  const iStart = startAt(hole) + degFor(r, hole);
+  const iEnd = endAt(hole) - degFor(r, hole);
 
   // SVG needs the long-arc flag once the sweep passes a half circle.
   const longOuter = oEnd - oStart > 180 ? 1 : 0;
@@ -289,20 +304,23 @@ export function ringSegmentPath(options: RingSegmentOptions): string {
 
   const p = (rad: number, deg: number): string =>
     polar(cx, cy, rad, deg).map((n) => n.toFixed(4)).join(' ');
+  const onStart = (rad: number): string => p(rad, startAt(rad));
+  const onEnd = (rad: number): string => p(rad, endAt(rad));
+  const point = tip ? `${(cx + tip[0]).toFixed(4)} ${(cy + tip[1]).toFixed(4)}` : '';
   const parts: string[] = [];
 
   // Leading edge, corner, outer arc, corner, trailing edge.
-  parts.push(`M ${p(inner + r, startDeg)}`);
-  parts.push(`L ${p(outer - r, startDeg)}`);
+  parts.push(`M ${point || onStart(hole + r)}`);
+  parts.push(`L ${onStart(outer - r)}`);
   parts.push(`A ${r} ${r} 0 0 1 ${p(outer, oStart)}`);
   parts.push(`A ${outer} ${outer} 0 ${longOuter} 1 ${p(outer, oEnd)}`);
-  parts.push(`A ${r} ${r} 0 0 1 ${p(outer - r, endDeg)}`);
-  parts.push(`L ${p(inner + r, endDeg)}`);
-  if (!pie) {
+  parts.push(`A ${r} ${r} 0 0 1 ${onEnd(outer - r)}`);
+  parts.push(`L ${point || onEnd(hole + r)}`);
+  if (!point) {
     // Corner, inner arc BACKWARDS, corner.
-    parts.push(`A ${r} ${r} 0 0 1 ${p(inner, iEnd)}`);
-    parts.push(`A ${inner} ${inner} 0 ${longInner} 0 ${p(inner, iStart)}`);
-    parts.push(`A ${r} ${r} 0 0 1 ${p(inner + r, startDeg)}`);
+    parts.push(`A ${r} ${r} 0 0 1 ${p(hole, iEnd)}`);
+    parts.push(`A ${hole} ${hole} 0 ${longInner} 0 ${p(hole, iStart)}`);
+    parts.push(`A ${r} ${r} 0 0 1 ${onStart(hole + r)}`);
   }
   parts.push('Z');
   return parts.join(' ');

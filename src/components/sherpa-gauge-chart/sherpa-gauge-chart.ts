@@ -7,7 +7,7 @@
 import { SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { redrawOnResize, unitsPerPixel } from '../../core/ui/chart-parts.js';
-import { formatTick, radialArea, ringSegmentPath, ringInset, statusBorderVar, statusVar } from '../../core/data/format-tick.js';
+import { formatTick, radialArea, ringSegmentPath, statusBorderVar, statusVar } from '../../core/data/format-tick.js';
 import { isStatus } from '../../core/data/chart-datum.js';
 import type { Threshold } from '../../core/data/threshold.js';
 import { fillTip, pairAnchor } from '../../core/ui/chart-parts.js';
@@ -337,7 +337,6 @@ export class SherpaGaugeChart extends SherpaElement {
     bands.forEach((band) => {
       if (band.to <= band.from) return;
       const i = index++;
-      const [gapStart, gapEnd] = ringInset(START_DEG + band.from * SPAN_DEG, START_DEG + band.to * SPAN_DEG, inner, outer, pad);
       const arc = this.clone<SVGPathElement>(tpl, '.zone');
       if (!arc) return;
       arc.setAttribute(
@@ -347,8 +346,10 @@ export class SherpaGaugeChart extends SherpaElement {
           cy: CENTRE,
           inner,
           outer,
-          startDeg: i ? gapStart : START_DEG + band.from * SPAN_DEG,
-          endDeg: i < reached.length - 1 ? gapEnd : START_DEG + band.to * SPAN_DEG,
+          startDeg: START_DEG + band.from * SPAN_DEG,
+          endDeg: START_DEG + band.to * SPAN_DEG,
+          // A gap only to a neighbour; the arc's two ends are its own.
+          startGap: i ? pad : 0, endGap: i < reached.length - 1 ? pad : 0,
           radius: CORNER,
         }),
       );

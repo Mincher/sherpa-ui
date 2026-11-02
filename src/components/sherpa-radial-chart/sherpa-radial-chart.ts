@@ -14,7 +14,7 @@
 import { datumTotal, type ChartDatum } from '../../core/data/chart-datum.js';
 import { SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
-import { formatValue, radialArea, ringInset, ringSegmentPath } from '../../core/data/format-tick.js';
+import { formatValue, radialArea, ringSegmentPath, type RingSegmentOptions } from '../../core/data/format-tick.js';
 import { fillTip, pairAnchor, paintSeries, paintTone, redrawOnResize, unitsPerPixel, partsSaid } from '../../core/ui/chart-parts.js';
 import { rovingFocus, type Roving } from '../../core/ui/roving-focus.js';
 import { RADIAL_CENTRE as CENTRE, RADIAL_CORNER as CORNER,
@@ -24,6 +24,9 @@ import { RADIAL_CENTRE as CENTRE, RADIAL_CORNER as CORNER,
 export type RadialSlice = ChartDatum;
 
 const MIN_SHARE = 0.005;
+
+/** A mark's two boundaries, and how far each of its edges moves in from one. */
+type Edges = Required<Pick<RingSegmentOptions, 'startDeg' | 'endDeg' | 'startGap' | 'endGap'>>;
 
 export class SherpaRadialChart extends SherpaElement {
   static override css = [
@@ -132,32 +135,33 @@ export class SherpaRadialChart extends SherpaElement {
      *  between, none at the band's own edges, which its outline holds. Will, TODOs 548, 564, 635 */
     /** What the driver matches of one mark, from its own start: over all the marks. Will, TODO 638 */
     const matches: SVGPathElement[] = [];
-    const matchIn = (mark: { value: number; matched?: number }, from: number, to: number, start: number, end: number, index: number, colorIndex?: number): void => {
+    const matchIn = (mark: { value: number; matched?: number }, from: number, to: number, edges: Edges, index: number, colorIndex?: number): void => {
       const part = mark.value && mark.matched ? Math.min(1, Math.max(0, mark.matched) / mark.value) : 0;
       const path = marking && part && matchTpl ? this.clone<SVGPathElement>(matchTpl, '.slice-match') : null;
       if (!path) return;
-      path.setAttribute('d', ringSegmentPath({ cx: CENTRE, cy: CENTRE, inner: from, outer: to, startDeg: start, endDeg: start + (end - start) * part }));
+      const endDeg = edges.startDeg + (edges.endDeg - edges.startDeg) * part;
+      path.setAttribute('d', ringSegmentPath({ cx: CENTRE, cy: CENTRE, inner: from, outer: to, ...edges, endDeg, endGap: part < 1 ? 0 : edges.endGap }));
       paintSeries(path, index, colorIndex);
       matches.push(path);
     };
     const partsIn = (parts: readonly { value: number; matched?: number }[] | undefined, whole: number, from: number, to: number,
-      startDeg: number, spanDeg: number, index: number, colorIndex?: number): void => {
+      edges: Edges, index: number, colorIndex?: number): void => {
       const shown = (parts ?? []).filter((one) => one.value > 0);
+      const spanDeg = edges.endDeg - edges.startDeg;
       let within = 0;
       shown.forEach((p, n) => {
         const begins = within;
         within += whole ? p.value / whole : 0;
         const part = partTpl ? this.clone<SVGPathElement>(partTpl, '.slice-part') : null;
         if (!part) return;
-        const [start, end] = ringInset(startDeg + spanDeg * begins, startDeg + spanDeg * within, from, to, sectionPad);
-        const startsAt = n ? start : startDeg + spanDeg * begins;
-        const endsAt = n < shown.length - 1 ? end : startDeg + spanDeg * within;
-        part.setAttribute('d', ringSegmentPath({ cx: CENTRE, cy: CENTRE, inner: from, outer: to, startDeg: startsAt, endDeg: endsAt }));
+        const own: Edges = { startDeg: edges.startDeg + spanDeg * begins, endDeg: edges.startDeg + spanDeg * within,
+          startGap: n ? sectionPad : edges.startGap, endGap: n < shown.length - 1 ? sectionPad : edges.endGap };
+        part.setAttribute('d', ringSegmentPath({ cx: CENTRE, cy: CENTRE, inner: from, outer: to, ...own }));
         part.setAttribute('stroke-width', String(SECTION_GAP * unit));
         paintSeries(part, index, colorIndex);
         paintTone(part, p.value, shown.map((one) => one.value));
         group.appendChild(part);
-        matchIn(p, from, to, startsAt, endsAt, index, colorIndex);
+        matchIn(p, from, to, own, index, colorIndex);
       });
     };
 
@@ -167,10 +171,8 @@ export class SherpaRadialChart extends SherpaElement {
       const share = Math.max(value / total, MIN_SHARE);
 
       // A lone slice closes the ring, and has no neighbour to clear.
-      const [gapStart, gapEnd] = this.#slices.length > 1
-        ? ringInset(sweepStart + acc * sweep, sweepStart + (acc + share) * sweep, inner, outer, segmentPad)
-        : [sweepStart + acc * sweep, sweepStart + (acc + share) * sweep];
-      const edges = { startDeg: gapStart, endDeg: gapEnd };
+      const pad = this.#slices.length > 1 ? segmentPad : 0;
+      const edges: Edges = { startDeg: sweepStart + acc * sweep, endDeg: sweepStart + (acc + share) * sweep, startGap: pad, endGap: pad };
       // No -90deg transform: ringSegmentPath already measures from 12 o'clock.
       const arc = this.clone<SVGPathElement>(tpl, '.slice');
       if (!arc) return;
@@ -200,8 +202,6 @@ export class SherpaRadialChart extends SherpaElement {
       arc.setAttribute('role', 'img');
       const parts = partsSaid(slice.stack ?? slice.parts);
       arc.setAttribute('aria-label', `${slice.label}: ${slice.value}${parts ? ` (${parts})` : ''}`);
-      const startDeg = gapStart;
-      const spanDeg = gapEnd - gapStart;
       const split = !slice.stack?.length && !!slice.parts?.some((one) => one.value > 0);
       // Under its parts, unless it has them: then it is their outline, and takes the pointer.
       if (!split) group.appendChild(arc);
@@ -219,23 +219,23 @@ export class SherpaRadialChart extends SherpaElement {
           const thick = to - from > segmentPad * 4;
           const near = j && thick ? from + segmentPad : from;
           const far = j < last && thick ? to - segmentPad : to;
-          path.setAttribute('d', ringSegmentPath({ cx: CENTRE, cy: CENTRE, inner: near, outer: far, startDeg, endDeg: startDeg + spanDeg, radius: CORNER }));
+          path.setAttribute('d', ringSegmentPath({ cx: CENTRE, cy: CENTRE, inner: near, outer: far, ...edges, radius: CORNER }));
           path.setAttribute('stroke-width', String(OUTLINE));
           paintSeries(path, j, band.colorIndex);
           path.toggleAttribute('data-split', !!band.parts?.some((one) => one.value > 0));
           if (!path.hasAttribute('data-split')) group.appendChild(path);
-          partsIn(band.parts, Math.max(0, band.value), near, far, startDeg, spanDeg, j, band.colorIndex);
-          if (!path.hasAttribute('data-split')) matchIn(band, near, far, startDeg, startDeg + spanDeg, j, band.colorIndex);
+          partsIn(band.parts, Math.max(0, band.value), near, far, edges, j, band.colorIndex);
+          if (!path.hasAttribute('data-split')) matchIn(band, near, far, edges, j, band.colorIndex);
           if (path.hasAttribute('data-split')) group.appendChild(path);
           from = to;
         }
       } else {
         // GROUPED: its parts, in tones of its own colour. TODO 548
-        partsIn(slice.parts, value, inner, outer, startDeg, spanDeg, i, slice.colorIndex);
+        partsIn(slice.parts, value, inner, outer, edges, i, slice.colorIndex);
       }
       if (split) group.appendChild(arc);
       // Whole, it marks its own; split, each ring and section does. TODO 638
-      if (!split && !slice.stack?.length) matchIn(slice, inner, outer, gapStart, gapEnd, i, slice.colorIndex);
+      if (!split && !slice.stack?.length) matchIn(slice, inner, outer, edges, i, slice.colorIndex);
 
       if (hotspots && hotTpl) {
         const frag = hotTpl.content.cloneNode(true) as DocumentFragment;

@@ -362,11 +362,11 @@ test('clicking a slice leaves no focus ring; tabbing to one draws it', async ({ 
  * A PIE SLICE HAS NO ROUNDED CORNER.
  *
  * A donut's corners round because they sit on two ARCS. A pie slice's two
- * straight edges meet at the CENTRE, and a radius there rounds the point off —
+ * straight edges meet at a POINT, and a radius there rounds the point off —
  * measured before the fix, the path began at 49 rather than the centre's 50.
  * TRAP T-a-pie-slice-has-no-rounded-corner
  */
-test('a pie slice reaches the centre with a sharp point; a donut keeps its rounding',
+test('a pie slice comes to a sharp point; a donut keeps its rounding',
   async ({ page }) => {
     const r = await page.evaluate(async () => {
       const draw = async (type: string | null): Promise<string> => {
@@ -376,24 +376,34 @@ test('a pie slice reaches the centre with a sharp point; a donut keeps its round
         if (type) el.setAttribute('data-type', type);
         document.getElementById('root')!.replaceChildren(el);
         await el.rendered;
-        el.populate!([{ label: 'a', value: 3 }, { label: 'b', value: 1 }]);
+        el.populate!([{ label: 'a', value: 1 }, { label: 'b', value: 1 }, { label: 'c', value: 1 }, { label: 'd', value: 1 }]);
         await window.__settled();
         return el.shadowRoot!.querySelector('.slice')!.getAttribute('d') ?? '';
       };
       const donut = await draw(null);
       const pie = await draw('pie');
+      // The first two points: where the leading edge starts, and where it meets the rim.
+      const [tip, rim] = [...pie.matchAll(/[ML] ([\d.]+) ([\d.]+)/g)].map((m): [number, number] => [Number(m[1]), Number(m[2])]);
       // `A 1 1` is a corner arc at the CORNER radius — the tell for rounding.
       return {
         donutRounded: /A 1 1 /.test(donut),
         pieRounded: /A 1 1 /.test(pie),
-        pieStart: pie.slice(0, 17),
+        tip: tip!,
+        rim: rim!,
       };
     });
 
     expect(r.donutRounded).toBe(true);
     expect(r.pieRounded).toBe(false);
-    // Straight to the centre of the 100-unit box.
-    expect(r.pieStart).toBe('M 50.0000 50.0000');
+    /* The first slice starts at 12 o'clock, so its gap to the slice before is its
+       distance from the centre line, x = 50. The SAME at the point and the rim: the
+       point moves off the centre, along the slice's middle, to keep the gap one
+       width. TRAP T-a-chart-gap-is-real-space */
+    const atTip = r.tip[0] - 50;
+    expect(atTip).toBeGreaterThan(0);
+    expect(r.rim[0] - 50).toBeCloseTo(atTip, 3);
+    // On the middle of a quarter slice: as far right of the centre as above it.
+    expect(50 - r.tip[1]).toBeCloseTo(atTip, 3);
   });
 
 /**

@@ -7175,8 +7175,11 @@ Two more shapes that are not the general case:
   and no radial edges to draw, so it is emitted as two plain circles — outer, then
   inner reversed — which `fill-rule: evenodd` hollows out. The rounded-corner path
   has nothing to attach to and would collapse.
-- A PIE (`inner <= 0`) has a single centre point for its inner "arc", so its
-  corners collapse there and the inner half of the outline is skipped.
+- A PIE (`inner <= 0`) has a single point for its inner "arc", so its corners
+  collapse there and the inner half of the outline is skipped. With gaps that
+  point is where its two edges meet, off the centre; past a half circle they
+  never meet, and the inner arc is a hub the gap's width
+  (`T-a-chart-gap-is-real-space`).
 
 - Site: `src/core/data/format-tick.ts`
 
@@ -14766,10 +14769,19 @@ outlines, so it thins them. So each path moves in from its neighbour by half the
 half of its outline that falls outside it.
 
 An SVG draws in units and a gap is in pixels, so a ring reads its own size as it draws
-(`unitsPerPixel`) and draws again when that changes (`redrawOnResize`). The edges move by an
-angle measured at the band's middle, so a gap is true there and a little wider at the rim.
+(`unitsPerPixel`) and draws again when that changes (`redrawOnResize`).
+
+**A gap is one width from the rim to the centre** (Will, 2026-11-02). Each straight edge
+moves in SQUARE to its boundary (`startGap`, `endGap` on `ringSegmentPath`), not by an
+angle. An angle made the gap taper: a pie's slices all met at the centre, so the gap there
+was nothing. So a pie slice's point moves off the centre, along its middle, by
+`gap / sin(span / 2)`. A slice over half the circle has no point — its edges never meet —
+and the gaps' ends leave a hub the gap's width at the centre. A gap is capped so the point
+stays inside half the radius: a very thin slice keeps a smaller gap, not a shape that is gone.
 
 - Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
+- Site: `src/core/data/format-tick.ts`
+- Site: `test/e2e/reforged-radial-chart.spec.ts`
 
 ### T-a-match-marks-its-own-mark
 
@@ -16641,6 +16653,10 @@ unchanged at six arcs including its rounding.
 Will stated the rule: *"Pie segments will have 0 inner radius and no corner
 rounding on segments."* The inner radius was already right; the rounding was
 not.
+
+Since 2026-11-02 the point sits off the centre by its gap, along the slice's
+middle, so the gap keeps one width (`T-a-chart-gap-is-real-space`). It is still
+sharp.
 
 - Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
 - Site: `test/e2e/reforged-radial-chart.spec.ts`
