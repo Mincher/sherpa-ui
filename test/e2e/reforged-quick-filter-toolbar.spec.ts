@@ -2269,8 +2269,9 @@ test('a FOLDED advanced-only filter opens its own menu, not a blank drill', asyn
 test('a resize that folds nothing new keeps the open Filters menu; a real unfold rebuilds it', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'style': 'max-inline-size: 260px', 'data-no-section-labels': true });
+    // Status held too, so Filters lists more than the one folded field. TODO 678
     el.populate([
-      { id: 'status', label: 'Status', select: 'multiple', options: [{ value: 'a', label: 'a' }] },
+      { id: 'status', label: 'Status', select: 'multiple', removable: true, options: [{ value: 'a', label: 'a' }] },
       { id: 'email', label: 'Email', advanced: 'only', op: 'contains' },
     ]);
     await window.__settled();

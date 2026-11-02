@@ -80,8 +80,10 @@ export interface AddedFilter extends ListedFilter {
   removable: boolean;
   /** Folded off a bar, or in a shut scope: its row opens its child menu. */
   hidden: boolean;
-  /** Picks its child menu holds. */
+  /** Its chip's count badge, while folded. Will, TODO 677 */
   count?: number;
+  /** Its chip's icon. Will, TODO 677 */
+  icon?: string;
   /** A ONE-value filter — a preset, an on/off chip — and whether it is ON:
    *  its tick means On; its chip's own Remove takes it off. Will, TODOs 54, 380 */
   on?: boolean;
@@ -101,10 +103,10 @@ function filtersMenuItems(
     // A held filter the reader cannot take off is listed only while hidden.
     ...added.filter((f) => f.removable || f.hidden).map((f) => (f.on !== undefined ? {
       // ONE value: its tick turns it on. No ×: the chip takes it off. Will, TODOs 54, 380
-      value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: ADDED_SECTION,
+      value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), ...(f.icon ? { icon: f.icon } : {}), section: ADDED_SECTION,
       selected: f.on,
     } : {
-      value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: ADDED_SECTION,
+      value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), ...(f.icon ? { icon: f.icon } : {}), section: ADDED_SECTION,
       ...(f.removable ? { selected: true } : { pickable: false }),
       ...(f.hidden ? { drill: true, count: f.count ?? 0 } : {}),
     })),

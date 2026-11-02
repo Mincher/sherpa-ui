@@ -22,6 +22,28 @@
   color: inherit;
 }
 
+/* A legend SWATCH — a value's series colour, or a band's status — at icon size,
+   wherever a value is named: a chip, a menu row. JS paints --_hue and --_border
+   (paintSwatch). Will, TODO 677 */
+.sherpa-swatch {
+  display: inline-block;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  inline-size: var(--sherpa-display-mode-size-xs, 12px);
+  block-size: var(--sherpa-display-mode-size-xs, 12px);
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid
+    var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  background: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
+}
+
+/* An icon or a swatch LEADING a menu row's label. The row is its menu's light DOM,
+   which the menu's own sheet cannot reach; every host adopts this one. TODO 677 */
+.menu-row-label > :is(.sherpa-icon-box, .sherpa-swatch) {
+  margin-inline-end: var(--sherpa-display-mode-space-2xs, 4px);
+  vertical-align: middle;
+}
+
 /* The art, at the size it was DRAWN. The viewBox is the icon's own Figma frame,
    so a glyph drawn at half the frame renders at half; `xMidYMid meet` keeps it
    1:1 and makes overflow impossible at any wrapper size.

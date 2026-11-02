@@ -52,7 +52,7 @@
             },
             {
               "el": "span",
-              "class": "swatch",
+              "class": "swatch sherpa-swatch",
               "part": "swatch",
               "attrs": {
                 "aria-hidden": "true"

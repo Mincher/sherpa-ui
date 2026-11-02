@@ -2240,6 +2240,10 @@
           "name": "data-step"
         },
         {
+          "name": "data-swatches",
+          "valueSet": "v"
+        },
+        {
           "name": "data-takes",
           "description": "written BY the menu from data-op: list | text. CSS reads it to reveal the rows or the text box.",
           "values": [

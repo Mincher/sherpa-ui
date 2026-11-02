@@ -5476,6 +5476,12 @@
               }
             },
             {
+              "name": "data-swatches",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-takes",
               "description": "written BY the menu from data-op: list | text. CSS reads it to reveal the rows or the text box.",
               "type": {

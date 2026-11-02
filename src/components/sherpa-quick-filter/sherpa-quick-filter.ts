@@ -1106,6 +1106,8 @@ export class SherpaQuickFilter extends SherpaElement {
    */
   #syncValues(): void {
     const menu = this.#fieldMenu();
+    // Its menu's rows lead with the swatches its value chips carry. Will, TODO 677
+    menu?.toggleAttribute('data-swatches', this.#laysValues());
     // A section's values, or its values alone — a chart's legend in a bar. Will, TODO 670
     const items = this.#laysValues() && menu && !menu.dataset['body'] ? menu.itemData ?? [] : [];
     const tops = items.filter((i) => i.parent === undefined);
@@ -1166,8 +1168,9 @@ export class SherpaQuickFilter extends SherpaElement {
   }
   set valueResults(results: Readonly<Record<string, number>> | null) {
     this.#valueResults = results;
-    // A chip's own menu draws them on its rows; a section's are its value chips. TODO 466
-    this.menu?.setMatches?.(this.#laysValues() ? null : results);
+    /* A chip's own menu draws them on its rows; a section's are its value chips. Its
+       values alone draw both: folded, its menu stands for its value chips. TODOs 466, 677 */
+    this.menu?.setMatches?.(this.dataset['layout'] === 'section' ? null : results);
     this.#syncValues();
   }
   /** Each value's count, as its host last said. */

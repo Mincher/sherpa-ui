@@ -260,3 +260,61 @@ test('Manage Saved Filters leads the Saved section of a saveable bar with sets o
   });
   expect(asked).toEqual(['filters-manage']);
 });
+
+test('a folded chip\'s row wears its chip\'s icon before its label and its count badge at its end (Will, TODO 677)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const box = document.createElement('div');
+    box.style.inlineSize = '420px';
+    const el = document.createElement('sherpa-quick-filter-toolbar') as unknown as Bar & { drawResults(r: Record<string, number>): void };
+    box.appendChild(el);
+    document.getElementById('root')!.replaceChildren(box);
+    await el.rendered;
+    const opts = [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }];
+    el.populate([
+      { id: 'plan', label: 'Plan', removable: true, options: opts },
+      { id: 'tier', label: 'Tier', options: opts },
+      { id: 'site', label: 'Site', options: opts },
+      { id: 'region', label: 'Region', icon: 'globe', options: opts },
+    ]);
+    await window.__settled();
+    el.drawResults({ region: 12 });
+    await window.__settled();
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+    const sr = el.shadowRoot!;
+    const chip = sr.querySelector<HTMLElement>('.chips > .chip[data-id="region"]')!;
+    const row = sr.querySelector('.add-btn sherpa-menu')!.querySelector<HTMLElement>('.menu-row[data-value="region"]')!;
+    return {
+      folded: chip.hasAttribute('data-folded-away'),
+      chipCount: chip.getAttribute('data-count'),
+      icon: row.querySelector('.menu-row-label > .menu-row-icon')?.querySelector('svg') ? 'drawn' : 'none',
+      badge: row.querySelector('.menu-row-count')?.textContent ?? null,
+    };
+  });
+  expect(r).toEqual({ folded: true, chipCount: '12', icon: 'drawn', badge: '12' });
+});
+
+test('with ONE field folded and nothing else to list, Edit opens that field\'s own menu — one level, not two (Will, TODO 678)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const box = document.createElement('div');
+    box.style.inlineSize = '200px';
+    const el = document.createElement('sherpa-quick-filter-toolbar') as unknown as Bar;
+    box.appendChild(el);
+    document.getElementById('root')!.replaceChildren(box);
+    await el.rendered;
+    el.populate([{ id: 'status', label: 'Status', options: [{ value: 'a', label: 'Active' }, { value: 'b', label: 'Trial' }] }]);
+    await window.__settled();
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+    const sr = el.shadowRoot!;
+    const chip = sr.querySelector<HTMLElement & { menu: HTMLElement & { open: boolean } }>('.chips > .chip[data-id="status"]')!;
+    const add = sr.querySelector<HTMLElement>('.add-btn')!;
+    add.shadowRoot!.querySelector<HTMLElement>('button')!.click();
+    await window.__settled();
+    return {
+      folded: chip.hasAttribute('data-folded-away'),
+      own: chip.menu.open,
+      filters: (add.querySelector(':scope > sherpa-menu') as HTMLElement & { open: boolean }).open,
+      values: [...chip.menu.querySelectorAll('input')].map((i) => (i as HTMLInputElement).value).filter((v) => v && v !== 'on'),
+    };
+  });
+  expect(r).toEqual({ folded: true, own: true, filters: false, values: ['a', 'b'] });
+});

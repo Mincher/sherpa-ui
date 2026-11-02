@@ -27,6 +27,8 @@ import { NON_VALUE_ROWS, RULED_OUT, SET_ASIDE, onByPreset } from '../../core/ui/
 import { hiddenRows } from '../../core/ui/tree-rows.js';
 import type { Threshold } from '../../core/data/threshold.js';
 import { TreePicks } from '../../core/ui/tree-picks.js';
+import { renderIcon } from '../../core/ui/render-icon.js';
+import { paintSwatch } from '../../core/ui/chart-parts.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
 import '../sherpa-input-text/sherpa-input-text.js';
@@ -67,8 +69,10 @@ export interface MenuItem {
   drill?: boolean;
   /** `false`: no tick box — a row naming what it cannot pick. */
   pickable?: boolean;
-  /** How many picks its child menu holds, as a badge. */
+  /** Its count, as a badge: a folded chip's own. */
   count?: number;
+  /** The icon its chip carries, leading its label. Will, TODO 677 */
+  icon?: string;
   /** A tiered field's child value: its parent value's key. TODO 369 */
   parent?: string;
   /** A row that DOES something — no tick box: a button, reported as `menu-select`. TODO 427 */
@@ -101,6 +105,8 @@ export class SherpaMenu extends SherpaElement {
     'data-bounds': SHARED_PROPS['data-bounds'],
     'data-select': { type: 'enum', kind: 'style', values: ['single', 'multiple'] },
     'data-drill': { type: 'boolean', kind: 'style' },
+    // Its value rows lead with their swatch, as its chip's value chips do. Will, TODO 677
+    'data-swatches': { type: 'boolean', kind: 'behaviour' },
     // A list of filters: no Select all. Read when the items stamp.
     'data-no-select-all': { type: 'boolean', kind: 'style' },
     'data-none': { type: 'boolean', kind: 'behaviour' },
@@ -1191,6 +1197,7 @@ export class SherpaMenu extends SherpaElement {
 
   override onChange(name?: string): void {
     if (name === 'data-body') this.#stampDateBody();
+    if (name === 'data-swatches') this.#drawSwatches();
     if (name === 'data-pending') this.#syncDirty();
     this.#sync();
     if (name === 'data-hide-unavailable') this.#markPresent();
@@ -1640,7 +1647,35 @@ export class SherpaMenu extends SherpaElement {
     }
     if (item.drill) this.#addDrill(row, item.value, label, item.count ?? 0);
     if (this.#tree) this.#treeRow(row, item);
+    this.#leadRow(row, item);
     return row;
+  }
+
+  /** A row's LEADING mark, in its label: the icon its chip carries, or — where this
+   *  menu draws them — its value's swatch. Will, TODO 677 */
+  #leadRow(row: HTMLElement, item: MenuItem): void {
+    const label = row.querySelector('.menu-row-label');
+    label?.querySelector(':scope > .menu-row-swatch')?.remove();
+    if (!label || label.querySelector(':scope > .menu-row-icon')) return;
+    if (item.icon) {
+      const icon = this.clone('template.menu-icon-tpl');
+      if (icon) label.prepend(icon);
+      if (icon) renderIcon(icon, item.icon);
+    } else if (item.swatch && this.hasAttribute('data-swatches')) {
+      const swatch = this.clone<HTMLElement>('template.menu-swatch-tpl');
+      if (swatch) label.prepend(swatch);
+      if (swatch) paintSwatch(swatch, item.swatch);
+    }
+  }
+
+  /** Each value row leads with its swatch, or not, as `data-swatches` says now. */
+  #drawSwatches(): void {
+    const byValue = new Map(this.#items.map((item) => [item.value, item]));
+    for (const box of this.#inputs()) {
+      const row = box.closest<HTMLElement>('.menu-row');
+      const item = byValue.get(box.value);
+      if (row && item) this.#leadRow(row, item);
+    }
   }
 
   /* ── A tree of tiered values. TODO 369 · TRAP T-a-tree-menu-keeps-its-ticks-as-data ── */

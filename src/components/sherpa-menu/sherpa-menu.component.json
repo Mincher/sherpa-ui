@@ -312,6 +312,32 @@
             },
             {
               "el": "template",
+              "class": "menu-icon-tpl",
+              "children": [
+                {
+                  "el": "i",
+                  "class": "menu-row-icon sherpa-icon-box",
+                  "attrs": {
+                    "aria-hidden": "true"
+                  }
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "menu-swatch-tpl",
+              "children": [
+                {
+                  "el": "span",
+                  "class": "menu-row-swatch sherpa-swatch",
+                  "attrs": {
+                    "aria-hidden": "true"
+                  }
+                }
+              ]
+            },
+            {
+              "el": "template",
               "class": "menu-drill-tpl",
               "children": [
                 {
@@ -902,6 +928,32 @@
             },
             {
               "el": "template",
+              "class": "menu-icon-tpl",
+              "children": [
+                {
+                  "el": "i",
+                  "class": "menu-row-icon sherpa-icon-box",
+                  "attrs": {
+                    "aria-hidden": "true"
+                  }
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "menu-swatch-tpl",
+              "children": [
+                {
+                  "el": "span",
+                  "class": "menu-row-swatch sherpa-swatch",
+                  "attrs": {
+                    "aria-hidden": "true"
+                  }
+                }
+              ]
+            },
+            {
+              "el": "template",
               "class": "menu-drill-tpl",
               "children": [
                 {
@@ -1353,6 +1405,14 @@
       "observed": true,
       "declared": true,
       "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-swatches",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
     },
     {
       "$type": "prop",

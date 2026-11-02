@@ -313,12 +313,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** The step the last fold collapsed the actions to. */
   #collapse = 0;
 
-  /** Re-read every folded chip's pick count on its row. Separate from stamping, which rebuilds the open list. */
+  /** The number a chip's count badge shows, or 0 for none. Will, TODO 677 */
+  #badgeOf(chip: HTMLElement): number {
+    return chip.hasAttribute('data-count') ? (chip as SherpaQuickFilter).results ?? 0 : 0;
+  }
+
+  /** Re-read every folded chip's count badge on its row. Separate from stamping, which rebuilds the open list. */
   #syncFoldedBadges(): void {
     const menu = this.$<HTMLElement>('.add-btn')
       ?.querySelector<SherpaMenu>('sherpa-menu');
     for (const chip of this.#folded) {
-      if (chip.isConnected) menu?.setCount?.(chip.dataset['id'] ?? '', this.#chipPicks(chip).length);
+      if (chip.isConnected) menu?.setCount?.(chip.dataset['id'] ?? '', this.#badgeOf(chip));
     }
     this.#syncOverflowActive();
   }
@@ -921,6 +926,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       chip.results = shown[field] ?? shown[id] ?? null;
     }
     this.#syncScopeBadge();
+    // A folded chip's row wears its badge too. TODO 677
+    if (this.#folded.length) this.#syncFoldedBadges();
   }
 
   /** The counts it shows: none while `data-no-results`. TODO 436 */
@@ -1670,11 +1677,22 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     more.setAttribute('aria-label', `${def.label} options`);
   }
 
-  /** The Edit menu opened: its Reset rows say whether there is anything to reset. */
+  /** The Edit menu opened: its Reset rows say whether there is anything to reset —
+   *  or, holding one folded field alone, it is that field's own menu, one level, not
+   *  two. Will, TODO 678 */
   #onEditOpen = (event: Event): void => {
-    const edit = this.pathFind(event, '.add-btn');
-    if (edit) drawFilterActions(this, this.root, edit.querySelector('sherpa-menu'));
+    const edit = this.pathFind<HTMLElement>(event, '.add-btn');
+    if (!edit) return;
+    const own = this.#lone?.isConnected ? (this.#lone as SherpaQuickFilter).menu : null;
+    if (own && !this.#filtersSuspended) {
+      edit.querySelector<SherpaMenu>(':scope > sherpa-menu')?.hide?.();
+      own.show?.(edit);
+      return;
+    }
+    drawFilterActions(this, this.root, edit.querySelector('sherpa-menu'));
   };
+  /** The one chip folded, while Edit would list nothing else. */
+  #lone: HTMLElement | null = null;
 
   /** A "Remove" row. `menu-select` is for ACTION rows; value rows commit via `menu-change`. */
   #onMenuSelect = (event: Event): void => {
@@ -2240,7 +2258,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
           removable: heldIds.has(id), hidden: hidden.has(c),
           // ONE value: the tick is the chip's on/off. TODO 54
           ...(c.hasAttribute('data-menu') ? {} : { on: c.current }),
-          ...(hidden.has(c) ? { count: this.#chipPicks(c).length } : {}),
+          // …and its row wears what the chip does: its icon, and folded, its count badge. Will, TODO 677
+          ...(c.dataset['iconStart'] ? { icon: c.dataset['iconStart'] } : {}),
+          ...(hidden.has(c) ? { count: this.#badgeOf(c) } : {}),
         };
       }),
       ...held.filter((f) => !inRun.has(f.id))
@@ -2249,7 +2269,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#oneRows.tell(added);
     // Split, the sets are the Saved menu's. TODO 436
     const split = this.hasAttribute('data-saved-menu');
-    const def = drawFiltersButton(add, added, offer, split ? [] : this.#saved.listed, !split && saves(this));
+    const sets = split ? [] : this.#saved.listed;
+    // ONE field folded, and nothing else to list: Edit opens its own values. Will, TODO 678
+    const [only] = folded;
+    this.#lone = only && added.length === 1 && added[0]!.hidden && !offer.length && !sets.length ? only : null;
+    const def = drawFiltersButton(add, added, offer, sets, !split && saves(this));
     if (!def) return;
     this.#drawApplied();
     this.#header.drawSaved();

@@ -62,6 +62,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `data-search` | boolean |  | show a search input under the heading that filters the rows |
 | `data-select` | `single` `multiple` | `multiple` | multiple \| single (radio rows) |
 | `data-step` | text |  |  |
+| `data-swatches` | boolean |  |  |
 | `data-takes` | `list` `text` |  | written BY the menu from data-op: list \| text. CSS reads it to reveal the rows or the text box. |
 | `data-time` | boolean |  |  |
 | `data-type` | `list` `calendar` `filter` | `list` | list \| calendar \| filter — the Menu set's `Type` axis. `filter` is the FILTER MENU: a condition dropdown above the search, and the text box its typing conditions use. One field gets one menu whether a chip or a column heading opens it. TRAP T-one-field-one-filter-menu TRAP T-an-operator-decides-pick-or-type `calendar` widens the card and lays the LIST region out horizontally, so a day grid and a time picker sit side by side. Everything else is the same menu. |

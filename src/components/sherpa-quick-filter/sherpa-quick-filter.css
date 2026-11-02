@@ -260,19 +260,9 @@
 :host([data-layout="section"]) .body { anchor-name: var(--_anchor); }
 
 /* Leading SWATCH — Figma "Legend Swatch", as a chart's legend draws it: the
-   series hue, and a solid stroke of it. JS sets --_hue and --_border. */
+   shared .sherpa-swatch, shown where the chip has one. JS sets --_hue and --_border. */
 .swatch { display: none; }
-:host([data-swatch]) .swatch {
-  display: inline-block;
-  flex-shrink: 0;
-  box-sizing: border-box;
-  inline-size: var(--sherpa-display-mode-size-xs, 12px);
-  block-size: var(--sherpa-display-mode-size-xs, 12px);
-  border: var(--sherpa-display-mode-border-width-base, 1px) solid
-    var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
-  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  background: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
-}
+:host([data-swatch]) .swatch { display: inline-block; }
 
 /* ON or OFF, by a shape too, where the page asks (`--sherpa-toggle-shape`): a
    box, ticked while the button is pressed. Only on a toggle — not a picker, a
