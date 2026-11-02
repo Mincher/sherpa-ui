@@ -6,7 +6,8 @@ offload some work and also handle it async/offline."* And: *"would it be bad if 
 was a client side server where the data layer, and all its source, store, and query
 components, lived? Or is a per-page data layer better?"*
 
-This is a plan. Nothing is built. The decisions at the end are Will's.
+Will, 2026-11-02, on the decisions: *"your picks work for me. We can start making that a
+reality."* D1 to D4 are A. Built so far: **S1** (below).
 
 ---
 
@@ -112,7 +113,7 @@ Each step is measured in the running app, and the plan can stop after any of the
 
 | Step | What | Done when |
 |---|---|---|
-| S1 | The protocol and `handle()`: the `QUERY` body, the answers, a `Failure` kind for each HTTP status, a version header | Node tests over every store kind |
+| S1 ✅ | The protocol and `handle()`: the `QUERY` body, the answers, a `Failure` kind for each HTTP status, a version header | Node tests over every store kind. **Done 2026-11-02:** `createDataHandler` in `src/core/data/data-handler.ts`, from `sherpa-ui/data`; 9 Node tests. `T-a-data-request-is-the-store-interface` |
 | S2 | Host A: `DataSource` reads one Demos page through the protocol, in the page | Every test green, nothing changes for the reader |
 | S3 | Host B and the Store seam: `sherpa-ui/worker`, its routes, the fallback to A; Records on it | Two tabs read the server once; Records works offline |
 | S4 | The Query seam: one `QUERY` an act | INP and LCP at 4x CPU with 100k rows beat S3 (TODO 350's targets). If not, S4 stops |

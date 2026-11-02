@@ -112,6 +112,19 @@ export {
   type GraphNode,
   type GraphRow,
 } from './core/data/workflow.js';
+/* The data layer over HTTP: one handle() for the page, a Service Worker or a server. Plan 652 */
+export {
+  DATA_QUERY_TYPE,
+  DATA_VERSION,
+  createDataHandler,
+  decodeQuery,
+  encodeQuery,
+  keySegment,
+  type DataHandler,
+  type DataHandlerOptions,
+  type DataQuery,
+  type StoreFacts,
+} from './core/data/data-handler.js';
 /* A page's QUERY, drawn as nodes for the Node Editor. TODO 555 · TRAP T-the-node-editor-asks-the-query */
 export { QUERY_KINDS, queryGraph, type GraphComponent, type QueryGraphFacts } from './core/data/query-graph.js';
 /* An APP, set up from one JSON document. TRAP T-an-app-is-its-definition */

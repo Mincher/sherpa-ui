@@ -14782,6 +14782,34 @@ or slice with nothing inside it still fills from its base: its match has no posi
 - Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
 - Site: `test/unit/aggregate.test.mjs`
 
+### T-a-data-request-is-the-store-interface
+
+**The data layer over HTTP is the `Store` interface, nothing more.** Plan 652, step S1.
+`createDataHandler({ stores })` answers `QUERY` (a `load`, or `totalCount` with
+`total: true`), `GET` (a row by key, the store's facts, or `?since=` its changes), `POST`,
+`PATCH` and `DELETE`, under `/sherpa/data/<store>`. The page, a Service Worker and a server
+host the same function, so they cannot answer differently. Outside its path it returns
+`null`, and its host passes the request on.
+
+Four things that are not obvious:
+
+- **A key travels as JSON** (`keySegment`), so `5` and `"5"` reach the store as they were
+  sent. A REST URL's `String(key)` cannot tell them apart.
+- **`now` travels as an ISO time**, because a relative date reads a clock
+  (`T-a-rule-names-its-clock-and-its-language`). A read with no `now` reads the host's.
+- **A row is JSON on the way back**, so a `Date` in a row arrives as text. The data layer
+  compares a `Date` and ISO text as dates (TODO 612), but a component that wants a `Date`
+  object must not assume one.
+- **The browser's Cache API refuses a `QUERY`** in all three engines (measured 2026-11-02),
+  so a worker caches answers itself, keyed by the body.
+
+A bad body is refused before the store is asked: 400 when it is not JSON, 415 when it is
+not `application/vnd.sherpa.query+json`, 422 when it is not a read. A store's own failure
+comes back as its `Failure` kind, with its HTTP status where it had one.
+
+- Site: `src/core/data/data-handler.ts`
+- Site: `test/unit/a-data-request-is-the-store-interface.test.mjs`
+
 ### T-a-horizontal-legend-is-three-by-two
 
 A horizontal legend was a wrapping flex row, so it put a different number of
