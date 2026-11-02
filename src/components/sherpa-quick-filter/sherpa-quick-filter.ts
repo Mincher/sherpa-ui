@@ -1318,7 +1318,7 @@ export class SherpaQuickFilter extends SherpaElement {
            TRAP T-a-chip-says-its-own-answer */
         ...(body === 'number' || body === 'date' ? { type: body } : { values: all }),
         labels: tree ? Object.fromEntries(tree.map((i) => [i.value, i.label]))
-          : Object.fromEntries(all.map((v) => [v, this.#valueLabel(v)])),
+          : this.#valueLabels(all),
         ...(tree ? { parentOf: new Map(tree.flatMap((i) => (i.parent !== undefined ? [[i.value, i.parent] as const] : []))) } : {}),
       },
       list ? { ...list, picked: values, ...(this.#all ? { all: true } : {}) } : {
@@ -1401,16 +1401,20 @@ export class SherpaQuickFilter extends SherpaElement {
     return (menu.conditionValue ?? '').trim() !== '';
   }
 
-  /** The VISIBLE text of a menu row, falling back to the raw value. */
-  #valueLabel(value: string): string {
+  /** Each value's VISIBLE text, falling back to the raw value — in ONE pass: a
+   *  lookup per value was rows × rows, 4.4 s of a load at 20k rows. Plan 652 S9 */
+  #valueLabels(values: readonly string[]): Record<string, string> {
     const menu = this.menu;
     // Its item's own label: a word its row adds — "(Default)" — is the menu's. Will, TODO 684
-    const named = menu?.itemData?.find((i) => i.value === value)?.label;
-    if (named) return named;
-    const input = [...(menu?.querySelectorAll<HTMLInputElement>(`input[value="${CSS.escape(value)}"]`) ?? [])]
-      .find((i) => i.closest('sherpa-menu') === menu);
-    const row = input?.closest('label');
-    return row?.textContent?.trim() || value;
+    const named = new Map(menu?.itemData?.map((i) => [i.value, i.label]) ?? []);
+    const shown = new Map<string, string>();
+    if (values.some((v) => !named.get(v))) {
+      for (const input of menu?.querySelectorAll<HTMLInputElement>('input') ?? []) {
+        if (input.closest('sherpa-menu') !== menu || shown.has(input.value)) continue;
+        shown.set(input.value, input.closest('label')?.textContent?.trim() ?? '');
+      }
+    }
+    return Object.fromEntries(values.map((v) => [v, named.get(v) || shown.get(v) || v]));
   }
 }
 

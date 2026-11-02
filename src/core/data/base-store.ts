@@ -7,7 +7,7 @@
  * - StoreOptions — Options every store shares.
  * - BaseStore — what every store shares: key, time, schema guard, change events
  */
-import { applyOptions, matchesOnly, orderKey, pageOf, readField, withoutPage, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail, type WriteOptions } from './store.js';
+import { applyOptions, matchesOnly, orderKey, pageOf, projectRow, readField, withoutPage, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail, type WriteOptions } from './store.js';
 import { carryKey, keyRow } from './row-key.js';
 import { StoreHistory } from './store-history.js';
 import {
@@ -71,9 +71,7 @@ export abstract class BaseStore extends EventTarget implements Store {
 
   /** One row as a projection sends it: its key and the named fields — a path's whole top field. */
   protected project(row: Row, fields: readonly string[]): Row {
-    const out: Row = { [this.key]: row[this.key] };
-    for (const top of fields.map((f) => f.split('.')[0]!)) if (top in row) out[top] = row[top];
-    return out;
+    return projectRow(row, this.key, fields);
   }
 
   /** A read checks only its first rows. TRAP T-schema-sample-cost */

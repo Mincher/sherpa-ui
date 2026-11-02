@@ -16,8 +16,8 @@ import { HeldReads } from './held-reads.js';
 import { HeldSet } from './held-set.js';
 import { outboxEntry, type OutboxEntry, type OutboxPort } from './outbox.js';
 import { report } from './report.js';
-import { keyRow } from './row-key.js';
-import { readField, sameKey, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail, type StoreChanges } from './store.js';
+import { carryKey, keyRow } from './row-key.js';
+import { projectRow, readField, sameKey, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail, type StoreChanges } from './store.js';
 
 /** A write made offline that did not land: a newer write won (`conflict`, D3), or
  *  its source refused it. Said as `lost`. Plan 652 S7b */
@@ -158,7 +158,11 @@ export class HeldStore extends EventTarget implements Store {
     if (options?.fields) this.#need = options.fields;
     await this.#read;
     await this.#reads.hold();
-    return this.#answers.load(options);
+    const result = await this.#answers.load(options);
+    /* Its set holds whole rows: a read that names its fields gets those, and the key —
+       a tally of one field at 100k rows moved 9.5 MB to the page. Plan 652 S9 */
+    const fields = options?.fields;
+    return fields ? { ...result, rows: result.rows.map((row) => carryKey(row, projectRow(row, this.key, fields))) } : result;
   }
 
   async totalCount(options?: LoadOptions): Promise<number> {

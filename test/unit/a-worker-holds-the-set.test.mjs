@@ -83,3 +83,11 @@ test('a Refresh in a tab reads the source again, in the worker, before it answer
   await source.load();
   assert.equal(reads.whole, 2, 'and not again for a plain load');
 });
+
+test('a read that names its fields gets those and the key, not the whole held row — plan 652 S9', async () => {
+  const { handle } = worker();
+  const { store } = await tab(handle);
+  // Asked for its key alone: the held row's `team` stays in the worker.
+  const { rows } = await store.load({ fields: ['id'] });
+  assert.deepEqual(Object.keys(rows[0]), ['id']);
+});

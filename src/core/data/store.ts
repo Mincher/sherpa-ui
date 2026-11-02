@@ -28,6 +28,7 @@
  * - Store — where records come from; the same interface whatever backs it
  * - RowOrder — The order a whole read returns rows in, asked no sort.
  * - StoreChangeDetail — Fired after an insert, update or remove.
+ * - projectRow — One row as a projection sends it: its key, and each named field's whole top field.
  * - readField — Read a field, following dots (`'customer.name'`) into nested objects.
  * - distinctOf — Each field's values among rows, one per value key: the last raw, in first-seen order.
  * - setCollation — Name the language values sort in.
@@ -325,6 +326,13 @@ export interface StoreChangeDetail {
 }
 
 /* ── Value access ──────────────────────────────────────────────────────── */
+
+/** One row as a projection sends it: its key, and each named field's whole top field. */
+export function projectRow(row: Row, key: string, fields: readonly string[]): Row {
+  const out: Row = { [key]: row[key] };
+  for (const top of fields.map((f) => f.split('.')[0]!)) if (top in row) out[top] = row[top];
+  return out;
+}
 
 /** Read a field, following dots (`'customer.name'`) into nested objects. */
 export function readField(row: Row, field: string): unknown {
