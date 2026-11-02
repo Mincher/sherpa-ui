@@ -23,6 +23,9 @@ export interface OutboxEntry {
   values?: Row;
   /** When it was made, in ms. A newer write wins (D3). */
   at: number;
+  /** When an earlier write of ours to the row landed: a change after it is another
+   *  writer's, so it is measured from here. S7b */
+  since?: number;
 }
 
 /** Where a store's writes wait, and how one sender at a time sends them. */

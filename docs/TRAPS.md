@@ -15039,7 +15039,7 @@ device and lays them over its first set.
 
 **One the source refuses when sent is dropped and said** (`lost`, and a report):
 the set is read again and shown at once, so no row shows a write that never landed.
-How the reader is told, and D3's newer-write rule, are S7b.
+D3's newer-write rule, and how the reader is told, are `T-a-newer-write-wins`.
 
 **The kept entries share one object store** (`sherpa-outbox`, `entries`), each in
 the slot `<name>|<id>`: two outboxes can make one id in the same ms.
@@ -15049,6 +15049,44 @@ the slot `<name>|<id>`: two outboxes can make one id in the same ms.
 - Site: `src/core/data/held-store.ts`
 - Site: `src/core/worker/serve-data.ts`
 - Site: `test/unit/a-write-made-offline-waits.test.mjs`
+
+### T-a-newer-write-wins
+
+**A write made offline is sent with its own time, and a newer write wins** (Will,
+plan 652 S7b, D3). `HeldStore.send()` passes `{ unmodifiedSince: entry.at }`;
+`RestStore` sends it as `If-Unmodified-Since`, and a server refuses the write,
+412, where the row changed after. `failureOf` reads 409 and 412 as `conflict`.
+`fakeRemote` keeps when each row last changed — by any writer, heard or missed —
+and refuses the same way. A store that cannot tell writes it anyway: then the
+write made offline wins. An HTTP date has whole seconds, so a change in the same
+second is not seen as newer.
+
+**Our own earlier write is no newer write.** An insert made offline lands, and
+then the update made after it would be refused, as the row "changed after" it.
+So when a write of ours lands, every later entry for that row is measured from
+that time (`since`, kept on the device, as a send may stop midway).
+
+**The reader is told, even with every tab shut** (Will, D9: A). `HeldStore` says
+`lost` (`LostWrite`: its id, row, time and why). `serveData` KEEPS it as a notice,
+`{ kind: 'lost', id, store, key, why }`, in IndexedDB (`sherpa-notices`), says it
+on `NOTICE_CHANNEL`, and says every kept one again when a page asks. A page asks
+as `onUpdate` starts, by `postMessage` to its worker — a message starts a stopped
+worker, and a channel cannot. `noticeSeen(id)` tells the worker to forget one.
+
+**Demos:** a warning banner listens for `lost` on each Context, and each lost
+notice is an item in Notifications, keyed by its id; picked, it is seen, and the
+next page is not told. Measured 2026-11-02 in Demos' remote mode, all three
+engines: the server's newer change stays, the banner shows, the item comes back
+after a reload, and once picked the worker keeps none.
+
+- Site: `src/core/data/store.ts`
+- Site: `src/core/data/stores.ts`
+- Site: `src/core/data/fake-remote.ts`
+- Site: `src/core/data/notices.ts`
+- Site: `src/core/browser/notice-keep.ts`
+- Site: `src/core/browser/updates.ts`
+- Site: `src/core/worker/serve-data.ts`
+- Site: `test/unit/a-newer-write-wins.test.mjs`
 
 ### T-a-horizontal-legend-is-three-by-two
 

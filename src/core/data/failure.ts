@@ -10,7 +10,7 @@
  */
 
 /** Why a read failed, as a kind a page can act on. */
-export type FailureKind = 'offline' | 'timeout' | 'server' | 'refused' | 'invalid' | 'unknown';
+export type FailureKind = 'offline' | 'timeout' | 'server' | 'refused' | 'conflict' | 'invalid' | 'unknown';
 
 /** One failure: its kind, its message, and its HTTP status where it had one. */
 export interface Failure {
@@ -30,6 +30,8 @@ export function failureOf(error: unknown): Failure {
     if (status === 408 || status === 504 || status === 524) return at('timeout');
     if (status === 429 || (status >= 500 && status < 600)) return at('server');
     if (status === 401 || status === 403 || status === 407) return at('refused');
+    // A newer write won: the row changed after the one sent (D3). Plan 652 S7b
+    if (status === 409 || status === 412) return at('conflict');
     return at('invalid');
   }
   if (name === 'ValidationError' || name === 'SyntaxError') return at('invalid');

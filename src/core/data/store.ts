@@ -24,6 +24,7 @@
  * - LoadOptions — What a caller asks a store for.
  * - StoreChanges — What moved in a store since a mark, and the mark now.
  * - LoadResult — What a load returns: the rows, plus the total BEFORE paging.
+ * - WriteOptions — What a write asks of its store beyond the row: the time it was made.
  * - Store — where records come from; the same interface whatever backs it
  * - RowOrder — The order a whole read returns rows in, asked no sort.
  * - StoreChangeDetail — Fired after an insert, update or remove.
@@ -225,6 +226,14 @@ export interface LoadResult {
   issues?: ReadonlyArray<{ readonly message: string; readonly path?: ReadonlyArray<PropertyKey> }>;
 }
 
+/** What a write asks of its store beyond the row: the time it was made. */
+export interface WriteOptions {
+  /** Refuse the write — a `conflict` — where the row changed after this time, in
+   *  ms: a newer write wins (D3). A store that cannot tell writes it anyway.
+   *  Plan 652 S7b · TRAP T-a-newer-write-wins */
+  unmodifiedSince?: number;
+}
+
 /**
  * The store interface — identical whatever backs it, so a view moves from an
  * array to an HTTP endpoint untouched. TRAP T-store-is-stateless
@@ -233,8 +242,8 @@ export interface Store extends EventTarget {
   load(options?: LoadOptions): Promise<LoadResult>;
   byKey(key: unknown): Promise<Row | undefined>;
   insert(values: Row): Promise<Row>;
-  update(key: unknown, values: Row): Promise<Row>;
-  remove(key: unknown): Promise<void>;
+  update(key: unknown, values: Row, options?: WriteOptions): Promise<Row>;
+  remove(key: unknown, options?: WriteOptions): Promise<void>;
   totalCount(options?: LoadOptions): Promise<number>;
   /** The field holding each row's identity. */
   readonly key: string;

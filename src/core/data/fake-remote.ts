@@ -9,7 +9,7 @@
  * - FakeRemoteOptions — How slow each load is, and how often one fails.
  * - fakeRemote — Wrap a store so its loads act as if they left the data layer.
  */
-import type { LoadOptions, LoadResult, Row, Store, StoreChanges } from './store.js';
+import { readField, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail, type StoreChanges, type WriteOptions } from './store.js';
 
 /** How slow each load is, and how often one fails — a number, or a function read
  *  at each load, so ONE wrapper serves a whole app while a setting changes. */
@@ -34,6 +34,20 @@ export function fakeRemote(store: Store, options: FakeRemoteOptions = {}): Store
   const failed = (): void => {
     if (Math.random() < read(options.fail, 0)) throw new TypeError('fakeRemote: the fetch failed.');
   };
+  /* When each row last changed — by any writer, heard or missed — so a write sent
+     with its own time is refused where the row changed after (D3). Plan 652 S7b
+     TRAP T-a-newer-write-wins */
+  const changedAt = new Map<string, number>();
+  const stamp = (e: Event): void => {
+    const { key, row } = ((e as CustomEvent).detail ?? {}) as StoreChangeDetail;
+    if (key != null) changedAt.set(String(key), Date.now());
+    if (row && store.key) changedAt.set(String(readField(row, store.key)), Date.now());
+  };
+  const newer = (key: unknown, write?: WriteOptions): void => {
+    const at = write?.unmodifiedSince;
+    if (at === undefined || (changedAt.get(String(key)) ?? 0) <= at) return;
+    throw Object.assign(new Error(`fakeRemote: ${String(key)} changed after this write was made.`), { name: 'HttpError', status: 412 });
+  };
   const out = new EventTarget() as Store;
   /* Its rows changed: say so, as the store itself did. Held WEAKLY, so a wrapper
      dropped is freed, and its relay goes at the next change. TRAP T-a-closed-source-hears-nothing */
@@ -41,7 +55,10 @@ export function fakeRemote(store: Store, options: FakeRemoteOptions = {}): Store
   const relay = (e: Event): void => {
     const wrapper = to.deref();
     if (!wrapper) store.removeEventListener('change', relay);
-    else if (!options.missed?.()) wrapper.dispatchEvent(new CustomEvent('change', { detail: (e as CustomEvent).detail }));
+    else {
+      stamp(e);
+      if (!options.missed?.()) wrapper.dispatchEvent(new CustomEvent('change', { detail: (e as CustomEvent).detail }));
+    }
   };
   store.addEventListener('change', relay);
   const inner = store.distinct?.bind(store);
@@ -86,7 +103,7 @@ export function fakeRemote(store: Store, options: FakeRemoteOptions = {}): Store
     byKey: (key: unknown) => store.byKey(key),
     // Offline, a write never leaves, as a fetch's would not. Plan 652 S7a
     insert: async (values: Row) => (failed(), store.insert(values)),
-    update: async (key: unknown, values: Row) => (failed(), store.update(key, values)),
-    remove: async (key: unknown) => (failed(), store.remove(key)),
+    update: async (key: unknown, values: Row, write?: WriteOptions) => (failed(), newer(key, write), store.update(key, values)),
+    remove: async (key: unknown, write?: WriteOptions) => (failed(), newer(key, write), store.remove(key)),
   });
 }

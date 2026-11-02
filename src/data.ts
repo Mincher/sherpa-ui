@@ -128,11 +128,11 @@ export {
 // A store reached by that protocol: a handler in the page, then a Service Worker. Plan 652 S2
 export { RequestStore, openRequestStore, type RequestStoreOptions } from './core/data/request-store.js';
 // A remote store's ONE held set, for a Service Worker to answer every tab from. Plan 652 S5b
-export { HeldStore, type HeldStoreOptions } from './core/data/held-store.js';
+export { HeldStore, type HeldStoreOptions, type LostWrite } from './core/data/held-store.js';
 // A write made offline waits, and is sent once. Plan 652 S7a
 export { memoryOutbox, outboxEntry, type OutboxEntry, type OutboxPort } from './core/data/outbox.js';
 // What is new, said to every tab: a fact, never a request to show it. Plan 652 S6
-export { NOTICE_CHANNEL, sayNotice, type UpdateNotice } from './core/data/notices.js';
+export { NOTICE_CHANNEL, sayNotice, type NoticeAsk, type UpdateNotice } from './core/data/notices.js';
 /* A page's QUERY, drawn as nodes for the Node Editor. TODO 555 · TRAP T-the-node-editor-asks-the-query */
 export { QUERY_KINDS, queryGraph, type GraphComponent, type QueryGraphFacts } from './core/data/query-graph.js';
 /* An APP, set up from one JSON document. TRAP T-an-app-is-its-definition */

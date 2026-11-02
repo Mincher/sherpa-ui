@@ -1,7 +1,8 @@
 /**
  * serve-data.ts — the data layer's own requests, answered in the Service Worker:
  * one copy of each store for every tab, and offline; the writes made offline sent
- * when it starts, and on Background Sync. Plan 652 S4
+ * when it starts, and on Background Sync; one that was lost kept as a notice until
+ * a page has seen it (S7b). Plan 652 S4
  * TRAP T-the-worker-answers-the-data
  *
  * Map:
@@ -10,11 +11,19 @@
  * - serveData — Answer the data layer's requests in the worker, from the stores the app hands it.
  */
 import { DATA_CHANNEL, createDataHandler, type DataHandlerOptions } from '../data/data-handler.js';
-import { sayNotice } from '../data/notices.js';
+import { keepNotices } from '../browser/notice-keep.js';
+import type { LostWrite } from '../data/held-store.js';
+import { sayNotice, type NoticeAsk, type UpdateNotice } from '../data/notices.js';
 import type { WorkerFetchEvent, WorkerScope } from './app-files.js';
 
 /** The Background Sync tag the worker sends its stores' waiting writes on. */
 export const OUTBOX_SYNC = 'sherpa-outbox';
+
+/** A page's message to the worker: it starts the worker, as a channel cannot. */
+interface WorkerMessageEvent extends Event {
+  readonly data: unknown;
+  waitUntil(promise: Promise<unknown>): void;
+}
 
 /** A Background Sync: Chromium's, with every tab perhaps shut. */
 interface SyncEvent extends Event {
@@ -50,7 +59,21 @@ export function serveData(scope: WorkerScope, options: ServeDataOptions): void {
   scope.addEventListener('sync', (event) => {
     if ((event as SyncEvent).tag === OUTBOX_SYNC) (event as SyncEvent).waitUntil(sendAll());
   });
+  /* A write made offline that was lost is KEPT as a notice until a page says it was
+     seen: said now, and again to each page that asks as it opens — it may have
+     been sent with every tab shut (D9). S7b · TRAP T-a-newer-write-wins */
+  const kept = keepNotices();
+  scope.addEventListener('message', (event) => {
+    const ask = (event as WorkerMessageEvent).data as NoticeAsk | undefined;
+    if (ask?.sherpa === 'notices') (event as WorkerMessageEvent).waitUntil(kept.read().then((all) => all.forEach(sayNotice)));
+    if (ask?.sherpa === 'seen') (event as WorkerMessageEvent).waitUntil(kept.remove(ask.id));
+  });
   for (const [name, store] of Object.entries(options.stores)) {
+    store.addEventListener('lost', (event) => {
+      const lost = (event as CustomEvent<LostWrite>).detail;
+      const notice: UpdateNotice & { id: string } = { kind: 'lost', id: `${name}|${lost.id}`, store: name, key: lost.key, why: lost.why };
+      void kept.put(notice).catch(() => undefined).then(() => sayNotice(notice));
+    });
     // A write waits: the browser sends it once back online, if it can — with no tab open.
     store.addEventListener('queued', () => {
       void scope.registration?.sync?.register(OUTBOX_SYNC).catch(() => undefined);

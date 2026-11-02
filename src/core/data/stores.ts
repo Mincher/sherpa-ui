@@ -27,6 +27,7 @@ import {
   type RowOrder,
   type StoreChangeDetail,
   type StoreChanges,
+  type WriteOptions,
 } from './store.js';
 // Its own module so IdbStore reaches it too.
 import { BaseStore, type StoreOptions } from './base-store.js';
@@ -298,6 +299,12 @@ export interface RestStoreOptions extends StoreOptions {
   changesUrl?: string;
 }
 
+/** A write's time as HTTP says it: a server refuses it, 412, where the row
+ *  changed after. TRAP T-a-newer-write-wins */
+function since(options?: WriteOptions): Record<string, string> {
+  return options?.unmodifiedSince ? { 'If-Unmodified-Since': new Date(options.unmodifiedSince).toUTCString() } : {};
+}
+
 /**
  * Records behind an HTTP endpoint — the SERVER filters, sorts and pages.
  * TRAP T-rest-update-is-patch-not-put
@@ -401,12 +408,12 @@ export class RestStore extends BaseStore {
     return saved;
   }
 
-  async update(key: unknown, values: Row): Promise<Row> {
+  async update(key: unknown, values: Row, options?: WriteOptions): Promise<Row> {
     const url = this.#keyUrl(key);
     const row = await this.#request<Row>(url, {
       // TRAP T-rest-update-is-patch-not-put — PUT blanks what it is not sent.
       method: 'PATCH',
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', ...since(options) },
       body: JSON.stringify(values),
     });
     // The RESPONSE is checked, the patch is not —
@@ -416,9 +423,9 @@ export class RestStore extends BaseStore {
     return saved;
   }
 
-  async remove(key: unknown): Promise<void> {
+  async remove(key: unknown, options?: WriteOptions): Promise<void> {
     const url = this.#keyUrl(key);
-    await this.#request<unknown>(url, { method: 'DELETE' });
+    await this.#request<unknown>(url, { method: 'DELETE', headers: since(options) });
     this.announce({ type: 'remove', key });
   }
 

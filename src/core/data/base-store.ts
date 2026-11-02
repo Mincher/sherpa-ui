@@ -7,7 +7,7 @@
  * - StoreOptions — Options every store shares.
  * - BaseStore — what every store shares: key, time, schema guard, change events
  */
-import { applyOptions, matchesOnly, orderKey, pageOf, readField, withoutPage, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail } from './store.js';
+import { applyOptions, matchesOnly, orderKey, pageOf, readField, withoutPage, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail, type WriteOptions } from './store.js';
 import { carryKey, keyRow } from './row-key.js';
 import { StoreHistory } from './store-history.js';
 import {
@@ -89,8 +89,8 @@ export abstract class BaseStore extends EventTarget implements Store {
   abstract load(options?: LoadOptions): Promise<LoadResult>;
   abstract byKey(key: unknown): Promise<Row | undefined>;
   abstract insert(values: Row): Promise<Row>;
-  abstract update(key: unknown, values: Row): Promise<Row>;
-  abstract remove(key: unknown): Promise<void>;
+  abstract update(key: unknown, values: Row, options?: WriteOptions): Promise<Row>;
+  abstract remove(key: unknown, options?: WriteOptions): Promise<void>;
 
   /** Matching rows before paging — what a pager counts pages from. */
   async totalCount(options?: LoadOptions): Promise<number> {

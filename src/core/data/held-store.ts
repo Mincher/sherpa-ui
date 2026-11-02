@@ -7,16 +7,29 @@
  * TRAP T-a-worker-holds-the-set · TRAP T-a-server-change-waits · TRAP T-a-write-made-offline-waits
  *
  * Map:
+ * - LostWrite — A write made offline that did not land: a newer write won, or its source refused it.
  * - HeldStoreOptions — The most rows it holds, whether its source's changes wait, and where its writes wait offline.
  * - HeldStore — A store that holds its source's whole set and answers every reader from it.
  */
-import { failureOf, unreached, type Failure } from './failure.js';
+import { failureOf, unreached, type Failure, type FailureKind } from './failure.js';
 import { HeldReads } from './held-reads.js';
 import { HeldSet } from './held-set.js';
 import { outboxEntry, type OutboxEntry, type OutboxPort } from './outbox.js';
 import { report } from './report.js';
 import { keyRow } from './row-key.js';
 import { readField, sameKey, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail, type StoreChanges } from './store.js';
+
+/** A write made offline that did not land: a newer write won (`conflict`, D3), or
+ *  its source refused it. Said as `lost`. Plan 652 S7b */
+export interface LostWrite {
+  /** Its outbox entry's id. */
+  id: string;
+  type: OutboxEntry['type'];
+  key: unknown;
+  /** When it was made, in ms. */
+  at: number;
+  why: FailureKind;
+}
 
 /** The most rows it holds, whether its source's changes wait, and where its writes wait offline. */
 export interface HeldStoreOptions {
@@ -238,11 +251,21 @@ export class HeldStore extends EventTarget implements Store {
     return outbox.alone(async () => {
       // Read again: another sender may have sent some.
       let lost = false;
-      for (const entry of await outbox.read()) {
+      const waiting = await outbox.read();
+      for (const [i, entry] of waiting.entries()) {
         try {
+          // Sent with its own time: a row changed after it keeps the newer write. D3
+          const since = { unmodifiedSince: entry.since ?? entry.at };
           if (entry.type === 'insert') await this.#source.insert(entry.values ?? {});
-          else if (entry.type === 'update') await this.#source.update(entry.key, entry.values ?? {});
-          else await this.#source.remove(entry.key);
+          else if (entry.type === 'update') await this.#source.update(entry.key, entry.values ?? {}, since);
+          else await this.#source.remove(entry.key, since);
+          // Ours now: a later write to this row is measured from here — kept, as a send may stop.
+          const landed = Date.now();
+          for (const next of waiting.slice(i + 1)) {
+            if (!sameKey(next.key, entry.key)) continue;
+            next.since = landed;
+            await outbox.add(next);
+          }
         } catch (error) {
           const failure = failureOf(error);
           if (unreached(failure)) {
@@ -251,11 +274,11 @@ export class HeldStore extends EventTarget implements Store {
           }
           lost = true;
           report({
-            code: 'outbox-write-lost',
+            code: failure.kind === 'conflict' ? 'outbox-write-lost-to-a-newer' : 'outbox-write-lost',
             message: `A write made offline (${entry.type} ${String(entry.key)}) was refused when sent (${failure.kind}: ${failure.message}), so it was dropped.`,
             at: { type: entry.type, key: String(entry.key), kind: failure.kind },
           });
-          this.dispatchEvent(new CustomEvent('lost', { detail: { type: entry.type, key: entry.key, failure } }));
+          this.dispatchEvent(new CustomEvent<LostWrite>('lost', { detail: { id: entry.id, type: entry.type, key: entry.key, at: entry.at, why: failure.kind } }));
         }
         await outbox.remove(entry.id);
       }
