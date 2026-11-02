@@ -68,13 +68,13 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-preset-is-its-own-part](TRAPS.md#t-a-preset-is-its-own-part) — data-source, filter-state, page-definition, query, query-context, query-edits, source-counts
 - [T-a-projected-row-is-checked-on-what-it-was-sent](TRAPS.md#t-a-projected-row-is-checked-on-what-it-was-sent) — base-store, store
 - [T-a-range-is-bounded-by-the-data](TRAPS.md#t-a-range-is-bounded-by-the-data) — data-source-types
-- [T-a-read-is-planned](TRAPS.md#t-a-read-is-planned) — data-source, data-source-types, read-plan, store-cache
+- [T-a-read-is-planned](TRAPS.md#t-a-read-is-planned) — data-source, data-source-types, held-reads, read-plan, store-cache
 - [T-a-reading-is-frozen-in-the-query](TRAPS.md#t-a-reading-is-frozen-in-the-query) — data-source, query, query-context
 - [T-a-record-has-a-time-of-its-own](TRAPS.md#t-a-record-has-a-time-of-its-own) — base-store, data-source, store
 - [T-a-refused-row-never-shortens-a-page](TRAPS.md#t-a-refused-row-never-shortens-a-page) — base-store
 - [T-a-relative-date-stays-relative](TRAPS.md#t-a-relative-date-stays-relative) — filter-state, store, stores, where
 - [T-a-reload-replays-the-readers-answers](TRAPS.md#t-a-reload-replays-the-readers-answers) — data-source, query-context
-- [T-a-remote-source-holds-its-whole-set](TRAPS.md#t-a-remote-source-holds-its-whole-set) — data-source, data-source-types, held-set, page-definition, store, store-cache
+- [T-a-remote-source-holds-its-whole-set](TRAPS.md#t-a-remote-source-holds-its-whole-set) — data-source, data-source-types, held-reads, held-set, page-definition, store, store-cache
 - [T-a-remote-store-says-what-changed](TRAPS.md#t-a-remote-store-says-what-changed) — data-source, fake-remote, store, store-cache, stores
 - [T-a-rule-names-its-clock-and-its-language](TRAPS.md#t-a-rule-names-its-clock-and-its-language) — data-source, data-source-types, source-counts, store
 - [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — data-source, data-source-types, filter-state, query, query-context, source-counts, store, stores, walk
@@ -83,7 +83,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-series-has-a-value-at-every-point](TRAPS.md#t-a-series-has-a-value-at-every-point) — aggregate
 - [T-a-server-field-is-asked-once-per-answer](TRAPS.md#t-a-server-field-is-asked-once-per-answer) — data-source, data-source-types
 - [T-a-source-compiles-only-what-it-has](TRAPS.md#t-a-source-compiles-only-what-it-has) — data-source, query, source-counts
-- [T-a-store-has-one-cache](TRAPS.md#t-a-store-has-one-cache) — data-source, store, store-cache
+- [T-a-store-has-one-cache](TRAPS.md#t-a-store-has-one-cache) — data-source, held-reads, store, store-cache
 - [T-a-store-keeps-its-history](TRAPS.md#t-a-store-keeps-its-history) — base-store, data, fake-remote, live-stores, store, store-history
 - [T-a-summary-binds-to-all-the-rows](TRAPS.md#t-a-summary-binds-to-all-the-rows) — data-source, data-source-types, source-binding
 - [T-a-superseded-chip-suspends-it-is-never-removed](TRAPS.md#t-a-superseded-chip-suspends-it-is-never-removed) — data-source-types, query, query-context, query-edits, source-binding

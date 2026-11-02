@@ -87,8 +87,9 @@ import { coalesce, Latest } from './timing.js';
 import { QueryContext, type QueryChange, type QueryHandle } from './query-context.js';
 import { readingsOf, whereOf, type Condition, type Where } from './where.js';
 import { report } from './report.js';
-import { cacheOf, type CacheChangeDetail, type StoreCache } from './store-cache.js';
-import { planRead, type Plan } from './read-plan.js';
+import { type CacheChangeDetail, type StoreCache } from './store-cache.js';
+import { type Plan } from './read-plan.js';
+import { HeldReads } from './held-reads.js';
 import { failureOf, unreached, type Failure } from './failure.js';
 import type { FieldReading, FilterState } from './filter-state.js';
 import type {
@@ -184,14 +185,8 @@ export class DataSource extends EventTarget {
   readonly #pinned: boolean;
   /** Its store's ONE held set, shared with every source over it — remote only. */
   readonly #cache: StoreCache | null;
-  /** How many whole reads had landed when it was made: a set from before may miss a writer. */
-  readonly #since: number;
-  /** Its first hold has tried a failed whole read once more. */
-  #checked = false;
-  /** How its last question was answered. TRAP T-a-read-is-planned */
-  #plan: Plan = 'store';
-  /** It has started its ONE check of the set behind it. */
-  #tried = false;
+  /** Where its next read goes: the held set, or the store. Plan 652 S5a */
+  readonly #held: HeldReads;
   /** Its last ask failed and the store could not be reached: nothing to show. */
   #down: Failure | null = null;
 
@@ -229,8 +224,8 @@ export class DataSource extends EventTarget {
       page: 1,
       pageSize: options.pageSize ?? null,
     };
-    this.#cache = this.#remote && this.#holdRows > 0 ? cacheOf(this.store) : null;
-    this.#since = this.#cache?.gen ?? 0;
+    this.#held = new HeldReads(this.store, { cap: this.#holdRows, need: () => this.#need() });
+    this.#cache = this.#held.cache;
     this.#heard = this.store.history?.seq ?? 0;
     // A held source hears its store through the cache, which takes each change once.
     (this.#cache ?? this.store).addEventListener('change', this.#onStoreChange);
@@ -1012,7 +1007,7 @@ export class DataSource extends EventTarget {
       skipped: [...this.#skipped],
       loaded: this.#loaded,
       // How it answers, and whether its store can be reached. TRAP T-a-read-is-planned
-      plan: this.#plan,
+      plan: this.#held.plan,
       reach: this.reach,
       // The picks the filters before them rule out, by scope. TRAP T-one-walk-counts-and-limits-in-order
       aside: Object.fromEntries(this.#setAside),
@@ -1450,7 +1445,7 @@ export class DataSource extends EventTarget {
   #onSet = (): void => {
     const set = this.#cache?.set;
     // A set too big for this page — or none, where this page never used one — moves nothing here.
-    if (set ? set.size > this.#holdRows : this.#plan !== 'held' && this.#plan !== 'held-stale') return;
+    if (set ? set.size > this.#holdRows : this.#held.plan !== 'held' && this.#held.plan !== 'held-stale') return;
     this.#age++;
     this.#rowsAge++;
     // An ask in flight may have read the set before it landed: it is overtaken.
@@ -1466,7 +1461,7 @@ export class DataSource extends EventTarget {
   get reach(): 'ok' | 'unreached' | 'down' {
     if (this.#down) return 'down';
     const failure = this.#closed ? null : this.#cache?.failure;
-    return failure && unreached(failure) && this.#plan === 'held-stale' ? 'unreached' : 'ok';
+    return failure && unreached(failure) && this.#held.plan === 'held-stale' ? 'unreached' : 'ok';
   }
 
   /** Why the store could not be reached, while it cannot — its kind and message — else null. */
@@ -1483,7 +1478,7 @@ export class DataSource extends EventTarget {
     const cache = this.#closed ? null : this.#cache;
     if (reach === 'down') void this.load({ force: true });
     // The rows stay, and say they are unconfirmed, until the read lands.
-    else if (reach === 'unreached' || (cache?.tracks && cache.set && this.#plan === 'held')) cache?.recheck(this.#holdRows, this.#need());
+    else if (reach === 'unreached' || (cache?.tracks && cache.set && this.#held.plan === 'held')) this.#held.recheck();
   }
 
   /** Closed: it no longer hears its store, and holds nothing. */
@@ -1497,6 +1492,7 @@ export class DataSource extends EventTarget {
    */
   close(): void {
     this.#closed = true;
+    this.#held.closed = true;
     this.#member.leave();
     (this.#cache ?? this.store).removeEventListener('change', this.#onStoreChange);
     this.#cache?.removeEventListener('set', this.#onSet);
@@ -1513,63 +1509,18 @@ export class DataSource extends EventTarget {
   /** What every read asks, as the plan says: the store's held set — current, or
    *  shown while it is checked — else the store. A closed source asks the store. */
   get #reads(): Pick<Store, 'load' | 'totalCount' | 'distinct' | 'scan'> {
-    const set = this.#closed ? null : this.#cache?.set;
-    return set && (this.#plan === 'held' || this.#plan === 'held-stale') ? set : this.store;
+    return this.#held.reads;
   }
 
   /** The plan for the next question, as the store's set stands now. */
   #planNow(): { plan: Plan; behind: boolean } {
-    const cache = this.#closed ? null : this.#cache;
-    if (!cache) return { plan: 'store', behind: false };
-    const set = cache.set;
-    return planRead({
-      need: { cap: this.#holdRows },
-      held: {
-        set: set ? { size: set.size, gen: cache.gen, due: cache.due, covers: set.covers(this.#need()) } : null,
-        never: cache.never, over: cache.over, failedAt: cache.failedAt,
-      },
-      history: { announcesAll: !!this.store.announcesAll, since: this.#since },
-      reach: { tried: this.#tried },
-    });
+    return this.#held.planNow();
   }
 
   /** Hold the store's whole set, where it can be: one read for every page over
    *  it. TRAP T-a-remote-source-holds-its-whole-set · TRAP T-a-store-has-one-cache */
-  async #hold(): Promise<void> {
-    const cache = this.#closed ? null : this.#cache;
-    if (!cache) {
-      this.#plan = 'store';
-      return;
-    }
-    /* A new page tries a failed whole read once more, as each page did before
-       the set was the store's — behind the set, where one is held, so the page
-       is never held up for it. */
-    if (!this.#checked) {
-      this.#checked = true;
-      if (cache.failed && !cache.set) cache.retry();
-    }
-    for (;;) {
-      const { plan, behind } = this.#planNow();
-      this.#plan = plan;
-      /* A set it cannot vouch for answers at once, and is read again BEHIND it —
-         once a page, at open or a first load: never on a toggle (340). */
-      if (behind) {
-        this.#tried = true;
-        cache.recheck(this.#holdRows, this.#need());
-      }
-      if (plan !== 'fetch') return;
-      const moved = (): string => `${cache.gen}:${cache.over}:${cache.failedAt}:${cache.never}:${cache.due}:${cache.set?.fields}`;
-      const before = moved();
-      const held = cache.set;
-      await cache.hold(this.#holdRows, this.#need());
-      // A read that just failed WAS this page's check: no second one at once.
-      if (cache.failed) this.#tried = true;
-      // Nothing moved — no read could be sent, and no kept copy landed: the store answers.
-      if (moved() === before && cache.set === held) {
-        this.#plan = 'store';
-        return;
-      }
-    }
+  #hold(): Promise<void> {
+    return this.#held.hold();
   }
 
   /** The fields this page reads from a row, or null — every field: what its
@@ -1700,7 +1651,7 @@ export class DataSource extends EventTarget {
       // Empty, or no matches: the data layer says which. TRAP T-a-container-shows-its-datas-state
       const emptiness = result.total > 0 ? undefined : this.#filter || this.#arrangement().search ? 'no-matches' : 'empty';
       // Unconfirmed, as the set stands NOW: a check that landed meanwhile confirmed it.
-      const stale = this.#plan === 'held-stale' && this.#planNow().plan === 'held-stale';
+      const stale = this.#held.plan === 'held-stale' && this.#planNow().plan === 'held-stale';
       this.#down = null;
       this.dispatchEvent(
         new CustomEvent<DataChangeDetail>('change', {

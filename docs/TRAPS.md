@@ -3681,6 +3681,7 @@ The bench holds the rule: each act on its remote page after it opens must cost
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/page-definition.ts`
 - Site: `scripts/check-bench.mjs`
+- Site: `src/core/data/held-reads.ts`
 
 ### T-a-held-set-takes-a-change-in-place
 
@@ -3984,6 +3985,7 @@ none (`asked()`).
 - Site: `test/unit/the-read-plan.test.mjs`
 - Site: `test/unit/a-reopen-checks-behind.test.mjs`
 - Site: `test/unit/a-held-set-yields-when-it-cannot-answer.test.mjs`
+- Site: `src/core/data/held-reads.ts`
 
 ### T-a-store-has-one-cache
 
@@ -4040,6 +4042,7 @@ PER open page. Now the set is the STORE's: `cacheOf(store)` gives one
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/store.ts`
 - Site: `test/unit/a-store-has-one-cache.test.mjs`
+- Site: `src/core/data/held-reads.ts`
 
 ### T-a-failure-has-a-kind
 
