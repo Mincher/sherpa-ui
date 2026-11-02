@@ -777,6 +777,12 @@
               }
             },
             {
+              "name": "data-count-axis",
+              "type": {
+                "text": "'primary' | 'secondary'"
+              }
+            },
+            {
               "name": "data-field",
               "description": "the number that aggregate reads",
               "type": {
@@ -8541,6 +8547,12 @@
               }
             },
             {
+              "name": "data-no-primary",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-no-results",
               "description": "its chips say no match counts — the app's choice, written by its provider",
               "type": {
@@ -9960,6 +9972,12 @@
               }
             },
             {
+              "name": "data-count-axis",
+              "type": {
+                "text": "'primary' | 'secondary'"
+              }
+            },
+            {
               "name": "data-field",
               "description": "the number that aggregate reads",
               "type": {
@@ -9989,6 +10007,12 @@
             {
               "name": "data-segment-field",
               "description": "ASKED of its provider: one slice per value of this field",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "data-stack-field",
               "type": {
                 "text": "string"
               }

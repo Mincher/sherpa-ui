@@ -49,11 +49,13 @@ For parts of a whole, as a donut (the default) or a pie. For one value on a scal
 | `data-aggregate` | `count` `sum` `mean` `min` `max` `distinct` | `count` | count \| sum \| mean \| min \| max \| distinct, per value |
 | `data-bands` | text |  |  |
 | `data-bucket` | `day` `month` `year` |  |  |
+| `data-count-axis` | `primary` `secondary` |  |  |
 | `data-field` | text |  | the number that aggregate reads |
 | `data-inner` | text |  | hole size, a FRACTION of the outer radius (0–1). A pie ignores it — a pie has no hole by definition. |
 | `data-label` | text |  | centre big text |
 | `data-over-field` | text |  |  |
 | `data-segment-field` | text |  | ASKED of its provider: one slice per value of this field |
+| `data-stack-field` | text |  |  |
 | `data-sublabel` | text |  | centre small text |
 | `data-sweep` | number | `360` | how far it runs, in degrees. 360 is a full ring; a gauge is this ring stopped short — start 270, sweep 180. |
 | `data-sweep-start` | number |  | where the arc begins, clockwise degrees from 12 o'clock |

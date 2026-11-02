@@ -106,6 +106,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-no-section-labels': { type: 'boolean', kind: 'visibility' },
     // Its Organise chips show their icons, and no name. Will, TODO 634
     'data-no-organise-labels': { type: 'boolean', kind: 'visibility' },
+    // No Primary chip: its chart's Primary is fixed. Will, TODO 653
+    'data-no-primary': { type: 'boolean', kind: 'visibility' },
     // No section names over its filters, in portrait. Will, TODO 436
     'data-no-sections': { type: 'boolean', kind: 'visibility' },
     // A chip hovered previews what it matches: the app's choice. Will, TODO 449

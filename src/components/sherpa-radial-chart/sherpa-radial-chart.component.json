@@ -238,6 +238,18 @@
     },
     {
       "$type": "prop",
+      "name": "data-count-axis",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "values": [
+        "primary",
+        "secondary"
+      ]
+    },
+    {
+      "$type": "prop",
       "name": "data-field",
       "type": "string",
       "observed": true,
@@ -279,6 +291,14 @@
       "declared": true,
       "kind": "style",
       "description": "ASKED of its provider: one slice per value of this field"
+    },
+    {
+      "$type": "prop",
+      "name": "data-stack-field",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
     },
     {
       "$type": "prop",

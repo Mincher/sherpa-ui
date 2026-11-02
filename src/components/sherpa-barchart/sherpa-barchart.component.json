@@ -297,6 +297,18 @@
     },
     {
       "$type": "prop",
+      "name": "data-count-axis",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "values": [
+        "primary",
+        "secondary"
+      ]
+    },
+    {
+      "$type": "prop",
       "name": "data-field",
       "type": "string",
       "observed": true,

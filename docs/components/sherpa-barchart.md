@@ -50,6 +50,7 @@ For comparing values across categories, one bar each; `data-bands` cuts a number
 | `data-axis-label` | text |  | the value axis's caption, under it (shown when set) |
 | `data-bands` | text |  | a number segment-field cut at these edges, "0,20,40" — a histogram |
 | `data-bucket` | `day` `month` `year` |  |  |
+| `data-count-axis` | `primary` `secondary` |  |  |
 | `data-field` | text |  | the number that aggregate reads |
 | `data-max` | number |  | explicit value-axis max (else derived from the data) |
 | `data-over-field` | text |  |  |

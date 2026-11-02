@@ -77,6 +77,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-move-filters` | boolean |  |  |
 | `data-no-actions` | boolean |  | hide the built-in cluster entirely (host owns the trailing end) |
 | `data-no-organise-labels` | boolean |  |  |
+| `data-no-primary` | boolean |  |  |
 | `data-no-results` | boolean | `false` | its chips say no match counts — the app's choice, written by its provider |
 | `data-no-saves` | boolean |  |  |
 | `data-no-section-labels` | boolean |  |  |

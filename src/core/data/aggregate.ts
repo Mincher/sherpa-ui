@@ -22,6 +22,7 @@
  * - Bucket — A date cut to one step — its ISO prefix, so the keys sort as they read.
  * - SummarySpec — What a component asks to see of its rows: its attributes, as JSON.
  * - Summary — What `summarise` hands a component, by the shape it asked for.
+ * - chartAxes — A chart's two axes as a summary reads them: one shown as counts splits nothing.
  * - summarise — Rows into the shape a component declared — one door for every chart and tile.
  * - BandFacts — A field's bands, as a summary reads them: its thresholds, and the bottom of its scale.
  * - Zoned — A summary with its value field's bands beside it: a gauge's zones.
@@ -271,6 +272,21 @@ export type Summary =
   | ChartDatum[]
   | { value: number; values: number[]; deltaPercent?: number }
   | { labels: string[]; series: Series[] };
+
+/** A chart's two axes as a summary reads them. The axis shown as COUNTS splits
+ *  nothing: each value of the other is the number of its distinct values there. With
+ *  no other axis, or a chart that sums or averages, both show as names. Will, TODO 653 */
+export function chartAxes(
+  primary: string | undefined,
+  secondary: string | undefined,
+  counts?: string | null,
+  aggregate?: string | null,
+): Pick<SummarySpec, 'segment' | 'stack' | 'aggregate' | 'field'> {
+  const counted = counts === 'primary' ? primary : counts === 'secondary' ? secondary : undefined;
+  const other = counts === 'primary' ? secondary : primary;
+  if (counted && other && (!aggregate || aggregate === 'count')) return { segment: other, aggregate: 'distinct', field: counted };
+  return { ...(primary ? { segment: primary } : {}), ...(secondary ? { stack: secondary } : {}) };
+}
 
 const CUT: Record<Bucket, number> = { year: 4, month: 7, day: 10 };
 

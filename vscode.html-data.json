@@ -250,6 +250,17 @@
           ]
         },
         {
+          "name": "data-count-axis",
+          "values": [
+            {
+              "name": "primary"
+            },
+            {
+              "name": "secondary"
+            }
+          ]
+        },
+        {
           "name": "data-field",
           "description": "the number that aggregate reads"
         },
@@ -2904,6 +2915,10 @@
           "valueSet": "v"
         },
         {
+          "name": "data-no-primary",
+          "valueSet": "v"
+        },
+        {
           "name": "data-no-results",
           "description": "its chips say no match counts — the app's choice, written by its provider",
           "valueSet": "v"
@@ -3308,6 +3323,17 @@
           ]
         },
         {
+          "name": "data-count-axis",
+          "values": [
+            {
+              "name": "primary"
+            },
+            {
+              "name": "secondary"
+            }
+          ]
+        },
+        {
           "name": "data-field",
           "description": "the number that aggregate reads"
         },
@@ -3325,6 +3351,9 @@
         {
           "name": "data-segment-field",
           "description": "ASKED of its provider: one slice per value of this field"
+        },
+        {
+          "name": "data-stack-field"
         },
         {
           "name": "data-sublabel",

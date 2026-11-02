@@ -18,7 +18,7 @@ import {
   DATA_CONTEXT, SOURCE_CONTEXT, type ContextRequestEvent, type DataAsk,
 } from '../../core/ui/context.js';
 import { report } from '../../core/data/report.js';
-import { summarise, summariseMarked, type SummarySpec } from '../../core/data/aggregate.js';
+import { chartAxes, summarise, summariseMarked, type SummarySpec } from '../../core/data/aggregate.js';
 import type { ChartDatum } from '../../core/data/chart-datum.js';
 import { bindSelection } from '../../core/data/bind-selection.js';
 import { groupRows, groupSummaries, valueKey, type Row, type Store } from '../../core/data/store.js';
@@ -148,7 +148,7 @@ const PIVOT_STEERS = ['column-filter-change', 'filter-apply', 'filter-discard', 
 const KEPT_ACROSS = ['slot', 'data-grow', 'data-scope', 'style'] as const;
 
 /** What a chart's axes read: a grid made from it carries them, to name its columns. TODO 622 */
-const CHART_AXES = ['data-over-field', 'data-stack-field', 'data-field', 'data-aggregate'] as const;
+const CHART_AXES = ['data-over-field', 'data-stack-field', 'data-count-axis', 'data-field', 'data-aggregate'] as const;
 
 /** What only a line chart reads: another chart made from it drops them. */
 const LINE_ONLY = ['data-type', 'data-over-field', 'data-bucket'] as const;
@@ -1342,16 +1342,18 @@ export class SherpaProvider extends SherpaElement {
     if (asks.thresholds) spec['zones'] = true;
     /* Its SLOT's presentation, as the Query keeps it, over its own attributes: the
        primary its first split (a bar or slice a value), the secondary a bar
-       chart's stack, the group the sections in each, and its order. A legend lists
-       the secondary; with none, the primary. Will, TODOs 548, 633 */
+       chart's stack, the group the sections in each, and its order. An axis shown
+       as counts splits nothing. A legend lists what splits the chart last: the
+       secondary; with none, the primary. Will, TODOs 548, 633, 653 */
     const slot = this.#inherited(el, 'data-scope');
     const shown = slot && !/\s/.test(slot) ? source.query.presented(slot, 'chart') : {};
-    if (shown.primary) spec['segment'] = shown.primary;
     const host = asks.picks ? up(el) : null;
     const stacks = asks.stacks || !!(host?.constructor as { asks?: DataAsk } | undefined)?.asks?.stacks;
     const stack = stacks ? shown.secondary ?? this.#inherited(el, 'data-stack-field') : null;
-    if (stack && asks.picks) spec['segment'] = stack;
-    else if (stack) spec['stack'] = stack;
+    const axes = chartAxes(shown.primary ?? spec['segment'] as string | undefined, stack ?? undefined,
+      stacks ? this.#inherited(el, 'data-count-axis') : null, spec['aggregate'] as string | undefined);
+    if (asks.picks) Object.assign(spec, { ...axes, segment: axes.stack ?? axes.segment, stack: undefined });
+    else Object.assign(spec, axes);
     if (shown.group) spec['group'] = shown.group;
     if (shown.sort) spec['sort'] = shown.sort;
     return spec as unknown as SummarySpec;
@@ -1533,7 +1535,22 @@ export class SherpaProvider extends SherpaElement {
   /** A grid made from a chart: its first axis, which leads its columns. */
   #madeLead(el: Element, slot: string, source: DataSource): string | null {
     if (this.#authored.get(el) === 'gauge') return (el as Element & { columns?: GridColumnLike[] }).columns?.[0]?.field ?? null;
-    return el.getAttribute('data-over-field') ?? source.query.presented(slot, 'chart').primary ?? el.getAttribute('data-segment-field');
+    return this.#madeAxes(el, slot, source).segment ?? null;
+  }
+
+  /** A grid made from a chart: its axes, as its chart reads them. A line's first is
+   *  what it runs over; an axis shown as counts splits nothing. TODOs 622, 653 */
+  #madeAxes(el: Element, slot: string, source: DataSource): Pick<SummarySpec, 'segment' | 'stack' | 'aggregate' | 'field'> {
+    const { primary, secondary } = source.query.presented(slot, 'chart');
+    const over = el.getAttribute('data-over-field');
+    const first = over ?? primary ?? el.getAttribute('data-segment-field') ?? undefined;
+    const second = (over ? primary ?? el.getAttribute('data-segment-field') : secondary ?? el.getAttribute('data-stack-field')) || undefined;
+    const aggregate = el.getAttribute('data-aggregate') as SummarySpec['aggregate'] | null;
+    const field = el.getAttribute('data-field');
+    return {
+      ...(aggregate ? { aggregate } : {}), ...(field ? { field } : {}),
+      ...chartAxes(first, second, over ? null : el.getAttribute('data-count-axis'), aggregate),
+    };
   }
 
   /** What a grid made from a chart draws: its axes and its Group, no more, and a Total.
@@ -1549,15 +1566,11 @@ export class SherpaProvider extends SherpaElement {
     // A gauge's number is one mean: no count to total, so its rows, as they are.
     if (this.#authored.get(el) === 'gauge') return { rows, groups: null, filters };
 
-    const { primary, secondary, group, sort } = source.query.presented(slot, 'chart');
-    const over = el.getAttribute('data-over-field');
-    const lead = this.#madeLead(el, slot, source) ?? '';
-    const stack = (over ? primary ?? el.getAttribute('data-segment-field') : secondary ?? el.getAttribute('data-stack-field')) || undefined;
-    const aggregate = el.getAttribute('data-aggregate') as SummarySpec['aggregate'] | null;
-    const field = el.getAttribute('data-field');
-    const spec: SummarySpec = {
-      shape: 'segments', segment: lead, ...(stack ? { stack } : {}), ...(aggregate ? { aggregate } : {}), ...(field ? { field } : {}), ...(sort ? { sort } : {}),
-    };
+    const { group, sort } = source.query.presented(slot, 'chart');
+    const axes = this.#madeAxes(el, slot, source);
+    const lead = axes.segment ?? '';
+    const stack = axes.stack;
+    const spec: SummarySpec = { shape: 'segments', ...axes, segment: lead, ...(sort ? { sort } : {}) };
     const parts = group ? groupRows(rows, group).map((g) => ({ of: g.key, rows: g.rows })) : [{ of: '', rows }];
     const made = parts.flatMap((part) => (summarise(part.rows, spec, (f) => source.valuesFor(f)) as ChartDatum[]).map((datum) => ({ part, datum })));
     const seen = made.flatMap(({ datum }) => (datum.stack ?? []).map((p) => p.label));

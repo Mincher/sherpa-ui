@@ -10,6 +10,7 @@
  * - PropMap — A component's whole declared attribute surface.
  * - DATA_PROPS — What `DataSource.#push` writes onto every component it binds, plus the guard.
  * - SUMMARY_PROPS — What a chart or tile DECLARES it needs — its provider hands back that shape.
+ * - STACK_PROPS — A chart's Secondary, for one that splits by two axes: a bar chart and a radial.
  * - SHARED_PROPS — Shared style attributes whose shape is identical wherever they appear.
  * - coerceNum — Coerce a raw attribute string to a number, or return `fallback`.
  * - clampNum — Apply the min/max bounds from `opts`, if any.
@@ -132,6 +133,15 @@ export const SUMMARY_PROPS = {
   'data-bands': { type: 'string', kind: 'style' },
   /** Its OWN default filter — a condition by field, as JSON — narrowing it alone. */
   'data-where': { type: 'string', kind: 'style' },
+} as const satisfies PropMap;
+
+/** A chart's Secondary, for one that splits by two axes: a bar chart and a radial. */
+export const STACK_PROPS = {
+  /** Each segment's rows again, by this field: the Secondary. */
+  'data-stack-field': { type: 'string', kind: 'style' },
+  /** The axis shown as COUNTS: each value of the other is the number of its distinct
+   *  values there. Absent, both show as names. Will, TODO 653 */
+  'data-count-axis': { type: 'enum', kind: 'style', values: ['primary', 'secondary'] },
 } as const satisfies PropMap;
 
 /**
@@ -526,7 +536,7 @@ export abstract class SherpaElement extends Base {
     if (def) this.#syncProp(name, def);
     applySwaps(this, this.#swaps, name);
     if (name === 'aria-label' || name === 'aria-pressed') this.#syncLabel();
-    if (Ctor.asks && (name in SUMMARY_PROPS || name === 'data-source' || name === 'data-scope')) this.#reask();
+    if (Ctor.asks && (name in SUMMARY_PROPS || name in STACK_PROPS || name === 'data-source' || name === 'data-scope')) this.#reask();
     this.onChange(name, oldVal, newVal);
     // TRAP T-restamp-runs-after-on-change
     this.#restampIfVariantChanged();
