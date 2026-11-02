@@ -8,7 +8,10 @@ to other fields in the data and applies conditions to them for each health statu
 it holds. This is a pattern that will probably be used for other status fields in the
 future so it should be agnostic of the concept of 'health'. Then we're also not relying
 on the UI components to do this calculation and mutation work. It all comes from the
-data."*
+data."* And again: *"The health field should be an advanced field, in the data, that uses
+other fields to calculate health statuses. We need to make sure that this is the case. We
+also need to show health field status labels as the values in the health column of the
+grid rather than numerical values."*
 
 It is the data layer's first RULE — the first condition that matches gives the value —
 so it serves the rules engine of [DATA-LAYER-PLAN](../DATA-LAYER-PLAN.md) too.
@@ -36,23 +39,30 @@ The band code is about 60 lines in 15 files: `threshold.ts`, and a banded branch
 
 ## After
 
-A **status field** is defined once, with the data, as JSON:
+A **status field** is defined once, with the data, as JSON. Health reads OTHER fields — in
+Demos, the account's `score` (today's number) and its open tickets; Will may set the rules:
 
 ```json
 "health": {
   "label": "Health", "type": "status",
   "values": [
-    { "value": "At risk", "status": "critical", "where": { "score": { "lt": 60 } } },
-    { "value": "Watch",   "status": "warning",  "where": { "score": { "lt": 80 } } },
+    { "value": "At risk", "status": "critical", "when": [{ "score": { "lt": 60 } }, { "openTickets": { "gte": 5 } }] },
+    { "value": "Watch",   "status": "warning",  "when": [{ "score": { "lt": 80 } }, { "openTickets": { "gt": 0 } }] },
     { "value": "Healthy", "status": "success" }
   ]
 }
 ```
 
-- **The first value whose condition matches is the row's.** Its `where` is the one
-  condition language every View and preset writes (`T-one-way-to-write-a-condition`), so it
-  may read several fields: `{ "score": { "lt": 60 }, "openTickets": { "gt": 0 } }`. A value
-  with no `where` takes every row the earlier ones left. A row none match has no value.
+- **The grid's Health column shows each row's status** — At risk, Watch, Healthy — never a
+  number (Will). It is the field's value, so the cell draws it as it draws any list
+  value, in its status. The score is a column of its own, where a page wants it.
+
+- **The first value whose conditions match is the row's.** `when` is a list of conditions
+  in the one condition language every View and preset writes
+  (`T-one-way-to-write-a-condition`): the value matches when ANY of them does, and each
+  holds when ALL its fields do — `{ "score": { "lt": 60 }, "openTickets": { "gt": 0 } }`.
+  That language joins fields with AND alone, so the list is how one value says OR. A value
+  with no `when` takes every row the earlier ones left. A row none match has no value.
 - **The data layer works it out**, at the store seam: `statusFields(store, defs)` wraps any
   store, as `fakeRemote` does. Every row it gives carries the value. A filter on it becomes
   conditions on the fields it reads — `health is Watch` is "not At risk, and score below 80"
@@ -88,7 +98,7 @@ Each step is measured in the running app. Each step deletes what it makes redund
 | S1 | The data layer: the definition, `statusFields(store, defs)` — the value on each row, filters turned into conditions, the values and statuses as its domain, counts, changes, writes refused | Node: over an `ArrayStore`, a `fakeRemote` and the worker's `HeldStore`, a page filters, counts and sorts by a status field, and no filter that reaches a remote store names it | Nothing yet |
 | S2 | The controls: the catalogue lists a status field's values, each in its status — chips, menus, legend swatches; an Advanced row on it asks *is* and *is not* | Records' chips, panel and legend pick Health's values, and the counts and Limit speak them | The catalogue's and the walk's banded branches |
 | S3 | The gauge (D4) | The Records gauge's zones and legend come from Health; a legend pick filters Health and highlights its zone | The gauge's `thresholds` ask and the provider's banded legend binding |
-| S4 | Demos: `score`, the number, and `health`, the status field, in `records-data.js`; the presets, Views, "At risk", the Learn Filtering pages; the Dashboard's storage gauge | Demos all green, in three engines | `thresholds` in Demos' definitions; `{ band: … }` in its Views |
+| S4 | Demos: `score`, the number, and `health`, the status field over `score` and `openTickets`, in `records-data.js`; the grid's Health column; the presets, Views, "At risk", the Learn Filtering pages; the Dashboard's storage gauge | The grid's Health column reads At risk, Watch or Healthy on every row; Demos all green, in three engines | `thresholds` in Demos' definitions; `{ band: … }` in its Views |
 | S5 | Cleanup: `threshold.ts`, `band`, `bandOf`, `bandCondition`, `bandEdges`, every banded branch; the two traps folded into the new one (D3 A) | No `thresholds` or `band` left in `src/`; `check:size` falls | — |
 
 ## Risks
