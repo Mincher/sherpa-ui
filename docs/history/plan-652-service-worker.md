@@ -184,18 +184,28 @@ component tests it in the same way.
 
 Each step is measured in the running app, and the plan can stop after any of them.
 
-| Step | What | Done when |
-|---|---|---|
-| S1 ✅ | The protocol and `handle()`: the `QUERY` body, the answers, a `Failure` kind for each HTTP status, a version header, and a `POST` of a query answered as the query | **Done 2026-11-02:** `createDataHandler` in `src/core/data/data-handler.ts`, from `sherpa-ui/data`; 10 Node tests. `T-a-data-request-is-the-store-interface` |
-| S2 | Host A: `DataSource` reads one Demos page through the protocol, in the page | Every test green. Nothing changes for the reader |
-| S3 | The worker and the app's files: `sherpa-ui/worker` keeps them; Demos gets a manifest | Demos opens offline and installs. A second load's LCP falls |
-| S4 | Host B and the Store seam: the data routes, one held set for all tabs, the fallback to A. Records on it | Two tabs read the server once. Records reads offline |
-| S5 | The fake backend, from a JSON definition, with a delay and failures | Records runs on `RestStore` through it, with no server |
-| S6 | Changes and update notices: every tab told, server changes wait, the notice, Demos' banner, Refresh data, a new version's banner and Notifications item | A change in one tab shows in another. A server change shows the banner, and Refresh data takes it in. A new build shows the banner and an item in Notifications; the item stays after the banner is dismissed |
-| S7 | Offline writes: the outbox, Web Locks, Background Sync where it is, D3's rule | A save made offline lands once, after the network comes back |
-| S8 | Live feeds and push: one feed in the worker for all tabs; a push makes a notice and a notification | One connection for many tabs. A push shows the banner |
-| S9 | The answer seam: answers as columns, each component counting from them | INP and LCP at 4x CPU with 100k rows beat S4 (TODO 350's targets). If not, S9 stops |
-| S10 | `RestStore` sends `QUERY` to real servers; a `POST` of the same body where a proxy refuses it; `GET` only for a server that takes nothing else. Host C's shape, for row 170 | A long filter that breaks a URL works |
+**Each step cleans up behind itself** (Will, 2026-11-02: *"The Service Worker improvement
+may make some legacy code redundant or convoluted. So we should plan to refactor and
+cleanup the code as we implement the Service Worker changes."*). The last column is what
+each step should make redundant. In that step: measure that nothing still needs it, delete
+it, and say so. A step is not done while its old path is still there beside the new one.
+`check:size` must fall, or the step says why it grew.
+
+| Step | What | Done when | What it should make redundant: check, then delete |
+|---|---|---|---|
+| S1 ✅ | The protocol and `handle()`: the `QUERY` body, the answers, a `Failure` kind for each HTTP status, a version header, and a `POST` of a query answered as the query | **Done 2026-11-02:** `createDataHandler` in `src/core/data/data-handler.ts`, from `sherpa-ui/data`; 10 Node tests. `T-a-data-request-is-the-store-interface` | Nothing yet: it is new |
+| S2 | Host A: `DataSource` reads one Demos page through the protocol, in the page | Every test green. Nothing changes for the reader | Once every page reads this way, `DataSource`'s direct calls to a `Store`: one path, the protocol, in the page or in the worker |
+| S3 | The worker and the app's files: `sherpa-ui/worker` keeps them; Demos gets a manifest | Demos opens offline and installs. A second load's LCP falls | Any app-side preload or file-cache code the worker's cache now does |
+| S4 | Host B and the Store seam: the data routes, one held set for all tabs, the fallback to A. Records on it | Two tabs read the server once. Records reads offline | The page's own `StoreCache`, `HeldSet` and `CacheKeep`: the worker holds the set; the page keeps only a mirror of what controls read at once. Each tab's own `changes(since)` asks |
+| S5 | The fake backend, from a JSON definition, with a delay and failures | Records runs on `RestStore` through it, with no server | Demos' stand-in data paths: stores built and seeded in the page (`app/stores/*`, the seed before bind), where the fake backend now serves the same rows |
+| S6 | Changes and update notices: every tab told, server changes wait, the notice, Demos' banner, Refresh data, a new version's banner and Notifications item | A change in one tab shows in another. A server change shows the banner, and Refresh data takes it in. A new build shows the banner and an item in Notifications; the item stays after the banner is dismissed | Each tab's own change events and checks for new data; per-tab reach checks that the worker's notice now answers |
+| S7 | Offline writes: the outbox, Web Locks, Background Sync where it is, D3's rule | A save made offline lands once, after the network comes back | Any per-tab retry or queue of writes |
+| S8 | Live feeds and push: one feed in the worker for all tabs; a push makes a notice and a notification | One connection for many tabs. A push shows the banner | Each tab's own feed connection |
+| S9 | The answer seam: answers as columns, each component counting from them | INP and LCP at 4x CPU with 100k rows beat S4 (TODO 350's targets). If not, S9 stops | Presentation math still in the data layer: what row 655 has not already taken out of `DataSource` and `QueryContext`, and any count the page computes that a value-count answer now gives |
+| S10 | `RestStore` sends `QUERY` to real servers; a `POST` of the same body where a proxy refuses it; `GET` only for a server that takes nothing else. Host C's shape, for row 170 | A long filter that breaks a URL works | Query strings built for `GET`, kept only for a server that takes nothing else |
+
+Row 655 cleans up too: `QueryContext.preview` and `previewed`, and the hover half of
+`DataSource.highlightFor`, go when the broadcast takes their place.
 
 Rows 655 (highlighting) and 656 (the banner) need no worker, so they go before S2. Playwright can test the
 worker in all three engines (`context.serviceWorkers()`, `context.setOffline()`).
