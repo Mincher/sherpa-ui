@@ -338,6 +338,16 @@
             },
             {
               "el": "template",
+              "class": "menu-suffix-tpl",
+              "children": [
+                {
+                  "el": "span",
+                  "class": "menu-row-suffix"
+                }
+              ]
+            },
+            {
+              "el": "template",
               "class": "menu-drill-tpl",
               "children": [
                 {
@@ -949,6 +959,16 @@
                   "attrs": {
                     "aria-hidden": "true"
                   }
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "menu-suffix-tpl",
+              "children": [
+                {
+                  "el": "span",
+                  "class": "menu-row-suffix"
                 }
               ]
             },

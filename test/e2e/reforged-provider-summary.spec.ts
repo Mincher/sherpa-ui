@@ -415,7 +415,8 @@ test('a chart\'s Primary is its bars and its Secondary their stack — its chart
     const groups = () => [...chip('group').querySelectorAll('sherpa-menu input')].map((i) => i.value).filter(Boolean);
     const at = { order: zone().map((c) => c.dataset.id), first: { primary: said('primary'), secondary: said('secondary'), groups: groups(), bars: bars() } };
     const menu = chip('primary').querySelector('sherpa-menu');
-    at.menu = { none: menu.hasAttribute('data-none'), rows: [...menu.querySelectorAll('input')].map((i) => i.closest('label, .menu-row').textContent.trim()) };
+    at.menu = { none: menu.hasAttribute('data-none'), rows: [...menu.querySelectorAll('input')].map((i) => i.closest('label, .menu-row').textContent.trim()),
+      face: chip('primary').shadowRoot.querySelector('.caret-label').textContent.trim() };
     const persistent = () => ['primary', 'secondary'].map((id) => chip(id).hasAttribute('data-persistent'));
     at.persistent = persistent();
     await pick('primary', 'day');
@@ -444,7 +445,8 @@ test('a chart\'s Primary is its bars and its Secondary their stack — its chart
   expect(r['counted']).toEqual({ secondary: { on: true, field: 'plan' }, kept: { primary: 'day', secondary: 'plan' }, bars: ['Mon: 3 (Pro 2 · Enterprise 1)', 'Tue: 1 (Free 1)', 'Wed: 1 (Pro 1)'], persistent: [true, true] });
   expect(r['pressed']).toEqual({ secondary: { on: true, field: 'plan' }, open: true, kept: { primary: 'day', secondary: 'plan' }, bars: ['Mon: 3 (Pro 2 · Enterprise 1)', 'Tue: 1 (Free 1)', 'Wed: 1 (Pro 1)'] });
   // Primary is always set: no None, and its chart's own field reads as the Default.
-  expect(r['menu']).toEqual({ none: false, rows: ['plan (Default)', 'day'] });
+  // …its menu says which is the Default; its face names the field alone. Will, TODO 684
+  expect(r['menu']).toEqual({ none: false, rows: ['plan (Default)', 'day'], face: 'plan' });
   expect(r['back']).toEqual({ primary: { on: true, field: 'plan' }, kept: {}, bars: ['Free: 1', 'Pro: 3', 'Enterprise: 1'] });
 });
 

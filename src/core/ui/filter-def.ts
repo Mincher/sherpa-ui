@@ -21,6 +21,9 @@ export interface FilterOption {
   available?: boolean;
   /** A second fact its menu row shows, muted. */
   note?: string;
+  /** A word after its label in its MENU ROW only — a chart chip's "(Default)": never
+   *  part of its value's name on the chip. Will, TODO 684 */
+  suffix?: string;
   /** The section its menu row is in, headed where it changes. */
   section?: string;
   /** The data-viz series a chart draws this value in, from 1, or a band's status — its chip's swatch. */

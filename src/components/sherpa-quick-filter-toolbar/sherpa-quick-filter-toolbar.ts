@@ -2748,7 +2748,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  a bar chart's stack, its colours and legend: a
    *  Group chip's gesture, its menu a field, its body on or off (off, the chart's
    *  own). Drawn ON at the field in force. A Primary is never unset: no None, and
-   *  its definition's field reads "Name (Default)"; a `required` Secondary neither.
+   *  its definition's field's menu row reads "Name (Default)" — the chip, "Name";
+   *  a `required` Secondary neither.
    *  `off`: drawn off, still naming its field. Will, TODOs 548, 572, 663, 666 */
   #chartChip(id: 'primary' | 'secondary', fields: OrganiseColumn[], on: string | undefined, fallback?: string, required = false, off = false): HTMLElement {
     const chip = this.clone(`template.organise-${id}-tpl`);
@@ -2759,7 +2760,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // The page's Primary: shown, never changed here. Will, TODO 664
     chip.toggleAttribute('disabled', id === 'primary' && this.hasAttribute('data-fixed-primary'));
     const options = organiseOptions(fields, on)
-      .map((o) => (o.value === fallback ? { ...o, label: `${o.label} ${this.word('default')}` } : o));
+      // "(Default)" is the menu's to say; the chip names the field alone. Will, TODO 684
+      .map((o) => (o.value === fallback ? { ...o, suffix: this.word('default') } : o));
     this.#addMenu(chip, { id, label: chip.dataset['label'] ?? '', select: 'single', options, ...(id === 'primary' || required ? { persistent: true } : {}) });
     this.#lock(chip);
     (chip as SherpaQuickFilter).arrangeBy?.(off ? '' : on ?? '');

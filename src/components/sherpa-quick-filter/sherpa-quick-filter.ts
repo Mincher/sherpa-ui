@@ -743,8 +743,10 @@ export class SherpaQuickFilter extends SherpaElement {
     const field = this.column;
     const row = this.querySelector<HTMLElement>(`[slot="menu"] input[value="${CSS.escape(field)}"]`)
       ?.closest<HTMLElement>('label, .menu-row');
-    // With no menu, nothing was picked: the tip says only the way. TODO 548
-    this.valueLabel = field && this.menu ? (row?.textContent ?? '').trim() || field : '';
+    /* With no menu, nothing was picked: the tip says only the way. TODO 548. Its
+       name is its item's, never a word its row adds — "(Default)". Will, TODO 684 */
+    const named = field ? this.menu?.itemData?.find((i) => i.value === field)?.label : undefined;
+    this.valueLabel = field && this.menu ? named || (row?.textContent ?? '').trim() || field : '';
     const dir = this.dataset['kind'] === 'sort' ? this.direction : null;
     if (this.dataset['kind'] === 'sort') {
       this.set('data-icon-start', dir === null ? ORGANISE_ICONS.sortNone
@@ -1402,6 +1404,9 @@ export class SherpaQuickFilter extends SherpaElement {
   /** The VISIBLE text of a menu row, falling back to the raw value. */
   #valueLabel(value: string): string {
     const menu = this.menu;
+    // Its item's own label: a word its row adds — "(Default)" — is the menu's. Will, TODO 684
+    const named = menu?.itemData?.find((i) => i.value === value)?.label;
+    if (named) return named;
     const input = [...(menu?.querySelectorAll<HTMLInputElement>(`input[value="${CSS.escape(value)}"]`) ?? [])]
       .find((i) => i.closest('sherpa-menu') === menu);
     const row = input?.closest('label');

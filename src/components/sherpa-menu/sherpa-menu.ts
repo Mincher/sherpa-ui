@@ -59,6 +59,8 @@ export interface MenuItem {
   available?: boolean;
   /** A SECOND fact, drawn muted after the label — where a filter lives now. */
   note?: string;
+  /** A word after its label, in this row only — a chart chip's "(Default)". Will, TODO 684 */
+  suffix?: string;
   /** The data-viz series a chart draws it in, from 1, or a band's status: a value chip's swatch. TODOs 425, 477 */
   swatch?: number | string;
   /** The section it is in. A heading is drawn where the section changes.
@@ -1638,6 +1640,12 @@ export class SherpaMenu extends SherpaElement {
     }
     const label = item.label ?? item.value;
     row.querySelector('.menu-row-label')!.textContent = label;
+    // …and a word that is the row's, not the value's name. Will, TODO 684
+    const suffix = item.suffix ? this.clone('template.menu-suffix-tpl') : null;
+    if (suffix) {
+      suffix.textContent = item.suffix!;
+      row.querySelector('.menu-row-label')!.append(' ', suffix);
+    }
     /* AN ATTRIBUTE, drawn by CSS: the row is light DOM, and `::slotted` cannot
        reach its children — only the row itself and its pseudo-elements.
        Said to assistive tech too, since generated content is not reliably. */
