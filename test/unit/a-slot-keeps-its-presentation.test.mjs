@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, QueryContext } from '../../dist/data.js';
+import { ArrayStore, DataSource, QueryContext, bindSource } from '../../dist/data.js';
 
 const ROWS = [{ id: 1, status: 'active', plan: 'Pro' }, { id: 2, status: 'trial', plan: 'Free' }];
 
@@ -45,4 +45,27 @@ test('it is not the row arrangement: a grid\'s sort stays, and the slot\'s group
   assert.deepEqual(source.state.sort, [{ field: 'status', direction: 'desc' }]);
   assert.equal(source.state.group, null);
   assert.deepEqual(source.query.applied.scopes.data.sort, [{ field: 'status', direction: 'desc' }]);
+});
+
+test('a Secondary switched off is kept, and not shown — the definition\'s neither; on again, it is back (Will, TODO 666)', () => {
+  const query = new QueryContext();
+  query.declarePresentation('data', { grid: { secondary: 'plan' } });
+  query.present('data', { secondary: 'status', off: 'secondary' });
+  assert.deepEqual(query.presented('data', 'grid'), {});
+  assert.deepEqual(query.presentation('data'), { secondary: 'status', off: 'secondary' });
+  query.present('data', { secondary: 'status', off: undefined });
+  assert.deepEqual(query.presented('data', 'grid'), { secondary: 'status' });
+});
+
+test('describe() names an off Secondary\'s field, so its chip keeps it (Will, TODO 666)', async () => {
+  const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
+  source.declareField('status', { label: 'Status' });
+  source.declareField('plan', { label: 'Plan' });
+  source.query.offer('data', ['status', 'plan']);
+  bindSource(source, Object.assign(new EventTarget(), { setAttribute() {}, removeAttribute() {}, hasAttribute: () => false, populate() {} }), { scope: 'data' });
+  await source.load();
+  source.query.present('data', { secondary: 'plan', off: 'secondary' });
+  const scope = source.describe('data');
+  assert.equal(scope.secondaryField, undefined);
+  assert.equal(scope.secondaryOff, 'plan');
 });

@@ -557,6 +557,7 @@ export class DataSource extends EventTarget {
       const lead = shown.primary ?? cols[0]?.field;
       const fallback = this.#context.presented(scope, 'grid', false).primary ?? cols[0]?.field;
       const axes = this.#context.honours('axes');
+      const kept = this.#context.presentation(scope);
       Object.assign(out, {
         // Off, no chip offers them; the chain stays, so Group loses its Primary. TODOs 583, 658
         chartFields: axes ? offerAxis(cols.filter(groupable), offers.primary) : [], stacks: true,
@@ -564,6 +565,8 @@ export class DataSource extends EventTarget {
         ...(lead ? { primaryField: lead } : {}),
         ...(fallback ? { primaryDefault: fallback } : {}),
         ...(shown.secondary ? { secondaryField: shown.secondary } : {}),
+        // Switched off, its chip keeps the field. Will, TODO 666
+        ...(kept.off === 'secondary' && kept.secondary ? { secondaryOff: kept.secondary } : {}),
       });
     } else if (this.#binding.presentsIn(scope)) {
       /* A SLOT: its Primary, its Secondary where its chart stacks — a bar chart —

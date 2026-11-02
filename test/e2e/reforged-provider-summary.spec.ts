@@ -772,6 +772,48 @@ test('a grid in a slot: its Primary leads its columns; a Secondary makes it a PI
   expect(r['back']!.rows.length).toBe(4);
 });
 
+test('a grid\'s Secondary switched off keeps its field: the pivot goes, the chip still names it, and on again brings it back (Will, TODO 666)', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-container data-scope="data">
+        <sherpa-quick-filter-toolbar></sherpa-quick-filter-toolbar>
+        <sherpa-data-grid id="grid" data-scope="data"></sherpa-data-grid>
+      </sherpa-container>\`;
+    const grid = provider.querySelector('#grid');
+    grid.columns = [{ field: 'day', header: 'Day' }, { field: 'plan', header: 'Plan' }];
+    grid.key = 'id';
+    const source = make();
+    for (const [f, label] of [['plan', 'Plan'], ['day', 'Day']]) source.declareField(f, { label });
+    source.query.offer('data', ['plan', 'day']);
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    source.query.present('data', { secondary: 'plan' });
+    await settle(); await settle();
+    const bar = provider.querySelector('sherpa-quick-filter-toolbar');
+    const chip = () => bar.shadowRoot.querySelector('.organise-chip[data-id="secondary"]');
+    const read = () => ({
+      column: chip().column, on: chip().hasAttribute('data-current'),
+      heads: [...grid.shadowRoot.querySelectorAll('.head-cell .head-label')].map((h) => h.textContent.trim()),
+      kept: source.query.presentation('data'),
+    });
+    const press = async () => {
+      chip().shadowRoot.querySelector('.body').click();
+      await settle(); await settle();
+    };
+    const at = { pivot: read() };
+    await press();
+    at.off = read();
+    await press();
+    at.on = read();
+    return at;
+  })()`) as Record<string, { column: string; on: boolean; heads: string[]; kept: Record<string, string> }>;
+  expect(r['pivot']).toEqual({ column: 'plan', on: true, heads: ['Day', 'Free', 'Pro', 'Enterprise', 'Total'], kept: { secondary: 'plan' } });
+  // Off: a plain grid, and the chip and the Query keep Plan.
+  expect(r['off']).toEqual({ column: 'plan', on: false, heads: ['Day', 'Plan'], kept: { secondary: 'plan', off: 'secondary' } });
+  expect(r['on']).toEqual(r['pivot']);
+});
+
 test('a pivot\'s tags go where their columns are: down to its rows\' sub-grids, never its Primary\'s or its Group\'s, and back up when it goes (Will, TODOs 579, 580)', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}

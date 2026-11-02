@@ -33,7 +33,7 @@ export function organiseOptions(cols: readonly OrganiseColumn[] | undefined, on:
  *  here, so none leaves one out. Will, TODO 548 */
 export function organiseOf(scope: ScopeDescription): {
   group: OrganiseColumn[]; sort: OrganiseColumn[]; order?: true;
-  chart?: { fields: OrganiseColumn[]; secondaryFields?: OrganiseColumn[]; primary?: string; primaryDefault?: string; secondary?: string; stacks?: true };
+  chart?: { fields: OrganiseColumn[]; secondaryFields?: OrganiseColumn[]; primary?: string; primaryDefault?: string; secondary?: string; secondaryOff?: string; stacks?: true };
 } {
   return {
     group: scope.group ?? [], sort: scope.sort ?? [],
@@ -46,6 +46,7 @@ export function organiseOf(scope: ScopeDescription): {
         ...(scope.primaryField ? { primary: scope.primaryField } : {}),
         ...(scope.primaryDefault ? { primaryDefault: scope.primaryDefault } : {}),
         ...(scope.secondaryField ? { secondary: scope.secondaryField } : {}),
+        ...(scope.secondaryOff ? { secondaryOff: scope.secondaryOff } : {}),
         ...(scope.stacks ? { stacks: true as const } : {}),
       },
     } : {}),

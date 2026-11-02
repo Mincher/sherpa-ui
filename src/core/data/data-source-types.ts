@@ -167,6 +167,8 @@ export interface ScopeDescription {
   /** The Primary its definition names: what Default picks. Will, TODO 572 */
   primaryDefault?: string;
   secondaryField?: string;
+  /** Its Secondary, switched off: the field its chip keeps. Off is not gone. Will, TODO 666 */
+  secondaryOff?: string;
   stacks?: boolean;
 }
 

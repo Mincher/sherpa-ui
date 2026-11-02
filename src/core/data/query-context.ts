@@ -1094,7 +1094,10 @@ export class QueryContext extends EventTarget {
   presented(scope: string, view?: 'grid' | 'chart', kept = true): Presentation {
     const { grid, chart, ...base } = this.#defined.get(scope) ?? {};
     const own = view === 'grid' ? grid : view === 'chart' ? chart : undefined;
-    return { ...base, ...own, ...(kept ? this.#inForce(this.presentation(scope)) : {}) };
+    const shown: Presentation = { ...base, ...own, ...(kept ? this.#inForce(this.presentation(scope)) : {}) };
+    // Its Secondary off: no Secondary, the definition's neither. Off is not gone. Will, TODO 666
+    if (kept && this.presentation(scope).off === 'secondary') delete shown.secondary;
+    return shown;
   }
 
   /** What each axis's chip offers — the page's, or a scope's over it. Not in the
@@ -1136,7 +1139,7 @@ export class QueryContext extends EventTarget {
 
   /** A kept presentation, less the picks not in force. */
   #inForce(kept: Presentation): Presentation {
-    const { kind, primary, secondary, ...rest } = kept;
+    const { kind, primary, secondary, off: _off, ...rest } = kept;
     const axes = this.#honoured.axes;
     return { ...rest, ...(this.#honoured.kind && kind ? { kind } : {}),
       ...(axes && primary ? { primary } : {}), ...(axes && secondary ? { secondary } : {}) };

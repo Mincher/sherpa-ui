@@ -110,6 +110,9 @@ export interface Presentation {
   group?: string;
   /** The segments by value; none keeps their order. */
   sort?: SortDirection;
+  /** Its Secondary is switched OFF: kept, and not shown — the definition's neither.
+   *  Off is not gone. Will, TODO 666 */
+  off?: 'secondary';
 }
 
 /** What a page DEFINES a slot shows: a presentation, and a default per view —

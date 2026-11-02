@@ -64,7 +64,7 @@ export interface OrganiseDef {
   order?: boolean;
   /** A chart's Primary and Secondary: the fields it may count and split by — the
    *  Secondary's own where fewer — and those it does. TODOs 548, 660 */
-  chart?: { fields: OrganiseColumn[]; secondaryFields?: OrganiseColumn[]; primary?: string; primaryDefault?: string; secondary?: string; stacks?: true };
+  chart?: { fields: OrganiseColumn[]; secondaryFields?: OrganiseColumn[]; primary?: string; primaryDefault?: string; secondary?: string; secondaryOff?: string; stacks?: true };
 }
 
 export type { OrganiseColumn } from '../../core/data/data-source.js';
@@ -2635,7 +2635,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       /* Secondary where it stacks by one. A chart's — its Sort orders, with no
          column — is never unset once it has one. Will, TODOs 548, 639, 663 */
       const required = order && !!chart.secondary;
-      if (chart.stacks) zone.append(this.#chartChip('secondary', chart.secondaryFields ?? chart.fields, chart.secondary, undefined, required));
+      // Switched off, it keeps its field. Off is not gone. Will, TODO 666
+      if (chart.stacks) zone.append(this.#chartChip('secondary', chart.secondaryFields ?? chart.fields, chart.secondary ?? chart.secondaryOff, undefined, required, !chart.secondary));
     }
 
     /* BORN NAMING ITS COLUMN. The bar may already be grouped or sorted — a
@@ -2678,7 +2679,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #markChain(): void {
     const chart = this.#organise.chart;
     if (!chart) return;
-    const links = { primary: chart.primary, secondary: chart.secondary, group: this.dataset['groupField'] || undefined };
+    const links = { primary: chart.primary, secondary: chart.secondary ?? chart.secondaryOff, group: this.dataset['groupField'] || undefined };
     for (const id of ['primary', 'secondary', 'group'] as const) {
       const taken = new Set(Object.entries(links).filter(([link]) => link !== id).map(([, field]) => field));
       const fields = (id === 'group' ? this.#organise.group : id === 'secondary' ? chart.secondaryFields ?? chart.fields : chart.fields) ?? [];
@@ -2691,8 +2692,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  a bar chart's stack, its colours and legend: a
    *  Group chip's gesture, its menu a field, its body on or off (off, the chart's
    *  own). Drawn ON at the field in force. A Primary is never unset: no None, and
-   *  its definition's field reads "Name (Default)"; a `required` Secondary neither. Will, TODOs 548, 572, 663 */
-  #chartChip(id: 'primary' | 'secondary', fields: OrganiseColumn[], on: string | undefined, fallback?: string, required = false): HTMLElement {
+   *  its definition's field reads "Name (Default)"; a `required` Secondary neither.
+   *  `off`: drawn off, still naming its field. Will, TODOs 548, 572, 663, 666 */
+  #chartChip(id: 'primary' | 'secondary', fields: OrganiseColumn[], on: string | undefined, fallback?: string, required = false, off = false): HTMLElement {
     const chip = this.clone(`template.organise-${id}-tpl`);
     if (!chip) throw new Error(`sherpa-quick-filter-toolbar: template.organise-${id}-tpl is missing or empty`);
     if (on) chip.dataset['column'] = on;
@@ -2700,7 +2702,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       .map((o) => (o.value === fallback ? { ...o, label: `${o.label} ${this.word('default')}` } : o));
     this.#addMenu(chip, { id, label: chip.dataset['label'] ?? '', select: 'single', options, ...(id === 'primary' || required ? { persistent: true } : {}) });
     this.#lock(chip);
-    (chip as SherpaQuickFilter).arrangeBy?.(on ?? '');
+    (chip as SherpaQuickFilter).arrangeBy?.(off ? '' : on ?? '');
     return chip;
   }
 
@@ -2712,9 +2714,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (id !== 'primary' && id !== 'secondary') return;
     event.stopImmediatePropagation();
     const field = (event as CustomEvent<{ field?: string | null }>).detail?.field;
+    /* A grid's Secondary, its BODY turned off — None clears its column first: the
+       field is kept, and not shown. Off is not gone. A chart's is required. Will, TODOs 663, 666 */
+    if (id === 'secondary' && !field && chip?.column && !this.#organise.order) {
+      this.#ask({ presentation: { secondary: chip.column, off: 'secondary' } }, 'free');
+      return;
+    }
     // Its definition's field is no pick: the definition rules again. TODO 572
     const fallback = id === 'primary' ? this.#organise.chart?.primaryDefault : undefined;
-    this.#ask({ presentation: { [id]: field && field !== fallback ? field : undefined } }, 'free');
+    this.#ask({ presentation: { [id]: field && field !== fallback ? field : undefined, ...(id === 'secondary' ? { off: undefined } : {}) } }, 'free');
   };
 
   /** One organise chip, from its own prototype: a menu chip with single-select rows. */
