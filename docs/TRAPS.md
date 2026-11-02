@@ -15131,6 +15131,27 @@ deliver a push in a test.
 - Site: `src/core/worker/serve-data.ts`
 - Site: `test/unit/a-push-is-a-check-behind.test.mjs`
 
+### T-a-list-has-a-limit
+
+**A field with more values than a filter lists offers its Advanced conditions
+alone** (Will, plan 652 D10: A). `MOST_LISTED` is 200. Over it, `filterDef` gives
+no options, `advanced: 'only'` and `op: 'contains'` (or the field's own op);
+`isList` is false, so no walk tallies it and no chip counts it; `unlisted(field)`
+says so, and a page's first answer skips it. The grid's own heading filter, where
+no source defines one, stops at the same limit.
+
+Measured 2026-11-02 in Demos' `?remote&rows=100000`, 4x CPU: the grid's Email
+heading drew 100,001 menu rows — 437,000 elements on the page, every grid query
+walking them. With the limit: LCP 13.5 s → 5.0 s, a preset pick 3.6 s → 0.36 s,
+Apply 0.7 s → 0.2 s. At 100 rows nothing changes: Email has 100 values.
+
+A number or a date is never cut: neither is a list. A legend that lays out a
+field's values as chips (674) draws none for an unlisted field.
+
+- Site: `src/core/data/field-catalogue.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/unit/a-list-has-a-limit.test.mjs`
+
 ### T-a-horizontal-legend-is-three-by-two
 
 A horizontal legend was a wrapping flex row, so it put a different number of

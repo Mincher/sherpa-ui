@@ -23,6 +23,7 @@ import { markNeedles } from '../../core/ui/mark-text.js';
 import { ORGANISE_ICONS, heldByPreset, movedTo } from '../../core/ui/shared-constants.js';
 import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/data/cycle.js';
 import { reduceRows } from '../../core/data/aggregate.js';
+import { MOST_LISTED } from '../../core/data/field-catalogue.js';
 import { offerAxis, type AxisOffer } from '../../core/data/query.js';
 import { markField, markHeld, pendingFields } from '../../core/ui/filter-host.js';
 import {
@@ -829,12 +830,16 @@ export class SherpaDataGrid extends SherpaElement {
     const kind = col.type ?? 'text';
     const given = this.#givenFilters[col.field];
     // Its values only where a list shows them: the work is not done to be thrown away. TODO 355
-    const listed = !given && kind === 'text' && kindOf(col) !== 'advanced';
-    const values = listed ? this.#presentValues(col.field) : [];
+    const asked = !given && kind === 'text' && kindOf(col) !== 'advanced';
+    const offered = asked ? this.#presentValues(col.field) : [];
+    // More than a list shows, and it is Advanced alone. Will, D10 · TRAP T-a-list-has-a-limit
+    const many = offered.length > MOST_LISTED;
+    const listed = asked && !many;
+    const values = listed ? offered : [];
     const own: FilterMenuDef = given ? { ...given } : {
       // No offer is Advanced too, for a text column.
       ...(kind === 'text'
-        ? { advanced: col.advanced ?? true, ...(col.op ? { op: col.op } : {}) }
+        ? { advanced: many ? 'only' as const : col.advanced ?? true, ...(col.op || many ? { op: col.op ?? 'contains' } : {}) }
         : { kind: kind as 'number' | 'date', ...(col.advanced != null ? { advanced: col.advanced } : {}) }),
       ...(listed ? { options: values.map((v) => ({ value: v, label: v })) } : {}),
     };

@@ -3,6 +3,7 @@
  * it may take. A DataSource holds one. DOM-free.
  *
  * Map:
+ * - MOST_LISTED — The most values a filter lists one by one; a field with more is Advanced alone.
  * - FieldCatalogue — Each field's declared kind and label, and every value it can take.
  * - .declareChildren — Keep a tiered field's child values per parent, from the rows' pairs.
  * - .pathOf — A child pick: its parent's value and its own, by field.
@@ -22,12 +23,18 @@
  * - .valuesFor — A copy of a field's declared values.
  * - .byKey — A field's declared values, by their string key.
  * - .isList — A field whose values are a list a control offers one by one.
+ * - .unlisted — A field with more values than a filter lists: Advanced alone.
  * - .fromRows — Declare each field its schema says nothing of from the values the rows hold.
  */
 import { compareValues, valueKey } from './store.js';
 import { fieldState, type FieldFacts, type FieldReading, type FilterState } from './filter-state.js';
 import { report } from './report.js';
 import type { FieldDeclaration, FieldFilter } from './data-source-types.js';
+
+/** The most values a filter lists one by one: a field with more offers its Advanced
+ *  conditions alone. Measured, an Email heading over 100k rows drew 100,001 menu rows.
+ *  Will, plan 652 D10 · TRAP T-a-list-has-a-limit */
+export const MOST_LISTED = 200;
 import type { Threshold } from './threshold.js';
 
 /** Steps a number slider may take. */
@@ -181,7 +188,8 @@ export class FieldCatalogue {
       };
     }
     const body = type === 'number' || type === 'date' ? type : undefined;
-    const values = body || rest.advanced === 'only' ? [] : this.valuesFor(field).map(valueKey);
+    const many = this.unlisted(field);
+    const values = body || many || rest.advanced === 'only' ? [] : this.valuesFor(field).map(valueKey);
     // A date's declared values are the days a calendar may pick. TRAP T-a-date-chip-names-its-field
     const days = type === 'date' ? this.valuesFor(field).map(String) : [];
     // A tiered field lists each parent, then its children, each naming its parent. TODO 369
@@ -197,6 +205,7 @@ export class FieldCatalogue {
     const listed = (type === 'number' ? this.#equals.get(field) ?? [] : []).map((n) => ({ value: String(n), label: String(n) }));
     return {
       id: field, label: label ?? field, ...rest,
+      ...(many ? { advanced: 'only' as const, op: rest.op ?? 'contains' } : {}),
       // The store answers it, once per Apply: its menus wait for theirs. 345 phase 6
       ...(rest.fetch === 'server' ? { commit: true } : {}),
       ...(body ? { kind: body } : {}),
@@ -235,7 +244,13 @@ export class FieldCatalogue {
     const facts = this.#fields.get(field) ?? {};
     if (this.#bands(field)) return true;
     return this.#domains.has(field) && facts.type !== 'number' && facts.type !== 'date'
-      && facts.advanced !== 'only';
+      && facts.advanced !== 'only' && !this.unlisted(field);
+  }
+
+  /** A field with more values than a filter lists: Advanced alone. TRAP T-a-list-has-a-limit */
+  unlisted(field: string): boolean {
+    const type = this.#fields.get(field)?.type;
+    return type !== 'number' && type !== 'date' && (this.#domains.get(field)?.length ?? 0) > MOST_LISTED;
   }
 
   /** Declare each field its schema says nothing of from the values the rows hold. */

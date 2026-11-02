@@ -709,7 +709,7 @@ export class DataSource extends EventTarget {
       const before: Filter[] = [];
       for (const field of this.query.scope(scope)) {
         const facts = this.#catalogue.get(field);
-        if (!facts || facts.type === 'number' || facts.type === 'date' || facts.advanced === 'only') continue;
+        if (!facts || facts.type === 'number' || facts.type === 'date' || facts.advanced === 'only' || this.#catalogue.unlisted(field)) continue;
         const known = { field, ...this.#catalogue.facts(field) };
         const had = this.query.applied.scopes[scope]?.readings[field];
         const answer = had && readingAnswered(had) ? had : undefined;
