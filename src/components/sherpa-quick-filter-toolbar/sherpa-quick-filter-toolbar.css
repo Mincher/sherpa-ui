@@ -150,6 +150,19 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+/* NARROW: each Organise chip is its icon button alone — no name and no value; its
+   tip says both, and a screen reader keeps them. Will, TODO 680 */
+@container qf-bar (max-width: 760px) {
+  .organise-chip::part(label),
+  .organise-chip::part(caret-label) {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
 
 /* A section's name — "View Context", "Organise", "Presets", "Custom" — LEFT of
    its first chip, in the row, as the panel heads them. Will, TODOs 440, 543, 610.

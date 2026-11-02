@@ -432,8 +432,8 @@ test('the bar\'s icon actions are named for what they do', async ({ page }) => {
   // "View as filter panel" is the PAGE's button now. TRAP T-the-mode-switch-is-the-pages-own
   // Suggest filters is the App Header's. Will, TODO 425
   await expect(page.getByRole('button', { name: 'Suggest filters', exact: true })).toHaveCount(0);
-  // Reset leads the Edit menu, named once it opens. Will, TODO 454
-  await page.getByRole('button', { name: 'Edit', exact: true }).click();
+  // Reset leads the Filters menu, named once it opens. Will, TODOs 454, 681
+  await page.getByRole('button', { name: 'Filters', exact: true }).click();
   for (const name of ['Reset filters', 'Reset all on view']) {
     await expect(page.getByRole('button', { name, exact: true })).toHaveCount(1);
   }

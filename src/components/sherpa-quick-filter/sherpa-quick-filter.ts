@@ -753,7 +753,9 @@ export class SherpaQuickFilter extends SherpaElement {
     // The tip says the column, and for a sort which WAY. Will, TODO 125.
     // Its words are in its template: before the stamp, the draw on connect says the way.
     const way = dir && this.hasRendered ? this.word(dir) : '';
-    this.#said = this.current ? [this.valueLabel, way].filter(Boolean).join(', ') : '';
+    // …led by its own name: a narrow bar shows only its icon. Will, TODO 680
+    const answer = this.current ? [this.valueLabel, way].filter(Boolean).join(', ') : '';
+    this.#said = [this.dataset['label'] ?? '', answer].filter(Boolean).join(': ');
     this.#writeTip();
   }
 

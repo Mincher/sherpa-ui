@@ -94,7 +94,7 @@ test('a greyed chip still says why on hover: held above, or off; its buttons hea
   expect(await chip.evaluate((c) => c.shadowRoot!.querySelector('.chip')!.classList.contains('sherpa-anchor'))).toBe(false);
 });
 
-test('a Sort chip says its column and which way; Group its column', async ({ page }) => {
+test('a Sort chip says its name, its column and which way; Group its name and column', async ({ page }) => {
   const r = await page.evaluate(async (wait) => {
     const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [], { style: 'inline-size: 1200px' });
     bar.organise({ group: [{ field: 'plan', label: 'Plan' }], sort: [{ field: 'name', label: 'Name' }, { field: 'plan', label: 'Plan' }] });
@@ -113,10 +113,11 @@ test('a Sort chip says its column and which way; Group its column', async ({ pag
     org('sort').arrangeBy('');
     return { none, set, steered, off: [tip('sort'), org('sort').hasAttribute('data-current')] };
   }, frames);
-  expect(r.none).toEqual(['', '']);
-  expect(r.set).toEqual(['Name, descending', 'Plan']);
-  expect(r.steered).toBe('Plan, ascending');
-  expect(r.off).toEqual(['', false]);
+  // Led by its own name: a narrow bar shows only its icon. Will, TODO 680
+  expect(r.none).toEqual(['Sort', 'Group']);
+  expect(r.set).toEqual(['Sort: Name, descending', 'Group: Plan']);
+  expect(r.steered).toBe('Sort: Plan, ascending');
+  expect(r.off).toEqual(['Sort', false]);
 });
 
 test('a grid heading\'s sort button says its column, and which way once it sorts', async ({ page }) => {

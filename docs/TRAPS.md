@@ -10306,8 +10306,9 @@ exists to prevent.
 **ONE "Filters" button holds every filter: the chips folded off the run for want
 of room, every filter a reader may add, and the saved ones.** Will, 2026-09-25:
 *"We should merge the overflow 'More' button and the 'Add filter' button … into
-1 button"* — in the action group. It reads "Edit", with a pencil (Will, TODO
-445); the menu it opens is still headed "Filters".
+1 button"* — in the action group. It reads "Filters", with a pencil (Will, TODOs
+445, 681); the menu it opens is headed "Filters" too. A column's own button, beside
+its "Filters" title, still reads "Edit".
 
 Its menu, top to bottom:
 

@@ -3,7 +3,7 @@ import { test, expect, type Bar } from './harness';
 /**
  * ONE "FILTERS" BUTTON. Will, 2026-09-25: "We should merge the overflow 'More'
  * button and the 'Add filter' button … into 1 button", in the action group.
- * It reads "Edit", with a pencil (TODO 445); its menu is headed "Filters".
+ * It reads "Filters", with a pencil (TODOs 445, 681); its menu is headed "Filters".
  *
  * Its menu lists the chips the bar HIDES for want of room first — each still a
  * door into its own menu — then every filter, then the saved sets. No badge
@@ -60,14 +60,14 @@ const look = (page: import('@playwright/test').Page) => page.evaluate(() => {
   };
 });
 
-test('ONE button: "Edit", a pencil; hidden chips first, then Added, Available, Custom', async ({ page }) => {
+test('ONE button: "Filters", a pencil; hidden chips first, then Added, Available, Custom', async ({ page }) => {
   await mount(page, 1400);
   const wide = await look(page);
   await mount(page, 560);
   const narrow = await look(page);
 
   expect(wide.more).toBe(false);
-  expect(wide.label).toBe('Edit');
+  expect(wide.label).toBe('Filters');
   expect(wide.icon).toBe('pencil');
   expect(wide.heading).toBe('Filters');
   expect(wide.selectAll).toBe(false);
