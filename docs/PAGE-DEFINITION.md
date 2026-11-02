@@ -81,6 +81,13 @@ One JSON document per page. The same rule as a View: **a definition is data**
 - **A scope's `arranges`** says whether Group and Sort arrange its rows. Left
   out, a scope a page of rows is drawn in does, and the View does not
   (`T-group-and-sort-are-component-scope`).
+- **`axes`** says which fields each axis's chip offers — `primary`,
+  `secondary`, `group` — each only those `available`, less those
+  `unavailable`, for every view or per view, `grid` or `chart`:
+  `"axes": { "chart": { "secondary": { "unavailable": ["name", "email"] } } }`.
+  On the source it is every scope's; a scope's own `axes` win an axis over it.
+  The last to name an axis wins it whole. It narrows, never adds: never a number
+  or a date (Will, TODO 660).
 - **A field's `child`** names the field holding its CHILD values — a
   Customer's Site: `"customer": { "label": "Customer", "child": "site" }`,
   `"site": { "label": "Site" }`. A child has no filter of its own: its picks are

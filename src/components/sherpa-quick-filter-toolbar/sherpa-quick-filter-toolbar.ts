@@ -62,8 +62,9 @@ export interface OrganiseDef {
   sort?: OrganiseColumn[];
   /** A Sort with no column to pick: it orders what a chart draws, by value. TODO 548 */
   order?: boolean;
-  /** A chart's Primary and Secondary: the fields it may count and split by, and those it does. TODO 548 */
-  chart?: { fields: OrganiseColumn[]; primary?: string; primaryDefault?: string; secondary?: string; stacks?: true };
+  /** A chart's Primary and Secondary: the fields it may count and split by — the
+   *  Secondary's own where fewer — and those it does. TODOs 548, 660 */
+  chart?: { fields: OrganiseColumn[]; secondaryFields?: OrganiseColumn[]; primary?: string; primaryDefault?: string; secondary?: string; stacks?: true };
 }
 
 export type { OrganiseColumn } from '../../core/data/data-source.js';
@@ -2631,8 +2632,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.toggleState('has-organise', group.length > 0 || sort.length > 0 || order);
     if (chart?.fields.length) {
       zone.append(this.#chartChip('primary', chart.fields, chart.primary, chart.primaryDefault));
-      // Secondary where it stacks by one. Will, TODOs 548, 639
-      if (chart.stacks) zone.append(this.#chartChip('secondary', chart.fields, chart.secondary));
+      /* Secondary where it stacks by one. A chart's — its Sort orders, with no
+         column — is never unset once it has one. Will, TODOs 548, 639, 663 */
+      const required = order && !!chart.secondary;
+      if (chart.stacks) zone.append(this.#chartChip('secondary', chart.secondaryFields ?? chart.fields, chart.secondary, undefined, required));
     }
 
     /* BORN NAMING ITS COLUMN. The bar may already be grouped or sorted — a
@@ -2670,17 +2673,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#markChain();
   }
 
-  /** Primary, Secondary and Group are a chain: a field on one link is ruled out on
-   *  the others — greyed, or gone while Hide is on. Will, TODO 581 */
+  /** Primary, Secondary and Group are a chain: a field on one link is gone from the
+   *  others, whatever Hide says. Will, TODOs 581, 658 */
   #markChain(): void {
     const chart = this.#organise.chart;
     if (!chart) return;
     const links = { primary: chart.primary, secondary: chart.secondary, group: this.dataset['groupField'] || undefined };
     for (const id of ['primary', 'secondary', 'group'] as const) {
       const taken = new Set(Object.entries(links).filter(([link]) => link !== id).map(([, field]) => field));
-      const fields = (id === 'group' ? this.#organise.group : chart.fields) ?? [];
+      const fields = (id === 'group' ? this.#organise.group : id === 'secondary' ? chart.secondaryFields ?? chart.fields : chart.fields) ?? [];
       limitField([], [this.$<SherpaQuickFilter>(`.organise-chip[data-id="${id}"]`)?.menu],
-        { present: fields.map((c) => c.field).filter((f) => !taken.has(f)), offered: null, hide: hidesUnmatched(this) });
+        { present: fields.map((c) => c.field).filter((f) => !taken.has(f)), offered: null, hide: true });
     }
   }
 
@@ -2688,14 +2691,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  a bar chart's stack, its colours and legend: a
    *  Group chip's gesture, its menu a field, its body on or off (off, the chart's
    *  own). Drawn ON at the field in force. A Primary is never unset: no None, and
-   *  its definition's field reads "Name (Default)". Will, TODOs 548, 572 */
-  #chartChip(id: 'primary' | 'secondary', fields: OrganiseColumn[], on: string | undefined, fallback?: string): HTMLElement {
+   *  its definition's field reads "Name (Default)"; a `required` Secondary neither. Will, TODOs 548, 572, 663 */
+  #chartChip(id: 'primary' | 'secondary', fields: OrganiseColumn[], on: string | undefined, fallback?: string, required = false): HTMLElement {
     const chip = this.clone(`template.organise-${id}-tpl`);
     if (!chip) throw new Error(`sherpa-quick-filter-toolbar: template.organise-${id}-tpl is missing or empty`);
     if (on) chip.dataset['column'] = on;
     const options = organiseOptions(fields, on)
       .map((o) => (o.value === fallback ? { ...o, label: `${o.label} ${this.word('default')}` } : o));
-    this.#addMenu(chip, { id, label: chip.dataset['label'] ?? '', select: 'single', options, ...(id === 'primary' ? { persistent: true } : {}) });
+    this.#addMenu(chip, { id, label: chip.dataset['label'] ?? '', select: 'single', options, ...(id === 'primary' || required ? { persistent: true } : {}) });
     this.#lock(chip);
     (chip as SherpaQuickFilter).arrangeBy?.(on ?? '');
     return chip;

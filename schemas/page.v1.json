@@ -45,7 +45,8 @@
         "scopes": {
           "type": "object",
           "additionalProperties": { "$ref": "#/$defs/scope" }
-        }
+        },
+        "axes": { "description": "What each axis's chip offers in every scope: a scope's own axes win an axis over it.", "$ref": "#/$defs/axes" }
       }
     },
     "field": {
@@ -107,6 +108,7 @@
       "additionalProperties": false,
       "properties": {
         "label": { "type": "string" },
+        "axes": { "description": "What each axis's chip offers in this scope, over the page's.", "$ref": "#/$defs/axes" },
         "offers": {
           "description": "Every field it may add, or \"all\" for every field the page declares.",
           "oneOf": [{ "const": "all" }, { "type": "array", "items": { "type": "string" } }]
@@ -163,6 +165,37 @@
             }
           }
         }
+      }
+    },
+    "axes": {
+      "description": "The fields each axis's chip offers — primary, secondary, group — and per view, grid and chart, over them. The last to name an axis wins it whole.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "primary": { "$ref": "#/$defs/axisOffer" },
+        "secondary": { "$ref": "#/$defs/axisOffer" },
+        "group": { "$ref": "#/$defs/axisOffer" },
+        "grid": { "$ref": "#/$defs/axisOffers" },
+        "chart": { "$ref": "#/$defs/axisOffers" }
+      }
+    },
+    "axisOffers": {
+      "description": "The fields each axis's chip offers in one view.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "primary": { "$ref": "#/$defs/axisOffer" },
+        "secondary": { "$ref": "#/$defs/axisOffer" },
+        "group": { "$ref": "#/$defs/axisOffer" }
+      }
+    },
+    "axisOffer": {
+      "description": "One axis's fields: only those available, less those unavailable. It narrows, never adds: never a number or a date.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "available": { "type": "array", "items": { "type": "string" } },
+        "unavailable": { "type": "array", "items": { "type": "string" } }
       }
     },
     "view": {

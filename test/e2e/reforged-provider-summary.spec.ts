@@ -441,7 +441,7 @@ test('a chart\'s Primary is its bars and its Secondary their stack — its chart
   expect(r['back']).toEqual({ primary: { on: true, field: 'plan' }, kept: {}, bars: ['Free: 1', 'Pro: 3', 'Enterprise: 1'] });
 });
 
-test('Primary, Secondary and Group are a chain: a field one holds is greyed and refused on the others, and gone while Hide is on (Will, TODO 581)', async ({ page }) => {
+test('Primary, Secondary and Group are a chain: a field one holds is gone from the others, and refused, whatever Hide says (Will, TODOs 581, 658)', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     provider.innerHTML = \`
@@ -481,20 +481,18 @@ test('Primary, Secondary and Group are a chain: a field one holds is greyed and 
     at.hidden = read();
     return at;
   })()`) as Record<string, unknown>;
-  // Primary holds plan: Secondary and Group grey it.
-  expect(r['first']).toEqual({ primary: { out: [], gone: [] }, secondary: { out: ['plan'], gone: [] }, group: { out: ['plan'], gone: [] } });
-  // Secondary takes day: Primary greys it, and Group greys both.
-  expect(r['stacked']).toEqual({ primary: { out: ['day'], gone: [] }, secondary: { out: ['plan'], gone: [] }, group: { out: ['plan', 'day'], gone: [] } });
-  // Group takes region: Primary and Secondary grey it too, and refuse a tick on it.
-  expect(r['grouped']).toEqual({
-    primary: { out: ['day', 'region'], gone: [] }, secondary: { out: ['plan', 'region'], gone: [] },
-    group: { out: ['plan', 'day'], gone: [] }, refused: true,
-  });
-  // Hide on: each greyed row goes.
-  expect(r['hidden']).toEqual({
+  // Primary holds plan: Secondary and Group have no row for it.
+  expect(r['first']).toEqual({ primary: { out: [], gone: [] }, secondary: { out: ['plan'], gone: ['plan'] }, group: { out: ['plan'], gone: ['plan'] } });
+  // Secondary takes day: Primary loses it, and Group both.
+  expect(r['stacked']).toEqual({ primary: { out: ['day'], gone: ['day'] }, secondary: { out: ['plan'], gone: ['plan'] }, group: { out: ['plan', 'day'], gone: ['plan', 'day'] } });
+  // Group takes region: Primary and Secondary lose it too, and refuse a tick on it.
+  const grouped = {
     primary: { out: ['day', 'region'], gone: ['day', 'region'] }, secondary: { out: ['plan', 'region'], gone: ['plan', 'region'] },
     group: { out: ['plan', 'day'], gone: ['plan', 'day'] },
-  });
+  };
+  expect(r['grouped']).toEqual({ ...grouped, refused: true });
+  // Hide on changes nothing: they were gone already.
+  expect(r['hidden']).toEqual(grouped);
 });
 
 test('a card\'s Show as swaps its chart over the same data, keeps what it was arranged by, and Default goes back (Will, TODO 548)', async ({ page }) => {
@@ -614,7 +612,7 @@ test('the app may turn Show as off: no card offers it, and a kept pick is set as
   expect(r['on']).toEqual({ tag: 'sherpa-radial-chart', shown: 'pie', offered: true, kept: { kind: 'pie' } });
 });
 
-test('the app may turn the Primary and Secondary chips off: no bar offers them, a kept pick is set aside, and Group still greys the Primary (Will, TODO 583)', async ({ page }) => {
+test('the app may turn the Primary and Secondary chips off: no bar offers them, a kept pick is set aside, and Group still leaves out the Primary (Will, TODOs 583, 658)', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     provider.innerHTML = \`
@@ -631,7 +629,7 @@ test('the app may turn the Primary and Secondary chips off: no bar offers them, 
     const said = () => ({
       chips: [...bar.shadowRoot.querySelectorAll('.organise-zone > .organise-chip')].map((c) => c.dataset.id),
       bars: [...provider.querySelector('#slotted').shadowRoot.querySelectorAll('.bar-col')].map((c) => c.getAttribute('aria-label')),
-      greyed: [...chip('group').querySelectorAll('sherpa-menu input')].filter((i) => i.value && i.closest('.menu-row').hasAttribute('data-unavailable')).map((i) => i.value),
+      gone: [...chip('group').querySelectorAll('sherpa-menu input')].filter((i) => i.value && i.closest('.menu-row').hasAttribute('data-removed')).map((i) => i.value),
       kept: source.query.presentation('by-plan'),
     });
     const box = [...chip('primary').querySelectorAll('sherpa-menu input')].find((i) => i.value === 'day');
@@ -647,9 +645,9 @@ test('the app may turn the Primary and Secondary chips off: no bar offers them, 
     at.on = said();
     return at;
   })()`) as Record<string, unknown>;
-  expect(r['day']).toEqual({ chips: ['primary', 'secondary', 'group', 'sort'], bars: ['Mon: 2', 'Tue: 1', 'Wed: 1'], greyed: ['day'], kept: { primary: 'day' } });
-  // Off: no Primary or Secondary, the bars its page drew — and day kept. Group greys the page's Primary.
-  expect(r['off']).toEqual({ chips: ['group', 'sort'], bars: ['Free: 1', 'Pro: 2', 'Enterprise: 1'], greyed: ['plan'], kept: { primary: 'day' } });
+  expect(r['day']).toEqual({ chips: ['primary', 'secondary', 'group', 'sort'], bars: ['Mon: 2', 'Tue: 1', 'Wed: 1'], gone: ['day'], kept: { primary: 'day' } });
+  // Off: no Primary or Secondary, the bars its page drew — and day kept. Group leaves out the page's Primary.
+  expect(r['off']).toEqual({ chips: ['group', 'sort'], bars: ['Free: 1', 'Pro: 2', 'Enterprise: 1'], gone: ['plan'], kept: { primary: 'day' } });
   expect(r['on']).toEqual(r['day']);
 });
 

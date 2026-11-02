@@ -216,6 +216,9 @@ export const { store: customerStore, ready: customersReady } = localRecords({
   `"child": "site"` and declare `site`. Its menu is then a tree in the bar, the
   panel and the grid heading; a pick is a parent, or a path `{ customer, site }`.
   `T-a-value-holds-child-values`
+- Each axis's chip — Primary, Secondary, Group — offers what `axes` leaves:
+  `"axes": { "chart": { "group": { "unavailable": ["name"] } } }`, on the source
+  or on a scope, for `grid`, `chart` or both. `available` keeps only those named.
 
 ## 6. A template that asks
 

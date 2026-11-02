@@ -14,6 +14,10 @@
  * - PRESENTATION_KINDS — Each way a slot can show its data.
  * - Presentation — A slot's presentation: a chart or a grid; a chart's two fields, its parts and its order.
  * - PresentationDefinition — What a page DEFINES a slot shows: a presentation, and a default per view — its grid's, its charts' — over it.
+ * - AxisOffer — The fields one axis's chip offers: only those `available`, less those `unavailable`.
+ * - AxisOffers — The fields each axis — Primary, Secondary, Group — offers.
+ * - AxesDefinition — What each axis offers, and per view — a grid's, a chart's — over it, an axis whole.
+ * - offerAxis — An axis's fields, as its offer narrows them.
  * - Arrangement — How a Query arranges its rows: the ONE scope that sorts, groups, keeps a suspended sort or searches.
  * - ARRANGE_KEYS — The keys that arrange a scope's rows, written once.
  * - stripArrangement — A scope without its arrangement, in place.
@@ -113,6 +117,27 @@ export interface Presentation {
 export interface PresentationDefinition extends Presentation {
   grid?: Presentation;
   chart?: Presentation;
+}
+
+/** The fields one axis's chip offers: only those `available`, less those
+ *  `unavailable`. It narrows, never adds: never a number or a date. Will, TODO 660 */
+export interface AxisOffer {
+  available?: readonly string[];
+  unavailable?: readonly string[];
+}
+
+/** The fields each axis — Primary, Secondary, Group — offers. */
+export type AxisOffers = Partial<Record<'primary' | 'secondary' | 'group', AxisOffer>>;
+
+/** What each axis offers, and per view — a grid's, a chart's — over it, an axis whole. Will, TODO 660 */
+export interface AxesDefinition extends AxisOffers {
+  grid?: AxisOffers;
+  chart?: AxisOffers;
+}
+
+/** An axis's fields, as its offer narrows them. Will, TODO 660 */
+export function offerAxis<C extends { field: string }>(cols: readonly C[], offer: AxisOffer | undefined): C[] {
+  return cols.filter((c) => (!offer?.available || offer.available.includes(c.field)) && !offer?.unavailable?.includes(c.field));
 }
 
 /** How a Query arranges its rows: the ONE scope that sorts, groups, keeps a suspended sort or searches. */

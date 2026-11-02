@@ -140,6 +140,18 @@ function shownAs(el: Element): string | undefined {
 /** A grid's column, as a pivot hands it on to a row's sub-grid. */
 type GridColumnLike = { field: string; header?: string; type?: string; tags?: string[] };
 
+/** A row's own rows, by its first column's value, a group's together where it
+ *  groups, and their groups: what each row's sub-grid draws. TODOs 574, 661 */
+function opened(rows: readonly Row[], lead: string, group: string | null | undefined): { rows: Record<string, Row[]>; groups?: Record<string, ReturnType<typeof groupSummaries>> } {
+  const opens = groupRows(rows, lead).map((g) => ({
+    key: g.key, rows: group ? groupRows(g.rows, group).flatMap((part) => part.rows) : g.rows,
+  }));
+  return {
+    rows: Object.fromEntries(opens.map((o) => [o.key, o.rows])),
+    ...(group ? { groups: Object.fromEntries(opens.map((o) => [o.key, groupSummaries(o.rows, group)])) } : {}),
+  };
+}
+
 /** What a pivot steers: a filter, from a heading or a cell — its own or a row's
  *  sub-grid's — and its sub-grids' sort and group. TODOs 571, 574 */
 const PIVOT_STEERS = ['column-filter-change', 'filter-apply', 'filter-discard', 'sort-change', 'group-change'] as const;
@@ -1553,10 +1565,10 @@ export class SherpaProvider extends SherpaElement {
     };
   }
 
-  /** What a grid made from a chart draws: its axes and its Group, no more, and a Total.
-   *  A row a value of its first axis, its cells the count the chart draws, and each
-   *  row opens on its own rows. A line's first axis is what it runs over. Will, TODOs
-   *  622, 625. TRAP T-a-grid-from-a-chart-keeps-to-its-card */
+  /** What a grid made from a chart draws: its axes, no more, and a Total. A row a
+   *  value of its first axis, its cells the count the chart draws, and each row opens
+   *  on its own rows, its Group grouping them. A line's first axis is what it runs
+   *  over. Will, TODOs 622, 625, 661. TRAP T-a-grid-from-a-chart-keeps-to-its-card */
   #madeTable(el: Element, rows: readonly Row[], slot: string, source: DataSource): unknown {
     const own = el as Element & { columns?: GridColumnLike[] };
     const label = (f: string): string => source.fieldFacts(f).label ?? f;
@@ -1571,32 +1583,28 @@ export class SherpaProvider extends SherpaElement {
     const lead = axes.segment ?? '';
     const stack = axes.stack;
     const spec: SummarySpec = { shape: 'segments', ...axes, segment: lead, ...(sort ? { sort } : {}) };
-    const parts = group ? groupRows(rows, group).map((g) => ({ of: g.key, rows: g.rows })) : [{ of: '', rows }];
-    const made = parts.flatMap((part) => (summarise(part.rows, spec, (f) => source.valuesFor(f)) as ChartDatum[]).map((datum) => ({ part, datum })));
-    const seen = made.flatMap(({ datum }) => (datum.stack ?? []).map((p) => p.label));
+    const made = summarise(rows, spec, (f) => source.valuesFor(f)) as ChartDatum[];
+    const seen = made.flatMap((datum) => (datum.stack ?? []).map((p) => p.label));
     const declared = stack ? source.valuesFor(stack).map(valueKey) : [];
     const values = declared.length ? declared.filter((v) => seen.includes(v)) : [...new Set(seen)];
-    const key = (part: string, value: string): string => `${part}\u0000${value}`;
     return { pivot: {
       key: 'made:key',
       columns: [
         { field: lead, header: label(lead), sortable: false },
-        ...(group ? [{ field: group, header: label(group), sortable: false }] : []),
         ...values.map((v) => ({ field: `made:${v}`, header: v, type: 'number', sortable: false, filterable: false })),
         { field: 'made:total', header: this.word('total'), type: 'number', sortable: false, filterable: false },
       ],
       filters,
-      rows: made.map(({ part, datum }) => ({
-        'made:key': key(part.of, datum.label),
+      rows: made.map((datum) => ({
+        'made:key': datum.label,
         [lead]: datum.label,
-        ...(group ? { [group]: part.of } : {}),
         ...Object.fromEntries(values.map((v) => [`made:${v}`, datum.stack?.find((p) => p.label === v)?.value ?? 0])),
         'made:total': datum.value,
       })),
       detail: {
-        // Not what its row says: every row under it holds that. Will, TODO 578
-        columns: (own.columns ?? []).filter((c) => c.field !== lead && c.field !== group),
-        rows: Object.fromEntries(parts.flatMap((part) => groupRows(part.rows, lead).map((g) => [key(part.of, g.key), g.rows]))),
+        // Not what its row says: every row under it holds that; its Group groups them. Will, TODOs 578, 661
+        columns: (own.columns ?? []).filter((c) => c.field !== lead),
+        ...opened(rows, lead, group),
       },
     } };
   }
@@ -1635,11 +1643,6 @@ export class SherpaProvider extends SherpaElement {
     });
     const fields = [...new Set([...filtered, spec.segment])];
     src.readValues(fields);
-    // Each row's own rows, a group's together where it groups.
-    const group = src.state.group;
-    const opens = groupRows(rows, spec.segment).map((g) => ({
-      key: g.key, rows: group ? groupRows(g.rows, group).flatMap((part) => part.rows) : g.rows,
-    }));
     return { pivot: {
       key: spec.segment,
       columns: [
@@ -1657,8 +1660,7 @@ export class SherpaProvider extends SherpaElement {
         // Not its Primary: every row under a row holds that row's. Will, TODO 578
         columns: details,
         ...(own.key ? { key: own.key } : {}),
-        rows: Object.fromEntries(opens.map((o) => [o.key, o.rows])),
-        ...(group ? { groups: Object.fromEntries(opens.map((o) => [o.key, groupSummaries(o.rows, group)])) } : {}),
+        ...opened(rows, spec.segment, src.state.group),
       },
     } };
   }

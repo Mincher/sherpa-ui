@@ -65,6 +65,8 @@
  * - .presentation — A slot's presentation, as kept: a copy; none, an empty one.
  * - .declarePresentation — What its page DEFINES a slot shows — a chart's two fields — under what is kept.
  * - .presented — A slot's presentation as shown: what is kept, over its definition; or its definition alone.
+ * - .declareAxes — What each axis's chip offers — the page's, or a scope's over it.
+ * - .axesOf — What each axis offers in a scope's view: the page's, its view's, the scope's, then the scope's view's.
  * - .honour — Which picks are in force: `kind` (Show as), `axes` (Primary, Secondary). Off, kept, not shown.
  * - .honours — Is that kind of pick in force?
  * - .present — Change a slot's presentation, at once in BOTH copies — it filters nothing, so no Apply waits.
@@ -78,7 +80,7 @@
 import type { BoundControl, FilterSet, QueryState } from './data-source-types.js';
 import {
   answerOf, arrangementOf, copyQuery, copyReading, eachScope, emptyScope, freezeReading, readingAnswered, sameAnswer, sameReading, stripArrangement, VIEW,
-  type Arrangement, type Presentation, type PresentationDefinition, type Query, type QueryDefaults, type ScopeQuery,
+  type AxesDefinition, type AxisOffers, type Arrangement, type Presentation, type PresentationDefinition, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
 import {
   answerIn, copyField, copyScope, definitionOf, holderOf, holdsField, homes, moveHold, prune, readingOf, rehome,
@@ -1094,6 +1096,24 @@ export class QueryContext extends EventTarget {
     const own = view === 'grid' ? grid : view === 'chart' ? chart : undefined;
     return { ...base, ...own, ...(kept ? this.#inForce(this.presentation(scope)) : {}) };
   }
+
+  /** What each axis's chip offers — the page's, or a scope's over it. Not in the
+   *  Query: no reader changes it. Will, TODO 660 */
+  declareAxes(axes: AxesDefinition, scope?: string): void {
+    this.#axes.set(scope ?? '', structuredClone(axes));
+  }
+
+  /** What each axis offers in a scope's view: the page's, its view's, the scope's,
+   *  then the scope's view's — the last to name an axis wins it whole. Will, TODO 660 */
+  axesOf(scope: string, view: 'grid' | 'chart'): AxisOffers {
+    return Object.assign({}, ...['', scope].flatMap((at) => {
+      const { grid, chart, ...base } = this.#axes.get(at) ?? {};
+      return [base, view === 'grid' ? grid : chart];
+    })) as AxisOffers;
+  }
+
+  /** The page's axes, at '', and each scope's. */
+  readonly #axes = new Map<string, AxesDefinition>();
 
   /** Which of the reader's picks are in force — off, one is KEPT and not shown:
    *  `kind` Show as's, `axes` the Primary and Secondary chips'. The app's setting.

@@ -14719,8 +14719,8 @@ conditions, are coming from the data layer"*). The event stops at the grid. `onl
 one element, so when the grid is swapped away its readings go with it.
 
 **Its rows are a table, not the records** (Will, TODOs 622, 625): a row a value of the
-first axis, its Group, a column a Secondary value, and a Total, and a row opens on its
-records. A line's first axis is what it runs over, its split the columns. A gauge is one
+first axis, a column a Secondary value, and a Total, and a row opens on its records. Its
+Group groups those records, in each opened row, and adds no column (Will, TODO 661). A line's first axis is what it runs over, its split the columns. A gauge is one
 mean of one field, so nothing totals: it shows its records, named by the first column of
 the page's own grid, and that field.
 

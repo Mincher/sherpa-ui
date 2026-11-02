@@ -78,7 +78,7 @@ import { SourceBinding, tagOf } from './source-binding.js';
 import { answerOrder, planWalk, presentUnder, walkStepwise } from './source-counts.js';
 import { emptyWalk, walkInOrder, walkReads, type Walk, type WalkPlan } from './walk.js';
 import {
-  answerOf, arrangementOf, compile, eachScope, emptyScope, filterKey, freezeReading, readingAnswered, sameFilter,
+  answerOf, arrangementOf, compile, eachScope, emptyScope, filterKey, freezeReading, offerAxis, readingAnswered, sameFilter,
   VIEW, withoutArrangement, type Arrangement, type CompileFacts, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
 import {
@@ -539,7 +539,9 @@ export class DataSource extends EventTarget {
     if (this.#context.arranges(scope) && this.#context.fields(scope).length) {
       const cols = this.#context.fields(scope).filter((f) => this.#catalogue.has(f))
         .map((f) => ({ field: f, label: this.#catalogue.get(f)?.label ?? f }));
-      out.group = cols.filter(groupable);
+      // Each axis as the app offers it. Will, TODO 660
+      const offers = this.#context.axesOf(scope, 'grid');
+      out.group = offerAxis(cols.filter(groupable), offers.group);
       out.sort = cols;
       const arranged = this.#arrangement();
       const mine = (this.#arrangedIn() ?? scope) === scope;
@@ -554,9 +556,11 @@ export class DataSource extends EventTarget {
       const shown = this.#context.presented(scope, 'grid');
       const lead = shown.primary ?? cols[0]?.field;
       const fallback = this.#context.presented(scope, 'grid', false).primary ?? cols[0]?.field;
+      const axes = this.#context.honours('axes');
       Object.assign(out, {
-        // Off, no chip offers them; the chain stays, so Group greys its Primary. TODO 583
-        chartFields: this.#context.honours('axes') ? cols.filter(groupable) : [], stacks: true,
+        // Off, no chip offers them; the chain stays, so Group loses its Primary. TODOs 583, 658
+        chartFields: axes ? offerAxis(cols.filter(groupable), offers.primary) : [], stacks: true,
+        ...(axes ? { secondaryFields: offerAxis(cols.filter(groupable), offers.secondary) } : {}),
         ...(lead ? { primaryField: lead } : {}),
         ...(fallback ? { primaryDefault: fallback } : {}),
         ...(shown.secondary ? { secondaryField: shown.secondary } : {}),
@@ -571,8 +575,12 @@ export class DataSource extends EventTarget {
       const fallback = { ...this.#binding.shownIn(scope), ...this.#context.presented(scope, 'chart', false) }.primary;
       const stacks = this.#binding.stacksIn(scope);
       const secondary = stacks ? shown.secondary : undefined;
+      // Each axis as the app offers it. Will, TODO 660
+      const offers = this.#context.axesOf(scope, 'chart');
+      const axes = this.#context.honours('axes');
       Object.assign(out, {
-        presents: true, group: lists, chartFields: this.#context.honours('axes') ? lists : [],
+        presents: true, group: offerAxis(lists, offers.group), chartFields: axes ? offerAxis(lists, offers.primary) : [],
+        ...(axes ? { secondaryFields: offerAxis(lists, offers.secondary) } : {}),
         ...(stacks ? { stacks: true } : {}),
         ...(shown.group ? { groupField: shown.group } : {}),
         ...(shown.sort ? { sortDirection: shown.sort } : {}),

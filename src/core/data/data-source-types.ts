@@ -161,6 +161,8 @@ export interface ScopeDescription {
    *  `stacks`, its chart takes a Secondary — a bar chart. TODO 548 */
   presents?: boolean;
   chartFields?: OrganiseColumn[];
+  /** What its Secondary may pick; `chartFields` are its Primary's. Each as the app offers it. Will, TODO 660 */
+  secondaryFields?: OrganiseColumn[];
   primaryField?: string;
   /** The Primary its definition names: what Default picks. Will, TODO 572 */
   primaryDefault?: string;

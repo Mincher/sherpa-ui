@@ -15,7 +15,7 @@ import { DataSource, type FieldDeclaration, type FilterSet } from './data-source
 import { report } from './report.js';
 import type { Store } from './store.js';
 import type { QueryContext } from './query-context.js';
-import { isSavedFilter, type PresentationDefinition, type SavedFilter } from './query.js';
+import { isSavedFilter, type AxesDefinition, type PresentationDefinition, type SavedFilter } from './query.js';
 import type { Condition } from './where.js';
 
 /** One scope: its name, and the fields it offers and holds at the start. */
@@ -39,6 +39,8 @@ export interface ScopeDefinition {
   /** What its slot shows until the reader changes it — its `primary`, `secondary`
    *  and `group` — and a default per view, `grid` and `chart`, over it. Will, TODO 548 */
   presentation?: PresentationDefinition;
+  /** What each axis's chip offers here, over the page's. Will, TODO 660 */
+  axes?: AxesDefinition;
 }
 
 /** A page's source: which store, how it pages and searches, its fields and
@@ -57,6 +59,9 @@ export interface SourceDefinition {
   search?: readonly string[];
   fields?: Readonly<Record<string, FieldDeclaration>>;
   scopes?: Readonly<Record<string, ScopeDefinition>>;
+  /** What each axis's chip offers — `{ "chart": { "secondary": { "unavailable": ["name"] } } }` —
+   *  in every scope, a scope's own over it. Will, TODO 660 */
+  axes?: AxesDefinition;
 }
 
 /** One page, as JSON — its source, its saved filters, and its components'
@@ -95,6 +100,7 @@ export async function openSource(def: SourceDefinition, store: Store, options: {
   const fields = Object.keys(def.fields ?? {});
   const children = checkTiers(def);
   for (const [field, facts] of Object.entries(def.fields ?? {})) source.declareField(field, facts);
+  if (def.axes) source.query.declareAxes(def.axes);
   for (const [scope, facts] of Object.entries(def.scopes ?? {})) {
     if (facts.label || facts.arranges != null) {
       source.query.declareScope(scope, {
@@ -109,6 +115,7 @@ export async function openSource(def: SourceDefinition, store: Store, options: {
     }
     if (facts.where) source.query.declareStart(scope, source.readingsOf(facts.where));
     if (facts.presentation) source.query.declarePresentation(scope, facts.presentation);
+    if (facts.axes) source.query.declareAxes(facts.axes, scope);
     if (facts.presets?.length) {
       source.declarePresets(scope, facts.presets.map((p) => ({ id: p.id, label: p.label, readings: source.readingsOf(p.where) })));
     }
