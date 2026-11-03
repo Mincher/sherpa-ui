@@ -194,6 +194,27 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+# WHAT ONE IMPORT COSTS, in brotli bytes, may only fall. --staged: only when the
+# commit touches what dist/ is built from, on a dist/ built after it. About 1.5s.
+echo "⚖️  Checking what one import costs..."
+WEIGHT_OUT=$(npm run check:weight --silent -- --staged 2>&1)
+if [ $? -ne 0 ]; then
+  echo "$WEIGHT_OUT"
+  echo "❌ An import grew. Remove what it added, or record it: npm run check:weight -- --update-baseline. Commit blocked."
+  exit 1
+fi
+# Said aloud when the source is staged but dist/ cannot weigh it.
+echo "$WEIGHT_OUT" | grep -E 'not checked here — (dist/|there is no dist/)'
+
+# The hand-patched Figma extensions keep the shape a good file has. About 0.1s.
+echo "🧬 Checking figma.extensions.json..."
+EXT_OUT=$(npm run check:extensions --silent 2>&1)
+if [ $? -ne 0 ]; then
+  echo "$EXT_OUT"
+  echo "❌ figma.extensions.json has lost its shape. Commit blocked."
+  exit 1
+fi
+
 # The editor files and docs/components/ are written from the specs.
 echo "🧩 Checking the files the specs make..."
 GEN_OUT=$(npm run check:generated --silent 2>&1)

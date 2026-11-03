@@ -103,8 +103,10 @@ npm run preview           # serve the repo on :4000 — WITHOUT building
 # An app runs it on itself (Demos does, in its npm test); sherpa-ui knows no app.
 npx sherpa-ui check-usage <folder>
 
-# What ONE import costs — JS and fetched files per entry, may only fall; and no
-# display component reaches the app layer. Reads dist/; npm test runs it too.
+# What ONE import costs — JS and fetched files per entry, in BROTLI bytes, may
+# only fall (raw bytes and V8 parse time are reported); and no display component
+# reaches the app layer. Reads dist/; npm test and CI run it, and the hook runs it
+# --staged: on a source commit, when dist/ was built after the source.
 npm run check:weight
 npm run check:weight -- --update-baseline  # record growth on purpose
 

@@ -1,0 +1,99 @@
+# The pre-commit hook's gates in full, the build with its weight and the Node
+# tests, and the Chromium e2e run — on every push and pull request.
+# Each gate is the hook's own npm script; a gate step runs even when one before
+# it failed, so one run shows every red gate.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: Gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - id: install
+        run: npm ci
+      - run: npm run type-check
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - run: npm run type-check:tests
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - run: npm run lint
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - run: npm run lint:css
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - run: npm run spec:check
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - run: npm run check:traps
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - run: npm run check:mcp
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - run: npm run check:ownership
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - run: npm run check:props
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - run: npm run check:docs
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - run: npm run check:map
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - run: npm run check:size
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - run: npm run check:bench
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - run: npm run check:extensions
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+      - run: npm run check:generated
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+
+  build:
+    name: Build, weight and Node tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - id: build
+        run: npm run build
+      - run: npm run check:weight
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+      - run: npm run test:node
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+
+  e2e:
+    name: Playwright, Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # The config's webServer builds dist/ and serves it on :4173.
+      - run: npx playwright test --project=chromium
+      - uses: actions/upload-artifact@v7
+        if: ${{ failure() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
