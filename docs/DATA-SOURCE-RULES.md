@@ -505,6 +505,40 @@ Nothing here needs to know what a "view" or a "component" is. They are two
 scopes, one narrowing within the other — a card extending a dashboard, or a
 panel extending a card, is the same relationship with different words.
 
+### Your stores, said once, for every host
+
+Say your stores in ONE module, which your page and your Service Worker both import:
+
+```js
+// app/stores.js
+import { defineStores, RestStore } from 'sherpa-ui/data';
+
+export const stores = defineStores(() => ({
+  customers: new RestStore({ url: '/api/customers', totalPath: 'total' }),
+}));
+```
+
+The worker serves them (`serveData(self, { stores })`), and a page with no worker
+answers itself over the same module (`createDataHandler({ stores })`). They are made
+at a host's first ask, so a page the worker answers makes none. A remote one is read
+through the worker's own `HeldStore`, its writes made offline waiting on the device.
+
+**A request may pick which store answers.** A name can hold several, each by your
+own word, and a `pick` that reads the request — your headers, your sign-in, your own
+say:
+
+```js
+customers: {
+  stores: { live, demo },
+  pick: (request) => (request.headers.get('X-Tenant') === 'demo' ? 'demo' : 'live'),
+},
+```
+
+Sherpa passes the request to your pick, whole, and never reads a header of yours:
+**auth is yours**. A page's store sends your headers with each request
+(`openWorkerStore({ name, headers })`). Every path is under one constant,
+`DATA_BASE` (`/sherpa/data/`). TRAP T-a-request-picks-its-stores
+
 ---
 
 ## 7. It runs with no DOM
@@ -541,3 +575,6 @@ nothing else. Saved Views, saved filters and the session are the app layer:
     question is then answered on the client. Where the store projects, only the
     page's fields are held; a whole record is `store.byKey()`.
 13. A store says what it can do once, in `capabilities`; a wrapper is `wrapStore()`.
+14. Your stores are said once, in a module the page and the worker both import
+    (`defineStores`); a request may pick which of a name's stores answers, and
+    Sherpa never reads your headers.

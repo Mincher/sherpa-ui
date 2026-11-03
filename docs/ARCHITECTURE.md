@@ -41,7 +41,7 @@ flowchart LR
   end
   subgraph worker["Service Worker — one for every tab"]
     appfiles["keepAppFiles<br/>files, network first"]
-    serve["serveData<br/>/sherpa/data/*"]
+    serve["serveData<br/>DATA_BASE /sherpa/data/*"]
     held["HeldStore<br/>one held set, the outbox"]
     status["statusFields<br/>each row's status"]
     kept["kept notices<br/>lost saves"]
@@ -75,10 +75,12 @@ flowchart LR
 | File | What it is | Who reads it |
 |---|---|---|
 | `app/index.html` | The frame (shell, router, provider, outlet, dialogs) and its boot script | The browser, once |
-| `app/sw.js` | The app's Service Worker: imports `sherpa-ui/worker` and the app's stores (a worker cannot `import()` at run time, D7) | The browser, at register and at each update check |
+| `app/sw.js` | The app's Service Worker: imports `sherpa-ui/worker` and the app's stores module (a worker cannot `import()` at run time, D7) | The browser, at register and at each update check |
 | `server/index.mjs` | Serves the app, `/dist`, the live feeds; stamps `/sw.js` with the build | Node |
 | `app/app.json` | The app definition: Contexts, Sections, Settings pages | The server, the boot script, `outlet.start()` |
-| `app/stores/*-data.js` | The app's stores, written once: rules, seed, and status fields (`statusFields`) | The page AND the worker — the same module |
+| `app/stores/*-data.js` | The app's records: rules, seed, and status fields (`statusFields`) | The page AND the worker — the same module |
+| `app/stores/stores.js` | The app's stores, said ONCE (`defineStores`): each name, and the pick that reads a request's own header — Demos' debug mode | The page AND the worker |
+| `app/stores/page-stores.js` | The page's stores, opened once: through the worker, else the page's own handler | The page, and a Context that reads a store beside its page |
 | `app/templates/<context>.html` | A Context's markup: its components and where each asks | The outlet, at Context load |
 | `app/view-schemas/<context>.json` | A page definition: the store's name, fields, scopes, presets | The outlet → `provider.open()` → `openSource()` |
 | `app/views/<context>-views.json` | Each View: its Query and its component settings | `loadViewLibrary()` |
@@ -206,6 +208,13 @@ worker check that store behind — and what that finds reaches every tab as a no
 or one gap and a check of every store. Where no feed answers, every tab polls
 instead (`watchForUpdates`, which `followUpdates` runs).
 
+**Two words for news, as they are two ideas.** The feed says what CHANGED on the
+server (`FeedNotice`: a build, a store, a gap) — a cause, which one tab acts on and
+nobody is shown. A notice says what WAITS for the reader (`UpdateNotice`: a new
+version, a store's newer rows, a lost save) — an effect, which a listening element
+shows. A feed's `data` becomes a notice's `data` only where a check behind finds
+newer rows.
+
 **What each host DID is one trace stream** (`T-one-trace-stream`, plan 695 S3). A
 DataSource's `load`, a `RequestStore`'s `request`, the handler's `answer` and the
 worker's `hold`, `recheck` and `send` are each a span, said on `sherpa-trace` to
@@ -238,7 +247,15 @@ listening, no span is made and no request carries the header.
   (`T-a-store-says-what-it-can-do-once`).
 - **Newer server rows WAIT** (`T-a-server-change-waits`): no grid moves under its
   reader; Refresh data takes them in. A write made through the app shows at once.
-- **The store modules are imported by the page and the worker alike**, by URL, as
-  a worker has no import map.
+- **The stores are said once** (`defineStores`), in a module the page and the worker
+  import alike, by URL, as a worker has no import map. Made at a host's first ask, so a
+  page the worker answers makes none.
+- **A request picks its store, and Sherpa never reads it** (`T-a-request-picks-its-stores`).
+  A name may hold several stores; the app's `pick` reads the request — its headers, its
+  sign-in — and names one. A change is said with the store's name and the app's word
+  for it, so each page's store hears its own. Auth is the app's: Sherpa passes headers on.
+- **A check behind runs once at a time per store**: a tab shown, the feed, a gap, a push
+  and a Refresh join one, or wait for one more where its read is already out.
+- **Every path is under one constant**, `DATA_BASE` (`/sherpa/data/`).
 - **Demos stamps `sw.js` per browser for tests** (`?client=`): a test's fake deploy
   must reach its own page alone.
