@@ -325,6 +325,20 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   the function a kind runs by; a run hooks into `bindWorkflow`'s `write()`.
   **Carried → S5:** `QueryContext.presetOn` should call the pure `presetHeld`.
   `ViewScope.superseded` still takes two types.
+- **P2 ✅ (`fa1495ab`, `583cc91f`, `eb573ea2`, `dd3ef25a`).** One `FilterHostController`
+  (`src/core/ui/filter-host-controller.ts`, 368 lines): by field, the limits present and
+  offered, the fields a scope above holds and its name, results and value counts, each
+  reading as drawn, a reading waiting for its chip to stamp — and one copy of each draw.
+  The grid's `#columnFilters`, `#present`, `#offered`, `#superseded`, `#supersededAt`,
+  `#markPresent`, `#heldAbove` and the toolbar's sixteen like fields are gone; the column
+  keeps one controller per scope. `BoundControl` is unchanged. Toolbar 2,933 → 2,808, grid
+  2,683 → 2,651. Measured (Demos Records, Chromium, 4x, median of 6): open the Status menu
+  104 → 72 ms; tick a value 272 → 264; a chip off 168 → 160; on 248 → 224. Lane picks
+  taken: the hosts keep their public draw methods as one-line doors to the controller; the
+  grid's `#drawn` stays in the grid.
+  **Carried → P4 (a lead):** the grid draws its body twice per act — the new reading
+  (~65 ms), then the rows (~89 ms, ~50 of it a forced style read in `#readBounds`); one draw
+  for reading and rows is the fix. A one-frame wait measured worse.
 
 ### The waves
 

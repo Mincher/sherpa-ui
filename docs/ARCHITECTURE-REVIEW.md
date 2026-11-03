@@ -380,6 +380,12 @@ eleven draw methods of `BoundControl`, with their own present, offered, supersed
 applied maps; the panel column adds a third partial copy. **Proposal:** one
 `FilterHostController`, keyed by field.
 
+*Done, 695 P2 (2026-11-03):* `filter-host-controller.ts` holds, by field, what a host is
+told and draws it once; the toolbar, the grid and the toolbar's column ask it, and their
+own maps and draw code are gone. Measured at 4x: a menu opens in 72 ms (was 104); a chip
+turned on takes 224 ms (248) — still over 200, as the grid draws its body twice per act
+(the reading, then the rows), which P4 takes.
+
 ### 6.3 The base class
 
 - **Three small binding languages:** props `to:`, item directives, and `data-swap-on`. One
