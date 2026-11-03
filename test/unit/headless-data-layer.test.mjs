@@ -24,7 +24,7 @@ import assert from 'node:assert/strict';
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { ArrayStore } = await import(new URL('stores.js', core));
 const { DataSource } = await import(new URL('data-source.js', core));
-const { bindSource } = await import(new URL('../ui/bind-source.js', core));
+const { bindId, bindSource } = await import(new URL('../ui/bind-source.js', core));
 const { applyOptions, filterRows, sortRows, filterFields } = await import(new URL('store.js', core));
 const { validate } = await import(new URL('validate.js', core));
 
@@ -936,7 +936,7 @@ test('declareDefault: a component narrows itself alone, and a View pick keeps it
   bindSource(source, tile, { rows: 'all', readonly: true });
   bindSource(source, other, { rows: 'all', readonly: true });
   await source.load();
-  source.query.declareDefault('own:tile', { sev: { picked: ['critical'] } }, { only: tile });
+  source.query.declareDefault('own:tile', { sev: { picked: ['critical'] } }, { only: bindId(tile) });
   await new Promise((r) => setTimeout(r, 0));
   assert.deepEqual(seen.get('tile'), [1, 3]);
   assert.deepEqual(seen.get('other'), [1, 2, 3]);
@@ -962,7 +962,7 @@ test('declareDefault on a field the View holds still narrows its component', asy
   bindSource(source, tile, { rows: 'all', readonly: true });
   source.query.ask({ scope: 'view', hold: ['sev'] });
   await source.load();
-  source.query.declareDefault('own:tile', { sev: { picked: ['critical'] } }, { only: tile });
+  source.query.declareDefault('own:tile', { sev: { picked: ['critical'] } }, { only: bindId(tile) });
   await new Promise((r) => setTimeout(r, 0));
   assert.deepEqual(seen.get('tile'), [1, 3]);
   // The View's own answer narrows it too, under the tile's.

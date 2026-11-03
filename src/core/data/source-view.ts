@@ -16,7 +16,7 @@
  * - .arrangedIn — The scope whose Group or Sort set the rows' arrangement, while it still arranges.
  * - .selection — One field's whole state, ready for any control to draw.
  * - .fieldStatus — What a field is now, seen from a scope: the one answer for every control.
- * - .pickedFor — A field's picks in force on one bind: its own part's, else the View's.
+ * - .pickedFor — A field's picks in force on one component, by its bind id: its own part's, else the View's.
  * - .draw — Tell each bar over a field's home — or the one named — what it now holds.
  * - .syncHeld — Each control below the View is told what the View holds.
  * - .syncPending — Each bound control over a scope is told its pending fields, whether it is dirty or waits, and what failed.
@@ -28,13 +28,11 @@ import { answerOf, emptyScope, offerAxis, VIEW, type Arrangement, type Query } f
 import { cameFrom, homeOf, readingOf, viewHeldReadings } from './query-edits.js';
 import { answerOrder } from './source-counts.js';
 import { fieldStatus, type FieldStatus } from './field-status.js';
-import { tagOf, type SourceBinding } from './source-binding.js';
+import type { SourceBinding } from './source-binding.js';
 import type { FieldCatalogue } from './field-catalogue.js';
 import type { QueryContext } from './query-context.js';
 import type { QueryPart } from './query-declarations.js';
-import type {
-  BoundControl, BoundView, FieldFilter, FilterSet, HeldFilter, ScopeDescription,
-} from './data-source-types.js';
+import type { BoundView, FieldFilter, FilterSet, HeldFilter, ScopeDescription } from './data-source-types.js';
 
 /** What the view-model reads of its source, live. */
 export interface ViewHost {
@@ -60,6 +58,8 @@ export interface ViewHost {
   /** Is a field's values still to be read? Has its own read failed? */
   unread(field: string): boolean;
   failed(): ReadonlySet<string>;
+  /** The tag of the component bound by this id, by any source over the Query. */
+  tagOf(id: string): string | undefined;
 }
 
 /** A source's view-model: each scope, field and reading as a control draws it. */
@@ -89,7 +89,7 @@ export class SourceView {
       const reading = q.readings[part.field];
       return {
         scope, label: part.label ?? def.label, part: true, available: [],
-        ...(tagOf(part.only) ? { component: tagOf(part.only)! } : {}),
+        ...(this.#host.tagOf(part.only) ? { component: this.#host.tagOf(part.only)! } : {}),
         filters: options?.length ? [{
           ...def,
           // A band paints in its status; any other value, its series. TODO 477
@@ -301,16 +301,16 @@ export class SourceView {
     }, field, scope);
   }
 
-  /** A field's picks in force on one component, as value keys: its own part's,
-   *  else the View's — applied, not drafted. A chart FREE of its field lights
-   *  them. Will, TODO 479. TRAP T-a-chart-is-free-of-its-own-field */
-  pickedFor(el: BoundControl, field: string): string[] {
+  /** A field's picks in force on one component, by its bind id, as value keys: its
+   *  own part's, else the View's — applied, not drafted. A chart FREE of its field
+   *  lights them. Will, TODO 479. TRAP T-a-chart-is-free-of-its-own-field */
+  pickedFor(id: string, field: string): string[] {
     const applied = this.#host.applied();
     // Only picks in FORCE: not while Advanced answers, nor under "is not". TODO 518
     const picks = (r: FieldReading | undefined): string[] =>
       (r && !r.suspended && modeOf(r) !== 'advanced' && (r.op ?? DEFAULT_OP) === DEFAULT_OP ? (r.picked ?? []).map(valueKey) : []);
     for (const [scope, part] of this.#host.parts()) {
-      if (part.only === el && part.field === field) {
+      if (part.only === id && part.field === field) {
         const own = picks(applied.scopes[scope]?.readings[field]);
         if (own.length) return own;
       }

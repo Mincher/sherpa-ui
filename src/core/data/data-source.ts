@@ -70,7 +70,7 @@
 import { andFilter, DEFAULT_OP, filterRows, filterTest, readField, valueKey } from './store.js';
 import { readingClause, ruleOut } from './filter-state.js';
 import { FieldCatalogue } from './field-catalogue.js';
-import { SourceBinding } from './source-binding.js';
+import { SourceBinding, tagOf } from './source-binding.js';
 import { presentUnder, type WalkFacts } from './source-counts.js';
 import { SourceReads } from './source-reads.js';
 import { SourceWalk } from './source-walk.js';
@@ -113,11 +113,10 @@ export class DataSource extends EventTarget {
     view: () => this.#view.boundView(),
     rows: (w) => (w === 'all' ? this.#reads.unpaged : this.#reads.rows),
     freeRows: (fields) => this.#reads.freeRows(fields),
-    pickedFor: (el, field) => this.pickedFor(el, field),
+    pickedFor: (id, field) => this.pickedFor(id, field),
     only: (id) => this.#only[id],
     scoped: (s) => this.#scoped[s],
     now: () => this.#now(),
-    mintId: () => this.#member.mintId(),
   });
   /** Its rows: the store or its held set, the page, each ask and its answer. */
   readonly #reads: SourceReads;
@@ -224,9 +223,9 @@ export class DataSource extends EventTarget {
         this.#reads.requery(this.applyOn === 'input');
         return true;
       },
-      drawn: () => [...this.#binding.entries()].flatMap(([el, b]) => (
-        (el.drawResults || el.drawValueResults || el.drawPresent || el.drawOffered) && b.scope
-          ? [{ control: el, id: b.id, bar: typeof b.scope === 'string', scopes: typeof b.scope === 'string' ? [b.scope] : [...b.scope, ...this.#narrowing.keys()] }]
+      drawn: () => [...this.#binding.binds()].flatMap(({ control: el, id, scope }) => (
+        (el.drawResults || el.drawValueResults || el.drawPresent || el.drawOffered) && scope
+          ? [{ control: el, id, bar: typeof scope === 'string', scopes: typeof scope === 'string' ? [scope] : [...scope, ...this.#narrowing.keys()] }]
           : [])),
       parts: () => [...this.#narrowing].map(([p, part]) => [p, part.shownIn]),
       partsIn: (scope) => this.#view.partsIn(scope),
@@ -249,10 +248,17 @@ export class DataSource extends EventTarget {
       searchFields: this.#searchFields,
       unread: (field) => this.#unread.has(field),
       failed: () => this.#failed,
+      tagOf: (id) => this.#member.bound(id)?.tag,
     });
     // REMOTE: the reader edits a copy, and Apply sends it — the context splits it.
     this.#member = this.#context.join({
-      remote: this.#reads.remote, pagedIn: (scope) => this.#binding.pagedIn(scope), bindOf: (el) => this.#binding.get(el),
+      remote: this.#reads.remote, pagedIn: (scope) => this.#binding.pagedIn(scope),
+      bound: (id) => {
+        const bind = this.#binding.byId(id);
+        if (!bind) return undefined;
+        const tag = tagOf(bind.control);
+        return { id, rows: bind.rows, ...(bind.scope ? { scope: bind.scope } : {}), ...(tag ? { tag } : {}) };
+      },
       presentsIn: (scope) => this.#binding.presentsIn(scope),
       // A page, or its size, is asked of the Query: it says which source draws it.
       page: (at) => ('page' in at ? this.#reads.setPage(at.page) : this.#reads.setPageSize(at.pageSize)),
@@ -437,10 +443,10 @@ export class DataSource extends EventTarget {
     return filter ? filterTest(filter, this.#now()) : null;
   }
 
-  /** A field's picks in force on one component, as value keys: its own part's,
-   *  else the View's — applied, not drafted. TRAP T-a-chart-is-free-of-its-own-field */
-  pickedFor(el: BoundControl, field: string): string[] {
-    return this.#view.pickedFor(el, field);
+  /** A field's picks in force on one component, by its bind id, as value keys: its
+   *  own part's, else the View's — applied, not drafted. TRAP T-a-chart-is-free-of-its-own-field */
+  pickedFor(id: string, field: string): string[] {
+    return this.#view.pickedFor(id, field);
   }
 
   /** Is this scope a SLOT — does a chart draw a summary in it? Its Group and Sort are
@@ -1092,9 +1098,9 @@ export class DataSource extends EventTarget {
     return this.#now().toISOString().slice(0, 10);
   }
 
-  /** The component scope a chart part's element is bound into, if any. */
-  #hostOf(el: BoundControl): string | undefined {
-    const scope = this.#member.bindOf(el)?.scope;
+  /** The component scope a chart part's component is bound into, by its bind id, if any. */
+  #hostOf(id: string): string | undefined {
+    const scope = this.#member.bound(id)?.scope;
     return typeof scope === 'string' && scope !== VIEW ? scope : undefined;
   }
 
@@ -1176,9 +1182,9 @@ export class DataSource extends EventTarget {
 
   /* ── Binding ───────────────────────────────────────────────────────── */
 
-  /** Take a component its binder has wired, and send it what is already
-   *  loaded. `bindSource()` is the way in. TODO 196 */
-  attach(el: BoundControl, facts: AttachFacts, sink: BindSink): void {
+  /** Take a component its binder has wired, by the bind id it gave, and send it
+   *  what is already loaded. `bindSource()` is the way in. TODO 196 */
+  attach(el: BoundControl, facts: AttachFacts & { id: string }, sink: BindSink): void {
     const had = this.#binding.componentScopes();
     const scope = typeof facts.scope === 'string' ? facts.scope : undefined;
     const arranged = scope ? this.#context.arranges(scope) : false;
@@ -1195,6 +1201,10 @@ export class DataSource extends EventTarget {
       this.#binding.drawBars(scope);
       this.#binding.drawScopesSoon();
     }
+    // A part's component joined — a chart swapped by Show as, after its legend: its section names it now. TODO 548
+    const named = [...this.#narrowing].flatMap(([key, p]) => (p.only === facts.id ? [key] : []));
+    for (const key of named) this.#binding.drawBars(key);
+    if (named.length) this.#binding.drawScopesSoon();
 
     // Whatever is already loaded, so a component bound late is not blank.
     this.#binding.push(el);
@@ -1221,12 +1231,11 @@ export class DataSource extends EventTarget {
     else if (this.#autoLoad && !this.#reads.rows.length) void this.load();
   }
 
-  /** Every row a bound component is under, UNPAGED — what "Select all rows"
-   *  ticks on a grid that holds one page. TODO 238 · TRAP T-select-all-is-the-visible-rows */
-  async allRows(el?: BoundControl): Promise<readonly Row[]> {
+  /** Every row a bound component is under, by its bind id, UNPAGED — what "Select
+   *  all rows" ticks on a grid that holds one page. TODO 238 · TRAP T-select-all-is-the-visible-rows */
+  async allRows(id?: string): Promise<readonly Row[]> {
     const rows = await this.#reads.every();
-    const entry = el ? this.#binding.get(el) : undefined;
-    const own = entry ? this.#only[entry.id] : undefined;
+    const own = id ? this.#only[id] : undefined;
     return own ? filterRows(rows, own, this.#now()) : rows;
   }
 

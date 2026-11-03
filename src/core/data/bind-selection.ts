@@ -17,7 +17,6 @@
  * - bindSelection — join a control to a FIELD on a source — declare, draw, report, redraw
  */
 import { report } from './report.js';
-import type { BoundControl } from './data-source-types.js';
 import type { FieldReading, FilterState } from './filter-state.js';
 import { VIEW, type QueryRequest } from './query.js';
 import { valueKey } from './store.js';
@@ -68,11 +67,11 @@ export interface SelectionBinding<T> {
    */
   key?: string;
   /**
-   * The ONE bound component a `component` answer narrows — a legend's own
-   * chart. A `component` reach needs it, or nothing is bound.
+   * The bind id of the ONE component a `component` answer narrows — a legend's
+   * own chart. A `component` reach needs it, or nothing is bound.
    * TRAP T-a-component-part-narrows-one-component
    */
-  only?: BoundControl;
+  only?: string;
   /** A scope that HOLDS the field: the control shows and changes that scope's
    *  answer, and has no part of its own — a chart Show as made from a grid, whose
    *  filters are already there. Will, TODO 548 */

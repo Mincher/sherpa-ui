@@ -58,7 +58,6 @@ import {
 } from './store.js';
 import { answerTree, answeredCondition, readingClause, type FieldFacts, type FieldReading } from './filter-state.js';
 import type { Where } from './where.js';
-import type { BoundControl } from './data-source-types.js';
 
 /** Every scope's setup, as plain data — what a page's data is under. */
 export interface Query {
@@ -215,7 +214,8 @@ export interface QueryDefaults {
  *  now; for an Apply or a Discard, every scope. `commit` applies what the
  *  edit names at once. TRAP T-one-command-one-door */
 export type QueryRequest =
-  | { scope?: string; field: string; reading: FieldReading | null; commit?: true; only?: BoundControl }
+  /** One field's answer; `only`, the bind id of the ONE component it narrows. */
+  | { scope?: string; field: string; reading: FieldReading | null; commit?: true; only?: string }
   | { scope?: string; field: string; suspended: boolean; commit?: true }
   | { scope?: string; suspended: boolean; commit?: true }
   | { scope?: string; reset: { carry?: boolean; organise?: boolean }; commit?: true }

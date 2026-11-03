@@ -11,7 +11,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, bindSource, openSource, statusFields } from '../../dist/data.js';
+import { ArrayStore, bindId, bindSource, openSource, statusFields } from '../../dist/data.js';
 import { filterWithout } from '../../dist/core/data/store.js';
 
 /** Health, worked out from the score: the gauge's zones (plan 683). */
@@ -61,7 +61,7 @@ test('a chart free of its field is narrowed by the View\'s other filters, never 
   // The page is narrowed by both; the gauge by Region alone.
   assert.equal(source.debugState().total, 1);
   assert.deepEqual(seen.at(-1), [1, 2, 3]);
-  assert.deepEqual(source.pickedFor(gauge, 'health'), ['At risk']);
+  assert.deepEqual(source.pickedFor(bindId(gauge), 'health'), ['At risk']);
 });
 
 test('only picks in force are lit: none while the field is Advanced or says "is not" (TODO 518)', async () => {
@@ -71,9 +71,9 @@ test('only picks in force are lit: none while the field is Advanced or says "is 
   bindSource(source, chart, { scope: 'chart', rows: 'all', readonly: true, free: ['plan'] });
   source.query.ask({ scope: VIEW, hold: ['plan'] });
   source.query.ask({ scope: VIEW, field: 'plan', reading: { picked: ['Pro'] } });
-  assert.deepEqual(source.pickedFor(chart, 'plan'), ['Pro']);
+  assert.deepEqual(source.pickedFor(bindId(chart), 'plan'), ['Pro']);
   source.query.ask({ scope: VIEW, field: 'plan', reading: { picked: ['Pro'], mode: 'advanced', tree: { op: 'eq', value: 'Free' } } });
-  assert.deepEqual(source.pickedFor(chart, 'plan'), [], 'Advanced is in force, not the Simple picks');
+  assert.deepEqual(source.pickedFor(bindId(chart), 'plan'), [], 'Advanced is in force, not the Simple picks');
   source.query.ask({ scope: VIEW, field: 'plan', reading: { op: 'ne', picked: ['Pro'] } });
-  assert.deepEqual(source.pickedFor(chart, 'plan'), [], '"is not Pro" lights no Pro');
+  assert.deepEqual(source.pickedFor(bindId(chart), 'plan'), [], '"is not Pro" lights no Pro');
 });

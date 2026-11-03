@@ -35,7 +35,7 @@
  * - .fillOpens — Each held field with an opening answer and no answer takes it, in place.
  */
 import { copyReading, readingAnswered, VIEW, type AxesDefinition, type AxisOffers, type Presentation, type PresentationDefinition, type Query, type ScopeQuery } from './query.js';
-import type { BoundControl, FilterSet } from './data-source-types.js';
+import type { FilterSet } from './data-source-types.js';
 import type { FieldReading } from './filter-state.js';
 import { report } from './report.js';
 
@@ -44,7 +44,8 @@ import { report } from './report.js';
  *  TRAP T-a-chart-scope-is-its-legend-field */
 export interface QueryPart {
   field: string;
-  only: BoundControl;
+  /** The bind id of the component it narrows. */
+  only: string;
   label?: string;
   shownIn?: string;
 }

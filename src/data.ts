@@ -102,7 +102,7 @@ export {
 } from './core/data/settings.js';
 export type { FieldStatus } from './core/data/field-status.js';
 /* A component joined to a source by hand — the provider does it for a page. TODO 196 */
-export { bindSource, type BindOptions } from './core/ui/bind-source.js';
+export { bindId, bindSource, type BindOptions } from './core/ui/bind-source.js';
 /* A PAGE, set up from one JSON document. TRAP T-a-page-is-its-definition */
 export {
   checkPage,

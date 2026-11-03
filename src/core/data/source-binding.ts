@@ -1,17 +1,18 @@
 /**
  * source-binding.ts — every component a DataSource is bound to, how each is
  * bound, and what each is pushed and drawn. A DataSource holds one, and is its
- * host. DOM-free: a component is only a key and the methods it has.
+ * host. The Query names a component by its bind id alone. DOM-free: a component
+ * is only the methods it is drawn by.
  *
  * Map:
  * - Bound — One bound component: how it is bound, and what it was last pushed.
  * - BindHost — What the binding asks its source, live, at each push and draw.
- * - SourceBinding — Every bound component, by element.
- * - .add — Bind a component, with the id a scope's `narrows` names it by.
+ * - SourceBinding — Every bound component, and how it is bound.
+ * - .add — Bind a component, by the bind id a scope's `narrows` names it by.
  * - .remove — Let a component go, and tell its sink.
- * - .get — One component's bind, live, or undefined.
+ * - .byId — The newest bind by this id, live, or undefined.
  * - .elements — Every bound component, as a copy.
- * - .entries — Every bind, live, in the order they were made.
+ * - .binds — Every bind, live, in the order they were made.
  * - .componentScopes — The scopes a bound component answers — every other one is the page's.
  * - .fieldsRead — The fields the bound components read from a row, or null — every field.
  * - .freeSets — Each set of fields a bind is free of, once.
@@ -45,6 +46,8 @@ import type { FieldReading } from './filter-state.js';
 
 /** One bound component: how it is bound, and what it was last pushed. */
 export interface Bound {
+  /** What it is drawn on: its draw methods. */
+  control: BoundControl;
   readonly: boolean;
   steerOnly: boolean;
   /** See AttachFacts.rows. */
@@ -90,19 +93,18 @@ export interface BindHost {
   rows(which: 'page' | 'all'): readonly Row[];
   /** Every row under the View less its clauses on these fields. TODO 479 */
   freeRows(fields: readonly string[]): readonly Row[];
-  /** A field's picks in force on one component. TODO 479 */
-  pickedFor(el: BoundControl, field: string): string[];
+  /** A field's picks in force on one component, by its bind id. TODO 479 */
+  pickedFor(id: string, field: string): string[];
   /** What narrows one bound component alone, by its id. */
   only(id: string): Filter | undefined;
   /** A component scope's own answer. */
   scoped(scope: string): Filter | undefined;
-  /** A bind id no other bind in its context has. */
-  mintId(): string;
 }
 
-/** Every bound component, by element. */
+/** Every bound component, and how it is bound. */
 export class SourceBinding {
-  /** Every bound component, and how it is bound. */
+  /** Every bound component, and how it is bound. Two may share a bind id: a chart
+   *  swapped by Show as for one of its name is the same component. */
   #bound = new Map<BoundControl, Bound>();
   /** The source this binding draws from. */
   readonly #host: BindHost;
@@ -111,10 +113,11 @@ export class SourceBinding {
     this.#host = host;
   }
 
-  /** Bind a component, with the id a scope's `narrows` names it by. */
-  add(el: BoundControl, facts: AttachFacts, sink: BindSink): void {
+  /** Bind a component, with the bind id a scope's `narrows` names it by. */
+  add(el: BoundControl, facts: AttachFacts & { id: string }, sink: BindSink): void {
     this.#bound.set(el, {
-      id: facts.id ?? (el.id || this.#host.mintId()),
+      control: el,
+      id: facts.id,
       readonly: facts.readonly ?? false,
       steerOnly: facts.steerOnly ?? false,
       rows: facts.rows ?? 'page',
@@ -135,19 +138,20 @@ export class SourceBinding {
     this.#bound.delete(el);
   }
 
-  /** One component's bind, live, or undefined. */
-  get(el: BoundControl): Bound | undefined {
-    return this.#bound.get(el);
+  /** The newest bind by this id, live, or undefined: a component swapped for another
+   *  of its name is the one bound last. */
+  byId(id: string): Bound | undefined {
+    return [...this.#bound.values()].findLast((b) => b.id === id);
   }
 
   /** Every bound component, as a copy. */
   get elements(): BoundControl[] {
-    return [...this.#bound.keys()];
+    return [...this.#bound.values()].map((b) => b.control);
   }
 
   /** Every bind, live, in the order they were made. */
-  entries(): IterableIterator<[BoundControl, Bound]> {
-    return this.#bound.entries();
+  binds(): IterableIterator<Bound> {
+    return this.#bound.values();
   }
 
   /** The scopes a bound component answers — every other one is the page's. */
@@ -186,7 +190,7 @@ export class SourceBinding {
 
   /** The tag of the first component drawn rows in a scope. TRAP T-a-scope-says-what-it-shows */
   componentOf(scope: string): string | undefined {
-    return tagOf([...this.#bound].find(([, b]) => b.scope === scope && !b.steerOnly)?.[0]);
+    return tagOf([...this.#bound.values()].find((b) => b.scope === scope && !b.steerOnly)?.control);
   }
 
   /** Is a page of rows drawn in this scope — or a pivot of them? TODOs 341, 574 */
@@ -201,7 +205,7 @@ export class SourceBinding {
 
   /** Push rows and state to every bound component. */
   publish(): void {
-    for (const [el] of this.#bound) this.push(el);
+    for (const el of this.#bound.keys()) this.push(el);
   }
 
   /** Give one component the rows and the view state. TRAP T-push-writes-state-as-attributes */
@@ -226,7 +230,7 @@ export class SourceBinding {
     const narrows = andFilter([this.#host.only(entry.id), into].filter((f): f is Filter => !!f));
     const own = free ? filterWithout(narrows, free) : narrows;
     // …and a free field's picks, which light it. TODO 479
-    const lit = entry.free?.map((f) => this.#host.pickedFor(el, f)) ?? null;
+    const lit = entry.free?.map((f) => this.#host.pickedFor(entry.id, f)) ?? null;
     const ownKey = JSON.stringify([own ?? null, lit]);
     if (entry.lastRows === base && entry.lastOwn === ownKey) return;
     entry.lastRows = base;
@@ -241,7 +245,8 @@ export class SourceBinding {
 
   /** Tell each control over several scopes, and each bar that draws a part, one field's reading in a scope. */
   drawPanelReading(field: string, reading: FieldReading, scope: string): void {
-    for (const [el, b] of this.#bound) {
+    for (const b of this.#bound.values()) {
+      const el = b.control;
       // A bar draws a chart's legend in its own. TODO 670
       const draws = Array.isArray(b.scope) || (typeof b.scope === 'string' && this.#host.partsIn(b.scope).includes(scope));
       if (draws) el.drawReading?.(field, reading, scope);
@@ -251,7 +256,7 @@ export class SourceBinding {
   /** Tell each control over a field's home its reading — and each bar that draws
    *  that home, a part, in its own. TODO 670 */
   drawReading(field: string, reading: FieldReading, home: string): void {
-    for (const [el, { scope }] of this.#bound) {
+    for (const { control: el, scope } of this.#bound.values()) {
       if (scope === home || (Array.isArray(scope) && scope.includes(home))
         || (typeof scope === 'string' && this.#host.partsIn(scope).includes(home))) {
         el.drawReading?.(field, reading, home);
@@ -262,7 +267,7 @@ export class SourceBinding {
   /** Draw every bar over one scope, as the panel draws it — after a request
    *  that came from somewhere else (the panel) changed what it holds. */
   drawBars(scope: string): void {
-    for (const [el, { scope: s }] of this.#bound) {
+    for (const { control: el, scope: s } of this.#bound.values()) {
       if (typeof s !== 'string' || !el.drawScope) continue;
       // …and a bar that draws it, a part, in its own. TODO 670
       if (s === scope || this.#host.partsIn(s).includes(scope)) void el.drawScope(...this.#slice(s));
@@ -294,7 +299,7 @@ export class SourceBinding {
    *  one of them. TRAP T-two-bars-over-one-scope */
   drawBarsBehind(scope: string): void {
     const held = this.#host.describe(scope).filters.map((f) => f.id).join();
-    for (const [el, { scope: s }] of this.#bound) {
+    for (const { control: el, scope: s } of this.#bound.values()) {
       if (s !== scope || !el.drawScope || el.heldFields?.join() === held) continue;
       void el.drawScope(...this.#slice(scope));
     }
@@ -303,7 +308,7 @@ export class SourceBinding {
   /** Draw every bar over one scope each; settles when all have drawn. */
   drawEveryBar(): Promise<unknown> {
     const drawn: Array<void | Promise<void>> = [];
-    for (const [el, { scope }] of this.#bound) {
+    for (const { control: el, scope } of this.#bound.values()) {
       if (typeof scope === 'string' && el.drawScope) drawn.push(el.drawScope(...this.#slice(scope)));
     }
     return Promise.all(drawn);
@@ -318,7 +323,7 @@ export class SourceBinding {
   /** A control over several scopes — the panel — is drawn each WHOLE, once
    *  per moment, when what a scope holds changes. TRAP T-an-open-panel-follows-the-data-layer */
   readonly drawScopesSoon = coalesce((): void => {
-    for (const [el, { scope }] of this.#bound) {
+    for (const { control: el, scope } of this.#bound.values()) {
       // A scope this page does not have — nothing held, nothing to offer — is not drawn.
       if (Array.isArray(scope) && el.drawScopes) {
         // Each chart's own, between the View and the rest. Will, TODO 52.
@@ -339,7 +344,7 @@ export class SourceBinding {
    * TRAP T-an-inactive-chip-says-where-its-filter-went
    */
   supersede(held: Readonly<Record<string, FieldReading>>): void {
-    for (const [el, { scope }] of this.#bound) {
+    for (const { control: el, scope } of this.#bound.values()) {
       if (typeof scope === 'string' && scope !== VIEW) el.supersede?.(held, this.#host.scopeLabel(VIEW));
     }
   }
@@ -354,7 +359,7 @@ export class SourceBinding {
     fieldsOf: (scopes: string[]) => string[], dirty: (scope: string) => boolean, waits: (scope: string) => boolean,
     failed: (scopes: string[]) => string[], applied: (scopes: string[], fields: readonly string[]) => Record<string, FieldReading>,
   ): void {
-    for (const [, { scope, sink }] of this.#bound) {
+    for (const { scope, sink } of this.#bound.values()) {
       if (!scope) continue;
       const scopes = typeof scope === 'string' ? [scope] : [...scope];
       const fields = fieldsOf(scopes);

@@ -21,12 +21,11 @@
  * - .presentsIn — Does any member's chart draw a summary in this scope?
  * - .theirs — Is a scope ANOTHER source's than the one that draws in this one?
  * - .knows — The member that knows a field, else the first.
- * - .bindOf — How any member bound this control.
+ * - .bound — How any member bound the control with this bind id.
  * - .page — A page, or the rows per page, for the sources that draw a page in a scope.
- * - .mintId — A bind id no other member has made.
  */
 import type { Arrangement, Query, ScopeQuery } from './query.js';
-import type { BoundControl, FilterSet } from './data-source-types.js';
+import type { FilterSet } from './data-source-types.js';
 import type { FieldReading, RuledOut } from './filter-state.js';
 import type { QueryPart } from './query-declarations.js';
 import type { Where } from './where.js';
@@ -80,8 +79,8 @@ export interface QueryMember {
   presentsIn(scope: string): boolean;
   /** Show this page of its rows, or this many rows a page. */
   page(edit: { page: number } | { pageSize: number }): void;
-  /** How it bound this control, if it did. */
-  bindOf(el: BoundControl): MemberBind | undefined;
+  /** How it bound the control with this bind id, if it did. */
+  bound(id: string): MemberBind | undefined;
   /** What the context did, in order, once its Query is in place: its follow-ups. In join order. */
   heard(changes: readonly QueryChange[]): void | Promise<void>;
   /** Does it know this field? */
@@ -96,11 +95,13 @@ export interface QueryMember {
   ruledOut?(scope: string, field: string): ((key: string) => RuledOut) | undefined;
 }
 
-/** How a member bound a control. */
+/** How a member bound a control: its bind id, its rows, its scope, and its tag. */
 export interface MemberBind {
   id: string;
   rows: 'page' | 'all';
   scope?: string | readonly string[];
+  /** Its tag, and its `data-type` where it has one — `sherpa-radial-chart:pie`. TODO 548 */
+  tag?: string;
 }
 
 /** The Query and the declarations, live: read each time, never kept — a pure edit swaps a copy in. */
@@ -130,14 +131,12 @@ export interface QueryLive {
 export interface QueryHandle {
   /** The live Query and declarations. Read only: every edit is the context's. */
   live(): Readonly<QueryLive>;
-  /** A bind id no other member has made. */
-  mintId(): string;
   /** Moves with each declaration a walk reads — a part, a set. */
   walkVersion(): number;
   /** Does any member draw a page of rows in this scope? */
   pagedIn(scope: string): boolean;
-  /** How any member bound this control. */
-  bindOf(el: BoundControl): MemberBind | undefined;
+  /** How any member bound the control with this bind id. */
+  bound(id: string): MemberBind | undefined;
   /** Leave the context. */
   leave(): void;
 }
@@ -146,8 +145,6 @@ export interface QueryHandle {
 export class QueryMembers {
   /** Every source that joined, in join order. */
   readonly #members = new Set<QueryMember>();
-  /** Binds made, for an id when the element has none. */
-  #binds = 0;
 
   /** How many sources share this Query. */
   get size(): number {
@@ -206,10 +203,10 @@ export class QueryMembers {
     return members.find((m) => m.has(field)) ?? members[0];
   }
 
-  /** How any member bound this control. */
-  bindOf(el: BoundControl): MemberBind | undefined {
+  /** How any member bound the control with this bind id. */
+  bound(id: string): MemberBind | undefined {
     for (const m of this.#members) {
-      const bind = m.bindOf(el);
+      const bind = m.bound(id);
       if (bind) return bind;
     }
     return undefined;
@@ -221,10 +218,5 @@ export class QueryMembers {
     const { scope, ...at } = edit;
     const owners = scope === undefined ? [] : [...this.#members].filter((m) => m.pagedIn(scope));
     for (const member of owners.length ? owners : this.#members) member.page(at);
-  }
-
-  /** A bind id no other member has made. */
-  mintId(): string {
-    return `bind-${++this.#binds}`;
   }
 }

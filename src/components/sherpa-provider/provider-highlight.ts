@@ -17,6 +17,7 @@
 import { VIEW } from '../../core/data/query.js';
 import type { Row } from '../../core/data/store.js';
 import type { DataSource } from '../../core/data/data-source.js';
+import { bindId } from '../../core/ui/bind-source.js';
 
 /** What the pointer rests on while it lights its matches: a chip, one value of it, or a legend row. */
 export interface Hovered {
@@ -84,7 +85,7 @@ export class ProviderHighlight {
   #lit(el: Element, scope: string | readonly string[] | undefined, source: DataSource): Test {
     const hovered = this.#hovered;
     if (!hovered) return null;
-    const reaches = this.#across() || hovered.scope === VIEW || source.query.partFacts(hovered.scope)?.only === el
+    const reaches = this.#across() || hovered.scope === VIEW || source.query.partFacts(hovered.scope)?.only === bindId(el)
       || (typeof scope === 'string' ? scope === hovered.scope : !!scope?.includes(hovered.scope));
     if (!reaches) return null;
     if (!this.#tests.has(source)) this.#tests.set(source, source.highlightTest(hovered));

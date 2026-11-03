@@ -56,7 +56,7 @@
  * - .import — Take a question back in, exactly.
  * - .join — A source joins: it gets its handle.
  */
-import type { BoundControl, FilterSet, QueryState } from './data-source-types.js';
+import type { FilterSet, QueryState } from './data-source-types.js';
 import {
   arrangementOf, copyQuery, emptyScope, freezeReading, sameAnswer, VIEW,
   type AxesDefinition, type AxisOffers, type Presentation, type PresentationDefinition, type Query, type QueryDefaults,
@@ -153,7 +153,7 @@ export class QueryContext extends EventTarget {
       presets: (scope) => this.#decl.presets(scope),
       opens: (scope) => this.#decl.opens(scope),
       knows: (field) => this.#members.knows(field),
-      bindOf: (el) => this.#members.bindOf(el),
+      bound: (id) => this.#members.bound(id),
       presents: (scope) => this.#members.presentsIn(scope),
       theirs: (scope) => this.#members.theirs(scope),
     };
@@ -250,7 +250,7 @@ export class QueryContext extends EventTarget {
     return this.#decl.defaults.get(scope)?.readings;
   }
 
-  /** What `declarePart` was told for this scope, or undefined. `only` is the element itself. */
+  /** What `declarePart` was told for this scope, or undefined. `only` is the bind id of its component. */
   partFacts(scope: string): QueryPart | undefined {
     const part = this.#decl.parts.get(scope);
     return part ? { ...part } : undefined;
@@ -371,7 +371,7 @@ export class QueryContext extends EventTarget {
   }
 
   /**
-   * A component's OWN default filter — readings that narrow `only` it — as its
+   * A component's OWN default filter — readings that narrow `only`, its bind id — as its
    * scope in the Query. It is put back under any Query that does not name that
    * scope, so a View pick keeps it; `undefined` forgets it and its scope.
    * TRAP T-a-component-default-outlives-a-view
@@ -379,7 +379,7 @@ export class QueryContext extends EventTarget {
   declareDefault(
     scope: string,
     readings: Readonly<Record<string, FieldReading>> | undefined,
-    at: { only?: BoundControl } = {},
+    at: { only?: string } = {},
   ): void {
     const was = this.#live.draft.scopes[scope]?.readings ?? {};
     const gone = Object.fromEntries(Object.keys(was).filter((f) => !readings || !(f in readings)).map((f) => [f, undefined]));
@@ -615,10 +615,9 @@ export class QueryContext extends EventTarget {
     if ((member.remote || this.#waiting.size) && this.#live.draft === this.#live.applied) this.#split();
     return {
       live: () => this.#live,
-      mintId: () => this.#members.mintId(),
       walkVersion: () => this.#decl.version,
       pagedIn: (scope) => this.#members.pagedIn(scope),
-      bindOf: (el) => this.#members.bindOf(el),
+      bound: (id) => this.#members.bound(id),
       leave: () => { this.#members.delete(member); },
     };
   }

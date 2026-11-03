@@ -17,7 +17,7 @@ import { test, expect } from './harness';
 
 /** One source over four rows, plus a fake legend bound at the given scope. */
 const SETUP = `
-  const { ArrayStore, DataSource, bindSelection, bindSource } = await import('/dist/data.js');
+  const { ArrayStore, DataSource, bindId, bindSelection, bindSource } = await import('/dist/data.js');
   const store = new ArrayStore(
     [{ id: 1, os: 'mac' }, { id: 2, os: 'win' }, { id: 3, os: 'linux' }, { id: 4, os: 'mac' }],
     { key: 'id' },
@@ -169,7 +169,7 @@ test('a legend with `only` narrows its chart, never the grid beside it', async (
     bindSelection(legend, src, {
       field: 'os', values: ['mac', 'win', 'linux'],
       read: (l) => ['mac', 'win', 'linux'].filter((v) => !l.off.includes(v)),
-      draw: () => {}, event: 'legend-item-click', reach: 'component', key: 'legend', only: chart,
+      draw: () => {}, event: 'legend-item-click', reach: 'component', key: 'legend', only: bindId(chart),
     });
     await src.load();
     await settle();
@@ -212,8 +212,8 @@ test('two legends with `only` each narrow their own chart', async ({ page }) => 
       });
       return l;
     };
-    const a = legend(one, 'legend-one');
-    const b = legend(two, 'legend-two');
+    const a = legend(bindId(one), 'legend-one');
+    const b = legend(bindId(two), 'legend-two');
     await src.load();
     a.off = ['mac'];
     a.dispatchEvent(new Event('legend-item-click'));

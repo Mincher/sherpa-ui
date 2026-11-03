@@ -33,7 +33,7 @@ import type { Failure } from '../../core/data/failure.js';
 import type { DataSource, QueryState } from '../../core/data/data-source.js';
 import type { Where } from '../../core/data/where.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
-import { bindSource } from '../../core/ui/bind-source.js';
+import { bindId, bindSource } from '../../core/ui/bind-source.js';
 import { ProviderMode, isColumn } from './provider-mode.js';
 import { ProviderPage, type Bar, type SharedStore } from './provider-page.js';
 import { ProviderReach } from './provider-reach.js';
@@ -862,7 +862,7 @@ export class SherpaProvider extends SherpaElement {
       // A number's zones, from a status field. Plan 683 S3
       const summary = summariseMarked(rows, spec, (f) => src.valuesFor(f), (f) => src.zonesOf(f)?.zones, test);
       return zoned && summary && typeof summary === 'object' && 'zones' in summary
-        ? { ...summary, picked: src.pickedFor(el as Populatable, zoned) } : summary;
+        ? { ...summary, picked: src.pickedFor(bindId(el), zoned) } : summary;
     } : undefined;
     // It draws a hover's matches on its own rows. TODO 655
     const highlights = takes.includes('highlight') ? el as Highlights : null;
@@ -971,7 +971,7 @@ export class SherpaProvider extends SherpaElement {
       return undefined;
     }
     const scope = `own:${el.id || this.#ownId(el)}`;
-    source.query.declareDefault(scope, source.readingsOf(where), { only: el as Populatable });
+    source.query.declareDefault(scope, source.readingsOf(where), { only: bindId(el) });
     return () => source.query.declareDefault(scope, undefined);
   }
 

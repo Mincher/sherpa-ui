@@ -22,9 +22,8 @@ import type { Presentation } from '../../core/data/query.js';
 import type { Row } from '../../core/data/store.js';
 import type { DataSource } from '../../core/data/data-source.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
-import type { Populatable } from '../../core/ui/apply-state.js';
 import { declared } from './provider-declared.js';
-import type { BindOptions } from '../../core/ui/bind-source.js';
+import { bindId, type BindOptions } from '../../core/ui/bind-source.js';
 
 /** The component each chart presentation is drawn by, loaded when first shown;
  *  its prototype, legend and all, is the template's `shown-<kind>-tpl`. Will, TODO 548 */
@@ -203,7 +202,7 @@ export class ProviderShowAs {
       if (want && kind === 'grid' && parked && shownAs(el) !== 'grid') parked.append(...el.childNodes);
       // A grid made from a chart takes its filters with it: they narrow it alone.
       if (shownAs(el) === 'grid' && this.#authored.has(el)) {
-        for (const c of (el as Grid).columns ?? []) source.query.ask({ scope: slot, field: c.field, reading: null, only: el as Populatable });
+        for (const c of (el as Grid).columns ?? []) source.query.ask({ scope: slot, field: c.field, reading: null, only: bindId(el) });
       }
       if (!this.#authored.has(el) && shownAs(el) === authored) this.#parked.set(slot, el);
       if (next !== parked) this.#authored.set(next, authored);
@@ -277,7 +276,7 @@ export class ProviderShowAs {
     el.addEventListener('column-filter-change', (e) => {
       e.stopPropagation();
       const { field, reading } = (e as CustomEvent<{ field: string; reading: FieldReading | null }>).detail;
-      source.query.ask({ scope: slot, field, reading, only: el as Populatable, commit: true });
+      source.query.ask({ scope: slot, field, reading, only: bindId(el), commit: true });
       // A field's home draws its controls: this scope is not its home, so it is told here.
       (el as Element & { drawReading(f: string, r: FieldReading): void }).drawReading(field, source.query.reading(slot, field) ?? {});
     }, { signal: stop.signal });

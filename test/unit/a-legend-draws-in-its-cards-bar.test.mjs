@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, bindSource } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindId, bindSource } from '../../dist/data.js';
 
 const ROWS = [
   { id: 1, sev: 'critical', os: 'mac' }, { id: 2, sev: 'info', os: 'mac' },
@@ -36,7 +36,7 @@ async function setup() {
   bindSource(source, other, { rows: 'all', readonly: true });
   bindSource(source, bar, { scope: 'by-sev', steerOnly: true });
   await source.load();
-  source.query.declarePart('picks:bar', { field: 'sev', only: chart, label: 'Alerts', shownIn: 'by-sev' });
+  source.query.declarePart('picks:bar', { field: 'sev', only: bindId(chart), label: 'Alerts', shownIn: 'by-sev' });
   await tick();
   return { source, seen, chart, bar, drawn };
 }
@@ -60,7 +60,7 @@ test('a pick from the slot\'s bar, in the part\'s scope, narrows the chart alone
   assert.deepEqual(seen.get('donut'), [1, 2, 3, 4]);
   assert.equal(source.query.applied.scopes['by-sev']?.readings?.sev, undefined);
   // The legend's own door, or the panel's: the bar is told, in the part's scope.
-  source.query.ask({ scope: 'picks:bar', field: 'sev', reading: { picked: ['info'] }, only: chart });
+  source.query.ask({ scope: 'picks:bar', field: 'sev', reading: { picked: ['info'] }, only: bindId(chart) });
   await tick();
   assert.deepEqual(seen.get('bar'), [2]);
   assert.deepEqual(drawn.readings.at(-1), ['picks:bar', 'sev', ['info']]);
@@ -68,7 +68,7 @@ test('a pick from the slot\'s bar, in the part\'s scope, narrows the chart alone
 
 test('off again, the bar lets the legend go: no filter answered elsewhere', async () => {
   const { source, chart, drawn } = await setup();
-  source.query.declarePart('picks:bar', { field: 'sev', only: chart, label: 'Alerts' });
+  source.query.declarePart('picks:bar', { field: 'sev', only: bindId(chart), label: 'Alerts' });
   await tick();
   assert.equal(source.describe('by-sev').filters.some((f) => f.answeredIn), false);
   assert.equal(drawn.scopes.at(-1).filters.some((f) => f.answeredIn), false);

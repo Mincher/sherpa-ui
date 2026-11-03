@@ -18,7 +18,7 @@ import { VIEW } from '../../core/data/query.js';
 import { report } from '../../core/data/report.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { declared, up } from './provider-declared.js';
-import type { Populatable } from '../../core/ui/apply-state.js';
+import { bindId } from '../../core/ui/bind-source.js';
 import type { DataSource } from '../../core/data/data-source.js';
 import { cardOf } from './provider-cards.js';
 
@@ -96,7 +96,7 @@ export class ProviderLegends {
       draw: (c, picked) => { c.picked = [...picked]; },
       event: picks.event,
       reach: 'component',
-      ...(only ? { only } : {}),
+      ...(only ? { only: bindId(only) } : {}),
       ...(home ? { home } : {}),
       key,
     }).destroy;
@@ -113,7 +113,7 @@ export class ProviderLegends {
     const bars = (): Counts[] => (slot ? host.bars(slot) : []).filter((b): b is Counts => declared(b).takes.includes('counts'));
     const lay = (): void => {
       const inBar = host.chips() && bar;
-      if (!home) source.query.declarePart(key, { field, only: only as Populatable, ...(label ? { label } : {}), ...(inBar ? { shownIn: slot! } : {}) });
+      if (!home) source.query.declarePart(key, { field, only: bindId(only), ...(label ? { label } : {}), ...(inBar ? { shownIn: slot! } : {}) });
       el.toggleAttribute('data-chips', host.chips() && !inBar);
       only.toggleAttribute('data-no-legend', inBar);
       // Its value chips count what its chart counts, each its legend row's number. Will, TODO 670

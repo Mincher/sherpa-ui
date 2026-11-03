@@ -7,17 +7,17 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindId } from '../../dist/data.js';
 
 const open = () => new DataSource({ store: new ArrayStore([{ id: 1, region: 'EMEA' }], { key: 'id' }), autoLoad: false });
 
-test('partFacts() reads back declarePart; `only` is the element itself', () => {
+test('partFacts() reads back declarePart; `only` is its component\'s bind id', () => {
   const source = open();
   const chart = {};
-  source.query.declarePart('picks:region', { field: 'region', only: chart });
+  source.query.declarePart('picks:region', { field: 'region', only: bindId(chart) });
   const got = source.query.partFacts('picks:region');
   assert.equal(got.field, 'region');
-  assert.equal(got.only, chart);
+  assert.equal(got.only, bindId(chart));
   source.query.declarePart('picks:region', undefined);
   assert.equal(source.query.partFacts('picks:region'), undefined);
 });

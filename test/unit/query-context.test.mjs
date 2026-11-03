@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, QueryContext, fakeRemote, VIEW } from '../../dist/data.js';
+import { ArrayStore, DataSource, QueryContext, bindId, fakeRemote, VIEW } from '../../dist/data.js';
 
 const ROWS = [{ id: 1, plan: 'Pro' }, { id: 2, plan: 'Free' }];
 const store = () => new ArrayStore(ROWS, { key: 'id' });
@@ -59,7 +59,7 @@ test('each read of the Query is the context\'s (366 step 13)', () => {
   source.query.ask({ scope: 'data', hold: ['id'] });
   source.query.declareScope('data', { label: 'Records', arranges: true });
   source.query.declareSets('data', [{ id: 'set', fields: ['id'] }]);
-  source.query.declarePart('legend', { field: 'plan', only: chart, label: 'Plan' });
+  source.query.declarePart('legend', { field: 'plan', only: bindId(chart), label: 'Plan' });
   source.query.declareDefault('grid', { id: { picked: [1] } });
   source.query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Pro'] } });
 
@@ -73,7 +73,7 @@ test('each read of the Query is the context\'s (366 step 13)', () => {
   assert.deepEqual(query.reading(VIEW, 'plan').picked, ['Pro']);
   assert.ok(Object.isFrozen(query.reading(VIEW, 'plan')));
   assert.deepEqual(query.defaultFor('grid'), { id: { picked: [1] } });
-  assert.deepEqual(query.partFacts('legend'), { field: 'plan', only: chart, label: 'Plan' });
+  assert.deepEqual(query.partFacts('legend'), { field: 'plan', only: bindId(chart), label: 'Plan' });
   assert.deepEqual(query.scopeFacts('data'), { label: 'Records', arranges: true });
   assert.equal(query.scopeLabel('other'), 'other');
   assert.equal(query.arranges(VIEW), false);

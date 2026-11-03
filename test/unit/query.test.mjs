@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { compile, VIEW, DataSource, bindSource, ArrayStore, filterRows, fakeRemote } =
+const { compile, VIEW, DataSource, bindId, bindSource, ArrayStore, filterRows, fakeRemote } =
   await import(new URL('../../dist/data.js', import.meta.url));
 
 const ROWS = [
@@ -333,7 +333,7 @@ test('a legend narrows its chart at once, even on a remote source — its rows a
     id: 'chart', setAttribute() {}, removeAttribute() {}, hasAttribute: () => false, populate() {},
   });
   bindSource(src, chart, { readonly: true, rows: 'all' });
-  src.query.ask({ scope: 'legend', field: 'status', reading: { picked: ['active'] }, only: chart });
+  src.query.ask({ scope: 'legend', field: 'status', reading: { picked: ['active'] }, only: bindId(chart) });
   assert.equal(src.query.dirty(), false);
   assert.deepEqual(Object.keys(src.debugState().only), ['chart']);
 });

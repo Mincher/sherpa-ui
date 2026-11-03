@@ -52,7 +52,6 @@ import { valueKey, type SortSpec } from './store.js';
 import { answerTree, modeOf, withPreset, type FieldReading } from './filter-state.js';
 import { compiles, type MemberBind, type QueryChange, type QueryMember } from './query-members.js';
 import type { Preset, QueryPart } from './query-declarations.js';
-import type { BoundControl } from './data-source-types.js';
 import type { Where, WhereCondition } from './where.js';
 import { report } from './report.js';
 
@@ -577,8 +576,8 @@ export interface CopyFacts {
   opens: (scope: string) => ReadonlyMap<string, FieldReading> | undefined;
   /** The member that knows a field. */
   knows: (field: string) => Pick<QueryMember, 'raws' | 'ruledOut' | 'carriesOver'> | undefined;
-  /** How a member bound this control. */
-  bindOf: (el: BoundControl) => MemberBind | undefined;
+  /** How a member bound the control with this bind id. */
+  bound: (id: string) => MemberBind | undefined;
   presents: (scope: string) => boolean;
   theirs: (scope?: string) => (id: string) => boolean;
 }
@@ -712,10 +711,10 @@ class Work {
  * total. `undefined` removes the reading.
  * TRAP T-a-component-part-narrows-one-component · TRAP T-one-query-one-owner
  */
-function write(w: Work, scope: string, field: string, reading: FieldReading | undefined, at: { only?: BoundControl } = {}): void {
+function write(w: Work, scope: string, field: string, reading: FieldReading | undefined, at: { only?: string } = {}): void {
   // A declared part narrows its own component, whoever writes it — a panel too.
   const only = at.only ?? w.facts.parts.get(scope)?.only;
-  const bind = only ? w.facts.bindOf(only) : undefined;
+  const bind = only ? w.facts.bound(only) : undefined;
   if (reading && only && bind?.rows !== 'all') {
     report({
       code: 'component-part-on-a-page',
@@ -1031,7 +1030,7 @@ function lower(w: Work, field: string, to: string): void {
  * it is not given. The answer already in force changes nothing and tells no
  * one. `null` clears it. 366 step 18 · TRAP T-one-query-one-owner
  */
-function answer(w: Work, scope: string, field: string, reading: FieldReading | null, at: { only?: BoundControl } = {}): void {
+function answer(w: Work, scope: string, field: string, reading: FieldReading | null, at: { only?: string } = {}): void {
   if (at.only || w.facts.parts.has(scope) || w.draft.scopes[scope]?.narrows?.length) {
     const next = reading && readingAnswered(reading) ? reading : undefined;
     if (sameReading(w.draft.scopes[scope]?.readings[field], next)) return;
@@ -1262,7 +1261,7 @@ export function editCopies(copies: Copies, request: QueryRequest, facts: CopyFac
 /** A scope's own readings, written as its page declares them — its start, or a
  *  component's own default (`only`) — each told as written. `undefined` removes one. */
 export function writeScope(
-  copies: Copies, scope: string, readings: Readonly<Record<string, FieldReading | undefined>>, facts: CopyFacts, at: { only?: BoundControl } = {},
+  copies: Copies, scope: string, readings: Readonly<Record<string, FieldReading | undefined>>, facts: CopyFacts, at: { only?: string } = {},
 ): Edited {
   const w = new Work(copies, facts);
   for (const [field, reading] of Object.entries(readings)) write(w, scope, field, reading, reading ? at : {});

@@ -6,6 +6,7 @@
  *
  * Map:
  * - BindOptions — What a component may do with the source it is bound to.
+ * - bindId — A control's bind id: what a part, a component's own default and a command's `only` name it by.
  * - bindSource — Point a component at a source: rows and `data-*` down, steering events back.
  * - SteeringEvent — One of them.
  * - SteerBind — What steering needs of one binding: its scope, and where a hover goes.
@@ -36,6 +37,23 @@ export interface BindOptions extends AttachFacts {
   /** Where a bar's rest on a chip, or one value of it, GOES: a hover lights its
    *  matches, and is the page's, never the Query's. Will, TODO 655 */
   hover?: (hovered: { scope: string; field: string; on: boolean; value?: string }) => void;
+}
+
+/** Each control's bind id: the data layer names a component by it, never by the element. */
+const ids = new WeakMap<object, string>();
+/** Bind ids made for controls with no `id` of their own. */
+let minted = 0;
+
+/** A control's bind id — what a part, a component's own default and a command's
+ *  `only` name it by: the one it was bound with, else its own `id`, else one made
+ *  for it. The same while it lives, bound or not. */
+export function bindId(el: object): string {
+  let id = ids.get(el);
+  if (id === undefined) {
+    const own = (el as { id?: unknown }).id;
+    ids.set(el, (id = typeof own === 'string' && own ? own : `bind-${++minted}`));
+  }
+  return id;
 }
 
 /**
@@ -95,9 +113,12 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
   // …and over a LIVE one, its values report while they move. Will, TODO 107.
   if (options.scope && source.applyOn === 'input') el.setAttribute('data-apply-on', 'input');
   // TRAP T-signal-not-a-teardown-list — drops the BINDING; `once` leaves nothing.
+  // Its bind id, kept here: the source names it by that alone.
+  const id = options.id ?? bindId(el);
+  ids.set(el, id);
   options.signal?.addEventListener('abort', () => source.unbind(el), { once: true });
 
-  source.attach(el, options, {
+  source.attach(el, { ...options, id }, {
     view: (view) => writeView(el, view, options.scope, slotOf(source, options.scope)),
     rows: (rows) => {
       // populate() waits for the first render itself, so a component bound
@@ -276,7 +297,7 @@ const STEERS = {
     const answer = detail['answer'];
     if (typeof answer !== 'function') return undefined;
     event.preventDefault();
-    void source.allRows(el).then((rows) => (answer as (rows: readonly Row[]) => void)(rows));
+    void source.allRows(bindId(el)).then((rows) => (answer as (rows: readonly Row[]) => void)(rows));
     return undefined;
   },
 } satisfies Record<string, (steering: Steering) => QueryRequest | undefined>;

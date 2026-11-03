@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { ArrayStore } = await import(new URL('stores.js', core));
 const { DataSource } = await import(new URL('data-source.js', core));
-const { bindSource } = await import(new URL('../ui/bind-source.js', core));
+const { bindId, bindSource } = await import(new URL('../ui/bind-source.js', core));
 
 const ROWS = [
   { id: 1, plan: 'Pro', region: 'EMEA' }, { id: 2, plan: 'Free', region: 'EMEA' },
@@ -54,7 +54,7 @@ test('a View field names ONE scope to go down to: the first that has it, a compo
   const { source, chart, sendTo } = await setup();
   assert.deepEqual(sendTo('region'), { scope: 'data', label: 'Customer records' });
   // A chart's own scope has the field too: still one, the page's first. Will, TODO 346.
-  source.query.declarePart('picks:bar', { field: 'region', only: chart, label: 'By region' });
+  source.query.declarePart('picks:bar', { field: 'region', only: bindId(chart), label: 'By region' });
   assert.deepEqual(sendTo('region'), { scope: 'data', label: 'Customer records' });
   // In the page's order: a scope offered first is named first.
   source.query.declareScope('other', { label: 'Other records' });
@@ -83,7 +83,7 @@ test('SENT DOWN, the View lets go and the answer goes with the field', async () 
 
 test('a field goes back down to where it CAME UP from — a chart\'s own scope — though another scope has it too', async () => {
   const { source, seen, chart, send, sendTo } = await setup();
-  source.query.declarePart('picks:bar', { field: 'plan', only: chart, label: 'By plan' });
+  source.query.declarePart('picks:bar', { field: 'plan', only: bindId(chart), label: 'By plan' });
   source.query.ask({ scope: 'picks:bar', field: 'plan', reading: { picked: ['Pro'] } });
   send('view', 'plan', 'picks:bar');
   await tick();
@@ -130,7 +130,7 @@ test('A to the View to B: the field is in B alone, and A does not get it back', 
    is kept IN the Query. */
 test('where a View field came up from is in the Query, so a reload still returns it there', async () => {
   const first = await setup();
-  first.source.query.declarePart('picks:bar', { field: 'plan', only: first.chart, label: 'By plan' });
+  first.source.query.declarePart('picks:bar', { field: 'plan', only: bindId(first.chart), label: 'By plan' });
   first.source.query.ask({ scope: 'picks:bar', field: 'plan', reading: { picked: ['Pro'] } });
   first.send('view', 'plan', 'picks:bar');
   await tick();
@@ -138,7 +138,7 @@ test('where a View field came up from is in the Query, so a reload still returns
   assert.deepEqual(kept.scopes.view.from, { plan: 'picks:bar' });
 
   const again = await setup();
-  again.source.query.declarePart('picks:bar', { field: 'plan', only: again.chart, label: 'By plan' });
+  again.source.query.declarePart('picks:bar', { field: 'plan', only: bindId(again.chart), label: 'By plan' });
   await again.source.query.setQuery(kept);
   assert.deepEqual(again.sendTo('plan'), { scope: 'picks:bar', label: 'By plan', origin: true });
 
