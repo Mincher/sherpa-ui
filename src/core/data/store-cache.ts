@@ -21,7 +21,7 @@
  * - .tracks — A page that opens again, or a tab shown, asks the store what moved, not for the whole set.
  * - .recheck — Read the set again BEHIND the one held, which stays meanwhile.
  * - .keep — Keep the set beyond the session, and start from the copy kept last time.
- * - .drop — Hold nothing; `forget`, and the kept copy goes too, and nothing more is kept.
+ * - .drop — Hold nothing; `forget`, and the kept copy goes too — a sign-out.
  * - .hold — Hold the whole set, up to a cap: one shared read, waited for.
  * - .retry — A new page tries a failed whole read once more.
  * - .letGo — A Refresh: the set is due, and read again before it is used.
@@ -202,8 +202,9 @@ export class StoreCache extends EventTarget {
     });
   }
 
-  /** Hold nothing; `forget`, and the kept copy goes too, and nothing more is
-   *  kept until `keep` is called again — a sign-out. */
+  /** Hold nothing; `forget`, and the kept copy goes too — a sign-out. Nothing kept
+   *  is shown again; whether the next set is kept is its port's: a page's closes,
+   *  a worker's goes on. TRAP T-a-kept-set-is-checked-each-session */
   drop(options: { forget?: boolean } = {}): void {
     this.#set = null;
     this.#due = false;
@@ -211,7 +212,6 @@ export class StoreCache extends EventTarget {
     this.#noRestore = true;
     if (!options.forget) return;
     void this.#keep?.forget();
-    this.#keep = null;
     this.#restoring = null;
   }
 

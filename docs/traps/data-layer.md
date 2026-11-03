@@ -1459,8 +1459,14 @@ rows it shows, the writes that wait), its own keeps, and the kept notices; the
 device loses every set, every outbox entry and every kept notice. Before, only the
 calling context forgot: the worker's set wrote the copy back, its rows still
 showed, and the last reader's waiting writes were sent for the next. A write that
-waited is DROPPED: an app that cares asks `pending` first. A worker keeps nothing
-more until it starts again: `keepCache` runs in its script.
+waited is DROPPED: an app that cares asks `pending` first.
+
+**Whether the next set is kept is the keep's** (plan 695 S4). `drop({ forget })`
+forgets the copy and shows nothing kept again; it no longer stops the keep. A
+page's keep closes (`forgetKept()`), and the app keeps again under the new
+sign-in's name. A worker's goes on (`forgetKept({ keepOn: true })`): its
+`keepCache` ran once, in its script, so before, a worker kept nothing more until it
+started again — measured: the next set was held in memory, and never written.
 
 - **Read at the start**, and the FIRST hold waits for it — at most 1 s, once: a
   copy that never comes holds up no later hold. One that lands during the wait
@@ -1488,6 +1494,7 @@ the 800 ms read could, and offline it shows them with the warning banner.
 
 - Site: `src/core/data/store-cache.ts`
 - Site: `src/core/browser/cache-keep.ts`
+- Site: `src/core/data/held-store.ts`
 - Site: `src/core/worker/serve-data.ts`
 - Site: `test/e2e/reforged-a-kept-set-survives-a-reload.spec.ts`
 - Site: `test/unit/a-kept-set-in-node-is-a-miss.test.mjs`

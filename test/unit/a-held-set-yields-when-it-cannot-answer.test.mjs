@@ -34,15 +34,16 @@ function server(rows, { delay = 0, fail = () => null } = {}) {
   return { store, seen };
 }
 
-/** A keep port on no device: its copy lands when told, and what it is asked is counted. */
+/** A keep port on no device: its copy lands when told, and what it is asked is counted. Closed, it writes nothing, as `keepCache`'s does. */
 function port(copy, after = 0) {
   const asked = { writes: 0, written: [], forgets: 0 };
-  return {
-    asked,
+  const keep = {
+    asked, closed: false,
     read: () => (after === Infinity ? new Promise(() => {}) : tick(after).then(() => copy)),
-    write: (take) => { asked.writes++; const set = take(); if (set) asked.written.push(set.rows.length); },
+    write: (take) => { asked.writes++; const set = keep.closed ? null : take(); if (set) asked.written.push(set.rows.length); },
     forget: async () => { asked.forgets++; },
   };
+  return keep;
 }
 
 test('a set now too big for its cap stops answering: the page asks the store, and so does the next', async () => {
@@ -154,17 +155,19 @@ test('a kept copy that never comes holds up only the first page', async () => {
   assert.ok(Date.now() - started < 500, `Refresh took ${Date.now() - started} ms`);
 });
 
-test('a sign-out drops the set and keeps nothing more under the old name', async () => {
+test('a sign-out drops the set and forgets its copy; a page\'s keep, closed, writes nothing more under the old name', async () => {
   const { store } = server(rowsOf(3));
   const keep = port(null);
   const cache = cacheOf(store);
   cache.keep(keep);
   const page = new DataSource({ store });
   await page.load();
-  assert.equal(keep.asked.writes, 1);
+  assert.deepEqual(keep.asked.written, [3]);
+  // A page's sign-out (`forgetKept`): its keep closes, and the set goes.
+  keep.closed = true;
   cache.drop({ forget: true });
   assert.equal(keep.asked.forgets, 1);
   await page.load({ force: true });
   assert.equal(page.total, 3);
-  assert.equal(keep.asked.writes, 1);
+  assert.deepEqual(keep.asked.written, [3], 'nothing more written');
 });

@@ -90,12 +90,13 @@ export function serveData(scope: WorkerScope, options: ServeDataOptions): void {
     if (ask?.sherpa === 'notices') asked.waitUntil(kept.read().then((all) => all.forEach(sayNotice)));
     if (ask?.sherpa === 'seen') asked.waitUntil(kept.remove(ask.id));
     /* A sign-out: every held set, the rows shown, the writes that wait and the kept
-       notices are forgotten here, or the held set writes the copy back.
+       notices are forgotten here, or the held set writes the copy back. Its keeps go
+       on — `keepCache` ran once, in its script — so the next reader's set is kept.
        TRAP T-a-kept-set-is-checked-each-session */
     if (ask?.sherpa === 'sign-out') {
       asked.waitUntil(Promise.allSettled([
         ...Object.values(options.stores).map((store) => (store.capabilities.holds ? store.forget?.() : undefined)),
-        forgetKept(), kept.clear(),
+        forgetKept({ keepOn: true }), kept.clear(),
       ]).then(() => asked.ports?.[0]?.postMessage('signed-out')));
     }
   });

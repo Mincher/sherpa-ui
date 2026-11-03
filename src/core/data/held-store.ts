@@ -408,7 +408,8 @@ export class HeldStore extends EventTarget implements Store {
   }
 
   /** Forget all it holds — its set, the rows shown, the writes that wait — and
-   *  have its readers ask again: a sign-out. */
+   *  have its readers ask again: a sign-out. Whether its next set is kept is its
+   *  keep's. TRAP T-a-kept-set-is-checked-each-session */
   async forget(): Promise<void> {
     await this.#read;
     this.#pending = [];

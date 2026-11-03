@@ -50,7 +50,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-held-set-reads-the-pages-fields](traps/data-layer.md#t-a-held-set-reads-the-pages-fields) — data-source, data-source-types, held-set, held-store, page-definition, read-plan, source-binding, store-cache
 - [T-a-held-set-takes-a-change-in-place](traps/data-layer.md#t-a-held-set-takes-a-change-in-place) — data-source, held-set, store, store-cache, stores
 - [T-a-hovered-chip-previews-the-highlight](traps/data-layer.md#t-a-hovered-chip-previews-the-highlight) — query
-- [T-a-kept-set-is-checked-each-session](traps/data-layer.md#t-a-kept-set-is-checked-each-session) — store-cache
+- [T-a-kept-set-is-checked-each-session](traps/data-layer.md#t-a-kept-set-is-checked-each-session) — held-store, store-cache
 - [T-a-legend-follows-the-view-when-it-holds-the-field](traps/data-layer.md#t-a-legend-follows-the-view-when-it-holds-the-field) — bind-selection
 - [T-a-legend-row-goes-inactive-it-never-vanishes](traps/data-layer.md#t-a-legend-row-goes-inactive-it-never-vanishes) — aggregate
 - [T-a-list-has-a-limit](traps/data-layer.md#t-a-list-has-a-limit) — field-catalogue

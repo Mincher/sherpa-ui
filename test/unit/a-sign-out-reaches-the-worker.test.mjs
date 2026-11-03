@@ -10,6 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ArrayStore, HeldStore, NOTICE_CHANNEL, clearKept, fakeRemote, memoryOutbox } from '../../dist/data.js';
+import { cacheOf } from '../../dist/core/data/store-cache.js';
 import { serveData } from '../../dist/worker.js';
 
 const later = (ms = 5) => new Promise((done) => setTimeout(done, ms));
@@ -79,6 +80,27 @@ test('a sign-out forgets the worker\'s held set, the rows it shows, the writes t
   await message({ sherpa: 'notices' });
   await later(30);
   assert.equal(heard.length, 1, 'no kept notice is said again');
+});
+
+test('after a sign-out the worker keeps the next reader\'s set: its keep, made once in its script, goes on — plan 695 S4', async (t) => {
+  const inner = new ArrayStore([{ id: 1, owner: 'Ada' }, { id: 2, owner: 'Bo' }], { key: 'id' });
+  const source = fakeRemote(inner, { delay: 0 });
+  // The worker's keep, as `keepCache` in its script makes it: each set it is asked to write, and each forget.
+  const kept = [];
+  cacheOf(source).keep({
+    read: async () => null,
+    write: (take) => { const set = take(); if (set) kept.push(set.rows.map((r) => r.owner)); },
+    forget: async () => { kept.push('forgotten'); },
+  });
+  const held = new HeldStore(source);
+  pageAndWorker(t, { people: held });
+  assert.deepEqual(await owners(held), ['Ada', 'Bo']);
+  assert.deepEqual(kept, [['Ada', 'Bo']]);
+  await clearKept();
+  assert.equal(kept.at(-1), 'forgotten', 'the last reader\'s copy goes');
+  await inner.update(1, { owner: 'Cy' });
+  assert.deepEqual(await owners(held), ['Cy', 'Bo'], 'the next reader reads the set again');
+  assert.deepEqual(kept.at(-1), ['Cy', 'Bo'], 'and it is kept, with no restart');
 });
 
 test('a page with no worker forgets its own, and settles at once', async (t) => {

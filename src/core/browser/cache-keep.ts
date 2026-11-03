@@ -145,13 +145,14 @@ export function keepCache(store: Store, options: KeepOptions): { ready: Promise<
 
 /** This context's half of a sign-out: each set it keeps, held in memory, is
  *  dropped and kept no more; the device forgets every set, every write that waits
- *  and every kept notice. A worker runs it when a page signs out. */
-export async function forgetKept(): Promise<void> {
+ *  and every kept notice. A worker runs it when a page signs out, `keepOn`: its
+ *  `keepCache` ran once, in its script, so its keeps go on with the next set. */
+export async function forgetKept(options: { keepOn?: boolean } = {}): Promise<void> {
   for (const [store, close] of kept) {
-    close();
+    if (!options.keepOn) close();
     cacheOf(store).drop({ forget: true });
   }
-  kept.clear();
+  if (!options.keepOn) kept.clear();
   if (!hasDatabase()) return;
   await clearStores(['sets', 'outbox', 'notices']).catch(() => undefined);
 }
