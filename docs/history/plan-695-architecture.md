@@ -434,6 +434,22 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   server mode is an explicit `?server`.
   **Carried:** Will's running :4200 server keeps its old code until he restarts it. The
   Sherpa Starter: `updatesFeed().answer` now returns null away from its own path.
+- **U4 ✅ (`2b434fe4`, `435dbe7b`, `39de9d63`; Demos `d5d55da`). 548 is done.** Each chart
+  and the grid declare `static presents = { kind, accepts, slots?, is? }`; `define()` keeps
+  each class it registers; `src/core/ui/show-as.ts` is the registry alone (`presentsOf`,
+  `presenter`, `offered`, `kept`) and imports no component (a lint rule holds it and the
+  data layer to that); the menu wiring is `show-as-menu.ts`. A swap keeps the attributes
+  both components declare, and those neither declares. Deleted: `SHOWN_BY`, `shownAs()`,
+  `LINE_ONLY`, `KEPT_ACROSS`, `CHART_AXES`, the gauge, line and radial special cases, the
+  `shown-*-tpl` templates, and the tag tests in `#madeColumns` and `#retitle`.
+  `pivotTable` and `madeTable` → one `crossTable` with `crossSpec`: a grid made from a chart
+  lays out the very summary its chart is asked. The swap runs in `startViewTransition` (all
+  three engines run it, 258–404 ms), at once with reduced motion. Demos' `CHART_KINDS`
+  gone. Lane picks taken: a chart made from a grid keeps the grid's `id`; a kind is offered
+  only while its component is loaded. 825 tests in three engines on the tip.
+  **Carried:** `tagOf` in `source-binding.ts` names a panel section by tag → P6; the node
+  editor offers every kind for a gauge — it should call `offered()` (N lane); a bucketed
+  line's grid rows do not open on their own records yet.
 
 ### The waves
 

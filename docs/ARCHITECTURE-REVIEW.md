@@ -344,6 +344,12 @@ registers itself; the data layer gives one answer per shape (segments, pivot, ro
 slot host swaps its child by kind, inside `startViewTransition`. The gauge and the line
 chart become ordinary kinds.
 
+*Done, 695 U4 (2026-11-03):* `static presents = { kind, accepts, slots?, is? }` on each
+chart and the grid; `show-as.ts` is the registry and its types alone (a lint rule keeps
+components out of it); the tag maps, attribute lists and special cases are gone; one
+`crossTable` per shape; the swap in a view transition (258–404 ms in all three engines),
+or at once with reduced motion.
+
 ---
 
 ## 6. The presentation layer
