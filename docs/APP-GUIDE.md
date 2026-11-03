@@ -295,7 +295,8 @@ export async function init(root, { source, query, session, view, signal, header,
 - A View's own cards are markup, in a template beside the JSON.
   `T-a-views-markup-lives-in-a-template`
 - A reader's own Views: `provider.saveView(name)`, `provider.deleteView()`.
-  A draft per View is kept: `T-a-view-keeps-a-draft`.
+  Each View keeps what the reader left on it, where the keeper's `eachView`
+  says so: `T-a-view-keeps-what-the-reader-left`.
 
 ## 9. The session
 
@@ -305,7 +306,7 @@ import { SessionStore } from 'sherpa-ui';
 const session = new SessionStore({
   theme: { mode: 'auto' },
   nav: { pinned: false, favorites: [], recent: [], hierarchy: false },
-  filters: { mode: 'toolbars', drafts: true },
+  filters: { mode: 'toolbars' },
 });
 session.persist('/theme/mode');
 session.persist('/nav/pinned');
@@ -356,6 +357,31 @@ document.querySelector('sherpa-provider').settings = settings;
 - The nav opens to a pointer; `/nav/hover: false` keeps it as icons until its Pin.
   `T-a-rail-may-stay-shut`
 
+### A page's state
+
+```js
+import { PageKeeper } from 'sherpa-ui';
+
+provider.keeper = new PageKeeper({ eachView: () => settings.get('eachView') === true });
+```
+
+- A page's state is ONE document, kept under its name (an outlet's Context): the
+  View on screen, its Query, what waits for Apply (`draft`), each element's
+  `ui`, what the reader left on each View, the saved filters on a bar, each
+  card's toolbar, and — NAMED — the reader's own Views and saved filters.
+  `T-one-page-one-document`
+- Each part has ONE tier. Only what the reader names crosses tabs; the rest is
+  the tab's, and a reload keeps it. `T-only-a-named-part-crosses-tabs`
+- Give the keeper before a page opens. Its tiers are the app's: `tab`, `local`,
+  `database: true` for the reader's Views in IndexedDB, `remote` for a server
+  (`PageRemote`, a snapshot pushed, debounced). `await keeper.restore(page)`
+  merges the database and the server under this browser's.
+  `T-local-first-then-onward`
+- An element's own state across a reload — a grid's selection — is the page's
+  `ui`: `keeper.keepUi(ctx.id, { source, elements: { grid } }, { grid: () => ({ select: [grid.selectedKeys] }) }, { signal })`.
+- `provider.export()` hands the same document out, and `import(state)` takes it
+  back in. `T-a-page-goes-out-as-json`
+
 ## 10. Questions and saved filters
 
 ```html
@@ -405,7 +431,6 @@ outlet.start({
   app, base: new URL('./app.json', location.href), session,
   stores: () => ({ customers: customerStore }),
   ready: customersReady,
-  drafts: () => 'session',
   panels: { filters: document.getElementById('filter-column') },
   settings: { dialog: settings, header: settings.querySelector('sherpa-app-header'),
               root: document.getElementById('settings-root') },

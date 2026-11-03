@@ -89,10 +89,11 @@ implicit wrapper"*):
 The page gives it its sources and libraries once, in JS or JSON:
 
 ```js
+provider.keeper = keeper;                // where every page's state is kept
 provider.provide({
   sources: { records: source },          // one or more DataSources
   views: RECORDS_VIEWS,                  // the View library — JSON
-  session,                               // where the Query is kept
+  key: 'records',                        // the page's name in the keeper
 });
 ```
 
@@ -116,7 +117,7 @@ in `src/components/sherpa-provider/`, given what it needs by its provider:
 | `provider-highlight.ts` | what the pointer rests on, and each component that draws its matches |
 | `provider-legends.ts` | a legend that picks its chart's values: its part, its chips, its rest on a row |
 | `provider-show-as.ts` | Show as: a slot's chart swapped, a pivot, a grid made from a chart, the card's title |
-| `provider-mode.ts`, `provider-page.ts` | the panel or the bars; the open page's Views, saved sets and drafts |
+| `provider-mode.ts`, `provider-page.ts` | the panel or the bars; the open page's Views, saved sets and what the reader left on each View, through the keeper |
 | `provider-declared.ts` | what a component declares, read in one place |
 | `provider-look.ts` | the look settings on the page's root |
 
@@ -144,6 +145,15 @@ second source joins it with `new DataSource({ store, query: ctx.query })`. Its
 Views apply only when every source it provides shares one Query. The keeper
 keeps the reader's changes: a whole Query the provider puts on says who put it
 (`setQuery(q, { by })`), and only a change with no `by`, or `'reader'`, is kept.
+
+**A page's state is ONE document with ONE keeper** (695 U3): `provider.keeper`, a
+`PageKeeper` (`core/browser/page-state.ts`). Per page, under its name: the View on
+screen, its Query and what waits for Apply, each element's `ui`, what the reader
+left on each View, the saved filters on a bar, each card's toolbar, and the
+reader's own Views and saved filters — NAMED, the only parts that cross tabs. Each
+part has one tier; the app may plug in its own, the browser database and a
+server. `export()` and `import()` carry the same document.
+`T-one-page-one-document`
 
 ---
 
@@ -198,7 +208,7 @@ Yes, in three directions:
 | `fillPanel`, `refill`, `barFor`, panel mode wiring, `asPanelField` | the panel asks for its scopes and draws them |
 | `syncScopes`, `viewFields`, `headerField`, the header answer listener | a bar asks for its scope and registers its holds by asking |
 | `showChip`, the raise and lower handlers | a bar and a heading are views of one scope; add and move are requests |
-| `onViewPicked` wiring, the session save and restore | the provider holds the View library and the session Query |
+| `onViewPicked` wiring, the session save and restore | the provider holds the View library, and its keeper the page's state |
 | `records.js` 853 → ~250, `dashboard.js` 222 → ~50 | the page keeps what only it knows: its CRUD and its own business |
 
 **Stays:** the DataSource, the Query, `compile`, `bind()` as the explicit
