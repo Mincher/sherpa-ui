@@ -547,6 +547,49 @@ Sherpa passes the request to your pick, whole, and never reads a header of yours
 (`openWorkerStore({ name, headers })`). Every path is under one constant,
 `DATA_BASE` (`/sherpa/data/`). TRAP T-a-request-picks-its-stores
 
+**Or a store made for each request** — a server wraps the request's own sign-in into
+the store that answers it, here one that sends it on upstream:
+
+```js
+orders: (request) => new RestStore({
+  url: 'https://api.example/orders',
+  init: { headers: { Authorization: request.headers.get('Authorization') ?? '' } },
+}),
+```
+
+It lives for its one request: it is never held, and a check behind has nothing of it
+to read.
+
+### A server hosts them too
+
+`sherpa-ui/server` serves the same handler on Node — a `node:http` listener and an
+Express-style middleware in one:
+
+```js
+import { createServer } from 'node:http';
+import { createDataHandler, nodeHandler, updatesFeed } from 'sherpa-ui/server';
+import { stores } from './app/stores.js';
+
+const updates = updatesFeed();
+const data = createDataHandler({ stores, host: 'server', cors: { origins: ['https://app.example'], headers: ['Authorization'] } });
+createServer(nodeHandler([updates.answer, data])).listen(8080);
+```
+
+Its answers are the protocol's, whichever host gives them:
+
+- **A refusal says its kind** (`application/problem+json`): a store that cannot reach
+  its source is `offline` on the page too, a 503 — never a server that failed.
+- **An act is a `POST`**: `?recheck` (one store's, or every store's) and `?take`.
+- **One version marker**, the `Sherpa-Data` header; **no answer is cached**
+  (`no-store`); a `since` that is no mark is refused.
+- **Another origin asks by your CORS policy** — your origins, your headers. A refused
+  preflight reads `refused` on the page, never offline.
+  TRAP T-a-preflight-is-the-apps-to-answer
+
+`serveWorkerScript({ file, build, feed })` serves your worker script stamped with the
+build, and says each new build on the feed, so an open page takes it at once.
+TRAP T-a-node-host-is-the-same-handler
+
 ---
 
 ## 7. It runs with no DOM
@@ -584,5 +627,7 @@ nothing else. Saved Views, saved filters and the session are the app layer:
     page's fields are held; a whole record is `store.byKey()`.
 13. A store says what it can do once, in `capabilities`; a wrapper is `wrapStore()`.
 14. Your stores are said once, in a module the page and the worker both import
-    (`defineStores`); a request may pick which of a name's stores answers, and
-    Sherpa never reads your headers.
+    (`defineStores`); a request may pick which of a name's stores answers, or have
+    its own made, and Sherpa never reads your headers.
+15. A server hosts the same handler (`sherpa-ui/server`): a refusal crosses with its
+    kind, an act is a `POST`, and another origin asks by your CORS policy.

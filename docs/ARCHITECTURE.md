@@ -17,12 +17,14 @@ Paths that start with `app/` or `server/` are in Sherpa Demos. Paths that start 
 |---|---|---|---|
 | **The data layer** — `src/core/data/` | Anywhere: a page, the worker, Node | Stores, the request protocol, held sets, the Query, field facts | Touch the DOM (rule 13) |
 | **The Service Worker** — `src/core/worker/`, run by the app's `sw.js` | One per app, for every tab | The app's files; the app's stores and their one held set; the outbox; kept notices | See a component, a chip or a Query |
+| **The Node host** — `src/core/server/`, `sherpa-ui/server` (plan 695 H5) | The app's server | The same handler over the app's stores; the worker script, stamped with the build; the feed | Hold a reader's state, or read a header of the app's |
 | **The utility layer** — router, provider, outlet | The page | The URL; which Context is open; who asks for what | Draw anything; hold rows |
 | **The presentation layer** — every `sherpa-*` component | The page | What it draws, and what it counts from its answer | Reach a store; talk to another component |
 
 The worker is the DATA's home; each tab holds its own STATE (the Query) and its own
 presentation (D1). A page that has no worker — a first visit, a private window —
-runs the same handler in the page, and works as before (Host A).
+runs the same handler in the page, and works as before (Host A). A server runs it
+too (Host C, `nodeHandler`): ONE protocol, three hosts (`T-a-node-host-is-the-same-handler`).
 
 **What Sherpa keeps on the device is in ONE IndexedDB database**, `sherpa-ui`
 (`src/core/browser/database.ts`, plan 695 H3), which the page and the worker open
@@ -34,10 +36,10 @@ current View, drafts, saved filters, the session.
 
 ```mermaid
 flowchart LR
-  subgraph server["The app's server"]
-    api["REST / Sherpa handler<br/>(row 170)"]
-    files["the app's files<br/>sw.js stamped with the build"]
-    feed["updatesFeed<br/>/sherpa/updates"]
+  subgraph server["The app's server — sherpa-ui/server"]
+    api["nodeHandler: createDataHandler<br/>the app's stores, CORS"]
+    files["serveWorkerScript<br/>sw.js stamped with the build"]
+    feed["updatesFeed<br/>UPDATES_PATH"]
   end
   subgraph worker["Service Worker — one for every tab"]
     appfiles["keepAppFiles<br/>files, network first"]
@@ -65,7 +67,7 @@ flowchart LR
   upd --> prov
   kept -.-> upd
   feed -.->|"a build · a store changed"| follow
-  follow -.->|"?recheck"| serve
+  follow -.->|"POST ?recheck"| serve
 ```
 
 ---
@@ -76,7 +78,7 @@ flowchart LR
 |---|---|---|
 | `app/index.html` | The frame (shell, router, provider, outlet, dialogs) and its boot script | The browser, once |
 | `app/sw.js` | The app's Service Worker: imports `sherpa-ui/worker` and the app's stores module (a worker cannot `import()` at run time, D7) | The browser, at register and at each update check |
-| `server/index.mjs` | Serves the app, `/dist`, the live feeds; stamps `/sw.js` with the build | Node |
+| `server/index.mjs` | Serves the app, `/dist`, the live feeds; the data path, the stamped `/sw.js` and the feed with `sherpa-ui/server` | Node |
 | `app/app.json` | The app definition: Contexts, Sections, Settings pages | The server, the boot script, `outlet.start()` |
 | `app/stores/*-data.js` | The app's records: rules, seed, and status fields (`statusFields`) | The page AND the worker — the same module |
 | `app/stores/stores.js` | The app's stores, said ONCE (`defineStores`): each name, and the pick that reads a request's own header — Demos' debug mode | The page AND the worker |
@@ -116,7 +118,7 @@ sequenceDiagram
   Pr-->>B: each component that asked is bound (bindSource)
   Pr->>W: QUERY /sherpa/data/customers — the first page, the fields asked
   W-->>Pr: rows, from the one held set (statusFields worked each status out)
-  Pr->>W: GET ?recheck — the page's open check (D8), behind the rows shown
+  Pr->>W: POST ?recheck — the page's open check (D8), behind the rows shown
 ```
 
 ---
@@ -265,6 +267,73 @@ by what the walk counted, said under the load (`traceQuerySteps`).
   for it, so each page's store hears its own. Auth is the app's: Sherpa passes headers on.
 - **A check behind runs once at a time per store**: a tab shown, the feed, a gap, a push
   and a Refresh join one, or wait for one more where its read is already out.
-- **Every path is under one constant**, `DATA_BASE` (`/sherpa/data/`).
+- **Every path is under one constant**, `DATA_BASE` (`/sherpa/data/`); the feed's is
+  `UPDATES_PATH` (`/sherpa/updates`).
+- **An act is a `POST`** (`?recheck`, `?take`): a `GET` is safe, so a cache or a
+  prefetch never makes a worker read again (`T-an-act-is-a-post`). The version is one
+  header, `Sherpa-Data`, and no answer is kept by a cache (`no-store`).
+- **A refusal keeps its kind** across the wire, as `application/problem+json`: a
+  worker whose source is down tells its page `offline`, not that it failed
+  (`T-a-refusal-keeps-its-kind`).
+- **Another origin asks by the app's CORS policy** (`cors` on the handler); a refused
+  preflight reads `refused`, never offline (`T-a-preflight-is-the-apps-to-answer`).
+- **A store may be made for each request** — a server wraps the request's sign-in
+  into it; it is never held (`T-a-request-picks-its-stores`).
 - **Demos stamps `sw.js` per browser for tests** (`?client=`): a test's fake deploy
   must reach its own page alone.
+
+---
+
+## 8. Where the data layer runs — 170's plan
+
+Row 170 (Will, 2026-09-30): an app runs the whole data layer, or parts of it, on the
+client, the server, or both. **H5 is its plan, not its build.** What runs where:
+
+```mermaid
+flowchart LR
+  subgraph today["Today: the page and the worker (H1–H3)"]
+    direction TB
+    t1["page: components · DataSource · Query"] --> t2["worker: handler · HeldStore · stores"]
+    t2 --> t3["the app's API"]
+  end
+  subgraph h5["H5: the server is a host too"]
+    direction TB
+    h1["page: components · DataSource · Query"] --> h2["worker: HeldStore (optional)"]
+    h2 --> h3["server: nodeHandler · stores made per request"]
+    h1 -.->|"no worker: ?server"| h3
+  end
+  subgraph later["170, if Will says: the Query on the server"]
+    direction TB
+    l1["page: components · a thin source"] -->|"the Query, as JSON"| l3["server: DataSource · stores"]
+    l3 -->|"rows · counts · groups · values"| l1
+  end
+  today --> h5 --> later
+```
+
+| | Runs on the client | Runs on the server | Crosses the wire |
+|---|---|---|---|
+| **Today** | components, `DataSource`, the Query; the worker's held set | nothing of Sherpa's | `RestStore` reads (the app's API) |
+| **After H5** | the same | the handler over the app's stores, one made per request where the app wants its sign-in in it; the feed; the stamped worker | Sherpa's protocol: a read (`QUERY`), a write, an act (`POST`), a problem |
+| **170, later** | components; a source that sends its Query and draws what comes back | `DataSource` itself: the Query compiled, counted and grouped where the rows are | the Query (it is JSON already) and its answers — rows, counts, groups, field values |
+
+**What H5 settles.** "Stores on the server, filters on the client" is done: the
+server hosts the stores with the same handler, the page's source reads them through
+a `RequestStore`, and the worker may hold the set between. A server shapes what each
+reader may see (a tenant, a permission) by the store it makes for that request.
+
+**What 170 would add** — the Query run on the server, for a set too large to hold:
+
+1. **Split `DataSource`** into its reads, its counts and its view-models (S5): only
+   the reads and counts can move; drawing stays on the page.
+2. **A source handler**: the protocol gains one read — the page's Query in, the
+   answers each bound component asked for out (rows, totals, chip counts, groups,
+   values), and each answer a span in the one trace.
+3. **A thin page source** that speaks it, and a page definition that says where its
+   source runs (`client`, the default, or `server`); the provider opens either.
+4. **Both at once**: the client answers a toggle from what it holds (TODO 340, a
+   client update), and asks the server only for what it does not hold.
+
+**The decision 170 needs** (Will's): stop at H5 — stores on the server, the Query on
+the client, a held set between (up to `holdRows`, 100,000 by default, the size
+Demos' scale test, `?remote&rows=100000`, reads) — or build steps 1–4 for sets beyond it. Auth stays the app's either way:
+Sherpa passes the request on, and never reads it.

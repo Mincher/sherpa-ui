@@ -48,6 +48,8 @@ const ENTRIES = {
 };
 // src/index.ts is `export *` of the three.
 ENTRIES['sherpa-ui'] = new Set(Object.values(ENTRIES).flatMap((names) => [...names]));
+// A server's own entry, apart from the package's: Node only. Plan 695 H5
+ENTRIES['sherpa-ui/server'] = exportsOf('src/server.ts');
 
 /** A line saying the thing is gone is not a dangling pointer. */
 const OBITUARY = /\b(RETIRED|retired|deleted|DELETED|removed|RENAMED|was |used to|no longer|future|planned|proposed)\b/;
