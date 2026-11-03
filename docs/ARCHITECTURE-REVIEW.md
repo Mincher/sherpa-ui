@@ -261,6 +261,12 @@ pages. Pivots and made tables are pure "rows in, table out" — data layer. High
 picks, card states, notices and Show as become modules. Components DECLARE what they can do
 (`static asks`, `static presents`) instead of being probed.
 
+*Done, 695 U1 (2026-11-03):* `sherpa-provider.ts` 1,984 → 1,386 lines (about 460 of them
+the settings pairs U2 replaces); reach, notices, card states, highlight, legend picks and
+Show as are modules beside it; `pivotTable`/`madeTable` in `aggregate.ts`; components
+declare `static takes` (read in `provider-declared.ts`), so no `in el` probe or tag test is
+left in the provider; an unanswered ask travels up to the provider above.
+
 ### 5.2 Settings, seven ways
 
 A setting reaches a component as a bar attribute, a source property, a `querySelectorAll`

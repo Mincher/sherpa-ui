@@ -171,6 +171,27 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   `getComputedStyle` of each part (fills, borders, ink, the resolved `--_status-*` and
   `--sherpa-style-*`) in three engines, before and after; the diff must be empty. Recalc
   by CDP `Performance.getMetrics` at 4x, 5 runs, the median.
+- **The Wave 1 full run** (on `512572ae`, load ~50): sherpa-ui 3678 passed; one spec in
+  three engines broke — a host's column filter reads back typed, `70` not `'70'` (fixed in
+  the test, `d73e593e`; D1 types a reader's typed value once). Node 914/914. Demos 899
+  passed, 5 flaky; 2 WebKit failures: the old `saved-filter:353` (TODO 702) and a timing
+  bound that passes alone.
+
+### Wave 2 — as each lane lands
+
+- **U1 ✅, started early (`a72dc470`, `6869e01b`, `8f76eff3`).** The provider answers asks
+  and opens pages: 1,984 → 1,386 lines. Modules beside it: `provider-reach`, `-news`,
+  `-cards`, `-highlight`, `-legends`, `-show-as` (moved as it was), `-declared`.
+  `pivotTable`/`madeTable` → `aggregate.ts`, with a Node test. Components declare
+  `static takes` (typed once, `Take` in `context.ts`): the toolbar, the grid, the container;
+  a filter bar is "what asks for a `scope`". Every `in el` probe and tag test is gone from
+  the provider. An ask a provider above gives travels up (a test, both orders). Lane picks
+  taken: `static takes` beside `asks` (the container asks for nothing); the pivots in
+  `aggregate.ts` (the grid +571 B brotli, as it imports it); an ask answered above stays
+  there. 390 provider-related tests pass in three engines on the tip.
+  **Carried:** U4 takes the tags that moved with Show as (`SHOWN_BY`, `shownAs`,
+  `#madeColumns`, `#retitle`); U2 the settings pairs and `#offerLimit`; D1's open-time check
+  is one line in the provider, added at D1's merge.
 
 ### The waves
 
