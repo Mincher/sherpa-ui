@@ -37,8 +37,8 @@ export function organiseOf(scope: ScopeDescription): {
 } {
   return {
     group: scope.group ?? [], sort: scope.sort ?? [],
-    // A chart's Sort orders its segments, and has no column to pick.
-    ...(scope.presents ? { order: true as const } : {}),
+    // A chart's Sort orders its segments, and has no column to pick. One number has none.
+    ...(scope.presents && !scope.whole ? { order: true as const } : {}),
     ...(scope.chartFields ? {
       chart: {
         fields: scope.chartFields,

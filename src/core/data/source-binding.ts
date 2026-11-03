@@ -26,6 +26,7 @@
  * - .drawReading — Tell each control over a field's home its reading.
  * - .drawBars — Draw every bar over one scope, as the panel draws it.
  * - .stacksIn — Does a slot's chart stack by a Secondary — a bar chart?
+ * - .wholeIn — Does a slot's chart draw one number — a gauge?
  * - .shownIn — What a slot's chart shows by its own attributes.
  * - .tellView — Tell each component in one scope its view again, and nothing more.
  * - .drawBarsBehind — Draw each bar over one scope that does not hold what the scope holds now: a scope two bars draw — a strip and…
@@ -63,6 +64,8 @@ export interface Bound {
   shows?: Presentation;
   /** See AttachFacts.stacks. */
   stacks?: boolean;
+  /** See AttachFacts.whole. */
+  whole?: boolean;
   /** See AttachFacts.arranges. */
   arranges?: boolean;
   /** Where its view, rows and pending fields go. */
@@ -121,6 +124,7 @@ export class SourceBinding {
       ...(facts.free?.length ? { free: [...facts.free].sort() } : {}),
       ...(facts.shows ? { shows: facts.shows } : {}),
       ...(facts.stacks ? { stacks: true } : {}),
+      ...(facts.whole ? { whole: true } : {}),
       ...(facts.arranges ? { arranges: true } : {}),
     });
   }
@@ -268,6 +272,11 @@ export class SourceBinding {
   /** Does a slot's chart stack by a Secondary — a bar chart? TODO 548 */
   stacksIn(scope: string): boolean {
     return [...this.#bound.values()].some((b) => b.scope === scope && b.stacks);
+  }
+
+  /** Does a slot's chart draw one number — a gauge? Will, TODO 696 */
+  wholeIn(scope: string): boolean {
+    return [...this.#bound.values()].some((b) => b.scope === scope && b.whole);
   }
 
   /** What a slot's chart shows by its own attributes. TODO 548 */

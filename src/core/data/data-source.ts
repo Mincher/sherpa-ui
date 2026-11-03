@@ -533,6 +533,9 @@ export class DataSource extends EventTarget {
         // Switched off, its chip keeps the field. Will, TODO 666
         ...(kept.off === 'secondary' && kept.secondary ? { secondaryOff: kept.secondary } : {}),
       });
+    } else if (this.#binding.presentsIn(scope) && this.#binding.wholeIn(scope)) {
+      // A SLOT of one number: nothing to arrange. Its empty Group clears its bar's. Will, TODO 696
+      Object.assign(out, { presents: true, whole: true, group: [] });
     } else if (this.#binding.presentsIn(scope)) {
       /* A SLOT: its Primary, its Secondary where its chart stacks — a bar chart —
          its Group, by list fields, and its order: kept in the Query, never the

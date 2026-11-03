@@ -167,8 +167,10 @@ export interface ScopeDescription {
   /** A SLOT: a chart draws here, and its Group and Sort are its presentation's, not the
    *  rows'. `chartFields` its Primary and Secondary may pick — none while the app turns them off (TODO 583);
    *  `primaryField` and `secondaryField` are in force;
-   *  `stacks`, its chart takes a Secondary — a bar chart. TODO 548 */
+   *  `stacks`, its chart takes a Secondary — a bar chart. TODO 548
+   *  `whole`, its chart draws one number, so it offers no Primary, Group or Sort. TODO 696 */
   presents?: boolean;
+  whole?: boolean;
   chartFields?: OrganiseColumn[];
   /** What its Secondary may pick; `chartFields` are its Primary's. Each as the app offers it. Will, TODO 660 */
   secondaryFields?: OrganiseColumn[];
@@ -259,6 +261,8 @@ export interface AttachFacts {
   shows?: Presentation;
   /** It stacks each segment by a Secondary — a bar chart. Will, TODO 548 */
   stacks?: boolean;
+  /** It draws ONE number, which no axis, Group or Sort changes — a gauge. Will, TODO 696 */
+  whole?: boolean;
   /** Its scope's rows are ARRANGED here, though it reads every row: a grid's
    *  pivot, whose rows' sub-grids its Group and Sort arrange. Will, TODO 574 */
   arranges?: boolean;

@@ -1347,7 +1347,9 @@ export class SherpaProvider extends SherpaElement {
     };
     const unbind = bindSource(source, el as Populatable, {
       ...(zoned ? { free: [zoned] } : {}),
-      ...(spec && typeof scope === 'string' ? { shows: this.#shows(el), ...(asks.stacks ? { stacks: true } : {}) } : {}),
+      ...(spec && typeof scope === 'string' ? { shows: this.#shows(el), ...(asks.stacks ? { stacks: true } : {}),
+        // One number: its card offers no Primary, Group or Sort. Will, TODO 696
+        ...(asks.shape === 'aggregate' ? { whole: true } : {}) } : {}),
       // A pivot is its scope's grid still: its Group and Sort arrange its rows' sub-grids. TODO 574
       ...(pivot ? { arranges: true } : {}),
       ...(fields ? { fields } : {}),
