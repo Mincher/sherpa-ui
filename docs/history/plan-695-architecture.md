@@ -140,6 +140,9 @@ P6 runs when no component lane is in flight: it touches every component.
 
 ## Decision for Will
 
+**Answered, 2026-11-03: D7 A** — lanes build in parallel. And the peer keeps its own
+rows, outside the files of the lanes in flight (Will: A).
+
 | # | Question | A (my pick) | B |
 |---|---|---|---|
 | D7 | Parallel lanes | Agents BUILD in parallel, each in its own worktree with its own `dist` and ports, on disjoint files; one integrator merges and builds main | Agents plan and explore in parallel; ONE builds, lane after lane — slower, the same order |
