@@ -34,6 +34,8 @@ export class SherpaBarchart extends SherpaElement {
   ];
   static override html = new URL('./sherpa-barchart.html', import.meta.url);
   static override asks: DataAsk = { shape: 'segments', stacks: true };
+  // Show as's Bar chart: from another chart's split, a line's or a grid's rows. Will, TODO 548
+  static override presents = { kind: 'bar', accepts: ['segments', 'series', 'rows'], slots: ['legend'] } as const;
 
   // A host's aria-label names the chart. TRAP T-a-host-label-must-reach-its-control
   static override labelTarget = '.plot';

@@ -3,7 +3,10 @@
  * Figma's Data Viz Header (1456:30467). CSS owns every part's presence.
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
-import { SHOW_AS, SHOW_AS_HTML, showAs } from '../../core/ui/show-as.js';
+import { SHOW_AS, SHOW_AS_HTML, showAs } from '../../core/ui/show-as-menu.js';
+// Show as's markup holds them.
+import '../sherpa-button/sherpa-button.js';
+import '../sherpa-menu/sherpa-menu.js';
 
 /** The card's title, its line under it, its actions and its Show as menu. */
 export class SherpaDataVizHeader extends SherpaElement {

@@ -234,6 +234,8 @@ export class SherpaDataGrid extends SherpaElement {
   };
   // …and a hover's matches.
   static takes: readonly Take[] = ['highlight'];
+  // Show as's Data Grid: any chart's data, as a table, its headings and cells filtering. Will, TODOs 548, 621
+  static override presents = { kind: 'grid', accepts: ['segments', 'series', 'aggregate'], is: { 'data-column-filters': '', 'data-scroll-shadow': '' } } as const;
   // The app's settings it reads: its headings' Limit, Group, hover and tags. TODOs 178, 500, 501, 490
   static override settings = {
     'data-limit-options': 'limitOptions', 'data-hide-unmatched': 'hideUnmatched', 'data-heading-group': 'headingGroup',

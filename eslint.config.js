@@ -70,6 +70,17 @@ export default [
     },
   },
   {
+    /* THE CORE IMPORTS NO COMPONENT here: the data layer, and Show as's registry and
+       menu — a component registers its kind. TRAP T-a-kind-is-registered-never-a-tag */
+    files: ['src/core/data/**/*.ts', 'src/core/ui/show-as.ts', 'src/core/ui/show-as-menu.ts'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [{
+        group: ['**/components/**'],
+        message: 'The core imports no component: a component declares `static presents`, and `define()` registers it. TRAP T-a-kind-is-registered-never-a-tag',
+      }] }],
+    },
+  },
+  {
     // THE APP LAYER IS OPT-IN: a display component imports none of it. TRAP T-the-app-layer-is-opt-in
     files: ['src/components/**/*.ts', 'src/components.ts'],
     ignores: ['src/components/sherpa-provider/**', 'src/components/sherpa-router/**', 'src/components/sherpa-outlet/**'],

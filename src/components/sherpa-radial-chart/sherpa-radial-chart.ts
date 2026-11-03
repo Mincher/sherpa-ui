@@ -36,6 +36,11 @@ export class SherpaRadialChart extends SherpaElement {
   ];
   static override html = new URL('./sherpa-radial-chart.html', import.meta.url);
   static override asks: DataAsk = { shape: 'segments', stacks: true };
+  // Show as's Donut and Pie charts, by `data-type`; a donut with none. Will, TODO 548
+  static override presents = [
+    { kind: 'donut', is: { 'data-type': 'donut' }, accepts: ['segments', 'series', 'rows'], slots: ['legend'] },
+    { kind: 'pie', is: { 'data-type': 'pie' }, accepts: ['segments', 'series', 'rows'], slots: ['legend'] },
+  ] as const;
   // A host's aria-label names the chart. TRAP T-a-host-label-must-reach-its-control
   static override labelTarget = '.ring';
   static override props = {

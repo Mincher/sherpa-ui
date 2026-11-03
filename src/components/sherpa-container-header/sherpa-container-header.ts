@@ -7,8 +7,10 @@
  * @tier sub-component — renders inside sherpa-container; excluded from the public catalog.
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
-import { SHOW_AS, SHOW_AS_HTML, showAs } from '../../core/ui/show-as.js';
+import { SHOW_AS, SHOW_AS_HTML, showAs } from '../../core/ui/show-as-menu.js';
 import '../sherpa-button/sherpa-button.js';
+// Show as's markup holds it.
+import '../sherpa-menu/sherpa-menu.js';
 
 export class SherpaContainerHeader extends SherpaElement {
   static override css = new URL('./sherpa-container-header.css', import.meta.url);

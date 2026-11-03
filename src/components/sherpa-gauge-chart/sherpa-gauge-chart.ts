@@ -45,6 +45,8 @@ export class SherpaGaugeChart extends SherpaElement {
   ];
   static override html = new URL('./sherpa-gauge-chart.html', import.meta.url);
   static override asks: DataAsk = { shape: 'aggregate', zones: true };
+  // A kind of its own: only ever its page's, as nothing else is one number. Will, TODO 548
+  static override presents = { kind: 'gauge', accepts: [], slots: ['legend'] } as const;
 
   // A host's aria-label names the chart. TRAP T-a-host-label-must-reach-its-control
   static override labelTarget = '.gauge';

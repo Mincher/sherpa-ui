@@ -49,6 +49,8 @@ export class SherpaLineChart extends SherpaElement {
   ];
   static override html = new URL('./sherpa-line-chart.html', import.meta.url);
   static override asks: DataAsk = { shape: 'series' };
+  // A kind of its own: only ever its page's, as nothing else runs over a field. Will, TODO 548
+  static override presents = { kind: 'line', accepts: [], slots: ['legend'] } as const;
 
   // A host's aria-label names the chart. TRAP T-a-host-label-must-reach-its-control
   static override labelTarget = '.plot';

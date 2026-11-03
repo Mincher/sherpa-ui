@@ -16,11 +16,13 @@
  * - coerceNum — Coerce a raw attribute string to a number, or return `fallback`.
  * - clampNum — Apply the min/max bounds from `opts`, if any.
  * - define — Register a tag once: nothing on a server, a report when another class holds it.
+ * - defined — Every class `define()` registered, by tag: what a registry over a static reads.
  * - SherpaElement — the base every component extends: template, props, slots, emit
  */
 
 import { hasIcon, iconsLoading, renderIcon, upgradeIcons } from './render-icon.js';
 import { ContextRequestEvent, DATA_CONTEXT, SETTINGS_CONTEXT, type DataAsk } from './context.js';
+import type { Presents } from './show-as.js';
 import type { Settings } from '../data/settings.js';
 import { liftTipsIn } from './top-layer-tips.js';
 import {
@@ -218,6 +220,9 @@ const CONFIGURED = new WeakSet<typeof SherpaElement>();
  *  TRAP T-a-component-imports-anywhere */
 const Base = (globalThis.HTMLElement ?? Object) as typeof HTMLElement;
 
+/** Each class `define()` registered, by tag — on a server too. */
+const DEFINED = new Map<string, CustomElementConstructor>();
+
 /**
  * Register a tag ONCE. Nothing on a server; nothing when this class holds it
  * already; and another class under the same tag — two copies of the library on
@@ -234,12 +239,19 @@ export function define(tag: string, cls: CustomElementConstructor): void {
       configurable: true,
     });
   }
-  if (typeof customElements === 'undefined') return;
-  const held = customElements.get(tag);
-  if (!held) customElements.define(tag, cls);
-  else if (held !== cls) {
+  const registry = globalThis.customElements as CustomElementRegistry | undefined;
+  const held = registry?.get(tag);
+  if (!held) {
+    registry?.define(tag, cls);
+    DEFINED.set(tag, cls);
+  } else if (held !== cls) {
     report({ code: 'tag-taken', message: `<${tag}> is defined by another class already — two copies of sherpa-ui on one page? This one is not used.`, at: { tag } });
   }
+}
+
+/** Every class `define()` registered, by tag: what a registry over a static reads. */
+export function defined(): ReadonlyMap<string, CustomElementConstructor> {
+  return DEFINED;
 }
 
 export abstract class SherpaElement extends Base {
@@ -353,6 +365,10 @@ export abstract class SherpaElement extends Base {
    * it, it waits to be populated by hand. TRAP T-a-component-asks-its-provider
    */
   static asks?: DataAsk;
+
+  /** The kind of Show as it draws a slot's data as — or kinds, one per `is`.
+   *  `define()` registers it; `show-as.ts` reads it. Will, TODO 548 */
+  static presents?: Presents | readonly Presents[];
 
   /**
    * The app's SETTINGS it reads, each onto one of its own attributes — by key,

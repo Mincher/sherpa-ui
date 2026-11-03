@@ -41,6 +41,8 @@ export {
 export { bindGroupedGrid, measureGroupedGrid } from './components/sherpa-layout-grid/grouped-grid.js';
 // Wait for a tree's components to draw — for an app that measures, or a test.
 export { settled } from './core/ui/settled.js';
+// The kinds of Show as, as each component registers its own. TRAP T-a-kind-is-registered-never-a-tag
+export { offered, presenter, presentsOf, type Presenter, type Presents } from './core/ui/show-as.js';
 // ONE datum shape for every chart and the legend beside it — see chart-datum.ts.
 export type { ChartDatum, LegendDatum } from './core/data/chart-datum.js';
 
