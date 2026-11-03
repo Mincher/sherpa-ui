@@ -182,6 +182,36 @@ test('bindQueryEditor ASKS the Query through its one door, as a chip does: a rea
   ]);
 });
 
+// Bug 5 (plan 695 S2): the editor's Sort and Group skipped a slot's rerouting.
+test('in a SLOT, the editor\'s Sort and Group are its chart\'s, as a chip\'s are: the rows keep their own', async ({ page }) => {
+  await page.evaluate(async () => {
+    const { bindQueryEditor } = await import('/dist/app.js');
+    const { ArrayStore, DataSource, bindSource } = await import('/dist/data.js');
+    const canvas = document.getElementById('root')!.querySelector('sherpa-layout-canvas') as Drawable;
+    const rows = [{ id: 1, plan: 'Pro', region: 'EMEA' }, { id: 2, plan: 'Free', region: 'APAC' }];
+    const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }) });
+    // A chart's summary in its card's scope: the card is its SLOT.
+    bindSource(source, Object.assign(document.createElement('div'), { populate() {} }), { scope: 'card', rows: 'all', readonly: true });
+    // Its rows came arranged, so its Arrange node is drawn.
+    await source.query.setQuery({ v: 1, scopes: { card: { holds: [], sort: [{ field: 'region', direction: 'asc' }] } } });
+    (window as unknown as { source: unknown }).source = source;
+    const definition = { v: 1 as const, id: 'cards', source: { store: 'plans', fields: { plan: { label: 'Plan' }, region: { label: 'Region' } } } };
+    bindQueryEditor(canvas, source, { definition });
+    await window.__settled();
+  });
+  const arrange = page.locator('#root sherpa-node[data-heading="Arrange"]');
+  await arrange.locator('sherpa-node-row:has(sherpa-input-text[name="group"]) select').selectOption('plan');
+  await page.evaluate(() => window.__settled());
+  await arrange.locator('sherpa-node-row:has(sherpa-input-text[name="direction"]) select').selectOption('desc');
+  const r = await page.evaluate(async () => {
+    await window.__settled();
+    const { query } = (window as unknown as { source: { query: { presentation(s: string): unknown; applied: { scopes: Record<string, { sort?: unknown; group?: unknown }> } } } }).source;
+    const card = query.applied.scopes['card'];
+    return { presentation: query.presentation('card'), sort: card?.sort, group: card?.group ?? null };
+  });
+  expect(r).toEqual({ presentation: { group: 'plan', sort: 'desc' }, sort: [{ field: 'region', direction: 'asc' }], group: null });
+});
+
 test('a row a route drives MIRRORS what comes in, read only; one with no route stays editable', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const { drawGraph } = await import('/dist/app.js');
