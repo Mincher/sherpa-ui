@@ -5,6 +5,7 @@
  * Map:
  * - organiseOptions — A Group or Sort chip's rows: each column, the one in force ticked.
  * - organiseOf — A scope's leading chips, as its description says: Group and Sort, and a chart's Primary, Secondary and order.
+ * - drawsNothing — Does a scope's description give its bar nothing to draw: no filter, nothing to arrange?
  * - arrangeFrom — Follow the host's arrangement onto its Group or Sort chip; the chip knows how.
  * - pendingFields — The fields the host's source says wait for their Apply, or could not be fetched.
  * - markField — One field's chips and menus, told whether it waits for Apply and whether its read failed.
@@ -51,6 +52,13 @@ export function organiseOf(scope: ScopeDescription): {
       },
     } : {}),
   };
+}
+
+/** Does a scope's description give its bar nothing to draw: no filter, nothing to arrange?
+ *  A gauge's, its legend not chips. Will, TODO 696 */
+export function drawsNothing(scope: ScopeDescription): boolean {
+  const { group, sort, order, chart } = organiseOf(scope);
+  return !scope.filters.length && !group.length && !sort.length && !order && !chart?.fields.length;
 }
 
 /** Follow `data-group-field` or `data-sort-field`, and `data-sort-direction`, onto

@@ -530,7 +530,10 @@ hidden, so a filter it holds still applies.
 
 Where the panel answers for its scope a bar has `data-panel-mode`, and a press could hide
 the panel by accident: the toggle reads `panel`, shown and inactive (Will, TODO 672). With
-no bar at all it reads `off` and goes. `ProviderMode` says when a bar steps.
+no bar at all it reads `off` and goes, and so it does where its bars have nothing to draw —
+no filter, nothing to arrange, no actions: a gauge's, its legend not chips (Will, TODO 696, A).
+That is read from the slot's description (`drawsNothing`), so it is read again once a chart
+binds and once its legend moves in or out of the bar. `ProviderMode` says when a bar steps.
 
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/e2e/reforged-provider-summary.spec.ts`

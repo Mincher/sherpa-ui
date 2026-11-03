@@ -35,6 +35,7 @@ import type { DataChangeDetail, DataSource, QueryState } from '../../core/data/d
 import type { Where } from '../../core/data/where.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
 import { bindSource } from '../../core/ui/bind-source.js';
+import { drawsNothing } from '../../core/ui/filter-host.js';
 import { ProviderMode, isColumn } from './provider-mode.js';
 import { ProviderPage, type Bar, type SharedStore } from './provider-page.js';
 import type { SharedView } from '../../core/data/query-edits.js';
@@ -1401,6 +1402,8 @@ export class SherpaProvider extends SherpaElement {
     }
     this.#fetchFields(el, source);
     const unpick = spec && asks.picks ? this.#picks(el as Picker, source, spec.segment ?? '', asks.picks) : undefined;
+    // Its card's toggle, now its slot says what its bars draw. Will, TODO 696
+    if (typeof scope === 'string' && shownAs(el)) this.#drawToolbars(scope);
     const unown = this.#own(el, source);
     // A chart, a grid and a legend in a slot follow its presentation. TODO 548
     const unshow = typeof scope === 'string' && (spec || shownAs(el)) ? this.#followPresentation(asked, source, scope, !spec && !pivot && !made) : undefined;
@@ -1561,7 +1564,8 @@ export class SherpaProvider extends SherpaElement {
 
   /** A slot's filter toolbars and its toggles: as asked, else as the reader left them,
    *  else as its page's markup does. A bar stepped back for the panel leaves its toggle
-   *  inactive: a press would hide the panel. Will, TODO 672 · TRAP T-a-card-toggles-its-own-toolbar */
+   *  inactive: a press would hide the panel; one with nothing to draw, off. Will, TODOs 672, 696
+   *  TRAP T-a-card-toggles-its-own-toolbar */
   #drawToolbars(slot: string, asked?: boolean): void {
     const inSlot = (selector: string): Element[] => [...this.querySelectorAll(selector)].filter((el) => this.#inherited(el, 'data-scope') === slot);
     const toggles = inSlot('[data-filter-toolbar]');
@@ -1571,7 +1575,9 @@ export class SherpaProvider extends SherpaElement {
     const shown = asked ?? (typeof kept === 'boolean' ? kept : bars.some((bar) => !bar.hasAttribute('hidden')));
     for (const bar of bars) bar.toggleAttribute('hidden', !shown);
     const panel = bars.length > 0 && bars.every((bar) => bar.hasAttribute('data-panel-mode'));
-    const state = !bars.length ? 'off' : panel ? 'panel' : shown ? 'shown' : 'shut';
+    const source = bars[0] ? this.#resolve(bars[0]) : null;
+    const blank = !!source && bars.every((bar) => bar.hasAttribute('data-no-actions')) && drawsNothing(source.describe(slot));
+    const state = !bars.length || blank ? 'off' : panel ? 'panel' : shown ? 'shown' : 'shut';
     for (const toggle of toggles) toggle.setAttribute('data-filter-toolbar', state);
   }
 
@@ -1910,6 +1916,8 @@ export class SherpaProvider extends SherpaElement {
           for (const b of bars()) b.drawCounts?.(field, Object.fromEntries(items.map((i) => [i.label, i.value])));
         });
       } else if (this.#legendCounts.delete(el)) for (const b of bars()) b.drawCounts?.(field, null);
+      // In its bar or out of it, the bar may have nothing left to draw. Will, TODO 696
+      if (slot) this.#drawToolbars(slot);
     };
     lay();
     // What the filters before it leave, so the legend greys the rest. TRAP T-a-ruled-out-value-is-greyed
