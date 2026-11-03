@@ -14,8 +14,8 @@ place would defeat it — which is why `ArrayStore` copies (`[...rows]`) rather
 than sorting the caller's array. That is a cross-module contract recorded
 nowhere else.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/source-binding.ts`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-schema-sample-cost
 
@@ -133,8 +133,8 @@ chips — shows no answer, in `setFieldReading` and in `drawScopes` alike. The
 Query keeps the value, for the chip. A DATE in the panel is one chip, which
 does have an off, so it keeps its days.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `test/unit/query.test.mjs`
+- Site: `src/core/data/source-view.ts`
 
 ### T-a-container-shows-its-datas-state
 
@@ -190,8 +190,8 @@ failure would have no banner.
 - Site: `test/e2e/reforged-provider-opening.spec.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/core/data/field-catalogue.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-provider/provider-cards.ts`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-a-range-is-bounded-by-the-data
 
@@ -280,7 +280,6 @@ so its path holds no `.move`. A bar sends the same request,
 
 **Offering it is the app's choice**, off by default: `provider.moveFilters` → `data-move-filters`, Will, TODO 587. Off, `#moveLabel` says nothing, so neither a chip's menu nor a section's ⋮ has the row. Edit filters still adds a field at another scope.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `test/unit/send-down.test.mjs`
 - Site: `src/core/data/query.ts`
 - Site: `src/core/ui/filter-def.ts`
@@ -290,6 +289,7 @@ so its path holds no `.move`. A bar sends the same request,
 - Site: `src/core/data/query-context.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-rows.html`
+- Site: `src/core/data/source-view.ts`
 
 ### T-a-condition-marks-every-match
 
@@ -384,6 +384,7 @@ them once per scope that counts.
 - Site: `test/e2e/reforged-chip-results.spec.ts`
 - Site: `test/unit/a-chip-counts-within-the-filters-before-it.test.mjs`
 - Site: `src/core/ui/filter-host-controller.ts`
+- Site: `src/core/data/source-walk.ts`
 
 ### T-a-scope-says-what-it-shows
 
@@ -450,6 +451,7 @@ may still add it.
 - Site: `src/components/sherpa-provider/provider-page.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/data/query-context.ts`
+- Site: `src/core/data/source-walk.ts`
 
 ### T-one-walk-counts-and-limits-in-order
 
@@ -531,6 +533,9 @@ answers no field stay first; a field added lands at the end.
 - Site: `test/unit/the-walk-holds-under-change.test.mjs`
 - Site: `test/unit/an-advanced-answer-limits-what-follows.test.mjs`
 - Site: `test/unit/a-tiered-field-counts-at-both-tiers.test.mjs`
+- Site: `src/core/data/source-reads.ts`
+- Site: `src/core/data/source-view.ts`
+- Site: `src/core/data/source-walk.ts`
 
 ### T-reset-to-default-is-the-views-own
 
@@ -915,9 +920,9 @@ shortcut is `key === #lastLoadKey && #loaded && !#inFlight.busy` now;
 `test/unit/a-request-back-to-the-last-answer-still-runs.test.mjs` gates a load
 back to the last answer, and that a true no-op still skips.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `test/unit/a-request-back-to-the-last-answer-still-runs.test.mjs`
 - Site: `src/core/data/timing.ts`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-coalesce-microtask-not-debounce
 
@@ -942,11 +947,11 @@ microtask. A remote source is never live: it already waits for Apply.
 
 `load()` stays immediate and public: a caller that awaits it means it.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `test/unit/a-live-filter-waits-for-the-moves-to-stop.test.mjs`
 - Site: `test/e2e/reforged-number-filter-reports.spec.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/timing.ts`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-push-writes-state-as-attributes
 
@@ -990,6 +995,7 @@ re-clamp must re-read whatever the new page holds — rather than showing an emp
 page.
 
 - Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-storage-access-throws
 
@@ -1096,7 +1102,7 @@ always won the race. The store's check moving ahead of its page cut
 bind, then `await load()`, read an empty page. The race was always there; a
 store over a network loses it every time.
 
-- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-a-refused-row-never-shortens-a-page
 
@@ -1259,7 +1265,6 @@ This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` an
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `test/unit/field-selection.test.mjs`
 - Site: `test/unit/filter-state.test.mjs`
@@ -1267,6 +1272,7 @@ This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` an
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/query-context.ts`
 - Site: `src/core/ui/filter-host-controller.ts`
+- Site: `src/core/data/source-view.ts`
 
 ### T-a-remote-source-holds-its-whole-set
 
@@ -1311,12 +1317,12 @@ The bench holds the rule: each act on its remote page after it opens must cost
 
 - Site: `src/core/data/store-cache.ts`
 - Site: `src/core/data/held-set.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/page-definition.ts`
 - Site: `scripts/check-bench.mjs`
 - Site: `src/core/data/held-reads.ts`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-a-held-set-takes-a-change-in-place
 
@@ -1369,11 +1375,11 @@ asks the store nothing.
 
 - Site: `src/core/data/store-cache.ts`
 - Site: `src/core/data/held-set.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/stores.ts`
 - Site: `test/unit/a-held-set-takes-a-change-in-place.test.mjs`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-a-store-keeps-its-history
 
@@ -1439,9 +1445,10 @@ redoes only what reads it.
   the plan NOW).
 - A Refresh, a set landing and every `declare*` still move `#age`: everything.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/walk.ts`
 - Site: `test/unit/a-change-walks-again-only-for-what-it-moved.test.mjs`
+- Site: `src/core/data/source-reads.ts`
+- Site: `src/core/data/source-walk.ts`
 
 ### T-a-kept-set-is-checked-each-session
 
@@ -1538,6 +1545,7 @@ rows shown (no loading state), which on success clears the failure and fires
 - Site: `src/core/data/store-cache.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/a-failed-read-keeps-the-last-set.test.mjs`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-a-read-is-planned
 
@@ -1640,10 +1648,10 @@ PER open page. Now the set is the STORE's: `cacheOf(store)` gives one
   awaited that settled promise for ever: a frozen tab.
 
 - Site: `src/core/data/store-cache.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/store.ts`
 - Site: `test/unit/a-store-has-one-cache.test.mjs`
 - Site: `src/core/data/held-reads.ts`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-a-failure-has-a-kind
 
@@ -1671,11 +1679,11 @@ store reads as offline — the message is kept, so it can be told apart.
 fails too. Its `delay` and `fail` may be functions, read at each load, so one
 wrapper serves an app while a debug setting changes.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/failure.ts`
 - Site: `src/core/data/fake-remote.ts`
 - Site: `test/unit/a-failure-has-a-kind.test.mjs`
 - Site: `test/unit/a-fake-remote-fails-when-told.test.mjs`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-a-closed-source-hears-nothing
 
@@ -1716,6 +1724,7 @@ freed. A source's own `HeldStore` is closed with it, and lets the shared set go.
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/unit/a-closed-source-hears-nothing.test.mjs`
 - Site: `test/e2e/reforged-provider-closes-its-sources.spec.ts`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-the-filter-switch-keeps-what-it-turned-off
 
@@ -1824,11 +1833,11 @@ next to `markNeedle()`, which is the one decision every caller shares:
 needle-or-nothing, then `markMatch`. See `T-mark-match-is-one-shape`.
 
 - Site: `src/core/data/store.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/source-view.ts`
 
 ### T-one-state-per-filtered-field
 
@@ -2741,6 +2750,7 @@ a load each — not built until a page has two.
 - Site: `test/unit/the-search-is-in-the-query.test.mjs`
 - Site: `src/core/data/query-context.ts`
 - Site: `src/core/ui/bind-source.ts`
+- Site: `src/core/data/source-view.ts`
 
 ### T-a-bar-offers-only-what-its-scope-holds
 
@@ -2760,6 +2770,7 @@ is the DOM-free rule; the caller supplies the two held-id lists.
 
 - Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
 - Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/source-view.ts`
 
 ### T-a-superseded-chip-suspends-it-is-never-removed
 
@@ -2925,6 +2936,7 @@ from its source's last walk (`QueryMember.ruledOut`), so every way off agrees
 - Site: `src/components/sherpa-menu/menu-list.ts`
 - Site: `src/components/sherpa-provider/provider-legends.ts`
 - Site: `src/core/ui/filter-host-controller.ts`
+- Site: `src/core/data/source-walk.ts`
 
 ### T-unavailable-value-sorts-below-a-divider
 
@@ -3032,8 +3044,8 @@ was being routed through a DATA-level mechanism.
 If a future value changes what is DRAWN without changing what is FETCHED, it
 needs this branch too — `#stateKey` will not see it.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-data-source.spec.ts`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-grouped-paging-belongs-to-the-view
 
@@ -3066,6 +3078,7 @@ browser. That is the price of letting the reader fold.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/ui/bind-source.ts`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-view-state-lives-in-one-object
 
@@ -3097,6 +3110,7 @@ It returns a COPY of the container, so a caller cannot steer the source by
 writing to the object it was handed.
 
 - Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-an-allow-list-is-a-filter-not-an-order
 
@@ -3214,6 +3228,7 @@ that wants one calls `provider.recheck()`.
 - Site: `test/unit/a-reopen-checks-behind.test.mjs`
 - Site: `test/unit/a-store-has-one-cache.test.mjs`
 - Site: `scripts/check-bench.mjs`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-a-held-set-reads-the-pages-fields
 
@@ -3542,7 +3557,7 @@ Two details that are easy to get wrong:
 - **`scope()` answers a COPY.** A caller that mutates the answer must not reach
   into the registry through it.
 
-- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/query-context.ts`
 - Site: `test/unit/scope-registry.test.mjs`
 
 ### T-a-broken-assumption-reports
@@ -3597,13 +3612,14 @@ changed-key contract with the other stores.
 
 - Site: `src/core/data/report.ts`
 - Site: `src/data.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/a-broken-assumption-reports.test.mjs`
 - Site: `test/e2e/reforged-a-broken-assumption-reports.spec.ts`
 - Site: `src/core/ui/templater.ts`
 - Site: `src/core/browser/view-files.ts`
 - Site: `test/e2e/reforged-reports-round-2.spec.ts`
+- Site: `src/core/data/source-reads.ts`
+- Site: `src/core/data/source-view.ts`
 
 ### T-a-bug-report-should-be-a-paste
 
@@ -3678,8 +3694,8 @@ replacement, all }`. The HOST moves the match: the grid's `findStep()`.
 - Site: `src/components/sherpa-input-text/sherpa-input-text.css`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
-- Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-input-find.spec.ts`
+- Site: `src/core/data/source-view.ts`
 
 ### T-the-field-type-decides-the-clause
 
@@ -3769,6 +3785,7 @@ them; it never works them out.
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/unit/parity-sweep.test.mjs`
 - Site: `test/unit/a-summary-groups-and-sorts.test.mjs`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-a-conditioned-chip-answers-with-its-clause
 
@@ -3805,11 +3822,11 @@ returned nothing — a chip full of answered rows reported an EMPTY clause. That
 one is the quietest of the three: the chip looks right, the badge is right, the
 menu is right, and the grid does not move.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ---
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
+- Site: `src/core/data/source-view.ts`
 
 ### T-aggregation-is-data
 
@@ -4115,7 +4132,6 @@ so a resume starts ascending rather than at the stale `desc`).
 away" must say so — and a NEW sort drops the memory rather than shadowing it,
 or resuming would jump to a column the reader had moved on from.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/data/cycle.ts`
@@ -4125,6 +4141,7 @@ or resuming would jump to a column the reader had moved on from.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/query-edits.ts`
+- Site: `src/core/data/source-view.ts`
 
 ### T-one-cycle-for-one-value
 
@@ -4198,6 +4215,7 @@ the rows it has.
 - Site: `src/core/ui/bind-source.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/source-binding.ts`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-a-legend-row-goes-inactive-it-never-vanishes
 
@@ -4312,8 +4330,8 @@ outbound path works, which is what makes it hard to see.
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/store.ts`
 - Site: `test/unit/filter-state.test.mjs`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-menu/menu-list.ts`
+- Site: `src/core/data/source-view.ts`
 
 ### T-everything-on-is-no-filter
 
@@ -4578,9 +4596,9 @@ tab shown only where the store may miss a writer and says what moved, as before.
 The provider's bundle carries `HeldStore` now: about 2.4 KB brotli.
 
 - Site: `src/core/data/held-store.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `test/unit/a-remote-store-is-read-through-a-held-store.test.mjs`
 - Site: `src/core/worker/serve-data.ts`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-a-store-says-what-it-can-do-once
 
@@ -4613,9 +4631,9 @@ A test that changes one replaces the object.
 - Site: `src/core/data/base-store.ts`
 - Site: `src/core/data/request-store.ts`
 - Site: `src/core/data/held-store.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/a-store-says-what-it-can-do-once.test.mjs`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-a-superseded-read-stops
 
@@ -4639,8 +4657,8 @@ stops at the network. Before, a superseded read was only discarded
 - Site: `src/core/data/stores.ts`
 - Site: `src/core/data/request-store.ts`
 - Site: `src/core/data/fake-remote.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `test/unit/a-superseded-read-stops.test.mjs`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-every-tab-hears-a-change
 
@@ -5175,7 +5193,6 @@ Customer records" — drawn muted by `::slotted(.menu-row[data-note])::after`,
 the one part of a slotted row the menu's sheet can reach, and read out through
 `aria-description`. Measured the same in all three engines.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/up-is-open-down-is-closed.test.mjs`
 - Site: `test/e2e/reforged-menu-row-note.spec.ts`
@@ -5348,7 +5365,7 @@ saying only "Go". Nothing caught it, because nothing ran it.
 See `T-a-superseded-chip-suspends-it-is-never-removed`, which IS implemented,
 on the half a component owns.
 
-- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/source-view.ts`
 
 ### T-apply-and-discard-wait-for-a-change
 
@@ -5562,6 +5579,7 @@ reaching into the bar's shadow root.
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `src/core/ui/bind-source.ts`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/source-view.ts`
 
 ### T-only-the-view-trickles-down
 
@@ -5612,6 +5630,7 @@ reaches everything.
 - Site: `test/e2e/reforged-provider-summary.spec.ts`
 - Site: `test/unit/query.test.mjs`
 - Site: `test/unit/a-search-stays-in-its-scope.test.mjs`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-a-field-is-declared-once
 
@@ -5635,6 +5654,7 @@ not a fact about the field.
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/source-view.ts`
 
 ### T-configuration-is-not-data
 
@@ -5923,13 +5943,13 @@ SENT UP, the answer goes to the View with its field and the chart lets go of
 it; its section then says where the filter went. The View draws only a field
 it knows, so declaring a part declares its field.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-provider/provider-legends.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `test/unit/chart-scope.test.mjs`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/query-context.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-column.ts`
+- Site: `src/core/data/source-view.ts`
 
 ### T-a-legend-follows-the-view-when-it-holds-the-field
 
@@ -6078,6 +6098,7 @@ a rebuilt menu was still empty wiped answers it showed. An event with no
 - Site: `test/unit/a-rebuilt-bar-cannot-clear-a-field.test.mjs`
 - Site: `test/unit/an-unscoped-bar-is-reported.test.mjs`
 - Site: `src/core/ui/filter-host-controller.ts`
+- Site: `src/core/data/source-view.ts`
 
 ### T-the-data-says-what-a-field-may-hold
 
@@ -6602,6 +6623,8 @@ page, as Will asked: the Records View holds Health.
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
 - Site: `test/unit/a-chart-is-free-of-its-own-field.test.mjs`
+- Site: `src/core/data/source-reads.ts`
+- Site: `src/core/data/source-view.ts`
 
 ### T-all-is-an-answer
 
@@ -6724,6 +6747,7 @@ docs/DATA-LAYER-PLAN.md, Step 3.
 - Site: `src/core/ui/filter-host.ts`
 - Site: `test/unit/one-field-one-status.test.mjs`
 - Site: `src/core/ui/filter-host-controller.ts`
+- Site: `src/core/data/source-view.ts`
 
 ### T-a-rule-names-its-clock-and-its-language
 
@@ -6737,10 +6761,10 @@ alone, both are the reader's, as a page wants. The day is in the source's keys, 
 load after midnight would be skipped as the same question (TODO 614).
 
 - Site: `src/core/data/data-source-types.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/source-counts.ts`
 - Site: `src/core/data/store.ts`
 - Site: `test/unit/same-input-same-output.test.mjs`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-a-page-turn-is-a-slice
 
@@ -6790,9 +6814,9 @@ until they stop.
 - Site: `src/core/data/trace.ts`
 - Site: `src/core/data/request-store.ts`
 - Site: `src/core/data/data-handler.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/one-trace-stream.test.mjs`
+- Site: `src/core/data/source-reads.ts`
 
 ### T-one-command-one-door
 

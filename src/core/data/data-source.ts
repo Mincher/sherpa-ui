@@ -1,8 +1,9 @@
 /**
  * data-source.ts — one place that owns how records are being VIEWED.
  *
- * Its parts: data-source-types, query-edits, field-catalogue, source-binding,
- * source-counts. TRAP T-one-comparator-one-source
+ * It composes its parts: source-reads (the rows, the page, each ask), source-walk
+ * (the counts), source-view (what each control is drawn), source-binding,
+ * field-catalogue and its QueryContext. TRAP T-one-comparator-one-source
  * TRAP T-view-state-lives-in-one-object
  *
  * Map:
@@ -66,36 +67,29 @@
  * - .boundElements — Every component currently bound.
  * - .reportPages — The grid's own page count, when every row is in hand: publish, load nothing.
  */
-import {
-  andFilter, DEFAULT_OP, filterFields, filterNeedles, filterRows, filterTest, filterWithout, groupSummaries, readField, valueKey,
-} from './store.js';
-import { modeOf, readingClause, ruleOut } from './filter-state.js';
+import { andFilter, DEFAULT_OP, filterRows, filterTest, readField, valueKey } from './store.js';
+import { readingClause, ruleOut } from './filter-state.js';
 import { FieldCatalogue } from './field-catalogue.js';
-import { SourceBinding, tagOf } from './source-binding.js';
-import { answerOrder, planWalk, presentUnder, walkStepwise } from './source-counts.js';
-import { emptyWalk, walkInOrder, walkReads, type Walk, type WalkPlan } from './walk.js';
+import { SourceBinding } from './source-binding.js';
+import { presentUnder, type WalkFacts } from './source-counts.js';
+import { SourceReads } from './source-reads.js';
+import { SourceWalk } from './source-walk.js';
+import { SourceView } from './source-view.js';
 import {
-  answerOf, arrangementOf, compile, eachScope, emptyScope, filterKey, freezeReading, highlightOf, offerAxis, readingAnswered, sameFilter,
+  answerOf, arrangementOf, compile, eachScope, filterKey, freezeReading, highlightOf, readingAnswered, sameFilter,
   VIEW, withoutArrangement, type Arrangement, type CompileFacts, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
-import {
-  cameFrom, definitionOf, homeOf, keepOff, readingOf, viewHeldReadings,
-} from './query-edits.js';
-import { fieldStatus, type FieldStatus } from './field-status.js';
-import { coalesce, Latest } from './timing.js';
-import { QueryContext, type QueryChange, type QueryHandle } from './query-context.js';
+import { definitionOf, keepOff } from './query-edits.js';
+import type { FieldStatus } from './field-status.js';
+import { QueryContext, type QueryChange, type QueryHandle, type QueryPart } from './query-context.js';
 import { readingsOf, whereOf, type Where } from './where.js';
 import { report } from './report.js';
-import { heldOf, type HeldStore } from './held-store.js';
-import { failureOf, unreached, type Failure } from './failure.js';
-import { startSpan } from './trace.js';
+import type { Failure } from './failure.js';
 import type { FieldReading, FilterState } from './filter-state.js';
+import type { Filter, GroupSummary, LoadResult, Row, Store } from './store.js';
 import type {
-  Filter, GroupSummary, LoadOptions, LoadResult, Row, Store, StoreCapabilities,
-} from './store.js';
-import type {
-  AttachFacts, BindSink, BoundControl, BoundView, DataChangeDetail, DataSourceOptions, FieldDeclaration, FieldFilter,
-  FilterSet, HeldFilter, ScopeDescription, ViewState,
+  AttachFacts, BindSink, BoundControl, DataSourceOptions, FieldDeclaration, FieldFilter,
+  FilterSet, ScopeDescription, ViewState,
 } from './data-source-types.js';
 export type {
   AttachFacts, BindSink, BoundControl, BoundView, DataChangeDetail, DataSourceOptions, FieldDeclaration, FieldFilter,
@@ -104,53 +98,33 @@ export type {
 
 export class DataSource extends EventTarget {
   readonly store: Store;
-  /** The view this source owns: sort, group, search, page. The filter is compiled. */
-  #state: Pick<ViewState, 'page' | 'pageSize'>;
   /** The fields a search matches, or every field. */
-  #searchFields: string[] | undefined;
+  readonly #searchFields: string[] | undefined;
   /** It reads only the page's fields. TRAP T-a-held-set-reads-the-pages-fields */
   readonly #pageFields: boolean;
   /** Every bound component, how it is bound, and what it is pushed and drawn. */
-  readonly #binding = new SourceBinding({
+  readonly #binding: SourceBinding = new SourceBinding({
     describe: (s) => this.describe(s),
     scopeLabel: (s) => this.#context.scopeLabel(s),
     partScopes: () => this.#narrowing.keys(),
-    partsIn: (s) => this.#partsIn(s),
-    view: () => this.#boundView(),
-    rows: (w) => (w === 'all' ? this.#allRows : this.#result.rows),
-    freeRows: (fields) => this.#freeRows.get(fields.join('\n'))?.rows ?? this.#allRows,
+    partsIn: (s) => this.#view.partsIn(s),
+    view: () => this.#view.boundView(),
+    rows: (w) => (w === 'all' ? this.#reads.unpaged : this.#reads.rows),
+    freeRows: (fields) => this.#reads.freeRows(fields),
     pickedFor: (el, field) => this.pickedFor(el, field),
     only: (id) => this.#only[id],
     scoped: (s) => this.#scoped[s],
     now: () => this.#now(),
     mintId: () => this.#member.mintId(),
   });
-  /** The last load's answer: the rows, and the total before paging. */
-  #result: LoadResult = { rows: [], total: 0 };
-  /**
-   * Every row matching the filter, unpaged — for a `rows: 'all'` bind. Loaded
-   * only when one exists, so a view with no summary asks the store once as
-   * before. TRAP T-a-summary-binds-to-all-the-rows
-   */
-  #allRows: readonly Row[] = [];
-  /**
-   * The page count a GROUPED view reported; `null` until the first draw.
-   * TRAP T-grouped-paging-belongs-to-the-view
-   */
-  #viewPages: number | null = null;
+  /** Its rows: the store or its held set, the page, each ask and its answer. */
+  readonly #reads: SourceReads;
+  /** Its counts: one walk per Query, and what each control is drawn of it. */
+  readonly #walk: SourceWalk;
+  /** What each control is drawn: each scope, field and reading. */
+  readonly #view: SourceView;
   /** Load on the first bind, rather than waiting to be asked. */
-  #autoLoad: boolean;
-  // TRAP T-in-flight-ticket-discards-stale — three keys, and why not one.
-  /** The load in flight, as a ticket the response is checked against. */
-  #inFlight = new Latest();
-  /** The ViewState the last COMPLETED load asked for, serialised. */
-  #lastLoadKey: string | null = null;
-  /** Has any load completed? Until one has, nothing may be skipped. */
-  #loaded = false;
-  /** The key of the load currently in flight. */
-  #inFlightKey: string | null = null;
-  /** The key the load in flight was ASKED with, before the walk set picks aside. */
-  #inFlightAsked: string | null = null;
+  readonly #autoLoad: boolean;
   /** The Query and the page's declarations are its context's. 366 step 12 */
   readonly #context: QueryContext;
   /** What it holds of the context: the live Query, its ids, its fellow members. */
@@ -162,7 +136,7 @@ export class DataSource extends EventTarget {
   get #defaults(): Map<string, ScopeQuery> { return this.#member.live().defaults; }
   get #sets(): Map<string, FilterSet[]> { return this.#member.live().sets; }
   get #offers(): Map<string, string[]> { return this.#member.live().offers; }
-  get #narrowing(): Map<string, { field: string; only: BoundControl; label?: string; shownIn?: string }> { return this.#member.live().parts; }
+  get #narrowing(): Map<string, QueryPart> { return this.#member.live().parts; }
   /** The last compile, so a load does not redo it. Written by `#compileNow`. */
   #filter: Filter | undefined;
   /** What a component OUTSIDE every component scope is under — the View alone.
@@ -170,26 +144,16 @@ export class DataSource extends EventTarget {
   #viewFilter: Filter | undefined;
   /** Each component scope's own answer — for a summary bound INTO that scope. */
   #scoped: Record<string, Filter> = {};
+  /** What `compile` narrows each bound component by, alone — by bind id. */
+  #only: Record<string, Filter> = {};
   /** What each field IS: its kind, label and values. TRAP T-the-field-type-decides-the-clause */
   readonly #catalogue = new FieldCatalogue();
-
-  /* ── A remote store's whole set, held. Will, TODO 340 ─────────────────
-   * TRAP T-a-remote-source-holds-its-whole-set · TRAP T-a-store-has-one-cache */
-  /** The most rows it holds; 0 holds none. */
-  readonly #holdRows: number;
   /** The clock its relative dates read. */
   readonly #now: () => Date;
   /** Was a clock named? Then each read says which. */
   readonly #pinned: boolean;
-  /** The HeldStore it reads a remote store through, made here — none for a store
-   *  that is local, holds its own, or a page that holds no rows. TRAP T-a-remote-store-is-read-through-a-held-store */
-  readonly #held: HeldStore | null;
-  /** What every read asks: its own HeldStore, else the store. */
-  readonly #reader: Store;
-  /** What its reader can do, read once. TRAP T-a-store-says-what-it-can-do-once */
-  readonly #can: StoreCapabilities;
-  /** Its last ask failed and the store could not be reached: nothing to show. */
-  #down: Failure | null = null;
+  /** The most rows a remote store's held set holds. */
+  readonly #holdRows: number;
 
   constructor(options: DataSourceOptions) {
     super();
@@ -197,16 +161,99 @@ export class DataSource extends EventTarget {
     // Will's target: 100k rows in the browser. D3
     this.#holdRows = options.holdRows ?? 100_000;
     this.#pageFields = options.pageFields ?? false;
-    this.#held = heldOf(this.store, { cap: this.#holdRows, need: () => this.#need(), waits: false });
-    this.#reader = this.#held ?? this.store;
-    this.#can = this.#reader.capabilities;
-    // REMOTE: the reader edits a copy, and Apply sends it — the context splits it.
+    this.#autoLoad = options.autoLoad ?? true;
+    this.#applyOn = options.applyOn ?? 'change';
+    this.#now = options.now ?? ((): Date => new Date());
+    this.#pinned = !!options.now;
+    this.#searchFields = options.searchFields;
     this.#context = options.query ?? new QueryContext();
+    this.#reads = new SourceReads({
+      store: this.store, holdRows: this.#holdRows, now: this.#now, pinned: this.#pinned,
+      pageSize: options.pageSize ?? null, searchFields: this.#searchFields, debounce: options.debounce ?? 300,
+    }, {
+      filter: () => this.#filter,
+      viewFilter: () => this.#viewFilter,
+      scoped: () => this.#scoped,
+      arrangement: () => this.#arrangement(),
+      wantsAllRows: () => this.#binding.wantsAllRows(),
+      freeSets: () => this.#binding.freeSets(),
+      need: () => this.#need(),
+      beforeLoad: async (still) => {
+        if (!this.#reads.cheap) return 'none';
+        const walked = this.#walk.key();
+        const walk = await this.#walk.walked();
+        if (!still()) return 'overtaken';
+        // A walk something else moved past sets nothing aside: the walk after the load decides.
+        if (this.#walk.key() === walked && this.#walk.takeAside(walk)) this.#compileNow();
+        return 'walked';
+      },
+      // Its rows say which fields it has: one it lacks leaves the filter. TRAP T-a-source-compiles-only-what-it-has
+      landed: (rows) => {
+        if (this.#context.members > 1 && this.#saw(rows) && this.#lacksAny()) queueMicrotask(() => this.#recompose());
+      },
+      publish: () => this.#binding.publish(),
+      published: () => void this.#walk.rewalk(),
+      emit: (event) => this.dispatchEvent(event),
+      storeMoved: (moved) => this.#walk.storeMoved(moved),
+      refreshed: () => {
+        // The keys a server field matched are of the set let go: they are asked again. TODO 612
+        if (!this.#fetchedKeys.size) return;
+        this.#fetchedKeys.clear();
+        this.#fetching.clear();
+        this.#compileNow();
+      },
+    });
+    this.#walk = new SourceWalk({
+      keyOf: () => {
+        const parts = [...this.#narrowing].map(([s, p]) => [s, p.field, this.#hostOf(p.only)]);
+        return [this.#day(), this.#reads.age, this.#member.walkVersion(), withoutArrangement(this.#applied),
+          [...this.#binding.componentScopes()].sort(), [...this.#defaults.keys()].sort(), parts, [...this.#offers]];
+      },
+      applied: () => this.#applied,
+      facts: () => this.#walkFacts(),
+      rows: () => this.#reads.walkRows(),
+      reader: () => this.#reads.reader,
+      closed: () => this.#reads.closed,
+      letGo: (scope, field, keys) => this.#context.ask({ scope, field, letGo: keys }),
+      asideMoved: () => {
+        const { still, same } = this.#compileNow();
+        this.#view.syncPending();
+        if (same || (still && !this.remote)) return false;
+        this.#reads.requery(this.applyOn === 'input');
+        return true;
+      },
+      drawn: () => [...this.#binding.entries()].flatMap(([el, b]) => (
+        (el.drawResults || el.drawValueResults || el.drawPresent || el.drawOffered) && b.scope
+          ? [{ control: el, id: b.id, bar: typeof b.scope === 'string', scopes: typeof b.scope === 'string' ? [b.scope] : [...b.scope, ...this.#narrowing.keys()] }]
+          : [])),
+      parts: () => [...this.#narrowing].map(([p, part]) => [p, part.shownIn]),
+      partsIn: (scope) => this.#view.partsIn(scope),
+      filtering: (scope) => this.#filtering([scope]) > 0,
+      emit: (event) => this.dispatchEvent(event),
+    }, { limitOptions: options.limitOptions ?? false });
+    this.#view = new SourceView({
+      context: this.#context,
+      catalogue: this.#catalogue,
+      binding: this.#binding,
+      draft: () => this.#draft,
+      applied: () => this.#applied,
+      parts: () => this.#narrowing,
+      offers: () => this.#offers,
+      sets: (scope) => this.#sets.get(scope) ?? [],
+      arrangement: () => this.#arrangement(),
+      filter: () => this.#filter,
+      fetchedField: (clause) => [...this.#fetchedKeys].find(([, got]) => got.clause === clause)?.[0],
+      paging: () => ({ ...this.#reads.page, totalPages: this.#reads.totalPages }),
+      searchFields: this.#searchFields,
+      unread: (field) => this.#unread.has(field),
+      failed: () => this.#failed,
+    });
+    // REMOTE: the reader edits a copy, and Apply sends it — the context splits it.
     this.#member = this.#context.join({
-      remote: this.#remote, pagedIn: (scope) => this.#binding.pagedIn(scope), bindOf: (el) => this.#binding.get(el),
+      remote: this.#reads.remote, pagedIn: (scope) => this.#binding.pagedIn(scope), bindOf: (el) => this.#binding.get(el),
       presentsIn: (scope) => this.#binding.presentsIn(scope),
       // A page, or its size, is asked of the Query: it says which source draws it.
-      page: (at) => ('page' in at ? this.#setPage(at.page) : this.#setPageSize(at.pageSize)),
+      page: (at) => ('page' in at ? this.#reads.setPage(at.page) : this.#reads.setPageSize(at.pageSize)),
       heard: (change) => this.#hear(change),
       has: (field) => this.#catalogue.has(field),
       carriesOver: (field) => this.#catalogue.carriesOver(field),
@@ -216,24 +263,10 @@ export class DataSource extends EventTarget {
         return picked.map((v) => declared.get(valueKey(v)) ?? v);
       },
       ruledOut: (scope, field) => {
-        const walk = this.#walk?.walk;
+        const walk = this.#walk.last;
         return walk ? ruleOut(walk.present[scope]?.[field] ?? null, walk.offered[scope]?.[field] ?? null) : undefined;
       },
     });
-    this.#autoLoad = options.autoLoad ?? true;
-    this.#limitOptions = options.limitOptions ?? false;
-    this.#applyOn = options.applyOn ?? 'change';
-    this.#debounce = options.debounce ?? 300;
-    this.#now = options.now ?? ((): Date => new Date());
-    this.#pinned = !!options.now;
-    this.#searchFields = options.searchFields;
-    this.#state = {
-      page: 1,
-      pageSize: options.pageSize ?? null,
-    };
-    this.#heard = this.#reader.history?.seq ?? 0;
-    // A held source hears its store through its HeldStore, which says each change its set took, and each set.
-    this.#reader.addEventListener('change', this.#onStoreChange);
     /* A RECORD'S TIME IS A DATE, said once, by whoever knows it — the store.
        Nothing downstream has to know the dataset calls it `created`.
        TRAP T-a-record-has-a-time-of-its-own */
@@ -258,9 +291,7 @@ export class DataSource extends EventTarget {
 
   /** The current view state. A copy — mutating it must not steer the source. */
   get state(): ViewState {
-    const { sort, group, search, sortSuspended } = this.#arrangement();
-    const state: ViewState = { sort, group, search, ...this.#state, ...(sortSuspended ? { sortSuspended } : {}) };
-    return structuredClone(this.#filter ? { ...state, filter: this.#filter } : state);
+    return this.#reads.state;
   }
 
   /** How the rows are arranged: the Query's, in the ONE scope of this source's
@@ -370,40 +401,32 @@ export class DataSource extends EventTarget {
 
   /** Has any load completed? Before one, there is nothing to count or group. */
   get loaded(): boolean {
-    return this.#loaded;
+    return this.#reads.loaded;
   }
 
   /** The whole of the last load's answer. A shallow copy: its `rows` is the live array. TRAP T-result-is-the-hosts-half */
   get result(): LoadResult {
-    return { ...this.#result };
+    return this.#reads.result;
   }
 
   /** The last load's rows — one page when paged. LIVE, not a copy: read it, never change it. */
   get rows(): readonly Row[] {
-    return this.#result.rows;
+    return this.#reads.rows;
   }
 
   /** Matching rows before paging. */
   get total(): number {
-    return this.#result.total;
+    return this.#reads.result.total;
   }
 
-  /**
-   * Pages at the current size, at least 1. GROUPED, it is what the grid
-   * reported — a shut group is one screen line.
-   * TRAP T-grouped-paging-belongs-to-the-view
-   */
+  /** Pages at the current size, at least 1. GROUPED, it is what the grid reported.
+   *  TRAP T-grouped-paging-belongs-to-the-view */
   get totalPages(): number {
-    const size = this.#state.pageSize;
-    if (!size) return 1;
-    if (this.#arrangement().group && this.#viewPages != null) return Math.max(1, this.#viewPages);
-    return Math.max(1, Math.ceil(this.#result.total / size));
+    return this.#reads.totalPages;
   }
 
   /* ── Steering ──────────────────────────────────────────────────────── */
 
-  /** What `compile` narrows each bound component by, alone — by bind id. */
-  #only: Record<string, Filter> = {};
   /** What a hover lights, as a row test: one value of a scope's field, or the whole
    *  reading it holds. Asked by the page, once per hover, and kept nowhere: the
    *  highlight is the page's. Null where this source lacks the field. Will, TODO 655 */
@@ -413,19 +436,9 @@ export class DataSource extends EventTarget {
   }
 
   /** A field's picks in force on one component, as value keys: its own part's,
-   *  else the View's — applied, not drafted. A chart FREE of its field lights
-   *  them. Will, TODO 479. TRAP T-a-chart-is-free-of-its-own-field */
+   *  else the View's — applied, not drafted. TRAP T-a-chart-is-free-of-its-own-field */
   pickedFor(el: BoundControl, field: string): string[] {
-    // Only picks in FORCE: not while Advanced answers, nor under "is not". TODO 518
-    const picks = (r: FieldReading | undefined): string[] =>
-      (r && !r.suspended && modeOf(r) !== 'advanced' && (r.op ?? DEFAULT_OP) === DEFAULT_OP ? (r.picked ?? []).map(valueKey) : []);
-    for (const [scope, part] of this.#narrowing) {
-      if (part.only === el && part.field === field) {
-        const own = picks(this.#applied.scopes[scope]?.readings[field]);
-        if (own.length) return own;
-      }
-    }
-    return picks(this.#applied.scopes[VIEW]?.readings[field]);
+    return this.#view.pickedFor(el, field);
   }
 
   /** Is this scope a SLOT — does a chart draw a summary in it? Its Group and Sort are
@@ -434,152 +447,9 @@ export class DataSource extends EventTarget {
     return this.#binding.presentsIn(scope);
   }
 
-  /**
-   * One scope as a control draws it WHOLE: each field it holds — a field held
-   * ABOVE keeps its place and says where it went — what it may add, and, below
-   * the View, how its rows are arranged. TRAP T-a-panel-asks-for-its-scopes
-   */
+  /** One scope as a control draws it WHOLE. TRAP T-a-panel-asks-for-its-scopes */
   describe(scope: string): ScopeDescription {
-    const q = this.#draft.scopes[scope] ?? emptyScope();
-    const above = scope === VIEW ? [] : this.#context.scope(VIEW);
-    const part = this.#narrowing.get(scope);
-    if (part) {
-      /* ONE Simple filter: a chip per value, each with the series it is drawn
-         in. No Advanced — Will, TODO 52. TRAP T-a-chart-scope-is-its-legend-field */
-      const { advanced: _a, kind: _k, options, ...def } = this.filterDef(part.field);
-      const reading = q.readings[part.field];
-      return {
-        scope, label: part.label ?? def.label, part: true, available: [],
-        ...(tagOf(part.only) ? { component: tagOf(part.only)! } : {}),
-        filters: options?.length ? [{
-          ...def,
-          // A band paints in its status; any other value, its series. TODO 477
-          options: options.map((o, i) => ({ ...o, swatch: o.swatch ?? i + 1 })),
-          ...(reading ? { state: structuredClone(reading) } : {}),
-          ...(above.includes(part.field) ? { appliedAt: this.#context.scopeLabel(VIEW) } : {}),
-        }] : [],
-      };
-    }
-    /* EVERY field it holds, declared or not: one left out still filters. In the
-       ONE order — each set together (D2 A). TRAP T-a-broken-assumption-reports
-       TRAP T-one-walk-counts-and-limits-in-order */
-    const held = answerOrder(this.#draft, this.#sets.get(scope) ?? [], scope).flatMap((e) => (e.held ? [e.id] : []));
-    // The app's presets lead the scope: a boolean chip each. TODO 493
-    const presets: HeldFilter[] = this.#context.presets(scope).map((p) => ({
-      id: `preset:${p.id}`, label: p.label, preset: true, active: this.#context.presetOn(scope, p.id),
-    }));
-    const fields: HeldFilter[] = held.map((f) => {
-      // Held above, its state is its own kept answer. D2 A
-      const kept = q.superseded?.[f];
-      const reading = q.readings[f] ?? (kept && Object.keys(kept).length ? kept : undefined);
-      const down = scope === VIEW ? this.#sendTo(f) : undefined;
-      const from = cameFrom(this.#draft, f);
-      return {
-        ...this.filterDef(f), removable: true,
-        ...(this.#own.get(scope)?.has(f) ? { own: true } : {}),
-        ...(reading ? { state: structuredClone(reading) } : {}),
-        ...(above.includes(f) ? { appliedAt: this.#context.scopeLabel(VIEW) } : {}),
-        ...(down ? { sendTo: {
-          scope: down, label: this.#narrowing.get(down)?.label ?? this.#context.scopeLabel(down), ...(down === from ? { origin: true } : {}),
-        } } : {}),
-      };
-    });
-    const component = scope === VIEW ? undefined : this.#binding.componentOf(scope);
-    const sets = this.#context.sets(scope);
-    const out: ScopeDescription = {
-      scope, label: this.#context.scopeLabel(scope), ...(component ? { component } : {}),
-      filters: [...presets, ...fields, ...(this.#unused.get(scope) ?? []).map((u) => ({ ...u, field: u.id, unused: true })),
-        // A chart's legend its bar draws, answered in its own scope. Will, TODO 670
-        ...this.#partsIn(scope).flatMap((key) => this.describe(key).filters.map((f) => ({ ...f, answeredIn: key })))],
-      available: this.addable(scope), ...(sets.length ? { sets } : {}),
-      ...(q.suspended ? { suspended: true } : {}),
-      ...(this.#context.soloed?.scope === scope ? { soloed: this.#context.soloed.field } : {}),
-    };
-    /* GROUP, PRIMARY and SECONDARY by any field that names things — by its
-       declaration, so before its values come: never a number or a date. A typed
-       field, a name, is one too. Will, TODOs 500, 523, 548 */
-    const groupable = (c: { field: string }): boolean => {
-      const facts = this.#catalogue.get(c.field);
-      return facts?.type !== 'number' && facts?.type !== 'date';
-    };
-    /* HOW its rows are arranged — only in a scope that arranges, and its own
-       arrangement only. TRAP T-group-and-sort-are-component-scope */
-    if (this.#context.arranges(scope) && this.#context.fields(scope).length) {
-      const cols = this.#context.fields(scope).filter((f) => this.#catalogue.has(f))
-        .map((f) => ({ field: f, label: this.#catalogue.get(f)?.label ?? f }));
-      // Each axis as the app offers it. Will, TODO 660
-      const offers = this.#context.axesOf(scope, 'grid');
-      out.group = offerAxis(cols.filter(groupable), offers.group);
-      out.sort = cols;
-      const arranged = this.#arrangement();
-      const mine = (this.#arrangedIn() ?? scope) === scope;
-      if (mine && arranged.group) out.groupField = arranged.group;
-      const [first] = mine ? arranged.sort : [];
-      if (first) {
-        out.sortField = first.field;
-        out.sortDirection = first.direction ?? 'asc';
-      }
-      /* …and a grid's Primary — its leading column, pinned — and Secondary: a pivot,
-         each row opening on its own rows. Will, TODOs 548, 570 */
-      const shown = this.#context.presented(scope, 'grid');
-      const lead = shown.primary ?? cols[0]?.field;
-      const fallback = this.#context.presented(scope, 'grid', false).primary ?? cols[0]?.field;
-      const axes = this.#context.honours('axes');
-      const kept = this.#context.presentation(scope);
-      Object.assign(out, {
-        // Off, no chip offers them; the chain stays, so Group loses its Primary. TODOs 583, 658
-        chartFields: axes ? offerAxis(cols.filter(groupable), offers.primary) : [], stacks: true,
-        ...(axes ? { secondaryFields: offerAxis(cols.filter(groupable), offers.secondary) } : {}),
-        ...(lead ? { primaryField: lead } : {}),
-        ...(fallback ? { primaryDefault: fallback } : {}),
-        ...(shown.secondary ? { secondaryField: shown.secondary } : {}),
-        // Switched off, its chip keeps the field. Will, TODO 666
-        ...(kept.off === 'secondary' && kept.secondary ? { secondaryOff: kept.secondary } : {}),
-      });
-    } else if (this.#binding.presentsIn(scope) && this.#binding.wholeIn(scope)) {
-      // A SLOT of one number: nothing to arrange. Its empty Group clears its bar's. Will, TODO 696
-      Object.assign(out, { presents: true, whole: true, group: [] });
-    } else if (this.#binding.presentsIn(scope)) {
-      /* A SLOT: its Primary, its Secondary where its chart stacks — a bar chart —
-         its Group, by list fields, and its order: kept in the Query, never the
-         rows'. Will, TODO 548 */
-      const lists = this.#catalogue.known().map((field) => ({ field, label: this.#catalogue.get(field)?.label ?? field })).filter(groupable);
-      // Its chart's own, under what the reader changed.
-      const shown = { ...this.#binding.shownIn(scope), ...this.#context.presented(scope, 'chart') };
-      const fallback = { ...this.#binding.shownIn(scope), ...this.#context.presented(scope, 'chart', false) }.primary;
-      const stacks = this.#binding.stacksIn(scope);
-      const secondary = stacks ? shown.secondary : undefined;
-      // Each axis as the app offers it. Will, TODO 660
-      const offers = this.#context.axesOf(scope, 'chart');
-      const axes = this.#context.honours('axes');
-      Object.assign(out, {
-        presents: true, group: offerAxis(lists, offers.group), chartFields: axes ? offerAxis(lists, offers.primary) : [],
-        ...(axes ? { secondaryFields: offerAxis(lists, offers.secondary) } : {}),
-        ...(stacks ? { stacks: true } : {}),
-        ...(shown.group ? { groupField: shown.group } : {}),
-        ...(shown.sort ? { sortDirection: shown.sort } : {}),
-        ...(shown.primary ? { primaryField: shown.primary } : {}),
-        ...(fallback ? { primaryDefault: fallback } : {}),
-        ...(secondary ? { secondaryField: secondary } : {}),
-      });
-    }
-    return out;
-  }
-
-  /** The parts a scope's bar draws: a chart's legend, in its card's toolbar. Will, TODO 670 */
-  #partsIn(scope: string): string[] {
-    return [...this.#narrowing].flatMap(([key, part]) => (part.shownIn === scope ? [key] : []));
-  }
-
-  /** The ONE scope a View field is sent down to: the one it came UP from,
-   *  while that still has it, else the first that has it — a component's, in
-   *  the page's order, then a chart's own. Will, TODO 346. TRAP T-send-to-view-filters */
-  #sendTo(field: string): string | undefined {
-    const has = (scope: string): boolean =>
-      scope !== VIEW && (this.#narrowing.get(scope)?.field === field || this.#context.canHold(scope, field));
-    const from = cameFrom(this.#draft, field);
-    if (from && has(from)) return from;
-    return [...this.#offers.keys(), ...this.#narrowing.keys()].find(has);
+    return this.#view.describe(scope);
   }
 
   /* ── Selection, by FIELD ───────────────────────────────────────────── */
@@ -590,7 +460,7 @@ export class DataSource extends EventTarget {
    * lets two controls share one selection.
    */
   declareValues(field: string, values: readonly unknown[]): void {
-    this.#age++;
+    this.#reads.aged();
     this.#catalogue.declareValues(field, values);
     this.#recomposeFor([field]);
   }
@@ -598,10 +468,8 @@ export class DataSource extends EventTarget {
   /** A scope's own fields, as its page definition holds them: they keep their
    *  place — a reader drags only what was added. Will, TODO 452 */
   declareOwn(scope: string, fields: readonly string[]): void {
-    this.#own.set(scope, new Set(fields));
+    this.#view.declareOwn(scope, fields);
   }
-  /** Each scope's own fields. */
-  #own = new Map<string, ReadonlySet<string>>();
 
   /** A scope's PRESETS: the app's own named conditions, each a boolean chip — on,
    *  its rows are written into the fields'. Kept by the Query. Will, TODOs 493, 510
@@ -614,15 +482,10 @@ export class DataSource extends EventTarget {
    *  this page has no field for: the App Context's. Never in the Query. True when
    *  it changed: a provider's bars are drawn by their provider. TODO 453 */
   declareUnused(scope: string, filters: readonly { id: string; label: string; icon?: string }[]): boolean {
-    // The same list draws nothing again: a page tells it on every reader act.
-    if (JSON.stringify(filters) === JSON.stringify(this.#unused.get(scope) ?? [])) return false;
-    if (filters.length) this.#unused.set(scope, filters);
-    else this.#unused.delete(scope);
+    if (!this.#view.declareUnused(scope, filters)) return false;
     this.#binding.drawBars(scope);
     return true;
   }
-  /** Each scope's unused filters. */
-  #unused = new Map<string, readonly { id: string; label: string; icon?: string }[]>();
 
   /**
    * Declare a field's KIND and its reader-facing name.
@@ -633,7 +496,7 @@ export class DataSource extends EventTarget {
    * TRAP T-the-field-type-decides-the-clause
    */
   declareField(field: string, facts: FieldDeclaration = {}): void {
-    this.#age++;
+    this.#reads.aged();
     this.#catalogue.declare(field, facts);
     this.#recomposeFor([field]);
   }
@@ -664,30 +527,25 @@ export class DataSource extends EventTarget {
       }
     });
     // Each field's facts moved: what was counted is out of date.
-    this.#age++;
+    this.#reads.aged();
     this.#recomposeFor(fields);
   }
 
   /** The values of the fields the catalogue has not got, from the store or the held set. */
   async #readOpen(open: readonly string[], options: { lazy?: boolean }): Promise<Record<string, unknown[]>> {
-    await this.#hold();
-    const reads = this.#reader;
+    await this.#reads.hold();
+    const reads = this.#reads.reader;
     const distinct = reads.distinct?.bind(reads);
     /* A remote store whose rows are not held here is asked a field's values when
        the field is needed — at open, what the page holds and answers; the rest later.
        345 phase 5 · TRAP T-a-field-reads-its-values-when-needed */
-    if (distinct && options.lazy && this.#remote && !this.#scan) {
+    if (distinct && options.lazy && this.remote && !this.#reads.scans) {
       const asked = open.filter((f) => this.#needs(f));
       for (const f of open) if (!asked.includes(f)) this.#unread.add(f);
       return asked.length ? distinct(asked, {}) : {};
     }
     if (distinct) return distinct(open, {});
-    const age = this.#rowsAge;
-    const { rows } = await reads.load({});
-    // The walk reads these rows too, until they change. TRAP T-one-walk-counts-and-limits-in-order
-    if (!this.#remote && age === this.#rowsAge && rows.length <= this.#holdRows) {
-      this.#rowsCache = { age, rows };
-    }
+    const rows = await this.#reads.loadAll();
     return Object.fromEntries(open.map((f) => [f, rows.map((r) => readField(r, f))]));
   }
 
@@ -702,7 +560,7 @@ export class DataSource extends EventTarget {
       if (failed) this.#failed.add(f);
       else this.#failed.delete(f);
     }
-    if (moved.length) this.#syncPending();
+    if (moved.length) this.#view.syncPending();
   }
 
   /**
@@ -714,7 +572,7 @@ export class DataSource extends EventTarget {
    */
   async openOnFirst(): Promise<void> {
     for (const scope of this.query.scopes) {
-      if (scope !== VIEW && !this.#remote) continue;
+      if (scope !== VIEW && !this.remote) continue;
       const before: Filter[] = [];
       for (const field of this.query.scope(scope)) {
         const facts = this.#catalogue.get(field);
@@ -733,8 +591,8 @@ export class DataSource extends EventTarget {
           if (before.length || !known.values?.length) {
             // A store that fails here fails the first load too, which says so: no start.
             try {
-              await this.#hold();
-              found = (await presentUnder(this.#reader, [field], andFilter(before)))[field] ?? [];
+              await this.#reads.hold();
+              found = (await presentUnder(this.#reads.reader, [field], andFilter(before)))[field] ?? [];
             } catch {
               return;
             }
@@ -758,10 +616,10 @@ export class DataSource extends EventTarget {
   async declareChildren(field: string): Promise<void> {
     const child = this.#catalogue.get(field)?.child;
     if (!child) return;
-    const rows = await this.#walkRows();
+    const rows = await this.#reads.walkRows();
     if (!rows) return;
     this.#catalogue.declareChildren(field, rows.map((r) => [readField(r, field), readField(r, child)] as const));
-    this.#age++;
+    this.#reads.aged();
   }
 
   /**
@@ -784,7 +642,7 @@ export class DataSource extends EventTarget {
   async #readWanted(): Promise<void> {
     const fields = [...this.#wanted];
     this.#wanted.clear();
-    if (!fields.length || this.#closed) return;
+    if (!fields.length || this.#reads.closed) return;
     await this.declareFromRows(fields);
     for (const f of fields) this.#unread.delete(f);
     for (const scope of new Set(fields.flatMap((f) => this.#context.scopes.filter((id) => this.#context.scope(id).includes(f))))) {
@@ -829,39 +687,16 @@ export class DataSource extends EventTarget {
     return readingsOf(where, (f) => this.#catalogue.facts(f));
   }
 
-  /** A field's filter, as any bar or panel draws it — ONE definition, so two
-   *  controls over a field cannot offer it two ways. Its options are the values
-   *  the rows HOLD, never a lower-cased copy a heading's menu would not share.
-   *  TRAP T-a-field-is-declared-once · TRAP T-one-comparison-rule-for-query-and-ui */
+  /** A field's filter, as any bar or panel draws it — ONE definition.
+   *  TRAP T-a-field-is-declared-once */
   filterDef(field: string): FieldFilter {
-    const def = this.#catalogue.filterDef(field);
-    // Its values are on their way: a menu says so. 345 phase 5
-    return this.#unread.has(field) ? { ...def, loading: true } : def;
+    return this.#view.filterDef(field);
   }
 
-  /** The scope whose Group or Sort set the rows' arrangement — while it still
-   *  arranges; else none, and every arranging scope shows it. */
-  #arrangedIn(): string | undefined {
-    const { scope } = this.#arrangement();
-    return scope && this.#context.arranges(scope) ? scope : undefined;
-  }
-
-  /**
-   * What a scope may still ADD: the declared fields it has, less those it
-   * holds or `taken` names — each saying where it lives now, when that is
-   * somewhere else, because adding it here MOVES it. Declared FIELDS only, so
-   * Group and Sort — which arrange one component — are never offered.
-   * TRAP T-a-bar-offers-only-what-its-scope-holds
-   * TRAP T-group-and-sort-are-component-scope
-   */
-  addable(scope: string, taken: Iterable<string> = this.#context.scope(scope)): FieldFilter[] {
-    // UP IS OPEN, DOWN IS CLOSED: below the View, what it holds is not offered.
-    // TRAP T-component-extends-view-never-alters-it
-    const skip = new Set([...taken, ...(scope === VIEW ? [] : this.#context.scope(VIEW))]);
-    return this.#context.fields(scope).filter((f) => !skip.has(f) && this.#catalogue.has(f)).map((f) => {
-      const at = this.#context.scopeOf(f);
-      return at && at !== scope ? { ...this.filterDef(f), note: this.#context.scopeLabel(at) } : this.filterDef(f);
-    });
+  /** What a scope may still ADD, each saying where it lives now.
+   *  TRAP T-a-bar-offers-only-what-its-scope-holds */
+  addable(scope: string, taken?: Iterable<string>): FieldFilter[] {
+    return this.#view.addable(scope, taken);
   }
 
   /** What `declareValues` was told, as the data holds it. */
@@ -869,121 +704,26 @@ export class DataSource extends EventTarget {
     return this.#catalogue.valuesFor(field);
   }
 
-  /**
-   * TELL EACH BAR over this field's scope what it now holds — a chip, a heading
-   * or the panel changed it, and the bar is a VIEW of the Query, not a copy.
-   * Its CONDITIONS go too, or a chip stays blank while its field filters.
-   * A SUSPENDED answer is drawn too, and SAYS it is — `suspended: true` — so a
-   * bar keeps its chip off and a panel does not show an answer that filters
-   * nothing. TRAP T-one-query-one-owner · TRAP T-grid-suspend-is-not-clear
-   * TRAP T-a-conditioned-chip-answers-with-its-clause
-   * TRAP T-a-suspended-answer-is-drawn-as-off
-   */
-  #draw(field: string): void {
-    const home = homeOf(this.#draft, field);
-    // A View answer shows in every grid's heading too.
-    if (home === VIEW) this.#syncHeld();
-    const state = this.selection(field);
-    const off = state.fieldState === 'suspended';
-    // Suspended, its values are not "picked" in the state: they are the reading's own.
-    const picked = off ? (readingOf(this.#draft, field)?.picked ?? []).map(valueKey)
-      : state.values.filter((v) => v.state === 'picked').map((v) => v.value);
-    /* The WHOLE answer — its operator and its typed text too: "is not churned"
-       drawn as "churned" is the opposite answer, and "contains an" drawn
-       without its text is none. */
-    // Its tree as the STATE reads it — an empty condition is none.
-    const { tree: _raw, ...held } = answerOf(readingOf(this.#draft, field) ?? {});
-    const reading = { ...held, picked, ...(state.tree ? { tree: state.tree } : {}) };
-    this.#binding.drawReading(field, reading, home);
-    // A preset's field no scope holds has no home once it goes: where it sat hears that. TODO 611
-    const sat = this.#presetAt.get(field);
-    if (sat && sat !== home) this.#binding.drawReading(field, reading, sat);
-    if (held.byPreset && !this.#context.scopeOf(field)) this.#presetAt.set(field, home);
-    else this.#presetAt.delete(field);
-  }
-  /** Where a preset put each field no scope holds. */
-  #presetAt = new Map<string, string>();
-
-  /**
-   * THE GROUPS IN FORCE — each value, and how many rows carry it.
-   *
-   * A GROUP IS A DATA CONCEPT, the same way a data PAGE is. A grid draws a
-   * group as a heading row and collapses it, exactly as it pages screen lines
-   * — that is the VIEW's half, and neither makes the grid the owner. Counted
-   * over every matching row, so a group split across a page boundary still
-   * says how many rows it holds.
-   * TRAP T-a-group-is-a-data-layer-concept · TRAP T-grouped-paging-belongs-to-the-view
-   */
-  groups(field: string = this.#arrangement().group ?? ''): GroupSummary[] {
-    if (!field) return [];
-    if (!this.#loaded) {
-      /* NOT LOADED YET. An empty answer here reads as "no groups", which is
-         indistinguishable from a field nothing carries.
-         TRAP T-a-broken-assumption-reports */
-      report({
-        code: 'not-loaded',
-        message: 'groups() was asked before the first load, so it has nothing to count.',
-        at: { field },
-      });
-      return [];
-    }
-    /* The rows a component SHOWS: an unwindowed load is those, under every
-       scope. `#allRows` is the VIEW's alone, so it stands in only for a page.
-       TRAP T-a-group-is-a-data-layer-concept */
-    const whole = this.#arrangement().group != null || this.#state.pageSize == null;
-    const rows = !whole && this.#allRows.length ? this.#allRows : this.#result.rows;
-    return groupSummaries(rows, field);
+  /** THE GROUPS IN FORCE — each value, and how many rows carry it.
+   *  TRAP T-a-group-is-a-data-layer-concept */
+  groups(field?: string): GroupSummary[] {
+    return this.#reads.groups(field);
   }
 
-  /**
-   * One field's whole state — picked, unpicked, the condition — ready for a
-   * chip, a column menu, a legend row or anything else that draws it.
-   */
+  /** One field's whole state — picked, unpicked, the condition — ready for any control to draw. */
   selection(field: string, label?: string): FilterState {
-    return this.#catalogue.stateFor(field, readingOf(this.#draft, field) ?? {}, label);
+    return this.#view.selection(field, label);
   }
 
   /** What a field is now, seen from a scope: the one answer for every control. TRAP T-one-field-one-status */
   fieldStatus(field: string, scope: string = VIEW): FieldStatus {
-    return fieldStatus({
-      draft: this.#draft,
-      applied: this.#applied,
-      state: (f, reading) => this.#catalogue.stateFor(f, reading),
-      pending: (f) => this.#context.pending(f),
-      failed: (f) => this.#failed.has(f),
-      label: (s) => this.#context.scopeLabel(s),
-    }, field, scope);
+    return this.#view.fieldStatus(field, scope);
   }
 
   /** Every field currently selected. */
   get selectedFields(): string[] {
     return Object.values(this.#draft.scopes).flatMap((s) => Object.keys(s.readings));
   }
-
-  /* ── Scopes: WHICH SURFACE holds a filter ──────────────────────────── */
-
-  /**
-   * A SCOPE is a named place a filter lives — a header bar, a grid's bar, a
-   * panel section. The app names them; this holds only what is true NOW.
-   *
-   * It is here because two controls must agree on it and NEITHER MAY KNOW THE
-   * OTHER EXISTS. A panel that asked a toolbar what it was holding is a panel
-   * coupled to a toolbar. Held in the Query. TRAP T-a-scope-is-a-place-not-a-reach
-   */
-
-  /** Each control below the View is told what the View holds: from the draft, as a
-   *  raise shows at once, each with its answer in force. TRAP T-one-field-one-status */
-  #syncHeld(): void {
-    this.#binding.supersede(viewHeldReadings(this.#draft, this.#applied));
-  }
-
-  /* ── What a scope MAY hold ─────────────────────────────────────────────
-   * Will, 2026-09-25: "Any component field can be applied to the view scope
-   * as a filter. Only component fields can be added to that component's scoped
-   * filters." And: "A filter can't exist in both the view and component scope
-   * so adding to one removes it from the other. However, the same filter can
-   * exist across multiple component scopes."
-   * TRAP T-up-is-open-down-is-closed */
 
   /**
    * EVERYTHING THIS SOURCE THINKS IS TRUE, in one object.
@@ -994,16 +734,18 @@ export class DataSource extends EventTarget {
    * TRAP T-a-bug-report-should-be-a-paste
    */
   debugState(): Record<string, unknown> {
-    const { plan, held } = this.#held?.debugState() ?? { plan: 'store' };
+    const { plan, held } = this.#reads.debug();
+    const { page, pageSize } = this.#reads.page;
+    const { sort, group, search } = this.#arrangement();
     return {
-      rows: this.#result.rows.length,
+      rows: this.#reads.rows.length,
       total: this.total,
-      page: this.#state.page,
-      pageSize: this.#state.pageSize,
+      page,
+      pageSize,
       totalPages: this.totalPages,
-      sort: this.#arrangement().sort,
-      group: this.#arrangement().group,
-      search: this.#arrangement().search,
+      sort,
+      group,
+      search,
       filter: this.#filter,
       // The readings and holds the filter is compiled from. TRAP T-one-query-one-owner
       query: structuredClone(this.#applied),
@@ -1021,12 +763,12 @@ export class DataSource extends EventTarget {
       bound: this.#binding.debug(),
       // What it left out: another source's scope, or `scope.field` for a field it lacks.
       skipped: [...this.#skipped],
-      loaded: this.#loaded,
+      loaded: this.loaded,
       // How it answers, and whether its store can be reached. TRAP T-a-read-is-planned
       plan,
       reach: this.reach,
       // The picks the filters before them rule out, by scope. TRAP T-one-walk-counts-and-limits-in-order
-      aside: Object.fromEntries(this.#setAside),
+      aside: Object.fromEntries(this.#walk.aside),
       ...(held ? { held } : {}),
     };
   }
@@ -1042,12 +784,12 @@ export class DataSource extends EventTarget {
     /* A DRAFT edit on a remote source changes nothing applied: no load, and
        the page stays where it is. It only changes what is pending. */
     const { still, same } = this.#compileNow();
-    this.#syncPending();
-    if (!same) this.#requery(this.applyOn === 'input');
+    this.#view.syncPending();
+    if (!same) this.#reads.requery(this.applyOn === 'input');
     /* The rows did not move, so no load will count again — yet an answer that
        is OFF, or one chart's own, changed, and its badge wears a number.
        TRAP T-a-chip-counts-within-the-filters-before-it */
-    if (still && this.#loaded) this.#walkSoon();
+    if (still && this.loaded) this.#walk.soon();
   }
 
   /** Every reading the Query keeps, in both copies, frozen: what a control is
@@ -1063,15 +805,13 @@ export class DataSource extends EventTarget {
   #compileNow(): { still: boolean; same: boolean } {
     const { filter, view, scoped, only, skipped } = compile(this.#applied, this.#compileFacts());
     this.#skipped = skipped ?? [];
-    const next = filter;
-    const viewed = view;
     // The SHARED filter stood still: no load follows, whatever one component's own did.
-    const still = sameFilter(next, this.#filter);
+    const still = sameFilter(filter, this.#filter);
     // A draft edit loads nothing: remote, or a scope that waits. TODO 406
     const same = this.#context.waiting() && still && sameFilter(only, this.#only);
     this.#only = only;
-    this.#filter = next;
-    this.#viewFilter = viewed;
+    this.#filter = filter;
+    this.#viewFilter = view;
     this.#scoped = scoped;
     return { still, same };
   }
@@ -1083,7 +823,7 @@ export class DataSource extends EventTarget {
       field: (f) => this.#catalogue.facts(f),
       components: this.#binding.componentScopes(),
       fixed: new Set(this.#defaults.keys()),
-      drop: (scope, field) => this.#setAside.get(scope)?.[field],
+      drop: (scope, field) => this.#walk.aside.get(scope)?.[field],
       mine: this.#mine,
       has: this.#has,
       fetched: this.#fetched,
@@ -1114,7 +854,7 @@ export class DataSource extends EventTarget {
       // The KEYS alone, where the store can send just them. 345 phase 7
       const projected = this.store.capabilities.projects ? { fields: [this.store.key] } : {};
       const { rows } = await this.store.load({ ...(clause ? { filter: clause } : {}), ...projected, ...(this.#pinned ? { now: this.#now() } : {}) });
-      if (this.#fetching.get(field) !== answer || this.#closed) return;
+      if (this.#fetching.get(field) !== answer || this.#reads.closed) return;
       this.#fetchedKeys.set(field, { answer, clause: [this.store.key!, 'in', rows.map((row) => readField(row, this.store.key!))] });
       this.#setFailed([field], false);
     } catch (error) {
@@ -1141,38 +881,31 @@ export class DataSource extends EventTarget {
 
   /** Do this source's loads reach outside the data layer? */
   get remote(): boolean {
-    return this.#remote;
+    return this.#reads.remote;
   }
 
   /** When a filter applies: once per act, or LIVE while its value moves — never
    *  live for a remote source. Fixed by the options; `bindSource` writes it on
    *  each control once. Will, TODO 107 */
   get applyOn(): 'change' | 'input' {
-    return this.#remote ? 'change' : this.#applyOn;
+    return this.remote ? 'change' : this.#applyOn;
   }
   /** When a filter applies, as the app asked. */
-  #applyOn: 'change' | 'input' = 'change';
-  /** A live filter's wait after the last move, in ms. */
-  #debounce = 300;
-
-  /** The same, for this class's own branches. */
-  get #remote(): boolean {
-    return !!this.#can.remote;
-  }
+  readonly #applyOn: 'change' | 'input';
 
   /** What its context did: today's follow-ups, in today's order. 366 steps 14-15 */
   #hear(change: QueryChange): void | Promise<void> {
     switch (change.kind) {
       case 'offer':
         // What its menus may add moved: the walk tallies it.
-        if (this.#loaded) this.#walkSoon();
+        if (this.loaded) this.#walk.soon();
         return;
       case 'part':
       case 'sets':
-        this.#age++;
+        this.#reads.aged();
         // A legend declared after the last load is told what the View leaves it; a
         // set's order is the order every chip counts in.
-        if (this.#loaded) this.#walkSoon();
+        if (this.loaded) this.#walk.soon();
         // Sent up, the View holds its field — and draws only a field it knows.
         if (change.kind === 'part' && change.field && !this.#catalogue.has(change.field)) this.declareField(change.field);
         this.#binding.drawScopesSoon();
@@ -1194,7 +927,7 @@ export class DataSource extends EventTarget {
       case 'select':
         // The requery first, so a listener sees the state the rows were fetched for.
         this.#recompose();
-        this.#draw(change.field);
+        this.#view.draw(change.field);
         this.readValues([change.field]);
         // A preset reads its on from this field: its chip is drawn again. TODO 510
         for (const scope of this.#context.presetsOver(change.field)) this.#binding.drawBars(scope);
@@ -1203,8 +936,8 @@ export class DataSource extends EventTarget {
         // A field just held needs its values. 345 phase 5
         this.readValues(this.#context.scope(change.scope));
         if (change.moved.length) this.#recompose();
-        for (const field of change.moved) this.#draw(field);
-        if (change.scope === VIEW) this.#syncHeld();
+        for (const field of change.moved) this.#view.draw(field);
+        if (change.scope === VIEW) this.#view.syncHeld();
         this.#binding.drawBarsBehind(change.scope);
         this.#binding.drawScopesSoon();
         return;
@@ -1221,19 +954,19 @@ export class DataSource extends EventTarget {
         return;
       case 'order':
         // No row moves, but each count is counted in this order. TODO 452
-        if (this.#loaded) this.#walkSoon();
+        if (this.loaded) this.#walk.soon();
         this.#binding.drawBarsBehind(change.scope);
         this.#binding.drawScopesSoon();
         return;
       case 'commit':
         this.#recompose();
         // The headings show what is APPLIED.
-        this.#syncHeld();
+        this.#view.syncHeld();
         return;
       case 'drawn':
-        for (const field of change.fields) this.#draw(field);
+        for (const field of change.fields) this.#view.draw(field);
         if (change.bars) this.#binding.drawBars(change.bars);
-        if (change.pending) this.#syncPending();
+        if (change.pending) this.#view.syncPending();
         return;
       case 'bars':
         this.#binding.drawBars(change.scope);
@@ -1246,9 +979,9 @@ export class DataSource extends EventTarget {
       case 'arranged':
         // The old count was measured against the OLD grouping. Drop it and wait for
         // the next draw. TRAP T-grouped-paging-belongs-to-the-view
-        if (change.group) this.#viewPages = null;
+        if (change.group) this.#reads.regroup();
         // Every re-ordering returns to page 1.
-        this.#requery();
+        this.#reads.requery();
         return;
       case 'query':
         // What the Query holds and answers needs its values. 345 phase 5
@@ -1263,15 +996,15 @@ export class DataSource extends EventTarget {
    *  TRAP T-a-reload-replays-the-readers-answers */
   async #heardQuery(was: Arrangement, before: readonly string[]): Promise<void> {
     const now = this.#arrangement();
-    if (now.group !== was.group) this.#viewPages = null;
+    if (now.group !== was.group) this.#reads.regroup();
     this.#recompose();
     // Re-arranged, or searched: page one, and a load, whatever the filter did.
     const order = (a: Arrangement): string => JSON.stringify([a.sort, a.group, a.search]);
-    if (order(now) !== order(was)) this.#requery();
-    for (const field of new Set([...before, ...this.selectedFields])) this.#draw(field);
+    if (order(now) !== order(was)) this.#reads.requery();
+    for (const field of new Set([...before, ...this.selectedFields])) this.#view.draw(field);
     await this.#binding.drawEveryBar();
     // Drawn, never reported: the Query is already the answer.
-    this.#syncHeld();
+    this.#view.syncHeld();
     this.#binding.drawScopesSoon();
   }
 
@@ -1285,259 +1018,36 @@ export class DataSource extends EventTarget {
     }, copy);
   }
 
-  /** Tell each bound control over a scope its PENDING fields, whether its scope
-   *  is DIRTY or waits, and the fields that FAILED to fetch. */
-  #syncPending(): void {
-    this.#binding.syncPending((scopes) => (this.#context.waiting()
-      ? [...new Set(scopes.flatMap((id) => Object.keys({
-        ...this.#applied.scopes[id]?.readings, ...this.#draft.scopes[id]?.readings,
-      })))].filter((f) => this.#context.pending(f))
-      : []), (id) => this.#context.dirty(id), (id) => this.#context.named(id),
-    (scopes) => [...this.#failed].filter((f) => scopes.some((id) => this.#context.scope(id).includes(f))),
-    // Each pending field's answer as APPLIED — none yet, an empty one — so a control marks only what its draft changed. TODO 424
-    (scopes, fields) => Object.fromEntries(fields.map((f) => {
-      const at = scopes.find((id) => this.#applied.scopes[id]?.readings[f]);
-      return [f, at ? this.#applied.scopes[at]!.readings[f]! : { picked: [] }] as const;
-    })));
-  }
-
-  /** The SEARCH as needles, so a view marks what it found: a `contains` on each
-   *  field it searches, or on every field (`*`). TRAP T-a-find-asks-its-host-to-step */
-  #searchNeedles(): string {
-    const term = this.#arrangement().search.trim().replace(/\n/g, ' ');
-    if (!term) return '';
-    return (this.#searchFields?.length ? this.#searchFields : ['*']).map((f) => `${f}:contains:${term}`).join('\n');
-  }
-
-  /** Which page to show — asked of the Query: `ask({ page })`. */
-  #setPage(page: number): void {
-    // Clamped against the CURRENT total, so a pager cannot walk past the end.
-    this.#state.page = Math.min(Math.max(1, Math.trunc(page) || 1), this.totalPages);
-    /* GROUPED: publish, never load. Grouped loads send no skip/take, so every
-       page shares one state key and the no-op guard would eat the publish.
-       TRAP T-grouped-page-change-publishes-without-loading */
-    if (this.#arrangement().group) {
-      this.#binding.publish();
-      return;
-    }
-    this.#schedule();
-  }
-
-  /** Rows per page — asked of the Query: `ask({ pageSize })`. */
-  #setPageSize(size: number): void {
-    this.#state.pageSize = Math.max(1, Math.trunc(size) || 1);
-    this.#requery();
-  }
-
-  /**
-   * The query CHANGED, so start over: back to page one, then load.
-   *
-   * Six setters wrote these two calls in this order, which is six chances for
-   * a seventh to write one and forget the other — a filter that narrows while
-   * the pager still points at page four.
-   */
-  #requery(live = false): void {
-    this.#state.page = 1;
-    if (live) this.#settle();
-    else this.#schedule();
-  }
-
-  /** LIVE: load once the moves stop — `debounce` ms after the last. The app
-   *  chose the wait, per source. Will, TODO 107. TRAP T-coalesce-microtask-not-debounce */
-  #settle(): void {
-    clearTimeout(this.#liveWait);
-    this.#liveWait = setTimeout(() => this.#schedule(), this.#debounce);
-  }
-  /** The live load waiting for the moves to stop. */
-  #liveWait: ReturnType<typeof setTimeout> | undefined;
-
-  /** COALESCE one tick's writes into a single load. TRAP T-coalesce-microtask-not-debounce */
-  #schedule = coalesce((): void => void this.load());
-
   /* ── Loading ───────────────────────────────────────────────────────── */
-
-  /** The ViewState as one comparable string. Key order is stable by construction.
-   *  A bind over the unpaged rows reads the View's filter and each scope's own,
-   *  so a move between them — the shared filter the same — loads again. 366 step 7 */
-  #stateKey(): string {
-    const unpaged = this.#binding.wantsAllRows() ? [this.#viewFilter ?? null, this.#scoped] : null;
-    // The day too: "last 7 days" means other rows tomorrow. TRAP T-a-rule-names-its-clock-and-its-language
-    return JSON.stringify([this.#day(), ...(unpaged ? [this.#loadOptions(), unpaged] : [this.#loadOptions()])]);
-  }
-
-  /** Today, as a relative date reads it. */
-  #day(): string {
-    return this.#now().toISOString().slice(0, 10);
-  }
-
-  /** Build the load options the store is asked with. */
-  #loadOptions(): LoadOptions {
-    const { page, pageSize } = this.#state;
-    const { sort, group, search } = this.#arrangement();
-    const filter = this.#filter;
-    const options: LoadOptions = this.#pinned ? { now: this.#now() } : {};
-    if (filter) options.filter = filter;
-    if (sort.length) options.sort = sort;
-    if (group) options.group = group;
-    if (search) {
-      options.search = search;
-      if (this.#searchFields) options.searchFields = this.#searchFields;
-    }
-    // GROUPED: ask for EVERY matching row and let the grid cut the page — no
-    // store window knows which groups the reader has folded.
-    // TRAP T-grouped-paging-belongs-to-the-view
-    if (pageSize && !group) {
-      options.skip = (page - 1) * pageSize;
-      options.take = pageSize;
-    }
-    return options;
-  }
 
   /** Re-read and push to every bound component. TRAP T-error-is-a-state-not-a-throw */
   load(options: { force?: boolean } = {}): Promise<LoadResult> {
-    // Skip a load that would ask the same question twice. `force` is how a load
-    // that MUST happen says so.
-    // TRAP T-no-op-load-guard
-    // TRAP T-in-flight-ticket-discards-stale — ANSWERED and ASKED are separate.
-    // FORCED: the rows may have changed, so a held set is read again.
-    if (options.force) {
-      this.#age++;
-      this.#rowsAge++;
-      this.#letGo();
-    }
-    const key = this.#stateKey();
-    if (!options.force) {
-      /* ANSWERED only while nothing else is in flight. A DIFFERENT load in
-         flight will land and overwrite the answer, so a request back to the
-         last finished one must still run — skipping it lost the reader's
-         filter for good. TRAP T-in-flight-ticket-discards-stale */
-      if (key === this.#lastLoadKey && this.#loaded && !this.#inFlight.busy) return Promise.resolve(this.#result);
-      /* ASKED: the caller waits for THAT answer. Handed the result of the load
-         BEFORE it, `await source.load()` came back with no rows while the
-         first load was still out. TRAP T-an-asked-load-is-awaited */
-      if ((key === this.#inFlightKey || key === this.#inFlightAsked) && this.#asking) return this.#asking;
-    }
-    return this.#reask(key);
+    return this.#reads.load(options);
   }
 
-  /** The rows changed under an identical ViewState — or a whole set landed: asked
-   *  again. A held set has taken the change already — or is due, and read once for
-   *  every page. TRAP T-a-held-set-takes-a-change-in-place · TRAP T-a-store-has-one-cache */
-  #onStoreChange = (event: Event): void => {
-    this.#rowsAge++;
-    this.#allAge++;
-    const history = this.#reader.history;
-    const since = this.#heard;
-    this.#heard = history?.seq ?? 0;
-    // Not in a History it can trust: any field may have moved.
-    if (!history || !this.#trusts(event, since)) {
-      this.#age++;
-      /* A store that holds its set has taken the change: it is asked again, once it
-         has answered — never read again. S6 */
-      if (!this.#can.holds) void this.load({ force: true });
-      else if (this.#loaded || this.#inFlight.busy) void this.#reask();
-      return;
-    }
-    // The walk runs again only when a field it reads, or the rows, moved. TRAP T-a-change-redoes-only-what-reads-it
-    const moved = (reads: readonly string[]): boolean => history.changedSince(since, reads);
-    const w = this.#walk;
-    if ((w && (this.#unwalked.has(w.walk) || moved(w.reads))) || (this.#walking && moved(this.#walking.reads))) this.#walkAge++;
-    void this.#reask();
-  };
-
-  /** Is this change in the store's History, from a store that hears every writer?
-   *  A held store says what changed only where its set took it, and it can vouch
-   *  for the set. TRAP T-a-change-redoes-only-what-reads-it */
-  #trusts(event: Event, since: number): boolean {
-    const history = this.#reader.history;
-    if (!history || history.seq <= since || !this.#can.announcesAll) return false;
-    return !!(event as CustomEvent<unknown>).detail;
-  }
-  /** The store's History as this source last heard it. */
-  #heard = 0;
-  /** Moves when a store change moved a field the walk reads, or the rows. */
-  #walkAge = 0;
-  /** Moves on every store change: the unpaged rows are read again. */
-  #allAge = 0;
-
-  /**
-   * Can its store be reached? `ok`; `unreached` — the store could not be reached,
-   * and the last rows it gave are shown, unconfirmed; `down` — it could not be
-   * reached, and there is nothing to show. A refusal (401) is not this: the
-   * store was reached. TRAP T-a-failed-read-keeps-the-last-set
-   */
+  /** Can its store be reached? TRAP T-a-failed-read-keeps-the-last-set */
   get reach(): 'ok' | 'unreached' | 'down' {
-    if (this.#down) return 'down';
-    const failure = this.#staleBy();
-    return failure && unreached(failure) ? 'unreached' : 'ok';
+    return this.#reads.reach;
   }
 
   /** Why the store could not be reached, while it cannot — its kind and message — else null. */
   get failure(): Failure | null {
-    return this.#down ?? (this.reach === 'unreached' ? this.#staleBy() : null);
+    return this.#reads.failure;
   }
 
-  /** Why the rows shown are unconfirmed, as its store that holds says. D8 */
-  #staleBy(): Failure | null {
-    return this.#closed ? null : this.#reader.stale ?? null;
-  }
-
-  /** Try the store again: `down`, a fresh read; `unreached`, a read behind the rows
-   *  shown, with no loading; `ok`, its own held set is asked what moved where its
-   *  store may miss a writer, and one held elsewhere checks behind — newer rows
-   *  wait, and are said (S6c). A page's retry, its tab shown, `online`.
-   *  TRAP T-a-remote-store-says-what-changed */
+  /** Try the store again. TRAP T-a-remote-store-says-what-changed */
   recheck(): void {
-    const reach = this.reach;
-    if (reach === 'down') {
-      void this.load({ force: true });
-      return;
-    }
-    const reader = this.#reader;
-    if (this.#closed || !reader.recheck) return;
-    if (reach === 'ok' && this.#held && (this.#held.plan !== 'held' || !reader.changes || this.#can.announcesAll)) return;
-    const asks = this.#asks;
-    // The rows stay, and say they are unconfirmed, until the read lands: then they are asked anew.
-    void reader.recheck().then(() => {
-      if (reach !== 'unreached' || asks !== this.#asks) return;
-      this.#age++;
-      this.#rowsAge++;
-      void this.#reask();
-    });
+    this.#reads.recheck();
   }
-
-  /** Closed: it no longer hears its store, and holds nothing. */
-  #closed = false;
 
   /**
-   * Let the store go: a change no longer reloads it. It can still be asked —
-   * the store itself, never the shared set. The store's held set STAYS, for the
-   * next page over it. A page's source is closed when the page goes, or every
-   * visit leaves one more listening. TRAP T-a-closed-source-hears-nothing
+   * Let the store go: a change no longer reloads it. A page's source is closed
+   * when the page goes, or every visit leaves one more listening.
+   * TRAP T-a-closed-source-hears-nothing
    */
   close(): void {
-    this.#closed = true;
-    this.#held?.close();
+    this.#reads.close();
     this.#member.leave();
-    this.#reader.removeEventListener('change', this.#onStoreChange);
-    this.#abort?.abort();
-    clearTimeout(this.#liveWait);
-  }
-
-  /** Ask the store — or the held set — this question, even one asked before. */
-  #reask(key = this.#stateKey()): Promise<LoadResult> {
-    this.#asks++;
-    const asking = this.#ask(key);
-    this.#asking = asking;
-    return asking;
-  }
-  /** How many asks it has made. */
-  #asks = 0;
-
-  /** Hold the store's whole set, where it can be: one read for every page over
-   *  it. TRAP T-a-remote-source-holds-its-whole-set · TRAP T-a-store-has-one-cache */
-  #hold(): Promise<void> {
-    return this.#held?.hold() ?? Promise.resolve();
   }
 
   /** The fields this page reads from a row, or null — every field: what its
@@ -1560,210 +1070,22 @@ export class DataSource extends EventTarget {
     return [...need].sort();
   }
 
-  /** A Refresh: its own held set is read again before it is used — never by a closed
-   *  source. A store that holds its set elsewhere reads its source again, and the next ask waits. D8 */
-  #letGo(): void {
-    if (this.#closed) return;
-    /* …newer rows that wait are taken in first; with none waiting, it reads again.
-       Refresh data. S6c */
-    const store = this.#reader;
-    if (this.#held) this.#held.letGo();
-    else if (this.#can.holds) {
-      this.#freshen = store.take
-        ? store.take().then((took) => (took ? undefined : store.recheck?.()))
-        : store.recheck?.() ?? null;
-    }
-    // The keys a server field matched are of the set let go: they are asked again. TODO 612
-    if (!this.#fetchedKeys.size) return;
-    this.#fetchedKeys.clear();
-    this.#fetching.clear();
-    this.#compileNow();
+  /** Each answered chip's RESULTS in a scope. TRAP T-a-chip-counts-within-the-filters-before-it */
+  results(scope: string): Promise<Record<string, number>> {
+    return this.#walk.results(scope);
   }
 
-  /** A store that holds its own set, reading its source again for a Refresh. */
-  #freshen: Promise<void> | null = null;
-  /** This page has had the set of a store that holds its own checked once. */
-  #confirmed = false;
-
-  /** The load in flight, for a caller that asks the same question again. */
-  #asking: Promise<LoadResult> | null = null;
-  /** What stops the ask in flight, once a newer one supersedes it. */
-  #abort: AbortController | null = null;
-
-  /** Ask the store, and publish the answer if it is still the latest asked. */
-  async #ask(asked: string): Promise<LoadResult> {
-    let key = asked;
-    const ticket = this.#inFlight.next();
-    this.#inFlightKey = key;
-    this.#inFlightAsked = key;
-    // The ask it supersedes stops: its reads abort their fetch. TRAP T-a-superseded-read-stops
-    this.#abort?.abort();
-    const { signal } = (this.#abort = new AbortController());
-    this.dispatchEvent(new CustomEvent('loading', { detail: { loading: true } }));
-    // A load says its start and end on the one trace stream. TRAP T-one-trace-stream
-    const span = startSpan('load');
-
-    try {
-      await this.#hold();
-      // A Refresh of a store that holds its own set waits for it to read again.
-      if (this.#freshen) await this.#freshen.catch(() => undefined).finally(() => { this.#freshen = null; });
-      /* A new page over a store that holds its set elsewhere — one that may miss a
-         writer — has that set checked behind once, as its own HeldStore checks its
-         set (D8): its rows answer at once, and are asked again when the check lands. */
-      else if (!this.#held && this.#can.holds && !this.#can.announcesAll && !this.#confirmed) {
-        this.#confirmed = true;
-        void this.#reader.recheck?.().then(() => {
-          this.#age++;
-          this.#rowsAge++;
-          void this.#reask();
-        });
-      }
-      // Overtaken while it waited: the newer ask answers, and this one asks no one.
-      if (!this.#inFlight.is(ticket)) return await (this.#asking ?? Promise.resolve(this.#result));
-      /* What the filters before each pick rule out is set aside BEFORE the load,
-         where the walk asks no store: ONE load, right first time.
-         TRAP T-one-walk-counts-and-limits-in-order */
-      if (this.#walkIsCheap()) {
-        const walked = this.#walkKey();
-        const walk = await this.#walked();
-        if (!this.#inFlight.is(ticket)) return await (this.#asking ?? Promise.resolve(this.#result));
-        // A walk something else moved past sets nothing aside: the walk after the load decides.
-        if (this.#walkKey() === walked && this.#takeAside(walk)) this.#compileNow();
-        // Whoever set them aside — this ask, or a walk beside it — the load asks what stands now.
-        key = this.#stateKey();
-        this.#inFlightKey = key;
-      }
-      const result = await this.#reader.load({ ...this.#loadOptions(), signal });
-      // Not the latest → DISCARDED, and the key recorded only by the winner.
-      if (!this.#inFlight.is(ticket)) return this.#result;
-      this.#result = result;
-      this.#lastLoadKey = key;
-      this.#loaded = true;
-      // Its rows say which fields it has: one it lacks leaves the filter. TRAP T-a-source-compiles-only-what-it-has
-      if (this.#context.members > 1 && this.#saw(result.rows) && this.#lacksAny()) queueMicrotask(() => this.#recompose());
-
-      /* A SUMMARY sees every matching row. When nothing was windowed the page
-         IS everything, so the second ask is skipped.
-         TRAP T-a-summary-binds-to-all-the-rows */
-      /* …under the VIEW alone: a component scope narrows its own components,
-         never a summary beside them. TRAP T-only-the-view-trickles-down */
-      const windowed = this.#state.pageSize != null && !this.#arrangement().group;
-      const viewed = this.#viewFilter;
-      // A search in a component scope is its components' too, never a summary's. Will, TODO 519
-      const { search, scope: searchedAt } = this.#arrangement();
-      const searchedHere = !!search && searchedAt !== VIEW;
-      const split = !sameFilter(viewed, this.#filter) || searchedHere;
-      const underView = (): LoadOptions => {
-        const { skip: _skip, take: _take, filter: _filter, ...rest } = this.#loadOptions();
-        if (searchedHere) { delete rest.search; delete rest.searchFields; }
-        return rest;
-      };
-      if (!this.#binding.wantsAllRows() || (!windowed && !split)) {
-        this.#allRows = this.#binding.wantsAllRows() ? result.rows : [];
-        this.#allFor = '';
-      } else {
-        const rest = underView();
-        const asked = viewed ? { ...rest, filter: viewed } : rest;
-        // The same question over the same rows — a page turned — is not asked again.
-        const allKey = JSON.stringify([this.#age, this.#allAge, asked]);
-        if (allKey !== this.#allFor) {
-          const all = await this.#reader.load({ ...asked, signal });
-          if (!this.#inFlight.is(ticket)) return this.#result;
-          this.#allRows = all.rows;
-          this.#allFor = allKey;
-        }
-      }
-      /* …and each set a chart is FREE of: the View's rows less its clauses on
-         them. TRAP T-a-chart-is-free-of-its-own-field */
-      const sets = this.#binding.freeSets();
-      for (const key of [...this.#freeRows.keys()]) if (!sets.some((f) => f.join('\n') === key)) this.#freeRows.delete(key);
-      for (const fields of sets) {
-        const rest = underView();
-        const without = filterWithout(viewed, new Set(fields));
-        const asked = without ? { ...rest, filter: without } : rest;
-        const freeKey = JSON.stringify([this.#age, this.#allAge, asked]);
-        if (this.#freeRows.get(fields.join('\n'))?.key === freeKey) continue;
-        const free = await this.#reader.load({ ...asked, signal });
-        if (!this.#inFlight.is(ticket)) return this.#result;
-        this.#freeRows.set(fields.join('\n'), { key: freeKey, rows: free.rows });
-      }
-
-      // Re-clamp and reload ONCE, FORCED. Never while GROUPED: the page count
-      // there is the GRID's to report, and the re-load would ask the same thing.
-      // TRAP T-error-is-a-state-not-a-throw
-      // TRAP T-grouped-paging-belongs-to-the-view
-      const pages = this.totalPages;
-      if (!this.#arrangement().group && this.#state.pageSize && this.#state.page > pages) {
-        this.#state.page = pages;
-        return this.#reask();
-      }
-
-      this.#binding.publish();
-      // Empty, or no matches: the data layer says which. TRAP T-a-container-shows-its-datas-state
-      const emptiness = result.total > 0 ? undefined : this.#filter || this.#arrangement().search ? 'no-matches' : 'empty';
-      // Unconfirmed, as the set stands NOW: a check that landed meanwhile confirmed it.
-      const stale = !!this.#held?.unconfirmed;
-      this.#down = null;
-      this.dispatchEvent(
-        new CustomEvent<DataChangeDetail>('change', {
-          detail: { ...result, state: this.state, ...(emptiness ? { emptiness } : {}), ...(stale ? { stale: true as const } : {}) },
-        }),
-      );
-      void this.#rewalk();
-      return result;
-    } catch (error) {
-      // TRAP T-error-is-a-state-not-a-throw — a stale failure raises nothing; nor does a closed source.
-      if (!this.#inFlight.is(ticket) || this.#closed) return this.#result;
-      // …and says what KIND it was. TRAP T-a-failure-has-a-kind
-      const failure = failureOf(error);
-      this.#down = unreached(failure) ? failure : null;
-      this.dispatchEvent(new CustomEvent('error', { detail: { error, failure } }));
-      return this.#result;
-    } finally {
-      span?.end({ rows: this.#result.rows.length, total: this.#result.total });
-      if (this.#inFlight.end(ticket)) {
-        this.#inFlightKey = null;
-        this.#inFlightAsked = null;
-        this.#asking = null;
-        this.dispatchEvent(new CustomEvent('loading', { detail: { loading: false } }));
-      }
-    }
-  }
-
-  /**
-   * Each answered chip's RESULTS in a scope: the rows that reach it — its
-   * scopes, and the filters BEFORE it in the one order — and match its answer.
-   * By field, or saved-filter id; from the APPLIED Query, so a draft has none.
-   * OFF, it still says what it would match (123); a SAVED filter only while ON
-   * (166). Will, TODOs 60 and 348.
-   * TRAP T-a-chip-counts-within-the-filters-before-it
-   */
-  async results(scope: string): Promise<Record<string, number>> {
-    return { ...(await this.#walked()).results[scope] };
-  }
-
-  /**
-   * Each PICKED value's own results in a scope: the rows that reach its field
-   * and match that ONE value — by field, then by value. Only a plain pick in
-   * force has values to count: rows, a range, a field that is off or held above
-   * have none. Will, TODO 172.
-   * TRAP T-a-chip-counts-within-the-filters-before-it
-   */
-  async valueResults(scope: string): Promise<Record<string, Record<string, number>>> {
-    return Object.fromEntries(Object.entries((await this.#walked()).values[scope] ?? {}).map(([f, byValue]) => [f, { ...byValue }]));
+  /** Each PICKED value's own results in a scope. TRAP T-a-chip-counts-within-the-filters-before-it */
+  valueResults(scope: string): Promise<Record<string, Record<string, number>>> {
+    return this.#walk.valueResults(scope);
   }
 
   /* ── The WALK: one ordered pass per scope gives every count. TODOs 347–349 ──
    * TRAP T-one-walk-counts-and-limits-in-order */
 
-  /** What a walk reads besides the rows: the Query, the setting, the parts, the
-   *  bound scopes, what each scope offers, and the picks set aside. */
-  #walkKey(): string {
-    const components = [...this.#binding.componentScopes()].sort();
-    const parts = [...this.#narrowing].map(([s, p]) => [s, p.field, this.#hostOf(p.only)]);
-    return JSON.stringify([this.#day(), this.#age, this.#member.walkVersion(), this.#walkAge, this.#limitOptions, this.#countEvery, withoutArrangement(this.#applied),
-      components, [...this.#defaults.keys()].sort(), parts,
-      [...this.#offers]]);
+  /** Today, as a relative date reads it. */
+  #day(): string {
+    return this.#now().toISOString().slice(0, 10);
   }
 
   /** The component scope a chart part's element is bound into, if any. */
@@ -1772,13 +1094,13 @@ export class DataSource extends EventTarget {
     return typeof scope === 'string' && scope !== VIEW ? scope : undefined;
   }
 
-  /** The walk's plan, from the applied Query. */
-  #planWalk(): WalkPlan {
+  /** What the walk's plan needs that the Query does not say. */
+  #walkFacts(): Omit<WalkFacts, 'limit' | 'countAll'> {
     const narrowing = new Map([...this.#narrowing].map(([s, p]) => {
       const host = this.#hostOf(p.only);
       return [s, { field: p.field, ...(host ? { host } : {}) }] as const;
     }));
-    return planWalk(this.#applied, {
+    return {
       field: (f) => this.#catalogue.facts(f),
       isList: (f) => this.#catalogue.isList(f),
       plainPicks: (f, reading) => {
@@ -1790,212 +1112,33 @@ export class DataSource extends EventTarget {
       components: this.#binding.componentScopes(),
       fixed: new Set(this.#defaults.keys()),
       narrowing,
-      limit: this.#limitOptions,
       now: this.#now(),
       fetched: this.#fetched,
       mine: this.#mine,
       has: this.#has,
-      ...(this.#countEvery ? { countAll: true } : {}),
       presets: (scope) => this.#context.presets(scope).filter((p) => this.#context.presetOn(scope, p.id, true)),
-    });
+    };
   }
-
-  /** The rows a walk reads, as the plan says: the held set, in place; a local
-   *  store's scan, or one load per change; null — ask the store step by step. */
-  async #walkRows(): Promise<readonly Row[] | null> {
-    await this.#hold();
-    const reads = this.#reader;
-    // A held set is walked in place; a remote store not held is asked.
-    const scan = this.#scan;
-    if (scan) return scan();
-    if (this.#remote) return null;
-    if (this.#rowsCache?.age === this.#rowsAge) return this.#rowsCache.rows;
-    const age = this.#rowsAge;
-    const { rows } = await reads.load({});
-    // Kept until the rows change — not a set too big to keep.
-    if (age === this.#rowsAge && rows.length <= this.#holdRows) this.#rowsCache = { age, rows };
-    return rows;
-  }
-
-  /** The walk for the Query as it stands: one per key, shared by every reader of
-   *  it. A walk that fails keeps the last one — it never stops a load. */
-  async #walked(): Promise<Walk> {
-    // A closed source walks nothing: the page is gone.
-    if (this.#closed) return this.#walk?.walk ?? emptyWalk();
-    const key = this.#walkKey();
-    if (this.#walk?.key === key) return this.#walk.walk;
-    if (this.#walking?.key === key) return this.#walking.walk;
-    const plan = this.#planWalk();
-    // Nothing to count or tally: no row is read.
-    if (!plan.scopes.some((sc) => sc.taps.length || sc.steps.some((st) => st.counts || st.each?.length || st.countAll || st.ruler || st.offers))) {
-      this.#walk = { key, walk: emptyWalk(), reads: [] };
-      return this.#walk.walk;
-    }
-    const reads = [...new Set(Object.values(walkReads(plan)).flatMap((r) => [...r.tested, ...r.tallied]))];
-    const entry: { key: string; walk: Promise<Walk>; reads: string[] } = { key, walk: Promise.resolve(emptyWalk()), reads };
-    entry.walk = (async (): Promise<Walk> => {
-      try {
-        const rows = await this.#walkRows();
-        const out = rows ? walkInOrder(rows, plan) : await walkStepwise(this.#reader, plan);
-        if (this.#walkKey() === key) this.#walk = { key, walk: out, reads };
-        return out;
-      } catch {
-        /* The last walk stays drawn, and nothing is set aside from it; kept for
-           this key, so a draw does not ask again until something moves. It never stops a load. */
-        const kept = { ...(this.#walk?.walk ?? emptyWalk()) };
-        this.#unwalked.add(kept);
-        if (this.#walkKey() === key) this.#walk = { key, walk: kept, reads };
-        return kept;
-      } finally {
-        if (this.#walking === entry) this.#walking = null;
-      }
-    })();
-    this.#walking = entry;
-    return entry.walk;
-  }
-  /** The last walk, what it was for, and the fields it read. */
-  #walk: { key: string; walk: Walk; reads: readonly string[] } | null = null;
-  /** A walk that failed, standing in for the last one. */
-  #unwalked = new WeakSet<Walk>();
-  /** The walk in flight, what it is for, and the fields it reads. */
-  #walking: { key: string; walk: Promise<Walk>; reads: readonly string[] } | null = null;
-  /** Moves each time the rows may have changed. */
-  #rowsAge = 0;
-  /** A store with no scan, loaded once per change. */
-  #rowsCache: { age: number; rows: readonly Row[] } | null = null;
-
-  /** Can the walk run without asking the store — a held set, a store that
-   *  scans, or rows kept since the last change? Then it runs before the load. */
-  #walkIsCheap(): boolean {
-    return !!this.#scan || (!this.#remote && this.#rowsCache?.age === this.#rowsAge);
-  }
-
-  /** Its rows in place, where they are: a local store's, or a held set's while it
-   *  answers — never a remote store's read directly. */
-  get #scan(): (() => Promise<readonly Row[]>) | undefined {
-    return this.#remote && !this.#can.holds ? undefined : this.#reader.scan?.bind(this.#reader);
-  }
-
-  /** Take the walk's set-aside picks. Says whether they moved. */
-  #takeAside(walk: Walk): boolean {
-    // A walk that failed sets nothing aside: what an older Query set aside goes too.
-    const next = this.#unwalked.has(walk) ? new Map<string, Record<string, string[]>>()
-      : new Map(Object.entries(walk.aside).filter(([, fields]) => Object.keys(fields).length));
-    const key = (m: Map<string, Record<string, string[]>>): string => JSON.stringify([...m].sort());
-    if (key(next) === key(this.#setAside)) return false;
-    this.#setAside = next;
-    /* …and LET GO, not kept: a ruled-out pick leaves the answer, so the chip, its
-       menu and the rows agree, and clearing the filter before it brings nothing
-       back. After this act, as the rows have them out already. Will, TODO 512 (A) */
-    if (next.size) {
-      queueMicrotask(() => {
-        for (const [scope, fields] of next) for (const [field, keys] of Object.entries(fields)) this.#context.ask({ scope, field, letGo: keys });
-      });
-    }
-    return true;
-  }
-
-  /** Walk, and set aside what it rules out — compiling again, and asking again
-   *  only when that moved what a load reads — then draw what it gives. */
-  async #rewalk(): Promise<void> {
-    const key = this.#walkKey();
-    const walk = await this.#walked();
-    // The Query moved while it walked: the walk for what stands now decides.
-    if (this.#walkKey() !== key) {
-      this.#walkSoon();
-      return;
-    }
-    if (this.#takeAside(walk)) {
-      const { still, same } = this.#compileNow();
-      this.#syncPending();
-      if (!same && !(still && !this.#remote)) {
-        this.#requery(this.applyOn === 'input');
-        return;
-      }
-    }
-    void this.#drawWalk();
-  }
-
-  /** One walk this tick, however many asked. */
-  #walkSoon = coalesce((): void => {
-    void this.#rewalk();
-  });
-
-  /** The picks set aside, by scope then field, as value keys. */
-  #setAside = new Map<string, Record<string, string[]>>();
-
-  /** Each bound control is drawn what the walk gives its scopes — each chip's
-   *  results, each value's, what each list field's ruler leaves, what each
-   *  serial field offers — once per walk and set of controls; a later walk
-   *  wins. A chart part's goes out as `present`, for its legend (179).
-   *  TRAP T-one-walk-counts-and-limits-in-order */
-  async #drawWalk(): Promise<void> {
-    // A control over several scopes — the panel — draws each chart's own too.
-    const drawn = [...this.#binding.entries()].flatMap(([el, b]) => (
-      (el.drawResults || el.drawValueResults || el.drawPresent || el.drawOffered) && b.scope
-        ? [{ el, scopes: typeof b.scope === 'string' ? [b.scope] : [...b.scope, ...this.#narrowing.keys()] }] : []));
-    const parts = [...this.#narrowing.keys()];
-    if (!drawn.length && !parts.length) return;
-    // Drawn already, for this walk and these controls: a sort, a page or a search moves nothing.
-    const key = JSON.stringify([this.#walkKey(), drawn.map(({ el, scopes }) => [this.#binding.get(el)?.id, scopes]),
-      parts.map((p) => [p, this.#narrowing.get(p)?.shownIn])]);
-    if (key === this.#drawnFor) return;
-    this.#drawnFor = key;
-    const ticket = this.#drawing.next();
-    const walk = await this.#walked();
-    if (!this.#drawing.is(ticket)) return;
-    // Drawn from a walk that failed: the next draw draws again.
-    if (this.#unwalked.has(walk)) this.#drawnFor = '';
-    const lists = (of: Record<string, string[]> | undefined): Record<string, string[]> =>
-      Object.fromEntries(Object.entries(of ?? {}).map(([f, keys]) => [f, [...keys]]));
-    for (const { el, scopes } of drawn) {
-      for (const scope of scopes) {
-        // A bar draws the parts it shows with its own: their counts and limits too. Will, TODO 670
-        const also = typeof this.#binding.get(el)?.scope === 'string' ? this.#partsIn(scope) : [];
-        const own = <T>(of: Readonly<Record<string, T | undefined>>): T => Object.assign({}, of[scope], ...also.map((p) => of[p])) as T;
-        el.drawResults?.({ ...own(walk.results) }, scope, this.#filtering([scope]) ? walk.ends[scope] : undefined);
-        // A control that draws a chip per VALUE is told each picked value's own too.
-        el.drawValueResults?.(Object.fromEntries(Object.entries(own(walk.values) ?? {}).map(([f, v]) => [f, { ...v }])), scope);
-        el.drawPresent?.(lists(own(walk.present)), scope);
-        el.drawOffered?.(lists(own(walk.offered)), scope);
-      }
-    }
-    const byScope = Object.fromEntries([...new Set([...drawn.flatMap((d) => d.scopes), ...parts])]
-      .map((scope) => [scope, lists(walk.present[scope])]));
-    this.dispatchEvent(new CustomEvent('present', { detail: { byScope } }));
-  }
-  /** The latest draw; an older one lands on nothing. */
-  #drawing = new Latest();
-  /** What the controls were last drawn for: the walk and the controls. */
-  #drawnFor = '';
 
   /* ── What the filters BEFORE a field leave — Will, TODOs 174 and 349 ────
    * TRAP T-a-ruled-out-value-is-greyed */
 
   /** Does each list field offer only the values the filters before it leave? Settable at any time, unlike `applyOn`. */
   get limitOptions(): boolean {
-    return this.#limitOptions;
+    return this.#walk.limitOptions;
   }
   set limitOptions(on: boolean) {
-    if (on === this.#limitOptions) return;
-    this.#limitOptions = on;
-    this.#walkSoon();
+    this.#walk.limitOptions = on;
   }
-  /** The setting: does each list field offer only what the others leave? */
-  #limitOptions = false;
 
   /** Every value of a list field is counted, picked or not, on or off — where
    *  the rows are held: a store is never asked once per value. Will, TODO 466 */
   get countEveryValue(): boolean {
-    return this.#countEvery;
+    return this.#walk.countEvery;
   }
   set countEveryValue(on: boolean) {
-    if (on === this.#countEvery) return;
-    this.#countEvery = on;
-    this.#walkSoon();
+    this.#walk.countEvery = on;
   }
-  /** The setting: count every value? */
-  #countEvery = false;
 
   /** A reader's Show as pick is shown — off, kept and not shown. The app's
    *  setting. Will, TODO 582 */
@@ -2017,34 +1160,15 @@ export class DataSource extends EventTarget {
     void this.#binding.drawEveryBar();
   }
 
-  /**
-   * Each list field's values its RULER leaves in a scope, as value keys: with
-   * Limit, the rows at its place — its scopes and the filters BEFORE it; without,
-   * a component scope's the View's subset (347), and the View's nothing. A field
-   * no chip holds is tallied where it would stand (349).
-   * TRAP T-a-ruled-out-value-is-greyed
-   */
-  async present(scope: string): Promise<Record<string, string[]>> {
-    return Object.fromEntries(Object.entries((await this.#walked()).present[scope] ?? {}).map(([f, keys]) => [f, [...keys]]));
+  /** Each list field's values its RULER leaves in a scope. TRAP T-a-ruled-out-value-is-greyed */
+  present(scope: string): Promise<Record<string, string[]>> {
+    return this.#walk.present(scope);
   }
 
-  /**
-   * What each field below the top of a SERIAL set OFFERS: the values the rows
-   * hold at its place, once anything before it narrows, as value keys. A control
-   * REMOVES the rest, and a pick it held is let go (TODO 512). Whatever
-   * `limitOptions` says. TRAP T-a-filter-set-groups-or-chains
-   */
-  async offered(scope: string): Promise<Record<string, string[]>> {
-    return Object.fromEntries(Object.entries((await this.#walked()).offered[scope] ?? {}).map(([f, keys]) => [f, [...keys]]));
+  /** What each field below the top of a SERIAL set OFFERS. TRAP T-a-filter-set-groups-or-chains */
+  offered(scope: string): Promise<Record<string, string[]>> {
+    return this.#walk.offered(scope);
   }
-
-  /** Moves each time what a count reads may have changed beside the Query: the
-   *  rows, a field's facts or values, a saved filter, a part, a set. */
-  #age = 0;
-  /** What the unpaged rows were last read for. */
-  #allFor = '';
-  /** Each set a chart is free of: its rows, and what they were read for. TODO 479 */
-  #freeRows = new Map<string, { key: string; rows: readonly Row[] }>();
 
   /* ── Binding ───────────────────────────────────────────────────────── */
 
@@ -2071,35 +1195,32 @@ export class DataSource extends EventTarget {
     // Whatever is already loaded, so a component bound late is not blank.
     this.#binding.push(el);
     // …and whether its scope waits, and what in it does. TODO 406
-    if (facts.scope && this.#context.waiting()) this.#syncPending();
+    if (facts.scope && this.#context.waiting()) this.#view.syncPending();
     if (Array.isArray(facts.scope) && el.drawScopes) this.#binding.drawScopesSoon();
     /* …and what the View holds: one bound after the last word — a column's section
        drawn later — never heard it. Will, TODO 479 */
-    if (typeof facts.scope === 'string' && facts.scope !== VIEW && el.supersede) this.#syncHeld();
+    if (typeof facts.scope === 'string' && facts.scope !== VIEW && el.supersede) this.#view.syncHeld();
     /* …and the answers the Query holds already — a fetching list's start — LAST:
        a bar told its scope waits rebuilds its chips. TODO 403 */
-    if (facts.scope && el.drawReading) for (const field of this.selectedFields) this.#draw(field);
+    if (facts.scope && el.drawReading) for (const field of this.selectedFields) this.#view.draw(field);
     // …and what the filters before each field leave. TRAP T-a-ruled-out-value-is-greyed
     // …and its chips' counts. TRAP T-a-chip-counts-within-the-filters-before-it
-    if (facts.scope && (el.drawResults || el.drawValueResults || el.drawPresent || el.drawOffered) && this.#loaded) this.#walkSoon();
+    if (facts.scope && (el.drawResults || el.drawValueResults || el.drawPresent || el.drawOffered) && this.loaded) this.#walk.soon();
     /* A summary bound AFTER the first load would otherwise draw blank: the
        unpaged set is fetched by `load`, and nothing would ask for it again.
        TRAP T-a-summary-binds-to-all-the-rows */
-    const needsAll = facts.rows === 'all' && (!this.#allRows.length
-      || (!!facts.free?.length && !this.#freeRows.has([...facts.free].sort().join('\n'))));
+    const needsAll = facts.rows === 'all' && (!this.#reads.unpaged.length || (!!facts.free?.length && !this.#reads.hasFree(facts.free)));
     // It reads a field the held set lacks: asked again, and the column read. TRAP T-a-held-set-reads-the-pages-fields
-    const lacks = !this.#closed && !!this.#result.rows.length && !!this.#held?.lacks(this.#need());
+    const lacks = !this.#reads.closed && !!this.#reads.rows.length && !!this.#reads.held?.lacks(this.#need());
     // Asked again, not fetched again: the rows did not change, so a held set stays.
-    if (this.#autoLoad && (needsAll || lacks)) void this.#reask();
-    else if (this.#autoLoad && !this.#result.rows.length) void this.load();
+    if (this.#autoLoad && (needsAll || lacks)) void this.#reads.reask();
+    else if (this.#autoLoad && !this.#reads.rows.length) void this.load();
   }
 
   /** Every row a bound component is under, UNPAGED — what "Select all rows"
    *  ticks on a grid that holds one page. TODO 238 · TRAP T-select-all-is-the-visible-rows */
   async allRows(el?: BoundControl): Promise<readonly Row[]> {
-    const { skip: _skip, take: _take, ...options } = this.#loadOptions();
-    await this.#hold();
-    const { rows } = await this.#reader.load(options);
+    const rows = await this.#reads.every();
     const entry = el ? this.#binding.get(el) : undefined;
     const own = entry ? this.#only[entry.id] : undefined;
     return own ? filterRows(rows, own, this.#now()) : rows;
@@ -2125,42 +1246,9 @@ export class DataSource extends EventTarget {
     return this.#binding.elements;
   }
 
-  /* ── What a control asks, by name — what the steering calls ─────────── */
-
-
   /** The grid's own page count, when every matching row is already in hand:
    *  the pager's numbers publish again, and nothing loads. */
   reportPages(pages: number): void {
-    const next = Math.max(1, Math.trunc(pages));
-    const clamped = Math.min(this.#state.page, next);
-    if (next === this.#viewPages && clamped === this.#state.page) return;
-    this.#viewPages = next;
-    this.#state.page = clamped;
-    this.#binding.publish();
-  }
-
-  /* ── Publishing ────────────────────────────────────────────────────── */
-
-  /** The view state every bound component is pushed. */
-  #boundView(): BoundView {
-    const { page, pageSize } = this.#state;
-    const { sort, group, sortSuspended } = this.#arrangement();
-    const filter = this.#filter;
-    const first = sort[0];
-
-    /* The FIELD survives a suspend; the DIRECTION says whether it is applied.
-       TRAP T-a-suspended-sort-is-one-owners-job */
-    const shown = first ?? sortSuspended;
-    return {
-      sortField: shown?.field,
-      sortDirection: first ? (first.direction ?? 'asc') : (sortSuspended ? '' : undefined),
-      groupField: group ?? undefined,
-      arrangedIn: this.#arrangedIn(),
-      filterFields: filterFields(filter, (c) => [...this.#fetchedKeys].find(([, got]) => got.clause === c)?.[0]),
-      /* …and WHAT it matched on, so a component can point at the hit, whichever
-         control set the filter. TRAP T-a-needle-comes-from-either-direction */
-      needles: [filterNeedles(filter), this.#searchNeedles()].filter(Boolean).join('\n'),
-      paging: pageSize ? { page, totalPages: this.totalPages, pageSize } : undefined,
-    };
+    this.#reads.reportPages(pages);
   }
 }

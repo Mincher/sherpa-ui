@@ -8,6 +8,7 @@
  * - QueryMember — What a source tells the context it joins.
  * - QueryChangeDetail — What `query-change` says: the fields whose answers moved, and the scopes whose holds or arrangement did.
  * - MemberBind — How a member bound a control.
+ * - QueryPart — A part: the one field it answers, the component it narrows, its name, and the bar that draws it.
  * - QueryLive — The Query and the declarations, live: read each time, never kept.
  * - QueryHandle — What a member holds of its context.
  * - QueryContext — The Query of one app Context, shared by every source in it. Fires `query-change`.
@@ -153,6 +154,16 @@ export interface MemberBind {
   scope?: string | readonly string[];
 }
 
+/** A PART: the one field it answers, the one component it narrows, its name, and
+ *  the slot whose bar draws it — a chart's legend, in its card's toolbar (TODO 670).
+ *  TRAP T-a-chart-scope-is-its-legend-field */
+export interface QueryPart {
+  field: string;
+  only: BoundControl;
+  label?: string;
+  shownIn?: string;
+}
+
 /** The Query and the declarations, live: read each time, never kept — a pure edit swaps a copy in. */
 export interface QueryLive {
   /**
@@ -177,10 +188,8 @@ export interface QueryLive {
   readonly sets: Map<string, FilterSet[]>;
   /** What each COMPONENT scope has — its own fields. */
   readonly offers: Map<string, string[]>;
-  /** Each PART: the one field it answers, and the one component it narrows.
-   *  TRAP T-a-chart-scope-is-its-legend-field */
-  /** `shownIn`: the slot whose bar draws it — a chart's legend, in its card's toolbar. TODO 670 */
-  readonly parts: Map<string, { field: string; only: BoundControl; label?: string; shownIn?: string }>;
+  /** Each part, by its scope. */
+  readonly parts: Map<string, QueryPart>;
 }
 
 /** What a member holds of its context. */
@@ -298,7 +307,8 @@ export class QueryContext extends EventTarget {
     return held ? freezeReading(held) : undefined;
   }
 
-  /** The fields a scope HOLDS, in order — `hold()`'s read-back. A copy. */
+  /** The fields a scope HOLDS, in order — `hold()`'s read-back. A copy. A scope is
+   *  a named place a filter lives. TRAP T-a-scope-is-a-place-not-a-reach */
   scope(name: string): string[] {
     return [...(this.#live.draft.scopes[name]?.holds ?? [])];
   }
@@ -469,7 +479,7 @@ export class QueryContext extends EventTarget {
    * write to it from anywhere narrows that component. `undefined` forgets it.
    * TRAP T-a-chart-scope-is-its-legend-field
    */
-  declarePart(scope: string, part: { field: string; only: BoundControl; label?: string; shownIn?: string } | undefined): void {
+  declarePart(scope: string, part: QueryPart | undefined): void {
     this.#walks++;
     const parts = this.#live.parts;
     // The bar that drew it, if another draws it now or none. TODO 670
