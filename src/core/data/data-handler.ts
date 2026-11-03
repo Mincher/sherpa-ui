@@ -158,6 +158,11 @@ export function createDataHandler(options: DataHandlerOptions): DataHandler {
     const url = new URL(request.url);
     if (!url.pathname.startsWith(base)) return null;
     const [name, key, ...more] = url.pathname.slice(base.length).split('/');
+    // Every store read again behind its held set: a feed's gap. Plan 687 U3 · TRAP T-news-is-pushed-by-the-server
+    if (!name && !more.length && request.method === 'GET' && url.searchParams.has('recheck')) {
+      await Promise.all(Object.values(options.stores).map((each) => each.recheck?.()));
+      return answer(204, null);
+    }
     const store = name ? options.stores[decodeURIComponent(name)] : undefined;
     if (!store || more.length) return problem(404, 'invalid', `no store at ${url.pathname}`);
     const asked = request.headers.get('Sherpa-Data');

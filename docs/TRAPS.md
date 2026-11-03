@@ -14963,8 +14963,10 @@ first, which is no news. But the browser looks for a new worker only when a page
 loads, or about once a day, and only finds one when the worker SCRIPT's bytes
 changed: a build that changes the app's files alone changes nothing there.
 
-So two halves. **The page asks** — `watchForUpdates()`: `registration.update()`
-every few minutes (default 5), when the tab is shown again, and back online. **The
+So two halves. **The page asks** — the server's feed says a new build and the tab
+that follows it asks at once (`T-news-is-pushed-by-the-server`); where no feed
+answers, `watchForUpdates()`: `registration.update()` every few minutes (default 5),
+when the tab is shown again, and back online. **The
 app's server stamps the worker script with each build**, so a new build is new
 bytes: Demos serves `/sw.js` with `// build <newest file time>` on its first line.
 The new worker skips waiting and claims its pages (`keepAppFiles`, fresh), so the
@@ -15125,14 +15127,28 @@ and its newer rows wait. What either finds reaches every tab as a notice
 worker, and a store with nothing newer finds nothing, so one feed serves every
 client.
 
-**A follower that reconnects hears what it missed:** each event's id is
-`<boot>-<n>`, and the feed keeps its last 100. `Last-Event-ID` from this start of
-the server replays what came after it; from an earlier start, everything kept. A
-follower with no id hears only what comes next. An idle stream says a comment every
-25 s, so no proxy shuts it.
+**A follower that comes back hears what it missed — the replay IS the catch-up
+check** (U3, Will: A): each event's id is `<boot>-<n>`, and the feed keeps its last
+100. `Last-Event-ID` from this start of the server replays what came after it;
+nothing missed, nothing sent. Where it cannot say it all — the server started since,
+or let some go — it says ONE `{ kind: 'gap' }`, whose id is the latest, and the
+follower checks everything once: the new worker, and `<base>?recheck` with no store
+name, which rechecks every store the worker serves (one holding nothing returns at
+once). Each store's check behind still asks only what moved since its own History
+mark (`T-a-remote-store-says-what-changed`). A follower with no id hears only what
+comes next. An idle stream says a comment every 25 s, so no proxy shuts it.
+
+**Where no feed answers, every tab polls** (U4): `followUpdates()` starts each tab on
+`watchForUpdates()`; the holder says `live` when its feed opens and `down` when it
+is refused, on the channel `sherpa-feed:updates`, and a tab that opens later asks. A
+refusal (a 404, not an event stream) shuts an `EventSource` for good; a dropped
+connection retries by itself, and stays live. An app calls `followUpdates()` ALONE,
+never `watchForUpdates()` beside it. Measured 2026-11-03 in Demos: the feed live, a
+tab shown again polls 0 times, and a second tab 0 times; the feed refused, once.
 
 - Site: `src/core/data/updates-feed.ts`
 - Site: `src/core/browser/follow-updates.ts`
+- Site: `src/core/data/data-handler.ts`
 - Site: `test/unit/news-is-pushed-by-the-server.test.mjs`
 
 ### T-a-push-is-a-check-behind

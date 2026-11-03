@@ -2,24 +2,25 @@
  * updates-feed.ts — the app server's "what is new" feed: one small stream of
  * Server-Sent Events that every open app follows. It says THAT something is new — a
  * new build, a store that changed — never the data. DOM-free: a Node server or a
- * worker answers it with a web `Request` and `Response`. Plan 687 U2
+ * worker answers it with a web `Request` and `Response`. Plan 687 U2, U3
  * TRAP T-news-is-pushed-by-the-server
  *
  * Map:
- * - FeedNotice — What the feed says: a new build, or a store that changed.
+ * - FeedNotice — What the feed says: a new build, a store that changed, or a gap.
  * - UpdatesFeed — The feed: say a notice to every follower, and answer a request to follow it.
  * - updatesFeed — Make the feed; it keeps its last notices, so a follower that reconnects hears what it missed.
  */
 
-/** What the feed says: a new build, or a store that changed. */
-export type FeedNotice = { kind: 'app'; build?: string } | { kind: 'data'; store: string; at?: unknown };
+/** What the feed says: a new build, a store that changed — or, to a follower that
+ *  missed more than it can say again, a gap. */
+export type FeedNotice = { kind: 'app'; build?: string } | { kind: 'data'; store: string; at?: unknown } | { kind: 'gap' };
 
 /** The feed: say a notice to every follower, and answer a request to follow it. */
 export interface UpdatesFeed {
   /** Say a notice to every page that follows. */
   say(notice: FeedNotice): void;
   /** Answer a request to follow: an event stream that first says what a follower
-   *  missed since its `Last-Event-ID` — all it keeps, where the server started since. */
+   *  missed since its `Last-Event-ID` — or one gap, where it no longer keeps it all. */
   answer(request: Request): Response;
 }
 
@@ -27,7 +28,7 @@ export interface UpdatesFeed {
  *  often an idle stream says a comment, so no proxy shuts it. */
 export function updatesFeed(options: { keep?: number; beat?: number } = {}): UpdatesFeed {
   const keep = options.keep ?? 100;
-  // An id names this start of the server, so a follower from before knows to hear all.
+  // An id names this start of the server, so a follower from before hears a gap.
   const boot = Date.now().toString(36);
   const kept: { n: number; data: string }[] = [];
   let next = 1;
@@ -62,12 +63,17 @@ export function updatesFeed(options: { keep?: number; beat?: number } = {}): Upd
     },
     answer(request) {
       const [from, seen] = (request.headers.get('Last-Event-ID') ?? '').split('-');
-      const missed = !from ? [] : from === boot ? kept.filter((e) => e.n > Number(seen)) : kept;
+      const after = Number(seen);
+      /* What it missed is said again where all of it is kept. Where some is not — the
+         server started since, or let it go — it hears one gap, and checks everything. */
+      const gap = !!from && (from !== boot || !Number.isFinite(after) || after < (kept[0]?.n ?? next) - 1);
+      const missed = !from || gap ? [] : kept.filter((e) => e.n > after);
       let mine: ReadableStreamDefaultController<Uint8Array> | undefined;
       const body = new ReadableStream<Uint8Array>({
         start(controller) {
           mine = controller;
           controller.enqueue(text.encode('retry: 3000\n\n'));
+          if (gap) controller.enqueue(frame(next - 1, JSON.stringify({ kind: 'gap' })));
           for (const e of missed) controller.enqueue(frame(e.n, e.data));
           followers.add(controller);
           beating();

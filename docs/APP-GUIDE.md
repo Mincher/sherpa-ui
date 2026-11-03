@@ -246,7 +246,9 @@ export const { store: customerStore, ready: customersReady } = localRecords({
   `change` event), never a second `onUpdate`. `T-a-notice-is-heard-never-ordered`
 - **So no page polls for news,** serve `updatesFeed()` at `/sherpa/updates`, `say()`
   a new build or a changed store on it, and call `followUpdates()` in the page: one
-  tab follows it, and the worker checks behind. `T-news-is-pushed-by-the-server`
+  tab follows it, and the worker checks behind. Where no feed answers, it polls
+  instead — call it alone, never `watchForUpdates()` beside it.
+  `T-news-is-pushed-by-the-server`
 
 ## 7. A Context module
 

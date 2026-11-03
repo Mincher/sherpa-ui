@@ -1,7 +1,8 @@
 /**
- * NEWS IS PUSHED BY THE SERVER — plan 687 U2. The app server's feed says THAT
+ * NEWS IS PUSHED BY THE SERVER — plan 687 U2, U3. The app server's feed says THAT
  * something is new, as Server-Sent Events; a follower that reconnects hears what it
- * missed, and one from before the server started again hears all it keeps.
+ * missed, and one that missed more than the feed keeps — or came from before the
+ * server started again — hears one gap, and checks every store.
  * TRAP T-news-is-pushed-by-the-server
  *
  *   node --test test/unit/news-is-pushed-by-the-server.test.mjs
@@ -9,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { updatesFeed } from '../../dist/data.js';
+import { createDataHandler, updatesFeed } from '../../dist/data.js';
 
 /** Follow the feed: read its events, then stop. */
 function follow(feed, lastId) {
@@ -61,12 +62,37 @@ test('a follower that reconnects hears only what it missed', async () => {
   await fresh.stop();
 });
 
-test('a follower from before the server started again hears all it keeps', async () => {
+test('a follower from before the server started again hears one gap', async () => {
   const feed = updatesFeed({ keep: 2 });
   for (const store of ['a', 'b', 'c']) feed.say({ kind: 'data', store });
   const page = follow(feed, 'oldboot-7');
-  assert.deepEqual((await page.events()).map((e) => e.data.store), ['b', 'c']);
+  assert.deepEqual((await page.events()).map((e) => e.data), [{ kind: 'gap' }]);
   await page.stop();
+});
+
+test('a follower that missed more than the feed keeps hears one gap, and its next reconnect starts after it', async () => {
+  const feed = updatesFeed({ keep: 2 });
+  const first = follow(feed);
+  feed.say({ kind: 'data', store: 'a' });
+  const [seen] = await first.events();
+  await first.stop();
+  for (const store of ['b', 'c', 'd']) feed.say({ kind: 'data', store });
+  const again = follow(feed, seen.id);
+  const [gap, ...more] = await again.events();
+  assert.deepEqual([gap.data, more], [{ kind: 'gap' }, []]);
+  await again.stop();
+  const later = follow(feed, gap.id);
+  assert.deepEqual(await later.events(), [], 'nothing since the gap');
+  await later.stop();
+});
+
+test('a gap rechecks every store the worker serves, once', async () => {
+  const asked = [];
+  const store = (name) => ({ key: 'id', recheck: async () => { asked.push(name); }, load: async () => ({ rows: [], total: 0 }) });
+  const handle = createDataHandler({ stores: { customers: store('customers'), alerts: store('alerts') } });
+  const response = await handle(new Request('http://app/sherpa/data/?recheck'));
+  assert.equal(response.status, 204);
+  assert.deepEqual(asked.sort(), ['alerts', 'customers']);
 });
 
 test('a follower that stopped is no longer said to', async () => {

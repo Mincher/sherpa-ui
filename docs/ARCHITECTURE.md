@@ -193,8 +193,9 @@ list (Demos' Notifications). The app's server SAYS what is new on one feed,
 `/sherpa/updates` (`updatesFeed`): a new build, or a store that changed. One tab
 follows it (`followUpdates`) and only acts — it asks for the new worker, or has the
 worker check that store behind — and what that finds reaches every tab as a notice
-(`T-news-is-pushed-by-the-server`). Polling (`watchForUpdates`) stays as a fallback
-until row 687's U4.
+(`T-news-is-pushed-by-the-server`). A tab that comes back hears only what it missed,
+or one gap and a check of every store. Where no feed answers, every tab polls
+instead (`watchForUpdates`, which `followUpdates` runs).
 
 ---
 

@@ -144,7 +144,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-many-conditions-are-one-reading](TRAPS.md#t-many-conditions-are-one-reading) — filter-state, query, query-context
 - [T-max-rows-is-oldest-out-by-insertion](TRAPS.md#t-max-rows-is-oldest-out-by-insertion) — base-store, stores
 - [T-narrowing-constructor-is-not-useless](TRAPS.md#t-narrowing-constructor-is-not-useless) — live-stores
-- [T-news-is-pushed-by-the-server](TRAPS.md#t-news-is-pushed-by-the-server) — updates-feed
+- [T-news-is-pushed-by-the-server](TRAPS.md#t-news-is-pushed-by-the-server) — data-handler, updates-feed
 - [T-no-op-load-guard](TRAPS.md#t-no-op-load-guard) — data-source, source-binding
 - [T-no-rows-is-still-an-answer](TRAPS.md#t-no-rows-is-still-an-answer) — filter-state
 - [T-number-of-null-is-zero](TRAPS.md#t-number-of-null-is-zero) — aggregate
