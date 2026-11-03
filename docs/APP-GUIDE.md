@@ -244,6 +244,9 @@ export const { store: customerStore, ready: customersReady } = localRecords({
   callout's close hides it until the next notice; a `data-refresh` from it takes
   the rows in. For your own list, read `provider.updates` (`waiting`, and its
   `change` event), never a second `onUpdate`. `T-a-notice-is-heard-never-ordered`
+- **So no page polls for news,** serve `updatesFeed()` at `/sherpa/updates`, `say()`
+  a new build or a changed store on it, and call `followUpdates()` in the page: one
+  tab follows it, and the worker checks behind. `T-news-is-pushed-by-the-server`
 
 ## 7. A Context module
 

@@ -66,3 +66,4 @@ export {
 export { openWorkerStore, type WorkerStoreOptions } from './core/browser/worker-store.js';
 // Hear what is new — a new version's files, a store's rows waiting. Plan 652 S6
 export { hearUpdates, noticeSeen, onUpdate, watchForUpdates } from './core/browser/updates.js';
+export { followUpdates, type FollowOptions } from './core/browser/follow-updates.js';

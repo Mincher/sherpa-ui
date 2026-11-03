@@ -15106,6 +15106,35 @@ message back and forth.
 - Site: `src/core/browser/share-feed.ts`
 - Site: `test/unit/one-feed-for-every-tab.test.mjs`
 
+### T-news-is-pushed-by-the-server
+
+**The app's SERVER says what is new, on one small feed** (Will, plan 687, A: *"we
+don't have to rely on polling"*). A Service Worker cannot find news by itself: the
+browser stops it when idle, so it holds no timer and no connection. So the server
+offers `updatesFeed()` — Server-Sent Events, at `/sherpa/updates` — and says each
+notice on it: `{ kind: 'app', build }` or `{ kind: 'data', store }`. It says THAT
+something is new, never the data.
+
+**One tab follows it, and only ACTS** (`followUpdates()`, under the Web Lock
+`sherpa-feed:updates`): `app` asks the browser for the new worker
+(`registration.update()`), which takes every tab over; `data` sends
+`<base><store>?recheck`, so the worker reads that store again behind its held set,
+and its newer rows wait. What either finds reaches every tab as a notice
+(`T-a-notice-is-heard-never-ordered`), so the feed passes nothing on, unlike
+`shareFeed`. A notice is a HINT: a tab whose build did not change finds the same
+worker, and a store with nothing newer finds nothing, so one feed serves every
+client.
+
+**A follower that reconnects hears what it missed:** each event's id is
+`<boot>-<n>`, and the feed keeps its last 100. `Last-Event-ID` from this start of
+the server replays what came after it; from an earlier start, everything kept. A
+follower with no id hears only what comes next. An idle stream says a comment every
+25 s, so no proxy shuts it.
+
+- Site: `src/core/data/updates-feed.ts`
+- Site: `src/core/browser/follow-updates.ts`
+- Site: `test/unit/news-is-pushed-by-the-server.test.mjs`
+
 ### T-a-push-is-a-check-behind
 
 **A push from the app's server says a store changed, and the worker checks behind**

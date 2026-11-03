@@ -29,6 +29,7 @@ flowchart LR
   subgraph server["The app's server"]
     api["REST / Sherpa handler<br/>(row 170)"]
     files["the app's files<br/>sw.js stamped with the build"]
+    feed["updatesFeed<br/>/sherpa/updates"]
   end
   subgraph worker["Service Worker — one for every tab"]
     appfiles["keepAppFiles<br/>files, network first"]
@@ -43,6 +44,7 @@ flowchart LR
     prov["sherpa-provider<br/>bindSource"]
     comps["components<br/>draw and count"]
     upd["Updates<br/>hearUpdates · watchForUpdates"]
+    follow["followUpdates<br/>ONE tab"]
   end
   files --> appfiles
   api <--> held
@@ -54,6 +56,8 @@ flowchart LR
   serve -.->|"NOTICE_CHANNEL: what is new"| upd
   upd --> prov
   kept -.-> upd
+  feed -.->|"a build · a store changed"| follow
+  follow -.->|"?recheck"| serve
 ```
 
 ---
@@ -178,18 +182,19 @@ sequenceDiagram
 | A change made in one tab | the worker | `DATA_CHANNEL`, to each tab's `RequestStore` | every bound component asks again |
 | Newer rows the worker found behind | the worker | a `data` notice on `NOTICE_CHANNEL` | the banner that listens (`data-listens="data"`); Refresh data takes them in |
 | A save made offline that lost | the worker, KEPT until seen | a `lost` notice; said again to each page that opens | a warning banner, a Notifications item |
-| A new build | the browser: a new worker takes the page over | `controllerchange` | the "new version" banner and a Notifications item |
+| A new build | the app's server, on its feed (`updatesFeed`); the browser, as a new worker takes the page over | `/sherpa/updates`, followed by ONE tab (`followUpdates`), which asks for the new worker; then `controllerchange` | the "new version" banner and a Notifications item |
 | A live feed (alerts) | the app's server | ONE tab holds it (`shareFeed`, a Web Lock) and passes each message on | the store it feeds |
 
 The worker never tells a page WHAT to show: it says a fact, and an element that
 asked to hear it shows (`T-a-notice-is-heard-never-ordered`). Each page holds its
 news in ONE `Updates` object, the provider's `updates`: what waits, and what the
 reader dismissed. Every listening element draws from it, and so does an app's own
-list (Demos' Notifications). Two things are still
-polled, because the server has no way yet to say them: a new build
-(`watchForUpdates`, every 5 minutes and when a tab is shown again) and a server-side
-change (checked behind when a tab is shown or back online). Row 687 replaces both
-with one shared "what's new" feed from the app's server.
+list (Demos' Notifications). The app's server SAYS what is new on one feed,
+`/sherpa/updates` (`updatesFeed`): a new build, or a store that changed. One tab
+follows it (`followUpdates`) and only acts — it asks for the new worker, or has the
+worker check that store behind — and what that finds reaches every tab as a notice
+(`T-news-is-pushed-by-the-server`). Polling (`watchForUpdates`) stays as a fallback
+until row 687's U4.
 
 ---
 
