@@ -600,16 +600,33 @@
                   "part": "condition-rows",
                   "attrs": {
                     "role": "group",
-                    "aria-label": "Advanced conditions"
+                    "aria-label": "Advanced conditions",
+                    "data-join": "or"
                   }
                 },
                 {
-                  "el": "sherpa-button",
-                  "class": "add-condition",
-                  "part": "add-condition",
-                  "attrs": {
-                    "data-icon-start": "plus"
-                  }
+                  "el": "div",
+                  "class": "condition-adds",
+                  "part": "condition-adds",
+                  "children": [
+                    {
+                      "el": "sherpa-button",
+                      "class": "add-condition",
+                      "part": "add-condition",
+                      "attrs": {
+                        "data-icon-start": "plus"
+                      }
+                    },
+                    {
+                      "el": "sherpa-button",
+                      "class": "add-group",
+                      "part": "add-group",
+                      "attrs": {
+                        "data-look": "transparent",
+                        "data-icon-start": "plus"
+                      }
+                    }
+                  ]
                 }
               ]
             },
@@ -813,6 +830,84 @@
                         "data-icon-start": "cross",
                         "aria-label": "Remove condition"
                       }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "el": "template",
+              "class": "condition-group-tpl",
+              "children": [
+                {
+                  "el": "div",
+                  "class": "condition-group",
+                  "attrs": {
+                    "role": "group",
+                    "aria-label": "Group"
+                  },
+                  "children": [
+                    {
+                      "el": "sherpa-input-text",
+                      "class": "join",
+                      "attrs": {
+                        "data-type": "select",
+                        "data-size": "sm",
+                        "aria-label": "Join"
+                      },
+                      "children": [
+                        {
+                          "el": "option",
+                          "attrs": {
+                            "value": "and"
+                          }
+                        },
+                        {
+                          "el": "option",
+                          "attrs": {
+                            "value": "or"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "el": "div",
+                      "class": "condition-parts"
+                    },
+                    {
+                      "el": "div",
+                      "class": "group-adds",
+                      "children": [
+                        {
+                          "el": "sherpa-button",
+                          "class": "add-condition",
+                          "attrs": {
+                            "data-look": "transparent",
+                            "data-size": "sm",
+                            "data-icon-start": "plus"
+                          }
+                        },
+                        {
+                          "el": "sherpa-button",
+                          "class": "add-group",
+                          "attrs": {
+                            "data-look": "transparent",
+                            "data-size": "sm",
+                            "data-icon-start": "plus"
+                          }
+                        },
+                        {
+                          "el": "sherpa-button",
+                          "class": "drop-group",
+                          "attrs": {
+                            "data-type": "icon",
+                            "data-look": "transparent",
+                            "data-size": "sm",
+                            "data-icon-start": "cross",
+                            "aria-label": "Remove group"
+                          }
+                        }
+                      ]
                     }
                   ]
                 }
@@ -1355,7 +1450,7 @@
         "simple",
         "advanced"
       ],
-      "description": "FILTER type only: simple | advanced (Will's words). `simple` is a ticked list with a search; `advanced` is the And/Or condition rows. An Advanced button in the header moves between them. TRAP T-a-filter-menu-has-two-modes"
+      "description": "FILTER type only: simple | advanced (Will's words). `simple` is a ticked list with a search; `advanced` is the And/Or condition rows, and groups of them. An Advanced button in the header moves between them. TRAP T-a-filter-menu-has-two-modes"
     },
     {
       "$type": "prop",
@@ -1699,7 +1794,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (values, mode, listed, reading, conditions, op, conditionValue, open, dirty, itemData, present, heldByPreset, offered, all). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (values, mode, listed, reading, condition, op, conditionValue, open, dirty, itemData, present, heldByPreset, offered, all). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -1788,13 +1883,11 @@
     {
       "$type": "event",
       "name": "condition-change",
-      "description": "The condition or its typed value changed.",
+      "description": "The Advanced answer changed: a row, a join, a group.",
       "bubbles": true,
       "composed": true,
       "detail": {
-        "conditions": "FieldCondition[]",
-        "op": "FilterOp",
-        "value": "string"
+        "condition": "Condition | undefined"
       }
     },
     {
@@ -1845,6 +1938,11 @@
     "menu.color": "{sherpa.theme-content-body-base}",
     "menu.font-family": "{sherpa.font-family-body}",
     "menu.box-shadow": "{sherpa.shadow-md}",
+    "condition-parts.row-gap": "{sherpa.display-mode-space-xs}",
+    "condition-parts.padding-inline-start": "{sherpa.display-mode-space-xs}",
+    "condition-parts.border-inline-start": "{sherpa.display-mode-border-width-sm}",
+    "group-adds.gap": "{sherpa.display-mode-space-2xs}",
+    "group-adds.padding-inline-start": "{sherpa.display-mode-space-xs}",
     "heading.padding-inline": "{sherpa.theme-padding-none}",
     "heading.color": "{sherpa.theme-content-body-1}",
     "heading.font-size": "{sherpa.theme-content-size-small}",
@@ -1970,8 +2068,8 @@
           "access": "read-write"
         },
         {
-          "name": "conditions",
-          "type": "FieldCondition[]",
+          "name": "condition",
+          "type": "Condition | undefined",
           "access": "read-write"
         },
         {

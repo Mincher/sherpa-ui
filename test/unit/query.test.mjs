@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { compile, VIEW, DataSource, bindSource, ArrayStore, filterRows, fakeRemote, rowsTree } =
+const { compile, VIEW, DataSource, bindSource, ArrayStore, filterRows, fakeRemote } =
   await import(new URL('../../dist/data.js', import.meta.url));
 
 const ROWS = [
@@ -29,7 +29,7 @@ const RECORDS = {
       holds: ['status', 'owner'],
       readings: {
         status: { picked: ['active'] },
-        owner: { tree: rowsTree([{ op: 'contains', text: 'Da' }, { op: 'startswith', text: 'N', join: 'or' }]) },
+        owner: { tree: { or: [{ op: 'contains', value: 'Da' }, { op: 'startswith', value: 'N' }] } },
       },
       sort: [{ field: 'health', direction: 'asc' }],
       group: null,
@@ -183,16 +183,16 @@ test('a bar bound with a scope is DRAWN each answer in its scope, whoever set it
   bindSource(src, bar, { steerOnly: true, scope: 'grid' });
   src.query.ask({ scope: 'grid', hold: ['status'] });
   // A heading, a legend or the panel — not the bar — answers Status.
-  src.query.ask({ scope: 'view', field: 'status', reading: { tree: rowsTree([{ op: 'contains', text: 'tri' }]), picked: [] } });
+  src.query.ask({ scope: 'view', field: 'status', reading: { tree: { op: 'contains', value: 'tri' }, picked: [] } });
   // Region is the View's, so this bar is not told.
   src.query.ask({ scope: 'view', field: 'region', reading: { picked: ['EMEA'] } });
-  assert.deepEqual(drawn, [['status', { picked: [], tree: rowsTree([{ op: 'contains', text: 'tri' }]) }]]);
+  assert.deepEqual(drawn, [['status', { picked: [], tree: { op: 'contains', value: 'tri' } }]]);
   /* SUSPENDED is drawn too, and SAYS it is off — so a panel does not go on
      showing an answer that filters nothing. TRAP T-a-suspended-answer-is-drawn-as-off */
   src.query.ask({ scope: 'view', field: 'status', suspended: true });
   assert.equal(drawn.length, 2);
   assert.deepEqual(drawn[1], ['status', {
-    picked: [], tree: rowsTree([{ op: 'contains', text: 'tri' }]), suspended: true,
+    picked: [], tree: { op: 'contains', value: 'tri' }, suspended: true,
   }]);
 });
 
@@ -253,7 +253,7 @@ test('a field a scope lets go of, held nowhere else, loses its answer — removi
 
 test('an EMPTY condition row is no answer — a cleared menu keeps one', async () => {
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
-  src.query.ask({ scope: 'view', field: 'owner', reading: { op: 'contains', text: '', tree: rowsTree([{ op: 'eq' }]), suspended: true, picked: [] } });
+  src.query.ask({ scope: 'view', field: 'owner', reading: { op: 'contains', text: '', tree: undefined, suspended: true, picked: [] } });
   assert.equal(src.query.reading(VIEW, 'owner'), undefined);
   assert.deepEqual(src.selectedFields, []);
 });

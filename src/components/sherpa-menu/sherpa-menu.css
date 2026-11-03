@@ -274,7 +274,7 @@
 /* SIMPLE mode shows the search; ADVANCED mode shows the condition rows.
    One filter, two views of it. TRAP T-a-filter-menu-has-two-modes */
 .condition-rows,
-.add-condition { display: none; }
+.condition-adds { display: none; }
 
 :host([data-type="filter"]) .search { grid-area: filter; }
 
@@ -284,10 +284,13 @@
   display: grid;
   row-gap: var(--sherpa-display-mode-space-xs, 8px);
 }
-/* ADD CONDITION sits BELOW the last row, labelled, in the default look.
-   Will, 2026-09-26. TRAP T-add-condition-sits-below-the-rows */
-:host([data-mode="advanced"]) .add-condition {
-  display: inline-flex;
+/* ADD CONDITION sits BELOW the last row, labelled, in the default look; ADD
+   GROUP beside it, tertiary. Will, 2026-09-26, TODO 692.
+   TRAP T-add-condition-sits-below-the-rows */
+:host([data-mode="advanced"]) .condition-adds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
   grid-area: add;
   justify-self: start;
 }
@@ -307,6 +310,41 @@
     "filter"
     "add";
 }
+
+/* A GROUP is the same rows, indented one step: its parent's join in the join's
+   own column — kept, empty, for a first part — then its parts, a subtle rule at
+   their start, and its foot. Will, TODO 692 */
+.condition-group {
+  display: grid;
+  grid-template-columns: minmax(3.5rem, auto) minmax(0, 1fr);
+  align-items: start;
+}
+.condition-group > .join {
+  grid-column: 1;
+  min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
+}
+.condition-group[data-first] > .join { visibility: hidden; }
+.condition-parts,
+.group-adds { grid-column: 2; }
+.condition-parts {
+  display: grid;
+  row-gap: var(--sherpa-display-mode-space-xs, 8px);
+  padding-inline-start: var(--sherpa-display-mode-space-xs, 8px);
+  border-inline-start: var(--sherpa-display-mode-border-width-sm, 0.5px) solid var(--sherpa-style-border-base, #b3b3c3);
+}
+.group-adds {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  padding-inline-start: var(--sherpa-display-mode-space-xs, 8px);
+}
+/* A lone part has nothing to drop: a group's last row, or the root's last group. */
+.condition-group[data-only] > .group-adds > .drop-group { display: none; }
+
+/* A part KEPT OFF is drawn, and filters nothing: shown in the secondary ink. */
+.condition-row[data-off] sherpa-input-text::part(control),
+.condition-group[data-off] sherpa-input-text::part(control) { color: var(--sherpa-style-content-secondary, #35353d); }
 
 /* ONE OBJECT per row: [And|Or] [condition] [value] [x], snapped with no gap by
    `.sherpa-group`, which squares the inner corners by POSITION. */
@@ -825,7 +863,7 @@
    component whose own `:host` display wins otherwise.
    TRAP T-a-composed-child-hides-with-important
    TRAP T-a-view-held-heading-shows-and-refuses */
-:host([data-readonly]) :is(.footer, .add-condition, .use-condition) { display: none !important; }
+:host([data-readonly]) :is(.footer, .condition-adds, .group-adds, .use-condition) { display: none !important; }
 
 /* …and a read-only row removes nothing: no ×, and its value is the row's right
    end, as on a lone row. Will, TODO 236 */

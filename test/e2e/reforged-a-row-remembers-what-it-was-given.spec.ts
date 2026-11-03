@@ -16,10 +16,10 @@ test('a chip\'s menu reads its typed condition the moment it has rendered', asyn
     await bar.rendered;
     let seen: unknown = null;
     const watch = new MutationObserver(() => {
-      const chip = bar.shadowRoot!.querySelector('.chips > .chip') as (HTMLElement & { menu?: { rendered: Promise<void>; conditions: unknown } }) | null;
+      const chip = bar.shadowRoot!.querySelector('.chips > .chip') as (HTMLElement & { menu?: { rendered: Promise<void>; condition: unknown } }) | null;
       if (!chip?.menu || seen) return;
       seen = 'waiting';
-      void Promise.resolve(chip.menu.rendered).then(() => { seen = JSON.stringify(chip.menu!.conditions); });
+      void Promise.resolve(chip.menu.rendered).then(() => { seen = JSON.stringify(chip.menu!.condition); });
     });
     watch.observe(bar.shadowRoot!, { childList: true, subtree: true });
     await bar.populate([{ id: 'owner', label: 'Owner', select: 'multiple', active: true, advanced: true, op: 'contains', text: 'Da',
@@ -27,17 +27,17 @@ test('a chip\'s menu reads its typed condition the moment it has rendered', asyn
     await window.__settled();
     return seen;
   });
-  expect(r).toBe(JSON.stringify([{ op: 'contains', text: 'Da' }]));
+  expect(r).toBe(JSON.stringify({ op: 'contains', value: 'Da' }));
 });
 
 test('a second row keeps its join and its op through a rebuild, read at once', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const menu = await window.__mount<HTMLElement & { conditions: unknown[] }>('sherpa-menu', undefined,
+    const menu = await window.__mount<HTMLElement & { condition: unknown }>('sherpa-menu', undefined,
       { 'data-type': 'filter', 'data-advanced': true, 'data-mode': 'advanced' });
     await window.__settled();
-    const rows = [{ op: 'contains', text: 'Da' }, { join: 'and', op: 'startswith', text: 'R' }];
-    menu.conditions = rows;
-    return JSON.stringify(menu.conditions) === JSON.stringify(rows.map((x) => ({ op: x.op, ...(x.join ? { join: x.join } : {}), text: x.text })));
+    const tree = { and: [{ op: 'contains', value: 'Da' }, { op: 'startswith', value: 'R' }] };
+    menu.condition = tree;
+    return JSON.stringify(menu.condition) === JSON.stringify(tree);
   });
   expect(r).toBe(true);
 });

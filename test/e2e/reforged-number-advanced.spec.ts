@@ -10,7 +10,7 @@ import { test, expect, type Bar } from './harness';
  */
 type Menu = HTMLElement & {
   shadowRoot: ShadowRoot; rendered?: Promise<void>; mode: string;
-  conditions: { op: string; join?: string; text?: string; picked?: unknown[] }[];
+  condition: unknown;
   reading: Record<string, unknown>; show(t: Element): void;
 };
 
@@ -39,7 +39,7 @@ test('a toolbar number chip goes Advanced: number questions, its body carried ov
     const ops = [...sr.querySelectorAll<HTMLElement & { value: string }>('.condition-row .condition')].map((c) => c.value);
     const advanced = {
       mode: menu('seats').mode, body: shown('.body-number'), rows: shown('.condition-rows'),
-      conditions: menu('seats').conditions, ops,
+      condition: menu('seats').condition, ops,
       // Every row is TYPED: a number has no list to pick from.
       typed: [...sr.querySelectorAll<HTMLElement>('.condition-row')].map((row) => row.dataset['takes']),
     };
@@ -59,7 +59,7 @@ test('a toolbar number chip goes Advanced: number questions, its body carried ov
   expect(r.simple).toEqual({ type: 'filter', fx: true, body: true, rows: false });
   expect(r.advanced).toMatchObject({
     mode: 'advanced', body: false, rows: true,
-    conditions: [{ op: 'eq', picked: ['20'] }],
+    condition: { op: 'eq', value: 20 },
     typed: ['text'],
   });
   expect(r.advanced.ops).toEqual(['eq']);
@@ -141,12 +141,12 @@ test('Between and Not between: two boxes on the row, and a slider under it that 
     slider.range = [100, 300];
     slider.dispatchEvent(new CustomEvent('input', { bubbles: true, composed: true, detail: { start: 100, end: 300 } }));
     await window.__settled();
-    const slid = { from: box('.condition-value').value, to: box('.condition-value-to').value, rows: menu.conditions };
+    const slid = { from: box('.condition-value').value, to: box('.condition-value-to').value, rows: menu.condition };
     // One end alone is no answer.
     box('.condition-value-to').value = '';
     box('.condition-value-to').dispatchEvent(new Event('input', { bubbles: true, composed: true }));
     await window.__settled();
-    return { offers, drawn, layout, slid, half: menu.conditions };
+    return { offers, drawn, layout, slid, half: menu.condition ?? null };
   });
   expect(r.offers).toEqual({ advanced: true, ops: 'eq,ne,gt,gte,lt,lte,between,notbetween' });
   expect(r.drawn).toEqual({ takes: 'range', from: '20', to: '80', slider: [20, 80], min: '0', max: '500' });
@@ -156,6 +156,8 @@ test('Between and Not between: two boxes on the row, and a slider under it that 
   expect(r.layout.to.left).toBeGreaterThan(r.layout.from.left);
   expect(r.layout.slider.top).toBeGreaterThan(r.layout.from.top);
   expect(r.layout.slider.width).toBe(r.layout.row.width);
-  expect(r.slid).toEqual({ from: '100', to: '300', rows: [{ op: 'between', picked: ['100', '300'] }] });
-  expect(r.half).toEqual([{ op: 'between' }]);
+  // Typed as its field holds it. TRAP T-a-value-is-typed-once
+  expect(r.slid).toEqual({ from: '100', to: '300', rows: { op: 'between', value: [100, 300] } });
+  // One end alone says nothing.
+  expect(r.half).toBeNull();
 });

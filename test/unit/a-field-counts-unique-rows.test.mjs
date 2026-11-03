@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, bindSource, VIEW, rowsTree } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, VIEW } from '../../dist/data.js';
 
 const ROWS = [
   { id: 1, region: 'EMEA', owner: 'Dana' },
@@ -55,9 +55,6 @@ test('two picked values: each counts its own rows, and the header the rows of bo
 
 test('two conditions that match the SAME rows: the header counts each row once', async () => {
   // "Dana" and "Ann" hold both an a and an n: 2 rows, though each row matches 2.
-  const r = await counts({ owner: { tree: rowsTree([
-    { op: 'contains', text: 'a' },
-    { op: 'contains', text: 'n', join: 'or' },
-  ]) } });
+  const r = await counts({ owner: { tree: { or: [{ op: 'contains', value: 'a' }, { op: 'contains', value: 'n' }] } } });
   assert.deepEqual(r.field, { owner: 2 });
 });

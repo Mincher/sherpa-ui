@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, VIEW, rowsTree } from '../../dist/data.js';
+import { ArrayStore, DataSource, VIEW } from '../../dist/data.js';
 
 const ROWS = [
   { id: 1, plan: 'Pro', tickets: 2 }, { id: 2, plan: 'Free', tickets: 0 }, { id: 3, plan: 'Pro', tickets: 3 },
@@ -23,7 +23,7 @@ function page() {
   source.query.declareScope('data', { label: 'Rows' });
   source.query.offer('data', ['plan', 'tickets']);
   source.query.ask({ scope: 'data', hold: ['plan'] });
-  source.declarePresets('data', [{ id: 'busy', label: 'Busy', readings: { tickets: { tree: rowsTree([{ op: 'gt', text: '0' }]), mode: 'advanced' } } }]);
+  source.declarePresets('data', [{ id: 'busy', label: 'Busy', readings: { tickets: { tree: { op: 'gt', value: '0' }, mode: 'advanced' } } }]);
   return source;
 }
 const brief = ({ home, above, on, presets, pending, failed }) => ({ home, above: above?.label ?? null, on, presets, pending, failed });
@@ -52,7 +52,7 @@ test('switched off: off, and it keeps its answer', () => {
 
 test('an answer that narrows nothing is off', () => {
   const source = page();
-  source.query.ask({ scope: 'data', field: 'plan', reading: { tree: rowsTree([{ op: 'between', picked: ['1'] }]), mode: 'advanced' } });
+  source.query.ask({ scope: 'data', field: 'plan', reading: { tree: undefined, mode: 'advanced' } });
   assert.equal(source.fieldStatus('plan', 'data').on, false);
 });
 
@@ -80,7 +80,7 @@ test('a preset on a field no scope holds: at the preset\'s scope, on, and it nam
 test('held by the View and a preset: both are said', () => {
   const source = page();
   source.query.ask({ scope: VIEW, move: 'plan', from: 'data' });
-  source.declarePresets('data', [{ id: 'pro', label: 'Pro only', readings: { plan: { tree: rowsTree([{ op: 'eq', picked: ['Pro'] }]), mode: 'advanced' } } }]);
+  source.declarePresets('data', [{ id: 'pro', label: 'Pro only', readings: { plan: { tree: { op: 'eq', value: 'Pro' }, mode: 'advanced' } } }]);
   source.query.ask({ scope: 'data', preset: 'pro', on: true, commit: true });
   const status = source.fieldStatus('plan', 'data');
   assert.equal(status.above.label, 'View Context');

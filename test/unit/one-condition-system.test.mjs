@@ -20,7 +20,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { fieldState, rowsTree, stateClause, filterFace } from '../../dist/data.js';
+import { fieldState, stateClause, filterFace } from '../../dist/data.js';
 
 const PLANS = { field: 'plan', values: ['Free', 'Pro', 'Enterprise'] };
 const SEATS = { field: 'seats', type: 'number' };
@@ -73,10 +73,7 @@ test('a NAMED op over ticks is Advanced — DOES NOT EQUAL is not Simple', () =>
 
 test('a chain of rows is Advanced, and compiles with AND binding tighter', () => {
   const s = shape(PLANS, {
-    tree: rowsTree([
-      { op: 'eq', picked: ['Pro'] },
-      { join: 'or', op: 'contains', text: 'Ent' },
-    ]),
+    tree: { or: [{ op: 'eq', value: 'Pro' }, { op: 'contains', value: 'Ent' }] },
   });
   assert.equal(s.condition, 'advanced');
   assert.deepEqual(s.clause, ['or', ['plan', 'eq', 'Pro'], ['plan', 'contains', 'Ent']]);
@@ -94,7 +91,7 @@ test('EVERYTHING ticked is no filter, so no condition either', () => {
 });
 
 test('an UNANSWERED row is not an Advanced condition', () => {
-  const s = shape(PLANS, { tree: rowsTree([{ op: 'contains', text: '  ' }]) });
+  const s = shape(PLANS, { tree: undefined });
   assert.equal(s.condition, null);
   assert.equal(s.badge, '');
 });
@@ -105,7 +102,7 @@ test('the fx badge and the type AGREE on every shape', () => {
   const readings = [
     {}, { picked: ['Pro'] }, { picked: ['Pro', 'Free'] }, { op: 'contains', text: 'ro' },
     { op: 'contains', text: '' }, { op: 'ne', picked: ['Free'] },
-    { tree: rowsTree([{ op: 'eq', picked: ['Pro'] }]) }, { tree: rowsTree([{ op: 'eq', picked: [] }]) },
+    { tree: { op: 'eq', value: 'Pro' } }, { tree: undefined },
   ];
   for (const reading of readings) {
     const s = fieldState(PLANS, reading);
@@ -117,7 +114,7 @@ test('the fx badge and the type AGREE on every shape', () => {
 
 test('Not between is a range row: both ends, sorted as numbers, and every row outside them', async () => {
   const { filterRows } = await import('../../dist/data.js');
-  const s = shape(SEATS, { tree: rowsTree([{ op: 'notbetween', picked: ['500', '9'] }]), mode: 'advanced' });
+  const s = shape(SEATS, { tree: { op: 'notbetween', value: ['500', '9'] }, mode: 'advanced' });
   assert.equal(s.condition, 'advanced');
   assert.deepEqual(s.clause, ['seats', 'notbetween', [9, 500]]);
   const rows = [{ seats: 5 }, { seats: 9 }, { seats: 200 }, { seats: 600 }, { seats: null }];
@@ -127,7 +124,7 @@ test('Not between is a range row: both ends, sorted as numbers, and every row ou
 
 test('a range row with ONE end is no answer, and narrows nothing', () => {
   for (const op of ['between', 'notbetween']) {
-    const s = shape(SEATS, { tree: rowsTree([{ op, picked: ['9'] }]), mode: 'advanced' });
+    const s = shape(SEATS, { tree: { op, value: ['9'] }, mode: 'advanced' });
     assert.equal(s.clause, undefined, op);
     assert.equal(s.condition, null, op);
   }
@@ -137,7 +134,7 @@ test('a range row with ONE end is no answer, and narrows nothing', () => {
 
 test('an `in` or `notin` row is its `eq` or `ne` over the picks, with one pick or several', () => {
   const REGION = { field: 'region', values: ['EMEA', 'AMER', 'APAC', 'LATAM'] };
-  const clause = (op, picked) => shape(REGION, { tree: rowsTree([{ op, picked }]), mode: 'advanced' }).clause;
+  const clause = (op, picked) => shape(REGION, { tree: { op, value: picked }, mode: 'advanced' }).clause;
   // Before: `notin` with two picks compiled to `in`, and with one matched every row.
   assert.deepEqual(clause('notin', ['EMEA', 'APAC']), ['region', 'notin', ['EMEA', 'APAC']]);
   assert.deepEqual(clause('notin', ['EMEA']), ['region', 'ne', 'EMEA']);

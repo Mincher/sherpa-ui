@@ -12,7 +12,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, bindSource, openSource, rowsTree } from '../../dist/data.js';
+import { ArrayStore, bindSource, openSource } from '../../dist/data.js';
 
 const ROWS = [
   { id: 1, health: 40, tickets: 2, plan: 'pro' },
@@ -101,7 +101,7 @@ test('its rows are ANDed with a field\'s own; off, the field\'s own is all that 
 test('a reader\'s answer on its field, or a clear of it, leaves it on; the Switch shows it off while the fields are off; Reset takes it off', async () => {
   const source = await page();
   await act(source, () => source.query.ask({ scope: 'data', preset: 'high-risk', on: true }));
-  await act(source, () => source.query.ask({ scope: 'data', field: 'health', reading: { tree: rowsTree([{ op: 'lt', text: '50' }]), mode: 'advanced' } }));
+  await act(source, () => source.query.ask({ scope: 'data', field: 'health', reading: { tree: { op: 'lt', value: '50' }, mode: 'advanced' } }));
   assert.equal(on(source), true);
   assert.deepEqual(ids(source), [1]);
   await act(source, () => source.query.ask({ scope: 'data', field: 'health', reading: null }));

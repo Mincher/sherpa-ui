@@ -11,7 +11,7 @@ import {
   type Condition, type FilterOp, type SortDirection,
 } from '../../core/data/store.js';
 import {
-  answeredCondition, fieldState, modeOf, presetTouches, rowAnswered, type FieldReading, type FilterState,
+  answeredCondition, fieldState, modeOf, presetTouches, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
 import { countSaid, filterFace, spellConditions } from '../../core/data/filter-face.js';
 import { NON_VALUE_ROWS, NOT_AVAILABLE, ORGANISE_ICONS, RULED_OUT, SET_ASIDE, UNAPPLIED, UNFETCHED, heldByPreset, movedTo, onByPreset, unusedHere } from '../../core/ui/shared-constants.js';
@@ -559,7 +559,7 @@ export class SherpaQuickFilter extends SherpaElement {
     if (menu && !menu.dataset['body']) {
       menu.dataset['op'] = op;
       menu.conditionValue = '';
-      if ((menu.conditions ?? []).length) menu.conditions = [];
+      if (menu.condition) menu.condition = undefined;
       menu.mode = 'simple';
     }
     if (this.hasAttribute('data-menu')) return this.#setPicks([]);
@@ -1419,7 +1419,7 @@ export class SherpaQuickFilter extends SherpaElement {
        chip reading row one only stayed off while three rows filtered.
        TRAP T-a-filter-menu-has-two-modes */
     if (menu.mode === 'advanced') {
-      return (menu.conditions ?? []).some(rowAnswered);
+      return !!menu.condition;
     }
 
     // A LIST in Simple mode answers by its picks; row one's text is Advanced's.

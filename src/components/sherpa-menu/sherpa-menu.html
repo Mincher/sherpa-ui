@@ -9,9 +9,8 @@
   outside-click itself, off the composed path.
   TRAP T-a-slotted-row-is-outside-its-own-popover
 
-  Placement is NOT native: CSS anchor positioning cannot cross a shadow root, so
-  `position-anchor` found nothing and every menu rendered at the viewport corner.
-  show(trigger) measures the trigger and writes viewport coordinates instead.
+  Placement IS native: show(trigger) hands the trigger to showPopover({ source }),
+  an anchor by reference, which crosses the shadow root an anchor name cannot.
 
   Rows are slotted, and stay real form controls:
 
@@ -68,8 +67,8 @@
                   TRAP T-a-filter-answers-by-values-conditions-or-both
     data-mode     FILTER type only: simple | advanced (Will's words). `simple`
                   is a ticked list with a search; `advanced` is the And/Or
-                  condition rows. An Advanced button in the header moves between
-                  them. TRAP T-a-filter-menu-has-two-modes
+                  condition rows, and groups of them. An Advanced button in the
+                  header moves between them. TRAP T-a-filter-menu-has-two-modes
     data-op       FILTER type only: which condition is picked. Defaults to `eq`.
                   The FIRST row's op — a menu in condition mode holds many.
     data-conditions  FILTER type only: a comma-separated op list ('eq,ne,contains')
@@ -110,9 +109,9 @@
     menu-drill — a row's child-menu caret. detail: { value }
     menu-open — detail: {}
     menu-close — detail: {}
-    condition-change — the condition or its typed value changed.
-                  detail: { op, value, conditions }
-                  `conditions` is EVERY row, in order. TRAP T-many-conditions-are-one-reading
+    condition-change — the Advanced answer changed: a row, a join, a group.
+                  detail: { condition } — its answered parts, as ONE tree.
+                  TRAP T-many-conditions-are-one-reading
     condition-mode-change — the mode button was pressed. detail: { mode } — simple | advanced
     menu-range-change — a number or date body's Range switch flipped. detail: { range }
     menu-items — its items were stamped, so a host can read its face. detail: { values }
@@ -337,12 +336,20 @@
                          placeholder="Search" autocomplete="off"
                          aria-label="Search this menu"></sherpa-input-text>
 
-      <!-- CONDITION MODE — one or more rows, stamped from the prototype.
-           Row one has no join select; every later row starts with one. -->
+      <!-- CONDITION MODE — ONE condition tree: rows, and groups of rows, stamped
+           from the prototypes. The region is the root group; each group's first
+           part has no join select, every later part shows its group's join.
+           Will, TODO 692 -->
       <div class="condition-rows" part="condition-rows" role="group"
-           aria-label="Advanced conditions"></div>
-      <sherpa-button class="add-condition" part="add-condition"
-                     data-icon-start="plus">Add condition</sherpa-button>
+           aria-label="Advanced conditions" data-join="or"></div>
+      <!-- The root's own buttons, below the rows: a row, and a group of rows that
+           applies only inside this one. TRAP T-add-condition-sits-below-the-rows -->
+      <div class="condition-adds" part="condition-adds">
+        <sherpa-button class="add-condition" part="add-condition"
+                       data-icon-start="plus">Add condition</sherpa-button>
+        <sherpa-button class="add-group" part="add-group" data-look="transparent"
+                       data-icon-start="plus">Add group</sherpa-button>
+      </div>
     </div>
 
     <!-- Without this the card collapses to an empty box and reads as broken. -->
@@ -410,6 +417,26 @@
         <sherpa-button class="drop-condition" data-type="icon"
                        data-icon-start="cross"
                        aria-label="Remove condition"></sherpa-button>
+      </div>
+    </template>
+
+    <!-- CONDITION GROUP — the same rows, indented one step, with their own
+         And or Or: it applies only inside its parent. [And|Or] is its PARENT's
+         join, hidden as a first part's is; its foot adds a row or a group to it,
+         or removes it. Will, TODO 692 -->
+    <template class="condition-group-tpl">
+      <div class="condition-group" role="group" aria-label="Group">
+        <sherpa-input-text class="join" data-type="select" data-size="sm"
+                           aria-label="Join"><option value="and">And</option><option value="or">Or</option></sherpa-input-text>
+        <div class="condition-parts"></div>
+        <div class="group-adds">
+          <sherpa-button class="add-condition" data-look="transparent" data-size="sm"
+                         data-icon-start="plus">Add condition</sherpa-button>
+          <sherpa-button class="add-group" data-look="transparent" data-size="sm"
+                         data-icon-start="plus">Add group</sherpa-button>
+          <sherpa-button class="drop-group" data-type="icon" data-look="transparent" data-size="sm"
+                         data-icon-start="cross" aria-label="Remove group"></sherpa-button>
+        </div>
       </div>
     </template>
 

@@ -23,16 +23,11 @@
  * - isRanged — A field whose Simple picks are ENDS, not a list to tick: a date.
  * - FieldFacts — What a caller knows about a field before anything is chosen.
  * - FieldReading — What is true right now, which decides the STATES.
- * - FieldCondition — One row of a flat condition menu: the menu's own shape, a tree once it leaves.
- * - rowAnswered — Does this condition row have what its op needs to narrow anything?
- * - answeredCondition — A tree with only its answered parts, or undefined when none answers.
- * - rowsTree — A flat menu's rows as ONE tree, read left to right, typed by its field — the menu's boundary in.
- * - treeRows — A tree as the rows a flat menu draws — the menu's boundary out; undefined where rows cannot say it.
  * - RuledOut — Why the source rules a value out: not offered, or not matched.
  * - ruleOut — A field's limits as one test: what its chain offers first, then what the filters before it leave.
  * - goesFromList — Does a ruled-out value GO from its list: one its chain does not offer, and, hiding unmatched, any ruled out —…
  * - modeOf — which answer a reading puts in force: its `mode`, else Advanced where its tree answers
- * - rowsFromPicks — Simple's answer as Advanced's rows, for a mode switch to carry over
+ * - answeredCondition — A tree with only its answered parts, or undefined when none answers.
  * - answerTree — A reading's answer in force as a tree — Simple's picks as their leaf; none while off, or All.
  * - withPreset — A reading with one preset's tree on it, or, with none, off it.
  * - presetTouches — Does a preset's tree touch this value of a field: a list value it keeps?
@@ -213,31 +208,6 @@ export interface FieldReading {
   byPreset?: Readonly<Record<string, { label: string; scope: string; tree: Condition }>>;
 }
 
-/** One row of a FLAT condition menu, which reads its rows left to right: the
- *  menu's own shape, a tree once it leaves (`rowsTree`). TODO 692 nests the menu. */
-export interface FieldCondition {
-  /** How this row joins the one before it. The FIRST row has none. */
-  join?: 'and' | 'or';
-  op: FilterOp;
-  /** For an op that takes typed text. */
-  text?: string;
-  /** For an op that takes values — `eq` offers the field's own list. */
-  picked?: readonly unknown[];
-  /** `last` and `next`: what the typed count counts. Default `day`. TODO 21d */
-  unit?: Duration['unit'];
-}
-
-/** Does this condition row have what its op needs to narrow anything? An
- *  untouched row is not an answer. TRAP T-an-untouched-select-is-not-an-answer */
-export function rowAnswered(row: FieldCondition): boolean {
-  const takes = OP_TAKES[row.op] ?? 'list';
-  // A span of no length has no clause: "in the last 0" answers nothing. TODO 612
-  if (row.op === 'last' || row.op === 'next') return Number((row.text ?? '').trim()) > 0;
-  if (takes === 'text') return (row.text ?? '').trim() !== '';
-  // A range is BOTH its ends: one alone narrows nothing. TODO 375
-  return (row.picked ?? []).length >= (takes === 'range' ? 2 : 1);
-}
-
 /** Why the source rules a value out: its chain does not offer it, or the filters before it leave none of it. */
 export type RuledOut = 'unoffered' | 'unmatched' | null;
 
@@ -270,29 +240,7 @@ export function modeOf(reading: FieldReading): ConditionType | undefined {
   return reading.mode ?? (answeredCondition(reading.tree) ? 'advanced' : undefined);
 }
 
-/** Simple's answer as Advanced's rows, for a mode switch to carry over; undefined
- *  when a body has nothing to carry. TRAP T-a-mode-switch-carries-the-answer-over */
-export function rowsFromPicks(
-  body: 'number' | 'date' | undefined, simple: FieldReading,
-): FieldCondition[] | undefined {
-  const [a, b] = (simple.picked ?? []).map(String);
-  // A date: one day is On it, two are Between them. TODO 21d
-  if (body === 'date') {
-    if (a != null && b != null) return [{ op: 'between', picked: [a, b] }];
-    return a != null ? [{ op: DEFAULT_OP, picked: [a] }] : undefined;
-  }
-  // A number: its one value under its op.
-  if (body === 'number') {
-    const typed = (simple.text ?? '').trim();
-    if (typed) return [{ op: simple.op ?? DEFAULT_OP, text: typed }];
-    return a != null ? [{ op: simple.op ?? DEFAULT_OP, picked: [a] }] : undefined;
-  }
-  return (simple.picked ?? []).map((value, i) => (
-    i ? { op: DEFAULT_OP, join: 'or' as const, picked: [value] } : { op: DEFAULT_OP, picked: [value] }
-  ));
-}
-
-/* ── The tree, and a flat menu's rows — TRAP T-one-condition-tree ── */
+/* ── The tree — TRAP T-one-condition-tree ── */
 
 /** Does a leaf have what its op needs to narrow anything? */
 function leafAnswered({ op, value }: ConditionLeaf): boolean {
@@ -327,72 +275,6 @@ function picksLeaf(op: FilterOp, picks: readonly unknown[]): ConditionLeaf {
   if ((OP_TAKES[op] ?? 'list') !== 'list') return { op, value: [...picks] };
   const not = op === 'ne' || op === 'notin';
   return picks.length === 1 ? { op: not ? 'ne' : 'eq', value: picks[0] } : { op: not ? 'notin' : 'in', value: [...picks] };
-}
-
-/** One answered row as its leaf, its value as the field holds it: a number typed `70` is 70. */
-function rowLeaf(row: FieldCondition, type: FieldType): ConditionLeaf | undefined {
-  if (!rowAnswered(row)) return undefined;
-  if (row.op === 'last' || row.op === 'next') return { op: row.op, value: { n: Number(row.text!.trim()), unit: row.unit ?? 'day' } };
-  const takes = OP_TAKES[row.op] ?? 'list';
-  if (takes === 'text') return { op: row.op, value: typedValue(type, row.text) };
-  if (takes === 'range') return { op: row.op, value: typedValue(type, [...row.picked!]) };
-  return picksLeaf(row.op, typedValue(type, row.picked!) as unknown[]);
-}
-
-/**
- * A flat menu's rows as ONE tree, read left to right: each row joins all before
- * it, so `A or B and C` is `(A or B) and C`. Will, TODO 594. The menu's boundary
- * IN, typed by its field's `type`; a half-built row says nothing.
- * TRAP T-many-conditions-are-one-reading · TRAP T-a-value-is-typed-once
- */
-export function rowsTree(rows: readonly FieldCondition[], type: FieldType = 'text'): Condition | undefined {
-  let tree: Condition | undefined;
-  for (const row of rows) {
-    const leaf = rowLeaf(row, type);
-    if (!leaf) continue;
-    const join = row.join === 'or' ? 'or' : 'and';
-    const chain = tree && groupOf(tree);
-    tree = !tree ? leaf : chain?.[0] === join ? group(join, [...chain[1], leaf]) : group(join, [tree, leaf]);
-  }
-  return tree;
-}
-
-/** One leaf as the row a flat menu draws. */
-function leafRow({ op, value }: ConditionLeaf): FieldCondition {
-  if (op === 'last' || op === 'next') {
-    const { n, unit = 'day' } = (value ?? {}) as Partial<Duration>;
-    return { op, text: String(n ?? ''), unit };
-  }
-  const takes = OP_TAKES[op] ?? 'list';
-  if (takes === 'text') return { op, text: String(value ?? '') };
-  const picked = Array.isArray(value) ? [...value] : [value];
-  if (takes === 'range') return { op, picked };
-  // Several `eq` picks are `in` in a tree, one row in a menu. TRAP T-a-held-clause-op-is-not-a-reading-op
-  return { op: op === 'in' ? 'eq' : op === 'notin' ? 'ne' : op, picked };
-}
-
-/**
- * A tree as the rows a FLAT menu draws — the menu's boundary OUT: a chain, which
- * one group may lead, as order is no matter in a group. Undefined where rows
- * cannot say it — two groups, or a part kept off — until the menu nests (TODO
- * 692); the data never comes this way. TRAP T-many-conditions-are-one-reading
- */
-export function treeRows(tree: Condition | undefined): FieldCondition[] | undefined {
-  if (!tree) return [];
-  if (tree.off) return undefined;
-  const parts = groupOf(tree);
-  if (!parts) return [leafRow(tree as ConditionLeaf)];
-  const [join, each] = parts;
-  const groups = each.filter((p) => groupOf(p));
-  if (groups.length > 1) return undefined;
-  const rows = groups[0] ? treeRows(groups[0]) : [];
-  if (!rows) return undefined;
-  for (const part of each.filter((p) => !groupOf(p))) {
-    if (part.off) return undefined;
-    const row = leafRow(part as ConditionLeaf);
-    rows.push(rows.length ? { ...row, join } : row);
-  }
-  return rows;
 }
 
 /* ── A PRESET's tree in a field's answer — Will, TODO 510 · TRAP T-a-preset-is-its-own-part ── */

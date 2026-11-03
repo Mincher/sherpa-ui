@@ -9,17 +9,17 @@ import { test, expect } from './harness';
 
 type Menu = HTMLElement & {
   rendered: Promise<void>; mode: string; values: string[];
-  conditions: Record<string, unknown>[]; reading: Record<string, unknown>;
+  condition: unknown; reading: Record<string, unknown>;
 };
 
-const ROWS = [
-  { op: 'lt', text: '2026-09-03' },
-  { join: 'or', op: 'last', text: '7', unit: 'week' },
-  { join: 'or', op: 'between', picked: ['2026-01-01', '2026-01-31'] },
-];
+const TREE = { or: [
+  { op: 'lt', value: '2026-09-03' },
+  { op: 'last', value: { n: 7, unit: 'week' } },
+  { op: 'between', value: ['2026-01-01', '2026-01-31'] },
+] };
 
 test('a date menu offers Advanced rows that ask a date\'s questions, and reads them back', async ({ page }) => {
-  const r = await page.evaluate(async (rows) => {
+  const r = await page.evaluate(async (tree) => {
     const { menuFor } = await import('/dist/core/ui/filter-menu.js');
     // A host whose root holds the menu prototype. TRAP T-a-family-shares-markup
     const host = (await (async () => { const g = document.createElement('sherpa-data-grid') as HTMLElement & { rendered: Promise<void> }; document.body.append(g); await g.rendered; return g.shadowRoot!; })());
@@ -28,7 +28,7 @@ test('a date menu offers Advanced rows that ask a date\'s questions, and reads t
     const m = menu as unknown as Menu;
     await m.rendered;
     m.mode = 'advanced';
-    m.conditions = rows;
+    m.condition = tree;
     await window.__settled();
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
     const shown = (row: Element) => [...row.children].filter((c) => getComputedStyle(c).display !== 'none')
@@ -44,10 +44,10 @@ test('a date menu offers Advanced rows that ask a date\'s questions, and reads t
       // In the last / next count days, weeks, months and years. Will, TODO 688
       units: [...m.shadowRoot!.querySelectorAll('.condition-row')[1]!.querySelector('.condition-unit')!
         .shadowRoot!.querySelectorAll('option')].map((o) => o.textContent),
-      back: m.conditions,
+      back: m.condition,
       calendarHidden: getComputedStyle(m.shadowRoot!.querySelector('.rows')!).display === 'none',
     };
-  }, ROWS);
+  }, TREE);
   expect(r.type).toBe('filter');
   expect(r.switchShown).toBe(true);
   expect(r.takes).toEqual(['date', 'duration', 'dates']);
@@ -58,7 +58,7 @@ test('a date menu offers Advanced rows that ask a date\'s questions, and reads t
   ]);
   expect(r.labels).toEqual(['On', 'Before', 'After', 'Between', 'In the last', 'In the next']);
   expect(r.units).toEqual(['days', 'weeks', 'months', 'years']);
-  expect(r.back).toEqual(ROWS);
+  expect(r.back).toEqual(TREE);
   expect(r.calendarHidden).toBe(true);
 });
 
@@ -75,9 +75,9 @@ test('the switch to Advanced carries the calendar\'s day over as On', async ({ p
     await window.__settled();
     m.shadowRoot!.querySelector('.use-advanced')!.shadowRoot!.querySelector('button')!.click();
     await window.__settled();
-    return { mode: m.mode, rows: m.conditions, reading: m.reading };
+    return { mode: m.mode, rows: m.condition, reading: m.reading };
   });
   expect(r.mode).toBe('advanced');
-  expect(r.rows).toEqual([{ op: 'eq', picked: ['2026-09-03'] }]);
+  expect(r.rows).toEqual({ op: 'eq', value: '2026-09-03' });
   expect(r.reading).toMatchObject({ mode: 'advanced', tree: { op: 'eq', value: '2026-09-03' } });
 });

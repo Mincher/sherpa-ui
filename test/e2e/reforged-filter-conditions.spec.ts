@@ -103,7 +103,7 @@ test('the two modes swap, and NEITHER loses what the other holds', async ({ page
     const el = document.querySelector('sherpa-quick-filter-toolbar')!;
     const menu = el.shadowRoot!
       .querySelector('sherpa-quick-filter[data-id="tier"] sherpa-menu') as HTMLElement & {
-        mode: string; conditions: { op: string; text?: string; picked?: string[] }[];
+        mode: string; condition: unknown;
         values: string[];
       };
     const sr = menu.shadowRoot!;
@@ -151,7 +151,7 @@ test('the two modes swap, and NEITHER loses what the other holds', async ({ page
       takes: (row0 as HTMLElement).dataset['takes'],
       boxShown: getComputedStyle(row0.querySelector('.condition-value')!).display,
       pickShown: getComputedStyle(row0.querySelector('.condition-pick')!).display,
-      conditions: menu.conditions,
+      condition: menu.condition,
     };
 
     // …and BACK to default. The rows are still there; so is the typing.
@@ -163,7 +163,7 @@ test('the two modes swap, and NEITHER loses what the other holds', async ({ page
         mode: menu.mode, values: [...menu.values],
         search: shown('.search'), goldStillTicked: gold.checked,
         // Kept, not cleared — one more press brings the same rows back.
-        conditionsKept: menu.conditions,
+        conditionKept: menu.condition,
       },
     };
   });
@@ -185,14 +185,14 @@ test('the two modes swap, and NEITHER loses what the other holds', async ({ page
   expect(r.typed.takes).toBe('text');
   expect(r.typed.boxShown).not.toBe('none');
   expect(r.typed.pickShown).toBe('none');
-  expect(r.typed.conditions).toEqual([{ op: 'contains', text: 'gol' }]);
+  expect(r.typed.condition).toEqual({ op: 'contains', value: 'gol' });
 
   // THE POINT: both modes survive the round trip, because both are stamped.
   expect(r.backToDefault.mode).toBe('simple');
   expect(r.backToDefault.values).toEqual(['gold']);
   expect(r.backToDefault.search).toBe('block');
   expect(r.backToDefault.goldStillTicked).toBe(true);
-  expect(r.backToDefault.conditionsKept).toEqual([{ op: 'contains', text: 'gol' }]);
+  expect(r.backToDefault.conditionKept).toEqual({ op: 'contains', value: 'gol' });
 });
 
 /**
@@ -210,7 +210,7 @@ test('Add condition chains rows, and each row asks its own question', async ({ p
     const el = document.querySelector('sherpa-quick-filter-toolbar')!;
     const menu = el.shadowRoot!
       .querySelector('sherpa-quick-filter[data-id="tier"] sherpa-menu') as HTMLElement & {
-        mode: string; conditions: { op: string; join?: string; text?: string; picked?: string[] }[];
+        mode: string; condition: unknown;
       };
     const sr = menu.shadowRoot!;
     const wait = (): Promise<void> => new Promise((res) => { setTimeout(res, 120); });
@@ -270,13 +270,13 @@ test('Add condition chains rows, and each row asks its own question', async ({ p
          TRAP T-equals-answers-with-the-fields-own-values */
       pickOptions: [...(rows()[1]!.querySelector('.condition-pick') as HTMLElement).shadowRoot!
         .querySelectorAll('option')].map((o) => (o as HTMLOptionElement).value),
-      conditions: menu.conditions,
+      condition: menu.condition,
     };
 
     // Drop row two again. The LAST row is never dropped.
     rows()[1]!.querySelector<HTMLElement>('.drop-condition')!.click();
     await wait();
-    const afterDrop = { count: rows().length, conditions: menu.conditions };
+    const afterDrop = { count: rows().length, condition: menu.condition };
     rows()[0]!.querySelector<HTMLElement>('.drop-condition')!.click();
     await wait();
 
@@ -299,13 +299,13 @@ test('Add condition chains rows, and each row asks its own question', async ({ p
   expect(r.secondRow.pickOptions).toEqual(['', 'gold', 'silver']);
 
   // TWO rows, each with its own op and its own kind of answer.
-  expect(r.secondRow.conditions).toEqual([
-    { op: 'contains', text: 'gol' },
-    { op: 'eq', join: 'or', picked: ['silver'] },
-  ]);
+  expect(r.secondRow.condition).toEqual({ or: [
+    { op: 'contains', value: 'gol' },
+    { op: 'eq', value: 'silver' },
+  ] });
 
   expect(r.afterDrop.count).toBe(1);
-  expect(r.afterDrop.conditions).toEqual([{ op: 'contains', text: 'gol' }]);
+  expect(r.afterDrop.condition).toEqual({ op: 'contains', value: 'gol' });
   // Clear is how you mean "no filter"; an empty condition mode reads as broken.
   expect(r.lastRowKept).toBe(1);
 });

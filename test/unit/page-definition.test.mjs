@@ -16,7 +16,6 @@ const { DataSource } = await import(new URL('data-source.js', core));
 const { bindSource } = await import(new URL('../ui/bind-source.js', core));
 const { rules, oneOf, number, min, max, required } = await import(new URL('validate.js', core));
 const { checkPage, openSource } = await import(new URL('page-definition.js', core));
-const { rowsTree } = await import(new URL('filter-state.js', core));
 
 const ROOT = new URL('../../', import.meta.url);
 const json = async (path) => JSON.parse(await readFile(new URL(path, ROOT), 'utf8'));
@@ -246,7 +245,7 @@ test('each PICKED value has a count of its own — and only a list answer in for
   }, { scope: 'data' });
   await source.query.setQuery({ v: 1, scopes: {
     view: { holds: ['region'], readings: { region: { picked: ['EMEA', 'AMER'] } } },
-    data: { holds: ['status', 'seats'], readings: { status: { picked: ['open', 'shut'] }, seats: { mode: 'advanced', tree: rowsTree([{ op: 'between', picked: ['5', '9'] }]) } } },
+    data: { holds: ['status', 'seats'], readings: { status: { picked: ['open', 'shut'] }, seats: { mode: 'advanced', tree: { op: 'between', value: ['5', '9'] } } } },
   } });
   // The View's two values: each over everything. The field's own count is both.
   assert.deepEqual(await source.valueResults('view'), { region: { EMEA: 2, AMER: 2 } });
@@ -257,7 +256,7 @@ test('each PICKED value has a count of its own — and only a list answer in for
   assert.deepEqual(await source.valueResults('data'), { status: { open: 3, shut: 1 } });
 
   // Rows answer it: no values. Off: none. Emptied: none.
-  source.query.ask({ scope: 'view', field: 'status', reading: { mode: 'advanced', tree: rowsTree([{ op: 'contains', text: 'op' }]), picked: [] } });
+  source.query.ask({ scope: 'view', field: 'status', reading: { mode: 'advanced', tree: { op: 'contains', value: 'op' }, picked: [] } });
   assert.deepEqual(await source.valueResults('data'), {});
   source.query.ask({ scope: 'view', field: 'region', suspended: true });
   assert.deepEqual(await source.valueResults('view'), {});

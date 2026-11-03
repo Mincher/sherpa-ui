@@ -1356,7 +1356,7 @@ test('a NUMBER column filters by one value, an Advanced condition, or a Between 
       await settle();
     };
 
-    type NumberMenu = HTMLElement & { mode: string; conditions: { op: string; text?: string }[] };
+    type NumberMenu = HTMLElement & { mode: string; condition: unknown };
     const menu = (): NumberMenu => chip().querySelector('sherpa-menu') as NumberMenu;
     // The number questions an Advanced row asks. The string family (contains,
     // startswith…) is absent — "starts with" on a spend column is not a question.
@@ -1376,7 +1376,7 @@ test('a NUMBER column filters by one value, an Advanced condition, or a Between 
     (menu() as NumberMenu & { show(t: Element): void }).show(chip());
     await settle();
     menu().mode = 'advanced';
-    menu().conditions = [{ op: 'gte', text: '100' }];
+    menu().condition = { op: 'gte', value: 100 };
     await apply();
     menu().mode = 'simple';
     await settle();
@@ -1387,7 +1387,7 @@ test('a NUMBER column filters by one value, an Advanced condition, or a Between 
     (menu() as NumberMenu & { show(t: Element): void }).show(chip());
     await settle();
     menu().mode = 'advanced';
-    menu().conditions = [{ op: 'between', picked: ['5', '50'] } as never];
+    menu().condition = { op: 'between', value: [5, 50] };
     await settle();
     const slider = menu().shadowRoot!.querySelector<HTMLElement & { range: [number, number] }>('.condition-row .condition-slider')!;
     const ranged = {
@@ -2662,13 +2662,13 @@ test('a heading filtered by a condition opens its menu on the condition', async 
     await window.__settled();
     const menu = (f: string) => grid.shadowRoot!
       .querySelector(`.head-cell[data-field="${f}"] sherpa-menu`) as HTMLElement & {
-        mode: string; conditions: unknown[]; values: string[] };
+        mode: string; condition: unknown; values: string[] };
     return {
-      owner: { mode: menu('owner').mode, conditions: menu('owner').conditions },
+      owner: { mode: menu('owner').mode, condition: menu('owner').condition },
       status: { mode: menu('status').mode, values: menu('status').values },
     };
   });
-  expect(r.owner).toEqual({ mode: 'advanced', conditions: [{ op: 'contains', text: 'Da' }] });
+  expect(r.owner).toEqual({ mode: 'advanced', condition: { op: 'contains', value: 'Da' } });
   // PICKS stay a ticked list.
   expect(r.status).toEqual({ mode: 'simple', values: ['active'] });
 });
@@ -2691,14 +2691,14 @@ test('a heading holds a chain: set from outside, or typed in, it shows and appli
     await window.__settled();
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
     const menu = grid.shadowRoot!.querySelector('.head-cell[data-field="owner"] sherpa-menu') as
-      HTMLElement & { mode: string; conditions: unknown[] };
+      HTMLElement & { mode: string; condition: unknown };
     const held = { clause: grid.columnClause('owner'), label: grid.columnLabel('owner'),
-      mode: menu.mode, rows: menu.conditions };
+      mode: menu.mode, rows: menu.condition };
 
     // TYPED IN: the menu's own rows, read whole on Apply.
     const heard: unknown[] = [];
     grid.addEventListener('column-filter-change', (e) => heard.push((e as CustomEvent).detail.clause));
-    menu.conditions = [{ op: 'contains', text: 'Na' }, { op: 'startswith', text: 'D', join: 'or' }];
+    menu.condition = { or: [{ op: 'contains', value: 'Na' }, { op: 'startswith', value: 'D' }] };
     // A rebuilt row fills a frame late.
     await window.__settled();
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
@@ -2711,7 +2711,7 @@ test('a heading holds a chain: set from outside, or typed in, it shows and appli
     clause: ['or', ['owner', 'contains', 'Da'], ['owner', 'startswith', 'R']],
     label: 'contains(Da) OR startsWith(R)',
     mode: 'advanced',
-    rows: [{ op: 'contains', text: 'Da' }, { op: 'startswith', text: 'R', join: 'or' }],
+    rows: { or: [{ op: 'contains', value: 'Da' }, { op: 'startswith', value: 'R' }] },
   });
   expect(r.typed).toEqual(['or', ['owner', 'contains', 'Na'], ['owner', 'startswith', 'D']]);
 });

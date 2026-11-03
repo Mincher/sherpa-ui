@@ -11,7 +11,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
-import { ArrayStore, DataSource, rowsTree } from '../../dist/data.js';
+import { ArrayStore, DataSource } from '../../dist/data.js';
 import { openSource } from '../../dist/core/data/page-definition.js';
 
 const ROWS = Array.from({ length: 20 }, (_, i) => ({ id: i + 1, seats: i * 10 }));
@@ -27,7 +27,7 @@ function counted(extra = {}) {
 }
 
 // A Between row's ends moving, as its slider moves them (TODO 375).
-const move = (source, n) => source.query.ask({ scope: 'view', field: 'seats', reading: { mode: 'advanced', tree: rowsTree([{ op: 'between', picked: [0, n] }]), picked: [] } });
+const move = (source, n) => source.query.ask({ scope: 'view', field: 'seats', reading: { mode: 'advanced', tree: { op: 'between', value: [0, n] }, picked: [] } });
 
 test('live: five moves, one load — once the moves stop', async () => {
   const store = counted();

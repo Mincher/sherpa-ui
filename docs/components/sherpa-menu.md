@@ -50,7 +50,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `data-loading` | boolean |  | its rows are on their way: a Loading row shows |
 | `data-max` | text |  |  |
 | `data-min` | text |  |  |
-| `data-mode` | `simple` `advanced` |  | FILTER type only: simple \| advanced (Will's words). `simple` is a ticked list with a search; `advanced` is the And/Or condition rows. An Advanced button in the header moves between them. TRAP T-a-filter-menu-has-two-modes |
+| `data-mode` | `simple` `advanced` |  | FILTER type only: simple \| advanced (Will's words). `simple` is a ticked list with a search; `advanced` is the And/Or condition rows, and groups of them. An Advanced button in the header moves between them. TRAP T-a-filter-menu-has-two-modes |
 | `data-no-select-all` | boolean |  | a multi-select list with no Select all row — the Filters menu, where adding every filter at once is never the answer. Read when the items stamp. |
 | `data-none` | boolean |  | a SINGLE list leads with a None row: its nothing (Will, TODO 394) |
 | `data-op` | text |  | FILTER type only: which condition is picked. Defaults to `eq`. The FIRST row's op — a menu in condition mode holds many. |
@@ -80,7 +80,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `mode` | `ConditionType` | read and write |  |
 | `listed` | `{ value: string; label: string }[]` | read and write |  |
 | `reading` | `FieldReading` | read and write |  |
-| `conditions` | `FieldCondition[]` | read and write |  |
+| `condition` | `Condition \| undefined` | read and write |  |
 | `op` | `FilterOp` | read and write |  |
 | `conditionValue` | `string` | read and write |  |
 | `open` | `boolean` | read and write |  |
@@ -121,7 +121,7 @@ Each one bubbles.
 | `menu-drill` | `{ value: string }` | A row's child-menu caret. |
 | `menu-open` |  |  |
 | `menu-close` |  |  |
-| `condition-change` | `{ conditions: FieldCondition[]; op: FilterOp; value: string }` | The condition or its typed value changed. |
+| `condition-change` | `{ condition: Condition \| undefined }` | The Advanced answer changed: a row, a join, a group. |
 | `condition-mode-change` | `{ mode: ConditionType }` | The mode button was pressed. |
 | `menu-range-change` | `{ range: boolean }` | A number or date body's Range switch flipped. |
 | `menu-items` | `{ values: string[] }` | Its items were stamped, so a host can read its face. |
@@ -140,7 +140,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`add-condition`, `apply`, `body-actions`, `body-number`, `body-range`, `condition-rows`, `description`, `discard`, `drill-back`, `drill-crumbs`, `drill-trail`, `footer`, `header`, `heading`, `loading`, `menu`, `no-matches`, `remove`, `reset`, `rows`, `search`, `solo-toggle`, `titles`, `today`, `use-condition`
+`add-condition`, `add-group`, `apply`, `body-actions`, `body-number`, `body-range`, `condition-adds`, `condition-rows`, `description`, `discard`, `drill-back`, `drill-crumbs`, `drill-trail`, `footer`, `header`, `heading`, `loading`, `menu`, `no-matches`, `remove`, `reset`, `rows`, `search`, `solo-toggle`, `titles`, `today`, `use-condition`
 
 ## CSS custom properties it reads
 
@@ -157,6 +157,11 @@ What each class's base rule reads:
 | `--sherpa-theme-content-body-base` | `.menu` | `color` |
 | `--sherpa-font-family-body` | `.menu` | `font-family` |
 | `--sherpa-shadow-md` | `.menu` | `box-shadow` |
+| `--sherpa-display-mode-space-xs` | `.condition-parts` | `row-gap` |
+| `--sherpa-display-mode-space-xs` | `.condition-parts` | `padding-inline-start` |
+| `--sherpa-display-mode-border-width-sm` | `.condition-parts` | `border-inline-start` |
+| `--sherpa-display-mode-space-2xs` | `.group-adds` | `gap` |
+| `--sherpa-display-mode-space-xs` | `.group-adds` | `padding-inline-start` |
 | `--sherpa-theme-padding-none` | `.heading` | `padding-inline` |
 | `--sherpa-theme-content-body-1` | `.heading` | `color` |
 | `--sherpa-theme-content-size-small` | `.heading` | `font-size` |

@@ -25,7 +25,7 @@ test('typed rows, then a press on the chip: the condition is applied', async ({ 
     bar.addEventListener('quick-filter-change', () => heard.push(true));
     const chip = bar.shadowRoot!.querySelector<HTMLElement>('.chip[data-id="owner"]')!;
     const menu = chip.querySelector('sherpa-menu') as HTMLElement & {
-      show(t: HTMLElement): void; shadowRoot: ShadowRoot; conditions: unknown; open: boolean;
+      show(t: HTMLElement): void; shadowRoot: ShadowRoot; condition: unknown; open: boolean;
     };
     const wait = (ms = 150) => new Promise((res) => setTimeout(res, ms));
     chip.shadowRoot!.querySelector<HTMLElement>('.caret')!.click();
@@ -51,7 +51,7 @@ test('typed rows, then a press on the chip: the condition is applied', async ({ 
       before,
       on: chip.hasAttribute('data-current'),
       condition: chip.getAttribute('data-condition'),
-      rows: menu.conditions,
+      rows: menu.condition,
       open: menu.open,
       clauses: await window.__clauses(bar),
     };
@@ -60,7 +60,7 @@ test('typed rows, then a press on the chip: the condition is applied', async ({ 
   expect(r.before).toEqual({ on: false, heard: 0 });
   expect(r.on).toBe(true);
   expect(r.condition).toBe('advanced');
-  expect(r.rows).toEqual([{ op: 'contains', text: 'Da' }]);
+  expect(r.rows).toEqual({ op: 'contains', value: 'Da' });
   expect(r.open).toBe(false);
   expect(r.clauses).toEqual({ owner: ['owner', 'contains', 'Da'] });
 });
@@ -122,13 +122,13 @@ test('a steered condition keeps its typed text through a re-sync', async ({ page
     bar.setChipReading('owner', { tree: { op: 'contains', value: 'Ai' } });
     await window.__settled();
     const menu = bar.shadowRoot!.querySelector('.chip[data-id="owner"] sherpa-menu') as HTMLElement & {
-      conditions: unknown; conditionValue: string;
+      condition: unknown; conditionValue: string;
     };
     // ANY watched attribute re-syncs row one from `data-op` and `data-value`.
     menu.setAttribute('data-heading', 'Owner, again');
     await window.__settled();
-    return { rows: menu.conditions, text: menu.conditionValue, attr: menu.dataset['value'] };
+    return { rows: menu.condition, text: menu.conditionValue, attr: menu.dataset['value'] };
   }, OWNER);
 
-  expect(r).toEqual({ rows: [{ op: 'contains', text: 'Ai' }], text: 'Ai', attr: 'Ai' });
+  expect(r).toEqual({ rows: { op: 'contains', value: 'Ai' }, text: 'Ai', attr: 'Ai' });
 });

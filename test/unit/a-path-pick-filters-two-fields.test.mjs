@@ -11,7 +11,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, openSource, filterRows, valueKey, rowsTree } from '../../dist/data.js';
+import { ArrayStore, openSource, filterRows, valueKey } from '../../dist/data.js';
 
 const ROWS = [
   { id: 1, customer: 'Northwind', site: 'Leeds' },
@@ -52,7 +52,7 @@ test('the clause is plain and/or/eq/in — a server runs the same', async () => 
   // NOT those: its opposite, every other row.
   const not = stateClause(fieldState({ field: 'customer', values: src.selection('customer').values.map((v) => v.raw),
     child: 'site', parentOf: new Map(src.selection('customer').values.filter((v) => v.parent).map((v) => [v.value, v.parent])) },
-  { mode: 'advanced', tree: rowsTree([{ op: 'ne', picked: ['Contoso', at('Northwind', 'London')] }]) }));
+  { mode: 'advanced', tree: { op: 'notin', value: ['Contoso', at('Northwind', 'London')] } }));
   assert.deepEqual(filterRows(ROWS, not).map((r) => r.id), [1, 6]);
 });
 

@@ -676,12 +676,15 @@ app's content area. A menu that hangs over the nav or out of a panel reads as
 belonging to neither, and the window's edges say nothing about where the
 content actually stops.
 
-The viewport is the platform's: an anchored card is shifted to stay inside its
-containing block, which for a top-layer card IS the viewport. A bounds box is
-not, and no engine can make it one — so a bounded card is the one case still
-measured: after the platform places it, the shell reads the card and the box
-and writes `--_nudge-x` / `--_nudge-y`, a `translate` that moves it inside, one
-gap from the box's edge; again on a scroll (once a frame) and as the card grows.
+The viewport is mostly the platform's: an anchored card is shifted to stay
+inside its containing block, which for a top-layer card IS the viewport. Not when
+its TRIGGER is out of the viewport — a chip `addFilters` just folded is measured
+at x = −9950 — for then the area under it is out of it too, the card fits that
+area, and nothing shifts: the card opened 10,000px off-screen. And a bounds box
+is no containing block, in any engine. So the shell reads the card once as it
+shows, against the bounds box or the viewport, and writes `--_nudge-x` /
+`--_nudge-y` — a `translate` one gap inside — only when it must move; a bounded
+card again on a scroll (once a frame) and as it grows.
 
 The selector resolves from the menu's OWN tree out to the document, each shadow
 root's host in turn, so it can name a box in a shadow root or in the app's own
@@ -972,6 +975,7 @@ drawn, as it renders on its own clock.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
 ### T-a-reopened-dialog-hears-a-late-close
@@ -1772,3 +1776,83 @@ question answers the first with its "no".
 
 - Site: `src/components/sherpa-dialog/sherpa-dialog.ts`
 - Site: `test/e2e/reforged-dialog.spec.ts`
+
+### T-a-mode-switch-carries-the-answer-over
+
+Pressing the mode button with three values ticked seeds three ORed rows.
+
+A reader who ticks values and then reaches for conditions is saying "now let me
+refine THAT". Opening on a blank `Equals <first option>` throws their answer
+away and does not say so.
+
+`#seedFromPicks()` runs only when the rows hold nothing of their own, so a
+second trip into condition mode never overwrites real work.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+
+---
+
+### T-an-untouched-select-is-not-an-answer
+
+A `<select>` shows its first option whether or not anyone touched it.
+
+So reading `.value` made every untouched condition row report a pick — and
+`#seedFromPicks` then believed the rows were already answered and carried
+nothing over. The row records what the READER chose in `data-want`, written
+only from a change event on the value select.
+
+The same fact needs a PLACEHOLDER: a `<select>` has no `placeholder`
+attribute, so an empty `Select…` first option is both the prompt and the proof
+the row is unanswered. Will, 2026-09-24: "Conditional equal dropdowns, if not
+populated from carry over, should default to a placeholder 'Select…' label."
+
+`data-condition="advanced"` follows the same rule — it means ANSWERED rows, not
+merely present ones, because a menu in Advanced mode always holds one row.
+
+- Site: `src/components/sherpa-menu/menu-conditions.ts`
+
+---
+
+### T-a-held-clause-op-is-not-a-reading-op
+
+**The grid held a CLAUSE op, and handed it to the data layer as a READING op.**
+
+A column filter keeps the op its clause has: several ticks under `eq` are
+`in`, under `ne` are `notin`, and two ends are `between`. `#columnReading()`
+passed that op to `readingClause()` unchanged. But a reading's op is what the
+reader picked in the dropdown — `eq` or `ne` — and `picksClause()` makes
+`notin` only from `ne`. Given `notin`, several picks became `in`.
+
+So "Is not Pro, Free" reached the host as `['plan', 'in', ['Pro', 'Free']]`:
+exactly the rows the reader excluded. Measured in the browser —
+`columnClause('plan')` returned `in`.
+
+It hid behind the menu. The menu draws a clause op the same way — `in` as `eq`
+rows, `notin` as `ne` ones (`spread`) — so the menu read right; only the clause
+the HOST got was wrong.
+
+`readingOp()` is that mapping, once, for both. It also makes the column's
+`state.condition` honest: `between` is a clause op, not an Advanced one, so a
+range reads Simple, as it does on a toolbar chip.
+
+- Site: `src/components/sherpa-menu/menu-conditions.ts`
+- Site: `test/e2e/reforged-advanced-condition-words.spec.ts`
+
+### T-a-condition-tree-draws-whole
+
+The menu draws ONE condition tree as it was said: each group as a group of rows
+with its own And or Or, nested as deep as it goes, and reads back the same tree.
+A flat menu could not: two groups, a group not leading, or a part kept off had
+no rows to say them, so the menu held such a tree aside, unseen, until the reader
+edited a row — and then dropped it.
+
+Two things a row cannot say are drawn so it can. A leaf of several picks — `in`,
+`notin`, a list under `eq` — is one row a value, ORed (`notin`: `ne` rows ANDed);
+a group of the same join flattens into its parent (`spread`). The keep test
+compares both sides spread, so a host that hands the same `in` back does not
+rebuild the rows. And an op the menu does not offer is offered on its own row,
+not swapped for the first one. A part kept `off` is drawn in the secondary ink
+and stays off.
+
+- Site: `src/components/sherpa-menu/menu-conditions.ts`
+- Site: `test/e2e/reforged-one-condition-tree.spec.ts`

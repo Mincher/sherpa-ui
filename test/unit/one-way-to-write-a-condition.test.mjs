@@ -7,7 +7,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ArrayStore, DataSource, checkPage, onReport, readingsOf, rowsTree, savedFiltersOf, whereOf,
+  ArrayStore, DataSource, checkPage, onReport, readingsOf, savedFiltersOf, whereOf,
 } from '../../dist/data.js';
 
 const TYPES = { openTickets: 'number', health: 'number', created: 'date' };
@@ -36,11 +36,9 @@ test('each answer a control holds is ONE plain condition, and reads back as it w
 });
 
 test('Advanced rows: several ops all hold, `or` takes a list, and they read left to right', () => {
-  const both = { tree: rowsTree([{ op: 'gte', text: '10' }, { join: 'and', op: 'lt', text: '60' }]) };
-  const either = { tree: rowsTree([{ op: 'lt', text: '10' }, { join: 'or', op: 'gt', text: '90' }]) };
-  const mixed = { tree: rowsTree([
-    { op: 'lt', text: '10' }, { join: 'or', op: 'gt', text: '50' }, { join: 'and', op: 'lt', text: '60' },
-  ]) };
+  const both = { tree: { and: [{ op: 'gte', value: '10' }, { op: 'lt', value: '60' }] } };
+  const either = { tree: { or: [{ op: 'lt', value: '10' }, { op: 'gt', value: '90' }] } };
+  const mixed = { tree: { and: [{ or: [{ op: 'lt', value: '10' }, { op: 'gt', value: '50' }] }, { op: 'lt', value: '60' }] } };
   const number = () => ({ type: 'number' });
   const where = whereOf({ health: both, openTickets: either, seats: mixed }, number);
   assert.deepEqual(where, {
@@ -56,7 +54,7 @@ test('Advanced rows: several ops all hold, `or` takes a list, and they read left
   });
   assert.deepEqual(whereOf(readingsOf(where, number), number), where);
   // The same op twice cannot share one object, so it is a list.
-  const twice = { tree: rowsTree([{ op: 'contains', text: 'a' }, { join: 'and', op: 'contains', text: 'b' }]), mode: 'advanced' };
+  const twice = { tree: { and: [{ op: 'contains', value: 'a' }, { op: 'contains', value: 'b' }] }, mode: 'advanced' };
   assert.deepEqual(whereOf({ name: twice }), { name: { and: [{ contains: 'a' }, { contains: 'b' }] } });
   assert.deepEqual(readingsOf(whereOf({ name: twice })), { name: twice });
 });

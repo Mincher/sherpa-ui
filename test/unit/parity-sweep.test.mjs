@@ -65,7 +65,7 @@ const KNOWN = {
     'platform: a File list can only come from a real picker or drop; ' +
     'script cannot forge one, so there is nothing to call',
   'sherpa-nav.activeEntry': 'ok: data-current-id attribute',
-  'sherpa-menu.dirty': 'ok: derived — the `values` / `conditions` setters against the last Apply; apply() clears it',
+  'sherpa-menu.dirty': 'ok: derived — the `values` / `condition` setters against the last Apply; apply() clears it',
   'sherpa-menu.itemData': 'ok: items() / populate() — the items it was given, read back with their parents',
   'sherpa-notifications.unreadCount': 'ok: populate() — derived from the items',
   'sherpa-quick-filter.menu': 'ok: the slotted <… slot="menu"> element IS the write',

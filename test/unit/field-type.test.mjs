@@ -14,7 +14,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, rowsTree, stateClause } from '../../dist/data.js';
+import { ArrayStore, DataSource, stateClause } from '../../dist/data.js';
 
 const ROWS = [
   { id: 1, seats: 5, owner: 'Dana', made: '2026-01-05' },
@@ -45,7 +45,7 @@ test('two picks on a NUMBER are a LIST, as numbers; its range is a Between row, 
   // A number has no Simple range: two values are `in` (TODO 375).
   assert.deepEqual(stateClause(src.selection('seats')), ['seats', 'in', [9, 500]]);
   assert.deepEqual(ids(src), [3, 4]);
-  src.query.ask({ scope: 'view', field: 'seats', reading: { tree: rowsTree([{ op: 'between', picked: ['500', '9'] }]), mode: 'advanced', picked: [] } });
+  src.query.ask({ scope: 'view', field: 'seats', reading: { tree: { op: 'between', value: ['500', '9'] }, mode: 'advanced', picked: [] } });
   await settle();
   // Sorted as TEXT this is ["500","9"] and the range matches nothing.
   assert.deepEqual(stateClause(src.selection('seats')), ['seats', 'between', [9, 500]]);
@@ -77,7 +77,7 @@ test('a number needs no declared value list', async () => {
   const src = await source();
   // Nothing called `declareValues('seats', …)`, and it still filters.
   assert.deepEqual(src.valuesFor('seats'), []);
-  src.query.ask({ scope: 'view', field: 'seats', reading: { tree: rowsTree([{ op: 'between', picked: ['1', '10'] }]), mode: 'advanced', picked: [] } });
+  src.query.ask({ scope: 'view', field: 'seats', reading: { tree: { op: 'between', value: ['1', '10'] }, mode: 'advanced', picked: [] } });
   await settle();
   assert.deepEqual(ids(src), [1, 4]);
 });
@@ -97,7 +97,7 @@ test('a number answered from a LIST is `in`, not a range', async () => {
 test('a Between row says `between` when the field has a list', async () => {
   const src = await source();
   src.declareValues('seats', [5, 50, 500, 9]);
-  src.query.ask({ scope: 'view', field: 'seats', reading: { tree: rowsTree([{ op: 'between', picked: ['5', '500'] }]), mode: 'advanced', picked: [] } });
+  src.query.ask({ scope: 'view', field: 'seats', reading: { tree: { op: 'between', value: ['5', '500'] }, mode: 'advanced', picked: [] } });
   await settle();
   assert.deepEqual(stateClause(src.selection('seats')), ['seats', 'between', [5, 500]]);
   assert.deepEqual(ids(src), [1, 2, 3, 4]);
@@ -108,10 +108,7 @@ test('a Between row says `between` when the field has a list', async () => {
 test('CONDITIONS answer a field with no picks and no text', async () => {
   const src = await source();
   src.query.ask({ scope: 'view', field: 'owner', reading: { ...{
-    tree: rowsTree([
-      { op: 'eq', picked: ['Dana'] },
-      { op: 'eq', join: 'or', picked: ['Ravi'] },
-    ]),
+    tree: { or: [{ op: 'eq', value: 'Dana' }, { op: 'eq', value: 'Ravi' }] },
   }, picked: [] } });
   await settle();
 
@@ -125,7 +122,7 @@ test('CONDITIONS answer a field with no picks and no text', async () => {
 
 test('a typed condition reaches the rows too', async () => {
   const src = await source();
-  src.query.ask({ scope: 'view', field: 'owner', reading: { tree: rowsTree([{ op: 'startswith', text: 'D' }]), picked: [] } });
+  src.query.ask({ scope: 'view', field: 'owner', reading: { tree: { op: 'startswith', value: 'D' }, picked: [] } });
   await settle();
   assert.deepEqual(ids(src), [1, 3]);
 });

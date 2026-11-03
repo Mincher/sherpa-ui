@@ -2168,7 +2168,7 @@
         },
         {
           "name": "data-mode",
-          "description": "FILTER type only: simple | advanced (Will's words). `simple` is a ticked list with a search; `advanced` is the And/Or condition rows. An Advanced button in the header moves between them. TRAP T-a-filter-menu-has-two-modes",
+          "description": "FILTER type only: simple | advanced (Will's words). `simple` is a ticked list with a search; `advanced` is the And/Or condition rows, and groups of them. An Advanced button in the header moves between them. TRAP T-a-filter-menu-has-two-modes",
           "values": [
             {
               "name": "simple"

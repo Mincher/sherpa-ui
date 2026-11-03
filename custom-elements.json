@@ -5398,7 +5398,7 @@
             },
             {
               "name": "data-mode",
-              "description": "FILTER type only: simple | advanced (Will's words). `simple` is a ticked list with a search; `advanced` is the And/Or condition rows. An Advanced button in the header moves between them. TRAP T-a-filter-menu-has-two-modes",
+              "description": "FILTER type only: simple | advanced (Will's words). `simple` is a ticked list with a search; `advanced` is the And/Or condition rows, and groups of them. An Advanced button in the header moves between them. TRAP T-a-filter-menu-has-two-modes",
               "type": {
                 "text": "'simple' | 'advanced'"
               }
@@ -5574,9 +5574,9 @@
             },
             {
               "kind": "field",
-              "name": "conditions",
+              "name": "condition",
               "type": {
-                "text": "FieldCondition[]"
+                "text": "Condition | undefined"
               }
             },
             {
@@ -5817,9 +5817,9 @@
             },
             {
               "name": "condition-change",
-              "description": "The condition or its typed value changed.",
+              "description": "The Advanced answer changed: a row, a join, a group.",
               "type": {
-                "text": "CustomEvent<{ conditions: FieldCondition[]; op: FilterOp; value: string }>"
+                "text": "CustomEvent<{ condition: Condition | undefined }>"
               }
             },
             {
@@ -5874,6 +5874,9 @@
               "name": "add-condition"
             },
             {
+              "name": "add-group"
+            },
+            {
               "name": "apply"
             },
             {
@@ -5884,6 +5887,9 @@
             },
             {
               "name": "body-range"
+            },
+            {
+              "name": "condition-adds"
             },
             {
               "name": "condition-rows"

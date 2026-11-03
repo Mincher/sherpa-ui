@@ -13,12 +13,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, fieldState, rowsTree, stateClause } from '../../dist/data.js';
+import { ArrayStore, DataSource, fieldState, stateClause } from '../../dist/data.js';
 
 const OWNER = { field: 'owner', values: ['Dana', 'Ravi', 'Mo'] };
 const BOTH = {
   picked: ['Dana'],
-  tree: rowsTree([{ op: 'startswith', text: 'R' }]),
+  tree: { op: 'startswith', value: 'R' },
 };
 const clause = (reading) => stateClause(fieldState(OWNER, reading));
 
@@ -34,7 +34,7 @@ test('the answer NOT in force is kept, and filters nothing', () => {
   assert.equal(simple.condition, 'simple');
 
   // Advanced with no answered row filters nothing, whatever Simple holds.
-  const empty = fieldState(OWNER, { picked: ['Dana'], tree: rowsTree([{ op: 'eq' }]), mode: 'advanced' });
+  const empty = fieldState(OWNER, { picked: ['Dana'], tree: undefined, mode: 'advanced' });
   assert.equal(empty.fieldState, 'off');
   assert.equal(stateClause(empty), undefined);
   assert.deepEqual(empty.values.filter((v) => v.state === 'picked').map((v) => v.value), ['Dana']);

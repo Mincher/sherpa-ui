@@ -7,7 +7,7 @@ import { test, expect } from './harness';
 type Menu = HTMLElement & {
   rendered: Promise<void>;
   values: string[];
-  conditions: { op: string; text?: string }[];
+  condition: unknown;
   items(next: { value: string; label?: string; drill?: boolean; count?: number }[]): void;
   setCount(value: string, count: number): void;
 };
@@ -40,20 +40,20 @@ test('values and items set before the first render are drawn by it', async ({ pa
   expect(r).toEqual({ before: ['c'], after: ['c'] });
 });
 
-test('conditions set before the first render are its rows', async ({ page }) => {
+test('a condition set before the first render is its rows', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const menu = document.createElement('sherpa-menu') as Menu;
     menu.dataset['type'] = 'filter';
     menu.setAttribute('data-advanced-only', '');
-    menu.conditions = [{ op: 'contains', text: 'acme' }];
-    const before = menu.conditions;
+    menu.condition = { op: 'contains', value: 'acme' };
+    const before = menu.condition;
     document.getElementById('root')!.replaceChildren(menu);
     await menu.rendered;
     await window.__settled();
-    return { before, after: menu.conditions.map(({ op, text }) => ({ op, text })) };
+    return { before, after: menu.condition };
   });
-  expect(r.before).toEqual([{ op: 'contains', text: 'acme' }]);
-  expect(r.after).toEqual([{ op: 'contains', text: 'acme' }]);
+  expect(r.before).toEqual({ op: 'contains', value: 'acme' });
+  expect(r.after).toEqual({ op: 'contains', value: 'acme' });
 });
 
 test('a count set before the rows stamp is on the row once they do', async ({ page }) => {

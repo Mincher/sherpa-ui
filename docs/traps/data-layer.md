@@ -3511,44 +3511,6 @@ nothing, and `fx` announces as noise.
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
-### T-a-mode-switch-carries-the-answer-over
-
-Pressing the mode button with three values ticked seeds three ORed rows.
-
-A reader who ticks values and then reaches for conditions is saying "now let me
-refine THAT". Opening on a blank `Equals <first option>` throws their answer
-away and does not say so.
-
-`#seedFromPicks()` runs only when the rows hold nothing of their own, so a
-second trip into condition mode never overwrites real work.
-
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/core/data/filter-state.ts`
-
----
-
-### T-an-untouched-select-is-not-an-answer
-
-A `<select>` shows its first option whether or not anyone touched it.
-
-So reading `.value` made every untouched condition row report a pick — and
-`#seedFromPicks` then believed the rows were already answered and carried
-nothing over. The row records what the READER chose in `data-want`, written
-only from a change event on the value select.
-
-The same fact needs a PLACEHOLDER: a `<select>` has no `placeholder`
-attribute, so an empty `Select…` first option is both the prompt and the proof
-the row is unanswered. Will, 2026-09-24: "Conditional equal dropdowns, if not
-populated from carry over, should default to a placeholder 'Select…' label."
-
-`data-condition="advanced"` follows the same rule — it means ANSWERED rows, not
-merely present ones, because a menu in Advanced mode always holds one row.
-
-- Site: `src/core/data/filter-state.ts`
-- Site: `src/components/sherpa-menu/menu-conditions.ts`
-
----
-
 ### T-a-scope-is-a-place-not-a-reach
 
 A SCOPE is a named place a filter lives — a header bar, a grid's bar, a panel
@@ -5083,31 +5045,6 @@ its own (`savedFilters`), which are never saved over or deleted.
 - Site: `test/unit/a-saved-filter-is-a-query.test.mjs`
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-column.ts`
 
-### T-a-held-clause-op-is-not-a-reading-op
-
-**The grid held a CLAUSE op, and handed it to the data layer as a READING op.**
-
-A column filter keeps the op its clause has: several ticks under `eq` are
-`in`, under `ne` are `notin`, and two ends are `between`. `#columnReading()`
-passed that op to `readingClause()` unchanged. But a reading's op is what the
-reader picked in the dropdown — `eq` or `ne` — and `picksClause()` makes
-`notin` only from `ne`. Given `notin`, several picks became `in`.
-
-So "Is not Pro, Free" reached the host as `['plan', 'in', ['Pro', 'Free']]`:
-exactly the rows the reader excluded. Measured in the browser —
-`columnClause('plan')` returned `in`.
-
-It hid behind the menu. The column's own dropdown was fed through the same
-mapping (`in` → `eq`, `notin` → `ne`), so the menu read right; only the
-clause the HOST got was wrong.
-
-`readingOp()` is that mapping, once, for both. It also makes the column's
-`state.condition` honest: `between` is a clause op, not an Advanced one, so a
-range reads Simple, as it does on a toolbar chip.
-
-- Site: `src/core/data/filter-state.ts`
-- Site: `test/e2e/reforged-advanced-condition-words.spec.ts`
-
 ### T-up-is-open-down-is-closed
 
 What may be filtered WHERE. Will, 2026-09-25:
@@ -6169,6 +6106,8 @@ date preset's two ends became `in [a, b]`, two days, not a range.
 - Site: `src/core/data/page-definition.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/a-value-is-typed-once.test.mjs`
+- Site: `src/components/sherpa-menu/menu-conditions.ts`
+- Site: `test/e2e/reforged-number-advanced.spec.ts`
 
 ### T-a-changed-key-moves-the-row
 

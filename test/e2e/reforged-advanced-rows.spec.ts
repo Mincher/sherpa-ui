@@ -74,7 +74,7 @@ test('every Advanced row shows what its condition takes, and answers the clause 
     const { menuFor } = await import('/dist/core/ui/filter-menu.js');
     // A host whose root holds the menu prototype. TRAP T-a-family-shares-markup
     const host = (await (async () => { const g = document.createElement('sherpa-data-grid') as HTMLElement & { rendered: Promise<void> }; document.body.append(g); await g.rendered; return g.shadowRoot!; })());
-    const { readingClause, rowsTree } = await import('/dist/core/data/filter-state.js');
+    const { readingClause } = await import('/dist/core/data/filter-state.js');
     const FILL: Record<string, string> = {
       'condition-pick': 'Ravi', 'condition-date': '2026-09-03', 'condition-date-to': '2026-09-30',
       'condition-time': '14:00', 'condition-time-to': '18:00', 'condition-count': '7', 'condition-unit': 'week',
@@ -85,7 +85,7 @@ test('every Advanced row shows what its condition takes, and answers the clause 
     for (const [kind, { def, facts }] of Object.entries(kinds)) {
       const { menu, items } = menuFor(host, def as never);
       document.getElementById('root')!.replaceChildren(menu);
-      const m = menu as unknown as HTMLElement & { rendered: Promise<void>; mode: string; conditions: Record<string, unknown>[]; items?(i: unknown): void };
+      const m = menu as unknown as HTMLElement & { rendered: Promise<void>; mode: string; condition: unknown; items?(i: unknown): void };
       await m.rendered;
       if (items.length) m.items?.(items);
       await settle();
@@ -111,7 +111,7 @@ test('every Advanced row shows what its condition takes, and answers the clause 
         }
         await settle();
         out[`${kind}:${op}`] = [shown.join('+'),
-          readingClause({ field: def.id as string, ...facts } as never, { tree: rowsTree([m.conditions[0]!] as never), mode: 'advanced' } as never)];
+          readingClause({ field: def.id as string, ...facts } as never, { tree: m.condition, mode: 'advanced' } as never)];
         for (const box of row.querySelectorAll<HTMLElement & { value: string }>('.condition-value, .condition-value-to, .condition-date, .condition-date-to, .condition-time, .condition-time-to, .condition-count')) box.value = '';
         delete row.dataset['want'];
       }
@@ -126,11 +126,11 @@ test('two rows join by Or or And, and the cross takes one away', async ({ page }
     const { menuFor } = await import('/dist/core/ui/filter-menu.js');
     // A host whose root holds the menu prototype. TRAP T-a-family-shares-markup
     const host = (await (async () => { const g = document.createElement('sherpa-data-grid') as HTMLElement & { rendered: Promise<void> }; document.body.append(g); await g.rendered; return g.shadowRoot!; })());
-    const { readingClause, rowsTree } = await import('/dist/core/data/filter-state.js');
+    const { readingClause } = await import('/dist/core/data/filter-state.js');
     const settle = async () => { await window.__settled(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); };
     const { menu, items } = menuFor(host, def as never);
     document.getElementById('root')!.replaceChildren(menu);
-    const m = menu as unknown as HTMLElement & { rendered: Promise<void>; mode: string; conditions: Record<string, unknown>[];
+    const m = menu as unknown as HTMLElement & { rendered: Promise<void>; mode: string; condition: unknown;
       items?(i: unknown): void };
     await m.rendered;
     m.items?.(items);
@@ -144,7 +144,7 @@ test('two rows join by Or or And, and the cross takes one away', async ({ page }
       inner.dispatchEvent(new Event('input', { bubbles: true }));
       inner.dispatchEvent(new Event('change', { bubbles: true }));
     };
-    const clause = () => readingClause({ field: 'owner' }, { tree: rowsTree(m.conditions as never), mode: 'advanced' } as never);
+    const clause = () => readingClause({ field: 'owner' }, { tree: m.condition, mode: 'advanced' } as never);
     set(rows()[0]!, 'condition-pick', 'Ravi');
     m.shadowRoot!.querySelector<HTMLElement>('.add-condition')!.click();
     await settle();

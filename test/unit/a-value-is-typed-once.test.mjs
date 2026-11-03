@@ -10,7 +10,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  ArrayStore, answerTree, conditionClause, filterCondition, openSource, readingClause, readingsOf, rowsTree,
+  ArrayStore, answerTree, conditionClause, filterCondition, openSource, readingClause, readingsOf,
   treeReading, typedValue,
 } from '../../dist/data.js';
 
@@ -19,7 +19,8 @@ const bare = ({ field: _field, ...leaf }) => leaf;
 
 test('a typed gt 70 and a host-set one are the same tree, and compile alike', () => {
   const host = bare(filterCondition(['storage', 'gt', 70]));
-  const typed = rowsTree([{ op: 'gt', text: ' 70 ' }], 'number');
+  // A reader's ` 70 ` typed in a number's menu: its row's leaf, typed as it comes in.
+  const typed = { op: 'gt', value: typedValue('number', ' 70 ') };
   assert.deepEqual(typed, { op: 'gt', value: 70 });
   assert.deepEqual(typed, host);
   // A host's clause on a number column, as a heading holds it: its answer is the same tree.
@@ -40,10 +41,10 @@ test('typedValue: a number field\'s text is its number; a list each; anything el
   assert.equal(typedValue('text', '70'), '70');
   assert.equal(typedValue('date', '2026-11-03'), '2026-11-03');
   // A list op's picks and a range's ends, typed as each row comes in.
-  assert.deepEqual(rowsTree([{ op: 'eq', picked: ['5', '9'] }], 'number'), { op: 'in', value: [5, 9] });
-  assert.deepEqual(rowsTree([{ op: 'between', picked: ['10', '60'] }], 'number'), { op: 'between', value: [10, 60] });
+  assert.deepEqual(typedValue('number', ['5', '9']), [5, 9]);
+  assert.deepEqual(typedValue('number', ['10', '60']), [10, 60]);
   // A text field keeps what was typed.
-  assert.deepEqual(rowsTree([{ op: 'contains', text: '70' }]), { op: 'contains', value: '70' });
+  assert.equal(typedValue(undefined, '70'), '70');
 });
 
 test('the compile casts nothing: a tree is compiled as it holds its values', () => {

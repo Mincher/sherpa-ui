@@ -3,7 +3,8 @@
  * and shut by Escape or a press outside it. A module of sherpa-menu, not an
  * element. The browser owns the top layer, focus and the placement: the trigger
  * is the card's anchor BY REFERENCE, `showPopover({ source })`, which crosses a
- * shadow root where an anchor name cannot. Only a host's `data-bounds` is measured.
+ * shadow root where an anchor name cannot. Measured only to keep it in a box: a
+ * host's `data-bounds`, or the viewport when its trigger is out of it.
  * TRAP T-anchor-cross-root · TRAP T-a-slotted-row-is-outside-its-own-popover
  *
  * Map:
@@ -14,7 +15,7 @@
  * - .hide — Shut the card.
  * - .listen — What an open card listens to, until it shuts.
  * - .closed — The card shut: its listeners go, and so does its trigger.
- * - .rowsChanged — The rows moved: a bounded card is kept inside its box next frame.
+ * - .rowsChanged — The rows moved: a card is kept inside its box next frame.
  * - .syncInline — An inline menu is not a popover.
  * - .stop — The menu left the page, or the card shut.
  */
@@ -98,25 +99,26 @@ export class MenuShell {
     this.#host.card()?.hidePopover();
   }
 
-  /** A host's `data-bounds` box; null for none, or one not drawn.
+  /** The box the card stays in: a host's `data-bounds`, else the viewport.
    *  TRAP T-bounds-clamp-to-the-viewport */
-  #bounds(): DOMRect | null {
+  #bounds(): { left: number; top: number; right: number; bottom: number } {
     const sel = this.#host.el.dataset['bounds'];
     const box = sel ? across(this.#host.el, sel)?.getBoundingClientRect() : undefined;
-    return box && box.width > 0 && box.height > 0 ? box : null;
+    return box && box.width > 0 && box.height > 0 ? box : { left: 0, top: 0, right: Infinity, bottom: Infinity };
   }
 
-  /** Keep the card inside its host's `data-bounds` box: the one placement the
-   *  platform cannot make, as a top-layer card's containing block is the viewport. */
+  /** Keep the card inside its box: the platform keeps it in the viewport, but not
+   *  when its trigger is out of it — a folded chip, measured off-screen — and never
+   *  in a host's `data-bounds`, as a top-layer card's containing block is the viewport. */
   #keepInBounds = (): void => {
     const card = this.#host.card();
     if (!card) return;
-    const box = this.open ? this.#bounds() : null;
-    if (!box) {
+    if (!this.open) {
       card.style.removeProperty('--_nudge-x');
       card.style.removeProperty('--_nudge-y');
       return;
     }
+    const box = this.#bounds();
     // Where the platform put it, without the last nudge.
     const was = (axis: string): number => Number.parseFloat(card.style.getPropertyValue(`--_nudge-${axis}`)) || 0;
     const c = card.getBoundingClientRect();
@@ -127,8 +129,11 @@ export class MenuShell {
     const vh = document.documentElement.clientHeight;
     const dx = shift(left, left + c.width, Math.max(0, box.left) + GAP, Math.min(vw, box.right) - GAP);
     const dy = shift(top, top + c.height, Math.max(0, box.top) + GAP, Math.min(vh, box.bottom) - GAP);
-    card.style.setProperty('--_nudge-x', `${Math.round(dx)}px`);
-    card.style.setProperty('--_nudge-y', `${Math.round(dy)}px`);
+    // Nothing to move — the common case — writes nothing.
+    for (const [axis, d] of [['x', Math.round(dx)], ['y', Math.round(dy)]] as const) {
+      if (d) card.style.setProperty(`--_nudge-${axis}`, `${d}px`);
+      else card.style.removeProperty(`--_nudge-${axis}`);
+    }
   };
 
   /** A pointerdown anywhere this menu does not own closes it. */

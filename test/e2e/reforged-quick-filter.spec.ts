@@ -873,10 +873,10 @@ test('a LOCKED chip never turns itself on from a condition row: its owner says',
     el.innerHTML = '<sherpa-menu slot="menu" data-type="filter" data-advanced data-select="multiple"><label><input type="checkbox" value="Ravi" /> Ravi</label></sherpa-menu>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    const menu = el.querySelector('sherpa-menu') as HTMLElement & { rendered?: Promise<void>; mode: string; conditions: unknown[] };
+    const menu = el.querySelector('sherpa-menu') as HTMLElement & { rendered?: Promise<void>; mode: string; condition: unknown };
     await menu.rendered;
     menu.mode = 'advanced';
-    menu.conditions = [{ op: 'contains', text: 'Ra' }];
+    menu.condition = { op: 'contains', value: 'Ra' };
     menu.dispatchEvent(new CustomEvent('condition-change', { bubbles: true, composed: true }));
     await window.__settled();
     return { on: el.hasAttribute('data-current'), mode: menu.mode };

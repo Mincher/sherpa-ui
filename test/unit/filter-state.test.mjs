@@ -17,7 +17,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 const {
-  fieldState, stateClause, filterFace, CONDITION_BADGE, readingClause, conditionClause, filterCondition, rowsTree, treeRows,
+  fieldState, stateClause, filterFace, CONDITION_BADGE, readingClause, conditionClause, filterCondition,
 } = await import(new URL('../../dist/data.js', import.meta.url));
 
 const OWNERS = ['Ravi Menon', 'Dana Whitlock', 'Unassigned'];
@@ -136,11 +136,7 @@ test('several picks read as first + ellipsis, and count', () => {
 });
 
 test('a chained condition counts only its ANSWERED rows', () => {
-  const face = filterFace(fieldState(facts, { tree: rowsTree([
-    { op: 'contains', text: 'Ra' },
-    { op: 'startswith', text: 'U', join: 'or' },
-    { op: 'contains', text: '', join: 'and' },
-  ]) }));
+  const face = filterFace(fieldState(facts, { tree: { or: [{ op: 'contains', value: 'Ra' }, { op: 'startswith', value: 'U' }] } }));
   assert.equal(face.tip, 'contains(Ra) OR startsWith(U)');
 });
 
@@ -201,38 +197,15 @@ test('a control with NO values is off, never broken', () => {
   assert.equal(filterFace(empty).tip, '');
 });
 
-/* ── The tree, and a flat menu's rows — TRAP T-one-condition-tree ── */
+/* ── The tree — TRAP T-one-condition-tree ── */
 
-test('a menu\'s rows are ONE tree, read left to right, and come back as the rows that made it', () => {
+test('a nested tree is the clause it says, as deep as it was said', () => {
   // TRAP T-a-heading-holds-a-whole-reading
-  const rows = [
-    { op: 'contains', text: 'Da' },
-    { op: 'startswith', text: 'R', join: 'or' },
-    { op: 'ne', picked: ['Ravi Menon'], join: 'and' },
-  ];
-  const tree = rowsTree(rows);
-  // Left to right: `(A or B) and C`. Will, TODO 594
-  assert.deepEqual(tree, { and: [{ or: [{ op: 'contains', value: 'Da' }, { op: 'startswith', value: 'R' }] }, { op: 'ne', value: 'Ravi Menon' }] });
-  const clause = readingClause({ field: 'owner' }, { tree });
-  assert.deepEqual(clause, ['and', ['or', ['owner', 'contains', 'Da'], ['owner', 'startswith', 'R']],
+  const tree = { and: [{ or: [{ op: 'contains', value: 'Da' }, { op: 'startswith', value: 'R' }] }, { op: 'ne', value: 'Ravi Menon' }] };
+  assert.deepEqual(readingClause({ field: 'owner' }, { tree }), ['and', ['or', ['owner', 'contains', 'Da'], ['owner', 'startswith', 'R']],
     ['owner', 'ne', 'Ravi Menon']]);
-  assert.deepEqual(treeRows(tree), rows);
-  // A group can lead a menu's rows: its order is no matter.
-  const a = ['owner', 'contains', 'A'];
-  const b = ['owner', 'contains', 'B'];
-  const c = ['owner', 'contains', 'C'];
-  assert.deepEqual(treeRows(filterCondition(['or', a, ['and', b, c]])),
-    [{ op: 'contains', text: 'B' }, { op: 'contains', text: 'C', join: 'and' }, { op: 'contains', text: 'A', join: 'or' }]);
-});
-
-test('a clause is the tree it is; two groups are no menu rows, and still the filter they say', () => {
-  assert.deepEqual(treeRows(filterCondition(['status', 'in', ['active', 'trial']])),
-    [{ op: 'eq', picked: ['active', 'trial'] }]);
-  assert.deepEqual(treeRows(filterCondition(['and', ['or', ['a', 'eq', 1], ['a', 'eq', 2]], ['a', 'eq', 3]])),
-    [{ op: 'eq', picked: [1] }, { op: 'eq', picked: [2], join: 'or' }, { op: 'eq', picked: [3], join: 'and' }]);
-  // Two groups: a flat menu cannot draw them (TODO 692) — the data layer still holds and compiles them.
+  // Two groups: held and compiled whole.
   const two = ['or', ['and', ['a', 'gt', 1], ['a', 'lt', 2]], ['and', ['a', 'gt', 3], ['a', 'lt', 4]]];
-  assert.equal(treeRows(filterCondition(two)), undefined);
   assert.deepEqual(conditionClause(filterCondition(two)), two);
   const held = readingClause({ field: 'a', type: 'number' }, { tree: filterCondition(two), mode: 'advanced' });
   assert.deepEqual(held, two);

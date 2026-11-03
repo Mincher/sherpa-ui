@@ -269,8 +269,6 @@ export {
   // The ONE place a tree becomes a filter.
   conditionClause,
   // A flat menu's rows as one tree, and back. TRAP T-many-conditions-are-one-reading
-  rowsTree,
-  treeRows,
   answerTree,
   // A value typed by its field, once, where it comes in. TRAP T-a-value-is-typed-once
   typedValue,
@@ -281,7 +279,6 @@ export {
   type FieldFacts,
   type FieldType,
   type FieldReading,
-  type FieldCondition,
   /* Default or Custom — the one type every control reads.
      TRAP T-one-condition-system */
   type ConditionType,

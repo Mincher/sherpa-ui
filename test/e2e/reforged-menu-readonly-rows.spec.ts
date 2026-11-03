@@ -8,10 +8,10 @@ import { test, expect } from './harness';
  */
 test('read-only condition rows show no ×, and their values no clear button', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const menu = await window.__mount<HTMLElement & { conditions: unknown[] }>('sherpa-menu', undefined,
+    const menu = await window.__mount<HTMLElement & { condition: unknown }>('sherpa-menu', undefined,
       { 'data-type': 'filter', 'data-advanced': true, 'data-mode': 'advanced', 'data-readonly': true });
     await window.__settled();
-    menu.conditions = [{ op: 'gt', text: '10' }, { join: 'and', op: 'lt', text: '60' }];
+    menu.condition = { and: [{ op: 'gt', value: '10' }, { op: 'lt', value: '60' }] };
     await window.__settled();
     const read = () => [...menu.shadowRoot!.querySelectorAll<HTMLElement>('.condition-row')].map((row) => {
       const value = row.querySelector<HTMLElement>('.condition-value')!;
