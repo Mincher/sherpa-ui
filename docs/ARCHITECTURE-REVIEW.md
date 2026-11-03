@@ -495,11 +495,15 @@ flowchart LR
 | 6 | One `$defs` model; `checkPage`; MCP compose tools and a pattern model; DSD prerequisites | **77, 223** |
 
 Phase 1 is the one that unlocks the rest: every later phase uses the condition tree, the
-commands, or the trace.
+commands, or the trace. The order of execution, in waves that run in parallel:
+[history/plan-695-architecture.md](history/plan-695-architecture.md).
 
 ---
 
 ## 12. Decisions for Will
+
+**Answered, 2026-11-03: D1–D6 all A** (Will). The order of execution, its waves and
+lanes: [history/plan-695-architecture.md](history/plan-695-architecture.md).
 
 | # | Question | A (my pick) | B |
 |---|---|---|---|
