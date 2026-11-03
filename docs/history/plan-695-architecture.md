@@ -99,7 +99,27 @@ Every lane writes `TODO.md` and `TRAPS.md`, so they change shape BEFORE any lane
 `TRAPS.md` splits by the index's 11 areas into `docs/traps/<area>.md`; `check-traps` scans
 the folder; history wording is cut; the stale and duplicate entries go. Size: M.
 
-### Wave 1 — as each lane lands
+### Wave 1 — as each lane lands (all landed 2026-11-03)
+
+- **S1 + 694 ✅ (`80fbca0a`, `fe1a71bd`, `379400e9`; Demos `0089814`).** One tree:
+  `Condition = {and} | {or} | {field?, op, value, off?, id?}` beside `Filter`;
+  `conditionClause` the one compile; `reading.conditions` → `reading.tree`,
+  `FilterState.rows`/`heldRows` → `answer`/`held`; the sugar type is `WhereCondition`. A
+  status value's `when` is parsed once and its domain carries the tree; `zonesOf` reads it.
+  Deleted: `clauseConditions` (and its one-group limit), `chainRows`, `readingRows`,
+  `asRows`, `conditionOf`, `rowReading`, `clauseReading`, `whereFilter` + `kindOf`,
+  `zonesOf`'s parsing, `presetTouches`' fake state, the `unreadable-condition` report, the
+  menu's op-over-picks shim. Bug 6 (a comma in a node-editor value) fixed. `$defs/condition`
+  describes nesting and `all`. 694: a month or a year clamps to the month's last day. Lane
+  picks taken: a text field's other ops from JSON (`ne`, `contains`…) are its Advanced
+  tree; JSON keeps the plain `where` form, the tree lives in memory; a tree the flat menu
+  cannot draw stays whole until the reader edits a row. Edited outside its list (minimal):
+  `data-source.ts`, `data-source-types.ts`, `bind-selection.ts`, `filter-face.ts`, the menu,
+  the chip, the toolbar, the grid, `node-graph.ts`, `check-bench.mjs`.
+  **Carried:** P3 removes the menu's `#unsaid` and the `treeRows` limit (692's UI half).
+  `ViewScope.superseded` takes two types; the workflow node keeps `{key, op, value}` → N1.
+  A preset from a number's Simple reading keeps a string value (cast at compile) → D1.
+  Demos `reforged-saved-filter.spec.ts:353` fails in WebKit, on `41b368f9` too (old).
 
 - **D2 ✅ (`076b1838`).** `spec:check` is the one door (`spec:validate` and
   `validate-component.mjs` folded in; a token ref that names no token is now an error).

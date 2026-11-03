@@ -138,6 +138,12 @@ Condition = { and: Condition[] } | { or: Condition[] }
   `conditionOf`, `rowReading`, the `whereFilter` detour, `zonesOf`'s hand parsing,
   `presetTouches`' fake state.
 
+*Done, 695 S1 (2026-11-03):* `Condition` beside `Filter` in `store.ts`, one compile
+(`conditionClause`); `reading.tree`; presets and a status value's `when` hold the tree;
+`Where` stays the JSON form, parsed once; the flat menu converts at one boundary
+(`rowsTree`/`treeRows`) until P3 nests it. Every converter above is deleted. Left: the
+workflow node's `{key, op, value}` (N1).
+
 ### 3.2 The Store — the local/remote seam
 
 The `Store` interface is the right seam for 170. But it says what a store can do in three
@@ -427,12 +433,12 @@ model (patterns as data: when this kind of data and this task, use this layout) 
 
 | # | Bug | Where | Measured |
 |---|---|---|---|
-| 1 | "In the last/next" by month or year overshoots at a month's end | `durationSpan`, `store.ts:160` | last 1 month on 03-31 → from **03-03**; next 1 month from 01-31 → **03-03**. TODO 694 |
+| 1 | "In the last/next" by month or year overshoots at a month's end | `durationSpan`, `store.ts:160` | last 1 month on 03-31 → from **03-03**; next 1 month from 01-31 → **03-03**. TODO 694; **fixed, 694** |
 | 2 | Two stores cannot share one IndexedDB database | `idb-store.ts:145` | read |
 | 3 | In the worker, `seedVersion` never re-seeds (its mark lives in localStorage) | `web-storage.ts:34` | read |
 | 4 | The newer-write rule is lost over the wire | `request-store.ts:152`, the handler | read; **fixed, 695 H1** |
 | 5 | The node editor's sort and group skip a slot's rerouting | `node-graph.ts:436` | likely |
-| 6 | A condition value with a comma breaks in the node editor | `query-graph.ts:146` | read |
+| 6 | A condition value with a comma breaks in the node editor | `query-graph.ts:146` | read; **fixed, 695 S1** |
 | 7 | `followUpdates` and `shareFeed(…, 'updates')` take the same lock | `share-feed.ts`, `follow-updates.ts` | read; **fixed, 695 H1** |
 | 8 | Each `RequestStore` opens a BroadcastChannel and never closes it | `request-store.ts:74` | read; **fixed, 695 H1** |
 | 9 | A notification's click ignores its `url` | `serve-data.ts:108` | read; **fixed, 695 H1** |
