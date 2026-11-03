@@ -18,6 +18,7 @@ import {
 } from './store.js';
 import type { FieldDomain } from './validate.js';
 import { parseWhere, type Where } from './where.js';
+import { wrapStore } from './wrap-store.js';
 
 /** One value of a status field: its name, its look, and when a row has it. */
 export interface StatusValue {
@@ -131,17 +132,17 @@ export function statusFields(store: Store, fields: Readonly<Record<string, Statu
   const mentions = (options: LoadOptions): boolean =>
     [...(options.sort ?? []).map((s) => s.field), options.group].some((f) => f != null && named.has(f));
 
-  const out = new EventTarget() as Store;
-  const say = (detail: StoreChangeDetail | undefined): void => {
+  /** A change, as its rows now read: the row with its status values, and a change
+   *  to a field one reads a change to it too. */
+  const said = (detail: StoreChangeDetail | undefined): StoreChangeDetail | undefined => {
+    if (!detail) return detail;
     const compiled = all();
-    const row = detail?.row ? give([{ ...detail.row }], compiled)[0] : undefined;
-    // A change to a field it reads is a change to it.
-    const moved = detail?.fields
+    const row = detail.row ? give([{ ...detail.row }], compiled)[0] : undefined;
+    const moved = detail.fields
       ? [...detail.fields, ...compiled.filter((c) => c.reads.some((r) => detail.fields!.includes(r))).map((c) => c.field)]
       : undefined;
-    out.dispatchEvent(new CustomEvent('change', { detail: detail ? { ...detail, ...(row ? { row } : {}), ...(moved ? { fields: moved } : {}) } : detail }));
+    return { ...detail, ...(row ? { row } : {}), ...(moved ? { fields: moved } : {}) };
   };
-  store.addEventListener('change', (event) => say((event as CustomEvent<StoreChangeDetail | undefined>).detail));
 
   const refuse = (values: Row): void => {
     const field = Object.keys(values).find((f) => named.has(f));
@@ -157,17 +158,13 @@ export function statusFields(store: Store, fields: Readonly<Record<string, Statu
     };
   }
 
-  return Object.assign(out, {
-    key: store.key,
-    time: store.time,
-    remote: store.remote,
-    projects: store.projects,
-    reportsTotal: store.reportsTotal,
-    totalFirst: store.totalFirst,
-    sampled: store.sampled,
-    rowOrder: store.rowOrder,
-    announcesAll: store.announcesAll,
+  /* Everything else is the store's — its capabilities, its holding — but two things
+     a status field moves: a row read in place has none, and its History never names one. */
+  return wrapStore(store, {
     domains,
+    change: said,
+    scan: undefined,
+    history: undefined,
     async load(options: LoadOptions = {}): Promise<LoadResult> {
       const compiled = all();
       const filter = rewrite(options.filter, compiled);
@@ -220,16 +217,13 @@ export function statusFields(store: Store, fields: Readonly<Record<string, Statu
       refuse(values);
       return give([{ ...(await store.update(key, values, write)) }], all())[0]!;
     },
-    remove: (key: unknown, write?: Parameters<Store['remove']>[1]) => store.remove(key, write),
-    ...(store.changes ? {
-      async changes(since?: unknown): Promise<StoreChanges> {
-        const moved = await store.changes!(since);
-        if (!Array.isArray(moved.fields)) return moved;
-        const compiled = all();
-        const more = compiled.filter((c) => c.reads.some((r) => (moved.fields as readonly string[]).includes(r))).map((c) => c.field);
-        return { ...moved, fields: [...moved.fields, ...more] };
-      },
-    } : {}),
+    changes: store.changes ? async (since?: unknown): Promise<StoreChanges> => {
+      const moved = await store.changes!(since);
+      if (!Array.isArray(moved.fields)) return moved;
+      const compiled = all();
+      const more = compiled.filter((c) => c.reads.some((r) => (moved.fields as readonly string[]).includes(r))).map((c) => c.field);
+      return { ...moved, fields: [...moved.fields, ...more] };
+    } : undefined,
   });
 }
 

@@ -16,19 +16,19 @@ const ROWS = [{ id: 1, name: 'Ada', plan: 'Pro', seats: 5 }, { id: 2, name: 'Bob
 
 test('an ArrayStore sends the key and the fields named', async () => {
   const store = new ArrayStore(ROWS, { key: 'id' });
-  assert.equal(store.projects, true);
+  assert.equal(store.capabilities.projects, true);
   const { rows } = await store.load({ fields: ['plan'] });
   assert.deepEqual(rows, [{ id: 1, plan: 'Pro' }, { id: 2, plan: 'Free' }]);
   // A faked remote passes it on, and says so.
   const remote = fakeRemote(store, { delay: 0 });
-  assert.equal(remote.projects, true);
+  assert.equal(remote.capabilities.projects, true);
   assert.deepEqual((await remote.load({ fields: ['seats'] })).rows, [{ id: 1, seats: 5 }, { id: 2, seats: 9 }]);
 });
 
 test('a store whose schema checks only a whole row does not project', () => {
   const whole = { '~standard': { version: 1, vendor: 'other', validate: async (v) => ({ value: v }) } };
-  assert.equal(new ArrayStore(ROWS, { key: 'id', schema: whole }).projects, false);
-  assert.equal(new ArrayStore(ROWS, { key: 'id', schema: rules({ name: required() }) }).projects, true);
+  assert.equal(new ArrayStore(ROWS, { key: 'id', schema: whole }).capabilities.projects, false);
+  assert.equal(new ArrayStore(ROWS, { key: 'id', schema: rules({ name: required() }) }).capabilities.projects, true);
 });
 
 test('a RestStore asks for the fields, and a row missing one it was not sent passes', async () => {

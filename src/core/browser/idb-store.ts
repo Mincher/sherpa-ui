@@ -78,8 +78,6 @@ export function localRecords(options: LocalRecordsOptions): { store: IdbStore | 
 
 /** Records in IndexedDB — the real local store. */
 export class IdbStore extends BaseStore {
-  /** A whole read returns its rows by key. */
-  readonly rowOrder = 'key' as const;
   /** Its rows' place in the one database. */
   readonly #name: string;
   /** The row cap, oldest out first; 0 for none. */
@@ -88,7 +86,8 @@ export class IdbStore extends BaseStore {
   readonly #indexes: readonly string[];
 
   constructor(options: IdbStoreOptions) {
-    super(options);
+    // A whole read returns its rows by key.
+    super(options, { rowOrder: 'key' });
     this.#name = options.name;
     this.#maxRows = options.maxRows && options.maxRows > 0 ? options.maxRows : 0;
     this.#indexes = options.indexes ?? [];

@@ -1,23 +1,31 @@
 /**
  * held-store.ts — a store that holds its remote source's whole set itself and
- * answers every reader from it: ONE copy for every tab, in a Service Worker. A
- * reader over it holds none, and stays remote (D8). Newer rows its source gives
- * wait until taken (S6c); a write it cannot send, offline, waits in its outbox
- * (S7a). DOM-free. Plan 652 S5b
+ * answers every reader from it. A remote store is ALWAYS read through one: ONE for
+ * every tab in a Service Worker, or one a page's source makes for itself (`heldOf`,
+ * the one rule). A reader over it holds none (D8). Newer rows its source gives wait
+ * until taken (S6c); a write it cannot send, offline, waits in its outbox (S7a).
+ * DOM-free. Plan 652 S5b · TRAP T-a-remote-store-is-read-through-a-held-store
  * TRAP T-a-worker-holds-the-set · TRAP T-a-server-change-waits · TRAP T-a-write-made-offline-waits
  *
  * Map:
  * - LostWrite — A write made offline that did not land: a newer write won, or its source refused it.
- * - HeldStoreOptions — The most rows it holds, whether its source's changes wait, and where its writes wait offline.
+ * - HeldStoreOptions — Its cap, its readers' fields, whether newer rows wait, and where writes wait offline.
+ * - heldOf — A remote store's HeldStore, made for one reader: the one rule. None where none is needed.
  * - HeldStore — A store that holds its source's whole set and answers every reader from it.
  */
 import { failureOf, unreached, type Failure, type FailureKind } from './failure.js';
 import { HeldReads } from './held-reads.js';
 import { HeldSet } from './held-set.js';
 import { outboxEntry, type OutboxEntry, type OutboxPort } from './outbox.js';
+import type { Plan } from './read-plan.js';
 import { report } from './report.js';
 import { carryKey, keyRow } from './row-key.js';
-import { projectRow, readField, sameKey, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail, type StoreChanges, type WriteOptions } from './store.js';
+import type { CacheChangeDetail } from './store-cache.js';
+import type { StoreHistory } from './store-history.js';
+import {
+  projectRow, readField, sameKey,
+  type LoadOptions, type LoadResult, type Row, type Store, type StoreCapabilities, type StoreChangeDetail, type StoreChanges, type WriteOptions,
+} from './store.js';
 import { startSpan, within } from './trace.js';
 
 /** A write made offline that did not land: a newer write won (`conflict`, D3), or
@@ -32,31 +40,45 @@ export interface LostWrite {
   why: FailureKind;
 }
 
-/** The most rows it holds, whether its source's changes wait, and where its writes wait offline. */
+/** Its cap, its readers' fields, whether newer rows wait, and where writes wait offline. */
 export interface HeldStoreOptions {
-  /** Default 100,000, a source's own. */
+  /** Default 100,000, a source's own; 0 holds none. */
   cap?: number;
+  /** The fields its readers read from a row, or null — every field. Default: the
+   *  fields its readers last asked for. TRAP T-a-held-set-reads-the-pages-fields */
+  need?: () => readonly string[] | null;
   /** Newer rows its source gives behind WAIT until taken, so no page moves under its
-   *  reader — `false` takes them at once: a live board. Default true. S6c */
+   *  reader — `false` takes them at once, and says so: a live board, or a page's
+   *  own. Default true. S6c */
   waits?: boolean;
   /** Where a write it cannot send, as its source is offline, waits — shown at once,
    *  and sent in order, once, when it is reached. None: the write fails, as before. S7a */
   outbox?: OutboxPort;
 }
 
+/** A remote store's HeldStore, made for one reader: the ONE rule that a remote store
+ *  is read through a held set. None for a local store, one that holds its own — a
+ *  worker's, over requests — or a reader that holds no rows. TRAP T-a-remote-store-is-read-through-a-held-store */
+export function heldOf(store: Store, options: HeldStoreOptions = {}): HeldStore | null {
+  const { remote, holds } = store.capabilities;
+  return remote && !holds && (options.cap ?? 100_000) > 0 ? new HeldStore(store, options) : null;
+}
+
 /** A store that holds its source's whole set and answers every reader from it. */
 export class HeldStore extends EventTarget implements Store {
-  /** Its readers hold none: it does. */
-  readonly holds = true;
+  /** What its source can do — and it holds. TRAP T-a-store-says-what-it-can-do-once */
+  readonly capabilities: StoreCapabilities;
   /** What moved since a mark: its source's, where it says. */
   readonly changes?: (since?: unknown) => Promise<StoreChanges>;
   /** Its remote source. */
   readonly #source: Store;
   /** Where each read goes: the one held set, or the source. */
   readonly #reads: HeldReads;
+  /** Where it hears its rows change: its set, or — holding none — its source. */
+  readonly #hears: EventTarget;
   /** The fields its readers last asked for, or null — every field: the set holds
    *  those, as a page's own did, so a copy kept with them serves. */
-  #need: readonly string[] | null = null;
+  #asked: readonly string[] | null = null;
   /** Its source's newer rows wait to be taken. */
   readonly #waits: boolean;
   /** The rows its readers see — its OWN copy, as a set read behind may be joined in
@@ -76,29 +98,44 @@ export class HeldStore extends EventTarget implements Store {
   constructor(source: Store, options: HeldStoreOptions = {}) {
     super();
     this.#source = source;
-    this.#reads = new HeldReads(source, { cap: options.cap ?? 100_000, need: () => this.#need });
+    this.capabilities = { ...source.capabilities, holds: true };
+    this.#reads = new HeldReads(source, { cap: options.cap ?? 100_000, need: options.need ?? ((): readonly string[] | null => this.#asked) });
     this.#waits = options.waits ?? true;
     this.#outbox = options.outbox ?? null;
     this.#read = this.#outbox
       ? this.#outbox.read().then((entries) => { this.#pending = entries; this.#relay(); }, () => undefined)
       : Promise.resolve();
     if (source.changes) this.changes = (since) => source.changes!(since);
-    // A change its set takes — or its source says — is its readers' to hear.
-    const pass = (event: Event): void => {
-      // The set says its change inside its own word for it.
-      const said = (event as CustomEvent<{ change?: StoreChangeDetail } | undefined>).detail;
-      const change = said && 'change' in said ? said.change : (said as StoreChangeDetail | undefined);
-      // A write it heard shows at once, in what its readers see too.
-      if (change && this.#shown && !this.#shown.patch(change, source)) this.#owed = true;
-      if (said && 'taken' in said && !said.taken) this.#owed = true;
-      this.dispatchEvent(new CustomEvent('change', { detail: change }));
-    };
-    (this.#reads.cache ?? source).addEventListener('change', pass);
-    this.#reads.cache?.addEventListener('set', () => {
-      this.#relay();
-      this.#landed();
-    });
+    this.#hears = this.#reads.cache ?? source;
+    this.#hears.addEventListener('change', this.#pass);
+    this.#reads.cache?.addEventListener('set', this.#onSet);
   }
+
+  /** A change its set takes — or its source says — is its readers' to hear: as said
+   *  where its set took it and it can vouch for the set; else as if every row moved. */
+  #pass = (event: Event): void => {
+    const said = (event as CustomEvent<CacheChangeDetail | StoreChangeDetail | undefined>).detail ?? undefined;
+    const held = !!this.#reads.cache;
+    const change = held ? (said as CacheChangeDetail | undefined)?.change : (said as StoreChangeDetail | undefined);
+    const taken = !held || !!(said as CacheChangeDetail | undefined)?.taken;
+    // A write it heard shows at once, in what its readers see too.
+    if (change && this.#shown && !this.#shown.patch(change, this.#source)) this.#owed = true;
+    if (!taken) this.#owed = true;
+    const sure = taken && this.#reads.planNow().plan !== 'held-stale';
+    this.dispatchEvent(new CustomEvent('change', { detail: sure ? change : undefined }));
+  };
+
+  /** A set landed — or was joined in place. Where none waits, its readers hear it,
+   *  if it answers them: a set too big for its cap, or none they used, moves nothing. */
+  #onSet = (): void => {
+    this.#relay();
+    this.#landed();
+    if (this.#waits) return;
+    const set = this.#reads.cache?.set;
+    const plan = this.#reads.plan;
+    if (set ? set.size > this.#reads.cap : plan !== 'held' && plan !== 'held-stale') return;
+    this.dispatchEvent(new CustomEvent('change', { detail: undefined }));
+  };
 
   /** A set landed — or was joined in place: the first is shown; newer rows that
    *  differ from those shown wait, and each check that finds them says so — a tab
@@ -131,21 +168,12 @@ export class HeldStore extends EventTarget implements Store {
   get time(): string | undefined {
     return this.#source.time;
   }
-  get remote(): boolean {
-    return !!this.#source.remote;
-  }
-  /** A load from its set counts every match. */
-  get reportsTotal(): boolean {
-    return true;
-  }
-  get projects(): boolean {
-    return !!this.#source.projects;
-  }
-  get announcesAll(): boolean {
-    return !!this.#source.announcesAll;
-  }
   get domains(): NonNullable<Store['domains']> {
     return this.#source.domains ?? {};
+  }
+  /** Its source's History: what changed, by field. */
+  get history(): StoreHistory | undefined {
+    return this.#source.history;
   }
 
   /** Why its rows are unconfirmed — its source could not be reached, and the last
@@ -155,31 +183,83 @@ export class HeldStore extends EventTarget implements Store {
     return failure && unreached(failure) && this.#reads.plan === 'held-stale' ? failure : null;
   }
 
-  async load(options?: LoadOptions): Promise<LoadResult> {
+  /** Its last answer came from a set it cannot vouch for — kept from before, or its
+   *  source unreached — and nothing has confirmed it since. TRAP T-a-read-is-planned */
+  get unconfirmed(): boolean {
+    return this.#reads.plan === 'held-stale' && this.#reads.planNow().plan === 'held-stale';
+  }
+
+  /** How its last question was answered. */
+  get plan(): Plan {
+    return this.#reads.plan;
+  }
+
+  /** Does the set it holds lack any of these fields (null — every field)? TRAP T-a-held-set-reads-the-pages-fields */
+  lacks(fields: readonly string[] | null): boolean {
+    const set = this.#reads.closed ? null : this.#reads.cache?.set;
+    return !!set && !set.covers(fields);
+  }
+
+  /** How it answers, and its set, for a bug report: none where it holds no rows. */
+  debugState(): { plan: Plan; held?: { rows: number | null; gen: number; due: boolean; failure: Failure | null } } {
+    const cache = this.#reads.cache;
+    return { plan: this.#reads.plan, ...(cache ? { held: { rows: cache.set?.size ?? null, gen: cache.gen, due: cache.due, failure: cache.failure } } : {}) };
+  }
+
+  /** Hold its source's whole set, where it can be — after the writes kept last time are read. */
+  async hold(): Promise<void> {
     const span = startSpan('hold');
-    if (options?.fields) this.#need = options.fields;
     await this.#read;
     await this.#reads.hold();
     span?.end({ plan: this.#reads.plan, rows: this.#reads.cache?.set?.size ?? 0 });
-    const result = await this.#answers.load(options);
+  }
+
+  async load(options?: LoadOptions): Promise<LoadResult> {
+    if (options?.fields) this.#asked = options.fields;
+    await this.hold();
+    const answers = this.#answers;
+    const result = await answers.load(options);
     /* Its set holds whole rows: a read that names its fields gets those, and the key —
        a tally of one field at 100k rows moved 9.5 MB to the page. Plan 652 S9 */
     const fields = options?.fields;
-    return fields ? { ...result, rows: result.rows.map((row) => carryKey(row, projectRow(row, this.key, fields))) } : result;
+    return fields && answers !== this.#source ? { ...result, rows: result.rows.map((row) => carryKey(row, projectRow(row, this.key, fields))) } : result;
   }
 
   async totalCount(options?: LoadOptions): Promise<number> {
-    const span = startSpan('hold');
-    await this.#reads.hold();
-    span?.end({ plan: this.#reads.plan, rows: this.#reads.cache?.set?.size ?? 0 });
+    await this.hold();
     return this.#answers.totalCount(options);
+  }
+
+  /** Its rows in place, while its set answers: never its source's, which is remote. */
+  get scan(): (() => Promise<readonly Row[]>) | undefined {
+    const answers = this.#answers;
+    return answers === this.#source ? undefined : answers.scan?.bind(answers);
+  }
+
+  /** Each field's values among the matches: its set's, while it answers; else its source's, where it says them. */
+  get distinct(): ((fields: readonly string[], options?: LoadOptions) => Promise<Record<string, unknown[]>>) | undefined {
+    const answers = this.#answers;
+    return answers.distinct?.bind(answers);
   }
 
   /** What answers its readers: its copy of the rows they see, while the plan reads
    *  the set; else as planned. */
-  get #answers(): Pick<Store, 'load' | 'totalCount'> {
+  get #answers(): Pick<Store, 'load' | 'totalCount' | 'distinct' | 'scan'> {
     const reads = this.#reads.reads;
     return reads !== this.#source && this.#shown ? this.#shown : reads;
+  }
+
+  /** A Refresh: its set is read again before it is used. */
+  letGo(): void {
+    this.#reads.cache?.letGo();
+  }
+
+  /** Close it: it hears nothing more, and asks its source, never the shared set —
+   *  its reader has gone. TRAP T-a-closed-source-hears-nothing */
+  close(): void {
+    this.#reads.closed = true;
+    this.#hears.removeEventListener('change', this.#pass);
+    this.#reads.cache?.removeEventListener('set', this.#onSet);
   }
 
   byKey(key: unknown): Promise<Row | undefined> {
@@ -313,12 +393,13 @@ export class HeldStore extends EventTarget implements Store {
   }
 
   /** Read its source again behind the set it answers — the writes that wait sent
-   *  first; settles when that read lands or fails — either way the set says so. */
+   *  first; settles when that read lands or fails — either way the set says so.
+   *  Holding none, nothing is behind: its next read reads it. */
   async recheck(): Promise<void> {
     const span = startSpan('recheck');
     await within(span, () => this.send()).catch(() => false);
-    const cache = this.#reads.cache;
-    if (cache) {
+    const cache = this.#reads.closed ? null : this.#reads.cache;
+    if (cache?.set) {
       const landed = new Promise<void>((done) => cache.addEventListener('set', () => done(), { once: true }));
       this.#reads.recheck();
       await landed;

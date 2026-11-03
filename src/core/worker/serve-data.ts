@@ -14,7 +14,7 @@
 import { DATA_CHANNEL, createDataHandler, type DataHandlerOptions } from '../data/data-handler.js';
 import { forgetKept } from '../browser/cache-keep.js';
 import { keepNotices } from '../browser/notice-keep.js';
-import { HeldStore, type LostWrite } from '../data/held-store.js';
+import type { LostWrite } from '../data/held-store.js';
 import { sayNotice, type UpdateNotice, type WorkerAsk } from '../data/notices.js';
 import type { WorkerFetchEvent, WorkerScope } from './app-files.js';
 
@@ -94,7 +94,7 @@ export function serveData(scope: WorkerScope, options: ServeDataOptions): void {
        TRAP T-a-kept-set-is-checked-each-session */
     if (ask?.sherpa === 'sign-out') {
       asked.waitUntil(Promise.allSettled([
-        ...Object.values(options.stores).map((store) => (store instanceof HeldStore ? store.forget() : undefined)),
+        ...Object.values(options.stores).map((store) => (store.capabilities.holds ? store.forget?.() : undefined)),
         forgetKept(), kept.clear(),
       ]).then(() => asked.ports?.[0]?.postMessage('signed-out')));
     }

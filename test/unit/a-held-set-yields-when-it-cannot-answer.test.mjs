@@ -19,7 +19,7 @@ const rowsOf = (n) => Array.from({ length: n }, (_, i) => ({ id: i + 1, tier: i 
 function server(rows, { delay = 0, fail = () => null } = {}) {
   const seen = { takes: [] };
   const store = Object.assign(new EventTarget(), {
-    key: 'id', remote: true, reportsTotal: true, announcesAll: false,
+    key: 'id', capabilities: { remote: true, reportsTotal: true, announcesAll: false },
     load: async (o = {}) => {
       seen.takes.push(o.take);
       await tick(delay);

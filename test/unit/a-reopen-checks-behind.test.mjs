@@ -59,7 +59,7 @@ test('a row another client saved is in the answer after the check', async () => 
   // A store another client also writes: its rows change, and it says nothing.
   const rows = ROWS.map((r) => ({ ...r }));
   const store = Object.assign(new EventTarget(), {
-    key: 'id', remote: true, reportsTotal: true, announcesAll: false,
+    key: 'id', capabilities: { remote: true, reportsTotal: true, announcesAll: false },
     // As a server answers: a little later.
     load: async (o = {}) => {
       await tick(30);

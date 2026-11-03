@@ -48,7 +48,7 @@ function once(code: string, message: string): void {
  *  `ready` settles once the kept copy has been read; `forget()` removes it. */
 export function keepCache(store: Store, options: KeepOptions): { ready: Promise<void>; forget(): Promise<void> } {
   const none = { ready: Promise.resolve(), forget: () => Promise.resolve() };
-  if (!store.remote) {
+  if (!store.capabilities.remote) {
     once('cache-keep-never-held', 'keepCache: only a REMOTE store\'s set is held, so this one is kept nowhere.');
     return none;
   }

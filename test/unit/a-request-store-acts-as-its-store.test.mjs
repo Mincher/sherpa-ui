@@ -29,10 +29,8 @@ async function pair(options = {}) {
 test('its facts are its store\'s: key, total, projection, announcing', async () => {
   const { inner, store } = await pair();
   assert.equal(store.key, 'id');
-  assert.equal(store.reportsTotal, inner.reportsTotal);
-  assert.equal(store.projects, inner.projects);
-  assert.equal(store.announcesAll, inner.announcesAll);
-  assert.equal(store.remote, false);
+  assert.deepEqual(store.capabilities, inner.capabilities, 'its capabilities are its store\'s, whole');
+  assert.equal(store.capabilities.remote, undefined);
 });
 
 test('a load and a count answer what the store answers, its rows keyed', async () => {

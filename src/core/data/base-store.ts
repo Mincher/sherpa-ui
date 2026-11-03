@@ -7,7 +7,7 @@
  * - StoreOptions — Options every store shares.
  * - BaseStore — what every store shares: key, time, schema guard, change events
  */
-import { applyOptions, matchesOnly, orderKey, pageOf, projectRow, readField, withoutPage, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail, type WriteOptions } from './store.js';
+import { applyOptions, matchesOnly, orderKey, pageOf, projectRow, readField, withoutPage, type LoadOptions, type LoadResult, type Row, type Store, type StoreCapabilities, type StoreChangeDetail, type WriteOptions } from './store.js';
 import { carryKey, keyRow } from './row-key.js';
 import { StoreHistory } from './store-history.js';
 import {
@@ -47,36 +47,31 @@ export abstract class BaseStore extends EventTarget implements Store {
   protected readonly sampleSize: number;
   /** What changed this session, by field. TRAP T-a-store-keeps-its-history */
   readonly history = new StoreHistory();
+  /** What it can do: its own say, over what its schema allows. TRAP T-a-store-says-what-it-can-do-once */
+  readonly capabilities: StoreCapabilities;
 
-  constructor(options: StoreOptions = {}) {
+  constructor(options: StoreOptions = {}, can: StoreCapabilities = {}) {
     super();
     this.key = options.key ?? 'id';
     this.time = options.time;
     this.schema = options.schema;
     this.sampleSize = options.sample ?? 0;
-  }
-
-  /** A load's total counts every match: these stores page in memory. */
-  get reportsTotal(): boolean {
-    return true;
-  }
-
-  /** It can send only the fields a load names: its rows are checked field by
-   *  field (a `rules()` schema), or not at all. Another library's schema checks
-   *  a whole row, so a store that has one sends whole rows.
-   *  TRAP T-a-projected-row-is-checked-on-what-it-was-sent */
-  get projects(): boolean {
-    return !this.schema || !!rulesOf(this.schema);
+    this.capabilities = {
+      // A load's total counts every match: these stores page in memory.
+      reportsTotal: true,
+      /* It sends only the fields a load names where its rows are checked field by
+         field (a `rules()` schema), or not at all: another library's schema checks a
+         whole row. TRAP T-a-projected-row-is-checked-on-what-it-was-sent */
+      projects: !this.schema || !!rulesOf(this.schema),
+      // A read checks only its first rows. TRAP T-schema-sample-cost
+      sampled: !!this.schema && this.sampleSize > 0,
+      ...can,
+    };
   }
 
   /** One row as a projection sends it: its key and the named fields — a path's whole top field. */
   protected project(row: Row, fields: readonly string[]): Row {
     return projectRow(row, this.key, fields);
-  }
-
-  /** A read checks only its first rows. TRAP T-schema-sample-cost */
-  get sampled(): boolean {
-    return !!this.schema && this.sampleSize > 0;
   }
 
   /** What each field MAY hold, as its schema says. TRAP T-the-data-says-what-a-field-may-hold */
@@ -94,7 +89,7 @@ export abstract class BaseStore extends EventTarget implements Store {
   async totalCount(options?: LoadOptions): Promise<number> {
     // A COUNT is of the matches, not of one page, in no order. Its rows are only counted:
     // their keys, where it can send just them. TRAP T-a-page-turn-is-a-slice
-    return (await this.load({ ...matchesOnly(options), ...(this.projects ? { fields: [this.key] } : {}) })).total;
+    return (await this.load({ ...matchesOnly(options), ...(this.capabilities.projects ? { fields: [this.key] } : {}) })).total;
   }
 
   /** What the schema said of each row it has read. */

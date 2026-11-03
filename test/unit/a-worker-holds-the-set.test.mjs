@@ -42,8 +42,8 @@ async function tab(handle) {
 test('the worker\'s store holds, and says so: a reader over it stays remote and holds none', async () => {
   const { handle } = worker();
   const { store, source } = await tab(handle);
-  assert.equal(store.holds, true);
-  assert.equal(store.remote, true);
+  assert.equal(store.capabilities.holds, true);
+  assert.equal(store.capabilities.remote, true);
   assert.equal(source.debugState().held, undefined, 'no copy in the page');
   assert.equal(source.debugState().total, 30);
 });

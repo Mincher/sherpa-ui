@@ -182,7 +182,7 @@ test('a held store passes a write\'s time on, and keeps it with a write that wai
   const asked = [];
   const net = { down: false };
   const source = Object.assign(new EventTarget(), {
-    key: 'id', remote: true, reportsTotal: true,
+    key: 'id', capabilities: { remote: true, reportsTotal: true },
     load: async () => ({ rows: [{ id: 1, owner: 'Ada' }], total: 1 }), totalCount: async () => 1, byKey: async () => undefined, insert: async (v) => v,
     update: async (key, values, options) => { if (net.down) throw new TypeError('fetch failed'); asked.push(options); return { id: key, ...values }; },
     remove: async (key, options) => { if (net.down) throw new TypeError('fetch failed'); asked.push(options); },

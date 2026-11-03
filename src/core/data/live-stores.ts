@@ -15,7 +15,7 @@
  * - SocketStore — Records over a WebSocket — two-way.
  */
 import { ArrayStore } from './stores.js';
-import { readField, type LoadOptions, type LoadResult, type Row, type Store } from './store.js';
+import { readField, type LoadOptions, type LoadResult, type Row, type Store, type StoreCapabilities } from './store.js';
 import type { StoreOptions } from './stores.js';
 import type { StoreHistory } from './store-history.js';
 
@@ -63,9 +63,9 @@ abstract class LiveStore extends EventTarget implements Store {
   get history(): StoreHistory {
     return this.inner.history;
   }
-  /** Every change reaches its inner store, and is announced there. */
-  get announcesAll(): boolean {
-    return this.inner.announcesAll;
+  /** Its inner store's: every change reaches it, and is announced there. */
+  get capabilities(): StoreCapabilities {
+    return this.inner.capabilities;
   }
 
   /** Is the connection up? */

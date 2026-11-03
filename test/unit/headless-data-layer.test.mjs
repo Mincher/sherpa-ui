@@ -694,7 +694,7 @@ test('a RestStore is REMOTE: a source over it keeps a draft for Apply, never liv
   const { DataSource } = await import('../../dist/core/data/data-source.js');
   const store = new RestStore({ url: 'https://api.test/customers', key: 'id' });
   const source = new DataSource({ store, applyOn: 'input' });
-  assert.equal(store.remote, true);
+  assert.equal(store.capabilities.remote, true);
   assert.equal(source.remote, true);
   assert.equal(source.applyOn, 'change');
 });

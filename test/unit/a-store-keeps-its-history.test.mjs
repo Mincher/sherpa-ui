@@ -95,7 +95,7 @@ test('every wrapper hands on the same History', async (t) => {
   assert.equal(fakeRemote(inner, { delay: 0 }).history, inner.history);
   const live = new EventStore({ url: 'http://test/live', into: inner });
   assert.equal(live.history, inner.history);
-  assert.equal(live.announcesAll, true);
+  assert.equal(live.capabilities.announcesAll, true);
   // A held set passes the store's own change on.
   const remote = fakeRemote(inner, { delay: 0 });
   const cache = cacheOf(remote);

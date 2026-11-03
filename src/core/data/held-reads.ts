@@ -1,13 +1,13 @@
 /**
  * held-reads.ts — where a reader's next read goes: a remote store's one held set,
- * or the store itself — the plan's state over a `StoreCache`. A source reads
- * through it, and so does a worker's held store. DOM-free. Plan 652 S5a
+ * or the store itself — the plan's state over a `StoreCache`. A `HeldStore` reads
+ * through it, in the page or a worker. DOM-free. Plan 652 S5a
  * TRAP T-a-remote-source-holds-its-whole-set · TRAP T-a-read-is-planned
  *
  * Map:
  * - HeldReadsOptions — The most rows it holds, and the fields its reader needs.
  * - HeldReads — The next read's plan over a store's held set, and what answers it.
- * - .cache — The store's ONE held set, shared with every reader over it — remote only.
+ * - .cache — The store's ONE held set, shared with every reader over it; none at a cap of 0.
  * - .cap — The most rows it holds.
  * - .since — How many whole reads had landed when it was made: a set from before may miss a writer.
  * - .plan — How its last question was answered.
@@ -31,7 +31,7 @@ export interface HeldReadsOptions {
 
 /** The next read's plan over a store's held set, and what answers it. */
 export class HeldReads {
-  /** The store's ONE held set, shared with every reader over it — remote only. */
+  /** The store's ONE held set, shared with every reader over it; none at a cap of 0. */
   readonly cache: StoreCache | null;
   /** The most rows it holds. */
   readonly cap: number;
@@ -54,8 +54,8 @@ export class HeldReads {
     this.#store = store;
     this.cap = options.cap;
     this.#need = options.need;
-    // A store that holds its own set — a worker's — is held once, there. D8
-    this.cache = store.remote && !store.holds && options.cap > 0 ? cacheOf(store) : null;
+    // Only a HeldStore reads through it: which store is held is `heldOf`'s rule.
+    this.cache = options.cap > 0 ? cacheOf(store) : null;
     this.since = this.cache?.gen ?? 0;
   }
 
@@ -82,7 +82,7 @@ export class HeldReads {
         set: set ? { size: set.size, gen: cache.gen, due: cache.due, covers: set.covers(this.#need()) } : null,
         never: cache.never, over: cache.over, failedAt: cache.failedAt,
       },
-      history: { announcesAll: !!this.#store.announcesAll, since: this.since },
+      history: { announcesAll: !!this.#store.capabilities.announcesAll, since: this.since },
       reach: { tried: this.#tried },
     });
   }

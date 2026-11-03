@@ -61,7 +61,7 @@ test('a refusal is not a reach failure: the store answered', async ({ page }) =>
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const refusing = Object.assign(new EventTarget(), {
-      key: 'id', remote: true, reportsTotal: true, announcesAll: true,
+      key: 'id', capabilities: { remote: true, reportsTotal: true, announcesAll: true },
       load: async (o = {}) => { if (net.refuse) throw new HttpError(401, 'Unauthorized', '/api'); return { rows: rows.slice(0, o.take ?? 5), total: 5 }; },
       totalCount: async () => 5, byKey: async () => undefined, insert: async () => ({}), update: async () => ({}), remove: async () => {},
     });

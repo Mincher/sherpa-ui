@@ -58,7 +58,7 @@ test('the default loads on the tick, as before', async () => {
 });
 
 test('a remote source is never live', () => {
-  const source = new DataSource({ store: counted({ remote: true }), applyOn: 'input' });
+  const source = new DataSource({ store: counted({ capabilities: { remote: true, reportsTotal: true } }), applyOn: 'input' });
   assert.equal(source.applyOn, 'change');
 });
 

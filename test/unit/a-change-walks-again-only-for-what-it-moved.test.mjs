@@ -80,7 +80,7 @@ test('a store that may miss a writer, or with no History, walks again on every c
   // A store with no History at all.
   const plain = new ArrayStore(ROWS, { key: 'id' });
   const bare = Object.assign(new EventTarget(), {
-    key: 'id', load: (o) => plain.load(o), totalCount: (o) => plain.totalCount(o), scan: () => plain.scan(),
+    key: 'id', capabilities: {}, load: (o) => plain.load(o), totalCount: (o) => plain.totalCount(o), scan: () => plain.scan(),
     byKey: (k) => plain.byKey(k), insert: (v) => plain.insert(v), update: (k, v) => plain.update(k, v), remove: (k) => plain.remove(k),
   });
   plain.addEventListener('change', (e) => bare.dispatchEvent(new CustomEvent('change', { detail: e.detail })));

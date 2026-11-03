@@ -45,8 +45,15 @@ interface LoadOptions {
   searchFields?: string[];
   skip?: number;            // paging: skip N in, take N out
   take?: number;
+  fields?: string[];        // a projection: only these fields, and the key
+  signal?: AbortSignal;     // aborted, the read stops — pass it to your fetch
 }
 ```
+
+**A superseded read stops.** A source gives each ask a signal and aborts it when
+a newer ask supersedes it; a store hands it to its `fetch` (`RequestStore` and
+`RestStore` do). The signal is never part of the question.
+`T-a-superseded-read-stops`
 
 **A filter is `[field, op, value]`**, not a predicate:
 
@@ -162,8 +169,28 @@ interface Store {
   distinct?(fields: readonly string[], options?: LoadOptions): Promise<Record<string, unknown[]>>;
   scan?(): Promise<readonly Row[]>;
   readonly key: string;
+  readonly capabilities: StoreCapabilities;
+}
+
+interface StoreCapabilities {   // what it CAN do, said once; unsaid is no
+  remote?: boolean;        // its loads leave the data layer: Apply waits, and it is held
+  holds?: boolean;         // it holds its own whole set (a HeldStore)
+  projects?: boolean;      // it honours `fields`
+  reportsTotal?: boolean;  // a load's total counts every match
+  totalFirst?: boolean;    // its total costs one row
+  sampled?: boolean;       // its schema checks only a read's first rows
+  rowOrder?: 'insertion' | 'key';  // the order of a whole read asked no sort
+  announcesAll?: boolean;  // every change to its rows is announced by it
 }
 ```
+
+**Say what it can do in `capabilities`, once.** A `BaseStore` says what its
+schema allows (`reportsTotal`, `projects`, `sampled`) under what its subclass
+passes; a reader reads them once. **Wrap a store with `wrapStore(inner, own)`**:
+what `own` does not say — capabilities, domains, History, every method, every
+event — is the inner store's. A wrapper that cannot keep one says so by name
+(`scan: undefined`). `fakeRemote` and `statusFields` are built on it.
+`T-a-store-says-what-it-can-do-once`
 
 `distinct()` is optional: each field's values among the matching rows, one per
 value. A store that has it is asked for a filter's values; one without it is
@@ -186,7 +213,7 @@ watching it. A store that mutates silently leaves the screen lying.
 **Name the row.** `key` is the row's key — on an update, the key it had BEFORE
 the change — and `row` is the WHOLE row as saved; leave `row` out when you do
 not know it (a server that replied with nothing). A cap that removes rows with
-an insert lists their keys in `trimmed`. Say `rowOrder` — `'insertion'` or
+an insert lists their keys in `trimmed`. Say `capabilities.rowOrder` — `'insertion'` or
 `'key'` — when a load asked no sort returns rows in that order. A held set then
 takes the change in place, with no whole read; a change with no `key` means any
 row may have changed, and the whole set is read again.
@@ -198,7 +225,7 @@ sent)` to work them out). Leave `fields` out when you do not know: the change
 then moves every field.
 
 **Send only the fields asked, if you can.** A load may name `fields`. A store
-that says `projects: true` then sends each row's key and those fields alone —
+that says `capabilities.projects` then sends each row's key and those fields alone —
 `RestStore` asks with `fields=` — and checks a row on the fields it sent. A
 `BaseStore` says so when its schema is a `rules()` one (or there is none); a
 schema from another library checks a whole row, so that store sends whole rows.
@@ -318,11 +345,13 @@ any filter does.
 
 ### A remote store's whole set is HELD
 
-A store with `remote: true` is read ONCE for its whole set — once for every page
-over the same store OBJECT, which shares one held set — `load({ take })`
-with no filter, no sort and no search, so the answer is what your server's own
-shaping gives (a tenant, a permission). While that set is held, the source
-answers every load, count and distinct read on the client, with the same
+A store whose `capabilities.remote` is true is ALWAYS read through a `HeldStore`:
+the one in your Service Worker (`capabilities.holds`, over requests), or one the
+source makes for itself (`heldOf`, the one rule). It is read ONCE for its whole
+set — once for every page over the same store OBJECT, which shares one held set —
+`load({ take })` with no filter, no sort and no search, so the answer is what
+your server's own shaping gives (a tenant, a permission). While that set is held,
+the source answers every load, count and distinct read on the client, with the same
 search, filter, sort and paging an in-memory store runs. A chip toggled, a sort
 cycled, the filter Switch, a page turned: none of them reaches your server.
 Every chip's count, and what Limit greys and sets aside, comes from ONE walk
@@ -330,7 +359,7 @@ over the held set, in place. A set NOT held is asked step by step instead: one
 `totalCount` per count and one `distinct` (or load) per list it tallies, sent
 together.
 
-Your store must say two things for its set to be held:
+Your store must say two things in its `capabilities` for its set to be held:
 
 - **`reportsTotal`: its `total` counts every match.** A `RestStore` says so only
   with a `totalPath`; without one, its total is the rows it sent, and a server
@@ -339,8 +368,8 @@ Your store must say two things for its set to be held:
 
 The source checks those two before it reads anything. Then the whole read must
 come back whole: a total that is a number (a numeric string is read as one), at
-most `holdRows` rows (a source option or a page definition's, default 50 000;
-`0` holds none), and every row it counts — a server that caps a response
+most `holdRows` rows (a source option or a page definition's, default 100 000;
+`0` holds none, and asks your store), and every row it counts — a server that caps a response
 silently is refused. Otherwise it is said why once per store (`held-set-refused`)
 and your store is asked every question, as before. A page whose `holdRows` is
 smaller than the set asks your store, and the set stays for the others. A whole read that FAILS —
@@ -354,12 +383,12 @@ a Refresh does. So a store whose rows change on the server should announce it
 (an `EventStore` or `SocketStore` does).
 
 A change that moves no field the counts and greys read — and not the rows —
-counts nothing again, when the store says `announcesAll` and names its
+counts nothing again, when the store says `capabilities.announcesAll` and names its
 `fields`. The page itself is still read again.
 
 **The set outlives the page.** When a page closes, its store's set stays, and
 the next page over the same store object answers from it at once. A store that
-says `announcesAll: true` — every change to its rows comes through it, as an
+says `capabilities.announcesAll` — every change to its rows comes through it, as an
 `ArrayStore`'s does — is trusted as it is; any other (a server another client
 writes, a store another tab writes) is read again before a new page trusts it —
 unless it says `changes(since)`: what moved since a mark, as `{ at, rows,
@@ -372,7 +401,7 @@ object is a new store, with nothing held.
 Matching is the client's from then on, so your server and the client must agree
 on what a whole read returns, not on how to filter it.
 
-**Only the page's fields are held.** Where the store `projects` and has a key, a
+**Only the page's fields are held.** Where the store `capabilities.projects` and has a key, a
 page opened from its definition reads only the fields it uses: every field it
 declares, what its scopes hold and its Query answers, the sort, the group, the
 search fields, the time field, and what its components name — a grid its
@@ -506,7 +535,9 @@ nothing else. Saved Views, saved filters and the session are the app layer:
 9. A component EXTENDS a view's filter; it never alters it.
 10. Stores are app-level; sources are view-level.
 11. None of it needs a browser.
-12. A remote store's whole set is held — up to `holdRows`, when it reports a
+12. A remote store is always read through a `HeldStore` — its worker's, or one
+    its source makes. Its whole set is held — up to `holdRows`, when it reports a
     true total — once per store object, for every page over it, and every
     question is then answered on the client. Where the store projects, only the
     page's fields are held; a whole record is `store.byKey()`.
+13. A store says what it can do once, in `capabilities`; a wrapper is `wrapStore()`.

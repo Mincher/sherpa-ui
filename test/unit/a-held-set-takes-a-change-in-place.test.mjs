@@ -78,7 +78,7 @@ test('the rows a cap trims with an insert leave the held set too', async () => {
 
 test("a new row goes where the store's whole read puts it — or, unsaid, is read again", async () => {
   const keyed = await held();
-  keyed.store.rowOrder = 'key';
+  keyed.store.capabilities = { ...keyed.store.capabilities, rowOrder: 'key' };
   say(keyed.store, { type: 'insert', key: 0, row: { id: 0, tier: 'gold', owner: 'Al' } });
   await tick();
   assert.deepEqual([keyed.seen.loads, ...ids(keyed.source)], [0, 0, 1, 2, 3]);
@@ -87,7 +87,7 @@ test("a new row goes where the store's whole read puts it — or, unsaid, is rea
   assert.deepEqual([keyed.seen.loads, ...ids(keyed.source)], [0, 1, 2, 3, 5]);
 
   const unsaid = await held();
-  unsaid.store.rowOrder = undefined;
+  unsaid.store.capabilities = { ...unsaid.store.capabilities, rowOrder: undefined };
   say(unsaid.store, { type: 'insert', key: 0, row: { id: 0, tier: 'gold', owner: 'Al' } });
   await tick();
   assert.equal(unsaid.seen.loads, 1);

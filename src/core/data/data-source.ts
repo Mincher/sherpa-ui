@@ -86,14 +86,12 @@ import { coalesce, Latest } from './timing.js';
 import { QueryContext, type QueryChange, type QueryHandle } from './query-context.js';
 import { readingsOf, whereOf, type Where } from './where.js';
 import { report } from './report.js';
-import { type CacheChangeDetail, type StoreCache } from './store-cache.js';
-import { type Plan } from './read-plan.js';
-import { HeldReads } from './held-reads.js';
+import { heldOf, type HeldStore } from './held-store.js';
 import { failureOf, unreached, type Failure } from './failure.js';
 import { startSpan } from './trace.js';
 import type { FieldReading, FilterState } from './filter-state.js';
 import type {
-  Filter, GroupSummary, LoadOptions, LoadResult, Row, Store,
+  Filter, GroupSummary, LoadOptions, LoadResult, Row, Store, StoreCapabilities,
 } from './store.js';
 import type {
   AttachFacts, BindSink, BoundControl, BoundView, DataChangeDetail, DataSourceOptions, FieldDeclaration, FieldFilter,
@@ -183,16 +181,25 @@ export class DataSource extends EventTarget {
   readonly #now: () => Date;
   /** Was a clock named? Then each read says which. */
   readonly #pinned: boolean;
-  /** Its store's ONE held set, shared with every source over it — remote only. */
-  readonly #cache: StoreCache | null;
-  /** Where its next read goes: the held set, or the store. Plan 652 S5a */
-  readonly #held: HeldReads;
+  /** The HeldStore it reads a remote store through, made here — none for a store
+   *  that is local, holds its own, or a page that holds no rows. TRAP T-a-remote-store-is-read-through-a-held-store */
+  readonly #held: HeldStore | null;
+  /** What every read asks: its own HeldStore, else the store. */
+  readonly #reader: Store;
+  /** What its reader can do, read once. TRAP T-a-store-says-what-it-can-do-once */
+  readonly #can: StoreCapabilities;
   /** Its last ask failed and the store could not be reached: nothing to show. */
   #down: Failure | null = null;
 
   constructor(options: DataSourceOptions) {
     super();
     this.store = options.store;
+    // Will's target: 100k rows in the browser. D3
+    this.#holdRows = options.holdRows ?? 100_000;
+    this.#pageFields = options.pageFields ?? false;
+    this.#held = heldOf(this.store, { cap: this.#holdRows, need: () => this.#need(), waits: false });
+    this.#reader = this.#held ?? this.store;
+    this.#can = this.#reader.capabilities;
     // REMOTE: the reader edits a copy, and Apply sends it — the context splits it.
     this.#context = options.query ?? new QueryContext();
     this.#member = this.#context.join({
@@ -217,22 +224,16 @@ export class DataSource extends EventTarget {
     this.#limitOptions = options.limitOptions ?? false;
     this.#applyOn = options.applyOn ?? 'change';
     this.#debounce = options.debounce ?? 300;
-    // Will's target: 100k rows in the browser. D3
-    this.#holdRows = options.holdRows ?? 100_000;
     this.#now = options.now ?? ((): Date => new Date());
     this.#pinned = !!options.now;
     this.#searchFields = options.searchFields;
-    this.#pageFields = options.pageFields ?? false;
     this.#state = {
       page: 1,
       pageSize: options.pageSize ?? null,
     };
-    this.#held = new HeldReads(this.store, { cap: this.#holdRows, need: () => this.#need() });
-    this.#cache = this.#held.cache;
-    this.#heard = this.store.history?.seq ?? 0;
-    // A held source hears its store through the cache, which takes each change once.
-    (this.#cache ?? this.store).addEventListener('change', this.#onStoreChange);
-    this.#cache?.addEventListener('set', this.#onSet);
+    this.#heard = this.#reader.history?.seq ?? 0;
+    // A held source hears its store through its HeldStore, which says each change its set took, and each set.
+    this.#reader.addEventListener('change', this.#onStoreChange);
     /* A RECORD'S TIME IS A DATE, said once, by whoever knows it — the store.
        Nothing downstream has to know the dataset calls it `created`.
        TRAP T-a-record-has-a-time-of-its-own */
@@ -670,20 +671,21 @@ export class DataSource extends EventTarget {
   /** The values of the fields the catalogue has not got, from the store or the held set. */
   async #readOpen(open: readonly string[], options: { lazy?: boolean }): Promise<Record<string, unknown[]>> {
     await this.#hold();
-    const reads = this.#reads;
-    /* A remote store it does NOT hold is asked a field's values when the field
-       is needed — at open, what the page holds and answers; the rest later.
+    const reads = this.#reader;
+    const distinct = reads.distinct?.bind(reads);
+    /* A remote store whose rows are not held here is asked a field's values when
+       the field is needed — at open, what the page holds and answers; the rest later.
        345 phase 5 · TRAP T-a-field-reads-its-values-when-needed */
-    if (reads.distinct && options.lazy && this.#remote && reads === this.store) {
+    if (distinct && options.lazy && this.#remote && !this.#scan) {
       const asked = open.filter((f) => this.#needs(f));
       for (const f of open) if (!asked.includes(f)) this.#unread.add(f);
-      return asked.length ? reads.distinct(asked, {}) : {};
+      return asked.length ? distinct(asked, {}) : {};
     }
-    if (reads.distinct) return reads.distinct(open, {});
+    if (distinct) return distinct(open, {});
     const age = this.#rowsAge;
     const { rows } = await reads.load({});
     // The walk reads these rows too, until they change. TRAP T-one-walk-counts-and-limits-in-order
-    if (reads === this.store && !this.#remote && age === this.#rowsAge && rows.length <= this.#holdRows) {
+    if (!this.#remote && age === this.#rowsAge && rows.length <= this.#holdRows) {
       this.#rowsCache = { age, rows };
     }
     return Object.fromEntries(open.map((f) => [f, rows.map((r) => readField(r, f))]));
@@ -732,7 +734,7 @@ export class DataSource extends EventTarget {
             // A store that fails here fails the first load too, which says so: no start.
             try {
               await this.#hold();
-              found = (await presentUnder(this.#reads, [field], andFilter(before)))[field] ?? [];
+              found = (await presentUnder(this.#reader, [field], andFilter(before)))[field] ?? [];
             } catch {
               return;
             }
@@ -992,6 +994,7 @@ export class DataSource extends EventTarget {
    * TRAP T-a-bug-report-should-be-a-paste
    */
   debugState(): Record<string, unknown> {
+    const { plan, held } = this.#held?.debugState() ?? { plan: 'store' };
     return {
       rows: this.#result.rows.length,
       total: this.total,
@@ -1020,11 +1023,11 @@ export class DataSource extends EventTarget {
       skipped: [...this.#skipped],
       loaded: this.#loaded,
       // How it answers, and whether its store can be reached. TRAP T-a-read-is-planned
-      plan: this.#held.plan,
+      plan,
       reach: this.reach,
       // The picks the filters before them rule out, by scope. TRAP T-one-walk-counts-and-limits-in-order
       aside: Object.fromEntries(this.#setAside),
-      ...(this.#cache ? { held: { rows: this.#cache.set?.size ?? null, gen: this.#cache.gen, due: this.#cache.due, failure: this.#cache.failure } } : {}),
+      ...(held ? { held } : {}),
     };
   }
 
@@ -1109,7 +1112,7 @@ export class DataSource extends EventTarget {
     const clause = readingClause({ field, ...this.#catalogue.facts(field) }, reading);
     try {
       // The KEYS alone, where the store can send just them. 345 phase 7
-      const projected = this.store.projects ? { fields: [this.store.key] } : {};
+      const projected = this.store.capabilities.projects ? { fields: [this.store.key] } : {};
       const { rows } = await this.store.load({ ...(clause ? { filter: clause } : {}), ...projected, ...(this.#pinned ? { now: this.#now() } : {}) });
       if (this.#fetching.get(field) !== answer || this.#closed) return;
       this.#fetchedKeys.set(field, { answer, clause: [this.store.key!, 'in', rows.map((row) => readField(row, this.store.key!))] });
@@ -1154,7 +1157,7 @@ export class DataSource extends EventTarget {
 
   /** The same, for this class's own branches. */
   get #remote(): boolean {
-    return !!this.store.remote;
+    return !!this.#can.remote;
   }
 
   /** What its context did: today's follow-ups, in today's order. 366 steps 14-15 */
@@ -1417,20 +1420,22 @@ export class DataSource extends EventTarget {
     return this.#reask(key);
   }
 
-  /** The rows changed under an identical ViewState: asked again. A held set has
-   *  taken the change already — or is due, and read once for every page.
-   *  TRAP T-a-held-set-takes-a-change-in-place · TRAP T-a-store-has-one-cache */
+  /** The rows changed under an identical ViewState — or a whole set landed: asked
+   *  again. A held set has taken the change already — or is due, and read once for
+   *  every page. TRAP T-a-held-set-takes-a-change-in-place · TRAP T-a-store-has-one-cache */
   #onStoreChange = (event: Event): void => {
     this.#rowsAge++;
     this.#allAge++;
-    const history = this.store.history;
+    const history = this.#reader.history;
     const since = this.#heard;
     this.#heard = history?.seq ?? 0;
     // Not in a History it can trust: any field may have moved.
     if (!history || !this.#trusts(event, since)) {
       this.#age++;
-      // A store that holds its own set has taken the change: it is asked again, never read again. S6
-      void (this.#cache || this.store.holds ? this.#reask() : this.load({ force: true }));
+      /* A store that holds its set has taken the change: it is asked again, once it
+         has answered — never read again. S6 */
+      if (!this.#can.holds) void this.load({ force: true });
+      else if (this.#loaded || this.#inFlight.busy) void this.#reask();
       return;
     }
     // The walk runs again only when a field it reads, or the rows, moved. TRAP T-a-change-redoes-only-what-reads-it
@@ -1440,14 +1445,13 @@ export class DataSource extends EventTarget {
     void this.#reask();
   };
 
-  /** Is this change in the store's History, from a store that hears every writer —
-   *  and, held, taken into a set it can vouch for? TRAP T-a-change-redoes-only-what-reads-it */
+  /** Is this change in the store's History, from a store that hears every writer?
+   *  A held store says what changed only where its set took it, and it can vouch
+   *  for the set. TRAP T-a-change-redoes-only-what-reads-it */
   #trusts(event: Event, since: number): boolean {
-    const history = this.store.history;
-    if (!history || history.seq <= since || !this.store.announcesAll) return false;
-    if (!this.#cache) return true;
-    const said = (event as CustomEvent<CacheChangeDetail | undefined>).detail;
-    return !!said?.taken && this.#planNow().plan !== 'held-stale';
+    const history = this.#reader.history;
+    if (!history || history.seq <= since || !this.#can.announcesAll) return false;
+    return !!(event as CustomEvent<unknown>).detail;
   }
   /** The store's History as this source last heard it. */
   #heard = 0;
@@ -1455,18 +1459,6 @@ export class DataSource extends EventTarget {
   #walkAge = 0;
   /** Moves on every store change: the unpaged rows are read again. */
   #allAge = 0;
-
-  /** A whole set landed — another page's read too: what is counted moved, and an
-   *  idle page asks again. A page the set is too big for asks the store, which moved nothing. */
-  #onSet = (): void => {
-    const set = this.#cache?.set;
-    // A set too big for this page — or none, where this page never used one — moves nothing here.
-    if (set ? set.size > this.#holdRows : this.#held.plan !== 'held' && this.#held.plan !== 'held-stale') return;
-    this.#age++;
-    this.#rowsAge++;
-    // An ask in flight may have read the set before it landed: it is overtaken.
-    if (this.#loaded || this.#inFlight.busy) void this.#reask();
-  };
 
   /**
    * Can its store be reached? `ok`; `unreached` — the store could not be reached,
@@ -1477,7 +1469,7 @@ export class DataSource extends EventTarget {
   get reach(): 'ok' | 'unreached' | 'down' {
     if (this.#down) return 'down';
     const failure = this.#staleBy();
-    return failure && unreached(failure) && (this.store.holds || this.#held.plan === 'held-stale') ? 'unreached' : 'ok';
+    return failure && unreached(failure) ? 'unreached' : 'ok';
   }
 
   /** Why the store could not be reached, while it cannot — its kind and message — else null. */
@@ -1485,35 +1477,33 @@ export class DataSource extends EventTarget {
     return this.#down ?? (this.reach === 'unreached' ? this.#staleBy() : null);
   }
 
-  /** Why the rows shown are unconfirmed: the held set's failure — or, over a store
-   *  that holds its own set, what its last answer said. D8 */
+  /** Why the rows shown are unconfirmed, as its store that holds says. D8 */
   #staleBy(): Failure | null {
-    if (this.#closed) return null;
-    return (this.store.holds ? this.store.stale : this.#cache?.failure) ?? null;
+    return this.#closed ? null : this.#reader.stale ?? null;
   }
 
   /** Try the store again: `down`, a fresh read; `unreached`, a read behind the rows
-   *  shown, with no loading; `ok`, a store that may miss a writer is asked what
-   *  moved, behind the rows; else nothing. A page's retry, its tab shown, `online`.
+   *  shown, with no loading; `ok`, its own held set is asked what moved where its
+   *  store may miss a writer, and one held elsewhere checks behind — newer rows
+   *  wait, and are said (S6c). A page's retry, its tab shown, `online`.
    *  TRAP T-a-remote-store-says-what-changed */
   recheck(): void {
     const reach = this.reach;
-    const cache = this.#closed ? null : this.#cache;
-    if (reach === 'down') void this.load({ force: true });
-    /* A store that holds its own set reads its source again, then this asks it
-       anew; the rows shown stay meanwhile. D8 */
-    else if (reach === 'unreached' && this.store.holds) {
-      void this.store.recheck?.().then(() => {
-        this.#age++;
-        this.#rowsAge++;
-        void this.#reask();
-      });
+    if (reach === 'down') {
+      void this.load({ force: true });
+      return;
     }
-    /* A tab back, or the network: a store that holds its own set checks it behind;
-       newer rows wait, and are said, never shown at once. S6c */
-    else if (this.store.holds) void this.store.recheck?.();
-    // The rows stay, and say they are unconfirmed, until the read lands.
-    else if (reach === 'unreached' || (cache?.tracks && cache.set && this.#held.plan === 'held')) this.#held.recheck();
+    const reader = this.#reader;
+    if (this.#closed || !reader.recheck) return;
+    if (reach === 'ok' && this.#held && (this.#held.plan !== 'held' || !reader.changes || this.#can.announcesAll)) return;
+    const asks = this.#asks;
+    // The rows stay, and say they are unconfirmed, until the read lands: then they are asked anew.
+    void reader.recheck().then(() => {
+      if (reach !== 'unreached' || asks !== this.#asks) return;
+      this.#age++;
+      this.#rowsAge++;
+      void this.#reask();
+    });
   }
 
   /** Closed: it no longer hears its store, and holds nothing. */
@@ -1527,35 +1517,27 @@ export class DataSource extends EventTarget {
    */
   close(): void {
     this.#closed = true;
-    this.#held.closed = true;
+    this.#held?.close();
     this.#member.leave();
-    (this.#cache ?? this.store).removeEventListener('change', this.#onStoreChange);
-    this.#cache?.removeEventListener('set', this.#onSet);
+    this.#reader.removeEventListener('change', this.#onStoreChange);
+    this.#abort?.abort();
     clearTimeout(this.#liveWait);
   }
 
   /** Ask the store — or the held set — this question, even one asked before. */
   #reask(key = this.#stateKey()): Promise<LoadResult> {
+    this.#asks++;
     const asking = this.#ask(key);
     this.#asking = asking;
     return asking;
   }
-
-  /** What every read asks, as the plan says: the store's held set — current, or
-   *  shown while it is checked — else the store. A closed source asks the store. */
-  get #reads(): Pick<Store, 'load' | 'totalCount' | 'distinct' | 'scan'> {
-    return this.#held.reads;
-  }
-
-  /** The plan for the next question, as the store's set stands now. */
-  #planNow(): { plan: Plan; behind: boolean } {
-    return this.#held.planNow();
-  }
+  /** How many asks it has made. */
+  #asks = 0;
 
   /** Hold the store's whole set, where it can be: one read for every page over
    *  it. TRAP T-a-remote-source-holds-its-whole-set · TRAP T-a-store-has-one-cache */
   #hold(): Promise<void> {
-    return this.#held.hold();
+    return this.#held?.hold() ?? Promise.resolve();
   }
 
   /** The fields this page reads from a row, or null — every field: what its
@@ -1578,15 +1560,15 @@ export class DataSource extends EventTarget {
     return [...need].sort();
   }
 
-  /** A Refresh: the store's set is read again before it is used — never by a closed source.
-   *  A store that holds its own set reads its source again, and the next ask waits. D8 */
+  /** A Refresh: its own held set is read again before it is used — never by a closed
+   *  source. A store that holds its set elsewhere reads its source again, and the next ask waits. D8 */
   #letGo(): void {
     if (this.#closed) return;
-    this.#cache?.letGo();
     /* …newer rows that wait are taken in first; with none waiting, it reads again.
        Refresh data. S6c */
-    if (this.store.holds) {
-      const store = this.store;
+    const store = this.#reader;
+    if (this.#held) this.#held.letGo();
+    else if (this.#can.holds) {
       this.#freshen = store.take
         ? store.take().then((took) => (took ? undefined : store.recheck?.()))
         : store.recheck?.() ?? null;
@@ -1605,6 +1587,8 @@ export class DataSource extends EventTarget {
 
   /** The load in flight, for a caller that asks the same question again. */
   #asking: Promise<LoadResult> | null = null;
+  /** What stops the ask in flight, once a newer one supersedes it. */
+  #abort: AbortController | null = null;
 
   /** Ask the store, and publish the answer if it is still the latest asked. */
   async #ask(asked: string): Promise<LoadResult> {
@@ -1612,6 +1596,9 @@ export class DataSource extends EventTarget {
     const ticket = this.#inFlight.next();
     this.#inFlightKey = key;
     this.#inFlightAsked = key;
+    // The ask it supersedes stops: its reads abort their fetch. TRAP T-a-superseded-read-stops
+    this.#abort?.abort();
+    const { signal } = (this.#abort = new AbortController());
     this.dispatchEvent(new CustomEvent('loading', { detail: { loading: true } }));
     // A load says its start and end on the one trace stream. TRAP T-one-trace-stream
     const span = startSpan('load');
@@ -1620,12 +1607,12 @@ export class DataSource extends EventTarget {
       await this.#hold();
       // A Refresh of a store that holds its own set waits for it to read again.
       if (this.#freshen) await this.#freshen.catch(() => undefined).finally(() => { this.#freshen = null; });
-      /* A new page over a store that holds its own set — one that may miss a writer —
-         has that set checked behind once, as a page's own held set was (D8): its rows
-         answer at once, and are asked again when the check lands. */
-      else if (this.store.holds && !this.store.announcesAll && !this.#confirmed) {
+      /* A new page over a store that holds its set elsewhere — one that may miss a
+         writer — has that set checked behind once, as its own HeldStore checks its
+         set (D8): its rows answer at once, and are asked again when the check lands. */
+      else if (!this.#held && this.#can.holds && !this.#can.announcesAll && !this.#confirmed) {
         this.#confirmed = true;
-        void this.store.recheck?.().then(() => {
+        void this.#reader.recheck?.().then(() => {
           this.#age++;
           this.#rowsAge++;
           void this.#reask();
@@ -1646,7 +1633,7 @@ export class DataSource extends EventTarget {
         key = this.#stateKey();
         this.#inFlightKey = key;
       }
-      const result = await this.#reads.load(this.#loadOptions());
+      const result = await this.#reader.load({ ...this.#loadOptions(), signal });
       // Not the latest → DISCARDED, and the key recorded only by the winner.
       if (!this.#inFlight.is(ticket)) return this.#result;
       this.#result = result;
@@ -1680,7 +1667,7 @@ export class DataSource extends EventTarget {
         // The same question over the same rows — a page turned — is not asked again.
         const allKey = JSON.stringify([this.#age, this.#allAge, asked]);
         if (allKey !== this.#allFor) {
-          const all = await this.#reads.load(asked);
+          const all = await this.#reader.load({ ...asked, signal });
           if (!this.#inFlight.is(ticket)) return this.#result;
           this.#allRows = all.rows;
           this.#allFor = allKey;
@@ -1696,7 +1683,7 @@ export class DataSource extends EventTarget {
         const asked = without ? { ...rest, filter: without } : rest;
         const freeKey = JSON.stringify([this.#age, this.#allAge, asked]);
         if (this.#freeRows.get(fields.join('\n'))?.key === freeKey) continue;
-        const free = await this.#reads.load(asked);
+        const free = await this.#reader.load({ ...asked, signal });
         if (!this.#inFlight.is(ticket)) return this.#result;
         this.#freeRows.set(fields.join('\n'), { key: freeKey, rows: free.rows });
       }
@@ -1715,7 +1702,7 @@ export class DataSource extends EventTarget {
       // Empty, or no matches: the data layer says which. TRAP T-a-container-shows-its-datas-state
       const emptiness = result.total > 0 ? undefined : this.#filter || this.#arrangement().search ? 'no-matches' : 'empty';
       // Unconfirmed, as the set stands NOW: a check that landed meanwhile confirmed it.
-      const stale = this.#held.plan === 'held-stale' && this.#planNow().plan === 'held-stale';
+      const stale = !!this.#held?.unconfirmed;
       this.#down = null;
       this.dispatchEvent(
         new CustomEvent<DataChangeDetail>('change', {
@@ -1725,8 +1712,8 @@ export class DataSource extends EventTarget {
       void this.#rewalk();
       return result;
     } catch (error) {
-      // TRAP T-error-is-a-state-not-a-throw — a stale failure raises nothing.
-      if (!this.#inFlight.is(ticket)) return this.#result;
+      // TRAP T-error-is-a-state-not-a-throw — a stale failure raises nothing; nor does a closed source.
+      if (!this.#inFlight.is(ticket) || this.#closed) return this.#result;
       // …and says what KIND it was. TRAP T-a-failure-has-a-kind
       const failure = failureOf(error);
       this.#down = unreached(failure) ? failure : null;
@@ -1817,10 +1804,11 @@ export class DataSource extends EventTarget {
    *  store's scan, or one load per change; null — ask the store step by step. */
   async #walkRows(): Promise<readonly Row[] | null> {
     await this.#hold();
-    const reads = this.#reads;
-    // A remote store not held is asked; a held set is walked in place.
-    if (this.#remote && reads === this.store) return null;
-    if (reads.scan) return reads.scan();
+    const reads = this.#reader;
+    // A held set is walked in place; a remote store not held is asked.
+    const scan = this.#scan;
+    if (scan) return scan();
+    if (this.#remote) return null;
     if (this.#rowsCache?.age === this.#rowsAge) return this.#rowsCache.rows;
     const age = this.#rowsAge;
     const { rows } = await reads.load({});
@@ -1848,7 +1836,7 @@ export class DataSource extends EventTarget {
     entry.walk = (async (): Promise<Walk> => {
       try {
         const rows = await this.#walkRows();
-        const out = rows ? walkInOrder(rows, plan) : await walkStepwise(this.#reads, plan);
+        const out = rows ? walkInOrder(rows, plan) : await walkStepwise(this.#reader, plan);
         if (this.#walkKey() === key) this.#walk = { key, walk: out, reads };
         return out;
       } catch {
@@ -1879,9 +1867,13 @@ export class DataSource extends EventTarget {
   /** Can the walk run without asking the store — a held set, a store that
    *  scans, or rows kept since the last change? Then it runs before the load. */
   #walkIsCheap(): boolean {
-    const reads = this.#reads;
-    if (this.#remote && reads === this.store) return false;
-    return !!reads.scan || this.#rowsCache?.age === this.#rowsAge;
+    return !!this.#scan || (!this.#remote && this.#rowsCache?.age === this.#rowsAge);
+  }
+
+  /** Its rows in place, where they are: a local store's, or a held set's while it
+   *  answers — never a remote store's read directly. */
+  get #scan(): (() => Promise<readonly Row[]>) | undefined {
+    return this.#remote && !this.#can.holds ? undefined : this.#reader.scan?.bind(this.#reader);
   }
 
   /** Take the walk's set-aside picks. Says whether they moved. */
@@ -2096,8 +2088,7 @@ export class DataSource extends EventTarget {
     const needsAll = facts.rows === 'all' && (!this.#allRows.length
       || (!!facts.free?.length && !this.#freeRows.has([...facts.free].sort().join('\n'))));
     // It reads a field the held set lacks: asked again, and the column read. TRAP T-a-held-set-reads-the-pages-fields
-    const set = this.#closed ? null : this.#cache?.set;
-    const lacks = !!set && !!this.#result.rows.length && !set.covers(this.#need());
+    const lacks = !this.#closed && !!this.#result.rows.length && !!this.#held?.lacks(this.#need());
     // Asked again, not fetched again: the rows did not change, so a held set stays.
     if (this.#autoLoad && (needsAll || lacks)) void this.#reask();
     else if (this.#autoLoad && !this.#result.rows.length) void this.load();
@@ -2108,7 +2099,7 @@ export class DataSource extends EventTarget {
   async allRows(el?: BoundControl): Promise<readonly Row[]> {
     const { skip: _skip, take: _take, ...options } = this.#loadOptions();
     await this.#hold();
-    const { rows } = await this.#reads.load(options);
+    const { rows } = await this.#reader.load(options);
     const entry = el ? this.#binding.get(el) : undefined;
     const own = entry ? this.#only[entry.id] : undefined;
     return own ? filterRows(rows, own, this.#now()) : rows;

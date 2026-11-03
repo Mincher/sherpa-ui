@@ -103,7 +103,7 @@ sequenceDiagram
   P->>P: import sherpa-ui and the store modules
   P->>W: openWorkerStore('customers'): GET /sherpa/data/customers (its facts)
   alt a worker controls the page
-    W-->>P: facts — key, time, domains (with each status), holds, notifies
+    W-->>P: facts — key, time, domains (with each status), capabilities (holds), notifies
   else no worker yet
     P->>P: the same handler, in the page (Host A)
   end
@@ -126,7 +126,8 @@ sequenceDiagram
 2. **The provider answers** with `bindSource(source, el, …)`: it says which rows the
    component reads (a page, or all), which fields, and which scope.
 3. **The DataSource compiles the Query** — every scope's readings, presets, search —
-   into one filter, and asks its store.
+   into one filter, and asks its store, with a signal: an ask a newer one supersedes
+   stops at the network (`T-a-superseded-read-stops`).
 4. **The `RequestStore` sends one `QUERY`** with that read as a body
    (`T-a-data-request-is-the-store-interface`). A server or proxy that refuses `QUERY`
    gets the same body as `POST` (`T-a-query-falls-back-to-post`).
@@ -227,8 +228,14 @@ listening, no span is made and no request carries the header.
   it hears news only when a page, a push or a sync wakes it. So a live feed is held
   by a tab (`T-one-feed-for-every-tab`), and a new build is found by asking
   (`T-a-new-build-is-a-new-worker`).
-- **The page holds no rows of a store the worker holds** (`holds`): every answer is
-  asked, and a page's open check reads behind, once (D8).
+- **The page holds no rows of a store the worker holds** (`capabilities.holds`): every
+  answer is asked, and a page's open check reads behind, once (D8).
+- **A remote store is always read through a `HeldStore`** — the worker's, or, with no
+  worker, one the page's source makes for itself (`heldOf`,
+  `T-a-remote-store-is-read-through-a-held-store`). A source holds nothing itself.
+- **A store says what it can do once** (`capabilities`), and every wrapper —
+  `statusFields`, `fakeRemote` — is `wrapStore()`, which forwards what it does not say
+  (`T-a-store-says-what-it-can-do-once`).
 - **Newer server rows WAIT** (`T-a-server-change-waits`): no grid moves under its
   reader; Refresh data takes them in. A write made through the app shows at once.
 - **The store modules are imported by the page and the worker alike**, by URL, as

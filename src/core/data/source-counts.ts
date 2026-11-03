@@ -23,7 +23,7 @@ import type { FilterSet } from './data-source-types.js';
 
 /** Each field's distinct values, as value keys, among the rows a filter matches. */
 export async function presentUnder(
-  store: Pick<Store, 'load' | 'distinct' | 'projects'>, fields: readonly string[], filter: Filter | undefined,
+  store: Pick<Store, 'load' | 'distinct' | 'capabilities'>, fields: readonly string[], filter: Filter | undefined,
 ): Promise<Record<string, string[]>> {
   const options = filter ? { filter } : {};
   const keys = (values: readonly unknown[]): string[] => [...new Set(values
@@ -33,7 +33,7 @@ export async function presentUnder(
     return Object.fromEntries(fields.map((f) => [f, keys(found[f] ?? [])]));
   }
   // Only its fields, where the store can send just them. TRAP T-a-page-turn-is-a-slice
-  const { rows } = await store.load({ ...options, ...(store.projects ? { fields } : {}) });
+  const { rows } = await store.load({ ...options, ...(store.capabilities.projects ? { fields } : {}) });
   return Object.fromEntries(fields.map((f) => [f, keys(rows.map((r) => readField(r, f)))]));
 }
 
@@ -227,7 +227,7 @@ export function planWalk(applied: Query, facts: WalkFacts): WalkPlan {
  *  requests, sent together: the tallies one filter shares go in one request, and
  *  only a set-aside waits for the tally it reads. A relative date is the store's
  *  to read, as its loads are. TRAP T-one-walk-counts-and-limits-in-order */
-export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'totalCount'>, plan: WalkPlan): Promise<Walk> {
+export async function walkStepwise(reads: Pick<Store, 'load' | 'distinct' | 'totalCount' | 'capabilities'>, plan: WalkPlan): Promise<Walk> {
   const out = emptyWalk();
   const pending: Array<Promise<unknown>> = [];
   // Every request is waited for at the end; one that fails then fails the walk, and none goes unheard.

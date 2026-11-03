@@ -122,7 +122,7 @@ test('over a LIVE source, a number chip reports its value as it is typed, with n
 
 test('a binder tells a control over a live source so; never one over a remote source', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { ArrayStore, DataSource, bindSource } = await import('/dist/data.js');
+    const { ArrayStore, DataSource, bindSource, fakeRemote } = await import('/dist/data.js');
     const said = (store: unknown) => {
       const bar = document.createElement('sherpa-quick-filter-toolbar');
       document.getElementById('root')!.replaceChildren(bar);
@@ -133,7 +133,7 @@ test('a binder tells a control over a live source so; never one over a remote so
     const rows = [{ id: 1, spend: 10 }];
     return {
       local: said(new ArrayStore(rows, { key: 'id' })),
-      remote: said(Object.assign(new ArrayStore(rows, { key: 'id' }), { remote: true })),
+      remote: said(fakeRemote(new ArrayStore(rows, { key: 'id' }), { delay: 0 })),
     };
   });
   expect(r).toEqual({ local: 'input', remote: null });

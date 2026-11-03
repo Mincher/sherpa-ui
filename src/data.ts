@@ -49,8 +49,11 @@ export {
   type SortDirection,
   type SortSpec,
   type Store,
+  type StoreCapabilities,
   type StoreChangeDetail,
 } from './core/data/store.js';
+// One store over another: what it does not say is the inner store's. TRAP T-a-store-says-what-it-can-do-once
+export { wrapStore, type StoreWrap } from './core/data/wrap-store.js';
 export {
   ArrayStore,
   HttpError,
@@ -138,8 +141,8 @@ export {
 } from './core/data/data-handler.js';
 // A store reached by that protocol: a handler in the page, then a Service Worker. Plan 652 S2
 export { RequestStore, openRequestStore, type RequestStoreOptions } from './core/data/request-store.js';
-// A remote store's ONE held set, for a Service Worker to answer every tab from. Plan 652 S5b
-export { HeldStore, type HeldStoreOptions, type LostWrite } from './core/data/held-store.js';
+// A remote store's ONE held set: a Service Worker's for every tab, or a page's own. Plan 652 S5b
+export { HeldStore, heldOf, type HeldStoreOptions, type LostWrite } from './core/data/held-store.js';
 // A status field: each value named by conditions on a row's other fields. Plan 683
 export { statusFields, type StatusField, type StatusValue } from './core/data/status-field.js';
 // A write made offline waits, and is sent once. Plan 652 S7a

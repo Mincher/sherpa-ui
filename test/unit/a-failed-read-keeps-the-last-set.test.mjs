@@ -91,7 +91,7 @@ test('a refusal drops the set: an error, and the store was reached', async () =>
   const rows = ROWS.map((r) => ({ ...r }));
   const net = { refuse: false };
   const store = Object.assign(new EventTarget(), {
-    key: 'id', remote: true, reportsTotal: true, announcesAll: true,
+    key: 'id', capabilities: { remote: true, reportsTotal: true, announcesAll: true },
     load: async (o = {}) => {
       if (net.refuse) throw new HttpError(401, 'Unauthorized', '/api');
       return { rows: rows.slice(0, o.take ?? rows.length).map((r) => ({ ...r })), total: rows.length };

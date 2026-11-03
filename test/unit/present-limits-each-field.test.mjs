@@ -138,7 +138,7 @@ test('the rows are read ONCE per store change; a store with no scan is loaded, n
   const whole = [];
   // A store with no scan and no distinct: the walk loads it, once.
   const store = Object.assign(new EventTarget(), {
-    key: 'id', reportsTotal: true,
+    key: 'id', capabilities: { reportsTotal: true },
     load: (o = {}) => { if (!o.filter && o.take == null) whole.push(o); return inner.load(o); },
     totalCount: (o) => inner.totalCount(o), byKey: (k) => inner.byKey(k),
     insert: async (v) => { const r = await inner.insert(v); store.dispatchEvent(new CustomEvent('change', { detail: { type: 'insert' } })); return r; },

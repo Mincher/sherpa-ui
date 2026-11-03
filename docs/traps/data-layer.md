@@ -1574,6 +1574,7 @@ none (`asked()`).
 - Site: `test/unit/a-reopen-checks-behind.test.mjs`
 - Site: `test/unit/a-held-set-yields-when-it-cannot-answer.test.mjs`
 - Site: `src/core/data/held-reads.ts`
+- Site: `src/core/data/held-store.ts`
 
 ### T-a-store-has-one-cache
 
@@ -1692,8 +1693,14 @@ at the first change after the wrapper is gone, and Demos makes ONE wrapper for
 the app's life. An app hands its outlet the SAME store object each time
 (`OutletOptions.stores`).
 
+**The relay lives in a scope of its own** (`wrapStore`, plan 695 S4). V8 gives the
+closures one function makes ONE shared context: a relay made beside a closure that
+names the wrapper kept the wrapper alive, and none of 100 dropped wrappers was
+freed. A source's own `HeldStore` is closed with it, and lets the shared set go.
+
 - Site: `src/core/data/data-source.ts`
-- Site: `src/core/data/fake-remote.ts`
+- Site: `src/core/data/wrap-store.ts`
+- Site: `src/core/data/held-store.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/unit/a-closed-source-hears-nothing.test.mjs`
 - Site: `test/e2e/reforged-provider-closes-its-sources.spec.ts`
@@ -3220,6 +3227,7 @@ record is `store.byKey()`.
 - Site: `src/core/data/read-plan.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/data/held-store.ts`
 - Site: `src/core/data/source-binding.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/core/ui/context.ts`
@@ -4465,7 +4473,7 @@ comes back as its `Failure` kind, with its HTTP status where it had one.
 
 **A remote store's ONE held set lives in the Service Worker, for every tab**
 (plan 652 S5, D8). `new HeldStore(source)` holds its source's whole set through
-`HeldReads` and answers every reader from it; it says `holds`, so a page over it
+`HeldReads` and answers every reader from it; it says `capabilities.holds`, so a page over it
 (a `RequestStore`, through `openWorkerStore`) holds no second copy. Measured
 2026-11-02 with Demos' remote mode (800 ms a read): tab one waited once, 805 ms;
 tab two's every read came back in about 1 ms (Chromium; 813 and 128 ms at most in
@@ -4493,6 +4501,101 @@ and a hold with nothing held and nothing read this session restores once more.
 
 - Site: `src/core/data/held-store.ts`
 - Site: `test/unit/a-worker-holds-the-set.test.mjs`
+
+### T-a-remote-store-is-read-through-a-held-store
+
+**One rule, in one place: `heldOf(store)`** (plan 695 S4). A source over a REMOTE
+store reads it through a `HeldStore` it makes for itself — its own cap (`holdRows`),
+its page's fields (`need`), and `waits: false`. None for a local store, for one that
+holds its own set (`capabilities.holds`: a worker's, over requests), or for a page
+that holds no rows (`holdRows: 0`), which asks the store. So a remote store is held
+one way wherever it lives: in a worker, ONE `HeldStore` for every tab; in a page, one
+per source, over the store's one `StoreCache`.
+
+`DataSource` holds nothing itself — no `StoreCache`, no `HeldReads`, no `holds`
+check. What it read of them it reads of its HeldStore:
+
+- **A change** comes WITH its detail only where the set took it and the HeldStore can
+  vouch for the set; else with none, as if every row moved — the old
+  `taken && plan !== 'held-stale'`, decided once, by the holder.
+- **A set landing** is a change with no detail, from a HeldStore that does not wait,
+  where the set answers its reader: one too big for its cap, or none it used, moves
+  nothing. A source asks again only once it has answered.
+- **Rows in place**: `scan` and `distinct` are its set's while the set answers; `scan`
+  is never its source's, which is remote. **Unconfirmed**: `stale` (its source
+  unreached) and `unconfirmed` (a set it cannot vouch for yet). **A Refresh**:
+  `letGo()`. **Its end**: `close()`.
+
+A source over a store that holds ELSEWHERE keeps its doors: a Refresh takes the rows
+that wait, else rechecks; a new page checks the set behind once (D8); a tab shown
+checks behind, sending the writes that wait first. Its own holder is rechecked on a
+tab shown only where the store may miss a writer and says what moved, as before.
+
+The provider's bundle carries `HeldStore` now: about 2.4 KB brotli.
+
+- Site: `src/core/data/held-store.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `test/unit/a-remote-store-is-read-through-a-held-store.test.mjs`
+
+### T-a-store-says-what-it-can-do-once
+
+**What a store can do is ONE typed object, `capabilities`** (plan 695 S4): `remote`,
+`holds`, `projects`, `reportsTotal`, `totalFirst`, `sampled`, `rowOrder`,
+`announcesAll`. Unsaid is no. Beside it stay its state (`stale`), its History, its
+optional reads (`distinct`, `scan`, `changes`) and a holder's doors (`recheck`,
+`take`, `send`, `forget`): a method's presence is its own statement. Before, the eight
+flags sat loose on each store, and each wrapper copied them by hand and drifted —
+`statusFields` dropped `holds`, `stale`, `recheck`, `take` and `send`, and
+`fakeRemote` dropped `totalFirst`.
+
+**Every wrapper is `wrapStore(inner, own)`.** What `own` does not say is the inner
+store's, read when asked: key, time, capabilities, domains, History, `stale`, every
+method, and the store's events (`change`, `waiting`, `queued`, `lost`). A wrapper that
+cannot keep one says so by name, so a drop is a decision: `statusFields` says
+`scan: undefined` (a row read in place has no status value) and `history: undefined`
+(its History never names a status field, so a walk would trust it and miss a status
+that moved); `fakeRemote` says `scan: undefined` (a remote store's rows are never read
+in place). A member set on a wrapper later is its own.
+
+**Over the wire they go whole** (`StoreFacts.capabilities`), and a `RequestStore`
+says what its host's store said and nothing more. A `BaseStore` says what its schema
+allows (`reportsTotal`, `projects`, `sampled`) under its own say; a `HeldStore` says
+its source's, and `holds`. A reader reads them once: a `DataSource` at construction.
+A test that changes one replaces the object.
+
+- Site: `src/core/data/store.ts`
+- Site: `src/core/data/wrap-store.ts`
+- Site: `src/core/data/base-store.ts`
+- Site: `src/core/data/request-store.ts`
+- Site: `src/core/data/held-store.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/data.ts`
+- Site: `test/unit/a-store-says-what-it-can-do-once.test.mjs`
+
+### T-a-superseded-read-stops
+
+**Every read takes an `AbortSignal`** (`LoadOptions.signal`, plan 695 S4), and a store
+passes it on: `RequestStore` on its `Request`, `RestStore` to `fetch` beside its
+timeout (`AbortSignal.any`), `fakeRemote` to its wait. A `DataSource` gives each ask a
+signal and aborts the ask a newer one supersedes, so a read that would be thrown away
+stops at the network. Before, a superseded read was only discarded
+(`T-in-flight-ticket-discards-stale`): it ran to its end.
+
+- An aborted read is no error: the ask that superseded it answers. A closed source
+  aborts its ask, and says nothing.
+- **The signal is never part of the question.** `encodeQuery` leaves it out, and so
+  does `orderKey`: `JSON.stringify` writes a signal as `{}`, so a load with one and a
+  count without it asked two questions, and an `ArrayStore` ordered its rows again —
+  measured: two scans more per open on the bench's not-held pages.
+- A held set's whole read is SHARED, so it takes no reader's signal; a read its
+  HeldStore passes on to its source does.
+
+- Site: `src/core/data/store.ts`
+- Site: `src/core/data/stores.ts`
+- Site: `src/core/data/request-store.ts`
+- Site: `src/core/data/fake-remote.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `test/unit/a-superseded-read-stops.test.mjs`
 
 ### T-every-tab-hears-a-change
 

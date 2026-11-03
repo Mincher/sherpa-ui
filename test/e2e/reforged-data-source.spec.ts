@@ -441,7 +441,7 @@ test('source: a slow earlier load never overwrites a newer one', async ({ page }
     // read with no filter — the chips' counts — is not counted.
     let call = 0;
     const store = Object.assign(new EventTarget(), {
-      key: 'id',
+      key: 'id', capabilities: {},
       async load(options: { filter?: unknown }) {
         const tag = (options.filter as unknown[] | undefined)?.[2];
         if (tag) call++;
@@ -520,7 +520,7 @@ test('source: a failed load is a STATE, not a throw', async ({ page }) => {
   const got = await page.evaluate(async () => {
     const { DataSource } = await import('/dist/index.js');
     const store = Object.assign(new EventTarget(), {
-      key: 'id',
+      key: 'id', capabilities: {},
       load: async () => { throw new Error('network down'); },
       byKey: async () => undefined,
       insert: async (v: unknown) => v,
@@ -1012,7 +1012,7 @@ test('a bound grid draws its rows in the order its source gives them — it neve
     // A store that answers in its OWN order, as a server does.
     const rows = [{ id: 1, name: 'Bo' }, { id: 2, name: 'Ada' }, { id: 3, name: 'Cy' }];
     const store = Object.assign(new EventTarget(), {
-      key: 'id',
+      key: 'id', capabilities: {},
       async load() { return { rows: rows.map((r) => ({ ...r })), total: rows.length }; },
       async totalCount() { return rows.length; },
       async byKey(k: unknown) { return rows.find((r) => r.id === k); },

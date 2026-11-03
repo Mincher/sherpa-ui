@@ -340,7 +340,7 @@ test('a legend narrows its chart at once, even on a remote source — its rows a
 
 test('fakeRemote waits, fails when told, and marks the store remote', async () => {
   const slow = fakeRemote(new ArrayStore(ROWS, { key: 'id' }), { delay: 30 });
-  assert.equal(slow.remote, true);
+  assert.equal(slow.capabilities.remote, true);
   const t = Date.now();
   assert.equal((await slow.load()).total, 5);
   assert.ok(Date.now() - t >= 25);

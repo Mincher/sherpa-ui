@@ -90,7 +90,7 @@ test('a walk asks one question once', async () => {
 
 test('a tally from a store that can project asks only its fields', async () => {
   const asked = [];
-  const store = { projects: true, load: async (o) => { asked.push(o.fields); return { rows: [{ id: 1, plan: 'Pro' }], total: 1 }; } };
+  const store = { capabilities: { projects: true }, load: async (o) => { asked.push(o.fields); return { rows: [{ id: 1, plan: 'Pro' }], total: 1 }; } };
   assert.deepEqual(await presentUnder(store, ['plan'], undefined), { plan: ['Pro'] });
   assert.deepEqual(asked, [['plan']]);
 });

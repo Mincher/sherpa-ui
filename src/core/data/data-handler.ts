@@ -52,9 +52,8 @@ export interface DataQuery {
   total?: boolean;
 }
 
-/** What a store says of itself, as JSON. */
-export type StoreFacts = Pick<Store, 'key' | 'time' | 'remote' | 'projects' | 'reportsTotal' | 'totalFirst'
-  | 'sampled' | 'rowOrder' | 'announcesAll' | 'domains' | 'holds'> & {
+/** What a store says of itself, as JSON: its capabilities whole. */
+export type StoreFacts = Pick<Store, 'key' | 'time' | 'domains' | 'capabilities'> & {
   changes: boolean;
   /** Its host says every change on `DATA_CHANNEL`, so a reader hears another tab's. */
   notifies?: boolean;
@@ -76,7 +75,8 @@ export type DataHandler = (request: Request) => Promise<Response | null>;
 
 /** A store read as the body a `QUERY` sends. */
 export function encodeQuery(options: LoadOptions = {}, total = false): DataQuery {
-  const { now, fields, ...rest } = options;
+  // A signal stops the request; it is never part of the question.
+  const { now, fields, signal: _signal, ...rest } = options;
   return {
     v: DATA_VERSION,
     ...rest,
@@ -261,14 +261,12 @@ async function onRow(store: Store, key: unknown, request: Request, body: unknown
   return answer(200, await store.update(key, body as Row, writeOptionsOf(request)));
 }
 
-/** The facts a store may say of itself, beside its key. */
-const FACTS = ['time', 'remote', 'projects', 'reportsTotal', 'totalFirst', 'sampled', 'rowOrder', 'announcesAll', 'domains', 'holds'] as const;
-
-/** What a store says of itself: what it does not say is left out. */
+/** What a store says of itself: its key and capabilities, and its time and domains where it has them. */
 function factsOf(store: Store): StoreFacts {
-  const facts: Record<string, unknown> = { key: store.key, changes: typeof store.changes === 'function' };
-  for (const name of FACTS) if (store[name] !== undefined) facts[name] = store[name];
-  return facts as StoreFacts;
+  return {
+    key: store.key, capabilities: { ...store.capabilities }, changes: typeof store.changes === 'function',
+    ...(store.time !== undefined ? { time: store.time } : {}), ...(store.domains ? { domains: store.domains } : {}),
+  };
 }
 
 /** A request's JSON body, or the answer that says it is not JSON. */

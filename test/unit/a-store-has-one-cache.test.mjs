@@ -166,7 +166,7 @@ test('a store whose load throws at once does not hang the next hold', async () =
   const rows = ROWS.map((r) => ({ ...r }));
   let calls = 0;
   const store = Object.assign(new EventTarget(), {
-    key: 'id', remote: true, reportsTotal: true, announcesAll: true,
+    key: 'id', capabilities: { remote: true, reportsTotal: true, announcesAll: true },
     load(o = {}) {
       calls++;
       if (calls === 1) throw new Error('not yet');

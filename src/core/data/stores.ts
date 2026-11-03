@@ -47,17 +47,14 @@ export { ValidationError } from './validate.js';
 
 /** Records held in memory. TRAP T-array-store-copies-both-ways */
 export class ArrayStore extends BaseStore {
-  /** A whole read returns its rows as inserted. */
-  readonly rowOrder = 'insertion' as const;
-  /** Its rows change only through it, and each change is announced. */
-  readonly announcesAll = true;
   /** The records, in insertion order. */
   #rows: Row[];
   /** 0 or absent means no cap. */
   readonly #maxRows: number;
 
   constructor(rows: readonly Row[] = [], options: StoreOptions = {}) {
-    super(options);
+    // Its rows come back as inserted, and change only through it, each change announced.
+    super(options, { rowOrder: 'insertion', announcesAll: true });
     this.#maxRows = options.maxRows && options.maxRows > 0 ? options.maxRows : 0;
     this.#rows = this.#trim(rows.map((r) => this.keyed({ ...r })));
   }
@@ -184,8 +181,6 @@ export interface JsonStoreOptions extends StoreOptions {
  * is shared by callers arriving mid-flight — three components, one request.
  */
 export class JsonStore extends BaseStore {
-  /** Its rows are an ArrayStore's: as inserted. */
-  readonly rowOrder = 'insertion' as const;
   /** Holds the rows once fetched; every query runs over it. */
   #inner: ArrayStore;
   /** Where the JSON lives, and how to read it. */
@@ -196,7 +191,8 @@ export class JsonStore extends BaseStore {
   #loaded = false;
 
   constructor(options: JsonStoreOptions) {
-    super(options);
+    // Its rows are an ArrayStore's: as inserted.
+    super(options, { rowOrder: 'insertion' });
     this.#options = options;
     this.#inner = new ArrayStore([], options);
     // Forward the inner store's changes as our own.
@@ -311,8 +307,6 @@ export interface RestStoreOptions extends StoreOptions {
  * TRAP T-rest-update-is-patch-not-put
  */
 export class RestStore extends BaseStore {
-  /** Its loads leave the data layer: its source keeps a draft. TRAP T-apply-and-discard-wait-for-a-change */
-  readonly remote = true;
   /** The endpoint, and how its query parameters are spelled. */
   #options: RestStoreOptions;
 
@@ -320,7 +314,11 @@ export class RestStore extends BaseStore {
   readonly changes?: (since?: unknown) => Promise<StoreChanges>;
 
   constructor(options: RestStoreOptions) {
-    super(options);
+    /* Its loads leave the data layer: its source keeps a draft (TRAP
+       T-apply-and-discard-wait-for-a-change). Only a `totalPath` says how many rows
+       match, and then one row says it; the server's order, where the app says it. */
+    const counts = !!options.totalPath;
+    super(options, { remote: true, reportsTotal: counts, totalFirst: counts, ...(options.rowOrder ? { rowOrder: options.rowOrder } : {}) });
     this.#options = options;
     const url = options.changesUrl;
     if (url) this.changes = (since) => this.#changes(url, since);
@@ -334,26 +332,11 @@ export class RestStore extends BaseStore {
     return { at: body?.at, rows: !!body?.rows, fields: Array.isArray(fields) ? fields : 'all' };
   }
 
-  /** Only a `totalPath` says how many rows match: without one, the total is the rows sent. */
-  override get reportsTotal(): boolean {
-    return !!this.#options.totalPath;
-  }
-
-  /** One row says how many there are. */
-  get totalFirst(): boolean {
-    return this.reportsTotal;
-  }
-
   /** It says its total, so a count asks one row, never the matches. TRAP T-a-page-turn-is-a-slice */
   override async totalCount(options?: LoadOptions): Promise<number> {
-    if (!this.reportsTotal) return super.totalCount(options);
+    if (!this.capabilities.reportsTotal) return super.totalCount(options);
     const { total, totalUnknown } = await this.load({ ...matchesOnly(options), take: 1 });
     return totalUnknown ? super.totalCount(options) : total;
-  }
-
-  /** The server's order, when the app says it. */
-  get rowOrder(): RowOrder | undefined {
-    return this.#options.rowOrder;
   }
 
   /** A read sends its query as `POST`: asked so, or `QUERY` was refused. */
@@ -365,15 +348,16 @@ export class RestStore extends BaseStore {
     const init = (method: string): RequestInit => ({
       method, headers: { 'content-type': DATA_QUERY_TYPE }, body: JSON.stringify(encodeQuery(options)),
     });
-    if (this.#post || this.#options.method === 'POST') return this.#request<unknown>(this.#options.url, init('POST'));
+    const { signal } = options;
+    if (this.#post || this.#options.method === 'POST') return this.#request<unknown>(this.#options.url, init('POST'), signal);
     try {
-      return await this.#request<unknown>(this.#options.url, init('QUERY'));
+      return await this.#request<unknown>(this.#options.url, init('QUERY'), signal);
     } catch (error) {
       const refused = error instanceof HttpError && (error.status === 405 || error.status === 501);
       if (!refused && failureOf(error).kind !== 'offline') throw error;
       let body: unknown;
       try {
-        body = await this.#request<unknown>(this.#options.url, init('POST'));
+        body = await this.#request<unknown>(this.#options.url, init('POST'), signal);
       } catch {
         throw error;
       }
@@ -389,7 +373,7 @@ export class RestStore extends BaseStore {
     if ((this.#options.method ?? 'GET') === 'GET') {
       const query = (this.#options.buildQuery ?? defaultQuery)(sent);
       const suffix = query.size ? `?${query}` : '';
-      body = await this.#request<unknown>(`${this.#options.url}${suffix}`, { method: 'GET' });
+      body = await this.#request<unknown>(`${this.#options.url}${suffix}`, { method: 'GET' }, options.signal);
     } else body = await this.#read(sent);
     const rows = rowsAt(body, this.#options.rowsPath);
     // A reported total is believed; otherwise the page length —
@@ -459,13 +443,15 @@ export class RestStore extends BaseStore {
     this.announce({ type: 'remove', key });
   }
 
-  /** One HTTP request, with the store headers, parsed as JSON. */
-  async #request<T>(url: string, init: RequestInit): Promise<T> {
+  /** One HTTP request, with the store headers, parsed as JSON — stopped by its
+   *  read's signal, or its timeout. TRAP T-a-superseded-read-stops */
+  async #request<T>(url: string, init: RequestInit, signal?: AbortSignal): Promise<T> {
+    const timeout = AbortSignal.timeout(this.#options.timeout ?? 30_000);
     const response = await fetch(url, {
       ...this.#options.init,
       ...init,
       headers: { ...this.#options.init?.headers, ...init.headers },
-      signal: AbortSignal.timeout(this.#options.timeout ?? 30_000),
+      signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
     });
     if (!response.ok) throw new HttpError(response.status, response.statusText, url);
     // 204 and content-length 0 have no body to parse —
@@ -528,13 +514,12 @@ export interface LocalStoreOptions extends StoreOptions {
  * TRAP T-local-store-is-not-for-bulk-data
  */
 export class LocalStore extends BaseStore {
-  /** A whole read returns its rows as inserted. */
-  readonly rowOrder = 'insertion' as const;
   /** The storage key, and local vs session. */
   #options: LocalStoreOptions;
 
   constructor(options: LocalStoreOptions) {
-    super(options);
+    // A whole read returns its rows as inserted.
+    super(options, { rowOrder: 'insertion' });
     this.#options = options;
   }
 

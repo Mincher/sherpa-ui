@@ -12,7 +12,7 @@ import { BaseStore } from './base-store.js';
 import { DATA_CHANNEL, DATA_QUERY_TYPE, DATA_VERSION, STALE, encodeQuery, keySegment, writeHeaders, type DataQuery, type StoreFacts } from './data-handler.js';
 import { failureOf, type Failure } from './failure.js';
 import { HttpError } from './stores.js';
-import { readField, type LoadOptions, type LoadResult, type Row, type RowOrder, type StoreChangeDetail, type StoreChanges, type WriteOptions } from './store.js';
+import { readField, type LoadOptions, type LoadResult, type Row, type StoreChangeDetail, type StoreChanges, type WriteOptions } from './store.js';
 import { startSpan, traceparent } from './trace.js';
 import { ValidationError, type FieldDomain, type Issue } from './validate.js';
 
@@ -61,7 +61,8 @@ export class RequestStore extends BaseStore {
   #stale: Failure | null = null;
 
   constructor(options: RequestStoreOptions, facts: StoreFacts) {
-    super({ key: facts.key, ...(facts.time ? { time: facts.time } : {}) });
+    // What its host's store can do, and nothing it did not say. TRAP T-a-store-says-what-it-can-do-once
+    super({ key: facts.key, ...(facts.time ? { time: facts.time } : {}) }, { reportsTotal: false, projects: false, sampled: false, ...facts.capabilities });
     this.#send = options.send;
     this.#post = options.method === 'POST';
     this.#headers = options.headers ?? ((): Record<string, string> => ({}));
@@ -69,7 +70,7 @@ export class RequestStore extends BaseStore {
     this.#name = options.name;
     this.#facts = facts;
     if (facts.changes) this.changes = (since) => this.#ask('GET', `?since=${encodeURIComponent(since === undefined ? '' : JSON.stringify(since))}`);
-    if (facts.holds) {
+    if (this.capabilities.holds) {
       this.recheck = () => this.#ask('GET', '?recheck');
       this.take = () => this.#ask<{ took: boolean }>('GET', '?take').then((said) => !!said?.took);
     }
@@ -104,49 +105,25 @@ export class RequestStore extends BaseStore {
     if (!this.#heard) this.announce(change);
   }
 
-  /** It holds its own set, so a reader over it holds none. */
-  get holds(): boolean {
-    return this.#facts.holds ?? false;
-  }
   /** Why the rows it last answered are unconfirmed — its source could not be
    *  reached — else null. */
   get stale(): Failure | null {
     return this.#stale;
   }
 
-  get remote(): boolean {
-    return this.#facts.remote ?? false;
-  }
-  override get reportsTotal(): boolean {
-    return this.#facts.reportsTotal ?? true;
-  }
-  override get projects(): boolean {
-    return this.#facts.projects ?? true;
-  }
-  override get sampled(): boolean {
-    return this.#facts.sampled ?? false;
-  }
   override get domains(): Readonly<Record<string, FieldDomain>> {
     return this.#facts.domains ?? {};
   }
-  get totalFirst(): boolean | undefined {
-    return this.#facts.totalFirst;
-  }
-  get rowOrder(): RowOrder | undefined {
-    return this.#facts.rowOrder;
-  }
-  get announcesAll(): boolean | undefined {
-    return this.#facts.announcesAll;
-  }
 
+  /* A read sends its signal with its request: superseded, it stops. TRAP T-a-superseded-read-stops */
   async load(options: LoadOptions = {}): Promise<LoadResult> {
-    const result = await this.#query<LoadResult>(encodeQuery(options));
+    const result = await this.#query<LoadResult>(encodeQuery(options), options.signal);
     for (const row of result.rows) this.keyed(row);
     return result;
   }
 
   override async totalCount(options?: LoadOptions): Promise<number> {
-    return (await this.#query<{ total: number }>(encodeQuery(options, true))).total;
+    return (await this.#query<{ total: number }>(encodeQuery(options, true), options?.signal)).total;
   }
 
   async byKey(key: unknown): Promise<Row | undefined> {
@@ -184,16 +161,16 @@ export class RequestStore extends BaseStore {
    *  same body, from then on. One that fails at the network tries `POST` once, and
    *  keeps it only if it answers: a CORS preflight refused looks like offline.
    *  TRAP T-a-query-falls-back-to-post */
-  async #query<T>(query: DataQuery): Promise<T> {
-    if (this.#post) return this.#ask<T>('POST', '', query, DATA_QUERY_TYPE);
+  async #query<T>(query: DataQuery, signal?: AbortSignal): Promise<T> {
+    if (this.#post) return this.#ask<T>('POST', '', query, DATA_QUERY_TYPE, {}, signal);
     try {
-      return await this.#ask<T>('QUERY', '', query, DATA_QUERY_TYPE);
+      return await this.#ask<T>('QUERY', '', query, DATA_QUERY_TYPE, {}, signal);
     } catch (error) {
       const refused = error instanceof HttpError && (error.status === 405 || error.status === 501);
       if (!refused && failureOf(error).kind !== 'offline') throw error;
       let answer: T;
       try {
-        answer = await this.#ask<T>('POST', '', query, DATA_QUERY_TYPE);
+        answer = await this.#ask<T>('POST', '', query, DATA_QUERY_TYPE, {}, signal);
       } catch {
         throw error;
       }
@@ -205,7 +182,7 @@ export class RequestStore extends BaseStore {
   /** One request, its answer as JSON. A refusal throws as the store's own error
    *  would: a write's issues as a `ValidationError`, else an `HttpError`. Traced,
    *  it carries its span as `traceparent`, and its host's spans join it. TRAP T-one-trace-stream */
-  async #ask<T>(method: string, tail: string, body?: unknown, type = 'application/json', more: Record<string, string> = {}): Promise<T> {
+  async #ask<T>(method: string, tail: string, body?: unknown, type = 'application/json', more: Record<string, string> = {}, signal?: AbortSignal): Promise<T> {
     const url = this.#url + tail;
     const span = startSpan('request', { store: this.#name, detail: { method } });
     const headers: Record<string, string> = {
@@ -214,7 +191,9 @@ export class RequestStore extends BaseStore {
     };
     let response: Response | null;
     try {
-      response = await this.#send(new Request(url, { method, headers, ...(body !== undefined ? { body: JSON.stringify(body) } : {}) }));
+      response = await this.#send(new Request(url, {
+        method, headers, ...(body !== undefined ? { body: JSON.stringify(body) } : {}), ...(signal ? { signal } : {}),
+      }));
     } catch (error) {
       span?.end({ failed: failureOf(error).kind });
       throw error;

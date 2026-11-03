@@ -32,6 +32,7 @@
  * - StoreChanges — What moved in a store since a mark, and the mark now.
  * - LoadResult — What a load returns: the rows, plus the total BEFORE paging.
  * - WriteOptions — What a write asks of its store beyond the row: the time it was made.
+ * - StoreCapabilities — What a store CAN do, said once, as facts: a wrapper forwards them whole, and a reader reads them once.
  * - Store — where records come from; the same interface whatever backs it
  * - RowOrder — The order a whole read returns rows in, asked no sort.
  * - StoreChangeDetail — Fired after an insert, update or remove.
@@ -267,6 +268,9 @@ export interface LoadOptions {
   /** A PROJECTION: only these fields of each row, and its key. A store that
    *  does not say `projects` sends whole rows. TRAP T-a-projected-row-is-checked-on-what-it-was-sent */
   fields?: readonly string[];
+  /** Aborted, the read stops: its store passes it to its fetch. A newer read
+   *  supersedes it. TRAP T-a-superseded-read-stops */
+  signal?: AbortSignal;
 }
 
 /** What moved in a store since a mark, and the mark now: `rows` — a row came
@@ -301,6 +305,34 @@ export interface WriteOptions {
   unmodifiedSince?: number;
 }
 
+/** What a store CAN do, said once, as facts: a wrapper forwards them whole, and a
+ *  reader reads them once. Unsaid is no. TRAP T-a-store-says-what-it-can-do-once */
+export interface StoreCapabilities {
+  /** Its loads reach OUTSIDE the data layer, so a filter change waits for Apply —
+   *  and it is read through a `HeldStore`. TRAP T-apply-and-discard-wait-for-a-change */
+  readonly remote?: boolean;
+  /** It holds its own whole set — a `HeldStore`, in the page or a worker — so a
+   *  reader over it holds none; it rechecks, takes, sends and forgets. Plan 652 S5b, D8 */
+  readonly holds?: boolean;
+  /** It honours `LoadOptions.fields`: it can send only the fields a load names,
+   *  and check each row on those. TRAP T-a-projected-row-is-checked-on-what-it-was-sent */
+  readonly projects?: boolean;
+  /** A load's `total` counts every match, not just the rows it sent — so a
+   *  remote store's whole set can be held. TRAP T-a-remote-source-holds-its-whole-set */
+  readonly reportsTotal?: boolean;
+  /** Its total costs one row: ask that before the whole set, which may be too big to hold. */
+  readonly totalFirst?: boolean;
+  /** A read checks only its first rows against the schema: a long read's tail is unchecked. */
+  readonly sampled?: boolean;
+  /** The order a whole read returns its rows in, asked no sort: as inserted, or by
+   *  key (IndexedDB). Unsaid, a held set reads again on an insert. TRAP T-a-held-set-takes-a-change-in-place */
+  readonly rowOrder?: RowOrder;
+  /** EVERY change to its rows is announced by this object — no other tab,
+   *  client or server writes them unheard — so a set held before a page opens
+   *  is current. Unsaid, it is read again first. TRAP T-a-store-has-one-cache */
+  readonly announcesAll?: boolean;
+}
+
 /**
  * The store interface — identical whatever backs it, so a view moves from an
  * array to an HTTP endpoint untouched. TRAP T-store-is-stateless
@@ -321,58 +353,40 @@ export interface Store extends EventTarget {
    * TRAP T-a-record-has-a-time-of-its-own
    */
   readonly time?: string | undefined;
-  /** Its loads reach OUTSIDE the data layer, so a filter change waits for Apply.
-   *  TRAP T-apply-and-discard-wait-for-a-change */
-  readonly remote?: boolean;
-  /** It honours `LoadOptions.fields`: it can send only the fields a load names,
-   *  and check each row on those. TRAP T-a-projected-row-is-checked-on-what-it-was-sent */
-  readonly projects?: boolean;
-  /** A load's `total` counts every match, not just the rows it sent — so a
-   *  remote store's whole set can be held. TRAP T-a-remote-source-holds-its-whole-set */
-  readonly reportsTotal?: boolean;
-  /** Its total costs one row: ask that before the whole set, which may be too big to hold. */
-  readonly totalFirst?: boolean;
-  /** A read checks only its first rows against the schema: a long read's tail is unchecked. */
-  readonly sampled?: boolean;
-  /** The order a whole read returns its rows in, asked no sort: as inserted, or by
-   *  key (IndexedDB). Unsaid, a held set reads again on an insert. TRAP T-a-held-set-takes-a-change-in-place */
-  readonly rowOrder?: RowOrder;
-  /** EVERY change to its rows is announced by this object — no other tab,
-   *  client or server writes them unheard — so a set held before a page opens
-   *  is current. Unsaid, it is read again first. TRAP T-a-store-has-one-cache */
-  readonly announcesAll?: boolean;
+  /** What it can do. TRAP T-a-store-says-what-it-can-do-once */
+  readonly capabilities: StoreCapabilities;
   /** What each field MAY hold — a set in order, a number's ends — as the data's
    *  own contract says it. TRAP T-the-data-says-what-a-field-may-hold */
   readonly domains?: Readonly<Record<string, FieldDomain>>;
   /** OPTIONAL: each field's distinct values among the rows a filter matches, one
    *  per value key. A store without it is read row by row. TRAP T-a-ruled-out-value-is-greyed */
-  distinct?(fields: readonly string[], options?: LoadOptions): Promise<Record<string, unknown[]>>;
+  distinct?: ((fields: readonly string[], options?: LoadOptions) => Promise<Record<string, unknown[]>>) | undefined;
   /** OPTIONAL: every row the schema accepts, as the store holds them — read in
    *  place, never copied, by a reader that only reads (the walk). A store
    *  without it is loaded. TRAP T-one-walk-counts-and-limits-in-order */
-  scan?(): Promise<readonly Row[]>;
+  scan?: (() => Promise<readonly Row[]>) | undefined;
   /** OPTIONAL: what changed this session, by field. A store without it moves
    *  every field on each change. TRAP T-a-store-keeps-its-history */
-  readonly history?: StoreHistory;
+  readonly history?: StoreHistory | undefined;
   /** OPTIONAL: what moved since a mark — a remote store's History; asked with
    *  none, the mark now. Asked when a page opens again or its tab is shown,
    *  never on a toggle. TRAP T-a-remote-store-says-what-changed */
-  changes?(since?: unknown): Promise<StoreChanges>;
-  /** It holds its own whole set — a Service Worker's held store — so a reader over
-   *  it holds none. Plan 652 S5b, D8 */
-  readonly holds?: boolean;
+  changes?: ((since?: unknown) => Promise<StoreChanges>) | undefined;
   /** Why the rows it answers are unconfirmed — its source could not be reached —
    *  else null: a reader over it says so. Said by a store that `holds`. */
-  readonly stale?: Failure | null;
+  readonly stale?: Failure | null | undefined;
   /** Read its source again, behind the rows it answers: settles once that read
    *  lands or fails. A store that `holds` has it. */
-  recheck?(): Promise<void>;
+  recheck?: (() => Promise<void>) | undefined;
   /** Take in the newer rows its source gave behind the ones it answers, which wait
    *  so a page does not move under its reader: true if any waited. S6c */
-  take?(): Promise<boolean>;
+  take?: (() => Promise<boolean>) | undefined;
   /** Send the writes that wait — made while its source was offline — in order,
    *  once: true when none waits now. S7a */
-  send?(): Promise<boolean>;
+  send?: (() => Promise<boolean>) | undefined;
+  /** Forget all it holds — its set, the rows it shows, the writes that wait — so
+   *  its readers ask again: a sign-out. A store that `holds` in this context has it. */
+  forget?: (() => Promise<void>) | undefined;
 }
 
 /** The order a whole read returns rows in, asked no sort. */
@@ -833,9 +847,9 @@ export function withoutPage(options: LoadOptions): LoadOptions {
   return rest;
 }
 
-/** What makes two questions the same rows in the same order: a page, and the fields
- *  it sends, are not part of it. Today is: "last 7 days" means other rows tomorrow. */
+/** What makes two questions the same rows in the same order: a page, the fields it
+ *  sends and its signal are not part of it. Today is: "last 7 days" means other rows tomorrow. */
 export function orderKey(options: LoadOptions): string {
-  const { skip: _skip, take: _take, fields: _fields, now, ...rest } = options;
+  const { skip: _skip, take: _take, fields: _fields, signal: _signal, now, ...rest } = options;
   return JSON.stringify([rest, (now ?? new Date()).toISOString().slice(0, 10)]);
 }

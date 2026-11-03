@@ -46,7 +46,7 @@ function slowRemote() {
   const seen = { loads: [], slow: false, fail: false, distinct: 0, asks: 0 };
   const wait = () => sleep(seen.slow ? 150 : 1);
   const store = Object.assign(new EventTarget(), {
-    remote: true, key: 'id',
+    capabilities: { remote: true }, key: 'id',
     async load(o) { seen.loads.push(JSON.stringify(o?.filter ?? null)); await sleep(1); return inner.load(o); },
     async totalCount(o) { seen.asks++; await wait(); if (seen.fail) throw new TypeError('down'); return inner.totalCount(o); },
     async distinct(f, o) { seen.distinct++; seen.asks++; await wait(); if (seen.fail) throw new TypeError('down'); return inner.distinct(f, o); },
@@ -129,7 +129,7 @@ test('the rows read to declare the fields are the walk\'s: no second whole read 
   let whole = 0;
   // A local store with no scan and no distinct, as IndexedDB is.
   const store = Object.assign(new EventTarget(), {
-    key: 'id', reportsTotal: true,
+    key: 'id', capabilities: { reportsTotal: true },
     load: (o = {}) => { if (!o.filter && o.take == null) whole++; return inner.load(o); },
     totalCount: (o) => inner.totalCount(o), byKey: (k) => inner.byKey(k),
     insert: (v) => inner.insert(v), update: (k, v) => inner.update(k, v), remove: (k) => inner.remove(k),

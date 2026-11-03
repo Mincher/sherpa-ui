@@ -63,6 +63,7 @@ test('a walk asked of a store sends the dates of its own clock', async () => {
   const reads = {
     load: async (o) => { seen.push(o.filter); return { rows: [], total: 0 }; },
     totalCount: async (o) => { seen.push(o.filter); return 0; },
+    capabilities: {},
   };
   const step = { field: 'at', clause: LAST_WEEK, on: true, counts: true, ruler: 'here' };
   await walkStepwise(reads, { now: JUNE, scopes: [{ scope: 'data', after: null, steps: [step], taps: [] }] });

@@ -18,7 +18,7 @@
  * - .distinct — Each field's values among the matches, read in place.
  */
 import {
-  applyOptions, distinctOf, matchesOnly, orderKey, pageOf, readField, sameKey, valueKey, withoutPage, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail,
+  applyOptions, distinctOf, matchesOnly, orderKey, pageOf, readField, sameKey, valueKey, withoutPage, type LoadOptions, type LoadResult, type Row, type RowOrder, type Store, type StoreChangeDetail,
 } from './store.js';
 import { carryKey, isMadeUpKey, keyRow, rowKey } from './row-key.js';
 
@@ -89,10 +89,11 @@ export class HeldSet {
    * hold, a key another row has, a place it cannot tell — and the set must be
    * read again. TRAP T-a-held-set-takes-a-change-in-place
    */
-  patch(change: StoreChangeDetail, store: Pick<Store, 'key' | 'rowOrder'>): boolean {
+  patch(change: StoreChangeDetail, store: Pick<Store, 'key' | 'capabilities'>): boolean {
     this.#order = undefined;
     const { type, key, row } = change;
     const field = store.key;
+    const order = store.capabilities.rowOrder;
     if (key == null) return false;
     const at = (k: unknown): number => this.#rows.findIndex((r) => sameKey(readField(r, field), k) || (isMadeUpKey(k) && rowKey(r) === k));
     const i = at(key);
@@ -110,7 +111,7 @@ export class HeldSet {
     if (type === 'insert') {
       const trimmed = (change.trimmed ?? []).map(at);
       if (i >= 0 || trimmed.some((t) => t < 0)) return false;
-      const place = this.#placeOf(next, store, trimmed);
+      const place = this.#placeOf(next, store.key, order, trimmed);
       if (place < 0) return false;
       for (const t of trimmed.sort((a, b) => b - a)) this.#rows.splice(t, 1);
       this.#rows.splice(place, 0, next);
@@ -122,29 +123,29 @@ export class HeldSet {
       return true;
     }
     // A changed key: one another row has, or a place it cannot tell, is not certain.
-    if (at(now) >= 0 || !store.rowOrder) return false;
-    if (store.rowOrder === 'insertion') {
+    if (at(now) >= 0 || !order) return false;
+    if (order === 'insertion') {
       this.#rows[i] = next;
       return true;
     }
     this.#rows.splice(i, 1);
-    const place = this.#placeOf(next, store, []);
+    const place = this.#placeOf(next, store.key, order, []);
     if (place < 0) return false;
     this.#rows.splice(place, 0, next);
     return true;
   }
 
   /** Where a new row goes, as the store's whole read would place it, or -1 when it cannot tell. */
-  #placeOf(row: Row, store: Pick<Store, 'key' | 'rowOrder'>, gone: readonly number[]): number {
-    if (store.rowOrder === 'insertion') return this.#rows.length - gone.length;
-    if (store.rowOrder !== 'key') return -1;
-    const key = readField(row, store.key);
+  #placeOf(row: Row, field: string, order: RowOrder | undefined, gone: readonly number[]): number {
+    if (order === 'insertion') return this.#rows.length - gone.length;
+    if (order !== 'key') return -1;
+    const key = readField(row, field);
     let place = 0;
     for (const [n, r] of this.#rows.entries()) {
       if (gone.includes(n)) continue;
-      const order = keyOrder(readField(r, store.key), key);
-      if (Number.isNaN(order)) return -1;
-      if (order > 0) return place;
+      const at = keyOrder(readField(r, field), key);
+      if (Number.isNaN(at)) return -1;
+      if (at > 0) return place;
       place++;
     }
     return place;

@@ -154,7 +154,7 @@ export class StoreCache extends EventTarget {
   /** A page that opens again, or a tab shown, asks the store what moved, not
    *  for the whole set: it says `changes`, and may miss a writer. */
   get tracks(): boolean {
-    return !!this.store.changes && !this.store.announcesAll;
+    return !!this.store.changes && !this.store.capabilities.announcesAll;
   }
 
   /** Read the set again BEHIND the one held: it stays, and answers, until the
@@ -281,8 +281,9 @@ export class StoreCache extends EventTarget {
     if (cap <= 0 || this.#never || cap <= this.#over || (this.#failedAt && cap >= this.#failedAt)) return false;
     // Held, or held but too many for this cap: that page asks the store.
     if (this.#set && (!this.#due || this.#set.size > cap)) return false;
-    const why = !this.store.reportsTotal ? 'its load reports only the rows it sent as the total (a RestStore needs a totalPath)'
-      : this.store.sampled ? 'its schema checks only a sample of each read' : '';
+    const { reportsTotal, sampled } = this.store.capabilities;
+    const why = !reportsTotal ? 'its load reports only the rows it sent as the total (a RestStore needs a totalPath)'
+      : sampled ? 'its schema checks only a sample of each read' : '';
     if (why) this.#refuse(why, cap);
     return !why;
   }
@@ -295,7 +296,7 @@ export class StoreCache extends EventTarget {
 
   /** The fields a read asks for, where the store can send just them; else every field. */
   #projection(): readonly string[] | undefined {
-    return this.#columns && this.store.projects && this.store.key ? [...this.#columns] : undefined;
+    return this.#columns && this.store.capabilities.projects && this.store.key ? [...this.#columns] : undefined;
   }
 
   /** Held and current, but without a column this page needs. */
@@ -362,7 +363,7 @@ export class StoreCache extends EventTarget {
       const fields = this.#projection();
       /* A store that says its total is asked that first, once: a set too big is never
          sent whole, only to be thrown away. TRAP T-a-page-turn-is-a-slice */
-      if (!this.#set && this.store.totalFirst) {
+      if (!this.#set && this.store.capabilities.totalFirst) {
         const { total, totalUnknown } = await this.store.load({ take: 1 });
         if (age !== this.#age) return;
         if (!totalUnknown && total > cap) {

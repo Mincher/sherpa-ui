@@ -34,7 +34,7 @@ test('a dropped wrapper is freed, and its relay goes at the next change', () => 
     const inner = new ArrayStore([{ id: 1 }], { key: 'id' });
     let removed = 0;
     const remove = inner.removeEventListener.bind(inner);
-    inner.removeEventListener = (...a) => { removed++; return remove(...a); };
+    inner.removeEventListener = (type, ...a) => { if (type === 'change') removed++; return remove(type, ...a); };
     for (let i = 0; i < 100; i++) fakeRemote(inner, { delay: 0 });
     const kept = fakeRemote(inner, { delay: 0 });
     let heard = 0;
