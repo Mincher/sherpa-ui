@@ -36,7 +36,9 @@ ones in TODO 702).
     4 commits (the facts ask, one body draw, the split, the heading buttons); it was
     finishing the buttons and its last tests.
   - **P7** (style queries), branch `lane/css-p7`, `scratchpad/wt-css`: 41 files changed,
-    NOT committed yet. A scratchpad that is cleared loses them.
+    NOT committed yet. A scratchpad that is cleared loses them, so a copy is kept:
+    `~/.claude/projects/-Users-williammincher-Documents-My-synced-vault-Projects-sherpa-ui/lane-backups/p7-tracked-2026-11-03.patch`
+    (`git apply` it on `p7-base.txt`'s commit, `55eee021`).
 - **Then:** P5 (the chip split) after P4; P6 (the base class) after P4 and P7; a last
   full run; then the deferred rows (700 the MCP rebuild, 701, T3 the trap trim, 223, 170,
   77).
