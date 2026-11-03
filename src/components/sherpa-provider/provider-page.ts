@@ -1,13 +1,14 @@
 /**
  * provider-page.ts — the page a provider has open: its Views, saved filter
- * sets, drafts, kept Query and Reset. A provider holds one, and is its host.
+ * sets, what the reader left on each View, its kept state and Reset — kept
+ * through the page keeper. A provider holds one, and is its host.
  * TRAP T-a-provider-keeps-the-views
  *
  * Map:
  * - Bar — A filter bar, as the provider draws it.
  * - OpenedPage — The page `open()` set up: its id, store, source, Views and first Query.
  * - PageHost — What the open page asks of its provider.
- * - ProviderPage — The open page's Views, saved sets, drafts, kept Query and Reset.
+ * - ProviderPage — The open page's Views, saved sets, what each View was left with, its kept state and Reset.
  * - .opened — The page `open()` set up, or null.
  * - .begin — Take a page `open()` set up.
  * - .end — The page has gone, with its source.
@@ -28,26 +29,23 @@
  * - .view — The View on screen.
  * - .views — Open the Views over one source: restore, then hear and keep.
  * - .stopViews — Stop the Views' listeners.
- * - .sharing — sharing — the store before the page restores: set by its provider as it opens one.
- * - .share — share(store) — the app starts sharing the View's answer, or (null) stops: the page on screen takes the App an…
+ * - .sharing — sharing — does the app share the View's answer: set by its provider as it opens a page.
+ * - .share — share(on) — the app starts sharing the View's answer, or stops: the page on screen takes the App answer, or…
  * - .takeView — A state taken in names a View: show it, and hear its next pick.
- * - SharedStore — Where the App Context's answer is kept.
+ * - redraft — A pick that waited for Apply comes back waiting, in each scope that waits — but `skip`, the App Context's.
  */
 import {
-  deleteSavedView, loadSavedViews, onViewPicked, saveViewAs, uniqueViewLabel, viewOptions, viewQueryOf,
-  type ViewLibrary,
+  onViewPicked, uniqueViewLabel, viewOptions, viewQueryOf, type SavedView, type ViewLibrary,
 } from '../../core/browser/persist-view.js';
 import { labelId } from '../../core/browser/web-storage.js';
-import { clearDraft, draftSig, loadDraft, saveDraft, type DraftMode } from '../../core/browser/view-drafts.js';
-import {
-  conditionsOf, deleteSavedFilter, filtersOf, keepAdded, loadAdded, loadSavedFilters, renameSavedFilter, saveFilterAs,
-} from '../../core/browser/saved-filters.js';
+import { viewSig, type PageChange, type PageKeeper, type PageState } from '../../core/browser/page-state.js';
+import { conditionsOf, filtersOf } from '../../core/browser/saved-filters.js';
 import type { SavedSet } from '../../core/ui/filters-button.js';
 import type { DataSource } from '../../core/data/data-source.js';
 import { SAVED_PRESET, presetReadings } from '../../core/data/page-definition.js';
 import type { QueryChangeDetail, QueryContext } from '../../core/data/query-context.js';
 import { VIEW, emptyScope, sameReading, type Query, type QueryDefaults, type SavedFilter, type ScopeQuery, type ViewScope } from '../../core/data/query.js';
-import { layShared, sharedOf, type SharedView } from '../../core/data/query-edits.js';
+import { layShared, sharedOf } from '../../core/data/query-edits.js';
 import { VIEW_CHIP } from '../../core/ui/shared-constants.js';
 import { organiseOf } from '../../core/ui/filter-host.js';
 import type { ProvideOptions } from './sherpa-provider.js';
@@ -65,7 +63,7 @@ export type Bar = HTMLElement & {
 
 /** The page `open()` set up: its id, store, source, Views and first Query. */
 export interface OpenedPage {
-  /** What its saved Views, filters and drafts are kept under. TODO 321 */
+  /** Its name in the keeper: what its state is kept under. TODO 321 */
   id: string;
   store: string;
   source: DataSource;
@@ -93,9 +91,11 @@ export interface PageHost {
   viewChanged(id: string | undefined, elements?: Record<string, HTMLElement>): void;
   /** A word from the provider's markup, once it has drawn. TRAP T-a-word-is-in-the-markup */
   word(key: string): Promise<string>;
+  /** Where every page's state is kept. TRAP T-one-page-one-document */
+  keeper(): PageKeeper;
 }
 
-/** The open page's Views, saved sets, drafts, kept Query and Reset. */
+/** The open page's Views, saved sets, what each View was left with, its kept state and Reset. */
 export class ProviderPage {
   /** The provider it serves. */
   readonly #host: PageHost;
@@ -119,7 +119,7 @@ export class ProviderPage {
     this.#drawn = new WeakSet();
     this.#sentSets = '';
     // The sets on a bar before a reload, while they are still saved: BEFORE the Query, which holds their rows.
-    this.#added = new Map(Object.entries(loadAdded(page.id)).filter(([id]) => this.#library()[id]));
+    this.#added = new Map(Object.entries(this.#state().added ?? {}).filter(([id]) => this.#library()[id]));
     this.#layPresets(this.#added.values());
   }
 
@@ -181,21 +181,19 @@ export class ProviderPage {
   async saveView(label?: string, options: { stay?: boolean } = {}): Promise<string | undefined> {
     const opened = this.#opened;
     if (!opened?.library) return undefined;
-    const own = this.#view ? loadSavedViews(opened.id)[this.#view] : undefined;
+    const own = this.#view ? this.#mine()[this.#view] : undefined;
     const name = label == null ? own?.label
       : label.trim() && uniqueViewLabel(label, Object.values(opened.library()).map((v) => v.label));
     if (!name) return undefined;
     this.#flush?.();
-    saveViewAs(opened.id, name, { source: opened.source });
+    const id = labelId(name);
+    // JSON: the source's Query and arrangement. TRAP T-a-view-is-json
+    this.#keep({ views: { ...this.#mine(), [id]: { label: name, query: viewQueryOf(opened.source) } } });
     /* SAVED: the filters have a home, so neither the View they were made on
-       nor the one just saved keeps a draft of them. TRAP T-a-view-keeps-a-draft */
-    if (this.#drafts) {
-      if (this.#view) clearDraft(this.#drafts.page, this.#view);
-      clearDraft(this.#drafts.page, labelId(name));
-    }
+       nor the one just saved keeps what the reader left. TRAP T-a-view-keeps-what-the-reader-left */
+    this.#forget([this.#view, id]);
     // Read BEFORE the redraw: a rebuilt bar's first report is empty.
     const kept = opened.query.applied;
-    const id = labelId(name);
     // The View chip lists it either way; only a plain save moves to it.
     await this.drawBars(options.stay ? this.#view : id);
     await opened.query.setQuery(kept, { by: 'provider' });
@@ -208,9 +206,10 @@ export class ProviderPage {
    *  the first. A preset is never deleted. TRAP T-a-saved-view-is-the-readers-own */
   async deleteView(id = this.#view): Promise<boolean> {
     const opened = this.#opened;
-    if (!opened?.library || !id || !loadSavedViews(opened.id)[id]) return false;
-    deleteSavedView(opened.id, id);
-    if (this.#drafts) clearDraft(this.#drafts.page, id);
+    if (!opened?.library || !id || !this.#mine()[id]) return false;
+    const { [id]: _gone, ...rest } = this.#mine();
+    this.#keep({ views: rest });
+    this.#forget([id]);
     if (id !== this.#view) {
       await this.drawBars(this.#view);
       return true;
@@ -241,7 +240,8 @@ export class ProviderPage {
     // Saved over: what it held was the old set's.
     this.dismissFilters(id);
     const all = filtersOf(viewQueryOf(opened.source));
-    saveFilterAs(opened.id, name, local ? { v: 1, scopes: { [local]: all.scopes[local] ?? emptyScope() } } : all);
+    const query: QueryDefaults = local ? { v: 1, scopes: { [local]: all.scopes[local] ?? emptyScope() } } : all;
+    this.#keep({ filters: { ...this.#filters(), [id]: { label: name, query } } });
     this.#add(id, this.#homeOf(id, local ?? this.#savingAt ?? null));
     return id;
   }
@@ -275,9 +275,10 @@ export class ProviderPage {
   /** DELETE a reader's saved set, never a page's own: its chip goes, and what it held. */
   deleteFilters(id: string): boolean {
     const opened = this.#opened;
-    if (!opened || !loadSavedFilters(opened.id)[id]) return false;
+    if (!opened || !this.#filters()[id]) return false;
     this.dismissFilters(id);
-    deleteSavedFilter(opened.id, id);
+    const { [id]: _gone, ...rest } = this.#filters();
+    this.#keep({ filters: rest });
     this.#saySaved();
     return true;
   }
@@ -286,15 +287,17 @@ export class ProviderPage {
    *  and a name another set has gains a copy's. Its chip stays, on or off. Its new id. Will, TODO 427 */
   renameFilters(id: string, label: string): string | undefined {
     const opened = this.#opened;
-    const set = opened ? loadSavedFilters(opened.id)[id] : undefined;
+    const set = opened ? this.#filters()[id] : undefined;
     if (!opened || !set || !label.trim()) return undefined;
     if (label.trim() === set.label) return id;
     const name = uniqueViewLabel(label, Object.entries(this.#library()).filter(([key]) => key !== id).map(([, s]) => s.label));
     const scope = this.#added.get(id);
     const on = scope !== undefined && opened.query.presetOn(scope, SAVED_PRESET + id);
     this.dismissFilters(id);
-    renameSavedFilter(opened.id, id, name);
     const next = labelId(name);
+    // In its place: its id follows its name. TRAP T-derived-id-makes-resave-an-update
+    this.#keep({ filters: Object.fromEntries(Object.entries(this.#filters())
+      .map(([key, kept]) => (key === id ? [next, { ...kept, label: name }] : [key, kept]))) });
     if (scope !== undefined) this.#add(next, scope);
     if (on) opened.query.ask({ scope, preset: SAVED_PRESET + next, on: true, commit: true });
     this.#saySaved();
@@ -311,7 +314,7 @@ export class ProviderPage {
   #library(): Record<string, SavedFilter & { own: boolean }> {
     const opened = this.#opened;
     if (!opened) return {};
-    const own = loadSavedFilters(opened.id);
+    const own = this.#filters();
     return {
       ...Object.fromEntries(Object.entries(opened.savedFilters).map(([id, set]) => [id, { ...set, own: false }])),
       ...Object.fromEntries(Object.entries(own).map(([id, set]) => [id, { ...set, own: true }])),
@@ -349,8 +352,28 @@ export class ProviderPage {
 
   /** Remembered in this tab, and every saving control told. */
   #keepAdded(): void {
-    if (this.#opened) keepAdded(this.#opened.id, Object.fromEntries(this.#added));
+    this.#keep({ added: Object.fromEntries(this.#added) });
     this.#saySaved();
+  }
+
+  /** The open page's state, as its keeper holds it now. */
+  #state(): PageState {
+    return this.#opened ? this.#host.keeper().read(this.#opened.id) : { v: 3 };
+  }
+
+  /** Change parts of the open page's state. */
+  #keep(parts: PageChange): void {
+    if (this.#opened) this.#host.keeper().write(this.#opened.id, parts);
+  }
+
+  /** The reader's own Views of the open page. */
+  #mine(): Record<string, SavedView> {
+    return this.#state().views ?? {};
+  }
+
+  /** The reader's own saved sets of the open page. */
+  #filters(): Record<string, SavedFilter> {
+    return this.#state().filters ?? {};
   }
 
   /** Each of these scopes' presets: the app's own, then the sets on its bar. Will, TODO 605 */
@@ -428,7 +451,7 @@ export class ProviderPage {
   /** Is the View on screen the reader's own — saved, so it can be saved over or deleted? */
   get customView(): boolean {
     const opened = this.#opened;
-    return !!(opened && this.#view && loadSavedViews(opened.id)[this.#view]);
+    return !!(opened && this.#view && this.#mine()[this.#view]);
   }
 
   /** The bar over the View's own scope. */
@@ -445,10 +468,10 @@ export class ProviderPage {
     await opened.query.setQuery(structuredClone(opened.initial), { by: 'provider' });
     if (view?.query) await opened.query.setQuery(view.query, { holds: 'keep', by: 'provider' });
     // The View's own filters are on: nothing of the reader's is left to keep.
-    if (this.#drafts && this.#view) clearDraft(this.#drafts.page, this.#view);
+    this.#forget([this.#view]);
     this.#clearAdded();
     // …and they are the App Context's now, and this page's own. TODO 453
-    if (this.#shared) {
+    if (this.#sharing) {
       this.#ownView = structuredClone(opened.query.applied.scopes[VIEW] ?? emptyScope());
       this.#share(opened.source, true);
     }
@@ -497,7 +520,7 @@ export class ProviderPage {
       if (!scope) return;
       this.#drawn.add(bar);
       const described = source.describe(scope);
-      const custom = new Set(Object.keys(loadSavedViews(opened.id)));
+      const custom = new Set(Object.keys(this.#mine()));
       // A portrait bar is the panel's column: the View chip stays the header's. TODO 425
       const picker = scope === VIEW && library && (bar as HTMLElement).dataset['orientation'] !== 'portrait' ? [{
         id: VIEW_CHIP, label: await this.#host.word('view'), persistent: true, active: true, select: 'single',
@@ -565,46 +588,45 @@ export class ProviderPage {
   }
 
   /**
-   * RESTORE, then HEAR and KEEP: the session's Query, only on the View it was
-   * made on — else the URL's View; a pick from the View chip, a nav row or a
-   * link puts its Query on; and the Query is kept once per frame.
-   * TRAP T-a-reload-replays-the-readers-answers · TRAP T-a-view-is-json
+   * RESTORE, then HEAR and KEEP: the kept Query, only on the View it was made
+   * on — else what the reader left on the URL's View, else that View; a pick
+   * from the View chip, a nav row or a link puts its Query on; and the page's
+   * state is kept once per frame. TRAP T-a-reload-replays-the-readers-answers · TRAP T-a-view-is-json
    */
   async #openViews(source: DataSource, options: ProvideOptions, signal: AbortSignal): Promise<void> {
-    const { views, session, key } = options;
+    const { views, key } = options;
     const library = (): ViewLibrary => (typeof views === 'function' ? views() : views ?? {});
     const first = Object.keys(library())[0];
     this.#view = options.view ?? first;
-    const kept = key ? session?.get(key) as { view?: string; query?: Query; draft?: Query } | undefined : undefined;
+    const kept = key ? this.#host.keeper().read(key) : undefined;
     const start = this.#view ? library()[this.#view] : undefined;
-    this.#drafts = options.drafts ? { ...options.drafts, source, library } : null;
-    // A link to a View the reader left a draft on opens on the draft.
-    const draft = this.#view ? this.#draftOf(this.#view) : undefined;
+    this.#keyed = key ? { key, source, library } : null;
+    // A link to a View the reader left changed opens on what they left.
+    const left = this.#view ? this.#leftOf(this.#view) : undefined;
     // The App Context's answer goes over each Query put on. TODO 453
     const lay = this.#lay(source);
     if (kept?.query && kept.view === this.#view) {
       await source.query.setQuery(kept.query, { lay });
-      if (kept.draft) redraft(source, kept.draft, this.#shared ? VIEW : undefined);
-    } else if (draft) await source.query.setQuery(draft, { lay });
+      if (kept.draft) redraft(source, kept.draft, this.#sharing ? VIEW : undefined);
+    } else if (left) await source.query.setQuery(left, { lay });
     else if (this.#view !== first && start?.query) await source.query.setQuery(start.query, { holds: 'keep', lay });
-    else if (this.#shared) await source.query.setQuery(source.query.applied, { lay });
+    else if (this.#sharing) await source.query.setQuery(source.query.applied, { lay });
     if (signal.aborted) return;
     this.#share(source);
     this.#hear = () => this.#hearPicks(source, library, signal);
     this.#hear();
     // Opened on a View with cards of its own: they are drawn now, and the page told. TODO 198
     if (typeof start?.content === 'string') this.#host.viewChanged(this.#view);
-    if (!this.#drafts && !(key && session)) return;
+    if (!key) return;
     let frame = 0;
     const write = (): void => {
       frame = 0;
       this.#share(source, true);
-      if (key && session) session.set(key, keptEntry(source, this.#view, this.#kept()));
-      this.#keepDraft();
+      this.#keepNow(true);
     };
     /* The READER's changes only: a pick or a reset writes the Query too, says
-       who by, and kept then, the new View's filters were saved under the old
-       View's name. TRAP T-a-view-keeps-a-draft */
+       who by, and kept then, the new View's filters were kept under the old
+       View's name. TRAP T-a-view-keeps-what-the-reader-left */
     const keep = (event: Event): void => {
       const by = (event as CustomEvent<QueryChangeDetail>).detail?.by;
       if (by && by !== 'reader') return;
@@ -618,63 +640,91 @@ export class ProviderPage {
       write();
     };
     // After a pick or a reset, the page's kept Query is the one on screen.
-    this.#settle = () => { if (key && session) session.set(key, keptEntry(source, this.#view, this.#kept())); };
+    this.#settle = () => this.#keepNow(false);
     source.query.addEventListener('query-change', keep, { signal });
     signal.addEventListener('abort', () => {
       cancelAnimationFrame(frame);
       this.#flush = this.#settle = null;
-      this.#drafts = null;
+      this.#keyed = null;
     }, { once: true });
   }
 
-  /** Drafts for the open page: where they are kept, and what to read them from. */
-  #drafts: { page: string; mode: () => DraftMode; source: DataSource; library: () => ViewLibrary } | null = null;
+  /** The page whose Views are heard: its name in the keeper, its source and its Views. */
+  #keyed: { key: string; source: DataSource; library: () => ViewLibrary } | null = null;
   /** Write now what a reader's change left waiting for its frame. */
   #flush: (() => void) | null = null;
   /** Keep the Query on screen as the page's own, after the provider wrote it. */
   #settle: (() => void) | null = null;
 
-  /** The draft a reader left on one View, if drafts are kept. */
-  #draftOf(id: string): QueryDefaults | undefined {
-    const d = this.#drafts;
-    return d ? loadDraft(d.page, id, draftSig(d.library()[id]), d.mode()) : undefined;
+  /** What the reader left on one View, while each View keeps it. One left over
+   *  ANOTHER definition is dropped: a changed preset must not hide behind it. */
+  #leftOf(id: string): QueryDefaults | undefined {
+    const k = this.#keyed;
+    const keeper = this.#host.keeper();
+    if (!k || !keeper.eachView) return undefined;
+    const { [id]: one, ...rest } = keeper.read(k.key).left ?? {};
+    if (!one) return undefined;
+    if (one.sig === viewSig(k.library()[id])) return one.query;
+    keeper.write(k.key, { left: rest });
+    return undefined;
   }
 
-  /** Keep what is on screen as the draft of the View on screen. */
-  #keepDraft(): void {
-    const d = this.#drafts;
-    if (!d || !this.#view) return;
-    // While the App Context shares the View, this page's own is what it keeps. TODO 453
+  /** Forget what the reader left on these Views: their own filters are on, or
+   *  the filters have a home. */
+  #forget(ids: readonly (string | undefined)[]): void {
+    const k = this.#keyed;
+    if (!k) return;
+    const keeper = this.#host.keeper();
+    const left = Object.entries(keeper.read(k.key).left ?? {}).filter(([id]) => !ids.includes(id));
+    keeper.write(k.key, { left: Object.fromEntries(left) });
+  }
+
+  /** Keep the View on screen, its Query and what waits for Apply; after a
+   *  reader's change, what they left on the View too. While the App Context
+   *  shares the View, this page's own is what it keeps. Will, TODOs 410, 453 */
+  #keepNow(reader: boolean): void {
+    const k = this.#keyed;
+    if (!k) return;
+    const keeper = this.#host.keeper();
+    const { source } = k;
     const own = this.#kept();
-    const from = own ? {
-      query: { export: () => ({ query: withView(d.source.query.export().query, own) }) },
-      whereOf: (r: Parameters<DataSource['whereOf']>[0]) => d.source.whereOf(r),
-    } : d.source;
-    saveDraft(d.page, this.#view, viewQueryOf(from), draftSig(d.library()[this.#view]), d.mode());
+    const mine = (q: Query): Query => (own ? withView(q, own) : q);
+    const parts: PageChange = {
+      view: this.#view, query: mine(source.query.applied), draft: source.query.dirty() ? mine(source.query.draft) : undefined,
+    };
+    if (reader && !keeper.eachView) parts.left = undefined;
+    else if (reader && this.#view) {
+      const from = own ? {
+        query: { export: () => ({ query: withView(source.query.export().query, own) }) },
+        whereOf: (r: Parameters<DataSource['whereOf']>[0]) => source.whereOf(r),
+      } : source;
+      parts.left = { ...keeper.read(k.key).left, [this.#view]: { query: viewQueryOf(from), sig: viewSig(k.library()[this.#view]) } };
+    }
+    keeper.write(k.key, parts);
   }
 
-  /** The App Context's store: one View answer for every page, while the app
-   *  shares it. TODO 453 · TRAP T-the-app-context-is-one-answer */
-  #shared: SharedStore | null = null;
+  /** The app shares one View answer for every page: the App Context, kept by
+   *  the keeper. TODO 453 · TRAP T-the-app-context-is-one-answer */
+  #sharing = false;
   /** This page's own View under the App answer: what it keeps, and what comes
    *  back when sharing stops. */
   #ownView: ScopeQuery | null = null;
 
-  /** sharing — the store before the page restores: set by its provider as it opens one. */
-  set sharing(store: SharedStore | null) {
-    this.#shared = store;
+  /** sharing — does the app share the View's answer: set by its provider as it opens a page. */
+  set sharing(on: boolean) {
+    this.#sharing = on;
     this.#ownView = null;
   }
 
-  /** share(store) — the app starts sharing the View's answer, or (null) stops: the
-   *  page on screen takes the App answer, or gets its own back. Will, TODO 453 (D2 A) */
-  async share(store: SharedStore | null): Promise<void> {
-    const was = this.#shared;
+  /** share(on) — the app starts sharing the View's answer, or stops: the page
+   *  on screen takes the App answer, or gets its own back. Will, TODO 453 (D2 A) */
+  async share(on: boolean): Promise<void> {
+    const was = this.#sharing;
     const own = this.#ownView;
-    this.#shared = store;
+    this.#sharing = on;
     const source = this.#opened?.source;
-    if (!source || !!store === !!was) return;
-    if (store) await source.query.setQuery(source.query.applied, { lay: this.#lay(source), by: 'provider' });
+    if (!source || on === was) return;
+    if (on) await source.query.setQuery(source.query.applied, { lay: this.#lay(source), by: 'provider' });
     else {
       this.#ownView = null;
       if (own) await source.query.setQuery(withView(source.query.applied, own), { by: 'provider' });
@@ -687,10 +737,9 @@ export class ProviderPage {
    *  it had: this page's own. */
   #lay(source: DataSource): (query: Query) => void {
     return (query) => {
-      const store = this.#shared;
-      if (!store) return;
+      if (!this.#sharing) return;
       this.#ownView = structuredClone(query.scopes[VIEW] ?? emptyScope());
-      const shared = store.get();
+      const shared = this.#host.keeper().appContext;
       if (shared) layShared(query, shared, (f) => source.has(f));
     };
   }
@@ -698,25 +747,25 @@ export class ProviderPage {
   /** Write the View's answer as the App's — on a reader's act, or where there is
    *  none yet — and draw what it holds that this page has not. */
   #share(source: DataSource, write = false): void {
-    const store = this.#shared;
-    if (!store) {
+    if (!this.#sharing) {
       if (source.declareUnused(VIEW, [])) void this.drawBars(this.#view);
       return;
     }
-    const was = store.get();
+    const keeper = this.#host.keeper();
+    const was = keeper.appContext;
     const face = (f: string): { label: string; icon?: string } => {
       const def = source.filterDef(f);
       return { label: def.label, ...(def.icon ? { icon: def.icon } : {}) };
     };
-    if (write || !was) store.set(sharedOf(source.query.applied, was, (f) => source.has(f), face));
-    const now = store.get();
+    if (write || !was) keeper.appContext = sharedOf(source.query.applied, was, (f) => source.has(f), face);
+    const now = keeper.appContext;
     const unused = (now?.holds ?? []).filter((f) => !source.has(f)).map((f) => ({ id: f, ...now!.faces[f]! }));
     if (source.declareUnused(VIEW, unused)) void this.drawBars(this.#view);
   }
 
   /** The View this page keeps while sharing: its own. */
   #kept(): ScopeQuery | undefined {
-    return this.#shared && this.#ownView ? this.#ownView : undefined;
+    return this.#sharing && this.#ownView ? this.#ownView : undefined;
   }
 
   /** Listen for View picks again, knowing the View on screen now. */
@@ -745,9 +794,9 @@ export class ProviderPage {
       // TRAP T-a-persistent-chip-reports-on-every-change
       applied: this.#view ?? null,
       into: el.querySelector<HTMLElement>('[data-view-content]'),
-      // The old View's draft is written before its answers go. TRAP T-a-view-keeps-a-draft
+      // What the reader left on the old View is written before its answers go. TRAP T-a-view-keeps-what-the-reader-left
       before: () => this.#flush?.(),
-      draft: (id) => this.#draftOf(id),
+      left: (id) => this.#leftOf(id),
       after: ({ id, rendered }) => {
         // Another View: its filters are its own, and its bars hold none of these.
         if (id !== this.#view) this.#clearAdded();
@@ -779,23 +828,9 @@ export class ProviderPage {
   }
 }
 
-/** Where the App Context's answer is kept. TODO 453 */
-export interface SharedStore {
-  get(): SharedView | null;
-  set(value: SharedView): void;
-}
-
-/** What a page keeps across a reload: the View, the Query applied, and —
- *  while a pick waits for Apply — the draft; while the App Context shares the
- *  View, its own View in both. Will, TODOs 410, 453 */
 /** A column's scopes, from its `data-scope` list. */
 function scopesOf(panel: Element): string[] {
   return (panel.getAttribute('data-scope') ?? '').split(/\s+/).filter(Boolean);
-}
-
-function keptEntry(source: DataSource, view: string | undefined, own?: ScopeQuery): { view?: string; query: Query; draft?: Query } {
-  const mine = (q: Query): Query => (own ? withView(q, own) : q);
-  return { ...(view ? { view } : {}), query: mine(source.query.applied), ...(source.query.dirty() ? { draft: mine(source.query.draft) } : {}) };
 }
 
 /** A Query with another View scope. */
@@ -805,7 +840,7 @@ function withView(query: Query, view: ScopeQuery): Query {
 
 /** A pick that waited for Apply comes back waiting, in each scope that waits —
  *  but `skip`, the App Context's. TODO 410 */
-function redraft(source: DataSource, draft: Query, skip?: string): void {
+export function redraft(source: DataSource, draft: Query, skip?: string): void {
   const applied = source.query.applied;
   for (const [scope, s] of Object.entries(draft.scopes)) {
     if (!source.query.named(scope) || scope === skip) continue;

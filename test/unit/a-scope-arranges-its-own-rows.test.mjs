@@ -13,7 +13,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { ArrayStore, DataSource, bindSource } from '../../dist/data.js';
-import { saveViewAs } from '../../dist/core/browser/persist-view.js';
+import { viewQueryOf } from '../../dist/core/browser/persist-view.js';
 
 const ROWS = [{ id: 1, plan: 'Pro', name: 'b' }, { id: 2, plan: 'Free', name: 'a' }];
 
@@ -67,8 +67,8 @@ test('a SAVED View puts the sort where export() does: in the scope that set it',
   const { source, grid } = page();
   grid.dispatchEvent(new CustomEvent('sort-change', { detail: { field: 'name', direction: 'desc' } }));
   await source.load();
-  // No storage in node: the set comes back all the same.
-  const saved = saveViewAs('arranged', 'By name', { source }, {})['by-name'].query.scopes;
+  // What a saved View keeps: the source's Query as JSON.
+  const saved = viewQueryOf(source).scopes;
   assert.deepEqual(saved.data.sort, [{ field: 'name', direction: 'desc' }]);
   assert.equal(saved.view?.sort, undefined);
   assert.deepEqual(saved.data.sort, source.query.export().query.scopes.data.sort);

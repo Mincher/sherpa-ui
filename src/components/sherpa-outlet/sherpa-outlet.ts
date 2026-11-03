@@ -11,10 +11,10 @@ import { bindSettings } from '../../core/ui/bind-settings.js';
 import { checkApp, type AppDefinition, type ContextInit, type ContextModule } from '../../core/data/app-definition.js';
 import { report } from '../../core/data/report.js';
 import { loadViewLibrary } from '../../core/browser/view-files.js';
-import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.js';
+import type { ViewLibrary } from '../../core/browser/persist-view.js';
 import { VIEW_CHIP } from '../../core/ui/shared-constants.js';
 import type { SessionStore } from '../../core/browser/session.js';
-import type { DraftMode } from '../../core/browser/view-drafts.js';
+import { SETTINGS, Settings } from '../../core/data/settings.js';
 import type { PageDefinition } from '../../core/data/page-definition.js';
 import type { DataSource } from '../../core/data/data-source.js';
 import type { Store } from '../../core/data/store.js';
@@ -37,8 +37,6 @@ export interface OutletOptions {
   stores(): Record<string, Store>;
   /** Settles before a Context opens its data: its stores are seeded. */
   ready?: Promise<unknown>;
-  /** A View's drafts, asked at each write. None: no drafts. */
-  drafts?(): DraftMode;
   /** The app's panels by id, handed to every Context. */
   panels?: Readonly<Record<string, HTMLElement | undefined>>;
   /** Where a Settings page opens, OVER the Context: the overlay dialog, its
@@ -59,6 +57,8 @@ type ViewBar = HTMLElement & {
 export class SherpaOutlet extends SherpaElement {
   static override css = new URL('./sherpa-outlet.css', import.meta.url);
   static override html = new URL('./sherpa-outlet.html', import.meta.url);
+  // None on its attributes: told, its nav reads its own. TRAP T-the-outlet-keeps-the-nav
+  static override settings = {};
 
   /** What `start()` was given. */
   #options: OutletOptions | null = null;
@@ -100,7 +100,7 @@ export class SherpaOutlet extends SherpaElement {
 
   /** A Context's Views: its own, then the reader's saved ones. */
   viewsOf(context: string): ViewLibrary {
-    return viewLibrary(context, this.#views[context]);
+    return { ...this.#views[context], ...this.#provider?.keeper.read(context).views };
   }
 
   /** Its first View, which the URL leaves out. */
@@ -160,8 +160,10 @@ export class SherpaOutlet extends SherpaElement {
     const nav = this.#shell?.querySelector(':scope > sherpa-nav');
     if (nav) {
       await customElements.whenDefined('sherpa-nav');
+      // The app's settings as the provider tells them; else over the session alone.
+      const settings = this.#told ?? new Settings(SETTINGS, options.session);
       this.#nav = new OutletNav(nav as ConstructorParameters<typeof OutletNav>[0], {
-        app: options.app, session: options.session, router, header, host: this, signal: this.signal,
+        app: options.app, session: options.session, settings, router, header, host: this, signal: this.signal,
       });
       await this.#nav.refresh();
       void this.#viewsReady.then(() => this.#nav?.refresh());
@@ -174,6 +176,15 @@ export class SherpaOutlet extends SherpaElement {
     this.#leave();
     this.#drop();
     this.#closeSettings();
+  }
+
+  /** The app's settings, as its provider last told them. */
+  #told: Settings | null = null;
+
+  /** Told the app's settings: the nav reads its own there. */
+  protected override onSettings(settings: Settings): void {
+    this.#told = settings;
+    this.#nav?.told(settings);
   }
 
   /** The document's router: the URL has one owner. */
@@ -398,9 +409,8 @@ export class SherpaOutlet extends SherpaElement {
     await options.ready;
     if (token !== this.#token) return;
     const source: DataSource | undefined = definition && this.#provider ? await this.#provider.open(definition, {
-      // ONE key: its saved Views are kept and read under the Context's name. TODO 321
+      // ONE key: its state is kept and read under the Context's name. TODO 321
       key: name, stores: options.stores(), views: this.#views[name] ?? {}, ...(view ? { view } : {}),
-      session: options.session, ...(options.drafts ? { drafts: options.drafts } : {}),
     }) : undefined;
     if (token !== this.#token) return;
     const leaving = (this.#leaving = new AbortController());

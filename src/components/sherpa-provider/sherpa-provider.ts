@@ -13,7 +13,6 @@
  * Map:
  * - ProvideOptions — What a provider is given: its sources by name, and its Views.
  * - OpenOptions — What `open()` is given beside a page's definition: the app's stores, and the page's Views.
- * - ProviderState — A subtree's whole state as JSON: each source's question, and the View on screen.
  */
 import { SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import {
@@ -23,19 +22,19 @@ import { Settings, type SettingKey, type SettingValue } from '../../core/data/se
 import { report } from '../../core/data/report.js';
 import { chartAxes, summariseMarked, type SummarySpec } from '../../core/data/aggregate.js';
 import type { Row, Store } from '../../core/data/store.js';
-import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.js';
-import type { DraftMode } from '../../core/browser/view-drafts.js';
+import type { ViewLibrary } from '../../core/browser/persist-view.js';
+import { PageKeeper, type PageState } from '../../core/browser/page-state.js';
 import { Updates } from '../../core/data/updates.js';
 import { checkPage, openSource, savedFiltersOf, type PageDefinition } from '../../core/data/page-definition.js';
 import { QueryContext } from '../../core/data/query-context.js';
 import { VIEW } from '../../core/data/query.js';
 import type { Failure } from '../../core/data/failure.js';
-import type { DataSource, QueryState } from '../../core/data/data-source.js';
+import type { DataSource } from '../../core/data/data-source.js';
 import type { Where } from '../../core/data/where.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
 import { bindId, bindSource } from '../../core/ui/bind-source.js';
 import { ProviderMode, isColumn } from './provider-mode.js';
-import { ProviderPage, type Bar, type SharedStore } from './provider-page.js';
+import { ProviderPage, redraft, type Bar } from './provider-page.js';
 import { ProviderReach } from './provider-reach.js';
 import { ProviderNews } from './provider-news.js';
 import { ProviderCards } from './provider-cards.js';
@@ -44,49 +43,30 @@ import { RootLook } from './provider-look.js';
 import { ProviderHighlight } from './provider-highlight.js';
 import { ProviderLegends, type Picker } from './provider-legends.js';
 import { ProviderShowAs, shownAs } from './provider-show-as.js';
-import type { SharedView } from '../../core/data/query-edits.js';
 
 /** What a provider is given: its sources, by name — and, for a page with
- *  Views, the Views over them, the one on screen, and where its Query is kept. */
+ *  Views, the Views over them, the one on screen, and its name in the keeper. */
 export interface ProvideOptions {
   sources: Record<string, DataSource>;
   /** The Views, as JSON — or a function, for a library a reader adds to. */
   views?: ViewLibrary | (() => ViewLibrary);
   /** The View on screen at the start (the URL's). The FIRST View is the page as it loads. */
   view?: string;
-  /** Where the Query outlives a reload — for this View only — under `key`. */
-  session?: { get(key: string): unknown; set(key: string, value: unknown): void };
+  /** The page's name in the keeper: its Query outlives a reload, on its View only.
+   *  None: nothing is kept. TRAP T-one-page-one-document */
   key?: string;
-  /** A DRAFT per View, kept by this page's id: what a reader left on a View
-   *  comes back when they return to it. `mode` is asked at each write, so a
-   *  setting applies at once. None: no drafts. TRAP T-a-view-keeps-a-draft */
-  drafts?: { page: string; mode: () => DraftMode };
 }
 
 /** What `open()` is given beside a page's definition: the app's stores, by the
- *  name a definition gives — and the Views the page ships, the one on screen,
- *  and where its Query is kept. */
+ *  name a definition gives — and the Views the page ships, and the one on screen. */
 export interface OpenOptions {
   stores: Record<string, Store>;
-  /** What the page's saved Views, filters and drafts are kept under: an outlet
-   *  gives its Context's name. Default: the definition's id. TODO 321 */
+  /** The page's name in the keeper: an outlet gives its Context's. Default: the
+   *  definition's id. TODO 321 */
   key?: string;
   /** The page's own Views; a reader's saved ones join them by its key. */
   views?: ViewLibrary;
   view?: string;
-  session?: ProvideOptions['session'];
-  /** Keep a draft per View, for the tab: on or off, asked at each write. None:
-   *  no drafts. TRAP T-a-view-keeps-a-draft */
-  drafts?: () => DraftMode;
-}
-
-/** A subtree's whole state, as JSON — each source's question and the View on
- *  screen — to send out and take back in. v2: `queries`, by source name.
- *  366 step 24 · TRAP T-a-page-goes-out-as-json */
-export interface ProviderState {
-  v: 2;
-  view?: string;
-  queries: Record<string, QueryState>;
 }
 
 /** The attribute a summary needs before it asks; without it a page populates it.
@@ -110,9 +90,6 @@ interface Asked {
   request: ContextRequestEvent<unknown>;
   unbind?: () => void;
 }
-
-/** Where the App Context's answer is kept, in the session a page keeps in. TODO 453 */
-const APP_CONTEXT_KEY = '/filters/_app';
 
 /** What a component asks for that declares nothing: its rows, a page at a time. */
 const ROWS: DataAsk = { shape: 'rows' };
@@ -154,8 +131,14 @@ export class SherpaProvider extends SherpaElement {
     resolve: (el) => this.#resolve(el),
     inherited: (el, name) => this.#inherited(el, name),
     bars: (slot) => this.#slotBars(slot),
-    session: () => this.#session,
-    pageId: () => this.#pageId,
+    toolbar: (slot) => {
+      const page = this.#pages.opened?.id;
+      return page ? this.#keeper.read(page).toolbars?.[slot] : undefined;
+    },
+    keepToolbar: (slot, shown) => {
+      const page = this.#pages.opened?.id;
+      if (page) this.#keeper.write(page, { toolbars: { ...this.#keeper.read(page).toolbars, [slot]: shown } });
+    },
   });
 
   /** What the pointer rests on, and what draws its matches. */
@@ -332,8 +315,6 @@ export class SherpaProvider extends SherpaElement {
     this.#highlight.hover(scope, field, on, value);
   }
 
-  /** Where the open page keeps its Query — and the App Context its answer. */
-  #session: OpenOptions['session'];
   /** The open page's own name for its View scope. */
   #viewLabel = '';
 
@@ -344,18 +325,23 @@ export class SherpaProvider extends SherpaElement {
     const source = this.#pages.opened?.source;
     if (!source) return;
     this.#relabel(source);
-    void this.#pages.drawBars(this.#pages.view).then(() => this.#pages.share(this.#sharedStore()));
+    void this.#pages.drawBars(this.#pages.view).then(() => this.#pages.share(this.#on('appContext')));
   }
 
-  /** The App Context's store, while the app shares it and the page keeps. */
-  #sharedStore(): SharedStore | null {
-    const session = this.#session;
-    if (!this.#on('appContext') || !session) return null;
-    return {
-      get: () => (session.get(APP_CONTEXT_KEY) as SharedView | null | undefined) ?? null,
-      set: (value) => session.set(APP_CONTEXT_KEY, value),
-    };
+  /**
+   * Where every page's state is kept: ONE keeper, its tiers the app's — the
+   * View on screen, its Query, what the reader left on each View, and the
+   * reader's own Views and saved filters. Set it before a page opens.
+   * TRAP T-one-page-one-document
+   */
+  get keeper(): PageKeeper {
+    return this.#keeper;
   }
+  set keeper(keeper: PageKeeper) {
+    this.#keeper = keeper;
+  }
+  /** The keeper it holds: its own, until the app gives its. */
+  #keeper = new PageKeeper();
 
   /** The View scope's name: "App Context" while it is shared, else its own. */
   #relabel(source: DataSource): void {
@@ -459,11 +445,9 @@ export class SherpaProvider extends SherpaElement {
       source?.query.wait(VIEW);
       // …and, where the app asks, every scope the page declares. Will, TODO 436
       this.#scopes = Object.keys(def?.scopes ?? {});
-      this.#pageId = definition.id;
       this.#pageFields = Object.keys(def?.fields ?? {});
       if (this.#on('applyEvery')) for (const scope of this.#scopes) source?.query.wait(scope);
       // Shared, the View is the App Context, and keeps its answer there. TODO 453
-      this.#session = options.session;
       if (source) {
         this.#viewLabel = source.query.scopeLabel(VIEW);
         this.#relabel(source);
@@ -476,13 +460,14 @@ export class SherpaProvider extends SherpaElement {
       }
       const shipped = options.views;
       const key = options.key ?? definition.id;
-      const library = shipped ? (): ViewLibrary => viewLibrary(key, shipped) : null;
+      // The page's own Views, then the reader's. TRAP T-view-library-is-one-vocabulary
+      const library = shipped ? (): ViewLibrary => ({ ...shipped, ...this.#keeper.read(key).views }) : null;
       // The page as DEFINED, before a kept Query: what Reset all on view starts from.
       this.#pages.begin({
         id: key, store: def.store, source, query: source.query, library, initial: source.query.applied,
         savedFilters: savedFiltersOf(definition),
       });
-      this.#pages.sharing = this.#sharedStore();
+      this.#pages.sharing = this.#on('appContext');
       // A View this page does not have is the first.
       const view = options.view && library?.()[options.view] ? options.view : undefined;
       // BEFORE the Query: a kept one is drawn onto these chips.
@@ -491,11 +476,7 @@ export class SherpaProvider extends SherpaElement {
       this.#pages.listen(page.signal);
       await this.provide({
         sources: { [definition.id]: source },
-        ...(library ? {
-          views: library, ...(view ? { view } : {}),
-          ...(options.session ? { session: options.session } : {}), key: `/filters/${key}`,
-          ...(options.drafts ? { drafts: { page: key, mode: options.drafts } } : {}),
-        } : {}),
+        ...(library ? { views: library, ...(view ? { view } : {}), key } : {}),
       });
       if (!page.signal.aborted) opened = source;
       return opened;
@@ -630,7 +611,7 @@ export class SherpaProvider extends SherpaElement {
     return this.#pages.resetView();
   }
 
-  /** The open page: its Views, saved sets, drafts, kept Query and Reset. */
+  /** The open page: its Views, saved sets, what each View was left with, its kept state and Reset. */
   readonly #pages = new ProviderPage({
     el: this,
     bars: () => this.#bars() as Bar[],
@@ -645,6 +626,7 @@ export class SherpaProvider extends SherpaElement {
       await this.rendered;
       return this.word(key);
     },
+    keeper: () => this.#keeper,
   });
 
   /** Stops the open page's listeners. */
@@ -712,33 +694,44 @@ export class SherpaProvider extends SherpaElement {
   }
 
   /**
-   * This subtree's whole state as JSON — each source's question, and the View
-   * on screen — for a link, another service or an agent.
+   * This subtree's state as the page's ONE document — the View on screen, its
+   * Query and what waits for Apply — for a link, another service or an agent.
    * TRAP T-a-page-goes-out-as-json
    */
-  export(): ProviderState {
-    const queries: Record<string, QueryState> = {};
-    for (const [name, source] of Object.entries(this.#sources)) queries[name] = source.query.export();
+  export(): PageState {
+    const query = this.#oneQuery();
     const view = this.#pages.view;
-    return { v: 2, ...(view ? { view } : {}), queries };
+    return {
+      v: 3, ...(view ? { view } : {}),
+      ...(query ? { query: query.export().query, ...(query.dirty() ? { draft: structuredClone(query.draft) } : {}) } : {}),
+    };
   }
 
   /**
-   * Take a state back in, exactly: each named source's question, and its View
-   * — shown on the View chip, and known to the pick listener, so the next pick
-   * of the old View is heard. A source it does not name is left as it is.
+   * Take a state back in, exactly: its Query, what waited for Apply, and its
+   * View — shown on the View chip, and known to the pick listener, so the next
+   * pick of the old View is heard.
    */
-  async import(state: ProviderState): Promise<void> {
-    if (state?.v !== 2) {
-      report({ code: 'unknown-state', message: 'sherpa-provider: not a v2 state, so nothing was taken in.' });
+  async import(state: PageState): Promise<void> {
+    if (state?.v !== 3) {
+      report({ code: 'unknown-state', message: 'sherpa-provider: not a v3 page state, so nothing was taken in.' });
       return;
     }
-    for (const [name, given] of Object.entries(state.queries ?? {})) {
-      const source = this.#sources[name];
-      if (source) await source.query.import(given);
-      else report({ code: 'provider-unknown-source', message: `sherpa-provider: no source "${name}" to take in.`, at: { source: name } });
+    const query = this.#oneQuery();
+    if (state.query && !query) {
+      report({ code: 'provider-no-query', message: 'sherpa-provider: its sources share no one Query to take the state in.' });
+    } else if (state.query && query) {
+      await query.setQuery(state.query);
+      const [source] = Object.values(this.#sources);
+      if (state.draft && source) redraft(source, state.draft);
     }
     if (state.view) this.#pages.takeView(state.view);
+  }
+
+  /** The ONE Query every source shares, or null. 366 step 25 */
+  #oneQuery(): QueryContext | null {
+    const [first, ...more] = Object.values(this.#sources);
+    return first && more.every((other) => other.query === first.query) ? first.query : null;
   }
 
   /** A request from inside: the NEAREST provider answers, so it stops here — but one
@@ -1036,9 +1029,6 @@ export class SherpaProvider extends SherpaElement {
     if (shown.sort) spec['sort'] = shown.sort;
     return spec as unknown as SummarySpec;
   }
-
-  /** The open page's id: a slot's name is its own. */
-  #pageId = '';
 
   /** The fields the open page declares: a row opened in a grid made from a chart shows them. */
   #pageFields: string[] = [];

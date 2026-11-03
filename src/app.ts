@@ -1,11 +1,11 @@
 /**
  * app.ts — `sherpa-ui/app`: the app layer. The provider and the router, the
- * session and settings bound by pointer, saved Views, their drafts and the
- * reader's saved filters, Views from files, and the app definition. OPT-IN: no
- * display component imports any of it. TRAP T-the-app-layer-is-opt-in
+ * session and settings bound by pointer, a page's state and its one keeper,
+ * Views from files, and the app definition. OPT-IN: no display component
+ * imports any of it. TRAP T-the-app-layer-is-opt-in
  */
 // A page's components ASK; the provider answers from its definition.
-export { SherpaProvider, type ProvideOptions, type ProviderState } from './components/sherpa-provider/sherpa-provider.js';
+export { SherpaProvider, type ProvideOptions } from './components/sherpa-provider/sherpa-provider.js';
 // The URL has ONE owner. TRAP T-the-router-owns-the-url
 export { SherpaRouter, type RouteChange } from './components/sherpa-router/sherpa-router.js';
 export type { Route } from './core/browser/route.js';
@@ -24,25 +24,18 @@ export {
   bindQueryEditor, bindWorkflow, drawGraph, inspectNode, markNode,
   type DrawOptions, type GraphEditor, type InspectOptions, type Inspector, type QueryEditorOptions, type WorkflowEditorOptions,
 } from './core/ui/node-graph.js';
-// Saved Views: the reader's own, the View chip's options, a pick applied.
+// A page's state as ONE document, and its one keeper: each part in its tier. TRAP T-one-page-one-document
 export {
-  persistView, clearViewState, applyViewSnapshot, captureView,
+  PageKeeper, sessionTier, localTier, memoryTier, viewSig,
+  type PageState, type PageChange, type LeftView, type Named, type Tier, type PageRemote, type KeeperOptions,
+} from './core/browser/page-state.js';
+// A View applied and read back, the View chip's options, a pick applied.
+export {
+  applyView, captureView,
   viewOptions, uniqueViewLabel, onViewPicked,
-  loadSavedViews, saveViewAs, deleteSavedView,
-  type PersistOptions, type ViewSnapshot, type ApplyReport,
+  type ApplyReport,
   type SavedView, type ViewLibrary, type ViewOption, type ViewPick,
-  type SavedViewStore,
 } from './core/browser/persist-view.js';
-export {
-  syncViews,
-  type SyncOptions,
-  type ViewRemote,
-  type ViewSync,
-} from './core/browser/view-sync.js';
-export {
-  loadSavedFilters, saveFilterAs, deleteSavedFilter,
-  type SavedFilterSet, type SavedFilterOptions,
-} from './core/browser/saved-filters.js';
 // A page's Views from JSON files, each View's markup in an HTML template.
 export { loadViewLibrary } from './core/browser/view-files.js';
 // A saved View's content is MARKUP, parsed through an allow-list on the way in.

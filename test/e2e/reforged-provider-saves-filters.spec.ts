@@ -16,9 +16,10 @@ const PAGE = `{
   },
 }`;
 const SETUP = `
-  const { ArrayStore, SessionStore } = await import('/dist/index.js');
-  // The app's session, which keeps the page's Query across a reload.
-  const session = new SessionStore({});
+  const { ArrayStore } = await import('/dist/index.js');
+  // The reader's saved filters, as the page's one document keeps them. TRAP T-one-page-one-document
+  const storedSets = () => JSON.parse(localStorage.getItem('sherpa:page:plans') ?? '{}').filters ?? {};
+  const keep = (filters) => localStorage.setItem('sherpa:page:plans', JSON.stringify({ v: 3, filters }));
   const root = document.getElementById('root');
   const provider = document.createElement('sherpa-provider');
   provider.settings.set('saveAnyScope', true);
@@ -29,7 +30,7 @@ const SETUP = `
   const rows = [
     { id: 1, plan: 'Pro', tier: 'gold' }, { id: 2, plan: 'Free', tier: 'gold' }, { id: 3, plan: 'Pro', tier: 'silver' },
   ];
-  const open = () => provider.open(${PAGE}, { stores: { plans: new ArrayStore(rows, { key: 'id' }) }, views: {}, session });
+  const open = () => provider.open(${PAGE}, { stores: { plans: new ArrayStore(rows, { key: 'id' }) }, views: {} });
   const settle = async () => { await window.__settled?.(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); };
   // Each set as the bar was told it, and whether its chip is on a bar.
   const told = () => bar.savedSets.map(({ id, added }) => ({ id, added: !!added }));
@@ -42,8 +43,9 @@ const SETUP = `
 
 test.beforeEach(async ({ page }) => {
   await page.evaluate(() => {
-    for (const key of Object.keys(localStorage)) if (key.startsWith('sherpa:filter')) localStorage.removeItem(key);
-    for (const key of Object.keys(sessionStorage)) if (key.startsWith('sherpa:filter')) sessionStorage.removeItem(key);
+    for (const store of [localStorage, sessionStorage]) {
+      for (const key of Object.keys(store)) if (key.startsWith('sherpa:')) store.removeItem(key);
+    }
   });
 });
 
@@ -59,7 +61,7 @@ test('Save filters keeps every scope under a name: its chip joins the bar, off, 
     bar.dispatchEvent(new CustomEvent('filters-save-as', { bubbles: true, composed: true }));
     const id = provider.saveFilters('Gold Pro');
     await settle();
-    const stored = JSON.parse(localStorage.getItem('sherpa:filter-sets:plans') ?? '{}');
+    const stored = storedSets();
     return { id, stored, told: told(), read: provider.savedFilterSets, chip: chip(bar, 'gold-pro'), total: source.debugState().total,
       noName: provider.saveFilters('') ?? null, buttons: bar.shadowRoot.querySelectorAll('.save-set, .save-name').length };
   })()`) as Record<string, any>;
@@ -82,10 +84,10 @@ test('Save filters keeps every scope under a name: its chip joins the bar, off, 
 test('a set ticked is a preset chip, on, with its conditions beside the reader\'s; several may be on, a reload keeps them, and unticked its chip goes and what it held', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
-    localStorage.setItem('sherpa:filter-sets:plans', JSON.stringify({
+    keep({
       silver: { label: 'Silver', query: { v: 1, scopes: { view: { holds: ['tier'], where: { tier: { eq: 'silver' } } } } } },
       pro: { label: 'Pro', query: { v: 1, scopes: { data: { where: { plan: { eq: 'Pro' } } } } } },
-    }));
+    });
     const source = await open();
     await settle();
     const listed = told();
@@ -129,17 +131,18 @@ test('a set ticked is a preset chip, on, with its conditions beside the reader\'
   expect(r['off']).toEqual({ pro: null, total: 3, told: [{ id: 'silver', added: false }, { id: 'pro', added: false }], plan: null });
 });
 
-test('another View takes the chips off with what they held; Rename keeps a chip on, and Delete takes it off; an old one-scope saved filter is not adopted', async ({ page }) => {
+test('another View takes the chips off with what they held; Rename keeps a chip on, and Delete takes it off; a reader\'s saved filter of the last shape is read once, an older one is not adopted', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
-    // Sherpa keeps no shim for an app's old stored data (Will, D4).
+    // Sherpa keeps no shim for an app's old stored data (Will, D4) — but a reader's
+    // saved filters of the last shape are read once into the page's document (U3, B).
     localStorage.setItem('sherpa:filters:plans', JSON.stringify({ 'pro-only': { label: 'Pro only', where: { plan: { eq: 'Pro' } } } }));
     localStorage.setItem('sherpa:filter-sets:plans', JSON.stringify({ 'pro-only': { label: 'Pro only',
       query: { v: 1, scopes: { data: { where: { plan: { eq: 'Pro' } } } } } } }));
     const source = await open();
     await settle();
-    const sets = JSON.parse(localStorage.getItem('sherpa:filter-sets:plans') ?? '{}');
-    const old = localStorage.getItem('sherpa:filters:plans');
+    const sets = storedSets();
+    const old = [localStorage.getItem('sherpa:filters:plans') !== null, localStorage.getItem('sherpa:filter-sets:plans')];
     provider.applyFilters('pro-only');
     await source.load();
     await settle();
@@ -150,11 +153,11 @@ test('another View takes the chips off with what they held; Rename keeps a chip 
     const deleted = provider.deleteFilters('pro-rows');
     await source.load();
     await settle();
-    return { sets, old, renamed, deleted, left: JSON.parse(localStorage.getItem('sherpa:filter-sets:plans') ?? '{}'),
+    return { sets, old, renamed, deleted, left: storedSets(),
       chip: chip(bar, 'pro-rows'), total: source.debugState().total, rows: bar.savedSets };
   })()`) as Record<string, any>;
   expect(Object.keys(r['sets'])).toEqual(['pro-only']);
-  expect(r['old']).not.toBeNull();
+  expect(r['old']).toEqual([true, null]);
   expect(r['renamed']).toEqual({ next: 'pro-rows', was: null, now: true, total: 2 });
   expect(r['deleted']).toBe(true);
   expect(r['left']).toEqual({});
@@ -274,7 +277,7 @@ test('Save filters at any scope OFF: a set is the asking bar\'s scope alone, lis
     dataBar.dispatchEvent(new CustomEvent('filters-save-as', { bubbles: true, composed: true }));
     const id = provider.saveFilters('Pro rows');
     await settle();
-    const stored = Object.keys(JSON.parse(localStorage.getItem('sherpa:filter-sets:plans') ?? '{}')['pro-rows']?.query.scopes ?? {});
+    const stored = Object.keys(JSON.parse(localStorage.getItem('sherpa:page:plans') ?? '{}').filters?.['pro-rows']?.query.scopes ?? {});
     // …and the View's bar asks: nothing is saved.
     viewBar.dispatchEvent(new CustomEvent('filters-save-as', { bubbles: true, composed: true }));
     const fromView = provider.saveFilters('From the View') ?? null;

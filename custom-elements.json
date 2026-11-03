@@ -8028,6 +8028,13 @@
             },
             {
               "kind": "field",
+              "name": "keeper",
+              "type": {
+                "text": "PageKeeper"
+              }
+            },
+            {
+              "kind": "field",
               "name": "reach",
               "type": {
                 "text": "{ reach: 'ok' | 'unreached' | 'down'; failure?: Failure }"
@@ -8283,7 +8290,7 @@
               "kind": "method",
               "name": "export",
               "parameters": [],
-              "description": "This subtree's whole state as JSON — each source's question, and the View on screen — for a link, another service or an agent."
+              "description": "This subtree's state as the page's ONE document — the View on screen, its Query and what waits for Apply — for a link, another service or an agent."
             },
             {
               "kind": "method",
@@ -8292,11 +8299,11 @@
                 {
                   "name": "state",
                   "type": {
-                    "text": "ProviderState"
+                    "text": "PageState"
                   }
                 }
               ],
-              "description": "Take a state back in, exactly: each named source's question, and its View — shown on the View chip, and known to the pick listener, so the next pick of the old View is heard. A source it does not name is left as it is."
+              "description": "Take a state back in, exactly: its Query, what waited for Apply, and its View — shown on the View chip, and known to the pick listener, so the next pick of the old View is heard."
             }
           ],
           "events": [

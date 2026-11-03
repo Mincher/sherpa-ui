@@ -7,6 +7,7 @@
  * Map:
  * - NavHost — what the nav asks of its outlet: the Context, the Settings page, the Views
  * - OutletNav — The nav an outlet keeps, from app.json and the session's two lists.
+ * - .told — The app's settings, told again: the nav reads its three there.
  * - .refresh — Re-stamp every Area's children; the one holding the page opens.
  * - .syncCurrent — The lit row: the Context's, or its View's with the hierarchy on.
  * - .syncStar — The ★ says whether the View on screen is a favourite.
@@ -17,7 +18,7 @@
  * - .settingsClosed — Settings closed: back to the Context's row, and the rail as it was.
  */
 import type { AppDefinition } from '../../core/data/app-definition.js';
-import { SETTINGS } from '../../core/data/settings.js';
+import type { Settings } from '../../core/data/settings.js';
 import type { SessionList, SessionStore } from '../../core/browser/session.js';
 import type { SherpaRouter } from '../sherpa-router/sherpa-router.js';
 import type { NavConfig, NavEntry, NavState, QuickEntry } from '../sherpa-nav/sherpa-nav.js';
@@ -44,8 +45,12 @@ export class OutletNav {
   readonly #nav: Nav;
   /** The app, as app.json says it. */
   readonly #app: AppDefinition;
-  /** Where the pin, the hierarchy switch and the two lists live. */
+  /** Where the pin and the two lists live. */
   readonly #session: SessionStore;
+  /** The app's settings: the hierarchy, Views or Contexts, and hover. */
+  #settings: Settings;
+  /** Stops hearing the settings told before. */
+  #heard: AbortController | null = null;
   /** The URL's one owner. */
   readonly #router: SherpaRouter | null;
   /** The shell's header, whose View chip carries the ★. */
@@ -62,12 +67,13 @@ export class OutletNav {
   #lastSettings: string | null;
 
   constructor(nav: Nav, at: {
-    app: AppDefinition; session: SessionStore; router: SherpaRouter | null; header: HTMLElement | null;
+    app: AppDefinition; session: SessionStore; settings: Settings; router: SherpaRouter | null; header: HTMLElement | null;
     host: NavHost; signal: AbortSignal;
   }) {
     this.#nav = nav;
     this.#app = at.app;
     this.#session = at.session;
+    this.#settings = at.settings;
     this.#router = at.router;
     this.#header = at.header;
     this.#host = at.host;
@@ -93,12 +99,13 @@ export class OutletNav {
     const stops = [
       this.#favorites.subscribe(() => void this.refresh()),
       this.#recents.subscribe(() => void this.refresh()),
-      at.session.subscribe(SETTINGS.navHierarchy.at, () => { this.syncCurrent(); void this.refresh(); }),
-      at.session.subscribe(SETTINGS.navViews.at, () => { this.syncStar(); void this.refresh(); }),
-      at.session.subscribe(SETTINGS.navHover.at, () => this.#syncHover()),
     ];
+    this.#hear(at.settings);
     this.#syncHover();
-    at.signal.addEventListener('abort', () => { for (const stop of stops) stop(); }, { once: true });
+    at.signal.addEventListener('abort', () => {
+      for (const stop of stops) stop();
+      this.#heard?.abort();
+    }, { once: true });
     const { signal } = at;
     nav.addEventListener('nav-state-change', this.#onState, { signal });
     nav.addEventListener('nav-select', this.#onSelect, { signal });
@@ -106,11 +113,43 @@ export class OutletNav {
     document.addEventListener('view-favorite', this.#onStar, { signal });
   }
 
+  /** The app's settings, told again: the nav reads its three there. TRAP T-a-setting-is-declared-once */
+  told(settings: Settings): void {
+    if (settings === this.#settings) return;
+    this.#settings = settings;
+    this.#hear(settings);
+    this.syncCurrent();
+    this.syncStar();
+    this.#syncHover();
+    void this.refresh();
+  }
+
+  /** Each move of the nav's three settings, heard. */
+  #hear(settings: Settings): void {
+    this.#heard?.abort();
+    this.#heard = new AbortController();
+    settings.addEventListener('change', (event) => {
+      const { key } = (event as CustomEvent<{ key: string }>).detail;
+      if (key === 'navHierarchy') {
+        this.syncCurrent();
+        void this.refresh();
+      } else if (key === 'navViews') {
+        this.syncStar();
+        void this.refresh();
+      } else if (key === 'navHover') this.#syncHover();
+    }, { signal: this.#heard.signal });
+  }
+
+  /** Is the hierarchy on: a Context's Views its child rows? */
+  #hierarchy(): boolean {
+    return this.#settings.get('navHierarchy') === true;
+  }
+
   /** Re-stamp every Area's children. The one holding the page opens; the nav
    *  keeps the reader's own open Areas (TODO 116). */
   refresh(): Promise<void> | void {
     const here = this.#rowFor(this.#context())?.id;
-    const hierarchy = this.#session.get(SETTINGS.navHierarchy.at) === true;
+    const hierarchy = this.#hierarchy();
     for (const row of this.#rows()) {
       const list = row.id === 'recent' ? this.#recents : row.id === 'favorites' ? this.#favorites : null;
       const context = this.#contextOf(row.href);
@@ -136,7 +175,7 @@ export class OutletNav {
     const row = settings ? this.#rows().find((r) => this.#settingsOf(r.href) === settings) : this.#rowFor(name);
     const id = row?.id ?? `context-${name}`;
     const view = settings ? null : route['view'] ?? this.#host.firstView(name);
-    this.#nav.dataset['currentId'] = row && view && this.#session.get(SETTINGS.navHierarchy.at) === true ? `${id}:${view}` : id;
+    this.#nav.dataset['currentId'] = row && view && this.#hierarchy() ? `${id}:${view}` : id;
   }
 
   /** The header's ★ says whether the View on screen is a favourite — or,
@@ -189,7 +228,7 @@ export class OutletNav {
 
   /** "Expand navigation on hover": on unless the session says off. */
   #syncHover(): void {
-    this.#nav.toggleAttribute('data-no-hover', this.#session.get(SETTINGS.navHover.at) === false);
+    this.#nav.toggleAttribute('data-no-hover', this.#settings.get('navHover') === false);
   }
 
   /** The rows app.json gives: Home is the default Context, Recent and Favorites
@@ -265,7 +304,7 @@ export class OutletNav {
 
   /** Do Recents and Favorites name Views (the default), or Contexts? TODO 399 */
   #byView(): boolean {
-    return this.#session.get(SETTINGS.navViews.at) !== false;
+    return this.#settings.get('navViews') !== false;
   }
 
   /** Stored rows as an Area's children: each View, or — listing Contexts — each

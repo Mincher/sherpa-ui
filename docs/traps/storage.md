@@ -75,32 +75,95 @@ marks the header `data-custom-view` while one of the reader's is on screen
 - Site: `src/components/sherpa-app-header/sherpa-app-header.css`
 - Site: `src/components/sherpa-app-header/sherpa-app-header.html`
 
-### T-a-view-keeps-a-draft
+### T-one-page-one-document
 
-**A View keeps a DRAFT: the filters a reader left on it, unsaved** — Will,
-TODO 144: *"Filter configurations should survive view swaps during a session,
-even if not saved as a definition … if they could persist across sessions,
-too … configurable options for filtering (on by default)."* A pick used to
-put the View's own filters on, so what the reader had set on the View they
+**A page's state is ONE document, `PageState`, with ONE keeper** — plan 695 U3.
+It was kept in nine places, in three shapes (the provider's `{ v: 2, queries }`,
+`persistView`'s `{ v: 2, query, elements }`, the session's `{ view, query, draft }`),
+and "draft" meant two things. Now one document per page, under its name (an
+outlet's Context):
+
+| part | is | tier |
+|---|---|---|
+| `view` | the View on screen | the tab |
+| `query` | its Query applied, exact | the tab |
+| `draft` | what waits for Apply — the ONE meaning of draft | the tab |
+| `ui` | each element's own state, by id | the tab |
+| `left` | each View the reader changed and left | the tab |
+| `added` | the saved filters on a bar, with their scope | the tab |
+| `toolbars` | each card's filter toolbar, shown or shut | every tab |
+| `views` | NAMED: the reader's own Views | every tab; the database, a server |
+| `filters` | NAMED: the reader's saved filters | every tab; a server |
+
+`PageKeeper` keeps it: `read(page)` reads through each tier, so another tab's
+named parts are seen at once; `write(page, parts)` sends each part to its tier,
+and `undefined` forgets one. A tier is pluggable (`sessionTier`, `localTier`,
+`memoryTier`, or the app's own). Web Storage is the only synchronous tier, so the
+keeper is read before the first load (`T-restore-before-first-load`); the
+database and a server sit behind it (`T-local-first-then-onward`). The App
+Context's one answer is the keeper's too, for the tab (`appContext`).
+
+The provider holds one: `provider.keeper`, the app's set before a page opens.
+Every keeper of old goes through it — the kept Query, what was left on each View,
+the saved Views and filters, the sets on a bar, a card's toolbar, the App Context,
+the outlet's Views (`viewsOf`) and a Context's element state (`keepUi`); and
+`provider.export()` hands out the same shape. The URL's `?view` stays the
+router's (`T-the-router-owns-the-url`): the outlet hands it to `open()`, and the
+document's `view` follows each pick.
+
+**A stored part this version cannot read is dropped, never half-applied**; a part
+made of the reader's own entries loses only the broken ones, and a document of
+another `v` is not read. A reader's saved Views and saved filters as v2 kept them
+(`sherpa:views:<page>`, `sherpa:filter-sets:<page>`) are read ONCE into the page's
+document, and the old keys go only once the new one holds them. What else v2
+kept was the tab's, and is not carried.
+
+- Site: `src/core/browser/page-state.ts`
+- Site: `src/components/sherpa-provider/provider-page.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/app.ts`
+- Site: `test/unit/headless-data-layer.test.mjs`
+- Site: `test/e2e/reforged-a-page-keeps-one-key.spec.ts`
+- Site: `test/e2e/reforged-only-a-named-part-crosses-tabs.spec.ts`
+- Site: `test/e2e/reforged-provider-saves-filters.spec.ts`
+
+### T-only-a-named-part-crosses-tabs
+
+**Only what the reader NAMES crosses tabs** — Will, 2026-10-20 (TODO 370): *"The
+only way to share filter configurations across tabs, windows, or sessions is if
+they are saved by the user to a custom definition."* Each part's tier is declared
+ONCE, in `TIER_OF`: the reader's own Views and saved filters are every tab's
+(localStorage); the View on screen, its Query, what was left on each View, the
+sets on a bar and each element's state are the TAB's (sessionStorage). Two tabs on
+one screen filtered differently is a feature; a shared tier would make them fight.
+A card's toolbar is every tab's, as chrome, like the nav's pin. A store's History
+is per tab too (345 D2 B), outside the keeper.
+
+- Site: `src/core/browser/page-state.ts`
+- Site: `test/e2e/reforged-only-a-named-part-crosses-tabs.spec.ts`
+
+### T-a-view-keeps-what-the-reader-left
+
+**A View keeps what the reader left on it, unsaved** — Will, TODO 144: *"Filter
+configurations should survive view swaps during a session, even if not saved as
+a definition … configurable options for filtering (on by default)."* A pick used
+to put the View's own filters on, so what the reader had set on the View they
 left was gone.
 
-**A draft is the TAB's alone** — Will, 2026-10-20 (TODO 370): *"The only way to
-share filter configurations across tabs, windows, or sessions is if they are
-saved by the user to a custom definition."* The "across sessions" mode
-(`always`, kept in localStorage) is gone; a shared copy an older build left is
-never read, and goes at the next write.
+**It is the TAB's alone** — Will, 2026-10-20 (TODO 370;
+`T-only-a-named-part-crosses-tabs`). The "across sessions" mode is gone.
 
-`src/core/browser/view-drafts.ts` keeps one map per page, View id →
-`{ query, sig }`, in the tab's storage.
-`sig` is the View's own definition as it was when the draft was made: a
-draft over another definition is DROPPED, so a changed preset never hides
-behind an old draft. The provider takes a `drafts` option — a function
-asked at every write, so a setting applies at once; none means no drafts.
+The page's document keeps it as `left`: View id → `{ query, sig }`, the query a
+View's JSON. `sig` is the View's own definition as it was then: one left over
+another definition is DROPPED, so a changed preset never hides behind it. The
+keeper's `eachView` is asked at every write, so a setting applies at once; off,
+no View keeps what was left, and only the View on screen's `query` survives a
+reload. It is the keeper's, so no outlet passes it on.
 
 Four things that are not obvious:
 
 - **Only the READER's changes write it.** A pick and a reset write the
-  source too, and heard then, the NEW View's filters were saved under the
+  source too, and heard then, the NEW View's filters were kept under the
   OLD View's name (its id changes only after the pick's async write). So a
   whole Query put on says who put it — `setQuery(q, { by })` rides on its
   `query-change` — and the keeper keeps only a change with no `by`, or
@@ -109,48 +172,26 @@ Four things that are not obvious:
   which also dropped a reader's change made in those frames.
 - **A pick FLUSHES first**: a change still waiting for its frame is written,
   under the View it was made on, before the pick's own write.
-- **A draft is read INSIDE the pick** (`onViewPicked`'s `draft` hook), in
-  place of the View's Query, so the View's own filters never flash. It is a
-  RESTORE, so it is exact: a carry-over field does not follow into it.
-- **Reset all on view, Save and Delete clear it**: the View's own filters
+- **It is read INSIDE the pick** (`onViewPicked`'s `left` hook), in place of
+  the View's Query, so the View's own filters never flash. It is a RESTORE, so
+  it is exact: a carry-over field does not follow into it.
+- **Reset all on view, Save and Delete forget it**: the View's own filters
   are on, or the filters have a home.
 
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
-- Site: `src/core/browser/persist-view.ts`
-- Site: `src/core/browser/view-drafts.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
-- Site: `test/e2e/reforged-view-drafts.spec.ts`
-
-### T-persist-defaults-per-tab
-
-`persistView` keeps each component's state across a page reload — the rows a
-person ticked in a grid, say; the provider keeps the Query (366 step 10). An
-accidental refresh would throw it away, and they start again.
-
-It is a HELPER, not a feature of `DataSource`. Where state is kept — and
-whether it should survive a reload at all — is the host's decision: a dashboard
-may want it, a wizard may not, and a saved-views table on a server is a third
-answer. A source that wrote to storage itself would make that choice for every
-app that ever binds one.
-
-**`sessionStorage` BY DEFAULT**, and that is the important part: two tabs on the
-same screen filtered differently is a feature, not a bug, and `localStorage`
-would make them fight. `{ shared: true }` is for the rarer case where a filter
-genuinely belongs to the person rather than to the tab.
-
-`saveViewAs` defaults the OTHER WAY — SHARED (`localStorage`) — and deliberately:
-a view a reader took the trouble to NAME should outlive the tab, where "where was
-I" state should not.
-
+- Site: `src/core/browser/page-state.ts`
 - Site: `src/core/browser/persist-view.ts`
+- Site: `test/e2e/reforged-a-view-keeps-what-the-reader-left.spec.ts`
 
 ### T-one-snapshot-not-a-key-per-concern
 
-ONE SNAPSHOT, not a key per concern. It was heading for four — source state,
+ONE SHAPE, not a key per concern. It was heading for four — source state,
 column filters, selection, chips — four shapes and four restore paths for one
 idea. A saved view, a preset, a deep link and an agent's MCP request are the
-SAME object; that is the point of having one shape: `{ v: 2, query, elements }`,
-its `query` a View's JSON, put back by `setQuery` (366 step 10).
+SAME object; that is the point of having one shape: a View, `{ query, ui }`, its
+`query` a View's JSON, put back by `setQuery` (366 step 10), and its `ui` each
+element's state. `applyView` applies it, `captureView` reads it back, and a
+page's kept `ui` is the same (`keeper.keepUi`).
 
 **WHAT EACH ELEMENT CONTRIBUTES is the caller's function**, because only the
 caller knows which properties are view state and which are incidental — guessing
@@ -159,40 +200,42 @@ would restore someone's scroll position a week later. Each returns an
 rule is why `captureView`'s `reads` map is required and why omitting it makes an
 element contribute nothing.
 
-`ViewSnapshot.v` is the version of the SHAPE, not of the data. A saved view
-outlives the code that made it, and an unrecognised version — a stored `v: 1`
-too, whose `source` was a ViewState — is ignored WHOLE rather than half-applied,
-because a definition applied in part leaves a screen in a state nobody designed.
+The page's document carries the version of the SHAPE, not of the data
+(`PageState.v`). A saved view outlives the code that made it, and an unrecognised
+version is ignored WHOLE rather than half-applied, because a state applied in
+part leaves a screen nobody designed (`T-one-page-one-document`).
 
 - Site: `src/core/browser/persist-view.ts`
+- Site: `src/core/browser/page-state.ts`
+- Site: `test/e2e/reforged-data-source.spec.ts`
 
 ### T-restore-before-first-load
 
 RESTORE FIRST, before anything is wired, so each component takes its kept
 state before the first rows arrive, rather than drawing empty and then again.
-`persistView` keeps each component's state only — the page keeps the Query,
-and a whole Query restored with `setQuery` is one load (366 step 10).
+The keeper reads the tab's tier SYNCHRONOUSLY: `open()` puts the kept Query on
+before the first load, a whole Query restored with `setQuery` in one load (366
+step 10), and `keepUi` puts each element's own state back as it is called.
 
-The save side is the mirror: it hangs off the source's **`change`**, which fires
-after a load COMPLETES — the one moment the state is both settled and known to be
-loadable. A host whose view has no source calls the returned `save` itself.
+The save side is the mirror: `keepUi` hangs off the source's **`change`**, which
+fires after a load COMPLETES — the one moment the state is both settled and known
+to be loadable.
 
 `DataSource extends EventTarget`, so `addEventListener` honours the
 `AbortSignal` natively — no second way to say "stop" (see
 `T-signal-not-a-teardown-list`).
 
-- Site: `src/core/browser/persist-view.ts`
-- Site: `src/core/browser/view-sync.ts`
+- Site: `src/core/browser/page-state.ts`
 
 ### T-apply-degrades-never-throws
 
-`applyViewSnapshot` DEGRADES rather than throws. A saved view outlives its code —
+`applyView` DEGRADES rather than throws. A saved view outlives its code —
 a component renamed, a column dropped, a method gone — and one stale key must not
 stop the rest being restored. What could not be applied comes back in the report,
 so a host can tell the user rather than leave them guessing.
 
 ```js
-const report = applyViewSnapshot(snapshot, { source, elements: { grid } });
+const report = applyView(view, { query: source.query, elements: { grid } });
 if (report.missingElements.length) … // tell someone
 ```
 
@@ -231,8 +274,6 @@ A property whose value is a FUNCTION is skipped: `columnClause` needs a field
 argument, so a caller wanting it must name the setter form instead. Skipping
 beats storing `"[object Function]"`.
 
-`saveViewAs` takes the same `reads` map for the same reason.
-
 - Site: `src/core/browser/persist-view.ts`
 
 ### T-view-library-is-one-vocabulary
@@ -253,27 +294,7 @@ blank and a reader looking at data no view claims — which is also what
 `T-persistent-chip-is-a-selector` guards on the toolbar side.
 
 - Site: `src/core/browser/persist-view.ts`
-
-### T-view-content-is-a-view-definition
-
-A `SavedView.content` carries that view's OWN CONTENT AND LAYOUT, for when it
-differs from its neighbours'. A preset is not always the same screen with
-different rows: "Capacity planning" may want a histogram and a forecast table
-where "Fleet overview" wants metric tiles and a donut.
-
-**OPTIONAL, and most views omit it** — a set of views over ONE screen is the
-common and cheap case, where nothing is torn down and `snapshot.elements`
-configures what is already there.
-
-It is a `ViewDefinition`, the shape `renderView` builds. A second shape for "a
-screen as data" would be a second thing to learn, serialise and get wrong.
-
-The snapshot still applies AFTERWARDS, so a view can build its own grid AND
-arrive with a column already filtered. `saveViewAs` stores `content` for the
-same reason: a view of a screen the reader BUILT has to remember that screen, or
-re-opening it would restore the state onto whatever was there instead.
-
-- Site: `src/core/browser/persist-view.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
 ### T-library-re-read-on-every-pick
 
@@ -351,22 +372,22 @@ showed the Fleet cards under a chip that said Capacity planning (TODO 198).
 
 ### T-derived-id-makes-resave-an-update
 
-A saved view's id is DERIVED from its label — lowercase, words joined by a hyphen
-— rather than generated. That is what makes saving the same name twice an
-**UPDATE**. A random id would leave a reader with two "Q3 capacity" rows and no
-way to tell them apart.
+A saved View's and a saved filter's id is DERIVED from its label — lowercase,
+words joined by a hyphen — rather than generated. That is what makes saving over
+one an **UPDATE** in its place: `saveView()` with no name keeps the id of the View
+on screen, and a renamed set moves to its new name's id where it stood. A random
+id would leave a reader with two "Q3 capacity" rows and no way to tell them apart.
 
 A label of pure punctuation still needs an id, so the slug falls back to the RAW
 label; that keeps it addressable rather than colliding on an empty key.
 
-`deleteSavedView` REBUILDS the store without the id rather than
-`delete views[id]`. A dynamic delete on a parsed-JSON object is the one shape
-that can carry a prototype key through — and this object came from storage, which
-a person can edit (`T-storage-access-throws`).
+A delete REBUILDS the part without the id rather than `delete views[id]`. A
+dynamic delete on a parsed-JSON object is the one shape that can carry a
+prototype key through — and this object came from storage, which a person can
+edit (`T-storage-access-throws`).
 
-- Site: `src/core/browser/persist-view.ts`
 - Site: `src/core/browser/web-storage.ts`
-- Site: `src/core/browser/saved-filters.ts`
+- Site: `src/components/sherpa-provider/provider-page.ts`
 
 ### T-attributes-are-the-state-channel
 
@@ -502,7 +523,7 @@ one version, its object stores made in one upgrade from one fixed schema
 | `sets` | `name` | a remote store's held set, kept between sessions (`keepCache`) |
 | `outbox` | `[outbox, id]` | the writes that wait (`keepOutbox`) |
 | `notices` | `id` | the notices a worker keeps until seen |
-| `views` | `[page, id]` | the saved Views' durable tier (`syncViews`) |
+| `views` | `[page, id]` | the saved Views' durable tier (the page keeper's `database`) |
 
 Before, each part opened its own database (`sherpa`, `sherpa-cache`,
 `sherpa-outbox`, `sherpa-notices`, and an app's own), and two failed silently:
@@ -636,72 +657,71 @@ made inside its work.
 
 ### T-local-first-then-onward
 
-A view's state lives in THREE tiers, and each exists because the one below it
-cannot do that job:
+The reader's own Views live in THREE tiers, and each exists because the one
+below it cannot do that job:
 
 | tier | holds | why not the one below |
 |---|---|---|
-| Web Storage | the CURRENT view, per tab | it is the only **synchronous** one |
-| IndexedDB | every saved view, durably | it is the only one **without a ~5MB cap** |
-| a server | views that follow the user | it is the only one **another device sees** |
+| Web Storage | the page's document | it is the only **synchronous** one |
+| IndexedDB | every saved View, durably | it is the only one **without a ~5MB cap** |
+| a server | the named parts that follow the reader | it is the only one **another device sees** |
 
-`T-restore-before-first-load` requires the current view to be readable BEFORE
-the first load, or the page queries twice and blinks. IndexedDB is async and can
-never satisfy that. So `persistView` keeps its synchronous Web-Storage restore
-untouched and `syncViews` sits BEHIND it — this is why adding IndexedDB did not
-change `persist-view.ts` at all.
+`T-restore-before-first-load` requires the page to be readable BEFORE the first
+load, or it queries twice and blinks. IndexedDB is async and can never satisfy
+that. So the keeper reads Web Storage, and the database and a server sit BEHIND
+it: `database: true` and `remote` are the app's, off by default.
 
 **LOCAL WINS on a clash**, and the merge order in `restore()` is the reverse of
 what looks natural — remote first, so local overwrites it:
 
 ```js
-{ ...remote, ...(await fromIdb()), ...loadSavedViews(page) }
+{ ...remote.views, ...fromDatabase, ...here.views }
 ```
 
-A view the user edited on this device and has not pushed yet must not be
-replaced by the server's older copy. Reverse those spreads and the user's work
-vanishes on the next reload.
+A View the reader edited on this device and has not pushed yet must not be
+replaced by the server's older copy. Reverse those spreads and the reader's work
+vanishes. `restore()` keeps the merge here, so the page shows it, and pushes
+nothing back.
 
-**A FAILED PUSH IS NOT A FAILED SAVE.** The durable copy is written on `touch()`
-immediately; only the WIRE is debounced. A rejecting server is reported through
-`onError` and never thrown, because the view is already saved and the user is
-not waiting on the network. Nor is it retried on a timer — a retry loop against
-a rejecting server is a request storm nobody asked for, and the next `touch`
-carries the same snapshot anyway.
+**A FAILED PUSH IS NOT A FAILED SAVE.** The durable copy is written on each
+named write at once; only the WIRE is debounced. A rejecting server is reported
+through `onError` and never thrown, because the View is already saved and the
+reader is not waiting on the network. Nor is it retried on a timer — a retry loop
+against a rejecting server is a request storm nobody asked for, and the next
+write carries the same snapshot anyway.
 
 An absent tier is not an error. With no IndexedDB, no storage and no remote —
-which is Node — every method still answers, with `{}`.
+which is Node — every method still answers.
 
 **A DELETE must reach IndexedDB too**, or the merge brings it back and the next
-push publishes it (found 2026-10-14). But "in IndexedDB and not in Web Storage"
-can also mean a view from the server, or one Web Storage had no room for. So
-`touch()` removes only what Web Storage held at the LAST look and no longer
-does, and a push waits for that write.
+push publishes it (found 2026-10-14). A write knows which Views it removed, so it
+deletes exactly those, in the same transaction as the rest; a push waits for it.
+The database half is fetched only where an app asks for it.
 
-- Site: `src/core/browser/view-sync.ts`
+- Site: `src/core/browser/page-state.ts`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
 
 ### T-sync-pushes-a-snapshot-not-a-diff
 
-`ViewRemote.push` takes the WHOLE set of a page's views, not a change list.
+`PageRemote.push` takes a page's WHOLE named parts — its Views and its saved
+filters — not a change list.
 
-A diff would need a merge on the server, a conflict policy, and a per-view
+A diff would need a merge on the server, a conflict policy, and a per-entry
 version — three mechanisms to solve a problem that does not exist at this size.
-A page's saved views are kilobytes, a user edits them rarely, and the last write
-winning is what a person expects from "my saved views".
+A page's named parts are kilobytes, a reader edits them rarely, and the last
+write winning is what a person expects from "my saved views".
 
 The push is **debounced**, not batched: a burst of edits inside one interval is
 ONE request carrying the final state, rather than one request per edit. Default
 30 seconds — "fairly regularly", not "immediately", because nothing downstream
-is waiting on it.
+is waiting on it. A tab part never goes: it is not the reader's to share
+(`T-only-a-named-part-crosses-tabs`).
 
-`ViewRemote` is an interface rather than a `RestStore` because a host's view
-endpoint is its own, and the two calls it needs are far narrower than a Store's
-five. A host writes its own: a ready-made HTTP one, `restViewRemote`, had no
-user and went on 2026-10-14.
+`PageRemote` is an interface rather than a `RestStore` because a host's endpoint
+is its own, and the two calls it needs are far narrower than a Store's five.
 
-- Site: `src/core/browser/view-sync.ts`
+- Site: `src/core/browser/page-state.ts`
 
 ### T-session-store-is-the-third-tier
 
@@ -734,10 +754,10 @@ silently lose what a leaf write keeps.
 ### T-session-persist-defaults-shared
 
 `SessionStore.persist` defaults to `shared: true` — **localStorage**, across tabs —
-and that is the OPPOSITE of `persistView`'s default
-(`T-persist-defaults-per-tab`), deliberately.
+and that is the OPPOSITE of a page's own state, which is the tab's
+(`T-only-a-named-part-crosses-tabs`), deliberately.
 
-A view's state is about one screen in one tab; a session preference is about the
+A page's state is about one screen in one tab; a session preference is about the
 PERSON, and a theme that re-picks itself in a second tab is a bug the reader has to
 fix by hand every time.
 
@@ -801,26 +821,6 @@ function or a Date.
 - Site: `test/unit/session-list.test.mjs`
 - Test: `test/unit/session-list.test.mjs`
 
-### T-persist-view-returns-a-teardown
-
-`persistView` restores on the way IN, then saves on every change:
-
-```js
-const off = persistView('records',
-  { source, elements: { grid } },
-  { grid: () => ({ setColumnFilter: …, select: [grid.selectedKeys] }) });
-```
-
-It returns a function that STOPS SAVING, the same way `bindSource()`'s does — a caller
-should not have to remember which of our functions hand back a teardown and
-which do not. `T-signal-not-a-teardown-list` is the component-side form of the
-same rule.
-
-The third argument is per-element and is a FUNCTION, evaluated at save time, so
-it reads live state rather than whatever was true when the wiring ran.
-
-- Site: `src/core/browser/persist-view.ts`
-
 ### T-capture-is-the-save-button
 
 `captureView` reads the current state BACK into a definition — the other half of
@@ -832,7 +832,7 @@ one.** That is the same parity argument as `T-grid-read-without-write-is-half-an
 read from the other end.
 
 ```js
-const snapshot = captureView({ source, elements: { grid, chart } });
+const view = captureView({ source, elements: { grid, chart } });
 captureView({ elements: { grid } }, { grid: ['columnClause', 'selectedKeys'] })
 ```
 
@@ -850,33 +850,12 @@ place:
 const off = onViewPicked(header, VIEWS, { source, elements: { grid } });
 ```
 
-It returns an unsubscribe, like `bindSource()` and `persistView`, so a view that leaves
-the DOM stops listening — see `T-persist-view-returns-a-teardown` for why every
-one of these hands a teardown back.
+It returns an unsubscribe, like `bindSource()` and `keepUi`, so a view that leaves
+the DOM stops listening: a caller should not have to remember which of our
+functions hand back a teardown and which do not (`T-signal-not-a-teardown-list`).
 
 Two callbacks split the work: `onIncomplete` REPLACES the default warn
 (`T-apply-degrades-never-throws`), and `after` does the page-specific half.
-
-- Site: `src/core/browser/persist-view.ts`
-
-### T-save-view-as-returns-the-whole-set
-
-`saveViewAs` returns the FULL view store, not just the view it saved, so a caller
-can re-populate the View chip in the same breath — **a saved view nobody can pick
-is not saved.**
-
-```js
-const views = saveViewAs('dashboard', 'Q3 capacity',
-  { source, elements: { header } }, { header: ['values'] });
-```
-
-`reads` names which of each element's properties are view state, exactly as
-`captureView` takes it (`T-capture-reads-only-what-is-named`). The id is DERIVED
-from the label, so saving "Q3 capacity" twice UPDATES it rather than making a
-second — `T-derived-id-makes-resave-an-update`.
-
-It persists SHARED, unlike `persistView`, which defaults per tab — see
-`T-persist-defaults-per-tab`.
 
 - Site: `src/core/browser/persist-view.ts`
 
@@ -892,7 +871,7 @@ actually touched.
 
 `onViewPicked` read `values.view` and applied that view. Every time. So
 choosing a Region made it re-apply the view already on screen, and
-`applyViewSnapshot` restores a snapshot's filter as the WHOLE query — which
+the snapshot it applied restored its filter as the WHOLE query — which
 cleared the named `contribute` parts and threw away the region the reader had
 just set. Three symptoms, one cause:
 

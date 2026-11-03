@@ -76,7 +76,7 @@ export default [
       'no-restricted-imports': ['error', { patterns: [{
         group: [
           '**/core/browser/session.js', '**/core/browser/persist-view.js', '**/core/browser/route.js',
-          '**/core/browser/view-files.js', '**/core/browser/view-drafts.js', '**/core/browser/view-sync.js',
+          '**/core/browser/view-files.js', '**/core/browser/page-state.js',
           '**/core/browser/view-markup.js', '**/core/browser/saved-filters.js', '**/core/ui/bind-settings.js',
           '**/core/data/app-definition.js', '**/core/data/query-context.js', '**/sherpa-provider/*', '**/sherpa-router/*', '**/sherpa-outlet/*', '**/app.js',
         ],
@@ -88,7 +88,7 @@ export default [
     /* HEADLESS-SAFE but not storage-free: each reaches storage behind a guard
        (LocalStore's and web-storage's try/catch, hasDatabase()), so in Node it degrades. The
        DOM ban applies; the storage ban does not. */
-    files: ['src/core/data/stores.ts', 'src/core/browser/database.ts', 'src/core/browser/idb-store.ts', 'src/core/browser/view-sync.ts', 'src/core/browser/web-storage.ts', 'src/core/browser/cache-keep.ts', 'src/core/browser/outbox-keep.ts', 'src/core/browser/notice-keep.ts', 'src/core/browser/share-feed.ts', 'src/core/browser/one-tab.ts', 'src/core/browser/ask-worker.ts'],
+    files: ['src/core/data/stores.ts', 'src/core/browser/database.ts', 'src/core/browser/idb-store.ts', 'src/core/browser/page-state.ts', 'src/core/browser/web-storage.ts', 'src/core/browser/cache-keep.ts', 'src/core/browser/outbox-keep.ts', 'src/core/browser/notice-keep.ts', 'src/core/browser/share-feed.ts', 'src/core/browser/one-tab.ts', 'src/core/browser/ask-worker.ts'],
     rules: {
       'no-restricted-globals': ['error',
         noDom('document', 'This module must run with NO DOM — it is imported by tests, servers and MCP tools.'),

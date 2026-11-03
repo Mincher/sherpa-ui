@@ -38,7 +38,7 @@ const STAGED = [...BUILT_FROM, 'scripts/check-weight.mjs', BASELINE];
 export const APP = [
   'components/sherpa-provider/', 'components/sherpa-router/', 'components/sherpa-outlet/',
   'core/browser/session.js', 'core/browser/persist-view.js', 'core/browser/route.js',
-  'core/browser/view-files.js', 'core/browser/view-drafts.js', 'core/browser/view-sync.js',
+  'core/browser/view-files.js', 'core/browser/page-state.js',
   'core/browser/view-markup.js', 'core/browser/saved-filters.js', 'core/ui/bind-settings.js',
   'core/data/app-definition.js',
 ];

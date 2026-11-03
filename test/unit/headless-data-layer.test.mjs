@@ -562,70 +562,95 @@ test('IdbStore is importable headless and REPORTS its absence rather than preten
   await assert.rejects(() => store.load(), /IndexedDB is unavailable/);
 });
 
-test('syncViews works with no IndexedDB, no storage and no remote', async () => {
-  /* TRAP T-local-first-then-onward. The whole point of three tiers is that
-     losing the lower two leaves the top one working. In Node BOTH lower tiers
-     are gone, which is the harshest version of that and the easiest to test. */
-  const { syncViews } = await import('../../dist/core/browser/view-sync.js');
+test('the page keeper works with no IndexedDB, no storage and no remote', async () => {
+  /* TRAP T-local-first-then-onward. Losing the lower tiers leaves the top one
+     working; in Node every Web Storage tier is gone too, the harshest case. */
+  const { PageKeeper } = await import('../../dist/core/browser/page-state.js');
 
   const errors = [];
-  const sync = syncViews('records', { onError: (e, stage) => errors.push(stage) });
+  const keeper = new PageKeeper({ database: true, onError: (e, stage) => errors.push(stage) });
 
   // No storage, no IndexedDB, no remote — so nothing is known, and nothing threw.
-  assert.deepEqual(await sync.all(), {});
-  assert.deepEqual(await sync.restore(), {});
-
-  // touch() and flush() are safe with no remote: a local-only app calls both.
-  sync.touch();
-  await sync.flush();
-  await sync.stop();
+  assert.deepEqual(keeper.read('records'), { v: 3 });
+  assert.deepEqual(await keeper.restore('records'), { views: {}, filters: {} });
+  keeper.write('records', { views: { mine: { label: 'Mine' } } });
+  await keeper.flush();
   assert.deepEqual(errors, [], 'an absent tier is not an error — it is the design');
 });
 
-test('syncViews pushes to a remote, debounced, and a failed push is REPORTED not thrown', async () => {
-  /* The half that matters for "sync changes server side fairly regularly": a
-     burst of edits must be ONE request (T-sync-pushes-a-snapshot-not-a-diff),
-     and a rejecting server must not break the local save
-     (T-local-first-then-onward). */
-  const { syncViews } = await import('../../dist/core/browser/view-sync.js');
+test('the keeper pushes the named parts to a remote, debounced, and a failed push is REPORTED not thrown', async () => {
+  /* A burst of edits must be ONE request (T-sync-pushes-a-snapshot-not-a-diff),
+     and a rejecting server must not break the local save (T-local-first-then-onward). */
+  const { PageKeeper, memoryTier } = await import('../../dist/core/browser/page-state.js');
 
   const pushes = [];
   let failNext = false;
   const remote = {
-    pull: () => Promise.resolve({ shared: { label: 'Shared', ui: {} } }),
-    push: (page, views) => {
-      pushes.push({ page, views });
-      return failNext
-        ? Promise.reject(new Error('503'))
-        : Promise.resolve();
+    pull: () => Promise.resolve({ views: { shared: { label: 'Shared', ui: {} } }, filters: { broken: { label: 1 } } }),
+    push: (page, named) => {
+      pushes.push({ page, named });
+      return failNext ? Promise.reject(new Error('503')) : Promise.resolve();
     },
   };
 
   const errors = [];
-  const sync = syncViews('records', {
-    remote,
-    interval: 20,
+  const keeper = new PageKeeper({
+    tab: memoryTier(), local: memoryTier(), remote, interval: 20,
     onError: (error, stage) => errors.push(stage),
   });
 
-  // The remote's views come back even with no local tiers at all.
-  assert.deepEqual(Object.keys(await sync.restore()), ['shared']);
+  // The remote's Views come back, under this browser's — and a broken entry is dropped.
+  assert.deepEqual(await keeper.restore('records'), { views: { shared: { label: 'Shared', ui: {} } }, filters: {} });
+  assert.deepEqual(Object.keys(keeper.read('records').views), ['shared'], 'kept here, so the page shows it');
+  await new Promise((r) => setTimeout(r, 40));
+  assert.equal(pushes.length, 0, 'a restore pushes nothing back');
 
-  // THREE touches inside one interval is ONE push — that is the debounce.
-  sync.touch();
-  sync.touch();
-  sync.touch();
+  // THREE writes inside one interval is ONE push — that is the debounce.
+  for (const label of ['A', 'B', 'C']) keeper.write('records', { views: { ...keeper.read('records').views, [label]: { label } } });
+  // A tab part is not the server's.
+  keeper.write('records', { view: 'A' });
   await new Promise((r) => setTimeout(r, 60));
   assert.equal(pushes.length, 1, 'a burst of edits is one request');
+  assert.deepEqual(Object.keys(pushes[0].named.views), ['shared', 'A', 'B', 'C']);
+  assert.equal('view' in pushes[0].named, false);
 
   // A REJECTING server is reported, and does not throw out of flush().
   failNext = true;
-  sync.touch();
-  await sync.flush();
+  keeper.write('records', { filters: { gold: { label: 'Gold', query: { v: 1, scopes: {} } } } });
+  await keeper.flush();
   assert.equal(pushes.length, 2);
+  assert.deepEqual(pushes[1].named.filters, { gold: { label: 'Gold', query: { v: 1, scopes: {} } } });
   assert.deepEqual(errors, ['push'], 'the failure was reported, not thrown');
+});
 
-  await sync.stop();
+test('one page, one document: each part in its tier, and a part it cannot read is left out', async () => {
+  /* TRAP T-one-page-one-document · T-only-a-named-part-crosses-tabs */
+  const { PageKeeper, memoryTier } = await import('../../dist/core/browser/page-state.js');
+  const tab = memoryTier();
+  const local = memoryTier();
+  const keeper = new PageKeeper({ tab, local });
+  const query = { v: 1, scopes: { view: { holds: [], readings: {} } } };
+  keeper.write('records', {
+    view: 'risk', query, ui: { grid: { select: [[1]] } }, added: { gold: 'data' },
+    left: { risk: { query: { v: 1, scopes: {} }, sig: 'null' } },
+    toolbars: { data: false }, views: { mine: { label: 'Mine' } }, filters: { gold: { label: 'Gold', query: { v: 1, scopes: {} } } },
+  });
+  // The reader's own Views and saved filters cross tabs; what they did in this tab does not.
+  assert.deepEqual(Object.keys(tab.read('sherpa:page:records')).sort(), ['added', 'left', 'query', 'ui', 'v', 'view']);
+  assert.deepEqual(Object.keys(local.read('sherpa:page:records')).sort(), ['filters', 'toolbars', 'v', 'views']);
+  // A new tab: the same shared tier, a new tab tier.
+  const next = new PageKeeper({ tab: memoryTier(), local });
+  assert.deepEqual(Object.keys(next.read('records')).sort(), ['filters', 'toolbars', 'v', 'views']);
+  // `undefined` forgets a part; the last part gone forgets the key.
+  for (const part of ['view', 'query', 'ui', 'added', 'left']) keeper.write('records', { [part]: undefined });
+  assert.equal(tab.read('sherpa:page:records'), undefined);
+  // A stored part of another shape is not read; a broken saved View alone is dropped.
+  tab.write('sherpa:page:records', { v: 3, view: 7, query: { v: 9 }, added: { gold: 'data' } });
+  local.write('sherpa:page:records', { v: 3, views: { mine: { label: 'Mine' }, bad: { label: 3 } } });
+  assert.deepEqual(keeper.read('records'), { v: 3, added: { gold: 'data' }, views: { mine: { label: 'Mine' } } });
+  // A document of another version is not read at all.
+  tab.write('sherpa:page:records', { v: 2, view: 'risk' });
+  assert.equal(keeper.read('records').view, undefined);
 });
 
 test('RestStore sends the query to the server and trusts the answer', async () => {

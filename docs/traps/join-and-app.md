@@ -203,9 +203,9 @@ hand-tiered rows cannot express.
 | `applyState(el, state)` | configure a live element through its own methods and accessors | **1 — the live saved-view path** |
 | `renderElement(node)` | build an element from a JSON node: `{ type, props, data, slots, children, state }` | **0** |
 
-`applyState` is load-bearing: `records.js` builds state blocks for
-`persistView`, and `persist-view.ts` applies them — that is how a saved view
-restores a grid's column filters. It moved to `apply-state.ts` and stays.
+`applyState` is load-bearing: a View's `ui` and a page's kept `ui` are state
+blocks, and `persist-view.ts` applies them — that is how a saved view restores a
+grid's column filters. It moved to `apply-state.ts` and stays.
 
 `renderElement` was a JSON dialect for describing a tree — a second way to say
 what markup already says, with `props` for attributes, `slots` for slots and
@@ -527,8 +527,8 @@ the page's own grid, and that field.
 
 **A card's header toggles the filter toolbars of its slot.** Will, TODO 629. The header
 asks, in `filter-toolbar-change`; the provider owns the answer, sets the bars' native
-`hidden` and writes `data-filter-toolbar` back. It is kept in the session under the page
-and the slot, as a slot's name means nothing on another page. Its bar stays bound while
+`hidden` and writes `data-filter-toolbar` back. It is kept in the page's document
+(`toolbars`, by slot), as a slot's name means nothing on another page. Its bar stays bound while
 hidden, so a filter it holds still applies.
 
 Where the panel answers for its scope a bar has `data-panel-mode`, and a press could hide
@@ -638,8 +638,8 @@ used to leave behind:
   it with reason `page`, which is not the reader's choice: the mode is kept,
   and the next page with filters opens the panel again. On Chat the panel had
   stayed open, showing the last page's filters, which did nothing there.
-- **Every page with data keeps its Query**, under its own session key, on the
-  View it was made on. The Dashboard passed no session, key or View to
+- **Every page with data keeps its Query**, under its own name in the keeper,
+  on the View it was made on. The Dashboard passed no key or View to
   `provide()`, so its filters were lost on a trip away and back.
 
 Since 2026-09-29 a page is a DEFINITION the router hands the provider
@@ -736,14 +736,15 @@ its View filters alone.
 
 ### T-a-provider-keeps-the-views
 
-**The provider keeps a page's Views: `provide({ sources, views, view,
-session, key })`.** Provider P4, 2026-09-27. It puts the session's Query back
+**The provider keeps a page's Views: `provide({ sources, views, view, key })`.**
+Provider P4, 2026-09-27. It puts the page's kept Query back
 — only on the View it was made on — or else the URL's View (the FIRST View is
 the page as it loads, so it is not applied again); it hears a View pick from
 anything inside it, as the View chip reports one, and puts that View's Query
 on; it draws a View's own content into the element marked
 `data-view-content`, whose components ask like any other; and it keeps the
-Query in the session once per frame. `provide()` settles when the start Query
+Query in the page's document once per frame, through its keeper
+(`T-one-page-one-document`). `provide()` settles when the start Query
 is on, so a page awaits it before its first load.
 
 Before it, each Context wired `onViewPicked` itself with its own `applied`,
@@ -948,8 +949,8 @@ that one is on, and it keeps its value (Will, TODO 606).
 ### T-the-app-layer-is-opt-in
 
 **A display component imports no app code** (TODO 221). The app layer — the
-provider, the router, the session and `bindSettings`, saved Views, their
-drafts and sync, saved filters, View files and markup, the app definition —
+provider, the router, the session and `bindSettings`, a page's state and its
+keeper, View files and markup, the app definition —
 is `sherpa-ui/app` (`src/app.ts`). The display components and their base are
 `sherpa-ui/components` (`src/components.ts`). `sherpa-ui` re-exports both and
 the data layer (Will, A): one line on a CDN still gets everything.
@@ -973,7 +974,7 @@ any app, with or without the app layer.
 
 **`<sherpa-outlet>` is where the route's Context is drawn** (TODO 194). Put it
 in the app shell's content as `<sherpa-outlet id="context-root">` and call
-`outlet.start({ app, base, session, stores, ready, drafts, panels })` once. On
+`outlet.start({ app, base, session, stores, ready, panels })` once. On
 every `route-change` that names another Context it:
 
 1. tears the last one down — its teardown, its `ctx.signal`, the provider's page;
@@ -1015,13 +1016,16 @@ experiments — each on an outlet event. The nav is the outlet's too:
 Context, then Recent and Favorites as Areas, then each section's Contexts, and
 the Settings pages behind the settings button — BEFORE the first Context
 loads, so a first click finds its rows. It lights the row of the route, a
-View's own row when "Show full view hierarchy" (`/nav/hierarchy`) is on.
+View's own row when "Show full view hierarchy" (`navHierarchy`) is on. Its three
+settings — `navHierarchy`, `navViews`, `navHover` — are read from the app's
+`Settings`, as its provider tells them, so a schema's own default holds
+(`T-a-setting-is-declared-once`).
 
 **Recents and Favorites are the session's**: `/nav/recent` (five, newest
 first; Home never) and `/nav/favorites`, which it persists with a shape
 guard. Each is a VIEW, keyed `context:view`, the first View's by the Context
 alone, and named after the View ("All customers", not "Records"). With
-`/nav/views` false (TODO 399) both list each Context once, by its name, and the
+`navViews` off (TODO 399) both list each Context once, by its name, and the
 ★ stars the Context. A stored row whose Context the app no longer has (a
 Settings page, from before Settings was an overlay) is dropped at boot. The ★ is
 a request (`view-favorite`); the outlet toggles the favourite and writes

@@ -271,23 +271,24 @@ test('a component that leaves the page leaves its source; a new source reaches w
 });
 
 /* THE PROVIDER KEEPS THE VIEWS: it hears a View pick from inside, puts the
-   View's Query on, keeps the Query in the session, and puts it back — only on
-   the View it was made on. TRAP T-a-provider-keeps-the-views */
+   View's Query on, keeps the Query in the page's one document, and puts it back
+   — only on the View it was made on. TRAP T-a-provider-keeps-the-views */
 test('a provider applies a View pick, keeps the Query, and restores it on its own View only', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
-    const store = new Map();
-    const session = { get: (k) => store.get(k), set: (k, v) => store.set(k, v) };
+    const { PageKeeper, memoryTier } = await import('/dist/index.js');
+    const keeper = new PageKeeper({ tab: memoryTier(), local: memoryTier() });
     const VIEWS = {
       all: { label: 'All', query: { v: 1, scopes: { view: {} } } },
       odd: { label: 'Odd', query: { v: 1, scopes: { view: { readings: { name: { picked: ['o1', 'o3'] } } } } } },
     };
     const provider = document.createElement('sherpa-provider');
+    provider.keeper = keeper;
     const g = grid();
     provider.append(g);
     root.append(provider);
     const src = source(4, 'o');
-    await provider.provide({ sources: { s: src }, views: VIEWS, session, key: '/q' });
+    await provider.provide({ sources: { s: src }, views: VIEWS, key: 'q' });
     await src.load();
     await settle();
     const before = drawn(g);
@@ -297,16 +298,16 @@ test('a provider applies a View pick, keeps the Query, and restores it on its ow
     }));
     await settle();
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
-    const picked = { rows: drawn(g), view: provider.view, kept: store.get('/q')?.view };
+    const picked = { rows: drawn(g), view: provider.view, kept: keeper.read('q').view };
     // A reload on the SAME View puts the kept Query back.
     const again = source(4, 'o');
-    await provider.provide({ sources: { s: again }, views: VIEWS, view: 'odd', session, key: '/q' });
+    await provider.provide({ sources: { s: again }, views: VIEWS, view: 'odd', key: 'q' });
     await again.load();
     await settle();
     const restored = drawn(g);
     // On ANOTHER View the kept Query is not its own, so the View's is used.
     const other = source(4, 'o');
-    await provider.provide({ sources: { s: other }, views: VIEWS, view: 'all', session, key: '/q' });
+    await provider.provide({ sources: { s: other }, views: VIEWS, view: 'all', key: 'q' });
     await other.load();
     await settle();
     return { before, picked, restored, other: drawn(g), reports };
@@ -318,9 +319,9 @@ test('a provider applies a View pick, keeps the Query, and restores it on its ow
   expect(r['reports']).toEqual([]);
 });
 
-/* THE PAGE GOES OUT AS JSON: one provider's state, taken in by another, gives
-   the same rows and the same View — and the View it left is still heard.
-   TRAP T-a-page-goes-out-as-json */
+/* THE PAGE GOES OUT AS JSON: one provider's state — the page's one document —
+   taken in by another, gives the same rows and the same View, and the View it
+   left is still heard. TRAP T-a-page-goes-out-as-json */
 test('a provider exports its state as JSON; another takes it in and draws the same rows', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
@@ -357,9 +358,11 @@ test('a provider exports its state as JSON; another takes it in and draws the sa
       bubbles: true, composed: true, detail: { scope: 'bar', values: { view: ['all'] } },
     }));
     await settle();
-    return { json: JSON.parse(json).view, taken, back: { rows: drawn(two.g), view: two.provider.view }, reports };
+    const state = JSON.parse(json);
+    return { json: { v: state.v, view: state.view, picked: state.query.scopes.view.readings.name.picked }, taken,
+      back: { rows: drawn(two.g), view: two.provider.view }, reports };
   })()`) as Record<string, unknown>;
-  expect(r['json']).toBe('odd');
+  expect(r['json']).toEqual({ v: 3, view: 'odd', picked: ['j1', 'j3'] });
   expect(r['taken']).toEqual({ rows: 2, view: 'odd' });
   expect(r['back']).toEqual({ rows: 4, view: 'all' });
   expect(r['reports']).toEqual([]);

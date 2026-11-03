@@ -704,11 +704,11 @@ test('a toolbar filter lights the matching COLUMN HEADERS in a bound grid', asyn
 });
 
 test('source: a component\'s state survives a page reload, per TAB', async ({ page }) => {
-  // An accidental refresh threw away the rows a person had ticked. persistView
-  // keeps each component's state; the page keeps the Query (366 step 10).
-  // WHERE it is kept is the host's decision, so it is a helper.
+  // An accidental refresh threw away the rows a person had ticked. The page
+  // keeper keeps each component's state in the page's `ui`; WHAT each gives is
+  // the host's. TRAP T-one-snapshot-not-a-key-per-concern
   const before = await page.evaluate(async () => {
-    const { ArrayStore, DataSource, bindSource, persistView } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource, PageKeeper } = await import('/dist/index.js');
     const rows = Array.from({ length: 20 }, (_, i) => ({ id: `r${i}`, plan: i % 3 ? 'Pro' : 'Free' }));
     const grid = document.createElement('sherpa-data-grid') as HTMLElement & {
       rendered?: Promise<void>; select(k: readonly string[]): void; selectedKeys: string[];
@@ -718,7 +718,7 @@ test('source: a component\'s state survives a page reload, per TAB', async ({ pa
     await grid.rendered;
     const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
     bindSource(source, grid, { as: (r: unknown[]) => ({ key: 'id', columns: [{ field: 'plan', header: 'Plan' }], rows: r }) });
-    persistView('spec', { source, elements: { grid } }, { grid: () => ({ select: [grid.selectedKeys] }) });
+    new PageKeeper().keepUi('spec', { source, elements: { grid } }, { grid: () => ({ select: [grid.selectedKeys] }) });
     await source.load();
     grid.select(['r1', 'r2']);
     // It saves after a load.
@@ -727,8 +727,8 @@ test('source: a component\'s state survives a page reload, per TAB', async ({ pa
       keys: grid.selectedKeys,
       // sessionStorage, NOT localStorage — two tabs set differently is a
       // feature, and localStorage would make them fight.
-      inSession: !!sessionStorage.getItem('sherpa:view:spec'),
-      inLocal: !!localStorage.getItem('sherpa:view:spec'),
+      inSession: !!JSON.parse(sessionStorage.getItem('sherpa:page:spec') ?? '{}').ui,
+      inLocal: !!localStorage.getItem('sherpa:page:spec'),
     };
   });
 
@@ -737,7 +737,7 @@ test('source: a component\'s state survives a page reload, per TAB', async ({ pa
   await page.waitForFunction(() => window.__reforgedReady === true);
 
   const after = await page.evaluate(async () => {
-    const { ArrayStore, DataSource, bindSource, persistView, clearViewState } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource, PageKeeper } = await import('/dist/index.js');
     const rows = Array.from({ length: 20 }, (_, i) => ({ id: `r${i}`, plan: i % 3 ? 'Pro' : 'Free' }));
     const grid = document.createElement('sherpa-data-grid') as HTMLElement & {
       rendered?: Promise<void>; selectedKeys: string[];
@@ -747,13 +747,14 @@ test('source: a component\'s state survives a page reload, per TAB', async ({ pa
     await grid.rendered;
     const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
     bindSource(source, grid, { as: (r: unknown[]) => ({ key: 'id', columns: [{ field: 'plan', header: 'Plan' }], rows: r }) });
-    persistView('spec', { source, elements: { grid } }, { grid: () => ({ select: [grid.selectedKeys] }) });   // restores on the way in
+    const keeper = new PageKeeper();
+    keeper.keepUi('spec', { source, elements: { grid } }, { grid: () => ({ select: [grid.selectedKeys] }) });   // restores on the way in
     await source.load();
     await window.__settled();
     const keys = grid.selectedKeys;
     // …and a reset really forgets.
-    clearViewState('spec');
-    return { keys, cleared: !sessionStorage.getItem('sherpa:view:spec') };
+    keeper.write('spec', { ui: undefined });
+    return { keys, cleared: !sessionStorage.getItem('sherpa:page:spec') };
   });
 
   expect(before.keys).toEqual(['r1', 'r2']);

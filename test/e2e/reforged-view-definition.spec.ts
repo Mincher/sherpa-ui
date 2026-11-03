@@ -79,9 +79,9 @@ test('applyState configures an element through its OWN API, not its attributes',
 
 test('a whole view round-trips: capture it, restore it into a FRESH one', async ({ page }) => {
   // The test that matters. Two sources, two grids, nothing shared but a JSON
-  // snapshot — what persistView keeps.
+  // View — what a saved View, and a page's kept `ui`, are.
   const r = await page.evaluate(async () => {
-    const { ArrayStore, DataSource, bindSource, captureView, applyViewSnapshot } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource, captureView, applyView } = await import('/dist/index.js');
     const settle = () => window.__settled();
     const rows = Array.from({ length: 60 }, (_, i) => ({
       email: `e${i}@x`, name: `n${i % 9}`, plan: i % 3 ? 'Pro' : 'Free', spend: (i * 7) % 400,
@@ -123,12 +123,12 @@ test('a whole view round-trips: capture it, restore it into a FRESH one', async 
     const snapshot = captureView(
       { source: one.source, elements: { grid: one.grid } },
       { grid: ['selectedKeys'] },
-    ) as { v: 2; query?: unknown; elements?: Record<string, Record<string, unknown>> };
+    ) as { query?: unknown; ui?: Record<string, Record<string, unknown>> };
 
     // Two of the grid's values need their SETTER form, because reading them
     // takes an argument.
-    snapshot.elements = snapshot.elements ?? {};
-    snapshot.elements['grid'] = {
+    snapshot.ui = snapshot.ui ?? {};
+    snapshot.ui['grid'] = {
       setColumnFilter: ['name', one.grid.columnClause('name')],
       select: [one.grid.selectedKeys],
     };
@@ -142,7 +142,7 @@ test('a whole view round-trips: capture it, restore it into a FRESH one', async 
 
     // A FRESH view — new source, new grid, nothing shared but the JSON.
     const two = await build();
-    const report = applyViewSnapshot(
+    const report = applyView(
       JSON.parse(JSON.stringify(snapshot)),
       { query: two.source.query, elements: { grid: two.grid } },
     );
@@ -227,11 +227,11 @@ test('one method, MANY calls — a state block is a map, so calls nest', async (
 });
 
 test('a PRESET reconfigures a whole screen: query, arrangement and components', async ({ page }) => {
-  // What the app header's View dropdown does. Each option is a ViewSnapshot,
-  // not a label — the same object a user's saved view produces, a shared link
+  // What the app header's View dropdown does. Each option is a View, not a
+  // label — the same object a user's saved view produces, a shared link
   // carries, and an agent sends over MCP.
   const r = await page.evaluate(async () => {
-    const { ArrayStore, DataSource, bindSource, applyViewSnapshot } = await import('/dist/index.js');
+    const { ArrayStore, DataSource, bindSource, applyView } = await import('/dist/index.js');
     const settle = () => window.__settled();
 
     const rows = Array.from({ length: 90 }, (_, i) => ({
@@ -270,10 +270,9 @@ test('a PRESET reconfigures a whole screen: query, arrangement and components', 
 
     // "At risk" — a query AND a column filter, which is the case that proves a
     // definition reaches both halves.
-    applyViewSnapshot({
-      v: 2,
+    applyView({
       query: { v: 1, scopes: { view: { where: { health: { lt: 40 } }, sort: [{ field: 'health', direction: 'asc' }] } } },
-      elements: { grid: { setColumnFilter: ['status', ['status', 'ne', 'churned']] } },
+      ui: { grid: { setColumnFilter: ['status', ['status', 'ne', 'churned']] } },
     }, { query: source.query, elements: { grid } });
     await new Promise((res) => setTimeout(res, 150));
     await settle();
@@ -281,10 +280,9 @@ test('a PRESET reconfigures a whole screen: query, arrangement and components', 
 
     // "Renewals" — GROUPED, which nothing else here exercises: a view can set
     // how rows are ARRANGED, not only which ones there are.
-    applyViewSnapshot({
-      v: 2,
+    applyView({
       query: { v: 1, scopes: { view: { sort: [{ field: 'spend', direction: 'desc' }], group: 'tier' } } },
-      elements: { grid: { clearColumnFilter: [undefined] } },
+      ui: { grid: { clearColumnFilter: [undefined] } },
     }, { query: source.query, elements: { grid } });
     await new Promise((res) => setTimeout(res, 150));
     await settle();
@@ -318,10 +316,10 @@ test('a PRESET reconfigures a whole screen: query, arrangement and components', 
  */
 test('a view applied to a component that has not drawn yet waits for it', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { applyViewSnapshot } = await import('/dist/index.js');
+    const { applyView } = await import('/dist/index.js');
     const el = document.createElement('sherpa-prompt-composer') as HTMLElement & { value: string; rendered?: Promise<void> };
     document.getElementById('root')!.replaceChildren(el);
-    const report = applyViewSnapshot({ v: 2, elements: { composer: { value: 'hello' } } }, { elements: { composer: el } });
+    const report = applyView({ ui: { composer: { value: 'hello' } } }, { elements: { composer: el } });
     await el.rendered;
     await window.__settled();
     return { value: el.value, report };
@@ -334,15 +332,14 @@ test('a definition DEGRADES: a gone element and a gone method are reported, not 
   // A saved view outlives the code that made it. One stale key must not stop
   // the rest being restored — the same reason a bad ROW is dropped and counted.
   const r = await page.evaluate(async () => {
-    const { applyViewSnapshot } = await import('/dist/index.js');
+    const { applyView, PageKeeper, memoryTier } = await import('/dist/index.js');
     const el = document.createElement('sherpa-data-grid') as HTMLElement & { rendered?: Promise<void> };
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
 
-    const report = applyViewSnapshot(
+    const report = applyView(
       {
-        v: 2,
-        elements: {
+        ui: {
           grid: { select: [[]], methodThatVanished: 1 },
           panelRemovedLastYear: { anything: true },
         },
@@ -350,20 +347,18 @@ test('a definition DEGRADES: a gone element and a gone method are reported, not 
       { elements: { grid: el } },
     );
 
-    // An unrecognised VERSION is ignored whole rather than half-applied — a
-    // definition applied in part leaves a screen nobody designed.
-    const future = applyViewSnapshot(
-      { v: 99 as 2, elements: { grid: { select: [['x']] } } },
-      { elements: { grid: el } },
-    );
+    // A page document of an unknown VERSION is not read at all, rather than
+    // half-applied — a state applied in part leaves a screen nobody designed.
+    const tab = memoryTier();
+    tab.write('sherpa:page:p', { v: 99, ui: { grid: { select: [['x']] } } });
+    const future = new PageKeeper({ tab, local: memoryTier() }).read('p');
 
     return { report, future };
   });
 
   expect(r.report.missingElements).toEqual(['panelRemovedLastYear']);
   expect(r.report.skipped).toEqual({ grid: ['methodThatVanished'] });
-  // The future version did nothing at all, and said nothing was missing.
-  expect(r.future).toEqual({ missingElements: [], skipped: {} });
+  expect(r.future).toEqual({ v: 3 });
 });
 
 /**
@@ -585,86 +580,79 @@ test('a preset builds its OWN components and layout, then configures them', asyn
  * both example pages had a Save button wired to `console.log` — a control that
  * promises something and does nothing.
  *
- * `saveViewAs` captures what is on screen through the same API a definition
- * writes it through, so what is saved is exactly what can be restored.
+ * `saveView` keeps what is on screen as a View's JSON, the same form a
+ * definition writes, so what is saved is exactly what can be restored.
  */
-test('saveViewAs stores a named view, and the id is derived from the label', async ({ page }) => {
+test('saveView keeps a named View in the page\'s document, its id from its name; saved over, copied and deleted', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { saveViewAs, loadSavedViews, deleteSavedView, ArrayStore, DataSource } = await import('/dist/index.js');
-    localStorage.removeItem('sherpa:views:probe');
-
-    const el = document.createElement('sherpa-quick-filter') as HTMLElement & { values?: unknown };
-    document.getElementById('root')!.replaceChildren(el);
-    const source = new DataSource({ store: new ArrayStore([{ id: 1, region: 'EMEA' }, { id: 2, region: 'APAC' }], { key: 'id' }) });
-    source.declareField('region', { label: 'Region' });
-    source.query.ask({ scope: 'view', field: 'region', reading: { picked: ['EMEA'] } });
-    // What a saved view says of its region, in whichever scope holds it.
-    const regionOf = (v: { query?: { scopes: Record<string, { where?: Record<string, unknown> }> } } | undefined) =>
-      Object.values(v?.query?.scopes ?? {}).map((s) => s.where?.['region']).find(Boolean);
-
-    const first = saveViewAs('probe', 'Q3 capacity', { source, elements: { chip: el } },
-      { chip: ['values'] });
-
-    // The SAME label again is an UPDATE, not a second row. A random id would
-    // leave a reader with two "Q3 capacity" entries and no way to tell them
-    // apart in the chip.
-    source.query.ask({ scope: 'view', field: 'region', reading: { picked: ['APAC'] } });
-    const second = saveViewAs('probe', 'Q3 capacity', { source, elements: { chip: el } },
-      { chip: ['values'] });
-
-    // Whitespace is not a different view either.
-    saveViewAs('probe', '  Q3 capacity  ', { source }, {});
-    const trimmed = Object.keys(loadSavedViews('probe'));
-
-    const reloaded = loadSavedViews('probe');
-    const afterDelete = deleteSavedView('probe', 'q3-capacity');
-    return {
-      ids: Object.keys(first),
-      label: first['q3-capacity']?.label,
-      firstFilter: regionOf(first['q3-capacity']),
-      secondFilter: regionOf(second['q3-capacity']),
-      count: Object.keys(second).length,
-      trimmed,
-      // It SURVIVES the call — read back from storage, not from the return.
-      reloadedFilter: regionOf(reloaded['q3-capacity']),
-      afterDelete: Object.keys(afterDelete),
+    const { ArrayStore } = await import('/dist/index.js');
+    for (const store of [localStorage, sessionStorage]) store.removeItem('sherpa:page:probe');
+    const provider = document.createElement('sherpa-provider') as HTMLElement & {
+      open(d: unknown, o: unknown): Promise<{ query: { ask(r: unknown): void } }>;
+      saveView(label?: string): Promise<string | undefined>; deleteView(id?: string): Promise<boolean>;
     };
+    document.getElementById('root')!.replaceChildren(provider);
+    const source = await provider.open({
+      v: 1, id: 'probe', source: { store: 's', fields: { region: { label: 'Region' } }, scopes: { view: { label: 'View', holds: ['region'] } } },
+    }, {
+      stores: { s: new ArrayStore([{ id: 1, region: 'EMEA' }, { id: 2, region: 'APAC' }], { key: 'id' }) },
+      views: { all: { label: 'All', query: { v: 1, scopes: { view: {} } } } },
+    });
+    const pick = (region: string): void => {
+      source.query.ask({ scope: 'view', field: 'region', reading: { picked: [region] } });
+      source.query.ask({ commit: true });
+    };
+    // The View chip reports the View just saved; with none here, the page says it.
+    const show = async (id: string | undefined): Promise<void> => {
+      provider.dispatchEvent(new CustomEvent('quick-filter-change', { bubbles: true, composed: true, detail: { scope: 'bar', values: { view: [id] } } }));
+      await window.__settled();
+    };
+    const kept = (): Record<string, { label: string; query?: { scopes: Record<string, { where?: Record<string, unknown> }> } }> =>
+      JSON.parse(localStorage.getItem('sherpa:page:probe') ?? '{}').views ?? {};
+    // What a saved view says of its region, in whichever scope holds it.
+    const regionOf = (id: string) => Object.values(kept()[id]?.query?.scopes ?? {}).map((s) => s.where?.['region']).find(Boolean);
+
+    pick('EMEA');
+    // Whitespace is not part of a name.
+    const first = await provider.saveView('  Q3 capacity  ');
+    await show(first);
+    const one = { label: kept()[first!]?.label, region: regionOf(first!) };
+    // No name: over the reader's own View on screen — the same id, not a second row.
+    pick('APAC');
+    const over = await provider.saveView();
+    const two = { ids: Object.keys(kept()), region: regionOf(over!) };
+    // A name a View has is a copy, never a silent overwrite. TODO 15
+    const copy = await provider.saveView('Q3 capacity');
+    const blank = await provider.saveView('   ');
+    const deleted = await provider.deleteView('q3-capacity');
+    return { first, one, over, two, copy, blank: blank ?? null, deleted, after: Object.keys(kept()) };
   });
 
-  expect(r.ids).toEqual(['q3-capacity']);
-  expect(r.label).toBe('Q3 capacity');
-  expect(r.firstFilter).toEqual({ eq: 'EMEA' });
-
-  // Saved twice under one name = one view, updated.
-  expect(r.secondFilter).toEqual({ eq: 'APAC' });
-  expect(r.count).toBe(1);
-  expect(r.trimmed).toEqual(['q3-capacity']);
-
-  expect(r.reloadedFilter).toEqual({ eq: 'APAC' });
-  expect(r.afterDelete).toEqual([]);
+  expect(r.first).toBe('q3-capacity');
+  expect(r.one).toEqual({ label: 'Q3 capacity', region: { eq: 'EMEA' } });
+  expect(r.over).toBe('q3-capacity');
+  expect(r.two).toEqual({ ids: ['q3-capacity'], region: { eq: 'APAC' } });
+  expect(r.copy).toBe('q3-capacity-copy-001');
+  expect(r.blank).toBeNull();
+  expect(r.deleted).toBe(true);
+  expect(r.after).toEqual(['q3-capacity-copy-001']);
 });
 
-test('an empty label saves nothing, and unreadable storage yields no views', async ({ page }) => {
+test('a page document this code cannot read yields no Views, and is forgotten', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { saveViewAs, loadSavedViews } = await import('/dist/index.js');
-    localStorage.removeItem('sherpa:views:probe2');
-
-    // A reader who cancels the naming prompt has not saved anything.
-    const blank = saveViewAs('probe2', '   ', { source: { state: {} } } as never, {});
-
-    // A stored value this code no longer understands is not a crash. A saved
-    // view outlives the code that wrote it, and a hand-edited one is a string.
-    localStorage.setItem('sherpa:views:probe3', 'not json at all');
-    const broken = loadSavedViews('probe3');
-    localStorage.setItem('sherpa:views:probe4', '"a plain string"');
-    const wrongShape = loadSavedViews('probe4');
-
-    return { blank: Object.keys(blank), broken, wrongShape };
+    const { PageKeeper } = await import('/dist/index.js');
+    const keeper = new PageKeeper();
+    // A saved view outlives the code that wrote it, and a hand-edited one is a string.
+    localStorage.setItem('sherpa:page:probe3', 'not json at all');
+    const broken = keeper.read('probe3');
+    localStorage.setItem('sherpa:page:probe4', '"a plain string"');
+    const wrongShape = keeper.read('probe4');
+    return { broken, wrongShape, forgotten: localStorage.getItem('sherpa:page:probe3') };
   });
 
-  expect(r.blank).toEqual([]);
-  expect(r.broken).toEqual({});
-  expect(r.wrongShape).toEqual({});
+  expect(r.broken).toEqual({ v: 3 });
+  expect(r.wrongShape).toEqual({ v: 3 });
+  expect(r.forgotten).toBeNull();
 });
 
 test('onViewPicked re-reads a library that GROWS when given a function', async ({ page }) => {

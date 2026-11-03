@@ -1,15 +1,11 @@
 /**
- * persist-view.ts — keep a view across a reload, and save named views.
- * TRAP T-persist-defaults-per-tab
+ * persist-view.ts — a VIEW: its state applied and read back, and the View chip's
+ * library. Where a View is kept is the page keeper's (page-state.ts).
  *
  * Map:
- * - PersistOptions — where a view is kept, and who hears what could not be restored
- * - persistView — Keep every component's state across a reload; the page keeps the Query.
- * - ViewSnapshot — A whole VIEW DEFINITION — its Query AND every component's state.
- * - ApplyReport — what applyViewSnapshot could not do — a gone element, a gone method
- * - applyViewSnapshot — Apply a whole view definition: its Query, then each element's state.
- * - captureView — Read the current state BACK into a definition — the other half of applying one.
- * - clearViewState — Forget a saved view state — what a "reset this view" action does.
+ * - ApplyReport — what applyView could not do — a gone element, a gone method
+ * - applyView — Apply a View: its Query, then each element's state.
+ * - captureView — Read the current state BACK into a View — the other half of applying one.
  * - SavedView — One saved view in a set: what it is called, and what it does.
  * - ViewLibrary — A page's saved views, keyed by the id its chip option carries.
  * - ViewOption — A quick-filter option, as `populate()` takes it.
@@ -17,14 +13,8 @@
  * - uniqueViewLabel — A name no View has yet: a clash gets ` - Copy-001`, then `-002`.
  * - ViewPick — What `onViewPicked` hands back, so a host can do its own work after.
  * - onViewPicked — Wire a View chip to a library: pick one, and the screen reconfigures.
- * - SavedViewStore — The user's own saved views for one page, keyed by id like a preset set.
- * - loadSavedViews — Read a page's user-saved views.
- * - viewLibrary — A page's Views: the ones it ships, then the reader's saved ones.
- * - saveViewAs — Save what is on screen as a NEW named view, and hand back the whole set.
  * - viewQueryOf — What is on screen as a View's JSON: the applied Query, with the rows' arrangement.
- * - deleteSavedView — Forget one saved view.
  */
-import type { DataSource } from '../data/data-source.js';
 import type { Query, QueryDefaults } from '../data/query.js';
 import type { FieldReading } from '../data/filter-state.js';
 import { whereOf, type Where } from '../data/where.js';
@@ -32,110 +22,30 @@ import { applyState } from '../ui/apply-state.js';
 import { VIEW_CHIP } from '../ui/shared-constants.js';
 import { report } from '../data/report.js';
 import { parseViewMarkup } from './view-markup.js';
-import {
-  isPlainObject, labelId, readJson, removeKey, storageKind, writeJson,
-} from './web-storage.js';
 
-export interface PersistOptions {
-  /** Share across TABS via localStorage. Off by default — TRAP T-persist-defaults-per-tab. */
-  shared?: boolean;
-  /** Stop persisting when this aborts. TRAP T-signal-not-a-teardown-list */
-  signal?: AbortSignal;
-}
-
-/** Key prefix, so a host's own storage keys cannot collide with these. */
-const PREFIX = 'sherpa:view:';
-
-/** A snapshot is a plain object with a version. Anything else is not ours. */
-const isSnapshot = (v: unknown): v is ViewSnapshot => isPlainObject(v) && 'v' in v;
-
-/**
- * Keep every component's state across a reload — a grid's selection, say. The
- * Query is the page's: the provider keeps it, so it is not kept here.
- * TRAP T-one-snapshot-not-a-key-per-concern · TRAP T-a-reload-replays-the-readers-answers
- * TRAP T-persist-view-returns-a-teardown
- */
-export function persistView(
-  name: string,
-  targets: {
-    source?: DataSource;
-    elements?: Record<string, HTMLElement>;
-  },
-  contributors: Record<string, () => Record<string, unknown>> = {},
-  options: PersistOptions = {},
-): () => void {
-  const kind = storageKind(options.shared ?? false);
-  const key = PREFIX + name;
-
-  /* Restore BEFORE wiring. `readJson` forgets a key it cannot understand, and
-     a shape this version no longer reads is ignored whole, so the reader is
-     where they would have been without it. TRAP T-restore-before-first-load */
-  const stored = readJson<ViewSnapshot | null>(kind, key, null, isSnapshot);
-  if (stored) applyViewSnapshot(stored, { elements: targets.elements ?? {} });
-
-  const save = (): void => {
-    const snapshot: ViewSnapshot = { v: 2 };
-
-    const elements: Record<string, Record<string, unknown>> = {};
-    for (const [id, contribute] of Object.entries(contributors)) {
-      try {
-        const state = contribute();
-        if (state && Object.keys(state).length) elements[id] = state;
-      } catch {
-        // One element mid-teardown must not lose the whole snapshot.
-      }
-    }
-    if (Object.keys(elements).length) snapshot.elements = elements;
-
-    // Cannot throw on quota or a revoked store — TRAP T-storage-access-throws.
-    writeJson(kind, key, snapshot);
-  };
-
-  // Saves on `change`, which fires after a load COMPLETES. A view with no
-  // source calls `save` itself. TRAP T-restore-before-first-load
-  targets.source?.addEventListener(
-    'change', save,
-    options.signal ? { signal: options.signal } : undefined,
-  );
-  return () => targets.source?.removeEventListener('change', save);
-}
-
-/**
- * A whole VIEW DEFINITION — the query AND every component's state.
- * TRAP T-one-snapshot-not-a-key-per-concern
- */
-export interface ViewSnapshot {
-  /** The version of the SHAPE, not of the data. Any other is ignored WHOLE (D4). */
-  v: 2;
-  /** The Query, as a View writes it. Restored via `setQuery()`. 366 step 10 */
-  query?: QueryDefaults;
-  /** Per-element state, keyed by an id the CALLER chooses. Applied via the element's public API. */
-  elements?: Record<string, Record<string, unknown>>;
-}
-
-/** What `applyViewSnapshot` could not do — see TRAP T-apply-degrades-never-throws. */
+/** What `applyView` could not do — see TRAP T-apply-degrades-never-throws. */
 export interface ApplyReport {
-  /** Element ids named by the snapshot that the caller did not supply. */
+  /** Element ids named by the View that the caller did not supply. */
   missingElements: string[];
   /** Per element, the state keys its API does not expose. */
   skipped: Record<string, string[]>;
 }
 
 /**
- * Apply a whole view definition: its Query, then each element's state.
- * TRAP T-apply-degrades-never-throws — reported, not thrown; source first.
+ * Apply a View: its Query, then each element's state — a saved View, a preset,
+ * a page's kept `ui`. TRAP T-apply-degrades-never-throws — reported, not thrown; source first.
+ * TRAP T-one-snapshot-not-a-key-per-concern
  */
-export function applyViewSnapshot(
-  snapshot: ViewSnapshot,
+export function applyView(
+  view: Pick<SavedView, 'query' | 'ui'>,
   targets: {
     query?: { setQuery(query: QueryDefaults): Promise<void> };
     elements?: Record<string, HTMLElement>;
   },
 ): ApplyReport {
   const report: ApplyReport = { missingElements: [], skipped: {} };
-  if (snapshot?.v !== 2) return report;
-  if (snapshot.query && targets.query) void targets.query.setQuery(snapshot.query);
-  applyElements(snapshot.elements ?? {}, targets.elements ?? {}, report);
+  if (view?.query && targets.query) void targets.query.setQuery(view.query);
+  applyElements(view?.ui ?? {}, targets.elements ?? {}, report);
   return report;
 }
 
@@ -177,7 +87,7 @@ function whenDrawn(el: HTMLElement): Promise<void> | null {
 }
 
 /**
- * Read the current state BACK into a definition — the other half of applying one.
+ * Read the current state BACK into a View — the other half of applying one.
  * TRAP T-capture-reads-only-what-is-named — omitting the map reads nothing.
  * TRAP T-capture-is-the-save-button
  */
@@ -187,10 +97,10 @@ export function captureView(
     elements?: Record<string, HTMLElement>;
   },
   reads: Record<string, readonly string[]> = {},
-): ViewSnapshot {
-  const snapshot: ViewSnapshot = { v: 2 };
+): Pick<SavedView, 'query' | 'ui'> {
+  const view: Pick<SavedView, 'query' | 'ui'> = {};
 
-  if (targets.source) snapshot.query = viewQueryOf(targets.source);
+  if (targets.source) view.query = viewQueryOf(targets.source);
 
   const elements: Record<string, Record<string, unknown>> = {};
   for (const [id, el] of Object.entries(targets.elements ?? {})) {
@@ -209,13 +119,8 @@ export function captureView(
     if (Object.keys(out).length) elements[id] = out;
   }
 
-  if (Object.keys(elements).length) snapshot.elements = elements;
-  return snapshot;
-}
-
-/** Forget a saved view state — what a "reset this view" action does. */
-export function clearViewState(name: string, options: PersistOptions = {}): void {
-  removeKey(storageKind(options.shared ?? false), PREFIX + name);
+  if (Object.keys(elements).length) view.ui = elements;
+  return view;
 }
 
 /* ── Saved views as a LIBRARY — TRAP T-view-library-is-one-vocabulary ── */
@@ -334,11 +239,11 @@ export function onViewPicked(
     /** Stop listening when this aborts — `addEventListener` honours it natively. */
     signal?: AbortSignal;
     /** A pick was TAKEN: the last moment the old View's answers are on the
-        source. TRAP T-a-view-keeps-a-draft */
+        source. TRAP T-a-view-keeps-what-the-reader-left */
     before?: (id: string) => void;
-    /** A Query to put on INSTEAD of the View's own — the draft a reader left
-        on it. Exact: nothing carries over. TRAP T-a-view-keeps-a-draft */
-    draft?: (id: string, view: SavedView) => QueryDefaults | undefined;
+    /** A Query to put on INSTEAD of the View's own — what the reader left on
+        it. Exact: nothing carries over. TRAP T-a-view-keeps-what-the-reader-left */
+    left?: (id: string, view: SavedView) => QueryDefaults | undefined;
   } = {},
 ): () => void {
   if (!host) return () => {};
@@ -442,9 +347,9 @@ export function onViewPicked(
         values?: Record<string, readonly string[]>; setChipValues?: (id: string, picks: string[]) => void;
       } | null;
       if (bar?.values && bar.values[VIEW_CHIP]?.[0] !== id) bar.setChipValues?.(VIEW_CHIP, [id]);
-      const draft = options.draft?.(id, view);
+      const left = options.left?.(id, view);
       // A pick, not the reader's filters: a keeper of them is told so. 366 step 24
-      const put = draft ? targets.query.setQuery(draft, { by: 'view' })
+      const put = left ? targets.query.setQuery(left, { by: 'view' })
         : targets.query.setQuery(view.query, { holds: 'keep', by: 'view' });
       void put.then(() => {
         const waiting = applyElements(view.ui ?? {}, elements, report);
@@ -477,64 +382,6 @@ export function onViewPicked(
   return () => host.removeEventListener('quick-filter-change', listener);
 }
 
-/* ── Saving a view the READER made ─────────────────────────────────────
-   `persistView` keeps ONE view under a fixed name. A Save button makes a NEW
-   NAMED view from what is on screen and adds it to the set the chip offers. */
-
-const SAVED_PREFIX = 'sherpa:views:';
-
-/** The user's own saved views for one page, keyed by id like a preset set. */
-export type SavedViewStore = Record<string, SavedView>;
-
-/**
- * Read a page's user-saved views. `{}` when there are none or storage is
- * unreadable (TRAP T-storage-access-throws) — a reader then gets the presets.
- */
-export function loadSavedViews(page: string, options: PersistOptions = {}): SavedViewStore {
-  // Trustworthy in SHAPE, never in content — TRAP T-storage-access-throws.
-  return readJson<SavedViewStore>(
-    storageKind(options.shared ?? true), SAVED_PREFIX + page, {},
-    (v): v is SavedViewStore => isPlainObject(v),
-  );
-}
-
-/** A page's Views: the ones it ships, then the reader's saved ones. TRAP T-view-library-is-one-vocabulary */
-export function viewLibrary(page: string, shipped: ViewLibrary = {}): ViewLibrary {
-  return { ...shipped, ...loadSavedViews(page) };
-}
-
-/**
- * Save what is on screen as a NEW named view, and hand back the whole set.
- * TRAP T-capture-reads-only-what-is-named — how `reads` is shaped.
- * TRAP T-persist-defaults-per-tab — SHARED here, unlike `persistView`.
- * TRAP T-save-view-as-returns-the-whole-set
- */
-export function saveViewAs(
-  page: string,
-  label: string,
-  targets: { source?: ViewSource; elements?: Record<string, HTMLElement> },
-  reads: Record<string, readonly string[]> = {},
-  options: PersistOptions & { content?: string } = {},
-): SavedViewStore {
-  const trimmed = label.trim();
-  if (!trimmed) return loadSavedViews(page, options);
-
-  const views = loadSavedViews(page, options);
-  // JSON: the source's Query and arrangement, and the UI the host names. TRAP T-a-view-is-json
-  const { source } = targets;
-  const ui = captureView({ elements: targets.elements ?? {} }, reads).elements;
-  views[labelId(trimmed)] = {
-    label: trimmed,
-    ...(source ? { query: viewQueryOf(source) } : {}),
-    ...(ui ? { ui } : {}),
-    // TRAP T-view-content-is-a-view-definition — a built screen is remembered.
-    ...(options.content ? { content: options.content } : {}),
-  };
-
-  writeSavedViews(page, views, options);
-  return views;
-}
-
 /** What is on screen as a View's JSON: the source's own `export()`, each
  *  reading in the plain form — so the arrangement stays in the scope that
  *  arranged it. TRAP T-a-view-is-json · TRAP T-group-and-sort-are-component-scope */
@@ -557,26 +404,3 @@ type ViewSource = {
   query: { export(): { query: Query } };
   whereOf?(readings: Record<string, FieldReading>): Where;
 };
-
-/** Forget one saved view. Returns what is left, for the same reason. */
-export function deleteSavedView(
-  page: string,
-  id: string,
-  options: PersistOptions = {},
-): SavedViewStore {
-  const views = loadSavedViews(page, options);
-  // TRAP T-derived-id-makes-resave-an-update — REBUILT, never `delete`.
-  const kept = Object.fromEntries(Object.entries(views).filter(([key]) => key !== id));
-  writeSavedViews(page, kept, options);
-  return kept;
-}
-
-function writeSavedViews(
-  page: string,
-  views: SavedViewStore,
-  options: PersistOptions,
-): void {
-  // Cannot throw — the view is not kept; nothing breaks.
-  // TRAP T-storage-access-throws
-  writeJson(storageKind(options.shared ?? true), SAVED_PREFIX + page, views);
-}

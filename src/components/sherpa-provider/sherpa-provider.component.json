@@ -186,7 +186,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (settings, hovered, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (settings, hovered, keeper, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -320,13 +320,13 @@
           "$type": "method",
           "name": "export",
           "args": "",
-          "description": "This subtree's whole state as JSON — each source's question, and the View on screen — for a link, another service or an agent."
+          "description": "This subtree's state as the page's ONE document — the View on screen, its Query and what waits for Apply — for a link, another service or an agent."
         },
         {
           "$type": "method",
           "name": "import",
-          "args": "state: ProviderState",
-          "description": "Take a state back in, exactly: each named source's question, and its View — shown on the View chip, and known to the pick listener, so the next pick of the old View is heard. A source it does not name is left as it is."
+          "args": "state: PageState",
+          "description": "Take a state back in, exactly: its Query, what waited for Apply, and its View — shown on the View chip, and known to the pick listener, so the next pick of the old View is heard."
         }
       ],
       "jsProps": [
@@ -339,6 +339,11 @@
           "name": "hovered",
           "type": "{ scope: string; field: string; value?: string } | null",
           "access": "read"
+        },
+        {
+          "name": "keeper",
+          "type": "PageKeeper",
+          "access": "read-write"
         },
         {
           "name": "reach",

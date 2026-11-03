@@ -73,7 +73,7 @@ test('in a worker, a new seed version re-seeds: the mark lives in the database (
 
 test('every part keeps its data in ONE database, with one fixed schema', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { IdbStore, localRecords, keepCache, keepOutbox, syncViews, saveViewAs, fakeRemote, ArrayStore, DataSource } = await import('/dist/index.js');
+    const { IdbStore, localRecords, keepCache, keepOutbox, PageKeeper, fakeRemote, ArrayStore, DataSource } = await import('/dist/index.js');
     const { keepNotices } = await import('/dist/core/browser/notice-keep.js');
     const { DATABASE } = await import('/dist/core/browser/database.js');
     await new IdbStore({ name: 'things', key: 'id' }).insert({ id: 1 });
@@ -81,10 +81,9 @@ test('every part keeps its data in ONE database, with one fixed schema', async (
     await keepOutbox('writes').add({ id: '1', type: 'update', key: 1, values: { n: 1 }, at: 1 });
     await keepNotices().put({ kind: 'lost', id: 'n1', store: 'writes', key: 1 });
     localStorage.clear();
-    saveViewAs('records', 'Mine', {}, {});
-    const sync = syncViews('records');
-    sync.touch();
-    await sync.stop();
+    const keeper = new PageKeeper({ database: true });
+    keeper.write('records', { views: { mine: { label: 'Mine' } } });
+    await keeper.flush();
     const remote = fakeRemote(new ArrayStore([{ id: 1 }], { key: 'id' }), { delay: 0, announcesAll: false });
     await keepCache(remote, { name: 'kept' }).ready;
     await new DataSource({ store: remote }).load();

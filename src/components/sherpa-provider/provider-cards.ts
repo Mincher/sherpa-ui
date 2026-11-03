@@ -11,7 +11,7 @@
  * - .keepAll — Every card of what asked shows its state as its provider says: kept content, or an overlay.
  * - .retry — A card's Retry: the sources of what it holds load again.
  * - .drawToolbars — A slot's filter toolbars and their toggles: as asked, else as left, else as its markup.
- * - .toggled — A card's toggle: its filter toolbar shown or shut, kept in the session.
+ * - .toggled — A card's toggle: its filter toolbar shown or shut, kept with its page.
  */
 import { declared, up } from './provider-declared.js';
 import { drawsNothing } from '../../core/ui/filter-host.js';
@@ -38,10 +38,10 @@ export interface CardHost {
   inherited(el: Element, name: string): string | null;
   /** The filter bars in a slot. */
   bars(slot: string): Element[];
-  /** Where the open page keeps a card's toolbar. */
-  session(): { get(key: string): unknown; set(key: string, value: unknown): void } | undefined;
-  /** The open page's id: a slot's name is its own. */
-  pageId(): string;
+  /** A slot's toolbar as the reader left it on the open page, if they did. */
+  toolbar(slot: string): boolean | undefined;
+  /** Keep it so, with the open page. */
+  keepToolbar(slot: string, shown: boolean): void;
 }
 
 /** The cards of one provider's subtree. */
@@ -155,8 +155,7 @@ export class ProviderCards {
     const toggles = [...host.el.querySelectorAll('[data-filter-toolbar]')].filter((el) => host.inherited(el, 'data-scope') === slot);
     if (!toggles.length) return;
     const bars = host.bars(slot);
-    const kept = host.session()?.get(this.#key(slot));
-    const shown = asked ?? (typeof kept === 'boolean' ? kept : bars.some((bar) => !bar.hasAttribute('hidden')));
+    const shown = asked ?? host.toolbar(slot) ?? bars.some((bar) => !bar.hasAttribute('hidden'));
     for (const bar of bars) bar.toggleAttribute('hidden', !shown);
     const panel = bars.length > 0 && bars.every((bar) => bar.hasAttribute('data-panel-mode'));
     const source = bars[0] ? host.resolve(bars[0]) : null;
@@ -165,18 +164,13 @@ export class ProviderCards {
     for (const toggle of toggles) toggle.setAttribute('data-filter-toolbar', state);
   }
 
-  /** A card's toggle: its filter toolbar shown or shut, kept in the session. Will, TODO 629 */
+  /** A card's toggle: its filter toolbar shown or shut, kept with its page. Will, TODO 629 */
   toggled = (event: Event): void => {
     const slot = this.#host.inherited(event.target as Element, 'data-scope');
     if (!slot || /\s/.test(slot)) return;
     event.stopPropagation();
     const { shown } = (event as CustomEvent<{ shown: boolean }>).detail;
-    this.#host.session()?.set(this.#key(slot), shown);
+    this.#host.keepToolbar(slot, shown);
     this.drawToolbars(slot, shown);
   };
-
-  /** Where the session keeps a card's toolbar, as a slot's name is its page's. */
-  #key(slot: string): string {
-    return `/cards/toolbars/${this.#host.pageId()}/${slot}`;
-  }
 }

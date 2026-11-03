@@ -30,6 +30,7 @@ Put it round the part of a page whose components need data: each component insid
 |---|---|---|---|
 | `settings` | `Settings` | read and write |  |
 | `hovered` | `{ scope: string; field: string; value?: string } \| null` | read only |  |
+| `keeper` | `PageKeeper` | read and write |  |
 | `reach` | `{ reach: 'ok' \| 'unreached' \| 'down'; failure?: Failure }` | read only |  |
 | `savedFilterSets` | `{ id: string; label: string; added: boolean; own: boolean }[]` | read only |  |
 | `customView` | `boolean` | read only |  |
@@ -53,8 +54,8 @@ Put it round the part of a page whose components need data: each component insid
 | `deleteFilters(id: string)` | DELETE a reader's saved set, never a page's own: its chip goes, and what it held. |
 | `renameFilters(id: string, label: string)` | RENAME a reader's saved set — never a page's own. Its id follows its name, and a name another set has gains a copy's. Its new id. Will, TODO 427 |
 | `resetView()` | Put the filters back as the View on screen DEFINES them: the page's first Query, then the View's, as a pick puts it on. A filter the reader added since goes. What "Reset all on view" does. |
-| `export()` | This subtree's whole state as JSON — each source's question, and the View on screen — for a link, another service or an agent. |
-| `import(state: ProviderState)` | Take a state back in, exactly: each named source's question, and its View — shown on the View chip, and known to the pick listener, so the next pick of the old View is heard. A source it does not name is left as it is. |
+| `export()` | This subtree's state as the page's ONE document — the View on screen, its Query and what waits for Apply — for a link, another service or an agent. |
+| `import(state: PageState)` | Take a state back in, exactly: its Query, what waited for Apply, and its View — shown on the View chip, and known to the pick listener, so the next pick of the old View is heard. |
 
 ## Events
 

@@ -831,8 +831,8 @@ function that would unbind something the call never did. The abort listener is
 already gone — and it drops the BINDING, not just the event listeners, because
 the binding is what makes the source push rows.
 
-The same token is reused by `persistView` and `onViewPicked`, so one controller
-tears down every binding, listener and persister a view made.
+The same token is reused by the keeper's `keepUi` and `onViewPicked`, so one
+controller tears down every binding, listener and keeper a view made.
 
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/core/ui/bind-source.ts`
@@ -1030,12 +1030,11 @@ all five functions returned their fallback and none threw. A value stored as
 guard rejected did the same; a value the guard accepted was kept.
 
 - Site: `src/core/browser/web-storage.ts`
-- Site: `src/core/browser/persist-view.ts`
-- Site: `src/core/browser/saved-filters.ts`
 - Site: `src/core/browser/session.ts`
 - Site: `src/core/browser/database.ts`
 - Site: `src/core/data/stores.ts`
 - Site: `test/e2e/reforged-web-storage.spec.ts`
+- Site: `src/core/browser/page-state.ts`
 
 ### T-store-is-stateless
 
@@ -5094,7 +5093,8 @@ chips and one was taken at a time; the "Save <name>" button that went with it is
 
 Save filters keeps EVERY scope's filters under one name (Will, TODO 105). A set is
 `{ label, query }`, the query in a View's own JSON form with no arrangement, kept with
-the PAGE beside its Views (`saveFilterAs`, `sherpa:filter-sets:<page>`). A page may ship
+the PAGE beside its Views: a NAMED part of its one document, `filters`, in every tab's
+tier (`T-one-page-one-document`). A page may ship
 its own (`savedFilters`), which are never saved over or deleted.
 
 - **Adding**: a set's row in the Filters menu's Saved section asks `filters-apply`
@@ -5105,8 +5105,8 @@ its own (`savedFilters`), which are never saved over or deleted.
   set asks anything of, else the bar that asked, else the View.
 - **Several at once**: each row ticked adds its chip, and each unticked
   (`filters-dismiss`) takes the chip off and what it held. The chip's own press turns it
-  off and leaves it there. The chips added are kept in the tab
-  (`sherpa:filter-set-on:<page>`), and declared BEFORE the Query is restored, which
+  off and leaves it there. The chips added are kept in the tab (the document's
+  `added`), and declared BEFORE the Query is restored, which
   holds their rows. Another View or Reset all on view takes them off: they are one
   View's chips, as its other chips are.
 - **Saving**: `filters-save` and `filters-save-as` ask the HOST for a name, which
@@ -5457,7 +5457,7 @@ views hid their filters in a `view` part no chip showed; that part is gone.
 filters the charts (it filtered nothing before — only a View could), and its
 own axes (severity, storage) sit in a `page` scope no bar answers. A host must
 `hold` its header's chips in the View scope, or a view drawn onto the bar
-removes them. `saveViewAs` saves JSON for a source with a Query, and a
+removes them. A saved View is JSON for a source with a Query, and a
 content view's `after` now gets `rendered` — the Capacity view's charts had
 never been bound.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
@@ -5472,9 +5472,11 @@ never been bound.
 ### T-a-page-goes-out-as-json
 
 **A page's whole state goes out as JSON and comes back: `provider.export()` /
-`provider.import(state)`, over `source.query.export()` / `source.query.import(state)`.**
-Since 366 step 24 the provider's state is `{ v: 2, view?, queries }`, each
-source's Query by name; a v1 state (`sources`) is reported, `unknown-state`.
+`provider.import(state)`, over `source.query.export()`.** Since 695 U3 it is the
+page's one document, `PageState` `{ v: 3, view?, query?, draft? }` — the Query
+every source shares, and what waits for Apply; any other shape (v2's `queries` by
+source, v1's `sources`) is reported, `unknown-state`, and a Query with no one
+Query to take it, `provider-no-query` (`T-one-page-one-document`).
 Provider P5, 2026-09-27. A source's state is its Query as APPLIED, its sort,
 group and search in the View scope (the shape a View's JSON already uses),
 and every saved filter it names — readings and label — so a service that
@@ -5768,15 +5770,16 @@ nothing, so saying it would promise a filter that is not there.
 **Filters survive a reload by restoring the reader's QUERY — their answers,
 in their own terms — never a compiled filter.** Will, 2026-09-24: filters and
 Advanced filters survive a refresh and a trip away and back, for the
-session. Measured 2026-09-26 before the fix: `persistView` kept the source's
+session. Measured 2026-09-26 before the fix: the page kept the source's
 COMBINED filter — Region = EMEA + Status = active came back as 4 rows with
 every chip empty. A filter no one could see or clear.
 
-The session keeps `source.query.applied` — the answers, and the sort, group
-and suspended sort with them (366 step 8). `source.query.setQuery()` puts it back and
-DRAWS each bound bar its scope (`drawScope`, silent) — nothing replays a
-control (step 3 of docs/QUERY-DESIGN.md). `persistView` keeps each
-component's own state — a grid's selection — never the Query (366 step 10).
+The page's document keeps `source.query.applied` as its `query` — the answers,
+and the sort, group and suspended sort with them (366 step 8) — and what waits for
+Apply as its `draft`. `source.query.setQuery()` puts it back and DRAWS each bound
+bar its scope (`drawScope`, silent) — nothing replays a control (step 3 of
+docs/QUERY-DESIGN.md). Its `ui` keeps each component's own state — a grid's
+selection — never the Query (366 step 10).
 
 Three orderings make it work:
 
@@ -5789,14 +5792,11 @@ Three orderings make it work:
 - **The grid's column filters are read back FIRST**, so their chips are on the
   bar before it is drawn.
 
-The session path must be `persist()`ed in the app (`/filters/records`), or it
-lives in memory and dies with the page — and persisted with `shared: false`,
-for THIS TAB: a reload keeps it, another tab, window or session does not. Only
-a filter the reader SAVES crosses those (Will, 2026-10-20, TODO 370;
-`T-a-view-keeps-a-draft`).
+The keeper keeps it in the tab's tier: a reload keeps it, another tab, window
+or session does not. Only a filter the reader SAVES crosses those (Will,
+2026-10-20, TODO 370; `T-only-a-named-part-crosses-tabs`).
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/core/browser/persist-view.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
 - Site: `src/core/data/query-context.ts`
@@ -6136,11 +6136,11 @@ range — Seats — is a number's two ends.
 
 **A page is set up from ONE JSON document**, not from code in its Context.
 TODO 92, gap G4 (`PAGE-DEFINITION.md`). `provider.open(definition, { stores,
-views, view, session })` builds the source over the app's store (`openSource`,
+views, view, key })` builds the source over the app's store (`openSource`,
 DOM-free), draws every filter bar from its scope as the source describes it —
 the View chip first — gives each bar its Add list, and provides it all with the
-Query kept under `/filters/<id>`. A reader's saved Views join the shipped ones
-by the page's id, so `saveView(label)` needs nothing from the page.
+Query its keeper kept under the page's name. A reader's saved Views join the
+shipped ones by that name, so `saveView(label)` needs nothing from the page.
 
 - **Chips come from the scope, never a second list.** A bar's chips are
   `source.describe(scope).filters`; its Add list is `addable()` by the chips it
@@ -6514,9 +6514,9 @@ took the Date off, and the page never read as at its default.
 ### T-the-app-context-is-one-answer
 
 **While the app shares it, the View Context is the APP Context: one answer for
-every page** — Will, TODO 453; D1 A, D2 A. The provider's `appContext` keeps it
-in the session at `/filters/_app` (a page id is never `_app`), as a `SharedView`:
-the View's fields, their answers, and each field's face.
+every page** — Will, TODO 453; D1 A, D2 A. While the `appContext` setting is on,
+the page keeper keeps it for the tab (`keeper.appContext`), as a `SharedView`: the
+View's fields, their answers, and each field's face.
 
 - **Read:** every Query a page puts on — a restore, a View pick, a draft — goes
   through `setQuery(…, { lay })`, which lays the answer over the View
@@ -6525,9 +6525,9 @@ the View's fields, their answers, and each field's face.
 - **Write:** each reader act writes the View back (`sharedOf`); a field this
   page has not keeps its answer and its place for the pages that do. Reset all
   on view resets the App answer too.
-- **Each page keeps its own:** `lay` keeps the View it covered, and a reload, a
-  draft and turning sharing off use THAT (`keptEntry`, `#keepDraft`, `share`) —
-  so off gives each page its own back (D2 A).
+- **Each page keeps its own:** `lay` keeps the View it covered, and a reload,
+  what a View was left with and turning sharing off use THAT (`#keepNow`,
+  `share`) — so off gives each page its own back (D2 A).
 - **A field this page has not** (`source.has`) is drawn after its View's,
   inactive and refused, saying why (`declareUnused` → `data-unused`). It is
   never in the Query, so nothing compiles or counts it.
@@ -6537,6 +6537,7 @@ the View's fields, their answers, and each field's face.
 - Site: `src/core/data/query-edits.ts`
 - Site: `src/components/sherpa-provider/provider-page.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/core/browser/page-state.ts`
 
 ### T-a-hovered-chip-previews-the-highlight
 
@@ -6894,3 +6895,4 @@ A new setting is one entry, and its use.
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-provider/provider-look.ts`
+- Site: `src/components/sherpa-outlet/outlet-nav.ts`

@@ -278,53 +278,47 @@ test('maxRows keeps a local cache bounded, oldest out', async ({ page }) => {
   expect(r.trimmed).toEqual([8]);
 });
 
-test('syncViews keeps saved views in IndexedDB and pushes them onward', async ({ page }) => {
+test('the keeper keeps the reader\'s Views in IndexedDB and pushes them onward', async ({ page }) => {
   // TRAP T-local-first-then-onward — the three tiers, and LOCAL WINNING on a
   // clash. This is the one that matters: a view edited here and not yet pushed
   // must not be replaced by the server's older copy.
   const r = await page.evaluate(async () => {
-    const { syncViews, saveViewAs } = await import('/dist/index.js');
+    const { PageKeeper } = await import('/dist/index.js');
 
     sessionStorage.clear();
     localStorage.clear();
 
     const pushes: unknown[] = [];
     const remote = {
-      pull: () => Promise.resolve({
+      pull: () => Promise.resolve({ views: {
         // The server has an OLD copy of a view the user has since renamed…
         mine: { label: 'Server copy', ui: {} },
         // …and one this device has never seen.
         theirs: { label: 'From another device', ui: {} },
-      }),
-      push: (_page: string, views: unknown) => {
-        pushes.push(views);
+      } }),
+      push: (_page: string, named: unknown) => {
+        pushes.push(named);
         return Promise.resolve();
       },
     };
 
-    // A LOCAL view, in Web Storage — the fast tier persistView restores from.
-    saveViewAs('records', 'Mine', {}, {});
+    const keeper = new PageKeeper({ database: true, remote, interval: 20 });
+    // A LOCAL view, in Web Storage — the fast tier a page reads first.
+    keeper.write('records', { views: { mine: { label: 'Mine' } } });
+    const restored = (await keeper.restore('records')).views ?? {};
+    await keeper.flush();
 
-    const sync = syncViews('records', { remote, interval: 20 });
-    const restored = await sync.restore();
-
-    sync.touch();
-    await sync.flush();
-    await sync.stop();
-
-    // A FRESH sync over the same database, with NO Web Storage — which is what
+    // A FRESH keeper over the same database, with NO Web Storage — which is what
     // a different browser profile, or cleared site data, looks like. The
     // IndexedDB tier must still answer.
     sessionStorage.clear();
     localStorage.clear();
-    const second = syncViews('records');
-    const fromIdbOnly = await second.all();
-    await second.stop();
+    const fromIdbOnly = (await new PageKeeper({ database: true }).restore('records')).views ?? {};
 
     return {
       restored: Object.keys(restored).sort(),
       // LOCAL WON: the label is this device's, not the server's.
-      label: (restored as Record<string, { label: string }>)['mine']?.label,
+      label: restored['mine']?.label,
       pushed: pushes.length,
       fromIdbOnly: Object.keys(fromIdbOnly).sort(),
     };
@@ -338,28 +332,22 @@ test('syncViews keeps saved views in IndexedDB and pushes them onward', async ({
   expect(r.fromIdbOnly).toEqual(['mine', 'theirs']);
 });
 
-test('a view deleted from Web Storage stays deleted: not merged back, not pushed, not in IndexedDB', async ({ page }) => {
+test('a view deleted here stays deleted: not merged back, not pushed, not in IndexedDB', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { syncViews, saveViewAs, deleteSavedView } = await import('/dist/index.js');
+    const { PageKeeper } = await import('/dist/index.js');
     sessionStorage.clear();
     localStorage.clear();
-    const pushes: Record<string, unknown>[] = [];
-    const remote = { pull: () => Promise.resolve({}), push: (_p: string, v: Record<string, unknown>) => { pushes.push(v); return Promise.resolve(); } };
-    saveViewAs('records', 'Keep', {}, {});
-    saveViewAs('records', 'Gone', {}, {});
-    const sync = syncViews('records', { remote, interval: 20 });
-    sync.touch();
-    await sync.flush();
-    deleteSavedView('records', 'gone');
-    sync.touch();
-    await sync.flush();
-    const all = Object.keys(await sync.all()).sort();
-    await sync.stop();
+    const pushes: { views?: Record<string, unknown> }[] = [];
+    const remote = { pull: () => Promise.resolve({}), push: (_p: string, v: { views?: Record<string, unknown> }) => { pushes.push(v); return Promise.resolve(); } };
+    const keeper = new PageKeeper({ database: true, remote, interval: 20 });
+    keeper.write('records', { views: { keep: { label: 'Keep' }, gone: { label: 'Gone' } } });
+    await keeper.flush();
+    keeper.write('records', { views: { keep: { label: 'Keep' } } });
+    await keeper.flush();
+    const all = Object.keys(keeper.read('records').views ?? {}).sort();
     localStorage.clear();
-    const second = syncViews('records');
-    const fromIdbOnly = Object.keys(await second.all()).sort();
-    await second.stop();
-    return { all, pushed: Object.keys(pushes.at(-1) ?? {}).sort(), fromIdbOnly };
+    const fromIdbOnly = Object.keys((await new PageKeeper({ database: true }).restore('records')).views ?? {}).sort();
+    return { all, pushed: Object.keys(pushes.at(-1)?.views ?? {}).sort(), fromIdbOnly };
   });
   expect(r).toEqual({ all: ['keep'], pushed: ['keep'], fromIdbOnly: ['keep'] });
 });

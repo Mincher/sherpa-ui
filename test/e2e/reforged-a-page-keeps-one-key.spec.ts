@@ -2,13 +2,15 @@ import { test, expect } from './harness';
 
 /**
  * ONE KEY — TODO 321, Will A. An outlet opens a page under its Context's name,
- * so the page's saved Views and filters are kept where the outlet reads them,
- * whatever the definition's id says.
+ * so the page's document — its saved Views and filters too — is kept where the
+ * outlet reads it, whatever the definition's id says. TRAP T-one-page-one-document
  */
 test('a page opened with a key keeps its saved View and filters under that key, never its definition id', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     const { ArrayStore } = await import('/dist/index.js');
-    for (const key of Object.keys(localStorage)) if (key.includes('page-id') || key.includes('context-name')) localStorage.removeItem(key);
+    for (const store of [localStorage, sessionStorage]) {
+      for (const key of Object.keys(store)) if (key.includes('page-id') || key.includes('context-name')) store.removeItem(key);
+    }
     const provider = document.createElement('sherpa-provider');
     provider.settings.set('saveAnyScope', true);
     document.getElementById('root').replaceChildren(provider);
@@ -19,12 +21,15 @@ test('a page opened with a key keeps its saved View and filters under that key, 
     }, { key: 'context-name', stores: { plans: new ArrayStore(rows, { key: 'id' }) }, views: {} });
     await provider.saveView('Mine');
     provider.saveFilters('Some');
-    const keys = Object.keys(localStorage);
+    const keys = [...Object.keys(localStorage), ...Object.keys(sessionStorage)];
+    const kept = JSON.parse(localStorage.getItem('sherpa:page:context-name') ?? '{}');
     return {
-      underKey: keys.filter((k) => k.endsWith(':context-name')).map((k) => k.replace(/:context-name$/, '')).sort(),
+      underKey: keys.filter((k) => k.endsWith(':context-name')).sort(),
+      named: { v: kept.v, views: Object.keys(kept.views ?? {}), filters: Object.keys(kept.filters ?? {}) },
       underId: keys.filter((k) => k.endsWith(':page-id')),
     };
-  })()`) as { underKey: string[]; underId: string[] };
-  expect(r.underKey).toEqual(['sherpa:filter-sets', 'sherpa:views']);
+  })()`) as { underKey: string[]; named: unknown; underId: string[] };
+  expect(r.underKey).toEqual(['sherpa:page:context-name', 'sherpa:page:context-name']);
+  expect(r.named).toEqual({ v: 3, views: ['mine'], filters: ['some'] });
   expect(r.underId).toEqual([]);
 });

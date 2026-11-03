@@ -82,7 +82,7 @@ test('sherpa-ui/components and sherpa-ui/app resolve, and each holds its own hal
   for (const name of ['SherpaButton', 'SherpaDialog', 'SherpaAppShell', 'SherpaElement', 'settled']) {
     assert.ok(name in components, `components lacks ${name}`);
   }
-  for (const name of ['SherpaProvider', 'SherpaRouter', 'SessionStore', 'bindSettings', 'saveViewAs', 'checkApp']) {
+  for (const name of ['SherpaProvider', 'SherpaRouter', 'SessionStore', 'bindSettings', 'PageKeeper', 'checkApp']) {
     assert.ok(name in app, `app lacks ${name}`);
     assert.ok(!(name in components), `components carries the app layer's ${name}`);
   }
