@@ -19,10 +19,10 @@ export {
   type PersistOptions as SessionPersistOptions,
 } from './core/browser/session.js';
 export { bindSettings, persistSettings } from './core/ui/bind-settings.js';
-/* A graph of nodes on a canvas, and a page's Query kept drawn there — the Node Editor. TODO 555 */
+/* A graph of nodes on a canvas, and the two editors drawn there: a page's Query, a workflow. TODOs 555, 551 */
 export {
-  bindQueryEditor, drawGraph, inspectNode, markNode,
-  type DrawOptions, type GraphEdit, type InspectOptions, type QueryEditorOptions,
+  bindQueryEditor, bindWorkflow, drawGraph, inspectNode, markNode,
+  type DrawOptions, type GraphEditor, type InspectOptions, type Inspector, type QueryEditorOptions, type WorkflowEditorOptions,
 } from './core/ui/node-graph.js';
 // Saved Views: the reader's own, the View chip's options, a pick applied.
 export {

@@ -5,6 +5,10 @@ just the node header. … Nodes will also include, in their content area below t
 header, a series of value and condition rows: Input socket - Input field -
 Output socket. … The header could also have input and output sockets."*
 
+**Status: BUILT, 2026-10-29. Of "Later": a socket's name and a connected input
+(read only) came with 555, and the drag between sockets with plan 695 N1;
+`sherpa-node-socket` and `sherpa-connector` are not built — the lines are node-graph.ts's.**
+
 This round is the UI only. Loading definitions, routing and running a workflow
 come next, on the data layer.
 

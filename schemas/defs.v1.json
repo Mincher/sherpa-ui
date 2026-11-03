@@ -325,18 +325,18 @@
     },
 
     "node": {
-      "description": "One workflow node: what it is comes from its kind.",
+      "description": "One workflow node: what it is comes from its kind, in the one registry (NODE_KINDS).",
       "type": "object",
       "additionalProperties": false,
       "required": ["id", "kind", "x", "y"],
       "properties": {
         "id": { "$ref": "#/$defs/id" },
-        "kind": { "description": "A kind the library ships (source, value, pick, filter, sort, group, count, output), or one the app adds.", "type": "string" },
+        "kind": { "description": "A kind a workflow runs: one the library ships (store, value, pick, filter, sort, group, count, output), or one the app adds.", "type": "string" },
         "x": { "description": "Its place across the canvas, in plane px.", "type": "number" },
         "y": { "description": "Its place down the canvas, in plane px.", "type": "number" },
         "heading": { "description": "Its own name, in place of its kind's.", "type": "string" },
         "description": { "description": "Its own line, in place of its kind's.", "type": "string" },
-        "values": { "description": "Each row's value, by the row's name.", "type": "object" }
+        "values": { "description": "Each row's value, by the row's name, typed as its row takes it: a Filter's field, op and value are one condition.", "type": "object" }
       }
     },
     "route": {

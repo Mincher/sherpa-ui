@@ -1,10 +1,13 @@
-import { test, expect } from './harness';
+import { test, expect, gotoHarness, type Page } from './harness';
+import { parkThePointer } from './fixture';
 
 /**
  * The Node Editor's drawing — Will, TODO 555 Q2. drawGraph puts each node of a
  * graph on a canvas by its id, its rows read only, and a line for each route; a
  * redraw keeps a node where the reader moved it. bindQueryEditor keeps a page's
- * Query drawn as it changes, and its undo stops it.
+ * Query drawn as it changes, and its stop lets it go; bindWorkflow keeps a
+ * workflow's draft. A moved node keeps its place for the tab, and Save hands the
+ * app a checked definition (plan 695 N1, TODO 551).
  * TRAP T-the-node-editor-asks-the-query
  */
 type Canvas = HTMLElement & { rendered: Promise<void> };
@@ -32,7 +35,7 @@ test('each node by its id, its rows read only, a line for each route; a redraw k
       nodes: [
         { id: 'a', kind: 'store', heading: 'customers', icon: 'storage', output: 'object', rows: [], x: 0, y: 0 },
         ...(withB ? [{ id: 'b', kind: 'condition', heading: 'Status', icon: 'function', input: 'object', x: 360, y: 0, rows: [
-          { name: 'op', label: 'Condition', field: 'condition', value: op },
+          { name: 'op', label: 'Condition', control: 'op', value: op },
           { name: 'matches', label: 'Matches', output: 'value', value: 3 },
         ] } as Graph['nodes'][number]] : []),
       ],
@@ -66,13 +69,13 @@ test('each node by its id, its rows read only, a line for each route; a redraw k
   expect(r.gone).toEqual({ nodes: [['customers', '100']], field: null, label: null, lines: [] });
 });
 
-test('bindQueryEditor follows the Query as it changes, and its undo lets it go', async ({ page }) => {
+test('bindQueryEditor follows the Query as it changes, and its stop lets it go', async ({ page }) => {
   const r = await page.evaluate(async (frames) => {
     const { bindQueryEditor } = await import('/dist/app.js');
     const { readingsOf } = await import('/dist/data.js');
     const canvas = document.getElementById('root')!.querySelector('sherpa-layout-canvas') as Drawable;
     const draft = (picks: string[]) => ({ v: 1, scopes: { view: { holds: ['region'], readings: readingsOf({ region: { in: picks } }) } } });
-    const query = Object.assign(new EventTarget(), { draft: draft(['EMEA', 'APAC']) });
+    const query = Object.assign(new EventTarget(), { draft: draft(['EMEA', 'APAC']), presets: () => [] });
     const definition = { v: 1 as const, id: 'records', source: { store: 'customers' } };
     const value = () => canvas.querySelector<HTMLElement & { value: string }>('sherpa-node-row sherpa-input-text[name="value"]')?.value;
     const change = async (picks: string[]): Promise<void> => {
@@ -81,13 +84,13 @@ test('bindQueryEditor follows the Query as it changes, and its undo lets it go',
       await window.__settled();
       await eval(frames)();
     };
-    const undo = bindQueryEditor(canvas, { query } as never, { definition });
+    const editor = bindQueryEditor(canvas, { query } as never, { definition });
     await window.__settled();
     const drawn = [...canvas.querySelectorAll<HTMLElement>('sherpa-node')].map((n) => n.dataset['heading']);
     const before = value();
     await change(['EMEA']);
     const followed = value();
-    undo();
+    editor.stop();
     await change(['AMER']);
     return { drawn, before, followed, after: value() };
   }, FRAMES);
@@ -130,10 +133,10 @@ test('drawGraph tells its host each edit — a select picked, a switch flipped �
     drawGraph(canvas, { routes: [], nodes: [{
       id: 'c', kind: 'condition', heading: 'Status', icon: 'function', x: 0, y: 0, ref: { scope: 'view', field: 'status' },
       rows: [
-        { name: 'op', label: 'Condition', field: 'condition', value: 'eq', editable: true,
+        { name: 'op', label: 'Condition', control: 'op', value: 'eq', editable: true,
           choices: [{ value: 'eq', label: 'Equals' }, { value: 'ne', label: 'Does not equal' }] },
-        { name: 'on', label: 'Filters', field: 'switch', value: true, editable: true },
-        { name: 'fixed', label: 'Fixed', field: 'text', value: 'x' },
+        { name: 'on', label: 'Filters', control: 'switch', value: true, editable: true },
+        { name: 'fixed', label: 'Fixed', control: 'text', value: 'x' },
       ],
     }] }, { onEdit: ({ node, row, value }) => heard.push([node.id, row.name, value]) });
     await window.__settled();
@@ -161,6 +164,7 @@ test('bindQueryEditor ASKS the Query through its one door, as a chip does: a rea
         data: { holds: ['status'], readings: {}, sort: [{ field: 'name', direction: 'asc' }] },
       } },
       ask: (request: unknown) => asked.push(request),
+      presets: () => [],
     });
     const definition = { v: 1 as const, id: 'records', source: { store: 'customers', fields: { name: { label: 'Name' }, plan: { label: 'Plan' } } } };
     bindQueryEditor(canvas, { query } as never, { definition });
@@ -216,7 +220,7 @@ test('a row a route drives MIRRORS what comes in, read only; one with no route s
   const r = await page.evaluate(async () => {
     const { drawGraph } = await import('/dist/app.js');
     const canvas = document.getElementById('root')!.querySelector('sherpa-layout-canvas') as Drawable;
-    const row = { label: 'Value', field: 'text' as const, input: 'value' as const, editable: true };
+    const row = { label: 'Value', control: 'text' as const, input: 'value' as const, editable: true };
     drawGraph(canvas, { routes: [{ from: 'a', to: 'b/fed' }], nodes: [
       { id: 'a', kind: 'value', heading: 'A', icon: 'function', output: 'value', x: 0, y: 0, rows: [] },
       { id: 'b', kind: 'filter', heading: 'B', icon: 'filter', x: 360, y: 0, rows: [{ ...row, name: 'fed', value: '1' }, { ...row, name: 'free', value: '2' }] },
@@ -239,8 +243,8 @@ test('a picked node opens its inspector: its rows again, their routes, and an ed
     const graph = { routes: [{ from: 'a', to: 'b/value' }], nodes: [
       { id: 'a', kind: 'value', heading: 'A', icon: 'function', output: 'value' as const, x: 0, y: 0, rows: [] },
       { id: 'b', kind: 'condition', heading: 'Status', icon: 'function', x: 360, y: 0, rows: [
-        { name: 'op', label: 'Condition', field: 'condition' as const, value: 'eq', editable: true, choices: [{ value: 'eq', label: 'Equals' }, { value: 'ne', label: 'Does not equal' }] },
-        { name: 'value', label: 'Value', field: 'text' as const, input: 'value' as const, value: 'x', editable: true },
+        { name: 'op', label: 'Condition', control: 'op' as const, value: 'eq', editable: true, choices: [{ value: 'eq', label: 'Equals' }, { value: 'ne', label: 'Does not equal' }] },
+        { name: 'value', label: 'Value', control: 'text' as const, input: 'value' as const, value: 'x', editable: true },
       ] },
     ] };
     const onEdit = ({ row, value }: { row: { name: string }; value: unknown }) => heard.push([row.name, value]);
@@ -273,7 +277,7 @@ test('a drag from an OUTPUT socket draws a new route: let go on an input socket,
     (window as unknown as { asked: unknown[] }).asked = asked;
     drawGraph(canvas, { routes: [], nodes: [
       { id: 'a', kind: 'value', heading: 'A', icon: 'function', output: 'value', x: 0, y: 0, rows: [] },
-      { id: 'b', kind: 'filter', heading: 'B', icon: 'filter', x: 360, y: 0, rows: [{ name: 'x', label: 'X', field: 'text', input: 'value', editable: true }] },
+      { id: 'b', kind: 'filter', heading: 'B', icon: 'filter', x: 360, y: 0, rows: [{ name: 'x', label: 'X', control: 'text', input: 'value', editable: true }] },
     ] }, { onConnect: (route) => asked.push(route) });
     await window.__settled();
   });
@@ -317,6 +321,7 @@ test('a condition dragged into the same field of another scope MOVES there, as o
         data: { holds: ['region'], readings: {} },
       } },
       ask: (request: { scope: string; field: string; reading: unknown }[]) => asked.push(request.map(({ scope, field, reading }) => [scope, field, reading === null ? null : 'reading'])),
+      presets: () => [],
     });
     bindQueryEditor(canvas, { query } as never, { definition: { v: 1 as const, id: 'records', source: { store: 'customers' } } });
     await window.__settled();
@@ -342,6 +347,7 @@ test('a condition dragged onto a field none of its values fit is REFUSED, and sa
     const query = Object.assign(new EventTarget(), {
       draft: { v: 1, scopes: { view: { holds: ['status', 'plan'], readings: readingsOf({ status: { in: ['trial'] } }) } } },
       ask: (request: unknown) => asked.push(request),
+      presets: () => [],
     });
     const values = (field: string) => (field === 'status' ? ['trial', 'active'] : ['Free', 'Pro']);
     bindQueryEditor(canvas, { query } as never, { definition: { v: 1 as const, id: 'records', source: { store: 'customers' } }, values });
@@ -355,4 +361,105 @@ test('a condition dragged onto a field none of its values fit is REFUSED, and sa
   await page.mouse.move(bx, by, { steps: 6 });
   await page.mouse.up();
   expect(await page.evaluate(() => (window as unknown as { asked: unknown[] }).asked)).toEqual(['query-route']);
+});
+
+/** A canvas on the harness again, after a reload. */
+async function freshCanvas(page: Page): Promise<void> {
+  await gotoHarness(page);
+  await page.evaluate(async () => {
+    const el = document.createElement('sherpa-layout-canvas') as Canvas;
+    el.style.cssText = 'inline-size: 900px; block-size: 600px';
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+  });
+}
+
+/** Bind a page's Query on the harness canvas, with a session that keeps places for the tab. */
+const BIND_QUERY = `async () => {
+  const { bindQueryEditor, SessionStore } = await import('/dist/app.js');
+  const { ArrayStore, DataSource } = await import('/dist/data.js');
+  const canvas = document.querySelector('#root sherpa-layout-canvas');
+  const source = new DataSource({ store: new ArrayStore([{ id: 1, region: 'EMEA' }, { id: 2, region: 'APAC' }], { key: 'id' }) });
+  await source.query.ask({ scope: 'view', field: 'region', reading: { picked: ['EMEA'] } });
+  const definition = { v: 1, id: 'records', source: { store: 'customers', fields: { region: { label: 'Region' } } } };
+  window.editor = bindQueryEditor(canvas, source, { definition, session: new SessionStore() });
+  window.source = source;
+  await window.__settled();
+}`;
+/** Each drawn node's heading and place. */
+const PLACES = `(() => Object.fromEntries([...document.querySelectorAll('#root sherpa-node')].map((n) => [n.dataset.heading, [n.dataset.x, n.dataset.y]])))()`;
+
+test('a moved node keeps its place across a reload, for the tab — and a new tab starts from the layout (TODO 551)', async ({ page, context }) => {
+  await page.evaluate(`(${BIND_QUERY})()`);
+  const laid = await page.evaluate(PLACES) as Record<string, string[]>;
+  // The reader moves the Store node: the arrows on its header, as a drag would.
+  await page.evaluate(() => {
+    const header = document.querySelector('#root sherpa-node[data-heading="customers"]')!.shadowRoot!.querySelector<HTMLElement>('.header')!;
+    for (const key of ['ArrowRight', 'ArrowRight', 'ArrowDown']) header.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, composed: true, cancelable: true }));
+  });
+  const moved = await page.evaluate(PLACES) as Record<string, string[]>;
+  await page.reload();
+  await freshCanvas(page);
+  await page.evaluate(`(${BIND_QUERY})()`);
+  const reloaded = await page.evaluate(PLACES);
+  // A new tab is a new session: the layout's places.
+  const other = parkThePointer(await context.newPage());
+  await freshCanvas(other);
+  await other.evaluate(`(${BIND_QUERY})()`);
+  const fresh = await other.evaluate(PLACES);
+  await other.close();
+  expect(moved['customers']).toEqual([String(Number(laid['customers']![0]) + 16), String(Number(laid['customers']![1]) + 8)]);
+  expect(reloaded).toEqual(moved);
+  expect(fresh).toEqual(laid);
+});
+
+test('Save hands the app a checked page definition, as definition-save, with the reader\'s edit in it', async ({ page }) => {
+  await page.evaluate(`(${BIND_QUERY})()`);
+  await page.locator('#root sherpa-node[data-heading="Region"] sherpa-node-row:has(sherpa-input-text[name="op"]) select').selectOption('notin');
+  const r = await page.evaluate(async () => {
+    await window.__settled();
+    const heard: unknown[] = [];
+    document.addEventListener('definition-save', (e) => heard.push((e as CustomEvent).detail.definition));
+    const ok = (window as unknown as { editor: { save(): boolean } }).editor.save();
+    return { ok, heard };
+  });
+  expect(r.ok).toBe(true);
+  expect(r.heard).toEqual([{ v: 1, id: 'records', source: {
+    store: 'customers', fields: { region: { label: 'Region' } }, scopes: { view: { where: { region: { notin: ['EMEA'] } } } },
+  } }]);
+});
+
+/** Bind the test workflow on the harness canvas, with a session that keeps its draft for the tab. */
+const BIND_FLOW = `async () => {
+  const { bindWorkflow, SessionStore } = await import('/dist/app.js');
+  const canvas = document.querySelector('#root sherpa-layout-canvas');
+  const flow = { v: 1, id: 'active-customers', nodes: [
+    { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
+    { id: 'filter', kind: 'filter', x: 360, y: 0, values: { field: 'status', op: 'eq' } },
+    { id: 'end', kind: 'output', x: 720, y: 0 },
+  ], routes: [{ from: 'start', to: 'filter' }, { from: 'filter', to: 'end' }] };
+  window.editor = bindWorkflow(canvas, flow, { session: new SessionStore(), fields: { status: { label: 'Status' } }, stores: ['customers'] });
+  await window.__settled();
+}`;
+
+test('bindWorkflow draws a workflow by its kinds, keeps each edit in the tab\'s draft over a reload, and Save hands it over', async ({ page }) => {
+  await page.evaluate(`(${BIND_FLOW})()`);
+  const drawn = {
+    nodes: await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('#root sherpa-node')].map((n) => n.dataset['heading'])),
+    ops: await page.locator('#root sherpa-node[data-heading="Filter"] sherpa-input-text[name="op"] option').allTextContents(),
+  };
+  await page.locator('#root sherpa-node[data-heading="Filter"] sherpa-input-text[name="op"] select').selectOption('ne');
+  await page.reload();
+  await freshCanvas(page);
+  await page.evaluate(`(${BIND_FLOW})()`);
+  const r = await page.evaluate(() => {
+    const heard: { nodes: { id: string; values?: unknown }[] }[] = [];
+    document.addEventListener('definition-save', (e) => heard.push((e as CustomEvent).detail.definition));
+    const op = document.querySelector<HTMLElement & { value: string }>('#root sherpa-node[data-heading="Filter"] sherpa-input-text[name="op"]')!.value;
+    const ok = (window as unknown as { editor: { save(): boolean } }).editor.save();
+    return { op, ok, saved: heard.map((d) => d.nodes.find((n) => n.id === 'filter')?.values), draft: sessionStorage.getItem('sherpa:session:/workflows/active-customers') };
+  });
+  expect(drawn.nodes).toEqual(['Store', 'Filter', 'Output']);
+  expect(drawn.ops.slice(0, 2)).toEqual(['Equals', 'Does not equal']);
+  expect(r).toEqual({ op: 'ne', ok: true, saved: [{ field: 'status', op: 'ne' }], draft: null });
 });

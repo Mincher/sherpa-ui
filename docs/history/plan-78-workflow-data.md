@@ -6,7 +6,10 @@ built through the Node Editor interface."* And TODO 551: *"Node positions, and
 properties, should survive a page reload and only be lost on session end
 unless the user has saved to the definition."*
 
-**Status: RULED, 2026-10-29 — Will picked A for D1, D2, D3 and D4 (§7). Building W1–W5.**
+**Status: RULED, 2026-10-29 — Will picked A for D1, D2, D3 and D4 (§7). W1 built; plan 695 N1
+(2026-11-03) built W2's drawing from JSON (`workflowGraph`, the one registry), W3's pure edits
+(`editWorkflow`, in workflow.ts), the draft per tab and Save (`bindWorkflow`), and W4's connect.
+W5, `runWorkflow`, is plan 695 N4. The journal (Undo, 561) waits.**
 
 ## 1. What the data layer already has
 

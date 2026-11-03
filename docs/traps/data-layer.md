@@ -6108,6 +6108,8 @@ date preset's two ends became `in [a, b]`, two days, not a range.
 - Site: `test/unit/a-value-is-typed-once.test.mjs`
 - Site: `src/components/sherpa-menu/menu-conditions.ts`
 - Site: `test/e2e/reforged-number-advanced.spec.ts`
+- Site: `src/core/data/query-graph.ts`
+- Site: `src/core/data/workflow.ts`
 
 ### T-a-changed-key-moves-the-row
 
@@ -6210,30 +6212,45 @@ routes between their sockets — checked by `schemas/workflow.v1.json` and by
 
 - **A node holds only what the reader may change**: its place, its own name and
   line, and each row's value by the row's name. What it IS — its header, its
-  sockets, its rows — is its KIND's. So a kind can gain a row and every saved
-  workflow still loads.
+  sockets, its rows — is its KIND's, in the one registry (`T-one-node-registry`).
+  So a kind can gain a row and every saved workflow still loads.
 - **The library ships the generic kinds** (Will, D2 A), each over a data-layer
   function it already has; an app adds its own beside them, as `{ ...NODE_KINDS,
-  mine }`. Sherpa stays app agnostic.
+  mine }`. Sherpa stays app agnostic. A kind a workflow does not run (a Query's
+  scope) is reported.
+- **A Filter node's rows are one condition**: `{ field, op, value }`, the condition
+  tree's leaf, never a shape of its own. An `op` row holds an operator, a `number`
+  row a number: `editWorkflow` types a value as its row takes it.
 - **A socket is `node` or `node/row`**: the header's, for the whole node, or a
   row's. A route joins an output to an input that carries the same thing, a
   value or an object; an input takes one route, and no route may close a loop,
   or nothing would run first.
 - **`checkWorkflow` reports each fault and never throws**, as `checkApp` does: a
   definition from a store or an agent may be wrong, and the page still opens.
+  `workflowFaults` says them without reporting: `bindWorkflow` refuses a new route
+  that adds one.
+- **Each edit is pure** (`editWorkflow`): a value, a node's own name, line or place,
+  a route made — in place of the one into that input — or cut. `bindWorkflow`
+  keeps the DRAFT in the tab (`SessionStore`, `shared: false`, TODO 551): a reload
+  keeps every edit and move; the session's end forgets them. Save checks it, hands
+  it to the app as `definition-save`, and drops the draft: the app keeps it where it
+  keeps things. A routed row shows its own value, read only, until a run (N4) gives
+  it the incoming one.
 
 - Site: `src/core/data/workflow.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/a-workflow-is-its-definition.test.mjs`
+- Site: `src/core/ui/node-graph.ts`
 
 ### T-the-node-editor-asks-the-query
 
 **The Node Editor is one more VIEW of a page's Query, and it ASKS.** Will, TODO
 555; plan-78-query-editor.md. `queryGraph(query, definition, facts)` draws the
-Store, the Source, each scope with its held fields as rows, a Condition into
-each answered field, the scope's Arrange, its Presentation and its components
-— from the LIVE Query, each time it changes. It keeps no Query of its own; a
-change made in it is a `QueryRequest`, as a chip's is.
+Store and each status field it works out, the Source, each scope with its held
+fields as rows, a Condition into each answered field, each preset and saved
+filter, each superseded answer, the scope's Arrange, its Presentation and its
+components — from the LIVE Query, each time it changes. It keeps no Query of its
+own; a change made in it is a `QueryRequest`, as a chip's is (`graphRequest`).
 
 - **Derived, not stored.** The same Query draws the same graph. Only the nodes'
   places are the editor's (kept per tab). A second view that kept its own copy
@@ -6244,6 +6261,14 @@ change made in it is a `QueryRequest`, as a chip's is.
 - **Conditions are read in the plain form** (`whereOf`,
   `T-one-way-to-write-a-condition`), so the editor shows what the field filters
   by, never what a control keeps for itself; an `off` one is kept, not applied.
+  A condition node is the READER's answer: a preset's rows in it are the preset's.
+- **A preset is a node into its scope's row** (`@<id>`): its On, read from the
+  Query (`presetHeld`), and what it writes, read only. A saved filter on a bar is a
+  preset `saved:<id>` (`SAVED_PRESET`), drawn as the saved kind; one on no bar says
+  what it would add, with no route. A status field sits between the Store and the
+  Source, a row per value and when a row has it, from the store's `domains`. A
+  component scope's own answer the View holds over it (`superseded`) is a read-only
+  condition into its row: it moves nowhere.
 - **Laid out by depth**, in columns: conditions left of their scope, the View's
   scopes right of it. The reader moves what overlaps.
 
@@ -6251,9 +6276,11 @@ change made in it is a `QueryRequest`, as a chip's is.
   binds private. Each chart gets its own Presentation node: its slot's, where
   the scope is its own, else its definition's kind. A scope is named by the
   definition, else by the one component that reads it.
-- **`drawGraph` places a node ONCE**; after that its place is the reader's, and
-  a redraw only updates what it shows. It WRITES NOTHING: a field's change is
-  an edit it hands its host (`onEdit`). `bindQueryEditor` turns each into the
+- **`drawGraph` places a node where its graph says, when that place MOVED**; else
+  it leaves the reader's. It WRITES NOTHING: a field's change is an edit it hands
+  its host (`onEdit`), and a move too (`onMove`). `bindQueryEditor` keeps each moved
+  node's place for the tab (`/nodes/<page>`, `shared: false`, TODO 551) and lays it
+  over the layout (`placed`): a reload keeps it, a new tab starts from the layout. `bindQueryEditor` turns each into the
   command a chip asks, through the one door (`query.ask`) — a reading, the
   Switch, a Sort, a Group (a slot's are its chart's) — so whether it applies
   at once or waits for Apply is the Query's, as for any chip (Q3). What a row
@@ -6274,17 +6301,51 @@ change made in it is a `QueryRequest`, as a chip's is.
 - **A drag from an OUTPUT socket draws a new route** (Will, 2026-10-29). The
   drawing hears the press first, at the canvas, so it neither moves the node nor
   pans the view; let go within reach of an input socket, and the HOST is asked
-  (`onConnect`). The Query takes a condition into a field of a scope: the same
-  field in another scope MOVES it there; another field takes it, keeping only
-  the values that field has. A route the Query has no meaning for — or one that
-  would then say nothing — is REFUSED and reported (`query-route`): nothing
-  moves.
+  (`onConnect`). The Query takes a condition into a field of a scope
+  (`routeRequest`): the same field in another scope MOVES it there; another field
+  takes it, keeping only the values that field has. A route the Query has no
+  meaning for — or one that would then say nothing — is REFUSED and reported
+  (`query-route`): nothing moves.
+- **Save writes the definition** (`pageWithQuery`): each scope's holds, its own
+  answers as its `where`, its slot's presentation over the definition's, and the
+  page size. `checkPage` checks it; the editor hands it to the app as
+  `definition-save`. A sort, a group and a search have no place in a page (a View
+  keeps them), and neither do the places yet.
 
 - Site: `src/core/data/query-graph.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/a-query-is-drawn-as-nodes.test.mjs`
 - Site: `src/core/ui/node-graph.ts`
 - Site: `test/e2e/reforged-node-graph.spec.ts`
+
+### T-one-node-registry
+
+**Every node kind is said ONCE, in `NODE_KINDS`** (node-kinds.ts), for every graph
+Sherpa draws: a page's Query and a workflow. Plan 695 N1. There were two
+(`NODE_KINDS` for workflows, `QUERY_KINDS` for the Query), and `source` meant a
+store's rows in one and a page's source in the other.
+
+- **A kind says its header, its sockets, its rows, what it stands for in the data
+  layer (`model`), and where it is drawn (`graphs`)**. A Query node adds its own
+  rows after the kind's (a scope's presets and fields).
+- **One meaning per word**: a Store is where rows come from, in both graphs; the
+  Source is a page's `SourceDefinition`; a row's `field` is a field of the rows,
+  never its key; a row's `control` is what it draws; `op` is an operator, and a
+  condition is the tree.
+- **The graph is DERIVED, never stored**: from the definition and the live Query
+  (`queryGraph`), or from the workflow definition (`workflowGraph`). Only places are
+  the editor's, kept for the tab, and laid over (`placed`).
+- **An edit is a command**: a Query node's is a `QueryRequest` through `ask()`
+  (`graphRequest`, `T-one-command-one-door`); a workflow node's a pure
+  `editWorkflow`. A value entered is typed by its field (`typedValue`).
+- **Save hands the app a checked definition**, as `definition-save` on the canvas
+  (`pageWithQuery` and `checkPage`; the draft and `checkWorkflow`): Sherpa never
+  decides where an app keeps things.
+
+- Site: `src/core/data/node-kinds.ts`
+- Site: `src/data.ts`
+- Site: `src/core/data/page-definition.ts`
+- Site: `test/unit/a-workflow-is-its-definition.test.mjs`
 
 ### T-an-app-is-its-definition
 
@@ -6699,6 +6760,8 @@ every source's.
 - Site: `src/core/ui/bind-source.ts`
 - Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/one-command-one-door.test.mjs`
+- Site: `src/data.ts`
+- Site: `src/core/data/query-graph.ts`
 
 ### T-a-setting-is-declared-once
 

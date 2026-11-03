@@ -10,6 +10,7 @@
  * - holdsField — Is this field held in this scope?
  * - holderOf — Which scope holds this field, or null — the View first, when it does.
  * - homeOf — Where a field's reading lives: its holder, else a preset's scope, else the View.
+ * - presetHeld — Is a preset ON in this copy: its rows held on every field it names, in force?
  * - readingOf — One field's reading, or undefined.
  * - setReading — Write one field's reading at its home, or remove it.
  * - rehome — Move each reading to its home after a hold moved fields.
@@ -40,7 +41,7 @@ import {
   type Presentation, type Query, type QueryDefaults, type QueryRequest, type ScopeQuery, type ViewScope,
 } from './query.js';
 import type { SortSpec } from './store.js';
-import type { FieldReading } from './filter-state.js';
+import { answerTree, type FieldReading } from './filter-state.js';
 import type { Where, WhereCondition } from './where.js';
 import { report } from './report.js';
 
@@ -122,6 +123,17 @@ export function homeOf(query: Query, field: string): string {
   if (holder) return holder;
   for (const [name, scope] of eachScope(query)) if (scope.readings[field]?.byPreset) return name;
   return VIEW;
+}
+
+/** Is a preset ON in this copy: its rows held on every field it names, in force?
+ *  TODOs 510, 521 · TRAP T-a-preset-is-its-own-part */
+export function presetHeld(query: Query, scope: string, id: string, readings: Readonly<Record<string, FieldReading>>): boolean {
+  const entries = Object.entries(readings).filter(([, given]) => answerTree(given));
+  // Each at its field's home, where a preset is written.
+  return entries.length > 0 && entries.every(([field]) => {
+    const held = query.scopes[holderOf(query, field) ?? scope]?.readings[field];
+    return !!held?.byPreset?.[id] && !held.suspended;
+  });
 }
 
 /** One field's reading, or undefined. */

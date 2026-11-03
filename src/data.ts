@@ -109,27 +109,41 @@ export {
   checkTiers,
   savedFiltersOf,
   openSource,
+  pageWithQuery,
   presetReadings,
+  SAVED_PRESET,
   type PageDefinition,
   type ScopeDefinition,
   type SourceDefinition,
 } from './core/data/page-definition.js';
-/* A WORKFLOW, set up from one JSON document. TRAP T-a-workflow-is-its-definition */
+/* The ONE registry of node kinds, for a page's Query and a workflow alike. TRAP T-one-node-registry */
 export {
   NODE_KINDS,
-  checkWorkflow,
+  placed,
   socketOf,
+  type DrawnGraph,
+  type GraphEdit,
+  type GraphNode,
+  type GraphRow,
+  type NodeGraph,
   type NodeKind,
-  type RowField,
+  type NodePlaces,
+  type NodeRoute,
+  type RowControl,
   type RowKind,
   type Socket,
   type SocketCarries,
+} from './core/data/node-kinds.js';
+/* A WORKFLOW, set up from one JSON document. TRAP T-a-workflow-is-its-definition */
+export {
+  checkWorkflow,
+  editWorkflow,
+  workflowFaults,
+  workflowGraph,
   type WorkflowDefinition,
+  type WorkflowEdit,
+  type WorkflowFacts,
   type WorkflowNode,
-  type WorkflowRoute,
-  type DrawnGraph,
-  type GraphNode,
-  type GraphRow,
 } from './core/data/workflow.js';
 /* The data layer over HTTP: one handle() for the page, a Service Worker or a server. Plan 652 */
 export {
@@ -159,7 +173,12 @@ export { updatesFeed, type FeedNotice, type UpdatesFeed } from './core/data/upda
 // ONE trace stream: the page's, its worker's and a server's steps, joined by one id. TRAP T-one-trace-stream
 export { TRACE_CHANNEL, onTrace, tracing, type Span, type TraceHost } from './core/data/trace.js';
 /* A page's QUERY, drawn as nodes for the Node Editor. TODO 555 · TRAP T-the-node-editor-asks-the-query */
-export { QUERY_KINDS, queryGraph, type GraphComponent, type QueryGraphFacts } from './core/data/query-graph.js';
+export {
+  graphRequest, queryGraph, routeRequest,
+  type GraphComponent, type QueryGraphFacts, type RouteAnswer, type ScopePreset,
+} from './core/data/query-graph.js';
+/* A pure edit: the Query after a Sort, Group, Search, presentation, order or move. TRAP T-one-command-one-door */
+export { editQuery, type EditFacts, type PureEdit } from './core/data/query-edits.js';
 /* An APP, set up from one JSON document. TRAP T-an-app-is-its-definition */
 export {
   checkApp,

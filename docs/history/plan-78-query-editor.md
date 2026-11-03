@@ -7,8 +7,10 @@ should be able to access the workflow from the filter-toolbars overflow menu.
 Label the menu item "Node Editor (beta)". … Let's plan for this but wait for
 the presentation switching work to be completed by the other agent first."*
 
-**Status: a PLAN. It WAITS for TODO 548 (presentation switching) to be done. Q1 ruled: A (Will, 2026-10-29).**
-548 is still changing the Presentation and its slots, which this draws.
+**Status: BUILT, Q1–Q5 (Q1 ruled A, Will, 2026-10-29; the wait on 548 lifted, D5). Plan 695 N1
+(2026-11-03) drew presets, saved filters, status fields and superseded answers too, made every
+edit a command (`graphRequest`), kept places per tab (Q5) and wrote Save to the page definition
+(`pageWithQuery`). Places in the definition wait for a key in page.v1.**
 
 ## 1. The one rule: the editor ASKS, it never keeps a copy
 

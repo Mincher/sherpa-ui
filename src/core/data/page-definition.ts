@@ -12,15 +12,17 @@
  * - openSource — Build a page's source from its definition, over the app's store. It checks nothing.
  * - presetReadings — A preset's conditions as readings, each field's its tree, typed once by its field.
  * - savedFiltersOf — A page's own saved filters: each that is a name and a query.
+ * - SAVED_PRESET — The id a saved filter goes by as a preset on a bar: this, then its own.
+ * - pageWithQuery — The page definition with a Query written in: what an editor's Save hands its app.
  * - checkTiers — A page's child fields, each reported where it cannot be one.
  */
 import { DataSource, type FieldDeclaration, type FilterSet } from './data-source.js';
-import { answerTree, type FieldReading } from './filter-state.js';
+import { answerTree, type FieldReading, type FieldType } from './filter-state.js';
 import { report, type Report } from './report.js';
 import type { Store } from './store.js';
 import type { QueryContext } from './query-context.js';
-import { VIEW, isSavedFilter, type AxesDefinition, type PresentationDefinition, type SavedFilter } from './query.js';
-import type { Where } from './where.js';
+import { VIEW, isSavedFilter, type AxesDefinition, type PresentationDefinition, type Query, type SavedFilter } from './query.js';
+import { whereOf, type Where } from './where.js';
 
 /** One scope: its name, and the fields it offers and holds at the start. */
 export interface ScopeDefinition {
@@ -197,6 +199,47 @@ export function presetReadings(source: DataSource, where: Readonly<Where>): Reco
  *  `checkPage` reports one that is not. Will, 366 */
 export function savedFiltersOf(page: PageDefinition): Record<string, SavedFilter> {
   return Object.fromEntries(Object.entries(page.savedFilters ?? {}).filter(([, set]) => isSavedFilter(set)));
+}
+
+/** The id a saved filter goes by as a preset on a bar: this, then its own. TODO 605 */
+export const SAVED_PRESET = 'saved:';
+
+/**
+ * The page definition with a Query written in — what an editor's Save hands its app:
+ * each scope's holds, its answers at the start (the reader's own; a preset's rows are the
+ * preset's), its slot's presentation over the definition's, and the page size. The rest
+ * is the definition's. A sort, a group and a search have no place in a page: a View keeps
+ * them. `checkPage` checks what it makes. Plan 695 N1 · TRAP T-one-node-registry
+ */
+export function pageWithQuery(
+  page: PageDefinition, query: Query, facts: { pageSize?: number | null; type?: (field: string) => FieldType | undefined } = {},
+): PageDefinition {
+  const copy = structuredClone(page);
+  const source = copy.source;
+  if (!source) return copy;
+  const type = (field: string): FieldType | undefined => facts.type?.(field) ?? source.fields?.[field]?.type;
+  const scopes: Record<string, ScopeDefinition> = {};
+  for (const id of new Set([...Object.keys(source.scopes ?? {}), ...Object.keys(query.scopes)])) {
+    const { holds: _held, where: _said, presentation, ...kept } = source.scopes?.[id] ?? {};
+    const now = query.scopes[id];
+    const own = Object.fromEntries(Object.entries(now?.readings ?? {}).map(([field, { byPreset: _preset, ...reading }]) => [field, reading]));
+    const where = whereOf(own, (field) => {
+      const t = type(field);
+      return t ? { type: t } : {};
+    });
+    const shown = now?.presentation ? { ...presentation, ...structuredClone(now.presentation) } : presentation;
+    const scope: ScopeDefinition = {
+      ...kept,
+      ...(now?.holds.length ? { holds: [...now.holds] } : {}),
+      ...(Object.keys(where).length ? { where } : {}),
+      ...(shown ? { presentation: shown } : {}),
+    };
+    if (Object.keys(scope).length) scopes[id] = scope;
+  }
+  const { scopes: _scopes, pageSize, ...rest } = source;
+  const size = facts.pageSize ?? pageSize;
+  copy.source = { ...rest, ...(size ? { pageSize: size } : {}), ...(Object.keys(scopes).length ? { scopes } : {}) };
+  return copy;
 }
 
 /** A page's child fields, and each place one cannot be — not declared, under a

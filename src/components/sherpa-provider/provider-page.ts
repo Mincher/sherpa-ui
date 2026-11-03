@@ -44,16 +44,13 @@ import {
 } from '../../core/browser/saved-filters.js';
 import type { SavedSet } from '../../core/ui/filters-button.js';
 import type { DataSource } from '../../core/data/data-source.js';
-import { presetReadings } from '../../core/data/page-definition.js';
+import { SAVED_PRESET, presetReadings } from '../../core/data/page-definition.js';
 import type { QueryChangeDetail, QueryContext } from '../../core/data/query-context.js';
 import { VIEW, emptyScope, sameReading, type Query, type QueryDefaults, type SavedFilter, type ScopeQuery, type ViewScope } from '../../core/data/query.js';
 import { layShared, sharedOf, type SharedView } from '../../core/data/query-edits.js';
 import { VIEW_CHIP } from '../../core/ui/shared-constants.js';
 import { organiseOf } from '../../core/ui/filter-host.js';
 import type { ProvideOptions } from './sherpa-provider.js';
-
-/** A saved set's preset, in the Query: this, then its id. */
-const SAVED_PRESET = 'saved:';
 
 /** A filter bar, as the provider draws it. */
 export type Bar = HTMLElement & {

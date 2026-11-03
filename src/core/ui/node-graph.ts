@@ -1,17 +1,21 @@
 /**
- * node-graph.ts — a graph of nodes drawn on a sherpa-layout-canvas, and a page's Query kept drawn there.
- * Each node by its id, where the reader moved it; its rows; and a line for each route. Will, TODO 555.
+ * node-graph.ts — a graph of nodes drawn on a sherpa-layout-canvas, and the two editors kept
+ * drawn there: a page's Query, which each edit ASKS, and a workflow, whose draft each edit
+ * writes. Places last the tab; Save hands the app a checked definition. Will, TODOs 555, 551.
  * TRAP T-the-node-editor-asks-the-query
  *
  * Map:
- * - GraphEdit — One row a reader changed: its node, its row and the new value.
- * - DrawOptions — What a drawing tells its host: each edit, each node a reader picks, and each new route.
- * - drawGraph — Draw a graph on a canvas: each node by id, kept where the reader moved it; then its routes.
+ * - DrawOptions — What a drawing tells its host: each edit, each node a reader picks or moves, and each new route.
+ * - drawGraph — Draw a graph on a canvas: each node by id, at its place when that moved; then its routes.
  * - markNode — Mark one node as the one picked, or none.
  * - InspectOptions — What an inspector shows beside a node's rows, and whom it tells of an edit.
  * - inspectNode — Fill an overlay panel with one node: its rows again, their routes, and a visual.
- * - QueryEditorOptions — What drawing a page's Query needs beyond its source: the definition, the page's components, an inspector.
- * - bindQueryEditor — Keep a page's Query drawn on a canvas as it changes, and ask it for each edit; returns the undo.
+ * - Inspector — The overlay panel a picked node opens in.
+ * - GraphEditor — What an editor's binding gives back: Save, and the undo.
+ * - QueryEditorOptions — What drawing a page's Query needs beyond its source: its definition, an inspector, a session.
+ * - bindQueryEditor — Keep a page's Query drawn on a canvas as it changes, and ask it for each edit.
+ * - WorkflowEditorOptions — What editing a workflow needs beyond it: its facts, an inspector, a session, the kinds.
+ * - bindWorkflow — Keep a workflow's draft drawn on a canvas, and write each edit to it.
  */
 import '../../components/sherpa-input-text/sherpa-input-text.js';
 import '../../components/sherpa-key-value-list/sherpa-key-value-list.js';
@@ -22,35 +26,37 @@ import '../../components/sherpa-stack/sherpa-stack.js';
 import '../../components/sherpa-switch/sherpa-switch.js';
 import type { SherpaLayoutCanvas } from '../../components/sherpa-layout-canvas/sherpa-layout-canvas.js';
 import type { SocketSide } from '../../components/sherpa-node/node-sockets.js';
+import type { SessionStore } from '../browser/session.js';
 import type { DataSource } from '../data/data-source.js';
-import type { PageDefinition } from '../data/page-definition.js';
-import { editedCondition, queryGraph, type QueryGraphFacts } from '../data/query-graph.js';
+import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-definition.js';
+import { graphRequest, queryGraph, routeRequest, type QueryGraphFacts } from '../data/query-graph.js';
 import { VIEW } from '../data/query.js';
 import { OP_LABELS, valueKey, type FilterOp } from '../data/store.js';
 import { report } from '../data/report.js';
-import { answerTree, type FieldType } from '../data/filter-state.js';
-import { treeReading } from '../data/where.js';
-import type { DrawnGraph, GraphNode, GraphRow, WorkflowRoute } from '../data/workflow.js';
+import { typedValue, type FieldType } from '../data/filter-state.js';
+import {
+  NODE_KINDS, placed, socketOf,
+  type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeRoute,
+} from '../data/node-kinds.js';
+import {
+  checkWorkflow, editWorkflow, workflowFaults, workflowGraph,
+  type WorkflowDefinition, type WorkflowFacts, type WorkflowNode,
+} from '../data/workflow.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
 
 /** Anything with a socket to join: a node's header, or one of its rows. */
 type HasSockets = HTMLElement & { socketRect(side: SocketSide): DOMRect | null };
 
-/** One row a reader changed: its node, its row and the new value. */
-export interface GraphEdit {
-  node: GraphNode;
-  row: GraphRow;
-  value: unknown;
-}
-
-/** What a drawing tells its host: each edit, each node a reader picks, and each route a
- *  reader draws — the drawing writes nothing. */
+/** What a drawing tells its host: each edit, each node a reader picks or moves, and each
+ *  route a reader draws — the drawing writes nothing. */
 export interface DrawOptions {
   onEdit?: (edit: GraphEdit) => void;
   onSelect?: (node: GraphNode) => void;
+  /** A node the reader moved, and where to. */
+  onMove?: (node: GraphNode, x: number, y: number) => void;
   /** A line dragged from an output socket and let go on an input socket. */
-  onConnect?: (route: WorkflowRoute) => void;
+  onConnect?: (route: NodeRoute) => void;
 }
 
 /** A field a row draws: a text field or a select, a set of ticks, or a switch. */
@@ -65,8 +71,10 @@ interface Drawn {
   /** Each row element's address, for an edit to name. */
   addresses: WeakMap<HTMLElement, [string, string]>;
   shapes: Map<string, string>;
+  /** The place each node was last given by its graph: a new one moves it, the same one leaves the reader's. */
+  placedAt: Map<string, string>;
   lines: SVGSVGElement;
-  routes: readonly WorkflowRoute[];
+  routes: readonly NodeRoute[];
   /** The line a reader is drawing, kept over each redraw of the routes. */
   draft: SVGPathElement | null;
   sizes: ResizeObserver;
@@ -79,8 +87,8 @@ const drawnOn = new WeakMap<HTMLElement, Drawn>();
 function shown(row: GraphRow): string {
   const value = row.value;
   if (value === undefined || value === null) return '';
-  if (row.field === 'condition') return OP_LABELS[value as FilterOp] ?? String(value);
-  if (row.field === 'direction') return value === 'desc' ? 'Descending' : value === 'asc' ? 'Ascending' : String(value);
+  if (row.control === 'op') return OP_LABELS[value as FilterOp] ?? String(value);
+  if (row.control === 'direction') return value === 'desc' ? 'Descending' : value === 'asc' ? 'Ascending' : String(value);
   return Array.isArray(value) ? value.join(', ') : String(value);
 }
 
@@ -93,17 +101,17 @@ function put(el: Element, name: string, value: string | undefined): void {
 /** A row's field: a switch, a set of ticks, a select of its choices, or a text or number field.
  *  LOCKED — read only — where a route drives it, or nothing outside takes its change. */
 function fieldFor(row: GraphRow, locked: boolean): Field {
-  if (row.field === 'switch' || row.field === 'values') {
-    const field = document.createElement(row.field === 'switch' ? 'sherpa-switch' : 'sherpa-select-group') as Field;
-    if (row.field === 'values') field.setAttribute('multiple', '');
+  if (row.control === 'switch' || row.control === 'values') {
+    const field = document.createElement(row.control === 'switch' ? 'sherpa-switch' : 'sherpa-select-group') as Field;
+    if (row.control === 'values') field.setAttribute('multiple', '');
     if (locked) field.setAttribute('disabled', '');
-    if (row.field === 'values') field.populate?.(row.choices ?? []);
+    if (row.control === 'values') field.populate?.(row.choices ?? []);
     return field;
   }
   const field = document.createElement('sherpa-input-text') as Field;
   field.setAttribute('name', row.name);
   if (row.choices) field.setAttribute('data-type', 'select');
-  else if (row.field === 'number') field.setAttribute('data-type', 'number');
+  else if (row.control === 'number') field.setAttribute('data-type', 'number');
   if (locked) field.setAttribute(row.choices ? 'disabled' : 'readonly', '');
   if (row.choices) field.populate?.(row.choices);
   return field;
@@ -113,15 +121,15 @@ function fieldFor(row: GraphRow, locked: boolean): Field {
 function fill(field: Field, row: GraphRow, note?: string): void {
   field.setAttribute('data-label', row.label);
   put(field, 'data-description', note ?? row.hint);
-  if (row.field === 'switch') field.checked = !!row.value;
-  else if (row.field === 'values') field.value = Array.isArray(row.value) ? row.value.map(String) : [];
+  if (row.control === 'switch') field.checked = !!row.value;
+  else if (row.control === 'values') field.value = Array.isArray(row.value) ? row.value.map(String) : [];
   // A select holds its value's KEY, and shows its label itself.
   else field.value = row.choices ? String(row.value ?? '') : shown(row);
 }
 
 /** What a field says now, as its row's value. */
 function read(field: Field, row: GraphRow): unknown {
-  return row.field === 'switch' ? !!field.checked : field.value;
+  return row.control === 'switch' ? !!field.checked : field.value;
 }
 
 /** The input addresses a route drives: their fields mirror what comes in, read only. */
@@ -133,7 +141,7 @@ function driven(graph: DrawnGraph): Set<string> {
 function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
   const routed = driven(drawn.graph);
   const locked = (row: GraphRow): boolean => !row.editable || routed.has(`${node.id}/${row.name}`);
-  const shape = JSON.stringify(node.rows.map((r) => [r.name, r.field, r.input, r.output, locked(r), r.choices]));
+  const shape = JSON.stringify(node.rows.map((r) => [r.name, r.control, r.input, r.output, locked(r), r.choices]));
   if (drawn.shapes.get(node.id) !== shape) {
     drawn.shapes.set(node.id, shape);
     for (const key of [...drawn.rows.keys()]) if (key.startsWith(`${node.id}/`)) drawn.rows.delete(key);
@@ -141,7 +149,7 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
       const line = document.createElement('sherpa-node-row');
       drawn.rows.set(`${node.id}/${row.name}`, line);
       drawn.addresses.set(line, [node.id, row.name]);
-      if (row.field) line.append(fieldFor(row, locked(row)));
+      if (row.control) line.append(fieldFor(row, locked(row)));
       return line;
     }));
   }
@@ -151,7 +159,7 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
     put(line, 'data-output-socket', row.output);
     const field = line.firstElementChild as Field | null;
     if (field) fill(field, row);
-    else line.setAttribute('data-label', row.field === undefined && row.value !== undefined ? `${row.label}: ${shown(row)}` : row.label);
+    else line.setAttribute('data-label', row.control === undefined && row.value !== undefined ? `${row.label}: ${shown(row)}` : row.label);
   }
 }
 
@@ -171,8 +179,8 @@ function curve([x1, y1]: [number, number], [x2, y2]: [number, number]): string {
 /** A curve for each route, from its output socket to its input socket. */
 function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
   const end = (address: string, side: SocketSide): DOMRect | null => {
-    const [id = '', row] = address.split('/');
-    const el = (row === undefined ? drawn.nodes.get(id) : drawn.rows.get(address)) as HasSockets | undefined;
+    const { node, row } = socketOf(address);
+    const el = (row === undefined ? drawn.nodes.get(node) : drawn.rows.get(address)) as HasSockets | undefined;
     return el?.socketRect?.(side) ?? null;
   };
   const paths = drawn.routes.flatMap(({ from, to }) => {
@@ -238,11 +246,17 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
     drawn.draft = null;
     const to = e.type === 'pointerup' ? inputAt(drawn, e.clientX, e.clientY) : null;
     // Let go on the bare canvas, or on its own node: nothing is joined.
-    if (to && to.split('/')[0] !== from.split('/')[0]) drawn.options.onConnect?.({ from, to });
+    if (to && socketOf(to).node !== socketOf(from).node) drawn.options.onConnect?.({ from, to });
   };
   window.addEventListener('pointermove', follow);
   window.addEventListener('pointerup', stop);
   window.addEventListener('pointercancel', stop);
+}
+
+/** The drawn node an event came from. */
+function nodeOf(drawn: Drawn, target: EventTarget | null): GraphNode | undefined {
+  const id = [...drawn.nodes].find(([, el]) => el === target)?.[0];
+  return drawn.graph.nodes.find((n) => n.id === id);
 }
 
 /** What a canvas has drawn, made the first time. */
@@ -260,14 +274,20 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
   canvas.prepend(lines);
   const made: Drawn = {
     graph: { nodes: [], routes: [] }, options: {},
-    nodes: new Map(), rows: new Map(), addresses: new WeakMap(), shapes: new Map(), lines, routes: [], draft: null, fitted: false,
+    nodes: new Map(), rows: new Map(), addresses: new WeakMap(), shapes: new Map(), placedAt: new Map(),
+    lines, routes: [], draft: null, fitted: false,
     // A node's height lands when its parts render: the lines follow, and the first fits the view.
     sizes: new ResizeObserver(() => {
       drawRoutes(canvas, made);
       if (!made.fitted && made.nodes.size) { made.fitted = true; canvas.fit(); }
     }),
   };
-  canvas.addEventListener('node-move', () => drawRoutes(canvas, made));
+  canvas.addEventListener('node-move', (event) => {
+    drawRoutes(canvas, made);
+    const node = nodeOf(made, event.target);
+    const { x, y } = (event as CustomEvent<{ x: number; y: number }>).detail;
+    if (node) made.options.onMove?.(node, x, y);
+  });
   // Before the node and the view hear it: a drag from an output socket is a new route.
   canvas.addEventListener('pointerdown', (event) => connectFrom(canvas, made, event), { capture: true });
   // A field's change, as an EDIT for the host: the drawing writes nothing itself.
@@ -281,8 +301,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
   });
   // A node ASKS to be picked: the drawing marks it, one of many, and tells its host.
   canvas.addEventListener('node-select', (event) => {
-    const id = [...made.nodes].find(([, el]) => el === event.target)?.[0];
-    const node = made.graph.nodes.find((n) => n.id === id);
+    const node = nodeOf(made, event.target);
     if (!node) return;
     markNode(canvas, node.id);
     made.options.onSelect?.(node);
@@ -292,7 +311,8 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
   return drawn;
 }
 
-/** Draw a graph on a canvas: each node by id, kept where the reader moved it; then its routes. */
+/** Draw a graph on a canvas: each node by id, at its place when the graph's place for it
+ *  moved — else where the reader left it; then its routes. */
 export function drawGraph(canvas: SherpaLayoutCanvas, graph: DrawnGraph, options: DrawOptions = {}): void {
   const drawn = drawnFor(canvas);
   drawn.graph = graph;
@@ -304,17 +324,21 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: DrawnGraph, options
     el.remove();
     drawn.nodes.delete(id);
     drawn.shapes.delete(id);
+    drawn.placedAt.delete(id);
   }
   for (const node of graph.nodes) {
     let el = drawn.nodes.get(node.id);
     if (!el) {
       el = document.createElement('sherpa-node');
-      // Placed once: after that, the place is the reader's.
-      el.setAttribute('data-x', String(node.x));
-      el.setAttribute('data-y', String(node.y));
       drawn.nodes.set(node.id, el);
       canvas.append(el);
       drawn.sizes.observe(el);
+    }
+    const at = `${node.x},${node.y}`;
+    if (drawn.placedAt.get(node.id) !== at) {
+      drawn.placedAt.set(node.id, at);
+      el.setAttribute('data-x', String(node.x));
+      el.setAttribute('data-y', String(node.y));
     }
     el.setAttribute('data-heading', node.heading);
     put(el, 'data-icon', node.icon);
@@ -360,7 +384,7 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
     });
   }
   const name = (address: string): string => {
-    const [id, row] = address.split('/');
+    const { node: id, row } = socketOf(address);
     const from = graph.nodes.find((n) => n.id === id);
     const part = row ? from?.rows.find((r) => r.name === row)?.label : undefined;
     return [from?.heading ?? id, part].filter(Boolean).join(' › ');
@@ -371,7 +395,7 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
     const at = `${node.id}/${row.name}`;
     const ins = graph.routes.filter((r) => r.to === at).map((r) => `From ${name(r.from)}`);
     const outs = graph.routes.filter((r) => r.from === at).map((r) => `To ${name(r.to)}`);
-    const field = fieldFor(row.field ? row : { ...row, field: 'text' }, !row.editable || routed.has(at) || !row.field);
+    const field = fieldFor(row.control ? row : { ...row, control: 'text' }, !row.editable || routed.has(at) || !row.control);
     fill(field, row, [...ins, ...outs, row.hint].filter(Boolean).join(' · ') || undefined);
     fields.set(field, row);
     return field;
@@ -393,83 +417,108 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   inspecting.set(panel, { node, fields, options });
 }
 
-/** What drawing a page's Query needs beyond its source: the definition, the page's components, an inspector. */
+/** The overlay panel a picked node opens in. */
+export type Inspector = HTMLElement & { show(): void; hide(): void; open: boolean };
+
+/** What an editor's binding gives back: Save, and the undo. */
+export interface GraphEditor {
+  /** Check what the edits make and hand it to the app, as `definition-save` on the
+   *  canvas — Sherpa never decides where an app keeps it. False, and reported, when it fails its check. */
+  save(): boolean;
+  /** Stop drawing and asking, and shut the inspector. */
+  stop(): void;
+}
+
+/** Tell the app a definition to keep. */
+function handOver(canvas: HTMLElement, definition: PageDefinition | WorkflowDefinition): void {
+  canvas.dispatchEvent(new CustomEvent('definition-save', { detail: { definition }, bubbles: true, composed: true }));
+}
+
+/** The node a canvas's inspector shows: picked, followed on each draw, and let go. */
+interface Picked {
+  select(node: GraphNode, graph: DrawnGraph): void;
+  follow(graph: DrawnGraph): void;
+  stop(): void;
+}
+
+/** A canvas's picked node in its inspector: opened on a pick, followed on each draw, let go as it shuts. */
+function pickedIn(
+  canvas: SherpaLayoutCanvas, inspector: Inspector | undefined, show: (node: GraphNode, graph: DrawnGraph) => void, onClose?: () => void,
+): Picked {
+  let picked: string | null = null;
+  const close = (event: Event): void => {
+    if (event.target !== inspector) return;
+    picked = null;
+    markNode(canvas, null);
+    onClose?.();
+  };
+  inspector?.addEventListener('panel-close', close);
+  return {
+    select(node, graph): void {
+      picked = node.id;
+      if (inspector) show(node, graph);
+      inspector?.show();
+    },
+    follow(graph): void {
+      const node = graph.nodes.find((n) => n.id === picked);
+      if (inspector?.open && node) show(node, graph);
+    },
+    stop(): void {
+      inspector?.removeEventListener('panel-close', close);
+      inspector?.hide();
+    },
+  };
+}
+
+/** Each node's place, as a session keeps it. */
+function isPlaces(v: unknown): v is NodePlaces {
+  return !!v && typeof v === 'object' && !Array.isArray(v)
+    && Object.values(v).every((p: { x?: unknown; y?: unknown } | null) => typeof p?.x === 'number' && typeof p?.y === 'number');
+}
+
+/** What drawing a page's Query needs beyond its source: the definition, the page's
+ *  components, an inspector, and a session to keep each node's place. */
 export interface QueryEditorOptions extends QueryGraphFacts {
   definition: PageDefinition;
   /** The overlay panel a picked node opens in: its rows again, and a component's live visual. */
-  inspector?: HTMLElement & { show(): void; hide(): void; open: boolean };
+  inspector?: Inspector;
+  /** Where a moved node's place is kept for the tab (TODO 551): it survives a reload, and the session's end forgets it. */
+  session?: SessionStore;
 }
 
-/** The operators that pick one value. */
-const ONE = new Set(['eq', 'ne']);
-
-/** Keep a page's Query drawn on a canvas as it changes, and ask it for each edit; returns the undo.
+/** Keep a page's Query drawn on a canvas as it changes, and ask it for each edit.
  *  It draws what the controls show — the draft — and ASKS through the one door a chip
  *  asks through: whether a change applies at once or waits for Apply is the Query's,
  *  and so is a slot's Sort and Group. TRAP T-one-command-one-door */
 export function bindQueryEditor(
   canvas: SherpaLayoutCanvas,
-  source: Pick<DataSource, 'query'> & Partial<Pick<DataSource, 'valuesFor'>>,
-  { definition, inspector, ...facts }: QueryEditorOptions,
-): () => void {
+  source: Pick<DataSource, 'query'> & Partial<Pick<DataSource, 'valuesFor' | 'store' | 'state'>>,
+  { definition, inspector, session, ...facts }: QueryEditorOptions,
+): GraphEditor {
   const query = source.query;
   const typeOf = (field: string): string | undefined => facts.type?.(field) ?? definition.source?.fields?.[field]?.type;
   const values = facts.values ?? ((field: string) => source.valuesFor?.(field)?.map((v) => valueKey(v)));
-  const onEdit = ({ node, row, value }: GraphEdit): void => {
-    const scope = node.ref?.['scope'];
-    const was = Object.fromEntries(node.rows.map((r) => [r.name, r.value]));
-    if (node.kind === 'source' && row.name === 'pageSize') query.ask({ pageSize: Number(value) });
-    if (!scope) return;
-    if (node.kind === 'scope') {
-      query.ask({ scope, suspended: !value });
-    } else if (node.kind === 'condition') {
-      const field = node.ref?.['field'] ?? '';
-      const to = String(row.name === 'field' ? value : field);
-      const op = String(row.name === 'op' ? value : was['op']);
-      let given = row.name === 'value' ? value : was['value'];
-      // One value where one is asked; a list where several are.
-      if (ONE.has(op) && Array.isArray(given)) given = given[0] ?? '';
-      const reading = treeReading(editedCondition(op, given as string | string[] ?? '', typeOf(to)), typeOf(to) as FieldType | undefined);
-      // Another field: the condition MOVES there, as one change.
-      query.ask(to === field ? { scope, field, reading } : [{ scope, field, reading: null }, { scope, field: to, reading }]);
-    } else if (node.kind === 'arrange') {
-      const pick = (name: string): string => String(row.name === name ? value : was[name] ?? '');
-      if (row.name === 'group') query.ask({ scope, group: pick('group') || null });
-      else if (row.name === 'search') query.ask({ scope, search: pick('search') });
-      else query.ask({ scope, sort: pick('sort') || null, direction: pick('direction') === 'desc' ? 'desc' : 'asc' });
-    } else if (node.kind === 'presentation') {
-      query.ask({ scope, presentation: { [row.name]: value ? String(value) : undefined } });
-    }
+  // A moved node's place: the reader's for the tab. TODO 551
+  const pointer = `/nodes/${definition.id}`;
+  session?.persist(pointer, { shared: false, guard: isPlaces });
+  let places: NodePlaces = (session?.get(pointer) as NodePlaces | undefined) ?? {};
+  const onMove = (node: GraphNode, x: number, y: number): void => {
+    places = { ...places, [node.id]: { x, y } };
+    session?.set(pointer, places);
   };
-  /* A NEW ROUTE, as the Query can take one: a condition into a field of a scope. The
-     same field in another scope MOVES it there; another field takes it, keeping the
-     values that field has. Anything else is no route the Query has. */
-  const onConnect = ({ from, to }: WorkflowRoute): void => {
-    const was = graph.nodes.find((n) => n.id === from.split('/')[0]);
-    const [into = '', field = ''] = to.split('/');
-    const target = graph.nodes.find((n) => n.id === into);
-    const scope = was?.ref?.['scope'];
-    const old = was?.ref?.['field'];
-    const there = target?.ref?.['scope'];
-    if (was?.kind !== 'condition' || target?.kind !== 'scope' || !field || !scope || !old || !there) {
-      report({ code: 'query-route', message: `The Query has no route from "${was?.heading ?? from}" to "${target?.heading ?? to}": a condition goes into a field of a scope.` });
-      return;
-    }
-    if (scope === there && old === field) return;
-    const rows = Object.fromEntries(was.rows.map((r) => [r.name, r.value]));
-    let given = rows['value'] as string | string[];
-    const known = values(field);
-    if (field !== old && known && Array.isArray(given)) given = given.filter((v) => known.includes(v));
-    const reading = treeReading(editedCondition(String(rows['op']), given ?? '', typeOf(field)), typeOf(field) as FieldType | undefined);
-    // It must still SAY something there: an empty pick filters nothing, so nothing moves.
-    if (!answerTree(reading)) {
-      report({ code: 'query-route', message: `Nothing "${was.heading}" picks is a value of "${field}": tick its values there.` });
-      return;
-    }
-    query.ask([{ scope, field: old, reading: null }, { scope: there, field, reading }]);
+  const onEdit = (edit: GraphEdit): void => {
+    const request = graphRequest(edit, { type: typeOf });
+    if (!request) return;
+    query.ask(request);
+    // The page size is the source's, not the Query's: no query-change tells it.
+    if (edit.node.kind === 'source') draw();
+  };
+  const onConnect = (route: NodeRoute): void => {
+    const answer = routeRequest(graph, route, { type: typeOf, values });
+    if (answer && 'refused' in answer) report({ code: 'query-route', message: answer.refused });
+    else if (answer) query.ask(answer.request);
   };
   // The node in the inspector, and its live visual: kept while the same component is shown.
-  let picked: string | null = null;
   let visual: { id: string; el: HTMLElement } | null = null;
   const visualOf = (node: GraphNode): HTMLElement | null => {
     const id = node.ref?.['component'];
@@ -486,34 +535,105 @@ export function bindQueryEditor(
     visual = { id, el };
     return el;
   };
-  const show = (graph: DrawnGraph): void => {
-    const node = graph.nodes.find((n) => n.id === picked);
-    if (!inspector || !node) return;
-    inspectNode(inspector, node, graph, { onEdit, visual: visualOf(node) });
-  };
+  const picks = pickedIn(canvas, inspector, (node, now) => inspectNode(inspector!, node, now, { onEdit, visual: visualOf(node) }), () => { visual = null; });
   let graph: DrawnGraph = { nodes: [], routes: [] };
-  const onSelect = (node: GraphNode): void => {
-    picked = node.id;
-    show(graph);
-    inspector?.show();
-  };
-  const onClose = (event: Event): void => {
-    if (event.target !== inspector) return;
-    picked = null;
-    visual = null;
-    markNode(canvas, null);
-  };
-  inspector?.addEventListener('panel-close', onClose);
   const draw = (): void => {
-    graph = queryGraph(query.draft, definition, { ...facts, values });
-    drawGraph(canvas, graph, { onEdit, onSelect, onConnect });
-    if (inspector?.open) show(graph);
+    graph = placed(queryGraph(query.draft, definition, {
+      ...facts, values, presets: (scope) => query.presets(scope), domains: source.store?.domains ?? {}, pageSize: source.state?.pageSize ?? null,
+    }), places);
+    drawGraph(canvas, graph, { onEdit, onMove, onConnect, onSelect: (node) => picks.select(node, graph) });
+    picks.follow(graph);
   };
   draw();
   query.addEventListener('query-change', draw);
-  return () => {
-    query.removeEventListener('query-change', draw);
-    inspector?.removeEventListener('panel-close', onClose);
-    inspector?.hide();
+  return {
+    save(): boolean {
+      const page = pageWithQuery(definition, query.draft, { pageSize: source.state?.pageSize ?? null, type: (f) => typeOf(f) as FieldType | undefined });
+      if (!checkPage(page)) return false;
+      handOver(canvas, page);
+      return true;
+    },
+    stop(): void {
+      query.removeEventListener('query-change', draw);
+      picks.stop();
+    },
+  };
+}
+
+/** What editing a workflow needs beyond it: its facts, an inspector, a session, the kinds. */
+export interface WorkflowEditorOptions extends WorkflowFacts {
+  inspector?: Inspector;
+  /** Where the DRAFT is kept for the tab (TODO 551): every edit, a move too, survives a
+   *  reload, and the session's end forgets it — unless Save handed it over. */
+  session?: SessionStore;
+  kinds?: Readonly<Record<string, NodeKind>>;
+}
+
+/** A node's own name, line and place, as its inspector's first rows edit them. */
+const OWN: Readonly<Record<string, keyof Pick<WorkflowNode, 'heading' | 'description' | 'x' | 'y'>>> = {
+  '#heading': 'heading', '#description': 'description', '#x': 'x', '#y': 'y',
+};
+
+/** Keep a workflow's draft drawn on a canvas, and write each edit to it as a pure edit:
+ *  a value, a move, a route, a node's own name. A route that would break the workflow is
+ *  refused, and says why. N4 runs the draft. TRAP T-a-workflow-is-its-definition */
+export function bindWorkflow(
+  canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition,
+  { inspector, session, kinds = NODE_KINDS, ...facts }: WorkflowEditorOptions = {},
+): GraphEditor {
+  const pointer = `/workflows/${workflow.id}`;
+  const isDraft = (v: unknown): v is WorkflowDefinition =>
+    !!v && typeof v === 'object' && (v as WorkflowDefinition).v === 1 && (v as WorkflowDefinition).id === workflow.id && Array.isArray((v as WorkflowDefinition).nodes);
+  session?.persist(pointer, { shared: false, guard: isDraft });
+  // This tab's draft wins: a reload loses nothing.
+  let draft: WorkflowDefinition = (session?.get(pointer) as WorkflowDefinition | undefined) ?? structuredClone(workflow);
+  let graph: DrawnGraph = { nodes: [], routes: [] };
+  const write = (next: WorkflowDefinition): void => {
+    draft = next;
+    session?.set(pointer, next);
+    draw();
+  };
+  const onEdit = ({ node, row, value }: GraphEdit): void => {
+    const own = OWN[row.name];
+    if (!own) return write(editWorkflow(draft, { node: node.id, row: row.name, value }, kinds));
+    const said = own === 'x' || own === 'y' ? typedValue('number', String(value ?? '')) : String(value ?? '');
+    if ((own === 'x' || own === 'y') && typeof said !== 'number') return;
+    write(editWorkflow(draft, { node: node.id, set: { [own]: said } }, kinds));
+  };
+  const onMove = (node: GraphNode, x: number, y: number): void => write(editWorkflow(draft, { node: node.id, set: { x, y } }, kinds));
+  const onConnect = (route: NodeRoute): void => {
+    const next = editWorkflow(draft, { route }, kinds);
+    const was = new Set(workflowFaults(draft, kinds));
+    const added = workflowFaults(next, kinds).filter((f) => !was.has(f));
+    if (added.length) report({ code: 'workflow-route', message: `bindWorkflow: ${added.join('; ')}.`, at: { workflow: draft.id } });
+    else write(next);
+  };
+  // The inspector leads with the node's own name, line and place.
+  const withOwn = (node: GraphNode): GraphNode => {
+    const at = draft.nodes.find((n) => n.id === node.id);
+    const own: GraphRow[] = [
+      { name: '#heading', label: 'Name', control: 'text', value: node.heading, editable: true },
+      { name: '#description', label: 'Description', control: 'text', value: node.description ?? '', editable: true },
+      { name: '#x', label: 'X', control: 'number', value: at?.x, editable: true },
+      { name: '#y', label: 'Y', control: 'number', value: at?.y, editable: true },
+    ];
+    return { ...node, rows: [...own, ...node.rows] };
+  };
+  const picks = pickedIn(canvas, inspector, (node, now) => inspectNode(inspector!, withOwn(node), now, { onEdit }));
+  const draw = (): void => {
+    graph = workflowGraph(draft, facts, kinds);
+    drawGraph(canvas, graph, { onEdit, onMove, onConnect, onSelect: (node) => picks.select(node, graph) });
+    picks.follow(graph);
+  };
+  draw();
+  return {
+    save(): boolean {
+      if (!checkWorkflow(draft, kinds)) return false;
+      handOver(canvas, draft);
+      // The definition holds it now: the draft goes.
+      session?.set(pointer, undefined);
+      return true;
+    },
+    stop: picks.stop,
   };
 }

@@ -1,20 +1,28 @@
 /**
- * query-graph.ts — a page's Query drawn as nodes, for the Node Editor to show. DOM-free.
- * It is DERIVED each time the Query changes; only the nodes' places are the editor's own.
+ * query-graph.ts — a page's Query drawn as nodes, for the Node Editor, and each edit made in
+ * them as the command it asks. DERIVED each time the Query changes: the store and its status
+ * fields, the source, each scope with its presets, saved filters, conditions and superseded
+ * answers, its arrangement, presentation and components. Kinds are the one registry's. DOM-free.
  * Will, TODO 555 · docs/history/plan-78-query-editor.md · TRAP T-the-node-editor-asks-the-query
  *
  * Map:
- * - QUERY_KINDS — What each node of a Query IS: its header, its sockets and its fixed rows.
  * - GraphComponent — One component a scope's rows reach: its id, its label and how it shows them.
+ * - ScopePreset — One preset of a scope, as declared: its id, its name and the readings it writes.
  * - QueryGraphFacts — What drawing a Query needs that the Query does not say.
  * - editedCondition — A condition node's rows, edited, as the condition they say: the other half of drawing one.
  * - queryGraph — A page's Query as nodes and routes, laid out in columns by depth.
+ * - graphRequest — The command a node's edit asks, as a chip's would; none for a row nothing takes.
+ * - RouteAnswer — What a new route asks: a command, or why it is refused; null, nothing to do.
+ * - routeRequest — The command a new route asks: a condition into a field of a scope, moved or retargeted.
  */
-import type { PageDefinition } from './page-definition.js';
-import { PRESENTATION_KINDS, VIEW, arranging, type Presentation, type Query } from './query.js';
-import { OP_LABELS, OPS_FOR_TYPE, groupOf, joinConditions, type Condition, type ConditionLeaf, type Duration, type FilterOp } from './store.js';
-import { answerTree, type FieldReading } from './filter-state.js';
-import type { DrawnGraph, GraphNode, GraphRow, NodeKind, WorkflowRoute } from './workflow.js';
+import { SAVED_PRESET, type PageDefinition } from './page-definition.js';
+import { PRESENTATION_KINDS, VIEW, arranging, isSavedFilter, type Presentation, type Query, type QueryRequest } from './query.js';
+import { OP_LABELS, OPS_FOR_TYPE, groupOf, type Condition, type ConditionLeaf, type Duration, type FilterOp } from './store.js';
+import { answerTree, typedValue, type FieldReading, type FieldType } from './filter-state.js';
+import { readingsOf, treeReading } from './where.js';
+import { presetHeld } from './query-edits.js';
+import type { FieldDomain } from './validate.js';
+import { NODE_KINDS, kindNode, socketOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeRoute } from './node-kinds.js';
 
 /** One column's width, in plane px: a node and the room for its routes. */
 const COLUMN = 360;
@@ -22,49 +30,6 @@ const COLUMN = 360;
 const HEADER = 72;
 const ROW = 64;
 const GAP = 40;
-
-/** What each node of a Query IS: its header, its sockets and its fixed rows. */
-export const QUERY_KINDS: Readonly<Record<string, NodeKind>> = {
-  store: { heading: 'Store', icon: 'storage', description: 'Where the rows come from.', output: 'object', rows: [] },
-  source: {
-    heading: 'Source', icon: 'server', description: 'How the page reads its store.', input: 'object', output: 'object',
-    rows: [
-      { name: 'pageSize', label: 'Page size', field: 'number' },
-      { name: 'search', label: 'Search fields', field: 'text' },
-      { name: 'applyOn', label: 'Apply on', field: 'text' },
-    ],
-  },
-  // A scope's rows are the fields it holds, each with an input for its condition.
-  scope: { heading: 'Scope', icon: 'filter', input: 'object', output: 'object', rows: [] },
-  condition: {
-    heading: 'Condition', icon: 'function', output: 'value',
-    rows: [
-      { name: 'field', label: 'Field', field: 'key' },
-      { name: 'op', label: 'Condition', field: 'condition' },
-      { name: 'value', label: 'Value', field: 'text' },
-    ],
-  },
-  arrange: {
-    heading: 'Arrange', icon: 'sort-ascending', description: 'The rows\' order, groups and search.', input: 'object', output: 'object',
-    rows: [
-      { name: 'sort', label: 'Sort', field: 'key' },
-      { name: 'direction', label: 'Direction', field: 'direction' },
-      { name: 'group', label: 'Group', field: 'key' },
-      { name: 'search', label: 'Search', field: 'text' },
-    ],
-  },
-  presentation: {
-    heading: 'Presentation', icon: 'insights', description: 'How a slot shows its rows.', input: 'object', output: 'object',
-    rows: [
-      { name: 'kind', label: 'Show as', field: 'presentation' },
-      { name: 'primary', label: 'Primary', field: 'key' },
-      { name: 'secondary', label: 'Secondary', field: 'key' },
-      { name: 'group', label: 'Group', field: 'key' },
-      { name: 'sort', label: 'Sort', field: 'direction' },
-    ],
-  },
-  component: { heading: 'Component', icon: 'table-columns', input: 'object', rows: [] },
-};
 
 /** One component a scope's rows reach: its id, its label and how it shows them. */
 export interface GraphComponent {
@@ -74,6 +39,13 @@ export interface GraphComponent {
   scope?: string;
   /** How its definition shows it, before a reader's presentation. */
   kind?: (typeof PRESENTATION_KINDS)[number];
+}
+
+/** One preset of a scope, as declared: its id, its name and the readings it writes. */
+export interface ScopePreset {
+  id: string;
+  label: string;
+  readings: Readonly<Record<string, FieldReading>>;
 }
 
 /** What drawing a Query needs that the Query does not say. */
@@ -86,24 +58,43 @@ export interface QueryGraphFacts {
   type?: (field: string) => string | undefined;
   /** Every value a field may take, for a condition to pick from rather than type. */
   values?: (field: string) => readonly string[] | undefined;
+  /** A scope's presets as declared now — the app's, and each saved filter on its bar. Absent, the definition's. */
+  presets?: (scope: string) => readonly ScopePreset[];
+  /** The store's domains: a status field's values, their looks and when a row has each. */
+  domains?: Readonly<Record<string, FieldDomain>>;
+  /** The rows per page now, where the reader changed them. */
+  pageSize?: number | null;
 }
 
 /** The operators a field's condition may take: its type's, and a pick list's. */
 const PICK_OPS: readonly FilterOp[] = ['in', 'notin', 'eq', 'ne'];
 
-/** The scope's filter Switch: a row of its own, before its fields. Not a field's name. */
-const SWITCH = '#filters';
+/** The scope's filter Switch: the kind's own row, before its presets and fields. */
+const SWITCH = NODE_KINDS['scope']!.rows[0]!.name;
 
-/** Why a row is read only: nothing outside the editor takes its change yet. */
-const FROM_DEFINITION = 'The page definition sets it: Save will change it (later).';
+/** Why a row is read only: nothing outside the editor takes its change. */
+const FROM_DEFINITION = 'The page definition sets it: Save writes the definition.';
+const FROM_STORE = 'The app\'s store works it out: statusFields().';
+const SAVED_WORDS = 'A saved filter: Manage Saved Filters changes it.';
+const NOT_ADDED = 'Not on a bar: add it from the Saved menu, and it joins as a preset.';
+const SUPERSEDED = 'The View holds this field: kept, not in force. It comes back when the View lets it go.';
 
 /** The operators that pick several values; the ones that pick one. */
 const MANY = new Set(['in', 'notin']);
 const ONE = new Set(['eq', 'ne']);
 
-/** A field's answer in force as one tree — its presets' too — or none. */
-function answerOf(reading: FieldReading): Condition | undefined {
-  return joinConditions('and', [answerTree({ ...reading, suspended: false }), ...Object.values(reading.byPreset ?? {}).map((p) => p.tree)]);
+/** A condition in words — `Status is one of active, trial` — for a row that only shows it. */
+function said(tree: Condition, name?: (field: string) => string): string {
+  const parts = groupOf(tree);
+  if (parts) {
+    const each = parts[1].filter((p) => !p.off).map((p) => (groupOf(p) ? `(${said(p, name)})` : said(p, name)));
+    return each.join(parts[0] === 'and' ? ' and ' : ' or ');
+  }
+  const { field, op, value } = tree as ConditionLeaf;
+  const span = value as Duration;
+  const what = op === 'last' || op === 'next' ? `${span.n} ${span.unit}${span.n === 1 ? '' : 's'}`
+    : Array.isArray(value) ? value.join(', ') : String(value);
+  return [field && name ? name(field) : undefined, (OP_LABELS[op] ?? op).toLowerCase(), what].filter(Boolean).join(' ');
 }
 
 /** One condition's field, operator and value, as its rows show them — each editable, as
@@ -132,7 +123,7 @@ function conditionRows(
     return rowsOf('condition', { field, op: many, value: ticked }).map((row): GraphRow => (row.name === 'field'
       ? { ...row, editable: true, choices: fields }
       : row.name === 'op' ? { ...row, editable: true, choices: [...MANY].map((o) => ({ value: o, label: OP_LABELS[o as FilterOp] })) }
-      : { ...row, field: 'values', editable: true, choices: picks }));
+      : { ...row, control: 'values', editable: true, choices: picks }));
   }
   return rowsOf('condition', { field, op, value: value ?? '' }).map((row): GraphRow => {
     if (!plain) return row;
@@ -144,9 +135,9 @@ function conditionRows(
 
 /** A condition node's rows, edited, as the condition they say: the other half of drawing one.
  *  A value is typed text, or the values picked — each whole, a comma and all; only a
- *  TYPED list is split at its commas. */
+ *  TYPED list is split at its commas. Each is typed by its field. TRAP T-a-value-is-typed-once */
 export function editedCondition(op: string, given: string | readonly string[], type?: string): ConditionLeaf {
-  const one = (v: string): string | number => (type === 'number' && v !== '' && Number.isFinite(Number(v)) ? Number(v) : v);
+  const one = (v: string): unknown => typedValue(type as FieldType | undefined, v);
   const text = Array.isArray(given) ? String(given[0] ?? '') : String(given);
   const list = (Array.isArray(given) ? [...given] : text.split(',')).map((v) => v.trim()).filter(Boolean).map(one);
   const at = op as FilterOp;
@@ -172,74 +163,117 @@ function presentationRows(
 
 /** A kind's fixed rows, each with its value. */
 function rowsOf(kind: string, values: Readonly<Record<string, unknown>>): GraphRow[] {
-  return QUERY_KINDS[kind]!.rows.map((row) => ({ ...row, value: values[row.name] }));
+  return NODE_KINDS[kind]!.rows.map((row) => ({ ...row, value: values[row.name] }));
 }
 
 /** A page's Query as nodes and routes, laid out in columns by depth. */
 export function queryGraph(query: Query, definition: PageDefinition, facts: QueryGraphFacts = {}): DrawnGraph {
   const label = (field: string): string => facts.label?.(field) ?? definition.source?.fields?.[field]?.label ?? field;
   const typeOf = (field: string): string | undefined => facts.type?.(field) ?? definition.source?.fields?.[field]?.type;
+  const typed = (field: string): { type?: FieldType } => {
+    const type = typeOf(field) as FieldType | undefined;
+    return type ? { type } : {};
+  };
   // Every field a Sort or Group may pick: the declared ones, then any a scope holds.
   const known = [...new Set([...Object.keys(definition.source?.fields ?? {}), ...Object.values(query.scopes).flatMap((s) => s.holds)])];
   const keys = [{ value: '', label: 'None' }, ...known.map((f) => ({ value: f, label: label(f) }))];
   const components = facts.components ?? [];
-  const scopes = Object.entries(query.scopes);
   const scopeOf = (c: GraphComponent): string => c.scope ?? (c.id in query.scopes ? c.id : VIEW);
   const nodes: (Omit<GraphNode, 'x' | 'y'> & { column: number })[] = [];
-  const routes: WorkflowRoute[] = [];
+  const routes: NodeRoute[] = [];
   const add = (column: number, id: string, kind: string, rows: GraphRow[], own: Partial<GraphNode> = {}): string => {
-    const k = QUERY_KINDS[kind]!;
-    nodes.push({
-      id, kind, column, heading: k.heading, icon: k.icon, rows,
-      ...(k.description ? { description: k.description } : {}),
-      ...(k.input ? { input: k.input } : {}),
-      ...(k.output ? { output: k.output } : {}),
-      ...own,
-    });
+    nodes.push({ ...kindNode(NODE_KINDS, kind, id, rows, own), column });
     return id;
   };
+  // A scope's presets: as declared now, else as its definition says them.
+  const presetsOf = (scope: string): readonly ScopePreset[] => facts.presets?.(scope)
+    ?? (definition.source?.scopes?.[scope]?.presets ?? []).map((p) => ({ id: p.id, label: p.label, readings: readingsOf(p.where, typed) }));
 
-  // Store ─▶ Source ─▶ the View.
+  // Store ─▶ each status field it works out ─▶ Source.
   const source = definition.source;
-  add(0, 'store', 'store', [], { heading: source?.store ?? 'Store' });
+  add(0, 'store', 'store', rowsOf('store', { store: source?.store }).map((row) => ({ ...row, hint: FROM_DEFINITION })), { heading: source?.store ?? 'Store' });
+  const statuses = Object.entries(facts.domains ?? {}).filter(([, d]) => d.when || d.statuses);
+  for (const [field, domain] of statuses) {
+    const rows = (domain.values ?? []).map(String).map((value): GraphRow => {
+      const when = domain.when?.[value];
+      return { name: value, label: value, value: when ? said(when, label) : 'every row the values before it left', hint: FROM_STORE };
+    });
+    routes.push({ from: 'store', to: add(1, `status-${field}`, 'status', rows, { heading: label(field), ref: { field } }) });
+  }
   // Its page size changes live; the rest is the definition's, until Save.
-  add(1, 'source', 'source', rowsOf('source', {
-    pageSize: source?.pageSize, search: source?.search?.join(', '), applyOn: source?.applyOn ?? 'change',
+  add(2, 'source', 'source', rowsOf('source', {
+    pageSize: facts.pageSize ?? source?.pageSize, search: source?.search?.join(', '), applyOn: source?.applyOn ?? 'change',
   }).map((row) => (row.name === 'pageSize' ? { ...row, editable: true } : { ...row, hint: FROM_DEFINITION })));
-  routes.push({ from: 'store', to: 'source' });
+  if (statuses.length) for (const [field] of statuses) routes.push({ from: `status-${field}`, to: 'source' });
+  else routes.push({ from: 'store', to: 'source' });
 
-  // Each scope: its held fields as rows, and a condition into each field it answers.
+  // Each scope — and one its definition gives presets, held or not.
+  const scopes = Object.entries(query.scopes);
+  for (const [id, declared] of Object.entries(source?.scopes ?? {})) {
+    if (declared.presets?.length && !query.scopes[id]) scopes.push([id, { holds: [], readings: {} }]);
+  }
   const view = scopes.find(([id]) => id === VIEW);
   const ordered = view ? [view, ...scopes.filter(([id]) => id !== VIEW)] : scopes;
+  const onBars = new Set<string>();
   for (const [id, scope] of ordered) {
     const top = id === VIEW;
+    const into = top ? 3 : 5;
+    // The reader's own answer: a preset's rows are its own node's.
     const where = Object.entries(scope.readings).flatMap(([f, reading]) => {
-      const tree = answerOf(reading);
+      const tree = answerTree({ ...reading, suspended: false });
       return tree ? [[f, tree, !!reading.suspended] as const] : [];
     });
-    const fields = [...scope.holds, ...where.map(([f]) => f).filter((f) => !scope.holds.includes(f))];
+    const kept = Object.entries(scope.superseded ?? {}).flatMap(([f, reading]) => {
+      const tree = answerTree(reading);
+      return tree ? [[f, tree] as const] : [];
+    });
+    const presets = presetsOf(id);
+    const fields = [...new Set([...scope.holds, ...where.map(([f]) => f), ...kept.map(([f]) => f)])];
     const shows = components.filter((c) => scopeOf(c) === id);
     // Its name: the definition's, else the one component that reads it.
-    const named = definition.source?.scopes?.[id]?.label
+    const named = source?.scopes?.[id]?.label
       ?? (components.find((c) => c.id === id) ?? (shows.length === 1 ? shows[0] : undefined))?.label;
     const rows: GraphRow[] = [
-      { name: SWITCH, label: 'Filters', field: 'switch', value: !scope.suspended, editable: true },
+      ...rowsOf('scope', { [SWITCH]: !scope.suspended }).map((row) => ({ ...row, editable: true })),
+      ...presets.map((p): GraphRow => ({ name: `@${p.id}`, label: p.label, input: 'value' })),
       ...fields.map((f): GraphRow => ({ name: f, label: label(f), input: 'value' })),
     ];
-    const node = add(top ? 3 : 5, `scope-${id}`, 'scope', rows, {
+    const node = add(top ? 4 : 6, `scope-${id}`, 'scope', rows, {
       heading: named ?? (top ? 'View' : id),
       description: `${scope.holds.length} held${scope.suspended ? ' · filters off' : ''}`,
       ref: { scope: id },
     });
     routes.push({ from: top || !view ? 'source' : `scope-${VIEW}`, to: node });
+    // Each preset, and each saved filter on its bar: on or off, and what it writes.
+    for (const p of presets) {
+      const saved = p.id.startsWith(SAVED_PRESET);
+      if (saved) onBars.add(p.id.slice(SAVED_PRESET.length));
+      const writes = Object.entries(p.readings).flatMap(([f, reading]): GraphRow[] => {
+        const tree = answerTree(reading, typed(f));
+        return tree ? [{ name: f, label: label(f), value: said(tree), hint: saved ? SAVED_WORDS : FROM_DEFINITION }] : [];
+      });
+      const on = presetHeld(query, id, p.id, p.readings);
+      const from = add(into, `preset-${id}-${p.id}`, saved ? 'saved' : 'preset', [
+        ...rowsOf(saved ? 'saved' : 'preset', { on }).map((row) => ({ ...row, editable: true })), ...writes,
+      ], { heading: p.label, ref: { scope: id, preset: p.id } });
+      routes.push({ from, to: `${node}/@${p.id}` });
+    }
     const held = fields.map((f) => ({ value: f, label: label(f) }));
     for (const [field, condition, off] of where) {
-      const when = add(top ? 2 : 4, `when-${id}-${field}`, 'condition', conditionRows(field, condition, typeOf(field), held, facts.values?.(field)), {
+      const when = add(into, `when-${id}-${field}`, 'condition', conditionRows(field, condition, typeOf(field), held, facts.values?.(field)), {
         heading: label(field),
         description: off ? 'Off: kept, not applied.' : 'Applied.',
         ref: { scope: id, field },
       });
       routes.push({ from: when, to: `${node}/${field}` });
+    }
+    // Its own answers the View holds over it: kept, not in force.
+    for (const [field, condition] of kept) {
+      const rows = conditionRows(field, condition, typeOf(field), held, facts.values?.(field)).map((row) => ({ ...row, editable: false, hint: SUPERSEDED }));
+      const from = add(into, `kept-${id}-${field}`, 'condition', rows, {
+        heading: label(field), description: 'Superseded: kept, not in force.', ref: { scope: id, field, superseded: 'true' },
+      });
+      routes.push({ from, to: `${node}/${field}` });
     }
     // The scope's rows on their way out: arranged, presented, then shown.
     let out = node;
@@ -247,7 +281,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       const first = scope.sort?.[0];
       const directions = [{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }];
       // Sort, Group and Search change as their chips do.
-      out = add(6, `arrange-${id}`, 'arrange', rowsOf('arrange', {
+      out = add(7, `arrange-${id}`, 'arrange', rowsOf('arrange', {
         sort: first?.field ?? '', direction: first?.direction ?? 'asc', group: scope.group ?? '', search: scope.search ?? '',
       }).map((row) => (row.name === 'search' ? { ...row, editable: true } : { ...row, editable: true, choices: row.name === 'direction' ? directions : keys })), {
         ref: { scope: id },
@@ -261,25 +295,106 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       const presented = slot ? scope.presentation : undefined;
       let to = out;
       if (presented || c.kind) {
-        to = add(7, `show-${c.id}`, 'presentation', presentationRows(presented ?? {}, c.kind, keys, slot), slot ? { ref: { scope: id } } : {});
+        to = add(8, `show-${c.id}`, 'presentation', presentationRows(presented ?? {}, c.kind, keys, slot), slot ? { ref: { scope: id } } : {});
         routes.push({ from: out, to });
       }
-      routes.push({ from: to, to: add(8, `component-${c.id}`, 'component', [], { heading: c.label, ref: { component: c.id, scope: id } }) });
+      routes.push({ from: to, to: add(9, `component-${c.id}`, 'component', [], { heading: c.label, ref: { component: c.id, scope: id } }) });
     }
     // A slot's presentation with no component named to show it is still drawn.
     if (scope.presentation && !shows.length) {
-      routes.push({ from: out, to: add(7, `show-${id}`, 'presentation', presentationRows(scope.presentation, undefined, keys, !top), { ref: { scope: id } }) });
+      routes.push({ from: out, to: add(8, `show-${id}`, 'presentation', presentationRows(scope.presentation, undefined, keys, !top), { ref: { scope: id } }) });
     }
+  }
+  // The page's own saved filters on no bar: what each would add, and no route.
+  for (const [id, set] of Object.entries(definition.savedFilters ?? {})) {
+    if (!isSavedFilter(set) || onBars.has(id)) continue;
+    const writes = Object.entries(set.query.scopes).flatMap(([scope, s]) => Object.entries(readingsOf(s.where ?? {}, typed)).flatMap(([f, reading]): GraphRow[] => {
+      const tree = answerTree(reading, typed(f));
+      return tree ? [{ name: `${scope}:${f}`, label: scope === VIEW ? label(f) : `${label(f)} (${scope})`, value: said(tree), hint: SAVED_WORDS }] : [];
+    }));
+    add(3, `saved-${id}`, 'saved', [...rowsOf('saved', { on: false }).map((row) => ({ ...row, hint: NOT_ADDED })), ...writes], {
+      heading: set.label, ref: { saved: id },
+    });
   }
 
   // Columns with nothing in them close up; each column stacks its nodes.
   const used = [...new Set(nodes.map((n) => n.column))].sort((a, b) => a - b);
   const down = new Map<number, number>();
-  const placed = nodes.map(({ column, ...node }) => {
+  const laid = nodes.map(({ column, ...node }) => {
     const x = used.indexOf(column) * COLUMN;
     const y = down.get(column) ?? 0;
     down.set(column, y + HEADER + node.rows.length * ROW + GAP);
     return { ...node, x, y };
   });
-  return { nodes: placed, routes };
+  return { nodes: laid, routes };
+}
+
+/**
+ * The command a node's edit asks — the one a chip, a Switch or a menu asks for the same
+ * act; none for a row nothing takes. A value is typed by its field. Plan 695 N1
+ * TRAP T-one-command-one-door
+ */
+export function graphRequest({ node, row, value }: GraphEdit, facts: Pick<QueryGraphFacts, 'type'> = {}): QueryRequest | undefined {
+  if (node.kind === 'source') {
+    const size = typedValue('number', String(value ?? ''));
+    return row.name === 'pageSize' && typeof size === 'number' && size >= 1 ? { pageSize: size } : undefined;
+  }
+  const scope = node.ref?.['scope'];
+  if (!scope) return undefined;
+  const was = Object.fromEntries(node.rows.map((r) => [r.name, r.value]));
+  if (node.kind === 'scope') return row.name === SWITCH ? { scope, suspended: !value } : undefined;
+  if (node.kind === 'preset' || node.kind === 'saved') {
+    const preset = node.ref?.['preset'];
+    return preset && row.name === 'on' ? { scope, preset, on: !!value } : undefined;
+  }
+  if (node.kind === 'condition') {
+    const field = node.ref?.['field'] ?? '';
+    const to = String(row.name === 'field' ? value : field);
+    const op = String(row.name === 'op' ? value : was['op']);
+    let given = row.name === 'value' ? value : was['value'];
+    // One value where one is asked; a list where several are.
+    if (ONE.has(op) && Array.isArray(given)) given = given[0] ?? '';
+    const type = facts.type?.(to);
+    const reading = treeReading(editedCondition(op, given as string | string[] ?? '', type), type as FieldType | undefined);
+    // Another field: the condition MOVES there, as one change.
+    return to === field ? { scope, field, reading } : [{ scope, field, reading: null }, { scope, field: to, reading }];
+  }
+  if (node.kind === 'arrange') {
+    const pick = (name: string): string => String(row.name === name ? value : was[name] ?? '');
+    if (row.name === 'group') return { scope, group: pick('group') || null };
+    if (row.name === 'search') return { scope, search: pick('search') };
+    return { scope, sort: pick('sort') || null, direction: pick('direction') === 'desc' ? 'desc' : 'asc' };
+  }
+  if (node.kind === 'presentation') return { scope, presentation: { [row.name]: value ? String(value) : undefined } };
+  return undefined;
+}
+
+/** What a new route asks: a command, or why it is refused; null, nothing to do. */
+export type RouteAnswer = { request: QueryRequest } | { refused: string } | null;
+
+/**
+ * The command a new route asks. The Query takes a condition into a field of a scope:
+ * the same field in another scope MOVES it there; another field takes it, keeping the
+ * values that field has. Anything else, or a move that would then say nothing, is refused.
+ */
+export function routeRequest(graph: DrawnGraph, { from, to }: NodeRoute, facts: Pick<QueryGraphFacts, 'type' | 'values'> = {}): RouteAnswer {
+  const was = graph.nodes.find((n) => n.id === socketOf(from).node);
+  const { node: into, row: field = '' } = socketOf(to);
+  const target = graph.nodes.find((n) => n.id === into);
+  const scope = was?.ref?.['scope'];
+  const old = was?.ref?.['field'];
+  const there = target?.ref?.['scope'];
+  if (was?.kind !== 'condition' || was.ref?.['superseded'] || target?.kind !== 'scope' || !field || field.startsWith('@') || !scope || !old || !there) {
+    return { refused: `The Query has no route from "${was?.heading ?? from}" to "${target?.heading ?? to}": a condition goes into a field of a scope.` };
+  }
+  if (scope === there && old === field) return null;
+  const rows = Object.fromEntries(was.rows.map((r) => [r.name, r.value]));
+  let given = rows['value'] as string | string[];
+  const known = facts.values?.(field);
+  if (field !== old && known && Array.isArray(given)) given = given.filter((v) => known.includes(v));
+  const type = facts.type?.(field);
+  const reading = treeReading(editedCondition(String(rows['op']), given ?? '', type), type as FieldType | undefined);
+  // It must still SAY something there: an empty pick filters nothing, so nothing moves.
+  if (!answerTree(reading)) return { refused: `Nothing "${was.heading}" picks is a value of "${field}": tick its values there.` };
+  return { request: [{ scope, field: old, reading: null }, { scope: there, field, reading }] };
 }
