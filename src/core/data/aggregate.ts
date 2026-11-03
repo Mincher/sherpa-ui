@@ -31,8 +31,8 @@
  * - TableColumn — A grid's column, as a cross table names it and hands it on to a row's sub-grid.
  * - CrossTable — A cross table, as a grid draws it: its columns, rows and filters, and each row's own rows.
  * - TableFacts — What a cross table reads beside its rows: each field's declared values and name, its filters, its Total.
- * - pivotTable — A grid's PIVOT: a row a Primary value, a column a Secondary value, every cell a row count.
- * - madeTable — A grid made from a chart: its axes, no more, and a Total, as the chart counts them.
+ * - crossSpec — A summary as a cross table reads it: a series is segments by what it runs over, split by its lines.
+ * - crossTable — A cross table from the very answer a chart draws: a grid's pivot, and a grid made from a chart.
  */
 import { compareValues, readField, groupRows, groupSummaries, valueKey, type GroupSummary, type Row, type SortDirection } from './store.js';
 import type { ChartDatum } from './chart-datum.js';
@@ -568,66 +568,54 @@ function crossCells(datum: ChartDatum, values: readonly string[], prefix: string
   };
 }
 
-/** A grid's PIVOT: a row a Primary value, a column a Secondary value, and the
- *  total, every cell a row count. Each row OPENS on its own rows, under the grid's
- *  own columns, its Group grouping them: Primary, Secondary, Group are a chain.
- *  Will, TODOs 548, 570, 574 */
-export function pivotTable(
+/** A summary as a cross table reads it: a series is segments by what it runs over,
+ *  split by its lines; a split chart's is its own. Its parts are not a column. TODOs 622, 653 */
+export function crossSpec(spec: SummarySpec): SummarySpec & { shape: 'segments' } {
+  const { group: _parts, ...split } = spec;
+  if (spec.shape !== 'series') return { ...split, shape: 'segments' };
+  const { over, segment, bucket: _bucket, ...rest } = split;
+  return { ...rest, shape: 'segments', ...(over ? { segment: over } : {}), ...(segment ? { stack: segment } : {}) };
+}
+
+/**
+ * A CROSS TABLE, as a grid draws it, from the very answer a chart draws: a row a
+ * value of its first axis, a column each value of its second it holds, and a
+ * Total. Each row OPENS on its own rows, under the grid's other columns, `group`
+ * grouping them: a grid's pivot — Primary, Secondary, Group a chain — and a grid
+ * made from a chart alike. Will, TODOs 548, 570, 574, 622, 625, 661
+ */
+export function crossTable(
   rows: readonly Row[],
-  spec: SummarySpec & { segment: string; stack: string },
+  spec: SummarySpec,
   grid: { columns: readonly TableColumn[]; key?: string | null | undefined; group?: string | null | undefined },
   facts: TableFacts,
 ): CrossTable {
-  const segments = summarise(rows, spec, facts.domain) as ChartDatum[];
-  const values = crossValues(segments, facts.domain(spec.stack).map(valueKey));
+  const split = crossSpec(spec);
+  const lead = split.segment ?? '';
+  const segments = summarise(rows, { ...split, segment: lead }, facts.domain) as ChartDatum[];
+  const values = crossValues(segments, split.stack ? facts.domain(split.stack).map(valueKey) : []);
   // Its Primary filters as the grid's own column does; a count filters nothing. TODO 571
-  const { tags: moved, ...primary } = grid.columns.find((c) => c.field === spec.segment) ?? { field: spec.segment };
+  const { tags: moved, ...primary } = grid.columns.find((c) => c.field === lead) ?? { field: lead };
   /* Its rows' TAGS go where their columns are: down to the sub-grid, the
      Primary's on its first column — and never the Primary's own, which every
      row there holds. Will, TODO 580 */
-  const details = grid.columns.filter((c) => c.field !== spec.segment).map((c, i) => {
-    const tags = [...new Set([...c.tags ?? [], ...(i === 0 ? moved ?? [] : [])])].filter((f) => f !== spec.segment);
+  const details = grid.columns.filter((c) => c.field !== lead).map((c, i) => {
+    const tags = [...new Set([...c.tags ?? [], ...(i === 0 ? moved ?? [] : [])])].filter((f) => f !== lead);
     const { tags: _tags, ...rest } = c;
     return tags.length ? { ...rest, tags } : rest;
   });
   return {
-    key: spec.segment,
+    key: lead,
     columns: [
-      { ...primary, field: spec.segment, header: primary.header ?? facts.label(spec.segment), sortable: false },
+      { ...primary, field: lead, header: primary.header ?? facts.label(lead), sortable: false },
       ...crossColumns(values, 'pivot:', facts.total),
     ],
     filters: facts.filters,
-    rows: segments.map((s) => ({ [spec.segment]: s.label, ...crossCells(s, values, 'pivot:') })),
+    rows: segments.map((s) => ({ [lead]: s.label, ...crossCells(s, values, 'pivot:') })),
     detail: {
       // Not its Primary: every row under a row holds that row's. Will, TODO 578
       columns: details,
       ...(grid.key ? { key: grid.key } : {}),
-      ...opened(rows, spec.segment, grid.group),
-    },
-  };
-}
-
-/** A grid made from a chart: its axes, no more, and a Total. A row a value of its
- *  first axis, its cells the count the chart draws, and each row opens on its own
- *  rows, its Group grouping them. Will, TODOs 622, 625, 661 */
-export function madeTable(
-  rows: readonly Row[],
-  axes: Pick<SummarySpec, 'segment' | 'stack' | 'aggregate' | 'field'>,
-  grid: { columns: readonly TableColumn[]; group?: string | null | undefined; sort?: SortDirection | null | undefined },
-  facts: TableFacts,
-): CrossTable {
-  const lead = axes.segment ?? '';
-  const spec: SummarySpec = { shape: 'segments', ...axes, segment: lead, ...(grid.sort ? { sort: grid.sort } : {}) };
-  const made = summarise(rows, spec, facts.domain) as ChartDatum[];
-  const values = crossValues(made, axes.stack ? facts.domain(axes.stack).map(valueKey) : []);
-  return {
-    key: 'made:key',
-    columns: [{ field: lead, header: facts.label(lead), sortable: false }, ...crossColumns(values, 'made:', facts.total)],
-    filters: facts.filters,
-    rows: made.map((d) => ({ 'made:key': d.label, [lead]: d.label, ...crossCells(d, values, 'made:') })),
-    detail: {
-      // Not what its row says: every row under it holds that; its Group groups them. Will, TODOs 578, 661
-      columns: grid.columns.filter((c) => c.field !== lead),
       ...opened(rows, lead, grid.group),
     },
   };

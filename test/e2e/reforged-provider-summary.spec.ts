@@ -702,10 +702,109 @@ test('a grid card\'s Show as draws its slot as a chart — bars and stack as its
     return at;
   })()`) as Record<string, Record<string, unknown>>;
   expect(r['first']).toEqual({ tag: 'sherpa-data-grid', rows: 5 });
-  // A bar a plan, its row count; its legend lists the plans.
-  expect(r['bar']).toEqual({ tag: 'sherpa-barchart', scope: 'data', id: '', shown: 'bar', marks: ['Free: 1', 'Pro: 3', 'Enterprise: 1'], legend: 3 });
+  // A bar a plan, its row count; its legend lists the plans. It sits where the grid sat, its id too.
+  expect(r['bar']).toEqual({ tag: 'sherpa-barchart', scope: 'data', id: 'grid', shown: 'bar', marks: ['Free: 1', 'Pro: 3', 'Enterprise: 1'], legend: 3 });
   // The page's own grid, with its columns, and its rows again.
   expect(r['back']).toEqual({ same: true, shown: 'default', rows: 5, reports: [] });
+});
+
+// TRAP T-a-kind-is-registered-never-a-tag
+test('each kind is registered by its own component: who draws it, what Show as offers over it, and a radial\'s two (Will, TODO 548)', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    const { offered, presenter, presentsOf } = await import('/dist/index.js');
+    const radial = document.createElement('sherpa-radial-chart');
+    const kinds = { donut: presentsOf(radial)?.kind };
+    radial.setAttribute('data-type', 'pie');
+    kinds.pie = presentsOf(radial)?.kind;
+    const by = (kind) => presenter(kind)?.ctor === customElements.get(({ bar: 'sherpa-barchart', donut: 'sherpa-radial-chart', grid: 'sherpa-data-grid', gauge: 'sherpa-gauge-chart', line: 'sherpa-line-chart' })[kind]);
+    return {
+      kinds, drawn: ['bar', 'donut', 'grid', 'gauge', 'line'].every(by), shape: presenter('pie')?.shape, none: presenter('scatter') ?? null,
+      offers: Object.fromEntries(['bar', 'donut', 'grid', 'gauge', 'line'].map((k) => [k, offered(k)])),
+    };
+  })()`);
+  expect(r).toEqual({
+    kinds: { donut: 'donut', pie: 'pie' }, drawn: true, shape: 'segments', none: null,
+    offers: {
+      bar: ['donut', 'pie', 'grid'], donut: ['bar', 'pie', 'grid'], grid: ['bar', 'donut', 'pie'],
+      // One number splits nothing: a grid of its rows, never a chart. A line, any.
+      gauge: ['grid'], line: ['bar', 'donut', 'pie', 'grid'],
+    },
+  });
+});
+
+// TRAP T-a-swap-is-a-view-transition
+test('Show as swaps in a view transition where the engine has one, at once where it has none or the reader asks for less motion (Will, TODO 548)', async ({ page }) => {
+  const run = (): Promise<Record<string, unknown>> => page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-container data-scope="by-plan">
+        <sherpa-data-viz-header slot="header" data-heading="By plan" data-presentation="default"></sherpa-data-viz-header>
+        <sherpa-barchart id="slotted" data-segment-field="plan"></sherpa-barchart>
+      </sherpa-container>\`;
+    const has = typeof document.startViewTransition === 'function';
+    let calls = 0;
+    if (has) {
+      const own = document.startViewTransition;
+      document.startViewTransition = function (update) { calls++; return own.call(this, update); };
+    }
+    const source = make();
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    const tag = () => provider.querySelector('#slotted').localName;
+    source.query.ask({ scope: 'by-plan', presentation: { kind: 'pie' } });
+    await settle(); await settle();
+    const at = { has, pie: tag(), calls };
+    // None to be had: a plain swap.
+    document.startViewTransition = undefined;
+    source.query.ask({ scope: 'by-plan', presentation: { kind: undefined } });
+    await settle(); await settle();
+    delete document.startViewTransition;
+    return { ...at, back: tag(), after: calls, reports };
+  })()`);
+  const r = await run();
+  test.info().annotations.push({ type: 'startViewTransition', description: String(r['has']) });
+  expect(r).toEqual({ has: r['has'], pie: 'sherpa-radial-chart', calls: r['has'] ? 1 : 0, back: 'sherpa-barchart', after: r['has'] ? 1 : 0, reports: [] });
+  // Less motion: no transition.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  expect(await run()).toMatchObject({ pie: 'sherpa-radial-chart', calls: 0, back: 'sherpa-barchart' });
+});
+
+test('a chart\'s grid reads its chart\'s very answer: a row a bar, a column a piece of its stack, the bar its Total — a line\'s, a row a point (Will, TODOs 548, 622)', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-container data-scope="by-plan">
+        <sherpa-container-header slot="header" data-presentation="default"></sherpa-container-header>
+        <sherpa-barchart id="bar" data-segment-field="plan" data-stack-field="day"></sherpa-barchart>
+      </sherpa-container>
+      <sherpa-container data-scope="over-day">
+        <sherpa-container-header slot="header" data-presentation="default"></sherpa-container-header>
+        <sherpa-line-chart id="line" data-over-field="day" data-segment-field="plan"></sherpa-line-chart>
+      </sherpa-container>\`;
+    const source = make();
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    const card = (scope) => provider.querySelector('[data-scope="' + scope + '"] > :not([slot])');
+    const drawn = (bar) => [...bar.shadowRoot.querySelectorAll('.bar-col')].map((c) => c.getAttribute('aria-label'));
+    const table = (grid) => [...grid.shadowRoot.querySelectorAll('.body > .row')].map((row) => [...row.querySelectorAll('td')].map((td) => td.textContent.trim()).filter(Boolean).join('|'));
+    const heads = (grid) => [...grid.shadowRoot.querySelectorAll('.head-cell .head-label')].map((h) => h.textContent.trim());
+    const at = { bars: drawn(card('by-plan')) };
+    for (const scope of ['by-plan', 'over-day']) source.query.ask({ scope, presentation: { kind: 'grid' } });
+    await settle(); await settle(); await settle();
+    at.grid = { tag: card('by-plan').localName, id: card('by-plan').id, heads: heads(card('by-plan')), rows: table(card('by-plan')) };
+    at.line = { heads: heads(card('over-day')), rows: table(card('over-day')) };
+    return { ...at, reports };
+  })()`) as Record<string, unknown>;
+  // The bars: each plan, stacked by day.
+  expect(r['bars']).toEqual(['Free: 1 (Tue 1)', 'Pro: 2 (Mon 1 · Wed 1)', 'Enterprise: 1 (Mon 1)']);
+  // Its grid: the same plans, a column a day it holds, each bar its Total.
+  expect(r['grid']).toEqual({ tag: 'sherpa-data-grid', id: 'bar', heads: ['plan', 'Mon', 'Tue', 'Wed', 'Total'],
+    rows: ['Free|0|1|0|1', 'Pro|1|0|1|2', 'Enterprise|1|0|0|1'] });
+  // A line's: a row a day it runs over, a column a line.
+  expect(r['line']).toEqual({ heads: ['day', 'Free', 'Pro', 'Enterprise', 'Total'], rows: ['Mon|0|1|1|2', 'Tue|1|0|0|1', 'Wed|0|1|0|1'] });
+  expect(r['reports']).toEqual([]);
 });
 
 test('a grid in a slot: its Primary leads its columns; a Secondary makes it a PIVOT whose rows OPEN on their own rows; Group groups those — a chain (Will, TODOs 548, 570, 574)', async ({ page }) => {

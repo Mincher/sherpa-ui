@@ -42,7 +42,8 @@ import { declared, up } from './provider-declared.js';
 import { RootLook } from './provider-look.js';
 import { ProviderHighlight } from './provider-highlight.js';
 import { ProviderLegends, type Picker } from './provider-legends.js';
-import { ProviderShowAs, shownAs } from './provider-show-as.js';
+import { ProviderShowAs } from './provider-show-as.js';
+import { presentsOf } from '../../core/ui/show-as.js';
 
 /** What a provider is given: its sources, by name — and, for a page with
  *  Views, the Views over them, the one on screen, and its name in the keeper. */
@@ -167,6 +168,8 @@ export class SherpaProvider extends SherpaElement {
     drawToolbars: (slot) => this.#cards.drawToolbars(slot),
     showAs: () => this.#on('showAs'),
     pageFields: () => this.#pageFields,
+    spec: (el, asks, source, slot) => this.#spec(el, asks, source, slot),
+    declares: (shape) => DECLARED_BY[shape],
   });
 
   constructor() {
@@ -837,10 +840,12 @@ export class SherpaProvider extends SherpaElement {
     const scope = scopes.length > 1 || isColumn(el) ? scopes : scopes[0];
     // Its slot shows another way: swapped for that one, which asks again. Will, TODO 548
     const slot = typeof scope === 'string' ? scope : undefined;
-    const kind = slot ? shownAs(el) : undefined;
+    const kind = slot ? presentsOf(el)?.kind : undefined;
+    // A chart's card is titled by its axes. Will, TODO 567
+    if (slot && kind && spec) this.#show.retitle(el, slot, source);
     if (slot && kind && this.#show.swapped(el, slot, source)) return;
-    // A grid in a slot: a pivot, or a grid made from a chart, its Primary leading. TODOs 548, 624
-    const table = slot && kind === 'grid' ? this.#show.table(el, slot, source, () => asks.filters?.(el) ?? []) : undefined;
+    // A grid in a slot: a pivot, or a table of its chart's answer, its Primary leading. TODOs 548, 624
+    const table = slot && kind && asks.shape === 'rows' ? this.#show.table(el, slot, source, () => asks.filters?.(el) ?? []) : undefined;
     // The fields it reads from a row: a summary's, or what it says. TRAP T-a-held-set-reads-the-pages-fields
     const fields = table?.fields ?? (spec ? [spec.field, spec.segment, spec.over].filter((f): f is string => !!f) : asks.fields?.(el));
     /* A chart over its field's ZONES is free of that field: its filter lights the
@@ -990,8 +995,9 @@ export class SherpaProvider extends SherpaElement {
     return null;
   }
 
-  /** The summary a component declared, as JSON — or none, and it waits. */
-  #spec(el: Element, asks: DataAsk, source: DataSource): SummarySpec | undefined {
+  /** The summary a component declared, as JSON — or none, and it waits. `slot`, its
+   *  own or the one it was drawn in, where it is aside. */
+  #spec(el: Element, asks: DataAsk, source: DataSource, slot = this.#inherited(el, 'data-scope')): SummarySpec | undefined {
     const spec: Record<string, unknown> = { shape: asks.shape };
     for (const [key, attr] of SPEC_KEYS) {
       const value = this.#inherited(el, attr);
@@ -1016,7 +1022,6 @@ export class SherpaProvider extends SherpaElement {
        chart's stack, the group the sections in each, and its order. An axis shown
        as counts splits nothing. A legend lists what splits the chart last: the
        secondary; with none, the primary. Will, TODOs 548, 633, 653 */
-    const slot = this.#inherited(el, 'data-scope');
     const shown = slot && !/\s/.test(slot) ? source.query.presented(slot, 'chart') : {};
     const host = asks.picks ? up(el) : null;
     const stacks = asks.stacks || (!!host && !!declared(host).asks?.stacks);

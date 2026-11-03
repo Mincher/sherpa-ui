@@ -285,7 +285,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — persist-view
 - [T-view-library-is-one-vocabulary](traps/storage.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (90)
+## The join and the app layer (92)
 
 - [T-a-bar-reports-its-holds](traps/join-and-app.md#t-a-bar-reports-its-holds) — bind-source
 - [T-a-card-toggles-its-own-toolbar](traps/join-and-app.md#t-a-card-toggles-its-own-toolbar) — provider
@@ -309,6 +309,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-heading-opens-the-chips-menu](traps/join-and-app.md#t-a-heading-opens-the-chips-menu) — context, provider
 - [T-a-held-set-reads-the-pages-fields](traps/data-layer.md#t-a-held-set-reads-the-pages-fields) — context, provider
 - [T-a-hovered-chip-previews-the-highlight](traps/data-layer.md#t-a-hovered-chip-previews-the-highlight) — bind-source, provider
+- [T-a-kind-is-registered-never-a-tag](traps/join-and-app.md#t-a-kind-is-registered-never-a-tag) — provider
 - [T-a-legend-toggle-is-a-filter](traps/join-and-app.md#t-a-legend-toggle-is-a-filter) — provider
 - [T-a-nested-control-steers-through-its-own-binding](traps/join-and-app.md#t-a-nested-control-steers-through-its-own-binding) — bind-source
 - [T-a-notice-is-heard-never-ordered](traps/data-layer.md#t-a-notice-is-heard-never-ordered) — provider
@@ -329,6 +330,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-setting-is-declared-once](traps/data-layer.md#t-a-setting-is-declared-once) — outlet, provider
 - [T-a-status-is-worked-out-by-the-data](traps/data-layer.md#t-a-status-is-worked-out-by-the-data) — context, provider
 - [T-a-summary-binds-to-all-the-rows](traps/data-layer.md#t-a-summary-binds-to-all-the-rows) — bind-source
+- [T-a-swap-is-a-view-transition](traps/join-and-app.md#t-a-swap-is-a-view-transition) — provider
 - [T-a-view-is-json](traps/data-layer.md#t-a-view-is-json) — provider
 - [T-a-view-keeps-what-the-reader-left](traps/storage.md#t-a-view-keeps-what-the-reader-left) — provider
 - [T-a-word-is-in-the-markup](traps/join-and-app.md#t-a-word-is-in-the-markup) — outlet, provider
@@ -759,7 +761,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-field-type-decides-the-clause](traps/data-layer.md#t-the-field-type-decides-the-clause) — data-grid
 - [T-the-last-row-draws-no-rule](traps/data-grid.md#t-the-last-row-draws-no-rule) — data-grid
 
-## Charts (66)
+## Charts (67)
 
 - [T-a-bar-hangs-from-the-zero-line](traps/charts.md#t-a-bar-hangs-from-the-zero-line) — barchart
 - [T-a-breakdown-pick-is-a-legend-pick](traps/charts.md#t-a-breakdown-pick-is-a-legend-pick) — chart-legend
@@ -776,6 +778,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-gauge-names-its-zones-once](traps/charts.md#t-a-gauge-names-its-zones-once) — gauge-chart
 - [T-a-horizontal-legend-is-three-by-two](traps/charts.md#t-a-horizontal-legend-is-three-by-two) — chart-legend
 - [T-a-host-label-must-reach-its-control](traps/charts.md#t-a-host-label-must-reach-its-control) — barchart, gauge-chart, line-chart, radial-chart, sparkline
+- [T-a-kind-is-registered-never-a-tag](traps/join-and-app.md#t-a-kind-is-registered-never-a-tag) — show-as
 - [T-a-legend-keeps-one-row-on](traps/charts.md#t-a-legend-keeps-one-row-on) — chart-legend
 - [T-a-legend-remembers-its-off-set-by-label](traps/charts.md#t-a-legend-remembers-its-off-set-by-label) — chart-legend
 - [T-a-legend-row-goes-inactive-it-never-vanishes](traps/data-layer.md#t-a-legend-row-goes-inactive-it-never-vanishes) — chart-legend
@@ -828,7 +831,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (125)
+## SherpaElement and the shared sheets (126)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -849,6 +852,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-host-attribute-is-declared-once](traps/element-and-sheets.md#t-a-host-attribute-is-declared-once) — sherpa-element
 - [T-a-host-label-must-reach-its-control](traps/charts.md#t-a-host-label-must-reach-its-control) — sherpa-element
 - [T-a-host-state-pin-lives-where-the-host-is](traps/element-and-sheets.md#t-a-host-state-pin-lives-where-the-host-is) — sherpa-style-modes
+- [T-a-kind-is-registered-never-a-tag](traps/join-and-app.md#t-a-kind-is-registered-never-a-tag) — components
 - [T-a-layout-read-belongs-in-a-frame](traps/menus-tips-overlays.md#t-a-layout-read-belongs-in-a-frame) — sherpa-element
 - [T-a-list-takes-its-children-as-data](traps/element-and-sheets.md#t-a-list-takes-its-children-as-data) — sherpa-element
 - [T-a-native-control-brings-its-own-margin](traps/element-and-sheets.md#t-a-native-control-brings-its-own-margin) — sherpa-base

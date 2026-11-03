@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 
 // The DATA tier — src/core is split by where a module can run.
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { aggregateBy, countBy, bandBy, seriesBy, reduceRows, summarise, summariseMarked, pivotTable, madeTable } =
+const { aggregateBy, countBy, bandBy, seriesBy, reduceRows, summarise, summariseMarked, crossSpec, crossTable } =
   await import(new URL('aggregate.js', core));
 
 const ROWS = [
@@ -236,9 +236,9 @@ const FACTS = {
   total: 'Total',
 };
 
-test('pivotTable: a row a Primary value, a column each Secondary value it holds, and a Total', () => {
+test('crossTable, a pivot: a row a Primary value, a column each Secondary value it holds, and a Total', () => {
   const grid = { columns: [{ field: 'region', header: 'Region', tags: ['sev'] }, { field: 'spend', header: 'Spend' }], key: 'id', group: 'sev' };
-  const t = pivotTable(ROWS, { shape: 'segments', segment: 'region', stack: 'sev' }, grid, FACTS);
+  const t = crossTable(ROWS, { shape: 'segments', segment: 'region', stack: 'sev' }, grid, FACTS);
   assert.equal(t.key, 'region');
   // The declared values it holds, in their order: `debug` holds no row.
   assert.deepEqual(t.columns.map((c) => c.field), ['region', 'pivot:critical', 'pivot:warning', 'pivot:info', 'pivot:total']);
@@ -254,13 +254,26 @@ test('pivotTable: a row a Primary value, a column each Secondary value it holds,
   assert.deepEqual(t.detail.groups['EMEA'].map((g) => [g.key, g.count]), [['critical', 1], ['warning', 1]]);
 });
 
-test('madeTable: a chart\'s axes as a table, sorted as the chart is, each row its own rows', () => {
-  const t = madeTable(ROWS, { segment: 'region', stack: 'sev' }, { columns: [{ field: 'region' }, { field: 'spend' }], sort: 'asc' }, FACTS);
-  assert.equal(t.key, 'made:key');
+test('crossTable, from a chart: the very answer its chart draws, sorted as it is; its parts group a row\'s own rows, never a column', () => {
+  const chart = { shape: 'segments', segment: 'region', stack: 'sev', group: 'day', sort: 'asc' };
+  const t = crossTable(ROWS, chart, { columns: [{ field: 'region' }, { field: 'spend' }], group: chart.group }, FACTS);
+  assert.equal(t.key, 'region');
   assert.deepEqual(t.columns.map((c) => [c.field, c.header]),
-    [['region', 'REGION'], ['made:critical', 'critical'], ['made:warning', 'warning'], ['made:info', 'info'], ['made:total', 'Total']]);
-  assert.deepEqual(t.rows.map((r) => [r['made:key'], r.region, r['made:total']]), [['AMER', 'AMER', 1], ['EMEA', 'EMEA', 2], ['APAC', 'APAC', 2]]);
+    [['region', 'REGION'], ['pivot:critical', 'critical'], ['pivot:warning', 'warning'], ['pivot:info', 'info'], ['pivot:total', 'Total']]);
+  // Each row's Total is its bar.
+  const bars = summarise(ROWS, chart, FACTS.domain).map((d) => [d.label, d.value]);
+  assert.deepEqual(t.rows.map((r) => [r.region, r['pivot:total']]), bars);
+  assert.deepEqual(bars, [['AMER', 1], ['EMEA', 2], ['APAC', 2]]);
   assert.deepEqual(t.detail.columns, [{ field: 'spend' }]);
-  assert.equal(t.detail.groups, undefined);
+  assert.deepEqual(t.detail.groups['APAC'].map((g) => [g.key, g.count]), [['2', 1], ['3', 1]]);
   assert.deepEqual(Object.keys(t.detail.rows), ['EMEA', 'APAC', 'AMER']);
+});
+
+test('crossTable, from a line: a row a point it runs over, a column each line, the numbers its lines draw', () => {
+  const line = { shape: 'series', over: 'day', segment: 'region' };
+  const t = crossTable(ROWS, line, { columns: [{ field: 'day' }, { field: 'region' }] }, { ...FACTS, domain: () => [] });
+  const { labels, series } = summarise(ROWS, line);
+  assert.deepEqual(crossSpec(line), { shape: 'segments', segment: 'day', stack: 'region' });
+  assert.deepEqual(t.rows.map((r) => String(r.day)), labels);
+  for (const s of series) assert.deepEqual(t.rows.map((r) => r[`pivot:${s.name}`]), s.values);
 });

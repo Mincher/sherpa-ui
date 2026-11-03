@@ -517,11 +517,61 @@ one element, so when the grid is swapped away its readings go with it.
 
 **Its rows are a table, not the records** (Will, TODOs 622, 625): a row a value of the
 first axis, a column a Secondary value, and a Total, and a row opens on its records. Its
-Group groups those records, in each opened row, and adds no column (Will, TODO 661). A line's first axis is what it runs over, its split the columns. A gauge is one
-mean of one field, so nothing totals: it shows its records, named by the first column of
-the page's own grid, and that field.
+Group groups those records, in each opened row, and adds no column (Will, TODO 661). The
+table is laid out (`crossTable`) from the very summary its page's own chart is asked —
+the provider's `#spec` over that chart, kept aside, in its slot — so its numbers are the
+chart's, a bucketed line's months too. A line's first axis is what it runs over, its
+lines the columns. A gauge is one mean of one field, so nothing totals: it shows its
+records, named by the first field the page declares (Records: Name), and that field.
 
 - Site: `src/components/sherpa-provider/provider-show-as.ts`
+
+### T-a-kind-is-registered-never-a-tag
+
+**Show as knows no tag.** Will, TODO 548; plan 695 U4. Each component says what it is in
+its `static presents`: the kind it draws (`bar`, `donut`, `pie`, `grid`, `gauge`, `line`),
+the shapes of answer it can draw another kind's data from (`accepts`), the slots it fills
+from the element it replaces (`slots`: a chart's legend) and its own attributes as that
+kind (`is`: a radial chart is a donut or a pie by `data-type`). `define()` keeps every
+class it registers, and `show-as.ts` reads the statics: who draws a kind (`presenter`),
+what an element is (`presentsOf`), what a card offers (`offered`, in the Query's order of
+`PRESENTATION_KINDS`) and what a made element keeps of the one it replaces (`kept`).
+
+- **What it keeps is read from the two declarations**, never listed: the attributes BOTH
+  declare (a chart's summary, a donut's centre label to a pie) and the ones NEITHER does —
+  where it sat: its `id`, `slot`, `style`, `data-scope`, a layout's `data-grow`. A line's
+  `data-type` is its own and stays behind; a grid's `data-column-filters` too. It takes them
+  from its slot's own element while that is aside, so a third kind comes from the page's.
+- **The gauge and the line are kinds like any other.** They accept nothing: only ever their
+  page's own. A gauge is one number, so a card over one offers a grid, never a chart; the
+  grid accepts `aggregate` and shows its rows.
+- **A kind is offered only while its component is loaded.** The old map imported each
+  chart on first show; now an app imports what it offers (the package does it all).
+- **The core imports no component.** `npm run lint` holds `show-as.ts`, `show-as-menu.ts` and
+  the data layer to it; a header that offers Show as imports the button and menu its
+  markup holds.
+
+- Site: `src/components/sherpa-provider/provider-show-as.ts`
+- Site: `src/core/ui/show-as.ts`
+- Site: `src/components.ts`
+- Site: `test/e2e/reforged-provider-summary.spec.ts`
+
+### T-a-swap-is-a-view-transition
+
+**A slot's swap runs in `document.startViewTransition`** where the engine has it —
+measured 2026-11-03 in Chromium 153, Firefox 155 and WebKit 26.6: each runs it (`ready`
+resolves, five `::view-transition` animations, 258–404 ms) — and at once where it has
+none, or where the reader asks for less motion: the
+`prefers-reduced-motion` gate in `sherpa-motion.css` reaches no `::view-transition`
+pseudo-element, which the document owns. Everything — the made element, its legend
+moved, the page's own put aside, `replaceWith` — happens inside the update callback, so
+the old snapshot is the old card, whole. A transition another one skips still runs its
+update; only its `ready` rejects, and is caught. While it waits for its frame the element
+is marked swapping, so a second ask in that frame does not make a second one; what takes
+its place asks again and reads the newest presentation.
+
+- Site: `src/components/sherpa-provider/provider-show-as.ts`
+- Site: `test/e2e/reforged-provider-summary.spec.ts`
 
 ### T-a-card-toggles-its-own-toolbar
 
