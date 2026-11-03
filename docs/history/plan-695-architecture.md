@@ -288,6 +288,23 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   **Carried → U3:** `drafts` still reaches the provider as the outlet's callback. The
   outlet reads its nav settings from the session, not from Settings, so a page cannot lay
   them.
+- **P3 ✅, started early (`a331a47f`, `634f12ea`, `977b5b7a`, `fbf47859`; Demos
+  `db9b75a`).** The menu is `sherpa-menu.ts` (2,558 → 1,258 lines) plus `menu-shell`,
+  `menu-list`, `menu-conditions`, `menu-number` and `menu-date` (2,037 lines); +3.1 KB brotli
+  per menu import (1.5 KB of it the six files compressing apart). Placement measured, 192
+  cases per engine: in three engines each card is inside the viewport and within 4px of
+  the old JS, and follows its trigger on a scroll; `#place`, the scroll listener and the
+  card's ResizeObserver are gone. Measuring stays for `data-bounds` (no engine gives a
+  top-layer card a box but the viewport; the box is now found through shadow roots) and
+  a trigger off-screen (a folded chip at x = −9950). 692's UI half: the condition editor
+  nests; `menu.condition` is the tree; `rowsTree`, `treeRows`, `rowLeaf`, `leafRow`,
+  `rowAnswered`, `rowsFromPicks`, `FieldCondition`, the menu's `conditions`, `#unsaid` and
+  the flat-row limit are gone; values still enter through `typedValue`. The axe gate:
+  70/70 at or under baseline. Lane picks taken (❓ Will may change them when he looks): a
+  group is indented one join column with a subtle 0.5px rule; one join per group; a new
+  group joins the other way from its parent; an `in` leaf is one row per value; an `off`
+  part is drawn greyed and kept off.
+  **Carried:** `show()` on a card that is already open keeps its first anchor.
 
 ### The waves
 
