@@ -62,10 +62,10 @@ test('an update announces only the fields that moved', async ({ page }) => {
     await store.insert({ id: 1, name: 'Ada', tier: 'Gold', seats: 10 });
     const heard: unknown[] = [];
     store.addEventListener('change', (e) => heard.push((e as CustomEvent<{ fields?: string[] }>).detail.fields));
-    const at = store.history.seq;
+    const at = store.history!.seq;
     // A form sends every field back; one moved.
     await store.update(1, { id: 1, name: 'Ada', tier: 'Platinum', seats: 10 });
-    const since = store.history.since(at);
+    const since = store.history!.since(at);
     return { heard, since };
   });
   expect(r.heard).toEqual([['tier']]);

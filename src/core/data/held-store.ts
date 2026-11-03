@@ -23,7 +23,7 @@ import { carryKey, keyRow } from './row-key.js';
 import type { CacheChangeDetail } from './store-cache.js';
 import type { StoreHistory } from './store-history.js';
 import {
-  projectRow, readField, sameKey,
+  distinctOf, matchesOnly, projectRow, readField, sameKey,
   type LoadOptions, type LoadResult, type Row, type Store, type StoreCapabilities, type StoreChangeDetail, type StoreChanges, type WriteOptions,
 } from './store.js';
 import { startSpan, within } from './trace.js';
@@ -236,10 +236,12 @@ export class HeldStore extends EventTarget implements Store {
     return answers === this.#source ? undefined : answers.scan?.bind(answers);
   }
 
-  /** Each field's values among the matches: its set's, while it answers; else its source's, where it says them. */
-  get distinct(): ((fields: readonly string[], options?: LoadOptions) => Promise<Record<string, unknown[]>>) | undefined {
+  /** Each field's values among the matches, its set held first — a host asks with no
+   *  load before: its set's, while it answers; else its source's, or read from its rows. */
+  async distinct(fields: readonly string[], options?: LoadOptions): Promise<Record<string, unknown[]>> {
+    await this.hold();
     const answers = this.#answers;
-    return answers.distinct?.bind(answers);
+    return answers.distinct ? answers.distinct(fields, options) : distinctOf((await answers.load(matchesOnly(options))).rows, fields);
   }
 
   /** What answers its readers: its copy of the rows they see, while the plan reads
@@ -384,7 +386,7 @@ export class HeldStore extends EventTarget implements Store {
       if (lost) {
         this.#owed = true;
         this.#reads.cache?.addEventListener('set', () => this.dispatchEvent(new CustomEvent('change', { detail: { type: 'update' } })), { once: true });
-        this.#reads.recheck();
+        void this.#reads.recheck();
       }
       return !this.#pending.length;
     });
@@ -393,17 +395,41 @@ export class HeldStore extends EventTarget implements Store {
   }
 
   /** Read its source again behind the set it answers — the writes that wait sent
-   *  first; settles when that read lands or fails — either way the set says so.
-   *  Holding none, nothing is behind: its next read reads it. */
-  async recheck(): Promise<void> {
+   *  first; settles as that read ends: landed, failed, or overtaken by a change,
+   *  which leaves the set due. Holding none, nothing is behind: its next read reads
+   *  it. ONE check at a time: an ask before its read is sent joins it; an ask after
+   *  waits for one more, which every later ask joins — what it heard may be newer
+   *  than the read out. */
+  recheck(): Promise<void> {
+    if (!this.#rechecking) {
+      const check = this.#recheck().finally(() => {
+        this.#rechecking = null;
+        this.#reading = false;
+      });
+      return (this.#rechecking = check);
+    }
+    if (!this.#reading) return this.#rechecking;
+    return (this.#again ??= this.#rechecking.then(() => {
+      this.#again = null;
+      return this.recheck();
+    }));
+  }
+
+  /** The check in flight. */
+  #rechecking: Promise<void> | null = null;
+  /** The one check after it, which every ask while its read is out joins. */
+  #again: Promise<void> | null = null;
+  /** The check in flight has sent its read. */
+  #reading = false;
+
+  /** One check behind: the writes that wait, then the set. */
+  async #recheck(): Promise<void> {
     const span = startSpan('recheck');
     await within(span, () => this.send()).catch(() => false);
     const cache = this.#reads.closed ? null : this.#reads.cache;
-    if (cache?.set) {
-      const landed = new Promise<void>((done) => cache.addEventListener('set', () => done(), { once: true }));
-      this.#reads.recheck();
-      await landed;
-    }
+    this.#reading = true;
+    // The read's own end, never its `set`: a change during the read lands it on nothing.
+    if (cache?.set) await this.#reads.recheck();
     span?.end({ rows: cache?.set?.size ?? 0 });
   }
 

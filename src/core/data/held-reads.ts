@@ -109,7 +109,7 @@ export class HeldReads {
          once a page, at open or a first load: never on a toggle (340). */
       if (behind) {
         this.#tried = true;
-        cache.recheck(this.cap, this.#need());
+        void cache.recheck(this.cap, this.#need());
       }
       if (plan !== 'fetch') return;
       const moved = (): string => `${cache.gen}:${cache.over}:${cache.failedAt}:${cache.never}:${cache.due}:${cache.set?.fields}`;
@@ -126,8 +126,8 @@ export class HeldReads {
     }
   }
 
-  /** Read the set again behind the one shown. */
-  recheck(): void {
-    this.#live?.recheck(this.cap, this.#need());
+  /** Read the set again behind the one shown; settles as that read ends. */
+  recheck(): Promise<void> {
+    return this.#live?.recheck(this.cap, this.#need()) ?? Promise.resolve();
   }
 }

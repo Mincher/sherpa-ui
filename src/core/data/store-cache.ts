@@ -158,17 +158,20 @@ export class StoreCache extends EventTarget {
   }
 
   /** Read the set again BEHIND the one held: it stays, and answers, until the
-   *  read lands — then `set` fires. A read in flight serves. TRAP T-a-read-is-planned */
-  recheck(cap: number, fields: readonly string[] | null = null): void {
+   *  read lands — then `set` fires. A read in flight serves. Settles as the read
+   *  ends: landed, failed, or overtaken by a change, which fires no `set`.
+   *  TRAP T-a-read-is-planned */
+  recheck(cap: number, fields: readonly string[] | null = null): Promise<void> {
     this.#widest = Math.max(this.#widest, cap);
     this.#want(fields);
-    if (this.#reading) return;
+    if (this.#reading) return this.#reading;
     const asks = this.tracks && this.#at !== undefined && !!this.#set && !this.#due && !this.#failedAt;
     const reading = asks ? this.#readChanges(cap) : this.#readWhole(this.#failedAt ? cap : this.#widest);
     this.#reading = reading;
     void reading.finally(() => {
       if (this.#reading === reading) this.#reading = null;
     });
+    return reading;
   }
 
   /** Keep the set beyond the session (D2 B), and start from the copy kept last
