@@ -422,13 +422,13 @@ model (patterns as data: when this kind of data and this task, use this layout) 
 | 1 | "In the last/next" by month or year overshoots at a month's end | `durationSpan`, `store.ts:160` | last 1 month on 03-31 → from **03-03**; next 1 month from 01-31 → **03-03**. TODO 694 |
 | 2 | Two stores cannot share one IndexedDB database | `idb-store.ts:145` | read |
 | 3 | In the worker, `seedVersion` never re-seeds (its mark lives in localStorage) | `web-storage.ts:34` | read |
-| 4 | The newer-write rule is lost over the wire | `request-store.ts:152`, the handler | read |
+| 4 | The newer-write rule is lost over the wire | `request-store.ts:152`, the handler | read; **fixed, 695 H1** |
 | 5 | The node editor's sort and group skip a slot's rerouting | `node-graph.ts:436` | likely |
 | 6 | A condition value with a comma breaks in the node editor | `query-graph.ts:146` | read |
-| 7 | `followUpdates` and `shareFeed(…, 'updates')` take the same lock | `share-feed.ts`, `follow-updates.ts` | read |
-| 8 | Each `RequestStore` opens a BroadcastChannel and never closes it | `request-store.ts:74` | read |
-| 9 | A notification's click ignores its `url` | `serve-data.ts:108` | read |
-| 10 | Sign-out leaves the worker's set, the outbox and notices | `cache-keep.ts:162` | read |
+| 7 | `followUpdates` and `shareFeed(…, 'updates')` take the same lock | `share-feed.ts`, `follow-updates.ts` | read; **fixed, 695 H1** |
+| 8 | Each `RequestStore` opens a BroadcastChannel and never closes it | `request-store.ts:74` | read; **fixed, 695 H1** |
+| 9 | A notification's click ignores its `url` | `serve-data.ts:108` | read; **fixed, 695 H1** |
+| 10 | Sign-out leaves the worker's set, the outbox and notices | `cache-keep.ts:162` | read; **fixed, 695 H1** |
 
 ---
 

@@ -120,6 +120,20 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   `--staged` (1.5 s) and `check:extensions` (0.1 s). Lane picks taken: a dist that cannot
   be weighed passes with a note (CI weighs it); Node 24 floats, no `.nvmrc`.
   **Carried:** the first CI run comes with Will's push; e2e has never run on Linux.
+- **H1 + S3 ✅ (`d919d1a7`, `ce6c6ba8`; Demos `4776077`).** Bugs 4, 7–10 fixed, each with
+  a test that fails on the old build. `writeHeaders` is the one `If-Unmodified-Since`
+  encoding (`RestStore`'s own is gone); a 412 answers `conflict`. `oneTab()`
+  (`browser/one-tab.ts`) is the one leader election; the news feed leads under
+  `sherpa-news`. `RequestStore.close()`. A notification press focuses the tab at its
+  url, else opens it. `clearKept()` asks the worker to forget (`askWorker`): the held
+  set, the outbox and the kept notices. `src/core/data/trace.ts`: `onTrace`, spans
+  `{host, step, store?, trace, id, parent?, t, ms?, detail?}` on `sherpa-trace`; a
+  `traceparent` only while someone listens. Lane picks taken: a sign-out DROPS writes
+  still waiting (the app checks `pending` first). `check:traps` now writes and holds the
+  area counts in `TRAPS.md`.
+  **Carried:** a DataSource load's requests start their own traces (a span cannot
+  cross an `await`) → S5. After a sign-out, the worker holds no new set until it
+  restarts → H3. `serve-data`'s `instanceof HeldStore` → S4's capabilities.
 
 ### The waves
 

@@ -4,7 +4,8 @@
  * docs/traps/*.md, and that section's `Site:` lines name exactly the files that
  * cite it. Drift either way exits 1. Each entry lives in the file of its first
  * Site's area (plan-695 T1). It also writes docs/TRAPS-INDEX.md, the entries by
- * area, from those Site lines — and fails when it is stale.
+ * area, from those Site lines, and the area counts in docs/TRAPS.md — and fails
+ * when either is stale.
  *
  *   npm run check:traps    check
  *   npm run traps:write    write the index, then check
@@ -13,6 +14,7 @@ import { readFileSync, writeFileSync, existsSync, globSync } from 'node:fs';
 
 const DOC = 'docs/traps/*.md';
 const INDEX = 'docs/TRAPS-INDEX.md';
+const POINTER = 'docs/TRAPS.md';
 const WRITE = process.argv.includes('--write');
 /** A file not scanned here is not gated. */
 const SOURCES = [
@@ -161,6 +163,16 @@ if (WRITE) writeFileSync(INDEX, indexText);
 else if (!existsSync(INDEX) || readFileSync(INDEX, 'utf8') !== indexText) {
   problems.push(`${INDEX} is stale — run npm run traps:write`);
 }
+
+// The area table in TRAPS.md: each file's entry count, written here, never by hand.
+const counts = new Map();
+for (const doc of home.values()) counts.set(doc, (counts.get(doc) ?? 0) + 1);
+const pointerOld = readFileSync(POINTER, 'utf8');
+const pointerText = pointerOld
+  .replace(/^(\| \[[^\]]+\]\((traps\/[a-z-]+\.md)\) \| )\d+( \|)$/gm, (_, pre, doc, post) => `${pre}${counts.get(`docs/${doc}`) ?? 0}${post}`)
+  .replace(/^(\| \*\*All\*\* \| \*\*)\d+(\*\* \|)$/m, (_, pre, post) => `${pre}${home.size}${post}`);
+if (WRITE) writeFileSync(POINTER, pointerText);
+else if (pointerText !== pointerOld) problems.push(`${POINTER}'s area counts are stale — run npm run traps:write`);
 
 for (const [id, files] of cited) {
   if (!defined.has(id)) {
