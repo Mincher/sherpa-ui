@@ -59,14 +59,14 @@ test('a search while the Switch is off keeps the sort it kept', async () => {
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   source.declareValues('plan', ['Free', 'Pro']);
   source.query.offer('data', ['plan']);
-  source.query.hold('data', ['plan']);
-  source.query.setReading('data', 'plan', { picked: ['Pro'] });
-  source.query.commit({ scope: 'data' });
-  source.query.setSort('seats', 'desc', 'data');
-  source.query.suspend('data', null, true);
+  source.query.ask({ scope: 'data', hold: ['plan'] });
+  source.query.ask({ scope: 'data', field: 'plan', reading: { picked: ['Pro'] } });
+  source.query.ask({ scope: 'data', commit: true });
+  source.query.ask({ scope: 'data', sort: 'seats', direction: 'desc' });
+  source.query.ask({ scope: 'data', suspended: true });
   assert.ok(source.query.applied.scopes.data.suspended, 'the Switch is off');
-  source.query.setSearch('o', 'data');
-  source.query.suspend('data', null, false);
+  source.query.ask({ scope: 'data', search: 'o' });
+  source.query.ask({ scope: 'data', suspended: false });
   assert.deepEqual(source.query.applied.scopes.data.sort, [{ field: 'seats', direction: 'desc' }]);
 });
 
@@ -76,8 +76,8 @@ test('a question exported and taken back keeps each source\'s own sort', async (
   const b = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), query: context });
   a.query.offer('a', ['plan', 'seats']);
   b.query.offer('b', ['plan', 'seats']);
-  a.query.setSort('seats', 'desc', 'a');
-  b.query.setSort('plan', 'asc', 'b');
+  a.query.ask({ scope: 'a', sort: 'seats', direction: 'desc' });
+  b.query.ask({ scope: 'b', sort: 'plan', direction: 'asc' });
   const before = JSON.stringify([context.applied.scopes.a?.sort, context.applied.scopes.b?.sort]);
   await context.import(context.export());
   assert.equal(JSON.stringify([context.applied.scopes.a?.sort, context.applied.scopes.b?.sort]), before);
@@ -96,8 +96,8 @@ test('a Refresh asks a server field again: its old keys are of the set let go', 
     scopes: { data: { label: 'Rows', holds: ['seats'] } },
   }, store);
   bindSource(source, { populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {} }, { scope: 'data' });
-  source.query.setReading('data', 'seats', { tree: rowsTree([{ op: 'gt', text: '40' }]), mode: 'advanced' });
-  source.query.commit({ scope: 'data' });
+  source.query.ask({ scope: 'data', field: 'seats', reading: { tree: rowsTree([{ op: 'gt', text: '40' }]), mode: 'advanced' } });
+  source.query.ask({ scope: 'data', commit: true });
   await source.load();
   await settle();
   assert.deepEqual(source.rows.map((r) => r.id).sort(), [2, 3]);
@@ -121,8 +121,8 @@ test('a chip counts a field the store answers as its rows do, by the keys the st
     scopes: { data: { label: 'Rows', holds: ['score'] } },
   }, store);
   bindSource(source, { populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {} }, { scope: 'data' });
-  source.query.setReading('data', 'score', { tree: rowsTree([{ op: 'gt', text: '40' }]), mode: 'advanced' });
-  source.query.commit({ scope: 'data' });
+  source.query.ask({ scope: 'data', field: 'score', reading: { tree: rowsTree([{ op: 'gt', text: '40' }]), mode: 'advanced' } });
+  source.query.ask({ scope: 'data', commit: true });
   await source.load();
   await settle();
   await source.load();

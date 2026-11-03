@@ -133,7 +133,7 @@ never be a list in one place and a box in the other.
 ### T-one-query-builder-in-the-data-layer
 
 A reading becomes a query in exactly ONE place: `stateClause()`, reached through
-`setReading()`. Anything else is a second builder, and a second builder
+`ask({ field, reading })`. Anything else is a second builder, and a second builder
 does not know what the first learned.
 
 `DataSource.#steer` had one. `quick-filter-change` ran a private

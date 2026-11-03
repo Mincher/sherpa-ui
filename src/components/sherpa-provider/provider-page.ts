@@ -258,7 +258,7 @@ export class ProviderPage {
     this.#flush?.();
     const scope = this.#added.get(id) ?? this.#homeOf(id, from);
     this.#add(id, scope);
-    opened.query.setPreset(scope, SAVED_PRESET + id, true, true);
+    opened.query.ask({ scope, preset: SAVED_PRESET + id, on: true, commit: true });
     return true;
   }
 
@@ -268,7 +268,7 @@ export class ProviderPage {
     const scope = this.#added.get(id);
     if (!opened || scope === undefined) return false;
     this.#flush?.();
-    opened.query.setPreset(scope, SAVED_PRESET + id, false, true);
+    opened.query.ask({ scope, preset: SAVED_PRESET + id, on: false, commit: true });
     this.#added.delete(id);
     this.#layPresets([scope]);
     this.#keepAdded();
@@ -299,7 +299,7 @@ export class ProviderPage {
     renameSavedFilter(opened.id, id, name);
     const next = labelId(name);
     if (scope !== undefined) this.#add(next, scope);
-    if (on) opened.query.setPreset(scope, SAVED_PRESET + next, true, true);
+    if (on) opened.query.ask({ scope, preset: SAVED_PRESET + next, on: true, commit: true });
     this.#saySaved();
     return next;
   }
@@ -344,7 +344,7 @@ export class ProviderPage {
     const opened = this.#opened;
     if (!opened || !this.#added.size) return;
     const added = [...this.#added];
-    for (const [id, scope] of added) opened.query.setPreset(scope, SAVED_PRESET + id, false, true);
+    for (const [id, scope] of added) opened.query.ask({ scope, preset: SAVED_PRESET + id, on: false, commit: true });
     this.#added.clear();
     this.#layPresets(added.map(([, scope]) => scope));
     this.#keepAdded();
@@ -815,7 +815,7 @@ function redraft(source: DataSource, draft: Query, skip?: string): void {
     const was = applied.scopes[scope]?.readings ?? {};
     for (const field of new Set([...Object.keys(s.readings), ...Object.keys(was)])) {
       const want = s.readings[field] ?? null;
-      if (!sameReading(want, was[field])) source.query.setReading(scope, field, want);
+      if (!sameReading(want, was[field])) source.query.ask({ scope, field, reading: want });
     }
   }
 }

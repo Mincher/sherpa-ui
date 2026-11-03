@@ -22,8 +22,8 @@ const settle = () => new Promise((r) => setTimeout(r, 50));
 async function picked(declare, picks) {
   const source = new DataSource({ store: new ArrayStore(ROWS.map((r) => ({ ...r })), { key: 'id' }), limitOptions: true });
   declare(source);
-  source.query.hold(VIEW, ['score']);
-  source.query.setReading(VIEW, 'score', { picked: picks });
+  source.query.ask({ scope: VIEW, hold: ['score'] });
+  source.query.ask({ scope: VIEW, field: 'score', reading: { picked: picks } });
   await source.load({ force: true });
   await settle();
   await source.load();

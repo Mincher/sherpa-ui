@@ -27,11 +27,11 @@ test('`in: []` reads as nothing picked', () => {
 test('a source with nothing ticked — an old save\'s `none` too — answers every row', async () => {
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   await source.declareFromRows(['customer']);
-  source.query.hold('view', ['customer']);
-  source.query.setReading('view', 'customer', { picked: [] });
+  source.query.ask({ scope: 'view', hold: ['customer'] });
+  source.query.ask({ scope: 'view', field: 'customer', reading: { picked: [] } });
   await source.load();
   assert.equal(source.debugState().total, 3);
-  source.query.setReading('view', 'customer', /** @type {never} */ ({ picked: [], none: true }));
+  source.query.ask({ scope: 'view', field: 'customer', reading: /** @type {never} */ ({ picked: [], none: true }) });
   await source.load();
   assert.equal(source.debugState().total, 3);
 });

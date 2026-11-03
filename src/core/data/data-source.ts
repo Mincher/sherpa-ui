@@ -47,8 +47,6 @@
  * - .debugState — EVERYTHING THIS SOURCE THINKS IS TRUE, in one object.
  * - .remote — Do this source's loads reach outside the data layer?
  * - .applyOn — Once per act, or LIVE while a value moves — never live when remote. Fixed by the options.
- * - .setPage — which page to show
- * - .setPageSize — rows per page, or null for all
  * - .load — Re-read and push to every bound component.
  * - .reach — Can its store be reached?
  * - .failure — Why the store could not be reached, while it cannot — its kind and message — else null.
@@ -199,6 +197,9 @@ export class DataSource extends EventTarget {
     this.#context = options.query ?? new QueryContext();
     this.#member = this.#context.join({
       remote: this.#remote, pagedIn: (scope) => this.#binding.pagedIn(scope), bindOf: (el) => this.#binding.get(el),
+      presentsIn: (scope) => this.#binding.presentsIn(scope),
+      // A page, or its size, is asked of the Query: it says which source draws it.
+      page: (at) => ('page' in at ? this.#setPage(at.page) : this.#setPageSize(at.pageSize)),
       heard: (change) => this.#hear(change),
       has: (field) => this.#catalogue.has(field),
       carriesOver: (field) => this.#catalogue.carriesOver(field),
@@ -1305,7 +1306,8 @@ export class DataSource extends EventTarget {
     return (this.#searchFields?.length ? this.#searchFields : ['*']).map((f) => `${f}:contains:${term}`).join('\n');
   }
 
-  setPage(page: number): void {
+  /** Which page to show — asked of the Query: `ask({ page })`. */
+  #setPage(page: number): void {
     // Clamped against the CURRENT total, so a pager cannot walk past the end.
     this.#state.page = Math.min(Math.max(1, Math.trunc(page) || 1), this.totalPages);
     /* GROUPED: publish, never load. Grouped loads send no skip/take, so every
@@ -1318,7 +1320,8 @@ export class DataSource extends EventTarget {
     this.#schedule();
   }
 
-  setPageSize(size: number): void {
+  /** Rows per page — asked of the Query: `ask({ pageSize })`. */
+  #setPageSize(size: number): void {
     this.#state.pageSize = Math.max(1, Math.trunc(size) || 1);
     this.#requery();
   }
@@ -1894,7 +1897,7 @@ export class DataSource extends EventTarget {
        back. After this act, as the rows have them out already. Will, TODO 512 (A) */
     if (next.size) {
       queueMicrotask(() => {
-        for (const [scope, fields] of next) for (const [field, keys] of Object.entries(fields)) this.#context.letGo(scope, field, keys);
+        for (const [scope, fields] of next) for (const [field, keys] of Object.entries(fields)) this.#context.ask({ scope, field, letGo: keys });
       });
     }
     return true;

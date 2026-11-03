@@ -28,8 +28,8 @@ test('sorted by another field, the groups stay A to Z and sort inside', async ()
 test('the source\'s groups follow the same order', async () => {
   const source = new DataSource({ store: store() });
   bindSource(source, Object.assign(new EventTarget(), { setAttribute() {}, removeAttribute() {}, hasAttribute: () => false, populate() {} }), { scope: 'data' });
-  source.query.setGroup('p', 'data');
-  source.query.setSort('p', 'desc', 'data');
+  source.query.ask({ scope: 'data', group: 'p' });
+  source.query.ask({ scope: 'data', sort: 'p', direction: 'desc' });
   await source.load();
   assert.deepEqual(source.groups().map((g) => g.key), ['C', 'B', 'A']);
 });

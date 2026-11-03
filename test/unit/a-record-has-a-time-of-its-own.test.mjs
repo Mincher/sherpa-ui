@@ -50,7 +50,7 @@ test('a Date filter over timeField works on a dataset that never says `created`'
   const src = new DataSource({ store: new ArrayStore(ORDERS, { key: 'id', time: 'placedOn' }) });
   await src.ready;
   // Two ENDS, as a range menu sends them.
-  src.query.setReading('view', src.timeField, { picked: ['2026-02-01', '2026-04-01'], range: true });
+  src.query.ask({ scope: 'view', field: src.timeField, reading: { picked: ['2026-02-01', '2026-04-01'], range: true } });
   await settle();
   assert.deepEqual(src.rows.map((r) => r.id), [2]);
 });

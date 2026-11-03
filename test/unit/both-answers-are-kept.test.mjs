@@ -53,12 +53,12 @@ test('a source keeps both answers, the mode and the mirror', async () => {
   await source.load();
   // A component scope holds only the fields it has. TRAP T-up-is-open-down-is-closed
   source.query.offer('data', ['owner']);
-  source.query.setReading('data', 'owner', { ...BOTH, mode: 'simple', mirror: false });
+  source.query.ask({ scope: 'data', field: 'owner', reading: { ...BOTH, mode: 'simple', mirror: false } });
   await source.load();
   assert.equal(source.debugState().total, 1);
   assert.deepEqual(source.query.reading('data', 'owner'), { ...BOTH, mode: 'simple', mirror: false });
 
-  source.query.setReading('data', 'owner', { ...BOTH, mode: 'advanced', mirror: false });
+  source.query.ask({ scope: 'data', field: 'owner', reading: { ...BOTH, mode: 'advanced', mirror: false } });
   await source.load();
   // Ravi and Rex start with R.
   assert.equal(source.debugState().total, 2);

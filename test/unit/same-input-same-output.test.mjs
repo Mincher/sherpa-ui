@@ -46,9 +46,9 @@ test('a source told its clock reads it for its rows, and asks again when the day
   let now = JUNE;
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), now: () => now });
   source.query.offer('data', ['at']);
-  source.query.hold('data', ['at']);
-  source.query.setReading('data', 'at', { tree: rowsTree([{ op: 'last', text: '7', unit: 'day' }]), mode: 'advanced' });
-  source.query.commit({ scope: 'data' });
+  source.query.ask({ scope: 'data', hold: ['at'] });
+  source.query.ask({ scope: 'data', field: 'at', reading: { tree: rowsTree([{ op: 'last', text: '7', unit: 'day' }]), mode: 'advanced' } });
+  source.query.ask({ scope: 'data', commit: true });
   await source.load();
   await settle();
   assert.deepEqual(ids(source.rows), [1]);

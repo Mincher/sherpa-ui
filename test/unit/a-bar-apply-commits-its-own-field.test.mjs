@@ -24,9 +24,9 @@ class Bar extends EventTarget {
 
 test('a bar request for status applies status, and the panel\'s plan stays pending', () => {
   const source = new DataSource({ store: fakeRemote(new ArrayStore(ROWS, { key: 'id' }), { delay: 0 }) });
-  source.query.hold('data', ['plan', 'status']);
+  source.query.ask({ scope: 'data', hold: ['plan', 'status'] });
   // The panel's edit, not yet applied.
-  source.query.setReading('data', 'plan', { picked: ['Pro'] });
+  source.query.ask({ scope: 'data', field: 'plan', reading: { picked: ['Pro'] } });
   assert.equal(source.query.pending('plan'), true);
   const bar = new Bar();
   bindSource(source, bar, { steerOnly: true, scope: 'data' });

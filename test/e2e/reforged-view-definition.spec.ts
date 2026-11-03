@@ -111,8 +111,8 @@ test('a whole view round-trips: capture it, restore it into a FRESH one', async 
     // A reader configures a view…
     const one = await build();
     await one.source.load();
-    one.source.query.setReading('view', 'plan', { picked: ['Pro'] });
-    one.source.query.setSort('spend', 'desc');
+    one.source.query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Pro'] } });
+    one.source.query.ask({ sort: 'spend', direction: 'desc' });
     await settle();
     one.grid.setColumnFilter('name', ['name', 'contains', 'n1']);
     one.grid.select(one.source.rows.slice(0, 2).map((x) => x['email'] as string));
@@ -597,7 +597,7 @@ test('saveViewAs stores a named view, and the id is derived from the label', asy
     document.getElementById('root')!.replaceChildren(el);
     const source = new DataSource({ store: new ArrayStore([{ id: 1, region: 'EMEA' }, { id: 2, region: 'APAC' }], { key: 'id' }) });
     source.declareField('region', { label: 'Region' });
-    source.query.setReading('view', 'region', { picked: ['EMEA'] });
+    source.query.ask({ scope: 'view', field: 'region', reading: { picked: ['EMEA'] } });
     // What a saved view says of its region, in whichever scope holds it.
     const regionOf = (v: { query?: { scopes: Record<string, { where?: Record<string, unknown> }> } } | undefined) =>
       Object.values(v?.query?.scopes ?? {}).map((s) => s.where?.['region']).find(Boolean);
@@ -608,7 +608,7 @@ test('saveViewAs stores a named view, and the id is derived from the label', asy
     // The SAME label again is an UPDATE, not a second row. A random id would
     // leave a reader with two "Q3 capacity" entries and no way to tell them
     // apart in the chip.
-    source.query.setReading('view', 'region', { picked: ['APAC'] });
+    source.query.ask({ scope: 'view', field: 'region', reading: { picked: ['APAC'] } });
     const second = saveViewAs('probe', 'Q3 capacity', { source, elements: { chip: el } },
       { chip: ['values'] });
 

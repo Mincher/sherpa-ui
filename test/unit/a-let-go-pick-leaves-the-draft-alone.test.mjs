@@ -17,21 +17,21 @@ const picks = (query, which) => query[which].scopes[VIEW]?.readings.region?.pick
 
 test('a waiting draft the reader changed keeps its picks; the applied answer lets go', () => {
   const query = new QueryContext();
-  query.hold(VIEW, ['region']);
-  query.setReading(VIEW, 'region', { picked: ['EU', 'US'] });
+  query.ask({ scope: VIEW, hold: ['region'] });
+  query.ask({ scope: VIEW, field: 'region', reading: { picked: ['EU', 'US'] } });
   query.wait(VIEW);
-  query.setReading(VIEW, 'region', { picked: ['US'] });
-  query.letGo(VIEW, 'region', ['US']);
+  query.ask({ scope: VIEW, field: 'region', reading: { picked: ['US'] } });
+  query.ask({ scope: VIEW, field: 'region', letGo: ['US'] });
   assert.deepEqual(picks(query, 'applied'), ['EU']);
   assert.deepEqual(picks(query, 'draft'), ['US']);
 });
 
 test('a draft still as applied lets go with it', () => {
   const query = new QueryContext();
-  query.hold(VIEW, ['region']);
-  query.setReading(VIEW, 'region', { picked: ['EU', 'US'] });
+  query.ask({ scope: VIEW, hold: ['region'] });
+  query.ask({ scope: VIEW, field: 'region', reading: { picked: ['EU', 'US'] } });
   query.wait(VIEW);
-  query.letGo(VIEW, 'region', ['US']);
+  query.ask({ scope: VIEW, field: 'region', letGo: ['US'] });
   assert.deepEqual(picks(query, 'applied'), ['EU']);
   assert.deepEqual(picks(query, 'draft'), ['EU']);
   assert.equal(query.dirty(VIEW), false);
@@ -39,8 +39,8 @@ test('a draft still as applied lets go with it', () => {
 
 test('where nothing waits, the one answer lets go', () => {
   const query = new QueryContext();
-  query.hold(VIEW, ['region']);
-  query.setReading(VIEW, 'region', { picked: ['EU', 'US'] });
-  query.letGo(VIEW, 'region', ['US']);
+  query.ask({ scope: VIEW, hold: ['region'] });
+  query.ask({ scope: VIEW, field: 'region', reading: { picked: ['EU', 'US'] } });
+  query.ask({ scope: VIEW, field: 'region', letGo: ['US'] });
   assert.deepEqual(picks(query, 'applied'), ['EU']);
 });

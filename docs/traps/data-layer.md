@@ -1750,7 +1750,7 @@ arranged again. Its search stays. The Switch sits left of the Group chip.
 ### T-a-solo-is-a-draft-of-one-tab
 
 **Solo one filter, and every other answer in force goes off — whole** (Will, TODO
-690): `query.solo(scope, field, { across })` switches off each other answer in force
+690): `query.ask({ scope, solo: field, across })` switches off each other answer in force
 in its scope (every scope, `across`; a scope its Switch turned off is skipped) and
 this one on, applied at once as the Switch is. It goes off RAW: not through
 `suspend()`, whose going-off drops the picks the filters before it rule out, or a
@@ -1913,7 +1913,7 @@ The fix is that the SOURCE owns the field, not any control:
 | | |
 |---|---|
 | `declareValues(field, values)` | every value, so each control offers the same rows — and the same STRINGS |
-| `setReading(scope, field, reading)` | the one write; re-queries, then `query-change` names the field |
+| `query.ask({ scope, field, reading })` | the one write; re-queries, then `query-change` names the field |
 | `selection(field)` | a `FilterState`, the one answer each control draws from |
 
 The filter is composed from the FIELDS' readings, scope by scope, so a field
@@ -2790,7 +2790,7 @@ a field's scopes and the filters before it in the one order limit it, never
 the ones after. A value already picked is LET GO (Will, TODO 512 A): the walk
 sets it aside — out of the compiled filter (`CompileFacts.drop`), so the load
 is right — and the source then takes it out of the APPLIED reading
-(`QueryContext.letGo`), asking no Apply. The draft follows only while it is
+(`ask({ scope, field, letGo })`), asking no Apply. The draft follows only while it is
 still the applied answer: a draft the reader changed and has not applied keeps
 their picks (TODO 518; it was emptied). Until 512 it stayed in the
 reading, ticked, greyed and disabled, and came back when the earlier filter
@@ -3000,7 +3000,7 @@ drawing the same rows. No error, nothing in the console, and the ungrouped path
 worked perfectly — which is what made it look like "pagination is broken"
 rather than "grouped pagination is broken".
 
-`setPage` now publishes directly when a group is set, and schedules a load only
+A page asked (`ask({ page })`) now publishes directly when a group is set, and schedules a load only
 when one is not. The guard is right; what was wrong is that a VIEW-level change
 was being routed through a DATA-level mechanism.
 
@@ -3034,7 +3034,7 @@ the grid never writes it. The source clamps the current page against the new
 count and re-publishes; it does NOT load, because the rows in hand are already
 every matching row.
 
-`#viewPages` is cleared by `setGroup` and by a `setQuery` that moves the group —
+`#viewPages` is cleared by a Group asked and by a `setQuery` that moves the group —
 a count measured against the old grouping describes groups that no longer exist.
 
 The cost is honest and bounded: a grouped view holds the whole result set in the
@@ -3113,8 +3113,8 @@ Two scopes, and before this they shared one slot.
 
 | scope | reaches | writes |
 |---|---|---|
-| **view** | every component in the View — it cascades DOWN | the FIELD's one answer, `setReading()` at its home |
-| **component** | that component only (`only`) | its OWN scope, `setReading(scope, field, reading, { only })` |
+| **view** | every component in the View — it cascades DOWN | the FIELD's one answer, `ask({ field, reading })` at its home |
+| **component** | that component only (`only`) | its OWN scope, `ask({ scope, field, reading, only })` |
 
 A field's answer at its home is keyed by field alone, so a second writer does not narrow,
 it **replaces**. Measured: a View chip picked `mac + win`, a legend switched
@@ -4123,7 +4123,7 @@ Three things read it and all three must agree: `#sortRows` (does not sort),
 chip's `arrangeBy`, through `arrangeFrom` (chip off, direction rewound to `asc`
 so a resume starts ascending rather than at the stale `desc`).
 
-`setSort(null)` suspends; `clearSort()` forgets. A caller that means "throw it
+`ask({ sort: null })` suspends; `ask({ sort: null, clear: true })` forgets. A caller that means "throw it
 away" must say so — and a NEW sort drops the memory rather than shadowing it,
 or resuming would jump to a column the reader had moved on from.
 
@@ -4136,7 +4136,7 @@ or resuming would jump to a column the reader had moved on from.
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/data-source-types.ts`
-- Site: `src/core/data/query-context.ts`
+- Site: `src/core/data/query-edits.ts`
 
 ### T-one-cycle-for-one-value
 
@@ -4261,7 +4261,7 @@ order. A `Date` is a VALUE, not a bag of fields, so it is its timestamp.
 **Sorting was never affected** — `sortRows` compares with `readField` and the
 shared collator, and both a number and a dotted path (`owner.name`) have always
 worked. Two probes of mine reported otherwise and both were the probe's fault:
-`setSort` takes a FIELD NAME, not an array of specs.
+a Sort takes a FIELD NAME, not an array of specs.
 
 **A KEY can be an object too.** `sameKey` compared `String(a) === String(b)`,
 so a compound key (`{org:'acme', no:2}`) matched the FIRST row asked for and
@@ -5396,8 +5396,8 @@ field's normal chip onto the bar by hand (`showChip`) — and a second listener
 headings the View held.
 
 `column-filter-change` is a steering event now, for a grid bound to a scope:
-the heading's reading is its field's — `query.setReading(scope, field,
-reading)`, then `commit({ field })` — and a field no scope holds is held in
+the heading's reading is its field's — `query.ask({ scope, field,
+reading, commit: true })` — and a field no scope holds is held in
 the grid's scope first, so its bar is drawn the field's normal chip, from the
 Query. A BOUND heading asks, then is drawn: it writes neither its filters nor
 what it drew before it reports, and `drawReading` fills them (366 step 23). A field the View holds is sent to every grid below it with its
@@ -5770,7 +5770,7 @@ Three things follow from the declaring, and each was a hole without it:
 - **It is drawn before it is answered.** An unanswered scope is pruned from the
   Query, so `describe()` reads the declaration, never `holds`.
 - **A write from anywhere narrows the one chart.** The panel has no pointer to
-  the chart; `setReading()` finds `only` in the declaration. Without it the scope
+  the chart; a reading asked finds `only` in the declaration. Without it the scope
   came back WIDE and narrowed every component.
 - **Both views are told.** The legend hears `query-change`; a panel is
   drawn `drawReading(field, reading, scope)` — and takes it BY SCOPE, because
@@ -5854,7 +5854,7 @@ per page it opens, and a Context's module gets it as `ctx.query`.
 
 Before this, each source held its own Query, and four controls each held a
 copy of their answer beside it; every bug of the filter rewrite was one holder
-copying another wrongly. Every edit now goes through the Context's doors, each
+copying another wrongly. Every edit now goes through the Context's one door, each
 member hears it at once, and the Context fires ONE `query-change` for it.
 
 - Site: `src/core/data/query-context.ts`
@@ -6198,8 +6198,8 @@ change made in it is a `QueryRequest`, as a chip's is.
 - **`drawGraph` places a node ONCE**; after that its place is the reader's, and
   a redraw only updates what it shows. It WRITES NOTHING: a field's change is
   an edit it hands its host (`onEdit`). `bindQueryEditor` turns each into the
-  door a chip asks through — a reading through `ask()`, the Switch as a
-  suspend, Sort and Group as `setSort` and `setGroup` — so whether it applies
+  command a chip asks, through the one door (`query.ask`) — a reading, the
+  Switch, a Sort, a Group (a slot's are its chart's) — so whether it applies
   at once or waits for Apply is the Query's, as for any chip (Q3). What a row
   may change is the graph's to say (`editable`, its `choices`).
 - **Read only is the exception** (Will, 2026-10-29): a row a route drives
@@ -6600,3 +6600,45 @@ until they stop.
 - Site: `src/core/data/data-source.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/one-trace-stream.test.mjs`
+
+### T-one-command-one-door
+
+**Every edit to the Query is a `QueryRequest`, asked through ONE door:
+`QueryContext.ask(request)`.** Plan 695 S2 (D2). A field's answer, an on or off,
+a Switch, a reset, an order, a preset, a presentation, a solo, a Sort, Group or
+Search, a page or its size, what a scope holds, takes, lets go or moves, a
+let-go pick, an Apply, a Discard — one typed union, and a list is ONE change
+(one `query-change`, one Apply). The UI, the node editor and an agent say the
+same thing the same way, so each edit can be traced, undone and replayed. The
+named doors it replaced (`setReading`, `setSort`, `hold`, `commit`…) are gone,
+and so are `DataSource.setPage` and `setPageSize`: a page is the source's that
+draws a page in the request's scope — with none named, or none drawing there,
+every source's.
+
+- **One table maps the steering events** (`STEERS` in `bind-source.ts`): each
+  event a bound component sends up, and the command it asks. The event names
+  are the components' own, public (PRINCIPLES 18); only the map moves. Two are
+  no edit and say so: `grid-pages-change` is a report, `select-all-request` a
+  read. A hover (`preview`) is the page's, never the Query's: `ask()` passes it
+  by.
+- **A slot's Sort and Group are its chart's**, whoever asks — the rerouting
+  lives in the edit, not in one caller. The node editor's Sort and Group once
+  called `setSort` and `setGroup` straight, and arranged a chart's rows instead
+  of its presentation (bug 5).
+- **The edits that write one copy as plain data are pure**: `editQuery(query,
+  edit, facts)` gives the Query after a Sort, Group, Search, presentation, order
+  or move and leaves the one given untouched; the context swaps the result into
+  the copies it reaches. The rest — an answer, a Switch, a solo, a reset, a
+  preset, a hold — still edit in place, because a member hears each step: the
+  compile lists what a Switch turned off, and a hold's clear is told while the
+  scope still holds the field.
+- **`scope` left out** is the View; for a Sort, Group or Search, the scope that
+  arranges now; for an Apply or a Discard, every scope. A preset's own `commit`
+  applies only the fields it moved.
+
+- Site: `src/core/data/query.ts`
+- Site: `src/core/data/query-edits.ts`
+- Site: `src/core/data/query-context.ts`
+- Site: `src/core/ui/bind-source.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `test/unit/one-command-one-door.test.mjs`

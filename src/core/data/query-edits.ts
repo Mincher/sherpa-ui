@@ -1,7 +1,7 @@
 /**
- * query-edits.ts — the edits a DataSource makes to its own Query, as plain
- * data. Each takes the Query first, so a test needs no source. Helpers other
- * modules share stay in query.ts. DOM-free.
+ * query-edits.ts — the edits made to a Query, as plain data. Each takes the
+ * Query first, so a test needs no source. Helpers other modules share stay in
+ * query.ts. DOM-free.
  *
  * Map:
  * - scopeEntry — One scope's entry, made when first written.
@@ -29,8 +29,17 @@
  * - DefinitionFacts — What turning a definition into a Query needs from its source.
  * - definitionOf — A definition as a whole Query.
  * - answerIn — One field's answer in one copy of the Query, wherever it lives, or null.
+ * - EditFacts — What a pure edit needs to know that the copy it edits does not say.
+ * - PureEdit — The edits `editQuery` makes: each writes one copy as plain data, and tells no one.
+ * - isPureEdit — Is this request one `editQuery` makes?
+ * - editQuery — A pure edit: the Query after a Sort, Group, Search, presentation, order or move; the one given untouched.
+ * - slotted — A Sort or a Group in a SLOT is its chart's: its presentation's sort or parts.
  */
-import { ARRANGE_KEYS, answerOf, arrangementOf, arranging, copyReading, eachScope, emptyScope, readingAnswered, stripArrangement, VIEW, type Query, type QueryDefaults, type ScopeQuery, type ViewScope } from './query.js';
+import {
+  ARRANGE_KEYS, answerOf, arrangementOf, arranging, copyQuery, copyReading, eachScope, emptyScope, readingAnswered, stripArrangement, VIEW,
+  type Presentation, type Query, type QueryDefaults, type QueryRequest, type ScopeQuery, type ViewScope,
+} from './query.js';
+import type { SortSpec } from './store.js';
 import type { FieldReading } from './filter-state.js';
 import type { Where, WhereCondition } from './where.js';
 import { report } from './report.js';
@@ -399,4 +408,112 @@ export function answerIn(query: Query, field: string): FieldReading | null {
     if (held) return answerOf(held);
   }
   return null;
+}
+
+/** What a pure edit needs to know that the copy it edits does not say. */
+export interface EditFacts {
+  /** Is this scope a SLOT — a chart's? Its Sort and Group are its presentation's. Will, TODO 548 */
+  presents?: (scope: string) => boolean;
+  /** Is this scope ANOTHER source's? It keeps its own arrangement. 366 step 25 */
+  theirs?: (scope: string) => boolean;
+  /** The applied copy, whose arrangement both copies follow; absent, the copy edited. */
+  applied?: Query;
+  /** The draft, whose holds an order places; absent, the copy edited. */
+  draft?: Query;
+}
+
+/** The edits `editQuery` makes: each writes one copy as plain data, and tells no one. */
+export type PureEdit = Extract<Exclude<QueryRequest, readonly QueryRequest[]>,
+  { sort: unknown } | { group: unknown } | { search: unknown } | { presentation: unknown } | { order: unknown } | { move: unknown }>;
+
+/** Is this request one `editQuery` makes? */
+export function isPureEdit(request: QueryRequest): request is PureEdit {
+  return !Array.isArray(request) && ['sort', 'group', 'search', 'presentation', 'order', 'move'].some((key) => key in request);
+}
+
+/**
+ * editQuery(query, edit, facts) — a pure edit: the Query after it, the one given
+ * untouched. A slot's Sort and Group become its presentation's. A move another
+ * scope may not hold changes nothing. TRAP T-one-command-one-door
+ */
+export function editQuery(query: Query, given: PureEdit, facts: EditFacts = {}): Query {
+  const out = copyQuery(query);
+  const edit = slotted(given, facts.presents);
+  const scope = edit.scope;
+  if ('presentation' in edit) {
+    const entry = scopeEntry(out, scope ?? VIEW);
+    const merged: Record<string, unknown> = { ...entry.presentation, ...edit.presentation };
+    const next = Object.fromEntries(Object.entries(merged).filter(([, value]) => value != null && value !== ''));
+    if (Object.keys(next).length) entry.presentation = next as Presentation;
+    else delete entry.presentation;
+    prune(out);
+    return out;
+  }
+  if ('order' in edit) {
+    const name = scope ?? VIEW;
+    const holds = (facts.draft ?? query).scopes[name]?.holds ?? [];
+    const named = new Set(edit.order.filter((f) => holds.includes(f)));
+    const next = [...named];
+    const ordered = holds.map((f) => (named.has(f) ? next.shift()! : f));
+    const entry = out.scopes[name];
+    if (entry) entry.holds = ordered.filter((f) => entry.holds.includes(f));
+    return out;
+  }
+  if ('move' in edit) {
+    moveHold(out, edit.move, edit.from, scope ?? VIEW);
+    rehome(out);
+    return out;
+  }
+  // Both copies follow the applied arrangement. TRAP T-group-and-sort-are-component-scope
+  const applied = facts.applied ?? query;
+  return arranged(out, arrangeEdit(edit, applied, facts), scope, applied, facts);
+}
+
+/** A Sort or a Group in a SLOT is its chart's: its presentation's sort or parts. Will, TODO 548 */
+export function slotted(edit: PureEdit, presents?: (scope: string) => boolean): PureEdit {
+  const scope = edit.scope;
+  if (!scope || !presents?.(scope) || !('sort' in edit || 'group' in edit)) return edit;
+  return {
+    scope,
+    presentation: 'sort' in edit
+      ? { sort: edit.sort && !edit.clear ? (edit.direction === 'desc' ? 'desc' : 'asc') : undefined }
+      : { group: edit.group ?? undefined },
+  };
+}
+
+/** A change to the arrangement: what it names, and nothing else. */
+type ArrangeEdit = { sort?: SortSpec[]; group?: string | null; sortSuspended?: SortSpec | undefined; search?: string };
+
+/** A Sort, a Group or a Search as the arrangement it changes. A second suspend in a
+ *  row keeps the column it remembers. TRAP T-a-suspended-sort-is-one-owners-job */
+function arrangeEdit(edit: Extract<PureEdit, { sort: unknown } | { group: unknown } | { search: unknown }>, applied: Query, facts: EditFacts): ArrangeEdit {
+  if ('group' in edit) return { group: edit.group };
+  if ('search' in edit) return { search: edit.search };
+  if (edit.clear) return { sort: [], sortSuspended: undefined };
+  if (edit.sort) return { sort: [{ field: edit.sort, direction: edit.direction ?? 'asc' }], sortSuspended: undefined };
+  const theirs = facts.theirs ?? ((): boolean => false);
+  const live = arrangementOf(applied, (id) => !theirs(id)).sort[0];
+  return { sort: [], ...(live ? { sortSuspended: live } : {}) };
+}
+
+/** The arrangement written into ONE scope — the one named, else the one that
+ *  arranges now, else the View — and every other of this source's loses its own.
+ *  TRAP T-group-and-sort-are-component-scope */
+function arranged(out: Query, next: ArrangeEdit, scope: string | undefined, applied: Query, facts: EditFacts): Query {
+  const theirs = facts.theirs ?? ((): boolean => false);
+  // What a Switch keeps off is kept through this write too. TODO 612
+  const now = arrangementOf(applied, (id) => !theirs(id), true);
+  const at = scope ?? now.scope ?? VIEW;
+  const sort = next.sort ?? now.sort;
+  const group = 'group' in next ? next.group ?? null : now.group;
+  const sortSuspended = 'sortSuspended' in next ? next.sortSuspended : now.sortSuspended;
+  const search = next.search ?? now.search;
+  for (const [id, s] of Object.entries(out.scopes)) if (!theirs(id)) stripArrangement(s);
+  if (!sort.length && group == null && !sortSuspended && !search) return out;
+  const s = scopeEntry(out, at);
+  s.sort = sort.map((by) => ({ ...by }));
+  if (group != null) s.group = group;
+  if (sortSuspended) s.sortSuspended = { ...sortSuspended };
+  if (search) s.search = search;
+  return out;
 }

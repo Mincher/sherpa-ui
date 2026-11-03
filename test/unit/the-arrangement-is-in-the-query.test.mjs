@@ -18,15 +18,15 @@ const scopes = (s) => s.query.applied.scopes;
 
 test('setSort lands in the scope it names, in the Query', () => {
   const source = make();
-  source.query.setSort('name', 'desc', 'data');
+  source.query.ask({ scope: 'data', sort: 'name', direction: 'desc' });
   assert.deepEqual(scopes(source).data.sort, [{ field: 'name', direction: 'desc' }]);
   assert.deepEqual(source.state.sort, [{ field: 'name', direction: 'desc' }]);
 });
 
 test('a filter edit after a sort, in a scope that holds nothing, keeps the sort', async () => {
   const source = make();
-  source.query.setSort('name', 'asc', 'data');
-  source.query.setReading('view', 'plan', { picked: ['Pro'] });
+  source.query.ask({ scope: 'data', sort: 'name', direction: 'asc' });
+  source.query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Pro'] } });
   await source.load();
   assert.deepEqual(scopes(source).data.sort, [{ field: 'name', direction: 'asc' }]);
   assert.deepEqual(source.rows.map((r) => r.id), [1, 3]);
@@ -34,26 +34,26 @@ test('a filter edit after a sort, in a scope that holds nothing, keeps the sort'
 
 test('one scope arranges: grouping in another takes the arrangement there', () => {
   const source = make();
-  source.query.setSort('name', 'asc', 'data');
-  source.query.setGroup('plan', 'other');
+  source.query.ask({ scope: 'data', sort: 'name', direction: 'asc' });
+  source.query.ask({ scope: 'other', group: 'plan' });
   assert.equal(scopes(source).data?.sort, undefined);
   assert.equal(scopes(source).other.group, 'plan');
 });
 
 test('a suspended sort is in the Query, and comes back', () => {
   const source = make();
-  source.query.setSort('name', 'desc', 'data');
-  source.query.setSort(null);
+  source.query.ask({ scope: 'data', sort: 'name', direction: 'desc' });
+  source.query.ask({ sort: null });
   assert.deepEqual(scopes(source).data.sortSuspended, { field: 'name', direction: 'desc' });
   assert.deepEqual(scopes(source).data.sort, []);
-  source.query.resumeSort();
+  source.query.ask({ sort: 'name', direction: 'desc' });
   assert.deepEqual(scopes(source).data.sort, [{ field: 'name', direction: 'desc' }]);
   assert.equal(scopes(source).data.sortSuspended, undefined);
 });
 
 test('a View that names no arrangement keeps it; one that names it sets it', async () => {
   const source = make();
-  source.query.setSort('name', 'asc', 'data');
+  source.query.ask({ scope: 'data', sort: 'name', direction: 'asc' });
   await source.query.setQuery({ v: 1, scopes: { view: { holds: ['plan'] } } }, { holds: 'keep' });
   assert.deepEqual(source.state.sort, [{ field: 'name', direction: 'asc' }]);
   await source.query.setQuery({ v: 1, scopes: { data: { sort: [], group: null } } }, { holds: 'keep' });

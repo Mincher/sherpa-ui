@@ -37,7 +37,7 @@ for (const pageSize of [2, undefined]) {
     await source.load();
     assert.deepEqual(ids(chart.given), [1, 2, 3, 4]);
 
-    source.query.setSearch('Ada', 'data');
+    source.query.ask({ scope: 'data', search: 'Ada' });
     await source.load();
     assert.deepEqual(ids(grid.given), [1]);
     assert.deepEqual(ids(chart.given), [1, 2, 3, 4]);
@@ -51,7 +51,7 @@ test('a search held at the View narrows a summary too', async () => {
   bindSource(source, control(), { scope: 'data' });
   const chart = control();
   bindSource(source, chart, { scope: 'chart', rows: 'all', readonly: true });
-  source.query.setSearch('Ada', 'view');
+  source.query.ask({ scope: 'view', search: 'Ada' });
   await source.load();
   assert.deepEqual(ids(chart.given), [1]);
 });

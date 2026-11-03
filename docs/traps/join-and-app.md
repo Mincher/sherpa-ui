@@ -90,15 +90,18 @@ the source having already acted by the time the view's own handler runs.
 
 ### T-steering-events-are-a-closed-list
 
-`STEERING_EVENTS` is the CLOSED list of events a bound component may send up to
-the source: `sort-change`, `group-change`, `quick-filter-change`,
-`filter-change`, `page-change`, `page-size-change`, `search-change`.
+`STEERS` in `bind-source.ts` is the CLOSED table of events a bound component may
+send up, and the command each asks the Query (`T-one-command-one-door`):
+`sort-change`, `group-change`, `quick-filter-change`, `filter-add`,
+`filter-remove`, `column-filter-change`, `filter-apply`, `filter-discard`,
+`page-change`, `page-size-change`, `search-change` — and two that are no edit,
+`grid-pages-change` (a report) and `select-all-request` (a read).
 
 Only these. A component fires plenty more (`row-click`, `bar-click`) that are the
 app's business, not the source's — a source that listened to everything would
 turn every click into a reload.
 
-The detail shapes `#steer` reads are the components' own, already ratified. It
+The detail shapes the table reads are the components' own, already ratified. It
 reads them; it does not ask components to send anything new. So adding an event
 here is a decision about what steers a query, never about what a component
 emits.
@@ -506,7 +509,7 @@ there is nothing to filter on and inventing a field would be a lie.
 the local scope for the chart. Right now they're affecting the Customer Records data
 grid toolbar and columns."* Steered, a heading's answer goes to the scope that holds its
 field (one home), which is Customer Records. So the provider asks with `only`:
-`setReading(slot, field, reading, { only })` keeps it in the Query, in the slot's scope,
+`ask({ scope: slot, field, reading, only })` keeps it in the Query, in the slot's scope,
 and narrows that one grid. Its rows and its cells' on state come back from the source,
 as any grid's do, and its sub-grids are told as ever (Will: *"all of the state, and
 conditions, are coming from the data layer"*). The event stops at the grid. `only` names
@@ -907,11 +910,11 @@ What moved with it:
 
 **A filter control sends ONE request per reader act, and paints only what it
 is drawn.** 366. The request — a `QueryRequest` — names one field's answer, an
-on or off, a Switch, a reset, or a list that is one change; `bindSource`
-routes it to the Context's doors. A control never sends its WHOLE answer: that
-cleared every field a rebuilt control had not drawn yet.
+on or off, a Switch, a reset, or a list that is one change; `bindSource` asks
+it of the Context's one door, `QueryContext.ask`. A control never sends its
+WHOLE answer: that cleared every field a rebuilt control had not drawn yet.
 
-Two things end every loop. A draw never goes through a public door, so a draw
+Two things end every loop. A draw never goes through the door, so a draw
 never becomes a request. And the Context drops a request whose answer is
 already in force, so an echo dies in one round. A bound control's doors ask as
 its reader would; unbound, they stay silent writes.

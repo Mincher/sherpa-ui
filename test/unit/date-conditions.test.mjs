@@ -109,7 +109,7 @@ test('a source filters by a date from today', async () => {
   const source = new DataSource({ store: new ArrayStore(
     [{ id: 1, created: ago(2) }, { id: 2, created: ago(20) }, { id: 3, created: ago(5) }], { key: 'id' }) });
   source.declareField('created', { type: 'date', advanced: true });
-  source.query.setReading('view', 'created', { ...rows([{ op: 'last', text: '7', unit: 'day' }]), picked: [] });
+  source.query.ask({ scope: 'view', field: 'created', reading: { ...rows([{ op: 'last', text: '7', unit: 'day' }]), picked: [] } });
   await source.load();
   assert.equal(source.debugState().total, 2);
 });

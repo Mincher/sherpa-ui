@@ -14,13 +14,13 @@ import { ArrayStore, DataSource, QueryContext, VIEW } from '../../dist/data.js';
 test('a control that echoes every draw as a request settles in one round', () => {
   const query = new QueryContext();
   new DataSource({ store: new ArrayStore([{ id: 1, plan: 'Pro' }], { key: 'id' }), query });
-  query.hold(VIEW, ['plan']);
+  query.ask({ scope: VIEW, hold: ['plan'] });
   let told = 0;
   // The echo: each time its field moves, it sends back what it was drawn.
   query.addEventListener('query-change', (e) => {
     if (!e.detail.fields.includes('plan') || ++told > 10) return;
-    query.setReading(VIEW, 'plan', query.reading(VIEW, 'plan') ?? null);
+    query.ask({ scope: VIEW, field: 'plan', reading: query.reading(VIEW, 'plan') ?? null });
   });
-  query.setReading(VIEW, 'plan', { picked: ['Pro'] });
+  query.ask({ scope: VIEW, field: 'plan', reading: { picked: ['Pro'] } });
   assert.equal(told, 1, 'the echo changed nothing, so nothing was told again');
 });

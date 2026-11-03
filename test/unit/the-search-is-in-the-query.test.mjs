@@ -15,8 +15,8 @@ const make = () => new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) }
 
 test('setSearch lands in the Query, beside the sort', () => {
   const source = make();
-  source.query.setSort('name', 'asc', 'data');
-  source.query.setSearch('ad');
+  source.query.ask({ scope: 'data', sort: 'name', direction: 'asc' });
+  source.query.ask({ search: 'ad' });
   assert.equal(source.query.applied.scopes.data.search, 'ad');
   assert.equal(source.state.search, 'ad');
 });
@@ -31,7 +31,7 @@ test('a restored Query\'s search loads the searched rows', async () => {
 
 test('a View that names no search keeps it; one that names it sets it', async () => {
   const source = make();
-  source.query.setSearch('ad');
+  source.query.ask({ search: 'ad' });
   await source.query.setQuery({ v: 1, scopes: { view: { holds: [] } } }, { holds: 'keep' });
   assert.equal(source.state.search, 'ad');
   await source.query.setQuery({ v: 1, scopes: { view: { search: '' } } }, { holds: 'keep' });

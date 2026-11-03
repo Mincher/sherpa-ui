@@ -20,7 +20,7 @@ const make = (remote = false) => {
 test('select copies the caller\'s rows: a change to them leaves the Query as it was', async () => {
   const source = make();
   const tree = { or: [{ op: 'contains', value: 'Da' }] };
-  source.query.setReading('view', 'owner', { mode: 'advanced', tree, picked: [] });
+  source.query.ask({ scope: 'view', field: 'owner', reading: { mode: 'advanced', tree, picked: [] } });
   tree.or[0].value = 'Ra';
   tree.or.push({ op: 'eq', value: 'x' });
   assert.deepEqual(source.query.applied.scopes.view.readings.owner.tree, { or: [{ op: 'contains', value: 'Da' }] });
@@ -52,17 +52,17 @@ test('after setQuery, what a grid is handed cannot change the Query', async () =
 test('after a remote commit, what a grid is handed cannot change the Query', async () => {
   const source = make(true);
   const got = grid(source);
-  source.query.hold('view', ['region']);
-  source.query.setReading('view', 'region', { picked: ['EMEA'] });
-  source.query.commit();
+  source.query.ask({ scope: 'view', hold: ['region'] });
+  source.query.ask({ scope: 'view', field: 'region', reading: { picked: ['EMEA'] } });
+  source.query.ask({ commit: true });
   throwsOnWrite(got);
 });
 
 test('after the Switch goes off, the reading it turned off is frozen too', async () => {
   const source = make();
-  source.query.hold('view', ['region']);
-  source.query.setReading('view', 'region', { picked: ['EMEA'] });
-  source.query.suspend('view', null, true);
+  source.query.ask({ scope: 'view', hold: ['region'] });
+  source.query.ask({ scope: 'view', field: 'region', reading: { picked: ['EMEA'] } });
+  source.query.ask({ scope: 'view', suspended: true });
   const off = source.query.reading('view', 'region');
   assert.equal(off.suspended, true);
   assert.throws(() => { off.picked.push('APAC'); }, TypeError);
@@ -70,6 +70,6 @@ test('after the Switch goes off, the reading it turned off is frozen too', async
 
 test('reading() hands out the same object twice', () => {
   const source = make();
-  source.query.setReading('view', 'owner', { picked: ['Dana'] });
+  source.query.ask({ scope: 'view', field: 'owner', reading: { picked: ['Dana'] } });
   assert.equal(source.query.reading('view', 'owner'), source.query.reading('view', 'owner'));
 });

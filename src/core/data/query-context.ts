@@ -8,11 +8,12 @@
  * - QueryMember — What a source tells the context it joins.
  * - QueryChangeDetail — What `query-change` says: the fields whose answers moved, and the scopes whose holds or arrangement did.
  * - MemberBind — How a member bound a control.
- * - QueryLive — The Query and the declarations, live: written in place, never copied.
+ * - QueryLive — The Query and the declarations, live: read each time, never kept.
  * - QueryHandle — What a member holds of its context.
  * - QueryContext — The Query of one app Context, shared by every source in it. Fires `query-change`.
  * - .applied — The Query the rows are under. A copy.
  * - .draft — What the reader is editing. A copy.
+ * - .ask — THE door every edit to the Query goes through, whoever asks; a list is one change.
  * - .remote — Does any member's store wait for Apply?
  * - .members — How many sources share this Query.
  * - .reading — One scope's reading of one field, or undefined. The Query's own, frozen.
@@ -39,30 +40,11 @@
  * - .declareSets — A scope's filter sets, in order.
  * - .offer — Say which fields a component scope HAS.
  * - .declareDefault — A component's OWN default filter — readings that narrow `only` it — as its scope in the Query.
- * - .suspend — Switch answers off and on, keeping each: one field's, or every answer in a scope.
  * - .soloed — The filter soloed in this tab, if one is.
- * - .solo — Solo one filter: every other answer in force in its scope (every scope, `across`) goes off, whole.
- * - .unsolo — End the solo: only what it switched off comes back on.
- * - .hold — Say what a scope holds now.
- * - .order — Put some of a scope's fields in this order; the rest keep their places.
- * - .move — Move a filter between scopes — ONE call, because the removal is not optional.
- * - .release — A scope lets ONE field go.
- * - .take — A scope TAKES fields: down from the View, or up from a chart with its answer.
- * - .setReading — ONE field's answer — at its home, or a component's own; the answer in force is a no-op.
- * - .letGo — The filters before a field rule these picks out: they leave its answer, applied and drafted alike.
  * - .declarePresets — A scope's presets: the app's own named conditions, each a boolean chip.
  * - .presets — A scope's presets, in order: each its id, its name and the readings it writes.
  * - .presetOn — Is this preset on: every row it writes still in its field's answer, in force?
  * - .presetsOver — The scopes whose presets write this field: its answer moving moves their on.
- * - .setPreset — A scope's preset on or off: the app's own named conditions, beside the fields'.
- * - .reset — Clear all, Reset all: every answer homed in these scopes goes.
- * - .batch — The doors one act calls are ONE change to the page.
- * - .commit — SEND the draft — Apply, where a scope waits.
- * - .discard — Put the applied answers back over the draft — Discard, where a scope waits.
- * - .setSort — Order by one field, or stop; `null` suspends.
- * - .resumeSort — Resume the suspended sort.
- * - .clearSort — Forget the sort entirely — the gesture that is NOT a suspend.
- * - .setGroup — Group by a field, or stop.
  * - .presentation — A slot's presentation, as kept: a copy; none, an empty one.
  * - .declarePresentation — What its page DEFINES a slot shows — a chart's two fields — under what is kept.
  * - .presented — A slot's presentation as shown: what is kept, over its definition; or its definition alone.
@@ -70,8 +52,6 @@
  * - .axesOf — What each axis offers in a scope's view: the page's, its view's, the scope's, then the scope's view's.
  * - .honour — Which picks are in force: `kind` (Show as), `axes` (Primary, Secondary). Off, kept, not shown.
  * - .honours — Is that kind of pick in force?
- * - .present — Change a slot's presentation, at once in BOTH copies — it filters nothing, so no Apply waits.
- * - .setSearch — The rows' free-text search, with the arrangement.
  * - .setQuery — Restore a whole Query — a reload, a View, a saved filter.
  * - .startWith — The answer a field opens on where nothing answers it — a fetching list's first value.
  * - .export — The whole question as JSON — the Query as applied.
@@ -80,15 +60,16 @@
  */
 import type { BoundControl, FilterSet, QueryState } from './data-source-types.js';
 import {
-  answerOf, arrangementOf, copyQuery, copyReading, eachScope, emptyScope, freezeReading, readingAnswered, sameAnswer, sameReading, stripArrangement, VIEW,
-  type AxesDefinition, type AxisOffers, type Arrangement, type Presentation, type PresentationDefinition, type Query, type QueryDefaults, type ScopeQuery,
+  answerOf, arrangementOf, copyQuery, copyReading, eachScope, emptyScope, freezeReading, readingAnswered, sameAnswer, sameReading, VIEW,
+  type AxesDefinition, type AxisOffers, type Arrangement, type Presentation, type PresentationDefinition, type Query, type QueryDefaults,
+  type QueryRequest, type ScopeQuery,
 } from './query.js';
 import {
-  answerIn, copyField, copyScope, definitionOf, holderOf, holdsField, homes, moveHold, prune, readingOf, rehome,
-  copyHolds, sameField, sameScope, scopeEntry, setCameFrom, setReading,
+  answerIn, copyField, copyScope, definitionOf, editQuery, holderOf, holdsField, homes, isPureEdit, prune, readingOf, rehome,
+  copyHolds, sameField, sameScope, scopeEntry, setCameFrom, setReading, slotted, type EditFacts, type PureEdit,
 } from './query-edits.js';
 import { readingsOf, type Where } from './where.js';
-import { valueKey, type SortDirection, type SortSpec } from './store.js';
+import { valueKey } from './store.js';
 import { answerTree, modeOf, withPreset, type FieldReading, type RuledOut } from './filter-state.js';
 import { report } from './report.js';
 
@@ -124,6 +105,10 @@ export interface QueryMember {
   readonly remote: boolean;
   /** Does it draw a page of rows in this scope? */
   pagedIn(scope: string): boolean;
+  /** Does a chart of its draw a summary in this scope — is it a SLOT? TODO 548 */
+  presentsIn(scope: string): boolean;
+  /** Show this page of its rows, or this many rows a page. */
+  page(edit: { page: number } | { pageSize: number }): void;
   /** How it bound this control, if it did. */
   bindOf(el: BoundControl): MemberBind | undefined;
   /** What the context did: its follow-ups. Called at once, in join order. */
@@ -140,9 +125,6 @@ export interface QueryMember {
   ruledOut?(scope: string, field: string): ((key: string) => RuledOut) | undefined;
 }
 
-/** A change to the arrangement: what it names, and nothing else. */
-type ArrangeEdit = { sort?: SortSpec[]; group?: string | null; sortSuspended?: SortSpec | undefined; search?: string };
-
 /** What `query-change` says: the fields whose answers moved, and the scopes
  *  whose holds or arrangement did — and, for a whole Query put on, who put it:
  *  `by` is the caller's own tag, which a keeper reads. 366 step 24 */
@@ -150,6 +132,11 @@ export interface QueryChangeDetail {
   fields: string[];
   scopes: string[];
   by?: string;
+}
+
+/** Where an Apply or a Discard reaches: one field, one scope, or every scope. */
+function applyAt(at: { scope?: string; field?: string }): { scope?: string; field?: string } {
+  return at.field ? { field: at.field } : at.scope ? { scope: at.scope } : {};
 }
 
 /** A scope keeps no answer for this field now. */
@@ -166,7 +153,7 @@ export interface MemberBind {
   scope?: string | readonly string[];
 }
 
-/** The Query and the declarations, live: written in place, never copied. */
+/** The Query and the declarations, live: read each time, never kept — a pure edit swaps a copy in. */
 export interface QueryLive {
   /**
    * THE QUERY — which scope holds each field, and each field's reading, in the
@@ -248,6 +235,50 @@ export class QueryContext extends EventTarget {
   /** What the reader is editing. A copy. */
   get draft(): Query {
     return structuredClone(this.#live.draft);
+  }
+
+  /**
+   * ask(request) — THE door every edit to the Query goes through: a control's, the
+   * node editor's, an agent's. A list is ONE change: one `query-change`, one Apply.
+   * A hover is the page's, never the Query's: it is passed by.
+   * TRAP T-one-command-one-door · TRAP T-one-query-one-owner
+   */
+  ask(request: QueryRequest): void {
+    if (Array.isArray(request)) {
+      this.#batch(() => { for (const one of request as readonly QueryRequest[]) this.ask(one); });
+      return;
+    }
+    const one = request as Exclude<QueryRequest, readonly QueryRequest[]>;
+    const at = one.scope ?? VIEW;
+    if ('preview' in one) return;
+    if (isPureEdit(one)) this.#edit(one);
+    else if ('reset' in one) this.#reset([at], one.reset);
+    else if ('preset' in one) this.#setPreset(at, one.preset, one.on, !!one.commit);
+    else if ('reading' in one) this.#setReading(at, one.field, one.reading, one.only ? { only: one.only } : {});
+    else if ('solo' in one) this.#solo(at, one.solo, { across: !!one.across });
+    else if ('unsolo' in one) this.#batch(() => this.#unsolo());
+    else if ('page' in one || 'pageSize' in one) this.#page(one);
+    else if ('hold' in one) this.#hold(at, one.hold);
+    else if ('take' in one) this.#take(at, one.take, one.from);
+    else if ('release' in one) this.#release(at, one.release);
+    else if ('letGo' in one) this.#letGo(at, one.field, one.letGo);
+    else if ('discard' in one) this.#discard(applyAt(one));
+    else if ('suspended' in one) this.#suspend(at, 'field' in one ? one.field : null, one.suspended);
+    // Alone, `commit` is an Apply: one field, one scope, or every scope.
+    else {
+      this.#commit(applyAt(one));
+      return;
+    }
+    // A preset's own commit applies the fields it moved, and no more.
+    if ('commit' in one && one.commit && !('preset' in one)) this.#commit('field' in one ? { field: one.field } : { scope: at });
+  }
+
+  /** A page, or the rows per page, for the sources that draw a page in its scope —
+   *  or, with no scope or none drawing there, every source's. */
+  #page(edit: { scope?: string } & ({ page: number } | { pageSize: number })): void {
+    const { scope, ...at } = edit;
+    const owners = scope === undefined ? [] : [...this.#members].filter((m) => m.pagedIn(scope));
+    for (const member of owners.length ? owners : this.#members) member.page(at);
   }
 
   /** Does any member's store wait for Apply? */
@@ -374,7 +405,7 @@ export class QueryContext extends EventTarget {
   wait(scope: string, on = true): void {
     if (on === this.#waiting.has(scope)) return;
     if (!on) {
-      this.commit({ scope });
+      this.#commit({ scope });
       this.#waiting.delete(scope);
       if (!this.#waiting.size && !this.remote) this.#live.draft = this.#live.applied;
       // Told AFTER: the commit's drawing still said it waits. TODO 436
@@ -619,7 +650,7 @@ export class QueryContext extends EventTarget {
       this.#tell({ kind: 'recompose' });
     }
     // The Switch is its scope's Apply, remote too.
-    this.commit({ scope });
+    this.#commit({ scope });
     this.#tell({ kind: 'drawn', fields, bars: scope });
     // Its sort and group go off and on with it: the rows are arranged again. Will, TODO 398
     if (entry.sort?.length || entry.group) this.#tell({ kind: 'arranged', group: !!entry.group });
@@ -631,7 +662,7 @@ export class QueryContext extends EventTarget {
    * reading back; a field already so changes nothing.
    * TRAP T-the-filter-switch-keeps-what-it-turned-off · TRAP T-grid-suspend-is-not-clear
    */
-  suspend(scope: string, field: string | null, off: boolean): void {
+  #suspend(scope: string, field: string | null, off: boolean): void {
     if (field === null) {
       this.#suspendScope(scope, off);
       return;
@@ -656,11 +687,11 @@ export class QueryContext extends EventTarget {
 
   /** The filter soloed in this tab, and every answer the solo switched off. Never
    *  saved, never exported. Will, TODO 690 */
-  #solo: { scope: string; field: string; off: { scope: string; field: string }[] } | null = null;
+  #soloing: { scope: string; field: string; off: { scope: string; field: string }[] } | null = null;
 
   /** The filter soloed in this tab, if one is. */
   get soloed(): { scope: string; field: string } | null {
-    return this.#solo ? { scope: this.#solo.scope, field: this.#solo.field } : null;
+    return this.#soloing ? { scope: this.#soloing.scope, field: this.#soloing.field } : null;
   }
 
   /**
@@ -669,8 +700,8 @@ export class QueryContext extends EventTarget {
    * as the Switch is. A second solo moves it. Will, TODO 690
    * TRAP T-a-solo-is-a-draft-of-one-tab
    */
-  solo(scope: string, field: string, options: { across?: boolean } = {}): void {
-    this.batch(() => {
+  #solo(scope: string, field: string, options: { across?: boolean } = {}): void {
+    this.#batch(() => {
       this.#unsolo();
       const draft = this.#live.draft;
       const off: { scope: string; field: string }[] = [];
@@ -691,22 +722,17 @@ export class QueryContext extends EventTarget {
         const { suspended: _off, ...on } = own;
         this.#select(field, own.picked ?? [], on);
       }
-      this.#solo = { scope, field, off };
-      this.#soloSaid(this.#solo);
+      this.#soloing = { scope, field, off };
+      this.#soloSaid(this.#soloing);
     });
   }
 
   /** End the solo: ONLY what it switched off comes back on — less any the reader
-   *  turned on meanwhile. Will, TODO 690 */
-  unsolo(): void {
-    this.batch(() => this.#unsolo());
-  }
-
-  /** End the solo, inside a batch. */
+   *  turned on meanwhile. Inside a batch. Will, TODO 690 */
   #unsolo(): void {
-    const solo = this.#solo;
+    const solo = this.#soloing;
     if (!solo) return;
-    this.#solo = null;
+    this.#soloing = null;
     for (const { field } of solo.off) {
       const held = readingOf(this.#live.draft, field);
       if (!held?.suspended) continue;
@@ -719,13 +745,13 @@ export class QueryContext extends EventTarget {
   /** A solo applied, and every bar it reaches drawn again: each its own scope. */
   #soloSaid(solo: { scope: string; field: string; off: { scope: string; field: string }[] }): void {
     const scopes = new Set([solo.scope, ...solo.off.map((o) => o.scope)]);
-    for (const id of scopes) this.commit({ scope: id });
+    for (const id of scopes) this.#commit({ scope: id });
     this.#tell({ kind: 'drawn', fields: [solo.field, ...solo.off.map((o) => o.field)] });
     for (const id of scopes) this.#tell({ kind: 'bars', scope: id });
   }
 
   /** Say what a scope holds now. An empty list forgets the scope. */
-  hold(name: string, fields: readonly string[]): void {
+  #hold(name: string, fields: readonly string[]): void {
     const next = [...fields];
     const before = this.#live.draft.scopes[name]?.holds ?? [];
     // A no-op must not wake every listener — a bar re-renders on this.
@@ -765,22 +791,6 @@ export class QueryContext extends EventTarget {
     this.#tell({ kind: 'hold', scope: name, moved });
   }
 
-  /** Put some of a scope's fields in this order, in the places they hold; the
-   *  rest keep theirs. A reader dragged one. Will, TODO 452 */
-  order(name: string, fields: readonly string[]): void {
-    const holds = this.scope(name);
-    const named = new Set(fields.filter((f) => holds.includes(f)));
-    const next = [...named];
-    const ordered = holds.map((f) => (named.has(f) ? next.shift()! : f));
-    if (ordered.every((f, i) => f === holds[i])) return;
-    // In both copies: an order is no answer to Apply.
-    for (const query of new Set([this.#live.applied, this.#live.draft])) {
-      const entry = query.scopes[name];
-      if (entry) entry.holds = ordered.filter((f) => entry.holds.includes(f));
-    }
-    this.#tell({ kind: 'order', scope: name });
-  }
-
   /** The View let go of a field: its home below gets back the answer it kept
    *  — or clears, for `{}` — and no scope keeps one for it now. */
   #giveBack(field: string): void {
@@ -796,42 +806,15 @@ export class QueryContext extends EventTarget {
     }
   }
 
-  /**
-   * Move a filter between scopes — ONE call, because the removal is not
-   * optional: two `hold()`s could be interrupted between them.
-   * RAISED to the view, it leaves EVERY component; LOWERED, it leaves the view
-   * and lands in one component. Returns whether it moved; a component that
-   * does not have the field refuses, and says so.
-   */
-  move(field: string, from: string, to: string): boolean {
-    if (!this.canHold(to, field)) {
-      report({
-        code: 'scope-refused',
-        message: 'move: a component scope may hold only its own fields.',
-        at: { field, from, to, offers: (this.#live.offers.get(to) ?? []).join(',') },
-      });
-      return false;
-    }
-    const was = homes(this.#live.draft);
-    const scopes = moveHold(this.#live.draft, field, from, to);
-    rehome(this.#live.draft);
-    // An answer that moved narrows from where it lives now, at once. TRAP T-up-is-open-down-is-closed
-    const now = homes(this.#live.draft);
-    const moved = [...now].filter(([f, home]) => was.get(f) !== home).map(([f]) => f);
-    this.#carry(moved);
-    this.#tell({ kind: 'move', scopes, moved: moved.length > 0 });
-    return true;
-  }
-
   /** A scope lets ONE field go. */
-  release(scope: string, id: string): void {
-    this.hold(scope, this.scope(scope).filter((f) => f !== id));
+  #release(scope: string, id: string): void {
+    this.#hold(scope, this.scope(scope).filter((f) => f !== id));
     this.#tell({ kind: 'bars', scope });
   }
 
   /** A scope TAKES fields — sent DOWN from the View to the one scope named,
    *  or UP from a chart with its answer. TRAP T-send-to-view-filters */
-  take(scope: string, ids: readonly string[], from?: string): void {
+  #take(scope: string, ids: readonly string[], from?: string): void {
     if (from === VIEW && scope !== VIEW) {
       for (const id of ids) this.#lower(id, scope);
       return;
@@ -844,7 +827,7 @@ export class QueryContext extends EventTarget {
     if (part && answer && from && ids.includes(part.field)) {
       this.#write(from, part.field, undefined);
       this.#select(part.field, answer.picked ?? [], answer);
-      this.commit();
+      this.#commit();
       this.#tell({ kind: 'bars', scope });
     }
   }
@@ -852,7 +835,7 @@ export class QueryContext extends EventTarget {
   /** A scope holds each of these fields. */
   #holdEach(scope: string, ids: readonly string[]): void {
     const fields = ids.filter((id) => !this.holds(scope, id));
-    if (fields.length) this.hold(scope, [...this.scope(scope), ...fields]);
+    if (fields.length) this.#hold(scope, [...this.scope(scope), ...fields]);
     this.#tell({ kind: 'bars', scope });
   }
 
@@ -873,19 +856,19 @@ export class QueryContext extends EventTarget {
        Will, TODO 168. TRAP T-send-to-view-filters */
     for (const [id, scope] of eachScope(this.#live.draft)) {
       if (id === VIEW || id === to || !scope.holds.includes(field)) continue;
-      this.hold(id, scope.holds.filter((f) => f !== field));
+      this.#hold(id, scope.holds.filter((f) => f !== field));
       this.#tell({ kind: 'bars', scope: id });
     }
     // Held BELOW first, so the answer moves there and is not cleared.
-    if (!part && !this.holds(to, field)) this.hold(to, [...this.scope(to), field]);
+    if (!part && !this.holds(to, field)) this.#hold(to, [...this.scope(to), field]);
     /* THE VIEW'S ANSWER WINS, whole — its mode and its rows: what a scope kept
        from before the field went up is dropped. TRAP T-send-to-view-filters */
     for (const [, s] of eachScope(this.#live.draft)) forget(s, field);
-    this.hold(VIEW, this.scope(VIEW).filter((f) => f !== field));
+    this.#hold(VIEW, this.scope(VIEW).filter((f) => f !== field));
     // A chart's own scope takes the picks; the View's answer went with its hold.
     if (part) this.#write(to, field, answer?.picked?.length ? { picked: [...answer.picked] } : undefined);
     this.#setCameFrom(field, undefined);
-    this.commit();
+    this.#commit();
     this.#tell({ kind: 'bars', scope: VIEW });
     if (!part) this.#tell({ kind: 'bars', scope: to });
   }
@@ -898,7 +881,7 @@ export class QueryContext extends EventTarget {
    * it is not given. The answer already in force changes nothing and tells no
    * one. `null` clears it. 366 step 18 · TRAP T-one-query-one-owner
    */
-  setReading(scope: string, field: string, reading: FieldReading | null, at: { only?: BoundControl } = {}): void {
+  #setReading(scope: string, field: string, reading: FieldReading | null, at: { only?: BoundControl } = {}): void {
     if (at.only || this.#live.parts.has(scope) || this.#live.draft.scopes[scope]?.narrows?.length) {
       const next = reading && readingAnswered(reading) ? reading : undefined;
       if (sameReading(this.#live.draft.scopes[scope]?.readings[field], next)) return;
@@ -907,7 +890,7 @@ export class QueryContext extends EventTarget {
     }
     // A heading's answer to a field no scope holds is held in its grid's scope, and its bar draws the chip. TRAP T-a-heading-asks-through-the-source
     const fresh = !!reading && scope !== VIEW && !this.scopeOf(field) && this.canHold(scope, field);
-    if (fresh) this.hold(scope, [...this.scope(scope), field]);
+    if (fresh) this.#hold(scope, [...this.scope(scope), field]);
     const picked = reading?.picked ?? [];
     const next = this.#keepPresets(field, this.#raw(field, picked, reading ?? {}));
     if (!sameReading(readingOf(this.#live.draft, field), readingAnswered(next) ? next : undefined)) this.#select(field, picked, reading ?? {});
@@ -920,7 +903,7 @@ export class QueryContext extends EventTarget {
    * already. A draft follows only while it is still the applied answer: one the
    * reader changed is theirs. Will, TODO 512 (A); 518 · TRAP T-a-ruled-out-value-is-greyed
    */
-  letGo(scope: string, field: string, keys: readonly string[]): void {
+  #letGo(scope: string, field: string, keys: readonly string[]): void {
     const { applied, draft } = this.#live;
     const was = applied.scopes[scope]?.readings[field];
     const kept = was?.picked?.filter((v) => !keys.includes(valueKey(v)));
@@ -976,11 +959,11 @@ export class QueryContext extends EventTarget {
    * takes them off. Its on is read from the fields. With `commit`, the fields it
    * moved are applied at once. Will, TODOs 510 (A), 521, 526, 590 · TRAP T-a-preset-is-its-own-part
    */
-  setPreset(scope: string, id: string, on: boolean, commit = false): void {
+  #setPreset(scope: string, id: string, on: boolean, commit = false): void {
     const preset = this.#presets.get(scope)?.get(id);
     // Off goes on: a field suspended reads it off, and still holds its rows.
     if (!preset || (on && this.presetOn(scope, id))) return;
-    this.batch(() => {
+    this.#batch(() => {
       const moved: string[] = [];
       for (const [field, given] of Object.entries(preset.readings)) {
         const tree = answerTree(given);
@@ -995,7 +978,7 @@ export class QueryContext extends EventTarget {
         this.#tell({ kind: 'select', field });
         moved.push(field);
       }
-      if (commit) for (const field of moved) this.commit({ field });
+      if (commit) for (const field of moved) this.#commit({ field });
     });
     this.#tell({ kind: 'preset', scope });
   }
@@ -1004,10 +987,10 @@ export class QueryContext extends EventTarget {
    *  carry-over field's stays, with `carry` — and what a Switch turned off is
    *  forgotten; `organise` clears their sort and group too. The one door that
    *  clears what it does not name. TRAP T-a-field-can-carry-over-views */
-  reset(scopes: readonly string[], options: { carry?: boolean; organise?: boolean } = {}): void {
-    this.batch(() => {
+  #reset(scopes: readonly string[], options: { carry?: boolean; organise?: boolean } = {}): void {
+    this.#batch(() => {
       // A Reset ends a solo: what it switched off is cleared with the rest.
-      this.#solo = null;
+      this.#soloing = null;
       for (const id of scopes) {
         const s = this.#live.draft.scopes[id];
         if (!s) continue;
@@ -1030,19 +1013,20 @@ export class QueryContext extends EventTarget {
       // The arrangement in a scope it resets, never another source's. TODO 523 S3
       const { scope } = arrangementOf(this.#live.applied, (id) => scopes.includes(id));
       if (options.organise && scope) {
-        this.clearSort(scope);
-        this.setGroup(null, scope);
+        // The rows' own, a slot's too: its chart's are below.
+        this.#edit({ scope, sort: null, clear: true }, false);
+        this.#edit({ scope, group: null }, false);
       }
       // …and a SLOT's own Group and Sort, its chart's. TODO 548
       for (const id of options.organise ? scopes : []) {
         const shown = this.presentation(id);
-        if (shown.group || shown.sort) this.present(id, { group: undefined, sort: undefined });
+        if (shown.group || shown.sort) this.#edit({ scope: id, presentation: { group: undefined, sort: undefined } });
       }
     });
   }
 
   /** The doors one act calls are ONE change to the page: one `query-change`. */
-  batch(fn: () => void): void {
+  #batch(fn: () => void): void {
     if (this.#batched) {
       fn();
       return;
@@ -1064,7 +1048,7 @@ export class QueryContext extends EventTarget {
   }
 
   /** SEND the draft — Apply, where a scope waits. One field, one scope, or all. It loads. */
-  commit(at: { scope?: string; field?: string } = {}): void {
+  #commit(at: { scope?: string; field?: string } = {}): void {
     if (!this.waiting()) return;
     if (this.#batched) this.#applies.push(at);
     else if (this.#send(at)) this.#tell({ kind: 'commit' });
@@ -1084,7 +1068,7 @@ export class QueryContext extends EventTarget {
 
   /** Put the applied answers back over the draft — Discard, where a scope waits.
    *  One field, one scope, or all. Every control over them is drawn the applied answer. */
-  discard(at: { scope?: string; field?: string } = {}): void {
+  #discard(at: { scope?: string; field?: string } = {}): void {
     if (!this.waiting()) return;
     const before = new Set(this.#answered());
     if (at.field) copyField(this.#live.applied, this.#live.draft, at.field);
@@ -1094,44 +1078,62 @@ export class QueryContext extends EventTarget {
   }
 
   /**
-   * Order by one field, or stop. Every re-ordering returns to page 1.
-   * `field: null` SUSPENDS — the column moves to `sortSuspended`, so one more
-   * click resumes it. `clearSort()` is how a caller forgets.
-   * TRAP T-a-suspended-sort-is-one-owners-job
+   * A PURE edit — a Sort, Group or Search, a presentation, an order, a move —
+   * written over the copies it reaches: the arrangement, a presentation and an
+   * order in BOTH, since no Apply waits on them; a move in the draft. Every
+   * re-arranging returns to page 1. TRAP T-one-command-one-door
    */
-  setSort(field: string | null, direction: SortDirection = 'asc', scope?: string): void {
-    if (field) this.#arrange({ sort: [{ field, direction }], sortSuspended: undefined }, scope);
-    else {
-      // A second suspend in a row must not overwrite the memory with nothing.
-      const live = this.#arrangedFor(scope).sort[0];
-      this.#arrange({ sort: [], ...(live ? { sortSuspended: live } : {}) }, scope);
+  #edit(edit: PureEdit, slots = true): void {
+    const { applied, draft } = this.#live;
+    const facts: EditFacts = { ...(slots ? { presents: (scope: string) => this.#presents(scope) } : {}), theirs: this.#theirs(edit.scope), applied, draft };
+    const routed = slotted(edit, facts.presents);
+    if ('move' in routed) return this.#move(routed, facts);
+    const next = editQuery(draft, routed, facts);
+    const was = 'order' in routed ? draft.scopes[routed.scope ?? VIEW]?.holds ?? [] : null;
+    const now = next.scopes[routed.scope ?? VIEW]?.holds ?? [];
+    // An order that moves nothing must not wake every listener.
+    if (was && was.length === now.length && was.every((f, i) => f === now[i])) return;
+    this.#live.applied = draft === applied ? next : editQuery(applied, routed, facts);
+    this.#live.draft = next;
+    const scope = routed.scope ?? VIEW;
+    this.#tell('presentation' in routed ? { kind: 'presented', scope }
+      : 'order' in routed ? { kind: 'order', scope } : { kind: 'arranged', group: 'group' in routed });
+  }
+
+  /**
+   * MOVE a filter between scopes — ONE edit, because the removal is not
+   * optional. RAISED to the view, it leaves EVERY component; LOWERED, it leaves
+   * the view and lands in one. A component that does not have the field refuses,
+   * and says so. An answer that moved narrows from where it lives now, at once.
+   * TRAP T-up-is-open-down-is-closed
+   */
+  #move(edit: Extract<PureEdit, { move: unknown }>, facts: EditFacts): void {
+    const to = edit.scope ?? VIEW;
+    const field = edit.move;
+    if (!this.canHold(to, field)) {
+      report({
+        code: 'scope-refused',
+        message: 'move: a component scope may hold only its own fields.',
+        at: { field, from: edit.from, to, offers: (this.#live.offers.get(to) ?? []).join(',') },
+      });
+      return;
     }
-    this.#tell({ kind: 'arranged', group: false });
+    const { draft, applied } = this.#live;
+    const was = homes(draft);
+    const next = editQuery(draft, edit, facts);
+    const scopes = [...new Set([to, ...Object.keys({ ...draft.scopes, ...next.scopes }).filter((id) =>
+      (draft.scopes[id]?.holds ?? []).join() !== (next.scopes[id]?.holds ?? []).join())])];
+    this.#live.draft = next;
+    if (draft === applied) this.#live.applied = next;
+    const now = homes(next);
+    const moved = [...now].filter(([f, home]) => was.get(f) !== home).map(([f]) => f);
+    this.#carry(moved);
+    this.#tell({ kind: 'move', scopes, moved: moved.length > 0 });
   }
 
-  /** Resume the suspended sort — the scope's source's. No-op when there is none. */
-  resumeSort(scope?: string): void {
-    const held = this.#arrangedFor(scope).sortSuspended;
-    if (!held) return;
-    this.setSort(held.field, held.direction ?? 'asc', scope);
-  }
-
-  /** Forget the sort entirely — the gesture that is NOT a suspend. */
-  clearSort(scope?: string): void {
-    this.#arrange({ sort: [], sortSuspended: undefined }, scope);
-    this.#tell({ kind: 'arranged', group: false });
-  }
-
-  /** The arrangement of the source that draws in `scope`: another's is not read. TODO 523 S3 */
-  #arrangedFor(scope?: string): Arrangement {
-    const theirs = this.#theirs(scope);
-    return arrangementOf(this.#live.applied, (id) => !theirs(id));
-  }
-
-  /** Group by a field, or stop. A grid draws it; the Query holds it. */
-  setGroup(field: string | null, scope?: string): void {
-    this.#arrange({ group: field }, scope);
-    this.#tell({ kind: 'arranged', group: true });
+  /** Is this scope a SLOT — does a member's chart draw a summary in it? TODO 548 */
+  #presents(scope: string): boolean {
+    return [...this.#members].some((m) => m.presentsIn(scope));
   }
 
   /** A slot's presentation, as kept: a copy; none, an empty one. TODO 548 */
@@ -1206,27 +1208,6 @@ export class QueryContext extends EventTarget {
   /** Each slot's definition. */
   readonly #defined = new Map<string, PresentationDefinition>();
 
-  /** Change a slot's presentation, at once in BOTH copies — it filters nothing, so
-   *  no Apply waits. A key given `undefined` goes back to the definition. Will, TODO 548 */
-  present(scope: string, patch: Partial<Record<keyof Presentation, string | undefined>>): void {
-    for (const query of new Set([this.#live.applied, this.#live.draft])) {
-      const entry = scopeEntry(query, scope);
-      const merged: Record<string, unknown> = { ...entry.presentation, ...patch };
-      const next = Object.fromEntries(Object.entries(merged).filter(([, value]) => value != null && value !== ''));
-      if (Object.keys(next).length) entry.presentation = next as Presentation;
-      else delete entry.presentation;
-    }
-    prune(this.#live.applied);
-    if (this.#live.draft !== this.#live.applied) prune(this.#live.draft);
-    this.#tell({ kind: 'presented', scope });
-  }
-
-  /** The rows' free-text search, with the arrangement. */
-  setSearch(term: string, scope?: string): void {
-    this.#arrange({ search: term }, scope);
-    this.#tell({ kind: 'arranged', group: false });
-  }
-
   /**
    * Restore a whole Query — a reload, a trip away and back, a View's own
    * defaults. Resolves once every member has drawn it.
@@ -1245,7 +1226,7 @@ export class QueryContext extends EventTarget {
       return;
     }
     // A whole Query put in — a View, a draft — ends a solo. TODO 690
-    this.#solo = null;
+    this.#soloing = null;
     const next = definitionOf(query, options.holds === 'keep', this.#live.draft, {
       defaults: this.#live.defaults,
       starts: this.#live.starts,
@@ -1300,7 +1281,7 @@ export class QueryContext extends EventTarget {
   export(): QueryState {
     const query = structuredClone(this.#live.applied);
     // A solo is this tab's draft: what it switched off is saved on. TODO 690
-    for (const { scope, field } of this.#solo?.off ?? []) {
+    for (const { scope, field } of this.#soloing?.off ?? []) {
       const reading = query.scopes[scope]?.readings[field];
       if (reading?.suspended) delete reading.suspended;
     }
@@ -1316,33 +1297,6 @@ export class QueryContext extends EventTarget {
       return;
     }
     await this.setQuery(state.query);
-  }
-
-  /** Write the arrangement into the Query, in BOTH copies: the scope given,
-   *  else the one that arranges now, else the View; every other scope loses
-   *  it. It compiles nothing. 366 step 8 · TRAP T-group-and-sort-are-component-scope */
-  #arrange(next: ArrangeEdit, scope?: string): void {
-    /* ONE arranging scope per SOURCE: a scope another source draws a page in
-       keeps its own. With one source, every scope is its. 366 step 25 */
-    const theirs = this.#theirs(scope);
-    // What a Switch keeps off is kept through this write too. TODO 612
-    const now = arrangementOf(this.#live.applied, (id) => !theirs(id), true);
-    const at = scope ?? now.scope ?? VIEW;
-    const sort = next.sort ?? now.sort;
-    const group = 'group' in next ? next.group ?? null : now.group;
-    const sortSuspended = 'sortSuspended' in next ? next.sortSuspended : now.sortSuspended;
-    const search = next.search ?? now.search;
-    for (const query of new Set([this.#live.applied, this.#live.draft])) {
-      for (const [id, s] of Object.entries(query.scopes)) {
-        if (!theirs(id)) stripArrangement(s);
-      }
-      if (!sort.length && group == null && !sortSuspended && !search) continue;
-      const s = scopeEntry(query, at);
-      s.sort = sort.map((by) => ({ ...by }));
-      if (group != null) s.group = group;
-      if (sortSuspended) s.sortSuspended = { ...sortSuspended };
-      if (search) s.search = search;
-    }
   }
 
   /** A reader's answer replaces the answer, never what presets hold of the field. TODO 521 */

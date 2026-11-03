@@ -148,7 +148,7 @@ test('drawGraph tells its host each edit â€” a select picked, a switch flipped â
   expect(r).toEqual({ heard: [['c', 'op', 'ne'], ['c', 'on', false]], fixed: true });
 });
 
-test('bindQueryEditor ASKS the Query through a chip\'s doors: a reading, the Switch, Group', async ({ page }) => {
+test('bindQueryEditor ASKS the Query through its one door, as a chip does: a reading, the Switch, Group', async ({ page }) => {
   await page.evaluate(async () => {
     const { bindQueryEditor } = await import('/dist/app.js');
     const { readingsOf } = await import('/dist/data.js');
@@ -160,10 +160,7 @@ test('bindQueryEditor ASKS the Query through a chip\'s doors: a reading, the Swi
         view: { holds: ['region'], readings: readingsOf({ region: { in: ['EMEA', 'APAC'] } }) },
         data: { holds: ['status'], readings: {}, sort: [{ field: 'name', direction: 'asc' }] },
       } },
-      setReading: (scope: string, field: string, reading: unknown) => asked.push(['setReading', scope, field, reading]),
-      suspend: (scope: string, field: string | null, on: boolean) => asked.push(['suspend', scope, field, on]),
-      setGroup: (field: string | null, scope: string) => asked.push(['setGroup', field, scope]),
-      setSort: (field: string | null, direction: string, scope: string) => asked.push(['setSort', field, direction, scope]),
+      ask: (request: unknown) => asked.push(request),
     });
     const definition = { v: 1 as const, id: 'records', source: { store: 'customers', fields: { name: { label: 'Name' }, plan: { label: 'Plan' } } } };
     bindQueryEditor(canvas, { query } as never, { definition });
@@ -174,14 +171,14 @@ test('bindQueryEditor ASKS the Query through a chip\'s doors: a reading, the Swi
   await page.locator('#root sherpa-node-row sherpa-switch .track').first().click();
   const r = await page.evaluate(async () => {
     const { whereOf } = await import('/dist/data.js');
-    const asked = (window as unknown as { asked: unknown[][] }).asked;
+    const asked = (window as unknown as { asked: Record<string, unknown>[] }).asked;
     // A reading reads back as the plain condition it says.
-    return asked.map((a) => (a[0] === 'setReading' ? [a[0], a[1], a[2], whereOf({ [a[2] as string]: a[3] as never })[a[2] as string]] : a));
+    return asked.map((a) => ('reading' in a ? { ...a, reading: whereOf({ [a['field'] as string]: a['reading'] as never })[a['field'] as string] } : a));
   });
   expect(r).toEqual([
-    ['setReading', 'view', 'region', { notin: ['EMEA', 'APAC'] }],
-    ['setGroup', 'plan', 'data'],
-    ['suspend', 'view', null, true],
+    { scope: 'view', field: 'region', reading: { notin: ['EMEA', 'APAC'] } },
+    { scope: 'data', group: 'plan' },
+    { scope: 'view', suspended: true },
   ]);
 });
 
@@ -277,7 +274,7 @@ test('a drag from an OUTPUT socket draws a new route: let go on an input socket,
   expect(r).toEqual({ asked: [{ from: 'a', to: 'b/x' }], drafts: 0, after: before });
 });
 
-test('a condition dragged into the same field of another scope MOVES there, as one change through a chip\'s doors', async ({ page }) => {
+test('a condition dragged into the same field of another scope MOVES there, as one change through the one door', async ({ page }) => {
   await page.evaluate(async () => {
     const { bindQueryEditor } = await import('/dist/app.js');
     const { readingsOf } = await import('/dist/data.js');
@@ -289,8 +286,7 @@ test('a condition dragged into the same field of another scope MOVES there, as o
         view: { holds: ['region'], readings: readingsOf({ region: { in: ['EMEA'] } }) },
         data: { holds: ['region'], readings: {} },
       } },
-      batch: (fn: () => void) => { asked.push('batch'); fn(); },
-      setReading: (scope: string, field: string, reading: unknown) => asked.push([scope, field, reading === null ? null : 'reading']),
+      ask: (request: { scope: string; field: string; reading: unknown }[]) => asked.push(request.map(({ scope, field, reading }) => [scope, field, reading === null ? null : 'reading'])),
     });
     bindQueryEditor(canvas, { query } as never, { definition: { v: 1 as const, id: 'records', source: { store: 'customers' } } });
     await window.__settled();
@@ -302,7 +298,7 @@ test('a condition dragged into the same field of another scope MOVES there, as o
   await page.mouse.down();
   await page.mouse.move(bx, by, { steps: 6 });
   await page.mouse.up();
-  expect(await page.evaluate(() => (window as unknown as { asked: unknown[] }).asked)).toEqual(['batch', ['view', 'region', null], ['data', 'region', 'reading']]);
+  expect(await page.evaluate(() => (window as unknown as { asked: unknown[] }).asked)).toEqual([[['view', 'region', null], ['data', 'region', 'reading']]]);
 });
 
 test('a condition dragged onto a field none of its values fit is REFUSED, and says why: nothing moves', async ({ page }) => {
@@ -315,8 +311,7 @@ test('a condition dragged onto a field none of its values fit is REFUSED, and sa
     onReport((r) => asked.push(r.code));
     const query = Object.assign(new EventTarget(), {
       draft: { v: 1, scopes: { view: { holds: ['status', 'plan'], readings: readingsOf({ status: { in: ['trial'] } }) } } },
-      batch: (fn: () => void) => { asked.push('batch'); fn(); },
-      setReading: (scope: string, field: string) => asked.push([scope, field]),
+      ask: (request: unknown) => asked.push(request),
     });
     const values = (field: string) => (field === 'status' ? ['trial', 'active'] : ['Free', 'Pro']);
     bindQueryEditor(canvas, { query } as never, { definition: { v: 1 as const, id: 'records', source: { store: 'customers' } }, values });

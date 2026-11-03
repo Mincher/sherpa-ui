@@ -434,7 +434,7 @@ component repeats.** The method's own signature already used that word
 - the template **ATTRIBUTES** (`data-text`, `data-icon`, `data-attr-*`,
   `data-when-*`) were already presentation-free
 - `populate(data: unknown)` was already shape-agnostic
-- `DataSource`'s `rows`, `setSort`, `setPage` are **query** words, not UI words.
+- `DataSource`'s `rows`, and the Query's `sort` and `page`, are **query** words, not UI words.
   A `Row` there is a RECORD — a chart has rows of data and draws none
 
 So the leak was narrow: the base class's own vocabulary, and nothing else. A

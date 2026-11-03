@@ -56,11 +56,11 @@ test('a bound filter pick draws the body at most twice, and makes no heading cel
     source.declareValues('status', ['active', 'trial']);
     source.declareValues('region', ['EMEA', 'APAC']);
     bindSource(source, grid, { scope: 'view', as: (r) => ({ columns, rows: r }) });
-    source.query.setReading('view', 'region', { picked: ['EMEA'] });
+    source.query.ask({ scope: 'view', field: 'region', reading: { picked: ['EMEA'] } });
     await source.load();
     await settle();
     const seen = count();
-    source.query.setReading('view', 'status', { picked: ['active'] });
+    source.query.ask({ scope: 'view', field: 'status', reading: { picked: ['active'] } });
     await settle();
     return { ...seen, total: source.total };
   })()`) as { total: number; body: number; heads: number };
@@ -126,11 +126,11 @@ test('a pick, a sort and a page make no new heading component', async ({ page })
     };
     const head = () => all(grid.shadowRoot.querySelector('.head-row'));
     const before = new Set(head());
-    source.query.setReading('view', 'status', { picked: ['active'] });
+    source.query.ask({ scope: 'view', field: 'status', reading: { picked: ['active'] } });
     await settle();
-    source.query.setSort('name', 'desc');
+    source.query.ask({ sort: 'name', direction: 'desc' });
     await settle();
-    source.setPage(2);
+    source.query.ask({ page: 2 });
     await settle();
     // Plain picks only: a menu's condition rows are its own to make.
     return { kept: before.size > 0, fresh: head().filter((el) => !before.has(el)).length, total: source.total };
@@ -157,7 +157,7 @@ test('an open heading menu survives a push, with its search and its draft', asyn
     if (search) search.value = 'act';
     menu.values = ['active'];
     // Another control changes ANOTHER field: the rows move, the heading is pushed.
-    source.query.setReading('view', 'region', { picked: ['EMEA'] });
+    source.query.ask({ scope: 'view', field: 'region', reading: { picked: ['EMEA'] } });
     await settle();
     const now = grid.shadowRoot.querySelector('.head-cell[data-field="status"] sherpa-menu');
     return { same: now === menu, open: !!menu.open, search: search ? search.value : 'none', draft: menu.values, total: source.total };
@@ -174,7 +174,7 @@ for (const how of ['remove'] as const) {
       const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
       source.declareValues('status', ['active', 'trial']);
       bindSource(source, grid, { scope: 'view', as: (r) => ({ columns, rows: r }) });
-      source.query.setReading('view', 'status', { picked: ['active'] });
+      source.query.ask({ scope: 'view', field: 'status', reading: { picked: ['active'] } });
       await source.load();
       await settle();
       window.__source = source;

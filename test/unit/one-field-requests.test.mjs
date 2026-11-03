@@ -24,73 +24,73 @@ const make = () => {
 
 test('setReading lands at the field\'s home; the same answer again is a no-op', async () => {
   const { query, source, told } = make();
-  query.hold('data', ['plan']);
+  query.ask({ scope: 'data', hold: ['plan'] });
   told.length = 0;
-  query.setReading(VIEW, 'plan', { picked: ['Pro'] });
+  query.ask({ scope: VIEW, field: 'plan', reading: { picked: ['Pro'] } });
   assert.deepEqual(query.reading('data', 'plan').picked, ['Pro'], 'at its home, wherever it was asked');
   assert.equal(told.length, 1);
-  query.setReading(VIEW, 'plan', { picked: ['Pro'] });
+  query.ask({ scope: VIEW, field: 'plan', reading: { picked: ['Pro'] } });
   assert.equal(told.length, 1, 'the same answer: no change, no event');
   await source.load();
   assert.deepEqual(source.rows.map((r) => r.id), [1, 3]);
-  query.setReading(VIEW, 'plan', null);
+  query.ask({ scope: VIEW, field: 'plan', reading: null });
   assert.equal(query.reading('data', 'plan'), undefined, 'null clears it');
 });
 
 test('a field no scope holds is held where it is asked, when that scope may hold it', () => {
   const { query } = make();
   query.offer('data', ['status']);
-  query.setReading('data', 'status', { picked: ['trial'] });
+  query.ask({ scope: 'data', field: 'status', reading: { picked: ['trial'] } });
   assert.deepEqual(query.scope('data'), ['status']);
   assert.deepEqual(query.reading('data', 'status').picked, ['trial']);
   // The View holds nothing it is not given.
-  query.setReading(VIEW, 'plan', { picked: ['Pro'] });
+  query.ask({ scope: VIEW, field: 'plan', reading: { picked: ['Pro'] } });
   assert.deepEqual(query.scope(VIEW), []);
 });
 
 test('suspend: off keeps the answer, and on gives the same reading back', () => {
   const { query, source } = make();
-  query.hold(VIEW, ['plan']);
-  query.setReading(VIEW, 'plan', { picked: ['Pro'] });
+  query.ask({ scope: VIEW, hold: ['plan'] });
+  query.ask({ scope: VIEW, field: 'plan', reading: { picked: ['Pro'] } });
   const on = query.reading(VIEW, 'plan');
-  query.suspend(VIEW, 'plan', true);
+  query.ask({ scope: VIEW, field: 'plan', suspended: true });
   assert.equal(query.reading(VIEW, 'plan').suspended, true);
   assert.equal(source.state.filter, undefined, 'off filters nothing');
-  query.suspend(VIEW, 'plan', false);
+  query.ask({ scope: VIEW, field: 'plan', suspended: false });
   assert.deepEqual(query.reading(VIEW, 'plan'), on);
   // The scope's Switch: every answer in it, off and back.
-  query.suspend(VIEW, null, true);
+  query.ask({ scope: VIEW, suspended: true });
   assert.deepEqual(query.applied.scopes[VIEW].suspended, { fields: ['plan'] });
-  query.suspend(VIEW, null, false);
+  query.ask({ scope: VIEW, suspended: false });
   assert.deepEqual(query.reading(VIEW, 'plan'), on);
 });
 
 test('take holds fields in a scope, as a request to add them does', () => {
   const { query } = make();
   query.offer('data', ['plan', 'status']);
-  query.take('data', ['plan', 'status']);
+  query.ask({ scope: 'data', take: ['plan', 'status'] });
   assert.deepEqual(query.scope('data'), ['plan', 'status']);
 });
 
 test('reset clears the answers homed in its scopes, and leaves the others alone', () => {
   const { query } = make();
-  query.hold(VIEW, ['plan']);
-  query.hold('data', ['status']);
-  query.setReading(VIEW, 'plan', { picked: ['Pro'] });
-  query.setReading('data', 'status', { picked: ['trial'] });
-  query.reset(['data']);
+  query.ask({ scope: VIEW, hold: ['plan'] });
+  query.ask({ scope: 'data', hold: ['status'] });
+  query.ask({ scope: VIEW, field: 'plan', reading: { picked: ['Pro'] } });
+  query.ask({ scope: 'data', field: 'status', reading: { picked: ['trial'] } });
+  query.ask({ scope: 'data', reset: {} });
   assert.equal(query.reading('data', 'status'), undefined);
   assert.deepEqual(query.reading(VIEW, 'plan').picked, ['Pro']);
   assert.deepEqual(query.scope('data'), ['status'], 'its chips stay');
 });
 
-test('batch: the doors called inside it are one query-change', () => {
+test('a list is ONE change: one query-change', () => {
   const { query, told } = make();
-  query.hold(VIEW, ['plan', 'status']);
+  query.ask({ scope: VIEW, hold: ['plan', 'status'] });
   told.length = 0;
-  query.batch(() => {
-    query.setReading(VIEW, 'plan', { picked: ['Pro'] });
-    query.setReading(VIEW, 'status', { picked: ['trial'] });
-  });
+  query.ask([
+    { scope: VIEW, field: 'plan', reading: { picked: ['Pro'] } },
+    { scope: VIEW, field: 'status', reading: { picked: ['trial'] } },
+  ]);
   assert.deepEqual(told, [{ fields: ['plan', 'status'], scopes: [] }]);
 });

@@ -17,19 +17,19 @@ test('present() keeps what differs, clears a key given nothing, and forgets an e
   const query = new QueryContext();
   const heard = [];
   query.addEventListener('query-change', (e) => heard.push(e.detail.scopes));
-  query.present('by-status', { group: 'plan', sort: 'desc' });
+  query.ask({ scope: 'by-status', presentation: { group: 'plan', sort: 'desc' } });
   assert.deepEqual(query.presentation('by-status'), { group: 'plan', sort: 'desc' });
   assert.deepEqual(heard.at(-1), ['by-status']);
-  query.present('by-status', { sort: undefined });
+  query.ask({ scope: 'by-status', presentation: { sort: undefined } });
   assert.deepEqual(query.presentation('by-status'), { group: 'plan' });
-  query.present('by-status', { group: undefined });
+  query.ask({ scope: 'by-status', presentation: { group: undefined } });
   assert.deepEqual(query.presentation('by-status'), {});
   assert.equal('by-status' in query.applied.scopes, false);
 });
 
 test('a presentation rides in the Query: export carries it, and a restore puts it back', async () => {
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
-  source.query.present('by-status', { kind: 'donut', secondary: 'status', group: 'plan' });
+  source.query.ask({ scope: 'by-status', presentation: { kind: 'donut', secondary: 'status', group: 'plan' } });
   const saved = source.query.export();
   assert.deepEqual(saved.query.scopes['by-status'].presentation, { kind: 'donut', secondary: 'status', group: 'plan' });
   const again = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
@@ -39,8 +39,8 @@ test('a presentation rides in the Query: export carries it, and a restore puts i
 
 test('it is not the row arrangement: a grid\'s sort stays, and the slot\'s group sorts no row', async () => {
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
-  source.query.setSort('status', 'desc', 'data');
-  source.query.present('by-status', { group: 'plan', sort: 'asc' });
+  source.query.ask({ scope: 'data', sort: 'status', direction: 'desc' });
+  source.query.ask({ scope: 'by-status', presentation: { group: 'plan', sort: 'asc' } });
   await source.load();
   assert.deepEqual(source.state.sort, [{ field: 'status', direction: 'desc' }]);
   assert.equal(source.state.group, null);
@@ -50,10 +50,10 @@ test('it is not the row arrangement: a grid\'s sort stays, and the slot\'s group
 test('a Secondary switched off is kept, and not shown — the definition\'s neither; on again, it is back (Will, TODO 666)', () => {
   const query = new QueryContext();
   query.declarePresentation('data', { grid: { secondary: 'plan' } });
-  query.present('data', { secondary: 'status', off: 'secondary' });
+  query.ask({ scope: 'data', presentation: { secondary: 'status', off: 'secondary' } });
   assert.deepEqual(query.presented('data', 'grid'), {});
   assert.deepEqual(query.presentation('data'), { secondary: 'status', off: 'secondary' });
-  query.present('data', { secondary: 'status', off: undefined });
+  query.ask({ scope: 'data', presentation: { secondary: 'status', off: undefined } });
   assert.deepEqual(query.presented('data', 'grid'), { secondary: 'status' });
 });
 
@@ -64,7 +64,7 @@ test('describe() names an off Secondary\'s field, so its chip keeps it (Will, TO
   source.query.offer('data', ['status', 'plan']);
   bindSource(source, Object.assign(new EventTarget(), { setAttribute() {}, removeAttribute() {}, hasAttribute: () => false, populate() {} }), { scope: 'data' });
   await source.load();
-  source.query.present('data', { secondary: 'plan', off: 'secondary' });
+  source.query.ask({ scope: 'data', presentation: { secondary: 'plan', off: 'secondary' } });
   const scope = source.describe('data');
   assert.equal(scope.secondaryField, undefined);
   assert.equal(scope.secondaryOff, 'plan');

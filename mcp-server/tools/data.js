@@ -363,9 +363,9 @@ export function register(server) {
           await source.load();
           /* PAGE COMES AFTER THE LOAD. `setPage` before the first `load()` is
              silently discarded — the page is a position in a result that does not
-             exist yet. `setPage` runs its own load, so await the settle. */
+             exist yet. A page asked runs its own load, so await the settle. */
           if (page > 1) {
-            source.setPage(page);
+            source.query.ask({ page });
             await new Promise((r) => setTimeout(r, 0));
           }
           result = source.result;
@@ -458,7 +458,7 @@ export function register(server) {
         lines.push(`const source = new DataSource({ store, pageSize: ${pageSize}${parsed.searchFields ? `, searchFields: ${JSON.stringify(parsed.searchFields)}` : ""} });`);
         lines.push(`await source.query.setQuery(${JSON.stringify({ v: 1, scopes: { view } })});`);
         lines.push(`await source.load();   // source.rows, source.total`);
-        if (actualPage > 1) lines.push(`source.setPage(${actualPage});`);
+        if (actualPage > 1) lines.push(`source.query.ask({ page: ${actualPage} });`);
         lines.push("```\n");
       }
       lines.push("This is the REAL data layer running in Node — the same code the browser runs, so what you see here is what a bound component gets.");

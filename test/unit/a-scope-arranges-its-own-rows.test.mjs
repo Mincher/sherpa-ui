@@ -105,7 +105,7 @@ test('only the scope that arranges is TOLD its sort: a bar over another scope is
   assert.equal(dataBar.attrs.get('data-sort-direction'), 'desc');
   assert.equal(viewBar.attrs.get('data-sort-field'), undefined);
   // Grouped from the View: now the View's alone.
-  source.query.setGroup('plan', 'view');
+  source.query.ask({ scope: 'view', group: 'plan' });
   await source.load();
   assert.equal(viewBar.attrs.get('data-group-field'), 'plan');
   assert.equal(dataBar.attrs.get('data-group-field'), undefined);

@@ -81,8 +81,8 @@ test('a source over it reads and filters as over its store', async () => {
   const source = new DataSource({ store });
   await source.load();
   assert.equal(source.debugState().total, 3);
-  source.query.hold(VIEW, ['team']);
-  source.query.setReading(VIEW, 'team', { picked: ['ops'] });
+  source.query.ask({ scope: VIEW, hold: ['team'] });
+  source.query.ask({ scope: VIEW, field: 'team', reading: { picked: ['ops'] } });
   await source.load();
   assert.deepEqual(source.rows.map((r) => r.name), ['Bo']);
 });

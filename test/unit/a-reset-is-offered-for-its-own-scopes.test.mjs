@@ -19,15 +19,15 @@ async function page() {
   source.declareField('plan', { label: 'Plan' });
   source.declareField('tier', { label: 'Tier' });
   bindSource(source, control(), { scope: 'data' });
-  source.query.hold(VIEW, ['plan']);
-  source.query.hold('data', ['tier']);
+  source.query.ask({ scope: VIEW, hold: ['plan'] });
+  source.query.ask({ scope: 'data', hold: ['tier'] });
   await source.load();
   return source;
 }
 
 test('a filter answers its own scope, and a list of scopes holding it', async () => {
   const source = await page();
-  source.query.setReading(VIEW, 'plan', { picked: ['Pro'] });
+  source.query.ask({ scope: VIEW, field: 'plan', reading: { picked: ['Pro'] } });
   await source.load();
   assert.equal(source.answered(), true);
   assert.equal(source.answered(VIEW), true);
@@ -38,7 +38,7 @@ test('a filter answers its own scope, and a list of scopes holding it', async ()
 
 test('a sort is its own scope\'s to reset, never another\'s', async () => {
   const source = await page();
-  source.query.setSort('tier', 'asc', 'data');
+  source.query.ask({ scope: 'data', sort: 'tier', direction: 'asc' });
   await source.load();
   assert.equal(source.answered('data'), true);
   assert.equal(source.answered(VIEW), false);

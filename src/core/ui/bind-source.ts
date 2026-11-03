@@ -9,14 +9,11 @@
  * - bindSource — Point a component at a source: rows and `data-*` down, steering events back.
  * - SteeringEvent — One of them.
  * - SteerBind — What steering needs of one binding: its scope, and where a hover goes.
- * - ask — A control's request, to its context's doors; a list is one change.
- * - steer — Turn one component's event into its source's call.
  */
 import { report } from '../data/report.js';
 import type { AttachFacts, BoundView, DataSource } from '../data/data-source.js';
 import type { FieldReading } from '../data/filter-state.js';
 import { VIEW, type Presentation, type QueryRequest } from '../data/query.js';
-import type { QueryContext } from '../data/query-context.js';
 import type { Row } from '../data/store.js';
 import type { Populatable } from './apply-state.js';
 
@@ -194,31 +191,101 @@ function mergeInto(el: Populatable, path: string, value: unknown): unknown {
   return host[DRAFT];
 }
 
+/** What a steering event knows of its binding: its scope, its source, its control, the event itself. */
+interface Steering {
+  detail: Record<string, unknown>;
+  /** The scope it names, else the one its binding names. TODO 99 */
+  scope: string | undefined;
+  bind: SteerBind | undefined;
+  source: DataSource;
+  el: Populatable;
+  event: CustomEvent;
+}
+
+/**
+ * THE ONE TABLE: each event a bound component may send UP, and the command it
+ * asks the Query (`QueryContext.ask`). Two are no edit — a report and a read — and
+ * say so. The event names are the components' own, public; only this map moves.
+ * TRAP T-steering-events-are-a-closed-list · TRAP T-one-command-one-door
+ */
+const STEERS = {
+  // In a slot, the Query makes it its chart's order. TODO 548. None: no sort at all, not one kept. TODO 407
+  'sort-change': ({ detail, scope }) => (detail['clear'] === true
+    ? { ...at(scope), sort: null, clear: true }
+    : { ...at(scope), sort: text(detail['field']) || null, direction: detail['direction'] === 'desc' ? 'desc' : 'asc' }),
+  'group-change': ({ detail, scope }) => ({ ...at(scope), group: text(detail['field']) || null }),
+  /* ONE READER ACT, AS A REQUEST, in its own scope or the bind's. An event with none
+     asks nothing; a hover goes to the page. TRAP T-a-control-sends-one-request */
+  'quick-filter-change': ({ detail, bind, el }) => {
+    const request = detail['request'] as QueryRequest | undefined;
+    if (!request) return undefined;
+    const bound = typeof bind?.scope === 'string' ? bind.scope : undefined;
+    // TODO 655 · TRAP T-a-hovered-chip-previews-the-highlight
+    if (!Array.isArray(request) && 'preview' in request) {
+      const scope = request.scope ?? bound;
+      if (scope) bind?.hover?.({ scope, field: request.field, on: request.preview, ...(request.value != null ? { value: request.value } : {}) });
+      return undefined;
+    }
+    if (bound || hasScope(request)) return scoped(request, bound ?? VIEW);
+    reportUnscoped(el);
+    return undefined;
+  },
+  /* What a scope HOLDS, ASKED of the Query, which owns each scope's list: it TAKES
+     fields — a bar's Add, the panel's Filters menu, sent up or down — or LETS ONE GO;
+     a host's own bar says its whole list. Will, TODO 415 (D2 A).
+     TRAP T-send-to-view-filters · TRAP T-a-panel-asks-for-its-scopes · TRAP T-a-bar-reports-its-holds */
+  'filter-add': ({ detail, bind }) => {
+    const named = text(detail['scope']);
+    const from = text(detail['from']);
+    if (!named || !Array.isArray(detail['ids'])) return holds(detail, bind);
+    return { scope: named, take: (detail['ids'] as unknown[]).map(String), ...(from ? { from } : {}) };
+  },
+  'filter-remove': ({ detail, bind }) => {
+    const named = text(detail['scope']);
+    return named && typeof detail['id'] === 'string' ? { scope: named, release: detail['id'] } : holds(detail, bind);
+  },
+  /* A HEADING's answer is its field's, in its grid's scope, and its Apply. A grid in
+     no scope has no place in the Query: it is drawn back as it asked. 366 step 23
+     TRAP T-one-query-one-owner · TRAP T-a-heading-asks-through-the-source */
+  'column-filter-change': ({ detail, bind, el }) => {
+    const field = detail['field'];
+    if (typeof field !== 'string') return undefined;
+    const reading = (detail['reading'] ?? null) as FieldReading | null;
+    if (typeof bind?.scope !== 'string') {
+      el.drawReading?.(field, reading ?? {}, '');
+      return undefined;
+    }
+    return { scope: bind.scope, field, reading, commit: true };
+  },
+  // One field's own Apply or Discard — or, naming none, all of them. TRAP T-apply-and-discard-wait-for-a-change
+  'filter-apply': ({ detail }) => ({ ...field(detail), commit: true }),
+  'filter-discard': ({ detail }) => ({ ...field(detail), discard: true }),
+  'page-change': ({ detail, bind }) => (typeof detail['page'] === 'number' ? { ...at(own(bind)), page: detail['page'] } : undefined),
+  'page-size-change': ({ detail, bind }) => (typeof detail['pageSize'] === 'number' ? { ...at(own(bind)), pageSize: detail['pageSize'] } : undefined),
+  'search-change': ({ detail, scope }) => ({ ...at(scope), search: text(detail['value']) ?? '' }),
+  /* A REPORT, not an edit: what the pager draws, never the Query. The rows in hand are
+     every matching row already. TRAP T-grouped-paging-belongs-to-the-view */
+  'grid-pages-change': ({ detail, source }) => {
+    const pages = detail['pages'];
+    if (typeof pages === 'number' && Number.isFinite(pages)) source.reportPages(pages);
+    return undefined;
+  },
+  /* A READ, not an edit: "Select all rows" on a paged grid, every matching row answered
+     back. TODO 238 · TRAP T-select-all-is-the-visible-rows */
+  'select-all-request': ({ detail, source, el, event }) => {
+    const answer = detail['answer'];
+    if (typeof answer !== 'function') return undefined;
+    event.preventDefault();
+    void source.allRows(el).then((rows) => (answer as (rows: readonly Row[]) => void)(rows));
+    return undefined;
+  },
+} satisfies Record<string, (steering: Steering) => QueryRequest | undefined>;
+
 /** The events a bound component may send UP. TRAP T-steering-events-are-a-closed-list */
-const STEERING_EVENTS = [
-  'sort-change',
-  'group-change',
-  'quick-filter-change',
-  // A scoped bar added or took off a chip: what its scope HOLDS changed.
-  'filter-add',
-  'filter-remove',
-  // A heading's answer is its field's, in the grid's scope.
-  'column-filter-change',
-  // One field's own Apply or Discard.
-  'filter-apply',
-  'filter-discard',
-  'page-change',
-  'page-size-change',
-  'search-change',
-  // A REPORT, not a request: changes what the pager draws, never the query.
-  // TRAP T-grouped-paging-belongs-to-the-view
-  'grid-pages-change',
-  // "Select all rows" on a paged grid: every matching row, answered back. TODO 238
-  'select-all-request',
-] as const;
+const STEERING_EVENTS = Object.keys(STEERS) as SteeringEvent[];
 
 /** One of them. */
-export type SteeringEvent = (typeof STEERING_EVENTS)[number];
+export type SteeringEvent = keyof typeof STEERS;
 
 /** What steering needs of one binding: its scope. */
 export interface SteerBind {
@@ -226,10 +293,31 @@ export interface SteerBind {
   hover?: BindOptions['hover'];
 }
 
-/** Which scope a Group or Sort came from: the event's, else its one bound scope. TODO 99 */
-function arranger(detail: Record<string, unknown>, bind: SteerBind | undefined): string | undefined {
-  if (typeof detail['scope'] === 'string') return detail['scope'];
+/** A string, or nothing. */
+function text(v: unknown): string | undefined {
+  return typeof v === 'string' ? v : undefined;
+}
+
+/** A scope, where there is one to say. */
+function at(scope: string | undefined): { scope?: string } {
+  return scope ? { scope } : {};
+}
+
+/** The one field an event names, where it names one. */
+function field(detail: Record<string, unknown>): { field?: string } {
+  const named = text(detail['field']);
+  return named ? { field: named } : {};
+}
+
+/** The binding's own scope, when it names one. */
+function own(bind: SteerBind | undefined): string | undefined {
   return typeof bind?.scope === 'string' ? bind.scope : undefined;
+}
+
+/** A control that says its WHOLE list instead — a host's own bar. TRAP T-a-bar-reports-its-holds */
+function holds(detail: Record<string, unknown>, bind: SteerBind | undefined): QueryRequest | undefined {
+  const scope = own(bind);
+  return scope && Array.isArray(detail['holds']) ? { scope, hold: (detail['holds'] as unknown[]).map(String) } : undefined;
 }
 
 /** The controls bound to steer, each heard by its OWN binding only. */
@@ -249,156 +337,16 @@ function hasScope(request: QueryRequest): boolean {
   return Array.isArray(request) ? request.every(hasScope) : typeof (request as { scope?: unknown }).scope === 'string';
 }
 
-/** A control's request, to its context's doors; a list is one change. With
- *  `commit`, its Apply: the one field it named, else its scope. 366 step 18 */
-export function ask(query: QueryContext, request: QueryRequest, scope: string): void {
-  if (Array.isArray(request)) {
-    query.batch(() => { for (const one of request as readonly QueryRequest[]) ask(query, one, scope); });
-    return;
-  }
-  const one = request as Exclude<QueryRequest, readonly QueryRequest[]>;
-  const at = one.scope ?? scope;
-  if ('reset' in one) query.reset([at], one.reset);
-  // A hover is the page's, never the Query's: `steer` hands it to the host. TODO 655
-  else if ('preview' in one) return;
-  else if ('order' in one) query.order(at, one.order);
-  else if ('preset' in one) query.setPreset(at, one.preset, one.on, !!one.commit);
-  else if ('reading' in one) query.setReading(at, one.field, one.reading);
-  else if ('presentation' in one) query.present(at, one.presentation);
-  else if ('solo' in one) query.solo(at, one.solo, { across: !!one.across });
-  else if ('unsolo' in one) query.unsolo();
-  else query.suspend(at, 'field' in one ? one.field : null, one.suspended);
-  if ('commit' in one && one.commit) query.commit('field' in one ? { field: one.field } : { scope: at });
+/** A request whose parts name no scope, in the bind's. */
+function scoped(request: QueryRequest, scope: string): QueryRequest {
+  if (Array.isArray(request)) return (request as readonly QueryRequest[]).map((one) => scoped(one, scope));
+  return (request as { scope?: string }).scope ? request : { ...request, scope } as QueryRequest;
 }
 
-/** Turn one component's event into its source's call. TRAP T-steering-events-are-a-closed-list */
-export function steer(source: DataSource, el: Populatable, bind: SteerBind | undefined, type: SteeringEvent, event: CustomEvent): void {
+/** Turn one component's event into the command it asks. TRAP T-steering-events-are-a-closed-list */
+function steer(source: DataSource, el: Populatable, bind: SteerBind | undefined, type: SteeringEvent, event: CustomEvent): void {
   const detail = (event.detail ?? {}) as Record<string, unknown>;
-
-  switch (type) {
-    case 'sort-change': {
-      const at = arranger(detail, bind);
-      /* A SLOT: its sort is its chart's order, kept as its presentation, never the
-         rows'; off or forgotten, none. Will, TODO 548 */
-      if (at && source.presents(at)) {
-        const on = typeof detail['field'] === 'string' && detail['field'] && detail['clear'] !== true;
-        source.query.present(at, { sort: on ? (detail['direction'] === 'desc' ? 'desc' : 'asc') : undefined });
-        return;
-      }
-      // None: no sort at all, not one kept to resume. TODO 407
-      if (detail['clear'] === true) {
-        source.query.clearSort(arranger(detail, bind));
-        return;
-      }
-      const field = detail['field'];
-      const direction = detail['direction'] === 'desc' ? 'desc' : 'asc';
-      source.query.setSort(typeof field === 'string' ? field : null, direction, arranger(detail, bind));
-      return;
-    }
-    case 'group-change': {
-      const field = typeof detail['field'] === 'string' && detail['field'] ? detail['field'] : null;
-      const at = arranger(detail, bind);
-      // A SLOT's group is its chart's parts. Will, TODO 548
-      if (at && source.presents(at)) source.query.present(at, { group: field ?? undefined });
-      else source.query.setGroup(field, at);
-      return;
-    }
-    case 'quick-filter-change': {
-      /* ONE READER ACT, AS A REQUEST: it goes to the Query's doors, in the
-         request's scope or the bind's. An event with none asks nothing.
-         TRAP T-a-control-sends-one-request */
-      const request = detail['request'] as QueryRequest | undefined;
-      if (!request) return;
-      const at = typeof bind?.scope === 'string' ? bind.scope : undefined;
-      // A hover goes to the page. TODO 655 · TRAP T-a-hovered-chip-previews-the-highlight
-      if (!Array.isArray(request) && 'preview' in request) {
-        const scope = request.scope ?? at;
-        if (scope) bind?.hover?.({ scope, field: request.field, on: request.preview, ...(request.value != null ? { value: request.value } : {}) });
-        return;
-      }
-      if (at || hasScope(request)) ask(source.query, request, at ?? VIEW);
-      else reportUnscoped(el);
-      return;
-    }
-    case 'filter-add':
-    case 'filter-remove': {
-      const scope = bind?.scope;
-      const named = typeof detail['scope'] === 'string' ? detail['scope'] : undefined;
-      /* ONE CHANGE, ASKED of the Query, which owns each scope's list: a scope
-         TAKES fields — a bar's Add, the panel's Filters menu, or sent up or down —
-         or LETS ONE GO. Will, TODO 415 (D2 A).
-         TRAP T-send-to-view-filters · TRAP T-a-panel-asks-for-its-scopes */
-      if (named && type === 'filter-add' && Array.isArray(detail['ids'])) {
-        const from = detail['from'];
-        source.query.take(named, (detail['ids'] as unknown[]).map(String), typeof from === 'string' ? from : undefined);
-        return;
-      }
-      if (named && type === 'filter-remove' && typeof detail['id'] === 'string') {
-        source.query.release(named, detail['id']);
-        return;
-      }
-      // A control that says its WHOLE list instead — a host's own bar. TRAP T-a-bar-reports-its-holds
-      const holds = detail['holds'];
-      if (typeof scope === 'string' && Array.isArray(holds)) source.query.hold(scope, holds.map(String));
-      return;
-    }
-    case 'column-filter-change': {
-      /* A HEADING's answer is its field's, in its grid's scope — and a field
-         no scope holds yet gets its normal chip on that scope's bar.
-         TRAP T-one-query-one-owner · TRAP T-a-heading-asks-through-the-source */
-      const scope = bind?.scope;
-      const field = detail['field'];
-      if (typeof field !== 'string') return;
-      const reading = (detail['reading'] ?? null) as FieldReading | null;
-      // A grid in no scope has no place for it in the Query: it is drawn back as it asked. 366 step 23
-      if (typeof scope !== 'string') {
-        el.drawReading?.(field, reading ?? {}, '');
-        return;
-      }
-      source.query.setReading(scope, field, reading);
-      // A heading's Apply is its field's. TRAP T-apply-and-discard-wait-for-a-change
-      source.query.commit({ field });
-      return;
-    }
-    case 'filter-apply':
-    case 'filter-discard': {
-      // One field's own Apply or Discard, on a remote source — or, naming none, all of them.
-      // TRAP T-apply-and-discard-wait-for-a-change
-      const field = detail['field'];
-      const at = typeof field === 'string' ? { field } : {};
-      if (type === 'filter-apply') source.query.commit(at);
-      else source.query.discard(at);
-      return;
-    }
-    case 'page-change': {
-      const page = detail['page'];
-      if (typeof page === 'number') source.setPage(page);
-      return;
-    }
-    case 'grid-pages-change': {
-      // The rows in hand are already every matching row, so re-publish the
-      // pager's numbers and load nothing.
-      const pages = detail['pages'];
-      if (typeof pages === 'number' && Number.isFinite(pages)) source.reportPages(pages);
-      return;
-    }
-    case 'page-size-change': {
-      const size = detail['pageSize'];
-      if (typeof size === 'number') source.setPageSize(size);
-      return;
-    }
-    case 'search-change': {
-      const term = detail['value'];
-      source.query.setSearch(typeof term === 'string' ? term : '', arranger(detail, bind));
-      return;
-    }
-    case 'select-all-request': {
-      // The grid holds one page; its source holds the rest. TRAP T-select-all-is-the-visible-rows
-      const answer = detail['answer'];
-      if (typeof answer !== 'function') return;
-      event.preventDefault();
-      void source.allRows(el).then((rows) => (answer as (rows: readonly Row[]) => void)(rows));
-      return;
-    }
-  }
+  const scope = text(detail['scope']) ?? own(bind);
+  const command = (STEERS[type] as (steering: Steering) => QueryRequest | undefined)({ detail, scope, bind, source, el, event });
+  if (command) source.query.ask(command);
 }

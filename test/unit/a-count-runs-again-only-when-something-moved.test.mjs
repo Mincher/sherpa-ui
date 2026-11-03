@@ -21,14 +21,14 @@ async function setup() {
   source.declareValues('status', ['active', 'trial']);
   source.query.declareScope('data', { label: 'Records' });
   source.query.offer('data', ['status']);
-  source.query.hold('data', ['status']);
+  source.query.ask({ scope: 'data', hold: ['status'] });
   const drawn = [];
   const bar = Object.assign(new EventTarget(), {
     id: 'bar', setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
     drawScope() {}, drawReading() {}, drawResults: (results, scope) => drawn.push([scope, results]),
   });
   bindSource(source, bar, { steerOnly: true, scope: 'data' });
-  source.query.setReading('data', 'status', { picked: ['active'] });
+  source.query.ask({ scope: 'data', field: 'status', reading: { picked: ['active'] } });
   await source.load();
   await tick();
   return { store, source, drawn };
@@ -38,11 +38,11 @@ test('a sort, a page and a search count nothing again', async () => {
   const { source, drawn } = await setup();
   const before = drawn.length;
   assert.ok(before > 0);
-  source.query.setSort('name');
+  source.query.ask({ sort: 'name' });
   await tick();
-  source.setPage(2);
+  source.query.ask({ page: 2 });
   await tick();
-  source.query.setSearch('a');
+  source.query.ask({ search: 'a' });
   await tick();
   assert.equal(drawn.length, before);
 });
@@ -71,11 +71,11 @@ test('a change to the rows counts again, though the Query is the same', async ()
 test('a scope\'s sets moving counts again: the order the chips count in is new', async () => {
   const { source, drawn } = await setup();
   source.query.offer('data', ['status', 'name']);
-  source.query.hold('data', ['status', 'name']);
-  source.query.batch(() => {
-    source.query.setReading('data', 'status', { picked: ['active'] });
-    source.query.setReading('data', 'name', { picked: ['a', 'c'] });
-  });
+  source.query.ask({ scope: 'data', hold: ['status', 'name'] });
+  source.query.ask([
+    { scope: 'data', field: 'status', reading: { picked: ['active'] } },
+    { scope: 'data', field: 'name', reading: { picked: ['a', 'c'] } },
+  ]);
   await tick();
   assert.deepEqual(drawn.at(-1), ['data', { status: 2, name: 1 }]);
   // The Query is the same; the set puts Name first.

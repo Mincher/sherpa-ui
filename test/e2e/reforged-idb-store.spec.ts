@@ -247,7 +247,7 @@ test('a DataSource binds to an IdbStore exactly as it binds to any other', async
     await source.load();
     const firstPage = { rows: source.rows.length, total: source.total, pages: source.totalPages };
 
-    source.query.setReading('view', 'tier', { picked: ['Gold'] });
+    source.query.ask({ scope: 'view', field: 'tier', reading: { picked: ['Gold'] } });
     await source.load();
     const filtered = { rows: source.rows.length, total: source.total };
 

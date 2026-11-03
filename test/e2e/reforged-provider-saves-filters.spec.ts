@@ -52,9 +52,9 @@ test('Save filters keeps every scope under a name: its chip joins the bar, off, 
     ${SETUP}
     const source = await open();
     await settle();
-    source.query.setReading('view', 'plan', { picked: ['Pro'] });
-    source.query.setReading('view', 'tier', { picked: ['gold'] });
-    source.query.commit(); // the View waits for its Apply. TODO 406
+    source.query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Pro'] } });
+    source.query.ask({ scope: 'view', field: 'tier', reading: { picked: ['gold'] } });
+    source.query.ask({ commit: true }); // the View waits for its Apply. TODO 406
     await source.load();
     bar.dispatchEvent(new CustomEvent('filters-save-as', { bubbles: true, composed: true }));
     const id = provider.saveFilters('Gold Pro');
@@ -266,9 +266,9 @@ test('Save filters at any scope OFF: a set is the asking bar\'s scope alone, lis
     await settle();
     const flags = () => [viewBar, dataBar, column].map((b) => b.hasAttribute('data-no-saves'));
     const told = () => [viewBar, dataBar, column].map((b) => b.savedSets.map((set) => set.id));
-    source.query.setReading('view', 'tier', { picked: ['gold'] });
-    source.query.setReading('data', 'plan', { picked: ['Pro'] });
-    source.query.commit();
+    source.query.ask({ scope: 'view', field: 'tier', reading: { picked: ['gold'] } });
+    source.query.ask({ scope: 'data', field: 'plan', reading: { picked: ['Pro'] } });
+    source.query.ask({ commit: true });
     await source.load();
     // The DATA bar asks; the host names it.
     dataBar.dispatchEvent(new CustomEvent('filters-save-as', { bubbles: true, composed: true }));
@@ -280,9 +280,9 @@ test('Save filters at any scope OFF: a set is the asking bar\'s scope alone, lis
     const fromView = provider.saveFilters('From the View') ?? null;
     const off = { flags: flags(), told: told(), id, stored, fromView };
     // Added after a change everywhere: its conditions join the data scope, and what the reader picked stays.
-    source.query.setReading('view', 'tier', { picked: ['silver'] });
-    source.query.setReading('data', 'plan', { picked: ['Pro'] });
-    source.query.commit();
+    source.query.ask({ scope: 'view', field: 'tier', reading: { picked: ['silver'] } });
+    source.query.ask({ scope: 'data', field: 'plan', reading: { picked: ['Pro'] } });
+    source.query.ask({ commit: true });
     await source.load();
     provider.applyFilters('pro-rows');
     await source.load();

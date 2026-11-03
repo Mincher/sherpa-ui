@@ -40,12 +40,12 @@ const ids = (src) => src.rows.map((r) => r.id);
 
 test('two picks on a NUMBER are a LIST, as numbers; its range is a Between row, sorted numerically', async () => {
   const src = await source();
-  src.query.setReading('view', 'seats', { picked: ['9', '500'] });
+  src.query.ask({ scope: 'view', field: 'seats', reading: { picked: ['9', '500'] } });
   await settle();
   // A number has no Simple range: two values are `in` (TODO 375).
   assert.deepEqual(stateClause(src.selection('seats')), ['seats', 'in', [9, 500]]);
   assert.deepEqual(ids(src), [3, 4]);
-  src.query.setReading('view', 'seats', { tree: rowsTree([{ op: 'between', picked: ['500', '9'] }]), mode: 'advanced', picked: [] });
+  src.query.ask({ scope: 'view', field: 'seats', reading: { tree: rowsTree([{ op: 'between', picked: ['500', '9'] }]), mode: 'advanced', picked: [] } });
   await settle();
   // Sorted as TEXT this is ["500","9"] and the range matches nothing.
   assert.deepEqual(stateClause(src.selection('seats')), ['seats', 'between', [9, 500]]);
@@ -54,19 +54,19 @@ test('two picks on a NUMBER are a LIST, as numbers; its range is a Between row, 
 
 test('one pick on a NUMBER is a comparison, as a number', async () => {
   const src = await source();
-  src.query.setReading('view', 'seats', { picked: ['50'] });
+  src.query.ask({ scope: 'view', field: 'seats', reading: { picked: ['50'] } });
   await settle();
   assert.deepEqual(ids(src), [2]);
 });
 
 test('two picks on a DATE are two DAYS, unless the field or the reading says range', async () => {
   const src = await source();
-  src.query.setReading('view', 'made', { picked: ['2026-06-05', '2026-01-05'] });
+  src.query.ask({ scope: 'view', field: 'made', reading: { picked: ['2026-06-05', '2026-01-05'] } });
   await settle();
   // Days: the two picked, not what lies between them. Will, 2026-10-22
   assert.deepEqual(ids(src), [1, 3]);
   src.declareField('made', { range: true });
-  src.query.setReading('view', 'made', { picked: ['2026-06-05', '2026-03-05'] });
+  src.query.ask({ scope: 'view', field: 'made', reading: { picked: ['2026-06-05', '2026-03-05'] } });
   await settle();
   // Ends, sorted lexically.
   assert.deepEqual(stateClause(src.selection('made')), ['made', 'between', ['2026-03-05', '2026-06-05']]);
@@ -77,7 +77,7 @@ test('a number needs no declared value list', async () => {
   const src = await source();
   // Nothing called `declareValues('seats', …)`, and it still filters.
   assert.deepEqual(src.valuesFor('seats'), []);
-  src.query.setReading('view', 'seats', { tree: rowsTree([{ op: 'between', picked: ['1', '10'] }]), mode: 'advanced', picked: [] });
+  src.query.ask({ scope: 'view', field: 'seats', reading: { tree: rowsTree([{ op: 'between', picked: ['1', '10'] }]), mode: 'advanced', picked: [] } });
   await settle();
   assert.deepEqual(ids(src), [1, 4]);
 });
@@ -87,7 +87,7 @@ test('a number answered from a LIST is `in`, not a range', async () => {
   /* The same field, two ways: a SLIDER gives two ENDS, a ticked LIST gives two
      VALUES. The type alone cannot tell them apart, so the reading says. */
   src.declareValues('seats', [5, 50, 500, 9]);
-  src.query.setReading('view', 'seats', { range: false, picked: ['5', '500'] });
+  src.query.ask({ scope: 'view', field: 'seats', reading: { range: false, picked: ['5', '500'] } });
   await settle();
   assert.deepEqual(stateClause(src.selection('seats')), ['seats', 'in', [5, 500]]);
   // `in ["5","500"]` would match NOTHING — the rows hold numbers.
@@ -97,7 +97,7 @@ test('a number answered from a LIST is `in`, not a range', async () => {
 test('a Between row says `between` when the field has a list', async () => {
   const src = await source();
   src.declareValues('seats', [5, 50, 500, 9]);
-  src.query.setReading('view', 'seats', { tree: rowsTree([{ op: 'between', picked: ['5', '500'] }]), mode: 'advanced', picked: [] });
+  src.query.ask({ scope: 'view', field: 'seats', reading: { tree: rowsTree([{ op: 'between', picked: ['5', '500'] }]), mode: 'advanced', picked: [] } });
   await settle();
   assert.deepEqual(stateClause(src.selection('seats')), ['seats', 'between', [5, 500]]);
   assert.deepEqual(ids(src), [1, 2, 3, 4]);
@@ -107,12 +107,12 @@ test('a Between row says `between` when the field has a list', async () => {
 
 test('CONDITIONS answer a field with no picks and no text', async () => {
   const src = await source();
-  src.query.setReading('view', 'owner', { ...{
+  src.query.ask({ scope: 'view', field: 'owner', reading: { ...{
     tree: rowsTree([
       { op: 'eq', picked: ['Dana'] },
       { op: 'eq', join: 'or', picked: ['Ravi'] },
     ]),
-  }, picked: [] });
+  }, picked: [] } });
   await settle();
 
   // Before this the reading was DELETED — no picks, no text, so "not answered".
@@ -125,7 +125,7 @@ test('CONDITIONS answer a field with no picks and no text', async () => {
 
 test('a typed condition reaches the rows too', async () => {
   const src = await source();
-  src.query.setReading('view', 'owner', { tree: rowsTree([{ op: 'startswith', text: 'D' }]), picked: [] });
+  src.query.ask({ scope: 'view', field: 'owner', reading: { tree: rowsTree([{ op: 'startswith', text: 'D' }]), picked: [] } });
   await settle();
   assert.deepEqual(ids(src), [1, 3]);
 });
@@ -134,7 +134,7 @@ test('a typed condition reaches the rows too', async () => {
 
 test('a TEXT field still turns two picks into `in`', async () => {
   const src = await source();
-  src.query.setReading('view', 'owner', { picked: ['Dana', 'Pia'] });
+  src.query.ask({ scope: 'view', field: 'owner', reading: { picked: ['Dana', 'Pia'] } });
   await settle();
   assert.deepEqual(stateClause(src.selection('owner')), ['owner', 'in', ['Dana', 'Pia']]);
   assert.deepEqual(ids(src), [1, 3, 4]);
@@ -144,7 +144,7 @@ test('an UNDECLARED field is text, so nothing that ignores this changes', async 
   const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
   await src.ready;
   src.declareValues('owner', ['Dana', 'Ravi', 'Pia']);
-  src.query.setReading('view', 'owner', { picked: ['Ravi'] });
+  src.query.ask({ scope: 'view', field: 'owner', reading: { picked: ['Ravi'] } });
   await settle();
   assert.equal(src.selection('owner').type, 'text');
   assert.deepEqual(ids(src), [2]);

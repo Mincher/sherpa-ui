@@ -25,8 +25,8 @@ class Bar extends EventTarget {
 
 test('an event with no request leaves every answer as it was', () => {
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
-  source.query.hold('data', ['plan']);
-  source.query.setReading('data', 'plan', { picked: ['Pro'] });
+  source.query.ask({ scope: 'data', hold: ['plan'] });
+  source.query.ask({ scope: 'data', field: 'plan', reading: { picked: ['Pro'] } });
   const bar = new Bar();
   bindSource(source, bar, { steerOnly: true, scope: 'data' });
   // What a rebuilt bar said before its menus stamped: nothing in any chip.

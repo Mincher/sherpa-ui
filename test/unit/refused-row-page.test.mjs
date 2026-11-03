@@ -44,7 +44,7 @@ test('a DataSource pages it the same: full pages, and three of them', async () =
   await source.load();
   assert.equal(source.rows.length, 10);
   assert.equal(source.totalPages, 3);
-  source.setPage(2);
+  source.query.ask({ page: 2 });
   await new Promise((r) => setTimeout(r, 0));
   await source.load();
   assert.equal(source.rows.length, 10);

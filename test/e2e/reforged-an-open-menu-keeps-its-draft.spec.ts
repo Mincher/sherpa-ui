@@ -44,7 +44,7 @@ test('a remote bar drawn again while a menu is open keeps that menu\'s draft', a
 
     // Region comes into the scope, answered: the bar is drawn again.
     const was = draws;
-    source.query.setReading('data', 'region', { picked: ['EMEA'] });
+    source.query.ask({ scope: 'data', field: 'region', reading: { picked: ['EMEA'] } });
     await window.__settled();
     for (let i = 0; i < 4; i++) await new Promise((res) => requestAnimationFrame(res));
     return {

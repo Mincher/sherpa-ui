@@ -69,11 +69,11 @@ test('a Store and a DataSource run headless — query and mutate', async () => {
   assert.equal(source.rows.length, 25, 'paged');
   assert.equal(source.total, 500);
 
-  source.query.setReading('view', 'plan', { picked: ['Pro'] });
+  source.query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Pro'] } });
   await settle();
   assert.equal(source.total, 333, 'filtered');
 
-  source.query.setSort('spend', 'desc');
+  source.query.ask({ sort: 'spend', direction: 'desc' });
   await settle();
   assert.equal(source.rows[0].spend, 9953, 'sorted, within the filter');
 
@@ -157,12 +157,12 @@ test('F1: a load asking the SAME question twice is skipped', async () => {
   // Twenty writes of the SAME filter. A chip re-emitting its state, a view
   // re-applying what it already applied, an attribute syncing back — all
   // arrive here, and all are free to ignore.
-  for (let i = 0; i < 20; i += 1) source.query.setReading('view', 'plan', { picked: ['Pro'] });
+  for (let i = 0; i < 20; i += 1) source.query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Pro'] } });
   await settle();
   assert.equal(storeLoads, 2, 'only the FIRST of the twenty reached the store');
 
   // A genuine change still reads.
-  source.query.setReading('view', 'plan', { picked: ['Free'] });
+  source.query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Free'] } });
   await settle();
   assert.equal(storeLoads, 3);
 });
@@ -202,11 +202,11 @@ test('F2: a component is not re-populated with rows it already holds', async () 
 
   // Same filter, twenty times. Even if F1 let a load through, the rows array
   // would be the same reference and the push is skipped.
-  for (let i = 0; i < 20; i += 1) source.query.setReading('view', 'plan', { picked: ['Pro'] });
+  for (let i = 0; i < 20; i += 1) source.query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Pro'] } });
   await settle();
   const afterIdentical = populates;
 
-  source.query.setReading('view', 'plan', { picked: ['Free'] });
+  source.query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Free'] } });
   await settle();
   assert.ok(populates > afterIdentical, 'a REAL change still populates');
 });
@@ -243,9 +243,9 @@ test('F3: writes in one tick coalesce; separate ticks do not', async () => {
 
   // ONE TICK — a view setting three things in one handler. It used to ask the
   // store three times and throw two answers away.
-  source.query.setReading('view', 'plan', { picked: ['Pro'] });
-  source.query.setSort('spend', 'desc');
-  source.setPageSize(10);
+  source.query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Pro'] } });
+  source.query.ask({ sort: 'spend', direction: 'desc' });
+  source.query.ask({ pageSize: 10 });
   await settle();
   assert.equal(storeLoads - afterFirst, 1, 'three setters, one load');
 
@@ -259,7 +259,7 @@ test('F3: writes in one tick coalesce; separate ticks do not', async () => {
   // which is a policy about how fast people type and belongs to the caller.
   const beforeTyping = storeLoads;
   for (const term of ['n1', 'n12', 'n123']) {
-    source.query.setReading('view', 'name', { op: 'contains', text: term, picked: [] });
+    source.query.ask({ scope: 'view', field: 'name', reading: { op: 'contains', text: term, picked: [] } });
     await settle();
   }
   assert.equal(storeLoads - beforeTyping, 3, 'one load per tick, as asked');
@@ -313,7 +313,7 @@ test('V7: a schema maps rows on the way IN — rename, coerce, default', async (
   // The coercion is the point: a real number sorts numerically, where "100"
   // would sort below "9" as text.
   assert.equal(typeof source.rows[0].spend, 'number');
-  source.query.setSort('spend', 'desc');
+  source.query.ask({ sort: 'spend', direction: 'desc' });
   await settle();
   assert.deepEqual(source.rows.map((r) => r.spend), [900.5, 40, 0]);
 });
@@ -375,8 +375,8 @@ test('S11: a whole Query restores in ONE load', async () => {
   // A person narrows things down…
   const before = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
   await before.load();
-  before.query.setReading('view', 'plan', { picked: ['Pro'] });
-  before.query.setSort('spend', 'desc');
+  before.query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Pro'] } });
+  before.query.ask({ sort: 'spend', direction: 'desc' });
   await settle();
 
   const saved = JSON.stringify(before.query.export());   // what a host would persist
@@ -525,7 +525,7 @@ test('the data layer exports NO view renderer and no second wiring mechanism', a
     removeEventListener() {},
   };
   bindSource(source, el);
-  source.query.setSort('n', 'desc');
+  source.query.ask({ sort: 'n', direction: 'desc' });
   await source.load();
 
   assert.deepEqual(el.rows.map((r) => r.n), ['b', 'a'], 'rows arrived through populate()');
@@ -844,8 +844,8 @@ test('filterDef, declareScope and addable: one definition per field, and what a 
 
   source.query.declareScope('view', { label: 'App header' });
   source.query.offer('grid', ['plan', 'seats', 'email', 'undeclared']);
-  source.query.hold('grid', ['plan']);
-  source.query.hold('view', ['seats']);
+  source.query.ask({ scope: 'grid', hold: ['plan'] });
+  source.query.ask({ scope: 'view', hold: ['seats'] });
   // Held here is not offered, nor below the View what the View holds; undeclared never.
   assert.deepEqual(source.addable('grid').map((d) => [d.id, d.note]), [['email', undefined]]);
   // UP IS OPEN: the View is offered a component's field, and told where it lives.
@@ -920,8 +920,8 @@ test('a grid heading answers through the source, and is told what the View holds
   assert.deepEqual(source.query.applied.scopes.data.readings.plan.picked, ['Pro']);
   assert.deepEqual(barDrawn.at(-1), ['plan']);
 
-  source.query.hold('view', ['region']);
-  source.query.setReading('view', 'region', { picked: ['EMEA'] });
+  source.query.ask({ scope: 'view', hold: ['region'] });
+  source.query.ask({ scope: 'view', field: 'region', reading: { picked: ['EMEA'] } });
   assert.deepEqual(columns.at(-1), [{ region: { picked: ['EMEA'] } }, 'View filters']);
 });
 
@@ -964,13 +964,13 @@ test('declareDefault on a field the View holds still narrows its component', asy
   });
   const tile = stub('tile');
   bindSource(source, tile, { rows: 'all', readonly: true });
-  source.query.hold('view', ['sev']);
+  source.query.ask({ scope: 'view', hold: ['sev'] });
   await source.load();
   source.query.declareDefault('own:tile', { sev: { picked: ['critical'] } }, { only: tile });
   await new Promise((r) => setTimeout(r, 0));
   assert.deepEqual(seen.get('tile'), [1, 3]);
   // The View's own answer narrows it too, under the tile's.
-  source.query.setReading('view', 'sev', { picked: ['info'] });
+  source.query.ask({ scope: 'view', field: 'sev', reading: { picked: ['info'] } });
   await source.load();
   await new Promise((r) => setTimeout(r, 0));
   assert.deepEqual(seen.get('tile'), []);
@@ -989,11 +989,11 @@ test('export and import: a round trip through JSON gives the same rows', async (
     return s;
   };
   const a = make();
-  a.query.hold('view', ['plan']);
-  a.query.setReading('view', 'plan', { picked: ['Pro', 'Enterprise'] });
-  a.query.hold('grid', ['seats']);
-  a.query.setReading('grid', 'seats', { op: 'gt', text: '10' });
-  a.query.setSort('seats', 'desc');
+  a.query.ask({ scope: 'view', hold: ['plan'] });
+  a.query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Pro', 'Enterprise'] } });
+  a.query.ask({ scope: 'grid', hold: ['seats'] });
+  a.query.ask({ scope: 'grid', field: 'seats', reading: { op: 'gt', text: '10' } });
+  a.query.ask({ sort: 'seats', direction: 'desc' });
   await a.load();
   const out = JSON.parse(JSON.stringify(a.query.export()));
   assert.deepEqual(Object.keys(out), ['v', 'query']);

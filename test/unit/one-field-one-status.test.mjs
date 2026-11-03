@@ -22,7 +22,7 @@ function page() {
   source.query.declareScope(VIEW, { label: 'View Context' });
   source.query.declareScope('data', { label: 'Rows' });
   source.query.offer('data', ['plan', 'tickets']);
-  source.query.hold('data', ['plan']);
+  source.query.ask({ scope: 'data', hold: ['plan'] });
   source.declarePresets('data', [{ id: 'busy', label: 'Busy', readings: { tickets: { tree: rowsTree([{ op: 'gt', text: '0' }]), mode: 'advanced' } } }]);
   return source;
 }
@@ -35,7 +35,7 @@ test('free, with no answer: at its home, off', () => {
 
 test('answered: on, and the reading is the Query\'s', () => {
   const source = page();
-  source.query.setReading('data', 'plan', { picked: ['Pro'] });
+  source.query.ask({ scope: 'data', field: 'plan', reading: { picked: ['Pro'] } });
   const status = source.fieldStatus('plan', 'data');
   assert.equal(status.on, true);
   assert.deepEqual(status.reading.picked, ['Pro']);
@@ -43,8 +43,8 @@ test('answered: on, and the reading is the Query\'s', () => {
 
 test('switched off: off, and it keeps its answer', () => {
   const source = page();
-  source.query.setReading('data', 'plan', { picked: ['Pro'] });
-  source.query.suspend('data', 'plan', true);
+  source.query.ask({ scope: 'data', field: 'plan', reading: { picked: ['Pro'] } });
+  source.query.ask({ scope: 'data', field: 'plan', suspended: true });
   const status = source.fieldStatus('plan', 'data');
   assert.equal(status.on, false);
   assert.deepEqual(status.reading.picked, ['Pro']);
@@ -52,36 +52,36 @@ test('switched off: off, and it keeps its answer', () => {
 
 test('an answer that narrows nothing is off', () => {
   const source = page();
-  source.query.setReading('data', 'plan', { tree: rowsTree([{ op: 'between', picked: ['1'] }]), mode: 'advanced' });
+  source.query.ask({ scope: 'data', field: 'plan', reading: { tree: rowsTree([{ op: 'between', picked: ['1'] }]), mode: 'advanced' } });
   assert.equal(source.fieldStatus('plan', 'data').on, false);
 });
 
 test('held by the View: below it says so and where, the View does not', () => {
   const source = page();
-  source.query.move('plan', 'data', VIEW);
+  source.query.ask({ scope: VIEW, move: 'plan', from: 'data' });
   assert.deepEqual(source.fieldStatus('plan', 'data').above, { scope: VIEW, label: 'View Context' });
   assert.equal(source.fieldStatus('plan', VIEW).above, null);
   assert.equal(source.fieldStatus('plan', 'data').home, VIEW);
-  source.query.setReading(VIEW, 'plan', { picked: ['Pro'] });
+  source.query.ask({ scope: VIEW, field: 'plan', reading: { picked: ['Pro'] } });
   assert.equal(source.fieldStatus('plan', 'data').on, true);
   assert.deepEqual(source.fieldStatus('plan', 'data').reading.picked, ['Pro']);
 });
 
 test('a preset on a field no scope holds: at the preset\'s scope, on, and it names the preset', () => {
   const source = page();
-  source.query.setPreset('data', 'busy', true, true);
+  source.query.ask({ scope: 'data', preset: 'busy', on: true, commit: true });
   assert.deepEqual(brief(source.fieldStatus('tickets', 'data')),
     { home: 'data', above: null, on: true, presets: ['Busy'], pending: false, failed: false });
-  source.query.setPreset('data', 'busy', false, true);
+  source.query.ask({ scope: 'data', preset: 'busy', on: false, commit: true });
   assert.deepEqual(brief(source.fieldStatus('tickets', 'data')),
     { home: VIEW, above: null, on: false, presets: [], pending: false, failed: false });
 });
 
 test('held by the View and a preset: both are said', () => {
   const source = page();
-  source.query.move('plan', 'data', VIEW);
+  source.query.ask({ scope: VIEW, move: 'plan', from: 'data' });
   source.declarePresets('data', [{ id: 'pro', label: 'Pro only', readings: { plan: { tree: rowsTree([{ op: 'eq', picked: ['Pro'] }]), mode: 'advanced' } } }]);
-  source.query.setPreset('data', 'pro', true, true);
+  source.query.ask({ scope: 'data', preset: 'pro', on: true, commit: true });
   const status = source.fieldStatus('plan', 'data');
   assert.equal(status.above.label, 'View Context');
   assert.deepEqual(status.presets, ['Pro only']);
@@ -91,12 +91,12 @@ test('held by the View and a preset: both are said', () => {
 test('waiting for Apply: pending, off until applied; applied, on', () => {
   const source = page();
   source.query.wait('data');
-  source.query.setReading('data', 'plan', { picked: ['Pro'] });
+  source.query.ask({ scope: 'data', field: 'plan', reading: { picked: ['Pro'] } });
   let status = source.fieldStatus('plan', 'data');
   assert.equal(status.pending, true);
   assert.equal(status.on, false);
   assert.deepEqual(status.reading.picked, ['Pro']);
-  source.query.commit({ scope: 'data' });
+  source.query.ask({ scope: 'data', commit: true });
   status = source.fieldStatus('plan', 'data');
   assert.equal(status.pending, false);
   assert.equal(status.on, true);

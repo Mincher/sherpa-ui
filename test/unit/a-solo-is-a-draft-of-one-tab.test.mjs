@@ -22,11 +22,11 @@ const settle = () => new Promise((r) => setTimeout(r, 30));
 async function page() {
   const source = new DataSource({ store: new ArrayStore(ROWS.map((r) => ({ ...r })), { key: 'id' }) });
   for (const f of ['region', 'plan', 'owner']) source.declareValues(f, [...new Set(ROWS.map((r) => r[f]))]);
-  source.query.hold(VIEW, ['region']);
-  source.query.hold('data', ['plan', 'owner']);
-  source.query.setReading(VIEW, 'region', { picked: ['EU'] });
-  source.query.setReading('data', 'plan', { picked: ['Free'] });
-  source.query.setReading('data', 'owner', { picked: ['Bo'] });
+  source.query.ask({ scope: VIEW, hold: ['region'] });
+  source.query.ask({ scope: 'data', hold: ['plan', 'owner'] });
+  source.query.ask({ scope: VIEW, field: 'region', reading: { picked: ['EU'] } });
+  source.query.ask({ scope: 'data', field: 'plan', reading: { picked: ['Free'] } });
+  source.query.ask({ scope: 'data', field: 'owner', reading: { picked: ['Bo'] } });
   await source.load({ force: true });
   await settle();
   return source;
@@ -36,7 +36,7 @@ const off = (source, scope, field) => !!source.query.reading(scope, field)?.susp
 test('a solo switches the others in its scope off, each value whole, and leaves other scopes alone', async () => {
   const source = await page();
   assert.deepEqual(source.rows.map((r) => r.id), [], 'EU, Free and Bo: none');
-  source.query.solo('data', 'plan');
+  source.query.ask({ scope: 'data', solo: 'plan' });
   assert.deepEqual(source.query.soloed, { scope: 'data', field: 'plan' });
   assert.equal(off(source, 'data', 'owner'), true);
   assert.deepEqual(source.query.reading('data', 'owner').picked, ['Bo'], 'its value is whole');
@@ -49,17 +49,17 @@ test('a solo switches the others in its scope off, each value whole, and leaves 
 
 test('across every scope, a solo switches the View\'s answers off too', async () => {
   const source = await page();
-  source.query.solo('data', 'plan', { across: true });
+  source.query.ask({ scope: 'data', solo: 'plan', across: true });
   assert.equal(off(source, VIEW, 'region'), true);
   assert.equal(off(source, 'data', 'owner'), true);
 });
 
 test('ending it switches back on only what it switched off', async () => {
   const source = await page();
-  source.query.suspend('data', 'owner', true);
-  source.query.solo(VIEW, 'region', { across: true });
+  source.query.ask({ scope: 'data', field: 'owner', suspended: true });
+  source.query.ask({ scope: VIEW, solo: 'region', across: true });
   assert.equal(off(source, 'data', 'plan'), true);
-  source.query.unsolo();
+  source.query.ask({ unsolo: true });
   assert.equal(source.query.soloed, null);
   assert.equal(off(source, 'data', 'plan'), false, 'the solo turned it off: back on');
   assert.equal(off(source, 'data', 'owner'), true, 'the reader turned it off: stays off');
@@ -67,7 +67,7 @@ test('ending it switches back on only what it switched off', async () => {
 
 test('a solo is never exported: a View saved meanwhile has every filter on', async () => {
   const source = await page();
-  source.query.solo('data', 'plan', { across: true });
+  source.query.ask({ scope: 'data', solo: 'plan', across: true });
   const { query } = source.query.export();
   assert.equal(query.scopes.data.readings.owner.suspended, undefined);
   assert.equal(query.scopes[VIEW].readings.region.suspended, undefined);
@@ -77,7 +77,7 @@ test('a solo is never exported: a View saved meanwhile has every filter on', asy
 test('a View put in ends the solo', async () => {
   const source = await page();
   const saved = source.query.export();
-  source.query.solo('data', 'plan');
+  source.query.ask({ scope: 'data', solo: 'plan' });
   await source.query.import(saved);
   assert.equal(source.query.soloed, null);
   assert.equal(off(source, 'data', 'owner'), false);

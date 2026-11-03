@@ -21,11 +21,11 @@ test('order and a path written as its key do not make a change', () => {
 
 test('an applied pick re-sent in another order is not pending', async () => {
   const source = new DataSource({ store: new ArrayStore([{ id: 1, customer: 'Northwind', site: 'Leeds' }], { key: 'id' }) });
-  source.query.hold('view', ['customer']);
+  source.query.ask({ scope: 'view', hold: ['customer'] });
   source.query.wait('view');
-  source.query.setReading('view', 'customer', { picked: ['Northwind', NW, 'Contoso'] });
-  source.query.commit();
-  source.query.setReading('view', 'customer', { picked: ['Contoso', NW, 'Northwind'] });
+  source.query.ask({ scope: 'view', field: 'customer', reading: { picked: ['Northwind', NW, 'Contoso'] } });
+  source.query.ask({ commit: true });
+  source.query.ask({ scope: 'view', field: 'customer', reading: { picked: ['Contoso', NW, 'Northwind'] } });
   assert.equal(source.query.pending('customer'), false);
   assert.equal(source.query.dirty(), false);
 });

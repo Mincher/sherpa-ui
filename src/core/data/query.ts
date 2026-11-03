@@ -25,7 +25,7 @@
  * - arrangementOf — How a Query arranges its rows; none, an empty arrangement.
  * - withoutArrangement — The Query with no arrangement: what filters, and nothing of the order.
  * - QueryDefaults — A Query as a DEFINITION states it — a saved View, in JSON.
- * - QueryRequest — One reader act, as a control asks it of the Query; a list is one change.
+ * - QueryRequest — One edit to the Query, as anyone asks it through `QueryContext.ask()`; a list is one change.
  * - SavedFilter — A saved filter: a name, and each scope's filters as a View writes them.
  * - isSavedFilter — Is this a saved filter — a name, and a query definition?
  * - ViewScope — One scope as a View writes it: each field's condition in the plain form.
@@ -58,6 +58,7 @@ import {
 } from './store.js';
 import { answerTree, answeredCondition, readingClause, type FieldFacts, type FieldReading } from './filter-state.js';
 import type { Where } from './where.js';
+import type { BoundControl } from './data-source-types.js';
 
 /** Every scope's setup, as plain data — what a page's data is under. */
 export interface Query {
@@ -208,15 +209,17 @@ export interface QueryDefaults {
   scopes: Record<string, ViewScope>;
 }
 
-/** One reader act, as a control asks it of the Query: one field's answer, one
- *  field or a whole scope switched off or on, a reset — or a list of them,
- *  which is one change. `scope` is the bind's when left out; `commit` is a
- *  bar's or a heading's Apply. 366 step 18 · TRAP T-one-query-one-owner */
+/** One edit to the Query, as a control, the node editor or an agent asks it:
+ *  `QueryContext.ask()` is its one door, and a list is one change. Left out,
+ *  `scope` is the View — for a sort, group or search, the scope that arranges
+ *  now; for an Apply or a Discard, every scope. `commit` applies what the
+ *  edit names at once. TRAP T-one-command-one-door */
 export type QueryRequest =
-  | { scope?: string; field: string; reading: FieldReading | null; commit?: true }
+  | { scope?: string; field: string; reading: FieldReading | null; commit?: true; only?: BoundControl }
   | { scope?: string; field: string; suspended: boolean; commit?: true }
   | { scope?: string; suspended: boolean; commit?: true }
   | { scope?: string; reset: { carry?: boolean; organise?: boolean }; commit?: true }
+  /** A hover: the page's, never the Query's — `ask()` passes it by. TODO 655 */
   | { scope?: string; field: string; preview: boolean; value?: string }
   | { scope?: string; order: readonly string[] }
   /** A preset on or off. TODO 493 */
@@ -226,6 +229,26 @@ export type QueryRequest =
   /** Solo a field, every scope `across`; or end the solo. TODO 690 */
   | { scope?: string; solo: string; across?: boolean }
   | { scope?: string; unsolo: true }
+  /** Sort by a field; `null` suspends it, kept to resume; with `clear`, forgets it.
+   *  In a slot, its chart's order. TRAP T-a-suspended-sort-is-one-owners-job */
+  | { scope?: string; sort: string | null; direction?: SortDirection; clear?: true }
+  /** Group by a field, or stop. In a slot, its chart's parts. */
+  | { scope?: string; group: string | null }
+  | { scope?: string; search: string }
+  /** The page, or the rows per page, of the source that draws a page in `scope`. */
+  | { scope?: string; page: number }
+  | { scope?: string; pageSize: number }
+  /** What a scope holds, whole; one it takes, down from the View or up from a chart; one it lets go. */
+  | { scope?: string; hold: readonly string[] }
+  | { scope?: string; take: readonly string[]; from?: string }
+  | { scope?: string; release: string }
+  /** A field's hold moved into `scope`, as one change. */
+  | { scope?: string; move: string; from: string }
+  /** Picks the filters before a field rule out leave its answer, applied and drafted alike. */
+  | { scope?: string; field: string; letGo: readonly string[] }
+  /** Apply, or Discard: one field, one scope, or every scope. */
+  | { scope?: string; field?: string; commit: true }
+  | { scope?: string; field?: string; discard: true }
   | readonly QueryRequest[];
 
 /** A saved filter: a name, and each scope's filters as a View writes them —

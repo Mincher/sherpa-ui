@@ -40,7 +40,7 @@ async function source(options = {}) {
 
 test('the SOURCE names the groups, with a count over every matching row', async () => {
   const src = await source();
-  src.query.setGroup('team');
+  src.query.ask({ group: 'team' });
   await settle();
   assert.deepEqual(src.groups(), [
     { key: 'Blue', value: 'Blue', count: 3 },
@@ -85,9 +85,9 @@ test('a filter in a COMPONENT scope narrows the groups, with a summary bound bes
     id: 'chart', setAttribute() {}, removeAttribute() {}, hasAttribute: () => false, populate() {},
   });
   bindSource(src, chart, { rows: 'all', readonly: true });
-  src.query.setGroup('team');
-  src.query.hold('data', ['team']);
-  src.query.setReading('data', 'team', { picked: ['Blue', 'Red'] });
+  src.query.ask({ group: 'team' });
+  src.query.ask({ scope: 'data', hold: ['team'] });
+  src.query.ask({ scope: 'data', field: 'team', reading: { picked: ['Blue', 'Red'] } });
   await settle();
   assert.deepEqual(src.groups(), [
     { key: 'Blue', value: 'Blue', count: 3 },
@@ -97,7 +97,7 @@ test('a filter in a COMPONENT scope narrows the groups, with a summary bound bes
 
 test('the count spans PAGES — a page count is the grid\'s, not the group\'s', async () => {
   const src = await source({ pageSize: 2 });
-  src.query.setGroup('team');
+  src.query.ask({ group: 'team' });
   await settle();
   // Two rows on the page; the groups still say what the whole set holds.
   assert.equal(src.rows.length <= 6, true);

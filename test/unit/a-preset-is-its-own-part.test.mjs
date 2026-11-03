@@ -46,7 +46,7 @@ const readings = (source) => source.query.applied.scopes.data.readings;
 const on = (source) => source.describe('data').filters[0].active;
 const act = async (source, fn) => {
   fn();
-  source.query.commit({ scope: 'data' });
+  source.query.ask({ scope: 'data', commit: true });
   await source.load();
   await settle();
 };
@@ -61,7 +61,7 @@ test('a preset leads its scope as a boolean chip, off at the start', async () =>
 
 test('on, it puts its conditions on the fields, adds no chip, and never goes Advanced; off takes them away', async () => {
   const source = await page();
-  await act(source, () => source.query.setPreset('data', 'high-risk', true));
+  await act(source, () => source.query.ask({ scope: 'data', preset: 'high-risk', on: true }));
   assert.deepEqual(ids(source), [1, 4]);
   assert.equal(on(source), true);
   assert.deepEqual(readings(source).health.byPreset, { 'high-risk': { label: 'High risk', scope: 'data', tree: { op: 'lt', value: 60 } } });
@@ -71,9 +71,9 @@ test('on, it puts its conditions on the fields, adds no chip, and never goes Adv
   assert.equal(readings(source).health.tree, undefined);
   assert.deepEqual(source.describe('data').filters.map((f) => f.id), ['preset:high-risk', 'plan']);
   // A field's own answer narrows beside them.
-  await act(source, () => source.query.setReading('data', 'plan', { picked: ['free'] }));
+  await act(source, () => source.query.ask({ scope: 'data', field: 'plan', reading: { picked: ['free'] } }));
   assert.deepEqual(ids(source), [4]);
-  await act(source, () => source.query.setPreset('data', 'high-risk', false));
+  await act(source, () => source.query.ask({ scope: 'data', preset: 'high-risk', on: false }));
   assert.deepEqual(ids(source), [3, 4]);
   assert.equal(on(source), false);
   assert.equal(readings(source).health, undefined);
@@ -83,15 +83,15 @@ test('on, it puts its conditions on the fields, adds no chip, and never goes Adv
 
 test('its rows are ANDed with a field\'s own; off, the field\'s own is all that is left', async () => {
   const source = await page();
-  await act(source, () => source.query.setReading('data', 'tickets', { op: 'gt', text: '1' }));
+  await act(source, () => source.query.ask({ scope: 'data', field: 'tickets', reading: { op: 'gt', text: '1' } }));
   assert.deepEqual(ids(source), [1, 3]);
-  await act(source, () => source.query.setPreset('data', 'high-risk', true));
+  await act(source, () => source.query.ask({ scope: 'data', preset: 'high-risk', on: true }));
   assert.deepEqual(ids(source), [1]);
   // The reader's answer and its mode stay as they were, beside the preset's.
   assert.deepEqual(readings(source).tickets.tree, undefined);
   assert.equal(readings(source).tickets.text, '1');
   assert.equal(readings(source).tickets.mode, undefined);
-  await act(source, () => source.query.setPreset('data', 'high-risk', false));
+  await act(source, () => source.query.ask({ scope: 'data', preset: 'high-risk', on: false }));
   assert.deepEqual(ids(source), [1, 3]);
   assert.equal(readings(source).tickets.text, '1');
   assert.equal(readings(source).tickets.byPreset, undefined);
@@ -100,23 +100,23 @@ test('its rows are ANDed with a field\'s own; off, the field\'s own is all that 
 
 test('a reader\'s answer on its field, or a clear of it, leaves it on; the Switch shows it off while the fields are off; Reset takes it off', async () => {
   const source = await page();
-  await act(source, () => source.query.setPreset('data', 'high-risk', true));
-  await act(source, () => source.query.setReading('data', 'health', { tree: rowsTree([{ op: 'lt', text: '50' }]), mode: 'advanced' }));
+  await act(source, () => source.query.ask({ scope: 'data', preset: 'high-risk', on: true }));
+  await act(source, () => source.query.ask({ scope: 'data', field: 'health', reading: { tree: rowsTree([{ op: 'lt', text: '50' }]), mode: 'advanced' } }));
   assert.equal(on(source), true);
   assert.deepEqual(ids(source), [1]);
-  await act(source, () => source.query.setReading('data', 'health', null));
+  await act(source, () => source.query.ask({ scope: 'data', field: 'health', reading: null }));
   assert.equal(on(source), true);
   assert.deepEqual(ids(source), [1, 4]);
-  source.query.suspend('data', null, true);
+  source.query.ask({ scope: 'data', suspended: true });
   await source.load();
   await settle();
   assert.deepEqual(ids(source), [1, 2, 3, 4]);
   assert.equal(on(source), false);
-  source.query.suspend('data', null, false);
+  source.query.ask({ scope: 'data', suspended: false });
   await source.load();
   await settle();
   assert.equal(on(source), true);
-  await act(source, () => source.query.reset(['data']));
+  await act(source, () => source.query.ask({ scope: 'data', reset: {} }));
   assert.deepEqual(ids(source), [1, 2, 3, 4]);
   assert.equal(on(source), false);
 });
@@ -124,11 +124,11 @@ test('a reader\'s answer on its field, or a clear of it, leaves it on; the Switc
 test('on a field no scope holds, its reading is read where it sits: the state says on, not off (Will, TODO 611)', async () => {
   const source = await page();
   assert.equal(source.query.scopeOf('tickets'), null);
-  await act(source, () => source.query.setPreset('data', 'high-risk', true));
+  await act(source, () => source.query.ask({ scope: 'data', preset: 'high-risk', on: true }));
   assert.equal(source.selection('tickets').fieldState, 'active');
   // Still its scope's alone: it never moved to the View.
   assert.ok(source.query.applied.scopes.data.readings.tickets);
   assert.equal(source.query.applied.scopes.view?.readings.tickets, undefined);
-  await act(source, () => source.query.setPreset('data', 'high-risk', false));
+  await act(source, () => source.query.ask({ scope: 'data', preset: 'high-risk', on: false }));
   assert.equal(source.selection('tickets').fieldState, 'off');
 });

@@ -31,7 +31,6 @@ import { report } from '../data/report.js';
 import { answerTree, type FieldType } from '../data/filter-state.js';
 import { treeReading } from '../data/where.js';
 import type { DrawnGraph, GraphNode, GraphRow, WorkflowRoute } from '../data/workflow.js';
-import { ask } from './bind-source.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
 
@@ -405,11 +404,12 @@ export interface QueryEditorOptions extends QueryGraphFacts {
 const ONE = new Set(['eq', 'ne']);
 
 /** Keep a page's Query drawn on a canvas as it changes, and ask it for each edit; returns the undo.
- *  It draws what the controls show — the draft — and ASKS through the doors a chip
- *  asks through: whether a change applies at once or waits for Apply is the Query's. */
+ *  It draws what the controls show — the draft — and ASKS through the one door a chip
+ *  asks through: whether a change applies at once or waits for Apply is the Query's,
+ *  and so is a slot's Sort and Group. TRAP T-one-command-one-door */
 export function bindQueryEditor(
   canvas: SherpaLayoutCanvas,
-  source: Pick<DataSource, 'query'> & Partial<Pick<DataSource, 'valuesFor' | 'setPageSize'>>,
+  source: Pick<DataSource, 'query'> & Partial<Pick<DataSource, 'valuesFor'>>,
   { definition, inspector, ...facts }: QueryEditorOptions,
 ): () => void {
   const query = source.query;
@@ -418,10 +418,10 @@ export function bindQueryEditor(
   const onEdit = ({ node, row, value }: GraphEdit): void => {
     const scope = node.ref?.['scope'];
     const was = Object.fromEntries(node.rows.map((r) => [r.name, r.value]));
-    if (node.kind === 'source' && row.name === 'pageSize') source.setPageSize?.(Number(value));
+    if (node.kind === 'source' && row.name === 'pageSize') query.ask({ pageSize: Number(value) });
     if (!scope) return;
     if (node.kind === 'scope') {
-      ask(query, { scope, suspended: !value }, scope);
+      query.ask({ scope, suspended: !value });
     } else if (node.kind === 'condition') {
       const field = node.ref?.['field'] ?? '';
       const to = String(row.name === 'field' ? value : field);
@@ -431,14 +431,14 @@ export function bindQueryEditor(
       if (ONE.has(op) && Array.isArray(given)) given = given[0] ?? '';
       const reading = treeReading(editedCondition(op, given as string | string[] ?? '', typeOf(to)), typeOf(to) as FieldType | undefined);
       // Another field: the condition MOVES there, as one change.
-      ask(query, to === field ? { scope, field, reading } : [{ scope, field, reading: null }, { scope, field: to, reading }], scope);
+      query.ask(to === field ? { scope, field, reading } : [{ scope, field, reading: null }, { scope, field: to, reading }]);
     } else if (node.kind === 'arrange') {
       const pick = (name: string): string => String(row.name === name ? value : was[name] ?? '');
-      if (row.name === 'group') query.setGroup(pick('group') || null, scope);
-      else if (row.name === 'search') query.setSearch(pick('search'), scope);
-      else query.setSort(pick('sort') || null, pick('direction') === 'desc' ? 'desc' : 'asc', scope);
+      if (row.name === 'group') query.ask({ scope, group: pick('group') || null });
+      else if (row.name === 'search') query.ask({ scope, search: pick('search') });
+      else query.ask({ scope, sort: pick('sort') || null, direction: pick('direction') === 'desc' ? 'desc' : 'asc' });
     } else if (node.kind === 'presentation') {
-      query.present(scope, { [row.name]: value ? String(value) : undefined });
+      query.ask({ scope, presentation: { [row.name]: value ? String(value) : undefined } });
     }
   };
   /* A NEW ROUTE, as the Query can take one: a condition into a field of a scope. The
@@ -466,7 +466,7 @@ export function bindQueryEditor(
       report({ code: 'query-route', message: `Nothing "${was.heading}" picks is a value of "${field}": tick its values there.` });
       return;
     }
-    ask(query, [{ scope, field: old, reading: null }, { scope: there, field, reading }], there);
+    query.ask([{ scope, field: old, reading: null }, { scope: there, field, reading }]);
   };
   // The node in the inspector, and its live visual: kept while the same component is shown.
   let picked: string | null = null;

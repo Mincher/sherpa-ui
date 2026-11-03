@@ -73,8 +73,8 @@ test('a pick the chain rules out is LET GO: out of the Query, and the earlier fi
   assert.deepEqual(source.debugState().aside, {});
   assert.deepEqual(sorted(await source.offered(VIEW)).region, ['AMER', 'APAC', 'EMEA']);
   // Customer let go: LATAM does not come back.
-  source.query.setReading(VIEW, 'customer', null);
-  source.query.commit();
+  source.query.ask({ scope: VIEW, field: 'customer', reading: null });
+  source.query.ask({ commit: true });
   for (let i = 0; i < 4; i++) await source.load().then(tick);
   assert.deepEqual(source.query.applied.scopes.view.readings.region.picked, ['EMEA']);
 });
@@ -96,8 +96,8 @@ test('a field is never ruled out by one BELOW it — even with Limit on, and Reg
 test('a filter before the set limits the chain, though the top is unanswered', async () => {
   const { source } = await setup({});
   // Zone is held before the set, so its answer stands before the chain.
-  source.query.hold(VIEW, ['zone', 'customer', 'region']);
-  source.query.setReading('view', 'zone', { picked: ['north'] });
+  source.query.ask({ scope: VIEW, hold: ['zone', 'customer', 'region'] });
+  source.query.ask({ scope: 'view', field: 'zone', reading: { picked: ['north'] } });
   await source.load();
   assert.deepEqual(sorted(await source.offered(VIEW)), { region: ['AMER', 'EMEA'] });
 });

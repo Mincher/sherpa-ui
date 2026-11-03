@@ -53,9 +53,9 @@ test('a chart free of its field is narrowed by the View\'s other filters, never 
   bindSource(source, gauge, { rows: 'all', readonly: true, free: ['health'] });
   await source.load();
   await settle();
-  source.query.setReading('view', 'health', { picked: ['At risk'] });
-  source.query.setReading('view', 'region', { picked: ['EMEA'] });
-  source.query.commit();
+  source.query.ask({ scope: 'view', field: 'health', reading: { picked: ['At risk'] } });
+  source.query.ask({ scope: 'view', field: 'region', reading: { picked: ['EMEA'] } });
+  source.query.ask({ commit: true });
   await source.load();
   await settle();
   // The page is narrowed by both; the gauge by Region alone.
@@ -69,11 +69,11 @@ test('only picks in force are lit: none while the field is Advanced or says "is 
   const source = new DataSource({ store: new Store([{ id: 1, plan: 'Pro' }, { id: 2, plan: 'Free' }], { key: 'id' }) });
   const chart = Object.assign(new EventTarget(), { setAttribute() {}, removeAttribute() {}, hasAttribute: () => false, populate() {} });
   bindSource(source, chart, { scope: 'chart', rows: 'all', readonly: true, free: ['plan'] });
-  source.query.hold(VIEW, ['plan']);
-  source.query.setReading(VIEW, 'plan', { picked: ['Pro'] });
+  source.query.ask({ scope: VIEW, hold: ['plan'] });
+  source.query.ask({ scope: VIEW, field: 'plan', reading: { picked: ['Pro'] } });
   assert.deepEqual(source.pickedFor(chart, 'plan'), ['Pro']);
-  source.query.setReading(VIEW, 'plan', { picked: ['Pro'], mode: 'advanced', tree: rowsTree([{ op: 'eq', picked: ['Free'] }]) });
+  source.query.ask({ scope: VIEW, field: 'plan', reading: { picked: ['Pro'], mode: 'advanced', tree: rowsTree([{ op: 'eq', picked: ['Free'] }]) } });
   assert.deepEqual(source.pickedFor(chart, 'plan'), [], 'Advanced is in force, not the Simple picks');
-  source.query.setReading(VIEW, 'plan', { op: 'ne', picked: ['Pro'] });
+  source.query.ask({ scope: VIEW, field: 'plan', reading: { op: 'ne', picked: ['Pro'] } });
   assert.deepEqual(source.pickedFor(chart, 'plan'), [], '"is not Pro" lights no Pro');
 });

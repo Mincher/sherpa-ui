@@ -21,7 +21,7 @@ async function mount(page: Page) {
     const { ArrayStore, openSource, bindSource } = await import('/dist/index.js') as unknown as {
       ArrayStore: new (r: unknown[], o: object) => unknown;
       openSource(d: object, s: unknown): Promise<{ describe(s: string): unknown; load(): Promise<void>;
-        query: { setReading(s: string, f: string, r: null): void; commit(): void } }>;
+        query: { ask(r: unknown): void } }>;
       bindSource(s: unknown, el: Element, o: object): void;
     };
     const src = await openSource({
@@ -35,8 +35,8 @@ async function mount(page: Page) {
     bindSource(src, bar, { steerOnly: true, scope: 'view' });
     await src.load();
     // Customer opens on All; these pick from no answer. TODO 489
-    src.query.setReading('view', 'customer', null);
-    src.query.commit();
+    src.query.ask({ scope: 'view', field: 'customer', reading: null });
+    src.query.ask({ commit: true });
     await src.load();
     (window as unknown as { __src: unknown }).__src = src;
     await window.__settled();

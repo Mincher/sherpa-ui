@@ -52,12 +52,12 @@ test('DOWN IS CLOSED: a component may hold only its own fields', async () => {
 
 test('RAISING a filter takes it out of EVERY component, in one event', async () => {
   const src = await source();
-  src.query.hold('grid', ['owner', 'plan']);
-  src.query.hold('tickets', ['owner']);
+  src.query.ask({ scope: 'grid', hold: ['owner', 'plan'] });
+  src.query.ask({ scope: 'tickets', hold: ['owner'] });
   const events = [];
   src.query.addEventListener('query-change', (e) => { if (e.detail.scopes.length) events.push(e.detail); });
 
-  assert.equal(src.query.move('owner', 'grid', VIEW), true);
+  src.query.ask({ scope: VIEW, move: 'owner', from: 'grid' });
 
   assert.deepEqual(src.query.scope(VIEW), ['owner']);
   assert.deepEqual(src.query.scope('grid'), ['plan']);
@@ -70,8 +70,8 @@ test('RAISING a filter takes it out of EVERY component, in one event', async () 
 
 test('LOWERING it leaves the view and lands in one component', async () => {
   const src = await source();
-  src.query.hold(VIEW, ['owner', 'status']);
-  assert.equal(src.query.move('owner', VIEW, 'tickets'), true);
+  src.query.ask({ scope: VIEW, hold: ['owner', 'status'] });
+  src.query.ask({ scope: 'tickets', move: 'owner', from: VIEW });
   assert.deepEqual(src.query.scope(VIEW), ['status']);
   assert.deepEqual(src.query.scope('tickets'), ['owner']);
   assert.deepEqual(src.query.scope('grid'), []);
@@ -79,21 +79,20 @@ test('LOWERING it leaves the view and lands in one component', async () => {
 
 test('COMPONENT and COMPONENT are NOT exclusive — both may hold `owner`', async () => {
   const src = await source();
-  src.query.hold('grid', ['owner']);
-  src.query.hold('tickets', ['owner']);
+  src.query.ask({ scope: 'grid', hold: ['owner'] });
+  src.query.ask({ scope: 'tickets', hold: ['owner'] });
   assert.deepEqual(src.query.scope('grid'), ['owner']);
   assert.deepEqual(src.query.scope('tickets'), ['owner']);
 });
 
 test('a component REFUSES a field it does not have, and says so', async () => {
   const src = await source();
-  src.query.hold(VIEW, ['priority']);
+  src.query.ask({ scope: VIEW, hold: ['priority'] });
   const seen = [];
   const undo = onReport((r) => seen.push(r));
-  const moved = src.query.move('priority', VIEW, 'grid');
+  src.query.ask({ scope: 'grid', move: 'priority', from: VIEW });
   undo();
 
-  assert.equal(moved, false);
   // Nothing changed: the refusal is not half a move.
   assert.deepEqual(src.query.scope(VIEW), ['priority']);
   assert.deepEqual(src.query.scope('grid'), []);
@@ -111,7 +110,7 @@ test('offer() on an unchanged list fires nothing — a bar re-renders on it', as
 
 test('debugState says what each scope HAS as well as what it holds', async () => {
   const src = await source();
-  src.query.hold('grid', ['plan']);
+  src.query.ask({ scope: 'grid', hold: ['plan'] });
   const d = src.debugState();
   assert.deepEqual(d.offers.grid, ['status', 'plan', 'owner']);
   assert.deepEqual(d.scopes.grid, ['plan']);

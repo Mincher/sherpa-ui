@@ -127,7 +127,7 @@ export class ProviderShowAs {
     if (!slot || /\s/.test(slot) || !source) return;
     event.stopPropagation();
     const kind = (event as CustomEvent<{ kind?: string }>).detail?.kind;
-    source.query.present(slot, { kind: kind && kind !== 'default' ? kind : undefined });
+    source.query.ask({ scope: slot, presentation: { kind: kind && kind !== 'default' ? kind : undefined } });
   };
 
   /** A chart card's title follows what the reader set: "Primary by Secondary,
@@ -203,7 +203,7 @@ export class ProviderShowAs {
       if (want && kind === 'grid' && parked && shownAs(el) !== 'grid') parked.append(...el.childNodes);
       // A grid made from a chart takes its filters with it: they narrow it alone.
       if (shownAs(el) === 'grid' && this.#authored.has(el)) {
-        for (const c of (el as Grid).columns ?? []) source.query.setReading(slot, c.field, null, { only: el as Populatable });
+        for (const c of (el as Grid).columns ?? []) source.query.ask({ scope: slot, field: c.field, reading: null, only: el as Populatable });
       }
       if (!this.#authored.has(el) && shownAs(el) === authored) this.#parked.set(slot, el);
       if (next !== parked) this.#authored.set(next, authored);
@@ -277,8 +277,7 @@ export class ProviderShowAs {
     el.addEventListener('column-filter-change', (e) => {
       e.stopPropagation();
       const { field, reading } = (e as CustomEvent<{ field: string; reading: FieldReading | null }>).detail;
-      source.query.setReading(slot, field, reading, { only: el as Populatable });
-      source.query.commit({ field });
+      source.query.ask({ scope: slot, field, reading, only: el as Populatable, commit: true });
       // A field's home draws its controls: this scope is not its home, so it is told here.
       (el as Element & { drawReading(f: string, r: FieldReading): void }).drawReading(field, source.query.reading(slot, field) ?? {});
     }, { signal: stop.signal });

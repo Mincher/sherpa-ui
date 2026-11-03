@@ -232,7 +232,7 @@ test('source: one filter fans out to every bound component', async ({ page }) =>
     await source.load();
     const afterLoad = counts.map((c) => c.at(-1));
 
-    source.query.setReading('view', 'region', { picked: ['EMEA'] });
+    source.query.ask({ scope: 'view', field: 'region', reading: { picked: ['EMEA'] } });
     await new Promise((r) => setTimeout(r, 30));
     const afterFilter = counts.map((c) => c.at(-1));
 
@@ -269,7 +269,7 @@ test('source: a readonly bind receives data but never steers', async ({ page }) 
 
     // …but it still receives data when the source changes.
     const before = populated;
-    source.query.setReading('view', 'region', { picked: ['EMEA'] });
+    source.query.ask({ scope: 'view', field: 'region', reading: { picked: ['EMEA'] } });
     await new Promise((r) => setTimeout(r, 30));
     return { sortAfterEvent, received: populated > before };
   }, ROWS);
@@ -282,15 +282,15 @@ test('source: a narrowing change returns to page 1 rather than stranding the use
   const got = await page.evaluate(async (data) => {
     const { ArrayStore, DataSource } = await import('/dist/index.js');
     const source = new DataSource({ store: new ArrayStore(data), pageSize: 3 });
-    source.query.setSort('id');
+    source.query.ask({ sort: 'id' });
     await source.load();
 
-    source.setPage(3);
+    source.query.ask({ page: 3 });
     await new Promise((r) => setTimeout(r, 20));
     const onPage3 = { page: source.state.page, ids: source.rows.map((r) => r['id']), pages: source.totalPages };
 
     // Filtering to 4 rows leaves only 2 pages — page 3 no longer exists.
-    source.query.setReading('view', 'region', { picked: ['EMEA'] });
+    source.query.ask({ scope: 'view', field: 'region', reading: { picked: ['EMEA'] } });
     await new Promise((r) => setTimeout(r, 30));
     const afterFilter = { page: source.state.page, count: source.rows.length, pages: source.totalPages };
 
@@ -370,7 +370,7 @@ test('source: unbind stops both halves', async ({ page }) => {
     off();
 
     const before = populated;
-    source.query.setReading('view', 'region', { picked: ['EMEA'] });
+    source.query.ask({ scope: 'view', field: 'region', reading: { picked: ['EMEA'] } });
     await new Promise((r) => setTimeout(r, 30));
     // …and its events no longer steer.
     el.dispatchEvent(
@@ -462,9 +462,9 @@ test('source: a slow earlier load never overwrites a newer one', async ({ page }
     // single load (see the coalescing test below), which would mean only one
     // request ever reached the store — and then there would be no race to test.
     // A person clicking two chips produces two ticks, which is this.
-    source.query.setReading('view', 'tag', { picked: ['a'] });   // slow
+    source.query.ask({ scope: 'view', field: 'tag', reading: { picked: ['a'] } });   // slow
     await new Promise((r) => setTimeout(r, 0));
-    source.query.setReading('view', 'tag', { picked: ['b'] });   // fast — must win
+    source.query.ask({ scope: 'view', field: 'tag', reading: { picked: ['b'] } });   // fast — must win
     await new Promise((r) => setTimeout(r, 250));
     return { rows: source.rows.map((r) => r['tag']), calls: call };
   });
@@ -496,9 +496,9 @@ test('source: writes in ONE tick coalesce into a single load', async ({ page }) 
     const afterFirst = calls;
 
     // THREE setters, one tick.
-    source.query.setReading('view', 'plan', { picked: ['Pro'] });
-    source.query.setSort('id', 'desc');
-    source.setPageSize(10);
+    source.query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Pro'] } });
+    source.query.ask({ sort: 'id', direction: 'desc' });
+    source.query.ask({ pageSize: 10 });
     await new Promise((r) => setTimeout(r, 60));
 
     return {
@@ -941,17 +941,17 @@ test('a page change while GROUPED reaches the components, without a load', async
     const ungrouped = { seen: [...seen], loads };
 
     // UNGROUPED: a page change loads, because skip/take really did change.
-    source.setPage(2);
+    source.query.ask({ page: 2 });
     await new Promise((res) => setTimeout(res, 80));
     const afterUngrouped = { page: source.state.page, seen: [...seen], loads };
 
     // GROUPED: the same change must still REACH the component.
-    source.query.setGroup('team');
+    source.query.ask({ group: 'team' });
     await new Promise((res) => setTimeout(res, 80));
     const loadsBeforeGrouped = loads;
     seen.length = 0;
 
-    source.setPage(2);
+    source.query.ask({ page: 2 });
     await new Promise((res) => setTimeout(res, 80));
 
     return {
@@ -1020,7 +1020,7 @@ test('a bound grid draws its rows in the order its source gives them — it neve
     });
     const source = new DataSource({ store });
     bindSource(source, grid, { scope: 'view' });
-    source.query.setSort('name', 'asc');
+    source.query.ask({ sort: 'name', direction: 'asc' });
     await source.load();
     await window.__settled();
     return [...grid.shadowRoot!.querySelectorAll('.row')].map((r) => r.querySelector('[data-field="name"]')?.textContent?.trim());

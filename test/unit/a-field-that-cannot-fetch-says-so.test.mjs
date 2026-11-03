@@ -27,7 +27,7 @@ test('a failed values read marks its field; the next good one clears it', async 
   let down = true;
   const store = fakeRemote(new ArrayStore(ROWS, { key: 'id' }), { delay: 0, fail: () => (down ? 1 : 0) });
   const source = new DataSource({ store, autoLoad: false });
-  source.query.hold('data', ['region']);
+  source.query.ask({ scope: 'data', hold: ['region'] });
   const bar = new Bar();
   bindSource(source, bar, { steerOnly: true, scope: 'data' });
   await source.declareFromRows(['region']);
@@ -39,7 +39,7 @@ test('a failed values read marks its field; the next good one clears it', async 
 
 test('a field whose values read, but match nothing, is not failed', async () => {
   const source = new DataSource({ store: new ArrayStore([], { key: 'id' }) });
-  source.query.hold('data', ['region']);
+  source.query.ask({ scope: 'data', hold: ['region'] });
   const bar = new Bar();
   bindSource(source, bar, { steerOnly: true, scope: 'data' });
   await source.declareFromRows(['region']);

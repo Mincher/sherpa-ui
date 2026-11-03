@@ -32,7 +32,7 @@ test('Select all rows ticks every matching row, on every page, and only those', 
 
     // Under a filter, only the rows it leaves.
     scenario('none');
-    source.query.setReading('view', 'tier', { picked: ['Gold'] });
+    source.query.ask({ scope: 'view', field: 'tier', reading: { picked: ['Gold'] } });
     await source.load();
     scenario('all');
     await new Promise((done) => setTimeout(done, 50));
@@ -75,7 +75,7 @@ test('Select all on page lets go of the rows chosen on other pages', async ({ pa
     await window.__settled();
     const first = [...grid.selectedKeys];
     // Page 2: Select all on page.
-    source.setPage(2);
+    source.query.ask({ page: 2 });
     await source.load();
     await window.__settled();
     scenario('page');

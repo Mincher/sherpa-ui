@@ -27,8 +27,8 @@ test('a source joins the context it is given, and source.query IS it', () => {
   const query = new QueryContext();
   const source = new DataSource({ store: store(), query });
   assert.equal(source.query, query);
-  source.query.hold(VIEW, ['plan']);
-  source.query.setReading('view', 'plan', { picked: ['Pro'] });
+  source.query.ask({ scope: VIEW, hold: ['plan'] });
+  source.query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Pro'] } });
   assert.deepEqual(picked(query.applied), ['Pro']);
   // A source given none makes its own.
   assert.notEqual(new DataSource({ store: store() }).query, query);
@@ -38,15 +38,15 @@ test('a remote source splits the draft once; a draft that exists is kept', () =>
   const query = new QueryContext();
   const remote = new DataSource({ store: fakeRemote(store(), { delay: 0 }), query });
   assert.equal(query.remote, true);
-  remote.query.hold(VIEW, ['plan']);
-  remote.query.setReading('view', 'plan', { picked: ['Free'] });
+  remote.query.ask({ scope: VIEW, hold: ['plan'] });
+  remote.query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Free'] } });
   // The edit waits for Apply.
   assert.deepEqual(picked(query.draft), ['Free']);
   assert.equal(picked(query.applied), undefined);
   // A second remote source keeps the draft as it is.
   new DataSource({ store: fakeRemote(store(), { delay: 0 }), query });
   assert.deepEqual(picked(query.draft), ['Free']);
-  remote.query.commit();
+  remote.query.ask({ commit: true });
   assert.deepEqual(picked(query.applied), ['Free']);
 });
 
@@ -55,13 +55,13 @@ test('each read of the Query is the context\'s (366 step 13)', () => {
   const source = new DataSource({ store: store(), query });
   const chart = { id: 'chart' };
   source.query.offer('data', ['plan', 'id']);
-  source.query.hold(VIEW, ['plan']);
-  source.query.hold('data', ['id']);
+  source.query.ask({ scope: VIEW, hold: ['plan'] });
+  source.query.ask({ scope: 'data', hold: ['id'] });
   source.query.declareScope('data', { label: 'Records', arranges: true });
   source.query.declareSets('data', [{ id: 'set', fields: ['id'] }]);
   source.query.declarePart('legend', { field: 'plan', only: chart, label: 'Plan' });
   source.query.declareDefault('grid', { id: { picked: [1] } });
-  source.query.setReading('view', 'plan', { picked: ['Pro'] });
+  source.query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Pro'] } });
 
   assert.deepEqual(query.scope(VIEW), ['plan']);
   assert.deepEqual([...query.scopes].sort(), ['data', 'grid', VIEW], 'a default holds its field');
@@ -85,11 +85,11 @@ test('each read of the Query is the context\'s (366 step 13)', () => {
 test('pending and dirty: a remote member\'s edit, until Apply', () => {
   const query = new QueryContext();
   const remote = new DataSource({ store: fakeRemote(store(), { delay: 0 }), query });
-  remote.query.hold(VIEW, ['plan']);
-  remote.query.setReading('view', 'plan', { picked: ['Free'] });
+  remote.query.ask({ scope: VIEW, hold: ['plan'] });
+  remote.query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Free'] } });
   assert.equal(query.pending('plan'), true);
   assert.equal(query.dirty(VIEW), true);
-  remote.query.commit();
+  remote.query.ask({ commit: true });
   assert.equal(query.pending('plan'), false);
   assert.equal(query.dirty(), false);
 });
@@ -104,8 +104,8 @@ test('a change is the context\'s: every member hears it, then ONE query-change (
   assert.deepEqual(query.fields('data'), ['plan']);
   // The same offer again changes nothing, and no one hears it.
   query.offer('data', ['plan']);
-  query.hold(VIEW, ['plan']);
-  query.setReading('view', 'plan', { picked: ['Pro'] });
+  query.ask({ scope: VIEW, hold: ['plan'] });
+  query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Pro'] } });
   // Both members compiled before the page was told.
   assert.deepEqual(heard, [
     { fields: [], scopes: ['data'], filters: [undefined, undefined] },
@@ -123,26 +123,26 @@ test('an edit on the context recompiles, reloads and redraws its source (366 ste
   const heard = [];
   query.addEventListener('query-change', (e) => heard.push(...e.detail.fields));
   await source.load();
-  query.hold(VIEW, ['plan']);
-  query.setReading('view', 'plan', { picked: ['Pro'] });
+  query.ask({ scope: VIEW, hold: ['plan'] });
+  query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Pro'] } });
   await source.load();
   assert.deepEqual(source.state.filter, ['plan', 'eq', 'Pro'], 'compiled');
   assert.deepEqual(source.rows.map((r) => r.id), [1], 'loaded');
   assert.deepEqual(heard, ['plan'], 'and told');
   // A key from a control maps to the value the rows hold, by the member that knows the field.
   source.declareValues('plan', ['Pro', 'Free']);
-  query.setReading('view', 'plan', { picked: ['Free'] });
+  query.ask({ scope: 'view', field: 'plan', reading: { picked: ['Free'] } });
   assert.deepEqual(query.reading(VIEW, 'plan').picked, ['Free']);
 });
 
 test('the arrangement and the whole writes are the context\'s (366 step 16)', async () => {
   const query = new QueryContext();
   const source = new DataSource({ store: store(), query });
-  query.setSort('plan', 'asc');
+  query.ask({ sort: 'plan', direction: 'asc' });
   await source.load();
   assert.deepEqual(source.rows.map((r) => r.plan), ['Free', 'Pro'], 'the source loads in the new order');
   const saved = JSON.parse(JSON.stringify(query.export()));
-  query.clearSort();
+  query.ask({ sort: null, clear: true });
   assert.deepEqual(source.state.sort, []);
   await query.import(saved);
   assert.deepEqual(source.state.sort, [{ field: 'plan', direction: 'asc' }], 'a restore puts it back');

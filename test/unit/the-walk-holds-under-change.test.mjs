@@ -106,7 +106,7 @@ test('a failed walk sets nothing aside, and is not asked again until something m
   assert.deepEqual(source.debugState().aside, {});
   assert.deepEqual(source.query.applied.scopes.view.readings.region.picked, ['LATAM', 'EMEA', 'APAC']);
   const asked = seen.distinct;
-  source.setPage(2);
+  source.query.ask({ page: 2 });
   await sleep(40);
   assert.equal(seen.distinct, asked, 'a page turn asks nothing of a walk that failed');
 });

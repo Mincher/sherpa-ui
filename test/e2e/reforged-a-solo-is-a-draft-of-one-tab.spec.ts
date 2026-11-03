@@ -27,10 +27,10 @@ const SETUP = `
   ];
   const settle = async () => { await window.__settled?.(); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); };
   const source = await provider.open(${PAGE}, { stores: { plans: new ArrayStore(rows, { key: 'id' }) }, views: {} });
-  source.query.setReading('view', 'tier', { picked: ['gold'] });
-  source.query.setReading('data', 'plan', { picked: ['Pro'] });
-  source.query.setReading('data', 'owner', { picked: ['Ada'] });
-  source.query.commit();
+  source.query.ask({ scope: 'view', field: 'tier', reading: { picked: ['gold'] } });
+  source.query.ask({ scope: 'data', field: 'plan', reading: { picked: ['Pro'] } });
+  source.query.ask({ scope: 'data', field: 'owner', reading: { picked: ['Ada'] } });
+  source.query.ask({ commit: true });
   await source.load();
   await settle();
   const chip = (id) => bar.shadowRoot.querySelector('.chips > .chip[data-id="' + id + '"]');

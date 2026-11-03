@@ -819,7 +819,7 @@ door stays silent.
 counterpart. Each is a place a host can write state that nothing downstream
 will ever hear about.
 
-**`query.setReading()` is the answer for a FIELD**, and the reason the legend
+**`query.ask({ field, reading })` is the answer for a FIELD**, and the reason the legend
 no longer mirrors a chip at all. It writes the field's selection, re-queries,
 and then `query-change` names the field — one write, one announcement, and every
 control over that field re-reads `selection(field)` instead of being pushed to.
@@ -1843,7 +1843,7 @@ suspended → asc, from `nextSort()` in the data layer, which the toolbar's chip
 already used. The panel had no cycle at all: one click switched the sort off,
 the next set it to the wrong field.
 
-Suspended is not cleared — `setSort(null)` moves the column to the source's own
+Suspended is not cleared — `ask({ sort: null })` moves the column to the source's own
 memory so one more click resumes it. TRAP T-grid-suspend-is-not-clear
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
@@ -2725,7 +2725,7 @@ scope still WAITS — every pick is a draft in the Query, as with one Apply —
 but the bar's one Apply and Discard go. A chip's menu shows Apply beside its
 Discard (`data-apply` on a waiting menu); in a panel section, Apply and Discard
 sit on its heading row, before its ⋮, while a value of it is pending. Apply
-sends that field's answer with `commit` (`query.commit({ field })`): the rest
+sends that field's answer with `commit` (`query.ask({ field, commit: true })`): the rest
 of the scope still waits. Discard is 406's `filter-discard { field }`.
 
 **Only an OPEN menu's Apply commits.** A section's value press picks through

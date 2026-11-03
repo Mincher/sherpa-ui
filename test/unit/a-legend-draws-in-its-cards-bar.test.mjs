@@ -60,7 +60,7 @@ test('a pick from the slot\'s bar, in the part\'s scope, narrows the chart alone
   assert.deepEqual(seen.get('donut'), [1, 2, 3, 4]);
   assert.equal(source.query.applied.scopes['by-sev']?.readings?.sev, undefined);
   // The legend's own door, or the panel's: the bar is told, in the part's scope.
-  source.query.setReading('picks:bar', 'sev', { picked: ['info'] }, { only: chart });
+  source.query.ask({ scope: 'picks:bar', field: 'sev', reading: { picked: ['info'] }, only: chart });
   await tick();
   assert.deepEqual(seen.get('bar'), [2]);
   assert.deepEqual(drawn.readings.at(-1), ['picks:bar', 'sev', ['info']]);

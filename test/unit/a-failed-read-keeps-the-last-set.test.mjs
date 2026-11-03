@@ -52,7 +52,7 @@ test('while stale, a toggle asks nothing, and a change the set can place costs n
   await source.load({ force: true });
   await tick();
   seen.loads = 0;
-  source.query.setSort('tier');
+  source.query.ask({ sort: 'tier' });
   await source.load();
   await inner.insert({ id: 7, tier: 'gold' });
   await tick();

@@ -172,7 +172,7 @@ test('a remote store not held is asked step by step: its distinct values, per fi
   const bar = new Bar({ customer: { picked: ['Tailspin'] } }, ['customer', 'region']);
   bindSource(source, bar, { steerOnly: true, scope: VIEW });
   bar.report();
-  source.query.commit();
+  source.query.ask({ commit: true });
   await source.load();
   assert.deepEqual(sorted(await source.present(VIEW)).region, ['AMER', 'LATAM']);
   assert.ok(asked.some((f) => f.includes('region')));

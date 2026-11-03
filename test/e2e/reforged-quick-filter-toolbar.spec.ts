@@ -2714,7 +2714,7 @@ test('in portrait, a SHUT scope says the rows its filters leave — never an OFF
     const { ArrayStore, openSource, bindSource } = await import('/dist/index.js') as unknown as {
       ArrayStore: new (r: unknown[], o: object) => unknown;
       openSource(d: object, s: unknown): Promise<{ describe(s: string): { filters: unknown[] }; load(): Promise<void>;
-        query: { setReading(s: string, f: string, r: object | null): void; commit(): void } }>;
+        query: { ask(r: unknown): void } }>;
       bindSource(s: unknown, el: Element, o: object): void;
     };
     const rows = [
@@ -2728,9 +2728,9 @@ test('in portrait, a SHUT scope says the rows its filters leave — never an OFF
     const bar = await window.__mount('sherpa-quick-filter-toolbar', src.describe('view').filters, { 'data-orientation': 'portrait' });
     bindSource(src, bar, { steerOnly: true, scope: 'view' });
     const set = async (plan: object | null, region: object | null) => {
-      src.query.setReading('view', 'plan', plan);
-      src.query.setReading('view', 'region', region);
-      src.query.commit();
+      src.query.ask({ scope: 'view', field: 'plan', reading: plan });
+      src.query.ask({ scope: 'view', field: 'region', reading: region });
+      src.query.ask({ commit: true });
       await src.load();
       await window.__settled();
       await new Promise((done) => setTimeout(done, 150));

@@ -47,9 +47,9 @@ test('a toggle while stale asks nothing more', async () => {
   seen.loads = 0;
   const page = new DataSource({ store });
   await page.load();
-  page.query.setSort('tier');
+  page.query.ask({ sort: 'tier' });
   await page.load();
-  page.query.setSort('id');
+  page.query.ask({ sort: 'id' });
   await page.load();
   await tick(150);
   assert.equal(seen.loads, 1);

@@ -257,11 +257,11 @@ test('each PICKED value has a count of its own — and only a list answer in for
   assert.deepEqual(await source.valueResults('data'), { status: { open: 3, shut: 1 } });
 
   // Rows answer it: no values. Off: none. Emptied: none.
-  source.query.setReading('view', 'status', { mode: 'advanced', tree: rowsTree([{ op: 'contains', text: 'op' }]), picked: [] });
+  source.query.ask({ scope: 'view', field: 'status', reading: { mode: 'advanced', tree: rowsTree([{ op: 'contains', text: 'op' }]), picked: [] } });
   assert.deepEqual(await source.valueResults('data'), {});
-  source.query.suspend('view', 'region', true);
+  source.query.ask({ scope: 'view', field: 'region', suspended: true });
   assert.deepEqual(await source.valueResults('view'), {});
-  source.query.setReading('view', 'region', { picked: [] });
+  source.query.ask({ scope: 'view', field: 'region', reading: { picked: [] } });
   assert.deepEqual(await source.valueResults('view'), {});
 });
 
@@ -291,11 +291,11 @@ test('a chip counts the rows ITS OWN answer matches, within what its scope can s
 
   /* OFF keeps its number: what the answer WOULD match. Will, TODO 123. An
      off View answer narrows nothing, so the chip below counts over every row. */
-  source.query.suspend('view', 'region', true);
+  source.query.ask({ scope: 'view', field: 'region', suspended: true });
   assert.deepEqual(await source.results('view'), { region: 2 });
   assert.deepEqual(await source.results('data'), { status: 3 });
   // EMPTIED, a field has no number.
-  source.query.setReading('view', 'status', { picked: [] });
+  source.query.ask({ scope: 'view', field: 'status', reading: { picked: [] } });
   assert.deepEqual(await source.results('data'), {});
 });
 
@@ -374,7 +374,7 @@ test('a nested condition in a page definition filters right: a start, a preset a
     store: 'rows', fields,
     scopes: { data: { holds: ['plan'], presets: [{ id: 'odd', label: 'Odd sizes', where: { seats: nested, plan: { eq: 'Pro' } } }] } },
   }, new ArrayStore(rows, { key: 'id' }));
-  preset.query.setPreset('data', 'odd', true, true);
+  preset.query.ask({ scope: 'data', preset: 'odd', on: true, commit: true });
   await preset.load();
   assert.deepEqual(ids(preset), [2, 6]);
   // A status value whose `when` nests: parsed once, worked out by the data.

@@ -95,14 +95,14 @@ test('a filter chip\'s tip, in lines: its field, what the field is, its answer, 
   const r = await page.evaluate(async () => {
     const { ArrayStore } = await import('/dist/index.js');
     const root = document.getElementById('root')!;
-    const provider = document.createElement('sherpa-provider') as HTMLElement & { open(d: unknown, o: unknown): Promise<{ query: { setReading(s: string, f: string, r: unknown): void; commit(): void }; load(): Promise<void> }> };
+    const provider = document.createElement('sherpa-provider') as HTMLElement & { open(d: unknown, o: unknown): Promise<{ query: { ask(r: unknown): void }; load(): Promise<void> }> };
     provider.innerHTML = '<sherpa-quick-filter-toolbar data-scope="data"></sherpa-quick-filter-toolbar>';
     root.replaceChildren(provider);
     const bar = provider.querySelector('sherpa-quick-filter-toolbar')!;
     const source = await provider.open({ v: 1, id: 'p', source: { store: 's', fields: { plan: { label: 'Plan', description: 'The plan a customer pays for.' } }, scopes: { data: { label: 'Rows', holds: ['plan'] } } } },
       { stores: { s: new ArrayStore([{ id: 1, plan: 'Pro' }, { id: 2, plan: 'Free' }], { key: 'id' }) }, views: {} });
-    source.query.setReading('data', 'plan', { picked: ['Pro'] });
-    source.query.commit();
+    source.query.ask({ scope: 'data', field: 'plan', reading: { picked: ['Pro'] } });
+    source.query.ask({ commit: true });
     await source.load();
     const settle = async () => { await window.__settled(); await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res))); };
     await settle();

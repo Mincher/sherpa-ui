@@ -293,7 +293,7 @@ const ACTS = {
   'apply-saved': (p) => {
     const readings = p.source.readingsOf(p.L.conditionsOf(p.saved['at-risk']));
     p.source.declarePresets('view', [{ id: 'saved:at-risk', label: p.saved['at-risk'].label, readings }]);
-    p.source.query.setPreset('view', 'saved:at-risk', true, true);
+    p.source.query.ask({ scope: 'view', preset: 'saved:at-risk', on: true, commit: true });
   },
   // The tiered page: a Site pick is a PATH; one beside a whole customer; a row edit that moves only a site walks again.
   'pick-site': (p) => p.view.answer({ customer: { picked: [{ customer: 'Customer 01', site: 'Site 2' }] } }),
@@ -304,7 +304,7 @@ const ACTS = {
   'fetch-off': (p) => p.data.send('quick-filter-change', { scope: 'bar', request: { field: 'seats', suspended: true, commit: true } }),
   'fetch-on': (p) => p.data.send('quick-filter-change', { scope: 'bar', request: { field: 'seats', suspended: false, commit: true } }),
   // A field held for the first time asks its values; held again, nothing. 345 phase 5
-  'add-field': (p) => p.source.query.hold('data', [...p.source.query.scope('data'), 'seats']),
+  'add-field': (p) => p.source.query.ask({ scope: 'data', hold: [...p.source.query.scope('data'), 'seats'] }),
   // Another client moves an owner; the page hears nothing until it asks what moved — once, then nothing new. 345 phase 9
   'missed-change': async (p) => {
     p.deaf.on = true;
@@ -319,8 +319,8 @@ const ACTS = {
   'show-all': (p) => p.L.bindSource(p.source, control('sherpa-barchart', 'any-chart'), { readonly: true }),
   'add-field-again': (p) => {
     const held = p.source.query.scope('data').filter((f) => f !== 'seats');
-    p.source.query.hold('data', held);
-    p.source.query.hold('data', [...held, 'seats']);
+    p.source.query.ask({ scope: 'data', hold: held });
+    p.source.query.ask({ scope: 'data', hold: [...held, 'seats'] });
   },
 };
 const MAIN = ['pick', 'repick', 'page', 'report', 'switch-off', 'switch-on', 'sort', 'heading', 'search', 'raise',

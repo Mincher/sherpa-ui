@@ -128,7 +128,7 @@ test('a walk that failed is asked again on any change, even one it does not read
   const { source } = await page(fakeRemote(inner, { delay: 0, fail: () => (failing ? 1 : 0) }), { holdRows: 0 });
   // The walk fails, and is kept for its key.
   failing = true;
-  source.setPage(1);
+  source.query.ask({ page: 1 });
   await source.load({ force: true }).catch(() => {});
   await sleep(40);
   failing = false;

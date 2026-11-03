@@ -76,7 +76,7 @@ test("a panel's answer to a part narrows its chart ALONE, and a legend's write i
   assert.deepEqual(drawn.readings.at(-1), ['picks:bar', 'sev', ['critical']]);
 
   // The legend's own door. The panel is told, in the part's scope.
-  source.query.setReading('picks:bar', 'sev', { picked: ['info'] }, { only: chart });
+  source.query.ask({ scope: 'picks:bar', field: 'sev', reading: { picked: ['info'] }, only: chart });
   await tick();
   assert.deepEqual(seen.get('bar'), [2]);
   assert.deepEqual(drawn.readings.at(-1), ['picks:bar', 'sev', ['info']]);
@@ -92,7 +92,7 @@ test("a panel's answer to a part narrows its chart ALONE, and a legend's write i
 
 test('SENT UP, the answer goes to the View with its field, and the chart lets go of it', async () => {
   const { source, seen, panel } = await setup();
-  source.query.setReading('picks:bar', 'sev', { picked: ['critical'] });
+  source.query.ask({ scope: 'picks:bar', field: 'sev', reading: { picked: ['critical'] } });
   panel.dispatchEvent(new CustomEvent('filter-add', {
     detail: { scope: 'view', ids: ['sev'], from: 'picks:bar' },
   }));
@@ -139,8 +139,8 @@ test('while the VIEW holds its field, a legend shows the View\'s answer and chan
   assert.deepEqual(seen.get('donut'), [1, 2, 3, 4]);
 
   // The View TAKES the field: the legend's own answer is dropped, and it shows the View's.
-  source.query.hold('view', ['sev']);
-  source.query.setReading('view', 'sev', { picked: ['info'] });
+  source.query.ask({ scope: 'view', hold: ['sev'] });
+  source.query.ask({ scope: 'view', field: 'sev', reading: { picked: ['info'] } });
   await tick();
   assert.equal(source.query.applied.scopes['picks:bar'], undefined);
   assert.deepEqual(legend.picked, ['info']);
@@ -155,7 +155,7 @@ test('while the VIEW holds its field, a legend shows the View\'s answer and chan
   assert.deepEqual(legend.picked, ['warning', 'info']);
 
   // The View lets go: the legend answers for its chart alone again.
-  source.query.hold('view', []);
+  source.query.ask({ scope: 'view', hold: [] });
   await tick();
   press(['critical']);
   await tick();
@@ -174,7 +174,7 @@ test('a component binding draws a pick that is an object by its key, as every ot
     read: (c) => c.picked, draw: (c, picked) => { c.picked = [...picked]; },
     event: 'legend-item-click', reach: 'component', only: chart, key: 'picks:site',
   });
-  source.query.setReading('picks:site', 'site', { picked: [site] }, { only: chart });
+  source.query.ask({ scope: 'picks:site', field: 'site', reading: { picked: [site] }, only: chart });
   await tick();
   assert.deepEqual(legend.picked, [valueKey(site)]);
 });

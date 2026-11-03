@@ -89,7 +89,7 @@ test('a closed page\'s Refresh leaves the shared set as it is', async () => {
   seen.loads = 0;
   seen.whole = 0;
   // A NEW question on the open page: a due set would be read again for it.
-  kept.query.setSort('tier');
+  kept.query.ask({ sort: 'tier' });
   await kept.load();
   assert.equal(kept.total, 6);
   assert.deepEqual([seen.loads, seen.whole], [0, 0]);
@@ -104,7 +104,7 @@ test('a page with a smaller cap asks the store, and the set stays for the others
   assert.equal(seen.whole, 1);
   assert.deepEqual([small.total, big.total], [6, 6]);
   seen.loads = 0;
-  big.query.setSort('tier');
+  big.query.ask({ sort: 'tier' });
   await big.load();
   assert.equal(seen.loads, 0);
 });
@@ -115,9 +115,9 @@ test('what a chip counts moves with the shared set', async () => {
   source.declareValues('tier', ['gold', 'silver']);
   source.query.declareScope('data', { label: 'Records' });
   source.query.offer('data', ['tier']);
-  source.query.hold('data', ['tier']);
-  source.query.setReading('data', 'tier', { picked: ['gold'] });
-  source.query.commit();
+  source.query.ask({ scope: 'data', hold: ['tier'] });
+  source.query.ask({ scope: 'data', field: 'tier', reading: { picked: ['gold'] } });
+  source.query.ask({ commit: true });
   await source.load();
   assert.deepEqual(await source.results('data'), { tier: 3 });
   await store.insert({ id: 7, tier: 'gold' });
@@ -157,7 +157,7 @@ test('a Refresh tries a set refused for its size again', async () => {
   await source.load({ force: true });
   assert.equal(seen.whole, 1);
   seen.loads = 0;
-  source.query.setSort('tier');
+  source.query.ask({ sort: 'tier' });
   await source.load();
   assert.equal(seen.loads, 0);
 });

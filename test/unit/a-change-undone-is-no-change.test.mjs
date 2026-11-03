@@ -12,14 +12,14 @@ import { QueryContext, VIEW } from '../../dist/data.js';
 
 test('a field changed and put back leaves its waiting scope clean', () => {
   const query = new QueryContext();
-  query.hold(VIEW, ['a', 'b']);
-  query.setReading(VIEW, 'a', { picked: ['1'] });
-  query.setReading(VIEW, 'b', { picked: ['2'] });
+  query.ask({ scope: VIEW, hold: ['a', 'b'] });
+  query.ask({ scope: VIEW, field: 'a', reading: { picked: ['1'] } });
+  query.ask({ scope: VIEW, field: 'b', reading: { picked: ['2'] } });
   query.wait(VIEW);
-  query.setReading(VIEW, 'a', { picked: ['9'] });
+  query.ask({ scope: VIEW, field: 'a', reading: { picked: ['9'] } });
   assert.equal(query.dirty(VIEW), true);
   assert.equal(query.pending('a'), true);
-  query.setReading(VIEW, 'a', { picked: ['1'] });
+  query.ask({ scope: VIEW, field: 'a', reading: { picked: ['1'] } });
   assert.equal(query.pending('a'), false);
   assert.equal(query.pending('b'), false);
   assert.equal(query.dirty(VIEW), false, 'the same answers, written in another order');
@@ -28,15 +28,15 @@ test('a field changed and put back leaves its waiting scope clean', () => {
 
 test('picks in another order are no change; a field added or taken away is', () => {
   const query = new QueryContext();
-  query.hold(VIEW, ['a', 'b']);
-  query.setReading(VIEW, 'a', { picked: ['1', '2'] });
+  query.ask({ scope: VIEW, hold: ['a', 'b'] });
+  query.ask({ scope: VIEW, field: 'a', reading: { picked: ['1', '2'] } });
   query.wait(VIEW);
-  query.setReading(VIEW, 'a', { picked: ['2', '1'] });
+  query.ask({ scope: VIEW, field: 'a', reading: { picked: ['2', '1'] } });
   assert.equal(query.dirty(VIEW), false);
-  query.setReading(VIEW, 'b', { picked: ['3'] });
+  query.ask({ scope: VIEW, field: 'b', reading: { picked: ['3'] } });
   assert.equal(query.dirty(VIEW), true);
-  query.setReading(VIEW, 'b', null);
+  query.ask({ scope: VIEW, field: 'b', reading: null });
   assert.equal(query.dirty(VIEW), false);
-  query.setReading(VIEW, 'a', null);
+  query.ask({ scope: VIEW, field: 'a', reading: null });
   assert.equal(query.dirty(VIEW), true);
 });

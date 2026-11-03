@@ -15,7 +15,7 @@ test('a pick waits; the bar\'s one Apply sends it; a menu\'s Discard puts back t
     const src = new DataSource({ store: new ArrayStore([
       { id: 1, region: 'EU' }, { id: 2, region: 'US' }, { id: 3, region: 'EU' },
     ], { key: 'id' }) });
-    src.query.hold('view', ['region']);
+    src.query.ask({ scope: 'view', hold: ['region'] });
     src.query.wait('view');
     await src.load();
     const bar = document.createElement('sherpa-quick-filter-toolbar') as Bar;

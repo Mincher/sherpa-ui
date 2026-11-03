@@ -52,8 +52,8 @@ const settle = async (...sources) => {
 
 test('one source\'s component scope never narrows the other', async () => {
   const { query, alerts, customers } = await page();
-  query.hold('alerts', ['severity']);
-  query.setReading('alerts', 'severity', { picked: ['critical'] });
+  query.ask({ scope: 'alerts', hold: ['severity'] });
+  query.ask({ scope: 'alerts', field: 'severity', reading: { picked: ['critical'] } });
   await settle(alerts, customers);
   assert.deepEqual(ids(alerts), [1, 3]);
   assert.deepEqual(ids(customers), [1, 2, 3]);
@@ -62,8 +62,8 @@ test('one source\'s component scope never narrows the other', async () => {
 
 test('a View reading on a field one source lacks leaves that source whole', async () => {
   const { query, alerts, customers } = await page();
-  query.hold(VIEW, ['severity']);
-  query.setReading(VIEW, 'severity', { picked: ['critical'] });
+  query.ask({ scope: VIEW, hold: ['severity'] });
+  query.ask({ scope: VIEW, field: 'severity', reading: { picked: ['critical'] } });
   await settle(alerts, customers);
   assert.deepEqual(ids(alerts), [1, 3]);
   assert.deepEqual(ids(customers), [1, 2, 3]);
@@ -72,8 +72,8 @@ test('a View reading on a field one source lacks leaves that source whole', asyn
 
 test('a View reading on a field both have narrows both', async () => {
   const { query, alerts, customers } = await page();
-  query.hold(VIEW, ['region']);
-  query.setReading(VIEW, 'region', { picked: ['EMEA'] });
+  query.ask({ scope: VIEW, hold: ['region'] });
+  query.ask({ scope: VIEW, field: 'region', reading: { picked: ['EMEA'] } });
   await settle(alerts, customers);
   assert.deepEqual(ids(alerts), [1, 2]);
   assert.deepEqual(ids(customers), [1]);
@@ -81,8 +81,8 @@ test('a View reading on a field both have narrows both', async () => {
 
 test('each source sorts its own rows', async () => {
   const { query, alerts, customers } = await page();
-  query.setSort('severity', 'desc', 'alerts');
-  query.setSort('name', 'asc', 'customers');
+  query.ask({ scope: 'alerts', sort: 'severity', direction: 'desc' });
+  query.ask({ scope: 'customers', sort: 'name', direction: 'asc' });
   await settle(alerts, customers);
   assert.deepEqual(alerts.rows.map((r) => r.severity), ['warning', 'info', 'critical', 'critical']);
   assert.deepEqual(customers.rows.map((r) => r.name), ['Contoso', 'Litware', 'Tailspin']);
@@ -90,19 +90,19 @@ test('each source sorts its own rows', async () => {
 
 test('a clear, a suspend, a resume and a reset touch only their own source\'s sort (TODO 523 S3)', async () => {
   const { query, alerts, customers } = await page();
-  query.setSort('severity', 'desc', 'alerts');
-  query.setSort('name', 'asc', 'customers');
+  query.ask({ scope: 'alerts', sort: 'severity', direction: 'desc' });
+  query.ask({ scope: 'customers', sort: 'name', direction: 'asc' });
   const sorts = () => [alerts.state.sort, customers.state.sort].map((s) => s.map((one) => one.field).join() || '-');
   // Suspended in Customers: Alerts keeps its sort, and Customers resumes its OWN.
-  query.setSort(null, 'asc', 'customers');
+  query.ask({ scope: 'customers', sort: null, direction: 'asc' });
   assert.deepEqual(sorts(), ['severity', '-']);
-  query.resumeSort('customers');
+  query.ask({ scope: 'customers', sort: customers.state.sortSuspended.field, direction: customers.state.sortSuspended.direction });
   assert.deepEqual(sorts(), ['severity', 'name']);
-  query.clearSort('alerts');
+  query.ask({ scope: 'alerts', sort: null, clear: true });
   assert.deepEqual(sorts(), ['-', 'name']);
-  query.setSort('severity', 'desc', 'alerts');
+  query.ask({ scope: 'alerts', sort: 'severity', direction: 'desc' });
   // A reset of Customers clears its arrangement only.
-  query.reset(['customers'], { organise: true });
+  query.ask({ scope: 'customers', reset: { organise: true } });
   assert.deepEqual(sorts(), ['severity', '-']);
 });
 
@@ -116,12 +116,12 @@ test('bind ids never clash across the sources', async () => {
 test('one remote source: every answer waits for Apply, local ones too', async () => {
   const { query, alerts, customers } = await page({ remote: true });
   assert.equal(query.remote, true);
-  query.hold(VIEW, ['region']);
-  query.setReading(VIEW, 'region', { picked: ['EMEA'] });
+  query.ask({ scope: VIEW, hold: ['region'] });
+  query.ask({ scope: VIEW, field: 'region', reading: { picked: ['EMEA'] } });
   await settle(alerts, customers);
   assert.deepEqual(ids(alerts), [1, 2, 3, 4], 'the local source waits too');
   assert.equal(query.pending('region'), true);
-  query.commit();
+  query.ask({ commit: true });
   await settle(alerts, customers);
   assert.deepEqual(ids(alerts), [1, 2]);
   assert.deepEqual(ids(customers), [1]);
@@ -129,8 +129,8 @@ test('one remote source: every answer waits for Apply, local ones too', async ()
 
 test('a source that declares nothing still applies a View reading its rows hold', async () => {
   const { query, alerts, customers } = await page({ declare: false });
-  query.hold(VIEW, ['region']);
-  query.setReading(VIEW, 'region', { picked: ['AMER'] });
+  query.ask({ scope: VIEW, hold: ['region'] });
+  query.ask({ scope: VIEW, field: 'region', reading: { picked: ['AMER'] } });
   await settle(alerts, customers);
   assert.deepEqual(ids(alerts), [3]);
   assert.deepEqual(ids(customers), [2]);
