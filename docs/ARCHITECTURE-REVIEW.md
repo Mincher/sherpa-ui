@@ -245,9 +245,11 @@ sequenceDiagram
 - **No Node host yet.** Demos bridges Express to a web `Response` by hand, and mounts
   nothing at `/sherpa/data/`. A server host needs: a Node adapter, CORS, `problem+json`
   errors, POST for the acts that change state (`?recheck`, `?take`), and one version marker.
+  *Done, 695 H5: `sherpa-ui/server`, with all five; Demos serves its data path from it.*
 - **Demos wires its stores twice**, differently, in the page and in `sw.js`; a store name
   stands for a debug mode (`customers` vs `customers-remote`). One `defineStores()` module
   both hosts import fixes it — and is the pattern every app needs.
+  *Done, 695 H2: `defineStores()`; a request context reaches a store, never read by Sherpa.*
 - **Seven places keep data in the browser** (four Sherpa IndexedDB databases, the app's,
   local and session storage, the Cache API). Two stores cannot share one database: the
   upgrade makes only the opener's object store (`idb-store.ts:145`). **Proposal:** one

@@ -414,6 +414,27 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   failed; Node 975/975. Demos 920 passed, 2 flaky; the 2 failures are both old WebKit ones
   in TODO 702 (`panel-keeps-both-answers:19`, `saved-filter:352`). No new break.
 
+### Wave 4 — as each lane lands
+
+- **H5 ✅ (`85aacaf9`…`f9134dcf`, `a1cabe0b`; Demos `420da7e`, `492b154`).** A new
+  `sherpa-ui/server` entry (`src/server.ts`, `src/core/server/{node-host,worker-script}.ts`):
+  the one handler served on Node (node:http and an Express-style middleware). One protocol
+  for every host: errors cross as `application/problem+json` with their kind kept (offline
+  is a 503 that reads `offline`); `?recheck` and `?take` are POST (a GET of one is a 405);
+  `Sherpa-Data` is the one version marker (the body's `v` gone); every answer is
+  `no-store`; a `since` that is not JSON is a 400; CORS is the app's policy; a refused
+  preflight reads `refused` (one no-cors probe), not offline; a store may be made per
+  request, `(request) => store`, never held, and Sherpa reads none of its headers (a spy
+  proves it); the feed path is `UPDATES_PATH`. Demos' server mounts the data path from
+  `sherpa-ui/server`; its hand bridge and stamp code are gone; `?server` reads the server
+  with no Service Worker. 170's plan is in `docs/ARCHITECTURE.md` §8. At merge: S5's
+  `trace` and H5's `probe` both kept on `#ask`. `check:mcp-pack` passes on the main tree
+  (19 tools, 275 resources, 3 prompts). Lane picks taken: a refused preflight is refused
+  honestly and the client probes once; a per-request store is a bare function; Demos'
+  server mode is an explicit `?server`.
+  **Carried:** Will's running :4200 server keeps its old code until he restarts it. The
+  Sherpa Starter: `updatesFeed().answer` now returns null away from its own path.
+
 ### The waves
 
 | Wave | Lane | Workstream | Owns | Done when | Size |
