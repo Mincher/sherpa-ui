@@ -99,7 +99,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `takeBaseline()` | What Discard restores becomes what it holds NOW — for a host that wrote an answer while it is open. |
 | `setMatches(counts: Readonly<Record<string, number>> \| null)` | setMatches(counts) — each value row's match count at its end, by value: the rows that reach this field and hold it. `null` takes them off. Will, TODO 466 |
 | `setCount(value: string, count: number)` | Write a child menu's pick count on its row. An empty badge draws nothing. |
-| `show(trigger?: HTMLElement)` | Open the menu under `trigger`, which is also what it measures against. |
+| `show(trigger?: HTMLElement)` | Open the menu at `trigger`: its anchor, by reference. |
 | `hide()` |  |
 | `close()` |  |
 | `toggle(trigger?: HTMLElement)` |  |
@@ -148,6 +148,7 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-display-mode-space-2xs` | `.menu` | `--_gap` |
 | `--sherpa-display-mode-space-xs` | `.menu` | `gap` |
 | `--sherpa-theme-padding-md` | `.menu` | `padding` |
 | `--sherpa-theme-padding-sm` | `.menu` | `padding-block-end` |

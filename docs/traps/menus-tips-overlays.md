@@ -594,19 +594,17 @@ JS writes the flag; CSS owns the hiding.
 ### T-show-then-measure
 
 `show()` points the select-all row at the set BEFORE the card is painted, then
-shows the popover, THEN measures.
+shows the popover.
 
-A CLOSED popover is `display: none`, so its own size reads as **0** and a
-pre-show measurement cannot flip correctly — the card would always think it had
-room below.
+The rows are slotted light DOM that a host stamps, so there is no render pass of
+ours to hang the sync on. Opening is the moment the set is known, and without it
+a menu opens with its box blank rather than reading all / some / none.
 
-The select-all sync has to happen on open for a different reason: the rows are
-slotted light DOM that a host stamps, so there is no render pass of ours to
-hang it on. Opening is the moment the set is known, and without it a menu opens
-with its box blank rather than reading all / some / none.
+The card is placed by the platform (`T-anchor-cross-root`), so nothing is
+measured before or after the show — but a closed popover still reads 0 wide, so
+anything that does measure the card (a bounded card's nudge) runs after it.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-menu/menu-shell.ts`
 
 ### T-menu-value-is-not-always-rows
 
@@ -672,61 +670,70 @@ you are.
 
 ### T-bounds-clamp-to-the-viewport
 
-A menu card is clamped inside the VIEWPORT by default, or inside a host's
+A menu card stays inside the VIEWPORT by default, or inside a host's
 `data-bounds` — a CSS selector for the region the menu belongs to, such as an
 app's content area. A menu that hangs over the nav or out of a panel reads as
 belonging to neither, and the window's edges say nothing about where the
 content actually stops.
 
-VIEWPORT COORDINATES THROUGHOUT, because the card is `position: fixed` in the
-top layer. `getBoundingClientRect()` gives exactly that and works across shadow
-boundaries where a CSS anchor name does not (`T-anchor-cross-root`).
+The viewport is the platform's: an anchored card is shifted to stay inside its
+containing block, which for a top-layer card IS the viewport. A bounds box is
+not, and no engine can make it one — so a bounded card is the one case still
+measured: after the platform places it, the shell reads the card and the box
+and writes `--_nudge-x` / `--_nudge-y`, a `translate` that moves it inside, one
+gap from the box's edge; again on a scroll (once a frame) and as the card grows.
 
-The selector resolves from the DOCUMENT, so it can name a box in the app's own
-tree. One that matches nothing — or a zero-sized box — falls back to the
-viewport rather than trapping the card in nothing.
+The selector resolves from the menu's OWN tree out to the document, each shadow
+root's host in turn, so it can name a box in a shadow root or in the app's own
+tree. It read only the document, and inside a shadow root found nothing. One
+that matches nothing — or a zero-sized box — leaves the card where the platform
+put it.
 
 And the box is never WIDER than the viewport: a container that scrolls out of
 view would otherwise let the card follow it off the screen.
 
 - Site: `src/components/sherpa-menu/menu-shell.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `test/e2e/reforged-menu.spec.ts`
 
 ### T-card-max-height-follows-the-side
 
-`#place()` caps the card to the room it actually has ON THE SIDE IT LANDED ON,
-writing `--_max-h`, and lets `.rows` scroll inside that.
+The card is capped to the room it has ON THE SIDE IT LANDED ON, and `.rows`
+scrolls inside that.
 
 Without it a long list — a Sort menu offers TWO ROWS PER COLUMN — ran off the
-bottom of the screen and took the Apply/Cancel footer with it. The CSS cap was
-a flat `60vh`, which knows nothing about where the trigger sits. It flips to
-the roomier side when neither fits comfortably, with a floor of 120px.
+bottom of the screen and took the Apply/Cancel footer with it. A flat `60vh`
+knows nothing about where the trigger sits.
 
-It must also never run off the TOP: the vertical flip can put a tall card above
-the trigger and past the start edge, which is where a DRILLED CALENDAR landed —
-taller than the list it replaced, with the same y it was placed at.
+In CSS now: `max-block-size: max(100% − 2 gaps, 50vh − half the anchor − 2
+gaps)`. Inside a `position-area`, `100%` is the room on that side. The second
+term is the trick: the roomier side always has at least half the viewport beside
+the trigger, so a card too tall for below fails its first option and lands above,
+capped to the room there — the old rule ("below unless it does not fit, then the
+roomier side") without measuring. A plain `100%` cap fits every option by
+shrinking, so the card never flipped and opened 8px tall at the foot.
 
-- Site: `src/components/sherpa-menu/menu-shell.ts`
+It never runs off the TOP: the platform shifts it inside the viewport, which is
+where a DRILLED CALENDAR landed — taller than the list it replaced.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
 
 ### T-open-menu-resize-closes
 
-While a menu is OPEN it follows its trigger on SCROLL — `capture`, because
-scrolls in an ancestor do not bubble — but a RESIZE **closes** it.
+While a menu is OPEN its card follows its trigger on SCROLL — the platform moves
+an anchored box — but a RESIZE **closes** it.
 
-A repositioned card is fine when only the trigger moved. A resize can rebuild
+A card that follows is fine when only the trigger moved. A resize can rebuild
 what is UNDERNEATH it: a toolbar folds chips away, a grid re-columns, a
 container query swaps a layout. The card would then be pointing at something
 that is no longer there, or holding rows that have been moved out from under it
 (`T-drill-moves-not-clones`). Closing is honest and puts everything back where
 it belongs.
 
-THE CARD'S OWN SIZE can change while it is open, and then the placement it was
-given no longer fits. A date menu's Range switch turns one month into two —
-**274px becomes 485** — and the card kept its left edge and ran straight off
-the screen. A number menu's Range switch does the same in miniature.
-
-So a `ResizeObserver` watches THE CARD rather than re-placing from each control
-that might grow it: the menu cannot know what a host slotted into it, and every
-future body that changes size gets this for free.
+THE CARD'S OWN SIZE can change while it is open — a date menu's Range switch
+turns one month into two, 274px into 485 — and the platform places it again, as
+it does any anchored box. A bounded card (`T-bounds-clamp-to-the-viewport`) has a
+`ResizeObserver` on the card for its nudge.
 
 The Cancel baseline is snapshotted here too —
 `T-cancel-baseline-captured-on-open`.
@@ -775,10 +782,10 @@ swapping its list for another filter's (`T-drill-moves-not-clones`) — so the
 select-all row's state has to follow them. `slotchange` fires exactly when they
 move in or out, which `show()` alone does not cover: a drill happens AFTER it.
 
-It also RE-PLACES the card. A drill swaps a 240px list for content of its own
-size — a calendar is half as wide again — and the card was positioned while it
-was still the list. Left alone it kept the old x and ran off the side of the
-screen. Measured on the NEXT FRAME, so the new rows have been laid out.
+A drill swaps a 240px list for content of its own size — a calendar is half as
+wide again. The platform places an anchored card again as it grows; a BOUNDED
+card is nudged into its box again on the NEXT FRAME, once the new rows are laid
+out (`T-bounds-clamp-to-the-viewport`).
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/menu-shell.ts`
@@ -931,20 +938,19 @@ every descendant that reads it.
 
 ### T-a-menu-with-no-trigger-lands-at-the-origin
 
-`#place()` measures the TRIGGER, because CSS anchoring cannot cross a shadow
-root (`T-anchor-cross-root`). With no trigger it returns early, and the card
-keeps `left: 0; top: 0` — the top-left of the viewport, over whatever is there.
+A card is anchored to its TRIGGER (`T-anchor-cross-root`). With no trigger there
+is no anchor, and the card sits at the top-left of the viewport, over whatever is
+there.
 
 It is silent. The card opens, it is readable, and every row works; it is simply
-in the wrong place. Measured: `show()` with no argument left the card at
-`["0px","0px"]` and it never moved, at +0ms through +2500ms. Not a race — there
-was nothing to measure.
+in the wrong place. Measured: `show()` with no argument left the card at 0, 0,
+and it never moved.
 
 `show(trigger)` is the normal path, and a click always has one. The gap is
 `open = true`, which calls `show()` bare, and any caller that forgets. The menu
-now falls back to the nearest drawn box: the element it is slotted into, else
-its own parent. `#trigger` is cleared on close, so the fallback is recomputed
-per open and never outlives the trigger that replaced it.
+falls back to the nearest drawn box: the element it is slotted into, else its own
+parent. The trigger is cleared on close, so the fallback is found again per open
+and never outlives the trigger that replaced it.
 
 - Site: `test/e2e/reforged-menu.spec.ts`
 - Site: `src/components/sherpa-menu/menu-shell.ts`
@@ -1547,12 +1553,12 @@ While its box is not drawn, such a row reads the pick it was given (`want`).
 
 ### T-a-layout-read-belongs-in-a-frame
 
-`sherpa-menu` re-places itself on scroll so an open card follows its trigger.
-`#place()` reads two boxes — the trigger's and the card's — and it was bound
-with a plain listener, so it ran **per scroll EVENT** rather than per frame.
-
-Measured on an open chip menu in the Records example: **50 scroll events
-produced 100 `getBoundingClientRect()` calls**. After throttling, **2**.
+A scroll listener that READS LAYOUT runs per frame, not per EVENT. `sherpa-menu`
+once re-placed its card on scroll, reading two boxes, with a plain listener —
+measured on an open chip menu in the Records example: **50 scroll events
+produced 100 `getBoundingClientRect()` calls**. After throttling, **2**. The
+platform places the card now (`T-anchor-cross-root`): a scroll reads nothing,
+and only a bounded card's nudge still listens, once a frame.
 
 `SherpaElement.onFrame(target, type, handler, options)` coalesces to one call
 per animation frame. `on()` is the same without the throttle, for a handler

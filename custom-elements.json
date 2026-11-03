@@ -5708,7 +5708,7 @@
                   "optional": true
                 }
               ],
-              "description": "Open the menu under `trigger`, which is also what it measures against."
+              "description": "Open the menu at `trigger`: its anchor, by reference."
             },
             {
               "kind": "method",

@@ -59,13 +59,12 @@
 
 /**
  * sherpa-menu.css — a floating list of choices or actions.
- * Card is a native `popover`, so the browser owns the top layer, Escape,
- * outside-click dismiss and focus. Data-matched to Figma "Menu" (1156:29240).
+ * Card is a native `popover`, so the browser owns the top layer, focus and the
+ * placement. Data-matched to Figma "Menu" (1156:29240).
  *
- * POSITIONING — NOT CSS anchor positioning. `anchor-name` resolves inside ONE
- * tree; the trigger lives in another shadow root, so an anchor rule silently
- * collapses the card into the viewport corner. Placement comes from the
- * trigger's measured rect, written by JS into --_x / --_y as viewport coords.
+ * PLACEMENT is anchor positioning BY REFERENCE: show() hands the trigger to
+ * `showPopover({ source })`, which crosses a shadow root where an `anchor-name`
+ * cannot. TRAP T-anchor-cross-root
  */
 
 :host {
@@ -94,20 +93,26 @@
      card (a sherpa-button centres, which shifted the heading 46px). */
   text-align: start;
 
-  /* Fixed, not absolute: --_x / --_y are viewport coordinates. */
+  /* Under its trigger, from its start edge, one gap away: above where there is
+     no room below, and pinned to the viewport's edge where it would run off it. */
+  --_gap: var(--sherpa-display-mode-space-2xs, 4px);
   position: fixed;
   inset: auto;
-  inset-block-start: var(--_y, 0px);
-  inset-inline-start: var(--_x, 0px);
-  margin: 0;
+  position-anchor: auto;
+  position-area: block-end span-inline-end;
+  margin: var(--_gap) var(--_gap) var(--_gap) 0;
+  position-try-fallbacks: --menu-below-pinned-end, flip-block, --menu-above-pinned-end;
+  /* A bounded card's nudge into its host's `data-bounds`. TRAP T-bounds-clamp-to-the-viewport */
+  translate: var(--_nudge-x, 0px) var(--_nudge-y, 0px);
   /* 240 is a FLOOR, not a fixed width — a footer of Remove + Cancel + Apply
      needs more and must take it. Cap is the viewport less an 8px gutter. */
   inline-size: max-content;
   min-inline-size: 240px;
   max-inline-size: calc(100vw - 16px);
-  /* --_max-h is the room left between trigger and viewport edge, measured by
-     #place(). The fallback caps it where the JS has not run. */
-  max-block-size: var(--_max-h, 60vh);
+  /* The room on its side, or half the viewport beside the trigger where that is
+     more: so a card too tall for below goes above, to the roomier side.
+     TRAP T-card-max-height-follows-the-side */
+  max-block-size: max(calc(100% - 2 * var(--_gap)), calc(50vh - anchor-size(height) / 2 - 2 * var(--_gap)));
   /* The CARD must not scroll — `.rows` does, or the footer scrolls away. */
   overflow: hidden;
 
@@ -136,6 +141,44 @@
   display: flex;
 }
 
+/* The trigger's END edge leads: `data-align="end"`. */
+:host([data-align="end"]) .menu {
+  position-area: block-end span-inline-start;
+  margin: var(--_gap) 0 var(--_gap) var(--_gap);
+  position-try-fallbacks: --menu-below-pinned-start, flip-block, --menu-above-pinned-start;
+}
+
+/* BESIDE the trigger, level with it, and up from the foot where it must:
+   `data-placement="right"`. */
+:host([data-placement="right"]) .menu {
+  position-area: inline-end span-block-end;
+  margin: 0 var(--_gap) var(--_gap);
+  position-try-fallbacks: none;
+  max-block-size: calc(100vh - 2 * var(--_gap));
+}
+
+/* Wider than the room beside its trigger's edge: pinned to the viewport's. */
+@position-try --menu-below-pinned-end {
+  position-area: block-end span-all;
+  justify-self: end;
+  margin: var(--_gap) var(--_gap) var(--_gap) 0;
+}
+@position-try --menu-above-pinned-end {
+  position-area: block-start span-all;
+  justify-self: end;
+  margin: var(--_gap) var(--_gap) var(--_gap) 0;
+}
+@position-try --menu-below-pinned-start {
+  position-area: block-end span-all;
+  justify-self: start;
+  margin: var(--_gap) 0 var(--_gap) var(--_gap);
+}
+@position-try --menu-above-pinned-start {
+  position-area: block-start span-all;
+  justify-self: start;
+  margin: var(--_gap) 0 var(--_gap) var(--_gap);
+}
+
 /* ── INLINE ──────────────────────────────────────────────────────────────
  * The same card, in the FLOW instead of the top layer: a filter PANEL shows a
  * field's own body — its condition rows, its number input, its range switch
@@ -145,6 +188,8 @@
 :host([data-inline]) .menu {
   display: flex;
   position: static;
+  margin: 0;
+  translate: none;
   inline-size: auto;
   min-inline-size: 0;
   max-block-size: none;
@@ -177,8 +222,6 @@
      TRAP T-a-composed-child-hides-with-important */
   display: none !important;
 }
-
-/* No `@supports (anchor-name)` block — see the positioning note at the top. */
 
 /* ── Header ──────────────────────────────────────────────────────────────
  * Two rows on every menu: the heading, then the control that drives the card

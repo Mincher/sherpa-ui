@@ -153,8 +153,9 @@ export class SherpaMenu extends SherpaElement {
     'data-pending': { type: 'boolean', kind: 'behaviour' },
     // Shows an answer held ELSEWHERE, unchangeable here. TRAP T-a-view-held-heading-shows-and-refuses
     'data-readonly': { type: 'boolean', kind: 'style' },
-    'data-align': { type: 'enum', kind: 'behaviour', values: ['start', 'end'] },
-    'data-placement': { type: 'enum', kind: 'behaviour', values: ['right'] },
+    // Which edge of its trigger it hangs from, and on which side. CSS places it.
+    'data-align': { type: 'enum', kind: 'style', values: ['start', 'end'] },
+    'data-placement': { type: 'enum', kind: 'style', values: ['right'] },
     'data-search': { type: 'boolean', kind: 'style' },
     'data-clearable': { type: 'boolean', kind: 'style' },
     'data-removable': { type: 'boolean', kind: 'style' },
@@ -775,7 +776,7 @@ export class SherpaMenu extends SherpaElement {
 
   /* ── Public API ──────────────────────────────────────────────────── */
 
-  /** Open the menu under `trigger`, which is also what it measures against. */
+  /** Open the menu at `trigger`: its anchor, by reference. */
   show(trigger?: HTMLElement): void {
     // Inline, it is already showing and has nothing to place.
     if (this.hasAttribute('data-inline')) return;

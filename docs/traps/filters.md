@@ -5,20 +5,30 @@ first `Site:` is in this area (`npm run check:traps` holds it so). 104 entries.
 
 ### T-anchor-cross-root
 
-CSS anchor positioning **cannot cross a shadow root**. `anchor-name` resolves
-inside ONE tree, and a trigger is always in a different shadow root from the card
-it opens — so `position-anchor` finds nothing.
+An `anchor-name` resolves inside ONE tree, and a trigger is always in a
+different shadow root from the card it opens — so a NAMED anchor finds nothing.
+It does not fail loudly: the property is supported, and the card silently
+renders at the viewport's far corner.
 
-It does not fail loudly. Re-probed on **Chromium 153**: the property is
-*supported*, and the card silently renders at the viewport's far corner. Feature
-detection cannot catch this, because the feature IS there.
+An anchor BY REFERENCE does cross: `card.showPopover({ source: trigger })` makes
+the trigger the card's implicit anchor, and `position-anchor: auto` reads it.
+Measured 2026-11-03 in Chromium 153, Firefox 155 and WebKit 26.6, 192 cases per
+engine — a trigger in the page and in a shadow root, near each edge and in the
+middle, four card sizes, `data-align` start and end, `data-placement="right"`:
+every card inside the viewport and within 4px of the old measured placement, a
+synchronous read straight after `showPopover()` included, and the card follows
+its trigger on a page scroll, an inner scroller's and a wheel with no script.
 
-So every floating card measures its trigger with `getBoundingClientRect()` and
-writes viewport coordinates the card consumes as `position: fixed` offsets. That
-measurement layer looks like reinventing the platform. It is not.
+So the card is placed by CSS: `position-area` under the trigger, `flip-block`
+above it, and two `@position-try` options that pin it to the viewport's edge
+when it is wider than the room beside its trigger's — without them, an inline
+overflow made every option fail, and a card at a bottom corner covered its
+trigger. A `@position-try` rule works in an adopted sheet in all three.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-menu/menu-shell.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `test/e2e/reforged-menu.spec.ts`
 
 ### T-custom-element-upgrade
 

@@ -3,16 +3,16 @@ import { test, expect } from './fixture';
 /**
  * sherpa-menu — a native-popover list of choices, placed against its trigger.
  *
- * The placement tests are the point of this file. CSS anchor positioning was the
- * first attempt and it silently failed: `anchor-name` only resolves inside ONE
- * tree, and the trigger always lives in a different shadow root from the card, so
- * `position-anchor` found nothing and every menu rendered in the viewport corner.
- * These tests assert real measured coordinates so that regression cannot come back
- * unnoticed.
+ * The placement tests are the point of this file. An `anchor-name` resolves inside
+ * ONE tree, and the trigger always lives in a different shadow root from the card,
+ * so a NAMED anchor found nothing and every menu rendered in the viewport corner.
+ * The card is anchored BY REFERENCE now — `showPopover({ source })` — and these
+ * tests assert real measured coordinates so that regression cannot come back
+ * unnoticed. TRAP T-anchor-cross-root
  */
 
 const HARNESS = '/test/reforged/harness.html';
-const GAP = 4; // SherpaMenu.OFFSET — Figma space/2xs
+const GAP = 4; // the card's --_gap — Figma space/2xs
 
 test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1200, height: 800 });
@@ -28,6 +28,7 @@ test.beforeEach(async ({ page }) => {
 interface MenuEl extends HTMLElement {
   rendered?: Promise<void>;
   show(trigger?: HTMLElement): void;
+  hide(): void;
   toggle(trigger?: HTMLElement): void;
   open: boolean;
   values: string[];
@@ -143,6 +144,94 @@ test('the card is pulled back inside the viewport at the right edge', async ({ p
   // Aligning the card's start edge with the trigger would overflow, so it clamps.
   expect(r.right).toBeLessThanOrEqual(r.viewport);
   expect(r.left).toBeGreaterThanOrEqual(0);
+});
+
+test('data-align="end" hangs the card from its trigger\'s end edge; pinned at the viewport\'s start', async ({ page }) => {
+  await installBuilder(page);
+  const r = await page.evaluate(async () => {
+    const { menu, trigger, card } = await window.__buildMenu('top:200px; left:600px;');
+    menu.setAttribute('data-align', 'end');
+    menu.show(trigger);
+    const t = trigger.getBoundingClientRect();
+    const c = card.getBoundingClientRect();
+    const end = { right: Math.round(t.right - c.right), dy: Math.round(c.top - t.bottom) };
+    menu.hide();
+    await window.__settled();
+    // Too far left for its width: it is pinned one gap in from the viewport's edge.
+    trigger.style.left = '20px';
+    menu.show(trigger);
+    return { end, left: Math.round(card.getBoundingClientRect().left) };
+  });
+
+  expect(r.end).toEqual({ right: 0, dy: GAP });
+  expect(r.left).toBe(GAP);
+});
+
+test('data-placement="right" sits the card beside its trigger, level with it', async ({ page }) => {
+  await installBuilder(page);
+  const r = await page.evaluate(async () => {
+    const { menu, trigger, card } = await window.__buildMenu('top:200px; left:300px;');
+    menu.setAttribute('data-placement', 'right');
+    menu.show(trigger);
+    const t = trigger.getBoundingClientRect();
+    const c = card.getBoundingClientRect();
+    return { dx: Math.round(c.left - t.right), dy: Math.round(c.top - t.top) };
+  });
+
+  expect(r).toEqual({ dx: GAP, dy: 0 });
+});
+
+test('a card too tall for either side opens on the roomier one, capped to its room', async ({ page }) => {
+  await installBuilder(page);
+  const r = await page.evaluate(async () => {
+    const { menu, trigger, card } = await window.__buildMenu('top:560px; left:300px;');
+    (menu as MenuEl & { items(v: unknown): void }).items(Array.from({ length: 60 }, (_, i) => ({ value: `v${i}`, label: `Value ${i}` })));
+    await window.__settled();
+    menu.show(trigger);
+    const t = trigger.getBoundingClientRect();
+    const c = card.getBoundingClientRect();
+    return { above: c.bottom <= t.top, gap: Math.round(t.top - c.bottom), top: Math.round(c.top) };
+  });
+
+  // 560 above against 216 below: it goes up, and stops one gap short of the top.
+  expect(r.above).toBe(true);
+  expect(r.gap).toBe(GAP);
+  expect(r.top).toBe(GAP);
+});
+
+/**
+ * `data-bounds` names the box the card stays inside — found from the menu's own
+ * tree out to the document, so a box in a shadow root is found too. It read only
+ * the document, and inside a shadow root found nothing.
+ * TRAP T-bounds-clamp-to-the-viewport
+ */
+test('data-bounds keeps the card inside a box that lives in a shadow root', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const app = document.createElement('div');
+    const sr = app.attachShadow({ mode: 'open' });
+    sr.innerHTML = '<div class="content" style="position:fixed; left:200px; top:50px; width:500px; height:600px;"></div>';
+    const trigger = document.createElement('button');
+    trigger.textContent = 'Open';
+    trigger.style.cssText = 'position:fixed; left:600px; top:100px; inline-size:24px; block-size:24px;';
+    const menu = document.createElement('sherpa-menu') as MenuEl & { items(v: unknown): void };
+    menu.setAttribute('data-bounds', '.content');
+    sr.append(trigger, menu);
+    root.append(app);
+    await menu.rendered;
+    menu.items([{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }]);
+    await window.__settled();
+    menu.show(trigger);
+    const card = menu.shadowRoot!.querySelector('.menu')!;
+    const c = card.getBoundingClientRect();
+    const t = trigger.getBoundingClientRect();
+    return { right: Math.round(c.right), dy: Math.round(c.top - t.bottom) };
+  });
+
+  // Its start edge would run past the box's right (700): it is pulled back inside.
+  expect(r.right).toBe(700 - GAP);
+  expect(r.dy).toBe(GAP);
 });
 
 test('a closed card is not laid out, and toggle flips it', async ({ page }) => {
@@ -528,27 +617,28 @@ test('the select-all row cycles ALL → NONE, and reads the set rather than the 
 });
 
 /**
- * A SCROLL LISTENER THAT READS LAYOUT RUNS PER FRAME, NOT PER EVENT.
- *
- * `#place()` reads two boxes. Bound with a plain listener it ran on every
- * scroll event: measured on an open menu in the Records example, 50 scroll
- * events produced 100 getBoundingClientRect() calls.
- *
- * TRAP T-a-layout-read-belongs-in-a-frame
+ * AN OPEN CARD FOLLOWS ITS TRIGGER WITH NO SCRIPT: the platform moves an anchored
+ * box, so a scroll reads no layout at all. It took a frame-throttled listener
+ * that measured two boxes per frame. TRAP T-a-layout-read-belongs-in-a-frame
  */
-test('an open menu coalesces scroll repositioning into one frame', async ({ page }) => {
+test('an open menu follows its trigger on a scroll, and reads no layout to do it', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const menu = document.createElement('sherpa-menu') as HTMLElement & {
       rendered?: Promise<void>; show?: (t?: HTMLElement) => void;
     };
-    menu.innerHTML = '<label slot="menu"><input type="checkbox" value="a" />A</label>';
+    menu.innerHTML = '<label><input type="checkbox" value="a" />A</label>';
     const trigger = document.createElement('button');
     trigger.textContent = 'open';
-    document.getElementById('root')!.append(trigger, menu);
-    await customElements.whenDefined('sherpa-menu');
+    trigger.style.cssText = 'position:absolute; top:200px; left:100px;';
+    const tall = document.createElement('div');
+    tall.style.cssText = 'block-size:3000px;';
+    document.getElementById('root')!.append(tall, trigger, menu);
     await menu.rendered;
     menu.show?.(trigger);
-    await new Promise((res) => setTimeout(res, 250));
+    await window.__settled();
+    const card = menu.shadowRoot!.querySelector('.menu')!;
+    const gap = (): number => Math.round(card.getBoundingClientRect().top - trigger.getBoundingClientRect().bottom);
+    const before = gap();
 
     let reads = 0;
     const real = Element.prototype.getBoundingClientRect;
@@ -556,17 +646,20 @@ test('an open menu coalesces scroll repositioning into one frame', async ({ page
       reads++;
       return real.call(this);
     };
-    // Fifty events inside one frame. Unthrottled this is 100 reads.
-    for (let i = 0; i < 50; i++) window.dispatchEvent(new Event('scroll'));
-    await new Promise((res) => setTimeout(res, 250));
+    for (let i = 0; i < 10; i++) {
+      window.scrollBy(0, 10);
+      await new Promise((res) => requestAnimationFrame(res));
+    }
     Element.prototype.getBoundingClientRect = real;
-
-    return { open: menu.hasAttribute('open'), reads };
+    const after = gap();
+    window.scrollTo(0, 0);
+    return { before, after, reads, scrolled: true };
   });
 
-  // A handful of frames' worth, not fifty events' worth. The exact number
-  // depends on how many frames the 250ms wait spans.
-  expect(r.reads).toBeLessThan(20);
+  expect(r.before).toBe(GAP);
+  // Still one gap under it, a hundred pixels on.
+  expect(r.after).toBe(GAP);
+  expect(r.reads).toBe(0);
 });
 
 /**
@@ -648,23 +741,19 @@ test('a menu opened with no trigger falls back to the nearest drawn box', async 
     await window.__settled();
 
     const card = menu.shadowRoot!.querySelector('.menu')!;
-    const cs = getComputedStyle(card);
     const box = card.getBoundingClientRect();
+    const at = host.getBoundingClientRect();
     return {
-      left: cs.left,
-      top: cs.top,
       x: Math.round(box.x),
       y: Math.round(box.y),
-      hostY: Math.round(host.getBoundingClientRect().bottom),
+      hostX: Math.round(at.x),
+      hostY: Math.round(at.bottom),
     };
   });
 
-  // The bug was exactly this pair reading "0px".
-  expect(r.left).not.toBe('0px');
-  expect(r.top).not.toBe('0px');
-  // It hangs off the host box, not the viewport corner.
-  expect(r.x).toBeGreaterThan(100);
-  expect(r.y).toBeGreaterThanOrEqual(r.hostY);
+  // It hangs off the host box, not the viewport corner — the bug was 0, 0.
+  expect(r.x).toBe(r.hostX);
+  expect(r.y).toBe(r.hostY + GAP);
 });
 
 /**

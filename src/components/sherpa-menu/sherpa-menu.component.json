@@ -1159,7 +1159,7 @@
       "type": "enum",
       "observed": true,
       "declared": true,
-      "kind": "behaviour",
+      "kind": "style",
       "values": [
         "start",
         "end"
@@ -1399,7 +1399,7 @@
       "type": "enum",
       "observed": true,
       "declared": true,
-      "kind": "behaviour",
+      "kind": "style",
       "values": [
         "right"
       ],
@@ -1589,6 +1589,16 @@
     "description": "the menu's items."
   },
   "states": [
+    {
+      "$type": "state",
+      "name": "end",
+      "selector": ":host([data-align=\"end\"])"
+    },
+    {
+      "$type": "state",
+      "name": "right",
+      "selector": ":host([data-placement=\"right\"])"
+    },
     {
       "$type": "state",
       "name": "inline",
@@ -1826,6 +1836,7 @@
     }
   ],
   "tokens": {
+    "menu.--_gap": "{sherpa.display-mode-space-2xs}",
     "menu.gap": "{sherpa.display-mode-space-xs}",
     "menu.padding": "{sherpa.theme-padding-md}",
     "menu.padding-block-end": "{sherpa.theme-padding-sm}",
@@ -1884,7 +1895,7 @@
           "$type": "method",
           "name": "show",
           "args": "trigger?: HTMLElement",
-          "description": "Open the menu under `trigger`, which is also what it measures against."
+          "description": "Open the menu at `trigger`: its anchor, by reference."
         },
         {
           "$type": "method",

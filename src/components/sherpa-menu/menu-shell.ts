@@ -1,25 +1,23 @@
 /**
  * menu-shell.ts — the menu's card on the native popover: shown at its trigger,
- * placed, and shut by Escape or a press outside it. A module of sherpa-menu,
- * not an element. The browser owns the top layer and focus; `#place()` measures
- * the trigger, as CSS anchoring cannot cross a shadow root.
+ * and shut by Escape or a press outside it. A module of sherpa-menu, not an
+ * element. The browser owns the top layer, focus and the placement: the trigger
+ * is the card's anchor BY REFERENCE, `showPopover({ source })`, which crosses a
+ * shadow root where an anchor name cannot. Only a host's `data-bounds` is measured.
  * TRAP T-anchor-cross-root · TRAP T-a-slotted-row-is-outside-its-own-popover
  *
  * Map:
  * - ShellHost — What the shell asks of its menu.
- * - MenuShell — One menu's card: shown, placed and shut.
+ * - MenuShell — One menu's card: shown at its trigger, and shut.
  * - .open — Is the card open?
  * - .show — Show the card at its trigger; true when this opened it.
  * - .hide — Shut the card.
  * - .listen — What an open card listens to, until it shuts.
  * - .closed — The card shut: its listeners go, and so does its trigger.
- * - .rowsChanged — The rows moved: an open card is placed again next frame.
+ * - .rowsChanged — The rows moved: a bounded card is kept inside its box next frame.
  * - .syncInline — An inline menu is not a popover.
- * - .stop — The menu left the page.
+ * - .stop — The menu left the page, or the card shut.
  */
-
-/** Gap between trigger and card. */
-const GAP = 4;
 
 /** What the shell asks of its menu. */
 export interface ShellHost {
@@ -35,16 +33,32 @@ export interface ShellHost {
   hide(): void;
 }
 
-/** One menu's card: shown, placed and shut. */
+/** The gap a bounded card keeps from its box's edge, as it keeps from its trigger. */
+const GAP = 4;
+
+/** The first element `selector` names, from the menu's own tree out to the
+ *  document: a box in a shadow root is found too. TRAP T-bounds-clamp-to-the-viewport */
+function across(from: Node, selector: string): Element | null {
+  for (let root: Node | null = from.getRootNode(); root; root = root instanceof ShadowRoot ? root.host.getRootNode() : null) {
+    const hit = (root as ParentNode).querySelector(selector);
+    if (hit) return hit;
+  }
+  return null;
+}
+
+/** How far `[lo, hi]` moves to lie inside `[min, max]`: its start wins when it cannot. */
+const shift = (lo: number, hi: number, min: number, max: number): number => (lo < min ? min - lo : hi > max ? Math.max(min - lo, max - hi) : 0);
+
+/** One menu's card: shown at its trigger, and shut. */
 export class MenuShell {
   /** The menu it is part of. */
   readonly #host: ShellHost;
-  /** The open menu's trigger — re-measured on scroll / resize. */
+  /** The open card's trigger: its anchor, and a press on it is not outside. */
   #trigger: HTMLElement | null = null;
-  /** Watches the card's box, so a body that grows re-places. */
-  #cardResize: ResizeObserver | null = null;
-  /** Aborts when the menu SHUTS — the viewport listeners' own lifetime. */
+  /** Aborts when the menu SHUTS — the open card's own listeners' lifetime. */
   #openAc: AbortController | null = null;
+  /** Watches a bounded card's box, so a body that grows is kept inside. */
+  #cardResize: ResizeObserver | null = null;
 
   constructor(host: ShellHost) {
     this.#host = host;
@@ -66,20 +80,16 @@ export class MenuShell {
     return near instanceof HTMLElement ? near : null;
   }
 
-  /** Show the card under `trigger`, which is also what it measures against;
-   *  true when this call opened it. */
+  /** Show the card at `trigger`, its anchor; true when this call opened it. */
   show(trigger?: HTMLElement): boolean {
     if (trigger) this.#trigger = trigger;
-    // No trigger — `open` was set, or a caller forgot one. Without this the
-    // card has nothing to measure and sits at 0,0.
-    // TRAP T-a-menu-with-no-trigger-lands-at-the-origin
+    // No trigger — `open` was set, or a caller forgot one. TRAP T-a-menu-with-no-trigger-lands-at-the-origin
     this.#trigger ??= this.#fallbackTrigger();
     const was = this.open;
-    // A closed popover measures 0, so show first. TRAP T-show-then-measure
-    this.#host.card()?.showPopover();
+    if (!was) this.#host.card()?.showPopover(this.#trigger ? { source: this.#trigger } : {});
     const opened = !was && this.open;
     if (opened) this.listen();
-    this.#place();
+    this.#keepInBounds();
     return opened;
   }
 
@@ -88,73 +98,38 @@ export class MenuShell {
     this.#host.card()?.hidePopover();
   }
 
-  /** The box the card stays inside — viewport, or a host's `data-bounds`.
-   * A missing or zero-sized box falls back to the viewport.
-   * TRAP T-bounds-clamp-to-the-viewport */
-  #bounds(): { left: number; top: number; right: number; bottom: number } {
-    const viewport = {
-      left: 0,
-      top: 0,
-      right: document.documentElement.clientWidth,
-      bottom: document.documentElement.clientHeight,
-    };
+  /** A host's `data-bounds` box; null for none, or one not drawn.
+   *  TRAP T-bounds-clamp-to-the-viewport */
+  #bounds(): DOMRect | null {
     const sel = this.#host.el.dataset['bounds'];
-    if (!sel) return viewport;
-    const box = document.querySelector(sel)?.getBoundingClientRect();
-    if (!box || box.width === 0 || box.height === 0) return viewport;
-    // Never wider than the viewport, or the card follows a scrolled-away box off-screen.
-    return {
-      left: Math.max(viewport.left, box.left),
-      top: Math.max(viewport.top, box.top),
-      right: Math.min(viewport.right, box.right),
-      bottom: Math.min(viewport.bottom, box.bottom),
-    };
+    const box = sel ? across(this.#host.el, sel)?.getBoundingClientRect() : undefined;
+    return box && box.width > 0 && box.height > 0 ? box : null;
   }
 
-  /** Place the card against its trigger, inside the bounds. */
-  #place(): void {
+  /** Keep the card inside its host's `data-bounds` box: the one placement the
+   *  platform cannot make, as a top-layer card's containing block is the viewport. */
+  #keepInBounds = (): void => {
     const card = this.#host.card();
-    const trigger = this.#trigger;
-    if (!card || !trigger?.isConnected) return;
-    const el = this.#host.el;
-
-    const t = trigger.getBoundingClientRect();
-    const c = card.getBoundingClientRect();
-    const gap = GAP;
-    // `--_max-h` is the room on the side the card landed on.
-    // TRAP T-card-max-height-follows-the-side
-    const bounds = this.#bounds();
-    const vw = bounds.right;
-    const vh = bounds.bottom;
-
-    // Beside the trigger, level with it, and up from the foot if it must.
-    if (el.dataset['placement'] === 'right') {
-      card.style.setProperty('--_max-h', `${Math.max(120, Math.round(vh - bounds.top - gap * 2))}px`);
-      card.style.setProperty('--_x', `${Math.round(Math.min(t.right + gap, vw - c.width - gap))}px`);
-      card.style.setProperty('--_y', `${Math.round(Math.max(bounds.top + gap, Math.min(t.top, vh - c.height - gap)))}px`);
+    if (!card) return;
+    const box = this.open ? this.#bounds() : null;
+    if (!box) {
+      card.style.removeProperty('--_nudge-x');
+      card.style.removeProperty('--_nudge-y');
       return;
     }
-
-    // Below the trigger, unless there is no room and there IS room above.
-    const below = vh - t.bottom - gap * 2;
-    const above = t.top - gap * 2;
-    let y = t.bottom + gap;
-    if (y + c.height > vh && t.top - gap - c.height >= 0) y = t.top - gap - c.height;
-
-    const room = Math.max(below, above);
-    if (c.height > below && above > below) y = Math.max(gap, t.top - gap - Math.min(c.height, above));
-    card.style.setProperty('--_max-h', `${Math.max(120, Math.round(room))}px`);
-
-    // The trigger's start edge (end edge on data-align="end"), clamped inside.
-    let x = el.dataset['align'] === 'end' ? t.right - c.width : t.left;
-    if (x + c.width > vw) x = vw - c.width - gap;
-    if (x < bounds.left + gap) x = bounds.left + gap;
-
-    if (y < bounds.top + gap) y = bounds.top + gap;
-
-    card.style.setProperty('--_x', `${Math.round(x)}px`);
-    card.style.setProperty('--_y', `${Math.round(y)}px`);
-  }
+    // Where the platform put it, without the last nudge.
+    const was = (axis: string): number => Number.parseFloat(card.style.getPropertyValue(`--_nudge-${axis}`)) || 0;
+    const c = card.getBoundingClientRect();
+    const left = c.left - was('x');
+    const top = c.top - was('y');
+    // Never wider than the viewport, or the card follows a scrolled-away box off-screen.
+    const vw = document.documentElement.clientWidth;
+    const vh = document.documentElement.clientHeight;
+    const dx = shift(left, left + c.width, Math.max(0, box.left) + GAP, Math.min(vw, box.right) - GAP);
+    const dy = shift(top, top + c.height, Math.max(0, box.top) + GAP, Math.min(vh, box.bottom) - GAP);
+    card.style.setProperty('--_nudge-x', `${Math.round(dx)}px`);
+    card.style.setProperty('--_nudge-y', `${Math.round(dy)}px`);
+  };
 
   /** A pointerdown anywhere this menu does not own closes it. */
   #onOutsidePointer = (event: Event): void => {
@@ -179,21 +154,19 @@ export class MenuShell {
     if (this.#openAc) return;
     /* These live while the menu is OPEN, which is shorter than the element's
        life — `while` is that shorter lifetime, and the base class ANDs it
-       with its own disconnect signal.
-
-       `onFrame`, not `on`: #place() reads two boxes, and a scroll listener
-       runs per EVENT. Measured before this, 50 scroll events produced 100
-       getBoundingClientRect() calls.
-       capture: an ancestor's scroll does not bubble.
-       TRAP T-a-layout-read-belongs-in-a-frame
-       TRAP T-open-menu-resize-closes */
+       with its own disconnect signal. TRAP T-open-menu-resize-closes */
     this.#openAc = new AbortController();
     const whileOpen = { while: this.#openAc.signal, passive: true } as const;
-    this.#host.onFrame(window, 'scroll', this.#reposition, { ...whileOpen, capture: true });
     this.#host.on(window, 'resize', this.#onViewportResize, whileOpen);
-    this.#cardResize ??= new ResizeObserver(() => this.#place());
+    /* A BOUNDED card is measured: on a scroll — capture, as an ancestor's does
+       not bubble — once a frame, and as its box grows.
+       TRAP T-a-layout-read-belongs-in-a-frame */
     const card = this.#host.card();
-    if (card) this.#cardResize.observe(card);
+    if (this.#host.el.dataset['bounds'] && card) {
+      this.#host.onFrame(window, 'scroll', this.#keepInBounds, { ...whileOpen, capture: true });
+      this.#cardResize ??= new ResizeObserver(() => this.#keepInBounds());
+      this.#cardResize.observe(card);
+    }
 
     /* THE MENU OWNS ITS OWN DISMISS. `popover="manual"` because the rows are
        SLOTTED: the browser reads the DOM tree for light-dismiss, where they
@@ -208,26 +181,19 @@ export class MenuShell {
 
   /** The card shut: its listeners go, and so does its trigger. */
   closed(): void {
-    this.#openAc?.abort();
-    this.#openAc = null;
-    this.#cardResize?.disconnect();
+    this.stop();
     this.#trigger = null;
   }
 
-  /** Scrolled or resized while open: place the card again. */
-  #reposition = (): void => {
-    this.#place();
-  };
-
-  /** The window resized: close rather than float somewhere wrong. */
+  /** The window resized: close, as what is under the card may have been rebuilt. */
   #onViewportResize = (): void => {
     this.#host.hide();
   };
 
-  /** The rows moved: an open card is placed again next frame, once they are laid out.
-   *  TRAP T-rows-changed-re-places-next-frame */
+  /** The rows moved: a bounded card is kept inside its box next frame, once they
+   *  are laid out. TRAP T-rows-changed-re-places-next-frame */
   rowsChanged(): void {
-    if (this.open) requestAnimationFrame(() => this.#place());
+    if (this.open && this.#host.el.dataset['bounds']) requestAnimationFrame(this.#keepInBounds);
   }
 
   /**
@@ -245,7 +211,8 @@ export class MenuShell {
     else if (!inline && !card.hasAttribute('popover')) card.setAttribute('popover', 'manual');
   }
 
-  /** The menu left the page. The viewport listeners carry their own signals; only the observer is manual. */
+  /** The menu left the page, or the card shut. Only the observer is manual: the
+   *  listeners carry their own signals. */
   stop(): void {
     this.#openAc?.abort();
     this.#openAc = null;

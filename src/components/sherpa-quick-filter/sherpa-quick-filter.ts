@@ -841,7 +841,7 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /**
    * TRAP T-menu-anchors-to-the-chip — anchored to the CHIP's leading edge, not
-   * the caret's. Placement is measured: TRAP T-anchor-cross-root.
+   * the caret's, by reference: TRAP T-anchor-cross-root.
    *
    * `data-open` decides, NOT `menu.open`: the native popover light-dismisses on
    * pointerdown, so by the time the click lands an open menu already reads shut
