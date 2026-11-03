@@ -1179,7 +1179,7 @@ locale text passed 1.25 for `gt "1.5"`, and a typed value and a rule's value are
 (TODO 612).
 
 - Site: `src/core/data/store.ts`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/core/data/column-facts.ts`
 - Site: `src/core/data/aggregate.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
@@ -3784,6 +3784,7 @@ them; it never works them out.
 - Site: `test/unit/parity-sweep.test.mjs`
 - Site: `test/unit/a-summary-groups-and-sorts.test.mjs`
 - Site: `src/core/data/source-reads.ts`
+- Site: `src/core/data/column-facts.ts`
 
 ### T-a-conditioned-chip-answers-with-its-clause
 
@@ -3994,7 +3995,7 @@ wrong value.
 A missing health score is not a health score of nought, and averaging it in
 drags the mean toward zero in proportion to how much data is absent.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/core/data/column-facts.ts`
 - Site: `src/core/data/aggregate.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `test/unit/band-labels.test.mjs`
@@ -7018,3 +7019,69 @@ A new setting is one entry, and its use.
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-provider/provider-look.ts`
 - Site: `src/components/sherpa-outlet/outlet-nav.ts`
+
+### T-grid-collapsed-group-is-one-slot
+
+**A SHUT group is ONE line on screen, so it costs ONE slot of the page.**
+
+A page of 25 used to fill with 25 RECORDS. Group by tier, shut Gold, and the
+reader got a panel holding one heading and twenty-four hidden rows — a page that
+looks empty, with a pager insisting there are ten more like it. The rows were
+there; CSS was hiding them; the count had already been spent.
+
+So the page is cut from the rows in hand and the groups the grid has shut —
+the data layer's `ColumnFacts.page`, asked by the grid with its `#collapsed`:
+
+| | costs |
+|---|---|
+| a row | 1 |
+| an open group's heading | nothing |
+| a shut group | 1 — the heading, and nothing for its rows |
+
+**A page is `data-page-size` ROWS, grouped or not** — Will, TODO 152: "Data
+grid pages don't respect the row count value set in the pagination." The
+first cut counted every heading as a line, so a page of 25 held 24 or 23 rows
+and a grouped view had one page more than the same rows ungrouped. With every
+group open, the pages now match the ungrouped ones.
+
+`ColumnFacts.page` walks the visible rows once and records the index each page
+opens at. A page is then a plain slice, and `data-index` stays an index into the FULL
+visible list (`#renderBody` adds the slice's `offset`) — so selection, row-click
+and `#syncCurrent` keep resolving against the same list they always did. Change
+that and a click on page 2 returns a page-1 record.
+
+**A group split by a page boundary redraws its heading**, because a page that
+opened mid-group with no heading would not say which group it was showing. The
+`group-count` is the group's REAL size across every page, not the part this page
+drew — the heading answers "how many are in Gold", not "how many fit here".
+
+Only an OPEN group can be split. A shut one is a single line and cannot be.
+
+**Folding RE-CUTS the page**, so `#toggleGroup` calls `#renderBody()` and not
+just `#syncGroupVisibility()`. Shutting a group frees slots and the next rows
+move up onto this page; opening one pushes the tail off. A visibility sync alone
+leaves the hole this trap exists to remove — and because the body is replaced,
+the ticks, the select-all and the focus tint all have to be re-derived after it.
+
+None of this runs ungrouped (`#paginates`): there the store's window IS the page,
+and slicing it again would hide rows nobody folded.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
+- Site: `src/core/data/column-facts.ts`
+
+### T-grid-slider-spans-real-values
+
+A NUMBER column's range slider is given `min`/`max` from the column's REAL
+values (floor of the minimum, ceil of the maximum, over the finite ones).
+
+Left at the slider's own 0..100 default, a spend column would open with **every
+row crushed at the far left** and no way to pick between them.
+
+A fresh range then opens spanning the WHOLE column, so the filter starts by
+excluding nothing — opening at 0..0 would empty the view before the reader had
+asked it anything.
+
+- Site: `src/core/data/column-facts.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-data-grid.spec.ts`

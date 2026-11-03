@@ -22,14 +22,11 @@ import {
 import { markNeedles } from '../../core/ui/mark-text.js';
 import { ORGANISE_ICONS, heldByPreset, movedTo } from '../../core/ui/shared-constants.js';
 import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/data/cycle.js';
-import { reduceRows } from '../../core/data/aggregate.js';
+import { ColumnFacts, type PageAsk, type RowPage } from '../../core/data/column-facts.js';
 import { MOST_LISTED } from '../../core/data/field-catalogue.js';
 import { offerAxis, type AxisOffer } from '../../core/data/query.js';
 import { FilterHostController, type FieldPlace } from '../../core/ui/filter-host-controller.js';
-import {
-  compareValues, distinctOf, sortRows,
-  type Filter, type GroupSummary, type SortDirection, type SortSpec,
-} from '../../core/data/store.js';
+import type { Filter, GroupSummary } from '../../core/data/store.js';
 import {
   OP_TAKES, conditionLeaves, filterCondition, groupOf, joinConditions, valueKey,
   type Condition, type ConditionLeaf, type FilterOp,
@@ -272,6 +269,8 @@ export class SherpaDataGrid extends SherpaElement {
   #columns: GridColumn[] = [];
   /** The rows, as populated. */
   #rows: GridRow[] = [];
+  /** What the data layer says of them: their order, the page, the groups, each column's values. Plan 695 P4 */
+  #data = new ColumnFacts([]);
   /** What each row opens on, where it opens. TODO 570 */
   #detail: GridDetail | null = null;
   /** The rows open on their sub-grids, by key: kept across draws. */
@@ -485,7 +484,7 @@ export class SherpaDataGrid extends SherpaElement {
     this.#groupOffer = cfg.groupOffer;
     this.#syncNeedles();
     this.#actions = Array.isArray(cfg.actions) ? cfg.actions : [];
-    this.#groups = Array.isArray(cfg.groups) ? cfg.groups : null;
+    this.#data = new ColumnFacts(this.#rows, Array.isArray(cfg.groups) ? cfg.groups : null);
     this.#detail = cfg.detail ?? null;
     this.toggleState('detail', !!this.#detail);
     this.toggleState('actions', this.#actions.length > 0);
@@ -866,7 +865,7 @@ export class SherpaDataGrid extends SherpaElement {
     const given = this.#givenFilters[col.field];
     // Its values only where a list shows them: the work is not done to be thrown away. TODO 355
     const asked = !given && kind === 'text' && kindOf(col) !== 'advanced';
-    const offered = asked ? this.#presentValues(col.field) : [];
+    const offered = asked ? this.#data.values(col.field) : [];
     // More than a list shows, and it is Advanced alone. Will, D10 · TRAP T-a-list-has-a-limit
     const many = offered.length > MOST_LISTED;
     const listed = asked && !many;
@@ -878,13 +877,8 @@ export class SherpaDataGrid extends SherpaElement {
         : { kind: kind as 'number' | 'date', ...(col.advanced != null ? { advanced: col.advanced } : {}) }),
       ...(listed ? { options: values.map((v) => ({ value: v, label: v })) } : {}),
     };
-    /* A NUMBER's slider spans the values it HAS: the 0..100 default crushes a
-       spend column at the far left. `reduceRows`, as `null` coerces to 0.
-       TRAP T-grid-slider-spans-real-values · TRAP T-number-of-null-is-zero */
-    const ends = kind === 'number' && own.min == null && this.#rows.some((row) => {
-      const raw = row[col.field];
-      return raw != null && raw !== '' && Number.isFinite(Number(raw));
-    }) ? { min: Math.floor(reduceRows(this.#rows, 'min', col.field)), max: Math.ceil(reduceRows(this.#rows, 'max', col.field)) } : {};
+    // A NUMBER's slider spans the values it HAS: the 0..100 default crushes a spend column.
+    const ends = kind === 'number' && own.min == null ? this.#data.range(col.field) : undefined;
     return {
       ...own, ...ends, id: col.field, label: col.header ?? own.label ?? col.field, commit: true,
       ...(kind === 'text' && !own.select ? { select: 'multiple' as const } : {}),
@@ -926,12 +920,6 @@ export class SherpaDataGrid extends SherpaElement {
   drawOffered(offered: Readonly<Record<string, readonly string[]>>): void {
     this.#filter.drawOffered(offered);
     this.#tellDetails();
-  }
-
-  /** The values the ROWS on screen carry — the data layer's distinct values, in
-   *  the library's one order. A whole column comes in `filters`. TODO 523 · TRAP T-one-collator-for-the-library */
-  #presentValues(field: string): string[] {
-    return (distinctOf(this.#rows, [field])[field] ?? []).filter((v) => v != null && v !== '').sort(compareValues).map(valueKey);
   }
 
   /** Each heading's filter as its source defines it, as the last populate gave them. */
@@ -1414,12 +1402,9 @@ export class SherpaDataGrid extends SherpaElement {
     const tagTip = this.$('.tag-tip');
     if (tagTip) tagTip.textContent = this.#filter.heldFields.length ? movedTo(this.#filter.heldAt) : '';
 
-    // Each <tr>'s index is its place in the FILTERED, SORTED list, so row-click
-    // and selection-change name the row the user sees.
-    const all = this.#visibleRows();
-    // …then cut to ONE SCREEN PAGE when grouped. `offset` keeps data-index
-    // honest across the cut. TRAP T-grid-collapsed-group-is-one-slot.
-    const { rows, offset, pages } = this.#pageWindow(all);
+    // Each <tr>'s index is its place in the list as ordered, so row-click and
+    // selection-change name the row the user sees; grouped, one page of it.
+    const { rows, offset, pages } = this.#rowPage();
     let lastGroup: string | null = null;
     // Each tag field's value names, read once a draw.
     const looks = new Map<string, Map<string, string>>();
@@ -1435,7 +1420,7 @@ export class SherpaDataGrid extends SherpaElement {
           lastGroup = key;
           // The COUNT spans every page, so a group split by a boundary still
           // says how many rows it holds.
-          body.appendChild(this.#groupRow(key, this.#groupSize(all, group, key), columns.length));
+          body.appendChild(this.#groupRow(key, this.#data.count(group, key), columns.length));
         }
       }
 
@@ -1679,7 +1664,7 @@ export class SherpaDataGrid extends SherpaElement {
   #optionsOf(field: string): readonly FilterMenuItem[] {
     const given = this.#givenFilters[field]?.options;
     if (given?.length) return given;
-    return this.#presentValues(field).map((v) => ({ value: v, label: v }));
+    return this.#data.values(field).map((v) => ({ value: v, label: v }));
   }
 
   /** A field's name, as its heading says it: its column's, else its source's. */
@@ -1886,34 +1871,16 @@ export class SherpaDataGrid extends SherpaElement {
 
   // TRAP T-grid-thead-sticks-as-one-block — no sticky-offset measurement here.
 
-  /** The groups the data layer named, by key. Null until it names them. */
-  #groups: GroupSummary[] | null = null;
-
   /** Every group in force, as the data layer counted them. */
   get groups(): GroupSummary[] {
-    return this.#groups ? this.#groups.map((g) => ({ ...g })) : [];
-  }
-
-  /**
-   * How many rows share one group value.
-   *
-   * THE DATA LAYER'S COUNT where it gave one: this grid may hold a page, so
-   * its own tally is a page tally. The grid's OWN tally where its filter row
-   * hides rows — the data layer does not know of those — and for a grid
-   * populated by hand, with no source behind it.
-   * TRAP T-a-group-is-a-data-layer-concept
-   */
-  #groupSize(rows: GridRow[], field: string, key: string): number {
-    const told = this.#groups?.find((g) => g.key === key);
-    if (told) return told.count;
-    return rows.filter((r) => valueKey(r[field]) === key).length;
+    return this.#data.told?.map((g) => ({ ...g })) ?? [];
   }
 
   /* ── Visual paging ──────────────────────────────────────────────────
-   * TRAP T-grid-collapsed-group-is-one-slot — a page is `data-page-size` ROWS,
-   * grouped or not; a SHUT group is one line, so it costs one. The store
-   * counts RECORDS and cannot know what is shut.
-   * Ungrouped these do nothing: the store's window IS the page.
+   * Grouped, the data layer cuts the page from the rows in hand and the groups
+   * shut here: a page is `data-page-size` ROWS, a SHUT group one slot. The store
+   * counts RECORDS and cannot know what is shut. Ungrouped, the store's window IS
+   * the page. TRAP T-grid-collapsed-group-is-one-slot
    */
 
   /** The page size the host asked for, or 0 when it wants no visual paging. */
@@ -1931,46 +1898,24 @@ export class SherpaDataGrid extends SherpaElement {
     return Boolean(this.#groupField) && this.#pageSize > 0;
   }
 
-  /**
-   * Cut the visible rows into pages of `size` ROWS, returning each page's
-   * start index, so a page stays a plain slice. A ROW is one slot; an open
-   * group's heading is free, so a page holds the rows the pager says. A SHUT
-   * group is one slot, whatever it holds. An OPEN group longer than a page IS
-   * split.
-   */
-  #pageStarts(rows: GridRow[], field: string, size: number): number[] {
-    const starts: number[] = [0];
-    let slots = 0;
-    let lastGroup: string | null = null;
-
-    for (let i = 0; i < rows.length; i += 1) {
-      const key = valueKey(rows[i]![field]);
-      // A shut group's ROWS are drawn but hidden: its first one pays for the heading.
-      const cost = this.#collapsed.has(key) ? (key !== lastGroup ? 1 : 0) : 1;
-      if (cost > 0 && slots + cost > size && slots > 0) {
-        starts.push(i);
-        slots = 0;
-      }
-      slots += cost;
-      lastGroup = key;
-    }
-
-    return starts;
+  /** The rows in the order drawn, and the page of them: the data layer's answer. */
+  #rowPage(): RowPage {
+    return this.#data.page(this.#pageAsk());
   }
 
-  /** The page's rows plus their offset, so data-index stays TRUE after a slice. */
-  #pageWindow(rows: GridRow[]): { rows: GridRow[]; offset: number; pages: number } {
-    const field = this.#groupField;
-    const size = this.#pageSize;
-    if (!field || size <= 0) return { rows, offset: 0, pages: 1 };
-
-    const starts = this.#pageStarts(rows, field, size);
-    const pages = starts.length;
-    // CLAMP, never empty: a shut group can shrink the count under the host's page.
-    const index = Math.min(Math.max(this.#page, 1), pages) - 1;
-    const from = starts[index]!;
-    const to = starts[index + 1] ?? rows.length;
-    return { rows: rows.slice(from, to), offset: from, pages };
+  /** What it asks of its rows. Bound, its source ordered them; its rows OPEN, its
+   *  order is its sub-grids'. Alone, they are ordered by its own sort and group.
+   *  TODOs 523, 574 · TRAP T-bind-locks-what-it-owns */
+  #pageAsk(): PageAsk {
+    const group = this.#groupField;
+    const paged = group ? { group, page: this.#page, size: this.#pageSize, shut: this.#collapsed } : {};
+    if (this.hasAttribute('data-locked') || this.#detail) return paged;
+    /* SUSPENDED: the column is remembered, the sort not applied — an empty
+       direction says so. `?? 'asc'` is a column with no direction yet.
+       TRAP T-a-suspended-sort-is-one-owners-job · TRAP T-one-cycle-for-one-value */
+    const direction = this.dataset['sortDirection'];
+    const field = direction === '' ? undefined : this.dataset['sortField'];
+    return { ...paged, order: true, ...(field ? { sort: { field, direction: sortDirectionFrom(direction) ?? 'asc' } } : {}) };
   }
 
   /**
@@ -2077,37 +2022,6 @@ export class SherpaDataGrid extends SherpaElement {
   actionsFor(count: number): GridAction[] {
     if (count <= 0) return [];
     return count === 1 ? [...this.#actions] : this.#actions.filter((a) => a.multi);
-  }
-
-  /** The rows on screen, in order: `data-index` is a place in this list. A drawn
-   *  row's record is `#rowOf`'s, so a lookup never orders the rows again. */
-  #visibleRows(): GridRow[] {
-    /* Bound, its source ordered them: drawn as given. Alone, it orders them. Its
-       rows OPEN, its order is its sub-grids'. TODOs 523, 574 · TRAP T-bind-locks-what-it-owns */
-    return this.hasAttribute('data-locked') || this.#detail ? this.#rows : this.#sortRows(this.#rows);
-  }
-
-  /**
-   * Order the rows through the STORE's `sortRows`. TRAP
-   * T-one-collator-for-the-library. GROUP leads, so groups stay adjacent.
-   */
-  #sortRows(rows: GridRow[]): GridRow[] {
-    // SUSPENDED: the column is remembered, the sort is not applied — an empty
-    // direction is what says so. TRAP T-a-suspended-sort-is-one-owners-job.
-    const field = this.dataset['sortDirection'] === '' ? undefined : this.dataset['sortField'];
-    const group = this.#groupField;
-    if (!field && !group) return rows;
-    /* The shared reader, not a second spelling of it. `?? 'asc'` is the
-       DEFAULT for a column with no direction yet; the suspend is handled on
-       the line above, where the empty string drops the field.
-       TRAP T-one-cycle-for-one-value */
-    const direction: SortDirection =
-      sortDirectionFrom(this.dataset['sortDirection']) ?? 'asc';
-
-    const specs: SortSpec[] = [];
-    if (group) specs.push({ field: group, direction: group === field ? direction : 'asc' });
-    if (field && field !== group) specs.push({ field, direction });
-    return sortRows(rows, specs) as GridRow[];
   }
 
   /* ── Interaction ────────────────────────────────────────────────── */
@@ -2223,7 +2137,7 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** The row `by` rows from the current one, in the order drawn — or null. */
   neighbour(by: number): GridRow | null {
-    const rows = this.#visibleRows();
+    const rows = this.#rowPage().all;
     const at = rows.findIndex((r) => this.#keyOf(r) === this.#currentKey);
     return at < 0 ? null : rows[at + by] ?? null;
   }
@@ -2349,7 +2263,7 @@ export class SherpaDataGrid extends SherpaElement {
     const checked = (event.target as SelectBox).checked;
     // Only the VISIBLE rows: a select-all neither reaches nor deselects records
     // a filter is hiding.
-    for (const record of this.#visibleRows()) {
+    for (const record of this.#rowPage().all) {
       if (checked) this.#selected.add(record);
       else this.#selected.delete(record);
     }
@@ -2458,7 +2372,7 @@ export class SherpaDataGrid extends SherpaElement {
       this.#wantedKeys = null;
       for (const record of rows) this.#selected.add(record);
     } else {
-      for (const record of this.#visibleRows()) this.#selected.add(record);
+      for (const record of this.#rowPage().all) this.#selected.add(record);
     }
 
     this.#renderBody();

@@ -458,22 +458,6 @@ template.
 
 ---
 
-### T-grid-slider-spans-real-values
-
-A NUMBER column's range slider is given `min`/`max` from the column's REAL
-values (floor of the minimum, ceil of the maximum, over the finite ones).
-
-Left at the slider's own 0..100 default, a spend column would open with **every
-row crushed at the far left** and no way to pick between them.
-
-A fresh range then opens spanning the WHOLE column, so the filter starts by
-excluding nothing — opening at 0..0 would empty the view before the reader had
-asked it anything.
-
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `test/e2e/reforged-data-grid.spec.ts`
-
 ### T-variant-attrs-or-one-way-door
 
 `static variantAttrs` names the attributes `templateId` reads, so changing one
