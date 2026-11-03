@@ -733,7 +733,7 @@
         "on",
         "off"
       ],
-      "description": "on | off — while Limit is on, a heading menu hides what it rules out. Written by the provider. TODO 305"
+      "description": "on | off — while Limit is on, a heading menu hides what it rules out. The app's setting, `hideUnmatched`. TODO 305"
     },
     {
       "$type": "prop",
@@ -746,7 +746,7 @@
         "on",
         "off"
       ],
-      "description": "on | off — the host's \"Limit to matching filters\". Written by the provider."
+      "description": "on | off — the host's \"Limit to matching filters\". The app's setting, `limitOptions`."
     },
     {
       "$type": "prop",

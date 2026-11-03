@@ -17,6 +17,7 @@
  * - .settingsClosed — Settings closed: back to the Context's row, and the rail as it was.
  */
 import type { AppDefinition } from '../../core/data/app-definition.js';
+import { SETTINGS } from '../../core/data/settings.js';
 import type { SessionList, SessionStore } from '../../core/browser/session.js';
 import type { SherpaRouter } from '../sherpa-router/sherpa-router.js';
 import type { NavConfig, NavEntry, NavState, QuickEntry } from '../sherpa-nav/sherpa-nav.js';
@@ -92,9 +93,9 @@ export class OutletNav {
     const stops = [
       this.#favorites.subscribe(() => void this.refresh()),
       this.#recents.subscribe(() => void this.refresh()),
-      at.session.subscribe('/nav/hierarchy', () => { this.syncCurrent(); void this.refresh(); }),
-      at.session.subscribe('/nav/views', () => { this.syncStar(); void this.refresh(); }),
-      at.session.subscribe('/nav/hover', () => this.#syncHover()),
+      at.session.subscribe(SETTINGS.navHierarchy.at, () => { this.syncCurrent(); void this.refresh(); }),
+      at.session.subscribe(SETTINGS.navViews.at, () => { this.syncStar(); void this.refresh(); }),
+      at.session.subscribe(SETTINGS.navHover.at, () => this.#syncHover()),
     ];
     this.#syncHover();
     at.signal.addEventListener('abort', () => { for (const stop of stops) stop(); }, { once: true });
@@ -109,7 +110,7 @@ export class OutletNav {
    *  keeps the reader's own open Areas (TODO 116). */
   refresh(): Promise<void> | void {
     const here = this.#rowFor(this.#context())?.id;
-    const hierarchy = this.#session.get('/nav/hierarchy') === true;
+    const hierarchy = this.#session.get(SETTINGS.navHierarchy.at) === true;
     for (const row of this.#rows()) {
       const list = row.id === 'recent' ? this.#recents : row.id === 'favorites' ? this.#favorites : null;
       const context = this.#contextOf(row.href);
@@ -135,7 +136,7 @@ export class OutletNav {
     const row = settings ? this.#rows().find((r) => this.#settingsOf(r.href) === settings) : this.#rowFor(name);
     const id = row?.id ?? `context-${name}`;
     const view = settings ? null : route['view'] ?? this.#host.firstView(name);
-    this.#nav.dataset['currentId'] = row && view && this.#session.get('/nav/hierarchy') === true ? `${id}:${view}` : id;
+    this.#nav.dataset['currentId'] = row && view && this.#session.get(SETTINGS.navHierarchy.at) === true ? `${id}:${view}` : id;
   }
 
   /** The header's ★ says whether the View on screen is a favourite — or,
@@ -188,7 +189,7 @@ export class OutletNav {
 
   /** "Expand navigation on hover": on unless the session says off. */
   #syncHover(): void {
-    this.#nav.toggleAttribute('data-no-hover', this.#session.get('/nav/hover') === false);
+    this.#nav.toggleAttribute('data-no-hover', this.#session.get(SETTINGS.navHover.at) === false);
   }
 
   /** The rows app.json gives: Home is the default Context, Recent and Favorites
@@ -264,7 +265,7 @@ export class OutletNav {
 
   /** Do Recents and Favorites name Views (the default), or Contexts? TODO 399 */
   #byView(): boolean {
-    return this.#session.get('/nav/views') !== false;
+    return this.#session.get(SETTINGS.navViews.at) !== false;
   }
 
   /** Stored rows as an Area's children: each View, or — listing Contexts — each

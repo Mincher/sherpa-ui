@@ -317,7 +317,40 @@ session.persist('/nav/pinned');
 - A control bound to a pointer says so in its markup — the outlet binds it:
   `<sherpa-switch data-setting="/nav/hierarchy">`. One that depends on another adds
   `data-setting-needs="/pointer"`: disabled until that one is on. `T-a-setting-is-a-pointer`
-- A demo or onboarding page may lay its own settings over the app's: `session.overlay({ '/filters/limit': true })` on entering it, `session.overlay(null)` on leaving. While on, those pointers read and write there, and nothing is stored, so a change never carries over to another page. Not how an app sets a setting.
+- A demo or onboarding page may lay its own settings over the app's: `provider.settings.lay({ limitOptions: true })` on entering it, `lay(null)` on leaving. While on, a control bound to one reads and writes the page's, and nothing is stored, so a change never carries over to another page. Only a `page` or `component` setting may be laid. Not how an app sets a setting.
+
+### Settings
+
+Every setting is ONE entry in a schema: Sherpa's own are `SETTINGS`; an app adds
+its own beside them, and may start one of Sherpa's otherwise.
+
+```js
+import { SETTINGS, Settings, SessionStore, persistSettings } from 'sherpa-ui';
+
+export const SCHEMA = {
+  ...SETTINGS,
+  allowSolo: { ...SETTINGS.allowSolo, default: true },   // the app starts it on
+  sites: { type: 'boolean', default: true, scope: 'app', at: '/filters/sites' },
+};
+
+const session = new SessionStore({});
+for (const def of Object.values(SCHEMA)) if (session.get(def.at) === undefined) session.set(def.at, def.default);
+persistSettings(session, SCHEMA);        // each kept, guarded by what it can take
+const settings = new Settings(SCHEMA, session);
+document.querySelector('sherpa-provider').settings = settings;
+```
+
+- **Add a setting in one step:** its entry — `type`, `default`, `scope` (`app`;
+  `page`, which a page may lay; `component`, whose `null` leaves each component's
+  own) and `at`, its session pointer. Then its use: a Settings switch says
+  `data-setting="<at>"`; a component that reads it lists it in `static settings`,
+  `{ 'data-its-attribute': 'key' }` (`'!key'` while it is off); a DataSource
+  property of that name marks it `source: true`; a look marks `look: { props }`
+  (custom properties on the root, by value) or `look: { attr }` (the root's
+  attribute the tokens read, as `data-mode` and `data-density`).
+- Read one with `settings.get(key)`; hear each move on its `change`. A reader's
+  change made in the provider — a bar's ⋮, the mode button — is set and reported
+  as `setting-change` `{ key, value }`. `T-a-setting-is-declared-once`
 - Recents and Favorites name each View; `/nav/views: false` lists each Context
   once instead. `T-the-outlet-keeps-the-nav`
 - The nav opens to a pointer; `/nav/hover: false` keeps it as icons until its Pin.

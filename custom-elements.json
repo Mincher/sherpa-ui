@@ -2535,14 +2535,14 @@
             },
             {
               "name": "data-hide-unmatched",
-              "description": "on | off — while Limit is on, a heading menu hides what it rules out. Written by the provider. TODO 305",
+              "description": "on | off — while Limit is on, a heading menu hides what it rules out. The app's setting, `hideUnmatched`. TODO 305",
               "type": {
                 "text": "'on' | 'off'"
               }
             },
             {
               "name": "data-limit-options",
-              "description": "on | off — the host's \"Limit to matching filters\". Written by the provider.",
+              "description": "on | off — the host's \"Limit to matching filters\". The app's setting, `limitOptions`.",
               "type": {
                 "text": "'on' | 'off'"
               }
@@ -8482,7 +8482,7 @@
             },
             {
               "name": "data-limit-options",
-              "description": "on | off — the host offers \"Limit to matching filters\": the ⋮ always shows, and over the View its menu holds the switch. Written by the provider. Will, TODOs 178, 553.",
+              "description": "on | off — the host offers \"Limit to matching filters\": the ⋮ always shows, and over the View its menu holds the switch. The app's setting, `limitOptions`. Will, TODOs 178, 553.",
               "type": {
                 "text": "'on' | 'off'"
               }

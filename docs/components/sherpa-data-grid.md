@@ -93,8 +93,8 @@ For a table of records that can be sorted, filtered, grouped and selected. It re
 | `data-group-field` | text |  | group rows by this column |
 | `data-heading-group` | boolean |  | a Group button in each list column's heading: it groups by that column; a group row offers Ungroup. Set by its provider. TODO 500 |
 | `data-heading-hover` | boolean |  | a heading shows its buttons only while hovered or focused; one that is on stays. TODO 501 |
-| `data-hide-unmatched` | `on` `off` |  | on \| off — while Limit is on, a heading menu hides what it rules out. Written by the provider. TODO 305 |
-| `data-limit-options` | `on` `off` |  | on \| off — the host's "Limit to matching filters". Written by the provider. |
+| `data-hide-unmatched` | `on` `off` |  | on \| off — while Limit is on, a heading menu hides what it rules out. The app's setting, `hideUnmatched`. TODO 305 |
+| `data-limit-options` | `on` `off` |  | on \| off — the host's "Limit to matching filters". The app's setting, `limitOptions`. |
 | `data-locked` | boolean |  |  |
 | `data-multi-field` | boolean |  | a column's `tags` draw as a second row in its cells, each pressed to filter by its value, and its heading menu joins their lists. Set by its provider. TODO 490 |
 | `data-needles` | text |  | what an EXTERNAL filter MATCHED on, so its hits mark in the cells: `field:op:value` per entry, NEWLINE separated. Written by SherpaDataSource beside data-filter-fields. Only substring ops appear — `eq` matched the whole value and `ne` matched by absence, so neither leaves a span to point at. TRAP T-a-needle-comes-from-either-direction |

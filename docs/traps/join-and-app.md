@@ -926,7 +926,9 @@ its reader would; unbound, they stay silent writes.
 
 **A control that says `data-setting="/pointer"` is bound to that session
 value** (TODO 191). `bindSettings(root, session, { signal })` draws each one
-from the session and writes its `change` back: a boolean is a switch's
+and writes its `change` back — a declared setting's through the provider's
+`Settings`, so a page's own shows and stays the page's
+(`T-a-setting-is-declared-once`), any other pointer straight from the session: a boolean is a switch's
 `checked`, anything else is its `value`, and a value that was a number is kept
 a number — Items per page writes `50`, not `"50"`. A session write from
 anywhere redraws it. Sherpa Demos' Settings wired eight such controls by hand,

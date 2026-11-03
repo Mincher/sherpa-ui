@@ -118,6 +118,7 @@ in `src/components/sherpa-provider/`, given what it needs by its provider:
 | `provider-show-as.ts` | Show as: a slot's chart swapped, a pivot, a grid made from a chart, the card's title |
 | `provider-mode.ts`, `provider-page.ts` | the panel or the bars; the open page's Views, saved sets and drafts |
 | `provider-declared.ts` | what a component declares, read in one place |
+| `provider-look.ts` | the look settings on the page's root |
 
 A pivot and a grid made from a chart are rows in, a table out: `pivotTable()`
 and `madeTable()` in `core/data/aggregate.ts`, DOM-free.
@@ -125,9 +126,17 @@ and `madeTable()` in `core/data/aggregate.ts`, DOM-free.
 **A component DECLARES; the provider never probes.** `static asks` says the
 shape of its data (§4). `static takes` lists what else its provider gives it,
 each a door it has (`Take` in `core/ui/context.ts`): `card` (a container — the
-state of what it holds), `settings` (the app's filter settings), `headings` (a
-grid's heading settings), `highlight` (`drawHighlight`), `counts` (`drawCounts`).
+state of what it holds), `highlight` (`drawHighlight`), `counts` (`drawCounts`).
 A filter bar is what asks for a `scope`.
+
+**The app's settings are one schema the provider holds** (695 U2):
+`provider.settings`, a `Settings` over `SETTINGS` (`core/data/settings.ts`) and
+the app's own, kept in the app's session. A component reads what it takes through
+`static settings` — its own attributes, by setting key — asked as
+`SETTINGS_CONTEXT` and told again on every change. A `source` setting goes on
+each source; a `look` setting on the page's root, by the provider with none
+above it. A reader's change made here — a ⋮ switch, the mode button — is set and
+reported as ONE `setting-change` `{ key, value }`. `T-a-setting-is-declared-once`
 
 **One Query per Context (366).** `open()` makes the page's `QueryContext` and
 opens its source into it; a Context's module gets it as `ctx.query`, and a

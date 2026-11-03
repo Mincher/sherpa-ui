@@ -74,7 +74,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-hide-unmatched` | `on` `off` |  | on \| off — the host hides what Limit rules out, when it is on |
 | `data-highlight-hover` | boolean |  |  |
 | `data-label-column` | boolean |  |  |
-| `data-limit-options` | `on` `off` |  | on \| off — the host offers "Limit to matching filters": the ⋮ always shows, and over the View its menu holds the switch. Written by the provider. Will, TODOs 178, 553. |
+| `data-limit-options` | `on` `off` |  | on \| off — the host offers "Limit to matching filters": the ⋮ always shows, and over the View its menu holds the switch. The app's setting, `limitOptions`. Will, TODOs 178, 553. |
 | `data-locked` | boolean |  | the host owns the state; report, never self-set |
 | `data-move-filters` | boolean |  |  |
 | `data-no-actions` | boolean |  | hide the built-in cluster entirely (host owns the trailing end) |
