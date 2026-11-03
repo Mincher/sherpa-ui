@@ -538,6 +538,18 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: a solo reaches every scope. */
   #soloAcross = false;
 
+  /** Solo is an icon-only toggle in a filter menu's header, before its Advanced
+   *  button, not a row. Needs `allowSolo`. Will, TODO 690 */
+  get soloInHeader(): boolean {
+    return this.#soloHeader;
+  }
+  set soloInHeader(on: boolean) {
+    this.#soloHeader = on;
+    this.#offerAll();
+  }
+  /** The app's choice: Solo in the menu's header. */
+  #soloHeader = false;
+
   /** In the panel, each filter's heading in a column at its start, its values
    *  beside it. The app sets it, from its session. Will, TODO 460 */
   get labelColumn(): boolean {
@@ -720,6 +732,7 @@ export class SherpaProvider extends SherpaElement {
     el.toggleAttribute('data-move-filters', this.#moveFilters);
     el.toggleAttribute('data-allow-solo', this.#allowSolo);
     el.toggleAttribute('data-solo-across', this.#soloAcross);
+    el.toggleAttribute('data-solo-header', this.#soloHeader);
     el.toggleAttribute('data-label-column', this.#labelColumn);
     el.toggleAttribute('data-every-count', this.#countEvery);
     // A grid's headings and tags. TODOs 500, 501, 490

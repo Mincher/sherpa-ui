@@ -4142,10 +4142,18 @@ one that applies; the bar asks `{ solo, across }` or `{ unsolo }`. The scope say
 place, and the `info` look (D2 A, a pin until Figma refines it). A soloed chip's body
 does not toggle: it ends the solo, and stays on.
 
+**In the menu's header** (S4, Will): with `soloInHeader` (`data-solo-header`), the
+chip's menu holds no Solo rows; it is `data-soloable`, and shows an icon-only toggle
+before its Advanced button, `aria-pressed` while `data-soloed`. Its press says
+`menu-select` with `header: true`, and the bar leaves the menu open. A menu's
+action rows are never its answer: a drill opens a menu whose only rows are Move or
+Solo itself (`T-a-conditions-only-menu-cannot-be-drilled`).
+
 - Site: `src/core/data/query-context.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/unit/a-solo-is-a-draft-of-one-tab.test.mjs`
 - Site: `test/e2e/reforged-a-solo-is-a-draft-of-one-tab.spec.ts`
 ### T-grid-column-width-bounds

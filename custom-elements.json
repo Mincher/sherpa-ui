@@ -5470,6 +5470,18 @@
               "default": "\"multiple\""
             },
             {
+              "name": "data-soloable",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-soloed",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-step",
               "type": {
                 "text": "string"
@@ -5769,7 +5781,7 @@
               "name": "menu-select",
               "description": "An action row was clicked.",
               "type": {
-                "text": "CustomEvent<{ label: string; value: 'remove' | string }>"
+                "text": "CustomEvent<{ header: true; label: string; value: 'remove' | 'solo' | 'unsolo' | string }>"
               }
             },
             {
@@ -5905,6 +5917,9 @@
             },
             {
               "name": "search"
+            },
+            {
+              "name": "solo-toggle"
             },
             {
               "name": "today"
@@ -8115,6 +8130,13 @@
             },
             {
               "kind": "field",
+              "name": "soloInHeader",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
               "name": "labelColumn",
               "type": {
                 "text": "boolean"
@@ -8782,6 +8804,12 @@
             },
             {
               "name": "data-solo-across",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-solo-header",
               "type": {
                 "text": "boolean"
               }

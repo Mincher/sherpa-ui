@@ -61,6 +61,8 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `data-scroll-shadow` | boolean | `false` | an inner shadow on each edge its list is scrolled past |
 | `data-search` | boolean |  | show a search input under the heading that filters the rows |
 | `data-select` | `single` `multiple` | `multiple` | multiple \| single (radio rows) |
+| `data-soloable` | boolean |  |  |
+| `data-soloed` | boolean |  |  |
 | `data-step` | text |  |  |
 | `data-swatches` | boolean |  |  |
 | `data-takes` | `list` `text` |  | written BY the menu from data-op: list \| text. CSS reads it to reveal the rows or the text box. |
@@ -114,7 +116,7 @@ Each one bubbles.
 | `menu-apply` | `{ all: true; values: string[] }` | Apply was clicked. |
 | `menu-discard` |  | Discard put the values back as they were when the menu opened; it stays open. |
 | `menu-clear` |  | Clear was clicked; the selection is already empty. |
-| `menu-select` | `{ label: string; value: 'remove' \| string }` | An action row was clicked. |
+| `menu-select` | `{ header: true; label: string; value: 'remove' \| 'solo' \| 'unsolo' \| string }` | An action row was clicked. |
 | `menu-drill` | `{ value: string }` | A row's child-menu caret. |
 | `menu-open` |  |  |
 | `menu-close` |  |  |
@@ -137,7 +139,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`add-condition`, `apply`, `body-actions`, `body-number`, `body-range`, `condition-rows`, `discard`, `drill-back`, `drill-crumbs`, `drill-trail`, `footer`, `header`, `heading`, `loading`, `menu`, `no-matches`, `remove`, `reset`, `rows`, `search`, `today`, `use-condition`
+`add-condition`, `apply`, `body-actions`, `body-number`, `body-range`, `condition-rows`, `discard`, `drill-back`, `drill-crumbs`, `drill-trail`, `footer`, `header`, `heading`, `loading`, `menu`, `no-matches`, `remove`, `reset`, `rows`, `search`, `solo-toggle`, `today`, `use-condition`
 
 ## CSS custom properties it reads
 

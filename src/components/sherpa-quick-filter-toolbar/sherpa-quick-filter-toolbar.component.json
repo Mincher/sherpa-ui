@@ -945,6 +945,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-solo-header",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-sort-direction",
       "type": "enum",
       "observed": true,

@@ -96,6 +96,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-scope` | text |  | ASKED of its provider: the Query scope it draws and answers |
 | `data-scroll-shadow` | boolean | `false` | an inner shadow on each edge its column is scrolled past |
 | `data-solo-across` | boolean |  |  |
+| `data-solo-header` | boolean |  |  |
 | `data-sort-direction` | `asc` `desc` `""` | `asc` | asc \| desc |
 | `data-sort-field` | text |  | the field the Sort chip points at (the standard name) |
 | `data-suggest` | boolean |  | show "Suggest filters", left of Edit. Will, TODO 527 |

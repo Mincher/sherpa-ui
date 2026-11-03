@@ -128,6 +128,10 @@ export class SherpaMenu extends SherpaElement {
        switch to and the switch is hidden. It IMPLIES `data-advanced`.
        TRAP T-a-filter-answers-by-values-conditions-or-both */
     'data-advanced-only': { type: 'boolean', kind: 'style' },
+    /* SOLO in the header, icon only, before the mode button: its host offers it, and
+       says when its filter is soloed. Will, TODO 690 */
+    'data-soloable': { type: 'boolean', kind: 'style' },
+    'data-soloed': { type: 'boolean', kind: 'behaviour' },
     /* WHICH BODY this menu draws. A body lives in THIS component's shadow root,
        so one spelling and one set of rules serve every host.
        TRAP T-a-menu-owns-its-own-bodies */
@@ -270,6 +274,7 @@ export class SherpaMenu extends SherpaElement {
     region?.addEventListener('change', this.#passOn);
     region?.addEventListener('input', this.#passOn);
     this.$('.use-advanced')?.addEventListener('button-click', this.#onModeSwitch);
+    this.$('.solo-toggle')?.addEventListener('button-click', this.#onSoloToggle);
     this.$('.add-condition')?.addEventListener('click', this.#onAddCondition);
     region?.addEventListener('click', this.#onDropCondition);
     // Held writes, then a reading set before this menu drew — it has rows and ticks now.
@@ -376,6 +381,14 @@ export class SherpaMenu extends SherpaElement {
     this.dispatchEvent(new Event('change', { bubbles: true }));
     this.#syncDirty();
     this.#report();
+  };
+
+  /** The header's Solo: its host solos this filter, or ends the solo; the menu
+   *  stays open, the toggle pressed while it is soloed. TODO 690
+   *  TRAP T-a-solo-is-a-draft-of-one-tab */
+  #onSoloToggle = (event: Event): void => {
+    event.stopPropagation();
+    this.emit('menu-select', { value: this.hasAttribute('data-soloed') ? 'unsolo' : 'solo', header: true });
   };
 
   /** Switch between the value list and the condition rows. */

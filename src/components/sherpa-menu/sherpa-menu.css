@@ -141,9 +141,17 @@
    gap under its heading. */
 :host([data-type="filter"]) .header {
   grid-template-areas:
-    "heading  mode"
-    "filter   filter";
-  grid-template-columns: 1fr auto;
+    "heading  solo    mode"
+    "filter   filter  filter";
+  grid-template-columns: 1fr auto auto;
+}
+
+/* SOLO, before the mode button, where its host offers it. Will, TODO 690 */
+.solo-toggle { display: none; }
+:host([data-type="filter"][data-soloable]) .solo-toggle {
+  display: inline-flex;
+  grid-area: solo;
+  margin-inline-end: var(--sherpa-display-mode-space-2xs, 4px);
 }
 
 /* The mode button sits on the heading's own row, at its end — and ONLY when

@@ -48,6 +48,7 @@ Put it round the part of a page whose components need data: each component insid
 | `moveFilters` | `boolean` | read and write |  |
 | `allowSolo` | `boolean` | read and write |  |
 | `soloAcrossScopes` | `boolean` | read and write |  |
+| `soloInHeader` | `boolean` | read and write |  |
 | `labelColumn` | `boolean` | read and write |  |
 | `countEveryValue` | `boolean` | read and write |  |
 | `headingGroup` | `boolean` | read and write |  |

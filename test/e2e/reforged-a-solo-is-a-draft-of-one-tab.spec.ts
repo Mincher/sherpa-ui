@@ -10,7 +10,7 @@ import { test, expect } from './harness';
 const PAGE = `{
   v: 1, id: 'plans',
   source: {
-    store: 'plans', fields: { plan: { label: 'Plan' }, owner: { label: 'Owner' }, tier: { label: 'Tier' } },
+    store: 'plans', fields: { plan: { label: 'Plan', advanced: true }, owner: { label: 'Owner' }, tier: { label: 'Tier' } },
     scopes: { view: { label: 'View', holds: ['tier'] }, data: { label: 'Rows', holds: ['plan', 'owner'] } },
   },
 }`;
@@ -131,4 +131,33 @@ test('with soloing allowed, a FOLDED advanced-only filter still opens its own me
     return { solo, opened: menu.hasAttribute('open'), lists: overflow.querySelector('sherpa-menu')!.querySelectorAll('.menu-row[data-drill]').length > 0 };
   });
   expect(r).toEqual({ solo: true, opened: true, lists: true });
+});
+
+test('in the menu header: Solo is an icon toggle before Advanced, pressed while soloed, and its menu stays open', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.allowSolo = true;
+    provider.soloInHeader = true;
+    await settle();
+    const menu = chip('plan').querySelector(':scope > sherpa-menu');
+    menu.show(chip('plan'));
+    await settle();
+    const toggle = menu.shadowRoot.querySelector('.solo-toggle');
+    const advanced = menu.shadowRoot.querySelector('.use-condition');
+    const at = { rows: !!row('plan', 'solo'), shown: shown(toggle),
+      advanced: shown(advanced), before: toggle.getBoundingClientRect().right <= advanced.getBoundingClientRect().left + 0.5 };
+    toggle.shadowRoot.querySelector('button').click();
+    await settle();
+    at.soloed = state();
+    at.pressed = toggle.getAttribute('aria-pressed');
+    at.open = menu.hasAttribute('open');
+    toggle.shadowRoot.querySelector('button').click();
+    await settle();
+    at.after = state();
+    at.unpressed = toggle.getAttribute('aria-pressed');
+    return at;
+  })()`) as Record<string, unknown>;
+  expect(r).toMatchObject({ rows: false, shown: true, advanced: true, before: true, pressed: 'true', open: true, unpressed: 'false' });
+  expect(r['soloed']).toMatchObject({ owner: false, solo: true });
+  expect(r['after']).toMatchObject({ owner: true, solo: false });
 });

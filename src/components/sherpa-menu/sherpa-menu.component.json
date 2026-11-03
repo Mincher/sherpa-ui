@@ -525,6 +525,20 @@
                   }
                 },
                 {
+                  "el": "sherpa-button",
+                  "class": "solo-toggle",
+                  "part": "solo-toggle",
+                  "attrs": {
+                    "data-type": "icon",
+                    "data-size": "sm",
+                    "data-icon-start": "solo",
+                    "aria-label": "Solo this filter",
+                    "aria-pressed": "false",
+                    "data-swap-on": "data-soloed",
+                    "data-swap-aria-pressed": "true"
+                  }
+                },
+                {
                   "el": "div",
                   "class": "use-condition",
                   "part": "use-condition",
@@ -1420,6 +1434,22 @@
     },
     {
       "$type": "prop",
+      "name": "data-soloable",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-soloed",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-step",
       "type": "string",
       "observed": true,
@@ -1681,8 +1711,9 @@
       "bubbles": true,
       "composed": true,
       "detail": {
+        "header": "true",
         "label": "string",
-        "value": "'remove' | string"
+        "value": "'remove' | 'solo' | 'unsolo' | string"
       }
     },
     {

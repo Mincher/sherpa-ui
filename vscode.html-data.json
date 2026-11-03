@@ -2237,6 +2237,14 @@
           ]
         },
         {
+          "name": "data-soloable",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-soloed",
+          "valueSet": "v"
+        },
+        {
           "name": "data-step"
         },
         {
@@ -3047,6 +3055,10 @@
         },
         {
           "name": "data-solo-across",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-solo-header",
           "valueSet": "v"
         },
         {

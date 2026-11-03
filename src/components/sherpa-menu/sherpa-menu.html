@@ -310,6 +310,11 @@
       <!-- The mode button, at the end of the heading's row: the two modes are
            the SAME filter seen two ways, not two menus. f(x), and ON in
            Advanced. Will, TODO 141. TRAP T-a-filter-menu-has-two-modes -->
+      <!-- SOLO, icon only, before the mode button, where its host offers it: every
+           other filter off while this one is. Will, TODO 690 -->
+      <sherpa-button class="solo-toggle" part="solo-toggle" data-type="icon" data-size="sm"
+                     data-icon-start="solo" aria-label="Solo this filter"
+                     aria-pressed="false" data-swap-on="data-soloed" data-swap-aria-pressed="true"></sherpa-button>
       <div class="use-condition" part="use-condition">
         <sherpa-button class="use-advanced" data-type="icon" data-size="sm"
                        data-icon-start="function" aria-label="Advanced"

@@ -517,7 +517,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](TRAPS.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](TRAPS.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (112)
+## Menus, tips and overlays (113)
 
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](TRAPS.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
 - [T-a-chip-press-applies-its-menus-draft](TRAPS.md#t-a-chip-press-applies-its-menus-draft) — menu
@@ -554,6 +554,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-ruled-out-value-is-greyed](TRAPS.md#t-a-ruled-out-value-is-greyed) — menu
 - [T-a-select-does-not-hug-its-own-text](TRAPS.md#t-a-select-does-not-hug-its-own-text) — menu
 - [T-a-slotted-row-is-outside-its-own-popover](TRAPS.md#t-a-slotted-row-is-outside-its-own-popover) — menu
+- [T-a-solo-is-a-draft-of-one-tab](TRAPS.md#t-a-solo-is-a-draft-of-one-tab) — menu
 - [T-a-tip-lives-in-the-top-layer](TRAPS.md#t-a-tip-lives-in-the-top-layer) — top-layer-tips
 - [T-a-tooltip-is-always-in-the-top-layer](TRAPS.md#t-a-tooltip-is-always-in-the-top-layer) — tooltip
 - [T-a-tree-menu-keeps-its-ticks-as-data](TRAPS.md#t-a-tree-menu-keeps-its-ticks-as-data) — menu
