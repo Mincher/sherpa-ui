@@ -28,15 +28,15 @@ headings below are older than the index: most entries are under the last one.
 
 | Area | Entries |
 |---|---:|
-| [The data layer](traps/data-layer.md) | 210 |
+| [The data layer](traps/data-layer.md) | 207 |
 | [Storage, saved Views and the URL](traps/storage.md) | 38 |
 | [The join and the app layer](traps/join-and-app.md) | 40 |
 | [Filters](traps/filters.md) | 104 |
-| [Menus, tips and overlays](traps/menus-tips-overlays.md) | 75 |
+| [Menus, tips and overlays](traps/menus-tips-overlays.md) | 79 |
 | [The data grid](traps/data-grid.md) | 58 |
 | [Charts](traps/charts.md) | 42 |
 | [SherpaElement and the shared sheets](traps/element-and-sheets.md) | 71 |
 | [Other components](traps/other-components.md) | 61 |
 | [Build, tools and the MCP](traps/build-tools-mcp.md) | 34 |
 | [Tests only](traps/tests-only.md) | 13 |
-| **All** | **746** |
+| **All** | **747** |
