@@ -43,7 +43,7 @@ import { readingAnswered, sameReading } from '../../core/data/query.js';
 import { treeReading } from '../../core/data/where.js';
 import { coalesce } from '../../core/data/timing.js';
 import { hidesUnmatched } from '../../core/ui/more-menu.js';
-import type { DataAsk } from '../../core/ui/context.js';
+import type { DataAsk, Take } from '../../core/ui/context.js';
 import { report } from '../../core/data/report.js';
 import { isStaleKey, keyRow, rowKey } from '../../core/data/row-key.js';
 
@@ -233,6 +233,8 @@ export class SherpaDataGrid extends SherpaElement {
       return columns.length ? [...new Set([...columns.flatMap((c) => [c.field, ...c.tags ?? []]), ...(key ? [key] : [])])] : undefined;
     },
   };
+  // …and is told the app's filter settings, its headings' settings, and a hover's matches.
+  static takes: readonly Take[] = ['settings', 'headings', 'highlight'];
 
   /* CONFIGURATION a page sets once; rows and groups arrive as data beside it.
      TRAP T-configuration-is-not-data */

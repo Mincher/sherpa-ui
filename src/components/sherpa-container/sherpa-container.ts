@@ -2,6 +2,7 @@
  * sherpa-container — the base card. CSS owns style, padding and state.
  */
 import { SherpaElement, define, SHARED_PROPS } from '../../core/ui/sherpa-element.js';
+import type { Take } from '../../core/ui/context.js';
 import '../sherpa-loader/sherpa-loader.js';
 import '../sherpa-empty-state/sherpa-empty-state.js';
 import '../sherpa-button/sherpa-button.js';
@@ -23,6 +24,8 @@ export class SherpaContainer extends SherpaElement {
     new URL('./sherpa-container.css', import.meta.url),
   ];
   static override html = new URL('./sherpa-container.html', import.meta.url);
+  // A card: its provider draws the state of the data it holds.
+  static takes: readonly Take[] = ['card'];
 
   /* DECLARED, not hand-synced: CSS-only, so the base class writes nothing. */
   static override props = {

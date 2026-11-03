@@ -2,10 +2,12 @@
  * sherpa-provider — the data layer, over a SUBTREE of the page: a component
  * inside it ASKS, and this ANSWERS.
  *
- * A thin DOM door onto the DOM-free data layer. It holds the sources it is
- * given and joins each component that asks to the one its subtree provides —
- * by `bindSource()`, delivering through the callback the component asked with. A
- * request that arrives before any source waits, and `provide()` answers it.
+ * It holds the sources it is given and joins each component that asks to the
+ * one its subtree provides — by `bindSource()`, delivering through the callback
+ * the component asked with — and opens and closes pages. A request that arrives
+ * before any source waits, and `provide()` answers it. What it draws beside —
+ * reach, notices, cards, the highlight, legend picks, Show as — is each a module
+ * beside it.
  * docs/PROVIDER-DESIGN.md. TRAP T-a-component-asks-its-provider
  *
  * Map:
@@ -18,26 +20,28 @@ import {
   DATA_CONTEXT, SOURCE_CONTEXT, type ContextRequestEvent, type DataAsk,
 } from '../../core/ui/context.js';
 import { report } from '../../core/data/report.js';
-import { chartAxes, summarise, summariseMarked, type SummarySpec } from '../../core/data/aggregate.js';
-import type { ChartDatum } from '../../core/data/chart-datum.js';
-import { bindSelection } from '../../core/data/bind-selection.js';
-import { groupRows, groupSummaries, valueKey, type Row, type Store } from '../../core/data/store.js';
+import { chartAxes, summariseMarked, type SummarySpec } from '../../core/data/aggregate.js';
+import type { Row, Store } from '../../core/data/store.js';
 import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.js';
 import type { DraftMode } from '../../core/browser/view-drafts.js';
-import { hearUpdates } from '../../core/browser/updates.js';
-import { Updates, type NewsKind } from '../../core/data/updates.js';
+import { Updates } from '../../core/data/updates.js';
 import { openSource, savedFiltersOf, type PageDefinition } from '../../core/data/page-definition.js';
-import { QueryContext, type QueryChangeDetail } from '../../core/data/query-context.js';
-import { VIEW, type Presentation } from '../../core/data/query.js';
-import type { FieldReading } from '../../core/data/filter-state.js';
+import { QueryContext } from '../../core/data/query-context.js';
+import { VIEW } from '../../core/data/query.js';
 import type { Failure } from '../../core/data/failure.js';
-import type { DataChangeDetail, DataSource, QueryState } from '../../core/data/data-source.js';
+import type { DataSource, QueryState } from '../../core/data/data-source.js';
 import type { Where } from '../../core/data/where.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
 import { bindSource } from '../../core/ui/bind-source.js';
-import { drawsNothing } from '../../core/ui/filter-host.js';
 import { ProviderMode, isColumn } from './provider-mode.js';
 import { ProviderPage, type Bar, type SharedStore } from './provider-page.js';
+import { ProviderReach } from './provider-reach.js';
+import { ProviderNews } from './provider-news.js';
+import { ProviderCards } from './provider-cards.js';
+import { declared, up } from './provider-declared.js';
+import { ProviderHighlight } from './provider-highlight.js';
+import { ProviderLegends, type Picker } from './provider-legends.js';
+import { ProviderShowAs, shownAs } from './provider-show-as.js';
 import type { SharedView } from '../../core/data/query-edits.js';
 
 /** What a provider is given: its sources, by name — and, for a page with
@@ -99,75 +103,6 @@ const SPEC_KEYS = [
   ['over', 'data-over-field'], ['bucket', 'data-bucket'], ['bands', 'data-bands'],
 ] as const;
 
-/** A component that picks values, through its `picked` door. */
-type Picker = Element & { picked: string[] };
-
-/** The element above this one, across a shadow root. */
-const up = (el: Element): Element | null =>
-  el.parentElement ?? ((el.getRootNode() as ShadowRoot).host ?? null);
-
-/** A load quicker than this shows no spinner, so nothing flashes. */
-const SLOW_LOAD = 300;
-
-/** The card a component sits in, across shadow roots, or null. */
-const containerOf = (el: Element): HTMLElement | null => {
-  for (let at = up(el); at; at = up(at)) if (at.localName === 'sherpa-container') return at as HTMLElement;
-  return null;
-};
-
-/** What a reader calls a component: its own `aria-label`, or the heading of
- *  the card it sits in. TRAP T-a-scope-is-named-for-its-content */
-const nameOf = (el: Element): string =>
-  el.getAttribute('aria-label')
-  ?? containerOf(el)?.querySelector(':scope > [slot="header"]')?.getAttribute('data-heading')
-  ?? '';
-
-/** The component each chart presentation is drawn by, loaded when first shown;
- *  its prototype, legend and all, is the template's `shown-<kind>-tpl`. Will, TODO 548 */
-const SHOWN_BY: Readonly<Record<string, { tag: string; load: () => Promise<unknown> }>> = {
-  bar: { tag: 'sherpa-barchart', load: () => Promise.all([import('../sherpa-barchart/sherpa-barchart.js'), import('../sherpa-chart-legend/sherpa-chart-legend.js')]) },
-  donut: { tag: 'sherpa-radial-chart', load: () => Promise.all([import('../sherpa-radial-chart/sherpa-radial-chart.js'), import('../sherpa-chart-legend/sherpa-chart-legend.js')]) },
-  pie: { tag: 'sherpa-radial-chart', load: () => Promise.all([import('../sherpa-radial-chart/sherpa-radial-chart.js'), import('../sherpa-chart-legend/sherpa-chart-legend.js')]) },
-  grid: { tag: 'sherpa-data-grid', load: () => import('../sherpa-data-grid/sherpa-data-grid.js') },
-};
-
-/** The presentation a component draws, where it is one. A gauge and a line chart
- *  are only ever the page's own, put back. */
-function shownAs(el: Element): string | undefined {
-  if (el.localName === 'sherpa-gauge-chart') return 'gauge';
-  if (el.localName === 'sherpa-line-chart') return 'line';
-  if (el.localName === 'sherpa-radial-chart') return el.getAttribute('data-type') ?? 'donut';
-  return Object.keys(SHOWN_BY).find((kind) => SHOWN_BY[kind]?.tag === el.localName);
-}
-
-/** A grid's column, as a pivot hands it on to a row's sub-grid. */
-type GridColumnLike = { field: string; header?: string; type?: string; tags?: string[] };
-
-/** A row's own rows, by its first column's value, a group's together where it
- *  groups, and their groups: what each row's sub-grid draws. TODOs 574, 661 */
-function opened(rows: readonly Row[], lead: string, group: string | null | undefined): { rows: Record<string, Row[]>; groups?: Record<string, ReturnType<typeof groupSummaries>> } {
-  const opens = groupRows(rows, lead).map((g) => ({
-    key: g.key, rows: group ? groupRows(g.rows, group).flatMap((part) => part.rows) : g.rows,
-  }));
-  return {
-    rows: Object.fromEntries(opens.map((o) => [o.key, o.rows])),
-    ...(group ? { groups: Object.fromEntries(opens.map((o) => [o.key, groupSummaries(o.rows, group)])) } : {}),
-  };
-}
-
-/** What a pivot steers: a filter, from a heading or a cell — its own or a row's
- *  sub-grid's — and its sub-grids' sort and group. TODOs 571, 574 */
-const PIVOT_STEERS = ['column-filter-change', 'filter-apply', 'filter-discard', 'sort-change', 'group-change'] as const;
-
-/** What a chart made from a grid, or a grid from a chart, keeps of it: where it sits, and its slot. */
-const KEPT_ACROSS = ['slot', 'data-grow', 'data-scope', 'style'] as const;
-
-/** What a chart's axes read: a grid made from it carries them, to name its columns. TODO 622 */
-const CHART_AXES = ['data-over-field', 'data-stack-field', 'data-count-axis', 'data-field', 'data-aggregate'] as const;
-
-/** What only a line chart reads: another chart made from it drops them. */
-const LINE_ONLY = ['data-type', 'data-over-field', 'data-bucket'] as const;
-
 /** One component that asked, and how to stop answering it. */
 interface Asked {
   request: ContextRequestEvent<unknown>;
@@ -177,8 +112,11 @@ interface Asked {
 /** Where the App Context's answer is kept, in the session a page keeps in. TODO 453 */
 const APP_CONTEXT_KEY = '/filters/_app';
 
-/** The kinds of news an element listens for. */
-const kindsOf = (el: HTMLElement): NewsKind[] => (el.dataset['listens'] ?? '').split(/\s+/).filter(Boolean) as NewsKind[];
+/** What a component asks for that declares nothing: its rows, a page at a time. */
+const ROWS: DataAsk = { shape: 'rows' };
+
+/** A component that takes the `highlight`: it draws a hover's matches. */
+type Highlights = Element & { drawHighlight(test: ((row: Row) => boolean) | null): void };
 
 export class SherpaProvider extends SherpaElement {
   static override css = new URL('./sherpa-provider.css', import.meta.url);
@@ -191,15 +129,60 @@ export class SherpaProvider extends SherpaElement {
   /** What is new for this page — heard, and shown by every element under it that
    *  listens for its kind. Plan 687 U1 · TRAP T-a-notice-is-heard-never-ordered */
   readonly updates = new Updates();
+  /** …and the elements that show it. */
+  readonly #news = new ProviderNews(this, this.updates);
 
   /** The sources this subtree provides, by name. */
   #sources: Record<string, DataSource> = {};
   /** Every component that asked, by the element that asked. */
   #asked = new Map<Element, Asked>();
-  /** The presentation a swapped component's page drew it as: what Default goes back to. */
-  #authored = new WeakMap<Element, string>();
-  /** Each slot's own element, kept aside while another shows its data. */
-  #parked = new Map<string, Element>();
+
+  /** Can the page's data be reached: the worst of its sources'. */
+  readonly #reach = new ProviderReach({
+    sources: () => Object.values(this.#sources),
+    changed: (reach) => {
+      this.emit('reach-change', reach);
+    },
+  });
+
+  /** The card each component sits in: its data's state, its Retry, its toolbar's toggle. */
+  readonly #cards = new ProviderCards({
+    el: this,
+    asked: () => this.#asked.keys(),
+    resolve: (el) => this.#resolve(el),
+    inherited: (el, name) => this.#inherited(el, name),
+    bars: (slot) => this.#slotBars(slot),
+    session: () => this.#session,
+    pageId: () => this.#pageId,
+  });
+
+  /** What the pointer rests on, and what draws its matches. */
+  readonly #highlight = new ProviderHighlight(() => this.#across);
+
+  /** Each legend that picks its chart's values. */
+  readonly #legends = new ProviderLegends({
+    inherited: (el, name) => this.#inherited(el, name),
+    bars: (slot) => this.#slotBars(slot),
+    drawToolbars: (slot) => this.#cards.drawToolbars(slot),
+    hover: (scope, field, on, value) => this.hover(scope, field, on, value),
+    chips: () => this.#legendChips,
+    highlightHover: () => this.#highlightHover,
+  });
+
+  /** Show as: each slot's chart, or grid, as its presentation says. */
+  readonly #show = new ProviderShowAs({
+    el: this,
+    inherited: (el, name) => this.#inherited(el, name),
+    resolve: (el) => this.#resolve(el),
+    clone: (selector) => this.clone<Element>(selector),
+    word: (key) => this.word(key),
+    forget: (el) => {
+      this.#asked.delete(el);
+    },
+    drawToolbars: (slot) => this.#cards.drawToolbars(slot),
+    showAs: () => this.#showAs,
+    pageFields: () => this.#pageFields,
+  });
 
   constructor() {
     super();
@@ -217,20 +200,16 @@ export class SherpaProvider extends SherpaElement {
     });
     this.addEventListener('panel-room-change', this.#modes.room);
     // A card's Show as: its slot's presentation, kept in the Query. Will, TODO 548
-    this.addEventListener('presentation-change', this.#onShowAs);
+    this.addEventListener('presentation-change', this.#show.picked);
     // A card's filter toolbar, shown or shut. Will, TODO 629
-    this.addEventListener('filter-toolbar-change', this.#onToolbarToggle);
-    this.addEventListener('callout-dismiss', this.#onNoticeDismiss);
+    this.addEventListener('filter-toolbar-change', this.#cards.toggled);
+    this.addEventListener('callout-dismiss', this.#news.dismissed);
     /* A container's Retry, and a bar's Refresh: load again. Its Clear filters:
        every bar resets. TRAP T-a-container-shows-its-datas-state */
     this.addEventListener('data-refresh', (event) => {
-      // A card reloads the sources of what it holds, as its state is theirs;
-      // an unclear ask loads nothing — #resolve says so.
       const from = event.target as Element;
-      const held = [...this.#asked.keys()].filter((el) => containerOf(el) === from).map((el) => this.#resolve(el));
-      for (const source of new Set(held.length ? held : [this.#resolve(from)])) void source?.load({ force: true });
-      // A listening element's own Refresh takes the waiting rows in.
-      if (from.hasAttribute?.('data-listens')) this.updates.take('data');
+      this.#cards.retry(from);
+      this.#news.refreshed(from);
     });
   }
 
@@ -262,7 +241,7 @@ export class SherpaProvider extends SherpaElement {
     },
     stepped: (bar) => {
       const slot = this.#inherited(bar, 'data-scope');
-      if (slot) this.#drawToolbars(slot);
+      if (slot) this.#cards.drawToolbars(slot);
     },
   });
 
@@ -398,12 +377,8 @@ export class SherpaProvider extends SherpaElement {
     this.#highlightHover = on;
     this.#offerAll();
     // …and a legend that picks: a rest on a row previews it. Will, TODO 495
-    for (const el of this.#pickers.keys()) el.toggleAttribute('data-highlight-hover', on);
+    this.#legends.hoverable(on);
   }
-  /** Each legend that picks — a field's values, as a chip's — and how it lays out its chips. */
-  #pickers = new Map<Element, () => void>();
-  /** Each legend drawn in its card's bar, telling the bar its numbers. TODO 670 */
-  #legendCounts = new Map<Element, (payload: unknown) => void>();
 
   /** A legend's rows are filter chips: in its card's filter toolbar, the legend
    *  gone, where the card has one; else in the legend. Off, key rows. Off unless the
@@ -413,7 +388,7 @@ export class SherpaProvider extends SherpaElement {
   }
   set legendChips(on: boolean) {
     this.#legendChips = on;
-    for (const lay of this.#pickers.values()) lay();
+    this.#legends.lay();
   }
   /** The app's choice: a legend's rows as chips. */
   #legendChips = false;
@@ -428,53 +403,22 @@ export class SherpaProvider extends SherpaElement {
   }
   set highlightAcross(on: boolean) {
     this.#across = on;
-    this.#light();
+    this.#highlight.light();
   }
   /** The app's choice: highlight across every scope. */
   #across = false;
 
-  /** What the pointer rests on while it lights its matches: a chip, one value of
-   *  it, or a legend row. The page's, never the Query's: nothing loads, nothing is
-   *  saved. Will, TODOs 449, 655 · TRAP T-a-hovered-chip-previews-the-highlight */
-  #hovered: { scope: string; field: string; value?: string } | null = null;
-  /** This hover's test, asked once of each source. */
-  #tests = new Map<DataSource, ((row: Row) => boolean) | null>();
-  /** Each component that draws a hover's matches, and how it draws them again. */
-  #lights = new Map<Element, () => void>();
-  /** The test each of them was last drawn with. */
-  #shown = new WeakMap<Element, ((row: Row) => boolean) | null>();
-
-  /** What the pointer rests on while it lights its matches, or null. */
+  /** What the pointer rests on while it lights its matches — a chip, one value of
+   *  it, or a legend row — or null. The page's, never the Query's: nothing loads,
+   *  nothing is saved. Will, TODOs 449, 655 */
   get hovered(): { scope: string; field: string; value?: string } | null {
-    return this.#hovered ? { ...this.#hovered } : null;
+    return this.#highlight.hovered;
   }
 
   /** Light what a field of a scope matches — or one value of it — as a rest on its
    *  chip or legend row does; `on: false` stops. Will, TODO 655 */
   hover(scope: string, field: string, on = true, value?: string): void {
-    const was = this.#hovered;
-    if (on ? was?.scope === scope && was.field === field && was.value === value : !was || was.scope !== scope || was.field !== field) return;
-    this.#hovered = on ? { scope, field, ...(value != null ? { value } : {}) } : null;
-    this.#tests.clear();
-    this.#light();
-  }
-
-  /** Every component that draws the hover, drawn again where its test changed. */
-  #light(): void {
-    for (const relight of this.#lights.values()) relight();
-  }
-
-  /** The hover's test for one component, where it reaches it: across every scope,
-   *  from the View, in its own scope, or a chart's own part. TODOs 467, 520, 529.
-   *  TRAP T-the-highlight-reaches-the-whole-page */
-  #lit(el: Element, scope: string | readonly string[] | undefined, source: DataSource): ((row: Row) => boolean) | null {
-    const hovered = this.#hovered;
-    if (!hovered) return null;
-    const reaches = this.#across || hovered.scope === VIEW || source.query.partFacts(hovered.scope)?.only === el
-      || (typeof scope === 'string' ? scope === hovered.scope : !!scope?.includes(hovered.scope));
-    if (!reaches) return null;
-    if (!this.#tests.has(source)) this.#tests.set(source, source.highlightTest(hovered));
-    return this.#tests.get(source) ?? null;
+    this.#highlight.hover(scope, field, on, value);
   }
 
   /** ONE Apply and Discard for a scope that waits — or, off, each field's own,
@@ -622,19 +566,10 @@ export class SherpaProvider extends SherpaElement {
   set showAs(on: boolean) {
     this.#showAs = on;
     for (const source of Object.values(this.#sources)) source.showAs = on;
-    for (const host of this.querySelectorAll('[data-presentation]')) {
-      const slot = this.#inherited(host, 'data-scope');
-      const source = this.#resolve(host);
-      if (slot && source) host.setAttribute('data-presentation', this.#showAsOf(source, slot));
-    }
+    this.#show.menus();
   }
   /** The app's choice: Show as. */
   #showAs = true;
-
-  /** What a slot's Show as says: what it shows — or off. TODO 582 */
-  #showAsOf(source: DataSource, slot: string): string {
-    return this.#showAs ? source.query.presentation(slot).kind ?? 'default' : 'off';
-  }
 
   /** The Primary and Secondary chips are offered, and a reader's picks in them
    *  shown — off, kept and not shown. On unless the app says not, from its
@@ -706,7 +641,7 @@ export class SherpaProvider extends SherpaElement {
 
   /** Every control with a filter menu: a bar, a panel, a grid's headings. TODO 305 */
   #limited(): Element[] {
-    return [...this.#asked.keys()].filter((el) => 'drawScope' in el || 'drawPresent' in el);
+    return [...this.#asked.keys()].filter((el) => declared(el).takes.includes('settings'));
   }
 
   /** Every such control, told the app's filter settings again: a setting changed. */
@@ -722,7 +657,7 @@ export class SherpaProvider extends SherpaElement {
     el.toggleAttribute('data-count-applied', this.#countApplied);
     el.toggleAttribute('data-saved-menu', this.#savedMenu);
     // Off, the View's bar and the panel save nothing. TODO 485
-    if ('drawScope' in el) el.toggleAttribute('data-no-saves', !this.#saveAny && (isColumn(el) || this.#inherited(el, 'data-scope') === VIEW));
+    if (declared(el).asks?.shape === 'scope') el.toggleAttribute('data-no-saves', !this.#saveAny && (isColumn(el) || this.#inherited(el, 'data-scope') === VIEW));
     if (this.#switchable !== null) el.toggleAttribute('data-switchable', this.#switchable);
     el.toggleAttribute('data-no-section-labels', !this.#sectionLabels);
     el.toggleAttribute('data-no-organise-labels', this.#hideOrganiseLabels);
@@ -737,7 +672,7 @@ export class SherpaProvider extends SherpaElement {
     el.toggleAttribute('data-label-column', this.#labelColumn);
     el.toggleAttribute('data-every-count', this.#countEvery);
     // A grid's headings and tags. TODOs 500, 501, 490
-    if ('columnClause' in el) {
+    if (declared(el).takes.includes('headings')) {
       el.toggleAttribute('data-heading-group', this.#headingGroup);
       el.toggleAttribute('data-heading-hover', this.#headingHover);
       el.toggleAttribute('data-multi-field', this.#multiField);
@@ -747,13 +682,19 @@ export class SherpaProvider extends SherpaElement {
   #limit = false;
 
   /** Every panel that asked — a control drawn over several scopes. */
-  #panels(): Array<HTMLElement & { show?: () => void; hide?: (reason?: string) => void }> {
+  #panels(): Array<HTMLElement & { show(): void; hide(reason?: string): void }> {
     return [...this.#asked.keys()].filter(isColumn) as never;
   }
 
   /** Every filter bar that asked — a control drawn one scope at a time. */
   #bars(): Element[] {
-    return [...this.#asked.keys()].filter((el) => 'drawScope' in el && !isColumn(el));
+    return [...this.#asked.keys()].filter((el) => declared(el).asks?.shape === 'scope' && !isColumn(el));
+  }
+
+  /** The filter bars in a slot, in this subtree's own tree — not a panel's sections. */
+  #slotBars(slot: string): Element[] {
+    return [...this.#asked.keys()]
+      .filter((el) => this.contains(el) && declared(el).asks?.shape === 'scope' && this.#inherited(el, 'data-scope') === slot);
   }
 
   /**
@@ -776,8 +717,7 @@ export class SherpaProvider extends SherpaElement {
     }
     this.#sources = { ...options.sources };
     // A rest on the page that went goes with it.
-    this.#hovered = null;
-    this.#tests.clear();
+    this.#highlight.forget();
     for (const source of Object.values(this.#sources)) {
       source.limitOptions = this.#limit;
       source.countEveryValue = this.#countEvery;
@@ -788,20 +728,21 @@ export class SherpaProvider extends SherpaElement {
     // BEFORE answering: an answer binds, and a bind starts the first load.
     this.#states?.abort();
     this.#states = new AbortController();
-    this.#watchStates(this.#states.signal);
+    this.#reach.watch(Object.values(this.#sources), this.#states.signal);
+    this.#cards.watch(Object.values(this.#sources), this.#states.signal);
     // Leaving for the next page keeps the page's reach: the banner does not flicker between two.
-    if (shut || Object.keys(this.#sources).length) this.#syncReach();
+    if (shut || Object.keys(this.#sources).length) this.#reach.sync();
     for (const asked of this.#asked.values()) this.#answer(asked);
     this.#pages.stopViews();
     /* A page with NO data has no filters: the panel shuts — not the reader's
        choice, so it opens again on the next page that has some. TRAP T-navigating-sets-up-the-page */
     if (shut && !Object.keys(this.#sources).length) {
-      for (const panel of this.#panels()) panel.hide?.('page');
+      for (const panel of this.#panels()) panel.hide('page');
     }
     // The Views are over ONE Query: a subtree whose sources share none names none. 366 step 25
     const [source, ...more] = Object.values(this.#sources);
     // A page's listening elements show what still waits.
-    this.#drawNews();
+    this.#news.draw();
     if (!options.views || !source || more.some((other) => other.query !== source.query)) return Promise.resolve();
     return this.#pages.views(source, options);
   }
@@ -824,7 +765,7 @@ export class SherpaProvider extends SherpaElement {
         at: { store: def.store },
       });
     }
-    const opening = def && store ? this.#opening(page.signal) : null;
+    const opening = def && store ? this.#cards.opening(page.signal) : null;
     let opened: DataSource | undefined;
     let made: DataSource | undefined;
     try {
@@ -904,7 +845,7 @@ export class SherpaProvider extends SherpaElement {
   prepare(definition: PageDefinition | null): void {
     this.#modes.page(!!definition?.source);
     // A page with no data has nothing to reach.
-    if (!definition?.source) this.#setReach({ reach: 'ok' });
+    if (!definition?.source) this.#reach.set({ reach: 'ok' });
   }
 
   /**
@@ -914,47 +855,14 @@ export class SherpaProvider extends SherpaElement {
    * TRAP T-the-provider-says-the-pages-reach
    */
   get reach(): { reach: 'ok' | 'unreached' | 'down'; failure?: Failure } {
-    return { ...this.#reach };
+    return this.#reach.now;
   }
 
   /** Try every source that cannot reach its store again, and ask one that may
    *  miss a writer what moved — a page's Retry, its tab shown. TRAP T-a-remote-store-says-what-changed */
   recheck(): void {
-    for (const source of Object.values(this.#sources)) source.recheck();
+    this.#reach.recheck();
   }
-
-  /** The page's reach, as last said. */
-  #reach: { reach: 'ok' | 'unreached' | 'down'; failure?: Failure } = { reach: 'ok' };
-
-  /** Read each source's reach — from state, never from the last event — and say a change. */
-  #syncReach(): void {
-    const rank = { ok: 0, unreached: 1, down: 2 } as const;
-    let worst: { reach: 'ok' | 'unreached' | 'down'; failure?: Failure } = { reach: 'ok' };
-    const sources = Object.values(this.#sources);
-    // A source that has not answered yet says nothing: the page's reach stands until one does.
-    const known = sources.filter((source) => source.loaded || source.reach !== 'ok');
-    if (sources.length && !known.length) return;
-    for (const source of known) {
-      const reach = source.reach;
-      if (rank[reach] <= rank[worst.reach]) continue;
-      const failure = source.failure;
-      worst = { reach, ...(failure ? { failure } : {}) };
-    }
-    this.#setReach(worst);
-  }
-
-  /** Keep the page's reach, and say it when it moved. */
-  #setReach(next: { reach: 'ok' | 'unreached' | 'down'; failure?: Failure }): void {
-    if (next.reach === this.#reach.reach && next.failure?.kind === this.#reach.failure?.kind) return;
-    this.#reach = next;
-    this.emit('reach-change', { ...next });
-  }
-
-  /** The network back, or the tab shown again: a store that could not be
-   *  reached is tried again, and one that may miss a writer is asked what moved. */
-  #onBack = (): void => {
-    if (document.visibilityState === 'visible') this.recheck();
-  };
 
   /** Leave the page, or one still opening: its source goes, and nothing in the
    *  subtree reaches it. `next`: another page follows at once, and says
@@ -1095,15 +1003,15 @@ export class SherpaProvider extends SherpaElement {
   }
 
   override onConnect(): void {
-    this.on(window, 'online', this.#onBack);
-    this.on(document, 'visibilitychange', this.#onBack);
-    this.#stopHearing = hearUpdates(this.updates);
-    this.on(this.updates, 'change', this.#drawNews);
+    // The network back, or the tab shown again: what could not be reached is tried again.
+    this.on(window, 'online', this.#reach.back);
+    this.on(document, 'visibilitychange', this.#reach.back);
+    this.#news.hear();
+    this.on(this.updates, 'change', this.#news.draw);
   }
 
   override onDisconnect(): void {
-    this.#stopHearing?.();
-    this.#stopHearing = null;
+    this.#news.stop();
     this.#page?.abort();
     this.#pages.stopViews();
     for (const asked of this.#asked.values()) asked.unbind?.();
@@ -1113,110 +1021,8 @@ export class SherpaProvider extends SherpaElement {
   /** Stops watching the sources' loading, emptiness and failure. */
   #states: AbortController | null = null;
 
-  /** Stops hearing what is new. */
-  #stopHearing: (() => void) | null = null;
-
-  /** Each element under it that LISTENS shows while news of its kind waits. The
-   *  data layer said a fact; this element asked to hear it.
-   *  Will, plan 652 S6 · TRAP T-a-notice-is-heard-never-ordered */
-  #drawNews = (): void => {
-    for (const el of this.querySelectorAll<HTMLElement>('[data-listens]')) {
-      el.toggleAttribute('hidden', !kindsOf(el).some((kind) => this.updates.shows(kind)));
-    }
-  };
-
-  /** A listening element dismissed — a locked callout reports and stays: its kinds
-   *  hide until the next notice. */
-  #onNoticeDismiss = (event: Event): void => {
-    const el = event.target as HTMLElement;
-    if (el.hasAttribute?.('data-listens')) for (const kind of kindsOf(el)) this.updates.dismiss(kind);
-  };
-
-  /**
-   * Each source's loading, emptiness and failure, drawn on the card of every
-   * component it answers — so no page writes `data-loading` by hand. Loading
-   * and a failure reach every data component's card; empty and NO MATCHES a
-   * ROWS one's only, as a chart under the View alone still has its rows.
-   * Will, TODO 58. TRAP T-a-container-shows-its-datas-state
-   */
-  #watchStates(signal: AbortSignal): void {
-    for (const source of Object.values(this.#sources)) {
-      const cards = (rowsOnly: boolean): HTMLElement[] => this.#cardsOf((el) => this.#resolve(el) === source, rowsOnly);
-      let slow: ReturnType<typeof setTimeout> | undefined;
-      source.addEventListener('loading', (event) => {
-        clearTimeout(slow);
-        const loading = !!(event as CustomEvent).detail?.loading;
-        if (loading) slow = setTimeout(() => { for (const c of cards(false)) c.toggleAttribute('data-loading', true); }, SLOW_LOAD);
-        else for (const c of cards(false)) c.removeAttribute('data-loading');
-      }, { signal });
-      source.addEventListener('change', (event) => {
-        this.#syncReach();
-        const state = (event as CustomEvent<DataChangeDetail>).detail.emptiness ?? null;
-        for (const c of cards(false)) if (c.dataset['state'] === 'error') delete c.dataset['state'];
-        for (const c of cards(true)) {
-          if (state) c.dataset['state'] = state;
-          else delete c.dataset['state'];
-        }
-      }, { signal });
-      source.addEventListener('error', (event) => {
-        this.#syncReach();
-        const { error } = (event as CustomEvent).detail as { error: unknown };
-        for (const c of cards(false)) {
-          c.dataset['state'] = 'error';
-          c.dataset['error'] = error instanceof Error ? error.message : String(error);
-        }
-      }, { signal });
-    }
-  }
-  /** The cards of the components that asked for data and pass `which` — ROWS ones only, or any. */
-  #cardsOf(which: (el: Element) => boolean, rowsOnly = false): HTMLElement[] {
-    return [...new Set([...this.#asked.keys()]
-      .filter((el) => {
-        if (!which(el)) return false;
-        const shape = ((el.constructor as { asks?: DataAsk }).asks ?? { shape: 'rows' }).shape;
-        return rowsOnly ? shape === 'rows' : shape !== 'scope' && shape !== 'state';
-      })
-      .map(containerOf).filter((c): c is HTMLElement => !!c))].map((c) => this.#keep(c));
-  }
-
-  /**
-   * A page OPENING is a load: its source reads the store before anyone can hear
-   * it, so every data card says so after SLOW_LOAD. `stop` when the source is
-   * open; `end` hands the cards it draws to its own loading and clears the rest.
-   * A page left while it opens ends at once, so it never marks the next page.
-   * TRAP T-a-container-shows-its-datas-state
-   */
-  #opening(signal: AbortSignal): { stop(): void; end(source?: DataSource): void } {
-    const marked: HTMLElement[] = [];
-    const slow = setTimeout(() => {
-      for (const c of this.#cardsOf(() => true)) {
-        c.toggleAttribute('data-loading', true);
-        marked.push(c);
-      }
-    }, SLOW_LOAD);
-    const end = (source?: DataSource): void => {
-      clearTimeout(slow);
-      signal.removeEventListener('abort', left);
-      const handed = new Set(source ? this.#cardsOf((el) => this.#resolve(el) === source) : []);
-      for (const c of marked.splice(0)) if (!handed.has(c)) c.removeAttribute('data-loading');
-    };
-    const left = (): void => end();
-    signal.addEventListener('abort', left);
-    return { stop: () => clearTimeout(slow), end };
-  }
-
-  /** A card shows its state as this provider says: kept content, or an overlay. */
-  #keep(card: HTMLElement): HTMLElement {
-    card.toggleAttribute('data-keep-content', this.hasAttribute('data-keep-content'));
-    return card;
-  }
-
   override onChange(name: string): void {
-    if (name !== 'data-keep-content') return;
-    for (const el of this.#asked.keys()) {
-      const card = containerOf(el);
-      if (card) this.#keep(card);
-    }
+    if (name === 'data-keep-content') this.#cards.keepAll();
   }
 
   /**
@@ -1253,19 +1059,19 @@ export class SherpaProvider extends SherpaElement {
   #onRequest = (event: Event): void => {
     const request = event as ContextRequestEvent<unknown>;
     if (request.context !== DATA_CONTEXT && request.context !== SOURCE_CONTEXT) return;
+    const el = request.contextTarget;
     event.stopPropagation();
     if (request.context === SOURCE_CONTEXT) {
-      const source = this.#resolve(request.contextTarget);
+      const source = this.#resolve(el);
       if (source) request.callback(source);
       return;
     }
-    this.#asked.get(request.contextTarget)?.unbind?.();
+    this.#asked.get(el)?.unbind?.();
     const asked: Asked = { request };
-    this.#asked.set(request.contextTarget, asked);
+    this.#asked.set(el, asked);
     // A bar or a panel takes the mode as it asks, before it paints — not when
     // its data comes. TRAP T-the-filter-mode-is-set-before-the-page-paints
-    const el = request.contextTarget;
-    if ((el.constructor as { asks?: DataAsk }).asks?.shape === 'scope') this.#modes.join(el);
+    if (declared(el).asks?.shape === 'scope') this.#modes.join(el);
     this.#answer(asked);
   };
 
@@ -1284,7 +1090,7 @@ export class SherpaProvider extends SherpaElement {
     if (!source) return;
     // Bound by hand already — the page's own bind stands, and is not doubled.
     if (source.boundElements.includes(el as Populatable)) return;
-    const asks = (el.constructor as { asks?: DataAsk }).asks ?? { shape: 'rows' };
+    const { asks = ROWS, takes } = declared(el);
     // Nothing declared: it is the page's to populate.
     const needs = DECLARED_BY[asks.shape];
     if (needs && !this.#inherited(el, needs)) {
@@ -1294,7 +1100,7 @@ export class SherpaProvider extends SherpaElement {
       const field = asks.picks && !el.hasAttribute('data-readonly') ? this.#inherited(el, 'data-field') : null;
       const picked = field ? source.zonesOf(field)?.from ?? null : null;
       if (picked) {
-        const unpick = this.#picks(el as Picker, source, picked, asks.picks!);
+        const unpick = this.#legends.picks(el as Picker, source, picked, asks.picks!);
         if (unpick) asked.unbind = unpick;
       }
       return;
@@ -1310,22 +1116,13 @@ export class SherpaProvider extends SherpaElement {
     const scopes = (this.#inherited(el, 'data-scope') ?? '').split(/\s+/).filter(Boolean);
     const scope = scopes.length > 1 || isColumn(el) ? scopes : scopes[0];
     // Its slot shows another way: swapped for that one, which asks again. Will, TODO 548
-    if (typeof scope === 'string' && shownAs(el) && this.#swapped(el, scope, source)) return;
-    /* A grid made from a chart: every row its chart counts, with no pager, so its
-       scope stays a slot and its Group and Sort its presentation's. D4 B, TODO 624 */
-    const made = typeof scope === 'string' && shownAs(el) === 'grid' && (this.#authored.get(el) ?? 'grid') !== 'grid' ? scope : undefined;
-    if (made) (el as Element & { columns?: GridColumnLike[] }).columns = this.#madeColumns(el, source);
-    // A grid's Primary leads its columns; a grid made from a chart, its first axis. Will, TODO 548
-    if (typeof scope === 'string' && shownAs(el) === 'grid') {
-      const lead = made ? this.#madeLead(el, made, source) : source.query.presented(scope, 'grid').primary;
-      if (lead) el.setAttribute('data-primary-field', lead);
-      else el.removeAttribute('data-primary-field');
-    }
-    /* Its Secondary set, a grid is a PIVOT: a row a Primary value, a column a
-       Secondary value, row counts in the cells. Will, TODO 548 */
-    const pivot = typeof scope === 'string' && shownAs(el) === 'grid' && !made ? this.#pivotSpec(el, scope, source) : undefined;
+    const slot = typeof scope === 'string' ? scope : undefined;
+    const kind = slot ? shownAs(el) : undefined;
+    if (slot && kind && this.#show.swapped(el, slot, source)) return;
+    // A grid in a slot: a pivot, or a grid made from a chart, its Primary leading. TODOs 548, 624
+    const table = slot && kind === 'grid' ? this.#show.table(el, slot, source, () => asks.filters?.(el) ?? []) : undefined;
     // The fields it reads from a row: a summary's, or what it says. TRAP T-a-held-set-reads-the-pages-fields
-    const fields = pivot ? [pivot.segment, pivot.stack] : spec ? [spec.field, spec.segment, spec.over].filter((f): f is string => !!f) : asks.fields?.(el);
+    const fields = table?.fields ?? (spec ? [spec.field, spec.segment, spec.over].filter((f): f is string => !!f) : asks.fields?.(el));
     /* A chart over its field's ZONES is free of that field: its filter lights the
        zones and never moves the value. Will, TODO 479. TRAP T-a-chart-is-free-of-its-own-field */
     const zoned = asks.zones && spec?.field ? source.zonesOf(spec.field)?.from ?? spec.field : undefined;
@@ -1334,39 +1131,31 @@ export class SherpaProvider extends SherpaElement {
     let last: Row[] | null = null;
     const summarised = spec ? (rows: Row[], src: DataSource): unknown => {
       last = rows;
-      const test = this.#lit(el, scope, src);
-      this.#shown.set(el, test);
+      const test = this.#highlight.test(el, scope, src);
       // A number's zones, from a status field. Plan 683 S3
       const summary = summariseMarked(rows, spec, (f) => src.valuesFor(f), (f) => src.zonesOf(f)?.zones, test);
       return zoned && summary && typeof summary === 'object' && 'zones' in summary
         ? { ...summary, picked: src.pickedFor(el as Populatable, zoned) } : summary;
     } : undefined;
-    const drawsHighlight = 'drawHighlight' in el;
-    const draw = (test: ((row: Row) => boolean) | null): void => {
-      this.#shown.set(el, test);
-      (el as { drawHighlight?: (test: ((row: Row) => boolean) | null) => void }).drawHighlight?.(test);
-    };
+    // It draws a hover's matches on its own rows. TODO 655
+    const highlights = takes.includes('highlight') ? el as Highlights : null;
     const unbind = bindSource(source, el as Populatable, {
       ...(zoned ? { free: [zoned] } : {}),
-      ...(spec && typeof scope === 'string' ? { shows: this.#shows(el), ...(asks.stacks ? { stacks: true } : {}),
+      ...(spec && slot ? { shows: this.#show.shows(el), ...(asks.stacks ? { stacks: true } : {}),
         // One number: its card offers no Primary, Group or Sort. Will, TODO 696
         ...(asks.shape === 'aggregate' ? { whole: true } : {}) } : {}),
-      // A pivot is its scope's grid still: its Group and Sort arrange its rows' sub-grids. TODO 574
-      ...(pivot ? { arranges: true } : {}),
       ...(fields ? { fields } : {}),
-      rows: spec || pivot || made || asks.shape === 'all' ? 'all' : 'page',
+      rows: spec || table || asks.shape === 'all' ? 'all' : 'page',
       // A pager and a filter bar steer; the rows are not theirs to draw.
       steerOnly: asks.shape === 'state' || asks.shape === 'scope',
       ...(asks.own ? { ignore: asks.own } : {}),
       ...(scope ? { scope } : {}),
       /* A summary SHOWS the data and never steers it. TRAP T-aggregation-is-data */
       ...(summarised ? { readonly: true, as: summarised } : {}),
-      // …and its headings and cells filter its rows, its rows' sub-grids too. TODO 571
-      ...(pivot ? { readonly: true, steers: PIVOT_STEERS, as: (rows, src) => this.#pivotOf(el, rows, pivot, src, asks.filters?.(el) ?? []) } : {}),
-      ...(made ? { readonly: true, as: (rows) => this.#madeTable(el, rows, made, source) } : {}),
+      ...table?.options,
       // A page of rows arrives WITH its groups: a group is the data layer's.
       // TRAP T-a-group-is-a-data-layer-concept
-      ...(asks.shape === 'rows' && !pivot && !made
+      ...(asks.shape === 'rows' && !table
         ? { as: (rows, src) => {
           const filtered = asks.filters?.(el);
           // Its columns' values are needed now. TRAP T-a-field-reads-its-values-when-needed
@@ -1385,44 +1174,30 @@ export class SherpaProvider extends SherpaElement {
         : {}),
       deliver: (payload) => {
         callback(payload, leave);
-        if (drawsHighlight) draw(this.#lit(el, scope, source));
+        if (highlights) highlights.drawHighlight(this.#highlight.test(el, scope, source));
         // A legend drawn in its card's bar: its numbers are its value chips' counts. TODO 670
-        this.#legendCounts.get(el)?.(payload);
+        this.#legends.counted(el, payload);
       },
       hover: ({ scope: at, field, on, value }) => this.hover(at, field, on, value),
     });
     // A hover lights it again from what it has: nothing loads. TODO 655
-    if (summarised || drawsHighlight) {
-      this.#lights.set(el, () => {
-        const test = this.#lit(el, scope, source);
-        if (test === (this.#shown.get(el) ?? null)) return;
+    if (summarised || highlights) {
+      this.#highlight.follow(el, scope, source, (test) => {
         if (summarised && last) callback(summarised(last, source), leave);
-        else draw(test);
+        else highlights?.drawHighlight(test);
       });
     }
     this.#fetchFields(el, source);
-    const unpick = spec && asks.picks ? this.#picks(el as Picker, source, spec.segment ?? '', asks.picks) : undefined;
+    const unpick = spec && asks.picks ? this.#legends.picks(el as Picker, source, spec.segment ?? '', asks.picks) : undefined;
     // Its card's toggle, now its slot says what its bars draw. Will, TODO 696
-    if (typeof scope === 'string' && shownAs(el)) this.#drawToolbars(scope);
+    if (slot && kind) this.#cards.drawToolbars(slot);
     const unown = this.#own(el, source);
     // A chart, a grid and a legend in a slot follow its presentation. TODO 548
-    const unshow = typeof scope === 'string' && (spec || shownAs(el)) ? this.#followPresentation(asked, source, scope, !spec && !pivot && !made) : undefined;
-    const refilter = made ? new AbortController() : undefined;
-    /* A filter in it is its slot's, in the Query, and narrows it alone: asked plainly,
-       a field that Customer Records holds would be answered there. Its rows and its
-       cells' state come back from the source. Will, TODO 621
-       TRAP T-a-grid-from-a-chart-keeps-to-its-card */
-    if (refilter) el.addEventListener('column-filter-change', (e) => {
-      e.stopPropagation();
-      const { field, reading } = (e as CustomEvent<{ field: string; reading: FieldReading | null }>).detail;
-      source.query.setReading(made as string, field, reading, { only: el as Populatable });
-      source.query.commit({ field });
-      // A field's home draws its controls: this scope is not its home, so it is told here.
-      (el as Element & { drawReading(f: string, r: FieldReading): void }).drawReading(field, source.query.reading(made as string, field) ?? {});
-    }, { signal: refilter.signal });
+    const unshow = slot && (spec || kind) ? this.#show.follow(source, slot, !spec && !table, () => this.#answer(asked)) : undefined;
+    const untable = table?.bound?.();
     asked.unbind = () => {
-      this.#lights.delete(el);
-      refilter?.abort();
+      this.#highlight.leave(el);
+      untable?.();
       unshow?.();
       unown?.();
       unpick?.();
@@ -1433,8 +1208,8 @@ export class SherpaProvider extends SherpaElement {
     // …and again when answered: the next page with data opens the panel again.
     if (asks.shape === 'scope') this.#modes.join(el);
     // A bar made after the page's were drawn — a filter stack's — is drawn as they were. TODO 425
-    if ('drawScope' in el && !isColumn(el)) this.#pages.joined(el as unknown as Bar);
-    if ('drawScope' in el || 'drawPresent' in el) this.#offerLimit(el);
+    if (asks.shape === 'scope' && !isColumn(el)) this.#pages.joined(el as unknown as Bar);
+    if (takes.includes('settings')) this.#offerLimit(el);
   }
 
   /** The fields a component says the STORE answers — `data-fetch-fields`, or a
@@ -1525,7 +1300,7 @@ export class SherpaProvider extends SherpaElement {
     const slot = this.#inherited(el, 'data-scope');
     const shown = slot && !/\s/.test(slot) ? source.query.presented(slot, 'chart') : {};
     const host = asks.picks ? up(el) : null;
-    const stacks = asks.stacks || !!(host?.constructor as { asks?: DataAsk } | undefined)?.asks?.stacks;
+    const stacks = asks.stacks || (!!host && !!declared(host).asks?.stacks);
     const stack = stacks ? shown.secondary ?? this.#inherited(el, 'data-stack-field') : null;
     const axes = chartAxes(shown.primary ?? spec['segment'] as string | undefined, stack ?? undefined,
       stacks ? this.#inherited(el, 'data-count-axis') : null, spec['aggregate'] as string | undefined);
@@ -1536,419 +1311,11 @@ export class SherpaProvider extends SherpaElement {
     return spec as unknown as SummarySpec;
   }
 
-  /** A Show as pick: its card's slot keeps it; Default keeps none. Will, TODO 548 */
-  #onShowAs = (event: Event): void => {
-    const from = event.target as Element;
-    const slot = this.#inherited(from, 'data-scope');
-    const source = this.#resolve(from);
-    if (!slot || /\s/.test(slot) || !source) return;
-    event.stopPropagation();
-    const kind = (event as CustomEvent<{ kind?: string }>).detail?.kind;
-    source.query.present(slot, { kind: kind && kind !== 'default' ? kind : undefined });
-  };
-
-  /** A card's toggle: its filter toolbar shown or shut, kept in the session. Will, TODO 629 */
-  #onToolbarToggle = (event: Event): void => {
-    const slot = this.#inherited(event.target as Element, 'data-scope');
-    if (!slot || /\s/.test(slot)) return;
-    event.stopPropagation();
-    const { shown } = (event as CustomEvent<{ shown: boolean }>).detail;
-    this.#session?.set(this.#toolbarKey(slot), shown);
-    this.#drawToolbars(slot, shown);
-  };
-
-  /** Where the session keeps a card's toolbar, as a slot's name is its page's. */
-  #toolbarKey(slot: string): string {
-    return `/cards/toolbars/${this.#pageId}/${slot}`;
-  }
-
-  /** A slot's filter toolbars and its toggles: as asked, else as the reader left them,
-   *  else as its page's markup does. A bar stepped back for the panel leaves its toggle
-   *  inactive: a press would hide the panel; one with nothing to draw, off. Will, TODOs 672, 696
-   *  TRAP T-a-card-toggles-its-own-toolbar */
-  #drawToolbars(slot: string, asked?: boolean): void {
-    const inSlot = (selector: string): Element[] => [...this.querySelectorAll(selector)].filter((el) => this.#inherited(el, 'data-scope') === slot);
-    const toggles = inSlot('[data-filter-toolbar]');
-    if (!toggles.length) return;
-    const bars = inSlot('sherpa-quick-filter-toolbar');
-    const kept = this.#session?.get(this.#toolbarKey(slot));
-    const shown = asked ?? (typeof kept === 'boolean' ? kept : bars.some((bar) => !bar.hasAttribute('hidden')));
-    for (const bar of bars) bar.toggleAttribute('hidden', !shown);
-    const panel = bars.length > 0 && bars.every((bar) => bar.hasAttribute('data-panel-mode'));
-    const source = bars[0] ? this.#resolve(bars[0]) : null;
-    const blank = !!source && bars.every((bar) => bar.hasAttribute('data-no-actions')) && drawsNothing(source.describe(slot));
-    const state = !bars.length || blank ? 'off' : panel ? 'panel' : shown ? 'shown' : 'shut';
-    for (const toggle of toggles) toggle.setAttribute('data-filter-toolbar', state);
-  }
-
-  /** A chart card's title follows what the reader set: "Primary by Secondary,
-   *  grouped by Group", each part only where it is set. Set nothing, its page's
-   *  own. Will, TODO 567 */
-  #retitle(el: Element, slot: string, source: DataSource): void {
-    if (shownAs(el) === 'grid') return;
-    const shown = source.query.presented(slot, 'chart');
-    const own = source.query.presented(slot, 'chart', false);
-    const set = shown.primary !== own.primary || shown.secondary !== own.secondary || shown.group !== own.group;
-    const name = (field: string | null | undefined): string => (field ? source.fieldFacts(field).label ?? field : '');
-    const stacks = (el.constructor as { asks?: DataAsk }).asks?.stacks;
-    const secondary = shown.secondary ?? el.getAttribute('data-stack-field');
-    const by = stacks && secondary ? ` ${this.word('by')} ${name(secondary)}` : '';
-    const grouped = shown.group ? `, ${this.word('grouped-by')} ${name(shown.group)}` : '';
-    const title = `${name(shown.primary ?? el.getAttribute('data-segment-field'))}${by}${grouped}`;
-    for (const host of this.querySelectorAll(':is(sherpa-data-viz-header, sherpa-container-header)[slot="header"]')) {
-      if (this.#inherited(host, 'data-scope') !== slot) continue;
-      const now = host.getAttribute('data-heading') ?? '';
-      const was = this.#titled.get(host);
-      // A heading its page changed since is its page's own now.
-      const page = was?.wrote === now ? was.page : now;
-      const next = set ? title : page;
-      this.#titled.set(host, { page, wrote: next });
-      if (next !== now) host.setAttribute('data-heading', next);
-    }
-  }
-
   /** The open page's id: a slot's name is its own. */
   #pageId = '';
 
   /** The fields the open page declares: a row opened in a grid made from a chart shows them. */
   #pageFields: string[] = [];
-
-  /** Each chart card's title: its page's own, and what was last written. */
-  readonly #titled = new WeakMap<Element, { page: string; wrote: string }>();
-
-  /** Swap a chart for the one its slot shows, where that differs; its card's Show
-   *  as is told either way. True when swapped. Will, TODO 548 */
-  #swapped(el: Element, slot: string, source: DataSource): boolean {
-    const shown = source.query.presented(slot);
-    const authored = this.#authored.get(el) ?? shownAs(el);
-    const own = source.query.presented(slot, undefined, false).kind ?? authored;
-    for (const host of this.querySelectorAll('[data-presentation]')) {
-      if (this.#inherited(host, 'data-scope') !== slot) continue;
-      if (own) host.setAttribute('data-presentation-default', own);
-      host.setAttribute('data-presentation', this.#showAsOf(source, slot));
-    }
-    this.#drawToolbars(slot);
-    this.#retitle(el, slot, source);
-    const kind = shown.kind ?? authored;
-    if (!authored || !kind || kind === shownAs(el)) return false;
-    const parked = this.#parked.get(slot);
-    const want = parked && shownAs(parked) === kind ? undefined : SHOWN_BY[kind];
-    if (!parked && !want) return false;
-    // A chart's first split is its segment field: one made from a grid takes the
-    // slot's Primary, else the grid's first column — its Primary too. A gauge splits
-    // nothing, so only a grid is made from it, led by its field. Will, TODO 548
-    const segment = source.query.presented(slot, 'chart').primary ?? el.getAttribute('data-segment-field')
-      ?? (el as Element & { columns?: { field: string }[] }).columns?.[0]?.field
-      ?? (kind === 'grid' ? el.getAttribute('data-field') : null);
-    if (want && !segment) {
-      report({
-        code: 'presentation-without-primary',
-        message: `sherpa-provider: slot "${slot}" cannot be shown as a ${kind} chart: it names no primary field for its X axis.`,
-        at: { scope: slot, kind },
-      });
-      return false;
-    }
-    this.#asked.delete(el);
-    void (want?.load() ?? Promise.resolve()).then(() => {
-      if (!el.isConnected) return;
-      // Back to the page's own: the very element, a grid with its columns.
-      // A grid made from a chart holds nothing of it: another chart comes from the page's own.
-      const from = shownAs(el) === 'grid' && parked && shownAs(parked) !== 'grid' ? parked : el;
-      const next = !want ? parked : kind === 'grid' ? this.#gridFor(el, segment ?? '') : this.#chartFor(from, kind, segment ?? '');
-      if (!next) return;
-      if (!want) this.#parked.delete(slot);
-      // Back to the page's own chart: its legend goes home.
-      if (!want && shownAs(next) !== 'grid' && shownAs(el) !== 'grid') next.append(...el.childNodes);
-      // A grid has no legend: it waits with the page's own chart.
-      if (want && kind === 'grid' && parked && shownAs(el) !== 'grid') parked.append(...el.childNodes);
-      // A grid made from a chart takes its filters with it: they narrow it alone.
-      if (shownAs(el) === 'grid' && this.#authored.has(el)) {
-        for (const c of (el as Element & { columns?: GridColumnLike[] }).columns ?? []) source.query.setReading(slot, c.field, null, { only: el as Populatable });
-      }
-      if (!this.#authored.has(el) && shownAs(el) === authored) this.#parked.set(slot, el);
-      if (next !== parked) this.#authored.set(next, authored);
-      el.replaceWith(next);
-    });
-    return true;
-  }
-
-  /** A chart for a slot, from its prototype, its legend with it: a chart's own
-   *  attributes and legend, or a grid's place and its split. Will, TODO 548 */
-  #chartFor(el: Element, kind: string, segment: string): Element | null {
-    const next = this.clone(`template.shown-${kind}-tpl`);
-    if (!next) return null;
-    const fromGrid = shownAs(el) === 'grid';
-    for (const { name, value } of [...el.attributes]) {
-      if (!(LINE_ONLY as readonly string[]).includes(name) && (!fromGrid || (KEPT_ACROSS as readonly string[]).includes(name))) next.setAttribute(name, value);
-    }
-    if (fromGrid) next.setAttribute('data-segment-field', segment);
-    else if (el.querySelector(':scope > [slot="legend"]')) next.replaceChildren(...el.childNodes);
-    return next;
-  }
-
-  /** A grid for a chart's slot: where it sits, its id, and its axes, which name its
-   *  columns as it binds. Its legend stays with the chart. D4 B, TODO 624 */
-  #gridFor(el: Element, segment: string): Element | null {
-    const next = this.clone('template.shown-grid-tpl');
-    if (!next) return null;
-    for (const name of [...KEPT_ACROSS, ...CHART_AXES, 'id']) {
-      const value = el.getAttribute(name);
-      if (value !== null) next.setAttribute(name, value);
-    }
-    next.setAttribute('data-segment-field', segment);
-    return next;
-  }
-
-  /** What a grid made from a chart can show: every field of the page, as a row opened
-   *  on its own rows shows them. A gauge splits nothing, so it shows its rows: what
-   *  names a row, from the page's own grid, and the number it reads. Will, TODO 625 */
-  #madeColumns(el: Element, source: DataSource): GridColumnLike[] {
-    const page = this.querySelector<Element & { columns?: GridColumnLike[] }>('sherpa-data-grid:not([data-segment-field])');
-    const fields = this.#authored.get(el) === 'gauge'
-      ? [page?.columns?.[0]?.field, el.getAttribute('data-field')].filter((field): field is string => !!field)
-      : this.#pageFields;
-    return fields.map((field) => {
-      const facts = source.fieldFacts(field);
-      return { field, header: facts.label ?? field, sortable: true, ...(facts.type ? { type: facts.type } : {}) };
-    });
-  }
-
-  /** A grid made from a chart: its first axis, which leads its columns. */
-  #madeLead(el: Element, slot: string, source: DataSource): string | null {
-    if (this.#authored.get(el) === 'gauge') return (el as Element & { columns?: GridColumnLike[] }).columns?.[0]?.field ?? null;
-    return this.#madeAxes(el, slot, source).segment ?? null;
-  }
-
-  /** A grid made from a chart: its axes, as its chart reads them. A line's first is
-   *  what it runs over; an axis shown as counts splits nothing. TODOs 622, 653 */
-  #madeAxes(el: Element, slot: string, source: DataSource): Pick<SummarySpec, 'segment' | 'stack' | 'aggregate' | 'field'> {
-    const { primary, secondary } = source.query.presented(slot, 'chart');
-    const over = el.getAttribute('data-over-field');
-    const first = over ?? primary ?? el.getAttribute('data-segment-field') ?? undefined;
-    const second = (over ? primary ?? el.getAttribute('data-segment-field') : secondary ?? el.getAttribute('data-stack-field')) || undefined;
-    const aggregate = el.getAttribute('data-aggregate') as SummarySpec['aggregate'] | null;
-    const field = el.getAttribute('data-field');
-    return {
-      ...(aggregate ? { aggregate } : {}), ...(field ? { field } : {}),
-      ...chartAxes(first, second, over ? null : el.getAttribute('data-count-axis'), aggregate),
-    };
-  }
-
-  /** What a grid made from a chart draws: its axes, no more, and a Total. A row a
-   *  value of its first axis, its cells the count the chart draws, and each row opens
-   *  on its own rows, its Group grouping them. A line's first axis is what it runs
-   *  over. Will, TODOs 622, 625, 661. TRAP T-a-grid-from-a-chart-keeps-to-its-card */
-  #madeTable(el: Element, rows: readonly Row[], slot: string, source: DataSource): unknown {
-    const own = el as Element & { columns?: GridColumnLike[] };
-    const label = (f: string): string => source.fieldFacts(f).label ?? f;
-    const fields = (own.columns ?? []).map((c) => c.field);
-    source.readValues(fields);
-    const filters = Object.fromEntries(fields.map((f) => [f, source.filterDef(f)]));
-    // A gauge's number is one mean: no count to total, so its rows, as they are.
-    if (this.#authored.get(el) === 'gauge') return { rows, groups: null, filters };
-
-    const { group, sort } = source.query.presented(slot, 'chart');
-    const axes = this.#madeAxes(el, slot, source);
-    const lead = axes.segment ?? '';
-    const stack = axes.stack;
-    const spec: SummarySpec = { shape: 'segments', ...axes, segment: lead, ...(sort ? { sort } : {}) };
-    const made = summarise(rows, spec, (f) => source.valuesFor(f)) as ChartDatum[];
-    const seen = made.flatMap((datum) => (datum.stack ?? []).map((p) => p.label));
-    const declared = stack ? source.valuesFor(stack).map(valueKey) : [];
-    const values = declared.length ? declared.filter((v) => seen.includes(v)) : [...new Set(seen)];
-    return { pivot: {
-      key: 'made:key',
-      columns: [
-        { field: lead, header: label(lead), sortable: false },
-        ...values.map((v) => ({ field: `made:${v}`, header: v, type: 'number', sortable: false, filterable: false })),
-        { field: 'made:total', header: this.word('total'), type: 'number', sortable: false, filterable: false },
-      ],
-      filters,
-      rows: made.map((datum) => ({
-        'made:key': datum.label,
-        [lead]: datum.label,
-        ...Object.fromEntries(values.map((v) => [`made:${v}`, datum.stack?.find((p) => p.label === v)?.value ?? 0])),
-        'made:total': datum.value,
-      })),
-      detail: {
-        // Not what its row says: every row under it holds that; its Group groups them. Will, TODOs 578, 661
-        columns: (own.columns ?? []).filter((c) => c.field !== lead),
-        ...opened(rows, lead, group),
-      },
-    } };
-  }
-
-  /** A grid's pivot, where its slot names a Secondary: its Primary — else its first
-   *  column — a row a value, the Secondary's values its columns. Will, TODO 548 */
-  #pivotSpec(el: Element, slot: string, source: DataSource): (SummarySpec & { segment: string; stack: string }) | undefined {
-    const shown = source.query.presented(slot, 'grid');
-    const lead = shown.primary ?? (el as Element & { columns?: { field: string }[] }).columns?.[0]?.field;
-    if (!shown.secondary || !lead) return undefined;
-    return { shape: 'segments', segment: lead, stack: shown.secondary, ...(shown.sort ? { sort: shown.sort } : {}) };
-  }
-
-  /** A pivot for its grid: a row a Primary value, a column a Secondary value, and
-   *  the total, every cell a row count. Each row OPENS on its own rows, under the
-   *  grid's own columns, its Group grouping them: Primary, Secondary, Group are a
-   *  chain. Will, TODOs 548, 570, 574 */
-  #pivotOf(el: Element, rows: readonly Row[], spec: SummarySpec & { segment: string; stack: string }, src: DataSource, filtered: readonly string[]): unknown {
-    const segments = summarise(rows, spec, (f) => src.valuesFor(f)) as ChartDatum[];
-    const declared = src.valuesFor(spec.stack).map(valueKey);
-    const seen = segments.flatMap((s) => (s.stack ?? []).map((p) => p.label));
-    const values = declared.length ? declared.filter((v) => seen.includes(v)) : [...new Set(seen)];
-    const cell = (v: string): string => `pivot:${v}`;
-    const total = 'pivot:total';
-    const label = (f: string): string => src.fieldFacts(f).label ?? f;
-    const own = el as Element & { columns?: GridColumnLike[]; key?: string | null };
-    // Its Primary filters as the grid's own column does; a count filters nothing. TODO 571
-    const { tags: moved, ...primary } = own.columns?.find((c) => c.field === spec.segment) ?? { field: spec.segment };
-    /* Its rows' TAGS go where their columns are: down to the sub-grid, the
-       Primary's on its first column — and never the Primary's own, which every
-       row there holds. Will, TODO 580 */
-    const details = (own.columns ?? []).filter((c) => c.field !== spec.segment).map((c, i) => {
-      const tags = [...new Set([...c.tags ?? [], ...(i === 0 ? moved ?? [] : [])])].filter((f) => f !== spec.segment);
-      const { tags: _tags, ...rest } = c;
-      return tags.length ? { ...rest, tags } : rest;
-    });
-    const fields = [...new Set([...filtered, spec.segment])];
-    src.readValues(fields);
-    return { pivot: {
-      key: spec.segment,
-      columns: [
-        { ...primary, field: spec.segment, header: primary.header ?? label(spec.segment), sortable: false },
-        ...values.map((v) => ({ field: cell(v), header: v, type: 'number', sortable: false, filterable: false })),
-        { field: total, header: this.word('total'), type: 'number', sortable: false, filterable: false },
-      ],
-      filters: Object.fromEntries(fields.map((f) => [f, src.filterDef(f)])),
-      rows: segments.map((s) => ({
-        [spec.segment]: s.label,
-        ...Object.fromEntries(values.map((v) => [cell(v), s.stack?.find((p) => p.label === v)?.value ?? 0])),
-        [total]: s.value,
-      })),
-      detail: {
-        // Not its Primary: every row under a row holds that row's. Will, TODO 578
-        columns: details,
-        ...(own.key ? { key: own.key } : {}),
-        ...opened(rows, spec.segment, src.state.group),
-      },
-    } };
-  }
-
-  /** What a chart shows by its own attributes: its slot's default. Will, TODO 548 */
-  #shows(el: Element): Presentation {
-    const segment = this.#inherited(el, 'data-segment-field');
-    const stack = this.#inherited(el, 'data-stack-field');
-    return { ...(segment ? { primary: segment } : {}), ...(stack ? { secondary: stack } : {}) };
-  }
-
-  /** A slot's kept presentation moved: its chart is answered again, with it. Will, TODO 548 */
-  #followPresentation(asked: Asked, source: DataSource, slot: string, kindOnly: boolean): () => void {
-    // A grid draws rows, not a summary: only its kind, its Primary and its Secondary move it.
-    const read = (): string => {
-      const shown = source.query.presented(slot);
-      return JSON.stringify(kindOnly ? [shown.kind, shown.primary, shown.secondary] : shown);
-    };
-    const was = read();
-    const stop = new AbortController();
-    source.query.addEventListener('query-change', (e) => {
-      const moved = (e as CustomEvent<QueryChangeDetail>).detail.scopes.includes(slot);
-      if (moved && read() !== was) this.#answer(asked);
-    }, { signal: stop.signal });
-    return () => stop.abort();
-  }
-
-  /**
-   * A component that PICKS values of its segment field — a legend. Its pick
-   * narrows its host (its chart) and nothing else: component reach.
-   * TRAP T-a-legend-toggle-is-a-filter
-   * TRAP T-a-component-part-narrows-one-component
-   */
-  #picks(el: Picker, source: DataSource, field: string, picks: NonNullable<DataAsk['picks']>): (() => void) | undefined {
-    const values = source.valuesFor(field).map(valueKey);
-    if (!values.length) {
-      report({
-        code: 'provider-picks-undeclared',
-        message: "sherpa-provider: a component that picks needs its field's values declared, so this one only shows.",
-        at: { tag: el.localName, field },
-      });
-      return undefined;
-    }
-    const only = picks.narrows === 'host' ? up(el) : el;
-    // One part per component, or the second would replace the first.
-    const key = `picks:${el.id || field}`;
-    /* A chart in a slot that HOLDS its field — a grid's, shown as a chart — picks
-       in that scope: its filters are there already, so no part, no new panel
-       section. Will, TODO 548 */
-    const slot = this.#inherited(el, 'data-scope');
-    const home = slot && !/\s/.test(slot) && slot !== VIEW && source.query.holds(slot, field) ? slot : undefined;
-    const unbind = bindSelection(el, source, {
-      field,
-      values,
-      read: (c) => c.picked,
-      draw: (c, picked) => { c.picked = [...picked]; },
-      event: picks.event,
-      reach: 'component',
-      ...(only ? { only } : {}),
-      ...(home ? { home } : {}),
-      key,
-    }).destroy;
-    // No host to narrow: bindSelection said so, and bound nothing.
-    if (!only) return unbind;
-    /* The chart's OWN scope, so a filter panel draws it — named as the chart
-       is. TRAP T-a-chart-scope-is-its-legend-field */
-    const label = nameOf(only);
-    /* Chips, in its card's filter toolbar where it has one: the part is drawn there,
-       answered in its own scope still, and the chart keeps no room for its legend.
-       Will, TODO 670 */
-    const bar = !home && slot && !/\s/.test(slot) && slot !== VIEW
-      && [...this.querySelectorAll('sherpa-quick-filter-toolbar')].some((b) => this.#inherited(b, 'data-scope') === slot);
-    const bars = (): (Element & { drawCounts?(field: string, counts: Record<string, number> | null): void })[] =>
-      [...this.querySelectorAll('sherpa-quick-filter-toolbar')].filter((b) => this.#inherited(b, 'data-scope') === slot);
-    const lay = (): void => {
-      const inBar = this.#legendChips && !!bar;
-      if (!home) source.query.declarePart(key, { field, only: only as Populatable, ...(label ? { label } : {}), ...(inBar ? { shownIn: slot! } : {}) });
-      el.toggleAttribute('data-chips', this.#legendChips && !inBar);
-      only.toggleAttribute('data-no-legend', inBar);
-      // Its value chips count what its chart counts, each its legend row's number. Will, TODO 670
-      if (inBar) {
-        this.#legendCounts.set(el, (payload) => {
-          const items = Array.isArray(payload) ? (payload as { label: string; value: number }[]) : [];
-          for (const b of bars()) b.drawCounts?.(field, Object.fromEntries(items.map((i) => [i.label, i.value])));
-        });
-      } else if (this.#legendCounts.delete(el)) for (const b of bars()) b.drawCounts?.(field, null);
-      // In its bar or out of it, the bar may have nothing left to draw. Will, TODO 696
-      if (slot) this.#drawToolbars(slot);
-    };
-    lay();
-    // What the filters before it leave, so the legend greys the rest. TRAP T-a-ruled-out-value-is-greyed
-    const hear = (event: Event): void => {
-      const left = (event as CustomEvent<{ byScope: Record<string, Record<string, string[]>> }>).detail.byScope[home ?? key];
-      (el as Picker & { present?: readonly string[] | null }).present = left?.[field] ?? null;
-    };
-    source.addEventListener('present', hear);
-    /* A rest on a row previews its value's matches, as a chip's value does — in
-       the View where the View holds the field. Will, TODO 495
-       TRAP T-a-hovered-chip-previews-the-highlight */
-    const scope = (): string => (source.query.scope(VIEW).includes(field) ? VIEW : home ?? key);
-    const rest = (event: Event): void => {
-      const { label, on } = (event as CustomEvent<{ label: string; on: boolean }>).detail;
-      this.hover(scope(), field, on, label);
-    };
-    el.addEventListener('legend-hover', rest);
-    this.#pickers.set(el, lay);
-    el.toggleAttribute('data-highlight-hover', this.#highlightHover);
-    return () => {
-      el.removeEventListener('legend-hover', rest);
-      this.#pickers.delete(el);
-      el.removeAttribute('data-highlight-hover');
-      el.removeAttribute('data-chips');
-      only.removeAttribute('data-no-legend');
-      if (this.#legendCounts.delete(el)) for (const b of bars()) b.drawCounts?.(field, null);
-      source.removeEventListener('present', hear);
-      if (!home) source.query.declarePart(key, undefined);
-      unbind();
-    };
-  }
 
   /**
    * The source a component's subtree provides. Named only when the subtree

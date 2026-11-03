@@ -13,6 +13,7 @@
  * - ContextCallback — How a provider answers — with the value, and a way to stop when subscribed.
  * - ContextRequestEvent — The request: bubbles and is composed; the provider that answers stops it.
  * - DataAsk — What a component asks its provider for: the shape of its data, and the events it keeps.
+ * - Take — What a component takes from its provider beside its data: each a door it has.
  * - DATA_CONTEXT — A component's data, in the shape it declared — pushed on every change.
  * - SOURCE_CONTEXT — The DataSource over this subtree itself — for page code, never a component.
  */
@@ -69,6 +70,16 @@ export interface DataAsk {
    *  its slot's secondary. Will, TODO 548 */
   stacks?: boolean;
 }
+
+/** What a component takes from its provider beside its data, as its `static
+ *  takes` lists it — each a door it has, so the provider tells it, never probes
+ *  (`declared()`, in the provider, reads it):
+ *  `card` — the state of the data it holds (`data-loading`, `data-state`, `data-error`);
+ *  `settings` — the app's filter settings, as attributes;
+ *  `headings` — its headings' Group, hover and tags settings, as attributes;
+ *  `highlight` — a hover's matches, through `drawHighlight(test)`;
+ *  `counts` — its value chips' numbers, from a legend it draws, through `drawCounts(field, counts)`. */
+export type Take = 'card' | 'settings' | 'headings' | 'highlight' | 'counts';
 
 /** A component's data, in the shape it declared — pushed on every change. */
 export const DATA_CONTEXT = createContext<unknown>('sherpa:data');

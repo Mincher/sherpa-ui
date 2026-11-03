@@ -353,7 +353,7 @@ for, and "this context" answers for neither. The caller passes the name
 The VIEW scope keeps its own name, because there is exactly one of it.
 
 ---
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-provider/provider-legends.ts`
 
 ### T-panel-mode-hides-what-the-panel-answers
 
@@ -497,7 +497,7 @@ LINE legend is the one that stays a per-chart hide: those labels name two
 SERIES ("Sessions" is every non-critical row), not values of one field, so
 there is nothing to filter on and inventing a field would be a lie.
 
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-provider/provider-legends.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 
 ### T-a-grid-from-a-chart-keeps-to-its-card
@@ -518,7 +518,7 @@ Group groups those records, in each opened row, and adds no column (Will, TODO 6
 mean of one field, so nothing totals: it shows its records, named by the first column of
 the page's own grid, and that field.
 
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-provider/provider-show-as.ts`
 
 ### T-a-card-toggles-its-own-toolbar
 
@@ -535,7 +535,7 @@ no filter, nothing to arrange, no actions: a gauge's, its legend not chips (Will
 That is read from the slot's description (`drawsNothing`), so it is read again once a chart
 binds and once its legend moves in or out of the bar. `ProviderMode` says when a bar steps.
 
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-provider/provider-cards.ts`
 - Site: `test/e2e/reforged-provider-summary.spec.ts`
 
 ### T-a-context-has-a-fixed-region
@@ -1104,7 +1104,7 @@ is bound in the page's: so the part reaches the one component it narrows
 **Who it reaches is the PROVIDER's** since TODO 655 (`#lit`): the hover is the
 page's, and the data layer is only asked what it matches, once per source.
 
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-provider/provider-highlight.ts`
 - Site: `test/unit/a-hovered-chip-previews-the-highlight.test.mjs`
 
 ### T-a-grid-is-never-wired-by-hand

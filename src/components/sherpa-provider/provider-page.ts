@@ -393,8 +393,7 @@ export class ProviderPage {
    *  alone, and the View's bar and the panel none. TODO 485 */
   #tellSets(els: readonly Element[], sets: SavedSet[]): void {
     const any = this.#host.saveAnyScope();
-    for (const el of els as Array<Element & { savedSets?: SavedSet[] }>) {
-      if (!('savedSets' in el)) continue;
+    for (const el of els as Array<Element & { savedSets: SavedSet[] }>) {
       const local = any ? null : this.#localOf(el);
       el.savedSets = any ? sets : local ? sets.filter((set) => this.#namesOnly(set.id, local)) : [];
     }
@@ -774,11 +773,10 @@ export class ProviderPage {
 
   /** Put a View on the chip that shows the current one — silently: its Query is on. */
   #showView(was: string | undefined, id: string): void {
-    for (const bar of this.#host.el.querySelectorAll<HTMLElement & {
-      values?: Record<string, readonly string[]>; setChipValues?: (id: string, v: string[]) => void;
-    }>('sherpa-quick-filter-toolbar')) {
+    const shows = [...this.#host.bars(), ...this.#host.panels()].filter((bar) => this.#host.el.contains(bar));
+    for (const bar of shows as Array<Element & { values?: Record<string, readonly string[]>; setChipValues(id: string, v: string[]): void }>) {
       const chip = Object.keys(bar.values ?? {}).find((k) => bar.values?.[k]?.[0] === was);
-      if (chip) bar.setChipValues?.(chip, [id]);
+      if (chip) bar.setChipValues(chip, [id]);
     }
   }
 }

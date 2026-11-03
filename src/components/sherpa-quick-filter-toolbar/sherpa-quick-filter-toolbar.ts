@@ -31,7 +31,7 @@ import {
   type FieldReading,
 } from '../../core/data/filter-state.js';
 import type { FilterSet, OrganiseColumn, ScopeDescription } from '../../core/data/data-source.js';
-import type { DataAsk } from '../../core/ui/context.js';
+import type { DataAsk, Take } from '../../core/ui/context.js';
 import { toolbarKeys } from '../../core/ui/roving-focus.js';
 import { dragToOrder } from '../../core/ui/drag-order.js';
 import { ToolbarHeader } from './toolbar-header.js';
@@ -82,6 +82,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /* It ASKS for its `data-scope`: the source draws it and hears its reports.
      TRAP T-a-component-asks-its-provider */
   static override asks: DataAsk = { shape: 'scope' };
+  // …and is told the app's filter settings, and a legend's numbers for its chips.
+  static takes: readonly Take[] = ['settings', 'counts'];
 
   static override props = {
     'data-scroll-shadow': SHARED_PROPS['data-scroll-shadow'],

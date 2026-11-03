@@ -100,6 +100,31 @@ It is thin: a DOM adapter over the DOM-free data layer. It holds no data of
 its own. Providers NEST — an inner subtree answers what it provides, and a key
 it does not provide keeps travelling up.
 
+**What it does, and what sits beside it (plan 695 U1).** `sherpa-provider.ts`
+answers asks and opens and closes pages. Each other job is a module beside it,
+in `src/components/sherpa-provider/`, given what it needs by its provider:
+
+| module | job |
+|---|---|
+| `provider-reach.ts` | can the page's data be reached; tried again when the network or the tab comes back |
+| `provider-news.ts` | what is new, shown by each element that listens for its kind |
+| `provider-cards.ts` | the card a component sits in: its data's state, its Retry, its toolbar's toggle |
+| `provider-highlight.ts` | what the pointer rests on, and each component that draws its matches |
+| `provider-legends.ts` | a legend that picks its chart's values: its part, its chips, its rest on a row |
+| `provider-show-as.ts` | Show as: a slot's chart swapped, a pivot, a grid made from a chart, the card's title |
+| `provider-mode.ts`, `provider-page.ts` | the panel or the bars; the open page's Views, saved sets and drafts |
+| `provider-declared.ts` | what a component declares, read in one place |
+
+A pivot and a grid made from a chart are rows in, a table out: `pivotTable()`
+and `madeTable()` in `core/data/aggregate.ts`, DOM-free.
+
+**A component DECLARES; the provider never probes.** `static asks` says the
+shape of its data (§4). `static takes` lists what else its provider gives it,
+each a door it has (`Take` in `core/ui/context.ts`): `card` (a container — the
+state of what it holds), `settings` (the app's filter settings), `headings` (a
+grid's heading settings), `highlight` (`drawHighlight`), `counts` (`drawCounts`).
+A filter bar is what asks for a `scope`.
+
 **One Query per Context (366).** `open()` makes the page's `QueryContext` and
 opens its source into it; a Context's module gets it as `ctx.query`, and a
 second source joins it with `new DataSource({ store, query: ctx.query })`. Its

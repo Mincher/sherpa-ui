@@ -13,11 +13,12 @@
  * - .closed — Every close reports; a reader's is a choice worth keeping.
  * - .room — The shell lost room for the panel, or has it again.
  */
+import { declared } from './provider-declared.js';
 
-/** Is it the panel area's occupant: a toolbar turned to portrait over a scope
- *  list — or over one, said `data-column`? TODO 425, 436 */
+/** Is it the panel area's occupant: a bar — what asks for a `scope` — over a scope
+ *  list, or over one, said `data-column`? TODO 425, 436 */
 export function isColumn(el: Element): boolean {
-  return 'drawScopes' in el && (el.hasAttribute('data-column') || scopesOf(el).length > 1);
+  return declared(el).asks?.shape === 'scope' && (el.hasAttribute('data-column') || scopesOf(el).length > 1);
 }
 
 /** The scopes it names. */
@@ -30,9 +31,9 @@ export interface ModeHost {
   /** Every filter bar that asked. */
   bars(): Element[];
   /** Every panel that asked. */
-  panels(): Array<HTMLElement & { show?: () => void; hide?: (reason?: string) => void }>;
+  panels(): Array<HTMLElement & { show(): void; hide(reason?: string): void }>;
   /** Every panel in the subtree, asked or not: one asks only once drawn, after the first paint. */
-  found(): Array<HTMLElement & { show?: () => void; hide?: (reason?: string) => void }>;
+  found(): Array<HTMLElement & { show(): void; hide(reason?: string): void }>;
   /** A fresh mode button from the provider's template — the panel's or the bars' — or null before it has drawn. */
   button(kind: 'panel' | 'bars'): HTMLElement | null;
   /** Settles once the provider has drawn its template. */
@@ -75,7 +76,7 @@ export class ProviderMode {
   /** A page is about to be drawn: one with filters opens the panel the reader
    *  wants, one with none shuts it — before it paints. TRAP T-the-filter-mode-is-set-before-the-page-paints */
   page(filters: boolean): void {
-    if (!filters) for (const panel of this.#host.found()) panel.hide?.('page');
+    if (!filters) for (const panel of this.#host.found()) panel.hide('page');
     else if (this.#wanted === 'panel' && this.#mode !== 'panel') this.#setMode('panel');
     if (filters) this.#early();
   }
@@ -85,7 +86,7 @@ export class ProviderMode {
    *  TRAP T-the-filter-mode-is-set-before-the-page-paints */
   #early(): void {
     if (this.#wanted !== 'panel' || !this.#room || this.#host.panels().length) return;
-    for (const panel of this.#host.found()) panel.show?.();
+    for (const panel of this.#host.found()) panel.show();
   }
 
   /** A bar or a panel that joins takes the mode — a page loaded later too. */
@@ -115,7 +116,7 @@ export class ProviderMode {
    *  again, and the reader wanted it: give it back. TRAP T-the-panel-is-desktop-only */
   readonly room = (event: Event): void => {
     this.#room = (event as CustomEvent<{ room?: boolean }>).detail?.room !== false;
-    if (!this.#room) for (const panel of this.#host.panels()) panel.hide?.('width');
+    if (!this.#room) for (const panel of this.#host.panels()) panel.hide('width');
     else if (this.#wanted === 'panel') this.#setMode('panel');
   };
 
@@ -123,8 +124,8 @@ export class ProviderMode {
   #setMode(mode: 'toolbars' | 'panel'): void {
     const panels = this.#host.panels();
     for (const panel of panels) {
-      if (mode !== 'panel') panel.hide?.();
-      else if (this.#room) panel.show?.();
+      if (mode !== 'panel') panel.hide();
+      else if (this.#room) panel.show();
     }
     // With no room the panel stays shut, so follow what it actually did.
     this.#mode = mode === 'panel' && panels.some((p) => p.hasAttribute('open')) ? 'panel' : 'toolbars';

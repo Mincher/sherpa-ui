@@ -28,8 +28,13 @@
  * - Zoned — A summary with its value field's zones beside it: a gauge.
  * - summariseZoned — Rows into the declared shape, with its value field's zones beside it: a gauge.
  * - summariseMarked — The same, and each segment's part the highlight's driver matches.
+ * - TableColumn — A grid's column, as a cross table names it and hands it on to a row's sub-grid.
+ * - CrossTable — A cross table, as a grid draws it: its columns, rows and filters, and each row's own rows.
+ * - TableFacts — What a cross table reads beside its rows: each field's declared values and name, its filters, its Total.
+ * - pivotTable — A grid's PIVOT: a row a Primary value, a column a Secondary value, every cell a row count.
+ * - madeTable — A grid made from a chart: its axes, no more, and a Total, as the chart counts them.
  */
-import { compareValues, readField, groupRows, valueKey, type Row, type SortDirection } from './store.js';
+import { compareValues, readField, groupRows, groupSummaries, valueKey, type GroupSummary, type Row, type SortDirection } from './store.js';
 import type { ChartDatum } from './chart-datum.js';
 import type { Threshold } from './threshold.js';
 
@@ -500,3 +505,130 @@ export function summariseMarked(
   return typeof value === 'number' ? { ...all, matched: value } : all;
 }
 
+
+/* ── Cross tables ─────────────────────────────────────────────────────── */
+
+/** A grid's column, as a cross table names it and hands it on to a row's sub-grid. */
+export interface TableColumn {
+  field: string;
+  header?: string;
+  type?: string;
+  tags?: string[];
+  sortable?: boolean;
+  filterable?: boolean;
+}
+
+/** A cross table, as a grid draws it: its columns, rows and filters, and each row's own rows. */
+export interface CrossTable {
+  key: string;
+  columns: TableColumn[];
+  filters: Record<string, unknown>;
+  rows: Row[];
+  detail: { columns: TableColumn[]; key?: string; rows: Record<string, Row[]>; groups?: Record<string, GroupSummary[]> };
+}
+
+/** What a cross table reads beside its rows: each field's declared values and
+ *  name, each filter as the grid's headings draw it, and the word for its Total. */
+export interface TableFacts {
+  domain: (field: string) => readonly unknown[];
+  label: (field: string) => string;
+  filters: Record<string, unknown>;
+  total: string;
+}
+
+/** A row's own rows, by its first column's value, a group's together where it
+ *  groups, and their groups: what each row's sub-grid draws. TODOs 574, 661 */
+function opened(rows: readonly Row[], lead: string, group: string | null | undefined): Pick<CrossTable['detail'], 'rows' | 'groups'> {
+  const opens = groupRows(rows, lead).map((g) => ({
+    key: g.key, rows: group ? groupRows(g.rows, group).flatMap((part) => part.rows) : g.rows,
+  }));
+  return {
+    rows: Object.fromEntries(opens.map((o) => [o.key, o.rows])),
+    ...(group ? { groups: Object.fromEntries(opens.map((o) => [o.key, groupSummaries(o.rows, group)])) } : {}),
+  };
+}
+
+/** The Secondary's values a table shows: the declared ones its rows hold, in order; none declared, those seen. */
+function crossValues(segments: readonly ChartDatum[], declared: readonly string[]): string[] {
+  const seen = segments.flatMap((s) => (s.stack ?? []).map((p) => p.label));
+  return declared.length ? declared.filter((v) => seen.includes(v)) : [...new Set(seen)];
+}
+
+/** A column per value, and the Total; a count sorts and filters nothing. */
+function crossColumns(values: readonly string[], prefix: string, total: string): TableColumn[] {
+  const count = (field: string, header: string): TableColumn => ({ field, header, type: 'number', sortable: false, filterable: false });
+  return [...values.map((v) => count(`${prefix}${v}`, v)), count(`${prefix}total`, total)];
+}
+
+/** One segment's cells: its count of each value, and its Total. */
+function crossCells(datum: ChartDatum, values: readonly string[], prefix: string): Row {
+  return {
+    ...Object.fromEntries(values.map((v) => [`${prefix}${v}`, datum.stack?.find((p) => p.label === v)?.value ?? 0])),
+    [`${prefix}total`]: datum.value,
+  };
+}
+
+/** A grid's PIVOT: a row a Primary value, a column a Secondary value, and the
+ *  total, every cell a row count. Each row OPENS on its own rows, under the grid's
+ *  own columns, its Group grouping them: Primary, Secondary, Group are a chain.
+ *  Will, TODOs 548, 570, 574 */
+export function pivotTable(
+  rows: readonly Row[],
+  spec: SummarySpec & { segment: string; stack: string },
+  grid: { columns: readonly TableColumn[]; key?: string | null | undefined; group?: string | null | undefined },
+  facts: TableFacts,
+): CrossTable {
+  const segments = summarise(rows, spec, facts.domain) as ChartDatum[];
+  const values = crossValues(segments, facts.domain(spec.stack).map(valueKey));
+  // Its Primary filters as the grid's own column does; a count filters nothing. TODO 571
+  const { tags: moved, ...primary } = grid.columns.find((c) => c.field === spec.segment) ?? { field: spec.segment };
+  /* Its rows' TAGS go where their columns are: down to the sub-grid, the
+     Primary's on its first column — and never the Primary's own, which every
+     row there holds. Will, TODO 580 */
+  const details = grid.columns.filter((c) => c.field !== spec.segment).map((c, i) => {
+    const tags = [...new Set([...c.tags ?? [], ...(i === 0 ? moved ?? [] : [])])].filter((f) => f !== spec.segment);
+    const { tags: _tags, ...rest } = c;
+    return tags.length ? { ...rest, tags } : rest;
+  });
+  return {
+    key: spec.segment,
+    columns: [
+      { ...primary, field: spec.segment, header: primary.header ?? facts.label(spec.segment), sortable: false },
+      ...crossColumns(values, 'pivot:', facts.total),
+    ],
+    filters: facts.filters,
+    rows: segments.map((s) => ({ [spec.segment]: s.label, ...crossCells(s, values, 'pivot:') })),
+    detail: {
+      // Not its Primary: every row under a row holds that row's. Will, TODO 578
+      columns: details,
+      ...(grid.key ? { key: grid.key } : {}),
+      ...opened(rows, spec.segment, grid.group),
+    },
+  };
+}
+
+/** A grid made from a chart: its axes, no more, and a Total. A row a value of its
+ *  first axis, its cells the count the chart draws, and each row opens on its own
+ *  rows, its Group grouping them. Will, TODOs 622, 625, 661 */
+export function madeTable(
+  rows: readonly Row[],
+  axes: Pick<SummarySpec, 'segment' | 'stack' | 'aggregate' | 'field'>,
+  grid: { columns: readonly TableColumn[]; group?: string | null | undefined; sort?: SortDirection | null | undefined },
+  facts: TableFacts,
+): CrossTable {
+  const lead = axes.segment ?? '';
+  const spec: SummarySpec = { shape: 'segments', ...axes, segment: lead, ...(grid.sort ? { sort: grid.sort } : {}) };
+  const made = summarise(rows, spec, facts.domain) as ChartDatum[];
+  const values = crossValues(made, axes.stack ? facts.domain(axes.stack).map(valueKey) : []);
+  return {
+    key: 'made:key',
+    columns: [{ field: lead, header: facts.label(lead), sortable: false }, ...crossColumns(values, 'made:', facts.total)],
+    filters: facts.filters,
+    rows: made.map((d) => ({ 'made:key': d.label, [lead]: d.label, ...crossCells(d, values, 'made:') })),
+    detail: {
+      // Not what its row says: every row under it holds that; its Group groups them. Will, TODOs 578, 661
+      columns: grid.columns.filter((c) => c.field !== lead),
+      ...opened(rows, lead, grid.group),
+    },
+  };
+}

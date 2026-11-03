@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 
 // The DATA tier — src/core is split by where a module can run.
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { aggregateBy, countBy, bandBy, seriesBy, reduceRows, summarise, summariseMarked } =
+const { aggregateBy, countBy, bandBy, seriesBy, reduceRows, summarise, summariseMarked, pivotTable, madeTable } =
   await import(new URL('aggregate.js', core));
 
 const ROWS = [
@@ -224,4 +224,43 @@ test('summariseMarked says what is matched of every segment, piece and section',
   assert.equal(b.matched, 1);
   assert.deepEqual(a.stack.map((d) => [d.label, d.value, d.matched]), [['x', 1, 0], ['y', 2, 2]]);
   assert.deepEqual(a.stack[1].parts.map((d) => [d.label, d.value, d.matched]), [['m', 1, 1], ['n', 1, 1]]);
+});
+
+/* ── Cross tables — a pivot, and a grid made from a chart ──────────────── */
+
+// Rows in, a table out: what a grid shown as a pivot or made from a chart draws. TODO 548
+const FACTS = {
+  domain: (f) => (f === 'sev' ? ['critical', 'warning', 'info', 'debug'] : []),
+  label: (f) => f.toUpperCase(),
+  filters: { region: { field: 'region' } },
+  total: 'Total',
+};
+
+test('pivotTable: a row a Primary value, a column each Secondary value it holds, and a Total', () => {
+  const grid = { columns: [{ field: 'region', header: 'Region', tags: ['sev'] }, { field: 'spend', header: 'Spend' }], key: 'id', group: 'sev' };
+  const t = pivotTable(ROWS, { shape: 'segments', segment: 'region', stack: 'sev' }, grid, FACTS);
+  assert.equal(t.key, 'region');
+  // The declared values it holds, in their order: `debug` holds no row.
+  assert.deepEqual(t.columns.map((c) => c.field), ['region', 'pivot:critical', 'pivot:warning', 'pivot:info', 'pivot:total']);
+  assert.deepEqual(t.columns[0], { field: 'region', header: 'Region', sortable: false });
+  assert.equal(t.columns[4].header, 'Total');
+  assert.deepEqual(t.rows.map((r) => [r.region, r['pivot:critical'], r['pivot:warning'], r['pivot:info'], r['pivot:total']]),
+    [['EMEA', 1, 1, 0, 2], ['APAC', 1, 0, 1, 2], ['AMER', 0, 1, 0, 1]]);
+  assert.deepEqual(t.filters, FACTS.filters);
+  // Each row opens on its own rows, under the grid's other columns — the Primary's tags moved there.
+  assert.deepEqual(t.detail.columns, [{ field: 'spend', header: 'Spend', tags: ['sev'] }]);
+  assert.equal(t.detail.key, 'id');
+  assert.deepEqual(t.detail.rows['APAC'].map((r) => r.spend), [50, 25]);
+  assert.deepEqual(t.detail.groups['EMEA'].map((g) => [g.key, g.count]), [['critical', 1], ['warning', 1]]);
+});
+
+test('madeTable: a chart\'s axes as a table, sorted as the chart is, each row its own rows', () => {
+  const t = madeTable(ROWS, { segment: 'region', stack: 'sev' }, { columns: [{ field: 'region' }, { field: 'spend' }], sort: 'asc' }, FACTS);
+  assert.equal(t.key, 'made:key');
+  assert.deepEqual(t.columns.map((c) => [c.field, c.header]),
+    [['region', 'REGION'], ['made:critical', 'critical'], ['made:warning', 'warning'], ['made:info', 'info'], ['made:total', 'Total']]);
+  assert.deepEqual(t.rows.map((r) => [r['made:key'], r.region, r['made:total']]), [['AMER', 'AMER', 1], ['EMEA', 'EMEA', 2], ['APAC', 'APAC', 2]]);
+  assert.deepEqual(t.detail.columns, [{ field: 'spend' }]);
+  assert.equal(t.detail.groups, undefined);
+  assert.deepEqual(Object.keys(t.detail.rows), ['EMEA', 'APAC', 'AMER']);
 });

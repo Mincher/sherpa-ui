@@ -191,6 +191,7 @@ failure would have no banner.
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/core/data/field-catalogue.ts`
 - Site: `src/core/data/data-source.ts`
+- Site: `src/components/sherpa-provider/provider-cards.ts`
 
 ### T-a-range-is-bounded-by-the-data
 
@@ -2899,6 +2900,7 @@ from its source's last walk (`QueryMember.ruledOut`), so every way off agrees
 - Site: `src/core/data/walk.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-provider/provider-legends.ts`
 
 ### T-unavailable-value-sorts-below-a-divider
 
@@ -4555,6 +4557,7 @@ after its banner is dismissed and reloads when picked (Will, D5).
 - Site: `src/core/data/updates.ts`
 - Site: `test/unit/what-is-new-waits-until-taken.test.mjs`
 - Site: `test/e2e/reforged-provider-news.spec.ts`
+- Site: `src/components/sherpa-provider/provider-news.ts`
 
 ### T-a-server-change-waits
 
@@ -5750,7 +5753,7 @@ applies them, which is why none of them caught it; the new test uses a real
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/bind-selection.ts`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-provider/provider-legends.ts`
 - Site: `src/core/data/source-binding.ts`
 - Site: `src/core/data/query-context.ts`
 
@@ -5794,7 +5797,7 @@ it; its section then says where the filter went. The View draws only a field
 it knows, so declaring a part declares its field.
 
 - Site: `src/core/data/data-source.ts`
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-provider/provider-legends.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `test/unit/chart-scope.test.mjs`
 - Site: `src/core/data/data-source-types.ts`
@@ -6313,7 +6316,8 @@ from an empty one.
 - Site: `src/core/data/query.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/a-hovered-chip-previews-the-highlight.test.mjs`
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-provider/provider-highlight.ts`
+- Site: `src/components/sherpa-provider/provider-legends.ts`
 
 A chip switched OFF previews what it holds too (Will, TODO 496 A), where the
 rows are held here — not on a bar whose source is remote: compile lifts the
