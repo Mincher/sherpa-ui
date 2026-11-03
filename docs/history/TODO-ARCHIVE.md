@@ -1,0 +1,13269 @@
+# TODO — the archive
+
+Every DONE item, its row and its section, moved out of [TODO.md](../TODO.md) so that
+file is the open work alone (Will, D5 A, 2026-11-03; plan-695 T1). Nothing is deleted:
+an item moves here when it is done, as it was written.
+
+| | Pri | # | Item | Kind |
+|:-:|---:|---:|---|---|
+| | | | **Next — open work, in this order** (Will asked for a review, 2026-10-27) | |
+| ✅ | 1 | 491 | TESTS — a full run, then clean up: less complexity and faster runs, with no loss of quality (Will, 2026-10-27). Done: the run was green (sherpa-ui 3266 + 709 node, 4.6m; Demos 669, 2.9m) and Will found the time fine. 48 sherpa-ui specs moved onto the shared `./harness` setup; 531 `window` casts became the typed `window.__settled()` / `__reforgedReady`; Demos' 12 copies of a row-total helper became one `total(page)` in its fixture. The 10 fixed waits stay: each proves that nothing happens, or waits for a hover rest | tests |
+| ✅ | 2 | 487 | DEFAULT — the data grid's rows per page start at the 100 option — Will sees 10 rows on load, in the grid and the pager's box (Will, 2026-10-27). Probed 2026-10-27: a FRESH browser on :4200 shows 100 in the source, the grid and the pager's box, after a reload too, and opening Settings writes nothing. Only Settings › Appearance › Items per page writes it, and the browser keeps that choice under `sherpa:session:/grid/pageSize`. ❓ Will: is it 10 there? Pick 100, or run `localStorage.removeItem('sherpa:session:/grid/pageSize')` — Will, 2026-10-27: done (a stored choice) | data |
+| ✅ | 3 | 388 | PROVIDER ALWAYS — a data grid is never wired by hand: `bindSource()` on a grid with no `<sherpa-provider>` logs a console warning; where it can, Sherpa finds a hand-wired grid and routes its data through a provider before it draws. So the Query and the page number are kept by the provider (Will, 2026-10-27, answering the ask: "We should always use the provider. Never hand wire a data grid.") Done: `bindSource()` reports `grid-without-provider` for a grid bound with no `deliver` (every provider bind passes one); PRINCIPLES, CLAUDE.md and DATA-SOURCE-RULES lead with the provider. NOT re-routed: the binder is DOM-free and a grid never imports the app layer, so it cannot make its own provider; the report names the fix. TRAP `T-a-grid-is-never-wired-by-hand` | data |
+| ✅ | 4 | 444 | BUG — a metric is taller than its grid row: 89 for 88, 79 for 76 compact, 109 for 104 comfortable, at 1x and 2x; a fixed row clips it (found in 402). Will: A; part 2 (compact and comfortable heights) from Figma, Bridge running 2026-10-27. Done: Figma's Metric is FIXED at every density, so the tile's height is the row (76 / 88 / 104) and the space between value and trend takes what is left | bug |
+| ✅ | 5 | 489 | SETTING — 'Select none shows all data', OFF by default: off, a list with nothing ticked returns NO data (tick one, or all); on, nothing ticked is every row. And Customer and Region open with Select all ticked in every Demos View (Will, 2026-10-27). Part 1 DONE: the setting, off by default, in the bar, the panel and a grid heading. Part 2, Will B (2026-10-27): every value ticked and the chip ON — Customer and Region open with nothing ticked — `"start": "all"` means no filter. Ticking every value at start meets Will's 09-22 rule (every value ticked must look like no filter, chip off): A, every value ticked and the chip OFF; B, every value ticked and the chip ON, reading All  Part 2 DONE: ALL is a flag, as none is — `{ all: true }`; Customer and Region open on it, ON, reading All. TRAP `T-all-is-an-answer` | filters |
+| ✅ | 6 | 493 | PRESETS — (a) no divider between preset and added chips in PANEL mode (the bar keeps 482's); (b) a preset is an ADVANCED filter: one boolean chip that sets a complex context — several fields and conditions, like the old grid toolbar's 'High Risk' — never a single simple field; Demos' definitions change to match; (c) a preset cannot move scope by default: the app's maker defined it for the reader; (d) the panel lists them in their own section, 'Presets', each chip a value in it; the bar needs no such label (Will, 2026-10-27). Will A (2026-10-27): a preset chip is its OWN part — on, its conditions narrow beside the field chips  Done: a scope's `presets` (`{ id, label, where }`), each a boolean chip leading it, its own part of the Query; the panel heads them Presets; no ⋮, no drag; Records has three. Also: a chip that grows folds the bar. TRAP `T-a-preset-is-its-own-part` | filters |
+| ✅ | 7 | 499 | BUG — the data grid's TOP scroll shadow, under its sticky header, does not show while its columns scroll (Will, 2026-10-27; see 478, 481, 486). Done: the shared top edge read `inset-block-start: 0`, stronger than the grid's own rule; it reads `--_scroll-shadow-top` now, which the grid sets to its header's foot | bug |
+| ✅ | 8 | 500 | SETTING — 'Group button in column headings', ON by default: a heading's Group button groups the grid by its field; each group row gets an Ungroup button, at its right (Will, 2026-10-27). Done: a list column's heading groups by it (`data-heading-group`, `provider.headingGroup`, on); a group row's Ungroup, at its end, stops it. Demos: Settings › Appearance › Data grid | grid |
+| ✅ | 9 | 501 | SETTING — 'Heading buttons on hover', ON by default: a column heading shows its Group, Filter and Sort buttons only while the pointer is over it (Will, 2026-10-27). Done: `data-heading-hover` (`provider.headingHover`, on); an on or open button stays. TRAP `T-heading-buttons-show-on-hover` | grid |
+| ✅ | 10 | 502 | GRID — a click anywhere on a column heading no longer cycles its sort; only its Sort button does (Will, 2026-10-27). Done: the column's name is plain text; only the Sort button cycles. TRAP `T-grid-sort-is-tri-state` | grid |
+| ✅ | 11 | 494 | LOOK — a COLLAPSED accordion header wears the active chips' fill (the app setting's pink or green) while 1 or more chips inside it are on. Only the header: nothing else in the accordion changes. CSS scope or inheritance where it fits (Will, 2026-10-27). Done: a state pin on the shut accordion, keyed on `:state(chips-on)` — Firefox misses `:has()` here. TRAP `T-a-shut-scope-wears-its-chips-fill` | filters |
+| ✅ | 12 | 495 | HIGHLIGHT — with 'Highlight matches on hover' on, a pointer resting on a chart LEGEND item highlights its matches too, as a chip does (Will, 2026-10-27). Done: the legend says `legend-hover`; the provider previews the value | filters |
+| ✅ | 13 | 496 | HIGHLIGHT — on hover, a scope needs NO filter or value on to highlight, when its data is already held on the client (Will, 2026-10-27). Will A (2026-10-27): an OFF chip that holds values previews them, data held on the client only. Probed on :4200 with nothing applied: a rest on a VALUE highlights its rows — bar and panel, View and data. Only a rest on an OFF chip does nothing. Is that it? A: an OFF chip that holds values previews them, data held on the client only; B: something else — show me where. Done: a rest on an OFF chip previews what it holds, unless its source is remote | filters |
+| ✅ | 14 | 497 | A11Y SETTING — 'Show On/Off shapes on toggle components' (on in Demos): every control that toggles shows its on/off state as well as its fill — the words On/Off where it fits, as the Switch does; else a tick icon inside, likely at the start. For now: the simple Switch, filter chips, chips, tags. Menu items and checkboxes have one already (Will, 2026-10-27). Done: `html[data-toggle-shapes]` sets `--sherpa-toggle-shape`; an ON filter chip (bar, panel value, legend item) leads with a tick, the simple Switch's knob wears one. Chip and Tag have no on state yet. Demos: Appearance › Accessibility, on. TRAP `T-a-toggle-shows-its-state-by-a-shape` | a11y |
+| ✅ | 15 | 498 | LOOK — the SELECTED nav item gets an active border: its fill alone is far too low contrast (Will, 2026-10-27). Done: the selected row pins the Default look's Active mode — a solid pale fill and its purple edge, inside; Figma pins Transparent/active, so this departs from it on Will's word. TRAP `T-a-selected-nav-row-wears-its-edge` | a11y |
+| ✅ | 16 | 490 | GRID — MULTI-FIELD columns: a cell's second row of colour-coded TAGS (Records' Name: Plan, Tier, Status); its heading menu joins the fields' values; a tag click filters by its value, again clears; filtered tags wear the filter-on colours; a tag the View holds explains itself on hover; no Advanced in the joined menu; a Filtering setting, ON by default (Will, 2026-10-27, next). Done: a column's `tags` draw as pills in each value's series colour (bigger, Will, 2026-10-27); a press picks the value, again lets it go; the heading menu joins the lists, a section each, and answers each field; the View's field is greyed with ONE moved tip (`showFor()`); `provider.multiFieldColumns` → `data-multi-field`, on; Demos: Filtering › Multi-field columns, Name 300px. TRAP `T-a-joined-menu-answers-each-field` | grid |
+| ✅ | 17 | 503 | A11Y — the on/off SHAPE is a Sherpa CHECKBOX, not a tick: empty while off, ticked while on, on every toggle 497 marks (chips, the simple Switch, a grid's tags). It may need a smaller checkbox size to fit (Will, 2026-10-27; 0/I icons were asked first, then dropped). Done (Will A, an off shape too): the Checkbox's box lifted into `sherpa-checkbox-look.css`; each toggle's shape wears it, empty off and ticked on, sized by `--_checkbox-size`. TRAP `T-a-toggle-shows-its-state-by-a-shape` | a11y |
+| ✅ | 18 | 512 | BUG — clearing ALL of a filter's active values by hand makes the filter glitch: crossed wires, maybe a duplicate or legacy path (Will, 2026-10-27). Fixed on the way: the panel's binding heard its section bars' events too. REPRODUCED from Will's lead: a SET-ASIDE pick (Limit, 174/349) stays ticked, greyed and disabled, the chip still names it; untick the rest and it alone holds the field at 0 rows. ❓ A: let a ruled-out pick go at once; B: keep it aside but pressable, and the face names only what filters. Will, 2026-10-27: A. Done: a ruled-out pick is LET GO — out of the rows at once (as before), then out of the reading, applied and drafted alike (`QueryContext.letGo`), no Apply asked. TRAP `T-a-ruled-out-value-is-greyed` | bug |
+| ✅ | 19 | 513 | BUG — 'Highlight matches on hover': resting on a chart LEGEND item highlights only once one legend item has been toggled (Will, 2026-10-27; see 495, 496). Done: a chart's own scope is made at its first toggle, and the highlight compiled only from scopes the Query had; a rested value whose scope is not made yet now compiles from an empty one. TRAP `T-a-hovered-chip-previews-the-highlight` | bug |
+| ✅ | 20 | 485 | SETTING — 'Save filters at any scope', OFF by default: off, a saved filter is saved and applied at a LOCAL scope only, and the View Context's toolbar and panel have no Save filters button or menu (Will, 2026-10-27). Done: `provider.saveAnyScope`, off; a set is the asking bar's scope alone, listed and taken there; the View's bar and the panel get `data-no-saves` (`saves(host)`). TRAP `T-saved-filters-are-every-scope` | filters |
+| ✅ | 21 | 505 | BUG — the panel's Presets section draws one preset chip per row; it should be ONE wrapping row, as every other section's values are (Will, 2026-10-27; from 493). Done: the panel's chips flow in one wrapping row, every chip but a preset a row of its own; with headings in a column the run sits in the value column, its heading beside the first line. TRAP `T-a-preset-is-its-own-part` | bug |
+| ✅ | 22 | 507 | LOOK — a grid cell's TAGS (490) drop the data-viz colours: they are "not great" (Will, 2026-10-27). Done: the tags wear the plain Tag look; picked, the filters' on colours. TRAP `T-a-joined-menu-answers-each-field` | look |
+| ✅ | 23 | 504 | LOOK — the scroll shadow (the inner shadow a box casts over what it scrolls under) is too harsh: softer, in line with the other Sherpa drop shadows, a shorter reach, and none until the scroll starts (Will, 2026-10-27). Done: 8px, half the shadow ink, in ONE pair of properties (`--sherpa-scroll-shadow-size`, `-ink`) the edges, the grid's header, a stuck metric row and a scope header read; the bottom and a sideways end edge hidden until the scroll starts. TRAP `T-a-scroll-shadow-is-drawn-over-the-content` | look |
+| ✅ | 24 | 506 | LOOK — a grid's GROUP row: its leading padding one step more (Will, 2026-10-27). Done: 8px before the group's box, at rest and while it scrolls sideways | look |
+| ✅ | 25 | 508 | LOOK — a multi-field cell: more gap between its text and its tags (Will, 2026-10-27). Done: 4px, a step up from 2 | look |
+| ✅ | 26 | 509 | LOOK — a grid with multi-field cells: EVERY cell has two rows, so each value sits on the first line and the values align across the row (Will, 2026-10-27). Done: `:state(multi-field)` while a shown column draws tags; every cell of a row is two lines tall and top-aligned, its box and ⋮ too. TRAP `T-a-joined-menu-answers-each-field` | look |
+| ✅ | 27 | 511 | LOOK — in a two-line grid (509) a cell's filter button sits by the FIRST line, as the value does, not mid-cell (Will, 2026-10-27). Done: under `:state(multi-field)` the button centres on the first line in every cell | look |
+| ✅ | 28 | 510 | PRESETS — a preset is a WRAPPER round stacked Advanced conditions that go INTO the query, field by field; the query then tells every other control (chips, headings, cells, charts) (Will, 2026-10-27; reworks 493). Will, 2026-10-27: A. Done: on writes its rows into each field's answer (at its home, ANDed into every run); off takes them out; its on is read from the fields; no `presets` flag. TRAP `T-a-preset-is-its-own-part` | filters |
+| ✅ | 29 | 484 | LAYOUT — a STICKY metrics row moves out of the layout grid, above it in the content area; the layout grid's scroll shadow then shades it, and the metrics row loses its own drop shadow (Will, 2026-10-27). Will, 2026-10-27: B. DONE 2026-10-27: the app shell's `context-header` slot, a FIXED region pinned first in the Context's scroll area, with its own edge shadow while scrolled; the outlet lifts a Context's `slot="context-header"` element into it and takes it out with the Context. Fixed on the way: the first version sat ABOVE the scroller and moved it, CLS 0.08 at 4x; now 0.009. Demos' Dashboard and Records put their metrics row there, with no `data-sticky`. TRAP T-a-context-has-a-fixed-region | look |
+| ✅ | 29a | 515 | BUG — in Demos the data grid's card fills only ONE row of Records (Will, 2026-10-28). DONE 2026-10-28. Found: a row count KEPT by a drag before 484 (5: metrics, charts, the card) outlived the metrics row moving to the fixed region; the grid now has 4, so the card sat in a fixed 88px row with the `1fr` row empty below. Fix: a kept count is counted again as it is put back. TRAP T-a-fit-grid-counts-its-resized-rows | bug |
+| ✅ | 29a1 | 517 | BUG (Will, 2026-10-28, a screenshot of Records' filter column) — deselecting values in a filter makes that field's section in the panel go empty and show 0 matches: Customer records' Plan, Tier and Owner show no values; Status and Tier wear 0 | bug |
+| ✅ | 29b | 516 | CLEAN-UP (found closing 369) — `quick-filter-open` has no listener: only the filter panel answered it, and 476 removed the panel. Remove the event and the caret's branch that waits for a host to build a menu. DONE 2026-10-28: the event, its caret branch, its Fires line and its trap paragraph are gone; a caret with no menu does nothing, as `#openMenu()` did with none | refactor |
+| ✅ | 29d | 519 | BUG (Will, 2026-10-28) — the data grid toolbar's search input filters at the VIEW scope; it should filter at the grid's own (local) scope. DONE 2026-10-28: Records wrote the search into the grid's scope, but a summary's load (charts, metrics) spread the page's load options and swapped only the filter, so it kept the search; and with no window it reused the page's searched rows. A search in a component scope now stays out of a summary's rows and asks for them on its own; one at the View still reaches everything. The bench's raise and clear (run with the search still on) now read the summary's own rows: recorded. Test `a-search-stays-in-its-scope` (3), failing first. `T-only-the-view-trickles-down` | bug |
+| ✅ | 29e | 520 | BEHAVIOUR (Will, 2026-10-28) — match highlighting applies only to content in the SAME scope as its filter. DONE 2026-10-28: `highlightAcross` (TODO 467) is OFF by default — in the source itself, so a component bound alone has it too, in the provider and in Demos' session default. A Local chip lights the grid, not the charts; a View chip still lights every scope. Tests: unit `a-chip-drives-the-highlight` (off by default; its mechanics tests turn it on), Demos `reforged-highlight-matches` (a Local chip leaves the charts unlit). `T-the-highlight-reaches-the-whole-page` | filters |
+| ✅ | 29f | 521 | FILTERS (Will, 2026-10-28) — a compound PRESET (multi-condition) on changes how other filters' values show in the panel, and sometimes swaps another filter to Advanced, erratically. Wanted: a value a compound preset turns on wears the blue INFO status, not the active look, and its chip's tooltip says why (the preset's name). Panel and toolbar mode alike. CAUSE: 510's `withRows` writes a preset's conditions INTO each field's answer and always sets `mode: 'advanced'`, so "Enterprise trials" (plan Enterprise, status trial) flips Plan and Status to Advanced. PLAN: a preset's rows go in a place of their own on the reading (`held`, by preset), ANDed with the reader's answer in any mode; the field keeps the reader's mode; a chip or value a preset holds wears INFO (a state pin) and says "On by the preset ‹name›". ❓ Will: what a press on an info value does — A: turns that preset off; B: nothing, only the preset's own chip does. **Will, 2026-10-30, NEXT, after 577, 584, 567; then Presentation and Primary/Secondary work is PARKED:** activating a preset adds and activates other filter fields and sets them to Advanced. Show its downstream impact — which filters or value chips it activates — in the blue INFO status, with a tooltip that explains; NEVER Advanced for these; all of it goes when the preset goes off (526); the same in toolbar and panel mode. **Will approved the plan, 2026-10-30:** a preset's rows in a place of their own on the field, which keeps its mode; a field or value it turns on wears INFO, with a tooltip naming it; off, the rows and any chip it added go, the reader's own picks stay; a press on an info value does nothing (B). **DONE:** a preset's rows are `byPreset` on the field's reading, ANDed with the answer in any mode; no field goes Advanced. A chip, a panel value, a menu row and a grid heading wear the blue `info` pin and say "On by the preset ‹name›."; a press on a blue value does nothing (B). A reader's pick no longer turns a preset off. Toolbar and panel alike. The preset tests pass in all three engines, and the full suites were NOT run (Will: skip for now) | filters |
+| ✅ | 29g | 523 | REVIEW (Will, 2026-10-29) — another pass over GROUPING, SORTING and FILTERING, data layer and components: a component only ASKS for query state and PRESENTS what comes back; the data layer's query handler fetches, transforms and returns. Revise, refactor or cull only — never a new implementation of something that exists; reuse, duplicate only where it cannot be helped; HTML and CSS first, TS last — DONE 2026-10-29: Stage A, B and C, each step tested and committed; full suites green (sherpa-ui 3376, node 742, Demos 703). Checked and kept, with reasons in docs/history/report-518-523.md: P1, S12, U3, U21 and parts of P5, P6, P11, P12. S7 and U11 moved to 541 | refactor |
+| ✅ | 29h | 524 | FILTERS (Will, 2026-10-29, after 523) — "Reset all on view" is offered only at the View scope (with 518 R7) — DONE 2026-10-29: `resetRows` offers it over the View alone — its bar (`data-type="view"` or `data-scope` holding `view`) or a column; a local bar has Reset only. R7 goes with it: a lone bar, which nothing answers, is not over the View | filters |
+| ✅ | 29i | 525 | LOOK (Will, 2026-10-29, after 523) — in panel mode an Advanced field's input rows must not sit in the section's title column: every panel section is THREE columns — title, filter components, actions — DONE 2026-10-29: in a label-column section (the default), an Advanced field's rows sit in the answer column beside the title, as values do; actions stay in the third. With the label column OFF, titles sit above, as that setting chooses | look |
+| ✅ | 29j | 526 | BUG, minor (Will, 2026-10-29, after 523) — a preset toggled off must revert ALL its impact on other filters: one it turned Advanced goes back to Simple (with 521). **DONE, with 521:** off, its rows go; the reader's own answer and mode were never touched | bug |
+| ✅ | 29k | 527 | BUG, minor (Will, 2026-10-29, after 523) — the AI "Suggest filters" button is in the wrong place in the app header: it belongs to the left of the filter toolbar's Edit button — DONE 2026-10-29: the toolbar's `data-suggest` shows it left of Edit, and the panel column's left of its Edit; folded, it is a ⋮ row; it fires `ai-filter-request`, as the header's did. The App Header's button and `data-suggest` go; Demos sets it on the View bar and the column | bug |
+| ✅ | 29m | 529 | BUG (Will, 2026-10-29, after 523) — with "Highlight across every scope" off, highlight on hover stops working; it must still light matches in components in the SAME scope as the hovered filter value (follows 520's default) — DONE 2026-10-29: measured, a bar's own scope lit as it should; a CHART's own scope (its legend's part, in the panel or the legend) lit nothing, not even its chart, as the chart is bound in the page's scope. The part now reaches the component it narrows, in `highlightFor` and in the push key | bug |
+| ✅ | 29o | 531 | LOOK (Will, 2026-10-29, after 523) — a hover background on the panel's filter sections, the same colour token as a data grid row's hover; the chip hover moves to that colour too — DONE 2026-10-29: ONE hover fill, `--sherpa-hover-fill` in sherpa-base.css (the +1 step at 20% over the base, as a grid row's): a panel section wears the bar's (neutral, even when on), a chip its own pinned mode's, and the grid row the same amount over its own base | look |
+| ✅ | 29q | 533 | DEMOS (Will, 2026-10-29, after 523) — remove the Filter Layouts page from Sherpa Demos, and every piece of code that only it uses — DONE 2026-10-29: its context, template and module go; its 14 tests move to Records' panel — the same column — as Demos' `reforged-filter-column-sections`. sherpa-ui held no code only it used | cleanup |
+| ✅ | 29u | 538 | TOOLTIPS, after 364 (2026-10-29) — three choices for Will: (1) the tip's ARROW: A none, as every button and chart tip already has (my pick; an arrow that turns with a fallback works only in Chromium; Figma's Tooltip (atom) would lose it too), B an arrow in Chromium only; (2) `sherpa-tooltip`: A keep it as a thin wrapper, the one way to tip content that is not a button (my pick), B delete it, `data-tip` on a button only; (3) native `title` on greyed menu rows and select options, a second system: A leave it — a disabled `<option>` cannot hold a popover (my pick), B move menu rows to the shared tip — DECIDED (Will, 2026-10-29): A for all three. The code already is A; Figma's Tooltip (atom) loses its arrow too: 539 | decision |
+| ✅ | 29z | 543 | LOOK, minor (Will, 2026-10-29) — the "View context" label sits to the LEFT of the Customer chip in the filter toolbar, not above it — DONE 2026-10-29: in the row, left of the View's first filter; a pointer on the label previews nothing | look |
+| ✅ | 30a | 544 | SETTING (Will, 2026-10-29) — "Highlight full chip when active". OFF (the default): only a chip's left FIELD side turns active (green or pink); a boolean chip with no right side — a field in the bar, or a value in the panel — turns whole. ON: the whole chip, as now. ❓ Will (2026-11-02): 669 did most of this — its setting keeps the left half filled and gives the value half the on BORDER only, on by default in Demos. A (my pick): 669 replaces 544; close it. B: also add 544's OFF, the value half with no on look at all, as a third choice **CLOSED** (Will, 2026-11-02: A): 669 replaces it | filters |
+| ✅ | 30f | 549 | LOOK (Will, 2026-10-29) — the minimap's purple frame scales as the reader zooms in and out; the content drawn on the minimap holds its scale, and does not scale with the zoom — DONE 2026-10-29: the map is scaled to the content alone, half the map in its middle; a frame larger than the map keeps it covered | look |
+| ✅ | 30g | 550 | FILTERS (Will, 2026-10-29) — "Select none shows all data" is ON by default, and the inverse goes: a None pick takes the field OUT of the query, and no value's rows are hidden or blocked. Remove the setting and the logic for "None shows no data" (`data-none-shows-all` on the bar and the grid, menuFor's `empties`, the Settings row). DONE 2026-10-29: nothing ticked filters nothing, everywhere; gone — `data-none-shows-all`, the menu's `data-empties` and its `none`, `provider.noneShowsAll`, a reading's `none`, `T-none-is-an-answer`, and the Demos setting; `in: []` reads as nothing picked | filters |
+| ✅ | 30i | 552 | LOOK (Will, 2026-10-29) — the node being dragged wears a shadow, and its border is stronger — DONE 2026-10-29: Elevation=md's shadow and a 1px ring outside its border (nothing inside moves), over the nodes it passes | look |
+| ✅ | 30j | 553 | BUG (Will, 2026-10-29) — the filter toolbar's "Limit to matching filters" and "Hide invalid filter options" change nothing in a field's menu or its values. Offer both at the VIEW scope only. Turning one on there turns the setting on app wide, and the Settings page shows it. Settings go through ONE handler, if they do not already. DONE 2026-10-29: the two ⋮ rows are offered over the View only; one handler, `followSettings` (sherpa-ui), keeps each provider setting, its session key and its ⋮ event in step — Demos' 25 blocks are one table. The ⋮ already set the app-wide setting. ❓ NOT REPRODUCED: Limit and Hide grey and hide in the View bar, a grid bar, its menus, the panel and the column menus, wherever a pick truly rules a value out (status trial greys Dana Whitlock; Customer Adventure Works greys two owners). Demos' data is even — every status holds every plan and tier — so most picks rule nothing out. Will, 2026-10-29: "Never mind for now" — likely caused by Select None shows None, which 550 removed. Closed | filters |
+| ✅ | 30t | 563 | LOOK, found 2026-10-29 (548) — the Records toolbar's Find box measures 34px tall; the buttons beside it (Add customer, Show as) are 32px, the base size. Measure, then make Find 32. **DONE:** a button in a field's row was 32px inside its border, so the row grew to 34: a number's and a find's steppers, and a slotted action. Each is now 30px, so every field is 32. A flat 2px, not the border tokens: a 0.5px token can draw 1px. A narrow number's smaller steppers and an action with its own `data-size` keep theirs. Measured live: Find 256×32, at 1x and 2x | look |
+| ✅ | 30u | 564 | CHARTS, after 548's core (Will, 2026-10-29) — a grouped chart's parts are a shade or tint of their segment's colour, one per group: the larger a part, the darker its shade **DONE 2026-10-30:** in a bar, a slice and a ring: `paintTone` sets `--_shade` and `--_tint` by the part's weight among its segment's, 30% black at the largest to 55% white at the smallest; all equal, its colour | charts |
+| ✅ | 30w | 566 | BUG, later (Will, 2026-10-29) — an overflow (⋮) menu button with no menu rows is hidden: the filter toolbar's, and any other. Will again, 2026-10-30: anywhere, toolbars and filter sections too, a ⋮ with no rows to show is not shown. **DONE:** a section's ⋮ in CSS; the bar's and the panel's by what they would hold at this width. The canvas's always has rows, and a grid's row button only shows with actions | bug |
+| ✅ | 30x | 567 | CHARTS, with 548 (Will, 2026-10-29) — a chart card's title follows its presentation: "Primary by Secondary, grouped by Group", each part only where it is set. **DONE:** while the reader has set nothing a card keeps its page's title; set, the provider writes it: "Customer by Severity, grouped by Region". A heading its page changes since is its page's own. A grid's card has none to follow. Then PARKED, with Primary and Secondary (Will) | charts |
+| ✅ | 30za | 570 | GRID, for 548 (Will, 2026-10-29) — a grid's Secondary as EXPANDABLE PARENT ROWS: a row per Primary value that opens and shuts; open, it shows a sub data grid of its rows inside a content area. The counts-only pivot is not enough. Group must work with Primary and Secondary set. DONE 2026-10-29: a grid row may OPEN on a sub-grid of its own rows (`detail`), filled by its grid, never asking the provider; a grid's Secondary is a pivot whose rows open so, and Group sections it | grid |
+| ✅ | 30zb | 571 | GRID, for 570 (Will, 2026-10-29) — a pivot's sub-grids filter as the grid does: their headings and cells filter the same rows, in the grid's scope. "It's all just organisation of the same data set." The pivot's own Primary heading and cells filter too. DONE 2026-10-29: a grid tells each open sub-grid its filters — each field's answer, what the View holds, what the filters before each leave — and a sub-grid's heading or cell filter leaves as the grid's own `column-filter-change`; its other events stop at the grid. A pivot's bind is readonly yet `steers` its filters (bindSource's new `steers`); its Primary column is the grid's own, its counts filter nothing (GridColumn `filterable: false`) | grid |
+| ✅ | 30zc | 572 | PRESENTATION (Will, 2026-10-29) — Primary is always set: its chip menu has no None, and the definition's default reads "Name (Default)". DONE 2026-10-29: a scope's description carries `primaryDefault` (`presented(scope, view, false)`: the definition alone); the Primary chip's menu is `persistent` — no None, no Clear — and its default row reads "<Label> (Default)" (a word in toolbar-rows.html). Picking the default keeps no pick, so the definition rules again. The chip's tip says "Name (Default)" too. Records measured: rows Name (Default), Email … Owner | feature |
+| ✅ | 30zd | 573 | PRESENTATION (Will, 2026-10-29) — configurable rules for what may be Primary: by default, no field whose every value is unique. A definition may still name such a field — Name — as its default, and the reader's Default picks it again; an app configures which fields a reader may pick. CLOSED 2026-10-29, Will: "forget about those rules. We can specify options in the definition" | feature |
+| ✅ | 30ze | 574 | BUG (Will, 2026-10-29) — a Group picked before still applies after Primary or Secondary changes, even with Group set to None. FOUND 2026-10-29 (571): a pivot binds as a SLOT (readonly, every row), so its scope stops arranging — `describe()` takes the slot branch: the Primary chip reads the CHART's Primary (Records: Status, while the pivot leads by Name), and Group writes the slot's group, not the grid's. Back to a plain grid, the grid's own Group returns. THE MODEL (Will, 2026-10-29): a grid's three are a SERIAL hierarchy — Primary sets the pinned column, Secondary the pivot, Group the rows inside each pivot row's sub-grid; with no Secondary, Group groups the main grid. 570 sectioned the pivot itself: one level too high. DONE 2026-10-29: a pivot binds `arranges` — its scope stays a grid's, so the chips read the grid's Primary and Group is the grid's one Group (`setGroup`), never a slot's. A grid whose rows open hands its Group and Sort to each row's sub-grid, its rows grouped by the data layer (`detail.groups`); a sub-grid's heading sort, group and filter are the grid's. Measured in Records: Group Tier → Secondary Plan groups each sub-grid by Tier → Group None ungroups them → no Secondary, the main grid is ungrouped | bug |
+| ✅ | 30zf | 575 | GRID (Will, 2026-10-29) — a column has a sensible max width in CSS `ch` units (about 200ch?), so a sub-grid's columns are not very wide; a min width the same way, where one is not set already. **DONE:** `.col-bounds` in the grid's CSS sets `min-inline-size: 11ch` and `max-inline-size: 50ch`; JS reads them as px and holds every width inside — config, a wide card's share, a drag. A column that grows to fill a card stops at the max, and the room left stays empty. Measured: 1ch = 8.8px in 14px Inter, so 200ch = 1,764px, wider than the whole grid — it would stop nothing; 50ch = 441px, near the old 480px max; 11ch = 97px, the old 96px min. One line in `sherpa-data-grid.css` changes either | grid |
+| ✅ | 30zg | 576 | GRID, for 570 (Will, 2026-10-29) — a row's open chevron is a TERTIARY button, so its hover shows a click there differs from a click on the row. DONE 2026-10-29: a native button wearing the Button's look — tertiary (`data-look="transparent"`), icon, 24px like the cell's filter chip — overhanging its line, so a row is no taller. Its hover is Figma's Transparent +1 at 30%: faint on a hovered row | grid |
+| ✅ | 30zh | 577 | BUG (Will, 2026-10-29) — the Site column cannot be filtered, by its heading or its cells. MEASURED 2026-10-29 in Records: Site is Customer's CHILD (TODO 369: a child's picks are its parent's), and the View holds Customer. So the grid gives Site's heading NO filter (`#parentOf`), and its cells none. Customer and Region headings show greyed and refuse (T-a-view-held-heading-shows-and-refuses, Will 09-26). A Site pick sent as the heading's event works: it lands in the View, under Customer, 100 rows → 8. ❓ WILL: (A, my pick) Site shows as Customer does — its answer, greyed, refused; picked in the View's Customer chip. (B) Site's heading and cells pick, into Customer's tree in the View — the one View-held field a grid changes. **Will, 2026-10-30: A** — Site shows greyed, as Customer does, and is picked in the View's Customer chip. **DONE:** while a higher scope holds its parent, a tiered child's heading shows what the parent's answer holds of it — each path's child — greyed and refused; let go, it has no filter again. A Site cell's chip already did this. Records: a site picked in the View's Customer chip ticks in Site's heading | bug |
+| ✅ | 30zi | 578 | GRID, for 570 (Will, 2026-10-29) — a pivot row's sub-grid does not show the Primary column: every row in it has the same value, its row's. "That makes no sense". DONE 2026-10-29: a pivot's sub-grid takes the grid's columns but its Primary | grid |
+| ✅ | 30zj | 579 | GRID (Will, 2026-10-29) — a cell does not show a multi-value TAG of the field the grid groups by: its group heading says it already. DONE 2026-10-29: the grid draws a cell's tags without its group field; in a pivot, the sub-grids are the ones grouped (574), so they drop it. Records: grouped by Tier, Name shows Plan and Status | grid |
+| ✅ | 30zk | 580 | GRID, for 570 (Will, 2026-10-29) — multi-value cell tags go where their columns are: down to a pivot row's sub-grid when their columns are there, and back up to the main grid when not. DONE 2026-10-29: sub-grids are told `data-multi-field` (they drew no tags before); a pivot's Primary column drops its tags, which move to the sub-grid's first column; no column there tags the Primary's field, which every row holds. Secondary off, they are back on Name. Records: by Status, Name tags Plan; by Name, Email tags Plan and Status | grid |
+| ✅ | 30zl | 581 | PRESENTATION (Will, 2026-10-29) — Limit and Hide work across the Primary → Secondary → Group chain: a field set on one link is ruled out in the others — greyed, or hidden while Hide is on. No field is on two links at once. **DONE:** the toolbar's `#markChain` gives each link's menu the fields the other two leave; a taken one is greyed and refuses a tick, and goes while Hide is on. A slot's Group now lists its Primary's and Secondary's fields, greyed, where it hid them. Verified in Records: Primary status, Secondary plan, Group tier — each greys the other two | feature |
+| ✅ | 30zm | 582 | PRESENTATION, SETTINGS (Will, 2026-10-29) — the app's Settings page has a setting that turns presentation switching on or off: off, no card offers Show as. **DONE:** `provider.showAs` (on) → `source.showAs` → `query.honour('kind')`; off, `presented()` leaves out the reader's Show as pick, so each card shows its own way, and the pick is KEPT for when it is on again. Each header's `data-presentation` reads `off`, and its CSS hides Show as. Demos: Settings › Application › Layout › "Show as", `/cards/showAs` (not under `/layout`: Reset card sizes clears that). **Will, 2026-10-30:** off by default in Demos | feature |
+| ✅ | 30zn | 583 | PRESENTATION, SETTINGS (Will, 2026-10-29) — the Filtering settings page has a setting that turns the Primary and Secondary chips on or off: off, no toolbar or panel offers them. With 582 and 568. **DONE:** `provider.axisChips` (on) → `source.axisChips` → `query.honour('axes')`; off, `describe()` offers no `chartFields`, so no bar draws the chips, and `presented()` leaves out the reader's Primary and Secondary — kept for when it is on again. The chain stays: Group still greys the page's Primary (581). The panel never drew them. Demos: Settings › Filtering › "Pick a chart's Primary and Secondary", `/filters/axisChips` | feature |
+| ✅ | 30zo | 584 | LOOK (Will, 2026-10-30) — the Primary chip's pin icon misleads: a pin says fixed in place, and Primary is what its chart or grid is split by. Choose another icon. **DONE:** `table-columns`: a chart's bars, a grid's leading column. The nav's Records row wears the same icon | look |
+| ✅ | 30zp | 585 | BUG (Will, 2026-10-30) — a local scope's chip set inactive because its field moved to the View scope no longer shows its explanation tooltip on hover. With 521. **DONE:** a greyed chip's buttons hear no pointer, and since 364 a tip opens from a hover on them; while greyed, its box is the anchor. Disabled and ruled-out chips had the same bug. TRAP T-an-inactive-chip-says-where-its-filter-went | bug |
+| ✅ | 30zq | 586 | SETTING (Will, 2026-10-30) — show legend items as filter chips: on, each legend item is a boolean value chip with its swatch and label, as the filter toolbar's panel mode draws them. **DONE:** `provider.legendChips` → `data-chips` on a legend that picks. A number is the chip's count (Will: keep it); a value that is no number, a band's range, stays beside it. Off by default. Demos: Filtering › Look › "Show legend items as filter chips", `/filters/legendChips` | feature |
+| ✅ | 30zr | 587 | SETTING (Will, 2026-10-30) — "Show Move Context menu item", OFF by default for now. On: the option to move a filter between scopes shows. Off: it is not offered; a reader can still add a filter at another scope by the Edit filters button. **DONE:** `provider.moveFilters` → `data-move-filters`; off, no chip menu or section ⋮ has the Move row. Toolbar and panel alike. Demos: Filtering › Layout › "Show Move Context menu item", `/filters/moveFilters` | feature |
+| ✅ | 30zs | 588 | DEMOS, after 521, 526, 585 (Will, 2026-10-30; "less than 30 minutes would be amazing") — demo pages of increasingly complex filtering. The first: the View Context toolbar and one container with a data grid, every filter at the View Context. Each next page adds content and a more advanced idea: scopes, panel mode, Apply against immediate changes, matches, highlighting and so on. On each page a 3-column container, spanning every row of the layout grid, holds an easy explanation: it may use dummy sherpa components, or pieces of them, to show an idea; clear, simple words; links to the earlier pages that explain the basics; consider example query strings, whole or in part. **Will, 2026-10-30, on the first drafts:** the docs sit on the right of the grid or in the right panel area, clear of the filter panel; keep the demo-only settings toggles; each illustration must match what that page shows (a toolbar page draws toolbar chips with a menu, never panel-style value chips in a row); the docs teach a person how filters work, and all technical guidance (JSON, query strings) goes in one accordion, collapsed by default; each page checks and provides any setting its docs and examples need, from the app's defaults in a fresh session. **Will also wants:** the Edit filters menu; Advanced filters and their multiple conditions; filters driven from a UI component: grid column headers, cell filter buttons, legend items. **Will:** one nav item, and each page a View of it, in the View chip. **DONE:** Demos' Learn filtering: one Context, 12 lessons as Views, a Technical details accordion each; the docs are the last 3 columns of the grid. Known: 597, 598, 599 | demos |
+| ✅ | 30zt | 589 | FILTERS (Will, 2026-10-30) — remove the basic "Highlight matches": its setting, its menu switch and its experience. Keep "Highlight matches on hover" and "Highlight across every scope", setting and function. **DONE:** gone: `provider.highlight`, the menu's switch, the section ⋮'s row, the chip's highlighter look, and the driver the Query kept (`query.highlight`, `scope.highlight`). The hover preview and Across stay. Demos: the Filtering row and `/filters/highlight` are gone | filters |
+| ✅ | 30zu | 590 | PRESETS (Will, 2026-10-30, on 521) — a preset on adds NO chip or section to a toolbar or panel. It only wears the blue info look on chips and sections that are there already. Its rows still filter. **DONE:** where no scope holds a field, a preset's rows stay in its own scope, in `readings` and not `holds`: they filter that scope alone, and no bar or panel draws a chip. In a panel section, each value chip already there that the rows touch goes blue: `not churned` colours the other three, and a band they overlap (Will) | filters |
+| ✅ | 30zv | 591 | SETTINGS (Will, 2026-10-30) — per-page settings definitions: a page may define settings of its own, so a change on one demo page does not carry over to another. Not exposed in the app's Settings, and not a common way to set settings: for demos, and maybe later edge cases such as app onboarding. **DONE in the library:** `session.overlay(values | null)`: while on, those pointers read and write there and nothing is stored, and every reader (a switch, `followSettings`) follows. Demos' Learn filtering lays each lesson's on | feature |
+| ✅ | 30zw | 592 | PRESETS (Will, 2026-10-30) — toggling off a filter chip a preset affects turns the preset off: its conditions are no longer met. This replaces "a press on a blue value does nothing" (521 B). **DONE:** a bar's chip or a panel's value chip, blue and toggled off, asks each preset holding it off; the reader's own answer stays. A blue menu row is still ticked and refused, and a heading's icon-only chip opens its menu: neither has a toggle | filters |
+| ✅ | 30zx | 593 | FILTERS (Will, 2026-10-30) — switching a filter between Simple and Advanced, with no other change, does not ask for Apply. **DONE:** `sameAnswer` judges the answer in force, for `pending`, `dirty` and a menu's own Apply. A switch to rows that say something else still asks | filters |
+| ✅ | 30zy | 594 | FILTERS (Will, 2026-10-30) — an Advanced filter's rows read left to right: `A or B and C` is `(A or B) and C`, so the AND reaches every row before it. Until now AND bound tighter: `A or (B and C)`, which let rows through that did not contain the AND's text. **DONE:** `chainRows` reads the rows left to right; a band's rows are sorted ascending, so two bands still keep both and nothing between | filters |
+| ✅ | 30zz | 595 | **MERGED into 692 (2026-11-03):** the same work. FILTERS, after 594 (Will, 2026-10-30) — a way to indent or nest conditions, in the UI and the query, for an AND that applies only to the row before it: `A or (B and C)` | filters |
+| ✅ | 30zzb | 597 | BUG, found 2026-10-30 (588) — taking a saved filter from a card's Edit menu does nothing: the set reads taken, no chip fills, the rows do not move, and it logs `unknown-filter ... id=set:has-tickets`. Records too; `provider.applyFilters('has-tickets')` works. A lead: the toolbar's `#onAddCommit` passes a copy to `pick()`, so the `set:` row stays in `want`. **DONE:** the lead was half of it. Taking the set added its chip at once, then the handler held that chip against the menu's ticks and removed it, and its filter with it. Held chips are read before the set is taken, in the bar and the panel; `pick` takes the set rows out of the caller's list | bug |
+| ✅ | 30zzc | 598 | FILTERS, found 2026-10-30 (588) — a component over a field the View holds. A legend press changes the View's value, by design (`reforged-chart-scope`). A grid heading's filter stays lit, its tip says why, and its menu does not open: `:host([data-superseded])` takes the pointer, though T-a-view-held-heading-shows-and-refuses describes a read-only menu. Will: A, 2026-10-30 — a held heading's menu opens, read-only, to show the answer. Done: a pointer opens it, its tip stays, and a bar's held chip still refuses | bug |
+| ✅ | 30zzd | 599 | BUG, found 2026-10-30 (588) — when a View changes what the View scope holds, the bar resets the View chip to the first View: it shows the wrong View, and picking the first does nothing.. **DONE:** the View bar has `data-reset-on-populate`, so a rebuild forgot every pick, its selector's too; a persistent chip now keeps its own while its def is the same; a changed def names the pick, as a saved or deleted View does. Demos' workaround is gone | bug |
+| ✅ | 30zzda | 600 | SETTING (Will, 2026-10-30) — 'Expand navigation on hover'. On: the nav opens to a pointer, as now. Off: Settings and Pin stay at the bottom, a vertical group on the collapsed nav and at the bottom right of the open one (Will); Pin expands and pins it, and back; a nav row shows a tooltip with its name; with 'Show full view hierarchy' on, a row in the collapsed nav spawns a menu of its child rows to its right. **DONE:** `/nav/hover` in the session, `data-no-hover` on the nav, `data-placement="right"` on the menu, a switch in Demos' Settings › Application › Navigation. Recent and Favorites open a menu whatever the hierarchy says: an Area in a shut rail has no other door. The search icon opens the rail to type in. Also fixed: with the hierarchy on, a first load lit the Context's row, not its View's. Figma has no frame for this foot. TRAP `T-a-rail-may-stay-shut` | nav |
+| ✅ | 30zze | 601 | PRESETS (Will, 2026-10-30) — block changing the value selection of a filter a preset holds: its menu is read-only, and a panel section's other values refuse a press. Toggling the chip off still turns the preset off (592). **DONE:** a preset's field: its menu is `data-readonly` and says why, a panel's other values wear `data-held-out` (inactive, "Held by the preset ‹name›."), a section's ⋮ offers no Advanced or Reset, a grid's cell offers nothing and its tags refuse | filters |
+| ✅ | 30zzg | 603 | SETTINGS (Will, 2026-10-30) — hide Suggest filters from every filter toolbar and panel for now: nothing is tied to it yet. **DONE:** Demos' two toolbars no longer say `data-suggest`; the attribute stays, off by default, for when it does something | filters |
+| ✅ | 30zzh | 604 | LOOK (Will, 2026-10-30) — 4px less between the App Header's rows: `space-sm`, in a box of 84px. The second row's auto margin ate the gap, so the box had to shrink too | look |
+| ✅ | 30zzi | 605 | SAVED FILTERS (Will, 2026-10-30) — a saved filter is a preset the user made. Adding one adds a preset chip to the toolbar's Preset section. Today it adds a pink active chip left of Edit that does nothing. **DONE:** a saved set is `saved:<id>`, a preset of one scope: ticked, its chip joins the bar, on; unticked, it goes and what it held; several may be on. The "Save <name>" button, `takeSet`, `dropSet` and the Delete row are gone. It replaces 366 | filters |
+| ✅ | 30zzj | 606 | SETTINGS (Will, 2026-10-30) — 'Highlight across every scope' depends on 'Highlight matches on hover' being on: say so in Settings and in lesson 10. **DONE:** `data-setting-needs` on a settings control: disabled until that setting is on, keeping its value | filters |
+| ✅ | 30zzk | 607 | BUG, found 2026-10-30 — a View pick leaves the View chip's menu open on a page whose View does not change what the View holds, as on Records. A pick that redraws the bar shuts it, so the two disagree. A selector's menu shuts on its pick | filters |
+| ✅ | 30zzl | 608 | BUG (Will, 2026-10-30) — some switches in the demo docs are squished, narrower than they should be, with the ON text hard against the thumb. Add a min-width to `sherpa-switch` so a row around it cannot shrink it. MEASURED: 39.2px in lesson 2, now 48 | look |
+| ✅ | 30zzm | 609 | BUG, found 2026-10-30 by a flake in `reforged-nav` (600) — an Escape straight after a menu opened was lost: its listeners started at the browser's `toggle`, a task later. MEASURED: 1 run in 3 failed, each with Escape before `toggle`. They start in `show()` now; 40 of 40 pass | bug |
+| ✅ | 30zzn | 610 | FILTERS (Will, 2026-10-30) — like the 'View Context' label in the View's filter toolbar, labels for Organise, Presets and Custom at the start of each of those sections, in every filter toolbar. The 'Show View Context label' setting becomes one toggle for showing the filter toolbar's section labels. Done: `sectionLabels`, `data-no-section-labels`, `/filters/sectionLabels`. My call: a View bar's own fields keep 'View Context' in place of 'Custom' | filters |
+| ✅ | 30zzo | 611 | DATA LAYER, Step 1 (Will, 2026-10-30) — the three heading bugs. One home: a field no scope holds lives where its reading is, so a preset's Tickets heading goes blue, not amber. The missing pin: ON and held by the View reads inactive, on a toolbar chip too, and blue while a preset holds it (D1). A held heading with no answer has a lighter ink (D2). A toolbar chip does not yet hear a preset on a field the View holds: Step 3. PLAN: docs/DATA-LAYER-PLAN.md | bug |
+| ✅ | 30zzp | 612 | DATA LAYER, Step 2 — wrong answers: a number against text, a Date against ISO text, "in the last 0", `#fetchedKeys` never cleared, `setQuery` rehoming the draft only, a search losing a Switch's kept sort, the grid's own test of answered. Export losing a second arrangement proved no bug. Tests: one-question-one-answer. PLAN: docs/DATA-LAYER-PLAN.md | refactor |
+| ✅ | 30zzq | 613 | DATA LAYER, Step 3 (Will: centralise) — `fieldStatus(field, scope)` and its test matrix; one door for what the View holds; `markHeld` the one writer, gated; headings say pending and failed; a parity test of toolbar chip, heading and panel section against the status. The other channels stay: see the plan. PLAN: docs/DATA-LAYER-PLAN.md | refactor |
+| ✅ | 30zzr | 614 | DATA LAYER, Step 4 — same input, same output: a clock named (`now`), a language named (`setCollation`), `FieldFacts.literal`, a replay test. Problems returned not reported waits for the engine plan. Tests: same-input-same-output. PLAN: docs/DATA-LAYER-PLAN.md | refactor |
+| ✅ | 30zzs | 615 | DATA LAYER, Step 5 — scale: hold 100k (D3), a page turn is a slice, a total first, a count asks one row or its keys, a tally its fields, one question once a walk, a row checked once, a key found once; a `plain` bench page. A burst measured fine. PLAN: docs/DATA-LAYER-PLAN.md | refactor |
+| ✅ | 30zzu | 617 | DATA LAYER — Will's decisions, 2026-10-30: D1 blue, D2 lighter, D3 100k with Web Workers much later, D4 keep, D5 lift 555's wait on 548: docs/DATA-LAYER-PLAN.md, the last section | explore |
+| ✅ | 30zzv | 618 | DEMOS (Will, 2026-10-30) — the settings in Will's :4200 session become Demos' default settings. DROPPED by Will, the same day: "Forget about the default settings stuff." Nothing was changed, and the temporary page is gone | feature |
+| ✅ | 30zzx | 620 | PRESENTATION (Will, 2026-10-30) — in the Show as menu, 'Default' reads 'Default - Type', and the other rows are the other presentation types: no row but the first sets a component to the type it is by default **DONE:** the provider writes `data-presentation-default` on each Show as host, and `showAs()` draws 'Default - Bar chart', then only the other kinds. A gauge splits nothing, so it offers Data Grid alone | feature |
+| ✅ | 30zzy | 621 | PRESENTATION (Will, 2026-10-30) — a chart swapped to a Data Grid has its cell and column heading filter controls on **DONE:** on, and Will again, 2026-10-30: scoped to the chart, they were reaching Customer Records' toolbar and columns. `setReading(slot, field, reading, { only })`: in the Query, in the chart's own scope, narrowing that grid alone; its state comes back from the source, and its sub-grids are told, so a sub-grid's cell shows its remove button. Kept while the grid shows. `T-a-grid-from-a-chart-keeps-to-its-card` | feature |
+| ✅ | 30zzz | 622 | PRESENTATION (Will, 2026-10-30) — a Data Grid swapped from a chart shows only the columns for its axes and its grouping, if any **DONE:** its first axis, its Group, a column per Secondary value and a Total (625); every other field only in a row opened on its records | feature |
+| ✅ | 30zzza | 623 | CHARTS (Will, 2026-10-30) — a chart's shape places its legend, in a CSS container query: wider than square, beside it; square or narrower, below it. In a layout grid its card's column and row spans decide, not its pixels. No attribute says where. **DONE:** `data-legend` and the legend's `data-orientation` are gone, from Demos and the Gallery too. The grid rules publish `--sherpa-layout-grid-col-span` and `-row-span`; `.chart-shape` is the box the query reads, and the chart tells its legend by a style query. Measured in Chromium 153, Firefox 155, WebKit 26.6. Records' cards (4x3) sit beside, the Dashboard's (4x4) below, and its line (12x4) beside. `T-a-chart-shape-places-its-legend` | feature |
+| ✅ | 30zzzb | 624 | PRESENTATION (Will, 2026-10-30) — a chart has its own Show as menu at the top right of its card, and can flip to a Data Grid; none on the Records page. **DONE:** 548's F4. Data Grid is in the menu. Records' three chart cards and the Dashboard's gauge and line are slots with the menu in their headers. It still follows Settings › Application › Layout › Show as, off by default (582) | feature |
+| ✅ | 30zzzc | 625 | PRESENTATION (Will, 2026-10-30) — a chart's grid has a Total for its count of X by Y, and says what is compared. **DONE:** a row a value of the first axis, a Total, and a row opens on its records. Measured: By status reads one field, status, and counts rows, so the customers are what is counted, shown when a row opens. Mean risk reads one field, health, so it shows Name and Health, and no Total (a mean). Customer as a true second axis, a Secondary: **Will, 2026-10-30: A, no.** The customers show when a row opens, and the chart stays as it is | feature |
+| ✅ | 30zzzd | 626 | GRID, minor (Will, 2026-10-30) — a sub-grid's column headings pass over the parent grid's sticky headings. A sub-grid's headings stick too, so its cells overflow under them. **DONE:** `isolation` on its cell, so they never draw over the parent's; they stay under the parent's as it scrolls, with its cells passing under them. `T-a-sub-grid-sticks-under-its-parent` | bug |
+| ✅ | 30zzze | 627 | GRID, minor (Will, 2026-10-30) — a sub-grid breaks out of its parent grid's width. **DONE:** it stays the parent's width and scrolls sideways for itself. CSS cannot also stick it to the parent (a scroll box on one axis is one on both), so its parent moves its headings, per frame. Measured: parent scroll width 468 of 468, sub-grid table 2240 inside 440 | bug |
+| ✅ | 30zzzf | 628 | GRID (Will, 2026-10-30) — a cell filtered in a sub-grid shows no remove button on hover: its state comes from the data layer. **DONE:** a chart grid's filter is in the Query, and its parent is told, so each sub-grid drawn again shows the cross and clears it. Records' own pivot already did, measured. Found on the way: a tall narrow donut drew an oval box, as a chart now has a true height; the ring takes its size from whichever axis runs out first | bug |
+| ✅ | 30zzzg | 629 | CARDS (Will, 2026-10-30) — a 'Show filter toolbar' toggle button in the header of containers in Records. **DONE:** `sherpa-container-header` draws it from `data-filter-toolbar`; a press asks, in `filter-toolbar-change`, and the provider shows or shuts its slot's bars and keeps that in the session (Demos persists `/cards/toolbars`). Chart cards start shut, so the chart keeps its room; Customer Records starts shown. Mean risk has none: a gauge's Primary, Group and Sort changed nothing on its one number and broke its title. While the panel answers for a bar its toggle goes. `T-a-card-toggles-its-own-toolbar` | feature |
+| ✅ | 30zzzh | 630 | CARDS (Will, 2026-10-30) — a header on the Customer Records grid container, with the toolbar toggle in it, and the presentation swap moved to it from the toolbar. **DONE:** Add customer and Find stay in a toolbar, now in the card's body. Show as is gone from `sherpa-toolbar`, which nothing else used it from | feature |
+| ✅ | 30zzzi | 631 | LOOK (Will, 2026-10-30) — the data grid toolbar's horizontal padding is halved. **DONE:** `sherpa-toolbar`, 8px to 4px; Records' is the only one in use | feature |
+| ✅ | 30zzzj | 632 | LOOK (Will, 2026-10-30) — a filter toolbar's upper padding reduced and lower increased, so they are balanced. **DONE:** measured in a chart card, 20px over and 4px under; half the body's top padding moves under a bar that leads it, so 12px each, as Customer Records' is. The Dashboard's cards too | feature |
+| ✅ | 30zzzk | 633 | CHARTS (Will, 2026-10-30) — Records' charts: Primary Status and Plan, Secondary none by default, so each segment is a count of customers. A legend's items are the Secondary; with none, the Primary. **DONE:** Will tried Customer as the Primary and then as the Secondary, and settled here, as 625's A. A chart's grid: a row a Primary value, a column a Secondary value where one is set, a Total | charts |
+| ✅ | 30zzzl | 634 | FILTERS (Will, 2026-10-30) — a setting to hide 'Primary', 'Secondary', 'Group' and 'Sort' from Organise chips; the icons remain. On. **DONE:** `provider.hideOrganiseLabels` writes `data-no-organise-labels`, and the word stays for a screen reader. Demos: Settings › Filtering › Hide Organise chip labels, on by default | feature |
+| ✅ | 30zzzm | 635 | CHARTS (Will, 2026-10-30) — a gap between segments and sections in all charts, and a smaller donut hole for room. Then: segments 1px with a thick border, sections 0.5px, thin. **DONE:** real space, in bars, slices, rings and gauge zones; a donut's hole is 0.55 of its radius, a gauge's stays 0.7. `T-a-chart-gap-is-real-space` | charts |
+| ✅ | 30zzzn | 636 | PANELS (Will, 2026-10-30) — a 'Pop in' button in the Overlay Panel's header: pressed, the panel goes into the right panel area as a fixed panel, whose header has a Pop out button that makes it an overlay panel again. On the Ask N-zo panel. **DONE:** `data-poppable` shows the button, `data-fixed` is the state, and a press reports `panel-pop { fixed }`. A real move to the shell's `panel-end` slot, so the area gives the width, the edge and the reflow. Pop out puts it back where it sat. With no room it floats, and goes back with room; the button shows only where a press can work. Demos keeps the choice in the session, so a reload holds it. `T-a-panel-pops-into-the-end-area` | feature |
+| ✅ | 30zzzt | 651 | CHARTS (Will, 2026-10-30) — sorting in a chart toolbar goes by count, for segments and sections. **DONE:** whole bars and slices already did; the pieces and parts inside each kept their field's order, and now sort by count too, each in its own colour still | charts |
+| ✅ | 30zzzt1 | 653 | CHARTS (Will, 2026-11-02) — a chart is always at least Primary by Secondary, and each axis shows as counts or as names, set per chart. With no Secondary, the Primary shows as names, as now. A legend's items are the Secondary. A toolbar can hide its Primary chip. **DONE:** `data-count-axis="primary"` (or `secondary`) on a bar or radial chart: that axis splits nothing, and each value of the other is the number of its distinct values there, in the chart, its legend, its highlight and its grid. Absent, both show as names, so no other chart changed: a counted Primary like Status would read as "how many statuses". Both charts declare `data-stack-field` now (`STACK_PROPS`), and a change to either asks again. `data-no-primary` hides a toolbar's Primary chip. `chartAxes` in `aggregate.ts`; 5 Node tests | charts |
+| ✅ | 30zzzt2 | 654 | DEMOS (Will, 2026-11-02) — Records' charts: Primary Customer, shown as counts, with its chip hidden from their filter toolbars. Secondary is each chart's second axis — By status → Status, By plan → Plan — and the Secondary chip still changes it. Needs 653. Replaces 633's final state. **DONE:** measured on :4200 — a bar a status, 8, 7, 8 and 8 customers; a slice a plan, 7, 7, 7 and 8; no Primary chip; Secondary on Status and Plan. A new Secondary changes the bars (Demos spec) | charts |
+| ✅ | 30zzzt7 | 658 | FILTERS (Will, 2026-11-02) — Primary, Secondary and Group never offer a field another of them holds: the Secondary's menu has no row for the Primary's field. Today it is greyed, or gone only while Hide is on (581). **DONE:** the toolbar's `#markChain` takes the row out whatever Hide says; a row it took out still comes back once no link holds its field | feature |
+| ✅ | 30zzzt3 | 655 | HIGHLIGHT (Will, 2026-11-02) — a hover's highlight is a broadcast between components, never through the data layer. A legend item or a chip says what it rests on; the provider sends that to each component that asked to highlight; each tests its own rows and draws its own match. Out of the data layer: `QueryContext.preview` and `previewed`, and the hover half of `DataSource.highlightFor`. A chip set to Highlight is State, and stays in the Query. A component may show the data layer's counts, and highlights only from its own. [plan-652](plan-652-service-worker.md). **DONE** ([plan-655](plan-655-highlight.md)): the provider holds the hover (`hovered`, `hover()`), decides who it reaches (`#lit`: across, a View driver, its scope, a chart's own part) and draws again only what changed — a summary from its last rows, a grid by `drawHighlight`. A bar's preview request goes to `bindSource`'s new `hover` callback. The data layer only answers what a hover matches, when asked (`highlightOf`, `highlightTest`). Deleted: `QueryContext.preview`/`previewed`, `compile`'s highlight, `DataSource.highlight`/`highlightFor`/`highlightAcross`, the binding's highlight key. Nothing loads; 191 + 49 specs green | data |
+| ✅ | 30zzzt4 | 656 | BANNER (Will, 2026-11-02) — the banner is a variant of `sherpa-callout`: `data-type="banner"`, as Figma's Banner (62:274) — one row, full width, a 10px status icon, a 14px message and an optional link, a close button, 8px by 16px padding, radius 4. It can close itself after a time, with `data-duration` as `sherpa-toast` names it; off by default (Will, 2026-11-02). The callout stays the default — an icon column, a heading, a 12px body and an action, 16px padding, radius 2 (27:733). Figma: the two become one Callout set with a Type axis. The outlet's Unable to reach data banner moves to it. Code never had a `sherpa-banner`: the name map lists Figma's Banner with no code. **DONE:** `data-type="callout|banner"` and `data-duration` on `sherpa-callout`; a banner's heading leads its words on the one row, and a link in them is the link colour. The outlet's two reach banners are banners now, and its own shadow on them is gone. Figma (Will: A): one set, Callout 1686:30452, Type=Callout and Type=Banner; all 32 instances still linked; the Banner page deleted. Not as Figma: the close stays transparent, as a swap cannot remove `data-look` | feature |
+| ✅ | 30zzzt8 | 668 | BUG (Will, 2026-11-02) — an Advanced filter's Equals row shows no Select of the field's values. Check every other condition row too. The menu lists them only when it has its own value rows (`#typesItsPicks`), else it types: find which fields lose them. **DONE:** measured every Records heading: text lists (Owner, Email), bands (Health) and dates were right; NUMBERS typed their Equals, as TODO 112 had made them. An Advanced number now keeps its distinct values (`listed`, apart from `options` and its domain), and its Equals and Not equals pick from them — Seats 78, Spend 100, Tickets 9. Its Simple body is unchanged; `>`, `<` and Between stay typed; Name (Advanced only) still types. `T-one-number-is-a-pick-under-equals` | bug |
+| ✅ | 30zzzt5 | 657 | CHARTS (Will, 2026-11-02) — a pie's gaps taper to nothing at the centre: offset each segment's point so the gap stays one width. **DONE** `0950acd4`: each edge moves in square to its boundary, not by an angle, so a pie slice's point sits off the centre on its middle line; a slice over half the circle keeps a hub the gap's width. Donut and gauge gaps are one width too. `T-a-chart-gap-is-real-space` | charts |
+| ✅ | 30zzzt8 | 660 | CHARTS (Will, 2026-11-02) — Records' Name, Email, Customer and Site each name one thing, so a chart's Secondary and Group never offer them; the Primary is set by the page. And an app sets which fields each axis offers, for any component with axes. **DONE:** `axes` in a page definition, on the source or a scope: per axis (`primary`, `secondary`, `group`) an `available` and an `unavailable` list, for every view or per view (`grid`, `chart`); the last to name an axis wins it whole, and it never adds a number or a date. `describe()` sends a Secondary list of its own, `secondaryFields`. Records' charts make the four unavailable to Secondary and Group. `QueryContext.declareAxes`/`axesOf`, `offerAxis`; 3 Node tests, a Demos spec | feature |
+| ✅ | 30zzzt9 | 661 | BUG (Will, 2026-11-02) — Group on a chart's Data Grid presentation added a column to the parent grid, and split its rows by group. It groups the rows of each row's sub-grid instead. **DONE:** the provider's `#madeTable` draws a row per value of its first axis, over every row, and hands each sub-grid its rows a group together, and their groups, as a grid's pivot does (`opened()`, shared with `#pivotOf`). `T-a-grid-from-a-chart-keeps-to-its-card`; a Demos spec | bug |
+| ✅ | 30zzzta | 662 | GRID (found in 660) — a grid's heading Group button follows the app's `axes` too: a field whose Group is unavailable shows no Group button in its heading. Today the heading offers any list column. **DONE:** the provider hands a grid its scope's Group offer (`groupOffer`, `axesOf(scope, 'grid').group`) with its rows; a heading offers Group only for a list column that offer leaves (`offerAxis`), and passes it to its rows' sub-grids. A grid spec and a provider spec | feature |
+| ✅ | 30zzztb | 663 | CHARTS (Will, 2026-11-02) — None is no option for a chart's Secondary: the chart needs one. **DONE:** in a chart's slot, a Secondary chip that holds a field is persistent, as the Primary is: no None row and no Clear. A grid's Secondary keeps None, which turns its pivot off. A chart with no Secondary yet keeps None until one is picked (665). Its body still turns it off, as the Primary's does: 667 makes a chip that cannot toggle refuse it | charts |
+| ✅ | 30zzztc | 664 | CHARTS (Will, 2026-11-02) — show a chart's Primary chip in its filter toolbar again, inactive: the data set's definition sets it. Today `data-no-primary` hides it (653). **DONE:** renamed `data-fixed-primary` (no alias; LEXICON §11): the chip shows, and the toolbar sets `disabled` on it, so it wears the inactive pin and takes no press. Demos' Records charts use it; its spec reads the chip shown, disabled, on Customer | charts |
+| ✅ | 30zzztd | 665 | CHARTS (found in 663) — the Dashboard's two charts have no Secondary, so their Secondary chip keeps None until a reader picks one: with no field to tick, a persistent chip would show the first field as picked while the chart does not stack. ❓ Will: A (my pick) — give each Dashboard chart a Secondary in its markup, so every chart has one and no chip ever offers None; B — a chart may have none, and its chip offers None until one is picked, as now **CLOSED, no change** (Will, 2026-11-02: "Already a thing"): a reader picks a Secondary with its chip | charts |
+| ✅ | 30zzzte | 666 | BUG (Will, 2026-11-02) — turning a Data Grid's Secondary chip off clears its field. Off is not gone: the chip keeps its field, and on again brings the pivot back. **DONE:** the chip's body sends no field, as None does, but None clears the chip's column first; so the toolbar tells them apart, and off asks `present(scope, { secondary, off: 'secondary' })`. The Query keeps the field, `presented()` shows no Secondary (the definition's neither), and `describe()` names it as `secondaryOff`, so the chip is drawn off and still names it, and the chain keeps it from the other links. On again: the pivot is back. A chart's Secondary is required (663), so this is a grid's alone. 2 Node tests, a spec | bug |
+| ✅ | 30zzztf | 667 | FILTERS (Will, 2026-11-02) — a chip whose on state cannot be toggled (a persistent chip: a chart's Primary, a required Secondary, a selector) never draws its left half, the field label, in the active style. Only its right half does, when it holds a value. **DONE:** a chart's Primary and a held chart Secondary carry `data-persistent`, as the View chip does; a pin gives a persistent chip's value half the on look (`.caret`, `@filter-on`) and its label none; a Group-kind persistent chip's body opens its menu, never turns it off. Measured in pixels, Chromium and Firefox: the label white, the value half the on fill. `T-persistent-chip-is-a-selector`; `reforged-chip-value-border.spec.ts` | feature |
+| ✅ | 30zzztg | 669 | FILTERS (Will, 2026-11-02) — an app setting: a chip's active style marks only what can toggle. On, a chip's left half (its field label) still gets the active border and fill, unless it cannot be toggled (667); its right half (the value menu button) gets the active border only. On by default in Sherpa Demos. Will: to show that the on state is a toggle. **DONE:** a page setting, as On/Off shapes is: `html[data-filter-value-border]` sets `--sherpa-filter-value-surface` and `-content` to the default Style's, and an on chip's value half reads them, keeping its look's border. An icon-only chip (all value half) and an AI one keep theirs. Demos: Settings › Appearance › Accessibility, on by default (`/a11y/filterValueBorder`). Measured in pixels: the value half white, its border the on purple | feature |
+| ✅ | 30zzzth | 670 | CHARTS (Will, 2026-11-02) — with "Show legend as filter chips" on, a chart's legend items show as filter chips in that chart's filter toolbar, and its legend and legend items are hidden. **DONE:** the legend's part is declared `shownIn` its slot where the card has a filter toolbar: the slot's `describe()` lists the part's filter with `answeredIn`, the toolbar's requests for it name the part's scope, and the bar is drawn its answers, counts and limits — so a pick still narrows that chart alone (the Records grid untouched). The chart takes `data-no-legend` (`FRAME_PROPS`: bar, line, gauge, radial) and keeps no room for it. With no toolbar the legend draws its own chips, as 586. A narrow card folds the chip into its bar's menu, as any chip that does not fit. `T-a-chart-scope-is-its-legend-field`; 3 Node tests, a Demos spec | charts |
+| ✅ | 30zzzti | 672 | PANELS (Will, 2026-11-02) — while a filter toolbar is in panel mode, its card's show/hide filter toolbar button, in the header, is inactive, so a press cannot hide the panel by accident. Today the button is hidden (Demos spec "while the panel answers for it, a card's toggle goes"). **DONE:** `data-filter-toolbar` takes `panel`: the provider writes it while every bar in the slot is in panel mode, and the header shows its button, `disabled`. `off` (no bar) still hides it. `T-a-card-toggles-its-own-toolbar`; the Demos spec reads it shown and disabled | feature |
+| ✅ | 30zzztk | 674 | CHARTS (Will, 2026-11-02, after 670) — legend items as chips are BOOLEAN chips, one per value, each with its legend swatch for an icon and a badge for its count. **DONE:** a legend in its card's bar is a chip laid out `data-layout="values"`: its values alone, a value chip each (swatch, name, count badge), no heading or menu button. The badge is its chart's number for that value, as its legend would say it: the provider hands the bar the legend's numbers (`drawCounts`). The row is labelled by its field and, short of room, folds whole into the bar's Edit menu, as any chip does (675). A Demos spec reads each badge against its bar | charts |
+| ✅ | 30zzztl | 675 | FILTERS (Will, 2026-11-02) — a filter toolbar keeps its chips on ONE row; short of room they fold into the overflow menu button. **DONE:** 674's own row and wrap are gone: a legend's value chips sit in the run and fold whole, as any chip. A bar with `data-no-actions` (a chart card's) now shows Edit alone while chips are folded (`data-folded`), so they are never out of reach. The Organise chips still never fold (619) | filters |
+| ✅ | 30zzztm | 676 | FILTERS (Will, 2026-11-02) — hide a filter toolbar's section labels in narrower containers, as a chart card's. **DONE:** the labels show only where the bar is wider than 760px, its actions' first fold (`@container qf-bar`); a chart card's bar keeps that room for its chips | filters |
+| ✅ | 30zzztn | 677 | FILTERS (Will, 2026-11-02) — a chip's icon and count badge go with it into the overflow menu, each in its place on the item. **DONE:** a menu item takes an `icon`, drawn before its label; a folded chip's row carries its chip's icon, and its count badge is the chip's own (`#badgeOf`), kept current as results change. A menu with `data-swatches` leads each value row with its swatch: a chip that lays out its values (a legend's) sets it, and gives its menu its value counts too, so folded, its rows are its value chips. The swatch is one shared class now, `.sherpa-swatch` (sherpa-icon.css), which the chip uses too | filters |
+| ✅ | 30zzzto | 678 | FILTERS (Will, 2026-11-02) — an overflow menu holding ONE field's values alone shows them in one menu, not two levels. **DONE:** where one chip is folded and Edit would list nothing else, Edit opens that chip's own menu, at Edit: its values, swatches and counts, one level | filters |
+| ✅ | 30zzztp | 679 | TESTS (found in 652 S6c, 2026-11-02) — Demos' `reforged-add-customer-form.spec.ts:46` "Edit shows the record's plan" fails about 2 runs in 8 in Firefox (and `:73`, "a save the store refuses", 4 in 6 on 683's base — measured), with the Service Worker blocked too: the Edit dialog never opens, so the `row-action` it sends comes before Records listens. Not the worker and not S6c (measured). Find what Records awaits before it binds `row-action`; the spec should wait for that, never 50 ms. **DONE 2026-11-02:** both tests `settle()` first — rows can draw before Records listens; 8 of 8 each in Firefox (Demos 0b3afc9) | tests |
+| ✅ | 30zzztq | 680 | FILTERS (Will, 2026-11-02) — in narrower containers the four Organise chips collapse to their icon buttons: no field or value label; the tooltip says them. **DONE:** at a bar of 760px or less (`@container qf-bar`, the actions' first fold) each Organise chip's name and value are hidden — kept for a screen reader — and its tip leads with its own name: "Sort: Plan, ascending", "Group" while off. A chart card's bar now fits its Organise chips, its legend chips at 737px, and its Filters button at 470px | filters |
+| ✅ | 30zzztr | 681 | FILTERS (Will, 2026-11-02) — the Edit button reads "Filters"; its pencil stays. **DONE:** the bar's button, and a panel column's own too (Will, 2026-11-02: "Filters") | filters |
+| ✅ | 30zzzts | 682 | FILTERS (Will, 2026-11-02) — for room, hide the Primary chip while it is inactive (a chart's fixed Primary). **DONE:** in a bar of 760px or less, the narrow one where the Organise chips are icons (680), a disabled Primary chip is not shown; wider, it shows, inactive, as 664 | filters |
+| ✅ | 30zzztt | 683 | CHARTS (Will, 2026-11-02) — **DONE 2026-11-02:** S1–S5. A status field is worked out by the data; Health is one, over `score` and open tickets; a gauge's zones and legend come from a status field; `thresholds` and `band` are gone (S5, net −177 lines). Status fields in presets and Organise: 689. [plan-683](plan-683-status-field.md), D1–D4 all A (Will). Will moved it ahead of 652's S10 (2026-11-02). S1 ✅: `statusFields()` — the data works each row's status out, and a filter on it reaches the store as conditions on the fields it reads. S2's sherpa-ui half ✅: each value wears its look as a swatch, and a grid cell draws a status's icon and label. S3 ✅: a gauge's zones and legend come from the status field. S4 ✅: Demos' Health is a status worked out from score and open tickets; the grid shows its icon and label. Next: S5, the cleanup (retire `thresholds` and `band`); then status fields in presets and Organise. Then a look at status fields in presets and Organise criteria too. Will, again: Health is worked out from OTHER fields in the data (Demos: `score` and `openTickets`), and the grid's Health column shows its status labels, never numbers. A gauge's legend items and chips are numeric RANGE filters (a zone's span of the value), joined with one or more conditions on other fields. Unify them with how the other charts' legend items and chips work (670, 674: a boolean chip per value — swatch, name, badge), so a gauge reuses what was built for them: the toggles, the Filter Toolbar's chips and folding, the highlight (655, 479) and the counts. Explore first: what a gauge's zone filter holds today, and what a range chip needs that a value chip does not. **Will, 2026-11-02 — the way to do it:** Health becomes an ADVANCED FIELD in the data: a status field whose every value is defined by conditions on OTHER fields (as an Advanced filter is), e.g. At risk = health below 60. Agnostic of "health": the same for any status field later. The data layer works out each row's value, so no UI component calculates or changes it; the gauge's legend chips are then plain value chips of that field. Today: `health` is a number with `thresholds` (TODO 150, `T-a-threshold-is-a-fact-of-the-field`), filtered by `band`, and the gauge turns it round with `data-invert`; a derived field was 150's option B | data |
+| ✅ | 30zzztu | 684 | FILTERS (Will, 2026-11-02) — no "(Default)" suffix in a filter chip's value label: it is useful only when picking from a menu. **DONE:** a menu item takes a `suffix`, drawn after its label in its row only; a chart chip's Primary gives its definition's field the suffix "(Default)", and the chip names its value from the item's own label, so its face reads "Customer", its menu "Customer (Default)" | filters |
+| ✅ | 30zzztv | 685 | DOCS (Will, 2026-11-02) — once the Service Worker work (652) is done: revised diagrams and explanations, in markdown, of how a Sherpa app is built — its definition, pages, provider, router, shell and components — and how the data layer works with the presentation layer: stores, the worker and its held sets, the request protocol, the Query, bindings and what each component asks and is given. Revises `docs/history/STOCKTAKE-2026-10-19.md` and `docs/history/stocktake-runtime-drafts/` (app, view, component). Diagrams go in the doc, never raw in chat. **DONE 2026-11-02:** [ARCHITECTURE](../ARCHITECTURE.md) — the parts, the files, page load to first rows, a read, a write online and offline, what is new and who hears it, and what looks odd on purpose; for Will to read | docs |
+| ✅ | 30zzztw | 686 | CHARTS (Will, 2026-11-02) — the gap between sections within a chart segment is 1px, not 0.5px. **DONE:** a bar's parts stand 1px apart (CSS `gap`); a radial's `SECTION_GAP` is 1, its outline its own constant now, `SECTION_OUTLINE` 0.5, and each part moves in by half the gap and the half of its outline outside it, as a segment does. The outline stays thinner than a segment's. `T-a-chart-gap-is-real-space`; the radial spec reads the gap 0.4px either side of the edge | charts |
+| ✅ | 30zzztx | 687 | DATA LAYER (Will, 2026-11-02, after 683; pick A) — **DONE 2026-11-03: U1–U4.** **U1 ✅ 2026-11-03:** a page holds its news in one `Updates`, `provider.updates`; every listening element and Demos' Notifications draw from it. **U2 ✅ 2026-11-03:** the app server says what is new on one feed (`updatesFeed()`), and one tab follows it (`followUpdates()`): a new build's banner shows in 576 ms with no poll. **U3 ✅ 2026-11-03 (Will: A):** the feed's replay is the catch-up; a follower that missed more than it keeps hears one gap and checks every store once. **U4 ✅ 2026-11-03:** every tab polls only while no feed answers; Demos calls `followUpdates()` alone. [plan-687](plan-687-news-by-push.md), U-D1 and U-D2 both A (Will): Server-Sent Events; a store's mark from its own History. News by PUSH, not polling: a Service Worker cannot find news by itself (it is stopped when idle), so the APP'S SERVER says it on one small "what's new" feed — a new build; store X changed — held by ONE tab under a Web Lock (as S8's `shareFeed`). Its messages are tiny notices (what, and its mark), never the data. On a new build that tab asks for the new worker, which takes every tab over; on a store change the worker checks behind, and its rows wait (S6c). A tab that comes back, or a feed that reconnects, asks once "anything since my mark?" (Will: a "there is new stuff" check first) — the build and a version per store, or nothing; data is pulled only when taken, and only what moved (`changes(since)`). One UPDATES object per page in the data layer holds what is new and what this tab dismissed, fed by a browser-layer connector (channels, the takeover, the feed — or `watchForUpdates` polling where the server has no feed); the provider binds listening elements to it. Sherpa ships a small server helper for the feed; Demos' server shows it. Web Push stays for real alerts: Chrome shows a visible notification for every push | data |
+| ✅ | 30zzzty | 688 | FILTERS (Will, 2026-11-02) — "In the last" and "In the next", in Advanced filters, get a Years unit. **DONE:** `Duration['unit']` takes `year` (store.ts) — twelve months from the same day in `durationSpan`, so every clause, face and menu that reads the type takes it; the menu's unit list offers "years"; the page schema allows it. Node tests for its span and its words | filters |
+| ✅ | 30zzztzm | 690 | FILTERS (Will, 2026-11-03) — **DONE 2026-11-03: S1–S4.** S4 (Will): "Place Solo button in Menu Header" — an icon-only toggle before the Advanced button, pressed while soloed; Demos turns soloing and it on by default. [plan-690](plan-690-filter-solo.md), D1 and D2 both A (Will). The Query solos a filter and ends it, and never exports it; a chip's menu and a section's ⋮ offer Solo and Remove soloing where the app allows it; a soloed chip wears the `solo` icon and the `info` look (the same blue as a preset's — refine in Figma), and its body ends it. Demos: two switches on Settings › Filtering. A setting, "Allow filter soloing". On, each filter chip's and panel section's menu has "Solo this filter": picked, every other filter is IGNORED — shown inactive, as switched off, its value kept (off is not gone) — and that one filter is in a Solo state, styled apart. An icon may say it is soloed: audio and video software uses an S in a box outline. Clicking the LEFT half of a soloed chip, or the menu's "Remove soloing", ends it, and every filter the solo made inactive is active again — only those. Will: *"When this menu option is clicked all other filters are ignored (shown as inactive) while the target filter is put into a Solo state with a distinct styling for this state."* **Will's answers, 2026-11-03:** (1) a solo RESPECTS ITS SCOPE — and a second setting, "Solo across all scopes", so user tests can compare the two; (2) it is for ONE TAB, a temporary draft, never saved; (3) the S-in-a-box icon is drawn on Sherpa-UI's Icons page in Figma, styled as the other icons — DRAWN 2026-11-03: `solo`, node `1720:30462`, beside `function` in the custom row; its SVG goes into `src/icons/` with the row's code | filters |
+| ✅ | 30zzztzn | 691 | ACCESSIBILITY (Will, 2026-11-03) — **DONE 2026-11-03: S1–S4.** [plan-691](plan-691-action-descriptions.md), D1 and D2 both A (Will). A menu an action button opens says what it does, under its heading — Sherpa's own buttons say theirs; with "Also show descriptions in Tooltips", a button's and a filter chip's tip reads in lines: Name, Description, Value, the rest; a field says what it is in its page definition. Demos: both switches on Settings › Accessibility. A setting, "Show action descriptions in menu headers", ON by default: every menu an ACTION BUTTON opens shows a description as a subheading in its header. A second setting that depends on it (off, and disabled, while the first is off), "Also show descriptions in Tooltips": on, a tooltip reads, in this order — the Name; the Description; then the Value; then any other text a component adds for its own reasons. Will: *"When active (on by default) show a description subheading in the menu header for all menus triggered by action buttons."* | a11y |
+| ✅ | 30zzztzp | 693 | CHARTS (Will, 2026-11-03) — 1px of padding in a chart segment, to inset its sections (from grouping) a little, for readability. **DONE:** `SEGMENT_PADDING` 1; a bar's parts are inset 1px inside its outline, a piece's too; a ring's parts move in past the segment's outline by 1px, at its rim, its hole and its own edges. A pie's point and a band too thin to keep a part are not padded; a whole ring's first and last parts keep a section's gap at its start. `T-a-chart-gap-is-real-space`; both chart specs read the padding | charts |
+| ✅ | 30zzztzs | 696 | CHARTS (Will, 2026-11-03) — the gauge has a show/hide filter toolbar button in its card's header, and its legend and chips work as the other charts' do with the filter toolbar. **DONE:** Demos: Records' Mean risk card has the header's toggle and a hidden bar, as By status and By plan; Dashboard's Storage used card has a bar, as its bar and donut. With "Show legend as filter chips" on, the gauge's legend goes and its zones are value chips in its bar (670 did the wiring; the card had no bar). A gauge draws one number, so its bar offers no Primary, Group or Sort — they did nothing (Will, 2026-11-03): a chart that asks `shape: 'aggregate'` binds `whole`, and its slot describes `whole` with an empty Group. Node test `one-number-offers-no-axis`; the Demos card-toolbar spec reads the toggle, no Organise chip, and the zone chips; the whole Demos suite passed in Chromium. Known: with chips off the gauge's bar is empty, so its toggle shows nothing (❓ below); Records' inverted gauge lists its legend Healthy → At risk, and its chips At risk → Healthy, Health's own order | charts |
+| ✅ | 30zzztzt | 697 | FILTERS (Will, 2026-11-03, after 696) — the LEFT half of a filter chip that cannot be toggled still takes the ACTIVE border colour, but not the active fill, so the two halves read as one chip. Will: *"This will make them a bit more visually cohesive."* **DONE:** the pin on an on `data-persistent` chip (the View chip, a grid's Primary) covers both halves now (`state-pins.yaml`), and its field half keeps the default Style's fill and ink; both halves are 1px. A disabled one (a chart's fixed Primary) still wears no on look. Measured on Records: the View chip's halves read the same pink border on white; a chip that toggles is unchanged. The chip-value-border spec reads the field half's border in pixels | filters |
+| ✅ | 30zzztzu | 698 | FILTERS (Will, 2026-11-03, after 696) — the checkbox in a filter chip, which makes its toggle accessible, is too small. **DONE:** 16px (`--sherpa-display-mode-size-sm`), a step over its 14px text; it was the text size, 14px (503). The chip stays 24px tall, 4px clear above and below the box. Bar chips, panel values and legend chips share it; a grid tag's stays 12px. The toggle-shapes spec reads 16 by 16 | filters |
+| ✅ | 30zzztj | 673 | TESTS (found in 667, 2026-11-02) — `reforged-chip-tips.spec.ts` "a RESET leaves a date chip with no value" expects `/^2 \S+ 2026$/`, and the chip reads "02 Nov 2026": it fails on any day 1–9 of a month. Fix the test or the date face, whichever is wrong. **DONE:** the test was wrong — a day reads with two digits, "03 Sep 2026" (`formatDate`, `T-a-date-reads-one-way`); it now pads the day | bug |
+| ✅ | 30zzzu | 652 | DATA LAYER (Will, 2026-11-02) — **DONE 2026-11-03: S1–S10** (S9 stopped by its own rule); the follow-ups are in the architecture review, §4 (TODO 695). A Service Worker host for the data layer: offload work, run async and offline. [plan-652](plan-652-service-worker.md). The data (stores, held sets, the kept copy, remote reads and writes, feeds, push, the outbox, the app's files) in one worker for the app; State (the Query) and presentation per page. The worker sees no presentation: each component computes what it draws from its answers (Will's second pass). One `handle()`, three hosts: the page (the fallback), the worker, a server (170). Perks, all yes: fast loads and offline use, a fake backend, one connection for all tabs, push, install, background sync. Update notices are heard, never ordered: a banner (656) registers, Refresh data takes the update in. **D1 to D6 are A** (Will, 2026-11-02): Refresh data takes in data only; a new app version is a banner the reader can dismiss and an item in the App Header's Notifications menu that stays; a component counts in the binding it asks for. S1 ✅: `createDataHandler`, with a `POST` fallback. 655 ✅, 656 ✅. S2 ✅: `RequestStore` — Demos' Records reads every row by request, through a handler in the page. S3 ✅: `sherpa-ui/worker` keeps the app's files — Demos opens offline in all three engines and installs. S4 ✅: the worker answers Records' data for every tab, offline too (`serveData`, `openWorkerStore`; D7: a worker cannot `import()`, so the app's worker script imports its stores). S5 ✅ (reshaped, Will: A; D8: A — still remote): one held set of a remote store in the worker for every tab (`HeldStore`), the fake backend `fakeRemote` run there; tab two reads in ~1 ms where tab one waited 805 ms. S6a ✅: a change in one tab shows in every other, through the worker's channel. S6b ✅: what is new is heard — a banner that listens shows; a new version is also an item in Notifications that stays. S6c ✅: a change on the server waits — no row moves under the reader; the banner shows, and Refresh data takes it in. S7a ✅: a save made offline shows at once, waits on the device, and is sent once when the server is back — on Chromium by Background Sync too. S7b ✅ (D9: A): a save made offline that loses to a newer change is dropped; the worker keeps it as a notice until a page has seen it — a banner, and a Notifications item that stays until picked. S8 ✅: one live feed for every tab — the tab holding a Web Lock opens it, and the next tab takes over when it shuts (a Service Worker is stopped when idle, so it cannot hold one); a push names a store, the worker checks behind, and the banner shows. S9 measured at 100k rows: the copy from the worker is not the cost, so columns stop; two fixes on the way (a chip's labels were rows × rows: 4 minutes → 4–5 s; the held store now sends only the fields asked: 57 → 20 MB an act). D10 ✅ (Will: A): a field with more than 200 values filters by condition alone — at 100k, 4x: LCP 13.5 → 5.0 s, a preset pick 3.6 → 0.36 s. S10 ✅: a read is a `QUERY` with a body, falling back to `POST` where refused; `RestStore` keeps `GET` by default (D11: A, Will). Next: 687, news by push; then 685's diagrams | feature |
+| ✅ | 30zzzo | 637 | RECORDS (Will, 2026-10-30) — the Customer Records grid's default Primary is Name, with no default Secondary. **DONE:** as its definition already said, after a try of Customer. Shown as a chart it starts on Status | feature |
+| ✅ | 30zzzp | 638 | BUG (Will, 2026-10-30) — a chart's highlight, on hover of a legend item and other triggers, no longer covers its mark: it starts at 0 on the Secondary axis, not at the start and end of its segment or section **DONE:** a summary now says what the driver matches at every level, and each piece, ring and section draws its own, from its own start. A whole bar or slice still fills from its base. `T-a-match-marks-its-own-mark` | bug |
+| ✅ | 30zzzq | 639 | FILTERS (Will, 2026-10-30) — the Secondary axis chip on toolbars has a right menu button, as Group and Sort have. **DONE:** a grid's Secondary is there from the start, with that button; it no longer waits for a Primary to be picked. Neither chip is small any more (641) | feature |
+| ✅ | 30zzzr | 640 | BUG (Will, 2026-10-30) — the inactive filter button in the Site column's header differs from the Customer column's while the View holds them: make it match, with no new styling. **DONE:** with a Customer answered, Customer's was on and Site's off. A tiered child's heading is now on as its parent's is, in the looks they already had | bug |
+| ✅ | 30zzzs | 641 | FILTERS (Will, 2026-10-30) — Primary, Secondary, Group and Sort chips still show their value label when the field label is hidden. **DONE:** only the field's name hides; a grid's chips are no longer small until picked, so that state is gone from the toolbar, the filter host and the data source | feature |
+| ✅ | 30 | 321 | BUG (found reading, 289): the outlet keys a Context's saved Views by its name, the provider by its definition's id — equal in Demos, not promised. Will, 2026-10-27: A. DONE 2026-10-27: `open()` takes a `key`, and the outlet passes the Context's name: Views, saved filters, the kept Query and drafts are all kept under it. The `outlet-view-key` report is gone | bug |
+| ✅ | 31 | 323 | BUG: hairline gaps between the sparkline's segments — Will: close them with CSS `round()` (PRINCIPLES' old open item 3) | bug |
+| ✅ | 32 | 384 | BUG — a date menu's header is misaligned again: row 1 the title and the f(x) chip, row 2 the Month/Year group; both rows the menu's full width (Will, for later). Probed 2026-10-27 in Demos Records (the View's Date chip, one month and a range): already right — the title left and f(x) at the end on row 1, the Month/Year group the full width on row 2. Nothing to change | look |
+| ✅ | 33 | 390 | FLAKE — Demos `reforged-settings-overlay.spec.ts` ("leaving Settings by the back arrow…") fails ~1 in 40 in WebKit: Settings does not open (`settingsOpen` stays false). Same rate on 366 step 17's build, so not 366. Also seen 2026-10-27, twice: Demos `reforged-a-site-picked-shows-everywhere` in WebKit, passing on retry. Measured 2026-10-27, idle machine: 1 in 40 (Settings never opened — the click was lost), then 0 in 120 (all four ways out) and 0 in 60 (a scripted loop with Navigation-API logging). Load-bound, as 390 said; next time, run it with `--trace=retain-on-failure` | tests |
+| ✅ | 35 | 417 | LOOK, later — Discard wears a trash-can icon: the bar's and the panel's icon-only Discard, and leading the label on every menu footer's Discard (Will, 2026-10-22). Done: `trash` leads every Discard — the bar's, a portrait scope's and the flat View row's Discard all, a field's own, and both menu footers' | look |
+| ✅ | 37 | 287 | Phase 6 — split `data-source.ts` along its seams | refactor |
+| ✅ | 38 | 288 | Phase 6 — one copy of each data helper | refactor |
+| ✅ | 39 | 291 | Phase 6 — faster: one batch per report, a counts cache, `Store.distinct`, fewer clones | perf |
+| ✅ | 40 | 341 | DATA (Will, 340): a component — chart, metric, grid, list — exists in the data layer only as a TYPE, never as a term in how it shapes or holds data. Will, 2026-10-27: 1 A, 2 A, 3 B. DONE 2026-10-27: a scope arranges when a PAGE of rows is drawn in it (`pagedIn`: a bind given `rows: 'page'`, not steer-only), never because a grid or a list is; `shows` / `ScopeShows` / `DataAsk.shows` are gone from the asks, the binds and `describe()`, which names a scope's component by its tag only. The colour words are 514 | refactor |
+| ✅ | 41 | 293 | Phase 8.1 — the doc set: a TRAPS index, TODO's head, the reviews to history, the rules doc, CLAUDE.md to pointers | docs |
+| ✅ | 42 | 339 | FIGMA (found reading, 336): live bindings to deleted variables, 56 hidden collections still pinned, and 18 text styles bound into one. Will, 2026-10-27: "Leave 339" — the file stays as it is; closed with nothing done | figma |
+| ✅ | 43 | 492 | TESTS (found in 491) — no type check covers `test/e2e/`: 220 old type errors sit in the specs (129 of them only a missing `/dist/` module type). A `tsconfig` for the specs, the errors fixed, then a gate. Done 2026-10-27: `tsconfig.tests.json` maps `/dist/*` to the source (not `tsconfig.json`: Playwright reads that one and would rewrite the imports a spec hands the browser); 261 errors to 0 across 30 specs — casts, unused helpers, a stale `await src.ready`, a fallback import of a file that never existed; `npm run type-check:tests`, ~3s, in the pre-commit hook | tests |
+| | | | **Waits on Will** — a ruling, a screenshot, Figma, or a test run | |
+| ✅ | 33 | 413 | BUG — the View scope's chips show no count badge in the filter panel (Will, 2026-10-22) | filters |
+| ✅ | 34 | 302 | Phase 5 — the filter family's last frame waits, tried one by one in Will's next test run | refactor |
+| ✅ | 35 | 311 | Phase 5 — 285 part C's timing step: the grid row, bar chip, panel chip and menu condition row through clone(); then upgradeClonedIcons goes. Waits for Will's test run | refactor |
+| ✅ | 36 | 315 | Phase 5 — 284's calendar: one tab stop per grid with the date keys. Waits for a measured run (does a cell's tabindex=-1 hide its inner button?) | a11y |
+| | | | **Later — held or deferred by Will, or big and last** | |
+| ✅ | 39 | 369 | FILTERS — TIERED values: a value can hold child values (a Customer's Sites). Its chip's menu is a TREE with checkboxes: pick a parent, a child, or both. Generic; Demos' Customers first (Will) | filters |
+| ✅ | 41 | 364 | BUG — a Button's tooltip is not in the top layer, so a card or another component clips it; ONE tooltip system for every component (Will) — DEFERRED, much later (Will, 2026-10-20); PRIORITY now (Will, 2026-10-29). DONE 2026-10-29 by a worktree agent: a tip shows only from the top layer (`.sherpa-tip:popover-open`), its anchor found on the composed path, so a badge or slotted label no longer lets the card clip it; ONE system — `sherpa-tooltip`, the chip's count tip and the grid's tag tip are the shared `.sherpa-tip`; net −249 lines. Open choices in 538 | bug |
+| | | | **A — In hand** | |
+| ✅ | 0 | 344 | A component's markup, default variants and text come from its `.html` and `.css`, never from TS (Will, 2026-10-19) | refactor |
+| ✅ | 0a | 345 | A remote source fetches each field's values on demand, and caches them, instead of reading its whole set (340). Plan: `docs/history/plan-345.md`. Will: D1 A, D2 B + an "unable to reach data" banner. All nine phases done 2026-10-22; 369's remote part is 392 | explore |
+| ✅ | 0b | 346 | FILTERS — a View field offers ONE "Send to <component>", not one per scope that could take it | filters |
+| ✅ | 0c | 347 | FILTERS — the View scope applies first; a component scope works only within that subset of fields and values | filters |
+| ✅ | 0d | 348 | FILTERS — a chip's count is its matches within the subset: its scopes and the filters BEFORE it count | filters |
+| ✅ | 0e | 349 | FILTERS — a menu's viable fields and values come from the same subset: scopes and preceding filters | filters |
+| ✅ | 0g | 351 | BUG — a closed page's DataSource still hears its store: every Context visit leaves one, and each save reloads them all (345 phase 1) | bug |
+| ✅ | 0h | 352 | PERF — in Panel mode a page draws its filter bars first, then hides them and opens the panel: the content shifts (CLS). Set the mode at the start of the load (Will) | bug |
+| ✅ | 0i | 353 | BUG — a grid column heading's Advanced filter button stays ACTIVE-styled when "Show active filters in green" is on; chips go green. Do with the filter work (346–349) | bug |
+| ✅ | 0j | 354 | FLAKE — adding a second Advanced filter sometimes drops the first under load (Demos `reforged-panel-apply:100`, about 1 run in 3 with a busy machine). Older than 345 phase 2 | bug |
+| ✅ | 0k | 355 | PERF — a filter click makes the data grid rebuild its WHOLE heading (each column's filter chip, menu and inputs) several times: about half the click's CPU at 4x. The biggest INP cost found (350, in reach) | perf |
+| ✅ | 0l | 356 | BUG — in Firefox the toolbar's `setChipReading()` + `report()` applies the filter but the chip turns OFF about 250 ms later (real clicks are fine) | bug |
+| ✅ | 0m | 357 | BUG — a favourited View is named after its Context in the nav's Favorites ("Records"), not the View ("All customers") (Will) | bug |
+| ✅ | 0n | 358 | UX — a filter whose every pick is ruled out stays ACTIVE, wears 0 and applies, instead of greyed and set aside (Will) | filters |
+| ✅ | 0o | 359 | UX — a card's "No matches" covers its own filter bar, so a filter at 0 cannot be seen or pressed off (found with 358) | filters |
+| ✅ | 0p | 360 | UX — the Reset button in a filter panel section goes LEFT of the change-scope button, the same size (Will) | filters |
+| ✅ | 0q | 361 | UX — a value the context rules out has an INACTIVE checkbox, even when ticked (Will) | filters |
+| ✅ | 0r | 362 | UX — an inactive value is not interactive: a ticked ruled-out menu row or an on value chip refuses a press (Will) | filters |
+| ✅ | 0s | 363 | BUG — a filter chip's value tooltip shows only while the chip is on; on or off should not matter (Will) | bug |
+| ✅ | 0u | 365 | BUG — the grid's "Select all on page" keeps rows selected on other pages; it should select this page only (Will) | bug |
+| ✅ | 0v | 366 | DATA — ONE QueryContext per app Context: it holds the Query for every source and every component in it, and each reads its context there (Will, 2026-10-20). Done 2026-10-21: 26 steps | explore |
+| ✅ | 0w | 367 | PERF — a SHUT filter panel rebuilt all its fields on every filter act: about 800 elements and 120 ms at 4x in toolbars mode (found measuring 350) | perf |
+| ✅ | 0x | 368 | PERF — every grid row stamped BOTH a checkbox and a radio, and CSS hid one: 25 hidden controls per page, each upgraded and stamped (found measuring 350) | perf |
+| ✅ | 0z | 370 | RULE — a filter setup crosses tabs, windows and sessions ONLY once the reader saves it: drafts and the kept Query are the tab's own (Will) | filters |
+| ✅ | 0za | 371 | UX — a scrollbar's track is white on a dark page; make every track clear (Will) | look |
+| ✅ | 0zb | 372 | UX — a panel field's Advanced f(x) is a pressed button; make it an icon-only filter chip, in the filter-on look when on (Will) | filters |
+| ✅ | 0zc | 373 | UX — hover a grid cell: an icon-only filter chip at its right adds that cell's value to the filter, and a second press takes it off (Will) | filters |
+| ✅ | 0zd | 374 | ASK — a cell chip on a field the VIEW holds (Customer, Region in Demos): Will — show it INACTIVE on hover, as the heading is | filters |
+| ✅ | 0ze | 375 | FILTERS — a RANGE on a number or a date is an ADVANCED condition (Between, Not between); the Range switch goes. A date's Contains / Does not contain picks a weekday, Weekdays or Weekends (Will) | filters |
+| ✅ | 0zf | 376 | UX — an icon-only 'Hide invalid values' button in the filter bar's and the panel's ⋮ menu: it shows or hides the ruled-out rows in every filter menu (Will) | filters |
+| ✅ | 0zg | 377 | ASK — "update hidden inputs too" (Will, 366) against 367: Will — keep 367; a SHUT panel draws the current Query when it opens | filters |
+| ✅ | 0zh | 378 | BUG — the panel's Save filters button read "Savefilters": its space led a flex item and collapsed. Now a non-breaking space (Will) | look |
+| ✅ | 0zj | 380 | BUG — the Filters (Add) menu's rows each have a remove × at the right, but the row's checkbox already adds or removes the filter: the × goes (Will, for later; 10-27: drop the × only) | filters |
+| ✅ | 0zk | 381 | BUG — a donut's (radial) and a gauge's segment tooltips do not show on hover (Will, for later) | charts |
+| ✅ | 0zl | 382 | UX — Save filters and Save filters as are active ONLY while the Query differs from the View's own definition, as Reset all is; today they are always active (Will, for later) | filters |
+| ✅ | 0zm | 383 | UX — NOW (Will, 10-22): ONE "Filter actions" button holds Add/Remove filters, Reset, Reset all, Save filters and Save filters as; it still reads "Save <name>" while a saved filter is taken (Will, for later; design first) | filters |
+| ✅ | 0zo | 385 | UX — in the filter PANEL, every field that offers Advanced shows the f(x) chip in its field header; a menu's own f(x) hides in panel mode (Will) | filters |
+| ✅ | 0zp | 386 | BUG? — Advanced conditions may not limit the other fields and values down the query chain (counts, greys, Limit) (Will) — the data layer does; two gaps found and fixed | data |
+| ✅ | 0zq | 387 | GALLERY — two node checks fail: the gauge story writes `data-min`/`data-max` the gauge no longer has, and five enums have no story step (button and nav-item `data-type`, grid `data-hide-unmatched` and `data-limit-options`, radial `data-legend`). Found running the Gallery for 366 S2; not caused by it | gallery |
+| ✅ | 0zs | 389 | FLAKE — Demos `reforged-layout-resize.spec.ts:109` ("with the nav pinned…") fails ~3 in 10 alone in Chromium, at HEAD before 366 step 13 too: it reads `/layout/dashboard` two frames after a drag, where the test above it polls for the save | tests |
+| ✅ | 0zu | 391 | BUG — a DRILLED tree (the Filters menu's door into a tiered field, bar or panel) cannot open a parent: its children stamp into the home menu, which the drill emptied. Its picks keep a child it did not show (369) | filters |
+| ✅ | 0zw | 393 | BUG — a `fetch: "server"` field does not light its grid heading: the source names the KEY its answer matched (`email in […]`), not the field. Found when Demos' Customer and Region became server fields | filters |
+| ✅ | 0zx | 396 | BUG — adding a new condition to an Advanced filter does not re-enable Apply (Will) | filters |
+| ✅ | 0zy | 395 | FILTERS — Cancel becomes Discard in a re-fetch menu and in Advanced: it puts back what the menu held when it opened, and the menu stays open (Will) | filters |
+| ✅ | 0zz | 394 | FILTERS — no Clear button in a menu footer: multi-select has Select All; a date defaults to Today, chip OFF; single-select gets a "None" row at the top (Will) | filters |
+| ✅ | 0zza | 397 | UX — a calendar menu picks DAYS; it is a range only when its field definition says `range: true` (Will, 2026-10-22) | filters |
+| ✅ | 0zzb | 398 | UX — the filter toolbar's toggle Switch sits to the LEFT of the Group chip, and toggling it also switches grouping and sorting on and off (Will, 2026-10-22) | filters |
+| ✅ | 0zzc | 399 | BUG — Recents lists Settings pages, and names a Context ("Records") not its View ("All customers"); a Settings switch picks Views (default) or Contexts for Recents and Favorites (Will) | nav |
+| ✅ | 0zzd | 400 | BUG — a View scope pick does not grey the values of the OTHER View scope filters under Limit; only component scopes are affected (Will, 2026-10-22) | filters |
+| ✅ | 0zze | 401 | LOOK — INVESTIGATE: a scroll shadow for ANY scroll box — an inner shadow on each side where content is hidden, by CSS `scroll-state()`, turned on by an attribute every Sherpa element takes (off by default); the layout grid's replaces the app header's drop shadow (Will, 2026-10-22) | look |
+| ✅ | 0zzf | 402 | COMPONENT — `sherpa-metric-group`: a full-width row of up to 4 metrics, 16px apart; sticky metrics move into it (they scroll off today, and do not start on every View); each metric `solo`, start/mid/end when stuck and at mobile width; stuck groups stack, half height from 2 (Will, 2026-10-22). Done 2026-10-26 | component |
+| ✅ | 0zzg | 403 | FILTERS — a FETCHING filter (one with Apply: Customer, Region) reads NOTHING picked as NO rows, not all; it starts ON with its first value picked, unless the definition says otherwise — so a page never fetches every row on load (Will, 2026-10-22) | filters |
+| ✅ | 0zzh | 404 | LOOK — the grid's pager shows 100 rows a page by default, not 10 or 25 (Will, 2026-10-22) | look |
+| ✅ | 0zzi | 405 | FILTERS — a calendar menu waits for Apply by default, as a new day is likely a new fetch; and its header with f(x) is fixed (Will, 2026-10-22) | filters |
+| ✅ | 0zzj | 406 | FILTERS — the View scope always waits for Apply: ONE Apply button in the bar, left of the panel toggle, a divider between; its menus keep Remove and Discard only. Outside it, a fetching filter and a date keep their own Apply (Will, 2026-10-22) | filters |
+| ✅ | 0zzk | 407 | BUG — picking None in a Group or Sort menu neither clears it nor turns the chip off (from 394's None row) (Will, 2026-10-22) | filters |
+| ✅ | 0zzl | 408 | WORDS — the Reset menu's "Reset all to default" reads "Reset all on view" (Will, 2026-10-22) | words |
+| ✅ | 0zzm | 409 | WORDS — an Advanced filter's answer reads `equals(John) AND contains(Smith)` in its chip, tip and everywhere it is said: each condition before its value in brackets, the join between, `!` before a negative one (Will, 2026-10-22) | words |
+| ✅ | 0zzn | 410 | FILTERS — every scope's picked values survive a reload; the page definition is used only when the session has none, or on a reset (Will, 2026-10-22) | filters |
+| ✅ | 0zzo | 411 | FILTERS — a chip whose data FAILS to fetch (a system or service error, not 0 matches) wears the critical status, and its tip starts "Unable to fetch data - " (Will, 2026-10-22) | filters |
+| ✅ | 0zzp | 412 | BUG — a chip with 0 matches stays ON until the reader turns it off; the View's Date dropped a day no row held (Will, 2026-10-22) | filters |
+| ✅ | 0zzr | 414 | BUG — switching between the filter panel and the toolbar asks for the View's filters to be applied again; they are one Query shown twice (Will, 2026-10-22) | filters |
+| ✅ | 0zzs | 415 | REFACTOR — review the toolbar's and the panel's filter code now QueryContext is the data layer's: one way to do each thing, less to keep in step; PLAN first (Will, 2026-10-22) | refactor |
+| ✅ | 0zzt | 416 | LOOK — a grid cell's filter button, once its value is filtered on, shows a cross (discard) in critical (Will, 2026-10-22) | look |
+| ✅ | 0zzv | 418 | LOOK — a SHUT scope in the filter panel shows, in its header, a badge with the rows its filters match, and its tip lists each filter's matches (Will, 2026-10-22) | look |
+| ✅ | 0zzw | 419 | BUG — some menu rows and dialog content draw larger text than they should (Will, 2026-10-22) | look |
+| ✅ | 0zzx | 420 | UX — a filter panel field's own buttons (Reset, Send up or down, f(x)) become ONE ⋮ button; its menu holds the scope and Advanced options (Will, 2026-10-22) | filters |
+| ✅ | 0zzy | 421 | LOOK — a STUCK sticky element, with content scrolled under it, wears a drop shadow from the Sherpa shadow tokens; CSS only (Will, 2026-10-22) | look |
+| ✅ | 0zzz | 422 | BUG — a Customer chip shows no value labels until its menu is opened once: an opening problem (Will, 2026-10-22) | filters |
+| ✅ | 1zza | 423 | LOOK — an accordion header has a hover: a light grey fill, from the Sherpa tokens (Will, 2026-10-22) | look |
+| ✅ | 1zzb | 424 | BUG — an unapplied chip in the filter PANEL wears no warning look; and the bar and the panel must not each keep their own chip logic: every filter chip a variant of the chip, its logic in one place (Will, 2026-10-22) | filters |
+| ✅ | 1zzc | 425 | REWORK — the filter panel and the bar are ONE component in two orientations: a PORTRAIT toolbar recreates the panel; a field chip unpacks into value chips; a Demos page shows the old panel and the portrait bar side by side (Will, 2026-10-22) | filters |
+| ✅ | 1zzd | 426 | DEMOS — Records uses the filter TOOLBAR's column as its panel, never `sherpa-filter-panel`; the 35 Demos tests of the classic panel move to the column, and what the column lacks is fixed (Will, 2026-10-23) | filters |
+| ✅ | 1zze | 427 | UX — the Filters menu's Saved section leads with "Manage Saved Filters": a dialog to rename and remove every saved filter; Apply commits, Cancel or closing discards; a removed one is greyed until Apply (Will, 2026-10-23) | filters |
+| ✅ | 1zzf | 428 | LOOK — the App Header's Favorite and Save group moves to its top row, LEFT of Ask N-zo; Refresh data goes back to the filter toolbar, LEFT of its ⋮ (Will, 2026-10-23) | filters |
+| ✅ | 1zzh | 430 | LOOK — the filter toolbar's Reset and Save actions move into its OVERFLOW (⋮) menu (Will, 2026-10-23) | filters |
+| ✅ | 1zzi | 431 | LOOK — the filter toolbar's Discard button gets a "Discard" label (Will, 2026-10-23) | filters |
+| ✅ | 1zzj | 432 | LOOK — the View chip is a unique case: it never takes the active (or Settings' success green) look (Will, 2026-10-23) | filters |
+| ✅ | 1zzk | 433 | LOOK — a divider after the View chip in the toolbar (Will, 2026-10-23) | filters |
+| ✅ | 1zzl | 434 | LOOK — the App Header's icon and title move UP, onto the same row as its actions (★ Save, Ask N-zo…) (Will, 2026-10-23) | look |
+| ✅ | 1zzm | 435 | LOOK — the filter toolbar in PANEL mode: the View scope in one container, the component scopes in another; stacked, 16px apart. The View's is titled "View Context" (was "View filters") and is no accordion: its content is the container's body (Will, 2026-10-23) | filters |
+| ✅ | 1zzn | 436 | DEMOS — Settings gets a FILTERING page (a nav row of its own); every filter setting moves there, and new switches for the filters' parts: View Context in panel mode, Customer Sites, two count badges, Apply on every change, a split Filters/Saved menu, Highlight matches — and others already built (Will, 2026-10-23) | filters |
+| ✅ | 1zzo | 437 | BUG — panel mode: hovering a chip shows the chip's tooltip AND its section's; the section's shows only over the section header (Will, 2026-10-23) | filters |
+| ✅ | 1zzp | 438 | BUG — the toolbar's column (panel mode) lost the old panel's section labels, "Date" and "Organise": 1 or more chips may sit in a NAMED section in portrait (Will, 2026-10-23) | filters |
+| ✅ | 1zzq | 439 | PERF — panel mode at 4x CPU: the column's chips draw ~850ms after it shows, so the View scope grows and pushes the scopes under it (CLS 0.053; panel bound at Good, 0.1, till fixed); and each section is told its filters (`available`) ~6 times as the column opens (found in 435) | perf |
+| ✅ | 1zzr | 440 | LOOK — toolbar mode: a "View Context" label just above the first View filter chip, as the panel heads them (Will, 2026-10-23) | filters |
+| ✅ | 1zzs | 441 | FEATURE — HIGHLIGHT MATCHES: grid rows, chart segments and the like that match one chip's filter light up; each chip's menu gets "Highlight matches" to make it the driver. A switch on 436's Filtering page. PLAN first (Will, 2026-10-23) | filters |
+| ✅ | 1zzt | 442 | LOOK — the divider between the View chip and the View scope's chips, in toolbar mode, is not centred vertically (Will, 2026-10-26) | look |
+| ✅ | 1zzu | 443 | LOOK — the "Saved" filters button wears a filter icon, not a star (Will, 2026-10-26) | filters |
+| ✅ | 1zzw | 445 | LOOK — the Filters menu button reads "Edit", with a pencil icon (Will, 2026-10-26) | filters |
+| ✅ | 1zzx | 446 | LOOK — the Saved filters button is a SPLIT, as the App Header's Save: "Save" asks for a name and saves the filters; an icon-only ▾ holds the sets, Save as and Manage (Will, 2026-10-26) | filters |
+| ✅ | 1zzy | 447 | BUG — the Edit button's badge counts the wrong thing: remove the badge and its logic, for now (Will, 2026-10-26) | bug |
+| ✅ | 1zzz | 448 | BUG — "Hide invalid" does not hide the invalid options (Will, 2026-10-26) | bug |
+| ✅ | 2zza | 449 | FEATURE — a Filtering setting, "Highlight matches on hover": hovering an active chip whose matches are already counted highlights them (Will, 2026-10-26) | filters |
+| ✅ | 2zzb | 450 | FILTERS — toolbar mode: "Move to <scope>" in each filter's menu, where it can move (Will, 2026-10-26) | filters |
+| ✅ | 2zzc | 451 | FEATURE — a Filtering setting, "Single Apply & Discard": on, ONE Apply and Discard as now; off, an Apply and Discard per field, in its menu or panel section (Will, 2026-10-26) | filters |
+| ✅ | 2zzd | 452 | FEATURE — drag a chip left or right in a toolbar, or a section up or down in a panel, to move it in the query; a Filtering setting (Will, 2026-10-26) | filters |
+| ✅ | 2zze | 453 | FEATURE — a Filtering setting: the View Context filters hold across every app view, as the "App Context"; a filter a view cannot use is inactive, its tip says why. Off, each view keeps its own (Will, 2026-10-26) | filters |
+| ✅ | 2zzf | 454 | LOOK — the Reset rows go back to the Edit menu (Will, 2026-10-26) | filters |
+| ✅ | 2zzg | 455 | FILTERS — in the filter panel, an Advanced filter shows its condition rows IN its section, not a chip whose menu holds them (Will, 2026-10-26: "I swear we had this before") | filters |
+| ✅ | 2zzh | 456 | LOOK — a grid cell filtered by a View (or App) scope field shows no "Remove filter" button on hover (Will, 2026-10-26) | filters |
+| ✅ | 2zzi | 457 | LOOK — in the filter panel, each accordion header says what it targets ("Bar Chart", "Data Grid"), from the logic that picks its icon (Will, 2026-10-26) | filters |
+| ✅ | 2zzj | 458 | FILTERS — the highlight always reaches the whole View (or App): a local chip that drives or previews it marks every component's rows, every source's, while the filter stays in its scope (Will, 2026-10-26) | filters |
+| ✅ | 2zzk | 459 | FILTERS — Highlight on hover works for a FIELD (all its values) or ONE value: a menu row in toolbar mode, a value chip in a panel section (Will, 2026-10-26) | filters |
+| ✅ | 2zzl | 460 | LOOK — panel mode: each section's icon, label and match count sit in a column on its LEFT, not a row above it; a Filtering setting, on by default (Will, 2026-10-26) | filters |
+| ✅ | 2zzm | 461 | LOOK — the App Header: 16 or 24px between its top row and the View & Context row, which lines up with the nav's Search; much shorter overall (Will, 2026-10-26) | look |
+| ✅ | 2zzn | 462 | BUG — a filter ON but ruled out by the context can be turned OFF by a press, never back on while Limit is on; Hide invalid hides it only once it is off (Will, 2026-10-26) | bug |
+| ✅ | 2zzo | 463 | BUG — Highlight on hover fires at random, or late, then never again (Will, 2026-10-26) | bug |
+| ✅ | 2zzp | 464 | REVIEW — the date chip and its logic: a thorough review, clean-up and correction; five bugs below (Will, 2026-10-26) | filters |
+| ✅ | 2zzq | 465 | BUG — turning OFF a filter whose pick is ruled out looked right but kept the pick in the query, suspended (Will, 2026-10-26) | bug |
+| ✅ | 2zzr | 466 | FEATURE — a Filtering setting, "Always show client side match counts": a count on every value and chip, picked or not, on or off (Will, 2026-10-26) | filters |
+| ✅ | 2zzs | 467 | FEATURE — a Filtering setting: highlight across EVERY scope (on by default), or only within the filter's own scope; with 458 (Will, 2026-10-26) | filters |
+| ✅ | 2zzt | 468 | LOOK — a filter menu's Advanced (f(x)) buttons, and an Advanced condition string's highlight, wear the active filters' colour (green where chosen), not always the default purple (Will, 2026-10-26) | look |
+| ✅ | 2zzu | 469 | BUG — Advanced: a second Equals row ("Equals A And Equals B") has every other value ruled out. In Advanced mode, rule out no value (Will, 2026-10-26) | filters |
+| ✅ | 2zzw | 471 | LOOK — an accordion header: chevron, icon and heading on ONE row, centred on each other; the description on its own row below, its left edge flush with the heading's (Will, 2026-10-26) | look |
+| ✅ | 2zzx | 472 | LOOK — the filter panel's section headers ("By status", "Customer records") wear no icon; field names keep theirs (Will, 2026-10-26) | look |
+| ✅ | 2zzy | 473 | LOOK — a filter chip with no icon is smaller than one with an icon: match them, by padding (Will, 2026-10-26) | look |
+| ✅ | 2zzz | 474 | LOOK — the panel's label column a little narrower: 75–80% of its 120px (Will, 2026-10-26) | look |
+| ✅ | 3a | 475 | LOOK — in the panel, a section's field labels line up with its accordion header's label, on their left (Will, 2026-10-26) | look |
+| ✅ | 3b | 476 | CLEAN-UP — remove the legacy `sherpa-filter-panel`, `filter-field.ts`, the compare page's old half and its tests; closes 425 (Will: A, 2026-10-26) | refactor |
+| ✅ | 3c | 477 | FILTER — in Demos, the gauge chart's legend items could be filter values, but the gauge takes no part in filtering at all (Will, 2026-10-26; A: as the other legends) | data |
+| ✅ | 3d | 478 | LOOK — the scroll shadow works for SIDEWAYS scrolling too: the inner shadow on whichever side has more to scroll to (Will, 2026-10-26) | look |
+| ✅ | 3e | 479 | FILTER — a gauge filtered by its zones keeps its needle: a zone picked (legend or chip) HIGHLIGHTS its segment, it never narrows the gauge's value; in Demos Records the risk gauge's zone filter is the VIEW's — its zones split the whole customer set (Will, 2026-10-27) | data |
+| ✅ | 3f | 480 | BUG — in panel mode, turning every active value chip of a field OFF does not go back to 'none picked = show all'; only Reset does. Seen in the View scope; check and fix every scope (Will, 2026-10-27) | bug |
+| ✅ | 3g | 481 | BUG — inner shadows STACK on the grid's pinned columns while other columns scroll under them sideways; perhaps cells are see-through, not white (Will, 2026-10-27) | look |
+| ✅ | 3h | 482 | LOOK — a divider between the PRESET chips and the reader's ADDED chips in toolbar mode; an equivalent in panel mode (Will, 2026-10-27) | look |
+| ✅ | 3i | 483 | BUG — a panel section's ⋮ wears the green active look while one or more of its values is picked; its look must not follow the picks — they only decide its menu's rows (Will, 2026-10-27) | look |
+| ✅ | 3l | 486 | BUG — the grid's pinned columns show no inner shadow at the BOTTOM while more rows lie below; then CHECK every scroll shadow in the grid — top, bottom, start, end — over pinned and unpinned columns (Will, 2026-10-27) | look |
+| ✅ | 3n | 488 | UX — with 'Show view context in panel mode' OFF, the View Context toolbar has no panel-mode button; only Local Context toolbars show it (Will, 2026-10-27) | filters |
+| | | | **B — The foundation: what is left** | |
+| ✅ | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
+| ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
+| ✅ | 2a | 103 | Rows with no key get one from the data layer — Sherpa's own, never sent out | foundation |
+| ✅ | 3 | 38 | One model, one builder, one owner — what is left | refactor |
+| ✅ | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
+| ✅ | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| ✅ | 5a | 113 | EXPLORE — state first, then render, in every component; a skeleton while the first render waits | explore |
+| | | | **C — Contained bugs** | |
+| ✅ | 5b | 142 | The shell's panel areas must not scroll with the page: they sit outside the scrolling wrapper | quick |
+| ✅ | 6 | 112 | An Equals row in Advanced will not open its value list — and every Advanced row kind is checked | bug |
+| ✅ | 7 | 45 | A picked date does not show in the chip | bug |
+| ✅ | 8 | 82 | A number chip set by a View shows no value on its face | bug |
+| ✅ | 9 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
+| ✅ | 10 | 94 | A number (and range) filter menu needs Apply and Cancel buttons | bug |
+| ✅ | 11 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
+| ✅ | 12 | 16 | Favourite and Save apply to the Context, not the View | bug |
+| ✅ | 13 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
+| ✅ | 14 | 95 | Firefox: a remote chip holding a draft is not marked pending | bug |
+| ✅ | 15 | 96 | A grid with few columns leaves an empty band on the right of its card | bug |
+| ✅ | 16 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
+| ✅ | 16a | 100 | The Assistant panel shows no heading | quick |
+| ✅ | 16b | 106 | A click between a menu's items reaches what is behind it — an accordion toggles | bug |
+| ✅ | 16c | 108 | A Filters menu row's scope is a DESCRIPTION under its label, with no "in" | quick |
+| ✅ | 16d | 114 | About 1 time in 20, a folded Advanced-only filter's row in the Filters menu opens nothing | bug |
+| ✅ | 16e | 119 | The panel header's Reset menu button wears the grouping `end` style; it takes none | bug |
+| ✅ | 16f | 127 | A number input: `Enter a value`, right-aligned, Sherpa's own steppers — it came back native | bug |
+| ✅ | 16g | 130 | Filter panel chips show no tooltip: the tip belongs to the CHIP — and check what else does | bug |
+| ✅ | 16h | 131 | Switching a number filter to Range fires no update, so the range is not used | bug |
+| ✅ | 16i | 132 | Back from a changed Range, a number filter has lost the Simple value typed before | bug |
+| ✅ | 16j | 137 | A number RANGE filter's values do not match between the filter panel and the filter toolbar | bug |
+| ✅ | 16k | 147 | A chip switched off under the pointer leaves an EMPTY tooltip: the whole tooltip hides | bug |
+| ✅ | 16l | 148 | After a Reset, a date chip's value label reads `Unassigned` | bug |
+| ✅ | 16m | 151 | A filter moved across scopes does not keep its Simple or Advanced mode | bug |
+| ✅ | 16w | 168 | A filter sent from scope A to the View, then down to scope B, shows in A again: a filter is in ONE scope at any time | bug |
+| ✅ | 16x | 169 | "Reset to default", and a View pick, take the saved filter chips off the bar | bug |
+| ✅ | 16v | 167 | A Reset in a component scope clears a chip's "moved to the View" state and its inactive look | bug |
+| ✅ | 16u | 166 | A saved filter's badge shows its count only while it is ON — the count is not always known before | bug |
+| ✅ | 16t | 165 | A filtered grid's group row badge shows the group's TOTAL rows, not the rows shown | bug |
+| ✅ | 16s | 160 | Ungrouped, a page still holds fewer rows than the pager says: a row the schema refuses is dropped AFTER the page is cut | bug |
+| ✅ | 16n | 152 | Data grid pages do not keep to the row count set in the pagination: the count varies from page to page | bug |
+| ✅ | 16p | 155 | The change-scope buttons show on a panel filter only after its first edit; they must always show | bug |
+| ✅ | 16q | 157 | Tooltips are clipped by other elements: they must sit in the top layer, above everything | bug |
+| ✅ | 16r | 158 | A data viz filter sent up to the View cannot be sent back down | bug |
+| ✅ | 16o | 153 | In a fixed-row layout grid, the data grid and its container change height with the row count; the container must keep its height and the grid fill it | bug |
+| ✅ | 16s | 201 | In Chromium on Linux the nav rail opens to hover by itself, so 5 closed-rail tests fail every run | bug |
+| ✅ | 16t | 202 | Sherpa Demos: 7 Chromium tests time out — the rail opens under the pointer and covers the filter panel | bug |
+| ✅ | 16t1 | 203 | sherpa-ui: 135 of 136 specs load the page without the pointer park — one fixture, as in Demos? | bug |
+| ✅ | 16t2 | 204 | WebKit: a `page.reload` in the Demos nav favourites spec never fires `load` — 1 run in 80 | bug |
+| ✅ | 16t3 | 206 | Firefox: "closing the dialog fires a composed close event" sees no event, 1 to 2 runs in 10 | bug |
+| ✅ | 16t4 | 228 | The donut chart's legend lets EVERY item be switched off; one must stay on — and a value filter limiting greyed out may not be counted | bug |
+| ✅ | 16t5 | 229 | The legend's switched-off items are lost on a page refresh | bug |
+| ✅ | 16t7 | 231 | "Reset all to default" and "Reset" are inactive while the filters already ARE the View's default | bug |
+| ✅ | 16t8 | 232 | The delete customer dialog is critical all over — borders and labels; only its footer's confirm button is | bug |
+| ✅ | 16t9 | 233 | In the filter panel, a filter section's header inside an accordion aligns to the TOP: label, count badge and the accordion button | quick |
+| ✅ | 16t10 | 234 | A filter moved up to the View: its menu's FIRST option is "Return to X", its own scope, apart from the other scopes | quick |
+| ✅ | 16t11 | 235 | "Return to X" survives a reload: the Query keeps where a View field came up from | feature |
+| ✅ | 16t12 | 236 | Read-only Advanced condition rows: the value text is too dark, and the row × shows though nothing can be removed | bug |
+| ✅ | 16t13 | 237 | A tile's own `data-where` on a field the View's bar holds narrows nothing, and says nothing | bug |
+| ✅ | 16t14 | 238 | The data grid's "Select all rows" does not select every row on every page | bug |
+| ✅ | 16t15 | 239 | A chip given a typed Advanced answer in its def does not wear `data-condition` — since the templates went into the JS (199) | bug |
+| ✅ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
+| | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
+| ✅ | c1 | 225 | `settled()` hangs on an infinite animation — a loader, an indeterminate bar — and waits on the whole document when given a part | bug |
+| ✅ | c2 | 224 | Silent failures, round 2: a linked View drops its report; View gaps skip `onReport`; `open()` hangs on an undefined tag; a 200 that is not the file is stamped; and five more | bug |
+| ✅ | c3 | 207 | Import anywhere: a base class that loads on a server, and a `define()` that checks first — two copies of the library no longer throw | foundation |
+| ✅ | c4 | 209 | The package surface for ONE component: `sideEffects`, `./package.json`, and the extensionless import TypeScript accepts but the page cannot load | tooling |
+| ✅ | c5 | 211 | Booleans and data the way frameworks bind them: `data-x="false"` is OFF; a `data` property beside `populate()`; the grid's `rowKey` | foundation |
+| ✅ | c6 | 215 | Trusted Types and a strict CSP: one policy for the five HTML sinks; the calendar's inline styles into CSS | foundation |
+| ✅ | c7 | 220 | Weight per component, gated: JS and fetched CSS per entry may only fall, and no app module in a component's graph | tooling |
+| ✅ | c8 | 226 | Docs and agent text, round 2: CLAUDE.md on the shared sheets and the provider, three Fires blocks, the MCP's dead tokens and "Rule 9", the old def flow | docs |
+| ✅ | c9 | 227 | Sherpa Demos, round 2: a refused save is silent; seed lists kept twice; "Items per page" does nothing; `settled()` for its 62 waits | bug |
+| ✅ | c10 | 218 | Framework fixtures — measure, never infer: Vite + React 19 and 18, Next, Vue, Angular, SvelteKit, webpack, a CDN page, a CSP page | tooling |
+| ✅ | c11 | 195 | The spec becomes the whole contract: props only, slots, `populate()` shape, typed events; a usage gate | tooling |
+| ✅ | c12 | 210 | Framework typings from the manifest: the tag map, React 19 JSX, Vue and Svelte types, editor data — after 195 | tooling |
+| ✅ | c13 | 213 | Only a component's OWN events leave it: an inner `button-click` stops at its host | foundation |
+| ✅ | c14 | 212 | Markup paths for the list components — tabs, breadcrumbs, a select's options, key-value pairs — so plain HTML and React 18 can fill them | feature |
+| ✅ | c15 | 214 | Forms complete: `<fieldset disabled>`, reset on every control, and the five controls that submit nothing | foundation |
+| ✅ | c16 | 208 | The text in the JS, not fetched: templates and sheets inline at build, URLs only in a dev build — with 199 | refactor |
+| ✅ | c17 | 199 | A smaller download: minify the JS (a new dev tool) and load icons on demand | refactor |
+| ✅ | c18 | 216 | Tokens safe to embed: the page rules out of `tokens.css`, a default mode, the `[data-status]` reach documented | foundation |
+| ✅ | c19 | 219 | The framework guide, steps not history, served as `sherpa://frameworks`; an `AGENTS.md` in the package | docs |
+| ✅ | c20 | 217 | React 18 and Angular adapters, generated from the manifest — small, and dependency-free | tooling |
+| ✅ | c21 | 197 | ONE way to write a filter condition in a definition or a View: readings, or a plain `{ field: { gt: 0 } }` | foundation |
+| ✅ | c22 | 190 | A Context contract and ONE `app.json`: the Contexts, the default, the Settings pages — the nav, router and server read it | foundation |
+| ✅ | c23 | 191 | Library parts that empty `contexts/`: dialog prompt/confirm, saved filters in the provider, `data-setting`, store seeds | foundation |
+| ✅ | c25 | 221 | `sherpa-ui/app` and the app boundary: the app layer stays OPT-IN, so one button never pays for it | foundation |
+| ✅ | c26 | 194 | A Context loader beside `sherpa-router`: `<sherpa-outlet>` reads `app.json`; `index.html` becomes config | foundation |
+| ✅ | c27 | 193 | ONE app guide, steps not history, served to agents as `sherpa://app-guide` — after 190 | docs |
+| ✅ | c28 | 192 | Ship the agent path: the MCP with its real dependencies and files, a pack smoke test, registered in both projects | tooling |
+| ✅ | c29 | 222 | The starter: `npx sherpa-ui init my-app` and a `scaffold_app` tool — one folder, about 8 files, no build step | tooling |
+| ✅ | c30 | 196 | ONE filter surface and a smaller DataSource: `bind()` out of the data layer; one helper for bar and panel | refactor |
+| | | | **D — Filters: Will's features, on the foundation** | |
+| ✅ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
+| ✅ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
+| ✅ | 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
+| ✅ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
+| ✅ | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
+| ✅ | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
+| ✅ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
+| ✅ | 21b | 109 | Reset has a label, and a menu button: "Reset to default" puts back the View's own filters | feature |
+| ✅ | 22 | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
+| ✅ | 22a | 115 | Figma: a chart glyph and a table glyph for the panel's section icons | figma |
+| ✅ | 22b | 154 | A data viz section in the filter panel has a chart icon | quick |
+| ✅ | 23 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| ✅ | 24 | 49 | A preset Advanced chip shows its conditions, read-only | feature |
+| ✅ | 25 | 50 | A reader's saved Advanced chip shows its conditions, editable | feature |
+| ✅ | 26 | 48 | A child menu opens on hover or click of its row | feature |
+| ✅ | 27 | 21c | A condition's matches must ALL highlight | feature |
+| ✅ | 28 | 21f | "Send to view filters" | feature |
+| ✅ | 29 | 21b | Which header chips carry over between views | feature |
+| ✅ | 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| ✅ | 31 | 52 | A data viz scope in the filter panel: one Simple filter, a chip per legend item, with its swatch | feature |
+| ✅ | 31ab | 159 | A data viz filter held by the View: a legend click changes the VIEW's values, and toggles the item | feature |
+| ✅ | 31aa | 149 | A chart legend's items ARE swatch chips: move `sherpa-chart-legend` onto `sherpa-quick-filter` | refactor |
+| ✅ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
+| ✅ | 31b | 124 | The Filters button and menu move to the filter panel HEADER: one menu for every scope | feature |
+| ✅ | 31c | 122 | Email starts SIMPLE, with a switch to Advanced; over 20 values it is one chip with a multi-select menu | feature |
+| ✅ | 31d | 120 | A view-scope filter gets "Send to `<scope name>`", the counterpart of "Send to view filters" | feature |
+| ✅ | 31e | 121 | Clear and Send to are ONE button group, with the grouping classes | quick |
+| ✅ | 31f | 123 | An inactive chip KEEPS its match count badge; it goes only when every value and condition is removed | feature |
+| ✅ | 31g | 125 | The sort tooltip names the direction as well as the field | quick |
+| ✅ | 31h | 126 | "Filter applied at higher scope" becomes "Filter moved to `<scope name>` scope" | quick |
+| ✅ | 31i | 129 | "Reset all to default", with a confirm dialog and a "Save filters before reset" switch | feature |
+| ✅ | 31j | 133 | The results count badge shows at the right of a filter panel SECTION header, where it fits | feature |
+| ✅ | 31k | 134 | A number filter menu has Reset, not Clear: its field and slider handles go back to their original values | feature |
+| ✅ | 31l | 135 | A calendar with limited dates: a Month or Year with no date to pick is inactive too | feature |
+| ✅ | 31m | 138 | Advanced filters go back to the INFO status styling, from success | quick |
+| ✅ | 31ma | 156 | Advanced filters use the DEFAULT ACTIVE styling — no colour of their own | quick |
+| ✅ | 31n | 139 | An Advanced toolbar chip's value half shows its VALUES, truncated — not the condition labels | quick |
+| ✅ | 31o | 140 | Every Sherpa input a reader types into shows the Clear button — not a number stepper, not a text area | feature |
+| ✅ | 31p | 141 | Advanced is an icon button again — f(x), at the right of the section or menu header, active when on | quick |
+| ✅ | 31q | 144 | A View's filters survive a swap to another View — a draft per View, for the session, and across sessions; two settings, on by default | feature |
+| ✅ | 31r | 171 | The filter panel's search matches FIELD labels as well as value labels | feature |
+| ✅ | 31s | 172 | In the filter panel, each chip of a multi-value filter shows its own count badge | feature |
+| ✅ | 31t | 173 | BUG: a panel section header's count badge ADDS its values' counts; it should be the UNIQUE results of them all | bug |
+| ✅ | 31u | 174 | Two View fields that share no rows return NOTHING, though each badge has a count; a filterset's fields should limit each other's options | bug |
+| ✅ | 31v | 176 | A greyed-out chip says WHY in its tooltip, in a few simple words | feature |
+| ✅ | 31w | 180 | A picked value a LATER filter rules out goes inactive and leaves the query; the latest filter wins | feature |
+| ✅ | 31x | 179 | Every place a ruled-out value shows is inactive — a chart legend's item too | bug |
+| ✅ | 31y | 178 | The filter panel's header gets an overflow (⋯) menu; "Limit matching filters" is an item in it and in the toolbar's | feature |
+| ✅ | 31z | 181 | A saved filter's menu shows its condition rows, read-only — the Advanced menu, not a bespoke one | refactor |
+| ✅ | 31z2 | 186 | Saved filter card: six small choices left from 181, each built one way | feature |
+| ✅ | 31z3 | 205 | With "Limit to matching filters" on, both ⋮ menus offer "Hide unmatching filters"; the old name is renamed | feature |
+| ✅ | 31z4 | 240 | A filter set is drawn quietly: no heading or link icon on the bar, no nesting in the panel | quick |
+| ✅ | 31z5 | 241 | A set's chips on the bar are plain chips, side by side — not grouped | quick |
+| ✅ | 31aa2 | 182 | The filter panel's search: more room above it, and the full width of the header less its padding | bug |
+| | | | **E — Views and navigation** | |
+| ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
+| ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| ✅ | 33a | 116 | `sherpa-nav` binds to a Store: its entries as data, drawn and redrawn | refactor |
+| ✅ | 34 | 34 | Figma: use the Navigation terms | figma |
+| ✅ | 35 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
+| ✅ | 35d | 164 | At the mobile breakpoint the app header shows no nav hamburger: it does not get narrow enough to trigger it | bug |
+| ✅ | 35b | 161 | The app header's shadow FADES in, very quickly, as the Context scrolls under it | quick |
+| ✅ | 35c | 163 | The app shell's panel areas are 150% of their width today, at the least | quick |
+| ✅ | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
+| ✅ | 35b3 | 200 | Sherpa Demos: "a record added on one Context changes the summary on another" flakes in WebKit — the summary reads 0 | bug |
+| ✅ | 35b2 | 198 | A direct link to a View with cards of its own (`?view=capacity`) draws the default View's cards | bug |
+| ✅ | 35b | 177 | AFTER the example app moves (37) — an app setting: resize layout grid content by handles in its gutters, snapping to columns and rows | feature |
+| ✅ | 35c | 183 | REVIEW — how a consumer builds an app on Sherpa: use, configure, extend, scaffold, the data layer; and for AI agents | explore |
+| ✅ | 35c3 | 187 | Make the docs and the MCP text TRUE: `rows:'all'`, the provider in PRINCIPLES, dead names, prompt and scaffold text | docs |
+| ✅ | 35c4 | 188 | Fix the bugs 183 found, and run the gates we have: IdbStore update, Edit saves Plan, one badge writer, double `input`, provider reports and Fires; lint and node tests in the hook | bug |
+| ✅ | 35c5 | 189 | Readiness and a smaller download: export `settled()`, shared sheets on single imports, minify, icons on demand | refactor |
+| ✅ | 35c2 | 185 | Sherpa Demos: `definitions/` becomes `views/` (JSON, templates in HTML by id), `view-schemas/`; rethink `contexts/` | refactor |
+| ✅ | 35d | 184 | INVESTIGATE — does sherpa-ui need Node to ship? A CDN, a script or a small zip may suit it better | explore |
+| | | | **F — Data states and charts** | |
+| ✅ | 36 | 58 | Loading, empty and error states in a container | feature |
+| ✅ | 37 | 9b | A Data Viz header, for metrics and chart containers | component |
+| ✅ | 38 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
+| ✅ | 39 | 14 | An example of real-time data | feature |
+| ✅ | 39a | 128 | A gauge's tooltip names the segment as the legend does | quick |
+| ✅ | 39c | 162 | A chart and its legend go from side by side to stacked as their container narrows — container queries | feature |
+| ✅ | 39b | 150 | EXPLORE — how the example gauge's risk score is worked out; THRESHOLDS in the central Query | explore |
+| ✅ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| ✅ | 40a | 143 | EXPERIMENT, later — scrolled-past metrics become a compact sticky header; a toggle in Settings › Experiments | explore |
+| ✅ | 40b | 175 | LATER — the sticky metrics keep a small sparkline, tighter gaps, a larger value; a slow scroll must still gather them | feature |
+| | | | **G — Overlay panels** | |
+| ✅ | 41 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| ✅ | 42 | 23 | A focused grid row opens a details panel | feature |
+| ✅ | 42a | 145 | The details panel, tidied: Figma's Panel header, no scrim, a selected row paints the active base | quick |
+| | | | **H — The accessibility gate** | |
+| ✅ | 43 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| ✅ | 43a | 117 | Clear the accessibility baseline — 11 of 12 done; the accordion is ruled, and waits on 124 | bug |
+| ✅ | 43b | 118 | Four texts fail colour contrast — re-point the alias chain to a darker shade, no new hex | figma |
+| | | | **I — The big builds** | |
+| ✅ | 44 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
+| ✅ | 45 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
+| ✅ | 45a | 136 | A FIND input: jump to the next or previous match; an optional Find & Replace menu | component |
+| ✅ | 46 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| ✅ | 47 | 25 | `sherpa-layout-canvas` + minimap | component |
+| ✅ | 48 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| | | | **J — Tidy-ups and renames** | |
+| ✅ | 49 | 11 | `sherpa-group`: what is left | tidy |
+| ✅ | 50 | 28 | A Figma component is NOT always a web component | tidy |
+| ✅ | 51 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| ✅ | 52 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| ✅ | 53 | 36 | CSS: compiled where it should inherit? | tidy |
+| ✅ | 54 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| ✅ | 55 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
+| ✅ | 56 | 81 | Component contracts move from YAML to JSON | refactor |
+| ✅ | 56a | 111 | A spec types every JS property as `string` — `reading`, `conditions`, `open` | tidy |
+| ✅ | 57 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| | | | **K — Agentic UI: much later** | |
+| | | | **L — The code review** | |
+| ✅ | 61 | 242 | The code review of every component — the plan is `docs/CODE-REVIEW-PLAN.md`, ruled; its work is rows 256–296 | explore |
+| ✅ | 61a | 243 | BUG: a MOVED component stops marking its slots, and its slider, tooltip, nav and dialog listeners go dead | bug |
+| ✅ | 61b | 244 | BUG: five events are missing from the specs, and two phantom events are in them | bug |
+| ✅ | 61c | 245 | BUG: a deleted saved View comes back from IndexedDB | bug |
+| ✅ | 61d | 246 | BUG: `RestStore` does not say it is remote, so a real backend has no draft and loads on each pick | bug |
+| ✅ | 61e | 247 | BUG: a prop's text erased the slot beside it — container-header's icon, toast's heading, gauge's caption | bug |
+| ✅ | 61f | 248 | BUG: two icons are drawn as CSS classes, which paint nothing | bug |
+| ✅ | 61g | 249 | BUG: a bar's report writes over the source's saved filters | bug |
+| ✅ | 61h | 250 | BUG: `export()` and `viewQueryOf` put sort and group in different scopes | bug |
+| ✅ | 61i | 251 | BUG: `data-refresh` guesses a source when it does not know which | bug |
+| ✅ | 61j | 252 | The calendar calls `Temporal`, which Safari does not have yet — KEPT, by Will's D7 | bug |
+| ✅ | 61k | 253 | BUG: nav-item's search highlight carries its own colour in TS, where `lint:css` cannot see it | bug |
+| ✅ | 61l | 254 | The line chart's area: `opacity: .14` on the 50% series colour draws about 7% — KEPT, by Will | design |
+| ✅ | 61m | 255 | The calendar on an iPhone: every iOS browser is WebKit, so none has `Temporal` — a stand-in where it is missing | bug |
+| ✅ | 62.01 | 256 | Phase 1.1 — close `check:props`' loophole: each host attribute JS writes is declared, or a `:state()` | gate |
+| ✅ | 62.02 | 257 | Phase 1.3 — `data-accepts` on every content slot — one vocabulary of categories, gated | gate |
+| ✅ | 62.03 | 258 | Phase 1.4 — `lint:css` and CLAUDE.md agree on `prefers-reduced-motion` | gate |
+| ✅ | 62.04 | 259 | Phase 1.5 — no hand-typed counts in the rule docs | docs |
+| ✅ | 62.05 | 260 | Phase 7 — `sherpa-ui serve` replaces the unpinned `npx --yes serve` | tooling |
+| ✅ | 62.06 | 261 | Phase 7 — the docs say what Sherpa needs: `Temporal` for the calendar, the Inter font, the browsers; `engines` and an honest browserslist | docs |
+| ✅ | 62.07 | 262 | Phase 7 — `dist/` stops shipping the inlined `.html` and `.css`, and the build strips `data-accepts` | package |
+| ✅ | 62.08 | 263 | Phase 7 — drop autoprefixer, cssnano, prettier and husky; eslint 9; `@types/node` for the scripts only | tooling |
+| ✅ | 62.09 | 264 | Phase 7 — a phone check: one small Playwright project at a phone size, with touch | test |
+| ✅ | 62.10 | 265 | Phase 7 — SPIKE — open a dialog from markup alone with invoker commands | explore |
+| ✅ | 62.11 | 266 | Phase 2 — D4: the stored-data shims go, and the docs and comments that use Demos as the reference | tidy |
+| ✅ | 62.12 | 267 | Phase 2 — Q1: the starter, `init` and `scaffold_app` move to their own sibling project | move |
+| ✅ | 62.13 | 268 | Phase 2 — Q2: the hook stops checking Demos; `check-usage` ships as a consumer tool | tooling |
+| ✅ | 62.14 | 269 | Phase 2 — old filter names, data-API leftovers, component aliases | tidy |
+| ✅ | 62.15 | 270 | Phase 2 — dead code, icon leftovers, repo strays, `Some things to address.md` | tidy |
+| ✅ | 62.16 | 271 | Phase 8.3 — one example per component ships beside its spec; the a11y gate and the MCP read it | docs |
+| ✅ | 62.17 | 272 | Phase 8.3 — `../Sherpa Gallery`: native pages, CSF stories, the fake data layer | build |
+| ✅ | 62.18 | 273 | Phase 4 — elevate form plumbing and focus delegation into `SherpaElement` (D5) | refactor |
+| ✅ | 62.19 | 274 | Phase 4 — default role and ARIA through `ElementInternals`; boolean accessors and forwarding from `static props` | refactor |
+| ✅ | 62.20 | 275 | Phase 4 — private host state as `:state()` (D3) — `data-has-*` last | refactor |
+| ✅ | 62.21 | 276 | Phase 4 — one write door, `set()`; `num()`, `mirrorAttrs`, `writeIcon` used; `emit({ cancelable })`; a smaller base | refactor |
+| ✅ | 62.22 | 277 | Phase 4 — state first: the five hold-until-rendered queues become one rule | refactor |
+| ✅ | 62.23 | 278 | Phase 3 — the lexicon — one name per idea — for Will's approval | explore |
+| ✅ | 62.24 | 279 | Phase 3 — the lexicon's moves, held by a test | rename |
+| ✅ | 62.25 | 280 | Phase 5 — the filter family's async root: the menu keeps op and text as it keeps `want` | refactor |
+| ✅ | 62.26 | 281 | Phase 5 — toolbar and panel: one helper for each part written twice | refactor |
+| ✅ | 62.27 | 282 | Phase 5 — each component's own type imported — no hand-typed casts | refactor |
+| ✅ | 62.28 | 283 | Phase 5 — charts: one frame sheet, shared hotspots, no `:has()` caps, shared axis code | refactor |
+| ✅ | 62.29 | 284 | Phase 5 — a roving-focus helper: the keyboard reaches step-tracker, breadcrumbs, transfer-list, calendar and the charts | a11y |
+| ✅ | 62.30 | 285 | Phase 5 — controls, containers, templates: one radio grouping, one header chrome, one dismiss, prototypes | refactor |
+| ✅ | 62.31 | 286 | Phase 6 — the bench: loads, compiles and clones per act, against a baseline that may only fall | gate |
+| ✅ | 62.34 | 289 | Phase 6 — each layer its own job: one publish protocol; the provider answers asks; data meaning leaves the UI | refactor |
+| ✅ | 62.35 | 290 | Phase 6 — honest entry points: `sherpa-ui/data` is DOM-free | package |
+| ✅ | 62.37 | 292 | Phase 6 — one door per job, and the missing read-backs | api |
+| ✅ | 62.39 | 294 | Phase 8.2 — a component reference, generated from the specs | docs |
+| ✅ | 62.40 | 295 | Phase 8.5 — `custom-elements.json` and VS Code's HTML data, from the specs | tooling |
+| ✅ | 62.41 | 296 | Phase 8.4 — a README front door | docs |
+| ✅ | 62.42 | 297 | BUG (Will, 2026-10-14): the calendar's header content is misaligned | bug |
+| ✅ | 62.43 | 298 | Phase 7 — the MCP package carries its own copy of the generation libraries, so sherpa-ui ships no tooling | package |
+| ✅ | 62.44 | 299 | BUG: the breadcrumb separator and the chat avatar draw Font Awesome glyphs, from a font nothing loads | bug |
+| ✅ | 62.45 | 300 | BUG (Will, 2026-10-15): not every tooltip is in the top layer; some are clipped by the boxes they sit in | bug |
+| ✅ | 62.46 | 301 | BUG (Will, 2026-10-15): menu items without a tick box have no horizontal padding; a hovered item mixes the active and grey colours | bug |
+| ✅ | 62.48 | 303 | BUG (Will, 2026-10-15): the app header shows breadcrumbs when an overlay panel opens; they belong in the panel's header, in full-overlay mode, with maximise / minimise buttons | bug |
+| ✅ | 62.49 | 304 | BUG (found reading, 281): the panel never marks a ONE-chip field's chip `data-pending`, so its results badge shows while its Apply waits | bug |
+| ✅ | 62.50 | 305 | GAP (found reading, 281): a grid heading's menu never hears "Hide unmatching filters" — no `data-hide-unavailable` | bug |
+| ✅ | 62.51 | 306 | BUG (found reading, 282's check): the filter panel imported no slider, switch or calendar, so alone its number and date filters never drew | bug |
+| ✅ | 62.52 | 307 | BUG (found reading, 283): radial and gauge tips were never lifted to the top layer, so a card could clip them — 300 missed them | bug |
+| ✅ | 62.53 | 308 | Will: should the radial chart join the chart-frame sheet? Its legend would sit below by default | refactor |
+| ✅ | 62.54 | 309 | BUG (found reading, 283): a gauge with no zones draws its band's outline in a container's grey | bug |
+| ✅ | 62.55 | 310 | TOOLING (found reading, 285): the spec reader cuts each template at its first nested prototype, so specs and the manifest miss every later one | tooling |
+| ✅ | 62.57 | 312 | BUG (found reading, 285): the data-viz header's slotted leading icon never showed — 279 renamed the slot, not its state | bug |
+| ✅ | 62.58 | 313 | BUG (found reading, 285): the overlay panel's footer is inset twice — 32px against the body's 16px, its divider too | bug |
+| ✅ | 62.59 | 314 | Will: should dialog and panel draw `data-heading` with a composed sherpa-container-header? +5.8 KB on 14 entries | refactor |
+| ✅ | 62.61 | 316 | A11Y (found reading, 284): a breadcrumb with no href is clickable but cannot be focused | a11y |
+| ✅ | 62.62 | 317 | A11Y (found reading, 284): ArrowLeft in a text field or slider inside a drilled menu goes Back | a11y |
+| ✅ | 62.63 | 318 | A11Y (found reading, 284): three role="toolbar" bars have no arrow keys; radios have none between them; a slice's click has no key | a11y |
+| ✅ | 62.64 | 319 | GAP (found reading, 292): `declarePreset` keeps the caller's object, and `describe()` and `debugState()` hand out the source's own presets, parts and `only` — a caller that edits one changes the library | bug |
+| ✅ | 62.65 | 320 | Phase 6 — 289 part B: one description per scope, a bar drawn one way, an opt-in quiet `setQuery` — changes behaviour. Closed with 366: its steps 20–22 did it (Will, 2026-10-21: A) | refactor |
+| ✅ | 62.67 | 322 | The data grid holds its filter toolbar and its pager: Will chose "Grid owns both, slots for extras" (PRINCIPLES' old open item 1) | component |
+| ✅ | 62.69 | 324 | The app header: one more design pass, matched to Figma value by value — Will: "still not to spec" (PRINCIPLES' old open item 4) | figma |
+| ✅ | 62.70 | 325 | HAZARD (found reading, 296): on npm, `sherpa-ui` and `sherpa-mcp` are other people's packages, and `create-sherpa-ui` and `sherpa-ui-mcp` do not exist. So `npx sherpa-mcp` (the MCP README, the Starter's `mcp.json`) runs a stranger's package wherever ours is not installed. Will: the names to publish under | bug |
+| ✅ | 62.71 | 326 | TOOLING (found reading, 296): `check-usage` reads `app/` unless `sherpa-usage.json` says otherwise — Demos' layout (D4). A project with no `app/` checks no tags and passes | tooling |
+| ✅ | 62.72 | 327 | GAP (found reading, 296): there is no LICENSE file, but both `package.json` files and the README say MIT. Will: the copyright holder | package |
+| ✅ | 62.73 | 328 | GAP (found reading, 294): 5 token names no stylesheet defines, read at 9 places in 4 components, so each draws its fallback | bug |
+| ✅ | 62.74 | 329 | GAP (found reading, 294): 4 slot descriptions the spec generator misses | tooling |
+| ✅ | 62.75 | 330 | GAP (found reading, 294): one-value enums typed as text, and four template pickers whose spec kind is style | tooling |
+| ✅ | 62.76 | 331 | GAP (found reading, 294): sherpa-button submits no form, but its Figma note says a form's submit is a Saturated button | bug |
+| ✅ | 62.77 | 332 | TOOLING (found reading, 293): the MCP server reports version 3.0.0; its package is 2.1.0-beta.0 | tooling |
+| ✅ | 62.78 | 333 | TOOLING (found reading, 293): `validateDef`'s token check gives 12 warnings on real specs, and 10 are false (the motion scale; app-shell's and app-header's host-set properties) | tooling |
+| ✅ | 62.79 | 334 | GAP (found reading, 293): `--shade()`, `--tint()` and `--sherpa-shade-*` in sherpa-base.css have 0 call sites in component CSS | refactor |
+| ✅ | 62.80 | 335 | GAP (found reading, 293): `.chart-tip`, `.chart-mark` and `.chart-anchor-point` are kept as aliases of `.sherpa-*` names, against no-aliases | rename |
+| ✅ | 62.81 | 336 | DOCS (found reading, 293): the build-figma-component skill's collection table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match the export | docs |
+| ✅ | 62.82 | 337 | DOCS (found reading, 322): the filter toolbar spec's carried `divergence` note says it fires only quick-filter-change and delegates its action cluster; it fires 19 events and builds the cluster | docs |
+| ✅ | 62.83 | 338 | GAP (found reading, 337): Figma's data Filter Toolbar leads with an unlabelled Switch, set on; the code's bar has none | component |
+| ✅ | 62.85 | 340 | DATA (Will, 338): a chip toggle, a Sort or Group cycle and the filter Switch are CLIENT updates — the data layer decides, and asks the store for none of them. 170's first slice | data |
+| ✅ | 62.87 | 342 | The "No matches" banner above a kept card goes (Will: never asked for) | fix |
+| ✅ | 62.88 | 343 | A slow page opening shows its cards loading again — 340's whole read had hidden it | fix |
+| | | | **✅ Done — newest first** | |
+| ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
+| ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
+| ✅ | – | 101 | ADVANCED: a condition row will not add in a chip's menu; in the panel, changing a row's condition drops the row | bug |
+| ✅ | – | 61 | Add customer saves with required fields empty | bug |
+| ✅ | – | 92 | Navigating SETS UP the content — its definitions, data layer, filters and state — not only swaps the template | foundation |
+| ✅ | – | 85 | `sherpa-provider`: a component ASKS for data, a scope, a query, a View or a template | foundation |
+| ✅ | – | 73 | EXPLORE — one compiled QUERY, built as the reader sets it up, run on Apply | explore |
+| ✅ | – | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
+| ✅ | – | 47 | More than 20 values: one chip, not a run | feature |
+| ✅ | – | 93 | A grid-scope filter narrows the charts and tiles too | bug |
+| ✅ | – | 91 | The APP SHELL switches Filter toolbar and Filter panel modes, for any View in the content area | foundation |
+| ✅ | – | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
+| ✅ | – | 46 | A PENDING state: changed, not yet applied | feature |
+| ✅ | – | 66 | The footer owns "nothing to save": Save and Cancel wait for a change | feature |
+| ✅ | – | 39 | The panel header gets Reset all filters | quick |
+| ✅ | – | 53 | A conditional chip's tip says "X conditions applied" | quick |
+| ✅ | – | 40 | A switch has no accessible name | quick |
+| ✅ | – | 17 | Breadcrumbs are for workflow, not for the nav | quick |
+| ✅ | – | 57 | The filter panel's width is a hard-coded 400px | quick |
+| ✅ | – | 65 | A horizontal legend has a max width, and is centred | quick |
+| ✅ | – | 41 | A conditional filter applies for Owner only | bug |
+| ✅ | – | 63 | A conditions-only field shows the Conditional switch | bug |
+| ✅ | – | 69 | The main header has a back button | bug |
+| ✅ | – | 56 | A view change leaves a lit chip that filters nothing | bug |
+| ✅ | – | 21e | A reload keeps a filter nothing on screen shows | bug |
+| ✅ | – | 55 | The At risk view's own column filter never applies | bug |
+| ✅ | – | 44b | A heading holds a whole reading, so a CHAIN shows and applies | bug |
+| ✅ | – | 71 | The chart legend's Other menu does not open; check it filters the chart | bug |
+| ✅ | – | 72 | Adding a second conditional filter resets the first | bug |
+| ✅ | – | 44c | A heading shows an answer held at VIEW scope | bug |
+| ✅ | – | 42 | A legend toggle filters the whole view | bug |
+
+## A — In hand
+
+### `[x]` ✅ 344 — Markup, default variants and text come from the `.html` and `.css`
+
+Will, 2026-10-19: *"Ideally JS (or TS) should not be using template literals
+to provide default component variants. The HTML templates and CSS file for the
+component should do this. The Sherpa-Element base class should provide the
+mechanisms for template fetching."* Then: *"Let's just handle these breaks
+now."*
+
+A read-only sweep (2026-10-19) found the source keeps every component's
+template and sheet in its own files, and the build only copies their text into
+`dist/` (208). The breaks it found, to fix:
+
+1. **CSS or structure in TS:** the toast stack (`style.cssText`); nav-item's
+   `::highlight()` rule in a template literal; the calendar header's corners
+   and margins; `filter-menu.ts` makes the date body's `sherpa-calendar`.
+2. **A default variant set by TS:** nav `data-nav-state="collapsed"`;
+   chat-message `data-type`, calendar `data-view` and tooltip
+   `data-placement`, which are not needed.
+3. **Default text in TS:** transfer-list's headings, the app header's
+   "Ask N-zo", the ⋮ menu rows, the nav's default rows, the labels that swap
+   with state.
+4. **One element per item from `createElement`, not a `<template>` clone:**
+   filter-menu's menus, select-group's options, the toast.
+5. **Class lists in TS:** input-text's icon classes, chart-legend's
+   `rollup-toggle`, layout-grid's `sherpa-grid`.
+
+**Progress, 2026-10-19** (plans: `docs/history/plan-344/`, one per group,
+each checked by a second agent; handover: `docs/HANDOVER.md`):
+
+- ✅ Group 2, default variants (dc28fa30; Demos 650f35e). The rail rests
+  collapsed with no attribute (projector `unset`). TRAP `T-no-attribute-is-the-default-variant`.
+- ✅ Group 5, class lists (bfcf5373; Demos c4ecb86). Includes the Find glyph,
+  the grid selector `:is(.sherpa-grid, sherpa-layout-grid)`, and the Group and
+  Sort chip prototypes.
+- ✅ Group 4, select group options are prototypes (81bfebb9).
+- ✅ Group 3a, a content prop's default is its template's text;
+  `PropDef.default` is gone (97b29607). TRAP `T-the-templates-text-is-the-default`.
+- ✅ Group 3b, swaps: `data-swap-on` / `data-swap-*` (2f3f5b17). TRAP `T-a-swapped-label-is-in-the-markup`.
+- ✅ Group 3c, words: `<template class="words">` + `this.word()` (4a8e80d5). TRAP `T-a-word-is-in-the-markup`.
+- ✅ Group 3d, the nav's default rows are markup; `QuickEntry` (3350c7a0).
+- ✅ 1b, nav-item's search highlight is one shared `sherpa-nav-match`
+  Highlight, its rule static CSS (4c5b561a). Measured by pixels: a custom
+  highlight in a shadow root now paints in all three engines.
+- ✅ 1c, the calendar's projected stepper is a `<sherpa-group>`; `data-grow`
+  lets the month fill (e1df205b).
+- ✅ 1d, `static html` may be a LIST — family markup — and `menuFor(root, def)`
+  clones its menu from `src/core/sherpa-filter-menu.html`; the menu stamps its
+  own date calendar (e100c9a8). TRAP `T-a-family-shares-markup`.
+- ✅ 3b(a), the ⋮ menu's rows and words are `src/core/sherpa-filter-more.html`
+  and its sheet (77d71b9a).
+- ✅ 1a, the toast stack: `static pageCss` adopted into the document,
+  `:state(stacked)`, the stack cloned from the toast's template. `show()` keeps
+  `createElement('sherpa-toast')`: one component, no structure (Claude's pick;
+  Will may overrule). TRAP `T-a-page-sheet-is-for-what-a-component-puts-in-the-page`.
+- ✅ PRINCIPLES 17's exceptions recounted: five `createElement` calls left, none
+  builds structure.
+
+**✅ Done 2026-10-19.** Every group landed and passed its focused specs in three
+engines; the full suite is the next run.
+- Kept on purpose: labels with data inside (`Reset ${name}`) stay in TS — the
+  sweep classed them as data.
+
+**Found in passing** (not fixed, reading only): `sherpa-select-group`
+`#syncDisabled` re-enables an option its data disabled; `data-grouped` inside a
+Context probably keeps its gutters (a document rule wins); `sherpa-layout-grid`
+`:host([hidden])` loses to the document `display: grid`; `sherpa-nav-item.css`
+has a stale navigation token region; the outlet writes Context markup by plain
+`innerHTML` (no Trusted Types policy); a missing views file stops every Context;
+the Starter template asks npm for `sherpa-ui@^2.1.0-beta.0`, another person's
+package.
+
+### `[x]` ✅ 345 — EXPLORE: fetch each field's values on demand, and cache them
+
+Will, 2026-10-19, on 340's "a remote source reads its whole data set once":
+*"I think this has serious performance implications."* What he wants instead:
+
+- A source KNOWS all of the available fields.
+- It FETCHES the fields and values a page or component needs, on demand, at
+  the right time. A page that opens with 5 preset filters and 10 visible grid
+  columns fetches values for those 5 filters and 10 columns only.
+- When a reader adds a filter (to any toolbar, panel or column), the source
+  starts to fetch that field's values at once, so the menu is full when it
+  opens. A menu that opens before the fetch ends shows a loading state.
+- Maybe a client-side PARTNER for each remote source, which keeps the latest
+  data it fetched, so a source that goes offline or times out degrades
+  gracefully. The empty-state and error components tell the reader.
+- In short: incremental pre-fetching and caching. *"Sherpa's data layer, and
+  components, are just meant to be like a thin rosetta stone layer for the
+  presentation layer (UI)."* No whole set from every store on load.
+
+**The decision is a SERIES, not a yes or no** (Will, 2026-10-19, later). The
+check after `compile()` stays, reworded: *"Can the query be fulfilled with held
+data?"* Then:
+
+- **Current:** has any field the query uses changed in the store since it was
+  held? Then fetch it, not answer locally.
+- **Offline:** the app is offline, or the store does not answer? Then answer
+  locally from what is held.
+
+*"It's not just a binary scenario but a series of considerations on when to be
+performant versus current in working with data."*
+
+**Some filters ALWAYS ask the server** (Will, 2026-10-19): *"Some filters
+(typically multi-select) may need to always trigger a server side fetch of
+values. These menus should have an 'Apply' button in their footer that triggers
+the fetching."* He asked how configurable that is for a Sherpa user. Today
+(read 2026-10-19): `menuFor()` decides Apply per menu (`filter-menu.ts:100`) —
+on a REMOTE store's multi-select menu, a number, or a def's `commit: true`; a
+local store never shows Apply. A user can set it only per STORE (`remote`) and
+per SOURCE (`applyOn`); `commit` is a UI flag the grid and the Filters button
+set in code, and a page definition's `fields` cannot say it. So 345 needs a
+PER-FIELD fact in the page definition — e.g. `fields.<name>.fetch: "server"`
+(name to settle): that filter always asks the store, its menu always has Apply,
+and Apply starts the fetch. It is an input to the decision series above.
+
+**And an HTML attribute too** (Will, 2026-10-19: *"What about an HTML attribute,
+too, to mark a filter as always fetch?"*). Yes — as another way IN to the same
+field fact, never a component deciding (the data layer decides, Will 2026-10-16;
+precedent: a tile's `data-where` becomes its own default in the source).
+"Always fetch" can only be turned ON: if the definition OR the markup says so,
+it is so, so the two never conflict. **Will chose A (2026-10-19)**, as it
+reaches a linked grid's column filters: the attribute becomes a FIELD fact in
+the source, and the grid builds each heading's menu from the source's
+`filterDef(field)` (`sherpa-provider.ts:629`, `sherpa-data-grid.ts:506`) — so
+every filter of that field on that source has it, the View bar's too. A grid
+heading's menu already always has Apply (`commit: true`); after 345 that Apply
+fetches. Where it goes:
+**A (chosen)** on the filtering component —
+`<sherpa-quick-filter-toolbar data-scope="data" data-fetch-fields="owner tier">`;
+the provider hands it to the source. It works on a provider page, where chips
+are drawn from data and none is in the markup. **B** on each chip —
+`<sherpa-quick-filter data-id="owner" data-fetch="server">`; it works only where
+a page writes its chips by hand. A grid column takes it in its config
+(`fetch: "server"`). Names to settle.
+
+**Change tracking: Will's sketch** (2026-10-19). *"Definitely needs some
+thinking planning before we implement anything!"*
+
+- A store gets updates from many outside sources at any time, so the STORE
+  tracks its own updates.
+- A HISTORY table in the store: one row per update, with a time and the fields
+  that changed (not the values). Smaller still: a delta time and a BITMAP of the
+  changed fields.
+- The local data layer keeps the app instance's SESSION START time and the
+  VIEW UPDATE time, and the delta between them to speed up the maths. With the
+  History deltas, it works out what to request and load, and what to answer in
+  the browser.
+- Only the CURRENT View's update and delta times are kept. They reset when the
+  whole View refreshes, or a component in it redraws.
+- If the View is not fine-grained enough, the update and delta times move to
+  each component (`SherpaElement`), so each component asks for its own data.
+  *"I feel like this might be the actual best solution but I'm unsure of the
+  performance implications."* Filtering already works at component and View
+  scopes.
+
+Points to think through (Claude, 2026-10-19):
+
+- A bitmap needs a field order that the store and the client share: the
+  schema, with a version, so a new field never moves the other bits.
+- A row added or deleted changes every field's values and the counts: likely
+  one more bit, "rows changed".
+- One clock: the STORE's. The session start can be the store's time in its
+  first answer, so the browser's clock is never compared with the server's.
+- A remote store's History comes from its server: a "changes since T" request
+  that answers with the bitmaps OR-ed together.
+- The table grows: old rows can merge (OR their bitmaps over a time window).
+- Per component: the data layer has no DOM (lint enforces it). Each bound
+  component already has an entry in the source's `SourceBinding`, so a
+  per-component time could live there, with no change to `SherpaElement`.
+- How long a History lasts follows its store's DATA. Memory stores
+  (`ArrayStore`, `JsonStore`, `EventStore`, `SocketStore`, the held set) start
+  again each session, so their History can too (Will: fine). A `RestStore`'s
+  data and History live on the server and outlast the app; the client reads
+  only the entries after its session start. `IdbStore` and a `localStorage`
+  `LocalStore` outlast the session, so their History must too, or be cleared
+  with the data. A cache that outlasts the session starts from the time it was
+  written, not the session start.
+- **Will's ruling (2026-10-19): the History starts again EVERY session,** for
+  the stores that persist too. *"The first row is always 'ground zero' for that
+  session history and we don't have to worry about table sizes, archiving,
+  etc."* So what a client holds also counts from ground zero: a cache kept from
+  an earlier session is checked again when the session starts. A `RestStore`'s
+  server log is shared by every client, so the server cannot clear it per
+  session: the client asks only for the changes since its own ground zero, and
+  how long the server keeps its log is the server's concern.
+
+**What is there today (340):** `#readWhole()` sends
+`store.load({ take: holdRows + 1 })` with no filter, so up to 50,000 whole rows
+(every field), once per remote source when it opens. It holds them only if the
+store reports its total and checks every row; else every question asks the
+store, as before 340. A page can turn it off with `holdRows: 0`. The filter
+value lists come from `declareFromRows()` at open (`store.distinct()`, else one
+load). 340 exists so that a toggle, a cycle and the Switch ask the store for
+nothing (Will, 338) — the plan must keep that.
+
+**To investigate:** what a field's values cost per store kind (REST, SSE,
+socket); which fields a page needs at open, and how the source learns them (the
+page definition, the bound components' asks); what a client cache keys on
+(field, scope, Query) and when it goes stale; how a source learns that a field
+changed in the store (a store `change` event, a live push, a version or ETag,
+a time limit, a cheap "changed since" ask); how a toggle stays a client
+update without the whole set; offline and timeout states; the bench rules that
+prove it. Relates to 170 (client and server, waits on Will) and 341.
+
+**❓ Explored 2026-10-19** (read only: four explorers, one planner, one checker
+against the code). The full plan, with every file:line, is
+`docs/history/plan-345.md`. In short:
+
+- **Today, Records `?remote`:** one whole read at open (`load({ take: 50001 })`,
+  100 rows × 14 fields), then 0 asks per toggle. Not held (`holdRows: 0`, a failed
+  read, a RestStore with no `totalPath`): about 3 whole loads at open, and each
+  chip count is one more whole load. No load can ask for SOME fields, a RestStore
+  has no `distinct`, no store says WHICH fields changed, and a menu has no loading
+  state. Records shows 14 of its 14 fields, so it gains little at open; a wider
+  store gains a lot.
+- **The idea:** hold the fields the screen uses, one COLUMN at a time (the key
+  and one field, every row), and keep each until the store says that field
+  changed. Values come free from the column, and a toggle stays in the browser.
+- **The parts:** a page NEED (fields from the definition, the holds, the presets,
+  a grid's columns, a summary's spec — no component words, 341); columns on
+  demand (`LoadOptions.fields`, `Store.projects`); the decision series
+  (`planRead(need, held, history, reach)` in a new DOM-free `read-plan.ts`,
+  replacing the 8 `#hold()` sites); a History (`store-history.ts`: a sequence
+  and a field bitmap per change, reset each session); a cache partner
+  (`store-cache.ts`); a loading row in the filter menu; Will's always-fetch fields.
+  Every new member is optional, so an old store works as today.
+- **Nine phases, smallest first, each shippable and proved by `check:bench`:**
+  (1) close a source — a BUG, now **351**; (2) a change patches the held set, so a
+  save costs no whole read; (3) a History for memory stores; (4) the cache
+  partner in memory — going back to Records is instant, and a dropped network
+  keeps the data, marked stale; (5) values on demand and a menu loading state;
+  (6) always-fetch fields (Will's A); (7) projected reads, no change in
+  behaviour; (8) the decision series; (9) a remote History.
+- **What stays true:** a toggle asks nothing; the data layer has no DOM; no
+  component words in it; an old store works as today.
+
+**Will's decisions (2026-10-19):**
+
+- ✅ **D1 — A.** A remote store's History never reaches the browser inside a
+  toggle: it comes from a change feed beside the RestStore, on tab focus, on a
+  timer, or with a fetch that goes anyway. A toggle can show data one step old,
+  and 340's rule stays (phase 9).
+- ✅ **D2 — B.** The cache keeps data in IndexedDB too, opt-in per remote store:
+  a reload while offline shows the last data, marked stale (phase 4). The code
+  goes in `src/core/browser`; the History still starts again each session.
+- ✅ **And a banner** (Will): *"Unable to reach data warning/critical banner
+  under the app header (or at top of the content area actually)."* So the
+  plan's "no new banner" is wrong. When the store cannot be reached, a banner
+  shows at the TOP OF THE CONTENT AREA. Claude's reading, to confirm by eye: a
+  **warning** while the last data is still shown (stale), a **critical** when
+  there is nothing to show. A `sherpa-callout`, placed by the app layer, not by
+  a card.
+
+**Progress:**
+
+- ✅ **Phase 1** — done as TODO 351 (`1a2268e3`): a page's source is closed when the page goes.
+- ✅ **Phase 2** (2026-10-19) — a keyed store change is taken into the held set in
+  place (`HeldSet.patch`), so a save reads nothing again: the bench's remote
+  `add`, `save` and `delete` went from 1 load of 10,001 rows each to 0. Each row
+  is keyed as a whole read keys it; an update's row is the whole saved row; a new
+  row goes where the store's `rowOrder` says (`insertion` or `key`); a cap names
+  the rows it trimmed; a RestStore with no reply announces no row. Anything not
+  certain is read whole, as before. A review (3 lenses, 11 findings, all
+  confirmed) found the key, merge and order faults, fixed before the commit.
+  TRAP `T-a-held-set-takes-a-change-in-place`.
+- ✅ **Phase 3 (History)** — designed 2026-10-20 after the walk, with a
+  prototype and a check that found three bugs in it (M1–M3):
+  `docs/history/plan-345-phase-3.md`. Commits 3.1 bench acts, 3.2 an idle saved
+  filter tests no row and `walkReads`, 3.3 each store keeps its History, 3.4 the
+  walk runs again only when a field it reads moved. **Will, 2026-10-20:** D1 —
+  last change per field (folded, never grows). D3 — counts only, as the plan
+  said: the page still reloads; patching it in place waits for after 366.
+  **❓ D2 —** Will: *"now you've got me wondering if history should be a
+  singular, source component (like query context) so that the number of tabs,
+  windows, etc. isn't an issue."* Yes: a History lives where the data lives —
+  the tab for memory, the BROWSER for IndexedDB and localStorage, the server for
+  a RestStore (phase 9). **A** (my pick): in phase 3, each write to an IndexedDB
+  or localStorage store is also sent to the other tabs on a `BroadcastChannel`;
+  each tab's History takes it, so those stores are trusted. A tab woken from
+  sleep counts everything as changed. **B:** keep them untrusted now; the channel
+  later. Until then they take today's path.
+  **Will, 2026-10-20: A** — *"Yes they share."* — then, the same day: *"I was
+  wrong about tabs sharing history. Each tab should have it's own history. The
+  only way to share filter configurations across tabs, windows, or sessions is
+  if they are saved by the user to a custom definition."* So **B**: each tab
+  keeps its own History, and IndexedDB and localStorage stores stay untrusted
+  (today's path). The tab channel, written and not committed, was removed.
+  **Phase 3 is done** (3.1–3.4; page patching waits for 366, D3).
+  - ✅ **3.1** (2026-10-20) — the bench: pages `lean` and `notheld`, acts
+    `save-same` and `save-unread`, `save` now moves a read field, a `walks`
+    counter. 57 old acts unchanged, 21 new.
+  - ✅ **3.2** — an off saved filter tests no row; `walkReads(plan)` names what
+    a walk reads (a property test over six plans).
+  - ✅ **3.3** — `StoreHistory` (`store-history.ts`): one clock per store, the
+    last change per field; an update names its `fields`. Node 576, browsers
+    3196. TRAP `T-a-store-keeps-its-history`.
+  - ✅ **3.4** — a store change walks again only when it moved a field the walk
+    reads, or the rows. Bench: a save to an unread field, scans 4 → 2 and walks
+    1 → 0; over a store not held, counts 4 → 0 and distinct 2 → 0. TRAP
+    `T-a-change-redoes-only-what-reads-it`.
+- 🚧 **Phase 4** — the cache partner, IndexedDB (D2 B) and the banner.
+  Designed 2026-10-19 (two designs, a judge, a checker):
+  `docs/history/plan-345-phase-4.md`. Seven commits: 4.1 failure kinds and a
+  spoof that fails later (and ONE spoof wrapper — Demos made one per Context
+  open, and its relay listener kept every one: the 351 note that it was not a
+  leak was wrong); 4.2 one cache per store; 4.3 the read plan, a reopen shows
+  its data at once and checks behind; 4.4 a failed read keeps the last set,
+  reach is a state; 4.5 the provider reports the page's reach; 4.6 the banner;
+  4.7 the IndexedDB keep.
+
+  - ✅ **4.1** (2026-10-19) — `failureOf()` / `unreached()` (`failure.ts`, in
+    `sherpa-ui/data`); `navigator` banned in the data layer; `fakeRemote` takes
+    `delay` and `fail` as functions, fails as fetch does (a `TypeError`), fails
+    a count too, and relays through a `WeakRef` (100 dropped wrappers: 100
+    relays removed); Demos makes ONE wrapper. TRAP `T-a-failure-has-a-kind`.
+
+  - ✅ **4.2** (2026-10-19) — ONE held set per store object (`store-cache.ts`,
+    `cacheOf()`), shared by every page over it: one whole read, each change
+    taken once, the set kept when a page closes. `Store.announcesAll` (an
+    ArrayStore; a spoof passes it on) says a set held before a page opened is
+    current; any other store is read again first. Bench `remote/reopen`: 0
+    loads (open: 1 load, 10,000 rows). TRAP `T-a-store-has-one-cache`.
+
+  - ✅ **4.2 review** (`0153f989`) — 12 faults confirmed, fixed: retry per page,
+    failure per cap, the widest cap, no cancelled read, a Refresh retries a
+    refusal, and no hang on a load that throws at once.
+  - ✅ **4.3** (2026-10-19) — `planRead()` (`read-plan.ts`) decides every read; a
+    page opened again over a store that may miss a writer shows its set AT ONCE,
+    `change { stale: true }`, and reads it again behind, once. Bench `rest/`
+    page: open and reopen ONE load each, every other act none. Demos `?remote`:
+    back to Records shows rows before an 800 ms read could. TRAP `T-a-read-is-planned`.
+
+  - ✅ **4.4** (2026-10-19) — a whole read that fails UNREACHED keeps the last
+    set (`change { stale: true }`); a REFUSAL drops it. `source.reach` (`ok`,
+    `unreached`, `down`), `source.failure`, `source.recheck()`; the `error`
+    event carries `failure`. TRAP `T-a-failed-read-keeps-the-last-set`.
+
+  - ✅ **4.5** (2026-10-19) — `provider.reach` (the worst of its sources'),
+    `reach-change`, `provider.recheck()`, which runs on `online` and a tab
+    shown; kept across `close({ next: true })`. TRAP `T-the-provider-says-the-pages-reach`.
+
+  - ✅ **4.6** (2026-10-19) — the "Unable to reach data" banner (W1 A): the
+    outlet floats a WARNING (last rows shown) or a CRITICAL (nothing to show)
+    over the top of the content area, in a zero-height sticky row, so nothing
+    moves; Retry rechecks, Dismiss hides it until the reach moves. Demos
+    `reforged-reach-banner` (3 engines; layout shift 0 in Chromium). **For Will
+    to look at by eye:** Demos `?context=records&remote`, then Settings › debug
+    fail, then Refresh — or `?context=records&fail=1`. TRAP `T-a-reach-banner-takes-no-room`.
+
+  - ✅ **4.7** (2026-10-19) — `keepCache(store, { name })` keeps a remote
+    store's set in IndexedDB (D2 B); a reload draws it at once, unconfirmed,
+    and checks behind (W2 A) — offline it shows it with the warning banner.
+    `clearKept()` at sign-out. Demos keeps `?remote`'s customers. TRAP
+    `T-a-kept-set-is-checked-each-session`. **Phase 4 is done.**
+  - ✅ **Review of 4.3–4.7** (read-only, 2026-10-19; 13 found, 6 checked by a
+    skeptic and confirmed, 7 checked by hand — all fixed but none refuted):
+    a set read again that is now TOO BIG, or refused, kept answering stale for
+    good — it is dropped and the store answers; a kept copy that landed during
+    the 1 s wait sent the page to the store — it is drawn at once; a copy that
+    landed after a 401 was shown — it is dropped; an offline save ERASED the
+    device copy — an unconfirmed set writes nothing; a reopen after a failed
+    Refresh waited for the whole timeout — it checks behind the rows;
+    `clearKept()` went on writing under the old user's name — each keep stops;
+    a copy that never comes held up every Refresh — only the first hold waits;
+    a quota error on the put was not seen as one; a forget re-read the record.
+    The banner: dead spacing tokens, a warning a screen reader did not hear (now
+    a hidden live region), focus lost on Dismiss, and a grid heading that could
+    paint over it. Tests: `a-held-set-yields-when-it-cannot-answer` (7) and 2 in
+    `reforged-a-kept-set-survives-a-reload` — each fails on the old code.
+
+- 🚧 **Phase 5 — values on demand.** **5.1 ✅ (2026-10-21):** a REMOTE store the
+  source does not hold is asked a field's values only when the field is needed:
+  `openSource` declares the scopes first, then reads what they hold and what
+  the Query answers; the rest wait (`filterDef` says `loading`) until held,
+  answered, or a grid's filtered column (`source.readValues`). The bench counts
+  `fields`: notheld/open 7 value fields, not 12; `add-field` 1; again 0. Held and
+  local stores read every field at once, as before. TRAP
+  `T-a-field-reads-its-values-when-needed`. Untested in browsers (Will, 10x less
+  testing): the full run is at the end of phase 5. **5.2 ✅:** a menu with
+  `data-loading` shows a Loading row; `menuFor` sets it for a loading filter,
+  and a loading filter is a list, not a yes/no; the bar draws a chip again when
+  its values come; the panel and a grid heading are drawn fresh anyway.
+  **Phase 5 is done**, less 369's remote children: TODO 392 waits (Will, A).
+- ✅ **Phase 6 — always-fetch fields.** **Will, 2026-10-21: A** — the names are
+  `"fetch": "server"` on a field in the page definition, and `data-fetch-fields`
+  on a filtering component. **Done 2026-10-21:** the field is answered by the
+  store — each Apply asks once for the keys its answer matches, and the source
+  filters what it holds by them; off and on again ask nothing. The provider
+  turns it on from `data-fetch-fields` (bar, panel, grid) or a grid column's
+  `fetch`; its menus have Apply. Bench `remote/apply-fetch` 1 load (the key
+  alone, by phase 7), `fetch-off` and `fetch-on` 0. TRAP
+  `T-a-server-field-is-asked-once-per-answer`.
+- ✅ **Phase 7 — projected reads, no change in behaviour.** **Done
+  2026-10-21:** a load may name `fields`, and a store that says `projects`
+  sends each row's key and those fields alone — `RestStore` asks with
+  `fields=`. A projected row is checked on the fields it was sent, by the
+  `rules()` map (`rulesOf`); a store with another library's schema does not
+  project. Phase 6's ask reads the key alone. Bench unchanged. TRAP
+  `T-a-projected-row-is-checked-on-what-it-was-sent`. Untested in browsers: a
+  node test only (`test/unit/a-load-projects-its-fields.test.mjs`).
+- ✅ **Phase 8 — the decision series: a held set reads the page's fields.**
+  Four steps: 8.1 the cache reads the fields asked and a missing column alone,
+  joined by key; 8.2 the source works out its need; 8.3 the provider names a
+  grid's columns and a summary's fields; 8.4 the docs say a held row carries
+  the page's fields only, and a whole record is `store.byKey()`. Records and
+  Demos declare every field, so they read what they read today. **8.1 ✅
+  (2026-10-21):** `HeldSet.fields`, `covers`, `join`; `StoreCache.hold(cap,
+  fields)`; `planRead` plans `fetch` for a set without a column; the bench
+  counts `cells` (rows × fields). No source names fields yet: no change. TRAP
+  `T-a-held-set-reads-the-pages-fields`.
+  **8.2–8.4 ✅ (2026-10-21):** a source opened from a page definition
+  (`pageFields`) reads its NEED: every declared field and child, what the
+  Query holds and answers, the sort, group, search and time fields, and what
+  its components name (`AttachFacts.fields`; the provider gives a grid's
+  columns and key, a summary's field, segment and over). A component given rows
+  that names none, or a search with no search fields, needs every field; a
+  source made by hand reads every field, as before. A component bound later
+  without a column asks again. Bench `wide/` (the lean page over a remote
+  store, 10 of 15 fields): open 110,000 cells, not 150,000; `add-field` 0;
+  `add-column` 1 load of 20,000; again 0; `show-all` one whole read. The 90 old
+  acts did not move. DATA-SOURCE-RULES says a whole record is `store.byKey()`.
+  Demos needs no change: Records declares and shows all 15 fields. Untested in
+  browsers (10x less testing): node tests only, until the end of 345.
+- ✅ **Phase 9 — remote History (D1 A).** **Done 2026-10-21:**
+  `Store.changes(since)` → `{ at, rows, fields }`; `RestStore` says it with a
+  `changesUrl`; `fakeRemote` answers from its store's History, and its `missed`
+  drops a change as another client's write. A store that may miss a writer
+  keeps a MARK with each whole read; a page opened again, a Retry, `online` or
+  the tab shown asks what moved: nothing — confirmed; fields — those columns
+  alone; a row came or went — the whole set. Never on a toggle. No timer (a page
+  calls `provider.recheck()`). Bench `rest/`: open and reopen ask the mark too
+  (changes 1 and 2); `missed-change` 0; `recheck` 1 changes + 1 load of the
+  owner column (20,000 cells); `recheck-again` 1 changes, 0 loads. TRAP
+  `T-a-remote-store-says-what-changed`. **All nine phases are done.**
+- ✅ **Closed 2026-10-22, after the full round:** sherpa-ui node 668 and
+  browsers 3,253 (21 flaky, all timeouts under load; the Chromium ones pass
+  alone), Demos 466 (8 flaky, Firefox timeouts), Gallery 207 + 3, Starter
+  3 + 2. Four old node tests expected a whole read on a reopen: they now keep a
+  store with no `changes`, and a new test shows a store that says nothing moved
+  is confirmed with no read (`125f29e8`).
+
+  **Decisions — Will, 2026-10-19: "A for all, sure."**
+  - ✅ **W1 — where the "Unable to reach data" banner sits.** **A (pick):** it
+    floats over the top of the content area and takes no room — CLS stays 0;
+    while shown it covers about 60 px (Records' data bar) until Dismiss or
+    recovery. **B:** it sits in the flow and pushes the Context down — covers
+    nothing, but the page moves each time it shows or goes.
+  - ✅ **W2 — a kept copy, on a reload while ONLINE.** **A (pick):** draw the
+    kept rows at once and check behind them — a faster first paint (an LCP
+    gain), but rows can change about one round trip later. **B:** wait for the
+    read, and use the kept rows only if it fails — always current, offline
+    still works, no LCP gain.
+
+### `[x]` ✅ 346 — One "Send to <component>" on a View field
+
+Will, 2026-10-19: *"We only need 1 'Send to ComponentName' option when
+removing from the view scope. No need to cater for all possible routing of
+filters to component scope."*
+
+Today the source lists `sendTo` as EVERY scope below that has the field — a
+component's offer, or a chart's own scope — with the one it came up from
+first, and the panel draws a "Send to <scope>" for each
+(`data-source.ts` `describe()`, `T-send-to-view-filters`). Make it one. Which
+one — the scope it came up from, else the page's main component scope — is to
+confirm with Will when it is built.
+
+**✅ Done 2026-10-19** (D1 A). `sendTo` is ONE object, not a list: the scope
+the field came up from (a "Return"), else the first scope that has it — a
+component's offer in the page definition's order, then a chart's own
+(`#sendTo`, which replaces `#lowerTo`). The panel lost its Send to menu
+(`lower-menu-tpl`, `lower-item-tpl`, `#onSendTo`); its button always sends.
+`request()` and `filter-add` still take any scope. Tests: `send-down.test.mjs`
+(5), Demos `reforged-send-to-view-filters` (grid → View → back to the grid; a
+chart's field returns to its chart after a reload). TRAP `T-send-to-view-filters`.
+
+**Explored 2026-10-19** (read only: four explorers, a planner, a checker).
+The plan for 346–349, with every file:line and the checker's corrections, is
+`docs/history/plan-346-349.md`. 346 builds with Claude's pick for D1 (A and B
+give the same answer on Records). 347, and the counting fixes that need no
+choice (W0 measure, W1 stop recounts that change nothing), build without one.
+Will chose A for D1–D5, so 348 and 349 build too.
+
+**Decisions — Will, 2026-10-19: "Let's go with those picks" — D1 to D5 are all A.**
+
+- ✅ **D1 (346) — which scope the one "Send to" names, for a field that did
+  not come up from a scope.** (One that came up always goes back: "Return to X".)
+  **A (pick):** the first scope in the page definition that offers the field —
+  today's order, no new idea. **B:** the scope over the grid or list, else A.
+  On Records both give "Customer records".
+- ✅ **D2 (348) — what "before" means.** **A (pick):** ONE order the source
+  owns — saved filters first, then fields as the scope holds them, each set kept
+  together; the bar and the panel draw the same order, and a new saved filter
+  lands after the other saved filters. **B:** whatever the bar shows; the bar
+  reports its order and the panel copies it.
+- ✅ **D3 (348) — a chip switched OFF.** **A (pick):** it does not narrow the
+  chips after it; its own badge still counts what it would match within the
+  filters before it (keeps TODO 123). **B:** it shows no badge while off.
+- ✅ **D4 (348 + 349) — one order for everything?** **A (pick):** yes — counts,
+  greying, setting a pick aside and serial sets all go by position. A later
+  Region pick no longer sets an earlier Customer pick aside (the TODO 180 rule
+  goes); Customer limits Region's menu instead. One pass over the rows, less
+  code. **B:** position for counts and greying only; setting aside stays
+  newest-first (180) — two orders in one bar, and its second load stays.
+- ✅ **D5 (349) — does "Limit to matching filters" stay an opt-in?**
+  **A (pick):** yes — on, the filters before a field grey its values and set
+  picks aside; always, the View limits a component scope (347), serial sets
+  chain, and counts follow the order (348). **B:** no — ordered limits are
+  always on, and "Hide unmatching filters" is the only switch (it needs a new
+  place; the Limit setting goes).
+
+**Performance in reach** (the plan's §3): sort, page and search recount every
+chip though no count changes (sort: 10 counts + 4 distinct reads for nothing);
+each chip, value, limit and chained field is one full pass over the rows (a bar
+report: 29 passes, one walk after 348); and a report runs `select()` →
+`#recompose()` → draw once PER FIELD on the click's own stack — the likeliest
+part of the toolbar's 600 ms INP. An INP probe at 4x is measured first.
+
+### `[x]` ✅ 347 — The View scope first; a component scope within its subset
+
+Will, 2026-10-19: *"Ensure that View Scope is applied first and Component
+Scope works with that filtered subset of fields and values."*
+
+Rows already work this way (`T-only-the-view-trickles-down`), and
+`present()` and `results()` read a component scope "within the View's". Check
+EVERY place a component scope offers or counts something — its chips' counts,
+its menus' values, its Add list's fields, the panel's run of value chips — and
+fix any that read the whole set instead of the View's subset.
+
+**✅ Done 2026-10-19**, with 348 and 349 on one walk (see 348): a component
+scope counts, greys, chains and sets aside within the View's subset — with
+Limit off too — and a chart legend sits under its host (Q1 A). A part another
+component contributes narrows every chip.
+
+### `[x]` ✅ 348 — A chip counts its matches within the subset
+
+Will, 2026-10-19: *"Filter badge counts show the total matches for that
+filter. However they should show the count of matches from the filtered
+subset. So scopes and preceding filters will affect this."*
+
+Today `results(scope)` counts the rows a chip's OWN answer matches within what
+its scope can see (Will, TODO 60; `T-a-chip-counts-its-own-results`): the
+scopes count, the chips before it do not. The new rule: a chip's count is the
+rows that match its scopes, the filters BEFORE it in its bar, and its own
+answer. That makes ORDER matter, as a serial filter set already does (99).
+Settle with Will what "before" means across a bar and the panel, and what an
+OFF chip counts. The TRAP changes with it.
+
+**Progress:**
+
+- ✅ **W0** (`7af8e40b`) — the bench counts SCANS, each full pass over a set of
+  rows (`applyOptions`, `filterRows`, `distinctOf`), held or not; the fixture's
+  View has Demos' serial set. A bar report was 45 scans, a sort 20.
+  **INP at 4x before** (Demos Records, Chromium, Toolbars, median of 3, probe
+  `inp.mjs`): open a chip's menu 40 ms; tick a value 216; a second value 208;
+  turn a saved filter on **320**; pick in the View 200. (Will saw about 600 ms
+  with DevTools on his machine; the order of the acts is what to read.)
+- ✅ **W1** — a count, the set-aside pass and the second all-rows read run again
+  only when something they read moved (`#age`: rows, facts, values, saved
+  filters, parts, sets). Bench: sort 20 → 2 scans and 0 counts; search 24 → 2;
+  page 6 → 1 and 1 load fewer; report 45 → 32 and 1 load fewer; raise 52 → 36.
+  **INP unchanged** (216 / 328 / 200): W1 cuts the work after the click, as the
+  plan foretold; the click's own stack is next (a profile, then P1).
+- 🚧 **The walk designed** (2026-10-19; two designs and a judge — the checker
+  stopped at a session limit, so check each file:line before building):
+  `docs/history/plan-347-349-walk.md`. One ordered pass per scope gives every
+  count, value count, grey, set-aside and serial offer; a bar report goes from
+  32 scans to about 4. 347 (the View first) is folded into it.
+  - ✅ **Q1 (Will: A) — a chart legend's own scope, with Limit off.** **A (pick):** it sits
+    under its host like any component scope: the View greys the legend values
+    it leaves no rows for; a legend pick is never set aside. **B:** greyed only
+    while Limit is on, as today.
+  - ✅ **Q2 (Will: A) — the TOP field of a serial set, when filters stand before it.**
+    **A (pick):** the top is never cut — greyed only by Limit, or by the View
+    for a component scope; the fields below lose what everything before them
+    rules out. **B:** the top also removes what the filters before the set rule
+    out, so a declared value with no rows vanishes from the first menu. On
+    Records both give the same answer.
+
+- ✅ **Built the walk** (2026-10-19; the design checked against the code first):
+  - ✅ **C0** (`1b4a6c69`) — `appliesIn()` and `scopeClauses()` out of `compile()`.
+  - ✅ **C1** (`9f9ecadc`) — the walk, pure: `answerOrder`, `planWalk`, `walkInOrder`
+    (`walk.ts`), `walkStepwise`; a property test holds the three to one answer.
+  - ✅ **C2** (`3c9f4afd`) — ONE order, the source's (D2 A): `describe()` and the bar;
+    a saved filter added lands after the other saved filters; the bar draws one
+    the panel added.
+  - ✅ **C3** (`8f489c17`) — `Store.scan()`, the rows read in place.
+  - ✅ **C4** (`b2bbb751`) — a bench act that sets a pick aside.
+  - ✅ **C5** — a chip counts within the filters before it (348): counts come from
+    the walk. Bench: counts → 0 on every act; `records/report` scans 32 → 25,
+    compiles 16 → 11. TRAP renamed `T-a-chip-counts-within-the-filters-before-it`.
+    Limits still come from the old pass until C6.
+  - ✅ **C6** — limits from the walk too (347, 349; D4 A, D5 A, Q1 A, Q2 A): the
+    filters BEFORE a field grey it and set its picks aside, one way; with Limit
+    off the View still limits a component scope and a legend; a serial chain sees
+    every filter before it. Set aside BEFORE the load where the walk asks no
+    store, so one load. The newest-first pass (`#setAsideNow`, `#chainAside`,
+    `#recency`, `limitFor`, `serialChains`, `heldAbove`) is deleted; a pick that
+    matches rows case aside is never set aside (the C1 review). Bench:
+    `records/report` scans 25 → 3, distinct 10 → 0, compiles 11 → 5; `aside`
+    stays 1 load. **For Will to see:** a later pick no longer sets an earlier one
+    aside — the earlier limits the later; with Limit off, a data-bar pick the
+    View leaves no rows for is set aside (greyed, kept, not applied).
+  - ✅ **C7** — the words: "Limited by the filters before it: no matches." / "…:
+    not applied.", in the code, the JSDoc, the reference and Demos' Settings.
+  - ✅ **C8** — a grid heading draws what its serial chain offers (`drawOffered`), and
+    an Advanced row's values grey what the filters before the field rule out —
+    never the row's own pick.
+  - ✅ **C9** — the Add list (bar and panel) greys a SPENT field — one the filters
+    before it leave no value for — and hides it while Hide unmatching is on.
+  - ✅ **C10** — a menu's `present` / `offered` and a chip's `results` do nothing for
+    the same value. **INP at 4x after the walk** (Demos Records, Chromium,
+    Toolbars, median of 5, load ~11): tick a value 104 ms (355: 104); a second
+    value 112 (88); a saved filter on 176 (176); a View pick 96 (80). Every act
+    is under 200 ms. For 350: `perf/inp.mjs` has no panel-mode acts (its acts
+    click the bar, which panel mode hides) — it hangs; give it the panel's own.
+  - ✅ **Review of C5 and C6** (read-only; 22 found, 19 confirmed, all fixed): a walk
+    the Query moved past set picks aside for the newer one; a set-aside compile
+    dropped a hand filter (`setFilter`, a restored ViewState); a failed walk kept
+    an older Query's set-aside, and pinned the draw; a closed source still
+    walked; IndexedDB was read twice on open; step by step, one filter's tallies
+    were several requests, and a rejection could go unheard; a page scope's lists
+    were ruled by its own answer; a legend declared late got no greys; a
+    superseded chip kept its grey. Test: `the-walk-holds-under-change` (8, each
+    fails on C6).
+
+**✅ Done 2026-10-19.** A chip counts within the filters before it; one walk per
+key gives every count, grey, set-aside and serial offer. **For Will to see**
+(Demos Records): badges fall along the bar and the last one in force is the
+total; a later pick no longer sets an earlier one aside; with Limit off, a
+data-bar pick the View leaves no rows for is set aside; the Filters list greys
+a field with no value left.
+
+### `[x]` ✅ 349 — A menu's viable fields and values come from the same subset
+
+Will, 2026-10-19: *"The above also goes for viable field and value options in
+menus."*
+
+Today `present(scope)` greys a value the OTHER answers in its scope rule out —
+every other answer, in both directions (Customer limits Region and Region
+limits Customer) — and only while Limit to matching filters is on
+(`T-a-ruled-out-value-is-greyed`, 174, 205). The new rule follows 348: scopes
+and PRECEDING filters decide which fields and values are viable. Do with 348,
+on one ordered pass. Ask Will whether Limit stays an opt-in.
+
+**✅ Done 2026-10-19** (see 348; Will: D4 A, D5 A — Limit stays an opt-in): with
+Limit on, the filters BEFORE a field grey its values and set picks aside, one
+way only; a menu's Advanced rows and a grid heading follow it; the Add list
+greys a field with no value left, and hides it with Hide unmatching.
+
+### `[x]` ✅ 351 — BUG: a closed page's DataSource still hears its store
+
+Found by 345's exploration (2026-10-19), checked in the code. A `DataSource`
+adds a `change` listener to its store (`data-source.ts:256`) and never removes it
+— the file has no `removeEventListener`, and a source has no `close()`. The
+provider makes a NEW source each time a Context opens (`openSource()` in
+`open()`), over the same store, and drops the old one. So every visit leaves one
+more source listening, and each store change runs `load({ force: true })` in ALL
+of them: wasted loads (a whole read each on a remote store), and memory that is
+never freed. `fakeRemote` leaks its own listener the same way
+(`fake-remote.ts:29`). The fix (345 phase 1): the source keeps its listener,
+`DataSource.close()` removes it and drops the held set, and the provider closes
+the old source in `open()` and `close()`. Proof: two opens over one store, the
+first closed, one insert — one load, not two. A 350 lead, too.
+
+**✅ Done 2026-10-19.** `DataSource.close()` removes the listener, stops a live
+load waiting and drops the held set; a closed source never holds again, but can
+still be asked. The provider keeps `#made`, the sources `open()` built, and
+closes one when `provide()` no longer gives it (the next page, `close()`) or
+when its open is overtaken first. A source the app passes to `provide()` is
+never closed. ~~`fakeRemote` is NOT a leak~~ — WRONG, corrected 2026-10-19 by
+345 phase 4.1: Demos made a new wrapper at each Context open, and each relay
+kept its wrapper; the relay is weak now, and Demos makes one. Proof: `test/unit/a-closed-source-hears-nothing.test.mjs`
+(2) and `test/e2e/reforged-provider-closes-its-sources.spec.ts` (3 × 3 engines):
+the old source starts 0 loads on an insert, and one close per page that goes.
+TRAP `T-a-closed-source-hears-nothing`.
+
+### `[x]` ✅ 352 — PERF: Panel mode draws the bars, then shifts to the panel
+
+Will, 2026-10-19: *"the CLS increases if the Filter Panel is loaded instead of
+the Filter Toolbars. I think the mode needs to be set right at the start of the
+view load cycle so that the content area isn't drawn, then redrawn, when the
+filter presentation mode is applied."*
+
+What the code does today (read, not yet measured): the provider keeps the mode
+(`provider-mode.ts`), and Demos sets it from the session at start
+(`provider.filterMode = …`, Demos `app/index.html:285`). But a bar or panel
+takes the mode only when it JOINS — when it asks the provider, after its own
+first render (`sherpa-provider.ts` `#modes.join(el)`). So in Panel mode a data
+bar is drawn, then gets `data-panel-mode` and hides
+(`sherpa-quick-filter-toolbar.css:223`), and the panel in the shell's
+`panel-start` slot is opened by `show()` — the content area moves twice. Measure
+it first (a Playwright `PerformanceObserver('layout-shift')` at 4x, both
+modes), then make the mode known before the first paint — for example the
+provider reflects it as an attribute that the page's CSS reads, and a panel
+that is wanted opens as it is drawn. Target: CLS in Panel mode as low as in
+Toolbar mode (0.01 at 4x).
+
+**✅ Done 2026-10-19.** Measured first (Playwright, Chromium, 4x, 1440 × 900,
+Records): Toolbars 0.011, **Panel 0.554** — the content area was drawn full
+width, then the panel opened and pushed it 464 px aside. The panel and the bars
+ask their provider only once drawn, after the first paint, and the mode reached
+them only with the page's data. Now: a wanted panel opens before it asks; the
+outlet calls `provider.prepare(definition)` before it draws a Context's markup
+(markup and definition are fetched together); a bar steps back as it asks; and
+`close({ next: true })` keeps the panel open between two pages. After: Panel
+**0.013**, Toolbars 0.011. Tests: `test/e2e/reforged-provider-mode-before-paint.spec.ts`
+(4 × 3 engines) and Demos `reforged-panel-mode-does-not-shift.spec.ts` (both
+modes under 0.05, Chromium). TRAP `T-the-filter-mode-is-set-before-the-page-paints`.
+
+### `[x]` ✅ 353 — BUG: a column heading's Advanced filter button is not green
+
+Will, 2026-10-19: *"The advanced filter button, in a data grid column header,
+is still the active styling rather than success styling. We can fix this with
+the filter work."*
+
+Why (read, not yet run): Settings › Filtering › "Show active filters in green"
+is Demos CSS. It re-points the Style `active` names to the theme's success
+colours inside `sherpa-quick-filter-toolbar` and `sherpa-filter-panel` ONLY
+(Demos `app/index.html:21`). The heading's filter and sort are ALREADY
+icon-only chips — `sherpa-quick-filter.head-filter` and `.head-sort`
+(`sherpa-data-grid.html:156-162`), not buttons. But they sit in the grid's
+shadow root, and a page selector cannot reach in; only an inherited custom
+property can. Adding the grid to the selector would turn EVERY active thing in
+the grid green (a current row, the sort).
+
+Will asked (2026-10-19) why this cannot be set on the filter chip's own scope.
+It can, and that is the fix: the chip reads its ON colours through its own
+inherited properties, which fall back to the Style `active` ones. The app sets
+those once, at the top of the page, and every chip goes green — bar, panel and
+grid heading — with nothing else in the grid touched. Demos stops re-pointing
+Sherpa's `--sherpa-style-active-*` names. Do it with 346–349.
+
+**✅ Done 2026-10-19.** A state pin may carry a hook: the chip's on pin is
+`active @filter-on`, so the projector writes each Style name as
+`var(--sherpa-filter-on-<name>, var(<active>))`. Demos sets six
+`--sherpa-filter-on-*` names on `html[data-chips-success]`, and every ON filter
+chip turns green — bar, panel and grid heading — while the sort chip beside it
+does not. The pending edge reads the same hook. Test: Demos
+`reforged-filter-chips-green.spec.ts` (3 engines). TRAP `T-a-pin-a-page-can-re-point`.
+
+### `[x]` ✅ 354 — FLAKE: a second Advanced filter sometimes drops the first
+
+Found 2026-10-19 while checking 348 W1. Demos
+`test/e2e/reforged-panel-apply.spec.ts:100` ("adding and applying a second
+Advanced filter keeps the first") fails at line 115: after the bar's
+`addFilters(['email'])`, the total is 100, not 10 — Owner's typed condition is
+gone. With the machine busy (load average 10–16), it failed 2 to 5 runs in 6
+to 10, with one worker too. Bisected: it fails the same with W1 taken out,
+before 346, and before 352 (`9948308f`, the 345 phase 2 commit, which does not
+touch this local page). So it is older than today's work, and load brings it
+out. The same test once found "10 rows went back to 100"
+(`T-a-conditioned-field-opens-on-its-rows`), so this is likely the same race
+coming back: a rebuilt chip reads unanswered for one tick, and its report
+clears Owner (`sherpa-a-composed-field-fills-async`). Next: reproduce it with
+4x CPU throttling and trace the report that clears Owner.
+
+**✅ Fixed by 356 (`798fd439`), 2026-10-19.** The same race: adding the Email
+chip starts a bar draw that waits two frames, and the test's Owner condition,
+set in those frames, was cleared by it. With the bar skipping a chip it changed
+after a draw began, the test passed 10 of 10 in Chromium and 24 of 24 across
+three engines at a load average of 11–16 (it failed 5 of 10 before).
+
+### `[x]` ✅ 355 — PERF: a filter click rebuilds the grid's whole heading
+
+Found 2026-10-19 by profiling the click at 4x (Chromium CPU profile, Demos
+Records, a build with `--no-minify`). Turning a saved filter on: 493 ms busy,
+of which **257 ms is new components being made** (`#bootstrap` → `#stamp`), most
+of it the data grid's heading. Ticking a value: 546 ms busy, 266 ms the same.
+The data layer's own work is about 40 ms.
+
+Why: `sherpa-data-grid`'s `onChange()` runs a FULL `#render()` on every observed
+attribute, and `bind-source`'s `writeView()` sets several (the sort, the page,
+the total…) on each publish — so one click redraws the grid several times.
+`#renderHead()` removes every heading cell and clones it again: per column, a
+filter chip, its menu from `menuFor()` (with its inputs), a sort chip and a
+button — 14 columns on Records. `#syncPinned()` then reads layout
+(`getBoundingClientRect`, 49 ms).
+
+The fix to design: keep each heading cell by field and update it in place
+(sort, status, superseded, the menu's reading); rebuild a cell only when its
+column or its filter def changes; one render per tick, not one per attribute;
+and read layout once. Measure with `inp.mjs` before and after.
+
+**Designed 2026-10-19** (two explorers, a designer, a checker):
+`docs/history/plan-355.md`. Five commits — C1 guards (`drawReading` skips the
+same reading; `#filterDef` stops working out values it throws away); C2 one
+render per tick, and one per publish; C4 layout read once, only when a layout
+input moved; C3 each attribute redraws only what it needs (after C4: the
+checker found C3 alone loses the pinned select column and the shared width);
+C5 heading cells kept by field and updated in place. Expected: the click's
+`#bootstrap → #stamp` 260 ms → under 60, layout reads 49 ms → about 0, INP
+about 120–190 ms.
+
+- ✅ **G1 (Will: A) — a heading menu is OPEN, and another control changes the same field.**
+  **A (pick):** the new answer is written and the menu stays open; its draft is
+  replaced, as today, minus the close (the menu re-takes its Cancel baseline).
+  **B:** the open menu keeps the reader's draft. (Today the rebuild CLOSES it.)
+
+**Progress:**
+
+- ✅ **C1** (`fe7899fd`) — `drawReading` skips the reading it holds; `#filterDef`
+  works out values only where a list shows them.
+- ✅ **C2** (`d385b602`) — one render per moment, and one per publish
+  (`populate()` says rows are coming). TRAP `T-a-grid-draws-once-per-moment`.
+- ✅ **C4** (`74078533`) — layout read once, only when it moved (`#measure`).
+- ✅ **C3** (`428e1270`) — each attribute redraws only its part.
+- ✅ **C5** — heading cells KEPT by field and drawn in place: a pick, a sort and a
+  page make 0 heading cells and 0 heading components; an open heading menu
+  stays open with its search and draft (built with G1 A, Claude's pick — the
+  menu takes a new Cancel baseline when written while open; Will confirmed A). TRAP
+  `T-a-heading-cell-is-kept`.
+- **INP at 4x after C1–C5** (Demos Records, Chromium, Toolbars, median of 5;
+  load average 9–27): tick a value 216 → **104 ms**; a second value 208 → **88**;
+  a saved filter on 320 → **176**; a View pick 200 → **80**. Every act is under
+  the 200 ms target on this machine. Full suites: sherpa-ui 3130 passed, Demos
+  426 passed.
+- ✅ **Review** (read-only, 2026-10-19; 2 faults confirmed, both fixed): Clear or
+  Remove on a KEPT heading menu ticked the old answer back as the menu closed —
+  the menu now takes its Cancel answer as it is cleared; and each row's selection
+  cell is drawn frozen by `#renderBody` itself, so a group fold that moves only
+  the page count keeps it frozen. Three tests in `reforged-grid-keeps-its-heading`
+  (each fails without its fix).
+- **For 350 (2026-10-19):** reopening Records over `?remote` takes about 250 ms in
+Chromium but 300–620 ms in Firefox with three engines running; Demos'
+`reforged-a-reopen-shows-at-once` allows 800 ms and failed once under that load.
+**Left for 350** (the design's §5): the body is still redrawn — 50 select
+  components per page, and one of a tick's two body draws is spent on old rows;
+  the provider works out `filterDef` for every field on each push; `#pageRecords`
+  sorts once per row. The probes are in Demos `perf/` (`inp.mjs`, `cls.mjs`,
+  `profile.mjs`).
+
+### `[x]` ✅ 356 — BUG: `setChipReading()` leaves the chip off in Firefox
+
+Found 2026-10-19 while testing 353. On Demos Records, calling the data bar's
+`setChipReading('status', { picked: ['active'] })` then `report()` applies the
+filter (100 → 24 rows) and the chip is on — then, about 250 ms later, in
+FIREFOX ONLY, the chip turns off while the 24 rows stay. Chromium and WebKit
+keep it on, and a reader's real clicks keep it on in all three. Likely the
+chip's own menu fills late and reports its unticked rows
+(`sherpa-a-composed-field-fills-async`). `setChipReading` is public, so a
+caller with no pointer must get the same result as a click.
+
+**✅ Done 2026-10-19.** Traced in Firefox: a grid bound late redrew the bar
+(`attach` → `drawBars` → `drawScope`), and `drawScope` draws its chips from the
+description it was given only after waiting two frames — so a chip set in those
+frames was cleared. The bar now counts its own changes, and a draw skips any
+chip changed after it began. A reader's tick in those frames was at risk too.
+Test: Demos `reforged-a-stale-draw-keeps-the-bars-own-change.spec.ts` (fails
+without the fix). TRAP `T-a-stale-draw-keeps-the-bars-own-change`.
+
+### `[x]` ✅ 357 — BUG: a favourite is named after its Context, not its View
+
+Will, 2026-10-19: *"The name shown in the favorites section, when a view is
+favorited, is the nav context and not the specific view name. E.g. should be
+'All Customers' instead of 'Records'."*
+
+Why (read, not yet run): the ★ in `outlet-nav.ts` `#onStar` keys a favourite
+`context` when the View on screen is the Context's FIRST View (`#favKey`), and
+then labels it with the Context's label alone (`#kept(context)`). Any other View
+is labelled `Context › View`. So "All customers", Records' first View, reads
+"Records". The fix: label every favourite with its View — the first one too —
+and keep the key as it is, so a saved favourite still opens the same page. Old
+favourites in the session keep their old label until starred again (or the
+label is read from the View at draw time, which is the better fix).
+
+**✅ Done 2026-10-19.** A Favorites row is named after its View, read when it is
+drawn (`OutletNav.#viewLabel`): Records' first View reads "All customers", and a
+favourite starred before the fix reads right too. Every favourite is now its
+View's name alone — "At risk", where it read "Records › At risk" (Claude's call
+for one rule; say if the Context prefix should stay). A Context with no Views
+keeps its own name. Demos `reforged-nav-favorites-recents` (48 in 3 engines).
+
+**Review fix, 2026-10-19:** two favourites of one name — two Contexts' Views both
+called "Overview" — read the same, with no icon to tell them apart. Each now
+says its Context ("Home › My view", "Records › My view"), and only when the
+names clash; every other favourite stays its View's name alone. Demos test
+"two favourites of one name each say their Context".
+
+
+### `[x]` ✅ 358 — UX: a filter with no valid value stays active, at 0
+
+Will, 2026-10-20: *"Instead of setting filter chips with no valid values to
+inactive we should leave them active. If an active filter, with valid values,
+becomes invalid due to context changes then we should show a badge with count
+0."* So the reader can see the impact on results, open the menu to see the
+inactive values, remove or clear the filter, or press it off.
+
+**✅ Done 2026-10-20.** A pick is set aside only BESIDE one that stands. When
+every pick is ruled out, nothing is set aside: the filter stays in force, the
+rows go to 0, and its chip — on the bar, in a grid heading, in the panel — stays
+active and wears 0. Its menu ticks and greys the picks and says "no matches"
+("not applied" only beside a pick that stands). Pressed, it turns off and the
+rows come back. Read as: the filter APPLIES (0 rows) — say if it should not.
+Tests: `present-limits-each-field`, `a-serial-set-chains-its-fields`,
+`filters-limit-in-order`, `reforged-quick-filter-toolbar`, Demos
+`reforged-the-view-limits-a-component-scope` (each fails on the old rule).
+TRAP `T-a-ruled-out-value-is-greyed`.
+
+### `[x]` ✅ 359 — UX: "No matches" covers a card's own filter bar
+
+Found with 358 (2026-10-20). With 358 a filter at 0 is common, and the Records
+card then shows "No matches" OVER its whole content — the data bar too, since
+the bar lives in the card's body. The chip with its 0 badge is hidden, and
+cannot be pressed off; only the cover's "Clear filters" is left. With Settings ›
+Experiments › keep content on, nothing covers and the flow works. Waits on Will.
+
+- ✅ **Will (2026-10-20): never cover.** **A (pick, chosen):** "No matches" never covers a
+  card; the bar and its 0 chip stay, and the grid says "No rows match the current
+  filters." **B:** the cover over the rows only, the bar moved into the card header.
+
+**✅ Done 2026-10-20.** `sherpa-container` shows nothing for `data-state="no-matches"`
+(empty, error and loading are as they were). The cover's "No matches" panel, its
+Clear filters, `filters-clear` and the provider's answer to it are deleted. TRAP
+`T-a-container-shows-its-datas-state`.
+
+### `[x]` ✅ 360 — UX: a panel section's Reset goes left of the change-scope button
+
+Will, 2026-10-20: *"I don't like where the reset button is in filter panel
+sections. I'd prefer it to the left of the change scope button. Make sure it's
+the same size as the change scope button."*
+
+**✅ Done 2026-10-20.** A field's Reset is in its header, left of Send to, at
+its size (`data-size="sm"`), shown once something is set. It sits BESIDE the
+Send-to group, not in it: a hidden Reset in the group would square Send to's
+corners (the group squares by position). The action row now holds only Add
+condition (Advanced) and, remote, Discard and Apply. Test:
+`reforged-filter-panel-component` (left of it, same width and height).
+
+
+### `[x]` ✅ 361 — UX: a ruled-out value's checkbox reads inactive, ticked too
+
+Will, 2026-10-20: *"A contextually inactive value should have an inactive
+checkbox style, even if checked, to visually communicate that it's limited by
+the context."*
+
+**✅ Done 2026-10-20.** A menu row the filters before it rule out is pinned to the
+`inactive` Style mode (`.menu-row[data-unavailable]`, a class key in
+`state-pins.yaml`, as the row is slotted light DOM), and its checkbox takes the
+mode's accent: a ticked one is a grey tick, still free to untick. A panel's value
+chip that is ON and ruled out is greyed too (it had stayed active under 358 —
+the FILTER's chip stays active at 0, a VALUE reads inactive). Tests:
+`reforged-quick-filter-toolbar` (the box's accent is the inactive one),
+`reforged-serial-set`. TRAP `T-a-ruled-out-value-is-greyed`.
+
+
+### `[x]` ✅ 362 — UX: an inactive value is not interactive
+
+Will, 2026-10-20: *"I shouldn't be able to toggle the inactive menu item to
+unchecked. If it's inactive it's not interactive."*
+
+**✅ Done 2026-10-20.** A menu row the filters before it rule out is disabled,
+ticked or not, with no hover; Select all leaves it be. A panel's value chip
+that is ruled out refuses a press, on or off (a chip with a menu still opens
+it). The reader lets a ruled-out pick go with the menu's Clear or Remove, the
+field's Reset, or the filter chip's off. Tests: `reforged-quick-filter-toolbar`
+(a press leaves the row ticked), `reforged-serial-set` (a press leaves the
+chip on), Demos `reforged-limit-options`. TRAP `T-a-ruled-out-value-is-greyed`.
+
+### `[x]` ✅ 363 — BUG: a chip's value tooltip shows only while it is on
+
+Will, 2026-10-20: *"Filter chip value tooltips only show if the chip is active.
+The active/inactive state should have no bearing on the visibility of the
+tooltip."*
+
+**✅ Done 2026-10-20.** A chip's tip says the same on or off — its answer and its
+matches, as its badge keeps its number (123). It had said nothing while off.
+Tests: `reforged-chip-tips` (off says the same; switched off, a hover still
+shows it), Demos `reforged-chip-results`. TRAP `T-a-chip-counts-within-the-filters-before-it`.
+
+### `[x]` ✅ 365 — BUG: "Select all on page" keeps other pages' rows
+
+Will, 2026-10-20: *"If I choose 'Select all on page' in the data grid, and
+already have rows selected on other pages then those other rows should be
+deselected."*
+
+**✅ Done 2026-10-20.** "Select all on page" clears the selection — other pages'
+keys too — then ticks this page's rows. Test: `reforged-grid-select-all-pages`.
+TRAP `T-select-all-is-the-visible-rows`.
+
+### `[x]` ✅ 367 — PERF: a shut filter panel builds nothing
+
+Found measuring 350. In toolbars mode the filter panel is `display: none`, yet
+one saved-filter click made it rebuild every field: 46 chips, 10 menus, a
+calendar of 70 cells — about 800 new elements, most of the click's 176 ms at 4x.
+
+**✅ Done 2026-10-20.** A shut panel keeps the source's description and every
+answer drawn since as DATA, and builds them when it opens. While shut, its
+`readings` and `values` read that data. "Saved filter on" 176 → 56 ms; new
+elements per click about 800 → 150. `undrawable-filter` is reported when the
+data comes, open or shut. Two tests now open the panel before they read its
+fields. TRAP `T-a-panel-follows-the-query-open-or-shut`. Tests: every
+sherpa-ui spec that uses the panel (414) and every Demos spec that does (146),
+3 engines, the coordination gate among them.
+
+### `[x]` ✅ 377 — ASK: hidden inputs and the shut panel
+
+Will, 2026-10-20 (366): *"Any input fields that show a value from the
+QueryContext need to be updated. Even if they are hidden."* TODO 367 made a
+SHUT panel keep the Query as data and build its fields when it opens: every
+value it shows is current when it shows, and its getters read the data. That
+took one filter click from 176 to 56 ms at 4x CPU.
+
+- **A (my pick):** keep 367. A hidden panel never shows an old value: it draws
+  the current Query when it opens. Every other hidden input (a shut chip menu,
+  a grid heading's menu, the cell chip) is updated at once, as now.
+- **B:** draw the shut panel on every change too. Simple to state, and about
+  120 ms more per filter click.
+
+**✅ Will, 2026-10-20: A, keep 367.**
+
+### `[x]` ✅ 385 — UX: every panel field's f(x) is in its header
+
+Will, 2026-10-20: *"Show the advanced filter toggle on all relevant filter panel
+headers. Don't hide it inside menus when in filter panel mode."*
+
+**✅ Done 2026-10-20.** A field drawn as ONE chip with its own menu — a list of
+more than 16 values, a date — now has its f(x) in the field header too, when it
+offers Advanced (every number does since 375). The header f(x) switches the
+chip's menu through the menu's own door, and the chip stays: its rows are in
+its menu. A menu the panel hangs on a chip says `data-mode-outside`, so its own
+f(x) is not shown. In Demos the View's Date field shows it. Dead `qf-*` CSS
+for the old cloned number rows went, with its TRAP.
+
+### `[x]` ✅ 386 — BUG?: Advanced conditions and the query chain
+
+Will, 2026-10-20: *"Possible Bug: Advanced filter conditions potentially aren't
+limiting other filter fields and values in the query chain."*
+
+A read-only check reproduced it in node over every path — the walk, counts,
+greys, set-aside, a serial chain, a remote store not held, the panel and the
+bar — and an Advanced answer DOES limit every field after it. A second agent
+tried to refute that and found two real gaps:
+1. **The panel:** pressing a list field's f(x) builds its menu late, and nothing
+   gives that menu the scope's present/offered lists, so its new rows' value
+   pickers are not greyed until the walk runs again. Fix: `#markPresent` after
+   `#giveMenu` in `#setCustom`. Probably what Will saw.
+2. **The compiler (latent):** an `in` / `notin` row compiles wrong — `notin`
+   with two picks becomes `in`, one pick matches every row. The menu never
+   offers them, but a hand-written reading, a saved filter or the MCP can.
+   Fix: map `in`→`eq`, `notin`→`ne` before `picksClause` in `rowClause`.
+
+**✅ Fixed 2026-10-20:** both, each with a test that fails without it: a panel
+menu built by f(x) is told what the filters before it leave
+(`reforged-filter-panel-component.spec.ts`), and `in` / `notin` rows compile
+as `eq` / `ne` (`one-condition-system.test.mjs`). A guard,
+`an-advanced-answer-limits-what-follows.test.mjs`, holds the chain for
+contains, OR rows and `ne`, held and step by step.
+
+Also noted, for Will to judge: an answered field no scope HOLDS is placed after
+every held field, so it limits the rows but not the held fields' lists; per-value
+counts and set-aside are for Simple picks only, by design; a superseded chip's
+rows are never greyed.
+
+### `[x]` ✅ 387 — GALLERY: two node checks fail
+
+Found 2026-10-20, running `../Sherpa Gallery`'s `npm test` for 366 S2 (its
+Playwright 207/207 pass). `every data story's markup passes the usage check`:
+the gauge's WithData story writes `data-min` and `data-max`, which
+`sherpa-gauge-chart` no longer declares. `every story file opens on the example,
+and steps through each enum of its spec`: no story steps through `sherpa-button`
+and `sherpa-nav-item` `data-type`, `sherpa-data-grid` `data-hide-unmatched` and
+`data-limit-options`, or `sherpa-radial-chart` `data-legend`. Fix the stories
+in the Gallery; nothing in sherpa-ui changes.
+
+**✅ Done 2026-10-20** (Gallery `6ca9655`): the gauge story writes `min` and `max`,
+and five variant stories step the enums. Gallery node 3/3, Playwright 207.
+
+### `[x]` ✅ 388 — ASK: what a page with no provider keeps across a reload
+
+Found 2026-10-21, building 366 steps 10 and 11; the plan's "Still open" and its
+last check both name it. Step 10: `persistView` keeps each component's state
+only, so a page bound by hand with `bindSource`, and no `<sherpa-provider>`,
+loses its filters and sort on a reload. Step 11: `setState` goes, and with it
+the page-last restore (`T-set-state-merges-page-last`), so no page gets its
+page NUMBER back — with or without a provider.
+
+Every app built on Sherpa today (Demos, the Gallery) has a provider, and none
+restores a page number, so nothing visible breaks. The question is whether a
+door is wanted:
+
+- A: no door. A page that wants these uses a provider; a page number is not kept.
+- B: the provider keeps the page number with the Query.
+- C: `persistView` takes `{ query: true }` again, for a page with no provider.
+
+My pick: A, until a page asks — it is the plan's ruling, said as a loss.
+
+### `[x]` ✅ 389 — FLAKE: Demos' layout-resize test reads a save it did not wait for
+
+Found 2026-10-21, running Demos for 366 step 13: `reforged-layout-resize.spec.ts:109`
+("with the nav pinned the page has 8 columns…") fails 3 in 10 alone in
+Chromium with `Object.keys(kept)` holding only `12`. Measured on step 12's
+build too (3 in 10), so it is not 366. It reads `/layout/dashboard` two frames
+after the drag; the test above it (`:80`) polls for the save. First step: poll
+for the `8` key the same way, then see whether the save itself is late.
+
+**✅ Done 2026-10-22.** It polls for the `8` key now, as the case above does
+(Demos `reforged-layout-resize`): 10 of 10 in Chromium. The save lands within
+the poll; it was only read too soon.
+
+### `[x]` ✅ 390 — FLAKE: Settings sometimes does not open in WebKit
+
+Found 2026-10-21, running Demos for 366 step 18: `reforged-settings-overlay.spec.ts`
+(the back-arrow case of its `:53` group) fails about 1 run in 40 in WebKit, at
+`expect.poll(() => settingsOpen(page)).toBe(true)` — the overlay never opens.
+Measured on step 17's build too, at the same rate (a worktree build swapped
+into `dist/`), so it is not 366. First step: see whether the link's
+navigation is lost or the overlay's open is.
+
+**✅ Done 2026-10-22: it is LOAD, not the app.** The four "leaving Settings"
+cases, 15 times each in WebKit: with 2 workers, 60 of 60 pass; at load 35
+(every core busy), 4 of 60 fail, each at a DIFFERENT step and each a timeout —
+the rail's hover, the View pick narrowing the rows, Back closing the overlay.
+None is the open path alone. The spec's waits are 15 s now (Demos `63c304c`).
+
+**⬜ Reopened 2026-10-22 — load was not the whole story.** In the next full
+Demos run (2 minutes, a quiet machine, the bundle), the settings-button case
+failed once in WebKit at the OPEN, even with the 15 s wait: `settingsOpen`
+stayed false. So a press on the hover-shown `.settings` button sometimes opens
+nothing in WebKit. Next: trace that case alone in WebKit, 50 runs, and see
+whether the click lands while the rail is still opening or closing.
+
+**❓ 2026-10-28:** once more in a full Demos run, in WebKit, at the OPEN (the
+back-arrow case, the last minute of the run, when the load reached 149 on a
+fresh boot); it passed on its retry. Alone, the four "leaving Settings" cases
+passed 60 of 60 with 2 workers and 120 of 120 with 7. The full run keeps a
+trace only of a retry, which passed, so there is none of the fail. **For
+Will:** A — close it as load-bound; B — keep tracing: Demos keeps a trace of
+every failure (`retain-on-failure`, a slower run). My pick: A.
+
+**✅ Closed 2026-10-28 (Will: A)** — load-bound. It fails only in a full run on
+a loaded machine, and passes alone 180 of 180. Reopen it if it fails on a quiet
+machine.
+
+### `[x]` ✅ 393 — BUG: a `fetch: "server"` field does not light its grid heading
+
+Found 2026-10-22, when Demos' Customer and Region became `fetch: "server"`
+(Will: they simulate a re-fetch). The source compiles a server field's answer
+to the KEYS it matched, `email in [...]`, and tells the grid the fields of
+that clause. So the grid hears "email filters", lights no Customer heading,
+and would light Email's. Demos `reforged-a-site-picked-shows-everywhere`
+fails at the heading. Fix: the source names the field the reader filtered,
+not the key that stands in for it.
+
+**✅ Done 2026-10-22.** The source keeps each server field's clause, and
+`filterFields(filter, standsFor)` names the field it stands for. On :4200 the
+grid now hears `customer`, not `email`.
+
+### `[x]` ✅ 394 — FILTERS: no Clear button in a menu footer
+
+Will, 2026-10-22: *"No more clear buttons in footers!"* Each menu kind has
+another way to say "nothing":
+- **Multi-select:** its Select All checkbox already does it.
+- **Date:** the default value is always Today, and the chip is OFF by default
+  (unless the definition says otherwise). Off is the empty state.
+- **Single-select:** a "None" row at the top of the values.
+
+**✅ Done 2026-10-22.** First half: No footer has a Clear (the class, its rules and
+its listener are gone; a typed number keeps its Reset). A single LIST chip that
+is not persistent gets `data-none`: its menu leads with a None row in the same
+radio group, ticked while nothing else is; picking it answers nothing. A
+persistent chip (the View selector) has no None. Tests: `reforged-menu` (None),
+`reforged-menu-calendar` (four footer buttons, no Clear). The date half is below.
+
+**Will, 2026-10-22, on the date half:** *"As a default date is selected then the
+filter chips value label should be populated with that date. Even if the date
+has no records associated with it the user should still be able to activate the
+filter chip. Empty States in the view and components will handle informing the
+user that there is nothing to show."*
+
+**Date half, done.** A date chip with no day is OFF and its face reads Today (a
+range reads one day). One press turns it ON at Today: the chip asks for that
+day, as the state holds none to resume. Today is always a pick in its calendar,
+rows or none. The default is the chip's to draw, never stored, so it is always
+today's date. "On unless the definition says otherwise" is a View's answer: a
+preset View that names the date turns it on. Tests: `reforged-menu-calendar`
+(face, press, a range), `reforged-chip-tips` (Reset reads Today). Demos'
+`filter-coordination` skips the None row a Sort menu now leads with.
+
+### `[x]` ✅ 395 — FILTERS: Cancel becomes Discard, and Discard keeps the menu open
+
+Will, 2026-10-22: in a re-fetch menu (one with Apply — a remote source or a
+`fetch: "server"` field) and in an Advanced filter, the footer's Cancel button
+becomes **Discard**. Discard puts back what the menu held when it opened (it
+discards every change since then). Discard does NOT close the menu.
+
+**✅ Done 2026-10-22** (taken over from the other session, Will). The footer has
+one revert button, shown wherever a menu has Apply, so it is Discard in every
+such menu (re-fetch, Advanced, a typed number, the Filters menu). It puts back
+the picks, the mode and the rows held at open — rows only when they differ, as
+a rebuilt row reads empty for a tick — turns Apply off, and stays open. Its
+class and part are `discard`, its event `menu-discard`. Tests: `reforged-menu`
+(stays open, reports only menu-discard), the calendar footer, the number
+filter, the toolbar. Figma's node still says Cancel.
+
+### `[x]` ✅ 396 — BUG: a new condition in an Advanced filter does not re-enable Apply
+
+Will, 2026-10-22: add a new condition row to an Advanced filter, and Apply
+stays inactive. The new row is a change; Apply must be active.
+
+**✅ Done 2026-10-22.** Add and Remove are clicks, so no `input` or `change`
+told the footer the draft moved. Both now re-check it. `reforged-menu` has the
+case; it fails without the fix.
+
+### `[x]` ✅ 397 — UX: a calendar menu picks days unless its field says range
+
+Will, 2026-10-22: *"I think that calendar menus shouldn't default to 'range'
+unless specified in the definition."*
+
+**✅ Done 2026-10-22.** A field definition takes `"range": true` (FieldDeclaration,
+`page.v1.json`); `filterDef()` already carries it to every menu. Two defaults
+went: the source made every View date a range (TODO 20b), and a date reading
+with no `range` read its picks as ends when the field had no value list. Now a
+date's picks are days unless the reading or its field says range. Demos' View
+date, `created`, says `"range": true`, so it stays a range there. Tests:
+`reforged-a-date-picks-days` and `field-type` (two days, then two ends). TRAP
+`T-a-date-picks-days-unless-it-says-range`. Relates to 379 (375's date half,
+held by Will).
+
+### `[x]` ✅ 442 — LOOK: the divider after the View chip is not centred
+
+Will, 2026-10-26: *"The divider between the view selection and view scope
+filters, in the filter toolbar mode, is not aligned to the centre
+vertically."* The divider is 433's.
+
+**✅ Done 2026-10-26.** The View chip does not centre its items, so its 16px
+`::after` sat at the top of the 24px chip, 4px high: `align-self: center`.
+
+### `[x]` ✅ 443 — LOOK: the Saved filters button wears a filter icon
+
+Will, 2026-10-26: *"The 'Saved' Filters button doesn't need a star icon. Use a
+filter icon instead."*
+
+**✅ Done 2026-10-26, with 446:** the split's "Save" wears it, and the ▾ alone
+(where the filters may not be saved) is a filter icon.
+
+### `[x]` ✅ 447 — BUG: remove the Edit button's badge
+
+Will, 2026-10-26: *"Bug: The edit button badge should show the count of
+active filters and not the count of matches. Actually let's just remove that
+badge, and it's logic, for now."* Will: the bugs first.
+
+**✅ Done 2026-10-26.** The bar's and the column's Edit button have no badge:
+neither the chips folded away nor, with Count the filters applied, the filters
+applied. `drawFiltersButton` writes none; the classic panel keeps its own, at
+its call site. The column's title still counts the filters applied. The badge
+had widened the button, so three tests that fold chips at 300px fold at 220.
+
+### `[x]` ✅ 448 — BUG: Hide invalid does not hide
+
+Will, 2026-10-26: *"Bug: The 'Hide invalid filters' option doesn't hide
+invalid options."* The switch is 376's.
+
+**✅ Done 2026-10-26.** Measured on Records with Limit and Hide on: menu rows
+hid, but in PANEL mode a section's ruled-out value chips (Tier's Gold, under
+churned, Enterprise, Platinum) were only greyed. `limitField` marked a value
+chip removed only when the chain did not offer it, and the toolbar had no
+rule that hid even that one. Now both. With Limit off, data-scope fields do
+not limit each other, so nothing is greyed and nothing hides — as the setting
+says. Test: Demos `reforged-limit-options` (3 engines).
+
+### `[x]` ✅ 449 — FEATURE: Highlight matches on hover
+
+Will, 2026-10-26: *"Add a setting to 'Highlight matches on hover' which will
+show match highlighting when hovering over any active filter chip where the
+matches have been calculated already."* Builds on 441's highlight.
+
+**✅ Done 2026-10-26.** `provider.highlightOnHover` marks each bar
+`data-highlight-hover`. Resting 150ms on an applied chip whose matches are
+counted PREVIEWS it as the driver: the grid's rows and each chart's part light
+up, as 441's. The preview is the QueryContext's, never the Query's — not saved,
+no `query-change`, no load, and a menu's driver comes back after. It tells a
+new `mark` change, as a recompose would send the grid to page 1. Demos:
+Settings › Filtering › Look › "Highlight matches on hover". Tests:
+`a-chip-drives-the-highlight` (node), Demos `reforged-highlight-matches`
+(3 engines). TRAP T-a-hovered-chip-previews-the-highlight.
+
+### `[x]` ✅ 450 — FILTERS: Move to a scope, in each filter's menu (toolbar mode)
+
+Will, 2026-10-26: *"In Toolbar mode, add 'Move to X scope' as a menu item in
+each filter (if it can be moved scope)."* The panel's sections have it (425
+G4).
+
+**✅ Done 2026-10-26.** 425 G4 had put a Move button in each chip menu's
+footer, but the FILTER menu template had no `footer` slot, so it was never
+drawn; its test read the text alone. Now it is a ROW above the footer, in a new
+`actions` slot of `sherpa-menu` (shown while filled), with the ⋮ rows' look:
+"Move to View Context" on a Local chip, "Move to / Return to <scope>" on a View
+chip. Portrait sections keep theirs in the ⋮. Test: Demos
+`reforged-filter-layouts` (it opens the menu and presses the row).
+
+### `[x]` ✅ 451 — FEATURE: Single Apply & Discard, a setting
+
+Will, 2026-10-26: *"Add 'Single Apply & Discard' as a filtering setting. If
+on, then there's a single Apply and Discard button like we have now. If off
+then there's an Apply and Discard per filter field in their menu/panel
+section."*
+
+**✅ Done 2026-10-26.** `provider.singleApply` (on by default) — off, each bar
+is `data-field-apply`: the scope still waits, but the bar's (and a portrait
+scope's) one Apply and Discard go. A chip's menu shows Apply beside Discard; in
+a panel section, Apply and Discard sit on its heading row while a value of it
+is pending. Apply commits that field alone; Discard puts it back. Demos:
+Settings › Filtering › Behaviour › "Single Apply & Discard". Test: Demos
+`reforged-view-chips` (a menu's Apply, a section's Discard and Apply; 3
+engines). TRAP T-each-field-can-apply-on-its-own.
+
+### `[x]` ✅ 452 — FEATURE: drag to reorder the query
+
+Will, 2026-10-26: *"A user should be able to drag a chip left/right, in a
+filter toolbar, to reorder it's position in the query. In a filter panel, they
+should be able to drag a section up/down to achieve the same. Enabling this
+should be a filtering setting."*
+
+**✅ Done 2026-10-26.** `provider.reorderFilters` (off by default) → each bar
+`data-reorder`. A chip drags along its bar, a panel section down its column;
+the item follows the pointer, a line marks where it lands, and Alt with an
+arrow moves a focused one. It asks `{ order }`; `QueryContext.order()` puts the
+fields in that order and tells a new `order` change, which re-counts. Demos:
+Settings › Filtering › Behaviour › "Drag filters into a new order". Tests:
+Demos `reforged-filter-layouts` (a chip, Alt+Arrow, a section; 3 engines).
+TRAP T-a-filter-is-dragged-into-its-place. The look is basic: the landing line
+is cut off before the bar's first chip.
+
+**Will, 2026-10-26:** *"I should be able to drag reorder filter chips/sections
+with no selected values. Preset filter chips in both scopes should not be
+draggable — View/App Scope: Customer, Region, Date Range; Local Scope: Group,
+Sort, Specified Presets."* ✅ A field the page definition holds in a scope is a
+PRESET (`source.declarePresets`, `HeldFilter.preset`) and keeps its place; only
+an added filter drags, among the added ones, picked or not. Group and Sort never
+did. Tests drag added Seats and Spend.
+
+### `[x]` ✅ 453 — FEATURE: the App Context, a setting
+
+Will, 2026-10-26: *"Add a filtering setting to persist the 'View Context'
+filters across all app views (if we don't have it already). When this setting
+is on then relabel 'View Context' to 'App Context'. If a filter is irrelevant
+to an app view (no use of data stores/sources) then we set it as inactive and
+explain this in the tooltip. If this setting is off then each view has it's
+own unique 'View Context' filtering configuration."*
+
+**Planned 2026-10-26.** Today a View Context answer is per Context (a fresh
+Query per `provider.open()`), then per View, per tab; nothing crosses Contexts.
+- **Setting:** a provider prop `appContext` (as `applyEvery`); Demos' Filtering
+  page gets the switch, off by default.
+- **One answer:** the View scope's filter half (holds, readings, suspended, and
+  each field's face) at session `/filters/_app`. The provider swaps it into the
+  View scope on restore, on a View pick and on Reset (a pure, node-tested merge
+  beside `copyScope`), and writes it back on each reader act. Each Context keeps
+  its own answer underneath.
+- **Not used here:** a new `DataSource.has(field)` (the strict half of `#has`);
+  `declareUnused(VIEW, …)` beside `declarePresets`; the chip gets
+  `data-unused` — inactive, refused, with a tip "Not used on this page: its data
+  has no Date." (e.g. Dashboard has no `created`).
+- **Relabel:** the provider re-declares the View scope's label as "App Context"
+  while on; "Move to View Context" becomes "Move to" + the label.
+
+**Will, 2026-10-26: "go" — the picks: D1 A, D2 A.**
+
+✅ **D1 — a saved View that sets View Context filters, while this is on**
+(Dashboard's "EMEA operations", Records' "Renewals"). **A (pick):** the App
+answer wins; the View sets only its local filters and sort. **B:** the View's
+filter wins and changes the App answer for every Context.
+
+✅ **D2 — turning it off.** **A (pick):** each Context gets back the answer it
+had before. **B:** each Context starts from the App answer.
+
+**Done.** `appContext` on the provider; the answer at session `/filters/_app`
+(per tab in Demos). `setQuery(…, { lay })` lays it over every Query a page puts
+on; a reader act writes it back; each page keeps its own View under it, which
+comes back when sharing stops. A field a page has not is a greyed chip saying
+"Not used on this page: its data has no Date." The View scope is named "App
+Context" while shared. Switching redraws the bars BEFORE the answer goes on: the
+other order lost a pick made in the same moment. TRAP
+`T-the-app-context-is-one-answer`; node `the-app-context-is-one-answer`; Demos
+`reforged-app-context` (Settings › Filtering › "Share the View Context across
+the app", off by default).
+
+### `[x]` ✅ 455 — FILTERS: an Advanced filter's rows, in its panel section
+
+Will, 2026-10-26: *"In the filter panel, instead of showing a chip for
+Advanced filters, that spawns a menu to edit the conditions, the condition
+input rows (menu content) should be shown directly in the filter section in
+the panel. I swear we had this before."* The classic panel draws them inline;
+the portrait column (425) shows a chip (G14).
+
+**Done.** In Advanced, a section's rows are drawn in it, under its heading —
+answered or not — and its values give way; the ⋮'s Advanced only switches the
+mode now, and Simple brings the values back. The section chip makes its own menu
+`data-inline` (the same card, in the flow). Demos `reforged-filter-layouts`.
+
+### `[x]` ✅ 456 — LOOK: no Remove filter on a cell the View filters
+
+Will, 2026-10-26: *"Data Grid cells that are filtered, but in the view/app
+scope, shouldn't show the 'Remove filter' icon button on hover."* The cell
+chip is 373 and 416's; 374 made it inactive for a View field before a pick.
+
+**Done.** The grid's CSS shows the cell chip only where it is not
+`[data-superseded][data-current]`: a field the View holds, with a pick. Before
+a pick it still shows, inactive (374). Demos `reforged-cell-filter`: a Region
+cell has the chip, and none once the View picks EMEA.
+
+### `[x]` ✅ 457 — LOOK: a panel accordion header says what it targets
+
+Will, 2026-10-26: *"In the filter panel, add a description label to the
+accordion headers that say the type of content/component targeted (e.g. Bar
+Chart, Data Grid). I think we already have logic for this to set the
+appropriate icon in the accordion header that we can reuse."*
+
+**Done.** The same door as the icon: `describe()` gives each scope its
+`component` (the bound control's tag, `SourceBinding.componentOf`), and
+`nameScope()` writes its name as the accordion's `data-description` — from the
+toolbar's words where the tag says it badly (`sherpa-barchart` → "Bar Chart"),
+else Title Case from the tag. Demos `reforged-filter-column`: Bar Chart,
+Radial Chart, Data Grid; the View has none.
+
+### `[x]` ✅ 458 — FILTERS: the highlight reaches the whole View
+
+Will, 2026-10-26: *"I think that highlighting always elevates to the view/app
+scope even if the filter field/value is in a local scope. This allows for
+filters to stay in their scope but for the user to temporarily see it's impact
+across all of the view data without having to actually move the filter to the
+view scope."* To check first: one source already pushes its test to every
+component it binds; a page with several sources compiles only its OWN scopes
+(`facts.mine`), so another source skips a local driver.
+
+**Done.** One source already lit everything it binds (Demos' Records and
+Dashboard have one each). For several sources, `compile` now reads the driver
+before it skips another source's scope, where this source has the field.
+TRAP `T-the-highlight-reaches-the-whole-page`; node `a-chip-drives-the-highlight`.
+
+### `[x]` ✅ 459 — FILTERS: Highlight on hover, a field or one value
+
+Will, 2026-10-26: *"Highlight on Hover should work for a Field (highlights all
+values) or a single Value. The single Value may be in a menu (toolbar mode) or
+panel section (panel mode)."* 449 previews a whole applied chip.
+Will, 2026-10-26, as a bug: *"Hovering on any value in a panel section is
+highlighting matches for all active values in that section. It should only
+highlight that value's matches."*
+
+**✅ Done 2026-10-26.** Resting on a section's value chip, or on a value row
+of a chip's open menu, previews that value alone — picked or not; the chip
+itself previews its whole answer. The preview carries `value`, and `compile()`
+marks by that one pick. Leaving is the page's `pointermove` off the bar: a bar
+in the panel's column heard no `pointerout`, and a value stayed lit. Tests:
+`a-chip-drives-the-highlight` (node), Demos `reforged-highlight-matches` (a
+menu row, two value chips; 3 engines).
+
+### `[x]` ✅ 460 — LOOK: a panel section's heading in a column on its left
+
+Will, 2026-10-26: *"In panel mode, instead of using a row per section for the
+icon, label, and match count, I'd like to reserve a column on the left. This
+should hopefully help make the panel more scannable and also reduce the amount
+of vertical height used. This could also be a configurable filtering setting
+(on by default for now)."*
+
+**Done.** `labelColumn` on the provider (on by default) sets the bars'
+`data-label-column`; each section chip then takes `data-label-start`: its
+heading in a 120px start column, its values beside it. A lone chip's heading
+(Date) and Organise's line up in the same column. Advanced rows keep the whole
+row under the heading. Demos: Settings › Filtering › "Headings in a column";
+`reforged-filter-column`.
+
+### `[x]` ✅ 461 — LOOK: a shorter App Header
+
+Will, 2026-10-26: *"With moving the app header icon and heading label up to the
+first row, we can reduce the gap between that row and the View & Context
+controls. This should overall reduce the height of the App Header
+considerably. A gap of 16 or 24px between the rows would probably be best."*
+And: *"if the view & context row could vertically line up with the Search
+icon/input in the nav that would be ideal."*
+
+**Done.** 16px. The header is 88px, not 120: top row 8–32, a 16px gap
+(`space-base`), the View & Context row 48–80 — level with the nav's Search.
+Still a fixed height, so a Context without filters keeps the same edge. Demos
+`reforged-app-shell` measures it.
+
+### `[x]` ✅ 462 — BUG: an on filter ruled out can be turned off, not on
+
+Will, 2026-10-26: *"If a filter is already active, but becomes invalid due to
+context changes, then the user should be able to deactivate it, via clicking
+the relevant UI, but not be able to reactivate it (if limit filters is on).
+These active but invalid filters also shouldn't be hidden until deactivated if
+'hide invalid filters' is on."* Today a ticked ruled-out row, or an on value
+chip, refuses ANY press (TODO 362).
+
+**✅ Done 2026-10-26.** A ticked ruled-out row keeps its box enabled; the menu
+marks its rows again after each tick, so once let go it is refused, and hidden
+where Hide is on. An on value chip, or a chip whose every pick is ruled out,
+goes off at one press and stays refused after. Hide already kept a picked row
+and value. Tests: Demos `reforged-limit-options` (a menu row, a panel value
+chip), sherpa-ui `reforged-quick-filter-toolbar`.
+
+### `[x]` ✅ 463 — BUG: Highlight on hover fires at random, then never again
+
+Will, 2026-10-26: *"HIghlight on hover seems to trigger randomly, or delayed
+after a hover by a considerable time, and then seems to stop working after
+that first trigger."*
+
+**✅ Done 2026-10-26.** Measured with a real pointer on Records: the first rest
+lit 13 rows in ~200ms, and none after. Inside a bar Chromium sent ONE
+`pointerover` and none after — with the setting off too, and no pointer capture
+anywhere — while `pointermove` named each element. The bar follows
+`pointermove` now: every rest lights in ~200ms, every leave clears. The test
+rests three times. TRAP T-a-hovered-chip-previews-the-highlight.
+
+### `[x]` ✅ 464 — REVIEW: the date chip and its logic
+
+Will, 2026-10-26: *"I think, in general, the date chip and it's logic just need
+a good thourough review, clean up, and correction."* His bugs:
+
+- The calendar chip's active state is erratic.
+- A date chip set to 'range' defaults to a range.
+- The number input of the 'Last…' row is narrower than its row, its stepper
+  and its select.
+- Demos: the View/App Context's date chips default to an Advanced filter,
+  'Last 12 months', active.
+- Toggling the date chip's active state glitches, and can clear its value.
+
+**2026-10-26, part 1.**
+- ✅ The "In the last" row: its count and unit had shrunk to a stepper and a
+  caret in a floating card; each has a floor now (5rem, 7rem).
+- ✅ A page's scope may START with answers: `where` in the page definition, as a
+  View writes it (`{ "created": { "last": 12, "unit": "month" } }`); Reset puts
+  it back. Schema and `openSource`.
+- Toggling on and off, with Apply between (Records' Date, a range), applied and
+  suspended cleanly every time; a range chip opens on today as a one-day range
+  (`[today, today]`).
+
+✅ **D1 — the Demos default "Last 12 months"** — Will: A. Done: the Demos
+records' dates are the 12 months up to today (the same draws, so no other value
+moved), reseeded once a day (`seedVersion` is today's date); Records' View starts
+on Advanced "Last 12 months", on; "Renewals this quarter" is the last 3 months.
+Was: The Demos data is from 2024
+(and today, 26 Oct 2026), so Last 12 months leaves about ONE row on Records.
+**A (pick):** make the demo data's dates relative to today, so the last 12
+months hold most rows — many Demos tests read fixed 2024 dates and move with it.
+**B:** keep the data; default to a span it covers (Last 36 months).
+
+**Part 2.** Found and fixed: a date chip answered by an Advanced row ("In the
+last 12 months") read as OFF — the chip counted only picks and typing, so the
+bar said one thing and the Query another; on a panel's first draw its menu had
+not even drawn its mode. It is ON now, by the reading's own mode. And a page's
+starting answers outlive a View that does not name their scope (`declareStart`,
+TRAP `T-a-page-scope-starts-with-its-answers`): Records' first View had wiped
+the Date, so Reset to default took it off and the page never read as at default.
+
+**Part 3.** The Date chip read "last(12 days)" over a 12-month filter: the
+row's unit select had no options yet when the chip read it. The row remembers
+its unit now, as it does its op.
+
+**Closed, 2026-10-26** — Will: *"forget it for now"* for the rest (the toggle
+glitch, "range defaults to a range"); reopen with steps if it comes back.
+
+~~❓ **D2 — repro for the rest.**~~ "Erratic" active state, the toggle glitch that
+clears the value, and "range defaults to a range" did not show in the paths
+above. Which page, chip and clicks?
+
+### `[x]` ✅ 465 — BUG: an invalid filter turned off kept its value
+
+Will, 2026-10-26: *"Deactivating an active but invalid filter works visually
+but it doesn't clear the value from the filter query."*
+
+**✅ Done 2026-10-26.** A menu row and a panel value chip cleared their pick;
+the chip's BODY suspended it — off keeps an answer — so Dana Whitlock, ruled
+out, stayed in the Query, and could come back on matching nothing. Turned off,
+a chip now drops each pick the filters before it rule out; a valid pick is kept
+off, as before, and with none left the field clears. Test: Demos
+`reforged-limit-options` (3 engines).
+
+### `[x]` ✅ 466 — FEATURE: Always show client side match counts
+
+Will, 2026-10-26: *"Add a filtering setting to 'Always show client side match
+counts' even if the filter chip value hasn't been selected and/or the filter
+chip isn't active."*
+
+**Done.** `countEveryValue` on the provider and the source (off by default).
+The walk counts every value of each list field by key as it passes the rows —
+a held field's step, or a tap (a chart's legend field) — never asking a store
+once per value: only where the rows are held. A bar's chip hands the counts to
+its menu (`setMatches`: a count at each row's end); a panel's value chips show
+them as they did their picks'. Demos: Settings › Filtering › "Always show match
+counts"; node `a-chip-counts-within-the-filters-before-it`; Demos
+`reforged-chip-results`.
+
+### `[x]` ✅ 454 — LOOK: Reset goes back to the Edit menu
+
+Will, 2026-10-26: *"Move the Reset filter options back to the 'Edit' fitlers
+menu."* 430 moved them to the ⋮.
+
+**✅ Done 2026-10-26.** In the bar and the panel column, the Edit menu leads with
+Reset filters and Reset all on view, drawn again as it opens; the ⋮ keeps the
+save rows. Tests: sherpa-ui `reforged-reset-at-default`,
+`reforged-reset-to-default`, `reforged-quick-filter-toolbar`; Demos'
+`reforged-reset-*` and `reforged-filter-coordination`.
+
+### `[x]` ✅ 490 — GRID: multi-field columns, with tags
+
+Will, 2026-10-27 (at the next best opportunity): *"Support multi field columns in
+the data grid. For example, in the Customer Records data grid, allow the Name
+column cells to have a secondary row that shows a color coded tag for Plan,
+Tier, and Status (match data viz colors if possible). The column header filter
+menu will need to concatenate each fields values into a single menu. The
+toolbar and panel still show individual chips, sections, and values per field.
+They don't combine in any way. Clicking on a tag in this multi field cell should
+filter the data by that tag's value. Clicking the tag again clears the filter
+value. Filtered tags should use the active colours set for filter chips in the
+settings. If a field, that is a tag, is moved to the view context then hovering
+over the tag should show the explainer tooltip. Advanced filtering for this
+column isn't available via the concatenated menu and is reserved for the toolbar
+and panel menus only. This is because I'm not 100% sure how we handle a
+combination of advanced and simple filters in a single menu just yet. This
+should also be a Filtering setting and on by default."*
+
+**Plan, 2026-10-27.**
+
+| # | Step | Where |
+|---|---|---|
+| 1 | A column names its TAG fields: `"tags": ["plan", "tier", "status"]`. Each cell draws them as a second row, each tag a value in its series colour — the colour the charts give that value (its place in the field's values) | grid, page definition `ui.grid` |
+| 2 | The heading's menu JOINS its tag fields' values, a section per field, and no Advanced; a pick is that field's answer, in the grid's scope | grid, `menuFor` sections |
+| 3 | A tag pressed adds its value to its field's answer; pressed again lets it go — as the cell chip, so the last one let go follows "Select none shows all data" (489) | grid |
+| 4 | A tag whose value is picked wears the filter-on colours (the chip's pin and hook) | `state-pins.yaml` |
+| 5 | A tag whose field the View holds is greyed, refuses a press, and says where its filter went, as a held heading does | grid |
+| 6 | The setting: `provider.multiFieldColumns` → `data-multi-field` on a grid, ON by default; off, no tags and the plain heading menu. Demos: Filtering › "Multi-field columns" | provider, Demos |
+| 7 | Demos: Records' Name column holds Plan, Tier and Status as tags | Demos |
+
+**✅ Done 2026-10-27:** as planned, with four findings. (1) The Name column's own
+filter is Advanced only, so its menu joins Plan, Tier and Status, not Name: a
+field joins only as a plain list. (2) No Select all in a joined menu — every
+value of every field answers nothing. (3) A field the View holds is LEFT OUT of
+the joined menu (a menu is read-only whole, or not at all); its tags are greyed
+and say where it went. (4) The last tag let go is NO filter, not none (Will:
+"clears the filter value"), and a press picks out of All. The cell chip's press
+under All kept the All flag and did nothing — fixed on the way. Will, mid-item:
+the tags a step bigger (12px text in a 20px pill) and the column wide enough —
+Demos sets Name to 300px. The pins are a class key, on the chip's blocks: +52
+bytes an import, not 4.5 KB. TRAP `T-a-joined-menu-answers-each-field`
+
+### `[x]` ✅ 512 — BUG: clearing every active value glitches the filter
+
+Will, 2026-10-27: *"There's still an issue where clearing all active values,
+manually, results in the filter glitching out. There's some crossed wires going
+on, possibly with duplicate or legacy implementations."* "Still": seen before —
+489's none rule (the last value let go is NONE unless "Select none shows all
+data" is on) is the newest path there. First: reproduce it in Demos — the bar,
+the panel, a heading and a cell chip, each with the last value unticked — and
+read each path for a second writer.
+
+**🚧 2026-10-27.** Probed in Demos Records, each path to the last value let go:
+the View bar (Region, from All), the grid's bar (Status), the panel's value
+chips (data and View scopes, the setting off and on) and a heading's menu. Each
+does what 489 says — off: none, 0 rows, the chip on; on: no filter, every row.
+**Found, a crossed wire:** the panel is a column bar holding a bar per scope,
+each bound on its own, and the column's binding heard every section bar's
+events too — a `bar-without-scope` warning on each press, and any request that
+named its scope asked twice. **Fixed:** a binding skips an event that started in
+another control it bound (`T-a-nested-control-steers-through-its-own-binding`).
+**❓ Asked Will for the steps** of the glitch he sees: where (bar, panel, heading,
+cell, tag), which field, which settings, and what it does.
+
+**Will, 2026-10-27:** *"I think the issues caused when removing filters is that
+some filters are still active while being limited (and thus not shown in the UI)
+resulting in the appearance of broken filters and mismatched data."*
+
+**Reproduced** (Demos Records, Limit on): Region AMER + APAC (49 rows); Customer
+Proseware, which has no AMER → AMER is SET ASIDE (174, 349): kept in the
+reading, out of the rows, its row ticked, greyed and DISABLED, and the chip's
+face still reads "Americas…" (4 rows: APAC). Untick APAC by hand and AMER is the
+only pick left — it cannot be unticked, and a filter whose every pick is ruled
+out stays in force (Will, 10-20): 0 rows, a "broken" filter. Clear Customer
+instead and AMER comes back into force unseen (49 rows).
+
+**❓ Asked Will:**
+- **A (my pick):** a pick the filters before it rule out is LET GO at once —
+  dropped from the answer, so the chip, the menu and the rows always agree, and
+  clearing an earlier filter never brings an old pick back. (Every pick ruled out
+  at once: as today, it stays at 0, visible.)
+- **B:** keep it set aside, but its row stays pressable (unticking lets it go),
+  and the chip's face names only the picks in force.
+
+**Will, 2026-10-27: "Your picks" — A. ✅ Done 2026-10-27:** the walk still sets a
+ruled-out pick aside, so the load is right first time; the source then LETS IT
+GO — `QueryContext.letGo(scope, field, keys)` takes it out of the applied answer
+and the draft alike, asks no Apply, and tells one compile (the rows do not
+move). Every pick ruled out at once: as before, it stays at 0. The bench's two
+`aside` acts cost one compile and one walk more, recorded. Tests: unit
+`a-serial-set-chains-its-fields` (let go; the Customer cleared brings nothing
+back), `the-walk-holds-under-change` (a failed walk lets nothing go); Demos
+`reforged-limit-options` (Will's case: AMER + APAC, then Proseware).
+
+### `[x]` ✅ 517 — BUG: letting go of a value empties the panel
+
+Will, 2026-10-28: *"Still issues where deselecting values from a filter makes
+that filter field section in the panel disappear and show 0 matches for field."*
+A screenshot of Records' column: Customer records' Status and Tier wear 0;
+Plan, Tier and Owner show no values.
+
+**Reproduced** (Demos Records, panel mode, Limit and Hide unmatching on): Tier
+Bronze picked, 22 rows; Status trial picked, 6; trial let go, **0** — Status is
+ON at none (`{ picked: [], none: true }`), as 489 A says ("the last value let go
+… the chip stays on at 0"). Every field after it has no rows, so Hide unmatching
+hides Plan's 4 values and Owner's 8, and Tier keeps only its picked Bronze. The
+code does what 489 says; the rule is what reads as broken here. In the column a
+field is a row of value chips, with no Select all and no chip body to press
+off, so none LOOKS like the start (every value unticked) and shows nothing.
+
+**❓ For Will:**
+- **A (my pick):** in the panel, letting go of the last value turns the field
+  OFF — every row, as at the start, which is what it looks like. None stays for
+  a menu: Select all off or an empty Apply, where the chip wears 0 and its body
+  presses it off. A field with no values left says "Limited by the filters
+  before it: no matches." in place of an empty row.
+- **B:** keep 489 A in the panel too, and make it plain: the field's row says
+  "None selected: no rows", and each field after it says "Limited by the filters
+  before it: no matches." in place of an empty row.
+
+**Will, 2026-10-28: A**, then: *"If no values are selected then the field
+should be no longer included in the query."* — in the bar and the panel alike.
+
+**✅ Done 2026-10-28.** That is what "Select none shows all data" does, so it is
+ON by default now (`provider.noneShowsAll`, and Demos' session default): the
+last value let go — a value chip, a menu row, Select all off, an empty Apply —
+takes the field out of the query, and the chip goes off. Will's case: Status
+trial picked, then let go → Status gone from the readings, 100 rows, and Plan,
+Tier and Owner keep every value. Off, it is 489's none. A tiered parent let go
+keeps its pick OFF for its next press (369 Q2), in force nowhere. And a panel
+field whose every value is hidden says "Limited by the filters before it: no
+matches." in their place (`data-spent`, written by the toolbar). Tests: Demos
+`reforged-none-is-an-answer` (7: the default leaves the query in the bar, the
+panel and Will's case; setting off keeps none; the words), sherpa-ui
+`reforged-quick-filter` (the words). A browser that kept "off" from Settings
+keeps it: switch it on in Settings › Filtering.
+
+### `[x]` ✅ 503 — A11Y: the on/off shape is a Sherpa checkbox
+
+Will, 2026-10-27, on 490's tags: *"I think we should try using something like a
+0 (off) or I (on) icon, like ubuntu/GNOME's accessible switches, on togglable UI
+components instead of just a checkmark for on."* Then: *"Actually instead of the
+0 and I icons let's just use a sherpa checkbox component."* And: *"We might need a
+smaller checkbox size to fit into toggleable components."*
+
+So 497's tick becomes a `sherpa-select-checkbox`: empty while off, ticked while
+on, shown only while the page asks (`html[data-toggle-shapes]`). On a filter
+chip, the simple Switch's knob, and a grid cell's tag. To find: a size below the
+checkbox's smallest that sits in a 16-20px pill; and its cost, where a grid draws
+one per tag (300 on a 100-row page) — a checkbox's LOOK on a native box, as the
+Button's is (`sherpa-button-look.css`), may be the light way.
+
+**❓ Asked Will, 2026-10-27.** Found: `sherpa-select-checkbox` is heavy for this —
+each one stamps a box, a label and its own caret `sherpa-button`, so a grid page
+would make 300 of each. Its box is CSS on a native `<input>`.
+- **A (my pick):** lift the box's look into a shared sheet, `.sherpa-checkbox`, as
+  the Button's look was (`.sherpa-button`). The checkbox component wears it, and
+  so does each toggle's shape: the SAME box, one place, no element per toggle. A
+  new `xs` size fits a 16-20px pill.
+- **B:** a real `<sherpa-select-checkbox>` inside each toggle, with a new `xs`
+  size. Literal, but slow where a grid draws hundreds.
+
+**Will, 2026-10-27: A — "but we need an off icon, too."** So the shape shows in
+BOTH states: an EMPTY box while off, a ticked one while on — never only a tick
+on, nothing off.
+
+**✅ Done 2026-10-27:** the Checkbox's box is ONE look, `.sherpa-checkbox` in
+`src/core/sherpa-checkbox-look.css` — its own control wears it, and so does each
+toggle's shape, an empty span: a filter chip's (12-14px), a simple Switch's knob,
+a grid tag's. Ticked by the control it sits in (`aria-pressed`) or, in the
+Switch, by `data-checked` swapped in from `checked`. The size below the
+checkbox's 20 is a property, `--_checkbox-size`, the toggle sets.
+
+### `[x]` ✅ 493 — PRESETS: boolean chips that set a whole context
+
+Will, 2026-10-27: *"Ditch the divider between preset & custom filters in the
+panel mode. Update the definitions so that we're not using simple, single,
+fields as the preset filters. Preset filters should be Advanced filters that
+allow the user to quickly set complex contexts from a simple boolean chip
+toggle. We used to have some of these along the lines of 'High Risk' … I think
+by default that preset filters shouldn't be able to move scope either … we can
+add them to their own section in the panel (labelled Presets) and present each
+chip as a value within that section."*
+
+**Found.** Today a "preset" is a field the page's scope `holds` (Status, Plan,
+Tier, Owner). The old 'High Risk' chips were `custom` chips: each was its own
+named part of the Query (`saved:<id>`, a15ef736). TODO 366 (2026-10-21) took
+that out: a saved filter is a query definition that LOADS into the field chips,
+and the Query names none (5b2e25b8). Records still has three such definitions
+(`savedFilters`: Has open tickets, At risk, Unassigned).
+
+❓ **What does a preset chip DO when it is on?**
+- **A (my pick):** it is its OWN part, as before 366: on, its conditions narrow
+  its scope beside the field chips; off, they go. The field chips do not change,
+  so a reader sees "High Risk" on and still picks Region freely.
+- **B:** it LOADS, as a saved filter does now: on, it fills the field chips with
+  its readings; off, it empties those fields. It is on while they still hold them.
+
+Then, either way: the held simple fields stop being presets (they are the
+page's chips, after the divider); a preset offers no Send to; the panel lists
+the presets as value chips in a "Presets" section; the panel's divider goes.
+
+**Will, 2026-10-27: A.** (a) is done: the panel draws no divider.
+
+**Plan.** The Query part is small — before 366 each scope kept
+`presets: { id: on }` and compile added an on preset's clauses (5b2e25b8 took
+it out). The rest is new.
+
+| # | Step | Where |
+|---|---|---|
+| 1 | A scope's definition lists its `presets`: `{ id, label, where }`, `where` in the plain form a View writes | `page-definition.ts`, `where.ts` |
+| 2 | The Query keeps `presets: { id: on }` per scope — a draft, a View, the kept Query and the Switch's `suspended` carry it; compile adds an on preset's clauses, beside the fields' | `query.ts`, `query-context.ts`, `query-edits.ts` |
+| 3 | The source declares them, says them in `describe(scope)`, and takes `{ preset, on }`; a preset on narrows the counts of every chip in its scope | `data-source.ts`, `source-counts.ts`, `bind-source.ts` |
+| 4 | The bar: a preset is a BOOLEAN chip, `data-preset`, first in its scope; its press toggles it; its tip lists its conditions; no Send to, no drag | toolbar, `sherpa-quick-filter` |
+| 5 | The panel: a "Presets" section, its value chips the presets | toolbar portrait |
+| 6 | Demos: Records' data scope gets presets (High risk: health under 60 and open tickets; Unassigned; Has open tickets); its held simple fields are the page's chips, after the divider | Demos |
+
+**Done (2026-10-27).** Steps 1–6 as planned; Records' presets are High risk
+(health under 60, open tickets), Enterprise trials (Enterprise and trial) and
+Needs attention (over 2 open tickets, not churned). The held fields 452 called
+"presets" are `own` now. Found on the way: a bar re-folded only when it resized,
+never when a chip grew — a pick naming itself ran the chips under the actions; it
+watches each chip now. Tests: `a-preset-is-its-own-part`, Demos `reforged-presets`.
+
+### `[x]` ✅ 486 — BUG: no bottom shadow over the grid's pinned columns
+
+Will, 2026-10-27: *"Related to 481, pinned columns don't show an inner shadow at
+the bottom if there is overflow content (more cells) in that direction."* Then:
+*"Actually we need to check all overflow scroll under shadow logic in the data
+grid from both pinned and unpinned columns."*
+
+**Done.** The bottom edge sat under the pinned body cells (level 1 under 2); it
+now runs over every column (level 3 — it never meets the header). Checked at
+the top-left, middle and bottom-right: top under the header over every column,
+bottom over every column, start past the pinned Name, end before Actions —
+each only while content lies that way. Test: `reforged-scroll-shadow`.
+
+### `[x]` ✅ 485 — SETTING: save filters at any scope, off by default
+
+Will, 2026-10-27: *"Add a setting to allow Saving Filters at any scope. By
+default it is off which will mean we can only save filter definitions at a local
+scope (and also only apply them at a local scope). When off there will be no
+need for a Save Filters button/menu in the View Context toolbar or panel."*
+
+**✅ Done 2026-10-27:** `provider.saveAnyScope`, OFF unless the app says (Demos:
+Filtering › "Save filters at any scope", off). Off, a set is ONE local scope's:
+the provider hears which bar asked to save (in capture, before the host names
+it) and keeps that scope alone; each bar is told only its own scope's sets; a
+set taken changes its scope and leaves the rest (`takeSet(…, local)`). The
+View's bar and the panel get `data-no-saves`: no Save rows, no Saved split, no
+sets — `saves(host)` is the one test. A set that names the View, or several
+scopes (Records' page set "At risk"), is listed nowhere until the setting is on.
+Demos: "Save filters" asks for a name when the set taken is another scope's. On,
+every scope as before; the old tests run with it on. On the way: the token
+script dropped a SECOND class key joining one block — the menu row's ruled-out
+pin went when 490's tag joined first (fixed, 65a923d4).
+TRAP `T-saved-filters-are-every-scope`
+
+### `[x]` ✅ 505 — BUG: the panel's Presets are one per row
+
+Will, 2026-10-27: *"Preset filter sections in the panel are showing one filter
+per row. We should display them in a single, wrapping, row like we do with other
+section values."* From 493, which gave the presets their own section.
+
+**✅ Done 2026-10-27:** a portrait bar's chips flow in ONE wrapping row: a preset
+sits beside the next, every other chip takes a row of its own (16px apart, the
+presets' rows 4). With headings in a column, the bar's chips sit in the value
+column and every other chip reaches back across the labels, so a wrapped line of
+presets stays under the first.
+
+### `[x]` ✅ 506 — LOOK: a group row's leading padding, one step more
+
+Will, 2026-10-27: *"The group row left padding needs to be increased a notch."*
+
+**✅ Done 2026-10-27:** 8px, at rest and while the row scrolls sideways.
+
+### `[x]` ✅ 507 — LOOK: grid tags without the data-viz colours
+
+Will, 2026-10-27: *"The chip colours in the data grid cells are not great. Let's
+ditch linking them to the data viz colours."* 490's tags take each value's
+series fill (`paintSwatch`); they go back to the plain Tag look, and keep the
+filter-on colours while picked.
+
+**✅ Done 2026-10-27:** as written; `paintSwatch` stays, the chip's swatch uses it.
+
+### `[x]` ✅ 510 — PRESETS: stacked Advanced conditions, in the query
+
+Will, 2026-10-27: *"Preset filters should be a wrapper around stacked advanced
+filter conditions that get injected into the overall filter query. The filter
+query component should broadcast the changes out to all other UI components."*
+
+**Today (493):** a preset is its scope's own part — `presets: {id: true}` in the
+Query, its `where` compiled apart (`presetClauses`) and ANDed in. No field's chip
+or heading shows what it does.
+
+**Read as:** a preset ON writes its conditions into each field's reading — High
+risk puts `Health < 60` on Health and `Tickets > 0` on Tickets, as Advanced rows —
+so every chip, heading, cell chip and chart shows them; OFF takes those rows back
+out. To settle as it starts (each a short ❓ if the code does not answer it):
+- a field the reader already filters: the preset's rows join its own (AND), or
+  replace them while on?
+- the reader edits a row a preset put there: the preset turns off, or stays on
+  while its rows are all still there?
+- two presets on one field: their rows stack, each removed with its preset.
+
+**❓ Asked Will, 2026-10-27** — the one choice the rest follows from. A preset
+turned on where a field already has the reader's own filter:
+- **A (my pick):** its conditions are ADDED (AND) to the field's own; the preset
+  reads ON while every one of its conditions is still in the query, so editing
+  one away turns it off. One truth: the query.
+- **B:** it REPLACES the field's own filter while on, and gives it back when off.
+
+**Will, 2026-10-27: "Your picks" — A. ✅ Done 2026-10-27.** The Query keeps the
+presets (`declarePresets`); ON writes each field's rows into its answer as
+Advanced rows ANDed into every run (`withRows`), at the field's HOME — Records'
+High risk puts `lessThan(60)` on the View's Health chip and adds a Tickets chip
+`greaterThan(0)` to the grid's bar — and OFF takes them out (`withoutRows`; a
+field left with only its own Simple picks is Simple again). Its on is read from
+the fields (`presetOn`), so an edited row turns it off and a field's change
+redraws its chip. A preset press applies the fields it moved at once, in a
+scope that does not wait. The `presets` flag and the separate compile
+(`presetClauses`) went; an old stored `presets` is dropped and reported once.
+Tests: unit `a-preset-is-its-own-part` (4), `a-saved-filter-is-a-query`;
+Demos `reforged-presets`.
+
+### `[x]` ✅ 509 — LOOK: every cell two rows when one is multi-field
+
+Will, 2026-10-27: *"If there are multi-value cells then all cells in the grid
+should have 2 rows so that the value labels align vertically."*
+
+**✅ Done 2026-10-27:** the grid wears `:state(multi-field)` while a shown column
+draws tags; then every row's cells — its box and its ⋮ too — are two lines tall
+(52px) and start at the first, so each value sits on one line across the row.
+
+### `[x]` ✅ 508 — LOOK: a multi-field cell's rows, further apart
+
+Will, 2026-10-27: *"Increase the gap between rows in multi value cells."*
+
+**✅ Done 2026-10-27:** the tag row sits 4px under the text, a step up from 2.
+
+### `[x]` ✅ 504 — LOOK: a softer scroll shadow
+
+Will, 2026-10-27: *"The scroll under inner shadow strength is a bit too harsh. I
+think it could be more in line with other sherpa drop shadow styles. It also
+doesn't need to have particularly large distance values."* The shared
+`.sherpa-scroll-shadow` (see 421, 478, 481, 486, 499): its colour and blur from
+the elevation tokens a drop shadow uses, and a shorter distance. And: *"we don't
+need to show the shadow until scroll start."* — at scroll 0, no shadow at all.
+
+**✅ Done 2026-10-27:** 8px of half the shadow ink, as ONE pair of properties on
+`:host` (`--sherpa-scroll-shadow-size`, `--sherpa-scroll-shadow-ink`) that every
+scroll edge and stuck-header strip reads — five copies of the 12px strip had
+grown. The bottom edge and a sideways end edge show from the first pixel
+scrolled. TRAP `T-a-scroll-shadow-is-drawn-over-the-content`
+
+### `[x]` ✅ 483 — BUG: a section's ⋮ is green while a value is picked
+
+Will, 2026-10-27: *"The overflow menu buttons for panel mode sections uses the
+green active styling when 1 or more filter values is selected. The
+state/styling of this button shouldn't be tied to value selection status other
+than to populate its menu items correctly."*
+
+**Found:** the ⋮ sits in its chip, and an ON chip re-points the Style names for
+everything inside it. **Done:** the ⋮ pins `data-status="default"`, as the
+field's Apply pair already did; its open state is still its own. Test: Demos
+`reforged-filter-column`.
+
+### `[x]` ✅ 482 — LOOK: a divider between preset and added chips
+
+Will, 2026-10-27: *"Put a divider between preset and user added filter chips in
+the toolbar mode. Consider an equivalent visual in the Panel mode, too."*
+
+**Done.** A chip the page's definition holds carries `data-preset`. In a bar the
+last of them draws the toolbar's 1×16 divider after it while a chip the reader
+added follows (none while nothing was added); in a column a rule runs across
+the gap below the last of the page's fields. Test: Demos `reforged-filter-column`.
+
+### `[x]` ✅ 481 — BUG: shadows stack on the grid's pinned columns
+
+Will, 2026-10-27: *"There's some inner shadow stacking on pinned columns when
+other columns are scrolled under them horizontally. Perhaps because cells don't
+have a default white background and are transparent instead?"* Likely 478's
+side edges or 421's header shadow.
+
+**Found:** not the cells (they are white) and not 478: 421's header shadow was a
+strip under EVERY header cell, so the strips of columns scrolled under a pinned
+column piled up over it. **Done:** one edge under the scrolling columns — the
+scroll box's own, at the header's foot, under the pinned cells — and a strip
+only on a pinned header cell and Actions. TRAP `T-a-stuck-header-casts-a-shadow`.
+Test: `reforged-scroll-shadow` (a pixel under the pinned column stays put as
+columns pass under it; the old rule fails it, 204 to 170).
+
+### `[x]` ✅ 480 — BUG: every value toggled off is not "show all"
+
+Will, 2026-10-27: *"Toggling all active filter values to off, in the panel
+mode, doesn't reset back to the correct 'show all when none selected' state that
+I'd expect. I have to manually choose the reset action to correct it. I think
+this is just at the view scope but it's worth checking, and correcting, across
+all scopes."*
+
+**Found:** 403's "Select all off answers no rows" had grown to any list
+emptied while on: a View field's last value let go stayed ON at none, and the
+page showed 0 rows. **Done:** only Select all off says none (the menu reports
+it; the chip keeps it, locked or not). The last value let go turns the chip off:
+every row, in the bar and the panel, every scope. TRAP `T-none-is-an-answer`.
+Tests: sherpa-ui `reforged-menu`; Demos `reforged-none-is-an-answer`.
+
+### `[x]` ✅ 479 — FILTER: a gauge's zones highlight; its needle stays
+
+Will, 2026-10-27: *"When filtering gauge chart segments the needle shouldn't
+move. This chart shows a range with demarked threshold segments. Toggling a
+legend item, or filter chips, for this type of chart should highlight the
+active segments. In the Sherpa Demos records example, the risk gauge chart
+filters should be at the view scope as these are actually segments of the whole
+customer record dataset."*
+
+Changes 477: there a zone turned off narrowed the gauge alone, and moved its
+needle.
+
+Will, 2026-10-27: D1 A — the needle ignores only its OWN field's filter; the
+View's other filters (Customer, Region, Date) still move it. D2 A — picked
+zones keep their colour, the rest fade, as an OFF legend item does; nothing
+picked, all show.
+
+The plan:
+
+| step | what | |
+|---|---|---|
+| 1 | DATA — a binding can be FREE of fields: its rows are the View's less any clause on them, and its own part's too (`free`); and `pickedFor(el, field)` says the picks in force on it | ✅ |
+| 2 | GAUGE — its provider binds it free of its own field, and hands it the zones picked; the others fade | ✅ |
+| 3 | DEMOS — Records' View holds Health, so its gauge legend writes the View's answer (bindSelection's "raised") | ✅ |
+| 4 | Tests, TRAP | ✅ |
+
+**Done.** On Records a zone turned off in the gauge legend, or a Health chip in
+the View, filters the whole page (Records' View holds Health; its At risk View
+and saved filter now name Health there); the gauge fades the zones left out,
+and its needle stays — the View's other filters still move it. On the way: a
+section bound after the View took its field never heard it (the source now
+tells a bar what the View holds as it binds), a rebuild lost a chip's held-above
+mark (kept as state now), a held-above section chip drawn before it rendered
+said nothing (it says "Filter moved to View Context scope." now), and a bar's
+settle could wait for good on a chip a rebuild replaced. TRAP
+`T-a-chart-is-free-of-its-own-field`. Tests: sherpa-ui
+`a-chart-is-free-of-its-own-field`; Demos `reforged-gauge-legend-picks`.
+
+### `[x]` ✅ 478 — LOOK: the scroll shadow works sideways too
+
+Will, 2026-10-26: *"The scroll under inner shadow needs to work for horizontal
+scrolling content, too. The inner shadow needs to be applied to the relevant
+side of the scrolling container when needed."*
+
+The plan: a box's `::before` and `::after` already draw its top and bottom
+edges, so the side edges are a FRAME's — `.sherpa-scroll-frame`, a wrapper
+round the scroll box, whose two pseudo-elements sit over the box's sides and
+follow its sideways scroll (a named scroll timeline the frame scopes). A box
+that pins columns names how far in its edges sit: the grid's start edge is past
+its pinned first column, its end edge before the Actions column. Frames round
+the grid's scroller, the app shell's Context and the dialog's body — the three
+Demos shades.
+
+**Done.** The side edges are two empty spans in the frame, not its
+pseudo-elements: WebKit gives a scoped timeline only to an element, and its
+`::before` ran on no timeline and showed for good. The Records grid scrolled
+sideways shades past its pinned Name column and before Actions; a grid that
+fits shows none. Chromium and WebKit; Firefox has no scroll timeline.
+TRAP `T-a-sideways-scroll-shadow-is-its-frames`. Test: `reforged-scroll-shadow`.
+
+### `[x]` ✅ 477 — FILTER: the gauge's legend takes no part in filtering
+
+Will, 2026-10-26: *"In the demo app the gauge chart has legend items which
+could be filter values but we don't include it in the filtering at all."*
+
+Will: A — as the bar's and the donut's legends. A zone picked narrows the gauge
+alone, in its own section in the panel ("By health"); sent up, it narrows the
+page through the View. And: a number field's BANDS are its values — its
+Simple mode picks At risk / Watch / Healthy, in their status colours, and its
+Advanced keeps the number rows. The same chip in the bar, the panel and the
+gauge's section.
+
+The plan:
+
+| step | what | |
+|---|---|---|
+| 1 | DATA — a banded number field's values are its band names: the catalogue lists them, a picked band compiles to its range (several: either), and the walk counts a row under its band | ✅ |
+| 2 | CHIP — its filter is a list of bands with their status swatches; Advanced asks the number questions | ✅ |
+| 3 | GAUGE — its legend picks its field's bands, as the bar's picks its segments: a part that narrows the gauge alone; Demos' legend is no longer read-only | ✅ |
+| 4 | Docs, TRAP, Demos tests | ✅ |
+
+**Done.** Health's chip picks At risk / Watch / Healthy, each in its status
+colour; its Advanced rows ask number questions, and a band carries over as its
+ends. A row counts under its band, and a pick saves as its names. Both Demos
+gauges (Records' Mean risk, Dashboard's Storage used) have legends that pick:
+a zone turned off narrows the gauge alone, and its section joins the panel's
+Local Context. Its cost: a store not held is asked once more per act (the bench,
+recorded). TRAP `T-a-band-is-a-value-of-its-field`. Tests: sherpa-ui
+`a-band-is-a-value-of-its-field`, `reforged-advanced-rows`; Demos
+`reforged-gauge-legend-picks`.
+
+### `[x]` ✅ 476 — CLEAN-UP: the legacy filter panel goes
+
+Will, 2026-10-26: A — remove `sherpa-filter-panel` now. Only the Demos compare
+page uses it. With it go `filter-field.ts`, its tests, its Gallery story, and
+the TRAPs that only it cites. Closes 425.
+
+**Done.** About 2,400 lines gone. Also gone: the chip's borrowed-menu cache,
+the menu's `data-mode-outside` and `addCondition()`, and `drawFilterActions`'
+save rows — only the old panel used them. 15 TRAPs only it cited are deleted.
+The provider and reset tests now use the column toolbar; the bench's panel is
+a column too. Demos' Filter layouts page shows the column beside its rows. The
+Gallery lost its story, and gained the two it lacked (`data-layout`,
+`data-orientation`) and Metric group's.
+
+### `[x]` ✅ 475 — LOOK: a section's labels line up with its accordion's
+
+Will, 2026-10-26: *"The filter panel section labels should be left aligned with
+the accordion header labels' left side."*
+
+**Done.** A panel accordion's body starts where its heading's text does — the
+header's padding, the chevron and their gap (26px) — so each field name, and
+Organise, sits under "By status" or "Customer records". The View's section
+already lined up. Demos `reforged-filter-column`.
+
+### `[x]` ✅ 474 — LOOK: a narrower label column in the panel
+
+Will, 2026-10-26: *"We can narrow the column for panel section labels
+slightly. Maybe 75-80% of the current width."* (460's column is 120px.)
+
+**Done.** 96px — 80%, on the grid — in the chip and the toolbar's lone-chip
+heading alike. One name no longer fits whole: "Customer" with its icon AND a
+count reads "CUSTO…" (its tooltip says it in full).
+
+### `[x]` ✅ 473 — LOOK: a chip without an icon is as big as one with
+
+Will, 2026-10-26: *"Filter chips with no icon are visually smaller than those
+with icons. We need to increase their size to meet those with icons. Ideally do
+this using padding value changes."*
+
+**Done.** Both were 24px tall; the label had 4px each side, while an icon
+chip's label sits 23px in. A chip with no icon, swatch or dot now pads 8px
+(`space-xs`) each side; a section heading and a legend key keep their own.
+`reforged-quick-filter`.
+
+### `[x]` ✅ 472 — LOOK: no icon on a panel section's header
+
+Will, 2026-10-26: *"We can ditch the icons in the filter panel sections."*
+Asked which: the section headers only ("By status", "Customer records"); a
+field's name keeps its icon.
+
+**Done.** The panel column's accordions wear no icon; their description names
+the component (457). The classic panel keeps its icons. Demos
+`reforged-panel-scope-icon`.
+
+### `[x]` ✅ 471 — LOOK: an accordion header's rows
+
+Will, 2026-10-26: *"The chevron, icon, and heading of an accordion should be on
+the same row and aligned vertically. The description is on a separate row,
+left side flush with the heading label's left side."* (Seen in the panel's
+Local Context sections: "By status" over "Bar Chart", from 457.)
+
+**Done.** The summary row is `align-items: start`; the chevron, icon and badge
+each centre on the heading's line, and the description is the row under it,
+flush with the heading — every accordion, not only the panel's. It replaces
+the 10-22 centre of the whole header. TRAP
+`T-an-accordion-chevron-rides-the-heading-row`; `reforged-accordion`.
+
+### `[x]` ✅ 469 — BUG: Advanced rows rule out no value
+
+Will, 2026-10-26: *"In advanced filters EQUALS And EQUALS compound conditions
+don't work as the second EQUALS condition has all other values invalidated. I
+think we need to ignore invalidating values completely when in advanced filter
+mode."*
+
+**Done.** An Advanced row offers every value, always. Two rules are undone in
+the rows: an AND row offering only what the rows above leave (110 B —
+`rowOffer()` deleted), and greying what the filters before the field rule out
+(349). The Simple list still greys. TRAP `T-an-advanced-row-rules-out-nothing`;
+sherpa-ui `reforged-filter-conditions`.
+
+### `[x]` ✅ 468 — LOOK: Advanced buttons and condition strings follow the active colour
+
+Will, 2026-10-26: *"Filter menu Advance Filter buttons, and advanced filter
+condition string highlighting, should use the same colour scheme that the
+active filters use. Currently they always use the default active purple."*
+
+**Done.** The "condition string highlight" is the grid's match mark — the part
+of a cell a text condition found. It and the pressed f(x) button now take the
+on chip's colour: the button by a pin, `active @filter-on`, and the mark by
+`--sherpa-filter-on-border-base-1`. So "Show active filters in green" turns
+them green with the chips. Demos `reforged-filter-chips-green`.
+
+### `[x]` ✅ 467 — FEATURE: highlight across every scope, or one
+
+Will, 2026-10-26: *"Add a setting to toggle highlighting across all scopes (on
+by default) or to limit highlighting to the filter's current scope."* With 458.
+
+**Done.** `highlightAcross` on the provider and the source, on by default. Off,
+a component outside the driver's scope gets no test (`highlightFor(scope)`); a
+View driver still lights all. Demos: Settings › Filtering › "Highlight across
+every scope"; `reforged-highlight-matches`.
+
+### `[x]` ✅ 446 — LOOK: the Saved filters button is a split
+
+Will, 2026-10-26: *"The 'Saved' filters menu button should be a split button
+group. The left button is 'Save' and triggers the save dialog that lets the
+user name and save the filter configuration. The right button is an icon only,
+menu button that shows the existing menu options (saved definitions, save as,
+manage saved filters)."* Built as the App Header's ★ · Save · ▾: "Save" wears
+443's filter icon, which also sets it apart from the View's ⇪ Save.
+
+**✅ Done 2026-10-26,** in the bar and the column. "Save" asks
+`filters-save-as` (the host's name dialog) and shows only where the filters may
+be saved (`data-saveable`); it stays when the bar folds its actions. The ▾ is
+`.saved-btn` / `.column-saved` as before, so the menu code is unchanged; alone,
+it is a solo filter icon (`data-swap-on="data-saveable"`). Test: Demos
+`reforged-saved-filter` (the split, in the bar and the column).
+
+### `[x]` ✅ 445 — LOOK: the Filters menu button reads Edit, with a pencil
+
+Will, 2026-10-26: *"The 'Filters' menu button label should be changed to
+'Edit'. Change the icon to a pencil, too."* The button only: the menu it opens
+keeps its heading, "Filters". The classic panel is legacy and keeps its own.
+
+**✅ Done 2026-10-26,** in the bar and the column. "Edit" is narrower, so a
+test that folds chips at 300px now folds them at 220.
+
+### `[x]` ✅ 444 — BUG: a metric is taller than its grid row
+
+Found in 402 (2026-10-26). `sherpa-metric.css` says the tile is exactly one
+grid row. Measured alone in the harness, at 1x and 2x: 89 for an 88 row, 79
+for 76 in compact density, 109 for 104 in comfortable. Its parts add to 88 at
+the default (padding 3.5 + border 0.5 each side, header 20, gap 4, line 56),
+so 1px comes from somewhere not yet found; compact and comfortable miss by
+more. A fixed or fit row, and a metric group, hold it to the row, so its foot
+runs into its padding.
+
+**Found, 2026-10-26:** Chromium draws the 0.5px border as 1px, at 1x AND 2x
+(its computed `border-top-width` is 1px), so the padding's 0.5 allowance is
+1px short. Compact and comfortable miss by more because the header (20) and
+the value line (52 / 60) do not follow the row (76 / 104).
+❓ **A (my pick):** draw the edge INSIDE, as Figma's inside stroke (it takes
+no room), so the default is exactly 88; for compact and comfortable, take
+Figma's Metric at those densities. **B:** leave it: a held row clips 1–5px
+of padding. **Will, 2026-10-26: A.**
+
+**Part 1, done.** The edge is drawn inside — four inset shadows, one per edge —
+and the padding is the full 4 / 8, so at the default density the tile is
+exactly 88. TRAP `T-a-metric-stroke-takes-no-room`; `reforged-metric`.
+
+❓ **Part 2, waits for Figma.** On its own the tile is 78 in compact (row 76)
+and 108 in comfortable (row 104): its value-and-trend block (h1 line + gap +
+small line) is 2–4px taller than those rows leave it; a held row clips that.
+A says take Figma's Metric at those densities — the Desktop Bridge plugin was
+not connected (2026-10-26). Open it, and this is a light pull.
+
+**Part 2, done (2026-10-27).** Read live through the Bridge: Figma's Metric is
+a FIXED frame, 96 tall at every density, so it gives no compact or comfortable
+size. Density moves spacing, not the text's line heights. So the tile's height
+IS the row (`--sherpa-display-mode-size-row`: 76 / 88 / 104), the card row
+takes what is left, and the space between value and trend is 2 / 8 / 8 — the
+default is unchanged. TRAP `T-a-metric-is-one-row-at-every-density`.
+
+### `[x]` ✅ 441 — FEATURE: Highlight matches
+
+Will, 2026-10-23, in 436: *"Highlight matches (Highlights grid rows, chart
+segments etc. that match the target filter. With this on, every filter chip
+will have to have a menu with a 'Highlight matches' option to set it as the
+driver for highlighting)"*. Its own item, after 436's other switches (Will).
+A data-layer concept first: a HIGHLIGHT that marks rows without filtering
+them, one driver at a time; then who draws it (grid rows, chart segments,
+legend items) and how a chip says it drives. Plan, with ❓, before building.
+
+**Plan, 2026-10-23.** What is there: `matchesFilter(row, filter)` and
+`readingClause(facts, reading)` already test one row against one chip; the
+grid marks matched TEXT (`needles` → `<mark class="match">`), never a row;
+a chart segment knows its group key and value, not its rows (`summarise`);
+nothing else in the data layer marks without filtering.
+
+| # | Step | Where |
+|---|---|---|
+| 1 | The Query holds ONE driver: `highlight: { scope, field }`. `compile()` compiles the driver's reading on its own too, as `highlight`. A saved filter and a draft keep it, as they keep the rest | `query.ts`, `query-context.ts` |
+| 2 | A request: `{ highlight: field }` / `{ highlight: null }`, through `quick-filter-change` and `bindSource`'s `ask()` | `query.ts`, `bind-source.ts` |
+| 3 | The chip's menu gets a "Highlight matches" row (ticked while it drives) while its bar has `data-highlight-matches`, written by `provider.highlight` from the app's switch, as 436's are | toolbar, `filter-menu.ts`, provider |
+| 4 | The driver chip wears a highlighter icon and its own look, so a reader sees it marks, not filters | `sherpa-quick-filter` |
+| 5 | The grid: a matched row gets `data-highlight`; CSS gives it a tint through `--_row-fill` (a pin in `state-pins.yaml`) | `sherpa-data-grid` |
+| 6 | The charts: by ❓B below | the provider's `summarise` pass, then each chart |
+| 7 | Demos: "Highlight matches" on Settings › Filtering (Look) | Demos |
+
+❓ **A — what the driver does to the rows.** My reading: it STOPS
+filtering — every row the other chips leave stays, and those it matches light
+up. (Filter AND highlight would light every row, since each shown row
+already matches.)
+
+❓ **B — how a chart shows it.** A chart segment is a group (Status = Open),
+not a row. (1) Each segment draws the MATCHED part inside it: a bar of 40
+with 12 matches draws 12 strong over 40 pale, as Tableau and Power BI do.
+True, more work: the provider sums the rows twice, and each chart draws a
+second mark. (2) A segment lights if ANY of its rows match, the rest dim.
+Cheap, but a Customer driver over a Status chart lights almost every bar.
+My pick: (1), bar and radial first, line and gauge after.
+
+Will, 2026-10-23: **A** — the driver FILTERS AND marks (it matters where a
+component does not follow the driver's scope: a chart beside a grid's Local
+chip shows that chip's share). **B** — (1), the matched part.
+
+- ✅ **1–2**, 2026-10-23: `ScopeQuery.highlight` names the driver, one in the
+  Query (`query.highlight(scope, field, on)`, `query.highlighted`), in both
+  copies; `compile()` gives `highlight`, the driver's own clause. The source's
+  `highlight` tests a row; a mark moves no row, so it pushes each component
+  again (the push guard keys on it), and a component's `drawHighlight(test)`
+  gets it. A bar over the driver's scope gets `data-highlight-field`. A chip
+  asks `{ field, highlight: true }`.
+- ✅ **3–5, 7**, 2026-10-23: a filter menu has its own "Highlight matches"
+  switch above its footer (`data-highlightable`, on while `data-highlight`;
+  `menu-highlight-change`), which a bar offers on every chip but a picker's
+  while `data-highlight-matches` (`provider.highlight`). The driving chip wears
+  the highlighter — Style `saturated/warning` (#FFC44C) — and the grid tints
+  each row the test matches, pale (`drawHighlight`). Demos: "Highlight
+  matches" on Settings › Filtering (Look).
+- ✅ **6, bar and radial**, 2026-10-23: `summariseMarked()` sums a chart's
+  rows twice — all, and those the driver matches — and gives each segment its
+  `matched` (`ChartDatum.matched`). A bar goes pale and draws its matched share
+  solid from the zero line (`.bar-match`); a slice goes pale and a second path
+  draws its matched share of the angle from its start (`.slice-match`).
+- ✅ **6, line and gauge**, 2026-10-23: `summariseMarked()` gives each series
+  point its `matched` (`Series.matched`) and a value its own; the line goes pale
+  and its matched values are a second line on the same scale (`.line-match`);
+  the gauge draws a second needle, in the highlighter, at its matched value
+  (`.needle-match`). A plain number has nowhere to say it, so a KPI is unmarked.
+- ✅ A section in portrait shows its values as chips and keeps its menu shut, so
+  its ⋮ offers "Highlight matches" too — "Stop highlighting" while it drives.
+
+✅ 2026-10-24. Full run, three engines: sherpa-ui 3311 passed, the node tests
+695, the a11y gate 67; Demos 554. Its failures were the Mac's sleep — each
+passes alone, awake (`caffeinate -dis`) — and one test of mine, which read a
+row's fill mid-fade in Firefox: it waits for the row's transition now.
+Not done: a boolean chip with no menu cannot drive; a tip does not say its
+matched part.
+
+### `[x]` ✅ 440 — LOOK: "View Context" over the View's filters in toolbar mode
+
+Will, 2026-10-23: *"It would be good to show the 'View context' label in
+toolbar mode just above the first 'View' filter chip."* Read as: the View
+scope's first FILTER chip (Customer on Records) — the View picker chip is not
+a filter (432, 433). The label is the scope's own name, as the panel's. Done
+with 433 (the divider after the View chip) and 434 (the title moves up, which
+frees the row above the chips).
+
+✅ 2026-10-23: a View bar (`data-type="view"`) writes its scope's name — its
+`data-heading`, the source's label — on each chip as `data-context`; CSS shows
+it, 12px secondary, over the first shown filter chip (`:nth-child(1 of …)`),
+so a folded or persistent chip never carries it. The chip run clips across
+only (`overflow: clip visible`), so the label shows above it. Not in panel
+mode.
+
+### `[x]` ✅ 439 — PERF: the panel's chips draw late, and `available` runs 6 times
+
+Found in 435, 2026-10-23, Records in panel mode at 4x CPU: the column's cards
+show at ~720ms with headers only; each section is told its filters
+(`available()`) ~6 times between 768 and 795ms; the chips draw at ~1620ms. The
+View scope, at the top, grows ~250px and pushes the scopes under it: CLS
+0.053 with 435's flat View heading (0.047 as an accordion, 0.056 as two
+cards). Demos' `reforged-panel-mode-does-not-shift` bounds panel mode at Good
+(0.1) until this is fixed; put it back to 0.05 after. Draw the chips with the column, or hold the column's
+body back until the View's are drawn (a View with no filters must still show).
+
+✅ 2026-10-23: a late bar joining is told its Add list and the sets ALONE
+(`#offer(only)`): once per section, not ~6. And the column keeps the Local
+Context unseen until the View's bar has drawn (`:state(populated)`), so the
+View growing moves nothing: panel CLS 0.054 → 0.003 at 4x, and the Demos bound
+is 0.05 again. The draw itself is still one ~650ms task at 4x.
+TRAP T-the-local-context-waits-for-the-view
+
+### `[x]` ✅ 438 — BUG: the column has no "Date" or "Organise" section labels
+
+Will, 2026-10-23: *"In the filter toolbar as a column/panel mode we lose the
+section labels for 'Date' and 'Organise' that we had in the old filter panel.
+We need to support 1 or more filter chips being in a named section that can be
+used in the panel mode of the filter toolbar."* The old panel headed Group and
+Sort "Organise", and the Date chip "Date". A portrait toolbar needs a named
+group of chips: a label, then 1 or more chips under it.
+
+Will, 2026-10-23, the model: *"We could organise filter chips in the filter
+toolbar like*
+
+```
+Section 1 (Explicitly Named)
+  - Chip A
+  - Chip B
+Section 2 (Implicit from chip field name)
+  - Chip
+Section 3 (Explicitly Named)
+  - Chip
+```
+
+*That would make toggling from toolbar to panel mode super easy. It's very
+scalable, too."* So a toolbar's chips are ALWAYS in sections: a named one
+holds 1 or more chips; a chip in none is a section of its own, named by its
+field. Portrait draws each section with its name; landscape draws the same
+chips in a row (perhaps a divider between sections).
+
+✅ 2026-10-23: a field declares `section` in the page definition (schema,
+`FieldDeclaration`, `FilterDef`). In portrait the toolbar heads each run once,
+over its first chip: a named section's name; a lone chip's field ("DATE");
+none for a list field, which heads itself; "ORGANISE" over Group and Sort —
+all in the list heading's look. Landscape is unchanged (a divider between
+sections there is easy, if wanted). TRAP T-a-section-is-headed-once
+
+### `[x]` ✅ 437 — BUG: a chip in a section shows its section's tooltip too
+
+Will, 2026-10-23: *"In panel mode, hovering over a chip shows both the chip and
+section tooltip. The section tooltip should only show when hovering over the
+section header."* A section is a `sherpa-quick-filter` (`data-layout=
+"section"`): its tooltip is the host's, so a value chip inside it, hovered,
+counts as hovering the section too.
+
+✅ 2026-10-23: the chip's tooltip was anchored on its whole `.chip`, which in
+a section holds the value chips. A section swaps it to `.body`, its header
+(`data-swap-on="data-layout=section"`), and `sherpa-tooltip` now moves its
+listeners when `data-anchor` changes — it read the anchor once, at connect.
+
+### `[x]` ✅ 436 — DEMOS: a Filtering page in Settings, and a switch for each part
+
+Will, 2026-10-23: *"Create a 'Filtering' space in the navigation for the
+Sherpa Demo Settings and move all filtering related settings there.*
+
+*Add toggleable settings for various aspects of the filtering. Things like:*
+
+- *Include View Context filters in panel mode (Keep as toolbar if off and in
+  panel mode)*
+- *Include Customer Sites*
+- *Show Badge for number of applied filters (Need to pick a place to put this
+  in the toolbar in each presentation mode)*
+- *Show Badge for matching counts*
+- *Require Apply on all filter changes*
+- *Separate Add Filter and Saved Filter menus (splits Filters button and menu
+  into 2. When split, save actions are put in the Save menu.)*
+- *Highlight matches (Highlights grid rows, chart segments etc. that match the
+  target filter. With this on, every filter chip will have to have a menu with
+  a 'Highlight matches' option to set it as the driver for highlighting)*
+
+*There may be other things that make sense to add as configurable options,
+from things we've already implemented, too."*
+
+Each switch is the app's choice, set on a component by an attribute the
+library offers — Sherpa itself stays app agnostic. Some are new library work
+(the applied-filters badge's place in each mode, the split menu, Highlight
+matches); plan those first, with a ❓ for each place to pick. Today's filter
+settings live on Settings › Application (Filtering section).
+
+**Plan, 2026-10-23.** Each switch is a session key in Demos, set on a
+component or the provider through an option the library offers.
+
+| # | Switch | Library | Demos |
+|---|---|---|---|
+| a | The page itself: Settings › **Filtering**, a nav row; the Application page's Filtering switches move to it (filter mode, Keep each view's filters, Limit to matching filters, Hide invalid filters, Show active filters in green) | — | `app.json`, `templates/filtering.html` |
+| b | **Include View Context in panel mode** — off: the View stays a toolbar in the header | panel mode steps back only the bars a column COVERS (today every landscape bar) | the column's `data-scope`: `view data` or `data` |
+| c | **Include Customer Sites** | a way for an app to leave a field's `child` out of its definition as it opens (a definition hook, or a source option) | the Customer field's Sites |
+| d | **Badge: number of applied filters** — ❓ where, per mode | a count badge the bar and the column draw | — |
+| e | **Badge: matching counts** — off: no chip says its matches | a provider switch: no results drawn | — |
+| f | **Require Apply on every change** | a source/provider option: every scope waits for Apply, as a remote store's does | — |
+| g | **Separate Add Filter and Saved Filter menus** — ❓ the Saved menu's place and rows | a second menu button; the save rows move to it from the ⋮ (430) | — |
+| h | **Highlight matches** — ❓ its own item | a data-layer HIGHLIGHT (a reading that marks, not filters), drawn by the grid's rows and the charts' segments; every chip's menu gets "Highlight matches" to make it the driver | — |
+| i | Others already built, as switches: the filter Switch (hidden since 425 G7), the "View Context" label in toolbar mode (440), the section headings in panel mode (438), the scroll shadows (401) | an attribute each, where none yet | — |
+
+Will, 2026-10-23: **d** — on the Filters button: in toolbar mode its badge
+counts the APPLIED filters (not the chips folded away), and in panel mode the
+same badge sits beside the panel's "Filters" title. **g** — a "Saved ▾" button
+right of Filters: the saved sets (a tick takes one), then Save / Save as /
+Delete, then Manage Saved Filters; the ⋮ keeps Reset, and the Filters menu
+only filters. **h** — its own item, after: 441.
+
+- ✅ **a**, 2026-10-23: Settings › Filtering (`templates/filtering.html`, a row
+  in `app.json`): Layout (filter mode, toolbars or a panel, which the provider
+  now follows from the session), Behaviour (Keep each view's filters, Limit,
+  Hide invalid filters) and Look (Show active filters in green). Application
+  keeps Notifications, Navigation, Layout and Experiments.
+- ✅ **b**, 2026-10-23: "Include View Context in the panel" (Layout). Off, the
+  column's `data-scope` is `data`, and its View bar stays a whole toolbar in
+  the header. Library: a bar steps back only where a column answers for its
+  scope; `data-column` makes a portrait toolbar a column over one scope; the
+  provider binds a column's scopes as a list.
+- ✅ **e**, 2026-10-23: "Show match counts" (Look). `provider.results`, on by
+  default, marks every bar and panel; a toolbar with `data-no-results` draws no
+  count — no chip's, no value chip's, no shut scope's badge.
+- ✅ **f**, 2026-10-23: "Require Apply on every change" (Behaviour).
+  `provider.applyEvery` waits every scope the page declares; each bar shows
+  its own Apply. Off sends what waits.
+- ✅ **d**, 2026-10-23: "Count the filters applied" (Look). `provider.countApplied`;
+  `source.appliedCount(scopes, parts)` counts the fields that filter by their
+  applied readings; the provider writes each control's `data-applied`. The
+  Filters badge says it; in panel mode, a badge beside the column's "Filters".
+- ✅ **g**, 2026-10-23: "Separate Add Filter and Saved Filter menus" (Layout).
+  `provider.savedMenu` → `data-saved-menu`: a "Saved ▾" button right of
+  Filters, in the bar and the column — the sets (a tick takes one at once),
+  the save rows, Manage Saved Filters (`savedMenuDef`, `drawSaveActions`). The
+  Filters menu and the ⋮ then hold none of them.
+- ✅ **c**, 2026-10-23: "Include Customer Sites" (Behaviour). The outlet's
+  `definition(context, def)` option is the app's last word on a definition as
+  its Context opens (a copy); `outlet.reload()` opens the Context again, and
+  waits while Settings is open. Off, Demos drops each field's `child`.
+- ✅ **i**, 2026-10-23: three more switches. "Show the filter Switch"
+  (Behaviour) — `provider.switchable` writes each bar's `data-switchable`, and
+  until the app sets it a bar keeps its own. "Show the View Context label" and
+  "Show section headings" (Look) — `provider.contextLabel` / `provider.sections`
+  → `data-no-context-label` / `data-no-sections`, CSS only. The scroll shadows
+  are left out: they are app-wide, not a filter setting.
+
+✅ 2026-10-23: a–g and i built; h is 441. Full run, three engines: sherpa-ui
+3288 passed and Demos 555 passed, every failure load (each passes alone).
+WebKit closes no Settings opened from the URL on Escape, so the two new
+Demos tests close it by the back arrow.
+
+### `[x]` ✅ 435 — LOOK: the panel's View scope and component scopes, a container each
+
+Will, 2026-10-23: *"In panel mode for the filter toolbar put the view scope
+content in a container and the component scopes in another container."* And: *"Stack those containers vertically and have 16px gutter
+between them."* And: *"Change the label 'View filters' to be 'View
+Context'. This section, once in the new split containers, will not need to be
+an accordion. Just put the content into the container body."*
+Today the column is ONE `sherpa-container`: its header (Filters, search), then
+each scope an accordion, the View's set apart by a divider (425 G13). Check how
+the two cards share the column's height and its scroll (each scrolls, or the
+column), and where the header and search go.
+
+Will picked A: the header (Filters, Save, the Filters menu, ⋮, search) stays
+ABOVE both cards. Built as two cards (3309cc68), then Will: *"I'm not a fan of
+the 2 containers for filter scopes. I think we just need better visual
+separation of the scopes in 1 container."* Banded headers, tried next: *"The
+banded headers arent great. I was thinking more like: View Context — Filter
+sections; White space; Divider (light grey); White space; Local Context —
+Filter sections."* He picked small sub-headings for the component scopes.
+
+Then: *"Context labels are far too large."* — 16px down to the section
+header's small size, 12px.
+
+✅ 2026-10-23: ONE container. "View Context" is a plain label (12px, a
+portrait toolbar with `data-flat`: a section header with Apply and Discard,
+then its fields — no accordion, no icon); white space, a light grey rule,
+white space; then the "Local Context" label, over each component scope as an accordion
+(14px), as before. Demos' page definitions name the View "View Context"; the
+Move row says "Move to View Context". The templates every toolbar variant
+clones moved to one family file, `toolbar-rows.html`.
+
+### `[x]` ✅ 434 — LOOK: the App Header's title joins its actions' row
+
+Will, 2026-10-23: *"In the App Header, move the icon and title label to be on
+the same row as the Save, Ask N-zo etc. actions."* Today the top row holds the
+actions (★ Save ▾, Ask N-zo and the rest, TODO 428) and the icon and title sit
+on the row under it, above the filter toolbar.
+
+✅ 2026-10-23: the title row is in row 1, after the back button and crumbs;
+the actions keep the right end (an auto margin), and the title truncates first.
+The header stays a fixed 120 with the filters at its foot, so the band above
+them is free — 440's "View Context" label goes there.
+Will, after: keep the 120 (A), and look at the space with the label in it.
+
+### `[x]` ✅ 433 — LOOK: a divider after the View chip
+
+Will, 2026-10-23: *"Also add a divider after the View chip in the toolbar."*
+
+✅ 2026-10-23: the bar's 1×16 divider, as the View chip's own `::after`, while
+a filter chip follows it and never in panel mode (the View chip is alone
+there). TRAP T-a-divider-needs-a-neighbour-on-both-sides
+
+### `[x]` ✅ 432 — LOOK: the View chip never looks active
+
+Will, 2026-10-23: *"The 'Views' filter chip is a unique case and doesn't need
+any active/success green styling."* Today it takes the active look (magenta),
+and Settings › "Show active filters in green" makes it green.
+
+✅ 2026-10-23: the on pin is `[data-current]:not([data-persistent])` in
+`scripts/figma-data/state-pins.yaml`, and the thicker on border skips it too. A
+persistent chip — only the View chip — is a picker, always on, so on says
+nothing: it wears the plain look, never active or green.
+
+### `[x]` ✅ 431 — LOOK: Discard says "Discard"
+
+Will, 2026-10-23: *"Add a 'Discard' label to the discard button in the filter
+toolbar."* Today it is icon-only (×). See 417: Discard is to wear a trash-can
+icon too.
+
+✅ 2026-10-23: "Discard", with its ×, in the bar, a portrait scope's header and
+the View Context row. 417's trash can is still to come.
+
+### `[x]` ✅ 430 — LOOK: Reset and Save go into the toolbar's ⋮
+
+Will, 2026-10-23: *"Move the Reset, and Save, actions into the overflow menu of
+the filter toolbar."* Today they lead the Filters menu (TODO 383: every filter
+action is that one menu's), and "Save <name>" also sits beside it.
+
+✅ 2026-10-23: the bar's and the column's ⋮ open on Reset filters and Reset all
+on view, then the save rows (Save filters… or Save <name>, Save filters as…,
+Delete filters), then what has folded and Refresh, then the switches. The
+Filters menu keeps only Manage Saved Filters (427). The ⋮ always shows now:
+it is never empty. "Save <name>" stays beside the Filters button. The legacy
+panel is untouched.
+
+### `[x]` ✅ 428 — LOOK: the Favorite and Save group, and Refresh, move
+
+Will, 2026-10-23: *"Move the Favorite & Save button group (and functionality)
+to the App Header component on the left of the Ask N-zo button. Move the
+Refresh Data button to the left of the filter toolbar's overflow menu
+button."* (425 G9 put ★ Save ▾ ⟳ at the end of the header's filter row.)
+
+✅ 2026-10-23: the header's ★ · Save · ▾ group is on its top row, left of Ask
+N-zo (`data-view-actions`); Refresh is the toolbar's again, left of its ⋮, and
+folds into the ⋮ as "Refresh data".
+
+### `[x]` ✅ 427 — UX: Manage Saved Filters
+
+Will, 2026-10-23: *"At the top of the Saved Filters section of the Filters menu
+add a menu item labelled 'Manage Saved Filters'. Clicking this should open a
+dialog where the user can edit the name of, and remove (delete), all saved
+filter definitions. Clicking Apply in the Dialog footer will commit the
+changes. Clicking Cancel in the Footer will discard the changes. Closing the
+Dialog without clicking Apply will discard the changes. Removed definitions
+will need to be inactive (greyed out) until Apply is clicked and the removal
+commited."*
+
+✅ 2026-10-23: the Saved section leads with Manage Saved Filters — a menu
+ACTION row (`MenuItem.action`, a button with no tick box) — on the toolbar and
+its column where the bar saves and the reader has sets of their own. It asks
+`filters-manage`. Demos' `#manage-filters` dialog lists the reader's sets: a
+name field each, and Remove, which greys the row (Restore takes it back).
+Apply deletes, then renames (`provider.renameFilters(id, label)`: in place, its
+id follows its name, the set taken stays taken). Cancel, the close button and
+Escape keep nothing. The page's own sets are not listed: they are never
+renamed or deleted. TRAP T-saved-filters-are-every-scope
+
+### `[x]` ✅ 426 — DEMOS: Records uses the toolbar column, not the filter panel
+
+Will, 2026-10-23: *"Let's update the Records pages in Sherpa Demos to use the new
+filter-toolbar implementation of the panel instead of the filter-panel
+component."* The column was already the default (425 G10); now it is the only
+one: the app shell holds no `sherpa-filter-panel` and Settings › Application
+has no Classic switch. The compare page (Customers › Filter layouts) keeps the
+classic panel. 35 Demos tests drove the classic panel on Records: each moves to
+the column, and a behaviour the column lacks is fixed here or queued below.
+
+- ✅ **BUG, Will 2026-10-23:** *"Toggling legend items doesn't make the relevant
+  filter chips active. E.g if I deactivate the 'Trial' legend item then the
+  Active, Suspended, and Churned filter chips should be active in the panel
+  mode."* A chart's own answer is told a panel (a control over several
+  scopes), and the column dropped it; it hands it to the chart's section now.
+- ✅ **All 35 tests moved (2026-10-23).** What the port found and fixed: two
+  bars over one scope (`drawBarsBehind`, TRAP T-two-bars-over-one-scope); a
+  field sent up learns its way back, on a strip and a section (`#takeWays`); a
+  held field the bar does not offer — a chart's, sent up — is drawn from the
+  scope's description; a section's ⋮ is said on each layout; a held draw lands
+  only if latest, and the ⋮'s Advanced draws it first; a conditions-only field
+  stays a chip (Name); a chart's field moves up from its section; a section
+  held above shows where its filter went in its values' place; its count sits
+  right of its title (TODO 133); an add waits while a menu drafts.
+  Chromium: sherpa-ui 1149, Demos 186.
+
+### `[x]` ✅ 425 — REWORK: the panel is the bar, in portrait
+
+Will, 2026-10-22: *"We need to rethink the filter panel and toolbar approach.
+The elements are the same across both so they should really just be 2
+presentations of the same component … a flip between landscape and portrait
+mode (still consolidating all toolbars and moving the content to the panel area
+for panel mode)."* Left: Toggle, divider, Group, Sort, divider, filter chips
+(toggle part: badge, label; menu part: value label, menu icon, menu). Right:
+Apply, Discard, panel/toolbar toggle, Filters menu, Suggest filters, ⋮. *"If we
+have 2 variants of a filter chip — Field and Values (the default chip), Value
+only (the boolean chip) — we can unpack toolbar chips into a series of Value only
+chips in each filter section of the panel. Where there are tiers of values
+(Customer) the chip unpacks to a series of Field and Value chips … Use HTML and
+CSS as much as possible … Don't remove the existing filter panel. Add a page to
+the demo app with the old panel and the new toolbar orientation side by side."*
+And: Favorite, Save and Refresh may move to the App Header (they never move).
+
+**The plan:** `docs/history/plan-425-portrait-toolbar.md`.
+
+- ✅ **Phase 1 (2026-10-22).** `data-orientation="portrait"` on the bar: its
+  heading (`data-heading`, the scope's name), then its actions, the Switch,
+  Group and Sort, then its fields in a column; nothing folds. Its LIST fields'
+  chips are SECTIONS (`data-layout="section"` on the chip): the toggle part is
+  the heading, the menu part still opens the menu, and each menu row is a VALUE
+  chip whose press picks it through the menu (`values`, `apply()`) — so the
+  field chip stays the one owner, and none, pending, waits and Limit hold as
+  they do in landscape. A date, a number, a long list, Group, Sort and the View
+  chip stay chips. Demos: a **Filter layouts** page (in Customers) — the panel,
+  the portrait bars (View, Customer records) and the rows, over the Records
+  source. Will: *"Hide the app header's filter toolbar in the filter example
+  page"* — a Context's `chrome.filters: false` (app schema) takes the header's
+  filter row away (`data-no-filters` on the app header). Test: Demos
+  `reforged-filter-layouts`. Chromium: sherpa-ui 1148, Demos 172.
+- ✅ **Phase 2 (2026-10-22).** A section's value chips wear their own counts
+  (the bar's `drawValueResults`), read as pending only where the draft changed
+  them (the bar's `drawApplied` → the chip's `applied`), and are greyed and
+  removed as the panel's are (`limitField` with the section's value chips). With
+  Northwind applied and Limit on, Latin America goes in both, alike.
+- ✅ **Phase 3 — tiers (2026-10-22).** In a section, a customer's value chip is a
+  field chip of its own: its menu is its Sites, ticked from the field's picks
+  (all of them while the customer is picked whole). The field chip catches that
+  menu's change (capture) and picks those sites through its own menu, so it
+  stays the one owner. A value chip's body always toggles; its caret opens its
+  Sites. A section is marked pending by its values only — its heading never
+  (its menu button pins `default`, state-pins.yaml), and the source names every
+  waiting field's applied answer, an empty one where nothing is. A customer
+  switched OFF keeps its sites — see "The panel's tiers, matched".
+- ✅ **Phase 4 — a section shuts, and finds (2026-10-22).** A portrait bar's
+  heading is a button: it shuts the section to its heading and its actions (on
+  the heading's row, as a panel scope's header), and shut, a badge says the rows
+  its filters match, its tip each filter's ("Status - 25 matches"). The FIRST
+  portrait bar among its siblings carries the one search (`search(text)` on
+  every portrait bar beside it): a field shows while its name, or one of its
+  values, holds the text.
+- ✅ **The panel's tiers, matched (2026-10-22).** A customer value chip pressed
+  OFF keeps its sites in the answer's `off`, and pressed again brings them back,
+  as the panel's does; the field chip carries `off` in its reading.
+- ✅ **Phase 5 — panel mode, in the app (2026-10-22).** `sherpa-filter-stack`:
+  the provider tells it its scopes (`drawScopes`), and it draws one portrait
+  bar per scope in the panel area — the View first, Switch and Save only on a
+  component scope, no actions on a part scope; it opens, shows and hides as
+  the panel does (`filter-panel-close`). A bar made after the page's bars were
+  drawn is drawn then (`joined`), once. Portrait bars do not step back in panel
+  mode, and carry no View chip (the header's). Demos: Settings › Application ›
+  **Filter panel as toolbars** swaps the panel for the stack; the classic panel
+  stays the default. Test: Demos `reforged-filter-stack`. TRAP
+  T-the-panel-is-the-bar-in-portrait. Chromium: sherpa-ui 1149, Demos 182.
+
+**Will, 2026-10-22 — the gaps, round 2.** *"Both modes are variants of the filter
+toolbar component"*, and *"consolidate into the filter toolbar so that we can
+eventually ditch the old implementation."* So `sherpa-filter-stack` is gone: the
+toolbar in portrait over several scopes (`data-scope="view data"`) IS the column
+(`toolbar-column.ts`), and the provider tells a column from a bar by the scopes
+it asked (`isColumn`). The classic panel is untouched, and nothing links to it.
+
+Will's picks: Favorite, Save and Refresh go to the App Header (A); the new
+panel is the DEFAULT (B).
+
+| | Gap |
+|---|---|
+| ✅ | G1 — a section's heading has a ⋮ in the caret's place (the chip's new `more` slot, the bar's): Move, Reset once answered, Remove where removable |
+| ✅ | G2 — a scope in portrait is not an accordion. Now the toolbar's `portrait` template IS a `sherpa-accordion`: name and icon, a badge while shut, Apply and Discard on its row |
+| ✅ | G3 — ONE Filters menu: the COLUMN's header lists every scope's filters, then what may be added, each row saying its scope; no section has its own |
+| ✅ | G4 — "Move to View filters" — or "Move to / Return to <scope>" on a View chip — in a chip menu's footer beside Remove, and in a section's ⋮. The bar sends the panel's request, `filter-add { scope, ids, from }` |
+| ✅ | G5 — a blue border on the View scope's unapplied chips in portrait. Found: a value chip with its Sites menu open wore the open-menu ring on both halves; a section's value chip no longer does |
+| ✅ | G6 — the panel/toolbar toggle did odd things: on the compare page it gave each portrait bar a mode button and shut the classic panel. Now the mode button is the column's header's alone; a section gets none and never steps back; a column inside `[data-filter-mode="none"]` (the compare page) is never opened or shut by the mode |
+| ✅ | G7 — hide the filter Switch in every mode, for now. The stack sets no `data-switchable`; Demos' bars drop it. The attribute stays |
+| ✅ | G8 — the ONE search is in the column's header, above every scope |
+| ✅ | G9 — Favorite, Save (with Save view as, Delete view) and Refresh are the App Header's (`data-view-actions`), at its filter row's end; the toolbar has none. The outlet lights the header's ★ and marks `data-custom-view` on each `view-change` |
+| ✅ | G10 — the toolbar column is the default panel; Settings › Application › Classic filter panel puts the classic one back. Demos' classic-panel specs say `test.use({ classicPanel: true })` |
+| ✅ | G11 — the column's ⋮ holds only the page's folded buttons and Limit: no Suggest filters, no Refresh view |
+| ✅ | G12 — section spacing, text size and icon size: closer to the classic panel's. A field heading is the small step (12/16), caps and light, its icon the same size; the scopes are accordions as the classic's; a ⋮ in place of the ▾ |
+| ✅ | G13 — a rule between each scope's section; each accordion header keeps its own padding above and below |
+| ✅ | G15 — Suggest filters is the App Header's too (Will: A, 2026-10-23): `data-suggest` puts it beside Ask N-zo, bordered as it is; it still fires `ai-filter-request`. The toolbar has no AI button or ⋮ row |
+| ✅ | G14 — a section's ⋮ offers Advanced where the field does: its menu goes to its rows (`switchMode()`, the menu's own button's door) and opens on them. Answered in Advanced, the section shows the button that says its rows in place of its values; its ⋮ then offers Simple. Also: a chip finds and watches only its OWN menu, not the ⋮'s |
+
+**Round 2, 2026-10-22 — done** (G14 and G15, 2026-10-23). Also found: a SHUT column drew its
+sections, which asked for data, so a trip back to Records over a slow store
+took 990 ms in Firefox (270 with the classic panel); it draws once open now
+(TRAP T-a-shut-column-draws-nothing). 3 engines: sherpa-ui 3316, Demos 545
+(WebKit flakes under a load average of 15–26, green alone). Will to look.
+
+### `[x]` ✅ 424 — BUG: the panel's unapplied chips are not warning; one chip logic
+
+Will, 2026-10-22: *"unapplied chips in the filter panel don't use the warning
+style. I really hope we don't have 2 bespoke implementations of filter chips
+across the filter toolbar and filter panel with custom logic in each. All filter
+chips should be variants of the filter chip component and all logic
+centralised."*
+
+Found: both draw `sherpa-quick-filter`, but the per-field logic around it is
+written twice — the bar's (a chip per field) and the panel's (a chip per value,
+a tiered run, or one answer chip): a told reading, pending, failed, greying,
+results, none. The panel marks pending on its field box and its one answer chip,
+never on a run's value chips, so a run shows no warning. The plan for one chip
+logic is TODO 415's.
+
+**Will, 2026-10-22: "2 go"** — move the logic into one place. The plan, in 11
+commits: `docs/history/plan-424-one-chip-logic.md`.
+
+- ✅ **Step 1 — the warning (2026-10-22).** One door, `markField` in
+  `filter-host.ts`, marks a field's chips and menus pending (warning, Discard
+  on) and failed (critical); the bar marks its one chip through it, the panel
+  every chip of a field — a run, tier parents, the answer chip — and its menus,
+  late-built ones too. A pending run's value chips hide their badges, as the
+  bar's chip does (304). Test: Demos `reforged-panel-scope-header` (a new case).
+- ✅ **Step 2 — drafts (2026-10-22).** The chip says `drafting` — its menu
+  holds a change not yet sent — and both hosts read it into `markField`; the
+  panel now hears a menu's draft, Apply and Cancel as the bar does, so a panel
+  field whose menu holds a draft reads as a warning too.
+- ✅ **Step 3 — greying (2026-10-22).** `limitField` (`filter-host.ts`) tells a
+  field's value chips and menus what the filters before it leave and what its
+  chain offers; the bar and the panel both call it.
+- ✅ **Step 4 — counts (2026-10-22).** `drawCount` (`filter-host.ts`) writes a
+  count on a badge that is not a chip's — a panel field's and a shut scope's —
+  in the chip's words (`countSaid`).
+- ✅ **Step 5 — Reset of Group and Sort (2026-10-22).** The chip's own
+  `clear()` forgets a Group or Sort chip's column and way; the bar's Reset all
+  and the panel's field Reset call it, rather than each clearing it by hand.
+- ✅ **Step 6 — ON after an Apply (2026-10-22).** The chip's `answered` is the
+  one rule — a pick, typing or a row, or none — and the chip, the bar (a filter's
+  Apply, a calendar's pick) and the panel (a value chip's Apply) all use it; the
+  panel's dropped a typed answer and none.
+- ✅ **Step 7 — one object per field, in the panel (2026-10-22).** `FilterField`
+  (`src/core/ui/filter-field.ts`) holds a drawn field's chips, menu, tiers and
+  none, and its answer in and out: `reading`, `draw`, `press`, `takeKids`,
+  `empty`, `answered`. The panel keeps a Map of them; its own helpers for the
+  same (`#readingOf`, `#oneChip`, `#answerChip`, `#chipIn`, `#picked`,
+  `#paintTiers`, `#flipParent`, `#takeKids`, `#empty`) are gone. Each chip says
+  its field in `data-id`. TRAP `T-a-field-is-one-object`. Chromium: sherpa-ui
+  1148, Demos 169.
+- ✅ **Only the changed chips (2026-10-22).** Will: *"All panel chips in a
+  section are being set to unapplied. Just the altered value chips need to be
+  styled."* The source now tells a bound control each waiting field's APPLIED
+  answer (`drawApplied`, sent with `data-pending`); `FilterField.changed` gives
+  the chips whose tick differs from it, and `markField` marks only those. One
+  chip is still its whole field (the bar's, a date). Test: Demos
+  `reforged-panel-scope-header` — one region ticked is pending and the others
+  are not; with EMEA applied, a second region is pending and EMEA is not.
+- ✅ **Step 8 — the bar's fields too (2026-10-22).** The bar reaches each chip's
+  field through the same `FilterField`, laid out as ONE chip (`{ single: true }`):
+  its told answer (`draw`), Reset (`empty`, back to the def's condition — the
+  panel's one chip now does that too), its marks and its limits. Chromium:
+  sherpa-ui 1148, Demos 169.
+- ✅ **Step 9 — timing, once (2026-10-22).** `NextFrame` (`filter-host.ts`)
+  gathers what changed this frame and hands it over once, the next — the bar's
+  condition edits and the panel's field edits; `answerWhenDrawn` gives a menu
+  its answer once it has drawn and redraws its chip — the bar's rebuild and the
+  panel's fill. Three engines: the specs that hold the timing pass (sherpa-ui
+  264, Demos 18).
+- ⏸️ **Step 10 — the panel asks which scopes wait.** Today only the View waits
+  (406), so the panel's "the View waits" is right; nothing to change until a
+  second scope can wait.
+- ✅ **Step 11 — dead code (2026-10-22).** The bar's Group and Sort branches in
+  its click and change handlers are gone: those chips report their own, and
+  never send `quick-filter-click` or `quick-filter-change`. A selector chip's
+  click no longer "puts back" a flip it never made (it is locked).
+
+**✅ Done 2026-10-22.** Every filter chip was already `sherpa-quick-filter`; now
+a FIELD's logic is in one place too: `FilterField` (`filter-field.ts`) for both
+hosts, and `markField`, `limitField`, `drawCount`, `NextFrame`,
+`answerWhenDrawn` (`filter-host.ts`); the chip owns `drafting`, `answered` (on
+after an Apply) and clearing Group and Sort. A panel run marks only the chips a
+draft changed. Three engines: sherpa-ui 3313, Demos 501, Gallery 207, Starter 3,
+node 689. Still each host's own: its layout (a bar's fold, Organise zone, View
+chip, Switch; a panel's sections, header ⋮, inline bodies, search, scope badge).
+
+### `[x]` ✅ 423 — LOOK: an accordion header has a hover
+
+Will, 2026-10-22: *"Accordion headers need a hover style (light grey fill using
+sherpa tokens)"*
+
+**✅ Done 2026-10-22.** The header takes the Style surface's hover step,
+`--sherpa-style-surface-base-1` (base / +1 / +2 = default / hover / down). The
+filter panel paints its sticky scope headers itself, which outranks the
+accordion's own rule, so it says the hover too. Checked by screenshot.
+
+### `[x]` ✅ 422 — BUG: a Customer chip shows no labels until its menu opens
+
+Will, 2026-10-22: *"Customer value labels aren't shown, on the chip, until the
+menu is opened for the first time. So there's an initialisation issue."*
+
+**✅ Done 2026-10-22.** A SITE pick is an object (`{ customer, site }`). A chip
+told its answer read each pick with `String()`, so after a reload — or any
+answer drawn onto the chip — a site pick became "[object Object]" and left the
+face and tip; only the Query still held it. The chip reads picks by
+`valueKey` now, and so do two panel spots that had the same fault. Test: Demos
+`reforged-a-site-pick-keeps-its-label`.
+
+### `[x]` ✅ 421 — LOOK: a stuck element casts a shadow
+
+Will, 2026-10-22: *"Sticky elements should show a drop shadow from the sherpa
+shadow definitions when stuck and scrolled under. All possible with CSS."* With
+401's findings: `scroll-state(stuck: top)` is Chromium only; a scroll-driven
+animation (Chromium and WebKit) can show it once its scroller has moved, and a
+view timeline for one stuck part-way down (a panel's scope header). The shadow
+is the elevation tokens' (`--sherpa-shadow-*`). Settle with 401's A or B.
+
+🚧 2026-10-23: the data grid's header, done — a 12px strip in the shadow
+colour under its last header row, faded in by the grid's scroll (401's way, A).
+Next, after 435 splits the panel into two containers: each component scope's
+sticky header in the column, by a VIEW timeline on its scope
+(`exit-crossing`), so a header lower down shows none until it reaches the top.
+TRAP T-a-stuck-header-casts-a-shadow
+
+✅ 2026-10-23: the panel's Local Context headers too (435 made the View a plain
+label, so it does not stick): each scope names a view timeline, and its
+header's strip fades in from `exit-crossing 0` to `16px`. A Demos test scrolls
+the column in Chromium and WebKit.
+
+### `[x]` ✅ 420 — UX: one ⋮ per panel field section
+
+Will, 2026-10-22: *"Combine all filter panel filter section action buttons into
+a single overflow menu button with an ellipses icon. Clicking this button
+reveals the scope and advanced options."* Today each field's header holds Reset
+(`.field-clear`), Send up / Send down (`.field-raise`, `.field-lower`) and the
+f(x) chip (`.field-advanced`). They become ONE icon-only `ellipses-vertical`
+button with a menu: Send to View filters / Send down, Advanced (on or off),
+Reset — each only where it applies today.
+
+**🚧 Built 2026-10-22:** `.field-more` (icon-only `ellipses-vertical`, named
+"<Field> options") and its `.field-menu`: an Advanced tick row (the ⋮ menu's own
+switch-row look), Send to View filters, Send to / Return to <scope>, Reset
+(hidden while nothing is set). A row a field does not offer is removed, and a
+field with none has no ⋮. The f(x) chip is gone: Advanced is the field's
+`data-advanced` and its tick. **✅ Done 2026-10-22.** 13 test files moved to the
+rows (a helper agent), and three more that looked up "the field's menu" now skip
+the ⋮'s (`sherpa-menu:not(.field-menu)`). A ⋮ whose only row is a hidden Reset is
+hidden too. Chromium: sherpa-ui 1148, Demos 164.
+
+### `[x]` ✅ 419 — BUG: larger text in some menu rows and dialogs
+
+Will, 2026-10-22: *"Some menu items and content in dialogs etc has larger text
+than expected."* To find: which rows and which dialogs, and what sets their
+size — a shared sheet, a row slotted from another tree (the Filters menu's
+action rows, 383, are `.more-item` rows in a filter menu), or the page's own.
+
+**✅ Done 2026-10-22.** Measured on Demos: the shared `:host` rule
+(`sherpa-base.css`) gave every component 16px — the type scale's `lg` step —
+while the body text is 14/20, and `page.css` set the page's font family but no
+size. So content SLOTTED into a component (a dialog's form, a menu's
+`.more-item` rows) inherited 16px, while the components' own parts state their
+sizes. Now the shared host, and `page.css`'s body, are the body size, 14px with
+a 20px line, and `.more-item` states its size too. Every Chromium spec passes
+(1148), Demos 164.
+
+### `[x]` ✅ 418 — LOOK: a shut scope says what its filters match
+
+Will, 2026-10-22: *"A badge with count of matches of all section filters should
+be shown in the accordion header when the accordion is collapsed. The tooltip
+for this badge should show: Filter A - 1 match, Filter B - 2 matches, and so
+on."* With Will's other ask the same day — the View scope's Apply and Discard
+on the right of its accordion header — which needs the accordion's `actions`
+slot moved OUT of its `<summary>` (a button may not hold buttons, TRAP
+`T-an-accordion-action-is-not-a-toggle`).
+
+**✅ Done 2026-10-22.** The accordion is a grid: its card fills it, and the
+`actions` slot is a grid item laid over the header row, outside the summary,
+the titles leaving it its measured room (a ResizeObserver). A host that makes
+the header sticky makes `::part(actions)` sticky too (the panel does). A new
+`badge` slot in the summary shows only while SHUT. The panel: the View scope's
+header holds ONE Apply and an icon-only Discard (the panel's header no longer
+does); every scope's header a badge — the rows its filters leave (the last
+answered field's count) — and its tip each field's, one per line (the tooltip
+keeps line breaks now). Will, later: the header row is CENTRED, in an even 12px
+padding. a11y 68/68. Test: Demos `reforged-panel-scope-header`.
+
+### `[x]` ✅ 417 — LOOK, later: Discard wears a trash can
+
+Will, 2026-10-22: *"Todo later: Use a trash can icon for discard. Add the discard
+icon on the left of menu footer discard buttons."* The bar's and the panel's
+icon-only Discard (406) take it, and every menu footer's Discard leads its label
+with it. Check the icon set has one first.
+
+**✅ Done 2026-10-27:** the set has `trash`. It leads the label of every Discard:
+the bar's Discard all, a portrait scope's and the flat View row's, a field's own
+(451), and both menu footers'. Test: `reforged-discard-icon`.
+
+### `[x]` ✅ 416 — LOOK: an ON cell filter button reads as Discard
+
+Will, 2026-10-22: *"When a grid cell has been filtered on then the cell filter
+button should show a discard icon and be critical status styled."*
+
+**✅ Done 2026-10-22:** the grid sets the cell chip's `data-icon-start` to
+`cross` while its value is in force (the funnel is the default), and a grid pin
+(`'& .cell-filter[data-current]': critical` in state-pins.yaml) paints it
+critical, outranking the chip's own on pin. Test: `reforged-data-grid` (cross
+and critical on, funnel off).
+
+### `[x]` ✅ 415 — REFACTOR: the toolbar and the panel, simplified
+
+Will, 2026-10-22: *"With the second bug it's perhaps time to review the filter
+toolbar and panel code, with the querycontext component now in the data layer,
+to simplify the logic and minimise duplication, redundancy, or divergence where
+we don't need it."* Plan first, with Will, as the optimisations re-plan.
+
+**Planned 2026-10-26.** The bar and the column's sections are already ONE class
+(each section is a portrait toolbar). The excess is in four places: the column's
+header copies the bar's; every change rebuilds every chip, which needs a family
+of "keep what the reader did" workarounds; the bar works out state the chip or
+the Query owns; about 16 report paths are built by hand. Steps, each green on
+its own, in order:
+1. One report door — `#answerOf`, `#ask`, `#chipOf` (S–M).
+2. One test and one lookup — `#defOf`, `#fieldOf`, `#answering`; 12 superseded skips (S).
+3. The toolbar calls the chip, not FilterField; dead code out (`#act` 'clear',
+   the chip's `data-panelled`, the `filtersSuspended` setter, `drawFilterActions`'
+   unused arguments) (S).
+4. One header for the bar and the column (`ToolbarHeader`) — nine copied pairs (M).
+5. The chip owns its on/off and its draft (`:state(drafting)`); `data-pending`
+   comes only from the source (M).
+6. Keep chips across a rebuild: a chip whose def is unchanged is moved, not
+   remade — retires the live-DOM capture, `#keepAnswer`/`#pendingAnswers`,
+   `#heldDraws`, `#painted`, the chip's `#recheckEmpty` (L).
+7. A bound bar asks for its fields one change at a time, as the column does,
+   and is drawn once, by `drawScope` (M–L; D2).
+**Progress.** ✅ 1, 2, 3 (`drawFilterActions` keeps its arguments: the legacy
+panel passes them), ✅ 4 (`toolbar-header.ts`), ✅ 5's DRAFT half (the chip
+shows `:state(drafting)` itself; the bar's six-event sweep is gone). 5's on/off
+half is left: it only touches a bar with no source, which D1 keeps on its own
+path.
+✅ 6, the move: a chip built from the same def and flags is moved, not remade
+(adding Seats on Records kept all four chips). The keep-what-the-reader-did
+helpers still serve a chip that IS remade; retiring them is a follow-up, once
+this has run a while.
+✅ 7, the field list: a bar with a source ASKS for an add (`filter-add {scope,
+ids}` → `take`) or a remove (`filter-remove {scope, id}` → `release`) and is drawn
+back; the whole-list report stays for a host's own bar. Its second half — the
+provider and `drawScope` both drawing a bar — is left: the provider adds the View
+chip in that draw.
+Not touched: the legacy `sherpa-filter-panel` (Demos' compare page still uses
+it — delete it and `filter-field.ts` once that page drops it), the data layer,
+fold/hover/drag/Switch, the cached counts, `values`/`active` on the event.
+
+**Will, 2026-10-26: A, A — and go, steps 1–3 first.**
+✅ **D1 — a toolbar with no source** (its own Switch list, adds, early steers;
+~30 specs and the Gallery use one). **A (pick):** keep it, fenced behind
+`#sourced`, so a bound bar is only ever told. **B:** it binds a private Query,
+one path — most code out, but weight and those specs change.
+✅ **D2 — who owns a scope's field list.** **A (pick):** the Query; a bar asks
+one change at a time, as the column does (retires T-a-bar-reports-its-holds,
+T-a-panel-adds-through-the-bar-that-owns-the-list). **B:** the bar, as ratified.
+
+### `[x]` ✅ 414 — BUG: switching panel and toolbar asks for Apply again
+
+Will, 2026-10-22: *"Toggling between the filter panel and toolbar require
+reapplying the view scope filters. These are just re-presentations of the same
+query and data so this shouldn't happen."* Likely 406: a bar or panel that
+draws again re-sends what it shows, and in a scope that waits that lands as a
+draft.
+
+**Not reproduced, 2026-10-22** (Demos on :4300, a fresh page, the build of
+cfa82795): a Region, Customer and Date pick, applied in the bar or in the
+panel, then the mode button there and back, twice — the Query stays applied,
+nothing reads pending, the rows stay. ❓ Will: the steps, after a reload of
+the page (a tab open across several rebuilds runs old code).
+
+**Will's steps:** Customer values set and applied in the panel, then the toggle:
+the bar's Customer chip reads unapplied and Apply is on. Still not reproduced
+headless (two customers, a site, Limit on, opened in panel mode). **✅ Fixed
+2026-10-22 at its root, a weak compare:** `sameReading` read the picks as an
+ordered JSON string, and a panel and a bar's tree list Customer's picks — a
+customer and its site paths — in their own order, a path as an object or as
+its key. Re-sent by the bar, the same answer read as a change, and waited. It
+compares picks as a set of keys now. Test: `the-same-picks-in-any-order-are-the-same-answer`
+(fails before the fix). Will to confirm on his page.
+
+### `[x]` ✅ 413 — BUG: no count badge on the View's chips in the panel
+
+Will, 2026-10-22: *"Count badges on view scope filters don't show in the filter
+panel."*
+
+**Not reproduced, 2026-10-22** (same page): Customer 10, Region 27 and Date 2
+show on the panel's chips and field headers, as on the bar. A pick NOT yet
+applied shows no count by design (a pending chip's badge waits, TODO 304), and
+in panel mode the bar's Apply is hidden. ❓ Will: the steps, after a reload.
+**Will, 2026-10-22: still missing after a reload.**
+**Will, 2026-10-22: deferred for now.**
+
+**Not reproduced again, 2026-10-22 (after 400).** Will's steps on a fresh build:
+panel mode by its button, picks pressed in the panel (Customer, Region, Date
+Today), the scope's Apply, a reload. Records and Dashboard, in Chromium, Firefox
+and WebKit: every View badge is drawn and visible after the reload (Customer 14,
+Region 2, Date 0 on Records; 130, 65 + 65 on the Dashboard). A toolbar Apply
+then the switch to the panel shows them too. **❓ Will:** a screenshot of the
+panel without its badges, and the page and View it is on.
+
+### `[x]` ✅ 412 — BUG: a chip with 0 matches stays on
+
+Will, 2026-10-22: *"A chip with 0 matches, that returned successfully, should
+still be active and green until the user toggles it. The Date chip in the view
+scope fails to do this."*
+
+**✅ Done 2026-10-22.** `fieldState` counted a pick only when the field's values
+(the days its rows hold) named it, so Today — no rows — was dropped: no clause,
+100 rows, the chip drawn off. Now a range's ends are its values, a date's day is
+added to its list, and "every value ticked is no filter" never applies to a
+date. TRAP `T-no-rows-is-still-an-answer`. Test: `no-rows-is-still-an-answer`.
+Checked on Demos Records: Today, Apply, 0 rows, the chip on.
+
+### `[x]` ✅ 411 — FILTERS: a chip that cannot fetch says so, in critical
+
+Will, 2026-10-22: *"Use critical status on any filter chip that fails to fetch
+data. This isn't the same as there being 0 matches. It's for system, or
+service, errors. Pre-pend these chip's tooltips with 'Unable to fetch data - '."*
+
+**Found (reading, 2026-10-22).** Three reads can fail for one field: its VALUES
+(`declareFromRows`, from `readValues` — today nothing catches it), the KEYS a
+`fetch: "server"` answer asks for (`#fetchKeys` — today a `report()` only), and
+its COUNTS (the walk — today the last walk stays, silently). The page's ROWS
+failing is the source's `error` event; a card already says so.
+
+**Plan:** the source keeps a per-field `failed` map, set where a field's own
+read throws and cleared when it next succeeds, and pushes it to every bound
+control as `data-failed` (a field list), as it does `data-pending`. A bar and
+the panel mark each chip `data-failed`; state-pins.yaml pins it `critical`
+(after pending, so it wins); its tip starts "Unable to fetch data". A failed
+page load: the card alone says it (Will: my pick); a chip says only its own read.
+
+**✅ Done 2026-10-22**, as planned. Tests: `a-field-that-cannot-fetch-says-so`
+(node: marked, then cleared; 0 rows is not a failure), `reforged-a-chip-that-cannot-fetch`
+(critical edge, the tip's lead, the bar and the panel alike).
+
+### `[x]` ✅ 410 — FILTERS: every scope's picks survive a reload
+
+Will, 2026-10-22: *"Selected filter values, in all scopes, should survive a page
+reload. The base definition is only used if there isn't a session definition or
+when the user resets filters."*
+
+**Found 2026-10-22 (probe on Demos Records):** every scope's APPLIED picks
+already survive a reload — the provider keeps the applied Query in the tab's
+session (`sherpa:session:/filters/<page>`) and puts it back; the page
+definition is used only without one, or on a reset. A chart legend in Records
+answers through the View, so the View covers it. The one gap: a View pick NOT
+yet applied (406) was lost.
+
+**✅ Done 2026-10-22:** the kept entry carries the draft too while a pick
+waits (`keptEntry`), and a reload puts that pick back, still waiting
+(`redraft`). Test: Demos `records-persist` (a pending pick survives, pending).
+
+### `[x]` ✅ 409 — WORDS: an Advanced answer reads as its conditions
+
+Will, 2026-10-22: *"Prefix advanced filter value labels, in the chip, tooltip,
+etc., with the condition. Include the condition label between values. Wrap the
+value in parentheses after them like so: `equals(John) AND contains(Smith)`.
+Prefix with an exclamation mark for the negative conditions like so:
+`!equals(John) OR !contains(Smith)`."*
+
+**✅ Done 2026-10-22.** `spellConditions` (`filter-face.ts`) is the one
+wording, for the chip's face, its tip and a grid heading: each row's word, its
+value in brackets (picks by their labels, days as days), `AND` / `OR` between,
+`!` and the positive word for `ne`, `notin`, `notcontains`, `notbetween`. The
+words, my pick: `equals`, `lessThan`, `atMost`, `greaterThan`, `atLeast`,
+`contains`, `startsWith`, `endsWith`, `between`, `last`, `next`; a date's `eq`,
+`lt` and `gt` read `on`, `before`, `after`. Any Advanced answer reads so —
+one row too, and a Simple pick under another condition (`!equals(Gold)`). The
+tip no longer counts rows (`2 conditions applied`): the trap is now
+`T-an-advanced-answer-reads-as-its-conditions`.
+
+### `[x]` ✅ 408 — WORDS: "Reset all on view"
+
+Will, 2026-10-22: *"Change the 'Reset all to default' menu item label to read
+'Reset all on view'."* **✅ Done 2026-10-22**: the bar's Reset menu, the panel's
+and the ⋮ row, with the tests and docs that name it. The trap keeps its id,
+`T-reset-to-default-is-the-views-own`.
+
+### `[x]` ✅ 407 — BUG: None in a Group or Sort menu does nothing
+
+Will, 2026-10-22: *"Selecting 'None' in the Group and Sort filters doesn't clear
+the value and toggle the chips off."* The None row came with 394 (a single list
+leads with None); an arranging chip reads its pick its own way and never heard it.
+
+**✅ Done 2026-10-22.** None's value is empty, so the chip fell back to the
+column it remembered and picked it again. Now None reads as no column, the chip
+forgets it and goes off, and a Sort's None asks to CLEAR (`sort-change` with
+`clear`), not to suspend: nothing is kept to resume. Tests: the toolbar spec
+(both chips off, no column), `none-clears-a-sort` (the binding forgets it).
+
+### `[x]` ✅ 406 — FILTERS: the View scope waits for one Apply
+
+Will, 2026-10-22: *"Overarching the explicit rules for Customer, Region, and Date
+filters requiring and explicit 'Apply' action we should just enforce explicit
+apply actions on any filter elevated to the View Scope. This ensures we don't
+start churning through multiple data sources and stores until absolutely needed.
+Actually this also let's us unify all of their Apply buttons into a single Apply
+button to the left of the toggle filter panel/toolbar button. No need for per
+menu apply buttons. Just Remove and Discard in the menu footers. Put a divider
+between the Apply button and Toggle panel button in the Filter Toolbar."* Then:
+*"We will still need menu footer apply buttons for filters that fetch outside of
+the view scope as well as date filters."*
+
+**The plan:**
+1. **Data layer.** A scope WAITS when it is the View scope, or when its store is
+   remote and it narrows more than one component (today's rule). A waiting
+   scope's field writes go to the DRAFT; `commit()` sends them. Local or remote.
+   Today the draft is a separate Query only over a remote store; it becomes
+   separate whenever a scope can wait, and a write to a scope that does not wait
+   is copied to the applied Query at once. Group, Sort, search and the Switch
+   stay immediate (they arrange; TRAP `T-apply-and-discard-wait-for-a-change`).
+   `pending` and `dirty` are pushed for a waiting scope, local too.
+2. **Bar.** A View-scope bar draws one Apply (`data-act="apply"`) before its
+   `actions` slot — the provider's panel toggle sits first in that slot — and a
+   divider between them. Off until the scope is dirty; it sends `filter-apply`
+   for the scope.
+3. **Menus in the View scope.** No Apply: a pick goes into the draft at once
+   (the chip reads pending). The footer keeps Remove and Discard. Discard puts
+   back that filter's answer as LAST APPLIED (`discard({ field })`), not what
+   the menu opened with — Will: *"Discard buttons, in menus, will have to
+   discard changes since the last apply for that filter."* It stays open (395).
+4. **Outside the View scope**, nothing changes: a fetching filter (remote, or
+   `fetch: "server"`) and a date keep their own Apply (395, 405).
+
+**🚧 Steps 1–4 done 2026-10-22.**
+- Data layer: `query.wait(scope)`, `waiting()`, `named()`, the local draft
+  (`#settle`, `#carry`), no load on a draft-only edit, and a control bound late
+  is told too. A bound control over a scope `wait()` named wears `data-waits`; a
+  remote scope it did not name keeps each menu's own Apply (Will).
+- Bar: ONE Apply (`data-act="apply"`), a divider, then the provider's panel
+  toggle; off until `data-dirty`; it sends `filter-apply`. A menu's Discard
+  sends `filter-discard` for its field. Requests carry no `commit` there.
+- Menus there: `data-discard` (Discard, no Apply), on while `data-pending`.
+- Provider: `source.query.wait(VIEW)` on every page.
+- Will, later: a pending chip wears the WARNING look (it was no fill: the trap
+  is now `T-a-pending-chip-reads-as-a-warning`), and its tip starts
+  "Unapplied changes - ".
+- Tests: `reforged-the-view-waits-for-one-apply`, `reforged-pending-chip`,
+  `a-waiting-scope-holds-its-picks`.
+
+**✅ Done 2026-10-22.** Demos: 13 test files apply where they pick a View filter
+(a helper agent; 45 of 46 pass, the 46th is the old load flake). It found one
+real bug: an Apply sent no `query-change`, so the page's kept Query and the
+View's draft were written before Apply and never after — a View swap or a
+reload lost the applied pick. `commit` now announces. The panel shows its own
+Apply and Discard for a waiting scope, local too (`data-waits`), as it did for
+a remote one. The rows, Limit, the counts and the results follow the APPLIED
+answer until Apply (no fetch before it); a saved filter saves the applied
+answer. 410 settles whether a pick not yet applied survives a reload.
+**Will, 2026-10-22:** *"The apply button is back in the footer of filter
+menus."* The panel built its View menus without the wait — a Date drawn as
+one chip, a drilled field, a customer's sites — and a panel rule gave each its
+own Apply (TRAP `T-a-chip-menu-in-the-panel-commits`). Fixed: in a scope that
+waits, the panel's menus keep Discard alone (its field's applied answer), and
+the panel reports a calendar pick itself, as the bar does. Only the Filters
+menus keep Apply, on purpose: it confirms the filters added or taken off.
+
+**Design question the helper raised, for Will:** a chart legend's press over a
+field the View holds now waits for Apply too (its own ticks move at once, its
+bars and the grid at Apply).
+
+**Will, 2026-10-22, later:** *"Each View Scope filter section in the filter panel
+has an apply and discard button. We should just have 1 apply button in the View
+Scope header to the left of the Filters button. Add an icon only discard to the
+right of the apply button in both the filter section header and filter
+toolbar."* Written: the panel's header holds ONE Apply and an icon-only Discard
+(`.head-apply`, `.head-discard`) while a scope waits, before Save <name> and
+Filters; its fields' own Apply and Discard, and the footer's Apply all, are
+only a remote panel's that does not wait. The bar: Apply, then an icon-only
+Discard (`data-act="discard"`, `filter-discard` for every field), then the
+divider. The View has no header of its own in the panel (an accordion's summary
+may not hold buttons), so the panel's header is the one.
+
+### `[x]` ✅ 405 — FILTERS: a calendar waits for Apply; its header is fixed
+
+Will, 2026-10-22: *"Calendar menus should use an explicit apply action by
+default, too, as they're likely to result in fetches of new data."* Then: *"Fix
+the calendar menu header while you're in there."*
+
+**✅ Done 2026-10-22.**
+- A date menu waits for Apply, local or remote, one day or a range. A
+  definition's `commit: false`, or a LIVE source, turns it off. The Range switch
+  no longer moves it.
+- Found on the way: a committing calendar asked for its day on the PICK, then
+  again on Apply. The bar now ignores a pick in a menu that waits; Apply asks.
+- The header with f(x) (Demos' Date): f(x) sat mid-row and the month stepper
+  was pushed into a new column, as the filter header has no `control` area. The
+  stepper now fills the row under the heading. In Advanced the stepper and Today
+  are gone (no calendar), and a day field has a 9.5rem floor in a floating card
+  (it was clipped to "dd/mm").
+- The empty-date press (394) still turns the chip on at once: a press is not a
+  menu pick.
+TRAP `T-commit-follows-select-mode`. Tests: `reforged-a-calendar-pick-wakes-the-footer`
+(Apply asks, the pick does not), `reforged-menu-calendar` (the header; a date
+waits unless `commit: false`), `reforged-quick-filter-toolbar` (either shape
+waits). Demos `records-persist` counts rows, not pages (404 moved the pages).
+
+### `[x]` ✅ 404 — LOOK: 100 rows a page by default
+
+Will, 2026-10-22: *"Default the data grid pagination rows per page to 100 rather
+than 10."*
+
+**✅ Done 2026-10-22.** `sherpa-pagination` shows 100 a page when no size is
+named, and its default options are 10, 25, 50 and 100. Demos (the session's
+default and `records.json`), Starter's `records.json` and Gallery (it was 10)
+say 100. A reader's saved Items per page still wins: Settings › Appearance.
+TRAP `T-pages-are-one-based-and-default-to-100` (was `…-to-25`). Tests:
+`reforged-pagination` (the default), Demos `items-per-page` and
+`records-grid-pages` (it sets 25 to get four pages), Gallery's data story.
+
+### `[x]` ✅ 403 — FILTERS: a fetching filter never asks for every row
+
+Will, 2026-10-22: *"For the customer and region filters the Select All in the off
+state should select none and return no results. This is divergent from the
+default behaviour. The current behaviour would mean that all Customer and Region
+data is fetched on page load which would be horrible in a real app scenario. I
+think this will apply to all menus that fetch, with an apply action, rather than
+update the UI automatically. These filters should also have their first value
+selected by default and default to being active (unless the definition specifies
+otherwise)."*
+
+**What changes, for a menu that fetches (it has Apply — a remote source or a
+`fetch: "server"` field, as 395 names them):**
+- Nothing ticked (Select All off) answers NO rows. Today it answers every row
+  (TRAP `T-everything-on-is-no-filter`: empty is all). Every other menu keeps
+  that rule.
+- It starts ON with its FIRST value ticked, unless the definition says otherwise.
+- So the first load asks for one value's rows, never the whole set.
+
+**To settle when it is worked:** what a fetching chip switched OFF asks for (all
+rows would be the whole fetch again); and the definition's key for "start
+otherwise".
+
+**Plan, 2026-10-22 (after 406, every View pick waits for one Apply):**
+- A reading says "none, on purpose": `{ picked: [], none: true }`. It is an
+  answer (`readingAnswered`), and its clause is `[field, 'in', []]` — no rows.
+  Unticking the last value, or Select All off, sends it in a fetching field; an
+  ordinary field keeps today's rule (nothing ticked is no filter).
+- At open, a fetching list field with no answer takes its FIRST value, ON — the
+  provider, once its values are read. A Reset puts that back.
+- ❓ **Q1 — which fields.** A (my pick): every LIST field in the View (the
+  scope that waits), plus a remote store's list fields elsewhere. B: only a
+  `fetch: "server"` field and a remote store's.
+- ❓ **Q2 — the opt-out.** A (my pick): a field key, `"start": "all"` (open with
+  no filter, as today); `"first"` is the default. B: one key on the scope, for
+  all its fields.
+- A fetching chip switched OFF asks for all rows, as any other does (my pick):
+  off is the reader's choice, and Apply still gates it.
+- **Will, 2026-10-22: my picks — Q1 A, Q2 A.**
+
+**🚧 Part 1 done 2026-10-22 — none is an answer.** `{ picked: [], none: true }`
+compiles to `in []` (no rows), is answered, and is written `{ in: [] }`. A menu
+whose picks fetch (`data-fetches`: a multiple list in the View, or any on a
+remote source) keeps its chip ON as the last value goes — Select all off too —
+at 0, not amber; its body then toggles it, and off asks for every row. The
+panel sends none only for a field whose last value the reader let go (a tiered
+Customer too). Not yet: a grid heading's menu. TRAP `T-none-is-an-answer`.
+Tests: `none-is-an-answer` (unit), Demos `reforged-none-is-an-answer`.
+
+**✅ Part 2 done 2026-10-22 — a fetching list opens on its first value.**
+`openSource` ends with `source.openOnFirst()`: each such held list with no
+answer takes the first value a row holds under the starts before it (Records:
+Customer Northwind, then Region EMEA — 1 row). The start is the Query's
+(`query.startWith`) and comes back wherever the Query leaves the field
+unanswered: a View pick, a restore, Reset. `"start": "all"` opts out (field key,
+page schema). A control bound after the Query holds answers is drawn them at
+the end of `attach` — before, a bar told `data-waits` rebuilt its chips and lost
+them (the Dashboard opened with its chips off). Bench: an open asks each
+fetching list's values once more (`records/open` distinct 1 → 2; a remote page
+starts every list). TRAP `T-a-fetching-list-opens-on-its-first-value`. Docs:
+PAGE-DEFINITION, DATA-SOURCE-RULES. Tests: the node suite; three sherpa-ui
+specs whose pages are not about it say `start: "all"`.
+
+**❓ For Will — the Demos.** On, Records opens on Northwind and EMEA: ONE row;
+the Dashboard on Northwind and EMEA too. 58 Demos tests assume the whole set.
+So for now Demos' Customer and Region say `"start": "all"` — and so do the
+Gallery's data story (Region) and the Starter's template (Status), whose tests
+count the whole set. 3-engine round after: sherpa-ui 3313, Demos 498, Gallery
+and Starter green. **A (my pick):** keep
+the Demos on the whole set, and show the start on one page made for it. **B:**
+turn it on in the Demos (Customer and Region), and I move the 58 tests.
+**Will, 2026-10-22: deferred for now.**
+
+### `[x]` ✅ 402 — COMPONENT: a metric group, and sticky metrics that work
+
+Will, 2026-10-22: *"Sticky metric items eventually scroll off screen (out of the
+content area). They also don't activate on all views with metrics in the content
+area. Come to think of it metrics be in a single full column span metric-group
+container element. This metric-group supports a max of 4 metric items with 16px
+gutter between items (use tokens). That way metrics are always added to their own
+row in the layout-grid and handling stickiness becomes much easier. We can apply
+grouping (default 'solo') to each metric item. In sticky mode we can apply the
+start, mid, and end grouping attributes. We can also apply the grouping styles at
+mobile breakpoint so they unify into 1 visual. All of this will allow for more
+than 1 metric group in a view. If there are multiple then they should stack when
+stickiness kicks in. Half the height of the metric items, and metric-group, when
+there's 2 or more stuck metric-groups."*
+
+**Two bugs** (today's sticky metrics, 143/175): they scroll off the content area
+after a while, and they do not start on every View that has metrics.
+
+**The fix is a component**, `sherpa-metric-group`:
+- One full row of the layout grid (every column). It holds 1–4 metrics, a 16px
+  gap between them, from a space token.
+- Each metric is grouped `solo` by default. Stuck, and at mobile width (a
+  container query, never `@media`), they take start / mid / end, so the row
+  reads as one object.
+- A View may hold more than one group. Stuck groups stack, one under the other.
+  From two stuck groups, each group and its metrics are half height.
+- Stuck is a CSS `scroll-state(stuck: top)` query where it can be (Chromium
+  only today, as 175 found — see 401); the rest of the engines get a plain row.
+
+Will, later: *"Metric group rows should be exempt from the vertical resizing
+functionality. They are always 1 row high when not in sticky mode."* So a group
+row takes no resize handle and is one grid row while not stuck.
+
+**To find out first:** how a group knows how many groups are stuck above it (the
+stack offset and the half height), with no JS if it can be done. Then the five
+files, the Demos Views moved onto it, and the old sticky-metrics experiment
+deleted.
+
+**Plan, 2026-10-22 (read the experiment and the layout grid):**
+- `sherpa-metric-group`: a layout-grid child spanning every column, ONE row, no
+  resize handle (the grid's `data-resizable` skips it). 1–4 slotted metrics, a
+  16px gap (`--sherpa-display-mode-space-md`), each metric `solo`.
+- It is itself `position: sticky` — no copies, so it cannot scroll out of the
+  content area the way the experiment's copy row did (it sticks inside the
+  grid's own box). The experiment (`experiments/sticky-metrics.js`) is deleted.
+- Joined (start / mid / end, the gap 0) at mobile width — a container query on
+  the group — and while STUCK.
+- ❓ **How "stuck" is known — the same question as 401 and 421.** A: CSS
+  scroll-driven animations, for Chromium and WebKit (iOS): a zero-height marker
+  before each group names a view timeline, and the group animates its corners,
+  borders and height over the marker's exit. B: `scroll-state(stuck: top)` —
+  simpler, Chromium only. My pick: A, the same as 401. **Will: A.**
+- Stacking: each group sticks below the ones before it (`--_stack`, its index
+  among the groups); from two stuck, each is half height — with A, the second
+  group's marker drives the first one's half height too (`timeline-scope`).
+
+- ✅ **Step 1 (2026-10-26): the group, sticky, joined, stacked.**
+  `sherpa-metric-group`: every column, one row; 1–4 slotted metrics, the
+  grid's own gap between them, each solo. `data-sticky`: it sticks for its
+  whole grid (a sticky grid item does, in all three engines), so it never
+  scrolls off. STUCK needs no marker: the group's OWN view timeline, its view
+  cut to the line it sticks at (`view-timeline-inset`), starts the moment it
+  sticks — to the pixel in Chromium and WebKit. Stuck, the metrics join and a
+  shadow falls under the row (421's). At the grid's four-column band they join
+  too, by `@container style(--sherpa-layout-grid-columns: 4)`, in all three
+  engines. A later sticky group sticks one row under the one before. The layout
+  grid draws no handle that cannot move, so none under a group. Demos:
+  Dashboard and Records hold their metrics in a sticky group; the
+  "Compact metrics header" experiment, its switch and its test are deleted.
+  TRAP T-a-metric-group-knows-it-is-stuck. Tests: `reforged-metric-group`
+  (3 engines), `reforged-layout-grid-resize`.
+- ❓ **Half height from two stuck groups.** For it, group 1 must see group 2
+  stick. Measured: Chromium reads another group's timeline across shadow
+  roots; WebKit only when every timeline name is in the page's own tree.
+  **A (my pick):** the group's timelines go in a page sheet (`static
+  pageCss`, a new use of it), so both engines can. A half-height metric shows
+  its name and value on one line; its trend and sparkline hide. **B:** no
+  half height: stuck groups stack at full height. Nothing more to build. No
+  Demos View has two groups today. **Will, 2026-10-26: A.**
+- ✅ **Step 2 (2026-10-26): half height.** Every sticky group's timeline is
+  named in the page (`sherpa-metric-group-page.css`, `static pageCss`), and
+  the second's is scoped to their parent, so the first sees the second stick
+  in WebKit too. A later group is half a row once stuck, the first once the
+  second is; the second sticks half a row down and slides under the first on
+  its way up. A half metric shows its name and value on one line
+  (`--_metric-half`, read by `sherpa-metric.css`). The group is always one grid
+  row in the page and only DRAWS half, so the page never moves. Stacked, the
+  joint squares and one shadow falls at the foot. Firefox stacks full rows.
+  Test: `reforged-metric-group` (3 engines).
+
+**✅ Done 2026-10-26.** Found on the way: a metric is taller than its grid row
+(TODO 444).
+
+
+### `[x]` ✅ 401 — LOOK: a scroll shadow for any scroll box (investigate)
+
+Will, 2026-10-22: *"We show a drop shadow under the app header when it's scrolled
+under but instead this should be an inner shadow at the top of the content area
+(layout-grid) when it's content scrolls. This should be configurable, with an
+attribute, on the layout grid component so that we can override it when we don't
+need it."*
+
+Will, 2026-10-22, later: *"I think this could be a utility class, that uses CSS
+scroll-state() conditions, that applies an inner-shadow on any side where the
+content has overflowed. If we add it as an attribute on sherpa-element (off by
+default) then any scrollable area can get the scroll under shadow effect. This
+means we get it for free on form scroll areas, data grids, navigation lists, menu
+lists and so on! Plan this in for investigation!"*
+
+**To find out first:**
+
+1. **Engines.** `@container scroll-state(scrollable: top)` (and `bottom`, `left`,
+   `right`) is the condition. Measured 10-01: scroll-state queries work in
+   Chromium only, not Firefox 155 or WebKit 26.6. Measure again. If still so: no
+   shadow there (the page is fine without it), or a second way for those two —
+   a scroll-driven animation (`animation-timeline: scroll(self)`), if they have it.
+2. **What draws it.** A query styles what is INSIDE the scroll box, and an inset
+   `box-shadow` on the box itself is painted under its content, so a card hides
+   it. Try a sticky `::before` / `::after` of the box (a pseudo-element can ask
+   its own element), one per side, above the content.
+3. **Which box.** The attribute is on the HOST, but the box that scrolls is often
+   inside the shadow root (the grid body, a menu's list, the nav list). So a
+   component marks its scroll box in its template (one shared class), and the
+   host attribute turns the shadow on. One shared sheet holds the rules.
+4. **Clashes.** Sticky grid headings, the grid's own row dividers, a menu's
+   rounded corners, a scroll box that is also a size container.
+5. **The name.** One attribute on every component, e.g. `data-scroll-shadow`;
+   the layout grid's replaces the app header's drop shadow.
+
+Then: a plan with the class, the attribute, the sheet and the first users
+(layout grid, data grid, menu list, nav, a form's scroll area).
+
+**Found, 2026-10-22** (measured in Playwright's engines; a prototype over cards
+with their own fill, shot in each):
+- `container-type: scroll-state`: Chromium 153 only. Firefox 155 and WebKit 26.6
+  lack it (as on 10-01).
+- Scroll-driven animations (`animation-timeline: scroll()`): Chromium AND
+  WebKit 26.6. Firefox lacks both: no shadow there, and the page is fine.
+- The shadow must be drawn ABOVE the content — an inset `box-shadow` or a
+  `background-attachment: local` shadow is painted under it, so a card hides it.
+  A sticky `::before` (top) and `::after` (bottom) of the scroll box, 12px of
+  gradient each, with a negative margin so they take no room, `z-index: 1`,
+  `pointer-events: none`. A pseudo-element can read its own box's scroll.
+- Scroll-driven: the top shadow fades in over the first 16px scrolled
+  (`animation-range: 0 16px`), the bottom one out over the last 16px. No
+  overflow, no timeline: neither shows.
+- Two pseudo-elements give the two vertical edges; left and right (a wide grid)
+  would need another element — later, if asked.
+
+❓ **For Will — the mechanism.** A (my pick): scroll-driven animations —
+Chromium and WebKit, so iOS too (mobile is a target). B: `scroll-state()`, as
+asked — Chromium only. **Will, 2026-10-22: A.**
+
+**Then the build:** `data-scroll-shadow` on any Sherpa element (off by default);
+each component marks its scroll box with one shared class
+(`.sherpa-scroll-shadow`), and one shared rule draws it while the host has the
+attribute. First users: the layout grid (in place of the app header's drop
+shadow), the data grid's body, a menu's list, the nav list, a form's scroll
+area — each checked for a `::before`/`::after` it already uses.
+
+✅ 2026-10-23: built. `data-scroll-shadow` (a shared prop, off by default) on
+the app shell, menu, stack (`data-scroll`), data grid, container, dialog (an
+overlay's body), transfer list and the filter toolbar (its column, passed down
+by a swap). The rule is `sherpa-base.css`'s. The content area's scroll box is
+the SHELL's frame — the layout grid never scrolls — so the shell's replaces the
+header's drop shadow. Demos turns it on for the shell, the filter column,
+Settings and the Records grid. Not yet: the nav list (its `::after` says "No
+matches"), the overlay panel, and the chat composer (a textarea has no
+`::before`). A sticky header covers the top edge: that is 421.
+TRAP T-a-scroll-shadow-is-drawn-over-the-content
+
+### `[x]` ✅ 400 — BUG: a View scope pick does not limit the other View filters
+
+Will, 2026-10-22: *"Changing values in View Scope filters doesn't seem to
+invalidate values in other View Scope filters. Only Component Scopes are being
+affected."*
+
+**Found 2026-10-22 (Demos Records, Limit on):** it is the ORDER rule of 348/349.
+Picking Customer (first in the View) greys 1 of 4 Regions; picking Region
+(second) greys no Customer: a filter is limited only by the filters BEFORE it —
+Will's 349 ("scopes and preceding filters"). Before 349, Limit worked both ways.
+
+**❓ For Will.** **A (my pick):** within a scope, every OTHER answered filter
+limits a field's values, both ways (as before 349); the chip COUNTS stay ordered
+(348). **B:** keep the order rule: only the filters before a field limit it.
+
+**Will, 2026-10-22: "Still not working" — A.**
+
+**↩️ Reverted 2026-10-22.** Will, after: *"The filter limiting in the view scope
+is not right. Applying changes to region is limiting customer selection which
+goes against the serial nature of each scope's filters."* So B was right: the
+order rule stands — only the filters before a field limit it — and the two-way
+change below is undone (`presentBothWays` gone, "Limited by the filters before
+it" back, the set-aside words back).
+
+**✅ Will, 2026-10-22: "400, we're good"** — the order rule, as it is now.
+
+**❓ What "still not working" is — my reading.** The View WAITS for one Apply
+(406), and the walk reads the APPLIED Query: a Customer ticked but not applied
+greys no Region until Apply, while a component scope applies at once, so its
+limits move at once — *"Only Component Scopes are being affected."* **A (my
+pick):** in a scope that waits, Limit and a chain's offer follow the DRAFT —
+what is ticked, before Apply; counts stay on what is applied. **B:** they wait
+for Apply, as now.
+
+~~**✅ Done 2026-10-22.**~~ Limit greys each field by every OTHER filter in force in
+its scope, both ways (`presentBothWays` in `walk.ts`; step by step, one tally per
+Limit field under all the others). Counts and set-aside stay in order: a later
+pick still never sets an earlier one aside. A remote store not held asks 6 value
+requests per act in the bench, not 3; a held one makes one more pass over its
+rows. Tests: `filters-limit-in-order` (its plain walk is two-way now; the
+200-Query property holds), `present-limits-each-field`.
+
+### `[x]` ✅ 399 — BUG: Recents lists Settings pages and Context names; a switch for Views or Contexts
+
+Will, 2026-10-22: *"Settings views shouldn't appear in the Recents section of the
+Navigation. The Recents section also shows Navigation Spaces names instead of the
+literal View name (e.g. shows Records instead of All Customers.) Actually, we could
+add a toggle to settings to allow the user to decide if Spaces or Views go into
+the Recents & Favorites sections. It will be Views by default."*
+
+Found: Recents keeps one row per CONTEXT, named after it; a stored row whose
+Context the app no longer has (a Settings page, from before Settings was an
+overlay) is drawn anyway — no visit today adds one.
+
+**✅ Done 2026-10-22.** A Recent is a VIEW now, keyed as a favourite is, named
+after the View ("All customers"), and added each time a View is on screen (a
+pick too); Settings never adds one. At boot, a stored row whose Context the app
+no longer has is dropped. `/nav/views` (default true) picks Views or Contexts for
+both lists; false lists each Context once, by its name, and the ★ stars the
+Context. Demos' Settings › Application has the switch, "Name views in Recents
+and Favorites" (Demos calls a Context a page). Tests: Demos
+`reforged-nav-favorites-recents` (19, three new); `reforged-outlet` reads the new
+stored shape. **Will:** the word on the switch is "views" and "page" — say if
+you want "Spaces".
+
+### `[x]` ✅ 398 — UX: the toolbar Switch leads the Group chip, and toggles grouping and sorting too
+
+Will, 2026-10-22 (given to the other session, `sherpa-ui-48`): *"The filter
+toolbar toggle switch should be to the left of the group filter chip and
+toggling it should also toggle the application of grouping and sorting."*
+
+**✅ Done 2026-10-22.** The Switch's zone comes before Group and Sort, with its
+divider. While a scope is switched off, its sort and group are kept but not in
+force (`arrangementOf`), and the flip arranges the rows again; its search stays.
+Tests: `the-switch-suspends-the-arrangement` (node); the bar, panel and grid
+specs pass. **Will:** look at Demos Records' data bar: Switch, then Group.
+
+### `[x]` ✅ 382 — UX: Save only while the filters are not the View's own
+
+Will: *"Save filters and Save filters as are active ONLY while the Query differs
+from the View's own definition, as Reset all is."* **Done:** while
+`data-at-default`, Save filters, "Save <name>" and Save filters as are off — in
+the ⋮, the Saved menu, and the bar's and the column's Save buttons; Delete
+stays. TRAP `T-reset-to-default-is-the-views-own`. Tests: sherpa-ui
+`reforged-reset-at-default`; Demos `reforged-saved-filter`.
+
+### `[x]` ✅ 380 — BUG: the Filters menu's × goes
+
+Will: *"the row's checkbox already adds or removes the filter: the × goes."*
+The × was only on a ONE-value row (an on/off chip, a preset), whose tick is its
+ON. Will, 2026-10-27: drop the × only — the tick still switches a folded chip;
+the chip's own Remove takes it off the bar. **Done:** the row's ×, its event
+(`menu-row-remove`), the bar's handler and `reopenFilters` are gone. Test:
+`reforged-one-filters-button`.
+
+### `[x]` ✅ 381 — BUG: a donut's and a gauge's segment tips
+
+Will: *"a donut's (radial) and a gauge's segment tooltips do not show on hover."*
+
+**Found, 2026-10-26:** the FIRST segment hovered showed its tip; a move to the
+next showed none and left the first up — in all three engines. A pointer move
+between two elements of one shadow root never reaches the document (both ends
+are the same host outside it), and the tips were heard on the document alone.
+**Done:** every component's root hears them too (`liftTipsIn`). It fixes any
+two tips in one root — a legend's items too. TRAP `T-a-tip-lives-in-the-top-layer`.
+Test: `reforged-button-tip`.
+
+### `[x]` ✅ 383 — UX: one "Filter actions" button
+
+Will, 2026-10-20: *"I also feel like we could consolidate Adding/Removing filter
+definitions, Reset, Reset all, Save Filters, Save Filters As into 1 'Filter
+Actions' button. This 'Filter actions' button can still show 'Save
+$filterSetName' if a saved filter definition is active."*
+
+Design first (read-only), then Will picks: what the button's face says with and
+without a set taken; which half saves and which opens the menu; where the
+Filters (Add) list goes; the ⋮ menu's other rows (Limit, Hide unmatched, the
+host's own); the bar and the panel alike; and 376's Hide button and 382's
+active rule inside it. After 366's toolbar commits (20–22).
+
+**Will, 2026-10-22:** *"Also include the consolidated 'Filter Actions' button in
+the toolbar and panel. We seem to have forgotten about that."* So it is built
+now, on my picks (Will to look at by eye):
+- ONE split button where "Filters" and the Reset group are today. Its face reads
+  "Filters"; while a saved set is taken, "Save <name>", and that half saves
+  over it. The ▾ half opens its menu.
+- Its menu: the filters to add or remove (today's Filters list, with its Saved
+  section and the folded chips), then Reset, Reset all on view, Save filters,
+  Save filters as, and Delete filters while a set is taken.
+- The ⋮ keeps what is not a filter action: Limit, Hide invalid filters, the
+  host's own rows, the View's Save group, Refresh.
+- The panel the same, in its header.
+
+**🚧 Built 2026-10-22, on these picks — changed in the build:** no split button.
+"Filters" stays one button; while a saved set is taken a separate "Save <name>"
+button (active) sits just before it. The action rows LEAD the menu (`data-lead`
+keeps a caller's rows above the values a menu stamps): at the end of a long,
+scrolling list nobody would find them. The bar's Reset group and the panel's
+Reset and Save groups are gone, and the ⋮ keeps only what is not a filter
+action. **✅ Done 2026-10-22.** Tests: 25 in sherpa-ui and 4 Demos files moved
+to the menu rows (a helper agent); it found "Save <name>" drawn with no space
+("SaveGold", 378 again) — fixed with `&nbsp;`. **For Will to look at by eye:**
+Demos Records › Filters.
+
+### `[x]` ✅ 376 — UX: an icon-only "Hide invalid values" button in the ⋮ menus
+
+Will, 2026-10-20: *"Add an icon only 'Hide invalid values' button to the filter
+toolbar, and filter panel, overflow menus. This will toggle the visibility of
+invalid menu items in the filter menus."*
+
+Today the ⋮ menu (`src/core/sherpa-filter-more.html`, `more-menu.ts`) has a
+tick row, "Hide unmatching filters", shown only while "Limit options" is on; it
+sets `data-hide-unmatched` (TODO 305), and every filter menu and grid heading
+follows it. So: that row becomes an icon-only toggle button named "Hide invalid
+values", pressed while on. Settle at build time: where it sits in the ⋮ menu,
+and its icon. **Will, 2026-10-20:** *"'Hide unmatching filters' should be
+inactive, not hidden, when 'Limit matching filters' is not selected."* So it is
+always there, and inactive while Limit is off.
+
+**✅ Done 2026-10-22.** The toggle is the ⋮ menu's own markup
+(`sherpa-filter-more.html`): an icon-only `sherpa-button`, icon `hide`, in the
+menu's HEADER, at its end, so it sits above the rows and the menu stays open on
+a press. Pressed (`aria-pressed`, the `active` Style mode) follows
+`data-hide-unmatched=on` by `data-swap-on`; it is `disabled` while Limit is off
+(`syncHide`), and gone on a page with no Limit (CSS). A press ASKS
+`hide-unmatched-change` (`toggleHide`); the old tick row and its half of
+`askSwitches` went. Bar and panel alike. Tests: the panel's two ⋮ cases and
+Demos `reforged-limit-options` (Chromium). **For Will to look at by eye:** Demos
+Records › ⋮ — the icon at the menu's top right.
+
+**Redone 2026-10-22 — Will:** *"The 'Hide invalid filters' menu item is now just
+a weirdly placed eye icon in the menu. It should be a menu item below 'Limited to
+matching filters'."* So it is a check row again, "Hide invalid filters", right
+below Limit; always there while a page has Limit, and inactive (its box
+disabled) while Limit is off. The header icon went.
+
+### `[x]` ✅ 375 — FILTERS: a range is an Advanced condition
+
+Will, 2026-10-20: *"For numerical and date fields a 'range' is an advanced
+filter. To use a range, the user will enable advanced filter mode and then set
+the condition to 'between'. Other conditions such as not between, contains,
+does not contain etc. can be used too. 'Contains' and 'Does not contain' for a
+date should show a select dropdown with: Monday, Tuesday, Wednesday, Thursday,
+Friday, Saturday, Sunday, Weekdays, Weekends. We no longer need the range
+toggle as the 'advanced filter' chip will handle this mode switch."*
+
+So:
+- Simple mode on a number or a date picks values (a number's list, a date's
+  days). No Range switch.
+- Advanced mode (the f(x) chip, 372) holds the rows: Between and Not between
+  take two ends; the other ops as now.
+- A date's Contains and Does not contain take ONE pick from a select: a day of
+  the week, Weekdays or Weekends. The data layer compiles it (a server gets it
+  as a clause too).
+- What goes: the Range switch, `FieldReading.range` and `kept` (TRAP
+  `T-both-shapes-are-kept`, `T-the-field-type-decides-the-clause`), and a date's
+  two days meaning Between in Simple. Old stored readings with `range: true`
+  are read once as a Between row. The cell chip (373) stops setting
+  `range: false`.
+
+**Design:** [plan-375.md](plan-375.md). **Will's answers, 2026-10-20:**
+- NUMBERS ONLY for now. Simple is ONE value box; no Range switch. Advanced is
+  opt-in per filter with the f(x) chip, as for other filters, and holds Between
+  and Not between. A number compares: Equals, Does not equal, Greater, Less,
+  Between, Not between; no Contains. Its menu keeps the word Reset.
+- A Between / Not between row: *"| Condition select | Start value input | End
+  value input |"* on one line, and *"Range Slider"* under it, full width.
+- DATES: as they are, with the Single / Range switch (379 holds the rest).
+- The grid cell chip on a number REPLACES the value.
+- Old queries with a number range: rewrite the test definitions and data to the
+  new model; no conversion code.
+
+**✅ Done 2026-10-20 (numbers).** Part 1: every number offers Advanced (unless
+`advanced: false`), and its rows ask Between and Not between — condition, From,
+To on one line, a slider under them that moves both. `notbetween` is a new op
+(every value outside, and a row with none); a range row is both ends or no
+answer; the number menu keeps Reset; a grid cell's chip replaces a number.
+Part 2: the Range switch and the Simple slider go for a number — Simple is one
+value box, two numbers are a list (`in`), and `FieldReading.kept` and TRAP
+`T-both-shapes-are-kept` are retired. A number range from a View's `where`, a
+grid clause or a reading is an Advanced row. A Between row reads "37 to 120" on
+its chip. The tests that set number ranges the old way were rewritten (Will:
+no conversion code). Dates: 379.
+
+### `[x]` ✅ 374 — ASK: a cell chip on a field the View holds
+
+Found building 373. In Demos' Records the View holds Customer and Region, so a
+grid heading for them is greyed and refuses (TRAP
+`T-a-view-held-heading-shows-and-refuses`). The cell chip follows the heading:
+those cells show no chip.
+
+- **A (my pick):** keep it. The reader changes a View-held field in the View's
+  chip, as the heading says.
+- **B:** the cell chip edits the View's filter for that field. This is easy
+  after 366 (one request to the QueryContext); today it needs a second path.
+
+**Will, 2026-10-20:** *"Show the inactive filter chip in the grid cell, on hover,
+for fields that are limited by view scope."* **✅ Done:** the chip shows there
+with `data-superseded` and `data-applied-at`, as the heading's does: inactive,
+ON where the View holds that value, and a press changes nothing.
+
+### `[x]` ✅ 373 — UX: a grid cell's filter chip
+
+Will, 2026-10-20: *"When hovering over a data grid cell we should show an icon
+only filter chip on the right side of the cell. Clicking this should add the
+cell field and value to the filter query. Clicking it again should remove it."*
+
+**✅ Done 2026-10-20.** One icon-only `sherpa-quick-filter` per grid moves into
+the cell under the pointer (TRAP `T-a-cell-chip-is-one-and-moves`). It is ON,
+in the filter-on look, when that value is picked and in force. A press adds the
+value to the column's answer, or takes it off, and reports it the way a
+heading's menu does (`column-filter-change`, so the data layer's
+`answerColumn`). A DATE filters by its day, and a second day replaces the first
+(two would be "Between"). A NUMBER sets `range: false`. A single-pick field
+replaces. A field with NO list to tick (Advanced only, as Name) takes an "Is"
+row, OR'd with the others: the shape its chip holds. Only with
+`data-column-filters`; on a field the View holds it is inactive (374). The
+hovered cell makes room for it, so a number is not covered.
+
+**Bug, Will 2026-10-20:** *"Applying a filter from a grid cell does not correctly
+populate, or activate, the filter chip in the toolbar or the filter section in
+the filter panel."* **✅ Fixed:** two causes. (1) The cell chip sent ticked
+values for Name, which has no list, so the bar's new Name chip had nothing to
+show: it now sends an "Is" row. (2) A menu with no list LOST an "Is" row it was
+given: drawing the rows mirrored row one's text into `data-value` as "", and a
+later sync put that "" back in the box the row reads. Now the mirror carries the
+typed pick, and the row reads what it was given while its box is not drawn. A
+Demos test presses Plan and Name and reads the bar chip and the panel. A press
+is not a row click. Tests: 3 new (9 runs), every grid and provider spec, 3
+engines. Demos' row-details test now clicks the row's first cell: the middle of
+the row is the Status cell's chip.
+
+### `[x]` ✅ 372 — UX: a panel field's f(x) is an icon-only filter chip
+
+Will, 2026-10-20: *"The filter panel still uses an active button for the
+advanced filter instead of an icon-only filter chip with a success styling when
+active."*
+
+**✅ Done 2026-10-20.** A panel field's f(x) is a `sherpa-quick-filter`:
+icon-only, locked, with the chip's border at rest, as the Reset and Send to
+buttons beside it have. The panel sets `data-current` in Advanced, so it takes
+the filter-on look: green in Demos with "Show active filters in green", active
+purple without it. An icon-only chip with NO menu is now a toggle: its caret
+presses it, and says the host's name and `aria-pressed`. So a grid heading's
+sort says "Sorted by Name" too. The menu's own f(x) (in a bar chip's menu) is
+still a button. Tests: the chip, the panel, 5 sherpa-ui and 4 Demos specs that
+press f(x), 3 engines.
+
+### `[x]` ✅ 371 — UX: every scrollbar track is clear
+
+Will, 2026-10-20: *"Can we style scrollbar tracks to be transparent so they
+aren't white on black in dark mode."*
+
+**✅ Done 2026-10-20.** `page.css` sets `scrollbar-color` on `html`: a clear
+track and a `border-default-2` thumb. It inherits into every shadow root, so a
+component's own scroll box follows. A test reads it inside a shadow root, in
+both modes, 3 engines.
+
+### `[x]` ✅ 370 — RULE: only a saved filter crosses tabs and sessions
+
+Will, 2026-10-20: *"The only way to share filter configurations across tabs,
+windows, or sessions is if they are saved by the user to a custom
+definition."* Two things broke it:
+- **View drafts** kept across sessions in localStorage (the `always` mode,
+  Demos' "Keep them across sessions", on by default). Will chose **per tab
+  only**: the mode and the setting are gone; a shared copy an older build left
+  is never read, and goes at the next write.
+- **Each Context's kept Query** — Demos persisted `/filters/<context>` shared
+  (localStorage), so a new tab or session opened on the last unsaved filters.
+  Now `shared: false`: a reload of the tab keeps it, nothing else does.
+
+**✅ Done 2026-10-20.** sherpa-ui: `DraftMode` is `off | session`; drafts test
+(6 pass, 3 engines). Demos: one drafts switch (`data-setting`), the kept Query
+per tab; its suite 454 pass. TRAPs `T-a-view-keeps-a-draft`,
+`T-a-reload-replays-the-readers-answers`.
+
+### `[x]` ✅ 369 — FILTERS: tiered values, and a tree menu
+
+Will, 2026-10-20: *"In the demo app, customers should be able to have sites
+(e.g. office locations). This makes the menu for the customer filter chip a
+nested tree select menu (with checkboxes). Both customers and/or sites are
+selectable. The filter chips for each Customer in the filter panel View Scope
+will need to now have a menu that lists all site values. This is a new level of
+value tiering in filters but I think it should be easy to add. It is only for
+Customers at the moment but the value tiering, and tree menu, implementation
+should be generic for any potential future scenarios that need this."*
+
+What it needs, to design first (read-only), then build:
+- **Data:** Demos' customers gain sites (office locations). A field declares
+  its values' tiers — a value holds child values — once, in the page
+  definition, for ANY field (not a Customer special case).
+- **The filter:** a pick of a parent, a child, or both. A parent picked means all
+  its children; a child picked alone narrows to that child. Counts, greys,
+  set-aside and the walk (347–349) answer at both levels.
+- **The menu:** a TREE of checkboxes — parents, each opening to its children,
+  with a parent's box showing all, some or none of them. One generic menu body,
+  reused by the bar's chip, the panel and a grid heading.
+- **The panel's View scope:** each Customer chip opens a menu of that
+  customer's sites.
+- **Reuse first:** the menu's child menus (`T-a-row-opens-its-child-menu`) and the
+  nav's tree rows; a value as an object (`valueKey`).
+
+**Design:** [plan-369.md](plan-369.md). **Will's answers, 2026-10-20:** a
+customer ticked matches all its rows; its panel chip shows ON with some sites
+picked, and a press suspends it without clearing the picks; the chip says
+"Northwind: London, Leeds"; the sites open in place as a tree; a remote store
+reads a customer's sites when its row first opens; build the parts that 366
+does not touch now, the panel after 366 commit 20 and the grid after 23.
+
+**Built, 2026-10-20:** the store's key-Set in-list; a field declares its child;
+the catalogue keeps the children apart; a path pick filters two fields; the walk
+counts, greys and sets aside at both tiers (a site's own read shares the walk's);
+one tree-row helper for the nav and the menu; the menu draws a tree of tri-state
+boxes; the bar's chip face reads "Contoso, Northwind: London".
+Demos' customers have sites (a Site column; the dialog's Site follows Customer).
+Next: the panel (after 366 commit 20), the grid (after 23), Demos' child link,
+and a remote store's read on open (after 345 phase 5).
+
+**The panel ✅, 2026-10-21.** Each Customer is a locked chip drawn from the
+field's picks (parents and paths, as data); ON while it or a site is picked. A
+press turns it OFF and keeps its picks (Will's Q2): they move to the reading's
+new `off` — kept, not in force, an answer all the same. Its caret asks
+(`quick-filter-open`) for a sites menu, built then, shown once drawn, gone when
+shut. A drilled pick keeps a site it did not show. Greys reach an open sites
+menu (not yet tested). A drilled tree cannot open a parent: TODO 391 — ✅
+2026-10-22: a tree is not drilled; the bar shows the field's own menu at the
+Filters button, and the panel's door opens the scope. A bar's
+pick on the field replaces the whole answer, `off` too.
+TRAP `T-a-parent-pick-is-the-parent`.
+
+**The grid ✅, 2026-10-21.** The Customer heading's menu is the tree (the
+source's filter carries `child` and each site's `parent`); a child column (Site)
+has no heading filter; the grid's field facts carry the child, so a path's
+clause is `customer eq … and site eq …`; a Site cell's chip picks that cell's
+path on Customer, and is inactive while the View holds Customer.
+`reforged-a-tiered-grid` (3 cases, 3 engines). Next: Demos' child link.
+
+**Demos' child link ✅ and the docs ✅, 2026-10-21.** Records' Customer names
+Site as its child (Demos `c08fd80`, with `a-site-picked-shows-everywhere`).
+DATA-SOURCE-RULES gives a tiered pick's server clause; APP-GUIDE the `child`
+line; traps `T-a-value-holds-child-values` and
+`T-a-path-is-judged-by-its-parent-when-stepwise`. **Left: a remote store's read
+of a parent's children when its row opens — waits for 345 phase 5.**
+
+**Bug ✅ 2026-10-22 (Will):** the panel's Customer chip showed no badge when only
+its sites were picked — the walk counted each pick by its own key. A parent not
+picked itself now counts its picked children together (`bf3f294e`). Demos'
+Customer and Region are `fetch: "server"` now, to simulate a re-fetch (Will).
+
+**✅ Closed 2026-10-28.** The one part left, a remote store's read of a
+parent's children when its row opens, is 392, which waits (Will: A). "Greys
+reach an open sites menu (not yet tested)" went with the filter panel (476);
+so did the only host that answered `quick-filter-open`, which TODO 516 removes.
+
+### `[x]` ✅ 368 — PERF: a grid row keeps only the selection box it shows
+
+Found measuring 350: one saved-filter click made the grid build 25 checkboxes
+AND 25 radios, with CSS hiding one set. **✅ Done 2026-10-20.** A row keeps
+the box its mode shows, and none when the grid is not selectable; a change of
+`data-select` or `data-selectable` draws the rows again. Grid tests: 548 pass,
+3 engines. TRAP `T-a-row-holds-two-selection-boxes`.
+
+### `[x]` ✅ 366 — DATA: one QueryContext for the app Context
+
+Will, 2026-10-20: *"I still think we could have a singular QueryContext
+component in the data layer that holds the query conditions, for the current
+app context, for all data sources and related UI components. This single
+component can then be read by any component to get the context it needs to
+operate in the correct context. … I feel like this simplifies the code base and
+reduces a lot of duplication and fractured query contexts."*
+
+**Step 1 ✅, 2026-10-20 — the map:** `docs/history/plan-366-query-context-map.md`.
+- No filter crosses sources. A page has ONE filtered source; Demos' dashboard
+  and the shell's notification list have others, with no filter control.
+- The two-way loop is between ONE source and its controls. A bar sends its WHOLE
+  answer on each change, the source clears what it does not name, then draws it
+  back into every control, the sender too. Guards exist only for that loop: the
+  panel's `#said`, the bar's `#editedAt` and `#pendingAnswers`, the provider's
+  two-frame mute.
+- Beside the Query, in the source: sort, group and search (in `#state`; the
+  design puts them in the Query), an unscoped bar's `saved:<id>` parts, and a
+  compiled filter set by hand (`setFilter` / `setState`).
+- Object doors still open (319's kind): `write()` / `select()` copy one layer,
+  so a caller's `conditions` and `kept` become the Query's; `supersedeColumns`
+  hands the grid the APPLIED readings, and the grid keeps them.
+
+**❓ Will — step 2, the design:** **A** — your QueryContext is the Query each
+Context already has: make every control DRAW-ONLY. It reads its slice and sends a
+one-field request; it never sends its whole answer. Sort, group and search move
+into the Query; the side doors go. Then the guards go. Large: bar, panel, grid,
+legend, provider and many tests. **B** — a new QueryContext object ABOVE the
+sources, one per app Context. It removes nothing: no filter crosses sources
+today, and the two-way loop is below it. My pick: **A**, designed first by a
+read-only workflow, then built in small commits. Structural data-layer work
+(287 5b, 288 8b–10, 320) waits for it.
+
+**Will, 2026-10-20: B** — *"but if all sources are using this new component as the
+query source then they don't need to store their own, do they?"* So: ONE
+QueryContext per app Context holds the only Query. A source keeps NO Query: it
+reads its filter from the QueryContext and loads. The controls read their slice
+there too and send one-field requests, so the two-way loop goes.
+
+**Step 2 ✅, 2026-10-20 — the design:** `docs/history/plan-366-design.md` (18
+commits; two checkers found 7 unsafe as written). **Will, 2026-10-20:** D1 A — one
+Apply for the whole Context when any source is remote; D2 A — a superseded chip's
+own answer is kept in the Query (`ScopeQuery.superseded`); D3 A — a source skips a
+saved filter that names a field it lacks, whole. **Will, 2026-10-20:** *"Saved
+filters need to be reworked to provide a single query definition to the single
+query component."* Both kinds — a page's saved filters (the preset library,
+on/off by id) and a reader's saved sets — become ONE query definition (the JSON a
+View uses) handed to the QueryContext. **And:** *"Saved filters shouldn't show as
+a chip in the filter panel header (or filter toolbar) when selected. Selecting a
+saved filter definition should just apply the state, fields, and values to the
+filter chip components to match the query definition."* So a saved filter LOADS:
+no saved chip, no page toggle chip, no ` *` mark, no Dismiss cross. Its fields,
+values and on/off show on the ordinary chips. **And:** *"All filtering,
+grouping, and sorting, should be feeding to the QueryContext when changed. When
+the QueryContext updates it should broadcast the changes out to all components.
+I think we have this. Any input fields that show a value from the QueryContext
+need to be updated. Even if they are hidden."* (377: a shut panel keeps 367.)
+**Will's answers to the build plan, 2026-10-20:** ~~Save and Delete find their
+saved filter BY MATCH~~, replaced the same day: *"set the 'Save filters'
+chip/button to active and change its label to read 'Save $filterSetName'"*, and
+*"Only 1 saved filter definition can be applied at a time."* So the tab keeps
+the ONE set taken, through a change and a reload; the Filters menu ticks it;
+"Save <name>" saves over it; its ▾ holds Save filters as and Delete. Applying one CLEARS every scope it does not name, so the
+screen matches it exactly (this replaces 105's "the rest stay"). Unticking one
+CLEARS the filters of the scopes it names. Plan:
+[plan-366-build.md](plan-366-build.md).
+**Step 3, running:** a read-only
+design of that, then a revision that folds it and every checker finding into the
+plan, then the build.
+
+**Built:** S1 (no Saved chip; one set taken; Save <name>), and S2 (2026-10-20): a
+page's own saved filters are query definitions, `savedFilters` in its JSON —
+listed on every bar beside a reader's, taken into the field chips, never saved
+over or deleted. Page `presets` are gone; Demos and the Starter moved with it.
+S3 (2026-10-21): the Query names no saved filter — the library, `declarePreset`,
+`preset`, `say`, the export's `presets` and the walk's preset steps are gone; a
+stored scope key the Query does not keep is dropped and said once
+(`unknown-scope-key`). S4 (2026-10-21): no control draws a saved-filter
+chip — the bar's and the panel's saved chips and cards, `saved-filter-menu.ts`,
+the panel's Presets section, a chip's given answer and the saved-filter words
+(`sayReadings`, `conditionLines`) are gone. Step 5 (2026-10-21): named parts
+(`contribute`), `apply` and the unscoped bar go; a bar with no scope is reported
+(`bar-without-scope`), and a component reach needs `only`. Step 6: a reading
+is frozen in the Query — copied in, handed out frozen (TRAP
+`T-a-reading-is-frozen-in-the-query`). Step 7: a hold or a move that moves an
+answer recompiles at once, new field facts recompile an answer held, and a bind
+over the unpaged rows loads again when only the View's filter moved. Step 8:
+sort, group and a suspended sort are in the Query, in the ONE scope that
+arranges — so a reload keeps the sort, and Reset to default clears it. Step 9:
+the search is in the Query too, with the sort, and Demos' Find box draws it.
+Step 10: a ViewSnapshot is `{ v: 2, query, elements }`, put back by
+`setQuery`; `persistView` keeps each component's state only. Step 11:
+`setFilter`, `setState` and the starting `filter` option go — the Query is the
+one way in; `state.filter` stays, read only. 388 asks what a page with no
+provider keeps. Step 12: a `QueryContext` holds the Query and the page's
+declarations; `source.query` IS it, and a source given none makes its own. Step 13:
+the Query's reads — `reading`, `scope`, `scopes`, `holds`, `scopeOf`,
+`fields`, `canHold`, `defaultFor`, `partFacts`, `scopeFacts`, `scopeLabel`,
+`arranges`, `sets`, `pending`, `dirty` — are `source.query.X` only. Step 14:
+`declarePart`, `declareScope`, `declareSets` and `offer` are the context's,
+and each member hears them at once (`declareDefault` moves with `write`). Step 15:
+the filter edits — `select`, `write`, `hold`, `move`, `request`, `release`,
+`suspendScope`, `suspendSelection`, `commit`, `discard` and `declareDefault`
+— are the context's; it edits the Query and each source runs its follow-ups. Step 16:
+`setSort`, `setGroup`, `resumeSort`, `clearSort`, `setSearch`, `setQuery`,
+`export` and `import` are the context's too; `SourceState` is `QueryState`,
+and a View is applied to a `query`, not a source. Step 17: one event —
+the context fires `query-change { fields, scopes }` after every source has
+heard; sources fire neither `scope-change` nor `selection-change`. Step 18:
+one-field doors — `setReading` (for `select` and `write`), `suspend` (for
+both suspends), `take` (for `request`), `reset` and `batch`; an answer
+already in force is a no-op. A control may send a `QueryRequest`; a bar's
+Apply then commits its own field only. Step 19: a superseded chip's own
+answer is the Query's (`ScopeQuery.superseded`, D2 A): kept when the View
+takes the field, given back when it lets go; no bar re-reports it.
+
+**✅ Ruled — TODO 320's overlap: A** (Will, 2026-10-21, "302/311: A"). Steps
+20–22 (the panel and the bar send one request per act; a bound bar paints
+from its live slice) do 320's work now, and 320 closes with 366.
+
+Step 20: the panel sends one request per act — `{ scope: 'panel', request }`,
+one field's `{ scope, field, reading }`, or Reset all's `reset: { organise }`
+for each scope as one list. A bound panel's `setFieldReading` is a request;
+`drawReading` paints. `answerScopes` and the panel's `#said` go.
+
+Step 21: the bar sends one request per act, each its Apply — a field's
+answer, an on or off, the Switch, Clear all (`reset: { organise, carry }`),
+a list for one-value rows and the handover. An Add or a Remove sends only
+`filter-add` / `filter-remove`. Bound, a door (`setChipValues`,
+`setChipReading`, `values =`, `filtersSuspended =`) paints, then asks for
+the chip's answer; a draw paints privately. `answer()`, `answerScope()`,
+`pickedReadings` and the handle's `select` / `write` go. A batch's Applies go
+at its end; an Apply with nothing waiting is a no-op, and carries every
+scope's holds. The bench's fake no longer writes its draws into the shared
+`REPORT`, which had made the old remote "report" act send answers already off.
+`#keepAnswer` / `#pendingAnswers` move to step 22, with the paint from the
+live slice.
+
+Step 22: in a bound bar every chip that answers a field is locked, and Group
+and Sort too; a toggle answers no field and stays its own. A locked chip's
+click and menu ask, and the bar writes no on/off for it. `drawScope(desc,
+live)` paints the live slice after its waits, so `#edits` / `#editedAt` /
+`#edited` go. The bar keeps what it last drew per chip, and a redraw leaves a
+chip with an open draft alone (`reforged-an-open-menu-keeps-its-draft`).
+`#keepAnswer` stays: a reader's Add rebuilds a bound bar and no draw follows
+it (a hold redraws only the panel), so the rebuild repaints what the chip
+showed. Demos panel-apply: 120 of 120 (10 runs, 3 engines).
+
+Step 24: the provider opens each page into a new `QueryContext`
+(`openSource(def, store, { query })`); `OpenedPage.query` and
+`ContextInit.query` hand it on. `setQuery(q, { by })` puts `by` on its
+`query-change`, and the keeper keeps only the reader's changes — a pick is
+`'view'`, a reset or a save `'provider'`, a saved set `'reader'`. The
+two-frame `#writing` / `#quietly` / `#unquietSoon` and the provider's own
+`quick-filter-change` listener go. `ProviderState` is v2, `{ v: 2, view?,
+queries }`; a v1 state reports `unknown-state`. New Demos test
+`a-change-right-after-a-pick-is-kept` fails on the old build in every engine.
+
+Step 25: several sources share one QueryContext. `CompileFacts` gains
+`mine(scope)` (no other source shows rows in it) and `has(field)` (declared,
+its values, the store's `domains` / `time`, or a key in a loaded row). compile
+and `planWalk` skip another source's scope and a field a source lacks, and
+list each in `debugState().skipped`; `has` is strict only with two sources or
+more, so a single-source page is unchanged (bench identical). Sorting keeps
+one arranging scope per source. A second `openSource` into a shared Query is
+reported; the provider's Views need every source on one Query.
+`two-sources-one-query.test.mjs` proves the six rules.
+
+Step 26 ✅: the docs — QUERY-DESIGN rule 1 is "one Query per app Context",
+and §8 the request protocol; PROVIDER-DESIGN, PAGE-DEFINITION,
+DATA-SOURCE-RULES and APP-GUIDE name `ctx.query` and shared sources. New traps
+`T-a-context-holds-the-only-query` and `T-a-control-sends-one-request`.
+**366 is done, 2026-10-21, and 320 closes with it.**
+
+Step 23: a bound grid heading asks, then is drawn — its doors send the one
+`column-filter-change` a reader would, the steer calls `setReading` and
+`commit({ field })`, and `answerColumn` goes.
+
+---
+
+## B — The foundation: what is left
+
+### `[x]` ✅ 86 — AUDIT: every component's functions and events — one request, one response, standardised in `SherpaElement`
+
+**Assessed and decided 2026-09-29 — `docs/history/COMPONENT-API-AUDIT.md`.** About
+1,300 copied lines in six families; seven build steps (A1–A7), one commit
+each. Will's rulings are its §6: chip and tag stay two components; `-select`
+means picked one; meters take a number; sort and group keep their scope (with
+99); two shared chart sheets.
+
+Will, 2026-09-27: *"Once the provider approach is completed, it might be a
+good idea to take a look at all of the functions and events for all UI
+components to see where there is logical duplication but name, or
+implementation, divergence. If it can make generic requests, expects generic
+responses, and can be standardised in sherpa-element (communicating with
+sherpa-provider etc.) then we should make those optimisations. Take care to
+not only add code but rewrite, or refactor, existing code. We can also remove
+redundant code, too. Do the assessment first, for review, before executing
+these changes."*
+
+After P5. Assessment FIRST, for Will's review; nothing is changed before he
+rules. `PROVIDER-DESIGN.md` §9 is its first pass (the filter family, the
+base class, the wrapped controls, the charts). Still to cover: every public
+method and every event of all 63 components, side by side — same job,
+different name or different code.
+
+**Open from §9, and part of this:** 4 (the grid builds its filter menu by
+hand, and the page sets its `data-column-values` — read both from the
+source), 5 and 7 (ONE event shape, `{ readings, presets }`, which retires the
+grid's `ColumnFilter`), 10 (the wrapped native control, four times), 12
+(chart axes), 14 (the app-header re-exposes the bar) and 15 (leftovers). Item
+8 is 68; item 11 is 84.
+
+**Measured 2026-09-30 — the grid's headings on `menuFor()`.** It is not a
+plain move. Today a NUMBER heading has an operator select ("Greater than")
+in its Simple body; a number CHIP, built by `menuFor()`, has none since 90 —
+it answers with Advanced rows where the field offers them. And a heading is
+drawn from the page's column (`ui.grid.columns`), which does not say
+`advanced`; the chip is drawn from the source's field, which does. On
+`menuFor()` the heading's date calendar code goes too: the menu reads and
+writes a date body itself. The dead Range switch handler goes either way.
+
+**❓ One choice:**
+- **A (my pick): the heading is the chip's menu.** It is built from the
+  source's own field (`advanced` included), so "Greater than" is an Advanced
+  row there, as on the chip. One field, one menu.
+- **B: keep the heading's operator select**, and build only the rest on
+  `menuFor()`.
+
+**✅ Will, 2026-10-01: A — built.** A grid heading now opens the chip's own
+menu: the grid asks its provider for each column's FILTER
+(`DataAsk.filters`, which replaced `values`), and `menuFor()` builds it from
+`source.filterDef()`. So a heading follows its field: Region shows
+"Americas" (the value's name), Owner offers Advanced and Region does not, a
+number asks "at least" as an Advanced row, and Created is the menu's own
+date body. The grid's calendar code, its dead Range switch handler and two
+templates are gone. A grid with no source builds the def from its column.
+`T-a-heading-opens-the-chips-menu`
+
+**Left of A7:** one event per act, and the 18 members go — still built with
+89.
+
+**A7 build, from 2026-10-13** — measured first (a read-only agent): all 18
+members and the 8 events are still there; 13 calls in `src`, about 101 in
+sherpa-ui's tests and 28 in Sherpa Demos' tests. Each stage ships with
+behaviour unchanged.
+
+| | stage |
+|---|---|
+| ✅ | 1. Events: the menu's `filter-mode-change` becomes `condition-mode-change` (the provider's has the same name); `filter-clear` and `filter-condition-change` go — a field's mode is in its answer. **Kept:** `calendar-apply` and `calendar-cancel`, a lone calendar's only report of its own footer's buttons |
+| ✅ | 2. The bar's `quick-filter-change` carries its whole answer — `{ scope, readings, presets, holds, active, values }` — and its `filter-add` / `filter-remove` carry `holds`, so the binder reads the event, never the bar. `savedReadings` goes (`presets` says it). **Kept, found while building:** `active` is a field-less toggle chip's only report; `presets` and `heldFields` are read-backs (State ownership), and the provider's Add list reads `heldFields` |
+| ✅ | 3. `filter-add` / `filter-remove { scope, ids }`, always a REQUEST: the panel's `filter-add-request` folds in. Done: the panel asks with `filter-add { scope, ids, from? }`; the binder tells a panel's ask from a bar's report by the binding's scope list, as it did for `filter-remove`. A bar still adds its own chip, then reports its `holds` |
+| ✅ | 4. KEPT by Will's B (2026-10-13) — The grid: its heading's answer is `quick-filter-change { scope, readings }`; `column-filter-change` and the six column members go; `supersedeColumns` is drawn as the bar is |
+| ✅ | 5. KEPT by Will's B (2026-10-13) — The toolbar's `setChipValues`, `setChipReading`, `supersede`, `superseded`, the panel's `setFieldReading` and `values`, and the app-header's `values` and `available` go — `drawReading` and `drawScope` are the doors |
+
+**❓ Will — stages 4 and 5, found while building.** They delete doors that
+the State ownership rule asks for: CLAUDE.md names `grid.columnClause(field)`
+as THE read-back getter, and `setColumnFilter` / `setChipValues` are what "a
+caller with no pointer would type" (the parity sweep). They cost about 60
+test sites in sherpa-ui and 20 in Demos. Stages 1–3 already met the audit's
+aim: one event name per act, and a binder that reads only events. And the
+grid's `column-filter-change` names ONE field, where `quick-filter-change` is
+a WHOLE answer, so renaming it changes what it means.
+- **A:** delete them as the audit planned; `drawReading`, `drawScope` and
+  `readings` are the only doors.
+- **B:** keep them as the doors and read-backs, and close A7 at stage 3.
+My pick: B.
+
+**✅ Will, 2026-10-13: B** — the doors stay, and A7 closes at stage 3. 86 is done.
+
+
+### `[x]` ✅ 74 — EXPLORE: the Query builds every group, sort and filter menu; a menu shows its sub-query
+
+Will, 2026-09-27: *"The query language, and single query object, can be used
+to construct group, sort, and filter menus both in their simple list
+presentation mode and the conditional mode. It also allows us to expose the
+sub-query, that defines the conditions, for any filter menu."*
+
+So a menu is DRAWN from its field's slice of the Query — its values, its
+picks, its rows — in either mode, and the bar, the panel and a heading stop
+building their own. And any filter menu can SHOW the sub-query behind it: the
+conditions it compiles to, readable, perhaps editable. Explore with 49 and 50
+(an Advanced chip shows its conditions), which are this seen from a chip.
+
+**No query LANGUAGE — JSON.** Will, 2026-09-27: *"I don't think we should
+construct a query language for it. We're probably best served using JSON. As
+long as the whole situation is captured and can be recreated then we're
+good."* The sub-query IS the field's slice of the Query — its `FieldReading`,
+condition rows and all — shown and saved as JSON, and restored by
+`setQuery`. No grammar, no parser, no second spelling of a condition.
+
+**✅ Explored 2026-09-29 — the answer, as built in 102 and 103:**
+
+- **A menu is drawn from its field's slice of the Query.** That slice is a
+  `FieldReading` — both answers, the mode, the mirror — and it is the menu's
+  own `menu.reading` (get and set). The source draws it (`drawReading`) into
+  the bar, the panel and a grid heading, and each reads its menu the same way;
+  the grid's own fourth spelling (`ColumnFilter`) is gone. No host builds an
+  answer out of a menu's parts any more.
+- **A group and sort menu** already draws from the Query's arrangement
+  (`ScopeQuery.group` / `sort`); nothing new is needed there.
+- **The sub-query is shown as the reading**, in the reader's words: the rows
+  a chip or a heading holds (`spellConditions`) and, for a machine, its JSON.
+  Showing and editing it on a chip is 49 (read-only, a preset) and 50
+  (editable, the reader's own) — feature work in D, on this.
+- **Left for A7 (86):** the grid's headings built by `menuFor()`, so every menu
+  is made one way as well as read one way.
+
+### `[x]` ✅ 103 — Rows with no key get one from the data layer — Sherpa's own, never sent out
+
+Will, 2026-09-29: *"If we get grid data without keys then the data layer
+should give it keys. Means selection always works with keys. Keys are only
+for Sherpa's capabilities so we need to make sure we don't pollute any data
+we are ever sending out of the data layer to external sources (databases
+etc.)."*
+
+Today a grid with no `key` cannot name a row: `selectedKeys` is EMPTY, and
+`selection-change` sends row POSITIONS as `selected` (left open by the API
+audit's A6, `docs/history/COMPONENT-API-AUDIT.md`).
+
+- **The data layer gives a keyless row a key**, so selection — and anything
+  else that names a row — always works by key, and `selection-change` sends
+  keys.
+- **The key never leaves the data layer.** Not in a store's insert or update,
+  not in `export()`, not in a saved View's JSON, not in anything sent to an
+  external source. A field on the row would leak through every one of those,
+  so it is kept BESIDE the row (a symbol, or a map by row), never on it.
+- **Settle first:** how long a made-up key lives. A key the data never had is
+  stable only while the rows are, so a saved View keeps a selection only over
+  a real key — say so rather than restore the wrong rows.
+
+**✅ Done 2026-09-29:** every store keys the rows it hands out — by the row's
+own key field, or by a made-up `sherpa:<load>:<n>` held in a `WeakMap` BESIDE
+the row (`src/core/data/row-key.ts`), so nothing is ever written on a row and
+nothing leaks into JSON, a store write or an export. `ArrayStore` carries each
+key from its own row to the copy it hands out, so a key is the same on every
+load; a made-up key also finds, updates and removes its row. The grid selects
+by key always, and `selection-change` sends keys. A made-up key lives for one
+page load: a stale one from a saved View is dropped and reported
+(`stale-made-up-key`), never matched to the wrong row.
+`T-a-made-up-key-never-leaves-the-data-layer`
+
+### `[x]` ✅ 38 — One model, one builder, one owner: what is left
+
+Will, 2026-09-25: *"I'm juggling bugs here between the filter panel and filter
+toolbar when the overlap is considerable so the code should be singular, and
+reused, where possible."* The full review is `docs/history/FILTER-REVIEW.md`.
+
+Will's taxonomy stands: **six KINDS** — group, sort, boolean, single, multi,
+advanced. "Organise" is a label, never a kind.
+
+**Done:** steps 1, 2, 5, 5.5 and 6; step 3 — the data layer coordinates — is
+done by the provider (85): the panel asks for its scopes, every component finds
+its source by asking, and `records.js` carries nothing between the panel and
+the bars. A component declares the data it needs (P2). The size gate is
+built (`npm run check:size`).
+
+**Left:**
+
+- **Step 4 — ONE field-row builder.** The panel keeps its own `#draw`,
+  `#drawSection` and `#drawField`. The bar and the panel differ by the layout
+  DIRECTION and whether values EXPLODE into a run — two flags (89's 16-value
+  line is the second), not two implementations. Do it WITH 89, which redraws
+  the panel's fields anyway, and 99, which groups them. **❓ Waits on 89 and 99**, which each wait on one choice.
+- ✅ **"Scope" means one thing now — measured 2026-09-30.** A SCOPE is a
+  named place in the Query (`view`, `data`, a chart's part); the app's
+  surfaces ARE those places. Which rows a bind gets is `rows: 'page' | 'all'`,
+  and how far an answer goes is `reach`. Nothing is left to rename.
+- ✅ **Left from 44c — done 2026-09-29:** a heading that ALREADY held its own
+  filter when the View took its field applies none of it — the Query answers a
+  View-held field in the View alone (`compile`) — and the grid now marks the
+  View's matches, not the heading's old ones; the heading keeps its answer for
+  when the View lets go (`T-a-view-held-heading-shows-and-refuses`).
+
+Rules for the work: MOVE code, never rewrite it; delete the replaced path in
+the same commit; no helper with one caller; state the budget up front and
+report the actual.
+
+**✅ Will, 2026-10-12 — all my picks:** Unblocked: 89 (16) and 99 (a `sherpa-filterset`) are ruled.
+
+**✅ Closed 2026-10-13, measured.** 89 and 99 are built, and the shared half of
+"one builder" is in `src/core/ui/` already: `menuFor()` makes every filter
+menu, `kindOf()` and `oneChipList()` say what a filter is and whether it
+explodes, and `FilterDef`, the ⋮ menu, the saved-filter card, `MenuDrill` and
+`sherpa-filterset` are one each (196). The bar's `#addMenu` and the panel's
+`#giveMenu` both call `menuFor()`; what is left differs by host — the bar's
+chips against the panel's field boxes — not a copy. `docs/history/FILTER-REVIEW.md`
+§Step 4 measured the same: it landed at −21. Closed as Will closed 196 stage 6
+(2026-10-13: B); say so to reopen it.
+
+### `[x]` ✅ 113 — EXPLORE: state first, then render, in every component; a skeleton while the first render waits
+
+Will, 2026-09-29, asking why a menu dropped a reading set before it had drawn:
+*"Wouldn't it make sense for all components to load, set state and conditions
+etc, then render? Isn't this covered by the web component life cycle already?"*
+Asked A "state first, in every component" / B "remove the wait (templates in
+the built JS)", he chose **A**, and added: *"It would also be good if we could
+display skeleton loading of content in case there are any delays in the
+initial, state based, content rendering."*
+
+**Why it is needed.** The platform's hooks run at once. Sherpa adds its own wait:
+`SherpaElement` fetches each component's HTML and CSS, so the first render
+comes later. And many components keep their state IN their elements — a ticked
+box IS the pick, a row element IS the condition — so a value written before
+those elements exist is lost. One cause behind a family of traps:
+`T-custom-element-upgrade`, `T-a-rebuilt-row-reads-empty-for-a-tick`, the
+"a composed field fills async" rule, and `menu.reading`'s early-reading hold
+(102 step 3b).
+
+**The model.** A component keeps its state as plain DATA and draws its elements
+from it. A setter stores the data and asks for a draw; the first render draws
+whatever is there, so nothing set early is lost, and a read never has to wait
+for the page. A composed child is handed its data the same way.
+
+**The skeleton.** While the first render waits, the component shows a skeleton
+of its content, not an empty box. Design it with 58 (loading, empty and error
+states) and 59 (Will's own loading pattern), so a component and a container
+say "loading" one way.
+
+Explore first: measure which components keep state in their elements, pick the
+order (the menu first — A7 already moves its answer into `menu.reading`), and
+say what `SherpaElement` gives every component (a state field and one draw).
+
+**Measured 2026-09-29** (a read-only sweep of all 63 components):
+
+- **36 have public state; 12 of them keep it in their elements, or partly** —
+  in elements: app-header, filter-panel, menu, prompt-composer,
+  quick-filter-toolbar, select-group; mixed: file-upload, input-text, nav,
+  nav-item, notifications, quick-filter. The other 24 keep it in attributes
+  or fields and are safe.
+- **Riskiest five:** the toolbar (about 9 setters that write elements before
+  they exist, 10 getters that read state out of them; every restore goes
+  through it), the menu (`values`, `conditions`, `setCount`, `open`), the
+  panel (`readings` read chips; `setFieldReading` writes an empty `#held`),
+  the chip (`values`, `valueLabel`, `column`), and select-group (`value` is
+  lost before populate and on every re-render).
+- **Where early writes come from:** `applyState()` sets accessors at once;
+  the provider's `#configure` awaits only `whenDefined`; `persist-view.ts`
+  says "deferred to `rendered`" but `applyElements` does not await it (a bug
+  to fix first); the source's `#draw` calls `drawReading` directly.
+- **What the base class already has:** the `rendered` promise (always
+  settles; `populate()` chains on it); `static config` with `#settings` —
+  accessors that STORE and redraw after render, used only by the grid, the
+  nearest thing to "state first"; attribute replay. No queue for method calls.
+- **Models to copy:** the grid (state in fields, `#wantedKeys`), the menu's
+  `#early` reading, progress-step-tracker's `rendered.then` setter.
+
+**Proposed order:** fix `persist-view`'s missing await; then the menu, the
+toolbar, the panel and the chip — the filter family, built with A7 — then
+select-group, input-text and prompt-composer. The mechanism: `static config`
+widened for every component (state in `#settings`, one draw), not a family
+base class.
+Keep each component standing alone — Will's rule, `docs/history/COMPONENT-API-AUDIT.md`
+§5: it extends `SherpaElement` and nothing else, no family base class.
+
+**✅ Step 1 done 2026-09-29 — `persist-view` waits.** A saved View applied to
+a component that has not drawn yet now waits for its `rendered` (and for its
+tag's definition); a drawn one is applied at once, so a report is still read
+straight away. `SherpaElement` gained `hasRendered`, the answer NOW beside the
+`rendered` promise. `onViewPicked` reports, and calls `after`, once every
+element has its state — so the provider's `view-change` comes after a View's
+content is configured. Proved on `sherpa-prompt-composer`, whose value was
+lost before. **Not fixed by it**, as the sweep said: the toolbar's `values`
+and select-group's `value` are still lost, because they write into elements
+a later step (menus stamping, `populate()`) replaces — that is the component
+work below, the filter family with A7.
+
+**✅ select-group done 2026-09-29.** Its value is DATA (`#picked`) and the
+ticks are drawn from it: a value set before `populate()` waits for the
+options, a reader's tick survives new options, and a read before anything
+drew answers what was set. Done by hand with a private field, as the grid
+does — not the `static config` widening: select-group's `populate()` takes an
+ARRAY, which `config` does not merge into. Widen `config` when three
+components want the same shape. `T-a-value-is-data-the-ticks-are-drawn`
+
+**✅ prompt-composer and input-text done 2026-09-29.** The composer HOLDS a
+value set before its first render and writes it in at the end of `onRender`
+— the textarea owns the live text once it exists
+(`T-a-value-before-the-first-render-is-held`). input-text already kept an
+early value (probed); nothing to do. **Left of 113:** the filter family —
+menu, toolbar, panel, chip — built with A7 and 89; and the skeleton, with 58
+and 59.
+
+**Split 2026-10-12** (a read of the code): 89 redraws only the PANEL's fields,
+so the menu, the chip and the toolbar can be done now; the panel waits for 89.
+
+**✅ Menu and chip done 2026-10-12.** The menu HOLDS what it cannot draw yet:
+`values` until its rows exist (their stamp draws them over each item's
+`selected`), and `conditions` and `setCount` until it draws. Once drawn, its
+rows stay the live answer, because a drill moves them. Items that name their
+own picks are newer than held ones. The chip sets its picks THROUGH the menu
+— a borrowed menu's and an unstamped one's too — and holds its `valueLabel`.
+A hold, not a data copy (`T-a-value-before-the-first-render-is-held`).
+
+**✅ Toolbar done 2026-10-12.** It holds `values`, `setChipValues`,
+`setChipReading` and `supersede` given before `populate()` drew a chip, and
+`#render()` replays them in order; `values` and `superseded` read the held
+steers back; the last `drawResults` reaches rebuilt chips. And the ROOT of
+`T-a-rebuilt-bar-reads-empty-until-its-menus-stamp`: a menu that has not
+stamped answers from its items' `selected`, and the bar asks the menu for a
+chip's picks rather than reading `input:checked`. A rebuilt bar now reads its
+picks in the same task.
+
+**Left:**
+- the waits that root made redundant — six `#settled()` sites in the toolbar
+  and `#pendingAnswers` in `readings`; each removal needs its own proof;
+- the panel — with 89;
+- ✅ 2026-10-12, the four the 09-29 sweep called "mixed": nav (state in
+  attributes and fields), nav-item (attributes; `highlight()` is a search act
+  after render) and notifications (`#items`) are clean. file-upload kept each
+  file's status only in its row, so an add or a remove lost it — now data,
+  kept by file;
+- the skeleton. **❓ Will — two choices:** (1) its look: A one shimmer in the
+  host's box for every component, B one per component (grid rows, chart bars)
+  from Figma — my pick A; (2) when it shows: A only if the first render still
+  waits after 300 ms, as a container's loading state does (58), B from the
+  first frame — my pick A. First a measurement: how long a first render waits
+  on a cold load. If it never reaches 300 ms, the skeleton may not be needed.
+
+**✅ Will, 2026-10-12 — all my picks:** A and A — one skeleton, a shimmer in the host's box, for every component; shown only if the first render still waits after 300 ms.
+
+**✅ Skeleton done 2026-10-13.** Measured first: on a cold load with a 4×
+slow CPU, 797 elements on Records, NOT ONE painted a frame between its
+upgrade and its first draw — the stamp follows in microtasks. So the skeleton
+is the PAGE's: `page.css` shimmers an element whose code has not loaded
+(`:not(:defined)`), after 300 ms, and hides its bare children.
+`T-a-skeleton-is-the-pages`.
+
+**✅ Panel done 2026-10-13.** `setFieldReading` before the first `populate()`
+is held by `scope:field`: `readings` reports it, and the field draws it when
+it comes.
+
+**✅ Closed 2026-10-13 — the waits stay.** The proof went the other way: a
+TYPED row still fills late — one frame, and up to four on a busy page (the
+condition chip test failed 1 in 5 at a load of 30 until the chip asked for
+four frames). The bar's four `#settled()` waits and `#pendingAnswers` cover
+that gap, so none is redundant. `T-a-rebuilt-row-reads-empty-for-a-tick`.
+
+### `[x]` ✅ 37 — Components are AGNOSTIC of the data, and of the example app
+
+Will, 2026-09-25:
+
+> All sherpa UI components should be agnostic of the data. The data layer
+> should provision and inform them. They also shouldn't have any bespoke logic
+> in them specific to the example views. [...] For example toggling to the
+> filter panel, from the filter toolbar, should be a custom button added to the
+> actions slot [...] In fact, we should probably separate the example app to
+> it's own codebase and have it use the sherpa-ui framework library as a
+> dependency.
+
+1. ✅ **Find the bespoke logic — done 2026-09-29 for the mode toggles.** Both
+   were built in — `data-act="configure"` in the toolbar (emitting
+   `filter-configure`) and `.to-toolbars` in the panel. The provider, which
+   owns the mode, now puts its own button in each bar's `actions` slot while a
+   panel is on the page, and in the panel's new `actions` slot; both built-in
+   buttons and `filter-configure` are gone
+   (`T-the-mode-switch-is-the-pages-own`).
+2. **Components take PARAMETERS, never data shapes.** A component should not
+   know a field is called `openTickets`. Measure what still does.
+   ✅ **The grid's heading values — done 2026-09-29.** The PAGE set them
+   (`data-column-values`, in `records.js`). Now the grid's request names the
+   text columns that need a whole value list (`DataAsk.values`) and the
+   provider sends them with every page of rows; `records.js` does nothing.
+   ✅ **Measured 2026-09-29: no component names an example field** —
+   `openTickets`, `spend`, `owner` and the rest appear in `src/components`
+   only as the `data-status` attribute or in comments.
+3. ✅ **Extension, not forking — done 2026-09-30, by 27.** A consumer gives a
+   component their own markup and sheets with `useTemplate`, without a fork
+   or a subclass (`T-a-templater-owns-the-files`).
+4. **Split the example app into its own repo**, LAST. Anything it cannot do
+   from outside the library is a boundary the library has not drawn. Its
+   pages are JSON now (`examples/definitions/`, Will 2026-09-29), so the folder
+   moves with it. **Will, 2026-10-01:** *"There's no repo just yet. Just a
+   local, sibling, folder to sherpa-ui called 'Sherpa Demos'."* So the
+   example app moves to `../Sherpa Demos`, last. **Will, 2026-10-01: "go on
+   37".**
+
+   ✅ **Done 2026-10-01.** The app is `../Sherpa Demos`: `app/` (the old
+   `examples/`), its own server, and the tests that drive it. It takes
+   sherpa-ui as a dependency (`file:../sherpa-ui`) and imports it BY NAME —
+   `sherpa-ui` and `sherpa-ui/data`, through an import map in the browser and
+   `node_modules` in Node — as any consumer would. Nothing in it reaches into
+   the library's files. 25 test files moved whole and 12 were split: their
+   component tests stay here, their app tests went. sherpa-ui's own suite
+   needs no app server now. The 9 traps only the app meets moved to
+   `Sherpa Demos/docs/TRAPS.md`. Checked: the app loads with no errors (100
+   records, 1,284 alerts); the Demos suite passes 359 tests in three engines;
+   the library's split files pass 192.
+
+---
+
+## C — Contained bugs
+
+### `[x]` ✅ 301 — BUG: two small menu-item faults
+
+Will, 2026-10-15: *"The horizontal padding on menu items that don't have check
+boxes is non-existent. The hover colour of a menu item seems to be mixing the
+active colour and a grey colour. Grey for hover/focus. Active for selected.
+Only a mix when hover/focus on an active item."*
+
+**✅ Done 2026-10-15.** Both were real, and neither showed on a bare page — a
+scan of all 57 menus in Demos found them. **Padding:** the base sheet's
+`:where(button) { padding: 0 }`, adopted into the toolbar's and panel's shadow
+roots, beat the menu's `::slotted` padding (an outer-tree rule wins, even at no
+specificity), so "Save view as", "Delete view", "Reset all to default" and
+"Replace all" had none. The reset skips a menu's own buttons. **Hover:** rows
+shaded a `--_surface` the host had set, and their own ink; the menu pins its
+own surface and a row mixes it with the neutral body ink (a red row's hover
+had been red-tinted). After the fix no menu row in Demos has a tinted hover. A
+selected row has no fill of its own in a menu, so "only a mix on an active
+item" holds. `T-a-tree-rule-beats-slotted`.
+
+### `[x]` ✅ 300 — BUG: not every tooltip is in the top layer
+
+Will, 2026-10-15: *"Not all tooltips are on the CSS top layer and are getting
+clipped by other elements and containers. Could be related to anchoring of
+tooltips to other components?"*
+
+**✅ Done 2026-10-15.** Not the anchoring: every `.sherpa-tip` and
+`.chart-tip` is lifted, and a probe over all 66 gallery pages found each opens.
+The defect was `sherpa-tooltip`, whose ordinary mode — the one an app gets —
+never showed at all: its bubble is a popover, a closed one is `display: none`,
+and only `data-floating` opened it (the filter chip's count tip, the one use
+in the library). It is always a top-layer popover now, placed on any of four
+sides with a flip when its side does not fit, and the arrow follows the side
+(a custom state). `data-floating` is gone. Three tests, in three engines: it
+shuts and opens on hover, it shows whole above an `overflow: hidden` box, it
+flips. `T-a-tooltip-is-always-in-the-top-layer`.
+
+### `[x]` ✅ 299 — BUG: two glyphs still come from Font Awesome
+
+Found in 270's icon pass, 2026-10-14. `sherpa-breadcrumbs` draws its
+separator as `content: "\f054"` and `sherpa-chat-message` its avatar as
+`"\f544"`, each in `font-family: "Font Awesome 6 Free"`. Nothing loads that
+font since the icons became SVGs (`installIcons()` was a no-op), so each draws
+a private-use character in the fallback font: a box, or nothing. Draw each
+from the icon set (`chevron-right`, a robot or person glyph) the way every
+other icon is drawn, and test the pixels.
+
+**✅ Done 2026-10-15.** Each crumb's prototype carries an `<i class="separator">`
+with `data-icon="chevron-right"`; CSS hides the first crumb's. The chat avatar's
+default is `microchip-ai` (the set has no robot), inside the `avatar` slot as
+before, so a slotted avatar still replaces it. Both tests now ask for a drawn
+`<svg>`, not a font. **Not run yet** — Will's next test run.
+
+**⚠ Fixed again, 2026-10-15:** the crumb's separator was blank. In a
+`renderItems` prototype `data-icon` names a FIELD, so the literal
+`chevron-right` read nothing and was removed (found by 285c's checker, by
+reading). It is written in `after` now. `T-item-template-cannot-compute`.
+
+### `[x]` ✅ 64 — A collapsed accordion section fills with the down (+2) surface
+
+Will, 2026-09-26: a COLLAPSED `sherpa-accordion` section takes the Style
+surface's DOWN step — `base +2`, `--sherpa-style-surface-base-2` — as its
+background fill. (base / +1 / +2 are default / hover / down.) Bind the Style
+name, never a Theme colour: a state is the mode's own step. Open sections keep
+today's fill.
+
+**✅ Done 2026-09-29:** `.root:not([open])` binds
+`--sherpa-style-surface-base-2` (`#b3b3c3` under the accordion's default pin);
+open, the root paints nothing and the card's base shows. The filter panel's
+shut scopes take it too. Test in `reforged-accordion.spec.ts`.
+
+### `[x]` ✅ 43 — BUG: the toolbar ⋯ overflow menu shows nothing
+
+The ⋮ `overflow` button ("More actions") opens no items. With every action
+overflowed, the menu is, from the top:
+
+- Suggest filters
+- Reset filters
+- Show Filter Panel
+- *(divider)*
+- Favorite
+- Save view
+- Save view as
+- Refresh view
+
+**✅ Done 2026-09-29:** the ⋮ opens a menu of every action folded away at this
+width, in that order, and a row does what its button does; the page's own
+buttons (the panel switch) are listed with the filter actions. `filter-overflow`
+is gone — nothing heard it. Found on the way: on a VIEW bar the ★ · Save · ▾
+group never folded (its display rule came after the fold steps).
+`T-the-more-menu-holds-what-folded`
+
+### `[x]` ✅ 45 — BUG: a picked date does not show in the chip
+
+After a pick in the calendar the chip's right half stays empty. The formats:
+
+| picked | reads |
+|---|---|
+| one day | `DD Mmm YYYY` |
+| a range | `DD Mmm YYYY to DD Mmm YYYY` |
+| a range in one year | `DD Mmm to DD Mmm YYYY` |
+| a range in one month | `DD to DD Mmm YYYY` |
+
+Build ONE shared formatter in the data layer, DOM-free, beside
+`format-tick.ts`, so every date label reads the same. More formats will join
+it later; this is the first. (The range chip reads `02 Jan - 11 Dec, 2024`
+today — a third spelling.)
+
+**✅ Done 2026-09-29:** a picked date already showed (`#syncDateLabel`, fixed
+before 82 was written). The format is now ONE DOM-free `formatDate()` in
+`src/core/data/format-date.ts`, exported from `sherpa-ui/data`: `03 Sep 2026`;
+`03 to 15 Sep 2026`; `03 Sep to 15 Oct 2026`; `18 Dec 2026 to 03 Jan 2027`.
+Read in UTC, day first whatever the locale. `T-a-date-reads-one-way`
+
+### `[x]` ✅ 82 — BUG: a number chip set by a View shows no value on its face
+
+Found in step 7 (2026-09-27). The At risk view gives the bar an Open tickets
+chip with `> 2`: the chip holds it (its menu reads `2`, op `gt`), the rows
+obey it (13), and a report keeps it — but the chip's face shows no value.
+The number body's value reaches the menu without the chip's label being
+re-derived for a number. Same family as 45 (a picked date showed nothing),
+fixed for dates by `#syncDateLabel`.
+
+**✅ Done 2026-09-29:** the chip built its face from its menu's parts, and
+only for a `filter` menu — a number chip's menu is not one, so "> 2" read as
+"equals nothing ticked". A number body's face now comes from `menu.reading`,
+whatever the menu's type: At risk's Tickets chip reads `2`. Found on the way,
+same View: the old "Status is not churned" reading also ticked "churned" as
+Simple's answer — the opposite filter; an op's picks are no longer Simple's.
+`T-both-answers-are-kept`
+
+### `[x]` ✅ 83 — BUG: a calendar menu's picked date leaves Apply and Discard looking off
+
+Will, 2026-09-27: selecting a date does not remove the inactive styling from
+the calendar menu's Apply and Discard — yet they are still clickable and they
+work. TWO faults:
+
+- **From step 6e (23094c86).** `sherpa-menu` re-reads its draft for the footer
+  on `input` and `change` only; a calendar pick fires `datetime-change` and
+  `range-select`, so the footer is never told the draft changed and keeps its
+  pair `disabled`. Listen for those too (`T-the-footer-owns-nothing-to-save`).
+- **A disabled button still acts.** A `sherpa-button` with `disabled` looks
+  inactive but a click still reaches its handler — the look and the behaviour
+  disagree. The button must refuse the click while disabled, or the footer's
+  "off" is only paint.
+
+**✅ Done 2026-09-29:** the menu re-reads its draft on `datetime-change` and
+`range-select` too, so a picked day turns Apply and Discard on. A disabled
+`sherpa-button` refuses the click on its host — no listener, no ancestor —
+as a native button does (`T-a-disabled-button-acts-on-nothing`). That showed
+two more gaps, now closed: a draft set from code (`values`, `conditions`,
+`mode`, typed text) did not tell the footer, and a switch between Simple and
+Advanced was not a change to the draft. Eight tests pressed Apply on a menu
+they never opened; they open it first, as a reader must.
+
+### `[x]` ✅ 112 — BUG: an Equals row in Advanced will not open its value list
+
+Will, 2026-09-29: *"Equals conditions in advanced filters don't allow a
+selection from value. Dropdown doesn't show a menu on click."*
+
+The row's value field is a `sherpa-input-text data-type="select"` filled by
+`populate()` (`#fillRow`, `T-equals-answers-with-the-fields-own-values`).
+
+**Probed 2026-09-29 on the Records page, with a real mouse click:** the select
+is visible, on top at its centre, enabled, with 9 options. It OPENS (`:open`)
+in the bar's Owner menu (Chromium) and in the panel's Owner field (Chromium and
+WebKit); the menu stays open and the select keeps focus. Firefox reports
+`:open` false — maybe only how Firefox reports it. **❓ Waits on Will:** which
+surface (bar, panel or grid heading), which browser, and the steps.
+
+**DEFERRED — Will, 2026-10-13.** Not in the churn until he brings it back.
+
+**Back, Will 2026-10-14:** *"This bug applies to any advanced filter's
+condition input that has a dropdown (select) for an 'equals' condition. The
+list isn't populated or shown when interacting with the dropdown. As part of
+fixing this we should check that all input row permutations are working
+correctly for advanced filters."*
+
+**✅ Done 2026-10-14.** Reproduced on Records: **Name** answers by conditions
+only (`advanced: 'only'`), so its values are never listed — its Equals select
+was EMPTY, not even "Select…", and WebKit would not open it. Owner and Email
+opened on the bar, the panel and a grid heading in Chromium and WebKit
+(Firefox reports no select as open, so it cannot be read). Now a row with NO
+list to pick from types its Equals and Not equals, as a number does, and
+answers as the one value it picks; rows, and the host's mirror, ask again
+when the values come or go.
+
+**Every permutation checked** (`reforged-advanced-rows.spec.ts`, three
+engines): 30 single rows — a list, a list with none, a number, a date, a date
+with time, each condition each offers — show the inputs that condition takes,
+and answer the clause it says; two rows join by Or and by And, and the cross
+takes one away. One more was wrong and is fixed: on a field with TIMES a
+minute was exact, so "On 3 Sep at 14:00" missed 14:00:23 — now a minute is
+all of that minute, as a day is all of that day, and Between reaches the end
+of its last day or minute. Demos checks Owner and Name on all three surfaces.
+`T-one-number-is-a-pick-under-equals` · `T-a-relative-date-stays-relative`.
+
+### `[x]` ✅ 114 — BUG: about 1 time in 20, a folded Advanced-only filter's row opens nothing
+
+Found 2026-09-29 while checking a flaky test: "a FOLDED advanced-only filter
+opens its own menu, not a blank drill" (`reforged-quick-filter-toolbar.spec.ts`)
+fails about 1 run in 15–20, on the code before 102 as well as after. Its fixed
+120 ms wait is now a poll for the menu's `open` — and in a failing run the
+chip's own menu is still shut after 60 frames. So it is not slow; it never
+opens.
+
+Pressing the row opens the chip's own menu while the Filters menu closes. Two
+`auto` popovers in one moment, so a guess: the Filters menu's light-dismiss or
+`hidePopover()` lands after the chip's menu opened and closes it too. Check
+the order in `#onMenuSelect` / the drill path, and try the same with a real
+pointer.
+
+**✅ Done 2026-09-29:** not the drill. EVERY re-fold of the bar shut the
+Filters menu and built a new one, even when it folded the same chips — so a
+late re-fold threw away a menu opened just before it, and the test's row
+named nothing. WebKit runs the bar's last settling re-fold a frame later, so
+there it failed EVERY time (60 of 60); Chromium only under load. A re-fold
+that moves nothing now leaves the open menus alone. WebKit 30/30, a new test
+(fails on the old bar), Chromium 856/856.
+`T-a-reflow-that-moves-nothing-keeps-its-menus`
+
+### `[x]` ✅ 108 — A Filters menu row's scope is a DESCRIPTION under its label, with no "in"
+
+Will, 2026-09-29: *"In filter menu items we have the scope of the filter on the
+right side. This should be the description label on the row below the menu
+item's main label. We can also remove the 'in' prefix from this label."*
+
+Today the source writes ``note: `in ${scopeLabel}` `` (`data-source.ts`,
+`addable`), and the menu draws `data-note` at the row's right. Make it the
+row's description line — the same second line a menu row with a description
+already has, if one exists; check the Figma Menu set first — and drop "in".
+
+**✅ Done 2026-09-29:** Figma's Menu List Item has it: a `description` line,
+12/16, 2px under the 14/20 label. A noted row is a two-row grid now, and its
+`::after` note is the second row, in the label's column. The source writes
+the scope's name alone. The colour stays Style `content-secondary` — the same
+`rgb(53, 53, 61)` as Figma's Theme `content/body/+1`, with no new Theme read.
+
+### `[x]` ✅ 106 — BUG: a click between a menu's items reaches what is behind it
+
+Will, 2026-09-29: *"Clicking the space between menu items causes the
+accordion behind the menu to expand or collapse. The menu needs to block this
+from happening. I suspect it could allow clicking of any element behind a menu
+and not just accordions."*
+
+Likely cause, not yet proved: a click BUBBLES through the DOM, not through
+what is drawn. A popover menu is drawn in the top layer, but in the DOM it is
+still inside the accordion's header, so a click on the card's empty space
+reaches the header. A row click is handled; a gap click is not. Check every
+host that holds a menu, not only the accordion.
+
+**✅ Done 2026-09-29:** the cause was as guessed. The fix is in the MENU, so
+it holds for every host: a click in a popover menu that lands on no control
+is the menu's own — `preventDefault()` so no `<summary>` or link acts,
+`stopPropagation()` so no listener behind hears it. A row is a native
+control, so it still does its job. Test (real pointer, three browsers):
+padding and gap clicks toggle nothing and reach no host; a row still ticks.
+`T-a-gap-click-is-the-menus-own`
+
+### `[x]` ✅ 94 — A number (and range) filter menu needs Apply and Cancel buttons
+
+Will, 2026-09-27: *"Numerical (and range) filter menus need apply/cancel
+buttons."* A number is TYPED, so applying each keystroke filters on "1" on
+the way to "150". Locally a PICK applies at once (Will's ruling on 62, "No
+Apply locally"); a number body is the exception — it waits for Apply, and
+Cancel puts back what was applied. The calendar's footer is the pattern, and
+83 is its bug, so fix the two together.
+
+Will, 2026-09-29, after 104: *"Regarding the slider changes, and perhaps any
+filter selection/value changes, we might want to debounce the event to
+update."* Today a number applies on `change` — a handle let go, Enter, or
+leaving the field — so one act is one update, and there is nothing to debounce.
+A LIVE drag (on `input`) would need one. **Will chose once per act**, with live
+as a configurable option for later — that is 107.
+
+**✅ Done 2026-09-29:** every number menu waits for Apply — single or range,
+local or remote — and Cancel puts back what was applied (`menuFor()`:
+`data-commit` + `data-commit-fixed`, so the Range switch cannot turn it off; a
+definition that names `commit` still wins). Built on 83's footer fix. On the
+Records page: typing 172 leaves 100 rows until Apply, then 1.
+`T-a-number-waits-for-apply`
+
+### `[x]` ✅ 16 — BUG: Favourite and Save apply to the Context, not the View
+
+The ★ stars the Context (`examples/index.html` ~396, the `view-favorite`
+listener), so it applies to every View in that Context. It must apply to the
+one View.
+
+**✅ Done 2026-09-29:** the ★ stars the View on screen — a favourite's key is
+`context:view`, the first View's the Context alone — and re-syncs when another
+View is picked; a View favourite reads `Records › At risk` in the rail and
+opens that View. Favourites stored before keep meaning the first View. Save
+is 15's. `T-a-favourite-is-a-view`
+
+### `[x]` ✅ 54 — BUG: a one-value filter's row in the Filters menu: its tick means On
+
+Will: a row in the Filters menu's Added section gets a child menu only when
+its field has MULTIPLE values. A one-value filter (a preset, a toggle) has
+nothing to drill into — today it drills into a menu of one row, `On`
+(`onOffMenu()` in `src/core/ui/filters-button.ts`, `DRILL_FLAGS`,
+`filtersMenuItems()`).
+
+**Will's rule, 2026-09-26: a tick on a value means that value is ON — in
+every filter.** A one-value filter's row IS its value, so its tick turns it
+on; there is no caret. A filter that is OFF with its value on is the same as
+an inactive chip holding a value — suspended, not cleared.
+
+This changes what a tick means in the Added section, where it means HELD
+today (untick removes). Settle, when it starts: how a one-value filter is
+removed from this menu, and whether a multi-value row's tick keeps meaning
+held. Update `T-the-add-menu-is-the-whole-list` and the test "a folded BOOLEAN
+filter opens On".
+
+**❓ Will, 2026-09-29 — pick one.** A menu row has no remove button today
+(`sherpa-menu`'s item row is a tick and a label). If the tick means On, the
+row needs another way to take the filter off.
+
+- **A (my pick):** a one-value row — tick = On. It gets a small × at its end
+  that removes it. A multi-value row keeps tick = held (untick removes), as
+  its row is a FILTER, not a value. Least change; one new row part.
+- **B:** every Added row — tick = On (a multi-value row is ticked while it
+  holds a pick), and every row gets the ×. One meaning in the whole section;
+  more change, and the multi-value tick no longer removes.
+
+**✅ Will, 2026-10-12 — all my picks:** A — a small × on one-value rows only; a multi-value row keeps its tick as held.
+
+**✅ Done 2026-10-12.** An on/off chip's row and a preset's row have no caret
+now: the box is its on/off, and a removable one has a × (`menu-row-remove`).
+`onOffMenu()` and the built "On" menus are deleted. Apply flips only a row the
+reader changed, and a chip pressed elsewhere re-ticks the shut menu's row. A ×
+rebuilds the menu, so it opens again. One change you may notice: the tick now
+waits for the Filters menu's Apply, as every other row there does — the "On"
+row applied at once. `T-the-add-menu-is-the-whole-list`
+
+### `[x]` ✅ 95 — Firefox: a remote chip holding a draft is not marked pending
+
+Found 2026-09-27 by the full Firefox run: `test/e2e/reforged-pending-chip.spec.ts:10`
+fails in Firefox every time — after a tick in a remote chip's open menu, the
+chip has no `data-pending`. Chromium and WebKit pass. Not the provider work:
+the toolbar as committed before P3b fails the same way. Start at the menu's
+`dirty` and the bar's `#queuePending` (TODO 46, `T-a-pending-chip-reads-as-a-warning`).
+
+**✅ Done 2026-09-29:** the menu took its baseline in `toggle`, which Firefox
+fires AFTER the tick — so the tick became the baseline, and was no draft. The
+baseline is taken in `show()` now. The test passes in all three browsers.
+`T-the-baseline-is-taken-at-show`
+
+### `[x]` ✅ 96 — A grid with few columns leaves an empty band on the right of its card
+
+Seen 2026-09-27 in the Dashboard's Capacity planning View: five columns at the
+default 160px make an 800px table in a 1350px card. The grid is a FIXED table
+whose width is the sum of its `<col>`s (`inline-size: 0`,
+`T-col-width-not-inline-size`), so a column never grows to fill. Decide what
+fills the slack — the last column, or every column in proportion — without
+breaking a dragged width or the pinned edges.
+
+**❓ Will, 2026-09-29 — pick one.** Both keep the table at its columns' sum
+when the card is narrower, so nothing changes where it already scrolls.
+
+- **A (my pick):** every column the reader has NOT dragged grows in
+  proportion to fill the card. A dragged column and the pinned edges keep
+  their width. Reads as one table; a drag re-divides the rest, as most grids
+  do.
+- **B:** the last unpinned column takes all the slack. Simplest; the other
+  columns never move, but one column can grow very wide.
+
+**✅ Will, 2026-10-12 — all my picks:** A — every column the reader has not dragged grows in proportion; dragged and pinned ones keep their width.
+
+**✅ Done 2026-10-12.** The grid writes the free columns' `<col>` widths to
+share the slack — on render, when its scroll box resizes, and while a column is
+dragged. Narrower than the sum, nothing grows and it scrolls. A filled column
+can pass the 480px maximum, so a drag starting there shrinks it without a jump.
+Two older tests now run in a box narrower than their columns.
+`T-col-width-not-inline-size`
+
+### `[x]` ✅ 100 — The Assistant panel shows no heading
+
+Found by the API audit (86), 2026-09-29, and confirmed in the browser: the
+Assistant `sherpa-overlay-panel` in `examples/index.html` sets
+`data-title="Assistant"`, but the overlay panel reads only `data-heading`
+(`sherpa-overlay-panel.ts`, its `observed` list). A CONTAINER takes
+`data-heading` (CLAUDE.md, the tier rule). Rename the attribute in the page,
+and check no other page sets `data-title` on a container that reads
+`data-heading`.
+
+**✅ Done 2026-09-29:** the page sets `data-heading="Assistant"`; no other
+page or template sets `data-title`. An app test reads the heading, and fails
+on the old attribute.
+
+### `[x]` ✅ 119 — BUG: the panel header's Reset menu button wears the grouping `end` style
+
+Will, 2026-09-30: *"The 'reset' filters menu, in the filter panel header, has
+the grouping 'end' styling applied. It should have no grouping applied at
+all."*
+
+**✅ Done 2026-09-30.** The menu inherited its button's grouping, so its card
+had square left corners. A menu now states its own edges, so no grouping
+reaches it — in the panel, and in the toolbar's Reset and Save menus, which
+had the same fault. `T-a-menu-takes-no-grouping`
+
+### `[x]` ✅ 127 — BUG: a number input is native again — placeholder, alignment and steppers
+
+Will, 2026-09-30: *"Numerical inputs should have a placeholder of 'Enter a
+value'. Their input text should be right aligned. They should also be
+sherpa-inputs that use the sherpa style up and down stepper buttons rather
+than the native appearance. We've already fixed this before but seem to
+reintroduce the mistake."*
+
+It came back once, so the fix is not done until a test holds it: every number
+input a filter draws is a `sherpa-input-text`, right-aligned, with the
+placeholder and Sherpa's own steppers.
+
+**✅ Done 2026-09-30.** `sherpa-input-text data-type="number"` is Figma's
+`Input Number`: right-aligned, "Enter a value" when empty, and two composed
+`sherpa-button`s (`chevron-up`, `chevron-down`, Transparent) in place of the
+native spinner. A filter menu's number body uses it. A unit test now fails on
+any component template with a bare `<input type="number">`, so it cannot come
+back unseen. Two are left as they are, each with its reason in that test: the
+slider's value box and the pagination's page box — say if you want those
+changed too. One difference from Figma: the steppers sit flush to the right
+edge, as slotted actions already do; Figma leaves 8px.
+`T-a-number-input-wears-sherpas-steppers`
+
+**More, Will 2026-09-30.** *"all numerical inputs should use Sherpa's style"*:
+the slider's value boxes and the pagination's page box are the same field
+now, and the gate allows no other. The slider's fields sit UNDER the track in
+one row, half each, and never stack — also in a filter menu and a narrow
+panel, where the steppers shrink so the digits show. A stepper with no value
+to step to is inactive. Figma draws the pagination's page box with no
+steppers; yours has them, as you said.
+
+### `[x]` ✅ 130 — BUG: filter panel chips show no tooltip — the tip belongs to the CHIP
+
+Will, 2026-09-30: *"Filter panel chips don't display tooltips. This
+functionality should be on the filter chip component and not on the
+filter-toolbar or filter-panel components. Also check for any other
+functionality, or features, that should be at the chip level rather than the
+parent toolbar or panel."*
+
+Two parts. Move the tooltip into `sherpa-quick-filter`, so a chip shows it
+wherever it is drawn. Then AUDIT the toolbar and the panel for everything else
+a chip should own, and list it here before moving it.
+
+Will, 2026-09-30, a tweak: *"Filter chip tooltips (which we are fixing in
+another item already) should have " - X matches" appended. X is the result
+count."*
+
+Will, 2026-09-30, a bug: *"Numeric and Date filter chips don't show a
+tooltip."*
+
+**🚧 2026-09-30 — the tooltip is done; the audit's moves are not.** The tip
+was the chip's already, but it read only a list menu. Now, on a bar, in the
+panel and on a grid heading alike:
+
+| Chip | Its tip |
+|---|---|
+| a list | `active, trial - 49 matches` |
+| a number | `37 to 120 - 28 matches`, or `12 - 1 match` |
+| a date | `05 Jan to 06 Feb 2024 - 10 matches` |
+| conditions | `2 conditions applied - 5 matches` |
+| a saved filter | `4 matches` |
+| Sort, Group | `Name, descending` · `Plan` |
+| a grid heading's sort button | `Sorted by Name, descending` |
+
+The matches show while the chip is on and applied, as its badge does (123
+will change both together). A chip that is OFF says nothing — it filters
+nothing (147); one a scope above holds still says where its filter went. Three things moved INTO the chip to do this: a
+date's label (it was the toolbar's, so a panel date chip showed no days), the
+Group and Sort steer (`arrangeBy` — the panel had none, so its Group and Sort
+never followed the toolbar or a grid heading), and the wording of a range.
+
+**A panel VALUE chip** is one value of a run, and has no count of its own.
+The field's header carries the field's count instead (133). A count per
+value is not asked for.
+
+**The audit — what else belongs on the chip.** Still written twice, in the
+toolbar and in the panel, each asking "a list, a number or a date?":
+
+| Job | Toolbar | Panel |
+|---|---|---|
+| READ a chip's answer | `#answers()` | `#readingOf()` |
+| DRAW an answer into it | `setChipReading()` | `setFieldReading()` |
+| EMPTY it | `#emptyChip()` | `#empty()` |
+| is it ON | `#chipPicks()` + typed check | `data-current` per value chip |
+
+Five of the seven holes in 137 were one of these done differently in two
+places. The fix is one door on the chip — `reading` get and set, `clear()` —
+which its menu already has. That is a refactor of both hosts; say when.
+`T-a-chip-says-its-own-answer`
+
+**✅ Done 2026-09-30 — the second half.** Will: *"130: Good. A."* The chip
+has the one door: `reading` (read and draw), `clear()` and `answered`. The
+toolbar's three kinds of draw, its two kinds of empty and its own
+typed-answer check are gone; the panel's date chip uses the same door.
+Nothing changes on screen, with one fix found on the way: packing or
+unpacking a saved filter now empties a number or a date field too, as it
+did a list. The panel's run of value chips has no one chip, so its field
+still reads its inline menu's own `reading`.
+
+### `[x]` ✅ 131 — BUG: switching a number filter to Range fires no update
+
+Will, 2026-09-30: *"Switching a numerical filter to Range mode doesn't fire an
+update event to start using the range parameters."*
+
+Seen in the code: the switch reports `menu-range-change` only, never the
+values, so nothing re-filters until an end is moved.
+
+**✅ Done 2026-09-30.** The switch is reported as a value change is. In a
+panel the rows follow at once; in a toolbar chip the draft is dirty, so Apply
+takes it. `T-range-switch-swaps-not-rebuilds`
+
+### `[x]` ✅ 132 — BUG: back from a changed Range, the Simple value is gone
+
+Will, 2026-09-30: *"Switching a numerical filter back to Simple mode, from a
+modified range, does not retain any original simple values that were input
+before switching to Range."*
+
+Seen in the code: when a range is written back to the menu, `#setBodyValues`
+empties the single field. Both shapes must keep what they hold
+(`T-range-switch-swaps-not-rebuilds`).
+
+**✅ Done 2026-09-30.** The reading keeps both shapes: the one in force, and
+the other as `kept`. It had to be in the data, not only in the menu — a
+filter panel rebuilds a field's menu when its answer changes. Switch to Range
+and back, and the value typed before is there and applies again; the ends are
+kept the same way. Cancel puts the shape back too. `T-both-shapes-are-kept`
+
+### `[x]` ✅ 137 — BUG: a number range's values differ between the panel and the toolbar
+
+Will, 2026-09-30: *"Numeric range filter values don't match between the
+filter-panel and filter-toolbar. I'm worried that we're not using a
+centralised condition query etc. to coordinate filters and such. Look at this
+first, and any other filter coordination items/issues, before moving on to
+130."*
+
+**✅ Done 2026-09-30.** There IS one owner: the Query, in the `DataSource`. A
+toolbar, the header bar, the filter panel and a grid heading are views of it;
+each reports what a reader did, and the source draws the answer back into
+every one. The views had holes. Seven, all found by setting an answer in one
+control and reading it in the others:
+
+| # | What was wrong | Why |
+|---|---|---|
+| 1 | The panel opened on OLD answers, and its next change wrote them back over the Query. This is the bug reported: the toolbar said 37 to 120, the panel 4 to 240, and typing 60 in the panel made it 60 to 240 | a shut panel ignored every `drawReading`, and nothing refilled it on open — the page did once, and that went when the provider took the page over |
+| 2 | A number chip drew VALUES only, so the shape in force and the kept shape were lost on the way to the toolbar | `setChipReading` cut a number reading down to its values |
+| 3 | A rebuilt panel field dropped a number's answer | `#fill` kept only rows, a mode or a mirror |
+| 4 | A chip switched OFF showed as ON in the panel | the source skipped a suspended answer when it drew |
+| 5 | Reset did not empty a number chip: it switched it off and left the value, so the Query kept a suspended answer | Reset emptied list chips only |
+| 6 | The panel's Reset and a field's Clear did not empty a number field | they cleared value chips and rows only |
+| 7 | A date range set IN THE PANEL filtered nothing: the panel sent the chip's own id, `created`, as the day | a date is one chip, and a ticked chip's value is its id |
+
+And one in the source: a panel report that switched a saved filter drew the
+bars mid-way, from a copy of the scope, so a Reset's cleared fields came back
+on the toolbar a moment later.
+
+All are fixed, and `test/e2e/reforged-filter-coordination.spec.ts` holds
+them: one Records page, forty steps — a list, OFF and ON, a number in both
+shapes, conditions, a saved filter, a date range both ways, a grid heading,
+Reset from each side — and after EACH step every control must hold what the
+Query holds, the panel open or shut. A reload, a View change and remote mode
+(drafts, pending, Apply) were probed the same way and agree.
+
+**One choice is yours.** A chip switched OFF keeps its value. The panel has no
+"off" for a run of value chips, so it shows that field as not answered; the
+Query keeps the value for the chip. Say if the panel should show it another
+way — for example the values drawn, dimmed.
+
+`T-a-panel-follows-the-query-open-or-shut` · `T-a-suspended-answer-is-drawn-as-off`
+· `T-empty-is-every-kind-of-answer` · `T-a-panel-date-answers-with-its-days`
+· `T-a-bar-is-drawn-the-scope-as-it-ends`
+
+**For 130 — what else belongs on the chip.** Seen while here: the toolbar and
+the panel each have their own code to READ a field's answer, to DRAW one and
+to EMPTY one, and each asks "is it a list, a number or a date?". Five of the
+seven holes above were one of those three jobs done differently in two
+places. The chip (with its menu) should answer all three itself — `reading`
+get and set, and one `clear()` — so a host never asks what kind it is. Also
+the toolbar's: the date label on a chip's face (`#syncDateLabel`).
+
+### `[x]` ✅ 147 — BUG: a chip switched off under the pointer leaves an empty tooltip
+
+Will, 2026-09-30: *"When I set a filter chip to inactive while it's tooltip
+is visible then only the tooltip content is hidden. The whole tooltip should
+be hidden."*
+
+**✅ Done 2026-09-30.** `sherpa-tooltip` owns it: when its text goes while the
+bubble shows, the bubble shuts; when the text changes, the bubble is placed
+again for its new width. And every chip agrees now — OFF says nothing. A
+number or a date chip kept its answer in the tip while off, where a list chip
+did not. The tip comes back the next time the pointer enters the chip.
+
+### `[x]` ✅ 148 — BUG: after a Reset, a date chip's value label reads `Unassigned`
+
+Will, 2026-09-30, a minor bug for later: *"When filters are reset, a date
+chip shows 'Unassigned' in it's value label. Not needed."*
+
+**✅ Done 2026-09-30.** The word on the chip was `undefined`, not Unassigned:
+the header bar's Reset emptied the Date chip's RANGE calendar, and the menu
+wrote "no first day" into it as a day. A kept range with no ends holds none
+now. It came in with 137 (an emptied date keeps its range shape). If you did
+see the word `Unassigned` on a date chip, say where — I could not make it.
+
+### `[x]` ✅ 158 — BUG: a data viz filter cannot be moved back down from the View
+
+Will, 2026-09-30: *"I can't move data viz filters back down from the view
+scope."*
+
+**✅ Done 2026-09-30.** On Records a chart's field is the grid's field too
+(Status, Plan), so TWO scopes may take it. I had offered the ↓ button only
+where there was ONE scope, or where the source remembered which scope the
+field came up from — and it forgets that on a reload. So after a reload
+there was no button.
+
+The ↓ button now always shows where a scope below has the field. One scope:
+it sends there, and says where. More than one: it opens a menu — "Send to
+Customer records", "Send to By status" — and you pick. The scope the field
+came up from is first.
+`T-send-to-view-filters`
+
+### `[x]` ✅ 157 — BUG: tooltips are clipped by other elements
+
+Will, 2026-09-30: *"Tooltip are getting clipped by other elements. Tooltips
+should be at the top level in CSS so that they sit above everything else."*
+
+**✅ Done 2026-09-30.** Every button tip and every chart tip is a `popover`
+now, lifted to the browser's TOP LAYER while it shows. Nothing is above the
+top layer, so no card or panel can cut it. I saw the bug on the panel's new
+buttons: "Send Region to Customer records" was cut at the panel's edge.
+
+CSS still shows and places the tip; one small listener on the page lifts it.
+A filter chip's tooltip was in the top layer already. One thing left as it
+was: `sherpa-tooltip` with no `data-floating` still draws in the page —
+nothing in the library or the examples uses it that way.
+`T-a-tip-lives-in-the-top-layer`
+
+### `[x]` ✅ 155 — BUG: the change-scope buttons show only after the first edit
+
+Will, 2026-09-30, a minor issue: *"Change scope buttons only appear on
+filters after the first edit. This action should always be available."*
+
+**✅ Done 2026-09-30.** Send to (↑ or ↓) shows on a field from the start.
+Clear still comes once there is something to clear, and joins it as one
+group. Before that, Send to stands alone with all its corners. I had tied
+the pair to the answer in 121; only Clear belongs to it.
+
+### `[x]` ✅ 168 — BUG: a filter moved A → View → B shows in A again
+
+Will, 2026-09-30: *"If I send a filter from component scope A to View scope
+then back to component scope B then the filter shows again in component scope
+A. A filter should only ever be in 1 scope at any time."*
+
+**✅ Done 2026-09-30, for a grid's scope.** When a filter went up from scope
+A, A kept its place for it ("Filter moved to View scope"). Sent down to B, the
+View let go — and A's kept place came back to life beside B's. Now, as a
+filter lands in B, every other scope below lets go of it first. It is in B
+alone: in the Query, in the panel, and on A's own bar. A reader can add it to
+A again from A's Filters menu.
+
+❓ **One case is not the same: a CHART.** A chart's section is only its
+legend's filter. Send that filter up, then down to the grid, and the chart's
+section shows its legend's chips again — not answered.
+
+- **A (as built, my pick):** leave it. That is the chart's OWN filter, a
+  different one from the filter that moved; it is there on a new page too,
+  beside the grid's.
+- **B:** the chart's section says "Filter moved to Customer records scope"
+  until the filter is sent back to the chart.
+`T-send-to-view-filters`
+
+### `[x]` ✅ 169 — BUG: "Reset to default" and a View pick take the saved filter chips off the bar
+
+Found 2026-09-30, with 167. On Records the grid's bar shows three saved
+filters at rest. After "Reset to default", or after any View is picked, they
+are gone — unless the View names one as ON. A View keeps the FIELD chips a
+scope holds; it does not keep its saved filters.
+
+**✅ Done 2026-09-30.** A View pick keeps a scope's saved filter chips: each
+stays on its bar, off, unless the View turns it on. So "At risk" (the View)
+now shows `At risk` on, with `Has open tickets` and `Unassigned` beside it,
+off — before, it showed `At risk` alone.
+`T-a-view-keeps-the-saved-filter-chips`
+
+### `[x]` ✅ 167 — BUG: a Reset in a component scope clears a chip's "moved to the View" state
+
+Will, 2026-09-30: *"Resetting filters in a component scope clears the
+elevated to view scope state, and inactive styling, from filter chips."*
+
+**✅ Done 2026-09-30.** A bar's Reset emptied EVERY chip, the ones the View
+holds too. Such a chip lost the value it showed and went to "off", while the
+View went on filtering. A chip the View holds is not that bar's to reset: it
+is left as it is — its look, its value, the picks it keeps. What I saw was the
+value going; the grey look stayed in my runs. If the look still goes for you,
+say which button you pressed.
+
+**Found on the way, 169:** "Reset to default" and a View pick take the saved
+filter chips (Has open tickets, At risk, Unassigned) off the bar.
+
+### `[x]` ✅ 166 — A saved filter shows its count only while it is on
+
+Will, 2026-09-30, a minor fix: *"Preset filters always show their badge with
+count. We won't always know this number before activating the filter so we
+should only show it when active."*
+
+This takes back the "A for now" of 123: a saved filter that is OFF shows no
+number. A field chip that is off still keeps its badge.
+
+**✅ Done 2026-09-30.** The source counts a saved filter only while it is on.
+At rest the Records bar reads `Has open tickets`, `At risk`, `Unassigned`,
+with no number.
+
+### `[x]` ✅ 165 — BUG: a filtered grid's group badge counts rows that are not shown
+
+Will, 2026-09-30, a minor one: *"The badge count on a filtered data grids
+group rows should show the number of actual rows shown. Right now it show the
+total row count for the group regardless of visibility."*
+
+**✅ Done 2026-09-30.** Two causes, both fixed. With a chart bound beside the
+grid, the source counted the groups from the View's rows, so a filter on the
+grid's own bar did not reach the badge. And the grid's filter row hides rows
+the source does not know of: while that row holds a filter, the grid counts
+the rows it shows.
+
+### `[x]` ✅ 160 — BUG: ungrouped, a page still holds fewer rows than the pager says
+
+Will, 2026-09-30, on 152: *"All customers. Row count was set to 25. Not all
+data grid pages had 25 rows."*
+
+**✅ Done 2026-09-30.** The store cut the page of 25 first, and THEN dropped
+any row its rules refuse. So each bad row left its page one short.
+
+I could not see it because my browser's data is new, and all of it is good.
+Yours has lived: it holds rows that an older build saved and today's rules
+refuse — a customer with no organisation, from before that was required. The
+store now checks every row first and cuts the page after. Each page holds 25
+of the good rows, and the page count does not move as you page.
+
+Those old rows are still in your browser's database, and still not shown.
+`source.result.dropped` says how many. To get a clean set, clear the site's
+data for `localhost:4200` — or say, and I will make the page report them.
+`T-a-refused-row-never-shortens-a-page`
+
+### `[x]` ✅ 152 — BUG: data grid pages do not keep to the pagination's row count
+
+Will, 2026-09-30: *"Data grid pages don't respect the row count value set in
+the pagination. When i change pages I see varying row counts."*
+
+**✅ Done 2026-09-30.** I could make this happen only with the rows GROUPED.
+Ungrouped, every page held the pager's count in each case I tried: sizes 10,
+25 and 50, sorted, filtered, through the pager's own controls.
+
+Grouped, a page was 25 screen LINES, and each group heading was a line. So
+the pages held 24, 24, 23, 23 and 6 rows — and there were five pages, where
+the same rows ungrouped make four. That was the rule of 2026-09-17 ("visual
+paging"); your report changes it:
+
+- **A page is 25 ROWS, grouped or not.** An open group's heading costs
+  nothing. Records grouped by Plan: 25, 25, 25, 25, on four pages.
+- **A SHUT group is still one slot**, whatever it holds — so shutting a group
+  still pulls the next rows up.
+
+❓ If you saw it with NO grouping, say which page and size: that is a second
+bug, and I could not make it.
+
+**Will, 2026-09-30:** *"All customers. Row count was set to 25. Not all data
+grid pages had 25 rows."* So it WAS a second bug, with no grouping — it is
+160.
+`T-grid-collapsed-group-is-one-slot`
+
+### `[x]` ✅ 153 — BUG: the grid and its container change height with the row count
+
+Will, 2026-09-30: *"The data grid, and it's container, in a fixed row count
+layout grid also changes height to fit the row count. This isn't desirable.
+The container should stay the same height and the grid should fill the
+available height."*
+
+**✅ Done 2026-09-30. My mistake, in 142.** When I moved the scroller to the
+Context's frame I dropped the rule that makes the Context FILL that frame.
+So the Context was as tall as its content, and the "fit" grid fitted the
+content: the Records card was 586 px with ten rows and 632 px with fifty, and
+the pager moved with it. The rule is back. The card keeps one height at ten
+rows, fifty rows and a short last page; the grid fills it; the pager stays at
+its foot. No test had caught it, because every test page was taller than its
+frame — two do now.
+`T-a-fit-grid-needs-a-sized-parent`
+
+### `[x]` ✅ 151 — BUG: a filter moved across scopes does not keep its mode
+
+Will, 2026-09-30, a minor bug to queue: *"Moving a filter across scopes
+doesn't retain the simple/advanced mode state."*
+
+**✅ Done 2026-09-30. Two causes, both fixed.**
+
+- **Sent DOWN, the mode went back.** As the View let go of the field, the
+  toolbar below was freed and reported the answer IT had kept from before the
+  field went up. That old answer replaced the one that came down. The View's
+  answer now wins, whole — its mode and its rows.
+- **After any move, f(x) did not hold.** A move redraws the field. A field
+  drawn Simple has no menu; its first f(x) press builds one. That menu then
+  took the answer as it was DRAWN, a tick later — Simple — and undid the
+  press. The button read on, the Query read Simple. A menu built at a press
+  now takes the answer as it stands.
+
+The test uses a reader's own presses: tick, Advanced, "is not", Simple, send
+up, Advanced, send down.
+`T-a-late-built-menu-takes-the-answer-as-it-stands` · `T-send-to-view-filters`
+
+### `[x]` ✅ 142 — The shell's panel areas stay put while the page scrolls
+
+Will, 2026-09-30: *"The filter panel area, in the app shell, shouldn't scroll
+with the other page content. So it needs to be outside of that scrollable
+wrapper element so that it stays fixed on the left. This will be the same
+requirement for the right panel area (that we don't leverage yet). Should be a
+simple fix so we can bump it up near the top of the queue. :)"*
+
+**✅ Done 2026-09-30.** Only the Context scrolls now. The header and both
+panel areas stay put, and a panel taller than its area scrolls inside itself.
+CSS only: the markup is the same, the scroller moved from `.content` to
+`.context-frame`. The header still takes its shadow while something is
+scrolled under it, from the scroller's timeline — in Chromium and WebKit;
+Firefox draws none. `T-only-the-context-scrolls`
+
+### `[x]` ✅ 201 — BUG: in Chromium on Linux the nav rail opens to hover by itself
+
+Found 2026-10-02, on the first run on Will's Linux machine. These fail in
+Chromium on every run, and all pass in Firefox:
+
+- `reforged-nav.spec.ts:125` — the rail starts collapsed (state reads `hover`)
+- `reforged-nav.spec.ts:912` — the collapsed rail is the density's `size/3xl`
+- `reforged-app-shell.spec.ts:257` ×3 — the closed rail is 36 / 40 / 48 (reads 320)
+- `reforged-layout-grid.spec.ts:616` failed once too, then passed on a re-run
+
+The nav opens on `pointerenter` or `focusin` (`#onEnter` in `sherpa-nav.ts`),
+and no test moves the mouse. Best guess, NOT measured: Chromium keeps its
+pointer at (0, 0), and a rail drawn under it gets a `pointerenter`. On the Mac,
+`:125` was "the known nav flake" (2026-09-21) — likely the same cause, seen
+less often.
+
+First step: log which event opens the rail. If it is the pointer, the fix is in
+the tests (move the mouse off the rail first), not in the nav.
+
+**✅ Done 2026-10-02:** it is the pointer. A probe logged a trusted
+`pointerenter` at (0, 0) on a new rail, with no test touching the mouse. The
+nav is right; the tests were not. `gotoHarness()` now parks the pointer at
+(-1, -1). The layout-grid test was the same bug through the shell, which copies
+its rail's `hover` over a `pinned` set by the test: 31 failures in 40 under
+load before, 40 of 40 after, once that spec used `gotoHarness()`. 58 specs
+still load the page with their own `page.goto` and do not get the park.
+`T-chromium-pointer-starts-on-the-page`
+
+### `[x]` ✅ 202 — BUG: 7 Sherpa Demos tests time out in Chromium under an open rail
+
+Found 2026-10-02, first Demos run on Linux (`PORT=4300 npm test`): 384 passed,
+7 failed, all Chromium, all a click into the left filter panel. Each says
+`<sherpa-nav … data-nav-state="hover"> … intercepts pointer events` — the same
+cause as 201. The rail opens under a pointer at (0, 0) and covers the panel,
+and Playwright never moves the pointer while it waits for the target.
+
+Measured in `reforged-panel-apply.spec.ts`, 4 tests × 5 runs: 10 of 20 failed
+as is, 20 of 20 passed with `await page.mouse.move(-1, -1)` after the
+`page.goto`.
+
+Demos has no shared harness: 40 specs call `page.goto` themselves (~75 calls).
+
+**❓ Will:** (A) add `test/e2e/fixture.ts` to Demos, whose `page` parks the
+pointer after every `goto`, and change the import line in all 40 specs — it
+covers every test, now and later; or (B) park the pointer only in the 4
+failing specs — fewer files, but the next test that clicks near the rail
+fails the same way. A is a 40-file change, so it waits for your yes.
+
+**✅ Will, 2026-10-12: A — built** (Demos `c3997b1`). `test/e2e/fixture.ts`
+gives every test a `page` whose `goto` parks the pointer at (-1, -1);
+`parkThePointer()` does the same for a page a spec opens itself (two specs
+do). All 40 specs import `test` from `./fixture`, and
+`test/unit/e2e-fixture.test.mjs` fails a spec that does not. Full run on the
+Mac: 390 passed, 1 WebKit flake that HEAD has too (204).
+`T-chromium-pointer-starts-on-the-page`
+
+---
+
+### `[x]` ✅ 203 — sherpa-ui: 135 of 136 specs load the page without the pointer park
+
+Found 2026-10-12, with 202. Only `reforged-layout-grid.spec.ts` uses
+`gotoHarness()`; the other 135 call `page.goto` themselves, so a spec that
+draws something hover-aware at (0, 0) can fail as 201 and 202 did.
+
+**❓ Will:** (A) the Demos fix here too — a `test/e2e/fixture.ts` whose `page`
+parks the pointer after every `goto`, and the import line changed in all 135
+specs, with a node test that keeps it so; or (B) leave it — only the specs
+that draw the nav or the shell at (0, 0) have failed so far. My pick: A, for
+the reason you gave for 202. It is a 135-file change, so it waits for your yes.
+
+---
+
+**✅ Will, 2026-10-12 — all my picks:** A — one fixture in sherpa-ui whose `page` parks the pointer after every `goto`, the import line in every spec, and a node test that keeps it so.
+
+**✅ Done 2026-10-12.** `test/e2e/fixture.ts`, as in Demos; `harness.ts` builds
+on it, so its 87 specs park on every `goto` too; the other 58 import from it;
+`test/unit/e2e-fixture.test.mjs` keeps every spec on one of the two.
+
+### `[x]` ✅ 204 — BUG: WebKit — a `page.reload` in the nav favourites spec never fires `load`
+
+Found 2026-10-12, with 202. In Sherpa Demos,
+`reforged-nav-favorites-recents.spec.ts` reloads the page in its
+`beforeEach` and in two tests. In WebKit, about 1 run in 80 times out in
+`page.reload` "waiting for navigation until load", though the snapshot shows
+the page drawn. Measured on HEAD without 202 too: 1 failure in 80 both ways,
+so it is not the fixture. The retry hides it.
+
+Seen again 2026-10-12 in `reforged-nav-pin-persist.spec.ts`'s `beforeEach`
+— the same `page.reload` in WebKit, passing on its retry.
+
+First step: log which request is still open when it hangs — a live feed or a
+fetch that never ends would hold `load` back. If one is, the test can wait for
+`domcontentloaded` and the app's own ready signal instead.
+
+**✅ Done 2026-10-12** (Demos `fddb4dc`). Not Sherpa and not the server: a
+logged server answered every request, and the hung reload's document never
+loaded. WebKit stalls a reload sent while fetches are still open — every hang
+was a reload as the page booted — and the open `/live/files` stream made it
+about three times as likely. Demos' fixture now waits for quiet before a
+reload and gives test pages no stream; two `beforeEach` hooks no longer reload
+at all, as a test's context starts with empty storage. Measured in WebKit over
+1520 boot-time reloads: about 9 hangs before, 1 after. The one retry covers
+that last one. sherpa-ui's own fixture is unchanged: its pages saw no hang.
+
+---
+
+### `[x]` ✅ 206 — BUG: Firefox — a dialog's close event is sometimes not seen
+
+Found 2026-10-12, with 113. `reforged-dialog.spec.ts:52` ("closing the dialog
+fires a composed close event") counts 0 events in Firefox, 2 runs in 10 —
+and 1 in 10 on HEAD before 113, so it is not 113. It calls `show()` and
+`close()` at once, then waits for `__settled()`. The native close event comes
+on a task; in Firefox it may come after `__settled()` resolves, or it may be
+the late close that `T-a-reopened-dialog-hears-a-late-close` drops.
+
+**✅ Fixed by 225's follow-up, 2026-10-12.** It was the first: the native close
+is a TASK, and `settled()` waited for frames and microtasks only. It waits one
+task now — 30 of 30 in Firefox, and no failure in the full runs since.
+
+---
+
+### `[x]` ✅ 228 — BUG: every item in the donut chart's legend can be switched off
+
+Will, 2026-10-12: *"The donut chart allows all legend items to be toggled
+off. There should always be at least 1 active legend item. Perhaps it isn't
+taking into account items set to inactive by filter limiting?"* A legend
+toggle is a FILTER (`T-legend-toggle-is-a-filter`), so the last item on must
+refuse to go off — and an item greyed by "Limit to matching filters" (180) is
+already off for this count.
+
+**✅ Done 2026-10-12 — your guess was right.** The floor counted a greyed,
+ruled-out row as on, though it draws nothing and cannot be pressed. It counts
+only rows that DRAW now — not ruled out, not emptied to 0 by a filter — and
+holds nothing when none does. A host's write keeps the old floor (only every
+row off is refused): a chip over the same field may pick a value no row has
+now. `T-a-legend-keeps-one-row-on`
+
+### `[x]` ✅ 229 — BUG: the legend's switched-off items are lost on a refresh
+
+Will, 2026-10-12: *"They don't retain state on page refresh."* A legend's
+toggles are a filter, so they belong in the kept Query or the View's draft,
+as every other filter does (`T-a-view-keeps-a-draft`).
+
+**✅ Done 2026-10-12.** The kept Query DID hold the pick — the legend lost it.
+On a reload the provider draws `picked` before the legend has rows, and the
+rows come in parts, so the pick was read against the first rows as "all on".
+The legend keeps a host's pick as data and redraws its off-set as rows arrive;
+a click or an `off` write replaces it. A Demos test switches a row off,
+reloads, and finds it off. `T-a-value-before-the-first-render-is-held`
+
+### `[x]` ✅ 231 — "Reset all to default" and "Reset" are inactive at the default
+
+Will, 2026-10-12: *"Reset all to default shouldn't be an active item if the
+filters are already at the view default. Same goes for Reset, too,
+actually."* The provider knows the View's own answer (`resetView()` puts it
+back), so it can say whether anything differs; the menu items and the Reset
+buttons follow it — in the panel and in the bar.
+
+**✅ Done 2026-10-12.** The source answers both, and asking applies nothing:
+`atDefault(initial, view)` compares what filters now (compiled, so the same
+filter reads the same), which filters each scope holds — Will, the same day:
+a filter taken off, or moved to another scope, is a change too — and the
+arrangement the View names with what a Reset to default gives; `answered(scope?)` says whether anything is left to clear. After
+every load the provider sets `data-at-default` and `data-nothing-to-reset` on
+each bar and panel; their Reset buttons, the menu trigger and the ⋮ rows go
+inactive. The Query builder lost a side effect on the way: it no longer
+arranges the rows itself. `T-reset-to-default-is-the-views-own`
+
+### `[x]` ✅ 232 — BUG: the delete customer dialog is critical all over
+
+Will, 2026-10-12: *"The delete customer dialog has critical styling applied
+to it's borders and text labels but the only item that needs to have critical
+status styling is the footer's apply button."* Likely a `data-status` on the
+dialog that the status cascade carries to everything inside
+(`[data-status]` pins at any depth); it belongs on the one button.
+
+**✅ Done 2026-10-12** (Demos). It was: `data-status="critical"` on the dialog.
+It is on the Delete button now, and the generic confirm (deleting a saved
+View) puts it on its action. Two tests that read the dialog's status read the
+button's; a new one checks the dialog's text takes none.
+
+### `[x]` ✅ 233 — Filter section headers inside accordions align to the top
+
+Will, 2026-10-12: *"Align accordion header labels & any count badges to the
+top of the header row container."* — *"Accordion button, too."* — *"I meant
+filter sections within accordions. Align their headers to top."* The filter
+panel's field sections, inside each scope's accordion: the label, any count
+badge and the accordion's button sit at the top of the header row.
+
+**✅ Done 2026-10-12.** The field header row, its label and count, and its
+buttons align to the top (they shared the bottom line, Will 2026-09-26). A
+test measures each against the row's top; it failed on the old CSS.
+
+### `[x]` ✅ 239 — A chip with a typed Advanced answer in its def reads as Simple
+
+Found 2026-10-13 while testing 90: `reforged-one-condition-system.spec.ts`
+("a TYPED condition in list mode is Advanced") fails, every run, in Chromium.
+Measured by building old commits in a worktree: it passed on 2 October and
+first fails at `39dd3612` (199). It passes on a DEV build, where the files are
+fetched, and fails on a build with the templates in the JS, minified or not.
+So the chip now reads its menu BEFORE the menu holds its answer, and nothing
+asks it again: its menu reads Advanced (`contains Da`), the chip has no
+`data-condition`.
+
+**✅ Fixed 2026-10-13.** With the templates in the JS the menu draws, and
+says `menu-items`, before the chip listens; and when the chip connects, the
+menu's condition rows have not filled yet (a composed field fills a frame
+later). The chip now asks again once its menu has drawn and a frame has
+passed — the empty check's own pattern — and `menu-items` redraws a typed
+answer as well as a ticked one. `T-a-rebuilt-row-reads-empty-for-a-tick`
+
+**Worth a full run.** This one hid because no focused run had this spec in
+it; other specs may have failed since 199 the same way.
+
+### `[x]` ✅ 238 — "Select all rows" in the data grid misses rows on other pages
+
+Will, 2026-10-13: *"Bug: 'Select all rows' in the data grid component doesn't
+select all rows, on all pages, as expected."*
+
+**✅ Done 2026-10-13:** a grid its source pages holds one page, so "Select all
+rows" ticked that page alone. It now ASKS: `select-all-request`, with an
+`answer(rows)` callback. The binder answers with `source.allRows(el)` — every
+row under that grid's filter, unpaged — and the grid ticks their keys, on
+other pages too. Unbound, it ticks what it holds, as before.
+`T-select-all-is-the-visible-rows`
+
+### `[x]` ✅ 237 — A tile's own filter on a View-held field is lost, silently
+
+Found building the starter (222), 2026-10-13. A metric with
+`data-where='{"status":{"eq":"active"}}'`, on a page whose View scope holds
+`status`, counted every row: its own filter narrowed nothing, and nothing was
+reported. On a field no bar holds it narrows as it should (the Demos Critical
+tile). A field lives in ONE scope, so the View's chip likely supersedes the
+tile's own scope — but a tile's own filter is not a chip. Find which, then
+make it narrow, or report.
+
+**✅ Done 2026-10-13.** It was the View's answer winning: `compile()` set aside
+the tile's own scope's reading of the View-held field. A component's own scope
+is now `fixed` — compile never sets one aside, and the View's own answer
+narrows the tile under it. `declareDefault` marks the scope before its first
+write compiles. The starter's Active tile is the case, in three engines.
+`T-a-component-default-outlives-a-view`
+
+### `[x]` ✅ 236 — Read-only Advanced condition rows: value text too dark, a × not needed
+
+Will, 2026-10-13: *"Read only advanced filter conditional input rows have
+some issues: The value text is too dark. The delete button is shown but this
+is not required."* This turns 186 choice 4 to B for the row ×: it goes when a
+row is read-only — in the grid's held heading too.
+
+**✅ Part 1 done 2026-10-13 — the "delete" buttons.** A read-only row shows no
+row ×, and its fields are `readonly`, so the value's own clear button (⌫) goes
+too — that was the one on screen in a one-row card. The value takes the row's
+rounded end. The saved filter card and the grid's held heading both.
+
+**❓ Will — part 2, the value text.** Today the operator and the value both
+draw in near-black `#0C0B11`, the ink of an editable field. The ramp has no
+step between `#35353D` and the placeholder grey `#B3B3C3`.
+- **A:** the whole read-only row — operator and value — takes `#35353D`, the
+  ink a disabled field uses. A small lift; it passes contrast (about 12:1).
+- **B:** the placeholder grey `#B3B3C3`. Clearly lighter, but about 2:1 — below
+  the 4.5:1 that WCAG AA asks of text a reader must read.
+My pick: A. Figma was not connected, so I could not read a read-only input there.
+
+**✅ Will, 2026-10-13:** A — a lighter grey, an existing text colour token.
+**✅ Done 2026-10-13:** a read-only row's operator, join and value take
+`--sherpa-style-content-secondary` (`#35353D`), through each field's
+`::part(control)` — the Style name Figma binds, never Theme.
+
+### `[x]` ✅ 235 — "Return to X" survives a reload
+
+Will, 2026-10-12 (A): the scope a View field came up from is kept with the
+Query, so "Return to X" leads after a reload too. Today the source knows it for
+the session only (`#cameFrom`, `T-send-to-view-filters`).
+
+**✅ Done 2026-10-12.** The View scope of the Query carries `from` — each held
+field's origin — so the kept Query and a draft hold it; a send back down
+forgets it. A node test restores a kept Query in a fresh source and finds the
+return; the Demos test reads "Return to By status" after its reload.
+
+### `[x]` ✅ 234 — A filter moved up to the View offers "Return to X" first
+
+Will, 2026-10-12: *"If a filter is moved up to the view scope then the first
+menu option should be 'Return to X' to differentiate it from other available
+component scopes that weren't the original scope before being elevated to the
+view scope."* The send-down menu (TODO 120, `T-send-to-view-filters`) lists
+the component scopes; the one the filter came from leads, worded "Return to
+<its scope>", and the others follow.
+
+**✅ Done 2026-10-12.** The source already listed the scope a field came up
+from first; it now marks it `origin`, and the panel words it "Return to X"
+(and the single button "Return Status to X"). The source knows it for the
+session only, by design (`T-send-to-view-filters`): after a reload both rows
+read "Send to". Say if it should outlive a reload — the Query would carry it.
+
+### `[x]` ✅ 230 — The Reset all filters dialog: its switch is plain form content
+
+Will, 2026-10-12: *"The 'Save filters before reset' in the Reset All Filters
+dialog is contained within a grey border. The switch, label, and description
+should just be form content in the content area of the dialog. No need to
+encapsulate them in any custom way."*
+
+The border is the `sherpa-list` around one `sherpa-list-item` (Sherpa Demos
+`app/index.html`, `#reset-confirm`). `sherpa-switch` has no label of its own,
+and the app has no stylesheet — so plain form content needs one of:
+
+**❓ Will:** A `sherpa-switch` takes `data-label` and `data-description`, drawn
+as `sherpa-select-checkbox` draws its own — any form or dialog, in any
+framework, needs no CSS; it wants a matching Figma variant. B in this dialog
+only, a native `<label>` holding the text and the switch, laid out by a few
+inline styles. My pick: A.
+
+---
+
+**✅ Will, 2026-10-12 — all my picks:** A — `sherpa-switch` takes `data-label` and `data-description`, drawn as `sherpa-select-checkbox` draws its own.
+
+**✅ Done 2026-10-12.** One `<label>` holds the track and the words, so a click
+on them toggles it; no words, no text column. The words take Theme ink, as the
+checkbox's: ON pins the host's Style mode to saturated/success. The Demos
+dialog drops its `sherpa-list` for the plain switch.
+
+## C2 — Consumers: frameworks, apps and agents
+
+### `[x]` ✅ 225 — BUG: `settled()` can hang, and waits on the whole document
+
+`settled(root)` (189) awaits `.finished` on every document-timeline
+animation (`src/core/ui/settled.ts`). An infinite one never finishes, and
+Sherpa has three: `sherpa-loader`, an indeterminate `sherpa-progress-bar`, the
+app header's `data-loading`. And given a part of the page, it still waits on
+every animation in the document. Skip infinite animations; limit to `root`.
+
+**✅ Done 2026-10-12.** Only running animations with an end are awaited, and
+under `root` alone. Two more found on the way, both in all three engines:
+`document.getAnimations()` does not list a shadow root's animations, so a
+transition INSIDE a component was never waited for — each shadow root is asked
+now; and Firefox never ticks an animation in a closed `<details>`, so a wait
+also ends when its element is no longer drawn (`checkVisibility()`).
+`T-settled-waits-for-renders-not-transitions`
+
+**Follow-up, same day:** it made `reforged-saved-filter.spec.ts:476` flaky in
+Firefox (1 in 20; 0 in 20 before — bisected). A popover's `toggle`, which a
+menu writes `open` from, comes a task later than the frames it waited for.
+It waits one task too now: 30 of 30.
+
+### `[x]` ✅ 224 — Silent failures, round 2
+
+Each is small, and each says nothing when it goes wrong:
+- a View opened by a LINK builds an `ApplyReport` and drops it
+  (`persist-view.ts`, the `void applyElements(…)` path, new in 198);
+- a View's gaps go to `console.warn`, not to `report()`, so an app's
+  `onReport()` never hears them; the provider passes no `onIncomplete`;
+- `provider.open()` waits on `customElements.whenDefined` for each `ui` id:
+  a tag never imported hangs it for ever, a plain `<div>` rejects it;
+- `provider.import()` skips a source name it does not have;
+- `LocalStore.update` neither moves nor refuses a changed key, and the
+  "every store" contract test covers 2 of 5 stores;
+- the templater keeps a FAILED sheet in its cache and drops it with no report;
+- a missing file served as `index.html` with status 200 (any SPA fallback) is
+  stamped into a shadow root: check the `content-type`;
+- `scope: ['all']` (the array form) is not caught by `bind()`;
+- a setter that threw is reported as "#id has no X" — refused, not missing.
+
+**✅ Done 2026-10-12** — all nine. New report codes: `provider-undefined-element`
+(`open()` no longer waits for it), `provider-refused-setting`,
+`provider-unknown-source`, `view-gaps`, `sheet-failed`, `template-failed`; a
+fallback page is refused in place of a missing file; `LocalStore` keeps the
+changed-key contract, and the contract test runs over 4 stores (`RestStore`'s
+server answers for itself). 6 tests, each failing before.
+`T-a-broken-assumption-reports`
+
+### `[x]` ✅ 207 — Import anywhere: a server-safe base class, and a checked `define()`
+
+Any import in Node throws `HTMLElement is not defined`, so Next.js, Nuxt,
+Angular SSR and SvelteKit must defer every import. Measured: with only
+`HTMLElement` and `customElements` stubbed, all 65 modules load — so the base
+class extends `globalThis.HTMLElement ?? class {}`. And none of the 65
+`customElements.define` calls checks first: a second copy of the library
+(micro-frontends, Storybook beside the app, a CDN copy) throws at its first
+define and loses its whole import graph. One exported `define(tag, Class)`:
+nothing without `customElements`, nothing when the tag is held by this class,
+a report when another class holds it. The spec tooling finds a class by the
+`customElements.define(` text, so those regexes move with it. A node test
+imports every dist module in bare Node. 189 left the guard out on purpose;
+framework hosting is where two copies are common.
+
+**✅ Done 2026-10-12.** `SherpaElement` extends `globalThis.HTMLElement ??
+Object`; `define(tag, Class)` is exported, and all 65 components register
+through it. The three spec patterns and the def compiler read and write the
+new line; all 65 specs stay fresh. A node test imports every `dist/` module
+with no DOM, and proves `define()` registers once and reports `tag-taken`.
+`T-a-component-imports-anywhere`
+
+### `[x]` ✅ 209 — The package surface for one component
+
+- `sherpa-ui/components/sherpa-button/sherpa-button` (no `.js`) passes
+  TypeScript, which finds the `.d.ts`, and fails in the page;
+- no `sideEffects` field, so a bundler cannot tell what it may drop;
+- `sherpa-ui/package.json` is not exported, and tools that read it fail;
+- the pattern maps `….component.json`, which is not shipped.
+
+**❓ Will — the name of one component's import:** A
+`sherpa-ui/components/button` — the top level stays free for `data`, `app`,
+`css` and `types`; B `sherpa-ui/button`. My pick: A. The rest needs no ruling.
+
+**✅ The rest, done 2026-10-12.** The pattern is `./components/*.js`, so an
+import without `.js` is refused by Node AND by TypeScript, and the `.js` form
+gets its own `.d.ts`; `./package.json` is exported; `sideEffects` keeps the
+component modules, `index.js`, the base class and the CSS. A node test
+resolves each in Node and in TypeScript (bundler and nodenext). Only the
+short name is left, for your ruling.
+
+**✅ Will, 2026-10-12 — all my picks:** A — `sherpa-ui/components/button`.
+
+**✅ Done 2026-10-12.** `./components/*` maps the short name to
+`dist/components/sherpa-*/sherpa-*.js` and its `.d.ts`; the long `.js` form
+still works. The package test resolves both in Node and in TypeScript.
+
+### `[x]` ✅ 211 — Booleans and data the way frameworks bind them
+
+- Every framework writes `data-x={false}` as `data-x="false"`, and Sherpa
+  reads PRESENCE, so false means on. A declared `type: 'boolean'` prop set to
+  `"false"` is removed. Checked: no host uses a literal `"false"` today.
+- `populate()` is a method, so React 19, Vue and Svelte cannot bind data to
+  it, and React 18 can set no property at all. A property beside it.
+- `key` is reserved by React and Vue, so the grid's row key cannot be bound:
+  a `rowKey` alias.
+
+**❓ Will — the property's name:** A `data` — a metric and a line chart take
+an object, not a list; B `items`. My pick: A. The boolean half needs no ruling.
+
+**✅ The boolean half, done 2026-10-12.** A declared `type: 'boolean'` prop set
+to `"false"` is removed, before the first render and after; a string prop
+keeps `"false"`. Only declared booleans — the ones still in `observed` follow
+when 195 declares them. `T-false-is-off`. Left: the `data` property (its name)
+and the grid's `rowKey`.
+
+**✅ Will, 2026-10-12 — all my picks:** A — the property is `data`.
+
+**✅ Done 2026-10-12.** Every component has `data`: setting it is `populate()`,
+reading it gives what was last given, and a value set before the element
+upgrades is kept and drawn. With the boolean half and `rowKey`, 211 is whole.
+`T-false-is-off`
+
+### `[x]` ✅ 215 — Trusted Types and a strict CSP
+
+Under `require-trusted-types-for 'script'`, five HTML sinks throw
+(`sherpa-element.ts` stamping, `render-icon.ts`, two in `templater.ts`,
+`view-markup.ts`). One `sherpa-ui` policy for the first four; `view-markup`
+keeps its allow-list under its own. Three `style="…"` in `sherpa-calendar.html`
+move into CSS. A harness page with a meta CSP proves it.
+
+**✅ Done 2026-10-12.** The five sinks go through `trusted-html.ts`: the
+`sherpa-ui` policy for Sherpa's own files, `sherpa-ui-view` for a View's markup;
+a page that allows neither gets a report. The calendar's three styles are set
+through the CSSOM as its header lands — they could not be CSS, because the clone
+lives in its host's light DOM. `test/reforged/csp.html` (strict CSP, Trusted
+Types) draws a button with an icon, an embedded calendar and a View's markup
+with no refusal; it failed on the old code in Chromium and Firefox.
+`T-sherpa-runs-under-a-strict-csp`
+
+### `[x]` ✅ 220 — Weight per component, gated
+
+One `<sherpa-button>` is 9 JS files (374 KB, 314 KB of them icons) and 12
+fetched files (191 KB, 161 KB of them `sherpa-style-modes.css`). input-text
+pulls in 20 files and 7 elements. A gate walks each entry's import graph,
+records JS and fetched CSS bytes, and lets them only fall — as `check:size`
+does for lines. It also fails when an app module (router, provider, session)
+enters a component's graph, which keeps 221's boundary honest.
+
+**✅ Done 2026-10-12.** `npm run check:weight` (`scripts/check-weight.mjs`)
+walks each of 67 entries' import graph in `dist/` — the package, the data
+layer, every component alone — and records JS bytes, module count and fetched
+`.css`/`.html` bytes in `scripts/weight-baseline.json`; growth fails until it
+is recorded on purpose. It fails too when a display component reaches the app
+layer (provider, router, session, saved Views and drafts); none does today.
+`npm test` runs it as a node test after its build. One button: 10 files,
+378 KB of JS, 191 KB fetched. Not yet in the hook: it reads `dist/`, which the
+hook does not build. The bar's `saved-filters.js` is not counted as app layer
+until 191 moves it into the provider.
+
+### `[x]` ✅ 226 — Docs and agent text, round 2
+
+- CLAUDE.md says `src/index.ts` puts the eight shared sheets in place; since
+  189 `sherpa-element.ts` does. It names `sherpa-provider` 0 times.
+- `DATA-SOURCE-RULES.md`, served as `sherpa://data-rules`, names the provider
+  0 times and teaches only `bind()`.
+- `T-shared-sheets-settle-independently` explains a wait by code that is gone.
+- `Fires:` blocks miss events the code emits: `sherpa-menu` (`menu-range-change`,
+  `menu-items`, `menu-back`), `sherpa-quick-filter` (`group-change`,
+  `sort-change`), `sherpa-filter-panel` (`filter-condition-change`).
+- The MCP: `control-content` and `container-*` tokens (0 exist), a "Rule 9"
+  (the rules end at 8), ontology checks that no longer run, a dead `readDoc`.
+- The `generate_component` prompt and the skill's description still sell the
+  `*.def.json` flow; the skill links a missing `GENERATION-TOOLING.md`.
+- PRINCIPLES.md:118 says the default `populate()` "still shows data" (195).
+- README: `npm test` runs the node tests too; npm readers are sent to
+  `../Sherpa Demos`, CLAUDE.md and docs/, which the package does not ship; no
+  `repository` field.
+
+**✅ Done 2026-10-12.** Every line above: CLAUDE.md on the shared sheets and
+the provider; DATA-SOURCE-RULES names the provider; PRINCIPLES says the default
+`populate()` writes DECLARED props only; the stale trap explains the wait that
+is still needed; the three `Fires:` blocks list every event (the specs had
+them); the MCP says Rule 8, checks no roles, and claims no Rule 4 check; the
+dead `readDoc` is gone; the skill's description says it is out of date, and
+its four dead links and its `@fires` line are fixed; the README links what the
+package does not ship, and `package.json` has a `repository`.
+
+### `[x]` ✅ 227 — Sherpa Demos, round 2
+
+- A refused or invalid save (a taken email, the schema) is an unhandled
+  rejection: the dialog stays open, no toast. `T-a-failed-mutation-must-reach-the-reader`.
+- `customerOrgs` and the regions are kept twice (`records-data.js`,
+  `dashboard-data.js`); the chips need them to agree.
+- Settings › "Items per page" writes and reads nothing; `records.json` says 25.
+- `dashboard.js` declares a `provider` it never uses.
+- 30 `whenDefined` calls in `app/` and 32 `waitForTimeout` in `test/`, and 0
+  uses of the `settled()` that 189 shipped. After 225.
+
+**✅ The first four, done 2026-10-12** (Demos `66a7905`): a refused save shows
+a critical toast with its reason and keeps the dialog open; the two lists live
+once, in `seed-lists.js`; Items per page keeps `/grid/pageSize` and Records
+pages by it; the unused provider is gone. **Left:** the 62 waits — each needs
+reading, as a `whenDefined` may be there for a reason `settled()` does not
+cover.
+
+**✅ The waits, done 2026-10-12** (Demos `245cdc2`). All 32 `waitForTimeout`
+are gone, and a node test fails a spec that adds one: 26 are `settle(page)`
+(sherpa-ui's `settled()`, in the page), 2 samplers are `expect.poll`, 2
+negatives are proved rather than waited out (the applied Query is unchanged;
+no alerts feed is asked for), and 2 wait for the real result. The 30
+`whenDefined` in `app/` stay — each waits for a class before its methods are
+called, which `settled()` does not do.
+
+### `[x]` ✅ 218 — Framework fixtures: measure, never infer — CLOSED
+
+Four rows of the review are reasoned, not run: Vite dev's pre-bundling (likely
+breaks the `new URL` fetch), webpack's CSS rule catching it, Next.js, and
+whether React fires `onChange` for a custom element. Fixtures: Vite + React 19
+and 18, the Next app router, Vue (Vite and Nuxt), Angular SSR, SvelteKit,
+webpack 5, a CDN page and a CSP page. Each draws a button, an input-text in a
+form, a dialog and a grid with rows, and asserts the events. It becomes the
+gate for 207–216.
+
+**❓ Will — where it lives:** A a sibling project, as Sherpa Demos is; B
+`test/frameworks/` inside sherpa-ui. My pick: A — each fixture has its own
+`node_modules`. Until you rule, one throwaway fixture outside the repo
+checks the unverified rows.
+
+**✅ Will, 2026-10-12 — all my picks:** A — a sibling project, as Sherpa Demos is.
+
+**✅ Closed by Will, 2026-10-12:** *"These framework tests are ridiculous. We just want to focus on the quality of Sherpa web components. Their nature of being web components means that I have no concerns about them working with other frameworks."*
+
+Before that, three fixtures (Vite 8 + React 19, Vite 6 + React 18, webpack 5)
+measured three of the four reasoned claims, and one fix for the components
+came of it and is kept — `T-a-bundler-can-turn-a-file-into-a-module`:
+
+- **Vite dev** — Vite 8 works; Vite 6 draws nothing (its pre-bundle breaks each
+  `new URL`; `optimizeDeps.exclude` fixes it). And EVERY Vite dev answered a
+  sheet fetch with JavaScript: sherpa-ui now asks with `Accept: text/css`.
+- **webpack's CSS rule** — true: it turns every sheet into a module, unstyled
+  and silent. The fix is `dependency: { not: ['url'] }` on the rule.
+- **React's `onChange`** — React 19 hears `change`; React 18 hears nothing from
+  JSX, so a ref.
+
+A sheet is asked for as CSS, and each failure says its fix.
+
+### `[x]` ✅ 210 — Framework typings from the manifest — CLOSED
+
+**✅ Closed by Will, 2026-10-12:** *"These framework tests are ridiculous. We just want to focus on the quality of Sherpa web components. Their nature of being web components means that I have no concerns about them working with other frameworks."*
+
+Nothing declares `HTMLElementTagNameMap`, so `querySelector('sherpa-switch')`
+is an `Element`; there are no JSX, Vue or Svelte types, and Angular has only
+`CUSTOM_ELEMENTS_SCHEMA`. After 195 emits `custom-elements.json`, one script
+writes `dist/types/`: the tag map, per-element event maps, React 19 JSX
+(attributes, properties, `on<event>`), Vue `GlobalComponents`, Svelte
+elements, VS Code custom data and web-types. No runtime dependency.
+
+### `[x]` ✅ 213 — Only a component's own events leave it
+
+An inner `<sherpa-button>`'s composed `button-click` leaves its composite with
+the composite as its target. `sherpa-chip` stops it; `sherpa-toast`,
+`sherpa-container` and `sherpa-app-header` do not. So a page listening for
+`button-click` hears every app-header action and every container Retry. 23
+templates hold a `<sherpa-button>`. A sweep test: the events that leave a host
+are the ones its spec lists. First, find any Demos listener that relies on a
+leak.
+
+**❓ Will:** A stop each inner event at its host; B keep them, and document
+filtering by `event.target`. My pick: A.
+
+**✅ Will, 2026-10-12 — all my picks:** A — each inner event stops at its host.
+
+**✅ Done 2026-10-12.** `emit()` from a part inside a Sherpa composite's
+shadow root stops at the composite's host, after the composite's own
+listeners. No Demos listener relied on a leak; one component did — the menu,
+whose number field, slider and condition rows are parts, so it passes on a
+plain `input` and `change` for each now. The sweep `reforged-only-own-events.spec.ts` presses every
+button in every bare component: 24 leaks without the stopper, 0 with it.
+`T-an-inner-event-stops-at-its-host`
+
+### `[x]` ✅ 212 — Markup paths for the list components
+
+React 18, server HTML and a plain page can set only attributes and children.
+These take data only through `populate()`: the tab strip, breadcrumbs, an
+input-text select's options, key-value pairs. Each gets a children path (the
+panels' `data-tab`/`data-label`, `<a>` children, `<option>` children, slotted
+pairs). After 195 lists the slots.
+
+**✅ Done 2026-10-12.** Each reads its own children as its data while no
+`populate()` gave any: the tabs' panels (`data-tab`, `data-label`), `<a href>`
+crumbs, `<option>`s, and `<dt>`/`<dd>` pairs — one `childData()` hook in the
+base class, which follows the children as they change and draws only when
+what they say changed. `T-a-list-takes-its-children-as-data`
+
+### `[x]` ✅ 214 — Forms complete
+
+Four controls join a form (`FormValue`). Missing: `formDisabledCallback`
+everywhere, so inside `<fieldset disabled>` the inner control still works;
+reset on switch, checkbox and radio, which write their current state into
+`checked` and keep no default; and five controls that submit nothing — slider,
+select-card, calendar, file-upload, transfer-list. Angular needs
+ControlValueAccessors for all but input-text (217).
+
+**❓ Will — what `checked` means:** A native — the attribute is the default,
+the property the current state; B keep reflecting, and remember the first
+value as the reset default. My pick: B, less change.
+
+**✅ Will, 2026-10-12 — all my picks:** B — `checked` keeps reflecting; the first value is the reset default.
+
+**✅ Done 2026-10-12.** Every form control reads `:disabled`, so a disabled
+`<fieldset>` disables it; a reset puts back its first state (the file upload
+empties). The slider, select card, calendar, file upload and transfer list
+join their form and submit their values — a range and a list as one entry
+each. Angular's ControlValueAccessors are out, with 217.
+`T-a-form-control-follows-its-fieldset`
+
+### `[x]` ✅ 208 — The text in the JS, not fetched
+
+Templates and sheets are fetched at run time from `new URL(…, import.meta.url)`.
+That works on a plain ESM page and a file-serving CDN, and breaks under Vite's
+dev pre-bundling, a CDN that rebuilds modules, and a CSP `connect-src`; a
+button makes about 21 requests before it draws. The build turns each
+`new URL('./x', import.meta.url)` into an imported string; the source keeps its
+pattern, so the spec tooling is untouched; `reload()` keeps URL mode for the
+dev build. Built with 199 — the same build step. It also removes the first
+render's wait, which is what 113's skeleton is for.
+
+**❓ Will:** A inline by default, URLs only in a dev build; B fetch by default,
+inline as an opt-in subpath. My pick: A. NOTE: on 2026-09-29 you chose
+"state first" over "templates in the built JS" for 113 — this is not instead
+of that; 113's state work is done either way.
+
+**✅ Will, 2026-10-12 — all my picks:** A — inline by default, URLs only in a dev build.
+
+**✅ Done 2026-10-12.** After `tsc`, the build wraps each `new URL('./x.css' |
+'./x.html', import.meta.url)` in `inlined(…, text)`: 142 files, and a button
+and a grid draw with no request. `npm run build:watch` and `build:dev` keep the
+URLs for live reload; a reload fetches fresh in any build. The package entry
+now fetches only `tokens.css`, its page sheet. `T-the-text-is-in-the-js`
+
+### `[x]` ✅ 216 — Tokens safe to embed
+
+`tokens.css` also styles the page — `html, body` margins, the body's font and
+colours, a `body > sherpa-app-shell` rule — so a host that links it changes.
+With no `data-mode` it follows the OS, so a light-only app on a dark machine
+shows dark controls; and mode is set on `:root` only. Bare `[data-status]`,
+`[data-look]` and `[data-density]` match anywhere: a host's own
+`<tr data-status="active">` re-tints every Sherpa control in it. 502
+`::part()`s, 0 `exportparts`. No `@font-face` for Inter. The page rules move to
+a generated `sherpa-ui/css/page` that the app layer and the starter link.
+
+**❓ Will — the default mode with no `data-mode`:** A light, with `auto` as an
+opt-in (the starter sets it); B follow the OS, as now. My pick: A.
+
+**✅ Will, 2026-10-12 — all my picks:** A — light when no `data-mode` is set; `auto` is an opt-in (the starter sets it).
+
+**✅ Done 2026-10-13.** The page rules are `page.css` (`sherpa-ui/css/page`),
+generated beside `tokens.css`, which styles no page now; Sherpa Demos and the
+test pages link both. No `data-mode` is light; dark follows the OS only under
+`data-mode="auto"`. The `[data-status]` reach is written down. Not done: an
+`@font-face` for Inter, and `exportparts`. `T-tokens-are-safe-to-embed`
+
+### `[x]` ✅ 219 — The framework guide — CLOSED
+
+**✅ Closed by Will, 2026-10-12:** *"These framework tests are ridiculous. We just want to focus on the quality of Sherpa web components. Their nature of being web components means that I have no concerns about them working with other frameworks."*
+
+It was planned as `docs/FRAMEWORKS.md`, about 200 lines of steps: install, one import, tokens, a
+recipe per framework, attributes vs properties, events, forms, CSP, server
+rendering, and the `:not(:defined)` rule for the time before the JS loads.
+Served as `sherpa://frameworks`, with a short `AGENTS.md` in the package.
+After 207–215. The app guide (193) is its sibling.
+
+### `[x]` ✅ 217 — React 18 and Angular adapters — CLOSED
+
+**✅ Closed by Will, 2026-10-12:** *"These framework tests are ridiculous. We just want to focus on the quality of Sherpa web components. Their nature of being web components means that I have no concerns about them working with other frameworks."*
+
+React 18 can set no property and hear no custom event without a ref; Angular
+needs ControlValueAccessors. Both generated from the manifest: a small
+`createComponent` that takes React as an argument (no dependency), and CVA
+directives for switch, checkbox, radio, slider and select-group. After 210
+and 214.
+
+**❓ Will:** A their own packages (`sherpa-ui-react`, `sherpa-ui-angular`); B
+subpaths with optional peer dependencies. My pick: A, as for the MCP (183
+choice 2) and 184.
+
+**✅ Will, 2026-10-12 — all my picks:** A — their own packages, `sherpa-ui-react` and `sherpa-ui-angular`.
+
+### `[x]` ✅ 221 — `sherpa-ui/app` and the app boundary
+
+No display component imports app code today. Make it structural: a
+`sherpa-ui/app` entry (router, provider, outlet, session, View files, saved
+Views and drafts, `app.json`, `ContextModule`) and a `sherpa-ui/components`
+entry; a lint boundary like rule 13 — `src/components/**`, except the
+provider, router and outlet, may not import app modules; 220's gate proves it.
+A component feature stays a component: `SherpaDialog.prompt()` (191) is for
+React users too.
+
+**❓ Will:** A the root `sherpa-ui` still re-exports the app layer — one line
+on a CDN; B the root holds components and data only. My pick: A. Waits on 183
+choice 1.
+
+**✅ Will, 2026-10-12 — all my picks:** A — the root `sherpa-ui` still re-exports the app layer.
+
+**✅ Done 2026-10-13.** `src/app.ts` is `sherpa-ui/app`, `src/components.ts`
+is `sherpa-ui/components`, and `src/index.ts` is the two and the data layer,
+three lines; every name it had is still there (94 checked). A lint override
+refuses an app import from a display component, and `check:weight` lists
+four more app modules and weighs both new entries. The outlet joins
+`sherpa-ui/app` with 194. `T-the-app-layer-is-opt-in`
+
+### `[x]` ✅ 222 — The starter
+
+One folder, about 8 files, on any static host with no build and no Express:
+`index.html` (import map, tokens, router, provider, shell, outlet — about 40
+lines), `app.json`, a Context template that asks, its page definition, seed
+rows, an optional Context module, `package.json`, and an `AGENTS.md` that says
+where each kind of file goes. Three ways in, one source — a `starter/` folder
+versioned with the library: `npx sherpa-ui init my-app` (a bin with no
+dependencies), `scaffold_app` and `validate_app` in the MCP (192), later
+`npm create sherpa-app`. Needs 197, 190, 194, 221, 193; 192 for the MCP way;
+207 so `check` runs in Node.
+
+**❓ Will:** A the template inside sherpa-ui, with `npx sherpa-ui init`; B a
+separate `create-sherpa-app` package. My pick: A.
+
+**✅ Will, 2026-10-12 — all my picks:** A — a `starter/` folder in sherpa-ui, with `npx sherpa-ui init`.
+
+**✅ Done 2026-10-13.** `starter/` is 11 files — `index.html` (39 lines, 13
+of them script), `app.json`, the Records Context's template, page
+definition, Views, store and module, `package.json`, `.mcp.json`, `.gitignore`
+and `AGENTS.md`. `npx sherpa-ui init <folder>` (`bin/sherpa-ui.mjs`) copies it;
+the MCP's `scaffold_app` returns it (19 tools). An e2e test boots it in three
+engines; a node test checks what `init` makes against both schemas, `checkApp`
+and the usage gate. `validate_page` reads an `app.json` as well, so there is
+no separate `validate_app`. Found on the way: 237. `T-a-starter-is-one-folder`
+
+## D — Filters: Will's features, on the foundation
+
+### `[x]` ✅ 99 — EXPLORE: a FILTERSET — filters in SERIAL, in PARALLEL, or both; and a group of chips
+
+Will, 2026-09-29: *"Customers and Regions are closely related. 1 customer can
+operate in many regions. A region can only contain a customers data for that
+region. This isn't something that Sherpa logic needs to contend with
+literally. However, it would be good to have the option to configure filters
+to run in serial, parallel, or both modes."*
+
+| mode | a filter's options |
+|---|---|
+| **parallel** — the default, and today | every value, whatever the other filters pick |
+| **serial** | only the values the rows still have after the picks ABOVE it in the chain |
+| **both** | a serial group sits beside filters that run in parallel |
+
+*"A nice way to achieve serial groups is some sort of wrapper element like the
+native HTML fieldset… Perhaps a filterset element? Actually, we can also use
+this to group filters/chips together, too."*
+
+- **`filterset`** groups filters — and chips: it can also put Group and Sort
+  under "Organise".
+- **`data-filter-mode="serial"`** chains the filters in it;
+  **`data-filter-mode="parallel"`** runs them side by side. No filterset, or no
+  attribute, is parallel, as today.
+- **The example app:** Customer and Region in serial, everything else in
+  parallel. Sherpa never knows that a customer has many regions — the ROWS
+  answer it, through the chain.
+
+**Design first**, for Will's review:
+
+1. **The JSON.** A scope's sets in the page definition — for example
+   `"sets": [{ "mode": "serial", "fields": ["customer", "region"] }]` — so the
+   markup and the definition say one thing (`T-a-page-is-its-definition`).
+2. **The data layer.** A field in a serial set takes its options from the rows
+   the fields ABOVE it allow — `filterDef()` for that field, narrowed. Show an
+   unavailable value dimmed below a divider
+   (`T-unavailable-value-sorts-below-a-divider`), or remove it?
+3. **A pick that is no longer offered.** Region = APAC, then Customer = one
+   with no APAC rows: keep the pick, suspend it, or drop it? Suspend is not
+   clear — never lose a reader's answer silently.
+4. **Sort and group keep their scope** in the source (Will, 2026-09-29,
+   ruling 4 of the API audit) — design it here, with the filterset.
+5. **The bar and the panel draw a set as ONE group** — 38 step 4's one
+   builder, and `.sherpa-group` for the joins. Do it before 89 redraws the
+   panel, so the panel is rebuilt once.
+
+**Design, 2026-09-29 — for Will's review.** Found first: every filter is
+PARALLEL today. A field offers all its values (`filterDef()`), and the rows
+are the AND of every pick. `available: false` exists on an option, but
+nothing sets it. So SERIAL changes what a field OFFERS, never how rows
+match. 110 (an AND row offers only what the rows before it leave) is the same
+chain inside one field — build both on one helper.
+
+1. **The JSON** — a scope lists its sets; a set's order IS the chain:
+   ```json
+   "view": { "holds": ["customer", "region", "created"],
+             "sets": [{ "id": "account", "label": "Account", "mode": "serial",
+                        "fields": ["customer", "region"] }] }
+   ```
+   `mode` defaults to `parallel` — a set that only GROUPS chips. A set's
+   fields must be ones the scope holds; `openSource` reports one that is not.
+   Organise is a set too, in a component's scope:
+   `{ "label": "Organise", "organise": ["group", "sort"] }`.
+2. **The data layer** — `source.optionsFor(field)`: a field in a serial set
+   offers the values of the rows that the picks of the fields ABOVE it allow
+   (only those — a parallel filter outside the set does not narrow it). One
+   helper narrows rows by a list of readings; 110 reuses it for AND rows.
+   The source redraws a field's options when a field above it changes. Local
+   stores answer from their rows; a remote store needs one new call —
+   distinct values of a field under a filter — added to
+   `docs/DATA-SOURCE-RULES.md`. Narrowed-out values are REMOVED, not dimmed:
+   serial exists to offer less, and the way back out is the field above.
+3. **A pick no longer offered** — see ❓ below.
+4. **Sort and group keep their scope** — the source keeps an arrangement PER
+   scope, not one; a panel's `sort-change` reaches its own component
+   (ruling 4). Built with 38's scope rename.
+5. **Drawing** — see ❓ below. Either way the bar and the panel stamp a set
+   from the JSON; nobody writes one by hand, so the definition stays the one
+   list (`T-a-page-is-its-definition`).
+
+**Build order:** 1 the JSON and `openSource` checks; 2 the narrowing, with
+headless tests; 3 sort and group per scope; 4 the drawing, with 38 step 4 and
+before 89; 5 the example app — Customer then Region, serial; 6 110 on the
+same helper.
+
+**❓ Will — two choices.**
+
+- **Q3, a pick the chain no longer offers** (Region = APAC, then a Customer
+  with no APAC rows):
+  - **A (my pick): keep it, ticked and listed** — the DO NOT DROP rule
+    (`T-unavailable-value-sorts-below-a-divider`). The rows may go to zero;
+    the reader sees why, and unticks it. Nothing lost.
+  - **B: drop it, and say so** — a toast "Region APAC removed — no rows for
+    this Customer", with Undo.
+- **Q5, how a set is drawn:**
+  - **A (my pick): a `sherpa-filterset` component**, like `<fieldset>` —
+    your idea. Stamped by the bar and the panel from the JSON: a label, its
+    chips joined as one group, and a small chain mark when serial. One
+    component, so the bar and the panel cannot draw a set two ways.
+  - **B: no new component** — a `.sherpa-group` wrapper with a label, drawn
+    by each of the bar and the panel.
+
+**✅ Will, 2026-10-12 — all my picks:** Q5 A — a `sherpa-filterset` component. (Q3 was overtaken by 180.)
+
+**Build, from 2026-10-13:**
+
+| | step |
+|---|---|
+| ✅ | 1. The JSON: `sets` on a scope, `declareSets()` / `sets()`, `describe()` carries them; `openSource` reports a set field not held, `declareSets` a field in two sets |
+| ✅ | 2. Serial narrowing: a field offers what the fields above it leave; a pick the chain rules out is set aside, as 180 does. `source.offered(scope)`; `drawOffered` on the bar and the panel, `offered` on the menu; a value not offered is removed, a pick kept greyed. A field is never ruled out by one below it, Limit on or off |
+| ✅ | 3. The `sherpa-filterset` component, stamped by the bar and the panel — **✅ Will, 2026-10-13: A.** Built: a heading, its filters (joined with `.sherpa-group` in the bar, stacked in the panel), and a `link-simple` mark when serial. A set whose chips all fold is parked, as they are. Records in Sherpa Demos draws its Account set |
+| ✅ | 4. **Done 2026-10-13:** `arranges` per scope (page JSON or `declareScope`; left out, a grid's or a list's scope does, the View does not); the source remembers which scope arranged the rows — its chips alone show it, `export()` writes it there. Sort and group per scope — the Organise set. **✅ Will, 2026-10-13: B** — *"Only certain component scopes, and possibly view scope, will have group and sort. Not all component scopes."* **❓ Will, found while building:** a source has ONE arrangement today — one sort, group and page, loaded once — and `export()` writes it in the View scope. A real arrangement PER scope means each grid on a source gets its own sorted page: the source loads once per arranged scope. No page in Sherpa Demos has two arranged components on one source yet. **A:** build it now — one load per arranged scope, each grid its own sort, group and page. **B:** the source records WHICH scope arranged the rows (from `sort-change`'s `scope`): a scope's Organise chips show only its own sort, and a saved View keeps the arrangement in that scope — still one load, until a page has two arranged grids. My pick: B |
+| ✅ | 5. Sherpa Demos: Customer then Region, serial — on Records. The Dashboard stays parallel: in a chain Region can never set Customer aside, and the Dashboard is where 180's "a later answer wins" shows |
+
+### `[x]` ✅ 89 — Every filter added to the panel starts SIMPLE
+
+Will, 2026-09-27: *"Let's start all filters added to the panel in 'Simple'
+mode."* Its content is one of three, by the field:
+
+| the field has | Simple draws |
+|---|---|
+| 16 values or fewer | each value as its own chip — exploded |
+| more than 16 values, or it is a date | ONE chip with a menu — a list, or a calendar menu for a date |
+| numbers | a number input, or range slider inputs |
+
+**16 replaces 47's 20** — one line for the bar and the panel, set once (the
+builder's explode-or-menu flag, 38 step 4). 47 (more than 20 values, one chip)
+is merged here. Mode words: TODO 75.
+
+**Plan, 2026-09-30** (a second agent read the code; nothing built yet).
+NOT built: there is no "16 values" line anywhere in `src/`. Every field with
+options is a run of chips; only a date, Group and Sort are one chip. The
+line belongs in `src/core/ui/filter-kind.ts` (DOM-free), read by the panel
+and the bar. Two fixes ride with it: a one-chip field's picks are its MENU's
+values, not the chip's on/off (`#picked`), and its Advanced switch is the
+chip menu's own, as the inline body is never built for it.
+
+**❓ One number.** 89 says 16, and that it replaces 47's 20. 122, later, says
+"over 20 unique values".
+- **A (my pick): 16** — 89 calls it the one line for the bar and the panel.
+- **B: 20.**
+
+**✅ Will, 2026-10-12 — all my picks:** A — 16 values.
+
+**✅ Done 2026-10-13:** `EXPLODE_AT = 16` and `oneChipList()` in
+`src/core/ui/filter-kind.ts`. A panel field with more than 16 values is ONE
+chip with its values in its menu, as a date is. Its picks and its answer are
+the chip's, its greyed look is the chip's, and its Advanced switch is in its
+menu, not the field header. 16 or fewer is a run, and a number keeps its own
+input or range. The bar was one chip per field already. `T-only-group-and-sort-stay-one-chip`
+
+### `[x]` ✅ 102 — Simple AND Advanced answers are both kept, so a filter switches mode at any time
+
+**Progress, 2026-09-29.** ✅ Step 1: a reading keeps both answers, and `mode`
+says which filters (a696700e). ✅ Step 2: `menu.reading`, and Advanced mirrors
+Simple until a row is edited (c3b280b2). ✅ Step 3a: the bar and the chip read
+and write through `menu.reading` — Will's "can't switch back" bug is fixed, on
+the Records page too (22fbcb41). ✅ Step 3b: the panel — its chips are
+Simple's answer, its menu's rows Advanced's; its switch carries the chips over
+and they mirror until edited; a redraw keeps the reader's mode (75d23450). ✅
+Step 3c: the grid heading holds the menu's whole reading — `ColumnFilter` is
+gone — and a redraw is held as it is, not through a clause. **Left:** the rest
+of A7 (one event per act, the headings on `menuFor()`, the 18 members go),
+which is 86's.
+
+**✅ Done 2026-09-29:** a filter keeps its Simple picks AND its Advanced rows,
+and `mode` says which filters; the first switch to Advanced copies the picks
+(X and Y become Equals X OR Equals Y) and keeps copying until a row is edited;
+the switch works both ways in the bar, the panel and a grid heading, and a
+redraw keeps the reader's mode. A saved View and the session's kept Query carry
+both answers (`READING_KEYS`); a saved FILTER still saves the answer in force —
+105 reworks saving. `T-both-answers-are-kept`
+
+Will, 2026-09-29: *"Switching to an advanced filter, in the filter toolbar
+chip menu, prevents me from toggling back to a simple filter if a value has
+been input. Both simple and advanced mode conditions need to be tracked and
+stored to allow switching at any point. May require rework to the query
+building in the data layer as well as component fixes."*
+
+Today the menu's mode switch carries the picks INTO the condition rows
+(`#seedFromPicks`, `T-a-mode-switch-carries-the-answer-over`) and nothing
+keeps them going back — one answer, two views of it.
+
+- **The reading holds BOTH answers and which mode is in force.** A
+  `FieldReading` keeps its `picked` list and its condition rows side by side,
+  and a `mode`. The Query compiles only the mode in force; switching changes
+  the mode and loses nothing.
+- **The switch is never blocked**, whatever either mode holds. Switching back
+  shows Simple's own picks.
+
+**Will, 2026-09-29, later:** *"The initial switch from simple filter to
+advanced should carry over the conditions. e.g. X and Y are selected becomes
+Equals X OR Equals Y. As soon as the advanced conditions deviate from the
+simple conditions then that mirroring should be disabled. Users should still
+be free to toggle between simple and advanced modes at any point and have
+their parameters maintained."*
+
+- **Advanced MIRRORS Simple until the reader changes it.** The first switch
+  turns picks X and Y into `Equals X` OR `Equals Y` (today's
+  `#seedFromPicks`). While the rows are still that mirror, a change to the
+  picks re-draws them.
+- **The first edit to a row ends the mirror**, for good: from then on each
+  mode keeps its own answer, and switching shows it. The reading records
+  whether the rows still mirror the picks.
+- **Every writer and reader of a reading follows**: the menu, the bar, the
+  panel, a grid heading, a saved filter and a saved View (JSON), and the
+  session's kept Query. Design it with 90, which builds Advanced on it, and
+  with 75's rename (the mode is `simple` / `advanced`).
+
+### `[x]` ✅ 110 — In Advanced rows, AND is serial and OR is parallel
+
+Will, 2026-09-29: *"Advanced filter conditions: AND is serial. OR is
+parallel. So AND row options should be restricted by preceding conditional row
+conditions."*
+
+A row joined by AND narrows what the rows before it left, so its value list
+offers only the values still present under them — the SERIAL idea of 99's
+filterset, inside one field's rows. A row joined by OR starts again: every
+value. AND binds tighter than OR (`T-many-conditions-are-one-reading`), so an
+AND row looks back only as far as the last OR.
+
+The data layer has the tool: `present` is the values a row still carries under
+the other filters. Build with 90 (options per field type) and 99 (serial /
+parallel for whole filters), so "serial" means one thing in both.
+
+**Plan, 2026-09-30** (a second agent read the code; nothing built yet).
+`FieldReading.present` is READ (a value not in it shows as unavailable) but
+NOTHING writes it: the data layer has the type, not the sum. Needed: a
+DOM-free rule in `filter-state.ts` (walk back to the last OR), a source
+method that answers "which values are left under these rows", and a way for
+a row to ask — the menu reads its own DOM today, and a remote store is
+async. Build with 99.
+
+**❓ One choice.** In an AND row, a value the rows before it rule out is:
+- **A (my pick): hidden** — "offers only what the rows before it leave".
+- **B: shown, dimmed, and not pickable** — as an unavailable value reads
+  elsewhere.
+
+**✅ Will, 2026-10-01: B.** A value the rows before it rule out stays in the
+list, greyed out, and cannot be picked. The same rule for 174.
+
+**✅ Done 2026-10-01.** An AND row's value list greys what the rows before it
+rule out — back to the last OR — and says "No matches with the rows above."
+on hover; an OR row offers every value. With Tier = Silver in row one, an AND
+row offers Silver alone and greys Gold. It needs no data: every row is on the
+same field, so the menu tests the field's own values against the rows above.
+`T-an-and-row-offers-what-the-rows-before-it-leave`
+
+### `[x]` ✅ 90 — Any filter switches to ADVANCED: condition rows, with options per field type
+
+Will, 2026-09-27: *"Any filter should be able to be toggled to 'Advanced',
+using simple switch, to build a multi condition scenario using conditional
+input rows. We'll need different conditional options for numeric, and date,
+field types."*
+
+A plain switch on every filter turns Simple into Advanced: condition input
+rows, several of them. The operators follow the field's TYPE — text, number
+and date each get their own list (21d is the date half). Switching back to
+Simple keeps what it can show and says what it cannot, never drops a
+condition silently. **The word is Advanced** — Will chose it over
+*Complex*, 2026-09-27 (75).
+
+**Plan, 2026-09-30** (a second agent read the code; nothing built yet).
+DONE: Advanced rows on a TEXT field, both answers kept, the f(x) switch.
+LEFT: the operators do not follow the type — `menuFor` gives every Advanced
+menu the text list, and a number or date menu returns before it gets rows.
+`OPS_FOR_TYPE` has the number list already (a grid heading uses it). So:
+number rows first; a date waits on 21d's two open choices.
+
+**🚧 2026-09-30 — numbers are done; dates wait on 21d.** A number field that
+opts in (`advanced: true`) gets the f(x) button, on a toolbar chip and in the
+panel. Advanced shows condition rows with the number questions (=, ≠, >, ≥,
+<, ≤), every value typed. Switching over carries the number in: `37` stays
+`= 37`, and a range `20 to 80` becomes `At least 20` AND `At most 80`.
+Switching back finds the Simple answer as it was. On Records the four number
+fields opt in (Seats, Spend, Tickets, Health). Advanced is still opt-in per
+field (`T-conditions-are-opt-in-per-field`): say if EVERY field should offer
+it.
+
+**✅ Will, 2026-10-12 — all my picks:** Unblocked: 21d is ruled — no weekday now, a time input only where the field holds a time.
+
+**Dates, from 2026-10-13** (21d's design, as ruled):
+
+| | step |
+|---|---|
+| ✅ | 1. The data: On, Before, After and Between are `eq`, `lt`, `gt` and `between`; In the last and In the next are `last` / `next { n, unit }`, kept RELATIVE in the clause and in a saved View (`{ "last": 7 }`) and worked out when matched — a `RestStore` sends the `between`. A field with `time: true` takes a day alone as all of it. The words: `Before 03 Sep 2026`, `In the last 7 days` |
+| ✅ | 2. The menu: a date filter's Advanced rows — a date box (and a time box where the field holds times), two for Between, a count and a unit for In the last and In the next; the f(x) switch beside the calendar. A date that opts in is a FILTER menu, as a number is; the calendar keeps its card; the switch carries a day over as On, two as Between; the chip's face reads the rows |
+| ✅ | 3. Sherpa Demos: Created opts in — a Demos test answers "before 1 April 2024" and finds the header chip's rows and the records follow |
+
+### `[x]` ✅ 98 — One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes
+
+Will, 2026-09-29: *"If there is at least 1 advanced (conditional) filter in
+the filter panel then we should show Apply and Discard buttons in the same row
+as the Add condition button but on the right side. Clicking these will apply
+or discard changes to that specific filter only. We should also show a footer
+at the bottom of the panel to Apply All or Discard All changes. We can just
+tweak the labels (and any required logic) on the panel footer that we used to
+use for applying filters."*
+
+- **Per filter:** an Advanced filter shows Apply and Discard at the RIGHT of
+  its Add condition row. They apply or discard THAT filter only.
+- **Whole panel:** a footer with Apply all and Discard all, shown while at
+  least one Advanced filter is in the panel.
+- **The footer comes back**: it was removed in `c92adec0` (step 6c, "no
+  footer; a field applies as it changes"). Take its markup back from there and
+  change the labels. A Simple filter still applies as it changes.
+- Build on 90 (Advanced mode). The source already hears `filter-apply` and
+  `filter-discard`; a per-field one must name its field.
+
+**Update, Will 2026-09-29:** *"Let's also move the reset filter button from the
+section header to the last row alongside Apply/Discard… We can keep this as an
+icon only button for now. Increase its size to match the other buttons on the
+row. We can also add this row, with the updated remove button, to simple
+filter sections. That way we have 1 action row, per section, regardless of
+simple or advanced filter mode. With this change we can also get rid of the
+column that we had reserved in the filter panel for actions on the right side.
+This gives us some more horizontal space for content."*
+
+- **ONE action row per field section**, last in the section, in Simple AND
+  Advanced mode. It holds the Reset button (`.field-clear`,
+  `arrow-rotate-left`, icon only) and, where the field has them, Apply and
+  Discard at the right. In Advanced mode it is the Add condition row.
+- **Reset leaves the section header** and takes the row's button size, not
+  `data-size="sm"`. The remote Apply and Discard icons (`.field-apply`,
+  `.field-discard`) leave the header too.
+- **The actions column goes**: the panel's reserved right-hand column
+  (`.field-acts`, from `24c3a57c`) is deleted, and its width goes to the content.
+
+**Plan, 2026-09-30** (a second agent read the code; nothing built yet).
+
+- DONE already: the actions column (the field is one column now), and the
+  per-field Apply and Discard — but they show only while a REMOTE change
+  waits, and they sit in the header.
+- Left: one `.field-row` after the field's body holding Reset, Discard and
+  Apply; in Advanced it is the Add condition row (the menu needs a public
+  `addCondition()`, as its own button is in its shadow root); and a footer
+  with Apply all and Discard all. The source must hear an apply with no
+  field (it ignores one today).
+- It changes later rulings on purpose: 62's "no footer" trap and test, and
+  121's Clear + Send to group (Send to stays in the header, alone).
+
+**❓ One choice.** On a LOCAL source an Advanced row applies as you edit it
+(62), so Apply and Discard have nothing to do.
+- **A (my pick):** keep that. Apply, Discard and the footer show only while
+  a remote change waits. The row still holds Reset and Add condition.
+- **B:** Advanced rows are a DRAFT until Apply, on every source, as 98 says
+  word for word. The menu has a draft model, but only for an open popover,
+  not an inline one.
+
+**✅ Will, 2026-10-12 — all my picks:** A — a local source keeps live-apply; Apply, Discard and the footer show only while a remote change waits.
+
+**✅ Done 2026-10-13.** Each field ends with ONE action row: Add condition in
+Advanced (the inline menu's own goes; `menu.addCondition()` is the door),
+Reset at the row's button size, and — on a remote source, once changed —
+Discard and Apply at the right. The row is drawn only while it holds a
+button. Send to stays in the header, alone. While any change waits, the
+footer shows Apply all and Discard all, which name no field; the binder
+commits or discards everything. `T-apply-and-discard-wait-for-a-change`
+
+### `[x]` ✅ 241 — A set's chips on the bar are not grouped
+
+Will, 2026-10-14: *"Don't group Customer and Region filter chips in the toolbar."*
+
+**✅ Done 2026-10-14.** The bar draws a set's chips together, in the set's
+order, as plain chips — no `sherpa-filterset` round them, so they are not
+joined. The parking of a fully folded set went with it. A set is now only an
+ORDER on screen, in the bar and the panel; the serial chain is unchanged.
+`sherpa-filterset` was then used by nothing in Sherpa. **✅ Will,
+2026-10-14: A** — deleted: the component, its export and its a11y fixture.
+`T-a-filter-set-groups-or-chains`.
+
+### `[x]` ✅ 240 — A filter set is drawn quietly
+
+Will, 2026-10-14: *"I don't like the 'Account' and link icon before Customer
+and Region filters in the toolbar. I also don't like the nesting of Customer
+and Region filter sections in the filter panel."*
+
+**✅ Done 2026-10-14.** The bar still joins a set's chips, in the set's
+order, but stamps its `sherpa-filterset` with no heading and no chain mark.
+The panel only orders a set's fields where its first stands — no box. The
+serial chain is unchanged: Region still offers only the picked Customers'
+regions. `sherpa-filterset` keeps its heading and mark for a page that asks.
+Found while checking it: 105's "Save filters" pushed the panel's own title
+off its header; narrow, the button now reads "Save" (its name stays "Save
+filters"). `T-a-filter-set-groups-or-chains`.
+
+### `[x]` ✅ 105 — "Save filters" saves EVERY scope under one name; a "Saved" chip shows it
+
+Will, 2026-09-29: *"'Save filter', in the filter panel and filter toolbar,
+creates a Preset advance filter chip to reuse later. However this button should
+be a 'Save filters' (plural) button that saves a definition of the current
+state of the filter scopes."* … *"We have definition saving mechanisms for
+Views already. Perhaps there's overlap and reusable functionality here."*
+
+Today "Save filter" packs ONE scope's fields into one preset Advanced chip
+(`filter-save`, `packFilter`; `T-save-packs-the-fields-into-one-chip`,
+`T-a-saved-filter-is-its-readings`).
+
+| | Will's rule |
+|---|---|
+| **Save filters** | Saves ONE definition: the state of ALL scopes, under the name the reader gives. One button, in the panel HEADER (its toolbar actions menu) — no Save per scope |
+| **Save as** | A grouped menu button right of Save, as for Views |
+| View labels | `Save view` and `Save view as` (see 15) |
+| Filters menu | The section is `Saved filters`, not `Custom filters` (`CUSTOM_SECTION`, `T-saved-filters-are-the-custom-section`) |
+| The chip | The applied definition is an ACTIVE chip in the panel header. Field label `Saved`, value its name |
+| Edited after applying | The chip turns WARNING and its value gets ` *`. Save again, or Save as, clears both until the next edit |
+| Overwrite | A dialog asks to confirm |
+| Dismiss | The chip's right button DISMISSES — it is not a menu. Dismiss takes the definition off the scopes and puts them back as they were BEFORE it was applied |
+
+Build with 15: one Save split button, one name dialog, one overwrite confirm,
+and one store shape — a saved filter set is the filter half of a View
+definition (JSON, `T-a-page-is-its-definition`). Dismiss needs the Query as it
+was at apply time; the provider already keeps it under `/filters/<id>`.
+
+Settle when it starts:
+- Will wrote "all contexts". Read as all filter SCOPES (the panel's sections),
+  not nav Contexts — confirm.
+- What becomes of the saved preset chips already stored: read them as
+  one-scope definitions, or drop them.
+- Still kept per DATA (`T-a-saved-filter-lives-with-its-data`)?
+
+**✅ Step 1 done 2026-09-29:** the Filters menu's section is `Saved filters`
+(`SAVED_SECTION`). The rest is built with 15 and waits on the choices below.
+
+**❓ Will — two choices** (and I read "all contexts" as all filter SCOPES —
+the panel's sections; say if you meant nav Contexts).
+
+- **The saved preset chips already stored:**
+  - **A (my pick): read each as a one-scope definition** — nothing a reader
+    saved is lost; it applies to its one scope.
+  - **B: drop them.**
+- **Where a saved filter set is kept:**
+  - **A (my pick): per PAGE, beside its Views** — it saves every scope, and
+    the scopes are the page's, so it is the filter half of a View
+    definition, stored the same way.
+  - **B: per DATA, as saved filters are today**
+    (`T-a-saved-filter-lives-with-its-data`) — every page over the same data
+    sees it, but a scope another page lacks is dropped on apply.
+
+**✅ Will, 2026-10-12 — all my picks:** A and A — an old preset chip is read as a one-scope set; a saved set is kept per page, beside its Views. "All contexts" means all filter scopes.
+
+**Plan, 2026-10-13** — a saved SET is `{ label, query }`, the query in a View's
+JSON form, kept per page beside its Views. The Filters menu's `Saved filters`
+lists the sets; applying one keeps the Query from before (for Dismiss) and
+shows the `Saved: <name>` chip in the panel header; an edit turns it warning
+with ` *`; Save (or Save as) clears it; Dismiss puts the Query back. App
+presets from a definition stay preset chips.
+
+**❓ Will — two choices, found while planning:**
+- **In toolbar mode**, the panel is hidden, so its header's Save filters is too.
+  - **A (my pick):** the View bar's Save ▾ also offers "Save filters" and
+    "Save filters as", and the Saved chip shows on the View bar.
+  - **B:** Save filters is the panel's alone.
+- **A reader's saved chip today** sits in one scope, with its edit-in-place
+  card (Edit filter, Delete filter, its change kept — 49, 50, 181). Old ones
+  become one-scope SETS by your ruling, so:
+  - **A (my pick):** the set replaces it — a set is changed by changing the
+    filters and saving again, and deleted from the Save ▾ menu, as a View is.
+    The per-scope card goes, and 186 closes with it.
+  - **B:** keep both: sets for every scope, and the per-scope saved chip and
+    its card as they are.
+
+**✅ Will, 2026-10-13:** (1) neither — *"An option in the toolbars overflow
+menu"*: in toolbar mode, Save filters is a row in the filter toolbar's ⋮
+menu. (2) A — the set replaces the per-scope saved chip and its card.
+
+**✅ Done 2026-10-13.** A set is `{ label, query }` — each scope's filters in a
+View's JSON form, no arrangement — kept per page (`sherpa:filter-sets:<page>`).
+- **Save**: the panel header's Save filters split button (Save filters as,
+  Delete filters), folded into its ⋮ when narrow; in toolbar mode, rows in a
+  saving bar's ⋮. Each asks (`filters-save`, `filters-save-as`,
+  `filters-delete`); Demos names it, asks before it saves over a name, and
+  asks before Delete. The provider: `saveFilters(label?)`, `deleteFilters()`,
+  `savedFilters`, `savedFilterSets`.
+- **Apply**: a set's row in the Filters menu's Saved section
+  (`filters-apply`) — each scope it names takes its filters, the rest stay.
+  The Saved chip (`sherpa-quick-filter data-dismiss`) names it in the panel
+  header and on a saving bar; ` *` and the warning look once changed.
+- **Dismiss**: its cross (`filters-dismiss`) — back to the filters before the
+  first set applied, or, for one saved from the screen, the View's own. The
+  tab remembers the set on screen, so a reload keeps the chip.
+- **Old saved filters** move into the page's sets once, each over the first
+  scope below the View. **Gone**: the per-scope Save, `filter-save`,
+  `packFilter`, `filter-delete`, the saved chip's Edit filter / Save /
+  Discard / Delete rows, `preset-edit`, a Query's `edits`, `editPreset`,
+  `editable`, the chip's `data-edited` and the menu's Save filter button.
+  `T-saved-filters-are-every-scope`.
+
+### `[x]` ✅ 109 — Reset has a label, and a menu button: "Reset to default" puts back the View's own filters
+
+Will, 2026-09-29: *"The reset button in the filter panel and toolbar should
+have a label. It should also be in a button group with a secondary menu
+button. This menu button shows a 'Reset to default' option that restores to
+the Views initial defined filtering state. The current reset button just
+resets all added filters to their default state like it does currently."*
+
+| control | does |
+|---|---|
+| **Reset** (now with its label) | what it does today — every added filter back to its own default |
+| its menu button → **Reset to default** | the scopes go back to the View's DEFINED state: its definition's `ui` and `readings`, or a saved View's Query as it was saved |
+
+The same split button as Save view (15) and Save filters (105) — build the
+three together. A default is not an empty value
+(`T-a-default-is-not-an-empty-value`); the provider already holds the View's
+own Query (`provider.open`, `T-a-page-is-its-definition`). Settle: whether
+Reset to default also removes filters the reader ADDED since.
+
+**✅ Done 2026-09-29.** Reset reads "Reset", joined with a ▾ in one
+`.sherpa-group` (as Save and its ▾), in the bar and the panel header; the ▾'s
+menu has "Reset to default", and folded, the ⋮ lists both. It sends
+`view-reset`; `provider.resetView()` puts back the page's first Query (kept
+at `open()`), then the View's own, as a pick does. **Settled by your words**
+("the View's initial defined filtering state"): a filter the reader added
+since goes. On Records: At risk 13 rows → Reset 100 → Reset to default 13,
+the same Query, the added filter gone. 15 and 105 reuse the group.
+`T-reset-to-default-is-the-views-own`
+
+### `[x]` ✅ 97 — A filter panel section shows an icon for WHAT it filters
+
+Will, 2026-09-29: *"The accordion header for filter panel sections should have
+an icon before the heading label, and after caret, that indicates the type of
+content being filtered."*
+
+| section filters | icon |
+|---|---|
+| the View | `monitor` |
+| a chart | a chart icon |
+| a data grid | a grid or table icon |
+| a form | `file-lines` |
+| a list | `list` |
+
+The order in the header is caret, icon, label. `monitor`, `file-lines` and
+`list` are in `src/core/ui/icon-paths.ts`. **No chart icon and no table icon are
+there** (only `table-columns`), so get them from Figma first. The KIND comes
+from the component that the scope's fields belong to, so the source must
+report it with each scope (`describe(scope)`). The panel must not find it by
+tag name.
+
+**✅ Done 2026-09-29.** `sherpa-accordion` takes `data-icon` (an icon before
+its title); in the panel the order is caret, icon, label. A component says
+what it shows in `asks.shows` (the grid `grid`, the four charts `chart`); the
+provider passes it to `source.bind()`, and `describe(scope)` reports `shows`
+(`view` for the View). On Records: View filters `monitor`, Customer records
+`table-columns`. **Figma has no chart glyph and no table glyph** (searched the
+whole file) — so a chart's section shows none, and `table-columns` stands in:
+that is 115. `T-a-scope-says-what-it-shows`
+
+### `[x]` ✅ 174 — Two answered fields return nothing; a filterset's fields should limit each other
+
+Will, 2026-10-01: *"We also need to check the logic. I have set the following
+conditions: Customer - Adventure Works (Badge count 160), Region - America
+(Badge count 321). Customer section badge shows 160 result count. However
+there is nothing being returned for any of the component scoped
+data/filters. This may be because Customer and Region need to be in a
+filterset?*
+
+*Also we've only really talked about filtersets being serialised. We haven't
+done anything about symbiotic serial filtersets. For example, choosing a
+Customer filter should limit the Region options. Inversely, choosing a Region
+filter should limit the Customer filters in the filterset. There's
+potentially a need for limiting filter options to trickle down to the
+component scope, too. Perhaps this should be configurable. We can also make
+it an app setting."*
+
+Builds on 99 (filtersets) and 110 (an AND row offers only what the rows
+before it leave).
+
+**Found, 2026-10-01 — the logic is right; the DATA was wrong. Fixed.** View
+fields are joined by AND, so the rows must be Adventure Works AND Americas.
+The numbers (160, 321) are the Dashboard's 1,284 alerts. Its seed gave each
+row `customer = orgs[i % 8]` and `region = regions[i % 4]`, and 4 divides 8:
+so every customer had ONE region. Adventure Works was always EMEA, and
+Adventure Works + AMER was 0 rows. The comment said "coprime strides"; they
+were not. Now each region holds a list of customers
+(`examples/contexts/dashboard-data.js`): Contoso works in all four regions,
+Fabrikam and Litware in one. Region counts do not change (321 each). Probed
+in the live Dashboard: Adventure Works 208, AMER 321, both **64** (was 0). A
+filterset is not needed for AND — the View already joins its fields.
+
+The `:4200` server imports the same file for its live feed, so a restart
+gives NEW live alerts the new customers. Old rows are not affected.
+
+**The symbiotic part is not built.** Today every option is offered, whatever
+the other fields pick (99 calls this PARALLEL). Will's ask, as a design:
+
+- **One helper in the data layer**: the values a field's rows still hold
+  under the OTHER answers that limit it. 99 (serial) and 110 (AND rows) use
+  the same helper.
+- **Both ways** in the View: Customer limits Region, and Region limits
+  Customer — each field is limited by every other View field.
+- **Trickle down**: a component's fields offer only the values in the rows
+  the View leaves.
+- **Configurable**: an app setting first — Settings › Application, "Limit
+  filter options to matching rows", off by default, so nothing changes until
+  it is on. Later a filterset (99) can set it per group.
+- **A pick already made stays ticked** — 99's Q3, my pick A.
+
+**❓ Waits on 110's choice:** a limited-out value is **hidden** (110 A, my
+pick) or **shown but not pickable** (110 B). Today's rule is "never drop a
+value" (`T-unavailable-value-sorts-below-a-divider`); "limit the options"
+breaks it for a limited field, so it is your call. Answer 110 and I build
+this.
+
+**✅ Will, 2026-10-01: B** (on 110) — a limited-out value is shown, greyed
+out, and cannot be picked. To build.
+
+**✅ Built 2026-10-01 — "Limit filter options".** Settings › Application ›
+Filtering has a new switch, off by default. On, every list filter offers only
+the values the rows still hold under the OTHER filters in its scope: Customer
+limits Region and Region limits Customer, and the View limits a component's
+filters (the trickle down). A ruled-out value stays in its place, greyed, and
+cannot be picked — in a toolbar chip's menu, a grid heading's menu, and the
+panel's value chips. Its tooltip says "No matches with your other filters."
+(176). The data layer answers it: `source.present(scope)`, once per applied
+Query, told to each control as `drawPresent`. Probed on the Dashboard: with
+Customer = Adventure Works, Latin America is greyed.
+`T-a-ruled-out-value-is-greyed`
+
+**✅ Closed 2026-10-01.** Every part Will asked for is built: the AND logic
+checked, the data fixed, both-ways limiting, the trickle down, the setting
+(Settings, and the ⋮ menus — 178), a later answer setting an earlier pick
+aside (180), and legends (179). Grouping fields into a FILTERSET is 99, which
+still waits on its two choices.
+
+### `[x]` ✅ 180 — A picked value a later filter rules out goes inactive and leaves the query
+
+Will, 2026-10-01: *"If a filter is active but a subsequent filterset filter
+makes it unviable (e.g. Customer A is selected but made unviable by Region C
+being activated) then the unviable filter needs to be made inactive and
+ignored in the query."*
+
+And: *"The previous scenario becomes possible if Customer B makes Region C
+viable again and selectable even if Customer A made it unviable."*
+
+So: Customer A and B picked; B makes Region C viable; the reader picks C; A
+has no C rows, so A goes inactive and the query ignores it. B stays. This
+replaces 174's first rule that a picked value always stays in force.
+
+**✅ Done 2026-10-01.** With "Limit filter options" on, the LATER answer wins.
+On the Dashboard: Adventure Works and Contoso picked, then Latin America —
+Adventure Works stays ticked, greyed, and says "Not applied: no matches with
+your other filters."; the Alerts tile counts Contoso's Latin America alerts
+alone. Untick it, or let Latin America go, and it is back. The reader's
+picks stay in the Query (a saved View keeps them); only the filter leaves the
+set-aside value out. A chip whose every pick is set aside is greyed too.
+Works in the header's menus, the panel's chips and the grid headings.
+`T-a-later-answer-sets-an-earlier-pick-aside`
+
+### `[x]` ✅ 179 — Every place a ruled-out value shows is inactive — a legend item too
+
+Will, 2026-10-01: *"Finally, we need to make other representations of
+non-viable filter options to inactive in the view. Legend items are a good
+example. It can be inactive in the panel but toggleable in the data viz
+legend. This might be the only edge case we haven't covered, actually."*
+
+**✅ Done 2026-10-01.** A chart legend greys a value the other filters rule
+out, says why on hover ("No matches with your other filters."), and refuses
+a press. On the Dashboard, Customer = Fabrikam greys CPU in the bar chart's
+legend. Every place a value shows now follows the same rule: a toolbar chip's
+menu, a grid heading's menu, the panel's chips, and a legend.
+
+Will, 2026-10-01: *"Inactive legends and menu items need a tooltip explainer
+about limited filters."* Done the same day: a greyed value says, on hover,
+"Limited by your other filters: no matches." — a legend item, a menu row and
+a chip alike; a set-aside pick says "Limited by your other filters: not
+applied." (The words before were "No matches with your other filters.")
+
+### `[x]` ✅ 182 — The filter panel's search: more room above it, and full width
+
+Will, 2026-10-01, a todo: *"Gap above search input in filter panel is too
+small. Search input should span the width of the header, excluding header
+padding. Right now it's inset on the left."*
+
+**✅ Done 2026-10-01.** The search row spans the whole header, under its icon
+too — 8 px in from each edge, the header's own padding — with 8 px above it
+(it was 4). Done in the panel's CSS, through the header's `metadata` part, so
+other headers are unchanged.
+
+### `[x]` ✅ 181 — A saved filter's menu shows its condition rows, read-only
+
+Will, 2026-10-01, a todo: *"The preset/saved filter menus should show the
+condition input rows, in read only mode, rather than just text labels.*
+
+*This means we can use the same advanced menu logic and styling for these
+menus rather than a bespoke menu solution."*
+
+**Found, 2026-10-01.** The parts exist: `sherpa-menu` already draws IN THE
+FLOW (`data-inline`) and READ-ONLY (`data-readonly`). So a saved filter's menu
+can show one inline, read-only Advanced menu per field — its condition rows,
+under the field's name — built by `menuFor()` as every other filter menu is.
+A Simple answer shows as its rows ("is EMEA" OR "is APAC").
+
+**❓ One choice — how a reader's own saved filter is changed:**
+- **A (my pick): Edit filter makes those rows editable, in place,** with
+  Save filter and Discard changes below — today's per-line drill into a
+  second editor goes. One menu, the Advanced menu's own logic.
+- **B: keep today's editor:** a field's rows, pressed, open its editor, as a
+  line does now.
+
+**✅ Will, 2026-10-01: A.**
+
+**✅ Done 2026-10-01.** A saved filter's card shows each field's OWN menu,
+read-only: its condition rows, or a date's calendar. A field the control has
+no definition for stays a line of words. Edit filter keeps the card open and
+makes the rows editable where they are; Save filter and Discard changes show
+in place of Edit and Delete. The change is sent once, when the card closes,
+Save filter is pressed, or the bar or panel rebuilds. The bar and the panel
+share one helper, `src/core/ui/saved-filter-menu.ts`. The old per-line editor,
+`unpackFilter` and the panel's `filter-edit` are gone. A folded saved chip
+shows its card at the Filters button. `T-a-saved-chip-lists-its-conditions`
+`T-a-saved-filter-keeps-its-edit` `T-a-nested-menu-answers-for-itself`
+`T-an-action-row-can-keep-its-menu-open`
+
+### `[x]` ✅ 186 — Saved filter card: six small choices left from 181
+
+Each is built the first way. Say the word to change one.
+
+1. **Closing the card while editing** (click away, Escape) — **A (built):**
+   keeps the change, unsaved, and the chip shows it. **B:** Escape throws it
+   away; only a click away keeps it.
+2. **When the rows on screen follow an edit** — **A (built):** when editing
+   ends. **B:** live, as each row changes (the panel would first need to stop
+   redrawing every scope on each change).
+3. **Unpack is gone** — putting a saved filter's answer back into its field
+   chips. Edit filter now shows the rows in place. **A (built):** gone.
+   **B:** bring it back as its own row, "Put back into fields".
+4. **Read-only rows still show their select carets and a dead row ×**, as the
+   grid's held heading does. **A (built):** leave them. **B:** hide them when
+   read-only (this changes the grid's heading too).
+5. **Limit matching filters does not grey values inside a saved filter's
+   rows.** **A (built):** no. **B:** grey them as a chip's menu does.
+6. **A saved date shows its whole calendar**, so the card is tall. **A
+   (built):** the calendar. **B:** a line of words until Edit filter.
+
+And: a field the control has no definition for stays words, read-only even
+while editing, and is reported (`unknown-filter`). The source could hand its
+definitions over in `describe()` if that should change.
+
+**✅ Will, 2026-10-12 — all my picks:** A for all six, as built.
+
+**✅ Closed 2026-10-13** by that ruling: nothing to change.
+
+### `[x]` ✅ 178 — An overflow menu in the filter panel's header, with "Limit matching filters"
+
+Will, 2026-10-01: *"Add an ellipsis overflow menu button to the top of the
+filter panel header, after the toggle toolbar button.*
+
+*Other header buttons reflow into the menu of this button. Similar to the
+filter toolbard overflow button.*
+
+*Add a single menu item to this button, by default, to toggle the 'Limit
+matching filters' capability.*
+
+*This menu item should be in the filter toolbar overflow button's menu
+also."*
+
+**✅ Done 2026-10-01.** The filter panel's header has a ⋮ after the toggle
+toolbar button. When the panel is narrow (≤ 380px) Reset and Reset all to
+default fold into it, and so do the host's own buttons when they fold. Both
+the panel's ⋮ and the toolbar's ⋮ end in a check row, "Limit matching
+filters"; the bar's ⋮ now shows at any width while the provider offers it.
+Ticking it in either place turns the setting on or off for the whole page —
+the provider owns it, and the Demos app keeps it in its session, beside the
+Settings switch (renamed "Limit matching filters" to match).
+`T-the-more-menu-holds-what-folded`
+
+### `[x]` ✅ 205 — "Hide unmatching filters", and "Limit to matching filters"
+
+Will, 2026-10-12: *"In the filter panel and toolbar overflow menus, when
+'Limit matching filters' is enabled, show a menu item to toggle 'Hide
+unmatching filters'. Rename 'Limit matching filters' to 'Limit to matching
+filters'."*
+
+- The rename: the label is in the panel's and the toolbar's `.html` and
+  `.ts`, and in Sherpa Demos' Settings page, `index.html`, `settings.js` and
+  `reforged-limit-options.spec.ts`.
+- The new row shows in both ⋮ menus only while Limit is on. Like Limit, the
+  provider owns it, so ticking it in either menu changes the whole page, and
+  Demos keeps it in its session.
+- What it hides: the values the other answers rule out, which are greyed today
+  (`T-a-ruled-out-value-is-greyed`). A ruled-out value that is still PICKED
+  stays shown, greyed (180), so the reader can untick it. This also answers
+  174's old question, hidden or greyed: greyed by default, hidden on request.
+
+**✅ Done 2026-10-13.** `openMore()` draws the Hide row under Limit while
+Limit is on; `switchesOf()` reads both. A bar or panel emits
+`hide-unmatched-change`, and the provider's `hideUnmatched` writes
+`data-hide-unmatched` on each. A menu with `data-hide-unavailable` marks a
+ruled-out row `data-removed`; the panel hides a ruled-out value chip. A picked
+value stays. Demos keeps it at `/filters/hideUnmatched`, and the label is
+"Limit to matching filters" everywhere.
+
+### `[x]` ✅ 176 — A greyed-out chip says WHY in its tooltip
+
+Will, 2026-10-01: *"If a chip is greyed out (inactive) then it's tooltip
+should explain why in a few simple words."*
+
+Builds with 174 (a value the other answers rule out) and covers every greyed
+chip: one the View took (superseded), one that is disabled.
+
+**✅ Done 2026-10-01.** A ruled-out value says "No matches with your other
+filters." — on a chip's tooltip, and on a menu row for a screen reader. A
+disabled chip says "Not available here." A chip the View took already said
+where its filter went ("Filter moved to View scope."), so it is unchanged.
+
+### `[x]` ✅ 173 — BUG: a panel section header's count adds its values' counts
+
+Will, 2026-10-01: *"To investigate: The total count badge, in filter panel
+section headers, totals the count from each active filter value in that
+section. However this should be the total number of unique results across
+all active filter values."*
+
+And, the same day: *"Active filter value counts should be showing the total
+number of matches for that filter value. I think this is the case but I want
+to validate in light of the section total investigation."*
+
+**✅ Done 2026-10-01 — no bug; both counts were right.** The header asks the
+store ONE question, "rows that match any of these values", so each row counts
+once. It looks like a sum because a row holds ONE value of a field: an EMEA
+row is never also an APAC row, so `27 EMEA` + `29 APAC` = `REGION 56`, and
+56 is the unique count too. Where rows CAN overlap — two Advanced conditions
+that match the same row — the header counts that row once: the new test has
+two rows that match both conditions, and the header says 2, not 4.
+
+Each value chip is the rows that ONE value matches, within what its scope can
+see (for a component scope, inside the View's filter). It is not narrowed by
+the field's other values, or by the scope's other fields — that is 174.
+`test/unit/a-field-counts-unique-rows.test.mjs`
+
+### `[x]` ✅ 172 — In the filter panel, each value chip shows its own count
+
+Will, 2026-09-30: *"For multi value filters in the filter panel each chip
+should show their own count badge."*
+
+Until now a value chip had no count: the field's header carries the field's
+count (133), and 130 noted "a count per value is not asked for". Now it is.
+
+**✅ Done 2026-09-30.** Each PICKED chip shows the rows its one value
+matches: with EMEA and APAC picked, `27 EMEA`, `29 APAC`, and the header
+still says `REGION 56`. A chart's own chips do the same. A chip that is not
+picked shows no number — the same rule as a saved filter that is off (166).
+
+**❓ One choice, if you want it:** a number on EVERY value, picked or not
+(what picking it would give). I built picked-only: it matches 166, and it
+asks the store once per picked value, not once per value of every field.
+
+### `[x]` ✅ 171 — The filter panel's search matches field labels too
+
+Will, 2026-09-30: *"Search in the filter panel should search field labels as
+well as value labels."*
+
+**✅ Done 2026-09-30.** A field whose name matches shows whole, with every
+value of it: `own` shows Owner with Dana and Ravi. A section heading counts
+too (`preset` shows every preset). A value still matches on its own, and
+keeps its field's label. One fix on the way: a field with a body of its own
+— a number — had no chips to match, so any search hid it, and it stayed
+hidden when the box was emptied. It is found by its name now, and comes back.
+
+### `[x]` ✅ 154 — A data viz section in the filter panel has a chart icon
+
+Will, 2026-09-30, a minor one: *"An accordion for data viz filters, in the
+filter panel, should have a chart icon."*
+
+**✅ Done 2026-09-30.** A chart's section wears `reports` — three bars. It is
+the one chart glyph in the icon set now; the others near it are `gauge`,
+`dashboard` (four squares) and `insights` (a light bulb). If you draw a chart
+glyph in Figma (115), it is one word to change in `SHOWS_ICON`.
+
+### `[x]` ✅ 115 — Figma: a chart glyph and a table glyph for the panel's section icons
+
+Found building 97, 2026-09-29: Figma's Icons section (`17:3931`) has neither,
+and nothing else in the file does. **❓ Will:** add a chart glyph — and a
+table glyph, if `table-columns` is not the one you want for a grid — then
+`npm run icons`, and one line each in `SHOWS_ICON`
+(`sherpa-filter-panel.ts`).
+
+**✅ Will, 2026-10-12 — all my picks:** B — keep the stand-ins: `reports` for charts, `table-columns` for grids.
+
+**✅ Closed 2026-10-13** by that ruling: `SHOWS_ICON` already draws the stand-ins.
+
+### `[x]` ✅ 60 — Once applied, a chip's badge shows the number of results
+
+Will, 2026-09-26: when a filter change is APPLIED and its results are fetched,
+the chip's badge shows the NUMBER OF RESULTS. It replaces what the badge says
+today — a count of picks, or `fx` (`T-a-condition-badge-says-that-not-which`,
+which changes with it) — and it replaces Will's first ask, a count of
+conditions (the tip says that now). The picks stay in the tip.
+
+**Decided, Will 2026-09-26: the rows THIS chip's own answer matches** — not
+the whole filter's total, which would put one number on every chip. Counted
+out of what the chip's scope can see: a component chip counts within the
+rows the View already allows. A pending chip (46) has no results yet, so it
+shows no number until Apply. Read the count from the source
+(`debugState().total` is the measure; the pager reports pages only).
+
+**✅ Done 2026-09-29.** `source.results(scope)` counts, from the APPLIED
+Query, the rows each answered field or saved filter matches — within the
+View's rows for a component scope — with `store.totalCount()`; after every
+load it draws them onto each scope-bound bar (`drawResults`), and the bar
+hands each chip its `results`. The badge shows it only while the chip is on
+and not pending, in the reader's digits (`1,234`); the picks count and `fx`
+are gone from the chip (a grid heading keeps its `fx` glyph). The picks stay
+in the tip, and now also reach a screen reader as the button's
+`aria-description`. On Records › At risk (13 rows): At risk 27, Status 75,
+Tickets 75. Not drawn: a bar bound with no scope, and the panel's values.
+`T-a-chip-counts-its-own-results`
+
+### `[x]` ✅ 49 — A preset Advanced chip shows its conditions, read-only
+
+A PRESET Advanced chip (a saved filter the app ships) gets the `fx` button
+in the Success look. It opens a menu of its condition rows, read-only. It sits
+on the chip in the toolbar, in the section header in the panel, and on a column
+heading — only those three. Everywhere else a filter changes mode with the
+Advanced switch (done 2026-09-26).
+
+**Later, with 50:** Success is the look of a WORKING condition. Warning and
+critical are free for a condition that cannot apply, or a filter that failed
+to — Will's note, not asked for yet.
+
+**❓ Will, 2026-09-29 — one choice.** A preset can span TWO fields (a test's
+"Risky and unowned": Health < 60 AND Owner = Unassigned), but a menu's
+condition rows belong to ONE field — they have no field column. The shipped
+presets on Records are one field each.
+
+- **A (my pick): one read-only menu, a heading per field** with its rows
+  under it (`HEALTH` · Less than 60; `OWNER` · Equals Unassigned). One click
+  shows the whole preset. The menu learns to stack a field's rows under a
+  heading — 50 then edits the same shape.
+- **B: the `fx` menu lists the preset's fields**, and a field's row drills
+  into that field's own rows (as the Filters menu drills into a chip). No new
+  menu shape; two clicks to read a two-field preset.
+
+**Will, 2026-09-30:** *"Any preset or saved filter chip should have a menu
+button to show a menu with the conditions applied."* So: EVERY preset and
+saved filter chip, not only the Advanced ones, and a MENU button (the chip's
+own ▾), not an `fx` button. The A / B choice above — how a two-field filter
+reads in one menu — is still open; I will build A unless you say B.
+
+**✅ Done 2026-09-30, as A.** Every preset and saved filter chip has the ▾
+now, on a bar and in the panel. Its menu lists the conditions, read-only,
+with a heading per field: `HEALTH` · Less than 60, `OWNER` · Equals
+Unassigned. A reader's own saved filter keeps Edit filter and Delete filter
+under the lines. The chip is still a toggle: its body switches it. The
+source makes the words, so a field has its real name. Not built: the `fx`
+button on a column heading — Will's later words ask for chips only.
+
+### `[x]` ✅ 50 — A reader's saved Advanced chip shows its conditions, editable
+
+The same `fx` button, with rows that can be edited. On a filter the reader SAVED
+that is applied, an edit is a temporary DRAFT; the saved filter does not
+change. When the draft differs, the menu and the panel section header offer
+Save. Needs 49, and 46's pending look for the draft.
+
+**✅ Done 2026-09-30.** On a reader's own saved chip, each line in its ▾ menu
+now opens that field in the field's own menu, holding what the filter
+applies. Apply is the change. The rows follow at once; what is saved does
+not. The chip wears the pending look (46) and keeps its count, and its menu
+adds **Save filter** (the page's name dialog, its own name offered) and
+**Discard changes**. Bar and panel alike. The change lives in the Query, so
+a reload keeps it. A shipped preset still only lists its lines.
+`T-a-saved-filter-keeps-its-edit`
+
+Two things differ from the words above:
+
+- **No Save in the panel section's header.** 117 ruled that a scope's
+  header holds nothing to press. Save is in the chip's menu.
+- **Edit filter stays.** It still unpacks the filter into its fields — the
+  only way to ADD a field to a saved filter. Say if it should go.
+
+### `[x]` ✅ 48 — A child menu opens on hover or click of its parent row
+
+Not from a caret button nested in the row: the whole row is the door, as in an
+OS menu. The panel's drill is click-only on purpose (a passing pointer drilled
+the list away), so give hover a short delay, or rule per host.
+
+**✅ Done 2026-09-29.** In `sherpa-menu`, so every host has it: a click
+anywhere on the row but its tick box, a pointer that RESTS on it for 500 ms,
+or ArrowRight opens its child menu (ArrowLeft goes back). A pointer passing
+over opens nothing, and a touch never hovers; the box still ticks and opens
+nothing. The caret stays, as the mark and a focus target.
+`T-a-row-opens-its-child-menu`
+
+### `[x]` ✅ 21c — A condition's matches must ALL highlight
+
+Will, 2026-09-24: *"there will be multiple strings to match and highlight. Not
+just one."*
+
+`.cell mark.match` marks ONE substring. `filterNeedles` keeps one needle per
+field (`store.ts:255`, `seen.has(field)`), and the grid marks one hit
+(`sherpa-data-grid.ts` `markNeedle`). A field answered by
+`Contains "ab" or Starts with "R"` has two strings; a three-row chain has
+three. The mark is already Success green, matching the chip
+(`T-a-conditioned-chip-reads-as-active`), so only the FINDING changes.
+
+**✅ Done 2026-09-29.** `filterNeedles` keeps every substring clause (an
+identical one once); `markNeedles` (replacing `markNeedle`) marks each hit of
+each — a `contains` every time, a `startswith` at the start and an `endswith`
+at the end — joining hits that overlap or touch; the grid passes all of a
+field's rows, not the first. `T-a-condition-marks-every-match`
+
+### `[x]` ✅ 21f — "Send to view filters"
+
+Will, 2026-09-24:
+
+> Add an option to 'Send to view filters' for local scope filters. This will
+> elevate them from their component toolbar to the app-header toolbar and allow
+> it trickle down across all view components/data. Include this next to clear
+> and remove buttons in the panel.
+
+A third action in a data-scope field's header, beside Clear. `source.move()`
+is the one call that does the promotion, and the header's `filter-add`
+already uses it. The values travel with the field — a field promoted while
+filtering by `active` keeps that. Promoting Status must not give the header
+TWO Status chips: the move consumes the header's available entry.
+
+The reverse trip is not asked for. Leave it until it is.
+
+**✅ Done 2026-09-29.** An `arrow-up` button, "Send Status to view filters",
+beside Clear on a component scope's field (Remove is gone from the panel
+since; the View's own fields have none). It sends the panel's ordinary
+`filter-add-request` with the View's scope — `source.move()` is not needed:
+holding it in the View carries the answer and leaves the chip below
+suspended. On Records › At risk: Status goes up with "not churned", the rows
+stay 13, and the header has one Status chip. `T-send-to-view-filters`
+
+### `[x]` ✅ 21b — Which header chips carry over between views
+
+Will, 2026-09-24:
+
+> App header filters shouldn't carry over between preset or custom views unless
+> already set in the initial view definition. The View chip is obviously a
+> different scenario altogether. Which chips carry over should be CONFIGURABLE
+> though, in case we do want to persist things like Customer and Region later.
+
+A chip def gains one flag, two answers: reset on a view change (the default),
+or SURVIVE it. The View chip is neither; it IS the thing that changed. **The
+default is built** (56, 2026-09-26): `onViewPicked` resets the reporting bar
+before a view applies (`T-a-view-change-resets-the-header-chips`). What is
+left is the flag: `clearAll()` skips a chip that SURVIVES, and its part stays
+applied through `setState`, which clears every part today.
+
+**✅ Done 2026-09-29.** The flag is `carryOver: true` on a field (its
+declaration, so the page JSON takes it — the schema knows it). A JSON View
+(`setQuery`, `holds: 'keep'`) keeps a carry-over field's answer unless it
+answers the field itself; an old snapshot View keeps it too (`clearAll({
+carry: true })`, and `setState` keeps its reading). Plain Reset and a restore
+still clear it. **Nothing on Records carries over yet** — say which fields
+(Customer and Region were your example), and it is one line each in
+`records.json`. `T-a-field-can-carry-over-views`
+
+### `[x]` ✅ 20b — The Date filter should be a view-scope date RANGE
+
+Will, 2026-09-23: a top-level date range that slices the records across the
+whole view. It is at view scope now — "Date", over `source.timeField`
+(cae7e964) — but still `kind: 'date'`, single by default with a Range switch,
+over a list of `availableDates` — the days the records carry (`declareFromRows`).
+
+A VIEW-scope date wants range by default; a component-scope one keeps single,
+where one day is the common case. Settle whether `kind: 'date'` gains a range
+variant or the chip takes the menu's `data-range`. A range wants bounds —
+`dates[0]` and `dates.at(-1)` — not a set of days.
+
+**✅ Done 2026-09-29.** Settled: the chip takes the menu's range — no new
+kind. `describe(VIEW)` marks a date field `range: true`, so the header's Date
+opens with its Range on; a component's date stays one day. In range mode the
+calendar takes only its BOUNDS from `data-available` (the first and last days
+with records), so an empty day between can be an end. On Records: a range
+over 2024-01-02 to 2024-12-11. `T-a-range-is-bounded-by-the-data`
+
+### `[x]` ✅ 21d — EXPLORE: conditions for a DATE field
+
+Will, 2026-09-24. **Design before code.** A date is not a string, and the text
+ops say nothing about one:
+
+| condition | takes |
+|---|---|
+| On | a date |
+| Before / After | a date **and** a time |
+| Between | two dates **and** two times |
+| Last X / Next X | a DURATION — `7 days`, `3 months` |
+| Includes | a toggle per weekday? |
+
+Will: *"Much more complicated than current conditional filters."* A row shows
+ONE control per `OP_TAKES` answer (`list`, `text`, `range`); these want a
+calendar, a time (no control exists), two of each, or a number-and-unit. And
+`Includes` may be a second axis, not a condition. `OPS_FOR_TYPE['date']` is
+`[]` on purpose today; this item reopens that.
+
+**Design, 2026-09-29 — for Will's review.** Found first: a clause is data,
+`[field, op, value]`, and most date conditions are ops the store already
+answers. Only Last and Next are new — they must stay RELATIVE in a saved
+View, or "last 7 days" freezes on the day it was saved. And no time control
+is needed: `sherpa-input-text` passes `type` to its `<input>`, so
+`type="date"` and `type="time"` are the platform's own pickers.
+
+| condition | in the query | the row shows | saved as |
+|---|---|---|---|
+| On | `between` the day's start and end | a date | `"2026-09-03"` |
+| Before | `lt` | a date, and a time | `"2026-09-03"` or `"2026-09-03T14:00"` |
+| After | `gt` | a date, and a time | as Before |
+| Between | `between` | two dates, two times | `["…", "…"]` |
+| In the last N | `within`, turned into `between` when the Query is built | a number and a unit (days, weeks, months) | `{ "last": 7, "unit": "day" }` |
+| In the next N | as Last, forward | as Last | `{ "next": 3, "unit": "month" }` |
+
+- **Simple stays the calendar** (a day, or a range) — only Advanced gains
+  these rows, on 102's two kept answers.
+- **`OP_TAKES` gains `date`, `dates` and `duration`** beside `list`, `text`
+  and `range`: each a `<template>` in the menu's condition row, composed from
+  `sherpa-input-text` and `sherpa-select`.
+- **Days are UTC**, as `formatDate` reads them (`T-a-date-reads-one-way`); a
+  relative date is worked out once per load, with `Temporal` where the
+  browser has it.
+- **The chip's face** reads `Created: last 7 days`, `Created: before 03 Sep
+  2026`, through `formatDate`.
+- **Build after 20b** (the ledger's rule) and with 90.
+
+**❓ Will — two choices.**
+
+- **Includes (a weekday):**
+  - **A (my pick): not now.** It is a second axis — the weekday OF a date —
+    so it is a derived field a set filter answers, its own later item.
+  - **B: a condition** with seven day toggles in the row.
+- **The time input:**
+  - **A (my pick): only where the field holds a time** —
+    `declareField(f, { type: 'date', time: true })`. Records' `created` holds
+    days (`2024-07-01`), so it shows none.
+  - **B: always**, and a blank time means the day's start or end.
+
+**✅ Will, 2026-10-12 — all my picks:** A and A — no weekday condition now; a time input only where the field holds a time.
+
+**✅ Built 2026-10-13, in 90** — its three steps are there. `T-a-relative-date-stays-relative`
+
+### `[x]` ✅ 107 — A filter can apply LIVE, debounced — an opt-in; the default stays once per act
+
+Will, 2026-09-29, choosing A of "once per act" / "live while dragging, with a
+debounce": *"A but save it as a configurable option to support later. Apps
+with large datasets in the data layer will probably thank us."*
+
+The default does not change: a filter applies once per act — a handle let go,
+Enter, leaving a field, a tick. The OPTION applies while the reader is still
+moving, and waits a set time after the last move before it asks the data
+again.
+
+A place to start: components stay reporters — they already send `input`
+while a value moves and `change` when it settles. The SOURCE owns the rule
+(`applyOn: 'change' | 'input'`, `debounce` in ms), so one app can choose per
+source, and a large or remote dataset keeps the default. Settle: per source,
+per field, or both; and whether a remote source may choose live at all.
+
+**❓ Will, 2026-09-29 — two choices** (it is an option "to support later", so
+it waits on these rather than guess). How it would work: the source sets
+`data-apply-on="input"` on what it binds, as it sets `data-remote`; a menu
+then reports while a value moves, and the source waits `debounce` ms after
+the last report before it loads.
+
+- **Chosen for:**
+  - **A (my pick): per source** — one line in the page JSON,
+    `"source": { "applyOn": "input", "debounce": 300 }`.
+  - **B: per source AND per field** — a slow field can stay on Apply.
+- **A remote source:**
+  - **A (my pick): stays on Apply** — live would send a request per pause,
+    and remote already waits for Apply by design.
+  - **B: may choose live too**, with the debounce.
+
+**✅ Will, 2026-10-12 — all my picks:** A and A — set per source; a remote source always stays on Apply.
+
+**✅ Done 2026-10-13.** `new DataSource({ applyOn: 'input', debounce })`, or
+`"applyOn": "input"` in the page JSON's source (schema too). `source.applyOn`
+is `'change'` for a remote source, whatever was asked. A live filter change
+loads `debounce` ms (default 300) after the last one; everything else still
+coalesces on the tick. The binder writes `data-apply-on="input"` on a scope's
+control; bar, panel and grid pass `live` to `menuFor()`, so a number menu does
+not wait for Apply and its body reports on `input`. A panel's CARD menus keep
+committing (`T-a-chip-menu-in-the-panel-commits`); only its inline bodies go
+live.
+
+### `[x]` ✅ 52 — A data viz scope in the filter panel
+
+A legend toggle IS a filter (42, done: `only` narrows one component), so a chart could have its own component
+scope in the panel. It may want chips for its AXES or its AGGREGATION, the way
+the grid has Group and Sort. Larger; design first. After 42, and after 38
+step 3, which puts scopes in the data layer.
+
+**Design, 2026-09-29 — for Will's review** (42 and 38 step 3 are done).
+Found: most of it exists. A scope with `narrows: ["bar"]` already filters one
+component alone, and a legend's toggles already narrow their chart (42). A
+chart says what it summarises in attributes — `data-segment-field`,
+`data-aggregate` + `data-field`, `data-over-field` + `data-bucket` — which the
+provider reads into its summary.
+
+- **The scope:** a chart's own scope in the page JSON, `narrows` its id. The
+  panel draws it as a section with the chart icon (97; the glyph is 115).
+  Its filters narrow the chart alone; the legend's field is one of them.
+- **Its arranging chips**, as Group and Sort are a grid's: **Segment by** (a
+  field), **Measure** (Count, or Sum / Mean / Min / Max of a number field),
+  **Over** (a date field, by day, month or year) — each only where the chart
+  has that axis (a bar or donut segments, a line runs over).
+- **Who owns them:** the chart REPORTS; the provider writes its attributes.
+- **Build after** 99's drawing (a set can hold them, as Organise holds Group
+  and Sort) and ruling 4's per-scope arrangement.
+
+**❓ Will — two choices.**
+
+- **Where a chart's arrangement is kept:**
+  - **A (my pick): in the Query, per scope** — as sort and group are
+    (ruling 4). A saved View keeps "segmented by OS", and a reload too.
+  - **B: on the chart only** — the panel steers its attributes, and a View
+    does not remember them.
+- **Which chips first:**
+  - **A (my pick): all three** — Segment by, Measure, Over — each where the
+    chart has that axis.
+  - **B: Segment by only**, and the rest when asked.
+
+**✅ Ruled, Will 2026-09-30 — a first, small shape. Do it after 130.** *"I
+think it would be really neat to see the data viz component scopes in the
+filter panel. I'd expect them between the view and grid scope accordions.
+They will only have 1 filter section. Each is just a Simple filter with a
+chip per legend item (might be nice to include the swatch where the left icon
+usually is). I don't think Advanced filters make sense for chart data just
+yet. As per previously established rules, component scope filters don't
+affect other component scopes. Filters should be elevated to view scope to
+achieve that."*
+
+So, for now: no arranging chips (Segment by, Measure, Over) and no Advanced —
+the two choices above wait. One section per chart, between the View's and the
+grid's, holding ONE Simple filter: the legend's field, a chip per legend
+item, with its swatch.
+
+**And a thought of Will's, the same day:** *"legend items could just be a
+boolean filter chip variant. It's just style differences and a swatch instead
+of an icon. Functionally they are the same. That keeps all representation of
+simple filters using filter chips of some kind. This could lead to cleaner,
+consolidated, code, too."* So the panel's chip and the legend's item should be
+ONE chip, with a swatch — build the panel's that way, and then look at moving
+`sherpa-chart-legend` onto it.
+
+**✅ Done 2026-09-30 — the first, small shape.** Each chart with a legend has
+a section in the panel, after the View's and before the grid's, named as its
+card is ("Alerts by category"). It holds ONE filter: the legend's field, a
+chip per legend item, each with its swatch — the same colour the chart
+paints. No Advanced, no Filters button, no Save.
+
+- **One answer, two views.** A chip and the legend's item are the same
+  answer: press either and the other follows. It narrows that chart ALONE —
+  on Records the grid holds `status` too, and its chips, its rows and the
+  other chart do not move.
+- **Sent up.** The field's ↑ sends the answer to the View filters: every
+  component narrows, and the chart's section says where the filter went.
+  Take the field off the View and the chart's chips come back.
+- **The chip.** `sherpa-quick-filter` takes `data-swatch="<series>"`: it leads
+  with that series' swatch where its icon goes.
+- **The data layer.** `source.declarePart(scope, { field, only, label })` —
+  the provider declares it for each legend — and `describe(scope)` gives the
+  panel the one filter. The dashboard's JSON names the three fields
+  (Category, OS, Severity).
+
+Two things to know. A panel shows EVERY value; the legend folds the seventh
+and later into "Other". And with no chip on, every series shows — so the
+panel's chips all read off where the legend's items all read on. That is how
+every filter chip reads; 149 is where the two become one control.
+`T-a-chart-scope-is-its-legend-field`
+
+The arranging chips (Segment by, Measure, Over) and the two choices above
+still wait.
+
+### `[x]` ✅ 159 — A data viz filter in the View scope: a legend click changes the View's values
+
+Will, 2026-09-30: *"When a data viz filter is added to the view scope then
+clicking on a legend item should adjust values at the view scope as well as
+toggling the legend item active state."*
+
+Today a legend always writes its chart's OWN scope, even while the View holds
+the field — so the two can disagree.
+
+**✅ Done 2026-09-30.** While the View holds a chart's field, its legend
+shows the View's answer, and a press on a legend item changes the View's
+values. So the View's chips follow, and EVERY component narrows — the item
+toggles as it did. When the View lets go of the field, the legend answers for
+its own chart again. The chart keeps no answer of its own while the View
+holds the field: two answers to one field, one of them hidden, was the fault.
+`T-a-legend-follows-the-view-when-it-holds-the-field`
+
+### `[x]` ✅ 149 — A chart legend's items ARE swatch chips
+
+Will, 2026-09-30 (with 52): *"legend items could just be a boolean filter
+chip variant. It's just style differences and a swatch instead of an icon.
+Functionaly they are the same. That keeps all representation of simple
+filters using filter chips of some kind. This could lead to cleaner,
+consolidated, code, too."*
+
+The chip has its swatch now (52), so the panel's half is done. What is left
+is `sherpa-chart-legend` itself: draw each item as a `sherpa-quick-filter
+data-swatch`. Four things a legend item has that a chip does not, to settle
+when it is built:
+
+- its VALUE (the count at the right, in a shared column);
+- the "Other" roll-up row and its menu;
+- read-only mode (a gauge's zones: a key, not a filter);
+- "every item on" as the rest state, where a chip's is "every chip off".
+
+**Plan, 2026-09-30** (a second agent read the code; nothing built yet).
+
+- The legend COMPOSES one `sherpa-quick-filter` per item, in its own
+  template. It keeps the layout (the value column, the 3-by-2 grid), the
+  "Other" roll-up and its menu, its off-set, `legend-item-click`,
+  `populate` — so charts, the provider and the gauge change nothing. The
+  other way — no legend, a chart slots a run of chips — moves all of that
+  into four charts for no gain.
+- The chip needs: a `key` kind (no border, mono 12px, 16px tall, its label
+  truncates); `data-readonly` (a gauge's key: not a control); a STATUS
+  swatch (a gauge's zones); and `aria-pressed` on a boolean chip, which no
+  chip sets today — a real gap for the panel's chips too.
+- The VALUE stays the legend's own cell beside the chip, so the column still
+  lines up. A click on the number then does nothing.
+
+**❓ One choice.** A legend chip is ON when its value is SHOWN, and at rest
+every one is on. A panel chip is ON when its value is PICKED, and at rest
+every one is off. The same value reads the two ways round.
+- **A (my pick): leave it.** The legend says what the chart shows; the panel
+  says what you picked. Each is true where it is.
+- **B:** the legend follows the panel — at rest no chip is on, and all read
+  in full ink.
+
+**✅ Will, 2026-10-12 — all my picks:** A — leave each as it is: each is true where it is.
+
+**✅ Done 2026-10-13.** Each legend row is a `sherpa-quick-filter
+data-type="key"` (swatch and slotted label), `data-locked`, with the legend's
+`.value` beside it. The chip gained the `key` type (no border, mono 12 on 16,
+the label truncates), `data-readonly`, a STATUS swatch (`data-swatch` takes a
+status name), and `aria-pressed` on every toggle chip — the panel's too. The
+legend keeps its layout, roll-up, off-set and `legend-item-click`; the grid is
+three tracks now: entry, value, button. Charts, the provider and the gauge
+change nothing. `T-a-legend-row-is-a-key-chip`.
+
+### `[x]` ✅ 124 — The Filters button and menu move to the filter panel HEADER
+
+Will, 2026-09-30: *"Let's move the 'Filters' button, and menu, to the filter
+panel header. This will consolidate the filter menu for all scopes into 1
+menu. We already show the scope for filters in the menu item description so
+we can leverage that for all filter menu items. We can still separate Added
+and Available filters. Filters will get added to their default scope. It's
+then up to the user to move their scope. Filter toolbars still maintain their
+own filter buttons and menus."*
+
+**✅ Done 2026-09-30.** One Filters button, in the panel's header, left of
+Reset. Its menu lists every scope: Added filters, Available filters, Saved
+filters. Each row says its scope under its name. A shut scope's filters lead
+the list with a caret each, and the badge counts them, as before.
+
+A filter not held yet is listed ONCE, and is added to its default scope. I
+read "default scope" as the scope of the component that offers it (on
+Records: Customer records); a field no component offers goes to the View.
+You then move it with its ↑. Say if the default must come from the page's
+definition (so Region, taken off, would come back in View filters).
+
+Found on the way: a long menu squeezed its rows until a row's description
+ran under the next row. A row keeps its height now, and the list scrolls.
+
+### `[x]` ✅ 122 — Email starts SIMPLE; over 20 values it is one chip with a multi-select menu
+
+Will, 2026-09-30: *"The 'Email' filter should be a simple filter, initially,
+with the option to switch to advanced. When in simple mode, as it over 20
+unique values, then it should show as a filter chip with a multi-select
+menu."*
+
+Part of 89 (every panel filter starts Simple) and 90 (any filter switches to
+Advanced). Today `email` is declared `"advanced": "only"` in `records.json`.
+
+**Plan, 2026-09-30.** `email` is `"advanced": "only"`, so the source never
+reads its values. Changing it to `"advanced": true` collects them; then 89's
+line draws it as one chip with a multi-select menu, and the chip menu's f(x)
+switches to Advanced. Waits on 89's number.
+
+**✅ Will, 2026-10-12 — all my picks:** Unblocked: 89 rules the line at 16 values.
+
+**✅ Done 2026-10-13:** Sherpa Demos declares Email `"advanced": true`, so its addresses are read; over 16 of them, the panel draws one chip with a multi-select menu, and its f(x) is in that menu (89). A Demos test checks it.
+
+### `[x]` ✅ 120 — A view-scope filter gets "Send to `<scope name>`"
+
+Will, 2026-09-30: *"'Send filter to View' should have a counterpart button in
+the view context to 'Send to &componentScopeName' with a down arrow icon."*
+
+The other way of 21f. The name is the scope the field came from.
+
+**✅ Done 2026-09-30.** A View field in the panel has a ↓ button beside
+Clear, in the same group: "Send Region to Customer records". The View lets
+go of the field, and its answer goes with it — so the rows do not move. The
+header bar loses the chip and the grid's bar gets it.
+
+Which scope: every scope that has the field (a grid's, or a chart's own).
+With one, the button sends there. With more, it opens a menu and you pick —
+the source will not guess (158 added the menu; there was no button before).
+On Records that is every View field today: Customer, Region and Date all go
+to "Customer records". A field sent up from a chart (52) goes back to that
+chart. The button shows from the start, as ↑ does (155).
+`T-send-to-view-filters`
+
+### `[x]` ✅ 121 — Clear and Send to are ONE button group
+
+Will, 2026-09-30: *"The 'clear' and 'send to' buttons should be in a button
+group with grouping style classes applied."*
+
+**✅ Done 2026-09-30.** In a panel field's header the two are one
+`.sherpa-group`: joined, with the inner corners square. The group is by
+POSITION, so Clear alone — a View field has nowhere to send to — keeps both
+its corners. Send to shows from the start (155); Clear joins it once the
+field has an answer. 120's
+"Send to `<scope>`" button goes in this group when it is built.
+
+### `[x]` ✅ 123 — An inactive chip KEEPS its match count badge
+
+Will, 2026-09-30: *"Don't hide the match count badge when a filter chip is
+set to inactive. Only remove the badge when all values/conditions are removed
+from the filter."*
+
+Changes 60, which shows the badge only while the chip is on.
+
+**✅ Done 2026-09-30.** A chip switched off keeps its badge: the rows its
+answer WOULD match. Empty it and the badge goes. A chip with a change that
+waits for Apply still shows none. The tooltip follows 147: off, it says
+nothing.
+
+❓ **One thing to see — saved filters.** A saved filter always holds its
+conditions, so by your rule it always shows its count, before it is ever
+switched on. On Records the bar now reads `90 Has open tickets`, `27 At
+risk`, `15 Unassigned` at rest.
+
+- **A (as built, my pick):** keep it — the number says what the switch will
+  give, before the press.
+- **B:** a saved filter shows its count only while it is on.
+
+**✅ Ruled, Will 2026-09-30: "A for now."** A saved filter shows its count at
+rest. **Then B, the same day (166):** only while it is on.
+
+`T-a-chip-counts-its-own-results`
+
+### `[x]` ✅ 125 — The sort tooltip names the direction as well as the field
+
+Will, 2026-09-30: *"Sort tooltip should show direction (e.g ascending) as well
+as the field name."*
+
+**✅ Done 2026-09-30, with 130.** A Sort chip's tip reads `Name, descending`,
+on a bar and in the panel. A grid heading's sort button reads `Sort by Name`,
+then `Sorted by Name, descending`. `T-a-chip-says-its-own-answer`
+
+### `[x]` ✅ 126 — "Filter applied at higher scope" becomes "Filter moved to `<scope name>` scope"
+
+Will, 2026-09-30: *"Change the 'Filter applied at higher scope' to 'Filter
+moved to $scopeName scope'."*
+
+**✅ Done 2026-09-30.** A chip's tooltip and the panel's note say the same
+sentence, from one function (`movedTo`): `Filter moved to View scope.` — and
+on a chip that still holds picks, `… This chip holds active, churned.` My
+pick: the View's heading is "View filters", so the sentence drops "filters"
+and says "View scope", not "View filters scope". Will, 2026-09-30: "That's
+ok." `T-an-inactive-chip-says-where-its-filter-went`
+
+### `[x]` ✅ 129 — "Reset all to default", with a confirm dialog and "Save filters before reset"
+
+Will, 2026-09-30: *"'Reset to default' in filter toolbars should be renamed to
+'Reset all to default'. It should throw a confirmation sherpa dialog informing
+the user that it will reset all filters across all scopes to the view default.
+Include a simple switch to 'Save filters before reset' that will reveal a text
+input that allows the user to name the filter definition. When this save
+filters before reset feature is enabled, and a valid name entered, on
+confirming reset then the current filter configuration should be saved, using
+the provided name, before all filters are reset."*
+
+Builds on 109 (the Reset menu). The save is 105's "every scope under one
+name", which still waits on a ruling.
+
+**✅ Done 2026-09-30.** The row reads "Reset all to default" on a bar, in the
+panel and in the ⋮ menu. It opens a Sherpa dialog: "This resets every
+filter, in every scope, to the View's default", Cancel and Reset all. The
+switch "Save filters before reset" shows a Name field. On, with no name,
+Reset all stays open and says "Enter a name to save the filters under". With
+a name, the filters on screen are saved first, then everything resets, and
+the page stays on its own View.
+
+**One thing to know:** the save is a saved VIEW — the View chip lists it
+under your own Views, and picking it puts every scope's filters back. It is
+the one store that holds every scope under one name today. When you rule on
+105 (saved filter sets), the save moves there.
+
+In the library: `view-reset` is cancelable, and `provider.saveView(name,
+{ stay: true })` saves without leaving the View on screen. The dialog is the
+example app's (`#reset-confirm`, `resetPrompt`), as the Save view dialogs are.
+
+### `[x]` ✅ 133 — The results count badge, at the right of a filter panel section header
+
+Will, 2026-09-30: *"The results count badge should show to the right of the
+filter panel section header where appropriate."*
+
+The chip's badge from 60, for a field drawn in the panel with no chip to
+carry it.
+
+**✅ Done 2026-09-30.** A panel field drawn as a run of chips, a number body
+or Advanced rows shows its results in a badge right of its title: `REGION
+27`. It shows once the field has an applied answer — on or off, as 123 — and
+goes when the field is emptied or a change waits for Apply. A chart's own
+field has one too. A field drawn as ONE chip (a date, Group, Sort) and a
+saved filter keep the number on the chip.
+
+Also fixed on the way: a panel redraw (a field added, a filter sent up) lost
+every results number until the next load. The panel keeps the last ones now.
+`T-a-chip-counts-its-own-results`
+
+### `[x]` ✅ 134 — A number filter menu has Reset, not Clear
+
+Will, 2026-09-30: *"Numeric filter menus have a 'Clear' button but this isn't
+appropriate. It should be a reset button that resets inputs and slider handles
+to their original values."*
+
+**✅ Done 2026-09-30.** A number menu's footer reads **Reset**, with the ↺
+icon. It empties the field and puts both handles back on the bounds — both
+shapes, the one in force and the one kept — and the chip goes off at once.
+A list menu keeps Clear.
+
+**What I found:** Clear did NOTHING to a number. It looked for the slider
+among the menu's slotted children, and the number body lives inside the menu
+now. So the button was there and the filter stayed. My reading of "original
+values" is where they started — empty, and the handles on the bounds. Cancel
+is still the way back to what was last applied.
+`T-a-number-is-reset-not-cleared`
+
+### `[x]` ✅ 135 — A calendar's Month and Year views mark what has no date to pick
+
+Will, 2026-09-30: *"In calendars, where the viable selectable dates are
+limited, the Month and Year modes should set Months and Year buttons with no
+viable selectable dates to inactive, too."*
+
+The day view already does this, from `data-available`, `data-min` and
+`data-max`.
+
+**✅ Done 2026-09-30.** A month or a year with no day to pick is drawn
+inactive, and a press on it does nothing. One rule answers a day, a month and
+a year, so the three views cannot disagree. A RANGE calendar is bounded by the
+data, not dotted by it: every month from the first day with records to the
+last stays active. With no limit set, every month and year is active, as
+before.
+
+### `[x]` ✅ 138 — Advanced filters use the info status styling again
+
+Will, 2026-09-30, a future small one: *"Move advanced filters back to using
+the info status styling rather than the success status styling."*
+
+**✅ Done 2026-09-30.** An Advanced chip's edge, ink and `fx` badge are info
+blue, on a bar, in the panel and on a grid heading. The text a condition
+matched in a grid cell is marked in the same blue, so a reader still follows
+one colour from the chip to the cell. One pin changed
+(`scripts/figma-data/state-pins.yaml`), and the trap is renamed to match.
+`T-a-conditioned-chip-reads-as-active`
+
+### `[x]` ✅ 156 — Advanced filters use the default active styling
+
+Will, 2026-09-30, a minor one: *"Let's use the default active styling for
+advanced filters instead of diverging to use the info styling."*
+
+**✅ Done 2026-09-30.** An Advanced chip is active purple, as a Simple chip
+is: no state pin and no CSS of its own. The text a condition matched in a
+grid cell is marked in the active colour too, so the chip and its matches
+still read as one colour. What still tells them apart: the f(x) button is
+pressed in the menu and in the panel, and a grid heading shows the f(x)
+glyph. This replaces 138's info blue.
+`T-a-conditioned-chip-reads-as-active`
+
+### `[x]` ✅ 139 — An Advanced chip's value half shows its values, not the condition labels
+
+Will, 2026-09-30: *"Actually ignore that improvement. The values should be
+shown, truncated, but not the condition labels."* (He first asked for the
+f(x) icon and the ▾ alone, then took that back.) So `Owner: Starts with: U
+or Contains: an` reads `Owner: U, an`, cut short where it is long.
+
+**✅ Done 2026-09-30.** A chip with two or more condition rows shows what each
+row answers with — typed text, or the picked values by their labels — joined
+by commas: `U, an`. The chip cuts it short as it does any long value. The
+tooltip still says `2 conditions applied`. A grid heading's
+`column-filter-change` label keeps the full words (`Contains: Da or Starts
+with: R`); that is a label for a host, not the chip's face.
+
+### `[x]` ✅ 140 — Every typed Sherpa input shows the Clear button
+
+Will, 2026-09-30, a future one: *"Any sherpa input that I type into, that
+isn't a numeric stepper or text area, should show the clear input button like
+we do in the sherpa text input."*
+
+Today it is opt-in: `data-clearable` on `sherpa-input-text`.
+
+**✅ Done 2026-09-30.** A text field shows Clear by itself while it holds
+something. Not a number (it has steppers), not a text area, not a select,
+and not a field that is read-only or disabled. `data-no-clear` turns it off
+for one field; `data-clearable` still turns it on for a text area or a
+select. The other typed inputs had a Clear already: the nav's search, the
+grid's filter row, a menu's search and its condition value. Not done: the
+`minimal` variant (a bare inline field, used nowhere in the library or the
+examples) — it has no row to hold a button.
+
+### `[x]` ✅ 141 — Advanced is an f(x) icon button, not a switch
+
+Will, 2026-09-30, a minor one to queue: *"Instead of a simple switch for
+'advanced' let's go back to a button on the right of the filter panel
+section, and toolbar chip menu, header that is icon only, uses the f(x) icon,
+and is active when advanced, default when simple."*
+
+**✅ Done 2026-09-30.** The switch and its "Advanced" word are gone. A chip
+menu's header and a panel field's header each end in an f(x) icon button,
+named "Advanced" (in the panel, "Advanced Owner"). It is pressed — the
+active look — in Advanced, and plain in Simple. In the panel it sits after
+the Clear and Send to group, and shows before the field has an answer.
+
+**A bug this showed, fixed.** In the panel, the flip to Advanced reported the
+field BEFORE its new rows were drawn: "Advanced, no rows". So every row came
+back until the next edit. The switch hid it — its own `change` event made a
+second, late report. The flip now reports once, when the rows are drawn.
+`T-a-filter-menu-has-two-modes` · `T-a-rebuilt-row-reads-empty-for-a-tick`
+
+### `[x]` ✅ 144 — A View's filters survive a View swap: a draft per View
+
+Will, 2026-09-30: *"Filter configurations should survive view swaps during a
+session, even if not saved as a definition. We can leverage the definition
+functionality to support drafts, per view, for the session. It would be cool,
+actually, if they could persist across sessions, too. This will save the user
+from absolute headaches on app crashes etc. These should be configurable
+options for filtering (on by default) and we should expose toggles in the app
+settings nav & content. Potentially something we can do as we work on an
+adjacent filtering item."*
+
+Today the session keeps ONE Query per Context, with the View it was made on
+(`/filters/records`), and a View pick starts from that View's own filters.
+So: keep a draft Query per View; two settings, both on by default — keep
+drafts for the session, keep them across sessions — in Settings ›
+Application.
+
+**Plan, 2026-09-30** (a second agent read the code; nothing built yet).
+
+- Today: ONE kept Query per page (`/filters/<page>`), tagged with its View,
+  and restored only if the View matches. A pick throws it away. It is kept
+  in localStorage already, so it outlives the tab.
+- A draft per View: a new `src/core/browser/view-drafts.ts` beside the saved
+  Views — a map per page, View id → `{ query, sig }`. `sig` is the View's own
+  definition as it was; a draft whose `sig` no longer matches is dropped, so
+  a changed preset is not hidden by an old draft.
+- Written on the same frame-debounced path that keeps the page's Query now,
+  and FLUSHED before a pick — the View's id changes only after an async
+  write, so a pending frame would save the new View's filters under the old
+  name. No draft while the Query is the View's own.
+- Read inside the pick, in place of the View's own Query (no flash), and at
+  open, so a reload or a link to a View restores its draft. A draft is a
+  RESTORE: exact, so it wins over carry-over.
+- Cleared by Reset all to default, by Save (the saved View owns them now),
+  and by Delete.
+- Two switches in Settings › Application, a "Filtering" section, both on:
+  keep each View's filters while I switch Views (the tab); keep them across
+  sessions. The provider takes them as an option; an app that gives none
+  gets no drafts.
+- Tests that pin "a fresh View resets" (`reforged-view-chips.spec.ts`) then
+  mean "on a first visit".
+
+**✅ Done 2026-09-30, as planned.** Change a filter on a View, go to another
+View, come back: your filters are there. A View you never changed opens on
+its own filters. Reset all to default, Save and Delete clear a View's draft.
+Settings › Application has a new "Filtering" section with two switches, both
+on: "Keep each view's filters while I switch views", and "Keep them across
+sessions" (a new tab, or a crash). The second is off and greyed while the
+first is off. In the library: `provider.open(…, { drafts })`, and
+`src/core/browser/view-drafts.ts`.
+
+---
+
+## E — Views and navigation
+
+### `[x]` ✅ 15 — Save a View, and the Save split-button menu
+
+Measured 2026-09-29: `provider.saveView(label)` saves the current View of
+ANY page opened from a definition, and puts it on the View chip (D1). Only the
+Dashboard calls it (`dashboard.js`, after its name dialog); Records has no
+`view-save` handler and no name dialog (G3 in `PROVIDER-DESIGN.md` §10).
+`viewOptions` is a flat list.
+
+**Save** writes the current View — layout, content and its WHOLE filter
+configuration — to a view definition. **Load** from the View chip's menu, in a
+`Custom Views` section at the BOTTOM. **A name clash** in `Presets` or
+`Custom Views` appends ` - Copy-001`.
+
+**Labels** (Will, 2026-09-29): `Save view` and `Save view as`. Build with 105,
+which needs the same split button, name dialog and overwrite confirm.
+
+**The menu button, right of Save:**
+
+| Option | What it does |
+|---|---|
+| `Save As` | A dialog. The user edits the View name, then saves or cancels. |
+| `Delete View` | Critical style. A dialog asks to confirm. ONLY a custom View. |
+
+**✅ Done 2026-09-29, on every page.** The Save ▾ opens "Save view as" and —
+on the reader's own View only, critical — "Delete view". The SHELL answers
+the three requests with one name dialog and one confirm (`ask-name.js`:
+`namePrompt`, `confirmPrompt`); the Dashboard's own handler and dialog are
+gone. The provider: `saveView(name)` saves a new View, a clashing name
+getting ` - Copy-001`; `saveView()` saves over the reader's View on screen —
+Save on a preset asks for a name; `deleteView()` deletes and goes to the
+first View; the bar is marked `data-custom-view`. The View chip lists
+`Presets`, then `Custom views` at the bottom. 105 reuses the dialogs.
+`T-a-saved-view-is-the-readers-own`
+
+### `[x]` ✅ 17b — At the mobile breakpoint the nav becomes a menu
+
+Not started. At mobile width the rail is GONE and a menu takes its place.
+
+- **The trigger:** a menu button in the App Header, RIGHT of the Context title.
+- **The rail:** hidden, and its padding on the header and content goes to `0`.
+- **The menu:** fills the viewport; no `Pin`; `Settings` at the BOTTOM; a
+  footer `Cancel` that closes it and goes nowhere.
+- **A Context row** closes the menu AND navigates.
+
+**Put the nav on the data layer while you are here.** `sherpa-nav` has
+`renderData()` but never calls `bind()` — a one-shot draw. Bind it to a Store,
+so the rail and the menu are two renderings of one nav model.
+
+**✅ Done 2026-09-29.** At 480 px — the header's own phone width, where its
+filters go — the shell hides the rail (by `visibility`, so the menu can come
+back) and drops its inset; the header shows a `menu` button right of the
+Context title. The menu is the SAME `sherpa-nav`, `openMenu()`ed into the top
+layer: the whole screen, open, no Pin, Settings at the bottom, Cancel that
+goes nowhere; an Area only opens, a Context row closes it as it goes; Escape
+closes it. One element in two presentations, so they cannot disagree — which
+meets "one nav model" without a second copy; binding the nav to a Store is
+now its own item, 116. **Found on the way:** the header's
+`container-type: inline-size scroll-state` was dropped whole by Firefox and
+WebKit, so its 480 px rule never ran there — fixed
+(`T-a-second-container-type-drops-the-first`). No Figma design exists for
+the phone; the look follows the rail's. `T-the-nav-is-a-menu-on-a-phone`
+
+### `[x]` ✅ 116 — `sherpa-nav` binds to a Store: its entries as data, drawn and redrawn
+
+Split from 17b, 2026-09-29. `sherpa-nav` has `renderData()` but is never
+bound — the app re-`populate()`s it by hand when Favorites or Recent change.
+Bind it to a Store (its sections and entries as rows), so a change to the
+data redraws it, as every other data component. The phone menu is the same
+element (17b), so it follows for free.
+
+**❓ Will, 2026-09-29 — one choice.** Measured: the app redraws the nav from
+three places (Favorites, Recent, the Views-as-rows switch) through ONE
+`refreshNav()`, and its only real pain is that a redraw rebuilds every row,
+so the app must read back the reader's OPEN Areas first. A Store would mean a
+second data source just for the nav, fed from the two session lists.
+
+- **A (my pick): the nav keeps its own open Areas** across a redraw — state
+  it owns, as the grid keeps its scroll — and the app's read-back goes. Less
+  code, and the one real bug class closes.
+- **B: the full Store binding** as written: nav entries as rows in a Store,
+  the app writing rows, `bind()` redrawing. More code, and the lists are
+  already the data layer's (`SessionList`).
+
+**✅ Will, 2026-10-12 — all my picks:** A — the nav keeps its own open Areas across a redraw.
+
+**✅ Done 2026-10-13.** The nav keeps each Area's open or shut by id: an
+open Area stays open across a populate, and an entry's `expanded: true` may
+open more. The outlet's read-back of `expandedIds` is gone; it only opens the
+Area that holds the page. `expandedIds` stays, as the read-back door.
+
+### `[x]` ✅ 34 — Figma: use the Navigation terms
+
+The code moved to Section / Area / Context / View on 2026-09-24 (CLAUDE.md
+"Navigation terms"). Figma still uses the old words. Rename there, then resync:
+
+- App Header: the `View title` layer is the Context title. Code parts are
+  `row-context` and `context-icon`.
+- Navigation: a parent row is an Area; a leaf row is a Context. A Section is
+  the label + divider only.
+- Any `Views` section label, or frame named for a page, is a Context.
+- Keep `View` only for the View chip and its View group (★ · Save · ▾).
+- `sherpa-dialog data-type="overlay"` and `sherpa-app-shell`'s `overlay` slot
+  do not exist in Figma yet.
+- Navigation: collapsed `nav-layout/width` is pinned to 40px. Bind it to
+  `size/3xl` so the closed rail follows density (36 / 40 / 48), then drop the
+  override in `sherpa-nav.css`.
+
+Each code-only difference is also in that component's `_divergence` block.
+
+**✅ Done 2026-09-29, in Figma.** App Header (150:3690): `View Details` →
+`Context Details`, `view-icon` → `context-icon`, `View title` → `Context
+title` (layer names only — no property or variant changed, so nothing in the
+specs moved). The Navigation components hold no old word (`hasChildren` is a
+property), and the only "View" text on their page is the View chip, which
+keeps it. `nav-layout/width` in the collapsed mode is an ALIAS of `size/3xl`
+now (it was a raw 40); the export was patched to match
+(`{display-mode.size.3xl}`), re-projected, and the code's override and its
+`_divergence` note are gone — a test holds 36 / 40 / 48. **Left for you:**
+the `overlay` slot and `data-type="overlay"` dialog still have no Figma
+design (the shell's `_divergence` says so).
+
+---
+
+### `[x]` ✅ 79 — Nav header: Settings and Pin are one Button group in an Actions slot
+
+Will, 2026-09-27, from Figma: in the Navigation Panel's header the Settings
+and Pinning buttons are now GROUPED and use the DEFAULT button style. Settings
+takes the Grouping START class, Pinning the Grouping END class — Settings
+first, then Pin, the reverse of the code today. Button size is unchanged. The
+group is a SLOT called `Actions`, so more buttons can join it later.
+
+Today `sherpa-nav.html` draws both as raw `<button class="hdr-btn …">`. So:
+COMPOSE two `sherpa-button`s (never a re-drawn button), wrapped in
+`.sherpa-group` (start/end by position), inside a `<slot name="actions">` in
+the header — the default content being these two. Resync the nav's spec and
+check the pixels against Figma.
+
+**✅ Done 2026-09-29.** Read live from Figma's Navigation Header (1051:7815):
+an `Actions` frame, 48 × 24, two 24 px icon Buttons with no gap, Style
+default, Structure sm, Grouping start and end — the SAME in every state, so
+no pressed look — and the pin glyph is `thumbtack-angle`. The nav now
+composes two `sherpa-button`s (Settings `data-group="start"`, then Pin
+`end`) in `.actions`, with an `actions` slot after them so more can join;
+the raw `.hdr-btn`s, their CSS and their two state pins are gone. A host's
+`aria-pressed` now reaches the inner button, as `aria-label` does (the bar's
+★ gains it too). The old test that read a 12 px glyph off the host now
+measures the button's own sm icon: 14 px, as Figma's Structure collection
+projects it.
+
+### `[x]` ✅ 164 — BUG: at the mobile breakpoint the app header shows no nav hamburger
+
+Will, 2026-09-30: *"The breakpoint for mobile mode isn't wide enough. Also at
+the mobile breakpoint the nav hamburger menu appears but the collapsed nav
+sidebar isn't hidden."* Then, a moment later: *"Actually the mobile breakpoint
+is hit. It's just that the app header doesn't show the nav hamburger menu as
+it doesn't get narrow enough to trigger it."*
+
+So the second message is the bug: the shell goes to mobile, and the header's
+own rule for the hamburger reads the HEADER's width, which is still too wide.
+
+**✅ Done 2026-09-30.** Mobile now starts below 768px, where the layout grid
+goes to mobile. The shell hides the rail there and tells the header to show
+the menu button, so the two turn together. Before, each read its own width at
+480px: a desktop window cannot go that narrow, and from 481 to 520 the button
+showed beside the rail. The header's filters still go at its own 480px.
+
+### `[x]` ✅ 161 — The app header's shadow fades in as the Context scrolls under it
+
+Will, 2026-09-30, a minor one: *"Add a very quick fade transition to the app
+header shadow on scroll under."*
+
+**✅ Done 2026-09-30.** The shadow fades in and out in 100ms. The first pixel
+of scroll still decides it, with no JS: it now flips a property on the
+header's area, and the header's shadow follows that with a transition.
+Chromium and WebKit; Firefox has no scroll timeline and draws no shadow, as
+before.
+
+### `[x]` ✅ 163 — The app shell's panel areas: 150% of their min width
+
+Will, 2026-09-30, a minor one: *"Increase the min width of panel areas, in
+the app shel to 150% of their current min width."*
+
+**✅ Done 2026-09-30, second try.** The first build made the WIDTH 1.5 times
+bigger at every size. Will: *"You made the width of the panel area 150%
+bigger and not the min-width."* Now the width is three grid columns again,
+and the area has a MIN width of 464px. That is 150% of the 310px it is at
+1280, which is its narrowest (on the 4px grid). So the panel card is 448px
+at 1280 and at 1600, and from about 1900 the three columns are wider and
+take over (454 at 1920).
+
+### `[x]` ✅ 184 — Does sherpa-ui need Node to ship?
+
+Will, 2026-10-01, to investigate later: *"How much does sherpa actually need
+nodejs? Does it need nodejs to ship to consumers?*
+
+*A CDN, script, or even a small zip might be a much better approach for
+sherpa-ui."*
+
+Found while moving the app (37): the package ships `dist/`, but not
+`schemas/` — a consumer cannot check a page definition against the page
+schema without the repo.
+
+**Investigated 2026-10-01 — a consumer needs no Node at all.** Measured on
+`dist/`:
+- **No runtime dependency.** Every import in `dist/` is relative; the only
+  `'sherpa-ui'` strings are in comments. No external host either.
+- **It runs from any static host.** 66 components load their `.html` and
+  `.css` by `new URL('./x', import.meta.url)`, so `dist/` copied anywhere —
+  a CDN such as jsDelivr (which sends CORS headers), a web server, a zip
+  unpacked into a site — works as it is. Sherpa Demos already proves it:
+  its pages import `/dist/index.js` through an import map.
+- **Size:** 3.3 MB on disk, of which `.d.ts` types are part; the JS, CSS and
+  HTML are about 550 KB gzipped. The JS is not minified and carries its
+  comments; the CSS is minified.
+- **Node is only for MAKING it:** the TypeScript build, the CSS transform,
+  the gates, the tests, the MCP server, the token projector.
+
+So the ways to ship, none needing Node from the reader: a zip of `dist/`, a
+CDN URL to `dist/index.js` (from an npm release, or a git tag), or npm for
+those who want the types. Smaller wins, if wanted: minify the JS, and ship
+`schemas/`.
+
+**✅ Done 2026-10-02.** The answer is no: Node makes sherpa-ui, and a
+consumer needs none. The package now ships `schemas/`, and
+`sherpa-ui/schemas/page.v1.json` resolves by name; a node test packs it to
+prove it. Minifying the JS and icons on demand are 199's.
+
+### `[x]` ✅ 187 — Make the docs and the MCP text true
+
+Found by 183. `DATA-SOURCE-RULES.md` (served to agents) and a TRAPS entry say `scope: 'all'` where the option is `rows: 'all'`; a wrong call passes the type check and a chart counts one page. `PRINCIPLES.md:26` says the join is `bind()` and nothing else; the app joins through `sherpa-provider`. CLAUDE.md names a `ThemeManager` that does not exist; the README links a deleted doc; the MCP prompts use `data-variant` and read a missing file; `scaffold_def` suggests token names that do not exist. Fix each, and make `bind()` report `scope: 'all'`. `docs/history/CONSUMER-REVIEW.md` §3.1.
+
+
+**✅ Done 2026-10-01.** `DATA-SOURCE-RULES.md` and the summary trap say
+`rows: 'all'`, and `bind()` now reports `scope: 'all'` (`scope-all`); the data
+rules teach ONE source with Query scopes, not two sources, and the `error`
+event, not a `source.error` that never existed. `PRINCIPLES.md` names the
+provider as the join and `bind()` as the manual way, and its doc list is true.
+CLAUDE.md's `ThemeManager` line, the README (an import map first, no dead
+link), the MCP prompts (`Fires:` not `@fires`, a real enum, no missing file, no
+ontology), the server's resource list and `scaffold_def`'s token names (each
+one real now) are fixed. The `generate-sherpa-component` skill is marked out
+of date; its rewrite goes with the guide, 193.
+### `[x]` ✅ 188 — Fix the bugs 183 found, and run the gates we have
+
+Found by reading, to be proved by a test each: `IdbStore.update` with a changed key writes a second row; Edit never saves Plan; the notification badge has three writers; `sherpa-input-text` fires `input` twice; the provider drops the keys `applyState` skipped, and its Fires block says nothing. And `npm run lint` and the node tests run in no hook. `docs/history/CONSUMER-REVIEW.md` §3.2.
+
+
+**✅ Done 2026-10-01**, each with a test. A changed key moves the row in both
+`IdbStore` and `ArrayStore`, and one taken by another row is refused
+(`T-a-changed-key-moves-the-row`). `sherpa-input-text` sends one `input` per
+keystroke (`T-a-composed-native-event-goes-out-twice`). The provider reports a
+setting a component does not have (`provider-unknown-setting`), and its
+`Fires:` block names its two events. `npm run lint` runs in the commit hook,
+and `npm test` runs the node tests after Playwright; the Playwright comment
+says all three engines run. In Sherpa Demos: Edit opens on the record's Plan
+and saves a changed one, and the notification source is the badge's only
+writer, so read stays read.
+### `[x]` ✅ 189 — Readiness and a smaller download
+
+Export the harness's `__settled()` as `settled(root)`; put the eight shared sheets in SherpaElement's default so a single-component import draws right; minify the JS and strip template comments (keep a debug build); load icons on demand (314 KB today). Then the demo's 30 `whenDefined` and 32 `waitForTimeout` calls can go. `docs/history/CONSUMER-REVIEW.md` §3.3.
+
+
+**✅ Done 2026-10-01 — the readiness half.** `settled(root?)` ships from
+`sherpa-ui`: an app, or a test, waits for a tree's components to draw, their
+data to stamp and their transitions to end — never a fixed timeout. The test
+harness now uses it, so there is one copy. The eight shared sheets are
+`SherpaElement`'s own default, so `sherpa-ui/components/sherpa-button/…` on
+its own draws as it does from the index (a test page imports one component
+alone). Guarding each `define` is left: it matters only with two copies of
+the library on a page. The smaller-download half waits in 199.
+
+### `[x]` ✅ 199 — A smaller download: minify, and icons on demand
+
+From 189. `import 'sherpa-ui'` loads 1.5 MB of JS, not minified; the icons
+alone are 314 KB (102 KB gzipped), and every page loads them all.
+
+**❓ Two choices** (my pick first):
+1. **Minify** — **A:** add `esbuild` as a DEV dependency and minify each file
+   after `tsc`, and a new debug build script for the readable copy. **B:** no new
+   tool; strip only the comments at build. Pick: A — it is dev-only, so the
+   package still has no runtime dependency (184).
+2. **Icons** — **A:** one small module per icon, fetched the first time it is
+   drawn; an icon draws a moment later. **B:** keep the one file, and split
+   the names a page never uses into a second file. Pick: A.
+
+Then Sherpa Demos can drop its 32 `waitForTimeout` calls for `settled()`.
+
+**Re-checked 2026-10-12:** still true — 118 files, 1.5 MB, comments kept
+(225 of `sherpa-element.js`'s 975 lines), 276 template comments. Build it in
+the same step as 208 (the text in the JS). 220 gates the result.
+
+**✅ Will, 2026-10-12 — all my picks:** A and A — esbuild as a dev dependency with a readable debug build; one module per icon, fetched the first time it is drawn.
+
+**✅ Done 2026-10-12.** The build minifies each module with esbuild, one by
+one (no bundle, so every import holds): 2021 KB → 1201 KB. `npm run build:dev`
+is the readable copy. Each icon is its own module, loaded the first time it is
+drawn; `settled()` waits for them. One button: 570 KB (JS + fetched) before
+208, 214 KB now, nothing fetched. `T-an-icon-loads-when-first-drawn`
+
+### `[x]` ✅ 190 — A Context contract and one `app.json`
+
+❓ Waits on choice 1 in 183. Export `ContextModule { init(root, ctx) → teardown }`; one `app.json` names the Contexts (template, definition, views, module, chrome), the default Context and the Settings pages, and the nav, the router, the session defaults and the server read it — about 12 hand-kept lists end. `docs/history/CONSUMER-REVIEW.md` §3.4.
+
+**Re-checked 2026-10-12:** still true. `index.html` is 968 lines, about 818
+of script; the Context names are hand-kept in about 25 places (17 in
+`index.html` alone, plus the server, two Contexts, the definitions and four
+folder conventions). Also for 190: a page definition's `template` key is read
+by nothing, while a View's `template` IS read — one name, two meanings, one
+dead; the page schema says it holds Views, and has no `views`; and a Context,
+Settings and the Assistant get three different `init` shapes.
+
+**✅ Will, 2026-10-12 — all my picks:** A (183 choice 1) — the app layer lives in sherpa-ui, beside `sherpa-router`.
+
+**✅ Done 2026-10-13.** `src/core/data/app-definition.ts`: `AppDefinition`,
+`ContextModule`, `ContextInit` and `checkApp()`, with `schemas/app.v1.json`.
+Sherpa Demos' `app/app.json` names the three Contexts, the default, the nav
+section and the four Settings pages; `index.html` and the server read every
+list from it, and the server's `/template/context/` route is gone (a template
+is a file where `app.json` names it). Every Context, Settings page and the
+assistant get ONE `ctx` — `{ session, view, source, signal, header, panels,
+label }` — so the six `document.querySelector` calls in `contexts/` are gone,
+and `chrome.header: false` is the loader's, not chat's. A page definition's
+dead `template` key is deleted. The loader itself is 194.
+`T-an-app-is-its-definition`
+
+### `[x]` ✅ 191 — Library parts that empty `contexts/`
+
+❓ Waits on choice 1 in 183. `SherpaDialog.prompt()` and `.confirm()`; saved filters owned by the provider, as saved Views are; `data-setting="/pointer"` binds a control to the session; stores take a seed, a version and a fallback; public APIs for the three shadow-root reaches. Then Sherpa Demos sorts by kind: `stores/`, `contexts/` (page behaviour only), `views/`, `view-schemas/`. `docs/history/CONSUMER-REVIEW.md` §3.5.
+
+**✅ Will, 2026-10-12 — all my picks:** A (183 choice 1) — in sherpa-ui.
+
+Six parts, one commit each:
+
+| | part | |
+|---|---|---|
+| ✅ | 1. `dialog.prompt(value)` and `dialog.confirm({ … })` — the dialog asks what its own markup holds; `ask-name.js` is `reset-prompt.js`, the Reset all dialog alone | `T-a-dialog-answers-its-question` |
+| ✅ | 2. the provider owns the reader's saved filters, as it owns saved Views: `provider.saveFilter(label, event)`; it forgets one a bar deletes, and routes the panel's delete to its bar | `T-save-packs-the-fields-into-one-chip` |
+| ✅ | 3. `data-setting="/pointer"` binds a control to the session (`bindSettings`); `persist()` takes its guard from the default | `T-a-setting-is-a-pointer` |
+| ✅ | 4. a store takes a seed, a seed version and a fallback: `localRecords(options)` → `{ store, ready }` | `T-local-records-seed-themselves` |
+| ✅ | 5. public doors for the three shadow-root reaches in `index.html`: `nav.expandedIds`, `header.notificationsAnchor`, `data-theme-mode` | `T-a-shadow-reach-is-a-missing-door` |
+| ✅ | 6. Sherpa Demos sorted by kind: `stores/`, `contexts/`, `views/`, `view-schemas/`; the shell's Reset all helper beside `index.html` | |
+
+Part 1 keeps the five dialogs' markup — HTML first, and their ids are what
+the tests press — and deletes the JS that wired each by hand. Part 2 moves
+Save filter to the app shell, beside Save view: one flow for every page.
+
+**✅ Done 2026-10-13**, six commits. Sherpa Demos' `contexts/` is page
+behaviour only: four modules, no store, no dialog wiring, no session wiring,
+no `document` lookups. Not done: a schema `default` — no ledger row asked
+for it, and 183 named it beside the seed.
+
+**Found in part 2, fixed with 194 stage 1:** Sherpa Demos'
+`reforged-saved-filter.spec.ts:86` read `window.sherpa` after a reload, when
+the grid had rows but `records.js` had not set it yet; `reforged-records-persist.spec.ts:164`
+did the same. Both now wait for `window.sherpa.source` too (3 of 3 each).
+
+### `[x]` ✅ 192 — Ship the agent path
+
+❓ Waits on choice 2 in 183. The MCP imports `scripts/` and reads specs and schemas that the package does not ship, and its SDK is a devDependency. Publish it with its real dependencies and files, add an `npm pack` smoke test that calls every tool, resource and prompt, register it in both projects, and add `validate_page`. `docs/history/CONSUMER-REVIEW.md` §3.6.
+
+**Re-checked 2026-10-12:** 184 shipped `schemas/` only. Six of the seven MCP
+modules import `scripts/` statically, so `sherpa-mcp` dies at load from a
+published package. Not shipped either: the 65 specs and the two served docs.
+More runtime imports are devDependencies — `js-yaml`, `@playwright/test`
+(lazy), and zod's `^3.23.8` floor may lack the `zod/v3` path every module
+imports. The MCP README says "Node 18+, and this repository", and the drive
+tools default to the repo's own harness on :4000. Registered in neither
+project. **Before registering it:** `sherpa-ui/.mcp.json` holds a plain-text
+Figma access token. It is git-ignored, so it is not committed — but the token
+must move to an environment variable before that file is shared.
+
+**✅ Will, 2026-10-12 — all my picks:** A (183 choice 2) — its own package, `sherpa-ui-mcp`.
+
+**✅ Will, 2026-10-13: A** — `mcp-server/` becomes `sherpa-ui-mcp` in this repo.
+
+**✅ Done 2026-10-13, but two steps are Will's.** `mcp-server/package.json` is
+`sherpa-ui-mcp` — its own dependencies, the `sherpa-mcp` bin — and reads
+sherpa-ui through `lib/sherpa.js`. sherpa-ui ships the specs, the six
+`scripts/` files, the name map and the three served docs, and no longer ships
+`mcp-server/` or the bin. `validate_page` checks a page definition or an
+`app.json` (18 tools). `npm run check:mcp-pack` installed both tarballs into an
+empty folder and called 18 tools, 267 resources and 3 prompts with no failure;
+a node test checks both file lists without the network. Sherpa Demos has a
+committed `.mcp.json`. **Will's:** publish both packages, and move the Figma
+token in sherpa-ui's local `.mcp.json` to an environment variable — then the
+`sherpa` server can be added there too. `T-the-mcp-reads-sherpa-ui-through-one-door`
+
+**The question was — how the package is laid out.** Six of seven MCP modules
+import `scripts/lib/generation/`, and it reads the specs, `schemas/` and three
+served docs.
+- **A:** `mcp-server/` becomes `sherpa-ui-mcp` in this repo, with its own
+  `package.json` and real dependencies, and depends on `sherpa-ui`, which then
+  ships the specs, the served docs and the generation lib it reads. Sherpa
+  Demos gets a committed `.mcp.json` that runs it (no secret in it).
+- **B:** bundle the MCP into one file at pack time, with its libs and copies
+  of the specs and docs inside.
+My pick: A — one copy of each file, and `npm pack` proves what ships.
+**Before it is registered in sherpa-ui:** move the Figma token in your local
+`.mcp.json` to an environment variable (yours to do). Publishing the package
+is yours too.
+
+### `[x]` ✅ 193 — One app guide, served to agents
+
+After 190, so it teaches the contract. `docs/APP-GUIDE.md`, about 300 lines of steps with no history: the page skeleton, the shell, stores, a page definition, a template that asks, a Context module, Views and the session, and the ten or so traps an app meets. Served as `sherpa://app-guide`; each TRAPS entry tagged by who meets it. `docs/history/CONSUMER-REVIEW.md` §3.7.
+
+**✅ Will, 2026-10-12 — all my picks:** A (183 choice 1) — it teaches the app layer in sherpa-ui.
+
+**✅ Done 2026-10-13.** `docs/APP-GUIDE.md`, 302 lines in twelve steps — the
+page, the shell, `app.json`, stores, a page definition, a template that asks,
+a Context module, Views, the session, questions and saved filters, starting
+the outlet, and reports — each naming the trap it rests on. Served as
+`sherpa://app-guide` (7 resources). Not done: a tag on each of the 636 TRAPS
+entries by who meets it; the guide names the ones an app meets.
+
+### `[x]` ✅ 194 — A Context loader beside `sherpa-router`
+
+❓ Waits on choice 1 in 183. `<sherpa-outlet>` reads `app.json` and, on each route change, fetches the template, opens the provider, runs the module and tears it down with the navigation's signal; it owns the Settings overlay, the header title from the nav row, the View in the URL, and favourites and recents. `index.html` drops from about 800 lines of script to config, and a `scaffold_app` tool can emit a starter. `docs/history/CONSUMER-REVIEW.md` §3.8.
+
+**✅ Will, 2026-10-12 — all my picks:** A (183 choice 1) — in sherpa-ui, beside `sherpa-router`.
+
+**Plan (2026-10-13), three commits:**
+
+| | stage | |
+|---|---|---|
+| ✅ | 1. `<sherpa-outlet id="context-root">` in the shell's content: on each `route-change` it loads the Context `app.json` names — template, definition, module — opens the provider, runs `init(root, ctx)`, binds `data-setting`, writes the header's title, icon and `chrome`, picks the View, and tears down with a signal. It reports `context-load`, so the app's own extras follow. Its light DOM is the Context, so `#context-root …` selectors hold | |
+| ✅ | 2. the Settings overlay: `?settings=` opens its page in the shell's overlay dialog, over the Context — `settings: { dialog, header, root }` | |
+| ✅ | 3. favourites and recents: the nav's Recent and Favorites Areas, the ★, and a Context's Views as rows — `outlet-nav.ts` | `T-the-outlet-keeps-the-nav` |
+
+The outlet is the app layer: `src/components/sherpa-outlet/`, in `sherpa-ui/app`, in check:weight's APP list and the lint override's exceptions.
+
+**✅ Done 2026-10-13**, three stages. Sherpa Demos' `index.html` is 581 lines,
+from 994: what is left is its own — the session's defaults, its stores and
+debug switches, kept card sizes, experiments, notifications, the theme, the
+assistant, and the save and reset dialogs. The Demos suite passes in
+Chromium (137 of 137). `T-an-outlet-loads-the-context` · `T-the-outlet-keeps-the-nav`
+
+### `[x]` ✅ 195 — The spec becomes the whole contract
+
+Every observed `data-*` moves into `static props` and `check:props` checks membership; the generator reads types from props, fills `slots` (0 of 65 list them today), records the `populate()` shape and types event details; emit `HTMLElementTagNameMap` and `custom-elements.json`; a `check:usage` gate checks the Demos markup against the specs. `docs/history/CONSUMER-REVIEW.md` §3.9.
+
+**Measured 2026-10-12** (a read of the code): 135 observed attributes in 37
+components are not in `static props` — 52 read by CSS, 83 by JS only — which
+is why `button.populate({ label })` draws nothing. 0 of 65 specs list slots;
+155 of 174 event detail fields are `unknown`. It waits on no ruling. Plan:
+the tooling first (spec `observed`, types from `static props`, slots,
+`populate` shape, typed details, `custom-elements.json`), then the moves in
+four families, then `check:props` tightened and `check:usage`. Size L.
+
+**❓ Will — two choices:**
+1. An attribute only JS reads (83 of the 135): A a new `kind: 'behaviour'`,
+   B `kind: 'style'` — but then the spec says CSS reads 83 it does not. My
+   pick: A.
+2. Where `check:usage` runs: A sherpa-ui's hook runs it on `../Sherpa Demos`
+   when that folder is there, so a library rename that breaks the app blocks
+   the library commit, and Demos runs it too; B Demos only. My pick: A.
+
+**✅ Will, 2026-10-12 — all my picks:** A and A — a new `kind: 'behaviour'`; sherpa-ui's hook runs `check:usage` on `../Sherpa Demos` when that folder is there.
+
+**Out, by Will's ruling on 218 (2026-10-12):** `HTMLElementTagNameMap` and
+`custom-elements.json` — framework typings, closed with 210.
+
+**🚧 Part 1, the tooling, 2026-10-12.** `kind: 'behaviour'` exists. The
+generator reads `static props` by TypeScript's parser (spreads and lookups
+resolve), so every declared prop is in its spec with the code's type, values
+and default — 66 props added, 96 types corrected — and is marked `declared`.
+`slots` is filled from the real `<slot>` tags, described by each `Slots:`
+block: 111 slots in 51 specs.
+
+**🚧 Part 2, the moves, and `check:props` tightened, 2026-10-12.** 131 of the
+135 moved into `static props`, in four families (controls, shell, data,
+charts); `populate({ label })` now sets `data-label`. The other 4 are the
+menu's old names, still heard and never public. `check:props` fails an
+observed `data-*` that is not declared.
+
+**🚧 Part 3a, the `populate()` shape, 2026-10-12.** A spec's `populate` says
+what `populate()` takes: an override's own `populate(…) — …` line over its
+`renderData` (25; three were missing a line, one said no shape), or, with no
+override, the declared props by short name (38). 63 of 65; the badge takes
+nothing. The MCP's `component_api` shows it and the slots.
+
+**🚧 Part 3b, typed event details, 2026-10-12.** TypeScript's checker types
+each detail field: 181 fields, none `unknown` (155 of 174 were).
+`T-a-detail-is-typed-by-the-checker`.
+
+**✅ Done 2026-10-12 — part 4, `check:usage`.** The app's markup against the
+specs: every `sherpa-*` tag, `data-*` and enum value. sherpa-ui's hook runs it
+on `../Sherpa Demos`; Demos runs it in its node tests and lists its two own
+hooks in `sherpa-usage.json`. Its first run found a dead `data-label` on a bar
+chart, which meant the chart's name: the four charts now take a host
+`aria-label` (`labelTarget`), and Demos uses one. `T-markup-is-checked-against-the-spec`.
+
+### `[x]` ✅ 196 — One filter surface and a smaller DataSource
+
+❓ Waits on choice 3 in 183. Move `bind()` and `#steer` out of DataSource into a UI-side binder, so the data layer stops knowing component event names; one imported helper for the bar and the panel, one FilterDef type and one scope protocol; the filter editor out of `sherpa-menu`. Each parity bug is then fixed once. `docs/history/CONSUMER-REVIEW.md` §3.10.
+
+**✅ Will, 2026-10-12 — all my picks:** A (183 choice 3) — the app layer first; this after it, or beside it.
+
+**Plan (2026-10-13), seven stages, each shippable with behaviour unchanged:**
+
+| | stage | size |
+|---|---|---|
+| ✅ | 1. Name the verbs: each `#steer` branch that reaches private state becomes a public DataSource method named for what it does — `answerScope`, `answerScopes`, `release`, `answerColumn`, `request`, `reportPages`, `remote` | S |
+| ✅ | 2. Steering out: `src/core/ui/bind-source.ts` holds `STEERING_EVENTS` and `steer()`; `bind()` calls it | M |
+| ✅ | 3. Bind and push out: `bindSource(source, el, options)` in the binder; DataSource keeps `attach(target, facts, sink)` and picks the rows. The listeners, `data-locked`, `data-remote`, `as`, `into`, `deliver` and every `data-*` write are the binder's now | M |
+| ✅ | 4. One helper for the bar and the panel, the ⋮ menu first (`src/core/ui/more-menu.ts`) — then the saved-filter menu, then the drill. The ⋮ menu is shared now. The saved-filter menu (`saved-filter-menu.ts`) and the drill (`MenuDrill`) were shared already; what is left of them is each host's chips or scope boxes, which is stage 5 | M |
+| ✅ | 5. One `FilterDef` type, then one scope protocol (the bar drawn as a panel scope is). `FilterDef` and `FilterOption` in `src/core/ui/filter-def.ts`; `QuickFilterDef`, `QuickFilterOption`, `PanelFilter` and `PanelValue` are gone. A bar's `drawScope` takes `describe(scope)`, as the panel's `drawScopes` does; the raw slice is gone. `describe` now lists every held field, declared or not — one left out filtered with no chip | S + L |
+| ✅ | 6. ~~The filter editor out of `sherpa-menu` (`src/core/ui/filter-editor.ts`). Found 2026-10-13: the editor is in ONE place already — the bar, the panel, the grid and the saved cards all open `sherpa-menu`, and the shared logic is `filter-state.ts`. So this only splits a 1993-line file, behind a host interface of about 15 calls. **A:** split it anyway; **B:** drop this stage. My pick: B~~ — **✅ Will, 2026-10-13: B, dropped** | L |
+| ✅ | 7. Remove the bridge: delete `DataSource.bind`, rewrite ~90 calls in tests — **✅ Will, 2026-10-13: A, remove it.** Done: `bindSource(source, el, options)` from `sherpa-ui/data` is the one way in; 93 calls moved, in 23 test files, Sherpa Demos and the docs | M |
+
+**✅ Done 2026-10-13.** The data layer names no component event and writes no
+attribute: `bindSource()` in `src/core/ui/bind-source.ts` joins a component to
+its source, and `DataSource.attach()` takes what it is told. The bar and the
+panel share the ⋮ menu, one `FilterDef`, and one way to be drawn a scope.
+Stage 6 was dropped (Will): the editor was in one place already.
+
+### `[x]` ✅ 197 — One way to write a filter condition
+
+❓ Waits on choice 4 in 183. Today an agent learns two grammars: `[field, op, value]` (DATA-SOURCE-RULES §2) and readings with numbers as strings, `{"op":"gt","text":"0"}`. Keep readings, or store a plain form with numbers as numbers and migrate saved Views. Decide before 193.
+
+**✅ Will, 2026-10-12 — all my picks:** B (183 choice 4) — the plain form, `{ "openTickets": { "gt": 0 } }`, numbers as numbers; saved Views are migrated.
+
+**✅ Done 2026-10-13.** `src/core/data/where.ts` reads the plain form into
+readings and back; `source.readingsOf()` / `source.whereOf()` do it by the
+field types. It is `where` in a View's scope, a definition's preset and a
+stored saved filter, and `data-where` on a component (was `data-readings`).
+A View or saved filter stored before 197 still opens, field by field, and the
+next save writes the plain form. Readings stay inside. The Sherpa Demos Views,
+presets and dashboard tile are moved. Not moved: `export()` / `import()` keep
+the exact Query, as a session restore does. `T-one-way-to-write-a-condition`
+
+### `[x]` ✅ 185 — Sherpa Demos: views, view schemas, and what `contexts/` is for
+
+Will, 2026-10-01, in the example app, to do later:
+
+*"- The 'definitions' folder should be called 'views' and should only contain
+'\*-views.json' files.*
+*- '\*-views.json' files should not contain any HTML template literals. They
+should point to an HTML file, in the same folder, that contains the template.
+Target the template via ID.*
+*- Other files in 'definitions' should be moved to a sibling 'view-schemas'
+folder.*
+*- I don't understand the point of the 'contexts' folder's JS content. It
+seems to be a mix of data and business logic? These seem like hacks to make
+things work rather than sensible consideration of the whole Sherpa system and
+how it should be leveraged.*
+
+*This is probably all part of the overall review of the architecture, and
+building with, Sherpa."* — so it goes with 183.
+
+**✅ Done 2026-10-01.** Sherpa Demos has `app/views/` — only `*-views.json`,
+plus `dashboard-views.html`, where the Capacity View's cards live as
+`<template id="capacity">`; the JSON names it, `"template":
+"dashboard-views.html#capacity"`. The page definitions moved to
+`app/view-schemas/`, and `definitions/` is gone. The library gained
+`loadViewLibrary(url)`, which reads a views file and fills each View's content
+from its template (`T-a-views-markup-lives-in-a-template`). A Demos test checks
+`views/` holds only those files and that every named template exists. Demos is
+not in git, so its half is uncommitted. **What `contexts/` is for** is
+answered by 183: about 60% is glue the library should own, and items 190, 191
+and 194 move it out — `docs/history/CONSUMER-REVIEW.md` §2.1.
+
+### `[x]` ✅ 183 — REVIEW: how a consumer builds an app on Sherpa — and an AI agent
+
+Will, 2026-10-01, a todo once the example app moved: *"We need to review how
+a consumer of Sherpa will use it to build an application frontend.*
+
+*We need to make it easy to do things like:*
+
+*- Use, configure, extend, and co-ordinate sherpa components*
+*- Scaffold a sherpa application*
+*- Work with the data layer to provide data, data sources, set context and
+conditions etc.*
+
+*I'm sure there's a host of other things, too.*
+
+*We also don't want to forget making it easy for AI agents to build using
+Sherpa.*
+
+*The principles of sherpa need to be easy to understand and work with to make
+it viable.*
+
+*This review may likely involve really getting into the overall architecture
+and doing some overdue cleanup, refactoring and optimisation of Sherpa."*
+
+The app moved on 2026-10-01 (37), so this may start; Sherpa Demos is the
+first consumer to learn from.
+
+**✅ Reviewed 2026-10-01** — the full report is `docs/history/CONSUMER-REVIEW.md`.
+The base is good: a template asks for its data in markup alone, there is no
+bundler and no runtime dependency, and the gates are real. But Sherpa stops at
+the PAGE. The part between "I have components" and "I have an app" is written
+by hand in Sherpa Demos — `index.html` is 957 lines — which is why `contexts/`
+looks like hacks (185): about 60% of it is glue the library should own, 20%
+demo data, 20% the app's own business. The agent path breaks outside this
+repo; the rule docs still teach `bind()` as the only join; and some mistakes
+fail silently. Its plan is items 187–197. Four choices wait in 190, 192, 196
+and 197, each with the review's pick.
+
+**✅ Will, 2026-10-12 — the review's picks: A, A, A, B.** The four choices (the review's pick first):
+1. **Where the app layer lives (190, 191, 194)** — **A:** in sherpa-ui, beside
+   `sherpa-router` (its rules are already ratified in CLAUDE.md, but only the
+   demo's code does them). **B:** a separate starter package. Pick: A.
+2. **How the MCP ships (192)** — **A:** its own package, `sherpa-ui-mcp`, so
+   sherpa-ui keeps no runtime dependency (184). **B:** inside sherpa-ui, its
+   SDK an optional dependency. Pick: A.
+3. **After 187–189 (196)** — **A:** the app layer next, and filter fixes in
+   place meanwhile. **B:** merge the bar and the panel first (XL). Pick: A.
+4. **One filter grammar (197)** — **A:** keep `readings`. **B:** a plain form,
+   `{ "openTickets": { "gt": 0 } }`, numbers as numbers; saved Views migrate.
+   Pick: B, decided before the guide (193).
+
+### `[x]` ✅ 200 — A WebKit flake: the summary on another Context reads 0
+
+Sherpa Demos' `reforged-view-chips.spec.ts:126` fails in WebKit in most full
+runs and passes on its retry: "the summary reads the store, not a constant"
+gets 0. Seen on 2026-10-01 in every Demos run. Find whether the test reads too
+early or the summary misses the store's announce.
+
+**✅ Done 2026-10-01 — the test read too early.** It waited for the word
+"Customers", which the summary draws at 0 before its rows load; WebKit was
+often there first. It now waits for a number above 0 (4 of 4 in WebKit).
+
+### `[x]` ✅ 198 — A direct link to a View with cards of its own draws the default cards
+
+Found by the review of 177. Open `/?context=dashboard&view=capacity`: the
+provider opens on that View, so the pick is ignored as already applied, and
+its `content` is never drawn into `[data-view-content]`. The page shows the
+Fleet cards under a chip that says Capacity planning. Picking it IN the page
+works. Fix in `sherpa-provider`'s open: when the start View has content, draw
+it as a pick does, then emit `view-change`.
+
+
+**✅ Done 2026-10-01.** `onViewPicked` draws the View already on screen when
+it has content of its own, and keeps the page's own children per region, so
+the next pick puts them back; the provider then reports `view-change`. A
+library test and a Sherpa Demos test (`reforged-view-link.spec.ts`) hold it.
+`T-content-first-original-once`
+### `[x]` ✅ 177 — Resize layout grid content by dragging handles in its gutters
+
+Will, 2026-10-01, *"Todo after we move the example app to it's own project:*
+
+*I really like the resizing of the panel areas in the app shell.*
+
+*As an app setting, let me enable the ability to resize layout grid content
+using handles in the gutters between containers/elements.*
+
+*Dragging to resize should snap to column and row increments.*
+
+*The minimum column span for any container is 3 columns. The minimum row span
+for a container/element should be set via an attribute.*
+
+*For example a metric item can have a min row span of 1 whereas a data viz
+should have a minimum of a 2 row span.*
+
+*If there's no space on the row to grow an element's column span (siblings
+already at their minimum span) then dragging won't increase the width.*
+
+*Dragging to resize height/row span can't force neighbouring rows of content
+to span lower than the highest min row span on elements in that row."*
+
+Starts after 37 step 4 — done 2026-10-01, so it may start. Builds on 146's edge helper (`src/core/ui/edge-resize.ts`).
+
+**Plan, 2026-10-01.** `<sherpa-layout-grid data-resizable>` draws a handle
+(a focusable separator) in each gutter. Drag it, or use the arrow keys. A
+pure solver moves ONE line: the card or row across it gives way first, down
+to its floor (3 columns; a row's highest `data-min-row-span`), then the next.
+Free space is used last. A step nobody can give is dropped. The grid writes
+only its own attributes — `data-col-span-<C>` and `data-row-span-<C>`, C the
+column count now — and reports `layout-change { layout }` on release. Setting
+`grid.layout` puts a layout back, silently. Sherpa Demos turns it on in
+Settings › Application › Layout and keeps each Context's layout by card id.
+Seven library steps, then the Demos part.
+
+**Built this way — say to change any:**
+1. What gives way: the card or row across the line, then the next (your
+   "can't force neighbouring rows lower than…"). Not: free space first.
+2. Handles at 8 and 12 columns, each width keeping its own layout (with the
+   nav pinned at 1440 the page has 8). Not: 12 columns only.
+3. Heights are kept per width too.
+4. A layout is kept per page (Context), by card — not per View.
+5. Turning the setting off hides the handles and keeps the sizes; "Reset card
+   sizes" forgets them.
+
+**✅ Done 2026-10-01.** Settings › Application › Layout › "Resize cards"
+turns it on. A handle sits in each gap between cards in a row, and under each
+row. Drag it, or focus it and use the arrow keys, Home and End; sizes snap to
+whole columns and rows. A card is never narrower than 3 columns; a row never
+shorter than its tallest `data-min-row-span` (1 on a metric, 2 on a chart);
+with no room left, a drag does nothing. The Dashboard and Records keep their
+sizes per card, across a reload and every View; "Reset card sizes" forgets
+them. Library: seven commits, ab30530c to b78de6e0. The Sherpa Demos half
+(the setting, the ids, the keeping, its tests) is not committed — Demos has no
+git yet. `T-a-gutter-moves-a-line` `T-a-dragged-layout-is-kept-per-column-count`
+`T-a-handle-is-never-restamped-mid-drag` `T-a-fit-grid-counts-its-resized-rows`
+
+**Reviewed 2026-10-01** — four lenses, each finding verified; 23 real, all
+fixed with a test each that could be tested. The worst two: on the Dashboard a
+row could grow but never shrink back (the locked Summary row blocked it), and
+the handles went dead after the grid was taken out and put back. One more is
+not the grid's: 198.
+
+### `[x]` ✅ 146 — The app shell's FIXED panel areas resize by dragging their edge
+
+Will, 2026-09-30, a future todo: *"Allow the side of the panel areas, in the
+app shell to be dragged to resize like we can do with the overlay panel.*
+
+*Left panel's width, in the current examples, is a good min width. 33% of the
+area between the nav and viewport edge (not sure of wrapper name) is probably
+a good max width.*
+
+*Obviously only the right side of the left panel area is draggable. The
+inverse for the right panel area.*
+
+*The drag indicator should show on the edge of the panel area (not panel) on
+hover & drag.*
+
+*The content area's content should respond and reflow following the
+breakpoint rules, and container queries, that we built previously.*
+
+*We will need to rework the container query that hides panel areas at lower
+breakpoints to use the viewport width (I think?). Perhaps it's not the
+viewport but a different wrapper element.*
+
+*Either way I think that there's 2 levels of container query and scopes of
+breakpoint responsiveness needed."*
+
+**These are FIXED panels, not overlay panels** — Will, 2026-09-30: *"the
+panels referred to in this request are Fixed Panels in the app shell's panel
+areas wrapper elements."* The filter panel sits in one (`panel-start`); the
+right one is not used yet. An overlay panel (G) floats over the content; a
+fixed panel takes its own column, and the content reflows beside it.
+
+So, to find when it is built: which wrapper is "the area between the nav and
+the viewport edge" (the max is 33% of it, and it may be the container the
+hide-the-panels query reads); and the two levels — one for the shell, which
+shows or hides a panel area, and one for the content area, which reflows as a
+panel area grows. The handle can follow the overlay panel's (22): a `role="separator"`, drag
+or arrow keys — but it is on the AREA's edge, in `sherpa-app-shell`.
+
+**Plan, 2026-09-30** (a second agent read the code; nothing built yet).
+
+- The model is `sherpa-overlay-panel`'s handle: a `role="separator"` strip,
+  pointer capture, arrow keys in 16px steps, the width in a custom property,
+  CSS owning the clamp, `panel-resize` on release. It lacks `aria-valuemin`
+  and `aria-valuemax`, a dragging state and `pointercancel`. A new imported
+  helper, `src/core/ui/edge-resize.ts`, gives all of that to both.
+- "The area between the nav and the viewport edge" is the shell's `.body`.
+  The area becomes `flex: 0 0 clamp(464px, asked or 3 columns, 33%)`; the
+  drag writes only the asked width. Nothing asked means today's width, so
+  the 3-column test still holds.
+- In: `data-panel-start-width`, `data-panel-end-width`. Out: one event on
+  release and on each key press. The example keeps the width in its session
+  store, as it keeps the nav pin.
+- LEVEL 1 (the shell shows or hides an area): nothing in the shell hides a
+  panel today — the filter panel does it itself, by the VIEWPORT
+  (`data-min-width`, 1280). The shell should own it, by its own width, and
+  tell the panel, or a pinned nav and the panel disagree.
+- LEVEL 2 (the content reflows): the layout grid's column spans are viewport
+  `@media` rules in the GENERATED `tokens.css` (`scripts/project-tokens.mjs`).
+  They need `@container` twins on the Context's frame, with `@media` kept as
+  the fallback for a page with no shell. To measure first, in three engines:
+  can slotted light-DOM content query a container that is in the shell's
+  shadow tree?
+- Build order: the second container → the shell-level hide → the clamp → the
+  helper → the handles → attributes and events → the grid's container
+  queries → the example's persistence.
+
+**🚧 2026-09-30 — the drag is built; the two levels are not.** Each panel
+area's INNER edge resizes it: drag it, or the arrow keys (Home and End go to
+the ends). The line shows on the AREA's edge on hover, focus and drag. It
+never goes under the area's min (464px) or over 33% of the row, and the
+example app keeps the width through a reload. The overlay panel's handle is
+the same code now (one helper, `src/core/ui/edge-resize.ts`).
+
+**One thing to know:** at 1280 wide, 33% of the row is 409px — under the
+464px min from 163 — so the area cannot be dragged there. It gives from about
+1446px wide. Say if the max or the min should move.
+
+Not built: level 1 (the shell, not the filter panel, hides an area when it is
+too narrow) and level 2 (the Context's grid reflows by its own width). Level
+2 waits on the choice below.
+
+**✅ Level 1 done 2026-10-01 — the shell says when there is room.** A panel
+area shows only while the Context beside it keeps a tablet's width (768px):
+the shell's body must hold 768 plus the area's 464 min. The SHELL measures
+its own body now, not the window, so a pinned nav counts: at 1280 with the
+nav pinned there is no room, and the toolbars come back. Unpin, and the panel
+is back. Today's widths do not change: 1280 with the nav shut still has
+room. The panel lost its own window rule (`data-min-width`, 1280) — a panel
+with no shell is its host's to place. While Settings is open the shell
+ignores the room, as Settings covers the Context.
+`T-the-panel-is-desktop-only`
+
+**❓ One choice before level 2.** The grid's bands (768 / 1280 / 1920) are
+viewport widths. As container widths they are narrower by the nav and the
+panels.
+- **A (my pick):** keep the numbers, offset for the nav's inset, so today's
+  layouts do not change at today's widths.
+- **B:** use them as they are; every layout steps down a little earlier.
+
+**✅ Will, 2026-10-01: A.**
+
+**✅ Level 2 done 2026-10-01 — the Context steps by its own width.** The
+Context (the shell's child with no `slot`) is a container, and the token
+projector writes a container twin of every layout band: 728 / 1240 / 1880,
+the viewport bands less the shut rail's 40 px. With nothing open, every
+layout is as before at the same window width. Open the filter panel at
+1440 and the Records grid goes from 12 columns to 8; shut it and it is 12
+again. A pinned nav does the same. The viewport rules now skip the Context,
+so the two never fight; a page with no shell, and the Settings overlay, still
+step by the window. One seam: below 768 the shell hides the rail, so a
+728–767 px window now gets the tablet layout.
+
+Found on the way: WebKit cannot match a container inside the shell's shadow
+tree for the Context's own children, so the container is the light-DOM
+Context, declared in `tokens.css`. `T-a-context-steps-by-its-own-width`
+
+## F — Data states and charts
+
+### `[x]` ✅ 58 — Loading, empty and error states in a container
+
+Will, 2026-09-26: *"Gracefully handle data loading and loading, or no data,
+errors."* It mirrors Apex for now; it is not his favourite pattern (see 59).
+
+| state | the content area shows, IN PLACE of its content |
+|---|---|
+| loading | a spinner and a short loading message |
+| no data | the relevant empty-state illustration and message |
+| failure | the relevant illustration, the error message, and action buttons |
+
+On a failure, an action that RESOLVES the issue (Retry) is the CTA; one that
+does not (Dismiss) is a plain button.
+
+**The parts exist; the wiring does not.** `sherpa-container` already has
+`data-loading` and `loading` / `empty` / `error` slots; `sherpa-empty-state`
+has `data-illustration` = `empty | search | data | error | …` and an `action`
+slot; `sherpa-loader` is the spinner. What is missing is the DATA LAYER
+driving them: a bound source reports loading, empty and failed, and the
+container of each bound component follows — so no host writes
+`data-loading` by hand. `LoadResult` and `report()` (38 step 5.5) are the
+shapes to reuse, and 62's debug flag is how the example shows each state. "No data" must not fire on a filter that matched nothing —
+that is a different message ("No matches", clear the filter), and a zero-row
+view already reads as a broken filter.
+
+**✅ Done 2026-09-30.** The container shows each state IN PLACE of its body
+(an opaque overlay), with a composed default for each: `sherpa-loader` and
+"Loading…"; `sherpa-empty-state` for no data (data illustration) and no
+matches (search illustration, Clear filters); and for an error its own words,
+Retry as the CTA and Dismiss plain. A slotted state still replaces its
+default. The PROVIDER drives it from each source's `loading`, `change` and
+`error`: loading only after 300 ms; empty and no matches on a rows
+component's card only; Retry (and a bar's Refresh) force a load; Clear
+filters resets every bar; Dismiss is the card's own. A store that cannot
+answer at open no longer stops the page. The example shows each: `?remote`
+(slow), `?fail` (every load fails). No Figma design — the look follows the
+empty state. `T-a-container-shows-its-datas-state`
+
+### `[x]` ✅ 9b — A Data Viz header, for metrics and chart containers
+
+Figma `Data Viz Header`, node `1456:30467`, page `✅ Headers`. For Metrics,
+and any Container that holds a chart. 32px tall, horizontal, `gap/sm`,
+`padding/md` all round, a `border/width/sm` bottom rule in
+`style-border/base +1`, no fill.
+
+| Part | What |
+|---|---|
+| Drag handle | a Button, icon only. Toggled by `hasDragHandle` |
+| `left` | a SLOT. The leading icon. Toggled by `hasIcon` |
+| `Labels` | vertical, `gap:2` — the `title`, then a `metadata` SLOT |
+| `actions` | a SLOT. Icon-only Buttons |
+
+The title is NOT the normal heading: `content/font/body`, `weight/light`,
+`size/small` (12px), `line-height/small` (16px), `content/body/+1`,
+**UPPERCASE**. The filter panel's field titles use the same look
+(`sherpa-text-small`, caps, light). Compose both Buttons from `sherpa-button`.
+
+**🚧 Built 2026-09-30, from Figma's NEWER design** (80 said so), which the
+notes above predate: 20 px tall, not 32; no drag handle; a hug · fill · hug
+row, `gap/sm`, padding 2 / 4; a `left` icon slot; the title (12/16, light,
+CAPS, `content/body/+1`) over a `metadata` slot (a 12/16 regular line); an
+`actions` slot (Figma's example: an xs icon Button). The 0.5 px rule sits
+INSIDE the 20, as Figma's stroke does. `sherpa-data-viz-header` is the 64th
+component; the Dashboard's four chart cards wear it. **Left:** the METRIC —
+read Figma's Metric to see how it composes the header (the Figma plugin was
+closed at the time).
+
+**✅ Done 2026-09-30.** Read live from Figma's Metric (`61:263`): it composes
+the Data Viz Header — an icon, the name, no metadata, no actions, and its rule
+HIDDEN. `sherpa-metric` does the same now: `data-label` is the header's
+heading, a new `data-icon` its glyph, and the header takes
+`data-divider="none"` (the section header's word for the same thing).
+
+**One thing to know:** the header is 20px tall where the label was 16px, and
+Figma's Metric is 96px with an 8px gap. The layout row here is 88px, so the
+gap under the header is 4px and the tile still fits its row. Say if the row
+should grow instead.
+
+### `[x]` ✅ 80 — Container and Data Viz headers: Figma's new button styling and grouping
+
+Will, 2026-09-27: *"I've also tweaked the Container Headers and Data Viz
+Headers in Figma. Mainly adjusting button styling and grouping. We need to
+adjust the components in the codebase."* Read both from Figma live — the
+buttons' look, size and which ones are GROUPED (`.sherpa-group`, start/end by
+position) — and bring `sherpa-container-header` into line. The Data Viz
+header does not exist in code yet (9b), so it is BUILT from the new Figma,
+not the old notes above. Same kind of change as 79 (the nav header's Actions
+group): compose `sherpa-button`s, group them, keep them in a slot.
+
+**Partly done by 145, 2026-09-30:** the header's own close and collapse
+buttons are `sm`, and the overlay panel's toolbar is grouped and divided as
+`Variant=Panel`. Left: the 3-column GRID (the metadata row sits under the
+TITLE, 4 px below it — not under the icon, 8 px below), the accordion's
+chevron in the `left` slot, and the Data Viz header.
+
+**✅ Done 2026-09-30.** The header is ONE grid, as Figma's Container Header
+(912:33355) is: `left · title · actions` on row one, and the metadata row
+under the TITLE, 4 px below it, running to the end. The description is the
+metadata row's first line now. With nothing to lead, the grid drops to two
+columns, so a bare header is still 36 px and its title starts at 8 px. The
+collapse chevron moved into `left`, before the icon. The Data Viz header is
+9b's `sherpa-data-viz-header`. Not done: Figma's Accordion variant pads
+16 / 8 / 4 / 8 — no Sherpa header asks for it yet.
+
+### `[x]` ✅ 14 — An example of real-time data
+
+Data that changes in real time — WebSocket, or like it — coming through the
+data layer into a piece of content. Last of D: it proves 13 is really fixed.
+
+**✅ Done 2026-09-30.** The examples server pushes a new alert every 2 s over
+Server-Sent Events (`/live/alerts`); the Dashboard, under `?live`, feeds them
+through an `EventStore` INTO its alert store, so every tile and chart
+follows — a tile's value and its sparkline together (13). **To see it on
+:4200, restart the examples server** once: the route is new. The test runs
+on a second server Playwright starts on :4201, so it does not wait for that.
+`T-a-live-feed-goes-into-the-store`
+
+### `[x]` ✅ 59 — EXPLORE, later: Will's own loading pattern
+
+Will, 2026-09-26, an alternative to 58 for later. Content is never replaced:
+
+- **Loading:** an INDETERMINATE loading bar along the bottom of the container
+  header (`sherpa-progress-bar data-indeterminate`), and the content locked to
+  read-only while it runs.
+- **Failure or no data:** a message BANNER in the content area that explains
+  the error and says the PREVIOUS data is still shown. It carries Retry,
+  Dismiss and the like.
+
+Build 58 so its states are data, not markup, and this is a second rendering of
+the same three states.
+
+**✅ Built 2026-10-01, as a trial.** Settings › Application › Experiments,
+"Keep the content while data loads" (off by default). On, every card keeps its
+content: a slow load shows an indeterminate bar along the bottom of the card
+header, and the body takes no clicks until it ends; a failure is a red banner
+above the body — "The data could not load", the error's words, "The last data
+is still shown.", Retry and Dismiss. No data is a banner too. (A No matches
+banner was added as well, unasked; it went in 342.)
+The overlay from 58 never shows. The provider carries it
+(`data-keep-content`), so no page sets it card by card.
+`T-a-container-shows-its-datas-state`
+
+### `[x]` ✅ 150 — EXPLORE: the gauge's risk score, and thresholds in the central Query
+
+Will, 2026-09-30: *"We need to take a look at how the example gauge's risk
+score is being calculated.*
+
+*I feel like this is probably a compound filter across fields and values with
+various conditions. We cover this type of scenario with 'Presets' or Saved
+filters.*
+
+*We don't support thresholds in the centralised query system. If we did then
+a gauge (or any component potentially) could request prepared data, with
+thresholds it provides, to present it back to the user.*
+
+*Thresholds could also be part of the data and data shaping without the gauge
+(or any component) providing them."*
+
+**What is there today** (read 2026-09-30, nothing changed):
+
+- The score is NOT a filter. It is `100 − mean(health)` over every matching
+  row, worked out by hand in `examples/contexts/records.js` — the one
+  component on the page that the provider does not answer.
+- The thresholds are written in THREE places, and nothing joins them: the
+  gauge's `data-zones` (`0-20`, `20-40`, `40-100`), the legend's zone names
+  (typed in `records.js`), and the saved filter "At risk" (`health < 60`).
+
+So the two ways you name are the question: a component ASKS for data shaped
+by thresholds it gives, or the thresholds are part of the data's own schema
+and every component gets them. Either way the three copies become one.
+
+**❓ Explored 2026-09-30 — one choice for Will.** A second agent read the
+whole path; I checked its main points against the code.
+
+*How the score is made.* One field, one sum: `100 − mean(health)`, over every
+row the filters leave (`rows: 'all'`), in a hand-written adapter in
+`examples/contexts/records.js`. `health` is seeded 40 to 100, so the score
+sits near 30. The dashboard's gauge needs no adapter: it asks its provider
+(`data-aggregate="mean" data-field="storage"`). Only the `100 −` forces the
+hand-written one — an ask cannot turn a value round.
+
+*The copies now.* 128 took one away (the legend's names are the gauge's).
+Two are left, and they are in different units: the gauge's zones are on RISK
+(`0-20`, `20-40`, `40-100`), and the saved filter "At risk" is on HEALTH
+(`health < 60`, which is risk > 40). They agree, but nothing says so.
+
+*What the data layer has.* No threshold, and no aggregate in the Query — on
+purpose: a summary shows the data and never steers it
+(`T-aggregation-is-data`). Aggregates are in `src/core/data/aggregate.ts`
+(`count`, `sum`, `mean`, `min`, `max`, `distinct`). The nearest thing to a
+threshold is `bandBy(rows, field, edges)`: it cuts a number field into bands
+for a bar chart (`data-bands`). Its bands have no name and no status, and a
+gauge cannot read them. A field's declared facts are `type`, `label`, `min`,
+`max`, `step`, `labels` — and they already reach every bar and panel from
+the page's definition.
+
+- **A (my pick): thresholds are a FACT of the field**, declared once in the
+  page's definition beside `min` and `max`: each band's top, name and status.
+  The gauge's zones, its legend, the "At risk" saved filter and a bar chart's
+  bands all read it. This is your "part of the data and data shaping". It
+  needs one more fact for a score that runs the other way (risk is
+  `100 − health`): a derived field, or `invert`.
+- **B: a component ASKS with its own thresholds** (your first way). The
+  provider answers with the value AND its band. Smaller — the bands plumbing
+  is there — but each component still holds its own copy, so the gauge and
+  the saved filter stay apart.
+
+Either way the Query stays as it is: it filters and arranges, and never
+summarises.
+
+**✅ Will, 2026-10-12 — all my picks:** A — a threshold is a fact of the field, declared once beside `min` and `max`.
+
+**🚧 Built 2026-10-13.** A number field declares `thresholds: [{ to, label,
+status }]` (schema too). A gauge asks for them and draws them where it has no
+`data-zones`; its legend names them. A bar chart over the field with no
+`data-bands` is cut at them. A saved filter names one:
+`{ "health": { "band": "At risk" } }` (half-open; an unknown name is reported).
+Demos: the Dashboard's storage gauge draws `storage`'s bands, and Records'
+"At risk" names `health`'s band. `T-a-threshold-is-a-fact-of-the-field`.
+
+**❓ Will — one choice left.** The Records gauge shows RISK, `100 − health`:
+`health`'s bands, the other way up. Until this is chosen it keeps its own
+`data-zones` and its hand-written bind in `records.js`.
+- **A (my pick): `data-invert` on the gauge.** It shows `max − value` and
+  turns its field's bands round. Small: only the gauge knows.
+- **B: a derived field** in the page JSON — `"risk": { "from": "health",
+  "invert": true }` — that any component can use. Larger: the data layer
+  gains derived fields.
+
+**✅ Will, 2026-10-13: A** — `data-invert` on the gauge.
+
+**✅ Done 2026-10-13.** `data-invert` reads the value from the top and turns
+the field's bands round. Records' gauge asks its provider for `mean` of
+`health`, inverted; its zones are health's thresholds, and the hand-written
+bind in `records.js` is gone.
+
+### `[x]` ✅ 162 — A chart and its legend stack as their container narrows
+
+Will, 2026-09-30, a minor one: *"Have data viz charts and legends go from
+horizontal layout to vertical layout as their container gets narrower. Use
+container queries. If a layout is set to vertical by default in it's template
+then this won't apply."*
+
+**✅ Done 2026-09-30.** Below 352px (22rem) of its own width, a chart puts a
+legend that was beside it below it, and a legend strip (three per line)
+becomes a list, one per line. A chart that is stacked already is left alone.
+All four charts, by container queries, no JS. 352px keeps Records at 1280
+with the panel shut as it was; with the panel open every label now shows in
+full. If it must turn sooner, it is one number in three places.
+
+### `[x]` ✅ 128 — A gauge's tooltip names the segment as the legend does
+
+Will, 2026-09-30: *"Gauge tooltips should match the segment name as shown in
+the legend."*
+
+**✅ Done 2026-09-30.** A zone is named once, on the gauge:
+`data-zones="0-20:success:Low,…"`. The tooltip says `Low` · `0–20%`, and the
+gauge fills its own legend with the same words, so a row reads `Low 0–20%`.
+The two example pages no longer fill the gauge legend by hand. Before, the
+tooltip said `Success` and the legend said `Low (0–20)`.
+
+### `[x]` ✅ 143 — EXPERIMENT: scrolled-past metrics become a compact sticky header
+
+Will, 2026-09-30, a fun concept to explore later: *"When a content area
+scrolls, if there are metric items in the first row that have reached the
+upper boundary of the content area, they should:*
+
+- *Be grouped with no gap*
+- *The group becomes a sticky header, ignores layout grid margins, gutters,
+  padding.*
+- *Value label text size is reduced to smaller size token (approx half size)*
+- *Metric item height reduces to follow value label height reduction*
+
+*As soon as the content area is scrolled the other way, and the metrics
+should be back in view then we reverse all of this and show them again in the
+layout grid. Actually a visibility toggle, and content injection, is probably
+the best way to do this. This is just an experiment, so add it to the app
+settings as a toggle in an Experiments section. There's a possibility we
+remove this or archive it for later. So don't intertwine the logic and code
+too much if possible."*
+
+So: one module of its own, switched by one setting, that a delete removes
+whole.
+
+**✅ Done 2026-10-01, as an experiment** (and tuned in 175 — read that for how it switches now). Settings › Application has a new
+**Experiments** section with one switch, "Compact metrics header" (off by
+default). On, the first row's metrics, once their top passes the top of the
+content area, show as one sticky row: no gaps, the full width of the content
+area, the value at 12px (half of 24), no sparkline. The tiles under it hide.
+Scroll back until they are in view, and the row goes. The row holds COPIES
+that follow each tile's label, value and change; they ask no provider.
+
+To remove it: delete `examples/experiments/sticky-metrics.js`; in
+`examples/index.html` its import, its `experiments` session key and the
+`syncExperiments` block and call; its wiring in `settings.js`; the section in
+`application.html`; and `test/e2e/reforged-sticky-metrics.spec.ts`.
+
+### `[x]` ✅ 175 — LATER: the sticky metrics, tuned
+
+Will, 2026-10-01, "Todo later": *"Sticky metric items should still show the
+sparkline. It will have reduced height and width but that's ok.*
+
+*Also the gap between the title, value, and trend label should be reduced.
+This will reduce the overall height of these sticky metric items in the
+metrics group.*
+
+*The metric value label is a bit too small.*
+
+*Sometimes if I scroll slowly, or the metrics are already partly scrolled
+under, the app header then the metrics don't switch to the sticky metrics
+group.*
+
+*We need to check the CSS logic here."*
+
+And: *"use this doc guidance to improve the mechanism for sticky metrics:
+https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Conditional_rules/Container_scroll-state_queries
+We can probably use CSS calc, with the layout-grid margin, gutter, and row
+height values to help determine when to switch between regular and sticky
+metrics."*
+
+**✅ Done 2026-10-01.** CSS decides when now, with no scroll code. The
+sticky row's anchor is a `scroll-state` container, sticky at minus (grid
+padding + one row height). So it is STUCK exactly when the first row has
+scrolled fully under the top, and `@container scroll-state(stuck: top)`
+shows the row. Back up past that point and it goes. A slow scroll works: the
+test moves 2 px at a time. The old way watched the tiles and missed a slow
+crossing by under half a pixel. The originals no longer need hiding: the row
+shows only once they are gone. The gutter is not in the sum — the row
+overlays it.
+
+The compact tiles keep their sparkline (`sherpa-metric` has a `series`
+read-back now, so a copy draws the same line), the gaps are 2 px, and the
+value is 14 px (it was 12). A tile is about 64 px tall, was 88.
+
+**One thing to know:** scroll-state queries are Chromium only. In Firefox and
+Safari the row never shows; the page is as it was.
+
+---
+
+## G — Overlay panels
+
+### `[x]` ✅ 22 — The `Ask N-zo` panel is too narrow, and cannot be resized
+
+- Make it wider, with a sensible minimum.
+- The user can drag the LEFT edge to resize any overlay panel.
+
+**✅ Done 2026-09-30.** Every overlay panel, the Ask N-zo one included, is
+40rem (640 px) by default — it was 30rem — never under 20rem nor past 92vw.
+Its left edge is a `role="separator"` handle: drag it, or ArrowLeft /
+ArrowRight by 16 px; each resize reports `panel-resize { width }`. Figma was
+closed, so the widths are my pick — say if Figma has its own.
+`T-an-overlay-panel-resizes-from-its-left-edge`
+
+### `[x]` ✅ 23 — A focused grid row opens a details panel on the right
+
+Focus a row in `sherpa-data-grid` → an overlay panel opens on the right with
+more about that record. Any other open overlay closes first. Its header has up
+and down chevrons that step the focused row. Needs 22's resizing panel.
+A drilldown like this is where a breadcrumb trail belongs — the first real one.
+
+**✅ Done 2026-09-30.** A Records row click opens a details panel: the heading
+is the name, the body is every declared field under its label. Its up and
+down chevrons step the grid's current row, and disable at an end of the page.
+The grid holds the current row BY KEY now, so an edit keeps it, and a caller
+can set it (`currentKey`), read the next one (`neighbour(by)`) and step it
+(`stepCurrent(by)`). An overlay panel takes an `actions` slot, and opening one
+shuts every other one — the Assistant and the details are the pair. The
+header's trail reads `Records › <name>` while it is open; its first crumb
+shuts it, in place. My pick: the trail is in the app header, not in the panel
+— say if you want it in the panel.
+`T-a-current-row-opens-its-details` · `T-one-overlay-panel-at-a-time`
+
+### `[x]` ✅ 145 — The details panel, tidied
+
+Will, 2026-09-30: the panel's header buttons are too small, and Figma has an
+Overlay Panel Header variant to follow; a selected row wants the active
+surface, with the focus grey mixed over it; and *"the overlay panel shouldn't
+show a scrim behind it. It's whole purpose is for quick-peek drill down
+functionality while still working in the primary content space."*
+
+**✅ Done 2026-09-30.**
+
+- **The header, as Figma's Container Header `Variant=Panel`** (911:32577).
+  The close and collapse buttons are `sm`, 24 px, in EVERY container header:
+  Figma has them so in all three variants. The panel's expand and pop-out
+  are one bordered group, the details' up and down another, with a divider
+  between each and before close. A divider shows only with a control on both
+  sides of it.
+- **No scrim.** The element, its rule and its part are gone.
+- **Rows.** Selected is the active base; hover and focused are a grey MIXED
+  over whichever base the row has. The old selected rule never matched —
+  `:checked` does not match a custom element — so a ticked row had no fill.
+- **Firefox, the same day.** It never re-read the selected rule — a `:has()`
+  after `:host(…)` — so a ticked row kept its old fill there. The grid marks
+  the row `data-selected` now, and CSS selects that.
+  `T-firefox-never-rereads-a-has-after-host`
+- **An empty forwarded slot no longer reads as filled**, in `SherpaElement`:
+  the panel's empty description slot drew an empty strip under every heading.
+  `T-slot-guards-only-when-filled`
+
+❓ **One ruling left — the title's ink.** Figma's Panel variant inks it
+link-blue. Will's call of 2026-09-15 was the DEFAULT ink: blue "reads as
+something you can click when it isn't". Kept as ruled; say if Figma wins now.
+
+---
+
+## H — The accessibility gate
+
+### `[x]` ✅ 24 — Playwright must test accessibility — WCAG 2.1 AA
+
+Every component, level AA. None today; `axe-core` is not a dependency.
+
+**The output is a REPORT, one per component**: for each failure, what is
+wrong, which criterion it breaks, and HOW to correct it.
+
+Prove the checker reaches inside a shadow root before trusting a green
+result — one that reads the light DOM sees almost nothing of a Sherpa
+component. Its first finding is fixed: a HOST `aria-label` named nothing
+(`T-a-host-label-must-reach-its-control`). Assert names with `getByRole(…,
+{ name })`, never the attribute.
+
+**✅ Done 2026-09-30.** `npm run test:a11y` runs axe-core (a new dev
+dependency) over one realistic fixture of each of the 64 components, at WCAG
+2.1 A and AA. A test proves axe reads inside a shadow root, one asserts a host
+label by role, and one fails when a component has no fixture. Each run writes
+`test/a11y/reports/<name>.md` (not tracked): the rule, the criterion, the
+element, and how to correct it. `test/a11y/baseline.json` holds the known
+failures, and a count may only fall. The first run found failures in 22
+components. Six are clean now: nav rows are named in a collapsed rail, a tab
+names its panel by text, the overlay panel's resize edge states its value, a
+transfer list's two lists are named, and a blank calendar cell is hidden from
+a reader. 16 are left: 117 and 118.
+`T-the-a11y-gate-reads-shadow-roots`
+
+### `[x]` ✅ 117 — Clear the accessibility baseline — 12 components with a structural failure
+
+Each is in `test/a11y/baseline.json`; run `npm run test:a11y` and read its
+report in `test/a11y/reports/`. Fix one, then `npm run test:a11y:update`.
+
+**🚧 2026-09-30: 11 of 12 are clean.** One is left, and it needs a choice.
+
+| Component | Was wrong | Now |
+|---|---|---|
+| barchart, line-chart | the plot was `role="img"` over focusable marks | ✅ a `group`; each bar is named `Pro: 12` |
+| sparkline | the same, with hover dots as buttons | ✅ the dots are not controls |
+| calendar | a `gridcell` with no `row` | ✅ cells sit in `role="row"` boxes, `display: contents` |
+| chart-legend | a button with `role="listitem"` and `aria-pressed` | ✅ a `group` of toggle buttons |
+| list, list-item | a `<ul>` whose children are not `<li>` | ✅ `role="list"`; a slotted row is a `listitem` |
+| menu, notifications | `role="menu"` held inputs and buttons | ✅ a named `dialog`; triggers say `aria-haspopup="dialog"` |
+| select-card | a `role="radio"` host held a live, unnamed radio | ✅ its own footer controls are `inert` |
+| transfer-list | a `listbox` whose options held a checkbox | ✅ two named plain lists |
+| **filter-panel (accordion)** | buttons inside a `<summary>` | ❓ below |
+
+`T-a-menu-is-a-dialog-of-native-controls`
+
+**❓ Will — the accordion's `actions` slot.** A `<summary>` is a button, and a
+button may not hold buttons. The filter panel puts `Filters` and `Save filter`
+there.
+- **A (my pick):** the actions move to the first row of the BODY. Native
+  `<details>` stays. They hide when the section is shut.
+- **B:** the actions stay in the header row, shown when shut. Then the
+  accordion drops `<details>` for a `<button aria-expanded>` and a panel.
+
+**✅ Ruled, Will 2026-09-30:** *"There is an item to move the Filters button
+to the filter panel header. We can move the save filters button to the first
+row of the body of the accordion."* So: `Filters` leaves the section with 124,
+and `Save filter` goes to the first row of the section's BODY. Then nothing is
+in the `<summary>`, native `<details>` stays, and the last baseline entry
+goes. Do it with 124.
+
+**✅ Done 2026-09-30, with 124.** Nothing a reader can press is in a scope's
+header now. `Save filter` is the first row of the scope's body, at the right.
+The panel audits clean, and its entry is out of `test/a11y/baseline.json`.
+Twelve of twelve. What is left in the baseline is four colour-contrast
+failures: that is 118.
+
+### `[x]` ✅ 118 — Four texts fail colour contrast — the success green, and a field's description
+
+WCAG 1.4.3 needs 4.5:1 for small text. Measured by the gate (24):
+
+- **Success text is `#00ad62`: 2.93:1 on white.** A success chip, a metric's
+  `+12.5%`, and a success toast's message.
+- **A field's description is `content-body-2` (`#b3b3c3`): 1.7:1.** That is
+  the colour a DISABLED control uses.
+
+Both are Figma values, so they are yours to change.
+
+**❓ Will — which?**
+- **A (my pick):** darken them in Figma. Success text to a green at 4.5:1 or
+  more on white, and the description to the body text one step lighter than
+  the label. I re-project, and the four baseline entries go.
+- **B:** keep the colours. The four stay in the baseline as known failures.
+
+**✅ Ruled, Will 2026-09-30: A** — *"but determine if the aliasing chain can
+be mapped back to a darker shade rather than directly applying new hex
+values."* So: no new colour. Follow each token's alias chain in Figma to the
+ramp it points at, and re-point it to a darker STEP of that same ramp that
+reaches 4.5:1. Only if no step does, say so and ask.
+
+**✅ Done 2026-09-30, with no new colour.** Both moved one step darker on
+their own ramp, in Figma first:
+
+- **Success text:** Style `style-content/base`, mode `success`, pointed at
+  Theme `content/success/+1` (`#00AD62`, 2.93:1). It points at
+  `content/success/base` now (`#006B37`, about 6.6:1) — as Active already
+  points at `content/active/base`. Re-projected.
+- **A field's description:** the ALIAS was not the fault. Theme `body/+2`
+  is the disabled grey, and moving it would move every disabled text. Two of
+  Figma's six inputs — Input Text and Input Number — bound their description
+  to `body/+2`; the other four bind `body/+1`, one step lighter than the
+  label. Those two now bind `body/+1` too, and so does the code.
+
+The a11y baseline is empty now: no known failures. **One more of the same:**
+the Transparent look's success text (`style-transparent`, a hand-kept
+override collection) still points at `success/+1`. No text wears it today;
+say if it should move too.
+
+---
+
+## I — The big builds
+
+### `[x]` ✅ 67 — A UTILITY layer: `sherpa-router`, on the Navigation API
+
+Will, 2026-09-26: *"We have a presentation layer and data layer that are
+working great together. We need to further enhance sherpa with a utility
+layer. The first candidate … will be a Sherpa Router web component for
+handling navigation. It should use the Navigation API extensively."*
+
+**Where routing lives today: the example app.** `examples/index.html` does it
+by hand — `history.pushState` / `replaceState` at four sites, a `popstate`
+listener, `urlFor()`, `contextFromURL()`, `hrefParam()` and `loadContext()`,
+23 lines of the page touching the URL. Nothing in `src/` routes. Since
+2026-09-29 `loadContext()` also OPENS each page from its definition
+(`provider.open()`) — so a router is the one place that takes a URL to a
+page: its definition, its View, its data.
+
+**The router owns the URL**, one owner for one value: which Context, which
+View, and whether Settings is open over them (`?context=records&view=risk&settings=profile`,
+CLAUDE.md "Navigation terms"). A nav row, a breadcrumb, the View chip and
+browser Back all REQUEST a navigation; the router intercepts it
+(`navigation.addEventListener('navigate', e => e.intercept(…))`), updates the
+URL, and reports what changed. The shell and the Context listen; none of them
+touches `history`. Settings-over-a-Context stays one navigation with two
+parts, so leaving Settings never reloads the Context.
+
+To settle when it starts: the Navigation API is not in every engine the tests
+run (check Chromium, Firefox and WebKit on the day), so decide the fallback —
+`history` + `popstate` behind the same surface, or require it. And where a
+utility lives: a component in `sherpa-ui`, or a third entry point beside
+`sherpa-ui/data` — it needs a DOM, so not the DOM-free one. This is also most
+of 37's step 4: an example app that routes through the library can leave it.
+
+**✅ Done 2026-09-30.** `sherpa-router` is component 65, exported from
+`sherpa-ui`. It owns the URL's `data-params`, keeps every other parameter, and
+reports `route-change` with what changed. `data-overlay="settings"` makes a
+Settings link open OVER the Context it was pressed on. `route`, `href(route)`
+and `go(changes, { replace })` are its JS API; its arithmetic is
+`src/core/browser/route.ts`, pure. The two things to settle: **the Navigation
+API is required** — all three engines have it, probed today — and **it is a
+component in `sherpa-ui`**, beside the provider. The example app routes
+through it: its four `history` sites, its `popstate` listener and its two
+link-click listeners are gone, for one `route-change` listener. One behaviour
+changed: a Context row pressed while on a later View goes to the first View.
+`T-the-router-owns-the-url`
+
+### `[x]` ✅ 136 — A FIND input, and an optional Find & Replace
+
+Will, 2026-09-30: *"A variant of the search input, a Find input, that locates
+string matches and allows the user to jump to the next/previous match using 2
+stepper buttons, like the numeric sherpa input has.*
+
+*This Find input should also support an optional 'replace' attribute. This
+adds a third 'Find & Replace' button (pencil icon) to the input field.
+Clicking this button opens a menu with an input to enter a replacement value
+into.*
+
+*The menu should have footer with buttons for Replace, Previous, and Next.*
+
+*Replace should be in a button group with an icon only menu button that
+exposes a 'Replace all' menu item in a menu. Clicking Replace will replace the
+currently focused match. Clicking Replace all will replace all matches with
+the new value.*
+
+*Replace all should throw a confirmation dialog before actioning.*
+
+*We can use the Find (without replace attr) for the data grid toolbar's
+'search' input on the right and show it in the examples.*
+
+*We might need a future example page to show Find & Replace in action. I have
+designs for a WYSIWYG text area editor that I'll want to implement eventually
+but we're not there yet."*
+
+Builds on the number field's steppers (127) and the grid's match marks (21c).
+
+**✅ Done 2026-09-30.** `sherpa-input-text data-type="find"`: the search
+glyph, "Find" when empty, and two steppers — Previous and Next — flush to the
+edge, as a number's are. Enter is Next and Shift+Enter Previous. With
+`data-replace` a pencil opens Find & Replace: a "Replace with" field, then
+**Replace** in a group with a ▾ that holds **Replace all**, and Previous and
+Next. Replace all asks first, in a dialog. The field cannot see what it
+searches, so each button ASKS its host (`find-step`, `find-replace`).
+
+**On Records** the Find sits at the right of the grid's toolbar. What you
+type is the search: the rows narrow and every hit is marked. Previous and
+Next move a stronger mark from hit to hit; past a page's last hit it opens
+the next page, and it goes round from the end. `T-a-find-asks-its-host-to-step`
+
+Three things I chose — say if any should change:
+
+- **It still narrows the rows**, as the search it replaces did. A browser's
+  own find only marks.
+- **No "3 of 12" count.** You did not ask for one; the host can set
+  `data-matches`, and at `0` the steppers go inactive.
+- **Replace is not on any page yet** — nothing in the examples holds text to
+  replace. The component asks; a page does the replacing.
+
+### `[x]` ✅ 68 — `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement`
+
+Will, 2026-09-26: Sherpa's equivalent of hot reloading is fetching and
+modifying HTML templates — *"this might be mashing 2 concerns together. So I'm
+open to having a Sherpa Templater component that does this. I think we do all
+of the template stuff in sherpa-element currently so it would be good to be
+able to offload that and slim the base UI component down."*
+
+**What would move out of `sherpa-element.ts` (948 lines):** `loadHtml()` and
+`loadSheet()`, the `templateCache`, `#resolveTemplate`, `#stamp` /
+`#restampIfVariantChanged` and `variantAttrs`, and `#adoptStyles`. What stays:
+props, slots, `emit`, `$` / `$$`, the lifecycle — the part every component
+needs. `T-rendered-settles-even-when-the-markup-does-not` and
+`T-template-id-read-once-was-permanent` move with the code.
+
+**Hot reload** is then the templater's job: re-fetch a changed template or
+sheet, and re-stamp every live instance of that component — keeping its
+attributes, slotted content and state, as a variant re-stamp does today. 27
+(a consumer's OWN templates and CSS) is the same door from the other side:
+"use this template instead" and "this template changed" are one mechanism.
+Do 27 with it.
+
+**✅ Done 2026-09-30, with 27.** The fetching, caching and splitting of
+templates and sheets moved out of `sherpa-element.ts` into an imported
+helper, `src/core/ui/templater.ts` — a helper, not a component, since a
+component extends `SherpaElement` alone. The base keeps props, slots,
+`emit`, `$` / `$$` and the lifecycle.
+
+**Hot reload.** `SherpaElement.reload(tag)` fetches a component's files
+again. A sheet changes IN PLACE — the one shared sheet object — so every
+element restyles at once and nothing is drawn again. Changed markup is
+stamped again, as a variant is. **In the example app it is live**: run
+`npm run build:watch`, and a saved component file redraws that component on
+the open page, with no page reload. **Restart the :4200 server once** — the
+route (`/live/files`) is new. `T-a-templater-owns-the-files`
+
+Not done: the Templater also turning a View's JSON into a template (the
+memory of 2026-09-27). Views still carry markup; that is a separate step.
+
+### `[x]` ✅ 27 — A consumer can supply their OWN templates and CSS
+
+Someone building with Sherpa-UI must be able to give a component their own
+HTML template, and their own CSS that EXTENDS the default rather than
+replacing it. Make it possible, and easy.
+
+In `src/core/ui/sherpa-element.ts`, `static css` / `static html` are plain
+`URL`s a subclass can re-point, and the template cache is keyed by `href`. Half
+the door is open. Missing: a "default, then mine" CSS order; an API that is not
+subclass-and-redefine; and a check that a custom template still provides the
+parts, slots and classes the JS and CSS expect — the `.component.yaml`
+anatomy is the natural thing to check against. Do it with 68: "use my template" and "the
+template changed" are one mechanism.
+
+**✅ Done 2026-09-30, with 68.** One call, no subclass:
+
+```js
+import { useTemplate } from 'sherpa-ui';
+useTemplate('sherpa-tag', { html: '/my/tag.html', css: '/my/tag.css' });
+```
+
+Your markup replaces the component's; your sheets come AFTER its own, so
+they extend it and win. Your markup is checked against the component's
+OWN template file, not the spec: each template id, part, slot name and
+class it has — its code reaches for them. What yours lacks is reported
+(`template-missing`), never thrown. `T-a-templater-owns-the-files`
+
+### `[x]` ✅ 25 — `sherpa-layout-canvas` — an infinite canvas content area
+
+Pans and zooms without an edge, on a CROSSHAIR grid pattern. A floating button
+group at the BOTTOM RIGHT: Pan, Zoom in, Zoom out, Options (a menu). Compose
+from `sherpa-button` and the menu; do not hand-roll either.
+
+**A minimap** shows the whole canvas and where the viewport sits; the user
+moves the viewport from it. PART OF the canvas, not its own component: it needs
+the canvas's pan and zoom, and a separate element would be a second owner of
+one value. Split it out only if a second host wants one.
+
+**✅ Done 2026-09-30.** `<sherpa-layout-canvas>`: it pans and zooms with no
+edge, on a crosshair grid that moves and scales with it. Content sits where
+its `--x` and `--y` say. Pan, Zoom in, Zoom out and Options float at the
+bottom right as one group; Options holds Fit to content, Zoom to 100% and
+Hide minimap. The minimap, at the bottom left, draws each piece and the
+view; a press or a drag on it moves the view.
+
+A wheel pans, and Ctrl or ⌘ with it — a trackpad pinch — zooms about the
+pointer. The arrows pan, + and − zoom, 0 is 100%. With the Pan tool on, a
+drag anywhere pans; off, only a drag on the empty canvas does, so the
+content keeps its own clicks. The canvas owns its view and reports each
+move (`canvas-change`). `T-a-canvas-owns-its-view`
+
+Two things to know:
+
+- **There is no hand icon** in the icon set, so Pan wears
+  `diverging-arrows`. Say which icon you want, or add a hand to Figma.
+- **It is on no example page yet** — the sandbox that showed it was
+  removed 2026-10-01. 78, the workflow creator, is where it would live.
+
+### `[x]` ✅ 26 — A `Grouped` mode for the content area
+
+Every container in the content area reads as ONE stitched object: gutters
+`0px`, MID rounding on every container, only the top-most keeps its own.
+
+**Will's ruling: this is `sherpa-group` applied to the layout grid.** The work
+is how the two meet — `<sherpa-layout-grid>` owns the tracks, `<sherpa-group
+data-direction="grid">` the joins. Likely: the layout grid gains a
+`data-grouped` that gives up its gaps and applies the group rules.
+
+**Ask first (Will, 2026-09-24): are we re-inventing the grid?** A scenario is
+spread over `data-rows`, `data-row-count`, a named `data-col-span` and a
+`data-row-span` per child, and JS for `data-grouped`. A named
+`grid-template-areas` per scenario, each child naming its AREA, might replace
+most of it. Find what it cannot do — spans re-scale per breakpoint; the fit
+grid's last row takes the rest — before building either.
+
+**The Grouped mode is BUILT** (measured 2026-09-30): `<sherpa-layout-grid
+data-grouped>` drops the gutters, writes each child's grid position
+(`grouped-grid.ts`, from laid-out geometry), and only the four OUTER
+corners stay round. Tested in `reforged-layout-grid.spec.ts`.
+
+**Your question — are we re-inventing the grid?** Measured against
+`grid-template-areas`. Areas CAN do a fixed layout per breakpoint in one
+string, with row spans and no JS. They CANNOT do three things the grid does
+now:
+
+1. **An unknown number of children.** Areas name every cell; four metric
+   tiles or seven are the same markup today.
+2. **A lone last item that widens** to fill its row — the generated
+   `:nth-last-child(… of …)` rules in `tokens.css`.
+3. **Spans from Figma.** The names (`full`, `large`, `medium`, …) and what
+   each spans per breakpoint are PROJECTED from the layout tokens, so a
+   re-export moves every page. Areas would be hand-written per page.
+
+**❓ One choice:**
+- **A (my pick): keep the grid as it is.** Nothing is re-invented: it is CSS
+  grid with Figma's span names. Close 26.
+- **B: add areas beside it**, as an opt-in for a FIXED layout
+  (`data-areas`, a template per breakpoint), for a page whose parts never
+  change.
+
+**✅ Will, 2026-10-01: A.** The grid stays as it is; the Grouped mode was
+built already. Nothing left.
+
+## J — Tidy-ups and renames
+
+### `[x]` ✅ 11 — `sherpa-group`: what is left
+
+`<sherpa-group>` is BUILT (2026-09-23), but only `sherpa-pagination` uses it.
+Measured 2026-09-26, all three still open:
+
+1. The 16 generated `grid-*` / `vertical-*` blocks are still in
+   `sherpa-group-positions.css` AND `tokens.css`, with 0 callers. The wrapper
+   derives those positions; they can go.
+2. `.sherpa-border-edges` / `.sherpa-border-corners` are not grouping — 21
+   components use them. Move them to their own `sherpa-borders.css`.
+3. The `.sherpa-group` class is still used in calendar, menu,
+   quick-filter-toolbar and select-checkbox.
+
+**✅ Closed 2026-09-30 — measured again, nothing left to build.** Say if you
+want any of it anyway.
+
+1. **The `grid-*` and `vertical-*` blocks have callers now.** The layout
+   grid's grouped mode (`grouped-grid.ts`) writes `grid-top-*` and the rest,
+   and `SherpaElement` lists them as `data-group` values.
+2. **The edge and corner classes ARE grouping.** They read the
+   `--sherpa-border-*` variables that a grouping position writes — the other
+   half of it. Their own sheet would be a ninth in every shadow root, for a
+   name.
+3. **The class stays where it is.** `.sherpa-group` is CSS only, by
+   position; `<sherpa-group>` is for a grid, whose positions must be told.
+   CSS before JS.
+
+### `[x]` ✅ 28 — A Figma component is NOT always a web component
+
+A sub-component is often only a `<template>` in its parent's `.html`, or a set
+of CSS classes. `sherpa-grid-cell` is the clear case.
+
+1. Sweep all components: real element, template, or CSS only.
+2. For each that is not a real element, cost the fold — spec, MCP, tests,
+   Figma link.
+3. Fold the clear ones. Start with `sherpa-grid-cell`.
+
+**`sherpa-nav-section` is the same question** — still composed by nothing
+(only exported and listed in the sandbox). `sherpa-nav` draws its own label
+and rule. Compose it (the nav mirrors `data-collapsed` onto each section — one
+`setAttribute`), fold it, or leave its 65 correct lines. A Figma component
+stays a Figma component either way.
+
+**Measured 2026-09-30.** Step 1 is done already, in
+`scripts/figma-data/name-map.yaml`: 52 Figma components are elements, and 28
+more are a parent's template or a composition (`figmaOnly` — the Calendar
+Button, the File Item, the Input types, and the rest). Two are left, and
+neither is clear:
+
+- **Grid Cell.** `sherpa-grid-cell` is composed by nothing: the grid draws
+  its own cells, and the grid's spec already maps Figma's Grid Cell. But the
+  name map (2026-09-02) says the grid is to be REBUILT from Grid Cells, and a
+  grid can compose it inside each `<td>`.
+- **Nav Section.** The nav heads each section with a real `<h2>`;
+  `sherpa-nav-section` draws a `<span>`. Composing it would lose the
+  heading. My pick: leave it as it is.
+
+**❓ One choice, for the Grid Cell:**
+- **A (my pick): fold it.** The grid's own templates are Figma's Grid Cell.
+  One element per cell would be about 350 shadow roots on one Records page.
+- **B: keep it**, for the rebuild of the grid from Grid Cells.
+
+**✅ Will, 2026-10-01: A.** *"Grid cell is a necessary figma component, for
+content variants, but it's just css styling in code."* `sherpa-grid-cell` is
+folded: gone from the source, the index, the sandbox, the a11y fixtures and
+the state pins. Figma's Grid Cell maps to the grid's own cells, and the name
+map no longer says the grid waits on a rebuild. The Nav Section stays as it
+is.
+
+### `[x]` ✅ 30 — Do we still need `icon-paths.ts` and `render-icon.ts`?
+
+Will, twice: *"HTML & CSS should be handling this."*
+
+**The first answer's main reason is STALE.** It was "the TS carries each
+icon's INK BOX, and the files' 14x14 frame draws them 15% small". But
+bbe7c2ef (2026-09-24) reversed that: an icon now renders at its 14x14 frame,
+the same `viewBox` its `.svg` already has. So the files are enough as they
+are, and `render-icon.ts`'s header comment (line 4) is now wrong.
+
+What still stands: the `.svg` files do not ship (no `dist/icons/`), and 48 of
+76 icon sites take a name from OUTSIDE the component
+(`data-icon-start="gear"`), which a static template cannot cover. Options: a
+sprite sheet (`<use href="#gear">` — check across a shadow root), or a CSS
+`mask-image` set coloured by `background-color`. Measure, then choose.
+
+**Measured 2026-09-30, in Chromium, Firefox and WebKit**, inside a shadow
+root with an adopted sheet, on a two-colour icon (a disc with a white tick,
+as `status-ok` is):
+
+| | the disc | the white tick |
+|---|---|---|
+| sprite: `<svg><use href="icons.svg#ok">` | the text colour ✓ | white ✓ |
+| mask: `mask: url(ok.svg)` + `background` | the text colour ✓ | **the text colour ✗** |
+
+So a MASK cannot draw a two-colour icon — the tick disappears. A SPRITE can,
+in every engine, and a file reference crosses a shadow root fine.
+
+What neither removes: a name from OUTSIDE (`data-icon-start="gear"`, 48 of
+76 sites) still needs one line of JS, to write `href="…#gear"`. What a sprite
+DOES remove: `icon-paths.ts` is 314 KB of JavaScript in every page, parsed
+before anything draws. A sprite is a file the browser caches.
+
+**❓ One choice:**
+- **A (my pick): a sprite.** `generate-icons.mjs` writes `dist/icons.svg`
+  (one `<symbol>` per icon, in its frame); an icon is `<svg><use href>`, and
+  `renderIcon` shrinks to writing that one `href`. A small list of names
+  stays, for `hasIcon`. The icon tests read the sprite instead.
+- **B: keep it as it is.** It works; its cost is the 314 KB.
+
+**✅ Will, 2026-10-01: no sprite.** *"SVGs are fine for now. They are
+temporary until we connect a FA license."* Kept as they are.
+
+### `[x]` ✅ 33 — Density as step offsets, and a breakpoint step
+
+Will, 2026-09-23: in code, two scalings would do what Figma's remapped modes
+do — by BREAKPOINT (bigger on touch), then by MODE (compact / comfortable),
+relative to it.
+
+**The rule is measured and holds exactly: a density mode is ONE STEP on the
+primitive scale** — compact −1, comfortable +1, clamped at both ends. Steps,
+not multipliers: a multiplier leaves the 4px grid at once (×0.8 puts 10 of 12
+space values off it), a step cannot.
+
+1. **Emit the scale ONCE** plus a step offset, not three copies of every space
+   and size token in `tokens.css`.
+2. **Add the breakpoint step**, applied before the mode's. Mobile and tablet
+   step UP. It does not exist yet: the layout grid's gap and padding are
+   `space-base` at every breakpoint.
+3. **Consume `--sherpa-grid-space-step`** — it is emitted and nothing reads
+   it but `lint:css`. `round()` against it is for genuinely dynamic sizes only
+   (`T-round-is-for-dynamic-sizes-only`).
+
+The density values live in the hand-kept `figma.extensions.json`; read them
+live through the figma-console MCP
+(`T-an-override-collection-is-keyed-by-its-parent`).
+
+**✅ Step 1 done 2026-09-30 — and it found a bug.** A density already
+ALIASED the scale (`var(--sherpa-scale-…)`), one step along. But each density
+block also copied the WHOLE ramp — 119 values, colours and borders too — and
+then a dark copy of the colours. Read live, Figma's compact and comfortable
+override only **27 values: space and size**. The other 92 were a stale copy,
+and five of them painted an **old success green** under `[data-density]`
+(`#007a45` where the base is `#00ad62`), in light and dark. The file now
+keeps only the 27, so `tokens.css` lost 376 lines. Measured in a browser:
+with no density nothing changed; with compact or comfortable, only that
+green changed, to the true one. `T-a-density-mode-is-one-step`
+
+**Step 3** (consume `--sherpa-grid-space-step`) waits for a size that is
+truly dynamic; none is today.
+
+**❓ Step 2 — one choice.** A breakpoint step makes every space and size one
+step bigger on a small screen, before density.
+- **A (my pick): one step up below 768 px** (a phone), density relative to
+  it; tablet unchanged.
+- **B: one step up below 1280 px** (tablet and phone), as the item says.
+  Every layout and test at a narrow width moves.
+
+**✅ Will, 2026-10-01:** *"Not sure it matters any more."* No breakpoint
+step. Step 1 stands; step 3 has nothing to consume it.
+
+### `[x]` ✅ 36 — CSS: compiled where it should inherit?
+
+Will, 2026-09-24: the system is designed on INHERITANCE, so why is so much CSS
+compiled? Two generators: the state pins (`state-pins.yaml` → ~21 re-pointed
+Style names per line, into `tokens.css` and `sherpa-style-modes.css`, because
+CSS has no mixin) and the dist PostCSS transform. Find what can move into
+`sherpa-base.css` / `sherpa-element` as inherited rules, and what genuinely
+needs a generator.
+
+**Measured 2026-09-30 — each generator earns its place; one has a choice.**
+
+- **The state pins** (`state-pins.yaml`): a pin puts an element in a Style
+  MODE, which is about 21 Style names re-pointed at once. Inheritance cannot
+  do it: the names must be set ON the element, and CSS has no mixin to name
+  the set once (`@mixin` ships in no engine). Setting `data-status` from JS
+  instead would be JS for a visual state. Keep the generator.
+- **Typography, group positions and tokens** are generated from FIGMA, which
+  is their source. Keep.
+- **The PostCSS step** does three things: minifies (keep), adds a few
+  `-webkit-` prefixes, and — the only real COMPILING — lowers CSS nesting in
+  70 of 76 sheets. It lowers nesting because the support list includes
+  **Safari 16**, which has none (nesting came in Safari 17.2).
+
+**❓ One choice, the support floor:**
+- **A (my pick): keep Safari 16**, and the nesting lowered. It costs
+  nothing a reader sees.
+- **B: raise the floor to Safari 17.2** — the nesting ships as written, and
+  preset-env goes from the build.
+
+**✅ Will, 2026-10-01: B** — *"No-one cares about Safari."* The floor is
+Safari 17.2, the nesting ships as written, and `postcss-preset-env` is gone
+from the build and the package. Measured: 0 pixels differ on Records,
+Dashboard and Settings, in Chromium and WebKit. One thing reads differently:
+the minifier now writes a 50% colour-mix as `#rrggbb80`; two chart tests
+read that text, and take both forms now.
+
+### `[x]` ✅ 11d — `data-type` means nine things; `data-empty` means three
+
+`data-type` selects: which control element, how many thumbs, pill vs
+rectangle, square vs labelled, a look, a template variant, a scope, a
+cardinality, a role. `data-empty` is a message string (list), a host boolean
+(grid), a per-pane boolean (transfer-list). Both are rulings, not bugs. The
+question: reserve `data-type` for TEMPLATE SELECTION, as four of its nine uses
+already do?
+
+**Measured 2026-09-30 — one rule already explains all nine.** `data-type`
+is **Figma's `Type` variant axis**, as `T-calendar-view-is-not-the-figma-type`
+says: whatever Figma calls a component's Type — its control, its shape, its
+look — is `data-type` in code, and a design that swaps a Type swaps it here.
+The nine "meanings" are nine components' own Type axes. `data-empty` is
+three components' own words for "nothing to show".
+
+**❓ One choice:**
+- **A (my pick): keep both.** `data-type` stays Figma's Type axis. Say it
+  in PRINCIPLES, and a new component names a Type the same way.
+- **B: reserve `data-type` for template selection**, and rename the other
+  five to new attributes. Each rename breaks the Figma mapping and every
+  page that sets it.
+
+**✅ Will, 2026-10-01:** *"Whatever makes most sense for Sherpa."* So A:
+`data-type` is the component's Figma Type axis, said once in PRINCIPLES
+rule 15. Nothing is renamed.
+
+### `[x]` ✅ 84 — Use the platform: Intl for money, units and deltas; Temporal in the calendar
+
+Will, 2026-09-27: *"No need to reinvent foundational things that we already
+get for free."* Measured support is in `QUERY-DESIGN.md` §4. What the repo
+hand-rolls today:
+
+| site | today | the platform |
+|---|---|---|
+| `sherpa-file-upload.ts` | `` `${(bytes / 1048576).toFixed(1)} MB` `` | `Intl.NumberFormat` unit `megabyte` |
+| `sherpa-metric.ts` | the delta rounded with `toFixed(2)` | `Intl.NumberFormat` percent, `signDisplay` |
+| `sherpa-calendar.ts` | ten `Date` sites of day maths | `Temporal` — a component only runs in a browser |
+
+The DOM-free data layer stays off `Temporal` and `Math.sumPrecise` until Node
+has them. The metric's VALUE takes `Intl` options as JSON since provider P2
+(`data-format`); its delta and the upload size do not yet.
+
+**✅ Done 2026-09-30.** No hand-rolled formatter or day maths is left in the
+three:
+
+- **The metric's delta** is `Intl.NumberFormat` percent, signed, two
+  decimals at most, no sign on zero — `+12.5%`, `-4%`, `0%` in English.
+- **The upload's size** is `Intl.NumberFormat` units: `512 byte`, `12 kB`,
+  `1.5 MB`. The kilobyte is the platform's `kB` now, not `KB`.
+- **The calendar** holds the month on view as one `Temporal.PlainYearMonth`,
+  and every day, month length, weekday, step and "today" is Temporal's. Its
+  month names are the platform's too, in the reader's own language.
+
+### `[x]` ✅ 111 — A spec types every JS property as `string`
+
+Found in 102 step 2 (2026-09-29): `parseClassApi` (`scripts/lib/ts-facts.mjs`)
+gives every getter and setter `type: 'string'`, so `sherpa-menu`'s spec says
+`reading` and `conditions` are strings, and `open` and `dirty` too. A wrong
+type in a contract is worse than an honest gap: read the accessor's own
+annotation, and write `unknown` where there is none. Every spec's `jsProps`
+moves when it lands.
+
+**✅ Done 2026-09-30.** A property's type is what its accessor says: the
+getter's return type, else the setter's argument; a `static config` default
+by its literal. 66 properties across 24 specs changed — `reading` is
+`FieldReading`, `open` is `boolean`. Three say `unknown`, because nothing in
+the code names their type. A `@prop` tag's type still wins where it gives one.
+
+### `[x]` ✅ 81 — Component contracts move from YAML to JSON
+
+Will, 2026-09-27: *"We can probably accept moving the component YAML contracts
+to JSON, too."* The same rule as views and queries: JSON is what other
+services send and receive. Each `sherpa-<name>.component.yaml` becomes
+`.component.json`, still GENERATED, still validated against
+`schemas/component.v1.json` (already JSON Schema). What reads the YAML today:
+`generate-component-spec`, `validate-component`, `roundtrip-component`,
+`resync-figma`, `compile-def`, `code-map`, `figma-harvest-colours`,
+`scripts/lib/component-ref.mjs` and `generation/data.mjs`, and the MCP
+server (`server.js`, `tools/discover.js`). One sweep, with `spec:check`
+proving every contract round-trips the same before and after. The
+hand-maintained YAML in `scripts/figma-data/` is a separate question.
+
+**❓ Blocked 2026-09-30 — it needs your permission.** The first step renames
+all 66 `*.component.yaml` files to `.component.json` (`git mv`, then write
+the same data as JSON). The session's permission check refused that as a
+change to shared files, so nothing was changed. Every reader is ready to
+switch: they all read through `scripts/lib/generation/data.mjs` (the MCP
+server too), plus eight scripts and one unit test that read the file
+directly. Say "go on 81" and allow the rename, and I finish it in one
+commit, with `spec:check` proving each contract the same.
+
+**Will, 2026-10-01: "go on … 81".**
+
+**✅ Done 2026-10-01.** All 65 contracts are `sherpa-<name>.component.json`
+now. Git sees each as a new file — YAML and JSON text differ too much for its
+rename check — so a spec's older history is under its `.component.yaml`
+name. Each was converted as it stood,
+and then the generator — which now writes JSON — was asked if each is FRESH:
+65 of 65 are byte-for-byte what the source makes, 65 validate and 65 round-
+trip. JSON has no comments, so the "GENERATED by" line is a `$comment` key
+(the schema allows it). Every reader moved: the generator, validate,
+round-trip, resync-figma, compile-def, figma-harvest-colours, the data
+helpers the MCP server reads through, and one unit test. The MCP server reads
+them: a `sherpa://def/` resource, `get_component` and `component_api` all
+answer. The docs say `.component.json` everywhere. `js-yaml` stays for the
+hand-written YAML in `scripts/figma-data/` — the separate question above.
+
+### `[x]` ✅ 29 — Rename `src/index.ts` to `src/app.ts`
+
+It does not hold an index: it registers every component and installs the icons
+and tokens — it SCAFFOLDS a Sherpa app. Knock-on: `package.json` `main`
+(`./dist/index.js`) and `exports`, the build and `dist/` name, every
+`sherpa-ui` import in `examples/` and `test/`, and the MCP server if
+it reads the entry by name. Keep `src/data.ts`. **Dead last** — cheapest when
+nothing else is in flight.
+
+**✅ Closed 2026-10-13 — overtaken by 221.** `src/index.ts` IS an index now:
+it re-exports `components`, `app` and `data`, one line each. And `src/app.ts`
+is already the app layer (`sherpa-ui/app`), so the rename would collide with
+it. Nothing to do.
+
+---
+
+## L — The code review
+
+### `[x]` ✅ 242 — The code review of every component
+
+Will, 2026-10-14: *"Now is the time to do a thorough code review of all of the
+components. … Plan all of this in a markdown for review before starting."*
+
+**The plan is [CODE-REVIEW-PLAN.md](../CODE-REVIEW-PLAN.md).** Four read-only
+reviews and the web research made it. It has eleven bugs found while reading
+(four confirmed in the code), then eight phases: gates, legacy, the lexicon,
+`SherpaElement`, shared helpers, the data layer, third-party technology, and
+docs with a gallery. Once Will rules, each phase's items become rows 243 and on.
+
+**❓ Will — seven choices, in the plan's §0.** My picks: D1 A a native gallery
+(stories in CSF, so Storybook can read them later); D2 A `custom-elements.json`
+from our own specs, plain HTML only; D3 A private host state as `:state()`; D4
+A delete the stored-data shims now; D5 A form and focus plumbing in
+`SherpaElement`, opt-in; D6 A native names where a native element does the
+same job; D7 A the calendar on `Date` + `Intl` until Safari has `Temporal`.
+
+**Will, 2026-10-14:** *"Let's fix those agent discovered issues and bugs before
+we come back to the plan."* So the plan's Phase 0 goes first: items 243–254.
+
+**✅ Will, 2026-10-14 — D1–D7 ruled:** D1 A, with Storybook later in a separate
+project that consumes Sherpa; D2 A, with the manifest explained; D3 A; D4 A —
+*"Sherpa is app agnostic so nothing relating to constructed applications lives
+in this project"*; D5 A — *"Anything generic gets elevated so that it's handled
+in a consistent manner. Only edge cases, or bespoke differences, are added at
+the individual component levels"*; D6 A; D7 B — *"I don't care about Safari."*
+The plan is updated with each, and with three questions their reach raised:
+**❓ Q1** the starter out of sherpa-ui (my pick A, yes); **❓ Q2** the hook's
+check of Demos moves to Demos (my pick A, yes); **❓ Q3** WebKit stays in the
+tests, for the iPhone (my pick A, keep).
+
+**✅ Will, 2026-10-14: Q1 A, Q2 A, Q3 A** — *"We don't specifically target
+iPhone but I'd like Sherpa to work for mobile browsers (except Safari)."* The
+plan is ruled; its work is rows 256–296, in the plan's order. One small choice
+it raised is 255.
+
+### `[x]` ✅ 255 — The calendar on an iPhone
+
+On iOS every browser is WebKit inside — Chrome and Firefox too — so what Safari
+lacks, every iPhone browser lacks. Today that is `Temporal`, and the calendar
+fails on all of them. Android is fine. Our WebKit tests pass because
+Playwright's WebKit build is newer than Safari.
+
+**❓ Will:** A keep D7 — the calendar waits for WebKit to ship `Temporal`; B
+D7's other option, the calendar's date code on `Date` + `Intl`. My pick: A —
+only the calendar, and mobile is not iPhone first.
+
+**✅ Will, 2026-10-14:** *"Let's support a fallback in the Calendar for iPhone
+browsers but use Temporal as the default date and time model for Sherpa."*
+
+**✅ Done 2026-10-14.** `src/core/ui/temporal.ts` is the one door to dates:
+`Temporal` where the engine has it, and a stand-in over `Date` and `Intl` for
+the part Sherpa uses where it has not — it answers as `Temporal` does (bad text
+throws, fields clamp, days in UTC). The calendar uses it. A node test runs the
+stand-in (Node 24 has no `Temporal`), and a browser test draws the calendar
+with `Temporal` and again with it taken away: the days, months and years match
+in three engines. Before, the calendar threw the moment it was made. +1.5 KB
+per import that holds the calendar. `T-temporal-is-the-date-model`.
+
+### `[x]` ✅ 243 — A moved component keeps its listeners
+
+A move is a disconnect and a connect. The disconnect aborts `this.signal`, and
+`onRender` runs only once — so everything wired there with the signal stayed
+dead. Every slot's `slotchange` (so `data-has-*` froze on 66 components), the
+slider's 8 inputs and the tooltip's anchor; nav and dialog removed their host
+listeners in `onDisconnect` and never added them back. The trap's own text told
+components to read the signal in `onRender`.
+
+**✅ Done 2026-10-14.** A listener on the element's own nodes takes no signal;
+the tooltip's anchor is wired in `onConnect`. A sweep moves every a11y fixture
+and fills each slot; it failed on the old build (the slots, and all four
+behaviours) and passes in three engines. `T-abort-controller-per-connect`.
+
+### `[x]` ✅ 244 — Every emitted event is in its spec
+
+The generator read event names with regex, so `this.emit(act)` hid the
+toolbar's `filters-save` and `filters-save-as`, the panel's `filters-save-as`
+and the prompt-composer's `composer-attach` and `composer-lab`. And it counted
+a `new CustomEvent` dispatched on a CHILD as the component's own: phantom
+`button-click` on the toolbar and the panel, and `menu-change` on the panel.
+
+**✅ Done 2026-10-14.** TypeScript's checker names each `emit()` from the type
+of its first argument (`parseEmits`), so a `case`-narrowed variable, a ternary
+and an `as const` table are read. A name that types as `string` fails the
+generator; the panel's `` `${id}-change` `` and the app-header's table were the
+two, now literals. Only `this.dispatchEvent(new …)` counts as the component's.
+A unit test holds it. `T-an-event-name-is-not-always-a-literal`.
+
+### `[x]` ✅ 245 — A deleted saved View stays deleted
+
+`syncViews`' `touch()` wrote Web Storage's views into IndexedDB but never removed
+one, so a View deleted from Web Storage was merged back by `all()` and
+`restore()`, and published by the next push.
+
+**✅ Done 2026-10-14.** `touch()` removes from IndexedDB what Web Storage held at
+the last look and no longer does — never a view only IndexedDB holds (from the
+server, or one Web Storage had no room for). A push waits for that write. The
+test failed on the old build in three engines. Nothing outside tests calls
+`syncViews` yet. `T-local-first-then-onward`.
+
+### `[x]` ✅ 246 — A `RestStore` is remote
+
+Only `fakeRemote()` said `remote: true`, so a source over a real HTTP store
+applied every pick live: no draft, no Apply, and a full request per move.
+
+**✅ Done 2026-10-14.** `RestStore` says `remote = true`, so its source keeps a
+draft for Apply and is never live. A unit test holds it.
+`T-apply-and-discard-wait-for-a-change`.
+
+### `[x]` ✅ 247 — A prop's text never erases a slot
+
+A declared prop wrote into a box that held a `<slot>`, so the write erased the
+slot. `skipWhen` skipped it only while the slot was filled. Measured in a
+browser, all five cases failed: container-header's guard was `[slot]`, which
+no `<slot>` matches, so a slotted icon NEVER showed; a toast's heading and a
+gauge's caption slotted after the first render had nowhere to go; and a toast
+holding only whitespace showed no heading at all.
+
+**✅ Done 2026-10-14.** The text goes in a span BESIDE the slot (`.glyph`,
+`.heading-text`, `.caption-text`), and CSS hides it on `data-has-<slot>`. The
+gauge's hand-written caption write became a declared prop. `skipWhen` had no
+user left, so it is deleted from `SherpaElement` and CLAUDE.md.
+`T-slot-guards-only-when-filled`.
+
+### `[x]` ✅ 248 — Two icons are drawn, not named as classes
+
+`sherpa-notifications` and the grid's row actions wrote an icon NAME into
+`className`, from before icons were SVG — so each drew nothing. Both now call
+`writeIcon`; the two tests that build them check for a drawn path, and failed
+on the old build.
+
+### `[x]` ✅ 249 — A bar's report never rewrites a saved filter
+
+`answerScope` copied each reported saved filter's readings into the source's
+library, past `declarePreset`: a bar's stale echo rewrote what the source had
+declared, with no facts and no redraw — a component writing state the source
+owns.
+
+**✅ Done 2026-10-14.** A report says which are ON; the readings stay the
+source's. It teaches the source only a saved filter it has never heard of, and
+then through `declarePreset`. A unit test failed on the old build. The weight
+baseline records the bytes 245, 246 and 249 added (`data.js` +220 B).
+`T-one-query-one-owner`.
+
+### `[x]` ✅ 250 — A saved View keeps the sort in the scope that set it
+
+`export()` put sort and group in the scope that arranged the rows (TODO 99);
+`viewQueryOf` — what a saved View, a draft and Save filters are made from —
+always put them on the View. So a View saved over a grid's sort said the View
+arranged it, and a restore left the source thinking so.
+
+**✅ Done 2026-10-14.** `viewQueryOf` is the source's own `export()`, each
+reading in the plain form: one serialiser, not two. A unit test failed on the
+old build. `T-group-and-sort-are-component-scope`.
+
+### `[x]` ✅ 251 — `data-refresh` never guesses a source
+
+With two sources, a container's Retry or a bar's Refresh that named none got
+`#resolve`'s loud refusal — and then the FIRST source anyway. Measured: a card
+over the `invoices` grid reloaded `customers`.
+
+**✅ Done 2026-10-14.** A card reloads the sources of what it holds, as its
+state is theirs; any other ask resolves as every ask does, and an unclear one
+loads nothing. The test failed on the old build.
+
+### `[x]` ✅ 253 — The search tint is declared once, in the CSS
+
+`sherpa-nav-item` builds its `::highlight()` rule in TS, because each row needs
+its own highlight name. That rule carried its own colour — a Theme read
+`lint:css` could not see, and a second token for the purple its `<mark>`
+already paints.
+
+**✅ Done 2026-10-14.** The tint is two private properties in the CSS
+(`--_match-surface`, `--_match-ink`); the `<mark>` and the TS rule both read
+them. A test checks the rule has no colour of its own.
+`T-custom-highlight-not-painted-in-shadow`.
+
+### `[x]` ✅ 252 — The calendar keeps `Temporal`
+
+**✅ Closed by Will's D7 (B), 2026-10-14:** *"I don't care about Safari."* No
+polyfill and no rewrite; the docs say the calendar needs `Temporal`.
+
+### `[x]` ✅ 254 — The line chart's area wash
+
+`.area` fills with the series colour, which is already 50% alpha, at
+`opacity: 0.14` — so it draws about 7%. Radial and gauge refuse an opacity on
+that token for this reason. In the other themes the fill and border colours
+differ in HUE, not only alpha, so moving the area onto the border colour
+changes its colour. Figma was not open to read the area's value.
+
+**❓ Will:** A keep today's 7% wash as it is; B give me the Figma value and I
+bind it. My pick: B, once Figma is open — a light read.
+
+**✅ Will, 2026-10-14: A** — *"The token used already comes from Figma. The
+border colour creates enough contrast between the bar fill and background to be
+accessible."* Kept, with a one-line comment so a later review does not fix it.
+
+### `[x]` ✅ 256 — Phase 1.1: `check:props` closes its loophole
+
+A `:host([data-x])` rule passed the gate when any quoted `'data-x'` sat
+anywhere in the TS — so a component that WROTE its own private state as an
+attribute looked declared. Fifteen did.
+
+**✅ Done 2026-10-14.** The CSS half now asks what `static props` DECLARES, as
+the read half did. Of the 15, 2 are public and declared — the provider sets a
+container's `data-loading`, and a host may set the nav's `data-searchable` —
+and 13 are private, so they are custom states (D3): `SherpaElement` owns one
+`ElementInternals` (`this.internals`, which `FormValue` now takes) and gives
+`toggleState()` / `hasState()`; CSS reads `:host(:state(name))`. The toolbar's
+collapse step is cumulative states. The specs no longer list the private ones.
+948 specs of the changed components, the a11y gate and the node tests pass.
+`T-private-state-is-a-custom-state`.
+
+### `[x]` ✅ 257 — Phase 1.3: every slot says what it accepts
+
+23 of 121 slots had a `data-accepts`, in words that mixed categories with tag
+names. **✅ Done 2026-10-14:** all 121, and the 3 forwarded ones, from one
+vocabulary — HTML's content categories `text`, `icon`, `control`, `input`,
+`content`, then the Sherpa roles `item`, `menu`, `legend`, `header`, `footer`,
+`nav`, `panel`, `dialog`, `toolbar`, `badge`. The spec generator fails a slot
+without one or with another word, and the schema lists the same words. The
+copies in the `Slots:` comments are gone. **The words join the Phase 3 lexicon
+for Will's approval.** `T-a-slot-says-what-it-accepts`.
+
+### `[x]` ✅ 258 — Phase 1.4: one motion gate, held by `lint:css`
+
+CLAUDE.md forbids a component's own `prefers-reduced-motion` block —
+`sherpa-motion.css` owns the one gate — but `lint:css` sanctioned it, and
+`prefers-contrast` and `prefers-color-scheme` too. **✅ Done 2026-10-14:** a
+motion block outside `sherpa-motion.css` is an error (`motion-gate`); any media
+query but `forced-colors` is the `viewport-media` warning. No sheet broke the
+new rule. `T-motion-is-owned-here`.
+
+### `[x]` ✅ 259 — Phase 1.5: no hand-typed counts in the rule docs
+
+A count typed into a rule doc goes wrong as the code moves. **✅ Done
+2026-10-14:** PRINCIPLES' "65 components" (66), CLAUDE.md's "nine core
+modules" (it named eight; the lint covers the whole `src/core/data/` folder),
+"eight stylesheets" and the MCP's tool, resource and prompt counts now point at
+the list or table that holds the truth. PRINCIPLES' doc table gains
+`APP-GUIDE.md`, which the MCP serves. TODO's head says the open items are its
+⬜ 🚧 ❓ rows, and that a done item keeps its row and section. A count measured
+on a date, as history, stays.
+
+### `[x]` ✅ 260 — Phase 7: `sherpa-ui serve` — nothing downloads to serve a folder
+
+The starter's `npm start`, `npm run preview` and Playwright's web server each
+ran `npx --yes serve`: an unpinned package, fetched from npm on every run and
+declared nowhere — the one third-party thing a consumer met at run time.
+
+**✅ Done 2026-10-14.** `sherpa-ui serve [folder] [--port N]` is Node's own
+`http` and `fs`: a folder serves its `index.html`, each file goes with its type,
+nothing outside the folder is served, and it listens on `localhost`. All three
+use it. A unit test holds it, and the full browser suite ran against it.
+`T-nothing-downloads-to-serve`.
+
+### `[x]` ✅ 261 — Phase 7: the docs and the package say what Sherpa needs
+
+**✅ Done 2026-10-14.** README gains *What it needs*, and APP-GUIDE's first
+section says the same: current Chrome, Edge and Firefox, desktop and Android,
+are the targets and Safari is not; every iOS browser is WebKit, and Sherpa
+brings its own stand-in where WebKit lacks something (`Temporal`); nothing is
+fetched at run time; Sherpa loads no font — the tokens ask for Inter, then
+`system-ui`; Node 22 for the tooling only. `package.json` gains `engines` and a
+browserslist of those targets in place of `>= 0.5%` and Safari 17.2. The build
+then drops only prefixes no target needs (`-moz-column-gap`, `-moz-fit-content`,
+`-moz-max-content`, `-moz-user-select`, most `-webkit-appearance`) and keeps
+the ones iOS still needs (`-webkit-user-select`, `-webkit-mask-*`).
+
+### `[x]` ✅ 297 — BUG: the calendar's header content is misaligned
+
+Will, 2026-10-14: *"Bug; The Calendar header content has become misaligned at
+some point. Address when suitable."*
+
+Measured in a menu: in a RANGE calendar the second month's day names sat 6px
+above the first month's, and all fourteen crowded together. The build from
+before 2026-10-14 drew it the same, so it was older.
+
+**✅ Done 2026-10-14.** Two CSS causes. The second month's captions were shown
+with `display: block`, which beat the shared `inline-flex` that centres every
+caption in its 32px row; now they keep `inline-flex`. And the width floor
+counted SEVEN 32px tracks, so fifteen tracks shrank to 29px; a two-month grid
+now floors at fifteen. A test reads each caption's TEXT (its box was already in
+place) and each column's width; it failed on the old CSS both ways.
+
+### `[x]` ✅ 262 — Phase 7: `dist/` ships each file once
+
+The build puts every template and sheet in its JS (TODO 208), and then shipped
+the 142 files a second time beside it. **✅ Done 2026-10-14.** The build deletes
+each file it inlined; only the page `<link>` sheets (`tokens.css`, `page.css`)
+stay. Inlined templates drop `data-accepts` — the spec carries it. A reload now
+SKIPS a file the JS carries, since it cannot change without a new build; the
+full run found that one, `reload()` fetching a deleted sheet, in all three
+engines, and the templater spec passes with the fix. The full browser suite
+otherwise passed (3,012). The MCP's tooling is 298.
+`T-the-text-is-in-the-js`.
+
+### `[x]` ✅ 263 — Phase 7: fewer dev tools
+
+**Measured, 2026-10-14: autoprefixer and cssnano STAY**, against the plan.
+iOS still needs prefixes (`-webkit-user-select`, `-webkit-mask-*`), and
+autoprefixer reads them from `package.json`'s browserslist, the one place the
+targets live. And esbuild's CSS minifier, tried in cssnano's place, made 666 KB
+of CSS where cssnano makes 617 KB — about 49 KB more for every consumer, to
+drop one tool a consumer never meets.
+
+**✅ prettier and husky are gone.** prettier ran in no gate; its two scripts,
+its config and its CLAUDE.md lines went with it. husky only pointed git at its
+own folder: the hook is `.githooks/pre-commit` now, and `npm install`'s
+`prepare` sets `git config core.hooksPath .githooks`. Dev dependencies: 17 → 15.
+
+**✅ `@types/node` stays out of `src/`:** `tsconfig.reforged.json` says
+`"types": []`, and nothing there needed Node's types.
+
+**✅ eslint 9.** eslint 8 is past its end of life. `eslint.config.js` (the flat
+config) replaces `.eslintrc.json`, with the same rules and both boundaries —
+the DOM-free data layer and the opt-in app layer. Each was proved by a breach:
+`document` in `where.ts`, and an app-layer import in a badge, each an error.
+Three overrides matched no file that `npm run lint` reads, and went. It adds
+`@eslint/js` (eslint:recommended now ships apart). Dev dependencies end at 16.
+
+### `[x]` ✅ 264 — Phase 7: a phone check
+
+Will, Q3: *"I'd like Sherpa to work for mobile browsers (except Safari)."*
+Every test ran at a desktop size. **✅ Done 2026-10-14.** A `phone` project — a
+Pixel 7, 412 wide, with touch, which is Chromium as Android is — runs
+`test/e2e/phone.spec.ts` alone, and the desktop projects skip it. Five checks,
+each a thumb's: the shell's nav opens from the header's menu button over the
+screen and a row shuts it; a dialog fits and a tap answers it; a button's menu
+opens and stays on screen; the filter bar folds into its ⋮, which opens; a wide
+grid scrolls inside itself, never the page.
+
+It found one gap at once: **the test harness had no viewport `<meta>`**, so a
+phone drew it 980px wide and no phone layout showed. APP-GUIDE's page example
+had none either; both have it now (the starter and Demos already did).
+`T-the-nav-is-a-menu-on-a-phone`.
+
+### `[x]` ✅ 265 — Phase 7: a dialog opens from markup, by invoker commands
+
+The spike, measured first in all three engines: a plain `commandfor` button,
+and a button inside a shadow root carrying `commandForElement`, both deliver a
+custom `--show` to the element they name. **✅ Done 2026-10-14.**
+`SherpaElement` gains `static commands` (`--name` → a method), answered on the
+host; `sherpa-dialog` and `sherpa-overlay-panel` declare `--show` and `--hide`;
+`sherpa-button` carries `commandfor` / `command` onto its inner `<button>` in
+the click. A test opens a dialog and a panel and shuts the dialog from a button
+inside it, with no script, in three engines. CLAUDE.md's CRUD flow and
+APP-GUIDE say so. **✅ And the spec, 2026-10-15:** the generator reads `static
+commands` into `$extensions.sherpa.commands`, and the MCP's `component_api`
+lists them. `T-a-button-commands-by-markup`.
+
+### `[x]` ✅ 298 — Phase 7: sherpa-ui ships no tooling
+
+sherpa-ui shipped eight files of generation code only so the MCP could run
+them, and one, `contract-io.mjs`, imported `js-yaml`, which only the MCP
+declares. **✅ Done 2026-10-14.** The code keeps its one home in `scripts/`,
+where the spec gate runs it. The MCP package copies it into its own `vendor/`
+as it is packed (`mcp-server/scripts/vendor.mjs`, prepack; postpack cleans it),
+and the copy reads sherpa-ui's data through `SHERPA_UI_ROOT`, which
+`lib/sherpa.js` sets. sherpa-ui's `files` lose the five code entries and keep
+the data. The node test now checks sherpa-ui packs the data and not the code,
+and that the MCP's copy is exactly the code it imports; `npm run
+check:mcp-pack` installed both tarballs and called 19 tools, 267 resources and
+3 prompts with no failure. `T-the-mcp-reads-sherpa-ui-through-one-door`.
+
+### `[x]` ✅ 266 — Phase 2: no shim for an app's old stored data (D4)
+
+Will, D4: *"Sherpa is app agnostic so nothing relating to constructed
+applications lives in this project."* **✅ Done 2026-10-14.** Gone:
+`adoptOldFilters` and its `sherpa:filters:` key, read on every page open; the
+strip of a pre-105 View's `edits`; `readingsOf`'s pass-through for a reading
+stored in a `where` before 197 — now reported (`unknown-op`) and filtering
+nothing, and `where` is typed as conditions only, which let one of the two
+`READING_KEYS` copies go; the favourites migration for a row with no key; the
+`search-change` event's old `detail.search`; and the old saved-View shape,
+`SavedView.snapshot` — `saveViewAs` saves the source's Query, and a picked View
+with no Query applies its `ui`. `persistView`'s own snapshot is live and stays.
+Two kept on purpose: `readingRows`' single-condition form (a Simple typed
+answer is stored that way) and a whole Query's `readings`. Nine tests moved to
+the current shapes; one that tested a shim now checks it is gone.
+
+**✅ And the docs.** README, APP-GUIDE and CLAUDE.md named Demos as THE
+reference in seven places; each states the rule in Sherpa's own terms now, and
+names Demos only as one app built that way. A design record that names Demos
+(PAGE-DEFINITION's plan, a trap's history) stays: it is history, not a rule.
+
+### `[x]` ✅ 280 — Phase 5: the filter family's async root
+
+The review's cause: `menu.conditions` reads a row's op and text from live
+controls that fill later, so about 20 sites wait on frames. **Measured first,
+2026-10-15, and the first look was wrong:** reading a menu the harness had
+already rendered showed nothing amiss. The fault is at the moment
+`menu.rendered` resolves for a chip the bar has just built: its row reads
+`{ op: '' }` — the op select has no options — and two frames later reads right.
+
+The plan's Phase 5 item. **Evidence, 2026-10-14:** Demos' `filters survive a
+reload and a trip away` (`reforged-records-persist.spec.ts:164`) sets Status,
+then calls `addFilters(['email'])` at once — and the rebuilt bar reports Status
+EMPTY, so the source clears it (`status: off`, 27 rows, not 4). Run 10 at a
+time it failed 6 of 10 on the build before today's work (`1a8936ca`) and 7 of
+10 on today's, so it is old, not new — it is
+`T-a-rebuilt-bar-reads-empty-until-its-menus-stamp`. In the full Demos run it
+failed once in Chromium and once in WebKit, then passed on retry. 280's fix (the
+menu keeps op and text as it keeps `want`) is what ends it; the test is its
+proof.
+
+**✅ Step 1.** A row keeps its `op` and `join` as data, as it keeps `want`; the
+getter, the change handler and row one's sync use them
+(`T-a-row-remembers-what-it-was-given`). The chip's start-up check lost its
+four-frame loop, and `refresh()` its two frames: 945 filter-family tests pass
+in three engines, and a test reads the menu at the moment it renders.
+
+**✅ Step 2.** The chip's `#recheckConditions` (a re-read one frame later) is
+gone: a row reads right at once now. 954 filter-family tests passed.
+
+**✅ Closed 2026-10-15.** Will: no tests while the components still change. Each
+wait left can only be removed with a test run to prove it, so they move to 302.
+
+### `[x]` ✅ 294 — Phase 8.2: a component reference, generated from the specs
+
+One page per component, written from its spec and its example, so it cannot
+drift. A read-only agent planned it; a second checked the plan against the
+specs, the generator and a prototype. The order: step 1, an attribute's default
+is a value (the generator); step 2, each event says what it means and whether a
+host may cancel it (the generator); step 3, the reference script, its gate and
+the pages; step 4, a hand-written "when to use it" in each example, in three
+batches. Picks (each A): the "when to use it" line lives in each
+`.example.json`; `docs/components/` is not shipped (GitHub renders it); the
+script is its own, with its own gate; Will reads each batch's diff after it
+lands; the CSS table shows the tokens each class's base rule reads.
+
+- **✅ Step 1, 2026-10-15:** an attribute's default is a VALUE. The generator
+  reads it where the header marks it — `md (default)`, `(default md)` or
+  `(default: md)` — and keeps it only if it is a value of the attribute's type
+  (an enum's value, true/false, a number, or a quoted string). 51 defaults
+  changed in 43 specs: 34 gained one (for example `sherpa-dialog data-type`
+  modal, `sherpa-tooltip data-placement` top), 3 lost stray quotes, 1 stale one
+  was replaced, and 13 that were prose ("omitted = base size", "style",
+  "0 / 100") were dropped. A rejected `(default …)` keeps its words in the
+  description. 52 descriptions lost a leading dash. Nothing else in any spec
+  moved (proved against HEAD).
+- **✅ Step 2, 2026-10-15:** each event says what it means, and whether a host
+  may cancel it. The first sentence of each `Fires:` entry, without its detail
+  shape, is the event's meaning: 90 of 156 events in 25 specs have one now. An
+  `emit(…, { cancelable: true })` marks the event `cancelable` (3: the grid's
+  `select-all-request`, and the bar's and the panel's `view-reset`). The
+  manifest carries the meanings. CLAUDE.md said an event missing from `Fires:`
+  is dropped from the contract; the code has kept it for weeks, and now says so.
+- **✅ Step 3, 2026-10-15:** the reference. `npm run reference` writes
+  `docs/components/`: 66 pages and an index (67 files, about 380 KB), each from
+  its spec and its example — what it is, its facts, its example, attributes with
+  values and defaults, properties, methods, commands, events with their detail
+  and meaning, slots, parts and the CSS custom properties each class reads.
+  `check:reference` fails a commit whose pages are not what the specs make, and
+  runs in the hook. Not shown yet: "When to use it" (step 4).
+- **✅ Step 4, 2026-10-15 — done:** every example says when to use its component,
+  and what to use instead (66 of 66; the schema's new `use`). The reference shows
+  it, and so does the MCP's `get_component`. A read-only agent drafted each batch
+  (19 controls, 22 containers, 25 others) from the component's own code and the
+  ruled rules, citing evidence for every claim; a second tried to refute each
+  claim and cut or rewrote what nothing backed. **For Will:** read the lines; a
+  line that reads wrong is fixed in its `.example.json`, then
+  `npm run reference`. Not run yet: the example schema test.
+### `[x]` ✅ 328 — GAP: 5 token names no stylesheet defines
+
+`--sherpa-display-mode-space-md` (chart-legend 1, filter-panel 1),
+`--sherpa-border-rounding-sm` (data-grid 1), `--sherpa-theme-content-size-md`
+(data-grid 2), `--sherpa-theme-content-size-base-1` (filter-panel 2),
+`--sherpa-border-width-sm` (quick-filter 2). Measured: 0 definitions in `src/`,
+so only each fallback draws, and density cannot move it. app-shell's
+`--sherpa-panel-area-width` and `--sherpa-panel-area-min-width` are the only
+other undefined reads, and they are hooks for a page to set. A `lint:css` rule
+could catch this kind of read.
+
+**✅ Done 2026-10-16.** Each read now names the real token with the SAME value in
+the default density (repointed by value, never by name):
+`display-mode-space-base` (16px), `display-mode-border-rounding-base` (4px),
+`theme-content-size-base` (14px), `theme-content-size-large` (16px, the panel
+header's "one size up") and `display-mode-border-width-base` (1px). So nothing
+moves today, and compact and comfortable now move them. Note for Will: Figma's
+`style-active-border-width` is 0.5px, but the active chip draws 1px, as it did;
+say if the chip should take the Style value.
+
+### `[x]` ✅ 329 — GAP: 4 slot descriptions the spec generator misses
+
+app-shell `panel-start`, `panel-end` and `overlay`: a blank line inside its
+`Slots:` block ends the parse. code-block's default slot: its header has a
+one-line `Slot:` label, and the generator reads `Slots:`. 13 more slots have
+no description in their headers.
+
+**✅ Done 2026-10-16.** The generator reads a `Slot:` label too, and a blank line
+ends the block only where nothing follows at its indent. The four descriptions
+are in the specs, the manifest and the reference; nothing else moved. The 13
+slots with no words in their headers still have none.
+
+### `[x]` ✅ 330 — GAP: one-value enums typed as text; template pickers typed as style
+
+The generator reads an enum only from a `|` list, so button `data-type` (icon)
+and nav-item `data-type` (promo) are typed string. Also: button, input-text,
+menu and nav-item set `static variantAttrs` (it picks the template), but their
+specs say kind `style`. The schema has kind `template`, and 0 specs use it.
+Typing them changes check-usage for apps, so it waits.
+
+**✅ Done 2026-10-16.** Measured first: every `data-type` in sherpa-ui, Demos
+and the Gallery is a valid value (68 `icon` buttons, 14 input-text types), so
+no app markup fails. `PropKind` gains `template`. Button (`icon`), nav-item
+(`promo`), menu and input-text (`data-type`, `data-multiline`) declare it, so
+their specs say enum and `template` — and `observed: true`, which the base
+class always did for a `variantAttrs` name; the specs said false. check-usage
+now flags `<sherpa-button data-type="label">`. compile-def writes an enum
+template prop's `templateId` and `variantAttrs`; it wrote `'undefined'`.
+
+### `[x]` ✅ 331 — GAP: sherpa-button submits no form
+
+sherpa-button has no `formAssociated` and no submit code, and both inner
+buttons are `type="button"`. Its Figma divergence note says "For a form SUBMIT …
+use this Button styled Saturated-Default". **For Will:** A — the note changes (a
+form's submit is a native `<button type="submit">`); B — sherpa-button gets a
+submit type. My pick: A.
+
+**Will, 2026-10-16:** *"A but a form submit button should be able to be
+styled like a sherpa button to inherit status classes etc."* **✅ The note**
+now says a submit is a native `<button type="submit">`, and that it must look
+like a Saturated, default Button and follow status and look pins. **⬜ The
+look:** a native button has no way to wear the Button's look today — its CSS is
+in `sherpa-button`'s shadow, and its Structure sizes are projected only there.
+Next: plan one look both can wear, without a second copy of the Button's CSS.
+
+**Planned 2026-10-16** (a read-only workflow: three readers, a designer, a
+critic who found seven breaks). The design:
+
+- **One class, `.sherpa-button`**, on a native `<button>`, with the Button's
+  own names: `data-size`, `data-look`, `data-type="icon"`, `data-status`,
+  `aria-pressed`, `disabled` (read as `:disabled`, so a disabled fieldset counts).
+- **One sheet, `src/core/sherpa-button-look.css`**, in `sharedStyles` (class
+  rules only, no `:host`): the face, hover, down, focus and the switches. The
+  Button's own `.trigger` wears the class, so there is ONE copy of the look.
+  It leaves `display`, `margin` and `vertical-align` to the slot owner, and
+  joins the shared edge and corner classes rather than writing them again.
+- **Sizes** keep the `--sherpa-button-*` names (input-text sets them); the
+  projector also writes `.sherpa-button[data-size]` blocks for a native.
+- **Pins:** a class key in state-pins.yaml, put on its twin pin's selector list
+  so no new block is written (else every import grows ~15 KB). The Button's
+  pressed and disabled pins move to its control.
+- **The page copy:** the build writes `dist/styles/button.css` from the same
+  sheet, exported as `sherpa-ui/css/button`.
+- **Its spec** keeps its token table: the generator reads the look sheet's
+  bindings for a node that wears the class.
+- check-usage checks a native's `data-size`, `data-type` and `data-look`, and
+  flags an icon one with no name. A forced-colours focus ring is added.
+
+**My picks, for Will to change:** 1 — A: the page links `sherpa-ui/css/button`
+beside the tokens (an embedding app leaves `page.css` out). 2 — A: the four
+hand-made copies of the look (code-block copy, grid actions, nav search-clear,
+the chip caret) are queued, one pixel check each, since each one's focus ring
+changes. Building it is test-free; proving every Button looks the same, in
+each size, look and state, needs a run.
+
+**✅ Built 2026-10-17, Will: A (both picks).** `src/core/sherpa-button-look.css`
+holds the face, states and switches once; the Button's control wears
+`.sherpa-button`, and so can a native. The projector writes the native's size
+blocks into the sheet and puts its eight pins on the Button's own blocks (no new
+block); the spec generator reads the look for the node that wears it, so the
+Button's spec keeps its bindings; the build writes `dist/styles/button.css`,
+exported as `sherpa-ui/css/button`; check-usage checks a native's `data-size`
+and `data-type`, and an unnamed icon one. TRAP `T-a-native-wears-the-button-class`.
+**Proved by a run:** a new spec matches a native to the Button in six looks,
+sizes and states, in a disabled fieldset, and inside a shadow root, in three
+engines; every button spec passes; the full suite passes (3044, 17 flaky — all
+page-setup timeouts under load). Weight: about 5 KB more per import, the one
+shared sheet, recorded on purpose. **Queued, as Will chose:** the four
+hand-made copies of the look (code-block copy, grid actions, nav search-clear,
+the chip caret), one pixel check each.
+
+Also found and fixed: `bindSettings` stored a NEW switch's `value` ("on"), not
+a boolean, so a fresh `data-setting` switch read as off. A switch now always
+writes `true` / `false` (a test holds it).
+
+### `[x]` ✅ 296 — Phase 8.4: a README front door
+
+**✅ Done 2026-10-15.** The README is the front door for a developer who meets
+Sherpa for the first time: what it is, its status, how to get it, a first
+page, the four entry points, the data layer alone, a whole app, the editor,
+what it needs, the MCP server, and how to work on it. A read-only agent planned
+it; a second checked the plan against the code and the npm registry.
+
+The old README, measured first:
+- It said `npm install sherpa-ui`. On the registry that name is another
+  project, an Electron app whose `postinstall` runs `npm install` (325).
+- It named two of the four entries, and not `page.css`.
+- Its import map used root paths (`/dist/…`).
+- It said `dist/` needs no build, but a clone has no `dist/`.
+- It linked Sherpa Demos, whose repository a reader cannot open.
+- Its CLAUDE.md link carried an anchor that 293's cut can break.
+
+The new one installs Sherpa by path and links no CLAUDE.md anchor. It gives
+an MCP client `node` and a path, never `npx`, and it does not link the MCP
+README, which still says `npx sherpa-mcp` (325).
+
+`check:docs` now reads the README too. In each doc a reader is given (the
+README, CLAUDE.md, and each doc in `package.json`'s `files`) it checks every
+`npm run`, also in a code block; each `npx sherpa-ui` command; each
+`sherpa-*` tag and attribute in an example, against its spec; each name
+imported from `sherpa-ui`, against its entry; and each relative link outside
+a code block. A record doc keeps the old check. All of them pass, and seven
+planted faults each fail it. Not run yet: a fresh clone and its build, and the
+first page in a browser.
+
+For 293: CLAUDE.md says `data-mode="auto|light|dark|hc"`, but tokens.css
+selects only `auto` and `dark`; no `data-mode` is light, and `hc` selects
+nothing. APP-GUIDE links Sherpa Demos, which a reader cannot open. For 294: the
+README links the reference when the reference lands.
+
+### `[x]` ✅ 325 — HAZARD: our package names on npm are other people's
+
+Measured 2026-10-15 with `npm view`: `sherpa-ui` is 1.8.0, by three other
+maintainers, last changed 2022-06-26. It is an Electron app with no bin, and
+its `postinstall` is `cd reactVR && npm install`. `sherpa-mcp` is 0.1.4,
+another author's Claude Code plugin, with a `sherpa-mcp` bin.
+`create-sherpa-ui` and `sherpa-ui-mcp` are 404. npm says that `npx` with no
+terminal, which is how an MCP client runs it, installs a missing package
+without asking (read, not run).
+
+Safe today, whatever the names: the client runs `node` with the path to
+`mcp-server/index.js`, as the README says.
+
+The sites in sherpa-ui: `mcp-server/README.md` (Setup, the client configs and
+the `scaffold_app` row); `mcp-server/package.json` (the `sherpa-mcp` bin, and
+`sherpa-ui` and `create-sherpa-ui` deps the registry does not have);
+`mcp-server/tools/generate.js` (the `scaffold_app` text); `bin/sherpa-ui.mjs`
+(its header and usage text — `test/unit/nothing-downloads-to-serve.test.mjs`
+expects `npx sherpa-ui serve` in it, so it changes with it); the header of
+`scripts/check-usage.mjs`; CLAUDE.md's commands; and APP-GUIDE's "Start from
+the starter". In `../Sherpa Starter`: `template/mcp.json`,
+`template/package.json`, and `npm create sherpa-ui` in its README,
+`package.json`, `index.mjs` and CLAUDE.md.
+
+**For Will:** A — publish under names that are free, such as a scope you own
+(`@<scope>/sherpa-ui`), and move every site above in one change (a bulk rename:
+your yes); B — keep the names until you publish, and change the docs only to
+say "from the clone". My pick: A.
+
+**Will, 2026-10-16:** *"Let's not worry about shipping via npm for now. We'll
+implement locally from the repo into other projects."* So nothing is renamed
+and nothing is published; a project links sherpa-ui from the repo, as Demos
+does. The hazard stays only for someone who runs `npx sherpa-ui` where it is not
+installed.
+
+One safety fix all the same, as it is "locally from the repo": nothing an MCP
+client runs by itself names `npx sherpa-mcp` now. The MCP README's setup and
+the Starter's `template/mcp.json` run the local `index.js` with `node`, so a
+wrong path fails instead of running a stranger's package. Closed.
+
+### `[x]` ✅ 326 — TOOLING: check-usage reads `app/` unless told otherwise
+
+`usageProblems` reads `config.markup ?? ['app']` (`scripts/check-usage.mjs`),
+but the header says the default is the folder it runs in. A project with no
+`app/` checks 0 tags and passes. `app/` is Demos' layout (D4). Demos names it
+in its own `sherpa-usage.json`, so a default of the project itself does not
+change Demos. That default must skip `node_modules`, because the package ships
+its own `src/**/*.html`. The README leaves `check-usage` out until this lands.
+
+**✅ Done 2026-10-16.** With no `sherpa-usage.json` it reads every `.html` in the
+project but `node_modules` and `.git`. Probed in an empty folder: a typo in its
+page is found, and a page under `node_modules` is not read. Demos names `app` in
+its own config, so it still checks its 199 tags. The README still leaves it out:
+its command is `npx sherpa-ui`, which is 325's hazard. Not run yet: the
+check-usage unit test.
+
+### `[x]` ✅ 327 — GAP: no LICENSE file
+
+Both `package.json` files and the README say MIT, but the repo has no LICENSE
+file, and the MIT licence asks for its notice in each copy. **For Will:** the
+copyright holder and the year.
+
+**Will, 2026-10-20: "Sherpa-UI contributors".**
+
+**✅ Done 2026-10-20.** An MIT `LICENSE` — "Copyright (c) 2026 the Sherpa-UI
+contributors" — in sherpa-ui and in `mcp-server/` (npm ships a root LICENSE in
+every package, whatever `files` lists). The README points to it.
+
+### `[x]` ✅ 293 — Phase 8.1: the doc set
+
+The plan's §8.1. Part A: a TRAPS index by area, made and gated by
+check:traps; TODO's head made true; PRINCIPLES' open work moved here; the four
+reviews moved to a history folder. Part B: the rules doc (`sherpa://rules`)
+written again, and CLAUDE.md cut to pointers. A read-only agent planned each
+part; a second checked each plan against the files.
+
+- **✅ Step 1, 2026-10-15:** check-docs also checks backticked `docs/….md` paths
+  and relative `.md` links (53 paths and 14 links; 2 dangled, now fixed). A line
+  with an obituary word (was, deleted, planned…) is still skipped.
+- **✅ Step 2, 2026-10-15:** `docs/TRAPS-INDEX.md` — 656 entries in 11 areas;
+  `npm run traps:write` makes it, and check:traps fails when it is stale. It is
+  by code area, not by reader, so 193's "a tag on each entry by who meets it" is
+  still not done.
+- **✅ Step 3, 2026-10-15:** TODO's head — one status key, and it says where the
+  work in hand is; headings use `[~]` for 🚧 and ⬜ for not started; 242's and
+  280's sections agree with the ledger. The one-line log is closed at item 200:
+  since then an item's `✅ Done` line is its record.
+- **✅ Step 4, 2026-10-15:** PRINCIPLES' old open items 1, 3 and 4 are 322–324;
+  item 0 is 284's test run; the rest was done, and is kept below.
+- **✅ Step 5, 2026-10-15 — part A done:** the four reviews are in
+  `docs/history/`; every path and link moved, proved by check-docs and one git
+  grep. Part B (the rules doc, and CLAUDE.md to pointers) is next.
+- **✅ Part B step 1, 2026-10-15:** PRINCIPLES now states each rule that only
+  CLAUDE.md stated: where generic code goes (D5), the one `@media`, the slot
+  vocabulary, the app-layer boundary, the naming rules, the tier rule,
+  current/selected, no aliases, the event endings, the words (19), tokens (20),
+  report do not derive (21), comments (22) and suppressions (23), the `@function`
+  trap, and checking a generator by its output. Facts fixed on the way: rules 5
+  and 6 only warn in the hook; rule 16 is half gated by eslint; the accordion
+  example in 18 was false (it is the switch that keeps `change`). LEXICON points
+  at PRINCIPLES 15; a TRAPS line named the wrong motion sheet. CLAUDE.md is not
+  cut yet.
+- **✅ Part B step 2, 2026-10-15:** the rules doc (`sherpa://rules`) is today's
+  build rules: reuse, the five files, the class, the template, the CSS recipes,
+  events, what the generator reads, Figma, and the checks — 208 → 199 lines,
+  pointing at PRINCIPLES by number. Rules 3 and 4 are retired; the disabled and
+  focus recipes no longer read Theme (a new component's Theme baseline is 0). Its
+  Figma names are as exported 2026-09-09, not read live. Five MCP strings that
+  named collections no longer in the export (`Button::`, `Container::`, "Core",
+  "Typography") now say Structure, Display Mode and Theme.
+- **Fixed on the way:** `onConnect`'s doc (and CLAUDE.md's class example) said it
+  fires once; it fires on every connect after the first render.
+- **❓ Part B step 3 — cut CLAUDE.md to pointers.** Every rule it states now has a
+  home in PRINCIPLES or the rules doc. The cut changes what every session reads
+  first, so it waits for Will. **For Will:** A — cut it to about 180 lines: the
+  commands verbatim, the stack, a "where each thing is stated" table, and an
+  `@docs/PRINCIPLES.md` import so each session still loads the rules; B — keep
+  it as it is, and let PRINCIPLES be the statement. My pick: A.
+- **✅ Part B step 3, 2026-10-28 (Will: A):** CLAUDE.md is 864 → 183 lines: the
+  doc table, the commands byte for byte, the stack, the four entry points, one
+  paragraph on a component, and a "where each thing is stated" table. It imports
+  `@docs/PRINCIPLES.md`, so each session still reads the rules. Checked fact by
+  fact first; what only CLAUDE.md said moved: the rules doc gains `pageCss`,
+  the words template, family markup, all six family sheets, `--core-*`, pin
+  hooks, `figma.extensions.json` and "an option needs three uses"; APP-GUIDE
+  gains the Settings page shape and `dialog.show()`. **Fixed on the way:** the
+  rules doc said `onRender` runs once; it runs after each stamp
+  (`T-restamp-does-not-abort`). Two code comments named a CLAUDE.md section;
+  they name PRINCIPLES 18 and 19.
+- **✅ Step 5, 2026-10-28 (Will: A):** the generate-sherpa-component skill is
+  removed; the MCP's README and `server.js` no longer name it.
+- **✅ Step 4, 2026-10-28 — B, not A.** Will picked A (rename the `*_def` tools to
+  `*_spec`), but reading them showed A's premise was wrong: a def is NOT an old
+  name for the spec. It is the MCP's working form of a component (`name`,
+  `props`, `events`, `figma`), made from its DTCG-dialect spec by `specToDef`; a
+  raw spec fails `validate_def` (no `name`) and `compile_def` throws on it, and
+  `sherpa://def/{name}` serves the def. So the names stay, and each tool, the
+  README (which called its output a "spec") and `server.js` say what a def is
+  and where to read one. `check:mcp-pack`: 19 tools, 267 resources, 3 prompts,
+  0 failures. Found reading: 332–336.
+
+**✅ Done 2026-10-28.**
+
+### `[x]` ✅ 332 — TOOLING: the MCP server's version
+
+`mcp-server/server.js` reports `{ name: "sherpa-ui", version: "3.0.0" }`; its
+package is `2.1.0-beta.0`.
+
+**✅ Done 2026-10-16.** The server reads its version from its own
+`package.json`, so the two cannot differ again. Its header's tool list also
+gains `scaffold_app` and `validate_page`. Not run yet: `npm run check:mcp-pack`.
+
+### `[x]` ✅ 333 — TOOLING: `validateDef`'s false token warnings
+
+On real specs its token check gives 12 warnings, and 10 are false: the motion
+scale (`--sherpa-motion-*`, declared in `sherpa-motion.css`: container-header,
+switch ×3, tooltip) and host-set properties (app-shell ×4, app-header ×1). The
+other 2 are 328's.
+
+**✅ Done 2026-10-16.** A token is real when tokens.css, a shared sheet or any
+component's sheet declares it — app-shell SETS the app header's
+`--sherpa-app-header-nav-menu` — or when the component's own header names it as
+a hook; app-shell's header now names both panel-area hooks. 0 token warnings on
+the 66 specs, and a made-up name still warns. `audit_component` and
+`validate_def` show the same.
+
+### `[x]` ✅ 334 — GAP: `--shade()` and `--tint()` have no users
+
+`sherpa-base.css` defines `--shade()`, `--tint()` and `--sherpa-shade-hover|active`,
+but no component's CSS calls them; only the e2e CSS-functions spec
+probes support. Style `+1`/`+2` replaced them for hover and down. **For Will:** A
+— delete them, and keep `T-a-css-function-needs-its-longhand-first` as the rule
+for any future function; B — keep them as a door. My pick: A.
+
+**✅ Done 2026-10-16. Will: A.** Both functions and `--sherpa-shade-*` are
+gone from `sherpa-base.css`, with the e2e spec that probed them (its second
+test asserted the function rule exists, so it would have failed). The trap
+keeps the rule for the next function; CLAUDE.md says none exists today.
+
+### `[x]` ✅ 335 — GAP: the `.chart-*` class aliases
+
+`.chart-tip`, `.chart-mark` and `.chart-anchor-point` are kept as aliases of the
+`.sherpa-*` names (`T-anchoring-is-generic`, `sherpa-anchor.css`), against
+`T-a-rename-drops-the-old-name`. `.chart-tip` is in 5 templates and `.sherpa-tip`
+in 1. **For Will:** A — rename the five to `.sherpa-*` and drop the aliases (a
+rename: your yes); B — keep both names. My pick: A.
+
+**✅ Done 2026-10-16. Will: A.** Five names, one each now: `.chart-tip` →
+`.sherpa-tip`, `.chart-tip-value` → `.sherpa-tip-value`, `.chart-mark` →
+`.sherpa-anchor`, `.chart-anchor-point` → `.sherpa-anchor-point`, `.chart-anchor`
+→ `.sherpa-anchor-el`. In the five charts' templates and TS, the anchor and
+segments sheets, the tip pins (re-projected), the e2e specs and the docs; the
+aliases are gone. Demos and the Gallery never named them. **Not run yet.**
+
+### `[x]` ✅ 336 — DOCS: the build-figma-component skill's collection table
+
+Its table (Apex 2.0, Controls, Containers, Status, `Button::`) does not match
+the export's collections (display-mode, theme, structure, style, …).
+
+Read 2026-10-16: the whole of its §2 is stale, and its "golden binding rule" —
+a component binds its OWN collection first — conflicts with PRINCIPLES 8 (a
+colour binds the Style name Figma binds). That is the skill an agent follows to
+build in Figma, so its doctrine is Will's call. **For Will:** A — rewrite §2 from
+the export's collections and modes, with PRINCIPLES 8 as the binding rule; B —
+cut §2 to a pointer at `sherpa://rules`' Figma section. My pick: A.
+
+**Will, 2026-10-16: A.** §2 to §4b are rewritten together, because §3 and §4's
+recipes name the same old collections. Every name is read live from Figma.
+
+**✅ Done 2026-10-16.** A read-only workflow read Figma live (25 collections,
+and six built components' bindings), drafted §2 to §4b, and a checker found
+and fixed 20 wrong names or claims. The skill now has today's collection table
+(12 base, 13 override), PRINCIPLES 8 as its rule, recipes in today's names, a
+"retired" list, and a list of mistakes in the live file not to copy. Found:
+
+- 56 collections that nodes still pin are hidden from the plugin API, and all
+  18 local text styles bind into one of them (`Typography`). So the skill
+  says: bind the Theme `content/*` atoms, use no text style.
+- Live bindings to deleted variables: the Switch `Value=on` track
+  (`style-surface/dark`), the Filter Chip's badge stroke (`_old_border/base`),
+  the Container Footer buttons' radii (`structure-rounding/*`), and most
+  effects' colour (`Elevation/color`).
+- Five status glyph masters bind a REMOTE library variable.
+
+Those are Figma's to clean; the skill says not to copy them (339).
+
+### `[x]` ✅ 339 — FIGMA: dead bindings and hidden collections in the live file
+
+Found by 336's live read, 2026-10-16. In the Figma file, not the code:
+
+- Bound to deleted variables: the Switch `Value=on` track fill
+  (`Style/style-surface/dark`), the Filter Chip (atom)'s badge stroke in both
+  variants (`Theme/_old_border/base`), both Container Footer buttons' radii
+  (`Structure/structure-rounding/*`), and most effects' colour
+  (`Elevation/color`, not in Elevation's 4 variables).
+- `Transparent` and `Saturated` hold overrides for two deleted variables.
+- 56 collections that nodes pin are hidden from the plugin API (54
+  extensions, 2 bases: `Typography`, `Snapping`); 6,138 text nodes pin one, and
+  5,613 of those a mode that is gone. All 18 local text styles bind into
+  `Typography`.
+- Five status glyph masters bind a remote library variable.
+- Some text binds a Theme colour where a Style one exists (the Container's
+  title, description and body; the Switch `Value=on` label).
+
+It is Will's file, so this waits for him: a clean-up pass, or leave it.
+
+### `[x]` ✅ 340 — DATA: toggles, cycles and the Switch are client updates
+
+Will, 2026-10-16, after 338: *"The switch will never make new server side
+requests, of filter conditions, on toggle."* Then: *"All filter chip UI
+interactions are handled between the presentation and data layers of sherpa.
+It is the data layer that determines if a server side request for data is made
+or if a client side update is enough. The latter is enough for the switch,
+general toggling & cycling of chips etc."*
+
+Measured the same day, on the bench's fake remote store: one Switch toggle
+made 2 loads, 10–12 counts and 5 distinct reads, as any chip change does. So
+today it is not true. In scope: a chip off or on with its value kept, a saved
+filter on or off, the Switch, a Sort cycle and a Group toggle. Not in scope: a
+new value, a typed condition, a page, a search. It is the first slice of 170
+("client side handling immediate front end changes"); the rest of 170 still
+waits.
+
+**Planned 2026-10-16** (a read-only workflow: three readers, a designer, a
+critic who found 13 holes). The client can answer only from a COMPLETE,
+UNPAGED set it already holds; today it holds one only while a summary binds
+`rows: 'all'`. **Will's answers:**
+
+1. *"Charts and metrics are just visual representations of data. The
+   definition of a 'chart' or 'metric', or any other UI component, should only
+   exist in the data layer as a type. They shouldn't be terms in the
+   formatting of data in the data layer."* So what the source holds does not
+   depend on which component is bound (and 341 for the rest).
+2. Hold the WIDER set: the rows under the server's own shaping, before any
+   View filter, so View chips, their counts and Limit never ask either.
+
+**The model that follows:** a remote source reads its whole set once — what
+the store gives for no filter, up to a cap — and, while that set is complete
+and current, answers every load, count and distinct read on the client, with
+the same pipeline a local store runs. It asks the store again on a refresh, a
+store `change`, or when the set is over the cap (then as today). Rows are as
+fresh as the last full read.
+
+**✅ Built 2026-10-16.** `HeldSet` (`src/core/data/held-set.ts`) holds a
+remote store's whole set, and every read the source makes — the page, the
+unpaged rows, each chip's count, Limit's distinct reads, `allRows()`,
+`declareFromRows()` — asks it while it is held, with `applyOptions` and
+`distinctOf`. Held only when provably whole: the store `reportsTotal` (new; a
+`RestStore` needs a `totalPath`), it checks every row (`sampled`, new), and it
+has at most `holdRows` rows (a source option, default 50 000). A public forced
+load (a store `change`, a Refresh) reads it again; an ask that only repeats a
+question keeps it. TRAP `T-a-remote-source-holds-its-whole-set`;
+DATA-SOURCE-RULES says what a backend must give.
+
+**Measured on the bench** (its remote page now runs all 13 acts): opening reads
+the store ONCE (was 3 loads and 2 distinct reads); every act after it — a pick,
+a page, a report, the Switch off and on, a sort, a heading, a search, raise,
+clear, reset — costs 0 loads, 0 counts and 0 distinct reads (was 2 loads, up to
+12 counts and 5 distinct reads each). `asked()` in the bench now FAILS any remote
+act that asks the store, so the rule cannot slip. A local store is unchanged: it
+never left the client.
+
+**Look at:** Demos, `?context=records&remote` — only the first load waits its
+800 ms; every toggle after it is instant. **Run 2026-10-16** (Will's go): the
+full suite is green after it — Playwright 3049 passed, node 471 of 471, the
+remote-count node tests included.
+
+**Reviewed 2026-10-16** (a read-only workflow, each finding checked by a
+refuter): 13 confirmed, all fixed. The three high ones were one root: the
+whole read went out before the store's own facts were checked, and a failed
+whole read had no fallback, so a backend that rejects or times out on
+`take=50001` never loaded again. Now: the facts are read first (a store that
+can never be held is never sent the big read); a refusal for a fixed reason
+lasts and is said once; a failed whole read falls back to the store until a
+Refresh; changes during a read cost one more read, not one each; an overtaken
+ask asks no one; counts and Limit wait for the hold; a `RestStore` whose
+`totalPath` reads no number says `totalUnknown`; a search reads an object's
+values, never its keys; a page definition sets `holdRows`.
+
+**Moved from PRINCIPLES' open work (verbatim):** Carried over when 16 documents were retired into this one, 2026-09-22, then
+**verified one by one** — four were already done and are struck out below.
+Each remaining item is real and reported; none is a plan.
+
+Done, verified in the running app 2026-09-22: **B4** (tooltips showed "1.2K"
+for 1,234 — fixed, they now show the value in full while the axis still
+compacts), **B7** (clicking an indeterminate group box selects all 24 rows and
+the icon follows), **B8** (the 8px token is on the bulk-actions row), **B9**
+(`def.range ?? def.kind === 'number'`), **5** (Add Customer calls
+`store.insert`). And **2**, verified 2026-10-14: on Records, scrolled 300px
+sideways, the selection column keeps its pin and its place through a header
+filter change — all 27 of its cells.
+
+### `[x]` ✅ 341 — DATA: a component is only a TYPE in the data layer
+
+**✅ Done 2026-10-27** (Will: 1 A, 2 A, 3 B). A scope arranges when a page of
+rows is drawn in it (`SourceBinding.pagedIn`, `QueryMember.pagedIn`); `shows`
+is removed outright from `DataAsk`, `AttachFacts`, `Bound` and
+`ScopeDescription`, and the five component asks; `componentOf` names the first
+bind drawn rows. Node tests that bound a bar into a scope by hand did not need
+`steerOnly`. `colorIndex` / `swatch` are their own item, 514.
+
+Will, 2026-10-16: *"Charts and metrics are just visual representations of
+data. The definition of a 'chart' or 'metric', or any other UI component,
+should only exist in the data layer as a type. They shouldn't be terms in the
+formatting of data in the data layer."* Today `src/core/data` decides with
+component words: `shows: 'grid' | 'list' | 'chart'`, `showsRows`, a scope
+that `arranges` because a grid or list is bound, "a summary binds to all the
+rows", a chart's legend scope. Measure every such decision, and plan how each
+becomes a data shape (rows, one page, all rows, a count) that any component
+may ask for.
+
+**Measured 2026-10-27** (a read-only planning agent; its key claim checked by
+hand). The component words that DECIDE:
+- **Who arranges** — `showsRows` (`shows` is `'grid'`/`'list'`,
+  `source-binding.ts`) feeds `arranges()`'s default, the sort's owner and
+  `#mine`. What it means: a PAGE of rows is drawn in this scope.
+- **`shows`** — asked, stored and put in `describe()`; no component reads it
+  there (the bar's `nameScope` uses `component` only). `'list'` and `'form'`
+  are never declared.
+- **A part** is hard-coded `shows: 'chart'`; `part: true` already says it.
+- **Summaries** are already a data shape (`rows: 'all'`), and so are
+  `componentScopes` and `narrows: 'host'`. The TODO text is off there.
+- **Not in the TODO:** `colorIndex` and `swatch` are a value's place in its
+  field's order, named for paint.
+
+**Plan, one commit each:** 1. a scope arranges because a PAGE is drawn in it
+(`pagedIn` = not steer-only and `rows: 'page'`) — the provider's pages behave
+as today; hand binds of plain bars in a scope would start arranging, so about
+15 node-test binds take `steerOnly`. 2. `describe()` stops saying `shows`; a
+scope names its component by the first bind given rows. 3. `shows` goes from
+the asks and binds (`ScopeShows`, `DataAsk.shows`, five component asks). 4.
+Words: schema, PAGE-DEFINITION, comments, trap bodies (ids kept). 1–3 change
+public names or hand-bind behaviour.
+
+**❓ Asked Will:** (1) a silent scope arranges when — A (my pick): a page of
+rows is drawn in it; B: a new explicit `arranged: true` on the bind. (2)
+`shows` — A (my pick): removed outright (nothing reads it); B: accepted and
+ignored for one release, with a report. (3) `colorIndex`/`swatch` — A: part of
+341; B (my pick): type fields, a TODO of their own if at all.
+
+### `[x]` ✅ 342 — The "No matches" banner goes
+
+Will, 2026-10-17: *"I don't like the weird 'no matches' banner/callout that
+you added to the data grid. I never asked for this to be added."* It was the
+container's `banner-no-matches` callout, shown above the Records grid when
+Settings › Experiments › "Keep the content while data loads" is on. 59 asked
+for a banner on a failure or no data only. **✅ 2026-10-17:** the callout and
+its CSS are gone; a kept card with no matches shows no banner, and its grid
+says "No rows to display.". The overlay (58) keeps its No matches and Clear
+filters. `T-a-container-shows-its-datas-state`
+
+### `[x]` ✅ 343 — A slow page opening shows its cards loading
+
+Found 2026-10-17 by Demos' `reforged-card-data-states.spec.ts`: the two
+slow-load tests (`?remote=1`) failed in all three engines. A regression from
+340. `openSource()` awaits `declareFromRows()`, which now does the remote
+store's whole read (800 ms), BEFORE the provider holds the source and hears its
+`loading`. The first load after it comes from the held set, under 300 ms, so
+no card ever showed loading.
+
+**✅ 2026-10-17:** the provider's `open()` treats the opening as a load. After
+300 ms it marks every data card `data-loading` (a bar under kept content, else
+the overlay). When the page is provided, the cards the source draws go to the
+source's own loading; the rest are cleared. `T-a-container-shows-its-datas-state`
+
+### `[x]` ✅ 322 — The data grid holds its filter toolbar and its pager
+
+Will chose the shape in 2026-09 (HANDOVER-BACKLOG.md at 66a93734^, L245–283):
+`data-toolbar`, `data-paginated`; the grid owns sort, group, column filters,
+page, page size and selection; slots for extras; the parts stay usable alone.
+An actions bar (`data-toolbar`) was built 2026-09-10 (4d5b4ab0) and taken out
+in b17959a7. Today the grid has only the `empty` and `no-matches` slots. The
+reason was two sort states that could disagree. Measure first whether they
+still can, now that a bound grid reports and the source owns the sort.
+
+**Measured by reading, 2026-10-16** (a read-only workflow: three readers, one
+checker, one planner; nothing run). Bound — through the provider, as Demos'
+Records page is — there is ONE applied sort: the source owns it and pushes it
+to every bound part, and a bound grid is locked. So the old reason is gone.
+What could still differ is what the Sort chip SHOWED: Save view as rebuilt the
+bar's Group and Sort chips OFF, and nothing re-drew them, while the grid kept
+its sort. An unbound grid and toolbar still hold two sorts, by design. Figma's
+"Data Grid (template)" frame holds cells only — no toolbar, no pager inside it.
+
+**✅ Phase A, 2026-10-16** (no new API): a rebuilt Group or Sort chip follows
+the host's arrangement at once (`#syncArrangement()`, the panel's door). Two
+wrong comments: the grid's `data-total-pages` (it is observed, and Find pages
+by it) and the pager's page-size default (25 when it is an option). The spec
+generator now drops a carried event trigger whose node has gone (pagination's
+`.pager`, 1 of 23). **Not run yet:** the Save view as steps, as a spec.
+
+**Left as it is:** a failed load leaves the source's sort and page ahead of
+what is drawn until the next good load. Pushing the view on a failure would
+move the pager to a page whose rows never came, so it trades one mismatch for
+another.
+
+**For Will — build Phase B (the grid composes the toolbar and the pager)?**
+- A: yes, as chosen in 2026-09. About 20 lines of Demos markup go. The grid
+  pulls in 8 more modules, must re-emit 9 events the page listens for, needs a
+  JS gate so a hidden part never binds, and Demos' tests reach `#qft` from the
+  document 18 times. Each of those steps needs a test run.
+- B: close 322 after Phase A. Bound, the three parts already share one owner,
+  and Figma draws the toolbar and the pager outside the grid's frame.
+- **My pick: B.**
+
+**✅ Closed 2026-10-16. Will: B.** No phase B: the grid, its filter toolbar and
+its pager stay three parts that share one source.
+
+### `[x]` ✅ 337 — DOCS: the filter toolbar spec's stale divergence note
+
+`sherpa-quick-filter-toolbar.component.json` carries a hand-written
+`divergence` note from the prior spec: "the only event emitted is
+quick-filter-change", and the action cluster is "DELEGATED to slotted
+content". The spec lists 19 events, and the template builds the cluster. Read
+Figma's Filter Toolbar (150:3688) and rewrite the note to what still differs,
+or drop it.
+
+**✅ Done 2026-10-16.** Read live: Figma has two slots, content (the chips) and
+right-actions; the code builds both and keeps `view` and `actions` slots for a
+host's extras. The note now says that, and names the one gap (338). A carried
+note is the one part of a spec written by hand; a regeneration keeps it.
+
+### `[x]` ✅ 338 — GAP: the data bar's leading Switch
+
+Figma's Filter Toolbar `Type=data` starts its content with a Switch (28×16,
+on, no label), then a divider, then the chips. The code's data bar has no
+switch. Figma does not say what it switches. **For Will:** A — it turns every
+filter in the bar off and on at once, keeping their values (suspend, not
+clear); build it. B — it is not wanted; take it out of Figma. My pick: A, if
+that is what it means.
+
+**Will, 2026-10-16: A.** "The switch is optional for legacy reasons. So include
+it but hide it by default. Use an attr to expose it."
+
+**✅ Built 2026-10-16** (a read-only workflow planned it: three readers, a
+designer and a critic who found ten breaks in the first design). `data-switchable`
+shows it, on a data bar only. OFF stops every filter in force in the bar — its
+answers and saved filters — and keeps each value; ON brings back exactly those,
+in the same "latest wins" order. The Query owns it (`ScopeQuery.suspended`), so
+the session and a saved View keep it, and one rule (`keepOff`) means nothing
+comes into force in an off scope. `source.suspendScope(scope, off)` and
+`bar.filtersSuspended` are the no-pointer ways. TRAP
+`T-the-filter-switch-keeps-what-it-turned-off`. **Not run yet.**
+
+**Reviewed 2026-10-16** (a read-only workflow: three lenses, each finding
+checked by a refuter): 10 bugs confirmed, all fixed the same day. The two high
+ones: a Reset while off turned the saved filters the Switch stopped back on
+(a Reset report now says `reset`, and the source forgets the list); and a
+bound bar not yet drawn by its source kept its own list, so ON brought nothing
+back (a `data-locked` bar never turns its own chips). Also: a field that leaves
+an off scope comes back on where it went; a carried-over field comes on in a
+new View; a saved filter added while off is redrawn off; the unbound bar has its
+own keepOff, prunes its list and restores only chips that still answer; the
+Filters menu turns no chip on while off. **Not run yet.**
+
+**❓ Two choices I made, for Will to change:**
+1. While it is off, the chips are greyed and cannot be pressed: only the Switch
+   turns them back on. (B: a chip press turns everything back on, plus that
+   chip.) My pick: A, as built — it has no race.
+2. The panel has no Switch, so a bar the panel answers for turns its Switch
+   back on. (B: each panel section gets the Switch too.) My pick: A, as built.
+
+**Will, 2026-10-20: keep both as built.** Done.
+
+### `[x]` ✅ 323 — BUG: hairline gaps between the sparkline's segments
+
+Each segment is a `clip-path` polygon on a flex child of fractional width
+(`sherpa-sparkline.css`), so a hairline of background shows between neighbours.
+Will's old note said `round()` was a no-op here; `T-round-is-for-dynamic-sizes-only`
+says it works in all three engines and is for a DYNAMIC size, and a segment's
+width is one. There is no `round()` today.
+
+Done in code 2026-10-16: JS gives each segment its index (`--_i`), and CSS
+rounds each segment's two EDGES to whole pixels (`round(…, 1px)`), so
+neighbours share one edge and a vertex stays within half a pixel of its dot. A
+bar keeps equal widths: its gap means no two bars share an edge. **Waits for a
+look**: Demos' records page, the metric tiles' sparklines, at a width that does
+not divide by 7. One limit: an edge is whole RELATIVE to the chart, so a chart
+that starts on a fractional pixel still seams at 1x.
+
+**✅ Done 2026-10-28 (Will: look).** Measured before the look: the limit was
+the whole bug. In Records (4 tiles, five window widths), 5 of 20 sparklines at
+1x and 6 of 20 at 2x start on a part pixel and showed up to 6 seams each (a
+whole empty column at 2x in Chromium and Firefox). The
+line and its fill are now one `clip-path: polygon()` each; JS lists the points,
+and CSS still scales each from `--_min` and `--_range`. 0 seams in 84 probe
+cases (three engines, 1x and 2x, whole and part-pixel starts, seven widths) and
+in all 40 Records measures. The `round()` edges are gone; the bars are unchanged.
+A new test reads the pixels. `T-a-trend-line-is-one-shape`.
+
+### `[x]` ✅ 324 — The app header: one more design pass, against Figma
+
+Will, 2026-09-10 (812436a2): "still not to spec". Read the Figma App Header
+node's values (fills, padding, gaps, sizes, text bindings) and diff them against
+`sherpa-app-header.css`, property by property.
+
+**✅ Done 2026-10-16**, read live from App Header 150:3690. Gaps, row heights,
+the buttons' sizes and looks, and the fill already matched. Changed:
+
+- **Badge:** Figma's is a Badge instance; ours was a span copying its values.
+  It is now a real `sherpa-badge`, centred under the bell (Figma x 194 of a bell
+  at 189). The Badge itself drew 12/16 semibold where every Figma Badge count
+  draws JetBrains Mono 14/20 regular; it now wears `.sherpa-text-mono-base`, so
+  menu row counts, filter-panel results and button badges change too.
+- **Dividers:** a 0.5px stroke, 12 tall (Figma); was a 1×16 fill.
+- **Padding** binds Theme `gap/md`, as Figma does (same 8px).
+- **Title** wears `.sherpa-text-large` — font, size, line-height, weight and
+  letter-spacing, as Figma binds; it set three of the five.
+- **Context icon:** 16, `size/icon/sm`, the title's size (Figma 16); was 14.
+- **Shadow:** Figma pins Elevation=lg on the header, in the App Shell too. The
+  header's stuck shadow (2 2 16 -8) and the shell's lift (`shadow-md`) are now
+  `--sherpa-shadow-lg` (8 8 32 -8). It still shows only once something scrolls
+  under.
+- Its `Slots:` named `title`; the slot is `heading`.
+
+**Look at:** Demos, any page — the header, the bell's count, the dividers.
+
+### `[x]` ✅ 319 — GAP: the source shares its presets with its callers
+
+`declarePreset` keeps the CALLER's readings object, and `describe()` and
+`debugState()` hand out the source's own presets, parts and `only`. A caller
+that edits one changes the library. No caller in sherpa-ui or the siblings does
+today (read 2026-10-15). **For Will:** A — copy on the way in only
+(`declarePreset` clones once; rare, cheap), and say in `describe()`'s doc that
+what it hands out is read-only; B — copy both ways (every `describe()` clones
+each preset's readings; the bench's clone count rises in every act that draws a
+bar). My pick: A.
+
+**Will, 2026-10-20: A.**
+
+**✅ Done 2026-10-20.** `declarePreset` keeps its own copy; `describe()` says what it
+hands out is read-only. Opening a page makes one copy per saved filter (bench
+`*/open` clones 7 → 10, recorded). Test: `every-declare-reads-back`.
+
+### `[x]` ✅ 321 — BUG: a Context's saved Views have two keys
+
+**✅ Done 2026-10-27** (Will A): `open(definition, { key })` keeps the page's
+saved Views, filters, kept Query and drafts under `key`, its definition's id by
+default; the outlet passes its Context's name. Test: `reforged-a-page-keeps-one-key`.
+
+The outlet reads a Context's saved Views by the Context's NAME
+(`viewsOf(context)`); the provider keeps them by the definition's `id`. Equal
+in Demos and the Starter, but nothing promises it. **🚧 2026-10-15** (289's Q3,
+my pick A): the outlet now reports `outlet-view-key` when the two differ, so
+the mismatch is loud. No stored key moves. **Waits for Will:** A — the outlet
+passes its Context name to `open()` as the key, one key everywhere (a stored
+View under the old key is not found); B — keep the report only. My pick: A.
+
+### `[x]` ✅ 289 — Phase 6: each layer its own job
+
+**✅ Done 2026-10-15**, the part that keeps behaviour (Q1 A: part B is 320).
+One commit each, each safe by reading; the bench counts never moved.
+
+| step | what | where now |
+|---|---|---|
+| 1 | one View chip id (`VIEW_CHIP`, 7 sites) and one View library builder (`viewLibrary`) | `shared-constants.ts`, `persist-view.ts` |
+| 2 | the draw contract is the data layer's: `BoundControl`; `src/core/data` imports nothing from `ui/` | `data-source-types.ts` |
+| 3 | data meaning leaves the provider: `mergeSet`, the change event's `emptiness`, `summariseBanded` | `query-edits.ts`, `data-source.ts`, `aggregate.ts` |
+| 4 | an unscoped bar's whole answer: `answerUnscoped` | `data-source.ts` (from `bind-source.ts`) |
+| 5 | the panel-or-bars mode: `ProviderMode` | `sherpa-provider/provider-mode.ts` |
+| 6 | the open page's Views, saved sets, drafts and Reset: `ProviderPage` | `sherpa-provider/provider-page.ts` |
+
+The provider falls from 1,245 to 756 lines. Its spec changed only in two door
+args (`deleteView(id?)`, `deleteFilters(id?)`). Public types: `boundElements`,
+`attach`, `allRows` and `unbind` speak `BoundControl`; `DataChangeDetail` gains
+`emptiness`, `SummarySpec` gains `zones`; `answerUnscoped` is new.
+**Not run yet:** the provider e2e suites (provider, provider-saves-filters,
+provider-summary, reset-at-default, reset-to-default, saved-filter, view-drafts,
+view-definition, outlet), the Demos filter-panel-mode and reset suites, and the
+unit tests for `summariseBanded`, `mergeSet` and saved filters.
+
+### `[x]` ✅ 292 — Phase 6: one door per job, and the missing read-backs
+
+**✅ Done 2026-10-15** (no rename: 86 holds; Q3 A, Q4 A). Each irregular member
+says its job: `scope()` is `hold()`'s read-back, `scopes` every scope that holds
+a field, `rows` is LIVE (now typed `readonly Row[]`), `result` a shallow copy,
+`applyOn` fixed by the options, `limitOptions` settable. Five read-backs, each
+a copy: `contribution(key)`, `partFacts(scope)` (its `only` is the element),
+`defaultFor(scope)`, `preset(id)` and `scopeFacts(scope)`; `export()` now builds
+its presets with `preset()`. DATA-SOURCE-RULES §6 has one read-back table.
+**Not run yet:** `every-declare-reads-back`, and
+`a-bar-report-never-rewrites-a-saved-filter`, which guards `export()`. Found
+reading: 319.
+
+### `[x]` ✅ 291 — Phase 6: faster
+
+**🚧 Steps 1–6 done 2026-10-15**, each safe by reading and measured by the bench.
+1. An `ArrayStore` count copies no rows: it counts in place.
+2. `Store.distinct`: `ArrayStore` and the live stores read a field's values in
+   place, and a `fakeRemote` store forwards it. `declareFromRows` asks it too.
+3. Fewer `structuredClone` copies: one for `source.query`, none for the first
+   `#defaults` entry, none in the provider's change listener.
+4. Recency is a Map of change numbers, not an array rebuilt on each change.
+5. `present()`'s limits build a shallow Query, not a clone, per list field:
+   clones fall by 6 in each act that limits values (pick 7 → 1).
+6. A Reset check reads its definitions without copies, and the provider asks
+   each scope's `answered()` once per frame.
+
+The bench, re-recorded after the fakes were fixed (286):
+
+| act | before 291 — loads (counts) · rows | now — loads (counts) · distinct · rows |
+|---|---:|---:|
+| pick a value | 10 (3) · 45,223 | 2 (4) · 5 · 2,558 |
+| the same pick again | 1 (0) · 10,000 | 0 (0) · 1 · 0 |
+| a bar's whole report | 22 (10) · 38,337 | 2 (15) · 14 · 2,543 |
+| sort | 16 (10) · 25,508 | 2 (10) · 4 · 2,543 |
+| search | 19 (12) · 25,602 | 2 (12) · 5 · 898 |
+| clear | 23 (11) · 64,161 | 2 (12) · 10 · 3,520 |
+
+(The "now" column also counts every chip a bar reports, which the old fakes did
+not, so its counts are higher.) **Waits for a test:** 7 (one test per filter)
+and 8 (one compile per act). **Not run yet:**
+present-limits-each-field, page-definition and the stores' unit tests.
+
+**2026-10-27:** every step has run in the full suites since. Step 8 is met: the
+bench reads ONE compile per pick on a local source, two on a remote or REST one.
+Step 7 stays open.
+
+**2026-10-28: step 7 done** — one test per filter. `filterTest(filter)` makes a
+filter into ONE test: its text lower-cased, its `last`/`next` made dates, its
+range ordered — once. The walk makes each step's test once per pass,
+`filterRows` once per call, and the highlight once; `matchesFilter` is the
+one-row door. Measured over 10,000 rows with four clauses: 1.8 ms → 0.6 ms.
+`filterTest` is exported beside `matchesFilter`, for an app's own loop.
+
+### `[x]` ✅ 290 — Phase 6: honest entry points
+
+**✅ Done 2026-10-15** (Q1, my pick A, as CODE-REVIEW-PLAN 6.4 says). 32
+app-layer names leave `sherpa-ui/data`: persist-view (18), view-sync (4),
+saved-filters (6) and session (4). Each keeps its door at `sherpa-ui/app` and
+`sherpa-ui`; no sibling imported one from `/data`. `checkApp`, `bindSource` and
+`labelId` stay: each is DOM-free, and a server runs `checkApp`. The lint now
+holds `web-storage.ts` DOM-free, as `IdbStore` loads it. `dist/data.js` loads 7
+fewer modules. A new test, `the-data-entry-loads-no-dom`, reads each export's
+module and walks what `dist/data.js` loads, against the lint's own file list;
+`T-the-data-entry-loads-no-dom` says why the lint alone cannot catch it.
+**Not run yet:** that test, headless-data-layer, a-scope-arranges-its-own-rows,
+the-package-surface, weight. **✅ Q2 done 2026-10-28 (Will: yes):** `spoofRemote` is `fakeRemote`, in
+`src/core/data/fake-remote.ts`, and its options are `FakeRemoteOptions`. No alias
+(`T-a-rename-drops-the-old-name`); Demos and Gallery moved in the same change.
+
+### `[x]` ✅ 288 — Phase 6: one copy of each data helper
+
+**🚧 Steps 1–8a done 2026-10-15**, one commit each, each safe by reading. A
+read-only agent planned it; a second checked the plan against the code. The
+bench counts did not move.
+
+| step | what | where now |
+|---|---|---|
+| 1 | `emptyScope`, `narrowsOne`, `eachScope`, `heldInView`, `heldAbove`, `presetClauses` — 15 narrows-skip loops, 12 empty-scope literals, 5 View-hold sets, 3 preset loops | `query.ts` |
+| 2 | `answerOf`, `readingAnswered` (was `answers`), `sameReading`; `READING_KEYS` now `satisfies Record<keyof FieldReading, 0>`, so a missed key is a type error | `query.ts` |
+| 3 | `modeOf(reading, rows?)` — the mode rule written at 7 sites | `filter-state.ts` |
+| 4 | `rowsFromPicks` — the pure half of the menu's `#seedFromPicks` | `filter-state.ts` |
+| 5 | the chip's `#hasTypedAnswer` calls `rowAnswered` | — |
+| 6 | the two `canonical`s: `filterKey` (query.ts) and `sortedJson` (saved-filters) | `query.ts` |
+| 7 | `coalesce()` (3 microtask flags) and `Latest` (4 Symbol tickets) | `timing.ts` (new) |
+| 8a | `storageKind(shared)` — 2 `kindOf` copies and 3 ternaries | `web-storage.ts` |
+
+One edge, step 1: the old loops read `narrows` as truthy, compile read
+`narrows?.length`. They differ only for `narrows: []`, which only a View's JSON
+can carry; now every site reads it as compile did.
+
+**Waits for Will's next test run:** 8b (`keyedStore` for saved views, saved
+filters and drafts — an emptied set then removes its key), 9 (the op-blind row
+test), 10 (`sameFilter`, order-free, at three sites). **Deferred:** 11 (one
+version counter for the applied Query), after 287.
+**Not run yet:** every step — type-check, lint and the bench only.
+
+**2026-10-27:** steps 1–8a have run in every full suite since (all green). 8b
+looked at again: each of the three is one read and one write, already over
+`web-storage.ts`'s `readJson`/`writeJson` — a keyed store would add a layer to
+save about ten lines. My pick: drop 8b. 9 and 10 stay open.
+
+**2026-10-28:** step 10 done — `sameFilter(a, b)` in `query.ts` (a filter, or a
+filter by id, the same in any clause order), at the three sites in
+`data-source.ts` that compared filters as text: `still`, `same` and `split`.
+The bench did not move. Step 9 looked at: `readingAnswered` tests a condition
+row as "has text or picks", blind to its op, and that keeps a half-typed range
+(one end) in the draft, where `rowAnswered` would drop the first click of a
+date range. My pick: drop 9.
+
+**✅ Closed 2026-10-28 (Will: yes).** 8b and 9 are dropped, for the reasons
+above. 11 is dropped too: the walk key is a cache guard, and a version counter
+that one edit forgets to bump draws old counts with no error, where the text of
+the applied Query is small. The 13 `JSON.stringify` calls left in
+`data-source.ts` are cache keys, not filter compares.
+
+### `[x]` ✅ 287 — Phase 6: split `data-source.ts` along its seams
+
+**🚧 Steps 1–5a and 6 done 2026-10-15**, one commit each, each safe by reading.
+A read-only agent planned it; a second checked the plan against the code.
+
+| step | what moved | to |
+|---|---|---|
+| 1 | the 15 shapes a DataSource takes and gives | `data-source-types.ts` |
+| 2 | what each field IS: kind, label, values (`#fields`, `#domains`) | `field-catalogue.ts` — `FieldCatalogue` |
+| 3 | the Query edits, as functions that take the Query first | `query-edits.ts` |
+| 4a | the bound components and how each is bound | `source-binding.ts` — `SourceBinding` |
+| 4b | publishing and every draw loop, behind a live `BindHost` | `source-binding.ts` |
+| 5a | the pure counting helpers (limits, distinct values, serial chains) | `source-counts.ts` |
+| 6 | tidy: header, banners, maps, one blank line, one doubled JSDoc | — |
+
+`data-source.ts`: 2,808 → 2,081 lines. After every step the built
+`DataSource` class and `data.d.ts` were byte-identical, and the bench counts
+did not move. The four data-layer entries grew about 3.5 KB minified (five
+modules cost more than one); no display component grew.
+**Waits for Will's next test run:** 5b — counts and limits as a `SourceCounts`
+class behind a `CountHost`. The bench does not cover serial sets, chart parts or
+carry-over fields. **Not run yet:** every step — type-check, lint, the bench and
+the d.ts diff only.
+
+**2026-10-27:** steps 1–6 have run in every full suite since (all green). 5b is
+left: the walk reads about 25 of the source's parts (its age, binding, catalogue,
+sets, defaults, parts, held rows, compile, requery…), so a `CountHost` would be
+25 hooks to move 280 lines. My pick: leave it until the walk changes for a reason
+of its own.
+
+**✅ Closed 2026-10-28 (Will: yes)** — 5b is left until the walk changes for a
+reason of its own.
+
+### `[x]` ✅ 286 — Phase 6: the bench
+
+**✅ Done 2026-10-15** (Will: run it now, and in the hook on data-layer commits).
+`scripts/check-bench.mjs` (`npm run check:bench`) bundles the data layer from
+`src/`, opens the Records page over 10,000 seeded rows with its five controls
+faked from their specs, and counts what each reader's act costs — loads, counts,
+distinct reads, rows, compiles, clones — against `scripts/bench-baseline.json`,
+which may only fall. Time is printed, never gated. It runs in half a second; the
+hook runs it with `--staged` on data-layer commits, `npm test` always.
+`T-the-bench-counts-and-never-times`.
+
+**What it measured** (the first baseline; the plan's guesses by reading held):
+
+| act | loads (counts) | rows | compiles | clones |
+|---|---:|---:|---:|---:|
+| pick a value | 10 (3) | 45,223 | 14 | 7 |
+| the same pick again | 1 (0) | 10,000 | 2 | 0 |
+| a bar's whole report | 22 (10) | 38,337 | 14 | 13 |
+| sort | 16 (10) | 25,508 | 4 | 1 |
+| a heading's filter | 25 (12) | 39,875 | 11 | 7 |
+| search | 19 (12) | 25,602 | 4 | 1 |
+| clear | 23 (11) | 64,161 | 15 | 7 |
+
+A pick that changes nothing still reads all 10,000 rows; a sort or a search
+costs 10–12 chip counts, each a full load. These are 291's targets.
+
+**Fakes fixed, 2026-10-15** (the plan's check). The first baseline under-counted
+each bar report: its fake bars sent only answered chips, and an OFF saved filter
+leaked into a bar's holds. Now each bar reports every chip it holds, as the
+toolbar does; a bar supersedes only its own chips; the page act runs while the
+rows fill many pages; and a change to one of the four specs the fakes read runs
+it in the hook. `distinct` stays gated: after 291 it is a cost like a load. The
+re-recorded numbers are in 291's section.
+
+### `[x]` ✅ 284 — Phase 5: a roving-focus helper
+
+**✅ Done 2026-10-15**, but for the calendar (315). A read-only agent planned it
+and a second checked the plan against today's code. `rovingFocus()` in
+`core/ui/roving-focus.ts`: a set is ONE tab stop; the arrows, Home and End move
+it; a re-draw keeps focus on the same item (it read `activeElement` before
+drawing and finds the item by its key after); a handled key is prevented, and a
+menu now skips a key an inner set used. Its users: **tabs** (their own copy went,
+−26 lines); **every chart** — bar and radial were one stop per mark, the gauge
+one per band (and its `role="img"` hid their names), the line chart had none;
+now one stop each, with Left/Right along a line and Up/Down across lines. A
+**sparkline** and a **gauge** have nothing to focus for their whole reading, so
+they SAY it: the sparkline's host label names it and its trend is its
+description; the gauge describes the needle's value and its scale. The date
+stand-in gained `add()` for the calendar. **My picks on the plan's questions**
+(each was A): one stop per chart; Up/Down cross lines; the line's dot stays a
+`<button>`; the sparkline's words "Trend: {first} to {last}, low {min}, high
+{max}"; the step tracker, breadcrumbs and transfer list keep one stop per item;
+right-to-left arrows later. **Not run yet:** the tabs, chart keyboard, radial,
+gauge and the date unit test. **Queued:** 315 (calendar), 316–318.
+
+PRINCIPLES' old open item 0 (no chart was keyboard-reachable) closes when this
+passes Will's test run.
+
+### `[x]` ✅ 316 — A11Y: a breadcrumb with no href could not be reached
+
+**✅ Fixed 2026-10-15.** A crumb with no `href` (not the current one) is a step
+back all the same: it is `role="link"` with `tabindex="0"`, Enter presses it, and
+it underlines on hover as a live crumb does. **Not run yet.**
+
+### `[x]` ✅ 317 — A11Y: an arrow in a drilled menu's text field went Back
+
+**✅ Fixed 2026-10-15.** The menu's ArrowLeft-goes-Back and ArrowRight-drills
+skip a key whose real target is a text field, a textarea, a slider or editable
+text: there an arrow moves the caret or the value. **Not run yet.**
+
+### `[x]` ✅ 318 — A11Y: toolbars, radios and a slice's click by keyboard
+
+**✅ Radios, 2026-10-15.** Each `sherpa-select-radio` has its native radio in a
+shadow root of its own, so the browser gave a group neither its one Tab stop nor
+its arrows. Now, by its group (`radioGroup()`): the ticked radio, else the first
+enabled one, is the group's one Tab stop, and the arrows tick the next or
+previous one and report it, as a press does. The grid's single-select rows
+follow (one stop, arrows move the selection). **✅ A slice's click:** Enter and
+Space press the focused slice. **⬜ Toolbars:** three `role="toolbar"` bars
+(`sherpa-toolbar`, `sherpa-quick-filter-toolbar`, `sherpa-layout-canvas`) have
+no arrow keys; their items are SLOTTED, which `rovingFocus()` does not reach yet.
+**Not run yet.**
+
+**❓ Toolbars — Will (2026-10-22).** A bar can hold a text box (the toolbar's
+trailing search, a chip's value box), where Left and Right move the caret.
+**A (my pick):** the arrows move between the bar's controls and Tab still
+visits each one, as today; inside a text box the arrows stay the box's. Small,
+and no control leaves the Tab order. **B:** the APG pattern: the bar is ONE Tab
+stop and the arrows move inside it. Fewer Tab presses, but every chip, button
+and box needs `data-no-tab`-style handling, and the bar's keys change for every
+reader.
+
+**✅ Toolbars, 2026-10-22 — Will: A**, *"However, in number inputs the up/down
+arrows should increment/decrement the value. In select inputs the up/down
+arrows should walk the menu items."* `toolbarKeys()` (`roving-focus.ts`): Left,
+Right, Home and End move between the controls of `sherpa-toolbar`,
+`sherpa-quick-filter-toolbar` and `sherpa-layout-canvas`, slotted ones too;
+Tab is unchanged. A text or number box keeps every arrow (a number steps on Up
+and Down, natively), a select keeps Up and Down, an open menu its own; Up and
+Down never move between controls. `reforged-a-toolbar-moves-by-arrow` (2,
+Chromium). TRAP `T-a-toolbar-moves-by-arrow-and-keeps-its-tabs`.
+
+### `[x]` ✅ 315 — Phase 5: the calendar's roving grid
+
+Waits for a measured run. The plan: `sherpa-calendar-cell` gets
+`delegatesFocus`; each grid (days, months, years) is one tab stop with the date
+keys — arrows ±1/±7 days skipping days that cannot be picked, Home/End the week,
+PageUp/PageDown a month (Shift: a year), moving the shown month when the day
+leaves it. The open question is the engine's: with `tabindex="-1"` on a
+`delegatesFocus` host, is its inner `<button>` out of the Tab order in all three
+engines? If not, the cell takes its button out on a flag, as `sherpa-button`'s
+`data-no-tab` does. Today a pick also drops focus to `<body>` (the grid
+re-stamps), which `restamp()` fixes.
+
+### `[x]` ✅ 283 — Phase 5: charts, one frame sheet, shared hotspots, no caps, shared axis code
+
+**✅ Done 2026-10-15**, in six commits. A read-only agent planned it, a second
+checked the plan against the code. 1: `.hotspots` once, in `sherpa-anchor.css`
+beside `.chart-tip`; the polar anchor once, in the segments sheet. 2: a donut
+slice and a gauge band are one `.chart-segment` rule. 3: a third family sheet,
+`sherpa-chart-frame.css` — heading, body, the legend's place and the narrow
+stack — for bar, line and gauge (it was written three times). 4: bar and line
+share `renderValueAxis()`, which now returns the bands it drew, and stamp their
+x-labels by `renderItems`. 5: no tip cap on radial (was 11 slices) or gauge (6
+zones): the lift finds a segment's tip by index and shows it (307). 6: the
+sparkline stamps its shapes and dots from prototypes, each with its values
+inline; `data-len` goes; the last 8 values are still drawn. And stale pointers
+went. Net about −290 lines. **Not run yet:** the chart, keyboard, tooltip,
+sparkline and metric specs; Demos' live-alerts. **❓ 308** holds the one step
+left: the radial chart on the frame sheet.
+
+### `[x]` ✅ 308 — Will: the radial chart on the chart-frame sheet?
+
+The frame sheet (283) serves bar, line and gauge. The radial chart lays out its
+own `.layout` grid, 7:3, legend beside. On the frame it would gain a `heading`
+slot and `data-legend` like the others, and lose `part="layout"`; its legend
+would sit **below** unless a page sets `data-legend="vertical"` (Demos' two
+donuts would). **A:** join — one layout rule for every chart. **B:** keep its
+own grid. My pick: **A**, with Demos' two donuts set to `vertical` in the same
+step, so nothing you see moves.
+
+**✅ Will, 2026-10-15: A** — *"Sure, as long as it doesn't break component
+agnosticism."* The radial chart works alone as before; only Demos' own markup
+names `vertical`.
+
+**✅ Done 2026-10-15.** The radial adopts the frame sheet: a `heading` slot and
+`data-legend` like the others, its ring in a `.chart-body`, and the frame's 7:3
+split and narrow stack; its own `.layout` grid (and `part="layout"`) went. The
+legend now sits below by default; Demos' two donuts set `vertical`, so they look
+as before. The legend-slot test now runs every check on all four charts.
+**Not run yet.**
+
+### `[x]` ✅ 309 — BUG: a zoneless gauge's band takes a container's grey outline
+
+Found by 283's checker, by reading. `.chart-segment` reads `var(--_border, …)`
+first. A gauge with no zones gives its value band no inline `--_border`, so
+inside a `sherpa-container` or `sherpa-panel` — both set `--_border` on their
+`:host` — the band's outline is their grey (`#b3b3c3`), not `--_fill`. A fix:
+the gauge writes the band's own `--_border`. Needs a look first.
+
+**✅ Fixed 2026-10-15**, by reading: only the segment outline reads `--_border`,
+and every zone sets its own inline. The gauge's `:host` now sets
+`--_border: initial`, so nothing comes in from a card and a zoneless band's
+outline falls back to its fill. **Not run yet.**
+
+### `[x]` ✅ 307 — BUG: radial and gauge tips were never lifted
+
+Found by the 283 plan agent, by reading. `top-layer-tips.ts` lifts the tip of an
+`.sherpa-anchor` or `.chart-mark`; a donut slice and a gauge band are neither,
+so their tips stayed in the page, where a card's containment can clip them. 300
+checked the gallery's tips open; it did not check they were lifted. **✅ Fixed
+2026-10-15 with 283 step 5:** the lift finds a segment's tip by its index and
+shows it. **Not run yet** — a test for a 14-slice donut and an 8-zone gauge waits
+for Will's run.
+
+### `[x]` ✅ 306 — BUG: the panel's number and date filters never drew alone
+
+Found by the checker of 282's plan. A number body draws a slider and a Range
+switch, a date body a calendar — but only the bar and the grid imported them,
+so `sherpa-ui/components/filter-panel` alone drew those bodies empty. **✅ Fixed
+2026-10-15:** `menuFor()` — which asks for those bodies — imports the three, and
+the bar's and grid's own copies went. Not the menu: a text field's options menu
+must not load a calendar. `T-menu-composes-real-components`. **Not run yet.**
+
+### `[x]` ✅ 310 — TOOLING: the spec reader stops at a template's first nested prototype
+
+Found by 285c's checker. `scripts/lib/html-structure.mjs`' `parseTemplates`
+matches `<template id="…">` lazily up to the FIRST `</template>`, which is the
+first nested prototype's. So each spec's anatomy holds only that prototype: the
+bar, line and gauge keep only their first, input-text keeps none, and the
+manifest's parts miss the bar's. A fix nests properly; every spec regenerates,
+so it is its own commit.
+
+**✅ Fixed 2026-10-15:** the close is found by depth. 15 specs gained the
+prototypes they had lost (additions only, 1,400 lines); all 66 still round-trip,
+which is the proof the gate gives; the manifest gains the parts it missed.
+
+### `[x]` ✅ 311 — Phase 5: 285 part C's timing step
+
+Waits for Will's test run. Four prototypes hold custom elements: the grid's row
+(select boxes), the bar's chip, the panel's value chip and the menu's condition
+row. Through `clone()` they upgrade at clone time, not at append — the end state
+is the same by reading, and a detached menu's rows would then fill (a likely
+fix). Then the base's `upgradeClonedIcons` goes, and `clone()` calls
+`upgradeIcons` itself. Run the grid, toolbar, panel and menu specs after.
+
+### `[x]` ✅ 312 — BUG: the data-viz header's leading icon never showed
+
+Found by 285b's checker. 279 renamed the slot `left` → `leading`, but the CSS
+still showed the icon cell on `:state(has-left)`, a state nothing sets any more.
+**✅ Fixed 2026-10-15:** `:state(has-leading)`, and its `Slots:` line. The class
+and part stay `left` (a part is public). **Not run yet.** No other renamed slot
+left a stale state (checked: `has-title`, `has-brand-icon`, `has-action`).
+
+### `[x]` ✅ 313 — BUG: the overlay panel's footer is inset twice
+
+Found by 285b's checker, by reading. `sherpa-overlay-panel.css` gives the
+`sherpa-container-footer` host `padding-inline: var(--_pad)` (16px), and the
+footer row adds its own 16px: 32px against the body's 16px, and the divider is
+inset too, where 8ef4f2a1 asked for a full-width one. Its comment ("Container
+Footer binds padding/none inline") is stale. The likely fix deletes those
+lines. Needs a look at the pixels first.
+
+**✅ Fixed 2026-10-15**, by reading: the panel passes its gutter to the footer as
+`--_pad-inline` instead of padding the footer's box, so the row has ONE inset and
+its divider runs the full width. **Will, to check by eye:** a footer in an
+overlay panel in Demos.
+
+### `[x]` ✅ 314 — Will: a composed header for dialog and panel?
+
+Dialog and panel draw `data-heading` as a plain `<span class="heading-text">`
+with four title rules and a hand-drawn row — the same as
+`sherpa-container-header`'s title. **A:** compose a `sherpa-container-header`
+(default variant), as the overlay panel does — one header for every card, and a
+slotted header then hides it (today both draw). Cost: about +5.8 KB on 14
+single-component entries (input-text imports the dialog, the menu imports
+input-text), and the title truncates where it wraps today. **B:** keep the span,
+move its four rules into the regions sheet. No weight, no visible change. My
+pick: **A** ("compose, never re-implement"), after one light Figma read of the
+Dialog (1003:33675) and Panel headers to confirm they are Container Header
+instances.
+
+**Will, 2026-10-15:** *"There are already header variants designed in Figma. The
+bridge is up."* So: read the header variants in Figma first, and build to them.
+
+**✅ Done 2026-10-15.** Read in Figma: the Dialog (1003:33675) and the Panel
+(1003:33690) each compose `Container Header` **Variant=default** (912:33355) and
+`Container Footer` Type=action-bar; the Overlay Panel composes Variant=Panel, as
+it already does in code. So dialog and panel stamp a
+`<sherpa-container-header class="heading">`, and `data-heading` reaches it by a
+new value of an existing prop option, `as: 'attr'` — the base passes the
+attribute itself on (and removes it when absent), so neither needs a sync method.
+A slotted header now hides it; before, both drew. The span, its four title rules
+and the hand-drawn row went. The footer already matched Figma: a page slots a
+`sherpa-container-footer`. **Not run yet:** the dialog, panel, a11y and phone specs;
+Demos' five dialogs with a `data-heading`. **Weight:** about +5.8 KB on the entries
+that reach the dialog — record at Will's run.
+
+### `[x]` ✅ 304 — BUG: a one-chip field in the panel never shows pending
+
+Found by the 281 plan agent, by reading. The panel draws a date, or a list over
+16 values, as ONE chip; `#syncPending` marks only the field's box, never that
+chip, so the chip's results badge stays up while its Apply waits —
+`T-a-chip-counts-its-own-results` says pending shows none. A fix marks
+`#answerChip(held)` too. Needs a test first.
+
+**✅ Fixed 2026-10-15**, by reading: `#syncPending` marks the field's one chip as
+it marks its box. **Not run yet.**
+
+### `[x]` ✅ 305 — GAP: a grid heading's menu never hears "Hide unmatching filters"
+
+Found by the 281 plan agent, by reading. The provider writes
+`data-hide-unmatched` only to bars and panels, and the grid's `#markPresent`
+never toggles `data-hide-unavailable` on a heading's menu. Intended, or a gap?
+
+**❓ Will:** **A** — the grid's heading menus follow the switch too (the provider
+writes the grid's `data-hide-unmatched` as it writes a bar's, and the grid marks
+its menus with `hidesUnmatched()`): one rule in every filter. **B** — a grid
+heading always shows every value. My pick: **A**.
+
+**Will, 2026-10-20: A.**
+
+**✅ 2026-10-20.** The provider tells every control with a filter menu its Limit
+switches — a bar, a panel, and now a grid (`#limited()`: anything that draws a
+scope or a present list). The grid declares `data-limit-options` and
+`data-hide-unmatched`, and its `#markPresent` puts `data-hide-unavailable` on
+each heading menu with `hidesUnmatched()`, again when either changes. Test:
+`reforged-provider` "a grid heading menu follows the provider's Hide unmatching
+switch", 3 engines.
+
+### `[x]` ✅ 281 — Phase 5: toolbar and panel, one helper for each part written twice
+
+**✅ Part A, 2026-10-15.** Four parts the bar and the panel each wrote, now one
+copy in `core/ui/`: the reader's saved sets and the Saved chip (`SavedSets`,
+26 lines a side); the Filters button's face and its menu's def
+(`drawFiltersButton`); what each one-value row was told, its Apply flip and the
+re-tick of a shut menu (`OneRows`, beside `MenuDrill`); and the ⋮ menu's save
+rows (`saveRows`), page-button press (inside `pickMore`) and two switches
+(`askSwitches`). Every `emit` stays in its component — the spec reads only
+the component's own file — so a helper hands back a request or takes an `ask`.
+One dead write went: the bar's `data-search`, which `menuFor()` already sets.
+Bar −48 lines, panel −43, helpers +133 (each class member carries its doc
+line), net +42. Specs unchanged. A read-only agent planned it and a second
+checked it against the code first. **Not run yet:** the toolbar, filter-panel,
+one-filters-button, panel-filters-button and provider-saves-filters specs.
+
+**✅ Part B, 2026-10-15.** Eight more, each to the file whose job it is:
+`OrganiseColumn` once, in `data-source.ts` (it had a third copy inside
+`ScopeDescription`), and `SortDirection` from `store.ts` — `PanelColumn` goes,
+no alias; the reset buttons and the hide test beside `resetRows` in
+`more-menu.ts`; the Group/Sort rows, the arrangement and the `data-pending`
+parse in a new `core/ui/filter-host.ts`; ONE "ruled out" rule, `ruleOut()` and
+`setAside()` in `filter-state.ts`, used by the bar, the panel, the grid and the
+menu (five copies, not three); the results words, `countSaid()` in
+`filter-face.ts` — the chip and the panel, not the bar, wrote them, and only
+filter code loads that file; the saved card's tail, `hangSavedMenu()`; and
+`reopenFilters()` after a ×. Bar −45, panel −24, chip −3, grid −1; the shared
+homes +128. Each copy is one now; the line count is not the gain. Two probable
+bugs found on the way are queued: 304, 305. Specs unchanged. **Not run yet.**
+
+### `[x]` ✅ 285 — Phase 5: controls, containers, templates
+
+**✅ Part A, controls, 2026-10-15.** The review said radio grouping was written
+twice; it was three times — the grid unticked its own rows too — with three
+reaches: the form or the root (radio), the whole document (card). Now ONE
+helper, `radioGroup()` in `core/ui/radio-group.ts`, by HTML's own rule: the same
+tag, tree, form owner and `name`. Radio and radio-mode card use it; a
+checkbox-mode card is no longer a member; the grid's loop is gone, since the
+radio unticks its own group before the grid hears it. The switch mirrors through
+`mirrorAttrs` and the shared `MIRRORED_CONTROL_ATTRS`, as checkbox and radio do,
+and its `disabled` setter no longer writes the input after the fieldset check
+(that left a switch in a disabled fieldset enabled). **And a generator gap:**
+`observed` lists spread from an IMPORT expanded to nothing, so the checkbox and
+radio specs said `name`, `value`, `required` and `disabled` were not observed,
+and the checkbox's `required` was missing. Now read from the imported file.
+**Not run yet:** `reforged-select-radio`, `reforged-form-controls`,
+`reforged-forms-complete`, `reforged-select-group`, the grid's single select.
+**Queued, not done:** a required radio-card group (the card has no group
+validity), and arrow keys between radios (318).
+
+**✅ Part B, containers, 2026-10-15** — three of its five steps. 1: chip and tag
+keep ONE template each; the × is hidden by CSS until `data-dismissible`, as the
+callout's is, so the second template and its re-stamp went. 2: the trailing ×
+rule, written four times (callout, chip, tag, toast), is `.sherpa-dismiss` in the
+base sheet. 3: a card's header / body / footer regions, written three times with
+exclusion lists that had drifted, are one family sheet,
+`sherpa-container-regions.css` (container, dialog, panel). Net about −110 lines.
+4 is **❓ 314** (it adds weight and may move pixels). 5, the footer: **kept as it
+is** — a page slots a `sherpa-container-footer`; making each container compose
+its own would break about 15 call sites, so it waits for a reason. Found on the
+way: 312 (fixed), 313 (queued). **Not run yet.**
+
+**✅ Part C, templates, 2026-10-15** — four commits, safe by reading; a read-only
+agent planned it and a second checked the plan. `clone()` and `cloneItem()` take
+a template or a selector, and `clone()` an `inner` selector for a path an
+`<svg>` wraps. 17 hand-written copies now go through `clone()`, `cloneItem()`
+or `renderItems()` — the grid's cells and menus, step tracker, legend, menu
+rows, the panel's Send-to rows, every chart's paths and gridlines, the bar
+column, the nav section, the gauge's dots, a jump chip's rows. The nav's icon
+box and input-text's options are prototypes. Found on the way: `renderItems`'
+icon pass was dead — `data-icon` in an item prototype names a FIELD — which also
+blanked 299's breadcrumb separator (fixed); and the nav never let a page's
+slotted brand icon win (fixed). **Waits for a test run: 311**, the four sites
+that hold custom elements, where `clone()` upgrades them sooner. **Queued: 310.**
+The toast's stack stays `createElement`: it is the Phase 7 popover row's.
+
+### `[x]` ✅ 282 — Phase 5: each component's own type, no hand-typed casts
+
+**✅ Done 2026-10-15.** Measured first: 90 lines of `HTMLElement & {…}` in
+`src/`, 66 in the filter family (the plan said 46), plus 51 casts through local
+copies (`FieldEl`, `MenuApi`, `ChipEl`, `HeadMenu`, `FieldMenu`, `AnswerChip`,
+`Counted`, `MenuLike`). Now 17 lines are left, none in the filter family but the
+grid's `SelectBox`. Each part is typed by its class, imported `import type`, so
+nothing is added at run time; `menuFor()` returns a `SherpaMenu`, and
+`FilterMenuItem` is an alias of the menu's own `MenuItem`. The same pattern
+reached button, app-header, app-shell, chart-legend, notifications,
+select-checkbox and pagination. One run-time change, identical by reading: the
+toolbar's item rows no longer copy five keys that `...item` already carries.
+**The generator needed no fix:** it reads the class by its parser since
+9fa16917, so `ChipEl`'s property-shaped methods were a workaround for a bug
+already gone. A read-only agent made every edit in a copy of `src/` first: the
+type-check and lint passed there and here, and the minified output was
+byte-identical but for the toolbar (−113 B) and panel (−10 B). Not run in a
+browser yet. `T-custom-element-upgrade`.
+
+### `[x]` ✅ 295 — Phase 8.5: `custom-elements.json` and VS Code's HTML data
+
+**✅ Done 2026-10-15.** `npm run manifest` (`scripts/write-manifest.mjs`) writes
+both from the 66 specs: the Custom Elements Manifest 2.1.0 (attributes with
+their values and defaults, JS properties, methods with parameters, events with
+their detail types, slots, parts, custom states) and VS Code's HTML data.
+`package.json` names the manifest in `customElements` and ships both files; the
+hook's `check:manifest` keeps them fresh; README's *In your editor* gives the
+VS Code setting. It found two phantom props — the filter chip's `asc` and
+`desc`, kept because the generator took any quoted bare word as an attribute;
+now a quoted bare name counts only as a key, a list item or a call argument.
+JetBrains' `web-types.json` is not written: nobody asked. Not tested in an
+editor yet. `T-the-manifest-is-written-from-the-specs`.
+
+### `[x]` ✅ 303 — BUG: breadcrumbs belong in the overlay panel, not the app header
+
+Will, 2026-10-15: *"The app header shows breadcrumbs when an overlay panel is
+opened (on grid row focus) but this isn't required. Breadcrumbs should be shown
+at the top of the overlay panel when it is expanded to full overlay mode. We
+need the maximise & minimise buttons added to the header to toggle these
+states."*
+
+**✅ Done 2026-10-15.** `sherpa-overlay-panel` gains `data-maximised`: the
+panel fills the window, square, with no resize edge. Its header's Expand
+button is now ONE toggle — Maximise (`fullscreen`), then Minimise
+(`fullscreen-exit`) — shown by `data-expandable` as before; it sets the state
+itself, as collapse does, and `panel-expand` says `{ maximised }`. One button,
+not two, so the header's button pair keeps its corners. A new `breadcrumbs`
+slot at the top of the panel shows only while it is maximised. Named
+`maximised`, not `expanded`: a list row's `data-expanded` already means
+"children shown". Demos: the details panel is `data-expandable`, its trail is
+its own `sherpa-breadcrumbs`, and the app header gets none. Tests written in
+both projects; **not run** — Will's next test run.
+
+### `[x]` ✅ 302 — Phase 5: the filter family's last frame waits
+
+Waits for Will's next test run. In the toolbar: `#onConditionChanged`'s second
+report, `#keepAnswer`'s two-frame hold, the two frames after `#settled()`, and
+the `#settled()` callers; in the panel: the two frames at its apply and
+`#editFrame`. **Not** `#onResize`'s frame: that one is layout, not a wait.
+Remove one, run the filter family's tests, keep it only when a test fails, and
+say why in its comment. Watch Demos' `panel-apply:100`.
+
+### `[x]` ✅ 279 — Phase 3: the lexicon's moves
+
+Will approved `docs/LEXICON.md` whole, with my two picks (the calendar cell
+keeps `data-state`; the chip's flag becomes `data-filters-nothing`),
+2026-10-15. One commit per row.
+
+**✅ Done 2026-10-15, row 4 held.** `test/unit/the-lexicon-holds.test.mjs` fails
+when a spec brings back a retired name; the one difference left is row 4's
+`data-state`. It found a generator bug on the way: a prop was kept in a spec
+because an INNER element used the same attribute (a calendar cell's
+`data-value`), which kept three stale props — calendar and slider
+`data-value`, chat message `data-time`. The generator counts only the host now.
+
+- **Row 1, value, range, bounds ✅ (D6):** gauge `data-value|min|max` →
+  `value|min|max`; calendar `data-value|min|max` → `value|min|max`; the slider's
+  range ends `value-start|value-end` → `data-value-start|data-value-end`, as the
+  calendar's. **Metric and toast stay `data-value`:** each is the formatted text
+  shown, and the metric's number is its `value` property already. The menu's
+  `data-min|max|step` stay (they hand the slider the data's bounds). The props
+  gate found two reads and an observed list that the type-checker could not.
+  Demos' gauge templates and the gallery's seed moved with it.
+- **Row 2, dismiss ✅:** `chip-remove` → `chip-dismiss`, `tag-remove` →
+  `tag-dismiss`; `data-dismissible` is a declared boolean on both.
+- **Row 3, selection ✅:** select-card is `checked` (attribute, property, and
+  `change{checked}`), as checkbox, radio and switch; the default `value` is
+  `'on'` on all four.
+- **Row 6, padding ✅:** one scale on both axes, `none sm md lg xl` = 0, 4, 8,
+  16, 20px, on the theme tokens. The default, with no attribute, is still the
+  card's own — the `lg` step, 16px — so no card changes; the lexicon's "md is
+  the default" would have shrunk every one. Old block `sm` (8) is `md`, `base`
+  is gone (it was the default), and block `lg` (20) is `xl`. Nothing in the
+  library or Demos used them but the test.
+- **Row 7, slot names ✅:** app-header and the bar, gauge and line charts'
+  `title` → `heading` (the radial chart has no title slot); data-viz-header
+  `left` → `leading`; nav `brand-icon` → `icon`; empty-state `action` →
+  `actions`, and the container's built-in empty and error states with it; the
+  `has-*` states follow.
+- **Row 4, `data-state` ⏸ held:** input-text's `data-state` is the Figma `input`
+  collection's mode attribute, so the rename waits for Figma's queue.
+- **Row 5, error, empty, help ✅:** container `data-error-message` →
+  `data-error`; notifications `data-empty-text` → `data-empty`; file-upload
+  `data-helper` → `data-description`, `data-accept` → `accept`, `data-multiple` →
+  `multiple`; select-group `data-multiple` → `multiple`; prompt-composer
+  `data-placeholder` → `placeholder`; the chip's flag `data-empty` →
+  `data-filters-nothing` (its pin in `state-pins.yaml` and the token CSS follow).
+  The props gate caught three `dataset['accept'|'placeholder']` reads that the
+  type-checker could not: a native name is read with `getAttribute`.
+
+### `[x]` ✅ 277 — Phase 4: state first
+
+The review counted five hold-until-rendered queues in the filter family
+(`#held`, `#early` twice, `#heldValues`, `#heldLabel`). **✅ Done 2026-10-15,
+and measured first:** TODO 113's state-first work had reshaped most of them
+already, so two remain, and they are two kinds. The chip's `valueLabel` was a
+pure hold — written into the caret if it existed, else kept; it is DATA now,
+always stored, and drawn once there is a caret, so the getter no longer reads
+the page. The menu's `#heldValues` and `#heldRows` stay: once its rows are
+drawn they ARE the live answer, because a drill MOVES them to another menu
+(`T-drill-moves-not-clones`), so making them data first would copy and lose
+that. Whether the menu can keep its op and text as data too is the question
+Phase 5's async root answers (280): it is the same cause as the double-frame
+waits, and that item takes it up. `T-a-value-before-the-first-render-is-held`.
+
+### `[x]` ✅ 276 — Phase 4: one write door, and a smaller base
+
+D5. **✅ Done 2026-10-15.** A component writes its own `data-*` through
+`this.set(...)`: 110 hand writes in 26 components — `dataset['x'] = v`,
+`delete dataset['x']`, and `set`/`toggle`/`removeAttribute('data-x')` — are
+calls to it now, moved by a script that reads the TypeScript syntax tree, so a
+write that spans lines is safe. (Three uses against about 167 was the review's
+count; the state moves had taken some already.) `emit(name, detail, { cancelable })`
+returns whether the event was kept: `view-reset` is no longer built by hand three
+times, nor `select-all-request`. The hand `Number(…)` reads of an attribute are
+`this.num()`, and the app header's icon is a declared prop with `as: 'icon'`.
+`markNeedles` and `markMatch`, one user each, are `core/ui/mark-text.ts`.
+Already done by 274: `mirrorAttrs`. Left: nav and input-text's own icon writes,
+which say why in their comments (the host's slot fallback must be emptied
+first; the raw-glyph sink). 1318 tests in three engines.
+
+### `[x]` ✅ 275 — Phase 4: private host state is `:state()` (D3)
+
+**✅ The host-private attributes, 2026-10-15.** Nine, each written by its own
+component on itself and read only by its own CSS and tests, are custom states:
+`has-y-axis` (the bar and line charts, and the shared axes sheet), `has-query`
+(nav), `has-files` (file upload), `has-organise` (the filter toolbar),
+`has-value` (input text), `dragging` and `panning` (the canvas), `leaving`
+(toast). A `:state()` rule is private, so each also leaves the spec. Left, on
+purpose, as attributes: `data-touched` (the menu writes it onto a slider, a
+cross-component write), `data-has-values` (Demos watches it), `data-empty`
+(the generated page-level token CSS selects it), `data-folded` (it carries a
+count) and `data-takes`, `data-no-minimap` and `data-searchable` (a host may
+set them). 636 tests in three engines.
+
+**✅ `data-has-*`, 2026-10-15.** The base sets a `has-<slot>` state for every
+slot, `has-content-slot` for the default one; 27 stylesheets select
+`:host(:state(has-icon))`; the tests read `el.matches(':state(has-icon)')`.
+The tooltip's and the gauge's own `has-tip` and `has-caption` declarations went,
+since the base writes them. The gate's `data-has-` exemption is gone, which
+showed one more: the metric's `data-has-values`, which an app watches, is
+declared. 1171 tests in three engines, the a11y gate and the phone project.
+`T-private-state-is-a-custom-state`.
+
+### `[x]` ✅ 274 — Phase 4: default ARIA, boolean accessors and forwarding, in the base
+
+D5. **✅ Done 2026-10-15.** `static aria` sets a component's default role and
+ARIA through `ElementInternals`, so the loader and the callout write no
+`role` attribute (an author's own wins); a test reads them by role.
+A boolean prop's `accessor` has `define()` install the property: five
+hand-written get/set pairs went (list-item, nav-item, select-card), and the
+generator lists them. `mirrorAttrs` takes `[from, to]` pairs, and the overlay
+panel's and the metric's header loops are calls to it. Not moved: the select
+card's role (it sets `aria-checked` as an attribute, so axe needs the role
+attribute beside it), and `disabled`/`checked`/`open` accessors, which each
+sync an inner part. The plan named app-header for forwarding: it has none.
+`T-aria-defaults-live-in-internals`, `T-a-flag-brings-the-base-methods`.
+
+### `[x]` ✅ 273 — Phase 4: form plumbing and focus delegation, in the base
+
+D5: *"Anything generic gets elevated."* **✅ Done 2026-10-15.** The nine
+form-associated controls each made their own `FormValue`; five wrote the same
+`checkValidity()` and `reportValidity()`; six wrote the same `focus()`.
+`SherpaElement` has `formLink`, both validity methods (with a `syncFormValue()`
+a control overrides — the radio and the text field do), and `static
+delegatesFocus`, the platform's own flag, passed to `attachShadow`: the six
+set it and lost their `focus()`. The generator lists what a flag brings, so
+the contracts keep the surface — and calendar, file-upload, slider and
+transfer-list, which had no `checkValidity()`, now offer it. +490 bytes on
+every entry (0.2%), paid once; 273 control tests pass in three engines.
+Not elevated: `formResetCallback` (each puts back its own first value) and
+the `disabled` accessor (it syncs a different inner part in each) — edge
+cases, which D5 leaves in the component. `T-focus-is-delegated-by-the-platform`,
+`T-a-flag-brings-the-base-methods`.
+
+### `[x]` ✅ 272 — Phase 8.3: `../Sherpa Gallery`
+
+The plan's 8.3: a sibling project that takes `sherpa-ui` as a consumer does —
+native pages now, CSF stories that Storybook can read later, and a fake data
+layer.
+
+**✅ A gap it found first, 2026-10-15:** a Context's module was not told WHICH
+Context it is — `ctx` had its label, not its id — so one module could not serve
+many. The gallery has a Context per component and one module for all of them.
+`ctx.id` is its key in `app.json` now, for a Settings page too.
+
+**✅ Done 2026-10-15.** `../Sherpa Gallery` (its `4005aa1`) takes sherpa-ui
+as an app does and is a Sherpa app itself: a Context per component, in nav
+sections by category, all with one template and one module. Each component
+has a CSF file — `export default { title, component }`, stories whose
+`render` returns DOM, data through `loaders`, the order in
+`__namedExportsOrder` — so Storybook can read the same files later. Seeded
+from the specs by the gallery's own seed script, which its test runs with `--check`: the shipped example
+(271), a story per enum attribute with its values read from the spec, and a
+data story for the nine data components. The fake data layer is forty
+accounts, one page definition and a store that is local, slow or failing;
+Mode, Density and Data are page switches, kept in the session. Its tests:
+every page draws with nothing said wrong, the switches, the variants, and the
+data stories in three engines (207), and its app, page and markup pass
+sherpa-ui's own checks.
+
+What it showed first: a data story outside a CARD shows no loading or error —
+the provider writes those states on the card, by design — so each data story
+is a card. And the MCP's drive tools opened `test/reforged/harness.html`,
+which is not shipped: they open the gallery now (`SHERPA_GALLERY_URL`, or
+`http://localhost:4500/`), and wait up to 5 s for the element, since a page may
+draw after it loads.
+
+Not yet: nesting stories (inside the shell, a dialog, a panel, a grid), and
+Controls from `custom-elements.json` (295).
+
+### `[x]` ✅ 271 — Phase 8.3: each component ships its example
+
+The plan's 8.3: ONE example per component, shipped beside its spec, as the
+one source for the a11y gate, the MCP and the gallery. **✅ Done 2026-10-15.**
+The 66 fixtures in `test/a11y/fixtures.mjs` (in `test/`, not shipped) are
+`src/components/<name>/<name>.example.json` now, against a new
+`schemas/example.v1.json`: the markup, the data each part is populated with,
+and the part to open. Long markup is an array of strings, joined with nothing.
+The package ships them; the a11y gate and one other spec read them through
+`test/a11y/examples.mjs`; the MCP's `get_component` has an Example section
+(`include: "example"`), read through `lib/sherpa.js`'s `loadExample`. A node
+test checks every component has one, each passes the schema, and its markup
+passes the usage check — for which `check-usage.mjs` now exports
+`markupProblems()`, one piece of markup. That check found the chat example's
+`data-type="person"`, not a value it takes: it is `user`. The a11y baseline
+did not move. `check:mcp-pack`: 19 tools, no failure.
+`T-a-component-ships-its-example`.
+
+### `[x]` ✅ 270 — Phase 2: dead code, icon leftovers, repo strays
+
+The plan's Phase 2 rows for dead code, icons and the repo. One commit per area.
+
+**✅ Repo, 2026-10-14.** Gone: the four root scratch pages (`leak.html`,
+`prop.html`, `risk.html`, `sz.html`); ten `.gitignore` lines that matched
+nothing any script writes (`figma-tokens/`, `.git-commit-msg.tmp`,
+`.build-metrics.json`, `COMPONENT-AUDIT-REPORT.json`, `coverage/`,
+`test/visual/report/`). `docs/Some things to address.md` goes: each of its 12
+notes was done already — the 2026-09-26 list (the field header's caps and
+buttons, `fullscreen-exit`, Customer and Region in the View, Apply and Discard
+that wait, the higher-scope words), 41 (conditions do filter), 43 (the ⋮
+menu), 44c (a heading shows a held answer), 49 and 50 (a preset's and a saved
+filter's menu), and 126.
+
+**✅ Kept, by Will's ruling (A, 2026-10-15):** the plan named three unused scripts —
+`check-tokens.mjs`, `figma-harvest-colours.mjs` and
+`figma-extract-component.js`. No npm script runs them, but they are MANUAL
+Figma tools, run through the figma-console MCP, and `figma-harvest-colours`
+is the check that compares Figma's bound colour with the component's
+(2026-09-11). Each header now says it is a manual tool and how to run it;
+`check-tokens.mjs` no longer calls itself a CI gate.
+
+**✅ Icons, 2026-10-14.** Gone: `installIcons()`, a public no-op;
+`T-fa-pro-renders-nothing`, about a webfont nothing loads; and six comments
+that explained a choice by Font Awesome's weights or its resolver. The icon
+count in `render-icon.ts` ("all 214" — 216 today) is words now, not a number.
+The pass found a real bug, filed as 299: two glyphs still come from the
+Font Awesome font.
+
+**✅ Dead code, 2026-10-14.** Gone: three attributes written and read by
+nothing (the toolbar's `data-can-add`, a panel field's `data-single` and
+`data-removable` — the MENU's `data-removable` is real and stays);
+`SHARED_PROPS['data-group']`, which no component spread; the sparkline's
+`.point` rule marked "BUG, left as found", which never won its specificity
+fight, so nothing renders differently; and seven doc blocks over code that had
+gone (two now sit over the code they describe again: `setQuery`'s, and the
+chart aggregates' note in `data.ts`). Nine exports only their own file used
+lose `export`: `STEERING_EVENTS`, `EXPLODE_AT`, five filters-button names,
+`RADIAL_BOX`, `STATUSES`. Kept: `bindGroupedGrid`, a door for a plain
+`.sherpa-grid`; and the five test-only helpers 269 made internal — the plan
+says internal, not gone.
+
+
+### `[x]` ✅ 269 — Phase 2: old names, data-API leftovers, component aliases
+
+The plan's Phase 2 rows for filter names, the data API and component aliases.
+One commit per area.
+
+**✅ Filter names, 2026-10-14.** The filter modes' old names are gone: the
+menu's `OLD_OPT_INS`, `OLD_MODES`, its four old attributes in `observed` and
+the CSS for two of them; `OLD_KINDS` and the def keys `custom` and
+`conditions`; a chip's `data-kind="custom"`; the grid column's two old keys; a
+field declaration's `custom` (in the page schema too); `kind: 'values'`; and
+the panel's `picked` copy of `values` in its event. `check:props` loses its
+old-name exception. An old word does nothing now, and two tests check that. 24
+tests and one doc example moved to `advanced`. `T-a-renamed-attribute-keeps-its-old-name`
+is `T-a-rename-drops-the-old-name`, with a was/now table for an app;
+`T-saved-filters-are-the-custom-section` is `T-saved-filters-are-the-last-section`.
+
+**✅ Data API, 2026-10-14.** Gone: `persistViewState` (a deprecated subset of
+`persistView`), `IdbValidationError` (an alias of `ValidationError`),
+`restViewRemote` and its options (no user), and `VIEW_SCOPE` (a second name
+for `VIEW`, which is exported). `FieldDeclaration.custom` went with the filter
+names. Of the exports only tests called, the doors stay — the stores,
+`HttpError`, `syncViews`, `searchRows`, `durationSpan`, `applyViewSnapshot`,
+`captureView`, `clearViewState`, `issuesFor`, `datumValue`, the chart
+aggregates, `CONDITION_BADGE`, `conditionLines`, `checkViewMarkup`,
+`useTemplate`, `createContext` and every component class — and seven go off
+the entry point: `MADE_UP` (now private), `isSchema`, `savedReading` and the
+allow-list's `isAllowed`, `allowKey`, `unknownEntries` and `nextState`. Their
+tests import the module. Four of those seven, and `bindGroupedGrid`, have no
+caller in `src/`: 270's dead-code pass decides them.
+
+**✅ Component aliases, 2026-10-14.** Each thing has one name: list-item
+`data-heading`, app-header `data-title`, toast `data-message` (its `show()`
+writes `data-heading` now), chat-message `data-author`/`-time`/`-content`,
+progress-bar `data-value`, list `bordered`, nav `NavItem` and its array
+`populate`, notifications `title`, metric `name`, and file-upload's
+`files-change` are gone. No alias is left, so `static props` loses its
+`fallbackAttr` option, `check:props` its alias exception, and
+`T-an-alias-is-declared-by-its-owner` its reason; `T-a-rename-drops-the-old-name`
+has the was/now table. CLAUDE.md says there are no aliases. Demos and the
+starter used none of them. 11 specs regenerated; 9 test files moved to the
+names, and two now check an old name does nothing.
+
+### `[x]` ✅ 267 — Phase 2: the starter is its own project (Q1)
+
+Will, Q1: A. `starter/`, `npx sherpa-ui init` and the MCP's `scaffold_app`
+were an app template, with app content, inside the library. **✅ Done
+2026-10-14.** The template is the package `create-sherpa-ui` in
+`../Sherpa Starter` (its `34415f2`): `npm create sherpa-ui <folder>` runs its
+`init`, and its own tests check an app it makes against sherpa-ui's schemas,
+`checkApp` and the usage check, and boot it in three engines. sherpa-ui loses
+`starter/`, `init` and the two starter tests. The MCP depends on
+`create-sherpa-ui` and `scaffold_app` reads its `template/` — the checkout's
+sibling when run from here; `check:mcp-pack` packs all three and checks
+`scaffold_app` gives `index.html` (19 tools, 267 resources, 3 prompts, no
+failure). `T-a-starter-is-one-folder`.
+
+**✅ And a bug it found.** `sherpa-ui serve` did nothing when run through a
+link — `npx`, `node_modules/.bin`, a `file:` dependency — and said nothing: its
+main-file check compared the link to the real path. It compares real paths
+now, as `check-usage.mjs` did, and so does `create-sherpa-ui`'s; a unit test
+runs the CLI through a link. `T-a-cli-is-run-through-a-link`.
+
+### `[x]` ✅ 268 — Phase 2: the hook stops checking Demos (Q2)
+
+Will, Q2: A. sherpa-ui's hook ran `check:usage` on `../Sherpa Demos`, so the
+library knew a consumer. **✅ Done 2026-10-14.** The hook's block and the
+`check:usage` script are gone. The checker SHIPS as a consumer tool,
+`npx sherpa-ui check-usage <folder>`, defaulting to the folder it runs in; its
+command line is one `checkUsage()`, which the bin and the script share. Demos'
+`npm test` runs it first (Demos `687869e`), so a library rename that breaks
+Demos still shows — in Demos. A unit test runs the command on a typo and on
+clean markup. `T-markup-is-checked-against-the-spec`.
+
+## ✅ Done — the full record
+
+Every finished item keeps its section: what was asked, then what was done.
+Newest first. The ledger lists them too, with ✅.
+
+### `[x]` ✅ 104 — BUG: a number filter never applies what is typed or dragged
+
+Will, 2026-09-29: *"Numerical range filters aren't applied on value changes
+via input fields or slider handles."*
+
+Proved in a probe: drag a slider handle, or type in the number field, and no
+`menu-change` and no `quick-filter-change` leaves the chip. The chip HOLDS the
+value — `readings` shows it — but nothing tells the source.
+
+Cause: 45b2f136 (2026-09-25) moved the number body INTO the menu's shadow root
+(`T-a-menu-owns-its-own-bodies`), and `#onChange` still listens on the HOST.
+The field's native `change` is not composed, so it stops at the shadow root.
+The slider's composed `change` arrives retargeted to the menu, so the
+`SHERPA-SLIDER` check never matches. `T-native-change-stops-at-the-host` still
+describes a SLOTTED body.
+
+The chip test "a NUMBER chip flips between a single field and a two-ended
+slider" stayed green because it reads `el.readings`, which ASKS the menu. The
+fix's test watches the event. The grid heading's menu and the panel use the
+same body — check both. Before 94, which changes the same path.
+
+**✅ Done 2026-09-29:** a number filter applied nothing that was typed or dragged — the body moved into the menu's shadow root and the menu listened only on its host; it now listens on its body, the panel reads a number through the bar's own `bodyReading()`, and one typed number is a pick under `=` — `T-native-change-stops-at-the-host`, `T-one-number-is-a-pick-under-equals`
+
+### `[x]` ✅ 75 — Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file
+
+**75a built 2026-09-29 — the mode VALUES:** `ConditionType` is `simple |
+advanced`; a menu's `data-mode`, a chip's `data-condition`, a filter's kind
+(`advanced`), the panel's and menu's mode events, and the Style pins
+(state-pins.yaml, re-projected). Old words are still HEARD — `default`,
+`custom`, `select`, `condition`, `conditional` — so a saved View or filter keeps
+working. **75b built the same day:** the opt-in key is `advanced` (`custom`
+and `conditions` still read), the menu's `data-advanced` / `data-advanced-only`
+(old names heard), the page schema and `records.json`, the internal class names,
+and the labels — the switch reads **Advanced**. **Left: 75c** — docs, TRAPS
+and test titles.
+
+Will, 2026-09-27: *"We need to move away from using the terms Default and
+Conditional for filter modes. Instead we should use 'Simple' and 'Complex'."*
+
+| mode | is |
+|---|---|
+| **Simple** | ONE field, with one or more values to choose from |
+| **Advanced** | ONE OR MORE fields, with one or more values to choose from, and conditional parameters in use |
+
+**Advanced, not Complex** — Will, later the same day, choosing A of "Advanced" /
+"Complex" after writing "Advanced" in 90.
+
+The new ontology goes into EVERY file: code (`mode: 'default' | 'custom'`,
+`data-mode`, `condition: 'custom'`, `custom:` opt-ins), UI labels (the
+"Conditional" switch), tests, docs, TRAPS and the specs. Do it in one sweep,
+after step 6 of the Query, so the features in D (49, 50, 46) are built in
+the new words. Note: Advanced allows SEVERAL fields — today a condition is
+over one field, so the rename also opens that door.
+
+**✅ Done 2026-09-29:** the filter modes are **Simple** and **Advanced** in every file — values (75a), the opt-in key `advanced`, the menu's `data-advanced` / `data-advanced-only` and the labels (75b), then docs, TRAPS and test titles (75c). Every old word is still HEARD, so a saved View or filter keeps working — `T-a-renamed-attribute-keeps-its-old-name`
+
+### `[x]` ✅ 101 — ADVANCED: a condition row will not add in a chip's menu; in the panel, changing a row's condition drops the row
+
+Will, 2026-09-29: *"I can't add more conditions to an advanced filter. In the
+filter toolbar menu the row just doesn't add. In the filter panel, the row
+adds, but changing the condition type results in the row being removed."*
+
+Two faces, probably one cause. Start at `sherpa-menu`'s `#onAddCondition`
+(`#addRow()` then `#emitConditions()`): the report goes to the source, and the
+source draws the field's reading BACK onto the menu. A new row has no text
+yet, so it is likely not part of the reading, and the redraw drops it — in
+the chip at once, in the panel once its condition changes. An unanswered row
+is the reader's work in progress, never an answer to throw away — the same
+family as `T-a-rebuilt-bar-reads-empty-until-its-menus-stamp`.
+A test for each face: add a row in a chip's menu, and change a new row's
+condition in the panel.
+
+**✅ Done 2026-09-29:** an Advanced condition row would not add in a chip's menu, and in the panel a row's condition change dropped it — the source draws every field's answer back with its ANSWERED rows only, and the menu rebuilt from that; now an answer that matches the rows the reader has answered keeps every row — `T-an-unanswered-row-survives-a-redraw`
+
+### `[x]` ✅ 61 — BUG: Add customer saves with required fields empty
+
+Will, 2026-09-26: the Add customer dialog let him save with Name and Email
+empty. `#f-name` and `#f-email` carry `required`
+(`examples/templates/records.html`), and `sherpa-input-text` has `validate()`,
+`checkValidity()` and `data-error` — but the Save handler
+(`examples/contexts/records.js`, `#save-btn`) asks none of them. Worse, it
+FILLS the blanks: a blank name becomes `New customer`, a blank email a made-up
+`new.customer@example.com`.
+
+**Use and handle required-field logic, once, for every form.** Save checks
+every field, shows each one's error, focuses the first invalid one, and saves
+nothing until all pass. Prefer the platform: a native `<form>` and
+`reportValidity()` reach a shadow-DOM input only if it is form-associated
+(`ElementInternals`) — check `sherpa-input-text` first. The fallbacks go.
+
+**And did it save at all?** Will could not tell. `store.insert` runs, but the
+new row is created TODAY with status `trial`: the header's Date chip (2024
+data), the current view, the sort or the page can each hide it. Measure with
+`source.debugState().total` before and after. Then make the result visible —
+the toast says where the row went, or the grid shows it.
+
+**✅ Done 2026-09-29:** Add customer saves with required fields empty — the dialog is a real `<form>`; the four form controls take part in it (`FormValue`), Save submits it, and the browser refuses an empty required field and points at it; nothing is filled in for the reader, and the toast says when the page's filters hide the new record — `T-a-form-value-follows-every-write`
+
+### `[x]` ✅ 92 — Navigating SETS UP the content — its definitions, data layer, filters and state — not only swaps the template
+
+Will, 2026-09-27: *"When the app shell navigates to new content we shouldn't
+only be swapping the content area content/templates. We need to be getting
+and setting the definitions, data layer etc. to ensure all the correct filters
+are available, shown, and in the correct state. Same goes for all other view
+content. We're probably already doing this somewhere but there are gaps. I
+assume the new provider comes into play here."*
+
+Today each Context's `init()` does it by hand — make a source, declare its
+fields, give the provider its source, restore the session's Query, draw the
+bars — and anything a Context forgets is a gap (the Dashboard gave the
+provider no source until P2). Yes, the provider: a Context DEFINITION (JSON —
+its sources, fields, scopes, Views and template) handed to it on navigation,
+so it sets up the data layer, answers every component, and restores the
+state. Provider P4 (definitions) and 70 (a view definition renders the page)
+are its halves. First: audit where it is done today, and list the gaps.
+
+**Audited 2026-09-27 — `PROVIDER-DESIGN.md` §10.** Two gaps fixed: a page with
+no data shut the panel (G1), and the Dashboard keeps its Query (G2). Open: Save
+view on Records (G3, TODO 15), and the Context DEFINITION that ends the
+repeated setup in every Context (G4) — **designed in `docs/PAGE-DEFINITION.md`,
+decided by Will 2026-09-29.** D1, D2 and D3 are built: the router
+opens every page from `examples/definitions/<context>.json` through
+`provider.open()`, and a Context's `init` gets its source.
+
+**✅ Done 2026-09-29:** navigating sets up the page — the router opens each Context from `examples/definitions/<name>.json` through `provider.open()`: its source, fields, scopes, saved filters, the header's chips, each bar's Add list, the grid's configuration and the kept Query. D1 `edec11a6`, D2 `ce3aaa4f`, D3 `eeb5e37a` — `T-a-page-is-its-definition`
+
+### `[x]` ✅ 85 — `sherpa-provider`: a component ASKS for data, a scope, a query, a View or a template
+
+**Designed — `docs/PROVIDER-DESIGN.md`, for Will's review.** Will, 2026-09-27:
+*"Why can't any component ask for data, a definition, a conditional query
+definition or a template from the data layer?"* — the Context Protocol
+(choice A), a provider over a subtree, and each request can subscribe. It was
+designed in `docs/history/FILTER-REVIEW.md` §9–§12 on 2026-09-25 and never built. Step 8
+of the Query folds into its P2. Target: `records.js` 853 → ~250 lines of code,
+`dashboard.js` 222 → ~50. Closes most of 37 and 38.
+
+**P1 built `ffc48935`** — the provider, the Context Protocol, the grid and
+pager ask. **P2 built** — charts, tiles and legends DECLARE what they need
+(`aggregate`, `segments`, `series`); the pages lost their adapters. The
+centralisation audit is `PROVIDER-DESIGN.md` §9, for review; its items 9
+and 13 are done. **P3a and P3b built** — fields declared once on the
+source; the bars ask for their scope and report their holds. **P3c built**
+— the panel asks for its scopes, drawn whole by `describe()`. Also fixed on
+the way: 93 (only the View trickles down), 87 and 88. **P3d built** — the
+grid headings answer through the source. **P3e built** — a component's own
+filter is `data-readings`, and a View pick keeps it. **P4 built** — the
+provider keeps the Views and the session's Query; a View's content asks for
+its data. **P3 and P4 are done:
+`records.js` 1163 → 655 lines since P2 began, `dashboard.js` 331 → 170 (the
+size gate's count, comments in).** **P5 built** —
+a page's state goes out and comes back as JSON. **The provider plan (P1–P5) is
+done.** **Next:** 91 (the shell owns panel mode) and 92 (navigating sets up
+the content), then the §9 items that P3 unlocked, and 86 (the full audit).
+
+**✅ Done 2026-09-29:** the provider, P1–P5 — a component ASKS and the nearest provider answers; `records.js` 1163 → 326 lines, `dashboard.js` 331 → 107 — `T-a-component-asks-its-provider`, `docs/PROVIDER-DESIGN.md`
+
+### `[x]` ✅ 73 — EXPLORE: one compiled QUERY, built as the reader sets it up, run on Apply
+
+Will, 2026-09-26: *"A query language that is compiled as conditions
+(grouping, sorting, filtering, conditions, segmentation, aggregation etc.)
+are built up. The data layer compiles this query then executes it when
+triggered (e.g. user clicks apply). The aim here is to avoid reloads,
+refreshes, state changes etc. causing a loss of set up parameters. The data
+layer can probably also use this query to help inform other UI components
+alongside the component state tracking feature. We probably have a
+proto-version of this going already but it needs work if we do."*
+
+**The proto-version, as it stands:**
+
+| piece | where | what it is |
+|---|---|---|
+| `ViewState` | `data-source.ts` | filter, sort, group, search, page — one flat state |
+| named parts + field readings | `DataSource` (`contribute`, `select`) | the filter is COMPOSED from them, and `state.filter` is the composed result |
+| the clause grammar | `store.ts` (`Filter`, `andFilter`, `picksClause`) | the query's filter language |
+| `FieldReading` → clause | `filter-state.ts` (`fieldState`, `readingClause`, `clauseConditions`) | a reader's answer as data, compiled one way |
+| aggregation | `aggregate.ts` (`reduceRows`, `countBy`, `seriesBy`) | run by hand in the example's `as` closures |
+| `debugState()`, `ViewSnapshot` | source, `persist-view.ts` | the query read back, and saved |
+
+**What is missing:** the query is not ONE object. Filter parts, readings,
+sort and group live in the source; segmentation and aggregation live in each
+Context's code; and `state.filter` is the compiled OUTPUT, which is why a
+restored one showed rows no chip explained (21e). A single query — every
+parameter, in the reader's own terms, compiled on demand — could be the one
+thing that is saved (21e), shared (70's view definition), applied on a
+trigger (62's remote Apply), and read by every control to draw itself (38
+step 3). Design it with 70; 62's "only a remote fetch needs Apply" decides
+when it runs.
+
+**Will, 2026-09-26: DESIGN FIRST.** One short design covering 73, 70 and 62
+together — the query object, the view definition, and when Apply runs — as a
+page Will reviews before any of it is built.
+
+**The design is written: `docs/QUERY-DESIGN.md`** (2026-09-26). **Decided the
+same day:** a View is markup + a JSON Query; "remote" is on the STORE, spoofed
+by a wrapping store in the data layer; build steps 1–5 first (one owner), then
+6–8. Building now, one step per commit.
+
+**Steps 1 to 7 are built (2026-09-27)** — see `QUERY-DESIGN.md` §10 for what
+each did and what is left. The source holds the Query; the bars, the open
+panel, the header, the legends and the grid headings are drawn from it; the
+session saves and restores it. Will's choice A: a heading filter wears its
+field's normal chip, so the `col:` and external chips are gone. Step 6 gave a
+remote store a draft, Apply only for a remote fetch, the pending chip and the
+footer's "nothing to save" (62, 46, 66). Step 7: a saved View is JSON — its
+Query onto a clean slate, its defaults on the chips — Records and the
+Dashboard. **Next: step 8** — segment and aggregate in a component scope.
+
+**✅ Done 2026-09-29:** one Query, steps 1–8 — step 8 (segment and aggregate) became provider P2's declared summaries — `T-one-query-one-owner`, `docs/QUERY-DESIGN.md`
+
+### `[x]` ✅ 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
+
+**Designed with 73 — see `docs/QUERY-DESIGN.md`.**
+
+Will, 2026-09-26, ruling on 21e: a View change is a clean slate (both bars
+empty their filter chips) — *"but default filter fields, values, and states
+need to be bundled in a view definition. I'm not sure how we'd do that with
+our templates. So perhaps we need a JSON definition that gets translated to a
+template and data layer requests for all components. Something to
+investigate."*
+
+**What a view definition holds today** (`SavedView`, `persist-view.ts`): a
+label; a `snapshot` — the source's state plus, per element, a map of public
+METHOD CALLS (`applyViewSnapshot`; the Dashboard's EMEA view sets Region this
+way); and optional `content` markup, parsed through an allow-list
+(`parseViewMarkup`). What it CANNOT say: which filter chips each bar HOLDS,
+nor their default values and on/off states — the Context's own code decides
+those (`DATA_FILTERS` and `globalFilters()` in the Records example).
+
+**The question:** one JSON definition per View that declares, for every
+component, what it is, where it sits, which fields it offers, and each
+field's default answer — and a translator that turns it into the template AND
+the data-layer requests (`declareValues`, `hold`, `select`, `contribute`).
+Then a View change applies the view's own defaults onto the clean slate, and
+Save (15) writes the same shape back.
+
+Settle before building: is the JSON a superset of `SavedView` or its
+replacement; how it meets the templates (68's templater, 27's own
+templates); and how much of it is 38's "a component DECLARES the data it
+needs". Design first — 15 builds on the answer.
+
+**Settled 2026-09-27: ONE JSON definition** (`T-a-view-is-json`). Built for
+Records and the Dashboard in step 7 of 73: `{ label, query, ui }`, applied
+onto a clean slate with its defaults on the chips; `saveViewAs` saves the same
+shape. Left: a view's LAYOUT as JSON, which the Templater (68) turns into a
+template — `content` markup stays until then — and Save a View (15).
+
+**✅ Done 2026-09-29:** a View is ONE JSON definition, `{ label, query, ui }`, applied onto a clean slate. Its layout as JSON is 68's; saving it is 15's — `T-a-view-is-json`
+
+### `[x]` ✅ 47 — More than 20 values: one chip, not a run
+
+A panel field with more than 20 values draws the toolbar's single chip, with a
+dropdown of its values, not one chip per value. **89 moves the line to 16**, for the bar
+and the panel alike. It is the flag 38's builder
+already needs: whether values EXPLODE into a run or stay behind a menu.
+
+**✅ Done 2026-09-29:** more than 20 values, one chip — merged into 89, at 16
+
+### `[x]` ✅ 93 — A grid-scope filter narrows the charts and tiles too
+
+Found while building the provider (85), 2026-09-27, and fixed at once — it had
+no section of its own. A filter set at GRID scope narrowed every summary on
+the page, not only the grid. Only the View's filters should reach everything.
+Commit 6bcc4f23.
+
+**✅ Done 2026-09-27:** a grid-scope filter narrowed the charts and tiles too — only the View trickles down now; a summary is under the View alone — `T-only-the-view-trickles-down`
+
+### `[x]` ✅ 91 — The APP SHELL switches Filter toolbar and Filter panel modes, for any View in the content area
+
+Will, 2026-09-27: *"The app shell should be able to toggle between Filter
+Toolbar and Filter Panel modes for any View that is showing in the content
+area."*
+
+Today Records wires it by hand: `togglePanel`, `setPanelMode`,
+`syncPanelled`, the reopen and restore code, and the session's
+`/filters/mode`. The shell already owns WHERE the panel sits
+(`T-the-shell-owns-the-panel-areas`), so it owns the MODE too — for whatever
+content it shows, with no page code. With provider P3c the panel asks for its
+own scopes, so the shell needs only to open it.
+
+**✅ Done 2026-09-27:** the provider owns TOOLBARS or PANEL for every page — Configure opens the panel on the Dashboard too; the app keeps the choice — `T-the-provider-owns-the-panel-mode`
+
+### `[x]` ✅ 62 — Apply and Discard only for a REMOTE fetch; a debug flag spoofs one
+
+**Designed with 73 — see `docs/QUERY-DESIGN.md`.**
+
+Will, 2026-09-26: *"Apply and Discard are actions that are only needed if
+there is a data fetch that reaches outside the Data Layer. If the change is
+just shaping data that's already in the data layer then there's no need."*
+
+- **The panel footer goes.** A field whose change needs a remote fetch shows a
+  small, ICON-ONLY Apply and Discard at the right of its section header row,
+  beside Clear. Every other field applies as it is changed.
+- **The same rule reaches a chip's menu.** Its Apply/Cancel (`commit: true`,
+  `data-commit` — Owner and Region today) is only for a remote field too.
+- **"Remote" is a fact about the FILTER**, so it is on the filter def and
+  asked of the data layer — never guessed by a component.
+
+**There is no remote source, so spoof one.** A DEBUG attribute/property on a
+filter pretends that its change fetches from a remote source — a delay, and
+optionally a failure. Sprinkle it into the example filters so both paths are
+always on screen. 58 (loading, empty and error states) reuses the same flag to
+drive its loading and failure states.
+
+Before 46: a pending state only exists on a field that has an Apply, and this
+item decides which fields those are. `T-apply-and-discard-wait-for-a-change`
+changes with it.
+
+**✅ Done 2026-09-27:** Apply only for a REMOTE fetch — locally every pick applies at once; `?remote` spoofs a remote store; the panel's footer is gone, a remote field has its own Apply and Discard — 7c7cdf5c, 9294cfd6, c92adec0, `T-apply-and-discard-wait-for-a-change`, `T-commit-follows-select-mode`
+
+### `[x]` ✅ 46 — A PENDING state: changed, not yet applied
+
+A chip that goes straight to active before its change is applied misleads the
+reader. Between the change and Apply, a chip is PENDING: an active purple
+BORDER, no fill. A conditional chip is the same — it turns green only once
+applied. Only a committing (Apply) field has a pending state — after 62, that is a
+REMOTE one; a field that applies at once goes straight to active.
+
+A state is a pin, as data (`scripts/figma-data/state-pins.yaml`), not a
+colour rule in the chip. Check what the pin's surface resolves to first.
+
+**✅ Done 2026-09-27:** a pending chip wears the active edge and no fill — 6050eddf, `T-a-pending-chip-reads-as-a-warning`
+
+### `[x]` ✅ 66 — The footer owns "nothing to save": Save and Cancel wait for a change
+
+Will, 2026-09-26: wire the inactive Save & Cancel (or Apply & Discard, or any
+equivalent pair) into `sherpa-container-footer`, *"so that all menus etc can
+inherit this common behaviour."* Today each host does it by hand, or not at
+all: the filter panel built its own (`#syncDirty`,
+`T-apply-and-discard-wait-for-a-change`), and `sherpa-menu` has a `dirty`
+getter its footer does not use.
+
+The FOOTER turns its commit and revert controls off while the host says
+nothing has changed, and on when it has. The host only REPORTS dirty — one
+attribute or property, e.g. `data-dirty` on the footer, or a `dirty` it asks
+of its host — and never touches the buttons. Nine templates compose the
+footer (calendar, dialog, container, filter panel, menu, nav, overlay-panel,
+panel, select-card); each then drops its own copy. Which buttons are the pair
+must be declared, not guessed from their labels.
+
+Do it with 62: 62 decides WHICH fields have Apply and Discard at all, this
+decides how any such pair behaves.
+
+**✅ Done 2026-09-27:** the footer owns "nothing to save" — a committing menu's Apply and Cancel wait for a change — 23094c86, `T-the-footer-owns-nothing-to-save`
+
+### `[x]` ✅ 39 — The panel header gets Reset all filters
+
+A button in the filter panel's header that resets BOTH scopes, View and
+component, in one press. It and the toggle-to-toolbar button (`.to-toolbars`)
+take the DEFAULT button look, not transparent.
+
+**✅ Done 2026-09-26:** the panel header's Reset all clears both scopes, and both header buttons wear the default look
+
+### `[x]` ✅ 53 — A conditional chip's tip says "X conditions applied"
+
+Will, 2026-09-26. The tooltip of a conditional chip reads `3 conditions
+applied` (`1 condition applied` for one). Count ANSWERED rows only — an empty
+row is not a condition. Today the tip spells the chain (`Contains: ab or
+Equals: churned`, `spellConditions()`); the `fx` button (49, 50) is where the
+rows themselves are read now. The badge is NOT a condition count — Will
+changed that ask for 60.
+
+**✅ Done 2026-09-26:** a conditional chip's tooltip says "X conditions applied" — `T-an-advanced-answer-reads-as-its-conditions`
+
+### `[x]` ✅ 40 — A switch has no accessible name
+
+`sherpa-switch` does not pass an `aria-label` to its inner `role="switch"`
+input, and its visible text is a sibling span. So the Range and Conditional
+switches are unnamed to a screen reader. Mirror `aria-label` onto the input,
+or label the input by the text beside it.
+
+**✅ Done 2026-09-26:** a host's `aria-label` names its inner control — button, input, checkbox, radio, switch; 59 template sites + 18 in code were unnamed — `T-a-host-label-must-reach-its-control`
+
+### `[x]` ✅ 17 — Breadcrumbs are for workflow, not for the nav
+
+Breadcrumbs must not show movement between Contexts — the nav does that. They
+are for a workflow redirect or a drilldown, e.g. a link in a grid cell opens a
+details Context.
+
+**Still wrong, measured 2026-09-26, and small.** Records and Assistant set a
+`Home › Records` / `Home › Assistant` trail (`examples/contexts/records.js`,
+`chat.js`) — Home is the Dashboard Context, so the trail IS nav movement.
+Drop both; Dashboard already sets `[]`. The first real trail comes with a
+drilldown (23).
+
+**✅ Done 2026-09-26:** no breadcrumb trail on Records or Assistant — moving between Contexts is the nav's to show
+
+### `[x]` ✅ 57 — The filter panel's width is a hard-coded 400px
+
+Found by the 2026-09-26 audit. The shell's panel areas read
+`--sherpa-panel-area-width`, which is defined NOWHERE
+(`sherpa-app-shell.css:130`), so it is always its 400px fallback. The comment
+there says 4 columns.
+
+**Will, 2026-09-26: 3 columns — and KEEP the shell's panel areas.** *"We need
+to consider the other containers in the view and their responsiveness. The
+left/right panel areas that we have might be the better solution (it works
+well right now, tbh)."* So the panel stays in the app shell's left area,
+OUTSIDE the content's layout grid, and the grid's containers keep their own
+breakpoints. The change is the width: define the token as 3 of the layout
+grid's columns plus their gutters, per breakpoint. Then check, with the panel
+open, that every container in Records and Dashboard still re-flows as it does
+with the panel shut — the grid is narrower, not re-counted. Fix the comment
+to say 3.
+
+**✅ Done 2026-09-26:** a shell panel area is exactly three grid columns wide, worked out in CSS; the shell's panel areas stay — `T-the-shell-owns-the-panel-areas`
+
+### `[x]` ✅ 65 — A horizontal legend has a max width, and is centred
+
+Will, 2026-09-26: a horizontal `sherpa-chart-legend` spreads its entries across
+a whole 12-column container — far too wide to read as one key. Give it a
+max width and centre it horizontally in its container. A token for the width,
+never a hand-typed px; check it in the Dashboard's wide charts.
+
+**✅ Done 2026-09-26:** a horizontal legend is capped at 40rem and centred; narrow, it fills — `T-a-horizontal-legend-is-three-by-two`
+
+### `[x]` ✅ 41 — BUG: a conditional filter applies for Owner only
+
+Will: *"Conditional filters don't apply or go active at all for any field other
+than Owner."* Owner is the only chip def with `custom: true`
+(`examples/contexts/records.js`); every other conditioned field arrives through
+the Filters (Add) menu or a column heading. Look first at how an ADDED field,
+or a heading's condition, reaches the source.
+
+Reproduce on the running page and read the TOTAL
+(`source.debugState().total`), never the drawn page. Try the same field as a
+toolbar chip, a panel field and a column heading. Fix 63 in the same pass.
+
+**A lead, measured 2026-09-26.** The panel's Apply (`records.js`) sends the
+four `FIELD_CHIPS` — Status, Plan, Tier, OWNER — through `source.select()`,
+and every other field through `bar.setChipReading()`. That sets
+`menu.conditions` SILENTLY: the chip's value and tooltip are not redrawn
+(a probe read an empty tip and value after it). Owner working and the rest not
+is exactly that split.
+
+**✅ Done 2026-09-26:** conditions DID filter — Owner, Name and Email, in the toolbar and the panel (Owner Contains Da: 100 → 10). What failed was the chip's FACE after a panel Apply: no value, a stale tip. A silent steer now calls the chip's `refresh()` — `T-a-silent-steer-still-redraws-its-chip`
+
+### `[x]` ✅ 63 — BUG: a conditions-only field shows the Conditional switch
+
+Will, 2026-09-26: the panel's Email field shows the Conditional switch, but
+Email is CONDITIONS-ONLY — there is no list to switch to. The menu already
+hides its own switch for `data-custom-only`
+(`T-a-filter-answers-by-values-conditions-or-both`); the panel does not. Its
+`data-custom-ok` is `!!customOf(def)` (`sherpa-filter-panel.ts`), and
+`customOf()` answers `'only'` for Email, which is truthy. So: no switch for
+`'only'`, and the field opens in custom mode with its rows showing.
+
+**Fix it with 41**, as Will suggests — both are how a conditioned field is
+drawn and answered, and a test that walks every conditioned field's panel,
+chip and heading covers both.
+
+**✅ Done 2026-09-26:** a conditions-only field (Email) has no Conditional switch in the panel; its rows show from the start
+
+### `[x]` ✅ 69 — The main header has a back button
+
+From Will's list, 2026-09-26, and fixed at once — it had no section of its
+own. The back button on the main header went back between Contexts, which is
+the nav's job. Commit 5453f571.
+
+**✅ Done 2026-09-26:** no back button on the main header — it went back between Contexts, which is the nav's job, as with the breadcrumbs; Settings keeps its own
+
+### `[x]` ✅ 56 — BUG: a view change leaves a lit chip that filters nothing
+
+Found by the 2026-09-26 audit. Region = EMEA (27 rows), then the My accounts
+view: the Region chip stays `data-current`, but its `global` part is dropped.
+12 rows — all of Ravi's; EMEA would be 5. A lit chip must filter, or go off.
+21b decides whether the chip SHOULD survive; this is that it must not lie.
+
+**✅ Done 2026-09-26:** a view change resets the header chips the new view does not set — Region no longer stays lit over My accounts; this is 21b's default — `T-a-view-change-resets-the-header-chips`
+
+### `[x]` ✅ 21e — BUG: a reload keeps a filter nothing on screen shows
+
+Will, 2026-09-24:
+
+> Filters & conditional filters need to survive page refreshes and navigating
+> away and coming back. So they need to be compiled and stored in the data
+> layer. They don't need to survive the session.
+
+**Half-built, and wrong.** Measured 2026-09-26: `persistView` stores the whole
+filter as ONE flat query. Region = EMEA + Status = active (4 rows), reload:
+still 4 rows, but parts `{}`, selections `{}`, and no chip lit. Navigating
+away and back is the same. The rows obey a filter the reader cannot see or
+clear.
+
+**What to store is the COMPILED form, per field** — each field's picks,
+conditions and suspended flag, plus the named `contribute()` parts. That is
+what a reload must give back to the chips, and what `ViewSnapshot` will want.
+
+| | |
+|---|---|
+| WRITE | on every `quick-filter-change` / `condition-change`, keyed by Context |
+| READ | at Context load, BEFORE `bind()` — a bar painted then re-filtered flashes |
+
+SessionStore, not IdbStore: a reload keeps it, closing the tab does not. The
+panel-or-toolbar mode already persists this way (`session '/filters/mode'`,
+24c3a57c) — done.
+
+**✅ Done 2026-09-26:** filters survive a reload and a trip away, for the session, on the View they were made on — each bar keeps its `answers` and replays them with `restoreAnswers()`; the combined query is never restored; a View change empties both bars' filter chips — `T-a-reload-replays-the-readers-answers`
+
+### `[x]` ✅ 55 — BUG: the At risk view's own column filter never applies
+
+Found by the 2026-09-26 audit. At risk sets
+`grid.setColumnFilter(status, ne churned)`, and 9ms later the selection
+handler (`examples/contexts/records.js` ~783) calls
+`setColumnFilter(status, null)`. So At risk shows 20 rows where it should show
+13. And a `col:status` chip stays on the bar, `data-current` with no value,
+still lit after going back to All customers.
+
+(The old bug — All → At risk → All left 1 page of 4 — is fixed.)
+
+**✅ Done 2026-09-26:** At risk keeps its own `status ne churned` (13 rows, was 20); going back to All drops the old `col:status` chip — `T-an-empty-selection-never-wipes-a-condition`
+
+### `[x]` ✅ 44b — BUG: a heading holds a whole reading, so a CHAIN shows and applies
+
+The single-condition half of 44 is done (a held condition opens its menu on
+the condition, `T-a-heading-menu-opens-on-what-it-holds`). What is left: the
+grid's `ColumnFilter` holds ONE condition — an op and a value or picks. So:
+
+- a chain set from outside (`owner contains Da or starts with R`, from the
+  chip mirror) is GARBLED — `setColumnFilter` reads `['or', a, b]` as an op
+  and a list of picks;
+- a chain a reader types INTO the heading applies only its first row
+  (`#readColumnFilter` reads `op` and `conditionValue`).
+
+The fix is the model: a column holds a whole `FieldReading` (picks, op, text,
+conditions, range, suspended), as a chip does, and the clause comes from the
+data layer's own `readingClause`. The grid then stops being a second filter
+model.
+
+**✅ Done 2026-09-26:** a heading holds a whole reading — a chain set from outside or typed in shows and applies whole; `clauseConditions()` turns a chained clause back into rows — `T-a-heading-holds-a-whole-reading`
+
+### `[x]` ✅ 71 — BUG: the chart legend's Other menu does not open
+
+Will, 2026-09-26: the Other row's breakdown menu no longer displays. Check,
+too, that changing its selections shows and hides those segments in the chart
+(`T-the-breakdown-button-shares-the-other-row`,
+`T-legend-toggle-is-a-filter`). Suspect first: every `sherpa-button`'s
+`.trigger` now carries `anchor-name` for its tip (2cbc6c6d) — check it does
+not take the anchor a slotted menu positions against.
+
+**✅ Done 2026-09-26:** the legend's Other menu draws again — an icon button had no menu slot since ad7f91be; unticking a folded category and Apply takes the bar chart 16 → 14 bars — `T-an-icon-button-still-slots-its-menu`
+
+### `[x]` ✅ 72 — BUG: adding a second conditional filter resets the first
+
+Will, 2026-09-26: with Owner already answered by a condition, he added a
+second conditional filter — Email — and on Apply the Owner condition was
+reset completely. Adding a field REBUILDS the bar (`#addFilters` → `#render`),
+and a rebuilt menu reads empty until it stamps
+(`T-a-rebuilt-bar-reads-empty-until-its-menus-stamp`); `#keepAnswer` carries
+a chip's rows across a rebuild.
+
+**Reproduced 2026-09-26, toolbar, through the real menus:** Owner Contains Da
+→ 10 rows, chip on. Add Email → the rebuilt Owner chip comes back OFF — its
+rows kept (`mode: custom`, `contains Da`), so it reads as SUSPENDED. Email
+Contains `example` → the bar reports, the suspended Owner applies nothing:
+100 rows. So the rebuild keeps the answer and loses the ON. Suspect the
+rebuilt row reading empty for a tick (`T-a-rebuilt-row-reads-empty-for-a-tick`)
+switching the chip off in `#applySelection`, with nothing turning it back on.
+Check the panel too.
+
+**✅ Done 2026-09-26:** adding a second conditional filter keeps the first — the toolbar holds a rebuilt chip's answer until its rows fill; the panel draws a conditioned field on its rows and writes them once each menu has drawn — `T-a-conditioned-field-opens-on-its-rows`
+
+### `[x]` ✅ 44c — BUG: a heading shows an answer held at VIEW scope
+
+Region = EMEA in the header lights the grid's Region heading — `#isFiltered`
+counts the query's `data-filter-fields` — but its menu shows nothing ticked,
+so a reader can pick a contradicting value there. The heading must show the
+View's answer.
+
+**Will's ruling, 2026-09-26: shown, but held higher.** As a component chip
+whose field the View took (`T-a-superseded-chip-suspends-it-is-never-removed`):
+the heading's menu shows EMEA ticked, greyed, with the tip "Filter applied at
+higher scope", and it cannot be changed there — the reader changes it in the
+header. One owner for one value. Build on 44b: the heading then just holds
+the View's reading, read-only.
+
+**✅ Done 2026-09-26:** a heading whose field the View holds shows the View's answer — ticked, greyed, read-only (`sherpa-menu data-readonly`) — via `grid.supersedeColumns()` — `T-a-view-held-heading-shows-and-refuses`
+
+### `[x]` ✅ 42 — BUG: a legend toggle filters the whole view
+
+Will: *"Chart legend toggling is behaving like View scope filtering. They
+should only affect their chart."* This was fixed on 2026-09-24
+(`bindSelection` `scope: 'component'`, `T-a-filter-applies-down-its-scope`),
+so something has undone it. Find what, and add the test that would have
+caught it.
+
+**Likely cause, read 2026-09-26:** `reach: 'component'` CONTRIBUTES a named
+part (`legend:<id>`) to the SOURCE — and every component bound to that one
+source obeys every part. So "component" scope narrows the whole view, not
+the chart. A per-component filter needs the part to reach only the component
+that owns it (a part keyed to a bind, applied at that bind's push), or its own
+source.
+
+**✅ Done 2026-09-26:** a legend narrows ITS chart only — a part can name the one component it narrows (`contribute(key, filter, { only })`), kept out of the shared query; Records' bar chart 4 → 3 bars, the grid stays at 100 — `T-a-component-part-narrows-one-component`
+
+## Done — the one-line log
+
+One line each. The detail is in git and in the trap named. The highest item in
+it is 200 (logged 2026-10-02). Since then, an item's `✅ Done` line is its record.
+
+**2026-09-29, the component API audit (86)**
+- 16: the ★ stars the View, not its whole Context — `T-a-favourite-is-a-view`
+- 95: a menu takes its Cancel baseline in `show()`, not in the late `toggle` — `T-the-baseline-is-taken-at-show`
+- 54: ❓ how a one-value row is removed once its tick means On — two options in the item
+- 96: ❓ what fills a narrow grid's slack — two options in the item
+- 64: a shut accordion fills with the Style +2 surface
+- 100: the Assistant panel shows its heading — `data-heading`, not `data-title`
+- 106: a click in a menu's gap is the menu's own; no accordion behind it toggles — `T-a-gap-click-is-the-menus-own`
+- 108: a Filters menu row's scope is its description line, with no "in"
+- 114: a re-fold that moves nothing keeps the open Filters menu — `T-a-reflow-that-moves-nothing-keeps-its-menus`
+- 113 step 1: a saved View waits for a component that has not drawn — `T-apply-degrades-never-throws`
+- 113: select-group's value is data, and its ticks are drawn from it — `T-a-value-is-data-the-ticks-are-drawn`
+- 113: prompt-composer holds a value set before its first render — `T-a-value-before-the-first-render-is-held`
+- 99, 21d: designed; each waits on two choices from Will
+- 105 step 1: the Filters menu's section is "Saved filters"; the rest waits on two choices
+- 109: Reset is labelled, with a ▾ menu — Reset to default puts back the View's own filters — `T-reset-to-default-is-the-views-own`
+- 97: a panel section shows an icon for what it filters — `T-a-scope-says-what-it-shows`; the chart glyph is 115, for Will in Figma
+- 60: a chip's badge is the rows its own answer matches — `T-a-chip-counts-its-own-results`
+- 49: ❓ how the fx menu shows a preset over two fields; 50 waits on it
+- 48: a child menu opens from the whole row, a resting pointer or ArrowRight — `T-a-row-opens-its-child-menu`
+- 21c: a chain of conditions marks every string it matched — `T-a-condition-marks-every-match`
+- 21f: a panel field can be sent up to the view filters — `T-send-to-view-filters`
+- 21b: a field can carry its answer over a View change (`carryOver`) — `T-a-field-can-carry-over-views`
+- 20b: the View's Date is a range, bounded by the data — `T-a-range-is-bounded-by-the-data`
+- 52, 107: designed / explained; each waits on two choices from Will
+- 15: save, save as, save over and delete a View, on every page — `T-a-saved-view-is-the-readers-own`
+- 17b: on a phone the nav is a whole-screen menu — `T-the-nav-is-a-menu-on-a-phone`; the Store binding is 116
+- 116: ❓ the nav keeps its open Areas, or a full Store binding
+- 34: Figma speaks Context; the closed rail follows density from Figma, not an override
+- 79: the nav header's Settings and Pin are one composed default group, as Figma draws it
+- 58: a card shows its data's state — loading, no data, no matches, an error — driven by the provider — `T-a-container-shows-its-datas-state`
+- 9b 🚧: `sherpa-data-viz-header`, from Figma's newer design, on the Dashboard's chart cards; the metric is left
+- 14: live alerts over Server-Sent Events move the Dashboard's tiles — `T-a-live-feed-goes-into-the-store`
+- 22: an overlay panel is wider, and resizes from its left edge — `T-an-overlay-panel-resizes-from-its-left-edge`
+- 23: a grid row opens its details in an overlay panel; the chevrons step it; the trail names it — `T-a-current-row-opens-its-details`
+- 145: the details panel follows Figma's Panel header, has no scrim, and a selected row paints the active base
+- 145, more: Firefox never re-reads a `:has()` after `:host()`, so the grid marks a selected row itself — `T-firefox-never-rereads-a-has-after-host`
+- 24: the accessibility gate — axe-core over a fixture of every component, a report each, a baseline that may only fall — `T-the-a11y-gate-reads-shadow-roots`; 117 and 118 are what it found
+- 117: 11 of the 12 structural accessibility failures are fixed; the accordion's actions slot waits on Will — `T-a-menu-is-a-dialog-of-native-controls`
+- 67: `sherpa-router` owns the URL, on the Navigation API; the example app routes through it — `T-the-router-owns-the-url`
+- 119–142: Will's items, queued as they came; 117 and 118 ruled
+- 119: a menu takes no grouping from the grouped button that opens it — `T-a-menu-takes-no-grouping`
+- 127: a number input is Sherpa's own, and a gate holds it — `T-a-number-input-wears-sherpas-steppers`
+- 127, more: the slider's and the pagination's number boxes are the Sherpa field too; slider fields sit under the track
+- 131: the Range switch is reported — `T-range-switch-swaps-not-rebuilds`
+- 132: a number filter's reading keeps both shapes — `T-both-shapes-are-kept`
+- 137: every filter control shows the Query's answer — seven holes between the toolbar, the panel and the source, one test for all — `T-a-panel-follows-the-query-open-or-shut`
+- 142: only the Context scrolls; the header and the panel areas stay put — `T-only-the-context-scrolls`
+- 130, first half: a chip says its own answer — number, date, sort and its matches, on a bar, in the panel and on a heading — `T-a-chip-says-its-own-answer`
+- 125: a sort's tip names which way
+- 147: a tooltip whose text goes shuts whole; an off chip says nothing
+- 146, 148: queued — the shell's FIXED panel areas resize by their edge; a reset date chip reads `Unassigned`
+- 52: ruled — a data viz scope is one Simple filter, a chip per legend item
+- 52: each chart's own scope is in the filter panel — one filter, a swatch chip per legend item; it narrows its chart alone, and ↑ sends it to the View — `T-a-chart-scope-is-its-legend-field`
+- 149: queued — the legend's items become swatch chips
+- 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
+- 121: a panel field's Clear and Send to are one button group
+- 169: a View pick keeps a scope's saved filter chips, off unless the View turns one on — `T-a-view-keeps-the-saved-filter-chips`
+- 168: a filter that lands in one scope is let go by every other — it is in ONE scope at a time — `T-send-to-view-filters`
+- 165: a group's badge counts the rows shown, under the grid's scope and its filter row — `T-a-group-is-a-data-layer-concept`
+- 164: mobile starts below 768px; the shell hides the rail and tells the header to show its menu button — `T-the-nav-is-a-menu-on-a-phone`
+- 161: the app header's scroll shadow fades, 100ms — the timeline flips a property, a transition follows it — `T-only-the-context-scrolls`
+- 163: a panel area is three grid columns, and never under 464px (150% of its width at 1280) — `T-the-shell-owns-the-panel-areas`
+- 162: a narrow chart puts its legend below, and a legend strip becomes a list — `T-a-narrow-chart-stacks-its-legend`
+- 130: the chip reads, draws and empties its own answer — `reading`, `clear()`, `answered`; the toolbar and the panel's date use it — `T-a-chip-says-its-own-answer`
+- 49: every saved filter chip opens a menu that lists its conditions, a heading per field — `T-a-saved-chip-lists-its-conditions`
+- 171: the filter panel's search matches a field's name too, and then shows the whole field
+- 129: Reset all to default asks first, and can save what is on screen as a View before it resets — `T-reset-to-default-is-the-views-own`
+- 172: in the panel, each picked value chip shows its own results; the header keeps the field's — `T-a-chip-counts-its-own-results`
+- 128: a gauge zone is named once; its tooltip and its legend row say the same — `T-a-gauge-names-its-zones-once`
+- 150: explored — the gauge's score is `100 − mean(health)`; thresholds as a field fact (A) or in a component's ask (B) — ❓ in the item
+- 140: a typed text field shows Clear by itself; `data-no-clear` opts out
+- 146, 144, 149, 98, 89, 90, 122, 110: planned from a read of the code, each in its item — five carry one choice (❓)
+- 124: ONE Filters button in the panel header, for every scope; a row says its scope — `T-a-panel-adds-through-the-bar-that-owns-the-list`
+- 117: the accessibility baseline has no structural failure left — `T-an-accordion-action-is-not-a-toggle`
+- 144: a View keeps a draft of the filters left on it, for the tab and across sessions; two settings, on — `T-a-view-keeps-a-draft`
+- 146 🚧: a panel area resizes by its inner edge, dragged or by the keys, within its min and 33% of the row; kept through a reload. Levels 1 and 2 left — `T-an-edge-resizes-its-box`
+- 90 🚧: a number field can go Advanced — number questions, typed values, its answer carried over; dates wait on 21d — `T-a-number-has-advanced-rows`
+- 9b: a metric's name is its composed Data Viz Header, as Figma's Metric has it — no rule, an optional icon
+- 80: the container header is Figma's one grid — metadata under the title, the chevron leading
+- 50: a saved filter's line opens its field; the change applies, unsaved, until Save or Discard — `T-a-saved-filter-keeps-its-edit`
+- 111: a spec types a property as its accessor does, `unknown` where nothing says
+- 118: success text and a field's description pass 4.5:1 — one step darker on their own ramps, no new hex; the a11y baseline is empty
+- 11: closed — the grid positions have callers, the edge classes are grouping's other half, the class is CSS first
+- 84: the platform formats the delta and the upload size (`Intl`), and the calendar counts its days (`Temporal`)
+- 136: a Find input steps through a host's matches; Find & Replace asks, and Replace all asks first — on Records, the grid's toolbar — `T-a-find-asks-its-host-to-step`
+- 68, 27: the templater owns a component's files — your own markup and sheets by `useTemplate`, and a live reload that restyles in place — `T-a-templater-owns-the-files`
+- 25: `sherpa-layout-canvas` — an infinite canvas that pans and zooms, with a minimap and four floating controls — `T-a-canvas-owns-its-view`
+- 33 (step 1): a density carries only the 27 space and size values Figma overrides; a stale copy had painted an old success green — `T-a-density-mode-is-one-step`
+- 26, 30, 33, 11d: closed by Will's rulings — the grid stays, the SVG icons stay, no breakpoint step, `data-type` is Figma's Type axis
+- 28: `sherpa-grid-cell` folded — Figma's Grid Cell is the grid's own CSS
+- 36: preset-env is gone — the Safari 16 floor went, so nesting ships as written; no pixel moved
+- 86 (A7, the headings): a grid heading opens the chip's menu, from the source's own field — `T-a-heading-opens-the-chips-menu`
+- 173: no bug — a field's header is one count of its unique rows; a test pins it — `T-a-chip-counts-its-own-results`
+- 174 (part): Adventure Works + AMER matched nothing because the Dashboard seed gave each customer one region — fixed; the symbiotic options wait on 110
+- 146 level 1: the shell, not the panel, says when there is room for a panel area — a pinned nav counts — `T-the-panel-is-desktop-only`
+- 143: EXPERIMENT — scrolled-past metrics become a compact sticky row; Settings › Experiments
+- 59: TRIAL — a card keeps its content: a loading bar under its header, a banner for a failure; Settings › Experiments — `T-a-container-shows-its-datas-state`
+- 175: the sticky metrics switch in CSS — a scroll-state query at grid padding + one row; sparkline kept, tighter, 14px value
+- 81: the 65 component contracts are JSON — `sherpa-<name>.component.json`, generated, validated, round-tripped, fresh
+- 146 level 2: the Context's grid steps by its own width — a container twin of every layout band — `T-a-context-steps-by-its-own-width`
+- 174 (most) + 176: "Limit filter options" — a ruled-out value is greyed, refused, and says why — `T-a-ruled-out-value-is-greyed`
+- 180: a later answer sets aside an earlier pick it rules out — kept, greyed, not applied — `T-a-later-answer-sets-an-earlier-pick-aside`
+- 179: a chart legend greys and refuses a ruled-out value, as its chip does — `T-a-ruled-out-value-is-greyed`
+- 37 step 4: the example app is its own project, `../Sherpa Demos`, taking sherpa-ui as a dependency by name
+- 182: the filter panel's search spans its header, with more room above
+- 178: the filter panel's ⋮ — Reset folds into it when narrow; both ⋮ menus hold "Limit matching filters"
+- 110: an AND row greys the values the rows before it rule out — `T-an-and-row-offers-what-the-rows-before-it-leave`
+- 181: a saved filter's card shows each field's own menu, read-only; Edit filter edits it in place — `T-a-saved-filter-keeps-its-edit`
+- 177: cards resize from the layout grid's gutters, by drag or keys; each Context keeps its sizes — `T-a-gutter-moves-a-line`
+- 183: how a consumer and an agent build on Sherpa — `docs/history/CONSUMER-REVIEW.md`; its plan is items 187 to 197
+- 185: Sherpa Demos `views/` holds only `*-views.json`; each View's markup is a template the JSON names — `T-a-views-markup-lives-in-a-template`
+- 187: the docs and the MCP text say what the code does; `bind()` reports `scope: 'all'`
+- 188: a changed key moves the row in every store; one `input` per keystroke; the provider reports skipped keys; lint and the node tests are gates — `T-a-changed-key-moves-the-row`
+- 189 (readiness): `settled()` ships for apps and tests; one component imported alone draws right
+- 198: a link to a View with cards of its own draws them — `T-content-first-original-once`
+- 200: a WebKit flake — the test waited for a word the summary draws before its rows load
+- 184: a consumer needs no Node; the package ships `schemas/`
+- 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
+- 167: a bar's Reset leaves a chip the View holds as it is
+- 166: a saved filter shows its count only while it is on
+- 160: a local store checks its rows BEFORE it cuts a page — a refused row left its page short — `T-a-refused-row-never-shortens-a-page`
+- 159: while the View holds a chart's field, its legend shows and changes the View's answer — `T-a-legend-follows-the-view-when-it-holds-the-field`
+- 158: a View field's Send down offers every scope that has it — a menu where there is more than one — `T-send-to-view-filters`
+- 157: every button and chart tip is a popover, lifted to the top layer while it shows — `T-a-tip-lives-in-the-top-layer`
+- 156: an Advanced chip wears the plain active styling; no pin, no CSS of its own — `T-a-conditioned-chip-reads-as-active`
+- 155: a panel field's Send to buttons show before its first answer
+- 152: a grouped grid page holds the pager's ROW count — a heading costs nothing, a shut group one slot — `T-grid-collapsed-group-is-one-slot`
+- 153: the Context fills its frame again, so a fit grid's card keeps one height — `T-a-fit-grid-needs-a-sized-parent`
+- 154: a chart's section in the filter panel wears the `reports` glyph
+- 133: a panel field's header wears its results badge, right of the title; a chart's own field too — `T-a-chip-counts-its-own-results`
+- 135: a calendar's Month and Year views disable what holds no day to pick
+- 134: a number menu has Reset — the field empties and the handles go back, both shapes; Clear had done nothing to a number — `T-a-number-is-reset-not-cleared`
+- 151: a filter moved across scopes keeps its mode — the View's answer wins on the way down, and a menu built at a flip takes the answer as it stands — `T-a-late-built-menu-takes-the-answer-as-it-stands`
+- 150: queued — the gauge's risk score, and thresholds in the central Query
+- 141: Advanced is an f(x) icon button at the end of a menu's and a panel field's header; the panel's flip reports once its rows are drawn — `T-a-filter-menu-has-two-modes`
+- 123: a chip switched off keeps its results badge; the source counts an off answer, and a saved filter, on or off — `T-a-chip-counts-its-own-results`
+- 139: a chained chip's face shows its values — `U, an` — not the condition labels
+- 138: an Advanced chip, and the text it matched, are info blue again — `T-a-conditioned-chip-reads-as-active`
+- 120: a View field is sent DOWN to the one scope that has it, with its answer — `T-send-to-view-filters`
+- 126: a filter another scope holds says `Filter moved to View scope.` — `T-an-inactive-chip-says-where-its-filter-went`
+- 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
+- 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
+- 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`
+- 82: a number chip set by a View shows its value (`2` for "> 2"); an old "is not X" no longer ticks X as Simple's answer — `T-both-answers-are-kept`
+- 45: a date reads one way — `formatDate()`, DOM-free, `03 to 15 Sep 2026` — `T-a-date-reads-one-way`
+- 103: a keyless row gets a key from the data layer, kept beside the row and never on it; the grid selects by key and `selection-change` sends keys — `T-a-made-up-key-never-leaves-the-data-layer`
+- 102: both answers kept — a filter switches between Simple and Advanced at any time and loses nothing; Advanced mirrors Simple until a row is edited; in the bar, the panel and a grid heading — `T-both-answers-are-kept`
+- 104: a number filter applied nothing that was typed or dragged — the body moved into the menu's shadow root and the menu listened only on its host; it now listens on its body, the panel reads a number through the bar's own `bodyReading()`, and one typed number is a pick under `=` — `T-native-change-stops-at-the-host`, `T-one-number-is-a-pick-under-equals`
+- 75: the filter modes are **Simple** and **Advanced** in every file — values (75a), the opt-in key `advanced`, the menu's `data-advanced` / `data-advanced-only` and the labels (75b), then docs, TRAPS and test titles (75c). Every old word is still HEARD, so a saved View or filter keeps working — `T-a-renamed-attribute-keeps-its-old-name`
+- 101: an Advanced condition row would not add in a chip's menu, and in the panel a row's condition change dropped it — the source draws every field's answer back with its ANSWERED rows only, and the menu rebuilt from that; now an answer that matches the rows the reader has answered keeps every row — `T-an-unanswered-row-survives-a-redraw`
+- 61: Add customer saves with required fields empty — the dialog is a real `<form>`; the four form controls take part in it (`FormValue`), Save submits it, and the browser refuses an empty required field and points at it; nothing is filled in for the reader, and the toast says when the page's filters hide the new record — `T-a-form-value-follows-every-write`
+
+**2026-09-29, the page definition (92)**
+- 92: navigating sets up the page — the router opens each Context from `examples/definitions/<name>.json` through `provider.open()`: its source, fields, scopes, saved filters, the header's chips, each bar's Add list, the grid's configuration and the kept Query. D1 `edec11a6`, D2 `ce3aaa4f`, D3 `eeb5e37a` — `T-a-page-is-its-definition`
+- A field's possible values come from the DATA: the store's schema (`oneOf`, `number()` with `min`/`max`), or else its rows (`declareFromRows`) — Will's decision — `T-the-data-says-what-a-field-may-hold`
+- 85: the provider, P1–P5 — a component ASKS and the nearest provider answers; `records.js` 1163 → 326 lines, `dashboard.js` 331 → 107 — `T-a-component-asks-its-provider`, `docs/PROVIDER-DESIGN.md`
+- 73: one Query, steps 1–8 — step 8 (segment and aggregate) became provider P2's declared summaries — `T-one-query-one-owner`, `docs/QUERY-DESIGN.md`
+- 70: a View is ONE JSON definition, `{ label, query, ui }`, applied onto a clean slate. Its layout as JSON is 68's; saving it is 15's — `T-a-view-is-json`
+- 47: more than 20 values, one chip — merged into 89, at 16
+
+**2026-09-27, the provider (85)**
+- 93: a grid-scope filter narrowed the charts and tiles too — only the View trickles down now; a summary is under the View alone — `T-only-the-view-trickles-down`
+- 91: the provider owns TOOLBARS or PANEL for every page — Configure opens the panel on the Dashboard too; the app keeps the choice — `T-the-provider-owns-the-panel-mode`
+- 87 and 88: a field raised to the View stays in its component scope's Filters list, its section keeps its heading and says "Filter applied at higher scope." — provider P3c, `T-a-panel-asks-for-its-scopes`
+
+**2026-09-27, the Query — steps 1 to 6 (73)**
+- Steps 1–5: one Query, held by the source, compiled on demand; bars, the open panel, the header, legends and headings are drawn from it; the session saves and restores it — 827cadd8 to b59363d4, `T-one-query-one-owner`
+- Choice A: a heading filter wears its field's NORMAL chip; the `col:` and external chips are gone — 731d2bc3, c5d6e513
+- Removing a chip clears its filter (it had moved to the View and kept filtering) — 731d2bc3
+- 62: Apply only for a REMOTE fetch — locally every pick applies at once; `?remote` spoofs a remote store; the panel's footer is gone, a remote field has its own Apply and Discard — 7c7cdf5c, 9294cfd6, c92adec0, `T-apply-and-discard-wait-for-a-change`, `T-commit-follows-select-mode`
+- 46: a pending chip wears the active edge and no fill — 6050eddf, `T-a-pending-chip-reads-as-a-warning`
+- 66: the footer owns "nothing to save" — a committing menu's Apply and Cancel wait for a change — 23094c86, `T-the-footer-owns-nothing-to-save`
+- Step 7: saved Views are JSON, their defaults on the chips — Records c6166719, Dashboard 6001eb63, `T-a-view-is-json`
+- A number chip filters (a Seats range showed and narrowed nothing); the Dashboard's header chips filter; the Capacity view's charts draw — c6166719, 6001eb63
+
+**2026-09-26, Will's list**
+- The superseded-chip tip reads "Filter applied at higher scope" — c0f5e32f, `T-an-inactive-chip-says-where-its-filter-went`
+- The panel's to-toolbar button uses `fullscreen-exit` — 1e98a823
+- Customer and Region moved to the panel's View filters — aba1f583
+- Add condition is a labelled default button BELOW the rows — 5b40c4f3, `T-add-condition-sits-below-the-rows`
+- A toolbar divider hides with nothing on one side — b80eb9f4, `T-a-divider-needs-a-neighbour-on-both-sides`
+- A scope's chevron leads its heading; its buttons ride that row — 8e60cf78
+- A field's label is caps and light, its buttons in its header — a161e054
+- Apply and Discard wait for a change; a field header keeps one height — 3c1d306e, `T-apply-and-discard-wait-for-a-change`
+- A conditioned chip reads as Success, not info — a24d020a, `T-a-conditioned-chip-reads-as-active`
+- A Conditional switch moves a filter between its modes — 91fd57be, `T-a-filter-menu-has-two-modes`
+- The Conditional switch is its own row, under the field header — 7c6bb862
+- Organise and Presets carry no Conditional switch — 8623c084
+- A disabled Today keeps its Today fill — 9baa9f57
+- 39: the panel header's Reset all clears both scopes, and both header buttons wear the default look
+- 53: a conditional chip's tooltip says "X conditions applied" — `T-an-advanced-answer-reads-as-its-conditions`
+- 40: a host's `aria-label` names its inner control — button, input, checkbox, radio, switch; 59 template sites + 18 in code were unnamed — `T-a-host-label-must-reach-its-control`
+- A button with no visible label shows a tip that says its action; `data-tip` sets one, `data-no-tip` turns it off — `T-every-button-says-its-action`
+- Toolbar icon actions named in Will's words: Suggest filters, Reset all filters, View as filter panel, Add to / Remove from Favorites, Save view options
+- 17: no breadcrumb trail on Records or Assistant — moving between Contexts is the nav's to show
+- 57: a shell panel area is exactly three grid columns wide, worked out in CSS; the shell's panel areas stay — `T-the-shell-owns-the-panel-areas`
+- 65: a horizontal legend is capped at 40rem and centred; narrow, it fills — `T-a-horizontal-legend-is-three-by-two`
+- 41: conditions DID filter — Owner, Name and Email, in the toolbar and the panel (Owner Contains Da: 100 → 10). What failed was the chip's FACE after a panel Apply: no value, a stale tip. A silent steer now calls the chip's `refresh()` — `T-a-silent-steer-still-redraws-its-chip`
+- 63: a conditions-only field (Email) has no Conditional switch in the panel; its rows show from the start
+- 69: no back button on the main header — it went back between Contexts, which is the nav's job, as with the breadcrumbs; Settings keeps its own
+- 56: a view change resets the header chips the new view does not set — Region no longer stays lit over My accounts; this is 21b's default — `T-a-view-change-resets-the-header-chips`
+- 21e: filters survive a reload and a trip away, for the session, on the View they were made on — each bar keeps its `answers` and replays them with `restoreAnswers()`; the combined query is never restored; a View change empties both bars' filter chips — `T-a-reload-replays-the-readers-answers`
+- 55: At risk keeps its own `status ne churned` (13 rows, was 20); going back to All drops the old `col:status` chip — `T-an-empty-selection-never-wipes-a-condition`
+- 44 (first half): a heading holding a condition opens its menu on the condition, not on an unticked list — `T-a-heading-menu-opens-on-what-it-holds`
+- 44b: a heading holds a whole reading — a chain set from outside or typed in shows and applies whole; `clauseConditions()` turns a chained clause back into rows — `T-a-heading-holds-a-whole-reading`
+- 71: the legend's Other menu draws again — an icon button had no menu slot since ad7f91be; unticking a folded category and Apply takes the bar chart 16 → 14 bars — `T-an-icon-button-still-slots-its-menu`
+- 72: adding a second conditional filter keeps the first — the toolbar holds a rebuilt chip's answer until its rows fill; the panel draws a conditioned field on its rows and writes them once each menu has drawn — `T-a-conditioned-field-opens-on-its-rows`
+- 44c: a heading whose field the View holds shows the View's answer — ticked, greyed, read-only (`sherpa-menu data-readonly`) — via `grid.supersedeColumns()` — `T-a-view-held-heading-shows-and-refuses`
+- 42: a legend narrows ITS chart only — a part can name the one component it narrows (`contribute(key, filter, { only })`), kept out of the shared query; Records' bar chart 4 → 3 bars, the grid stays at 100 — `T-a-component-part-narrows-one-component`
+
+**Culled or merged in the 2026-09-26 review**
+- 13, a sparkline did not follow its record deltas — each tile's sparkline and its delta are ONE series now (`T-a-delta-is-derived-not-declared`)
+- 51, warning and critical for a condition — a note, folded into 49
+- 35, plain grid templates — the question 26 asks first; merged into it
+- The draft list `todo-filter-2609.md` — merged here, and deleted
+
+**Found done or stale by the 2026-09-26 audit, and removed**
+- The data toolbar clipped below 800px — fine at 1280x720 since 39b6537c
+- Fold `More` into `Add filter` — ONE Filters button with Added / Available sections
+- A filter PANEL as an alternative to the toolbars — built; its width is 57
+- Switching back to a view left the last column filter — fixed; a new bug is 55
+- A range filter refused its default max — does not reproduce (45163ad4)
+- Button borders did not inherit the status colour — 52b5857f; buttons bind the Style pins
+- A metric trend did not update — did not reproduce, twice
+- A fixed-height row's hard-coded gutter — did not reproduce, twice
+- 38's compound Owner condition did not widen — does not reproduce (Dana 10, Dana OR Nassim 17)
+- Allow-list follow-ons (values, actions, `nextState`) — the primitive is there; wire each when a caller needs it
+
+**2026-09-23 to 09-25**
+- Context vs View — the naming, settled (CLAUDE.md "Navigation terms")
+- A filter applies DOWN its scope only — `T-a-filter-applies-down-its-scope`
+- Style/Transparent tokens consumed — 7f1f95a3
+- The `More` chip showed active when it was not — `T-the-filters-button-is-a-door-not-a-filter`
+- Metric item surface and border; every metric uses the xsmall container class
+- Only five filter chips carry an icon — `T-only-five-filter-chips-carry-an-icon`
+- Pagination row-count select is a Sherpa select — `T-a-native-select-keeps-its-own-shape`
+- Notifications button, and three more menus that could never close — `T-a-trigger-click-follows-light-dismiss`
+- An optional allow-list on any axis — `src/core/data/allow.ts`, `T-an-allow-list-is-a-filter-not-an-order`
+- The filter menu's two modes and many conditions, and its shake-down — `T-a-filter-menu-has-two-modes`
+- An inactive chip says where its filter went
+- The grid is TWO tokens, 4px and 2px — `T-the-grid-is-two-grids`
+- Donut folded into `sherpa-radial-chart`; the gauge composes the ring — `T-a-gauge-composes-the-ring`
+- Settings opens as an overlay — `test/e2e/reforged-settings-overlay.spec.ts`
+- A nav item goes to a Context
+- Shared constants swept; event detail shapes swept; toggle chips' owner settled
+- The panel-or-toolbar mode survives a reload — 24c3a57c

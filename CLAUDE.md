@@ -22,9 +22,9 @@ This file is the commands and where each thing is stated. It states no rule.
 | Doc | Read it when |
 |---|---|
 | [docs/PRINCIPLES.md](docs/PRINCIPLES.md) | **First, always.** The rules, and the gate that enforces each |
-| [docs/TODO.md](docs/TODO.md) | The one list of open work. A done item keeps its row and its section |
+| [docs/TODO.md](docs/TODO.md) | The one list of open work. A done item MOVES, row and section, to [docs/history/TODO-ARCHIVE.md](docs/history/TODO-ARCHIVE.md) |
 | [docs/HANDOVER.md](docs/HANDOVER.md) | Picking up the work in hand: where it stands, and what Will asked for next |
-| [docs/TRAPS.md](docs/TRAPS.md) | Any `TRAP T-…` citation you meet in the code. The reasons, gated both ways. By area: [docs/TRAPS-INDEX.md](docs/TRAPS-INDEX.md) |
+| [docs/TRAPS.md](docs/TRAPS.md) | Any `TRAP T-…` citation you meet in the code. The reasons, gated both ways, one file per area in `docs/traps/`. By area and code: [docs/TRAPS-INDEX.md](docs/TRAPS-INDEX.md) |
 | [docs/APP-GUIDE.md](docs/APP-GUIDE.md) | Building an app on Sherpa, step by step. Served to agents as `sherpa://app-guide` |
 | [docs/DATA-SOURCE-RULES.md](docs/DATA-SOURCE-RULES.md) | Pointing Sherpa at a backend. Served to agents as `sherpa://data-rules` |
 | [docs/DEF-TO-FIGMA-BUILD-RULES.md](docs/DEF-TO-FIGMA-BUILD-RULES.md) | Building a component: the five files, the class, the template, the CSS recipes, Figma. Served as `sherpa://rules` |

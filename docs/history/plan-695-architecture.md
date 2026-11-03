@@ -84,7 +84,15 @@ flowchart LR
   P1 --> P7
 ```
 
-### T1 — first, alone (D5)
+### T1 — first, alone (D5) ✅
+
+**Done 2026-11-03:** `TODO.md` 13,868 → 600 lines — 55 open rows and 12 open sections stay;
+615 done rows and 469 done sections moved to `docs/history/TODO-ARCHIVE.md`, links rebased,
+nothing lost (every row, section and line checked). `TRAPS.md` is a pointer page; the 735
+entries live in 11 files in `docs/traps/`, each in its first Site's area, which
+`check-traps` now holds (a misplaced entry fails, with the file to move it to).
+**Deferred to a docs pass (T3):** the editorial trim — history wording, the stale entry,
+the duplicate pair — as it changes citations in code.
 
 Every lane writes `TODO.md` and `TRAPS.md`, so they change shape BEFORE any lane starts.
 `TODO.md` keeps its open rows; done sections move to `docs/history/TODO-ARCHIVE.md`.

@@ -79,7 +79,7 @@ are a reminder of why.
 |---|---|---|
 | 9 | Every `:host([data-*])` and every `this.dataset` read is DECLARED in `static props`. A `kind: style` prop gets no JS branch | `check:props` |
 | 10 | One owner per value. A bound component REPORTS; `data-locked` says the host owns it | `check:ownership` |
-| 11 | A `TRAP T-…` citation resolves to an entry in `TRAPS.md`, and its Sites match who cites it. `TRAPS-INDEX.md` is made from those Sites | `check:traps` |
+| 11 | A `TRAP T-…` citation resolves to an entry in `docs/traps/`, in the file of its first Site's area, and its Sites match who cites it. `TRAPS-INDEX.md` is made from those Sites | `check:traps` |
 | 12 | A `.component.json` regenerates the source it describes, and is what that source generates now. Every slot says what it takes, in `data-accepts`, from one vocabulary: text, icon, control, input, content, item, menu, legend, header, footer, nav, panel, dialog, toolbar, badge (`T-a-slot-says-what-it-accepts`) | `spec:check` |
 | 13 | The data layer imports no DOM — no `document`, `window`, `customElements`, storage — and no display component imports the app layer (`T-the-app-layer-is-opt-in`) | `lint`; `check:weight` proves it in `npm test` |
 | 14 | Every file's header says what it holds, and ends in a `Map:` of its exports — one line each. A changed file carries its map; `npm run map` prints them all | `check:map` |
@@ -182,7 +182,7 @@ on `bindSource()` gives one event to the view that owns it
 | Restating what the code plainly says | A line that looks like a mistake and is not |
 | Worked examples longer than one line | `/* off-grid-ok */` and other pragmas |
 
-Depth belongs in `docs/TRAPS.md`, which is gated both ways: a `TRAP T-some-id`
+Depth belongs in the traps (`docs/traps/`, listed in `docs/TRAPS.md`), gated both ways: a `TRAP T-some-id`
 citation must survive verbatim, and the explanation lives in the doc. Two
 regions are exempt because a generator owns them: everything above
 `/* == end sherpa:tokens == */` in a component's CSS, and the `Public API:`,
@@ -267,13 +267,13 @@ written from the specs by `npm run reference`, never edited.
 
 | File | Who reads it |
 |---|---|
-| `PRINCIPLES.md` | People. This file — the rules and the doors. Open work is in `TODO.md` |
-| `TRAPS.md` | `check-traps` — a `TRAP T-…` citation must resolve to an entry, and that entry's `Site:` list must match who cites it; `npm run traps:write` makes `TRAPS-INDEX.md`, the entries by area, from those lists |
+| `PRINCIPLES.md` | People. This file — the rules and the doors. Open work is in `TODO.md`; done work in `history/TODO-ARCHIVE.md` |
+| `TRAPS.md`, `traps/*.md` | `check-traps` — a `TRAP T-…` citation must resolve to an entry, in the file of its first Site's area, and that entry's `Site:` list must match who cites it; `npm run traps:write` makes `TRAPS-INDEX.md`, the entries by area, from those lists |
 | `APP-GUIDE.md` | The MCP server, as `sherpa://app-guide` |
 | `DEF-TO-FIGMA-BUILD-RULES.md` | The MCP server, as `sherpa://rules` |
 | `DATA-SOURCE-RULES.md` | The MCP server, as `sherpa://data-rules` |
 
-`TRAPS.md` is where the depth went, and it is gated both ways. That is the
+The traps are where the depth went, and they are gated both ways. That is the
 trade: the citation stays beside the code, the essay moves out. Each `TRAP T-…`
 comment in the code points at it.
 
