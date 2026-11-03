@@ -10,7 +10,7 @@ test('a page opened with a key keeps its saved View and filters under that key, 
     const { ArrayStore } = await import('/dist/index.js');
     for (const key of Object.keys(localStorage)) if (key.includes('page-id') || key.includes('context-name')) localStorage.removeItem(key);
     const provider = document.createElement('sherpa-provider');
-    provider.saveAnyScope = true;
+    provider.settings.set('saveAnyScope', true);
     document.getElementById('root').replaceChildren(provider);
     const rows = [{ id: 1, plan: 'Pro' }, { id: 2, plan: 'Free' }];
     await provider.open({

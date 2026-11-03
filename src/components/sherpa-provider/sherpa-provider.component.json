@@ -165,7 +165,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "every card it draws a state on keeps its content: a bar and a banner, never an overlay. Will, TODO 59. (the rest — `provide()` gives it its sources)"
+      "description": "every card it draws a state on keeps its content: a bar and a banner, never an overlay. Will, TODO 59. (the rest — `provide()` gives it its sources, `settings` the app's settings)"
     }
   ],
   "slots": [
@@ -186,7 +186,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, results, countApplied, savedMenu, saveAnyScope, switchable, sectionLabels, hideOrganiseLabels, sections, highlightOnHover, legendChips, highlightAcross, hovered, singleApply, reorderFilters, moveFilters, allowSolo, soloAcrossScopes, soloInHeader, labelColumn, countEveryValue, headingGroup, headingHover, multiFieldColumns, showAs, axisChips, appContext, applyEvery, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (settings, hovered, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -197,12 +197,13 @@
   "events": [
     {
       "$type": "event",
-      "name": "filter-mode-change",
-      "description": "The filters moved between the toolbars and the panel.",
+      "name": "setting-change",
+      "description": "A reader changed a setting here: a bar's ⋮, the panel's mode.",
       "bubbles": true,
       "composed": true,
       "detail": {
-        "mode": "'panel' | 'toolbars'"
+        "key": "'actionDescriptions' | 'allowSolo' | 'appContext' | 'applyEvery' | 'axisChips' | 'countApplied' | 'countEveryValue' | 'descriptionTips' | 'filterMode' | 'filterValueBorder' | 'headingGroup' | 'headingHover' | 'hideOrganiseLabels' | 'hideUnmatched' | 'highlightAcross' | 'highlightOnHover' | 'labelColumn' | 'legendChips' | 'limitOptions' | 'moveFilters' | 'multiFieldColumns' | 'navHierarchy' | 'navHover' | 'navViews' | 'reorderFilters' | 'results' | 'saveAnyScope' | 'savedMenu' | 'sectionLabels' | 'sections' | 'showAs' | 'singleApply' | 'soloAcrossScopes' | 'soloInHeader' | 'switchable' | 'toggleShapes'",
+        "value": "SettingValue"
       }
     },
     {
@@ -330,154 +331,14 @@
       ],
       "jsProps": [
         {
-          "name": "filterMode",
-          "type": "'toolbars' | 'panel'",
-          "access": "read-write"
-        },
-        {
-          "name": "limitOptions",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "hideUnmatched",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "results",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "countApplied",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "savedMenu",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "saveAnyScope",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "switchable",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "sectionLabels",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "hideOrganiseLabels",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "sections",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "highlightOnHover",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "legendChips",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "highlightAcross",
-          "type": "boolean",
+          "name": "settings",
+          "type": "Settings",
           "access": "read-write"
         },
         {
           "name": "hovered",
           "type": "{ scope: string; field: string; value?: string } | null",
           "access": "read"
-        },
-        {
-          "name": "singleApply",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "reorderFilters",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "moveFilters",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "allowSolo",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "soloAcrossScopes",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "soloInHeader",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "labelColumn",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "countEveryValue",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "headingGroup",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "headingHover",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "multiFieldColumns",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "showAs",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "axisChips",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "appContext",
-          "type": "boolean",
-          "access": "read-write"
-        },
-        {
-          "name": "applyEvery",
-          "type": "boolean",
-          "access": "read-write"
         },
         {
           "name": "reach",

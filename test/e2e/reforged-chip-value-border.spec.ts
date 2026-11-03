@@ -4,7 +4,7 @@ import { test, expect, type Page } from './harness';
  * AN ON CHIP FILLS THE HALF THAT TOGGLES — Will, TODOs 667, 669, 697. A chip that
  * cannot be toggled (the View chip, a chart's Primary) never fills its field
  * label, but wears the on border on both halves. And the page may ask that an on chip's
- * value half wear the on BORDER only (`html[data-filter-value-border]`), so the
+ * value half wear the on BORDER only (the `filterValueBorder` look setting), so the
  * filled half is the one a press turns off. Read in PIXELS, never computed style.
  */
 
@@ -58,14 +58,14 @@ test('an on chip fills both halves; with the page\'s value border on, its value 
   expect(near(on.body, WHITE)).toBe(false);
   expect(near(on.caret, on.body)).toBe(true);
 
-  await page.evaluate(() => document.documentElement.setAttribute('data-filter-value-border', ''));
+  await page.evaluate(() => ['surface', 'content'].forEach((p) => document.documentElement.style.setProperty(`--sherpa-filter-value-${p}`, `var(--sherpa-style-default-${p}-base)`)));
   await page.evaluate(() => window.__settled());
   const bordered = await halves(page, 'on');
   // The label half keeps its fill; the value half is white again, its border still the on one.
   expect(near(bordered.body, on.body)).toBe(true);
   expect(near(bordered.caret, WHITE)).toBe(true);
   expect(near(bordered.edge, off.edge)).toBe(false);
-  await page.evaluate(() => document.documentElement.removeAttribute('data-filter-value-border'));
+  await page.evaluate(() => ['surface', 'content'].forEach((p) => document.documentElement.style.removeProperty(`--sherpa-filter-value-${p}`)));
 });
 
 test('a chip that cannot be toggled never fills its field label, and both halves wear the on border (Will, TODO 697)', async ({ page }) => {

@@ -20,7 +20,8 @@
  */
 
 import { hasIcon, iconsLoading, renderIcon, upgradeIcons } from './render-icon.js';
-import { ContextRequestEvent, DATA_CONTEXT, type DataAsk } from './context.js';
+import { ContextRequestEvent, DATA_CONTEXT, SETTINGS_CONTEXT, type DataAsk } from './context.js';
+import type { Settings } from '../data/settings.js';
 import { liftTipsIn } from './top-layer-tips.js';
 import {
   adoptPageSheet, cachedTemplates, checkOwnTemplate, familyBody, filesFor, loadFamily, loadSheets, loadTemplates, onReload,
@@ -354,6 +355,14 @@ export abstract class SherpaElement extends Base {
   static asks?: DataAsk;
 
   /**
+   * The app's SETTINGS it reads, each onto one of its own attributes — by key,
+   * or `!key` for an attribute that is on while the setting is off. Asked on
+   * connect and told again on every change; a setting with no value (`null`)
+   * leaves its attribute as it is. TRAP T-a-setting-is-declared-once
+   */
+  static settings?: Readonly<Record<string, string>>;
+
+  /**
    * CONFIGURATION a page sets once, as properties — a grid's columns, its key
    * — each by name, with its default. Every setting made in one moment redraws
    * ONCE, and data without them (a provider's rows) keeps them.
@@ -490,6 +499,7 @@ export abstract class SherpaElement extends Base {
       this.#connected = true;
       this.onConnect();
       this.#ask();
+      this.#askSettings();
       this.#watchChildren();
     }
   }
@@ -502,6 +512,8 @@ export abstract class SherpaElement extends Base {
     // Out of the tree, out of its provider's reach: stop being told.
     this.#leave?.();
     this.#leave = undefined;
+    this.#unsettle?.();
+    this.#unsettle = undefined;
     this.#childWatch?.disconnect();
     this.onDisconnect();
   }
@@ -526,6 +538,34 @@ export abstract class SherpaElement extends Base {
       if (unsubscribe) this.#leave = unsubscribe;
       if (data !== undefined) void this.populate(data);
     }, true));
+  }
+
+  /** How to stop being told the app's settings, once a provider has. */
+  #unsettle: (() => void) | undefined;
+
+  /** ASK the nearest provider for the app's settings, if it reads any. */
+  #askSettings(): void {
+    if (!(this.constructor as typeof SherpaElement).settings || this.#unsettle) return;
+    this.dispatchEvent(new ContextRequestEvent(SETTINGS_CONTEXT, this, (settings, unsubscribe) => {
+      if (unsubscribe) this.#unsettle = unsubscribe;
+      this.#takeSettings(settings);
+    }, true));
+  }
+
+  /** Each setting it reads, onto its attribute: an `on | off` prop says so, a
+   *  boolean one is there or not, else the value. */
+  #takeSettings(settings: Settings): void {
+    const Ctor = this.constructor as typeof SherpaElement;
+    for (const [attr, named] of Object.entries(Ctor.settings ?? {})) {
+      const not = named.startsWith('!');
+      const value = settings.get(not ? named.slice(1) : named);
+      if (value === null) continue;
+      const on = not ? !value : value;
+      if (typeof on !== 'boolean') this.setAttribute(attr, String(on));
+      else if (Ctor.props[attr]?.type === 'enum') this.setAttribute(attr, on ? 'on' : 'off');
+      else this.toggleAttribute(attr, on);
+    }
+    this.onSettings(settings);
   }
 
   attributeChangedCallback(name: string, oldVal: string | null, newVal: string | null): void {
@@ -911,6 +951,7 @@ export abstract class SherpaElement extends Base {
       this.#connected = true;
       this.onConnect();
       this.#ask();
+      this.#askSettings();
     }
     this.#watchChildren();
   }
@@ -1246,6 +1287,9 @@ export abstract class SherpaElement extends Base {
 
   /** An observed attribute changed (after the first render). */
   protected onChange(_name: string, _oldVal: string | null, _newVal: string | null): void {}
+
+  /** The app's settings, told: after its `static settings` are on its attributes. */
+  protected onSettings(_settings: Settings): void {}
 
 }
 

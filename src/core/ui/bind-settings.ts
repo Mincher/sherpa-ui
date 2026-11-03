@@ -1,84 +1,94 @@
 /**
  * bind-settings.ts — a control that says `data-setting="/pointer"` shows that
- * session value, and writes it back as the reader changes it; and a target's
- * properties, each kept on its pointer.
+ * value, and writes it back as the reader changes it: a declared setting's
+ * through the provider's settings, a page's own over the app's; any other
+ * pointer straight from the session. And every setting kept across reloads.
  * TRAP T-a-setting-is-a-pointer
  *
  * Map:
- * - bindSettings — Bind every `[data-setting]` control under `root` to the session, until `signal` aborts.
- * - Setting — One property `followSettings` keeps: its pointer, its default, and the event that reports it.
- * - followSettings — Keep each property of `target` on its session pointer, both ways, until `signal` aborts.
+ * - bindSettings — Bind every `[data-setting]` control under `root`, until `signal` aborts.
+ * - persistSettings — Keep every setting of a schema across reloads, each guarded by what it can take.
  */
 import type { SessionStore } from '../browser/session.js';
+import { ContextRequestEvent, SETTINGS_CONTEXT } from './context.js';
+import { fitsSetting, type Settings, type SettingsSchema, type SettingValue } from '../data/settings.js';
 
 type Control = HTMLElement & { checked?: boolean; value?: string };
 
-/** Bind every `[data-setting]` control under `root` to the session, until `signal` aborts.
+/** One value a control reads and writes, and how to hear it move. */
+interface Port {
+  get(): unknown;
+  set(value: unknown): void;
+  watch(draw: (value: unknown) => void): () => void;
+}
+
+/** The settings the provider over `root` holds, if one answers. */
+function settingsOver(root: ParentNode): Settings | undefined {
+  let found: Settings | undefined;
+  if (root instanceof Element) root.dispatchEvent(new ContextRequestEvent(SETTINGS_CONTEXT, root, (settings) => { found = settings; }));
+  return found;
+}
+
+/** A pointer's port: the declared setting kept there, else the session's value. */
+function portOf(pointer: string, session: SessionStore, settings: Settings | undefined): Port {
+  const key = settings?.keyAt(pointer);
+  if (!settings || !key) {
+    return { get: () => session.get(pointer), set: (value) => session.set(pointer, value), watch: (draw) => session.subscribe(pointer, draw) };
+  }
+  return {
+    get: () => settings.get(key),
+    set: (value) => settings.set(key, value as SettingValue),
+    watch: (draw) => {
+      const heard = (event: Event): void => {
+        const { key: moved, value } = (event as CustomEvent<{ key: string; value: unknown }>).detail;
+        if (moved === key) draw(value);
+      };
+      settings.addEventListener('change', heard);
+      return () => settings.removeEventListener('change', heard);
+    },
+  };
+}
+
+/** Bind every `[data-setting]` control under `root`, until `signal` aborts.
  *  A boolean is a switch's `checked`; anything else is its `value`, kept a number if it was one.
  *  `data-setting-needs="/pointer"`: disabled, keeping its value, until that setting is on. Will, TODO 606 */
 export function bindSettings(root: ParentNode, session: SessionStore, options: { signal?: AbortSignal } = {}): void {
   const { signal } = options;
+  const settings = settingsOver(root);
   for (const el of root.querySelectorAll<Control>('[data-setting]')) {
-    const pointer = el.dataset['setting'] ?? '';
+    const port = portOf(el.dataset['setting'] ?? '', session, settings);
     const draw = (value: unknown): void => {
       if (typeof value === 'boolean') el.checked = value;
       else if (value != null) el.value = String(value);
     };
-    draw(session.get(pointer));
-    const stop = session.subscribe(pointer, draw);
+    draw(port.get());
+    const stop = port.watch(draw);
     signal?.addEventListener('abort', stop, { once: true });
     const needs = el.dataset['settingNeeds'];
     if (needs) {
+      const needed = portOf(needs, session, settings);
       const allow = (value: unknown): void => { el.toggleAttribute('disabled', value !== true); };
-      allow(session.get(needs));
-      const stopNeeds = session.subscribe(needs, allow);
+      allow(needed.get());
+      const stopNeeds = needed.watch(allow);
       signal?.addEventListener('abort', stopNeeds, { once: true });
     }
     el.addEventListener('change', (event) => {
       const detail = (event as CustomEvent<{ checked?: boolean; value?: unknown } | null>).detail ?? {};
-      const was = session.get(pointer);
+      const was = port.get();
       // A switch is a boolean even before its key holds one: else it stores its `value`, "on".
       const flag = typeof was === 'boolean' || el.localName === 'sherpa-switch';
       let next: unknown = flag ? (detail.checked ?? el.checked) : (detail.value ?? el.value);
       if (typeof was === 'number') next = Number(next);
       if (next === undefined || next === was || (typeof next === 'number' && !Number.isFinite(next))) return;
-      session.set(pointer, next);
+      port.set(next);
     }, signal ? { signal } : {});
   }
 }
 
-/** One property `followSettings` keeps: its pointer, its default, and the event that reports it. */
-export interface Setting {
-  at: string;
-  /** While the session holds nothing there; else the target keeps its own. */
-  default?: unknown;
-  /** The target's event for a reader's change, and its detail key. */
-  heard?: readonly [type: string, key: string];
-}
-
-/** Keep each property of `target` on its session pointer, both ways, until `signal` aborts:
- *  set now and at each change, and a change the target reports written back. ONE
- *  table for every app setting, so a ⋮ and the Settings page agree. Will, TODO 553 */
-export function followSettings(
-  target: EventTarget, session: SessionStore, settings: Readonly<Record<string, string | Setting>>,
-  options: { signal?: AbortSignal } = {},
-): void {
-  const { signal } = options;
-  const props = target as unknown as Record<string, unknown>;
-  for (const [prop, given] of Object.entries(settings)) {
-    const { at, default: fallback, heard }: Setting = typeof given === 'string' ? { at: given } : given;
-    const draw = (value: unknown): void => {
-      const next = value ?? fallback;
-      if (next !== undefined && props[prop] !== next) props[prop] = next;
-    };
-    draw(session.get(at));
-    const stop = session.subscribe(at, draw);
-    signal?.addEventListener('abort', stop, { once: true });
-    if (!heard) continue;
-    const [type, key] = heard;
-    target.addEventListener(type, (event) => {
-      const value = ((event as CustomEvent<Record<string, unknown> | null>).detail ?? {})[key];
-      if (value !== undefined) session.set(at, value);
-    }, signal ? { signal } : {});
+/** Keep every setting of a schema across reloads, each guarded by what it can
+ *  take, so a stale shape is dropped. */
+export function persistSettings(session: SessionStore, schema: SettingsSchema): void {
+  for (const def of Object.values(schema)) {
+    session.persist(def.at, { guard: (value): value is SettingValue => fitsSetting(def, value) });
   }
 }

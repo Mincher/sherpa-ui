@@ -1,13 +1,13 @@
 import { test, expect } from './harness';
 
 /**
- * ON/OFF SHAPES — Will, TODOs 497, 503, 698. With the page's `data-toggle-shapes`, a
+ * ON/OFF SHAPES — Will, TODOs 497, 503, 698. With the page's `--sherpa-toggle-shape`, a
  * toggle shows its state by a shape, not by its fill alone: the Checkbox's box,
  * EMPTY while off and ticked while on — a filter chip's, a simple Switch's knob,
  * a grid tag's. Off the page's setting, no box.
  * TRAP T-a-toggle-shows-its-state-by-a-shape
  */
-test('with data-toggle-shapes, a chip and a simple Switch wear a box, ticked while on; otherwise none', async ({ page }) => {
+test('with --sherpa-toggle-shape on the root, a chip and a simple Switch wear a box, ticked while on; otherwise none', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const chip = document.createElement('sherpa-quick-filter') as HTMLElement & { rendered?: Promise<void>; current: boolean };
     chip.setAttribute('data-label', 'Status');
@@ -26,7 +26,7 @@ test('with data-toggle-shapes, a chip and a simple Switch wear a box, ticked whi
     sw.checked = true;
     await window.__settled();
     states['page off'] = shown();
-    document.documentElement.toggleAttribute('data-toggle-shapes', true);
+    document.documentElement.style.setProperty('--sherpa-toggle-shape', 'inline-flex');
     states['on'] = shown();
     // A step over its 14px text, so it reads. TODO 698
     const tick = chip.shadowRoot!.querySelector<HTMLElement>('.tick')!.getBoundingClientRect();
@@ -35,7 +35,7 @@ test('with data-toggle-shapes, a chip and a simple Switch wear a box, ticked whi
     sw.checked = false;
     await window.__settled();
     states['off'] = shown();
-    document.documentElement.removeAttribute('data-toggle-shapes');
+    document.documentElement.style.removeProperty('--sherpa-toggle-shape');
     return states;
   });
   expect(r).toEqual({

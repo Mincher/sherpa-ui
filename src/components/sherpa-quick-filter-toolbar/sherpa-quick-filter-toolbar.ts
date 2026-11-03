@@ -32,6 +32,7 @@ import {
 } from '../../core/data/filter-state.js';
 import type { FilterSet, OrganiseColumn, ScopeDescription } from '../../core/data/data-source.js';
 import type { DataAsk, Take } from '../../core/ui/context.js';
+import type { Settings } from '../../core/data/settings.js';
 import { toolbarKeys } from '../../core/ui/roving-focus.js';
 import { dragToOrder } from '../../core/ui/drag-order.js';
 import { ToolbarHeader } from './toolbar-header.js';
@@ -82,8 +83,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /* It ASKS for its `data-scope`: the source draws it and hears its reports.
      TRAP T-a-component-asks-its-provider */
   static override asks: DataAsk = { shape: 'scope' };
-  // …and is told the app's filter settings, and a legend's numbers for its chips.
-  static takes: readonly Take[] = ['settings', 'counts'];
+  // …and a legend's numbers for its chips.
+  static takes: readonly Take[] = ['counts'];
+  // The app's filter settings it reads, each onto its attribute. TODO 436
+  static override settings = {
+    'data-limit-options': 'limitOptions', 'data-hide-unmatched': 'hideUnmatched', 'data-no-results': '!results',
+    'data-count-applied': 'countApplied', 'data-saved-menu': 'savedMenu', 'data-switchable': 'switchable',
+    'data-no-section-labels': '!sectionLabels', 'data-no-organise-labels': 'hideOrganiseLabels', 'data-no-sections': '!sections',
+    'data-highlight-hover': 'highlightOnHover', 'data-field-apply': '!singleApply', 'data-reorder': 'reorderFilters',
+    'data-move-filters': 'moveFilters', 'data-allow-solo': 'allowSolo', 'data-solo-across': 'soloAcrossScopes',
+    'data-solo-header': 'soloInHeader', 'data-label-column': 'labelColumn', 'data-every-count': 'countEveryValue',
+  };
 
   static override props = {
     'data-scroll-shadow': SHARED_PROPS['data-scroll-shadow'],
@@ -1898,7 +1908,22 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.$('.chips')?.toggleAttribute('inert', off);
   }
 
+  /** Off, the View's bar and the panel save nothing. TODO 485 · TRAP T-saved-filters-are-every-scope */
+  protected override onSettings(settings: Settings): void {
+    this.#settingsTold = settings;
+    // Its own scope, or the one it sits in.
+    let scope = this.getAttribute('data-scope');
+    for (let n = this.parentElement ?? (this.getRootNode() as ShadowRoot).host; n && scope === null; n = n.parentElement ?? (n.getRootNode() as ShadowRoot).host) {
+      scope = n.getAttribute('data-scope');
+    }
+    const column = this.hasAttribute('data-column') || (this.dataset['scope'] ?? '').trim().split(/\s+/).length > 1;
+    this.toggleAttribute('data-no-saves', settings.get('saveAnyScope') !== true && (column || scope === VIEW));
+  }
+  /** The app's settings, as last told. */
+  #settingsTold: Settings | undefined;
+
   override onChange(name?: string): void {
+    if ((name === 'data-scope' || name === 'data-column') && this.#settingsTold) this.onSettings(this.#settingsTold);
     if (name === 'data-heading') for (const chip of this.#chips()) this.#nameSection(chip);
     if (name === 'data-saved-menu') {
       if (this.#columned) this.#column.saved(this.#saved.all);

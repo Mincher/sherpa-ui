@@ -3,7 +3,7 @@ import { test, expect } from './harness';
 /**
  * AN ACTION SAYS WHAT IT DOES — Will, TODO 691. An action button's description is
  * shown under the heading of the menu it opens, unless the page turns it off
- * (`<html data-no-action-descriptions>`).
+ * (`--sherpa-action-description: none` on the root).
  * TRAP T-an-action-says-what-it-does
  */
 test('a button\'s menu shows its description under its heading; the page can turn it off', async ({ page }) => {
@@ -23,10 +23,10 @@ test('a button\'s menu shows its description under its heading; the page can tur
       return { text: d.textContent, shown: getComputedStyle(d).display !== 'none', below: d.getBoundingClientRect().top >= menu.shadowRoot!.querySelector('.heading')!.getBoundingClientRect().bottom - 0.5 };
     };
     const on = { open: menu.hasAttribute('open'), ...line() };
-    document.documentElement.toggleAttribute('data-no-action-descriptions', true);
+    document.documentElement.style.setProperty('--sherpa-action-description', 'none');
     await settle();
     const off = line();
-    document.documentElement.removeAttribute('data-no-action-descriptions');
+    document.documentElement.style.removeProperty('--sherpa-action-description');
     return { on, off };
   });
   expect(r.on).toEqual({ open: true, text: 'Add, change and save the filters on this page', shown: true, below: true });

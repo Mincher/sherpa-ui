@@ -26,7 +26,7 @@ const SETUP = `
 test('a wanted panel opens before it has drawn or asked', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
-    provider.filterMode = 'panel';
+    provider.settings.set('filterMode', 'panel');
     return { open: panel.hasAttribute('open') };
   })()`);
   expect(r).toEqual({ open: true });
@@ -35,14 +35,14 @@ test('a wanted panel opens before it has drawn or asked', async ({ page }) => {
 test('prepare() opens or shuts the panel for the page about to be drawn', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
-    provider.filterMode = 'panel';
+    provider.settings.set('filterMode', 'panel');
     await panel.rendered;
     const seen = [];
     provider.prepare(none);
     seen.push(panel.hasAttribute('open'));
     provider.prepare(data);
     seen.push(panel.hasAttribute('open'));
-    return { seen, mode: provider.filterMode };
+    return { seen, mode: provider.settings.get('filterMode') };
   })()`);
   // A page with no data shuts it, which is not the reader's choice: the next page with data opens it.
   expect(r).toEqual({ seen: [false, true], mode: 'panel' });
@@ -51,7 +51,7 @@ test('prepare() opens or shuts the panel for the page about to be drawn', async 
 test('leaving for another page keeps the panel; leaving for none shuts it', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
-    provider.filterMode = 'panel';
+    provider.settings.set('filterMode', 'panel');
     await panel.rendered;
     provider.close({ next: true });
     const kept = panel.hasAttribute('open');
@@ -64,7 +64,7 @@ test('leaving for another page keeps the panel; leaving for none shuts it', asyn
 test('a bar steps back as it asks, with no source yet', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
-    provider.filterMode = 'panel';
+    provider.settings.set('filterMode', 'panel');
     await panel.rendered;
     const bar = document.createElement('sherpa-quick-filter-toolbar');
     bar.dataset.scope = 'data';

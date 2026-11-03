@@ -2846,7 +2846,7 @@
       "attributes": [
         {
           "name": "data-keep-content",
-          "description": "every card it draws a state on keeps its content: a bar and a banner, never an overlay. Will, TODO 59. (the rest — `provide()` gives it its sources)",
+          "description": "every card it draws a state on keeps its content: a bar and a banner, never an overlay. Will, TODO 59. (the rest — `provide()` gives it its sources, `settings` the app's settings)",
           "valueSet": "v"
         }
       ]

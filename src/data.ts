@@ -95,6 +95,11 @@ export {
 } from './core/data/data-source.js';
 // The Query of one app Context: every source over the page joins it. 366
 export { QueryContext } from './core/data/query-context.js';
+// The app's settings, each declared once: one schema, and its live values.
+export {
+  SETTINGS, Settings, fitsSetting,
+  type SettingDef, type SettingKey, type SettingLook, type SettingScope, type SettingValue, type SettingsSchema, type SettingsStore,
+} from './core/data/settings.js';
 export type { FieldStatus } from './core/data/field-status.js';
 /* A component joined to a source by hand — the provider does it for a page. TODO 196 */
 export { bindSource, type BindOptions } from './core/ui/bind-source.js';

@@ -22,42 +22,14 @@ Put it round the part of a page whose components need data: each component insid
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
-| `data-keep-content` | boolean |  | every card it draws a state on keeps its content: a bar and a banner, never an overlay. Will, TODO 59. (the rest — `provide()` gives it its sources) |
+| `data-keep-content` | boolean |  | every card it draws a state on keeps its content: a bar and a banner, never an overlay. Will, TODO 59. (the rest — `provide()` gives it its sources, `settings` the app's settings) |
 
 ## Properties
 
 | Property | Type | Access | What it is |
 |---|---|---|---|
-| `filterMode` | `'toolbars' \| 'panel'` | read and write |  |
-| `limitOptions` | `boolean` | read and write |  |
-| `hideUnmatched` | `boolean` | read and write |  |
-| `results` | `boolean` | read and write |  |
-| `countApplied` | `boolean` | read and write |  |
-| `savedMenu` | `boolean` | read and write |  |
-| `saveAnyScope` | `boolean` | read and write |  |
-| `switchable` | `boolean` | read and write |  |
-| `sectionLabels` | `boolean` | read and write |  |
-| `hideOrganiseLabels` | `boolean` | read and write |  |
-| `sections` | `boolean` | read and write |  |
-| `highlightOnHover` | `boolean` | read and write |  |
-| `legendChips` | `boolean` | read and write |  |
-| `highlightAcross` | `boolean` | read and write |  |
+| `settings` | `Settings` | read and write |  |
 | `hovered` | `{ scope: string; field: string; value?: string } \| null` | read only |  |
-| `singleApply` | `boolean` | read and write |  |
-| `reorderFilters` | `boolean` | read and write |  |
-| `moveFilters` | `boolean` | read and write |  |
-| `allowSolo` | `boolean` | read and write |  |
-| `soloAcrossScopes` | `boolean` | read and write |  |
-| `soloInHeader` | `boolean` | read and write |  |
-| `labelColumn` | `boolean` | read and write |  |
-| `countEveryValue` | `boolean` | read and write |  |
-| `headingGroup` | `boolean` | read and write |  |
-| `headingHover` | `boolean` | read and write |  |
-| `multiFieldColumns` | `boolean` | read and write |  |
-| `showAs` | `boolean` | read and write |  |
-| `axisChips` | `boolean` | read and write |  |
-| `appContext` | `boolean` | read and write |  |
-| `applyEvery` | `boolean` | read and write |  |
 | `reach` | `{ reach: 'ok' \| 'unreached' \| 'down'; failure?: Failure }` | read only |  |
 | `savedFilterSets` | `{ id: string; label: string; added: boolean; own: boolean }[]` | read only |  |
 | `customView` | `boolean` | read only |  |
@@ -90,7 +62,7 @@ Each one bubbles.
 
 | Event | Detail | What it means |
 |---|---|---|
-| `filter-mode-change` | `{ mode: 'panel' \| 'toolbars' }` | The filters moved between the toolbars and the panel. |
+| `setting-change` | `{ key: 'actionDescriptions' \| 'allowSolo' \| 'appContext' \| 'applyEvery' \| 'axisChips' \| 'countApplied' \| 'countEveryValue' \| 'descriptionTips' \| 'filterMode' \| 'filterValueBorder' \| 'headingGroup' \| 'headingHover' \| 'hideOrganiseLabels' \| 'hideUnmatched' \| 'highlightAcross' \| 'highlightOnHover' \| 'labelColumn' \| 'legendChips' \| 'limitOptions' \| 'moveFilters' \| 'multiFieldColumns' \| 'navHierarchy' \| 'navHover' \| 'navViews' \| 'reorderFilters' \| 'results' \| 'saveAnyScope' \| 'savedMenu' \| 'sectionLabels' \| 'sections' \| 'showAs' \| 'singleApply' \| 'soloAcrossScopes' \| 'soloInHeader' \| 'switchable' \| 'toggleShapes'; value: SettingValue }` | A reader changed a setting here: a bar's ⋮, the panel's mode. |
 | `view-change` | `{ elements: Record<string, HTMLElement> \| undefined; id: string \| undefined }` | A View was picked, opened or saved. |
 | `reach-change` | `{ failure: Failure; reach: 'down' \| 'ok' \| 'unreached' }` | Whether the page's data can be reached changed. |
 

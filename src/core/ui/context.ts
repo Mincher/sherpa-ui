@@ -16,7 +16,9 @@
  * - Take — What a component takes from its provider beside its data: each a door it has.
  * - DATA_CONTEXT — A component's data, in the shape it declared — pushed on every change.
  * - SOURCE_CONTEXT — The DataSource over this subtree itself — for page code, never a component.
+ * - SETTINGS_CONTEXT — The app's settings, as its provider holds them — told again on every change.
  */
+import type { Settings } from '../data/settings.js';
 
 /** A key a component asks for, typed by its answer. */
 export type Context<T> = string & { readonly __context__?: T };
@@ -75,14 +77,16 @@ export interface DataAsk {
  *  takes` lists it — each a door it has, so the provider tells it, never probes
  *  (`declared()`, in the provider, reads it):
  *  `card` — the state of the data it holds (`data-loading`, `data-state`, `data-error`);
- *  `settings` — the app's filter settings, as attributes;
- *  `headings` — its headings' Group, hover and tags settings, as attributes;
  *  `highlight` — a hover's matches, through `drawHighlight(test)`;
  *  `counts` — its value chips' numbers, from a legend it draws, through `drawCounts(field, counts)`. */
-export type Take = 'card' | 'settings' | 'headings' | 'highlight' | 'counts';
+export type Take = 'card' | 'highlight' | 'counts';
 
 /** A component's data, in the shape it declared — pushed on every change. */
 export const DATA_CONTEXT = createContext<unknown>('sherpa:data');
 
 /** The DataSource over this subtree itself — for page code, never a component. */
 export const SOURCE_CONTEXT = createContext<unknown>('sherpa:source');
+
+/** The app's settings, as its provider holds them — told again on every change,
+ *  so a component reads what it takes through its `static settings`. */
+export const SETTINGS_CONTEXT = createContext<Settings>('sherpa:settings');

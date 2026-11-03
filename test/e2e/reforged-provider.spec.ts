@@ -68,8 +68,8 @@ test('a grid heading menu follows the provider\'s Hide unmatching switch', async
       [{ id: 0, region: 'EMEA' }, { id: 1, region: 'AMER' }], { key: 'id' }) });
     await src.declareFromRows(['region']);
     await provider.provide({ sources: { s: src } });
-    provider.limitOptions = true;
-    provider.hideUnmatched = true;
+    provider.settings.set('limitOptions', true);
+    provider.settings.set('hideUnmatched', true);
     await settle();
     const menu = () => g.shadowRoot.querySelector('.head-cell[data-field="region"] sherpa-menu');
     const amer = () => [...menu().querySelectorAll('.menu-row')].find((row) => row.querySelector('input')?.value === 'AMER');
@@ -80,7 +80,7 @@ test('a grid heading menu follows the provider\'s Hide unmatching switch', async
     g.drawPresent({ region: ['EMEA'] });
     await settle();
     const hidden = read();
-    provider.hideUnmatched = false;
+    provider.settings.set('hideUnmatched', false);
     await settle();
     return { told, hidden, greyed: read(), after: g.dataset.hideUnmatched, reports };
   })()`) as Record<string, unknown>;
@@ -109,7 +109,7 @@ test('mode buttons wait for the provider to draw; nothing throws', async ({ page
     provider.append(bar, panel);
     root.append(provider);
     // At once: nothing has drawn yet.
-    provider.filterMode = 'toolbars';
+    provider.settings.set('filterMode', 'toolbars');
     const src = source(2, 'p');
     src.query.offer('data', ['name']);
     await provider.provide({ sources: { s: src } });
@@ -381,7 +381,7 @@ test('panel mode: Configure opens the panel and steps bars back; a later bar joi
     provider.append(bar, panel);
     root.append(provider);
     const heard = [];
-    provider.addEventListener('filter-mode-change', (e) => heard.push(e.detail.mode));
+    provider.addEventListener('setting-change', (e) => { if (e.detail.key === 'filterMode') heard.push(e.detail.value); });
     const src = source(2, 'p');
     src.query.offer('data', ['name']);
     src.declareField('name', { label: 'Name' });
@@ -390,7 +390,7 @@ test('panel mode: Configure opens the panel and steps bars back; a later bar joi
     // The page's own mode button, in the bar's actions slot. TRAP T-the-mode-switch-is-the-pages-own
     bar.querySelector('[data-filter-mode]').dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
     await settle();
-    const opened = { open: panel.hasAttribute('open'), bar: bar.hasAttribute('data-panel-mode'), mode: provider.filterMode };
+    const opened = { open: panel.hasAttribute('open'), bar: bar.hasAttribute('data-panel-mode'), mode: provider.settings.get('filterMode') };
     const late = document.createElement('sherpa-quick-filter-toolbar');
     late.setAttribute('data-scope', 'data');
     provider.append(late);
@@ -435,10 +435,10 @@ test('the provider gives bars and the panel their mode buttons, only while a pan
     const withPanel = { bar: toggle(bar)?.getAttribute('aria-label'), slot: toggle(bar)?.slot };
     toggle(bar).dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
     await settle();
-    const inPanel = { bar: !!toggle(bar), panel: toggle(panel)?.getAttribute('aria-label'), mode: provider.filterMode };
+    const inPanel = { bar: !!toggle(bar), panel: toggle(panel)?.getAttribute('aria-label'), mode: provider.settings.get('filterMode') };
     toggle(panel).dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
     await settle();
-    return { alone, withPanel, inPanel, back: { bar: !!toggle(bar), mode: provider.filterMode }, reports };
+    return { alone, withPanel, inPanel, back: { bar: !!toggle(bar), mode: provider.settings.get('filterMode') }, reports };
   })()`) as Record<string, unknown>;
   expect(r['alone']).toBe(false);
   expect(r['withPanel']).toEqual({ bar: 'View as filter panel', slot: 'actions' });
@@ -460,8 +460,8 @@ test('a page with no data shuts the panel without changing the mode; the next pa
     provider.append(panel);
     root.append(provider);
     const heard = [];
-    provider.addEventListener('filter-mode-change', (e) => heard.push(e.detail.mode));
-    provider.filterMode = 'panel';
+    provider.addEventListener('setting-change', (e) => { if (e.detail.key === 'filterMode') heard.push(e.detail.value); });
+    provider.settings.set('filterMode', 'panel');
     await provider.provide({ sources: { s: source(2, 'x') } });
     await settle();
     const first = panel.hasAttribute('open');

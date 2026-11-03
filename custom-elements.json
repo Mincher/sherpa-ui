@@ -7998,7 +7998,7 @@
           "attributes": [
             {
               "name": "data-keep-content",
-              "description": "every card it draws a state on keeps its content: a bar and a banner, never an overlay. Will, TODO 59. (the rest — `provide()` gives it its sources)",
+              "description": "every card it draws a state on keeps its content: a bar and a banner, never an overlay. Will, TODO 59. (the rest — `provide()` gives it its sources, `settings` the app's settings)",
               "type": {
                 "text": "boolean"
               }
@@ -8007,100 +8007,9 @@
           "members": [
             {
               "kind": "field",
-              "name": "filterMode",
+              "name": "settings",
               "type": {
-                "text": "'toolbars' | 'panel'"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "limitOptions",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "hideUnmatched",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "results",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "countApplied",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "savedMenu",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "saveAnyScope",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "switchable",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "sectionLabels",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "hideOrganiseLabels",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "sections",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "highlightOnHover",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "legendChips",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "highlightAcross",
-              "type": {
-                "text": "boolean"
+                "text": "Settings"
               }
             },
             {
@@ -8110,111 +8019,6 @@
                 "text": "{ scope: string; field: string; value?: string } | null"
               },
               "readonly": true
-            },
-            {
-              "kind": "field",
-              "name": "singleApply",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "reorderFilters",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "moveFilters",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "allowSolo",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "soloAcrossScopes",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "soloInHeader",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "labelColumn",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "countEveryValue",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "headingGroup",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "headingHover",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "multiFieldColumns",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "showAs",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "axisChips",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "appContext",
-              "type": {
-                "text": "boolean"
-              }
-            },
-            {
-              "kind": "field",
-              "name": "applyEvery",
-              "type": {
-                "text": "boolean"
-              }
             },
             {
               "kind": "field",
@@ -8491,10 +8295,10 @@
           ],
           "events": [
             {
-              "name": "filter-mode-change",
-              "description": "The filters moved between the toolbars and the panel.",
+              "name": "setting-change",
+              "description": "A reader changed a setting here: a bar's ⋮, the panel's mode.",
               "type": {
-                "text": "CustomEvent<{ mode: 'panel' | 'toolbars' }>"
+                "text": "CustomEvent<{ key: 'actionDescriptions' | 'allowSolo' | 'appContext' | 'applyEvery' | 'axisChips' | 'countApplied' | 'countEveryValue' | 'descriptionTips' | 'filterMode' | 'filterValueBorder' | 'headingGroup' | 'headingHover' | 'hideOrganiseLabels' | 'hideUnmatched' | 'highlightAcross' | 'highlightOnHover' | 'labelColumn' | 'legendChips' | 'limitOptions' | 'moveFilters' | 'multiFieldColumns' | 'navHierarchy' | 'navHover' | 'navViews' | 'reorderFilters' | 'results' | 'saveAnyScope' | 'savedMenu' | 'sectionLabels' | 'sections' | 'showAs' | 'singleApply' | 'soloAcrossScopes' | 'soloInHeader' | 'switchable' | 'toggleShapes'; value: SettingValue }>"
               }
             },
             {

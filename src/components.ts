@@ -33,7 +33,7 @@ export { useTemplate, type OwnFiles } from './core/ui/templater.js';
 export { applyState, type Populatable } from './core/ui/apply-state.js';
 // A component ASKS; the nearest provider ANSWERS. TRAP T-a-component-asks-its-provider
 export {
-  ContextRequestEvent, createContext, DATA_CONTEXT, SOURCE_CONTEXT,
+  ContextRequestEvent, createContext, DATA_CONTEXT, SETTINGS_CONTEXT, SOURCE_CONTEXT,
   type Context, type ContextCallback, type DataAsk,
 } from './core/ui/context.js';
 /* A `data-grouped` grid needs each child's position, which CSS cannot see.

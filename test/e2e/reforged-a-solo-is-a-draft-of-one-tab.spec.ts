@@ -48,7 +48,7 @@ test('Solo this filter: the others in its scope go off, kept; its body brings ba
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const off = { solo: shown(row('plan', 'solo')), unsolo: shown(row('plan', 'unsolo')) };
-    provider.allowSolo = true;
+    provider.settings.set('allowSolo', true);
     await settle();
     const on = { solo: shown(row('plan', 'solo')), unsolo: shown(row('plan', 'unsolo')) };
     const before = state();
@@ -72,8 +72,8 @@ test('Solo this filter: the others in its scope go off, kept; its body brings ba
 test('across every scope, a solo switches the View\'s filters off too, and Remove soloing brings them back', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
-    provider.allowSolo = true;
-    provider.soloAcrossScopes = true;
+    provider.settings.set('allowSolo', true);
+    provider.settings.set('soloAcrossScopes', true);
     await settle();
     await pick('owner', 'solo');
     const soloed = state();
@@ -87,7 +87,7 @@ test('across every scope, a solo switches the View\'s filters off too, and Remov
 test('in the panel, a section\'s ⋮ offers Solo, and its chip shows the Solo state', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
-    provider.allowSolo = true;
+    provider.settings.set('allowSolo', true);
     const column = document.createElement('sherpa-quick-filter-toolbar');
     column.setAttribute('data-orientation', 'portrait');
     column.setAttribute('data-scope', 'view data');
@@ -136,8 +136,8 @@ test('with soloing allowed, a FOLDED advanced-only filter still opens its own me
 test('in the menu header: Solo is an icon toggle before Advanced, pressed while soloed, and its menu stays open', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
-    provider.allowSolo = true;
-    provider.soloInHeader = true;
+    provider.settings.set('allowSolo', true);
+    provider.settings.set('soloInHeader', true);
     await settle();
     const menu = chip('plan').querySelector(':scope > sherpa-menu');
     menu.show(chip('plan'));

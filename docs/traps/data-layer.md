@@ -1795,7 +1795,6 @@ Solo itself (`T-a-conditions-only-menu-cannot-be-drilled`).
 
 - Site: `src/core/data/query-context.ts`
 - Site: `src/core/data/data-source-types.ts`
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/unit/a-solo-is-a-draft-of-one-tab.test.mjs`
@@ -6753,3 +6752,29 @@ every source's.
 - Site: `src/core/ui/bind-source.ts`
 - Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/one-command-one-door.test.mjs`
+
+### T-a-setting-is-declared-once
+
+**Every app setting is ONE entry in a schema** (695 U2): its key, type, default,
+scope and the session pointer it is kept at — `SETTINGS`, and an app's own beside
+it. `Settings` holds the live values over the app's session: a page's own (`lay()`,
+for its `page` or `component` settings) over the app's, kept, over the default. It
+was seven paths: a provider field, getter and setter for each, an attribute line,
+a table row in the app, `<html>` attributes and `session.overlay`.
+
+The provider holds the `Settings` and delivers each kind one way. A component
+reads what it takes through `static settings` — its own attribute, by key, `!key`
+while the setting is off — asked by Context Protocol and told again on every
+change; a setting of none (`null`) leaves the attribute alone. A `source` setting
+is the DataSource's own property of that name. A `look` setting goes on the page's
+root: inherited custom properties the component CSS reads, or the attribute the
+token layer reads (a mode, a density); the root takes off only what it put on. A
+reader's change made inside — a ⋮ switch, the mode button — is set and said as ONE
+`setting-change`; the app's own writes say nothing.
+
+A new setting is one entry, and its use.
+
+- Site: `src/core/data/settings.ts`
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-provider/provider-look.ts`

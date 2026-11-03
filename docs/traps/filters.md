@@ -746,8 +746,9 @@ exists for (`T-ignore-is-the-scalpel`).
 ### T-a-tip-in-lines
 
 **Where the page says, a tip reads in LINES: the Name, the Description, the Value,
-then the rest** (Will, TODO 691 S3, D2 A: buttons and filter chips). The page says
-so on `<html data-description-tips>`; ONE watcher (`watchTipLines`) tells each
+then the rest** (Will, TODO 691 S3, D2 A: buttons and filter chips). The
+`descriptionTips` look setting says so on `<html data-description-tips>` — while
+`actionDescriptions` is on too; ONE watcher (`watchTipLines`) tells each
 button and chip, which writes its tip again (`writeTip`). Off, its one line as
 before goes in its first line, and the rest stay empty — it reads as it did.
 
@@ -779,16 +780,14 @@ legend's Breakdown. The heading and the line sit in one `.titles`
 box in the header's `heading` area: a grid row of their own would be an empty
 track, and a doubled gap, wherever a menu has no description.
 
-**On by default; the page turns it off** with `<html data-no-action-descriptions>`,
-which sets `--sherpa-action-description: none`, inherited into every shadow root.
-That rule is in `page.css`, which `project-tokens.mjs` writes: an edit to `page.css`
-itself is gone at the next build.
+**On by default; the page turns it off** with the `actionDescriptions` look setting,
+which puts `--sherpa-action-description: none` on the page's root, inherited into
+every shadow root.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-button/sherpa-button.ts`
 - Site: `src/core/ui/more-menu.ts`
-- Site: `scripts/project-tokens.mjs`
 - Site: `test/e2e/reforged-an-action-says-what-it-does.spec.ts`
 
 ### T-a-silent-write-still-needs-a-way-to-report
@@ -2785,13 +2784,12 @@ nothing else; its badge and its Apply and Discard pin default.
 **A toggle shows its state by a SHAPE, not by its fill alone, where the page
 asks** — Will, TODO 497: *"any UI element that toggles must have a visual element
 that indicates to the user its on/off state … Ideally this is a text label …
-In these instances we should show a checkmark icon."* The page sets
-`html[data-toggle-shapes]` (`page.css`), which sets ONE custom property,
-`--sherpa-toggle-shape: inline-flex`; it inherits into every shadow root, and
-each toggle's tick reads `display: var(--sherpa-toggle-shape, none)`. No style
-query: Firefox has none for a custom property, and a property is the one shape
-that reaches a bare host (`T-one-value-one-declaration`). A host that does not
-link `page.css` sets the property itself.
+In these instances we should show a checkmark icon."* The `toggleShapes` look
+setting puts ONE custom property on the page's root, `--sherpa-toggle-shape:
+inline-flex`; it inherits into every shadow root, and each toggle's tick reads
+`display: var(--sherpa-toggle-shape, none)`. No style query: Firefox has none for a
+custom property, and a property is the one shape that reaches a bare host
+(`T-one-value-one-declaration`). A page with no provider sets the property itself.
 
 **The shape is the Checkbox's BOX, in BOTH states** (Will, TODO 503: A, *"but we
 need an off icon, too"*): empty while off, ticked while on. It is the
@@ -2815,4 +2813,3 @@ so nothing to mark.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 - Site: `src/core/sherpa-checkbox-look.css`
 - Site: `test/e2e/reforged-toggle-shapes.spec.ts`
-- Site: `scripts/project-tokens.mjs`

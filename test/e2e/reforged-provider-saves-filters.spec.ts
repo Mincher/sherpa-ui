@@ -21,7 +21,7 @@ const SETUP = `
   const session = new SessionStore({});
   const root = document.getElementById('root');
   const provider = document.createElement('sherpa-provider');
-  provider.saveAnyScope = true;
+  provider.settings.set('saveAnyScope', true);
   provider.innerHTML = '<sherpa-quick-filter-toolbar data-scope="data" data-saveable></sherpa-quick-filter-toolbar>'
     + '<sherpa-quick-filter-toolbar data-orientation="portrait" data-scope="view data" data-saveable open></sherpa-quick-filter-toolbar>';
   root.replaceChildren(provider);
@@ -202,7 +202,7 @@ test('a page\'s own saved filter is listed on an unsaveable bar, adds its chip t
   const r = await page.evaluate(`(async () => {
     const { ArrayStore } = await import('/dist/index.js');
     const provider = document.createElement('sherpa-provider');
-    provider.saveAnyScope = true;
+    provider.settings.set('saveAnyScope', true);
     provider.innerHTML = '<sherpa-quick-filter-toolbar data-scope="view"></sherpa-quick-filter-toolbar>'
       + '<sherpa-quick-filter-toolbar data-scope="data" data-saveable></sherpa-quick-filter-toolbar>';
     document.getElementById('root').replaceChildren(provider);
@@ -290,7 +290,7 @@ test('Save filters at any scope OFF: a set is the asking bar\'s scope alone, lis
     const taken = { tier: source.query.applied.scopes.view.readings.tier?.picked, plan: source.query.applied.scopes.data.readings.plan?.picked,
       by: Object.keys(source.query.applied.scopes.data.readings.plan?.byPreset ?? {}),
       on: dataBar.shadowRoot.querySelector('.chips > .chip[data-id="preset:saved:pro-rows"]')?.hasAttribute('data-current') ?? null };
-    provider.saveAnyScope = true;
+    provider.settings.set('saveAnyScope', true);
     await settle();
     return { off, taken, on: { flags: flags(), told: told() } };
   })()`) as Record<string, any>;

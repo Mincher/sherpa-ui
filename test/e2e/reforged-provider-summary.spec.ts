@@ -112,14 +112,14 @@ test('with its provider\'s Legend items as chips, a legend row is a value chip: 
     }));
     const value = () => legend.shadowRoot.querySelector('.value').textContent;
     const at = { key: read()[0], keyValue: value() };
-    provider.legendChips = true;
+    provider.settings.set('legendChips', true);
     await settle();
     at.chips = read();
     at.value = value();
     legend.shadowRoot.querySelector('.entry').shadowRoot.querySelector('.body').click();
     await settle();
     at.picked = { on: read().map((c) => c.on), off: legend.off };
-    provider.legendChips = false;
+    provider.settings.set('legendChips', false);
     await settle();
     at.back = read()[0];
     return at;
@@ -159,7 +159,7 @@ test('a rest on a legend row previews its value while Highlight matches on hover
     };
     const off = await rest('over');
     await rest('leave');
-    provider.highlightOnHover = true;
+    provider.settings.set('highlightOnHover', true);
     const marked = legend.hasAttribute('data-highlight-hover');
     const on = await rest('over');
     // Its matches LIGHT, not only asked for: nothing was toggled. TODO 513
@@ -607,11 +607,11 @@ test('the app may turn Show as off: no card offers it, and a kept pick is set as
     await settle();
     await settle();
     const at = { pie: said() };
-    provider.showAs = false;
+    provider.settings.set('showAs', false);
     await settle();
     await settle();
     at.off = said();
-    provider.showAs = true;
+    provider.settings.set('showAs', true);
     await settle();
     await settle();
     at.on = said();
@@ -648,10 +648,10 @@ test('the app may turn the Primary and Secondary chips off: no bar offers them, 
     box.dispatchEvent(new Event('change', { bubbles: true }));
     await settle();
     const at = { day: said() };
-    provider.axisChips = false;
+    provider.settings.set('axisChips', false);
     await settle();
     at.off = said();
-    provider.axisChips = true;
+    provider.settings.set('axisChips', true);
     await settle();
     at.on = said();
     return at;

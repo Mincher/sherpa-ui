@@ -17,8 +17,9 @@
  */
 import { SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import {
-  ContextRequestEvent, DATA_CONTEXT, SOURCE_CONTEXT, type DataAsk,
+  ContextRequestEvent, DATA_CONTEXT, SETTINGS_CONTEXT, SOURCE_CONTEXT, type ContextCallback, type DataAsk,
 } from '../../core/ui/context.js';
+import { Settings, type SettingKey, type SettingValue } from '../../core/data/settings.js';
 import { report } from '../../core/data/report.js';
 import { chartAxes, summariseMarked, type SummarySpec } from '../../core/data/aggregate.js';
 import type { Row, Store } from '../../core/data/store.js';
@@ -39,6 +40,7 @@ import { ProviderReach } from './provider-reach.js';
 import { ProviderNews } from './provider-news.js';
 import { ProviderCards } from './provider-cards.js';
 import { declared, up } from './provider-declared.js';
+import { RootLook } from './provider-look.js';
 import { ProviderHighlight } from './provider-highlight.js';
 import { ProviderLegends, type Picker } from './provider-legends.js';
 import { ProviderShowAs, shownAs } from './provider-show-as.js';
@@ -157,7 +159,7 @@ export class SherpaProvider extends SherpaElement {
   });
 
   /** What the pointer rests on, and what draws its matches. */
-  readonly #highlight = new ProviderHighlight(() => this.#across);
+  readonly #highlight = new ProviderHighlight(() => this.#on('highlightAcross'));
 
   /** Each legend that picks its chart's values. */
   readonly #legends = new ProviderLegends({
@@ -165,8 +167,8 @@ export class SherpaProvider extends SherpaElement {
     bars: (slot) => this.#slotBars(slot),
     drawToolbars: (slot) => this.#cards.drawToolbars(slot),
     hover: (scope, field, on, value) => this.hover(scope, field, on, value),
-    chips: () => this.#legendChips,
-    highlightHover: () => this.#highlightHover,
+    chips: () => this.#on('legendChips'),
+    highlightHover: () => this.#on('highlightOnHover'),
   });
 
   /** Show as: each slot's chart, or grid, as its presentation says. */
@@ -180,7 +182,7 @@ export class SherpaProvider extends SherpaElement {
       this.#asked.delete(el);
     },
     drawToolbars: (slot) => this.#cards.drawToolbars(slot),
-    showAs: () => this.#showAs,
+    showAs: () => this.#on('showAs'),
     pageFields: () => this.#pageFields,
   });
 
@@ -190,14 +192,11 @@ export class SherpaProvider extends SherpaElement {
     this.addEventListener('context-request', this.#onRequest);
     // The panel's own close, and the shell's room for it.
     this.addEventListener('filter-panel-close', this.#modes.closed);
-    // A bar's or the panel's ⋮ switch: this provider owns the setting. TODO 178.
-    this.addEventListener('limit-options-change', (event) => {
-      this.limitOptions = !!(event as CustomEvent<{ on?: boolean }>).detail?.on;
-    });
-    // …and its Hide invalid filters. Will, TODOs 205 and 376.
-    this.addEventListener('hide-unmatched-change', (event) => {
-      this.hideUnmatched = !!(event as CustomEvent<{ on?: boolean }>).detail?.on;
-    });
+    this.#hearSettings();
+    // A bar's or the panel's ⋮ switch, and its Hide invalid filters: this provider owns them. TODOs 178, 205, 376
+    for (const [type, key] of [['limit-options-change', 'limitOptions'], ['hide-unmatched-change', 'hideUnmatched']] as const) {
+      this.addEventListener(type, (event) => this.#setByReader(key, !!(event as CustomEvent<{ on?: boolean }>).detail?.on));
+    }
     this.addEventListener('panel-room-change', this.#modes.room);
     // A card's Show as: its slot's presentation, kept in the Query. Will, TODO 548
     this.addEventListener('presentation-change', this.#show.picked);
@@ -214,16 +213,91 @@ export class SherpaProvider extends SherpaElement {
   }
 
   /**
-   * TOOLBARS or PANEL, for every page in this subtree — the filter panel open
-   * and each filter bar stepped back, or the bars. The app sets it (from its
-   * session); a reader's change is reported as `filter-mode-change`.
-   * TRAP T-the-provider-owns-the-panel-mode
+   * The app's SETTINGS, one schema kept where the app keeps them: told to every
+   * component that asks, a data one put on each source, a look one on the page's
+   * root. A reader's change made here is reported as `setting-change`.
+   * TRAP T-a-setting-is-declared-once
    */
-  get filterMode(): 'toolbars' | 'panel' {
-    return this.#modes.mode;
+  get settings(): Settings {
+    return this.#settings;
   }
-  set filterMode(mode: 'toolbars' | 'panel') {
-    this.#modes.want(mode);
+  set settings(settings: Settings) {
+    const was = this.#settings;
+    if (settings === was) return;
+    this.#settings = settings;
+    this.#hearSettings();
+    this.#follow(Object.keys(settings.schema).filter((key) => settings.get(key) !== was.get(key)));
+  }
+  /** The settings it holds: its own, until the app gives its. */
+  #settings = new Settings();
+  /** Stops hearing the settings given before. */
+  #settingsHeard: AbortController | null = null;
+  /** Every component told the settings, and how to tell it again. */
+  #told = new Map<Element, ContextCallback<Settings>>();
+  /** What the settings put on the page's root. */
+  readonly #look = new RootLook();
+
+  /** Hear each change of the settings this holds. */
+  #hearSettings(): void {
+    this.#settingsHeard?.abort();
+    this.#settingsHeard = new AbortController();
+    this.#settings.addEventListener('change', (event) => {
+      this.#follow([(event as CustomEvent<{ key: string }>).detail.key]);
+    }, { signal: this.#settingsHeard.signal });
+  }
+
+  /** A setting is on. */
+  #on(key: SettingKey): boolean {
+    return this.#settings.get(key) === true;
+  }
+
+  /** A reader changed a setting here: it is set, and said. */
+  #setByReader(key: SettingKey, value: SettingValue): void {
+    this.#settings.set(key, value);
+    this.emit('setting-change', { key, value });
+  }
+
+  /** These settings moved: each source takes its data ones, every component is
+   *  told, and what follows each here follows it. */
+  #follow(keys: readonly string[]): void {
+    const settings = this.#settings;
+    for (const source of Object.values(this.#sources)) this.#toSource(source, keys);
+    for (const [el, tell] of this.#told) tell(settings, () => this.#told.delete(el));
+    for (const key of keys) {
+      switch (key) {
+        // TRAP T-the-provider-owns-the-panel-mode
+        case 'filterMode': {
+          const mode = settings.get(key) as 'toolbars' | 'panel';
+          if (mode !== this.#modes.mode) this.#modes.want(mode);
+          break;
+        }
+        case 'saveAnyScope': this.#pages.savesChanged(); break;
+        case 'highlightOnHover': this.#legends.hoverable(this.#on(key)); break;
+        case 'legendChips': this.#legends.lay(); break;
+        case 'highlightAcross': this.#highlight.light(); break;
+        case 'showAs': this.#show.menus(); break;
+        case 'appContext': this.#shareAppContext(); break;
+        case 'applyEvery': {
+          // Off sends what waits; the View always waits.
+          const query = this.#pages.opened?.query;
+          for (const scope of this.#scopes) if (scope !== VIEW) query?.wait(scope, this.#on(key));
+          break;
+        }
+      }
+    }
+    if (this.#isTop()) this.#look.draw(document.documentElement, settings, keys);
+  }
+
+  /** A source takes each DATA setting: its own property by that name. TRAP T-a-ruled-out-value-is-greyed */
+  #toSource(source: DataSource, keys: readonly string[]): void {
+    const props = source as unknown as Record<string, SettingValue>;
+    for (const key of keys) if (this.#settings.schema[key]?.source && key in source) props[key] = this.#settings.get(key);
+  }
+
+  /** No provider is above this one: its settings are the page's. */
+  #isTop(): boolean {
+    for (let at = up(this); at; at = up(at)) if (at instanceof SherpaProvider) return false;
+    return true;
   }
 
   /** The panel or the bars, and the buttons that switch them. A column in
@@ -237,176 +311,13 @@ export class SherpaProvider extends SherpaElement {
     button: (kind) => this.clone(`template.mode-${kind}-tpl`) as HTMLElement | null,
     rendered: () => this.rendered,
     changed: (mode) => {
-      this.emit('filter-mode-change', { mode });
+      this.#setByReader('filterMode', mode);
     },
     stepped: (bar) => {
       const slot = this.#inherited(bar, 'data-scope');
       if (slot) this.#cards.drawToolbars(slot);
     },
   });
-
-  /** Each list filter offers only what the others leave — on every source it
-   *  gives. The app sets it, from its session. TRAP T-a-ruled-out-value-is-greyed */
-  get limitOptions(): boolean {
-    return this.#limit;
-  }
-  set limitOptions(on: boolean) {
-    this.#limit = on;
-    for (const source of Object.values(this.#sources)) source.limitOptions = on;
-    // Every bar and panel offers the switch in its ⋮, showing where it stands. TODO 178.
-    this.#offerAll();
-  }
-
-  /** While Limit is on, a value it rules out is HIDDEN, not greyed — on every
-   *  bar and panel. The app sets it, from its session. TODO 205 */
-  get hideUnmatched(): boolean {
-    return this.#hide;
-  }
-  set hideUnmatched(on: boolean) {
-    this.#hide = on;
-    this.#offerAll();
-  }
-  /** The app's choice: hide what Limit rules out. */
-  #hide = false;
-
-  /** Each filter control says its match counts — or, off, none. The app sets
-   *  it, from its session. Will, TODO 436 */
-  get results(): boolean {
-    return this.#results;
-  }
-  set results(on: boolean) {
-    this.#results = on;
-    this.#offerAll();
-  }
-  /** The app's choice: say the match counts. */
-  #results = true;
-
-  /** A column's title counts the filters APPLIED. The app sets it, from its
-   *  session. Will, TODO 436 */
-  get countApplied(): boolean {
-    return this.#countApplied;
-  }
-  set countApplied(on: boolean) {
-    this.#countApplied = on;
-    this.#offerAll();
-  }
-  /** The app's choice: count the filters applied. */
-  #countApplied = false;
-
-  /** The saved sets, the save rows and Manage are a Saved menu of their own,
-   *  beside Filters — not the Filters menu's and the ⋮'s. The app sets it,
-   *  from its session. Will, TODO 436 */
-  get savedMenu(): boolean {
-    return this.#savedMenu;
-  }
-  set savedMenu(on: boolean) {
-    this.#savedMenu = on;
-    this.#offerAll();
-  }
-  /** The app's choice: a Saved menu of its own. */
-  #savedMenu = false;
-
-  /** A filter set may be saved and taken at ANY scope: the View's too, every
-   *  scope in one set. Off, a set is ONE local scope's — saved from its bar,
-   *  listed there and taken there alone — and the View's bar and the panel save
-   *  nothing. Off unless the app says. Will, TODO 485 · TRAP T-saved-filters-are-every-scope */
-  get saveAnyScope(): boolean {
-    return this.#saveAny;
-  }
-  set saveAnyScope(on: boolean) {
-    this.#saveAny = on;
-    this.#offerAll();
-    this.#pages.savesChanged();
-  }
-  /** The app's choice: saved filters at any scope. */
-  #saveAny = false;
-
-  /** Each bar shows its filter Switch. The app sets it, from its session;
-   *  until then a bar keeps its own `data-switchable`. Will, TODO 436 */
-  get switchable(): boolean {
-    return this.#switchable === true;
-  }
-  set switchable(on: boolean) {
-    this.#switchable = on;
-    this.#offerAll();
-  }
-  /** The app's choice: the Switch — or null, each bar's own. */
-  #switchable: boolean | null = null;
-
-  /** Each section's name at its start, in toolbar mode. The app sets it, from
-   *  its session. Will, TODOs 436, 610 */
-  get sectionLabels(): boolean {
-    return this.#sectionLabels;
-  }
-  set sectionLabels(on: boolean) {
-    this.#sectionLabels = on;
-    this.#offerAll();
-  }
-  /** The app's choice: the filter toolbars' section labels. */
-  #sectionLabels = true;
-
-  /** Organise chips show their icons, and no name. The app sets it, from its session. Will, TODO 634 */
-  get hideOrganiseLabels(): boolean {
-    return this.#hideOrganiseLabels;
-  }
-  set hideOrganiseLabels(on: boolean) {
-    this.#hideOrganiseLabels = on;
-    this.#offerAll();
-  }
-  /** The app's choice: the Organise chips' names. */
-  #hideOrganiseLabels = false;
-
-  /** Each section's name over its filters, in panel mode. The app sets it,
-   *  from its session. Will, TODO 436 */
-  get sections(): boolean {
-    return this.#sections;
-  }
-  set sections(on: boolean) {
-    this.#sections = on;
-    this.#offerAll();
-  }
-  /** The app's choice: the section headings. */
-  #sections = true;
-
-  /** A chip hovered previews what it matches, where its matches are counted.
-   *  The app sets it, from its session. Will, TODO 449 */
-  get highlightOnHover(): boolean {
-    return this.#highlightHover;
-  }
-  set highlightOnHover(on: boolean) {
-    this.#highlightHover = on;
-    this.#offerAll();
-    // …and a legend that picks: a rest on a row previews it. Will, TODO 495
-    this.#legends.hoverable(on);
-  }
-
-  /** A legend's rows are filter chips: in its card's filter toolbar, the legend
-   *  gone, where the card has one; else in the legend. Off, key rows. Off unless the
-   *  app says, from its session. Will, TODOs 586, 670 */
-  get legendChips(): boolean {
-    return this.#legendChips;
-  }
-  set legendChips(on: boolean) {
-    this.#legendChips = on;
-    this.#legends.lay();
-  }
-  /** The app's choice: a legend's rows as chips. */
-  #legendChips = false;
-  /** The app's choice: Highlight matches on hover. */
-  #highlightHover = false;
-
-  /** The highlight reaches every component on the page — or, off (the
-   *  default), those in its filter's own scope alone. The app sets it, from its
-   *  session. Will, TODOs 467, 520 */
-  get highlightAcross(): boolean {
-    return this.#across;
-  }
-  set highlightAcross(on: boolean) {
-    this.#across = on;
-    this.#highlight.light();
-  }
-  /** The app's choice: highlight across every scope. */
-  #across = false;
 
   /** What the pointer rests on while it lights its matches — a chip, one value of
    *  it, or a legend row — or null. The page's, never the Query's: nothing loads,
@@ -421,196 +332,25 @@ export class SherpaProvider extends SherpaElement {
     this.#highlight.hover(scope, field, on, value);
   }
 
-  /** ONE Apply and Discard for a scope that waits — or, off, each field's own,
-   *  in its menu or its panel section. The app sets it, from its session. Will, TODO 451 */
-  get singleApply(): boolean {
-    return this.#singleApply;
-  }
-  set singleApply(on: boolean) {
-    this.#singleApply = on;
-    this.#offerAll();
-  }
-  /** The app's choice: Single Apply & Discard. */
-  #singleApply = true;
-
-  /** A reader drags a chip, or a panel section, into its place in the query.
-   *  The app sets it, from its session. Will, TODO 452 */
-  get reorderFilters(): boolean {
-    return this.#reorder;
-  }
-  set reorderFilters(on: boolean) {
-    this.#reorder = on;
-    this.#offerAll();
-  }
-  /** The app's choice: drag filters into a new order. */
-  #reorder = false;
-
-  /** A filter's menu, and its section's ⋮, offer to move it between scopes. Off
-   *  unless the app says, from its session: Edit filters still adds one at
-   *  another scope. Will, TODO 587 */
-  get moveFilters(): boolean {
-    return this.#moveFilters;
-  }
-  set moveFilters(on: boolean) {
-    this.#moveFilters = on;
-    this.#offerAll();
-  }
-  /** The app's choice: Move between scopes. */
-  #moveFilters = false;
-
-  /** A filter's menu, and its section's ⋮, offer "Solo this filter": every other
-   *  filter in its scope goes off while it is soloed. Off unless the app says, from
-   *  its session. Will, TODO 690 · TRAP T-a-solo-is-a-draft-of-one-tab */
-  get allowSolo(): boolean {
-    return this.#allowSolo;
-  }
-  set allowSolo(on: boolean) {
-    this.#allowSolo = on;
-    this.#offerAll();
-  }
-  /** The app's choice: Solo a filter. */
-  #allowSolo = false;
-
-  /** A solo switches off every other filter in EVERY scope, not its own alone —
-   *  for user tests to compare the two. Will, TODO 690 */
-  get soloAcrossScopes(): boolean {
-    return this.#soloAcross;
-  }
-  set soloAcrossScopes(on: boolean) {
-    this.#soloAcross = on;
-    this.#offerAll();
-  }
-  /** The app's choice: a solo reaches every scope. */
-  #soloAcross = false;
-
-  /** Solo is an icon-only toggle in a filter menu's header, before its Advanced
-   *  button, not a row. Needs `allowSolo`. Will, TODO 690 */
-  get soloInHeader(): boolean {
-    return this.#soloHeader;
-  }
-  set soloInHeader(on: boolean) {
-    this.#soloHeader = on;
-    this.#offerAll();
-  }
-  /** The app's choice: Solo in the menu's header. */
-  #soloHeader = false;
-
-  /** In the panel, each filter's heading in a column at its start, its values
-   *  beside it. The app sets it, from its session. Will, TODO 460 */
-  get labelColumn(): boolean {
-    return this.#labelColumn;
-  }
-  set labelColumn(on: boolean) {
-    this.#labelColumn = on;
-    this.#offerAll();
-  }
-  /** The app's choice: headings in a column. */
-  #labelColumn = true;
-
-  /** Every value of a list filter shows its match count, picked or not, its
-   *  chip on or off — counted where the rows are held. The app sets it, from its
-   *  session. Will, TODO 466 */
-  get countEveryValue(): boolean {
-    return this.#countEvery;
-  }
-  set countEveryValue(on: boolean) {
-    this.#countEvery = on;
-    for (const source of Object.values(this.#sources)) source.countEveryValue = on;
-    this.#offerAll();
-  }
-  /** The app's choice: count every value. */
-  #countEvery = false;
-
-
-  /** A grid's column heading offers Group by its field; a group row, Ungroup.
-   *  On unless the app says not, from its session. Will, TODO 500 */
-  get headingGroup(): boolean {
-    return this.#headingGroup;
-  }
-  set headingGroup(on: boolean) {
-    this.#headingGroup = on;
-    this.#offerAll();
-  }
-  /** The app's choice: Group in a heading. */
-  #headingGroup = true;
-
-  /** A grid's column heading shows its buttons only while hovered or focused.
-   *  On unless the app says not, from its session. Will, TODO 501 */
-  get headingHover(): boolean {
-    return this.#headingHover;
-  }
-  set headingHover(on: boolean) {
-    this.#headingHover = on;
-    this.#offerAll();
-  }
-  /** The app's choice: heading buttons on hover. */
-  #headingHover = true;
-
-  /** A grid column's `tags` draw in its cells, and its heading menu joins their
-   *  lists. On unless the app says not, from its session. Will, TODO 490 */
-  get multiFieldColumns(): boolean {
-    return this.#multiField;
-  }
-  set multiFieldColumns(on: boolean) {
-    this.#multiField = on;
-    this.#offerAll();
-  }
-  /** The app's choice: multi-field columns. */
-  #multiField = true;
-
-  /** A card offers Show as, and a reader's pick is shown — off, kept and not
-   *  shown. On unless the app says not, from its session. Will, TODO 582 */
-  get showAs(): boolean {
-    return this.#showAs;
-  }
-  set showAs(on: boolean) {
-    this.#showAs = on;
-    for (const source of Object.values(this.#sources)) source.showAs = on;
-    this.#show.menus();
-  }
-  /** The app's choice: Show as. */
-  #showAs = true;
-
-  /** The Primary and Secondary chips are offered, and a reader's picks in them
-   *  shown — off, kept and not shown. On unless the app says not, from its
-   *  session. Will, TODO 583 */
-  get axisChips(): boolean {
-    return this.#axisChips;
-  }
-  set axisChips(on: boolean) {
-    this.#axisChips = on;
-    for (const source of Object.values(this.#sources)) source.axisChips = on;
-  }
-  /** The app's choice: Primary and Secondary chips. */
-  #axisChips = true;
-
-  /** The View Context is the APP Context: one answer for every page, kept in
-   *  the session; a page without a field it holds shows that filter inactive.
-   *  Off, each page has its own again. The app sets it, from its session.
-   *  Will, TODO 453 · TRAP T-the-app-context-is-one-answer */
-  get appContext(): boolean {
-    return this.#appContext;
-  }
-  set appContext(on: boolean) {
-    if (on === this.#appContext) return;
-    this.#appContext = on;
-    const source = this.#pages.opened?.source;
-    if (!source) return;
-    // The name first, on every bar; then the answer, which the bars hear as any change.
-    this.#relabel(source);
-    void this.#pages.drawBars(this.#pages.view).then(() => this.#pages.share(this.#sharedStore()));
-  }
-  /** The app's choice: share the View Context. */
-  #appContext = false;
   /** Where the open page keeps its Query — and the App Context its answer. */
   #session: OpenOptions['session'];
   /** The open page's own name for its View scope. */
   #viewLabel = '';
 
+  /** The View Context is the APP Context, or each page's own again: the name
+   *  first, on every bar; then the answer, which the bars hear as any change.
+   *  TRAP T-the-app-context-is-one-answer */
+  #shareAppContext(): void {
+    const source = this.#pages.opened?.source;
+    if (!source) return;
+    this.#relabel(source);
+    void this.#pages.drawBars(this.#pages.view).then(() => this.#pages.share(this.#sharedStore()));
+  }
+
   /** The App Context's store, while the app shares it and the page keeps. */
   #sharedStore(): SharedStore | null {
     const session = this.#session;
-    if (!this.#appContext || !session) return null;
+    if (!this.#on('appContext') || !session) return null;
     return {
       get: () => (session.get(APP_CONTEXT_KEY) as SharedView | null | undefined) ?? null,
       set: (value) => session.set(APP_CONTEXT_KEY, value),
@@ -619,67 +359,12 @@ export class SherpaProvider extends SherpaElement {
 
   /** The View scope's name: "App Context" while it is shared, else its own. */
   #relabel(source: DataSource): void {
-    source.query.declareScope(VIEW, { label: this.#appContext ? this.word('app-context') : this.#viewLabel });
+    source.query.declareScope(VIEW, { label: this.#on('appContext') ? this.word('app-context') : this.#viewLabel });
   }
 
-  /** Every scope the page declares waits for its bar's Apply — not only the
-   *  View's. The app sets it, from its session. Will, TODO 436.
-   *  TRAP T-apply-and-discard-wait-for-a-change */
-  get applyEvery(): boolean {
-    return this.#applyEvery;
-  }
-  set applyEvery(on: boolean) {
-    this.#applyEvery = on;
-    // Off sends what waits; the View always waits.
-    const query = this.#pages.opened?.query;
-    for (const scope of this.#scopes) if (scope !== VIEW) query?.wait(scope, on);
-  }
-  /** The app's choice: every scope waits for Apply. */
-  #applyEvery = false;
-  /** The scopes the open page declares. */
+  /** The scopes the open page declares: each waits for its bar's Apply while
+   *  `applyEvery` is on. TRAP T-apply-and-discard-wait-for-a-change */
   #scopes: string[] = [];
-
-  /** Every control with a filter menu: a bar, a panel, a grid's headings. TODO 305 */
-  #limited(): Element[] {
-    return [...this.#asked.keys()].filter((el) => declared(el).takes.includes('settings'));
-  }
-
-  /** Every such control, told the app's filter settings again: a setting changed. */
-  #offerAll(): void {
-    for (const el of this.#limited()) this.#offerLimit(el);
-  }
-
-  /** One control, told the app's filter settings: Limit, and the counts. */
-  #offerLimit(el: Element): void {
-    el.setAttribute('data-limit-options', this.#limit ? 'on' : 'off');
-    el.setAttribute('data-hide-unmatched', this.#hide ? 'on' : 'off');
-    el.toggleAttribute('data-no-results', !this.#results);
-    el.toggleAttribute('data-count-applied', this.#countApplied);
-    el.toggleAttribute('data-saved-menu', this.#savedMenu);
-    // Off, the View's bar and the panel save nothing. TODO 485
-    if (declared(el).asks?.shape === 'scope') el.toggleAttribute('data-no-saves', !this.#saveAny && (isColumn(el) || this.#inherited(el, 'data-scope') === VIEW));
-    if (this.#switchable !== null) el.toggleAttribute('data-switchable', this.#switchable);
-    el.toggleAttribute('data-no-section-labels', !this.#sectionLabels);
-    el.toggleAttribute('data-no-organise-labels', this.#hideOrganiseLabels);
-    el.toggleAttribute('data-no-sections', !this.#sections);
-    el.toggleAttribute('data-highlight-hover', this.#highlightHover);
-    el.toggleAttribute('data-field-apply', !this.#singleApply);
-    el.toggleAttribute('data-reorder', this.#reorder);
-    el.toggleAttribute('data-move-filters', this.#moveFilters);
-    el.toggleAttribute('data-allow-solo', this.#allowSolo);
-    el.toggleAttribute('data-solo-across', this.#soloAcross);
-    el.toggleAttribute('data-solo-header', this.#soloHeader);
-    el.toggleAttribute('data-label-column', this.#labelColumn);
-    el.toggleAttribute('data-every-count', this.#countEvery);
-    // A grid's headings and tags. TODOs 500, 501, 490
-    if (declared(el).takes.includes('headings')) {
-      el.toggleAttribute('data-heading-group', this.#headingGroup);
-      el.toggleAttribute('data-heading-hover', this.#headingHover);
-      el.toggleAttribute('data-multi-field', this.#multiField);
-    }
-  }
-  /** The app's choice, for every source. */
-  #limit = false;
 
   /** Every panel that asked — a control drawn over several scopes. */
   #panels(): Array<HTMLElement & { show(): void; hide(reason?: string): void }> {
@@ -718,12 +403,7 @@ export class SherpaProvider extends SherpaElement {
     this.#sources = { ...options.sources };
     // A rest on the page that went goes with it.
     this.#highlight.forget();
-    for (const source of Object.values(this.#sources)) {
-      source.limitOptions = this.#limit;
-      source.countEveryValue = this.#countEvery;
-      source.showAs = this.#showAs;
-      source.axisChips = this.#axisChips;
-    }
+    for (const source of Object.values(this.#sources)) this.#toSource(source, Object.keys(this.#settings.schema));
     for (const made of this.#made) if (!this.#provides(made)) this.#closeMade(made);
     // BEFORE answering: an answer binds, and a bind starts the first load.
     this.#states?.abort();
@@ -781,7 +461,7 @@ export class SherpaProvider extends SherpaElement {
       this.#scopes = Object.keys(def?.scopes ?? {});
       this.#pageId = definition.id;
       this.#pageFields = Object.keys(def?.fields ?? {});
-      if (this.#applyEvery) for (const scope of this.#scopes) source?.query.wait(scope);
+      if (this.#on('applyEvery')) for (const scope of this.#scopes) source?.query.wait(scope);
       // Shared, the View is the App Context, and keeps its answer there. TODO 453
       this.#session = options.session;
       if (source) {
@@ -956,7 +636,7 @@ export class SherpaProvider extends SherpaElement {
     bars: () => this.#bars() as Bar[],
     panels: () => this.#panels(),
     scopeOf: (el) => this.#inherited(el, 'data-scope'),
-    saveAnyScope: () => this.#saveAny,
+    saveAnyScope: () => this.#on('saveAnyScope'),
     viewChanged: (id, elements) => {
       this.emit('view-change', { id, ...(elements ? { elements } : {}) });
     },
@@ -1006,6 +686,8 @@ export class SherpaProvider extends SherpaElement {
   }
 
   override onConnect(): void {
+    // The page's root wears the look settings. TRAP T-a-setting-is-declared-once
+    if (this.#isTop()) this.#look.draw(document.documentElement, this.#settings);
     // The network back, or the tab shown again: what could not be reached is tried again.
     this.on(window, 'online', this.#reach.back);
     this.on(document, 'visibilitychange', this.#reach.back);
@@ -1019,6 +701,7 @@ export class SherpaProvider extends SherpaElement {
     this.#pages.stopViews();
     for (const asked of this.#asked.values()) asked.unbind?.();
     this.#asked.clear();
+    this.#told.clear();
   }
 
   /** Stops watching the sources' loading, emptiness and failure. */
@@ -1062,8 +745,16 @@ export class SherpaProvider extends SherpaElement {
    *  for a source this one does not give, and one above does, travels up. PROVIDER-DESIGN §3 */
   #onRequest = (event: Event): void => {
     const request = event as ContextRequestEvent<unknown>;
-    if (request.context !== DATA_CONTEXT && request.context !== SOURCE_CONTEXT) return;
     const el = request.contextTarget;
+    // The settings: the nearest provider's, told again on every change while subscribed.
+    if (request.context === SETTINGS_CONTEXT) {
+      event.stopPropagation();
+      const tell = request.callback as ContextCallback<Settings>;
+      if (request.subscribe) this.#told.set(el, tell);
+      tell(this.#settings, request.subscribe ? () => this.#told.delete(el) : undefined);
+      return;
+    }
+    if (request.context !== DATA_CONTEXT && request.context !== SOURCE_CONTEXT) return;
     if (this.#passes(el)) return;
     event.stopPropagation();
     if (request.context === SOURCE_CONTEXT) {
@@ -1245,7 +936,6 @@ export class SherpaProvider extends SherpaElement {
     if (asks.shape === 'scope') this.#modes.join(el);
     // A bar made after the page's were drawn — a filter stack's — is drawn as they were. TODO 425
     if (asks.shape === 'scope' && !isColumn(el)) this.#pages.joined(el as unknown as Bar);
-    if (takes.includes('settings')) this.#offerLimit(el);
   }
 
   /** The fields a component says the STORE answers — `data-fetch-fields`, or a

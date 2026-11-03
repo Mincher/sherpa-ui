@@ -12,7 +12,6 @@
  * - SessionStore — What an app knows about itself, addressed by pointer.
  * - .get — the value at a pointer
  * - .set — write a pointer; every overlapping subscriber hears it
- * - .overlay — A page's own settings over the store's, until laid off; nothing is kept.
  * - .subscribe — Watch the list.
  * - .snapshot — the whole store as plain data
  * - .persist — Remember this pointer across reloads.
@@ -77,16 +76,10 @@ export class SessionStore {
   }
 
   get(pointer: string): unknown {
-    return this.#overlay?.has(pointer) ? this.#overlay.get(pointer) : getPointer(this.#data, pointer);
+    return getPointer(this.#data, pointer);
   }
 
   set(pointer: string, value: unknown): void {
-    // A page's own setting stays the page's: the store and its copy never hear it.
-    if (this.#overlay?.has(pointer)) {
-      this.#overlay.set(pointer, value);
-      this.#tellOverlapping([pointer]);
-      return;
-    }
     setPointer(this.#data, pointer, value);
     this.#tellOverlapping([pointer]);
     // Write through for this pointer or any ANCESTOR: a branch write must not
@@ -95,21 +88,6 @@ export class SessionStore {
       if (pointersOverlap(p, pointer)) this.#write(p, where);
     }
   }
-
-  /**
-   * A page's OWN settings, by exact pointer. While laid on, each reads its value
-   * here, a write to one stays here, and nothing is persisted. `null` lays them
-   * off, and every reader hears the store's value again. For a demo or an
-   * onboarding page; not how an app sets a setting. Will, TODO 591
-   */
-  overlay(values: Readonly<Record<string, unknown>> | null): void {
-    const was = [...this.#overlay?.keys() ?? []];
-    this.#overlay = values ? new Map(Object.entries(values)) : null;
-    this.#tellOverlapping([...was, ...this.#overlay?.keys() ?? []]);
-  }
-
-  /** The page's own settings, while laid on. */
-  #overlay: Map<string, unknown> | null = null;
 
   /** Tell each subscriber over these pointers what it reads now. */
   #tellOverlapping(pointers: readonly string[]): void {
