@@ -27,9 +27,9 @@ type Lit = Record<string, [string | null, string | null]>;
 /** A page source over a request store, answered by a handler that says its spans as the worker would. */
 const BIND = `async () => {
   const { bindQueryEditor } = await import('/dist/app.js');
-  const { ArrayStore, DataSource, HeldStore, createDataHandler, fakeRemote, onTrace, openRequestStore } = await import('/dist/data.js');
+  const { ArrayStore, DataSource, HeldStore, createDataHandler, defineStores, fakeRemote, onTrace, openRequestStore } = await import('/dist/data.js');
   const rows = [{ id: 1, region: 'EMEA' }, { id: 2, region: 'APAC' }, { id: 3, region: 'EMEA' }];
-  const worker = createDataHandler({ stores: { customers: new HeldStore(fakeRemote(new ArrayStore(rows, { key: 'id' }), { delay: 300 })) }, host: 'worker' });
+  const worker = createDataHandler({ stores: defineStores(() => ({ customers: new HeldStore(fakeRemote(new ArrayStore(rows, { key: 'id' }), { delay: 300 })) })), host: 'worker' });
   const store = await openRequestStore({ name: 'customers', send: (request) => worker(request) });
   const source = new DataSource({ store });
   await source.query.ask([{ scope: 'view', hold: ['region'] }, { scope: 'view', field: 'region', reading: { picked: ['EMEA'] } }]);
