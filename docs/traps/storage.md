@@ -1,7 +1,7 @@
 # Traps — Storage, saved Views and the URL
 
 One of the eleven areas of [the traps](../TRAPS.md): each entry is here because its
-first `Site:` is in this area (`npm run check:traps` holds it so). 37 entries.
+first `Site:` is in this area (`npm run check:traps` holds it so). 38 entries.
 
 ### T-the-router-owns-the-url
 
@@ -489,6 +489,48 @@ from the host after the swap.
 - Site: `test/e2e/reforged-view-markup.spec.ts`
 - Site: `src/app.ts`
 
+### T-one-browser-database
+
+**Sherpa keeps everything in ONE IndexedDB database** (plan 695 H3): `sherpa-ui`,
+one version, its object stores made in one upgrade from one fixed schema
+(`database.ts`). A page and its worker open the same one.
+
+| object store | key | holds |
+|---|---|---|
+| `rows` | `[store, key]` | every `IdbStore`'s rows, under the store's name; one `seek` index |
+| `seeds` | `store` | the seed version a store's rows were last seeded at |
+| `sets` | `name` | a remote store's held set, kept between sessions (`keepCache`) |
+| `outbox` | `[outbox, id]` | the writes that wait (`keepOutbox`) |
+| `notices` | `id` | the notices a worker keeps until seen |
+| `views` | `[page, id]` | the saved Views' durable tier (`syncViews`) |
+
+Before, each part opened its own database (`sherpa`, `sherpa-cache`,
+`sherpa-outbox`, `sherpa-notices`, and an app's own), and two failed silently:
+
+- **Two stores could not share a database** (bug 2): the upgrade made only the
+  opener's object store, so a second `IdbStore` in the default `sherpa` threw
+  `NotFoundError`. Now no store has its own object store to make.
+- **A worker never re-seeded** (bug 3): the seed mark lived in `localStorage`,
+  which a worker cannot read. Now it lives in `seeds`, beside the rows
+  (`T-local-records-seed-themselves`).
+
+**`navigator.storage.persist()` is asked once per page**, the first time the
+page opens the database: every part that keeps data passes through that one
+open. Only a page can ask (`persist()` is the window's); the grant is the
+origin's, so it covers what the worker keeps. A page already persisted is not
+asked again (`persisted()` first). Firefox asks the reader.
+
+**The old databases are not read, moved or deleted** (no stored-data shims,
+CODE-REVIEW-PLAN D4): what they held stays on the device, unread.
+
+A test that counts records must not `open()` the database before Sherpa has: an
+open with no version makes it, with no object stores, and Sherpa's open at the
+same version then upgrades nothing.
+
+- Site: `src/core/browser/database.ts`
+- Site: `src/core/browser/idb-store.ts`
+- Site: `test/e2e/reforged-one-browser-database.spec.ts`
+
 ### T-idb-open-is-a-handshake-not-a-call
 
 `indexedDB.open()` is a request, a version negotiation and possibly a schema
@@ -497,27 +539,28 @@ used it:
 
 **1. The connection is held as a PROMISE, not a database.** Twenty concurrent
 loads on first paint would otherwise fire twenty `open()` calls and race twenty
-upgrade transactions. One promise, shared.
+upgrade transactions. One promise, shared by every part.
 
-**2. Indexes are built ONLY inside `onupgradeneeded`.** Adding a field to
-`indexes` on an existing database does nothing at all — the index is silently
-absent and every filter on it quietly reads the whole store. **Bump `version`
-when `indexes` changes.** The constructor cannot detect this: it has no way to
-know what the last version declared without opening, which is the thing it is
-deciding whether to do.
+**2. Object stores and indexes are made ONLY inside `onupgradeneeded`.** So the
+schema is fixed (`T-one-browser-database`): an `IdbStore`'s `indexes` need no
+upgrade, as every store's indexed values share one `seek` index. A new object
+store in the schema needs `VERSION` bumped.
 
 **3. Another tab can ask for a higher version**, and is blocked until this one
 lets go. `onversionchange` closes the connection and drops the cached promise,
 so the next call re-opens at the new version. A tab that ignores this hangs the
-other one indefinitely.
+other one indefinitely. A connection the browser closes (site data cleared) is
+dropped the same way.
 
-- Site: `src/core/browser/idb-store.ts`
+- Site: `src/core/browser/database.ts`
 
 ### T-idb-index-narrows-it-never-answers-it
 
 **An index is a PRE-FILTER, never the answer.** `#readRows` uses one to read a
 slice instead of the whole store; `applyOptions` then filters, sorts, searches
-and pages exactly as it does for every other store.
+and pages exactly as it does for every other store. The index is the `rows`
+store's one `seek` index (`T-one-browser-database`): each row lists
+`[store, field, value]` for each indexed field, so a range is a run of it.
 
 That is what makes an index safe to add or remove: it changes how much is read,
 never what comes back. `reforged-idb-store.spec.ts` asserts this directly, by
@@ -562,13 +605,12 @@ the switch kept the same mistake.
 
 ### T-idb-clear-is-not-a-reset
 
-`clear()` deletes every RECORD. The object store and its indexes survive.
+`clear()` deletes every row of THIS store; every other store's rows, and its
+seed mark, stay. A store holds no object store of its own to reset.
 
-So it is not a way out of `T-idb-open-is-a-handshake-not-a-call`: a changed
-`indexes` list still needs a `version` bump, whether or not the store was
-cleared first. Deleting the whole database is the only true reset, and this
-class deliberately does not offer one — a method that destroys another store's
-data because they happen to share a database name is not a method worth having.
+Deleting the whole database is the only true reset, and it resets everything
+Sherpa keeps (`T-one-browser-database`). This class deliberately does not offer
+one — a method that destroys every other part's data is not a method worth having.
 
 - Site: `src/core/browser/idb-store.ts`
 
@@ -583,11 +625,13 @@ having work, and awaiting anything else — a schema's async `validate` — is
 exactly that pause. So `putAll` checks every row first, then opens the
 transaction and writes without awaiting anything but its own completion.
 
-This is the seam a **sync down from a server** writes through, and what seeds a
-store on first run. `replace: true` clears first, for a full refresh where a row
-the server deleted must not survive locally.
+This is the seam a **sync down from a server** writes through. `replace: true`
+clears first, for a full refresh where a row the server deleted must not survive
+locally. `transact` settles once its transaction COMMITS, and every request is
+made inside its work.
 
 - Site: `src/core/browser/idb-store.ts`
+- Site: `src/core/browser/database.ts`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 
 ### T-local-first-then-onward
@@ -1028,12 +1072,20 @@ blocked site data — and seeded on a first run and again when `seedVersion`
 moves. It hands back `{ store, ready }`; await `ready` before a component
 draws, or a grid that populates before the seed lands shows an empty table.
 
-A re-seed is `putAll`: it overwrites the seed's rows, and a row a person
-added stays. The seed version is kept in `localStorage` under
-`sherpa:seed:<database>/<name>`. Storage that cannot be read cannot say a seed
-is old, so it seeds only an EMPTY store — never on every load, which would
-erase the very edit meant to survive one. A seed that cannot be written
-reports `seed-failed` and the store starts as it is.
+A re-seed overwrites the seed's rows, and a row a person added stays. The seed
+version is kept in the database beside the rows (`seeds`, by the store's name),
+where a worker reads it too: kept in `localStorage`, it was unreadable in a
+worker, which never re-seeded (bug 3, plan 695 H3).
+
+**The rows and their mark are ONE transaction, which reads the mark first.** A
+page and its worker start together on a first run; IndexedDB runs their two
+transactions one after the other, so the second finds the mark and writes
+nothing. The rows are checked BEFORE it opens (`T-idb-bulk-is-one-transaction`),
+on every load — measured 0.3 ms for 100 rows, 6 ms for 10,000 — so the page,
+which starts first, seeds first: a readonly look before them let a worker win
+the race in Demos, and its held set, having heard the seed, read again behind
+the kept copy (`T-a-kept-set-is-checked-each-session`). A seed that cannot be written reports
+`seed-failed` and the store starts as it is.
 
 Sherpa Demos chose the store, kept the version and seeded by hand in
 `records-data.js`; its `reforged-records-persist.spec.ts` now drives this.

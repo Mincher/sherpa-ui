@@ -560,10 +560,6 @@ test('IdbStore is importable headless and REPORTS its absence rather than preten
   // poison a session that is later granted storage. Proven by the second call
   // failing the same way rather than with a different, cached error.
   await assert.rejects(() => store.load(), /IndexedDB is unavailable/);
-
-  // close() on a store that never opened is a no-op, not a throw: a teardown
-  // path runs whether or not the thing it tears down ever started.
-  store.close();
 });
 
 test('syncViews works with no IndexedDB, no storage and no remote', async () => {

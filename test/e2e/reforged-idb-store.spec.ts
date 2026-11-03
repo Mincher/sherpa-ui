@@ -14,14 +14,10 @@ import { test, expect } from './harness';
  * TRAP T-a-store-keeps-its-history
  */
 
-/** A fresh database per test, so one test's records cannot be another's. */
-let seq = 0;
-const freshDb = (): string => `sherpa-test-${Date.now()}-${++seq}`;
-
 test('records survive a full CRUD round trip, and a reload', async ({ page }) => {
-  const r = await page.evaluate(async (database) => {
+  const r = await page.evaluate(async () => {
     const { IdbStore } = await import('/dist/index.js');
-    const store = new IdbStore({ name: 'customers', key: 'id', database });
+    const store = new IdbStore({ name: 'customers', key: 'id' });
 
     const inserted = await store.insert({ id: 1, name: 'Ada', tier: 'Gold' });
     await store.insert({ id: 2, name: 'Grace', tier: 'Silver' });
@@ -33,12 +29,10 @@ test('records survive a full CRUD round trip, and a reload', async ({ page }) =>
     const gone = await store.byKey(2);
     const left = await store.load();
 
-    // A SECOND store over the same database is what a reload looks like — the
-    // records must be there without anything re-seeding them.
-    store.close();
-    const reopened = new IdbStore({ name: 'customers', key: 'id', database });
+    // A SECOND store of the same name reads the same rows, with nothing re-seeding
+    // them; Demos' records-persist spec proves a real reload.
+    const reopened = new IdbStore({ name: 'customers', key: 'id' });
     const afterReload = await reopened.load();
-    reopened.close();
 
     return {
       inserted,
@@ -49,22 +43,22 @@ test('records survive a full CRUD round trip, and a reload', async ({ page }) =>
       total: left.total,
       afterReload: afterReload.rows,
     };
-  }, freshDb());
+  });
 
   expect(r.inserted).toEqual({ id: 1, name: 'Ada', tier: 'Gold' });
   expect(r.updated).toEqual({ id: 1, name: 'Ada', tier: 'Platinum' });
   expect(r.afterUpdate).toEqual({ id: 1, name: 'Ada', tier: 'Platinum' });
   expect(r.gone).toBeUndefined();
   expect(r.total).toBe(1);
-  // THE POINT OF THE WHOLE STORE: the record outlived the connection.
+  // THE POINT OF THE WHOLE STORE: the record outlived the object that wrote it.
   expect(r.afterReload).toEqual([{ id: 1, name: 'Ada', tier: 'Platinum' }]);
 });
 
 /* 345 phase 3: an update names the fields whose values moved, and the History keeps them. */
 test('an update announces only the fields that moved', async ({ page }) => {
-  const r = await page.evaluate(async (database) => {
+  const r = await page.evaluate(async () => {
     const { IdbStore } = await import('/dist/index.js');
-    const store = new IdbStore({ name: 'customers', key: 'id', database });
+    const store = new IdbStore({ name: 'customers', key: 'id' });
     await store.insert({ id: 1, name: 'Ada', tier: 'Gold', seats: 10 });
     const heard: unknown[] = [];
     store.addEventListener('change', (e) => heard.push((e as CustomEvent<{ fields?: string[] }>).detail.fields));
@@ -72,9 +66,8 @@ test('an update announces only the fields that moved', async ({ page }) => {
     // A form sends every field back; one moved.
     await store.update(1, { id: 1, name: 'Ada', tier: 'Platinum', seats: 10 });
     const since = store.history.since(at);
-    store.close();
     return { heard, since };
-  }, freshDb());
+  });
   expect(r.heard).toEqual([['tier']]);
   expect(r.since).toEqual({ rows: false, fields: ['tier'] });
 });
@@ -82,7 +75,7 @@ test('an update announces only the fields that moved', async ({ page }) => {
 test('an INDEX narrows the read without changing the answer', async ({ page }) => {
   // TRAP T-idb-index-narrows-it-never-answers-it — the same rows come back
   // whether or not a field is indexed. That is what makes an index safe to add.
-  const r = await page.evaluate(async (database) => {
+  const r = await page.evaluate(async () => {
     const { IdbStore } = await import('/dist/index.js');
     const rows = Array.from({ length: 60 }, (_, i) => ({
       id: i + 1,
@@ -90,8 +83,8 @@ test('an INDEX narrows the read without changing the answer', async ({ page }) =
       spend: i * 10,
     }));
 
-    const indexed = new IdbStore({ name: 'a', key: 'id', database, indexes: ['tier', 'spend'] });
-    const plain = new IdbStore({ name: 'b', key: 'id', database: `${database}-plain` });
+    const indexed = new IdbStore({ name: 'a', key: 'id', indexes: ['tier', 'spend'] });
+    const plain = new IdbStore({ name: 'b', key: 'id' });
     await indexed.putAll(rows);
     await plain.putAll(rows);
 
@@ -120,10 +113,8 @@ test('an INDEX narrows the read without changing the answer', async ({ page }) =
     const lower = await same({ filter: ['tier', 'eq', 'gold'] });
     const lowerRange = await same({ filter: ['tier', 'between', ['bronze', 'gold']] });
 
-    indexed.close();
-    plain.close();
     return { eq, range, and, or, contains, lower, lowerRange };
-  }, freshDb());
+  });
 
   // Every shape agrees with the unindexed store. If an index ever changed an
   // answer, this is where it would show.
@@ -147,9 +138,9 @@ test('putAll is ONE transaction and ONE change event', async ({ page }) => {
   // TRAP T-idb-bulk-is-one-transaction — 2,000 rows through insert() is 2,000
   // transactions and 2,000 events, and a bound DataSource would reload 2,000
   // times.
-  const r = await page.evaluate(async (database) => {
+  const r = await page.evaluate(async () => {
     const { IdbStore } = await import('/dist/index.js');
-    const store = new IdbStore({ name: 'bulk', key: 'id', database });
+    const store = new IdbStore({ name: 'bulk', key: 'id' });
 
     let events = 0;
     store.addEventListener('change', () => { events += 1; });
@@ -162,9 +153,8 @@ test('putAll is ONE transaction and ONE change event', async ({ page }) => {
     await store.putAll([{ id: 1, n: 0 }], { replace: true });
     const afterReplace = await store.load();
 
-    store.close();
     return { written, total: loaded.total, events, afterReplace: afterReplace.total };
-  }, freshDb());
+  });
 
   expect(r.written).toBe(2000);
   expect(r.total).toBe(2000);
@@ -175,10 +165,10 @@ test('putAll is ONE transaction and ONE change event', async ({ page }) => {
 test('a schema refuses a bad write and DROPS a bad read', async ({ page }) => {
   // The same split every store in this layer makes: a WRITE throws (someone is
   // adding it on purpose), a READ drops (one bad row must not empty a grid).
-  const r = await page.evaluate(async (database) => {
+  const r = await page.evaluate(async () => {
     const { IdbStore, rules, required } = await import('/dist/index.js');
     const schema = rules({ name: required() });
-    const store = new IdbStore({ name: 'checked', key: 'id', database, schema });
+    const store = new IdbStore({ name: 'checked', key: 'id', schema });
 
     let threw = '';
     try {
@@ -188,14 +178,12 @@ test('a schema refuses a bad write and DROPS a bad read', async ({ page }) => {
     }
 
     // A bad row written WITHOUT the schema, then read back WITH it.
-    const raw = new IdbStore({ name: 'checked', key: 'id', database });
+    const raw = new IdbStore({ name: 'checked', key: 'id' });
     await raw.putAll([{ id: 2, name: 'ok' }, { id: 3, name: '' }]);
     const read = await store.load();
 
-    store.close();
-    raw.close();
     return { threw, rows: read.rows.length, total: read.total, dropped: read.dropped };
-  }, freshDb());
+  });
 
   expect(r.threw).toBe('ValidationError');
   expect(r.rows).toBe(1);
@@ -209,19 +197,17 @@ test('a schema refuses a bad write and DROPS a bad read', async ({ page }) => {
    Each one the page held was dropped AFTER the page was cut.
    TRAP T-a-refused-row-never-shortens-a-page */
 test('rows the schema refuses never shorten a page', async ({ page }) => {
-  const r = await page.evaluate(async (database) => {
+  const r = await page.evaluate(async () => {
     const { IdbStore, rules, required } = await import('/dist/index.js');
     // Written WITHOUT the schema, as an older build wrote them: three have no name.
-    const raw = new IdbStore({ name: 'aged', key: 'id', database });
+    const raw = new IdbStore({ name: 'aged', key: 'id' });
     const bad = new Set([3, 8, 15]);
     await raw.putAll(Array.from({ length: 30 }, (_, i) => ({ id: i + 1, name: bad.has(i + 1) ? '' : `Row ${i + 1}` })));
-    const store = new IdbStore({ name: 'aged', key: 'id', database, schema: rules({ name: required() }) });
+    const store = new IdbStore({ name: 'aged', key: 'id', schema: rules({ name: required() }) });
     const pages = [];
     for (const skip of [0, 10, 20]) pages.push(await store.load({ skip, take: 10 }));
-    store.close();
-    raw.close();
     return pages.map((p) => ({ rows: p.rows.length, total: p.total, dropped: p.dropped }));
-  }, freshDb());
+  });
 
   expect(r).toEqual([
     { rows: 10, total: 27, dropped: 3 },
@@ -233,9 +219,9 @@ test('rows the schema refuses never shorten a page', async ({ page }) => {
 test('a DataSource binds to an IdbStore exactly as it binds to any other', async ({ page }) => {
   // The whole reason the Store interface exists: a view moves from an array to
   // IndexedDB without touching a component.
-  const r = await page.evaluate(async (database) => {
+  const r = await page.evaluate(async () => {
     const { IdbStore, DataSource } = await import('/dist/index.js');
-    const store = new IdbStore({ name: 'bound', key: 'id', database, indexes: ['tier'] });
+    const store = new IdbStore({ name: 'bound', key: 'id', indexes: ['tier'] });
     await store.putAll(
       Array.from({ length: 30 }, (_, i) => ({
         id: i + 1,
@@ -256,9 +242,8 @@ test('a DataSource binds to an IdbStore exactly as it binds to any other', async
     await new Promise((resolve) => setTimeout(resolve, 50));
     const afterInsert = source.total;
 
-    store.close();
     return { firstPage, filtered, afterInsert };
-  }, freshDb());
+  });
 
   expect(r.firstPage).toEqual({ rows: 10, total: 30, pages: 3 });
   expect(r.filtered).toEqual({ rows: 10, total: 10 });
@@ -266,11 +251,11 @@ test('a DataSource binds to an IdbStore exactly as it binds to any other', async
 });
 
 test('maxRows keeps a local cache bounded, oldest out', async ({ page }) => {
-  const r = await page.evaluate(async (database) => {
+  const r = await page.evaluate(async () => {
     const { IdbStore } = await import('/dist/index.js');
     // An ASCENDING key, which is what makes "oldest" honest here — the doc says
     // to pair maxRows with one.
-    const store = new IdbStore({ name: 'capped', key: 'id', database, maxRows: 5 });
+    const store = new IdbStore({ name: 'capped', key: 'id', maxRows: 5 });
     await store.putAll(Array.from({ length: 12 }, (_, i) => ({ id: i + 1 })));
     const after = await store.load();
 
@@ -279,13 +264,12 @@ test('maxRows keeps a local cache bounded, oldest out', async ({ page }) => {
     await store.insert({ id: 99 });
     const afterInsert = await store.load();
 
-    store.close();
     return {
       kept: after.rows.map((row: Record<string, unknown>) => row['id']),
       afterInsert: afterInsert.rows.map((row: Record<string, unknown>) => row['id']),
       trimmed,
     };
-  }, freshDb());
+  });
 
   expect(r.kept).toEqual([8, 9, 10, 11, 12]);
   // A single insert holds the cap too, not just a bulk write.
@@ -298,7 +282,7 @@ test('syncViews keeps saved views in IndexedDB and pushes them onward', async ({
   // TRAP T-local-first-then-onward — the three tiers, and LOCAL WINNING on a
   // clash. This is the one that matters: a view edited here and not yet pushed
   // must not be replaced by the server's older copy.
-  const r = await page.evaluate(async (database) => {
+  const r = await page.evaluate(async () => {
     const { syncViews, saveViewAs } = await import('/dist/index.js');
 
     sessionStorage.clear();
@@ -321,7 +305,7 @@ test('syncViews keeps saved views in IndexedDB and pushes them onward', async ({
     // A LOCAL view, in Web Storage — the fast tier persistView restores from.
     saveViewAs('records', 'Mine', {}, {});
 
-    const sync = syncViews('records', { remote, interval: 20, database });
+    const sync = syncViews('records', { remote, interval: 20 });
     const restored = await sync.restore();
 
     sync.touch();
@@ -333,7 +317,7 @@ test('syncViews keeps saved views in IndexedDB and pushes them onward', async ({
     // IndexedDB tier must still answer.
     sessionStorage.clear();
     localStorage.clear();
-    const second = syncViews('records', { database });
+    const second = syncViews('records');
     const fromIdbOnly = await second.all();
     await second.stop();
 
@@ -344,7 +328,7 @@ test('syncViews keeps saved views in IndexedDB and pushes them onward', async ({
       pushed: pushes.length,
       fromIdbOnly: Object.keys(fromIdbOnly).sort(),
     };
-  }, freshDb());
+  });
 
   // Both tiers merged: the server's view AND this device's.
   expect(r.restored).toEqual(['mine', 'theirs']);
@@ -355,7 +339,7 @@ test('syncViews keeps saved views in IndexedDB and pushes them onward', async ({
 });
 
 test('a view deleted from Web Storage stays deleted: not merged back, not pushed, not in IndexedDB', async ({ page }) => {
-  const r = await page.evaluate(async (database) => {
+  const r = await page.evaluate(async () => {
     const { syncViews, saveViewAs, deleteSavedView } = await import('/dist/index.js');
     sessionStorage.clear();
     localStorage.clear();
@@ -363,7 +347,7 @@ test('a view deleted from Web Storage stays deleted: not merged back, not pushed
     const remote = { pull: () => Promise.resolve({}), push: (_p: string, v: Record<string, unknown>) => { pushes.push(v); return Promise.resolve(); } };
     saveViewAs('records', 'Keep', {}, {});
     saveViewAs('records', 'Gone', {}, {});
-    const sync = syncViews('records', { remote, interval: 20, database });
+    const sync = syncViews('records', { remote, interval: 20 });
     sync.touch();
     await sync.flush();
     deleteSavedView('records', 'gone');
@@ -372,18 +356,18 @@ test('a view deleted from Web Storage stays deleted: not merged back, not pushed
     const all = Object.keys(await sync.all()).sort();
     await sync.stop();
     localStorage.clear();
-    const second = syncViews('records', { database });
+    const second = syncViews('records');
     const fromIdbOnly = Object.keys(await second.all()).sort();
     await second.stop();
     return { all, pushed: Object.keys(pushes.at(-1) ?? {}).sort(), fromIdbOnly };
-  }, freshDb());
+  });
   expect(r).toEqual({ all: ['keep'], pushed: ['keep'], fromIdbOnly: ['keep'] });
 });
 
 /** ONE contract, every store: a changed key MOVES the row, and a key another
  *  row holds is refused. TRAP T-a-changed-key-moves-the-row */
 test('every store: a changed key moves the row; a key another row holds is refused', async ({ page }) => {
-  const r = await page.evaluate(async (database) => {
+  const r = await page.evaluate(async () => {
     const { IdbStore, ArrayStore, LocalStore, JsonStore } = await import('/dist/index.js');
     const run = async (store: {
       insert(r: unknown): Promise<unknown>; update(k: unknown, v: unknown): Promise<unknown>;
@@ -397,7 +381,7 @@ test('every store: a changed key moves the row; a key another row holds is refus
       const rows = (await store.load()).rows.map((row) => row.email).sort();
       return { rows, old: !!(await store.byKey('ada@x')), refused };
     };
-    const idb = new IdbStore({ name: 'people', key: 'email', database });
+    const idb = new IdbStore({ name: 'people', key: 'email' });
     localStorage.removeItem('contract-people');
     const out = {
       idb: await run(idb as never),
@@ -405,10 +389,9 @@ test('every store: a changed key moves the row; a key another row holds is refus
       local: await run(new LocalStore({ name: 'contract-people', key: 'email' }) as never),
       json: await run(new JsonStore({ url: 'data:application/json,[]', key: 'email' }) as never),
     };
-    idb.close();
     localStorage.removeItem('contract-people');
     return out;
-  }, freshDb());
+  });
   // RestStore is not here: its server answers a changed key.
   const want = { rows: ['ada@y', 'bo@x'], old: false, refused: true };
   expect(r).toEqual({ idb: want, array: want, local: want, json: want });

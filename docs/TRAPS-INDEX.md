@@ -215,7 +215,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-up-is-open-down-is-closed](traps/data-layer.md#t-up-is-open-down-is-closed) — data, data-source, query-context
 - [T-view-state-lives-in-one-object](traps/data-layer.md#t-view-state-lives-in-one-object) — data-source
 
-## Storage, saved Views and the URL (59)
+## Storage, saved Views and the URL (60)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — view-files
 - [T-a-changed-key-moves-the-row](traps/data-layer.md#t-a-changed-key-moves-the-row) — idb-store
@@ -243,11 +243,11 @@ files. An entry that only tests cite is under Tests only.
 - [T-derived-id-makes-resave-an-update](traps/storage.md#t-derived-id-makes-resave-an-update) — persist-view, saved-filters, web-storage
 - [T-every-tab-hears-a-change](traps/data-layer.md#t-every-tab-hears-a-change) — serve-data
 - [T-group-and-sort-are-component-scope](traps/data-layer.md#t-group-and-sort-are-component-scope) — persist-view
-- [T-idb-bulk-is-one-transaction](traps/storage.md#t-idb-bulk-is-one-transaction) — idb-store
+- [T-idb-bulk-is-one-transaction](traps/storage.md#t-idb-bulk-is-one-transaction) — database, idb-store
 - [T-idb-clear-is-not-a-reset](traps/storage.md#t-idb-clear-is-not-a-reset) — idb-store
 - [T-idb-index-narrows-it-never-answers-it](traps/storage.md#t-idb-index-narrows-it-never-answers-it) — idb-store
-- [T-idb-is-the-only-real-local-store](traps/data-layer.md#t-idb-is-the-only-real-local-store) — idb-store
-- [T-idb-open-is-a-handshake-not-a-call](traps/storage.md#t-idb-open-is-a-handshake-not-a-call) — idb-store
+- [T-idb-is-the-only-real-local-store](traps/data-layer.md#t-idb-is-the-only-real-local-store) — database, idb-store
+- [T-idb-open-is-a-handshake-not-a-call](traps/storage.md#t-idb-open-is-a-handshake-not-a-call) — database
 - [T-library-re-read-on-every-pick](traps/storage.md#t-library-re-read-on-every-pick) — persist-view
 - [T-local-first-then-onward](traps/storage.md#t-local-first-then-onward) — view-sync
 - [T-local-records-seed-themselves](traps/storage.md#t-local-records-seed-themselves) — idb-store
@@ -255,6 +255,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-news-is-pushed-by-the-server](traps/data-layer.md#t-news-is-pushed-by-the-server) — follow-updates
 - [T-numeric-keys-compare-as-strings](traps/data-layer.md#t-numeric-keys-compare-as-strings) — idb-store
 - [T-on-view-picked-replaces-hand-wiring](traps/storage.md#t-on-view-picked-replaces-hand-wiring) — persist-view
+- [T-one-browser-database](traps/storage.md#t-one-browser-database) — database, idb-store
 - [T-one-class-to-catch](traps/data-layer.md#t-one-class-to-catch) — idb-store
 - [T-one-feed-for-every-tab](traps/data-layer.md#t-one-feed-for-every-tab) — one-tab, share-feed
 - [T-one-snapshot-not-a-key-per-concern](traps/storage.md#t-one-snapshot-not-a-key-per-concern) — persist-view
@@ -269,7 +270,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-session-persist-defaults-shared](traps/storage.md#t-session-persist-defaults-shared) — session
 - [T-session-store-is-the-third-tier](traps/storage.md#t-session-store-is-the-third-tier) — session
 - [T-signal-not-a-teardown-list](traps/data-layer.md#t-signal-not-a-teardown-list) — persist-view
-- [T-storage-access-throws](traps/data-layer.md#t-storage-access-throws) — idb-store, persist-view, saved-filters, session, web-storage
+- [T-storage-access-throws](traps/data-layer.md#t-storage-access-throws) — database, persist-view, saved-filters, session, web-storage
 - [T-sync-pushes-a-snapshot-not-a-diff](traps/storage.md#t-sync-pushes-a-snapshot-not-a-diff) — view-sync
 - [T-the-router-owns-the-url](traps/storage.md#t-the-router-owns-the-url) — route
 - [T-the-worker-answers-the-data](traps/storage.md#t-the-worker-answers-the-data) — serve-data, worker, worker-store

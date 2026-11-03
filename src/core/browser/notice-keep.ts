@@ -1,6 +1,6 @@
 /**
- * notice-keep.ts — the notices a worker keeps until a page has seen them, in
- * IndexedDB, so one said with every tab shut still reaches the reader (D9).
+ * notice-keep.ts — the notices a worker keeps until a page has seen them, in the
+ * one Sherpa database, so one said with every tab shut still reaches the reader (D9).
  * Headless-safe: with no IndexedDB they are kept in memory.
  * Plan 652 S7b · TRAP T-a-newer-write-wins
  *
@@ -8,24 +8,21 @@
  * - NoticeKeep — Where a worker's kept notices wait to be seen.
  * - keepNotices — The kept notices on the device, or in memory where it has no IndexedDB.
  */
-import { IdbStore } from './idb-store.js';
+import { clearStores, erase, hasDatabase, readAll, write, type NoticeRecord } from './database.js';
 import type { UpdateNotice } from '../data/notices.js';
-import type { Row } from '../data/store.js';
 
 /** Where a worker's kept notices wait to be seen. */
 export interface NoticeKeep {
   read(): Promise<UpdateNotice[]>;
-  put(notice: UpdateNotice & { id: string }): Promise<void>;
+  put(notice: NoticeRecord): Promise<void>;
   remove(id: string): Promise<void>;
   /** Forget every one: a sign-out. */
   clear(): Promise<void>;
 }
 
-let notices: IdbStore | null = null;
-
 /** The kept notices on the device, or in memory where it has no IndexedDB. */
 export function keepNotices(): NoticeKeep {
-  if (!IdbStore.available) {
+  if (!hasDatabase()) {
     const kept = new Map<string, UpdateNotice>();
     return {
       read: async () => [...kept.values()],
@@ -34,12 +31,11 @@ export function keepNotices(): NoticeKeep {
       clear: async () => kept.clear(),
     };
   }
-  const store = (notices ??= new IdbStore({ name: 'notices', database: 'sherpa-notices', key: 'id' }));
   return {
-    read: async () => (await store.load()).rows as unknown as UpdateNotice[],
-    put: async (notice) => void await store.putAll([notice as unknown as Row]),
-    // Seen in another tab already: nothing to forget.
-    remove: (id) => store.remove(id).catch(() => undefined),
-    clear: () => store.clear(),
+    read: () => readAll('notices'),
+    put: (notice) => write('notices', [notice]),
+    // One seen in another tab already is no error.
+    remove: (id) => erase('notices', id),
+    clear: () => clearStores(['notices']),
   };
 }

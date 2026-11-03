@@ -17,11 +17,10 @@
  * - ViewSync — What `syncViews` hands back.
  * - syncViews — Keep one page's saved views in three tiers.
  */
-import { IdbStore } from './idb-store.js';
+import { hasDatabase, readAll, transact, within, type ViewRecord } from './database.js';
 import {
   loadSavedViews,
   type PersistOptions,
-  type SavedView,
   type SavedViewStore,
 } from './persist-view.js';
 
@@ -40,8 +39,6 @@ export interface SyncOptions extends PersistOptions {
   remote?: ViewRemote;
   /** Debounce the push, in ms. Default 30_000. TRAP T-sync-pushes-a-snapshot-not-a-diff */
   interval?: number;
-  /** The IndexedDB database name. Defaults to `sherpa`. */
-  database?: string;
   /** Stop syncing when this aborts — the same token `bindSource()` and `persistView` take. */
   signal?: AbortSignal;
   /** A failed push is REPORTED, never thrown. TRAP T-local-first-then-onward */
@@ -69,15 +66,8 @@ export function syncViews(page: string, options: SyncOptions = {}): ViewSync {
   const interval = options.interval ?? 30_000;
   const report = options.onError ?? ((): void => { /* reported nowhere by default */ });
 
-  // The durable tier. One ROW per view, so a page reads only the view it needs.
-  const idb = IdbStore.available
-    ? new IdbStore({
-      name: 'sherpa-views',
-      key: 'id',
-      indexes: ['page'],
-      ...(options.database ? { database: options.database } : {}),
-    })
-    : null;
+  // The durable tier: one record per view, keyed `[page, id]`, so a page reads only its own.
+  const durable = hasDatabase();
 
   let timer: ReturnType<typeof setTimeout> | null = null;
   let pending = false;
@@ -90,16 +80,10 @@ export function syncViews(page: string, options: SyncOptions = {}): ViewSync {
 
   /** IndexedDB's rows for this page, as a SavedViewStore. */
   const fromIdb = async (): Promise<SavedViewStore> => {
-    if (!idb) return {};
+    if (!durable) return {};
     try {
-      // The `page` index only narrows the read — T-idb-index-narrows-it-never-answers-it.
-      const result = await idb.load({ filter: ['page', 'eq', page] });
       const views: SavedViewStore = {};
-      for (const row of result.rows) {
-        const id = String(row['id'] ?? '').replace(`${page}:`, '');
-        const view = row['view'] as SavedView | undefined;
-        if (id && view) views[id] = view;
-      }
+      for (const { id, view } of await readAll('views', within(page))) views[id] = view;
       return views;
     } catch (error) {
       // Storage blocked, or a version clash with another tab. Web Storage still answers.
@@ -110,13 +94,14 @@ export function syncViews(page: string, options: SyncOptions = {}): ViewSync {
 
   /** Write a set into IndexedDB, and remove the views deleted since the last look. */
   const toIdb = async (views: SavedViewStore, deleted: readonly string[] = []): Promise<void> => {
-    if (!idb) return;
+    if (!durable) return;
     try {
-      // Keyed `<page>:<id>`, so two pages cannot collide on an id like `default`.
-      for (const id of deleted) await idb.remove(`${page}:${id}`);
-      await idb.putAll(
-        Object.entries(views).map(([id, view]) => ({ id: `${page}:${id}`, page, view })),
-      );
+      // One transaction: a push never sees the deletes without the writes.
+      await transact('views', 'readwrite', (tx) => {
+        const store = tx.objectStore('views');
+        for (const id of deleted) store.delete([page, id]);
+        for (const [id, view] of Object.entries(views)) store.put({ page, id, view } satisfies ViewRecord);
+      });
     } catch (error) {
       report(error, 'push');
     }
@@ -185,7 +170,6 @@ export function syncViews(page: string, options: SyncOptions = {}): ViewSync {
       // Skipped on abort: the page is going, so the request dies mid-flight anyway.
       if (pending && !options.signal?.aborted) await push();
       stopped = true;
-      idb?.close();
     },
   };
 

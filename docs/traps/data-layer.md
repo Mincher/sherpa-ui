@@ -1025,7 +1025,7 @@ guard rejected did the same; a value the guard accepted was kept.
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/core/browser/saved-filters.ts`
 - Site: `src/core/browser/session.ts`
-- Site: `src/core/browser/idb-store.ts`
+- Site: `src/core/browser/database.ts`
 - Site: `src/core/data/stores.ts`
 - Site: `test/e2e/reforged-web-storage.spec.ts`
 
@@ -1446,8 +1446,7 @@ store) and W2 A (on a reload ONLINE, draw the kept rows at once and check behind
 `keepCache(store, { name, version?, maxAge?, maxRows? })` is the opt-in, in the
 app's code where it makes the store — not a page definition (two pages could
 disagree) and not a provider option (it would work only under one). One record
-per store in its OWN database (`sherpa-cache`, object store `sets`), so an app's
-`version` never moves it. `clearKept()` empties every one — and each set held in
+per store, in the one Sherpa database (`sets`, `T-one-browser-database`). `clearKept()` empties every one — and each set held in
 memory — at sign-out, and stops each keep: nothing more is written under the old
 name until `keepCache` is called again, with the new sign-in's name. The `name`
 must carry the user or tenant: the rows outlive the session.
@@ -2612,8 +2611,9 @@ record:
   reported success would let an app write a customer into a void and call it
   saved
 
-So `#db()` rejects with `IndexedDB is unavailable`, and `IdbStore.available` is
-the door a caller checks BEFORE building one. In Node that is false and the
+So the one database's open (`openDatabase`) rejects with `IndexedDB is
+unavailable`, and `IdbStore.available` is the door a caller checks BEFORE
+building one. In Node that is false and the
 headless test proves every method rejects rather than resolving to a lie.
 
 A failed open is **not cached** — one rejection in a private window must not
@@ -2624,6 +2624,7 @@ it is never the only copy, so no IndexedDB is a miss — memory only, said once 
 never an error, and never a fallback to Web Storage.
 
 - Site: `src/core/browser/idb-store.ts`
+- Site: `src/core/browser/database.ts`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `src/data.ts`
@@ -4615,8 +4616,8 @@ device and lays them over its first set.
 the set is read again and shown at once, so no row shows a write that never landed.
 D3's newer-write rule, and how the reader is told, are `T-a-newer-write-wins`.
 
-**The kept entries share one object store** (`sherpa-outbox`, `entries`), each in
-the slot `<name>|<id>`: two outboxes can make one id in the same ms.
+**The kept entries share one object store** (`outbox`, in the one Sherpa database),
+each keyed `[outbox, id]`: two outboxes can make one id in the same ms.
 
 - Site: `src/core/data/outbox.ts`
 - Site: `src/core/browser/outbox-keep.ts`
@@ -4651,7 +4652,7 @@ that time (`since`, kept on the device, as a send may stop midway).
 
 **The reader is told, even with every tab shut** (Will, D9: A). `HeldStore` says
 `lost` (`LostWrite`: its id, row, time and why). `serveData` KEEPS it as a notice,
-`{ kind: 'lost', id, store, key, why }`, in IndexedDB (`sherpa-notices`), says it
+`{ kind: 'lost', id, store, key, why }`, in IndexedDB (`notices`, in the one Sherpa database), says it
 on `NOTICE_CHANNEL`, and says every kept one again when a page asks. A page asks
 as `onUpdate` starts, by `postMessage` to its worker — a message starts a stopped
 worker, and a channel cannot. `noticeSeen(id)` tells the worker to forget one.

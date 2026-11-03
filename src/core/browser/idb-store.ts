@@ -1,14 +1,13 @@
 /**
  * idb-store.ts — records in IndexedDB, the one local store that survives a reload.
- *
- * Apart from stores.ts: it alone has a migration, a connection and a version.
+ * Every IdbStore keeps its rows in the one Sherpa database, under its name.
  *
  * TRAP T-idb-is-the-only-real-local-store
- * TRAP T-idb-open-is-a-handshake-not-a-call
+ * TRAP T-one-browser-database
  * TRAP T-idb-index-narrows-it-never-answers-it
  *
  * Map:
- * - IdbStoreOptions — which database and store, its indexes, and the version that builds them
+ * - IdbStoreOptions — the store's name in the one database, and the fields it indexes
  * - LocalRecordsOptions — an IdbStore's options, and the rows a first run starts with
  * - localRecords — Records kept in this browser: IndexedDB where it has it, memory where not, seeded once per seed version.
  * - IdbStore — Records in IndexedDB — the real local store.
@@ -27,19 +26,18 @@ import { BaseStore, type StoreOptions } from '../data/base-store.js';
 import { ArrayStore } from '../data/stores.js';
 import { report } from '../data/report.js';
 import { changedFields } from '../data/store-history.js';
-import { readText, removeKey, writeText } from './web-storage.js';
+import { hasDatabase, openDatabase, readOne, transact, within, type RowRecord, type SeedRecord } from './database.js';
+
+/** The door `localRecords` seeds through; no other module holds it. */
+const SEED = Symbol('seed');
 
 /* ── Options ───────────────────────────────────────────────────────────── */
 
 export interface IdbStoreOptions extends StoreOptions {
-  /** The object store's name, and the database's unless `database` says otherwise. */
+  /** The store's name: its rows' place in the one database. */
   name: string;
-  /** Defaults to `sherpa`, so several stores share one database. */
-  database?: string;
   /** Fields to INDEX — a pre-filter, never the answer. */
   indexes?: readonly string[];
-  /** Bump when `indexes` changes: indexes are built only in an upgrade. */
-  version?: number;
 }
 
 /** An IdbStore's options, and the rows a first run starts with. */
@@ -58,23 +56,13 @@ export interface LocalRecordsOptions extends IdbStoreOptions {
  * before a component draws. TRAP T-local-records-seed-themselves
  */
 export function localRecords(options: LocalRecordsOptions): { store: IdbStore | ArrayStore; ready: Promise<void> } {
-  const { seed = [], seedVersion = 1, name, database, indexes: _indexes, version: _version, ...kept } = options;
+  const { seed = [], seedVersion = 1, name, indexes: _indexes, ...kept } = options;
   if (!IdbStore.available) return { store: new ArrayStore([...seed], kept), ready: Promise.resolve() };
   const store = new IdbStore(options);
-  const mark = `sherpa:seed:${database ?? 'sherpa'}/${name}`;
-  // Storage that cannot be read cannot say a seed is old, so it never re-seeds on every load.
-  writeText('local', `${mark}:probe`, '1');
-  const readable = readText('local', `${mark}:probe`) === '1';
-  removeKey('local', `${mark}:probe`);
   const ready = (async () => {
     if (!seed.length) return;
     try {
-      const stale = readable && readText('local', mark) !== String(seedVersion);
-      if (stale || await store.totalCount() === 0) {
-        // ONE transaction and one `change`. TRAP T-idb-bulk-is-one-transaction
-        await store.putAll(seed);
-        writeText('local', mark, String(seedVersion));
-      }
+      await store[SEED](seed, seedVersion);
     } catch (error) {
       report({
         code: 'seed-failed',
@@ -92,98 +80,28 @@ export function localRecords(options: LocalRecordsOptions): { store: IdbStore | 
 export class IdbStore extends BaseStore {
   /** A whole read returns its rows by key. */
   readonly rowOrder = 'key' as const;
-  /** Which database and store, and its version. */
-  readonly #options: IdbStoreOptions;
+  /** Its rows' place in the one database. */
+  readonly #name: string;
   /** The row cap, oldest out first; 0 for none. */
   readonly #maxRows: number;
-  /** The fields IndexedDB indexes. */
+  /** The fields its rows are sought by. */
   readonly #indexes: readonly string[];
-
-  /** A PROMISE, so concurrent loads share ONE `open()` and never race upgrades. */
-  #opening: Promise<IDBDatabase> | null = null;
 
   constructor(options: IdbStoreOptions) {
     super(options);
-    this.#options = options;
+    this.#name = options.name;
     this.#maxRows = options.maxRows && options.maxRows > 0 ? options.maxRows : 0;
     this.#indexes = options.indexes ?? [];
   }
 
   /** Whether this browser has IndexedDB at all. */
   static get available(): boolean {
-    try {
-      return typeof indexedDB !== 'undefined' && indexedDB !== null;
-    } catch {
-      // TRAP T-storage-access-throws — reading the global itself can throw.
-      return false;
-    }
+    return hasDatabase();
   }
 
-  /* ── Connection ──────────────────────────────────────────────────── */
-
-  /** The open database. REJECTS rather than reading as empty — empty means saved-into-nothing. */
-  #db(): Promise<IDBDatabase> {
-    if (this.#opening) return this.#opening;
-
-    this.#opening = new Promise<IDBDatabase>((resolve, reject) => {
-      if (!IdbStore.available) {
-        reject(new Error('IdbStore: IndexedDB is unavailable'));
-        return;
-      }
-
-      const dbName = this.#options.database ?? 'sherpa';
-      const version = this.#options.version ?? 1;
-      let request: IDBOpenDBRequest;
-      try {
-        request = indexedDB.open(dbName, version);
-      } catch (error) {
-        // A private window, or site data blocked — TRAP T-storage-access-throws.
-        reject(error instanceof Error ? error : new Error(String(error)));
-        return;
-      }
-
-      request.onupgradeneeded = () => {
-        const db = request.result;
-        const store = db.objectStoreNames.contains(this.#options.name)
-          ? request.transaction!.objectStore(this.#options.name)
-          : db.createObjectStore(this.#options.name, { keyPath: this.key });
-
-        // ONLY here — a new index needs `version` bumped.
-        for (const field of this.#indexes) {
-          if (!store.indexNames.contains(field)) store.createIndex(field, field);
-        }
-      };
-
-      request.onsuccess = () => {
-        const db = request.result;
-        // Another tab is blocked on a higher version; closing is the only answer.
-        db.onversionchange = () => {
-          db.close();
-          this.#opening = null;
-        };
-        resolve(db);
-      };
-
-      request.onerror = () => reject(request.error ?? new Error('IdbStore: open failed'));
-      request.onblocked = () => reject(new Error('IdbStore: open blocked by another tab'));
-    });
-
-    // Never cache a FAILED open: storage may be granted later in the session.
-    this.#opening.catch(() => { this.#opening = null; });
-    return this.#opening;
-  }
-
-  /** Close the connection. The next call re-opens. */
-  close(): void {
-    const opening = this.#opening;
-    this.#opening = null;
-    void opening?.then((db) => db.close()).catch(() => { /* never opened */ });
-  }
-
-  /** Delete every record; the store and its indexes stay. TRAP T-idb-clear-is-not-a-reset */
+  /** Delete every row of this store; the others stay. TRAP T-idb-clear-is-not-a-reset */
   async clear(): Promise<void> {
-    const db = await this.#db();
-    await promised(this.#tx(db, 'readwrite').clear());
+    await transact('rows', 'readwrite', (tx) => { tx.objectStore('rows').delete(this.#all()); });
     this.announce({ type: 'remove' });
   }
 
@@ -196,19 +114,18 @@ export class IdbStore extends BaseStore {
   }
 
   async byKey(key: unknown): Promise<Row | undefined> {
-    const db = await this.#db();
+    await openDatabase();
     // A wrong-TYPE key throws rather than missing.
-    let row: Row | undefined;
+    let record: RowRecord | undefined;
     try {
-      row = await promised<Row | undefined>(this.#tx(db, 'readonly').get(key as IDBValidKey));
+      record = await readOne('rows', [this.#name, key as IDBValidKey]);
     } catch {
       return undefined;
     }
-    if (row) return { ...row };
+    if (record) return record.row;
     // TRAP T-numeric-keys-compare-as-strings — fall back to string comparison.
     const all = await this.#readRows();
-    const found = all.find((r) => sameKey(readField(r, this.key), key));
-    return found ? { ...found } : undefined;
+    return all.find((r) => sameKey(readField(r, this.key), key));
   }
 
   /* ── Writes ──────────────────────────────────────────────────────── */
@@ -216,8 +133,7 @@ export class IdbStore extends BaseStore {
   async insert(values: Row): Promise<Row> {
     // CHECKED FIRST, so a refused row never reaches the database.
     const row = { ...(await this.check(values)) };
-    const db = await this.#db();
-    await promised(this.#tx(db, 'readwrite').add(row));
+    await transact('rows', 'readwrite', (tx) => tx.objectStore('rows').add(this.#record(row)));
     const trimmed = await this.#trim();
     this.announce({ type: 'insert', key: readField(row, this.key), row: { ...row }, ...(trimmed.length ? { trimmed } : {}) });
     return { ...row };
@@ -228,18 +144,16 @@ export class IdbStore extends BaseStore {
     if (!existing) throw new Error(`IdbStore: no row with ${this.key} ${String(key)}`);
     // MERGE, not replace, and the MERGED row is what gets checked.
     const row = await this.check({ ...existing, ...values });
-    const db = await this.#db();
     const was = readField(existing, this.key);
-    if (!sameKey(readField(row, this.key), was)) {
+    await transact('rows', 'readwrite', (tx) => {
+      const rows = tx.objectStore('rows');
+      if (sameKey(readField(row, this.key), was)) return rows.put(this.#record(row));
       /* A changed KEY moves the row, as ArrayStore's does: the old one goes in
          the same transaction, and a key another row holds is refused — the
          delete rolls back with it. TRAP T-a-changed-key-moves-the-row */
-      const store = this.#tx(db, 'readwrite');
-      store.delete(was as IDBValidKey);
-      await promised(store.add({ ...row }));
-    } else {
-      await promised(this.#tx(db, 'readwrite').put({ ...row }));
-    }
+      rows.delete([this.#name, was as IDBValidKey]);
+      return rows.add(this.#record(row));
+    });
     this.announce({ type: 'update', key, row: { ...row }, fields: changedFields(existing, row, values) });
     return { ...row };
   }
@@ -247,9 +161,8 @@ export class IdbStore extends BaseStore {
   async remove(key: unknown): Promise<void> {
     const existing = await this.byKey(key);
     if (!existing) throw new Error(`IdbStore: no row with ${this.key} ${String(key)}`);
-    const db = await this.#db();
     // The row's OWN key, not the caller's — byKey accepts '7' for 7, delete would not.
-    await promised(this.#tx(db, 'readwrite').delete(readField(existing, this.key) as IDBValidKey));
+    await transact('rows', 'readwrite', (tx) => { tx.objectStore('rows').delete([this.#name, readField(existing, this.key) as IDBValidKey]); });
     this.announce({ type: 'remove', key });
   }
 
@@ -264,49 +177,78 @@ export class IdbStore extends BaseStore {
     // CHECKED BEFORE THE TRANSACTION OPENS: a transaction auto-commits on any
     // await that is not one of its own requests.
     for (const row of rows) checked.push({ ...(await this.check(row)) });
-
-    const db = await this.#db();
-    const tx = db.transaction(this.#options.name, 'readwrite');
-    const store = tx.objectStore(this.#options.name);
-    if (options.replace) store.clear();
-    for (const row of checked) store.put(row);
-
-    await new Promise<void>((resolve, reject) => {
-      tx.oncomplete = () => resolve();
-      // The failed REQUEST's error: the transaction's is not set until it aborts.
-      tx.onerror = (event) => reject((event.target as IDBRequest | null)?.error ?? tx.error ?? new Error('IdbStore: bulk write failed'));
-      tx.onabort = () => reject(tx.error ?? new Error('IdbStore: bulk write aborted'));
+    await transact('rows', 'readwrite', (tx) => {
+      const store = tx.objectStore('rows');
+      if (options.replace) store.delete(this.#all());
+      for (const row of checked) store.put(this.#record(row));
     });
-
     await this.#trim();
     this.announce({ type: 'update' });
     return checked.length;
   }
 
+  /** Seed where the mark beside the rows is another version, or the store is
+   *  empty: rows and mark in ONE transaction that reads the mark first, so a page
+   *  and its worker seed once between them. Checked before it opens: the first to
+   *  ask, the page, seeds. TRAP T-local-records-seed-themselves */
+  async [SEED](seed: readonly Row[], version: number): Promise<void> {
+    const checked: Row[] = [];
+    for (const row of seed) checked.push({ ...(await this.check(row)) });
+    const wrote = await transact<boolean>(['rows', 'seeds'], 'readwrite', (tx) => {
+      const rows = tx.objectStore('rows');
+      const marks = tx.objectStore('seeds');
+      let put = false;
+      const mark = marks.get(this.#name);
+      const counted = rows.count(this.#all());
+      counted.onsuccess = () => {
+        if ((mark.result as SeedRecord | undefined)?.version === version && counted.result > 0) return;
+        for (const row of checked) rows.put(this.#record(row));
+        marks.put({ store: this.#name, version } satisfies SeedRecord);
+        put = true;
+      };
+      return () => put;
+    });
+    if (!wrote) return;
+    await this.#trim();
+    this.announce({ type: 'update' });
+  }
+
   /* ── Internals ───────────────────────────────────────────────────── */
 
-  /** This store's object store, inside a fresh transaction. */
-  #tx(db: IDBDatabase, mode: IDBTransactionMode): IDBObjectStore {
-    return db.transaction(this.#options.name, mode).objectStore(this.#options.name);
+  /** Every key of this store's rows. */
+  #all(): IDBKeyRange {
+    return within(this.#name);
+  }
+
+  /** A row as the database keeps it: under this store, by its key, sought by its indexed fields. */
+  #record(row: Row): RowRecord {
+    const seek: [string, string, IDBValidKey][] = [];
+    for (const field of this.#indexes) {
+      const value = readField(row, field);
+      // What IndexedDB can key: a number, a string, a real date.
+      if ((typeof value === 'number' && !Number.isNaN(value)) || typeof value === 'string'
+        || (value instanceof Date && !Number.isNaN(value.getTime()))) seek.push([this.#name, field, value]);
+    }
+    return { store: this.#name, key: readField(row, this.key) as IDBValidKey, row, ...(seek.length ? { seek } : {}) };
   }
 
   /** Rows a filter could match. What no index narrows reads whole — slower, not wrong. */
   async #readRows(filter?: Filter): Promise<Row[]> {
-    const db = await this.#db();
-    const range = this.#rangeFor(filter);
-    if (!range) return promised<Row[]>(this.#tx(db, 'readonly').getAll());
-
-    const index = this.#tx(db, 'readonly').index(range.field);
-    return promised<Row[]>(index.getAll(range.range));
+    const records = await transact<RowRecord[]>('rows', 'readonly', (tx) => {
+      const rows = tx.objectStore('rows');
+      const range = this.#rangeFor(filter);
+      return range ? rows.index('seek').getAll(range) : rows.getAll(this.#all());
+    });
+    return records.map((record) => record.row);
   }
 
   /**
-   * A key range for a filter, when one exists. A WRONG range would drop
-   * matching rows, so this refuses far more than it accepts.
+   * A range of the `seek` index for a filter, when one exists. A WRONG range
+   * would drop matching rows, so this refuses far more than it accepts.
    *
    * TRAP T-idb-index-narrows-it-never-answers-it
    */
-  #rangeFor(filter?: Filter): { field: string; range: IDBKeyRange } | null {
+  #rangeFor(filter?: Filter): IDBKeyRange | null {
     if (!filter) return null;
 
     // AND narrows by any ONE clause. OR cannot narrow: the second arm's rows
@@ -325,36 +267,35 @@ export class IdbStore extends BaseStore {
     if (value == null) return null;
 
     /* NO RANGE FOR A STRING. An IndexedDB index is byte-exact; `applyOptions`
-       lower-cases both sides. `IDBKeyRange.only('gold')` therefore skipped
-       every row holding 'Gold' — the seek ANSWERED the query instead of
-       narrowing it, and a chip picking one value returned nothing while two
-       values, which build an `in` and take no range, returned 27.
+       lower-cases both sides, so a seek for 'gold' would skip every 'Gold'.
        TRAP T-idb-index-narrows-it-never-answers-it */
     if (typeof value === 'string') return null;
-    if (Array.isArray(value) && value.some((v) => typeof v === 'string')) return null;
+    // Only `between` takes a pair; an indexed value is never an array.
+    if (Array.isArray(value) && (op !== 'between' || value.some((v) => typeof v === 'string'))) return null;
 
+    // `[store, field]` sorts before each of its values, `[store, field, []]` after.
+    const at = (v: unknown): IDBValidKey => [this.#name, field, v as IDBValidKey];
+    const first = [this.#name, field];
+    const last = [this.#name, field, []];
     try {
       switch (op) {
-        case 'eq': return { field, range: IDBKeyRange.only(value as IDBValidKey) };
-        case 'gt': return { field, range: IDBKeyRange.lowerBound(value as IDBValidKey, true) };
-        case 'gte': return { field, range: IDBKeyRange.lowerBound(value as IDBValidKey) };
-        case 'lt': return { field, range: IDBKeyRange.upperBound(value as IDBValidKey, true) };
-        case 'lte': return { field, range: IDBKeyRange.upperBound(value as IDBValidKey) };
+        case 'eq': return IDBKeyRange.only(at(value));
+        case 'gt': return IDBKeyRange.bound(at(value), last, true, true);
+        case 'gte': return IDBKeyRange.bound(at(value), last, false, true);
+        case 'lt': return IDBKeyRange.bound(first, at(value), true, true);
+        case 'lte': return IDBKeyRange.bound(first, at(value), true, false);
         case 'between': {
           const pair = value as unknown[];
           if (!Array.isArray(pair) || pair.length < 2) return null;
           if (pair[0] == null || pair[1] == null) return null;
-          return {
-            field,
-            range: IDBKeyRange.bound(pair[0] as IDBValidKey, pair[1] as IDBValidKey),
-          };
+          return IDBKeyRange.bound(at(pair[0]), at(pair[1]));
         }
         // `startswith` and `in` take no range: the first needs a prefix scan
         // the collation cannot give, the second needs several.
         default: return null;
       }
     } catch {
-      // Not a valid key. Not a narrowing; read everything.
+      // Not a valid key, or a range upside down. Not a narrowing; read everything.
       return null;
     }
   }
@@ -364,34 +305,22 @@ export class IdbStore extends BaseStore {
   async #trim(): Promise<unknown[]> {
     const trimmed: unknown[] = [];
     if (!this.#maxRows) return trimmed;
-    const db = await this.#db();
-    const count = await promised<number>(this.#tx(db, 'readonly').count());
-    if (count <= this.#maxRows) return trimmed;
-
-    const excess = count - this.#maxRows;
-    const store = this.#tx(db, 'readwrite');
-    await new Promise<void>((resolve, reject) => {
-      const request = store.openCursor();
-      request.onsuccess = () => {
-        const cursor = request.result;
-        if (!cursor || trimmed.length >= excess) { resolve(); return; }
-        trimmed.push(cursor.primaryKey);
-        cursor.delete();
-        cursor.continue();
+    await transact('rows', 'readwrite', (tx) => {
+      const rows = tx.objectStore('rows');
+      const counted = rows.count(this.#all());
+      counted.onsuccess = () => {
+        let excess = counted.result - this.#maxRows;
+        if (excess <= 0) return;
+        const cursor = rows.openCursor(this.#all());
+        cursor.onsuccess = () => {
+          const at = cursor.result;
+          if (!at || excess-- <= 0) return;
+          trimmed.push((at.primaryKey as IDBValidKey[])[1]);
+          at.delete();
+          at.continue();
+        };
       };
-      request.onerror = () => reject(request.error ?? new Error('IdbStore: trim failed'));
     });
     return trimmed;
   }
-
-}
-
-/* ── Helpers ───────────────────────────────────────────────────────────── */
-
-/** One IDBRequest as a promise. */
-function promised<T>(request: IDBRequest): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    request.onsuccess = () => resolve(request.result as T);
-    request.onerror = () => reject(request.error ?? new Error('IdbStore: request failed'));
-  });
 }
