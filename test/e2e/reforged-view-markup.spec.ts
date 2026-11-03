@@ -187,10 +187,10 @@ test('a saved view applies its markup, then configures it by id', async ({ page 
   });
 
   expect(r.built).toBe(true);
-  /* Its `ui` reached an element the MARKUP created, through its own API.
-     The value reads back as a STRING because a column filter is typed input —
-     the grid holds what a person would have typed, not the JSON literal. */
-  expect(r.clause).toEqual(['storage', 'gt', '70']);
+  /* Its `ui` reached an element the MARKUP created, through its own API. The
+     value reads back as the host set it: a condition holds a typed value
+     (695 S1), as a read-back answers what a host set. */
+  expect(r.clause).toEqual(['storage', 'gt', 70]);
 });
 
 /** A page OPENED on a View with content of its own draws it: no pick will.
