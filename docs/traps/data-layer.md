@@ -229,6 +229,7 @@ Nothing on Records carries over yet — the default is Will's.
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/query-edits.ts`
 - Site: `src/core/data/query-context.ts`
+- Site: `src/core/data/query-members.ts`
 
 ### T-send-to-view-filters
 
@@ -452,6 +453,7 @@ may still add it.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/data/query-context.ts`
 - Site: `src/core/data/source-walk.ts`
+- Site: `src/core/data/query-declarations.ts`
 
 ### T-one-walk-counts-and-limits-in-order
 
@@ -1965,7 +1967,7 @@ binding went from 194 lines to 152.
 - Site: `test/unit/bind-selection.test.mjs`
 - Site: `test/unit/field-selection.test.mjs`
 - Site: `src/core/ui/filter-menu.ts`
-- Site: `src/core/data/query-context.ts`
+- Site: `src/core/data/query-members.ts`
 
 ### T-an-operator-decides-pick-or-type
 
@@ -4300,6 +4302,7 @@ to right-align or sort numerically must read the row, not the state.
 - Site: `test/unit/value-types.test.mjs`
 - Site: `src/core/data/field-catalogue.ts`
 - Site: `src/core/data/query-context.ts`
+- Site: `src/core/data/query-members.ts`
 
 ### T-one-comparison-rule-for-query-and-ui
 
@@ -4403,6 +4406,7 @@ before, a rebuilt chip lost its answer.
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/query-context.ts`
 - Site: `test/unit/a-list-can-start-with-every-value.test.mjs`
+- Site: `src/core/data/query-declarations.ts`
 
 ### T-a-chart-gap-is-real-space
 
@@ -5422,6 +5426,7 @@ still said it waits, and a bar kept its Apply.
 - Site: `src/core/data/query-context.ts`
 - Site: `test/unit/a-bar-apply-commits-its-own-field.test.mjs`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/core/data/query-members.ts`
 
 ### T-a-view-is-json
 
@@ -5526,6 +5531,7 @@ or `write` reports `component-part-on-a-page`. Bad JSON reports
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/query-edits.ts`
 - Site: `src/core/data/query-context.ts`
+- Site: `src/core/data/query-declarations.ts`
 
 ### T-a-heading-asks-through-the-source
 
@@ -5950,6 +5956,7 @@ it knows, so declaring a part declares its field.
 - Site: `src/core/data/query-context.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-column.ts`
 - Site: `src/core/data/source-view.ts`
+- Site: `src/core/data/query-declarations.ts`
 
 ### T-a-legend-follows-the-view-when-it-holds-the-field
 
@@ -6099,6 +6106,7 @@ a rebuilt menu was still empty wiped answers it showed. An event with no
 - Site: `test/unit/an-unscoped-bar-is-reported.test.mjs`
 - Site: `src/core/ui/filter-host-controller.ts`
 - Site: `src/core/data/source-view.ts`
+- Site: `src/core/data/query-members.ts`
 
 ### T-the-data-says-what-a-field-may-hold
 

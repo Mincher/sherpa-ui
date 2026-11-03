@@ -81,7 +81,9 @@ import {
 } from './query.js';
 import { definitionOf, keepOff } from './query-edits.js';
 import type { FieldStatus } from './field-status.js';
-import { QueryContext, type QueryChange, type QueryHandle, type QueryPart } from './query-context.js';
+import { QueryContext } from './query-context.js';
+import type { QueryChange, QueryHandle } from './query-members.js';
+import type { QueryPart } from './query-declarations.js';
 import { readingsOf, whereOf, type Where } from './where.js';
 import { report } from './report.js';
 import type { Failure } from './failure.js';
@@ -133,10 +135,10 @@ export class DataSource extends EventTarget {
      The filter is compiled from the Query, never kept beside it. TRAP T-one-query-one-owner */
   get #applied(): Query { return this.#member.live().applied; }
   get #draft(): Query { return this.#member.live().draft; }
-  get #defaults(): Map<string, ScopeQuery> { return this.#member.live().defaults; }
-  get #sets(): Map<string, FilterSet[]> { return this.#member.live().sets; }
-  get #offers(): Map<string, string[]> { return this.#member.live().offers; }
-  get #narrowing(): Map<string, QueryPart> { return this.#member.live().parts; }
+  get #defaults(): ReadonlyMap<string, ScopeQuery> { return this.#member.live().defaults; }
+  get #sets(): ReadonlyMap<string, FilterSet[]> { return this.#member.live().sets; }
+  get #offers(): ReadonlyMap<string, string[]> { return this.#member.live().offers; }
+  get #narrowing(): ReadonlyMap<string, QueryPart> { return this.#member.live().parts; }
   /** The last compile, so a load does not redo it. Written by `#compileNow`. */
   #filter: Filter | undefined;
   /** What a component OUTSIDE every component scope is under — the View alone.

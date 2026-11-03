@@ -30,7 +30,8 @@ import { answerOrder } from './source-counts.js';
 import { fieldStatus, type FieldStatus } from './field-status.js';
 import { tagOf, type SourceBinding } from './source-binding.js';
 import type { FieldCatalogue } from './field-catalogue.js';
-import type { QueryContext, QueryPart } from './query-context.js';
+import type { QueryContext } from './query-context.js';
+import type { QueryPart } from './query-declarations.js';
 import type {
   BoundControl, BoundView, FieldFilter, FilterSet, HeldFilter, ScopeDescription,
 } from './data-source-types.js';

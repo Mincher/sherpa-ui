@@ -3,14 +3,11 @@
  * about it. Every source over the page joins it, so there is one Query.
  * DOM-free. TRAP T-one-query-one-owner · TRAP T-a-context-holds-the-only-query
  *
+ * Its parts: query-declarations (what the page declares), query-members (the
+ * sources that share it, and what each hears), query-edits (the edits).
+ *
  * Map:
- * - QueryChange — What the context did, as each member hears it.
- * - QueryMember — What a source tells the context it joins.
  * - QueryChangeDetail — What `query-change` says: the fields whose answers moved, and the scopes whose holds or arrangement did.
- * - MemberBind — How a member bound a control.
- * - QueryPart — A part: the one field it answers, the component it narrows, its name, and the bar that draws it.
- * - QueryLive — The Query and the declarations, live: read each time, never kept.
- * - QueryHandle — What a member holds of its context.
  * - QueryContext — The Query of one app Context, shared by every source in it. Fires `query-change`.
  * - .applied — The Query the rows are under. A copy.
  * - .draft — What the reader is editing. A copy.
@@ -62,69 +59,19 @@
 import type { BoundControl, FilterSet, QueryState } from './data-source-types.js';
 import {
   answerOf, arrangementOf, copyQuery, copyReading, eachScope, emptyScope, freezeReading, readingAnswered, sameAnswer, sameReading, VIEW,
-  type AxesDefinition, type AxisOffers, type Arrangement, type Presentation, type PresentationDefinition, type Query, type QueryDefaults,
+  type AxesDefinition, type AxisOffers, type Presentation, type PresentationDefinition, type Query, type QueryDefaults,
   type QueryRequest, type ScopeQuery,
 } from './query.js';
+import { QueryDeclarations, type QueryPart } from './query-declarations.js';
+import { QueryMembers, type MemberBind, type QueryChange, type QueryHandle, type QueryLive, type QueryMember } from './query-members.js';
 import {
   answerIn, copyField, copyScope, definitionOf, editQuery, holderOf, holdsField, homes, isPureEdit, prune, readingOf, rehome,
   copyHolds, sameField, sameScope, scopeEntry, setCameFrom, setReading, slotted, type EditFacts, type PureEdit,
 } from './query-edits.js';
 import { readingsOf, type Where } from './where.js';
 import { valueKey } from './store.js';
-import { answerTree, modeOf, withPreset, type FieldReading, type RuledOut } from './filter-state.js';
+import { answerTree, modeOf, withPreset, type FieldReading } from './filter-state.js';
 import { report } from './report.js';
-
-/** What the context did, as each member hears it: the follow-ups are the member's. */
-export type QueryChange =
-  | { kind: 'part'; scope: string; field?: string; left?: string }
-  | { kind: 'sets'; scope: string }
-  | { kind: 'offer'; scope: string }
-  | { kind: 'write'; scope: string; field: string; narrows: string[] }
-  | { kind: 'select'; field: string }
-  | { kind: 'hold'; scope: string; moved: string[] }
-  | { kind: 'move'; scopes: string[]; moved: boolean }
-  /** The Query moved: compile it. */
-  | { kind: 'recompose' }
-  /** Only a scope's ORDER moved: count again in it. TODO 452 */
-  | { kind: 'order'; scope: string }
-  /** A scope's preset went on or off. TODO 493 */
-  | { kind: 'preset'; scope: string }
-  | { kind: 'commit' }
-  /** Each field is drawn its answer; then a scope's bars, or each control's pending. */
-  | { kind: 'drawn'; fields: string[]; bars?: string; pending?: true }
-  | { kind: 'bars'; scope: string }
-  /** The rows were re-arranged: page one, and a load. */
-  | { kind: 'arranged'; group: boolean }
-  /** A slot's presentation moved: its chart is asked again; no row moves. TODO 548 */
-  | { kind: 'presented'; scope: string }
-  /** A whole Query came in, over `was`; `before` are the fields answered before. Settles once drawn. */
-  | { kind: 'query'; was: Arrangement; before: string[] };
-
-/** What a source tells the context it joins. */
-export interface QueryMember {
-  /** Its store waits for Apply. */
-  readonly remote: boolean;
-  /** Does it draw a page of rows in this scope? */
-  pagedIn(scope: string): boolean;
-  /** Does a chart of its draw a summary in this scope — is it a SLOT? TODO 548 */
-  presentsIn(scope: string): boolean;
-  /** Show this page of its rows, or this many rows a page. */
-  page(edit: { page: number } | { pageSize: number }): void;
-  /** How it bound this control, if it did. */
-  bindOf(el: BoundControl): MemberBind | undefined;
-  /** What the context did: its follow-ups. Called at once, in join order. */
-  heard(change: QueryChange): void | Promise<void>;
-  /** Does it know this field? */
-  has(field: string): boolean;
-  /** Does this field keep its answer across Views? TRAP T-a-field-can-carry-over-views */
-  carriesOver(field: string): boolean;
-  /** A View's plain conditions as readings, by its field types. */
-  readingsOf(where: Where): Record<string, FieldReading>;
-  /** The values its rows hold for these picks: a KEY maps to its value. TRAP T-a-value-can-be-an-object */
-  raws(field: string, picked: readonly unknown[]): unknown[];
-  /** Its last walk's test of a field's value keys in a scope: why one is ruled out, null if it stands. */
-  ruledOut?(scope: string, field: string): ((key: string) => RuledOut) | undefined;
-}
 
 /** What `query-change` says: the fields whose answers moved, and the scopes
  *  whose holds or arrangement did — and, for a whole Query put on, who put it:
@@ -147,81 +94,18 @@ function forget(scope: ScopeQuery, field: string): void {
   if (!Object.keys(scope.superseded).length) delete scope.superseded;
 }
 
-/** How a member bound a control. */
-export interface MemberBind {
-  id: string;
-  rows: 'page' | 'all';
-  scope?: string | readonly string[];
-}
-
-/** A PART: the one field it answers, the one component it narrows, its name, and
- *  the slot whose bar draws it — a chart's legend, in its card's toolbar (TODO 670).
- *  TRAP T-a-chart-scope-is-its-legend-field */
-export interface QueryPart {
-  field: string;
-  only: BoundControl;
-  label?: string;
-  shownIn?: string;
-}
-
-/** The Query and the declarations, live: read each time, never kept — a pure edit swaps a copy in. */
-export interface QueryLive {
-  /**
-   * THE QUERY — which scope holds each field, and each field's reading, in the
-   * reader's terms. One reading per field, in the scope that holds it.
-   * TRAP T-one-query-one-owner · TRAP T-one-field-one-filter-menu
-   */
-  applied: Query;
-  /** What the reader is EDITING. With no remote member it IS `applied`; else a
-   *  copy that Apply sends. TRAP T-apply-and-discard-wait-for-a-change */
-  draft: Query;
-  /** Each component's OWN default filter, by its scope.
-   *  TRAP T-a-component-default-outlives-a-view */
-  readonly defaults: Map<string, ScopeQuery>;
-  /** Each scope's answers at the start, as its page defines them. TODO 464 */
-  readonly starts: Map<string, ScopeQuery>;
-  /** Each scope's name as a reader sees it. */
-  readonly labels: Map<string, string>;
-  /** Each scope's own word on whether it arranges. */
-  readonly arranges: Map<string, boolean>;
-  /** Each scope's filter sets. */
-  readonly sets: Map<string, FilterSet[]>;
-  /** What each COMPONENT scope has — its own fields. */
-  readonly offers: Map<string, string[]>;
-  /** Each part, by its scope. */
-  readonly parts: Map<string, QueryPart>;
-}
-
-/** What a member holds of its context. */
-export interface QueryHandle {
-  /** The live Query and declarations. Read only: every edit is the context's. */
-  live(): Readonly<QueryLive>;
-  /** A bind id no other member has made. */
-  mintId(): string;
-  /** Moves with each declaration a walk reads — a part, a set. */
-  walkVersion(): number;
-  /** Does any member draw a page of rows in this scope? */
-  pagedIn(scope: string): boolean;
-  /** How any member bound this control. */
-  bindOf(el: BoundControl): MemberBind | undefined;
-  /** Leave the context. */
-  leave(): void;
-}
-
 /**
  * The Query of one app Context, shared by every source in it. After each
  * change, once every member has heard it, it fires ONE `query-change`.
  * 366 step 17 · TRAP T-one-query-one-owner
  */
 export class QueryContext extends EventTarget {
-  /** The one Query, and the declarations. */
+  /** The one Query, and the declarations a member reads. */
   readonly #live: QueryLive;
+  /** What the page declares about its Query. */
+  readonly #decl = new QueryDeclarations();
   /** Every source that joined. */
-  readonly #members = new Set<QueryMember>();
-  /** Binds made, for an id when the element has none. */
-  #binds = 0;
-  /** Declarations a walk reads: a part, a set. */
-  #walks = 0;
+  readonly #members = new QueryMembers();
   /** What a batch has to tell, until it ends. */
   #batched: QueryChangeDetail | null = null;
   /** The Applies a batch asked for: sent at its end, after every edit in it. */
@@ -230,10 +114,8 @@ export class QueryContext extends EventTarget {
   constructor() {
     super();
     const applied: Query = { v: 1, scopes: {} };
-    this.#live = {
-      applied, draft: applied,
-      defaults: new Map(), starts: new Map(), labels: new Map(), arranges: new Map(), sets: new Map(), offers: new Map(), parts: new Map(),
-    };
+    const { defaults, starts, sets, offers, parts } = this.#decl;
+    this.#live = { applied, draft: applied, defaults, starts, sets, offers, parts };
   }
 
   /** The Query the rows are under. A copy. */
@@ -266,7 +148,7 @@ export class QueryContext extends EventTarget {
     else if ('reading' in one) this.#setReading(at, one.field, one.reading, one.only ? { only: one.only } : {});
     else if ('solo' in one) this.#solo(at, one.solo, { across: !!one.across });
     else if ('unsolo' in one) this.#batch(() => this.#unsolo());
-    else if ('page' in one || 'pageSize' in one) this.#page(one);
+    else if ('page' in one || 'pageSize' in one) this.#members.page(one);
     else if ('hold' in one) this.#hold(at, one.hold);
     else if ('take' in one) this.#take(at, one.take, one.from);
     else if ('release' in one) this.#release(at, one.release);
@@ -282,17 +164,9 @@ export class QueryContext extends EventTarget {
     if ('commit' in one && one.commit && !('preset' in one)) this.#commit('field' in one ? { field: one.field } : { scope: at });
   }
 
-  /** A page, or the rows per page, for the sources that draw a page in its scope —
-   *  or, with no scope or none drawing there, every source's. */
-  #page(edit: { scope?: string } & ({ page: number } | { pageSize: number })): void {
-    const { scope, ...at } = edit;
-    const owners = scope === undefined ? [] : [...this.#members].filter((m) => m.pagedIn(scope));
-    for (const member of owners.length ? owners : this.#members) member.page(at);
-  }
-
   /** Does any member's store wait for Apply? */
   get remote(): boolean {
-    return [...this.#members].some((m) => m.remote);
+    return this.#members.remote;
   }
 
   /** How many sources share this Query. */
@@ -338,13 +212,12 @@ export class QueryContext extends EventTarget {
    * every component's, because any field may be raised to narrow everything.
    */
   fields(name: string): string[] {
-    if (name === VIEW) return [...new Set([...this.#live.offers.values()].flat())];
-    return [...(this.#live.offers.get(name) ?? [])];
+    return this.#decl.fields(name);
   }
 
   /** May this scope hold this field? Up is open; down is closed. */
   canHold(name: string, field: string): boolean {
-    return name === VIEW || (this.#live.offers.get(name) ?? []).includes(field);
+    return this.#decl.canHold(name, field);
   }
 
   /**
@@ -360,44 +233,43 @@ export class QueryContext extends EventTarget {
     if (!written) return;
     const start = structuredClone(written);
     for (const r of Object.values(start.readings)) freezeReading(r);
-    this.#live.starts.set(scope, Object.freeze(start));
+    this.#decl.starts.set(scope, Object.freeze(start));
   }
 
   /** A component's own default, as `declareDefault` left it, or undefined — not
    *  its answer now, which `reading()` reads. Frozen. TRAP T-a-reading-is-frozen-in-the-query */
   defaultFor(scope: string): Readonly<Record<string, FieldReading>> | undefined {
-    return this.#live.defaults.get(scope)?.readings;
+    return this.#decl.defaults.get(scope)?.readings;
   }
 
   /** What `declarePart` was told for this scope, or undefined. `only` is the element itself. */
-  partFacts(scope: string): { field: string; only: BoundControl; label?: string } | undefined {
-    const part = this.#live.parts.get(scope);
+  partFacts(scope: string): QueryPart | undefined {
+    const part = this.#decl.parts.get(scope);
     return part ? { ...part } : undefined;
   }
 
   /** What `declareScope` was told — not the fallbacks `scopeLabel()` and `arranges()` answer with. */
   scopeFacts(scope: string): { label?: string; arranges?: boolean } {
-    const label = this.#live.labels.get(scope);
-    const arranges = this.#live.arranges.get(scope);
+    const label = this.#decl.labels.get(scope);
+    const arranges = this.#decl.arranges.get(scope);
     return { ...(label != null ? { label } : {}), ...(arranges != null ? { arranges } : {}) };
   }
 
   /** A scope's name as a reader sees it, or its id. */
   scopeLabel(scope: string): string {
-    return this.#live.labels.get(scope) ?? scope;
+    return this.#decl.labels.get(scope) ?? scope;
   }
 
   /** Does Group and Sort arrange this scope's rows? As declared — else a
    *  component scope a page of rows is drawn in does, and the View does not.
    *  Will, TODO 99. TRAP T-group-and-sort-are-component-scope */
   arranges(scope: string): boolean {
-    return this.#live.arranges.get(scope)
-      ?? (scope !== VIEW && [...this.#members].some((m) => m.pagedIn(scope)));
+    return this.#decl.arranges.get(scope) ?? (scope !== VIEW && this.#members.pagedIn(scope));
   }
 
   /** A scope's filter sets, as declared. */
   sets(scope: string): FilterSet[] {
-    return structuredClone(this.#live.sets.get(scope) ?? []);
+    return structuredClone(this.#decl.sets.get(scope) ?? []);
   }
 
   /** Does this scope — or, naming none, any — wait for Apply? A remote member's
@@ -480,61 +352,26 @@ export class QueryContext extends EventTarget {
    * TRAP T-a-chart-scope-is-its-legend-field
    */
   declarePart(scope: string, part: QueryPart | undefined): void {
-    this.#walks++;
-    const parts = this.#live.parts;
-    // The bar that drew it, if another draws it now or none. TODO 670
-    const was = parts.get(scope)?.shownIn;
-    const left = was && was !== part?.shownIn ? was : undefined;
-    if (part) parts.set(scope, part);
-    else parts.delete(scope);
-    /* A part keeps the place it was first given: a chart swapped by Show as binds
-       its legend again, and its panel section must not move. Will, TODO 548 */
-    if (!this.#partOrder.includes(scope)) this.#partOrder.push(scope);
-    const placed = [...parts].sort(([a], [b]) => this.#partOrder.indexOf(a) - this.#partOrder.indexOf(b));
-    parts.clear();
-    for (const [key, value] of placed) parts.set(key, value);
+    const left = this.#decl.part(scope, part);
     this.#tell({ kind: 'part', scope, ...(part ? { field: part.field } : {}), ...(left ? { left } : {}) });
   }
-  /** Each part's scope, in the order first declared. */
-  readonly #partOrder: string[] = [];
 
   /** Name a scope as a reader sees it — a panel's section, an Add list's note — and say if it arranges. */
   declareScope(scope: string, facts: { label?: string; arranges?: boolean }): void {
-    if (facts.label != null) this.#live.labels.set(scope, facts.label);
-    if (facts.arranges != null) this.#live.arranges.set(scope, facts.arranges);
+    if (facts.label != null) this.#decl.labels.set(scope, facts.label);
+    if (facts.arranges != null) this.#decl.arranges.set(scope, facts.arranges);
   }
 
   /** A scope's filter sets, in order. A field is in one set at most; a second
    *  is left out, and said. TRAP T-a-filter-set-groups-or-chains */
   declareSets(scope: string, sets: readonly FilterSet[]): void {
-    this.#walks++;
-    const taken = new Set<string>();
-    this.#live.sets.set(scope, sets.map((set) => ({
-      ...structuredClone(set),
-      fields: set.fields.filter((field) => {
-        if (!taken.has(field)) {
-          taken.add(field);
-          return true;
-        }
-        report({
-          code: 'field-in-two-sets',
-          message: `declareSets: "${field}" is in two of scope "${scope}"'s sets; it stays in the first.`,
-          at: { scope, set: set.id, field },
-        });
-        return false;
-      }),
-    })));
+    this.#decl.setSets(scope, sets);
     this.#tell({ kind: 'sets', scope });
   }
 
   /** Say which fields a component scope HAS. The view needs none: up is open. */
   offer(name: string, fields: readonly string[]): void {
-    const next = [...new Set(fields)];
-    const before = this.#live.offers.get(name);
-    if (before && before.length === next.length && before.every((f, i) => f === next[i])) return;
-    if (next.length) this.#live.offers.set(name, next);
-    else this.#live.offers.delete(name);
-    this.#tell({ kind: 'offer', scope: name });
+    if (this.#decl.offer(name, fields)) this.#tell({ kind: 'offer', scope: name });
   }
 
   /**
@@ -547,7 +384,7 @@ export class QueryContext extends EventTarget {
    */
   #write(scope: string, field: string, reading: FieldReading | undefined, at: { only?: BoundControl } = {}): void {
     // A declared part narrows its own component, whoever writes it — a panel too.
-    const only = at.only ?? this.#live.parts.get(scope)?.only;
+    const only = at.only ?? this.#decl.parts.get(scope)?.only;
     const bind = only ? this.#bindOf(only) : undefined;
     if (reading && only && bind?.rows !== 'all') {
       report({
@@ -587,20 +424,20 @@ export class QueryContext extends EventTarget {
   ): void {
     const was = this.#live.draft.scopes[scope]?.readings ?? {};
     if (!readings) {
-      this.#live.defaults.delete(scope);
+      this.#decl.defaults.delete(scope);
       for (const field of Object.keys(was)) this.#write(scope, field, undefined);
       return;
     }
     // Its OWN before the first write compiles, so a View-held field cannot set it aside.
-    this.#live.defaults.set(scope, emptyScope());
+    this.#decl.defaults.set(scope, emptyScope());
     for (const field of Object.keys(was)) if (!(field in readings)) this.#write(scope, field, undefined);
     for (const [field, reading] of Object.entries(readings)) this.#write(scope, field, reading, at);
     const written = this.#live.draft.scopes[scope];
     if (written) {
       const own = structuredClone(written);
       for (const r of Object.values(own.readings)) freezeReading(r);
-      this.#live.defaults.set(scope, Object.freeze(own));
-    } else this.#live.defaults.delete(scope);
+      this.#decl.defaults.set(scope, Object.freeze(own));
+    } else this.#decl.defaults.delete(scope);
   }
 
   /**
@@ -691,7 +528,7 @@ export class QueryContext extends EventTarget {
    *  they could never come back on (TODO 462). Conditions stay. Will, TODOs 465, 523 F3 */
   #standing(scope: string, field: string, reading: FieldReading): unknown[] {
     const picked = reading.picked ?? [];
-    const out = modeOf(reading) === 'advanced' ? undefined : this.#knows(field)?.ruledOut?.(scope, field);
+    const out = modeOf(reading) === 'advanced' ? undefined : this.#members.knows(field)?.ruledOut?.(scope, field);
     return out ? picked.filter((v) => out(valueKey(v)) === null) : [...picked];
   }
 
@@ -830,7 +667,7 @@ export class QueryContext extends EventTarget {
       return;
     }
     if (scope === VIEW && from) for (const id of ids) this.#setCameFrom(id, from);
-    const part = from ? this.#live.parts.get(from) : undefined;
+    const part = from ? this.#decl.parts.get(from) : undefined;
     const answer = part && from ? this.reading(from, part.field) : undefined;
     this.#holdEach(scope, [...ids]);
     // The chart lets go of it: the View narrows every component now.
@@ -859,7 +696,7 @@ export class QueryContext extends EventTarget {
   #lower(field: string, to: string): void {
     if (!this.holds(VIEW, field)) return;
     const answer = this.reading(VIEW, field);
-    const part = this.#live.parts.get(to);
+    const part = this.#decl.parts.get(to);
     if (!part && !this.canHold(to, field)) return;
     /* ONE SCOPE AT A TIME. A scope the field came up from still holds its
        place: each lets go first, while the View still holds the answer.
@@ -892,7 +729,7 @@ export class QueryContext extends EventTarget {
    * one. `null` clears it. 366 step 18 · TRAP T-one-query-one-owner
    */
   #setReading(scope: string, field: string, reading: FieldReading | null, at: { only?: BoundControl } = {}): void {
-    if (at.only || this.#live.parts.has(scope) || this.#live.draft.scopes[scope]?.narrows?.length) {
+    if (at.only || this.#decl.parts.has(scope) || this.#live.draft.scopes[scope]?.narrows?.length) {
       const next = reading && readingAnswered(reading) ? reading : undefined;
       if (sameReading(this.#live.draft.scopes[scope]?.readings[field], next)) return;
       this.#write(scope, field, next, at);
@@ -932,21 +769,19 @@ export class QueryContext extends EventTarget {
    * conditions, each a boolean chip that writes them into the fields. TODO 493, 510
    */
   declarePresets(scope: string, presets: readonly { id: string; label: string; readings: Readonly<Record<string, FieldReading>> }[]): void {
-    this.#presets.set(scope, new Map(presets.map((p) => [p.id, { label: p.label, readings: structuredClone(p.readings) as Record<string, FieldReading> }])));
+    this.#decl.setPresets(scope, presets);
     this.#tell({ kind: 'preset', scope });
   }
-  /** Each scope's presets, by id. */
-  readonly #presets = new Map<string, Map<string, { label: string; readings: Record<string, FieldReading> }>>();
 
   /** A scope's presets, in order: each its id, its name and the readings it writes. */
   presets(scope: string): { id: string; label: string; readings: Readonly<Record<string, FieldReading>> }[] {
-    return [...this.#presets.get(scope) ?? []].map(([id, p]) => ({ id, label: p.label, readings: p.readings }));
+    return [...this.#decl.presets(scope)].map(([id, p]) => ({ id, label: p.label, readings: p.readings }));
   }
 
   /** Is this preset ON: its rows held on every field it names, in force — the
    *  draft's, or with `applied`, what the rows are under. TODOs 510, 521 */
   presetOn(scope: string, id: string, applied = false): boolean {
-    const preset = this.#presets.get(scope)?.get(id);
+    const preset = this.#decl.presets(scope).get(id);
     if (!preset) return false;
     const query = applied ? this.#live.applied : this.#live.draft;
     const entries = Object.entries(preset.readings).filter(([, given]) => answerTree(given));
@@ -959,7 +794,7 @@ export class QueryContext extends EventTarget {
 
   /** The scopes whose presets write this field: its answer moving moves their on. */
   presetsOver(field: string): string[] {
-    return [...this.#presets].filter(([, ps]) => [...ps.values()].some((p) => field in p.readings)).map(([scope]) => scope);
+    return this.#decl.presetsOver(field);
   }
 
   /**
@@ -970,7 +805,7 @@ export class QueryContext extends EventTarget {
    * moved are applied at once. Will, TODOs 510 (A), 521, 526, 590 · TRAP T-a-preset-is-its-own-part
    */
   #setPreset(scope: string, id: string, on: boolean, commit = false): void {
-    const preset = this.#presets.get(scope)?.get(id);
+    const preset = this.#decl.presets(scope).get(id);
     // Off goes on: a field suspended reads it off, and still holds its rows.
     if (!preset || (on && this.presetOn(scope, id))) return;
     this.#batch(() => {
@@ -1012,9 +847,9 @@ export class QueryContext extends EventTarget {
           s.readings[field] = own;
         }
         for (const field of Object.keys(s.readings)) {
-          if (options.carry && this.#knows(field)?.carriesOver(field)) continue;
-          const start = this.#starts.get(id)?.get(field);
-          if (s.narrows?.length || this.#live.parts.has(id)) this.#write(id, field, undefined);
+          if (options.carry && this.#members.knows(field)?.carriesOver(field)) continue;
+          const start = this.#decl.opens(id)?.get(field);
+          if (s.narrows?.length || this.#decl.parts.has(id)) this.#write(id, field, undefined);
           // A field with a start goes back to it, never to every row. TODO 403
           else if (start) this.#select(field, [...start.picked ?? []], start);
           else this.#select(field, []);
@@ -1095,7 +930,7 @@ export class QueryContext extends EventTarget {
    */
   #edit(edit: PureEdit, slots = true): void {
     const { applied, draft } = this.#live;
-    const facts: EditFacts = { ...(slots ? { presents: (scope: string) => this.#presents(scope) } : {}), theirs: this.#theirs(edit.scope), applied, draft };
+    const facts: EditFacts = { ...(slots ? { presents: (scope: string) => this.#members.presentsIn(scope) } : {}), theirs: this.#members.theirs(edit.scope), applied, draft };
     const routed = slotted(edit, facts.presents);
     if ('move' in routed) return this.#move(routed, facts);
     const next = editQuery(draft, routed, facts);
@@ -1124,7 +959,7 @@ export class QueryContext extends EventTarget {
       report({
         code: 'scope-refused',
         message: 'move: a component scope may hold only its own fields.',
-        at: { field, from: edit.from, to, offers: (this.#live.offers.get(to) ?? []).join(',') },
+        at: { field, from: edit.from, to, offers: (this.#decl.offers.get(to) ?? []).join(',') },
       });
       return;
     }
@@ -1141,11 +976,6 @@ export class QueryContext extends EventTarget {
     this.#tell({ kind: 'move', scopes, moved: moved.length > 0 });
   }
 
-  /** Is this scope a SLOT — does a member's chart draw a summary in it? TODO 548 */
-  #presents(scope: string): boolean {
-    return [...this.#members].some((m) => m.presentsIn(scope));
-  }
-
   /** A slot's presentation, as kept: a copy; none, an empty one. TODO 548 */
   presentation(scope: string): Presentation {
     return { ...this.#live.applied.scopes[scope]?.presentation };
@@ -1155,45 +985,33 @@ export class QueryContext extends EventTarget {
    *  its charts' — under what is kept. Not in the Query: only what the reader
    *  changed is. Will, TODO 548 */
   declarePresentation(scope: string, presentation: PresentationDefinition): void {
-    this.#defined.set(scope, structuredClone(presentation));
+    this.#decl.define(scope, presentation);
   }
 
   /** A slot's presentation as shown in a view: what is kept, over that view's
    *  definition, over the slot's. The reader's pick wins. `kept` false: the
    *  definition alone, what Default picks. Will, TODOs 548, 572 */
   presented(scope: string, view?: 'grid' | 'chart', kept = true): Presentation {
-    const { grid, chart, ...base } = this.#defined.get(scope) ?? {};
-    const own = view === 'grid' ? grid : view === 'chart' ? chart : undefined;
-    const shown: Presentation = { ...base, ...own, ...(kept ? this.#inForce(this.presentation(scope)) : {}) };
-    // Its Secondary off: no Secondary, the definition's neither. Off is not gone. Will, TODO 666
-    if (kept && this.presentation(scope).off === 'secondary') delete shown.secondary;
-    return shown;
+    return this.#decl.presented(scope, view, kept ? this.presentation(scope) : null);
   }
 
   /** What each axis's chip offers — the page's, or a scope's over it. Not in the
    *  Query: no reader changes it. Will, TODO 660 */
   declareAxes(axes: AxesDefinition, scope?: string): void {
-    this.#axes.set(scope ?? '', structuredClone(axes));
+    this.#decl.setAxes(axes, scope);
   }
 
   /** What each axis offers in a scope's view: the page's, its view's, the scope's,
    *  then the scope's view's — the last to name an axis wins it whole. Will, TODO 660 */
   axesOf(scope: string, view: 'grid' | 'chart'): AxisOffers {
-    return Object.assign({}, ...['', scope].flatMap((at) => {
-      const { grid, chart, ...base } = this.#axes.get(at) ?? {};
-      return [base, view === 'grid' ? grid : chart];
-    })) as AxisOffers;
+    return this.#decl.axesOf(scope, view);
   }
-
-  /** The page's axes, at '', and each scope's. */
-  readonly #axes = new Map<string, AxesDefinition>();
 
   /** Which of the reader's picks are in force — off, one is KEPT and not shown:
    *  `kind` Show as's, `axes` the Primary and Secondary chips'. The app's setting.
    *  Will, TODOs 582, 583 */
   honour(picks: 'kind' | 'axes', on: boolean): void {
-    if (this.#honoured[picks] === on) return;
-    this.#honoured[picks] = on;
+    if (!this.#decl.honour(picks, on)) return;
     for (const [scope, entry] of Object.entries(this.#live.applied.scopes)) {
       if (entry?.presentation) this.#tell({ kind: 'presented', scope });
     }
@@ -1201,22 +1019,8 @@ export class QueryContext extends EventTarget {
 
   /** Is that kind of pick in force? */
   honours(picks: 'kind' | 'axes'): boolean {
-    return this.#honoured[picks];
+    return this.#decl.honours(picks);
   }
-
-  /** The app's settings: which picks are in force. */
-  readonly #honoured = { kind: true, axes: true };
-
-  /** A kept presentation, less the picks not in force. */
-  #inForce(kept: Presentation): Presentation {
-    const { kind, primary, secondary, off: _off, ...rest } = kept;
-    const axes = this.#honoured.axes;
-    return { ...rest, ...(this.#honoured.kind && kind ? { kind } : {}),
-      ...(axes && primary ? { primary } : {}), ...(axes && secondary ? { secondary } : {}) };
-  }
-
-  /** Each slot's definition. */
-  readonly #defined = new Map<string, PresentationDefinition>();
 
   /**
    * Restore a whole Query — a reload, a trip away and back, a View's own
@@ -1238,20 +1042,20 @@ export class QueryContext extends EventTarget {
     // A whole Query put in — a View, a draft — ends a solo. TODO 690
     this.#soloing = null;
     const next = definitionOf(query, options.holds === 'keep', this.#live.draft, {
-      defaults: this.#live.defaults,
-      starts: this.#live.starts,
+      defaults: this.#decl.defaults,
+      starts: this.#decl.starts,
       readingsOf: (where) => this.#readingsOf(where),
-      carriesOver: (f) => this.#knows(f)?.carriesOver(f) ?? false,
+      carriesOver: (f) => this.#members.knows(f)?.carriesOver(f) ?? false,
     });
     options.lay?.(next);
-    this.#fillStarts(next);
+    this.#decl.fillOpens(next);
     const was = arrangementOf(this.#live.applied);
     const before = this.#answered();
     // Before the copy: a waiting scope's rows and chips read the same homes. TODO 612
     rehome(next);
     this.#live.applied = next;
     this.#live.draft = this.waiting() ? structuredClone(next) : next;
-    await Promise.all([...this.#members].map((m) => m.heard({ kind: 'query', was, before })));
+    await this.#members.hear({ kind: 'query', was, before });
     this.#announce({
       fields: [...new Set([...before, ...this.#answered()])], scopes: this.scopes, ...(options.by ? { by: options.by } : {}),
     });
@@ -1263,27 +1067,10 @@ export class QueryContext extends EventTarget {
    * back. Will, TODO 403 · TRAP T-a-fetching-list-opens-on-its-first-value
    */
   startWith(scope: string, field: string, reading: FieldReading): void {
-    let fields = this.#starts.get(scope);
-    if (!fields) this.#starts.set(scope, (fields = new Map()));
-    fields.set(field, copyReading(reading));
+    this.#decl.setOpen(scope, field, reading);
     // Taken now, in place: it is how the page opens, not a change to it.
-    this.#fillStarts(this.#live.applied);
-    if (this.#live.draft !== this.#live.applied) this.#fillStarts(this.#live.draft);
-  }
-  /** Each scope's start answers, by field. */
-  readonly #starts = new Map<string, Map<string, FieldReading>>();
-
-  /** Each held field with a start and no answer — not one turned off — takes it. */
-  #fillStarts(query: Query): void {
-    for (const [id, fields] of this.#starts) {
-      const scope = query.scopes[id];
-      if (!scope) continue;
-      for (const [field, start] of fields) {
-        const had = scope.readings[field];
-        if (!scope.holds.includes(field) || (had && (readingAnswered(had) || had.suspended))) continue;
-        scope.readings[field] = copyReading(start);
-      }
-    }
+    this.#decl.fillOpens(this.#live.applied);
+    if (this.#live.draft !== this.#live.applied) this.#decl.fillOpens(this.#live.draft);
   }
 
   /** The whole question as JSON — the Query as applied, with its arrangement.
@@ -1320,26 +1107,15 @@ export class QueryContext extends EventTarget {
   /** A reading's answer, its picks as the values the rows hold: a control hands
    *  back the KEY it was given. Picks kept off too. TRAP T-a-value-can-be-an-object */
   #raw(field: string, picked: readonly unknown[], reading: FieldReading): FieldReading {
-    const raws = (keys: readonly unknown[]): unknown[] => this.#knows(field)?.raws(field, keys) ?? [...keys];
+    const raws = (keys: readonly unknown[]): unknown[] => this.#members.knows(field)?.raws(field, keys) ?? [...keys];
     return { ...answerOf(reading), picked: raws(picked), ...(reading.off ? { off: raws(reading.off) } : {}) };
-  }
-
-  /** The source that draws a page of rows in a scope; none for a scope of the page's. */
-  #owner(scope: string): QueryMember | undefined {
-    return [...this.#members].find((m) => m.pagedIn(scope));
-  }
-
-  /** Is a scope ANOTHER source's than the one that draws in `scope`? None given, none is. */
-  #theirs(scope?: string): (id: string) => boolean {
-    const owner = scope ? this.#owner(scope) : undefined;
-    return (id) => !!owner && !!this.#owner(id) && this.#owner(id) !== owner;
   }
 
   /** A View's plain conditions as readings: each field by the member that knows it. */
   #readingsOf(where: Where): Record<string, FieldReading> {
     const out: Record<string, FieldReading> = {};
     for (const [field, condition] of Object.entries(where)) {
-      Object.assign(out, this.#knows(field)?.readingsOf({ [field]: condition }) ?? readingsOf({ [field]: condition }));
+      Object.assign(out, this.#members.knows(field)?.readingsOf({ [field]: condition }) ?? readingsOf({ [field]: condition }));
     }
     return out;
   }
@@ -1349,26 +1125,16 @@ export class QueryContext extends EventTarget {
     return Object.values(this.#live.draft.scopes).flatMap((s) => Object.keys(s.readings));
   }
 
-  /** The member that knows a field — else the first. */
-  #knows(field: string): QueryMember | undefined {
-    const members = [...this.#members];
-    return members.find((m) => m.has(field)) ?? members[0];
-  }
-
   /** How any member bound this control. */
   #bindOf(el: BoundControl): MemberBind | undefined {
-    for (const m of this.#members) {
-      const bind = m.bindOf(el);
-      if (bind) return bind;
-    }
-    return undefined;
+    return this.#members.bindOf(el);
   }
 
   /** Each member hears what the context did, at once, in the order they joined;
    *  then, if a field's answer or a scope's holds moved, the page is told. */
   #tell(change: QueryChange): void {
     this.#settle();
-    for (const member of this.#members) void member.heard(change);
+    this.#members.tell(change);
     const said = ((): QueryChangeDetail | null => {
       switch (change.kind) {
         case 'write': case 'select': return { fields: [change.field], scopes: [] };
@@ -1404,10 +1170,10 @@ export class QueryContext extends EventTarget {
     if ((member.remote || this.#waiting.size) && this.#live.draft === this.#live.applied) this.#live.draft = copyQuery(this.#live.applied);
     return {
       live: () => this.#live,
-      mintId: () => `bind-${++this.#binds}`,
-      walkVersion: () => this.#walks,
-      pagedIn: (scope) => [...this.#members].some((m) => m.pagedIn(scope)),
-      bindOf: (el) => this.#bindOf(el),
+      mintId: () => this.#members.mintId(),
+      walkVersion: () => this.#decl.version,
+      pagedIn: (scope) => this.#members.pagedIn(scope),
+      bindOf: (el) => this.#members.bindOf(el),
       leave: () => { this.#members.delete(member); },
     };
   }
