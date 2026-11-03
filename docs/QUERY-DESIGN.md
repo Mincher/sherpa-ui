@@ -307,7 +307,7 @@ would. So:
 | toolbar | holds chips' answers; `readings`, `answers`, `restoreAnswers` | draws `holds` + `readings`; its events are requests |
 | filter panel | its own draft, `#applied`, `readings`, refill from the bars | draws every scope; Apply/Discard call the source |
 | grid heading | one `ColumnFilter` per column; `supersedeColumns` | draws the column's reading; superseded is derived |
-| legend | a one-component part | a component scope with `narrows: [chart]` |
+| legend | a one-component part | a component scope with `narrows: [bindId(chart)]` |
 | `records.js` | several hundred lines of glue | declares scopes and fields; no mirroring |
 
 ### One command, one door (695 S2)
@@ -336,10 +336,20 @@ edit applies what it names. A hover (`{ field, preview }`) is the page's, and
   `bind-source.ts`. The event names are the components' own; only the map moves.
 - **A slot's Sort and Group are its chart's**, whoever asks: the edit reroutes
   them, so the node editor's are too (bug 5 was its `setSort`, past the reroute).
-- **Pure where it is plain data**: `editQuery(query, edit, facts)` gives the Query
-  after a Sort, Group, Search, presentation, order or move, the one given
-  untouched. An answer, a Switch, a solo, a reset, a preset and a hold still edit
-  in place: a member hears each step (S5).
+- **Every edit is pure** (695 S5). `editCopies(copies, request, facts)` in
+  `query-edits.ts` takes both copies — `applied` and `draft`, one object while
+  nothing waits — and this tab's solo, and gives them back after the edit, the
+  ones given untouched, with what each member must hear said as the result: an
+  ordered list of changes. `editQuery(query, edit, facts)` is its plain-data half,
+  for a Sort, Group, Search, presentation, order or move. `ask()` freezes the new
+  Query and puts it in place, then tells each member ONCE: one compile, each
+  scope's bars drawn once, one `query-change`. Two behaviours the list keeps: the
+  Switch's own edit lists what it turned off (the compile once wrote it), and a
+  hold's clear is said with the scope that held it (`select.at`), so the bar over
+  that scope is drawn the clear.
+- **A component is named by its bind id**, never its element: a request's
+  `only`, a part's `only` and a component's own default. `bindId(el)`, in
+  `bind-source.ts`, is the one map from an element to its id.
 
 **Informing other components** (Will's *"use this query to help inform other
 UI components"*): the Filters menu's Added and Available lists, the panel's

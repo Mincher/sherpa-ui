@@ -47,6 +47,7 @@ interface LoadOptions {
   take?: number;
   fields?: string[];        // a projection: only these fields, and the key
   signal?: AbortSignal;     // aborted, the read stops — pass it to your fetch
+  trace?: TraceContext;     // the span the read runs under — start your request's under it
 }
 ```
 
@@ -54,6 +55,11 @@ interface LoadOptions {
 a newer ask supersedes it; a store hands it to its `fetch` (`RequestStore` and
 `RestStore` do). The signal is never part of the question.
 `T-a-superseded-read-stops`
+
+**A load and its reads are one trace.** A span cannot cross an `await`, so a
+source passes its load's span as `trace`, and a store starts each step and
+request under it (`HeldStore` and `RequestStore` do). Like the signal, it is
+never part of the question. `T-one-trace-stream`
 
 **A filter is `[field, op, value]`**, not a predicate:
 
@@ -323,8 +329,10 @@ source shows rows in, and a field it lacks, are skipped and listed in
 | `limitOptions = on` | `limitOptions`. `applyOn` is read only: set it in the options |
 
 Each read-back here is a copy, or — a reading, `defaultFor` — the Query's own,
-FROZEN: spread it to change it, and send it back. `partFacts`' `only` is the
-element itself, and `rows` is the source's own array, so never change it.
+FROZEN: spread it to change it, and send it back. `partFacts`' `only` is its
+component's bind id — `bindId(el)`, from `sherpa-ui/data`, names a component the
+same way in a request's `only`, `pickedFor` and `allRows` — and `rows` is the
+source's own array, so never change it.
 
 ### A field the server answers
 
