@@ -6802,6 +6802,13 @@
           "description": "one node of a node editor: a card on a sherpa-layout-canvas, at its data-x and data-y. Its HEADER names it, drags it and may carry the whole node's sockets; its content holds its rows. Will, TODO 78. TRAP T-a-node-moves-itself-and-reports",
           "attributes": [
             {
+              "name": "data-caption",
+              "description": "a line over the node: what its step did, its time and rows. Its host writes it",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
               "name": "data-current",
               "description": "the selected node; the HOST writes it, one node of many",
               "type": {
@@ -6849,6 +6856,13 @@
               "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond)",
               "type": {
                 "text": "'value' | 'object'"
+              }
+            },
+            {
+              "name": "data-step",
+              "description": "how its step stands as a run lights it: running | done | failed | skipped. Its host writes it",
+              "type": {
+                "text": "'running' | 'done' | 'failed' | 'skipped'"
               }
             },
             {
@@ -6908,6 +6922,9 @@
           "cssParts": [
             {
               "name": "body"
+            },
+            {
+              "name": "caption"
             },
             {
               "name": "header"

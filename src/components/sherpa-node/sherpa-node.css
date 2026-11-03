@@ -72,6 +72,21 @@
   outline-offset: var(--sherpa-focus-offset);
 }
 
+/* ── What its step did: a line over the card, so the rows and routes stay put ── */
+.root { position: relative; }
+.caption {
+  display: none;
+  position: absolute;
+  inset-block-end: 100%;
+  inset-inline: 0;
+  padding-block-end: var(--sherpa-theme-gap-sm, 4px);
+  color: var(--sherpa-style-content-secondary, #35353d);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
+}
+:host([data-caption]) .caption { display: block; }
+
 /* The whole node's sockets, on the header's edges. */
 .socket {
   inset-block-start: 50%;

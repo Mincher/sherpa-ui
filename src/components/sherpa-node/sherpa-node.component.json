@@ -19,6 +19,11 @@
       "part": "root",
       "children": [
         {
+          "el": "span",
+          "class": "caption sherpa-truncate",
+          "part": "caption"
+        },
+        {
           "el": "div",
           "class": "header",
           "part": "header",
@@ -71,6 +76,15 @@
     }
   },
   "props": [
+    {
+      "$type": "prop",
+      "name": "data-caption",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "content",
+      "description": "a line over the node: what its step did, its time and rows. Its host writes it"
+    },
     {
       "$type": "prop",
       "name": "data-current",
@@ -145,6 +159,21 @@
     },
     {
       "$type": "prop",
+      "name": "data-step",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "values": [
+        "running",
+        "done",
+        "failed",
+        "skipped"
+      ],
+      "description": "how its step stands as a run lights it: running | done | failed | skipped. Its host writes it"
+    },
+    {
+      "$type": "prop",
       "name": "data-x",
       "type": "number",
       "observed": true,
@@ -175,10 +204,15 @@
     }
   ],
   "populate": {
-    "shape": "{ current?, description?, heading?, icon?, inputSocket?, locked?, outputSocket?, x?, y? }",
+    "shape": "{ caption?, current?, description?, heading?, icon?, inputSocket?, locked?, outputSocket?, step?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
+    {
+      "$type": "state",
+      "name": "caption",
+      "selector": ":host([data-caption])"
+    },
     {
       "$type": "state",
       "name": "focus-visible",
@@ -213,6 +247,11 @@
     }
   ],
   "tokens": {
+    "caption.padding-block-end": "{sherpa.theme-gap-sm}",
+    "caption.color": "{sherpa.style-content-secondary}",
+    "caption.font-family": "{sherpa.font-family-body}",
+    "caption.font-size": "{sherpa.font-size-body-small}",
+    "caption.line-height": "{sherpa.theme-content-line-height-small}",
     "body.gap": "{sherpa.theme-gap-md}",
     "body.padding-block": "{sherpa.theme-gap-md}"
   },

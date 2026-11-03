@@ -22,6 +22,7 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
+| `data-caption` | text |  | a line over the node: what its step did, its time and rows. Its host writes it |
 | `data-current` | boolean |  | the selected node; the HOST writes it, one node of many |
 | `data-description` | text |  | a line under the name |
 | `data-heading` | text | `Node` | the node's name, in its header |
@@ -29,6 +30,7 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | `data-input-socket` | `value` `object` |  | the whole node's input socket, on its header: value (a circle) \| object (a diamond) |
 | `data-locked` | boolean |  | the host owns the place: a drag or a key reports, and moves nothing |
 | `data-output-socket` | `value` `object` |  | the whole node's output socket, on its header: value (a circle) \| object (a diamond) |
+| `data-step` | `running` `done` `failed` `skipped` |  | how its step stands as a run lights it: running \| done \| failed \| skipped. Its host writes it |
 | `data-x` | number | `0` | where it sits across the canvas, in plane px |
 | `data-y` | number | `0` | where it sits down the canvas, in plane px |
 
@@ -57,7 +59,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `header`, `heading`, `root`, `socket-in`, `socket-out`
+`body`, `caption`, `header`, `heading`, `root`, `socket-in`, `socket-out`
 
 ## CSS custom properties it reads
 
@@ -65,11 +67,16 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-theme-gap-sm` | `.caption` | `padding-block-end` |
+| `--sherpa-style-content-secondary` | `.caption` | `color` |
+| `--sherpa-font-family-body` | `.caption` | `font-family` |
+| `--sherpa-font-size-body-small` | `.caption` | `font-size` |
+| `--sherpa-theme-content-line-height-small` | `.caption` | `line-height` |
 | `--sherpa-theme-gap-md` | `.body` | `gap` |
 | `--sherpa-theme-gap-md` | `.body` | `padding-block` |
 
 ## populate()
 
-`{ current?, description?, heading?, icon?, inputSocket?, locked?, outputSocket?, x?, y? }`
+`{ caption?, current?, description?, heading?, icon?, inputSocket?, locked?, outputSocket?, step?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.
