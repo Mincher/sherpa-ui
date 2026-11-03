@@ -99,6 +99,27 @@ Every lane writes `TODO.md` and `TRAPS.md`, so they change shape BEFORE any lane
 `TRAPS.md` splits by the index's 11 areas into `docs/traps/<area>.md`; `check-traps` scans
 the folder; history wording is cut; the stale and duplicate entries go. Size: M.
 
+### Wave 1 — as each lane lands
+
+- **D2 ✅ (`076b1838`).** `spec:check` is the one door (`spec:validate` and
+  `validate-component.mjs` folded in; a token ref that names no token is now an error).
+  One Ajv, `scripts/lib/schema-check.mjs`. One round-trip, the generator's;
+  `roundtrip-component.mjs` (14 of 68 failing on a stale reader) and `compile-def.mjs`
+  deleted. `check:generated` replaces `check:manifest` + `check:reference`. Kept as manual
+  Figma tools: `check-tokens`, `figma-harvest-colours`, `figma-extract-component.js` (270 A)
+  and `resync-figma`. `tokens.config.json` is read by the figma-console MCP, so it stays.
+  Lane picks taken: `manifest` and `reference` stay two writers.
+  **Carried:** five unit tests compile Ajv themselves → `schemaCheck` in D1 (wave 2).
+  ❓ Will: `tokens.config.json` also points the figma-console export at a CSS-variables
+  file in `src/styles/tokens/`, so an export with no arguments could overwrite the
+  projected `tokens.css`. A: leave it. B: drop that CSS output (pick B).
+- **T2 ✅ (`54e9d05b`, `523c4adf`, `5b6890ad`).** `.github/workflows/ci.yml`: the hook's
+  gates, the build with `check:weight` and `test:node`, Chromium e2e. `check:weight`
+  gates brotli bytes per import, reports raw and V8 parse time; the hook runs it
+  `--staged` (1.5 s) and `check:extensions` (0.1 s). Lane picks taken: a dist that cannot
+  be weighed passes with a note (CI weighs it); Node 24 floats, no `.nvmrc`.
+  **Carried:** the first CI run comes with Will's push; e2e has never run on Linux.
+
 ### The waves
 
 | Wave | Lane | Workstream | Owns | Done when | Size |

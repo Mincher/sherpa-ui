@@ -459,12 +459,16 @@ WebKit, so the inlined sheets stay), `scheduler.yield` (not WebKit), `interestfo
 ## 10. Tooling and docs
 
 - **No CI.** The pre-commit hook runs 15 gates; `check:weight`, `check:extensions` and
-  `check:mcp-pack` run outside it.
+  `check:mcp-pack` run outside it. *Done, 695 T2: `.github/workflows/ci.yml`; the hook
+  runs `check:weight --staged` and `check:extensions`.*
 - **Generated four times over:** a component's spec is committed as `.component.json`,
   `custom-elements.json`, `vscode.html-data.json` and `docs/components/`, plus the MCP's
   `specToDef`. The round-trip is coded twice; `spec:validate` is a subset of `spec:check`;
-  `check:manifest` and `check:reference` could be one `check:generated`.
+  `check:manifest` and `check:reference` could be one `check:generated`. *Done, 695 D2:
+  one round-trip, one Ajv (`scripts/lib/schema-check.mjs`), `spec:check` the one door,
+  `check:generated`. The four committed forms stay; the MCP's fifth goes with 700.*
 - **`check:weight` measures raw bytes.** Measure brotli bytes and parse time instead.
+  *Done, 695 T2: it gates brotli bytes and reports raw bytes and V8 parse time.*
 - **`TODO.md`:** 664 of 716 rows are done — 89% of its 13,844 lines. **`TRAPS.md`:** 735
   entries, ~13% in history wording, ~10 citing deleted files. A leaner shape that keeps
   every gate: TODO keeps its open rows and an archive file holds the done sections; TRAPS

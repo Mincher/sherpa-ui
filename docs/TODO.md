@@ -172,9 +172,9 @@ In scope, as Will named it:
 
 What is known already, to start from (not yet measured under throttling):
 
-- `check:weight` says one button imports 12 files and about 221 KB of JS, and
-  `index.js` is about 960 KB: the base class and the shared sheets ship with
-  every component.
+- `check:weight` says one button imports 13 files, 19.8 KB brotli (266 KB raw),
+  and `index.js` is 313 KB brotli (1.26 MB raw): the base class and the shared
+  sheets ship with every component (2026-11-03, 695 T2).
 - `check:bench` counts the data layer's loads, counts, compiles and clones per
   act; 291 made a value pick go from 10 loads to 2, and its steps 7–8 (one test
   per filter, one compile per act) wait for a run. 287 and 288 split and share
