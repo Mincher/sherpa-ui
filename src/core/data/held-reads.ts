@@ -20,6 +20,7 @@
 import { planRead, type Plan } from './read-plan.js';
 import { cacheOf, type StoreCache } from './store-cache.js';
 import type { Store } from './store.js';
+import type { TraceContext } from './trace.js';
 
 /** The most rows it holds, and the fields its reader needs. */
 export interface HeldReadsOptions {
@@ -89,7 +90,7 @@ export class HeldReads {
 
   /** Hold the store's whole set, where it can be: one read for every reader over
    *  it. TRAP T-a-store-has-one-cache */
-  async hold(): Promise<void> {
+  async hold(trace?: TraceContext): Promise<void> {
     const cache = this.#live;
     if (!cache) {
       this.plan = 'store';
@@ -115,7 +116,7 @@ export class HeldReads {
       const moved = (): string => `${cache.gen}:${cache.over}:${cache.failedAt}:${cache.never}:${cache.due}:${cache.set?.fields}`;
       const before = moved();
       const held = cache.set;
-      await cache.hold(this.cap, this.#need());
+      await cache.hold(this.cap, this.#need(), trace);
       // A read that just failed WAS this page's check: no second one at once.
       if (cache.failed) this.#tried = true;
       // Nothing moved — no read could be sent, and no kept copy landed: the store answers.

@@ -51,7 +51,7 @@ import { coalesce, Latest } from './timing.js';
 import { report } from './report.js';
 import { heldOf, type HeldStore } from './held-store.js';
 import { failureOf, unreached, type Failure } from './failure.js';
-import { startSpan } from './trace.js';
+import { startSpan, type TraceContext } from './trace.js';
 import type { DataChangeDetail, ViewState } from './data-source-types.js';
 
 /** What the reads ask their source, live, at each ask. */
@@ -522,9 +522,10 @@ export class SourceReads {
   #asks = 0;
 
   /** Hold the store's whole set, where it can be: one read for every page over
-   *  it. TRAP T-a-remote-source-holds-its-whole-set · TRAP T-a-store-has-one-cache */
-  hold(): Promise<void> {
-    return this.held?.hold() ?? Promise.resolve();
+   *  it — under `trace`, the span of the load that asks. TRAP T-a-remote-source-holds-its-whole-set
+   *  TRAP T-a-store-has-one-cache */
+  hold(trace?: TraceContext): Promise<void> {
+    return this.held?.hold(trace) ?? Promise.resolve();
   }
 
   /** A Refresh: its own held set is read again before it is used — never by a closed
@@ -563,11 +564,13 @@ export class SourceReads {
     this.#abort?.abort();
     const { signal } = (this.#abort = new AbortController());
     this.#host.emit(new CustomEvent('loading', { detail: { loading: true } }));
-    // A load says its start and end on the one trace stream. TRAP T-one-trace-stream
+    /* A load says its start and end on the one trace stream, and its reads run
+       under it, passed: a span cannot cross an `await`. TRAP T-one-trace-stream */
     const span = startSpan('load');
+    const traced = span ? { trace: span } : {};
 
     try {
-      await this.hold();
+      await this.hold(span ?? undefined);
       // A Refresh of a store that holds its own set waits for it to read again.
       if (this.#freshen) await this.#freshen.catch(() => undefined).finally(() => { this.#freshen = null; });
       /* A new page over a store that holds its set elsewhere — one that may miss a
@@ -593,7 +596,7 @@ export class SourceReads {
         key = this.#stateKey();
         this.#inFlightKey = key;
       }
-      const result = await this.reader.load({ ...this.#loadOptions(), signal });
+      const result = await this.reader.load({ ...this.#loadOptions(), signal, ...traced });
       // Not the latest → DISCARDED, and the key recorded only by the winner.
       if (!this.#inFlight.is(ticket)) return this.#result;
       this.#result = result;
@@ -626,7 +629,7 @@ export class SourceReads {
         // The same question over the same rows — a page turned — is not asked again.
         const allKey = JSON.stringify([this.#age, this.#allAge, asked]);
         if (allKey !== this.#allFor) {
-          const all = await this.reader.load({ ...asked, signal });
+          const all = await this.reader.load({ ...asked, signal, ...traced });
           if (!this.#inFlight.is(ticket)) return this.#result;
           this.#allRows = all.rows;
           this.#allFor = allKey;
@@ -642,7 +645,7 @@ export class SourceReads {
         const asked = without ? { ...rest, filter: without } : rest;
         const freeKey = JSON.stringify([this.#age, this.#allAge, asked]);
         if (this.#freeRows.get(fields.join('\n'))?.key === freeKey) continue;
-        const free = await this.reader.load({ ...asked, signal });
+        const free = await this.reader.load({ ...asked, signal, ...traced });
         if (!this.#inFlight.is(ticket)) return this.#result;
         this.#freeRows.set(fields.join('\n'), { key: freeKey, rows: free.rows });
       }

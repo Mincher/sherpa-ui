@@ -90,8 +90,8 @@ export type DataHandler = (request: Request) => Promise<Response | null>;
 
 /** A store read as the body a `QUERY` sends. */
 export function encodeQuery(options: LoadOptions = {}, total = false): DataQuery {
-  // A signal stops the request; it is never part of the question.
-  const { now, fields, signal: _signal, ...rest } = options;
+  // A signal stops the request, and a trace is its header: neither is part of the question.
+  const { now, fields, signal: _signal, trace: _trace, ...rest } = options;
   return {
     v: DATA_VERSION,
     ...rest,

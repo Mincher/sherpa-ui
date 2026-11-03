@@ -32,6 +32,7 @@ import { report } from './report.js';
 import { failureOf, unreached, type Failure } from './failure.js';
 import { readField, type LoadResult, type Row, type Store, type StoreChangeDetail } from './store.js';
 import { keyRow } from './row-key.js';
+import type { TraceContext } from './trace.js';
 
 /** A store change, as the cache passes it on: did the set take it in place? */
 export interface CacheChangeDetail {
@@ -228,7 +229,7 @@ export class StoreCache extends EventTarget {
    *  one read, shared by every source that asks — sent at the largest cap and
    *  every field asked — one more if the rows changed while it was out, and one
    *  of a column it lacks. Never rejects. */
-  async hold(cap: number, fields: readonly string[] | null = null): Promise<void> {
+  async hold(cap: number, fields: readonly string[] | null = null, trace?: TraceContext): Promise<void> {
     this.#widest = Math.max(this.#widest, cap);
     this.#want(fields);
     /* None held, and none read this session: a copy kept since it last looked — by
@@ -249,7 +250,7 @@ export class StoreCache extends EventTarget {
            settles before `#reading` is set, and a cleared-first promise would
            be awaited for ever. */
         // After a failure, a smaller cap tries at its own: a server may refuse only the big take.
-        const reading = this.#wants(cap) ? this.#readWhole(this.#failedAt ? cap : this.#widest) : this.#readColumns(cap, fields);
+        const reading = this.#wants(cap) ? this.#readWhole(this.#failedAt ? cap : this.#widest, trace) : this.#readColumns(cap, fields, trace);
         this.#reading = reading;
         void reading.finally(() => {
           if (this.#reading === reading) this.#reading = null;
@@ -310,7 +311,7 @@ export class StoreCache extends EventTarget {
 
   /** Read the columns the set lacks, and join them by key. Not the same rows —
    *  a change it never heard — and the set is read again, whole. */
-  async #readColumns(cap: number, fields: readonly string[] | null): Promise<void> {
+  async #readColumns(cap: number, fields: readonly string[] | null, trace?: TraceContext): Promise<void> {
     const set = this.#set!;
     const missing = fields?.filter((f) => !set.covers([f]));
     if (!missing || !this.#projection()) {
@@ -319,7 +320,7 @@ export class StoreCache extends EventTarget {
     }
     const age = this.#age;
     try {
-      const { rows, total } = await this.store.load({ take: cap + 1, fields: missing });
+      const { rows, total } = await this.store.load({ take: cap + 1, fields: missing, ...(trace ? { trace } : {}) });
       if (age !== this.#age || set !== this.#set) return;
       if (total !== rows.length || !set.join(rows, missing, this.store.key!)) {
         this.#due = true;
@@ -360,14 +361,14 @@ export class StoreCache extends EventTarget {
   }
 
   /** The whole read: held, refused, or — failed — left to the store until a change or a Refresh. */
-  async #readWhole(cap: number): Promise<void> {
+  async #readWhole(cap: number, trace?: TraceContext): Promise<void> {
     const age = this.#age;
     try {
       const fields = this.#projection();
       /* A store that says its total is asked that first, once: a set too big is never
          sent whole, only to be thrown away. TRAP T-a-page-turn-is-a-slice */
       if (!this.#set && this.store.capabilities.totalFirst) {
-        const { total, totalUnknown } = await this.store.load({ take: 1 });
+        const { total, totalUnknown } = await this.store.load({ take: 1, ...(trace ? { trace } : {}) });
         if (age !== this.#age) return;
         if (!totalUnknown && total > cap) {
           this.#over = Math.max(this.#over, cap);
@@ -377,7 +378,7 @@ export class StoreCache extends EventTarget {
       }
       // The mark, asked as the read is sent: a change after it is asked of next time.
       const marking = this.tracks ? this.store.changes!().then((c) => c.at, () => undefined) : undefined;
-      const { rows, total, totalUnknown, dropped, issues } = await this.store.load({ take: cap + 1, ...(fields ? { fields } : {}) });
+      const { rows, total, totalUnknown, dropped, issues } = await this.store.load({ take: cap + 1, ...(fields ? { fields } : {}), ...(trace ? { trace } : {}) });
       const at = await marking;
       if (age !== this.#age) return;
       const counted = { rows: rows.length, total };

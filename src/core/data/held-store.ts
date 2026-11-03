@@ -26,7 +26,7 @@ import {
   distinctOf, matchesOnly, projectRow, readField, sameKey,
   type LoadOptions, type LoadResult, type Row, type Store, type StoreCapabilities, type StoreChangeDetail, type StoreChanges, type WriteOptions,
 } from './store.js';
-import { startSpan, within } from './trace.js';
+import { startSpan, within, type TraceContext } from './trace.js';
 
 /** A write made offline that did not land: a newer write won (`conflict`, D3), or
  *  its source refused it. Said as `lost`. Plan 652 S7b */
@@ -207,16 +207,16 @@ export class HeldStore extends EventTarget implements Store {
   }
 
   /** Hold its source's whole set, where it can be — after the writes kept last time are read. */
-  async hold(): Promise<void> {
-    const span = startSpan('hold');
+  async hold(trace?: TraceContext): Promise<void> {
+    const span = startSpan('hold', trace ? { parent: trace } : {});
     await this.#read;
-    await this.#reads.hold();
+    await this.#reads.hold(span ?? trace);
     span?.end({ plan: this.#reads.plan, rows: this.#reads.cache?.set?.size ?? 0 });
   }
 
   async load(options?: LoadOptions): Promise<LoadResult> {
     if (options?.fields) this.#asked = options.fields;
-    await this.hold();
+    await this.hold(options?.trace);
     const answers = this.#answers;
     const result = await answers.load(options);
     /* Its set holds whole rows: a read that names its fields gets those, and the key —

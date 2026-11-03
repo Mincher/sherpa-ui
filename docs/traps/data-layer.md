@@ -6823,6 +6823,7 @@ until they stop.
 - Site: `src/data.ts`
 - Site: `test/unit/one-trace-stream.test.mjs`
 - Site: `src/core/data/source-reads.ts`
+- Site: `src/core/data/store.ts`
 
 ### T-one-command-one-door
 

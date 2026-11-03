@@ -13,7 +13,7 @@ import { DATA_BASE, DATA_CHANNEL, DATA_QUERY_TYPE, DATA_VERSION, STALE, encodeQu
 import { failureOf, type Failure } from './failure.js';
 import { HttpError } from './stores.js';
 import { readField, type LoadOptions, type LoadResult, type Row, type StoreChangeDetail, type StoreChanges, type WriteOptions } from './store.js';
-import { startSpan, traceparent } from './trace.js';
+import { startSpan, traceparent, type TraceContext } from './trace.js';
 import { ValidationError, type FieldDomain, type Issue } from './validate.js';
 
 /** Where its requests go, and the store's name there. */
@@ -134,13 +134,13 @@ export class RequestStore extends BaseStore {
 
   /* A read sends its signal with its request: superseded, it stops. TRAP T-a-superseded-read-stops */
   async load(options: LoadOptions = {}): Promise<LoadResult> {
-    const result = await this.#query<LoadResult>(encodeQuery(options), options.signal);
+    const result = await this.#query<LoadResult>(encodeQuery(options), options.signal, options.trace);
     for (const row of result.rows) this.keyed(row);
     return result;
   }
 
   override async totalCount(options?: LoadOptions): Promise<number> {
-    return (await this.#query<{ total: number }>(encodeQuery(options, true), options?.signal)).total;
+    return (await this.#query<{ total: number }>(encodeQuery(options, true), options?.signal, options?.trace)).total;
   }
 
   async byKey(key: unknown): Promise<Row | undefined> {
@@ -178,16 +178,16 @@ export class RequestStore extends BaseStore {
    *  same body, from then on. One that fails at the network tries `POST` once, and
    *  keeps it only if it answers: a CORS preflight refused looks like offline.
    *  TRAP T-a-query-falls-back-to-post */
-  async #query<T>(query: DataQuery, signal?: AbortSignal): Promise<T> {
-    if (this.#post) return this.#ask<T>('POST', '', query, DATA_QUERY_TYPE, {}, signal);
+  async #query<T>(query: DataQuery, signal?: AbortSignal, trace?: TraceContext): Promise<T> {
+    if (this.#post) return this.#ask<T>('POST', '', query, DATA_QUERY_TYPE, {}, signal, trace);
     try {
-      return await this.#ask<T>('QUERY', '', query, DATA_QUERY_TYPE, {}, signal);
+      return await this.#ask<T>('QUERY', '', query, DATA_QUERY_TYPE, {}, signal, trace);
     } catch (error) {
       const refused = error instanceof HttpError && (error.status === 405 || error.status === 501);
       if (!refused && failureOf(error).kind !== 'offline') throw error;
       let answer: T;
       try {
-        answer = await this.#ask<T>('POST', '', query, DATA_QUERY_TYPE, {}, signal);
+        answer = await this.#ask<T>('POST', '', query, DATA_QUERY_TYPE, {}, signal, trace);
       } catch {
         throw error;
       }
@@ -199,9 +199,12 @@ export class RequestStore extends BaseStore {
   /** One request, its answer as JSON. A refusal throws as the store's own error
    *  would: a write's issues as a `ValidationError`, else an `HttpError`. Traced,
    *  it carries its span as `traceparent`, and its host's spans join it. TRAP T-one-trace-stream */
-  async #ask<T>(method: string, tail: string, body?: unknown, type = 'application/json', more: Record<string, string> = {}, signal?: AbortSignal): Promise<T> {
+  async #ask<T>(
+    method: string, tail: string, body?: unknown, type = 'application/json', more: Record<string, string> = {}, signal?: AbortSignal, trace?: TraceContext,
+  ): Promise<T> {
     const url = this.#url + tail;
-    const span = startSpan('request', { store: this.#name, detail: { method } });
+    // Under the read that asked it, passed: a span cannot cross an `await`.
+    const span = startSpan('request', { store: this.#name, detail: { method }, ...(trace ? { parent: trace } : {}) });
     const headers: Record<string, string> = {
       ...(span ? { traceparent: traceparent(span) } : {}), ...this.#headers(), ...more,
       'Sherpa-Data': String(DATA_VERSION), ...(body !== undefined ? { 'Content-Type': type } : {}),

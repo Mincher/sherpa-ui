@@ -68,6 +68,7 @@
 import type { FieldDomain } from './validate.js';
 import type { StoreHistory } from './store-history.js';
 import type { Failure } from './failure.js';
+import type { TraceContext } from './trace.js';
 
 /** One record. Plain object — structuredClone cannot clone a class instance. */
 export type Row = Record<string, unknown>;
@@ -271,6 +272,10 @@ export interface LoadOptions {
   /** Aborted, the read stops: its store passes it to its fetch. A newer read
    *  supersedes it. TRAP T-a-superseded-read-stops */
   signal?: AbortSignal;
+  /** The span the read runs under: its own steps and requests join its trace.
+   *  Passed, as a span cannot cross an `await`; never part of the question.
+   *  TRAP T-one-trace-stream */
+  trace?: TraceContext;
 }
 
 /** What moved in a store since a mark, and the mark now: `rows` — a row came

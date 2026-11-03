@@ -92,6 +92,33 @@ test('a DataSource load says its start and its end', async (t) => {
   assert.deepEqual(loads[1].detail, { rows: 3, total: 3 }, 'its end');
 });
 
+test('a DataSource load and its requests are one trace: the trace is passed through the load, across its awaits (S5)', async (t) => {
+  const spans = [];
+  t.after(onTrace((span) => spans.push(span)));
+  for (const holdRows of [100_000, 0]) {
+    spans.length = 0;
+    // A remote store: the page reads it through its own HeldStore, but with no rows to hold.
+    const { page } = await pageOverWorker(fakeRemote(new ArrayStore([{ id: 1 }, { id: 2 }], { key: 'id' }), { delay: 0 }));
+    const source = new DataSource({ store: page, holdRows });
+    await source.load();
+    await tick();
+    const loads = ended(spans, 'load');
+    const requests = ended(spans, 'request');
+    assert.ok(requests.length, `holdRows ${holdRows}: it asked`);
+    for (const request of requests) {
+      const load = loads.find((l) => l.trace === request.trace);
+      assert.ok(load, `holdRows ${holdRows}: a request is in the trace of the load that sent it`);
+      // Held, the request runs under the hold, the hold under the load; else under the load.
+      const under = holdRows ? spans.find((h) => h.step === 'hold' && h.id === request.parent) : load;
+      assert.equal(request.parent, under?.id, `holdRows ${holdRows}: under the ${holdRows ? 'hold' : 'load'}`);
+      if (holdRows) assert.equal(under.parent, load.id, 'the hold under the load');
+      // …and the worker's answer joins it, by the traceparent the request carries.
+      assert.ok(ended(spans, 'answer').some((a) => a.parent === request.id && a.trace === load.trace));
+    }
+    source.close();
+  }
+});
+
 test('another context listens on the channel: this one traces for it, and hears its spans', async (t) => {
   const other = new BroadcastChannel(TRACE_CHANNEL);
   other.unref?.();
