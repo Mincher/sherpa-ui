@@ -305,6 +305,26 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   group joins the other way from its parent; an `in` leaf is one row per value; an `off`
   part is drawn greyed and kept off.
   **Carried:** `show()` on a card that is already open keeps its first anchor.
+- **N1 ✅, started early (`ee9be4ca`; Demos `a541b9e`).** One registry: `NODE_KINDS` in
+  `src/core/data/node-kinds.ts`, each kind once with its `model` and the `graphs` it is in;
+  `QUERY_KINDS`, `WorkflowRoute` and `RowField` gone; one meaning per word (a workflow's
+  `source` → `store`; a row's `key` → `field`; a Filter node's rows are one condition
+  leaf). `workflowFaults`, `workflowGraph`, pure `editWorkflow`. The Query graph also draws
+  presets, saved filters, status fields and superseded answers; `graphRequest` and
+  `routeRequest` type values with `typedValue`. `bindQueryEditor` asks only through
+  `ask()`; a new `bindWorkflow`; both return `{save, stop}`, and Save fires
+  `definition-save` with the checked definition (`pageWithQuery`). A moved node keeps its
+  place for the tab; nodes not moved follow the layout. `editQuery` exported. Demos' Node
+  Editor runs `bindWorkflow` on `app/workflows/active-customers.json`; its stand-in
+  connectors and ops are gone. Lane picks taken: a preset, saved filter and status field
+  are each a node (a status node between Store and Source); a page graph's places are kept
+  for the session only, and page Save writes the Query's edits; Save in the beta overlay
+  waits for TODO 560's canvas toolbar. 234 node and provider tests pass in three engines.
+  **Seams:** N2 lights a node by its graph id (`when-<scope>-<field>`, `preset-…`;
+  `GraphNode.ref` names the scope and field) from a trace span. N4: `NodeKind.model` names
+  the function a kind runs by; a run hooks into `bindWorkflow`'s `write()`.
+  **Carried → S5:** `QueryContext.presetOn` should call the pure `presetHeld`.
+  `ViewScope.superseded` still takes two types.
 
 ### The waves
 

@@ -433,6 +433,13 @@ flowchart LR
   `sortRows`, `groupRows`, `summarise`, `planWalk`. What is missing is typed sockets, the
   trace, cancelling, and edits that return a new Query.
 
+*Done, 695 N1 (2026-11-03):* one registry, `NODE_KINDS` in `node-kinds.ts` (`QUERY_KINDS`
+gone; a workflow's `source` is `store`, a row's `key` is `field`); the Query graph adds
+presets, saved filters, status fields and superseded answers; every edit is an `ask()`;
+Save fires `definition-save` with a checked definition (`pageWithQuery`, `workflowFaults`);
+a moved node keeps its place for the tab; Demos' Node Editor is the library's alone. Left:
+watch by the trace (N2) and the runner (N4).
+
 ### 7.2 Local or remote, the same way (170)
 
 The seam is the `Store`, with its capabilities said once (§3.2), a remote store always
