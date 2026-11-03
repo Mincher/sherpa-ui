@@ -17,8 +17,8 @@ So every floating card measures its trigger with `getBoundingClientRect()` and
 writes viewport coordinates the card consumes as `position: fixed` offsets. That
 measurement layer looks like reinventing the platform. It is not.
 
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-menu/menu-shell.ts`
 
 ### T-custom-element-upgrade
 
@@ -54,6 +54,8 @@ the type is what it WILL be, not proof that it is upgraded yet.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-conditions.ts`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 - Site: `test/e2e/reforged-app-header.spec.ts`
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
@@ -286,6 +288,7 @@ draft until Apply: the bar asks for nothing on a pick in a committing menu.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-date.ts`
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/core/ui/filter-def.ts`
 
@@ -517,6 +520,7 @@ does not draw is not its to hold.
 - Site: `src/components/sherpa-prompt-composer/sherpa-prompt-composer.ts`
 - Site: `test/e2e/reforged-prompt-composer.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 - Site: `test/e2e/reforged-menu-state-first.spec.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-quick-filter-state-first.spec.ts`
@@ -631,6 +635,8 @@ TRAP T-projected-slot-content-crosses-two-shadow-boundaries
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-date.ts`
+- Site: `src/components/sherpa-menu/menu-number.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
@@ -982,6 +988,7 @@ until the user opened the menu.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 
 ### T-value-label-is-the-callers-words
 
@@ -1551,6 +1558,7 @@ box, label, count, caret — and needs no rule on any child. An empty
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-menu-child-rows.spec.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
@@ -1623,6 +1631,7 @@ each row is `[And|Or] [condition] [value]`.
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-conditions.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ---
@@ -1659,6 +1668,7 @@ Dates are not done: their questions wait on TODO 21d.
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-conditions.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `test/e2e/reforged-number-advanced.spec.ts`
@@ -1694,6 +1704,9 @@ keeps its Range switch for now: 379.)
 
 ---
 - Site: `src/core/ui/filter-menu.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 
 ### T-an-active-chip-is-heavier-and-more-strongly-drawn
 
@@ -1737,8 +1750,8 @@ rendered (`#reportSoon`).
 - Site: `src/core/ui/filter-host.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `src/components/sherpa-menu/menu-conditions.ts`
 
 ---
 
@@ -2171,6 +2184,7 @@ outside beats the menu's own `:host`. Will, TODO 525
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-menu/menu-shell.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 
 ### T-a-panel-builds-its-own-menus
@@ -2349,6 +2363,7 @@ some may now be removable — each needs its own proof. A BOUND bar paints from
 its live slice after them (366 step 22), so a wait costs it latency only.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 
 ---
 
@@ -2361,8 +2376,8 @@ for the menu's own `rendered` and one frame after it, and a later check
 cancels an earlier one.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar-state-first.spec.ts`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 
 ### T-an-empty-chip-opens-its-menu
 
@@ -2655,9 +2670,9 @@ showed nothing wrong, and a first look said the cause was gone. The wrong
 read only shows at the moment `menu.rendered` resolves for a chip the bar has
 just built.
 
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-a-row-remembers-what-it-was-given.spec.ts`
+- Site: `src/components/sherpa-menu/menu-conditions.ts`
 
 ### T-a-silent-steer-still-redraws-its-chip
 
@@ -2713,6 +2728,7 @@ a nested menu, and each menu names its radios with its own group. The chip
 reads its menu's inputs the same way.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-menu.spec.ts`
 

@@ -1,11 +1,11 @@
 /**
  * sherpa-menu — the dropdown card: value rows, condition rows, number and date bodies.
  *
- * On the native popover API.
- *
- * The browser owns the top layer, Escape, outside-click and focus. `#place()`
- * measures the trigger: CSS anchoring cannot cross a shadow root.
- * TRAP T-anchor-cross-root
+ * On the native popover API. Its parts are modules beside it: the card
+ * (`menu-shell`), the value list (`menu-list`), the condition rows
+ * (`menu-conditions`), the number body (`menu-number`) and the date body
+ * (`menu-date`). This file holds its attributes, its doors, its events, its two
+ * modes and its draft.
  * TRAP T-menu-rows-stay-native-controls
  *
  * @prop {string[]} values — the checked row values (read/write)
@@ -16,19 +16,17 @@
  * - MenuItem — One item a menu draws for itself.
  */
 import { DATA_PROPS, SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { DEFAULT_OP, OP_TAKES, type Condition, type FilterOp, valueKey } from '../../core/data/store.js';
 import {
-  DATE_OP_LABELS, DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type Condition, type FilterOp, valueKey, valueSet,
-} from '../../core/data/store.js';
-import {
-  answeredCondition, goesFromList, modeOf, rowAnswered, rowsFromPicks, rowsTree, ruleOut, treeRows,
+  answeredCondition, modeOf, rowAnswered, rowsFromPicks, rowsTree, treeRows,
   type ConditionType, type FieldCondition, type FieldReading,
 } from '../../core/data/filter-state.js';
 import { sameAnswer } from '../../core/data/query.js';
-import { NON_VALUE_ROWS, RULED_OUT, SET_ASIDE, onByPreset } from '../../core/ui/shared-constants.js';
-import { hiddenRows } from '../../core/ui/tree-rows.js';
-import { TreePicks } from '../../core/ui/tree-picks.js';
-import { renderIcon } from '../../core/ui/render-icon.js';
-import { paintSwatch } from '../../core/ui/chart-parts.js';
+import { MenuShell } from './menu-shell.js';
+import { MenuList } from './menu-list.js';
+import { ConditionRows } from './menu-conditions.js';
+import { NumberBody } from './menu-number.js';
+import { DateBody } from './menu-date.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
 import '../sherpa-input-text/sherpa-input-text.js';
@@ -36,17 +34,9 @@ import '../sherpa-button/sherpa-button.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
 import '../sherpa-badge/sherpa-badge.js';
 import type { SherpaBreadcrumbs } from '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
-import type { SherpaCalendar } from '../sherpa-calendar/sherpa-calendar.js';
 import type { SherpaInputText } from '../sherpa-input-text/sherpa-input-text.js';
 import type { SherpaSlider } from '../sherpa-slider/sherpa-slider.js';
 import type { SherpaSwitch } from '../sherpa-switch/sherpa-switch.js';
-
-/** Is a list of value keys the set held already — or both nothing? */
-function sameKeys(held: ReadonlySet<string> | null, next: readonly string[] | null): boolean {
-  if (!held || !next) return !held && !next;
-  const keys = new Set(next);
-  return keys.size === held.size && [...keys].every((k) => held.has(k));
-}
 
 /** One item a menu draws for itself. */
 export interface MenuItem {
@@ -83,21 +73,11 @@ export interface MenuItem {
   current?: boolean;
 }
 
-/** How long a pointer RESTS on a row before its child menu opens. */
-const HOVER_OPENS_AFTER = 500;
-
 /** What does its own job with a click. Anything else in the card is a gap. */
 const CONTROL = 'a[href], button, input, select, textarea, label, summary, [contenteditable]';
 
 /** A mode as written, as the one it means: anything but `advanced` is `simple`. */
 const modeAttr = (raw: string | undefined): ConditionType => (raw === 'advanced' ? 'advanced' : 'simple');
-
-/** What a date's In the last and In the next count. */
-const DATE_UNITS = ['day', 'week', 'month', 'year'] as const;
-type DateUnit = (typeof DATE_UNITS)[number];
-
-/** Each menu's own radio group number. */
-let radioGroups = 0;
 
 export class SherpaMenu extends SherpaElement {
   static override css = new URL('./sherpa-menu.css', import.meta.url);
@@ -201,11 +181,63 @@ export class SherpaMenu extends SherpaElement {
     return this.dataset['type'] === 'filter' ? 'filter' : 'default';
   }
 
-  /** Gap between trigger and card. */
-  static readonly OFFSET = 4;
+  /** The card: on the native popover. */
+  readonly #shell = new MenuShell({
+    el: this,
+    card: () => this.#card(),
+    on: (target, type, handler, options) => this.on(target, type, handler, options),
+    onFrame: (target, type, handler, options) => this.onFrame(target, type, handler, options),
+    hide: () => this.hide(),
+  });
 
-  /** The open menu's trigger — re-measured on scroll / resize. */
-  #trigger: HTMLElement | null = null;
+  /** The value rows. */
+  readonly #list = new MenuList({
+    el: this,
+    $: (sel) => this.$(sel),
+    clone: (from) => this.clone(from),
+    own: (sel) => this.#own(sel),
+    toggleState: (name, on) => this.toggleState(name, on),
+    open: () => this.open,
+    /* SAY SO. A host reads its own face off the menu's values, and pre-ticked
+       rows fire no native change. TRAP T-chip-empty-check-waits-for-onconnect */
+    stamped: () => this.emit('menu-items', { values: this.values }),
+    drill: (value) => this.emit('menu-drill', { value }),
+    back: () => this.emit('menu-back'),
+    commits: () => this.#commits,
+  });
+
+  /** The Advanced rows. */
+  readonly #rows = new ConditionRows({
+    el: this,
+    $: (sel) => this.$(sel),
+    clone: (from) => this.clone(from),
+    word: (key) => this.word(key),
+    set: (attr, value) => this.set(attr, value),
+    op: () => this.op,
+    conditionValue: () => this.conditionValue,
+    setConditionValue: (text) => { this.conditionValue = text; },
+    values: () => this.#list.fieldValues(),
+    advancedOnly: () => this.#advancedOnly(),
+  });
+
+  /** A number's Simple body. */
+  readonly #number = new NumberBody({
+    el: this,
+    $: (sel) => this.$(sel),
+    set: (attr, value) => this.set(attr, value),
+    ops: () => this.#rows.opList(),
+    op: () => this.op,
+  });
+
+  /** A date's Simple body. */
+  readonly #date = new DateBody({
+    el: this,
+    clone: (from) => this.clone(from),
+    own: (sel) => this.#own(sel),
+    set: (attr, value) => this.set(attr, value),
+    op: () => this.op,
+  });
+
   /** What Discard restores. TRAP T-cancel-baseline-captured-on-open */
   #baseline: string[] = [];
 
@@ -214,25 +246,15 @@ export class SherpaMenu extends SherpaElement {
     return this.$('.menu');
   }
 
-  /** The nearest drawn box to hang an untriggered card on: the element this
-   * menu is slotted into, else its own parent.
-   * TRAP T-a-menu-with-no-trigger-lands-at-the-origin */
-  #fallbackTrigger(): HTMLElement | null {
-    const slotted = this.assignedSlot?.getRootNode();
-    const host = slotted instanceof ShadowRoot ? slotted.host : null;
-    const near = host ?? this.parentElement;
-    return near instanceof HTMLElement ? near : null;
-  }
-
   override onRender(): void {
-    this.#stampDateBody();
-    this.#syncInline();
+    this.#date.stamp();
+    this.#shell.syncInline();
     this.#sync();
     /* Items given BEFORE this element had a shadow tree. A caller building a
        chip clones an UNUPGRADED <sherpa-menu>, so there is no template to
        stamp from until it enters the page.
        TRAP T-custom-element-upgrade */
-    this.#stampItems();
+    this.#list.stamp();
     const card = this.#card();
     if (!card) return;
     card.addEventListener('toggle', this.#onToggle as EventListener);
@@ -252,8 +274,8 @@ export class SherpaMenu extends SherpaElement {
     this.addEventListener('click', this.#onClick);
     this.addEventListener('click', this.#onGapClick);
     // A row with a child menu opens it on a rest, or ArrowRight. TRAP T-a-row-opens-its-child-menu
-    this.addEventListener('pointerover', this.#onRowHover);
-    this.addEventListener('pointerleave', this.#onRowHover);
+    this.addEventListener('pointerover', this.#list.hover);
+    this.addEventListener('pointerleave', this.#list.hover);
     this.addEventListener('keydown', this.#onRowKey);
     this.$('.apply')?.addEventListener('click', this.#onApply);
     this.$('.discard')?.addEventListener('click', this.#onDiscard);
@@ -282,11 +304,11 @@ export class SherpaMenu extends SherpaElement {
     this.$('.add-condition')?.addEventListener('click', this.#onAddCondition);
     region?.addEventListener('click', this.#onDropCondition);
     // Held writes, then a reading set before this menu drew — it has rows and ticks now.
-    const held = this.#heldValues;
-    this.#heldValues = null;
+    const held = this.#list.held;
+    this.#list.held = null;
     if (held) this.values = held;
-    const rows = this.#heldRows;
-    this.#heldRows = null;
+    const rows = this.#rows.held;
+    this.#rows.held = null;
     if (rows) this.conditions = rows;
     const early = this.#early;
     this.#early = undefined;
@@ -295,10 +317,6 @@ export class SherpaMenu extends SherpaElement {
 
   /** A reading set before this menu drew. TRAP T-custom-element-upgrade */
   #early: FieldReading | undefined;
-  /** Picks set before any row could show them. TRAP T-a-value-before-the-first-render-is-held */
-  #heldValues: string[] | null = null;
-  /** Condition rows set before the menu drew. */
-  #heldRows: FieldCondition[] | null = null;
 
   /* ── The two modes ──────────────────────────────────────────────── */
 
@@ -346,14 +364,11 @@ export class SherpaMenu extends SherpaElement {
     /* A NUMBER going Advanced carries its body into the rows, whoever flipped
        it — the menu's own button, a panel's f(x). TRAP T-a-number-has-advanced-rows */
     if (this.#typedBody() && was !== 'advanced' && to === 'advanced' && this.$('.condition-rows')) {
-      if (!this.#rowEls().length) this.#addRow();
+      if (!this.#rows.rows().length) this.#rows.add();
       this.#seedFromPicks();
     }
     this.#syncDirty();
   }
-
-  /** Drawn once — a re-populate would lose what the reader picked. */
-  #opsDrawn = false;
 
   /** The body's operator changed. */
   #onBodyOp = (event: Event): void => {
@@ -374,9 +389,7 @@ export class SherpaMenu extends SherpaElement {
     this.set('data-range', on);
     // A RANGE defers: the pick is not finished on its first end.
     if (!this.hasAttribute('data-commit-fixed')) this.set('data-commit', on);
-    /* A FLIP names both sides. Any previous single pick is left alone —
-       re-picking starts a range anyway. */
-    this.#own('sherpa-calendar')[0]?.setAttribute('data-type', on ? 'range' : 'single');
+    this.#date.flip(on);
     this.#syncBody();
     this.emit('menu-range-change', { range: on });
     /* THE SHAPE CHANGED, so what the filter means changed: said as a value
@@ -411,7 +424,7 @@ export class SherpaMenu extends SherpaElement {
     if (!this.#offersAdvanced() || this.#advancedOnly() || next === this.mode) return;
     this.mode = next;
     // An Advanced mode with no rows has nothing to answer with.
-    if (next === 'advanced' && !this.#rowEls().length) this.#addRow();
+    if (next === 'advanced' && !this.#rows.rows().length) this.#rows.add();
     /* CARRY THE PICKS OVER. Ticking three values and pressing the mode button
        is a reader saying "now let me refine THAT" — opening on a blank
        `Equals <first option>` throws their answer away without saying so.
@@ -422,7 +435,7 @@ export class SherpaMenu extends SherpaElement {
     this.#emitConditions();
     // Its own `change` stops here, so the footer is told directly.
     this.#syncDirty();
-  };
+  }
 
   /**
    * Put what is TICKED into the condition rows, when they have nothing of
@@ -446,15 +459,11 @@ export class SherpaMenu extends SherpaElement {
   /** listed — the values its Equals rows list where it has no value rows of its
    *  own: a number's, from its field. Will, TODO 668 */
   get listed(): { value: string; label: string }[] {
-    return [...this.#listed];
+    return this.#rows.listed;
   }
   set listed(values: readonly { value: string; label: string }[]) {
-    this.#listed = [...values];
-    // Before it draws there are no rows, nor the words they read: each row reads them as it is made.
-    if (this.#rowEls().length) this.#refillPicks();
+    this.#rows.listed = values;
   }
-  /** What `listed` was given. */
-  #listed: { value: string; label: string }[] = [];
 
   /** A pick moved: rows that still MIRROR the picks follow it. */
   #followPicks(): void {
@@ -472,16 +481,16 @@ export class SherpaMenu extends SherpaElement {
     /* A NUMBER that offers Advanced keeps BOTH answers, as a list does: its
        body is Simple's, its rows Advanced's. TRAP T-a-number-has-advanced-rows */
     if ((body === 'number' || body === 'date') && this.#offersAdvanced()) {
-      const tree = this.#treeOf(this.#rowEls().length ? this.conditions : []);
+      const tree = this.#treeOf(this.#rows.rows().length ? this.conditions : []);
       return { ...this.#bodyReading(), ...(tree ? { tree } : {}), mode: this.mode };
     }
     if (body === 'number' || body === 'date') return this.#bodyReading();
     const out: FieldReading = { picked: this.values };
     if (!this.#offersAdvanced()) return out;
-    /* Not drawn yet: row one is still its attributes, as #syncConditions will
-       draw it. A chip asks before then. TRAP T-restamp-does-not-abort */
+    /* Not drawn yet: row one is still its attributes, as the rows will draw it.
+       A chip asks before then. TRAP T-restamp-does-not-abort */
     const one: FieldCondition = { op: this.op, text: this.dataset['value'] ?? '' };
-    const tree = this.#treeOf(this.#rowEls().length ? this.conditions : OP_TAKES[one.op] === 'text' ? [one] : []);
+    const tree = this.#treeOf(this.#rows.rows().length ? this.conditions : OP_TAKES[one.op] === 'text' ? [one] : []);
     if (tree) out.tree = tree;
     out.mode = this.mode;
     out.mirror = this.#mirror;
@@ -513,20 +522,7 @@ export class SherpaMenu extends SherpaElement {
    * TRAP T-a-menu-owns-its-own-bodies · TRAP T-one-number-is-a-pick-under-equals
    */
   #bodyReading(): FieldReading {
-    const values = this.values;
-    if (this.dataset['body'] !== 'number') {
-      // Two ENDS are the answer; the operator is the single side's, left behind.
-      if (this.hasAttribute('data-range')) return { picked: [...values], op: DEFAULT_OP, range: true };
-      return { picked: [...values], op: this.op, range: false };
-    }
-    /* A NUMBER's Simple answer is ONE value: a pick under `=`, typed text under an
-       op that takes text. Its range is an Advanced row. Will, TODO 375.
-       TRAP T-one-number-is-a-pick-under-equals */
-    const one = this.$<SherpaInputText>('.body-number-one')?.value.trim() ?? '';
-    // The number body's own select is the live operator. TRAP T-a-menu-owns-its-own-bodies
-    const op = this.op;
-    if (OP_TAKES[op] === 'text') return { picked: [], op, text: one };
-    return { picked: one ? [one] : [], op };
+    return this.dataset['body'] === 'number' ? this.#number.reading() : this.#date.reading(this.values);
   }
 
   set reading(next: FieldReading) {
@@ -539,12 +535,12 @@ export class SherpaMenu extends SherpaElement {
     const body = this.dataset['body'];
     if (body === 'number') {
       // ONE value in Simple; a range is an Advanced row. Will, TODO 375
-      if (next.op) this.#setBodyOp(next.op);
+      if (next.op) this.#number.setOp(next.op);
       this.#setNumberBody(typed || valueKey(next.picked?.[0] ?? ''));
       /* …and its ROWS, where it offers them: only the reading's own rows — a
          Simple `> 2` is the body's, not a row. TRAP T-a-number-has-advanced-rows */
       if (this.#offersAdvanced()) {
-        this.#setRows(this.#drawTree(next.tree));
+        this.#rows.set(this.#drawTree(next.tree));
         // No `mode` — a saved answer: its tree decides, as a list's does.
         this.mode = modeOf(next) ?? 'simple';
       }
@@ -552,11 +548,11 @@ export class SherpaMenu extends SherpaElement {
       return;
     }
     if (body === 'date') {
-      if (next.op) this.#setBodyOp(next.op);
+      if (next.op) this.#number.setOp(next.op);
       this.values = typed ? [typed] : (next.picked ?? []).map(valueKey);
       // …and its ROWS, where it offers them, as a number's. TODO 21d
       if (this.#offersAdvanced()) {
-        this.#setRows(this.#drawTree(next.tree));
+        this.#rows.set(this.#drawTree(next.tree));
         this.mode = modeOf(next) ?? 'simple';
       }
       return;
@@ -578,20 +574,13 @@ export class SherpaMenu extends SherpaElement {
     if (mode) this.mode = mode;
   }
 
-  /** A number body's operator: its select, and the attribute that echoes it. */
-  #setBodyOp(op: FilterOp): void {
-    this.set('data-op', op);
-    const select = this.$<SherpaInputText>('.body-op');
-    if (select && select.value !== op) select.value = op;
-  }
-
   /** Add a condition row, and report the chain. Focus goes to its condition
    *  field once that has drawn — it renders on its own clock.
    *  TRAP T-add-condition-sits-below-the-rows */
   #onAddCondition = (): void => {
     this.#mirror = false;
     this.#unsaid = null;
-    const row = this.#addRow();
+    const row = this.#rows.add();
     this.#emitConditions();
     // A click is no input or change: say the draft moved. TODO 396
     this.#syncDirty();
@@ -599,160 +588,16 @@ export class SherpaMenu extends SherpaElement {
     void Promise.resolve(field?.rendered).then(() => field?.focus());
   };
 
-  /** A row's own Remove. The LAST row is never dropped — an empty condition
-   *  mode reads as broken, and Clear is the way to mean "no filter". */
+  /** A row's own Remove. The LAST row is never dropped. */
   #onDropCondition = (event: Event): void => {
-    const hit = (event.target as HTMLElement | null)?.closest?.('.drop-condition');
-    if (!hit || this.#rowEls().length <= 1) return;
+    if (!this.#rows.drop(event)) return;
     this.#mirror = false;
     this.#unsaid = null;
-    hit.closest('.condition-row')?.remove();
-    this.#numberRows();
-    // Row one is ALSO data-op and data-value: a dropped first row, left there,
-    // came back at the next sync. TRAP T-row-one-is-data-op
-    this.#setRows(this.conditions);
     this.#emitConditions();
     this.#syncDirty();
   };
 
-  /* ── The condition rows ─────────────────────────────────────────── */
-
-  /** Every condition row, in order. */
-  #rowEls(): HTMLElement[] {
-    return [...(this.$('.condition-rows')?.querySelectorAll<HTMLElement>('.condition-row') ?? [])];
-  }
-
-  /** Stamp one row from the prototype, populate its three selects, append it. */
-  #addRow(seed?: FieldCondition): HTMLElement | null {
-    const region = this.$('.condition-rows');
-    const row = this.clone('.condition-row-tpl');
-    if (!region || !row) return null;
-    region.append(row);
-    this.#fillRow(row, seed);
-    this.#readonlyRows([row]);
-    this.#numberRows();
-    return row;
-  }
-
-  /** Send the three option sets into one row and set its values. */
-  #fillRow(row: HTMLElement, seed?: FieldCondition): void {
-    const join = row.querySelector<SherpaInputText>('.join');
-    const cond = row.querySelector<SherpaInputText>('.condition');
-    const pick = row.querySelector<SherpaInputText>('.condition-pick');
-    const text = row.querySelector<SherpaInputText>('.condition-value');
-
-    /* OR, not AND. Two rows over ONE field are alternatives — `eq Dana` AND
-       `eq Ravi` matches nobody, every time, and that is what a second row
-       produced. `#seedFromPicks` already joins carried picks with `or`; a row
-       the reader adds now agrees with it.
-       TRAP T-two-conditions-over-one-field-are-alternatives */
-    if (join) join.value = seed?.join ?? 'or';
-    // The row REMEMBERS its join, as it does its op and its pick: the select has no options yet.
-    row.dataset['join'] = seed?.join ?? 'or';
-
-    const ops = this.#opList();
-    // A date's ops in a date's words: On, Before, After. TODO 21d
-    const dated = this.#dated();
-    void cond?.populate?.(ops.map((op) => ({
-      value: op, label: (dated ? DATE_OP_LABELS[op] : undefined) ?? OP_LABELS[op],
-    })));
-    const op = seed?.op && ops.includes(seed.op) ? seed.op : (ops[0] ?? DEFAULT_OP);
-    if (cond) cond.value = op;
-    /* The row REMEMBERS its op, as it does its pick (`want`): a select with no
-       options yet reads '' until it has them. TRAP T-a-row-remembers-what-it-was-given */
-    row.dataset['op'] = op;
-    row.dataset['takes'] = this.#takes(op);
-
-    /* `Equals` answers with a LIST of the field's own values, never a text box.
-       The values are the menu's own rows, so there is one vocabulary.
-       TRAP T-equals-answers-with-the-fields-own-values */
-    const options = this.#valueOptions();
-    const want = seed?.picked?.length ? String(seed.picked[0]) : '';
-    /* The row REMEMBERS what it wants. `populate()` settles later and
-       `#refillPicks` runs on every slotchange, so the live `.value` is not a
-       safe record of the reader's answer until the options exist.
-       TRAP T-custom-element-upgrade */
-    if (want) row.dataset['want'] = want;
-    if (pick) {
-      /* `populate()` on a composed field that has not upgraded settles LATER,
-         so a value written straight after it lands before the <option> it
-         names exists — and the select silently keeps its first row. Write it
-         AFTER. TRAP T-custom-element-upgrade */
-      void Promise.resolve(pick.populate?.(options)).then(() => {
-        if (want) pick.value = want;
-      });
-    }
-    /* A NUMBER's `=` is typed too, and kept as its one pick — and so is one with no list.
-       Written whether or not a list is here NOW: a list that goes later reads the box. */
-    const ends = !dated && (OP_TAKES[op] ?? 'list') === 'range' ? (seed?.picked ?? []).map(String) : null;
-    if (text) {
-      text.value = ends ? ends[0] ?? ''
-        : seed?.text ?? (seed?.picked?.length && (OP_TAKES[seed.op] ?? 'list') === 'list' ? String(seed.picked[0]) : '');
-    }
-    // A number's Between: its To end, and the slider under the row. Will, TODO 375
-    const to = row.querySelector<SherpaInputText>('.condition-value-to');
-    if (to) to.value = ends?.[1] ?? '';
-    this.#rangeSlider(row);
-    if (dated) this.#fillDateRow(row, seed);
-  }
-
-  /** A range row's slider: the menu's bounds, and the two ends typed, or the
-   *  whole span while they are not. Will, TODO 375 */
-  #rangeSlider(row: HTMLElement, from: 'boxes' | 'slider' = 'boxes'): void {
-    const slider = row.querySelector<SherpaSlider>('.condition-slider');
-    const boxes = [...row.querySelectorAll<SherpaInputText>('.condition-value, .condition-value-to')];
-    if (!slider || boxes.length < 2) return;
-    const min = this.dataset['min'] ?? '0';
-    const max = this.dataset['max'] ?? '100';
-    slider.setAttribute('min', min);
-    slider.setAttribute('max', max);
-    if (this.dataset['step']) slider.setAttribute('step', this.dataset['step']);
-    if (from === 'slider') {
-      const [lo, hi] = slider.range;
-      boxes[0]!.value = String(lo);
-      boxes[1]!.value = String(hi);
-      return;
-    }
-    const ends = boxes.map((box) => Number((box.value ?? '').trim() || NaN));
-    slider.range = ends.every(Number.isFinite) ? [ends[0]!, ends[1]!] : [Number(min), Number(max)];
-  }
-
-  /** A date row's own boxes: a day (and a time), two for Between, a count and a unit. TODO 21d */
-  #fillDateRow(row: HTMLElement, seed?: FieldCondition): void {
-    const box = (name: string): SherpaInputText | null => row.querySelector<SherpaInputText>(`.condition-${name}`);
-    const set = (name: string, value: string): void => { const el = box(name); if (el) el.value = value; };
-    const unit = box('unit');
-    // The row REMEMBERS its unit, as its op: the select has no options yet. TODO 464
-    row.dataset['unit'] = seed?.unit ?? 'day';
-    // Its value written AFTER its options exist. TRAP T-custom-element-upgrade
-    void Promise.resolve(unit?.populate?.(DATE_UNITS.map((u) => ({ value: u, label: `${u}s` }))))
-      .then(() => { if (unit) unit.value = seed?.unit ?? 'day'; });
-    if (seed?.op === 'last' || seed?.op === 'next') return set('count', seed.text ?? '');
-    const ends = seed?.op === 'eq' || seed?.op === 'between' ? [...(seed.picked ?? [])] : [seed?.text ?? ''];
-    ends.slice(0, 2).forEach((value, i) => {
-      const [day, time] = String(value ?? '').split('T');
-      set(i ? 'date-to' : 'date', day ?? '');
-      set(i ? 'time-to' : 'time', (time ?? '').slice(0, 5));
-    });
-  }
-
-  /** A DATE row's answer, as the row's own op needs it. */
-  #dateRowAnswer(row: HTMLElement, op: FilterOp): Omit<FieldCondition, 'op' | 'join'> {
-    const value = (name: string): string => (row.querySelector<SherpaInputText>(`.condition-${name}`)?.value ?? '').trim();
-    const at = (day: string, time: string): string => (value(day) && value(time) && this.hasAttribute('data-time')
-      ? `${value(day)}T${value(time)}` : value(day));
-    if (op === 'last' || op === 'next') return { text: value('count'), unit: (row.dataset['unit'] || value('unit') || 'day') as DateUnit };
-    if (op === 'between') {
-      const ends = [at('date', 'time'), at('date-to', 'time-to')];
-      return ends.every(Boolean) ? { picked: ends } : {};
-    }
-    const day = at('date', 'time');
-    if (op === 'eq') return day ? { picked: [day] } : {};
-    return { text: day };
-  }
-
-  /** A NUMBER menu's rows are TYPED, whatever the op: it has no list to pick
-   *  from. TRAP T-a-number-has-advanced-rows */
+  /** A NUMBER menu's rows are TYPED, whatever the op. TRAP T-a-number-has-advanced-rows */
   #numeric(): boolean {
     return this.dataset['body'] === 'number';
   }
@@ -773,168 +618,21 @@ export class SherpaMenu extends SherpaElement {
     return this.#numeric() || this.#dated();
   }
 
-  /** What a row answers with: a pick, typing — or, on a date, a day, two, or a count. */
-  #takes(op: FilterOp): 'list' | 'text' | 'range' | 'date' | 'dates' | 'duration' {
-    if (this.#dated()) return op === 'last' || op === 'next' ? 'duration' : op === 'between' ? 'dates' : 'date';
-    const takes = OP_TAKES[op] ?? 'list';
-    // A number's Between and Not between: two typed ends. Will, TODO 375
-    if (takes === 'range') return 'range';
-    return this.#typesItsPicks() ? 'text' : takes;
-  }
-
-  /** A row with NO list to pick from types its Equals — a field whose values
-   *  are not listed (Advanced only), or a number not yet given its own. It answers
-   *  as the one value it picks. Will, TODOs 112, 668. TRAP T-one-number-is-a-pick-under-equals */
-  #typesItsPicks(): boolean {
-    return !this.#fieldValues().length;
-  }
-
-  /** The ops this menu offers, from `data-conditions` or the text set. */
-  #opList(): FilterOp[] {
-    const declared = this.dataset['conditions'] ?? '';
-    const wanted = declared.trim()
-      ? declared.split(',').map((op) => op.trim()).filter(Boolean)
-      : [...(OPS_FOR_TYPE['text'] ?? [])];
-    const ops = wanted.filter((op): op is FilterOp => op in OP_LABELS);
-    return ops.length ? ops : [DEFAULT_OP];
-  }
-
-  /**
-   * The field's own values, led by a `Select…` placeholder.
-   *
-   * A `<select>` has no placeholder attribute, so an EMPTY first option is the
-   * only way to show one — and it doubles as the proof a row is unanswered.
-   * TRAP T-an-untouched-select-is-not-an-answer
-   */
-  #valueOptions(): { value: string; label: string }[] {
-    const values = this.#fieldValues();
-    return values.length ? [{ value: '', label: this.word('select') }, ...values] : [];
-  }
-
-  /** The field's own values, read from the menu's rows. */
-  #fieldValues(): { value: string; label: string }[] {
-    // Its own value ROWS: a nested menu's group is not one. TRAP T-a-nested-menu-answers-for-itself
-    const own = this.#rows()
-      .filter((row) => !row.matches(NON_VALUE_ROWS) && !row.querySelector('sherpa-menu'))
-      .map((row) => ({
-        value: row.querySelector<HTMLInputElement>('input')?.value ?? '',
-        label: (row.textContent ?? '').trim(),
-      }))
-      .filter((o) => o.value !== '');
-    // A number has none: its field's own, where it was given them. TODO 668
-    return own.length ? own : [...this.#listed];
-  }
-
-  /** Row ONE has no join. A flag, so CSS hides it and nothing is removed —
-   *  a row moved to the front gets its select back. */
-  #numberRows(): void {
-    const rows = this.#rowEls();
-    rows.forEach((row, i) => {
-      row.toggleAttribute('data-first', i === 0);
-      row.toggleAttribute('data-only', rows.length === 1);
-    });
-  }
-
-  /** A row's op: what it remembers, else what its control shows. */
-  #opOf(row: HTMLElement): FilterOp {
-    return (row.dataset['op'] || row.querySelector<SherpaInputText>('.condition')?.value || DEFAULT_OP) as FilterOp;
-  }
-
   /** Every row, as data. TRAP T-many-conditions-are-one-reading */
   get conditions(): FieldCondition[] {
-    if (this.#heldRows) return this.#heldRows.map((row) => ({ ...row }));
-    const rows = this.#rowEls();
-    /* No row yet: row ONE is `data-op` and `data-value` until it is drawn, so
-       a host that set them is answered at once. TRAP T-row-one-is-data-op */
-    const op = this.dataset['op'] as FilterOp | undefined;
-    if (!rows.length && this.dataset['mode'] === 'advanced' && op && !this.#typedBody() && !this.#dated()) {
-      const text = this.dataset['value'] ?? '';
-      return [(OP_TAKES[op] ?? 'list') === 'text' ? { op, text } : { op }];
-    }
-    return rows.map((row, i) => {
-      const op = this.#opOf(row);
-      const takes = OP_TAKES[op] ?? 'list';
-      const out: FieldCondition = { op };
-      if (i > 0) out.join = (row.dataset['join'] ?? 'or') as 'and' | 'or';
-      if (this.#dated()) return { ...out, ...this.#dateRowAnswer(row, op) };
-      // A range is BOTH ends typed. Will, TODO 375
-      if (takes === 'range') {
-        const ends = [...row.querySelectorAll<SherpaInputText>('.condition-value, .condition-value-to')]
-          .map((box) => (box.value ?? '').trim());
-        if (ends.length === 2 && ends.every(Boolean)) out.picked = ends;
-        return out;
-      }
-      /* A NUMBER's `=` is typed, and answers as the one number it picks —
-         as the body's one value does. TRAP T-one-number-is-a-pick-under-equals */
-      if (this.#typesItsPicks() && takes === 'list') {
-        // The box, else what the row was given: a box not drawn yet reads ''. TRAP T-a-rebuilt-row-reads-empty-for-a-tick
-        const typed = (row.querySelector<SherpaInputText>('.condition-value')?.value ?? '').trim() || row.dataset['want'];
-        if (typed) out.picked = [typed];
-      } else if (takes === 'list') {
-        /* `row.dataset.want` is what the READER chose. A `<select>` shows its
-           first option whether or not anyone touched it, so reading `.value`
-           made every untouched row report a pick — and a mode switch then
-           believed the rows were already answered.
-           TRAP T-an-untouched-select-is-not-an-answer */
-        const picked = row.dataset['want'] ?? '';
-        if (picked) out.picked = [picked];
-      } else {
-        out.text = row.querySelector<SherpaInputText>('.condition-value')?.value ?? '';
-      }
-      return out;
-    });
+    return this.#rows.get();
   }
 
   /** Replace every row from data — a host restoring a saved filter. */
   set conditions(rows: readonly FieldCondition[]) {
     this.#unsaid = null;
     if (!this.#card()) {
-      this.#heldRows = rows.map((row) => ({ ...row }));
+      this.#rows.held = rows.map((row) => ({ ...row }));
       return;
     }
-    this.#setRows(rows);
+    this.#rows.set(rows);
     // A set is a change to the DRAFT too. TRAP T-the-footer-owns-nothing-to-save
     this.#syncDirty();
-  }
-
-  /** Replace the rows — the setter's body, so every return still tells the footer. */
-  #setRows(rows: readonly FieldCondition[]): void {
-    const region = this.$('.condition-rows');
-    if (!region) return;
-    /* NOTHING NEW is not a rebuild. Between `replaceChildren()` and the async
-       fill of each new row's value select, this menu reports NO conditions.
-       TRAP T-a-rebuilt-row-reads-empty-for-a-tick
-       And a row the reader has not answered yet is their WORK IN PROGRESS: an
-       answer drawn back that says the tree the rows they HAVE answered say keeps
-       every row, blank ones too. TRAP T-an-unanswered-row-survives-a-redraw */
-    const answered = (list: readonly FieldCondition[]): string => JSON.stringify(rowsTree(list, this.#valueType()) ?? null);
-    const keep = answered(this.conditions) === answered(rows);
-    if (!keep) {
-      region.replaceChildren();
-      for (const row of rows.length ? rows : [{ op: DEFAULT_OP } as FieldCondition]) this.#addRow(row);
-    }
-    // A NUMBER's `data-op` is its BODY's, and a date's. TRAP T-a-number-has-advanced-rows
-    if (this.#typedBody()) return;
-    // Every sync rebuilds row one from these two — from the row SHOWN, when the
-    // rows were kept. TRAP T-row-one-is-data-op
-    const first = keep ? this.conditions[0] : rows[0];
-    if (!first) {
-      // No rows, so nothing typed — or a re-stamp puts the old text back.
-      if (!keep && this.dataset['value']) this.conditionValue = '';
-      return;
-    }
-    if (this.dataset['op'] !== first.op) this.set('data-op', first.op);
-    /* …and a pick that is TYPED, where no list shows it (Advanced only): the box
-       holds it, so a later sync must not put back an empty one. TODO 373 */
-    const typesIt = this.#typesItsPicks() || this.#advancedOnly();
-    const text = (OP_TAKES[first.op] ?? 'list') === 'text' ? (first.text ?? '')
-      : typesIt ? String(first.picked?.[0] ?? '') : '';
-    /* `data-value` TOO. A rebuilt row already holds the text, so comparing the
-       box alone skipped the write — and the next re-sync put back the empty
-       attribute over what a host had set. TRAP T-row-one-is-data-op */
-    if (this.conditionValue !== text || (this.dataset['value'] ?? '') !== text) {
-      this.conditionValue = text;
-    }
   }
 
   /**
@@ -999,47 +697,12 @@ export class SherpaMenu extends SherpaElement {
    * TRAP T-an-operator-decides-pick-or-type
    */
   #onCondition = (event?: Event): void => {
-    /* The row the change came from — its OWN op decides its OWN body, so two
-       rows can ask different questions at once. */
-    const row = (event?.target as HTMLElement | null)?.closest?.('.condition-row');
-    // A range's slider moves its two boxes, and its boxes move the slider. TODO 375
-    if (row instanceof HTMLElement && row.dataset['takes'] === 'range') {
-      const bySlider = !!(event?.target as HTMLElement | null)?.closest?.('.condition-slider');
-      this.#rangeSlider(row, bySlider ? 'slider' : 'boxes');
-    }
-    if (row instanceof HTMLElement) {
+    if (this.#rows.edit(event)) {
       this.#mirror = false;
       this.#unsaid = null;
-      // The reader just answered, so THAT is what the row remembers now.
-      const live = row.querySelector<SherpaInputText>('.condition')?.value;
-      if (live) row.dataset['op'] = live;
-      const joined = row.querySelector<SherpaInputText>('.join')?.value;
-      if (joined) row.dataset['join'] = joined;
-      // …and its unit, from the unit's own select only.
-      const unit = (event?.target as HTMLElement | null)?.closest?.<SherpaInputText>('.condition-unit')?.value;
-      if (unit) row.dataset['unit'] = unit;
-      const op = this.#opOf(row);
-      row.dataset['takes'] = this.#takes(op);
-      const picked = row.querySelector<SherpaInputText>('.condition-pick')?.value ?? '';
-      if (picked) row.dataset['want'] = picked;
-      // A TYPED pick is what the row wants now, emptied too — from the box itself only.
-      const fromBox = !!(event?.target as HTMLElement | null)?.closest?.('.condition-value');
-      if (fromBox && this.#typesItsPicks() && (OP_TAKES[op] ?? 'list') === 'list') {
-        const typed = (row.querySelector<SherpaInputText>('.condition-value')?.value ?? '').trim();
-        if (typed) row.dataset['want'] = typed;
-        else delete row.dataset['want'];
-      }
     }
-
     // A NUMBER's host attributes are its BODY's, and a date's. TRAP T-a-number-has-advanced-rows
-    if (this.#typedBody()) return this.#emitConditions();
-    // Row one still mirrors to the host attributes: the one-row view.
-    const firstRow = this.#rowEls()[0];
-    const op = firstRow ? this.#opOf(firstRow) : DEFAULT_OP;
-    if (this.dataset['op'] !== op) this.set('data-op', op);
-    this.set('data-takes', this.#takes(op));
-    this.set('data-value', this.#valueField()?.value ?? '');
-
+    if (!this.#typedBody()) this.#rows.followRowOne();
     this.#emitConditions();
   };
 
@@ -1053,8 +716,8 @@ export class SherpaMenu extends SherpaElement {
        reported the old operator. Read the control, not the echo of it.
        TRAP T-a-menu-owns-its-own-bodies */
     if (this.dataset['body'] === 'number') {
-      const picked = this.$<SherpaInputText>('.body-op')?.value;
-      if (picked && picked in OP_LABELS) return picked as FilterOp;
+      const picked = this.#number.op();
+      if (picked) return picked;
     }
     return (this.dataset['op'] as FilterOp | undefined) ?? DEFAULT_OP;
   }
@@ -1071,12 +734,12 @@ export class SherpaMenu extends SherpaElement {
    * the moment `data-type` changes. TRAP T-restamp-does-not-abort
    */
   get conditionValue(): string {
-    return this.#valueField()?.value ?? this.dataset['value'] ?? '';
+    return this.#rows.firstValue()?.value ?? this.dataset['value'] ?? '';
   }
 
   set conditionValue(next: string) {
     if (this.dataset['value'] !== next) this.set('data-value', next);
-    const box = this.#valueField();
+    const box = this.#rows.firstValue();
     if (box) box.value = next;
     /* ROW ONE, through the one-row door: a typed condition IS an Advanced
        answer, so a caller who knows nothing of rows still gets one.
@@ -1085,195 +748,49 @@ export class SherpaMenu extends SherpaElement {
     this.#syncDirty();
   }
 
-  /** ROW ONE's condition field. `menu.op` and `menu.conditionValue` are the
-   *  one-row view of the same state, so a caller that knows nothing about
-   *  rows still works. TRAP T-a-filter-menu-has-two-modes */
-  #conditionField(): SherpaInputText | null {
-    return this.#rowEls()[0]?.querySelector<SherpaInputText>('.condition') ?? null;
-  }
-
-  /** ROW ONE's typed box. */
-  #valueField(): SherpaInputText | null {
-    return this.#rowEls()[0]?.querySelector<SherpaInputText>('.condition-value') ?? null;
-  }
-
-  /**
-   * Make sure the condition region has at least ONE row, and that row holds
-   * what the host asked for through `data-op` / `data-value`.
-   *
-   * A re-stamp replaces the whole shadow tree, so the rows are rebuilt from
-   * the attributes rather than remembered. TRAP T-restamp-does-not-abort
-   */
-  #syncConditions(): void {
-    /* A field that did not opt in has no rows at all — not a hidden one. A
-       control nothing can reach should not exist.
-       TRAP T-conditions-are-opt-in-per-field */
-    if (!this.$('.condition-rows') || !this.#offersAdvanced()) return;
-    if (!this.#rowEls().length) this.#addRow();
-    // A NUMBER's `data-op` is its body's, not row one's, and a date's. TRAP T-a-number-has-advanced-rows
-    if (this.#typedBody()) return this.#numberRows();
-
-    const ops = this.#opList();
-    const op = ops.includes(this.op) ? this.op : (ops[0] ?? DEFAULT_OP);
-    const select = this.#conditionField();
-    if (select && select.value !== op) select.value = op;
-    const first = this.#rowEls()[0];
-    if (first) first.dataset['op'] = op;
-    if (this.dataset['op'] !== op) this.set('data-op', op);
-    this.set('data-takes', this.#takes(op));
-    this.#rowEls()[0]?.setAttribute('data-takes', this.#takes(op));
-
-    // Put back what was typed — a re-stamp blanked the box, not the state.
-    const box = this.#valueField();
-    const held = this.dataset['value'] ?? '';
-    if (box && box.value !== held) box.value = held;
-    this.#numberRows();
-  }
-
-
   /** Narrow rows to a typed substring; a hidden row keeps its tick.
    * TRAP T-menu-search-is-a-substring-find */
   #onSearch = (): void => {
-    const field = this.$<SherpaInputText>('.search');
-    const q = (field?.value ?? '').trim().toLowerCase();
-    const hits = (label: string): boolean => !q || label.toLowerCase().includes(q);
-    /* A TREE searches its DATA: a child that matches shows, its parent held open
-       while the search stands; a parent that matches shows as it was. TODO 369 */
-    const labelOf = new Map(this.#tree ? this.#items.map((item) => [item.value, item.label ?? item.value]) : []);
-    if (this.#tree) {
-      this.#searchOpen = new Set(q ? this.#items.flatMap((item) => (item.parent !== undefined && hits(item.label ?? item.value) ? [item.parent] : [])) : []);
-      for (const parent of this.#searchOpen) this.#drawKids(parent);
-      this.#drawOpen();
-    }
-    let shown = 0;
-    // A SECTION heading shows while a row under it does — never on its own name.
-    let heading: HTMLElement | null = null;
-    let under = false;
-    const close = (): void => { heading?.toggleAttribute('data-filtered-out', !under); };
-    for (const row of this.#rows()) {
-      if (row.classList.contains('menu-section')) {
-        close();
-        heading = row;
-        under = false;
-        continue;
-      }
-      // A composed row draws its name in its own shadow root, so say it here.
-      const text = row.getAttribute('data-label') ?? row.textContent ?? '';
-      const value = this.#tree ? row.querySelector('input')?.value : undefined;
-      const parent = row.dataset['parent'];
-      const hit = value === undefined ? hits(text)
-        : hits(labelOf.get(value) ?? text) || this.#searchOpen.has(value) || (parent !== undefined && hits(labelOf.get(parent) ?? ''));
-      // JS writes the flag; CSS owns the hiding.
-      row.toggleAttribute('data-filtered-out', !hit);
-      if (hit) {
-        shown += 1;
-        under = true;
-      }
-    }
-    close();
-    this.toggleState('no-matches', !!q && shown === 0);
+    this.#list.search(this.$<SherpaInputText>('.search')?.value ?? '');
   };
-
-  /** A CHILD MENU's door on a row: its pick count, then its caret.
-   *  TRAP T-a-row-opens-its-child-menu */
-  #addDrill(row: HTMLElement, value: string, label: string, count: number): void {
-    row.dataset['drill'] = '';
-    row.dataset['value'] = value;
-    // The SEARCH reads this: the badge's number is not part of the name.
-    row.dataset['label'] = label;
-    const badge = this.clone('template.menu-count-tpl');
-    const caret = this.clone('template.menu-drill-tpl');
-    if (badge) {
-      badge.textContent = count > 0 ? String(count) : '';
-      row.append(badge);
-    }
-    if (caret) {
-      caret.setAttribute('aria-label', `Open ${label}`);
-      row.append(caret);
-    }
-  }
 
   /** setMatches(counts) — each value row's match count at its end, by value: the
    *  rows that reach this field and hold it. `null` takes them off. Will, TODO 466 */
   setMatches(counts: Readonly<Record<string, number>> | null): void {
-    this.#matches = counts;
-    this.#drawMatches();
-  }
-  /** Each value's match count, as last given. */
-  #matches: Readonly<Record<string, number>> | null = null;
-
-  /** Draw each value row's count; a child menu's row keeps its badge for its picks. */
-  #drawMatches(): void {
-    const counts = this.#matches;
-    for (const box of this.#inputs()) {
-      const row = box.closest<HTMLElement>('.menu-row');
-      if (!row || row.hasAttribute('data-drill') || box.closest(NON_VALUE_ROWS)) continue;
-      const n = counts?.[valueKey(box.value)] ?? counts?.[box.value];
-      const had = row.querySelector<HTMLElement>(':scope > .menu-row-count');
-      if (n == null) {
-        had?.remove();
-        row.removeAttribute('data-matches');
-        continue;
-      }
-      const badge = had ?? this.clone<HTMLElement>('template.menu-count-tpl');
-      if (!badge) continue;
-      badge.textContent = String(n);
-      if (!had) row.append(badge);
-      row.setAttribute('data-matches', '');
-    }
+    this.#list.setMatches(counts);
   }
 
   /** Write a child menu's pick count on its row. An empty badge draws nothing. */
   setCount(value: string, count: number): void {
-    // The DATA too, so rows stamped later draw it.
-    this.#items = this.#items.map((item) => (item.drill && item.value === value ? { ...item, count } : item));
-    for (const row of this.#own<HTMLElement>('.menu-row[data-drill]')) {
-      if (row.dataset['value'] !== value) continue;
-      const badge = row.querySelector('.menu-row-count');
-      if (badge) badge.textContent = count > 0 ? String(count) : '';
-    }
-  }
-
-  /** Every slotted row — label rows and action buttons alike. */
-  #rows(): HTMLElement[] {
-    return [...this.children].filter((n): n is HTMLElement => n instanceof HTMLElement);
+    this.#list.setCount(value, count);
   }
 
   override onChange(name?: string): void {
-    if (name === 'data-body') this.#stampDateBody();
-    if (name === 'data-swatches') this.#drawSwatches();
+    if (name === 'data-body') this.#date.stamp();
+    if (name === 'data-swatches') this.#list.drawSwatches();
     if (name === 'data-pending') this.#syncDirty();
     this.#sync();
-    if (name === 'data-hide-unavailable') this.#markPresent();
+    if (name === 'data-hide-unavailable') this.#list.markPresent();
   }
 
   /* ── Public API ──────────────────────────────────────────────────── */
 
   /** Open the menu under `trigger`, which is also what it measures against. */
   show(trigger?: HTMLElement): void {
-    if (trigger) this.#trigger = trigger;
-    // No trigger — `open` was set, or a caller forgot one. Without this the
-    // card has nothing to measure and sits at 0,0.
-    // TRAP T-a-menu-with-no-trigger-lands-at-the-origin
-    this.#trigger ??= this.#fallbackTrigger();
     // Inline, it is already showing and has nothing to place.
     if (this.hasAttribute('data-inline')) return;
-    // A closed popover measures 0, so show first. TRAP T-show-then-measure
-    this.#syncSelectAll();
-    const wasOpen = this.open;
-    this.#card()?.showPopover();
+    // Before the card shows: its rows are slotted, so opening is when the set is known. TRAP T-show-then-measure
+    this.#list.syncSelectAll();
     // Now, not in `toggle`: that fires a task later. TRAP T-the-baseline-is-taken-at-show
-    if (!wasOpen && this.open) {
+    if (this.#shell.show(trigger)) {
       this.#takeBaseline();
       this.#syncDirty();
-      this.#listenWhileOpen();
     }
-    this.#place();
   }
 
   hide(): void {
     if (this.hasAttribute('data-inline')) return;
-    this.#card()?.hidePopover();
+    this.#shell.hide();
   }
 
   /**
@@ -1290,8 +807,7 @@ export class SherpaMenu extends SherpaElement {
   }
 
   get open(): boolean {
-    const card = this.#card();
-    return !!card?.matches(':popover-open');
+    return this.#shell.open;
   }
   set open(value: boolean) {
     if (value) this.show();
@@ -1320,29 +836,29 @@ export class SherpaMenu extends SherpaElement {
   /** What the menu holds. A NUMBER or CALENDAR menu has no rows.
    * TRAP T-menu-value-is-not-always-rows */
   get values(): string[] {
-    const numeric = this.#numericValues();
-    if (numeric) return numeric;
-    const dates = this.#calendarValues();
-    if (dates) return dates;
-    if (this.#heldValues) return [...this.#heldValues];
-    // ALL, before its rows are drawn: every item. TRAP T-all-is-an-answer
-    if (this.#all && !this.#stamped && this.#items.length) return this.#items.filter((item) => item.parent === undefined).map((item) => item.value);
-    if (this.#tree) return this.#tree.values;
-    // Not stamped yet: its items' own picks. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
-    if (!this.#stamped && this.#items.length) return this.#items.filter((item) => item.selected).map((item) => item.value);
-    return this.#inputs()
-      .filter((i) => i.checked)
-      .map((i) => i.value);
+    if (this.dataset['body'] === 'number') {
+      const one = this.#number.values();
+      if (one) return one;
+    }
+    return this.#date.values() ?? this.#list.values();
   }
 
-  /** A NUMBER menu's one value, or null when this is not one. */
-  #numericValues(): string[] | null {
-    if (this.dataset['body'] !== 'number') return null;
-    const field = this.$<SherpaInputText>('.body-number-one');
-    if (!field) return null;
-    const raw = field.value.trim();
-    return raw === '' ? [] : [raw];
+  set values(next: readonly string[]) {
+    // A list given is a list, not ALL: its host says all after, where it is.
+    this.#list.all = false;
+    /* Nothing to show them yet: HELD until it is drawn — a date's calendar is
+       light DOM, so it takes them now. A drill moves the rows themselves, so
+       once drawn they stay the live answer.
+       TRAP T-a-value-before-the-first-render-is-held */
+    if (!this.#card() && this.dataset['body'] !== 'date') {
+      this.#list.held = [...next];
+      return;
+    }
+    if (this.#list.tree || !this.#setBodyValues(next)) this.#list.setValues(next);
+    // A set is a change to the DRAFT too. TRAP T-the-footer-owns-nothing-to-save
+    this.#syncDirty();
   }
+
   /**
    * A DATE or NUMBER body takes its values as it reports them — a number ONE,
    * a date one day or two ends — or the getter reads what no caller could ever
@@ -1350,87 +866,25 @@ export class SherpaMenu extends SherpaElement {
    */
   #setBodyValues(next: readonly string[]): boolean {
     const body = this.dataset['body'];
-    if (body !== 'date' && body !== 'number') return false;
     // A number holds ONE value; its range is an Advanced row. Will, TODO 375
     if (body === 'number') {
       this.#setNumberBody(next[0] ?? '');
       return true;
     }
-    /* Two days are two ends and one is one day; NONE names no shape, so the
-       shape in force stays. A cleared range calendar came back as a
-       single-day one. */
-    const range = next.length > 1 || (next.length === 0 && this.hasAttribute('data-range'));
-    this.#setShape(range);
-    if (body === 'date') {
-      const cal = this.#own<HTMLElement>('sherpa-calendar')[0];
-      // Not stamped yet: HELD, and the shape above is said NOW. TRAP T-a-value-before-the-first-render-is-held
-      if (!cal) {
-        this.#heldValues = [...next];
-        return true;
-      }
-      for (const a of ['value', 'data-value-start', 'data-value-end']) cal.removeAttribute(a);
-      cal.setAttribute('data-type', range ? 'range' : 'single');
-      // A range kept with NO ends holds none: `undefined` was written as a day.
-      if (range && next.length > 1) {
-        cal.setAttribute('data-value-start', next[0]!);
-        cal.setAttribute('data-value-end', next[1]!);
-      } else if (!range && next[0]) cal.setAttribute('value', next[0]);
+    if (body !== 'date') return false;
+    // Not stamped yet: HELD, and the shape is said NOW. TRAP T-a-value-before-the-first-render-is-held
+    if (!this.#date.set(next)) {
+      this.#list.held = [...next];
+      return true;
     }
     this.#syncBody();
     return true;
   }
 
-  /** A date's one day or two ends: the shape, and the commit rule that follows it. */
-  #setShape(range: boolean): void {
-    if (range === this.hasAttribute('data-range')) return;
-    this.set('data-range', range);
-    if (!this.hasAttribute('data-commit-fixed')) this.set('data-commit', range);
-  }
-
   /** Write a number's one value. */
   #setNumberBody(one: string): void {
-    const field = this.$<SherpaInputText>('.body-number-one');
-    if (field && field.value !== one) field.value = one;
+    this.#number.set(one);
     this.#syncBody();
-  }
-
-  /** A CALENDAR menu's value, or null when this is not one. */
-  #calendarValues(): string[] | null {
-    const cal = this.#own<HTMLElement>('sherpa-calendar')[0];
-    if (!cal) return null;
-    // A RANGE reports both ends, and only once BOTH are picked.
-    const start = cal.dataset['valueStart'];
-    const end = cal.dataset['valueEnd'];
-    if (start && end) return [start, end];
-    const single = cal.getAttribute('value') ?? undefined;
-    return single ? [single] : [];
-  }
-
-  set values(next: readonly string[]) {
-    // A list given is a list, not ALL: its host says all after, where it is.
-    this.#all = false;
-    /* Nothing to show them yet: HELD until it is drawn — a date's calendar is
-       light DOM, so it takes them now. A drill moves the rows themselves, so
-       once drawn they stay the live answer.
-       TRAP T-a-value-before-the-first-render-is-held */
-    if (!this.#card() && this.dataset['body'] !== 'date') {
-      this.#heldValues = [...next];
-      return;
-    }
-    if (this.#tree) {
-      this.#heldValues = null;
-      this.#tree.set(next);
-      this.#drawTicks();
-    } else if (!this.#setBodyValues(next)) {
-      const inputs = this.#inputs();
-      this.#heldValues = inputs.length ? null : [...next];
-      // The query's comparison — TRAP T-one-comparison-rule-for-query-and-ui.
-      const wanted = valueSet(next);
-      for (const input of inputs) input.checked = wanted.has(input.value);
-      this.#syncNone();
-    }
-    // A set is a change to the DRAFT too. TRAP T-the-footer-owns-nothing-to-save
-    this.#syncDirty();
   }
 
   /**
@@ -1454,37 +908,14 @@ export class SherpaMenu extends SherpaElement {
    * stamps the rest. TRAP T-custom-element-upgrade
    */
   items(next: readonly MenuItem[]): void {
-    this.#items = [...next];
-    // Items that name their picks are newer than picks held for them.
-    if (next.some((item) => item.selected !== undefined)) this.#heldValues = null;
-    this.#tree = next.some((item) => item.parent !== undefined)
-      ? new TreePicks(next, next.filter((item) => item.selected).map((item) => item.value)) : null;
-    this.#indexOf = new Map(next.map((item, i) => [item.value, i]));
-    this.#stampItems();
+    this.#list.items(next);
   }
 
   /** Each item's value, label and parent, from the items — a row not drawn yet
    *  too, as a shut parent's children are. TRAP T-a-tree-menu-keeps-its-ticks-as-data */
   get itemData(): Array<{ value: string; label: string; parent?: string; swatch?: number | string }> {
-    return this.#items.map(({ value, label, parent, swatch }) => ({
-      value, label: label ?? value, ...(parent !== undefined ? { parent } : {}), ...(swatch ? { swatch } : {}),
-    }));
+    return this.#list.itemData;
   }
-
-  /** The items last given. Kept, so a late render can still stamp them. */
-  #items: MenuItem[] = [];
-  /** A tiered list's ticks, as data; null for a flat one. TRAP T-a-tree-menu-keeps-its-ticks-as-data */
-  #tree: TreePicks | null = null;
-  /** Each tree parent's open or shut, kept across items(), as the nav keeps its Areas. */
-  #opened = new Map<string, boolean>();
-  /** Parents a search holds open, for a child it matched. */
-  #searchOpen = new Set<string>();
-  /** Parents whose children are drawn: a shut one's wait for its first open. */
-  #kidsDrawn = new Set<string>();
-  /** Each item's place, by value: a tree row's id. */
-  #indexOf = new Map<string, number>();
-  /** Its items have been drawn as rows at least once. */
-  #stamped = false;
 
   /**
    * The values the filters before it LEAVE, as value keys — its host's, from the
@@ -1493,355 +924,34 @@ export class SherpaMenu extends SherpaElement {
    * TRAP T-a-ruled-out-value-is-greyed
    */
   set present(values: readonly string[] | null) {
-    // The same list does nothing: a draw tells every chip's menu each time.
-    if (sameKeys(this.#present, values)) return;
-    this.#present = values ? new Set(values) : null;
-    this.#markPresent();
+    this.#list.setPresent(values);
   }
   get present(): readonly string[] | null {
-    return this.#present ? [...this.#present] : null;
+    return this.#list.present;
   }
-  /** What the filters before it leave; `null` is everything. */
-  #present: Set<string> | null = null;
 
   /** Who among the presets on holds a value: its row is ticked, refused and says
    *  why; no answer of the reader's, so its values leave it out. Will, TODOs 521, 590 */
   set heldByPreset(held: ((value: string) => string) | null) {
-    this.#heldBy = held;
-    this.#markHeld();
-  }
-  /** Who holds a value; `null` while no preset does. */
-  #heldBy: ((value: string) => string) | null = null;
-
-  /** Mark each row a preset holds, and let go of each it no longer does. */
-  #markHeld(): void {
-    for (const row of this.querySelectorAll<HTMLElement>('.menu-row')) {
-      const box = row.querySelector<HTMLInputElement>(':scope > input');
-      if (!box) continue;
-      const by = this.#heldBy?.(box.value);
-      const was = row.hasAttribute('data-by-preset');
-      if (!by && !was) continue;
-      row.toggleAttribute('data-by-preset', !!by);
-      box.checked = !!by;
-      box.disabled = !!by;
-      if (by) row.setAttribute('title', onByPreset(by));
-      else row.removeAttribute('title');
-    }
+    this.#list.heldBy = held;
   }
 
   /** What a serial set's chain OFFERS; a row it does not is removed, unless
    *  ticked. `null` is everything. TRAP T-a-filter-set-groups-or-chains */
   set offered(values: readonly string[] | null) {
-    if (sameKeys(this.#offered, values)) return;
-    this.#offered = values ? new Set(values) : null;
-    this.#markPresent();
+    this.#list.setOffered(values);
   }
   get offered(): readonly string[] | null {
-    return this.#offered ? [...this.#offered] : null;
-  }
-  /** What the chain offers; `null` is everything. */
-  #offered: Set<string> | null = null;
-
-  /** Grey each row the filters before it rule out; refuse it unless it is ticked.
-   *  A row the chain does not offer goes, unless it is ticked — and, hiding
-   *  unmatched, so does one they rule out. */
-  #markPresent(): void {
-    this.#markHeld();
-    const given = new Map(this.#items.map((i) => [i.value, i]));
-    const hides = this.hasAttribute('data-hide-unavailable');
-    const limit = ruleOut(this.#present, this.#offered);
-    const outOf = (box: HTMLInputElement): boolean => given.get(box.value)?.available === false || limit(box.value) !== null;
-    // ALL is every value it may have: one ruled out or not offered is not ticked, and comes back. TRAP T-all-is-an-answer
-    if (this.#all && !this.#tree) for (const box of this.#inputs()) box.checked = !outOf(box);
-    /* Every ticked row ruled out: the filter stays in force (Will, 2026-10-20), so
-       they say "no matches"; only beside a pick that stands are they "not applied". */
-    const ticked = this.#inputs().filter((box) => box.checked);
-    const inForce = ticked.length > 0 && ticked.every(outOf);
-    for (const box of this.#inputs()) {
-      const row = box.closest<HTMLElement>('.menu-row');
-      // A value its def says is unavailable is ruled out as one the filters leave none of.
-      const why = limit(box.value) ?? (given.get(box.value)?.available === false ? 'unmatched' : null);
-      row?.toggleAttribute('data-removed', goesFromList(why, hides, box.checked));
-      const out = why !== null;
-      // INACTIVE refuses a tick ON; one still ticked may be let go, once (Will, TODO 462).
-      // Only ever undo its OWN refusal.
-      if (out && !box.checked) box.disabled = true;
-      else if (row?.hasAttribute('data-unavailable')) box.disabled = false;
-      row?.toggleAttribute('data-unavailable', out);
-      const said = box.getAttribute('aria-description');
-      // Said on hover too: why it is greyed. Will, TODO 176.
-      if (out) {
-        const why = box.checked && !inForce ? SET_ASIDE : RULED_OUT;
-        box.setAttribute('aria-description', why);
-        row?.setAttribute('title', why);
-      } else if (said === RULED_OUT || said === SET_ASIDE) {
-        box.removeAttribute('aria-description');
-        row?.removeAttribute('title');
-      }
-    }
-  }
-
-  /**
-   * Stamp `#items` into the rows slot. Needs the shadow template, so it is
-   * safe to call before this element has one — it simply waits for onRender.
-   */
-  #stampItems(): void {
-    if (!this.#items.length) return;
-    const single = this.dataset['select'] === 'single';
-    const tpl = this.$<HTMLTemplateElement>(
-      single ? 'template.menu-radio-tpl' : 'template.menu-check-tpl',
-    );
-    if (!tpl?.content.firstElementChild) return;
-
-    const held = this.#heldValues ? valueSet(this.#heldValues) : null;
-    this.#heldValues = null;
-    if (this.#tree && held) this.#tree.set(this.#items.map((item) => item.value).filter((v) => held.has(v)));
-    this.#kidsDrawn.clear();
-    // Not in items(): a menu not yet upgraded has no states to set.
-    this.toggleState('tree', !!this.#tree);
-    const stamp = (item: MenuItem): HTMLElement | null => this.#stampRow(item, tpl, held);
-
-    /* SELECT ALL is the MENU's row, not the caller's — one of the two used to
-       add its own and the other did not, so the same field read two ways. A
-       list of FILTERS asks for none. TRAP T-select-all-is-not-a-value */
-    const all = !single && this.#items.length && !this.hasAttribute('data-no-select-all')
-      ? this.clone('template.menu-all-tpl') : null;
-    // NONE is a single list's "nothing", in its radio group. Will, TODO 394
-    const none = single && this.#items.length && this.hasAttribute('data-none') ? this.clone('template.menu-none-tpl') : null;
-    const noneBox = none?.querySelector('input');
-    if (noneBox) noneBox.name = this.#group;
-
-    /* ONE list, in the order the caller gave: a ruled-out value is still
-       listed, never re-sorted. TRAP T-unavailable-value-sorts-below-a-divider */
-    const rows: Element[] = [];
-    let section: string | undefined;
-    for (const item of this.#items) {
-      // A shut parent's children wait for its first open: their ticks are the tree's.
-      if (item.parent !== undefined) {
-        if (!this.#isOpen(item.parent)) continue;
-        this.#kidsDrawn.add(item.parent);
-      }
-      if (item.section && item.section !== section) {
-        const head = this.clone('template.menu-section-tpl');
-        if (head) {
-          head.textContent = item.section;
-          rows.push(head);
-        }
-      }
-      section = item.section;
-      const one = stamp(item);
-      if (one) rows.push(one);
-    }
-    // SELECT ALL belongs to the section it heads, so it follows a leading heading.
-    const head = rows[0]?.classList.contains('menu-section') ? [rows.shift()!] : [];
-    const out: Element[] = [...head, ...(all ? [all] : []), ...(none ? [none] : []), ...rows];
-    /* KEEP what the menu does not own. A caller's own rows — a Select-all, a
-       Remove action — live here too, and a blanket replace ate them the moment
-       this stamped late. Only the menu's own items are replaced. */
-    for (const node of [...this.children]) {
-      if (node.classList.contains('menu-row')) {
-        node.remove();
-      }
-    }
-    /* FIRST, keeping whatever the caller put below — in practice a Remove
-       action, which a chip appends after this — and a caller row marked
-       `data-lead` above: a Filters menu's actions. TODO 383 */
-    this.prepend(...out);
-    this.prepend(...[...this.children].filter((n) => n.hasAttribute('data-lead')));
-    this.#stamped = true;
-    this.#drawTicks();
-    if (this.#all) this.#tickAll();
-    this.#drawOpen();
-    this.#markPresent();
-    this.#drawMatches();
-
-    /* SAY SO. A host reads its own face off the menu's values, and pre-ticked
-       rows fire no native change — so a chip built before its items arrived
-       would sit with an empty caret over a ticked row.
-       TRAP T-chip-empty-check-waits-for-onconnect */
-    this.emit('menu-items', { values: this.values });
-  }
-
-  /** One item's row: its box, label, note and ends. */
-  #stampRow(item: MenuItem, tpl: HTMLTemplateElement, held: { has: (v: unknown) => boolean } | null): HTMLElement | null {
-    if (item.action) {
-      const act = this.clone<HTMLButtonElement>('template.menu-action-tpl');
-      if (!act) return null;
-      act.value = item.value;
-      act.querySelector('.menu-row-label')!.textContent = item.label ?? item.value;
-      if (item.current) act.setAttribute('aria-current', 'true');
-      return act;
-    }
-    const row = (item.pickable === false ? this.clone('template.menu-bare-tpl') : null) ?? this.clone(tpl);
-    if (!row) return null;
-    const box = row.querySelector('input');
-    if (box) {
-      box.value = item.value;
-      box.checked = held ? held.has(item.value) : !!item.selected;
-      if (this.dataset['select'] === 'single') box.name = this.#group;
-    }
-    const label = item.label ?? item.value;
-    row.querySelector('.menu-row-label')!.textContent = label;
-    // …and a word that is the row's, not the value's name. Will, TODO 684
-    const suffix = item.suffix ? this.clone('template.menu-suffix-tpl') : null;
-    if (suffix) {
-      suffix.textContent = item.suffix!;
-      row.querySelector('.menu-row-label')!.append(' ', suffix);
-    }
-    /* AN ATTRIBUTE, drawn by CSS: the row is light DOM, and `::slotted` cannot
-       reach its children — only the row itself and its pseudo-elements.
-       Said to assistive tech too, since generated content is not reliably. */
-    if (item.note) {
-      row.dataset['note'] = item.note;
-      box?.setAttribute('aria-description', item.note);
-    }
-    if (item.drill) this.#addDrill(row, item.value, label, item.count ?? 0);
-    if (this.#tree) this.#treeRow(row, item);
-    this.#leadRow(row, item);
-    return row;
-  }
-
-  /** A row's LEADING mark, in its label: the icon its chip carries, or — where this
-   *  menu draws them — its value's swatch. Will, TODO 677 */
-  #leadRow(row: HTMLElement, item: MenuItem): void {
-    const label = row.querySelector('.menu-row-label');
-    label?.querySelector(':scope > .menu-row-swatch')?.remove();
-    if (!label || label.querySelector(':scope > .menu-row-icon')) return;
-    if (item.icon) {
-      const icon = this.clone('template.menu-icon-tpl');
-      if (icon) label.prepend(icon);
-      if (icon) renderIcon(icon, item.icon);
-    } else if (item.swatch && this.hasAttribute('data-swatches')) {
-      const swatch = this.clone<HTMLElement>('template.menu-swatch-tpl');
-      if (swatch) label.prepend(swatch);
-      if (swatch) paintSwatch(swatch, item.swatch);
-    }
-  }
-
-  /** Each value row leads with its swatch, or not, as `data-swatches` says now. */
-  #drawSwatches(): void {
-    const byValue = new Map(this.#items.map((item) => [item.value, item]));
-    for (const box of this.#inputs()) {
-      const row = box.closest<HTMLElement>('.menu-row');
-      const item = byValue.get(box.value);
-      if (row && item) this.#leadRow(row, item);
-    }
-  }
-
-  /* ── A tree of tiered values. TODO 369 · TRAP T-a-tree-menu-keeps-its-ticks-as-data ── */
-
-  /** A tree row: a child's place under its parent; a parent's twisty. */
-  #treeRow(row: HTMLElement, item: MenuItem): void {
-    const box = row.querySelector('input');
-    if (item.parent !== undefined) {
-      row.dataset['parent'] = item.parent;
-      row.dataset['depth'] = '1';
-      row.id = this.#rowId(item.value);
-      // Said with its parent's name: "London, Northwind".
-      box?.setAttribute('aria-describedby', this.#rowId(item.parent, 'label'));
-      return;
-    }
-    row.dataset['tree'] = '';
-    row.querySelector('.menu-row-label')!.id = this.#rowId(item.value, 'label');
-    if (!this.#tree!.kids(item.value).length) return;
-    const twisty = this.clone('template.menu-twisty-tpl');
-    if (!twisty) return;
-    row.dataset['twisty'] = '';
-    twisty.dataset['value'] = item.value;
-    row.prepend(twisty);
-  }
-
-  /** A tree row's id, unique to this menu. */
-  #rowId(value: string, part = 'row'): string {
-    return `${this.#group}-${part}-${this.#indexOf.get(value) ?? -1}`;
-  }
-
-  /** Each drawn box from the tree's ticks: on, off, or — a parent — some. */
-  #drawTicks(): void {
-    const tree = this.#tree;
-    if (!tree) return;
-    const single = this.dataset['select'] === 'single';
-    const picked = new Set(tree.values);
-    for (const box of this.#inputs()) {
-      const shows = tree.box(box.value);
-      box.checked = single ? picked.has(box.value) : shows === 'on';
-      box.indeterminate = !single && shows === 'some';
-    }
-  }
-
-  /** Is a tree parent open — by the reader, or by a search that matched a child? */
-  #isOpen(parent: string): boolean {
-    return (this.#opened.get(parent) ?? false) || this.#searchOpen.has(parent);
-  }
-
-  /** Each parent's box says open or shut, and names its children; a shut one's are hidden. */
-  #drawOpen(): void {
-    if (!this.#tree) return;
-    const kids = this.#own<HTMLElement>('.menu-row[data-parent]');
-    const parentOf = new Map(kids.map((row) => [row.id, row.dataset['parent']!]));
-    const under = Map.groupBy(kids, (row) => row.dataset['parent']!);
-    const open = new Map<string, boolean>();
-    for (const row of this.#own<HTMLElement>('.menu-row[data-twisty]')) {
-      const box = row.querySelector('input');
-      if (!box) continue;
-      const on = this.#isOpen(box.value);
-      open.set(box.value, on);
-      box.setAttribute('aria-expanded', String(on));
-      const ids = (under.get(box.value) ?? []).map((k) => k.id);
-      if (ids.length) box.setAttribute('aria-controls', ids.join(' '));
-      else box.removeAttribute('aria-controls');
-      row.querySelector('.menu-row-twisty')?.setAttribute('data-icon-start', on ? 'chevron-down' : 'chevron-right');
-    }
-    const hidden = hiddenRows(parentOf.keys(), parentOf, open);
-    for (const row of kids) row.toggleAttribute('data-shut', hidden.has(row.id));
-  }
-
-  /** Open or shut a parent; its children are drawn the first time it opens. */
-  #setOpen(parent: string, open: boolean): void {
-    this.#opened.set(parent, open);
-    if (open) this.#drawKids(parent);
-    this.#drawOpen();
-  }
-
-  /** Draw a parent's children under it, once. */
-  #drawKids(parent: string): void {
-    if (this.#kidsDrawn.has(parent)) return;
-    const tpl = this.$<HTMLTemplateElement>(this.dataset['select'] === 'single' ? 'template.menu-radio-tpl' : 'template.menu-check-tpl');
-    const at = this.#own<HTMLElement>('.menu-row[data-twisty]').find((row) => row.querySelector('input')?.value === parent);
-    if (!tpl || !at) return;
-    this.#kidsDrawn.add(parent);
-    const rows = this.#items.filter((item) => item.parent === parent).flatMap((item) => this.#stampRow(item, tpl, null) ?? []);
-    at.after(...rows);
-    this.#drawTicks();
-    this.#markPresent();
+    return this.#list.offered;
   }
 
   /* ── Private ─────────────────────────────────────────────────────── */
-
-  /** Every value row's control; the select-all row is excluded.
-   * TRAP T-select-all-is-not-a-value */
-  #inputs(): HTMLInputElement[] {
-    return this.#own<HTMLInputElement>('input[type="checkbox"], input[type="radio"]')
-      .filter((i) => !i.closest(NON_VALUE_ROWS));
-  }
-
-  /** A DATE body's calendar, stamped once into the light DOM — never beside a
-   *  page's own. TRAP T-a-menu-owns-its-own-bodies */
-  #stampDateBody(): void {
-    if (this.dataset['body'] !== 'date' || this.#own('sherpa-calendar').length) return;
-    const cal = this.clone('template.menu-calendar-tpl');
-    if (cal) this.append(cal);
-  }
 
   /** This menu's OWN light-DOM nodes: a menu nested in it answers for itself.
    *  TRAP T-a-nested-menu-answers-for-itself */
   #own<T extends Element>(selector: string): T[] {
     return [...this.querySelectorAll<T>(selector)].filter((n) => n.closest('sherpa-menu') === this);
   }
-
-  /** This menu's radio group: its own, never a nested menu's of the same heading.
-   *  TRAP T-a-nested-menu-answers-for-itself */
-  readonly #group = `sherpa-menu-${++radioGroups}`;
 
   /** The drill trail. An `href` would dismiss the popover.
    * TRAP T-drill-crumbs-carry-no-href */
@@ -1857,21 +967,6 @@ export class SherpaMenu extends SherpaElement {
   }
 
   /**
-   * An INLINE menu is not a popover.
-   *
-   * The attribute is in the TEMPLATE, so it is removed rather than never
-   * written — and putting it back restores the floating card, which is how one
-   * element serves a chip and a panel. TRAP T-an-inline-menu-is-the-same-menu
-   */
-  #syncInline(): void {
-    const card = this.#card();
-    if (!card) return;
-    const inline = this.hasAttribute('data-inline');
-    if (inline && card.hasAttribute('popover')) card.removeAttribute('popover');
-    else if (!inline && !card.hasAttribute('popover')) card.setAttribute('popover', 'manual');
-  }
-
-  /**
    * The chosen body's own numbers, its available days, and the Range switch.
    * TRAP T-a-menu-owns-its-own-bodies
    */
@@ -1879,70 +974,32 @@ export class SherpaMenu extends SherpaElement {
     const body = this.dataset['body'];
     if (!body) return;
     this.$('.body-range-switch')?.toggleAttribute('checked', this.hasAttribute('data-range'));
-
-    if (body === 'date') {
-      // SLOTTED, not in this shadow root — see the template.
-      const cal = this.#own<HTMLElement>('sherpa-calendar')[0];
-      if (!cal) return;
-      /* ONLY when RANGED. A fresh calendar has no `data-type` at all, and
-         writing `single` onto it would be this menu answering a question
-         nobody asked. The FLIP says `single`, because that is a change. */
-      if (this.hasAttribute('data-range')) cal.setAttribute('data-type', 'range');
-      const days = this.dataset['available'];
-      if (days) cal.setAttribute('data-available', days);
-      return;
-    }
+    if (body === 'date') return this.#date.sync();
     if (body !== 'number') return;
-    /* THE OPERATOR, from the ONE vocabulary — the same list the condition rows
-       read. A host names the set; the menu draws it.
-       TRAP T-ops-follow-the-column-type */
-    const picker = this.$<SherpaInputText>('.body-op');
-    // A FILTER menu's conditions are its rows; its Simple body has no operator.
-    if (picker && this.hasAttribute('data-conditions') && this.dataset['type'] !== 'filter') {
-      const ops = this.#opList();
-      if (!this.#opsDrawn) {
-        this.#opsDrawn = true;
-        void picker.populate?.(ops.map((op) => ({ value: op, label: OP_LABELS[op] })));
-      }
-      const op = ops.includes(this.op) ? this.op : (ops[0] ?? DEFAULT_OP);
-      if (this.dataset['op'] !== op) this.set('data-op', op);
-      if (picker.value !== op) picker.value = op;
-    }
-    const field = this.$<HTMLElement>('.body-number-one');
-    if (field) {
-      field.setAttribute('min', this.dataset['min'] ?? '0');
-      field.setAttribute('max', this.dataset['max'] ?? '100');
-      if (this.dataset['step']) field.setAttribute('step', this.dataset['step']);
-    }
+    this.#number.sync();
     // …and every range row's slider. TODO 375
-    for (const row of this.#rowEls()) if (row.dataset['takes'] === 'range') this.#rangeSlider(row);
-    // A single held value goes in the field.
-    const one = this.dataset['value'];
-    if (one && field instanceof HTMLInputElement && field.value === '') field.value = one;
+    this.#rows.sliders();
+    this.#number.fill();
   }
 
   /** Bring the body, the inline state, the mode and the drill trail into line. */
   #sync(): void {
     this.#syncReadonly();
     this.#syncBody();
-    this.#syncInline();
+    this.#shell.syncInline();
     this.#enforceMode();
     this.#syncCrumb();
-    this.#syncConditions();
+    /* A field that did not opt in has no rows at all — not a hidden one. A
+       control nothing can reach should not exist.
+       TRAP T-conditions-are-opt-in-per-field */
+    if (this.#offersAdvanced()) this.#rows.sync();
     // The name must reach a screen reader even when no heading is drawn.
     // TRAP T-calendar-header-has-no-heading
     // ALWAYS named: the card is a dialog, and a dialog with no name is a failure.
     // TRAP T-a-menu-is-a-dialog-of-native-controls
     this.#card()?.setAttribute('aria-label', this.dataset['heading'] || this.getAttribute('aria-label') || this.word('menu'));
-
     // A shared name makes the browser enforce "one at a time".
-    if (this.dataset['select'] === 'single') {
-      const name = this.#group;
-      for (const input of this.#inputs()) {
-        if (input.type === 'radio' && !input.name) input.name = name;
-      }
-    }
-
+    this.#list.nameRadios();
   }
 
   /** READ-ONLY: every answer region is `inert` — shown, never changed. */
@@ -1951,132 +1008,7 @@ export class SherpaMenu extends SherpaElement {
     for (const region of this.$$('.rows, .condition-rows, .search, .body-range, .body-number')) {
       region.toggleAttribute('inert', readonly);
     }
-    this.#readonlyRows(this.#rowEls());
-  }
-
-  /** A read-only row's fields are `readonly` too, so a value offers no clear button. */
-  #readonlyRows(rows: readonly HTMLElement[]): void {
-    const readonly = this.hasAttribute('data-readonly');
-    for (const row of rows) {
-      for (const field of row.querySelectorAll('sherpa-input-text')) field.toggleAttribute('readonly', readonly);
-    }
-  }
-
-  /** The box the card stays inside — viewport, or a host's `data-bounds`.
-   * A missing or zero-sized box falls back to the viewport.
-   * TRAP T-bounds-clamp-to-the-viewport */
-  #bounds(): { left: number; top: number; right: number; bottom: number } {
-    const viewport = {
-      left: 0,
-      top: 0,
-      right: document.documentElement.clientWidth,
-      bottom: document.documentElement.clientHeight,
-    };
-    const sel = this.dataset['bounds'];
-    if (!sel) return viewport;
-    const box = document.querySelector(sel)?.getBoundingClientRect();
-    if (!box || box.width === 0 || box.height === 0) return viewport;
-    // Never wider than the viewport, or the card follows a scrolled-away box off-screen.
-    return {
-      left: Math.max(viewport.left, box.left),
-      top: Math.max(viewport.top, box.top),
-      right: Math.min(viewport.right, box.right),
-      bottom: Math.min(viewport.bottom, box.bottom),
-    };
-  }
-
-  /** Place the card against its trigger, inside the bounds. */
-  #place(): void {
-    const card = this.#card();
-    const trigger = this.#trigger;
-    if (!card || !trigger?.isConnected) return;
-
-    const t = trigger.getBoundingClientRect();
-    const c = card.getBoundingClientRect();
-    const gap = SherpaMenu.OFFSET;
-    // `--_max-h` is the room on the side the card landed on.
-    // TRAP T-card-max-height-follows-the-side
-    const bounds = this.#bounds();
-    const vw = bounds.right;
-    const vh = bounds.bottom;
-
-    // Beside the trigger, level with it, and up from the foot if it must.
-    if (this.dataset['placement'] === 'right') {
-      card.style.setProperty('--_max-h', `${Math.max(120, Math.round(vh - bounds.top - gap * 2))}px`);
-      card.style.setProperty('--_x', `${Math.round(Math.min(t.right + gap, vw - c.width - gap))}px`);
-      card.style.setProperty('--_y', `${Math.round(Math.max(bounds.top + gap, Math.min(t.top, vh - c.height - gap)))}px`);
-      return;
-    }
-
-    // Below the trigger, unless there is no room and there IS room above.
-    const below = vh - t.bottom - gap * 2;
-    const above = t.top - gap * 2;
-    let y = t.bottom + gap;
-    if (y + c.height > vh && t.top - gap - c.height >= 0) y = t.top - gap - c.height;
-
-    const room = Math.max(below, above);
-    if (c.height > below && above > below) y = Math.max(gap, t.top - gap - Math.min(c.height, above));
-    card.style.setProperty('--_max-h', `${Math.max(120, Math.round(room))}px`);
-
-    // The trigger's start edge (end edge on data-align="end"), clamped inside.
-    let x = this.dataset['align'] === 'end' ? t.right - c.width : t.left;
-    if (x + c.width > vw) x = vw - c.width - gap;
-    if (x < bounds.left + gap) x = bounds.left + gap;
-
-    if (y < bounds.top + gap) y = bounds.top + gap;
-
-    card.style.setProperty('--_x', `${Math.round(x)}px`);
-    card.style.setProperty('--_y', `${Math.round(y)}px`);
-  }
-
-  /** A pointerdown anywhere this menu does not own closes it. */
-  #onOutsidePointer = (event: Event): void => {
-    const path = event.composedPath();
-    // Its own card, its own rows, and the trigger that opened it.
-    if (path.includes(this)) return;
-    const card = this.#card();
-    if (card && path.includes(card)) return;
-    if (this.#trigger && path.includes(this.#trigger)) return;
-    this.hide();
-  };
-
-  /** Escape closes this menu, not whatever is under it. */
-  #onEscape = (event: Event): void => {
-    if ((event as KeyboardEvent).key !== 'Escape') return;
-    event.stopPropagation();
-    this.hide();
-  };
-
-  /** What an OPEN menu listens to. show() calls it too: `toggle` fires a task later, and an Escape in that gap was lost. */
-  #listenWhileOpen(): void {
-    if (this.#openAc) return;
-    /* These live while the menu is OPEN, which is shorter than the element's
-       life — `while` is that shorter lifetime, and the base class ANDs it
-       with its own disconnect signal.
-
-       `onFrame`, not `on`: #place() reads two boxes, and a scroll listener
-       runs per EVENT. Measured before this, 50 scroll events produced 100
-       getBoundingClientRect() calls.
-       capture: an ancestor's scroll does not bubble.
-       TRAP T-a-layout-read-belongs-in-a-frame
-       TRAP T-open-menu-resize-closes */
-    this.#openAc = new AbortController();
-    const whileOpen = { while: this.#openAc.signal, passive: true } as const;
-    this.onFrame(window, 'scroll', this.#reposition, { ...whileOpen, capture: true });
-    this.on(window, 'resize', this.#onViewportResize, whileOpen);
-    this.#cardResize ??= new ResizeObserver(() => this.#place());
-    const card = this.#card();
-    if (card) this.#cardResize.observe(card);
-
-    /* THE MENU OWNS ITS OWN DISMISS. `popover="manual"` because the rows are
-       SLOTTED: the browser reads the DOM tree for light-dismiss, where they
-       are children of THIS element and outside the card, so ticking one shut
-       the menu with nothing chosen. The composed path says what is really
-       inside. TRAP T-a-slotted-row-is-outside-its-own-popover */
-    this.on(document, 'pointerdown', this.#onOutsidePointer, {
-      ...whileOpen, capture: true,
-    });
-    this.on(document, 'keydown', this.#onEscape, whileOpen);
+    this.#rows.readonly();
   }
 
   /** Opened: remember the picks Discard restores. Closed: settle them. */
@@ -2087,7 +1019,7 @@ export class SherpaMenu extends SherpaElement {
       // An open that did not come through show().
       if (!this.#baselineHeld) this.#takeBaseline();
       this.#syncDirty();
-      this.#listenWhileOpen();
+      this.#shell.listen();
     } else {
       /* A COMMITTING menu holds ticks as a DRAFT until Apply. Closing any other
          way — clicking away, Escape — discards them, as Discard does.
@@ -2109,196 +1041,49 @@ export class SherpaMenu extends SherpaElement {
       }
       this.#settledByAction = false;
       this.#baselineHeld = false;
-      this.#openAc?.abort();
-      this.#openAc = null;
-      this.#cardResize?.disconnect();
-      this.#trigger = null;
+      this.#shell.closed();
     }
     this.emit(open ? 'menu-open' : 'menu-close');
   };
 
-  /** Watches the card's box, so a body that grows re-places. */
-  #cardResize: ResizeObserver | null = null;
-  /** Aborts when the menu SHUTS — the viewport listeners' own lifetime. */
-  #openAc: AbortController | null = null;
-
-  /** Scrolled or resized while open: place the card again. */
-  #reposition = (): void => {
-    this.#place();
-  };
-
-  /** The window resized: close rather than float somewhere wrong. */
-  #onViewportResize = (): void => {
-    this.hide();
-  };
-
   override onDisconnect(): void {
-    // The viewport listeners carry their own signals; only the observer is manual.
-    this.#openAc?.abort();
-    this.#openAc = null;
-    this.#cardResize?.disconnect();
-    clearTimeout(this.#hoverTimer);
-  }
-
-  /** The select-all control (class `qf-all`). */
-  #allRow(): HTMLInputElement | null {
-    return this.#own<HTMLInputElement>('.qf-all input')[0] ?? null;
-  }
-
-  /** Tick or clear every value row — writes the BOXES, so a committing menu's
-   * draft still works. TRAP T-select-all-ticks-boxes-not-values */
-  #onSelectAll(input: HTMLInputElement): void {
-    // Read the SET, not the box. TRAP T-indeterminate-reports-false
-    // A ruled-out box is never ticked by Select all. TRAP T-a-ruled-out-value-is-greyed
-    const boxes = this.#inputs().filter((b) => !b.disabled);
-    if (this.#tree) {
-      // A tree ticks every parent. TRAP T-a-tree-menu-keeps-its-ticks-as-data
-      const can = this.#canTick(boxes);
-      this.#tree.all(this.#tree.allBox(can) !== 'on', can);
-      this.#drawTicks();
-    } else {
-      const on = boxes.some((b) => !b.checked);
-      for (const box of boxes) box.checked = on;
-    }
-    input.indeterminate = false;
-    // Select all ON is ALL: rows that come later are ticked too. TRAP T-all-is-an-answer
-    this.#all = this.values.length > 0;
-    this.#syncSelectAll();
-    this.#followPicks();
-    if (!this.#commits) this.emit('menu-change', { values: this.values, ...this.#said() });
+    this.#shell.stop();
+    this.#list.stop();
   }
 
   /** What a reader's act says beyond its ticks. ALL: Select all on. A list left
    *  empty says nothing: it filters nothing (Will, TODO 550). TRAP T-all-is-an-answer */
   #said(): { all?: true } {
     if (this.mode === 'advanced') return {};
-    return this.#all ? { all: true } : {};
+    return this.#list.said();
   }
 
   /** EVERY value ticked, on purpose — Select all on, or its host's answer: a row
    *  that comes later is ticked too. Will, TODO 489 · TRAP T-all-is-an-answer */
   get all(): boolean {
-    return this.#all;
+    return this.#list.all;
   }
   set all(on: boolean) {
-    this.#all = on;
-    if (on) this.#tickAll();
-  }
-  /** Every value ticked, on purpose. */
-  #all = false;
-
-  /** Tick every row Select all could — once there are rows; stamping ticks them after. */
-  #tickAll(): void {
-    if (!this.#stamped) return;
-    const boxes = this.#inputs().filter((b) => !b.disabled);
-    if (this.#tree) {
-      this.#tree.all(true, this.#canTick(boxes));
-      this.#drawTicks();
-    } else {
-      for (const box of boxes) box.checked = true;
-    }
-    this.#syncSelectAll();
-  }
-
-  /** What Select all may tick: a value whose box is drawn and not refused. */
-  #canTick(boxes: readonly HTMLInputElement[]): (value: string) => boolean {
-    const open = new Set(boxes.map((b) => b.value));
-    return (value) => open.has(value);
-  }
-
-  /** Point select-all at the set: all, some (indeterminate) or none. Rewritten
-   * every time the set moves. TRAP T-indeterminate-is-a-property */
-  #syncSelectAll(): void {
-    // A ticked value unticked may now be ruled out. TRAP T-a-ruled-out-value-is-greyed
-    this.#markPresent();
-    this.#syncNone();
-    const all = this.#allRow();
-    if (!all) return;
-    if (this.#tree) {
-      const shows = this.#tree.allBox(this.#canTick(this.#inputs().filter((b) => !b.disabled)));
-      all.checked = shows === 'on';
-      all.indeterminate = shows === 'some';
-      return;
-    }
-    const boxes = this.#inputs().filter((b) => !b.disabled || b.checked);
-    const on = boxes.filter((b) => b.checked).length;
-    all.checked = boxes.length > 0 && on === boxes.length;
-    all.indeterminate = on > 0 && on < boxes.length;
-  }
-
-  /** None is ticked while nothing else is. */
-  #syncNone(): void {
-    const none = this.#own<HTMLInputElement>('.qf-none input')[0];
-    if (none) none.checked = !this.#inputs().some((i) => i.checked);
+    this.#list.all = on;
   }
 
   /** Rows changed — re-read select-all, re-place next frame. */
   #onRowsChanged = (): void => {
-    const held = this.#heldValues;
-    if (held && this.#inputs().length) this.values = held;
-    this.#syncSelectAll();
+    const held = this.#list.held;
+    if (held && this.#list.inputs().length) this.values = held;
+    this.#list.syncSelectAll();
     /* A condition row's value select is BUILT from these rows, and row one is
        built before they arrive — so it opened empty while row two, added
        later, was full. TRAP T-a-value-select-waits-for-the-rows */
-    this.#refillPicks();
-    if (this.open) requestAnimationFrame(() => this.#place());
+    this.#rows.refill();
+    this.#shell.rowsChanged();
   };
-
-  /** Re-send the field's values to every row's value select, keeping each
-   *  row's own pick where it still names a value. */
-  #refillPicks(): void {
-    // Values came or went: each row asks again whether it picks or types — and
-    // so does the host's mirror of row one, where its body is not a number's or a date's.
-    for (const row of this.#rowEls()) {
-      row.dataset['takes'] = this.#takes(this.#opOf(row));
-    }
-    if (!this.#typedBody() && this.hasAttribute('data-takes')) this.set('data-takes', this.#takes(this.op));
-    const options = this.#valueOptions();
-    if (!options.length) return;
-    // Every value, in every row: an Advanced row rules out none. Will, TODO 469.
-    // TRAP T-an-advanced-row-rules-out-nothing
-    for (const row of this.#rowEls()) {
-      const pick = row.querySelector<SherpaInputText>('.condition-pick');
-      if (!pick) continue;
-      // What the row WANTS beats what the select happens to show.
-      const held = row.dataset['want'] || pick.value;
-      void Promise.resolve(pick.populate?.(options)).then(() => {
-        if (held && options.some((o) => o.value === held)) pick.value = held;
-      });
-    }
-  }
 
   /** Report the back arrow; the menu cannot know what it drilled into.
    * TRAP T-menu-back-is-a-report */
   #onBack = (event: Event): void => {
     event.stopPropagation();
     this.emit('menu-back');
-  };
-
-  /** Ask the host to open a row's child menu. */
-  #drillInto(row: HTMLElement): void {
-    clearTimeout(this.#hoverTimer);
-    this.#hovered = null;
-    this.emit('menu-drill', { value: row.dataset['value'] ?? '' });
-  }
-
-  /** The row a pointer rests on. */
-  #hovered: HTMLElement | null = null;
-  /** Opens that row's child menu once the rest is long enough. */
-  #hoverTimer: ReturnType<typeof setTimeout> | undefined;
-
-  /** A pointer RESTING on a child menu's row opens it; one passing over does not —
-   *  a quick pass once drilled the list away. TRAP T-a-row-opens-its-child-menu */
-  #onRowHover = (event: PointerEvent): void => {
-    const row = event.type === 'pointerleave' || event.pointerType === 'touch' ? null
-      : (event.target as Element).closest<HTMLElement>('.menu-row[data-drill]');
-    if (row === this.#hovered) return;
-    clearTimeout(this.#hoverTimer);
-    this.#hovered = row;
-    if (!row) return;
-    this.#hoverTimer = setTimeout(() => {
-      if (this.#hovered === row && row.isConnected && this.open) this.#drillInto(row);
-    }, HOVER_OPENS_AFTER);
   };
 
   /** ArrowRight opens a row's child menu, and ArrowLeft goes back, as in an OS menu. */
@@ -2309,65 +1094,23 @@ export class SherpaMenu extends SherpaElement {
     const at = event.composedPath()[0];
     if ((at instanceof HTMLInputElement && at.type !== 'checkbox' && at.type !== 'radio')
       || at instanceof HTMLTextAreaElement || (at instanceof HTMLElement && at.isContentEditable)) return;
-    if (this.#treeKey(event)) return;
-    const row = (event.target as Element).closest<HTMLElement>('.menu-row[data-drill]');
-    if (event.key === 'ArrowRight' && row) this.#drillInto(row);
-    else if (event.key === 'ArrowLeft' && this.hasAttribute('data-drill')) this.emit('menu-back');
-    else return;
-    event.preventDefault();
-    event.stopPropagation();
+    this.#list.key(event);
   };
-
-  /** In a tree, ArrowRight opens a parent, and ArrowLeft shuts it — from a child,
-   *  its parent, which takes the focus. Was the key the tree's? */
-  #treeKey(event: KeyboardEvent): boolean {
-    if (!this.#tree || (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft')) return false;
-    const row = (event.target as Element).closest<HTMLElement>('.menu-row[data-twisty], .menu-row[data-parent]');
-    if (!row) return false;
-    const open = event.key === 'ArrowRight';
-    const parent = row.dataset['parent'];
-    if (parent !== undefined) {
-      if (open) return false;
-      this.#setOpen(parent, false);
-      this.#own<HTMLElement>('.menu-row[data-twisty]').find((r) => r.querySelector('input')?.value === parent)
-        ?.querySelector('input')?.focus();
-    } else this.#setOpen(row.querySelector('input')?.value ?? '', open);
-    event.preventDefault();
-    event.stopPropagation();
-    return true;
-  }
 
   /** A row changed: report it, or hold it for Apply. */
   #onChange = (event: Event): void => {
-    const input = event.target as HTMLInputElement | null;
-    if (!input || (input.type !== 'checkbox' && input.type !== 'radio')) return;
-    // A nested menu's row is ITS answer. TRAP T-a-nested-menu-answers-for-itself
-    if (input.closest('sherpa-menu') !== this) return;
-    // The SELECT-ALL row drives the others, so it reports for itself.
-    if (input.closest('.qf-all')) {
-      this.#onSelectAll(input);
+    const what = this.#list.change(event);
+    if (!what) return;
+    if (what === 'all') {
+      this.#followPicks();
+      if (!this.#commits) this.emit('menu-change', { values: this.values, ...this.#said() });
       return;
     }
-    // NONE: its radio group has unticked the rest; the answer is nothing.
-    if (input.closest('.qf-none')) {
-      this.#all = false;
-      this.#tree?.set([]);
-      this.#drawTicks();
-      this.#markPresent();
-      this.#report();
-      return;
+    if (what === 'value') {
+      this.#followPicks();
+      // A row let go that is ruled out is refused now — and goes, hiding them. TODO 462
+      this.#list.settle();
     }
-    if (this.#tree) {
-      if (input.type === 'radio') this.#tree.set([input.value]);
-      else this.#tree.tick(input.value, input.checked);
-      this.#drawTicks();
-    }
-    // One row changed: a list now, not ALL — unless every row is ticked again.
-    this.#all = this.#all && this.#inputs().every((b) => b.checked || b.disabled);
-    this.#syncSelectAll();
-    this.#followPicks();
-    // A row let go that is ruled out is refused now — and goes, hiding them. TODO 462
-    this.#markPresent();
     this.#report();
   };
 
@@ -2458,19 +1201,14 @@ export class SherpaMenu extends SherpaElement {
   /** Empty the selection and report it — the checkboxes AND a slotted
    * calendar's date attributes. TRAP T-clear-empties-both-body-shapes */
   #onClear = (): void => {
-    this.#all = false;
-    for (const input of this.#own<HTMLInputElement>('input')) input.checked = false;
-    this.#tree?.set([]);
-    this.#drawTicks();
+    this.#list.clear();
     // A FILTER menu's typed value is part of what Clear empties.
     if (this.dataset['type'] === 'filter') this.conditionValue = '';
     /* BOTH HALVES. Clear means "no filter", and a menu with two modes holds
        its answer in two places — leaving the rows behind gave a cleared chip
        that was still filtering. TRAP T-clear-empties-both-modes */
-    if (this.#rowEls().length) this.conditions = [];
-    for (const cal of this.#own<HTMLElement>('sherpa-calendar')) {
-      for (const a of ['value', 'data-value-start', 'data-value-end']) cal.removeAttribute(a);
-    }
+    if (this.#rows.rows().length) this.conditions = [];
+    this.#date.clear();
     // A cleared range is untouched again. The reset writes both ends, which
     // re-flags it, so the flag comes off LAST.
     // TRAP T-a-full-range-is-still-a-range
@@ -2499,11 +1237,8 @@ export class SherpaMenu extends SherpaElement {
   /** Drive the slotted calendar to today; stays OPEN.
    * TRAP T-today-and-remove-are-menu-chrome */
   #onToday = (): void => {
-    for (const cal of this.#own<SherpaCalendar>('sherpa-calendar')) {
-      cal.today?.();
-    }
+    this.#date.today();
   };
-
 
   /** Remove — the footer-button form of a `<button value="remove">` row. */
   #onRemove = (): void => {
@@ -2513,28 +1248,11 @@ export class SherpaMenu extends SherpaElement {
 
   /** An ACTION row was clicked: report it and close; value rows stay open. */
   #onClick = (event: Event): void => {
-    /* A CHILD MENU's row opens it from anywhere but its tick box, which is a
-       different answer. preventDefault, or the label ticks its box as well.
-       TRAP T-a-row-opens-its-child-menu */
     const target = event.target as HTMLElement;
     // A nested menu's click is its own. TRAP T-a-nested-menu-answers-for-itself
     if (target.closest('sherpa-menu') !== this) return;
-    // A tree parent's twisty opens or shuts it, and does NOT tick. TODO 369
-    const twisty = target.closest<HTMLElement>('.menu-row-twisty');
-    if (twisty) {
-      event.preventDefault();
-      event.stopPropagation();
-      const parent = twisty.dataset['value'] ?? '';
-      this.#setOpen(parent, !this.#isOpen(parent));
-      return;
-    }
-    const row = target.closest<HTMLElement>('.menu-row[data-drill]');
-    if (row && !target.closest('input')) {
-      event.preventDefault();
-      event.stopPropagation();
-      this.#drillInto(row);
-      return;
-    }
+    // A tree's twisty, or a child menu's row. TODO 369 · TRAP T-a-row-opens-its-child-menu
+    if (this.#list.click(event)) return;
     // Only plain ACTION rows close the menu; value rows stay open.
     const button = target.closest('button');
     if (!button || button.disabled) return;

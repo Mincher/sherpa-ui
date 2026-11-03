@@ -15,7 +15,7 @@ click repeats. A two-click intermittent bug.
 Read the SET, not the box. `indeterminate` is also a property, never an
 attribute.
 
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 
 ### T-one-tab-stop-per-set
 
@@ -92,6 +92,7 @@ A component that needs `this.signal` should wire in `onRender`, never `onConnect
 
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-conditions.ts`
 
 ---
 
@@ -403,6 +404,8 @@ stay typed. The catalogue keeps them apart from the field's domain, so it is sti
 number to every chip, count and clause. A number with no values yet still types.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-conditions.ts`
+- Site: `src/components/sherpa-menu/menu-number.ts`
 - Site: `test/e2e/reforged-number-filter-reports.spec.ts`
 - Site: `test/e2e/reforged-advanced-rows.spec.ts`
 
@@ -586,6 +589,7 @@ empty because the caller passed no rows, which is a different thing from
 JS writes the flag; CSS owns the hiding.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 
 ### T-show-then-measure
 
@@ -602,6 +606,7 @@ hang it on. Opening is the moment the set is known, and without it a menu opens
 with its box blank rather than reading all / some / none.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-shell.ts`
 
 ### T-menu-value-is-not-always-rows
 
@@ -643,8 +648,8 @@ A list of FILTERS has none: `data-no-select-all`, from a def's
 `selectAll: false`. Adding every filter at once is never the answer, and under
 "Added filters" it read as selecting only those. Will, 2026-09-25.
 
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 
 ### T-drill-crumbs-carry-no-href
 
@@ -684,7 +689,7 @@ viewport rather than trapping the card in nothing.
 And the box is never WIDER than the viewport: a container that scrolls out of
 view would otherwise let the card follow it off the screen.
 
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-shell.ts`
 
 ### T-card-max-height-follows-the-side
 
@@ -700,7 +705,7 @@ It must also never run off the TOP: the vertical flip can put a tall card above
 the trigger and past the start edge, which is where a DRILLED CALENDAR landed —
 taller than the list it replaced, with the same y it was placed at.
 
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-shell.ts`
 
 ### T-open-menu-resize-closes
 
@@ -726,8 +731,8 @@ future body that changes size gets this for free.
 The Cancel baseline is snapshotted here too —
 `T-cancel-baseline-captured-on-open`.
 
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `src/components/sherpa-menu/menu-shell.ts`
 
 ### T-select-all-ticks-boxes-not-values
 
@@ -747,7 +752,7 @@ but the row never RELABELS itself to "Clear all", because emptying the menu is
 the footer's Clear button and one action belongs in one place
 (`T-select-all-is-not-a-value`).
 
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 
 ### T-indeterminate-is-a-property
 
@@ -761,7 +766,7 @@ the set moves — a declared `data-*` cannot express it and CSS cannot set it.
 That is also why the box can never be trusted to report the set: see
 `T-indeterminate-reports-false`.
 
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 
 ### T-rows-changed-re-places-next-frame
 
@@ -776,6 +781,7 @@ was still the list. Left alone it kept the old x and ran off the side of the
 screen. Measured on the NEXT FRAME, so the new rows have been laid out.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-shell.ts`
 
 ### T-menu-back-is-a-report
 
@@ -829,6 +835,8 @@ decision, so the reader can pick again or Cancel out of it. Without
 same way a tick does.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-date.ts`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 
 ### T-today-and-remove-are-menu-chrome
 
@@ -846,6 +854,7 @@ for ONE event whichever shape its menu is. A calendar menu has no rows, and
 this is how it still offers the action.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-date.ts`
 
 ### T-an-advanced-row-rules-out-nothing
 
@@ -858,8 +867,8 @@ just what the rows above it leave (TODO 110 B, `rowOffer()`, deleted), and a
 value the filters before the field rule out is no longer greyed there (349).
 The Simple list still greys and refuses (`T-a-ruled-out-value-is-greyed`).
 
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
+- Site: `src/components/sherpa-menu/menu-conditions.ts`
 
 ### T-css-owns-the-leave-duration
 
@@ -937,8 +946,8 @@ now falls back to the nearest drawn box: the element it is slotted into, else
 its own parent. `#trigger` is cleared on close, so the fallback is recomputed
 per open and never outlives the trigger that replaced it.
 
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-menu.spec.ts`
+- Site: `src/components/sherpa-menu/menu-shell.ts`
 
 ### T-add-condition-sits-below-the-rows
 
@@ -1011,6 +1020,7 @@ knows the parents and not the child's field.
 
 - Site: `src/core/ui/tree-picks.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 - Site: `test/unit/a-tree-keeps-its-ticks-as-data.test.mjs`
 - Site: `test/e2e/reforged-menu-tree.spec.ts`
 - Site: `test/e2e/reforged-a-tiered-chip.spec.ts`
@@ -1142,8 +1152,8 @@ Measured with a deep hit test — `elementFromPoint` through every shadow root
 returned the `input` itself, and the menu still closed.
 
 ---
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-menu/menu-shell.ts`
 
 ### T-a-composed-child-hides-with-important
 
@@ -1231,7 +1241,7 @@ values meant different things depending on how they got there.
 `and` is still there to be chosen, and it is the right answer for ranges
 (`> 10 AND < 50`). It is the wrong DEFAULT.
 
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-conditions.ts`
 
 ### T-a-borrowed-menu-leaves-its-toolbars-listeners-behind
 
@@ -1331,8 +1341,8 @@ own values, read from the menu's own rows. Only a TYPING op shows the box.
 The flag is on the ROW (`data-takes`), not the host, so one row can be a typed
 `Contains` while the next picks from the list.
 
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
+- Site: `src/components/sherpa-menu/menu-conditions.ts`
 
 ---
 
@@ -1531,9 +1541,9 @@ takes a list) let the next sync empty the box, and the row then read as
 unanswered: a grid cell's "Is Aisha" vanished from the bar's chip (TODO 373).
 While its box is not drawn, such a row reads the pick it was given (`want`).
 
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-menu-row-one.spec.ts`
 - Site: `test/e2e/reforged-a-chip-press-applies-its-draft.spec.ts`
+- Site: `src/components/sherpa-menu/menu-conditions.ts`
 
 ### T-a-layout-read-belongs-in-a-frame
 
@@ -1564,8 +1574,8 @@ live listeners reports a leak that is not there. Count them through CDP's
 listeners on `window` both before and after five open/close cycles.
 
 - Site: `src/core/ui/sherpa-element.ts`
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-menu.spec.ts`
+- Site: `src/components/sherpa-menu/menu-shell.ts`
 
 ### T-a-draft-dies-with-its-menu
 
@@ -1721,7 +1731,7 @@ the reader has answered keeps every row, blank ones too, and row one's
 `data-op` follows the row shown. An answer that differs — a View, a saved
 filter, a Clear from outside — still rebuilds.
 
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-conditions.ts`
 
 ### T-an-action-row-can-keep-its-menu-open
 

@@ -441,6 +441,7 @@ may still add it.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 - Site: `test/unit/a-serial-set-chains-its-fields.test.mjs`
 - Site: `test/e2e/reforged-serial-set.spec.ts`
 - Site: `test/e2e/reforged-filterset.spec.ts`
@@ -1077,9 +1078,9 @@ A `date` offers NO operator list at all: a date is answered by clicking a
 calendar.
 
 - Site: `src/core/data/store.ts`
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-menu/menu-number.ts`
 
 ### T-an-asked-load-is-awaited
 
@@ -1941,6 +1942,7 @@ binding went from 194 lines to 152.
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/data/bind-selection.ts`
 - Site: `src/data.ts`
@@ -2013,6 +2015,7 @@ and would otherwise wipe it.
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-menu/menu-conditions.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/ui/filter-menu.ts`
 
@@ -2914,6 +2917,7 @@ from its source's last walk (`QueryMember.ruledOut`), so every way off agrees
 - Site: `src/core/data/walk.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 - Site: `src/components/sherpa-provider/provider-legends.ts`
 
 ### T-unavailable-value-sorts-below-a-divider
@@ -2947,11 +2951,11 @@ filter (`DataAsk.filters`), whose options are the field's whole list
 `filters` to `populate()`; the `data-column-values` attribute, a second door for
 it that nothing wrote, went in TODO 523.
 
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `src/core/data/filter-state.ts`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 
 ### T-select-all-is-the-visible-rows
 
@@ -3444,6 +3448,7 @@ body. A list's other ops are its Advanced tree.
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-conditions.ts`
 - Site: `src/core/data/query.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/data/query-context.ts`
@@ -3539,8 +3544,8 @@ populated from carry over, should default to a placeholder 'Select…' label."
 `data-condition="advanced"` follows the same rule — it means ANSWERED rows, not
 merely present ones, because a menu in Advanced mode always holds one row.
 
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/core/data/filter-state.ts`
+- Site: `src/components/sherpa-menu/menu-conditions.ts`
 
 ---
 
@@ -4336,11 +4341,11 @@ The shape to remember: a comparison duplicated between the query and the UI is
 a contract with no gate on it, and it only breaks on the return journey — the
 outbound path works, which is what makes it hard to see.
 
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/store.ts`
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `src/core/data/data-source.ts`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 
 ### T-everything-on-is-no-filter
 
@@ -5825,6 +5830,8 @@ there (Will, TODO 456).
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/data/query.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 **A read-only row removes nothing** (Will, TODO 236): no row ×, and its
 fields are `readonly`, so a value shows no clear button. The value then takes
 the row's rounded end, as on a lone row.
@@ -6546,6 +6553,7 @@ The face says "All" for the flag only: a list ticked by hand says its values.
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/filter-face.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/menu-list.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/a-list-can-start-with-every-value.test.mjs`
