@@ -267,6 +267,28 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   Demos `fed4aa9`); the other 10 failures pass alone (Firefox under load),
   but the old `saved-filter:353` (WebKit) and the 800 ms `reopen` bound (TODO 702).
 
+### Wave 3 — as each lane lands
+
+- **U2 ✅, started early (`8125295d`, `b4fbcc8c`, `38298aab`; Demos `09062c9`,
+  `4eb0e75`).** One settings model, `src/core/data/settings.ts`: `SETTINGS` (type, default,
+  scope, session pointer `at`, `source` or `look`), the `Settings` class (a page layer
+  `lay()`, the app's kept value, the default; one `change`) and `fitsSetting`.
+  `provider-look.ts` puts look settings on the root and takes off only its own.
+  SherpaElement gains `static settings` and `onSettings` (+44 lines): the toolbar and the
+  grid read their settings that way. Data settings (`limitOptions`, `countEveryValue`,
+  `showAs`, `axisChips`) are set on each source. A reader's change reports one
+  `setting-change`; the app's own writes report nothing. Deleted: the 28 pairs,
+  `#offerLimit`, the `settings`/`headings` takes, `filter-mode-change`, `followSettings`,
+  `session.overlay`, three `html[data-*]` look rules (in `project-tokens.mjs`'s template),
+  Demos' settings table and its `<html>` writers. A probe of 10 look states: 30 of 30
+  readings the same in three engines. Provider 1,387 → 1,077 lines. Lane picks taken: the
+  nearest provider answers with its own settings and only the top one writes the root;
+  `definition.ui` stays component configuration. 774 settings-area tests pass in three
+  engines on the tip.
+  **Carried → U3:** `drafts` still reaches the provider as the outlet's callback. The
+  outlet reads its nav settings from the session, not from Settings, so a page cannot lay
+  them.
+
 ### The waves
 
 | Wave | Lane | Workstream | Owns | Done when | Size |

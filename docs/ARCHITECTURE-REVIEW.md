@@ -300,6 +300,14 @@ delivered by Context Protocol subscription (`context.ts` already supports it; th
 ignores it). Settings that change data go on the Query or the source; settings that change
 the look become inherited CSS properties on the root. One `setting-change` event out.
 
+*Done, 695 U2 (2026-11-03):* `SETTINGS` in `src/core/data/settings.ts` declares each setting
+once (type, default, scope, its session pointer, and `source` or `look`); a component reads
+its own through `static settings`, asked by `SETTINGS_CONTEXT`; data settings are set on
+each source; looks are custom properties on `<html>` (`data-mode`, `data-density` and
+`data-description-tips` stay attributes, as the tokens read them); one `setting-change`.
+The provider's 28 pairs and `#offerLimit`, `followSettings`, `session.overlay` and Demos'
+settings table are gone: 1,387 → 1,077 lines.
+
 ### 5.3 A page's state, nine keepers
 
 The saved Query, per-View drafts, the reader's Views (with IndexedDB and server tiers),
