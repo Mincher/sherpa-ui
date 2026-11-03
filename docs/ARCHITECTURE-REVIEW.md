@@ -199,6 +199,13 @@ through 13 steering events instead. Presentation alone is set four ways.
 node editor, the MCP and an agent all speak one vocabulary through one door — and every
 command can be traced, undone and replayed.
 
+*Done, 695 S2 (2026-11-03):* `QueryRequest` is one typed union (sort, group, search,
+page, pageSize, hold, take, release, move, letGo, Apply, Discard, presentation); `ask()`
+on `QueryContext` is the one public door, and the old doors are private; pure edits
+(`editQuery`) for sort, group, search, presentation, order and move; one table, `STEERS`,
+maps the 13 steering events. Left for S5: answer, Switch, solo, reset, preset, hold and
+commit still change the Query in place, as members hear each step.
+
 ---
 
 ## 4. The hosts — page, worker, server
@@ -450,7 +457,7 @@ model (patterns as data: when this kind of data and this task, use this layout) 
 | 2 | Two stores cannot share one IndexedDB database | `idb-store.ts:145` | read |
 | 3 | In the worker, `seedVersion` never re-seeds (its mark lives in localStorage) | `web-storage.ts:34` | read |
 | 4 | The newer-write rule is lost over the wire | `request-store.ts:152`, the handler | read; **fixed, 695 H1** |
-| 5 | The node editor's sort and group skip a slot's rerouting | `node-graph.ts:436` | likely |
+| 5 | The node editor's sort and group skip a slot's rerouting | `node-graph.ts:436` | likely; **fixed, 695 S2** |
 | 6 | A condition value with a comma breaks in the node editor | `query-graph.ts:146` | read; **fixed, 695 S1** |
 | 7 | `followUpdates` and `shareFeed(…, 'updates')` take the same lock | `share-feed.ts`, `follow-updates.ts` | read; **fixed, 695 H1** |
 | 8 | Each `RequestStore` opens a BroadcastChannel and never closes it | `request-store.ts:74` | read; **fixed, 695 H1** |

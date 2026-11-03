@@ -212,6 +212,25 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   number field null stays null (the old compile made it 0). APP-GUIDE §8 could name
   `views.v1` (U2 holds the guide). Demos `test:node` has 3 failures that are older than
   D1 (`e2e-fixture` ×2, usage `data-listens`) → TODO 702.
+- **S2 ✅ (`e71d6aa5`, `b2f8f33b`, `afa2c739`, `e4e952cf`, `e8ed414e`; Demos `ce70a93`).**
+  `QueryRequest` one typed union; `QueryContext.ask()` the one public door — `setReading`,
+  `setSort`, `setPreset`, `hold`, `commit`, `batch`, `present` private; `resumeSort` and
+  `DataSource.setPage`/`setPageSize` gone. Pure edits, `editQuery(query, edit, facts)`, for
+  sort, group, search, presentation, order and move; a slot's Sort and Group reroute to its
+  chart inside the edit, so bug 5 (the node editor) is fixed for every caller, with a test.
+  `STEERS` in bind-source.ts maps the 13 steering events; their names stay.
+  `grid-pages-change` and `select-all-request` are not edits. At merge: U1 had moved three
+  of the provider's edits into `provider-show-as.ts` (ported to `ask()`), and D1's new test
+  called `setPreset` (ported). 1074 tests in the shared areas pass in three engines. Lane
+  picks taken: `resumeSort` dropped (a resume is the sort asked again); a preset's commit
+  applies only the fields it moved; the `steered` WeakSet stays (stopping at each binding
+  would hide public events from ancestors — measured, it broke two summary tests); a page
+  command with no scope goes to every source in the context.
+  **Carried → S5:** answer, Switch, solo, reset, preset, hold, take, release, letGo, commit
+  and discard still change the Query in place (members hear each step); the reading command
+  carries `only?: BoundControl`, an element (make it a bind id). **→ N1:** export
+  `editQuery` from `sherpa-ui/data`; node-editor edits call `typedValue`. The bench baseline
+  is stale on the tip (acts cost less than recorded) — re-record it on purpose.
 
 ### The waves
 
