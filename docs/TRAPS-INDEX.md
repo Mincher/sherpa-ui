@@ -219,7 +219,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-up-is-open-down-is-closed](traps/data-layer.md#t-up-is-open-down-is-closed) — data, query-context, query-edits
 - [T-view-state-lives-in-one-object](traps/data-layer.md#t-view-state-lives-in-one-object) — data-source
 
-## Storage, saved Views and the URL (59)
+## Storage, saved Views and the URL (57)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — view-files
 - [T-a-changed-key-moves-the-row](traps/data-layer.md#t-a-changed-key-moves-the-row) — idb-store
@@ -230,12 +230,11 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-notice-is-heard-never-ordered](traps/data-layer.md#t-a-notice-is-heard-never-ordered) — updates
 - [T-a-persistent-chip-reports-on-every-change](traps/storage.md#t-a-persistent-chip-reports-on-every-change) — persist-view
 - [T-a-push-is-a-check-behind](traps/data-layer.md#t-a-push-is-a-check-behind) — serve-data
-- [T-a-reload-replays-the-readers-answers](traps/data-layer.md#t-a-reload-replays-the-readers-answers) — persist-view
 - [T-a-remote-store-is-read-through-a-held-store](traps/data-layer.md#t-a-remote-store-is-read-through-a-held-store) — serve-data
 - [T-a-saved-view-is-the-readers-own](traps/storage.md#t-a-saved-view-is-the-readers-own) — persist-view
 - [T-a-view-change-resets-the-header-chips](traps/storage.md#t-a-view-change-resets-the-header-chips) — persist-view
 - [T-a-view-is-json](traps/data-layer.md#t-a-view-is-json) — persist-view, view-files
-- [T-a-view-keeps-a-draft](traps/storage.md#t-a-view-keeps-a-draft) — persist-view, view-drafts
+- [T-a-view-keeps-what-the-reader-left](traps/storage.md#t-a-view-keeps-what-the-reader-left) — page-state, persist-view
 - [T-a-views-markup-lives-in-a-template](traps/storage.md#t-a-views-markup-lives-in-a-template) — persist-view, view-files
 - [T-a-worker-keeps-the-apps-files](traps/storage.md#t-a-worker-keeps-the-apps-files) — app-files, worker
 - [T-a-write-made-offline-waits](traps/data-layer.md#t-a-write-made-offline-waits) — outbox-keep, serve-data
@@ -244,7 +243,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-capture-is-the-save-button](traps/storage.md#t-capture-is-the-save-button) — persist-view
 - [T-capture-reads-only-what-is-named](traps/storage.md#t-capture-reads-only-what-is-named) — persist-view
 - [T-content-first-original-once](traps/storage.md#t-content-first-original-once) — persist-view
-- [T-derived-id-makes-resave-an-update](traps/storage.md#t-derived-id-makes-resave-an-update) — persist-view, saved-filters, web-storage
+- [T-derived-id-makes-resave-an-update](traps/storage.md#t-derived-id-makes-resave-an-update) — web-storage
 - [T-group-and-sort-are-component-scope](traps/data-layer.md#t-group-and-sort-are-component-scope) — persist-view
 - [T-idb-bulk-is-one-transaction](traps/storage.md#t-idb-bulk-is-one-transaction) — database, idb-store
 - [T-idb-clear-is-not-a-reset](traps/storage.md#t-idb-clear-is-not-a-reset) — idb-store
@@ -252,7 +251,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-idb-is-the-only-real-local-store](traps/data-layer.md#t-idb-is-the-only-real-local-store) — database, idb-store
 - [T-idb-open-is-a-handshake-not-a-call](traps/storage.md#t-idb-open-is-a-handshake-not-a-call) — database
 - [T-library-re-read-on-every-pick](traps/storage.md#t-library-re-read-on-every-pick) — persist-view
-- [T-local-first-then-onward](traps/storage.md#t-local-first-then-onward) — view-sync
+- [T-local-first-then-onward](traps/storage.md#t-local-first-then-onward) — page-state
 - [T-local-records-seed-themselves](traps/storage.md#t-local-records-seed-themselves) — idb-store
 - [T-max-rows-is-oldest-out-by-insertion](traps/data-layer.md#t-max-rows-is-oldest-out-by-insertion) — idb-store
 - [T-news-is-pushed-by-the-server](traps/data-layer.md#t-news-is-pushed-by-the-server) — follow-updates
@@ -261,27 +260,26 @@ files. An entry that only tests cite is under Tests only.
 - [T-one-browser-database](traps/storage.md#t-one-browser-database) — database, idb-store
 - [T-one-class-to-catch](traps/data-layer.md#t-one-class-to-catch) — idb-store
 - [T-one-feed-for-every-tab](traps/data-layer.md#t-one-feed-for-every-tab) — one-tab, share-feed
-- [T-one-snapshot-not-a-key-per-concern](traps/storage.md#t-one-snapshot-not-a-key-per-concern) — persist-view
+- [T-one-page-one-document](traps/storage.md#t-one-page-one-document) — page-state
+- [T-one-snapshot-not-a-key-per-concern](traps/storage.md#t-one-snapshot-not-a-key-per-concern) — page-state, persist-view
 - [T-one-way-to-write-a-condition](traps/data-layer.md#t-one-way-to-write-a-condition) — persist-view
-- [T-persist-defaults-per-tab](traps/storage.md#t-persist-defaults-per-tab) — persist-view
-- [T-persist-view-returns-a-teardown](traps/storage.md#t-persist-view-returns-a-teardown) — persist-view
-- [T-restore-before-first-load](traps/storage.md#t-restore-before-first-load) — persist-view, view-sync
-- [T-save-view-as-returns-the-whole-set](traps/storage.md#t-save-view-as-returns-the-whole-set) — persist-view
+- [T-only-a-named-part-crosses-tabs](traps/storage.md#t-only-a-named-part-crosses-tabs) — page-state
+- [T-restore-before-first-load](traps/storage.md#t-restore-before-first-load) — page-state
 - [T-saved-filters-are-every-scope](traps/data-layer.md#t-saved-filters-are-every-scope) — saved-filters
 - [T-saved-markup-is-untrusted-input](traps/storage.md#t-saved-markup-is-untrusted-input) — persist-view, view-markup
 - [T-session-list-is-a-view-not-a-copy](traps/storage.md#t-session-list-is-a-view-not-a-copy) — session
 - [T-session-persist-defaults-shared](traps/storage.md#t-session-persist-defaults-shared) — session
 - [T-session-store-is-the-third-tier](traps/storage.md#t-session-store-is-the-third-tier) — session
 - [T-signal-not-a-teardown-list](traps/data-layer.md#t-signal-not-a-teardown-list) — persist-view
-- [T-storage-access-throws](traps/data-layer.md#t-storage-access-throws) — database, persist-view, saved-filters, session, web-storage
-- [T-sync-pushes-a-snapshot-not-a-diff](traps/storage.md#t-sync-pushes-a-snapshot-not-a-diff) — view-sync
+- [T-storage-access-throws](traps/data-layer.md#t-storage-access-throws) — database, page-state, session, web-storage
+- [T-sync-pushes-a-snapshot-not-a-diff](traps/storage.md#t-sync-pushes-a-snapshot-not-a-diff) — page-state
+- [T-the-app-context-is-one-answer](traps/data-layer.md#t-the-app-context-is-one-answer) — page-state
 - [T-the-router-owns-the-url](traps/storage.md#t-the-router-owns-the-url) — route
 - [T-the-worker-answers-the-data](traps/storage.md#t-the-worker-answers-the-data) — serve-data, worker, worker-store
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — persist-view
-- [T-view-content-is-a-view-definition](traps/storage.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](traps/storage.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (87)
+## The join and the app layer (90)
 
 - [T-a-bar-reports-its-holds](traps/join-and-app.md#t-a-bar-reports-its-holds) — bind-source
 - [T-a-card-toggles-its-own-toolbar](traps/join-and-app.md#t-a-card-toggles-its-own-toolbar) — provider
@@ -322,11 +320,11 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-scope-is-named-for-its-content](traps/join-and-app.md#t-a-scope-is-named-for-its-content) — provider
 - [T-a-server-field-is-asked-once-per-answer](traps/data-layer.md#t-a-server-field-is-asked-once-per-answer) — provider
 - [T-a-setting-is-a-pointer](traps/join-and-app.md#t-a-setting-is-a-pointer) — bind-settings
-- [T-a-setting-is-declared-once](traps/data-layer.md#t-a-setting-is-declared-once) — provider
+- [T-a-setting-is-declared-once](traps/data-layer.md#t-a-setting-is-declared-once) — outlet, provider
 - [T-a-status-is-worked-out-by-the-data](traps/data-layer.md#t-a-status-is-worked-out-by-the-data) — context, provider
 - [T-a-summary-binds-to-all-the-rows](traps/data-layer.md#t-a-summary-binds-to-all-the-rows) — bind-source
 - [T-a-view-is-json](traps/data-layer.md#t-a-view-is-json) — provider
-- [T-a-view-keeps-a-draft](traps/storage.md#t-a-view-keeps-a-draft) — provider
+- [T-a-view-keeps-what-the-reader-left](traps/storage.md#t-a-view-keeps-what-the-reader-left) — provider
 - [T-a-word-is-in-the-markup](traps/join-and-app.md#t-a-word-is-in-the-markup) — outlet, provider
 - [T-adapter-lives-at-the-binding](traps/data-layer.md#t-adapter-lives-at-the-binding) — bind-source
 - [T-aggregation-is-data](traps/data-layer.md#t-aggregation-is-data) — provider
@@ -335,6 +333,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-apply-and-discard-wait-for-a-change](traps/data-layer.md#t-apply-and-discard-wait-for-a-change) — bind-source, provider
 - [T-bind-locks-what-it-owns](traps/join-and-app.md#t-bind-locks-what-it-owns) — bind-source
 - [T-configuration-is-not-data](traps/data-layer.md#t-configuration-is-not-data) — provider
+- [T-derived-id-makes-resave-an-update](traps/storage.md#t-derived-id-makes-resave-an-update) — provider
 - [T-every-close-reports-or-the-toolbars-stay-hidden](traps/join-and-app.md#t-every-close-reports-or-the-toolbars-stay-hidden) — provider
 - [T-group-and-sort-are-component-scope](traps/data-layer.md#t-group-and-sort-are-component-scope) — bind-source
 - [T-grouped-paging-belongs-to-the-view](traps/data-layer.md#t-grouped-paging-belongs-to-the-view) — bind-source
@@ -343,6 +342,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-nav-child-rows-carry-no-icon](traps/join-and-app.md#t-nav-child-rows-carry-no-icon) — outlet
 - [T-navigating-sets-up-the-page](traps/join-and-app.md#t-navigating-sets-up-the-page) — provider
 - [T-one-command-one-door](traps/data-layer.md#t-one-command-one-door) — bind-source
+- [T-one-page-one-document](traps/storage.md#t-one-page-one-document) — app, provider
 - [T-one-query-one-owner](traps/data-layer.md#t-one-query-one-owner) — bind-source
 - [T-one-way-to-build-an-element](traps/join-and-app.md#t-one-way-to-build-an-element) — apply-state
 - [T-one-way-to-write-a-condition](traps/data-layer.md#t-one-way-to-write-a-condition) — provider
@@ -370,6 +370,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-provider-says-the-pages-reach](traps/join-and-app.md#t-the-provider-says-the-pages-reach) — provider
 - [T-the-router-owns-the-url](traps/storage.md#t-the-router-owns-the-url) — app, router
 - [T-the-star-reports-it-does-not-decide](traps/join-and-app.md#t-the-star-reports-it-does-not-decide) — outlet
+- [T-view-library-is-one-vocabulary](traps/storage.md#t-view-library-is-one-vocabulary) — provider
 
 ## Filters (155)
 
