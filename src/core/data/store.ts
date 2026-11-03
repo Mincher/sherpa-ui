@@ -162,9 +162,12 @@ export function durationSpan(op: 'last' | 'next', { n, unit }: Duration, today =
   const from = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
   const to = new Date(from);
   const step = op === 'last' ? -n : n;
-  // A year is twelve months, from the same day. TODO 688
-  if (unit === 'month' || unit === 'year') to.setUTCMonth(to.getUTCMonth() + step * (unit === 'year' ? 12 : 1));
-  else to.setUTCDate(to.getUTCDate() + step * (unit === 'week' ? 7 : 1));
+  if (unit === 'month' || unit === 'year') {
+    // A year is twelve months, from the same day (TODO 688) — or its month's last, as Temporal clamps. TODO 694
+    const month = from.getUTCMonth() + step * (unit === 'year' ? 12 : 1);
+    const last = new Date(Date.UTC(from.getUTCFullYear(), month + 1, 0)).getUTCDate();
+    to.setUTCFullYear(from.getUTCFullYear(), month, Math.min(from.getUTCDate(), last));
+  } else to.setUTCDate(to.getUTCDate() + step * (unit === 'week' ? 7 : 1));
   return op === 'last' ? [day(to), day(from)] : [day(from), day(to)];
 }
 
