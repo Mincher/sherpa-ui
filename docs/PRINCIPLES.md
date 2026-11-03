@@ -147,8 +147,8 @@ comments, tests and docs.
 A Context's sub-pages are its **Views**, picked in the View chip. The session's
 `/nav/hierarchy` also lists them as child rows, which makes the Context row an
 Area. A View row picks THROUGH the chip, so the two never disagree. Add an Area
-only when one is asked for. "View" is kept for saved views — `ViewSnapshot`,
-`onViewPicked`, the `data-type="view"` toolbar and its `view-*` events.
+only when one is asked for. "View" is kept for saved views — `SavedView` and a
+`PageState`'s `views`, `onViewPicked`, the `data-type="view"` toolbar and its `view-*` events.
 
 **20. Tokens.** Read a token as `var(--sherpa-x, <the value it resolves to>)`.
 The fallback is required, and it is the token's own value. A private value is

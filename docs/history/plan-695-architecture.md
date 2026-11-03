@@ -450,6 +450,10 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   **Carried:** `tagOf` in `source-binding.ts` names a panel section by tag → P6; the node
   editor offers every kind for a gauge — it should call `offered()` (N lane); a bucketed
   line's grid rows do not open on their own records yet.
+- **Paused 2026-11-03 22:00 for the usage window (Will), to resume after midnight:** P4
+  (`lane/grid-p4`, 4 commits: the facts ask, one body draw, the split, the heading buttons
+  — finishing the buttons and its tests) and P7 (`lane/css-p7`, 41 files changed, none
+  committed). N4 waits on Will (TODO 616, held 2026-10-30).
 
 ### The waves
 

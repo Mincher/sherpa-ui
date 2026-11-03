@@ -1,4 +1,4 @@
-# Handover — 2026-10-26
+# Handover — 2026-11-03
 
 For the next Claude session on sherpa-ui, now on ANOTHER Claude account. Read
 `CLAUDE.md` and `docs/PRINCIPLES.md` first, as always; this says where the work
@@ -16,6 +16,41 @@ The repo holds the rules, the TODO and the traps. These live OUTSIDE it:
 | User skills | `~/.claude/skills/` | As memory |
 | claude.ai connectors (Figma, Claude Docs) | the claude.ai account | **No.** Connect them again in the new account |
 | figma-console MCP | `.mcp.json` (not tracked) | Yes. Never read, edit or stage it: it holds a plaintext token |
+
+## Where the work stands (2026-11-03, night)
+
+**The architecture refactor, plan 695** ([plan-695](history/plan-695-architecture.md),
+[the review](ARCHITECTURE-REVIEW.md)), is 22 of 26 workstreams done: T1; Wave 1 (S1,
+H1 + S3, P1 in part, D2, T2); Wave 2 (U1, S2, S4, H3, D1); Wave 3 (S5, U2, U3, P2, P3,
+H2); and N1, N2, H5, U4 early. Each lane's record, and what it carried on, is in the
+plan's "as each lane lands" notes. The full runs after Waves 1, 2 and 3 found no new
+break (Wave 3: sherpa-ui 3762 passed, none failed; Demos' only failures the old WebKit
+ones in TODO 702).
+
+- **Code:** `sherpa-data-layer` and Demos `main` hold every merged lane; nothing pushed.
+  Will's :4200 server keeps the old `server/index.mjs` until he restarts it (H5 changed
+  it). `check:mcp-pack` passes.
+- **Paused for the usage window, to resume after midnight** — each lane in its own
+  worktree pair under the session scratchpad, its agent resumed by a message:
+  - **P4** (the grid's column facts), branch `lane/grid-p4`, `scratchpad/wt-browser`:
+    4 commits (the facts ask, one body draw, the split, the heading buttons); it was
+    finishing the buttons and its last tests.
+  - **P7** (style queries), branch `lane/css-p7`, `scratchpad/wt-css`: 41 files changed,
+    NOT committed yet. A scratchpad that is cleared loses them.
+- **Then:** P5 (the chip split) after P4; P6 (the base class) after P4 and P7; a last
+  full run; then the deferred rows (700 the MCP rebuild, 701, T3 the trap trim, 223, 170,
+  77).
+- **Waiting on Will:**
+  - N4, `runWorkflow` (TODO 616): HELD by Will on 2026-10-30, "I want to plan it out".
+    N1 and N2 left its seams.
+  - `persist()` (H3): A, at the first open of the database (Firefox prompts the reader);
+    or B, an app call. My pick B.
+  - Looks to check in the demo: the menu's nested groups (P3's picks) and a node lit by
+    its step (N2's picks).
+  - 170 itself: its plan is `docs/ARCHITECTURE.md` §8.
+- **How the lanes run:** the memory note `sherpa-orchestrate-agents-in-parallel` — 3 or 4
+  lanes at once (5 or 6 used the 5-hour usage window in about 5 hours); after a usage stop
+  nothing wakes the integrator; the sync uses `git diff --name-only --no-renames`.
 
 ## Where the code stands (2026-10-26)
 

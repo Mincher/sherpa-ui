@@ -31,8 +31,9 @@ too (Host C, `nodeHandler`): ONE protocol, three hosts (`T-a-node-host-is-the-sa
 alike: one fixed schema, made in one upgrade — an `IdbStore`'s rows and seed mark,
 the kept sets, the outbox, the kept notices and the saved Views' durable tier. The
 page asks `navigator.storage.persist()` the first time it opens it
-(`T-one-browser-database`). Web Storage holds what must be read at once: the
-current View, drafts, saved filters, the session.
+(`T-one-browser-database`). Web Storage holds what must be read at once: each
+page's `PageState` (its tab's parts in session storage; its named `views` and
+`filters` in local storage, the only parts that cross tabs) and the session.
 
 ```mermaid
 flowchart LR
