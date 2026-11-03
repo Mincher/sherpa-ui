@@ -2388,6 +2388,7 @@ cancels an earlier one.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar-state-first.spec.ts`
 - Site: `src/components/sherpa-menu/menu-list.ts`
+- Site: `src/core/ui/filter-host-controller.ts`
 
 ### T-an-empty-chip-opens-its-menu
 

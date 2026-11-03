@@ -820,11 +820,12 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (118)
+## SherpaElement and the shared sheets (124)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — sherpa-element
+- [T-a-chip-counts-within-the-filters-before-it](traps/data-layer.md#t-a-chip-counts-within-the-filters-before-it) — filter-host-controller
 - [T-a-cloned-prototype-needs-its-icons-upgraded](traps/data-grid.md#t-a-cloned-prototype-needs-its-icons-upgraded) — sherpa-element
 - [T-a-component-asks-its-provider](traps/join-and-app.md#t-a-component-asks-its-provider) — components, sherpa-element
 - [T-a-component-declares-its-summary](traps/join-and-app.md#t-a-component-declares-its-summary) — sherpa-element
@@ -846,9 +847,10 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-native-wears-the-button-class](traps/element-and-sheets.md#t-a-native-wears-the-button-class) — sherpa-button-look
 - [T-a-page-loads-the-bundle](traps/element-and-sheets.md#t-a-page-loads-the-bundle) — render-icon
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](traps/menus-tips-overlays.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — sherpa-element, templater
-- [T-a-pending-chip-reads-as-a-warning](traps/data-layer.md#t-a-pending-chip-reads-as-a-warning) — shared-constants
+- [T-a-pending-chip-reads-as-a-warning](traps/data-layer.md#t-a-pending-chip-reads-as-a-warning) — filter-host-controller, shared-constants
 - [T-a-property-set-before-upgrade-shadows-its-accessor](traps/element-and-sheets.md#t-a-property-set-before-upgrade-shadows-its-accessor) — sherpa-element
-- [T-a-ruled-out-value-is-greyed](traps/data-layer.md#t-a-ruled-out-value-is-greyed) — shared-constants
+- [T-a-rebuilt-bar-reads-empty-until-its-menus-stamp](traps/filters.md#t-a-rebuilt-bar-reads-empty-until-its-menus-stamp) — filter-host-controller
+- [T-a-ruled-out-value-is-greyed](traps/data-layer.md#t-a-ruled-out-value-is-greyed) — filter-host-controller, shared-constants
 - [T-a-scroll-shadow-is-drawn-over-the-content](traps/element-and-sheets.md#t-a-scroll-shadow-is-drawn-over-the-content) — sherpa-base
 - [T-a-setting-is-declared-once](traps/data-layer.md#t-a-setting-is-declared-once) — sherpa-element
 - [T-a-shared-edge-is-halved-on-both-sides](traps/element-and-sheets.md#t-a-shared-edge-is-halved-on-both-sides) — sherpa-grouping
@@ -856,6 +858,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-sideways-scroll-shadow-is-its-frames](traps/data-grid.md#t-a-sideways-scroll-shadow-is-its-frames) — sherpa-base
 - [T-a-state-colour-binds-the-style-mode](traps/filters.md#t-a-state-colour-binds-the-style-mode) — sherpa-button-look
 - [T-a-sub-pixel-border-reads-back-as-1px](traps/element-and-sheets.md#t-a-sub-pixel-border-reads-back-as-1px) — sherpa-grouping
+- [T-a-superseded-chip-suspends-it-is-never-removed](traps/data-layer.md#t-a-superseded-chip-suspends-it-is-never-removed) — filter-host-controller
 - [T-a-suspended-sort-is-one-owners-job](traps/data-layer.md#t-a-suspended-sort-is-one-owners-job) — sherpa-element
 - [T-a-swapped-label-is-in-the-markup](traps/element-and-sheets.md#t-a-swapped-label-is-in-the-markup) — sherpa-element, swap
 - [T-a-template-is-parsed-once](traps/element-and-sheets.md#t-a-template-is-parsed-once) — templater
@@ -896,6 +899,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-every-button-says-its-action](traps/element-and-sheets.md#t-every-button-says-its-action) — sherpa-anchor
 - [T-false-is-off](traps/element-and-sheets.md#t-false-is-off) — sherpa-element
 - [T-focus-is-delegated-by-the-platform](traps/element-and-sheets.md#t-focus-is-delegated-by-the-platform) — sherpa-element
+- [T-grid-suspend-is-not-clear](traps/data-layer.md#t-grid-suspend-is-not-clear) — filter-host-controller
 - [T-grouping-is-an-attribute-and-a-class](traps/menus-tips-overlays.md#t-grouping-is-an-attribute-and-a-class) — sherpa-group-positions, sherpa-grouping
 - [T-icon-box-is-not-the-glyph](traps/element-and-sheets.md#t-icon-box-is-not-the-glyph) — icon-names, render-icon, sherpa-icon
 - [T-icon-value-takes-two-forms](traps/element-and-sheets.md#t-icon-value-takes-two-forms) — sherpa-element
@@ -907,6 +911,8 @@ files. An entry that only tests cite is under Tests only.
 - [T-non-value-rows-is-one-selector](traps/element-and-sheets.md#t-non-value-rows-is-one-selector) — shared-constants
 - [T-number-coercion](traps/element-and-sheets.md#t-number-coercion) — sherpa-element
 - [T-one-command-one-door](traps/data-layer.md#t-one-command-one-door) — node-graph
+- [T-one-field-one-status](traps/data-layer.md#t-one-field-one-status) — filter-host-controller
+- [T-one-query-one-owner](traps/data-layer.md#t-one-query-one-owner) — filter-host-controller
 - [T-one-tab-stop-per-set](traps/menus-tips-overlays.md#t-one-tab-stop-per-set) — roving-focus
 - [T-one-value-one-declaration](traps/data-grid.md#t-one-value-one-declaration) — sherpa-base
 - [T-parent-chain-walk-not-a-selector](traps/element-and-sheets.md#t-parent-chain-walk-not-a-selector) — tree-rows

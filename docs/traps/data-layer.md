@@ -383,6 +383,7 @@ them once per scope that counts.
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `test/e2e/reforged-chip-results.spec.ts`
 - Site: `test/unit/a-chip-counts-within-the-filters-before-it.test.mjs`
+- Site: `src/core/ui/filter-host-controller.ts`
 
 ### T-a-scope-says-what-it-shows
 
@@ -1265,6 +1266,7 @@ This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` an
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/query-context.ts`
+- Site: `src/core/ui/filter-host-controller.ts`
 
 ### T-a-remote-source-holds-its-whole-set
 
@@ -2798,6 +2800,7 @@ went on filtering. Will, TODO 167.
 - Site: `src/core/data/query-edits.ts`
 - Site: `src/core/data/query.ts`
 - Site: `test/unit/a-release-gives-back-the-kept-answer.test.mjs`
+- Site: `src/core/ui/filter-host-controller.ts`
 
 ### T-a-ruled-out-value-is-greyed
 
@@ -2919,6 +2922,7 @@ from its source's last walk (`QueryMember.ruledOut`), so every way off agrees
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/menu-list.ts`
 - Site: `src/components/sherpa-provider/provider-legends.ts`
+- Site: `src/core/ui/filter-host-controller.ts`
 
 ### T-unavailable-value-sorts-below-a-divider
 
@@ -5648,6 +5652,7 @@ tick differs from it; one chip is its whole field.
 - Site: `test/e2e/reforged-pending-chip.spec.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/ui/shared-constants.ts`
+- Site: `src/core/ui/filter-host-controller.ts`
 
 ### T-an-advanced-answer-reads-as-its-conditions
 
@@ -6004,6 +6009,7 @@ a rebuilt menu was still empty wiped answers it showed. An event with no
 - Site: `test/e2e/reforged-data-source.spec.ts`
 - Site: `test/unit/a-rebuilt-bar-cannot-clear-a-field.test.mjs`
 - Site: `test/unit/an-unscoped-bar-is-reported.test.mjs`
+- Site: `src/core/ui/filter-host-controller.ts`
 
 ### T-the-data-says-what-a-field-may-hold
 
@@ -6649,6 +6655,7 @@ docs/DATA-LAYER-PLAN.md, Step 3.
 - Site: `src/core/data/field-status.ts`
 - Site: `src/core/ui/filter-host.ts`
 - Site: `test/unit/one-field-one-status.test.mjs`
+- Site: `src/core/ui/filter-host-controller.ts`
 
 ### T-a-rule-names-its-clock-and-its-language
 
