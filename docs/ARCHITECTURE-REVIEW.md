@@ -293,7 +293,7 @@ chart become ordinary kinds.
 
 ## 6. The presentation layer
 
-### 6.1 State pins: the largest measured cost
+### 6.1 State pins: the largest sheet
 
 `sherpa-style-modes.css` is 227,934 bytes, inlined into the base element and adopted into
 **every** shadow root. 106 of its 128 rules are pins that only one component can ever
@@ -307,6 +307,14 @@ match.
 Over the wire it is small. The cost is the CASCADE: every pin tested in every root on every
 style recalc. (And `check:weight` gates raw bytes, which overstate the wire 30–70× and say
 nothing of parse or style time.)
+
+> **Measured after step 1 (695 P1, 2026-11-03), Chromium at 4x — this guess was wrong.**
+> Style recalc did not change (a toggle, a menu, a sort: within the spread). Chromium
+> files each rule under its last selector's tag or class, so a root tests only the pins
+> that could match it, and it parses a rule's body only when first needed. The gains are
+> sheet parse −24% (about 2 ms a page) and raw bytes −96 KB; brotli rose 7.5 KB on
+> `index.js` (+2.4%), as many small copies compress worse than one sheet. The case for
+> step 1 is the shape (a component's pins live with it) and step 2, not speed.
 
 **Proposal, in two steps:**
 

@@ -134,6 +134,23 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   **Carried:** a DataSource load's requests start their own traces (a span cannot
   cross an `await`) → S5. After a sign-out, the worker holds no new set until it
   restarts → H3. `serve-data`'s `instanceof HeldStore` → S4's capabilities.
+- **P1 ✅, in part (`ba772348`, `01ff5578`).** The 46 part pins and 11 default pins live in
+  their own component's generated region (31 components); the shared sheet is 128 → 71
+  rules, 227,946 → 131,723 B raw. A probe of 1,008 readings per engine: no change in
+  Chromium, Firefox or WebKit. A dead pin went (`sherpa-code-block[data-copied]`; the
+  component sets `:state(copied)`). **Measured:** no change in style recalc; sheet parse
+  −24%; brotli +7.5 KB on `index.js` (see the review, 6.1). Lane picks taken: the 48
+  HOST state pins stay shared — moved as `:host(…)`, 162 of 993 readings changed, since a
+  host's own status or look wins inside its root; and the brotli rise is accepted for P7.
+  **Carried to P7:** the 48 host state pins; retire the old `--_status-*` door (only the
+  gauge, sparkline, tag and `sherpa-base.css`'s card read it), which cuts every pin by
+  about 44%; `sherpa-nav-item.css` has an old navigation region nothing regenerates, and
+  it differs from `sherpa-nav`'s (`320` vs `320px`, mode blocks missing). P7's proof is the
+  same probe: mount each component in every state `state-pins.yaml` names — in the page,
+  nested in a shadow root with and without its own status and look — read
+  `getComputedStyle` of each part (fills, borders, ink, the resolved `--_status-*` and
+  `--sherpa-style-*`) in three engines, before and after; the diff must be empty. Recalc
+  by CDP `Performance.getMetrics` at 4x, 5 runs, the median.
 
 ### The waves
 
