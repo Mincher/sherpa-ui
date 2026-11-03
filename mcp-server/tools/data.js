@@ -361,7 +361,7 @@ export function register(server) {
           const source = new dl.DataSource({ store, pageSize, searchFields: parsed.searchFields });
           await source.query.setQuery({ v: 1, scopes: { view } });
           await source.load();
-          /* PAGE COMES AFTER THE LOAD. `setPage` before the first `load()` is
+          /* PAGE COMES AFTER THE LOAD. A page asked before the first `load()` is
              silently discarded — the page is a position in a result that does not
              exist yet. A page asked runs its own load, so await the settle. */
           if (page > 1) {
