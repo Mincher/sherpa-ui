@@ -100,6 +100,13 @@ views and its workflows. **Tooling** checks and generates around them.
 view, component config (`$ref` to its spec's props), node, route. A page becomes source +
 views + workflows, each by `$ref`. And a `checkPage` in the engine, run at `open()`.
 
+*Done, 695 D1 (2026-11-03):* `schemas/defs.v1.json` holds every shape a definition uses;
+`page`, `app` and `workflow` define none of their own; `where` is the one "conditions by
+field" shape (scope start, preset, saved filter, View, status `when`); `componentConfig`
+refs `component.v1.json#/$defs/member`. `schemas/views.v1.json` checks the View files.
+`checkPage` runs first in the provider's `open()`. A value is typed once by its field
+(`typedValue`). Left: status fields stay with the store, and defs describes their shape.
+
 ---
 
 ## 3. The data layer — the engine

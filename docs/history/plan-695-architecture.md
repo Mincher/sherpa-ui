@@ -192,6 +192,26 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   **Carried:** U4 takes the tags that moved with Show as (`SHOWN_BY`, `shownAs`,
   `#madeColumns`, `#retitle`); U2 the settings pairs and `#offerLimit`; D1's open-time check
   is one line in the provider, added at D1's merge.
+- **D1 ✅ (`1c03c86d`, `d903468d`, `34173798`; Demos `8b6aeee`).** One `$defs` library,
+  `schemas/defs.v1.json`; every `$id` is its file name, so relative `$ref`s resolve.
+  `schemas/views.v1.json`; `loadViewLibrary` leaves out a View with no label.
+  `schemaCheck` loads all of `schemas/` and takes a shape by pointer; the five tests use
+  it. `checkPage(page)`: one DOM-free pass, run first in `open()` (the integrator's line);
+  `openSource` and `savedFiltersOf` no longer report, so nothing is said twice. Values
+  typed once: `typedValue(type, value)` and `typedTree` (the old `cast`/`castTree` gone);
+  `rowLeaf` types a reader's value as it enters the tree, `presetReadings` a preset's
+  (`lt 60` holds 60), and the compile no longer casts. A bug fixed on the way: a date
+  preset's two ends became `in [a, b]`, two days, not a range. Lane picks taken: a saved
+  filter's scopes take `holds` and `where` only; a View's `settings` is typed on
+  `SavedView` (U2 may move it); status fields stay with the store. Edited outside its
+  list: `mcp-server/tools/data.js` (Ajv loads defs; `pageNames` calls `checkPage`),
+  `check-mcp-pack.mjs`, `where.ts`, the menu's `#valueType`, `persist-view.ts`.
+  **Carried:** `rangeClause` still `Number()`s a range's ends to sort them; S2's
+  node-editor edits call `typedValue`; `setPreset` reads with no field facts; a status
+  `when` parses with no field types; a stored old tree is typed only as it is read; on a
+  number field null stays null (the old compile made it 0). APP-GUIDE §8 could name
+  `views.v1` (U2 holds the guide). Demos `test:node` has 3 failures that are older than
+  D1 (`e2e-fixture` ×2, usage `data-listens`) → TODO 702.
 
 ### The waves
 
