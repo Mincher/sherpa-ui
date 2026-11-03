@@ -110,9 +110,10 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   and `resync-figma`. `tokens.config.json` is read by the figma-console MCP, so it stays.
   Lane picks taken: `manifest` and `reference` stay two writers.
   **Carried:** five unit tests compile Ajv themselves → `schemaCheck` in D1 (wave 2).
-  ❓ Will: `tokens.config.json` also points the figma-console export at a CSS-variables
-  file in `src/styles/tokens/`, so an export with no arguments could overwrite the
-  projected `tokens.css`. A: leave it. B: drop that CSS output (pick B).
+  Will, B: `tokens.config.json` no longer points the figma-console export at a
+  CSS-variables file in `src/styles/tokens/`, which an export with no arguments wrote
+  over the projected `tokens.css`; with no `generated` formats it writes the token JSON
+  only.
 - **T2 ✅ (`54e9d05b`, `523c4adf`, `5b6890ad`).** `.github/workflows/ci.yml`: the hook's
   gates, the build with `check:weight` and `test:node`, Chromium e2e. `check:weight`
   gates brotli bytes per import, reports raw and V8 parse time; the hook runs it
