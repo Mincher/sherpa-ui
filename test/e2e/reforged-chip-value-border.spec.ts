@@ -1,9 +1,9 @@
 import { test, expect, type Page } from './harness';
 
 /**
- * AN ON CHIP FILLS THE HALF THAT TOGGLES — Will, TODOs 667, 669. A chip that
+ * AN ON CHIP FILLS THE HALF THAT TOGGLES — Will, TODOs 667, 669, 697. A chip that
  * cannot be toggled (the View chip, a chart's Primary) never fills its field
- * label: only its value half reads on. And the page may ask that an on chip's
+ * label, but wears the on border on both halves. And the page may ask that an on chip's
  * value half wear the on BORDER only (`html[data-filter-value-border]`), so the
  * filled half is the one a press turns off. Read in PIXELS, never computed style.
  */
@@ -21,8 +21,8 @@ async function pixelAt(page: Page, x: number, y: number): Promise<number[]> {
   }, shot.toString('base64'));
 }
 
-/** The fill of each half, and the value half's bottom border. */
-async function halves(page: Page, id: string): Promise<{ body: number[]; caret: number[]; edge: number[] }> {
+/** The fill of each half, and each half's bottom border. */
+async function halves(page: Page, id: string): Promise<{ body: number[]; caret: number[]; edge: number[]; bodyEdge: number[] }> {
   const boxes = await page.evaluate((chipId) => {
     const root = document.getElementById(chipId)!.shadowRoot!;
     const box = (sel: string) => {
@@ -37,6 +37,7 @@ async function halves(page: Page, id: string): Promise<{ body: number[]; caret: 
     caret: await pixelAt(page, boxes.caret.x + 3, boxes.caret.y + boxes.caret.h / 2),
     // Its bottom border, a pixel in from its corner.
     edge: await pixelAt(page, boxes.caret.x + boxes.caret.w / 2, boxes.caret.y + boxes.caret.h - 1),
+    bodyEdge: await pixelAt(page, boxes.body.x + boxes.body.w / 2, boxes.body.y + boxes.body.h - 1),
   };
 }
 
@@ -67,7 +68,7 @@ test('an on chip fills both halves; with the page\'s value border on, its value 
   await page.evaluate(() => document.documentElement.removeAttribute('data-filter-value-border'));
 });
 
-test('a chip that cannot be toggled never fills its field label: only its value half reads on', async ({ page }) => {
+test('a chip that cannot be toggled never fills its field label, and both halves wear the on border (Will, TODO 697)', async ({ page }) => {
   await page.evaluate(async () => {
     document.getElementById('root')!.replaceChildren();
     await window.__mount('sherpa-quick-filter', undefined, { id: 'on', keep: true, 'data-label': 'Plan', 'data-menu': true, 'data-current': true });
@@ -78,4 +79,6 @@ test('a chip that cannot be toggled never fills its field label: only its value 
   const fixed = await halves(page, 'fixed');
   expect(near(fixed.body, WHITE)).toBe(true);
   expect(near(fixed.caret, on.caret)).toBe(true);
+  expect(near(fixed.bodyEdge, on.bodyEdge)).toBe(true);
+  expect(near(fixed.bodyEdge, fixed.edge)).toBe(true);
 });

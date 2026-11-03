@@ -199,9 +199,14 @@
  * at a glance across a bar of twelve.
  * NO weight change — see the trap.
  * TRAP T-an-active-chip-is-heavier-and-more-strongly-drawn */
-:host([data-current]:not([data-persistent])) :is(.body, .caret),
-:host([data-current][data-persistent]:not([disabled])) .caret {
+:host([data-current]:not([data-persistent][disabled])) :is(.body, .caret) {
   border-width: var(--sherpa-display-mode-border-width-base, 1px);
+}
+/* One that cannot be toggled: its field half wears the on border, not the on fill
+   or ink, so the two halves read as one chip. Will, TODO 697 */
+:host([data-current][data-persistent]:not([disabled])) .body:not(:hover, :active) {
+  background: var(--sherpa-style-default-surface-base, #ffffff);
+  color: var(--sherpa-style-default-content-base, #0c0b11);
 }
 /* The PAGE's choice: an on chip's value half wears its look's border only, its
    fill and ink the default's, so the half that toggles is the filled one. An

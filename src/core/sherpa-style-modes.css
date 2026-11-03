@@ -752,7 +752,7 @@ sherpa-quick-filter[data-current]:not([data-persistent]),
   --_status-icon: var(--sherpa-filter-on-indicator-accent, var(--sherpa-style-active-indicator-accent));
 }
 
-:host(sherpa-quick-filter[data-current][data-persistent]:not([disabled])) .caret {
+:host(sherpa-quick-filter[data-current][data-persistent]:not([disabled])) :is(.body, .caret) {
   --sherpa-style-border-base: var(--sherpa-filter-on-border-base, var(--sherpa-style-active-border-base));
   --sherpa-style-border-base-1: var(--sherpa-filter-on-border-base-1, var(--sherpa-style-active-border-base-1));
   --sherpa-style-border-width: var(--sherpa-filter-on-border-width, var(--sherpa-style-active-border-width));

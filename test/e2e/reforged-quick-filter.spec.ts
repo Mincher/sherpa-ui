@@ -793,7 +793,7 @@ test('a chip whose menu has no list keeps an "Is" row it is given, and says it',
   expect(r).toMatchObject({ on: true, says: 'equals(Bo)', box: 'Bo' });
 });
 
-test('a PERSISTENT chip — the View chip, always on — wears no on look; any other on chip does', async ({ page }) => {
+test('a PERSISTENT chip — the View chip, always on — wears no on fill, only the on border; any other on chip fills', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const look = async (attrs: Record<string, string>): Promise<{ fill: string; edge: string }> => {
       const el = await window.__mount('sherpa-quick-filter', undefined, { 'data-label': 'View', ...attrs });
@@ -803,8 +803,9 @@ test('a PERSISTENT chip — the View chip, always on — wears no on look; any o
     };
     return { plain: await look({}), on: await look({ 'data-current': '' }), view: await look({ 'data-current': '', 'data-persistent': '' }) };
   });
-  // Will, TODO 432
-  expect(r.view).toEqual(r.plain);
+  // Will, TODOs 432, 697
+  expect(r.view.fill).toBe(r.plain.fill);
+  expect(r.view.edge).toBe(r.on.edge);
   expect(r.on.fill).not.toBe(r.plain.fill);
 });
 
