@@ -5,6 +5,7 @@
  *
  * Map:
  * - QueryChange — What the context did, as each member hears it.
+ * - compiles — Does a member compile again on hearing this change?
  * - QueryMember — What a source tells the context it joins.
  * - MemberBind — How a member bound a control.
  * - QueryLive — The Query and the declarations, live: read each time, never kept.
@@ -36,11 +37,14 @@ export type QueryChange =
   | { kind: 'sets'; scope: string }
   | { kind: 'offer'; scope: string }
   | { kind: 'write'; scope: string; field: string; narrows: string[] }
-  | { kind: 'select'; field: string }
+  /** A field's answer moved: drawn at `at`, its home as it was said. */
+  | { kind: 'select'; field: string; at: string }
   | { kind: 'hold'; scope: string; moved: string[] }
   | { kind: 'move'; scopes: string[]; moved: boolean }
   /** The Query moved: compile it. */
   | { kind: 'recompose' }
+  /** Scopes switched off kept what came into force there off: a panel draws them. */
+  | { kind: 'off'; scopes: string[] }
   /** Only a scope's ORDER moved: count again in it. TODO 452 */
   | { kind: 'order'; scope: string }
   /** A scope's preset went on or off. TODO 493 */
@@ -56,6 +60,16 @@ export type QueryChange =
   /** A whole Query came in, over `was`; `before` are the fields answered before. Settles once drawn. */
   | { kind: 'query'; was: Arrangement; before: string[] };
 
+/** Does a member compile again on hearing this change? Then a scope switched off keeps OFF what came into force there. */
+export function compiles(change: QueryChange): boolean {
+  switch (change.kind) {
+    case 'write': case 'select': case 'recompose': case 'preset': case 'commit': case 'query': return true;
+    case 'hold': return change.moved.length > 0;
+    case 'move': return change.moved;
+    default: return false;
+  }
+}
+
 /** What a source tells the context it joins. */
 export interface QueryMember {
   /** Its store waits for Apply. */
@@ -68,8 +82,8 @@ export interface QueryMember {
   page(edit: { page: number } | { pageSize: number }): void;
   /** How it bound this control, if it did. */
   bindOf(el: BoundControl): MemberBind | undefined;
-  /** What the context did: its follow-ups. Called at once, in join order. */
-  heard(change: QueryChange): void | Promise<void>;
+  /** What the context did, in order, once its Query is in place: its follow-ups. In join order. */
+  heard(changes: readonly QueryChange[]): void | Promise<void>;
   /** Does it know this field? */
   has(field: string): boolean;
   /** Does this field keep its answer across Views? TRAP T-a-field-can-carry-over-views */
@@ -156,13 +170,13 @@ export class QueryMembers {
   }
 
   /** Each member hears what the context did, at once, in the order they joined. */
-  tell(change: QueryChange): void {
-    for (const member of this.#members) void member.heard(change);
+  tell(changes: readonly QueryChange[]): void {
+    for (const member of this.#members) void member.heard(changes);
   }
 
   /** Each member hears it, and the context waits for every one to settle. */
-  async hear(change: QueryChange): Promise<void> {
-    await Promise.all([...this.#members].map((m) => m.heard(change)));
+  async hear(changes: readonly QueryChange[]): Promise<void> {
+    await Promise.all([...this.#members].map((m) => m.heard(changes)));
   }
 
   /** Does any member draw a page of rows in this scope? */

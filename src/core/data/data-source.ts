@@ -76,13 +76,13 @@ import { SourceReads } from './source-reads.js';
 import { SourceWalk } from './source-walk.js';
 import { SourceView } from './source-view.js';
 import {
-  answerOf, arrangementOf, compile, eachScope, filterKey, freezeReading, highlightOf, readingAnswered, sameFilter,
+  answerOf, arrangementOf, compile, eachScope, filterKey, highlightOf, readingAnswered, sameFilter,
   VIEW, withoutArrangement, type Arrangement, type CompileFacts, type Query, type QueryDefaults, type ScopeQuery,
 } from './query.js';
-import { definitionOf, keepOff } from './query-edits.js';
+import { definitionOf } from './query-edits.js';
 import type { FieldStatus } from './field-status.js';
 import { QueryContext } from './query-context.js';
-import type { QueryChange, QueryHandle } from './query-members.js';
+import { compiles, type QueryChange, type QueryHandle } from './query-members.js';
 import type { QueryPart } from './query-declarations.js';
 import { readingsOf, whereOf, type Where } from './where.js';
 import { report } from './report.js';
@@ -776,13 +776,8 @@ export class DataSource extends EventTarget {
   }
 
   /** Compile the Query under every named part, and load. The ONE place the
-   *  filter is made. TRAP T-one-query-one-owner */
+   *  filter is made; the Query is its context's, and only read. TRAP T-one-query-one-owner */
   #recompose(): void {
-    // An answer that came into force in a scope switched off is switched off too.
-    const off = keepOff(this.#draft);
-    if (this.#applied !== this.#draft) keepOff(this.#applied);
-    this.#freezeReadings();
-    if (off.length) this.#binding.drawScopesSoon();
     /* A DRAFT edit on a remote source changes nothing applied: no load, and
        the page stays where it is. It only changes what is pending. */
     const { still, same } = this.#compileNow();
@@ -792,14 +787,6 @@ export class DataSource extends EventTarget {
        is OFF, or one chart's own, changed, and its badge wears a number.
        TRAP T-a-chip-counts-within-the-filters-before-it */
     if (still && this.loaded) this.#walk.soon();
-  }
-
-  /** Every reading the Query keeps, in both copies, frozen: what a control is
-   *  handed cannot change it. TRAP T-a-reading-is-frozen-in-the-query */
-  #freezeReadings(): void {
-    for (const query of new Set([this.#draft, this.#applied])) {
-      for (const scope of Object.values(query.scopes)) for (const r of Object.values(scope.readings)) freezeReading(r);
-    }
   }
 
   /** Compile the applied Query. Says whether the SHARED filter
@@ -895,8 +882,27 @@ export class DataSource extends EventTarget {
   /** When a filter applies, as the app asked. */
   readonly #applyOn: 'change' | 'input';
 
-  /** What its context did: today's follow-ups, in today's order. 366 steps 14-15 */
-  #hear(change: QueryChange): void | Promise<void> {
+  /** What its context did, once its Query is in place: ONE compile for the lot,
+   *  then each change's follow-ups, in order. 366 steps 14-15 */
+  #hear(changes: readonly QueryChange[]): void | Promise<void> {
+    if (changes.some((c) => c.kind !== 'query' && compiles(c))) this.#recompose();
+    // Each scope's bars are drawn once for the lot: the Query they are drawn is final.
+    const barred = new Set(changes.flatMap((c) => (c.kind === 'bars' ? [c.scope] : c.kind === 'drawn' && c.bars ? [c.bars] : [])));
+    const drawn = new Set<string>();
+    const bars = (scope: string): void => {
+      if (drawn.has(scope)) return;
+      drawn.add(scope);
+      this.#binding.drawBars(scope);
+    };
+    for (const change of changes) {
+      const settles = this.#follow(change, bars, barred);
+      if (settles) return settles;
+    }
+  }
+
+  /** One change's follow-ups, its compile made: `bars` draws a scope's bars once,
+   *  and a scope in `barred` is drawn whole later in the lot. */
+  #follow(change: QueryChange, bars: (scope: string) => void, barred: ReadonlySet<string>): void | Promise<void> {
     switch (change.kind) {
       case 'offer':
         // What its menus may add moved: the walk tallies it.
@@ -912,12 +918,11 @@ export class DataSource extends EventTarget {
         if (change.kind === 'part' && change.field && !this.#catalogue.has(change.field)) this.declareField(change.field);
         this.#binding.drawScopesSoon();
         // …and its own section, which names the chart it narrows: Show as swaps it. TODO 548
-        if (change.kind === 'part' && change.field) this.#binding.drawBars(change.scope);
+        if (change.kind === 'part' && change.field) bars(change.scope);
         // …and the bar it left: its chip goes. TODO 670
-        if (change.kind === 'part' && change.left) this.#binding.drawBars(change.left);
+        if (change.kind === 'part' && change.left) bars(change.left);
         return;
       case 'write':
-        this.#recompose();
         // The shared filter did not move, so no load will push it: push it here.
         this.#binding.pushTo(change.narrows);
         // A panel shows a part too, and is told as a bar is. TRAP T-one-query-one-owner
@@ -927,56 +932,53 @@ export class DataSource extends EventTarget {
         }
         return;
       case 'select':
-        // The requery first, so a listener sees the state the rows were fetched for.
-        this.#recompose();
-        this.#view.draw(change.field);
+        // Drawn at the home it had as it was said: a hold's clear, in the scope that held it.
+        this.#view.draw(change.field, change.at);
         this.readValues([change.field]);
         // A preset reads its on from this field: its chip is drawn again. TODO 510
-        for (const scope of this.#context.presetsOver(change.field)) this.#binding.drawBars(scope);
+        for (const scope of this.#context.presetsOver(change.field)) bars(scope);
         return;
       case 'hold':
         // A field just held needs its values. 345 phase 5
         this.readValues(this.#context.scope(change.scope));
-        if (change.moved.length) this.#recompose();
         for (const field of change.moved) this.#view.draw(field);
         if (change.scope === VIEW) this.#view.syncHeld();
-        this.#binding.drawBarsBehind(change.scope);
+        if (!barred.has(change.scope)) this.#binding.drawBarsBehind(change.scope);
         this.#binding.drawScopesSoon();
         return;
       case 'move':
-        if (change.moved) this.#recompose();
-        return;
       case 'recompose':
-        this.#recompose();
+        return;
+      case 'off':
+        // A scope switched off kept what came into force there off: the panel draws it.
+        this.#binding.drawScopesSoon();
         return;
       case 'preset':
-        this.#recompose();
-        this.#binding.drawBars(change.scope);
+        bars(change.scope);
         this.#binding.drawScopesSoon();
         return;
       case 'order':
         // No row moves, but each count is counted in this order. TODO 452
         if (this.loaded) this.#walk.soon();
-        this.#binding.drawBarsBehind(change.scope);
+        if (!barred.has(change.scope)) this.#binding.drawBarsBehind(change.scope);
         this.#binding.drawScopesSoon();
         return;
       case 'commit':
-        this.#recompose();
         // The headings show what is APPLIED.
         this.#view.syncHeld();
         return;
       case 'drawn':
         for (const field of change.fields) this.#view.draw(field);
-        if (change.bars) this.#binding.drawBars(change.bars);
+        if (change.bars) bars(change.bars);
         if (change.pending) this.#view.syncPending();
         return;
       case 'bars':
-        this.#binding.drawBars(change.scope);
+        bars(change.scope);
         return;
       case 'presented':
         // A slot's presentation moved: its bar is told its Group and Sort, and draws its Primary and Secondary. TODO 548
         this.#binding.tellView(change.scope);
-        this.#binding.drawBars(change.scope);
+        bars(change.scope);
         return;
       case 'arranged':
         // The old count was measured against the OLD grouping. Drop it and wait for

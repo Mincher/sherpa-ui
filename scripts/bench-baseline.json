@@ -55,7 +55,7 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 3,
+    "compiles": 1,
     "clones": 1,
     "scans": 3
   },
@@ -128,7 +128,7 @@
     "rows": 22,
     "cells": 330,
     "compiles": 1,
-    "clones": 21,
+    "clones": 13,
     "scans": 3
   },
   "records/clear": {
@@ -139,7 +139,7 @@
     "fields": 0,
     "rows": 71,
     "cells": 1065,
-    "compiles": 3,
+    "compiles": 1,
     "clones": 1,
     "scans": 4
   },
@@ -247,7 +247,7 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 4,
+    "compiles": 1,
     "clones": 1,
     "scans": 3
   },
@@ -257,10 +257,10 @@
     "distinct": 0,
     "changes": 0,
     "fields": 0,
-    "rows": 35,
-    "cells": 525,
-    "compiles": 3,
-    "clones": 19,
+    "rows": 0,
+    "cells": 0,
+    "compiles": 2,
+    "clones": 16,
     "scans": 4
   },
   "remote/open": {
@@ -283,7 +283,7 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 2,
+    "compiles": 1,
     "clones": 1,
     "scans": 3
   },
@@ -319,7 +319,7 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 3,
+    "compiles": 1,
     "clones": 1,
     "scans": 3
   },
@@ -331,7 +331,7 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 2,
+    "compiles": 1,
     "clones": 15,
     "scans": 3
   },
@@ -343,7 +343,7 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 2,
+    "compiles": 1,
     "clones": 7,
     "scans": 3
   },
@@ -367,7 +367,7 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 2,
+    "compiles": 1,
     "clones": 1,
     "scans": 3
   },
@@ -392,7 +392,7 @@
     "rows": 0,
     "cells": 0,
     "compiles": 1,
-    "clones": 21,
+    "clones": 13,
     "scans": 2
   },
   "remote/clear": {
@@ -403,7 +403,7 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 4,
+    "compiles": 1,
     "clones": 2,
     "scans": 4
   },
@@ -416,7 +416,7 @@
     "rows": 0,
     "cells": 0,
     "compiles": 1,
-    "clones": 8,
+    "clones": 7,
     "scans": 3
   },
   "remote/add": {
@@ -511,7 +511,7 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 8,
+    "compiles": 4,
     "clones": 1,
     "scans": 6
   },
@@ -523,8 +523,8 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 4,
-    "clones": 19,
+    "compiles": 2,
+    "clones": 16,
     "scans": 4
   },
   "remote/apply-fetch": {
@@ -535,8 +535,8 @@
     "fields": 0,
     "rows": 9162,
     "cells": 9162,
-    "compiles": 3,
-    "clones": 27,
+    "compiles": 2,
+    "clones": 17,
     "scans": 5
   },
   "remote/fetch-off": {
@@ -547,7 +547,7 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 2,
+    "compiles": 1,
     "clones": 1,
     "scans": 3
   },
@@ -559,7 +559,7 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 2,
+    "compiles": 1,
     "clones": 1,
     "scans": 3
   },
@@ -583,7 +583,7 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 2,
+    "compiles": 1,
     "clones": 1,
     "scans": 3
   },
@@ -619,7 +619,7 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 3,
+    "compiles": 1,
     "clones": 1,
     "scans": 3
   },
@@ -631,7 +631,7 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 2,
+    "compiles": 1,
     "clones": 15,
     "scans": 3
   },
@@ -643,7 +643,7 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 2,
+    "compiles": 1,
     "clones": 7,
     "scans": 3
   },
@@ -667,7 +667,7 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 2,
+    "compiles": 1,
     "clones": 1,
     "scans": 3
   },
@@ -692,7 +692,7 @@
     "rows": 0,
     "cells": 0,
     "compiles": 1,
-    "clones": 21,
+    "clones": 13,
     "scans": 2
   },
   "rest/clear": {
@@ -703,7 +703,7 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 4,
+    "compiles": 1,
     "clones": 2,
     "scans": 4
   },
@@ -716,7 +716,7 @@
     "rows": 0,
     "cells": 0,
     "compiles": 1,
-    "clones": 8,
+    "clones": 7,
     "scans": 3
   },
   "rest/add": {
@@ -811,7 +811,7 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 8,
+    "compiles": 4,
     "clones": 1,
     "scans": 6
   },
@@ -823,8 +823,8 @@
     "fields": 0,
     "rows": 0,
     "cells": 0,
-    "compiles": 4,
-    "clones": 19,
+    "compiles": 2,
+    "clones": 16,
     "scans": 4
   },
   "rest/missed-change": {
@@ -964,7 +964,7 @@
     "counts": 0,
     "distinct": 6,
     "changes": 0,
-    "fields": 18,
+    "fields": 17,
     "rows": 10025,
     "cells": 150375,
     "compiles": 0,
@@ -974,26 +974,26 @@
   "notheld/report": {
     "loads": 1,
     "counts": 5,
-    "distinct": 4,
+    "distinct": 3,
     "changes": 0,
-    "fields": 11,
+    "fields": 9,
     "rows": 25,
     "cells": 375,
-    "compiles": 3,
+    "compiles": 1,
     "clones": 1,
-    "scans": 14
+    "scans": 12
   },
   "notheld/save": {
     "loads": 2,
     "counts": 5,
-    "distinct": 4,
+    "distinct": 3,
     "changes": 0,
-    "fields": 11,
+    "fields": 9,
     "rows": 10025,
     "cells": 150375,
     "compiles": 0,
     "clones": 1,
-    "scans": 15
+    "scans": 13
   },
   "notheld/save-same": {
     "loads": 2,
@@ -1022,26 +1022,26 @@
   "notheld/add": {
     "loads": 2,
     "counts": 5,
-    "distinct": 4,
+    "distinct": 3,
     "changes": 0,
-    "fields": 11,
+    "fields": 9,
     "rows": 10026,
     "cells": 150390,
     "compiles": 0,
     "clones": 1,
-    "scans": 15
+    "scans": 13
   },
   "notheld/delete": {
     "loads": 2,
     "counts": 5,
-    "distinct": 4,
+    "distinct": 3,
     "changes": 0,
-    "fields": 11,
+    "fields": 9,
     "rows": 10025,
     "cells": 150375,
     "compiles": 0,
     "clones": 1,
-    "scans": 15
+    "scans": 13
   },
   "notheld/add-field": {
     "loads": 0,
@@ -1135,7 +1135,7 @@
     "fields": 0,
     "rows": 28469,
     "cells": 107208,
-    "compiles": 3,
+    "compiles": 1,
     "clones": 1,
     "scans": 10
   },

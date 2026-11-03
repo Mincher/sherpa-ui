@@ -17,7 +17,7 @@
  * - .selection — One field's whole state, ready for any control to draw.
  * - .fieldStatus — What a field is now, seen from a scope: the one answer for every control.
  * - .pickedFor — A field's picks in force on one bind: its own part's, else the View's.
- * - .draw — Tell each bar over a field's home what it now holds.
+ * - .draw — Tell each bar over a field's home — or the one named — what it now holds.
  * - .syncHeld — Each control below the View is told what the View holds.
  * - .syncPending — Each bound control over a scope is told its pending fields, whether it is dirty or waits, and what failed.
  * - .boundView — The view state every bound component is pushed.
@@ -328,9 +328,8 @@ export class SourceView {
    * TRAP T-a-conditioned-chip-answers-with-its-clause
    * TRAP T-a-suspended-answer-is-drawn-as-off
    */
-  draw(field: string): void {
+  draw(field: string, home: string = homeOf(this.#host.draft(), field)): void {
     const draft = this.#host.draft();
-    const home = homeOf(draft, field);
     // A View answer shows in every grid's heading too.
     if (home === VIEW) this.syncHeld();
     const state = this.selection(field);

@@ -228,7 +228,6 @@ Nothing on Records carries over yet — the default is Will's.
 - Site: `src/core/ui/filter-def.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/query-edits.ts`
-- Site: `src/core/data/query-context.ts`
 - Site: `src/core/data/query-members.ts`
 
 ### T-send-to-view-filters
@@ -287,7 +286,6 @@ so its path holds no `.move`. A bar sends the same request,
 - Site: `src/core/ui/bind-source.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/query-edits.ts`
-- Site: `src/core/data/query-context.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-rows.html`
 - Site: `src/core/data/source-view.ts`
@@ -1275,6 +1273,7 @@ This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` an
 - Site: `src/core/data/query-context.ts`
 - Site: `src/core/ui/filter-host-controller.ts`
 - Site: `src/core/data/source-view.ts`
+- Site: `src/core/data/query-edits.ts`
 
 ### T-a-remote-source-holds-its-whole-set
 
@@ -1809,12 +1808,12 @@ before its Advanced button, `aria-pressed` while `data-soloed`. Its press says
 action rows are never its answer: a drill opens a menu whose only rows are Move or
 Solo itself (`T-a-conditions-only-menu-cannot-be-drilled`).
 
-- Site: `src/core/data/query-context.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/unit/a-solo-is-a-draft-of-one-tab.test.mjs`
 - Site: `test/e2e/reforged-a-solo-is-a-draft-of-one-tab.spec.ts`
+- Site: `src/core/data/query-edits.ts`
 
 ### T-a-needle-comes-from-either-direction
 
@@ -2811,7 +2810,6 @@ went on filtering. Will, TODO 167.
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/source-binding.ts`
-- Site: `src/core/data/query-context.ts`
 - Site: `src/core/data/query-edits.ts`
 - Site: `src/core/data/query.ts`
 - Site: `test/unit/a-release-gives-back-the-kept-answer.test.mjs`
@@ -2910,7 +2908,6 @@ Query that could only come back matching nothing (TODO 465). The Query decides,
 from its source's last walk (`QueryMember.ruledOut`), so every way off agrees
 (Will, TODO 523 F3 A).
 
-- Site: `src/core/data/query-context.ts`
 - Site: `src/core/ui/filter-host.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/store.ts`
@@ -2939,6 +2936,7 @@ from its source's last walk (`QueryMember.ruledOut`), so every way off agrees
 - Site: `src/components/sherpa-provider/provider-legends.ts`
 - Site: `src/core/ui/filter-host-controller.ts`
 - Site: `src/core/data/source-walk.ts`
+- Site: `src/core/data/query-edits.ts`
 
 ### T-unavailable-value-sorts-below-a-divider
 
@@ -3185,7 +3183,7 @@ exists to prevent.
 
 - Site: `src/core/data/bind-selection.ts`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
-- Site: `src/core/data/query-context.ts`
+- Site: `src/core/data/query-edits.ts`
 
 ### T-a-date-picks-days-unless-it-says-range
 
@@ -3474,7 +3472,7 @@ body. A list's other ops are its Advanced tree.
 - Site: `src/components/sherpa-menu/menu-conditions.ts`
 - Site: `src/core/data/query.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-- Site: `src/core/data/query-context.ts`
+- Site: `src/core/data/query-edits.ts`
 
 ### T-an-inactive-chip-says-where-its-filter-went
 
@@ -4301,8 +4299,8 @@ to right-align or sort numerically must read the row, not the state.
 - Site: `src/data.ts`
 - Site: `test/unit/value-types.test.mjs`
 - Site: `src/core/data/field-catalogue.ts`
-- Site: `src/core/data/query-context.ts`
 - Site: `src/core/data/query-members.ts`
+- Site: `src/core/data/query-edits.ts`
 
 ### T-one-comparison-rule-for-query-and-ui
 
@@ -5203,6 +5201,7 @@ the one part of a slotted row the menu's sheet can reach, and read out through
 - Site: `test/unit/a-raise-narrows-at-once.test.mjs`
 - Site: `src/core/data/query-context.ts`
 - Site: `test/unit/both-answers-are-kept.test.mjs`
+- Site: `src/core/data/query-edits.ts`
 
 ### T-a-record-has-a-time-of-its-own
 
@@ -5556,7 +5555,7 @@ answer is drawn straight back to it, and a page wires the rest.
 
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `src/core/ui/bind-source.ts`
-- Site: `src/core/data/query-context.ts`
+- Site: `src/core/data/query-edits.ts`
 
 ### T-a-panel-asks-for-its-scopes
 
@@ -5908,7 +5907,7 @@ applies them, which is why none of them caught it; the new test uses a real
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
 - Site: `src/components/sherpa-provider/provider-legends.ts`
 - Site: `src/core/data/source-binding.ts`
-- Site: `src/core/data/query-context.ts`
+- Site: `src/core/data/query-edits.ts`
 
 ### T-a-chart-scope-is-its-legend-field
 
@@ -5993,7 +5992,6 @@ clone. A caller that wants to change one spreads it and sends it back. An edit
 to a frozen reading throws a `TypeError` in a module — loud, never silent.
 
 - Site: `src/core/data/query.ts`
-- Site: `src/core/data/data-source.ts`
 - Site: `test/unit/a-reading-is-frozen-in-the-query.test.mjs`
 - Site: `src/core/data/query-context.ts`
 
@@ -6107,6 +6105,7 @@ a rebuilt menu was still empty wiped answers it showed. An event with no
 - Site: `src/core/ui/filter-host-controller.ts`
 - Site: `src/core/data/source-view.ts`
 - Site: `src/core/data/query-members.ts`
+- Site: `src/core/data/query-edits.ts`
 
 ### T-the-data-says-what-a-field-may-hold
 
@@ -6729,7 +6728,6 @@ View and said off while the rows were filtered, and a heading wore the amber
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/page-definition.ts`
-- Site: `src/core/data/query-context.ts`
 - Site: `src/core/data/query-edits.ts`
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/source-counts.ts`
@@ -6869,6 +6867,7 @@ every source's.
 - Site: `test/unit/one-command-one-door.test.mjs`
 - Site: `src/data.ts`
 - Site: `src/core/data/query-graph.ts`
+- Site: `test/unit/an-answer-is-a-pure-edit.test.mjs`
 
 ### T-a-setting-is-declared-once
 

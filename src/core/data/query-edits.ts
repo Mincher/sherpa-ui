@@ -1,7 +1,7 @@
 /**
  * query-edits.ts — the edits made to a Query, as plain data. Each takes the
- * Query first, so a test needs no source. Helpers other modules share stay in
- * query.ts. DOM-free.
+ * Query first, so a test needs no source, and gives the Query after: the one
+ * given is untouched. Helpers other modules share stay in query.ts. DOM-free.
  *
  * Map:
  * - scopeEntry — One scope's entry, made when first written.
@@ -35,13 +35,24 @@
  * - isPureEdit — Is this request one `editQuery` makes?
  * - editQuery — A pure edit: the Query after a Sort, Group, Search, presentation, order or move; the one given untouched.
  * - slotted — A Sort or a Group in a SLOT is its chart's: its presentation's sort or parts.
+ * - Solo — A filter soloed in this tab, and every answer the solo switched off.
+ * - Copies — The two copies an edit reads — one object while nothing waits — and this tab's solo.
+ * - Edited — Both copies after an edit, and what each member must hear, in the order it happened.
+ * - CopyFacts — What an answering edit needs that the copies do not say: the context's members and declarations.
+ * - presetIn — Is this preset ON in a copy: its rows held on every field it names, in force.
+ * - editCopies — A request as a pure edit: both copies after it, and what each member must hear, in order.
+ * - writeScope — A scope's own readings, written as its page declares them, each told as written.
+ * - commitScope — An Apply of one scope, as `wait(scope, false)` sends what waits.
  */
 import {
-  ARRANGE_KEYS, answerOf, arrangementOf, arranging, copyQuery, copyReading, eachScope, emptyScope, readingAnswered, stripArrangement, VIEW,
-  type Presentation, type Query, type QueryDefaults, type QueryRequest, type ScopeQuery, type ViewScope,
+  ARRANGE_KEYS, answerOf, arrangementOf, arranging, copyQuery, copyReading, eachScope, emptyScope, readingAnswered, sameReading,
+  stripArrangement, VIEW, type Presentation, type Query, type QueryDefaults, type QueryRequest, type ScopeQuery, type ViewScope,
 } from './query.js';
-import type { SortSpec } from './store.js';
-import { answerTree, type FieldReading } from './filter-state.js';
+import { valueKey, type SortSpec } from './store.js';
+import { answerTree, modeOf, withPreset, type FieldReading } from './filter-state.js';
+import { compiles, type MemberBind, type QueryChange, type QueryMember } from './query-members.js';
+import type { Preset, QueryPart } from './query-declarations.js';
+import type { BoundControl } from './data-source-types.js';
 import type { Where, WhereCondition } from './where.js';
 import { report } from './report.js';
 
@@ -528,4 +539,739 @@ function arranged(out: Query, next: ArrangeEdit, scope: string | undefined, appl
   if (sortSuspended) s.sortSuspended = { ...sortSuspended };
   if (search) s.search = search;
   return out;
+}
+
+/* ── The edits that ANSWER: each pure — both copies in, both copies out — and
+   what each member must hear said as the result, in the order it happened.
+   `ask()` applies the new copies and tells the members once. TRAP T-one-command-one-door */
+
+/** A filter soloed in this tab, and every answer the solo switched off. Never
+ *  saved, never exported. Will, TODO 690 · TRAP T-a-solo-is-a-draft-of-one-tab */
+export interface Solo {
+  scope: string;
+  field: string;
+  off: { scope: string; field: string }[];
+}
+
+/** The two copies an edit reads — one object while nothing waits — and this tab's solo. */
+export interface Copies {
+  applied: Query;
+  draft: Query;
+  solo: Solo | null;
+}
+
+/** Both copies after an edit, and what each member must hear, in the order it happened. */
+export interface Edited extends Copies {
+  said: QueryChange[];
+}
+
+/** What an answering edit needs that the copies do not say: the context's members and declarations. */
+export interface CopyFacts {
+  /** Does a member's store wait for Apply? Which scopes did `wait()` name? */
+  remote: boolean;
+  named: ReadonlySet<string>;
+  parts: ReadonlyMap<string, QueryPart>;
+  offers: ReadonlyMap<string, readonly string[]>;
+  presets: (scope: string) => ReadonlyMap<string, Preset>;
+  /** The answers each held field opens on. TODO 403 */
+  opens: (scope: string) => ReadonlyMap<string, FieldReading> | undefined;
+  /** The member that knows a field. */
+  knows: (field: string) => Pick<QueryMember, 'raws' | 'ruledOut' | 'carriesOver'> | undefined;
+  /** How a member bound this control. */
+  bindOf: (el: BoundControl) => MemberBind | undefined;
+  presents: (scope: string) => boolean;
+  theirs: (scope?: string) => (id: string) => boolean;
+}
+
+/** Where an Apply or a Discard reaches: one field, one scope, or every scope. */
+type At = { scope?: string; field?: string };
+
+/** Where an Apply or a Discard reaches, as a request names it. */
+function applyAt(at: At): At {
+  return at.field ? { field: at.field } : at.scope ? { scope: at.scope } : {};
+}
+
+/** A scope keeps no answer for this field now. */
+function forget(scope: ScopeQuery, field: string): void {
+  if (!scope.superseded?.[field]) return;
+  Reflect.deleteProperty(scope.superseded, field);
+  if (!Object.keys(scope.superseded).length) delete scope.superseded;
+}
+
+/** An edit at work: its own copies, what it has said, and the Applies a batch waits to send. */
+class Work {
+  applied: Query;
+  draft: Query;
+  solo: Solo | null;
+  readonly facts: CopyFacts;
+  readonly said: QueryChange[] = [];
+  /** How deep in a batch it is: an Apply in one is sent at its end. */
+  #depth = 0;
+  /** The Applies a batch asked for: sent at its end, after every edit in it. 366 step 21 */
+  #applies: At[] = [];
+
+  constructor(copies: Copies, facts: CopyFacts) {
+    this.applied = copyQuery(copies.applied);
+    this.draft = copies.draft === copies.applied ? this.applied : copyQuery(copies.draft);
+    this.solo = copies.solo && { ...copies.solo, off: copies.solo.off.map((o) => ({ ...o })) };
+    this.facts = facts;
+  }
+
+  /** Does any scope wait for Apply? */
+  get waits(): boolean {
+    return this.facts.remote || this.facts.named.size > 0;
+  }
+
+  /** Say what changed. A local draft settles first; what a compile reads keeps a
+   *  scope switched off OFF, as the compile once wrote it. TRAP T-the-filter-switch-keeps-what-it-turned-off */
+  say(change: QueryChange): void {
+    this.#settle();
+    if (compiles(change)) {
+      const off = keepOff(this.draft);
+      if (this.applied !== this.draft) keepOff(this.applied);
+      if (off.length) this.said.push({ kind: 'off', scopes: off });
+    }
+    this.said.push(change);
+  }
+
+  /** A LOCAL draft: a scope that does not wait is in force at once, and so is
+   *  what each scope holds. A remote one keeps its own rule. TODO 406 */
+  #settle(): void {
+    if (this.facts.remote || this.draft === this.applied) return;
+    for (const id of new Set([...Object.keys(this.draft.scopes), ...Object.keys(this.applied.scopes)])) {
+      if (!this.facts.named.has(id)) copyScope(this.draft, this.applied, id);
+    }
+    copyHolds(this.draft, this.applied);
+  }
+
+  /** The edits one act makes are ONE change: one Apply, after every edit in it. */
+  batch(fn: () => void): void {
+    this.#depth++;
+    try {
+      fn();
+    } finally {
+      this.#depth--;
+      if (!this.#depth) {
+        const applies = this.#applies;
+        this.#applies = [];
+        if (applies.map((at) => this.#send(at)).some(Boolean)) this.say({ kind: 'commit' });
+      }
+    }
+  }
+
+  /** SEND the draft — Apply, where a scope waits. One field, one scope, or all. */
+  commit(at: At = {}): void {
+    if (!this.waits) return;
+    if (this.#depth) this.#applies.push(at);
+    else if (this.#send(at)) this.say({ kind: 'commit' });
+  }
+
+  /** Copy what an Apply sends onto `applied`. Nothing waiting: false. 366 step 21 */
+  #send(at: At): boolean {
+    const { draft, applied } = this;
+    if (at.field ? sameField(draft, applied, at.field) : at.scope ? sameScope(draft, applied, at.scope) : false) return false;
+    if (at.field) copyField(draft, applied, at.field);
+    else if (at.scope) copyScope(draft, applied, at.scope);
+    else this.applied = structuredClone(draft);
+    if (at.field || at.scope) copyHolds(draft, this.applied);
+    return true;
+  }
+
+  /** Fields that MOVED scope carry their answer at once, waiting or not.
+   *  TRAP T-up-is-open-down-is-closed */
+  carry(fields: readonly string[]): void {
+    if (this.facts.remote || this.draft === this.applied) return;
+    for (const field of fields) copyField(this.draft, this.applied, field);
+  }
+
+  /** May this scope hold this field? Up is open; down is closed. */
+  canHold(scope: string, field: string): boolean {
+    return scope === VIEW || (this.facts.offers.get(scope) ?? []).includes(field);
+  }
+
+  /** The fields a scope holds, in the draft. A copy. */
+  scope(name: string): string[] {
+    return [...(this.draft.scopes[name]?.holds ?? [])];
+  }
+
+  /** Every field the draft answers. */
+  answered(): string[] {
+    return Object.values(this.draft.scopes).flatMap((s) => Object.keys(s.readings));
+  }
+
+  /** The result: both copies, the solo, and what was said. */
+  done(): Edited {
+    return { applied: this.applied, draft: this.draft, solo: this.solo, said: this.said };
+  }
+}
+
+/**
+ * Write ONE scope's reading of ONE field — a component's own answer, which no
+ * other control shares. `only` makes the scope NARROW that one bound
+ * component. Its rows must be EVERY matching row — one page would lie about the
+ * total. `undefined` removes the reading.
+ * TRAP T-a-component-part-narrows-one-component · TRAP T-one-query-one-owner
+ */
+function write(w: Work, scope: string, field: string, reading: FieldReading | undefined, at: { only?: BoundControl } = {}): void {
+  // A declared part narrows its own component, whoever writes it — a panel too.
+  const only = at.only ?? w.facts.parts.get(scope)?.only;
+  const bind = only ? w.facts.bindOf(only) : undefined;
+  if (reading && only && bind?.rows !== 'all') {
+    report({
+      code: 'component-part-on-a-page',
+      message: 'write: a scope that narrows one component needs a bound `rows: "all"` component.',
+      at: { scope, field },
+    });
+    return;
+  }
+  const entry = scopeEntry(w.draft, scope);
+  if (bind) entry.narrows = [bind.id];
+  if (reading && readingAnswered(reading)) {
+    entry.readings[field] = copyReading(answerOf(reading));
+    if (!entry.holds.includes(field)) entry.holds = [...entry.holds, field];
+  } else {
+    Reflect.deleteProperty(entry.readings, field);
+    entry.holds = entry.holds.filter((f) => f !== field);
+  }
+  const narrows = entry.narrows ?? [];
+  prune(w.draft);
+  /* A scope that narrows ONE component filters rows already here — no fetch,
+     so no Apply, even with a remote member. */
+  if (w.facts.remote && narrows.length) copyScope(w.draft, w.applied, scope);
+  w.say({ kind: 'write', scope, field, narrows });
+}
+
+/** A reader's answer replaces the answer, never what presets hold of the field. TODO 521 */
+function keepPresets(w: Work, field: string, next: FieldReading): FieldReading {
+  const byPreset = readingOf(w.draft, field)?.byPreset;
+  if (!byPreset) return next;
+  // An answer emptied leaves the presets', in force.
+  return { ...(readingAnswered(next) ? next : {}), byPreset };
+}
+
+/** A reading's answer, its picks as the values the rows hold: a control hands
+ *  back the KEY it was given. Picks kept off too. TRAP T-a-value-can-be-an-object */
+function raw(w: Work, field: string, picked: readonly unknown[], reading: FieldReading): FieldReading {
+  const raws = (keys: readonly unknown[]): unknown[] => w.facts.knows(field)?.raws(field, keys) ?? [...keys];
+  return { ...answerOf(reading), picked: raws(picked), ...(reading.off ? { off: raws(reading.off) } : {}) };
+}
+
+/** Write a field's answer at its home, telling no one. */
+function put(w: Work, field: string, picked: readonly unknown[], reading: FieldReading = {}): void {
+  // Its OWN copy: a caller that edits its object after changes nothing here.
+  const next: FieldReading = copyReading(keepPresets(w, field, raw(w, field, picked, reading)));
+  /* CONDITIONS count. A field answered only by rows has no picked values and
+     no typed text. TRAP T-many-conditions-are-one-reading */
+  setReading(w.draft, field, readingAnswered(next) ? next : undefined);
+}
+
+/**
+ * Select values for a FIELD, at its home scope. Every control over that
+ * field reads the same answer back; an empty list clears it. It is drawn at the
+ * home it has as it is said. TRAP T-a-filter-applies-down-its-scope
+ */
+function select(w: Work, field: string, picked: readonly unknown[], reading: FieldReading = {}): void {
+  put(w, field, picked, reading);
+  w.say({ kind: 'select', field, at: homeOf(w.draft, field) });
+}
+
+/** A field's picks less those the filters before it rule out: going OFF, they go —
+ *  they could never come back on (TODO 462). Conditions stay. Will, TODOs 465, 523 F3 */
+function standing(w: Work, scope: string, field: string, reading: FieldReading): unknown[] {
+  const picked = reading.picked ?? [];
+  const out = modeOf(reading) === 'advanced' ? undefined : w.facts.knows(field)?.ruledOut?.(scope, field);
+  return out ? picked.filter((v) => out(valueKey(v)) === null) : [...picked];
+}
+
+/**
+ * A bar's filter Switch. OFF stops every answer in force in this scope,
+ * keeping each; ON brings back exactly those. While it is off,
+ * nothing comes into force there. TRAP T-the-filter-switch-keeps-what-it-turned-off
+ */
+function suspendScope(w: Work, scope: string, suspended = true): void {
+  if (suspended === !!w.draft.scopes[scope]?.suspended) return;
+  const entry = scopeEntry(w.draft, scope);
+  let fields: string[];
+  if (suspended) {
+    // Each answer drops what the filters before it rule out, as one field's OFF does. TODO 523 F3
+    const dropped: string[] = [];
+    for (const [field, reading] of Object.entries(entry.readings)) {
+      const kept = reading.suspended ? null : standing(w, scope, field, reading);
+      if (!kept || kept.length >= (reading.picked?.length ?? 0)) continue;
+      put(w, field, kept, kept.length ? reading : {});
+      dropped.push(field);
+    }
+    entry.suspended = { fields: [] };
+    // What the Switch turned off is listed as it is said.
+    w.say({ kind: 'recompose' });
+    fields = [...new Set([...entry.suspended.fields, ...dropped])];
+  } else {
+    const off = entry.suspended!;
+    delete entry.suspended;
+    fields = off.fields.filter((f) => f in entry.readings);
+    for (const f of fields) {
+      const { suspended: _off, ...on } = entry.readings[f]!;
+      entry.readings[f] = on;
+    }
+    prune(w.draft);
+    w.say({ kind: 'recompose' });
+  }
+  // The Switch is its scope's Apply, remote too.
+  w.commit({ scope });
+  w.say({ kind: 'drawn', fields, bars: scope });
+  // Its sort and group go off and on with it: the rows are arranged again. Will, TODO 398
+  if (entry.sort?.length || entry.group) w.say({ kind: 'arranged', group: !!entry.group });
+}
+
+/**
+ * Switch answers OFF and on, keeping each: one field's, at its home, or —
+ * `null` — every answer in a scope, its bar's Switch. On gives the same
+ * reading back; a field already so changes nothing.
+ * TRAP T-the-filter-switch-keeps-what-it-turned-off · TRAP T-grid-suspend-is-not-clear
+ */
+function suspend(w: Work, scope: string, field: string | null, off: boolean): void {
+  if (field === null) {
+    suspendScope(w, scope, off);
+    return;
+  }
+  const held = readingOf(w.draft, field);
+  if (!held || !!held.suspended === off) return;
+  const { suspended: _was, ...on } = held;
+  if (!off) return select(w, field, held.picked ?? [], on);
+  const kept = standing(w, homes(w.draft).get(field) ?? scope, field, held);
+  // None left, the field clears.
+  if (held.picked?.length && !kept.length) select(w, field, []);
+  else select(w, field, kept, { ...on, suspended: true });
+}
+
+/**
+ * SOLO one filter: every other answer in force in its scope — every scope,
+ * `across` — goes off, its value whole, and this one is on. Applied at once,
+ * as the Switch is. A second solo moves it. Will, TODO 690
+ * TRAP T-a-solo-is-a-draft-of-one-tab
+ */
+function solo(w: Work, scope: string, field: string, options: { across?: boolean } = {}): void {
+  w.batch(() => {
+    unsolo(w);
+    const draft = w.draft;
+    const off: { scope: string; field: string }[] = [];
+    const scopes = options.across ? eachScope(draft).map(([id]) => id) : [scope];
+    for (const id of scopes) {
+      const entry = draft.scopes[id];
+      // A scope its Switch turned off is off already.
+      if (!entry || entry.suspended) continue;
+      for (const [other, reading] of Object.entries(entry.readings)) {
+        if (other === field || reading.suspended || !readingAnswered(reading)) continue;
+        // Raw: going off here prunes nothing, so it comes back as it was.
+        select(w, other, reading.picked ?? [], { ...reading, suspended: true });
+        off.push({ scope: id, field: other });
+      }
+    }
+    const own = readingOf(draft, field);
+    if (own?.suspended) {
+      const { suspended: _off, ...on } = own;
+      select(w, field, own.picked ?? [], on);
+    }
+    w.solo = { scope, field, off };
+    soloSaid(w, w.solo);
+  });
+}
+
+/** End the solo: ONLY what it switched off comes back on — less any the reader
+ *  turned on meanwhile. Inside a batch. Will, TODO 690 */
+function unsolo(w: Work): void {
+  const was = w.solo;
+  if (!was) return;
+  w.solo = null;
+  for (const { field } of was.off) {
+    const held = readingOf(w.draft, field);
+    if (!held?.suspended) continue;
+    const { suspended: _off, ...on } = held;
+    select(w, field, held.picked ?? [], on);
+  }
+  soloSaid(w, was);
+}
+
+/** A solo applied, and every bar it reaches drawn again: each its own scope. */
+function soloSaid(w: Work, said: Solo): void {
+  const scopes = new Set([said.scope, ...said.off.map((o) => o.scope)]);
+  for (const id of scopes) w.commit({ scope: id });
+  w.say({ kind: 'drawn', fields: [said.field, ...said.off.map((o) => o.field)] });
+  for (const id of scopes) w.say({ kind: 'bars', scope: id });
+}
+
+/** Say what a scope holds now. An empty list forgets the scope. */
+function hold(w: Work, name: string, fields: readonly string[]): void {
+  const next = [...fields];
+  const before = w.draft.scopes[name]?.holds ?? [];
+  // A no-op must not wake every listener — a bar re-renders on this.
+  if (before.length === next.length && before.every((f, i) => f === next[i])) return;
+  /* LET GO, and held nowhere else: its answer goes with it. Removing a chip
+     is a clear. Cleared FIRST, while this scope still holds it, so the
+     controls over this scope are drawn the clear. TRAP T-one-query-one-owner */
+  const elsewhere = (field: string): boolean => eachScope(w.draft)
+    .some(([id, s]) => id !== name && s.holds.includes(field));
+  for (const field of before) {
+    if (!next.includes(field) && !elsewhere(field) && readingOf(w.draft, field)) select(w, field, []);
+  }
+  const draft = w.draft;
+  const entry = scopeEntry(draft, name);
+  const added = next.filter((f) => !before.includes(f));
+  const dropped = before.filter((f) => !next.includes(f));
+  /* THE VIEW TAKES a field a component scope holds: that scope keeps its own
+     answer, not in force — `{}` for none. One that lets a field go keeps none.
+     Will, D2 A. TRAP T-a-superseded-chip-suspends-it-is-never-removed */
+  if (name === VIEW) {
+    for (const [id, s] of eachScope(draft)) {
+      if (id === VIEW) continue;
+      for (const f of added) if (s.holds.includes(f)) (s.superseded ??= {})[f] = copyReading(s.readings[f] ?? {});
+    }
+  } else for (const f of dropped) forget(entry, f);
+  const was = homes(draft);
+  entry.holds = next;
+  rehome(draft);
+  // …and LETS GO: its home below gets back the answer it kept, or clears.
+  if (name === VIEW) for (const f of dropped) giveBack(w, f);
+  /* RAISING CARRIES THE ANSWER, and lowering brings it back: an answer that
+     moved scope narrows from where it lives now, at once, and is drawn there.
+     TRAP T-up-is-open-down-is-closed */
+  const now = homes(draft);
+  const moved = [...now].filter(([field, home]) => was.get(field) !== home).map(([field]) => field);
+  w.carry(moved);
+  w.say({ kind: 'hold', scope: name, moved });
+}
+
+/** The View let go of a field: its home below gets back the answer it kept
+ *  — or clears, for `{}` — and no scope keeps one for it now. */
+function giveBack(w: Work, field: string): void {
+  const draft = w.draft;
+  const home = holderOf(draft, field);
+  for (const [id, s] of eachScope(draft)) {
+    const kept = s.superseded?.[field];
+    if (!kept) continue;
+    forget(s, field);
+    if (id !== home) continue;
+    if (Object.keys(kept).length) s.readings[field] = kept;
+    else Reflect.deleteProperty(s.readings, field);
+  }
+}
+
+/** A scope lets ONE field go. */
+function release(w: Work, scope: string, id: string): void {
+  hold(w, scope, w.scope(scope).filter((f) => f !== id));
+  w.say({ kind: 'bars', scope });
+}
+
+/** A scope TAKES fields — sent DOWN from the View to the one scope named,
+ *  or UP from a chart with its answer. TRAP T-send-to-view-filters */
+function take(w: Work, scope: string, ids: readonly string[], from?: string): void {
+  if (from === VIEW && scope !== VIEW) {
+    for (const id of ids) lower(w, id, scope);
+    return;
+  }
+  if (scope === VIEW && from) for (const id of ids) cameFromBoth(w, id, from);
+  const part = from ? w.facts.parts.get(from) : undefined;
+  const answer = part && from ? w.draft.scopes[from]?.readings[part.field] : undefined;
+  holdEach(w, scope, [...ids]);
+  // The chart lets go of it: the View narrows every component now.
+  if (part && answer && from && ids.includes(part.field)) {
+    write(w, from, part.field, undefined);
+    select(w, part.field, answer.picked ?? [], answer);
+    w.commit();
+    w.say({ kind: 'bars', scope });
+  }
+}
+
+/** A scope holds each of these fields. */
+function holdEach(w: Work, scope: string, ids: readonly string[]): void {
+  const fields = ids.filter((id) => !holdsField(w.draft, scope, id));
+  if (fields.length) hold(w, scope, [...w.scope(scope), ...fields]);
+  w.say({ kind: 'bars', scope });
+}
+
+/** Remember, or forget, where a View field came up from, in both copies. */
+function cameFromBoth(w: Work, field: string, from: string | undefined): void {
+  for (const query of new Set([w.draft, w.applied])) setCameFrom(query, field, from);
+}
+
+/** SEND a View field DOWN: the View lets go of it, and its answer goes to
+ *  the one scope named. TRAP T-send-to-view-filters */
+function lower(w: Work, field: string, to: string): void {
+  if (!holdsField(w.draft, VIEW, field)) return;
+  const answer = w.draft.scopes[VIEW]?.readings[field];
+  const part = w.facts.parts.get(to);
+  if (!part && !w.canHold(to, field)) return;
+  /* ONE SCOPE AT A TIME. A scope the field came up from still holds its
+     place: each lets go first, while the View still holds the answer.
+     Will, TODO 168. TRAP T-send-to-view-filters */
+  for (const [id, scope] of eachScope(w.draft)) {
+    if (id === VIEW || id === to || !scope.holds.includes(field)) continue;
+    hold(w, id, scope.holds.filter((f) => f !== field));
+    w.say({ kind: 'bars', scope: id });
+  }
+  // Held BELOW first, so the answer moves there and is not cleared.
+  if (!part && !holdsField(w.draft, to, field)) hold(w, to, [...w.scope(to), field]);
+  /* THE VIEW'S ANSWER WINS, whole — its mode and its rows: what a scope kept
+     from before the field went up is dropped. TRAP T-send-to-view-filters */
+  for (const [, s] of eachScope(w.draft)) forget(s, field);
+  hold(w, VIEW, w.scope(VIEW).filter((f) => f !== field));
+  // A chart's own scope takes the picks; the View's answer went with its hold.
+  if (part) write(w, to, field, answer?.picked?.length ? { picked: [...answer.picked] } : undefined);
+  cameFromBoth(w, field, undefined);
+  w.commit();
+  w.say({ kind: 'bars', scope: VIEW });
+  if (!part) w.say({ kind: 'bars', scope: to });
+}
+
+/**
+ * ONE FIELD'S ANSWER — what a control asks when the reader changes it. It
+ * lands at the field's home. In a PART's scope, or with `only`, it is that
+ * component's own answer, which narrows it alone. A field no scope holds is
+ * first held in a component scope that may hold it; the View holds nothing
+ * it is not given. The answer already in force changes nothing and tells no
+ * one. `null` clears it. 366 step 18 · TRAP T-one-query-one-owner
+ */
+function answer(w: Work, scope: string, field: string, reading: FieldReading | null, at: { only?: BoundControl } = {}): void {
+  if (at.only || w.facts.parts.has(scope) || w.draft.scopes[scope]?.narrows?.length) {
+    const next = reading && readingAnswered(reading) ? reading : undefined;
+    if (sameReading(w.draft.scopes[scope]?.readings[field], next)) return;
+    write(w, scope, field, next, at);
+    return;
+  }
+  // A heading's answer to a field no scope holds is held in its grid's scope, and its bar draws the chip. TRAP T-a-heading-asks-through-the-source
+  const fresh = !!reading && scope !== VIEW && !holderOf(w.draft, field) && w.canHold(scope, field);
+  if (fresh) hold(w, scope, [...w.scope(scope), field]);
+  const picked = reading?.picked ?? [];
+  const next = keepPresets(w, field, raw(w, field, picked, reading ?? {}));
+  if (!sameReading(readingOf(w.draft, field), readingAnswered(next) ? next : undefined)) select(w, field, picked, reading ?? {});
+  if (fresh) w.say({ kind: 'bars', scope });
+}
+
+/**
+ * letGo(scope, field, keys) — the filters before a field rule these picks out:
+ * they leave its APPLIED answer, and no Apply is asked — the rows had them out
+ * already. A draft follows only while it is still the applied answer: one the
+ * reader changed is theirs. Will, TODO 512 (A); 518 · TRAP T-a-ruled-out-value-is-greyed
+ */
+function letGo(w: Work, scope: string, field: string, keys: readonly string[]): void {
+  const { applied, draft } = w;
+  const was = applied.scopes[scope]?.readings[field];
+  const kept = was?.picked?.filter((v) => !keys.includes(valueKey(v)));
+  if (!was || !kept || kept.length === was.picked!.length) return;
+  if (draft !== applied && sameReading(draft.scopes[scope]?.readings[field], was)) {
+    draft.scopes[scope]!.readings[field] = { ...was, picked: kept };
+  }
+  applied.scopes[scope]!.readings[field] = { ...was, picked: kept };
+  // ONE compile: what is applied moved; then the field is drawn its answer.
+  w.say({ kind: 'commit' });
+  w.say({ kind: 'drawn', fields: [field] });
+}
+
+/** Is this preset ON in a copy: its rows held on every field it names, in force. TODOs 510, 521 */
+export function presetIn(query: Query, scope: string, id: string, preset: Preset | undefined): boolean {
+  if (!preset) return false;
+  const entries = Object.entries(preset.readings).filter(([, given]) => answerTree(given));
+  // Each at its field's home, where a preset writes it.
+  return entries.length > 0 && entries.every(([field]) => {
+    const held = query.scopes[holderOf(query, field) ?? scope]?.readings[field];
+    return !!held?.byPreset?.[id] && !held.suspended;
+  });
+}
+
+/**
+ * A preset ON puts its conditions on each field, ANDed with what it holds,
+ * where the field is held; where no scope holds it, in this scope, and it adds
+ * no chip. The field's answer and mode stay the reader's. OFF takes them off.
+ * Its on is read from the fields. With `commit`, the fields it moved are
+ * applied at once. Will, TODOs 510 (A), 521, 526, 590 · TRAP T-a-preset-is-its-own-part
+ */
+function preset(w: Work, scope: string, id: string, on: boolean, commit = false): void {
+  const given = w.facts.presets(scope).get(id);
+  // Off goes on: a field suspended reads it off, and still holds its rows.
+  if (!given || (on && presetIn(w.draft, scope, id, given))) return;
+  w.batch(() => {
+    const moved: string[] = [];
+    for (const [field, reading] of Object.entries(given.readings)) {
+      const tree = answerTree(reading);
+      if (!tree) continue;
+      const entry = scopeEntry(w.draft, holderOf(w.draft, field) ?? scope);
+      const now = entry.readings[field];
+      if (!on && !now?.byPreset?.[id]) continue;
+      const next = withPreset(now, id, on ? { label: given.label, scope, tree } : null);
+      if (readingAnswered(next)) entry.readings[field] = copyReading(next);
+      else Reflect.deleteProperty(entry.readings, field);
+      prune(w.draft);
+      w.say({ kind: 'select', field, at: homeOf(w.draft, field) });
+      moved.push(field);
+    }
+    if (commit) for (const field of moved) w.commit({ field });
+  });
+  w.say({ kind: 'preset', scope });
+}
+
+/** Clear all, Reset all: every answer homed in these scopes goes — a
+ *  carry-over field's stays, with `carry` — and what a Switch turned off is
+ *  forgotten; `organise` clears their sort and group too. The one door that
+ *  clears what it does not name. TRAP T-a-field-can-carry-over-views */
+function reset(w: Work, scopes: readonly string[], options: { carry?: boolean; organise?: boolean } = {}): void {
+  w.batch(() => {
+    // A Reset ends a solo: what it switched off is cleared with the rest.
+    w.solo = null;
+    for (const id of scopes) {
+      const s = w.draft.scopes[id];
+      if (!s) continue;
+      if (s.suspended) s.suspended = { fields: [] };
+      // A preset goes with the rest. TODO 526
+      for (const [field, reading] of Object.entries(s.readings)) {
+        if (!reading.byPreset) continue;
+        const { byPreset: _held, ...own } = reading;
+        s.readings[field] = own;
+      }
+      for (const field of Object.keys(s.readings)) {
+        if (options.carry && w.facts.knows(field)?.carriesOver(field)) continue;
+        const start = w.facts.opens(id)?.get(field);
+        if (s.narrows?.length || w.facts.parts.has(id)) write(w, id, field, undefined);
+        // A field with a start goes back to it, never to every row. TODO 403
+        else if (start) select(w, field, [...start.picked ?? []], start);
+        else select(w, field, []);
+      }
+    }
+    // The arrangement in a scope it resets, never another source's. TODO 523 S3
+    const { scope } = arrangementOf(w.applied, (id) => scopes.includes(id));
+    if (options.organise && scope) {
+      // The rows' own, a slot's too: its chart's are below.
+      edit(w, { scope, sort: null, clear: true }, false);
+      edit(w, { scope, group: null }, false);
+    }
+    // …and a SLOT's own Group and Sort, its chart's. TODO 548
+    for (const id of options.organise ? scopes : []) {
+      const shown = { ...w.applied.scopes[id]?.presentation };
+      if (shown.group || shown.sort) edit(w, { scope: id, presentation: { group: undefined, sort: undefined } });
+    }
+  });
+}
+
+/** Put the applied answers back over the draft — Discard, where a scope waits.
+ *  One field, one scope, or all. Every control over them is drawn the applied answer. */
+function discard(w: Work, at: At = {}): void {
+  if (!w.waits) return;
+  const before = new Set(w.answered());
+  if (at.field) copyField(w.applied, w.draft, at.field);
+  else if (at.scope) copyScope(w.applied, w.draft, at.scope);
+  else w.draft = structuredClone(w.applied);
+  w.say({ kind: 'drawn', fields: [...new Set([...before, ...w.answered()])], pending: true });
+}
+
+/**
+ * A PURE edit — a Sort, Group or Search, a presentation, an order, a move —
+ * written over the copies it reaches: the arrangement, a presentation and an
+ * order in BOTH, since no Apply waits on them; a move in the draft. Every
+ * re-arranging returns to page 1. TRAP T-one-command-one-door
+ */
+function edit(w: Work, given: PureEdit, slots = true): void {
+  const { applied, draft } = w;
+  const facts: EditFacts = { ...(slots ? { presents: w.facts.presents } : {}), theirs: w.facts.theirs(given.scope), applied, draft };
+  const routed = slotted(given, facts.presents);
+  if ('move' in routed) return move(w, routed, facts);
+  const next = editQuery(draft, routed, facts);
+  const was = 'order' in routed ? draft.scopes[routed.scope ?? VIEW]?.holds ?? [] : null;
+  const now = next.scopes[routed.scope ?? VIEW]?.holds ?? [];
+  // An order that moves nothing must not wake every listener.
+  if (was && was.length === now.length && was.every((f, i) => f === now[i])) return;
+  w.applied = draft === applied ? next : editQuery(applied, routed, facts);
+  w.draft = next;
+  const scope = routed.scope ?? VIEW;
+  w.say('presentation' in routed ? { kind: 'presented', scope }
+    : 'order' in routed ? { kind: 'order', scope } : { kind: 'arranged', group: 'group' in routed });
+}
+
+/**
+ * MOVE a filter between scopes — ONE edit, because the removal is not
+ * optional. RAISED to the view, it leaves EVERY component; LOWERED, it leaves
+ * the view and lands in one. A component that does not have the field refuses,
+ * and says so. An answer that moved narrows from where it lives now, at once.
+ * TRAP T-up-is-open-down-is-closed
+ */
+function move(w: Work, given: Extract<PureEdit, { move: unknown }>, facts: EditFacts): void {
+  const to = given.scope ?? VIEW;
+  const field = given.move;
+  if (!w.canHold(to, field)) {
+    report({
+      code: 'scope-refused',
+      message: 'move: a component scope may hold only its own fields.',
+      at: { field, from: given.from, to, offers: (w.facts.offers.get(to) ?? []).join(',') },
+    });
+    return;
+  }
+  const { draft, applied } = w;
+  const was = homes(draft);
+  const next = editQuery(draft, given, facts);
+  const scopes = [...new Set([to, ...Object.keys({ ...draft.scopes, ...next.scopes }).filter((id) =>
+    (draft.scopes[id]?.holds ?? []).join() !== (next.scopes[id]?.holds ?? []).join())])];
+  w.draft = next;
+  if (draft === applied) w.applied = next;
+  const now = homes(next);
+  const moved = [...now].filter(([f, home]) => was.get(f) !== home).map(([f]) => f);
+  w.carry(moved);
+  w.say({ kind: 'move', scopes, moved: moved.length > 0 });
+}
+
+/** One request, at work: a list is ONE change — one batch, one Apply. A page and a
+ *  hover are no edit. */
+function run(w: Work, request: QueryRequest): void {
+  if (Array.isArray(request)) {
+    w.batch(() => { for (const one of request as readonly QueryRequest[]) run(w, one); });
+    return;
+  }
+  const one = request as Exclude<QueryRequest, readonly QueryRequest[]>;
+  const at = one.scope ?? VIEW;
+  if ('preview' in one || 'page' in one || 'pageSize' in one) return;
+  if (isPureEdit(one)) edit(w, one);
+  else if ('reset' in one) reset(w, [at], one.reset);
+  else if ('preset' in one) preset(w, at, one.preset, one.on, !!one.commit);
+  else if ('reading' in one) answer(w, at, one.field, one.reading, one.only ? { only: one.only } : {});
+  else if ('solo' in one) solo(w, at, one.solo, { across: !!one.across });
+  else if ('unsolo' in one) w.batch(() => unsolo(w));
+  else if ('hold' in one) hold(w, at, one.hold);
+  else if ('take' in one) take(w, at, one.take, one.from);
+  else if ('release' in one) release(w, at, one.release);
+  else if ('letGo' in one) letGo(w, at, one.field, one.letGo);
+  else if ('discard' in one) discard(w, applyAt(one));
+  else if ('suspended' in one) suspend(w, at, 'field' in one ? one.field : null, one.suspended);
+  // Alone, `commit` is an Apply: one field, one scope, or every scope.
+  else {
+    w.commit(applyAt(one));
+    return;
+  }
+  // A preset's own commit applies the fields it moved, and no more.
+  if ('commit' in one && one.commit && !('preset' in one)) w.commit('field' in one ? { field: one.field } : { scope: at });
+}
+
+/**
+ * editCopies(copies, request, facts) — a request as a pure edit: both copies
+ * after it, the copies given untouched, and what each member must hear, in the
+ * order it happened. The edits `editQuery` makes are among them. A page and a
+ * hover are no edit. TRAP T-one-command-one-door
+ */
+export function editCopies(copies: Copies, request: QueryRequest, facts: CopyFacts): Edited {
+  const w = new Work(copies, facts);
+  run(w, request);
+  return w.done();
+}
+
+/** A scope's own readings, written as its page declares them — its start, or a
+ *  component's own default (`only`) — each told as written. `undefined` removes one. */
+export function writeScope(
+  copies: Copies, scope: string, readings: Readonly<Record<string, FieldReading | undefined>>, facts: CopyFacts, at: { only?: BoundControl } = {},
+): Edited {
+  const w = new Work(copies, facts);
+  for (const [field, reading] of Object.entries(readings)) write(w, scope, field, reading, reading ? at : {});
+  return w.done();
+}
+
+/** An Apply of one scope, as `wait(scope, false)` sends what waits. */
+export function commitScope(copies: Copies, scope: string, facts: CopyFacts): Edited {
+  const w = new Work(copies, facts);
+  w.commit({ scope });
+  return w.done();
 }
