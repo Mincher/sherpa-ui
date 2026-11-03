@@ -1413,6 +1413,8 @@ is not in it (TODO 345, D2).
 - Site: `src/data.ts`
 - Site: `test/unit/a-store-keeps-its-history.test.mjs`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
+- Site: `src/core/data/data-handler.ts`
+- Site: `src/core/data/request-store.ts`
 
 ### T-a-change-redoes-only-what-reads-it
 
@@ -4413,6 +4415,66 @@ stays inside half the radius: a very thin slice keeps a smaller gap, not a shape
 - Site: `src/core/data/format-tick.ts`
 - Site: `test/e2e/reforged-radial-chart.spec.ts`
 
+### T-a-push-is-a-check-behind
+
+**A push from the app's server says a store changed, and the worker checks behind**
+(plan 652 S8). `serveData` reads a push as `PushSaid`: `{ store, notification }`.
+A held store is read again behind (`recheck`), so its newer rows WAIT and the
+data notice is said — the banner shows (`T-a-server-change-waits`); a store not
+held says the notice itself. A `notification` is shown where the reader allowed
+it, and its press focuses the tab that shows its `url`, else opens it in a new one:
+an open tab is never moved off its work (plan 695 H1, bug 9). The app's server
+sends the push, with its own keys: Sherpa ships the worker's half.
+
+Measured 2026-11-02 in Chromium, the push delivered by DevTools
+(`ServiceWorker.deliverPushMessage`): a record changed on the server unheard, the
+push named its store, and the banner showed. **Headless Chromium refuses every
+notification**, granted or not (`Notification.permission` stays `denied`), so the
+test reads that the worker ASKS to show it. Firefox and WebKit have no way to
+deliver a push in a test.
+
+- Site: `src/core/worker/serve-data.ts`
+- Site: `test/unit/a-push-is-a-check-behind.test.mjs`
+- Site: `src/core/data/data-handler.ts`
+
+### T-a-request-picks-its-stores
+
+**An app's stores are said once, and each request picks its own** (plan 695 H2).
+`defineStores(() => ({ … }))` is one module the page and the Service Worker both import;
+it makes the stores at a host's first ask, so a page a worker answers makes none. A name
+holds one store, or a choice — `{ stores: { local, remote }, pick: (request) => word }` —
+and the APP's pick reads the request: its headers, its sign-in, its own say. Sherpa hands
+the request on whole and reads none of it: the handler reads only its own protocol's
+headers (`Sherpa-Data`, `Content-Type`, `traceparent`, `If-Unmodified-Since`), measured
+by a spy on every header door.
+
+Four things that are not obvious:
+
+- **One name, several stores, each heard apart.** A change is said on `DATA_CHANNEL` as
+  `{ store, as, change }`, and a store's facts say the `as` its request picked, so a
+  request store hears only its own store of those under its name: a remote one that
+  missed a server's write is not told it by the local one beside it.
+- **A check behind is the name's.** `?recheck` on a name — a page's, a push, the feed's
+  word — checks every store under it: the feed's ask carries no app header, so a pick
+  would name the default. A name none of whose stores holds a set says a `data` notice,
+  where its host notifies.
+- **One check at a time.** A tab shown, the feed, a gap, a push and a Refresh each ask.
+  A `HeldStore`'s ask before its read is sent joins the check; one after waits for one
+  more, which every later ask joins — what it heard may be newer than the read out (a
+  pure join lost a sign-out's lost-save notice, measured). A `RequestStore` sends the
+  asks of one moment as one request. A check settles as its read ends, even one a change
+  overtook: before, it waited for a `set` that read never fires, and hung.
+- **The worker holds each remote store itself** (`heldOf`, its writes waiting in
+  `keepOutbox(name)`, or `name:as`); a store the app holds is served as it is. With no
+  worker, the page reads the same definitions, its source holding its own set.
+
+- Site: `src/core/data/define-stores.ts`
+- Site: `src/core/data/data-handler.ts`
+- Site: `src/core/data/request-store.ts`
+- Site: `src/data.ts`
+- Site: `test/unit/a-request-picks-its-stores.test.mjs`
+- Site: `test/unit/a-check-behind-is-asked-once.test.mjs`
+
 ### T-a-data-request-is-the-store-interface
 
 **The data layer over HTTP is the `Store` interface, nothing more.** Plan 652, step S1.
@@ -4433,6 +4495,9 @@ Four things that are not obvious:
   object must not assume one.
 - **The browser's Cache API refuses a `QUERY`** in all three engines (measured 2026-11-02),
   so a worker caches answers itself, keyed by the body.
+- **A field's values cross alone**: a `QUERY` with `distinct: [fields]` answers
+  `{ values }`, read where the rows are — the store's own `distinct`, else its rows there.
+  A `RequestStore` offers it where the facts say its store has one (plan 695 H2).
 
 A `POST` whose body is a query is answered as the `QUERY`: the fallback where a proxy refuses
 the method, with the same body. Any other `POST` adds a row.
@@ -4513,6 +4578,7 @@ The provider's bundle carries `HeldStore` now: about 2.4 KB brotli.
 - Site: `src/core/data/held-store.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/a-remote-store-is-read-through-a-held-store.test.mjs`
+- Site: `src/core/worker/serve-data.ts`
 
 ### T-a-store-says-what-it-can-do-once
 
@@ -4595,9 +4661,9 @@ hold the test run open for ever: each is `unref()`'d where it can be. A
 `RequestStore` whose owner ends before the page is closed by it (`close()`): its
 channel shuts, and it says its own writes again (plan 695 H1, bug 8).
 
-- Site: `src/core/worker/serve-data.ts`
 - Site: `src/core/data/request-store.ts`
 - Site: `test/unit/every-tab-hears-a-change.test.mjs`
+- Site: `src/core/data/data-handler.ts`
 
 ### T-a-notice-is-heard-never-ordered
 
@@ -4668,8 +4734,8 @@ at once, as the write did. `new HeldStore(source, { waits: false })` takes newer
 rows at once: a live board.
 
 - Site: `src/core/data/held-store.ts`
-- Site: `src/core/worker/serve-data.ts`
 - Site: `test/unit/a-server-change-waits.test.mjs`
+- Site: `src/core/data/data-handler.ts`
 
 ### T-a-write-made-offline-waits
 

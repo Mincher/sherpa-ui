@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ArrayStore, HeldStore, RestStore, createDataHandler, fakeRemote, memoryOutbox, openRequestStore, statusFields, wrapStore,
+  ArrayStore, HeldStore, RestStore, createDataHandler, fakeRemote, memoryOutbox, openRequestStore, statusFields, wrapStore, defineStores,
 } from '../../dist/data.js';
 
 const ROWS = [{ id: 1, seats: 4 }, { id: 2, seats: 40 }];
@@ -35,7 +35,7 @@ test('a held store says what its source can do, and that it holds', () => {
 test('over the wire, a store\'s capabilities arrive whole', async () => {
   const source = new RestStore({ url: 'http://test/api', key: 'id', totalPath: 'total' });
   const held = new HeldStore(source);
-  const store = await openRequestStore({ name: 'people', send: createDataHandler({ stores: { people: held } }) });
+  const store = await openRequestStore({ name: 'people', send: createDataHandler({ stores: defineStores(() => ({ people: held })) }) });
   assert.deepEqual(store.capabilities, held.capabilities);
   assert.equal(typeof store.recheck, 'function', 'a store that holds rechecks');
   assert.equal(typeof store.take, 'function', 'and takes');

@@ -9,6 +9,7 @@
  * - APP_CACHE_PREFIX — What every cache of an app's files is named from.
  * - keepAppFiles — Keep an app's files in the worker: its install, activate and fetch.
  */
+import { DATA_BASE } from '../data/data-handler.js';
 
 /** The part of a Service Worker's global scope this reads: the DOM library has no worker types. */
 export interface WorkerScope extends EventTarget {
@@ -63,7 +64,7 @@ export const APP_CACHE_PREFIX = 'sherpa-app:';
 export function keepAppFiles(scope: WorkerScope, options: AppFilesOptions): void {
   const name = APP_CACHE_PREFIX + options.version;
   const fast = options.strategy === 'fast';
-  const skip = options.skip ?? ['/sherpa/data/'];
+  const skip = options.skip ?? [DATA_BASE];
   const timeout = options.timeout ?? 4000;
 
   scope.addEventListener('install', (event) => {

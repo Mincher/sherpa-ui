@@ -8,7 +8,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ArrayStore, DataSource, openRequestStore } from '../../dist/data.js';
+import { ArrayStore, DataSource, openRequestStore, defineStores } from '../../dist/data.js';
 import { serveData } from '../../dist/worker.js';
 
 const ORIGIN = 'https://app.test';
@@ -28,7 +28,7 @@ const settle = () => new Promise((done) => setTimeout(done, 30));
 
 test('a write in one tab is heard in the other, and once in its own', async (t) => {
   const { scope, send } = workerScope();
-  serveData(scope, { stores: { people: new ArrayStore([{ id: 1 }, { id: 2 }], { key: 'id' }) } });
+  serveData(scope, { stores: defineStores(() => ({ people: new ArrayStore([{ id: 1 }, { id: 2 }], { key: 'id' }) })) });
   const one = await openRequestStore({ name: 'people', send, origin: ORIGIN });
   const two = await openRequestStore({ name: 'people', send, origin: ORIGIN });
   t.after(() => { one.close(); two.close(); });
@@ -46,7 +46,7 @@ test('a write in one tab is heard in the other, and once in its own', async (t) 
 
 test('a closed store hears no other tab: its channel is shut, and it says its own writes again', async () => {
   const { scope, send } = workerScope();
-  serveData(scope, { stores: { people: new ArrayStore([{ id: 1 }], { key: 'id' }) } });
+  serveData(scope, { stores: defineStores(() => ({ people: new ArrayStore([{ id: 1 }], { key: 'id' }) })) });
   const one = await openRequestStore({ name: 'people', send, origin: ORIGIN });
   const two = await openRequestStore({ name: 'people', send, origin: ORIGIN });
   const heard = [];

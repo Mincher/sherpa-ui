@@ -45,13 +45,14 @@ export abstract class BaseStore extends EventTarget implements Store {
   protected readonly schema: StandardSchema | undefined;
   /** How many rows a READ checks. 0 = all of them. */
   protected readonly sampleSize: number;
-  /** What changed this session, by field. TRAP T-a-store-keeps-its-history */
-  readonly history = new StoreHistory();
+  /** What changed this session, by field — none where it could not vouch for one. TRAP T-a-store-keeps-its-history */
+  readonly history: StoreHistory | undefined;
   /** What it can do: its own say, over what its schema allows. TRAP T-a-store-says-what-it-can-do-once */
   readonly capabilities: StoreCapabilities;
 
-  constructor(options: StoreOptions = {}, can: StoreCapabilities = {}) {
+  constructor(options: StoreOptions = {}, can: StoreCapabilities = {}, history = true) {
     super();
+    this.history = history ? new StoreHistory() : undefined;
     this.key = options.key ?? 'id';
     this.time = options.time;
     this.schema = options.schema;
@@ -218,7 +219,7 @@ export abstract class BaseStore extends EventTarget implements Store {
   /** Tell every listener the records changed — noted in the History first. */
   protected announce(detail: StoreChangeDetail): void {
     this.#age++;
-    this.history.record(detail, this.key);
+    this.history?.record(detail, this.key);
     this.dispatchEvent(new CustomEvent('change', { detail }));
   }
 }

@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ArrayStore, DataSource, HeldStore, TRACE_CHANNEL, createDataHandler, fakeRemote, onTrace, openRequestStore, tracing,
+  ArrayStore, DataSource, HeldStore, TRACE_CHANNEL, createDataHandler, fakeRemote, onTrace, openRequestStore, tracing, defineStores,
 } from '../../dist/data.js';
 import { startSpan } from '../../dist/core/data/trace.js';
 
@@ -19,7 +19,7 @@ const ended = (spans, step) => spans.filter((s) => s.step === step && s.ms !== u
 
 /** A page's request store over a worker's handler, and every `traceparent` each way. */
 async function pageOverWorker(store) {
-  const handle = createDataHandler({ stores: { people: store }, host: 'worker' });
+  const handle = createDataHandler({ stores: defineStores(() => ({ people: store })), host: 'worker' });
   const sent = [];
   const echoed = [];
   const page = await openRequestStore({
@@ -126,7 +126,7 @@ test('a request that asks to be traced is, where no listener is known: its host 
   const got = [];
   other.onmessage = (e) => { if (e.data?.span) got.push(e.data.span); };
   assert.equal(tracing(), false);
-  const handle = createDataHandler({ stores: { people: new ArrayStore([{ id: 1 }], { key: 'id' }) }, host: 'worker' });
+  const handle = createDataHandler({ stores: defineStores(() => ({ people: new ArrayStore([{ id: 1 }], { key: 'id' }) })), host: 'worker' });
   const trace = 'c'.repeat(32);
   const response = await handle(new Request('http://test/sherpa/data/people', { headers: { traceparent: `00-${trace}-${'d'.repeat(16)}-01` } }));
   await tick();

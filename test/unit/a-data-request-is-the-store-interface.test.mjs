@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ArrayStore, DATA_QUERY_TYPE, HttpError, IdbStore, createDataHandler, decodeQuery, encodeQuery, keySegment,
+  ArrayStore, DATA_QUERY_TYPE, HttpError, IdbStore, createDataHandler, decodeQuery, encodeQuery, keySegment, defineStores,
 } from '../../dist/data.js';
 
 const ORIGIN = 'http://app.test';
@@ -19,7 +19,7 @@ const rows = () => [
 ];
 const setup = (extra = {}) => {
   const people = new ArrayStore(rows(), { key: 'id' });
-  const handle = createDataHandler({ stores: { people, ...extra } });
+  const handle = createDataHandler({ stores: defineStores(() => ({ people, ...extra })) });
   const ask = (method, path, body, headers = {}) => handle(new Request(`${ORIGIN}/sherpa/data/${path}`, {
     method,
     ...(body === undefined ? {} : { body: typeof body === 'string' ? body : JSON.stringify(body) }),

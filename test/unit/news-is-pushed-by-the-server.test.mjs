@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createDataHandler, updatesFeed } from '../../dist/data.js';
+import { createDataHandler, updatesFeed, defineStores } from '../../dist/data.js';
 
 /** Follow the feed: read its events, then stop. */
 function follow(feed, lastId) {
@@ -41,8 +41,8 @@ test('a follower hears each notice as an event, never the data', async () => {
   const page = follow(feed);
   assert.equal(page.type, 'text/event-stream');
   feed.say({ kind: 'data', store: 'customers' });
-  feed.say({ kind: 'app', build: 'b42' });
-  assert.deepEqual((await page.events()).map((e) => e.data), [{ kind: 'data', store: 'customers' }, { kind: 'app', build: 'b42' }]);
+  feed.say({ kind: 'app' });
+  assert.deepEqual((await page.events()).map((e) => e.data), [{ kind: 'data', store: 'customers' }, { kind: 'app' }]);
   await page.stop();
 });
 
@@ -89,7 +89,7 @@ test('a follower that missed more than the feed keeps hears one gap, and its nex
 test('a gap rechecks every store the worker serves, once', async () => {
   const asked = [];
   const store = (name) => ({ key: 'id', recheck: async () => { asked.push(name); }, load: async () => ({ rows: [], total: 0 }) });
-  const handle = createDataHandler({ stores: { customers: store('customers'), alerts: store('alerts') } });
+  const handle = createDataHandler({ stores: defineStores(() => ({ customers: store('customers'), alerts: store('alerts') })) });
   const response = await handle(new Request('http://app/sherpa/data/?recheck'));
   assert.equal(response.status, 204);
   assert.deepEqual(asked.sort(), ['alerts', 'customers']);

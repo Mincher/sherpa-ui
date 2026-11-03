@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ArrayStore, DataSource, HeldStore, createDataHandler, fakeRemote, openRequestStore, statusFields,
+  ArrayStore, DataSource, HeldStore, createDataHandler, fakeRemote, openRequestStore, statusFields, defineStores,
 } from '../../dist/data.js';
 import { filterFields } from '../../dist/core/data/store.js';
 
@@ -105,7 +105,7 @@ test('a condition with no opposite, before another value, is refused at once', (
 test('through the worker: a page filters by it, and is told its values and looks', async () => {
   const inner = new ArrayStore(ROWS.map((r) => ({ ...r })), { key: 'id' });
   const held = new HeldStore(fakeRemote(statusFields(inner, { health: HEALTH }), { delay: 0 }));
-  const store = await openRequestStore({ name: 'people', send: createDataHandler({ stores: { people: held } }) });
+  const store = await openRequestStore({ name: 'people', send: createDataHandler({ stores: defineStores(() => ({ people: held })) }) });
   assert.deepEqual(store.domains.health.statuses, { 'At risk': 'critical', Watch: 'warning', Healthy: 'success' });
   const source = new DataSource({ store });
   await source.load();

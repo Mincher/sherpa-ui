@@ -17,7 +17,7 @@ export interface WorkerStoreOptions {
   name: string;
   /** The page's own handler, over the same stores: Host A of plan 652. */
   fallback: DataHandler;
-  /** Default `/sherpa/data/`. */
+  /** Default `DATA_BASE`. */
   base?: string;
   /** Headers each request carries, read at each request. */
   headers?: () => Record<string, string>;

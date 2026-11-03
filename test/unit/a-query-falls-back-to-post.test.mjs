@@ -9,12 +9,12 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ArrayStore, RestStore, createDataHandler, openRequestStore } from '../../dist/data.js';
+import { ArrayStore, RestStore, createDataHandler, openRequestStore, defineStores } from '../../dist/data.js';
 
 const people = () => new ArrayStore([{ id: 1, name: 'Ada' }, { id: 2, name: 'Bo' }], { key: 'id' });
 
 test('a request store whose server refuses QUERY sends the same body as POST, and keeps to it', async () => {
-  const handle = createDataHandler({ stores: { people: people() } });
+  const handle = createDataHandler({ stores: defineStores(() => ({ people: people() })) });
   const methods = [];
   const store = await openRequestStore({
     name: 'people',
@@ -30,7 +30,7 @@ test('a request store whose server refuses QUERY sends the same body as POST, an
 });
 
 test('blocked at the network, it tries POST once — and keeps it only if it answers', async () => {
-  const handle = createDataHandler({ stores: { people: people() } });
+  const handle = createDataHandler({ stores: defineStores(() => ({ people: people() })) });
   let offline = false;
   const methods = [];
   const store = await openRequestStore({

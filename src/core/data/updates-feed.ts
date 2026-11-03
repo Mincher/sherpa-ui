@@ -1,7 +1,8 @@
 /**
  * updates-feed.ts — the app server's "what is new" feed: one small stream of
- * Server-Sent Events that every open app follows. It says THAT something is new — a
- * new build, a store that changed — never the data. DOM-free: a Node server or a
+ * Server-Sent Events that every open app follows. It says THAT something CHANGED — a
+ * new build, a store — never the data: a cause, which one tab acts on, never what
+ * waits for a reader (`UpdateNotice`). DOM-free: a Node server or a
  * worker answers it with a web `Request` and `Response`. Plan 687 U2, U3
  * TRAP T-news-is-pushed-by-the-server
  *
@@ -13,7 +14,7 @@
 
 /** What the feed says: a new build, a store that changed — or, to a follower that
  *  missed more than it can say again, a gap. */
-export type FeedNotice = { kind: 'app'; build?: string } | { kind: 'data'; store: string; at?: unknown } | { kind: 'gap' };
+export type FeedNotice = { kind: 'app' } | { kind: 'data'; store: string } | { kind: 'gap' };
 
 /** The feed: say a notice to every follower, and answer a request to follow it. */
 export interface UpdatesFeed {

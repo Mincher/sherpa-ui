@@ -8,14 +8,14 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ArrayStore, DataSource, RestStore, createDataHandler, encodeQuery, fakeRemote, openRequestStore } from '../../dist/data.js';
+import { ArrayStore, DataSource, RestStore, createDataHandler, encodeQuery, fakeRemote, openRequestStore, defineStores } from '../../dist/data.js';
 
 const PEOPLE = [{ id: 1, name: 'Ada' }, { id: 2, name: 'Bo' }, { id: 3, name: 'Cy' }];
 const tick = (ms = 0) => new Promise((done) => setTimeout(done, ms));
 
 /** A request store whose reads each wait, as a slow host's do, and stop when aborted. */
 async function slow(ms = 40) {
-  const handle = createDataHandler({ stores: { people: new ArrayStore(PEOPLE.map((p) => ({ ...p })), { key: 'id' }) } });
+  const handle = createDataHandler({ stores: defineStores(() => ({ people: new ArrayStore(PEOPLE.map((p) => ({ ...p })), { key: 'id' }) })) });
   const reads = [];
   const send = async (request) => {
     if (request.method === 'QUERY') {

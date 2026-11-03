@@ -4,13 +4,14 @@
  * DOM-free. Plan 652 · TRAP T-a-data-request-is-the-store-interface
  *
  * Map:
+ * - DATA_BASE — The path every store sits under, for every host and every asker.
  * - DATA_QUERY_TYPE — The media type of a Sherpa data query, sent with `QUERY`.
  * - DATA_VERSION — The protocol's version, in the `Sherpa-Data` header.
  * - STALE — The header that says an answer's rows are unconfirmed, and why.
  * - DATA_CHANNEL — The channel a host that notifies says each store's change on, to every tab.
  * - DataQuery — A store read as JSON: what `load` or `totalCount` is asked.
  * - StoreFacts — What a store says of itself, as JSON.
- * - DataHandlerOptions — The stores it answers for, by name, and the path they sit under.
+ * - DataHandlerOptions — The stores it answers for, and the path they sit under.
  * - DataHandler — Answer one request, or null where it is not the data layer's.
  * - encodeQuery — A store read as the body a `QUERY` sends.
  * - decodeQuery — A `QUERY` body as a store read, or why it is not one.
@@ -18,9 +19,14 @@
  * - writeHeaders — A write's time as the `If-Unmodified-Since` it is sent with.
  * - createDataHandler — The handler for a set of stores.
  */
+import type { DefinedStore, StoreSet } from './define-stores.js';
 import { failureOf } from './failure.js';
-import { OP_LABELS, type Filter, type LoadOptions, type Row, type SortSpec, type Store, type WriteOptions } from './store.js';
+import { sayNotice } from './notices.js';
+import { OP_LABELS, distinctOf, matchesOnly, type Filter, type LoadOptions, type Row, type SortSpec, type Store, type WriteOptions } from './store.js';
 import { readTraceparent, startSpan, within, type TraceContext, type TraceHost } from './trace.js';
+
+/** The path every store sits under, for every host and every asker. */
+export const DATA_BASE = '/sherpa/data/';
 
 /** The media type of a Sherpa data query, sent with `QUERY`. */
 export const DATA_QUERY_TYPE = 'application/vnd.sherpa.query+json';
@@ -33,7 +39,7 @@ export const DATA_VERSION = 1;
 export const STALE = 'Sherpa-Stale';
 
 /** The `BroadcastChannel` a host that `notifies` says each store's change on, to
- *  every tab: `{ store, change }`. S6 */
+ *  every tab: `{ store, as, change }`. S6 */
 export const DATA_CHANNEL = 'sherpa-data';
 
 /** A store read as JSON: what `load` or `totalCount` is asked. `now` is an ISO
@@ -50,19 +56,28 @@ export interface DataQuery {
   take?: number;
   fields?: string[];
   total?: boolean;
+  /** Asks each of these fields' values among the matches, not the rows. */
+  distinct?: string[];
 }
 
-/** What a store says of itself, as JSON: its capabilities whole. */
+/** What a store says of itself, as JSON: its capabilities whole, and the reads it answers. */
 export type StoreFacts = Pick<Store, 'key' | 'time' | 'domains' | 'capabilities'> & {
   changes: boolean;
+  /** It answers a field's values among the matches (`distinct`). */
+  distinct?: boolean;
+  /** It keeps a History, by field. TRAP T-a-store-keeps-its-history */
+  history?: boolean;
+  /** The app's word for the store the request picked, where its name has several. */
+  as?: string;
   /** Its host says every change on `DATA_CHANNEL`, so a reader hears another tab's. */
   notifies?: boolean;
 };
 
-/** The stores it answers for, by name, and the path they sit under. */
+/** The stores it answers for, and the path they sit under. */
 export interface DataHandlerOptions {
-  stores: Readonly<Record<string, Store>>;
-  /** Default `/sherpa/data/`. */
+  /** The app's stores: each request is answered by the one its pick names. TRAP T-a-request-picks-its-stores */
+  stores: StoreSet;
+  /** Default `DATA_BASE`. */
   base?: string;
   /** Its host says each store's change on `DATA_CHANNEL`: a Service Worker. S6 */
   notifies?: boolean;
@@ -87,7 +102,7 @@ export function encodeQuery(options: LoadOptions = {}, total = false): DataQuery
 }
 
 /** A `QUERY` body as a store read, or why it is not one. */
-export function decodeQuery(body: unknown): { options: LoadOptions; total: boolean } | { problem: string } {
+export function decodeQuery(body: unknown): { options: LoadOptions; total: boolean; distinct?: string[] } | { problem: string } {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return { problem: 'the body is not an object' };
   const q = body as Record<string, unknown>;
   if (q['v'] !== DATA_VERSION) return { problem: `version ${String(q['v'])}, not ${DATA_VERSION}` };
@@ -109,12 +124,15 @@ export function decodeQuery(body: unknown): { options: LoadOptions; total: boole
     if (typeof value !== 'string') return { problem: `${name} is not text` };
     options[name] = value;
   }
-  for (const name of ['searchFields', 'fields'] as const) {
+  const lists: Partial<Record<'searchFields' | 'fields' | 'distinct', string[]>> = {};
+  for (const name of ['searchFields', 'fields', 'distinct'] as const) {
     const value = q[name];
     if (value === undefined) continue;
     if (!Array.isArray(value) || !value.every((f) => typeof f === 'string')) return { problem: `${name} is not a list of fields` };
-    options[name] = [...value as string[]];
+    lists[name] = [...value as string[]];
   }
+  const { distinct, ...fieldLists } = lists;
+  Object.assign(options, fieldLists);
   for (const name of ['skip', 'take'] as const) {
     const value = q[name];
     if (value === undefined) continue;
@@ -126,7 +144,7 @@ export function decodeQuery(body: unknown): { options: LoadOptions; total: boole
     if (!now || Number.isNaN(now.getTime())) return { problem: 'now is not a time' };
     options.now = now;
   }
-  return { options, total: q['total'] === true };
+  return { options, total: q['total'] === true, ...(distinct ? { distinct } : {}) };
 }
 
 /** Is this a filter: a clause `[field, op, value]`, or `['and' | 'or', ...filters]`? */
@@ -169,10 +187,13 @@ function writeOptionsOf(request: Request): WriteOptions {
 }
 
 /** The handler for a set of stores. Each answer is a span; one asked for by its
- *  `traceparent` joins the asker's trace, and echoes it. TRAP T-one-trace-stream */
+ *  `traceparent` joins the asker's trace, and echoes it. A host that `notifies`
+ *  says each store's change, and its newer rows waiting, to every tab.
+ *  TRAP T-one-trace-stream · TRAP T-a-request-picks-its-stores */
 export function createDataHandler(options: DataHandlerOptions): DataHandler {
-  const base = options.base ?? '/sherpa/data/';
+  const base = options.base ?? DATA_BASE;
   const host = options.host ?? 'page';
+  if (options.notifies) sayChanges(options.stores.all());
   return async (request) => {
     const url = new URL(request.url);
     if (!url.pathname.startsWith(base)) return null;
@@ -186,16 +207,59 @@ export function createDataHandler(options: DataHandlerOptions): DataHandler {
   };
 }
 
+/** Each store's change, to every tab, as its name and the app's word for it; its
+ *  newer rows waiting, as a notice. S6 · TRAP T-every-tab-hears-a-change · TRAP T-a-server-change-waits */
+function sayChanges(stores: readonly DefinedStore[]): void {
+  const channel = new BroadcastChannel(DATA_CHANNEL);
+  // Open as long as its host: in Node, it keeps nothing running.
+  (channel as { unref?: () => void }).unref?.();
+  for (const { name, as, store } of stores) {
+    const said = as === undefined ? { store: name } : { store: name, as };
+    store.addEventListener('change', (event) => {
+      try {
+        channel.postMessage({ ...said, change: (event as CustomEvent).detail });
+      } catch {
+        // A change that cannot be copied is still news: that something moved.
+        channel.postMessage(said);
+      }
+    });
+    store.addEventListener('waiting', (event) => {
+      const rows = (event as CustomEvent<{ rows?: number } | undefined>).detail?.rows;
+      sayNotice({ kind: 'data', store: name, ...(rows !== undefined ? { rows } : {}) });
+    });
+  }
+}
+
+/** Read each store under a name — with none, every store — again behind its held
+ *  set: a feed's word, a push or a gap. Each store checks once at a time. One that
+ *  holds none says that newer data waits, where its host notifies.
+ *  Plan 687 U3 · TRAP T-news-is-pushed-by-the-server · TRAP T-a-push-is-a-check-behind */
+async function recheckAll(stores: StoreSet, name: string | undefined, notifies: boolean): Promise<void> {
+  const under = stores.all(name);
+  const checks = under.filter(({ store }) => store.recheck);
+  await Promise.all(checks.map(({ store }) => store.recheck!()));
+  if (notifies && name !== undefined && under.length && !checks.length) sayNotice({ kind: 'data', store: name });
+}
+
 /** One request's answer, each store call made under its span. */
 async function answerOf(request: Request, url: URL, path: string[], options: DataHandlerOptions, span: TraceContext | null): Promise<Response> {
   const [name, key, ...more] = path;
-  // Every store read again behind its held set: a feed's gap. Plan 687 U3 · TRAP T-news-is-pushed-by-the-server
+  const notifies = !!options.notifies;
+  // Every store read again behind its held set: a feed's gap. Plan 687 U3
   if (!name && !more.length && request.method === 'GET' && url.searchParams.has('recheck')) {
-    await within(span, () => Promise.all(Object.values(options.stores).map((each) => each.recheck?.())));
+    await within(span, () => recheckAll(options.stores, undefined, notifies));
     return answer(204, null);
   }
-  const store = name ? options.stores[decodeURIComponent(name)] : undefined;
-  if (!store || more.length) return problem(404, 'invalid', `no store at ${url.pathname}`);
+  const named = name ? decodeURIComponent(name) : '';
+  // A check behind is the name's, every store under it: what a reader holds, and the rest.
+  if (named && !key && !more.length && request.method === 'GET' && url.searchParams.has('recheck') && options.stores.all(named).length) {
+    await within(span, () => recheckAll(options.stores, named, notifies));
+    return answer(204, null);
+  }
+  // The app picks which store answers, from the request; Sherpa reads none of it.
+  const picked = named ? options.stores.pick(named, request) : undefined;
+  if (!picked || more.length) return problem(404, 'invalid', `no store at ${url.pathname}`);
+  const { store } = picked;
   const asked = request.headers.get('Sherpa-Data');
   if (asked && Number(asked) !== DATA_VERSION) return problem(400, 'invalid', `version ${asked}, not ${DATA_VERSION}`);
   const allow = key === undefined || key === '' ? ON_STORE : ON_ROW;
@@ -207,7 +271,7 @@ async function answerOf(request: Request, url: URL, path: string[], options: Dat
     if ('problem' in body) return body.problem;
     const response = await within(span, () => (allow === ON_ROW
       ? onRow(store, keyFrom(key!), request, body.value)
-      : onStore(store, url, request, body.value, !!options.notifies)));
+      : onStore(picked, url, request, body.value, notifies)));
     // Old rows answer while the source cannot be reached: the reader says so. S5b
     if (store.stale) response.headers.set(STALE, encodeURIComponent(JSON.stringify(store.stale)));
     return response;
@@ -220,17 +284,12 @@ async function answerOf(request: Request, url: URL, path: string[], options: Dat
 }
 
 /** A read of the store, its facts, its changes, or a new row. */
-async function onStore(store: Store, url: URL, request: Request, body: unknown, notifies: boolean): Promise<Response> {
+async function onStore({ store, as }: DefinedStore, url: URL, request: Request, body: unknown, notifies: boolean): Promise<Response> {
   if (request.method === 'GET') {
-    // Read the source again, behind the set it holds. S5b
-    if (url.searchParams.has('recheck')) {
-      await store.recheck?.();
-      return answer(204, null);
-    }
     // Take in the newer rows that wait. S6c
     if (url.searchParams.has('take')) return answer(200, { took: (await store.take?.()) ?? false });
     const since = url.searchParams.get('since');
-    if (since === null) return answer(200, { ...factsOf(store), ...(notifies ? { notifies: true } : {}) });
+    if (since === null) return answer(200, { ...factsOf(store), ...(as !== undefined ? { as } : {}), ...(notifies ? { notifies: true } : {}) });
     if (!store.changes) return problem(404, 'invalid', 'this store says nothing of its changes');
     return answer(200, await store.changes(since === '' ? undefined : JSON.parse(since)));
   }
@@ -244,6 +303,13 @@ async function onStore(store: Store, url: URL, request: Request, body: unknown, 
   const read_ = decodeQuery(body);
   if ('problem' in read_) return problem(422, 'invalid', read_.problem);
   if (read_.total) return answer(200, { total: await store.totalCount(read_.options) });
+  // A field's values, read where the rows are: none of the rows crosses. TRAP T-a-data-request-is-the-store-interface
+  if (read_.distinct) {
+    const values = store.distinct
+      ? await store.distinct(read_.distinct, read_.options)
+      : distinctOf((await store.load(matchesOnly(read_.options))).rows, read_.distinct);
+    return answer(200, { values });
+  }
   return answer(200, await store.load(read_.options));
 }
 
@@ -265,6 +331,7 @@ async function onRow(store: Store, key: unknown, request: Request, body: unknown
 function factsOf(store: Store): StoreFacts {
   return {
     key: store.key, capabilities: { ...store.capabilities }, changes: typeof store.changes === 'function',
+    distinct: typeof store.distinct === 'function', history: !!store.history,
     ...(store.time !== undefined ? { time: store.time } : {}), ...(store.domains ? { domains: store.domains } : {}),
   };
 }

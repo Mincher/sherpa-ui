@@ -8,7 +8,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ArrayStore, DataSource, HeldStore, createDataHandler, fakeRemote, openRequestStore } from '../../dist/data.js';
+import { ArrayStore, DataSource, HeldStore, createDataHandler, fakeRemote, openRequestStore, defineStores } from '../../dist/data.js';
 
 /** A worker's held store over a remote source, and a writer the store does not hear. */
 function worker(options = {}) {
@@ -77,7 +77,7 @@ test('a write through the app shows at once, while newer rows wait', async () =>
 
 test('a page over it: Refresh data takes the waiting rows in', async () => {
   const { held, elsewhere } = worker();
-  const store = await openRequestStore({ name: 'people', send: createDataHandler({ stores: { people: held } }) });
+  const store = await openRequestStore({ name: 'people', send: createDataHandler({ stores: defineStores(() => ({ people: held })) }) });
   const source = new DataSource({ store });
   await source.load();
   await elsewhere(1, { owner: 'Cy' });

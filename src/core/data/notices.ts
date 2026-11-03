@@ -1,7 +1,9 @@
 /**
  * notices.ts — what is new, said once to every tab: a fact, never a request to
  * show it. The worker says that newer data waits; a component that listens shows
- * it. DOM-free. Plan 652 S6 · TRAP T-a-notice-is-heard-never-ordered
+ * it. What WAITS for a reader — not the feed's `FeedNotice`, what CHANGED, which
+ * one tab acts on and nobody shows. DOM-free. Plan 652 S6
+ * TRAP T-a-notice-is-heard-never-ordered
  *
  * Map:
  * - NOTICE_CHANNEL — The BroadcastChannel a notice is said on.
@@ -20,7 +22,7 @@ export interface UpdateNotice {
   kind: 'app' | 'data' | 'lost';
   /** The store whose rows wait, or whose write was lost. */
   store?: string;
-  /** How many rows moved, where it is known. */
+  /** How many rows the newer set holds, where it is known. */
   rows?: number;
   /** A KEPT notice's id: it is said again to each page that opens, until one says
    *  it was seen (D9). S7b · TRAP T-a-newer-write-wins */

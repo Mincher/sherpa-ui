@@ -9,7 +9,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ArrayStore, DATA_QUERY_TYPE, createDataHandler, encodeQuery } from '../../dist/data.js';
+import { ArrayStore, DATA_QUERY_TYPE, createDataHandler, encodeQuery, defineStores } from '../../dist/data.js';
 import { serveData } from '../../dist/worker.js';
 import { openWorkerStore } from '../../dist/app.js';
 
@@ -35,7 +35,7 @@ function ask(scope, request) {
 
 test('it answers the data layer\'s path from its stores, and no other request', async () => {
   const scope = workerScope();
-  serveData(scope, { stores: { people: new ArrayStore(ROWS, { key: 'id' }) } });
+  serveData(scope, { stores: defineStores(() => ({ people: new ArrayStore(ROWS, { key: 'id' }) })) });
   const read = await ask(scope, new Request(`${ORIGIN}/sherpa/data/people`, {
     method: 'QUERY', headers: { 'Content-Type': DATA_QUERY_TYPE }, body: JSON.stringify(encodeQuery({ filter: ['team', 'eq', 'ops'] })),
   }));
@@ -50,7 +50,7 @@ test('each request waits until its stores are ready', async () => {
   const store = new ArrayStore([], { key: 'id' });
   let seed;
   const ready = new Promise((done) => { seed = async () => { await store.insert(ROWS[0]); done(); }; });
-  serveData(scope, { stores: { people: store }, ready });
+  serveData(scope, { stores: defineStores(() => ({ people: store })), ready });
   const answer = ask(scope, new Request(`${ORIGIN}/sherpa/data/people`, {
     method: 'QUERY', headers: { 'Content-Type': DATA_QUERY_TYPE }, body: JSON.stringify(encodeQuery({})),
   }));
@@ -59,7 +59,7 @@ test('each request waits until its stores are ready', async () => {
 });
 
 test('with no worker to ask, the page\'s own handler answers', async () => {
-  const handler = createDataHandler({ stores: { people: new ArrayStore(ROWS, { key: 'id' }) } });
+  const handler = createDataHandler({ stores: defineStores(() => ({ people: new ArrayStore(ROWS, { key: 'id' }) })) });
   const store = await openWorkerStore({ name: 'people', fallback: handler });
   assert.equal(await store.totalCount(), 2);
 });

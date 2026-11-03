@@ -11,10 +11,11 @@
  * - ServeDataOptions — The stores the worker answers for, and what each request waits for.
  * - serveData — Answer the data layer's requests in the worker, from the stores the app hands it.
  */
-import { DATA_CHANNEL, createDataHandler, type DataHandlerOptions } from '../data/data-handler.js';
+import { DATA_BASE, createDataHandler, type DataHandler, type DataHandlerOptions } from '../data/data-handler.js';
 import { forgetKept } from '../browser/cache-keep.js';
 import { keepNotices } from '../browser/notice-keep.js';
-import type { LostWrite } from '../data/held-store.js';
+import { keepOutbox } from '../browser/outbox-keep.js';
+import { heldOf, type LostWrite } from '../data/held-store.js';
 import { sayNotice, type UpdateNotice, type WorkerAsk } from '../data/notices.js';
 import type { WorkerFetchEvent, WorkerScope } from './app-files.js';
 
@@ -60,20 +61,20 @@ export interface ServeDataOptions extends DataHandlerOptions {
 }
 
 /** Answer the data layer's requests in the worker, from the stores the app's worker
- *  script imports and hands it (D7: a worker cannot `import()` at runtime). */
-export function serveData(scope: WorkerScope, options: ServeDataOptions): void {
-  const handle = createDataHandler({ ...options, notifies: true, host: 'worker' });
-  /* Every store's change, to every tab — one tab's write is another's news. S6
-     TRAP T-every-tab-hears-a-change */
-  const channel = new BroadcastChannel(DATA_CHANNEL);
-  // Open as long as the worker: in Node, it keeps nothing running.
-  (channel as { unref?: () => void }).unref?.();
+ *  script imports and hands it (D7: a worker cannot `import()` at runtime). Each
+ *  remote store is read through the worker's own `HeldStore`, its writes made
+ *  offline waiting on the device; one the app holds itself is served as it is.
+ *  The handler it answers with is handed back: the app may ask it too.
+ *  TRAP T-a-remote-store-is-read-through-a-held-store */
+export function serveData(scope: WorkerScope, options: ServeDataOptions): DataHandler {
+  const stores = options.stores.through(({ name, as, store }) => heldOf(store, { outbox: keepOutbox(as === undefined ? name : `${name}:${as}`) }) ?? store);
+  const handle = createDataHandler({ ...options, stores, notifies: true, host: 'worker' });
   /* The writes made offline, sent: when the worker starts, and on Chromium's sync.
      A send still offline rejects, so the browser tries the sync again. S7a
      TRAP T-a-write-made-offline-waits */
   const sendAll = async (): Promise<void> => {
     await options.ready?.catch(() => undefined);
-    const sent = await Promise.all(Object.values(options.stores).map((store) => store.send?.() ?? true));
+    const sent = await Promise.all(stores.all().map(({ store }) => store.send?.() ?? true));
     if (sent.includes(false)) throw new Error('serveData: a write made offline is still waiting.');
   };
   void sendAll().catch(() => undefined);
@@ -95,21 +96,21 @@ export function serveData(scope: WorkerScope, options: ServeDataOptions): void {
        TRAP T-a-kept-set-is-checked-each-session */
     if (ask?.sherpa === 'sign-out') {
       asked.waitUntil(Promise.allSettled([
-        ...Object.values(options.stores).map((store) => (store.capabilities.holds ? store.forget?.() : undefined)),
+        ...stores.all().map(({ store }) => (store.capabilities.holds ? store.forget?.() : undefined)),
         forgetKept({ keepOn: true }), kept.clear(),
       ]).then(() => asked.ports?.[0]?.postMessage('signed-out')));
     }
   });
-  /* A PUSH from the app's server: the store it names is checked behind, so its newer
-     rows wait and the banner shows; a notification shows where allowed, and its
-     press opens the app. S8 · TRAP T-a-push-is-a-check-behind */
+  const base = options.base ?? DATA_BASE;
+  /* A PUSH from the app's server: the store it names is checked behind — the feed's
+     own ask — so its newer rows wait and the banner shows; a notification shows
+     where allowed, and its press opens the app. S8 · TRAP T-a-push-is-a-check-behind */
   scope.addEventListener('push', (event) => {
     let said: PushSaid = {};
     try {
       said = ((event as WorkerPushEvent).data?.json() ?? {}) as PushSaid;
     } catch { /* not JSON: nothing Sherpa reads */ }
-    const store = said.store ? options.stores[said.store] : undefined;
-    const checked = store?.recheck ? store.recheck() : said.store ? Promise.resolve(sayNotice({ kind: 'data', store: said.store })) : undefined;
+    const checked = said.store ? handle(new Request(new URL(`${base}${encodeURIComponent(said.store)}?recheck`, scope.location.origin))) : undefined;
     const { title, body, url } = said.notification ?? {};
     const shown = title ? scope.registration?.showNotification?.(title, { ...(body ? { body } : {}), data: { url: url ?? '/' } }) : undefined;
     (event as WorkerPushEvent).waitUntil(Promise.all([checked, shown?.catch(() => undefined)]));
@@ -127,7 +128,7 @@ export function serveData(scope: WorkerScope, options: ServeDataOptions): void {
       else await scope.clients.openWindow?.(url);
     })());
   });
-  for (const [name, store] of Object.entries(options.stores)) {
+  for (const { name, store } of stores.all()) {
     store.addEventListener('lost', (event) => {
       const lost = (event as CustomEvent<LostWrite>).detail;
       const notice: UpdateNotice & { id: string } = { kind: 'lost', id: `${name}|${lost.id}`, store: name, key: lost.key, why: lost.why };
@@ -137,23 +138,7 @@ export function serveData(scope: WorkerScope, options: ServeDataOptions): void {
     store.addEventListener('queued', () => {
       void scope.registration?.sync?.register(OUTBOX_SYNC).catch(() => undefined);
     });
-    /* Newer rows wait behind the ones shown: said as a fact, to every tab; whatever
-       listens shows it. S6c · TRAP T-a-server-change-waits */
-    store.addEventListener('waiting', (event) => {
-      const rows = (event as CustomEvent<{ rows?: number } | undefined>).detail?.rows;
-      sayNotice({ kind: 'data', store: name, ...(rows !== undefined ? { rows } : {}) });
-    });
-    store.addEventListener('change', (event) => {
-      const change = (event as CustomEvent).detail;
-      try {
-        channel.postMessage({ store: name, change });
-      } catch {
-        // A change that cannot be copied is still news: that something moved.
-        channel.postMessage({ store: name });
-      }
-    });
   }
-  const base = options.base ?? '/sherpa/data/';
   scope.addEventListener('fetch', (event) => {
     const { request } = event as WorkerFetchEvent;
     const url = new URL(request.url);
@@ -163,4 +148,5 @@ export function serveData(scope: WorkerScope, options: ServeDataOptions): void {
       return (await handle(request)) ?? new Response(null, { status: 404 });
     })());
   });
+  return handle;
 }

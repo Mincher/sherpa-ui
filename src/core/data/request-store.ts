@@ -9,7 +9,7 @@
  * - openRequestStore — A request store, with its facts asked first.
  */
 import { BaseStore } from './base-store.js';
-import { DATA_CHANNEL, DATA_QUERY_TYPE, DATA_VERSION, STALE, encodeQuery, keySegment, writeHeaders, type DataQuery, type StoreFacts } from './data-handler.js';
+import { DATA_BASE, DATA_CHANNEL, DATA_QUERY_TYPE, DATA_VERSION, STALE, encodeQuery, keySegment, writeHeaders, type DataQuery, type StoreFacts } from './data-handler.js';
 import { failureOf, type Failure } from './failure.js';
 import { HttpError } from './stores.js';
 import { readField, type LoadOptions, type LoadResult, type Row, type StoreChangeDetail, type StoreChanges, type WriteOptions } from './store.js';
@@ -23,12 +23,13 @@ export interface RequestStoreOptions {
   send: (request: Request) => Promise<Response | null>;
   /** The store's name under `base`. */
   name: string;
-  /** Default `/sherpa/data/`. */
+  /** Default `DATA_BASE`. */
   base?: string;
   /** The origin its URLs are made on: a page's own, for `fetch`. A handler in the
    *  page reads only the path. Default `http://localhost`. */
   origin?: string;
-  /** Headers each request carries — a sign-in, an app's own say — read at each request. */
+  /** Headers each request carries — a sign-in, an app's own say — read at each
+   *  request. Its host's store pick reads them; Sherpa never does. TRAP T-a-request-picks-its-stores */
   headers?: () => Record<string, string>;
   /** How a read is sent: `QUERY` (the default), falling back to `POST` of the same
    *  body where a server or a proxy refuses it — or `POST` from the start. Plan 652 S10 */
@@ -53,16 +54,21 @@ export class RequestStore extends BaseStore {
 
   /** What moved since a mark — only where the store says. */
   readonly changes?: (since?: unknown) => Promise<StoreChanges>;
-  /** Read its source again, behind the set it holds — only a store that holds one. S5b */
+  /** Read its source again, behind the set it holds — only a store that holds one.
+   *  The asks of one moment are one request: a page's sources, its tab shown. S5b */
   readonly recheck?: () => Promise<void>;
+  /** Each field's values among the matches, read by its host: no row crosses. */
+  readonly distinct?: (fields: readonly string[], options?: LoadOptions) => Promise<Record<string, unknown[]>>;
   /** Take in the newer rows that wait behind the set it holds. S6c */
   readonly take?: () => Promise<boolean>;
   /** Why its last answer's rows were unconfirmed, as it said, else null. */
   #stale: Failure | null = null;
 
   constructor(options: RequestStoreOptions, facts: StoreFacts) {
-    // What its host's store can do, and nothing it did not say. TRAP T-a-store-says-what-it-can-do-once
-    super({ key: facts.key, ...(facts.time ? { time: facts.time } : {}) }, { reportsTotal: false, projects: false, sampled: false, ...facts.capabilities });
+    /* What its host's store can do, and nothing it did not say: a History only where
+       its host's store keeps one, or a change it hears would claim to name its fields.
+       TRAP T-a-store-says-what-it-can-do-once · TRAP T-a-store-keeps-its-history */
+    super({ key: facts.key, ...(facts.time ? { time: facts.time } : {}) }, { reportsTotal: false, projects: false, sampled: false, ...facts.capabilities }, !!facts.history);
     this.#send = options.send;
     this.#post = options.method === 'POST';
     this.#headers = options.headers ?? ((): Record<string, string> => ({}));
@@ -71,17 +77,24 @@ export class RequestStore extends BaseStore {
     this.#facts = facts;
     if (facts.changes) this.changes = (since) => this.#ask('GET', `?since=${encodeURIComponent(since === undefined ? '' : JSON.stringify(since))}`);
     if (this.capabilities.holds) {
-      this.recheck = () => this.#ask('GET', '?recheck');
+      this.recheck = () => (this.#rechecking ??= Promise.resolve().then(() => {
+        this.#rechecking = null;
+        return this.#ask<undefined>('GET', '?recheck').then(() => undefined);
+      }));
       this.take = () => this.#ask<{ took: boolean }>('GET', '?take').then((said) => !!said?.took);
+    }
+    if (facts.distinct) {
+      this.distinct = async (fields, options) => (await this.#query<{ values: Record<string, unknown[]> }>({ ...encodeQuery(options), distinct: [...fields] }, options?.signal)).values;
     }
     /* Its host says every change, to every tab — its own writes too, so it says
        none of them itself. S6 · TRAP T-every-tab-hears-a-change */
     if (facts.notifies && typeof BroadcastChannel === 'function') {
       this.#heard = true;
       const channel = new BroadcastChannel(DATA_CHANNEL);
+      // Its own store's, of those under its name: the one its host picked for it.
       channel.addEventListener('message', (event) => {
-        const said = (event as MessageEvent<{ store?: string; change?: StoreChangeDetail }>).data;
-        if (said?.store === options.name) this.announce(said.change ?? { type: 'update' });
+        const said = (event as MessageEvent<{ store?: string; as?: string; change?: StoreChangeDetail }>).data;
+        if (said?.store === options.name && said.as === facts.as) this.announce(said.change ?? { type: 'update' });
       });
       // Open until closed — a page's store, as long as the page: in Node, it keeps nothing running.
       (channel as { unref?: () => void }).unref?.();
@@ -99,6 +112,8 @@ export class RequestStore extends BaseStore {
 
   /** Its host says its changes, its own writes among them. */
   #heard = false;
+  /** The check behind asked this moment, which every ask of it joins. */
+  #rechecking: Promise<void> | null = null;
 
   /** A write of its own, said unless its host says it to every tab. */
   #wrote(change: StoreChangeDetail): void {
@@ -213,7 +228,7 @@ export class RequestStore extends BaseStore {
 
 /** A store's URL, by its name under `base` on `origin`. */
 function urlOf(options: RequestStoreOptions): string {
-  const base = options.base ?? '/sherpa/data/';
+  const base = options.base ?? DATA_BASE;
   return new URL(`${base}${encodeURIComponent(options.name)}`, options.origin ?? 'http://localhost').href;
 }
 

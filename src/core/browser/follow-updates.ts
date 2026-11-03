@@ -10,6 +10,7 @@
  * - FollowOptions — Where the feed is, and where the worker serves the data.
  * - followUpdates — Follow the feed in one tab of the app; the function it returns stops this tab's part.
  */
+import { DATA_BASE } from '../data/data-handler.js';
 import type { FeedNotice } from '../data/updates-feed.js';
 import { oneTab } from './one-tab.js';
 import { watchForUpdates } from './updates.js';
@@ -18,7 +19,7 @@ import { watchForUpdates } from './updates.js';
 export interface FollowOptions {
   /** The feed: `/sherpa/updates`. */
   url?: string;
-  /** The worker's data path: `/sherpa/data/`. */
+  /** The worker's data path: `DATA_BASE`. */
   base?: string;
 }
 
@@ -28,7 +29,7 @@ export interface FollowOptions {
  *  (`watchForUpdates`). The function it returns stops this tab's part. */
 export function followUpdates(options: FollowOptions = {}): () => void {
   const url = options.url ?? '/sherpa/updates';
-  const base = options.base ?? '/sherpa/data/';
+  const base = options.base ?? DATA_BASE;
   // Each tab asks the browser until the feed is heard to answer. U4
   let polling: (() => void) | null = null;
   const poll = (on: boolean): void => {

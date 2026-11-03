@@ -60,7 +60,7 @@ abstract class LiveStore extends EventTarget implements Store {
   }
 
   /** Its inner store's History: one store, one record. TRAP T-a-store-keeps-its-history */
-  get history(): StoreHistory {
+  get history(): StoreHistory | undefined {
     return this.inner.history;
   }
   /** Its inner store's: every change reaches it, and is announced there. */

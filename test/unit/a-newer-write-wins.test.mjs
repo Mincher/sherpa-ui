@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ArrayStore, HeldStore, NOTICE_CHANNEL, RestStore, createDataHandler, failureOf, fakeRemote, memoryOutbox, openRequestStore,
+  ArrayStore, HeldStore, NOTICE_CHANNEL, RestStore, createDataHandler, failureOf, fakeRemote, memoryOutbox, openRequestStore, defineStores,
 } from '../../dist/data.js';
 import { serveData } from '../../dist/worker.js';
 
@@ -119,7 +119,7 @@ test('a REST store sends the write\'s time as If-Unmodified-Since', async (t) =>
 async function overTheWire() {
   const inner = new ArrayStore([{ id: 1, owner: 'Ada' }, { id: 2, owner: 'Bo' }], { key: 'id' });
   const net = { down: false };
-  const handle = createDataHandler({ stores: { people: fakeRemote(inner, { delay: 0 }) } });
+  const handle = createDataHandler({ stores: defineStores(() => ({ people: fakeRemote(inner, { delay: 0 }) })) });
   const sent = [];
   const send = async (request) => {
     if (net.down) throw new TypeError('fetch failed');
@@ -137,7 +137,7 @@ test('a request store sends a write\'s time as If-Unmodified-Since, and the hand
   const remove = people.remove.bind(people);
   people.update = (key, values, options) => (asked.push(options), update(key, values));
   people.remove = (key, options) => (asked.push(options), remove(key));
-  const handle = createDataHandler({ stores: { people } });
+  const handle = createDataHandler({ stores: defineStores(() => ({ people })) });
   const headers = [];
   const store = await openRequestStore({ name: 'people', send: (request) => (headers.push(request.headers.get('If-Unmodified-Since')), handle(request)) });
   const at = Date.UTC(2026, 10, 2, 12, 0, 0, 500);
@@ -205,7 +205,7 @@ test('the worker keeps a lost write as a notice: said again to a page that asks,
   const scope = Object.assign(new EventTarget(), {
     location: { origin: 'http://test' }, clients: { claim: async () => {} }, skipWaiting: async () => {},
   });
-  serveData(scope, { stores: { people: held } });
+  serveData(scope, { stores: defineStores(() => ({ people: held })) });
   const heard = [];
   const channel = new BroadcastChannel(NOTICE_CHANNEL);
   channel.unref?.();

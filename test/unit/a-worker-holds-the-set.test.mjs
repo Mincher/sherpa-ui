@@ -11,7 +11,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ArrayStore, DataSource, HeldStore, createDataHandler, fakeRemote, openRequestStore,
+  ArrayStore, DataSource, HeldStore, createDataHandler, fakeRemote, openRequestStore, defineStores,
 } from '../../dist/data.js';
 
 const ROWS = Array.from({ length: 30 }, (_, i) => ({ id: i + 1, team: i % 3 ? 'core' : 'ops' }));
@@ -27,7 +27,7 @@ function worker() {
     return load(options);
   };
   const held = new HeldStore(source);
-  const handle = createDataHandler({ stores: { people: held } });
+  const handle = createDataHandler({ stores: defineStores(() => ({ people: held })) });
   return { reads, held, handle, fail: (on) => { failing = on; } };
 }
 

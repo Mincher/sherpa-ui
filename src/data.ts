@@ -147,6 +147,7 @@ export {
 } from './core/data/workflow.js';
 /* The data layer over HTTP: one handle() for the page, a Service Worker or a server. Plan 652 */
 export {
+  DATA_BASE,
   DATA_QUERY_TYPE,
   DATA_VERSION,
   createDataHandler,
@@ -158,6 +159,8 @@ export {
   type DataQuery,
   type StoreFacts,
 } from './core/data/data-handler.js';
+// An app's stores, said once for every host; a request may pick among several of one name. TRAP T-a-request-picks-its-stores
+export { defineStores, type DefinedStore, type StoreChoice, type StoreDefinition, type StoreSet } from './core/data/define-stores.js';
 // A store reached by that protocol: a handler in the page, then a Service Worker. Plan 652 S2
 export { RequestStore, openRequestStore, type RequestStoreOptions } from './core/data/request-store.js';
 // A remote store's ONE held set: a Service Worker's for every tab, or a page's own. Plan 652 S5b

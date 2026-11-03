@@ -949,8 +949,9 @@ offline by stopping a server of your own, never by `setOffline` alone.
 
 **The data layer's own requests are answered in the Service Worker** (plan 652
 S4): one copy of each store for every tab, and offline. The app's worker script
-imports its store modules and hands them to `serveData(self, { stores, ready })`;
-a worker cannot `import()` at runtime — refused in all three engines, measured
+imports the app's one stores module (`defineStores`, `T-a-request-picks-its-stores`)
+and hands it to `serveData(self, { stores, ready })`, which reads each remote store
+through its own `HeldStore`; a worker cannot `import()` at runtime — refused in all three engines, measured
 2026-11-02 — so a JSON file cannot name a store's code (D7, Will: A). Each
 request waits for `ready`, a first seed written.
 
@@ -965,10 +966,11 @@ visit, which no worker controls yet, and a private window that refuses one.
 (`/dist/bundle/data.js`): a worker has no import map. In the page it is the URL
 the map gives `sherpa-ui/data`, so the very same module, not a copy.
 
-**Two copies of a store over one database agree on rows, not on news.** The page
-may still hold the same `IdbStore` (a Dashboard reads it directly): IndexedDB is
-read fresh on every load, so both see every row, but a write in one is announced
-only by that copy. Change notices for every tab are S6.
+**Two copies of a store over one database agree on rows, not on news.** A page
+that holds its own copy of an `IdbStore` sees every row, as IndexedDB is read fresh
+on every load, but hears a write only from its own copy. So a page reads a store the
+worker answers through `openWorkerStore`, Demos' Dashboard too, and hears every
+tab's change (S6).
 
 - Site: `src/core/worker/serve-data.ts`
 - Site: `src/core/browser/worker-store.ts`
@@ -1000,27 +1002,6 @@ held set. Not a cookie: Chromium sends none with a worker script's request
 (measured).
 
 - Site: `src/core/browser/updates.ts`
-
-### T-a-push-is-a-check-behind
-
-**A push from the app's server says a store changed, and the worker checks behind**
-(plan 652 S8). `serveData` reads a push as `PushSaid`: `{ store, notification }`.
-A held store is read again behind (`recheck`), so its newer rows WAIT and the
-data notice is said — the banner shows (`T-a-server-change-waits`); a store not
-held says the notice itself. A `notification` is shown where the reader allowed
-it, and its press focuses the tab that shows its `url`, else opens it in a new one:
-an open tab is never moved off its work (plan 695 H1, bug 9). The app's server
-sends the push, with its own keys: Sherpa ships the worker's half.
-
-Measured 2026-11-02 in Chromium, the push delivered by DevTools
-(`ServiceWorker.deliverPushMessage`): a record changed on the server unheard, the
-push named its store, and the banner showed. **Headless Chromium refuses every
-notification**, granted or not (`Notification.permission` stays `denied`), so the
-test reads that the worker ASKS to show it. Firefox and WebKit have no way to
-deliver a push in a test.
-
-- Site: `src/core/worker/serve-data.ts`
-- Site: `test/unit/a-push-is-a-check-behind.test.mjs`
 
 ### T-a-view-change-resets-the-header-chips
 

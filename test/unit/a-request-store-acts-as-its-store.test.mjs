@@ -10,7 +10,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ArrayStore, DataSource, HttpError, VIEW, ValidationError, createDataHandler, openRequestStore, required, rowKey, rules,
+  ArrayStore, DataSource, HttpError, VIEW, ValidationError, createDataHandler, openRequestStore, required, rowKey, rules, defineStores,
+  statusFields,
 } from '../../dist/data.js';
 
 const PEOPLE = [
@@ -22,7 +23,7 @@ const PEOPLE = [
 /** A request store over an array store, through a handler in the page. */
 async function pair(options = {}) {
   const inner = new ArrayStore(PEOPLE.map((p) => ({ ...p })), { key: 'id', ...options });
-  const store = await openRequestStore({ name: 'people', send: createDataHandler({ stores: { people: inner } }) });
+  const store = await openRequestStore({ name: 'people', send: createDataHandler({ stores: defineStores(() => ({ people: inner })) }) });
   return { inner, store };
 }
 
@@ -83,4 +84,36 @@ test('a source over it reads and filters as over its store', async () => {
   source.query.ask({ scope: VIEW, field: 'team', reading: { picked: ['ops'] } });
   await source.load();
   assert.deepEqual(source.rows.map((r) => r.name), ['Bo']);
+});
+
+/* Plan 695 H2: a field's values cross alone — a count over the wire downloaded every
+   row — and a History crosses only where its host's store keeps one. */
+test('a field\'s values are read where the rows are: one request, and no row crosses', async () => {
+  const inner = new ArrayStore(PEOPLE.map((p) => ({ ...p })), { key: 'id' });
+  const handle = createDataHandler({ stores: defineStores(() => ({ people: inner })) });
+  const bodies = [];
+  const send = async (request) => {
+    const response = await handle(request);
+    bodies.push(await response.clone().text());
+    return response;
+  };
+  const store = await openRequestStore({ name: 'people', send });
+  bodies.length = 0;
+  const values = await store.distinct(['team'], { filter: ['score', 'gt', 5] });
+  assert.deepEqual(values, await inner.distinct(['team'], { filter: ['score', 'gt', 5] }));
+  assert.deepEqual(values, { team: ['core'] });
+  assert.equal(bodies.length, 1);
+  assert.ok(!bodies[0].includes('Ada'), 'no row came back');
+});
+
+test('a History crosses only where its host\'s store keeps one', async () => {
+  const { store } = await pair();
+  assert.ok(store.history, 'an array store keeps one');
+  // A status field moves with fields its change never names, so its store keeps none.
+  const status = statusFields(new ArrayStore(PEOPLE.map((p) => ({ ...p })), { key: 'id' }), {
+    level: { type: 'status', values: [{ value: 'High', when: [{ score: { gt: 5 } }] }, { value: 'Low' }] },
+  });
+  const over = await openRequestStore({ name: 'people', send: createDataHandler({ stores: defineStores(() => ({ people: status })) }) });
+  assert.equal(status.history, undefined);
+  assert.equal(over.history, undefined, 'so its request store claims none');
 });

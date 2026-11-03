@@ -9,7 +9,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ArrayStore, HeldStore, NOTICE_CHANNEL, fakeRemote } from '../../dist/data.js';
+import { ArrayStore, HeldStore, NOTICE_CHANNEL, fakeRemote, defineStores } from '../../dist/data.js';
 import { serveData } from '../../dist/worker.js';
 
 const settle = () => new Promise((done) => setTimeout(done, 30));
@@ -30,7 +30,7 @@ function worker(stores) {
     skipWaiting: async () => {},
     registration: { showNotification: async (title, options) => { shown.push({ title, ...options }); } },
   });
-  serveData(scope, { stores });
+  serveData(scope, { stores: defineStores(() => stores) });
   const fire = (type, init) => {
     const waits = [];
     scope.dispatchEvent(Object.assign(new Event(type), init, { waitUntil: (p) => waits.push(p) }));

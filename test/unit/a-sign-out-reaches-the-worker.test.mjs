@@ -9,7 +9,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ArrayStore, HeldStore, NOTICE_CHANNEL, clearKept, fakeRemote, memoryOutbox } from '../../dist/data.js';
+import { ArrayStore, HeldStore, NOTICE_CHANNEL, clearKept, fakeRemote, memoryOutbox, defineStores } from '../../dist/data.js';
 import { cacheOf } from '../../dist/core/data/store-cache.js';
 import { serveData } from '../../dist/worker.js';
 
@@ -21,7 +21,7 @@ function pageAndWorker(t, stores) {
   const scope = Object.assign(new EventTarget(), {
     location: { origin: 'http://test' }, clients: { claim: async () => {} }, skipWaiting: async () => {},
   });
-  serveData(scope, { stores });
+  serveData(scope, { stores: defineStores(() => stores) });
   const message = (data, ports = []) => {
     const waits = [];
     scope.dispatchEvent(Object.assign(new Event('message'), { data, ports, waitUntil: (p) => waits.push(p) }));
