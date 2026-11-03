@@ -33,7 +33,7 @@ import {
 import { BaseStore, type StoreOptions } from './base-store.js';
 import { rowKey } from './row-key.js';
 import { changedFields } from './store-history.js';
-import { DATA_QUERY_TYPE, encodeQuery, writeHeaders } from './data-handler.js';
+import { DATA_QUERY_TYPE, DATA_VERSION, encodeQuery, writeHeaders } from './data-handler.js';
 import { failureOf } from './failure.js';
 export { BaseStore, type StoreOptions };
 
@@ -346,7 +346,8 @@ export class RestStore extends BaseStore {
    *  `POST`, from then on. One that fails at the network keeps `POST` only if it answers. */
   async #read(options: LoadOptions): Promise<unknown> {
     const init = (method: string): RequestInit => ({
-      method, headers: { 'content-type': DATA_QUERY_TYPE }, body: JSON.stringify(encodeQuery(options)),
+      // Sherpa's query carries its version as every request of the protocol does: one marker.
+      method, headers: { 'content-type': DATA_QUERY_TYPE, 'Sherpa-Data': String(DATA_VERSION) }, body: JSON.stringify(encodeQuery(options)),
     });
     const { signal } = options;
     if (this.#post || this.#options.method === 'POST') return this.#request<unknown>(this.#options.url, init('POST'), signal);

@@ -4472,7 +4472,7 @@ Four things that are not obvious:
   `{ store, as, change }`, and a store's facts say the `as` its request picked, so a
   request store hears only its own store of those under its name: a remote one that
   missed a server's write is not told it by the local one beside it.
-- **A check behind is the name's.** `?recheck` on a name — a page's, a push, the feed's
+- **A check behind is the name's.** `POST ?recheck` on a name — a page's, a push, the feed's
   word — checks every store under it: the feed's ask carries no app header, so a pick
   would name the default. A name none of whose stores holds a set says a `data` notice,
   where its host notifies.
@@ -4486,6 +4486,13 @@ Four things that are not obvious:
   `keepOutbox(name)`, or `name:as`); a store the app holds is served as it is. With no
   worker, the page reads the same definitions, its source holding its own set.
 
+**A store may be made for each request** (plan 695 H5): a name's definition may be a
+function, `(request) => store`, which the APP writes — a server wraps the request's own
+sign-in into a store that sends it upstream. Sherpa still reads none of it (the same
+spy, measured). Such a store is never held, never heard and never handed out: it is in
+no `all()`, and `through()` leaves it as it is — a worker's held set per request would
+read its source on every ask. A check behind has nothing of it to read.
+
 - Site: `src/core/data/define-stores.ts`
 - Site: `src/core/data/data-handler.ts`
 - Site: `src/core/data/request-store.ts`
@@ -4498,9 +4505,18 @@ Four things that are not obvious:
 **The data layer over HTTP is the `Store` interface, nothing more.** Plan 652, step S1.
 `createDataHandler({ stores })` answers `QUERY` (a `load`, or `totalCount` with
 `total: true`), `GET` (a row by key, the store's facts, or `?since=` its changes), `POST`,
-`PATCH` and `DELETE`, under `/sherpa/data/<store>`. The page, a Service Worker and a server
-host the same function, so they cannot answer differently. Outside its path it returns
-`null`, and its host passes the request on.
+`PATCH` and `DELETE`, under `/sherpa/data/<store>`; an act that changes state is a `POST`
+(`T-an-act-is-a-post`). The page, a Service Worker and a server host the same function
+(`T-a-node-host-is-the-same-handler`), so they cannot answer differently. Outside its path
+it returns `null`, and its host passes the request on.
+
+**One version marker** (plan 695 H5): the `Sherpa-Data` header, on every request and every
+answer; a request without it is taken as this version, another is a 400. The query body
+said a `v` too, and only a query has a body: it is gone, and a body's `v` is not read.
+**No answer is kept by a cache** (`Cache-Control: no-store`): rows, facts, changes,
+problems and acts are a store's, and may be one reader's alone. **A `since` is the store's
+own mark**, opaque, as JSON: one that is not JSON is a 400 before the store is asked (it
+threw inside the handler, a 500).
 
 Four things that are not obvious:
 
@@ -4524,12 +4540,77 @@ the method, with the same body. Any other `POST` adds a row.
 
 A bad body is refused before the store is asked: 400 when it is not JSON, 415 when it is
 not `application/vnd.sherpa.query+json`, 422 when it is not a read. A store's own failure
-comes back as its `Failure` kind, with its HTTP status where it had one.
+comes back as a problem with its `Failure` kind, and its HTTP status where it had one
+(`T-a-refusal-keeps-its-kind`).
 
 - Site: `src/core/data/data-handler.ts`
 - Site: `src/core/data/request-store.ts`
 - Site: `test/unit/a-data-request-is-the-store-interface.test.mjs`
 - Site: `test/unit/a-request-store-acts-as-its-store.test.mjs`
+
+### T-a-refusal-keeps-its-kind
+
+**A refusal crosses the protocol as `application/problem+json` (RFC 9457), with the
+protocol's kind kept** (plan 695 H5): `{ type, title, status, detail, kind }`, and a
+refused write's `issues`, by field. `type` is `tag:sherpa-ui,2026:<kind>` — a name, not a
+page to fetch, as RFC 9457 allows. A `RequestStore` throws it as its store would: a
+write's issues as a `ValidationError`, else an `HttpError` carrying the `kind`, which
+`failureOf` reads before the status.
+
+**An offline source is offline on the far side, not a failing server.** A store with no
+status of its own crossed as a 500, so a worker whose source was down told its page
+`server`, and the page's banner said the data failed rather than that it could not be
+reached. Each kind now crosses as its own status where its store gave none — `offline`
+503, `timeout` 504, `refused` 403, `conflict` 409, `invalid` 422, `server` and `unknown`
+500 — and a store's own status passes through. The old `{ error: { kind, message } }`
+body is gone.
+
+- Site: `src/core/data/data-handler.ts`
+- Site: `src/core/data/failure.ts`
+- Site: `src/core/data/request-store.ts`
+- Site: `test/unit/a-refusal-keeps-its-kind.test.mjs`
+
+### T-an-act-is-a-post
+
+**What changes a host's state is asked by `POST`** (plan 695 H5): a check behind —
+`POST <base><store>?recheck`, or `POST <base>?recheck` for every store — and the newer
+rows taken in, `POST <base><store>?take` → `{ took }`. A `GET` is safe: a prefetch, a
+cache or a crawler may send one, and none may make a worker read its source again. The
+`GET` forms are gone; one is refused, 405 with `Allow: POST`, and acts on nothing. The
+act keeps its word in the URL, so a test that waits for `?recheck` still finds it. Every
+asker sends `POST`: a `RequestStore`, the tab that follows the feed (`followUpdates`), a
+push in the worker (`serveData`), and Demos' own worker.
+
+- Site: `src/core/data/data-handler.ts`
+- Site: `src/core/data/request-store.ts`
+- Site: `src/core/browser/follow-updates.ts`
+- Site: `test/unit/an-act-is-a-post.test.mjs`
+
+### T-a-preflight-is-the-apps-to-answer
+
+**A page on another origin asks by the app's own CORS policy** (plan 695 H5):
+`createDataHandler({ stores, cors: { origins, headers, credentials, maxAge } })`. An
+allowed origin's preflight says the route's methods (`QUERY` among them), Sherpa's own
+headers and the app's (`headers`: its sign-in, its own say), and its answers let the page
+read `Sherpa-Data`, `Sherpa-Stale` and `traceparent`. A refused origin is refused, 403,
+preflight and request alike, and no store is asked. A request from the handler's own
+origin always may; with no `cors`, nothing of CORS is said, as for a page or a worker.
+
+**A refused preflight is not offline.** The browser fails the fetch with the same
+`TypeError` as a network that is down, so a `RequestStore` read a refusal as offline, and
+kept retrying. Now, where a request to another origin fails that way (after a read's one
+`POST` try, `T-a-query-falls-back-to-post`), it sends one plain `GET` in `no-cors` mode —
+no preflight, an opaque answer: where that reaches the host, the policy refused this
+origin, and the failure is `refused`; where it does not, offline. Measured 2026-11-03 in
+Chromium, Firefox and WebKit against a Node host: allowed, `QUERY` and `PATCH` went
+through their preflights with the app's header; refused, `refused`; a host gone,
+`offline`. With the probe off, a refusal read `offline` (Chromium, WebKit). No probe runs
+in Node, or to the page's own origin: there is no CORS there.
+
+- Site: `src/core/data/data-handler.ts`
+- Site: `src/core/data/request-store.ts`
+- Site: `test/unit/a-preflight-is-the-apps-to-answer.test.mjs`
+- Site: `test/e2e/reforged-a-server-answers-another-origin.spec.ts`
 
 ### T-a-worker-holds-the-set
 
@@ -4544,7 +4625,7 @@ WebKit; Firefox reports 0 for a worker's answer, so it cannot be read this way).
 **It stays REMOTE to the page, as before (Will, D8: A).** Drafts and Apply, the
 loading state and "Unable to reach data" all stay. The page learns why its rows
 are unconfirmed from each answer's `Sherpa-Stale` header (`store.stale`); Retry
-and Refresh ask the worker to read its source again (`GET …?recheck`), and the
+and Refresh ask the worker to read its source again (`POST …?recheck`), and the
 page asks anew once that lands.
 
 **A new page checks the worker's set once, behind** — where the store may miss a
@@ -4733,7 +4814,7 @@ its reader** (Will, plan 652 S6c). A `HeldStore` keeps its OWN copy of the rows
 its readers see. After each read behind it compares the live set with that copy;
 rows that differ wait, and it says `waiting`. `serveData` says that as a data
 notice, `{ kind: 'data', store, rows }`, and the listening banner shows. Refresh
-data takes them in: the page's Refresh asks `take()` first (`GET …?take`), and
+data takes them in: the page's Refresh asks `take()` first (`POST …?take`), and
 reads the source again only when nothing waited. Measured 2026-11-02 in Demos'
 remote mode: a customer's owner changed on the server; the grid kept the old
 owner and the banner showed, and Refresh data showed the new owner, in all three
@@ -4876,14 +4957,15 @@ and each wrote the election out again.
 **The app's SERVER says what is new, on one small feed** (Will, plan 687, A: *"we
 don't have to rely on polling"*). A Service Worker cannot find news by itself: the
 browser stops it when idle, so it holds no timer and no connection. So the server
-offers `updatesFeed()` — Server-Sent Events, at `/sherpa/updates` — and says each
+offers `updatesFeed()` — Server-Sent Events, at `UPDATES_PATH` (`/sherpa/updates`), the
+one name the server and the follower share — and says each
 notice on it: `{ kind: 'app', build }` or `{ kind: 'data', store }`. It says THAT
 something is new, never the data.
 
 **One tab follows it, and only ACTS** (`followUpdates()`, the tab that leads
 `sherpa-news`, `T-one-feed-for-every-tab`): `app` asks the browser for the new worker
 (`registration.update()`), which takes every tab over; `data` sends
-`<base><store>?recheck`, so the worker reads that store again behind its held set,
+`POST <base><store>?recheck` (`T-an-act-is-a-post`), so the worker reads that store again behind its held set,
 and its newer rows wait. What either finds reaches every tab as a notice
 (`T-a-notice-is-heard-never-ordered`), so the feed passes nothing on, unlike
 `shareFeed`. A notice is a HINT: a tab whose build did not change finds the same
@@ -4895,7 +4977,7 @@ check** (U3, Will: A): each event's id is `<boot>-<n>`, and the feed keeps its l
 100. `Last-Event-ID` from this start of the server replays what came after it;
 nothing missed, nothing sent. Where it cannot say it all — the server started since,
 or let some go — it says ONE `{ kind: 'gap' }`, whose id is the latest, and the
-follower checks everything once: the new worker, and `<base>?recheck` with no store
+follower checks everything once: the new worker, and `POST <base>?recheck` with no store
 name, which rechecks every store the worker serves (one holding nothing returns at
 once). Each store's check behind still asks only what moved since its own History
 mark (`T-a-remote-store-says-what-changed`). A follower with no id hears only what
@@ -4912,6 +4994,7 @@ tab shown again polls 0 times, and a second tab 0 times; the feed refused, once.
 - Site: `src/core/data/updates-feed.ts`
 - Site: `src/core/browser/follow-updates.ts`
 - Site: `src/core/data/data-handler.ts`
+- Site: `src/core/server/worker-script.ts`
 - Site: `test/unit/news-is-pushed-by-the-server.test.mjs`
 
 ### T-a-query-falls-back-to-post

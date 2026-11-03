@@ -110,7 +110,7 @@ export function serveData(scope: WorkerScope, options: ServeDataOptions): DataHa
     try {
       said = ((event as WorkerPushEvent).data?.json() ?? {}) as PushSaid;
     } catch { /* not JSON: nothing Sherpa reads */ }
-    const checked = said.store ? handle(new Request(new URL(`${base}${encodeURIComponent(said.store)}?recheck`, scope.location.origin))) : undefined;
+    const checked = said.store ? handle(new Request(new URL(`${base}${encodeURIComponent(said.store)}?recheck`, scope.location.origin), { method: 'POST' })) : undefined;
     const { title, body, url } = said.notification ?? {};
     const shown = title ? scope.registration?.showNotification?.(title, { ...(body ? { body } : {}), data: { url: url ?? '/' } }) : undefined;
     (event as WorkerPushEvent).waitUntil(Promise.all([checked, shown?.catch(() => undefined)]));

@@ -11,13 +11,13 @@
  * - followUpdates — Follow the feed in one tab of the app; the function it returns stops this tab's part.
  */
 import { DATA_BASE } from '../data/data-handler.js';
-import type { FeedNotice } from '../data/updates-feed.js';
+import { UPDATES_PATH, type FeedNotice } from '../data/updates-feed.js';
 import { oneTab } from './one-tab.js';
 import { watchForUpdates } from './updates.js';
 
 /** Where the feed is, and where the worker serves the data. */
 export interface FollowOptions {
-  /** The feed: `/sherpa/updates`. */
+  /** The feed: `UPDATES_PATH`. */
   url?: string;
   /** The worker's data path: `DATA_BASE`. */
   base?: string;
@@ -28,7 +28,7 @@ export interface FollowOptions {
  *  no feed answers, every tab asks the browser now and then instead
  *  (`watchForUpdates`). The function it returns stops this tab's part. */
 export function followUpdates(options: FollowOptions = {}): () => void {
-  const url = options.url ?? '/sherpa/updates';
+  const url = options.url ?? UPDATES_PATH;
   const base = options.base ?? DATA_BASE;
   // Each tab asks the browser until the feed is heard to answer. U4
   let polling: (() => void) | null = null;
@@ -51,10 +51,11 @@ export function followUpdates(options: FollowOptions = {}): () => void {
     if (notice.kind === 'app' || notice.kind === 'gap') {
       void navigator.serviceWorker?.getRegistration().then((registration) => registration?.update()).catch(() => undefined);
     }
-    // The worker reads it again behind its held set; newer rows wait, and it says so.
-    if (notice.kind === 'data' && notice.store) void fetch(`${base}${encodeURIComponent(notice.store)}?recheck`).catch(() => undefined);
+    /* The worker reads it again behind its held set; newer rows wait, and it says so.
+       An act is a POST. TRAP T-an-act-is-a-post */
+    if (notice.kind === 'data' && notice.store) void fetch(`${base}${encodeURIComponent(notice.store)}?recheck`, { method: 'POST' }).catch(() => undefined);
     // It missed more than the feed could say again: every store, once.
-    if (notice.kind === 'gap') void fetch(`${base}?recheck`).catch(() => undefined);
+    if (notice.kind === 'gap') void fetch(`${base}?recheck`, { method: 'POST' }).catch(() => undefined);
   };
   /* The leader says whether the feed answers, to every tab; a tab that opens later
      asks. A feed that refuses — no such path — stays shut, and every tab polls. */

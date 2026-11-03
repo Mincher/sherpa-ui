@@ -6,11 +6,14 @@
  * Map:
  * - DATA_BASE — The path every store sits under, for every host and every asker.
  * - DATA_QUERY_TYPE — The media type of a Sherpa data query, sent with `QUERY`.
- * - DATA_VERSION — The protocol's version, in the `Sherpa-Data` header.
+ * - DATA_VERSION — The protocol's version: the ONE marker, the `Sherpa-Data` header on every request and answer.
  * - STALE — The header that says an answer's rows are unconfirmed, and why.
  * - DATA_CHANNEL — The channel a host that notifies says each store's change on, to every tab.
+ * - PROBLEM_TYPE — The media type a refusal is said in: RFC 9457.
  * - DataQuery — A store read as JSON: what `load` or `totalCount` is asked.
  * - StoreFacts — What a store says of itself, as JSON.
+ * - Problem — A refusal as JSON (RFC 9457), with the protocol's kind kept.
+ * - CorsPolicy — Which other origins may ask, and what they may send: the app's own.
  * - DataHandlerOptions — The stores it answers for, and the path they sit under.
  * - DataHandler — Answer one request, or null where it is not the data layer's.
  * - encodeQuery — A store read as the body a `QUERY` sends.
@@ -20,10 +23,11 @@
  * - createDataHandler — The handler for a set of stores.
  */
 import type { DefinedStore, StoreSet } from './define-stores.js';
-import { failureOf } from './failure.js';
+import { failureOf, type FailureKind } from './failure.js';
 import { sayNotice } from './notices.js';
 import { OP_LABELS, distinctOf, matchesOnly, type Filter, type LoadOptions, type Row, type SortSpec, type Store, type WriteOptions } from './store.js';
 import { readTraceparent, startSpan, within, type TraceContext, type TraceHost } from './trace.js';
+import type { Issue } from './validate.js';
 
 /** The path every store sits under, for every host and every asker. */
 export const DATA_BASE = '/sherpa/data/';
@@ -31,7 +35,8 @@ export const DATA_BASE = '/sherpa/data/';
 /** The media type of a Sherpa data query, sent with `QUERY`. */
 export const DATA_QUERY_TYPE = 'application/vnd.sherpa.query+json';
 
-/** The protocol's version, in the `Sherpa-Data` header. */
+/** The protocol's version: the ONE marker, the `Sherpa-Data` header on every request
+ *  and answer. A request without it is taken as this one. */
 export const DATA_VERSION = 1;
 
 /** The header that says an answer's rows are unconfirmed, and why: a `Failure`, as
@@ -42,10 +47,12 @@ export const STALE = 'Sherpa-Stale';
  *  every tab: `{ store, as, change }`. S6 */
 export const DATA_CHANNEL = 'sherpa-data';
 
+/** The media type a refusal is said in: RFC 9457. TRAP T-a-refusal-keeps-its-kind */
+export const PROBLEM_TYPE = 'application/problem+json';
+
 /** A store read as JSON: what `load` or `totalCount` is asked. `now` is an ISO
  *  time; `total` asks for the count alone. */
 export interface DataQuery {
-  v: number;
   filter?: Filter;
   sort?: SortSpec[];
   group?: string;
@@ -73,6 +80,30 @@ export type StoreFacts = Pick<Store, 'key' | 'time' | 'domains' | 'capabilities'
   notifies?: boolean;
 };
 
+/** A refusal as JSON (RFC 9457), with the protocol's kind kept, so an offline store
+ *  reads as offline on the far side. A refused write says its `issues`, by field. */
+export interface Problem {
+  type: string;
+  title: string;
+  status: number;
+  detail: string;
+  kind: FailureKind;
+  issues?: Issue[];
+}
+
+/** Which other origins may ask, and what they may send: the app's own. A request from
+ *  its own origin always may. TRAP T-a-preflight-is-the-apps-to-answer */
+export interface CorsPolicy {
+  /** Each origin that may ask (`https://app.example`), or a test of one. */
+  origins: readonly string[] | ((origin: string) => boolean);
+  /** The app's own headers a page sends — a sign-in, its own say. Sherpa's are always allowed. */
+  headers?: readonly string[];
+  /** A page may send its cookies. */
+  credentials?: boolean;
+  /** How long a browser keeps a preflight's answer, in seconds. Default 600. */
+  maxAge?: number;
+}
+
 /** The stores it answers for, and the path they sit under. */
 export interface DataHandlerOptions {
   /** The app's stores: each request is answered by the one its pick names. TRAP T-a-request-picks-its-stores */
@@ -83,6 +114,8 @@ export interface DataHandlerOptions {
   notifies?: boolean;
   /** Who answers, as its spans say. Default `page`. TRAP T-one-trace-stream */
   host?: TraceHost;
+  /** Who may ask from another origin. None: no CORS is said, as for a page or a worker. */
+  cors?: CorsPolicy;
 }
 
 /** Answer one request, or null where it is not the data layer's: its host passes it on. */
@@ -93,7 +126,6 @@ export function encodeQuery(options: LoadOptions = {}, total = false): DataQuery
   // A signal stops the request, and a trace is its header: neither is part of the question.
   const { now, fields, signal: _signal, trace: _trace, ...rest } = options;
   return {
-    v: DATA_VERSION,
     ...rest,
     ...(now ? { now: now.toISOString() } : {}),
     ...(fields ? { fields: [...fields] } : {}),
@@ -105,7 +137,6 @@ export function encodeQuery(options: LoadOptions = {}, total = false): DataQuery
 export function decodeQuery(body: unknown): { options: LoadOptions; total: boolean; distinct?: string[] } | { problem: string } {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return { problem: 'the body is not an object' };
   const q = body as Record<string, unknown>;
-  if (q['v'] !== DATA_VERSION) return { problem: `version ${String(q['v'])}, not ${DATA_VERSION}` };
   const options: LoadOptions = {};
   if (q['filter'] !== undefined) {
     if (!isFilter(q['filter'])) return { problem: 'the filter is not a filter' };
@@ -169,9 +200,18 @@ function keyFrom(segment: string): unknown {
   }
 }
 
-/** What each route of a store allows. */
+/** What each route allows: a store, a row, and the acts on every store. */
 const ON_STORE = 'QUERY, GET, POST, OPTIONS';
 const ON_ROW = 'GET, PATCH, DELETE, OPTIONS';
+const ON_ALL = 'POST, OPTIONS';
+
+/** The acts that change state, each a `POST` with its word: a check behind, and the
+ *  newer rows taken in. TRAP T-an-act-is-a-post */
+const ACTS = ['recheck', 'take'] as const;
+
+/** The headers Sherpa's own requests send, and those an answer lets a page read. */
+const SHERPA_HEADERS = ['Content-Type', 'Sherpa-Data', 'If-Unmodified-Since', 'traceparent'];
+const EXPOSED = `Sherpa-Data, ${STALE}, traceparent, Accept-Query`;
 
 /** A write's time as the `If-Unmodified-Since` it is sent with: a host refuses the
  *  write, 412, where the row changed after. TRAP T-a-newer-write-wins */
@@ -188,8 +228,9 @@ function writeOptionsOf(request: Request): WriteOptions {
 
 /** The handler for a set of stores. Each answer is a span; one asked for by its
  *  `traceparent` joins the asker's trace, and echoes it. A host that `notifies`
- *  says each store's change, and its newer rows waiting, to every tab.
- *  TRAP T-one-trace-stream · TRAP T-a-request-picks-its-stores */
+ *  says each store's change, and its newer rows waiting, to every tab. Another
+ *  origin is answered by the app's `cors` policy, or not at all.
+ *  TRAP T-one-trace-stream · TRAP T-a-request-picks-its-stores · TRAP T-a-preflight-is-the-apps-to-answer */
 export function createDataHandler(options: DataHandlerOptions): DataHandler {
   const base = options.base ?? DATA_BASE;
   const host = options.host ?? 'page';
@@ -197,14 +238,39 @@ export function createDataHandler(options: DataHandlerOptions): DataHandler {
   return async (request) => {
     const url = new URL(request.url);
     if (!url.pathname.startsWith(base)) return null;
-    const asker = request.headers.get('traceparent');
     const path = url.pathname.slice(base.length).split('/');
+    const origin = options.cors ? request.headers.get('Origin') : null;
+    const cors = origin !== null && origin !== url.origin ? corsOf(options.cors!, origin) : null;
+    // A refused origin is told so, readably by no page: its browser says the request failed.
+    if (cors === false) return problem(403, 'refused', `${origin} may not ask for this data`, { Vary: 'Origin' });
+    if (cors && request.method === 'OPTIONS' && request.headers.has('Access-Control-Request-Method')) {
+      const { headers = [], maxAge = 600 } = options.cors!;
+      return answer(204, null, {
+        ...cors, 'Access-Control-Allow-Methods': allowOf(path),
+        'Access-Control-Allow-Headers': [...SHERPA_HEADERS, ...headers].join(', '), 'Access-Control-Max-Age': String(maxAge),
+      });
+    }
+    const asker = request.headers.get('traceparent');
     const span = startSpan('answer', { host, ...(path[0] ? { store: decodeURIComponent(path[0]) } : {}), parent: readTraceparent(asker, host), detail: { method: request.method } });
     const response = await answerOf(request, url, path, options, span);
     span?.end({ status: response.status });
     if (asker && span) response.headers.set('traceparent', asker);
+    if (cors) for (const [name, value] of Object.entries({ ...cors, 'Access-Control-Expose-Headers': EXPOSED })) response.headers.set(name, value);
     return response;
   };
+}
+
+/** What an answer to another origin says, by the app's policy: false where it may not ask. */
+function corsOf(policy: CorsPolicy, origin: string): Record<string, string> | false {
+  const allowed = typeof policy.origins === 'function' ? policy.origins(origin) : policy.origins.includes(origin);
+  if (!allowed) return false;
+  return { 'Access-Control-Allow-Origin': origin, Vary: 'Origin', ...(policy.credentials ? { 'Access-Control-Allow-Credentials': 'true' } : {}) };
+}
+
+/** What a path allows: the acts on every store, a store, or a row. */
+function allowOf(path: readonly string[]): string {
+  if (!path[0]) return ON_ALL;
+  return path[1] === undefined || path[1] === '' ? ON_STORE : ON_ROW;
 }
 
 /** Each store's change, to every tab, as its name and the app's word for it; its
@@ -244,54 +310,75 @@ async function recheckAll(stores: StoreSet, name: string | undefined, notifies: 
 /** One request's answer, each store call made under its span. */
 async function answerOf(request: Request, url: URL, path: string[], options: DataHandlerOptions, span: TraceContext | null): Promise<Response> {
   const [name, key, ...more] = path;
-  const notifies = !!options.notifies;
-  // Every store read again behind its held set: a feed's gap. Plan 687 U3
-  if (!name && !more.length && request.method === 'GET' && url.searchParams.has('recheck')) {
-    await within(span, () => recheckAll(options.stores, undefined, notifies));
-    return answer(204, null);
-  }
-  const named = name ? decodeURIComponent(name) : '';
-  // A check behind is the name's, every store under it: what a reader holds, and the rest.
-  if (named && !key && !more.length && request.method === 'GET' && url.searchParams.has('recheck') && options.stores.all(named).length) {
-    await within(span, () => recheckAll(options.stores, named, notifies));
-    return answer(204, null);
-  }
-  // The app picks which store answers, from the request; Sherpa reads none of it.
-  const picked = named ? options.stores.pick(named, request) : undefined;
-  if (!picked || more.length) return problem(404, 'invalid', `no store at ${url.pathname}`);
-  const { store } = picked;
   const asked = request.headers.get('Sherpa-Data');
   if (asked && Number(asked) !== DATA_VERSION) return problem(400, 'invalid', `version ${asked}, not ${DATA_VERSION}`);
-  const allow = key === undefined || key === '' ? ON_STORE : ON_ROW;
-  if (request.method === 'OPTIONS') return answer(204, null, { Allow: allow, 'Accept-Query': DATA_QUERY_TYPE });
+  const named = name ? decodeURIComponent(name) : '';
+  const allow = allowOf(path);
+  if (more.length || (named && !options.stores.has(named))) return problem(404, 'invalid', `no store at ${url.pathname}`);
+  if (request.method === 'OPTIONS') return answer(204, null, { Allow: allow, ...(allow === ON_STORE ? { 'Accept-Query': DATA_QUERY_TYPE } : {}) });
+  const act = ACTS.find((word) => url.searchParams.has(word));
+  if (act) return actOn(act, request, named, key, options, span);
   if (!allow.split(', ').includes(request.method)) return problem(405, 'invalid', `${request.method} is not allowed here`, { Allow: allow });
-  try {
+  // The app picks which store answers, from the request; Sherpa reads none of it.
+  const picked = options.stores.pick(named, request);
+  if (!picked) return problem(404, 'invalid', `no store at ${url.pathname}`);
+  return answered(picked.store, async () => {
     // The body first: a store call made after an await would begin under no span.
     const body = request.method === 'GET' || request.method === 'DELETE' ? { value: undefined } : await read(request);
     if ('problem' in body) return body.problem;
-    const response = await within(span, () => (allow === ON_ROW
-      ? onRow(store, keyFrom(key!), request, body.value)
-      : onStore(picked, url, request, body.value, notifies)));
+    return within(span, () => (allow === ON_ROW
+      ? onRow(picked.store, keyFrom(key!), request, body.value)
+      : onStore(picked, url, request, body.value, !!options.notifies)));
+  });
+}
+
+/** An act that changes state, asked by `POST` alone: a check behind — of the stores
+ *  under a name, or of every store — or the newer rows that wait, taken in.
+ *  TRAP T-an-act-is-a-post */
+async function actOn(act: (typeof ACTS)[number], request: Request, named: string, key: string | undefined, options: DataHandlerOptions, span: TraceContext | null): Promise<Response> {
+  if (request.method !== 'POST') return problem(405, 'invalid', `?${act} is asked by POST`, { Allow: 'POST' });
+  if (key) return problem(404, 'invalid', `a row has no ?${act}`);
+  if (act === 'recheck') {
+    return answered(null, async () => {
+      await within(span, () => recheckAll(options.stores, named || undefined, !!options.notifies));
+      return answer(204, null);
+    });
+  }
+  const picked = named ? options.stores.pick(named, request) : undefined;
+  if (!picked) return problem(404, 'invalid', '?take is a store\'s');
+  // Take in the newer rows that wait. S6c
+  return answered(picked.store, async () => answer(200, { took: (await within(span, () => picked.store.take?.())) ?? false }));
+}
+
+/** A store call's answer: its own refusal said as a problem, and old rows marked stale. */
+async function answered(store: Store | null, run: () => Promise<Response>): Promise<Response> {
+  try {
+    const response = await run();
     // Old rows answer while the source cannot be reached: the reader says so. S5b
-    if (store.stale) response.headers.set(STALE, encodeURIComponent(JSON.stringify(store.stale)));
+    if (store?.stale) response.headers.set(STALE, encodeURIComponent(JSON.stringify(store.stale)));
     return response;
   } catch (error) {
     const failure = failureOf(error);
     // A refused write says which fields, as the store's own error does. Plan 652 S2
     const issues = (error as { issues?: unknown }).issues;
-    return problem(failure.status ?? (failure.kind === 'invalid' ? 422 : 500), failure.kind, failure.message, {}, Array.isArray(issues) ? { issues } : {});
+    return problem(failure.status ?? STATUS[failure.kind], failure.kind, failure.message, {}, Array.isArray(issues) ? { issues: issues as Issue[] } : {});
   }
 }
 
 /** A read of the store, its facts, its changes, or a new row. */
 async function onStore({ store, as }: DefinedStore, url: URL, request: Request, body: unknown, notifies: boolean): Promise<Response> {
   if (request.method === 'GET') {
-    // Take in the newer rows that wait. S6c
-    if (url.searchParams.has('take')) return answer(200, { took: (await store.take?.()) ?? false });
     const since = url.searchParams.get('since');
     if (since === null) return answer(200, { ...factsOf(store), ...(as !== undefined ? { as } : {}), ...(notifies ? { notifies: true } : {}) });
     if (!store.changes) return problem(404, 'invalid', 'this store says nothing of its changes');
-    return answer(200, await store.changes(since === '' ? undefined : JSON.parse(since)));
+    // A mark is the store's own, opaque, as it said it: JSON, or no mark at all.
+    let mark: unknown;
+    try {
+      mark = since === '' ? undefined : JSON.parse(since);
+    } catch {
+      return problem(400, 'invalid', 'since is not a mark this store said');
+    }
+    return answer(200, await store.changes(mark));
   }
   /* A POST of a query IS a query: the fallback where a proxy refuses QUERY, with
      the same body. Any other POST adds a row. Will, 2026-11-02 */
@@ -345,15 +432,27 @@ async function read(request: Request): Promise<{ value: unknown } | { problem: R
   }
 }
 
-/** A JSON answer. A 204 has no body. */
-function answer(status: number, value: unknown, headers: Record<string, string> = {}): Response {
-  const head = { 'Sherpa-Data': String(DATA_VERSION), ...headers };
+/** A JSON answer, never kept by a cache: the data is the store's, and may be one
+ *  reader's alone. A 204 has no body. */
+function answer(status: number, value: unknown, headers: Record<string, string> = {}, type = 'application/json'): Response {
+  const head = { 'Sherpa-Data': String(DATA_VERSION), 'Cache-Control': 'no-store', ...headers };
   if (status === 204) return new Response(null, { status, headers: head });
-  return new Response(JSON.stringify(value), { status, headers: { ...head, 'Content-Type': 'application/json' } });
+  return new Response(JSON.stringify(value), { status, headers: { ...head, 'Content-Type': type } });
 }
 
-/** An answer that says what went wrong, as a `Failure`'s kind and message — and
- *  a refused write's `issues`, by field. */
-function problem(status: number, kind: string, message: string, headers: Record<string, string> = {}, more: Record<string, unknown> = {}): Response {
-  return answer(status, { error: { kind, message, ...more } }, headers);
+/** The status a failure crosses as, where its store gave none: offline is the host
+ *  unable to reach its source, never the host failing. */
+const STATUS: Record<FailureKind, number> = { offline: 503, timeout: 504, server: 500, refused: 403, conflict: 409, invalid: 422, unknown: 500 };
+
+/** Each kind's title: what a reader of the problem is told. */
+const TITLES: Record<FailureKind, string> = {
+  offline: 'The data could not be reached', timeout: 'The data took too long to answer', server: 'The data failed to answer',
+  refused: 'The request was refused', conflict: 'A newer change won', invalid: 'The request is not one the data takes', unknown: 'The data failed',
+};
+
+/** An answer that says what went wrong (RFC 9457): its kind kept, and a refused
+ *  write's `issues`, by field. TRAP T-a-refusal-keeps-its-kind */
+function problem(status: number, kind: FailureKind, detail: string, headers: Record<string, string> = {}, more: { issues?: Issue[] } = {}): Response {
+  const said: Problem = { type: `tag:sherpa-ui,2026:${kind}`, title: TITLES[kind], status, detail, kind, ...more };
+  return answer(status, said, headers, PROBLEM_TYPE);
 }

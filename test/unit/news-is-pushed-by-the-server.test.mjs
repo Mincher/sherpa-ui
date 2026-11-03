@@ -90,7 +90,7 @@ test('a gap rechecks every store the worker serves, once', async () => {
   const asked = [];
   const store = (name) => ({ key: 'id', recheck: async () => { asked.push(name); }, load: async () => ({ rows: [], total: 0 }) });
   const handle = createDataHandler({ stores: defineStores(() => ({ customers: store('customers'), alerts: store('alerts') })) });
-  const response = await handle(new Request('http://app/sherpa/data/?recheck'));
+  const response = await handle(new Request('http://app/sherpa/data/?recheck', { method: 'POST' }));
   assert.equal(response.status, 204);
   assert.deepEqual(asked.sort(), ['alerts', 'customers']);
 });

@@ -150,17 +150,20 @@ export {
   DATA_BASE,
   DATA_QUERY_TYPE,
   DATA_VERSION,
+  PROBLEM_TYPE,
   createDataHandler,
   decodeQuery,
   encodeQuery,
   keySegment,
+  type CorsPolicy,
   type DataHandler,
   type DataHandlerOptions,
   type DataQuery,
+  type Problem,
   type StoreFacts,
 } from './core/data/data-handler.js';
-// An app's stores, said once for every host; a request may pick among several of one name. TRAP T-a-request-picks-its-stores
-export { defineStores, type DefinedStore, type StoreChoice, type StoreDefinition, type StoreSet } from './core/data/define-stores.js';
+// An app's stores, said once for every host; a request may pick among several of one name, or have its own made. TRAP T-a-request-picks-its-stores
+export { defineStores, type DefinedStore, type StoreChoice, type StoreDefinition, type StoreFactory, type StoreSet } from './core/data/define-stores.js';
 // A store reached by that protocol: a handler in the page, then a Service Worker. Plan 652 S2
 export { RequestStore, openRequestStore, type RequestStoreOptions } from './core/data/request-store.js';
 // A remote store's ONE held set: a Service Worker's for every tab, or a page's own. Plan 652 S5b
@@ -172,7 +175,7 @@ export { memoryOutbox, outboxEntry, type OutboxEntry, type OutboxPort } from './
 // What is new, said to every tab: a fact, never a request to show it. Plan 652 S6
 export { NOTICE_CHANNEL, sayNotice, type UpdateNotice, type WorkerAsk } from './core/data/notices.js';
 export { Updates, type NewsKind, type UpdatesDetail } from './core/data/updates.js';
-export { updatesFeed, type FeedNotice, type UpdatesFeed } from './core/data/updates-feed.js';
+export { UPDATES_PATH, updatesFeed, type FeedNotice, type UpdatesFeed } from './core/data/updates-feed.js';
 // ONE trace stream: the page's, its worker's and a server's steps, joined by one id. TRAP T-one-trace-stream
 export {
   TRACE_CHANNEL, onTrace, traceStep, tracing, type OpenStep, type Span, type StepOptions, type StepState, type TraceHost,

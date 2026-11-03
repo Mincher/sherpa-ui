@@ -55,14 +55,13 @@ test('a read survives the trip whole: its clock, its fields, its search', () => 
 test('a body that is not a read says why, and the store is never asked', async () => {
   const { ask } = setup();
   for (const [body, why] of [
-    [{ v: 1, filter: ['plan', 'like', 'Pro'] }, /filter/],
-    [{ v: 1, take: -1 }, /take/],
-    [{ v: 2 }, /version/],
-    [{ v: 1, now: 'soon' }, /now/],
+    [{ filter: ['plan', 'like', 'Pro'] }, /filter/],
+    [{ take: -1 }, /take/],
+    [{ now: 'soon' }, /now/],
   ]) {
     const { status, body: said } = await json(await ask('QUERY', 'people', body));
     assert.equal(status, 422);
-    assert.match(said.error.message, why);
+    assert.match(said.detail, why);
   }
   assert.equal((await ask('QUERY', 'people', '{not json')).status, 400);
   const plain = await ask('QUERY', 'people', encodeQuery(), { 'Content-Type': 'application/json' });
@@ -112,7 +111,7 @@ test('a store that fails answers with its failure: its kind, and its status wher
   const { ask } = setup({ down, idb: new IdbStore({ name: 'nowhere', key: 'id' }) });
   const busy = await json(await ask('QUERY', 'down', encodeQuery()));
   assert.equal(busy.status, 503);
-  assert.equal(busy.body.error.kind, 'server');
+  assert.equal(busy.body.kind, 'server');
   // No IndexedDB in Node: the store rejects, and the answer says so rather than throwing.
   const none = await ask('QUERY', 'idb', encodeQuery());
   assert.ok(none.status >= 400);
@@ -135,4 +134,39 @@ test('a POST of a query is answered as the QUERY; a POST of a row still adds it'
   assert.equal(await people.totalCount(), 3);
   assert.equal((await ask('POST', 'people', { id: 7, name: 'Ed', plan: 'Free', seats: 1 }, { 'Content-Type': 'application/json' })).status, 201);
   assert.equal(await people.totalCount(), 4);
+});
+
+// Plan 695 H5: ONE version marker — the header, on every request and answer; the body says none.
+test('the version is one header, on every request and every answer; a query body carries none', async () => {
+  const { ask } = setup();
+  assert.equal('v' in encodeQuery({ take: 1 }), false);
+  for (const [method, path, body] of [['GET', 'people'], ['QUERY', 'people', encodeQuery()], ['GET', 'ghosts'], ['OPTIONS', 'people']]) {
+    assert.equal((await ask(method, path, body)).headers.get('Sherpa-Data'), '1', `${method} ${path}`);
+  }
+  assert.equal((await ask('QUERY', 'people', encodeQuery(), { 'Sherpa-Data': '2' })).status, 400);
+  // A body's own `v` is no marker: it is not read.
+  assert.equal((await ask('QUERY', 'people', { v: 2 })).status, 200);
+});
+
+// Plan 695 H5: an answer is the store's, and may be one reader's alone — no cache keeps it.
+test('no answer is kept by a cache: rows, facts, changes, problems and acts', async () => {
+  const told = { key: 'id', async load() { return { rows: [], total: 0 } }, async changes() { return { at: 1 } } };
+  const { ask } = setup({ told });
+  for (const [method, path, body] of [['QUERY', 'people', encodeQuery()], ['GET', 'people'], ['GET', 'told?since=1'], ['GET', 'ghosts'], ['POST', '?recheck']]) {
+    assert.equal((await ask(method, path, body)).headers.get('Cache-Control'), 'no-store', `${method} ${path}`);
+  }
+});
+
+// Plan 695 H5: a `since` that is not JSON is refused, and the store is never asked.
+test('a since that is no mark is refused before the store is asked', async () => {
+  const asked = [];
+  const told = { key: 'id', async load() { return { rows: [], total: 0 } }, async changes(since) { asked.push(since); return { at: 1 } } };
+  const { ask } = setup({ told });
+  const bad = await ask('GET', `told?since=${encodeURIComponent('{not')}`);
+  assert.equal(bad.status, 400);
+  assert.equal((await bad.json()).kind, 'invalid');
+  assert.deepEqual(asked, []);
+  assert.equal((await ask('GET', `told?since=${encodeURIComponent(JSON.stringify({ at: 'c7' }))}`)).status, 200);
+  assert.equal((await ask('GET', 'told?since=')).status, 200);
+  assert.deepEqual(asked, [{ at: 'c7' }, undefined]);
 });

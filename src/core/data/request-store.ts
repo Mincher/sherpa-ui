@@ -9,7 +9,7 @@
  * - openRequestStore — A request store, with its facts asked first.
  */
 import { BaseStore } from './base-store.js';
-import { DATA_BASE, DATA_CHANNEL, DATA_QUERY_TYPE, DATA_VERSION, STALE, encodeQuery, keySegment, writeHeaders, type DataQuery, type StoreFacts } from './data-handler.js';
+import { DATA_BASE, DATA_CHANNEL, DATA_QUERY_TYPE, DATA_VERSION, STALE, encodeQuery, keySegment, writeHeaders, type DataQuery, type Problem, type StoreFacts } from './data-handler.js';
 import { failureOf, type Failure } from './failure.js';
 import { HttpError } from './stores.js';
 import { readField, type LoadOptions, type LoadResult, type Row, type StoreChangeDetail, type StoreChanges, type WriteOptions } from './store.js';
@@ -81,9 +81,10 @@ export class RequestStore extends BaseStore {
     if (this.capabilities.holds) {
       this.recheck = () => (this.#rechecking ??= Promise.resolve().then(() => {
         this.#rechecking = null;
-        return this.#ask<undefined>('GET', '?recheck').then(() => undefined);
+        return this.#ask<undefined>('POST', '?recheck').then(() => undefined);
       }));
-      this.take = () => this.#ask<{ took: boolean }>('GET', '?take').then((said) => !!said?.took);
+      // An act that changes state is a POST. TRAP T-an-act-is-a-post
+      this.take = () => this.#ask<{ took: boolean }>('POST', '?take').then((said) => !!said?.took);
     }
     if (facts.distinct && this.capabilities.remote) {
       this.distinct = async (fields, options) => (await this.#query<{ values: Record<string, unknown[]> }>({ ...encodeQuery(options), distinct: [...fields] }, options?.signal)).values;
@@ -181,15 +182,15 @@ export class RequestStore extends BaseStore {
   async #query<T>(query: DataQuery, signal?: AbortSignal, trace?: TraceContext): Promise<T> {
     if (this.#post) return this.#ask<T>('POST', '', query, DATA_QUERY_TYPE, {}, signal, trace);
     try {
-      return await this.#ask<T>('QUERY', '', query, DATA_QUERY_TYPE, {}, signal, trace);
+      return await this.#ask<T>('QUERY', '', query, DATA_QUERY_TYPE, {}, signal, trace, false);
     } catch (error) {
       const refused = error instanceof HttpError && (error.status === 405 || error.status === 501);
       if (!refused && failureOf(error).kind !== 'offline') throw error;
       let answer: T;
       try {
-        answer = await this.#ask<T>('POST', '', query, DATA_QUERY_TYPE, {}, signal, trace);
+        answer = await this.#ask<T>('POST', '', query, DATA_QUERY_TYPE, {}, signal, trace, false);
       } catch {
-        throw error;
+        throw await refusalOf(error, this.#url, this.#send);
       }
       this.#post = true;
       return answer;
@@ -197,10 +198,10 @@ export class RequestStore extends BaseStore {
   }
 
   /** One request, its answer as JSON. A refusal throws as the store's own error
-   *  would: a write's issues as a `ValidationError`, else an `HttpError`. Traced,
-   *  it carries its span as `traceparent`, and its host's spans join it. TRAP T-one-trace-stream */
+   *  would, its kind kept (TRAP T-a-refusal-keeps-its-kind). Traced, it carries its
+   *  span as `traceparent`, and its host's spans join it. TRAP T-one-trace-stream */
   async #ask<T>(
-    method: string, tail: string, body?: unknown, type = 'application/json', more: Record<string, string> = {}, signal?: AbortSignal, trace?: TraceContext,
+    method: string, tail: string, body?: unknown, type = 'application/json', more: Record<string, string> = {}, signal?: AbortSignal, trace?: TraceContext, probe = true,
   ): Promise<T> {
     const url = this.#url + tail;
     // Under the read that asked it, passed: a span cannot cross an `await`.
@@ -216,19 +217,35 @@ export class RequestStore extends BaseStore {
       }));
     } catch (error) {
       span?.end({ failed: failureOf(error).kind });
-      throw error;
+      throw probe ? await refusalOf(error, this.#url, this.#send) : error;
     }
     span?.end({ status: response?.status ?? 404 });
     if (!response) throw new HttpError(404, 'no data handler answered', url);
     const stale = response.headers.get(STALE);
     this.#stale = stale ? (JSON.parse(decodeURIComponent(stale)) as Failure) : null;
-    if (!response.ok) {
-      const said = (await response.json().catch(() => null)) as { error?: { message?: string; issues?: Issue[] } } | null;
-      if (said?.error?.issues?.length) throw new ValidationError(said.error.issues);
-      throw new HttpError(response.status, said?.error?.message ?? response.statusText, url);
-    }
+    if (!response.ok) throw await problemOf(response, url);
     return (response.status === 204 ? undefined : await response.json()) as T;
   }
+}
+
+/** A refusal as the store's own error: a write's issues as a `ValidationError`, else
+ *  an `HttpError` that keeps the kind its host said, so an offline host reads as
+ *  offline, not as a failing one. TRAP T-a-refusal-keeps-its-kind */
+async function problemOf(response: Response, url: string): Promise<Error> {
+  const said = (await response.json().catch(() => null)) as Partial<Problem> | null;
+  if (said?.issues?.length) return new ValidationError(said.issues);
+  const error = new HttpError(response.status, said?.detail ?? response.statusText, url);
+  return typeof said?.kind === 'string' ? Object.assign(error, { kind: said.kind }) : error;
+}
+
+/** A request that failed at the network to another origin, whose host still answers
+ *  a plain `GET` (no preflight, an opaque answer): its policy refused this origin, so
+ *  it is `refused`, never offline. TRAP T-a-preflight-is-the-apps-to-answer */
+async function refusalOf(error: unknown, url: string, send: RequestStoreOptions['send']): Promise<unknown> {
+  const here = (globalThis as { location?: { origin?: string } }).location?.origin;
+  if (failureOf(error).kind !== 'offline' || !here || new URL(url).origin === here) return error;
+  const reached = await send(new Request(url, { mode: 'no-cors' })).then(() => true, () => false);
+  return reached ? Object.assign(new Error(`${url} refused a request from ${here}: its CORS policy`), { name: 'RefusedError', kind: 'refused' }) : error;
 }
 
 /** A store's URL, by its name under `base` on `origin`. */
@@ -240,7 +257,13 @@ function urlOf(options: RequestStoreOptions): string {
 /** A request store, with its facts asked first: they are read at once, as a store's are. */
 export async function openRequestStore(options: RequestStoreOptions): Promise<RequestStore> {
   const url = urlOf(options);
-  const response = await options.send(new Request(url, { method: 'GET', headers: { ...options.headers?.(), 'Sherpa-Data': String(DATA_VERSION) } }));
-  if (!response?.ok) throw new HttpError(response?.status ?? 404, response?.statusText || 'no data handler answered', url);
+  let response: Response | null;
+  try {
+    response = await options.send(new Request(url, { method: 'GET', headers: { ...options.headers?.(), 'Sherpa-Data': String(DATA_VERSION) } }));
+  } catch (error) {
+    throw await refusalOf(error, url, options.send);
+  }
+  if (!response) throw new HttpError(404, 'no data handler answered', url);
+  if (!response.ok) throw await problemOf(response, url);
   return new RequestStore(options, (await response.json()) as StoreFacts);
 }

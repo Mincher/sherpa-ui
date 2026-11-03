@@ -19,12 +19,17 @@ export interface Failure {
   readonly status?: number;
 }
 
-/** The kind of a thrown error, read by its shape: an `HttpError`'s `status`, a
- *  name a platform or Sherpa gives. Nothing is imported, so any store's errors count. */
+/** Every kind, as a far side may say one. */
+const KINDS: ReadonlySet<unknown> = new Set<FailureKind>(['offline', 'timeout', 'server', 'refused', 'conflict', 'invalid', 'unknown']);
+
+/** The kind of a thrown error, read by its shape: the `kind` its far side said
+ *  (TRAP T-a-refusal-keeps-its-kind), an `HttpError`'s `status`, a name a platform
+ *  or Sherpa gives. Nothing is imported, so any store's errors count. */
 export function failureOf(error: unknown): Failure {
-  const { name, status, message } = (error ?? {}) as { name?: unknown; status?: unknown; message?: unknown };
+  const { name, status, message, kind } = (error ?? {}) as { name?: unknown; status?: unknown; message?: unknown; kind?: unknown };
   const text = typeof message === 'string' ? message : String(error);
   const at = (kind: FailureKind): Failure => (typeof status === 'number' ? { kind, message: text, status } : { kind, message: text });
+  if (KINDS.has(kind)) return at(kind as FailureKind);
   if (name === 'TimeoutError') return at('timeout');
   if (typeof status === 'number') {
     if (status === 408 || status === 504 || status === 524) return at('timeout');

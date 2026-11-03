@@ -9,12 +9,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ArrayStore, DATA_BASE, HeldStore, createDataHandler, defineStores, fakeRemote, openRequestStore,
+  ArrayStore, DATA_BASE, HeldStore, RestStore, createDataHandler, defineStores, fakeRemote, heldOf, openRequestStore,
 } from '../../dist/data.js';
 
 const settle = () => new Promise((done) => setTimeout(done, 30));
-/** The headers Sherpa's own protocol reads; nothing else of a request is its. */
-const SHERPAS = new Set(['traceparent', 'sherpa-data', 'content-type', 'if-unmodified-since']);
+/** The headers Sherpa's own protocol reads — a CORS policy's too; nothing else of a request is its. */
+const SHERPAS = new Set(['traceparent', 'sherpa-data', 'content-type', 'if-unmodified-since', 'origin', 'access-control-request-method']);
 
 /** Two stores under one name, picked by the app's own header. */
 function app() {
@@ -76,7 +76,7 @@ test('Sherpa never reads an app header: only its own protocol\'s', async () => {
   };
   const all = [
     await ask({ method: 'GET' }),
-    await ask({ method: 'QUERY', headers: { 'Content-Type': 'application/vnd.sherpa.query+json' }, body: JSON.stringify({ v: 1 }) }),
+    await ask({ method: 'QUERY', headers: { 'Content-Type': 'application/vnd.sherpa.query+json' }, body: JSON.stringify({}) }),
     await ask({ method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ owner: 'Di' }) }, '/1'),
   ];
   assert.deepEqual(all.map((a) => a.status), [200, 200, 200]);
@@ -123,7 +123,7 @@ test('a check behind is the name\'s: every store under it that holds a set reads
   const recheck = held.recheck.bind(held);
   held.recheck = () => { checked++; return recheck(); };
   // A feed's word carries no app header: the pick names the local store, and the held one is still checked.
-  const response = await handle(new Request(`http://app${DATA_BASE}people?recheck`));
+  const response = await handle(new Request(`http://app${DATA_BASE}people?recheck`, { method: 'POST' }));
   assert.equal(response.status, 204);
   assert.equal(checked, 1);
 });
@@ -140,4 +140,63 @@ test('a store made once, at the first ask: a page a worker answers makes none', 
   await handle(new Request(`http://app${DATA_BASE}people`));
   await handle(new Request(`http://app${DATA_BASE}people`));
   assert.equal(made, 1);
+});
+
+/* A STORE MADE PER REQUEST — plan 695 H5: a server wraps each request's own sign-in
+   into its store, here one that sends it upstream. The app reads the request; Sherpa
+   reads only its own protocol's headers, and never holds such a store. */
+function upstream(t) {
+  const was = globalThis.fetch;
+  t.after(() => { globalThis.fetch = was; });
+  const heard = [];
+  globalThis.fetch = async (url, init = {}) => {
+    heard.push(new Headers(init.headers).get('Authorization'));
+    return new Response(JSON.stringify({ data: [{ id: 1, owner: 'Ada' }], total: 1 }), { status: 200, headers: { 'content-type': 'application/json' } });
+  };
+  let made = 0;
+  const stores = defineStores(() => ({
+    // The app's factory: the request's own sign-in, read by the app, sent upstream.
+    orders: (request) => {
+      made++;
+      const auth = Headers.prototype.get.call(request.headers, 'Authorization');
+      return new RestStore({ url: 'https://upstream.test/orders', key: 'id', rowsPath: 'data', totalPath: 'total', init: { headers: auth ? { Authorization: auth } : {} } });
+    },
+  }));
+  return { stores, heard, made: () => made };
+}
+
+test('a store made per request sends that request\'s sign-in upstream; Sherpa reads none of it', async (t) => {
+  const { stores, heard, made } = upstream(t);
+  const handle = createDataHandler({ stores, host: 'server' });
+  const ask = async (token, init = {}) => {
+    const request = new Request(`https://api.test${DATA_BASE}orders`, {
+      method: 'QUERY', ...init, headers: { 'Content-Type': 'application/vnd.sherpa.query+json', Authorization: `Bearer ${token}`, 'Sherpa-Data': '1' }, body: '{}',
+    });
+    const read = spied(request);
+    const response = await handle(request);
+    return { read: [...read], status: response.status, body: await response.json() };
+  };
+  const ada = await ask('ada');
+  const bo = await ask('bo');
+  assert.deepEqual([ada.status, bo.status], [200, 200]);
+  assert.deepEqual(ada.body.rows, [{ id: 1, owner: 'Ada' }]);
+  assert.deepEqual(heard, ['Bearer ada', 'Bearer bo'], 'each request\'s own sign-in went upstream');
+  assert.equal(made(), 2, 'one store for each request');
+  for (const { read } of [ada, bo]) assert.deepEqual(read.filter((name) => !SHERPAS.has(name)), [], `it read only its own: ${read}`);
+});
+
+test('a store made per request is never held, never heard, never handed out', async (t) => {
+  const { stores, made } = upstream(t);
+  assert.deepEqual(stores.all(), [], 'none is made until a request asks');
+  assert.ok(stores.has('orders'));
+  const worker = stores.through(({ store }) => heldOf(store) ?? store);
+  const one = worker.pick('orders', new Request('https://api.test/'));
+  const two = worker.pick('orders', new Request('https://api.test/'));
+  assert.notEqual(one.store, two.store);
+  assert.equal(one.store instanceof HeldStore, false, 'a held set per request would read upstream on every ask');
+  assert.equal(made(), 2);
+  // A check behind has nothing of it to read: it answers, and asks upstream nothing.
+  const handle = createDataHandler({ stores });
+  assert.equal((await handle(new Request(`https://api.test${DATA_BASE}orders?recheck`, { method: 'POST' }))).status, 204);
+  assert.equal(made(), 2);
 });
