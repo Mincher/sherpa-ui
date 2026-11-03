@@ -27,6 +27,7 @@
  * - .pendAll — Every place told it.
  * - .drawApplied — What each field that waits holds applied: a section marks only what its draft changed.
  * - .drawResults — Each field's results, and the rows the scope's filters leave: every chip's badge.
+ * - .resultAll — Every chip's badge again, from what it was told.
  * - .results — A field's results, as shown: none while its host shows none.
  * - .end — The rows the scope's filters leave, while one is in force.
  * - .drawValueResults — Each picked value's results, by field.
@@ -34,6 +35,7 @@
  * - .countAll — Every chip that lays out its values given its counts.
  * - .drawReading — One field's answer, told: drawn now, or once its place has drawn itself.
  * - .drawWaiting — A field's answer still waiting for its place, drawn now.
+ * - .draw — One answer drawn now, unless it is what the field holds.
  * - .reading — What a field holds, as drawn or set.
  * - .drawn — What a field was last drawn: undefined, never; null, empty.
  * - .keep — A field's reading set here, as it was drawn.
@@ -249,6 +251,11 @@ export class FilterHostController {
   drawResults(results: Counts, _scope?: string, end?: number): void {
     this.#results = results;
     this.#end = end;
+    this.resultAll();
+  }
+
+  /** Every chip's badge again, from what it was told. */
+  resultAll(): void {
     for (const { field, chip } of this.#host.places()) chip.results = this.results(field) ?? this.results(chip.dataset['id'] ?? '') ?? null;
   }
 
@@ -300,12 +307,12 @@ export class FilterHostController {
       void this.#host.settled?.().then(() => {
         if (this.#waiting.get(field) !== held) return;
         this.#waiting.delete(field);
-        if (!this.heldAbove(field) && !this.#host.drafting?.(field)) this.#draw(field, reading);
+        if (!this.heldAbove(field) && !this.#host.drafting?.(field)) this.draw(field, reading);
       });
       return;
     }
     this.#waiting.delete(field);
-    this.#draw(field, reading);
+    this.draw(field, reading);
   }
 
   /** A field's answer still waiting for its place, drawn NOW — before the reader acts on it. TODO 426 */
@@ -313,13 +320,13 @@ export class FilterHostController {
     const held = this.#waiting.get(field);
     if (!held) return;
     this.#waiting.delete(field);
-    if (!this.heldAbove(field)) this.#draw(field, held.reading);
+    if (!this.heldAbove(field)) this.draw(field, held.reading);
   }
 
-  /** One answer drawn, unless it is what the field holds: its picks in any order are
-   *  the same (TODO 523 F8). Never drawn, a draft in its open menu keeps it — or, with
-   *  no menu to draft in, an empty answer draws nothing. TRAP T-grid-suspend-is-not-clear */
-  #draw(field: string, reading: FieldReading): void {
+  /** One answer drawn now, unless it is what the field holds: its picks in any order
+   *  are the same (TODO 523 F8). Never drawn, a draft in its open menu keeps it — or,
+   *  with no menu to draft in, an empty answer draws nothing. TRAP T-grid-suspend-is-not-clear */
+  draw(field: string, reading: FieldReading): void {
     const said = readingAnswered(reading) ? { ...reading } : null;
     const was = this.#readings.get(field);
     if (was === undefined ? this.#host.drafting?.(field) ?? !said : sameReading(was, said)) return;

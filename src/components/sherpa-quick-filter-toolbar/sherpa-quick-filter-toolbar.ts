@@ -21,11 +21,12 @@ import {
   saveRows, syncHide,
   type MoreRow,
 } from '../../core/ui/more-menu.js';
-import { answerWhenDrawn, arrangeFrom, drawCount, markHeld, limitField, markField, NextFrame, organiseOf, organiseOptions, pendingFields } from '../../core/ui/filter-host.js';
+import { answerWhenDrawn, arrangeFrom, drawCount, limitField, NextFrame, organiseOf, organiseOptions } from '../../core/ui/filter-host.js';
+import { FilterHostController, type FieldPlace } from '../../core/ui/filter-host-controller.js';
 import { report } from '../../core/data/report.js';
 import { countSaid } from '../../core/data/filter-face.js';
 import { DEFAULT_OP, valueKey, type SortDirection } from '../../core/data/store.js';
-import { VIEW, readingAnswered, sameReading, type QueryRequest } from '../../core/data/query.js';
+import { VIEW, readingAnswered, type QueryRequest } from '../../core/data/query.js';
 import {
   answeredCondition, modeOf,
   type FieldReading,
@@ -53,9 +54,6 @@ const ORDER_BY = 'value';
 
 /** A filter chip, in the run or in a set. TRAP T-a-filter-set-groups-or-chains */
 const CHIP = '.chips > .chip';
-
-/** What the scope above holds, as last told. */
-type Above = { ids: readonly string[]; readings: Readonly<Record<string, FieldReading>>; at?: string };
 
 /** The columns the leading Group / Sort chips offer. */
 export interface OrganiseDef {
@@ -753,10 +751,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Paint every chip from a whole map; with no chips yet, held. */
   #paintValues(next: Record<string, readonly string[]>): void {
-    this.#painted.clear();
+    this.#filter.forget();
     // The WHOLE set, so it replaces every steer held before it.
     if (!this.#chips().length) {
-      this.#held = { values: { ...next }, chips: new Map(), ...(this.#held.supersede ? { supersede: this.#held.supersede } : {}) };
+      this.#held = { values: { ...next }, chips: new Map() };
       return;
     }
     for (const chip of this.#chips()) {
@@ -804,7 +802,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Paint ONE chip's picks; with no chips yet, held. */
   #paintPicks(id: string, picks: readonly string[]): void {
-    this.#painted.delete(id);
+    this.#filter.forget(this.#fieldOf(id));
     if (!this.#chips().length) {
       this.#held.chips.set(id, { picks: [...picks] });
       return;
@@ -845,6 +843,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   setChipReading(id: string, reading: FieldReading): void {
     const painted = this.#chips().length > 0;
+    this.#filter.forget(this.#fieldOf(id));
     this.#paintReading(id, reading);
     this.#askDoor([id], painted ? undefined : { [id]: reading });
   }
@@ -852,7 +851,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** Paint ONE chip's reading — a door's, or a source's draw; with no chips yet, held.
    *  A draw never goes through a door, so it never becomes a request. 366 step 21 */
   #paintReading(id: string, reading: FieldReading): void {
-    this.#painted.delete(id);
     if (!this.#chips().length) {
       this.#held.chips.set(id, { reading: { ...reading } });
       return;
@@ -865,32 +863,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * PENDING: a field its source says waits (`data-pending`) — this bar is the
-   * one writer of the chip's flag. A draft in its own open menu is the chip's
-   * own to show (TODO 415). Locally a menu never waits, so nothing is ever
-   * pending there. Will, 2026-09-26 (TODO 46). TRAP T-a-pending-chip-reads-as-a-warning
-   */
-  #syncPending(): void {
-    const waiting = pendingFields(this);
-    const failed = pendingFields(this, 'failed');
-    for (const chip of this.#chips()) {
-      const field = this.#fieldOf(chip.dataset['id'] ?? '');
-      // A SECTION is marked by its values, never its heading: they know what changed. TODO 425
-      const section = chip.dataset['layout'] === 'section' ? { changed: new Set<Element>() } : {};
-      markField([chip], [chip.menu], { pending: waiting.has(field), failed: failed.has(field), ...section });
-    }
-  }
-
-  /**
    * drawApplied(applied) — a bound source says what each field that waits for
    * Apply holds APPLIED: a section marks only the values its draft changed.
    * SILENT. TODO 425 · TRAP T-a-pending-chip-reads-as-a-warning
    */
   drawApplied(applied: Readonly<Record<string, FieldReading>>): void {
-    for (const chip of this.#chips()) {
-      const field = this.#fieldOf(chip.dataset['id'] ?? '');
-      if (chip.dataset['layout'] === 'section') chip.applied = applied[field] ?? null;
-    }
+    this.#filter.drawApplied(applied);
   }
 
   /**
@@ -898,34 +876,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * then value: a section's value chips wear them. SILENT. TODO 425
    */
   drawValueResults(results: Readonly<Record<string, Readonly<Record<string, number>>>>): void {
-    this.#valueResults = results;
-    this.#drawValueResults();
-  }
-  /** Each field's value counts, as the source last said. */
-  #valueResults: Readonly<Record<string, Readonly<Record<string, number>>>> = {};
-
-  /** Give each chip that lays out its values its field's value counts — a chart's
-   *  legend, its chart's numbers; any other, none. */
-  #drawValueResults(): void {
-    const results = this.hasAttribute('data-no-results') ? {} : this.#valueResults;
-    for (const chip of this.#chips()) {
-      const field = this.#fieldOf(chip.dataset['id'] ?? '');
-      const laid = chip.dataset['layout'] === 'section' || chip.dataset['layout'] === 'values';
-      const shown = laid || this.hasAttribute('data-every-count');
-      const legend = chip.dataset['layout'] === 'values' ? this.#counts.get(field) : undefined;
-      chip.valueResults = shown ? legend ?? results[field] ?? null : null;
-    }
+    this.#filter.drawValueResults(results);
   }
 
   /** drawCounts(field, counts) — a chart's legend drawn here: each value's number,
    *  as its chart counts it, for its value chip's badge; null lets it go. Will, TODO 670 */
   drawCounts(field: string, counts: Readonly<Record<string, number>> | null): void {
-    if (counts) this.#counts.set(field, { ...counts });
-    else this.#counts.delete(field);
-    this.#drawValueResults();
+    this.#filter.drawCounts(field, counts);
   }
-  /** Each legend's numbers, by field, as its provider last said. */
-  #counts = new Map<string, Readonly<Record<string, number>>>();
 
   /**
    * drawResults(results, scope, end) — each answered chip's results, from its
@@ -934,26 +892,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * none shows no number. Will, TODO 60. TRAP T-a-chip-counts-within-the-filters-before-it
    */
   drawResults(results: Readonly<Record<string, number>>, _scope?: string, end?: number): void {
-    this.#results = results;
-    this.#end = end;
-    const shown = this.#shownResults;
-    for (const chip of this.#chips()) {
-      const id = chip.dataset['id'] ?? '';
-      const field = this.#fieldOf(id);
-      chip.results = shown[field] ?? shown[id] ?? null;
-    }
+    this.#filter.drawResults(results, undefined, end);
+    this.#syncResults();
+  }
+
+  /** What else wears the results: the shut scope's badge, and a folded chip's row. TODO 677 */
+  #syncResults(): void {
     this.#syncScopeBadge();
-    // A folded chip's row wears its badge too. TODO 677
     if (this.#folded.length) this.#syncFoldedBadges();
   }
-
-  /** The counts it shows: none while `data-no-results`. TODO 436 */
-  get #shownResults(): Readonly<Record<string, number>> {
-    return this.hasAttribute('data-no-results') ? {} : this.#results;
-  }
-
-  /** The rows its filters leave, as its source counts them; none while none is in force. */
-  #end: number | undefined;
 
   /** A SHUT portrait section's badge: the rows its filters leave, and each
    *  one's in its tip, as a panel's shut scope says them. TODO 425 */
@@ -963,10 +910,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (!tip || !badge) return;
     const answered = this.#chips().flatMap((chip) => {
       const def = this.#defOf(chip);
-      const n = def ? this.#shownResults[def.field ?? def.id] ?? this.#shownResults[def.id] : undefined;
+      const n = def ? this.#filter.results(def.field ?? def.id) ?? this.#filter.results(def.id) : undefined;
       return def && n != null && !chip.hasAttribute('data-persistent') ? [{ label: def.label, n }] : [];
     });
-    drawCount(badge, this.hasAttribute('data-no-results') ? undefined : this.#end, ['match', 'matches']);
+    drawCount(badge, this.hasAttribute('data-no-results') ? undefined : this.#filter.end, ['match', 'matches']);
     tip.dataset['text'] = answered.map((one) => `${one.label} - ${countSaid(one.n, ['match', 'matches']).label}`).join('\n');
   }
 
@@ -1033,8 +980,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   drawPresent(present: Readonly<Record<string, readonly string[]>>, scope?: string): void {
     if (this.#columned) return scope ? this.#column.present(present, scope) : undefined;
-    this.#present = present;
-    for (const chip of this.#chips()) this.#markPresent(chip);
+    this.#filter.drawPresent(present);
     // The Add list is drawn again only when a field's being spent moved.
     if (this.#spentKey() !== this.#spentFor) this.#renderAvailable();
   }
@@ -1042,15 +988,34 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** drawOffered(offered) — what each serial-set field OFFERS: its menu
    *  removes the rest, but keeps a pick. TRAP T-a-filter-set-groups-or-chains */
   drawOffered(offered: Readonly<Record<string, readonly string[]>>): void {
-    this.#offered = offered;
-    for (const chip of this.#chips()) this.#markPresent(chip);
+    this.#filter.drawOffered(offered);
   }
-  /** What each chained field offers, as last drawn. */
-  #offered: Readonly<Record<string, readonly string[]>> = {};
-  /** What the filters before each field leave, as the source last said. */
-  #present: Readonly<Record<string, readonly string[]>> = {};
-  /** Each chip's results, as the source last said — a rebuilt chip is given them. */
-  #results: Readonly<Record<string, number>> = {};
+
+  /** What it is told and holds, by field: limits, what the View holds, results, each
+   *  chip's answer as drawn. Plan 695 P2 */
+  readonly #filter = new FilterHostController({
+    el: this,
+    places: () => this.#places(),
+    paint: (field, reading) => {
+      const id = this.#idOf(field);
+      this.#paintReading(id, reading);
+      // OFF keeps the answer and applies none of it. TRAP T-grid-suspend-is-not-clear
+      if (reading.suspended) this.#setChipActive(id, false);
+    },
+    drafting: (field) => this.#drafting(this.#idOf(field)),
+    // A chip just ADDED stamps its menu a moment later. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
+    ready: (field) => {
+      const chip = this.#chipById(this.#idOf(field));
+      const menu = chip?.menu;
+      return !chip || (!!chip.shadowRoot?.childElementCount && (!menu || !!menu.shadowRoot?.childElementCount));
+    },
+    settled: () => this.#settled(),
+  });
+
+  /** Each chip in the run, by the field it answers. */
+  *#places(): Iterable<FieldPlace> {
+    for (const chip of this.#chips()) yield { field: this.#fieldOf(chip.dataset['id'] ?? ''), chip };
+  }
 
   /**
    * savedSets — the reader's saved sets of filters. The Filters menu's Saved
@@ -1080,7 +1045,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #held: {
     values?: Record<string, readonly string[]>;
     chips: Map<string, { picks: readonly string[] } | { reading: FieldReading }>;
-    supersede?: Above;
   } = { chips: new Map() };
 
   /** What `values` will report once the held steers land. */
@@ -1091,24 +1055,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const picks = 'picks' in steer ? steer.picks : steer.reading.suspended ? [] : steer.reading.picked ?? [];
       out.set(id, picks.map(valueKey));
     }
-    for (const id of this.#held.supersede?.ids ?? []) out.delete(id);
+    for (const field of this.#filter.heldFields) out.delete(field);
     return Object.fromEntries([...out].filter(([, picks]) => picks.length));
-  }
-
-  /** One chip's menu, told what the filters before its field leave. The chip
-   *  itself is never greyed for it: a filter whose every pick is ruled out stays
-   *  in force and wears 0 (Will, 2026-10-20). TRAP T-a-ruled-out-value-is-greyed */
-  #markPresent(chip: HTMLElement): void {
-    const id = chip.dataset['id'] ?? '';
-    const field = this.#fieldOf(id);
-    if (!(chip as SherpaQuickFilter).menu || chip.hasAttribute('data-superseded')) return;
-    // A section's value chips are greyed too. TODO 425
-    // What a preset holds is its own: no limit rules it out. TODO 521
-    const values = [...chip.querySelectorAll<HTMLElement>(':scope > .value:not([data-by-preset])')];
-    limitField(values, [(chip as SherpaQuickFilter).menu],
-      { present: this.#present[field] ?? null, offered: this.#offered[field] ?? null, hide: hidesUnmatched(this) });
-    // Every value hidden: the section says why, not an empty row. Will, TODO 517
-    chip.toggleAttribute('data-spent', values.length > 0 && values.every((v) => v.hasAttribute('data-removed')));
   }
 
   /**
@@ -1120,57 +1068,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   drawReading(field: string, reading: FieldReading, scope?: string): void {
     // A column's sections are told their own; a chart's, through it. TODO 425, 426
     if (this.#columned) return void (scope && this.#column.drawReading(field, reading, scope));
-    const id = this.#idOf(field);
-    if (this.#supersededId(id)) return;
-    /* A chip just ADDED — a raised field's — stamps its menu a moment later,
-       and an answer drawn before that is lost. It waits for the SAME settle
-       the add's own report waits for, and is queued first — so that report
-       carries the answer instead of clearing it.
-       TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
-    const chip = this.#chipById(id);
-    const menu = (chip as SherpaQuickFilter | undefined)?.menu;
-    if (chip && (!chip.shadowRoot?.childElementCount || (menu && !menu.shadowRoot?.childElementCount))) {
-      /* Only the LATEST held draw of a field lands, and a draw made meanwhile
-         drops it: a stale one put a section's Advanced back to Simple. TODO 426 */
-      const held = { reading };
-      this.#heldDraws.set(id, held);
-      void this.#settled().then(() => {
-        if (this.#heldDraws.get(id) !== held) return;
-        this.#heldDraws.delete(id);
-        if (!this.#supersededId(id) && !this.#drafting(id)) this.#drawChip(id, reading);
-      });
-      return;
-    }
-    this.#heldDraws.delete(id);
-    this.#drawChip(id, reading);
+    if (this.#filter.heldAbove(field)) return;
+    this.#filter.drawReading(field, reading);
   }
-  /** Each field's draw held until its chip's menu has stamped. */
-  #heldDraws = new Map<string, { reading: FieldReading }>();
-
-  /** A field's held draw, drawn NOW — before the reader acts on its menu. */
-  #drawHeld(id: string): void {
-    const held = this.#heldDraws.get(id);
-    if (!held) return;
-    this.#heldDraws.delete(id);
-    if (!this.#supersededId(id)) this.#drawChip(id, held.reading);
-  }
-
-  /** One chip's answer, and whether it is ON. OFF keeps the answer and applies
-   *  none of it. The answer it last painted is not painted again, so an open
-   *  menu keeps its draft. 366 step 22 · TRAP T-grid-suspend-is-not-clear */
-  #drawChip(id: string, reading: FieldReading): void {
-    // The same answer, its picks in any order, is not painted again. TODO 523 F8
-    const said = readingAnswered(reading) ? reading : null;
-    const was = this.#painted.get(id);
-    if (was === undefined ? this.#drafting(id) : sameReading(was, said)) return;
-    this.#paintReading(id, reading);
-    if (reading.suspended) this.#setChipActive(id, false);
-    this.#painted.set(id, said);
-  }
-
-  /** What each chip was last drawn, by id — null for empty. A door's own paint
-   *  drops it; a new chip has none. */
-  #painted = new Map<string, FieldReading | null>();
 
   /** Is the reader working in this chip's menu — open, with a draft not applied? */
   #drafting(id: string): boolean {
@@ -1215,37 +1115,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-a-superseded-chip-suspends-it-is-never-removed
    */
   supersede(readings: Readonly<Record<string, FieldReading>>, appliedAt?: string): void {
-    // KEPT, so a chip a rebuild remakes is held above again. Will, TODO 479
-    const ids = Object.keys(readings);
-    this.#above = { ids, readings, ...(appliedAt ? { at: appliedAt } : {}) };
-    if (!this.#chips().length) {
-      this.#held.supersede = this.#above;
-      return;
-    }
-    // By field or by id: a chip named for its question answers its def's field.
-    const taken = new Map(ids.map((f) => [this.#idOf(f), readings[f]!]));
-    for (const chip of this.#chips()) {
-      const id = chip.dataset['id'];
-      if (!id) continue;
-      const held = taken.get(id);
-      const was = chip.hasAttribute('data-superseded');
-      /* WHERE it is filtered instead. Only the host knows — this bar cannot
-         see the one that took the field. An off chip with no explanation reads
-         as "your filter vanished".
-         TRAP T-an-inactive-chip-says-where-its-filter-went */
-      markHeld(chip, !!held, appliedAt);
-      // A preset's hold on it there shows here too: the Query says so, not the preset's chip. TODO 613
-      if (held) (chip as SherpaQuickFilter).presets = held.byPreset;
-      else if (was) (chip as SherpaQuickFilter).presets = undefined;
-    }
+    /* KEPT, so a chip a rebuild remakes is held above again (Will, TODO 479). WHERE
+       it is filtered instead, which only the host knows: an off chip with no
+       explanation reads as "your filter vanished".
+       TRAP T-an-inactive-chip-says-where-its-filter-went */
+    this.#filter.supersede(readings, appliedAt);
+    this.#filter.holdAll();
   }
-
-  /** The fields the View holds, as last told: every rebuild draws them again. */
-  #above: Above | null = null;
 
   /** The ids this bar currently has suspended. */
   get superseded(): string[] {
-    if (!this.#chips().length) return [...this.#held.supersede?.ids ?? []];
+    if (!this.#chips().length) return this.#filter.heldFields;
     return this.#chips()
       .filter((c) => c.hasAttribute('data-superseded'))
       .map((c) => c.dataset['id'] ?? '')
@@ -1297,12 +1177,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** Does a chip answer here: no selector, and not held by a scope above? */
   #answering(chip: HTMLElement): boolean {
     return !chip.hasAttribute('data-persistent') && !chip.hasAttribute('data-superseded');
-  }
-
-  /** Is this chip id held by a scope above — as the bar drew it, or was told before it drew? */
-  #supersededId(id: string): boolean {
-    if (!this.#chips().length) return this.#held.supersede?.ids.includes(id) ?? false;
-    return !!this.$(`${CHIP}[data-id="${CSS.escape(id)}"][data-superseded]`);
   }
 
   /** The field a chip id answers: its def's, else the id itself. */
@@ -1365,7 +1239,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const moved = new Set<string>();
     list.replaceChildren();
     // A chip that stays shows what it was drawn; a new one has been drawn nothing.
-    for (const id of this.#painted.keys()) if (!was.has(id)) this.#painted.delete(id);
+    this.#filter.forget(undefined, new Set([...was.keys()].map((id) => this.#fieldOf(id))));
     /* The allow-list applies to the chips already ON the bar, not only to what
        Add offers: a field a reader may not filter by must not appear at all.
        No list → every filter, which is the default. */
@@ -1437,17 +1311,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if ('picks' in steer) this.#paintPicks(id, steer.picks);
       else this.#paintReading(id, steer.reading);
     }
-    const above = held.supersede ?? this.#above;
-    if (above) this.supersede(above.readings, above.at);
-    this.drawResults(this.#results, undefined, this.#end);
+    this.#filter.holdAll();
+    this.#filter.resultAll();
+    this.#syncResults();
 
     /* THE ADD MENU LISTS WHAT IS HELD, so it follows the run. `populate()` is
        deferred, so a host calling `available()` first had nothing to tick.
        TRAP T-the-add-menu-is-the-whole-list */
     this.#renderAvailable();
-    this.#syncPending();
+    this.#filter.pendAll();
     this.#syncLayout();
-    this.#drawValueResults();
+    this.#filter.countAll();
 
     // A ResizeObserver fires only on a SIZE change; populating is not one, and
     // what fits just changed.
@@ -1526,7 +1400,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     chip.setAttribute('data-menu', '');
     chip.appendChild(menu);
-    this.#markPresent(chip);
+    this.#filter.limit({ field: this.#fieldOf(def.id), chip: chip as SherpaQuickFilter });
   }
 
   /** A chip's condition or typed value changed — its field's answer did too. */
@@ -1768,7 +1642,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         /* A draw held for this menu's first stamp is drawn FIRST — it holds the
            answer the rows carry — then the switch, which it would undo. TODO 426 */
         void Promise.resolve(menu?.rendered).then(() => {
-          this.#drawHeld(owner.dataset['id'] ?? '');
+          this.#filter.drawWaiting(this.#fieldOf(owner.dataset['id'] ?? ''));
           menu?.switchMode?.();
           // Reported NOW, not next frame: a draw in between would put it back.
           this.#emitChange(this.#answerRequest(owner));
@@ -1937,8 +1811,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
     if (name === 'data-applied' || name === 'data-count-applied') this.#drawApplied();
     if (name === 'data-no-results') {
-      this.drawResults(this.#results, undefined, this.#end);
-      this.#drawValueResults();
+      this.#filter.resultAll();
+      this.#syncResults();
+      this.#filter.countAll();
     }
     // A column draws once it opens. TRAP T-a-shut-column-draws-nothing
     if (name === 'open' && this.#columned && this.hasAttribute('open')) this.#column.opened();
@@ -1947,10 +1822,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (name === 'data-move-filters' || name === 'data-allow-solo' || name === 'data-solo-header') this.#redoMoves();
     if (name === 'data-limit-options' || name === 'data-saved-menu' || name === 'data-saveable' || name === 'data-no-saves'
       || name === 'data-node-editor' || name === 'data-suggest' || name === 'data-orientation') this.#syncMore();
-    if (name === 'data-every-count') this.#drawValueResults();
+    if (name === 'data-every-count') this.#filter.countAll();
     if (name === 'data-orientation') {
       this.#syncLayout();
-      this.#drawValueResults();
+      this.#filter.countAll();
       this.#reflow();
     }
     // A Switch it no longer shows — hidden, or the panel answering — gives the filters back.
@@ -1962,14 +1837,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // Local or remote decides which menus wait for Apply, so they are rebuilt.
     if ((name === 'data-remote' || name === 'data-apply-on' || name === 'data-waits' || name === 'data-field-apply')
       && this.#filters.length) this.#render();
-    if (name === 'data-pending' || name === 'data-failed') this.#syncPending();
+    if (name === 'data-pending' || name === 'data-failed') this.#filter.pendAll();
     // Apply is on while something in the scope waits for it. TODO 406
     if (name === 'data-dirty' || name === 'data-waits') {
       for (const btn of this.$$('.apply-all, .discard-all')) btn.toggleAttribute('disabled', !this.hasAttribute('data-dirty'));
     }
     if (name === 'data-locked') for (const chip of [...this.#chips(), ...this.$$<HTMLElement>('.organise-chip')]) this.#lock(chip);
     if (name === 'data-hide-unmatched' || name === 'data-limit-options') {
-      for (const chip of this.#chips()) this.#markPresent(chip);
+      this.#filter.limitAll();
       this.$('.add-btn sherpa-menu')?.toggleAttribute('data-hide-unavailable', hidesUnmatched(this));
       syncHide(this, this.root);
     }
@@ -2025,7 +1900,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #emptyChip(chip: SherpaQuickFilter): void {
     const id = chip.dataset['id'] ?? '';
     this.#pendingAnswers.delete(id);
-    this.#painted.set(id, null);
+    this.#filter.keep(this.#fieldOf(id), null);
     // Back to the condition its def opens on. TRAP T-empty-is-every-kind-of-answer
     chip.clear(this.#defOf(chip)?.op ?? DEFAULT_OP);
   }
@@ -2278,14 +2153,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (!state) continue;
       const id = this.#idOf(field);
       answered.add(id);
-      if (!persistent.has(id)) this.#drawChip(id, state);
+      if (!persistent.has(id)) this.#filter.draw(field, state);
     }
     /* THE WHOLE SCOPE: a chip it does not answer is EMPTY — a View is a clean
        slate. A superseded chip keeps the reader's own picks. TRAP T-a-view-is-json */
     for (const def of this.#filters) {
       const chip = this.#chipById(def.id);
       if (!chip || answered.has(def.id) || persistent.has(def.id)) continue;
-      if (this.#painted.get(def.id) === null || this.#drafting(def.id)) continue;
+      if (this.#filter.drawn(this.#fieldOf(def.id)) === null || this.#drafting(def.id)) continue;
       if (chip.hasAttribute('data-superseded')) continue;
       this.#emptyChip(chip);
     }
@@ -2388,7 +2263,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Is an offered field spent — the source tallied it, and found no value left? */
   #spent(def: FilterDef): boolean {
-    return this.#present[def.field ?? def.id]?.length === 0;
+    return this.#filter.spent(def.field ?? def.id);
   }
 
   /** The offered fields spent now, as one string. */
