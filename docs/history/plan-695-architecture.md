@@ -261,6 +261,11 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   re-reads its whole set. 946 Node tests; 92 store specs in three engines.
   **Carried:** over the wire a store still loses `distinct` and `history` → H2/H5; a
   `HeldStore` recheck can hang if a change lands during its whole read (older) → H2.
+- **The Wave 2 full run** (on `dcd7cc71`, load 50–75): sherpa-ui 3705 passed, none
+  failed; Node 946/946. Demos 890 passed; one spec broke in three engines —
+  `filter-coordination:23` read a number's range as text (D1 types it: fixed in the spec,
+  Demos `fed4aa9`); the other 10 failures pass alone (Firefox under load),
+  but the old `saved-filter:353` (WebKit) and the 800 ms `reopen` bound (TODO 702).
 
 ### The waves
 
