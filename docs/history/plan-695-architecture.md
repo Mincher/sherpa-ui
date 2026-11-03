@@ -393,6 +393,23 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   **Carried:** PRINCIPLES §19 still names `ViewSnapshot`; ARCHITECTURE.md line 33 says
   "drafts"; `query-edits.ts` says "a View's draft" — the integrator's wording pass.
   **Wave 3 is whole.**
+- **N2 ✅, started early (`2dd3f983`, `a6ce6be8`, `cc6af4a5`; Demos `f06d02a`).** One step
+  helper, `traceStep(node, {graph?, parent?, state?, ms?, rows?})` in trace.ts: an S3 span
+  with `detail.node` and `detail.state` (start, then done, failed or skipped), `ms` and
+  `detail.rows`; nothing made with no listener. `QUERY_NODE` is the one id scheme;
+  `queryStepNode` maps S3's spans (a `load` lights the Source; `request`, `answer`, `hold`,
+  `recheck`, `send` the Store); `traceQuerySteps` says the walk's counts by planWalk's step
+  ids; an off condition shows skipped. `watchSteps` sets `data-step` and `data-caption` on
+  each node; `bindQueryEditor` and `bindWorkflow` watch while bound. The look is CSS: a
+  `data-step` Style pin and a caption line over the card. At merge: its spec's worker used
+  the old `createDataHandler({stores: {…}})` — now `defineStores` (H2). Lane picks taken
+  (❓ Will may change them): running is an `info` edge, failed `critical`, skipped an
+  `inactive` fill, done stays plain; time and rows on a caption line over the card; only
+  nodes light, not routes.
+  **Seam → N4:** a run is one trace; the runner calls `traceStep(id, {graph: workflow.id})`
+  and its steps begin under it. **Carried:** S5's `SourceWalk.walked` should call
+  `traceQuerySteps` (then `watchQuery`'s own `walked()` goes), and a `load` span should name
+  its store; status, presentation and component nodes do not light yet; off presets do not.
 
 ### The waves
 
