@@ -339,6 +339,25 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   **Carried → P4 (a lead):** the grid draws its body twice per act — the new reading
   (~65 ms), then the rows (~89 ms, ~50 of it a forced style read in `#readBounds`); one draw
   for reading and rows is the fix. A one-frame wait measured worse.
+- **H2 ✅ (`1e95aa16`, `4e24129a`, `fa2aa960`, `bc4d4b90`, `77353bed`; Demos `7f4b72b`,
+  `e0c7acd`, `b6cb3c4`).** `defineStores(() => ({ name: store | { stores, pick } }))`
+  (`src/core/data/define-stores.ts`): made at a host's first ask; the app's `pick(request)`
+  names the store; Sherpa reads only its own protocol headers (a test watches every header
+  read). `DATA_BASE` the one data path. Each change goes out tagged with its store's name
+  and which of its stores changed; `?recheck` on a name checks every store under it; the
+  change and waiting-rows relays moved from `serveData` into the handler. The recheck hang
+  fixed (`HeldStore.recheck` waits on the read itself), and one recheck in flight per store
+  (an ask after the read is out waits for one more). A `distinct` query crosses the wire
+  for a remote store; `StoreFacts` gains `distinct`, `history` and `as`. `UpdateNotice` and
+  `FeedNotice` are two ideas (a cause one tab acts on; an effect shown to the reader), now
+  said so. Demos: one `customers` name in `app/stores/stores.js`, its debug mode the
+  `Demos-Debug` header; `app/stores/page-stores.js` opens the page's stores once. Lane
+  picks taken: Demos' `fail` is the fake network's one state, said by each request;
+  `distinct` is not offered for a local store over the wire (measured: two extra reads).
+  **Carried → H5:** a store made per request (a server wrapping each request's auth);
+  `problem+json` (an offline failure crosses as a 500); POST for `?recheck` and the other
+  acts; one name for `/sherpa/updates`. History is not sent apart: a request store builds
+  its own from the changes it hears.
 
 ### The waves
 
