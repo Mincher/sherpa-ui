@@ -271,12 +271,12 @@
 
 /* ON or OFF, by a shape too, where the page asks (`--sherpa-toggle-shape`): a
    box, ticked while the button is pressed. Only on a toggle — not a picker, a
-   section's heading or an icon-only button. Will, TODOs 497, 503
-   TRAP T-a-toggle-shows-its-state-by-a-shape */
+   section's heading or an icon-only button. A step over the text, so it reads.
+   Will, TODOs 497, 503, 698. TRAP T-a-toggle-shows-its-state-by-a-shape */
 .tick { display: none; }
 :host(:not([data-persistent], [data-layout="section"], [data-icon-only])) .body[aria-pressed] > .tick {
   display: var(--sherpa-toggle-shape, none);
-  --_checkbox-size: var(--sherpa-theme-content-size-base, 14px);
+  --_checkbox-size: var(--sherpa-display-mode-size-sm, 16px);
 }
 
 /* Leading icon — shown only with data-icon-start (Figma "Icon", funnel default). */
