@@ -6825,6 +6825,45 @@ until they stop.
 - Site: `src/core/data/source-reads.ts`
 - Site: `src/core/data/store.ts`
 
+### T-a-step-names-its-node
+
+**ONE way to say a step ran** (plan 695 N2, Will's TODO 671): a span on the one
+trace stream (`T-one-trace-stream`) whose `detail.node` is the id the graph draws
+the node by, `detail.state` how it stands (`start`, then `done`, `failed` or
+`skipped`) and `detail.rows` the rows it ended with. `traceStep(node, options)`
+says it: begun now, `end(state, detail)` ends it; or, given `state`, said once as
+it ended, in `ms`. The worker, any code or an agent reports this way, and any Node
+Editor that listens lights from it. No second channel; nobody listening, nothing
+is made and it returns null.
+
+- **A run is one trace.** A workflow's steps begin under one span (`parent`, or
+  `within`); `detail.graph` names the workflow, and claims the trace for its graph.
+  `watchSteps` keeps a run's lights until the next run begins; a late span of a run
+  gone by lights nothing. N4's runner only reports.
+- **A Query graph maps S3's spans** (`queryStepNode`): a `load` lights the Source;
+  `request`, `answer`, `hold`, `recheck` and `send` the Store. A trace is the
+  graph's where a span names its store (`definition.source.store`) — so the
+  worker's answer and hold join by the trace of the request they answer — or where
+  it is the source's own load. A load is the source's when its span begins as the
+  source says `loading`: the DataSource dispatches `loading` and begins its `load`
+  span in one synchronous step. Reorder the two and the Source never lights: the
+  e2e test fails.
+- **The rows are the walk's own** (`planWalk`'s step ids: a field, `preset:<id>`).
+  When the source's load ends, `traceQuerySteps` says each scope, condition and
+  preset the walk counted, and the scope it arranged, under the load; an off one,
+  or one in a scope whose filters are off, is `skipped`. Until the walk says its
+  own steps (S5), the Query editor asks it to as the load ends. The ids are one
+  scheme, `QUERY_NODE`, which `queryGraph` draws by.
+- **A lit node is CSS.** `data-step` (`running`, `done`, `failed`, `skipped`) is a
+  Style pin (`state-pins.yaml`); `data-caption` is a line over the card, so no row
+  or route moves. A step of 0 ms shows no time.
+
+- Site: `src/core/data/trace.ts`
+- Site: `src/core/data/query-graph.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `test/unit/a-step-names-its-node.test.mjs`
+- Site: `test/e2e/reforged-a-node-lights-by-its-step.spec.ts`
+
 ### T-one-command-one-door
 
 **Every edit to the Query is a `QueryRequest`, asked through ONE door:

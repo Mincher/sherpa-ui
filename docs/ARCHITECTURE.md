@@ -228,6 +228,15 @@ listening, no span is made and no request carries the header.
 | `request` | the page (or a worker's source) | whatever call began it |
 | `answer` | whoever handles it: `page`, `worker`, `server` | the `request`, by `traceparent` |
 | `hold` · `recheck` · `send` | the store's host | the `answer` |
+| `step` (`detail.node`) | whoever runs a graph's step: the page, the worker, any code, an agent | its run, or the `load` |
+
+**A step names its node** (`T-a-step-names-its-node`, plan 695 N2). `traceStep(node)`
+says a span whose `detail.node` is the graph's id for the node, with its state
+(`start`, then `done`, `failed` or `skipped`), its `ms` and its `detail.rows`; a
+run's steps share one trace, and `detail.graph` names the workflow. A Node Editor
+that is open listens (`watchSteps`) and lights each node as its step runs. The Query
+graph lights its Source by the `load`, its Store by the reads, and each condition
+by what the walk counted, said under the load (`traceQuerySteps`).
 
 ---
 

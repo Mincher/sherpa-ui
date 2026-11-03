@@ -1,13 +1,16 @@
 /**
  * node-graph.ts — a graph of nodes drawn on a sherpa-layout-canvas, and the two editors kept
  * drawn there: a page's Query, which each edit ASKS, and a workflow, whose draft each edit
- * writes. Places last the tab; Save hands the app a checked definition. Will, TODOs 555, 551.
- * TRAP T-the-node-editor-asks-the-query
+ * writes. Places last the tab; Save hands the app a checked definition. Each node lights as
+ * its step runs, from the one trace stream. Will, TODOs 555, 551, 671.
+ * TRAP T-the-node-editor-asks-the-query · TRAP T-a-step-names-its-node
  *
  * Map:
  * - DrawOptions — What a drawing tells its host: each edit, each node a reader picks or moves, and each new route.
  * - drawGraph — Draw a graph on a canvas: each node by id, at its place when that moved; then its routes.
  * - markNode — Mark one node as the one picked, or none.
+ * - WatchOptions — What a graph's watch is told: which traces are its, and which node each span lights.
+ * - watchSteps — Light a canvas's nodes from the one trace stream as their steps run; its stop lets it go.
  * - InspectOptions — What an inspector shows beside a node's rows, and whom it tells of an edit.
  * - inspectNode — Fill an overlay panel with one node: its rows again, their routes, and a visual.
  * - Inspector — The overlay panel a picked node opens in.
@@ -29,7 +32,8 @@ import type { SocketSide } from '../../components/sherpa-node/node-sockets.js';
 import type { SessionStore } from '../browser/session.js';
 import type { DataSource } from '../data/data-source.js';
 import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-definition.js';
-import { graphRequest, queryGraph, routeRequest, type QueryGraphFacts } from '../data/query-graph.js';
+import { graphRequest, queryGraph, queryStepNode, routeRequest, traceQuerySteps, type QueryGraphFacts } from '../data/query-graph.js';
+import { onTrace, type Span, type StepState, type TraceHost } from '../data/trace.js';
 import { VIEW } from '../data/query.js';
 import { OP_LABELS, valueKey, type FilterOp } from '../data/store.js';
 import { report } from '../data/report.js';
@@ -356,6 +360,103 @@ export function markNode(canvas: SherpaLayoutCanvas, id: string | null): void {
   for (const [key, el] of drawnOn.get(canvas)?.nodes ?? []) el.toggleAttribute('data-current', key === id);
 }
 
+/** One span that lit a node: where it ran, how it stands, its time and its rows. */
+interface Lit {
+  host: TraceHost;
+  state: StepState;
+  ms?: number;
+  rows?: number;
+}
+
+/** What a graph's watch is told: which traces are its, and which node each span lights. */
+export interface WatchOptions {
+  /** Is this span's trace the graph's? Every span of a trace it claims may light a node. */
+  claims(span: Span): boolean;
+  /** The node a span lights: the one it names, unless told. */
+  nodeOf?(span: Span): string | undefined;
+  /** Does this span begin a new run, whose lights replace the last run's? Unless told,
+   *  the first span of a trace it claims. */
+  begins?(span: Span): boolean;
+  /** A span that lit a node, after it is drawn. */
+  onLit?(span: Span, node: string): void;
+}
+
+const MS = new Intl.NumberFormat(undefined, { style: 'unit', unit: 'millisecond', unitDisplay: 'short', maximumFractionDigits: 1 });
+const COUNT = new Intl.NumberFormat();
+
+/** How a span stands: begun, or how it ended — a failure said, or its own word. */
+function stateOf(span: Span): StepState {
+  if (span.ms === undefined) return 'start';
+  const said = span.detail?.['state'];
+  if (said === 'failed' || said === 'skipped') return said;
+  return span.detail && 'failed' in span.detail ? 'failed' : 'done';
+}
+
+/** A node's step, from every span that lit it this run: running while one is open, else
+ *  failed, skipped or done; the longest time, the latest rows, and where it ran. */
+function light(el: HTMLElement, spans: ReadonlyMap<string, Lit>): void {
+  const all = [...spans.values()];
+  const state = all.some((s) => s.state === 'start') ? 'running'
+    : all.some((s) => s.state === 'failed') ? 'failed'
+    : all.every((s) => s.state === 'skipped') ? 'skipped' : 'done';
+  const ms = Math.max(0, ...all.flatMap((s) => (s.ms === undefined ? [] : [s.ms])));
+  const rows = all.findLast((s) => s.rows !== undefined)?.rows;
+  const away = [...new Set(all.map((s) => s.host).filter((h) => h !== 'page'))];
+  const words = [
+    ...(state === 'done' ? [] : [state[0]!.toUpperCase() + state.slice(1)]),
+    ...(ms > 0 && state !== 'running' ? [MS.format(ms)] : []),
+    ...(rows === undefined ? [] : [`${COUNT.format(rows)} ${rows === 1 ? 'row' : 'rows'}`]),
+    ...away,
+  ];
+  el.setAttribute('data-step', state);
+  put(el, 'data-caption', words.join(' · '));
+}
+
+/**
+ * Light a canvas's nodes from the one trace stream as their steps run: each node's
+ * `data-step` (CSS draws it) and `data-caption` — its time, its rows and where it
+ * ran. A run's lights stay until the next run begins. It listens only while bound:
+ * its stop lets the stream go. TRAP T-a-step-names-its-node
+ */
+export function watchSteps(canvas: SherpaLayoutCanvas, { claims, nodeOf = (span) => {
+  const named = span.detail?.['node'];
+  return typeof named === 'string' ? named : undefined;
+}, begins, onLit }: WatchOptions): () => void {
+  let traces = new Set<string>();
+  const lit = new Map<string, Map<string, Lit>>();
+  const clear = (): void => {
+    for (const id of lit.keys()) {
+      const el = drawnOn.get(canvas)?.nodes.get(id);
+      el?.removeAttribute('data-step');
+      el?.removeAttribute('data-caption');
+    }
+    lit.clear();
+  };
+  // A run's traces, and those of runs gone by: a late span of one lights nothing.
+  const retired = new Set<string>();
+  return onTrace((span) => {
+    if (retired.has(span.trace)) return;
+    const claimed = traces.has(span.trace);
+    if (!claimed && !claims(span)) return;
+    if (begins ? begins(span) : !claimed) {
+      clear();
+      for (const t of traces) retired.add(t);
+      for (const t of retired) if (retired.size > 256) retired.delete(t);
+      traces = new Set();
+    }
+    traces.add(span.trace);
+    const node = nodeOf(span);
+    const el = node ? drawnOn.get(canvas)?.nodes.get(node) : undefined;
+    if (!node || !el) return;
+    let spans = lit.get(node);
+    if (!spans) lit.set(node, (spans = new Map()));
+    const total = span.detail?.['total'] ?? span.detail?.['rows'];
+    spans.set(span.id, { host: span.host, state: stateOf(span), ...(span.ms !== undefined ? { ms: span.ms } : {}), ...(typeof total === 'number' ? { rows: total } : {}) });
+    light(el, spans);
+    onLit?.(span, node);
+  });
+}
+
 /** What an inspector shows beside a node's rows, and whom it tells of an edit. */
 export interface InspectOptions {
   onEdit?: (edit: GraphEdit) => void;
@@ -492,7 +593,7 @@ export interface QueryEditorOptions extends QueryGraphFacts {
  *  and so is a slot's Sort and Group. TRAP T-one-command-one-door */
 export function bindQueryEditor(
   canvas: SherpaLayoutCanvas,
-  source: Pick<DataSource, 'query'> & Partial<Pick<DataSource, 'valuesFor' | 'store' | 'state'>>,
+  source: Pick<DataSource, 'query'> & Partial<Pick<DataSource, 'valuesFor' | 'store' | 'state' | 'results' | 'addEventListener' | 'removeEventListener'>>,
   { definition, inspector, session, ...facts }: QueryEditorOptions,
 ): GraphEditor {
   const query = source.query;
@@ -546,6 +647,7 @@ export function bindQueryEditor(
   };
   draw();
   query.addEventListener('query-change', draw);
+  const unwatch = watchQuery(canvas, source, definition);
   return {
     save(): boolean {
       const page = pageWithQuery(definition, query.draft, { pageSize: source.state?.pageSize ?? null, type: (f) => typeOf(f) as FieldType | undefined });
@@ -555,8 +657,57 @@ export function bindQueryEditor(
     },
     stop(): void {
       query.removeEventListener('query-change', draw);
+      unwatch();
       picks.stop();
     },
+  };
+}
+
+/**
+ * Light a page's Query graph as its source loads: the Source by the load, the Store
+ * by its reads — the page's and its worker's, by the store's name or the load's
+ * trace — then what the walk counted. A load is the source's when it begins as the
+ * source says `loading`. TRAP T-a-step-names-its-node
+ */
+function watchQuery(
+  canvas: SherpaLayoutCanvas,
+  source: Pick<DataSource, 'query'> & Partial<Pick<DataSource, 'results' | 'addEventListener' | 'removeEventListener'>>,
+  definition: PageDefinition,
+): () => void {
+  const store = definition.source?.store;
+  let next = false;
+  let run: string | null = null;
+  const loading = (event: Event): void => {
+    if (!(event as CustomEvent<{ loading?: boolean }>).detail?.loading) return;
+    next = true;
+    queueMicrotask(() => { next = false; });
+  };
+  // What the walk counted, said under the load once it ends: rows from the walk itself.
+  const walked = async (load: Span): Promise<void> => {
+    const results = source.results;
+    if (!results) return;
+    const applied = source.query.applied;
+    const counted = await Promise.all(Object.keys(applied.scopes).map(async (scope) => [scope, await results.call(source, scope)] as const));
+    const total = load.detail?.['total'];
+    traceQuerySteps(applied, { walk: { results: Object.fromEntries(counted) }, ...(typeof total === 'number' ? { total } : {}) }, load);
+  };
+  source.addEventListener?.('loading', loading);
+  const stop = watchSteps(canvas, {
+    claims: (span) => {
+      if (span.step === 'load' && span.ms === undefined && next) {
+        next = false;
+        run = span.id;
+        return true;
+      }
+      return (!!store && span.store === store) || span.detail?.['graph'] === definition.id;
+    },
+    begins: (span) => span.id === run && span.ms === undefined,
+    nodeOf: queryStepNode,
+    onLit: (span) => { if (span.id === run && span.ms !== undefined) void walked(span); },
+  });
+  return () => {
+    stop();
+    source.removeEventListener?.('loading', loading);
   };
 }
 
@@ -626,6 +777,8 @@ export function bindWorkflow(
     picks.follow(graph);
   };
   draw();
+  // A run lights its nodes: each step names its node, and the run its workflow. N4 reports.
+  const unwatch = watchSteps(canvas, { claims: (span) => span.detail?.['graph'] === workflow.id });
   return {
     save(): boolean {
       if (!checkWorkflow(draft, kinds)) return false;
@@ -634,6 +787,9 @@ export function bindWorkflow(
       session?.set(pointer, undefined);
       return true;
     },
-    stop: picks.stop,
+    stop(): void {
+      unwatch();
+      picks.stop();
+    },
   };
 }

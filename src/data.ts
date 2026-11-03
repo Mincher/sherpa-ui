@@ -174,11 +174,13 @@ export { NOTICE_CHANNEL, sayNotice, type UpdateNotice, type WorkerAsk } from './
 export { Updates, type NewsKind, type UpdatesDetail } from './core/data/updates.js';
 export { updatesFeed, type FeedNotice, type UpdatesFeed } from './core/data/updates-feed.js';
 // ONE trace stream: the page's, its worker's and a server's steps, joined by one id. TRAP T-one-trace-stream
-export { TRACE_CHANNEL, onTrace, tracing, type Span, type TraceHost } from './core/data/trace.js';
+export {
+  TRACE_CHANNEL, onTrace, traceStep, tracing, type OpenStep, type Span, type StepOptions, type StepState, type TraceHost,
+} from './core/data/trace.js';
 /* A page's QUERY, drawn as nodes for the Node Editor. TODO 555 · TRAP T-the-node-editor-asks-the-query */
 export {
-  graphRequest, queryGraph, routeRequest,
-  type GraphComponent, type QueryGraphFacts, type RouteAnswer, type ScopePreset,
+  QUERY_NODE, graphRequest, queryGraph, queryStepNode, routeRequest, traceQuerySteps,
+  type GraphComponent, type LoadSteps, type QueryGraphFacts, type RouteAnswer, type ScopePreset,
 } from './core/data/query-graph.js';
 /* A pure edit: the Query after a Sort, Group, Search, presentation, order or move. TRAP T-one-command-one-door */
 export { editQuery, type EditFacts, type PureEdit } from './core/data/query-edits.js';

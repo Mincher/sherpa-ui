@@ -21,8 +21,8 @@ export {
 export { bindSettings, persistSettings } from './core/ui/bind-settings.js';
 /* A graph of nodes on a canvas, and the two editors drawn there: a page's Query, a workflow. TODOs 555, 551 */
 export {
-  bindQueryEditor, bindWorkflow, drawGraph, inspectNode, markNode,
-  type DrawOptions, type GraphEditor, type InspectOptions, type Inspector, type QueryEditorOptions, type WorkflowEditorOptions,
+  bindQueryEditor, bindWorkflow, drawGraph, inspectNode, markNode, watchSteps,
+  type DrawOptions, type GraphEditor, type InspectOptions, type Inspector, type QueryEditorOptions, type WatchOptions, type WorkflowEditorOptions,
 } from './core/ui/node-graph.js';
 // A page's state as ONE document, and its one keeper: each part in its tier. TRAP T-one-page-one-document
 export {

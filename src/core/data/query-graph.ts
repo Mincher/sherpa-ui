@@ -2,10 +2,18 @@
  * query-graph.ts — a page's Query drawn as nodes, for the Node Editor, and each edit made in
  * them as the command it asks. DERIVED each time the Query changes: the store and its status
  * fields, the source, each scope with its presets, saved filters, conditions and superseded
- * answers, its arrangement, presentation and components. Kinds are the one registry's. DOM-free.
+ * answers, its arrangement, presentation and components — and which node each step of a load
+ * lights. Kinds are the one registry's. DOM-free.
  * Will, TODO 555 · docs/history/plan-78-query-editor.md · TRAP T-the-node-editor-asks-the-query
+ * TRAP T-a-step-names-its-node
  *
  * Map:
+ * - QUERY_NODE — Each Query node's id, as a step names it: the one scheme the graph is drawn by.
+ * - queryStepNode — The node a span lights in a page's Query graph: the one it names, else its step's.
+ * - WalkedNode — One node a scope's walk counted: its id, its rows, and the field it filters.
+ * - walkedNodes — Each node a scope's walk counted, and its rows, by the walk's own step ids.
+ * - LoadSteps — What a page's load did after its read: its walk's counts, and the rows it arranged.
+ * - traceQuerySteps — Say what a load did after its read, each a step of its node, under the load.
  * - GraphComponent — One component a scope's rows reach: its id, its label and how it shows them.
  * - ScopePreset — One preset of a scope, as declared: its id, its name and the readings it writes.
  * - QueryGraphFacts — What drawing a Query needs that the Query does not say.
@@ -16,13 +24,83 @@
  * - routeRequest — The command a new route asks: a condition into a field of a scope, moved or retargeted.
  */
 import { SAVED_PRESET, type PageDefinition } from './page-definition.js';
-import { PRESENTATION_KINDS, VIEW, arranging, isSavedFilter, type Presentation, type Query, type QueryRequest } from './query.js';
+import { PRESENTATION_KINDS, VIEW, arrangementOf, arranging, isSavedFilter, type Presentation, type Query, type QueryRequest } from './query.js';
 import { OP_LABELS, OPS_FOR_TYPE, groupOf, type Condition, type ConditionLeaf, type Duration, type FilterOp } from './store.js';
 import { answerTree, typedValue, type FieldReading, type FieldType } from './filter-state.js';
 import { readingsOf, treeReading } from './where.js';
 import { presetHeld } from './query-edits.js';
 import type { FieldDomain } from './validate.js';
 import { NODE_KINDS, kindNode, socketOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeRoute } from './node-kinds.js';
+import { traceStep, type Span, type TraceContext } from './trace.js';
+import type { Walk } from './walk.js';
+
+/** Each Query node's id, as a step names it: the one scheme the graph is drawn by.
+ *  TRAP T-a-step-names-its-node */
+export const QUERY_NODE = {
+  store: 'store',
+  source: 'source',
+  scope: (scope: string): string => `scope-${scope}`,
+  condition: (scope: string, field: string): string => `when-${scope}-${field}`,
+  preset: (scope: string, preset: string): string => `preset-${scope}-${preset}`,
+  arrange: (scope: string): string => `arrange-${scope}`,
+  component: (id: string): string => `component-${id}`,
+} as const;
+
+/** The node an S3 span lights, by its step: a load is the Source's, the rest the Store's. */
+const STEP_NODES: Readonly<Record<string, string>> = {
+  load: QUERY_NODE.source, request: QUERY_NODE.store, answer: QUERY_NODE.store,
+  hold: QUERY_NODE.store, recheck: QUERY_NODE.store, send: QUERY_NODE.store,
+};
+
+/** The node a span lights in a page's Query graph: the one it names, else its step's. */
+export function queryStepNode(span: Pick<Span, 'step' | 'detail'>): string | undefined {
+  const named = span.detail?.['node'];
+  return typeof named === 'string' ? named : STEP_NODES[span.step];
+}
+
+/** One node a scope's walk counted: its id, its rows, and the field it filters. */
+export interface WalkedNode {
+  node: string;
+  rows: number;
+  field?: string;
+}
+
+/** Each node a scope's walk counted, and its rows: by the walk's own step ids — a
+ *  field's, or `preset:<id>` (planWalk) — as the graph names them. */
+export function walkedNodes(scope: string, results: Readonly<Record<string, number>>): WalkedNode[] {
+  return Object.entries(results).flatMap(([step, rows]): WalkedNode[] => {
+    if (!step) return [];
+    if (step.startsWith('preset:')) return [{ node: QUERY_NODE.preset(scope, step.slice('preset:'.length)), rows }];
+    return [{ node: QUERY_NODE.condition(scope, step), rows, field: step }];
+  });
+}
+
+/** What a page's load did after its read: each scope's walk — the rows each step
+ *  counted and each scope ended with — and how many rows it arranged. */
+export interface LoadSteps {
+  walk: Pick<Walk, 'results'> & Partial<Pick<Walk, 'ends'>>;
+  total?: number;
+}
+
+/**
+ * Say what a load did after its read, each a step of its Query graph node, under
+ * the load: each scope its walk counted, each condition and preset with its rows,
+ * and the scope it arranged. Off, or in a scope whose filters are off, a step is
+ * skipped: it narrows nothing. TRAP T-a-step-names-its-node
+ */
+export function traceQuerySteps(applied: Query, { walk, total }: LoadSteps, parent: TraceContext): void {
+  for (const [scope, results] of Object.entries(walk.results)) {
+    const q = applied.scopes[scope];
+    const rows = walk.ends?.[scope];
+    traceStep(QUERY_NODE.scope(scope), { parent, state: q?.suspended ? 'skipped' : 'done', ...(rows !== undefined ? { rows } : {}) });
+    for (const { node, rows: counted, field } of walkedNodes(scope, results)) {
+      const off = !!q?.suspended || !!(field && q?.readings[field]?.suspended);
+      traceStep(node, { parent, state: off ? 'skipped' : 'done', rows: counted });
+    }
+  }
+  const arranged = arrangementOf(applied).scope;
+  if (arranged) traceStep(QUERY_NODE.arrange(arranged), { parent, state: 'done', ...(total !== undefined ? { rows: total } : {}) });
+}
 
 /** One column's width, in plane px: a node and the room for its routes. */
 const COLUMN = 360;
@@ -191,21 +269,21 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
 
   // Store ─▶ each status field it works out ─▶ Source.
   const source = definition.source;
-  add(0, 'store', 'store', rowsOf('store', { store: source?.store }).map((row) => ({ ...row, hint: FROM_DEFINITION })), { heading: source?.store ?? 'Store' });
+  add(0, QUERY_NODE.store, 'store', rowsOf('store', { store: source?.store }).map((row) => ({ ...row, hint: FROM_DEFINITION })), { heading: source?.store ?? 'Store' });
   const statuses = Object.entries(facts.domains ?? {}).filter(([, d]) => d.when || d.statuses);
   for (const [field, domain] of statuses) {
     const rows = (domain.values ?? []).map(String).map((value): GraphRow => {
       const when = domain.when?.[value];
       return { name: value, label: value, value: when ? said(when, label) : 'every row the values before it left', hint: FROM_STORE };
     });
-    routes.push({ from: 'store', to: add(1, `status-${field}`, 'status', rows, { heading: label(field), ref: { field } }) });
+    routes.push({ from: QUERY_NODE.store, to: add(1, `status-${field}`, 'status', rows, { heading: label(field), ref: { field } }) });
   }
   // Its page size changes live; the rest is the definition's, until Save.
-  add(2, 'source', 'source', rowsOf('source', {
+  add(2, QUERY_NODE.source, 'source', rowsOf('source', {
     pageSize: facts.pageSize ?? source?.pageSize, search: source?.search?.join(', '), applyOn: source?.applyOn ?? 'change',
   }).map((row) => (row.name === 'pageSize' ? { ...row, editable: true } : { ...row, hint: FROM_DEFINITION })));
-  if (statuses.length) for (const [field] of statuses) routes.push({ from: `status-${field}`, to: 'source' });
-  else routes.push({ from: 'store', to: 'source' });
+  if (statuses.length) for (const [field] of statuses) routes.push({ from: `status-${field}`, to: QUERY_NODE.source });
+  else routes.push({ from: QUERY_NODE.store, to: QUERY_NODE.source });
 
   // Each scope — and one its definition gives presets, held or not.
   const scopes = Object.entries(query.scopes);
@@ -238,12 +316,12 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       ...presets.map((p): GraphRow => ({ name: `@${p.id}`, label: p.label, input: 'value' })),
       ...fields.map((f): GraphRow => ({ name: f, label: label(f), input: 'value' })),
     ];
-    const node = add(top ? 4 : 6, `scope-${id}`, 'scope', rows, {
+    const node = add(top ? 4 : 6, QUERY_NODE.scope(id), 'scope', rows, {
       heading: named ?? (top ? 'View' : id),
       description: `${scope.holds.length} held${scope.suspended ? ' · filters off' : ''}`,
       ref: { scope: id },
     });
-    routes.push({ from: top || !view ? 'source' : `scope-${VIEW}`, to: node });
+    routes.push({ from: top || !view ? QUERY_NODE.source : QUERY_NODE.scope(VIEW), to: node });
     // Each preset, and each saved filter on its bar: on or off, and what it writes.
     for (const p of presets) {
       const saved = p.id.startsWith(SAVED_PRESET);
@@ -253,14 +331,14 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
         return tree ? [{ name: f, label: label(f), value: said(tree), hint: saved ? SAVED_WORDS : FROM_DEFINITION }] : [];
       });
       const on = presetHeld(query, id, p.id, p.readings);
-      const from = add(into, `preset-${id}-${p.id}`, saved ? 'saved' : 'preset', [
+      const from = add(into, QUERY_NODE.preset(id, p.id), saved ? 'saved' : 'preset', [
         ...rowsOf(saved ? 'saved' : 'preset', { on }).map((row) => ({ ...row, editable: true })), ...writes,
       ], { heading: p.label, ref: { scope: id, preset: p.id } });
       routes.push({ from, to: `${node}/@${p.id}` });
     }
     const held = fields.map((f) => ({ value: f, label: label(f) }));
     for (const [field, condition, off] of where) {
-      const when = add(into, `when-${id}-${field}`, 'condition', conditionRows(field, condition, typeOf(field), held, facts.values?.(field)), {
+      const when = add(into, QUERY_NODE.condition(id, field), 'condition', conditionRows(field, condition, typeOf(field), held, facts.values?.(field)), {
         heading: label(field),
         description: off ? 'Off: kept, not applied.' : 'Applied.',
         ref: { scope: id, field },
@@ -281,7 +359,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       const first = scope.sort?.[0];
       const directions = [{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }];
       // Sort, Group and Search change as their chips do.
-      out = add(7, `arrange-${id}`, 'arrange', rowsOf('arrange', {
+      out = add(7, QUERY_NODE.arrange(id), 'arrange', rowsOf('arrange', {
         sort: first?.field ?? '', direction: first?.direction ?? 'asc', group: scope.group ?? '', search: scope.search ?? '',
       }).map((row) => (row.name === 'search' ? { ...row, editable: true } : { ...row, editable: true, choices: row.name === 'direction' ? directions : keys })), {
         ref: { scope: id },
@@ -298,7 +376,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
         to = add(8, `show-${c.id}`, 'presentation', presentationRows(presented ?? {}, c.kind, keys, slot), slot ? { ref: { scope: id } } : {});
         routes.push({ from: out, to });
       }
-      routes.push({ from: to, to: add(9, `component-${c.id}`, 'component', [], { heading: c.label, ref: { component: c.id, scope: id } }) });
+      routes.push({ from: to, to: add(9, QUERY_NODE.component(c.id), 'component', [], { heading: c.label, ref: { component: c.id, scope: id } }) });
     }
     // A slot's presentation with no component named to show it is still drawn.
     if (scope.presentation && !shows.length) {

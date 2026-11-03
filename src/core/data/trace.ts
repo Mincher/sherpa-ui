@@ -1,8 +1,8 @@
 /**
  * trace.ts — ONE trace stream: each step a host takes — the page, its Service
  * Worker, a server — as a span, joined across hosts by one trace id, and said to
- * every context on one BroadcastChannel. Nobody listens: no span is made.
- * DOM-free. TRAP T-one-trace-stream
+ * every context on one BroadcastChannel; a graph's step names its node. Nobody
+ * listens: no span is made. DOM-free. TRAP T-one-trace-stream
  *
  * Map:
  * - TraceHost — Where a span ran: the page, its Service Worker, or a server.
@@ -13,6 +13,10 @@
  * - onTrace — Hear every span, from every context; the function it returns stops.
  * - tracing — Does anyone listen, here or in another context?
  * - startSpan — Begin a span under the one running, or null when nobody listens.
+ * - StepState — How a graph's node stands as its step runs: begun, then done, failed or skipped.
+ * - OpenStep — A step begun: `end()` says how it ended — done unless told — and its `rows`.
+ * - StepOptions — Where a step runs and what it says: its graph, its span's step, the rows it ended with.
+ * - traceStep — Say that a graph's node ran its step: a span naming the node, its state, time and rows.
  * - within — Run `run` with a span as the one its calls begin under.
  * - traceparent — A span as the W3C `traceparent` a request carries.
  * - readTraceparent — A request's `traceparent` as the span it was sent under, or null.
@@ -131,9 +135,16 @@ export function tracing(): boolean {
   return others.size > 0;
 }
 
-/** Begin a span under the one running — or `parent` — or null when nobody listens:
- *  then nothing is made. */
-export function startSpan(step: string, options: { host?: TraceHost; store?: string; parent?: TraceContext | null; detail?: Span['detail'] } = {}): OpenSpan | null {
+/** Where a span begins, and what it says. */
+interface SpanOptions {
+  host?: TraceHost;
+  store?: string;
+  parent?: TraceContext | null;
+  detail?: Span['detail'];
+}
+
+/** A span, made — or null when nobody listens, and nothing is made. */
+function made(step: string, options: SpanOptions): { span: Span; sampled: boolean } | null {
   const parent = options.parent === undefined ? current : options.parent;
   const sampled = !!parent?.sampled;
   if (!sampled && !tracing()) return null;
@@ -143,6 +154,16 @@ export function startSpan(step: string, options: { host?: TraceHost; store?: str
     trace: parent?.trace ?? hex(16), id: hex(8), ...(parent ? { parent: parent.id } : {}),
     t: Date.now(), ...(options.detail ? { detail: options.detail } : {}),
   };
+  return { span, sampled };
+}
+
+/** Begin a span under the one running — or `parent` — or null when nobody listens:
+ *  then nothing is made. */
+export function startSpan(step: string, options: SpanOptions = {}): OpenSpan | null {
+  const begun = made(step, options);
+  if (!begun) return null;
+  const { span, sampled } = begun;
+  const store = span.store;
   say(span, sampled);
   const began = performance.now();
   return {
@@ -152,6 +173,46 @@ export function startSpan(step: string, options: { host?: TraceHost; store?: str
       say({ ...span, ms, ...(detail ? { detail: { ...span.detail, ...detail } } : {}) }, sampled);
     },
   };
+}
+
+/** How a graph's node stands as its step runs: begun, then done, failed or skipped. */
+export type StepState = 'start' | 'done' | 'failed' | 'skipped';
+
+/** A step begun: `end()` says how it ended — done unless told — and its `rows`. */
+export interface OpenStep extends TraceContext {
+  end(state?: Exclude<StepState, 'start'>, detail?: Span['detail']): void;
+}
+
+/** Where a step runs and what it says: its graph, its span's step, the rows it ended with. */
+export interface StepOptions extends SpanOptions {
+  /** The graph it is a step of — a workflow's id. Its trace is then that graph's. */
+  graph?: string;
+  /** The span's `step`: `step` unless told. */
+  step?: string;
+  /** Said once, as it ended — a step already run, or one skipped — in `ms`. */
+  state?: Exclude<StepState, 'start'>;
+  ms?: number;
+  rows?: number;
+}
+
+/**
+ * Say that a graph's node ran its step, on the one stream: a span whose
+ * `detail.node` names the node by its graph id, `detail.state` how it stands and
+ * `detail.rows` the rows it ended with. Begun now — `end()` ends it — or, given
+ * `state`, said once as it ended. The worker, any code or an agent says a step
+ * this way. Nobody listens: nothing is made, and null. TRAP T-a-step-names-its-node
+ */
+export function traceStep(node: string, options: StepOptions = {}): OpenStep | null {
+  const { graph, step = 'step', state, ms, rows, ...where } = options;
+  if (!where.parent?.sampled && !current?.sampled && !tracing()) return null;
+  const said = { ...where.detail, node, ...(graph !== undefined ? { graph } : {}), ...(rows !== undefined ? { rows } : {}) };
+  if (state) {
+    const once = made(step, { ...where, detail: { ...said, state } });
+    if (once) say({ ...once.span, ms: ms ?? 0 }, once.sampled);
+    return null;
+  }
+  const span = startSpan(step, { ...where, detail: { ...said, state: 'start' } });
+  return span && { ...span, end: (ended = 'done', detail) => span.end({ ...detail, state: ended }) };
 }
 
 /** Run `run` with a span as the one its calls begin under. A call captures it in
