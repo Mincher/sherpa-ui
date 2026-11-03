@@ -21,6 +21,7 @@ import type { ScopeDescription } from '../../core/data/data-source.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import { MANAGE_SETS, SavedSets, drawFiltersButton, hangFiltersMenu, saves, type AddedFilter, type ListedFilter, type SavedSet } from '../../core/ui/filters-button.js';
 import { FILTER_ACTIONS, askSwitches, drawFilterActions, extraRows, hidesUnmatched, openMore, pickMore, saveRows, type MoreRow } from '../../core/ui/more-menu.js';
+import { FilterHostController } from '../../core/ui/filter-host-controller.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 import { ToolbarHeader } from './toolbar-header.js';
 
@@ -49,8 +50,8 @@ export class ToolbarColumn {
   readonly #saved: SavedSets;
   /** Each scope, as last drawn. */
   #scopes: ScopeDescription[] = [];
-  /** Each scope's values left, by field. */
-  #present = new Map<string, Readonly<Record<string, readonly string[]>>>();
+  /** What each scope is told, by field: its sections place the chips. Plan 695 P2 */
+  #told = new Map<string, FilterHostController>();
   /** The offers spent when the Filters menu was drawn. */
   #spentFor = '';
   /** The Filters menu's rows: each value, and the scope and filter it stands for. */
@@ -134,7 +135,9 @@ export class ToolbarColumn {
   /** What the filters before a scope's fields leave: the Filters menu is drawn
    *  again only when an offer's being spent moved. */
   present(present: Readonly<Record<string, readonly string[]>>, scope: string): void {
-    this.#present.set(scope, present);
+    let told = this.#told.get(scope);
+    if (!told) this.#told.set(scope, told = new FilterHostController({ el: this.#host.el, places: () => [] }));
+    told.drawPresent(present);
     if (this.#spentKey() !== this.#spentFor) this.#drawFilters();
   }
 
@@ -156,7 +159,7 @@ export class ToolbarColumn {
 
   /** Is an offer spent — no value left under the filters before it? (349) */
   #spent(scope: string, field: string): boolean {
-    return this.#present.get(scope)?.[field]?.length === 0;
+    return this.#told.get(scope)?.spent(field) ?? false;
   }
 
   /** Each scope's offers spent now, as one string. */
