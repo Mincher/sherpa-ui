@@ -809,7 +809,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (114)
+## SherpaElement and the shared sheets (115)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -828,6 +828,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-grid-group-computes-its-own-position](traps/element-and-sheets.md#t-a-grid-group-computes-its-own-position) — sherpa-grouping
 - [T-a-host-attribute-is-declared-once](traps/element-and-sheets.md#t-a-host-attribute-is-declared-once) — sherpa-element
 - [T-a-host-label-must-reach-its-control](traps/charts.md#t-a-host-label-must-reach-its-control) — sherpa-element
+- [T-a-host-state-pin-lives-where-the-host-is](traps/element-and-sheets.md#t-a-host-state-pin-lives-where-the-host-is) — sherpa-style-modes
 - [T-a-layout-read-belongs-in-a-frame](traps/menus-tips-overlays.md#t-a-layout-read-belongs-in-a-frame) — sherpa-element
 - [T-a-list-takes-its-children-as-data](traps/element-and-sheets.md#t-a-list-takes-its-children-as-data) — sherpa-element
 - [T-a-native-control-brings-its-own-margin](traps/element-and-sheets.md#t-a-native-control-brings-its-own-margin) — sherpa-base
@@ -1041,7 +1042,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](traps/other-components.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (73)
+## Build, tools and the MCP (74)
 
 - [T-a-bare-name-must-be-used-not-mentioned](traps/build-tools-mcp.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — ts-facts
@@ -1063,6 +1064,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-flag-brings-the-base-methods](traps/element-and-sheets.md#t-a-flag-brings-the-base-methods) — generate-component-spec, ts-facts
 - [T-a-generated-region-still-declares-api](traps/build-tools-mcp.md#t-a-generated-region-still-declares-api) — check-props
 - [T-a-host-attribute-is-declared-once](traps/element-and-sheets.md#t-a-host-attribute-is-declared-once) — check-props, check-usage
+- [T-a-host-state-pin-lives-where-the-host-is](traps/element-and-sheets.md#t-a-host-state-pin-lives-where-the-host-is) — project-tokens
 - [T-a-look-override-is-not-on-the-variable](traps/build-tools-mcp.md#t-a-look-override-is-not-on-the-variable) — project-tokens
 - [T-a-metric-condenses-by-wrapping](traps/charts.md#t-a-metric-condenses-by-wrapping) — project-tokens
 - [T-a-native-wears-the-button-class](traps/element-and-sheets.md#t-a-native-wears-the-button-class) — build-reforged, check-usage, generate-component-spec, lint-css, project-tokens

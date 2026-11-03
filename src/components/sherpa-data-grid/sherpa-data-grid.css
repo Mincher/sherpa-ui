@@ -1,3 +1,162 @@
+/* == sherpa:tokens (generated — do not edit) == */
+/* State pins, from scripts/figma-data/state-pins.yaml. Unlayered, as the shared pins are. */
+:host(sherpa-data-grid) .head-cell[data-status] {
+  --sherpa-style-border-base: var(--sherpa-style-default-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-default-border-width);
+  --sherpa-style-border-data-viz: var(--sherpa-style-default-border-data-viz);
+  --sherpa-style-content-base: var(--sherpa-style-default-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-default-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-default-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-default-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-default-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-default-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-default-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
+  --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
+  --_status-surface: initial;
+  --_status-surface-subtle: initial;
+  --_status-surface-strong: initial;
+  --_status-shadow: initial;
+  --_status-border: initial;
+  --_status-border-strong: initial;
+  --_status-data-viz: initial;
+  --_status-data-viz-border: initial;
+  --_status-text: initial;
+  --_status-text-on-color: initial;
+  --_status-icon: initial;
+}
+
+:host(sherpa-data-grid) .actions-trigger {
+  --sherpa-style-border-base: var(--sherpa-style-transparent-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-transparent-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-transparent-border-width);
+  --sherpa-style-content-base: var(--sherpa-style-transparent-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-transparent-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-transparent-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-transparent-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-transparent-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-transparent-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-transparent-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-transparent-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-transparent-surface-shadow);
+  --_status-surface: var(--sherpa-style-transparent-surface-base);
+  --_status-surface-subtle: var(--sherpa-style-transparent-surface-base-1);
+  --_status-surface-strong: var(--sherpa-style-transparent-surface-base-2);
+  --_status-shadow: var(--sherpa-style-transparent-surface-shadow);
+  --_status-border: var(--sherpa-style-transparent-border-base);
+  --_status-border-strong: var(--sherpa-style-transparent-border-base-1);
+  --_status-text: var(--sherpa-style-transparent-content-base);
+  --_status-text-on-color: var(--sherpa-style-transparent-content-inverse);
+  --_status-icon: var(--sherpa-style-transparent-indicator-accent);
+}
+
+:host(sherpa-data-grid) .action-item {
+  --sherpa-style-border-base: var(--sherpa-style-transparent-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-transparent-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-transparent-border-width);
+  --sherpa-style-content-base: var(--sherpa-style-transparent-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-transparent-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-transparent-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-transparent-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-transparent-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-transparent-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-transparent-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-transparent-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-transparent-surface-shadow);
+  --_status-surface: var(--sherpa-style-transparent-surface-base);
+  --_status-surface-subtle: var(--sherpa-style-transparent-surface-base-1);
+  --_status-surface-strong: var(--sherpa-style-transparent-surface-base-2);
+  --_status-shadow: var(--sherpa-style-transparent-surface-shadow);
+  --_status-border: var(--sherpa-style-transparent-border-base);
+  --_status-border-strong: var(--sherpa-style-transparent-border-base-1);
+  --_status-text: var(--sherpa-style-transparent-content-base);
+  --_status-text-on-color: var(--sherpa-style-transparent-content-inverse);
+  --_status-icon: var(--sherpa-style-transparent-indicator-accent);
+}
+
+:host(sherpa-data-grid) .action-item[data-danger] {
+  --sherpa-style-border-base: var(--sherpa-style-transparent-critical-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-transparent-critical-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-transparent-critical-border-width);
+  --sherpa-style-content-base: var(--sherpa-style-transparent-critical-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-transparent-critical-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-transparent-critical-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-transparent-critical-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-transparent-critical-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-transparent-critical-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-transparent-critical-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-transparent-critical-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-transparent-critical-surface-shadow);
+  --_status-surface: var(--sherpa-style-transparent-critical-surface-base);
+  --_status-surface-subtle: var(--sherpa-style-transparent-critical-surface-base-1);
+  --_status-surface-strong: var(--sherpa-style-transparent-critical-surface-base-2);
+  --_status-shadow: var(--sherpa-style-transparent-critical-surface-shadow);
+  --_status-border: var(--sherpa-style-transparent-critical-border-base);
+  --_status-border-strong: var(--sherpa-style-transparent-critical-border-base-1);
+  --_status-text: var(--sherpa-style-transparent-critical-content-base);
+  --_status-text-on-color: var(--sherpa-style-transparent-critical-content-inverse);
+  --_status-icon: var(--sherpa-style-transparent-critical-indicator-accent);
+}
+
+:host(sherpa-data-grid) .group-count {
+  --sherpa-style-border-base: var(--sherpa-style-default-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-default-border-width);
+  --sherpa-style-border-data-viz: var(--sherpa-style-default-border-data-viz);
+  --sherpa-style-content-base: var(--sherpa-style-default-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-default-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-default-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-default-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-default-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-default-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-default-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
+  --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
+  --_status-surface: initial;
+  --_status-surface-subtle: initial;
+  --_status-surface-strong: initial;
+  --_status-shadow: initial;
+  --_status-border: initial;
+  --_status-border-strong: initial;
+  --_status-data-viz: initial;
+  --_status-data-viz-border: initial;
+  --_status-text: initial;
+  --_status-text-on-color: initial;
+  --_status-icon: initial;
+}
+
+:host(sherpa-data-grid) .cell-filter[data-current] {
+  --sherpa-style-border-base: var(--sherpa-style-critical-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-critical-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-critical-border-width);
+  --sherpa-style-border-data-viz: var(--sherpa-style-critical-border-data-viz);
+  --sherpa-style-content-base: var(--sherpa-style-critical-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-critical-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-critical-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-critical-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-critical-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-critical-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-critical-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-critical-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-critical-surface-shadow);
+  --sherpa-style-surface-data-viz: var(--sherpa-style-critical-surface-data-viz);
+  --_status-surface: var(--sherpa-style-critical-surface-base);
+  --_status-surface-subtle: var(--sherpa-style-critical-surface-base-1);
+  --_status-surface-strong: var(--sherpa-style-critical-surface-base-2);
+  --_status-shadow: var(--sherpa-style-critical-surface-shadow);
+  --_status-border: var(--sherpa-style-critical-border-base);
+  --_status-border-strong: var(--sherpa-style-critical-border-base-1);
+  --_status-data-viz: var(--sherpa-style-critical-surface-data-viz);
+  --_status-data-viz-border: var(--sherpa-style-critical-border-data-viz);
+  --_status-text: var(--sherpa-style-critical-content-base);
+  --_status-text-on-color: var(--sherpa-style-critical-content-inverse);
+  --_status-icon: var(--sherpa-style-critical-indicator-accent);
+}
+/* == end sherpa:tokens == */
+
 /**
  * sherpa-data-grid.css — a sortable table: sticky header, hover rows,
  * right-aligned numeric cells, optional selection / filter / actions columns.

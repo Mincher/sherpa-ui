@@ -21,6 +21,111 @@
     --sherpa-navigation-headerstate: default;
   }
 }
+
+/* State pins, from scripts/figma-data/state-pins.yaml. Unlayered, as the shared pins are. */
+:host(sherpa-nav-item) .badge {
+  --sherpa-style-border-base: var(--sherpa-style-saturated-success-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-saturated-success-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-saturated-success-border-width);
+  --sherpa-style-content-base: var(--sherpa-style-saturated-success-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-saturated-success-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-saturated-success-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-saturated-success-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-saturated-success-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-saturated-success-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-saturated-success-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-saturated-success-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-saturated-success-surface-shadow);
+  --_status-surface: var(--sherpa-style-saturated-success-surface-base);
+  --_status-surface-subtle: var(--sherpa-style-saturated-success-surface-base-1);
+  --_status-surface-strong: var(--sherpa-style-saturated-success-surface-base-2);
+  --_status-shadow: var(--sherpa-style-saturated-success-surface-shadow);
+  --_status-border: var(--sherpa-style-saturated-success-border-base);
+  --_status-border-strong: var(--sherpa-style-saturated-success-border-base-1);
+  --_status-text: var(--sherpa-style-saturated-success-content-base);
+  --_status-text-on-color: var(--sherpa-style-saturated-success-content-inverse);
+  --_status-icon: var(--sherpa-style-saturated-success-indicator-accent);
+}
+
+:host(sherpa-nav-item[disabled]) .badge {
+  --sherpa-style-border-base: var(--sherpa-style-saturated-inactive-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-saturated-inactive-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-saturated-inactive-border-width);
+  --sherpa-style-content-base: var(--sherpa-style-saturated-inactive-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-saturated-inactive-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-saturated-inactive-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-saturated-inactive-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-saturated-inactive-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-saturated-inactive-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-saturated-inactive-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-saturated-inactive-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-saturated-inactive-surface-shadow);
+  --_status-surface: var(--sherpa-style-saturated-inactive-surface-base);
+  --_status-surface-subtle: var(--sherpa-style-saturated-inactive-surface-base-1);
+  --_status-surface-strong: var(--sherpa-style-saturated-inactive-surface-base-2);
+  --_status-shadow: var(--sherpa-style-saturated-inactive-surface-shadow);
+  --_status-border: var(--sherpa-style-saturated-inactive-border-base);
+  --_status-border-strong: var(--sherpa-style-saturated-inactive-border-base-1);
+  --_status-text: var(--sherpa-style-saturated-inactive-content-base);
+  --_status-text-on-color: var(--sherpa-style-saturated-inactive-content-inverse);
+  --_status-icon: var(--sherpa-style-saturated-inactive-indicator-accent);
+}
+
+:host(sherpa-nav-item) .dot {
+  --sherpa-style-border-base: var(--sherpa-style-active-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-active-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-active-border-width);
+  --sherpa-style-border-data-viz: var(--sherpa-style-active-border-data-viz);
+  --sherpa-style-content-base: var(--sherpa-style-active-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-active-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-active-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-active-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-active-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-active-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-active-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-active-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-active-surface-shadow);
+  --sherpa-style-surface-data-viz: var(--sherpa-style-active-surface-data-viz);
+  --_status-surface: var(--sherpa-style-active-surface-base);
+  --_status-surface-subtle: var(--sherpa-style-active-surface-base-1);
+  --_status-surface-strong: var(--sherpa-style-active-surface-base-2);
+  --_status-shadow: var(--sherpa-style-active-surface-shadow);
+  --_status-border: var(--sherpa-style-active-border-base);
+  --_status-border-strong: var(--sherpa-style-active-border-base-1);
+  --_status-data-viz: var(--sherpa-style-active-surface-data-viz);
+  --_status-data-viz-border: var(--sherpa-style-active-border-data-viz);
+  --_status-text: var(--sherpa-style-active-content-base);
+  --_status-text-on-color: var(--sherpa-style-active-content-inverse);
+  --_status-icon: var(--sherpa-style-active-indicator-accent);
+}
+
+:host(sherpa-nav-item) .promo-icon {
+  --sherpa-style-border-base: var(--sherpa-style-active-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-active-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-active-border-width);
+  --sherpa-style-border-data-viz: var(--sherpa-style-active-border-data-viz);
+  --sherpa-style-content-base: var(--sherpa-style-active-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-active-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-active-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-active-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-active-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-active-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-active-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-active-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-active-surface-shadow);
+  --sherpa-style-surface-data-viz: var(--sherpa-style-active-surface-data-viz);
+  --_status-surface: var(--sherpa-style-active-surface-base);
+  --_status-surface-subtle: var(--sherpa-style-active-surface-base-1);
+  --_status-surface-strong: var(--sherpa-style-active-surface-base-2);
+  --_status-shadow: var(--sherpa-style-active-surface-shadow);
+  --_status-border: var(--sherpa-style-active-border-base);
+  --_status-border-strong: var(--sherpa-style-active-border-base-1);
+  --_status-data-viz: var(--sherpa-style-active-surface-data-viz);
+  --_status-data-viz-border: var(--sherpa-style-active-border-data-viz);
+  --_status-text: var(--sherpa-style-active-content-base);
+  --_status-text-on-color: var(--sherpa-style-active-content-inverse);
+  --_status-icon: var(--sherpa-style-active-indicator-accent);
+}
 /* == end sherpa:tokens == */
 
 /**

@@ -1,7 +1,7 @@
 # Traps — SherpaElement and the shared sheets
 
 One of the eleven areas of [the traps](../TRAPS.md): each entry is here because its
-first `Site:` is in this area (`npm run check:traps` holds it so). 70 entries.
+first `Site:` is in this area (`npm run check:traps` holds it so). 71 entries.
 
 ### T-tokens-css-never-reaches-shadow
 
@@ -25,6 +25,32 @@ page, `tokens.css` still does exactly that — a known gap, not a model.
 - Site: `test/e2e/reforged-style-modes.spec.ts`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/e2e/reforged-app-header.spec.ts`
+
+### T-a-host-state-pin-lives-where-the-host-is
+
+A host STATE pin (`sherpa-button[disabled]`) is matched in the tree the host
+sits in: the page, or a composer's shadow root. It is never `:host(…)` in the
+host's own sheet. Across a shadow boundary the OUTER rule wins whatever its
+specificity, so the host's own `data-status` or look would hide its state.
+
+Measured 2026-11-03 (695 P1), in Chromium, Firefox and WebKit: with the host
+state pins moved inside, 162 of 993 probe readings changed. Every one was a host
+with its own `data-status` or `data-look` in a shadow root. The toolbar's ⋮
+(`data-status="default"`) no longer read active while its menu was open.
+
+So `sherpa-style-modes.css`, which every root adopts, keeps the status and look
+pins, the 48 host state pins and their class twins. A component's own pins go in
+its sheet's generated region, unlayered, as the shared sheet is:
+
+- a pin on a PART, `:host(tag) .part`, which only its own root can match;
+- a bare `&`, its default, as `:host(tag)`. It beats only inheritance, so no
+  outer rule it lost to before changes.
+
+P7 can move the host state pins: there a mode is one property that the host's
+own state sets, and the paint moves to an inner part.
+
+- Site: `src/core/sherpa-style-modes.css`
+- Site: `scripts/project-tokens.mjs`
 
 ### T-a-button-commands-by-markup
 

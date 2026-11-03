@@ -1,3 +1,30 @@
+/* == sherpa:tokens (generated — do not edit) == */
+/* State pins, from scripts/figma-data/state-pins.yaml. Unlayered, as the shared pins are. */
+:host(sherpa-calendar-cell) {
+  --sherpa-style-border-base: var(--sherpa-style-transparent-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-transparent-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-transparent-border-width);
+  --sherpa-style-content-base: var(--sherpa-style-transparent-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-transparent-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-transparent-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-transparent-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-transparent-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-transparent-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-transparent-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-transparent-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-transparent-surface-shadow);
+  --_status-surface: var(--sherpa-style-transparent-surface-base);
+  --_status-surface-subtle: var(--sherpa-style-transparent-surface-base-1);
+  --_status-surface-strong: var(--sherpa-style-transparent-surface-base-2);
+  --_status-shadow: var(--sherpa-style-transparent-surface-shadow);
+  --_status-border: var(--sherpa-style-transparent-border-base);
+  --_status-border-strong: var(--sherpa-style-transparent-border-base-1);
+  --_status-text: var(--sherpa-style-transparent-content-base);
+  --_status-text-on-color: var(--sherpa-style-transparent-content-inverse);
+  --_status-icon: var(--sherpa-style-transparent-indicator-accent);
+}
+/* == end sherpa:tokens == */
+
 /**
  * sherpa-calendar-cell.css — one day in a calendar's grid.
  * Values read from the Figma "Calendar Cell" node (276:16589).

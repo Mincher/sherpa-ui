@@ -80,7 +80,8 @@ the chip moved. Measured then: 49% of component colours read Theme directly.
   component beats every `:host()` rule, so the page's `[data-look="saturated"]`
   hid a button's open state. As plain rules they meet the look and status pins
   in one tree, and specificity decides — look + state beats look alone. A pin on
-  a PART is `:host(tag) .part`, in the adopted sheet.
+  a PART is `:host(tag) .part`, in its component's own sheet
+  (`T-a-host-state-pin-lives-where-the-host-is`).
 - **A FLAG is not a pin.** The data grid marks an acting column with
   `data-status="active"` but paints nothing, so its YAML pins that heading
   back to `default`; without it the tint leaked into the chips and the menu.
