@@ -1,21 +1,9 @@
 /**
  * html-structure.mjs — parse a component's `<template>` markup into a node tree,
- * and compare two trees structurally.
+ * and compare two trees structurally, for the spec generator and its round-trip.
  *
- * ONE copy, because there were two and they had drifted.
- * `generate-component-spec.mjs` (the gated `spec:check` path) and
- * `roundtrip-component.mjs` (the per-component human report) each carried a
- * private copy of these six functions. Three were byte-identical; the rest were
- * not, and every divergence was a fix that had landed in one copy only:
- *
- *   - `findMatchingClose` was made COMMENT-AWARE in the generator after a comment
- *     that merely mentioned `<span>` pushed the tag depth one too deep and made an
- *     element swallow every sibling after it. The other copy never got it.
- *   - The `<slot>` FALLBACK-content handling landed in the generator only.
- *
- * The two then disagreed on 5 of 58 components — one reporting 58/58 green while
- * the other failed five. A second implementation of a check is a second answer to
- * "is this correct", and the two will not stay equal.
+ * `findMatchingClose` is COMMENT-AWARE: a comment that mentions `<span>` would
+ * otherwise push the depth one too deep and swallow every later sibling.
  *
  * Parsing is deliberately NOT general HTML. It handles exactly the deterministic
  * markup both sides emit: nested tags with attributes, void elements, and

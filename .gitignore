@@ -25,7 +25,6 @@ playwright/.cache/
 # Failed-patch artifacts
 *.orig
 *.rej
-.compile-out/
 
 # The MCP package's copy of the generation code, made as it is packed.
 mcp-server/vendor/

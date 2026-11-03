@@ -64,21 +64,22 @@ npm run lint:css
 npm run lint:css:strict
 
 # Check the component specs. Three halves, and ALL must pass:
-#   validate   — the spec matches schemas/component.v1.json
+#   validate   — the spec matches schemas/component.v1.json; each token ref resolves
 #   round-trip — the spec regenerates the source it was made from
 #   fresh      — the spec ON DISK is what the source generates now
 # `spec:check` RUNS IN THE PRE-COMMIT HOOK (`--staged`: freshness only for the
 # components the commit touches) and writes nothing. A stale spec blocks the
-# commit; `node scripts/generate-component-spec.mjs <name>` fixes it.
+# commit; `node scripts/generate-component-spec.mjs <name>` fixes it, and
+# `… --check <name>` prints one component's three halves and its diffs.
 npm run spec:check
-npm run spec:validate      # the schema half alone
 
 # What the specs make, written and never edited: custom-elements.json and VS
 # Code's HTML data (manifest), and a page per component in docs/components/
-# (reference). The hook's check:manifest and check:reference block a stale one,
-# so run both after a spec or an example changes.
+# (reference). The hook's check:generated blocks a stale one, so run both
+# writers after a spec or an example changes.
 npm run manifest
 npm run reference
+npm run check:generated
 
 # Tests — Playwright in three engines, then the node unit tests. The webServer
 # runs `npm run build`, so `npm test` builds for you.

@@ -37,12 +37,12 @@ fi
 # prose for identifiers. Cheap to check, and the only thing standing between a
 # fixed spec and the next silent drift.
 #
-# `spec:check` (not `spec:validate`) — it does BOTH halves:
-#   validate   the spec matches schemas/component.v1.json
+# `spec:check` is the one door, in three halves:
+#   validate   the spec matches schemas/component.v1.json; each token ref resolves
 #   round-trip the spec regenerates the source it came from
-# The round-trip is the half that catches a spec which is well-formed but no
-# longer describes its component. It had been reported and never enforced, so 22
-# of 58 failed it for a whole branch with every commit passing. 418ms for all 58.
+#   fresh      the spec on disk is what the source makes now
+# The round-trip catches a spec which is well-formed but no longer describes its
+# component. About 1.5s for all 68.
 echo "📋 Checking component specs (schema + round-trip)..."
 # QUIET ON SUCCESS. A 58-row table on every commit is noise that trains people to
 # scroll past the one line that matters. The output is captured and printed only
@@ -194,21 +194,12 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-# The editor files are written from the specs, by scripts/write-manifest.mjs.
-echo "🧩 Checking custom-elements.json against the specs..."
-MANIFEST_OUT=$(npm run check:manifest --silent 2>&1)
+# The editor files and docs/components/ are written from the specs.
+echo "🧩 Checking the files the specs make..."
+GEN_OUT=$(npm run check:generated --silent 2>&1)
 if [ $? -ne 0 ]; then
-  echo "$MANIFEST_OUT"
-  echo "❌ Commit blocked. Run: npm run manifest"
-  exit 1
-fi
-
-# The component reference is written from the specs, by scripts/write-reference.mjs.
-echo "📖 Checking docs/components/ against the specs..."
-REF_OUT=$(npm run check:reference --silent 2>&1)
-if [ $? -ne 0 ]; then
-  echo "$REF_OUT"
-  echo "❌ Commit blocked. Run: npm run reference"
+  echo "$GEN_OUT"
+  echo "❌ Commit blocked. Run the command named beside each file."
   exit 1
 fi
 

@@ -177,8 +177,10 @@ Visibility is a host attribute that CSS selects (PRINCIPLES 16):
 - Anatomy has three forms: `root`, `roots` (two or more sibling roots) and
   `byTemplate` (templates that are different trees). A composed child is a node
   whose `el` is a `sherpa-*` tag.
-- `npm run spec:check` has three halves: validate, round-trip and fresh.
-  `node scripts/resync-figma.mjs --check` reports drift from Figma.
+- `npm run spec:check` has three halves: validate (the schema, and each token
+  ref resolves), round-trip and fresh.
+  `node scripts/resync-figma.mjs <live-figma.json> --check` reports drift from
+  a live Figma snapshot.
 
 ## Figma
 
@@ -217,7 +219,8 @@ Names as exported on 2026-09-09; confirm them in the file before a build.
 In a checkout: `npm run type-check`, `npm run lint`, `npm run lint:css`,
 `npm run spec:check`, `npm run check:props`, `npm run check:ownership`,
 `npm run check:traps`, `npm run check:map`, `npm run check:size` and
-`npm run test:a11y`. Then `npm run manifest` and `npm run reference`.
+`npm run test:a11y`. Then `npm run manifest` and `npm run reference`, which
+`npm run check:generated` proves.
 
 ## With the MCP
 

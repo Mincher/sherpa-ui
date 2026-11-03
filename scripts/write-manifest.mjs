@@ -4,17 +4,16 @@
  * from the component specs. Editors and tools read these to autocomplete and
  * document every `<sherpa-*>` tag. TRAP T-the-manifest-is-written-from-the-specs
  *
- *   npm run manifest          write both files
- *   npm run check:manifest    fail when either is not what the specs make
+ *   npm run manifest          write both files; npm run check:generated checks them
  *
  * Map:
  * - specs — every component spec, by tag
  * - partsOf — every part named in a spec's anatomy
  * - manifest — the Custom Elements Manifest (schema 2.1.0) for every component
  * - htmlData — VS Code's HTML custom data (version 1.1) for every component
- * - FILES — the two files written, and what makes each
+ * - files — the two files the specs make, path → text
  */
-import { readFileSync, writeFileSync, globSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, globSync } from 'node:fs';
 import { basename } from 'node:path';
 
 /** Every component spec, by tag. */
@@ -146,23 +145,15 @@ export function htmlData(all = specs()) {
   };
 }
 
-/** The two files written, and what makes each. */
-export const FILES = { 'custom-elements.json': manifest, 'vscode.html-data.json': htmlData };
+/** The two files the specs make, path → text. */
+export function files(all = specs()) {
+  return new Map([['custom-elements.json', manifest], ['vscode.html-data.json', htmlData]]
+    .map(([file, make]) => [file, `${JSON.stringify(make(all), null, 2)}\n`]));
+}
 
 const isMain = process.argv[1] && basename(process.argv[1]) === 'write-manifest.mjs';
 if (isMain) {
-  const check = process.argv.includes('--check');
   const all = specs();
-  const stale = [];
-  for (const [file, make] of Object.entries(FILES)) {
-    const text = `${JSON.stringify(make(all), null, 2)}\n`;
-    if (check) {
-      if (!existsSync(file) || readFileSync(file, 'utf8') !== text) stale.push(file);
-    } else writeFileSync(file, text);
-  }
-  if (check && stale.length) {
-    console.error(`check:manifest — not what the specs make: ${stale.join(', ')}. Run: npm run manifest`);
-    process.exit(1);
-  }
-  console.log(`${check ? 'check:manifest' : 'manifest'} — ${all.length} components${check ? ' match' : ' written'}`);
+  for (const [file, text] of files(all)) writeFileSync(file, text);
+  console.log(`manifest — ${all.length} components written`);
 }

@@ -73,7 +73,7 @@ own `node_modules`). `realpathSync` on both sides is the check;
 
 **`custom-elements.json` and `vscode.html-data.json` are written, never
 edited.** `npm run manifest` makes both from the component specs, and the hook's
-`check:manifest` fails a commit whose specs changed without them. They are a
+`check:generated` fails a commit whose specs changed without them. They are a
 subset of the specs in two public formats — the Custom Elements Manifest 2.1.0,
 which editors, Storybook and doc tools read, and VS Code's HTML custom data — so
 no analyzer reads the code a second time. A prop the spec gets wrong is wrong in
@@ -81,10 +81,11 @@ every editor, which is how the phantom `asc` / `desc` props on the filter chip
 were found.
 
 **So is the component reference.** `npm run reference` writes `docs/components/`:
-a page for each spec and its example, and an index. `check:reference` fails a
+a page for each spec and its example, and an index. `check:generated` fails a
 commit whose pages are not what the specs and examples make. A wrong line on a
 page is fixed in the source or the generator, never on the page.
 
+- Site: `scripts/check-generated.mjs`
 - Site: `scripts/write-manifest.mjs`
 - Site: `scripts/write-reference.mjs`
 

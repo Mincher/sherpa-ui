@@ -4,6 +4,9 @@
  * Figma snapshot. Nothing else is touched; textProps is not compared.
  *
  *   node scripts/resync-figma.mjs <live-figma.json> [--dry|--check]
+ *
+ * A MANUAL Figma tool, run by hand — no npm script or gate runs it. The snapshot
+ * is read live through the figma-console MCP: { figmaName: { variantAxes, booleanProps } }.
  */
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';

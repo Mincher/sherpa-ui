@@ -1,24 +1,14 @@
 /**
- * css-reader.mjs — the single, PostCSS-based reader for authored component CSS.
+ * css-reader.mjs — the PostCSS reader for authored component CSS.
  *
- * Both the spec generator (generate-component-spec.mjs) and the round-trip guard
- * (roundtrip-component.mjs) used to carry their own regex copies of this logic.
- * Regexes only understood FLAT `.class { … }` / `:host([data-*])` selectors, so
- * native nesting (`&`) or `:is()`/`:where()` wrappers would make them go blind and
- * silently drop states / token-bindings → spec drift → parity break.
- *
- * This module parses with PostCSS instead: it walks the real AST, resolves nested
- * `&` against the parent selector chain, and unwraps `:is()` / `:where()` so a
- * wrapped `:host(...)` is still seen. Output shapes are IDENTICAL to the old
- * regex functions, so the migration is parity-neutral on today's flat CSS.
- *
- * Chromium-only CSS features (color-mix, @property, @function) are irrelevant here
- * — we only read selectors and `var(--sherpa-*)` bindings, which parse fine.
+ * The spec generator and its round-trip share it. It walks the real AST,
+ * resolves nested `&` against the parent selector chain, and unwraps `:is()` /
+ * `:where()`, so a nested or wrapped `:host(...)` is still seen — a regex reads
+ * flat selectors only, and silently drops the rest.
  *
  * Map:
  * - authoredCss — Strip the generated projector region; return only hand-authored CSS.
  * - extractBindings — every token a component binds, as { selector, property, token }
- * - extractBindingsMap — Round-trip's shape: { '.el': { prop: 'sherpa-x-without-prefix' } }.
  * - parseStates — a component's CSS states — :host([data-*]), :hover, :focus-visible
  */
 import postcss from 'postcss';
@@ -163,15 +153,6 @@ export function extractBindings(cssRaw) {
     }
   });
   return out;
-}
-
-/** Round-trip's shape: { '.el': { prop: 'sherpa-x-without-prefix' } }. */
-export function extractBindingsMap(cssRaw) {
-  const map = {};
-  for (const { el, prop, sherpaVar } of extractBindings(cssRaw)) {
-    (map[el] ??= {})[prop] = sherpaVar;
-  }
-  return map;
 }
 
 /* ══ state selectors ═════════════════════════════════════════════════════════════

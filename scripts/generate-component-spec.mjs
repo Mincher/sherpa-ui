@@ -27,16 +27,16 @@ import { execSync } from 'node:child_process';
 import { join, dirname, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import yaml from 'js-yaml';
-import Ajv2020 from 'ajv/dist/2020.js';
 import { specToDef } from './lib/component-to-def.mjs';
+import { isRef, resolveRef } from './lib/component-ref.mjs';
 import { compileDef } from './lib/generation/compile-def.mjs';
 import { authoredCss, extractBindings, parseStates } from './lib/css-reader.mjs';
 import { parseTemplates, htmlDiff, nodeAt } from './lib/html-structure.mjs';
+import { schemaCheck } from './lib/schema-check.mjs';
 import { parseClassApi, parseEmits, parseObserved, parsePopulate, parsePropDecls } from './lib/ts-facts.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const C = join(ROOT, 'src', 'components');
-const SCHEMA_PATH = join(ROOT, 'schemas', 'component.v1.json');
 const TOKENS_PATH = join(ROOT, 'src', 'styles', 'tokens', 'figma.tokens.json');
 const ELEMENT_MAP_PATH = join(ROOT, 'scripts', 'figma-data', 'element-map.yaml');
 
@@ -366,9 +366,6 @@ function collectEventNames(text, set) {
     if (mm && mm[1] && mm[1] !== 'detail') set.add(mm[1]);
   }
 }
-
-// authoredCss / extractBindings / parseStates live in ./lib/css-reader.mjs —
-// the same reader roundtrip-component.mjs uses.
 
 /** A `--sherpa-X` var name → a `{ref}` string. Scoped component vars become
  *  `{comp.<path>}`, everything else `{sherpa.X}`; refToToken inverts both back
@@ -923,19 +920,16 @@ function toJson(spec) {
 }
 
 // ══ validate + round-trip (in-memory, for --check) ══════════════════════════════
-let _validate = null;
-function getValidator() {
-  if (_validate) return _validate;
-  const AjvCtor = Ajv2020.default ?? Ajv2020;
-  const ajv = new AjvCtor({ allErrors: true, strict: false });
-  _validate = ajv.compile(JSON.parse(readFileSync(SCHEMA_PATH, 'utf8')));
-  return _validate;
-}
+/** The schema, and each token ref resolving; with no token file, refs go unjudged. */
 function validateSpec(spec) {
-  const validate = getValidator();
-  const ok = validate(spec);
-  const errors = ok ? [] : (validate.errors || []).map((e) => `${e.instancePath || '/'} ${e.message}`);
-  return { ok, errors };
+  const errors = schemaCheck('component.v1.json')(spec);
+  const tokens = generateSpec._tokens;
+  for (const [at, ref] of Object.entries(spec.tokens ?? {})) {
+    if (tokens && isRef(ref) && resolveRef(ref, { spec, tokens }).kind === 'unresolved') {
+      errors.push(`/tokens/${at} ${ref} names no token in figma.tokens.json`);
+    }
+  }
+  return { ok: !errors.length, errors };
 }
 /** In-memory round-trip: spec → specToDef → compileDef → compare on-disk files. */
 function roundtripSpec(name, spec) {

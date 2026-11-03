@@ -1,15 +1,7 @@
 /**
- * component-ref.mjs — the ONE shared {ref} resolver (plan §1.3).
- *
- * DTCG-style refs are `{path.to.thing}`. A component spec, its variant→tier
- * bindings, and its state→token links all use this same grammar — the single
- * seam shared with the token file. This resolver can walk BOTH:
- *
- *   • a component spec object (dot-path into the parsed *.component.json)
- *   • the token DTCG (dot-path into figma.tokens.json, unwrapping DTCG $value)
- *
- * Pure + importable. Neither the token pipeline nor the component pipeline
- * imports the other; they touch ONLY through this {ref} syntax.
+ * component-ref.mjs — the one {ref} resolver: a DTCG-style `{path.to.thing}`,
+ * against a component spec or the token DTCG (figma.tokens.json). `spec:check`
+ * holds each spec's token refs to it.
  *
  * Map:
  * - isRef — Is `s` a {ref} string?
@@ -40,17 +32,6 @@ function walkPath(root, path) {
     node = node[p];
   }
   return node;
-}
-
-/**
- * Resolve a {ref} against a component spec object. Returns the value the path
- * points at (a sub-object, an array, or a scalar), or undefined.
- *
- *   resolveComponentRef(spec, "{props}")          → the props array
- *   resolveComponentRef(spec, "{$extensions.sherpa.figmaName}") → "Switch"
- */
-function resolveComponentRef(spec, ref) {
-  return walkPath(spec, refPath(ref));
 }
 
 /**
@@ -111,21 +92,4 @@ export function resolveRef(ref, { spec, tokens } = {}) {
   }
 
   return { kind: 'unresolved', path };
-}
-
-/**
- * Fully resolve a token ref, following {ref} chains inside the token file to a
- * terminal value (a hex, a number, a keyword). Guards against cycles. Aliases
- * ({sherpa.*}) are terminal — returned as { alias } — since they're a CSS seam,
- * not a token value.
- */
-function resolveTokenChain(tokens, ref, seen = new Set()) {
-  const path = refPath(ref);
-  if (path.startsWith('sherpa.')) return { alias: path.slice('sherpa.'.length) };
-  if (seen.has(path)) throw new Error(`cyclic token ref: ${[...seen, path].join(' → ')}`);
-  seen.add(path);
-  const value = resolveTokenRef(tokens, ref);
-  if (value === undefined) return { unresolved: path };
-  if (isRef(value)) return resolveTokenChain(tokens, value, seen);
-  return { value };
 }

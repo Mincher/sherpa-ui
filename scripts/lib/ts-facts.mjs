@@ -1,13 +1,8 @@
 /**
  * ts-facts.mjs — read the facts a spec DETERMINES out of a component's TypeScript.
  *
- * Today that is the `observed` list and each declared prop. It lives here rather than in the spec
- * generator because two things need it and only one had the fixes: the generator
- * and `roundtrip-component.mjs` each had their own reader, and the fork's was the
- * naive `/static override observed = \[([^\]]*)\]/` regex. Both of the bugs
- * below had been found and fixed in the generator; neither reached the copy, so
- * the two disagreed on 5 of 58 components — one reporting all green while the
- * other failed five.
+ * The spec generator, `check-props` and the tests read the same facts here, so
+ * none of them can answer differently.
  *
  * Map:
  * - parseObserved — The `static override observed` list, as names.

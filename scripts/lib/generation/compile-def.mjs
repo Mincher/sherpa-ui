@@ -3,9 +3,8 @@
  *
  * `compileDef(def)` takes a def OBJECT and returns `{ ts, html, css }` — the
  * three component file strings. No file reads, no file writes, no process.argv:
- * a pure function so the MCP server, skills, and the CLI can all share one
- * implementation. The CLI (scripts/compile-def.mjs) owns arg parsing + I/O and
- * delegates the transformation here.
+ * a pure function, so the MCP server and the spec round-trip (`spec:check`)
+ * share one implementation.
  *
  * Requires an `anatomy` block on the def (only enriched defs have one) — the
  * caller is responsible for that check.

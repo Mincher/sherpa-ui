@@ -1107,7 +1107,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-app-layer-is-opt-in](traps/join-and-app.md#t-the-app-layer-is-opt-in) — check-weight
 - [T-the-bench-counts-and-never-times](traps/build-tools-mcp.md#t-the-bench-counts-and-never-times) — check-bench
 - [T-the-grid-is-two-grids](traps/build-tools-mcp.md#t-the-grid-is-two-grids) — lint-css, project-tokens
-- [T-the-manifest-is-written-from-the-specs](traps/build-tools-mcp.md#t-the-manifest-is-written-from-the-specs) — write-manifest, write-reference
+- [T-the-manifest-is-written-from-the-specs](traps/build-tools-mcp.md#t-the-manifest-is-written-from-the-specs) — check-generated, write-manifest, write-reference
 - [T-the-mcp-reads-sherpa-ui-through-one-door](traps/build-tools-mcp.md#t-the-mcp-reads-sherpa-ui-through-one-door) — check-mcp-pack, data, sherpa, vendor
 - [T-the-shared-vocabulary-is-declared-once](traps/element-and-sheets.md#t-the-shared-vocabulary-is-declared-once) — check-ownership
 - [T-the-templates-text-is-the-default](traps/element-and-sheets.md#t-the-templates-text-is-the-default) — generate-component-spec
