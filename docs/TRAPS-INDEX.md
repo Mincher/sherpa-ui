@@ -86,7 +86,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-series-has-a-value-at-every-point](TRAPS.md#t-a-series-has-a-value-at-every-point) — aggregate
 - [T-a-server-change-waits](TRAPS.md#t-a-server-change-waits) — held-store
 - [T-a-server-field-is-asked-once-per-answer](TRAPS.md#t-a-server-field-is-asked-once-per-answer) — data-source, data-source-types
-- [T-a-solo-is-a-draft-of-one-tab](TRAPS.md#t-a-solo-is-a-draft-of-one-tab) — query-context
+- [T-a-solo-is-a-draft-of-one-tab](TRAPS.md#t-a-solo-is-a-draft-of-one-tab) — data-source-types, query-context
 - [T-a-source-compiles-only-what-it-has](TRAPS.md#t-a-source-compiles-only-what-it-has) — data-source, query, source-counts
 - [T-a-status-is-worked-out-by-the-data](TRAPS.md#t-a-status-is-worked-out-by-the-data) — aggregate, field-catalogue, status-field, threshold
 - [T-a-store-has-one-cache](TRAPS.md#t-a-store-has-one-cache) — data-source, held-reads, store, store-cache
@@ -272,7 +272,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-view-content-is-a-view-definition](TRAPS.md#t-view-content-is-a-view-definition) — persist-view
 - [T-view-library-is-one-vocabulary](TRAPS.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (85)
+## The join and the app layer (86)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — bind-source
 - [T-a-card-toggles-its-own-toolbar](TRAPS.md#t-a-card-toggles-its-own-toolbar) — provider
@@ -313,6 +313,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-scope-is-named-for-its-content](TRAPS.md#t-a-scope-is-named-for-its-content) — provider
 - [T-a-server-field-is-asked-once-per-answer](TRAPS.md#t-a-server-field-is-asked-once-per-answer) — provider
 - [T-a-setting-is-a-pointer](TRAPS.md#t-a-setting-is-a-pointer) — bind-settings
+- [T-a-solo-is-a-draft-of-one-tab](TRAPS.md#t-a-solo-is-a-draft-of-one-tab) — provider
 - [T-a-status-is-worked-out-by-the-data](TRAPS.md#t-a-status-is-worked-out-by-the-data) — context, provider
 - [T-a-summary-binds-to-all-the-rows](TRAPS.md#t-a-summary-binds-to-all-the-rows) — bind-source
 - [T-a-view-is-json](TRAPS.md#t-a-view-is-json) — provider
@@ -360,7 +361,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — app, router
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 
-## Filters (152)
+## Filters (153)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — quick-filter-toolbar
@@ -411,6 +412,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-shut-scope-wears-its-chips-fill](TRAPS.md#t-a-shut-scope-wears-its-chips-fill) — quick-filter-toolbar
 - [T-a-silent-steer-still-redraws-its-chip](TRAPS.md#t-a-silent-steer-still-redraws-its-chip) — filter-host, quick-filter
 - [T-a-silent-write-still-needs-a-way-to-report](TRAPS.md#t-a-silent-write-still-needs-a-way-to-report) — quick-filter-toolbar
+- [T-a-solo-is-a-draft-of-one-tab](TRAPS.md#t-a-solo-is-a-draft-of-one-tab) — quick-filter-toolbar
 - [T-a-stale-draw-keeps-the-bars-own-change](TRAPS.md#t-a-stale-draw-keeps-the-bars-own-change) — quick-filter-toolbar
 - [T-a-state-colour-binds-the-style-mode](TRAPS.md#t-a-state-colour-binds-the-style-mode) — quick-filter
 - [T-a-stuck-header-casts-a-shadow](TRAPS.md#t-a-stuck-header-casts-a-shadow) — quick-filter-toolbar

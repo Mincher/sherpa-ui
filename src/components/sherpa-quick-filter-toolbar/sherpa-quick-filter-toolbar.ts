@@ -117,6 +117,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-reorder': { type: 'boolean', kind: 'behaviour' },
     // A filter's menu, and its section's ⋮, offer to move it between scopes: the app's choice. Will, TODO 587
     'data-move-filters': { type: 'boolean', kind: 'behaviour' },
+    // Solo a filter, and across every scope: the app's choices. Will, TODO 690
+    'data-allow-solo': { type: 'boolean', kind: 'behaviour' },
+    'data-solo-across': { type: 'boolean', kind: 'behaviour' },
     // In portrait, each field's heading in a column at its start: the app's choice. Will, TODO 460
     'data-label-column': { type: 'boolean', kind: 'behaviour' },
     // Every value's count, in a chip's menu too, picked or not: the app's choice. Will, TODO 466
@@ -371,7 +374,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        went active, and never filtered. Show the menu ITSELF, anchored to the
        Filters button. TRAP T-a-conditions-only-menu-cannot-be-drilled
        A TREE too: a parent opens its children from its own list. TODO 391 */
-    if (!from.children.length || from.matches(':state(tree)')) {
+    // Its action rows — Move, Solo — are not its answer.
+    if (![...from.children].some((row) => row.getAttribute('slot') !== 'actions') || from.matches(':state(tree)')) {
       this.#closeOverflow();
       from.show?.(add);
       return;
@@ -1254,6 +1258,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     return [...menu?.values ?? []];
   }
 
+  /** The field soloed in this tab, as its scope says. TODO 690 */
+  #soloed: string | null = null;
+
   /** The filter chips in the run — not Group, Sort or More — a set's among them. */
   #chips(): SherpaQuickFilter[] {
     return this.$$<SherpaQuickFilter>(CHIP);
@@ -1500,6 +1507,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     this.#addRemove(chip, menu, def);
     this.#addMove(chip, menu, def);
+    this.#addSolo(chip, menu, def);
 
     chip.setAttribute('data-menu', '');
     chip.appendChild(menu);
@@ -1613,8 +1621,35 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (!def || !menu) continue;
       menu.querySelector(':scope > .move')?.remove();
       this.#addMove(chip, menu, def);
+      this.#addSolo(chip, menu, def);
     }
     this.#syncLayout();
+  }
+
+  /** A field chip's Solo rows, in its menu, while the app allows it — as Move's: a
+   *  menu with rows is drilled, one without opens itself; CSS shows the one that
+   *  applies. TODO 690 */
+  #addSolo(chip: HTMLElement, menu: HTMLElement, def: FilterDef): void {
+    const rows = menu.querySelectorAll(':scope > :is([value="solo"], [value="unsolo"])');
+    const offered = this.hasAttribute('data-allow-solo') && chip.classList.contains('chip')
+      && !def.persistent && !def.preset && !arranges(kindOf(def));
+    if (!offered) {
+      for (const row of rows) row.remove();
+      return;
+    }
+    if (rows.length) return;
+    for (const tpl of ['template.solo-tpl', 'template.unsolo-tpl']) {
+      const row = this.clone(tpl);
+      if (row) menu.append(row);
+    }
+  }
+
+  /** Ask for a solo of this chip's field, or its end. TRAP T-a-solo-is-a-draft-of-one-tab */
+  #solo(chip: HTMLElement, on: boolean): void {
+    chip.querySelector<SherpaMenu>(':scope > sherpa-menu')?.hide?.();
+    const field = this.#fieldFor(chip.dataset['id'] ?? '');
+    if (on && field == null) return;
+    this.#ask(on ? { solo: field!, across: this.hasAttribute('data-solo-across') } : { unsolo: true }, 'free');
   }
 
   /** A chip's menu MOVES its field — up to the View, or a View field back down
@@ -1721,6 +1756,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       } else this.#move(owner);
       return;
     }
+    // SOLO, from a chip's menu or a section's ⋮. Will, TODO 690
+    const soloed = value === 'solo' || value === 'unsolo' ? owner ?? this.#chipOf(event) : null;
+    if (soloed) {
+      event.stopImmediatePropagation();
+      more?.querySelector<SherpaMenu>('sherpa-menu')?.hide?.();
+      this.#solo(soloed, value === 'solo');
+      return;
+    }
     // A chip menu's Move row: the menu says it, so its path holds no `.move`. TODO 450
     const mover = value === 'move' ? this.#chipOf(event) : null;
     if (mover) {
@@ -1755,6 +1798,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     // A selector is locked, and no filter: its body asks for nothing.
     if (chip.hasAttribute('data-persistent')) return;
+    // A SOLOED chip's body ends the solo. Will, TODO 690
+    if (chip.hasAttribute('data-solo')) return this.#solo(chip, false);
     // A PRESET asks for itself, on or off. TODO 493 · TRAP T-a-preset-is-its-own-part
     if (this.#defOf(chip)?.preset) {
       const on = chip.hasAttribute('data-locked') ? !chip.current : chip.current;
@@ -1860,7 +1905,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (name === 'open' && this.#columned && this.hasAttribute('open')) this.#column.opened();
     if (name === 'data-label-column') this.#syncLayout();
     if (name === 'data-fixed-primary') this.$('.organise-chip[data-id="primary"]')?.toggleAttribute('disabled', this.hasAttribute(name));
-    if (name === 'data-move-filters') this.#redoMoves();
+    if (name === 'data-move-filters' || name === 'data-allow-solo') this.#redoMoves();
     if (name === 'data-limit-options' || name === 'data-saved-menu' || name === 'data-saveable' || name === 'data-no-saves'
       || name === 'data-node-editor' || name === 'data-suggest' || name === 'data-orientation') this.#syncMore();
     if (name === 'data-every-count') this.#drawValueResults();
@@ -2165,6 +2210,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       });
     }
     this.#drawSwitch(!!scope.suspended && !resume);
+    // The field soloed in this tab. TODO 690
+    this.#soloed = scope.soloed ?? null;
     // Laid out first, drawn ONCE: each step below would draw the bar. TODO 523 U12
     this.#laying = true;
     try {
@@ -2173,6 +2220,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       this.#laying = false;
     }
     if (this.#owed) this.#render();
+    for (const chip of this.#chips()) chip.toggleAttribute('data-solo', chip.dataset['id'] === this.#soloed);
     // A rebuilt bar reads empty until its menus stamp. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
     await this.#settled();
     await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));

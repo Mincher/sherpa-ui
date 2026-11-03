@@ -8101,6 +8101,20 @@
             },
             {
               "kind": "field",
+              "name": "allowSolo",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "soloAcrossScopes",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "kind": "field",
               "name": "labelColumn",
               "type": {
                 "text": "boolean"
@@ -8497,6 +8511,12 @@
           "description": "a strip of quick-filter chips above a grid/list.",
           "attributes": [
             {
+              "name": "data-allow-solo",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-applied",
               "type": {
                 "text": "number"
@@ -8759,6 +8779,12 @@
                 "text": "boolean"
               },
               "default": "false"
+            },
+            {
+              "name": "data-solo-across",
+              "type": {
+                "text": "boolean"
+              }
             },
             {
               "name": "data-sort-direction",
@@ -9719,6 +9745,12 @@
               }
             },
             {
+              "name": "data-solo",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-spent",
               "description": "a SECTION whose every value its host hides: it says \"Limited by the filters before it: no matches.\" in their place. Written by the host. Will, TODO 517",
               "type": {
@@ -10021,6 +10053,9 @@
             },
             {
               "name": "moved"
+            },
+            {
+              "name": "solo-mark"
             },
             {
               "name": "swatch"

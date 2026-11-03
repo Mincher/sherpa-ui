@@ -47,6 +47,10 @@
   <!-- MOVE, a row of a chip's menu, in toolbar mode: the field up to the View,
        or a View field back down. Will, TODOs 425 G4, 450 · TRAP T-send-to-view-filters -->
   <template class="move-tpl"><button slot="actions" class="more-item move" type="button" value="move"></button></template>
+  <!-- SOLO, rows of a chip's menu: every other filter in its scope off while it is.
+       CSS shows them where the app allows it, and the one that applies. Will, TODO 690 -->
+  <template class="solo-tpl"><button slot="actions" class="more-item" type="button" value="solo">Solo this filter</button></template>
+  <template class="unsolo-tpl"><button slot="actions" class="more-item" type="button" value="unsolo">Remove soloing</button></template>
   <!-- The words its code hands on as data. TRAP T-a-word-is-in-the-markup -->
   <template class="words">
     <span data-word="raise">Move to View Context</span>
@@ -85,6 +89,8 @@
         <button class="more-item" type="button" value="raise"><span class="more-label"></span></button>
         <button class="more-item" type="button" value="lower"><span class="more-label"></span></button>
         <button class="more-item" type="button" value="clear"><span class="more-label">Reset</span></button>
+        <button class="more-item" type="button" value="solo"><span class="more-label">Solo this filter</span></button>
+        <button class="more-item" type="button" value="unsolo"><span class="more-label">Remove soloing</span></button>
         <button class="more-item" type="button" value="remove"><span class="more-label">Remove</span></button>
       </sherpa-menu>
     </sherpa-button>

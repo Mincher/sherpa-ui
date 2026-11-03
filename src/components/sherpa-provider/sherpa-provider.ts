@@ -513,6 +513,31 @@ export class SherpaProvider extends SherpaElement {
   /** The app's choice: Move between scopes. */
   #moveFilters = false;
 
+  /** A filter's menu, and its section's ⋮, offer "Solo this filter": every other
+   *  filter in its scope goes off while it is soloed. Off unless the app says, from
+   *  its session. Will, TODO 690 · TRAP T-a-solo-is-a-draft-of-one-tab */
+  get allowSolo(): boolean {
+    return this.#allowSolo;
+  }
+  set allowSolo(on: boolean) {
+    this.#allowSolo = on;
+    this.#offerAll();
+  }
+  /** The app's choice: Solo a filter. */
+  #allowSolo = false;
+
+  /** A solo switches off every other filter in EVERY scope, not its own alone —
+   *  for user tests to compare the two. Will, TODO 690 */
+  get soloAcrossScopes(): boolean {
+    return this.#soloAcross;
+  }
+  set soloAcrossScopes(on: boolean) {
+    this.#soloAcross = on;
+    this.#offerAll();
+  }
+  /** The app's choice: a solo reaches every scope. */
+  #soloAcross = false;
+
   /** In the panel, each filter's heading in a column at its start, its values
    *  beside it. The app sets it, from its session. Will, TODO 460 */
   get labelColumn(): boolean {
@@ -693,6 +718,8 @@ export class SherpaProvider extends SherpaElement {
     el.toggleAttribute('data-field-apply', !this.#singleApply);
     el.toggleAttribute('data-reorder', this.#reorder);
     el.toggleAttribute('data-move-filters', this.#moveFilters);
+    el.toggleAttribute('data-allow-solo', this.#allowSolo);
+    el.toggleAttribute('data-solo-across', this.#soloAcross);
     el.toggleAttribute('data-label-column', this.#labelColumn);
     el.toggleAttribute('data-every-count', this.#countEvery);
     // A grid's headings and tags. TODOs 500, 501, 490

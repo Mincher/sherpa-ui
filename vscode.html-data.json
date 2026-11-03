@@ -2842,6 +2842,10 @@
       "description": "a strip of quick-filter chips above a grid/list.",
       "attributes": [
         {
+          "name": "data-allow-solo",
+          "valueSet": "v"
+        },
+        {
           "name": "data-applied"
         },
         {
@@ -3039,6 +3043,10 @@
         {
           "name": "data-scroll-shadow",
           "description": "an inner shadow on each edge its column is scrolled past",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-solo-across",
           "valueSet": "v"
         },
         {
@@ -3270,6 +3278,10 @@
         {
           "name": "data-readonly",
           "description": "a KEY, not a control: no toggle, no button semantics. TRAP T-readonly-legend-is-a-key-not-a-filter",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-solo",
           "valueSet": "v"
         },
         {

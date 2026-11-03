@@ -186,7 +186,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, results, countApplied, savedMenu, saveAnyScope, switchable, sectionLabels, hideOrganiseLabels, sections, highlightOnHover, legendChips, highlightAcross, hovered, singleApply, reorderFilters, moveFilters, labelColumn, countEveryValue, headingGroup, headingHover, multiFieldColumns, showAs, axisChips, appContext, applyEvery, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (filterMode, limitOptions, hideUnmatched, results, countApplied, savedMenu, saveAnyScope, switchable, sectionLabels, hideOrganiseLabels, sections, highlightOnHover, legendChips, highlightAcross, hovered, singleApply, reorderFilters, moveFilters, allowSolo, soloAcrossScopes, labelColumn, countEveryValue, headingGroup, headingHover, multiFieldColumns, showAs, axisChips, appContext, applyEvery, reach, savedFilterSets, customView, view). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -416,6 +416,16 @@
         },
         {
           "name": "moveFilters",
+          "type": "boolean",
+          "access": "read-write"
+        },
+        {
+          "name": "allowSolo",
+          "type": "boolean",
+          "access": "read-write"
+        },
+        {
+          "name": "soloAcrossScopes",
           "type": "boolean",
           "access": "read-write"
         },

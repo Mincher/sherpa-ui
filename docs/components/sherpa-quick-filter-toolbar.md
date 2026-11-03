@@ -55,6 +55,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
+| `data-allow-solo` | boolean |  |  |
 | `data-applied` | number |  |  |
 | `data-apply-on` | `change` `input` |  | input: its source applies LIVE — a number does not wait for Apply, and reports while it moves. Set by a bound source. TODO 107 |
 | `data-at-default` | boolean |  | the filters already ARE the View's default: "Reset all to default" is inactive. Written by the provider. TODO 231. |
@@ -94,6 +95,7 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-saved-menu` | boolean | `false` | the saved sets, the save rows and Manage are a Saved menu of their own, not the Filters menu's |
 | `data-scope` | text |  | ASKED of its provider: the Query scope it draws and answers |
 | `data-scroll-shadow` | boolean | `false` | an inner shadow on each edge its column is scrolled past |
+| `data-solo-across` | boolean |  |  |
 | `data-sort-direction` | `asc` `desc` `""` | `asc` | asc \| desc |
 | `data-sort-field` | text |  | the field the Sort chip points at (the standard name) |
 | `data-suggest` | boolean |  | show "Suggest filters", left of Edit. Will, TODO 527 |

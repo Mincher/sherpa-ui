@@ -4134,8 +4134,20 @@ the solo lives in the `QueryContext` alone, and `export()` — a View save, a dr
 kept entry, the provider's state — reads what it switched off as ON. A whole Query
 put in (`setQuery`, `import`: a View, a draft) or a Reset ends it.
 
+**On the page** (S2): the provider's `allowSolo` and `soloAcrossScopes` reach every
+bar and panel as `data-allow-solo` and `data-solo-across`. A field chip's menu and a
+section's ⋮ hold both rows, "Solo this filter" and "Remove soloing", and CSS shows the
+one that applies; the bar asks `{ solo, across }` or `{ unsolo }`. The scope says its
+`soloed` field, and the bar marks that chip `data-solo`: the `solo` icon in its icon's
+place, and the `info` look (D2 A, a pin until Figma refines it). A soloed chip's body
+does not toggle: it ends the solo, and stays on.
+
 - Site: `src/core/data/query-context.ts`
+- Site: `src/core/data/data-source-types.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/a-solo-is-a-draft-of-one-tab.test.mjs`
+- Site: `test/e2e/reforged-a-solo-is-a-draft-of-one-tab.spec.ts`
 ### T-grid-column-width-bounds
 
 A column is never narrower than `11ch` nor wider than `50ch`; it starts at

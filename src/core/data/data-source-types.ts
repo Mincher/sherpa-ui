@@ -160,6 +160,8 @@ export interface ScopeDescription {
   sortDirection?: SortDirection;
   /** Its bar's filter Switch is OFF. TRAP T-the-filter-switch-keeps-what-it-turned-off */
   suspended?: boolean;
+  /** The field soloed in it, in this tab. TRAP T-a-solo-is-a-draft-of-one-tab */
+  soloed?: string;
   /** A SLOT: a chart draws here, and its Group and Sort are its presentation's, not the
    *  rows'. `chartFields` its Primary and Secondary may pick — none while the app turns them off (TODO 583);
    *  `primaryField` and `secondaryField` are in force;

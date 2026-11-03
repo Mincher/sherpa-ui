@@ -276,6 +276,13 @@
 
 /* Leading icon — shown only with data-icon-start (Figma "Icon", funnel default). */
 .icon { display: none; }
+/* SOLOED: the solo mark, in the icon's place. Will, TODO 690 */
+.solo-mark { display: none; }
+:host([data-solo]) .solo-mark {
+  display: inline-flex;
+  --_icon-size: var(--sherpa-theme-content-size-base, 14px);
+}
+:host([data-solo]) .icon { display: none; }
 /* Box + glyph come from .sherpa-icon-box; Figma "Icon" is content/size/base. */
 :host([data-icon-start]) .icon {
   display: inline-flex;

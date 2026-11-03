@@ -490,6 +490,7 @@ export class DataSource extends EventTarget {
         ...this.#partsIn(scope).flatMap((key) => this.describe(key).filters.map((f) => ({ ...f, answeredIn: key })))],
       available: this.addable(scope), ...(sets.length ? { sets } : {}),
       ...(q.suspended ? { suspended: true } : {}),
+      ...(this.#context.soloed?.scope === scope ? { soloed: this.#context.soloed.field } : {}),
     };
     /* GROUP, PRIMARY and SECONDARY by any field that names things — by its
        declaration, so before its values come: never a number or a date. A typed

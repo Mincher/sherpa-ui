@@ -553,6 +553,12 @@ sherpa-accordion.scope::part(actions) {
 /* A panel's filter section wears the shared hover fill, as a grid row does. Will, TODO 531 */
 .chips > .chip[data-layout="section"]:hover { background: var(--_bar-hover); }
 
+/* SOLO, where the app allows it: the row that applies, in a chip's menu and a
+   section's ⋮. Will, TODO 690 */
+:host(:not([data-allow-solo])) .more-item:is([value="solo"], [value="unsolo"]),
+sherpa-quick-filter[data-solo] .more-item[value="solo"],
+sherpa-quick-filter:not([data-solo]) .more-item[value="unsolo"],
+.add-btn .more-item:is([value="solo"], [value="unsolo"]) { display: none; }
 /* A section's ⋮ offers only what applies to its field, said by the bar. */
 .field-more:not([data-move="raise"]) .more-item[value="raise"],
 .field-more:not([data-move="lower"]) .more-item[value="lower"],

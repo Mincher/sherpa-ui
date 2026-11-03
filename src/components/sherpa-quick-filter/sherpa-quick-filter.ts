@@ -57,6 +57,9 @@ export class SherpaQuickFilter extends SherpaElement {
        it keeps its value and comes back when the view lets the field go.
        TRAP T-a-superseded-chip-suspends-it-is-never-removed */
     'data-superseded': { type: 'boolean', kind: 'style' },
+    /* SOLOED: every other filter in its scope is off while it is. Its body ends the
+       solo, never toggles. Written by its host. Will, TODO 690 */
+    'data-solo': { type: 'boolean', kind: 'behaviour' },
     /* The presets on that hold this field or value, by name: blue, and it says so. Will, TODO 521 */
     'data-by-preset': { type: 'string', kind: 'behaviour' },
     /* A value a preset on leaves out, in a field it holds: refused, by name. Will, TODO 601 */
@@ -815,7 +818,8 @@ export class SherpaQuickFilter extends SherpaElement {
     }
 
     // TRAP T-locked-chip-relays-and-nothing-else — report the click, do not flip.
-    if (!this.hasAttribute('data-locked')) this.current = !this.current;
+    // A soloed chip's body ends the solo: its host asks, and it stays on. TODO 690
+    if (!this.hasAttribute('data-locked') && !this.hasAttribute('data-solo')) this.current = !this.current;
     this.emit('quick-filter-click', { active: this.current });
   };
 

@@ -46,6 +46,8 @@ Put it round the part of a page whose components need data: each component insid
 | `singleApply` | `boolean` | read and write |  |
 | `reorderFilters` | `boolean` | read and write |  |
 | `moveFilters` | `boolean` | read and write |  |
+| `allowSolo` | `boolean` | read and write |  |
+| `soloAcrossScopes` | `boolean` | read and write |  |
 | `labelColumn` | `boolean` | read and write |  |
 | `countEveryValue` | `boolean` | read and write |  |
 | `headingGroup` | `boolean` | read and write |  |

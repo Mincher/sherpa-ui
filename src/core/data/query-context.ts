@@ -692,8 +692,7 @@ export class QueryContext extends EventTarget {
         this.#select(field, own.picked ?? [], on);
       }
       this.#solo = { scope, field, off };
-      for (const id of new Set([scope, ...off.map((o) => o.scope)])) this.commit({ scope: id });
-      this.#tell({ kind: 'drawn', fields: [field, ...off.map((o) => o.field)], bars: scope });
+      this.#soloSaid(this.#solo);
     });
   }
 
@@ -714,8 +713,15 @@ export class QueryContext extends EventTarget {
       const { suspended: _off, ...on } = held;
       this.#select(field, held.picked ?? [], on);
     }
-    for (const id of new Set([solo.scope, ...solo.off.map((o) => o.scope)])) this.commit({ scope: id });
-    this.#tell({ kind: 'drawn', fields: [solo.field, ...solo.off.map((o) => o.field)], bars: solo.scope });
+    this.#soloSaid(solo);
+  }
+
+  /** A solo applied, and every bar it reaches drawn again: each its own scope. */
+  #soloSaid(solo: { scope: string; field: string; off: { scope: string; field: string }[] }): void {
+    const scopes = new Set([solo.scope, ...solo.off.map((o) => o.scope)]);
+    for (const id of scopes) this.commit({ scope: id });
+    this.#tell({ kind: 'drawn', fields: [solo.field, ...solo.off.map((o) => o.field)] });
+    for (const id of scopes) this.#tell({ kind: 'bars', scope: id });
   }
 
   /** Say what a scope holds now. An empty list forgets the scope. */

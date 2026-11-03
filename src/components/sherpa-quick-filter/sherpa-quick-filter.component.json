@@ -68,6 +68,16 @@
             },
             {
               "el": "span",
+              "class": "solo-mark sherpa-icon-box",
+              "part": "solo-mark",
+              "attrs": {
+                "data-icon": "solo",
+                "role": "img",
+                "aria-label": "Soloed"
+              }
+            },
+            {
+              "el": "span",
               "class": "label",
               "part": "label",
               "children": [
@@ -522,6 +532,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-solo",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-spent",
       "type": "boolean",
       "observed": true,
@@ -684,6 +702,11 @@
       "$type": "state",
       "name": "swatch",
       "selector": ":host([data-swatch])"
+    },
+    {
+      "$type": "state",
+      "name": "solo",
+      "selector": ":host([data-solo])"
     },
     {
       "$type": "state",

@@ -32,8 +32,8 @@ draft; the icon is `solo` (an S in a box), drawn in Figma (node `1720:30462`).
 | Step | What | Done when |
 |---|---|---|
 | S1 ✅ | **Done 2026-11-03:** `QueryContext.solo`, `unsolo`, `soloed`; `export()` reads what a solo switched off as on; `setQuery` and `reset` end it; the `solo` icon in `src/icons/`. The data layer: `solo`, `unsolo`, `soloed`, `export()` without it | Node: a solo keeps every value whole, switches back only its own, and is never exported |
-| S2 | The provider, the toolbar, the panel, the chip | sherpa-ui specs: the rows show only with the setting; the Solo state; the body click ends it |
-| S3 | Demos: the settings, and a spec on Records | Demos green in three engines |
+| S2 ✅ | **Done 2026-11-03:** `allowSolo`, `soloAcrossScopes` → `data-allow-solo`, `data-solo-across`; both rows in a chip's menu and a section's ⋮, CSS shows the one that applies; `{ solo, across }` / `{ unsolo }` requests; the scope's `soloed` marks the chip `data-solo` — the `solo` icon, the `info` pin; its body ends the solo. The provider, the toolbar, the panel, the chip | sherpa-ui specs: the rows show only with the setting; the Solo state; the body click ends it |
+| S3 ✅ | **Done 2026-11-03:** Settings › Filtering's two switches (`/filters/solo`, `/filters/soloAcross`, which needs it), off by default; a spec on Records, three engines. Demos: the settings, and a spec on Records | Demos green in three engines |
 
 ## Decisions for Will
 

@@ -220,6 +220,9 @@ export type QueryRequest =
   | { scope?: string; preset: string; on: boolean; commit?: true }
   /** A slot's presentation: what its chart counts and splits by. TODO 548 */
   | { scope?: string; presentation: Partial<Record<keyof Presentation, string | undefined>> }
+  /** Solo a field, every scope `across`; or end the solo. TODO 690 */
+  | { scope?: string; solo: string; across?: boolean }
+  | { scope?: string; unsolo: true }
   | readonly QueryRequest[];
 
 /** A saved filter: a name, and each scope's filters as a View writes them —

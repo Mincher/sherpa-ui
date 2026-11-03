@@ -265,6 +265,8 @@ export function ask(query: QueryContext, request: QueryRequest, scope: string): 
   else if ('preset' in one) query.setPreset(at, one.preset, one.on, !!one.commit);
   else if ('reading' in one) query.setReading(at, one.field, one.reading);
   else if ('presentation' in one) query.present(at, one.presentation);
+  else if ('solo' in one) query.solo(at, one.solo, { across: !!one.across });
+  else if ('unsolo' in one) query.unsolo();
   else query.suspend(at, 'field' in one ? one.field : null, one.suspended);
   if ('commit' in one && one.commit) query.commit('field' in one ? { field: one.field } : { scope: at });
 }

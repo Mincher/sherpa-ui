@@ -32,6 +32,10 @@ sherpa-quick-filter:
   # ON BY A PRESET: a downstream chip or value, blue, and its tip says which. Will, TODO 521
   '&[data-by-preset]': info
   '&[data-current][data-by-preset]': info
+  # SOLOED: every other filter in its scope is off while it is; its icon says so.
+  # Will, TODO 690 (D2 A: info, refined in Figma later). TRAP T-a-solo-is-a-draft-of-one-tab
+  '&[data-solo]': info
+  '&[data-current][data-solo]': info
   # …and a value it leaves out, in a field it holds: refused. Will, TODO 601
   '&[data-held-out]': inactive
   '&[data-current][data-held-out]': inactive

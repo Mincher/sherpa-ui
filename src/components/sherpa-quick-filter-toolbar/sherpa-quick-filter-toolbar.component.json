@@ -571,6 +571,14 @@
   "props": [
     {
       "$type": "prop",
+      "name": "data-allow-solo",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-applied",
       "type": "number",
       "observed": true,
@@ -929,6 +937,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-solo-across",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-sort-direction",
       "type": "enum",
       "observed": true,
@@ -1078,6 +1094,11 @@
       "$type": "state",
       "name": "not-saveable",
       "selector": ":host(:not([data-saveable]))"
+    },
+    {
+      "$type": "state",
+      "name": "not-allow-solo",
+      "selector": ":host(:not([data-allow-solo]))"
     },
     {
       "$type": "state",
