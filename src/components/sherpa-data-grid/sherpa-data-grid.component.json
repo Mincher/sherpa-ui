@@ -949,7 +949,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (drawPresent, drawHighlight, drawOffered, setColumnFilter, supersede, columnClause, columnReading, drawReading, columnLabel, suspendColumnFilter, openColumnFilter, clearColumnFilter, findStep, actionsFor, neighbour, stepCurrent, select, clearSelection). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (drawLoading, drawPresent, drawHighlight, drawOffered, setColumnFilter, supersede, columnClause, columnReading, drawReading, columnLabel, suspendColumnFilter, openColumnFilter, clearColumnFilter, findStep, actionsFor, neighbour, stepCurrent, select, clearSelection). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -1176,6 +1176,12 @@
     "sherpa": {
       "figmaName": "Grid Cell",
       "methods": [
+        {
+          "$type": "method",
+          "name": "drawLoading",
+          "args": "loading: boolean",
+          "description": "drawLoading(loading) — its source is reading its rows again: what a reading owes the body is drawn once, with them; done, whatever is still owed. Plan 695 P4"
+        },
         {
           "$type": "method",
           "name": "drawPresent",

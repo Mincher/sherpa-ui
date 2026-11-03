@@ -319,6 +319,8 @@ export interface BoundControl {
   drawApplied?: (applied: Readonly<Record<string, FieldReading>>) => void;
   /** Mark each row the highlight's driver matches; `null`, none. TODO 441 */
   drawHighlight?: (matches: ((row: Row) => boolean) | null) => void;
+  /** Its rows are being read again; false, the read is done. Plan 695 P4 */
+  drawLoading?: (loading: boolean) => void;
   /** Each PICKED value's own results, by field then value — for a control that draws a chip per value. */
   drawValueResults?: (results: Readonly<Record<string, Readonly<Record<string, number>>>>, scope: string) => void;
   /** Each field's values the filters before it leave, as value keys; a field not named is not limited. */

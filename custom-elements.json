@@ -2723,6 +2723,19 @@
             },
             {
               "kind": "method",
+              "name": "drawLoading",
+              "parameters": [
+                {
+                  "name": "loading",
+                  "type": {
+                    "text": "boolean"
+                  }
+                }
+              ],
+              "description": "drawLoading(loading) — its source is reading its rows again: what a reading owes the body is drawn once, with them; done, whatever is still owed. Plan 695 P4"
+            },
+            {
+              "kind": "method",
               "name": "drawPresent",
               "parameters": [
                 {

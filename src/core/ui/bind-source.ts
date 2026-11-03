@@ -117,6 +117,9 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
   const id = options.id ?? bindId(el);
   ids.set(el, id);
   options.signal?.addEventListener('abort', () => source.unbind(el), { once: true });
+  // Its rows are read again: a control that draws them draws once, with them. Plan 695 P4
+  const loading = (event: Event): void => el.drawLoading?.(!!(event as CustomEvent).detail?.loading);
+  if (el.drawLoading) source.addEventListener('loading', loading);
 
   source.attach(el, { ...options, id }, {
     view: (view) => writeView(el, view, options.scope, slotOf(source, options.scope)),
@@ -140,6 +143,8 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
     },
     off: () => {
       for (const [type, handler] of listeners) el.removeEventListener(type, handler);
+      source.removeEventListener('loading', loading);
+      el.drawLoading?.(false);
       steered.delete(el as unknown as object);
       // UNLOCKED on the way out, or a component that outlives its source is mute.
       el.removeAttribute('data-locked');

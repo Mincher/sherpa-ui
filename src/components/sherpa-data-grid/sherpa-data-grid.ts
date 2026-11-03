@@ -294,11 +294,7 @@ export class SherpaDataGrid extends SherpaElement {
       const joined = this.#joined.get(field);
       return joined && { present: this.#joinedLimit(joined, present), offered: this.#joinedLimit(joined, offered) };
     },
-    paint: () => {
-      this.#renderHead();
-      this.#syncColumnFilterStatus();
-      this.#renderBody();
-    },
+    paint: () => this.#drawReadings(),
   });
 
   /** Each heading's filter chip, by its field. */
@@ -437,10 +433,29 @@ export class SherpaDataGrid extends SherpaElement {
     this.#schedule();
   }
 
-  /** The owed render, at the end of this moment. */
+  /** The owed render, at the end of this moment — once the rows on their way are here. */
   #schedule = coalesce((): void => {
-    if (!this.#awaitingData) this.#flush();
+    if (!this.#awaitingData && !this.#loading) this.#flush();
   });
+
+  /** Its source is reading its rows again. */
+  #loading = false;
+
+  /** drawLoading(loading) — its source is reading its rows again: what a reading
+   *  owes the body is drawn once, with them; done, whatever is still owed. Plan 695 P4
+   *  · TRAP T-a-grid-draws-once-per-moment */
+  drawLoading(loading: boolean): void {
+    this.#loading = loading;
+    if (!loading && this.#dirty.size) this.#schedule();
+  }
+
+  /** What its headings hold moved: they draw now — `head`, the whole row — and the body
+   *  once, at the end of this moment, or with the rows a bound grid is about to be given. */
+  #drawReadings(head = true): void {
+    if (head) this.#renderHead();
+    this.#syncColumnFilterStatus();
+    this.#invalidate('body');
+  }
 
   /** The owed render NOW — before a read of what is drawn. Only the part owed:
    *  a page turned draws the rows, not the heading. */
@@ -542,7 +557,8 @@ export class SherpaDataGrid extends SherpaElement {
   #measure(force = false): void {
     const box = this.$('.scroller');
     if (!box) return;
-    this.#readBounds();
+    // Read when its box resized — a font or a density moved — never per draw: it forces a style pass.
+    if (force || !this.#boundsRead) this.#readBounds();
     const selectable = this.hasAttribute('data-selectable');
     const shown = this.#shownColumns();
     const base = shown.map((col) => this.#widthFor(col));
@@ -625,8 +641,13 @@ export class SherpaDataGrid extends SherpaElement {
     const probe = this.$('.col-bounds');
     if (!probe) return;
     const { minInlineSize, maxInlineSize } = getComputedStyle(probe);
-    this.#bounds = { min: parseFloat(minInlineSize) || this.#bounds.min, max: parseFloat(maxInlineSize) || this.#bounds.max };
+    const min = parseFloat(minInlineSize);
+    const max = parseFloat(maxInlineSize);
+    this.#boundsRead = min > 0 && max > 0;
+    this.#bounds = { min: min || this.#bounds.min, max: max || this.#bounds.max };
   }
+  /** Have the bounds been read off CSS? */
+  #boundsRead = false;
 
   /** Stamp one <col> per column. Must run BEFORE the header cells are rebuilt. */
   #renderCols(): void {
@@ -975,8 +996,7 @@ export class SherpaDataGrid extends SherpaElement {
 
     // What the menu holds now is what it was drawn: a push of the same answer writes nothing.
     this.#drawn.set(field, held ? { ...held } : null);
-    this.#syncColumnFilterStatus();
-    this.#renderBody();
+    this.#drawReadings(false);
     this.#reportColumn(field, held);
   };
 
@@ -1085,9 +1105,7 @@ export class SherpaDataGrid extends SherpaElement {
     }
     this.#filter.keep(field, held);
     // The HEADER is rebuilt, not reached into: one path writes a menu.
-    this.#renderHead();
-    this.#syncColumnFilterStatus();
-    this.#renderBody();
+    this.#drawReadings();
   }
 
   /** A clause as what a heading HOLDS, or null when it filters by nothing — the
@@ -1112,11 +1130,8 @@ export class SherpaDataGrid extends SherpaElement {
    * TRAP T-a-view-held-heading-shows-and-refuses
    */
   supersede(readings: Readonly<Record<string, FieldReading>>, appliedAt?: string): void {
-    if (!this.#filter.supersede(readings, appliedAt)) return;
-    this.#renderHead();
-    this.#syncColumnFilterStatus();
     // The MARKS follow the answer that filters.
-    this.#renderBody();
+    if (this.#filter.supersede(readings, appliedAt)) this.#drawReadings();
   }
 
   /** What a heading SHOWS: a higher scope's answer when it holds the field — a
@@ -1190,10 +1205,9 @@ export class SherpaDataGrid extends SherpaElement {
       return;
     }
     this.#filter.keep(field, { ...held, suspended });
-    this.#syncColumnFilterStatus();
     // The MATCH MARKS go too: a suspended filter hides no rows, so marking what
     // would have matched claims something untrue.
-    this.#renderBody();
+    this.#drawReadings(false);
   }
 
   /**
@@ -1228,11 +1242,8 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** Drop one column's filter, or every one, and draw the heading. SILENT. */
   #clearColumns(field?: string): void {
-    if (!this.#filter.forget(field)) return;
     // Drawn from the map — #renderHead tells each kept menu what it now holds.
-    this.#renderHead();
-    this.#syncColumnFilterStatus();
-    this.#renderBody();
+    if (this.#filter.forget(field)) this.#drawReadings();
   }
 
   /**
@@ -1599,11 +1610,10 @@ export class SherpaDataGrid extends SherpaElement {
     const reading = readingAnswered(next) ? next : null;
     if (reading) this.#filter.keep(at.field, reading);
     else this.#filter.forget(at.field);
-    // The heading's menu is told by the redraw: what it holds no longer matches.
-    this.#renderHead();
-    this.#syncColumnFilterStatus();
-    this.#renderBody();
+    // Reported FIRST: a bound grid's source asks for its rows, and the body waits for them.
     this.#reportColumn(at.field, reading);
+    // The heading's menu is told by the redraw: what it holds no longer matches.
+    this.#drawReadings();
   }
 
   /**
@@ -1709,9 +1719,7 @@ export class SherpaDataGrid extends SherpaElement {
         if (reading) this.#filter.keep(f, reading);
         else this.#filter.forget(f);
       }
-      this.#renderHead();
-      this.#syncColumnFilterStatus();
-      this.#renderBody();
+      this.#drawReadings();
     }
     for (const [f, reading] of changed) this.#reportColumn(f, reading);
   }

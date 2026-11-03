@@ -129,6 +129,7 @@ For a table of records that can be sorted, filtered, grouped and selected. It re
 
 | Method | What it does |
 |---|---|
+| `drawLoading(loading: boolean)` | drawLoading(loading) — its source is reading its rows again: what a reading owes the body is drawn once, with them; done, whatever is still owed. Plan 695 P4 |
 | `drawPresent(present: Readonly<Record<string, readonly string[]>>)` | drawPresent(present, scope) — a bound source says what the filters before each field leave; a heading's menu greys the rest. A field not named is not limited. |
 | `drawHighlight(matches: ((row: GridRow) => boolean) \| null)` | drawHighlight(test) — a bound source says which rows the highlight's driver matches; `null`, none. Each row CSS tints. Will, TODO 441 |
 | `drawOffered(offered: Readonly<Record<string, readonly string[]>>)` | drawOffered(offered) — what each serial-set field OFFERS: a heading's menu removes the rest, but keeps a pick. |

@@ -1204,6 +1204,16 @@ again when shown. The `<col>`s are stamped again only when the shown columns
 change, or the widths `#measure` shared out would be lost. Pinning the select
 cells is writes only, on every draw (`#pinSelects`).
 
+**A reading and its rows draw the body once** (plan 695 P4). A bound grid is told
+a heading's new answer (`drawReading`, `supersede`) before its source has read
+the rows that answer leaves. The heading draws then; the body is OWED. The source
+asks its load before it draws the answer, so the load's microtask runs first, and
+its `loading` reaches the grid through `bindSource` as `drawLoading(true)`: the
+owed body waits for the rows. `drawLoading(false)` draws whatever is still owed —
+no rows came. The column bounds are read off CSS only when the box resized: read
+after every body draw, `getComputedStyle` forced a style pass (~40 ms at 4x).
+Measured on Demos Records at 4x: a value tick 216 → 80 ms, a chip on 208 → 80.
+
 **Each attribute redraws only its part** (C3). `onChange(name)` routes: a page
 or the needles redraw the BODY; the column values the HEADING; the sort both;
 `data-filter-fields` lights the chips in place; the total pages, the lock and
@@ -1213,6 +1223,7 @@ alone would otherwise lose the shared widths, and a body the frozen column.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-grid-keeps-its-heading.spec.ts`
+- Site: `test/e2e/reforged-a-grid-draws-once-per-act.spec.ts`
 
 ### T-a-heading-cell-is-kept
 
