@@ -262,9 +262,9 @@ test('a SORTED or FILTERED column FLAGS its header, and the CHIPS say so — no 
       return {
         background: getComputedStyle(th).backgroundColor,
         label: getComputedStyle(th.querySelector('.head-label')!).color,
-        // The sort CHIP paints itself from its own on-state. That is now the
-        // ONLY thing the sorted column shows.
-        sortOn: th.querySelector('.head-sort')!.hasAttribute('data-current'),
+        // The Sort BUTTON paints itself pressed. That is now the ONLY thing the
+        // sorted column shows. Plan 695 P4
+        sortOn: th.querySelector('.head-sort')!.getAttribute('aria-pressed') === 'true',
       };
     };
 
@@ -3283,4 +3283,41 @@ test('a sub-grid\'s headings stick under the parent\'s as it scrolls, and never 
   expect(r.atHead).toBe('head');
   expect(r.atSubHead).toBe('sub-head');
   expect(r.under).toBe('sub-body');
+});
+
+// Plan 695 P4: the heading's Sort and Group are real buttons — the chip is a filter's.
+test('a heading\'s Sort and Group are sherpa-buttons, pressed while they act, pressed by Enter, and their own press stays inside', async ({ page }) => {
+  await page.evaluate(async () => {
+    await window.__mount<HTMLElement>('sherpa-data-grid', {
+      columns: [{ field: 'name', header: 'Name' }, { field: 'team', header: 'Team' }],
+      rows: [{ name: 'b', team: 'x' }, { name: 'a', team: 'y' }],
+    }, { 'data-heading-group': '' });
+    await window.__settled();
+    const w = window as unknown as { heard: string[] };
+    w.heard = [];
+    document.addEventListener('button-click', () => w.heard.push('button-click'));
+    const grid = document.querySelector('sherpa-data-grid')!;
+    grid.addEventListener('sort-change', (e) => w.heard.push(`sort ${(e as CustomEvent).detail.field}`));
+    grid.addEventListener('group-change', (e) => w.heard.push(`group ${(e as CustomEvent).detail.field}`));
+    grid.shadowRoot!.querySelector('.head-cell[data-field="name"] .head-sort')!.shadowRoot!.querySelector<HTMLElement>('.trigger')!.focus();
+  });
+  await page.keyboard.press('Enter');
+  await page.evaluate(() => window.__settled());
+  const r = await page.evaluate(() => {
+    const sr = document.querySelector('sherpa-data-grid')!.shadowRoot!;
+    const read = (sel: string) => {
+      const b = sr.querySelector(sel)!;
+      return { tag: b.localName, pressed: b.getAttribute('aria-pressed'), inner: b.shadowRoot!.querySelector('.trigger')!.getAttribute('aria-pressed') };
+    };
+    const out = { sort: read('.head-cell[data-field="name"] .head-sort'), group: read('.head-cell[data-field="team"] .head-group'),
+      first: sr.querySelector('.row .cell')!.textContent };
+    sr.querySelector('.head-cell[data-field="team"] .head-group')!.shadowRoot!.querySelector<HTMLElement>('.trigger')!.click();
+    return { ...out, heard: (window as unknown as { heard: string[] }).heard };
+  });
+  expect(r).toEqual({
+    sort: { tag: 'sherpa-button', pressed: 'true', inner: 'true' },
+    group: { tag: 'sherpa-button', pressed: 'false', inner: 'false' },
+    first: 'a',
+    heard: ['sort name', 'group team'],
+  });
 });

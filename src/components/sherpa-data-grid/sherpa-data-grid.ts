@@ -39,6 +39,7 @@ import { GridWidths } from './grid-widths.js';
 
 // SIDE-EFFECT imports: an undefined custom element renders inert.
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
+import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-select-checkbox/sherpa-select-checkbox.js';
 import '../sherpa-select-radio/sherpa-select-radio.js';
@@ -374,6 +375,10 @@ export class SherpaDataGrid extends SherpaElement {
     // TRAP T-grid-chip-vocabulary-stops-here — a bound DataSource would read
     // the chip's quick-filter-change as the WHOLE filter.
     for (const type of ['quick-filter-change', 'quick-filter-click']) head?.addEventListener(type, this.#filters.stop);
+    // A heading's Sort and Group are its parts: their own press stops here. TRAP T-an-inner-event-stops-at-its-host
+    head?.addEventListener('button-click', (event) => {
+      if ((event.target as Element).closest('.head-sort, .head-group')) event.stopPropagation();
+    });
     head?.addEventListener('menu-select', this.#filters.remove);
     // Delegated: the body is replaced per render. The menu sits outside it.
     body?.addEventListener('click', this.#actions.click);
@@ -659,33 +664,41 @@ export class SherpaDataGrid extends SherpaElement {
     this.#filters.lightHeading(th, col.field);
 
     /* GROUP by a list field only: the source's rule, read from the filter it gave;
-       alone, not a number or a date. Will, TODOs 500, 523 */
-    const groupChip = th.querySelector<HTMLElement>('.head-group');
-    if (groupChip) {
-      groupChip.dataset['iconStart'] = SherpaDataGrid.icons.group;
+       alone, not a number or a date. Pressed while it groups. Will, TODOs 500, 523 */
+    const group = th.querySelector<HTMLElement>('.head-group');
+    if (group) {
+      group.dataset['iconStart'] = SherpaDataGrid.icons.group;
       const given = this.#filters.given[col.field];
       const list = col.type !== 'number' && col.type !== 'date' && (!given || advancedOf(given) !== 'only')
         // …and one the app's Group offers. Will, TODO 662
         && offerAxis([col], this.#groupOffer).length > 0;
-      groupChip.toggleAttribute('data-unsupported', !list);
-      groupChip.setAttribute('aria-label', `${this.word('group-by')} ${col.header ?? col.field}`);
+      group.toggleAttribute('data-unsupported', !list);
+      this.#press(group, this.dataset['groupField'] === col.field);
+      group.setAttribute('aria-label', `${this.word('group-by')} ${col.header ?? col.field}`);
     }
 
-    // TRAP T-grid-sort-glyph-needs-a-third-state.
-    const sortChip = th.querySelector<HTMLElement>('.head-sort');
-    if (sortChip) {
+    // Pressed while it sorts. TRAP T-grid-sort-glyph-needs-a-third-state.
+    const sort = th.querySelector<HTMLElement>('.head-sort');
+    if (sort) {
       const { sortNone, sortAsc, sortDesc } = SherpaDataGrid.icons;
-      sortChip.dataset['iconStart'] = !sorted
+      sort.dataset['iconStart'] = !sorted
         ? sortNone
         : (sortDir === 'desc' ? sortDesc : sortAsc);
-      // The chip is LOCKED, so the grid sets its on-state.
-      sortChip.toggleAttribute('data-current', sorted);
-      sortChip.toggleAttribute('data-unsupported', !sortable);
+      this.#press(sort, sorted);
+      sort.toggleAttribute('data-unsupported', !sortable);
       const name = col.header ?? col.field;
-      sortChip.setAttribute('aria-label', sorted
+      sort.setAttribute('aria-label', sorted
         ? `${this.word('sorted-by')} ${name}, ${this.word(sortDir === 'desc' ? 'desc' : 'asc')}`
         : `${this.word('sort-by')} ${name}`);
     }
+  }
+
+  /** A heading's toggle, pressed or not: pressed, the default look's active face — a
+   *  chip's on face; at rest, no chrome. Plan 695 P4 */
+  #press(button: HTMLElement, pressed: boolean): void {
+    button.setAttribute('aria-pressed', String(pressed));
+    if (pressed) button.removeAttribute('data-look');
+    else button.setAttribute('data-look', 'transparent');
   }
 
   /**
@@ -808,13 +821,14 @@ export class SherpaDataGrid extends SherpaElement {
   #onHeaderClick = (event: Event): void => {
     // A RESIZE just ended and the browser is synthesising its click.
     if (this.#widths.swallowed(event)) return;
-    // GROUP by this column. Will, TODO 500
-    if ((event.target as HTMLElement).closest('.head-group')) {
-      const field = (event.target as HTMLElement).closest<HTMLElement>('.head-cell')?.dataset['field'];
-      if (field) this.#askGroup(field);
+    // GROUP by this column; pressed, it stops. Will, TODO 500
+    const group = (event.target as HTMLElement).closest<HTMLElement>('.head-group');
+    if (group) {
+      const field = group.closest<HTMLElement>('.head-cell')?.dataset['field'];
+      if (field) this.#askGroup(group.getAttribute('aria-pressed') === 'true' ? null : field);
       return;
     }
-    // Only the SORT chip cycles; it carries no menu, so its click falls through to here.
+    // Only the SORT button cycles; it carries no menu, so its click falls through to here.
     if (!(event.target as HTMLElement).closest('.head-sort')) return;
     const th = (event.target as HTMLElement).closest<HTMLElement>('.head-cell');
     const field = th?.dataset['field'];

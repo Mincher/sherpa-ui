@@ -191,13 +191,11 @@
         <sherpa-quick-filter class="head-filter" data-icon-only data-menu
                              data-no-value data-locked
                              data-plain></sherpa-quick-filter>
-        <!-- Sort: no `data-menu` — a sort has nothing to pick, its click cycles
-             asc → desc → off; the only control that does. `data-locked` for the reason above. -->
-        <sherpa-quick-filter class="head-sort" data-icon-only data-plain
-                             data-no-value data-locked></sherpa-quick-filter>
-        <!-- Group by this column, where the app offers it. Will, TODO 500 -->
-        <sherpa-quick-filter class="head-group" data-icon-only data-plain
-                             data-no-value data-locked></sherpa-quick-filter>
+        <!-- Sort: a toggle, pressed while its column sorts. A sort has nothing to
+             pick: its press cycles asc → desc → off. Plan 695 P4 -->
+        <sherpa-button class="head-sort" data-type="icon" data-look="transparent" aria-pressed="false"></sherpa-button>
+        <!-- Group by this column, where the app offers it: pressed while it groups. Will, TODO 500 -->
+        <sherpa-button class="head-group" data-type="icon" data-look="transparent" aria-pressed="false"></sherpa-button>
       </span>
       <!-- A <th> cannot take `resize` (scroll containers only), so JS does the
            arithmetic on pointer move. A <span>, not a <button>: no keyboard

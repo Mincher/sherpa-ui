@@ -425,10 +425,10 @@
 /* An ACTING column's heading is deliberately UNPAINTED — the chips carry the
    on-state. `data-status="active"` is still written, for a host to style. */
 
-/* The column FILTER button — an icon-only <sherpa-quick-filter>, always in the
-   template, shown only for data-column-filters and a type that has a menu. */
-.head-filter { display: none; }
-
+/* The column FILTER button — an icon-only <sherpa-quick-filter> — and its Sort
+   and Group buttons: always in the template, shown only where they can act. */
+.head-filter,
+.head-sort,
 .head-group { display: none; }
 
 :host([data-column-filters]) .head-filter:not([data-unsupported]),
@@ -436,10 +436,12 @@
 :host([data-heading-group]) .head-group:not([data-unsupported]) {
   display: inline-flex;
   flex: 0 0 auto;
-  /* The chip scales off this token, so overriding it shrinks the whole control
-     rather than clipping it — a 24 chip would push the row past 32. */
-  --sherpa-display-mode-size-lg: 20px;
 }
+/* 20, not 24 — a 24 control would push the row past 32. Each is sized by the token
+   it scales off, so it shrinks whole rather than clipping. */
+.head-filter { --sherpa-display-mode-size-lg: 20px; }
+.head-sort,
+.head-group { --sherpa-button-size-height: 20px; }
 
 /* The heading row: filter button, sort button, label taking the rest.
    AN INNER WRAPPER, never the <th>: `display: flex` on a table cell takes it
@@ -469,7 +471,7 @@
 /* ON HOVER: a heading's buttons show while the pointer or focus is on it; one
    that is on stays — it says its column is filtered, sorted — and so does one
    whose menu is open. Will, TODO 501 · TRAP T-heading-buttons-show-on-hover */
-:host([data-heading-hover]) .head-cell:not(:hover, :focus-within) :is(.head-filter, .head-sort, .head-group):not([data-current], [data-open]) {
+:host([data-heading-hover]) .head-cell:not(:hover, :focus-within) :is(.head-filter, .head-sort, .head-group):not([data-current], [aria-pressed="true"], [data-open]) {
   visibility: hidden;
 }
 

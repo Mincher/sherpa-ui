@@ -38,9 +38,9 @@ test('a sortable header cycles none → asc → desc, each a different painted g
     await document.fonts.ready;
     await window.__settled();
 
-    // The sort control is an icon-only <sherpa-quick-filter> now, so the glyph
-    // is TWO shadow roots down: the chip writes its data-icon-start into its
-    // own `.caret-icon`. Reading the chip's attribute alone would not prove the
+    // The sort control is a <sherpa-button> now (plan 695 P4), so the glyph is
+    // TWO shadow roots down: the button writes its data-icon-start into its own
+    // `.icon-start`. Reading the button's attribute alone would not prove the
     // glyph paints, which is the whole point here.
     //
     // The classes go on `.caret-icon` ITSELF, not a child <i>. That changed
@@ -52,7 +52,7 @@ test('a sortable header cycles none → asc → desc, each a different painted g
     const read = () => [...el.shadowRoot.querySelectorAll('.head-cell')].map((th) => {
       const cell = th as HTMLElement;
       const chip = cell.querySelector('.head-sort') as HTMLElement;
-      const i = chip.shadowRoot!.querySelector('.caret-icon') as HTMLElement | null;
+      const i = chip.shadowRoot!.querySelector('.icon-start') as HTMLElement | null;
       const ink = i?.querySelector('path')?.getBoundingClientRect();
       return {
         field: cell.dataset['field'],
@@ -67,9 +67,9 @@ test('a sortable header cycles none → asc → desc, each a different painted g
     });
 
     const click = async (field: string) => {
-      // Click the SORT CHIP itself — it is the control now, not the label.
+      // Press the SORT BUTTON's own — it is the control now, not the label.
       const chip = el.shadowRoot.querySelector(`.head-cell[data-field="${field}"] .head-sort`) as HTMLElement;
-      (chip.shadowRoot!.querySelector('.caret') as HTMLElement).click();
+      (chip.shadowRoot!.querySelector('.trigger') as HTMLElement).click();
       await window.__settled();
     };
 

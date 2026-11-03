@@ -473,7 +473,7 @@ export class GridFilters {
 
   /** A heading chip's own events stop here — it is reused for its menu, not its vocabulary. */
   stop = (event: Event): void => {
-    if ((event.target as HTMLElement)?.closest?.('.head-filter, .head-sort')) event.stopPropagation();
+    if ((event.target as HTMLElement)?.closest?.('.head-filter')) event.stopPropagation();
   };
 
   /** Set one column's filter from a clause: SILENT unbound; BOUND, it asks as a reader

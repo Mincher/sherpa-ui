@@ -302,23 +302,21 @@
                     }
                   },
                   {
-                    "el": "sherpa-quick-filter",
+                    "el": "sherpa-button",
                     "class": "head-sort",
                     "attrs": {
-                      "data-icon-only": "",
-                      "data-plain": "",
-                      "data-no-value": "",
-                      "data-locked": ""
+                      "data-type": "icon",
+                      "data-look": "transparent",
+                      "aria-pressed": "false"
                     }
                   },
                   {
-                    "el": "sherpa-quick-filter",
+                    "el": "sherpa-button",
                     "class": "head-group",
                     "attrs": {
-                      "data-icon-only": "",
-                      "data-plain": "",
-                      "data-no-value": "",
-                      "data-locked": ""
+                      "data-type": "icon",
+                      "data-look": "transparent",
+                      "aria-pressed": "false"
                     }
                   }
                 ]
