@@ -291,9 +291,9 @@ field's `{ field, reading }`, an on or off `{ field, suspended }`, a scope's
 Switch `{ suspended }`, Clear all `{ reset }` — or a list, which is one change:
 
 ```ts
-// out: the event carries it; bindSource routes it to the Context's doors
+// out: the event carries it; its binding asks it of the Context
 el.emit('quick-filter-change', { scope: 'bar', request: { field, reading, commit: true } });
-// in: the source draws the control its slice, never through a public door
+// in: the source draws the control its slice, never through the door
 el.drawScope(description, live) / el.drawReading(field, reading, scope)
 ```
 
@@ -309,6 +309,37 @@ would. So:
 | grid heading | one `ColumnFilter` per column; `supersedeColumns` | draws the column's reading; superseded is derived |
 | legend | a one-component part | a component scope with `narrows: [chart]` |
 | `records.js` | several hundred lines of glue | declares scopes and fields; no mirroring |
+
+### One command, one door (695 S2)
+
+**Every edit to the Query is a `QueryRequest`, asked through
+`QueryContext.ask(request)`** — the controls, the node editor, an agent alike;
+the named doors (`setReading`, `setSort`, `hold`, `commit`…) are gone.
+`TRAP T-one-command-one-door`
+
+| asks | the request |
+|---|---|
+| a field's answer; on or off; a scope's Switch; Clear all | `{ field, reading }` · `{ field, suspended }` · `{ suspended }` · `{ reset }` |
+| an order; a preset; a solo; its end | `{ order }` · `{ preset, on }` · `{ solo, across? }` · `{ unsolo: true }` |
+| a slot's presentation | `{ presentation }` |
+| Sort (suspend: `null`; forget: `clear`); Group; Search | `{ sort, direction?, clear? }` · `{ group }` · `{ search }` |
+| a page; rows per page | `{ page }` · `{ pageSize }` — the source's that draws a page in `scope` |
+| what a scope holds; takes; lets go; a move | `{ hold }` · `{ take, from? }` · `{ release }` · `{ move, from }` |
+| picks ruled out; Apply; Discard | `{ field, letGo }` · `{ field?, commit: true }` · `{ field?, discard: true }` |
+
+Each names its `scope`, else the View — for a Sort, Group or Search the scope
+that arranges now, for an Apply or a Discard every scope. `commit: true` on an
+edit applies what it names. A hover (`{ field, preview }`) is the page's, and
+`ask()` passes it by. A list is one change.
+
+- **The steering events map to commands in ONE table**, `STEERS` in
+  `bind-source.ts`. The event names are the components' own; only the map moves.
+- **A slot's Sort and Group are its chart's**, whoever asks: the edit reroutes
+  them, so the node editor's are too (bug 5 was its `setSort`, past the reroute).
+- **Pure where it is plain data**: `editQuery(query, edit, facts)` gives the Query
+  after a Sort, Group, Search, presentation, order or move, the one given
+  untouched. An answer, a Switch, a solo, a reset, a preset and a hold still edit
+  in place: a member hears each step (S5).
 
 **Informing other components** (Will's *"use this query to help inform other
 UI components"*): the Filters menu's Added and Available lists, the panel's
@@ -329,7 +360,7 @@ selection mirror, `syncHeadings`, `syncColumns` and the panel glue in
 as aggregation moves in.
 
 **Stays**: `FieldReading`, `fieldState`, `readingClause`, `conditionClause`,
-the clause grammar, `bind()`, `setReading()` (a field's answer, at its home),
+the clause grammar, `bind()`, a field's answer at its home (now `ask({ field, reading })`),
 `groups()`, the scope registry, `debugState()`.
 
 ---

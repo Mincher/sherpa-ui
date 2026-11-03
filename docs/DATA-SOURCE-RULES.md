@@ -289,7 +289,7 @@ source shows rows in, and a field it lacks, are skipped and listed in
 
 | told with | read with |
 |---|---|
-| `hold(scope, fields)` | `query.scope(scope)` — the fields it holds; `query.scopes` — every scope that holds one; `describe(scope)` — the scope whole, as a control draws it |
+| `query.ask({ scope, hold: fields })` | `query.scope(scope)` — the fields it holds; `query.scopes` — every scope that holds one; `describe(scope)` — the scope whole, as a control draws it |
 | `declareField` · `declareValues` · `query.declareSets` | `fieldFacts(field)` · `valuesFor(field)` · `query.sets(scope)` |
 | `query.declareScope` | `query.scopeFacts(scope)`; `query.scopeLabel()` and `query.arranges()` add their fallbacks |
 | `query.declarePart` · `declareDefault` | `query.partFacts(scope)` · `query.defaultFor(scope)` |
@@ -390,7 +390,7 @@ setter never throws:
 
 ```js
 source.addEventListener('error', (e) => showBanner(e.detail.error));
-source.query.setSearch('ada');   // never throws, whatever the store does
+source.query.ask({ search: 'ada' });   // never throws, whatever the store does
 ```
 
 A failed load leaves the LAST GOOD ROWS on screen rather than blanking the
@@ -421,13 +421,18 @@ tenant in `name`, bump `version` when the rows' shape changes, and call
 Several controls narrow one query at once — a toolbar's chips, a grid's column
 headings, a chart legend, a saved view. Each answers a SCOPE of the Query, and
 the source ANDs them: a bar answers the scope it is bound to (`scope`), and a
-legend that narrows one chart writes that chart's own scope (`setReading(scope,
-field, reading, { only })`). A bar bound with no scope is reported
+legend that narrows one chart writes that chart's own scope (`query.ask({ scope,
+field, reading, only })`). A bar bound with no scope is reported
 (`bar-without-scope`), never applied.
+
+**Every edit is asked through one door, `source.query.ask(request)`** — a field's
+answer, an on or off, a Sort, a Group, a Search, a page, what a scope holds, an
+Apply — and a list is one change. A control's event is mapped to one by its
+binding; the node editor and an agent ask it the same way.
 
 `setQuery()` puts back a WHOLE Query — a saved view, a reload — so it is what a
 saved view uses and not what a control uses: a control asks for its own field
-(`setReading`). The store's `filter` (`[field, op, value]`) is what the
+(`ask({ scope, field, reading })`). The store's `filter` (`[field, op, value]`) is what the
 source compiles the Query to; nothing sets it by hand.
 
 ### Two scopes: a component EXTENDS a view, never alters it
