@@ -410,6 +410,9 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   and its steps begin under it. **Carried:** S5's `SourceWalk.walked` should call
   `traceQuerySteps` (then `watchQuery`'s own `walked()` goes), and a `load` span should name
   its store; status, presentation and component nodes do not light yet; off presets do not.
+- **The Wave 3 full run** (on `f3514899`, with N1 and N2): sherpa-ui 3762 passed, none
+  failed; Node 975/975. Demos 920 passed, 2 flaky; the 2 failures are both old WebKit ones
+  in TODO 702 (`panel-keeps-both-answers:19`, `saved-filter:352`). No new break.
 
 ### The waves
 
