@@ -9,7 +9,7 @@
   "components.js": {
     "files": 117,
     "brotli": {
-      "js": 231875,
+      "js": 232017,
       "fetched": 9534
     }
   },
@@ -107,7 +107,7 @@
   "components/sherpa-code-block/sherpa-code-block.js": {
     "files": 11,
     "brotli": {
-      "js": 18021,
+      "js": 18163,
       "fetched": 0
     }
   },
@@ -499,7 +499,7 @@
   "index.js": {
     "files": 181,
     "brotli": {
-      "js": 322468,
+      "js": 322610,
       "fetched": 9534
     }
   }

@@ -92,3 +92,24 @@ test('the copy button fires code-copy with the code and flips its copied state',
   expect(r.copiedAttr).toBe(true);
   expect(r.clipboard).toBe('copy me');
 });
+
+test('the copied tick reads as success: a pin on :state(copied) (Will, A, 2026-11-03)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-code-block') as WithRender;
+    el.setAttribute('data-code', 'copy me');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const tick = el.shadowRoot!.querySelector('.copied-label')!;
+    const before = getComputedStyle(tick).color;
+    (el.shadowRoot!.querySelector('.copy') as HTMLButtonElement).click();
+    await window.__settled();
+    const probe = document.createElement('span');
+    probe.style.color = 'var(--sherpa-style-success-content-base)';
+    document.body.appendChild(probe);
+    const success = getComputedStyle(probe).color;
+    probe.remove();
+    return { before, after: getComputedStyle(tick).color, success };
+  });
+  expect(r.after).toBe(r.success);
+  expect(r.before).not.toBe(r.success);
+});

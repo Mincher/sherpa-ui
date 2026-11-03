@@ -415,7 +415,7 @@
   "src/components/sherpa-chart-legend/sherpa-chart-legend.css": 150,
   "src/components/sherpa-chat-message/sherpa-chat-message.css": 121,
   "src/components/sherpa-chip/sherpa-chip.css": 46,
-  "src/components/sherpa-code-block/sherpa-code-block.css": 140,
+  "src/components/sherpa-code-block/sherpa-code-block.css": 168,
   "src/components/sherpa-container-footer/sherpa-container-footer.css": 43,
   "src/components/sherpa-container-header/sherpa-container-header.css": 163,
   "src/components/sherpa-container/sherpa-container.css": 220,

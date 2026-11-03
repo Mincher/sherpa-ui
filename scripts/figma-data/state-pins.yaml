@@ -220,6 +220,8 @@ sherpa-chip:
 sherpa-code-block:
   # The copy control is a Button instance pinned Transparent=default.
   '& .copy': transparent
+  # No copied state in Figma; the tick reads as success (Will, A, 2026-11-03).
+  '&:state(copied) .copied-label': success
 
 sherpa-container:
   # Container pins Style=default at its root.
