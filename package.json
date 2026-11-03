@@ -30,6 +30,10 @@
       "types": "./dist/worker.d.ts",
       "default": "./dist/worker.js"
     },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    },
     "./bundle": {
       "types": "./dist/index.d.ts",
       "default": "./dist/bundle/index.js"

@@ -52,8 +52,9 @@ export default [
     /* THE HEADLESS HALF of the data layer: it runs with no DOM — in Node, a test,
        an MCP tool, a server. The FOLDER is the rule, so a new file is covered
        the day it lands. EventTarget, CustomEvent and Event are Node globals and
-       stay allowed, as do TYPE-only uses of HTMLElement. */
-    files: ['src/core/data/**/*.ts', 'src/core/ui/bind-source.ts'],
+       stay allowed, as do TYPE-only uses of HTMLElement. Its Node host
+       (`sherpa-ui/server`) is held the same. */
+    files: ['src/core/data/**/*.ts', 'src/core/ui/bind-source.ts', 'src/core/server/**/*.ts', 'src/server.ts'],
     rules: {
       'no-restricted-globals': ['error',
         noDom('document', 'This module must run with NO DOM — it is the half of the data layer a server, a test or an MCP tool imports. Take the element as an argument instead.'),

@@ -105,7 +105,7 @@ const TESTS = 'Tests only';
 /** Each area: its name, its file in docs/traps/, and the Sites in it. */
 const AREAS = [
   ['The data layer', 'data-layer', [/^src\/core\/data\//, /^src\/data\.ts$/]],
-  ['Storage, saved Views and the URL', 'storage', [/^src\/core\/browser\//, /^src\/core\/worker\//, /^src\/worker\.ts$/]],
+  ['Storage, saved Views and the URL', 'storage', [/^src\/core\/browser\//, /^src\/core\/worker\//, /^src\/worker\.ts$/, /^src\/core\/server\//, /^src\/server\.ts$/]],
   ['The join and the app layer', 'join-and-app', [comp('provider', 'router', 'outlet'),
     ui('bind-source', 'context', 'apply-state', 'bind-settings'), /^src\/app\.ts$/]],
   ['Filters', 'filters', [comp('quick-filter', 'quick-filter-toolbar'),

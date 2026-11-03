@@ -969,7 +969,8 @@ that follows it asks at once (`T-news-is-pushed-by-the-server`); where no feed
 answers, `watchForUpdates()`: `registration.update()` every few minutes (default 5),
 when the tab is shown again, and back online. **The
 app's server stamps the worker script with each build**, so a new build is new
-bytes: Demos serves `/sw.js` with `// build <newest file time>` on its first line.
+bytes: `serveWorkerScript()` (`sherpa-ui/server`, plan 695 H5) serves `/sw.js` with
+`// build <newest file time>` on its first line, and says each new build on the feed.
 The new worker skips waiting and claims its pages (`keepAppFiles`, fresh), so the
 open page hears it at once, with no reload. Measured 2026-11-02 in all three
 engines: a deploy, the tab shown again, and the banner and the item show.
@@ -981,6 +982,39 @@ held set. Not a cookie: Chromium sends none with a worker script's request
 (measured).
 
 - Site: `src/core/browser/updates.ts`
+- Site: `src/core/server/worker-script.ts`
+
+### T-a-node-host-is-the-same-handler
+
+**A Node server hosts the data with the handler the page and the worker answer with**
+(plan 695 H5): `sherpa-ui/server`'s `nodeHandler(handlers)` turns a `node:http` request
+into a web `Request` and writes the `Response` back, streamed, so the feed's event stream
+stays open. It is a `node:http` listener and an Express-style middleware at once: each
+handler is asked in turn; where none answers, `next()`, else 404. One protocol, three
+hosts — never a second.
+
+Three things that are not obvious:
+
+- **Express rewrites `url`** under a mount path; the request's URL is made from
+  `originalUrl`, on the request's `Host` (or `origin`, behind a proxy that ends TLS).
+- **A body is read only as a handler reads it**, so a request none answers goes on to the
+  next middleware whole: read first, a parser after it — Demos' `/debug/updates` — finds
+  nothing left. One a parser read first is gone from the stream: its parsed value is
+  sent on, as JSON.
+- **A reader that goes away aborts its request's signal**, and cancels the stream it
+  was being sent, on the response's `close`: the feed drops a follower that left.
+
+The server's half of what is new is here too: `serveWorkerScript()` stamps the worker
+script with the build and says each new build on the feed (`T-a-new-build-is-a-new-worker`),
+and `updatesFeed().answer` is a handler, at `UPDATES_PATH`. The entry is DOM-free, held by
+the same lint as the data layer, and `the-server-entry-is-packed` installs it from its
+tarball and serves a store.
+
+- Site: `src/server.ts`
+- Site: `src/core/server/node-host.ts`
+- Site: `test/unit/a-node-host-is-the-same-handler.test.mjs`
+- Site: `test/unit/the-server-entry-is-packed.test.mjs`
+- Site: `test/e2e/reforged-a-server-answers-another-origin.spec.ts`
 
 ### T-a-view-change-resets-the-header-chips
 
