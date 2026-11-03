@@ -11,7 +11,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ArrayStore, DataSource, HttpError, VIEW, ValidationError, createDataHandler, openRequestStore, required, rowKey, rules, defineStores,
-  statusFields,
+  fakeRemote, statusFields,
 } from '../../dist/data.js';
 
 const PEOPLE = [
@@ -88,9 +88,9 @@ test('a source over it reads and filters as over its store', async () => {
 
 /* Plan 695 H2: a field's values cross alone — a count over the wire downloaded every
    row — and a History crosses only where its host's store keeps one. */
-test('a field\'s values are read where the rows are: one request, and no row crosses', async () => {
+test('a remote store\'s field values are read where the rows are: one request, and no row crosses', async () => {
   const inner = new ArrayStore(PEOPLE.map((p) => ({ ...p })), { key: 'id' });
-  const handle = createDataHandler({ stores: defineStores(() => ({ people: inner })) });
+  const handle = createDataHandler({ stores: defineStores(() => ({ people: fakeRemote(inner, { delay: 0 }) })) });
   const bodies = [];
   const send = async (request) => {
     const response = await handle(request);
@@ -104,6 +104,9 @@ test('a field\'s values are read where the rows are: one request, and no row cro
   assert.deepEqual(values, { team: ['core'] });
   assert.equal(bodies.length, 1);
   assert.ok(!bodies[0].includes('Ada'), 'no row came back');
+  // A local store's rows are read once, for its values and its counts alike.
+  const { store: local } = await pair();
+  assert.equal(local.distinct, undefined);
 });
 
 test('a History crosses only where its host\'s store keeps one', async () => {

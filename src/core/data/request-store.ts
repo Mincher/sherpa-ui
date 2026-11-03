@@ -57,7 +57,9 @@ export class RequestStore extends BaseStore {
   /** Read its source again, behind the set it holds — only a store that holds one.
    *  The asks of one moment are one request: a page's sources, its tab shown. S5b */
   readonly recheck?: () => Promise<void>;
-  /** Each field's values among the matches, read by its host: no row crosses. */
+  /** Each field's values among the matches, read by its host: no row crosses. A
+   *  remote store's only: a local one's rows are read once, for its values and its
+   *  counts alike — asked apart, Records read every row twice more (measured). */
   readonly distinct?: (fields: readonly string[], options?: LoadOptions) => Promise<Record<string, unknown[]>>;
   /** Take in the newer rows that wait behind the set it holds. S6c */
   readonly take?: () => Promise<boolean>;
@@ -83,7 +85,7 @@ export class RequestStore extends BaseStore {
       }));
       this.take = () => this.#ask<{ took: boolean }>('GET', '?take').then((said) => !!said?.took);
     }
-    if (facts.distinct) {
+    if (facts.distinct && this.capabilities.remote) {
       this.distinct = async (fields, options) => (await this.#query<{ values: Record<string, unknown[]> }>({ ...encodeQuery(options), distinct: [...fields] }, options?.signal)).values;
     }
     /* Its host says every change, to every tab — its own writes too, so it says

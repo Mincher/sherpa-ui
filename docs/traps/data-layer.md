@@ -4497,7 +4497,9 @@ Four things that are not obvious:
   so a worker caches answers itself, keyed by the body.
 - **A field's values cross alone**: a `QUERY` with `distinct: [fields]` answers
   `{ values }`, read where the rows are — the store's own `distinct`, else its rows there.
-  A `RequestStore` offers it where the facts say its store has one (plan 695 H2).
+  A `RequestStore` offers it where its store has one and is remote: a local store's
+  rows are read once, for its values and its counts alike, and asked apart Demos'
+  Records read every row twice more (measured, plan 695 H2).
 
 A `POST` whose body is a query is answered as the `QUERY`: the fallback where a proxy refuses
 the method, with the same body. Any other `POST` adds a row.
