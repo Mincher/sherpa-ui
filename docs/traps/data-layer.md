@@ -1270,7 +1270,6 @@ This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` an
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `src/core/data/query-context.ts`
 - Site: `src/core/ui/filter-host-controller.ts`
 - Site: `src/core/data/source-view.ts`
 - Site: `src/core/data/query-edits.ts`

@@ -9,52 +9,52 @@ files. An entry that only tests cite is under Tests only.
 ## The data layer (210)
 
 - [T-a-band-label-names-what-it-counts](traps/data-layer.md#t-a-band-label-names-what-it-counts) — aggregate
-- [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — data-source
-- [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — data, data-source, report
+- [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — data-source, source-view
+- [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — data, report, source-reads, source-view
 - [T-a-bug-report-should-be-a-paste](traps/data-layer.md#t-a-bug-report-should-be-a-paste) — data-source
 - [T-a-category-keeps-its-colour](traps/data-layer.md#t-a-category-keeps-its-colour) — aggregate
-- [T-a-change-redoes-only-what-reads-it](traps/data-layer.md#t-a-change-redoes-only-what-reads-it) — data-source, walk
+- [T-a-change-redoes-only-what-reads-it](traps/data-layer.md#t-a-change-redoes-only-what-reads-it) — source-reads, source-walk, walk
 - [T-a-changed-key-moves-the-row](traps/data-layer.md#t-a-changed-key-moves-the-row) — stores
 - [T-a-chart-gap-is-real-space](traps/data-layer.md#t-a-chart-gap-is-real-space) — format-tick
-- [T-a-chart-is-free-of-its-own-field](traps/data-layer.md#t-a-chart-is-free-of-its-own-field) — data-source, data-source-types, source-binding
-- [T-a-chart-scope-is-its-legend-field](traps/data-layer.md#t-a-chart-scope-is-its-legend-field) — data-source, data-source-types, query-context
+- [T-a-chart-is-free-of-its-own-field](traps/data-layer.md#t-a-chart-is-free-of-its-own-field) — data-source, data-source-types, source-binding, source-reads, source-view
+- [T-a-chart-scope-is-its-legend-field](traps/data-layer.md#t-a-chart-scope-is-its-legend-field) — data-source-types, query-context, query-declarations, source-view
 - [T-a-chip-body-cycles-its-states](traps/data-layer.md#t-a-chip-body-cycles-its-states) — cycle
-- [T-a-chip-counts-within-the-filters-before-it](traps/data-layer.md#t-a-chip-counts-within-the-filters-before-it) — data-source
+- [T-a-chip-counts-within-the-filters-before-it](traps/data-layer.md#t-a-chip-counts-within-the-filters-before-it) — data-source, source-walk
 - [T-a-chip-says-its-own-answer](traps/data-layer.md#t-a-chip-says-its-own-answer) — filter-face
-- [T-a-closed-source-hears-nothing](traps/data-layer.md#t-a-closed-source-hears-nothing) — data-source, held-store, wrap-store
-- [T-a-component-default-outlives-a-view](traps/data-layer.md#t-a-component-default-outlives-a-view) — query, query-context, query-edits
-- [T-a-component-part-narrows-one-component](traps/data-layer.md#t-a-component-part-narrows-one-component) — bind-selection, query, query-context, source-binding
+- [T-a-closed-source-hears-nothing](traps/data-layer.md#t-a-closed-source-hears-nothing) — data-source, held-store, source-reads, wrap-store
+- [T-a-component-default-outlives-a-view](traps/data-layer.md#t-a-component-default-outlives-a-view) — query, query-context, query-declarations, query-edits
+- [T-a-component-part-narrows-one-component](traps/data-layer.md#t-a-component-part-narrows-one-component) — bind-selection, query, query-edits, source-binding
 - [T-a-condition-badge-says-that-not-which](traps/data-layer.md#t-a-condition-badge-says-that-not-which) — data, filter-face
 - [T-a-condition-marks-every-match](traps/data-layer.md#t-a-condition-marks-every-match) — store
-- [T-a-conditioned-chip-answers-with-its-clause](traps/data-layer.md#t-a-conditioned-chip-answers-with-its-clause) — data-source
-- [T-a-container-shows-its-datas-state](traps/data-layer.md#t-a-container-shows-its-datas-state) — data-source, field-catalogue
+- [T-a-conditioned-chip-answers-with-its-clause](traps/data-layer.md#t-a-conditioned-chip-answers-with-its-clause) — source-view
+- [T-a-container-shows-its-datas-state](traps/data-layer.md#t-a-container-shows-its-datas-state) — field-catalogue, source-reads
 - [T-a-context-holds-the-only-query](traps/data-layer.md#t-a-context-holds-the-only-query) — query-context
 - [T-a-data-request-is-the-store-interface](traps/data-layer.md#t-a-data-request-is-the-store-interface) — data-handler, request-store
 - [T-a-date-chip-names-its-field](traps/data-layer.md#t-a-date-chip-names-its-field) — field-catalogue
 - [T-a-date-picks-days-unless-it-says-range](traps/data-layer.md#t-a-date-picks-days-unless-it-says-range) — data-source-types, filter-state
 - [T-a-date-reads-one-way](traps/data-layer.md#t-a-date-reads-one-way) — data, filter-face, format-date
 - [T-a-delta-is-derived-not-declared](traps/data-layer.md#t-a-delta-is-derived-not-declared) — aggregate
-- [T-a-failed-read-keeps-the-last-set](traps/data-layer.md#t-a-failed-read-keeps-the-last-set) — data-source, store-cache
-- [T-a-failure-has-a-kind](traps/data-layer.md#t-a-failure-has-a-kind) — data-source, failure, fake-remote
-- [T-a-fetching-list-opens-on-its-first-value](traps/data-layer.md#t-a-fetching-list-opens-on-its-first-value) — data-source, data-source-types, query-context
-- [T-a-field-can-carry-over-views](traps/data-layer.md#t-a-field-can-carry-over-views) — data-source-types, query-context, query-edits
-- [T-a-field-is-declared-once](traps/data-layer.md#t-a-field-is-declared-once) — data-source, data-source-types
+- [T-a-failed-read-keeps-the-last-set](traps/data-layer.md#t-a-failed-read-keeps-the-last-set) — data-source, source-reads, store-cache
+- [T-a-failure-has-a-kind](traps/data-layer.md#t-a-failure-has-a-kind) — failure, fake-remote, source-reads
+- [T-a-fetching-list-opens-on-its-first-value](traps/data-layer.md#t-a-fetching-list-opens-on-its-first-value) — data-source, data-source-types, query-context, query-declarations
+- [T-a-field-can-carry-over-views](traps/data-layer.md#t-a-field-can-carry-over-views) — data-source-types, query-edits, query-members
+- [T-a-field-is-declared-once](traps/data-layer.md#t-a-field-is-declared-once) — data-source, data-source-types, source-view
 - [T-a-field-reads-its-values-when-needed](traps/data-layer.md#t-a-field-reads-its-values-when-needed) — data-source, page-definition
-- [T-a-filter-applies-down-its-scope](traps/data-layer.md#t-a-filter-applies-down-its-scope) — bind-selection, query-context
-- [T-a-filter-set-groups-or-chains](traps/data-layer.md#t-a-filter-set-groups-or-chains) — data-source, data-source-types, page-definition, query-context
-- [T-a-find-asks-its-host-to-step](traps/data-layer.md#t-a-find-asks-its-host-to-step) — data-source
-- [T-a-group-is-a-data-layer-concept](traps/data-layer.md#t-a-group-is-a-data-layer-concept) — data-source, store
-- [T-a-heading-asks-through-the-source](traps/data-layer.md#t-a-heading-asks-through-the-source) — query-context
+- [T-a-filter-applies-down-its-scope](traps/data-layer.md#t-a-filter-applies-down-its-scope) — bind-selection, query-edits
+- [T-a-filter-set-groups-or-chains](traps/data-layer.md#t-a-filter-set-groups-or-chains) — data-source, data-source-types, page-definition, query-context, query-declarations, source-walk
+- [T-a-find-asks-its-host-to-step](traps/data-layer.md#t-a-find-asks-its-host-to-step) — source-view
+- [T-a-group-is-a-data-layer-concept](traps/data-layer.md#t-a-group-is-a-data-layer-concept) — data-source, source-reads, store
+- [T-a-heading-asks-through-the-source](traps/data-layer.md#t-a-heading-asks-through-the-source) — query-edits
 - [T-a-heading-holds-a-whole-reading](traps/data-layer.md#t-a-heading-holds-a-whole-reading) — where
 - [T-a-held-set-reads-the-pages-fields](traps/data-layer.md#t-a-held-set-reads-the-pages-fields) — data-source, data-source-types, held-set, held-store, page-definition, read-plan, source-binding, store-cache
-- [T-a-held-set-takes-a-change-in-place](traps/data-layer.md#t-a-held-set-takes-a-change-in-place) — data-source, held-set, store, store-cache, stores
+- [T-a-held-set-takes-a-change-in-place](traps/data-layer.md#t-a-held-set-takes-a-change-in-place) — held-set, source-reads, store, store-cache, stores
 - [T-a-hovered-chip-previews-the-highlight](traps/data-layer.md#t-a-hovered-chip-previews-the-highlight) — query
 - [T-a-kept-set-is-checked-each-session](traps/data-layer.md#t-a-kept-set-is-checked-each-session) — held-store, store-cache
 - [T-a-legend-follows-the-view-when-it-holds-the-field](traps/data-layer.md#t-a-legend-follows-the-view-when-it-holds-the-field) — bind-selection
 - [T-a-legend-row-goes-inactive-it-never-vanishes](traps/data-layer.md#t-a-legend-row-goes-inactive-it-never-vanishes) — aggregate
 - [T-a-list-has-a-limit](traps/data-layer.md#t-a-list-has-a-limit) — field-catalogue
 - [T-a-made-up-key-never-leaves-the-data-layer](traps/data-layer.md#t-a-made-up-key-never-leaves-the-data-layer) — base-store, data, held-set, row-key
-- [T-a-needle-comes-from-either-direction](traps/data-layer.md#t-a-needle-comes-from-either-direction) — data-source, data-source-types, store
+- [T-a-needle-comes-from-either-direction](traps/data-layer.md#t-a-needle-comes-from-either-direction) — data-source-types, source-view, store
 - [T-a-newer-write-wins](traps/data-layer.md#t-a-newer-write-wins) — data-handler, fake-remote, notices, request-store, store
 - [T-a-notice-is-heard-never-ordered](traps/data-layer.md#t-a-notice-is-heard-never-ordered) — notices, updates
 - [T-a-page-goes-out-as-json](traps/data-layer.md#t-a-page-goes-out-as-json) — data-source-types, query-context
@@ -62,46 +62,46 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-page-is-its-definition](traps/data-layer.md#t-a-page-is-its-definition) — data, page-definition
 - [T-a-page-scope-starts-with-its-answers](traps/data-layer.md#t-a-page-scope-starts-with-its-answers) — query-context, query-edits
 - [T-a-page-turn-is-a-slice](traps/data-layer.md#t-a-page-turn-is-a-slice) — base-store, held-set, source-counts, store-cache, stores
-- [T-a-panel-asks-for-its-scopes](traps/data-layer.md#t-a-panel-asks-for-its-scopes) — data-source, data-source-types
+- [T-a-panel-asks-for-its-scopes](traps/data-layer.md#t-a-panel-asks-for-its-scopes) — data-source, data-source-types, source-view
 - [T-a-parent-pick-is-the-parent](traps/data-layer.md#t-a-parent-pick-is-the-parent) — filter-state, source-counts
 - [T-a-path-is-judged-by-its-parent-when-stepwise](traps/data-layer.md#t-a-path-is-judged-by-its-parent-when-stepwise) — source-counts
 - [T-a-pending-chip-reads-as-a-warning](traps/data-layer.md#t-a-pending-chip-reads-as-a-warning) — data-source-types
-- [T-a-preset-is-its-own-part](traps/data-layer.md#t-a-preset-is-its-own-part) — data-source, filter-state, page-definition, query, query-context, query-edits, source-counts
+- [T-a-preset-is-its-own-part](traps/data-layer.md#t-a-preset-is-its-own-part) — data-source, filter-state, page-definition, query, query-edits, source-counts
 - [T-a-projected-row-is-checked-on-what-it-was-sent](traps/data-layer.md#t-a-projected-row-is-checked-on-what-it-was-sent) — base-store, store
 - [T-a-push-is-a-check-behind](traps/data-layer.md#t-a-push-is-a-check-behind) — data-handler
 - [T-a-query-falls-back-to-post](traps/data-layer.md#t-a-query-falls-back-to-post) — request-store, stores
 - [T-a-range-is-bounded-by-the-data](traps/data-layer.md#t-a-range-is-bounded-by-the-data) — data-source-types
 - [T-a-read-is-planned](traps/data-layer.md#t-a-read-is-planned) — data-source, data-source-types, held-reads, held-store, read-plan, store-cache
-- [T-a-reading-is-frozen-in-the-query](traps/data-layer.md#t-a-reading-is-frozen-in-the-query) — data-source, query, query-context
+- [T-a-reading-is-frozen-in-the-query](traps/data-layer.md#t-a-reading-is-frozen-in-the-query) — query, query-context
 - [T-a-record-has-a-time-of-its-own](traps/data-layer.md#t-a-record-has-a-time-of-its-own) — base-store, data-source, store
 - [T-a-refused-row-never-shortens-a-page](traps/data-layer.md#t-a-refused-row-never-shortens-a-page) — base-store
 - [T-a-relative-date-stays-relative](traps/data-layer.md#t-a-relative-date-stays-relative) — filter-state, store, stores, where
 - [T-a-reload-replays-the-readers-answers](traps/data-layer.md#t-a-reload-replays-the-readers-answers) — data-source, query-context
-- [T-a-remote-source-holds-its-whole-set](traps/data-layer.md#t-a-remote-source-holds-its-whole-set) — data-source, data-source-types, held-reads, held-set, page-definition, store, store-cache
-- [T-a-remote-store-is-read-through-a-held-store](traps/data-layer.md#t-a-remote-store-is-read-through-a-held-store) — data-source, held-store
-- [T-a-remote-store-says-what-changed](traps/data-layer.md#t-a-remote-store-says-what-changed) — data-source, fake-remote, store, store-cache, stores
+- [T-a-remote-source-holds-its-whole-set](traps/data-layer.md#t-a-remote-source-holds-its-whole-set) — data-source-types, held-reads, held-set, page-definition, source-reads, store, store-cache
+- [T-a-remote-store-is-read-through-a-held-store](traps/data-layer.md#t-a-remote-store-is-read-through-a-held-store) — held-store, source-reads
+- [T-a-remote-store-says-what-changed](traps/data-layer.md#t-a-remote-store-says-what-changed) — data-source, fake-remote, source-reads, store, store-cache, stores
 - [T-a-request-picks-its-stores](traps/data-layer.md#t-a-request-picks-its-stores) — data, data-handler, define-stores, request-store
-- [T-a-rule-names-its-clock-and-its-language](traps/data-layer.md#t-a-rule-names-its-clock-and-its-language) — data-source, data-source-types, source-counts, store
-- [T-a-ruled-out-value-is-greyed](traps/data-layer.md#t-a-ruled-out-value-is-greyed) — data-source, data-source-types, filter-state, query, query-context, source-counts, store, stores, walk
-- [T-a-scope-is-a-place-not-a-reach](traps/data-layer.md#t-a-scope-is-a-place-not-a-reach) — data-source
+- [T-a-rule-names-its-clock-and-its-language](traps/data-layer.md#t-a-rule-names-its-clock-and-its-language) — data-source-types, source-counts, source-reads, store
+- [T-a-ruled-out-value-is-greyed](traps/data-layer.md#t-a-ruled-out-value-is-greyed) — data-source, data-source-types, filter-state, query, query-edits, source-counts, source-walk, store, stores, walk
+- [T-a-scope-is-a-place-not-a-reach](traps/data-layer.md#t-a-scope-is-a-place-not-a-reach) — query-context
 - [T-a-scope-says-what-it-shows](traps/data-layer.md#t-a-scope-says-what-it-shows) — data-source-types, source-binding
 - [T-a-series-has-a-value-at-every-point](traps/data-layer.md#t-a-series-has-a-value-at-every-point) — aggregate
 - [T-a-server-change-waits](traps/data-layer.md#t-a-server-change-waits) — data-handler, held-store
 - [T-a-server-field-is-asked-once-per-answer](traps/data-layer.md#t-a-server-field-is-asked-once-per-answer) — data-source, data-source-types
 - [T-a-setting-is-declared-once](traps/data-layer.md#t-a-setting-is-declared-once) — settings
-- [T-a-solo-is-a-draft-of-one-tab](traps/data-layer.md#t-a-solo-is-a-draft-of-one-tab) — data-source-types, query-context
+- [T-a-solo-is-a-draft-of-one-tab](traps/data-layer.md#t-a-solo-is-a-draft-of-one-tab) — data-source-types, query-edits
 - [T-a-source-compiles-only-what-it-has](traps/data-layer.md#t-a-source-compiles-only-what-it-has) — data-source, query, source-counts
 - [T-a-status-is-worked-out-by-the-data](traps/data-layer.md#t-a-status-is-worked-out-by-the-data) — aggregate, field-catalogue, status-field, threshold
-- [T-a-store-has-one-cache](traps/data-layer.md#t-a-store-has-one-cache) — data-source, held-reads, store, store-cache
+- [T-a-store-has-one-cache](traps/data-layer.md#t-a-store-has-one-cache) — held-reads, source-reads, store, store-cache
 - [T-a-store-keeps-its-history](traps/data-layer.md#t-a-store-keeps-its-history) — base-store, data, data-handler, fake-remote, live-stores, request-store, store, store-history
-- [T-a-store-says-what-it-can-do-once](traps/data-layer.md#t-a-store-says-what-it-can-do-once) — base-store, data, data-source, held-store, request-store, store, wrap-store
-- [T-a-summary-binds-to-all-the-rows](traps/data-layer.md#t-a-summary-binds-to-all-the-rows) — data-source, data-source-types, source-binding
-- [T-a-superseded-chip-suspends-it-is-never-removed](traps/data-layer.md#t-a-superseded-chip-suspends-it-is-never-removed) — data-source-types, query, query-context, query-edits, source-binding
-- [T-a-superseded-read-stops](traps/data-layer.md#t-a-superseded-read-stops) — data-source, fake-remote, request-store, store, stores
-- [T-a-suspended-answer-is-drawn-as-off](traps/data-layer.md#t-a-suspended-answer-is-drawn-as-off) — data-source
-- [T-a-suspended-sort-is-one-owners-job](traps/data-layer.md#t-a-suspended-sort-is-one-owners-job) — cycle, data-source, data-source-types, query, query-edits
+- [T-a-store-says-what-it-can-do-once](traps/data-layer.md#t-a-store-says-what-it-can-do-once) — base-store, data, held-store, request-store, source-reads, store, wrap-store
+- [T-a-summary-binds-to-all-the-rows](traps/data-layer.md#t-a-summary-binds-to-all-the-rows) — data-source, data-source-types, source-binding, source-reads
+- [T-a-superseded-chip-suspends-it-is-never-removed](traps/data-layer.md#t-a-superseded-chip-suspends-it-is-never-removed) — data-source-types, query, query-edits, source-binding
+- [T-a-superseded-read-stops](traps/data-layer.md#t-a-superseded-read-stops) — fake-remote, request-store, source-reads, store, stores
+- [T-a-suspended-answer-is-drawn-as-off](traps/data-layer.md#t-a-suspended-answer-is-drawn-as-off) — source-view
+- [T-a-suspended-sort-is-one-owners-job](traps/data-layer.md#t-a-suspended-sort-is-one-owners-job) — cycle, data-source-types, query, query-edits, source-view
 - [T-a-tooltip-is-not-an-axis](traps/data-layer.md#t-a-tooltip-is-not-an-axis) — format-tick
-- [T-a-value-can-be-an-object](traps/data-layer.md#t-a-value-can-be-an-object) — aggregate, data, field-catalogue, filter-state, query-context, store, validate
+- [T-a-value-can-be-an-object](traps/data-layer.md#t-a-value-can-be-an-object) — aggregate, data, field-catalogue, filter-state, query-edits, query-members, store, validate
 - [T-a-value-holds-child-values](traps/data-layer.md#t-a-value-holds-child-values) — field-catalogue, filter-state
 - [T-a-value-is-typed-once](traps/data-layer.md#t-a-value-is-typed-once) — data, filter-state, page-definition, query-graph, where, workflow
 - [T-a-view-held-heading-shows-and-refuses](traps/data-layer.md#t-a-view-held-heading-shows-and-refuses) — query, source-binding
@@ -116,20 +116,20 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-aggregate-returns-the-number](traps/data-layer.md#t-an-aggregate-returns-the-number) — aggregate
 - [T-an-allow-list-is-a-filter-not-an-order](traps/data-layer.md#t-an-allow-list-is-a-filter-not-an-order) — allow
 - [T-an-app-is-its-definition](traps/data-layer.md#t-an-app-is-its-definition) — app-definition, data
-- [T-an-asked-load-is-awaited](traps/data-layer.md#t-an-asked-load-is-awaited) — data-source
+- [T-an-asked-load-is-awaited](traps/data-layer.md#t-an-asked-load-is-awaited) — source-reads
 - [T-an-inactive-chip-says-where-its-filter-went](traps/data-layer.md#t-an-inactive-chip-says-where-its-filter-went) — source-binding
 - [T-an-open-panel-follows-the-data-layer](traps/data-layer.md#t-an-open-panel-follows-the-data-layer) — source-binding
 - [T-an-operator-decides-pick-or-type](traps/data-layer.md#t-an-operator-decides-pick-or-type) — store
-- [T-apply-and-discard-wait-for-a-change](traps/data-layer.md#t-apply-and-discard-wait-for-a-change) — data, data-source, data-source-types, fake-remote, query-context, store, stores
+- [T-apply-and-discard-wait-for-a-change](traps/data-layer.md#t-apply-and-discard-wait-for-a-change) — data, data-source, data-source-types, fake-remote, query-context, query-members, store, stores
 - [T-array-store-copies-both-ways](traps/data-layer.md#t-array-store-copies-both-ways) — stores
 - [T-both-answers-are-kept](traps/data-layer.md#t-both-answers-are-kept) — filter-face, filter-state, query
-- [T-coalesce-microtask-not-debounce](traps/data-layer.md#t-coalesce-microtask-not-debounce) — data-source, data-source-types, timing
-- [T-component-extends-view-never-alters-it](traps/data-layer.md#t-component-extends-view-never-alters-it) — data-source
+- [T-coalesce-microtask-not-debounce](traps/data-layer.md#t-coalesce-microtask-not-debounce) — data-source-types, source-reads, timing
+- [T-component-extends-view-never-alters-it](traps/data-layer.md#t-component-extends-view-never-alters-it) — source-view
 - [T-configuration-is-not-data](traps/data-layer.md#t-configuration-is-not-data) — page-definition
 - [T-date-label-reads-in-full](traps/data-layer.md#t-date-label-reads-in-full) — filter-face
 - [T-dropped-rows-must-be-countable](traps/data-layer.md#t-dropped-rows-must-be-countable) — base-store, held-set, store
 - [T-email-check-is-deliberately-loose](traps/data-layer.md#t-email-check-is-deliberately-loose) — validate
-- [T-error-is-a-state-not-a-throw](traps/data-layer.md#t-error-is-a-state-not-a-throw) — data-source
+- [T-error-is-a-state-not-a-throw](traps/data-layer.md#t-error-is-a-state-not-a-throw) — data-source, source-reads
 - [T-eventsource-error-is-not-fatal](traps/data-layer.md#t-eventsource-error-is-not-fatal) — live-stores
 - [T-every-rule-but-required-passes-absent](traps/data-layer.md#t-every-rule-but-required-passes-absent) — validate
 - [T-every-tab-hears-a-change](traps/data-layer.md#t-every-tab-hears-a-change) — data-handler, request-store
@@ -137,21 +137,21 @@ files. An entry that only tests cite is under Tests only.
 - [T-fetch-does-not-reject-on-404](traps/data-layer.md#t-fetch-does-not-reject-on-404) — stores
 - [T-filter-fields-flattens-the-tree](traps/data-layer.md#t-filter-fields-flattens-the-tree) — store
 - [T-filter-is-data-not-a-predicate](traps/data-layer.md#t-filter-is-data-not-a-predicate) — store
-- [T-grid-suspend-is-not-clear](traps/data-layer.md#t-grid-suspend-is-not-clear) — data-source, filter-state, query-context
-- [T-group-and-sort-are-component-scope](traps/data-layer.md#t-group-and-sort-are-component-scope) — data-source, query, query-context, query-edits
-- [T-grouped-page-change-publishes-without-loading](traps/data-layer.md#t-grouped-page-change-publishes-without-loading) — data-source
-- [T-grouped-paging-belongs-to-the-view](traps/data-layer.md#t-grouped-paging-belongs-to-the-view) — data-source
+- [T-grid-suspend-is-not-clear](traps/data-layer.md#t-grid-suspend-is-not-clear) — filter-state, query-edits, source-view
+- [T-group-and-sort-are-component-scope](traps/data-layer.md#t-group-and-sort-are-component-scope) — data-source, query, query-context, query-edits, source-view
+- [T-grouped-page-change-publishes-without-loading](traps/data-layer.md#t-grouped-page-change-publishes-without-loading) — source-reads
+- [T-grouped-paging-belongs-to-the-view](traps/data-layer.md#t-grouped-paging-belongs-to-the-view) — data-source, source-reads
 - [T-idb-is-the-only-real-local-store](traps/data-layer.md#t-idb-is-the-only-real-local-store) — data
-- [T-in-flight-ticket-discards-stale](traps/data-layer.md#t-in-flight-ticket-discards-stale) — data-source, timing
+- [T-in-flight-ticket-discards-stale](traps/data-layer.md#t-in-flight-ticket-discards-stale) — source-reads, timing
 - [T-legend-status-swatch-shares-the-band-tokens](traps/data-layer.md#t-legend-status-swatch-shares-the-band-tokens) — format-tick
 - [T-live-store-into-shares-one-feed](traps/data-layer.md#t-live-store-into-shares-one-feed) — live-stores
 - [T-local-store-is-not-for-bulk-data](traps/data-layer.md#t-local-store-is-not-for-bulk-data) — stores
 - [T-loose-equal-is-case-insensitive](traps/data-layer.md#t-loose-equal-is-case-insensitive) — store, walk
-- [T-many-conditions-are-one-reading](traps/data-layer.md#t-many-conditions-are-one-reading) — data, filter-state, query, query-context
+- [T-many-conditions-are-one-reading](traps/data-layer.md#t-many-conditions-are-one-reading) — data, filter-state, query, query-edits
 - [T-max-rows-is-oldest-out-by-insertion](traps/data-layer.md#t-max-rows-is-oldest-out-by-insertion) — base-store, stores
 - [T-narrowing-constructor-is-not-useless](traps/data-layer.md#t-narrowing-constructor-is-not-useless) — live-stores
 - [T-news-is-pushed-by-the-server](traps/data-layer.md#t-news-is-pushed-by-the-server) — data-handler, updates-feed
-- [T-no-op-load-guard](traps/data-layer.md#t-no-op-load-guard) — data-source, source-binding
+- [T-no-op-load-guard](traps/data-layer.md#t-no-op-load-guard) — source-binding, source-reads
 - [T-no-rows-is-still-an-answer](traps/data-layer.md#t-no-rows-is-still-an-answer) — filter-state
 - [T-number-of-null-is-zero](traps/data-layer.md#t-number-of-null-is-zero) — aggregate
 - [T-numeric-keys-compare-as-strings](traps/data-layer.md#t-numeric-keys-compare-as-strings) — store, stores
@@ -159,25 +159,25 @@ files. An entry that only tests cite is under Tests only.
 - [T-one-collator-for-the-library](traps/data-layer.md#t-one-collator-for-the-library) — aggregate, store
 - [T-one-command-one-door](traps/data-layer.md#t-one-command-one-door) — data, query, query-context, query-edits, query-graph
 - [T-one-comparator-one-source](traps/data-layer.md#t-one-comparator-one-source) — data-source
-- [T-one-comparison-rule-for-query-and-ui](traps/data-layer.md#t-one-comparison-rule-for-query-and-ui) — data-source, filter-state, store
+- [T-one-comparison-rule-for-query-and-ui](traps/data-layer.md#t-one-comparison-rule-for-query-and-ui) — filter-state, source-view, store
 - [T-one-condition-system](traps/data-layer.md#t-one-condition-system) — data, filter-face, filter-state
 - [T-one-condition-tree](traps/data-layer.md#t-one-condition-tree) — data, filter-state, store, where
 - [T-one-cycle-for-one-value](traps/data-layer.md#t-one-cycle-for-one-value) — cycle
 - [T-one-datum-shape-for-chart-and-legend](traps/data-layer.md#t-one-datum-shape-for-chart-and-legend) — chart-datum
 - [T-one-feed-for-every-tab](traps/data-layer.md#t-one-feed-for-every-tab) — live-stores
-- [T-one-field-one-filter-menu](traps/data-layer.md#t-one-field-one-filter-menu) — bind-selection, data, query-context
-- [T-one-field-one-status](traps/data-layer.md#t-one-field-one-status) — data-source, data-source-types, field-status
+- [T-one-field-one-filter-menu](traps/data-layer.md#t-one-field-one-filter-menu) — bind-selection, data, query-members
+- [T-one-field-one-status](traps/data-layer.md#t-one-field-one-status) — data-source, data-source-types, field-status, source-view
 - [T-one-function-places-label-and-gridline](traps/data-layer.md#t-one-function-places-label-and-gridline) — format-tick
 - [T-one-node-registry](traps/data-layer.md#t-one-node-registry) — data, node-kinds, page-definition
-- [T-one-query-one-owner](traps/data-layer.md#t-one-query-one-owner) — data, data-source, query, query-context
+- [T-one-query-one-owner](traps/data-layer.md#t-one-query-one-owner) — data, data-source, query, query-context, query-edits, query-members, source-view
 - [T-one-scale-for-every-chart](traps/data-layer.md#t-one-scale-for-every-chart) — format-tick
 - [T-one-state-per-filtered-field](traps/data-layer.md#t-one-state-per-filtered-field) — data, filter-face, filter-state
 - [T-one-total-for-the-ring-and-the-label](traps/data-layer.md#t-one-total-for-the-ring-and-the-label) — chart-datum, data
-- [T-one-trace-stream](traps/data-layer.md#t-one-trace-stream) — data, data-handler, data-source, request-store, trace
-- [T-one-walk-counts-and-limits-in-order](traps/data-layer.md#t-one-walk-counts-and-limits-in-order) — data-source, source-counts, store, walk
+- [T-one-trace-stream](traps/data-layer.md#t-one-trace-stream) — data, data-handler, request-store, source-reads, store, trace
+- [T-one-walk-counts-and-limits-in-order](traps/data-layer.md#t-one-walk-counts-and-limits-in-order) — data-source, source-counts, source-reads, source-view, source-walk, store, walk
 - [T-one-way-to-write-a-condition](traps/data-layer.md#t-one-way-to-write-a-condition) — data, data-source, query, query-edits, where
 - [T-only-five-filter-chips-carry-an-icon](traps/data-layer.md#t-only-five-filter-chips-carry-an-icon) — data-source-types
-- [T-only-the-view-trickles-down](traps/data-layer.md#t-only-the-view-trickles-down) — data-source, query
+- [T-only-the-view-trickles-down](traps/data-layer.md#t-only-the-view-trickles-down) — data-source, query, source-reads
 - [T-ops-follow-the-column-type](traps/data-layer.md#t-ops-follow-the-column-type) — store
 - [T-pipeline-order-and-no-grouping](traps/data-layer.md#t-pipeline-order-and-no-grouping) — store
 - [T-pointer-escape-decode-order](traps/data-layer.md#t-pointer-escape-decode-order) — pointer
@@ -190,13 +190,13 @@ files. An entry that only tests cite is under Tests only.
 - [T-read-check-drops-where-a-write-throws](traps/data-layer.md#t-read-check-drops-where-a-write-throws) — base-store, stores
 - [T-reset-to-default-is-the-views-own](traps/data-layer.md#t-reset-to-default-is-the-views-own) — data-source
 - [T-rest-update-is-patch-not-put](traps/data-layer.md#t-rest-update-is-patch-not-put) — stores
-- [T-result-is-the-hosts-half](traps/data-layer.md#t-result-is-the-hosts-half) — data-source
+- [T-result-is-the-hosts-half](traps/data-layer.md#t-result-is-the-hosts-half) — data-source, source-reads
 - [T-ring-segment-needs-two-radius-clamps](traps/data-layer.md#t-ring-segment-needs-two-radius-clamps) — format-tick
 - [T-saved-filters-are-every-scope](traps/data-layer.md#t-saved-filters-are-every-scope) — page-definition, query
 - [T-schema-guard-belongs-at-the-store](traps/data-layer.md#t-schema-guard-belongs-at-the-store) — base-store, stores
 - [T-schema-sample-cost](traps/data-layer.md#t-schema-sample-cost) — base-store
 - [T-select-all-is-the-visible-rows](traps/data-layer.md#t-select-all-is-the-visible-rows) — data-source
-- [T-send-to-view-filters](traps/data-layer.md#t-send-to-view-filters) — data-source, data-source-types, query, query-context, query-edits
+- [T-send-to-view-filters](traps/data-layer.md#t-send-to-view-filters) — data-source-types, query, query-edits, source-view
 - [T-series-count-is-ten-not-eleven](traps/data-layer.md#t-series-count-is-ten-not-eleven) — chart-datum, format-tick
 - [T-signal-not-a-teardown-list](traps/data-layer.md#t-signal-not-a-teardown-list) — bind-selection
 - [T-socket-send-refuses-rather-than-queues](traps/data-layer.md#t-socket-send-refuses-rather-than-queues) — live-stores
@@ -216,7 +216,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-three-things-called-scope](traps/data-layer.md#t-three-things-called-scope) — bind-selection
 - [T-two-bars-over-one-scope](traps/data-layer.md#t-two-bars-over-one-scope) — source-binding
 - [T-unavailable-value-sorts-below-a-divider](traps/data-layer.md#t-unavailable-value-sorts-below-a-divider) — filter-state
-- [T-up-is-open-down-is-closed](traps/data-layer.md#t-up-is-open-down-is-closed) — data, data-source, query-context
+- [T-up-is-open-down-is-closed](traps/data-layer.md#t-up-is-open-down-is-closed) — data, query-context, query-edits
 - [T-view-state-lives-in-one-object](traps/data-layer.md#t-view-state-lives-in-one-object) — data-source
 
 ## Storage, saved Views and the URL (59)
