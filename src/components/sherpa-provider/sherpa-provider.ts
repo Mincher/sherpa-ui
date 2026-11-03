@@ -25,7 +25,7 @@ import type { Row, Store } from '../../core/data/store.js';
 import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.js';
 import type { DraftMode } from '../../core/browser/view-drafts.js';
 import { Updates } from '../../core/data/updates.js';
-import { openSource, savedFiltersOf, type PageDefinition } from '../../core/data/page-definition.js';
+import { checkPage, openSource, savedFiltersOf, type PageDefinition } from '../../core/data/page-definition.js';
 import { QueryContext } from '../../core/data/query-context.js';
 import { VIEW } from '../../core/data/query.js';
 import type { Failure } from '../../core/data/failure.js';
@@ -756,6 +756,7 @@ export class SherpaProvider extends SherpaElement {
    * with no data. TRAP T-a-page-is-its-definition
    */
   async open(definition: PageDefinition, options: OpenOptions): Promise<DataSource | undefined> {
+    checkPage(definition);
     this.#page?.abort();
     const page = (this.#page = new AbortController());
     const def = definition.source;

@@ -44,6 +44,7 @@ import {
 } from '../../core/browser/saved-filters.js';
 import type { SavedSet } from '../../core/ui/filters-button.js';
 import type { DataSource } from '../../core/data/data-source.js';
+import { presetReadings } from '../../core/data/page-definition.js';
 import type { QueryChangeDetail, QueryContext } from '../../core/data/query-context.js';
 import { VIEW, emptyScope, sameReading, type Query, type QueryDefaults, type SavedFilter, type ScopeQuery, type ViewScope } from '../../core/data/query.js';
 import { layShared, sharedOf, type SharedView } from '../../core/data/query-edits.js';
@@ -364,7 +365,7 @@ export class ProviderPage {
       const app = opened.query.presets(scope).filter((preset) => !preset.id.startsWith(SAVED_PRESET));
       const mine = [...this.#added].filter(([, at]) => at === scope).flatMap(([id]) => {
         const set = library[id];
-        return set ? [{ id: SAVED_PRESET + id, label: set.label, readings: opened.source.readingsOf(conditionsOf(set)) }] : [];
+        return set ? [{ id: SAVED_PRESET + id, label: set.label, readings: presetReadings(opened.source, conditionsOf(set)) }] : [];
       });
       opened.source.declarePresets(scope, [...app, ...mine]);
     }
