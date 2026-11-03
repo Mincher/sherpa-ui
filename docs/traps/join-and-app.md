@@ -452,6 +452,7 @@ filtering were already clean: every component use of `data-group-field` and
 - Site: `src/components/sherpa-pagination/sherpa-pagination.ts`
 - Site: `scripts/check-ownership.mjs`
 - Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/components/sherpa-data-grid/grid-groups.ts`
 
 ### T-a-legend-toggle-is-a-filter
 
@@ -956,6 +957,7 @@ What moved with it:
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/core/ui/context.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 
 ### T-a-control-sends-one-request
 

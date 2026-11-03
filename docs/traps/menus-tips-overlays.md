@@ -350,7 +350,7 @@ An open menu's listeners start in `show()` for the same reason. An Escape in the
 gap reached no listener, and the menu stayed open (found by `reforged-nav`, which
 failed 1 run in 3).
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 
 ### T-a-number-is-reset-not-cleared
@@ -524,6 +524,7 @@ at this element and never reaches the toolbar that stamped the rows: see
 `T-native-change-stops-at-the-host`.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-data-grid/grid-actions.ts`
 
 ### T-footer-row-raises-on-any-flag
 

@@ -70,6 +70,7 @@ the type is what it WILL be, not proof that it is upgraded yet.
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 
 ### T-a-state-colour-binds-the-style-mode
 
@@ -649,7 +650,7 @@ TRAP T-projected-slot-content-crosses-two-shadow-boundaries
 - Site: `src/components/sherpa-menu/menu-number.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `src/core/ui/filter-menu.ts`
 
@@ -2308,7 +2309,7 @@ matched — green too, where a page re-points the chips (TODO 468).
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 - Site: `test/e2e/reforged-one-condition-system.spec.ts`
 
 ---
@@ -2614,7 +2615,7 @@ box's top — under the opaque header, so it never showed (Will, TODO 499). The
 shared rule reads `--_scroll-shadow-top` (0 by default), and the grid sets it to
 `--_head-h`, its header's foot.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-widths.ts`
 - Site: `test/e2e/reforged-scroll-shadow.spec.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 

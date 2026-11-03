@@ -138,7 +138,7 @@ For a table of records that can be sorted, filtered, grouped and selected. It re
 | `columnClause(field: string)` | One column's filter as a ready FilterClause, or null. — a SUSPENDED clause is returned too. |
 | `columnReading(field: string)` | One column's filter as a READING, or null — what a saved view set on it. |
 | `drawReading(field: string, reading: FieldReading)` | drawReading(field, reading) — a bound source tells this grid one column's answer, whoever set it: a chip, the panel, a restored Query. SILENT. |
-| `columnLabel(field: string)` | One column filter AS A READER SEES IT — "Contains: ana", "Is not: churned". |
+| `columnLabel(field: string)` | One column filter AS A READER SEES IT — "Contains: ana", "Is not: churned". `column-filter-change` carries this same string, so an interaction and a restore describe a filter identically. |
 | `suspendColumnFilter(field: string, suspended = true)` | Suspend or resume, never lose; bound, it asks. . |
 | `openColumnFilter(field: string, anchor?: HTMLElement)` | Open one column's filter menu, anchored where the caller says. — one menu serves both. |
 | `clearColumnFilter(field?: string)` | Drop one column's heading filter from OUTSIDE; nothing drops them all. Unbound it is silent; bound, it asks for each it holds. . |
@@ -158,14 +158,14 @@ Each one bubbles.
 | `column-resize` | `{ field: string; width: number \| undefined }` |  |
 | `sort-change` | `{ direction: SortDirection; field: null \| string }` |  |
 | `row-select` | `{ index: number; row: GridRow \| undefined }` |  |
-| `selection-change` | `{ records: GridRow[]; selected: string[] }` |  |
-| `column-filter-change` | `{ clause: null \| unknown[]; field: string; header: string; label: null \| string; reading: object }` |  |
+| `selection-change` | `{ records: Row[]; selected: string[] }` |  |
+| `column-filter-change` | `{ clause: null \| unknown[]; field: string; header: string; label: null \| string; reading: FieldReading \| null }` |  |
 | `group-toggle` | `{ collapsed: boolean; value: string }` |  |
 | `group-change` | `{ field: null \| string }` | A heading's Group, or a group row's Ungroup (`field: null`): a REQUEST to group by it. |
-| `row-action` | `{ id: string; records: GridRow[] }` | An action was chosen, from the row menu or a host's bulk bar. |
+| `row-action` | `{ id: string; records: Row[] }` | An action was chosen, from the row menu or a host's bulk bar. |
 | `page-change` | `{ page: number }` | A Find stepped past this page's first or last match: a REQUEST for the page it goes on to |
 | `grid-pages-change` | `{ page: number; pages: number }` | How many pages the CURRENT fold state makes, while grouped. |
-| `select-all-request` | `{ answer: (rows: readonly GridRow[]) => void }` | "Select all rows" while its source pages: a REQUEST for every matching row, answered through answer(rows). A host may call `preventDefault()` to take it over. |
+| `select-all-request` | `{ answer: (rows: readonly Row[]) => void }` | "Select all rows" while its source pages: a REQUEST for every matching row, answered through answer(rows). A host may call `preventDefault()` to take it over. |
 
 ## Slots
 

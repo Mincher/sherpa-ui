@@ -21,7 +21,7 @@ column is dragged. A dragged column and the pinned edges keep theirs; narrower
 than the sum, nothing grows and the box scrolls. A filled column may pass the
 maximum width, so a drag that starts there shrinks it without a jump.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-widths.ts`
 
 ### T-firefox-never-rereads-a-has-after-host
 
@@ -43,7 +43,7 @@ So a state a `:host()` would gate is marked ON THE ELEMENT by its owner — the
 grid writes `data-selected` on the row from the shown box — and CSS selects
 that.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-selection.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
@@ -58,7 +58,7 @@ The fix is a FLAG, not a rival listener: `#onHeaderClick` is capture-phase on th
 same element and was **registered first**, so it sorted the column before any
 swallowing listener could run. Registration order decides capture order.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-widths.ts`
 
 ### T-grid-active-flag-is-not-a-tint
 
@@ -94,6 +94,9 @@ re-opened menu show the pair already set, and what a heading cell made again
 (a changed type or filter shape) draws from.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-actions.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
+- Site: `src/components/sherpa-data-grid/grid-groups.ts`
 
 ### T-grid-key-or-position-lies
 
@@ -109,6 +112,7 @@ It is optional: a grid given no key behaves exactly as it always did, and
 `selectedKeys` returns empty rather than approximating.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-selection.ts`
 
 ### T-grid-column-width-bounds
 
@@ -228,6 +232,7 @@ How that width is READ is its own trap — see
 shadow, so a two-column freeze shows one edge and not two.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-widths.ts`
 
 ### T-grid-pin-offset-needs-subpixel
 
@@ -243,7 +248,7 @@ The same reason `T-col-width-not-inline-size` exists one function away: table
 column geometry here is sub-pixel and does not survive being rounded or
 re-expressed.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-widths.ts`
 
 ### T-grid-sort-glyph-needs-a-third-state
 
@@ -284,7 +289,7 @@ which would match nothing at all with no way to see why.
 `between` is the RANGE shape and its value is the two ends, both cast the same
 way.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 
 ### T-grid-read-without-write-is-half-an-api
 
@@ -311,6 +316,7 @@ One path writes a menu, `#drawColumnFilter`, from `#columnFilters` — for a
 heading cell just made and a kept one alike (`T-a-heading-cell-is-kept`).
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 
 ### T-grid-mark-is-substring-only
 
@@ -333,7 +339,7 @@ haystack for exactly that reason; see `sherpa-element.ts` for the text-node and
 casing rulings it owns. The grid and `sherpa-nav-item` both wrote this once, and
 that duplication is what the shared helper replaced.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-cells.ts`
 
 ### T-grid-thead-sticks-as-one-block
 
@@ -407,7 +413,7 @@ first pixel of movement**.
 `#render()` on every move would rebuild every row of the body sixty times a
 second; the colgroup is the only thing a width changes.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-widths.ts`
 
 ### T-grid-select-remembers-wanted-keys
 
@@ -432,6 +438,7 @@ The boxes are stamped from `#selected` on every render, so a rebuild is how the
 ticks are written; there is one path that sets them, not two.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-selection.ts`
 
 ### T-grid-filter-fields-match-whole
 
@@ -446,7 +453,7 @@ The attribute itself is written by the source
 in two clauses arrives once, and the header only needs to know THAT it is
 filtered.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 
 ### T-grid-no-matches-is-not-empty
 
@@ -578,6 +585,7 @@ it. A grid that declares no action looks exactly as it did before the feature.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
+- Site: `src/components/sherpa-data-grid/grid-actions.ts`
 
 ### T-grid-actions-pin-to-the-trailing-edge
 
@@ -629,7 +637,7 @@ would be too late, and `row-click` would already have gone out. The
 `stopPropagation` stays anyway, for a HOST listener on the grid, which has no
 such guard.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-actions.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 
@@ -647,7 +655,7 @@ again (`T-a-heading-cell-is-kept`). `#drawColumnFilter` is the one path that
 writes a menu, for a cell just made and a kept one alike
 (`T-grid-read-without-write-is-half-an-api`).
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 
 ### T-grid-empty-clause-is-null
 
@@ -662,7 +670,7 @@ A RANGE needs BOTH ends for the same reason: one end alone is a "greater than"
 the reader did not ask for. `T-grid-number-clause-must-coerce` is the other half
 of reading a number column safely.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 
 ### T-grid-toolbar-chip-borrows-the-menu
 
@@ -713,6 +721,7 @@ Pass NOTHING to clear every column at once, which is what a toolbar's "clear
 all" means.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 
 ### T-nan-is-the-not-given-sentinel
 
@@ -842,7 +851,7 @@ name for a record — so `#rememberSelection()` returns early and selection stay
 page-local. That is a data contract, not a bug, and
 `T-grid-key-or-position-lies` is the other half of it.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-selection.ts`
 
 ### T-radios-in-shadow-roots-are-not-one-group
 
@@ -919,6 +928,7 @@ The tests had the same fault: `.row-select` in a spec counts double too.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-selection.ts`
 
 ### T-a-cell-chip-is-one-and-moves
 
@@ -944,6 +954,7 @@ holds the chip clips at its padding box, where the chip sits.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-cells.ts`
 
 ### T-a-native-select-keeps-its-own-shape
 
@@ -1022,7 +1033,7 @@ purple, because nothing wrote the chip's condition. The glyph and the chip's
 again in TODO 156: an Advanced chip is active, as a Simple one.)
 TRAP T-a-conditioned-chip-reads-as-active
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-a-default-is-not-an-override
@@ -1048,7 +1059,7 @@ Two places apply it and must agree: the switch's own state, and the `picksOne`
 flag that decides whether the menu defers to an Apply button. They read the same
 expression rather than repeating the condition.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 
 ### T-the-column-chip-is-the-only-signal
 
@@ -1081,7 +1092,7 @@ the flag survived on the heading and the chip beside it came back empty.
 The chip is `data-locked`: the GRID owns its on-state. Writing it here is the
 host doing its job, not the chip deriving something it does not own.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-one-value-one-declaration
@@ -1144,7 +1155,7 @@ headings stuck, and a wide sub-grid broke out of its parent. So:
   in the document drew over the parent's headings.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-details.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-a-cloned-prototype-needs-its-icons-upgraded
@@ -1224,6 +1235,7 @@ alone would otherwise lose the shared widths, and a body the frozen column.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-grid-keeps-its-heading.spec.ts`
 - Site: `test/e2e/reforged-a-grid-draws-once-per-act.spec.ts`
+- Site: `src/components/sherpa-data-grid/grid-widths.ts`
 
 ### T-a-heading-cell-is-kept
 
@@ -1265,6 +1277,7 @@ Measured: a bound pick makes 0 heading cells and 0 heading components (it made
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `test/e2e/reforged-grid-keeps-its-heading.spec.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 
 ### T-an-inner-event-stops-at-its-host
 
@@ -1292,6 +1305,7 @@ every bare component: 24 leaks without the stopper, 0 with it.
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/e2e/reforged-only-own-events.spec.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-details.ts`
 
 ### T-a-heading-menu-opens-on-what-it-holds
 
@@ -1306,7 +1320,7 @@ menu opens in the mode the reading names — or, for a reading with no mode,
 Advanced where only rows answer (`T-both-answers-are-kept`). A chain and a
 View-held answer open the same way.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-a-sideways-scroll-shadow-is-its-frames
@@ -1340,7 +1354,7 @@ The frame takes the box's place in its layout (a flex column, `flex: 1 1 auto`,
 box. Frames: the grid's scroller, the app shell's Context, the dialog's body.
 
 - Site: `src/core/sherpa-base.css`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-widths.ts`
 - Site: `test/e2e/reforged-scroll-shadow.spec.ts`
 
 ### T-heading-buttons-show-on-hover
@@ -1387,5 +1401,6 @@ were "not great" (Will, TODO 507). While a shown column draws tags, EVERY cell i
 two lines and starts at the first (`:state(multi-field)`), so the values align
 across the row (Will, TODO 509).
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-cells.ts`
 - Site: `test/e2e/reforged-multi-field-column.spec.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`

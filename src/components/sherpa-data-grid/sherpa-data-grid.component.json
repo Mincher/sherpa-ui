@@ -989,7 +989,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "records": "GridRow[]",
+        "records": "Row[]",
         "selected": "string[]"
       }
     },
@@ -1003,7 +1003,7 @@
         "field": "string",
         "header": "string",
         "label": "null | string",
-        "reading": "object"
+        "reading": "FieldReading | null"
       }
     },
     {
@@ -1034,7 +1034,7 @@
       "composed": true,
       "detail": {
         "id": "string",
-        "records": "GridRow[]"
+        "records": "Row[]"
       }
     },
     {
@@ -1066,7 +1066,7 @@
       "cancelable": true,
       "composed": true,
       "detail": {
-        "answer": "(rows: readonly GridRow[]) => void"
+        "answer": "(rows: readonly Row[]) => void"
       }
     }
   ],
@@ -1234,7 +1234,7 @@
           "$type": "method",
           "name": "columnLabel",
           "args": "field: string",
-          "description": "One column filter AS A READER SEES IT — \"Contains: ana\", \"Is not: churned\"."
+          "description": "One column filter AS A READER SEES IT — \"Contains: ana\", \"Is not: churned\". `column-filter-change` carries this same string, so an interaction and a restore describe a filter identically."
         },
         {
           "$type": "method",

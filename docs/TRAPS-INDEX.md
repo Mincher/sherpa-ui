@@ -660,7 +660,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-unavailable-value-sorts-below-a-divider](traps/data-layer.md#t-unavailable-value-sorts-below-a-divider) — menu
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — menu
 
-## The data grid (97)
+## The data grid (98)
 
 - [T-a-cell-chip-is-one-and-moves](traps/data-grid.md#t-a-cell-chip-is-one-and-moves) — data-grid
 - [T-a-chip-body-cycles-its-states](traps/data-layer.md#t-a-chip-body-cycles-its-states) — data-grid
@@ -743,6 +743,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-grid-untyped-column-gets-no-filter-button](traps/data-grid.md#t-grid-untyped-column-gets-no-filter-button) — data-grid
 - [T-heading-buttons-show-on-hover](traps/data-grid.md#t-heading-buttons-show-on-hover) — data-grid
 - [T-many-conditions-are-one-reading](traps/data-layer.md#t-many-conditions-are-one-reading) — data-grid
+- [T-menu-rows-stay-native-controls](traps/menus-tips-overlays.md#t-menu-rows-stay-native-controls) — data-grid
 - [T-nan-is-the-not-given-sentinel](traps/data-grid.md#t-nan-is-the-not-given-sentinel) — pagination
 - [T-one-actions-menu-for-every-row](traps/data-grid.md#t-one-actions-menu-for-every-row) — data-grid
 - [T-one-condition-system](traps/data-layer.md#t-one-condition-system) — data-grid

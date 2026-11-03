@@ -304,7 +304,7 @@ first hit wherever that was). Overlapping or touching hits JOIN into one
 
 - Site: `src/core/data/store.ts`
 - Site: `src/core/ui/mark-text.ts`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-cells.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
 ### T-a-chip-counts-within-the-filters-before-it
@@ -682,6 +682,7 @@ rather than restore the wrong rows. The grid selects by key always now, and
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/unit/a-keyless-row-gets-a-key.test.mjs`
 - Site: `test/e2e/reforged-a-keyless-row-selects-by-key.spec.ts`
+- Site: `src/components/sherpa-data-grid/grid-selection.ts`
 
 ### T-both-answers-are-kept
 
@@ -740,6 +741,7 @@ one, or a def's typed condition came back on every rebuild.
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-grid-keeps-both-answers.spec.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 
 ### T-a-chip-body-cycles-its-states
 
@@ -1272,6 +1274,7 @@ This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` an
 - Site: `src/core/ui/filter-host-controller.ts`
 - Site: `src/core/data/source-view.ts`
 - Site: `src/core/data/query-edits.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 
 ### T-a-remote-source-holds-its-whole-set
 
@@ -1832,7 +1835,7 @@ next to `markNeedle()`, which is the one decision every caller shares:
 needle-or-nothing, then `markMatch`. See `T-mark-match-is-one-shape`.
 
 - Site: `src/core/data/store.ts`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-cells.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `src/core/data/data-source-types.ts`
@@ -1950,7 +1953,7 @@ ready clause, and stripping only the picks let the clause ride in anyway.
 one field have nothing to keep in step once both read `selection(field)`. The
 binding went from 194 lines to 152.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
@@ -3009,7 +3012,7 @@ ask, and the grid ticks what it holds, as before.
 another page is let go — its key leaves `#wantedKeys` too, or the merge in
 `#rememberSelection` would hand it back.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-selection.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `src/core/ui/bind-source.ts`
 - Site: `src/core/data/data-source.ts`
@@ -3380,7 +3383,7 @@ together, under its own key.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/source-counts.ts`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-cells.ts`
 - Site: `test/e2e/reforged-a-tiered-grid.spec.ts`
 
 ### T-an-open-panel-follows-the-data-layer
@@ -3469,7 +3472,7 @@ body. A list's other ops are its Advanced tree.
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/menu-conditions.ts`
 - Site: `src/core/data/query.ts`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 - Site: `src/core/data/query-edits.ts`
 
 ### T-an-inactive-chip-says-where-its-filter-went
@@ -3523,12 +3526,10 @@ nothing, and `fx` announces as noise.
 
 - Site: `src/core/data/filter-face.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
-
----
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/filter-state.test.mjs`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 
 ### T-a-scope-is-a-place-not-a-reach
 
@@ -3690,7 +3691,7 @@ replacement, all }`. The HOST moves the match: the grid's `findStep()`.
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.html`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.css`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-find.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 - Site: `test/e2e/reforged-input-find.spec.ts`
 - Site: `src/core/data/source-view.ts`
@@ -3727,7 +3728,7 @@ a field's type to filter it, the type is in the wrong place.
 - Site: `test/unit/field-type.test.mjs`
 - Site: `src/data.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 - Site: `src/core/data/field-catalogue.ts`
 
 ### T-a-group-is-a-data-layer-concept
@@ -3785,6 +3786,7 @@ them; it never works them out.
 - Site: `test/unit/a-summary-groups-and-sorts.test.mjs`
 - Site: `src/core/data/source-reads.ts`
 - Site: `src/core/data/column-facts.ts`
+- Site: `src/components/sherpa-data-grid/grid-groups.ts`
 
 ### T-a-conditioned-chip-answers-with-its-clause
 
@@ -4141,6 +4143,7 @@ or resuming would jump to a column the reader had moved on from.
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/query-edits.ts`
 - Site: `src/core/data/source-view.ts`
+- Site: `src/components/sherpa-data-grid/grid-groups.ts`
 
 ### T-one-cycle-for-one-value
 
@@ -4166,6 +4169,7 @@ component that belongs to the source (`T-bind-locks-what-it-owns`).
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/cycle.test.mjs`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-data-grid/grid-groups.ts`
 
 ### T-a-summary-binds-to-all-the-rows
 
@@ -5037,7 +5041,7 @@ A number or a date is never cut: neither is a list. A legend that lays out a
 field's values as chips (674) draws none for an unlisted field.
 
 - Site: `src/core/data/field-catalogue.ts`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 - Site: `test/unit/a-list-has-a-limit.test.mjs`
 
 ### T-a-status-is-worked-out-by-the-data
@@ -5100,6 +5104,7 @@ alone (measured).
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.html`
 - Site: `test/e2e/reforged-gauge-chart.spec.ts`
 - Site: `test/e2e/reforged-provider-summary.spec.ts`
+- Site: `src/components/sherpa-data-grid/grid-cells.ts`
 
 ### T-one-condition-system
 
@@ -5163,7 +5168,7 @@ The public attributes speak these words since 2026-09-25; the old ones went on
 - Site: `src/data.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 - Site: `test/unit/one-condition-system.test.mjs`
 - Site: `test/e2e/reforged-one-condition-system.spec.ts`
 
@@ -5908,7 +5913,7 @@ and sets `menu.reading`, and the menu keeps a reading given before it drew
 and applies it at the end of its first render (`#flushChains()` is gone).
 
 - Site: `src/core/data/where.ts`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
@@ -5950,15 +5955,13 @@ there (Will, TODO 456).
 - Site: `src/core/data/query.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-**A read-only row removes nothing** (Will, TODO 236): no row ×, and its
-fields are `readonly`, so a value shows no clear button. The value then takes
-the row's rounded end, as on a lone row.
-
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `test/e2e/reforged-menu-readonly-rows.spec.ts`
 - Site: `src/core/data/source-binding.ts`
+- Site: `src/components/sherpa-data-grid/grid-cells.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 
 ### T-a-component-part-narrows-one-component
 
@@ -6189,6 +6192,7 @@ a rebuilt menu was still empty wiped answers it showed. An event with no
 - Site: `src/core/data/source-view.ts`
 - Site: `src/core/data/query-members.ts`
 - Site: `src/core/data/query-edits.ts`
+- Site: `src/components/sherpa-data-grid/grid-filters.ts`
 
 ### T-the-data-says-what-a-field-may-hold
 
@@ -7066,7 +7070,7 @@ the ticks, the select-all and the focus tint all have to be re-derived after it.
 None of this runs ungrouped (`#paginates`): there the store's window IS the page,
 and slicing it again would hide rows nobody folded.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-groups.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `src/core/data/column-facts.ts`
 
