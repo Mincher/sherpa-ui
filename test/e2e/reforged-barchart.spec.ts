@@ -375,7 +375,7 @@ test('a bar draws the part the highlight matches, and none without one', async (
   expect(r.plain).toEqual({ on: false, parts: [0, 0] });
 });
 
-test('a grouped bar stacks its parts in its own colour, each its share; the tip and the name list them (Will, TODO 548)', async ({ page }) => {
+test('a grouped bar stacks its parts in its own colour, each its share, 1px inside its outline; the tip and the name list them (Will, TODOs 548, 693)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<HTMLElement & { populate(d: unknown): Promise<void> }>('sherpa-barchart', undefined, { style: 'inline-size: 400px; block-size: 240px' });
     await el.populate([
@@ -395,6 +395,11 @@ test('a grouped bar stacks its parts in its own colour, each its share; the tip 
       // A tone by its weight, the larger darker, and a 1px gap between. TODOs 564, 635, 686
       tones: parts.map((p) => p.style.getPropertyValue('--_shade')),
       gap: getComputedStyle(parts[0]!.parentElement!).columnGap,
+      // Inside the bar's 1px outline, 1px of padding on every side. TODO 693
+      padded: (() => {
+        const box = parts[0]!.parentElement!.getBoundingClientRect();
+        return [box.top - bar.top, bar.right - box.right, bar.bottom - box.bottom, box.left - bar.left].map((n) => Math.round(n * 10) / 10);
+      })(),
       tip: cols[0]!.querySelector('.chart-tip-parts')!.textContent,
       name: cols[0]!.getAttribute('aria-label'),
       plain: cols[1]!.getAttribute('aria-label'),
@@ -416,6 +421,7 @@ test('a grouped bar stacks its parts in its own colour, each its share; the tip 
   expect(r.baseFirst).toBe(true);
   expect(r.tones).toEqual(['0%', '30%']);
   expect(r.gap).toBe('1px');
+  expect(r.padded).toEqual([2, 2, 2, 2]);
   expect(r.tip).toBe('Free 1\nPro 2');
   expect(r.under).toEqual({ below: true, lines: 2 });
   expect(r.name).toBe('active: 3 (Free 1 · Pro 2)');

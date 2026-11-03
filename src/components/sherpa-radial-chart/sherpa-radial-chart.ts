@@ -18,7 +18,7 @@ import { formatValue, radialArea, ringSegmentPath, type RingSegmentOptions } fro
 import { fillTip, pairAnchor, paintSeries, paintTone, redrawOnResize, unitsPerPixel, partsSaid } from '../../core/ui/chart-parts.js';
 import { rovingFocus, type Roving } from '../../core/ui/roving-focus.js';
 import { RADIAL_CENTRE as CENTRE, RADIAL_CORNER as CORNER,
-  RADIAL_OUTLINE as OUTLINE, DONUT_INNER_RATIO, SEGMENT_GAP, SECTION_GAP, SECTION_OUTLINE } from '../../core/ui/shared-constants.js';
+  RADIAL_OUTLINE as OUTLINE, DONUT_INNER_RATIO, SEGMENT_GAP, SECTION_GAP, SECTION_OUTLINE, SEGMENT_PADDING } from '../../core/ui/shared-constants.js';
 
 /** One slice — an alias of the shared `ChartDatum`. */
 export type RadialSlice = ChartDatum;
@@ -134,8 +134,10 @@ export class SherpaRadialChart extends SherpaElement {
     const unit = unitsPerPixel(ring);
     const segmentPad = (SEGMENT_GAP * unit + OUTLINE) / 2;
     const sectionPad = (SECTION_GAP + SECTION_OUTLINE) * unit / 2;
+    // A segment's padding: past the inner half of its outline, to the outer half of a section's.
+    const inset = OUTLINE / 2 + (SEGMENT_PADDING + SECTION_OUTLINE / 2) * unit;
     /** A band's parts: each a shade or tint of its colour by its weight there, a gap
-     *  between, none at the band's own edges, which its outline holds. Will, TODOs 548, 564, 635 */
+     *  between, and its padding inside the band's own outline. Will, TODOs 548, 564, 635, 693 */
     /** What the driver matches of one mark, from its own start: over all the marks. Will, TODO 638 */
     const matches: SVGPathElement[] = [];
     const matchIn = (mark: { value: number; matched?: number }, from: number, to: number, edges: Edges, index: number, colorIndex?: number): void => {
@@ -151,6 +153,13 @@ export class SherpaRadialChart extends SherpaElement {
       edges: Edges, index: number, colorIndex?: number): void => {
       const shown = (parts ?? []).filter((one) => one.value > 0);
       const spanDeg = edges.endDeg - edges.startDeg;
+      // A whole ring has no edge at its start: its last part is its first's neighbour there.
+      const start = spanDeg >= 359.999 ? sectionPad : edges.startGap + inset;
+      const end = spanDeg >= 359.999 ? sectionPad : edges.endGap + inset;
+      // Padded where the band is thick enough to keep a part; a pie's point has no edge to clear.
+      const pad = to - from > inset * 4 ? inset : 0;
+      const near = from > 0 ? from + pad : from;
+      const far = to - pad;
       let within = 0;
       shown.forEach((p, n) => {
         const begins = within;
@@ -158,13 +167,13 @@ export class SherpaRadialChart extends SherpaElement {
         const part = partTpl ? this.clone<SVGPathElement>(partTpl, '.slice-part') : null;
         if (!part) return;
         const own: Edges = { startDeg: edges.startDeg + spanDeg * begins, endDeg: edges.startDeg + spanDeg * within,
-          startGap: n ? sectionPad : edges.startGap, endGap: n < shown.length - 1 ? sectionPad : edges.endGap };
-        part.setAttribute('d', ringSegmentPath({ cx: CENTRE, cy: CENTRE, inner: from, outer: to, ...own }));
+          startGap: n ? sectionPad : start, endGap: n < shown.length - 1 ? sectionPad : end };
+        part.setAttribute('d', ringSegmentPath({ cx: CENTRE, cy: CENTRE, inner: near, outer: far, ...own }));
         part.setAttribute('stroke-width', String(SECTION_OUTLINE * unit));
         paintSeries(part, index, colorIndex);
         paintTone(part, p.value, shown.map((one) => one.value));
         group.appendChild(part);
-        matchIn(p, from, to, own, index, colorIndex);
+        matchIn(p, near, far, own, index, colorIndex);
       });
     };
 

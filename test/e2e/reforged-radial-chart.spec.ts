@@ -502,7 +502,7 @@ test('a grouped slice is split into its parts, each a tone by its weight, donut 
 });
 
 // A REAL gap: nothing is painted over an edge, so a segment keeps its whole outline. Will, TODO 635
-test('segments stand 1px apart and keep their full outline; sections 1px too, with a thinner one (Will, TODOs 635, 686)', async ({ page }) => {
+test('segments stand 1px apart and keep their full outline; sections 1px too, with a thinner one, 1px inside it (Will, TODOs 635, 686, 693)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<HTMLElement & { populate(d: unknown): Promise<void> }>('sherpa-radial-chart', undefined, { style: 'inline-size: 300px; block-size: 300px' });
     await el.populate([
@@ -513,17 +513,27 @@ test('segments stand 1px apart and keep their full outline; sections 1px too, wi
     const sr = el.shadowRoot!;
     const svg = sr.querySelector<SVGSVGElement>('.ring')!;
     // Two equal slices meet at 180deg (straight down); a's parts at 90deg (to the right).
-    const at = (deg: number) => {
+    const at = (deg: number, radius: number) => {
       const p = svg.createSVGPoint();
       const rad = (deg - 90) * (Math.PI / 180);
-      p.x = 50 + 38 * Math.cos(rad);
-      p.y = 50 + 38 * Math.sin(rad);
+      p.x = 50 + radius * Math.cos(rad);
+      p.y = 50 + radius * Math.sin(rad);
       return p;
     };
-    const covers = (selector: string, deg: number) => [...sr.querySelectorAll<SVGPathElement>(selector)]
-      .some((path) => path.isPointInFill(at(deg)) || path.isPointInStroke(at(deg)));
+    const covers = (selector: string, deg: number, radius = 38) => [...sr.querySelectorAll<SVGPathElement>(selector)]
+      .some((path) => path.isPointInFill(at(deg, radius)) || path.isPointInStroke(at(deg, radius)));
     const unit = 100 / svg.getBoundingClientRect().width;
+    /* Mid-way across the padding: the segment's outline ends 0.25 units inside its
+       path, a section's starts 1px further. a's rim, its hole, and its edge at 12 o'clock. TODO 693 */
+    const between = 0.25 + unit / 2;
+    const edgeAt = (offset: number) => (Math.asin(offset / 38) * 180) / Math.PI;
+    const padded = {
+      rim: covers('.slice-part', 45, 49.75 - between), hole: covers('.slice-part', 45, 27.75 + between),
+      edge: covers('.slice-part', edgeAt((unit + 0.5) / 2 + between)),
+      inRim: covers('.slice-part', 45, 49.75 - between - unit), inEdge: covers('.slice-part', edgeAt((unit + 0.5) / 2 + between + unit)),
+    };
     return {
+      padded,
       segmentEdge: covers('.slice, .slice-part', 180),
       sectionEdge: covers('.slice-part', 90),
       // 0.4px either side of the sections' shared edge is gap: a 1px one, not 0.5px. TODO 686
@@ -534,6 +544,7 @@ test('segments stand 1px apart and keep their full outline; sections 1px too, wi
       section: Number(sr.querySelector('.slice-part')!.getAttribute('stroke-width')) / unit,
     };
   });
+  expect(r.padded).toEqual({ rim: false, hole: false, edge: false, inRim: true, inEdge: true });
   expect(r.segmentEdge).toBe(false);
   expect(r.sectionEdge).toBe(false);
   expect(r.sectionGap).toBe(false);

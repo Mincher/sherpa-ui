@@ -14830,6 +14830,12 @@ card's surface along the shared edge was tried first and sent back: it is painte
 outlines, so it thins them. So each path moves in from its neighbour by half the gap and the
 half of its outline that falls outside it.
 
+**A segment has 1px of padding** (Will, TODO 693): its sections stand inside its outline,
+not on it. A bar's parts are inset 1px; a ring's move in past the inner half of the segment's
+outline, the 1px, and the outer half of their own. A pie's point and a band too thin to keep
+a part are not padded; a whole ring has no edge at its start, so its last part and its first
+keep a section's gap there.
+
 An SVG draws in units and a gap is in pixels, so a ring reads its own size as it draws
 (`unitsPerPixel`) and draws again when that changes (`redrawOnResize`).
 

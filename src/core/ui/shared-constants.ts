@@ -28,6 +28,7 @@
  * - SEGMENT_GAP — The gap between a chart's segments, in px.
  * - SECTION_GAP — The gap between a segment's sections, in px.
  * - SECTION_OUTLINE — A section's outline, in px: thinner than its segment's.
+ * - SEGMENT_PADDING — The space inside a segment's outline, around its sections, in px.
  * - DEFAULT_TICKS — Gridlines a cartesian chart draws when `data-ticks` is absent.
  */
 
@@ -144,6 +145,9 @@ export const SECTION_GAP = 1;
 
 /** A section's outline, in px: thinner than its segment's. Will, TODO 635 */
 export const SECTION_OUTLINE = 0.5;
+
+/** The space inside a segment's outline, around its sections, in px. Will, TODO 693 */
+export const SEGMENT_PADDING = 1;
 
 /**
  * Gridlines a cartesian chart draws when `data-ticks` is absent.

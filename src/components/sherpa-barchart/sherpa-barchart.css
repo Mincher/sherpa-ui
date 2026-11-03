@@ -163,7 +163,7 @@
 .bar-parts:not(:empty) {
   display: flex;
   position: absolute;
-  inset: 0;
+  inset: 1px; /* off-grid-ok: a segment's padding, inside its outline. Will, TODO 693 */
   gap: 1px; /* off-grid-ok: a gap between sections, not spacing. Will, TODOs 635, 686 */
 }
 .bar-col[data-sign="-"] .bar-parts { flex-direction: row-reverse; }
