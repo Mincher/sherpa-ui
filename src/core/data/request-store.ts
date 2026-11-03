@@ -14,7 +14,7 @@ import { failureOf, type Failure } from './failure.js';
 import { HttpError } from './stores.js';
 import { readField, type LoadOptions, type LoadResult, type Row, type StoreChangeDetail, type StoreChanges, type WriteOptions } from './store.js';
 import { startSpan, traceparent, type TraceContext } from './trace.js';
-import { ValidationError, type FieldDomain, type Issue } from './validate.js';
+import { ValidationError, type FieldDomain } from './validate.js';
 
 /** Where its requests go, and the store's name there. */
 export interface RequestStoreOptions {

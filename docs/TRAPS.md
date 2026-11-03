@@ -28,8 +28,8 @@ headings below are older than the index: most entries are under the last one.
 
 | Area | Entries |
 |---|---:|
-| [The data layer](traps/data-layer.md) | 211 |
-| [Storage, saved Views and the URL](traps/storage.md) | 35 |
+| [The data layer](traps/data-layer.md) | 214 |
+| [Storage, saved Views and the URL](traps/storage.md) | 36 |
 | [The join and the app layer](traps/join-and-app.md) | 40 |
 | [Filters](traps/filters.md) | 104 |
 | [Menus, tips and overlays](traps/menus-tips-overlays.md) | 79 |
@@ -39,4 +39,4 @@ headings below are older than the index: most entries are under the last one.
 | [Other components](traps/other-components.md) | 61 |
 | [Build, tools and the MCP](traps/build-tools-mcp.md) | 34 |
 | [Tests only](traps/tests-only.md) | 13 |
-| **All** | **748** |
+| **All** | **752** |
