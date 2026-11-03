@@ -89,7 +89,8 @@ test('a toolbar number chip sends a typed number, or a Between row\'s drag, on A
   expect(r.cancelled).toEqual({ heard: [], values: ['300'] });
   expect(r.ends).toEqual(['200', '600']);
   expect(r.rangeDraft).toEqual([]);
-  expect(r.ranged.at(-1)).toEqual({ op: 'between', value: ['200', '600'] });
+  // The tree holds the numbers its field holds: typed once, as they come in.
+  expect(r.ranged.at(-1)).toEqual({ op: 'between', value: [200, 600] });
 });
 
 /* LIVE — Will, TODO 107. Over a source with `applyOn: 'input'`, a number does

@@ -1,0 +1,5 @@
+{
+  "$schema": "../../../schemas/views.v1.json",
+  "ok": { "label": "Ok" },
+  "nameless": { "query": { "v": 1, "scopes": {} } }
+}

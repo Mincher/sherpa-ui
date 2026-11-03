@@ -26,7 +26,7 @@
  * - FieldCondition — One row of a flat condition menu: the menu's own shape, a tree once it leaves.
  * - rowAnswered — Does this condition row have what its op needs to narrow anything?
  * - answeredCondition — A tree with only its answered parts, or undefined when none answers.
- * - rowsTree — A flat menu's rows as ONE tree, read left to right — the menu's boundary in.
+ * - rowsTree — A flat menu's rows as ONE tree, read left to right, typed by its field — the menu's boundary in.
  * - treeRows — A tree as the rows a flat menu draws — the menu's boundary out; undefined where rows cannot say it.
  * - RuledOut — Why the source rules a value out: not offered, or not matched.
  * - ruleOut — A field's limits as one test: what its chain offers first, then what the filters before it leave.
@@ -37,6 +37,8 @@
  * - withPreset — A reading with one preset's tree on it, or, with none, off it.
  * - presetTouches — Does a preset's tree touch this value of a field: a list value it keeps?
  * - fieldState — work out one field's whole state — the only place that decides it
+ * - typedValue — A value as its field holds it: a number field's text `70` is 70, a list's each; anything else as given.
+ * - typedTree — A tree's values as its field holds them, by `typedValue`.
  * - stateClause — One field's state as a ready `FilterClause`, or `undefined`.
  * - readingClause — a reading as a clause, for a control holding its own field facts
  * - conditionClause — A tree as the filter it says — the ONE place any answer becomes a filter.
@@ -327,25 +329,26 @@ function picksLeaf(op: FilterOp, picks: readonly unknown[]): ConditionLeaf {
   return picks.length === 1 ? { op: not ? 'ne' : 'eq', value: picks[0] } : { op: not ? 'notin' : 'in', value: [...picks] };
 }
 
-/** One answered row as its leaf: its text kept as typed, so a menu reads it back. */
-function rowLeaf(row: FieldCondition): ConditionLeaf | undefined {
+/** One answered row as its leaf, its value as the field holds it: a number typed `70` is 70. */
+function rowLeaf(row: FieldCondition, type: FieldType): ConditionLeaf | undefined {
   if (!rowAnswered(row)) return undefined;
   if (row.op === 'last' || row.op === 'next') return { op: row.op, value: { n: Number(row.text!.trim()), unit: row.unit ?? 'day' } };
   const takes = OP_TAKES[row.op] ?? 'list';
-  if (takes === 'text') return { op: row.op, value: row.text };
-  if (takes === 'range') return { op: row.op, value: [...row.picked!] };
-  return picksLeaf(row.op, row.picked!);
+  if (takes === 'text') return { op: row.op, value: typedValue(type, row.text) };
+  if (takes === 'range') return { op: row.op, value: typedValue(type, [...row.picked!]) };
+  return picksLeaf(row.op, typedValue(type, row.picked!) as unknown[]);
 }
 
 /**
  * A flat menu's rows as ONE tree, read left to right: each row joins all before
  * it, so `A or B and C` is `(A or B) and C`. Will, TODO 594. The menu's boundary
- * IN; a half-built row says nothing. TRAP T-many-conditions-are-one-reading
+ * IN, typed by its field's `type`; a half-built row says nothing.
+ * TRAP T-many-conditions-are-one-reading · TRAP T-a-value-is-typed-once
  */
-export function rowsTree(rows: readonly FieldCondition[]): Condition | undefined {
+export function rowsTree(rows: readonly FieldCondition[], type: FieldType = 'text'): Condition | undefined {
   let tree: Condition | undefined;
   for (const row of rows) {
-    const leaf = rowLeaf(row);
+    const leaf = rowLeaf(row, type);
     if (!leaf) continue;
     const join = row.join === 'or' ? 'or' : 'and';
     const chain = tree && groupOf(tree);
@@ -508,9 +511,10 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
     : !answered ? undefined
       : takesText ? { op, value: text }
         : picksLeaf(range && ends.length >= 2 ? 'between' : op, ends);
-  const answer = said && castTree(said, type);
+  // Typed here, whatever it came from: a Simple text, or a tree kept before. TRAP T-a-value-is-typed-once
+  const answer = said && typedTree(said, type);
   const advanced = mode === 'advanced' || op !== DEFAULT_OP;
-  const held = Object.values(reading.byPreset ?? {}).map((p) => p.tree);
+  const held = Object.values(reading.byPreset ?? {}).map((p) => typedTree(p.tree, type));
 
   return {
     field: facts.field,
@@ -532,16 +536,26 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
   };
 }
 
-/** A tree's values as the data holds them: a number field's are numbers. */
-function castTree(tree: Condition, type: FieldType): Condition {
+/** A value as its field holds it: a number field's text `70` is 70, a list's each;
+ *  anything else as given. The one cast, called where a value comes in.
+ *  TRAP T-a-value-is-typed-once */
+export function typedValue(type: FieldType | undefined, value: unknown): unknown {
+  if (type !== 'number') return value;
+  if (Array.isArray(value)) return value.map((v) => typedValue(type, v));
+  if (typeof value !== 'string') return value;
+  const text = value.trim();
+  const n = Number(text);
+  return text !== '' && Number.isFinite(n) ? n : text;
+}
+
+/** A tree's values as its field holds them, by `typedValue`. */
+export function typedTree(tree: Condition, type: FieldType | undefined): Condition {
   if (type !== 'number') return tree;
   const parts = groupOf(tree);
-  if (parts) return group(parts[0], parts[1].map((p) => castTree(p, type)), tree);
+  if (parts) return group(parts[0], parts[1].map((p) => typedTree(p, type)), tree);
   const leaf = tree as ConditionLeaf;
   if (leaf.op === 'last' || leaf.op === 'next') return leaf;
-  const value = Array.isArray(leaf.value) ? cast(leaf.value, type)
-    : typeof leaf.value === 'string' ? cast([leaf.value.trim()], type)[0] : leaf.value;
-  return { ...leaf, value };
+  return { ...leaf, value: typedValue(type, leaf.value) };
 }
 
 /**
@@ -567,15 +581,6 @@ export function stateClause(state: FilterState): Filter | undefined {
  */
 export function readingClause(facts: FieldFacts, reading: FieldReading): Filter | undefined {
   return stateClause(fieldState(facts, reading));
-}
-
-/** Picks as the data holds them — a number column's values are numbers. */
-function cast(picked: readonly unknown[], type: FieldType): unknown[] {
-  if (type !== 'number') return [...picked];
-  return picked.map((v) => {
-    const n = Number(v);
-    return v !== '' && Number.isFinite(n) ? n : v;
-  });
 }
 
 /**
@@ -652,9 +657,10 @@ function leafClause(facts: FieldFacts, { op, value }: ConditionLeaf): Filter | u
     if ((op === 'between' || op === 'notbetween') && from && to) return [field, op, [from, endOf(to) ?? to]];
   }
   const takes = OP_TAKES[op] ?? 'list';
+  // Typed where it came in, so nothing is cast here. TRAP T-a-value-is-typed-once
   if (takes === 'text') {
     const text = typeof value === 'string' ? value.trim() : value;
-    return text != null && text !== '' ? [field, op, cast([text], type)[0]] as FilterClause : undefined;
+    return text != null && text !== '' ? [field, op, text] as FilterClause : undefined;
   }
   if (value === undefined) return undefined;
   if (takes === 'range') return rangeClause(field, type, list, op);
@@ -663,7 +669,7 @@ function leafClause(facts: FieldFacts, { op, value }: ConditionLeaf): Filter | u
   const base = op === 'in' ? 'eq' : op === 'notin' ? 'ne' : op;
   // A tiered field's picks: parents, and paths over both fields. TODO 369
   if (facts.child) return tierClause(field, facts.child, list, base);
-  return picksClause(field, cast(list, type), base);
+  return picksClause(field, list, base);
 }
 
 /**

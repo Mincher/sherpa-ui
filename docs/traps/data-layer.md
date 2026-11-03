@@ -6001,6 +6001,58 @@ by the page's id, so `saveView(label)` needs nothing from the page.
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `src/data.ts`
 
+### T-a-page-is-checked-as-it-opens
+
+**A page definition's names are checked ONCE, by `checkPage`, as it opens** —
+plan 695 D1. Before it, the names were checked in three places at three times:
+`openSource` said a child field or a set's field it could not use, `savedFiltersOf`
+a saved filter of the old shape, and only the MCP said a saved filter that fills a
+scope the page does not have. A page that named a missing scope opened, and showed
+less, with nothing said.
+
+- `checkPage(page)` is DOM-free and one pass over the JSON: a server, a test and the
+  MCP call the same function. It reports each broken name and answers true when
+  there is none. The provider calls it first in `open()`.
+- The builders after it are QUIET: `openSource` and `savedFiltersOf` leave out what
+  they cannot use and say nothing, so a page is never reported twice. Calling
+  `openSource` by hand checks nothing: call `checkPage` first.
+- The View scope is every page's: a saved filter may fill `view` though the page
+  declares no `view` scope.
+- What a schema says (a type, an op) is `schemas/page.v1.json`'s, run in tests and
+  tools. `checkPage` checks the NAMES, which no schema can.
+
+- Site: `src/core/data/page-definition.ts`
+- Site: `test/unit/page-definition.test.mjs`
+
+### T-a-value-is-typed-once
+
+**A condition's value is typed ONCE, by its field's type, where it comes in** —
+plan 695 D1. A number field's text `"70"` becomes `70` at each door: a menu's row
+(`rowLeaf`), a definition's plain form (`readingsOf`), a preset (`presetReadings`)
+and a Simple reading's answer (`fieldState`). All call `typedValue`. The compile
+(`leafClause`) casts nothing.
+
+Before, a host's `setColumnFilter('storage', ['storage', 'gt', 70])` kept `70` in
+the tree, and a reader who typed 70 in the same menu kept `"70"`: two shapes for
+one answer, so a comparison of the two said they differed, and a View saved from
+the reader's wrote `{ "gt": "70" }`. A preset from a definition held `"60"`,
+because `setPreset` reads its readings with no field facts; for the same reason a
+date preset's two ends became `in [a, b]`, two days, not a range.
+
+- Type at the door, never in a helper a lane may delete: `typedValue(type, value)`
+  is the one cast. `rowsTree` only passes its type through.
+- A Simple number reading keeps its `text` as typed: it is the control's, and is
+  typed when it becomes a tree.
+- A tree kept before this change, with a string, is typed by `fieldState` as it is
+  read, its presets' trees too.
+- A value that is not a number stays as given: `"n/a"` on a number field is text.
+
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/where.ts`
+- Site: `src/core/data/page-definition.ts`
+- Site: `src/data.ts`
+- Site: `test/unit/a-value-is-typed-once.test.mjs`
+
 ### T-a-changed-key-moves-the-row
 
 **An update that changes a row's KEY moves the row, in every store.** TODO 188,

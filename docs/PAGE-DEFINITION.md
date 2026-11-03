@@ -28,7 +28,10 @@ session, so its filters were lost on a trip away and back (G2).
 ## 2. What a page definition is
 
 One JSON document per page. The same rule as a View: **a definition is data**
-(`T-a-view-is-json`), so a service or an agent can read and write it.
+(`T-a-view-is-json`), so a service or an agent can read and write it. Its schema
+is `schemas/page.v1.json`, and every shape in it — a field, a scope, a condition,
+a saved filter, a component's config — is `schemas/defs.v1.json`'s, the one
+library `app.v1`, `views.v1` and `workflow.v1` use too.
 
 ```json
 {
@@ -69,7 +72,8 @@ One JSON document per page. The same rule as a View: **a definition is data**
   as a reader's saved filter is. Listed beside the reader's on every bar, and
   added as theirs are — as a preset chip; never saved over or deleted.
   One that is not `{ label, query: { v: 1, scopes } }` is reported
-  (`saved-filter-invalid`) and left out. `T-saved-filters-are-every-scope`
+  (`saved-filter-invalid`) and left out; so is a scope it fills that the page
+  does not have (`saved-filter-unknown-scope`). `T-saved-filters-are-every-scope`
 - **A scope's `sets`** draw fields as one group:
   `"sets": [{ "id": "account", "label": "Account", "mode": "serial", "fields": ["customer", "region"] }]`.
   A `serial` set chains them — Region offers only the regions of the picked
@@ -113,11 +117,13 @@ One JSON document per page. The same rule as a View: **a definition is data**
   On, it writes its conditions into those fields' answers — ANDed with what each
   holds, at the field's home — so their chips show them; off takes them out; it
   reads on while all its conditions are still there. The panel heads them
-  "Presets"; none moves scope (`T-a-preset-is-its-own-part`).
+  "Presets"; none moves scope (`T-a-preset-is-its-own-part`). Each value is typed
+  once by its field as the definition is read: `lt 60` on a number holds 60
+  (`T-a-value-is-typed-once`).
 - **A status field** — Health: At risk, Watch, Healthy — is defined with the
   STORE, not here: `statusFields(store, { health: { type: 'status', values: […] } })`,
-  each value named by conditions on the row's other fields. The page declares it as a
-  list (`"health": { "label": "Health", "select": "multiple" }`); its values and their
+  each value named by conditions on the row's other fields — its shape is
+  `defs.v1.json#/$defs/statusField`. The page declares it as a list (`"health": { "label": "Health", "select": "multiple" }`); its values and their
   looks come from the store, a filter names one as any value (`{ "health": { "in":
   ["At risk"] } }`), and a gauge over a number it ranges over draws its zones
   (`T-a-status-is-worked-out-by-the-data`).
@@ -131,9 +137,11 @@ One JSON document per page. The same rule as a View: **a definition is data**
   it: a page with a smaller cap asks the store, and the set stays. See DATA-SOURCE-RULES, "A remote store's whole
   set is HELD" (TODO 340).
 - **`ui`** — each component's configuration, by id, set through its own API
-  before it is answered — as a View's `ui` is. The grid's columns live here.
+  before it is answered — as a View's `ui` is. The grid's columns live here. Each
+  key is a property or a method its component's spec lists (`jsProps`, `methods`).
 - **Its Views** are filed under its `id`: the ones it ships, and a reader's
-  saved ones.
+  saved ones. The shipped ones are a file of their own, `schemas/views.v1.json`;
+  one with no `label` is reported and left out as it loads.
 - **The header's chips are not listed.** They are the View scope's holds,
   each drawn from its field — one definition per field
   (`T-a-field-is-declared-once`). The View chip lists `views`.
@@ -169,7 +177,11 @@ range will be between the min and max values."*
 
 ## 4. Who reads it
 
-The ROUTER hands the definition to the PROVIDER on every navigation:
+The ROUTER hands the definition to the PROVIDER on every navigation. The
+provider's `open()` checks its names first, with `checkPage(definition)` — one
+DOM-free pass that reports each broken one: a child field, a set's field its
+scope does not hold, two presets of one id, a saved filter. The builders after it
+are quiet (`T-a-page-is-checked-as-it-opens`).
 
 ```js
 provider.close({ next: true });   // leave the last page; the next one decides the panel

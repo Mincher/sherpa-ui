@@ -10,9 +10,9 @@
  * - parseWhere — The plain form as ONE tree, each leaf naming its field: every field's condition holds.
  * - treeReading — One field's tree as the reading a control holds: Simple's where a Simple control says it, else Advanced's.
  * - whereOf — Readings in the plain form: what each field filters by, nothing a control keeps for itself.
- * - readingsOf — The plain form as readings.
+ * - readingsOf — The plain form as readings, each value typed by its field.
  */
-import { fieldState, isRanged, type FieldFacts, type FieldReading, type FieldType } from './filter-state.js';
+import { fieldState, isRanged, typedTree, type FieldFacts, type FieldReading, type FieldType } from './filter-state.js';
 import { OP_TAKES, groupOf, joinConditions, type Condition, type ConditionLeaf, type Duration, type FilterOp } from './store.js';
 import { report } from './report.js';
 
@@ -139,7 +139,7 @@ export function whereOf(readings: Readonly<Record<string, FieldReading>>, facts?
   return where;
 }
 
-/** The plain form as readings. */
+/** The plain form as readings, each value typed by its field. */
 export function readingsOf(
   where: Readonly<Record<string, WhereCondition>>, facts?: Facts,
 ): Record<string, FieldReading> {
@@ -156,8 +156,10 @@ export function readingsOf(
       readings[field] = { picked: [], ...kept };
       continue;
     }
+    // Typed once, by its field, as it comes in. TRAP T-a-value-is-typed-once
+    const type = facts?.(field).type;
     const tree = fieldTree(condition);
-    readings[field] = { ...(tree ? treeReading(tree, facts?.(field).type) : {}), ...kept };
+    readings[field] = { ...(tree ? treeReading(typedTree(tree, type), type) : {}), ...kept };
   }
   return readings;
 }

@@ -97,9 +97,11 @@ export type { FieldStatus } from './core/data/field-status.js';
 export { bindSource, type BindOptions } from './core/ui/bind-source.js';
 /* A PAGE, set up from one JSON document. TRAP T-a-page-is-its-definition */
 export {
+  checkPage,
   checkTiers,
   savedFiltersOf,
   openSource,
+  presetReadings,
   type PageDefinition,
   type ScopeDefinition,
   type SourceDefinition,
@@ -262,6 +264,8 @@ export {
   rowsTree,
   treeRows,
   answerTree,
+  // A value typed by its field, once, where it comes in. TRAP T-a-value-is-typed-once
+  typedValue,
   type FieldState,
   type ValueState,
   type ValueEntry,

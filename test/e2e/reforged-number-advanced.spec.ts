@@ -63,7 +63,8 @@ test('a toolbar number chip goes Advanced: number questions, its body carried ov
     typed: ['text'],
   });
   expect(r.advanced.ops).toEqual(['eq']);
-  expect(r.reading).toMatchObject({ mode: 'advanced', picked: ['20'], tree: { op: 'eq', value: '20' } });
+  // The tree holds the number its field holds: typed once, as it comes in.
+  expect(r.reading).toMatchObject({ mode: 'advanced', picked: ['20'], tree: { op: 'eq', value: 20 } });
   expect(r.back).toEqual({ mode: 'simple', body: true, picked: ['20'] });
   expect(r.plain).toEqual({ type: null, advanced: false });
 });

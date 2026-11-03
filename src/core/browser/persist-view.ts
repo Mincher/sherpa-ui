@@ -245,6 +245,8 @@ export interface SavedView {
   /** Where its content lives instead: `file.html#id`, beside the views' JSON.
    *  `loadViewLibrary` reads it into `content`. TRAP T-a-views-markup-lives-in-a-template */
   template?: string;
+  /** The app's own settings it lays, by pointer: the app reads them, Sherpa does not. */
+  settings?: Readonly<Record<string, unknown>>;
 }
 
 /** A page's saved views, keyed by the id its chip option carries. */

@@ -2,9 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sherpa-ui.dev/schemas/views.v1.json",
   "title": "Sherpa-UI views library",
-  "description": "A page's Views, as JSON, by the id its View chip and the URL carry: the file a Context's views names in app.v1.json. The first is the Context's own. loadViewLibrary() reads it.",
+  "description": "A page's Views, as JSON, by the id its View chip and the URL carry: the file a Context's views names in app.v1.json. The first is the Context's own. loadViewLibrary() reads it, and leaves out one that is not a View.",
   "type": "object",
   "minProperties": 1,
-  "propertyNames": { "$ref": "defs.v1.json#/$defs/id" },
+  "properties": { "$schema": { "type": "string" } },
+  "propertyNames": { "anyOf": [{ "const": "$schema" }, { "$ref": "defs.v1.json#/$defs/id" }] },
   "additionalProperties": { "$ref": "defs.v1.json#/$defs/view" }
 }

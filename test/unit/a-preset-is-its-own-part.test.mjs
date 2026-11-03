@@ -64,8 +64,9 @@ test('on, it puts its conditions on the fields, adds no chip, and never goes Adv
   await act(source, () => source.query.setPreset('data', 'high-risk', true));
   assert.deepEqual(ids(source), [1, 4]);
   assert.equal(on(source), true);
-  assert.deepEqual(readings(source).health.byPreset, { 'high-risk': { label: 'High risk', scope: 'data', tree: { op: 'lt', value: '60' } } });
-  assert.deepEqual(readings(source).tickets.byPreset['high-risk'].tree, { op: 'gt', value: '0' });
+  assert.deepEqual(readings(source).health.byPreset, { 'high-risk': { label: 'High risk', scope: 'data', tree: { op: 'lt', value: 60 } } });
+  // Typed once, by its field, as the definition is read.
+  assert.deepEqual(readings(source).tickets.byPreset['high-risk'].tree, { op: 'gt', value: 0 });
   assert.equal(readings(source).health.mode, undefined);
   assert.equal(readings(source).health.tree, undefined);
   assert.deepEqual(source.describe('data').filters.map((f) => f.id), ['preset:high-risk', 'plan']);

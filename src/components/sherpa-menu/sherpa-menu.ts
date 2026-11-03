@@ -491,7 +491,7 @@ export class SherpaMenu extends SherpaElement {
   /** The rows as ONE tree — the menu's boundary in — or, while the reader has not
    *  touched them, the tree it was given that rows cannot say. TODO 692 */
   #treeOf(rows: readonly FieldCondition[]): Condition | undefined {
-    return this.#unsaid ?? rowsTree(rows);
+    return this.#unsaid ?? rowsTree(rows, this.#valueType());
   }
 
   /** A tree this menu was given that its flat rows cannot say AS GIVEN — nested, or
@@ -502,7 +502,7 @@ export class SherpaMenu extends SherpaElement {
   /** Draw a reading's tree as rows; one they cannot say as given is kept. */
   #drawTree(tree: Condition | undefined): FieldCondition[] {
     const rows = treeRows(tree);
-    const exact = !!rows && JSON.stringify(rowsTree(rows) ?? null) === JSON.stringify(answeredCondition(tree) ?? null);
+    const exact = !!rows && JSON.stringify(rowsTree(rows, this.#valueType()) ?? null) === JSON.stringify(answeredCondition(tree) ?? null);
     this.#unsaid = exact ? null : tree ?? null;
     return rows ?? [];
   }
@@ -762,6 +762,11 @@ export class SherpaMenu extends SherpaElement {
     return this.dataset['body'] === 'date';
   }
 
+  /** What its typed values are, so a number's `70` comes in as 70. */
+  #valueType(): 'number' | undefined {
+    return this.#numeric() ? 'number' : undefined;
+  }
+
   /** A menu whose own BODY answers Simple — a number or a date — so its host
    *  attributes are the body's, never row one's. TRAP T-a-number-has-advanced-rows */
   #typedBody(): boolean {
@@ -902,7 +907,7 @@ export class SherpaMenu extends SherpaElement {
        And a row the reader has not answered yet is their WORK IN PROGRESS: an
        answer drawn back that says the tree the rows they HAVE answered say keeps
        every row, blank ones too. TRAP T-an-unanswered-row-survives-a-redraw */
-    const answered = (list: readonly FieldCondition[]): string => JSON.stringify(rowsTree(list) ?? null);
+    const answered = (list: readonly FieldCondition[]): string => JSON.stringify(rowsTree(list, this.#valueType()) ?? null);
     const keep = answered(this.conditions) === answered(rows);
     if (!keep) {
       region.replaceChildren();

@@ -15,7 +15,7 @@ const { ArrayStore } = await import(new URL('stores.js', core));
 const { DataSource } = await import(new URL('data-source.js', core));
 const { bindSource } = await import(new URL('../ui/bind-source.js', core));
 const { rules, oneOf, number, min, max, required } = await import(new URL('validate.js', core));
-const { openSource } = await import(new URL('page-definition.js', core));
+const { checkPage, openSource } = await import(new URL('page-definition.js', core));
 const { rowsTree } = await import(new URL('filter-state.js', core));
 
 const ROOT = new URL('../../', import.meta.url);
@@ -31,6 +31,59 @@ test('a real page definition passes the page schema', async () => {
   } } } } };
   assert.deepEqual(check(nested), []);
   assert.notDeepEqual(check({ ...nested, source: { store: 'rows', scopes: { view: { where: { seats: { over: 3 } } } } } }), []);
+  // A status field is the store's, as statusFields takes it: each value's when, a list of wheres.
+  const status = schemaCheck('defs.v1.json#/$defs/statusField');
+  assert.deepEqual(status({ type: 'status', label: 'Health', values: [
+    { value: 'At risk', status: 'critical', when: [{ score: { lt: 60 } }, { openTickets: { gte: 5 } }] }, { value: 'Healthy', status: 'success' },
+  ] }), []);
+  assert.notDeepEqual(status({ type: 'status', values: [{ value: 'At risk', when: { score: { lt: 60 } } }] }), []);
+});
+
+// A page's Views library has its schema too: views.v1.json, each View a defs.v1.json view.
+test('a views library passes its schema; one with a View that has no label does not', async () => {
+  const check = schemaCheck('views.v1.json');
+  assert.deepEqual(check(await json('test/reforged/views/demo-views.json')), []);
+  assert.deepEqual(check(await json('test/reforged/views/broken-views.json')), ["/nameless must have required property 'label'"]);
+  assert.deepEqual(schemaCheck('defs.v1.json#/$defs/view')({ label: 'Mine', query: { v: 1, scopes: { data: {
+    where: { seats: { gt: 9 } }, sort: [{ field: 'seats', direction: 'desc' }], group: null, search: '',
+  } } }, ui: { grid: { select: [[]] } } }), []);
+});
+
+/* The one check of a page's names, as it opens: DOM-free, one pass, and every
+   builder after it quiet. TRAP T-a-page-is-checked-as-it-opens */
+test('checkPage says each broken name in a page, and nothing of a sound one', async () => {
+  const { onReport } = await import(new URL('report.js', core));
+  const heard = (page) => {
+    const said = [];
+    const stop = onReport((r) => said.push(r.code));
+    try { return { ok: checkPage(page), said }; } finally { stop(); }
+  };
+  assert.deepEqual(heard(await json('test/unit/fixtures/records.page.json')), { ok: true, said: [] });
+  assert.deepEqual(heard({ v: 2, id: 'p' }), { ok: false, said: ['page-definition'] });
+  const broken = {
+    v: 1, id: 'p',
+    source: {
+      store: 'rows',
+      fields: { customer: { child: 'site' }, seats: { type: 'number' } },
+      scopes: {
+        data: {
+          holds: ['seats'],
+          sets: [{ id: 's', fields: ['seats', 'plan'] }],
+          presets: [{ id: 'big', label: 'Big', where: { seats: { gt: 9 } } }, { id: 'big', label: 'Bigger', where: { seats: { gt: 99 } } }],
+        },
+      },
+    },
+    savedFilters: {
+      old: { label: 'Old', where: { seats: { gt: 1 } } },
+      lost: { label: 'Lost', query: { v: 1, scopes: { rows: { where: { seats: { gt: 1 } } } } } },
+      // The View is every page's, declared or not.
+      view: { label: 'View', query: { v: 1, scopes: { view: { where: { seats: { gt: 1 } } } } } },
+    },
+  };
+  assert.deepEqual(heard(broken), {
+    ok: false,
+    said: ['child-not-declared', 'set-field-not-held', 'preset-twice', 'saved-filter-invalid', 'saved-filter-unknown-scope'],
+  });
 });
 
 test('a schema says each field\'s domain; a min on text is a length, not an end', () => {
@@ -115,7 +168,7 @@ test('a scope lists its filter SETS; a field in two, or one it does not hold, is
   const said = [];
   const stop = onReport((r) => said.push([r.code, r.at?.field]));
   const rows = [{ id: 1, region: 'AMER', customer: 'Contoso', tier: 'Pro' }];
-  const source = await openSource({
+  const def = {
     store: 'alerts',
     fields: { customer: { label: 'Customer' }, region: { label: 'Region' }, tier: { label: 'Tier' } },
     scopes: {
@@ -127,7 +180,9 @@ test('a scope lists its filter SETS; a field in two, or one it does not hold, is
         ],
       },
     },
-  }, new ArrayStore(rows));
+  };
+  assert.equal(checkPage({ v: 1, id: 'p', source: def }), false);
+  const source = await openSource(def, new ArrayStore(rows));
   stop();
   // TRAP T-a-filter-set-groups-or-chains
   assert.deepEqual(said, [['set-field-not-held', 'tier'], ['field-in-two-sets', 'region']]);

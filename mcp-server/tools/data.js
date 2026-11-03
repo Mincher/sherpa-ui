@@ -824,29 +824,24 @@ export function register(server) {
   );
 }
 
-/** A page's names: each saved filter's scopes must be the page's and its
- *  conditions must parse, and a field not in `fields` is noted. */
+/** A page's names: the data layer's checkPage reports each broken one, each
+ *  saved filter's conditions must parse, and a field not in `fields` is noted. */
 function pageNames(dl, page, errors, warnings) {
   const source = page.source ?? {};
   const fields = new Set(Object.keys(source.fields ?? {}));
-  const scopes = new Set(Object.keys(source.scopes ?? {}));
+  dl.checkPage(page);
   for (const [scope, facts] of Object.entries(source.scopes ?? {})) {
     const named = [...(facts.holds ?? []), ...(Array.isArray(facts.offers) ? facts.offers : [])];
     for (const field of named) {
       if (!fields.has(field)) warnings.push(`scope "${scope}" names "${field}", which source.fields does not declare — the rows must carry it`);
     }
   }
-  // A saved filter that is not a name and a query: the data layer's own check reports it.
-  const saved = dl.savedFiltersOf?.(page) ?? page.savedFilters ?? {};
-  for (const [id, set] of Object.entries(saved)) {
-    for (const [scope, filters] of Object.entries(set?.query?.scopes ?? {})) {
-      if (!scopes.has(scope)) errors.push(`saved filter "${id}" fills scope "${scope}", which source.scopes does not have`);
+  for (const [id, set] of Object.entries(dl.savedFiltersOf(page))) {
+    for (const filters of Object.values(set.query.scopes)) {
       if (filters?.where) dl.readingsOf(filters.where);
       for (const field of [...(filters?.holds ?? []), ...Object.keys(filters?.where ?? {})]) {
         if (!fields.has(field)) warnings.push(`saved filter "${id}" names "${field}", which source.fields does not declare — the rows must carry it`);
       }
     }
   }
-  // A child field, where it cannot be one: the data layer's own check reports it.
-  dl.checkTiers?.(source);
 }
