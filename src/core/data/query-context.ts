@@ -40,6 +40,9 @@
  * - .offer — Say which fields a component scope HAS.
  * - .declareDefault — A component's OWN default filter — readings that narrow `only` it — as its scope in the Query.
  * - .suspend — Switch answers off and on, keeping each: one field's, or every answer in a scope.
+ * - .soloed — The filter soloed in this tab, if one is.
+ * - .solo — Solo one filter: every other answer in force in its scope (every scope, `across`) goes off, whole.
+ * - .unsolo — End the solo: only what it switched off comes back on.
  * - .hold — Say what a scope holds now.
  * - .order — Put some of a scope's fields in this order; the rest keep their places.
  * - .move — Move a filter between scopes — ONE call, because the removal is not optional.
@@ -651,6 +654,70 @@ export class QueryContext extends EventTarget {
     return out ? picked.filter((v) => out(valueKey(v)) === null) : [...picked];
   }
 
+  /** The filter soloed in this tab, and every answer the solo switched off. Never
+   *  saved, never exported. Will, TODO 690 */
+  #solo: { scope: string; field: string; off: { scope: string; field: string }[] } | null = null;
+
+  /** The filter soloed in this tab, if one is. */
+  get soloed(): { scope: string; field: string } | null {
+    return this.#solo ? { scope: this.#solo.scope, field: this.#solo.field } : null;
+  }
+
+  /**
+   * SOLO one filter: every other answer in force in its scope — every scope,
+   * `across` — goes off, its value whole, and this one is on. Applied at once,
+   * as the Switch is. A second solo moves it. Will, TODO 690
+   * TRAP T-a-solo-is-a-draft-of-one-tab
+   */
+  solo(scope: string, field: string, options: { across?: boolean } = {}): void {
+    this.batch(() => {
+      this.#unsolo();
+      const draft = this.#live.draft;
+      const off: { scope: string; field: string }[] = [];
+      const scopes = options.across ? eachScope(draft).map(([id]) => id) : [scope];
+      for (const id of scopes) {
+        const entry = draft.scopes[id];
+        // A scope its Switch turned off is off already.
+        if (!entry || entry.suspended) continue;
+        for (const [other, reading] of Object.entries(entry.readings)) {
+          if (other === field || reading.suspended || !readingAnswered(reading)) continue;
+          // Raw: going off here prunes nothing, so it comes back as it was.
+          this.#select(other, reading.picked ?? [], { ...reading, suspended: true });
+          off.push({ scope: id, field: other });
+        }
+      }
+      const own = readingOf(draft, field);
+      if (own?.suspended) {
+        const { suspended: _off, ...on } = own;
+        this.#select(field, own.picked ?? [], on);
+      }
+      this.#solo = { scope, field, off };
+      for (const id of new Set([scope, ...off.map((o) => o.scope)])) this.commit({ scope: id });
+      this.#tell({ kind: 'drawn', fields: [field, ...off.map((o) => o.field)], bars: scope });
+    });
+  }
+
+  /** End the solo: ONLY what it switched off comes back on — less any the reader
+   *  turned on meanwhile. Will, TODO 690 */
+  unsolo(): void {
+    this.batch(() => this.#unsolo());
+  }
+
+  /** End the solo, inside a batch. */
+  #unsolo(): void {
+    const solo = this.#solo;
+    if (!solo) return;
+    this.#solo = null;
+    for (const { field } of solo.off) {
+      const held = readingOf(this.#live.draft, field);
+      if (!held?.suspended) continue;
+      const { suspended: _off, ...on } = held;
+      this.#select(field, held.picked ?? [], on);
+    }
+    for (const id of new Set([solo.scope, ...solo.off.map((o) => o.scope)])) this.commit({ scope: id });
+    this.#tell({ kind: 'drawn', fields: [solo.field, ...solo.off.map((o) => o.field)], bars: solo.scope });
+  }
+
   /** Say what a scope holds now. An empty list forgets the scope. */
   hold(name: string, fields: readonly string[]): void {
     const next = [...fields];
@@ -933,6 +1000,8 @@ export class QueryContext extends EventTarget {
    *  clears what it does not name. TRAP T-a-field-can-carry-over-views */
   reset(scopes: readonly string[], options: { carry?: boolean; organise?: boolean } = {}): void {
     this.batch(() => {
+      // A Reset ends a solo: what it switched off is cleared with the rest.
+      this.#solo = null;
       for (const id of scopes) {
         const s = this.#live.draft.scopes[id];
         if (!s) continue;
@@ -1169,6 +1238,8 @@ export class QueryContext extends EventTarget {
       report({ code: 'unknown-query', message: 'setQuery: not a v1 Query, so nothing was restored.' });
       return;
     }
+    // A whole Query put in — a View, a draft — ends a solo. TODO 690
+    this.#solo = null;
     const next = definitionOf(query, options.holds === 'keep', this.#live.draft, {
       defaults: this.#live.defaults,
       starts: this.#live.starts,
@@ -1222,6 +1293,11 @@ export class QueryContext extends EventTarget {
    *  TRAP T-a-page-goes-out-as-json */
   export(): QueryState {
     const query = structuredClone(this.#live.applied);
+    // A solo is this tab's draft: what it switched off is saved on. TODO 690
+    for (const { scope, field } of this.#solo?.off ?? []) {
+      const reading = query.scopes[scope]?.readings[field];
+      if (reading?.suspended) delete reading.suspended;
+    }
     // It names its arrangement, none too: a View saved from it puts back the rows as they were.
     if (!arrangementOf(query).scope) query.scopes[VIEW] = { ...(query.scopes[VIEW] ?? emptyScope()), sort: [] };
     return { v: 1, query };

@@ -4115,6 +4115,27 @@ arranged again. Its search stays. The Switch sits left of the Group chip.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `src/core/data/query-context.ts`
+
+### T-a-solo-is-a-draft-of-one-tab
+
+**Solo one filter, and every other answer in force goes off — whole** (Will, TODO
+690): `query.solo(scope, field, { across })` switches off each other answer in force
+in its scope (every scope, `across`; a scope its Switch turned off is skipped) and
+this one on, applied at once as the Switch is. It goes off RAW: not through
+`suspend()`, whose going-off drops the picks the filters before it rule out, or a
+value would come back smaller than it went. A second solo moves it.
+
+**Ending it switches back on ONLY what it switched off** — `unsolo()`, the menu's
+"Remove soloing", or the soloed chip's body. An answer the reader had off before
+stays off; one the reader turned on meanwhile is left as it is.
+
+**It is never saved** (Will: one tab, a temporary draft; D1 A, a reload ends it):
+the solo lives in the `QueryContext` alone, and `export()` — a View save, a draft, a
+kept entry, the provider's state — reads what it switched off as ON. A whole Query
+put in (`setQuery`, `import`: a View, a draft) or a Reset ends it.
+
+- Site: `src/core/data/query-context.ts`
+- Site: `test/unit/a-solo-is-a-draft-of-one-tab.test.mjs`
 ### T-grid-column-width-bounds
 
 A column is never narrower than `11ch` nor wider than `50ch`; it starts at

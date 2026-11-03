@@ -187,6 +187,7 @@ export const ICON_NAMES: ReadonlySet<string> = new Set([
   'sidebar',
   'slash-forward',
   'sliders-up',
+  'solo',
   'sort-ascending',
   'sort-descending',
   'sort-none',
