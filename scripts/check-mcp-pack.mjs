@@ -23,7 +23,7 @@ const STARTER = resolve(ROOT, '..', 'Sherpa Starter');
 /** The sherpa-ui files the MCP reads from disk, beside the code it imports. */
 export const READS = [
   'dist/data.js',
-  'schemas/component.v1.json', 'schemas/page.v1.json', 'schemas/app.v1.json',
+  'schemas/component.v1.json', 'schemas/defs.v1.json', 'schemas/page.v1.json', 'schemas/app.v1.json',
   'docs/APP-GUIDE.md', 'docs/DATA-SOURCE-RULES.md', 'docs/DEF-TO-FIGMA-BUILD-RULES.md',
   'scripts/figma-data/name-map.yaml',
   'src/styles/tokens/tokens.css',

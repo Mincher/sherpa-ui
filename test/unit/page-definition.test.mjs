@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import Ajv2020 from 'ajv/dist/2020.js';
+import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { ArrayStore } = await import(new URL('stores.js', core));
@@ -23,16 +23,14 @@ const json = async (path) => JSON.parse(await readFile(new URL(path, ROOT), 'utf
 
 // The app's own definitions are checked in Sherpa Demos; this one is a copy of its Records page.
 test('a real page definition passes the page schema', async () => {
-  const Ajv = Ajv2020.default ?? Ajv2020;
-  const check = new Ajv({ allErrors: true }).compile(await json('schemas/page.v1.json'));
-  const ok = check(await json('test/unit/fixtures/records.page.json'));
-  assert.ok(ok, JSON.stringify(check.errors));
+  const check = schemaCheck('page.v1.json');
+  assert.deepEqual(check(await json('test/unit/fixtures/records.page.json')), []);
   // A condition nests, and All is an answer: the schema says what the parser reads.
   const nested = { v: 1, id: 'p', source: { store: 'rows', scopes: { view: { where: {
     seats: { or: [{ lt: 10 }, { and: [{ gt: 50 }, { lt: 60 }] }] }, region: { all: true },
   } } } } };
-  assert.ok(check(nested), JSON.stringify(check.errors));
-  assert.equal(check({ ...nested, source: { store: 'rows', scopes: { view: { where: { seats: { over: 3 } } } } } }), false);
+  assert.deepEqual(check(nested), []);
+  assert.notDeepEqual(check({ ...nested, source: { store: 'rows', scopes: { view: { where: { seats: { over: 3 } } } } } }), []);
 });
 
 test('a schema says each field\'s domain; a min on text is a length, not an end', () => {

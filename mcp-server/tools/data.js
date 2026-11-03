@@ -796,8 +796,11 @@ export function register(server) {
       try { doc = JSON.parse(document); } catch (e) { return err(`document is not valid JSON: ${e.message}`); }
       if (!doc || typeof doc !== "object" || Array.isArray(doc)) return err("document must be a JSON object.");
       const isApp = "contexts" in doc;
-      const schema = JSON.parse(fs.readFileSync(at("schemas", isApp ? "app.v1.json" : "page.v1.json"), "utf8"));
-      const check = new Ajv2020({ allErrors: true, strict: false }).compile(schema);
+      const read = (file) => JSON.parse(fs.readFileSync(at("schemas", file), "utf8"));
+      // The shapes it $refs live in defs.v1.json, and a config's names in component.v1.json.
+      const check = new Ajv2020({ allErrors: true, strict: false })
+        .addSchema(read("defs.v1.json")).addSchema(read("component.v1.json"))
+        .compile(read(isApp ? "app.v1.json" : "page.v1.json"));
       const errors = check(doc) ? [] : check.errors.map((e) =>
         `${e.instancePath || "(root)"} ${e.message}${e.params?.additionalProperty ? `: "${e.params.additionalProperty}"` : ""}`);
       const warnings = [];

@@ -7,8 +7,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-import Ajv2020 from 'ajv/dist/2020.js';
+import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 import { checkApp, onReport } from '../../dist/data.js';
 
 const APP = {
@@ -35,11 +34,8 @@ const heard = (fn) => {
   }
 };
 
-test('a sound app definition passes its schema and checkApp, and says nothing', async () => {
-  const Ajv = Ajv2020.default ?? Ajv2020;
-  const schema = JSON.parse(await readFile(new URL('../../schemas/app.v1.json', import.meta.url), 'utf8'));
-  const check = new Ajv({ allErrors: true }).compile(schema);
-  assert.ok(check(APP), JSON.stringify(check.errors));
+test('a sound app definition passes its schema and checkApp, and says nothing', () => {
+  assert.deepEqual(schemaCheck('app.v1.json')(APP), []);
   assert.deepEqual(heard(() => checkApp(APP)), { ok: true, seen: [] });
 });
 

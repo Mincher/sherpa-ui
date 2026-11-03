@@ -7,7 +7,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import Ajv2020 from 'ajv/dist/2020.js';
+import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 import { markupProblems } from '../../scripts/check-usage.mjs';
 import { EXAMPLES } from '../a11y/examples.mjs';
 
@@ -23,13 +23,11 @@ test('every component has one, and the package ships them', () => {
 });
 
 test('each passes the example schema, and its markup the usage check', () => {
-  const Ajv = Ajv2020.default ?? Ajv2020;
-  const valid = new Ajv({ allErrors: true, strict: false })
-    .compile(JSON.parse(readFileSync(new URL('schemas/example.v1.json', ROOT), 'utf8')));
+  const valid = schemaCheck('example.v1.json');
   const problems = [];
   for (const name of COMPONENTS) {
     const raw = JSON.parse(readFileSync(new URL(`src/components/${name}/${name}.example.json`, ROOT), 'utf8'));
-    if (!valid(raw)) problems.push(`${name}: ${JSON.stringify(valid.errors)}`);
+    problems.push(...valid(raw).map((e) => `${name}: ${e}`));
     const { problems: found, tags } = markupProblems(EXAMPLES[name].html, name);
     problems.push(...found);
     // It shows ITSELF.

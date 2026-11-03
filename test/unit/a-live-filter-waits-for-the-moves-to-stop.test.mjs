@@ -9,8 +9,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-import Ajv2020 from 'ajv/dist/2020.js';
+import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
 import { ArrayStore, DataSource, rowsTree } from '../../dist/data.js';
 import { openSource } from '../../dist/core/data/page-definition.js';
@@ -67,8 +66,5 @@ test('the page JSON says it per source, and the schema takes it', async () => {
   const def = { store: 'records', applyOn: 'input', debounce: 120, fields: { seats: { type: 'number' } } };
   const source = await openSource(def, counted());
   assert.equal(source.applyOn, 'input');
-  const Ajv = Ajv2020.default ?? Ajv2020;
-  const schema = JSON.parse(await readFile(new URL('../../schemas/page.v1.json', import.meta.url), 'utf8'));
-  const check = new Ajv({ allErrors: true }).compile(schema);
-  assert.ok(check({ v: 1, id: 'p', source: def }), JSON.stringify(check.errors));
+  assert.deepEqual(schemaCheck('page.v1.json')({ v: 1, id: 'p', source: def }), []);
 });

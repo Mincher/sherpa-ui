@@ -1,0 +1,357 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sherpa-ui.dev/schemas/defs.v1.json",
+  "title": "Sherpa-UI definition shapes",
+  "description": "Every shape a definition is made of, said once: page.v1, app.v1, views.v1 and workflow.v1 $ref these, and define none of their own.",
+  "$defs": {
+    "id": {
+      "description": "A name a URL or a store files things under.",
+      "type": "string", "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "fieldNames": { "type": "array", "items": { "type": "string" } },
+
+    "condition": {
+      "description": "One field's condition: the plain form of a condition tree, parsed once. Several ops all hold; and and or take a list, nested as deep as they say; numbers as numbers.",
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "eq": {}, "ne": {}, "lt": {}, "lte": {}, "gt": {}, "gte": {},
+        "contains": { "type": "string" }, "notcontains": { "type": "string" },
+        "startswith": { "type": "string" }, "endswith": { "type": "string" },
+        "in": { "type": "array" }, "notin": { "type": "array" },
+        "between": { "type": "array", "minItems": 2, "maxItems": 2 },
+        "notbetween": { "type": "array", "minItems": 2, "maxItems": 2 },
+        "last": { "description": "A date in the last n units, from today.", "type": "number" },
+        "next": { "description": "A date in the next n units, from today.", "type": "number" },
+        "unit": { "enum": ["day", "week", "month", "year"] },
+        "and": { "type": "array", "items": { "$ref": "#/$defs/condition" } },
+        "or": { "type": "array", "items": { "$ref": "#/$defs/condition" } },
+        "off": { "description": "Kept, not applied.", "type": "boolean" },
+        "all": { "description": "Every value, on purpose: Select all on, which filters nothing.", "type": "boolean" }
+      }
+    },
+    "where": {
+      "description": "Conditions field by field, all of which hold: { \"openTickets\": { \"gt\": 0 } }. A scope's start, a preset, a saved filter, a View and a status value each say theirs so.",
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/condition" }
+    },
+    "op": {
+      "enum": ["eq", "ne", "lt", "lte", "gt", "gte", "contains", "notcontains", "startswith", "endswith", "in", "notin", "between", "notbetween", "last", "next"]
+    },
+    "sort": {
+      "type": "object", "additionalProperties": false, "required": ["field", "direction"],
+      "properties": { "field": { "type": "string" }, "direction": { "enum": ["asc", "desc"] } }
+    },
+
+    "filterScope": {
+      "description": "One scope's filters: the fields it holds, and its conditions.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "holds": { "description": "The fields it holds.", "$ref": "#/$defs/fieldNames" },
+        "where": { "$ref": "#/$defs/where" }
+      }
+    },
+    "viewScope": {
+      "description": "One scope as a View writes it: its filters, and how it arranges the rows. A scope with no holds keeps what it holds now; a field it answers is held there.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "holds": { "description": "The fields it holds, in order.", "$ref": "#/$defs/fieldNames" },
+        "where": { "$ref": "#/$defs/where" },
+        "sort": { "type": "array", "items": { "$ref": "#/$defs/sort" } },
+        "group": { "type": ["string", "null"] },
+        "search": { "type": "string" },
+        "sortSuspended": { "description": "A sort switched off, kept.", "$ref": "#/$defs/sort" },
+        "suspended": {
+          "description": "Its filter Switch is off: the fields it switched off.",
+          "type": "object", "additionalProperties": false, "required": ["fields"],
+          "properties": { "fields": { "$ref": "#/$defs/fieldNames" } }
+        },
+        "narrows": { "description": "The only components it narrows.", "type": "array", "items": { "type": "string" } },
+        "from": { "description": "The View's only: the scope each field it holds came up from.", "type": "object", "additionalProperties": { "type": "string" } },
+        "superseded": { "description": "Its own answers to the fields the View holds over it: kept, not in force.", "$ref": "#/$defs/where" },
+        "presentation": { "$ref": "#/$defs/presentation" }
+      }
+    },
+    "query": {
+      "description": "A Query as a definition states it: each scope it sets, by id.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["v", "scopes"],
+      "properties": {
+        "v": { "const": 1 },
+        "scopes": { "type": "object", "additionalProperties": { "$ref": "#/$defs/viewScope" } }
+      }
+    },
+    "savedFilter": {
+      "description": "A saved filter: a name, and each scope's filters. Applied, it fills the field chips; a scope it does not name has no filters.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "query"],
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "query": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["v", "scopes"],
+          "properties": {
+            "v": { "const": 1 },
+            "scopes": { "type": "object", "additionalProperties": { "$ref": "#/$defs/filterScope" } }
+          }
+        }
+      }
+    },
+    "preset": {
+      "description": "One of the app's own named conditions: a boolean chip leading its scope.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "where"],
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "where": { "$ref": "#/$defs/where" }
+      }
+    },
+
+    "presentationParts": {
+      "description": "A slot's presentation: its kind, its primary (the first split: a bar, a slice or a grid's pinned column), its secondary (a bar chart's stack) and its group (the sections in each).",
+      "type": "object",
+      "properties": {
+        "kind": { "enum": ["bar", "donut", "pie", "grid"] },
+        "primary": { "type": "string" },
+        "secondary": { "type": "string" },
+        "group": { "type": "string" },
+        "sort": { "enum": ["asc", "desc"] },
+        "off": { "description": "Its secondary is switched off: kept, and not shown.", "const": "secondary" }
+      }
+    },
+    "presentation": { "$ref": "#/$defs/presentationParts", "unevaluatedProperties": false },
+    "presentationDefinition": {
+      "description": "What a slot shows until the reader changes it, and a default per view over it.",
+      "$ref": "#/$defs/presentationParts",
+      "properties": {
+        "grid": { "description": "Its grid's own default, over the slot's.", "$ref": "#/$defs/presentation" },
+        "chart": { "description": "Its charts' own default, over the slot's.", "$ref": "#/$defs/presentation" }
+      },
+      "unevaluatedProperties": false
+    },
+    "axisOffer": {
+      "description": "One axis's fields: only those available, less those unavailable. It narrows, never adds: never a number or a date.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "available": { "$ref": "#/$defs/fieldNames" },
+        "unavailable": { "$ref": "#/$defs/fieldNames" }
+      }
+    },
+    "axisOffers": {
+      "description": "The fields each axis's chip offers.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "primary": { "$ref": "#/$defs/axisOffer" },
+        "secondary": { "$ref": "#/$defs/axisOffer" },
+        "group": { "$ref": "#/$defs/axisOffer" }
+      }
+    },
+    "axes": {
+      "description": "The fields each axis's chip offers, and per view, grid and chart, over them. The last to name an axis wins it whole.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "primary": { "$ref": "#/$defs/axisOffer" },
+        "secondary": { "$ref": "#/$defs/axisOffer" },
+        "group": { "$ref": "#/$defs/axisOffer" },
+        "grid": { "$ref": "#/$defs/axisOffers" },
+        "chart": { "$ref": "#/$defs/axisOffers" }
+      }
+    },
+
+    "field": {
+      "description": "What a field is, said once: its kind, its name, and how a control answers it. Its values are the data's.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": { "enum": ["text", "number", "date"] },
+        "label": { "type": "string" },
+        "select": { "enum": ["single", "multiple"] },
+        "advanced": { "description": "Advanced conditions beside its values (true), or instead of them (\"only\").", "enum": [true, false, "only"] },
+        "op": { "description": "The condition its filter opens on.", "$ref": "#/$defs/op" },
+        "time": { "description": "A date that holds a time of day: its Advanced rows offer a time too.", "type": "boolean" },
+        "range": { "description": "A date whose menus pick two ends, from and to. Left out, they pick days.", "type": "boolean" },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "step": { "type": "number", "exclusiveMinimum": 0 },
+        "icon": { "type": "string" },
+        "description": { "description": "What the field is, in a few words: its filter chip's tip says it.", "type": "string" },
+        "section": { "description": "The named section its chip sits in, where a bar heads its sections. None: a section of its own.", "type": "string" },
+        "labels": { "description": "A value's name as a reader sees it, where it is not the value.", "type": "object", "additionalProperties": { "type": "string" } },
+        "carryOver": { "description": "Its answer survives a View change that does not answer it.", "type": "boolean" },
+        "child": { "description": "The field holding this one's child values, a Customer's Site. A child has no filter of its own.", "type": "string" },
+        "fetch": { "description": "server: its filter is asked of the store, never worked out from the rows held.", "enum": ["server"] },
+        "start": { "description": "What a fetching list opens on: first, its first value (the default), or all, no filter.", "enum": ["first", "all"] }
+      }
+    },
+    "statusValue": {
+      "description": "One value of a status field: its name, its look, and when a row has it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value"],
+      "properties": {
+        "value": { "type": "string" },
+        "status": { "description": "Its look, a Style mode: critical, warning, success.", "type": "string" },
+        "when": { "description": "Any of these holds. None: every row the values before it left.", "type": "array", "items": { "$ref": "#/$defs/where" } }
+      }
+    },
+    "statusField": {
+      "description": "A field each row is given by conditions on its other fields, the first value that matches: defined with the store, statusFields(store, { name: … }).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "values"],
+      "properties": {
+        "type": { "const": "status" },
+        "label": { "type": "string" },
+        "values": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/statusValue" } }
+      }
+    },
+    "filterSet": {
+      "description": "Fields drawn as one group. A serial set chains them: each offers only what the answers of the fields above it leave.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "fields"],
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "mode": { "description": "parallel, the default, only groups them.", "enum": ["serial", "parallel"] },
+        "fields": { "description": "In order: in a serial set, the order is the chain.", "$ref": "#/$defs/fieldNames", "minItems": 1 }
+      }
+    },
+    "scope": {
+      "description": "One scope of a page: its name, the fields it offers and holds at the start, and how its slot shows them.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string" },
+        "axes": { "description": "What each axis's chip offers in this scope, over the page's.", "$ref": "#/$defs/axes" },
+        "offers": {
+          "description": "Every field it may add, or \"all\" for every field the page declares.",
+          "oneOf": [{ "const": "all" }, { "$ref": "#/$defs/fieldNames" }]
+        },
+        "holds": { "description": "The fields it holds at the start.", "$ref": "#/$defs/fieldNames" },
+        "where": { "description": "Its answers at the start. Reset puts them back.", "$ref": "#/$defs/where" },
+        "arranges": { "description": "Group and Sort arrange its rows. Left out, a scope a page of rows is drawn in does, and the View does not.", "type": "boolean" },
+        "presets": { "type": "array", "items": { "$ref": "#/$defs/preset" } },
+        "presentation": { "$ref": "#/$defs/presentationDefinition" },
+        "sets": { "type": "array", "items": { "$ref": "#/$defs/filterSet" } }
+      }
+    },
+    "source": {
+      "description": "A page's source: which store, how it pages and searches, its fields and its scopes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["store"],
+      "properties": {
+        "store": { "description": "The name the app registered its store under.", "type": "string" },
+        "pageSize": { "type": "integer", "minimum": 1 },
+        "applyOn": { "description": "change: a filter applies once per act. input: LIVE, debounce ms after the last move. A remote source always waits for Apply.", "enum": ["change", "input"] },
+        "debounce": { "description": "How long a live filter waits after the last move, in ms. Default 300.", "type": "integer", "minimum": 0 },
+        "holdRows": { "description": "A remote store's whole set is held up to this many rows. 0 holds none. Default 50 000.", "type": "integer", "minimum": 0 },
+        "search": { "description": "The fields a free-text search looks at.", "$ref": "#/$defs/fieldNames" },
+        "fields": { "description": "Every field a filter may ask of.", "type": "object", "additionalProperties": { "$ref": "#/$defs/field" } },
+        "scopes": { "type": "object", "additionalProperties": { "$ref": "#/$defs/scope" } },
+        "axes": { "description": "What each axis's chip offers in every scope: a scope's own win an axis over it.", "$ref": "#/$defs/axes" }
+      }
+    },
+
+    "componentConfig": {
+      "description": "One element's configuration, set through its own API: each key a property or a method its component spec lists ($extensions.sherpa jsProps and methods). A method takes its arguments, or a list of calls.",
+      "type": "object",
+      "propertyNames": { "$ref": "component.v1.json#/$defs/member" }
+    },
+    "ui": {
+      "description": "Each element's configuration, by its id in the markup.",
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/componentConfig" }
+    },
+    "view": {
+      "description": "One View: its name, its Query, its elements' configuration, and its own markup.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label"],
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "query": { "$ref": "#/$defs/query" },
+        "ui": { "$ref": "#/$defs/ui" },
+        "template": { "description": "Its markup: file.html#id, beside the Views' JSON.", "type": "string", "pattern": "^[^#]+#[^#]+$" },
+        "content": { "description": "A reader's saved View's markup. A shipped View names a template instead.", "type": "string" },
+        "settings": { "description": "The app's own settings it lays, by pointer: the app reads them.", "type": "object", "propertyNames": { "pattern": "^/" } }
+      }
+    },
+
+    "context": {
+      "description": "One Context: its row's name and icon, its files, and what it changes in the chrome.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "template"],
+      "properties": {
+        "label": { "description": "Its row's name, which the header shows too.", "type": "string" },
+        "icon": { "type": "string" },
+        "template": { "description": "Its markup.", "type": "string" },
+        "definition": { "description": "Its page definition (page.v1.json). Absent, it has no data.", "type": "string" },
+        "views": { "description": "Its Views (views.v1.json).", "type": "string" },
+        "module": { "description": "Its module, which exports init(root, ctx).", "type": "string" },
+        "chrome": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "header": { "description": "false takes the app header away while it is open.", "type": "boolean" },
+            "filters": { "description": "false takes the header's filter row away while it is open: the page holds its own filters.", "type": "boolean" },
+            "resizable": { "description": "A reader may resize its cards.", "type": "boolean" }
+          }
+        }
+      }
+    },
+    "settingsPage": {
+      "description": "One Settings page: its row's name and icon, and its markup.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "template"],
+      "properties": {
+        "label": { "type": "string" },
+        "icon": { "type": "string" },
+        "template": { "type": "string" }
+      }
+    },
+
+    "node": {
+      "description": "One workflow node: what it is comes from its kind.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "x", "y"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "kind": { "description": "A kind the library ships (source, value, pick, filter, sort, group, count, output), or one the app adds.", "type": "string" },
+        "x": { "description": "Its place across the canvas, in plane px.", "type": "number" },
+        "y": { "description": "Its place down the canvas, in plane px.", "type": "number" },
+        "heading": { "description": "Its own name, in place of its kind's.", "type": "string" },
+        "description": { "description": "Its own line, in place of its kind's.", "type": "string" },
+        "values": { "description": "Each row's value, by the row's name.", "type": "object" }
+      }
+    },
+    "route": {
+      "description": "Joins an output socket to an input socket of the same kind. An input takes one route.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to"],
+      "properties": {
+        "from": { "$ref": "#/$defs/socket" },
+        "to": { "$ref": "#/$defs/socket" }
+      }
+    },
+    "socket": {
+      "description": "A node's header socket, \"node\", or a row's, \"node/row\".",
+      "type": "string", "pattern": "^[a-z][a-z0-9-]*(/[a-z][a-z0-9-]*)?$"
+    }
+  }
+}

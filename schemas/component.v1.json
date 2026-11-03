@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://sherpa-ui.dev/schema/component/v1.json",
+  "$id": "https://sherpa-ui.dev/schemas/component.v1.json",
   "title": "Sherpa-UI DTCG-dialect component spec",
   "description": "Private convention (DTCG-inspired grammar: $-keys + {ref} like the token file) for describing a sherpa-* web component. NOT external-DTCG-tool interop. The plan that defined this grammar landed; this schema IS the contract now.",
   "type": "object",
@@ -115,6 +115,10 @@
     }
   },
   "$defs": {
+    "member": {
+      "description": "A property or a method of the element: what a jsProps or methods entry names, and what a definition's ui configures (defs.v1.json componentConfig).",
+      "type": "string", "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*$"
+    },
     "typeEnum": {
       "description": "The closed set of component-spec node types.",
       "enum": [
@@ -370,13 +374,27 @@
             "type": "object",
             "required": ["name"],
             "properties": {
-              "name": { "type": "string" },
+              "name": { "$ref": "#/$defs/member" },
               "type": { "type": "string" },
               "access": { "enum": ["read", "write", "read-write"] },
               "reflects": {
                 "description": "The attribute this property mirrors.",
                 "type": "string"
               },
+              "description": { "type": "string" }
+            }
+          }
+        },
+        "methods": {
+          "description": "Its public methods: what a saved view, a preset or an agent may call.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "$type": { "const": "method" },
+              "name": { "$ref": "#/$defs/member" },
+              "args": { "type": "string" },
               "description": { "type": "string" }
             }
           }

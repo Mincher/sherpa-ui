@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import Ajv2020 from 'ajv/dist/2020.js';
+import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { NODE_KINDS, checkWorkflow, socketOf } = await import(new URL('workflow.js', core));
@@ -33,10 +33,8 @@ function check(workflow, kinds) {
 /** The good definition, with one change. */
 const with_ = (change) => ({ ...structuredClone(good), ...change });
 
-test('a real workflow passes its schema and the check', async () => {
-  const Ajv = Ajv2020.default ?? Ajv2020;
-  const valid = new Ajv({ allErrors: true }).compile(await json('schemas/workflow.v1.json'));
-  assert.ok(valid(good), JSON.stringify(valid.errors));
+test('a real workflow passes its schema and the check', () => {
+  assert.deepEqual(schemaCheck('workflow.v1.json')(good), []);
   assert.deepEqual(check(good), { ok: true, heard: [] });
 });
 

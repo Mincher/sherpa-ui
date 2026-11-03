@@ -6,14 +6,18 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 
+// One schema's $ref into another needs both: defs.v1.json is every definition's.
 test('npm pack carries every schema', () => {
   const out = execFileSync('npm', ['pack', '--dry-run', '--json', '--ignore-scripts'], { cwd: ROOT, encoding: 'utf8' });
   const files = new Set(JSON.parse(out)[0].files.map((f) => f.path));
-  for (const name of ['schemas/page.v1.json', 'schemas/app.v1.json', 'schemas/component.v1.json', 'schemas/workflow.v1.json']) assert.ok(files.has(name), `${name} is not packed`);
+  const schemas = readdirSync(`${ROOT}schemas`);
+  for (const name of ['defs.v1.json', 'page.v1.json', 'app.v1.json', 'views.v1.json', 'workflow.v1.json', 'component.v1.json']) assert.ok(schemas.includes(name), name);
+  for (const name of schemas) assert.ok(files.has(`schemas/${name}`), `schemas/${name} is not packed`);
 });
 
 test('a schema resolves by the package name', () => {
