@@ -63,7 +63,7 @@ test('a preset from a definition holds its tree typed: a number\'s 60, a date\'s
   const [low, autumn] = source.query.presets('data');
   assert.deepEqual(low.readings, { score: { tree: { op: 'lt', value: 60 } } });
   assert.deepEqual(autumn.readings, { created: { tree: { op: 'between', value: ['2026-09-01', '2026-11-30'] } } });
-  source.query.setPreset('data', 'low', true, true);
+  source.query.ask({ scope: 'data', preset: 'low', on: true, commit: true });
   assert.deepEqual(source.query.applied.scopes.data.readings.score.byPreset.low.tree, { op: 'lt', value: 60 });
   assert.deepEqual(source.whereOf(source.query.applied.scopes.data.readings), { score: { lt: 60 } });
 });
