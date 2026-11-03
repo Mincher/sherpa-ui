@@ -45,7 +45,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-find-asks-its-host-to-step](traps/data-layer.md#t-a-find-asks-its-host-to-step) — data-source
 - [T-a-group-is-a-data-layer-concept](traps/data-layer.md#t-a-group-is-a-data-layer-concept) — data-source, store
 - [T-a-heading-asks-through-the-source](traps/data-layer.md#t-a-heading-asks-through-the-source) — query-context
-- [T-a-heading-holds-a-whole-reading](traps/data-layer.md#t-a-heading-holds-a-whole-reading) — data, filter-state
+- [T-a-heading-holds-a-whole-reading](traps/data-layer.md#t-a-heading-holds-a-whole-reading) — where
 - [T-a-held-clause-op-is-not-a-reading-op](traps/data-layer.md#t-a-held-clause-op-is-not-a-reading-op) — filter-state
 - [T-a-held-set-reads-the-pages-fields](traps/data-layer.md#t-a-held-set-reads-the-pages-fields) — data-source, data-source-types, held-set, page-definition, read-plan, source-binding, store-cache
 - [T-a-held-set-takes-a-change-in-place](traps/data-layer.md#t-a-held-set-takes-a-change-in-place) — data-source, held-set, store, store-cache, stores
@@ -142,7 +142,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-live-store-into-shares-one-feed](traps/data-layer.md#t-live-store-into-shares-one-feed) — live-stores
 - [T-local-store-is-not-for-bulk-data](traps/data-layer.md#t-local-store-is-not-for-bulk-data) — stores
 - [T-loose-equal-is-case-insensitive](traps/data-layer.md#t-loose-equal-is-case-insensitive) — store, walk
-- [T-many-conditions-are-one-reading](traps/data-layer.md#t-many-conditions-are-one-reading) — filter-state, query, query-context
+- [T-many-conditions-are-one-reading](traps/data-layer.md#t-many-conditions-are-one-reading) — data, filter-state, query, query-context
 - [T-max-rows-is-oldest-out-by-insertion](traps/data-layer.md#t-max-rows-is-oldest-out-by-insertion) — base-store, stores
 - [T-narrowing-constructor-is-not-useless](traps/data-layer.md#t-narrowing-constructor-is-not-useless) — live-stores
 - [T-news-is-pushed-by-the-server](traps/data-layer.md#t-news-is-pushed-by-the-server) — data-handler, updates-feed
@@ -155,6 +155,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-one-comparator-one-source](traps/data-layer.md#t-one-comparator-one-source) — data-source
 - [T-one-comparison-rule-for-query-and-ui](traps/data-layer.md#t-one-comparison-rule-for-query-and-ui) — data-source, filter-state, store
 - [T-one-condition-system](traps/data-layer.md#t-one-condition-system) — data, filter-face, filter-state
+- [T-one-condition-tree](traps/data-layer.md#t-one-condition-tree) — data, filter-state, store, where
 - [T-one-cycle-for-one-value](traps/data-layer.md#t-one-cycle-for-one-value) — cycle
 - [T-one-datum-shape-for-chart-and-legend](traps/data-layer.md#t-one-datum-shape-for-chart-and-legend) — chart-datum
 - [T-one-feed-for-every-tab](traps/data-layer.md#t-one-feed-for-every-tab) — live-stores

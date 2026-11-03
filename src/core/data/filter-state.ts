@@ -17,33 +17,35 @@
  * - FieldState — What a field's selection is doing.
  * - ValueState — What one value is doing inside its field.
  * - ValueEntry — One value, and what it is doing.
- * - FilterState — everything any control needs to draw one field — its answer as rows, and its type
+ * - FilterState — everything any control needs to draw one field — its answer as a tree, and its type
  * - ConditionType — simple or advanced — which kind of answer a field has, decided once
  * - FieldType — What KIND of field this is.
  * - isRanged — A field whose Simple picks are ENDS, not a list to tick: a date.
  * - FieldFacts — What a caller knows about a field before anything is chosen.
  * - FieldReading — What is true right now, which decides the STATES.
- * - FieldCondition — One row of a multi-condition filter.
+ * - FieldCondition — One row of a flat condition menu: the menu's own shape, a tree once it leaves.
  * - rowAnswered — Does this condition row have what its op needs to narrow anything?
+ * - answeredCondition — A tree with only its answered parts, or undefined when none answers.
+ * - rowsTree — A flat menu's rows as ONE tree, read left to right — the menu's boundary in.
+ * - treeRows — A tree as the rows a flat menu draws — the menu's boundary out; undefined where rows cannot say it.
  * - RuledOut — Why the source rules a value out: not offered, or not matched.
  * - ruleOut — A field's limits as one test: what its chain offers first, then what the filters before it leave.
  * - goesFromList — Does a ruled-out value GO from its list: one its chain does not offer, and, hiding unmatched, any ruled out —…
- * - readingRows — a reading's Advanced answer as rows, old single-condition forms included
- * - modeOf — which answer a reading puts in force: its `mode`, else Advanced where rows answer
+ * - modeOf — which answer a reading puts in force: its `mode`, else Advanced where its tree answers
  * - rowsFromPicks — Simple's answer as Advanced's rows, for a mode switch to carry over
- * - asRows — A reading as condition rows — the answer it puts in force.
- * - withPreset — A reading with one preset's rows on it, or, with none, off it.
- * - presetTouches — Do a preset's rows touch this value of a field: a list value they keep?
+ * - answerTree — A reading's answer in force as a tree — Simple's picks as their leaf; none while off, or All.
+ * - withPreset — A reading with one preset's tree on it, or, with none, off it.
+ * - presetTouches — Does a preset's tree touch this value of a field: a list value it keeps?
  * - fieldState — work out one field's whole state — the only place that decides it
  * - stateClause — One field's state as a ready `FilterClause`, or `undefined`.
  * - readingClause — a reading as a clause, for a control holding its own field facts
- * - clauseConditions — a one-field chained clause back as its rows — the inverse of the chain
+ * - conditionClause — A tree as the filter it says — the ONE place any answer becomes a filter.
  */
 import {
-  matchesFilter,
+  andFilter, groupOf, matchesFilter,
   DEFAULT_OP, END_OF_DAY, OP_TAKES,
   picksClause, valueSet, valueKey,
-  type Duration, type Filter, type FilterClause, type FilterOp,
+  type Condition, type ConditionLeaf, type Duration, type Filter, type FilterClause, type FilterOp,
 } from './store.js';
 
 /** What a field's selection is doing. */
@@ -85,23 +87,20 @@ export interface FilterState {
   /** What a reader calls the field. */
   label: string;
   fieldState: FieldState;
-  /** Each preset on's rows, apart from the answer's `rows`. TODO 521 */
-  heldRows?: readonly (readonly FieldCondition[])[];
+  /** Each preset on's tree, apart from the `answer`. TODO 521 */
+  held?: readonly Condition[];
   /** The condition. `eq` unless a reader picked another. */
   op: FilterOp;
   /** What was TYPED, for a condition that takes text rather than a pick. */
   text: string;
-  /**
-   * The condition ROWS, when the reader built several. Empty for the ordinary
-   * single-condition case, so a control that never asks sees no change.
-   * TRAP T-many-conditions-are-one-reading
-   */
-  conditions: readonly FieldCondition[];
+  /** The Advanced answer's answered parts, kept whichever answer is in force.
+   *  TRAP T-many-conditions-are-one-reading */
+  tree?: Condition;
   /** Its KIND. `text` unless declared. TRAP T-the-field-type-decides-the-clause */
   type: FieldType;
   /** A DATE that holds a time of day, so a day alone means all of it. TODO 21d */
   time: boolean;
-  /** Which answer is in force — the reading's, or Advanced where only rows answer. */
+  /** Which answer is in force — the reading's, or Advanced where only its tree answers. */
   mode: ConditionType;
   /** Its picks are the ENDS of a range. */
   range: boolean;
@@ -116,11 +115,11 @@ export interface FilterState {
    */
   condition: ConditionType | null;
   /**
-   * The WHOLE answer as condition rows — ticked values, a range and a typed
-   * condition included. `stateClause` compiles only these.
+   * The WHOLE answer in force as ONE tree — ticked values, a range and a typed
+   * condition as their leaf, numbers as numbers. `stateClause` compiles only this.
    * TRAP T-one-condition-system
    */
-  rows: readonly FieldCondition[];
+  answer?: Condition;
   /** Every value ticked, on purpose: it filters nothing. Will, TODO 489 · TRAP T-all-is-an-answer */
   all?: boolean;
 }
@@ -128,7 +127,7 @@ export interface FilterState {
 /**
  * A SIMPLE filter is answered by the field's own body — values ticked, a
  * range dragged, a day picked — with the default op. An ADVANCED filter is
- * answered by a condition: a named op, a typed value, or a chain of rows. TRAP T-one-condition-system
+ * answered by a condition: a named op, a typed value, or a tree of them. TRAP T-one-condition-system
  */
 export type ConditionType = 'simple' | 'advanced';
 
@@ -177,19 +176,18 @@ export interface FieldReading {
   op?: FilterOp;
   text?: string;
   /**
-   * SEVERAL conditions on one field, chained — the Advanced answer. The first
-   * row has no `join`; every row after it carries `and` or `or`, which is how
-   * a reader reads it. TRAP T-many-conditions-are-one-reading
+   * The Advanced answer: ONE tree over this field, its leaves naming no field —
+   * nested as deep as it was said. TRAP T-one-condition-tree
    */
-  conditions?: readonly FieldCondition[];
+  tree?: Condition;
   /**
    * Which answer is IN FORCE. Both are kept — the picks (and a typed `op` /
-   * `text`) are Simple's, the rows Advanced's — so a reader switches at any
-   * time and loses nothing. Left out, the rows win where there are any.
+   * `text`) are Simple's, the tree Advanced's — so a reader switches at any
+   * time and loses nothing. Left out, the tree wins where it answers.
    * TRAP T-both-answers-are-kept
    */
   mode?: ConditionType;
-  /** The rows still MIRROR the picks: carried over on the first switch, and
+  /** The tree still MIRRORS the picks: carried over on the first switch, and
    *  redrawn as the picks change, until the reader edits a row. */
   mirror?: boolean;
   /**
@@ -208,12 +206,13 @@ export interface FieldReading {
    *  whatever values come: no filter. Will, TODO 489 · TRAP T-all-is-an-answer */
   all?: boolean;
   /** What each PRESET on holds of this field, by its id: its name, its scope and
-   *  its rows, ANDed with the answer. The answer and its mode stay the reader's.
+   *  its tree, ANDed with the answer. The answer and its mode stay the reader's.
    *  Will, TODO 521 · TRAP T-a-preset-is-its-own-part */
-  byPreset?: Readonly<Record<string, { label: string; scope: string; rows: readonly FieldCondition[] }>>;
+  byPreset?: Readonly<Record<string, { label: string; scope: string; tree: Condition }>>;
 }
 
-/** One row of a multi-condition filter. */
+/** One row of a FLAT condition menu, which reads its rows left to right: the
+ *  menu's own shape, a tree once it leaves (`rowsTree`). TODO 692 nests the menu. */
 export interface FieldCondition {
   /** How this row joins the one before it. The FIRST row has none. */
   join?: 'and' | 'or';
@@ -263,28 +262,10 @@ function looseSet(list: Iterable<string> | null | undefined): ((value: string) =
   return (value) => keys.has(value.toLowerCase());
 }
 
-/**
- * A reading's ADVANCED answer, as rows: its own answered rows — or, from a
- * reading written before rows were a list, its one typed condition, or its
- * non-default op over its picks ("is not A and is not B").
- * TRAP T-both-answers-are-kept
- */
-export function readingRows(reading: FieldReading): FieldCondition[] {
-  const given = (reading.conditions ?? []).filter(rowAnswered);
-  if (given.length) return [...given];
-  const op = reading.op ?? DEFAULT_OP;
-  const text = (reading.text ?? '').trim();
-  if ((OP_TAKES[op] ?? 'list') === 'text') return text ? [{ op, text }] : [];
-  if (op === DEFAULT_OP || (OP_TAKES[op] ?? 'list') !== 'list') return [];
-  // Several picks under a NEGATIVE op all have to hold; any other op, any one.
-  const join = op === 'ne' ? 'and' : 'or';
-  return (reading.picked ?? []).map((value, i) => (i ? { op, join, picked: [value] } : { op, picked: [value] }));
-}
-
-/** Which answer a reading puts in force: its own `mode`, else Advanced where `rows`
- *  answer, else none said. TRAP T-both-answers-are-kept */
-export function modeOf(reading: FieldReading, rows: readonly FieldCondition[] = readingRows(reading)): ConditionType | undefined {
-  return reading.mode ?? (rows.length ? 'advanced' : undefined);
+/** Which answer a reading puts in force: its own `mode`, else Advanced where its
+ *  tree answers, else none said. TRAP T-both-answers-are-kept */
+export function modeOf(reading: FieldReading): ConditionType | undefined {
+  return reading.mode ?? (answeredCondition(reading.tree) ? 'advanced' : undefined);
 }
 
 /** Simple's answer as Advanced's rows, for a mode switch to carry over; undefined
@@ -309,20 +290,119 @@ export function rowsFromPicks(
   ));
 }
 
-/* ── A PRESET's rows in a field's answer — Will, TODO 510 · TRAP T-a-preset-is-its-own-part ── */
+/* ── The tree, and a flat menu's rows — TRAP T-one-condition-tree ── */
 
-/** A reading as condition rows — the answer it puts in force, Simple's picks as
- *  their rows; none while it is off, or All. */
-export function asRows(reading: FieldReading | undefined, type?: 'number' | 'date'): FieldCondition[] {
-  if (!reading || reading.suspended || reading.all) return [];
-  if (modeOf(reading) === 'advanced') return readingRows(reading);
-  const picked = reading.picked ?? [];
-  if (reading.range && picked.length === 2) return [{ op: 'between', picked: [...picked] }];
-  if ((reading.op ?? DEFAULT_OP) !== DEFAULT_OP || (reading.text ?? '').trim()) return readingRows({ ...reading, conditions: [] });
-  return rowsFromPicks(type, reading) ?? [];
+/** Does a leaf have what its op needs to narrow anything? */
+function leafAnswered({ op, value }: ConditionLeaf): boolean {
+  // A span of no length has no clause: "in the last 0" answers nothing. TODO 612
+  if (op === 'last' || op === 'next') return Number((value as Partial<Duration> | undefined)?.n) > 0;
+  const takes = OP_TAKES[op] ?? 'list';
+  if (takes === 'text') return value != null && String(value).trim() !== '';
+  // A range is BOTH its ends: one alone narrows nothing. TODO 375
+  if (takes === 'range') return Array.isArray(value) && value.length >= 2;
+  return Array.isArray(value) ? value.length > 0 : value !== undefined;
 }
 
-/** A reading with one preset's rows on it, or, with none, off it. TODOs 521, 526 */
+/** Parts under one join, as a group. */
+function group(join: 'and' | 'or', parts: readonly Condition[], own: { off?: boolean; id?: string } = {}): Condition {
+  return { ...own, ...(join === 'and' ? { and: parts } : { or: parts }) } as Condition;
+}
+
+/** A tree with only its answered parts, or undefined when none answers: a
+ *  half-built row narrows nothing. TRAP T-many-conditions-are-one-reading */
+export function answeredCondition(tree: Condition | undefined): Condition | undefined {
+  if (!tree) return undefined;
+  const parts = groupOf(tree);
+  if (!parts) return leafAnswered(tree as ConditionLeaf) ? tree : undefined;
+  const kept = parts[1].map(answeredCondition).filter((p): p is Condition => !!p);
+  if (!kept.length) return undefined;
+  const own = { ...(tree.off ? { off: true } : {}), ...(tree.id !== undefined ? { id: tree.id } : {}) };
+  return kept.length === 1 && !Object.keys(own).length ? kept[0] : group(parts[0], kept, own);
+}
+
+/** Picks under a list op as ONE leaf: one value is `eq`, several `in`; `ne`, `notin`. */
+function picksLeaf(op: FilterOp, picks: readonly unknown[]): ConditionLeaf {
+  if ((OP_TAKES[op] ?? 'list') !== 'list') return { op, value: [...picks] };
+  const not = op === 'ne' || op === 'notin';
+  return picks.length === 1 ? { op: not ? 'ne' : 'eq', value: picks[0] } : { op: not ? 'notin' : 'in', value: [...picks] };
+}
+
+/** One answered row as its leaf: its text kept as typed, so a menu reads it back. */
+function rowLeaf(row: FieldCondition): ConditionLeaf | undefined {
+  if (!rowAnswered(row)) return undefined;
+  if (row.op === 'last' || row.op === 'next') return { op: row.op, value: { n: Number(row.text!.trim()), unit: row.unit ?? 'day' } };
+  const takes = OP_TAKES[row.op] ?? 'list';
+  if (takes === 'text') return { op: row.op, value: row.text };
+  if (takes === 'range') return { op: row.op, value: [...row.picked!] };
+  return picksLeaf(row.op, row.picked!);
+}
+
+/**
+ * A flat menu's rows as ONE tree, read left to right: each row joins all before
+ * it, so `A or B and C` is `(A or B) and C`. Will, TODO 594. The menu's boundary
+ * IN; a half-built row says nothing. TRAP T-many-conditions-are-one-reading
+ */
+export function rowsTree(rows: readonly FieldCondition[]): Condition | undefined {
+  let tree: Condition | undefined;
+  for (const row of rows) {
+    const leaf = rowLeaf(row);
+    if (!leaf) continue;
+    const join = row.join === 'or' ? 'or' : 'and';
+    const chain = tree && groupOf(tree);
+    tree = !tree ? leaf : chain?.[0] === join ? group(join, [...chain[1], leaf]) : group(join, [tree, leaf]);
+  }
+  return tree;
+}
+
+/** One leaf as the row a flat menu draws. */
+function leafRow({ op, value }: ConditionLeaf): FieldCondition {
+  if (op === 'last' || op === 'next') {
+    const { n, unit = 'day' } = (value ?? {}) as Partial<Duration>;
+    return { op, text: String(n ?? ''), unit };
+  }
+  const takes = OP_TAKES[op] ?? 'list';
+  if (takes === 'text') return { op, text: String(value ?? '') };
+  const picked = Array.isArray(value) ? [...value] : [value];
+  if (takes === 'range') return { op, picked };
+  // Several `eq` picks are `in` in a tree, one row in a menu. TRAP T-a-held-clause-op-is-not-a-reading-op
+  return { op: op === 'in' ? 'eq' : op === 'notin' ? 'ne' : op, picked };
+}
+
+/**
+ * A tree as the rows a FLAT menu draws — the menu's boundary OUT: a chain, which
+ * one group may lead, as order is no matter in a group. Undefined where rows
+ * cannot say it — two groups, or a part kept off — until the menu nests (TODO
+ * 692); the data never comes this way. TRAP T-many-conditions-are-one-reading
+ */
+export function treeRows(tree: Condition | undefined): FieldCondition[] | undefined {
+  if (!tree) return [];
+  if (tree.off) return undefined;
+  const parts = groupOf(tree);
+  if (!parts) return [leafRow(tree as ConditionLeaf)];
+  const [join, each] = parts;
+  const groups = each.filter((p) => groupOf(p));
+  if (groups.length > 1) return undefined;
+  const rows = groups[0] ? treeRows(groups[0]) : [];
+  if (!rows) return undefined;
+  for (const part of each.filter((p) => !groupOf(p))) {
+    if (part.off) return undefined;
+    const row = leafRow(part as ConditionLeaf);
+    rows.push(rows.length ? { ...row, join } : row);
+  }
+  return rows;
+}
+
+/* ── A PRESET's tree in a field's answer — Will, TODO 510 · TRAP T-a-preset-is-its-own-part ── */
+
+/** A reading's answer in force as a tree — Simple's picks as their leaf; none
+ *  while it is off, or All. */
+export function answerTree(reading: FieldReading | undefined, facts: Omit<FieldFacts, 'field'> = {}): Condition | undefined {
+  if (!reading || reading.suspended || reading.all) return undefined;
+  const { byPreset: _held, ...own } = reading;
+  return fieldState({ field: '', ...facts }, own).answer;
+}
+
+/** A reading with one preset's tree on it, or, with none, off it. TODOs 521, 526 */
 export function withPreset(reading: FieldReading | undefined, id: string, preset: NonNullable<FieldReading['byPreset']>[string] | null): FieldReading {
   const { [id]: _was, ...others } = reading?.byPreset ?? {};
   const byPreset = preset ? { ...others, [id]: preset } : others;
@@ -331,10 +411,10 @@ export function withPreset(reading: FieldReading | undefined, id: string, preset
   return { ...base, ...(suspended && !preset ? { suspended } : {}), ...(Object.keys(byPreset).length ? { byPreset } : {}) };
 }
 
-/** Do a preset's rows touch this value of a field: a list value they keep?
+/** Does a preset's tree touch this value of a field: a list value it keeps?
  *  Will, TODO 590 · TRAP T-a-preset-is-its-own-part */
-export function presetTouches(rows: readonly FieldCondition[], value: string): boolean {
-  return matchesFilter({ value }, stateClause(fieldState({ field: 'value' }, { conditions: rows, mode: 'advanced' })));
+export function presetTouches(tree: Condition, value: string): boolean {
+  return matchesFilter({ value }, conditionClause(tree, { field: 'value' }));
 }
 
 /**
@@ -411,59 +491,72 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
       ? chosen + paths > 0
       : (chosen > 0 && (facts.literal || chosen < tops.length)) || paths > 0;
 
-  /* ROWS answer for themselves. A row is answered when its op has what it
+  /* The TREE answers for itself: a leaf is answered when its op has what it
      needs — text typed, or a value picked — so a half-built row narrows
      nothing and an empty list is simply not a filter.
      TRAP T-many-conditions-are-one-reading */
-  const conditions = (reading.conditions ?? []).filter(rowAnswered);
+  const tree = answeredCondition(reading.tree);
 
-  /* ONE ANSWER, AS ROWS. Ticked values are an `eq` row — several picks in one
-     field join with OR, so `in` — a range is a `between`, and a typed op is a
-     row of its own. Whatever answered it, the compiler below sees rows.
+  /* ONE ANSWER, AS ONE TREE. Ticked values are an `eq` leaf — several picks in
+     one field join with OR, so `in` — a range is a `between`, and a typed op is
+     a leaf of its own. Whatever answered it, the compiler below sees a tree.
      TRAP T-one-condition-system */
   const ends = values.filter(own).map((v) => v.raw);
   // Only the answer IN FORCE compiles; the other is kept. TRAP T-both-answers-are-kept
-  const mode: ConditionType = modeOf(reading, conditions) ?? 'simple';
-  const rows: FieldCondition[] = mode === 'advanced' ? [...conditions]
-    : !answered ? []
-      : takesText ? [{ op, text }]
-        : [{ op: range && ends.length >= 2 ? 'between' : op, picked: ends }];
+  const mode: ConditionType = reading.mode ?? (tree ? 'advanced' : 'simple');
+  const said: Condition | undefined = mode === 'advanced' ? tree
+    : !answered ? undefined
+      : takesText ? { op, value: text }
+        : picksLeaf(range && ends.length >= 2 ? 'between' : op, ends);
+  const answer = said && castTree(said, type);
   const advanced = mode === 'advanced' || op !== DEFAULT_OP;
-  const heldRows = Object.values(reading.byPreset ?? {}).map((p) => p.rows);
+  const held = Object.values(reading.byPreset ?? {}).map((p) => p.tree);
 
   return {
     field: facts.field,
     label: facts.label ?? facts.field,
-    fieldState: !rows.length && !heldRows.length ? 'off' : reading.suspended ? 'suspended' : 'active',
+    fieldState: !answer && !held.length ? 'off' : reading.suspended ? 'suspended' : 'active',
     op,
     text,
-    conditions,
+    ...(tree ? { tree } : {}),
     type,
     time: type === 'date' && !!facts.time,
     mode,
     range,
     ...(parentOf && facts.child ? { child: facts.child } : {}),
     values,
-    condition: !rows.length ? null : advanced ? 'advanced' : 'simple',
-    rows,
-    ...(heldRows.length ? { heldRows } : {}),
+    condition: !answer ? null : advanced ? 'advanced' : 'simple',
+    ...(answer ? { answer } : {}),
+    ...(held.length ? { held } : {}),
     ...(every ? { all: true } : {}),
   };
+}
+
+/** A tree's values as the data holds them: a number field's are numbers. */
+function castTree(tree: Condition, type: FieldType): Condition {
+  if (type !== 'number') return tree;
+  const parts = groupOf(tree);
+  if (parts) return group(parts[0], parts[1].map((p) => castTree(p, type)), tree);
+  const leaf = tree as ConditionLeaf;
+  if (leaf.op === 'last' || leaf.op === 'next') return leaf;
+  const value = Array.isArray(leaf.value) ? cast(leaf.value, type)
+    : typeof leaf.value === 'string' ? cast([leaf.value.trim()], type)[0] : leaf.value;
+  return { ...leaf, value };
 }
 
 /**
  * One field's state as a ready `FilterClause`, or `undefined`.
  *
- * It compiles `state.rows` and nothing else — ticked values, a range and a
- * typed condition all arrive as rows. ONE pick is `eq`; SEVERAL become `in`,
- * because `eq` against a list can never match. A suspended field contributes
- * nothing while keeping its values. TRAP T-one-condition-system
+ * It compiles `state.answer` and nothing else — ticked values, a range and a
+ * typed condition all arrive as its leaves. ONE pick is `eq`; SEVERAL become
+ * `in`, because `eq` against a list can never match. A suspended field
+ * contributes nothing while keeping its values. TRAP T-one-condition-system
  */
 export function stateClause(state: FilterState): Filter | undefined {
   if (state.fieldState !== 'active') return undefined;
-  // Each preset's rows AND with the answer: `(A or B) and P`. TRAP T-a-preset-is-its-own-part
-  const all = [state.rows, ...state.heldRows ?? []].map((rows) => chainRows({ ...state, rows })).filter((f): f is Filter => !!f);
-  return all.length > 1 ? (['and', ...all] as Filter) : all[0];
+  const facts: FieldFacts = { field: state.field, type: state.type, time: state.time, ...(state.child ? { child: state.child } : {}) };
+  // Each preset's tree ANDs with the answer: `(A or B) and P`. TRAP T-a-preset-is-its-own-part
+  return andFilter([state.answer, ...state.held ?? []].map((tree) => conditionClause(tree, facts)).filter((f): f is Filter => !!f));
 }
 
 /**
@@ -486,7 +579,7 @@ function cast(picked: readonly unknown[], type: FieldType): unknown[] {
 }
 
 /**
- * A NUMBER or DATE field's picks as a clause.
+ * A NUMBER or DATE field's ends as a clause.
  *
  * TWO ends are a `between` — or a `notbetween`; one end alone is no range, and
  * narrows nothing. A number is compared as a NUMBER — sorting `["1000","9"]` as
@@ -497,7 +590,8 @@ function rangeClause(
   field: string, type: FieldType, picked: readonly unknown[], op: FilterOp,
 ): Filter | undefined {
   if (picked.length < 2) return undefined;
-  const numeric = type === 'number';
+  // Numbers as written stay numbers, whatever the field says. TRAP T-one-condition-tree
+  const numeric = type === 'number' || picked.every((v) => typeof v === 'number');
   const ends = numeric ? picked.map(Number) : picked.map(String);
   const sorted = numeric
     ? (ends as number[]).slice().sort((a, b) => a - b)
@@ -506,7 +600,30 @@ function rangeClause(
 }
 
 /**
- * One condition row as a clause — the ONE place any answer becomes a filter.
+ * A condition tree as the filter it says — the ONE place any answer becomes a
+ * filter. A leaf takes its field's facts: one naming no field is `facts`'s, one
+ * naming another asks `factsOf`. A part kept off says nothing.
+ * TRAP T-one-condition-tree · TRAP T-the-field-type-decides-the-clause
+ */
+export function conditionClause(
+  tree: Condition | undefined, facts?: FieldFacts, factsOf?: (field: string) => Omit<FieldFacts, 'field'> | undefined,
+): Filter | undefined {
+  if (!tree || tree.off) return undefined;
+  const parts = groupOf(tree);
+  if (parts) {
+    const [join, each] = parts;
+    const said = each.map((p) => conditionClause(p, facts, factsOf)).filter((f): f is Filter => !!f)
+      .flatMap((f) => (f[0] === join ? (f.slice(1) as Filter[]) : [f]));
+    return said.length > 1 ? ([join, ...said] as Filter) : said[0];
+  }
+  const leaf = tree as ConditionLeaf;
+  const field = leaf.field ?? facts?.field;
+  if (!field) return undefined;
+  return leafClause(field === facts?.field ? facts : { field, ...factsOf?.(field) }, leaf);
+}
+
+/**
+ * One leaf as a clause.
  *
  * TYPED, and still cast: "at least 100" on a number column compares as text
  * otherwise, and "1000" sorts below "9". A RANGE is two ends, sorted by the
@@ -514,34 +631,39 @@ function rangeClause(
  * clause is tested against real rows. TRAP T-the-field-type-decides-the-clause
  * TRAP T-a-value-can-be-an-object
  */
-function rowClause(state: FilterState, row: FieldCondition): Filter | undefined {
+function leafClause(facts: FieldFacts, { op, value }: ConditionLeaf): Filter | undefined {
+  const { field } = facts;
+  const type = facts.type ?? 'text';
   // A DATE from today stays RELATIVE in the clause. TRAP T-a-relative-date-stays-relative
-  if (row.op === 'last' || row.op === 'next') {
-    const n = Number((row.text ?? '').trim());
-    return n > 0 ? [state.field, row.op, { n, unit: row.unit ?? 'day' }] : undefined;
+  if (op === 'last' || op === 'next') {
+    const { n, unit = 'day' } = (value ?? {}) as Partial<Duration>;
+    return Number(n) > 0 ? [field, op, { n: Number(n), unit }] : undefined;
   }
+  const list = Array.isArray(value) ? [...value] : [value];
   /* On a field with times, a day alone is ALL of that day, and a minute all of
      that minute: "On", "After" and the end of "Between" reach its last moment.
      Will, TODO 112. TRAP T-a-relative-date-stays-relative */
-  if (state.time) {
-    const one = row.op === 'gt' ? row.text : row.op === 'eq' && row.picked?.length === 1 ? row.picked[0] : undefined;
+  if (type === 'date' && facts.time) {
+    const one = op === 'gt' ? (typeof value === 'string' ? value.trim() : value)
+      : (op === 'eq' || op === 'in') && list.length === 1 ? list[0] : undefined;
     const end = endOf(one);
-    if (end) return row.op === 'gt' ? [state.field, 'gt', end] : [state.field, 'between', [one, end]];
-    const [from, to] = [...(row.picked ?? [])].map(String).sort();
-    if ((row.op === 'between' || row.op === 'notbetween') && from && to) return [state.field, row.op, [from, endOf(to) ?? to]];
+    if (end) return op === 'gt' ? [field, 'gt', end] : [field, 'between', [one, end]];
+    const [from, to] = list.map(String).sort();
+    if ((op === 'between' || op === 'notbetween') && from && to) return [field, op, [from, endOf(to) ?? to]];
   }
-  const takes = OP_TAKES[row.op] ?? 'list';
+  const takes = OP_TAKES[op] ?? 'list';
   if (takes === 'text') {
-    const text = (row.text ?? '').trim();
-    return text ? [state.field, row.op, cast([text], state.type)[0]] as FilterClause : undefined;
+    const text = typeof value === 'string' ? value.trim() : value;
+    return text != null && text !== '' ? [field, op, cast([text], type)[0]] as FilterClause : undefined;
   }
-  const picked = [...(row.picked ?? [])];
-  if (takes === 'range') return rangeClause(state.field, state.type, picked, row.op);
-  // A tiered field's picks: parents, and paths over both fields. TODO 369
-  if (state.child) return tierClause(state.field, state.child, picked, ROW_OPS[row.op] ?? row.op);
-  /* A row's `in` / `notin` is its `eq` / `ne` over several picks: as given, `notin`
+  if (value === undefined) return undefined;
+  if (takes === 'range') return rangeClause(field, type, list, op);
+  /* A list op over several picks: `eq` is `in`, `ne` is `notin` — as given, `notin`
      with two picks compiled to `in`, and with one matched every row. TODO 386 */
-  return picksClause(state.field, cast(picked, state.type), ROW_OPS[row.op] ?? row.op);
+  const base = op === 'in' ? 'eq' : op === 'notin' ? 'ne' : op;
+  // A tiered field's picks: parents, and paths over both fields. TODO 369
+  if (facts.child) return tierClause(field, facts.child, list, base);
+  return picksClause(field, cast(list, type), base);
 }
 
 /**
@@ -580,69 +702,4 @@ function endOf(value: unknown): string | undefined {
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return `${value}${END_OF_DAY}`;
   if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return `${value}:59.999`;
   return undefined;
-}
-
-/** A held CLAUSE op as a reader's ROW op: several `eq` picks are `in`, several
- *  `ne` picks `notin`. TRAP T-a-held-clause-op-is-not-a-reading-op */
-const ROW_OPS: Readonly<Record<string, FilterOp>> = { in: 'eq', notin: 'ne' };
-
-/** One clause leaf as a row, or undefined when it is not one. */
-function leafRow(leaf: Filter): FieldCondition | undefined {
-  if (!Array.isArray(leaf) || typeof leaf[0] !== 'string' || leaf[0] === 'and' || leaf[0] === 'or') {
-    return undefined;
-  }
-  const [, clauseOp, value] = leaf as FilterClause;
-  if (clauseOp === 'last' || clauseOp === 'next') {
-    const { n, unit } = value as Duration;
-    return { op: clauseOp, text: String(n), unit };
-  }
-  const op = ROW_OPS[clauseOp] ?? clauseOp;
-  if ((OP_TAKES[op] ?? 'list') === 'text') return { op, text: String(value ?? '') };
-  return { op, picked: Array.isArray(value) ? [...value] : [value] };
-}
-
-/**
- * clauseConditions(filter) — a ONE-FIELD chained clause back as its rows: the
- * inverse of the chain, `A or (B and C)` to three rows joined `or`, `and`.
- * For a control that is handed a clause and draws rows — a grid heading.
- * `undefined` for a shape the rows cannot say, never a guess.
- * TRAP T-a-heading-holds-a-whole-reading
- */
-export function clauseConditions(filter: Filter): FieldCondition[] | undefined {
-  const head = Array.isArray(filter) ? filter[0] : undefined;
-  if (head !== 'and' && head !== 'or') {
-    const row = leafRow(filter);
-    return row ? [row] : undefined;
-  }
-  const parts = filter.slice(1) as Filter[];
-  const isGroup = (f: Filter): boolean => Array.isArray(f) && (f[0] === 'and' || f[0] === 'or');
-  /* Rows read left to right, so one group can lead them, and order is no matter
-     in a group. A second group needs nesting. TODO 595 · TRAP T-many-conditions-are-one-reading */
-  const groups = parts.filter(isGroup);
-  if (groups.length > 1) return undefined;
-  const rows = groups[0] ? clauseConditions(groups[0]) : [];
-  if (!rows) return undefined;
-  for (const part of parts.filter((p) => !isGroup(p))) {
-    const row = leafRow(part);
-    if (!row) return undefined;
-    rows.push(rows.length ? { ...row, join: head } : row);
-  }
-  return rows.length ? rows : undefined;
-}
-
-/**
- * The rows as ONE filter, read left to right: each row joins all before it, so
- * `A or B and C` is `(A or B) and C`. Will, TODO 594. TRAP T-many-conditions-are-one-reading
- */
-function chainRows(state: FilterState): Filter | undefined {
-  let chain: Filter | undefined;
-  let last: 'and' | 'or' | undefined;
-  for (const row of state.rows) {
-    const one = rowClause(state, row);
-    if (!one) continue;
-    const join = row.join === 'or' ? 'or' : 'and';
-    chain = !chain ? one : last === join ? [...chain as unknown[], one] as Filter : [join, chain, one] as Filter;
-    if (chain !== one) last = join;
-  }
-  return chain;
 }

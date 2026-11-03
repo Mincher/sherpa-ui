@@ -37,8 +37,8 @@ test('a toolbar number chip sends a typed number, or a Between row\'s drag, on A
     await window.__settled();
     const heard: unknown[] = [];
     bar.addEventListener('quick-filter-change', () => {
-      const one = bar.readings['spend'] as { picked?: unknown[]; conditions?: unknown[]; mode?: string } | undefined;
-      heard.push(one?.mode === 'advanced' ? one.conditions : one?.picked);
+      const one = bar.readings['spend'] as { picked?: unknown[]; tree?: unknown; mode?: string } | undefined;
+      heard.push(one?.mode === 'advanced' ? one.tree : one?.picked);
     });
     const chip = bar.shadowRoot!.querySelector('.chip[data-id="spend"]') as HTMLElement;
     const menu = chip.querySelector('sherpa-menu') as Menu;
@@ -89,7 +89,7 @@ test('a toolbar number chip sends a typed number, or a Between row\'s drag, on A
   expect(r.cancelled).toEqual({ heard: [], values: ['300'] });
   expect(r.ends).toEqual(['200', '600']);
   expect(r.rangeDraft).toEqual([]);
-  expect(r.ranged.at(-1)).toEqual([{ op: 'between', picked: ['200', '600'] }]);
+  expect(r.ranged.at(-1)).toEqual({ op: 'between', value: ['200', '600'] });
 });
 
 /* LIVE — Will, TODO 107. Over a source with `applyOn: 'input'`, a number does
@@ -180,7 +180,7 @@ test('a bound source filters the ROWS by a typed number, and by Between and Not 
     await apply();
     const typed = total();
     const answer = async (op: string): Promise<number> => {
-      bar.setChipReading('seats', { conditions: [{ op, picked: ['20', '40'] }], mode: 'advanced' });
+      bar.setChipReading('seats', { tree: { op, value: ['20', '40'] }, mode: 'advanced' });
       bar.report();
       await window.__settled();
       await source.load();

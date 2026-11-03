@@ -178,7 +178,7 @@ function control(tag, id, holds = []) {
   if (has('drawReading')) {
     el.drawReading = (field, r) => {
       counters.draws++;
-      if ((r?.picked ?? []).length || (r?.text ?? '').trim() || (r?.conditions ?? []).length) el.readings[field] = r;
+      if ((r?.picked ?? []).length || (r?.text ?? '').trim() || r?.tree) el.readings[field] = r;
       else delete el.readings[field];
     };
   }
@@ -300,7 +300,7 @@ const ACTS = {
   'pick-both': (p) => p.view.answer({ customer: { picked: ['Customer 02', { customer: 'Customer 01', site: 'Site 2' }] } }),
   'move-site': (p) => p.store.update(17, { site: 'Site 9' }),
   // A field the store answers: Apply asks once for its keys; off and on again ask nothing. 345 phase 6
-  'apply-fetch': (p) => p.data.answer({ seats: { mode: 'advanced', conditions: [{ op: 'gt', text: '40' }] } }),
+  'apply-fetch': (p) => p.data.answer({ seats: { mode: 'advanced', tree: { op: 'gt', value: '40' } } }),
   'fetch-off': (p) => p.data.send('quick-filter-change', { scope: 'bar', request: { field: 'seats', suspended: true, commit: true } }),
   'fetch-on': (p) => p.data.send('quick-filter-change', { scope: 'bar', request: { field: 'seats', suspended: false, commit: true } }),
   // A field held for the first time asks its values; held again, nothing. 345 phase 5

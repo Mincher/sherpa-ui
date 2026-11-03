@@ -779,7 +779,7 @@ test('a chip whose menu has no list keeps an "Is" row it is given, and says it',
     await chip.rendered;
     await menu.rendered;
     // A grid cell's chip sends this for a field with no list: an "Is" row (TODO 373).
-    chip.reading = { conditions: [{ op: 'eq', picked: ['Bo'] }], mode: 'advanced' };
+    chip.reading = { tree: { op: 'eq', value: 'Bo' }, mode: 'advanced' };
     await window.__settled();
     return {
       reading: menu.reading,
@@ -788,7 +788,7 @@ test('a chip whose menu has no list keeps an "Is" row it is given, and says it',
       box: (menu.shadowRoot!.querySelector('.condition-row .condition-value') as HTMLInputElement).value,
     };
   });
-  expect(r.reading).toMatchObject({ conditions: [{ op: 'eq', picked: ['Bo'] }], mode: 'advanced' });
+  expect(r.reading).toMatchObject({ tree: { op: 'eq', value: 'Bo' }, mode: 'advanced' });
   // An "Is" row reads as its condition. TODO 409
   expect(r).toMatchObject({ on: true, says: 'equals(Bo)', box: 'Bo' });
 });
@@ -892,7 +892,7 @@ test('an Advanced answer given before the menu draws turns its chip on — a lis
     el.innerHTML = '<sherpa-menu slot="menu" data-type="filter" data-advanced data-select="multiple"><label><input type="checkbox" value="Ravi" /> Ravi</label></sherpa-menu>';
     document.getElementById('root')!.appendChild(el);
     // The menu has not drawn yet: the reading's own mode decides.
-    el.reading = { mode: 'advanced', conditions: [{ op: 'contains', text: 'Ra' }] };
+    el.reading = { mode: 'advanced', tree: { op: 'contains', value: 'Ra' } };
     await el.rendered;
     await window.__settled();
     return el.hasAttribute('data-current');

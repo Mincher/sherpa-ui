@@ -155,9 +155,9 @@ export function bindSelection<T extends EventTarget>(
       return;
     }
     if (raised()) {
-      // Its picks are Simple's: rows the View kept stay kept, and out of force.
+      // Its picks are Simple's: a tree the View kept stays kept, and out of force.
       const held = source.query.reading(VIEW, field);
-      source.query.setReading(VIEW, field, { ...(held?.conditions?.length ? { ...held, mode: 'simple' as const } : {}), picked: answer });
+      source.query.setReading(VIEW, field, { ...(held?.tree ? { ...held, mode: 'simple' as const } : {}), picked: answer });
       return;
     }
     if (reach === 'component') {

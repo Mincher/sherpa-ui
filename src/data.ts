@@ -27,6 +27,15 @@ export {
      TRAP T-a-value-can-be-an-object */
   valueKey,
   valueSet,
+  /* ONE condition tree: what a reader or a definition says; a Filter is what it
+     compiles to. TRAP T-one-condition-tree */
+  conditionLeaves,
+  filterCondition,
+  groupOf,
+  joinConditions,
+  type Condition,
+  type ConditionGroup,
+  type ConditionLeaf,
   type Duration,
   type Filter,
   type FilterClause,
@@ -247,8 +256,12 @@ export {
   /* A field whose picks are ENDS, not a list to tick.
      TRAP T-the-field-type-decides-the-clause */
   isRanged,
-  // A chained clause back as its rows. TRAP T-a-heading-holds-a-whole-reading
-  clauseConditions,
+  // The ONE place a tree becomes a filter.
+  conditionClause,
+  // A flat menu's rows as one tree, and back. TRAP T-many-conditions-are-one-reading
+  rowsTree,
+  treeRows,
+  answerTree,
   type FieldState,
   type ValueState,
   type ValueEntry,
@@ -281,7 +294,14 @@ export {
 
 /* ONE way to write a condition in a definition or a View: `{ gt: 0 }`.
    TRAP T-one-way-to-write-a-condition */
-export { whereOf, readingsOf, type Condition, type Where } from './core/data/where.js';
+export {
+  parseWhere,
+  readingsOf,
+  treeReading,
+  whereOf,
+  type Where,
+  type WhereCondition,
+} from './core/data/where.js';
 export { type Threshold } from './core/data/threshold.js';
 
 /* A store that ACTS remote — slow, and failing when told to — until there is a

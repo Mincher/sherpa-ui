@@ -71,7 +71,11 @@ test('its values, in its own order, as the rows hold them; and as a domain with 
   assert.deepEqual(store.domains.health, {
     values: ['At risk', 'Watch', 'Healthy'],
     statuses: { 'At risk': 'critical', Watch: 'warning', Healthy: 'success' },
-    when: { 'At risk': HEALTH.values[0].when, Watch: HEALTH.values[1].when },
+    // Each value's `when`, parsed once into its tree. TRAP T-one-condition-tree
+    when: {
+      'At risk': { or: [{ field: 'score', op: 'lt', value: 60 }, { field: 'openTickets', op: 'gte', value: 5 }] },
+      Watch: { or: [{ field: 'score', op: 'lt', value: 80 }, { field: 'openTickets', op: 'gt', value: 0 }] },
+    },
   });
 });
 

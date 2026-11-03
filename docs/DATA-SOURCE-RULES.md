@@ -105,11 +105,15 @@ write a condition, with numbers as numbers:
 | a status field's value | `{ "in": ["At risk"] }` — the store works each row's value out from its other fields (`T-a-status-is-worked-out-by-the-data`) |
 | all hold | `{ "gte": 10, "lt": 60 }` — `{ "and": [{ "contains": "a" }, { "contains": "b" }] }` |
 | any holds | `{ "or": [{ "lt": 10 }, { "gt": 90 }] }` |
+| nested, as deep as it says | `{ "or": [{ "lt": 10 }, { "and": [{ "gt": 50 }, { "lt": 60 }] }] }` |
 | kept, not applied | `{ "eq": "trial", "off": true }` |
+| every value, on purpose | `{ "all": true }` — Select all on: no filter |
 
-It goes under `where` — a page definition's saved filter, a View's scope —
-and in a component's `data-where`. The source compiles it into the clause
-above. `T-one-way-to-write-a-condition`
+It goes under `where` — a page definition's saved filter, a View's scope, a
+preset — in a status value's `when`, and in a component's `data-where`. It is
+the plain form of ONE condition tree, parsed once — `{ "or": [...] }`,
+`{ "and": [...] }`, `{ "field", "op", "value" }` — which the source compiles
+into the clause above. `T-one-way-to-write-a-condition`, `T-one-condition-tree`
 
 ---
 

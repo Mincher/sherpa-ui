@@ -31,15 +31,16 @@ import {
   type Filter, type GroupSummary, type SortDirection, type SortSpec,
 } from '../../core/data/store.js';
 import {
-  valueKey, type FilterOp,
+  OP_TAKES, conditionLeaves, filterCondition, groupOf, joinConditions, valueKey,
+  type Condition, type ConditionLeaf, type FilterOp,
 } from '../../core/data/store.js';
 import {
-  fieldState, modeOf, readingClause, readingRows,
-  type FieldCondition, type FieldFacts, type FieldReading, type FieldType, type FilterState,
+  answeredCondition, fieldState, modeOf, readingClause,
+  type FieldFacts, type FieldReading, type FieldType, type FilterState,
 } from '../../core/data/filter-state.js';
 import { filterFace } from '../../core/data/filter-face.js';
 import { readingAnswered, sameReading } from '../../core/data/query.js';
-import { clauseReading } from '../../core/data/where.js';
+import { treeReading } from '../../core/data/where.js';
 import { coalesce } from '../../core/data/timing.js';
 import { hidesUnmatched } from '../../core/ui/more-menu.js';
 import type { DataAsk } from '../../core/ui/context.js';
@@ -808,8 +809,8 @@ export class SherpaDataGrid extends SherpaElement {
     const wrote = !this.#drawn.has(col.field) || !sameReading(drawn, held ?? null);
     if (wrote) {
       this.#drawn.set(col.field, held ?? null);
-      // Rows ARE the opt-in reaching the menu. TRAP T-many-conditions-are-one-reading
-      if (held && readingRows(held).length) menu.setAttribute('data-advanced', '');
+      // A tree IS the opt-in reaching the menu. TRAP T-many-conditions-are-one-reading
+      if (held && answeredCondition(held.tree)) menu.setAttribute('data-advanced', '');
       else if (!advancedOf(def)) menu.removeAttribute('data-advanced');
       if (held) menu.reading = held;
       else if (drawn) {
@@ -1098,15 +1099,7 @@ export class SherpaDataGrid extends SherpaElement {
     const [, clauseOp, value] = clause as [string, string, unknown];
     // A range with an end missing filters by nothing here.
     if ((clauseOp === 'between' || clauseOp === 'notbetween') && Array.isArray(value) && value.some((v) => v == null || v === '')) return null;
-    const held = clauseReading(clause as Filter, this.#columns.find((c) => c.field === field)?.type as FieldType | undefined);
-    if (!held) {
-      report({
-        code: 'unheld-column-clause',
-        message: 'setColumnFilter: a clause these rows cannot say was not held.',
-        at: { field, clause: JSON.stringify(clause) },
-      });
-      return null;
-    }
+    const held = treeReading(filterCondition(clause as Filter), this.#columns.find((c) => c.field === field)?.type as FieldType | undefined);
     // Its picks as the menu's values: text, none empty.
     const picked = held.picked?.map((v) => String(v ?? '')).filter(Boolean);
     const out = picked ? { ...held, picked } : held;
@@ -1599,8 +1592,7 @@ export class SherpaDataGrid extends SherpaElement {
   #cellOn(at: CellValue): boolean {
     const held = this.#shown(at.field);
     if (!held || held.suspended) return false;
-    const rows = modeOf(held) === 'advanced';
-    const values = rows ? isRows(held).flatMap((r) => r.picked ?? []) : held.picked ?? [];
+    const values = modeOf(held) === 'advanced' ? isValues(held) : held.picked ?? [];
     return values.some((v) => valueKey(v) === at.key);
   }
 
@@ -1627,10 +1619,11 @@ export class SherpaDataGrid extends SherpaElement {
     const { all: _all, ...held } = this.#columnFilters.get(at.field) ?? {};
     let next: FieldReading;
     if (this.#byConditions(at.field)) {
-      // Its value is an "Is" row, OR'd with the others: the shape its chip holds.
-      const kept = readingRows(held).filter((r) => !(r.op === 'eq' && (r.picked ?? []).some((v) => valueKey(v) === at.key)));
-      const rows = on ? kept : [...kept, { op: 'eq' as const, picked: [at.value] }];
-      next = { ...held, conditions: rows.map(({ join, ...row }, i) => (i ? { ...row, join: join ?? 'or' } : row)), mode: 'advanced' };
+      // Its value is an "Is" condition, OR'd with the others: the shape its chip holds.
+      const kept = withoutValue(answeredCondition(held.tree), at.key);
+      const tree = on ? kept : joinConditions('or', [kept, { op: 'eq', value: at.value }]);
+      const { tree: _was, ...rest } = held;
+      next = { ...rest, ...(tree ? { tree } : {}), mode: 'advanced' };
     } else {
       const rest = (held.picked ?? []).filter((v) => valueKey(v) !== at.key);
       /* One value only where a second would change the question: a day, a number
@@ -1664,8 +1657,8 @@ export class SherpaDataGrid extends SherpaElement {
     // TRAP T-a-view-held-heading-shows-and-refuses
     const held = this.#shown(col.field);
     // EVERY row's string, not the first. TRAP T-a-condition-marks-every-match
-    const own = (held && !held.suspended ? this.#inForce(col.field, held).rows : [])
-      .flatMap((row) => (row.text ? [{ op: row.op, text: row.text }] : []));
+    const own = conditionLeaves(held && !held.suspended ? this.#inForce(col.field, held).answer : undefined)
+      .flatMap(({ op, value }) => (OP_TAKES[op] === 'text' && op !== 'last' && op !== 'next' ? [{ op, text: String(value) }] : []));
     /* A toolbar chip's condition reaches here through `data-needles`, because
        the grid cannot see the bar that holds it. Without this a chip filtering
        "Contains Ravi" narrowed the rows and marked nothing.
@@ -2651,7 +2644,7 @@ export class SherpaDataGrid extends SherpaElement {
    */
   #isFiltered(field: string): boolean {
     const held = this.#columnFilters.get(field);
-    if (held && !held.suspended && this.#inForce(field, held).rows.length) return true;
+    if (held && !held.suspended && this.#inForce(field, held).answer) return true;
     // A tiered child, while a higher scope holds its parent: on as its parent is. TODOs 577, 640
     const parent = this.#parentOf(field);
     if (parent && this.#superseded.has(parent) && this.#isFiltered(parent)) return true;
@@ -2663,8 +2656,21 @@ export class SherpaDataGrid extends SherpaElement {
 
 define('sherpa-data-grid', SherpaDataGrid);
 
-/** A reading's "Is" rows: the values a condition-only field holds. */
-function isRows(reading: FieldReading): FieldCondition[] {
-  return readingRows(reading).filter((r) => r.op === 'eq');
+/** A reading's "Is" values: what a condition-only field holds. */
+function isValues(reading: FieldReading): unknown[] {
+  return conditionLeaves(answeredCondition(reading.tree))
+    .flatMap((l) => (l.op === 'eq' ? [l.value] : l.op === 'in' && Array.isArray(l.value) ? l.value : []));
+}
+
+/** A tree without its "Is" conditions on one value, by key. */
+function withoutValue(tree: Condition | undefined, key: string): Condition | undefined {
+  if (!tree) return undefined;
+  const parts = groupOf(tree);
+  if (parts) return joinConditions(parts[0], parts[1].map((p) => withoutValue(p, key)));
+  const { op, value } = tree as ConditionLeaf;
+  if (op === 'eq') return valueKey(value) === key ? undefined : tree;
+  if (op !== 'in' || !Array.isArray(value)) return tree;
+  const left = value.filter((v) => valueKey(v) !== key);
+  return !left.length ? undefined : left.length === 1 ? { ...tree, op: 'eq', value: left[0] } : { ...tree, value: left };
 }
 

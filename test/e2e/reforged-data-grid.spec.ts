@@ -2991,9 +2991,9 @@ test.describe('a cell filter chip', () => {
     await expect(chipOf(page, 'name', 1)).toHaveAttribute('data-current', '');
     await chipOf(page, 'name', 1).locator('.caret').click();
     expect(await heard(page)).toEqual([
-      { conditions: [{ op: 'eq', picked: ['Ada'] }], mode: 'advanced' },
-      { conditions: [{ op: 'eq', picked: ['Ada'] }, { op: 'eq', picked: ['Bob'], join: 'or' }], mode: 'advanced' },
-      { conditions: [{ op: 'eq', picked: ['Ada'] }], mode: 'advanced' },
+      { tree: { op: 'eq', value: 'Ada' }, mode: 'advanced' },
+      { tree: { or: [{ op: 'eq', value: 'Ada' }, { op: 'eq', value: 'Bob' }] }, mode: 'advanced' },
+      { tree: { op: 'eq', value: 'Ada' }, mode: 'advanced' },
     ]);
   });
 

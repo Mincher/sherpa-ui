@@ -14,11 +14,14 @@
  * - filterFace — How one field's state READS, for any control that draws it.
  * - CONDITION_BADGE — The ONE mark a control wears when conditions are applied.
  * - countSaid — A count as a badge shows it and its name says it: `1,204`, and `1,204 results`.
- * - spellConditions — Advanced rows as they read: `equals(John) AND !contains(Smith)`.
+ * - spellConditions — An answer's tree as it reads: `equals(John) AND !(contains(Smith) OR …)`.
  */
-import { DATE_OP_LABELS, DEFAULT_OP, OP_LABELS, OP_TAKES, valueKey, type FilterOp } from './store.js';
+import {
+  DATE_OP_LABELS, DEFAULT_OP, OP_LABELS, OP_TAKES, conditionLeaves, groupOf, valueKey,
+  type Condition, type ConditionLeaf, type Duration, type FilterOp,
+} from './store.js';
 import { formatDate } from './format-date.js';
-import type { FieldCondition, FilterState } from './filter-state.js';
+import type { FilterState } from './filter-state.js';
 
 /**
  * What a control SHOWS for a field — the same six facts whatever draws them.
@@ -55,9 +58,10 @@ const ALL = 'All';
  * TRAP T-one-state-per-filtered-field
  */
 export function filterFace(state: FilterState): FilterFace {
-  /* The answer IN FORCE: Advanced speaks for its first row, Simple for its
+  /* The answer IN FORCE: Advanced speaks for its first condition, Simple for its
      picks — the two can differ now both are kept. TRAP T-both-answers-are-kept */
-  const lead = state.mode === 'advanced' ? state.rows[0] : undefined;
+  const first = state.mode === 'advanced' ? conditionLeaves(state.answer)[0] : undefined;
+  const lead = first && wordsOf(first);
   const op = lead?.op ?? state.op;
   const text = lead ? (lead.text ?? '') : state.text;
   const labelOf = new Map(state.values.map((v) => [v.value, v.label]));
@@ -88,7 +92,7 @@ export function filterFace(state: FilterState): FilterFace {
   /* AN ADVANCED ANSWER reads as its conditions, on the face and in the tip:
      `equals(John) AND !contains(Smith)`. Will, TODO 409.
      TRAP T-an-advanced-answer-reads-as-its-conditions */
-  const advanced = state.condition === 'advanced' ? spellConditions({ ...state, conditions: state.rows }) : '';
+  const advanced = state.condition === 'advanced' ? spellConditions(state) : '';
 
   return {
     current: state.fieldState === 'active',
@@ -130,8 +134,28 @@ function opName(op: FilterOp, dated: boolean): string {
   return (dated ? DATE_OP_LABELS[op] : undefined) ?? OP_LABELS[op] ?? op;
 }
 
+/** One condition as a face reads it: its op as a reader picks it — several picks
+ *  are Equals — and what was typed, or picked. */
+interface Words {
+  op: FilterOp;
+  text?: string;
+  unit?: Duration['unit'];
+  picked?: readonly unknown[];
+}
+
+/** A leaf in a face's words. */
+function wordsOf({ op, value }: ConditionLeaf): Words {
+  if (op === 'last' || op === 'next') {
+    const { n, unit } = (value ?? {}) as Partial<Duration>;
+    return { op, text: String(n ?? ''), ...(unit ? { unit } : {}) };
+  }
+  if ((OP_TAKES[op] ?? 'list') === 'text') return { op, text: String(value ?? '') };
+  const picked = Array.isArray(value) ? value : [value];
+  return { op: op === 'in' ? 'eq' : op === 'notin' ? 'ne' : op, picked };
+}
+
 /** A TYPED answer as it reads: a day as a day, a count with what it counts. */
-function sayTyped(row: Pick<FieldCondition, 'op' | 'text' | 'unit'>, dated: boolean): string {
+function sayTyped(row: Pick<Words, 'op' | 'text' | 'unit'>, dated: boolean): string {
   const text = (row.text ?? '').trim();
   if (!text) return '';
   if (row.op === 'last' || row.op === 'next') {
@@ -154,22 +178,29 @@ const DATE_OP_WORDS: Partial<Record<FilterOp, string>> = { eq: 'on', lt: 'before
 const NEGATIVE = new Set<FilterOp>(['ne', 'notin', 'notcontains', 'notbetween']);
 
 /**
- * Advanced rows as they read — each condition's word, its value in brackets,
+ * An answer's TREE as it reads — each condition's word, its value in brackets,
  * the join between, `!` before a negative one: `equals(John) AND !contains(Smith)`.
- * The chip's value, its tip and a grid heading's. Will, TODO 409.
- * TRAP T-a-condition-badge-says-that-not-which
+ * It reads left to right, as rows do; a group after the first is bracketed:
+ * `equals(A) OR (greaterThan(5) AND lessThan(9))`. The chip's value, its tip and
+ * a grid heading's. Will, TODO 409. TRAP T-a-condition-badge-says-that-not-which
  */
 export function spellConditions(state: FilterState): string {
   const dated = state.type === 'date';
   const labelOf = new Map(state.values.map((v) => [v.value, v.label]));
-  const part = (row: FieldCondition): string => {
-    const word = `${NEGATIVE.has(row.op) ? '!' : ''}${(dated ? DATE_OP_WORDS[row.op] : undefined) ?? OP_WORDS[row.op] ?? row.op}`;
+  const part = (leaf: ConditionLeaf): string => {
+    const row = wordsOf(leaf);
+    const word = `${NEGATIVE.has(leaf.op) ? '!' : ''}${(dated ? DATE_OP_WORDS[row.op] : undefined) ?? OP_WORDS[row.op] ?? row.op}`;
     const said = (OP_TAKES[row.op] ?? 'list') === 'text'
       ? sayTyped(row, dated)
       : (row.picked ?? []).map((v) => (dated ? formatDate(String(v)) : labelOf.get(valueKey(v)) ?? String(v))).join(', ');
     return `${word}(${said})`;
   };
-  return state.conditions
-    .map((row, i) => (i ? `${row.join === 'or' ? 'OR' : 'AND'} ${part(row)}` : part(row)))
-    .join(' ');
+  const spell = (tree: Condition): string => {
+    const parts = groupOf(tree);
+    if (!parts) return part(tree as ConditionLeaf);
+    // A part kept off says nothing, as it filters nothing.
+    const [join, each] = [parts[0], parts[1].filter((p) => !p.off)];
+    return each.map((p, i) => (i && groupOf(p) ? `(${spell(p)})` : spell(p))).join(` ${join.toUpperCase()} `);
+  };
+  return state.answer && !state.answer.off ? spell(state.answer) : '';
 }

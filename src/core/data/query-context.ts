@@ -89,7 +89,7 @@ import {
 } from './query-edits.js';
 import { readingsOf, type Where } from './where.js';
 import { valueKey, type SortDirection, type SortSpec } from './store.js';
-import { asRows, modeOf, withPreset, type FieldReading, type RuledOut } from './filter-state.js';
+import { answerTree, modeOf, withPreset, type FieldReading, type RuledOut } from './filter-state.js';
 import { report } from './report.js';
 
 /** What the context did, as each member hears it: the follow-ups are the member's. */
@@ -956,7 +956,7 @@ export class QueryContext extends EventTarget {
     const preset = this.#presets.get(scope)?.get(id);
     if (!preset) return false;
     const query = applied ? this.#live.applied : this.#live.draft;
-    const entries = Object.entries(preset.readings).filter(([, given]) => asRows(given).length);
+    const entries = Object.entries(preset.readings).filter(([, given]) => answerTree(given));
     // Each at its field's home, where setPreset writes it.
     return entries.length > 0 && entries.every(([field]) => {
       const held = query.scopes[holderOf(query, field) ?? scope]?.readings[field];
@@ -983,12 +983,12 @@ export class QueryContext extends EventTarget {
     this.batch(() => {
       const moved: string[] = [];
       for (const [field, given] of Object.entries(preset.readings)) {
-        const rows = asRows(given);
-        if (!rows.length) continue;
+        const tree = answerTree(given);
+        if (!tree) continue;
         const entry = scopeEntry(this.#live.draft, this.scopeOf(field) ?? scope);
         const now = entry.readings[field];
         if (!on && !now?.byPreset?.[id]) continue;
-        const next = withPreset(now, id, on ? { label: preset.label, scope, rows } : null);
+        const next = withPreset(now, id, on ? { label: preset.label, scope, tree } : null);
         if (readingAnswered(next)) entry.readings[field] = copyReading(next);
         else Reflect.deleteProperty(entry.readings, field);
         prune(this.#live.draft);
@@ -1015,7 +1015,7 @@ export class QueryContext extends EventTarget {
         // A preset goes with the rest. TODO 526
         for (const [field, reading] of Object.entries(s.readings)) {
           if (!reading.byPreset) continue;
-          const { byPreset: _rows, ...own } = reading;
+          const { byPreset: _held, ...own } = reading;
           s.readings[field] = own;
         }
         for (const field of Object.keys(s.readings)) {

@@ -11,7 +11,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, openSource, filterRows, valueKey } from '../../dist/data.js';
+import { ArrayStore, openSource, filterRows, valueKey, rowsTree } from '../../dist/data.js';
 
 const ROWS = [
   { id: 1, customer: 'Northwind', site: 'Leeds' },
@@ -39,7 +39,7 @@ test('a customer, and a customer\'s sites, OR\'d: every row of the one, the site
   await settle();
   // Contoso's rows, its siteless one too; and Northwind's London rows only.
   assert.deepEqual(ids(src), [2, 3, 4, 5]);
-  assert.deepEqual(src.selection('customer').rows, [{ op: 'eq', picked: ['Contoso', at('Northwind', 'London')] }]);
+  assert.deepEqual(src.selection('customer').answer, { op: 'in', value: ['Contoso', at('Northwind', 'London')] });
 });
 
 test('the clause is plain and/or/eq/in — a server runs the same', async () => {
@@ -52,7 +52,7 @@ test('the clause is plain and/or/eq/in — a server runs the same', async () => 
   // NOT those: its opposite, every other row.
   const not = stateClause(fieldState({ field: 'customer', values: src.selection('customer').values.map((v) => v.raw),
     child: 'site', parentOf: new Map(src.selection('customer').values.filter((v) => v.parent).map((v) => [v.value, v.parent])) },
-  { mode: 'advanced', conditions: [{ op: 'ne', picked: ['Contoso', at('Northwind', 'London')] }] }));
+  { mode: 'advanced', tree: rowsTree([{ op: 'ne', picked: ['Contoso', at('Northwind', 'London')] }]) }));
   assert.deepEqual(filterRows(ROWS, not).map((r) => r.id), [1, 6]);
 });
 
@@ -60,7 +60,7 @@ test('a site under a customer that is picked says nothing more', async () => {
   const src = await source();
   src.query.setReading('view', 'customer', { picked: ['Northwind', valueKey(at('Northwind', 'London'))] });
   await settle();
-  assert.deepEqual(src.selection('customer').rows, [{ op: 'eq', picked: ['Northwind'] }]);
+  assert.deepEqual(src.selection('customer').answer, { op: 'eq', value: 'Northwind' });
   // …and shows picked, under its picked customer.
   const london = src.selection('customer').values.find((v) => v.value === valueKey(at('Northwind', 'London')));
   assert.equal(london.state, 'picked');

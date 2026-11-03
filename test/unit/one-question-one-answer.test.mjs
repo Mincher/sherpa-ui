@@ -7,7 +7,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, QueryContext, bindSource, fakeRemote, fieldState, filterRows, openSource } from '../../dist/data.js';
+import { ArrayStore, DataSource, QueryContext, bindSource, fakeRemote, fieldState, filterRows, openSource, rowsTree } from '../../dist/data.js';
 
 const ids = (rows, ...clause) => filterRows(rows, clause).map((r) => r.id);
 const settle = () => new Promise((r) => setTimeout(r, 30));
@@ -34,7 +34,7 @@ test('a Date row against ISO text compares as dates', () => {
 });
 
 test('"in the last 0" answers nothing, so a chip is off, as its rows say', () => {
-  const state = (text) => fieldState({ field: 'at', type: 'date' }, { conditions: [{ op: 'last', text, unit: 'day' }], mode: 'advanced' }).fieldState;
+  const state = (text) => fieldState({ field: 'at', type: 'date' }, { tree: rowsTree([{ op: 'last', text, unit: 'day' }]), mode: 'advanced' }).fieldState;
   assert.equal(state('0'), 'off');
   assert.equal(state('-1'), 'off');
   assert.equal(state(''), 'off');
@@ -96,7 +96,7 @@ test('a Refresh asks a server field again: its old keys are of the set let go', 
     scopes: { data: { label: 'Rows', holds: ['seats'] } },
   }, store);
   bindSource(source, { populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {} }, { scope: 'data' });
-  source.query.setReading('data', 'seats', { conditions: [{ op: 'gt', text: '40' }], mode: 'advanced' });
+  source.query.setReading('data', 'seats', { tree: rowsTree([{ op: 'gt', text: '40' }]), mode: 'advanced' });
   source.query.commit({ scope: 'data' });
   await source.load();
   await settle();
@@ -121,7 +121,7 @@ test('a chip counts a field the store answers as its rows do, by the keys the st
     scopes: { data: { label: 'Rows', holds: ['score'] } },
   }, store);
   bindSource(source, { populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {} }, { scope: 'data' });
-  source.query.setReading('data', 'score', { conditions: [{ op: 'gt', text: '40' }], mode: 'advanced' });
+  source.query.setReading('data', 'score', { tree: rowsTree([{ op: 'gt', text: '40' }]), mode: 'advanced' });
   source.query.commit({ scope: 'data' });
   await source.load();
   await settle();

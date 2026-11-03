@@ -7,7 +7,7 @@
  * Filter. We use the blue info styling to represent active Custom Condition
  * Filters."
  *
- * Every answer becomes condition ROWS, and one compiler turns rows into a
+ * Every answer becomes ONE condition TREE, and one compiler turns it into a
  * filter. The TYPE — default or custom — is decided once, in the state, and
  * both the chip's info-blue and its fx badge read it. They used to decide it
  * two different ways.
@@ -20,14 +20,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { fieldState, stateClause, filterFace } from '../../dist/data.js';
+import { fieldState, rowsTree, stateClause, filterFace } from '../../dist/data.js';
 
 const PLANS = { field: 'plan', values: ['Free', 'Pro', 'Enterprise'] };
 const SEATS = { field: 'seats', type: 'number' };
 
 const shape = (facts, reading) => {
   const s = fieldState(facts, reading);
-  return { condition: s.condition, rows: s.rows, clause: stateClause(s), badge: filterFace(s).badge };
+  return { condition: s.condition, answer: s.answer, clause: stateClause(s), badge: filterFace(s).badge };
 };
 
 /* ── Simple filters ─────────────────────────────────────────────── */
@@ -35,7 +35,7 @@ const shape = (facts, reading) => {
 test('one tick is a SIMPLE condition: EQUALS X', () => {
   assert.deepEqual(shape(PLANS, { picked: ['Pro'] }), {
     condition: 'simple',
-    rows: [{ op: 'eq', picked: ['Pro'] }],
+    answer: { op: 'eq', value: 'Pro' },
     clause: ['plan', 'eq', 'Pro'],
     badge: '',
   });
@@ -51,7 +51,7 @@ test('two numbers in Simple are a LIST — `in`, still default; a range is an Ad
   // A number has no Simple range (TODO 375).
   const s = shape(SEATS, { picked: ['500', '9'] });
   assert.equal(s.condition, 'simple');
-  assert.deepEqual(s.rows, [{ op: 'eq', picked: ['500', '9'] }]);
+  assert.deepEqual(s.answer, { op: 'in', value: [500, 9] });
   assert.deepEqual(s.clause, ['seats', 'in', [500, 9]]);
 });
 
@@ -60,7 +60,7 @@ test('two numbers in Simple are a LIST — `in`, still default; a range is an Ad
 test('a TYPED condition is Advanced', () => {
   const s = shape(PLANS, { op: 'contains', text: 'ro' });
   assert.equal(s.condition, 'advanced');
-  assert.deepEqual(s.rows, [{ op: 'contains', text: 'ro' }]);
+  assert.deepEqual(s.answer, { op: 'contains', value: 'ro' });
   assert.deepEqual(s.clause, ['plan', 'contains', 'ro']);
   assert.equal(s.badge, 'fx');
 });
@@ -73,10 +73,10 @@ test('a NAMED op over ticks is Advanced — DOES NOT EQUAL is not Simple', () =>
 
 test('a chain of rows is Advanced, and compiles with AND binding tighter', () => {
   const s = shape(PLANS, {
-    conditions: [
+    tree: rowsTree([
       { op: 'eq', picked: ['Pro'] },
       { join: 'or', op: 'contains', text: 'Ent' },
-    ],
+    ]),
   });
   assert.equal(s.condition, 'advanced');
   assert.deepEqual(s.clause, ['or', ['plan', 'eq', 'Pro'], ['plan', 'contains', 'Ent']]);
@@ -86,7 +86,7 @@ test('a chain of rows is Advanced, and compiles with AND binding tighter', () =>
 
 test('nothing chosen is NO condition — neither type', () => {
   const s = shape(PLANS, {});
-  assert.deepEqual(s, { condition: null, rows: [], clause: undefined, badge: '' });
+  assert.deepEqual(s, { condition: null, answer: undefined, clause: undefined, badge: '' });
 });
 
 test('EVERYTHING ticked is no filter, so no condition either', () => {
@@ -94,7 +94,7 @@ test('EVERYTHING ticked is no filter, so no condition either', () => {
 });
 
 test('an UNANSWERED row is not an Advanced condition', () => {
-  const s = shape(PLANS, { conditions: [{ op: 'contains', text: '  ' }] });
+  const s = shape(PLANS, { tree: rowsTree([{ op: 'contains', text: '  ' }]) });
   assert.equal(s.condition, null);
   assert.equal(s.badge, '');
 });
@@ -105,7 +105,7 @@ test('the fx badge and the type AGREE on every shape', () => {
   const readings = [
     {}, { picked: ['Pro'] }, { picked: ['Pro', 'Free'] }, { op: 'contains', text: 'ro' },
     { op: 'contains', text: '' }, { op: 'ne', picked: ['Free'] },
-    { conditions: [{ op: 'eq', picked: ['Pro'] }] }, { conditions: [{ op: 'eq', picked: [] }] },
+    { tree: rowsTree([{ op: 'eq', picked: ['Pro'] }]) }, { tree: rowsTree([{ op: 'eq', picked: [] }]) },
   ];
   for (const reading of readings) {
     const s = fieldState(PLANS, reading);
@@ -117,7 +117,7 @@ test('the fx badge and the type AGREE on every shape', () => {
 
 test('Not between is a range row: both ends, sorted as numbers, and every row outside them', async () => {
   const { filterRows } = await import('../../dist/data.js');
-  const s = shape(SEATS, { conditions: [{ op: 'notbetween', picked: ['500', '9'] }], mode: 'advanced' });
+  const s = shape(SEATS, { tree: rowsTree([{ op: 'notbetween', picked: ['500', '9'] }]), mode: 'advanced' });
   assert.equal(s.condition, 'advanced');
   assert.deepEqual(s.clause, ['seats', 'notbetween', [9, 500]]);
   const rows = [{ seats: 5 }, { seats: 9 }, { seats: 200 }, { seats: 600 }, { seats: null }];
@@ -127,7 +127,7 @@ test('Not between is a range row: both ends, sorted as numbers, and every row ou
 
 test('a range row with ONE end is no answer, and narrows nothing', () => {
   for (const op of ['between', 'notbetween']) {
-    const s = shape(SEATS, { conditions: [{ op, picked: ['9'] }], mode: 'advanced' });
+    const s = shape(SEATS, { tree: rowsTree([{ op, picked: ['9'] }]), mode: 'advanced' });
     assert.equal(s.clause, undefined, op);
     assert.equal(s.condition, null, op);
   }
@@ -137,7 +137,7 @@ test('a range row with ONE end is no answer, and narrows nothing', () => {
 
 test('an `in` or `notin` row is its `eq` or `ne` over the picks, with one pick or several', () => {
   const REGION = { field: 'region', values: ['EMEA', 'AMER', 'APAC', 'LATAM'] };
-  const clause = (op, picked) => shape(REGION, { conditions: [{ op, picked }], mode: 'advanced' }).clause;
+  const clause = (op, picked) => shape(REGION, { tree: rowsTree([{ op, picked }]), mode: 'advanced' }).clause;
   // Before: `notin` with two picks compiled to `in`, and with one matched every row.
   assert.deepEqual(clause('notin', ['EMEA', 'APAC']), ['region', 'notin', ['EMEA', 'APAC']]);
   assert.deepEqual(clause('notin', ['EMEA']), ['region', 'ne', 'EMEA']);

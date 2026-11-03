@@ -27,7 +27,7 @@ test('a toolbar chip says a number, a range and a date — and its matches, on o
     const settle = async (): Promise<void> => { await window.__settled(); await eval(wait); };
 
     // A number's range is an Advanced Between row (TODO 375).
-    bar.setChipReading('seats', { conditions: [{ op: 'between', picked: ['37', '120'] }], mode: 'advanced' });
+    bar.setChipReading('seats', { tree: { op: 'between', value: ['37', '120'] }, mode: 'advanced' });
     bar.setChipReading('created', { picked: ['2024-01-05', '2024-02-06'], range: true });
     bar.setChipReading('plan', { picked: ['Pro', 'Free'] });
     await settle();
@@ -263,7 +263,7 @@ test('a chip reads, draws and empties its own answer: a list, a number and a dat
     await settle();
     const suspended = look('plan');
     // Rows answer it too: Advanced, and on.
-    chip('plan').reading = { picked: [], mode: 'advanced', conditions: [{ op: 'contains', text: 'Pr' }] };
+    chip('plan').reading = { picked: [], mode: 'advanced', tree: { op: 'contains', value: 'Pr' } };
     await settle();
     const rows = { ...look('plan'), mode: chip('plan').reading?.['mode'] };
 

@@ -35,7 +35,7 @@
  */
 // `oneOf` compares with `valueKey`, so a schema and a query agree about
 // what two values being the same means.
-import { valueKey } from './store.js';
+import { valueKey, type Condition } from './store.js';
 
 /* ── The answer ─────────────────────────────────────────────────────── */
 
@@ -106,8 +106,8 @@ export interface FieldDomain {
   max?: number;
   /** Each value's look, a Style mode — a status field's (plan 683). */
   statuses?: Record<string, string>;
-  /** Each value's conditions, as written — a status field's: a gauge reads its zones there. */
-  when?: Record<string, readonly Record<string, unknown>[]>;
+  /** Each value's condition tree — a status field's: a gauge reads its zones there. */
+  when?: Record<string, Condition>;
 }
 
 /** The rules that bound a field, and how. */

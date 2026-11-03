@@ -12,7 +12,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, bindSource, openSource } from '../../dist/data.js';
+import { ArrayStore, bindSource, openSource, rowsTree } from '../../dist/data.js';
 
 const ROWS = [
   { id: 1, health: 40, tickets: 2, plan: 'pro' },
@@ -64,10 +64,10 @@ test('on, it puts its conditions on the fields, adds no chip, and never goes Adv
   await act(source, () => source.query.setPreset('data', 'high-risk', true));
   assert.deepEqual(ids(source), [1, 4]);
   assert.equal(on(source), true);
-  assert.deepEqual(readings(source).health.byPreset, { 'high-risk': { label: 'High risk', scope: 'data', rows: [{ op: 'lt', text: '60' }] } });
-  assert.deepEqual(readings(source).tickets.byPreset['high-risk'].rows, [{ op: 'gt', text: '0' }]);
+  assert.deepEqual(readings(source).health.byPreset, { 'high-risk': { label: 'High risk', scope: 'data', tree: { op: 'lt', value: '60' } } });
+  assert.deepEqual(readings(source).tickets.byPreset['high-risk'].tree, { op: 'gt', value: '0' });
   assert.equal(readings(source).health.mode, undefined);
-  assert.equal(readings(source).health.conditions, undefined);
+  assert.equal(readings(source).health.tree, undefined);
   assert.deepEqual(source.describe('data').filters.map((f) => f.id), ['preset:high-risk', 'plan']);
   // A field's own answer narrows beside them.
   await act(source, () => source.query.setReading('data', 'plan', { picked: ['free'] }));
@@ -87,7 +87,7 @@ test('its rows are ANDed with a field\'s own; off, the field\'s own is all that 
   await act(source, () => source.query.setPreset('data', 'high-risk', true));
   assert.deepEqual(ids(source), [1]);
   // The reader's answer and its mode stay as they were, beside the preset's.
-  assert.deepEqual(readings(source).tickets.conditions, undefined);
+  assert.deepEqual(readings(source).tickets.tree, undefined);
   assert.equal(readings(source).tickets.text, '1');
   assert.equal(readings(source).tickets.mode, undefined);
   await act(source, () => source.query.setPreset('data', 'high-risk', false));
@@ -100,7 +100,7 @@ test('its rows are ANDed with a field\'s own; off, the field\'s own is all that 
 test('a reader\'s answer on its field, or a clear of it, leaves it on; the Switch shows it off while the fields are off; Reset takes it off', async () => {
   const source = await page();
   await act(source, () => source.query.setPreset('data', 'high-risk', true));
-  await act(source, () => source.query.setReading('data', 'health', { conditions: [{ op: 'lt', text: '50' }], mode: 'advanced' }));
+  await act(source, () => source.query.setReading('data', 'health', { tree: rowsTree([{ op: 'lt', text: '50' }]), mode: 'advanced' }));
   assert.equal(on(source), true);
   assert.deepEqual(ids(source), [1]);
   await act(source, () => source.query.setReading('data', 'health', null));

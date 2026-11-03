@@ -79,5 +79,5 @@ test('the switch to Advanced carries the calendar\'s day over as On', async ({ p
   });
   expect(r.mode).toBe('advanced');
   expect(r.rows).toEqual([{ op: 'eq', picked: ['2026-09-03'] }]);
-  expect(r.reading).toMatchObject({ mode: 'advanced', conditions: [{ op: 'eq', picked: ['2026-09-03'] }] });
+  expect(r.reading).toMatchObject({ mode: 'advanced', tree: { op: 'eq', value: '2026-09-03' } });
 });

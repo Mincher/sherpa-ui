@@ -14,11 +14,11 @@ import {
   ArrayStore, DataSource, absoluteDates, durationSpan, matchesFilter, readingsOf, whereOf,
 } from '../../dist/data.js';
 import { spellConditions } from '../../dist/core/data/filter-face.js';
-import { fieldState, readingClause } from '../../dist/core/data/filter-state.js';
+import { fieldState, readingClause, rowsTree } from '../../dist/core/data/filter-state.js';
 
 const TODAY = new Date(Date.UTC(2026, 9, 13, 15, 0));
 const ago = (days) => new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
-const rows = (conditions) => ({ conditions, mode: 'advanced' });
+const rows = (conditions) => ({ tree: rowsTree(conditions), mode: 'advanced' });
 
 test('a span from today is whole days, in UTC', () => {
   assert.deepEqual(durationSpan('last', { n: 7, unit: 'day' }, TODAY), ['2026-10-06', '2026-10-13']);

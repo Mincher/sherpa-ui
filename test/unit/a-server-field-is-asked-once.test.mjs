@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, bindSource, fakeRemote } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, fakeRemote, rowsTree } from '../../dist/data.js';
 
 const ROWS = Array.from({ length: 10 }, (_, i) => ({ id: i + 1, seats: (i + 1) * 10 }));
 const settle = () => new Promise((r) => setTimeout(r, 10));
@@ -26,7 +26,7 @@ test('Apply asks the store once for the keys; off and on ask nothing; a new answ
   await source.load();
   const before = asked.length;
   source.query.hold('data', ['seats']);
-  source.query.setReading('data', 'seats', { mode: 'advanced', conditions: [{ op: 'gt', text: '70' }] });
+  source.query.setReading('data', 'seats', { mode: 'advanced', tree: rowsTree([{ op: 'gt', text: '70' }]) });
   source.query.commit({ field: 'seats' });
   await settle();
   await source.load();
@@ -41,7 +41,7 @@ test('Apply asks the store once for the keys; off and on ask nothing; a new answ
   await source.load();
   assert.equal(asked.length, before + 1, 'off and on again: no ask');
   assert.deepEqual(source.rows.map((r) => r.id), [8, 9, 10]);
-  source.query.setReading('data', 'seats', { mode: 'advanced', conditions: [{ op: 'gt', text: '90' }] });
+  source.query.setReading('data', 'seats', { mode: 'advanced', tree: rowsTree([{ op: 'gt', text: '90' }]) });
   source.query.commit({ field: 'seats' });
   await settle();
   await source.load();

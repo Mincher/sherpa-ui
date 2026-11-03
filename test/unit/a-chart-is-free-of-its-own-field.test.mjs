@@ -11,7 +11,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, bindSource, openSource, statusFields } from '../../dist/data.js';
+import { ArrayStore, bindSource, openSource, statusFields, rowsTree } from '../../dist/data.js';
 import { filterWithout } from '../../dist/core/data/store.js';
 
 /** Health, worked out from the score: the gauge's zones (plan 683). */
@@ -72,7 +72,7 @@ test('only picks in force are lit: none while the field is Advanced or says "is 
   source.query.hold(VIEW, ['plan']);
   source.query.setReading(VIEW, 'plan', { picked: ['Pro'] });
   assert.deepEqual(source.pickedFor(chart, 'plan'), ['Pro']);
-  source.query.setReading(VIEW, 'plan', { picked: ['Pro'], mode: 'advanced', conditions: [{ op: 'eq', picked: ['Free'] }] });
+  source.query.setReading(VIEW, 'plan', { picked: ['Pro'], mode: 'advanced', tree: rowsTree([{ op: 'eq', picked: ['Free'] }]) });
   assert.deepEqual(source.pickedFor(chart, 'plan'), [], 'Advanced is in force, not the Simple picks');
   source.query.setReading(VIEW, 'plan', { op: 'ne', picked: ['Pro'] });
   assert.deepEqual(source.pickedFor(chart, 'plan'), [], '"is not Pro" lights no Pro');

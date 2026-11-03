@@ -11,7 +11,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  ArrayStore, DataSource, RestStore, applyOptions, compile, filterRows, filterTest, matchesFilter, setCollation, sortRows,
+  ArrayStore, DataSource, RestStore, applyOptions, compile, filterRows, filterTest, matchesFilter, setCollation, sortRows, rowsTree
 } from '../../dist/data.js';
 import { walkStepwise } from '../../dist/core/data/source-counts.js';
 
@@ -47,7 +47,7 @@ test('a source told its clock reads it for its rows, and asks again when the day
   const source = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), now: () => now });
   source.query.offer('data', ['at']);
   source.query.hold('data', ['at']);
-  source.query.setReading('data', 'at', { conditions: [{ op: 'last', text: '7', unit: 'day' }], mode: 'advanced' });
+  source.query.setReading('data', 'at', { tree: rowsTree([{ op: 'last', text: '7', unit: 'day' }]), mode: 'advanced' });
   source.query.commit({ scope: 'data' });
   await source.load();
   await settle();
@@ -97,7 +97,7 @@ test('replay: one Query, one set of rows, one clock, byte-equal rows, from a Que
     await settle();
     return { rows: JSON.stringify(source.rows), out: JSON.stringify(source.query.export()) };
   };
-  const query = { v: 1, scopes: { data: { holds: ['at'], sort: [{ field: 'n', direction: 'desc' }], readings: { at: { conditions: [{ op: 'last', text: '60', unit: 'day' }], mode: 'advanced' } } } } };
+  const query = { v: 1, scopes: { data: { holds: ['at'], sort: [{ field: 'n', direction: 'desc' }], readings: { at: { tree: rowsTree([{ op: 'last', text: '60', unit: 'day' }]), mode: 'advanced' } } } } };
   const first = await run(JSON.parse(JSON.stringify(query)));
   const second = await run(JSON.parse(first.out).query);
   assert.deepEqual(JSON.parse(first.rows).map((r) => r.id), [2, 1]);

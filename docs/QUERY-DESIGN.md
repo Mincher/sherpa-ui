@@ -95,8 +95,9 @@ interface ScopeQuery {
 }
 ```
 
-`FieldReading` is unchanged — `{ picked, op, text, conditions, range,
-suspended }` — so every control already speaks it.
+`FieldReading` is what every control speaks — `{ picked, op, text, range,
+suspended }` for Simple, and `tree` for Advanced: ONE condition tree over the
+field, nested as deep as it was said (`T-one-condition-tree`).
 
 **Records, as a Query:**
 
@@ -112,8 +113,8 @@ suspended }` — so every control already speaks it.
       "holds": ["status", "plan", "tier", "owner", "email"],
       "readings": {
         "status": { "picked": ["active"] },
-        "owner":  { "conditions": [{ "op": "contains", "text": "Da" }] },
-        "email":  { "conditions": [{ "op": "contains", "text": "@" }], "suspended": true }
+        "owner":  { "tree": { "op": "contains", "value": "Da" }, "mode": "advanced" },
+        "email":  { "tree": { "op": "contains", "value": "@" }, "mode": "advanced", "suspended": true }
       },
       "sort": [{ "field": "name", "direction": "asc" }],
       "group": null,
@@ -160,9 +161,10 @@ interface Compiled {
 ```
 
 - **Pure and DOM-free**, beside `readingClause` in `filter-state.ts`. It is
-  `readingClause` and `chainRows` run over every scope, and `andFilter` over
-  the result. `clauseConditions` is its inverse for a reader that hands over
-  a clause.
+  `readingClause` run over every scope — each answer ONE condition tree, which
+  `conditionClause` compiles — and `andFilter` over the result. A reader that
+  hands over a clause has it read whole: `filterCondition`, then `treeReading`
+  (`T-one-condition-tree`).
 - **The source runs it** whenever `applied` changes, and loads.
   `state.filter` becomes a read-only getter over `compile(applied).filter` —
   never saved, never restored.
@@ -326,7 +328,7 @@ selection mirror, `syncHeadings`, `syncColumns` and the panel glue in
 `records.js`; `persistView`'s `filter` option; the Context's `as` closures,
 as aggregation moves in.
 
-**Stays**: `FieldReading`, `fieldState`, `readingClause`, `clauseConditions`,
+**Stays**: `FieldReading`, `fieldState`, `readingClause`, `conditionClause`,
 the clause grammar, `bind()`, `setReading()` (a field's answer, at its home),
 `groups()`, the scope registry, `debugState()`.
 

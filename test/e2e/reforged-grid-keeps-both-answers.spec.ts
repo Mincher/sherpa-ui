@@ -9,8 +9,7 @@ import { test, expect } from './harness';
  * TRAP T-both-answers-are-kept
  */
 
-type Row = { op: string; join?: string; text?: string; picked?: string[] };
-type Reading = { picked?: string[]; conditions?: Row[]; mode?: string; mirror?: boolean };
+type Reading = { picked?: string[]; tree?: unknown; mode?: string; mirror?: boolean };
 type Grid = HTMLElement & {
   populate(d: unknown): void;
   columnClause(f: string): unknown[] | null;
@@ -93,7 +92,7 @@ test('a heading switches both ways, each mode filters by its own answer, and a r
   expect(r.back.clause).toEqual(['owner', 'in', ['Dana', 'Mo']]);
   expect(r.back.reading).toEqual({
     picked: ['Dana', 'Mo'],
-    conditions: [{ op: 'startswith', text: 'R' }, { op: 'eq', join: 'or', picked: ['Mo'] }],
+    tree: { or: [{ op: 'startswith', value: 'R' }, { op: 'eq', value: 'Mo' }] },
     mode: 'simple', mirror: false,
   });
   expect(r.redrawn.clause).toEqual(r.advanced.clause);

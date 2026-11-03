@@ -13,12 +13,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, fieldState, stateClause } from '../../dist/data.js';
+import { ArrayStore, DataSource, fieldState, rowsTree, stateClause } from '../../dist/data.js';
 
 const OWNER = { field: 'owner', values: ['Dana', 'Ravi', 'Mo'] };
 const BOTH = {
   picked: ['Dana'],
-  conditions: [{ op: 'startswith', text: 'R' }],
+  tree: rowsTree([{ op: 'startswith', text: 'R' }]),
 };
 const clause = (reading) => stateClause(fieldState(OWNER, reading));
 
@@ -30,11 +30,11 @@ test('only the answer in force filters', () => {
 test('the answer NOT in force is kept, and filters nothing', () => {
   const simple = fieldState(OWNER, { ...BOTH, mode: 'simple' });
   assert.equal(simple.mode, 'simple');
-  assert.deepEqual(simple.conditions, BOTH.conditions);
+  assert.deepEqual(simple.tree, BOTH.tree);
   assert.equal(simple.condition, 'simple');
 
   // Advanced with no answered row filters nothing, whatever Simple holds.
-  const empty = fieldState(OWNER, { picked: ['Dana'], conditions: [{ op: 'eq' }], mode: 'advanced' });
+  const empty = fieldState(OWNER, { picked: ['Dana'], tree: rowsTree([{ op: 'eq' }]), mode: 'advanced' });
   assert.equal(empty.fieldState, 'off');
   assert.equal(stateClause(empty), undefined);
   assert.deepEqual(empty.values.filter((v) => v.state === 'picked').map((v) => v.value), ['Dana']);

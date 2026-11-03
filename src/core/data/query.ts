@@ -52,8 +52,11 @@
  * - compile — Turn a Query into what the source runs — the ONE place a Query becomes a filter.
  * - highlightOf — What a hover lights: one field of a scope, as that scope reads it.
  */
-import { DEFAULT_OP, andFilter, valueKey, type Filter, type SortDirection, type SortSpec } from './store.js';
-import { asRows, readingClause, type FieldFacts, type FieldReading } from './filter-state.js';
+import {
+  DEFAULT_OP, andFilter, conditionLeaves, groupOf, valueKey,
+  type Condition, type ConditionLeaf, type Filter, type SortDirection, type SortSpec,
+} from './store.js';
+import { answerTree, answeredCondition, readingClause, type FieldFacts, type FieldReading } from './filter-state.js';
 import type { Where } from './where.js';
 
 /** Every scope's setup, as plain data — what a page's data is under. */
@@ -322,7 +325,7 @@ export function heldInView(query: Query): ReadonlySet<string> {
 
 // Every key of FieldReading, once: one added there and not here is a type error. TRAP T-both-answers-are-kept
 const READING_KEYS = Object.keys({
-  picked: 0, present: 0, op: 0, text: 0, conditions: 0, mode: 0, mirror: 0, range: 0, suspended: 0, off: 0, all: 0, byPreset: 0,
+  picked: 0, present: 0, op: 0, text: 0, tree: 0, mode: 0, mirror: 0, range: 0, suspended: 0, off: 0, all: 0, byPreset: 0,
 } satisfies Record<keyof FieldReading, 0>) as (keyof FieldReading)[];
 
 /** The ANSWER keys of a reading only — a bar's reading also carries its label
@@ -365,15 +368,15 @@ export function freezeReading(reading: FieldReading): FieldReading {
   return reading;
 }
 
-/** Does a reading answer anything? CONDITIONS count — a field answered only by
- *  rows has no picks and no text — but an EMPTY row does not: a cleared menu
- *  keeps one. TRAP T-many-conditions-are-one-reading */
+/** Does a reading answer anything? Its TREE counts — a field answered only by
+ *  conditions has no picks and no text — but an EMPTY condition does not: a
+ *  cleared menu keeps one. TRAP T-many-conditions-are-one-reading */
 export function readingAnswered(reading: FieldReading): boolean {
   // Picks kept OFF are an answer too: the Query keeps them (TODO 369); so is all (489).
   return (reading.picked ?? []).length > 0 || (reading.off ?? []).length > 0 || reading.all === true
     || Object.keys(reading.byPreset ?? {}).length > 0
     || (reading.text ?? '').trim() !== ''
-    || (reading.conditions ?? []).some((r) => (r.text ?? '').trim() !== '' || (r.picked ?? []).length > 0);
+    || !!answeredCondition(reading.tree);
 }
 
 /** Do two readings give the same answer? Only the answer keys count. */
@@ -387,11 +390,13 @@ export function sameReading(a: FieldReading | null | undefined, b: FieldReading 
 export function sameAnswer(a: FieldReading | null | undefined, b: FieldReading | null | undefined): boolean {
   const said = (r: FieldReading | null | undefined): string => {
     if (!r) return JSON.stringify([[], false, [], false, null]);
-    // Rows that still mirror the picks say what the picks say.
-    const rows = asRows({ ...r, suspended: false, ...(r.mirror ? { mode: 'simple' as const } : {}) });
+    // A tree that still mirrors the picks says what the picks say; two ends are a range.
+    const tree = answerTree({ ...r, suspended: false, ...(r.mirror ? { mode: 'simple' as const } : {}) }, r.range ? { type: 'date' } : {});
     // A list ORed is a set: its picks in any order are one answer.
-    const set = rows.every((row) => row.op === DEFAULT_OP && row.join !== 'and');
-    const held = set ? rows.flatMap((row) => row.picked ?? []).map(valueKey).sort() : canon({ conditions: rows }).conditions;
+    const parts = tree && groupOf(tree);
+    const leaves = !parts ? conditionLeaves(tree) : parts[0] === 'or' && parts[1].every((p) => !groupOf(p)) ? conditionLeaves(tree) : null;
+    const set = !!leaves && leaves.every((l) => !l.off && (l.op === DEFAULT_OP || l.op === 'in'));
+    const held = set ? leaves!.flatMap((l) => (Array.isArray(l.value) ? l.value : [l.value])).map(valueKey).sort() : canonTree(tree);
     return JSON.stringify([held, !!r.suspended, canon({ off: r.off ?? [] }).off, !!r.all, r.byPreset ?? null]);
   };
   return said(a) === said(b);
@@ -405,8 +410,18 @@ function canon(reading: FieldReading): FieldReading {
     ...reading,
     ...(reading.picked ? { picked: keys(reading.picked)! } : {}),
     ...(reading.off ? { off: keys(reading.off)! } : {}),
-    ...(reading.conditions ? { conditions: reading.conditions.map((row) => (row.picked ? { ...row, picked: keys(row.picked)! } : row)) } : {}),
+    ...(reading.tree ? { tree: canonTree(reading.tree)! } : {}),
   };
+}
+
+/** A tree whose lists are sets: `in` and `notin` keep their values as sorted keys. */
+function canonTree(tree: Condition | undefined): Condition | undefined {
+  if (!tree) return undefined;
+  const parts = groupOf(tree);
+  if (parts) return { ...tree, [parts[0]]: parts[1].map(canonTree) } as Condition;
+  const leaf = tree as ConditionLeaf;
+  return (leaf.op === 'in' || leaf.op === 'notin') && Array.isArray(leaf.value)
+    ? { ...leaf, value: [...new Set(leaf.value.map(valueKey))].sort() } : leaf;
 }
 
 /** A filter as one string, its AND and OR children in one order: the same filter

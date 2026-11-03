@@ -16,6 +16,7 @@ const { DataSource } = await import(new URL('data-source.js', core));
 const { bindSource } = await import(new URL('../ui/bind-source.js', core));
 const { rules, oneOf, number, min, max, required } = await import(new URL('validate.js', core));
 const { openSource } = await import(new URL('page-definition.js', core));
+const { rowsTree } = await import(new URL('filter-state.js', core));
 
 const ROOT = new URL('../../', import.meta.url);
 const json = async (path) => JSON.parse(await readFile(new URL(path, ROOT), 'utf8'));
@@ -26,6 +27,12 @@ test('a real page definition passes the page schema', async () => {
   const check = new Ajv({ allErrors: true }).compile(await json('schemas/page.v1.json'));
   const ok = check(await json('test/unit/fixtures/records.page.json'));
   assert.ok(ok, JSON.stringify(check.errors));
+  // A condition nests, and All is an answer: the schema says what the parser reads.
+  const nested = { v: 1, id: 'p', source: { store: 'rows', scopes: { view: { where: {
+    seats: { or: [{ lt: 10 }, { and: [{ gt: 50 }, { lt: 60 }] }] }, region: { all: true },
+  } } } } };
+  assert.ok(check(nested), JSON.stringify(check.errors));
+  assert.equal(check({ ...nested, source: { store: 'rows', scopes: { view: { where: { seats: { over: 3 } } } } } }), false);
 });
 
 test('a schema says each field\'s domain; a min on text is a length, not an end', () => {
@@ -186,7 +193,7 @@ test('each PICKED value has a count of its own — and only a list answer in for
   }, { scope: 'data' });
   await source.query.setQuery({ v: 1, scopes: {
     view: { holds: ['region'], readings: { region: { picked: ['EMEA', 'AMER'] } } },
-    data: { holds: ['status', 'seats'], readings: { status: { picked: ['open', 'shut'] }, seats: { mode: 'advanced', conditions: [{ op: 'between', picked: ['5', '9'] }] } } },
+    data: { holds: ['status', 'seats'], readings: { status: { picked: ['open', 'shut'] }, seats: { mode: 'advanced', tree: rowsTree([{ op: 'between', picked: ['5', '9'] }]) } } },
   } });
   // The View's two values: each over everything. The field's own count is both.
   assert.deepEqual(await source.valueResults('view'), { region: { EMEA: 2, AMER: 2 } });
@@ -197,7 +204,7 @@ test('each PICKED value has a count of its own — and only a list answer in for
   assert.deepEqual(await source.valueResults('data'), { status: { open: 3, shut: 1 } });
 
   // Rows answer it: no values. Off: none. Emptied: none.
-  source.query.setReading('view', 'status', { mode: 'advanced', conditions: [{ op: 'contains', text: 'op' }], picked: [] });
+  source.query.setReading('view', 'status', { mode: 'advanced', tree: rowsTree([{ op: 'contains', text: 'op' }]), picked: [] });
   assert.deepEqual(await source.valueResults('data'), {});
   source.query.suspend('view', 'region', true);
   assert.deepEqual(await source.valueResults('view'), {});
@@ -286,6 +293,46 @@ test('a date is a RANGE only when its field says so, in the View too (TODO 397)'
   assert.equal(source.describe('data').filters.find((f) => f.id === 'seen').range, undefined);
 });
 
+// TRAP T-one-condition-tree · TODO 692 (its data half): a condition nests as deep as a page says it.
+test('a nested condition in a page definition filters right: a start, a preset and a status value, A or (B and C)', async () => {
+  const rows = [
+    { id: 1, seats: 5, plan: 'Free' }, { id: 2, seats: 55, plan: 'Pro' }, { id: 3, seats: 55, plan: 'Free' },
+    { id: 4, seats: 70, plan: 'Pro' }, { id: 5, seats: 30, plan: 'Pro' }, { id: 6, seats: 8, plan: 'Pro' },
+  ];
+  const ids = (source) => source.rows.map((r) => r.id).sort((a, b) => a - b);
+  // seats < 10, or (seats > 50 and seats < 60): 1, 2, 3, 6.
+  const nested = { or: [{ lt: 10 }, { and: [{ gt: 50 }, { lt: 60 }] }] };
+  const fields = { seats: { label: 'Seats', type: 'number', advanced: true }, plan: { label: 'Plan' } };
+  const start = await openSource({
+    store: 'rows', fields, scopes: { view: { holds: ['seats', 'plan'], where: { seats: nested } } },
+  }, new ArrayStore(rows, { key: 'id' }));
+  await start.load();
+  assert.deepEqual(ids(start), [1, 2, 3, 6]);
+  assert.deepEqual(start.query.applied.scopes.view.readings.seats,
+    { tree: { or: [{ op: 'lt', value: 10 }, { and: [{ op: 'gt', value: 50 }, { op: 'lt', value: 60 }] }] }, mode: 'advanced' });
+  // Two groups, (A and B) or (C and D), which a flat menu cannot draw, filter as said: 2, 3, 4.
+  const two = await openSource({
+    store: 'rows', fields, scopes: { view: { holds: ['seats'], where: { seats: { or: [{ gt: 50, lt: 60 }, { gt: 60, lt: 80 }] } } } },
+  }, new ArrayStore(rows, { key: 'id' }));
+  await two.load();
+  assert.deepEqual(ids(two), [2, 3, 4]);
+  // A preset that nests: on, its tree ANDs with the field's answer.
+  const preset = await openSource({
+    store: 'rows', fields,
+    scopes: { data: { holds: ['plan'], presets: [{ id: 'odd', label: 'Odd sizes', where: { seats: nested, plan: { eq: 'Pro' } } }] } },
+  }, new ArrayStore(rows, { key: 'id' }));
+  preset.query.setPreset('data', 'odd', true, true);
+  await preset.load();
+  assert.deepEqual(ids(preset), [2, 6]);
+  // A status value whose `when` nests: parsed once, worked out by the data.
+  const { statusFields } = await import(new URL('status-field.js', core));
+  const sized = statusFields(new ArrayStore(rows, { key: 'id' }), {
+    size: { type: 'status', values: [{ value: 'Odd', when: [{ seats: nested }] }, { value: 'Even' }] },
+  });
+  const { rows: given } = await sized.load({ filter: ['size', 'eq', 'Odd'] });
+  assert.deepEqual(given.map((r) => r.id).sort((a, b) => a - b), [1, 2, 3, 6]);
+});
+
 // Will, TODO 464: a page's scope may START with answers, as a View writes them.
 test('a scope\'s `where` is its answer at the start: in force, and what Reset puts back', async () => {
   const source = await openSource({
@@ -294,7 +341,7 @@ test('a scope\'s `where` is its answer at the start: in force, and what Reset pu
     scopes: { view: { holds: ['created', 'plan'], where: { created: { last: 12, unit: 'month' }, plan: { eq: 'pro' } } } },
   }, new ArrayStore([{ id: 1, created: '2026-01-01', plan: 'pro' }], { key: 'id' }));
   const readings = source.query.applied.scopes.view.readings;
-  assert.deepEqual(readings.created.conditions, [{ op: 'last', text: '12', unit: 'month' }]);
+  assert.deepEqual(readings.created.tree, { op: 'last', value: { n: 12, unit: 'month' } });
   assert.deepEqual(readings.plan.picked, ['pro']);
   // A View that names only another scope keeps it — and that is the default. TRAP T-a-page-scope-starts-with-its-answers
   const start = source.query.applied;

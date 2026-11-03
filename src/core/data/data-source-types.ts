@@ -18,7 +18,7 @@
  * - BoundControl — What a bound control may be drawn: each member optional, read when the source draws.
  * - DataChangeDetail — What `change` carries, for a listener that wants the result without asking.
  */
-import type { Filter, FilterOp, LoadResult, Row, SortDirection, SortSpec, Store } from './store.js';
+import type { Condition, Filter, FilterOp, LoadResult, Row, SortDirection, SortSpec, Store } from './store.js';
 import type { FieldReading, FieldType } from './filter-state.js';
 import type { Presentation, Query } from './query.js';
 import type { QueryContext } from './query-context.js';
@@ -33,8 +33,8 @@ export interface FieldDeclaration {
   advanced?: boolean | 'only';
   /** Each value's look, a Style mode — a status field's, as its store says. Plan 683 */
   statuses?: Record<string, string>;
-  /** Each value's conditions, as its store wrote them — a status field's. Plan 683 */
-  when?: Record<string, readonly Record<string, unknown>[]>;
+  /** Each value's condition tree, as its store says — a status field's. Plan 683 */
+  when?: Record<string, Condition>;
   /** The condition its filter opens on. */
   op?: FilterOp;
   /** A DATE that holds a time of day: its Advanced rows offer a time too. TODO 21d */

@@ -21,6 +21,13 @@
  * - FilterClause — [field, op, value] — one condition
  * - FilterGroup — ['and' | 'or', ...filters] — conditions joined
  * - Filter — a clause or a group; the one filter shape the whole layer speaks
+ * - Condition — ONE condition tree: what a reader or a definition says; a `Filter` is what it compiles to.
+ * - ConditionLeaf — One comparison: a clause as an object.
+ * - ConditionGroup — Parts that all hold, or any one.
+ * - groupOf — A group's join and its parts; undefined for a leaf.
+ * - conditionLeaves — Every leaf of a tree, in order.
+ * - joinConditions — Parts joined as one tree: a group's own join flattens into it; one part is itself.
+ * - filterCondition — A wire filter as the tree it is — for a door that is handed a `Filter`.
  * - LoadOptions — What a caller asks a store for.
  * - StoreChanges — What moved in a store since a mark, and the mark now.
  * - LoadResult — What a load returns: the rows, plus the total BEFORE paging.
@@ -188,6 +195,60 @@ export function absoluteDates(filter: Filter, today = new Date()): Filter {
 export type FilterClause = [field: string, op: FilterOp, value: unknown];
 export type FilterGroup = ['and' | 'or', ...Filter[]];
 export type Filter = FilterClause | FilterGroup;
+
+/** ONE condition tree — a field's Advanced answer, a preset's, a status value's:
+ *  what a reader or a definition says. `Filter` is what it compiles to, on the
+ *  wire. TRAP T-one-condition-tree */
+export type Condition = ConditionLeaf | ConditionGroup;
+
+/** One comparison: a clause as an object, its value the clause's — a list for
+ *  `in`, two ends for `between`, a `Duration` for `last`. */
+export interface ConditionLeaf {
+  /** Left out in one field's answer: it is that field's. */
+  field?: string;
+  op: FilterOp;
+  value?: unknown;
+  /** Kept, not applied: off is not gone. */
+  off?: boolean;
+  /** What an editor names it by. */
+  id?: string;
+}
+
+/** Parts that all hold, or any one. */
+export type ConditionGroup = ({ and: readonly Condition[]; or?: never } | { or: readonly Condition[]; and?: never })
+  & { off?: boolean; id?: string };
+
+/** A group's join and its parts; undefined for a leaf. */
+export function groupOf(tree: Condition): ['and' | 'or', readonly Condition[]] | undefined {
+  if ('and' in tree && tree.and) return ['and', tree.and];
+  if ('or' in tree && tree.or) return ['or', tree.or];
+  return undefined;
+}
+
+/** Every leaf of a tree, in order. */
+export function conditionLeaves(tree: Condition | undefined): ConditionLeaf[] {
+  if (!tree) return [];
+  const group = groupOf(tree);
+  return group ? group[1].flatMap(conditionLeaves) : [tree as ConditionLeaf];
+}
+
+/** Parts joined as one tree: a group's own join flattens into it; one part is itself. */
+export function joinConditions(join: 'and' | 'or', parts: readonly (Condition | undefined)[]): Condition | undefined {
+  const flat = parts.filter((p): p is Condition => !!p)
+    .flatMap((p) => (groupOf(p)?.[0] === join && !p.off && p.id === undefined ? groupOf(p)![1] : [p]));
+  if (flat.length < 2) return flat[0];
+  return (join === 'and' ? { and: flat } : { or: flat });
+}
+
+/** A wire filter as the tree it is — for a door that is handed a `Filter`. */
+export function filterCondition(filter: Filter): Condition {
+  const [head, ...rest] = filter;
+  if (head === 'and' || head === 'or') {
+    return joinConditions(head, (rest as Filter[]).map(filterCondition)) ?? (head === 'and' ? { and: [] } : { or: [] });
+  }
+  const [field, op, value] = filter as FilterClause;
+  return { field, op, value };
+}
 
 /** What a caller asks a store for. Every field is optional. */
 export interface LoadOptions {

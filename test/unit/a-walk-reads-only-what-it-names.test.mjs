@@ -10,6 +10,7 @@ import assert from 'node:assert/strict';
 
 import { walkInOrder, walkReads } from '../../dist/core/data/walk.js';
 import { planWalk } from '../../dist/core/data/source-counts.js';
+import { rowsTree } from '../../dist/data.js';
 
 const ROWS = (() => {
   let seed = 345;
@@ -40,7 +41,7 @@ const query = (extra = {}) => ({ v: 1, scopes: {
 const PLANS = {
   limit: planWalk(query(), facts()),
   'limit off': planWalk(query(), facts({ limit: false })),
-  'page scope': planWalk(query({ page: { holds: [], readings: { seats: { mode: 'advanced', conditions: [{ op: 'lt', text: '400' }] } } } }), facts()),
+  'page scope': planWalk(query({ page: { holds: [], readings: { seats: { mode: 'advanced', tree: rowsTree([{ op: 'lt', text: '400' }]) } } } }), facts()),
   hand: planWalk({ v: 1, scopes: { view: { holds: [], readings: {} } } }, facts({ hand: ['seats', 'gt', 100] })),
   'chart part': planWalk(query({ legend: { holds: [], readings: { status: { picked: ['trial'] } }, narrows: ['chart'] } }),
     facts({ narrowing: new Map([['legend', { field: 'status', host: 'data' }]]) })),

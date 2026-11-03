@@ -19,11 +19,11 @@ const make = (remote = false) => {
 
 test('select copies the caller\'s rows: a change to them leaves the Query as it was', async () => {
   const source = make();
-  const rows = [{ op: 'contains', text: 'Da' }];
-  source.query.setReading('view', 'owner', { mode: 'advanced', conditions: rows, picked: [] });
-  rows[0].text = 'Ra';
-  rows.push({ op: 'eq', picked: ['x'], join: 'or' });
-  assert.deepEqual(source.query.applied.scopes.view.readings.owner.conditions, [{ op: 'contains', text: 'Da' }]);
+  const tree = { or: [{ op: 'contains', value: 'Da' }] };
+  source.query.setReading('view', 'owner', { mode: 'advanced', tree, picked: [] });
+  tree.or[0].value = 'Ra';
+  tree.or.push({ op: 'eq', value: 'x' });
+  assert.deepEqual(source.query.applied.scopes.view.readings.owner.tree, { or: [{ op: 'contains', value: 'Da' }] });
 });
 
 /** A grid below the View: what supersede hands it. */

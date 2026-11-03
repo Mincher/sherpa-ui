@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, VIEW } from '../../dist/data.js';
+import { ArrayStore, DataSource, VIEW, rowsTree } from '../../dist/data.js';
 
 const ROWS = [
   { id: 1, plan: 'Pro', tickets: 2 }, { id: 2, plan: 'Free', tickets: 0 }, { id: 3, plan: 'Pro', tickets: 3 },
@@ -23,7 +23,7 @@ function page() {
   source.query.declareScope('data', { label: 'Rows' });
   source.query.offer('data', ['plan', 'tickets']);
   source.query.hold('data', ['plan']);
-  source.declarePresets('data', [{ id: 'busy', label: 'Busy', readings: { tickets: { conditions: [{ op: 'gt', text: '0' }], mode: 'advanced' } } }]);
+  source.declarePresets('data', [{ id: 'busy', label: 'Busy', readings: { tickets: { tree: rowsTree([{ op: 'gt', text: '0' }]), mode: 'advanced' } } }]);
   return source;
 }
 const brief = ({ home, above, on, presets, pending, failed }) => ({ home, above: above?.label ?? null, on, presets, pending, failed });
@@ -52,7 +52,7 @@ test('switched off: off, and it keeps its answer', () => {
 
 test('an answer that narrows nothing is off', () => {
   const source = page();
-  source.query.setReading('data', 'plan', { conditions: [{ op: 'between', picked: ['1'] }], mode: 'advanced' });
+  source.query.setReading('data', 'plan', { tree: rowsTree([{ op: 'between', picked: ['1'] }]), mode: 'advanced' });
   assert.equal(source.fieldStatus('plan', 'data').on, false);
 });
 
@@ -80,7 +80,7 @@ test('a preset on a field no scope holds: at the preset\'s scope, on, and it nam
 test('held by the View and a preset: both are said', () => {
   const source = page();
   source.query.move('plan', 'data', VIEW);
-  source.declarePresets('data', [{ id: 'pro', label: 'Pro only', readings: { plan: { conditions: [{ op: 'eq', picked: ['Pro'] }], mode: 'advanced' } } }]);
+  source.declarePresets('data', [{ id: 'pro', label: 'Pro only', readings: { plan: { tree: rowsTree([{ op: 'eq', picked: ['Pro'] }]), mode: 'advanced' } } }]);
   source.query.setPreset('data', 'pro', true, true);
   const status = source.fieldStatus('plan', 'data');
   assert.equal(status.above.label, 'View Context');

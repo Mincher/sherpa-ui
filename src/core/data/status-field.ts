@@ -10,14 +10,14 @@
  * - StatusField — A field whose value each row is given by conditions on its other fields.
  * - statusFields — A store whose rows carry each status field's value, worked out from their other fields.
  */
-import { presetClause } from './query.js';
+import { conditionClause } from './filter-state.js';
 import {
-  absoluteDates, andFilter, applyOptions, filterFields, filterTest, readField,
-  type Filter, type FilterClause, type FilterOp, type LoadOptions, type LoadResult, type Row,
+  absoluteDates, andFilter, applyOptions, filterFields, filterTest, joinConditions, readField,
+  type Condition, type Filter, type FilterClause, type FilterOp, type LoadOptions, type LoadResult, type Row,
   type Store, type StoreChangeDetail, type StoreChanges,
 } from './store.js';
 import type { FieldDomain } from './validate.js';
-import { readingsOf, type Condition, type Where } from './where.js';
+import { parseWhere, type Where } from './where.js';
 
 /** One value of a status field: its name, its look, and when a row has it. */
 export interface StatusValue {
@@ -56,18 +56,13 @@ function negate(filter: Filter): Filter {
   return [field, not, value];
 }
 
-/** A field's kind, as its condition writes it: a number, a date, else as written. */
-function kindOf(condition: Condition | undefined): { type?: 'number' | 'date' } {
-  const said = Object.entries(condition ?? {}).filter(([op]) => op !== 'unit');
-  if (said.some(([op]) => op === 'last' || op === 'next')) return { type: 'date' };
-  const num = (v: unknown): boolean => typeof v === 'number' || (Array.isArray(v) && typeof v[0] === 'number');
-  return said.some(([, v]) => num(v)) ? { type: 'number' } : {};
-}
-
-/** One condition as a filter, its numbers numbers and its days days. */
-function whereFilter(where: Where, now: Date): Filter {
-  const facts = (field: string): { type?: 'number' | 'date' } => kindOf(where[field]);
-  return absoluteDates(presetClause(readingsOf(where, facts), { field: facts }) ?? ALWAYS, now);
+/** Each value's `when` as ONE tree — any of its conditions — parsed once; none for
+ *  a value whose conditions say nothing, which takes every row the values before it left. */
+function treesOf(def: StatusField): (Condition | undefined)[] {
+  return def.values.map((v) => {
+    const each = (v.when ?? []).map(parseWhere);
+    return each.length && each.every(Boolean) ? joinConditions('or', each) : undefined;
+  });
 }
 
 /** A status field, worked out for one moment: each value's own filter, made apart
@@ -83,8 +78,9 @@ interface Compiled {
   reads: string[];
 }
 
-function compile(field: string, def: StatusField, now: Date): Compiled {
-  const own = def.values.map((v) => (v.when?.length ? ['or', ...v.when.map((w) => whereFilter(w, now))] as Filter : ALWAYS));
+function compile(field: string, def: StatusField, trees: readonly (Condition | undefined)[], now: Date): Compiled {
+  // A value with no condition holds for every row the values before it left.
+  const own = trees.map((tree) => (tree ? absoluteDates(conditionClause(tree) ?? ALWAYS, now) : ALWAYS));
   const only = own.map((f, i) => andFilter([f, ...own.slice(0, i).map(negate)]) ?? ALWAYS);
   const none = andFilter(own.map(negate)) ?? ALWAYS;
   const reads = [...new Set(own.flatMap((f) => filterFields(f)))];
@@ -94,9 +90,10 @@ function compile(field: string, def: StatusField, now: Date): Compiled {
 /** A store whose rows carry each status field's value, worked out from their other
  *  fields. The fields are read-only: a write that names one is refused. */
 export function statusFields(store: Store, fields: Readonly<Record<string, StatusField>>): Store {
+  const trees = new Map(Object.entries(fields).map(([field, def]) => [field, treesOf(def)]));
   // Checked now: a condition that cannot be negated is found before a read needs it.
-  for (const [field, def] of Object.entries(fields)) compile(field, def, new Date());
-  const all = (): Compiled[] => Object.entries(fields).map(([f, def]) => compile(f, def, new Date()));
+  for (const [field, def] of Object.entries(fields)) compile(field, def, trees.get(field)!, new Date());
+  const all = (): Compiled[] => Object.entries(fields).map(([f, def]) => compile(f, def, trees.get(f)!, new Date()));
   const named = new Set(Object.keys(fields));
 
   /** Each row's value, written onto the rows a read gave — copies, never the store's own. */
@@ -156,7 +153,7 @@ export function statusFields(store: Store, fields: Readonly<Record<string, Statu
     domains[field] = {
       values: def.values.map((v) => v.value),
       statuses: Object.fromEntries(def.values.flatMap((v) => (v.status ? [[v.value, v.status]] : []))),
-      when: Object.fromEntries(def.values.flatMap((v) => (v.when?.length ? [[v.value, v.when as readonly Record<string, unknown>[]]] : []))),
+      when: Object.fromEntries(def.values.flatMap((v, i) => (trees.get(field)![i] ? [[v.value, trees.get(field)![i]!]] : []))),
     };
   }
 

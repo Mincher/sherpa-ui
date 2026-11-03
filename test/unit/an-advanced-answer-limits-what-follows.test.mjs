@@ -11,7 +11,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, bindSource, fakeRemote, VIEW } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, fakeRemote, VIEW, rowsTree } from '../../dist/data.js';
 
 const ROWS = [
   { id: 1, region: 'EMEA', customer: 'Contoso', seats: 5 },
@@ -51,9 +51,9 @@ async function page(store, region, options = {}) {
 }
 
 const ADVANCED = {
-  'contains EM': { mode: 'advanced', conditions: [{ op: 'contains', text: 'EM' }] },
-  'eq EMEA or eq AMER': { mode: 'advanced', conditions: [{ op: 'eq', picked: ['EMEA'] }, { op: 'eq', join: 'or', picked: ['AMER'] }] },
-  'ne EMEA': { mode: 'advanced', conditions: [{ op: 'ne', picked: ['EMEA'] }] },
+  'contains EM': { mode: 'advanced', tree: rowsTree([{ op: 'contains', text: 'EM' }]) },
+  'eq EMEA or eq AMER': { mode: 'advanced', tree: rowsTree([{ op: 'eq', picked: ['EMEA'] }, { op: 'eq', join: 'or', picked: ['AMER'] }]) },
+  'ne EMEA': { mode: 'advanced', tree: rowsTree([{ op: 'ne', picked: ['EMEA'] }]) },
 };
 const WANT = {
   'contains EM': { ids: [1, 2], customer: ['Contoso', 'Tailspin'], count: 2 },

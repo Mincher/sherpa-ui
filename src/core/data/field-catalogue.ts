@@ -27,7 +27,7 @@
  * - .unlisted — A field with more values than a filter lists: Advanced alone.
  * - .fromRows — Declare each field its schema says nothing of from the values the rows hold.
  */
-import { compareValues, valueKey } from './store.js';
+import { compareValues, groupOf, valueKey, type Condition, type ConditionLeaf } from './store.js';
 import { fieldState, type FieldFacts, type FieldReading, type FilterState } from './filter-state.js';
 import { report } from './report.js';
 import type { FieldDeclaration, FieldFilter } from './data-source-types.js';
@@ -237,18 +237,18 @@ export class FieldCatalogue {
   zonesOf(field: string): { from: string; zones: Threshold[] } | undefined {
     const facts = this.#fields.get(field);
     if (facts?.type !== 'number') return undefined;
-    const top = (branch: Readonly<Record<string, unknown>>): number | undefined => {
-      if (Object.keys(branch).length !== 1) return undefined;
-      const said = Object.entries((branch[field] ?? {}) as Record<string, unknown>);
-      const [op, to] = said[0] ?? [];
-      return said.length === 1 && (op === 'lt' || op === 'lte') && typeof to === 'number' ? to : undefined;
+    // A branch that is one leaf on the number, below an end.
+    const top = (branch: Condition): number | undefined => {
+      const { field: on, op, value, off } = branch as ConditionLeaf;
+      return !groupOf(branch) && !off && on === field && (op === 'lt' || op === 'lte') && typeof value === 'number' ? value : undefined;
     };
     for (const [from, status] of this.#fields) {
       if (!status.statuses || !status.when) continue;
       const values = (this.#domains.get(from) ?? []).map(String);
       const zones: Threshold[] = [];
       for (const [i, value] of values.entries()) {
-        const branches = status.when[value];
+        const tree = status.when[value];
+        const branches = tree && (groupOf(tree)?.[0] === 'or' ? groupOf(tree)![1] : [tree]);
         const to = branches ? branches.map(top).find((n) => n !== undefined) : i === values.length - 1 ? facts.max ?? 100 : undefined;
         if (to === undefined || (zones.length && to <= zones.at(-1)!.to)) break;
         zones.push({ to, label: value, ...(status.statuses[value] ? { status: status.statuses[value] } : {}) });

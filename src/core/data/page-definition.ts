@@ -16,7 +16,7 @@ import { report } from './report.js';
 import type { Store } from './store.js';
 import type { QueryContext } from './query-context.js';
 import { isSavedFilter, type AxesDefinition, type PresentationDefinition, type SavedFilter } from './query.js';
-import type { Condition } from './where.js';
+import type { Where } from './where.js';
 
 /** One scope: its name, and the fields it offers and holds at the start. */
 export interface ScopeDefinition {
@@ -31,11 +31,11 @@ export interface ScopeDefinition {
   arranges?: boolean;
   /** Its answers at the start, in the plain form a View writes:
    *  `{ "created": { "last": 12, "unit": "month" } }`. Reset puts them back. Will, TODO 464 */
-  where?: Readonly<Record<string, Condition>>;
+  where?: Readonly<Where>;
   /** Its PRESETS: the app's own named conditions, each a boolean chip leading
    *  the scope — `{ "id": "high-risk", "label": "High risk", "where": { … } }`,
    *  `where` in the plain form. Will, TODO 493 · TRAP T-a-preset-is-its-own-part */
-  presets?: readonly { id: string; label: string; where: Readonly<Record<string, Condition>> }[];
+  presets?: readonly { id: string; label: string; where: Readonly<Where> }[];
   /** What its slot shows until the reader changes it — its `primary`, `secondary`
    *  and `group` — and a default per view, `grid` and `chart`, over it. Will, TODO 548 */
   presentation?: PresentationDefinition;

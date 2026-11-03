@@ -117,9 +117,9 @@ test('a steered condition keeps its typed text through a re-sync', async ({ page
     await window.__settled();
     // Rows DRAWN first, as in a page that has used the chip: the rebuilt row
     // then holds its text at once, which is what skipped the write.
-    bar.setChipReading('owner', { conditions: [{ op: 'contains', text: 'Zz' }] });
+    bar.setChipReading('owner', { tree: { op: 'contains', value: 'Zz' } });
     await window.__settled();
-    bar.setChipReading('owner', { conditions: [{ op: 'contains', text: 'Ai' }] });
+    bar.setChipReading('owner', { tree: { op: 'contains', value: 'Ai' } });
     await window.__settled();
     const menu = bar.shadowRoot!.querySelector('.chip[data-id="owner"] sherpa-menu') as HTMLElement & {
       conditions: unknown; conditionValue: string;

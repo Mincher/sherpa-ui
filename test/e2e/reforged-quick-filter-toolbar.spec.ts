@@ -2366,9 +2366,8 @@ test('a chip steered with conditions redraws its value and tip', async ({ page }
     ], { style: 'inline-size: 1200px' });
     await window.__settled();
     const steer = el as Bar & { setChipReading(id: string, r: unknown): void };
-    steer.setChipReading('owner', { picked: [], conditions: [
-      { op: 'contains', text: 'Da' }, { op: 'startswith', text: 'R', join: 'or' }] });
-    steer.setChipReading('email', { picked: [], conditions: [{ op: 'contains', text: 'zz' }] });
+    steer.setChipReading('owner', { picked: [], tree: { or: [{ op: 'contains', value: 'Da' }, { op: 'startswith', value: 'R' }] } });
+    steer.setChipReading('email', { picked: [], tree: { op: 'contains', value: 'zz' } });
     await window.__settled();
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(() =>
       requestAnimationFrame(res))));
@@ -2401,24 +2400,24 @@ test('adding a second Advanced filter keeps the first one\'s rows in every repor
     el.available([{ id: 'email', label: 'Email', advanced: 'only', op: 'contains' }]);
     await window.__settled();
     const bar = el as Bar & { setChipReading(id: string, r: unknown): void;
-      readings: Record<string, { conditions?: unknown[] }> };
-    bar.setChipReading('owner', { picked: [], conditions: [{ op: 'contains', text: 'Da' }] });
+      readings: Record<string, { tree?: unknown }> };
+    bar.setChipReading('owner', { picked: [], tree: { op: 'contains', value: 'Da' } });
     await window.__settled();
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
     const heard: unknown[] = [];
     for (const type of ['filter-add', 'quick-filter-change']) {
-      el.addEventListener(type, () => heard.push(bar.readings['owner']?.conditions ?? null));
+      el.addEventListener(type, () => heard.push(bar.readings['owner']?.tree ?? null));
     }
     bar.addFilters(['email']);
     for (let i = 0; i < 6; i++) await new Promise((res) => requestAnimationFrame(res));
     await window.__settled();
     const chip = el.shadowRoot!.querySelector('.chip[data-id="owner"]')!;
-    return { heard, on: chip.hasAttribute('data-current'), now: bar.readings['owner']?.conditions };
+    return { heard, on: chip.hasAttribute('data-current'), now: bar.readings['owner']?.tree };
   });
   expect(r.heard.length).toBeGreaterThan(0);
-  for (const h of r.heard) expect(h).toEqual([{ op: 'contains', text: 'Da' }]);
+  for (const h of r.heard) expect(h).toEqual({ op: 'contains', value: 'Da' });
   expect(r.on).toBe(true);
-  expect(r.now).toEqual([{ op: 'contains', text: 'Da' }]);
+  expect(r.now).toEqual({ op: 'contains', value: 'Da' });
 });
 
 /**

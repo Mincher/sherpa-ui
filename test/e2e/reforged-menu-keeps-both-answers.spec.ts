@@ -12,8 +12,7 @@ import { test, expect, type Bar } from './harness';
  * TRAP T-both-answers-are-kept
  */
 
-type Row = { op: string; join?: string; text?: string; picked?: string[] };
-type Reading = { picked?: string[]; conditions?: Row[]; mode?: string; mirror?: boolean };
+type Reading = { picked?: string[]; tree?: unknown; mode?: string; mirror?: boolean };
 type Menu = HTMLElement & { shadowRoot: ShadowRoot; mode: string; reading: Reading; values: string[] };
 
 const OWNERS = [
@@ -82,18 +81,18 @@ test('Advanced mirrors the picks until the reader edits a row, and the switch go
     return { carried, back, followed, edited, kept, mode: menu.mode };
   });
 
-  const EQ = (v: string, join?: string): Row => (join ? { op: 'eq', join, picked: [v] } : { op: 'eq', picked: [v] });
+  const EQ = (v: string): { op: string; value: string } => ({ op: 'eq', value: v });
   expect(r.carried).toEqual({
-    picked: ['Dana', 'Ravi'], conditions: [EQ('Dana'), EQ('Ravi', 'or')], mode: 'advanced', mirror: true,
+    picked: ['Dana', 'Ravi'], tree: { or: [EQ('Dana'), EQ('Ravi')] }, mode: 'advanced', mirror: true,
   });
   // Back to Simple: the picks were never lost, and the rows are kept too.
   expect(r.back).toEqual({ ...r.carried, mode: 'simple' });
-  expect(r.followed).toEqual({ picked: ['Dana'], conditions: [EQ('Dana')], mode: 'simple', mirror: true });
+  expect(r.followed).toEqual({ picked: ['Dana'], tree: EQ('Dana'), mode: 'simple', mirror: true });
   expect(r.edited).toEqual({
-    picked: ['Dana'], conditions: [{ op: 'startswith', text: 'R' }], mode: 'advanced', mirror: false,
+    picked: ['Dana'], tree: { op: 'startswith', value: 'R' }, mode: 'advanced', mirror: false,
   });
   expect(r.kept).toEqual({
-    picked: ['Dana', 'Mo'], conditions: [{ op: 'startswith', text: 'R' }], mode: 'simple', mirror: false,
+    picked: ['Dana', 'Mo'], tree: { op: 'startswith', value: 'R' }, mode: 'simple', mirror: false,
   });
   expect(r.mode).toBe('advanced');
 });
@@ -103,7 +102,7 @@ test('a reading drawn into the menu shows both answers; one with no mode lets it
   const r = await page.evaluate(async () => {
     const { menu } = window as unknown as { menu: Menu };
     const both = {
-      picked: ['Mo'], conditions: [{ op: 'startswith', text: 'R' }], mode: 'simple', mirror: false,
+      picked: ['Mo'], tree: { op: 'startswith', value: 'R' }, mode: 'simple', mirror: false,
     };
     menu.reading = both;
     await window.__settled();
@@ -113,13 +112,13 @@ test('a reading drawn into the menu shows both answers; one with no mode lets it
     const advanced = menu.mode;
     menu.reading = { picked: [], mode: 'simple' };
     await window.__settled();
-    menu.reading = { conditions: [{ op: 'startswith', text: 'D' }] };
+    menu.reading = { tree: { op: 'startswith', value: 'D' } };
     await window.__settled();
     return { simple, advanced, legacy: menu.mode };
   });
 
   expect(r.simple).toEqual({ mode: 'simple', reading: {
-    picked: ['Mo'], conditions: [{ op: 'startswith', text: 'R' }], mode: 'simple', mirror: false,
+    picked: ['Mo'], tree: { op: 'startswith', value: 'R' }, mode: 'simple', mirror: false,
   } });
   expect(r.advanced).toBe('advanced');
   expect(r.legacy).toBe('advanced');

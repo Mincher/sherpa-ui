@@ -28,7 +28,8 @@ import { editedCondition, queryGraph, type QueryGraphFacts } from '../data/query
 import { VIEW } from '../data/query.js';
 import { OP_LABELS, valueKey, type FilterOp } from '../data/store.js';
 import { report } from '../data/report.js';
-import { readingsOf, whereOf } from '../data/where.js';
+import { answerTree, type FieldType } from '../data/filter-state.js';
+import { treeReading } from '../data/where.js';
 import type { DrawnGraph, GraphNode, GraphRow, WorkflowRoute } from '../data/workflow.js';
 import { ask } from './bind-source.js';
 
@@ -428,7 +429,7 @@ export function bindQueryEditor(
       let given = row.name === 'value' ? value : was['value'];
       // One value where one is asked; a list where several are.
       if (ONE.has(op) && Array.isArray(given)) given = given[0] ?? '';
-      const reading = readingsOf({ [to]: editedCondition(op, given as string | string[] ?? '', typeOf(to)) })[to] ?? null;
+      const reading = treeReading(editedCondition(op, given as string | string[] ?? '', typeOf(to)), typeOf(to) as FieldType | undefined);
       // Another field: the condition MOVES there, as one change.
       ask(query, to === field ? { scope, field, reading } : [{ scope, field, reading: null }, { scope, field: to, reading }], scope);
     } else if (node.kind === 'arrange') {
@@ -459,9 +460,9 @@ export function bindQueryEditor(
     let given = rows['value'] as string | string[];
     const known = values(field);
     if (field !== old && known && Array.isArray(given)) given = given.filter((v) => known.includes(v));
-    const reading = readingsOf({ [field]: editedCondition(String(rows['op']), given ?? '', typeOf(field)) })[field] ?? null;
+    const reading = treeReading(editedCondition(String(rows['op']), given ?? '', typeOf(field)), typeOf(field) as FieldType | undefined);
     // It must still SAY something there: an empty pick filters nothing, so nothing moves.
-    if (!reading || !whereOf({ [field]: reading })[field]) {
+    if (!answerTree(reading)) {
       report({ code: 'query-route', message: `Nothing "${was.heading}" picks is a value of "${field}": tick its values there.` });
       return;
     }

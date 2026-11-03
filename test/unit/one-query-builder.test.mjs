@@ -14,7 +14,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, bindSource } from '../../dist/data.js';
+import { ArrayStore, DataSource, bindSource, rowsTree } from '../../dist/data.js';
 
 const ROWS = [
   { id: 1, owner: 'Dana', seats: 5 },
@@ -49,7 +49,7 @@ test('a request\'s reading is believed, so its field TYPE is honoured', async ()
 
   // A number's range is an Advanced Between row (TODO 375).
   el.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { request: { field: 'seats', reading: {
-    conditions: [{ op: 'between', picked: ['5', '50'] }], mode: 'advanced' } } } }));
+    tree: rowsTree([{ op: 'between', picked: ['5', '50'] }]), mode: 'advanced' } } } }));
   await settle();
 
   // A RANGE, cast to numbers: 5..50 keeps two rows and drops the 500.

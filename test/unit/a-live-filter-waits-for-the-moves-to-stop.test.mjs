@@ -12,7 +12,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import Ajv2020 from 'ajv/dist/2020.js';
 
-import { ArrayStore, DataSource } from '../../dist/data.js';
+import { ArrayStore, DataSource, rowsTree } from '../../dist/data.js';
 import { openSource } from '../../dist/core/data/page-definition.js';
 
 const ROWS = Array.from({ length: 20 }, (_, i) => ({ id: i + 1, seats: i * 10 }));
@@ -28,7 +28,7 @@ function counted(extra = {}) {
 }
 
 // A Between row's ends moving, as its slider moves them (TODO 375).
-const move = (source, n) => source.query.setReading('view', 'seats', { mode: 'advanced', conditions: [{ op: 'between', picked: [0, n] }], picked: [] });
+const move = (source, n) => source.query.setReading('view', 'seats', { mode: 'advanced', tree: rowsTree([{ op: 'between', picked: [0, n] }]), picked: [] });
 
 test('live: five moves, one load — once the moves stop', async () => {
   const store = counted();

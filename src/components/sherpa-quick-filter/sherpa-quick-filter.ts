@@ -7,10 +7,11 @@
 import { DATA_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { watchTipLines, writeTip } from '../../core/ui/description-tips.js';
 import {
-  DEFAULT_OP, OP_TAKES, valueKey, type FilterOp, type SortDirection,
+  DEFAULT_OP, OP_TAKES, conditionLeaves, groupOf, joinConditions, valueKey,
+  type Condition, type FilterOp, type SortDirection,
 } from '../../core/data/store.js';
 import {
-  fieldState, presetTouches, readingRows, rowAnswered, type FieldCondition, type FieldReading, type FilterState,
+  answeredCondition, fieldState, modeOf, presetTouches, rowAnswered, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
 import { countSaid, filterFace, spellConditions } from '../../core/data/filter-face.js';
 import { NON_VALUE_ROWS, NOT_AVAILABLE, ORGANISE_ICONS, RULED_OUT, SET_ASIDE, UNAPPLIED, UNFETCHED, heldByPreset, movedTo, onByPreset, unusedHere } from '../../core/ui/shared-constants.js';
@@ -435,7 +436,7 @@ export class SherpaQuickFilter extends SherpaElement {
   }
   /** What each preset on holds of this field, by its id. */
   #held: NonNullable<FieldReading['byPreset']> = {};
-  /** …and as a list: its name, its scope and its rows. */
+  /** …and as a list: its name, its scope and its tree. */
   #presets: NonNullable<FieldReading['byPreset']>[string][] = [];
 
   /** The requests that turn off each preset on that holds this field. Will, TODO 592 */
@@ -443,21 +444,26 @@ export class SherpaQuickFilter extends SherpaElement {
     return Object.entries(this.#held).map(([preset, { scope }]) => ({ scope, preset, on: false }));
   }
 
-  /** The presets on whose rows touch a value, by name; none, ''. Will, TODOs 521, 590 */
+  /** The presets on whose trees touch a value, by name; none, ''. Will, TODOs 521, 590 */
   #heldBy = (value: string): string => this.#presets
-    .filter((p) => presetTouches(p.rows, value)).map((p) => p.label).join(', ');
+    .filter((p) => presetTouches(p.tree, value)).map((p) => p.label).join(', ');
 
   /** What the presets on hold, in words: their picks, or their conditions. */
   #presetSaid(): string {
-    const rows = this.#presets.flatMap((p) => p.rows);
-    return rows.every((r) => r.op === DEFAULT_OP) ? rows.flatMap((r) => r.picked ?? []).map(valueKey).join(', ') : this.#spell(rows);
+    const tree = joinConditions('and', this.#presets.map((p) => p.tree));
+    // A list ORed reads as its values.
+    const parts = tree && groupOf(tree);
+    const leaves = conditionLeaves(tree);
+    const listed = !parts || (parts[0] === 'or' && parts[1].every((p) => !groupOf(p)));
+    return listed && leaves.every((l) => l.op === DEFAULT_OP || l.op === 'in')
+      ? leaves.flatMap((l) => (Array.isArray(l.value) ? l.value : [l.value])).map(valueKey).join(', ') : this.#spell(tree);
   }
 
-  /** Rows as an Advanced answer reads, for a field of this chip's kind. */
-  #spell(rows: readonly FieldCondition[]): string {
+  /** A tree as an Advanced answer reads, for a field of this chip's kind. */
+  #spell(tree: Condition | undefined): string {
     const body = this.#fieldMenu()?.dataset['body'];
     const type = body === 'number' || body === 'date' ? { type: body as 'number' | 'date' } : {};
-    return spellConditions(fieldState({ field: this.dataset['id'] ?? '', ...type }, { conditions: rows, mode: 'advanced' }));
+    return spellConditions(fieldState({ field: this.dataset['id'] ?? '', ...type }, { ...(tree ? { tree } : {}), mode: 'advanced' }));
   }
 
   /** The reader's own answer, into the menu: both modes, each body by its own door. */
@@ -467,13 +473,14 @@ export class SherpaQuickFilter extends SherpaElement {
     const body = menu.dataset['body'];
     /* Its own mode, else rows say Advanced, else the menu's — read once the menu
        has it: a menu not yet drawn still says Simple. Will, TODO 464; every body, 518 */
-    const advanced = (): boolean => (next.mode ?? (readingRows(next).length ? 'advanced' : menu.mode)) === 'advanced';
+    const advanced = (): boolean => (modeOf(next) ?? menu.mode) === 'advanced';
+    const tree = answeredCondition(next.tree);
     /* A NUMBER takes its WHOLE reading: its one value, and its rows.
        TRAP T-a-menu-owns-its-own-bodies */
     if (body === 'number') {
       menu.reading = next;
-      // In Advanced its ROWS answer it. TRAP T-a-number-has-advanced-rows
-      const answered = advanced() ? readingRows(next).length > 0
+      // In Advanced its TREE answers it. TRAP T-a-number-has-advanced-rows
+      const answered = advanced() ? !!tree
         : (next.picked ?? []).length > 0 || (next.text ?? '').trim() !== '';
       this.current = answered && !next.suspended;
       // TRAP T-a-silent-steer-still-redraws-its-chip
@@ -485,21 +492,20 @@ export class SherpaQuickFilter extends SherpaElement {
     if (body === 'date') {
       menu.reading = next;
       this.#applySelection(menu.values ?? []);
-      // In Advanced its ROWS answer it — "In the last 12 months" is ON.
-      const answered = advanced() ? readingRows(next).length > 0
+      // In Advanced its TREE answers it — "In the last 12 months" is ON.
+      const answered = advanced() ? !!tree
         : (next.text ?? '').trim() !== '' || (next.picked ?? []).length > 0;
       this.current = answered && !next.suspended;
       this.refresh();
       return;
     }
-    /* BOTH ANSWERS, and the mode the reading names. A steer carrying rows IS
+    /* BOTH ANSWERS, and the mode the reading names. A steer carrying a tree IS
        the opt-in reaching the menu.
        TRAP T-both-answers-are-kept · TRAP T-many-conditions-are-one-reading */
-    const rows = readingRows(next);
-    if (rows.length) menu.setAttribute('data-advanced', '');
+    if (tree) menu.setAttribute('data-advanced', '');
     menu.reading = next;
     if (advanced()) {
-      this.current = rows.length > 0 && !next.suspended;
+      this.current = !!tree && !next.suspended;
       this.refresh();
       return;
     }

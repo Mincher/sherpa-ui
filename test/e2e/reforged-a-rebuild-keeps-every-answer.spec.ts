@@ -19,28 +19,28 @@ test('adding a filter keeps another chip\'s Advanced rows, and says so at once',
     ], { style: 'inline-size: 1200px' });
     bar.available([{ id: 'plan', label: 'Plan', options: [{ value: 'Pro', label: 'Pro' }] }]);
     await window.__settled();
-    const rows = [{ op: 'contains', text: 'Da' }, { join: 'or', op: 'eq', picked: ['Ravi'] }];
-    bar.setChipReading('owner', { conditions: rows });
+    const tree = { or: [{ op: 'contains', value: 'Da' }, { op: 'eq', value: 'Ravi' }] };
+    bar.setChipReading('owner', { tree });
     await window.__settled();
 
     // What the bar reads when it says the Add.
     const heard: unknown[] = [];
-    bar.addEventListener('filter-add', () => heard.push(bar.readings.owner?.conditions));
+    bar.addEventListener('filter-add', () => heard.push(bar.readings.owner?.tree));
     bar.addFilters(['plan']);
-    const atOnce = bar.readings.owner?.conditions;
+    const atOnce = bar.readings.owner?.tree;
     await window.__settled();
     await new Promise((res) => setTimeout(res, 150));
     const chip = bar.shadowRoot!.querySelector<HTMLElement>('.chip[data-id="owner"]')!;
     return {
-      atOnce, heard, after: bar.readings.owner?.conditions,
+      atOnce, heard, after: bar.readings.owner?.tree,
       condition: chip.getAttribute('data-condition'), on: chip.hasAttribute('data-current'),
     };
   });
 
-  const rows = [{ op: 'contains', text: 'Da' }, { op: 'eq', join: 'or', picked: ['Ravi'] }];
-  expect(r.atOnce).toEqual(rows);
-  expect(r.heard).toEqual([rows]);
-  expect(r.after).toEqual(rows);
+  const tree = { or: [{ op: 'contains', value: 'Da' }, { op: 'eq', value: 'Ravi' }] };
+  expect(r.atOnce).toEqual(tree);
+  expect(r.heard).toEqual([tree]);
+  expect(r.after).toEqual(tree);
   expect(r.condition).toBe('advanced');
   expect(r.on).toBe(true);
 });

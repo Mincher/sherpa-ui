@@ -3392,8 +3392,9 @@ is no `office`; `buildings` is the set's word for it.
 
 A reader may give one field SEVERAL conditions — `contains "an" OR starts with
 "B"` — and every row after the first says how it joins the one before it. That
-is still ONE reading of ONE field, so it stays in the field's single slot and
-`stateClause()` returns one filter: a CLAUSE for one row, a GROUP for several.
+is still ONE reading of ONE field, so it stays in the field's single slot — as
+ONE tree, `reading.tree` (`T-one-condition-tree`) — and `stateClause()` returns
+one filter: a CLAUSE for one condition, a GROUP for several.
 
 Splitting it across two writers would be the bug `T-one-state-per-filtered-field`
 already names, and a control drawing the field would have to ask twice.
@@ -3402,7 +3403,10 @@ already names, and a control drawing the field would have to ask twice.
 every row before it, as a reader reads a stack of rows. Will, TODO 594: `Equals Ravi
 OR Equals Signe AND Contains "Khan"` let rows through with no Khan, when AND bound
 tighter. A banded field's rows rely on this being in ascending order, so
-`rowsFromPicks` sorts them. An AND for one row alone needs nesting, which is TODO 595.
+`rowsFromPicks` sorts them. The menu is FLAT: `rowsTree()` makes its rows the tree,
+left to right, and `treeRows()` draws a tree back as rows — a chain, which one group
+may lead. A tree with two groups is no rows: the menu keeps it whole, unedited,
+until it nests (TODO 692); the data layer compiles it either way.
 
 **A half-built row narrows nothing, and is dropped.** A row whose op has no
 value yet — no text typed, nothing picked — is not a filter. A field whose rows
@@ -3413,10 +3417,11 @@ under the reader's hands.
 valid and a caller ANDs it either way, but someone debugging a filter should see
 the shape they built.
 
-`op`/`text` remain the single-condition form and are what every existing caller
-writes. A reading carries EITHER — never both.
+`op`/`text` remain the single-condition form of a number's or a date's Simple
+body. A list's other ops are its Advanced tree.
 
 - Site: `src/core/data/filter-state.ts`
+- Site: `src/data.ts`
 - Site: `test/unit/filter-conditions.test.mjs`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
@@ -5656,18 +5661,17 @@ a filter the reader SAVES crosses those (Will, 2026-10-20, TODO 370;
 
 Since TODO 102 it holds the menu's `FieldReading` itself — both answers, the
 mode and the mirror — and `ColumnFilter` is gone. The clause and the label
-come from the data layer (`readingClause`, `spellConditions`), and
-`clauseConditions()` turns a chained clause back into its rows — the inverse
-of the chain, `A or (B and C)`. A shape the rows cannot say is reported, never
-guessed. A redraw is held AS IT IS: through a clause, only the answer in force
-came back.
+come from the data layer (`readingClause`, `spellConditions`). A clause set
+from outside is read WHOLE: `filterCondition()` makes it the tree it is, and
+`treeReading()` the reading — Simple where a Simple control says it, else
+Advanced, nested as deep as it was (`T-one-condition-tree`). A redraw is held
+AS IT IS: through a clause, only the answer in force came back.
 
 The rows reach the menu only once it has DRAWN. The heading upgrades its menu
 and sets `menu.reading`, and the menu keeps a reading given before it drew
 and applies it at the end of its first render (`#flushChains()` is gone).
 
-- Site: `src/core/data/filter-state.ts`
-- Site: `src/data.ts`
+- Site: `src/core/data/where.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
@@ -6025,17 +6029,22 @@ inside**: every control, event and the live Query speak them. The source turns
 one into the other at the edge — `source.readingsOf(where)` and
 `source.whereOf(readings)` — by its field types, so a number comes out a number.
 
-`whereOf` writes the CLAUSE the field compiles to, so the two cannot disagree.
-It keeps the answer in force only: Simple's picks or Advanced's rows, never
-both, and nothing a control keeps for itself (`mirror`, `kept`, `present`).
-An Advanced answer of one row reads back as Simple; the filter is the same.
+It is SUGAR for the condition tree (`T-one-condition-tree`): `readingsOf` parses
+each field's condition ONCE into its tree, then into the reading a control holds
+— Simple where a Simple control says it (a list's picks, a date's two ends, a
+number's one value under its op), else Advanced, nested as deep as it was
+written. `whereOf` writes the TREE the field compiles from, so the two cannot
+disagree. It keeps the answer in force only: Simple's picks or Advanced's tree,
+never both, and nothing a control keeps for itself (`mirror`, `kept`, `present`).
+An Advanced answer of one condition a Simple control can say reads back as Simple;
+the filter is the same.
 
 **A `where` holds conditions only.** A reading stored there before 197 — its
 keys `picked`, `op`, `text`… — is not read: each key reports `unknown-op` and
 the field filters nothing (Will, D4, 2026-10-14: no shim for old stored data).
 A page definition's preset with `readings` and no
-`where` reports `preset-without-where`. An `or` inside an `and` cannot be
-condition rows, so it reports `unreadable-condition` and filters nothing.
+`where` reports `preset-without-where`. A condition nests freely: nothing in it
+is unreadable but a key that is not an op.
 
 - Site: `src/core/data/where.ts`
 - Site: `src/core/data/data-source.ts`
@@ -6045,6 +6054,42 @@ condition rows, so it reports `unreadable-condition` and filters nothing.
 - Site: `src/data.ts`
 - Site: `test/unit/one-way-to-write-a-condition.test.mjs`
 - Site: `src/core/data/query-edits.ts`
+
+
+### T-one-condition-tree
+
+**A filter condition has ONE shape in memory: a tree.** Will, D1 A (plan 695):
+`{ and: [...] } | { or: [...] } | { field?, op, value, off?, id? }` (`Condition`,
+in `store.ts`, beside the wire `Filter` it compiles to). A field's Advanced
+answer is `reading.tree`; a preset holds its tree per field (`byPreset[id].tree`);
+a status value's `when` is parsed into one tree when `statusFields()` is made, and
+its domain carries that tree (`zonesOf` reads it); a View, a saved filter and a
+page definition WRITE the plain form (`T-one-way-to-write-a-condition`), parsed
+once.
+
+It had nine shapes and six converters, and nesting was blocked in two of them:
+rows could hold one group, and a nested condition in a definition was reported
+`unreadable-condition` and dropped — though the type and the schema allowed it.
+
+- **One compile.** `conditionClause()` is the one place a tree becomes a filter:
+  numbers cast, a day with a time reaching its last moment, a tiered field's paths.
+  `stateClause()` compiles `state.answer` — Simple's picks as their leaf, or the
+  Advanced tree — and each preset's tree, ANDed.
+- **A leaf in one field's answer names no field**: it is that field's. A tree
+  across fields (a status value's) names each.
+- **The flat menu is a boundary**, crossed twice: `rowsTree()` in, `treeRows()`
+  out (`T-many-conditions-are-one-reading`). Nothing in the data layer reads rows.
+- **Off is kept on any node**; a part kept off compiles to nothing and spells nothing.
+
+- Site: `src/core/data/store.ts`
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/where.ts`
+- Site: `src/data.ts`
+- Site: `test/unit/filter-state.test.mjs`
+- Site: `test/unit/one-way-to-write-a-condition.test.mjs`
+- Site: `test/unit/a-status-is-worked-out-by-the-data.test.mjs`
+- Site: `test/unit/page-definition.test.mjs`
+- Site: `test/e2e/reforged-one-condition-tree.spec.ts`
 
 ### T-a-workflow-is-its-definition
 

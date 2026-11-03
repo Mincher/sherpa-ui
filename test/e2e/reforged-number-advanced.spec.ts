@@ -63,7 +63,7 @@ test('a toolbar number chip goes Advanced: number questions, its body carried ov
     typed: ['text'],
   });
   expect(r.advanced.ops).toEqual(['eq']);
-  expect(r.reading).toMatchObject({ mode: 'advanced', picked: ['20'], conditions: [{ op: 'eq', picked: ['20'] }] });
+  expect(r.reading).toMatchObject({ mode: 'advanced', picked: ['20'], tree: { op: 'eq', value: '20' } });
   expect(r.back).toEqual({ mode: 'simple', body: true, picked: ['20'] });
   expect(r.plain).toEqual({ type: null, advanced: false });
 });
@@ -96,13 +96,13 @@ test('a bound source filters by a number\'s Advanced rows, `=` included', async 
     };
     return {
       // Under 10 OR over 200.
-      either: await total({ mode: 'advanced', conditions: [{ op: 'lt', text: '10' }, { op: 'gt', join: 'or', text: '200' }] }),
+      either: await total({ mode: 'advanced', tree: { or: [{ op: 'lt', value: '10' }, { op: 'gt', value: '200' }] } }),
       // Exactly 50: a number's `=` is its one pick.
-      equals: await total({ mode: 'advanced', conditions: [{ op: 'eq', picked: ['50'] }] }),
+      equals: await total({ mode: 'advanced', tree: { op: 'eq', value: '50' } }),
       // Between 40 and 150: 50 and 120. TODO 375
-      between: await total({ mode: 'advanced', conditions: [{ op: 'between', picked: ['40', '150'] }] }),
+      between: await total({ mode: 'advanced', tree: { op: 'between', value: ['40', '150'] } }),
       // Simple again: the body's one value.
-      simple: await total({ mode: 'simple', picked: ['120'], conditions: [{ op: 'eq', picked: ['50'] }] }),
+      simple: await total({ mode: 'simple', picked: ['120'], tree: { op: 'eq', value: '50' } }),
     };
   });
   expect(r).toEqual({ either: 2, equals: 1, between: 2, simple: 1 });
@@ -125,7 +125,7 @@ test('Between and Not between: two boxes on the row, and a slider under it that 
     const sr = menu.shadowRoot;
     // Every number offers Advanced, and its rows ask Between and Not between.
     const offers = { advanced: menu.hasAttribute('data-advanced'), ops: menu.dataset['conditions'] };
-    (chip as unknown as { reading: unknown }).reading = { conditions: [{ op: 'between', picked: ['20', '80'] }], mode: 'advanced' };
+    (chip as unknown as { reading: unknown }).reading = { tree: { op: 'between', value: ['20', '80'] }, mode: 'advanced' };
     await window.__settled();
     menu.show(chip);
     await window.__settled();

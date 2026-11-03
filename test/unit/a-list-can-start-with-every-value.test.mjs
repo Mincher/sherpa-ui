@@ -46,7 +46,7 @@ test('all ticks every value, filters nothing, says All, and keeps through the pl
   const facts = { field: 'region', label: 'Region', values: ['EMEA', 'AMER'] };
   const all = fieldState(facts, { picked: [], all: true });
   assert.deepEqual(all.values.map((v) => v.state), ['picked', 'picked']);
-  assert.equal(all.rows.length, 0);
+  assert.equal(all.answer, undefined);
   assert.equal(filterFace(all).value, 'All');
   // A list ticked by hand says its values, every one or one.
   assert.equal(filterFace(fieldState(facts, { picked: ['EMEA', 'AMER'] })).value, 'EMEA…');

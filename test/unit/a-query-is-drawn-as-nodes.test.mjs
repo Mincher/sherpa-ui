@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { queryGraph, editedCondition } = await import(new URL('query-graph.js', core));
-const { readingsOf, whereOf } = await import(new URL('where.js', core));
+const { readingsOf, treeReading, whereOf } = await import(new URL('where.js', core));
 
 const definition = {
   v: 1, id: 'records',
@@ -131,15 +131,23 @@ test('what a reader may change: everything a door takes — read only only what 
 });
 
 test('an edited condition reads back as the condition its rows say', () => {
-  assert.deepEqual(editedCondition('in', 'EMEA, APAC'), { in: ['EMEA', 'APAC'] });
-  assert.deepEqual(editedCondition('gt', '5', 'number'), { gt: 5 });
-  assert.deepEqual(editedCondition('last', '12 months'), { last: 12, unit: 'month' });
-  assert.deepEqual(editedCondition('eq', ' active '), { eq: 'active' });
+  assert.deepEqual(editedCondition('in', 'EMEA, APAC'), { op: 'in', value: ['EMEA', 'APAC'] });
+  assert.deepEqual(editedCondition('gt', '5', 'number'), { op: 'gt', value: 5 });
+  assert.deepEqual(editedCondition('last', '12 months'), { op: 'last', value: { n: 12, unit: 'month' } });
+  assert.deepEqual(editedCondition('eq', ' active '), { op: 'eq', value: 'active' });
   // The round trip a chip makes: rows → condition → reading → the plain form.
-  for (const [op, text] of [['notin', 'EMEA, APAC'], ['contains', 'north']]) {
-    const reading = readingsOf({ region: editedCondition(op, text) }).region;
-    assert.deepEqual(whereOf({ region: reading }).region, editedCondition(op, text));
+  for (const [op, text, said] of [['notin', 'EMEA, APAC', { notin: ['EMEA', 'APAC'] }], ['contains', 'north', { contains: 'north' }]]) {
+    const reading = treeReading(editedCondition(op, text));
+    assert.deepEqual(whereOf({ region: reading }).region, said);
   }
+});
+
+test('a picked value with a comma in it stays ONE value', () => {
+  // The values a row picked are each whole; only a list typed as text splits at its commas.
+  assert.deepEqual(editedCondition('in', ['Smith, John', 'Acme, Inc.']), { op: 'in', value: ['Smith, John', 'Acme, Inc.'] });
+  assert.deepEqual(editedCondition('eq', ['Smith, John']), { op: 'eq', value: 'Smith, John' });
+  assert.deepEqual(editedCondition('eq', 'Smith, John'), { op: 'eq', value: 'Smith, John' });
+  assert.deepEqual(treeReading(editedCondition('in', ['Smith, John', 'Acme, Inc.'])), { picked: ['Smith, John', 'Acme, Inc.'] });
 });
 
 test('a field whose values are known is PICKED, as its chip picks: Is one of or Is not one of, ticks', () => {
@@ -152,6 +160,6 @@ test('a field whose values are known is PICKED, as its chip picks: Is one of or 
   assert.deepEqual(picked.nodes.find((n) => n.id === 'when-view-status').rows[1].choices.map((c) => c.label), ['Is one of', 'Is not one of']);
   // A field with no known values is typed.
   assert.deepEqual(rows('when-view-name').value, ['text', 'north']);
-  assert.deepEqual(editedCondition('in', ['trial', 'active']), { in: ['trial', 'active'] });
+  assert.deepEqual(editedCondition('in', ['trial', 'active']), { op: 'in', value: ['trial', 'active'] });
 });
 

@@ -229,7 +229,7 @@
       }
     },
     "condition": {
-      "description": "One field's condition. Several ops all hold; numbers as numbers.",
+      "description": "One field's condition: the plain form of a condition tree, parsed once. Several ops all hold; and and or take a list, nested as deep as they say; numbers as numbers.",
       "type": "object",
       "additionalProperties": false,
       "minProperties": 1,
@@ -245,7 +245,8 @@
         "unit": { "enum": ["day", "week", "month", "year"] },
         "and": { "type": "array", "items": { "$ref": "#/$defs/condition" } },
         "or": { "type": "array", "items": { "$ref": "#/$defs/condition" } },
-        "off": { "description": "Kept, not applied.", "type": "boolean" }
+        "off": { "description": "Kept, not applied.", "type": "boolean" },
+        "all": { "description": "Every value, on purpose: Select all on, which filters nothing.", "type": "boolean" }
       }
     }
   }

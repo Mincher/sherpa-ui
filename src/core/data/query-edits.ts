@@ -32,7 +32,7 @@
  */
 import { ARRANGE_KEYS, answerOf, arrangementOf, arranging, copyReading, eachScope, emptyScope, readingAnswered, stripArrangement, VIEW, type Query, type QueryDefaults, type ScopeQuery, type ViewScope } from './query.js';
 import type { FieldReading } from './filter-state.js';
-import type { Condition, Where } from './where.js';
+import type { Where, WhereCondition } from './where.js';
 import { report } from './report.js';
 
 /** One scope's entry, made when first written. */
@@ -313,7 +313,7 @@ export function definitionOf(
     if (rest.suspended) rest.suspended = { fields: [...(rest.suspended.fields ?? [])] };
     // Kept answers: a whole Query's as they are; a View's in the plain form. `{}` is none.
     const kept = superseded && Object.fromEntries(Object.entries(superseded).map(([f, said]) => [f,
-      readings || !Object.keys(said).length ? { ...said as FieldReading } : facts.readingsOf({ [f]: said as Condition })[f] ?? {}]));
+      readings || !Object.keys(said).length ? { ...said as FieldReading } : facts.readingsOf({ [f]: said as WhereCondition })[f] ?? {}]));
     next.scopes[id] = {
       ...rest, holds: rest.holds ?? [], readings: { ...readings, ...(where ? facts.readingsOf(where) : {}) },
       ...(kept && Object.keys(kept).length ? { superseded: kept } : {}),

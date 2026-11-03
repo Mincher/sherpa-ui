@@ -17,10 +17,11 @@
  */
 import { DATA_PROPS, SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import {
-  DATE_OP_LABELS, DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp, valueKey, valueSet,
+  DATE_OP_LABELS, DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type Condition, type FilterOp, valueKey, valueSet,
 } from '../../core/data/store.js';
 import {
-  goesFromList, modeOf, readingRows, rowAnswered, rowsFromPicks, ruleOut, type ConditionType, type FieldCondition, type FieldReading,
+  answeredCondition, goesFromList, modeOf, rowAnswered, rowsFromPicks, rowsTree, ruleOut, treeRows,
+  type ConditionType, type FieldCondition, type FieldReading,
 } from '../../core/data/filter-state.js';
 import { sameAnswer } from '../../core/data/query.js';
 import { NON_VALUE_ROWS, RULED_OUT, SET_ASIDE, onByPreset } from '../../core/ui/shared-constants.js';
@@ -471,20 +472,39 @@ export class SherpaMenu extends SherpaElement {
     /* A NUMBER that offers Advanced keeps BOTH answers, as a list does: its
        body is Simple's, its rows Advanced's. TRAP T-a-number-has-advanced-rows */
     if ((body === 'number' || body === 'date') && this.#offersAdvanced()) {
-      const rows = this.#rowEls().length ? this.conditions.filter(rowAnswered) : [];
-      return { ...this.#bodyReading(), ...(rows.length ? { conditions: rows } : {}), mode: this.mode };
+      const tree = this.#treeOf(this.#rowEls().length ? this.conditions : []);
+      return { ...this.#bodyReading(), ...(tree ? { tree } : {}), mode: this.mode };
     }
     if (body === 'number' || body === 'date') return this.#bodyReading();
     const out: FieldReading = { picked: this.values };
     if (!this.#offersAdvanced()) return out;
     /* Not drawn yet: row one is still its attributes, as #syncConditions will
        draw it. A chip asks before then. TRAP T-restamp-does-not-abort */
-    const rows = this.#rowEls().length ? this.conditions.filter(rowAnswered)
-      : readingRows({ op: this.op, text: this.dataset['value'] ?? '' });
-    if (rows.length) out.conditions = rows;
+    const one: FieldCondition = { op: this.op, text: this.dataset['value'] ?? '' };
+    const tree = this.#treeOf(this.#rowEls().length ? this.conditions : OP_TAKES[one.op] === 'text' ? [one] : []);
+    if (tree) out.tree = tree;
     out.mode = this.mode;
     out.mirror = this.#mirror;
     return out;
+  }
+
+  /** The rows as ONE tree — the menu's boundary in — or, while the reader has not
+   *  touched them, the tree it was given that rows cannot say. TODO 692 */
+  #treeOf(rows: readonly FieldCondition[]): Condition | undefined {
+    return this.#unsaid ?? rowsTree(rows);
+  }
+
+  /** A tree this menu was given that its flat rows cannot say AS GIVEN — nested, or
+   *  in another order: kept whole, so an Apply of the picks does not change it,
+   *  until the reader edits a row. TODO 692 */
+  #unsaid: Condition | null = null;
+
+  /** Draw a reading's tree as rows; one they cannot say as given is kept. */
+  #drawTree(tree: Condition | undefined): FieldCondition[] {
+    const rows = treeRows(tree);
+    const exact = !!rows && JSON.stringify(rowsTree(rows) ?? null) === JSON.stringify(answeredCondition(tree) ?? null);
+    this.#unsaid = exact ? null : tree ?? null;
+    return rows ?? [];
   }
 
   /**
@@ -524,10 +544,9 @@ export class SherpaMenu extends SherpaElement {
       /* …and its ROWS, where it offers them: only the reading's own rows — a
          Simple `> 2` is the body's, not a row. TRAP T-a-number-has-advanced-rows */
       if (this.#offersAdvanced()) {
-        const rows = (next.conditions ?? []).filter(rowAnswered);
-        this.#setRows(rows);
-        // No `mode` — a saved answer: its rows decide, as a list's do.
-        this.mode = modeOf(next, rows) ?? 'simple';
+        this.#setRows(this.#drawTree(next.tree));
+        // No `mode` — a saved answer: its tree decides, as a list's does.
+        this.mode = modeOf(next) ?? 'simple';
       }
       this.#syncDirty();
       return;
@@ -537,25 +556,25 @@ export class SherpaMenu extends SherpaElement {
       this.values = typed ? [typed] : (next.picked ?? []).map(valueKey);
       // …and its ROWS, where it offers them, as a number's. TODO 21d
       if (this.#offersAdvanced()) {
-        const rows = (next.conditions ?? []).filter(rowAnswered);
-        this.#setRows(rows);
-        this.mode = modeOf(next, rows) ?? 'simple';
+        this.#setRows(this.#drawTree(next.tree));
+        this.mode = modeOf(next) ?? 'simple';
       }
       return;
     }
-    /* An old reading's picks under a non-default op ("is not churned") are THAT
-       op's, not Simple's ticks — ticking them would filter for the opposite. */
-    const opOverPicks = !(next.conditions ?? []).some(rowAnswered) && (next.op ?? DEFAULT_OP) !== DEFAULT_OP
-      && (OP_TAKES[next.op ?? DEFAULT_OP] ?? 'list') === 'list';
-    this.values = opOverPicks && this.#offersAdvanced() ? [] : (next.picked ?? []).map(valueKey);
+    this.values = (next.picked ?? []).map(valueKey);
     if (!this.#offersAdvanced()) return;
-    const rows = readingRows(next);
     this.#mirror = next.mirror ?? false;
     // A MIRROR is the picks, so its rows are drawn from them.
     if (this.#mirror) this.#seedFromPicks();
-    else this.conditions = rows;
-    // No `mode` is a reading from before both were kept: its rows decide.
-    const mode = modeOf(next, rows);
+    else {
+      const rows = this.#drawTree(next.tree);
+      // Its own setter forgets a tree kept whole: it is set back after.
+      const unsaid = this.#unsaid;
+      this.conditions = rows;
+      this.#unsaid = unsaid;
+    }
+    // No `mode`: its tree decides.
+    const mode = modeOf(next);
     if (mode) this.mode = mode;
   }
 
@@ -571,6 +590,7 @@ export class SherpaMenu extends SherpaElement {
    *  TRAP T-add-condition-sits-below-the-rows */
   #onAddCondition = (): void => {
     this.#mirror = false;
+    this.#unsaid = null;
     const row = this.#addRow();
     this.#emitConditions();
     // A click is no input or change: say the draft moved. TODO 396
@@ -585,6 +605,7 @@ export class SherpaMenu extends SherpaElement {
     const hit = (event.target as HTMLElement | null)?.closest?.('.drop-condition');
     if (!hit || this.#rowEls().length <= 1) return;
     this.#mirror = false;
+    this.#unsaid = null;
     hit.closest('.condition-row')?.remove();
     this.#numberRows();
     // Row one is ALSO data-op and data-value: a dropped first row, left there,
@@ -861,6 +882,7 @@ export class SherpaMenu extends SherpaElement {
 
   /** Replace every row from data — a host restoring a saved filter. */
   set conditions(rows: readonly FieldCondition[]) {
+    this.#unsaid = null;
     if (!this.#card()) {
       this.#heldRows = rows.map((row) => ({ ...row }));
       return;
@@ -878,9 +900,9 @@ export class SherpaMenu extends SherpaElement {
        fill of each new row's value select, this menu reports NO conditions.
        TRAP T-a-rebuilt-row-reads-empty-for-a-tick
        And a row the reader has not answered yet is their WORK IN PROGRESS: an
-       answer drawn back that matches the rows they HAVE answered keeps every
-       row, blank ones too. TRAP T-an-unanswered-row-survives-a-redraw */
-    const answered = (list: readonly FieldCondition[]): string => JSON.stringify(list.filter(rowAnswered));
+       answer drawn back that says the tree the rows they HAVE answered say keeps
+       every row, blank ones too. TRAP T-an-unanswered-row-survives-a-redraw */
+    const answered = (list: readonly FieldCondition[]): string => JSON.stringify(rowsTree(list) ?? null);
     const keep = answered(this.conditions) === answered(rows);
     if (!keep) {
       region.replaceChildren();
@@ -926,6 +948,8 @@ export class SherpaMenu extends SherpaElement {
 
   /** What Discard restores, captured on open beside `#baseline`. */
   #conditionBaseline: FieldCondition[] = [];
+  /** …and the tree it kept whole then. */
+  #unsaidBaseline: Condition | null = null;
   /** What it held when the menu opened, whole: what a mode switch is judged against. */
   #readingBaseline: FieldReading = {};
   /** Whether the rows mirrored the picks when the menu opened. */
@@ -955,6 +979,7 @@ export class SherpaMenu extends SherpaElement {
     this.#baseline = this.values;
     this.#numberBaseline = this.dataset['body'] === 'number' ? this.reading : null;
     this.#conditionBaseline = this.conditions;
+    this.#unsaidBaseline = this.#unsaid;
     this.#mirrorBaseline = this.#mirror;
     this.#modeBaseline = this.mode;
     this.#readingBaseline = this.reading;
@@ -979,6 +1004,7 @@ export class SherpaMenu extends SherpaElement {
     }
     if (row instanceof HTMLElement) {
       this.#mirror = false;
+      this.#unsaid = null;
       // The reader just answered, so THAT is what the row remembers now.
       const live = row.querySelector<SherpaInputText>('.condition')?.value;
       if (live) row.dataset['op'] = live;
@@ -2073,6 +2099,7 @@ export class SherpaMenu extends SherpaElement {
         if (this.mode === 'advanced'
           && JSON.stringify(this.conditions) !== JSON.stringify(this.#conditionBaseline)) {
           this.conditions = this.#conditionBaseline;
+          this.#unsaid = this.#unsaidBaseline;
         }
       }
       this.#settledByAction = false;
@@ -2415,6 +2442,7 @@ export class SherpaMenu extends SherpaElement {
     // Rows only when they differ: a rebuilt row reads empty for a tick. TRAP T-a-condition-is-a-draft-too
     if (this.mode === 'advanced' && JSON.stringify(this.conditions) !== JSON.stringify(this.#conditionBaseline)) {
       this.conditions = this.#conditionBaseline;
+      this.#unsaid = this.#unsaidBaseline;
     }
     this.#mirror = this.#mirrorBaseline;
     this.#applying = false;

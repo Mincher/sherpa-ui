@@ -12,8 +12,8 @@
  */
 import type { PageDefinition } from './page-definition.js';
 import { PRESENTATION_KINDS, VIEW, arranging, type Presentation, type Query } from './query.js';
-import { OP_LABELS, OPS_FOR_TYPE, type FilterOp } from './store.js';
-import { whereOf, type Condition } from './where.js';
+import { OP_LABELS, OPS_FOR_TYPE, groupOf, joinConditions, type Condition, type ConditionLeaf, type Duration, type FilterOp } from './store.js';
+import { answerTree, type FieldReading } from './filter-state.js';
 import type { DrawnGraph, GraphNode, GraphRow, NodeKind, WorkflowRoute } from './workflow.js';
 
 /** One column's width, in plane px: a node and the room for its routes. */
@@ -101,23 +101,24 @@ const FROM_DEFINITION = 'The page definition sets it: Save will change it (later
 const MANY = new Set(['in', 'notin']);
 const ONE = new Set(['eq', 'ne']);
 
-/** The keys of a condition that say HOW it holds, not what it compares. */
-const NOT_OPS = new Set(['unit', 'off', 'all', 'and', 'or']);
+/** A field's answer in force as one tree — its presets' too — or none. */
+function answerOf(reading: FieldReading): Condition | undefined {
+  return joinConditions('and', [answerTree({ ...reading, suspended: false }), ...Object.values(reading.byPreset ?? {}).map((p) => p.tree)]);
+}
 
 /** One condition's field, operator and value, as its rows show them — each editable, as
- *  a chip's are; a value the field's own values can say is PICKED, not typed. A chain
- *  or All is read only. */
+ *  a chip's are; a value the field's own values can say is PICKED, not typed. A group
+ *  is read only. */
 function conditionRows(
   field: string, condition: Condition, type: string | undefined,
   fields: readonly { value: string; label: string }[], values: readonly string[] | undefined,
 ): GraphRow[] {
-  const list = condition.and ?? condition.or;
-  const op = list ? (condition.and ? 'and' : 'or')
-    : condition.all ? 'all'
-    : Object.keys(condition).find((key) => !NOT_OPS.has(key)) ?? '';
-  const raw = list ? `${list.length} conditions`
-    : op === 'last' || op === 'next' ? `${String(condition[op])} ${condition.unit ?? 'day'}`
-    : condition[op as keyof Condition];
+  const list = groupOf(condition);
+  const leaf = condition as ConditionLeaf;
+  const op = list ? list[0] : leaf.op;
+  const raw = list ? `${list[1].length} conditions`
+    : op === 'last' || op === 'next' ? `${String((leaf.value as Duration).n)} ${(leaf.value as Duration).unit}`
+    : leaf.value;
   const value = Array.isArray(raw) ? raw.join(', ') : raw !== null && typeof raw === 'object' ? JSON.stringify(raw) : raw;
   const plain = op in OP_LABELS;
   const ops = [...new Set([...(OPS_FOR_TYPE[type ?? ''] ?? PICK_OPS), ...(plain ? [op as FilterOp] : [])])];
@@ -142,17 +143,19 @@ function conditionRows(
 }
 
 /** A condition node's rows, edited, as the condition they say: the other half of drawing one.
- *  A value is typed text, or the values picked. */
-export function editedCondition(op: string, given: string | readonly string[], type?: string): Condition {
+ *  A value is typed text, or the values picked — each whole, a comma and all; only a
+ *  TYPED list is split at its commas. */
+export function editedCondition(op: string, given: string | readonly string[], type?: string): ConditionLeaf {
   const one = (v: string): string | number => (type === 'number' && v !== '' && Number.isFinite(Number(v)) ? Number(v) : v);
-  const text = Array.isArray(given) ? given.join(',') : String(given);
-  const list = text.split(',').map((v) => v.trim()).filter(Boolean).map(one);
-  if (op === 'in' || op === 'notin' || op === 'between' || op === 'notbetween') return { [op]: list };
-  if (op === 'last' || op === 'next') {
+  const text = Array.isArray(given) ? String(given[0] ?? '') : String(given);
+  const list = (Array.isArray(given) ? [...given] : text.split(',')).map((v) => v.trim()).filter(Boolean).map(one);
+  const at = op as FilterOp;
+  if (at === 'in' || at === 'notin' || at === 'between' || at === 'notbetween') return { op: at, value: list };
+  if (at === 'last' || at === 'next') {
     const [n = '1', unit = 'day'] = text.trim().split(/\s+/);
-    return { [op]: Number(n), unit: unit.replace(/s$/, '') as NonNullable<Condition['unit']> };
+    return { op: at, value: { n: Number(n), unit: unit.replace(/s$/, '') as Duration['unit'] } };
   }
-  return { [op]: one(text.trim()) };
+  return { op: at, value: one(text.trim()) };
 }
 
 /** A presentation's rows: editable where it has a slot to keep them, its kind the definition's by default. */
@@ -210,8 +213,11 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   const ordered = view ? [view, ...scopes.filter(([id]) => id !== VIEW)] : scopes;
   for (const [id, scope] of ordered) {
     const top = id === VIEW;
-    const where = whereOf(scope.readings);
-    const fields = [...scope.holds, ...Object.keys(where).filter((f) => !scope.holds.includes(f))];
+    const where = Object.entries(scope.readings).flatMap(([f, reading]) => {
+      const tree = answerOf(reading);
+      return tree ? [[f, tree, !!reading.suspended] as const] : [];
+    });
+    const fields = [...scope.holds, ...where.map(([f]) => f).filter((f) => !scope.holds.includes(f))];
     const shows = components.filter((c) => scopeOf(c) === id);
     // Its name: the definition's, else the one component that reads it.
     const named = definition.source?.scopes?.[id]?.label
@@ -227,10 +233,10 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     });
     routes.push({ from: top || !view ? 'source' : `scope-${VIEW}`, to: node });
     const held = fields.map((f) => ({ value: f, label: label(f) }));
-    for (const [field, condition] of Object.entries(where)) {
+    for (const [field, condition, off] of where) {
       const when = add(top ? 2 : 4, `when-${id}-${field}`, 'condition', conditionRows(field, condition, typeOf(field), held, facts.values?.(field)), {
         heading: label(field),
-        description: condition.off ? 'Off: kept, not applied.' : 'Applied.',
+        description: off ? 'Off: kept, not applied.' : 'Applied.',
         ref: { scope: id, field },
       });
       routes.push({ from: when, to: `${node}/${field}` });

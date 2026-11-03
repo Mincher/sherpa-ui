@@ -86,7 +86,7 @@ import {
 import { fieldStatus, type FieldStatus } from './field-status.js';
 import { coalesce, Latest } from './timing.js';
 import { QueryContext, type QueryChange, type QueryHandle } from './query-context.js';
-import { readingsOf, whereOf, type Condition, type Where } from './where.js';
+import { readingsOf, whereOf, type Where } from './where.js';
 import { report } from './report.js';
 import { type CacheChangeDetail, type StoreCache } from './store-cache.js';
 import { type Plan } from './read-plan.js';
@@ -822,7 +822,7 @@ export class DataSource extends EventTarget {
   }
 
   /** The plain form as readings, by this source's field types. */
-  readingsOf(where: Readonly<Record<string, Condition>>): Record<string, FieldReading> {
+  readingsOf(where: Readonly<Where>): Record<string, FieldReading> {
     return readingsOf(where, (f) => this.#catalogue.facts(f));
   }
 
@@ -888,9 +888,9 @@ export class DataSource extends EventTarget {
     /* The WHOLE answer — its operator and its typed text too: "is not churned"
        drawn as "churned" is the opposite answer, and "contains an" drawn
        without its text is none. */
-    // Its rows as the STATE reads them — an empty row is none.
-    const { conditions: _raw, ...held } = answerOf(readingOf(this.#draft, field) ?? {});
-    const reading = { ...held, picked, ...(state.conditions.length ? { conditions: state.conditions } : {}) };
+    // Its tree as the STATE reads it — an empty condition is none.
+    const { tree: _raw, ...held } = answerOf(readingOf(this.#draft, field) ?? {});
+    const reading = { ...held, picked, ...(state.tree ? { tree: state.tree } : {}) };
     this.#binding.drawReading(field, reading, home);
     // A preset's field no scope holds has no home once it goes: where it sat hears that. TODO 611
     const sat = this.#presetAt.get(field);

@@ -27,7 +27,7 @@ import { countSaid } from '../../core/data/filter-face.js';
 import { DEFAULT_OP, valueKey, type SortDirection } from '../../core/data/store.js';
 import { VIEW, readingAnswered, sameReading, type QueryRequest } from '../../core/data/query.js';
 import {
-  modeOf, readingRows,
+  answeredCondition, modeOf,
   type FieldReading,
 } from '../../core/data/filter-state.js';
 import type { FilterSet, OrganiseColumn, ScopeDescription } from '../../core/data/data-source.js';
@@ -1540,20 +1540,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #keepAnswer(id: string, reading: FieldReading): void {
     const menu = this.#filterMenu(id);
     if (!menu) return;
-    const rows = readingRows(reading);
+    const tree = answeredCondition(reading.tree);
     /* The READER'S answer wins over the def's opening one — a def's typed
        condition must not come back on every rebuild. Picks go in as the menu
-       is made, so only the rows, the mode and the mirror are compared.
+       is made, so only the tree, the mode and the mirror are compared.
        TRAP T-a-rebuild-keeps-every-answer */
-    const gist = (r: FieldReading): string => {
-      const own = readingRows(r);
-      return JSON.stringify([own, modeOf(r, own) ?? 'simple', !!r.mirror]);
-    };
+    const gist = (r: FieldReading): string => JSON.stringify([answeredCondition(r.tree) ?? null, modeOf(r) ?? 'simple', !!r.mirror]);
     if (gist(menu.reading) === gist(reading)) return;
     const held: FieldReading = { ...reading };
     this.#pendingAnswers.set(id, held);
     // The menu refuses Advanced mode unless the field opted in.
-    if (rows.length) menu.setAttribute('data-advanced', '');
+    if (tree) menu.setAttribute('data-advanced', '');
     // A later rebuild may have taken over.
     void answerWhenDrawn(menu, held, () => this.#pendingAnswers.get(id) === held && menu.isConnected, (chip) => {
       /* HELD two frames MORE: a rebuilt row fills a frame late, and a report in
