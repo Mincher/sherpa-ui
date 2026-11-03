@@ -149,16 +149,15 @@ Plus the app's stores, and its Views as JSON.
 import { localRecords, rules, required, email, oneOf } from 'sherpa-ui';
 
 export const { store: customerStore, ready: customersReady } = localRecords({
-  name: 'customers', database: 'my-app', key: 'email',
+  name: 'customers', key: 'email',
   schema: rules({ email: [required(), email()], status: oneOf(['active', 'trial', 'churned']) }),
-  indexes: ['status'], version: 1,
   seed: customers, seedVersion: 1,
 });
 ```
 
-- `localRecords()` is IndexedDB where the browser has it, and memory where
-  not. It seeds a first run, and again when `seedVersion` moves.
-  `T-local-records-seed-themselves`
+- `localRecords()` is IndexedDB where the browser has it — its rows in
+  Sherpa's one database, under `name` — and memory where not. It seeds a first
+  run, and again when `seedVersion` moves. `T-local-records-seed-themselves`
 - A server's records are a `RestStore`; the same filter grammar reaches it.
   `docs/DATA-SOURCE-RULES.md`
 - **The schema says what a field may hold.** `oneOf([...])` is the list every

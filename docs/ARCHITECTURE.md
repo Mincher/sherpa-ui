@@ -24,6 +24,14 @@ The worker is the DATA's home; each tab holds its own STATE (the Query) and its 
 presentation (D1). A page that has no worker — a first visit, a private window —
 runs the same handler in the page, and works as before (Host A).
 
+**What Sherpa keeps on the device is in ONE IndexedDB database**, `sherpa-ui`
+(`src/core/browser/database.ts`, plan 695 H3), which the page and the worker open
+alike: one fixed schema, made in one upgrade — an `IdbStore`'s rows and seed mark,
+the kept sets, the outbox, the kept notices and the saved Views' durable tier. The
+page asks `navigator.storage.persist()` the first time it opens it
+(`T-one-browser-database`). Web Storage holds what must be read at once: the
+current View, drafts, saved filters, the session.
+
 ```mermaid
 flowchart LR
   subgraph server["The app's server"]
@@ -161,7 +169,7 @@ sequenceDiagram
     S-->>W: the saved row
     W-->>R: the row; DATA_CHANNEL tells every tab
   else offline (the fetch never left)
-    W->>W: the outbox keeps it (IndexedDB), laid over the held set
+    W->>W: the outbox keeps it (the one Sherpa database), laid over the held set
     W-->>R: the row as it will be; every tab shows it
     Note over W: sent in order, once, under a Web Lock:<br/>when the worker starts, before each check behind,<br/>on Chromium's Background Sync
     W->>S: update, If-Unmodified-Since <when it was made>
