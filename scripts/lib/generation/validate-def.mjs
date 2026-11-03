@@ -140,9 +140,7 @@ export function validateDef(def, opts = {}) {
           const scoped = ownCss
             && /sherpa:tokens \(generated/.test(ownCss)
             && new RegExp(`--sherpa-${nm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*:`).test(ownCss);
-          // A scoped token is CORRECT, so it is not a finding. Five components
-          // carry a projected region today: button (structure), input-text
-          // (input), nav + nav-item (navigation), switch (switch).
+          // A scoped token is CORRECT, so it is not a finding.
           if (scoped) continue;
           // Declared in a shared or a component sheet, or a hook its own header names: real.
           if (declaredInSheets().has(`--sherpa-${nm}`) || componentHtml(def.name).includes(`--sherpa-${nm}`)) continue;
