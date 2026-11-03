@@ -9,8 +9,10 @@
  * - onUpdate — Hear each notice; the function it returns stops hearing.
  * - watchForUpdates — Ask the browser now and then for the app's new worker; the function it returns stops asking.
  * - noticeSeen — The reader has seen a kept notice: the worker forgets it.
+ * - hearUpdates — Feed a page's `Updates` with each notice, and tell the worker of a lost save seen.
  */
 import { NOTICE_CHANNEL, type NoticeAsk, type UpdateNotice } from '../data/notices.js';
+import type { Updates, UpdatesDetail } from '../data/updates.js';
 
 /** Ask the page's worker — waking it, as a channel cannot. */
 function ask(message: NoticeAsk): void {
@@ -71,4 +73,19 @@ export function watchForUpdates(options: { every?: number } = {}): () => void {
  *  opens is told it again. */
 export function noticeSeen(id: string): void {
   ask({ sherpa: 'seen', id });
+}
+
+/** Feed a page's `Updates` with each notice, and tell the worker of a lost save the
+ *  reader took in; the function it returns stops. Plan 687 U1 */
+export function hearUpdates(updates: Updates): () => void {
+  const stop = onUpdate((notice) => updates.hear(notice));
+  const seen = (event: Event): void => {
+    const taken = (event as CustomEvent<UpdatesDetail>).detail.taken;
+    if (taken?.kind === 'lost' && taken.key !== undefined) noticeSeen(taken.key);
+  };
+  updates.addEventListener('change', seen);
+  return () => {
+    stop();
+    updates.removeEventListener('change', seen);
+  };
 }

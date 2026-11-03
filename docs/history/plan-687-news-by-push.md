@@ -53,7 +53,7 @@ way to say "something changed".
 
 | Step | What | Done when |
 |---|---|---|
-| U1 | The `Updates` object (data layer) and its connector (browser layer); the provider binds to it; `onUpdate` and the provider's `#heard` fold into it | Every notice spec green, unchanged |
+| U1 ✅ | **Done 2026-11-03:** `Updates` (`src/core/data/updates.ts`) holds what waits — a new version, each store's rows, the lost saves — and what the reader dismissed; `hearUpdates()` feeds it from `onUpdate` and tells the worker of a lost save taken in; the provider's `updates` draws every `[data-listens]` element on each change and each page it provides, so a banner shows on the next page while its news waits; a listening element's own Refresh takes the rows in. Demos' Notifications reads `provider.updates`, its two `onUpdate`s gone (each asked the worker to say every kept notice again). The `Updates` object (data layer) and its connector (browser layer); the provider binds to it; `onUpdate` and the provider's `#heard` fold into it | Every notice spec green, unchanged — 20 of 20 in three engines, before and after Demos moved |
 | U2 | The feed: `updatesFeed()` for a server; Demos' `/sherpa/updates`; one tab holds it (`shareFeed`) | A Demos build shows the banner in an open tab with polling OFF |
 | U3 | The catch-up check: `?since=<mark>`, `204` when nothing moved | A tab shown again after a change asks once, and checks behind only that store |
 | U4 | Cleanup: polling only where no feed answers | `watchForUpdates()` runs only as the fallback |

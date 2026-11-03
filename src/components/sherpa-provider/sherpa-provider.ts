@@ -24,8 +24,8 @@ import { bindSelection } from '../../core/data/bind-selection.js';
 import { groupRows, groupSummaries, valueKey, type Row, type Store } from '../../core/data/store.js';
 import { viewLibrary, type ViewLibrary } from '../../core/browser/persist-view.js';
 import type { DraftMode } from '../../core/browser/view-drafts.js';
-import { onUpdate } from '../../core/browser/updates.js';
-import type { UpdateNotice } from '../../core/data/notices.js';
+import { hearUpdates } from '../../core/browser/updates.js';
+import { Updates, type NewsKind } from '../../core/data/updates.js';
 import { openSource, savedFiltersOf, type PageDefinition } from '../../core/data/page-definition.js';
 import { QueryContext, type QueryChangeDetail } from '../../core/data/query-context.js';
 import { VIEW, type Presentation } from '../../core/data/query.js';
@@ -176,6 +176,9 @@ interface Asked {
 /** Where the App Context's answer is kept, in the session a page keeps in. TODO 453 */
 const APP_CONTEXT_KEY = '/filters/_app';
 
+/** The kinds of news an element listens for. */
+const kindsOf = (el: HTMLElement): NewsKind[] => (el.dataset['listens'] ?? '').split(/\s+/).filter(Boolean) as NewsKind[];
+
 export class SherpaProvider extends SherpaElement {
   static override css = new URL('./sherpa-provider.css', import.meta.url);
   static override html = new URL('./sherpa-provider.html', import.meta.url);
@@ -183,6 +186,10 @@ export class SherpaProvider extends SherpaElement {
   static override props = {
     'data-keep-content': { type: 'boolean', kind: 'style' },
   } as const;
+
+  /** What is new for this page — heard, and shown by every element under it that
+   *  listens for its kind. Plan 687 U1 · TRAP T-a-notice-is-heard-never-ordered */
+  readonly updates = new Updates();
 
   /** The sources this subtree provides, by name. */
   #sources: Record<string, DataSource> = {};
@@ -221,6 +228,8 @@ export class SherpaProvider extends SherpaElement {
       const from = event.target as Element;
       const held = [...this.#asked.keys()].filter((el) => containerOf(el) === from).map((el) => this.#resolve(el));
       for (const source of new Set(held.length ? held : [this.#resolve(from)])) void source?.load({ force: true });
+      // A listening element's own Refresh takes the waiting rows in.
+      if (from.hasAttribute?.('data-listens')) this.updates.take('data');
     });
   }
 
@@ -750,6 +759,8 @@ export class SherpaProvider extends SherpaElement {
     }
     // The Views are over ONE Query: a subtree whose sources share none names none. 366 step 25
     const [source, ...more] = Object.values(this.#sources);
+    // A page's listening elements show what still waits.
+    this.#drawNews();
     if (!options.views || !source || more.some((other) => other.query !== source.query)) return Promise.resolve();
     return this.#pages.views(source, options);
   }
@@ -1045,7 +1056,8 @@ export class SherpaProvider extends SherpaElement {
   override onConnect(): void {
     this.on(window, 'online', this.#onBack);
     this.on(document, 'visibilitychange', this.#onBack);
-    this.#stopHearing = onUpdate((notice) => this.#heard(notice));
+    this.#stopHearing = hearUpdates(this.updates);
+    this.on(this.updates, 'change', this.#drawNews);
   }
 
   override onDisconnect(): void {
@@ -1063,20 +1075,20 @@ export class SherpaProvider extends SherpaElement {
   /** Stops hearing what is new. */
   #stopHearing: (() => void) | null = null;
 
-  /** Something new waits: each element under it that LISTENS for its kind shows.
-   *  The data layer said a fact; this element asked to
-   *  hear it. Will, plan 652 S6 · TRAP T-a-notice-is-heard-never-ordered */
-  #heard(notice: UpdateNotice): void {
+  /** Each element under it that LISTENS shows while news of its kind waits. The
+   *  data layer said a fact; this element asked to hear it.
+   *  Will, plan 652 S6 · TRAP T-a-notice-is-heard-never-ordered */
+  #drawNews = (): void => {
     for (const el of this.querySelectorAll<HTMLElement>('[data-listens]')) {
-      if ((el.dataset['listens'] ?? '').split(/\s+/).includes(notice.kind)) el.toggleAttribute('hidden', false);
+      el.toggleAttribute('hidden', !kindsOf(el).some((kind) => this.updates.shows(kind)));
     }
-  }
+  };
 
-  /** A listening element dismissed — a locked callout reports and stays: it hides
-   *  until the next notice. */
+  /** A listening element dismissed — a locked callout reports and stays: its kinds
+   *  hide until the next notice. */
   #onNoticeDismiss = (event: Event): void => {
     const el = event.target as HTMLElement;
-    if (el.hasAttribute?.('data-listens')) el.toggleAttribute('hidden', true);
+    if (el.hasAttribute?.('data-listens')) for (const kind of kindsOf(el)) this.updates.dismiss(kind);
   };
 
   /**

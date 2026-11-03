@@ -14933,6 +14933,16 @@ A listening `sherpa-callout` is `data-locked`, so its close REPORTS and it stays
 the provider hides it until the next notice. Its `data-duration` timer runs only
 while it shows (`hidden` is watched), or a banner hidden at load timed out unseen.
 
+**A page holds its news in one `Updates`** (plan 687 U1): the provider's `updates`
+hears each notice (`hearUpdates`) and keeps what waits — a new version, each
+store's rows, the lost saves. It draws every listening element from that, on each
+change and on each page it opens, so a banner shows on the next page while its news
+waits. A dismiss hides a kind until its next notice; a listening element's own
+Refresh takes the rows in; `take('lost', id)` tells the worker the save was seen. A
+kept notice said again is no news. An app reads `provider.updates` for its own list,
+never its own `onUpdate`: each `onUpdate` asks the worker to say every kept notice
+again.
+
 **Demos:** two info banners at the top of each Context's layout grid, before the
 metrics, across all 12 columns — Reload for a new version, Refresh data for
 waiting rows — and a new version is an item in Notifications too, which stays
@@ -14941,6 +14951,9 @@ after its banner is dismissed and reloads when picked (Will, D5).
 - Site: `src/core/data/notices.ts`
 - Site: `src/core/browser/updates.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/core/data/updates.ts`
+- Site: `test/unit/what-is-new-waits-until-taken.test.mjs`
+- Site: `test/e2e/reforged-provider-news.spec.ts`
 
 ### T-a-new-build-is-a-new-worker
 

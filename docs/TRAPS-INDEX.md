@@ -58,7 +58,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-mode-switch-carries-the-answer-over](TRAPS.md#t-a-mode-switch-carries-the-answer-over) — filter-state
 - [T-a-needle-comes-from-either-direction](TRAPS.md#t-a-needle-comes-from-either-direction) — data-source, data-source-types, store
 - [T-a-newer-write-wins](TRAPS.md#t-a-newer-write-wins) — fake-remote, notices, store, stores
-- [T-a-notice-is-heard-never-ordered](TRAPS.md#t-a-notice-is-heard-never-ordered) — notices
+- [T-a-notice-is-heard-never-ordered](TRAPS.md#t-a-notice-is-heard-never-ordered) — notices, updates
 - [T-a-page-goes-out-as-json](TRAPS.md#t-a-page-goes-out-as-json) — data-source-types, query-context
 - [T-a-page-is-its-definition](TRAPS.md#t-a-page-is-its-definition) — data, page-definition
 - [T-a-page-scope-starts-with-its-answers](TRAPS.md#t-a-page-scope-starts-with-its-answers) — query-context, query-edits

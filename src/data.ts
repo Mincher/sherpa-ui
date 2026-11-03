@@ -135,6 +135,7 @@ export { statusFields, type StatusField, type StatusValue } from './core/data/st
 export { memoryOutbox, outboxEntry, type OutboxEntry, type OutboxPort } from './core/data/outbox.js';
 // What is new, said to every tab: a fact, never a request to show it. Plan 652 S6
 export { NOTICE_CHANNEL, sayNotice, type NoticeAsk, type UpdateNotice } from './core/data/notices.js';
+export { Updates, type NewsKind, type UpdatesDetail } from './core/data/updates.js';
 /* A page's QUERY, drawn as nodes for the Node Editor. TODO 555 · TRAP T-the-node-editor-asks-the-query */
 export { QUERY_KINDS, queryGraph, type GraphComponent, type QueryGraphFacts } from './core/data/query-graph.js';
 /* An APP, set up from one JSON document. TRAP T-an-app-is-its-definition */

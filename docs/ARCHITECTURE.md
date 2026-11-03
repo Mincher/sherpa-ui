@@ -42,7 +42,7 @@ flowchart LR
     ds["DataSource<br/>the Query, field facts"]
     prov["sherpa-provider<br/>bindSource"]
     comps["components<br/>draw and count"]
-    upd["onUpdate<br/>watchForUpdates"]
+    upd["Updates<br/>hearUpdates · watchForUpdates"]
   end
   files --> appfiles
   api <--> held
@@ -182,7 +182,10 @@ sequenceDiagram
 | A live feed (alerts) | the app's server | ONE tab holds it (`shareFeed`, a Web Lock) and passes each message on | the store it feeds |
 
 The worker never tells a page WHAT to show: it says a fact, and an element that
-asked to hear it shows (`T-a-notice-is-heard-never-ordered`). Two things are still
+asked to hear it shows (`T-a-notice-is-heard-never-ordered`). Each page holds its
+news in ONE `Updates` object, the provider's `updates`: what waits, and what the
+reader dismissed. Every listening element draws from it, and so does an app's own
+list (Demos' Notifications). Two things are still
 polled, because the server has no way yet to say them: a new build
 (`watchForUpdates`, every 5 minutes and when a tab is shown again) and a server-side
 change (checked behind when a tab is shown or back online). Row 687 replaces both

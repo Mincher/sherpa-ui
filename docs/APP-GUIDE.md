@@ -238,6 +238,12 @@ export const { store: customerStore, ready: customersReady } = localRecords({
 - A grid that fits its box needs a sized parent. `T-a-fit-grid-needs-a-sized-parent`
 - Wait for `settled(root)` before you measure: icons load when first drawn.
   `T-an-icon-loads-when-first-drawn`
+- **What is new** shows in an element that LISTENS for it, drawn `hidden`:
+  `data-listens="app"` (a new version), `"data"` (newer rows wait) or `"lost"` (a
+  save made offline lost). The provider shows it while that waits; a locked
+  callout's close hides it until the next notice; a `data-refresh` from it takes
+  the rows in. For your own list, read `provider.updates` (`waiting`, and its
+  `change` event), never a second `onUpdate`. `T-a-notice-is-heard-never-ordered`
 
 ## 7. A Context module
 
