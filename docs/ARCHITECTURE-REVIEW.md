@@ -195,6 +195,13 @@ a store still loses `distinct` and `history`.
   **pure edits `(query, command) → query`** (which undo and the node engine need),
   declarations, members.
 
+*Done, 695 S5 (2026-11-03):* `DataSource` 2,166 → 1,267 lines with `source-reads`,
+`source-walk` and `source-view` beside it; `QueryContext` 1,404 → 624 with
+`query-declarations` and `query-members`. Every answering edit is pure (`editCopies`): `ask()`
+applies the new Query and tells each member once — one compile, one draw, one
+`query-change`. A component is named by its bind id (`bindId`), never its element. One trace
+runs through a load. The bench fell: compiles 3 → 1 on reports and clears, clones 27 → 17.
+
 ### 3.4 One command vocabulary
 
 `QueryRequest` is the right idea, in the wrong place: it is dispatched by `ask()` in
@@ -316,6 +323,12 @@ the URL's `?view` — in three JSON shapes. "Draft" means two things.
 
 **Proposal:** one `PageState` document — `{ view, query, draft, ui }` — with one keeper and
 pluggable tiers. Saved Views and saved filters become named parts of it.
+
+*Done, 695 U3 (2026-11-03):* `PageState` v3 (`page-state.ts`) with one keeper, `PageKeeper`,
+and tiers (session, local, memory, the browser database, an app's remote); `views` and
+`filters` are its named parts and the only ones that cross tabs. "Draft" is only what waits
+for Apply; what a reader left on a View is `left`. `view-drafts.ts` and `view-sync.ts` are
+gone. A reader's v2 saved Views and saved filters are read once into it.
 
 ### 5.4 Presentation swapping (548)
 

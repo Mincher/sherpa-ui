@@ -358,6 +358,41 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   `problem+json` (an offline failure crosses as a 500); POST for `?recheck` and the other
   acts; one name for `/sherpa/updates`. History is not sent apart: a request store builds
   its own from the changes it hears.
+- **S5 ✅ (`be22140a`…`f967ef3e`, `1961ea0e`).** `DataSource` 2,166 → 1,267 lines, with
+  `source-reads.ts`, `source-walk.ts` and `source-view.ts`; `QueryContext` 1,404 → 624, with
+  `query-declarations.ts` and `query-members.ts`; `query-edits.ts` 519 → 1,264. Every
+  answering edit is pure — `editCopies(copies, request, facts)` returns the new copies and
+  an ordered list of what members must hear; `ask()` freezes the new Query, puts it in
+  place and tells each member once. The Switch's edit lists what it turned off; a hold's
+  clear carries its scope. `only` is a bind id (`bindId(el)` in bind-source.ts, exported);
+  `bindOf(el)` → `bound(id)`. `LoadOptions.trace` carries a load's span through
+  `HeldStore` → `HeldReads` → `StoreCache` → `RequestStore`. The bench recorded lower on
+  purpose (compiles 3 → 1 on reports and clears, `aside` 8 → 4; clones `raise` 21 → 13,
+  `apply-fetch` 27 → 17). `data.js` +4.9% brotli. Apps see: `pickedFor(id, field)`,
+  `allRows(id?)`, `attach` needs `facts.id`, `partFacts().only` a string. Lane picks
+  taken: `showAs`/`axisChips` stay on DataSource as doors over `QueryDeclarations.honour`;
+  the binding stays keyed by control, the newest bind winning a lookup by id (keyed by id,
+  two live charts sharing an `id` broke Show as). At merge: H2's and S5's store files met
+  cleanly; one stale Site removed. 1605 tests in three engines on the tip.
+  **Carried:** the bind registry keys by `BoundControl` and `tagOf` reads a tag (drawing
+  through `BindSink` → P6); a field-values module (~200 lines still in DataSource) and the
+  answering edits out of `query-edits.ts` are next seams. `QueryContext.presetOn` → N1's
+  pure `presetHeld`.
+- **U3 ✅ (`89f8eaed`…`9683929b`, `015db758`; Demos `0a92f86`).** `PageState` v3
+  (`src/core/browser/page-state.ts`): `view`, `query`, `draft`, `ui`, `left`, `added`,
+  `toolbars`, and the named `views` and `filters`; one `PageKeeper` with `sessionTier`,
+  `localTier`, `memoryTier`, an opt-in browser database and a `PageRemote`. The nine keepers
+  go through it; `view-drafts.ts` and `view-sync.ts` gone; `persist-view.ts` and
+  `saved-filters.ts` cut down. "Draft" is only what waits for Apply; what a reader left on
+  a View is `left`. The keeper's `eachView` replaces the outlet's `drafts` callback; the
+  outlet's nav reads its settings from Settings. Stored data: a reader's v2 saved Views and
+  saved filters are read once into the document (B, built), the old keys removed after;
+  per-tab state, card toolbars' shown state and Demos' "each view's filters" switch are not
+  carried (A). Lane picks taken: the tab's parts in sessionStorage by default; `?view`
+  stays the router's; saved filters not in IndexedDB yet. 696 tests in three engines.
+  **Carried:** PRINCIPLES §19 still names `ViewSnapshot`; ARCHITECTURE.md line 33 says
+  "drafts"; `query-edits.ts` says "a View's draft" — the integrator's wording pass.
+  **Wave 3 is whole.**
 
 ### The waves
 
