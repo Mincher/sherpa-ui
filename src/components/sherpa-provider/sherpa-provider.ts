@@ -5,9 +5,9 @@
  * It holds the sources it is given and joins each component that asks to the
  * one its subtree provides — by `bindSource()`, delivering through the callback
  * the component asked with — and opens and closes pages. A request that arrives
- * before any source waits, and `provide()` answers it. What it draws beside —
- * reach, notices, cards, the highlight, legend picks, Show as — is each a module
- * beside it.
+ * before any source waits, and `provide()` answers it; one naming a source a
+ * provider above gives travels up. What it draws beside — reach, notices, cards,
+ * the highlight, legend picks, Show as — is each a module beside it.
  * docs/PROVIDER-DESIGN.md. TRAP T-a-component-asks-its-provider
  *
  * Map:
@@ -17,7 +17,7 @@
  */
 import { SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import {
-  DATA_CONTEXT, SOURCE_CONTEXT, type ContextRequestEvent, type DataAsk,
+  ContextRequestEvent, DATA_CONTEXT, SOURCE_CONTEXT, type DataAsk,
 } from '../../core/ui/context.js';
 import { report } from '../../core/data/report.js';
 import { chartAxes, summariseMarked, type SummarySpec } from '../../core/data/aggregate.js';
@@ -732,7 +732,9 @@ export class SherpaProvider extends SherpaElement {
     this.#cards.watch(Object.values(this.#sources), this.#states.signal);
     // Leaving for the next page keeps the page's reach: the banner does not flicker between two.
     if (shut || Object.keys(this.#sources).length) this.#reach.sync();
-    for (const asked of this.#asked.values()) this.#answer(asked);
+    for (const asked of [...this.#asked.values()]) this.#answer(asked);
+    // An ask a provider below holds for one of these goes up to this one.
+    for (const below of this.querySelectorAll(this.localName)) if (below instanceof SherpaProvider) below.#rehome();
     this.#pages.stopViews();
     /* A page with NO data has no filters: the panel shuts — not the reader's
        choice, so it opens again on the next page that has some. TRAP T-navigating-sets-up-the-page */
@@ -1055,11 +1057,13 @@ export class SherpaProvider extends SherpaElement {
     if (state.view) this.#pages.takeView(state.view);
   }
 
-  /** A request from inside: the NEAREST provider answers, so it stops here. */
+  /** A request from inside: the NEAREST provider answers, so it stops here — but one
+   *  for a source this one does not give, and one above does, travels up. PROVIDER-DESIGN §3 */
   #onRequest = (event: Event): void => {
     const request = event as ContextRequestEvent<unknown>;
     if (request.context !== DATA_CONTEXT && request.context !== SOURCE_CONTEXT) return;
     const el = request.contextTarget;
+    if (this.#passes(el)) return;
     event.stopPropagation();
     if (request.context === SOURCE_CONTEXT) {
       const source = this.#resolve(el);
@@ -1075,6 +1079,32 @@ export class SherpaProvider extends SherpaElement {
     this.#answer(asked);
   };
 
+  /** Does a provider above this one give a source of this name now? */
+  #givenAbove(name: string): boolean {
+    for (let at = up(this); at; at = up(at)) {
+      if (at instanceof SherpaProvider && Object.hasOwn(at.#sources, name)) return true;
+    }
+    return false;
+  }
+
+  /** Is it for a source this one does not give, and one above does? */
+  #passes(el: Element): boolean {
+    const named = this.#inherited(el, 'data-source');
+    return !!named && !Object.hasOwn(this.#sources, named) && this.#givenAbove(named);
+  }
+
+  /** The asks held here for a source a provider above gives now go up to it. */
+  #rehome(): void {
+    for (const asked of [...this.#asked.values()]) if (this.#passes(asked.request.contextTarget)) this.#handUp(asked);
+  }
+
+  /** Hand an ask held here up, to the provider above that gives its source now. */
+  #handUp(asked: Asked): void {
+    const { context, contextTarget, callback, subscribe } = asked.request;
+    this.#asked.delete(contextTarget);
+    this.dispatchEvent(new ContextRequestEvent(context, contextTarget, callback, subscribe));
+  }
+
   /** Join one asking component to its source, in the shape it declared. */
   #answer(asked: Asked): void {
     asked.unbind?.();
@@ -1083,6 +1113,11 @@ export class SherpaProvider extends SherpaElement {
     // Gone from the page while it waited: forget it, never bind it.
     if (!el.isConnected) {
       this.#asked.delete(el);
+      return;
+    }
+    // Its source is given above now: it goes there.
+    if (this.#passes(el)) {
+      this.#handUp(asked);
       return;
     }
     const source = this.#resolve(el);
@@ -1327,7 +1362,7 @@ export class SherpaProvider extends SherpaElement {
     const named = this.#inherited(el, 'data-source');
     if (named) {
       const source = this.#sources[named];
-      if (!source && names.length) {
+      if (!source && names.length && !this.#givenAbove(named)) {
         report({
           code: 'provider-unknown-source',
           message: 'sherpa-provider: this subtree provides no source by that name.',

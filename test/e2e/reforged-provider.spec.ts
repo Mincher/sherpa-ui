@@ -202,6 +202,46 @@ test('two sources: an unnamed ask is refused loudly, a named one is answered', a
   expect(r['reports']).toEqual(['provider-ambiguous', 'provider-unknown-source']);
 });
 
+/* PROVIDERS NEST: an inner one answers what it gives, and an ask for a source it
+   does not give travels up to the one that does — its data and the source itself —
+   whichever is given its sources first. A name no provider gives is said, by the
+   nearest. PROVIDER-DESIGN §3 */
+for (const first of ['outer', 'inner']) {
+  test(`nested providers: the one above answers a source the inner one does not give (${first} provided first)`, async ({ page }) => {
+    const r = await page.evaluate(`(async () => {
+      ${SETUP}
+      const { SOURCE_CONTEXT, ContextRequestEvent } = await import('/dist/index.js');
+      const outer = document.createElement('sherpa-provider');
+      const inner = document.createElement('sherpa-provider');
+      const own = grid();
+      const above = grid({ 'data-source': 'invoices' });
+      const none = grid({ 'data-source': 'orders' });
+      inner.append(own, above, none);
+      outer.append(inner);
+      // Asked BEFORE either has a source: each waits in the inner one.
+      root.append(outer);
+      await settle();
+      const invoices = source(5, 'i');
+      const customers = source(2, 'c');
+      const give = { outer: () => outer.provide({ sources: { invoices } }), inner: () => inner.provide({ sources: { customers } }) };
+      give['${first}']();
+      give['${first}' === 'outer' ? 'inner' : 'outer']();
+      await Promise.all([customers.load(), invoices.load()]);
+      await settle();
+      let given = null;
+      above.dispatchEvent(new ContextRequestEvent(SOURCE_CONTEXT, above, (s) => { given = s; }));
+      return { own: drawn(own), above: drawn(above), none: drawn(none), source: given === invoices,
+        bound: [customers.boundElements.length, invoices.boundElements.length], reports: [...new Set(reports)] };
+    })()`) as Record<string, unknown>;
+    expect(r['own']).toBe(2);
+    expect(r['above']).toBe(5);
+    expect(r['none']).toBe(0);
+    expect(r['source']).toBe(true);
+    expect(r['bound']).toEqual([1, 1]);
+    expect(r['reports']).toEqual(['provider-unknown-source']);
+  });
+}
+
 test('a component that leaves the page leaves its source; a new source reaches what stays', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}

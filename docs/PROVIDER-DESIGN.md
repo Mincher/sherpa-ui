@@ -98,7 +98,11 @@ provider.provide({
 
 It is thin: a DOM adapter over the DOM-free data layer. It holds no data of
 its own. Providers NEST — an inner subtree answers what it provides, and a key
-it does not provide keeps travelling up.
+it does not provide keeps travelling up. An ask that names a source the inner
+provider does not give, and one above does, goes to that one; an ask held before
+the provider above gave it goes up when it does (`#onRequest`, `#rehome`). An
+unnamed ask stays with the nearest. A name no provider gives is held by the
+nearest, which says so (`provider-unknown-source`).
 
 **What it does, and what sits beside it (plan 695 U1).** `sherpa-provider.ts`
 answers asks and opens and closes pages. Each other job is a module beside it,
