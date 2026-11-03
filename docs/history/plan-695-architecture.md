@@ -231,6 +231,23 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   carries `only?: BoundControl`, an element (make it a bind id). **→ N1:** export
   `editQuery` from `sherpa-ui/data`; node-editor edits call `typedValue`. The bench baseline
   is stale on the tip (acts cost less than recorded) — re-record it on purpose.
+- **H3 ✅ (`79a8b785`, `8436fad3`; Demos `aa56815`).** One database, `sherpa-ui`
+  (`src/core/browser/database.ts`): one version, one upgrade, typed records; object stores
+  `rows` [store, key] with one multiEntry `seek` index, `seeds`, `sets`, `outbox`
+  [outbox, id], `notices`, `views` [page, id]; all access through `transact`, `readAll`,
+  `readOne`, `write`, `erase`, `clearStores`. `IdbStore`'s own open and upgrade, its
+  `database`/`version`/`close()` options and the localStorage seed mark are gone. Bug 2
+  fixed (two stores share the database); bug 3 fixed (the seed mark lives in `seeds`, one
+  transaction with the rows, so a worker re-seeds). `cache-keep`, `outbox-keep`,
+  `notice-keep` and `view-sync` use it; `clearOutboxes` gone; sign-out clears sets, outbox
+  and notices in one transaction. `persist()` once per page, at the first open (❓ Will:
+  A this, or B an app call). Lane pick taken: old databases are not migrated (D4: no
+  stored-data shims) — left on the device, unread: writes still waiting in
+  `sherpa-outbox`, rows an app kept in `sherpa`/`sherpa-examples`, and Views kept only in
+  IndexedDB; saved filters and current Views are in localStorage, untouched. Demos'
+  customers store dropped its five text `indexes` (a text index never narrows a read).
+  **Carried:** after a sign-out the worker holds no new set until it restarts — in S4's
+  brief; if S4 leaves it, H2.
 
 ### The waves
 
