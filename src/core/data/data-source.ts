@@ -92,6 +92,7 @@ import { type CacheChangeDetail, type StoreCache } from './store-cache.js';
 import { type Plan } from './read-plan.js';
 import { HeldReads } from './held-reads.js';
 import { failureOf, unreached, type Failure } from './failure.js';
+import { startSpan } from './trace.js';
 import type { FieldReading, FilterState } from './filter-state.js';
 import type {
   Filter, GroupSummary, LoadOptions, LoadResult, Row, Store,
@@ -1609,6 +1610,8 @@ export class DataSource extends EventTarget {
     this.#inFlightKey = key;
     this.#inFlightAsked = key;
     this.dispatchEvent(new CustomEvent('loading', { detail: { loading: true } }));
+    // A load says its start and end on the one trace stream. TRAP T-one-trace-stream
+    const span = startSpan('load');
 
     try {
       await this.#hold();
@@ -1727,6 +1730,7 @@ export class DataSource extends EventTarget {
       this.dispatchEvent(new CustomEvent('error', { detail: { error, failure } }));
       return this.#result;
     } finally {
+      span?.end({ rows: this.#result.rows.length, total: this.#result.total });
       if (this.#inFlight.end(ticket)) {
         this.#inFlightKey = null;
         this.#inFlightAsked = null;

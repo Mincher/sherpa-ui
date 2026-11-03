@@ -8,9 +8,13 @@
  * Map:
  * - KeepOptions — Where and for how long a store's set is kept.
  * - keepCache — Keep a remote store's held set on the device, and start from it next time.
- * - clearKept — Forget every kept set, on the device and in memory — a sign-out.
+ * - forgetKept — This context's half of a sign-out: its kept sets, and what the device keeps.
+ * - clearKept — A sign-out: what is kept here, in the app's worker and on the device, forgotten.
  */
+import { askWorker } from './ask-worker.js';
 import { IdbStore } from './idb-store.js';
+import { keepNotices } from './notice-keep.js';
+import { clearOutboxes } from './outbox-keep.js';
 import { cacheOf, type CacheKeep, type KeptSet } from '../data/store-cache.js';
 import { report } from '../data/report.js';
 import type { Row, Store } from '../data/store.js';
@@ -157,16 +161,24 @@ export function keepCache(store: Store, options: KeepOptions): { ready: Promise<
   return { ready: port.read().then(() => undefined), forget };
 }
 
-/** Forget every kept set — on the device, and each one held in memory — and
- *  keep nothing more until `keepCache` is called again: a sign-out. */
-export async function clearKept(): Promise<void> {
+/** This context's half of a sign-out: each set it keeps, held in memory, is
+ *  dropped and kept no more; the device forgets every set, every write that waits
+ *  and every kept notice. A worker runs it when a page signs out. */
+export async function forgetKept(): Promise<void> {
   for (const [store, close] of kept) {
     close();
     cacheOf(store).drop({ forget: true });
   }
   kept.clear();
   if (!IdbStore.available) return;
-  try {
-    await setsStore().clear();
-  } catch { /* nothing kept */ }
+  await Promise.all([setsStore().clear(), clearOutboxes(), keepNotices().clear()].map((done) => done.catch(() => undefined)));
+}
+
+/** A sign-out: every kept set forgotten — here, in the app's Service Worker, and
+ *  on the device — with the writes that wait and the kept notices, and nothing
+ *  more kept until `keepCache` is called again. Settles once the worker is done:
+ *  its held sets would write the copy back. TRAP T-a-kept-set-is-checked-each-session */
+export async function clearKept(): Promise<void> {
+  await forgetKept();
+  await askWorker({ sherpa: 'sign-out' }, { answered: true });
 }

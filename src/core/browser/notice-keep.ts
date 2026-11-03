@@ -17,7 +17,11 @@ export interface NoticeKeep {
   read(): Promise<UpdateNotice[]>;
   put(notice: UpdateNotice & { id: string }): Promise<void>;
   remove(id: string): Promise<void>;
+  /** Forget every one: a sign-out. */
+  clear(): Promise<void>;
 }
+
+let notices: IdbStore | null = null;
 
 /** The kept notices on the device, or in memory where it has no IndexedDB. */
 export function keepNotices(): NoticeKeep {
@@ -27,13 +31,15 @@ export function keepNotices(): NoticeKeep {
       read: async () => [...kept.values()],
       put: async (notice) => void kept.set(notice.id, notice),
       remove: async (id) => void kept.delete(id),
+      clear: async () => kept.clear(),
     };
   }
-  const notices = new IdbStore({ name: 'notices', database: 'sherpa-notices', key: 'id' });
+  const store = (notices ??= new IdbStore({ name: 'notices', database: 'sherpa-notices', key: 'id' }));
   return {
-    read: async () => (await notices.load()).rows as unknown as UpdateNotice[],
-    put: async (notice) => void await notices.putAll([notice as unknown as Row]),
+    read: async () => (await store.load()).rows as unknown as UpdateNotice[],
+    put: async (notice) => void await store.putAll([notice as unknown as Row]),
     // Seen in another tab already: nothing to forget.
-    remove: (id) => notices.remove(id).catch(() => undefined),
+    remove: (id) => store.remove(id).catch(() => undefined),
+    clear: () => store.clear(),
   };
 }

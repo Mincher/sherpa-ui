@@ -17,7 +17,8 @@ import { HeldSet } from './held-set.js';
 import { outboxEntry, type OutboxEntry, type OutboxPort } from './outbox.js';
 import { report } from './report.js';
 import { carryKey, keyRow } from './row-key.js';
-import { projectRow, readField, sameKey, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail, type StoreChanges } from './store.js';
+import { projectRow, readField, sameKey, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail, type StoreChanges, type WriteOptions } from './store.js';
+import { startSpan, within } from './trace.js';
 
 /** A write made offline that did not land: a newer write won (`conflict`, D3), or
  *  its source refused it. Said as `lost`. Plan 652 S7b */
@@ -155,9 +156,11 @@ export class HeldStore extends EventTarget implements Store {
   }
 
   async load(options?: LoadOptions): Promise<LoadResult> {
+    const span = startSpan('hold');
     if (options?.fields) this.#need = options.fields;
     await this.#read;
     await this.#reads.hold();
+    span?.end({ plan: this.#reads.plan, rows: this.#reads.cache?.set?.size ?? 0 });
     const result = await this.#answers.load(options);
     /* Its set holds whole rows: a read that names its fields gets those, and the key —
        a tally of one field at 100k rows moved 9.5 MB to the page. Plan 652 S9 */
@@ -166,7 +169,9 @@ export class HeldStore extends EventTarget implements Store {
   }
 
   async totalCount(options?: LoadOptions): Promise<number> {
+    const span = startSpan('hold');
     await this.#reads.hold();
+    span?.end({ plan: this.#reads.plan, rows: this.#reads.cache?.set?.size ?? 0 });
     return this.#answers.totalCount(options);
   }
 
@@ -189,19 +194,20 @@ export class HeldStore extends EventTarget implements Store {
       return values;
     }
   }
-  async update(key: unknown, values: Row): Promise<Row> {
+  /* A write's time goes on to the source; offline, it waits with it. D3 */
+  async update(key: unknown, values: Row, options?: WriteOptions): Promise<Row> {
     try {
-      return await this.#source.update(key, values);
+      return await this.#source.update(key, values, options);
     } catch (error) {
-      await this.#wait(error, { type: 'update', key, values });
+      await this.#wait(error, { type: 'update', key, values, ...timeOf(options) });
       return { ...this.#held(key), ...values };
     }
   }
-  async remove(key: unknown): Promise<void> {
+  async remove(key: unknown, options?: WriteOptions): Promise<void> {
     try {
-      await this.#source.remove(key);
+      await this.#source.remove(key, options);
     } catch (error) {
-      await this.#wait(error, { type: 'remove', key });
+      await this.#wait(error, { type: 'remove', key, ...timeOf(options) });
     }
   }
 
@@ -250,9 +256,14 @@ export class HeldStore extends EventTarget implements Store {
   async send(): Promise<boolean> {
     const outbox = this.#outbox;
     if (!outbox) return true;
+    // Traced only where writes wait: every check behind sends first.
+    const span = this.#pending.length ? startSpan('send', { detail: { waiting: this.#pending.length } }) : null;
     await this.#read;
-    if (!this.#pending.length) return true;
-    return outbox.alone(async () => {
+    if (!this.#pending.length) {
+      span?.end({ left: 0 });
+      return true;
+    }
+    const sent = await outbox.alone(async () => {
       // Read again: another sender may have sent some.
       let lost = false;
       const waiting = await outbox.read();
@@ -297,18 +308,45 @@ export class HeldStore extends EventTarget implements Store {
       }
       return !this.#pending.length;
     });
+    span?.end({ left: this.#pending.length });
+    return sent;
   }
 
   /** Read its source again behind the set it answers — the writes that wait sent
    *  first; settles when that read lands or fails — either way the set says so. */
   async recheck(): Promise<void> {
-    await this.send().catch(() => false);
+    const span = startSpan('recheck');
+    await within(span, () => this.send()).catch(() => false);
     const cache = this.#reads.cache;
-    if (!cache) return;
-    const landed = new Promise<void>((done) => cache.addEventListener('set', () => done(), { once: true }));
-    this.#reads.recheck();
-    await landed;
+    if (cache) {
+      const landed = new Promise<void>((done) => cache.addEventListener('set', () => done(), { once: true }));
+      this.#reads.recheck();
+      await landed;
+    }
+    span?.end({ rows: cache?.set?.size ?? 0 });
   }
+
+  /** Forget all it holds — its set, the rows shown, the writes that wait — and
+   *  have its readers ask again: a sign-out. */
+  async forget(): Promise<void> {
+    await this.#read;
+    this.#pending = [];
+    this.#shown = null;
+    this.#waiting = this.#owed = false;
+    this.#reads.cache?.drop({ forget: true });
+    const outbox = this.#outbox;
+    if (outbox) {
+      await outbox.alone(async () => {
+        for (const entry of await outbox.read()) await outbox.remove(entry.id);
+      });
+    }
+    this.dispatchEvent(new CustomEvent('change', { detail: { type: 'update' } }));
+  }
+}
+
+/** A write's own time, kept with it where it waits. */
+function timeOf(options?: WriteOptions): { since?: number } {
+  return options?.unmodifiedSince !== undefined ? { since: options.unmodifiedSince } : {};
 }
 
 /** Do two sets hold the same rows? Read only when a set lands behind another. */

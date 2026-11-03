@@ -134,9 +134,11 @@ export { statusFields, type StatusField, type StatusValue } from './core/data/st
 // A write made offline waits, and is sent once. Plan 652 S7a
 export { memoryOutbox, outboxEntry, type OutboxEntry, type OutboxPort } from './core/data/outbox.js';
 // What is new, said to every tab: a fact, never a request to show it. Plan 652 S6
-export { NOTICE_CHANNEL, sayNotice, type NoticeAsk, type UpdateNotice } from './core/data/notices.js';
+export { NOTICE_CHANNEL, sayNotice, type UpdateNotice, type WorkerAsk } from './core/data/notices.js';
 export { Updates, type NewsKind, type UpdatesDetail } from './core/data/updates.js';
 export { updatesFeed, type FeedNotice, type UpdatesFeed } from './core/data/updates-feed.js';
+// ONE trace stream: the page's, its worker's and a server's steps, joined by one id. TRAP T-one-trace-stream
+export { TRACE_CHANNEL, onTrace, tracing, type Span, type TraceHost } from './core/data/trace.js';
 /* A page's QUERY, drawn as nodes for the Node Editor. TODO 555 · TRAP T-the-node-editor-asks-the-query */
 export { QUERY_KINDS, queryGraph, type GraphComponent, type QueryGraphFacts } from './core/data/query-graph.js';
 /* An APP, set up from one JSON document. TRAP T-an-app-is-its-definition */

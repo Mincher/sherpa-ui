@@ -2,7 +2,7 @@
  * A PUSH IS A CHECK BEHIND — plan 652 S8. A push from the app's server names a
  * store that changed: the worker reads its held set again behind, so newer rows
  * wait and the banner's notice is said (S6c); a store not held says the notice
- * itself. A notification shows where it may, and its press opens the app.
+ * itself. A notification shows where it may, and its press opens its url.
  * TRAP T-a-push-is-a-check-behind
  *
  *   node --test test/unit/a-push-is-a-check-behind.test.mjs
@@ -24,7 +24,7 @@ function worker(stores) {
     location: { origin: 'http://test' },
     clients: {
       claim: async () => {},
-      matchAll: async () => tabs.map((tab) => ({ focus: async () => { focused.push(tab); } })),
+      matchAll: async () => tabs.map((url) => ({ url, focus: async () => { focused.push(url); } })),
       openWindow: async (url) => { opened.push(url); },
     },
     skipWaiting: async () => {},
@@ -76,16 +76,21 @@ test('a push naming a store not held says the notice itself', async () => {
   ear.close();
 });
 
-test('a notification shows; its press focuses an open tab, else opens its page', async () => {
+test('a notification shows; its press focuses the tab that shows its url, else opens it', async () => {
   const w = worker({});
   await w.push({ notification: { title: 'Customers changed', body: 'Ada is Cy now', url: '/?context=records' } });
   assert.deepEqual(w.shown, [{ title: 'Customers changed', body: 'Ada is Cy now', data: { url: '/?context=records' } }]);
-  const press = () => w.fire('notificationclick', { notification: { close() {}, data: { url: '/?context=records' } } });
-  await press();
-  assert.deepEqual(w.opened, ['/?context=records'], 'no tab open: it opens one');
-  w.tabs.push('a tab');
-  await press();
-  assert.equal(w.focused.length, 1, 'a tab open: it is focused');
+  const press = (url) => w.fire('notificationclick', { notification: { close() {}, data: { url } } });
+  await press('/?context=records');
+  assert.deepEqual(w.opened, ['http://test/?context=records'], 'no tab open: it opens one');
+  w.tabs.push('http://test/?context=dashboard');
+  await press('/?context=records');
+  assert.deepEqual([w.focused, w.opened.length], [[], 2], 'a tab on another page is left at its work: the url opens');
+  w.tabs.push('http://test/?context=records');
+  await press('/?context=records');
+  assert.deepEqual([w.focused, w.opened.length], [['http://test/?context=records'], 2], 'the tab that shows it is focused');
+  await press(undefined);
+  assert.deepEqual(w.opened.at(-1), 'http://test/', 'no url: the app');
 });
 
 test('a push that is not JSON, or names nothing, does nothing', async () => {

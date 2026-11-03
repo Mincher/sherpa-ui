@@ -11,13 +11,9 @@
  * - noticeSeen — The reader has seen a kept notice: the worker forgets it.
  * - hearUpdates — Feed a page's `Updates` with each notice, and tell the worker of a lost save seen.
  */
-import { NOTICE_CHANNEL, type NoticeAsk, type UpdateNotice } from '../data/notices.js';
+import { NOTICE_CHANNEL, type UpdateNotice } from '../data/notices.js';
 import type { Updates, UpdatesDetail } from '../data/updates.js';
-
-/** Ask the page's worker — waking it, as a channel cannot. */
-function ask(message: NoticeAsk): void {
-  navigator.serviceWorker?.controller?.postMessage(message);
-}
+import { askWorker } from './ask-worker.js';
 
 /** Hear each notice; the function it returns stops hearing. */
 export function onUpdate(listener: (notice: UpdateNotice) => void): () => void {
@@ -34,12 +30,12 @@ export function onUpdate(listener: (notice: UpdateNotice) => void): () => void {
     workers.addEventListener('controllerchange', () => {
       if (had) listener({ kind: 'app' });
       had = true;
-      ask({ sherpa: 'notices' });
+      void askWorker({ sherpa: 'notices' });
     }, { signal: stop.signal });
   }
   /* What the worker kept unseen — a write lost with every tab shut — said again, to
      every tab: a listener keys each by its id. S7b · TRAP T-a-newer-write-wins */
-  ask({ sherpa: 'notices' });
+  void askWorker({ sherpa: 'notices' });
   return () => {
     stop.abort();
     channel.close();
@@ -72,7 +68,7 @@ export function watchForUpdates(options: { every?: number } = {}): () => void {
 /** The reader has seen a kept notice: the worker forgets it, and no page that
  *  opens is told it again. */
 export function noticeSeen(id: string): void {
-  ask({ sherpa: 'seen', id });
+  void askWorker({ sherpa: 'seen', id });
 }
 
 /** Feed a page's `Updates` with each notice, and tell the worker of a lost save the

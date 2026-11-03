@@ -197,6 +197,20 @@ worker check that store behind — and what that finds reaches every tab as a no
 or one gap and a check of every store. Where no feed answers, every tab polls
 instead (`watchForUpdates`, which `followUpdates` runs).
 
+**What each host DID is one trace stream** (`T-one-trace-stream`, plan 695 S3). A
+DataSource's `load`, a `RequestStore`'s `request`, the handler's `answer` and the
+worker's `hold`, `recheck` and `send` are each a span, said on `sherpa-trace` to
+every context; `onTrace(listener)` hears them all. A request carries its span as a
+W3C `traceparent`, so the worker's spans join the page's trace by one id. Nobody
+listening, no span is made and no request carries the header.
+
+| Span | Host | Under |
+|---|---|---|
+| `load` | the page | — its own trace |
+| `request` | the page (or a worker's source) | whatever call began it |
+| `answer` | whoever handles it: `page`, `worker`, `server` | the `request`, by `traceparent` |
+| `hold` · `recheck` · `send` | the store's host | the `answer` |
+
 ---
 
 ## 7. Things that look odd, on purpose

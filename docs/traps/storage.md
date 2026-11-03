@@ -964,7 +964,8 @@ held set. Not a cookie: Chromium sends none with a worker script's request
 A held store is read again behind (`recheck`), so its newer rows WAIT and the
 data notice is said — the banner shows (`T-a-server-change-waits`); a store not
 held says the notice itself. A `notification` is shown where the reader allowed
-it, and its press focuses an open tab, else opens its `url`. The app's server
+it, and its press focuses the tab that shows its `url`, else opens it in a new one:
+an open tab is never moved off its work (plan 695 H1, bug 9). The app's server
 sends the push, with its own keys: Sherpa ships the worker's half.
 
 Measured 2026-11-02 in Chromium, the push delivered by DevTools

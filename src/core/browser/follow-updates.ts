@@ -11,6 +11,7 @@
  * - followUpdates — Follow the feed in one tab of the app; the function it returns stops this tab's part.
  */
 import type { FeedNotice } from '../data/updates-feed.js';
+import { oneTab } from './one-tab.js';
 import { watchForUpdates } from './updates.js';
 
 /** Where the feed is, and where the worker serves the data. */
@@ -21,10 +22,10 @@ export interface FollowOptions {
   base?: string;
 }
 
-/** Follow the feed in one tab of the app — the one that holds its Web Lock; when
- *  that tab shuts, the next takes it. Where no feed answers, every tab asks the
- *  browser now and then instead (`watchForUpdates`). The function it returns stops
- *  this tab's part. */
+/** Follow the feed in one tab of the app — the one that leads `sherpa-news`, its
+ *  own name, never a shared feed's; when that tab shuts, the next takes it. Where
+ *  no feed answers, every tab asks the browser now and then instead
+ *  (`watchForUpdates`). The function it returns stops this tab's part. */
 export function followUpdates(options: FollowOptions = {}): () => void {
   const url = options.url ?? '/sherpa/updates';
   const base = options.base ?? '/sherpa/data/';
@@ -54,53 +55,35 @@ export function followUpdates(options: FollowOptions = {}): () => void {
     // It missed more than the feed could say again: every store, once.
     if (notice.kind === 'gap') void fetch(`${base}?recheck`).catch(() => undefined);
   };
-  /* The holder says whether the feed answers, to every tab; a tab that opens later
+  /* The leader says whether the feed answers, to every tab; a tab that opens later
      asks. A feed that refuses — no such path — stays shut, and every tab polls. */
-  const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel('sherpa-feed:updates');
   let live: boolean | null = null;
   const say = (now: boolean): void => {
     live = now;
     poll(!now);
-    channel?.postMessage(now ? 'live' : 'down');
+    tab.say(now ? 'live' : 'down');
   };
-  channel?.addEventListener('message', (event: MessageEvent<string>) => {
-    if (event.data === 'ask') {
-      if (live !== null) channel.postMessage(live ? 'live' : 'down');
-    } else if (live === null) {
-      poll(event.data !== 'live');
-    }
+  const tab = oneTab<string>('sherpa-news', {
+    lead: () => {
+      const source = new EventSource(url);
+      source.addEventListener('message', act);
+      source.addEventListener('open', () => say(true));
+      source.addEventListener('error', () => {
+        if (source.readyState === EventSource.CLOSED) say(false);
+      });
+      return () => source.close();
+    },
+    hear: (said) => {
+      if (said === 'ask') {
+        if (live !== null) tab.say(live ? 'live' : 'down');
+      } else if (live === null) {
+        poll(said !== 'live');
+      }
+    },
   });
-  channel?.postMessage('ask');
-  const open = (): EventSource => {
-    const source = new EventSource(url);
-    source.addEventListener('message', act);
-    source.addEventListener('open', () => say(true));
-    source.addEventListener('error', () => {
-      if (source.readyState === EventSource.CLOSED) say(false);
-    });
-    return source;
-  };
-  const locks = navigator.locks as LockManager | undefined;
-  if (!locks) {
-    const source = open();
-    return () => {
-      source.close();
-      channel?.close();
-      poll(false);
-    };
-  }
-  const stop = new AbortController();
-  let source: EventSource | null = null;
-  let release: (() => void) | null = null;
-  locks.request('sherpa-feed:updates', { signal: stop.signal }, () => new Promise<void>((done) => {
-    release = done;
-    source = open();
-  })).catch(() => undefined);
+  tab.say('ask');
   return () => {
-    stop.abort();
-    source?.close();
-    release?.();
-    channel?.close();
+    tab.stop();
     poll(false);
   };
 }

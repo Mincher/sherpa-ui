@@ -33,7 +33,7 @@ import {
 import { BaseStore, type StoreOptions } from './base-store.js';
 import { rowKey } from './row-key.js';
 import { changedFields } from './store-history.js';
-import { DATA_QUERY_TYPE, encodeQuery } from './data-handler.js';
+import { DATA_QUERY_TYPE, encodeQuery, writeHeaders } from './data-handler.js';
 import { failureOf } from './failure.js';
 export { BaseStore, type StoreOptions };
 
@@ -306,12 +306,6 @@ export interface RestStoreOptions extends StoreOptions {
   method?: 'GET' | 'QUERY' | 'POST';
 }
 
-/** A write's time as HTTP says it: a server refuses it, 412, where the row
- *  changed after. TRAP T-a-newer-write-wins */
-function since(options?: WriteOptions): Record<string, string> {
-  return options?.unmodifiedSince ? { 'If-Unmodified-Since': new Date(options.unmodifiedSince).toUTCString() } : {};
-}
-
 /**
  * Records behind an HTTP endpoint — the SERVER filters, sorts and pages.
  * TRAP T-rest-update-is-patch-not-put
@@ -449,7 +443,7 @@ export class RestStore extends BaseStore {
     const row = await this.#request<Row>(url, {
       // TRAP T-rest-update-is-patch-not-put — PUT blanks what it is not sent.
       method: 'PATCH',
-      headers: { 'content-type': 'application/json', ...since(options) },
+      headers: { 'content-type': 'application/json', ...writeHeaders(options) },
       body: JSON.stringify(values),
     });
     // The RESPONSE is checked, the patch is not —
@@ -461,7 +455,7 @@ export class RestStore extends BaseStore {
 
   async remove(key: unknown, options?: WriteOptions): Promise<void> {
     const url = this.#keyUrl(key);
-    await this.#request<unknown>(url, { method: 'DELETE', headers: since(options) });
+    await this.#request<unknown>(url, { method: 'DELETE', headers: writeHeaders(options) });
     this.announce({ type: 'remove', key });
   }
 

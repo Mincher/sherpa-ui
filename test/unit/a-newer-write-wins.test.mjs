@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  ArrayStore, HeldStore, NOTICE_CHANNEL, RestStore, failureOf, fakeRemote, memoryOutbox,
+  ArrayStore, HeldStore, NOTICE_CHANNEL, RestStore, createDataHandler, failureOf, fakeRemote, memoryOutbox, openRequestStore,
 } from '../../dist/data.js';
 import { serveData } from '../../dist/worker.js';
 
@@ -112,6 +112,92 @@ test('a REST store sends the write\'s time as If-Unmodified-Since', async (t) =>
   assert.equal(sent[0]['If-Unmodified-Since'], 'Mon, 02 Nov 2026 12:00:00 GMT');
   assert.equal(sent[1]['If-Unmodified-Since'], 'Mon, 02 Nov 2026 12:00:00 GMT');
   assert.equal(sent[2]['If-Unmodified-Since'], undefined, 'a write made now sends no condition');
+});
+
+/** A request store over a handler over a server that can go down: a worker's
+ *  source, or a page's store over its worker. */
+async function overTheWire() {
+  const inner = new ArrayStore([{ id: 1, owner: 'Ada' }, { id: 2, owner: 'Bo' }], { key: 'id' });
+  const net = { down: false };
+  const handle = createDataHandler({ stores: { people: fakeRemote(inner, { delay: 0 }) } });
+  const sent = [];
+  const send = async (request) => {
+    if (net.down) throw new TypeError('fetch failed');
+    sent.push(request);
+    return handle(request);
+  };
+  const store = await openRequestStore({ name: 'people', send });
+  return { inner, net, store, sent };
+}
+
+test('a request store sends a write\'s time as If-Unmodified-Since, and the handler hands it to its store', async () => {
+  const asked = [];
+  const people = new ArrayStore([{ id: 1, owner: 'Ada' }], { key: 'id' });
+  const update = people.update.bind(people);
+  const remove = people.remove.bind(people);
+  people.update = (key, values, options) => (asked.push(options), update(key, values));
+  people.remove = (key, options) => (asked.push(options), remove(key));
+  const handle = createDataHandler({ stores: { people } });
+  const headers = [];
+  const store = await openRequestStore({ name: 'people', send: (request) => (headers.push(request.headers.get('If-Unmodified-Since')), handle(request)) });
+  const at = Date.UTC(2026, 10, 2, 12, 0, 0, 500);
+  await store.update(1, { owner: 'Cy' }, { unmodifiedSince: at });
+  await store.update(1, { owner: 'Dee' });
+  await store.remove(1, { unmodifiedSince: at });
+  assert.deepEqual(headers.slice(1), ['Mon, 02 Nov 2026 12:00:00 GMT', null, 'Mon, 02 Nov 2026 12:00:00 GMT']);
+  // An HTTP date has whole seconds: the store refuses from the next one, as HTTP does.
+  assert.deepEqual(asked, [{ unmodifiedSince: Date.UTC(2026, 10, 2, 12, 0, 0, 999) }, {}, { unmodifiedSince: Date.UTC(2026, 10, 2, 12, 0, 0, 999) }]);
+});
+
+test('over the wire, a write sent after a newer change is refused: 412, a conflict', async () => {
+  const { inner, store } = await overTheWire();
+  const made = Date.now() - 2000;
+  await inner.update(1, { owner: 'Dee' });
+  const refused = await store.update(1, { owner: 'Cy' }, { unmodifiedSince: made }).catch((error) => error);
+  assert.equal(refused.status, 412);
+  assert.equal(failureOf(refused).kind, 'conflict');
+  assert.equal((await inner.byKey(1)).owner, 'Dee', 'the newer write stays');
+  await assert.rejects(store.remove(1, { unmodifiedSince: made }), (error) => failureOf(error).kind === 'conflict');
+  assert.ok(await inner.byKey(1), 'and the row with it');
+});
+
+test('a held store over a request store: its write made offline loses to a newer change on the server, and is said lost', async () => {
+  const { inner, net, store, sent } = await overTheWire();
+  const held = new HeldStore(store, { outbox: memoryOutbox() });
+  await owners(held);
+  net.down = true;
+  await held.update(1, { owner: 'Cy' });
+  await new Promise((done) => setTimeout(done, 1100));
+  await inner.update(1, { owner: 'Dee' });
+  net.down = false;
+  const lost = [];
+  held.addEventListener('lost', (e) => lost.push(e.detail));
+  await held.send();
+  assert.ok(sent.find((r) => r.method === 'PATCH')?.headers.get('If-Unmodified-Since'), 'the write went with its time');
+  assert.deepEqual(lost.map((l) => [l.key, l.why]), [[1, 'conflict']]);
+  assert.equal((await inner.byKey(1)).owner, 'Dee');
+});
+
+test('a held store passes a write\'s time on, and keeps it with a write that waits', async () => {
+  const asked = [];
+  const net = { down: false };
+  const source = Object.assign(new EventTarget(), {
+    key: 'id', remote: true, reportsTotal: true,
+    load: async () => ({ rows: [{ id: 1, owner: 'Ada' }], total: 1 }), totalCount: async () => 1, byKey: async () => undefined, insert: async (v) => v,
+    update: async (key, values, options) => { if (net.down) throw new TypeError('fetch failed'); asked.push(options); return { id: key, ...values }; },
+    remove: async (key, options) => { if (net.down) throw new TypeError('fetch failed'); asked.push(options); },
+  });
+  const outbox = memoryOutbox();
+  const held = new HeldStore(source, { outbox });
+  await held.update(1, { owner: 'Cy' }, { unmodifiedSince: 1000 });
+  await held.remove(1, { unmodifiedSince: 2000 });
+  assert.deepEqual(asked, [{ unmodifiedSince: 1000 }, { unmodifiedSince: 2000 }]);
+  net.down = true;
+  await held.update(1, { owner: 'Dee' }, { unmodifiedSince: 3000 });
+  assert.deepEqual((await outbox.read()).map((e) => e.since), [3000], 'it waits with the time it was made');
+  net.down = false;
+  await held.send();
+  assert.deepEqual(asked.at(-1), { unmodifiedSince: 3000 });
 });
 
 test('the worker keeps a lost write as a notice: said again to a page that asks, until seen', async () => {

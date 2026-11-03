@@ -15,10 +15,12 @@
  * - encodeQuery — A store read as the body a `QUERY` sends.
  * - decodeQuery — A `QUERY` body as a store read, or why it is not one.
  * - keySegment — A row's key as the last part of its URL: JSON, so `5` and `"5"` stay apart.
+ * - writeHeaders — A write's time as the `If-Unmodified-Since` it is sent with.
  * - createDataHandler — The handler for a set of stores.
  */
 import { failureOf } from './failure.js';
-import { OP_LABELS, type Filter, type LoadOptions, type Row, type SortSpec, type Store } from './store.js';
+import { OP_LABELS, type Filter, type LoadOptions, type Row, type SortSpec, type Store, type WriteOptions } from './store.js';
+import { readTraceparent, startSpan, within, type TraceContext, type TraceHost } from './trace.js';
 
 /** The media type of a Sherpa data query, sent with `QUERY`. */
 export const DATA_QUERY_TYPE = 'application/vnd.sherpa.query+json';
@@ -65,6 +67,8 @@ export interface DataHandlerOptions {
   base?: string;
   /** Its host says each store's change on `DATA_CHANNEL`: a Service Worker. S6 */
   notifies?: boolean;
+  /** Who answers, as its spans say. Default `page`. TRAP T-one-trace-stream */
+  host?: TraceHost;
 }
 
 /** Answer one request, or null where it is not the data layer's: its host passes it on. */
@@ -151,41 +155,72 @@ function keyFrom(segment: string): unknown {
 const ON_STORE = 'QUERY, GET, POST, OPTIONS';
 const ON_ROW = 'GET, PATCH, DELETE, OPTIONS';
 
-/** The handler for a set of stores. */
+/** A write's time as the `If-Unmodified-Since` it is sent with: a host refuses the
+ *  write, 412, where the row changed after. TRAP T-a-newer-write-wins */
+export function writeHeaders(options?: WriteOptions): Record<string, string> {
+  return options?.unmodifiedSince ? { 'If-Unmodified-Since': new Date(options.unmodifiedSince).toUTCString() } : {};
+}
+
+/** A request's `If-Unmodified-Since` as a write's options. An HTTP date has whole
+ *  seconds, so a change refuses the write only from the next second, as HTTP says. */
+function writeOptionsOf(request: Request): WriteOptions {
+  const at = Date.parse(request.headers.get('If-Unmodified-Since') ?? '');
+  return Number.isNaN(at) ? {} : { unmodifiedSince: at + 999 };
+}
+
+/** The handler for a set of stores. Each answer is a span; one asked for by its
+ *  `traceparent` joins the asker's trace, and echoes it. TRAP T-one-trace-stream */
 export function createDataHandler(options: DataHandlerOptions): DataHandler {
   const base = options.base ?? '/sherpa/data/';
+  const host = options.host ?? 'page';
   return async (request) => {
     const url = new URL(request.url);
     if (!url.pathname.startsWith(base)) return null;
-    const [name, key, ...more] = url.pathname.slice(base.length).split('/');
-    // Every store read again behind its held set: a feed's gap. Plan 687 U3 · TRAP T-news-is-pushed-by-the-server
-    if (!name && !more.length && request.method === 'GET' && url.searchParams.has('recheck')) {
-      await Promise.all(Object.values(options.stores).map((each) => each.recheck?.()));
-      return answer(204, null);
-    }
-    const store = name ? options.stores[decodeURIComponent(name)] : undefined;
-    if (!store || more.length) return problem(404, 'invalid', `no store at ${url.pathname}`);
-    const asked = request.headers.get('Sherpa-Data');
-    if (asked && Number(asked) !== DATA_VERSION) return problem(400, 'invalid', `version ${asked}, not ${DATA_VERSION}`);
-    const allow = key === undefined || key === '' ? ON_STORE : ON_ROW;
-    if (request.method === 'OPTIONS') return answer(204, null, { Allow: allow, 'Accept-Query': DATA_QUERY_TYPE });
-    if (!allow.split(', ').includes(request.method)) return problem(405, 'invalid', `${request.method} is not allowed here`, { Allow: allow });
-    try {
-      const response = allow === ON_ROW ? await onRow(store, keyFrom(key!), request) : await onStore(store, url, request, !!options.notifies);
-      // Old rows answer while the source cannot be reached: the reader says so. S5b
-      if (store.stale) response.headers.set(STALE, encodeURIComponent(JSON.stringify(store.stale)));
-      return response;
-    } catch (error) {
-      const failure = failureOf(error);
-      // A refused write says which fields, as the store's own error does. Plan 652 S2
-      const issues = (error as { issues?: unknown }).issues;
-      return problem(failure.status ?? (failure.kind === 'invalid' ? 422 : 500), failure.kind, failure.message, {}, Array.isArray(issues) ? { issues } : {});
-    }
+    const asker = request.headers.get('traceparent');
+    const path = url.pathname.slice(base.length).split('/');
+    const span = startSpan('answer', { host, ...(path[0] ? { store: decodeURIComponent(path[0]) } : {}), parent: readTraceparent(asker, host), detail: { method: request.method } });
+    const response = await answerOf(request, url, path, options, span);
+    span?.end({ status: response.status });
+    if (asker && span) response.headers.set('traceparent', asker);
+    return response;
   };
 }
 
+/** One request's answer, each store call made under its span. */
+async function answerOf(request: Request, url: URL, path: string[], options: DataHandlerOptions, span: TraceContext | null): Promise<Response> {
+  const [name, key, ...more] = path;
+  // Every store read again behind its held set: a feed's gap. Plan 687 U3 · TRAP T-news-is-pushed-by-the-server
+  if (!name && !more.length && request.method === 'GET' && url.searchParams.has('recheck')) {
+    await within(span, () => Promise.all(Object.values(options.stores).map((each) => each.recheck?.())));
+    return answer(204, null);
+  }
+  const store = name ? options.stores[decodeURIComponent(name)] : undefined;
+  if (!store || more.length) return problem(404, 'invalid', `no store at ${url.pathname}`);
+  const asked = request.headers.get('Sherpa-Data');
+  if (asked && Number(asked) !== DATA_VERSION) return problem(400, 'invalid', `version ${asked}, not ${DATA_VERSION}`);
+  const allow = key === undefined || key === '' ? ON_STORE : ON_ROW;
+  if (request.method === 'OPTIONS') return answer(204, null, { Allow: allow, 'Accept-Query': DATA_QUERY_TYPE });
+  if (!allow.split(', ').includes(request.method)) return problem(405, 'invalid', `${request.method} is not allowed here`, { Allow: allow });
+  try {
+    // The body first: a store call made after an await would begin under no span.
+    const body = request.method === 'GET' || request.method === 'DELETE' ? { value: undefined } : await read(request);
+    if ('problem' in body) return body.problem;
+    const response = await within(span, () => (allow === ON_ROW
+      ? onRow(store, keyFrom(key!), request, body.value)
+      : onStore(store, url, request, body.value, !!options.notifies)));
+    // Old rows answer while the source cannot be reached: the reader says so. S5b
+    if (store.stale) response.headers.set(STALE, encodeURIComponent(JSON.stringify(store.stale)));
+    return response;
+  } catch (error) {
+    const failure = failureOf(error);
+    // A refused write says which fields, as the store's own error does. Plan 652 S2
+    const issues = (error as { issues?: unknown }).issues;
+    return problem(failure.status ?? (failure.kind === 'invalid' ? 422 : 500), failure.kind, failure.message, {}, Array.isArray(issues) ? { issues } : {});
+  }
+}
+
 /** A read of the store, its facts, its changes, or a new row. */
-async function onStore(store: Store, url: URL, request: Request, notifies: boolean): Promise<Response> {
+async function onStore(store: Store, url: URL, request: Request, body: unknown, notifies: boolean): Promise<Response> {
   if (request.method === 'GET') {
     // Read the source again, behind the set it holds. S5b
     if (url.searchParams.has('recheck')) {
@@ -199,34 +234,31 @@ async function onStore(store: Store, url: URL, request: Request, notifies: boole
     if (!store.changes) return problem(404, 'invalid', 'this store says nothing of its changes');
     return answer(200, await store.changes(since === '' ? undefined : JSON.parse(since)));
   }
-  const body = await read(request);
-  if ('problem' in body) return body.problem;
   /* A POST of a query IS a query: the fallback where a proxy refuses QUERY, with
      the same body. Any other POST adds a row. Will, 2026-11-02 */
   const isQuery = (request.headers.get('Content-Type') ?? '').startsWith(DATA_QUERY_TYPE);
-  if (request.method === 'POST' && !isQuery) return answer(201, await store.insert(body.value as Row));
+  if (request.method === 'POST' && !isQuery) return answer(201, await store.insert(body as Row));
   if (!isQuery) {
     return problem(415, 'invalid', `a QUERY is ${DATA_QUERY_TYPE}`, { 'Accept-Query': DATA_QUERY_TYPE });
   }
-  const read_ = decodeQuery(body.value);
+  const read_ = decodeQuery(body);
   if ('problem' in read_) return problem(422, 'invalid', read_.problem);
   if (read_.total) return answer(200, { total: await store.totalCount(read_.options) });
   return answer(200, await store.load(read_.options));
 }
 
-/** One row: read, changed, or gone. */
-async function onRow(store: Store, key: unknown, request: Request): Promise<Response> {
+/** One row: read, changed, or gone — a write only where it was not changed after
+ *  the time it carries. */
+async function onRow(store: Store, key: unknown, request: Request, body: unknown): Promise<Response> {
   if (request.method === 'GET') {
     const row = await store.byKey(key);
     return row ? answer(200, row) : problem(404, 'invalid', `no row ${JSON.stringify(key)}`);
   }
   if (request.method === 'DELETE') {
-    await store.remove(key);
+    await store.remove(key, writeOptionsOf(request));
     return answer(204, null);
   }
-  const body = await read(request);
-  if ('problem' in body) return body.problem;
-  return answer(200, await store.update(key, body.value as Row));
+  return answer(200, await store.update(key, body as Row, writeOptionsOf(request)));
 }
 
 /** The facts a store may say of itself, beside its key. */

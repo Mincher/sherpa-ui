@@ -1,7 +1,7 @@
 # Traps — The data layer
 
 One of the eleven areas of [the traps](../TRAPS.md): each entry is here because its
-first `Site:` is in this area (`npm run check:traps` holds it so). 201 entries.
+first `Site:` is in this area (`npm run check:traps` holds it so). 202 entries.
 
 ### T-no-op-load-guard
 
@@ -1451,6 +1451,17 @@ memory — at sign-out, and stops each keep: nothing more is written under the o
 name until `keepCache` is called again, with the new sign-in's name. The `name`
 must carry the user or tenant: the rows outlive the session.
 
+**A sign-out reaches the worker** (plan 695 H1, bug 10). `clearKept()` forgets this
+context's sets (`forgetKept`), then asks the app's worker (`{ sherpa: 'sign-out' }`,
+answered on a port) and settles once it is done — 3 s at most, as a worker from
+before never answers. The worker forgets each `HeldStore` (`forget()`: its set, the
+rows it shows, the writes that wait), its own keeps, and the kept notices; the
+device loses every set, every outbox entry and every kept notice. Before, only the
+calling context forgot: the worker's set wrote the copy back, its rows still
+showed, and the last reader's waiting writes were sent for the next. A write that
+waited is DROPPED: an app that cares asks `pending` first. A worker keeps nothing
+more until it starts again: `keepCache` runs in its script.
+
 - **Read at the start**, and the FIRST hold waits for it — at most 1 s, once: a
   copy that never comes holds up no later hold. One that lands during the wait
   is drawn at once too (the source plans again). The copy is
@@ -1477,8 +1488,10 @@ the 800 ms read could, and offline it shows them with the warning banner.
 
 - Site: `src/core/data/store-cache.ts`
 - Site: `src/core/browser/cache-keep.ts`
+- Site: `src/core/worker/serve-data.ts`
 - Site: `test/e2e/reforged-a-kept-set-survives-a-reload.spec.ts`
 - Site: `test/unit/a-kept-set-in-node-is-a-miss.test.mjs`
+- Site: `test/unit/a-sign-out-reaches-the-worker.test.mjs`
 - Site: `test/unit/a-held-set-yields-when-it-cannot-answer.test.mjs`
 
 ### T-a-failed-read-keeps-the-last-set
@@ -4490,7 +4503,9 @@ with no such host (the page's own handler) still does.
 a forced load would have made the worker read its source.
 
 **A channel lives as long as its page, or its worker** — and in Node it would
-hold the test run open for ever: each is `unref()`'d where it can be.
+hold the test run open for ever: each is `unref()`'d where it can be. A
+`RequestStore` whose owner ends before the page is closed by it (`close()`): its
+channel shuts, and it says its own writes again (plan 695 H1, bug 8).
 
 - Site: `src/core/worker/serve-data.ts`
 - Site: `src/core/data/request-store.ts`
@@ -4612,6 +4627,15 @@ and refuses the same way. A store that cannot tell writes it anyway: then the
 write made offline wins. An HTTP date has whole seconds, so a change in the same
 second is not seen as newer.
 
+**The rule holds over the wire** (plan 695 H1, bug 4). `RequestStore` sends a
+write's time as `If-Unmodified-Since` too — one encoding, `writeHeaders`, which
+`RestStore` uses — and `createDataHandler` reads it back for its store, as the END
+of that second: HTTP compares whole seconds, so a change refuses the write only
+from the next one. A 412 from the store answers 412, `conflict`. `HeldStore`
+passes a write's time on to its source, and one that waits offline keeps it as its
+`since`. Before, both dropped it: a held store over a request store — a worker over
+a server — wrote over every newer change.
+
 **Our own earlier write is no newer write.** An insert made offline lands, and
 then the update made after it would be refused, as the row "changed after" it.
 So when a write of ours lands, every later entry for that row is measured from
@@ -4631,7 +4655,8 @@ engines: the server's newer change stays, the banner shows, the item comes back
 after a reload, and once picked the worker keeps none.
 
 - Site: `src/core/data/store.ts`
-- Site: `src/core/data/stores.ts`
+- Site: `src/core/data/request-store.ts`
+- Site: `src/core/data/data-handler.ts`
 - Site: `src/core/data/fake-remote.ts`
 - Site: `src/core/data/notices.ts`
 - Site: `src/core/browser/notice-keep.ts`
@@ -4659,8 +4684,16 @@ A live store says each message off the wire as `message` (its raw data) before i
 applies it; `hear()` applies one without saying it, or two tabs would pass one
 message back and forth.
 
+**One election, one name each** (plan 695 H1, bug 7). `oneTab(name, { lead, hear })`
+is the ONE leader election: the tab that holds the lock `name` runs `lead`, and
+every tab talks on the channel `name`. `shareFeed` leads `sherpa-feed:<name>`;
+`followUpdates` leads `sherpa-news`. Before, the news feed took
+`sherpa-feed:updates`, so a feed shared as `updates` waited for its lock for ever,
+and each wrote the election out again.
+
 - Site: `src/core/data/live-stores.ts`
 - Site: `src/core/browser/share-feed.ts`
+- Site: `src/core/browser/one-tab.ts`
 - Site: `test/unit/one-feed-for-every-tab.test.mjs`
 
 ### T-news-is-pushed-by-the-server
@@ -4672,8 +4705,8 @@ offers `updatesFeed()` — Server-Sent Events, at `/sherpa/updates` — and says
 notice on it: `{ kind: 'app', build }` or `{ kind: 'data', store }`. It says THAT
 something is new, never the data.
 
-**One tab follows it, and only ACTS** (`followUpdates()`, under the Web Lock
-`sherpa-feed:updates`): `app` asks the browser for the new worker
+**One tab follows it, and only ACTS** (`followUpdates()`, the tab that leads
+`sherpa-news`, `T-one-feed-for-every-tab`): `app` asks the browser for the new worker
 (`registration.update()`), which takes every tab over; `data` sends
 `<base><store>?recheck`, so the worker reads that store again behind its held set,
 and its newer rows wait. What either finds reaches every tab as a notice
@@ -4695,7 +4728,7 @@ comes next. An idle stream says a comment every 25 s, so no proxy shuts it.
 
 **Where no feed answers, every tab polls** (U4): `followUpdates()` starts each tab on
 `watchForUpdates()`; the holder says `live` when its feed opens and `down` when it
-is refused, on the channel `sherpa-feed:updates`, and a tab that opens later asks. A
+is refused, on the channel `sherpa-news`, and a tab that opens later asks. A
 refusal (a 404, not an event stream) shuts an `EventSource` for good; a dropped
 connection retries by itself, and stays live. An app calls `followUpdates()` ALONE,
 never `watchForUpdates()` beside it. Measured 2026-11-03 in Demos: the feed live, a
@@ -6432,3 +6465,37 @@ row is checked once. The kept order goes when the rows change, or the day does, 
 - Site: `src/core/data/store-cache.ts`
 - Site: `src/core/data/stores.ts`
 - Site: `test/unit/scale-asks-less.test.mjs`
+
+### T-one-trace-stream
+
+**ONE trace stream for every host** (plan 695 S3). Each step is a span,
+`{ host, step, store?, trace, id, parent?, t, ms?, detail? }`: said as it begins,
+with no `ms`, and again as it ends. `trace` joins every span of one act, on every
+host; `id` is the span's own; `parent` the span it ran under. `onTrace(listener)`
+hears them all, from every context, and returns its stop; many may listen.
+
+**Across hosts, by `traceparent`** (W3C, sampled). A `RequestStore` that traces
+sends its `request` span as `traceparent`; `createDataHandler` begins its `answer`
+under it, on its own host (`host`: `serveData` says `worker`), and echoes the
+header. The worker's own steps — `hold` (the set held for a read, its plan and
+rows), `recheck`, `send` (only where writes wait) — begin under the answer. A
+DataSource says `load` as it starts and ends: its requests start traces of their
+own, as no call can carry a span past an `await` (`within` sets the span for a
+call's first, synchronous part only, so the handler reads a body BEFORE it calls
+its store).
+
+**Said on one channel, `sherpa-trace`.** A context that listens says so
+(`{ listen }`); one that opens its channel asks who does. `tracing()` is true where
+anyone listens, here or there. A request that asks to be traced is traced by the
+host that answers it, even one that knows of no listener yet: a worker woken by
+that very request has not heard. Nobody listening, `startSpan` returns null and
+nothing is made, and no request carries a `traceparent`: a new header could fail
+a server's CORS. A listening tab that shuts says nothing: its peers trace on for it
+until they stop.
+
+- Site: `src/core/data/trace.ts`
+- Site: `src/core/data/request-store.ts`
+- Site: `src/core/data/data-handler.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/data.ts`
+- Site: `test/unit/one-trace-stream.test.mjs`

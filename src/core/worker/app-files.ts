@@ -16,7 +16,7 @@ export interface WorkerScope extends EventTarget {
   readonly clients: {
     claim(): Promise<void>;
     /** The app's open tabs, and a new one: where a notification's press lands. */
-    matchAll?(options: { type: 'window' }): Promise<ReadonlyArray<{ focus(): Promise<unknown>; navigate?(url: string): Promise<unknown> }>>;
+    matchAll?(options: { type: 'window' }): Promise<ReadonlyArray<{ readonly url: string; focus(): Promise<unknown> }>>;
     openWindow?(url: string): Promise<unknown>;
   };
   skipWaiting(): Promise<void>;

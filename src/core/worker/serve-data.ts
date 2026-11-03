@@ -12,9 +12,10 @@
  * - serveData — Answer the data layer's requests in the worker, from the stores the app hands it.
  */
 import { DATA_CHANNEL, createDataHandler, type DataHandlerOptions } from '../data/data-handler.js';
+import { forgetKept } from '../browser/cache-keep.js';
 import { keepNotices } from '../browser/notice-keep.js';
-import type { LostWrite } from '../data/held-store.js';
-import { sayNotice, type NoticeAsk, type UpdateNotice } from '../data/notices.js';
+import { HeldStore, type LostWrite } from '../data/held-store.js';
+import { sayNotice, type UpdateNotice, type WorkerAsk } from '../data/notices.js';
 import type { WorkerFetchEvent, WorkerScope } from './app-files.js';
 
 /** The Background Sync tag the worker sends its stores' waiting writes on. */
@@ -40,6 +41,8 @@ interface WorkerPushEvent extends Event {
 /** A page's message to the worker: it starts the worker, as a channel cannot. */
 interface WorkerMessageEvent extends Event {
   readonly data: unknown;
+  /** Where an ask that is answered says it is done. */
+  readonly ports?: ReadonlyArray<{ postMessage(message: unknown): void }>;
   waitUntil(promise: Promise<unknown>): void;
 }
 
@@ -59,7 +62,7 @@ export interface ServeDataOptions extends DataHandlerOptions {
 /** Answer the data layer's requests in the worker, from the stores the app's worker
  *  script imports and hands it (D7: a worker cannot `import()` at runtime). */
 export function serveData(scope: WorkerScope, options: ServeDataOptions): void {
-  const handle = createDataHandler({ ...options, notifies: true });
+  const handle = createDataHandler({ ...options, notifies: true, host: 'worker' });
   /* Every store's change, to every tab — one tab's write is another's news. S6
      TRAP T-every-tab-hears-a-change */
   const channel = new BroadcastChannel(DATA_CHANNEL);
@@ -82,9 +85,19 @@ export function serveData(scope: WorkerScope, options: ServeDataOptions): void {
      been sent with every tab shut (D9). S7b · TRAP T-a-newer-write-wins */
   const kept = keepNotices();
   scope.addEventListener('message', (event) => {
-    const ask = (event as WorkerMessageEvent).data as NoticeAsk | undefined;
-    if (ask?.sherpa === 'notices') (event as WorkerMessageEvent).waitUntil(kept.read().then((all) => all.forEach(sayNotice)));
-    if (ask?.sherpa === 'seen') (event as WorkerMessageEvent).waitUntil(kept.remove(ask.id));
+    const asked = event as WorkerMessageEvent;
+    const ask = asked.data as WorkerAsk | undefined;
+    if (ask?.sherpa === 'notices') asked.waitUntil(kept.read().then((all) => all.forEach(sayNotice)));
+    if (ask?.sherpa === 'seen') asked.waitUntil(kept.remove(ask.id));
+    /* A sign-out: every held set, the rows shown, the writes that wait and the kept
+       notices are forgotten here, or the held set writes the copy back.
+       TRAP T-a-kept-set-is-checked-each-session */
+    if (ask?.sherpa === 'sign-out') {
+      asked.waitUntil(Promise.allSettled([
+        ...Object.values(options.stores).map((store) => (store instanceof HeldStore ? store.forget() : undefined)),
+        forgetKept(), kept.clear(),
+      ]).then(() => asked.ports?.[0]?.postMessage('signed-out')));
+    }
   });
   /* A PUSH from the app's server: the store it names is checked behind, so its newer
      rows wait and the banner shows; a notification shows where allowed, and its
@@ -100,12 +113,15 @@ export function serveData(scope: WorkerScope, options: ServeDataOptions): void {
     const shown = title ? scope.registration?.showNotification?.(title, { ...(body ? { body } : {}), data: { url: url ?? '/' } }) : undefined;
     (event as WorkerPushEvent).waitUntil(Promise.all([checked, shown?.catch(() => undefined)]));
   });
+  /* A press opens its `url`: a tab that shows it is focused, else it opens in a new
+     one — an open tab is never moved off its work. TRAP T-a-push-is-a-check-behind */
   scope.addEventListener('notificationclick', (event) => {
     const pressed = event as WorkerPushEvent;
     pressed.notification?.close();
-    const url = pressed.notification?.data?.url ?? '/';
+    const url = new URL(pressed.notification?.data?.url ?? '/', scope.location.origin).href;
     pressed.waitUntil((async () => {
-      const [tab] = (await scope.clients.matchAll?.({ type: 'window' })) ?? [];
+      const tabs = (await scope.clients.matchAll?.({ type: 'window' })) ?? [];
+      const tab = tabs.find((each) => each.url === url);
       if (tab) await tab.focus();
       else await scope.clients.openWindow?.(url);
     })());

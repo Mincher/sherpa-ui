@@ -9,10 +9,11 @@
  * - openRequestStore — A request store, with its facts asked first.
  */
 import { BaseStore } from './base-store.js';
-import { DATA_CHANNEL, DATA_QUERY_TYPE, DATA_VERSION, STALE, encodeQuery, keySegment, type DataQuery, type StoreFacts } from './data-handler.js';
+import { DATA_CHANNEL, DATA_QUERY_TYPE, DATA_VERSION, STALE, encodeQuery, keySegment, writeHeaders, type DataQuery, type StoreFacts } from './data-handler.js';
 import { failureOf, type Failure } from './failure.js';
 import { HttpError } from './stores.js';
-import { readField, type LoadOptions, type LoadResult, type Row, type RowOrder, type StoreChangeDetail, type StoreChanges } from './store.js';
+import { readField, type LoadOptions, type LoadResult, type Row, type RowOrder, type StoreChangeDetail, type StoreChanges, type WriteOptions } from './store.js';
+import { startSpan, traceparent } from './trace.js';
 import { ValidationError, type FieldDomain, type Issue } from './validate.js';
 
 /** Where its requests go, and the store's name there. */
@@ -43,6 +44,10 @@ export class RequestStore extends BaseStore {
   readonly #headers: () => Record<string, string>;
   /** The store's own URL. */
   readonly #url: string;
+  /** Its name, as its host knows it. */
+  readonly #name: string;
+  /** Where its host says each change, until closed. */
+  #channel: BroadcastChannel | null = null;
   /** What the store said of itself. */
   readonly #facts: StoreFacts;
 
@@ -61,6 +66,7 @@ export class RequestStore extends BaseStore {
     this.#post = options.method === 'POST';
     this.#headers = options.headers ?? ((): Record<string, string> => ({}));
     this.#url = urlOf(options);
+    this.#name = options.name;
     this.#facts = facts;
     if (facts.changes) this.changes = (since) => this.#ask('GET', `?since=${encodeURIComponent(since === undefined ? '' : JSON.stringify(since))}`);
     if (facts.holds) {
@@ -76,9 +82,18 @@ export class RequestStore extends BaseStore {
         const said = (event as MessageEvent<{ store?: string; change?: StoreChangeDetail }>).data;
         if (said?.store === options.name) this.announce(said.change ?? { type: 'update' });
       });
-      // Open as long as the page: in Node, it keeps nothing running.
+      // Open until closed — a page's store, as long as the page: in Node, it keeps nothing running.
       (channel as { unref?: () => void }).unref?.();
+      this.#channel = channel;
     }
+  }
+
+  /** Stop hearing its host's changes: its channel closes, and it says its own
+   *  writes again. Its owner closes it as it ends; a page's store lives as the page. */
+  close(): void {
+    this.#channel?.close();
+    this.#channel = null;
+    this.#heard = false;
   }
 
   /** Its host says its changes, its own writes among them. */
@@ -149,14 +164,16 @@ export class RequestStore extends BaseStore {
     return row;
   }
 
-  async update(key: unknown, values: Row): Promise<Row> {
-    const row = this.keyed(await this.#ask<Row>('PATCH', `/${keySegment(key)}`, values));
+  /* A write's time goes with it, so its host refuses it where the row changed
+     after (412, `conflict`). TRAP T-a-newer-write-wins */
+  async update(key: unknown, values: Row, options?: WriteOptions): Promise<Row> {
+    const row = this.keyed(await this.#ask<Row>('PATCH', `/${keySegment(key)}`, values, 'application/json', writeHeaders(options)));
     this.#wrote({ type: 'update', key, row });
     return row;
   }
 
-  async remove(key: unknown): Promise<void> {
-    await this.#ask('DELETE', `/${keySegment(key)}`);
+  async remove(key: unknown, options?: WriteOptions): Promise<void> {
+    await this.#ask('DELETE', `/${keySegment(key)}`, undefined, 'application/json', writeHeaders(options));
     this.#wrote({ type: 'remove', key });
   }
 
@@ -186,13 +203,23 @@ export class RequestStore extends BaseStore {
   }
 
   /** One request, its answer as JSON. A refusal throws as the store's own error
-   *  would: a write's issues as a `ValidationError`, else an `HttpError`. */
-  async #ask<T>(method: string, tail: string, body?: unknown, type = 'application/json'): Promise<T> {
+   *  would: a write's issues as a `ValidationError`, else an `HttpError`. Traced,
+   *  it carries its span as `traceparent`, and its host's spans join it. TRAP T-one-trace-stream */
+  async #ask<T>(method: string, tail: string, body?: unknown, type = 'application/json', more: Record<string, string> = {}): Promise<T> {
     const url = this.#url + tail;
+    const span = startSpan('request', { store: this.#name, detail: { method } });
     const headers: Record<string, string> = {
-      ...this.#headers(), 'Sherpa-Data': String(DATA_VERSION), ...(body !== undefined ? { 'Content-Type': type } : {}),
+      ...(span ? { traceparent: traceparent(span) } : {}), ...this.#headers(), ...more,
+      'Sherpa-Data': String(DATA_VERSION), ...(body !== undefined ? { 'Content-Type': type } : {}),
     };
-    const response = await this.#send(new Request(url, { method, headers, ...(body !== undefined ? { body: JSON.stringify(body) } : {}) }));
+    let response: Response | null;
+    try {
+      response = await this.#send(new Request(url, { method, headers, ...(body !== undefined ? { body: JSON.stringify(body) } : {}) }));
+    } catch (error) {
+      span?.end({ failed: failureOf(error).kind });
+      throw error;
+    }
+    span?.end({ status: response?.status ?? 404 });
     if (!response) throw new HttpError(404, 'no data handler answered', url);
     const stale = response.headers.get(STALE);
     this.#stale = stale ? (JSON.parse(decodeURIComponent(stale)) as Failure) : null;

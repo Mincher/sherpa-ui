@@ -6,6 +6,7 @@
  *
  * Map:
  * - keepOutbox — A store's outbox on the device: its writes wait there until sent.
+ * - clearOutboxes — Forget every write that waits on the device, in every outbox: a sign-out.
  */
 import { IdbStore } from './idb-store.js';
 import { memoryOutbox, type OutboxEntry, type OutboxPort } from '../data/outbox.js';
@@ -53,4 +54,9 @@ export function keepOutbox(name: string): OutboxPort {
     },
     alone: (send) => (locks ? locks.request(`sherpa-outbox:${name}`, send) : memory.alone(send)),
   };
+}
+
+/** Forget every write that waits on the device, in every outbox: a sign-out. */
+export async function clearOutboxes(): Promise<void> {
+  if (IdbStore.available) await entriesStore().clear();
 }

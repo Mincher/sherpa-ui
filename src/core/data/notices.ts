@@ -6,7 +6,7 @@
  * Map:
  * - NOTICE_CHANNEL — The BroadcastChannel a notice is said on.
  * - UpdateNotice — What is new: the app's own files, a store's rows waiting, or a write made offline lost.
- * - NoticeAsk — What a page asks of the worker about its kept notices.
+ * - WorkerAsk — What a page asks of its worker: its kept notices, one seen, or a sign-out.
  * - sayNotice — Say a notice to every tab.
  */
 import type { FailureKind } from './failure.js';
@@ -31,9 +31,10 @@ export interface UpdateNotice {
   why?: FailureKind;
 }
 
-/** What a page asks of the worker about its kept notices: say them all again, or
- *  forget one the reader has seen. Posted to the worker, which it wakes. */
-export type NoticeAsk = { sherpa: 'notices' } | { sherpa: 'seen'; id: string };
+/** What a page asks of its worker: say its kept notices again, forget one the
+ *  reader has seen, or forget all it holds — a sign-out, answered on the port sent
+ *  with it. Posted to the worker, which it wakes. */
+export type WorkerAsk = { sherpa: 'notices' } | { sherpa: 'seen'; id: string } | { sherpa: 'sign-out' };
 
 /** Say a notice to every tab — the worker's, or a page's. */
 export function sayNotice(notice: UpdateNotice): void {
