@@ -178,6 +178,12 @@ flowchart LR
 worker. Then `DataSource` holds nothing itself, and a store is used the same way wherever
 it lives.
 
+*Done, 695 S4 (2026-11-03):* `Store.capabilities` replaces the eight flags and goes over
+the wire whole; `wrapStore()` (both `fakeRemote` and `statusFields` use it, so the drift
+is gone); `heldOf()` puts a remote store behind a `HeldStore` and `DataSource` holds
+nothing; a newer ask aborts the read it supersedes, down to the fetch. Left: over the wire
+a store still loses `distinct` and `history`.
+
 ### 3.3 Two objects that do too much
 
 - **`DataSource`** (2,165 lines, ~120 members): reads, paging, tickets, reach, held reads,

@@ -248,6 +248,19 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   customers store dropped its five text `indexes` (a text index never narrows a read).
   **Carried:** after a sign-out the worker holds no new set until it restarts — in S4's
   brief; if S4 leaves it, H2.
+- **S4 ✅ (`2e802221`, `dcd7cc71`; Demos `b53826d`). Wave 2 is whole.** One
+  `Store.capabilities` (the eight loose flags gone; sent whole over the wire; `DataSource`
+  reads it once, and a store without it throws). One `wrapStore()`: `fakeRemote` and
+  `statusFields` use it, so `statusFields` keeps holding and `fakeRemote` keeps
+  `totalFirst`. `heldOf()`: a remote store is read through its own `HeldStore`; the
+  `holds` checks in `DataSource` and `serve-data`'s `instanceof HeldStore` are gone. A
+  signal on every read: a newer ask aborts the one it supersedes, down to `RequestStore`'s
+  and `RestStore`'s fetch. H1's carried sign-out bug fixed: the worker keeps the next
+  reader's set on the device with no restart. Lane picks taken: the protocol stays v1
+  (page and worker ship together); `capabilities` is required; a page's own Refresh
+  re-reads its whole set. 946 Node tests; 92 store specs in three engines.
+  **Carried:** over the wire a store still loses `distinct` and `history` → H2/H5; a
+  `HeldStore` recheck can hang if a change lands during its whole read (older) → H2.
 
 ### The waves
 
