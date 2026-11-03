@@ -30,8 +30,8 @@ Description; Value; then any other text a component adds.
 
 | Step | What | Done when |
 |---|---|---|
-| S1 | `sherpa-menu`: `data-description`, a subheading under the heading; `sherpa-button`: `data-description`, handed to the menu it opens; the root attribute and its custom property | Specs: a button's menu shows its description; the attribute hides it |
-| S2 | Words for Sherpa's own action buttons | Each menu above shows one |
+| S1 ✅ | **Done 2026-11-03:** `sherpa-menu`'s `data-description` → `.description`, under the heading in one `.titles` box; `sherpa-button`'s `data-description`, set on the menu it opens; `openMore` takes its trigger's; `html[data-no-action-descriptions]` → `--sherpa-action-description: none`, written by `project-tokens.mjs` into `page.css`. `sherpa-menu`: `data-description`, a subheading under the heading; `sherpa-button`: `data-description`, handed to the menu it opens; the root attribute and its custom property | Specs: a button's menu shows its description; the attribute hides it |
+| S2 ✅ | **Done 2026-11-03:** Filters, Saved, ⋮, a section's ⋮, the View's options, Show as, the canvas options, the legend's Breakdown. Words for Sherpa's own action buttons | Each menu above shows one |
 | S3 | Tooltips in lines — a button's, a filter chip's — with the description line on the second setting | Specs: the order Name, Description, Value, other; off, as today |
 | S4 | Demos: the two switches on Settings › Accessibility | Demos green in three engines |
 

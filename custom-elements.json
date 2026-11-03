@@ -1012,6 +1012,12 @@
               }
             },
             {
+              "name": "data-description",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
               "name": "data-icon-end",
               "description": "icon glyph value",
               "type": {
@@ -5318,6 +5324,12 @@
               }
             },
             {
+              "name": "data-description",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
               "name": "data-discard",
               "description": "show Discard without Apply: its bar holds ONE Apply for the scope",
               "type": {
@@ -5877,6 +5889,9 @@
               "name": "condition-rows"
             },
             {
+              "name": "description"
+            },
+            {
               "name": "discard"
             },
             {
@@ -5920,6 +5935,9 @@
             },
             {
               "name": "solo-toggle"
+            },
+            {
+              "name": "titles"
             },
             {
               "name": "today"

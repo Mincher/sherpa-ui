@@ -314,6 +314,9 @@
           "description": "the text of the trailing sherpa-badge (or slot a node into \"badge\")"
         },
         {
+          "name": "data-description"
+        },
+        {
           "name": "data-icon-end",
           "description": "icon glyph value"
         },
@@ -2117,6 +2120,9 @@
         {
           "name": "data-conditions",
           "description": "FILTER type only: a comma-separated op list ('eq,ne,contains') in place of the default text set."
+        },
+        {
+          "name": "data-description"
         },
         {
           "name": "data-discard",

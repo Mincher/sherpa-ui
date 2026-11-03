@@ -158,6 +158,9 @@ export class SherpaMenu extends SherpaElement {
     /* Draw in the FLOW, not the top layer. TRAP T-an-inline-menu-is-the-same-menu */
     'data-inline': { type: 'boolean', kind: 'style' },
     'data-heading': { type: 'string', kind: 'content', to: '.heading' },
+    /* What the action that opened it does, under its heading — its button's.
+       Will, TODO 691 · TRAP T-an-action-says-what-it-does */
+    'data-description': { type: 'string', kind: 'content', to: '.description' },
     /* A DATE body offers two days; `data-commit` holds its Apply until asked. */
     'data-range': { type: 'boolean', kind: 'style' },
     // A "Highlight matches" switch, where the host offers it; on while its field drives. TODO 441

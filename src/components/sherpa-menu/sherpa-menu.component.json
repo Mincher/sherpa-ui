@@ -59,9 +59,21 @@
                   ]
                 },
                 {
-                  "el": "p",
-                  "class": "heading",
-                  "part": "heading"
+                  "el": "div",
+                  "class": "titles",
+                  "part": "titles",
+                  "children": [
+                    {
+                      "el": "p",
+                      "class": "heading",
+                      "part": "heading"
+                    },
+                    {
+                      "el": "p",
+                      "class": "description",
+                      "part": "description"
+                    }
+                  ]
                 },
                 {
                   "slot": "header",
@@ -514,9 +526,21 @@
                   ]
                 },
                 {
-                  "el": "p",
-                  "class": "heading",
-                  "part": "heading"
+                  "el": "div",
+                  "class": "titles",
+                  "part": "titles",
+                  "children": [
+                    {
+                      "el": "p",
+                      "class": "heading",
+                      "part": "heading"
+                    },
+                    {
+                      "el": "p",
+                      "class": "description",
+                      "part": "description"
+                    }
+                  ]
                 },
                 {
                   "slot": "header",
@@ -1228,6 +1252,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-description",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "content"
+    },
+    {
+      "$type": "prop",
       "name": "data-discard",
       "type": "boolean",
       "observed": true,
@@ -1569,6 +1601,11 @@
     },
     {
       "$type": "state",
+      "name": "description",
+      "selector": ":host([data-description])"
+    },
+    {
+      "$type": "state",
       "name": "search",
       "selector": ":host([data-search])"
     },
@@ -1803,6 +1840,10 @@
     "heading.font-weight": "{sherpa.font-weight-regular}",
     "heading.line-height": "{sherpa.theme-content-line-height-small}",
     "heading.letter-spacing": "{sherpa.theme-content-letter-spacing-xs}",
+    "description.display": "{sherpa.action-description}",
+    "description.color": "{sherpa.style-content-secondary}",
+    "description.font-size": "{sherpa.theme-content-size-small}",
+    "description.line-height": "{sherpa.theme-content-line-height-small}",
     "remove.--_status-text": "{sherpa.theme-content-critical-1}",
     "remove.--_status-border": "{sherpa.theme-border-critical-2}",
     "remove.--_status-icon": "{sherpa.theme-content-critical-1}",

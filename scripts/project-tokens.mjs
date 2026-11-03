@@ -1304,6 +1304,12 @@ const documentResetBlock = `  /* The page itself. */
   html[data-toggle-shapes] {
     --sherpa-toggle-shape: inline-flex;
   }
+  /* ACTION DESCRIPTIONS: a menu an action opened says what the action does, under
+     its heading — on unless the page turns it off. Will, TODO 691
+     TRAP T-an-action-says-what-it-does */
+  html[data-no-action-descriptions] {
+    --sherpa-action-description: none;
+  }
   /* VALUE BORDER: an on filter chip's value half wears its look's border only, its
      fill and ink the default Style's — the page's choice. Will, TODO 669 */
   html[data-filter-value-border] {

@@ -129,7 +129,12 @@
                        aria-label="Back"></sherpa-button>
         <sherpa-breadcrumbs class="drill-crumbs" part="drill-crumbs"></sherpa-breadcrumbs>
       </span>
-      <p class="heading" part="heading"></p>
+      <!-- The heading, and under it what the action that opened this menu does — its
+           button's description, where the page shows it. Will, TODO 691 -->
+      <div class="titles" part="titles">
+        <p class="heading" part="heading"></p>
+        <p class="description" part="description"></p>
+      </div>
       <slot name="header" data-accepts="control"></slot>
       <!--
         SEARCH — sherpa-input-text composed, so it owns box, ring and focus; there
@@ -299,7 +304,12 @@
                        aria-label="Back"></sherpa-button>
         <sherpa-breadcrumbs class="drill-crumbs" part="drill-crumbs"></sherpa-breadcrumbs>
       </span>
-      <p class="heading" part="heading"></p>
+      <!-- The heading, and under it what the action that opened this menu does — its
+           button's description, where the page shows it. Will, TODO 691 -->
+      <div class="titles" part="titles">
+        <p class="heading" part="heading"></p>
+        <p class="description" part="description"></p>
+      </div>
       <slot name="header" data-accepts="control"></slot>
       <!-- ONE OBJECT: the condition and whatever answers it are SNAPPED, with
            no gap, by `.sherpa-group` — the system's own grouping class, which

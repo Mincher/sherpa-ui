@@ -25,6 +25,9 @@ export class SherpaButton extends SherpaElement {
     'data-no-tip': { type: 'boolean', kind: 'visibility' },
     'data-label': { type: 'string', kind: 'content' },
     'data-tip': { type: 'string', kind: 'content' },
+    /* What this action does: the menu it opens says it under its heading. Will,
+       TODO 691 · TRAP T-an-action-says-what-it-does */
+    'data-description': { type: 'string', kind: 'behaviour' },
     'data-icon-start': { type: 'string', kind: 'content' },
     'data-icon-end': { type: 'string', kind: 'content' },
     'data-badge': { type: 'string', kind: 'content' },
@@ -166,7 +169,12 @@ export class SherpaButton extends SherpaElement {
       const wasOpen = this.hasAttribute('data-open');
       this.set('data-open', null);
       if (wasOpen) menu.hide();
-      else menu.show(this);
+      else {
+        // Its menu says what this action does. TODO 691
+        const described = this.dataset['description'];
+        if (described) menu.setAttribute('data-description', described);
+        menu.show(this);
+      }
     }
     this.#carryCommand(event.currentTarget as HTMLButtonElement);
     this.emit('button-click');

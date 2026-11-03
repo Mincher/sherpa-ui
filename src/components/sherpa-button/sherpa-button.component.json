@@ -169,6 +169,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-description",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
+    },
+    {
+      "$type": "prop",
       "name": "data-icon-end",
       "type": "string",
       "observed": true,
@@ -323,7 +331,7 @@
     }
   ],
   "populate": {
-    "shape": "{ badge?, iconEnd?, iconStart?, label?, noTab?, noTip?, open?, size?, tip?, type? }",
+    "shape": "{ badge?, description?, iconEnd?, iconStart?, label?, noTab?, noTip?, open?, size?, tip?, type? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [

@@ -130,6 +130,7 @@
                     "data-size": "sm",
                     "data-icon-start": "pencil",
                     "data-icon-end": "triangle-down",
+                    "data-description": "Add filters to this page, or remove them.",
                     "aria-haspopup": "dialog"
                   }
                 },
@@ -160,6 +161,7 @@
                         "data-swap-on": "data-saveable",
                         "data-swap-data-group": "end",
                         "data-swap-data-icon-start": "triangle-down",
+                        "data-description": "Use, save and manage your saved filters.",
                         "aria-label": "Saved filters",
                         "aria-haspopup": "dialog"
                       }
@@ -185,6 +187,7 @@
                     "data-act": "overflow",
                     "data-type": "icon",
                     "data-icon-start": "ellipses-vertical",
+                    "data-description": "Reset, save and refresh these filters.",
                     "aria-label": "More actions",
                     "aria-haspopup": "dialog"
                   }
@@ -446,6 +449,7 @@
                     "data-size": "sm",
                     "data-icon-start": "pencil",
                     "data-icon-end": "triangle-down",
+                    "data-description": "Add filters to this page, or remove them.",
                     "aria-haspopup": "dialog"
                   }
                 },
@@ -478,6 +482,7 @@
                         "data-swap-on": "data-saveable",
                         "data-swap-data-group": "end",
                         "data-swap-data-icon-start": "triangle-down",
+                        "data-description": "Use, save and manage your saved filters.",
                         "aria-label": "Saved filters",
                         "aria-haspopup": "dialog"
                       }
@@ -500,6 +505,7 @@
                     "data-type": "icon",
                     "data-size": "sm",
                     "data-icon-start": "ellipses-vertical",
+                    "data-description": "Reset, save and refresh these filters.",
                     "aria-label": "More actions",
                     "aria-haspopup": "dialog"
                   }

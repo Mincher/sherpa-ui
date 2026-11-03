@@ -32,6 +32,7 @@ For an action on this page: save, add, delete, open a dialog with `commandfor`, 
 | `command` | text |  | native: what it is told — `--show`, `--hide` |
 | `commandfor` | text |  | native: the id of the element a press commands (a dialog, a panel) |
 | `data-badge` | text |  | the text of the trailing [sherpa-badge](sherpa-badge.md) (or slot a node into "badge") |
+| `data-description` | text |  |  |
 | `data-icon-end` | text |  | icon glyph value |
 | `data-icon-start` | text |  | icon glyph value |
 | `data-label` | text |  | label text (or use the default slot) |
@@ -96,6 +97,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ badge?, iconEnd?, iconStart?, label?, noTab?, noTip?, open?, size?, tip?, type? }`
+`{ badge?, description?, iconEnd?, iconStart?, label?, noTab?, noTip?, open?, size?, tip?, type? }`
 
 Its declared props by name: `label` sets data-label.

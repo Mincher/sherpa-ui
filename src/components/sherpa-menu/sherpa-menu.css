@@ -101,7 +101,7 @@
 
 /* An inline menu has no card edge of its own, and no trigger to name. Its
    heading is the section header above it. */
-:host([data-inline]) .heading,
+:host([data-inline]) .titles,
 :host([data-inline]) .drill-trail { display: none; }
 
 /* …and it drops the chrome its HOST already has: its switch and its Apply.
@@ -126,7 +126,7 @@
  * (a list's search field, a calendar's month stepper). A grid, not a flex
  * column, so the drill trail can replace the heading in place. */
 .header { display: none; }
-:host(:is([data-heading], :state(has-header), [data-search], [data-type="filter"])) .header {
+:host(:is([data-heading], [data-description], :state(has-header), [data-search], [data-type="filter"])) .header {
   display: grid;
   grid-template-areas:
     "heading"
@@ -314,7 +314,12 @@
 }
 
 
-.header .heading { grid-area: heading; }
+.header .titles {
+  grid-area: heading;
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+}
 .header .search { grid-area: control; }
 .header ::slotted(*) { grid-area: control; }
 
@@ -333,7 +338,7 @@
 }
 
 /* The trail REPLACES the heading — the last crumb IS the heading. */
-:host([data-drill]) .heading { display: none; }
+:host([data-drill]) .titles { display: none; }
 
 /* A slotted stepper is a sherpa-group: its corners and lap are its own.
    Block-level here, so the month fills the card. */
@@ -355,6 +360,19 @@
   letter-spacing: var(--sherpa-theme-content-letter-spacing-xs, 0px);
   text-align: start;
   text-transform: uppercase;
+
+  &:empty { display: none; }
+}
+
+/* WHAT THE ACTION DOES, under the heading — shown unless the page turns it off
+   (`--sherpa-action-description`). Will, TODO 691 · TRAP T-an-action-says-what-it-does */
+.description {
+  display: var(--sherpa-action-description, block);
+  margin: 0;
+  color: var(--sherpa-style-content-secondary, #35353d);
+  font-size: var(--sherpa-theme-content-size-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
+  text-align: start;
 
   &:empty { display: none; }
 }

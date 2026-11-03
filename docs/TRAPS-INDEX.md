@@ -361,7 +361,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — app, router
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 
-## Filters (153)
+## Filters (154)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — quick-filter-toolbar
@@ -427,6 +427,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-actions-were-a-slot](TRAPS.md#t-actions-were-a-slot) — quick-filter-toolbar
 - [T-add-menu-batches](TRAPS.md#t-add-menu-batches) — filters-button, quick-filter-toolbar
 - [T-all-is-an-answer](TRAPS.md#t-all-is-an-answer) — quick-filter, quick-filter-toolbar
+- [T-an-action-says-what-it-does](TRAPS.md#t-an-action-says-what-it-does) — more-menu
 - [T-an-active-chip-is-heavier-and-more-strongly-drawn](TRAPS.md#t-an-active-chip-is-heavier-and-more-strongly-drawn) — quick-filter
 - [T-an-allow-list-is-a-filter-not-an-order](TRAPS.md#t-an-allow-list-is-a-filter-not-an-order) — quick-filter-toolbar
 - [T-an-empty-chip-opens-its-menu](TRAPS.md#t-an-empty-chip-opens-its-menu) — quick-filter
@@ -517,7 +518,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](TRAPS.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](TRAPS.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (113)
+## Menus, tips and overlays (114)
 
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](TRAPS.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
 - [T-a-chip-press-applies-its-menus-draft](TRAPS.md#t-a-chip-press-applies-its-menus-draft) — menu
@@ -568,6 +569,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-add-condition-sits-below-the-rows](TRAPS.md#t-add-condition-sits-below-the-rows) — menu
 - [T-all-is-an-answer](TRAPS.md#t-all-is-an-answer) — menu
 - [T-an-action-row-can-keep-its-menu-open](TRAPS.md#t-an-action-row-can-keep-its-menu-open) — menu
+- [T-an-action-says-what-it-does](TRAPS.md#t-an-action-says-what-it-does) — menu
 - [T-an-advanced-row-rules-out-nothing](TRAPS.md#t-an-advanced-row-rules-out-nothing) — menu
 - [T-an-edge-resizes-its-box](TRAPS.md#t-an-edge-resizes-its-box) — overlay-panel
 - [T-an-fr-track-floors-at-min-content](TRAPS.md#t-an-fr-track-floors-at-min-content) — menu
@@ -921,7 +923,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](TRAPS.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (111)
+## Other components (112)
 
 - [T-a-bar-offers-only-what-its-scope-holds](TRAPS.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — button
@@ -977,6 +979,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-advanced-checkbox-is-a-snapped-pair](TRAPS.md#t-advanced-checkbox-is-a-snapped-pair) — select-checkbox
 - [T-an-accordion-action-is-not-a-toggle](TRAPS.md#t-an-accordion-action-is-not-a-toggle) — accordion
 - [T-an-accordion-chevron-rides-the-heading-row](TRAPS.md#t-an-accordion-chevron-rides-the-heading-row) — accordion
+- [T-an-action-says-what-it-does](TRAPS.md#t-an-action-says-what-it-does) — button
 - [T-an-edge-resizes-its-box](TRAPS.md#t-an-edge-resizes-its-box) — app-shell
 - [T-an-expandable-row-is-not-a-destination](TRAPS.md#t-an-expandable-row-is-not-a-destination) — nav-item
 - [T-an-icon-button-still-slots-its-menu](TRAPS.md#t-an-icon-button-still-slots-its-menu) — button
@@ -1035,7 +1038,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](TRAPS.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](TRAPS.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (72)
+## Build, tools and the MCP (73)
 
 - [T-a-bare-name-must-be-used-not-mentioned](TRAPS.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-button-commands-by-markup](TRAPS.md#t-a-button-commands-by-markup) — ts-facts
@@ -1078,6 +1081,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-stranded-container-fills-its-row](TRAPS.md#t-a-stranded-container-fills-its-row) — project-tokens
 - [T-a-swapped-label-is-in-the-markup](TRAPS.md#t-a-swapped-label-is-in-the-markup) — check-props, check-usage
 - [T-a-toggle-shows-its-state-by-a-shape](TRAPS.md#t-a-toggle-shows-its-state-by-a-shape) — project-tokens
+- [T-an-action-says-what-it-does](TRAPS.md#t-an-action-says-what-it-does) — project-tokens
 - [T-an-elevation-pin-cannot-reach-a-shadow-root](TRAPS.md#t-an-elevation-pin-cannot-reach-a-shadow-root) — project-tokens
 - [T-an-event-name-is-not-always-a-literal](TRAPS.md#t-an-event-name-is-not-always-a-literal) — generate-component-spec, ts-facts
 - [T-an-icon-loads-when-first-drawn](TRAPS.md#t-an-icon-loads-when-first-drawn) — generate-icons

@@ -85,6 +85,10 @@ export function openMore(host: HTMLElement, root: ParentNode, trigger: HTMLEleme
   menu.replaceChildren(...drawn.filter((g) => g.length)
     .flatMap((g, i) => (i ? [divider.cloneNode(true) as HTMLElement, ...g] : g)));
   syncHide(host, root);
+  // It says what its ⋮ does, under its heading. Will, TODO 691 · TRAP T-an-action-says-what-it-does
+  const described = trigger.getAttribute('data-description');
+  if (described) menu.setAttribute('data-description', described);
+  else menu.removeAttribute('data-description');
   menu.show?.(trigger);
 }
 

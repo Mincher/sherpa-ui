@@ -118,7 +118,8 @@
               "data-type": "icon",
               "data-icon-start": "ellipsis-horizontal",
               "aria-label": "Canvas options",
-              "aria-haspopup": "dialog"
+              "aria-haspopup": "dialog",
+              "data-description": "Fit, zoom, and show or hide the minimap."
             },
             "children": [
               {

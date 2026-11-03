@@ -162,6 +162,7 @@
       <!-- FILTERS opens the Filters menu: its pencil, its word "Filters". Will, TODOs 445, 681 -->
       <sherpa-button class="act add-btn" data-act="add" data-size="sm"
                      data-icon-start="pencil" data-icon-end="triangle-down"
+                     data-description="Add filters to this page, or remove them."
                      aria-haspopup="dialog">Filters</sherpa-button>
       <!-- SAVED, where the app splits it from Edit, as the App Header's Save:
            Save names the filters; ▾ holds the sets, the save rows, Manage. Alone,
@@ -172,6 +173,7 @@
         <sherpa-button class="act saved-btn" data-act="saved" data-size="sm" data-type="icon"
                        data-group="solo" data-icon-start="filter"
                        data-swap-on="data-saveable" data-swap-data-group="end" data-swap-data-icon-start="triangle-down"
+                       data-description="Use, save and manage your saved filters."
                        aria-label="Saved filters" aria-haspopup="dialog"></sherpa-button>
       </span>
 
@@ -181,6 +183,7 @@
                      aria-label="Refresh data"></sherpa-button>
       <sherpa-button class="act" data-size="sm" data-act="overflow" data-type="icon"
                      data-icon-start="ellipses-vertical"
+                     data-description="Reset, save and refresh these filters."
                      aria-label="More actions" aria-haspopup="dialog"></sherpa-button>
     </div>
   </div>
@@ -247,6 +250,7 @@
       <!-- FILTERS, as the bar's button reads. Will, TODO 681 -->
       <sherpa-button slot="actions" class="column-filters" part="filters" data-size="sm"
                      data-icon-start="pencil" data-icon-end="triangle-down"
+                     data-description="Add filters to this page, or remove them."
                      aria-haspopup="dialog">Filters</sherpa-button>
       <span slot="actions" class="saved-group" part="saved-group">
         <sherpa-button class="column-save-as" data-size="sm"
@@ -254,11 +258,13 @@
         <sherpa-button class="column-saved" part="saved" data-size="sm" data-type="icon"
                        data-group="solo" data-icon-start="filter"
                        data-swap-on="data-saveable" data-swap-data-group="end" data-swap-data-icon-start="triangle-down"
+                       data-description="Use, save and manage your saved filters."
                        aria-label="Saved filters" aria-haspopup="dialog"></sherpa-button>
       </span>
       <slot name="actions" slot="actions" data-accepts="control"></slot>
       <sherpa-button slot="actions" class="column-more" part="more" data-type="icon" data-size="sm"
                      data-icon-start="ellipses-vertical"
+                     data-description="Reset, save and refresh these filters."
                      aria-label="More actions" aria-haspopup="dialog"></sherpa-button>
       <sherpa-input-text slot="metadata" class="find" part="find"
                          data-icon-start="magnifying-glass" data-clearable

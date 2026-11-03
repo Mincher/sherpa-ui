@@ -4116,6 +4116,30 @@ arranged again. Its search stays. The Switch sits left of the Group chip.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `src/core/data/query-context.ts`
 
+### T-an-action-says-what-it-does
+
+**An action button says what it does, ONCE, in `data-description`** (Will, TODO
+691, D1 A): the menu it opens shows it under its heading (`sherpa-menu`'s
+`data-description` → `.description`, which the button writes as it opens it), and
+its tooltip reads the same string (S3). A menu code opens — the ⋮ (`openMore`) — takes
+its trigger's. Sherpa's own buttons say theirs in their templates (S2): Filters,
+Saved, ⋮, a section's ⋮, the View's options, Show as, the canvas options, the
+legend's Breakdown. The heading and the line sit in one `.titles`
+box in the header's `heading` area: a grid row of their own would be an empty
+track, and a doubled gap, wherever a menu has no description.
+
+**On by default; the page turns it off** with `<html data-no-action-descriptions>`,
+which sets `--sherpa-action-description: none`, inherited into every shadow root.
+That rule is in `page.css`, which `project-tokens.mjs` writes: an edit to `page.css`
+itself is gone at the next build.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-button/sherpa-button.ts`
+- Site: `src/core/ui/more-menu.ts`
+- Site: `scripts/project-tokens.mjs`
+- Site: `test/e2e/reforged-an-action-says-what-it-does.spec.ts`
+
 ### T-a-solo-is-a-draft-of-one-tab
 
 **Solo one filter, and every other answer in force goes off — whole** (Will, TODO

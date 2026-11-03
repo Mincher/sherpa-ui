@@ -39,6 +39,7 @@ For a floating list of choices or actions; put it in a `sherpa-button`'s `menu` 
 | `data-commit` | boolean |  | show the Apply / Discard footer and DEFER changes until Apply |
 | `data-commit-fixed` | boolean |  |  |
 | `data-conditions` | text |  | FILTER type only: a comma-separated op list ('eq,ne,contains') in place of the default text set. |
+| `data-description` | text |  |  |
 | `data-discard` | boolean |  | show Discard without Apply: its bar holds ONE Apply for the scope |
 | `data-drill` | boolean |  | the list has been replaced by a SUB-LIST — shows a back arrow and a breadcrumb in the header. Drilling IN PLACE rather than opening a second card means one box to position, nothing to close on a pointer crossing a gap, and no way for two cards to disagree about what is ticked. |
 | `data-drill-from` | text |  | names the list that was replaced — the breadcrumb's text |
@@ -139,7 +140,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`add-condition`, `apply`, `body-actions`, `body-number`, `body-range`, `condition-rows`, `discard`, `drill-back`, `drill-crumbs`, `drill-trail`, `footer`, `header`, `heading`, `loading`, `menu`, `no-matches`, `remove`, `reset`, `rows`, `search`, `solo-toggle`, `today`, `use-condition`
+`add-condition`, `apply`, `body-actions`, `body-number`, `body-range`, `condition-rows`, `description`, `discard`, `drill-back`, `drill-crumbs`, `drill-trail`, `footer`, `header`, `heading`, `loading`, `menu`, `no-matches`, `remove`, `reset`, `rows`, `search`, `solo-toggle`, `titles`, `today`, `use-condition`
 
 ## CSS custom properties it reads
 
@@ -161,6 +162,10 @@ What each class's base rule reads:
 | `--sherpa-font-weight-regular` | `.heading` | `font-weight` |
 | `--sherpa-theme-content-line-height-small` | `.heading` | `line-height` |
 | `--sherpa-theme-content-letter-spacing-xs` | `.heading` | `letter-spacing` |
+| `--sherpa-action-description` | `.description` | `display` |
+| `--sherpa-style-content-secondary` | `.description` | `color` |
+| `--sherpa-theme-content-size-small` | `.description` | `font-size` |
+| `--sherpa-theme-content-line-height-small` | `.description` | `line-height` |
 | `--sherpa-theme-content-critical-1` | `.remove` | `--_status-text` |
 | `--sherpa-theme-border-critical-2` | `.remove` | `--_status-border` |
 | `--sherpa-theme-content-critical-1` | `.remove` | `--_status-icon` |
