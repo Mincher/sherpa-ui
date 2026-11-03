@@ -5,6 +5,7 @@
  * TRAP T-scope-does-not-stop-inheritance, TRAP T-icon-only-is-purely-css
  */
 import { DATA_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { watchTipLines, writeTip } from '../../core/ui/description-tips.js';
 import {
   DEFAULT_OP, OP_TAKES, valueKey, type FilterOp, type SortDirection,
 } from '../../core/data/store.js';
@@ -60,6 +61,9 @@ export class SherpaQuickFilter extends SherpaElement {
     /* SOLOED: every other filter in its scope is off while it is. Its body ends the
        solo, never toggles. Written by its host. Will, TODO 690 */
     'data-solo': { type: 'boolean', kind: 'behaviour' },
+    /* What its field is, from the field's own declaration: its tip says it, in
+       lines, where the page shows them. Will, TODO 691 */
+    'data-description': { type: 'string', kind: 'behaviour' },
     /* The presets on that hold this field or value, by name: blue, and it says so. Will, TODO 521 */
     'data-by-preset': { type: 'string', kind: 'behaviour' },
     /* A value a preset on leaves out, in a field it holds: refused, by name. Will, TODO 601 */
@@ -195,9 +199,15 @@ export class SherpaQuickFilter extends SherpaElement {
    *  not read open. TRAP T-a-trigger-click-follows-light-dismiss */
   override onDisconnect(): void {
     this.set('data-open', null);
+    this.#stopTips?.();
+    this.#stopTips = null;
   }
 
+  /** Stops hearing whether the page shows tips in lines. */
+  #stopTips: (() => void) | null = null;
+
   override onConnect(): void {
+    this.#stopTips = watchTipLines(() => this.#writeTip());
     this.#syncEmpty();
     /* GROUP and SORT draw their OWN column and glyph, from the state they were
        given. A host that stamped `data-direction` and `data-current` has said
@@ -235,7 +245,7 @@ export class SherpaQuickFilter extends SherpaElement {
        while Sort remembered: one of the two blanked the caret.
        TRAP T-off-is-not-forgotten */
     if (this.#arranges()) this.#drawArrangement();
-    if (name === 'aria-label' || name === 'data-current') this.#writeTip();
+    if (name === 'aria-label' || name === 'data-current' || name === 'data-description') this.#writeTip();
     if (name === 'data-swatch') return this.#paintSwatch();
     if (name === 'data-current' || name === 'data-pending' || name === 'data-failed') this.#syncBadge();
     if (name === 'data-current') this.#syncEmpty();
@@ -1031,7 +1041,15 @@ export class SherpaQuickFilter extends SherpaElement {
        name in the tip, as an icon button does: "Sorted by Name, descending". */
     const name = this.hasAttribute('data-icon-only') ? this.getAttribute('aria-label') ?? '' : '';
     const tip = this.$('.tip');
-    if (tip) tip.textContent = said || name;
+    /* IN LINES, where the page shows them: its field's name, what the field is,
+       its answer, then the rest. Will, TODO 691 · TRAP T-a-tip-in-lines */
+    const label = this.dataset['label'] ?? this.$<HTMLSlotElement>('.label slot')?.assignedNodes({ flatten: true }).map((n) => n.textContent ?? '').join('');
+    if (tip) {
+      writeTip(tip, {
+        plain: said || name, name: name || label, description: this.dataset['description'],
+        value: this.#tipText(this.#said), more: [...lead, matches].filter(Boolean).join(' - '),
+      });
+    }
     // For a screen reader the name is said already; only the answer describes.
     const body = this.$('.body');
     if (said) body?.setAttribute('aria-description', said);

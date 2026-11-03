@@ -3159,6 +3159,9 @@
           "valueSet": "v"
         },
         {
+          "name": "data-description"
+        },
+        {
           "name": "data-direction",
           "description": "asc | desc — which way a sort chip POINTS. `data-current` says whether it runs, so a suspended sort resumes the way it was. TRAP T-off-is-not-forgotten",
           "values": [

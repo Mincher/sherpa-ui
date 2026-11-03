@@ -4116,6 +4116,30 @@ arranged again. Its search stays. The Switch sits left of the Group chip.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `src/core/data/query-context.ts`
 
+### T-a-tip-in-lines
+
+**Where the page says, a tip reads in LINES: the Name, the Description, the Value,
+then the rest** (Will, TODO 691 S3, D2 A: buttons and filter chips). The page says
+so on `<html data-description-tips>`; ONE watcher (`watchTipLines`) tells each
+button and chip, which writes its tip again (`writeTip`). Off, its one line as
+before goes in its first line, and the rest stay empty — it reads as it did.
+
+**The lines are in the template, so a tip is never `:empty`:** each `.tip` holds
+`.tip-name`, `.tip-description`, `.tip-value`, `.tip-more`. A line with nothing to
+say hides, and a tip whose every line is empty hides
+(`.sherpa-tip:has(> .tip-line):not(:has(> .tip-line:not(:empty)))`), as the
+`:empty` rule hides a tip without lines. A labelled button with no description
+shows no tip, in lines or not; with one, its name and its description.
+
+**A chip's description is its FIELD's**, declared in the page definition
+(`description`), carried by the catalogue into its filter def, and written on the
+chip as `data-description`.
+
+- Site: `src/core/ui/description-tips.ts`
+- Site: `src/core/sherpa-anchor.css`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `test/e2e/reforged-an-action-says-what-it-does.spec.ts`
+
 ### T-an-action-says-what-it-does
 
 **An action button says what it does, ONCE, in `data-description`** (Will, TODO

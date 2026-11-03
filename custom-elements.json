@@ -9643,6 +9643,12 @@
               "default": "false"
             },
             {
+              "name": "data-description",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
               "name": "data-direction",
               "description": "asc | desc — which way a sort chip POINTS. `data-current` says whether it runs, so a suspended sort resumes the way it was. TRAP T-off-is-not-forgotten",
               "type": {

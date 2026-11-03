@@ -32,6 +32,7 @@ One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. 
 | `data-condition` | `simple` `advanced` |  | written BY the chip: simple \| advanced — which condition it holds, absent when it holds none. No colour follows it: an Advanced chip is active, as a Simple one. TRAP T-a-conditioned-chip-reads-as-active |
 | `data-count` | text |  | written BY the chip: its RESULTS, the rows its answer matches, once its host tells it `results` — never a count of its picks. TODOs 60, 123 |
 | `data-current` | boolean | `false` | selected/on state |
+| `data-description` | text |  |  |
 | `data-direction` | `asc` `desc` |  | asc \| desc — which way a sort chip POINTS. `data-current` says whether it runs, so a suspended sort resumes the way it was. TRAP T-off-is-not-forgotten |
 | `data-failed` | boolean |  | its data could not be fetched — a system error, not 0 matches: the critical look. Written by its host. TODO 411 |
 | `data-filters-nothing` | boolean |  | written BY the chip: on, but filtering nothing — the amber warning. |

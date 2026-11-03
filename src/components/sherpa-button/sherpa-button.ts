@@ -7,6 +7,7 @@
  * @fires button-click — the button is activated. bubbles + composed.
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { watchTipLines, writeTip } from '../../core/ui/description-tips.js';
 import '../sherpa-badge/sherpa-badge.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 
@@ -68,7 +69,7 @@ export class SherpaButton extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name === 'data-label' || name === 'data-tip' || name === 'aria-label') this.#syncTip();
+    if (name === 'data-label' || name === 'data-tip' || name === 'aria-label' || name === 'data-description') this.#syncTip();
     if (name === 'data-label') this.#syncLabel();
     else if (name === 'data-icon-start' || name === 'data-icon-end') this.#syncIcons();
     else if (name === 'data-badge') this.#syncBadge();
@@ -94,8 +95,24 @@ export class SherpaButton extends SherpaElement {
     const slot = this.$<HTMLSlotElement>('.label slot');
     const slotted = slot?.assignedNodes({ flatten: true }).map((n) => n.textContent ?? '').join('');
     const label = (this.dataset['label'] ?? slotted ?? '').trim();
-    tip.textContent = (this.dataset['tip'] ?? (label ? '' : this.getAttribute('aria-label')) ?? '').trim();
+    const plain = (this.dataset['tip'] ?? (label ? '' : this.getAttribute('aria-label')) ?? '').trim();
+    const description = this.dataset['description'];
+    // In lines, it says its name and what it does; with nothing to add, its one line. TODO 691
+    const name = (this.dataset['tip'] ?? (label || this.getAttribute('aria-label')) ?? '').trim();
+    writeTip(tip, description ? { plain, name, description } : { plain, name: plain });
   };
+
+  /** Stops hearing whether the page shows tips in lines. */
+  #stopTips: (() => void) | null = null;
+
+  override onConnect(): void {
+    this.#stopTips = watchTipLines(this.#syncTip);
+  }
+
+  override onDisconnect(): void {
+    this.#stopTips?.();
+    this.#stopTips = null;
+  }
 
   /** Writes data-badge into the composed sherpa-badge; CSS shows it. */
   #syncBadge(): void {

@@ -1381,6 +1381,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // The toolbar's glyph to decide, not the app's.
       const glyph = f.id === VIEW_CHIP ? SherpaQuickFilterToolbar.#icons.view : f.icon;
       if (glyph) chip.setAttribute('data-icon-start', glyph);
+      // What its field is: its tip says it, in lines. TODO 691
+      if (f.description) chip.setAttribute('data-description', f.description);
       /* A selector: always on, and its body does not flip it. LOCKED for that
          reason — `data-locked` is how a chip is told the host owns its state,
          and without it the chip flipped itself off and the toolbar wrote it

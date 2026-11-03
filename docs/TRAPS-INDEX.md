@@ -361,7 +361,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-router-owns-the-url](TRAPS.md#t-the-router-owns-the-url) — app, router
 - [T-the-star-reports-it-does-not-decide](TRAPS.md#t-the-star-reports-it-does-not-decide) — outlet
 
-## Filters (154)
+## Filters (155)
 
 - [T-a-bar-reports-its-holds](TRAPS.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — quick-filter-toolbar
@@ -418,6 +418,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-stuck-header-casts-a-shadow](TRAPS.md#t-a-stuck-header-casts-a-shadow) — quick-filter-toolbar
 - [T-a-superseded-chip-suspends-it-is-never-removed](TRAPS.md#t-a-superseded-chip-suspends-it-is-never-removed) — quick-filter, quick-filter-toolbar
 - [T-a-suspended-sort-is-one-owners-job](TRAPS.md#t-a-suspended-sort-is-one-owners-job) — quick-filter
+- [T-a-tip-in-lines](TRAPS.md#t-a-tip-in-lines) — quick-filter
 - [T-a-toggle-shows-its-state-by-a-shape](TRAPS.md#t-a-toggle-shows-its-state-by-a-shape) — quick-filter
 - [T-a-toolbar-moves-by-arrow-and-keeps-its-tabs](TRAPS.md#t-a-toolbar-moves-by-arrow-and-keeps-its-tabs) — quick-filter-toolbar
 - [T-a-trigger-click-follows-light-dismiss](TRAPS.md#t-a-trigger-click-follows-light-dismiss) — quick-filter
@@ -807,7 +808,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](TRAPS.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](TRAPS.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (113)
+## SherpaElement and the shared sheets (114)
 
 - [T-a-broken-assumption-reports](TRAPS.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](TRAPS.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -845,6 +846,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-swapped-label-is-in-the-markup](TRAPS.md#t-a-swapped-label-is-in-the-markup) — sherpa-element, swap
 - [T-a-template-is-parsed-once](TRAPS.md#t-a-template-is-parsed-once) — templater
 - [T-a-templater-owns-the-files](TRAPS.md#t-a-templater-owns-the-files) — sherpa-element, templater
+- [T-a-tip-in-lines](TRAPS.md#t-a-tip-in-lines) — description-tips, sherpa-anchor
 - [T-a-tip-lives-in-the-top-layer](TRAPS.md#t-a-tip-lives-in-the-top-layer) — sherpa-anchor, sherpa-element
 - [T-a-toggle-shows-its-state-by-a-shape](TRAPS.md#t-a-toggle-shows-its-state-by-a-shape) — sherpa-checkbox-look
 - [T-a-toolbar-moves-by-arrow-and-keeps-its-tabs](TRAPS.md#t-a-toolbar-moves-by-arrow-and-keeps-its-tabs) — roving-focus

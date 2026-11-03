@@ -63,6 +63,7 @@
         "max": { "type": "number" },
         "step": { "type": "number", "exclusiveMinimum": 0 },
         "icon": { "type": "string" },
+        "description": { "description": "What the field is, in a few words: its filter chip's tip says it, where the page shows tips in lines.", "type": "string" },
         "section": {
           "description": "The named section its chip sits in, where a bar heads its sections (a portrait one). Chips of one section sit together under its name; a chip with none is a section of its own, named for it.",
           "type": "string"

@@ -140,7 +140,25 @@
           "attrs": {
             "popover": "manual",
             "aria-hidden": "true"
-          }
+          },
+          "children": [
+            {
+              "el": "span",
+              "class": "tip-line tip-name"
+            },
+            {
+              "el": "span",
+              "class": "tip-line tip-description"
+            },
+            {
+              "el": "span",
+              "class": "tip-line tip-value"
+            },
+            {
+              "el": "span",
+              "class": "tip-line tip-more"
+            }
+          ]
         },
         {
           "el": "div",
@@ -319,6 +337,14 @@
       "kind": "style",
       "default": false,
       "description": "selected/on state"
+    },
+    {
+      "$type": "prop",
+      "name": "data-description",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour"
     },
     {
       "$type": "prop",

@@ -63,6 +63,16 @@
 
 .sherpa-tip:empty { display: none; }
 
+/* A tip IN LINES — the Name, the Description, the Value, then the rest — one under
+   the next; a line with nothing to say hides, and a tip whose every line is empty
+   hides, as an empty one does. Will, TODO 691 · TRAP T-a-tip-in-lines */
+.sherpa-tip:has(> .tip-line) {
+  flex-direction: column;
+  align-items: flex-start;
+}
+.tip-line:empty { display: none; }
+.sherpa-tip:has(> .tip-line):not(:has(> .tip-line:not(:empty))) { display: none; }
+
 /* Zero-size anchor point: an SVG element cannot be a CSS anchor in Chromium. */
 .sherpa-anchor-point {
   position: absolute;

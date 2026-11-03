@@ -48,6 +48,8 @@ export interface FieldDeclaration {
   step?: number;
   /** Its chip's glyph. TRAP T-only-five-filter-chips-carry-an-icon */
   icon?: string;
+  /** What it is, in a few words: its chip's tip says it, in lines. Will, TODO 691 */
+  description?: string;
   /** The named SECTION its chip sits in, where a bar heads its sections; none,
    *  a section of its own, named for it. Will, TODO 438 */
   section?: string;

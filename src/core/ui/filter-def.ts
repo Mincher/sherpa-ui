@@ -50,6 +50,8 @@ export interface FilterDef extends OffersAdvanced {
   select?: 'single' | 'multiple';
   /** Its leading glyph. TRAP T-only-five-filter-chips-carry-an-icon */
   icon?: string;
+  /** What it is, in a few words: its chip's tip says it, in lines. Will, TODO 691 */
+  description?: string;
   /** The named SECTION it sits in, in portrait; none, a section of its own. Will, TODO 438 */
   section?: string;
   /** A number filter's box clamp, and a range row's slider ends. Default 0..100. */
