@@ -26,6 +26,9 @@ Wave 3 (S5, U2, U3, P2, P3, H2); and U4, P4, P5, N1, N2, H5, P6 (a + b) and P7. 
 done: 694 (month ends), 692 (nested conditions), 548 (the presents registry), 703 (View
 Context chips that stay), `persist()` (Will: B — the app calls `keepData()`).
 
+- **The final full run** (2026-11-04): sherpa-ui 3810 passed, none failed; Node
+  1014/1014; the axe gate 70/70; Demos 930 passed, its 2 failures the old WebKit ones in
+  TODO 702.
 - **Code:** `sherpa-data-layer` and Demos `main` hold it all; nothing pushed. Will's
   :4200 server keeps its old `server/index.mjs` until he restarts it (H5 changed it).
 - **Waiting on Will:**

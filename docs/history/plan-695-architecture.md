@@ -550,6 +550,10 @@ trim, with the wording pass the lanes carried), 223 (delivering templates and
 definitions), 170 (its plan is `docs/ARCHITECTURE.md` §8; Will's word), 77 (with 700),
 and the bugs the lanes found (702, 704).
 
+**The final full run** (2026-11-04, on `d96a5f2b`): sherpa-ui 3810 passed, none failed;
+Node 1014/1014; the axe gate 70/70. Demos 930 passed, 1 flaky; its 2 failures are both
+old WebKit ones in TODO 702 (the 800 ms `reopen` bound, `saved-filter:352`).
+
 ### The waves
 
 | Wave | Lane | Workstream | Owns | Done when | Size |
