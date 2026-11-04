@@ -144,3 +144,10 @@ test('a line over a range says each point\'s time span, as a sparkline tip does 
   assert.deepEqual(line.labels, summarise(rows, { shape: 'aggregate', ...spec }).labels);
   assert.match(line.labels[0], /May.+5.+Jun.+4|5.+May.+4.+Jun/);
 });
+
+test('a picked range on a date is a between once typed by its field — untyped, it is `in` and spans nothing (TODO 705)', async () => {
+  const { whereOf } = await import(new URL('../../dist/core/data/where.js', import.meta.url));
+  const reading = { created: { picked: ['2026-05-04', '2026-11-04'], range: true } };
+  assert.deepEqual(rangeOf(whereOf(reading, () => ({ type: 'date' })).created), ['2026-05-04', '2026-11-04']);
+  assert.equal(rangeOf(whereOf(reading).created), undefined);
+});

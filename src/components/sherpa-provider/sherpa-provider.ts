@@ -30,7 +30,7 @@ import { QueryContext } from '../../core/data/query-context.js';
 import { VIEW } from '../../core/data/query.js';
 import type { Failure } from '../../core/data/failure.js';
 import type { DataSource } from '../../core/data/data-source.js';
-import { whereOf, type Where } from '../../core/data/where.js';
+import type { Where } from '../../core/data/where.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
 import { bindId, bindSource } from '../../core/ui/bind-source.js';
 import { ProviderMode, isColumn } from './provider-mode.js';
@@ -1042,7 +1042,8 @@ export class SherpaProvider extends SherpaElement {
       ? { ...given, aggregate: 'sum' as const } : given;
     const scope = spec.over ? source.query.scopeOf(spec.over) : undefined;
     const reading = scope ? source.query.reading(scope, spec.over!) : undefined;
-    return segmented(spec, reading ? whereOf({ [spec.over!]: reading })[spec.over!] : undefined, rows);
+    // By its field's type: untyped, a picked range reads as `in`, and no axis sees it.
+    return segmented(spec, reading ? source.whereOf({ [spec.over!]: reading })[spec.over!] : undefined, rows);
   }
 
   /** The fields the open page declares: a row opened in a grid made from a chart shows them. */
