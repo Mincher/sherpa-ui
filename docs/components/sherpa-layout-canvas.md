@@ -55,12 +55,13 @@ Each one bubbles.
 | Slot | Accepts | What it holds |
 |---|---|---|
 | (default) | content | the content, placed on the canvas at its `--x` and `--y` (px) |
+| `panel` | panel | a card FLOATING on the canvas, 32px from its top, bottom and left edges: it does not pan or zoom (a node panel) |
 
 ## Parts
 
 Style these from outside with `::part()`:
 
-`controls`, `minimap`, `plane`, `viewport`
+`controls`, `floating`, `minimap`, `plane`, `viewport`
 
 ## CSS custom properties it reads
 

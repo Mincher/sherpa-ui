@@ -80,6 +80,9 @@ export class SherpaLayoutCanvas extends SherpaElement {
       minimap?.addEventListener(type, this.#onMinimap as EventListener);
     }
     this.$('slot')?.addEventListener('slotchange', () => this.#drawMinimap());
+    // A card in the `panel` slot takes the bottom left: the minimap moves out from under it.
+    const panel = this.$<HTMLSlotElement>('slot[name="panel"]');
+    panel?.addEventListener('slotchange', () => this.toggleState('has-panel', panel.assignedElements().length > 0));
     this.#zoom = this.#clamp(coerceNum(this.dataset['zoom'], 1));
     this.#apply(false);
   }

@@ -2617,6 +2617,11 @@
       ]
     },
     {
+      "name": "sherpa-node-panel",
+      "description": "the nodes a graph editor may place, by category: a search, then each category an accordion of items. A card (sherpa-container) floating on a canvas. Will, plan 713 M8. TRAP T-the-node-panel-asks-it-places",
+      "attributes": []
+    },
+    {
       "name": "sherpa-node-row",
       "description": "one row of a sherpa-node: an input socket, a field and an output socket. Any of the three may be absent. Will, TODO 78.",
       "attributes": [

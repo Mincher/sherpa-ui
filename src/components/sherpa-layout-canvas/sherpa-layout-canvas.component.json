@@ -48,6 +48,19 @@
       },
       {
         "el": "div",
+        "class": "floating",
+        "part": "floating",
+        "children": [
+          {
+            "slot": "panel",
+            "attrs": {
+              "data-accepts": "panel"
+            }
+          }
+        ]
+      },
+      {
+        "el": "div",
         "class": "minimap sherpa-border-edges sherpa-border-corners",
         "part": "minimap",
         "attrs": {
@@ -211,6 +224,14 @@
         "content"
       ],
       "description": "the content, placed on the canvas at its `--x` and `--y` (px)"
+    },
+    {
+      "$type": "slot",
+      "name": "panel",
+      "accepts": [
+        "panel"
+      ],
+      "description": "a card FLOATING on the canvas, 32px from its top, bottom and left edges: it does not pan or zoom (a node panel)"
     }
   ],
   "populate": {

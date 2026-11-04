@@ -119,10 +119,14 @@ export {
 /* The ONE registry of node kinds, for a page's Query and a workflow alike. TRAP T-one-node-registry */
 export {
   FALSE_SOCKET,
+  NODE_CATEGORIES,
   NODE_KINDS,
   ROWS,
   SOCKET_WORDS,
   accepts,
+  fitOf,
+  paletteFor,
+  paletteOf,
   placed,
   rowChoices,
   socketOf,
@@ -137,6 +141,8 @@ export {
   type NodeKind,
   type NodePlaces,
   type NodeRoute,
+  type PaletteGroup,
+  type PaletteItem,
   type RowChoice,
   type RowControl,
   type RowFacts,

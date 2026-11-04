@@ -15,6 +15,12 @@
  * - NodeKind — What a node IS: its header, its sockets, its rows, and what it stands for in the data layer.
  * - ROWS — The Rows row: the data rows a node sends on. They come in on its header.
  * - NODE_KINDS — Every kind the library ships, once. An app adds its own beside them.
+ * - NODE_CATEGORIES — The node panel's categories, in order.
+ * - PaletteItem — One node of the panel: the kind's id and the kind.
+ * - PaletteGroup — One category of the panel, and its kinds in the registry's order.
+ * - paletteOf — The node panel's list: each category with a workflow kind in it, in order; never a Query-only kind.
+ * - fitOf — Where a new node of a kind joins a socket of a type: its header or a row; none, it does not fit.
+ * - paletteFor — The palette's kinds a socket of a type could join, a Value first.
  * - Socket — A socket address, read: its node, and its row or none for the header's.
  * - socketOf — Read a socket address: `node`, the header's, or `node/row`.
  * - FALSE_SOCKET — The footer's False, as an address names it after its node.
@@ -114,6 +120,8 @@ export interface NodeKind {
   /** The data layer's name for what it stands for: a shape, or the function a workflow runs it by. */
   model: string;
   graphs: readonly NodeGraph[];
+  /** The node panel's category, one of `NODE_CATEGORIES` or an app's own; a workflow kind has one. */
+  category?: string;
 }
 
 /** The Rows row: the data rows a node sends on, an object. They come in on its header (D1);
@@ -126,7 +134,7 @@ export const ROWS: Readonly<RowKind> = { name: 'rows', label: 'Rows', output: 'o
 export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   store: {
     heading: 'Store', icon: 'storage', description: 'Where the rows come from.', branches: true,
-    rows: [ROWS, { name: 'store', label: 'Store', control: 'store', input: 'value' }], model: 'Store', graphs: ['query', 'workflow'],
+    rows: [ROWS, { name: 'store', label: 'Store', control: 'store', input: 'value' }], model: 'Store', graphs: ['query', 'workflow'], category: 'Sources',
   },
   // A page's Query: its rows read left to right, as the data flows.
   status: {
@@ -161,7 +169,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       { name: 'group', label: 'Group', repeat: true, input: 'boolean', from: ['condition'] },
       { name: 'matches', label: 'Matches', output: 'value' },
     ],
-    model: 'Condition', graphs: ['query', 'workflow'],
+    model: 'Condition', graphs: ['query', 'workflow'], category: 'Logic',
   },
   // Its on, then each field it writes.
   preset: {
@@ -199,11 +207,11 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // A workflow: each kind over the data-layer function it runs by.
   value: {
     heading: 'Value', icon: 'function', description: 'One value, typed.', branches: true,
-    rows: [{ name: 'value', label: 'Value', control: 'text', output: 'value' }, { name: 'type', label: 'Type', control: 'type' }], model: 'typedValue', graphs: ['workflow'],
+    rows: [{ name: 'value', label: 'Value', control: 'text', output: 'value' }, { name: 'type', label: 'Type', control: 'type' }], model: 'typedValue', graphs: ['workflow'], category: 'Variables',
   },
   pick: {
     heading: 'Pick', icon: 'price-tag', description: 'One field of the input.', input: 'any', branches: true,
-    rows: [{ name: 'field', label: 'Field', control: 'field', input: 'value', output: 'value' }], model: 'readField', graphs: ['workflow'],
+    rows: [{ name: 'field', label: 'Field', control: 'field', input: 'value', output: 'value' }], model: 'readField', graphs: ['workflow'], category: 'Variables',
   },
   sort: {
     heading: 'Sort', icon: 'sort-ascending', description: 'The rows in order.', input: 'any', branches: true,
@@ -212,20 +220,68 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       { name: 'field', label: 'Field', control: 'field', input: 'value' },
       { name: 'direction', label: 'Direction', control: 'direction', input: 'value' },
     ],
-    model: 'sortRows', graphs: ['workflow'],
+    model: 'sortRows', graphs: ['workflow'], category: 'Collections',
   },
   group: {
     heading: 'Group', icon: 'group', description: 'The rows by a field.', input: 'any', branches: true,
-    rows: [ROWS, { name: 'field', label: 'Field', control: 'field', input: 'value' }], model: 'groupRows', graphs: ['workflow'],
+    rows: [ROWS, { name: 'field', label: 'Field', control: 'field', input: 'value' }], model: 'groupRows', graphs: ['workflow'], category: 'Collections',
   },
   count: {
     heading: 'Count', icon: 'insights', description: 'How many rows.', input: 'any', branches: true,
-    rows: [{ name: 'count', label: 'Count', output: 'value' }], model: 'reduceRows', graphs: ['workflow'],
+    rows: [{ name: 'count', label: 'Count', output: 'value' }], model: 'reduceRows', graphs: ['workflow'], category: 'Collections',
   },
   output: {
-    heading: 'Output', icon: 'flag', description: 'Where the flow ends.', input: 'any', rows: [], model: 'LoadResult', graphs: ['workflow'],
+    heading: 'Output', icon: 'flag', description: 'Where the flow ends.', input: 'any', rows: [], model: 'LoadResult', graphs: ['workflow'], category: 'Output',
   },
 };
+
+/** The node panel's categories, in order, after Figma's (plan 713 §9.1). Each is empty until a kind
+ *  names it; `Custom Nodes` (D9) stays empty until saved nodes come (M9, M12). */
+export const NODE_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Utils', 'Collections', 'Output'];
+
+/** One node of the panel: the kind's id and the kind. */
+export interface PaletteItem {
+  id: string;
+  kind: NodeKind;
+}
+
+/** One category of the panel, and its kinds in the registry's order. */
+export interface PaletteGroup {
+  category: string;
+  items: PaletteItem[];
+}
+
+/** The node panel's list: each category with a workflow kind in it, in `NODE_CATEGORIES`' order and
+ *  then an app's own, in the order met; `Custom Nodes` always, empty or not. A Query-only kind is never in it. */
+export function paletteOf(kinds: Readonly<Record<string, NodeKind>>): PaletteGroup[] {
+  const groups = new Map<string, PaletteItem[]>(NODE_CATEGORIES.map((c) => [c, []]));
+  for (const [id, kind] of Object.entries(kinds)) {
+    if (!kind.graphs.includes('workflow')) continue;
+    const category = kind.category ?? 'Other';
+    const items = groups.get(category) ?? [];
+    items.push({ id, kind });
+    groups.set(category, items);
+  }
+  const known = new Set(NODE_CATEGORIES);
+  return [...groups].filter(([c, items]) => items.length || c === 'Custom Nodes').sort(([a], [b]) => Number(!known.has(a)) - Number(!known.has(b))).map(([category, items]) => ({ category, items }));
+}
+
+/** Where a new node of a kind joins a socket of a type: on the dragged OUTPUT's side, its header
+ *  or row INPUT that takes the type; on a dragged INPUT's, its header or row OUTPUT the input takes.
+ *  `{}` the header, `{ row }` a row; none, it does not fit. */
+export function fitOf(kind: NodeKind, type: SocketType, side: 'out' | 'in'): { row?: string } | undefined {
+  const key = side === 'out' ? 'input' : 'output';
+  const fits = (t: SocketType | undefined): boolean => !!t && (side === 'out' ? accepts(type, t) : accepts(t, type));
+  if (fits(kind[key])) return {};
+  const row = kind.rows.find((r) => fits(r[key]));
+  return row ? { row: row.name } : undefined;
+}
+
+/** The palette's kinds a socket of a type could join, a Value first (D16), then the palette's order. */
+export function paletteFor(palette: readonly PaletteGroup[], type: SocketType, side: 'out' | 'in'): PaletteItem[] {
+  const fit = palette.flatMap((g) => g.items).filter((i) => fitOf(i.kind, type, side));
+  return [...fit.filter((i) => i.id === 'value'), ...fit.filter((i) => i.id !== 'value')];
+}
 
 /** A socket address, read: its node, and its row or none for the header's. */
 export interface Socket {

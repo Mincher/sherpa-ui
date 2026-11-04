@@ -67,6 +67,24 @@
   top: var(--y, 0px);
 }
 
+/* ── The floating card ────────────────────────────────────────────────── */
+/* Always 32px from the top, bottom and left, Will's D14, whatever the density. A size container, so a card reads the canvas's own units. */
+.floating {
+  --_float: 32px;
+  position: absolute;
+  inset-block: var(--_float);
+  inset-inline-start: var(--_float);
+  inline-size: 18rem;
+  max-inline-size: 60%;
+  container-type: size;
+  pointer-events: none;
+}
+::slotted([slot="panel"]) {
+  position: static;
+  pointer-events: auto;
+  block-size: 100%;
+}
+
 /* The Pan tool: a drag anywhere moves the view, and the content does not hear it. */
 :host(:state(panning)) .viewport { cursor: grab; }
 :host(:state(panning)) .plane { pointer-events: none; }
@@ -101,6 +119,12 @@
   touch-action: none;
 }
 :host([data-no-minimap]) .minimap { display: none; }
+/* With a card floating at the bottom left, the minimap sits at the bottom right, above the controls. */
+:host(:state(has-panel)) .minimap {
+  inset-inline-start: auto;
+  inset-inline-end: var(--_inset);
+  inset-block-end: calc(var(--_inset) + 56px);
+}
 .minimap-items { position: absolute; inset: 0; pointer-events: none; }
 .minimap-item,
 .minimap-view {

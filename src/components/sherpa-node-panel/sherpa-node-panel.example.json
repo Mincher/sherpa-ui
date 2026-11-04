@@ -1,0 +1,13 @@
+{
+  "html": "<sherpa-node-panel></sherpa-node-panel>",
+  "use": "For a graph editor's list of the nodes it may place, by category, with a search. It floats in a canvas's `panel` slot. Fill it with `populate(paletteOf(kinds))`; it fires `node-add` for a click, Enter or a drag, and opens \"Add a node\" from `askAdd()`.",
+  "fill": [
+    {
+      "at": "sherpa-node-panel",
+      "data": [
+        { "category": "Variables", "items": [ { "id": "value", "kind": { "heading": "Value", "icon": "function", "description": "One value, typed." } } ] },
+        { "category": "Collections", "items": [ { "id": "count", "kind": { "heading": "Count", "icon": "insights", "description": "How many rows." } } ] }
+      ]
+    }
+  ]
+}

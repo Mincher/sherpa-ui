@@ -971,7 +971,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (114)
+## Other components (115)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1081,6 +1081,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-temporal-is-the-date-model](traps/element-and-sheets.md#t-temporal-is-the-date-model) — calendar
 - [T-the-footer-owns-nothing-to-save](traps/menus-tips-overlays.md#t-the-footer-owns-nothing-to-save) — container-footer
 - [T-the-nav-is-a-menu-on-a-phone](traps/other-components.md#t-the-nav-is-a-menu-on-a-phone) — app-header, app-shell, nav
+- [T-the-node-panel-asks-it-places](traps/other-components.md#t-the-node-panel-asks-it-places) — node-panel
 - [T-the-panel-is-desktop-only](traps/join-and-app.md#t-the-panel-is-desktop-only) — app-shell
 - [T-the-shell-owns-the-panel-areas](traps/other-components.md#t-the-shell-owns-the-panel-areas) — app-shell
 - [T-the-star-reports-it-does-not-decide](traps/join-and-app.md#t-the-star-reports-it-does-not-decide) — app-header

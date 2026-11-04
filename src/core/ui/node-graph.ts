@@ -17,7 +17,7 @@
  * - GraphEditor — What an editor's binding gives back: Save, and the undo.
  * - QueryEditorOptions — What drawing a page's Query needs beyond its source: its definition, an inspector, a session.
  * - bindQueryEditor — Keep a page's Query drawn on a canvas as it changes, and ask it for each edit.
- * - WorkflowEditorOptions — What editing a workflow needs beyond it: its facts, an inspector, a session, the kinds.
+ * - WorkflowEditorOptions — What editing a workflow needs beyond it: its facts, an inspector, a node panel, a session, the kinds.
  * - bindWorkflow — Keep a workflow's draft drawn on a canvas, and write each edit to it.
  */
 import '../../components/sherpa-button/sherpa-button.js';
@@ -28,6 +28,7 @@ import '../../components/sherpa-node-row/sherpa-node-row.js';
 import '../../components/sherpa-select-group/sherpa-select-group.js';
 import '../../components/sherpa-stack/sherpa-stack.js';
 import '../../components/sherpa-switch/sherpa-switch.js';
+import type { AddContext, SherpaNodePanel } from '../../components/sherpa-node-panel/sherpa-node-panel.js';
 import type { SherpaLayoutCanvas } from '../../components/sherpa-layout-canvas/sherpa-layout-canvas.js';
 import type { SocketSide } from '../../components/sherpa-node/node-sockets.js';
 import type { SessionStore } from '../browser/session.js';
@@ -40,8 +41,8 @@ import { OP_LABELS, valueKey, type FilterOp } from '../data/store.js';
 import { report } from '../data/report.js';
 import { typedValue, type FieldType } from '../data/filter-state.js';
 import {
-  FALSE_SOCKET, NODE_KINDS, placed, rowChoices, socketOf, socketType,
-  type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeRoute,
+  FALSE_SOCKET, NODE_KINDS, fitOf, paletteOf, placed, rowChoices, socketOf, socketType,
+  type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeRoute, type SocketType,
 } from '../data/node-kinds.js';
 import {
   addCustomValue, checkWorkflow, editWorkflow, readWorkflow, workflowFaults, workflowGraph,
@@ -70,6 +71,8 @@ export interface DrawOptions {
   onDeselect?: () => void;
   /** A line dragged out of an unrouted picklist's input socket and let go on the bare canvas, at a place on the plane. */
   onCustom?: (to: string, at: { x: number; y: number }) => void;
+  /** A line let go on the bare canvas from a socket of any type: "Add a node" opens there (D16). Where unset, the line goes nowhere. */
+  onAdd?: (context: AddContext) => void;
 }
 
 /** A field a row draws: a text field or a select, a set of ticks, or a switch. */
@@ -298,7 +301,7 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
   const fork = hit.classList.contains('socket-false');
   // What the line is joined to at its start: the output it leaves, or the input it runs back to.
   const lifting = out ? undefined : drawn.routes.findLast((r) => r.to === own);
-  if (!out && !lifting && !takesCustom(drawn, own)) return;
+  if (!out && !lifting && !takesCustom(drawn, own) && !(drawn.options.onAdd && typeAt(drawn, own, 'input'))) return;
   const from = out ? (fork ? `${own}/${FALSE_SOCKET}` : own) : lifting?.from;
   const start = out ? (owner as HasSockets).socketRect?.(fork ? 'false' : 'output') : lifting ? socketAt(drawn, lifting.from, 'output') : (owner as HasSockets).socketRect?.('input');
   if (!start) return;
@@ -320,6 +323,12 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
   const follow = (e: PointerEvent): void => {
     draft.setAttribute('d', out || lifting ? curve(begin, plane(e)) : curve(plane(e), begin));
   };
+  // "Add a node" for a line let go on the bare canvas: the socket's type, and where.
+  const addFrom = (socket: string, side: 'out' | 'in', e: PointerEvent): void => {
+    const type = typeAt(drawn, socket, side === 'out' ? 'output' : 'input');
+    const [x, y] = plane(e);
+    if (type) drawn.options.onAdd?.({ socket, type, side, client: { x: e.clientX, y: e.clientY }, at: { x: Math.round(x), y: Math.round(y) } });
+  };
   const stop = (e: PointerEvent): void => {
     window.removeEventListener('pointermove', follow);
     window.removeEventListener('pointerup', stop);
@@ -335,6 +344,7 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
       const to = socketNear(drawn, 'input', e.clientX, e.clientY);
       // Let go on the bare canvas, or on its own node: nothing is joined.
       if (to && from && socketOf(to).node !== socketOf(from).node) drawn.options.onConnect?.({ from, to });
+      else if (bare && from) addFrom(from, 'out', e);
     } else if (lifting) {
       const to = socketNear(drawn, 'input', e.clientX, e.clientY);
       if (to && to !== lifting.to && socketOf(to).node !== socketOf(lifting.from).node) drawn.options.onReroute?.(lifting, { from: lifting.from, to });
@@ -344,7 +354,8 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
       if (source && socketOf(source).node !== socketOf(own).node) drawn.options.onConnect?.({ from: source, to: own });
       else if (bare) {
         const [x, y] = plane(e);
-        drawn.options.onCustom?.(own, { x, y });
+        if (takesCustom(drawn, own)) drawn.options.onCustom?.(own, { x, y });
+        else addFrom(own, 'in', e);
       }
     }
   };
@@ -679,6 +690,13 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
 }
 
 /** The overlay panel a picked node opens in. */
+/** The type a drawn socket carries, on one side; none, it has no such socket. */
+function typeAt(drawn: Drawn, address: string, side: 'input' | 'output'): SocketType | undefined {
+  const { node, row } = socketOf(address);
+  const at = drawn.graph.nodes.find((n) => n.id === node);
+  return at ? socketType(at, row, side) : undefined;
+}
+
 export type Inspector = HTMLElement & { show(): void; hide(): void; open: boolean };
 
 /** What an editor's binding gives back: Save, and the undo. */
@@ -888,6 +906,8 @@ function watchQuery(
 /** What editing a workflow needs beyond it: its facts, an inspector, a session, the kinds. */
 export interface WorkflowEditorOptions extends WorkflowFacts {
   inspector?: Inspector;
+  /** The node panel floating on the canvas: it lists the kinds, and each node it asks for is placed. */
+  panel?: SherpaNodePanel;
   /** Where the DRAFT is kept for the tab (TODO 551): every edit, a move too, survives a
    *  reload, and the session's end forgets it — unless Save handed it over. */
   session?: SessionStore;
@@ -905,7 +925,7 @@ const OWN: Readonly<Record<string, keyof Pick<WorkflowNode, 'heading' | 'descrip
  *  hands over the v2. N4 runs the draft. TRAP T-a-workflow-is-its-definition */
 export function bindWorkflow(
   canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition | WorkflowDefinitionV1,
-  { inspector, session, kinds = NODE_KINDS, ...facts }: WorkflowEditorOptions = {},
+  { inspector, panel, session, kinds = NODE_KINDS, ...facts }: WorkflowEditorOptions = {},
 ): GraphEditor {
   const pointer = `/workflows/${workflow.id}`;
   const isDraft = (v: unknown): v is WorkflowDefinition | WorkflowDefinitionV1 => {
@@ -946,6 +966,40 @@ export function bindWorkflow(
   // A Value node for a picklist row: the row keeps its own pick, and mirrors the node.
   const customAt = (to: string, at: { x: number; y: number }): void => take(addCustomValue(draft, to, at, kinds));
   const onCustom = (to: string, at: { x: number; y: number }): void => customAt(to, { x: Math.round(at.x), y: Math.round(at.y) });
+  // A node the reader asked for, from the panel or "Add a node": through the one door, `{ add }`; picked, so its inspector opens.
+  const place = (kind: string, at: { x: number; y: number }, context?: AddContext): void => {
+    if (!kinds[kind]) return;
+    const free = (n: number): string => (draft.nodes.some((x) => x.id === `${kind}-${n}`) ? free(n + 1) : `${kind}-${n}`);
+    const id = free(1);
+    const fit = context && fitOf(kinds[kind]!, context.type, context.side);
+    // A node let go by its output sits left of the point, so its output meets the line.
+    const x = Math.round(at.x - (context?.side === 'in' ? 280 : 0));
+    write(editWorkflow(draft, { add: { id, kind, x, y: Math.round(at.y) } }, kinds));
+    if (context && fit) {
+      const own = fit.row ? `${id}/${fit.row}` : id;
+      take(editWorkflow(draft, { route: context.side === 'out' ? { from: context.socket, to: own } : { from: own, to: context.socket } }, kinds));
+    }
+    const node = graph.nodes.find((n) => n.id === id);
+    if (!node) return;
+    markNode(canvas, id);
+    picks.select(node, graph);
+  };
+  const planeAt = (clientX: number, clientY: number): { x: number; y: number } => {
+    const box = canvas.getBoundingClientRect();
+    const { x, y, zoom } = canvas.view;
+    return { x: (clientX - box.left - x) / zoom, y: (clientY - box.top - y) / zoom };
+  };
+  const onAdded = (event: Event): void => {
+    const { kind, point, context } = (event as CustomEvent<{ kind: string; point?: { x: number; y: number }; context?: AddContext }>).detail;
+    if (context) return place(kind, context.at, context);
+    const box = canvas.getBoundingClientRect();
+    if (!point) return place(kind, planeAt(box.left + box.width / 2 - 120, box.top + box.height / 2 - 40));
+    // Let go off the canvas: nothing is placed.
+    if (point.x < box.left || point.x > box.right || point.y < box.top || point.y > box.bottom) return;
+    place(kind, planeAt(point.x, point.y));
+  };
+  panel?.addEventListener('node-add', onAdded);
+  void panel?.populate(paletteOf(kinds));
   const onRemove = (id: string): void => {
     picks.deselect();
     write(editWorkflow(draft, { remove: id }, kinds));
@@ -972,7 +1026,10 @@ export function bindWorkflow(
   }));
   const draw = (): void => {
     graph = workflowGraph(draft, facts, kinds);
-    drawGraph(canvas, graph, { onEdit, onMove, onConnect, onReroute, onBreak, onCustom, onDeselect: picks.deselect, onSelect: (node) => picks.select(node, graph) });
+    drawGraph(canvas, graph, {
+      onEdit, onMove, onConnect, onReroute, onBreak, onCustom, onDeselect: picks.deselect, onSelect: (node) => picks.select(node, graph),
+      ...(panel ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
+    });
     picks.follow(graph);
   };
   draw();
@@ -988,6 +1045,7 @@ export function bindWorkflow(
     },
     stop(): void {
       unwatch();
+      panel?.removeEventListener('node-add', onAdded);
       picks.stop();
     },
   };

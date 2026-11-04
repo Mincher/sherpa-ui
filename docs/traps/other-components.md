@@ -1476,3 +1476,23 @@ the purple edge. Every other row stays Transparent, where the edge is nothing.
 
 - Site: `src/components/sherpa-nav-item/sherpa-nav-item.css`
 - Site: `test/e2e/reforged-nav-item.spec.ts`
+
+### T-the-node-panel-asks-it-places
+
+**The node panel LISTS and ASKS; it never places a node** (plan 713 M8, Will's
+D14 and D16). A click on an item, Enter on it, or a drag let go off the card is
+`node-add { kind, point? }`; "Add a node" is `askAdd(context)` and comes back on
+`node-add` with the same `context`. The editor that hears it makes the node through
+`editWorkflow { add }`, the one door, and picks it.
+
+- **The card floats in the canvas's `panel` slot**, not on the plane: a node in
+  the default slot pans and zooms with it. The slot's box sits 32px from the
+  canvas's top, bottom and left, in CSS.
+- **A drag is pointer events, not the HTML drag-and-drop**: a press that moves
+  four pixels. WebKit's drag events do not come from a script's pointer, and a
+  test drives the pointer. The click that ends a drag is eaten.
+- **A click is a place at the middle of the view**; a drag is a place where it
+  is let go, and a point off the canvas places nothing.
+
+- Site: `src/components/sherpa-node-panel/sherpa-node-panel.html`
+- Site: `src/components/sherpa-node-panel/sherpa-node-panel.ts`
