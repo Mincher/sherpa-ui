@@ -18,7 +18,7 @@ import { ruleOut } from '../../core/data/filter-state.js';
 import { SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { pairAnchor, paintSwatch } from '../../core/ui/chart-parts.js';
-import { watchTipLines, writeTip } from '../../core/ui/description-tips.js';
+import { TIP_HTML, watchTipLines, writeTip } from '../../core/ui/description-tips.js';
 // Each row is a key chip, and the roll-up a real button + menu; the page may not have imported them.
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-button/sherpa-button.js';
@@ -36,7 +36,7 @@ export type LegendItem = LegendDatum;
 
 export class SherpaChartLegend extends SherpaElement {
   static override css = new URL('./sherpa-chart-legend.css', import.meta.url);
-  static override html = new URL('./sherpa-chart-legend.html', import.meta.url);
+  static override html = [TIP_HTML, new URL('./sherpa-chart-legend.html', import.meta.url)];
 
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */
@@ -298,7 +298,8 @@ export class SherpaChartLegend extends SherpaElement {
     this.#items.forEach((item, i) => {
       if (readonly) {
         const key = this.#key(item, i);
-        if (key) list.appendChild(key);
+        // Said once in the root: its tip's lines are the family's. TRAP T-a-tip-in-lines
+        if (key) this.#sayKey(list.appendChild(key));
         return;
       }
       const isRollup = this.#rolledUp && i === this.#items.length - 1;
@@ -354,7 +355,6 @@ export class SherpaChartLegend extends SherpaElement {
     cell.toggleAttribute('data-unavailable', this.#out(item.label));
     // Its tip is its own: a row's anchor is named apart. TRAP T-chart-tip-is-a-sibling-of-its-dot
     pairAnchor(`--sherpa-legend-key-${i}`, cell.querySelector<HTMLElement>('.key')!, cell.querySelector<HTMLElement>('.tip')!);
-    this.#sayKey(cell);
     return cell;
   }
 

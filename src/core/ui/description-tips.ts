@@ -5,11 +5,16 @@
  * Will, TODO 691 · TRAP T-a-tip-in-lines
  *
  * Map:
+ * - TIP_HTML — The tip's lines, the family markup a control lists first in its static html.
  * - TipLines — A tip's one line as before, and its lines.
  * - tipsInLines — Does the page show tips in lines now?
  * - watchTipLines — Hear the page's choice change; the function it returns stops.
  * - writeTip — Write a tip: in lines where the page says, else its one line as before.
  */
+
+/** The tip's lines, the family markup a control lists first in its static html.
+ *  TRAP T-a-family-shares-markup */
+export const TIP_HTML = new URL('../sherpa-tip.html', import.meta.url);
 
 /** A tip's one line as before, and its lines. */
 export interface TipLines {
@@ -50,6 +55,11 @@ export function watchTipLines(listener: () => void): () => void {
 /** Write a tip: in lines where the page says, else its one line as before, in its
  *  first. A line with nothing to say stays empty, and hides. */
 export function writeTip(tip: Element, lines: TipLines): void {
+  // Its lines, from the family's prototype in its root, at the first write.
+  if (!tip.querySelector(':scope > .tip-line')) {
+    const from = (tip.getRootNode() as ParentNode).querySelector?.<HTMLTemplateElement>('template.tip-lines-tpl');
+    if (from) tip.append(document.importNode(from.content, true));
+  }
   const on = tipsInLines();
   const put = (line: string, text: string | undefined): void => {
     const el = tip.querySelector(`:scope > .tip-${line}`);

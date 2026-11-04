@@ -7,13 +7,13 @@
  * @fires button-click — the button is activated. bubbles + composed.
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
-import { watchTipLines, writeTip } from '../../core/ui/description-tips.js';
+import { TIP_HTML, watchTipLines, writeTip } from '../../core/ui/description-tips.js';
 import '../sherpa-badge/sherpa-badge.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 
 export class SherpaButton extends SherpaElement {
   static override css = new URL('./sherpa-button.css', import.meta.url);
-  static override html = new URL('./sherpa-button.html', import.meta.url);
+  static override html = [TIP_HTML, new URL('./sherpa-button.html', import.meta.url)];
   static override props = {
     /* CSS-only, and declared here rather than in `observed`: the base class
        need not watch a value only a selector reads. `2xs`-`xl`, NOT the shared

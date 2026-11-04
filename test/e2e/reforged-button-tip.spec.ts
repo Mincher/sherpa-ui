@@ -220,3 +220,26 @@ test('one tip is open at a time, and a tip turned off is never held open', async
   await page.locator('#off .trigger').hover();
   await expect.poll(open).toEqual([false, false, false]);
 });
+
+/* Read a frame after the hover, never in it (plan 695 P6): a tip its host hides
+   still shuts no other — the one keyboard focus holds stays — and only a root
+   that holds an anchor listens. TRAP T-a-tip-lives-in-the-top-layer */
+test('a tip turned off shuts no other, and a root with no anchor never lifts one', async ({ page }) => {
+  await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.style.cssText = 'padding: 80px; display: flex; gap: 120px';
+    root.innerHTML = '<sherpa-button id="one" data-type="icon" data-icon-start="gear" aria-label="First"></sherpa-button>'
+      + '<sherpa-button id="off" data-type="icon" data-icon-start="gear" aria-label="Off" data-no-tip></sherpa-button>'
+      + '<sherpa-badge id="badge">3</sherpa-badge>';
+    await window.__settled();
+  });
+  const open = () => page.evaluate(() => ['one', 'off'].map((id) =>
+    document.getElementById(id)!.shadowRoot!.querySelector('.tip')!.matches(':popover-open')));
+  await page.locator('#one .trigger').focus();
+  await expect.poll(open).toEqual([true, false]);
+  await page.mouse.move(1, 1);
+  await page.locator('#off .trigger').hover();
+  await expect.poll(open).toEqual([true, false]);
+  await page.locator('#badge').hover();
+  await expect.poll(open).toEqual([true, false]);
+});

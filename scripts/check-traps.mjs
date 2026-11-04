@@ -112,7 +112,7 @@ const AREAS = [
     ui('filter-def', 'filter-host', 'filter-kind', 'filter-menu', 'filters-button', 'more-menu'),
     /^src\/core\/sherpa-filter-/]],
   ['Menus, tips and overlays', 'menus-tips-overlays', [comp('menu', 'tooltip', 'dialog', 'overlay-panel', 'panel', 'toast', 'notifications'),
-    ui('top-layer-tips', 'disclosure')]],
+    ui('top-layer-tips', 'disclosure'), /^src\/core\/sherpa-tip\.html$/]],
   ['The data grid', 'data-grid', [comp('data-grid', 'pagination')]],
   ['Charts', 'charts', [comp('barchart', 'line-chart', 'gauge-chart', 'radial-chart', 'sparkline', 'chart-legend', 'metric'),
     ui('chart-parts', 'show-as'), /^src\/core\/sherpa-chart-/, /^src\/core\/sherpa-show-as\.html$/]],

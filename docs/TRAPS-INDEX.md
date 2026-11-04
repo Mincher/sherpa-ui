@@ -541,7 +541,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](traps/filters.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (117)
+## Menus, tips and overlays (119)
 
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](traps/menus-tips-overlays.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
 - [T-a-chip-press-applies-its-menus-draft](traps/filters.md#t-a-chip-press-applies-its-menus-draft) — menu
@@ -552,6 +552,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-css-function-needs-its-longhand-first](traps/menus-tips-overlays.md#t-a-css-function-needs-its-longhand-first) — menu
 - [T-a-dialog-answers-its-question](traps/menus-tips-overlays.md#t-a-dialog-answers-its-question) — dialog
 - [T-a-draft-dies-with-its-menu](traps/menus-tips-overlays.md#t-a-draft-dies-with-its-menu) — menu
+- [T-a-family-shares-markup](traps/filters.md#t-a-family-shares-markup) — sherpa-tip
 - [T-a-filter-answers-by-values-conditions-or-both](traps/filters.md#t-a-filter-answers-by-values-conditions-or-both) — menu
 - [T-a-filter-menu-has-two-modes](traps/filters.md#t-a-filter-menu-has-two-modes) — menu
 - [T-a-filter-set-groups-or-chains](traps/data-layer.md#t-a-filter-set-groups-or-chains) — menu
@@ -581,6 +582,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-select-does-not-hug-its-own-text](traps/menus-tips-overlays.md#t-a-select-does-not-hug-its-own-text) — menu
 - [T-a-slotted-row-is-outside-its-own-popover](traps/menus-tips-overlays.md#t-a-slotted-row-is-outside-its-own-popover) — menu
 - [T-a-solo-is-a-draft-of-one-tab](traps/data-layer.md#t-a-solo-is-a-draft-of-one-tab) — menu
+- [T-a-tip-in-lines](traps/filters.md#t-a-tip-in-lines) — sherpa-tip
 - [T-a-tip-lives-in-the-top-layer](traps/menus-tips-overlays.md#t-a-tip-lives-in-the-top-layer) — top-layer-tips
 - [T-a-tooltip-is-always-in-the-top-layer](traps/menus-tips-overlays.md#t-a-tooltip-is-always-in-the-top-layer) — tooltip
 - [T-a-tree-menu-keeps-its-ticks-as-data](traps/menus-tips-overlays.md#t-a-tree-menu-keeps-its-ticks-as-data) — menu
@@ -846,7 +848,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-component-with-data-icon-draws-its-own](traps/element-and-sheets.md#t-a-component-with-data-icon-draws-its-own) — render-icon
 - [T-a-condition-marks-every-match](traps/data-layer.md#t-a-condition-marks-every-match) — mark-text
 - [T-a-document-class-cannot-reach-a-shadow-root](traps/element-and-sheets.md#t-a-document-class-cannot-reach-a-shadow-root) — sherpa-element, sherpa-group-positions, sherpa-typography
-- [T-a-family-shares-markup](traps/filters.md#t-a-family-shares-markup) — sherpa-element, templater
+- [T-a-family-shares-markup](traps/filters.md#t-a-family-shares-markup) — description-tips, sherpa-element, templater
 - [T-a-filter-is-dragged-into-its-place](traps/filters.md#t-a-filter-is-dragged-into-its-place) — drag-order
 - [T-a-flag-brings-the-base-methods](traps/element-and-sheets.md#t-a-flag-brings-the-base-methods) — sherpa-element
 - [T-a-gauge-composes-the-ring](traps/charts.md#t-a-gauge-composes-the-ring) — shared-constants

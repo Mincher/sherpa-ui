@@ -77,11 +77,15 @@ function lift(this: ShadowRoot, event: Event): void {
   const { anchor, tip } = found;
   share(anchor, tip);
   if (!tip.matches(':popover-open')) tip.showPopover();
-  // One its host's CSS hides — empty, turned off, under its open menu — is
-  // never held open, and shuts no other.
-  if (getComputedStyle(tip).display === 'none') return tip.hidePopover();
-  if (shown !== tip && shown?.matches(':popover-open')) shown.hidePopover();
-  shown = tip;
+  /* A FRAME LATER, when its style is worked out anyway — read now, every hover
+     forced it (1 ms in WebKit): one its host's CSS hides — empty, turned off,
+     under its open menu — is never held open, and shuts no other. */
+  requestAnimationFrame(() => {
+    if (!tip.matches(':popover-open')) return;
+    if (getComputedStyle(tip).display === 'none') return tip.hidePopover();
+    if (shown !== tip && shown?.matches(':popover-open')) shown.hidePopover();
+    shown = tip;
+  });
 }
 
 function drop(this: ShadowRoot, event: Event): void {
@@ -96,10 +100,16 @@ function drop(this: ShadowRoot, event: Event): void {
   });
 }
 
+/** The roots heard already. */
+const lifted = new WeakSet<ShadowRoot>();
+
 /** Hear every hover and focus in one shadow root, and open or shut the tip
- *  concerned. The ROOT, never the document: a move between two of its elements
- *  stops at its host. TRAP T-a-tip-lives-in-the-top-layer */
+ *  concerned — once per root, and only a root that holds an anchor. The ROOT,
+ *  never the document: a move between two of its elements stops at its host.
+ *  TRAP T-a-tip-lives-in-the-top-layer */
 export function liftTipsIn(root: ShadowRoot): void {
+  if (lifted.has(root)) return;
+  lifted.add(root);
   root.addEventListener('pointerover', lift, { capture: true, passive: true });
   root.addEventListener('pointerout', drop, { capture: true, passive: true });
   root.addEventListener('focusin', lift, true);

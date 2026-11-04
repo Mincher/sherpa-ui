@@ -1646,8 +1646,9 @@ tree: a button's `sherpa-badge`, or a slotted label (`closest()` stops at a
 shadow or slot boundary). Measured in all three engines: shown, not open,
 clipped.
 
-**Each shadow root hears its own tips; the document hears none** (TODOs 381,
-364). A `pointerover`, `pointerout`, `focusin` or `focusout` whose target and
+**Each shadow root that holds an anchor hears its own tips, once; the document
+hears none** (TODOs 381, 364; a root with no anchor listens to nothing, plan 695
+P6). A `pointerover`, `pointerout`, `focusin` or `focusout` whose target and
 related target are in ONE shadow root stops at that root: outside it, both ends
 are the same host, so the browser dispatches nothing further. Heard on the
 document, the first donut slice hovered showed its tip and the next showed
@@ -1663,7 +1664,10 @@ anchors — the grid's one tag tip (TODO 490) — and the lift moves the anchor
 name to the anchor that opens it, so the words reach a screen reader too.
 
 **One tip is open at a time,** and a tip its host's CSS hides — empty,
-`data-no-tip`, under an open menu — is shut again at once, never held open.
+`data-no-tip`, under an open menu — is shut again, never held open, and shuts no
+other. That is read a FRAME after the hover, when the style is worked out anyway:
+read in the handler it forced a style pass on every hover — 1 ms median in
+WebKit (60 hovers, 87 ms), under 0.1 ms in Chromium and Firefox. Plan 695 P6.
 Keyboard focus opens a tip only when it shows (`:focus-visible`): a press
 opened it already, by hover.
 

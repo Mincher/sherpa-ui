@@ -417,8 +417,6 @@ export abstract class SherpaElement extends Base {
     super();
     const own = this.constructor as typeof SherpaElement;
     this.root = this.attachShadow({ mode: 'open', delegatesFocus: own.delegatesFocus });
-    // Its own root hears its tips. TRAP T-a-tip-lives-in-the-top-layer
-    liftTipsIn(this.root);
     if (Object.keys(own.aria).length) Object.assign(this.internals, own.aria);
     this.rendered = new Promise((res) => (this.#resolveRendered = res));
     // On the host, so it never needs removing. TRAP T-abort-controller-per-connect
@@ -957,8 +955,10 @@ export abstract class SherpaElement extends Base {
    */
   #stamp(body: string, id: string | null): void {
     // A family's markup after its own, parsed once and cloned. TRAP T-a-family-shares-markup
-    const { fragment, directives, icons } = stampable(body + familyBody(this.#files().family));
+    const { fragment, directives, icons, anchors } = stampable(body + familyBody(this.#files().family));
     this.root.replaceChildren(fragment);
+    // A root with an anchor hears its tips. TRAP T-a-tip-lives-in-the-top-layer
+    if (anchors) liftTipsIn(this.root);
     this.#stampedTemplate = id;
     this.#hasRendered = true;
     // Directives and icons BEFORE onRender, so a component's setup reads a

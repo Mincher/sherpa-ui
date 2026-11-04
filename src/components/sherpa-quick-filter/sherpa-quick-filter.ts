@@ -8,7 +8,7 @@
  * TRAP T-scope-does-not-stop-inheritance, TRAP T-icon-only-is-purely-css
  */
 import { DATA_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
-import { watchTipLines } from '../../core/ui/description-tips.js';
+import { TIP_HTML, watchTipLines } from '../../core/ui/description-tips.js';
 import { DEFAULT_OP, type FilterOp, type SortDirection } from '../../core/data/store.js';
 import type { FieldReading, FilterState } from '../../core/data/filter-state.js';
 import { RULED_OUT, movedTo } from '../../core/ui/shared-constants.js';
@@ -27,7 +27,7 @@ export class SherpaQuickFilter extends SherpaElement {
     new URL('../../core/sherpa-checkbox-look.css', import.meta.url),
     new URL('./sherpa-quick-filter.css', import.meta.url),
   ];
-  static override html = new URL('./sherpa-quick-filter.html', import.meta.url);
+  static override html = [TIP_HTML, new URL('./sherpa-quick-filter.html', import.meta.url)];
   static override props = {
     'data-icon-only': { type: 'boolean', kind: 'style' },
     /* The menu is open. CSS reads it for the pressed look — real focus has

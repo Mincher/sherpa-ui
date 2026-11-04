@@ -14,7 +14,7 @@
  * - loadTemplates — a markup file, fetched once and split by `<template id>`.
  * - cachedTemplates — the split markup already fetched, for a re-stamp that costs no fetch.
  * - templateBody — one template's markup: the one wanted, else the first, else the whole file.
- * - stampable — a body parsed once, cloned per element, and whether it holds a directive or an icon.
+ * - stampable — a body parsed once, cloned per element, and whether it holds a directive, an icon or a tip's anchor.
  * - loadSheets — adoptable sheets, each fetched once; one that fails is left out.
  * - adoptPageSheet — adopt a sheet into the DOCUMENT, for light DOM a component puts in the page.
  * - reloadFiles — fetch files again; a sheet changes in place, and each listener hears what else changed.
@@ -38,8 +38,8 @@ export interface OwnFiles {
 const htmlCache = new Map<string, Promise<string>>();
 const templateCache = new Map<string, { html: string; map: TemplateMap }>();
 const sheetCache = new Map<string, Promise<CSSStyleSheet>>();
-/** Each body to stamp, parsed once, with whether it holds a directive or an icon. */
-const stampCache = new Map<string, { tpl: HTMLTemplateElement; directives: boolean; icons: boolean }>();
+/** Each body to stamp, parsed once, with whether it holds a directive, an icon or a tip's anchor. */
+const stampCache = new Map<string, { tpl: HTMLTemplateElement; directives: boolean; icons: boolean; anchors: boolean }>();
 const own = new Map<string, { html?: string; css: string[] }>();
 /** Each tag's files, worked out once: the same for every element of it. */
 const filesCache = new Map<string, { html?: string; family: string[]; css: string[]; ownHtml?: string }>();
@@ -181,18 +181,19 @@ export function templateBody(map: TemplateMap, html: string, wanted: string | nu
 
 /** A body to stamp: parsed ONCE into a template, then a deep clone per element —
  *  a clone costs far less than parsing the markup again. And whether it holds a
- *  directive or a `data-icon`, so a tree without one is not searched.
+ *  directive, a `data-icon` or a tip's anchor, so a tree without one is not searched.
  *  TRAP T-a-template-is-parsed-once */
-export function stampable(body: string): { fragment: DocumentFragment; directives: boolean; icons: boolean } {
+export function stampable(body: string): { fragment: DocumentFragment; directives: boolean; icons: boolean; anchors: boolean } {
   let hit = stampCache.get(body);
   if (!hit) {
     const tpl = document.createElement('template');
     tpl.innerHTML = ownHtml(body);
-    hit = { tpl, directives: /\sdata-(?:text|attr-|when-)/.test(body), icons: body.includes('data-icon') };
+    hit = { tpl, directives: /\sdata-(?:text|attr-|when-)/.test(body), icons: body.includes('data-icon'), anchors: /sherpa-anchor|chart-segment/.test(body) };
     stampCache.set(body, hit);
   }
   // IMPORTED, not cloned: the page's document upgrades each custom element at once, as innerHTML did.
-  return { fragment: document.importNode(hit.tpl.content, true), directives: hit.directives, icons: hit.icons };
+  const { directives, icons, anchors } = hit;
+  return { fragment: document.importNode(hit.tpl.content, true), directives, icons, anchors };
 }
 
 /** Fetch a sheet once; every element adopting it shares one object. */

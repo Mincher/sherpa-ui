@@ -490,6 +490,8 @@ family's markup is not a component's anatomy.
 - Site: `src/core/sherpa-filter-menu.html`
 - Site: `src/components/sherpa-quick-filter-toolbar/toolbar-rows.html`
 - Site: `src/core/sherpa-show-as.html`
+- Site: `src/core/sherpa-tip.html`
+- Site: `src/core/ui/description-tips.ts`
 
 ### T-a-value-before-the-first-render-is-held
 
@@ -773,8 +775,10 @@ then the rest** (Will, TODO 691 S3, D2 A: buttons and filter chips). The
 button and chip, which writes its tip again (`writeTip`). Off, its one line as
 before goes in its first line, and the rest stay empty — it reads as it did.
 
-**The lines are in the template, so a tip is never `:empty`:** each `.tip` holds
-`.tip-name`, `.tip-description`, `.tip-value`, `.tip-more`. A line with nothing to
+**The lines are ONE family file,** `src/core/sherpa-tip.html`: a button, a chip
+and a legend list it first in their static html, and `writeTip` puts its
+`.tip-name`, `.tip-description`, `.tip-value`, `.tip-more` in the tip at the
+first write — so the tip has to be in its root by then (plan 695 P6). A line with nothing to
 say hides, and a tip whose every line is empty hides
 (`.sherpa-tip:has(> .tip-line):not(:has(> .tip-line:not(:empty)))`), as the
 `:empty` rule hides a tip without lines. A labelled button with no description
@@ -786,6 +790,7 @@ chip as `data-description`.
 
 - Site: `src/core/ui/description-tips.ts`
 - Site: `src/core/sherpa-anchor.css`
+- Site: `src/core/sherpa-tip.html`
 - Site: `test/e2e/reforged-an-action-says-what-it-does.spec.ts`
 - Site: `src/components/sherpa-quick-filter/chip-says.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`

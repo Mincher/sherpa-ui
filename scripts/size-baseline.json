@@ -192,7 +192,7 @@
   "src/core/ui/bind-source.ts": 379,
   "src/core/ui/chart-parts.ts": 118,
   "src/core/ui/context.ts": 93,
-  "src/core/ui/description-tips.ts": 63,
+  "src/core/ui/description-tips.ts": 73,
   "src/core/ui/directives.ts": 132,
   "src/core/ui/disclosure.ts": 80,
   "src/core/ui/drag-order.ts": 123,
@@ -433,9 +433,9 @@
   "src/core/ui/sherpa-element.ts": 1140,
   "src/core/ui/show-as-menu.ts": 61,
   "src/core/ui/show-as.ts": 90,
-  "src/core/ui/templater.ts": 319,
+  "src/core/ui/templater.ts": 320,
   "src/core/ui/temporal.ts": 113,
-  "src/core/ui/top-layer-tips.ts": 108,
+  "src/core/ui/top-layer-tips.ts": 118,
   "src/core/ui/tree-picks.ts": 109,
   "src/core/ui/tree-rows.ts": 27,
   "src/core/ui/trusted-html.ts": 39,
@@ -596,5 +596,6 @@
   "src/components/sherpa-tooltip/sherpa-tooltip.html": 27,
   "src/components/sherpa-transfer-list/sherpa-transfer-list.html": 44,
   "src/core/sherpa-filter-menu.html": 8,
-  "src/core/sherpa-show-as.html": 26
+  "src/core/sherpa-show-as.html": 26,
+  "src/core/sherpa-tip.html": 8
 }
