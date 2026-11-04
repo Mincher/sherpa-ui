@@ -164,7 +164,7 @@
   "src/core/data/report.ts": 71,
   "src/core/data/request-store.ts": 270,
   "src/core/data/row-key.ts": 50,
-  "src/core/data/segments.ts": 119,
+  "src/core/data/segments.ts": 116,
   "src/core/data/settings.ts": 244,
   "src/core/data/source-binding.ts": 376,
   "src/core/data/source-counts.ts": 355,
