@@ -30,6 +30,11 @@ export interface ScopeDefinition {
   /** Every field it may add — `'all'`, every field the page declares. */
   offers?: readonly string[] | 'all';
   holds?: readonly string[];
+  /** Fields it holds that a reader cannot REMOVE: they lead it, and its bar divides
+   *  them from what follows. Will, TODO 703 · TRAP T-a-fixed-field-stays-held */
+  fixed?: readonly string[];
+  /** Fields it holds that a reader cannot switch OFF. Will, TODO 703 */
+  alwaysOn?: readonly string[];
   /** Fields drawn as one group; a `serial` set chains them. TRAP T-a-filter-set-groups-or-chains */
   sets?: readonly FilterSet[];
   /** Group and Sort arrange its rows: its Organise chips. Left out, a scope
@@ -86,9 +91,10 @@ export interface PageDefinition {
 
 /**
  * Check every name a page definition uses: its shape, its child fields, each
- * set's fields, its presets' ids and each saved filter's scopes. Each broken one
- * reports; true when none is. DOM-free and one pass, so a page opening calls it
- * first, and a server or a tool the same. TRAP T-a-page-is-checked-as-it-opens
+ * set's, fixed and always-on fields, its presets' ids and each saved filter's
+ * scopes. Each broken one reports; true when none is. DOM-free and one pass, so a
+ * page opening calls it first, and a server or a tool the same.
+ * TRAP T-a-page-is-checked-as-it-opens
  */
 export function checkPage(page: PageDefinition): boolean {
   if (page?.v !== 1 || typeof page.id !== 'string') {
@@ -103,6 +109,11 @@ export function checkPage(page: PageDefinition): boolean {
   if (source && typeof source.store !== 'string') at('page-definition', 'its source names no store.', {});
   if (source) problems.push(...tiers(source).problems);
   for (const [scope, facts] of Object.entries(source?.scopes ?? {})) {
+    for (const [list, code] of [['fixed', 'fixed-field-not-held'], ['alwaysOn', 'always-on-field-not-held']] as const) {
+      for (const field of facts[list] ?? []) {
+        if (!facts.holds?.includes(field)) at(code, `scope "${scope}"'s ${list} names "${field}", which it does not hold.`, { scope, field });
+      }
+    }
     for (const set of facts.sets ?? []) {
       for (const field of set.fields) {
         if (!facts.holds?.includes(field)) at('set-field-not-held', `the set "${set.id}" names "${field}", which scope "${scope}" does not hold.`, { scope, set: set.id, field });
@@ -160,6 +171,8 @@ export async function openSource(def: SourceDefinition, store: Store, options: {
     }
     // A child is never offered on its own: its picks are its parent's. TODO 369
     if (facts.offers) source.query.offer(scope, facts.offers === 'all' ? fields.filter((f) => !children.has(f)) : facts.offers);
+    // Before it holds them. Will, TODO 703
+    if (facts.fixed || facts.alwaysOn) source.query.declareFixed(scope, facts);
     if (facts.holds) {
       source.query.ask({ scope, hold: facts.holds });
       source.declareOwn(scope, facts.holds);

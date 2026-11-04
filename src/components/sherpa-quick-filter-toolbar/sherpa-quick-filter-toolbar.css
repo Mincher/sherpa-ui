@@ -208,8 +208,9 @@
 /* The 1×16 divider rectangle, in every place it appears. `::after` on a zone
    or the View chip, a real element in the action cluster. */
 .act-divider,
-.chips > .chip[data-persistent]::after,
+.chips > .chip[data-selector]::after,
 .chips > .chip[data-preset]::after,
+.chips > .chip[data-fixed]::after,
 .organise-chip:is([data-id="primary"], [data-id="secondary"])::after,
 :host(:state(has-view)) .view-zone::after,
 :host(:state(has-organise)) .organise-zone::after,
@@ -226,7 +227,7 @@
 .act-divider { flex: 0 0 auto; }
 /* After the View chip — a picker, not a filter — while a filter follows it.
    Will, TODO 433 · TRAP T-a-divider-needs-a-neighbour-on-both-sides */
-:host(:not([data-panel-mode])) .chips > .chip[data-persistent]:has(~ .chip:not([data-folded-away]))::after {
+:host(:not([data-panel-mode])) .chips > .chip[data-selector]:has(~ .chip:not([data-folded-away]))::after {
   content: "";
   display: block;
   flex: 0 0 auto;
@@ -246,8 +247,10 @@
 }
 
 /* The page's own chips, then the reader's: a divider after the last of the
-   page's while one of the reader's follows. On the bar only. Will, TODOs 482, 493 */
-:host(:not([data-panel-mode], [data-orientation="portrait"])) .chips > .chip[data-preset]:not(:has(~ .chip[data-preset])):has(~ .chip:not([data-preset], [data-folded-away]))::after {
+   page's — its presets, and the fields it fixes — while a chip follows. On the
+   bar only. Will, TODOs 482, 493, 703 */
+:host(:not([data-panel-mode], [data-orientation="portrait"])) .chips > .chip[data-preset]:not(:has(~ .chip[data-preset])):has(~ .chip:not([data-preset], [data-folded-away]))::after,
+:host(:not([data-panel-mode], [data-orientation="portrait"])) .chips > .chip[data-fixed]:not(:has(~ .chip[data-fixed])):has(~ .chip:not([data-fixed], [data-folded-away]))::after {
   content: "";
   display: block;
   flex: 0 0 auto;
@@ -288,7 +291,7 @@
    keeps the room for its chips. Will, TODO 676 */
 @container qf-bar (min-width: 761px) {
   :host(:not([data-panel-mode], [data-orientation="portrait"], [data-no-section-labels])) .chips > .chip:nth-child(1 of [data-preset]:not([data-folded-away]))::before,
-  :host(:not([data-panel-mode], [data-orientation="portrait"], [data-no-section-labels])) .chips > .chip:nth-child(1 of [data-section]:not([data-preset], [data-persistent], [data-folded-away]))::before,
+  :host(:not([data-panel-mode], [data-orientation="portrait"], [data-no-section-labels])) .chips > .chip:nth-child(1 of [data-section]:not([data-preset], [data-selector], [data-folded-away]))::before,
   :host(:state(has-organise):not([data-panel-mode], [data-orientation="portrait"], [data-no-section-labels])) .organise-zone::before {
     content: attr(data-section);
     align-self: center;
@@ -330,9 +333,9 @@
 .bar:not(:has(.chips > .chip:not([data-folded-away]))) .organise-zone::after {
   display: none;
 }
-/* …and in panel mode only a persistent chip is still shown. */
+/* …and in panel mode only a selector is still shown. */
 :host([data-panel-mode]:not(:state(has-organise)))
-  .bar:not(:has(.chips > .chip[data-persistent]:not([data-folded-away]))) .view-zone::after {
+  .bar:not(:has(.chips > .chip[data-selector]:not([data-folded-away]))) .view-zone::after {
   display: none;
 }
 /* Panel mode takes every action before it. */
@@ -721,5 +724,5 @@ sherpa-quick-filter:not([data-solo]) .more-item[value="unsolo"],
 /* The PANEL draws every filter of this scope instead, so the bar keeps only
    its selector — the View chip. Plain `display: none`, unlike a folded chip:
    nothing here is still in use. TRAP T-the-view-chip-stays-on-the-header */
-:host([data-panel-mode]) .chips > .chip:not([data-persistent]) { display: none; }
+:host([data-panel-mode]) .chips > .chip:not([data-selector]) { display: none; }
 

@@ -10,7 +10,9 @@
     kind         worked out from the filter (core/ui/filter-kind.ts) — a list,
                  a number, a date, Group or Sort; a date leads with a Range switch.
     removable    opt-in; the row DELETES the chip.
-    persistent   always on, never removable, defaults to its FIRST option.
+    persistent   a SELECTOR: always on, never removable, defaults to its FIRST option.
+    fixed        its page fixes it: never removed; a divider follows the last.
+    alwaysOn     a filter never switched off: drawn as a persistent chip.
     commit       opt-in Apply/Cancel footer; chips auto-apply by default.
 
   Clear and Remove are icon buttons in the menu HEADER; the FOOTER holds

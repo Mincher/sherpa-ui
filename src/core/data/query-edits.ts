@@ -75,9 +75,9 @@ export function prune(query: Query): void {
 }
 
 /** A scope switched OFF applies nothing: an answer in force there is switched
- *  off and listed, and a listed one that left is forgotten.
- *  The scopes it changed. TRAP T-the-filter-switch-keeps-what-it-turned-off */
-export function keepOff(query: Query): string[] {
+ *  off and listed — not one its page keeps always on — and a listed one that left
+ *  is forgotten. The scopes it changed. TRAP T-the-filter-switch-keeps-what-it-turned-off */
+export function keepOff(query: Query, alwaysOn: (scope: string) => readonly string[] = () => []): string[] {
   const touched: string[] = [];
   for (const [id, scope] of Object.entries(query.scopes)) {
     const off = scope.suspended;
@@ -101,7 +101,7 @@ export function keepOff(query: Query): string[] {
     }
     off.fields = off.fields.filter((f) => f in scope.readings);
     for (const [field, reading] of Object.entries(scope.readings)) {
-      if (reading.suspended || !readingAnswered(reading)) continue;
+      if (reading.suspended || !readingAnswered(reading) || alwaysOn(id).includes(field)) continue;
       scope.readings[field] = { ...reading, suspended: true };
       if (!off.fields.includes(field)) off.fields.push(field);
     }
@@ -574,6 +574,9 @@ export interface CopyFacts {
   presets: (scope: string) => ReadonlyMap<string, Preset>;
   /** The answers each held field opens on. TODO 403 */
   opens: (scope: string) => ReadonlyMap<string, FieldReading> | undefined;
+  /** A scope's fixed fields, and those always on. Will, TODO 703 */
+  fixed: (scope: string) => readonly string[];
+  alwaysOn: (scope: string) => readonly string[];
   /** The member that knows a field. */
   knows: (field: string) => Pick<QueryMember, 'raws' | 'ruledOut' | 'carriesOver'> | undefined;
   /** How a member bound the control with this bind id. */
@@ -626,8 +629,8 @@ class Work {
   say(change: QueryChange): void {
     this.#settle();
     if (compiles(change)) {
-      const off = keepOff(this.draft);
-      if (this.applied !== this.draft) keepOff(this.applied);
+      const off = keepOff(this.draft, this.facts.alwaysOn);
+      if (this.applied !== this.draft) keepOff(this.applied, this.facts.alwaysOn);
       if (off.length) this.said.push({ kind: 'off', scopes: off });
     }
     this.said.push(change);
@@ -782,6 +785,17 @@ function standing(w: Work, scope: string, field: string, reading: FieldReading):
   return out ? picked.filter((v) => out(valueKey(v)) === null) : [...picked];
 }
 
+/** Is this field ALWAYS ON where it lives? Will, TODO 703 · TRAP T-a-fixed-field-stays-held */
+function alwaysOn(w: Work, field: string): boolean {
+  return w.facts.alwaysOn(homeOf(w.draft, field)).includes(field);
+}
+
+/** Refuse what would let a FIXED field go, or switch one ALWAYS ON off, and say so. */
+function refuse(code: 'field-fixed' | 'field-always-on', door: string, at: { scope: string; field: string }): void {
+  const kept = code === 'field-fixed' ? 'held' : 'on';
+  report({ code, message: `${door}: "${at.field}" stays ${kept}: its page says so in scope "${at.scope}".`, at });
+}
+
 /**
  * A bar's filter Switch. OFF stops every answer in force in this scope,
  * keeping each; ON brings back exactly those. While it is off,
@@ -795,7 +809,7 @@ function suspendScope(w: Work, scope: string, suspended = true): void {
     // Each answer drops what the filters before it rule out, as one field's OFF does. TODO 523 F3
     const dropped: string[] = [];
     for (const [field, reading] of Object.entries(entry.readings)) {
-      const kept = reading.suspended ? null : standing(w, scope, field, reading);
+      const kept = reading.suspended || w.facts.alwaysOn(scope).includes(field) ? null : standing(w, scope, field, reading);
       if (!kept || kept.length >= (reading.picked?.length ?? 0)) continue;
       put(w, field, kept, kept.length ? reading : {});
       dropped.push(field);
@@ -835,6 +849,7 @@ function suspend(w: Work, scope: string, field: string | null, off: boolean): vo
   }
   const held = readingOf(w.draft, field);
   if (!held || !!held.suspended === off) return;
+  if (off && alwaysOn(w, field)) return refuse('field-always-on', 'suspend', { scope: homeOf(w.draft, field), field });
   const { suspended: _was, ...on } = held;
   if (!off) return select(w, field, held.picked ?? [], on);
   const kept = standing(w, homes(w.draft).get(field) ?? scope, field, held);
@@ -860,7 +875,8 @@ function solo(w: Work, scope: string, field: string, options: { across?: boolean
       // A scope its Switch turned off is off already.
       if (!entry || entry.suspended) continue;
       for (const [other, reading] of Object.entries(entry.readings)) {
-        if (other === field || reading.suspended || !readingAnswered(reading)) continue;
+        // …but one always on. Will, TODO 703
+        if (other === field || reading.suspended || !readingAnswered(reading) || w.facts.alwaysOn(id).includes(other)) continue;
         // Raw: going off here prunes nothing, so it comes back as it was.
         select(w, other, reading.picked ?? [], { ...reading, suspended: true });
         off.push({ scope: id, field: other });
@@ -905,6 +921,9 @@ function hold(w: Work, name: string, fields: readonly string[]): void {
   const before = w.draft.scopes[name]?.holds ?? [];
   // A no-op must not wake every listener — a bar re-renders on this.
   if (before.length === next.length && before.every((f, i) => f === next[i])) return;
+  // A FIXED field it holds is never let go. Will, TODO 703
+  const fixed = w.facts.fixed(name).find((f) => before.includes(f) && !next.includes(f));
+  if (fixed) return refuse('field-fixed', 'hold', { scope: name, field: fixed });
   /* LET GO, and held nowhere else: its answer goes with it. Removing a chip
      is a clear. Cleared FIRST, while this scope still holds it, so the
      controls over this scope are drawn the clear. TRAP T-one-query-one-owner */
@@ -997,6 +1016,7 @@ function cameFromBoth(w: Work, field: string, from: string | undefined): void {
  *  the one scope named. TRAP T-send-to-view-filters */
 function lower(w: Work, field: string, to: string): void {
   if (!holdsField(w.draft, VIEW, field)) return;
+  if (w.facts.fixed(VIEW).includes(field)) return refuse('field-fixed', 'take', { scope: VIEW, field });
   const answer = w.draft.scopes[VIEW]?.readings[field];
   const part = w.facts.parts.get(to);
   if (!part && !w.canHold(to, field)) return;
@@ -1036,6 +1056,12 @@ function answer(w: Work, scope: string, field: string, reading: FieldReading | n
     if (sameReading(w.draft.scopes[scope]?.readings[field], next)) return;
     write(w, scope, field, next, at);
     return;
+  }
+  // ALWAYS ON: its answer comes in on. Will, TODO 703
+  if (reading?.suspended && alwaysOn(w, field)) {
+    refuse('field-always-on', 'answer', { scope: homeOf(w.draft, field), field });
+    const { suspended: _off, ...on } = reading;
+    return answer(w, scope, field, on, at);
   }
   // A heading's answer to a field no scope holds is held in its grid's scope, and its bar draws the chip. TRAP T-a-heading-asks-through-the-source
   const fresh = !!reading && scope !== VIEW && !holderOf(w.draft, field) && w.canHold(scope, field);
@@ -1194,6 +1220,7 @@ function edit(w: Work, given: PureEdit, slots = true): void {
 function move(w: Work, given: Extract<PureEdit, { move: unknown }>, facts: EditFacts): void {
   const to = given.scope ?? VIEW;
   const field = given.move;
+  if (to !== given.from && w.facts.fixed(given.from).includes(field)) return refuse('field-fixed', 'move', { scope: given.from, field });
   if (!w.canHold(to, field)) {
     report({
       code: 'scope-refused',

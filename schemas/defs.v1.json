@@ -240,6 +240,8 @@
           "oneOf": [{ "const": "all" }, { "$ref": "#/$defs/fieldNames" }]
         },
         "holds": { "description": "The fields it holds at the start.", "$ref": "#/$defs/fieldNames" },
+        "fixed": { "description": "Fields it holds that a reader cannot remove. They lead it, and its bar divides them from what follows.", "$ref": "#/$defs/fieldNames" },
+        "alwaysOn": { "description": "Fields it holds that a reader cannot switch off.", "$ref": "#/$defs/fieldNames" },
         "where": { "description": "Its answers at the start. Reset puts them back.", "$ref": "#/$defs/where" },
         "arranges": { "description": "Group and Sort arrange its rows. Left out, a scope a page of rows is drawn in does, and the View does not.", "type": "boolean" },
         "presets": { "type": "array", "items": { "$ref": "#/$defs/preset" } },

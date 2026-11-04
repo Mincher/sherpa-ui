@@ -69,6 +69,12 @@ export interface FilterDef extends OffersAdvanced {
   active?: boolean;
   /** Offer Remove. OPT-IN: a host-placed chip must not delete itself. */
   removable?: boolean;
+  /** Its page fixes it: never removed, and the bar divides the last from what
+   *  follows. Will, TODO 703 · TRAP T-a-fixed-field-stays-held */
+  fixed?: boolean;
+  /** A FILTER a reader cannot switch off: drawn as a persistent chip, still
+   *  answering its field. Will, TODO 703 */
+  alwaysOn?: boolean;
   /** The page's own: its definition holds it here, so it keeps its place — a
    *  reader drags only what was added. Will, TODO 452 */
   own?: boolean;
@@ -92,7 +98,7 @@ export interface FilterDef extends OffersAdvanced {
   /** The scope its answer is in, where not its bar's: a chart's legend, drawn in its
    *  card's toolbar. Its requests name it. Will, TODO 670 */
   answeredIn?: string;
-  /** The bar's: a chip that cannot be switched OFF. TRAP T-persistent-chip-is-a-selector */
+  /** The bar's: a SELECTOR that cannot be switched OFF, and answers no field. TRAP T-persistent-chip-is-a-selector */
   persistent?: boolean;
   /** The bar's: `false` — its menu has no Select all row. */
   selectAll?: boolean;

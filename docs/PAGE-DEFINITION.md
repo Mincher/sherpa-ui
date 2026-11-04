@@ -82,6 +82,15 @@ library `app.v1`, `views.v1` and `workflow.v1` use too.
   Limit greys it, within the filters BEFORE it: the fields in the scope's
   order, each set together
   (`T-one-walk-counts-and-limits-in-order`).
+- **A scope's `fixed`** names fields it holds that a reader cannot remove, and
+  **`alwaysOn`** those a reader cannot switch off: `"fixed": ["customer",
+  "region", "created"], "alwaysOn": ["customer", "region"]`. List the fixed
+  fields first in `holds`: a bar draws a divider after the last. Each list says
+  one thing, so a field always on and never removed is in both. Every door
+  refuses the same, and says so: no Remove, Move or Edit-list row, no toggle;
+  the Query will not let one go or switch one off, and a restore puts them back.
+  Its values still change, a clear too (Will, TODO 703;
+  `T-a-fixed-field-stays-held`).
 - **A scope's `arranges`** says whether Group and Sort arrange its rows. Left
   out, a scope a page of rows is drawn in does, and the View does not
   (`T-group-and-sort-are-component-scope`).

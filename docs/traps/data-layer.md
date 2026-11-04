@@ -7098,3 +7098,42 @@ asked it anything.
 - Site: `src/core/data/column-facts.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
+
+### T-a-fixed-field-stays-held
+
+A scope's definition may say, once, which fields it holds a reader cannot REMOVE
+(`fixed`) and which a reader cannot switch OFF (`alwaysOn`) — Will, TODO 703: the
+View Context's Customer, Region and Date stay, and Customer and Region stay on.
+`declareFixed` keeps it with the page's other declarations, never in the Query.
+
+**Every door refuses, not only the chip's** (PRINCIPLES 21). The Query refuses a
+`hold` or `release` that lets a fixed field go, a `take` that sends one down from
+the View, and a `move` out of its scope (`field-fixed`); and an OFF for a field
+always on (`field-always-on`): `suspended` is refused, and an answer that comes in
+suspended comes in on. The scope's Switch and a Solo pass an always-on field by. A
+restore (`setQuery`) that left a fixed field out puts it back, leading, and turns
+an always-on answer on (`keepFixed`): a kept Query from before the page fixed it
+would otherwise drop the chip. The bar refuses `removeFilter` (`filter-fixed`) and
+`setChipReading` off (`filter-always-on`), and offers no Remove, Move or Edit-list
+row for a fixed chip. Off is not gone: an always-on field's values still change,
+and a clear is an answer.
+
+**An always-on chip is `data-persistent`, and no selector.** `data-persistent` is
+the chip's one word for "cannot be toggled" (TODO 697), so the bar sets it. The
+bar's own rules for its SELECTOR — the View chip answers no field, leads, keeps its
+pick through a reset, stays in panel mode, and a divider follows it — read
+`data-selector`, which only a `persistent` def gets. Read off `data-persistent`,
+they would take an always-on Customer for a selector: it would report nothing, stay
+on the bar in panel mode, and draw a divider after itself.
+
+**Fixed fields lead their scope**, and the bar draws ONE divider after the last
+while a chip follows — the preset divider's rule, with a second selector.
+
+- Site: `src/core/data/query-edits.ts`
+- Site: `src/core/data/query-declarations.ts`
+- Site: `src/core/data/query-context.ts`
+- Site: `src/core/data/page-definition.ts`
+- Site: `src/core/ui/filter-def.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/unit/a-fixed-field-stays-held.test.mjs`
+- Site: `test/e2e/reforged-a-fixed-field-stays-held.spec.ts`

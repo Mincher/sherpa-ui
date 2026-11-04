@@ -107,6 +107,9 @@ export class SourceView {
     const presets: HeldFilter[] = context.presets(scope).map((p) => ({
       id: `preset:${p.id}`, label: p.label, preset: true, active: context.presetOn(scope, p.id),
     }));
+    // What its page fixes: no Remove, and always on, no off. Will, TODO 703
+    const fixed = context.fixed(scope);
+    const on = context.alwaysOn(scope);
     const fields: HeldFilter[] = held.map((f) => {
       // Held above, its state is its own kept answer. D2 A
       const kept = q.superseded?.[f];
@@ -114,7 +117,8 @@ export class SourceView {
       const down = scope === VIEW ? this.#sendTo(f) : undefined;
       const from = cameFrom(draft, f);
       return {
-        ...this.filterDef(f), removable: true,
+        ...this.filterDef(f), removable: !fixed.includes(f),
+        ...(fixed.includes(f) ? { fixed: true } : {}), ...(on.includes(f) ? { alwaysOn: true } : {}),
         ...(this.#own.get(scope)?.has(f) ? { own: true } : {}),
         ...(reading ? { state: structuredClone(reading) } : {}),
         ...(above.includes(f) ? { appliedAt: context.scopeLabel(VIEW) } : {}),

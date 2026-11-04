@@ -36,6 +36,9 @@
  * - .declarePart — Declare a PART: one field that narrows one component — a chart's legend field.
  * - .declareScope — Name a scope as a reader sees it, and say if it arranges.
  * - .declareSets — A scope's filter sets, in order.
+ * - .declareFixed — The fields of a scope a reader cannot remove, and those a reader cannot switch off, by any door.
+ * - .fixed — A scope's fixed fields, in order — `declareFixed()`'s read-back.
+ * - .alwaysOn — A scope's fields always on — `declareFixed()`'s read-back.
  * - .offer — Say which fields a component scope HAS.
  * - .declareDefault — A component's OWN default filter — readings that narrow `only` it — as its scope in the Query.
  * - .soloed — The filter soloed in this tab, if one is.
@@ -152,6 +155,8 @@ export class QueryContext extends EventTarget {
       remote: this.remote, named: this.#waiting, parts: this.#decl.parts, offers: this.#decl.offers,
       presets: (scope) => this.#decl.presets(scope),
       opens: (scope) => this.#decl.opens(scope),
+      fixed: (scope) => this.#decl.fixed(scope),
+      alwaysOn: (scope) => this.#decl.alwaysOn(scope),
       knows: (field) => this.#members.knows(field),
       bound: (id) => this.#members.bound(id),
       presents: (scope) => this.#members.presentsIn(scope),
@@ -365,6 +370,25 @@ export class QueryContext extends EventTarget {
     this.#tell([{ kind: 'sets', scope }]);
   }
 
+  /**
+   * declareFixed(scope, { fixed, alwaysOn }) — the fields of a scope a reader cannot
+   * REMOVE, and those a reader cannot switch OFF, by any door: each refused is said.
+   * Declared before the scope holds them. Will, TODO 703 · TRAP T-a-fixed-field-stays-held
+   */
+  declareFixed(scope: string, facts: { fixed?: readonly string[]; alwaysOn?: readonly string[] }): void {
+    this.#decl.setFixed(scope, facts);
+  }
+
+  /** A scope's fixed fields, in order — `declareFixed()`'s read-back. */
+  fixed(scope: string): string[] {
+    return [...this.#decl.fixed(scope)];
+  }
+
+  /** A scope's fields always on — `declareFixed()`'s read-back. */
+  alwaysOn(scope: string): string[] {
+    return [...this.#decl.alwaysOn(scope)];
+  }
+
   /** Say which fields a component scope HAS. The view needs none: up is open. */
   offer(name: string, fields: readonly string[]): void {
     if (this.#decl.offer(name, fields)) this.#tell([{ kind: 'offer', scope: name }]);
@@ -505,13 +529,15 @@ export class QueryContext extends EventTarget {
       carriesOver: (f) => this.#members.knows(f)?.carriesOver(f) ?? false,
     });
     options.lay?.(next);
+    // A restore that let a fixed field go, or switched one always on off, is put right. TODO 703
+    this.#decl.keepFixed(next);
     this.#decl.fillOpens(next);
     const was = arrangementOf(this.#live.applied);
     const before = this.#answered();
     // Before the copy: a waiting scope's rows and chips read the same homes. TODO 612
     rehome(next);
     // An answer in force in a scope switched off is switched off. TRAP T-the-filter-switch-keeps-what-it-turned-off
-    keepOff(next);
+    keepOff(next, (scope) => this.#decl.alwaysOn(scope));
     frozen(next);
     this.#live.applied = next;
     if (this.waiting()) this.#split();
@@ -532,7 +558,7 @@ export class QueryContext extends EventTarget {
     // Taken now, in place: it is how the page opens, not a change to it.
     for (const query of new Set([this.#live.applied, this.#live.draft])) {
       this.#decl.fillOpens(query);
-      keepOff(query);
+      keepOff(query, (scope) => this.#decl.alwaysOn(scope));
       frozen(query);
     }
   }

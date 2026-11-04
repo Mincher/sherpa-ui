@@ -103,6 +103,10 @@ export interface HeldFilter extends FieldFilter {
   /** Its answer in the Query, where it has one. */
   state?: FieldReading;
   removable?: boolean;
+  /** Its page fixes it here: a reader cannot remove it. Will, TODO 703 */
+  fixed?: boolean;
+  /** …or switch it off. */
+  alwaysOn?: boolean;
   /** The page's own: its definition holds it here. TODO 452 */
   own?: boolean;
   /** An app's PRESET: a boolean chip with its own conditions. Will, TODO 493 */

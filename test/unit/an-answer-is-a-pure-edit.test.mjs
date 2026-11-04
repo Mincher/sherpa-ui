@@ -26,7 +26,7 @@ const frozen = (v) => {
 /** What a pure edit needs, as a page with no member says it. */
 const facts = (over = {}) => ({
   remote: false, named: new Set(), parts: new Map(), offers: new Map([['data', ['plan', 'region']]]),
-  presets: () => new Map(), opens: () => undefined, knows: () => undefined, bindOf: () => undefined,
+  presets: () => new Map(), opens: () => undefined, fixed: () => [], alwaysOn: () => [], knows: () => undefined, bindOf: () => undefined,
   presents: () => false, theirs: () => () => false, ...over,
 });
 

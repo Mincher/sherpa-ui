@@ -1,8 +1,8 @@
 /**
  * query-declarations.ts — what a page DECLARES about its Query: each scope's
- * name, sets, own fields and starts, each part, preset and default, each slot's
- * presentation and axes. Never in the Query: a reader changes none of it. A
- * QueryContext holds one. DOM-free.
+ * name, sets, own, fixed and always-on fields and starts, each part, preset and
+ * default, each slot's presentation and axes. Never in the Query: a reader
+ * changes none of it. A QueryContext holds one. DOM-free.
  *
  * Map:
  * - QueryPart — A part: the one field it answers, the component it narrows, its name, and the bar that draws it.
@@ -32,9 +32,13 @@
  * - .honours — Is that kind of pick in force?
  * - .setOpen — The answer a field opens on where nothing answers it — a fetching list's first value.
  * - .opens — A scope's opening answers, by field.
+ * - .setFixed — A scope's fixed fields, a reader cannot let one go, and those always on, a reader cannot switch off.
+ * - .fixed — A scope's fixed fields, in order.
+ * - .alwaysOn — A scope's fields always on.
+ * - .keepFixed — Each scope holds its fixed fields, leading, and each always-on answer is on, in place.
  * - .fillOpens — Each held field with an opening answer and no answer takes it, in place.
  */
-import { copyReading, readingAnswered, VIEW, type AxesDefinition, type AxisOffers, type Presentation, type PresentationDefinition, type Query, type ScopeQuery } from './query.js';
+import { copyReading, emptyScope, readingAnswered, VIEW, type AxesDefinition, type AxisOffers, type Presentation, type PresentationDefinition, type Query, type ScopeQuery } from './query.js';
 import type { FilterSet } from './data-source-types.js';
 import type { FieldReading } from './filter-state.js';
 import { report } from './report.js';
@@ -240,6 +244,42 @@ export class QueryDeclarations {
   /** A scope's opening answers, by field. */
   opens(scope: string): ReadonlyMap<string, FieldReading> | undefined {
     return this.#opens.get(scope);
+  }
+
+  /** Each scope's fixed fields, in order, and those always on. */
+  readonly #fixed = new Map<string, { fixed: readonly string[]; alwaysOn: readonly string[] }>();
+
+  /** A scope's FIXED fields — a reader cannot let one go — and those ALWAYS ON —
+   *  a reader cannot switch one off. Will, TODO 703 · TRAP T-a-fixed-field-stays-held */
+  setFixed(scope: string, facts: { fixed?: readonly string[]; alwaysOn?: readonly string[] }): void {
+    this.#fixed.set(scope, { fixed: [...new Set(facts.fixed ?? [])], alwaysOn: [...new Set(facts.alwaysOn ?? [])] });
+  }
+
+  /** A scope's fixed fields, in order. */
+  fixed(scope: string): readonly string[] {
+    return this.#fixed.get(scope)?.fixed ?? [];
+  }
+
+  /** A scope's fields always on. */
+  alwaysOn(scope: string): readonly string[] {
+    return this.#fixed.get(scope)?.alwaysOn ?? [];
+  }
+
+  /** Each scope holds its fixed fields — a restore that left one out puts them
+   *  back, leading — and each always-on answer is on, in place. */
+  keepFixed(query: Query): void {
+    for (const [id, { fixed, alwaysOn }] of this.#fixed) {
+      if (fixed.some((f) => !query.scopes[id]?.holds.includes(f))) {
+        const entry = (query.scopes[id] ??= emptyScope());
+        entry.holds = [...fixed, ...entry.holds.filter((f) => !fixed.includes(f))];
+      }
+      for (const field of alwaysOn) {
+        const reading = query.scopes[id]?.readings[field];
+        if (!reading?.suspended) continue;
+        const { suspended: _off, ...on } = reading;
+        query.scopes[id]!.readings[field] = on;
+      }
+    }
   }
 
   /** Each held field with an opening answer and no answer — not one turned off — takes it, in place. */

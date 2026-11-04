@@ -258,6 +258,10 @@ the intermittent amber view chip: whether it appeared depended only on whether
 the host remembered to mark an option `selected`.
 
 
+**The bar marks it `data-selector` too, and its own rules read that.** A FILTER
+always on is drawn `data-persistent` as well, and is no selector: it answers its
+field (TODO 703, `T-a-fixed-field-stays-held`).
+
 **It keeps its pick through `data-reset-on-populate`, while its def is the same.** A changed def names the pick: saving or deleting a View moves the chip so. A reset is of the filters, and a selector answers none. A View that changed what the View scope holds rebuilt the bar, and the chip fell back to the first View. Will, TODO 599.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
