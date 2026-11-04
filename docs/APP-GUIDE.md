@@ -38,12 +38,15 @@ Plus the app's stores, and its Views as JSON.
 ```
 
 - `dist/bundle/` is Sherpa joined into a few files: a page with no bundler of
-  its own loads about 10, not 200. The icons the components draw are inside it;
-  an app's own icons load the first time each is drawn. Use the bundle OR the
+  its own loads about 10, not 200. Use the bundle OR the
   module files (`dist/index.js`), never both: two copies of every class. An app
   with its own bundler imports `sherpa-ui` as usual. `T-a-page-loads-the-bundle`
 - Serve text files compressed (brotli or gzip). A bundle file whose name ends in
   a hash (`chunk-AB12CD34.js`) never changes: it can be cached for good.
+- Every icon is a symbol in one file, `dist/core/ui/icons.svg`, fetched once, the
+  first time an icon is drawn. Serve it from the app's own origin (a CSP's
+  `connect-src` must let it through), and keep it in the app's Service Worker to
+  draw icons offline. `T-an-icon-loads-when-first-drawn`
 - `tokens.css` gives every component its variables. `page.css` styles the
   page itself — margins, the body font. Leave `page.css` out when the
   components go into someone else's page. `T-tokens-are-safe-to-embed`

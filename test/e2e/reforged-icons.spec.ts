@@ -11,8 +11,8 @@ import { join } from 'node:path';
  * in the free webfont gave `content: none`, zero width and no warning — and
  * `fa-bell-on` and `fa-sliders-up` both shipped that way before anyone noticed.
  *
- * The names are Figma's now (`src/icons/`, baked into `core/ui/icons/<name>.ts` with each
- * drawing's own ink box). The `fa-` spelling and its alias map are gone.
+ * The names are Figma's now (`src/icons/`, each a symbol in `core/ui/icons.svg`).
+ * The `fa-` spelling and its alias map are gone.
  *
  * The test scans the source itself rather than taking a hand-kept list, so a
  * new icon is covered the moment it is written.
@@ -22,8 +22,10 @@ const ROOT = join(import.meta.dirname, '../..');
 // The app's own names are checked in Sherpa Demos (test/e2e/app-icons.spec.ts).
 const SCAN = ['src'];
 const EXT = /\.(html|ts|js)$/;
-/** `data-icon="x"`, `data-icon-start="x"`, `data-icon-end="x"`, `icon: 'x'`. */
-const NAMED = /(?:data-icon(?:-start|-end)?=|icon:\s*)['"]([a-z0-9][a-z0-9-]*)['"]/g;
+/** `data-icon="x"`, `data-icon-start="x"`, `data-icon-end="x"`, `icon: 'x'`, and a
+ *  directive's `data-when-data-icon-start="cond: x"` — not `data-attr-data-icon="data-icon"`,
+ *  whose value is an attribute. */
+const NAMED = /(?:(?<![\w-])data-icon(?:-start|-end)?=['"]|icon:\s*['"]|data-when-data-icon(?:-start|-end)?="[^":]*:\s*)([a-z0-9][a-z0-9-]*)['"]/g;
 
 /** Every icon name written anywhere in the scanned trees. */
 function collectNames(): string[] {
@@ -49,8 +51,8 @@ test('every icon name in the repo draws a real glyph', async ({ page }) => {
 
   const broken = await page.evaluate(async (list: string[]) => {
     const mod = await import('/dist/core/ui/render-icon.js');
-    // A box each: an icon loads the first time it is drawn, and draws once it
-    // has. TRAP T-an-icon-loads-when-first-drawn
+    // A box each: the sprite loads the first time an icon is drawn, and each
+    // draws once it has. TRAP T-an-icon-loads-when-first-drawn
     const boxes = list.map((name) => {
       const box = document.createElement('span');
       document.getElementById('root')!.appendChild(box);

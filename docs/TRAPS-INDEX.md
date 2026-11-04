@@ -836,7 +836,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (126)
+## SherpaElement and the shared sheets (125)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -862,7 +862,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-list-takes-its-children-as-data](traps/element-and-sheets.md#t-a-list-takes-its-children-as-data) — sherpa-element
 - [T-a-native-control-brings-its-own-margin](traps/element-and-sheets.md#t-a-native-control-brings-its-own-margin) — sherpa-base
 - [T-a-native-wears-the-button-class](traps/element-and-sheets.md#t-a-native-wears-the-button-class) — sherpa-button-look
-- [T-a-page-loads-the-bundle](traps/element-and-sheets.md#t-a-page-loads-the-bundle) — render-icon
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](traps/menus-tips-overlays.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — sherpa-element, templater
 - [T-a-pending-chip-reads-as-a-warning](traps/data-layer.md#t-a-pending-chip-reads-as-a-warning) — filter-host-controller, shared-constants
 - [T-a-property-set-before-upgrade-shadows-its-accessor](traps/element-and-sheets.md#t-a-property-set-before-upgrade-shadows-its-accessor) — sherpa-element
@@ -918,7 +917,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-focus-is-delegated-by-the-platform](traps/element-and-sheets.md#t-focus-is-delegated-by-the-platform) — sherpa-element
 - [T-grid-suspend-is-not-clear](traps/data-layer.md#t-grid-suspend-is-not-clear) — filter-host-controller
 - [T-grouping-is-an-attribute-and-a-class](traps/menus-tips-overlays.md#t-grouping-is-an-attribute-and-a-class) — sherpa-group-positions, sherpa-grouping
-- [T-icon-box-is-not-the-glyph](traps/element-and-sheets.md#t-icon-box-is-not-the-glyph) — icon-names, render-icon, sherpa-icon
+- [T-icon-box-is-not-the-glyph](traps/element-and-sheets.md#t-icon-box-is-not-the-glyph) — render-icon, sherpa-icon
 - [T-icon-value-takes-two-forms](traps/element-and-sheets.md#t-icon-value-takes-two-forms) — sherpa-element
 - [T-import-dies-in-an-adopted-sheet](traps/element-and-sheets.md#t-import-dies-in-an-adopted-sheet) — sherpa-base, sherpa-element
 - [T-item-template-cannot-compute](traps/element-and-sheets.md#t-item-template-cannot-compute) — directives, sherpa-element
@@ -1081,7 +1080,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](traps/other-components.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (72)
+## Build, tools and the MCP (71)
 
 - [T-a-bare-name-must-be-used-not-mentioned](traps/build-tools-mcp.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — ts-facts
@@ -1107,7 +1106,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-look-override-is-not-on-the-variable](traps/build-tools-mcp.md#t-a-look-override-is-not-on-the-variable) — project-tokens
 - [T-a-metric-condenses-by-wrapping](traps/charts.md#t-a-metric-condenses-by-wrapping) — project-tokens
 - [T-a-native-wears-the-button-class](traps/element-and-sheets.md#t-a-native-wears-the-button-class) — build-reforged, check-usage, generate-component-spec, lint-css, project-tokens
-- [T-a-page-loads-the-bundle](traps/element-and-sheets.md#t-a-page-loads-the-bundle) — build-reforged
+- [T-a-page-loads-the-bundle](traps/build-tools-mcp.md#t-a-page-loads-the-bundle) — build-reforged
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](traps/menus-tips-overlays.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — lint-css
 - [T-a-pin-a-page-can-re-point](traps/build-tools-mcp.md#t-a-pin-a-page-can-re-point) — project-tokens
 - [T-a-read-is-planned](traps/data-layer.md#t-a-read-is-planned) — check-bench
@@ -1126,14 +1125,13 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-template-binds-by-markup](traps/element-and-sheets.md#t-a-template-binds-by-markup) — check-props, check-usage, generate-component-spec, html-structure
 - [T-an-elevation-pin-cannot-reach-a-shadow-root](traps/build-tools-mcp.md#t-an-elevation-pin-cannot-reach-a-shadow-root) — project-tokens
 - [T-an-event-name-is-not-always-a-literal](traps/build-tools-mcp.md#t-an-event-name-is-not-always-a-literal) — generate-component-spec, ts-facts
-- [T-an-icon-loads-when-first-drawn](traps/element-and-sheets.md#t-an-icon-loads-when-first-drawn) — generate-icons
+- [T-an-icon-loads-when-first-drawn](traps/element-and-sheets.md#t-an-icon-loads-when-first-drawn) — build-reforged, generate-icons
 - [T-an-override-collection-is-keyed-by-its-parent](traps/build-tools-mcp.md#t-an-override-collection-is-keyed-by-its-parent) — check-extensions
 - [T-at-property-needs-the-document](traps/charts.md#t-at-property-needs-the-document) — project-tokens
 - [T-bind-locks-what-it-owns](traps/join-and-app.md#t-bind-locks-what-it-owns) — check-ownership
 - [T-fit-is-a-desktop-mode](traps/other-components.md#t-fit-is-a-desktop-mode) — project-tokens
 - [T-grouping-is-an-attribute-and-a-class](traps/menus-tips-overlays.md#t-grouping-is-an-attribute-and-a-class) — project-tokens
 - [T-harness-serves-font-awesome-locally](traps/build-tools-mcp.md#t-harness-serves-font-awesome-locally) — playwright.config
-- [T-icon-box-is-not-the-glyph](traps/element-and-sheets.md#t-icon-box-is-not-the-glyph) — generate-icons
 - [T-kind-says-how-not-whether](traps/build-tools-mcp.md#t-kind-says-how-not-whether) — compile-def, generate-component-spec, ts-facts
 - [T-markup-is-checked-against-the-spec](traps/build-tools-mcp.md#t-markup-is-checked-against-the-spec) — check-usage, sherpa-ui
 - [T-motion-is-owned-here](traps/element-and-sheets.md#t-motion-is-owned-here) — lint-css

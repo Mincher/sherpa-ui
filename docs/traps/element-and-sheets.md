@@ -412,9 +412,6 @@ only 19 are drawn at 100%, so 195 were inflated — `filter` by 1.33x, and
 `triangle-down` from 7 units wide to 14, twice its Figma size. It was reported
 as "the caret glyph is too big in its container", which is exactly what it was.
 
-The ink bbox is still generated, because a test or a tool may reasonably ask
-how much of its frame an icon uses. It no longer decides what renders.
-
 **Three approaches failed before that one, each measured:**
 
 `font-size` cannot do it. Font Awesome at `font-size == box` paints about
@@ -433,10 +430,9 @@ It is invisible in the numbers a reviewer checks. Chip height, icon width and
 icon height were all exactly right; only the art inside was wrong.
 
 **The icons are Figma's**, exported to `src/icons/` and compiled by
-`scripts/generate-icons.mjs` (`npm run icons`) into `src/core/ui/icons/` (one module per icon, since TODO 199)
-with each ink bbox. Font Awesome NAMES still resolve, through `ICON_ALIASES`,
-to the Figma drawing that means the same thing — `house` is Figma's `home`,
-`xmark` its `cross` — so 88 call sites did not have to be rewritten.
+`scripts/generate-icons.mjs` (`npm run icons`) into one sprite,
+`src/core/ui/icons.svg`, a `<symbol>` each whose viewBox is its frame
+(`T-an-icon-loads-when-first-drawn`).
 
 **A drawing cannot be chosen by a CSS `content:` the way a webfont glyph was.**
 Toast, callout and the quick-filter caret picked their icon in CSS off
@@ -453,8 +449,6 @@ measure the PATH: the wrapper is its full size either way.
 
 - Site: `src/core/sherpa-icon.css`
 - Site: `src/core/ui/render-icon.ts`
-- Site: `src/core/ui/icon-names.ts`
-- Site: `scripts/generate-icons.mjs`
 - Site: `test/e2e/reforged-num-coercion.spec.ts`
 - Site: `src/core/ui/render-icon.ts`
 - Site: `src/core/sherpa-icon.css`
@@ -964,32 +958,6 @@ stamp. A clone, not `importNode`: a nested custom element upgrades when it is
 inserted, as it did from `innerHTML`. A live reload clears the parsed bodies.
 
 - Site: `src/core/ui/templater.ts`
-
-### T-a-page-loads-the-bundle
-
-**A page with no bundler loads `dist/bundle/`: Sherpa joined into a few files.**
-TODO 350 D1 (Will, A, 2026-10-22). The module files are about 200, and the
-browser finds each import only after the file before it lands: Records asked
-for 221 files, so on a fast 4G network its first paint waited 3.45 s for the
-chain. The production build joins each entry (`index`, `data`, `app`,
-`components`) with esbuild, split so they share their common code. Records now
-asks for 33: fast 4G 2.1 s cold, 1.4 s warm (Demos also compresses).
-
-Four things make it work, and each looks odd. **Every file sits in one folder**,
-and the build moves each module's own `new URL(…, import.meta.url)` to point
-from there (`installTokens()` links `tokens.css` beside `components.js`). **The
-icons the components draw ride inside** (`registerIcons`): any icon name quoted
-in the built component code — their DATA, because an imported icon module stays
-a file of its own, and the import is marked as having side effects, because
-`package.json`'s `sideEffects` would drop it. An app's own icons still load the
-first time each is drawn. **A DEV build** writes each entry as a pass-through to
-the modules, so the same import map serves live reload — a bundle of fetched
-templates would ask for them beside the bundle, where they are not. **One page,
-one copy:** map every entry to the bundle or every one to the modules; a mix
-defines each class twice.
-
-- Site: `scripts/build-reforged.mjs`
-- Site: `src/core/ui/render-icon.ts`
 
 ### T-a-component-with-data-icon-draws-its-own
 
@@ -1703,26 +1671,50 @@ EXTENDS the default rather than replacing it.
 
 ### T-an-icon-loads-when-first-drawn
 
-**Each icon is its own module, loaded the first time it is drawn** (Will,
-TODO 199, A). The set was one 314 KB module, and every page paid for all 216.
-`scripts/generate-icons.mjs` writes `src/core/ui/icons/<name>.ts` per icon and
-the names alone in `icon-names.ts`, so `hasIcon()` still answers at once.
+**Every icon is a `<symbol>` in one sprite, `core/ui/icons.svg`, loaded the
+first time any icon is drawn** (plan 695 P6, 2026-11-04). It is fetched and
+parsed once; each draw after is a clone of the symbol's shapes into an `<svg>`
+in the symbol's frame. It replaced one JS module per icon (TODO 199): 217
+modules, 217 more chunks in the bundle, and the components' icons as data inside
+it. `scripts/generate-icons.mjs` writes the sprite and the names in
+`icon-names.ts`, so `hasIcon()` answers before it loads; the build copies the
+sprite beside `render-icon.js`, and the bundle's URL to it is moved with the rest.
 
-`renderIcon()` draws at once when the icon is loaded already; otherwise it
-imports that one module and draws when it arrives — a moment later. Each
-element keeps the LAST icon it asked for, and only that one draws: an icon
-still loading must not land over the text or the other icon written since.
+`renderIcon()` draws at once once the sprite is in; before that, when it lands.
+Each element keeps the LAST icon it asked for, and only that one draws.
+`rendered` waits for the first draw's icons, because a reader who awaits it and
+reads an icon found none; `settled()` waits for any still loading.
 
-`rendered` waits for the icons of the first draw — the component SHOWS at
-once, its promise resolves when its icons are in — because a reader who
-awaits `rendered` and reads an icon found none. An icon written later, from
-data, is `settled()`'s: it waits for every icon still loading.
+**Why a clone, and not a `<use>` or a CSS mask**, measured on all 217 at 14 and
+24px, 1x and 2x, in the page and in a shadow root, in all three engines:
+
+- A **mask** differs on every one of the 207 one-colour icons (by up to 59/255
+  in Chromium, 37 in Firefox, 1 in WebKit), and cannot draw the 10 coloured ones
+  (the status badges, the OS marks) at all.
+- A **`<use>`** of the sprite paints the same pixels, but WebKit fetched the 309
+  KB sprite again for each `<use>` stamped in a later task — 228 fetches over
+  four Context switches in Demos, each switch three times slower, Service Worker
+  or not. Chromium does the same for each later batch when it is served
+  `no-cache`. A `<use>` is also the slowest to draw: 1,700 icons took 117 to 426
+  ms to the next frame in Chromium at 4x. And over one, WebKit's
+  `elementsFromPoint()` names the outermost shadow host first, so Playwright saw
+  the host intercept every click on an icon-only button.
+- A **clone** paints the same pixels as the old inline paths, and drew the 1,700
+  in 52 ms, half what `innerHTML` took.
+
+The sprite is FETCHED, so a page's CSP must let `fetch()` reach the app's own
+origin (`default-src 'self'` does), and it is parsed under the `sherpa-ui`
+Trusted Types policy, as a template is. Offline, the fetch goes through the
+Service Worker like any other; Demos keeps `icons.svg` at install, as it keeps
+the bundle. A load that fails draws nothing, says `icons-failed`, and the next
+draw tries again.
 
 - Site: `src/core/ui/render-icon.ts`
 - Site: `src/core/ui/settled.ts`
 - Site: `src/core/ui/icon-names.ts`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `scripts/generate-icons.mjs`
+- Site: `scripts/build-reforged.mjs`
 - Site: `test/e2e/reforged-icons.spec.ts`
 
 ### T-the-text-is-in-the-js

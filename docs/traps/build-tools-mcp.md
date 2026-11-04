@@ -1078,3 +1078,25 @@ against `/`. Its tests are in its own project.
 
 - Site: `mcp-server/tools/generate.js`
 - Site: `scripts/check-mcp-pack.mjs`
+
+### T-a-page-loads-the-bundle
+
+**A page with no bundler loads `dist/bundle/`: Sherpa joined into a few files.**
+TODO 350 D1 (Will, A, 2026-10-22). The module files are about 200, and the
+browser finds each import only after the file before it lands: Records asked
+for 221 files, so on a fast 4G network its first paint waited 3.45 s for the
+chain. The production build joins each entry (`index`, `data`, `app`,
+`components`) with esbuild, split so they share their common code. Records now
+asks for 33: fast 4G 2.1 s cold, 1.4 s warm (Demos also compresses).
+
+Three things make it work, and each looks odd. **Every file sits in one folder**,
+and the build moves each module's own `new URL(…, import.meta.url)` to point
+from there (`installTokens()` links `tokens.css` beside `components.js`; the
+icon sprite stays beside `render-icon.js`, `T-an-icon-loads-when-first-drawn`).
+**A DEV build** writes each entry as a pass-through to
+the modules, so the same import map serves live reload — a bundle of fetched
+templates would ask for them beside the bundle, where they are not. **One page,
+one copy:** map every entry to the bundle or every one to the modules; a mix
+defines each class twice.
+
+- Site: `scripts/build-reforged.mjs`

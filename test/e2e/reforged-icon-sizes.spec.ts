@@ -28,8 +28,8 @@ const BUTTON_SIZES: Record<string, string> = {
 };
 
 /**
- * How much of its 14-unit frame the `gear` drawing uses — its longest axis,
- * read from its module in `core/ui/icons/`: `ink: [1.344, 1.05, 11.324, 11.9]`. The box
+ * How much of its 14-unit frame the `gear` drawing uses — its longest axis, its
+ * ink box being `[1.344, 1.05, 11.324, 11.9]`. The box
  * follows the token; the art follows Figma, at 85% of it.
  * TRAP T-icon-box-is-not-the-glyph
  */

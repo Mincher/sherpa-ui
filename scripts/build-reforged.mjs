@@ -17,7 +17,6 @@
 import { execSync, spawn } from 'node:child_process';
 import { readdirSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, statSync, watch, globSync, existsSync, unlinkSync, rmSync } from 'node:fs';
 import { join, dirname, relative, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
 import postcss from 'postcss';
 import autoprefixer from 'autoprefixer';
 import cssnano from 'cssnano';
@@ -93,6 +92,8 @@ async function copyOne(full) {
 console.log('› css transform (autoprefixer + cssnano)');
 const cssCount = await copyAssets(SRC);
 console.log(`✓ assets copied into dist/ (${cssCount} css transformed)`);
+// The icon sprite: the one file every icon is drawn from. TRAP T-an-icon-loads-when-first-drawn
+copyFileSync(join(SRC, 'core/ui/icons.svg'), join(OUT, 'core/ui/icons.svg'));
 
 /** A template's text with no comments, no indent and no `data-accepts` — the
  *  spec carries that; nothing reads it at run time. */
@@ -165,26 +166,13 @@ if (!DEV) {
 }
 
 /* The BUNDLE: each entry joined into a few files in dist/bundle/, sharing their
-   common code; each icon stays a small lazy file. Every file sits in that one
-   folder, so a module's own URL — tokens.css beside components.js — is moved to
-   point from there. A DEV build writes each entry as a pass-through to the
-   modules, so the same path serves live reload. TRAP T-a-page-loads-the-bundle */
+   common code. Every file sits in that one folder, so a module's own URL —
+   tokens.css beside components.js, the icon sprite — is moved to point from
+   there. A DEV build writes each entry as a pass-through to the modules, so the
+   same path serves live reload. TRAP T-a-page-loads-the-bundle */
 const BUNDLED = ['index', 'data', 'app', 'components', 'worker'];
 const BUNDLE = join(OUT, 'bundle');
-/** The two entries that draw components: each is first given the icons they draw. */
-const DRAWS = ['index', 'components'];
 
-/** Every icon a component draws: its name, quoted, in the built code. */
-function componentIcons() {
-  const icons = join(OUT, 'core/ui/icons');
-  const names = readdirSync(icons).filter((f) => f.endsWith('.js')).map((f) => f.slice(0, -3));
-  const code = globSync('{components,core}/**/*.js', { cwd: OUT })
-    .filter((f) => !f.startsWith('core/ui/icons/') && f !== 'core/ui/icon-names.js')
-    .map((f) => readFileSync(join(OUT, f), 'utf8')).join('\n');
-  // A name in quotes, or a `data-when` value's after its condition: `"cond: name"`.
-  const quoted = (name) => new RegExp(`(?:["'\`]|: )${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\\\?["'\`]`);
-  return names.filter((name) => quoted(name).test(code));
-}
 async function writeBundle() {
   rmSync(BUNDLE, { recursive: true, force: true });
   mkdirSync(BUNDLE, { recursive: true });
@@ -195,8 +183,6 @@ async function writeBundle() {
   const moveUrls = {
     name: 'bundle-inputs',
     setup(b) {
-      // The icons a bundle carries register as it loads: package.json's sideEffects would drop the import.
-      b.onResolve({ filter: /^\.\/icons\.js$/ }, (args) => ({ path: join(args.resolveDir, args.path), sideEffects: true }));
       b.onLoad({ filter: /\.js$/ }, (args) => {
         const code = readFileSync(args.path, 'utf8');
         const moved = code.replace(/new URL\((['"])(\.{1,2}\/[^'"]+)\1,\s*import\.meta\.url\)/g, (_call, q, rel) => {
@@ -207,27 +193,14 @@ async function writeBundle() {
       });
     },
   };
-  /* The icons the components draw ride in the bundle: one file, not a request
-     each. An app's own icons still load the first time each is drawn. */
-  const inputs = join(OUT, '.bundle-in');
-  rmSync(inputs, { recursive: true, force: true });
-  mkdirSync(inputs, { recursive: true });
-  const icons = componentIcons();
-  // Their DATA, not their modules: an imported icon module would stay a file of its own.
-  const arts = {};
-  for (const name of icons) arts[name] = (await import(pathToFileURL(join(OUT, 'core/ui/icons', `${name}.js`)).href)).default;
-  writeFileSync(join(inputs, 'icons.js'),
-    `import { registerIcons } from '../core/ui/render-icon.js';\nregisterIcons(${JSON.stringify(arts)});\n`);
-  for (const entry of DRAWS) writeFileSync(join(inputs, `${entry}.js`), `import './icons.js';\nexport * from '../${entry}.js';\n`);
   const out = await build({
-    entryPoints: BUNDLED.map((entry) => join(DRAWS.includes(entry) ? inputs : OUT, `${entry}.js`)),
+    entryPoints: BUNDLED.map((entry) => join(OUT, `${entry}.js`)),
     bundle: true, splitting: true, format: 'esm', target: 'es2022', minify: MINIFY,
     legalComments: 'none', outdir: BUNDLE, entryNames: '[name]', write: true, metafile: true, logLevel: 'warning', plugins: [moveUrls],
   });
-  rmSync(inputs, { recursive: true, force: true });
   const files = Object.keys(out.metafile.outputs);
   const bytes = files.reduce((n, f) => n + out.metafile.outputs[f].bytes, 0);
-  return `${files.length} files, ${Math.round(bytes / 1024)} KB, ${icons.length} icons in it`;
+  return `${files.length} files, ${Math.round(bytes / 1024)} KB`;
 }
 console.log('› bundle each entry into dist/bundle/');
 console.log(`✓ ${await writeBundle()}`);
