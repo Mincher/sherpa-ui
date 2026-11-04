@@ -78,10 +78,8 @@ marks the header `data-custom-view` while one of the reader's is on screen
 ### T-one-page-one-document
 
 **A page's state is ONE document, `PageState`, with ONE keeper** — plan 695 U3.
-It was kept in nine places, in three shapes (the provider's `{ v: 2, queries }`,
-`persistView`'s `{ v: 2, query, elements }`, the session's `{ view, query, draft }`),
-and "draft" meant two things. Now one document per page, under its name (an
-outlet's Context):
+One document per page, under its name (an outlet's Context) — not nine keepers
+in three shapes, where "draft" meant two things:
 
 | part | is | tier |
 |---|---|---|
@@ -185,9 +183,9 @@ Four things that are not obvious:
 
 ### T-one-snapshot-not-a-key-per-concern
 
-ONE SHAPE, not a key per concern. It was heading for four — source state,
-column filters, selection, chips — four shapes and four restore paths for one
-idea. A saved view, a preset, a deep link and an agent's MCP request are the
+ONE SHAPE, not a key per concern: a key each for source state, column filters,
+selection and chips is four shapes and four restore paths for one idea. A saved
+view, a preset, a deep link and an agent's MCP request are the
 SAME object; that is the point of having one shape: a View, `{ query, ui }`, its
 `query` a View's JSON, put back by `setQuery` (366 step 10), and its `ui` each
 element's state. `applyView` applies it, `captureView` reads it back, and a
