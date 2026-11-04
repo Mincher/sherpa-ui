@@ -25,7 +25,8 @@ import '../../components/sherpa-input-text/sherpa-input-text.js';
 import '../../components/sherpa-key-value-list/sherpa-key-value-list.js';
 import '../../components/sherpa-node/sherpa-node.js';
 import '../../components/sherpa-node-row/sherpa-node-row.js';
-import '../../components/sherpa-select-group/sherpa-select-group.js';
+import '../../components/sherpa-menu/sherpa-menu.js';
+import '../../components/sherpa-quick-filter/sherpa-quick-filter.js';
 import '../../components/sherpa-stack/sherpa-stack.js';
 import '../../components/sherpa-switch/sherpa-switch.js';
 import type { AddContext, SherpaNodePanel } from '../../components/sherpa-node-panel/sherpa-node-panel.js';
@@ -75,8 +76,11 @@ export interface DrawOptions {
   onAdd?: (context: AddContext) => void;
 }
 
-/** A field a row draws: a text field or a select, a set of ticks, or a switch. */
-type Field = HTMLElement & { value: unknown; checked?: boolean; populate?(items: unknown): void };
+/** A field a row draws: a text field or a select, a menu of ticks (a quick-filter chip), or a switch. */
+type Field = HTMLElement & { value: unknown; values?: string[]; menu?: HTMLElement & { populate(items: unknown): void }; checked?: boolean; populate?(items: unknown): void };
+
+/** The events a field says its change by: its own `change`, or a chip's pick. */
+const CHANGES = ['change', 'quick-filter-change'] as const;
 
 /** What a canvas has drawn: each node and row by its address, the lines, and the routes they draw. */
 interface Drawn {
@@ -118,14 +122,25 @@ function put(el: Element, name: string, value: string | undefined): void {
   else el.setAttribute(name, value);
 }
 
-/** A row's field: a switch, a set of ticks, a select of its choices, or a text or number field.
+/** A row's field: a switch, a menu of ticks, a select of its choices, or a text or number field.
  *  LOCKED — read only — where a route drives it, or nothing outside takes its change. */
 function fieldFor(row: GraphRow, locked: boolean): Field {
-  if (row.control === 'switch' || row.multiple) {
-    const field = document.createElement(row.control === 'switch' ? 'sherpa-switch' : 'sherpa-select-group') as Field;
-    if (row.multiple) field.setAttribute('multiple', '');
+  if (row.multiple) {
+    // The panel's own multi-value field: a chip that opens a menu of ticks.
+    const chip = document.createElement('sherpa-quick-filter') as Field;
+    chip.setAttribute('data-persistent', '');
+    chip.setAttribute('data-menu', '');
+    const menu = document.createElement('sherpa-menu');
+    menu.setAttribute('slot', 'menu');
+    menu.setAttribute('data-select', 'multiple');
+    menu.setAttribute('data-no-select-all', '');
+    chip.append(menu);
+    if (locked) chip.setAttribute('disabled', '');
+    return chip;
+  }
+  if (row.control === 'switch') {
+    const field = document.createElement('sherpa-switch') as Field;
     if (locked) field.setAttribute('disabled', '');
-    if (row.multiple) field.populate?.(row.choices ?? []);
     return field;
   }
   const field = document.createElement('sherpa-input-text') as Field;
@@ -142,14 +157,19 @@ function fill(field: Field, row: GraphRow, note?: string): void {
   field.setAttribute('data-label', row.label);
   put(field, 'data-description', note ?? row.hint);
   if (row.control === 'switch') field.checked = !!row.value;
-  else if (row.multiple) field.value = Array.isArray(row.value) ? row.value.map(String) : [];
+  else if (row.multiple) {
+    const picks = Array.isArray(row.value) ? row.value.map(String) : [];
+    const menu = field.menu ?? field.querySelector<NonNullable<Field['menu']>>('sherpa-menu');
+    menu?.populate((row.choices ?? []).map((c) => ({ value: c.value, label: c.label, selected: picks.includes(c.value) })));
+    field.values = picks;
+  }
   // A select holds its value's KEY, and shows its label itself.
   else field.value = row.choices ? String(row.value ?? '') : shown(row);
 }
 
 /** What a field says now, as its row's value. */
 function read(field: Field, row: GraphRow): unknown {
-  return row.control === 'switch' ? !!field.checked : field.value;
+  return row.control === 'switch' ? !!field.checked : row.multiple ? [...(field.values ?? [])] : field.value;
 }
 
 /** The input addresses a route drives: their fields mirror what comes in, read only. */
@@ -441,7 +461,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     drawRoutes(canvas, made);
   });
   // A field's change, as an EDIT for the host: the drawing writes nothing itself.
-  canvas.addEventListener('change', (event) => {
+  for (const type of CHANGES) canvas.addEventListener(type, (event) => {
     const line = event.composedPath().find((n): n is HTMLElement => n instanceof HTMLElement && made.addresses.has(n));
     const [id, name] = line ? made.addresses.get(line)! : [];
     const node = made.graph.nodes.find((n) => n.id === id);
@@ -635,7 +655,7 @@ const inspecting = new WeakMap<HTMLElement, Inspecting>();
  *  edits — with where each comes from and goes to, and a visual above them. */
 export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGraph, options: InspectOptions = {}): void {
   if (!inspecting.has(panel)) {
-    panel.addEventListener('change', (event) => {
+    for (const type of CHANGES) panel.addEventListener(type, (event) => {
       const now = inspecting.get(panel);
       const field = event.composedPath().find((n): n is Element => n instanceof Element && !!now?.fields.has(n));
       const row = field ? now!.fields.get(field) : undefined;

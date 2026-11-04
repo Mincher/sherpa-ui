@@ -33,7 +33,7 @@ import { readingsOf, treeReading } from './where.js';
 import { presetHeld } from './query-edits.js';
 import type { FieldDomain } from './validate.js';
 import {
-  FALSE_SOCKET, NODE_KINDS, ROWS, conditionRows, kindNode, partName, partOf, rowChoices, socketOf,
+  FALSE_SOCKET, NODE_KINDS, ROWS, conditionRows, kindNode, partName, partOf, rowChoices, rowOf, socketOf,
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeRoute, type PartKind,
 } from './node-kinds.js';
 import { traceStep, type Span, type TraceContext } from './trace.js';
@@ -640,6 +640,10 @@ export function routeRequest(graph: DrawnGraph, { from, to }: NodeRoute, facts: 
   const scope = was?.ref?.['scope'];
   const old = was?.ref?.['field'];
   const there = target?.ref?.['scope'];
+  // A switch takes no route here: nothing in a page's Query says "driven by a node".
+  if (rowOf(target?.rows ?? [], field)?.control === 'switch') {
+    return { refused: `The Query takes no route into "${target?.heading ?? into} › ${rowOf(target?.rows ?? [], field)?.label}": its Switch is the reader's, and a page's Query has no way to say a node drives it.` };
+  }
   // A condition's True: its header. Its False says nothing a scope's field takes.
   if (was?.kind !== 'condition' || socketOf(from).row !== undefined || was.ref?.['superseded'] || was.ref?.['path'] || target?.kind !== 'scope' || !field || field.startsWith('@') || !scope || !old || !there) {
     return { refused: `The Query has no route from "${was?.heading ?? from}" to "${target?.heading ?? to}": a condition's True goes into a field of a scope.` };

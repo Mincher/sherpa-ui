@@ -36,6 +36,7 @@
  * - RowFacts — What a row's list is read from that the registry does not say.
  * - rowChoices — The list a picklist row reads; none, it is no picklist.
  * - fixedChoices — A fixed list, the same on every page; none, the list is open or the control is no picklist.
+ * - drivenSwitch — What a switch row shows while a boolean route drives it: True if any came in True, marked Custom.
  * - mirrored — What a picklist row shows while routes drive it: what comes in, read only, each pick marked Custom.
  * - GraphRow — One row as drawn: its kind's parts, the value it shows, and whether a reader may change it.
  * - GraphNode — One node as drawn: its header, its sockets, its rows and its place.
@@ -154,7 +155,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // Its Switch, then a row per preset and per field it holds, each with a boolean input: a True.
   scope: {
     heading: 'Scope', icon: 'filter', input: 'any',
-    rows: [ROWS, { name: '#filters', label: 'Filters', control: 'switch' }], model: 'ScopeQuery', graphs: ['query'],
+    rows: [ROWS, { name: '#filters', label: 'Filters', control: 'switch', input: 'boolean' }], model: 'ScopeQuery', graphs: ['query'],
   },
   // ONE group of the condition tree (D3): its join, then each part — a comparison's field, operator
   // and value, or a nested group's True into a Group row. True takes the rows that hold, False the rest.
@@ -174,11 +175,11 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // Its on, then each field it writes.
   preset: {
     heading: 'Preset', icon: 'star', description: 'The app\'s own named conditions: a chip leading its scope.', branches: true,
-    rows: [{ name: 'on', label: 'On', control: 'switch' }], model: 'ScopeDefinition.presets', graphs: ['query'],
+    rows: [{ name: 'on', label: 'On', control: 'switch', input: 'boolean' }], model: 'ScopeDefinition.presets', graphs: ['query'],
   },
   saved: {
     heading: 'Saved filter', icon: 'floppy-disk', description: 'Filters kept under one name: a preset the reader made.', branches: true,
-    rows: [{ name: 'on', label: 'On', control: 'switch' }], model: 'SavedFilter', graphs: ['query'],
+    rows: [{ name: 'on', label: 'On', control: 'switch', input: 'boolean' }], model: 'SavedFilter', graphs: ['query'],
   },
   arrange: {
     heading: 'Arrange', icon: 'sort-ascending', description: 'The rows\' order, groups and search.', input: 'any',
@@ -428,6 +429,13 @@ export function mirrored(row: Pick<RowKind, 'multiple'>, given: readonly unknown
   const picks = [...new Set(given.flat().filter((v) => v != null && v !== '').map(String))];
   if (!row.multiple) return { value: picks[0] ?? '', choices: picks.slice(0, 1).map(custom), custom: true };
   return { value: picks, choices: [...list, ...picks.filter((v) => !list.some((c) => c.value === v)).map(custom)], custom: true };
+}
+
+/** What a switch row shows while a route drives it (D7): True if any boolean that came in is
+ *  True, else False, marked Custom. The row's own state is not here: the draft keeps it, and
+ *  cutting the route gives it back. Plan 731, 732 */
+export function drivenSwitch(given: readonly boolean[]): Pick<GraphRow, 'value' | 'custom'> {
+  return { value: given.some(Boolean), custom: true };
 }
 
 /** One row as drawn: its kind's parts, the value it shows, and whether a reader may change it. */

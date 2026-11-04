@@ -22,7 +22,7 @@ import { report } from './report.js';
 import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS } from './store.js';
 import {
-  NODE_KINDS, ROWS, SOCKET_WORDS, accepts, conditionRows, fixedChoices, kindNode, mirrored, partName, partOf, rowChoices, rowOf, socketOf, socketType, takesMany,
+  NODE_KINDS, ROWS, SOCKET_WORDS, FALSE_SOCKET, accepts, conditionRows, drivenSwitch, fixedChoices, truthy, kindNode, mirrored, partName, partOf, rowChoices, rowOf, socketOf, socketType, takesMany,
   type DrawnGraph, type GraphRow, type NodeKind, type NodeRoute, type PartKind, type SocketType,
 } from './node-kinds.js';
 import type { FieldType } from './filter-state.js';
@@ -273,6 +273,18 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
       });
       const own: GraphRow = { ...plain, value: has, ...(plain.control ? { editable: true } : {}), ...(list ? { choices: list } : {}) };
       const coming = routes.filter((r) => r.to === `${node.id}/${row.name}`).flatMap((r) => brings(r.from) ?? []);
+      // A switch is driven by the road a boolean names: a True socket is on, a False socket off.
+      if (row.control === 'switch') {
+        const ins = routes.filter((r) => r.to === `${node.id}/${row.name}`);
+        if (!ins.length) return own;
+        const says = ins.map((r) => {
+          const { node: id, row: out } = socketOf(r.from);
+          if (out === FALSE_SOCKET) return false;
+          return out === undefined ? !!kinds[held.get(id)?.kind ?? '']?.branches : truthy(brings(r.from)?.value);
+        });
+        const at = (r: NodeRoute): string => { const n = held.get(socketOf(r.from).node); return n?.heading ?? kinds[n?.kind ?? '']?.heading ?? r.from; };
+        return { ...own, ...drivenSwitch(says), hint: `Custom, from ${[...new Set(ins.map(at))].join(', ')}` };
+      }
       if (!coming.length) return own;
       const shown = mirrored(row, coming.map((c) => c.value), list);
       const from = [...new Set(coming.map((c) => c.said))].join(', ');
