@@ -249,8 +249,8 @@ and the data layer imports nothing from `ui/`.
 
 `props` sets attributes and `data` sets the populate payload. Neither can express
 what a component exposes as a METHOD or an accessor — a grid's column filters
-(`setColumnFilter`), its selection (`select`), a chart's hidden series
-(`hiddenSeries`), a transfer list's chosen values. That is the half a SAVED VIEW
+(`setColumnFilter`), its selection (`select`), a chart's hidden series, a
+transfer list's chosen values. That is the half a SAVED VIEW
 needs, so `state` is the field that carries it.
 
 A reader who filters a column and reloads should find it filtered; a preset
@@ -260,7 +260,7 @@ for a view by describing it. All three are the same data.
 ```
 { type: 'sherpa-data-grid',
   data: { columns, rows },
-  state: { columnFilters: { name: ['name', 'contains', 'ana'] } } }
+  state: { setColumnFilter: ['name', ['name', 'contains', 'ana']] } }
 ```
 
 Each key is a property or method NAME on the element. A method is CALLED with the
@@ -333,7 +333,7 @@ So the split is the standard one:
 
 | | |
 |---|---|
-| `data-favourite` | the value, IN — observed, and the star's `data-swap-*` paint it |
+| `data-favourite` | the value, IN — observed, and the star's `data-when-*` paint it |
 | `view-favorite` | the INTENT, out — a request, not a notification |
 | `data-locked` | the host owns the list; the bar reports and never self-sets |
 
@@ -456,10 +456,10 @@ filtering were already clean: every component use of `data-group-field` and
 
 ### T-a-legend-toggle-is-a-filter
 
-Turning a legend row off used to call `setSliceHidden(i)` — a DRAWING trick on
-one chart. That bar vanished and nothing else on the page knew: the other
-charts, the metric tiles, the grid and its pager all carried on counting the
-rows the reader had just said to exclude.
+A legend row turned off by a DRAWING trick on one chart — hiding its slice —
+leaves nothing else on the page knowing: the other charts, the metric tiles,
+the grid and its pager all carry on counting the rows the reader has just said
+to exclude.
 
 A legend toggle is a **filter**, scoped to the view. One click writes the
 FIELD's selection, and every bound component re-reads. Measured on Records:
@@ -765,16 +765,14 @@ Measured after (Playwright, Chromium, 4x, 1440 × 900): Panel 0.013, Toolbars
 **TOOLBARS or PANEL is the provider's, for every page in its subtree.** TODO
 91, 2026-09-27. Will: *"The app shell should be able to toggle between Filter
 Toolbar and Filter Panel modes for any View that is showing in the content
-area."* Before it, Records wired it by hand — `togglePanel`, `setPanelMode`,
-the session key, and the close, reopen and restore listeners — and the
-Dashboard's Configure button did nothing.
+area."*
 
 The provider hears its OWN mode buttons (`T-the-mode-switch-is-the-pages-own`)
 the panel's `filter-panel-close`, and the shell's `panel-room-change`. It opens or shuts every panel
 that asked, and steps every bar that asked back (`data-panel-mode`) — a bar
-on a page loaded later takes the mode when it asks. The APP keeps the choice:
-it sets `provider.filterMode` from its session, and saves each
-`filter-mode-change` — a reader's change only; a window too narrow is not a
+on a page loaded later takes the mode when it asks. The choice is the
+`filterMode` setting (`T-a-setting-is-declared-once`), and a reader's change is
+said as one `setting-change` — a reader's only; a window too narrow is not a
 choice, and the panel comes back when it is wide again.
 
 A panel asks for `view data` on every page; a scope a page does not have —
@@ -946,8 +944,7 @@ What moved with it:
 - **A number heading has no operator select in Simple.** Simple is one value
   (equals) or a range; "at least" is an Advanced ROW, where the field offers
   Advanced — as on the chip.
-- **A text heading offers conditions only where its field does.** It used to
-  offer them on every text column.
+- **A text heading offers conditions only where its field does.**
 - **The menu reads and writes every body** through `reading` — a date's
   calendar too — so the grid's own calendar code, its dead Range switch
   handler and two templates are gone. Clear is `reading = {}`.
