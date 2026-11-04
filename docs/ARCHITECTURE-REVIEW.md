@@ -380,7 +380,7 @@ nothing of parse or style time.)
 > **Step 2 measured (695 P7, 2026-11-04):** host pins are one line each and the mode blocks
 > are shared; no reading changed in three engines; the shared sheet halved (raw). Recalc
 > rose on the harness (mount 33 → 52 ms at 4x) and within the spread on Demos (load +14%,
-> sort +6%, menu −6%). Whether to keep it is Will's call (plan-695, P7).
+> sort +6%, menu −6%). Will kept it (2026-11-04: A).
 
 **Proposal, in two steps:**
 
@@ -427,7 +427,7 @@ turned on takes 224 ms (248) — still over 200, as the grid draws its body twic
 *Done, 695 P6 (2026-11-04):* one binding language (the directives; `swap.ts` gone);
 observed attributes 574 → 523; `config` in the grid; one tip family file and tip
 listeners only where there is an anchor; one icon sprite, cloned on draw (no JS module per
-icon; the bundle 411 → 250 KB brotli). The badge waits on Will (plan-695, P6a).
+icon; the bundle 411 → 250 KB brotli). The badge: Will, A — stamped only once a count shows.
 
 ### 6.4 Components no app uses yet
 

@@ -32,11 +32,9 @@ Context chips that stay), `persist()` (Will: B — the app calls `keepData()`).
 - **Code:** `sherpa-data-layer` and Demos `main` hold it all; nothing pushed. Will's
   :4200 server keeps its old `server/index.mjs` until he restarts it (H5 changed it).
 - **Waiting on Will:**
-  - N4, `runWorkflow` (TODO 616): HELD 2026-10-30. N1 and N2 left its seams.
-  - P7's recalc: A keep style queries (harness mount 33 → 52 ms at 4x; Demos within the
-    spread), or B put host pins back as per-component blocks. My pick A.
-  - The badge (472 on Records, 1 shows a count): A stamp one only when a count shows, or
-    B a light `sherpa-badge`. My pick A.
+  - N4, `runWorkflow` (TODO 616): HELD (2026-10-30; again 2026-11-04). N1 and N2 left its seams.
+  - DECIDED 2026-11-04: P7 A (style queries stay), the badge A (stamped only once a count
+    shows: being built), N4 B (stays held).
   - 170: its plan is `docs/ARCHITECTURE.md` §8.
   - Looks to check in the demo: the menu's nested groups (P3), a node lit by its step
     (N2), the grid heading's Sort and Group buttons (P4: the button's own look).

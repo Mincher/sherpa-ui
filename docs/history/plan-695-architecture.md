@@ -500,9 +500,8 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   components 60/60 identical. Bytes: the shared sheet 137,271 → 67,443 raw (2,721 → 2,613
   brotli); `index.js` 342.0 → 340.3 KB brotli; tokens.css 221.6 → 147.3 KB raw. Recalc
   (Chromium 4x, medians): harness mount 32.7 → 52.2 ms, a toggle 745 → 1023 (ranges
-  overlap); Demos load +14%, sort +6%, menu −6% (ranges overlap). ❓ Will: A keep style
-  queries (the lane's pick), or B put the host pins back as per-component blocks and keep
-  the rest. Lane pick taken: metric's tile follows Figma's pin, on its part. At merge: N2's
+  overlap); Demos load +14%, sort +6%, menu −6% (ranges overlap). **Will, 2026-11-04: A** —
+  keep style queries ("modern CSS and amazing"). Lane pick taken: metric's tile follows Figma's pin, on its part. At merge: N2's
   lit-node spec reads `.root`; the axe gate 70/70.
   **Carried:** part pins (46), bare default pins (11) and native class pins stay whole
   blocks (a style query never reaches the element that sets it; an `<input>` has no
@@ -522,9 +521,8 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   1,311 → 1,139. Style probe: 0 differences on 39 components in three engines; the axe gate
   70/70. At merge: the build's icon scan missed three icons named in `data-when` values
   (pop-in, star-filled, sun) — fixed (`c420c849`), 80 again.
-  ❓ Will, the badge (472 on Records, 1 shows a count; ~30 µs each, ~14 ms of build): A
-  stamp a badge only once a count shows (the lane's pick), or B a light `sherpa-badge` (same
-  tag, no shadow root, one family sheet; 3–7 µs each).
+  The badge (472 on Records, 1 shows a count; ~30 µs each, ~14 ms of build): **Will,
+  2026-11-04: A** — stamp a badge only once a count shows (being built).
   **Carried:** chart tips keep their own markup (another shape, in prototypes); a boolean
   observed only for `"false"` still runs `onChange`; the quick-filter race → TODO 704.
 - **P6b ✅ (`3cf03025`; Demos `d5b510c`).** No JS module per icon: one sprite,
@@ -544,7 +542,7 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
 ### Plan 695 is done, but N4 (2026-11-04)
 
 Every workstream but N4 has landed: T1; Waves 1–3; and U4, P4, P5, N1, N2, H5, P6
-(a + b) and P7. N4 (`runWorkflow`, TODO 616) waits on Will, who held it on 2026-10-30.
+(a + b) and P7. N4 (`runWorkflow`, TODO 616) stays HELD (Will, 2026-10-30; again 2026-11-04: B).
 The deferred rows follow: 700 (the MCP rebuild), 701 (platform features), T3 (the trap
 trim, with the wording pass the lanes carried), 223 (delivering templates and
 definitions), 170 (its plan is `docs/ARCHITECTURE.md` §8; Will's word), 77 (with 700),
