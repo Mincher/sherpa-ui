@@ -372,3 +372,146 @@ cancel, a dry run, batch writes (§6). M1–M6 only draw, check and edit.
   pick is back.
 - **D8: A, and convert.** Workflow v2, a v1 read once into v2; and convert the saved v1
   graphs (in Demos and the tests) when v2 is ready, so no v1 is left.
+
+---
+
+## 9. Grouped nodes, the node panel, saved nodes (TODO 719)
+
+Will, 2026-11-04: group a graph into one reusable node, preset or custom; list every node by
+category in a floating panel left of the canvas; save nodes as JSON, as Views and filters are.
+Guide, older than the data layer: Figma `UaNDhhl1fawHB0K9KqJFxA`, "Node Graph Exploration". Held (616).
+
+### 9.1 What the Figma designs show
+
+`2872:32139`: 44 nodes in 10 categories. `2872:25806`: the editor and its node panel. `2872:44655`:
+"Add a node" at a route's end. `2872:26757`, `2872:23374`: a group, opened. **One kind per idea;
+an Operation picklist row picks what it does** (Math › Add), and the rows change with it (Round
+adds Places): D3. Its sockets are this plan's: True on the header, a red False on the footer
+(D6), a tall input that takes many (D4).
+
+| Figma node (its Operation picks) | Category | What it does | In | Out | Sherpa |
+|---|---|---|---|---|---|
+| API, File; Database, MCP | Sources | where data comes from | — | header | have: Store |
+| Check (folder icon, ⛶ opens it); Group Input, Group Output inside | Groups | a graph as one node | header, rows | header, rows | **new**: §9.2 |
+| Number (Integer, Decimal), Text; Property (Category, Field) | Variables | a typed value; one field | —; header | Value; header | have: Value (its Type, M6); Pick |
+| Math (Add, Subtract, Multiply, Divide, Ratio; Round, Increment; Floor, Ceiling, Average) | Math | a number from numbers | A, B, Places; or many | header | **new**: Math |
+| Compare (>, ≥, <, ≤, Equals, Does not equal; And, Or); Time (Between; Duration: Within 7 Days) | Logic, Time | A against B; joins booleans; a date test | A, B; many; Start, End | True, False | have: Condition (M4): its Operator, Join, Group row; Between, In the last |
+| Tag (Includes); Listen (Status); Collection (Users, Groups, Roles) | Utils, Collections | the rows that match | Value; header | header; True, False | have: Store + Condition (M4, M5) |
+| Collection (Property, Value, + Add property); Modify text (Append) | Collections, Utils | an object made of values; text from text | a Value per row; A, B | header | **new**: Object, Text |
+| Outcome (Return value) | Output | where the flow ends | header | — | have: Output |
+| Time (Schedule); Listen (Frequency) | Time, Utils | a run by the clock; once an hour at most | header | header; True, False | **new, after N4**: triggers |
+| Unified agent, Model, Ask N-zo, Delegate, Prompt, Tool, Await user, Action, Notify | Sources, AI, Calls, Utils, Output | AI, a person approves, the app's steps | header, Value | Response; True, False | not now: an app adds its kinds |
+
+**The gaps.** No type past "a value" and "a step" (§2 adds them); no name or type for a
+group's sockets, nor what a change to a group does to its uses; no Sort, Group by, Count, status
+or override (§5); no fault, undo, place to save, or way with no pointer (rule 21). Not now: run
+markers (N2 lights nodes, 671) and layers, rows that sort the nodes (Agentic, Identity, System…).
+
+### 9.2 Grouped nodes
+
+**A grouped node is a workflow body under one name.** Closed, it is one node: a header, a row
+per socket it exposes, True and False. Opened (⛶ on its header, or Enter), its graph fills the
+canvas under `sherpa-breadcrumbs` (Workflow › Prechecks › Org permissions). It may hold a group.
+
+**Its sockets are Group Input and Group Output**, as Figma draws them inside: each row of one is
+an input of the group, each row of the other an output. Group Input's header sends what comes
+into the group's header (any type, D1); what reaches Group Output's header gives True or False
+(D2). The definition says them once, in `inputs` and `outputs`; the two nodes are DRAWN from
+them, and inner routes name them `#in`, `#in/<name>`, `#out`, `#out/<name>` (the `#` of `#false`).
+
+```mermaid
+flowchart LR
+  s["Store: users"] -- "◆" --> g["Org permissions ⛶<br/>◆ Users · ● Role"] -- "▶ True" --> o["Output"]
+  subgraph inside["Inside Org permissions"]
+    gi["Group Input<br/>◆ Users · ● Role"] -- "◆ ●" --> c["Condition<br/>role is the Role given"] -- "▶ True" --> go["Group Output"]
+  end
+  g -. "opened" .-> gi
+```
+
+- **Preset:** in a file, the app's (or a few generic ones, Sherpa's); read only inside, and
+  "Copy to my nodes" makes a custom one (D15). **Custom:** the reader's (§9.4).
+- **To make one:** pick several nodes (Space adds the focused one), then **Group**. Each route
+  over the edge becomes a Group Input or Output row, typed by its socket, and one use takes
+  their place with the routes. **Ungroup** undoes it.
+- **A use follows its definition** (D11): edit once, and each use changes. A route to a socket
+  the definition lost is a fault, in words; a group inside itself is a loop.
+
+**How it maps.** `NODE_KINDS` stays the one registry: `nodeKindOf(definition)` makes a
+`NodeKind` (a row per input and output, `model: 'graph'`), and the editor passes `{ ...NODE_KINDS,
+...kindsOf(library) }` as the `kinds` that `workflowFaults`, `workflowGraph`, `editWorkflow` and
+`bindWorkflow` take now. A use is a plain node whose `kind` is the definition's id (a shipped
+kind's id is refused). **It runs flat** (D12): `flatten(workflow, library)` puts each use's nodes
+in its place as `use.inner` (never saved), joined through `#in` and `#out`; the checks and N4 see
+only simple nodes, and `traceStep` lights `use.inner` and its closed use. The Query graph gets
+none: it is derived, and its named group is already a saved filter.
+
+### 9.3 The node panel
+
+Left of the canvas, as `2872:25806`: a search, then each category and its nodes — the workflow
+kinds, the app's, the preset and custom nodes; never a query-only kind. It re-makes nothing:
+
+| Part | Composes |
+|---|---|
+| The panel | `sherpa-overlay-panel` (no scrim: the canvas stays live) on a new START side, `data-collapsible` (D14). The inspector stays on the end side: "one at a time" becomes one per side |
+| The search | `sherpa-input-text type="search"`: it opens each category with a match, and hides the rest |
+| A category | `sherpa-accordion`, open |
+| A node | `sherpa-list-item` in a `sherpa-list`: `data-icon`, `data-label`, `data-description`, `data-draggable`; a custom one adds a `sherpa-badge` "Custom" and a ⋮ `sherpa-menu` (Open, Rename, Delete) |
+
+- **To place one:** drag it onto the canvas; or click it or press Enter: it goes to the middle
+  of the view, picked, and the inspector opens (rule 21). Each is M6's `{ add }` edit.
+- **"Add a node"** (`2872:44655`): a route dropped on the bare canvas opens a `sherpa-menu
+  data-search` there, a child menu per category, only kinds that `accepts()` it; Value first (D16).
+- **Its data is one pure function,** `paletteOf(kinds, library)` in `node-kinds.ts`. Each kind
+  gets a `category`: Source, Values, Logic, Rows, Math, Text, Time, Output, or an app's own; a
+  custom node picks one when saved ("My nodes" by default).
+- **To test by hand:** before N4, place it, route Value nodes in, and read the drawing and the
+  faults. After N4, its ⋮ "Test" does a dry run with the inputs given.
+
+### 9.4 Saved nodes as JSON definitions
+
+| | Saved View | Saved filter | Saved node (new) |
+|---|---|---|---|
+| Its shape | `defs.v1#/$defs/view` | `defs.v1#/$defs/savedFilter` | `defs.v1#/$defs/nodeDefinition` |
+| Shipped in | `views.v1.json`, named by a Context | page.v1 `savedFilters` | `nodes.v1.json`, named by app.v1 `nodes` |
+| The reader's | `PageState.views` | `PageState.filters` | the keeper's `nodes`, a NAMED part |
+| Scope | one page | one page | the whole app (D13) |
+| Kept in | every tab (local tier), the database, the app's server (`PageRemote`) | the same | the same |
+
+```json
+{ "v": 1, "label": "Org permissions", "category": "Logic", "icon": "folder", "outputs": [],
+  "inputs": [{ "name": "users", "label": "Users", "type": "object" }, { "name": "role", "label": "Role", "type": "value" }],
+  "nodes": [{ "id": "has-role", "kind": "condition", "x": 240, "y": 80, "values": { "field": "role", "op": "eq" } }],
+  "routes": [{ "from": "#in/users", "to": "has-role/rows" }, { "from": "#in/role", "to": "has-role/value" },
+             { "from": "has-role", "to": "#out" }] }
+```
+
+- Its id is its key in the library, as a View's is; `type` is §2's `SocketType`, `many` D4's. Its
+  `nodes` and `routes` are `defs.v1`'s, so `workflowFaults` checks the body. `loadNodeLibrary()`
+  reads `nodes.v1.json` (`https://sherpa-ui.dev/schemas/nodes.v1.json`), as `loadViewLibrary()`.
+- Save writes the tab's draft (`/nodes/<id>`, as `/workflows/<id>`) to the keeper, under one
+  app-wide key: a named part crosses tabs (`T-only-a-named-part-crosses-tabs`); the panel lists it.
+
+### 9.5 Phases, N4 and decisions
+
+| Phase | Builds | Proves | Size | After |
+|---|---|---|---|---|
+| **M7** Categories | `NodeKind.category`; `paletteOf()` | node test: the list in order, no query-only kind | S | M1 |
+| **M8** The node panel | the overlay panel's start side; search, categories, items; click, Enter, drag; "Add a node" | Demos: place a Value by click and by drag; "cou" shows only Count; the a11y gate | M | M6, M7 |
+| **M9** Grouped node | `nodeDefinition`, `nodes.v1.json`, `#in`, `#out`, `nodeKindOf()`, `flatten()`, its faults | node tests: a use flattens to its graph, with the same faults | L | M3 |
+| **M10** Open a group | Group Input and Output drawn; breadcrumbs; a preset read only, "Copy to my nodes" | Demos: open, edit, back; each use shows the change | M | M9 |
+| **M11** Make a group | multi-pick (one pick today); Group, Ungroup; edge routes become sockets | node test: Group then Ungroup gives the same workflow | M | M9 |
+| **M12** Saved nodes | the keeper's `nodes`; `loadNodeLibrary()`; app.v1 `nodes`; in the panel | a saved node shows in a second tab, and after a reload | M | M8, M9 |
+
+**Lanes:** M7 beside M2 and M3; M8 beside M9; then M10, M11, M12 at the same time. **Waits on
+N4:** running a grouped node (flat), its steps lit through the use, "Test", the triggers.
+
+| # | Question | A (my pick) | B |
+|---|---|---|---|
+| D9 | Its name | **Group** (Will's word): Group, Ungroup, a grouped node; the rows' `group` kind becomes "Group by" | **Combine**: a combined node; "group" keeps its two meanings |
+| D10 | Its sockets | Group Input and Group Output nodes inside, as Figma | An "Expose" switch on each unrouted inner socket |
+| D11 | A use and its definition | A use follows it: edit once, each use changes | A use is a copy, made when placed |
+| D12 | How it runs | Flattened to simple nodes first: one runner, one check | Nested: the runner calls itself per use |
+| D13 | A custom node's scope | The whole app, beside the reader's Views and filters | One workflow, inside its definition |
+| D14 | The panel | `sherpa-overlay-panel` on a new start side, over the canvas | A fixed panel in the shell's `panel-start`: the canvas reflows |
+| D15 | A preset's inside | Read only, with "Copy to my nodes" | Editable: the reader's edit kept over it |
+| D16 | A route dropped on the bare canvas | "Add a node": the kinds that take its type, Value first | §5 as written: a Value node at once |
