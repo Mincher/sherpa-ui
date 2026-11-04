@@ -549,7 +549,15 @@ N4:** running a grouped node (flat), its steps lit through the use, "Test", the 
 - **D11: B, as INSTANCES.** Each use is an instance of the same definition: it is fed its
   own input, and its parameters can be changed in the editor, per instance. Node LOCKING,
   to stop edits, may come later.
-- **D12: open — leaning B (nested).** Will asked for more on this one.
+- **D12: B, nested.** The runner runs a Custom Node as one step, which runs its inside
+  graph: the trace and the editor show it as one step that opens; each instance's own
+  parameters pass in; the runner stops a Custom Node that holds itself.
+- **D11, the update flow.** A definition edited and SAVED: instances placed from then on use
+  it. Each EXISTING instance shows an update indicator, and its overlay panel shows the change
+  as a diff, with a split button: **Update instance** (the primary action); its menu holds
+  **Update all instances on graph** and **Update all instances**, each confirmed by a
+  critical dialog. Open: does an update keep the instance's changed parameters? (Our
+  reading: yes, as a Figma instance keeps its overrides; to confirm with Will.)
 - **D13: A.** Custom nodes are app-wide for now; per USER later, once there are accounts.
 - **D14: a card container, as a Panel, floating ON the canvas** about 32px from the canvas's
   top, bottom and left edges (not an overlay panel, not the shell's panel area).
