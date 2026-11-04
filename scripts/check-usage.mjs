@@ -30,6 +30,8 @@ export const EVERYWHERE = [
   'data-col-span', 'data-row-span', 'data-min-row-span', 'data-grow',
   // Read by the base class, to ask its provider.
   'data-source', 'data-scope',
+  // Read by the provider, on any element under it: the news it shows.
+  'data-listens',
   // Read by bindSettings, on any control. TRAP T-a-setting-is-a-pointer
   'data-setting',
   'data-setting-needs',

@@ -15,7 +15,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { usageProblems } from '../../scripts/check-usage.mjs';
 
-test('a typo, a wrong value and an unknown tag are said; the project\'s own hook and a placement are not', () => {
+test('a typo, a wrong value and an unknown tag are said; the project\'s own hook, a placement and what the provider reads are not', () => {
   const project = mkdtempSync(join(tmpdir(), 'sherpa-usage-'));
   try {
     mkdirSync(join(project, 'app'));
@@ -26,9 +26,10 @@ test('a typo, a wrong value and an unknown tag are said; the project\'s own hook
       '<sherpa-slider data-type="ranged"></sherpa-slider>',
       '<sherpa-buton></sherpa-buton>',
       '<sherpa-stack data-status="critical"><sherpa-metric data-grow></sherpa-metric></sherpa-stack>',
+      '<sherpa-callout data-listens="data" hidden></sherpa-callout>',
     ].join('\n'));
     const { problems, tags } = usageProblems(project);
-    assert.equal(tags, 5);
+    assert.equal(tags, 6);
     assert.deepEqual(problems, [
       'app/page.html:2  <sherpa-button data-lable> — sherpa-button has no such attribute',
       'app/page.html:3  <sherpa-slider data-type="ranged"> — it takes "single", "range"',

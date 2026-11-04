@@ -131,6 +131,36 @@ test('a set ticked is a preset chip, on, with its conditions beside the reader\'
   expect(r['off']).toEqual({ pro: null, total: 3, told: [{ id: 'silver', added: false }, { id: 'pro', added: false }], plan: null });
 });
 
+/* Its chip on, a set's preset row in the Edit menu is ticked too. Taking the set off
+   redraws that menu's one-value rows, and the ticked row was then read as a filter to
+   add: the chip came back, off. TODO 702 */
+test('a set unticked in the Edit menu takes its chip off, though the chip\'s own row there is ticked', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    keep({ pro: { label: 'Pro', query: { v: 1, scopes: { data: { where: { plan: { eq: 'Pro' } } } } } } });
+    const source = await open();
+    await settle();
+    provider.applyFilters('pro');
+    await source.load();
+    await settle();
+    // Told its sets again, as any later save tells them, its menu is drawn with the chip on.
+    bar.savedSets = bar.savedSets;
+    await settle();
+    const edit = bar.shadowRoot.querySelector('.add-btn');
+    const menu = () => edit.querySelector('sherpa-menu');
+    const before = { chip: chip(bar, 'pro'), ticked: menu().values.filter((v) => v.includes('pro')) };
+    edit.shadowRoot.querySelector('button').click();
+    await settle();
+    [...menu().querySelectorAll('input')].find((i) => i.value === 'set:pro').click();
+    menu().shadowRoot.querySelector('.apply').shadowRoot.querySelector('button').click();
+    await source.load();
+    await settle();
+    return { before, after: { chip: chip(bar, 'pro'), total: source.debugState().total, told: told() } };
+  })()`) as Record<string, any>;
+  expect(r['before']).toEqual({ chip: true, ticked: ['preset:saved:pro', 'set:pro'] });
+  expect(r['after']).toEqual({ chip: null, total: 3, told: [{ id: 'pro', added: false }] });
+});
+
 test('another View takes the chips off with what they held; Rename keeps a chip on, and Delete takes it off; a reader\'s saved filter of the last shape is read once, an older one is not adopted', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}

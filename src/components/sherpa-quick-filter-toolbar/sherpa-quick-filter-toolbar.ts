@@ -2517,9 +2517,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        is its chip's on/off instead, and its × removes it.
        TRAP T-the-add-menu-is-the-whole-list */
     const want = new Set(((event as CustomEvent).detail?.values ?? []) as string[]);
-    /* WHAT IS HELD NOW, before a set is taken: a chip it adds is no row the reader
-       unticked, and removing it would drop the set's filter. TODO 597 */
-    const ones = this.#oneRows;
+    /* WHAT IS HELD NOW, and the one-value rows, before a set is taken or taken off: the
+       pick redraws them, and a chip it adds or takes off is no row the reader moved. TODO 597, 702 */
+    const ones = new Set(this.#oneRows.ids);
     const held = new Set(this.#filters.filter((f) => f.removable && !ones.has(f.id)).map((f) => f.id));
     // A saved set's row takes it, or — unticked — takes it off. TODO 105, 366
     this.#header.pick(want);
