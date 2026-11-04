@@ -93,12 +93,13 @@ export function filesFor(
 }
 
 /** A family's markup files, each on its own: one that fails is said and left out.
+ *  Nothing to wait for once each is loaded, so a family never delays a stamp.
  *  TRAP T-shared-sheets-settle-independently */
-export async function loadFamily(urls: readonly string[]): Promise<void> {
-  const results = await Promise.allSettled(urls.map(loadTemplates));
-  results.forEach((r, i) => {
+export function loadFamily(urls: readonly string[]): Promise<void> | undefined {
+  if (urls.every((u) => templateCache.has(u))) return undefined;
+  return Promise.allSettled(urls.map(loadTemplates)).then((results) => results.forEach((r, i) => {
     if (r.status === 'rejected') report({ code: 'template-failed', message: `A family's markup did not load: ${String(r.reason)}`, at: { url: urls[i]! } });
-  });
+  }));
 }
 
 /** Each family file's first template, in order; one not loaded adds nothing. */
