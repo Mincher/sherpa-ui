@@ -92,7 +92,7 @@ test('each node shows what the Query and the definition say', () => {
   // Its Rows, the filter Switch, then each held field with a socket for its condition's True.
   assert.deepEqual(node('scope-view').rows.map((r) => [r.name, r.label, r.input, r.control, r.value]), [
     ['rows', 'Rows', undefined, undefined, undefined],
-    ['#filters', 'Filters', undefined, 'switch', true], ['region', 'Region', 'boolean', undefined, undefined], ['created', 'created', 'boolean', undefined, undefined],
+    ['#filters', 'Filters', 'boolean', 'switch', true], ['region', 'Region', 'boolean', undefined, undefined], ['created', 'created', 'boolean', undefined, undefined],
   ]);
   // A scope's name is the definition's, else its one component's, else its id.
   assert.deepEqual([node('scope-view').heading, node('scope-data').heading, node('scope-r-bar').heading], ['View Context', 'Customer records', 'By status']);
