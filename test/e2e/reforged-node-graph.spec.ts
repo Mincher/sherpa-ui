@@ -308,6 +308,28 @@ test('a drag from an OUTPUT socket draws a new route: let go on an input socket,
   expect(r).toEqual({ asked: [{ from: 'a', to: 'b/x' }], drafts: 0, after: before });
 });
 
+test('a drag from the footer\'s False socket starts at it and asks for `node/#false`', async ({ page }) => {
+  await page.evaluate(async () => {
+    const { drawGraph } = await import('/dist/app.js');
+    const canvas = document.getElementById('root')!.querySelector('sherpa-layout-canvas') as Drawable;
+    const asked: unknown[] = [];
+    (window as unknown as { asked: unknown[] }).asked = asked;
+    drawGraph(canvas, { routes: [], nodes: [
+      { id: 'a', kind: 'filter', heading: 'A', icon: 'filter', output: 'object', branches: true, x: 0, y: 0, rows: [] },
+      { id: 'b', kind: 'filter', heading: 'B', icon: 'filter', x: 360, y: 0, rows: [{ name: 'x', label: 'X', control: 'text', input: 'value', editable: true }] },
+    ] }, { onConnect: (route) => asked.push(route) });
+    await window.__settled();
+  });
+  const at = (selector: string, side: string) => page.evaluate(([sel, s, socket]) => eval(socket!)(document.querySelector(sel!), s), [selector, side, SOCKET]) as Promise<[number, number]>;
+  const [fx, fy] = await at('#root sherpa-node[data-heading="A"]', 'false');
+  const [bx, by] = await at('#root sherpa-node[data-heading="B"] sherpa-node-row', 'input');
+  await page.mouse.move(fx, fy);
+  await page.mouse.down();
+  await page.mouse.move(bx, by, { steps: 6 });
+  await page.mouse.up();
+  expect(await page.evaluate(() => (window as unknown as { asked: unknown[] }).asked)).toEqual([{ from: 'a/#false', to: 'b/x' }]);
+});
+
 test('a condition dragged into the same field of another scope MOVES there, as one change through the one door', async ({ page }) => {
   await page.evaluate(async () => {
     const { bindQueryEditor } = await import('/dist/app.js');

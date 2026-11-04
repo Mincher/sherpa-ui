@@ -241,8 +241,10 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
   const path = event.composedPath();
   if (event.button !== 0 || !(path[0] instanceof Element) || !path[0].classList.contains('socket-out')) return;
   const owner = path.find((n): n is HTMLElement => n instanceof HTMLElement && addressOf(drawn, n) !== null);
-  const from = owner ? addressOf(drawn, owner) : null;
-  const start = (owner as HasSockets | undefined)?.socketRect?.('output');
+  const fork = path[0].classList.contains('socket-false');
+  const own = owner ? addressOf(drawn, owner) : null;
+  const from = own && fork ? `${own}/${FALSE_SOCKET}` : own;
+  const start = (owner as HasSockets | undefined)?.socketRect?.(fork ? 'false' : 'output');
   if (!from || !start) return;
   event.preventDefault();
   event.stopPropagation();
