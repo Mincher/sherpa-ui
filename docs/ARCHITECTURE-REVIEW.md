@@ -376,6 +376,11 @@ nothing of parse or style time.)
 > sheet parse −24% (about 2 ms a page) and raw bytes −96 KB; brotli rose 7.5 KB on
 > `index.js` (+2.4%), as many small copies compress worse than one sheet. The case for
 > step 1 is the shape (a component's pins live with it) and step 2, not speed.
+>
+> **Step 2 measured (695 P7, 2026-11-04):** host pins are one line each and the mode blocks
+> are shared; no reading changed in three engines; the shared sheet halved (raw). Recalc
+> rose on the harness (mount 33 → 52 ms at 4x) and within the spread on Demos (load +14%,
+> sort +6%, menu −6%). Whether to keep it is Will's call (plan-695, P7).
 
 **Proposal, in two steps:**
 

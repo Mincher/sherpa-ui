@@ -486,6 +486,27 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   read-only rows only go light; a read-only key keeps its tip.
   **Carried:** the legend's `data-readonly` prop is declared `kind: 'style'` but its JS
   branches on it (older; rule 9) → P6.
+- **P7 ✅ (`1f420d44`…`8aa83587`, `0561f62f`).** A host state pin is one line,
+  `:host(tag[state]) { --_mode: X; }`, in its own sheet; one shared `@container
+  style(--_mode: X)` block per mode re-maps the Style variables; `--_mode` and `--_mode-viz`
+  are registered, not inherited; a mode block matches `:host > *` (with `*`, recalc
+  doubled). Paint moved from `:host` to an inner part in node (`.root`), metric,
+  nav-item, input-text, progress-bar, prompt-composer, select-card, slider and switch;
+  tag and menu stop reading the old door; one shared look+status guard replaces 14 copies
+  (it fixed a WebKit miss); nav-item's navigation region is the generator's (it was not
+  dead: deleting it moved a collapsed row 8 → 4 px). WebKit 26 re-matches a style query
+  only for a property a sheet in the same tree queries: tokens.css carries a no-op query.
+  Probe: 47,298 readings per engine, 0 differences in three engines; pixels of the 9 moved
+  components 60/60 identical. Bytes: the shared sheet 137,271 → 67,443 raw (2,721 → 2,613
+  brotli); `index.js` 342.0 → 340.3 KB brotli; tokens.css 221.6 → 147.3 KB raw. Recalc
+  (Chromium 4x, medians): harness mount 32.7 → 52.2 ms, a toggle 745 → 1023 (ranges
+  overlap); Demos load +14%, sort +6%, menu −6% (ranges overlap). ❓ Will: A keep style
+  queries (the lane's pick), or B put the host pins back as per-component blocks and keep
+  the rest. Lane pick taken: metric's tile follows Figma's pin, on its part. At merge: N2's
+  lit-node spec reads `.root`; the axe gate 70/70.
+  **Carried:** part pins (46), bare default pins (11) and native class pins stay whole
+  blocks (a style query never reaches the element that sets it; an `<input>` has no
+  children); two `--_status-*` names stay for the gauge, the sparkline and the tag's dot.
 
 ### The waves
 
