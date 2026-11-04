@@ -614,17 +614,17 @@ whatever the menu is.
 
 ### T-select-all-is-not-a-value
 
-The SELECT-ALL row is excluded from `#inputs()`. It is a control OVER the set,
+The SELECT-ALL row is excluded from `MenuList.inputs()`. It is a control OVER the set,
 not a member of it: counted in, `values` would carry a phantom `"qf-all"`
 entry, Apply would commit it as a picked value, and the count badge would be
 ONE TOO HIGH with everything ticked.
 
 `NON_VALUE_ROWS` is the shared selector for what is excluded and why.
 
-Its LABEL never moves either: the row used to say "Clear all" once everything
-was on, which made it both the select-all control AND the menu's clear — a
-second place to do what the footer's Clear button does, and one that moved
-under the reader depending on what was ticked. The row's words are its
+Its LABEL never moves either: a row that says "Clear all" once everything is on
+is both the select-all control AND the menu's clear — a second place to do what
+the footer's Clear button does, and one that moves under the reader depending
+on what is ticked. The row's words are its
 template's, "Select all", and nothing rewrites them (TODO 344).
 
 A list of FILTERS has none: `data-no-select-all`, from a def's
@@ -751,7 +751,7 @@ the footer's Clear button and one action belongs in one place
 
 ### T-indeterminate-is-a-property
 
-`#syncSelectAll` points the select-all row at the set it describes: TICKED for
+`MenuList.syncSelectAll` points the select-all row at the set it describes: TICKED for
 all, INDETERMINATE for some, EMPTY for none.
 
 `indeterminate` is a **PROPERTY, not an attribute**. There is no
@@ -870,9 +870,8 @@ The Simple list still greys and refuses (`T-a-ruled-out-value-is-greyed`).
 `sherpa-toast` removes itself on **`animationend`**, so CSS owns the leave
 timing and JS never needs to know it.
 
-It used to be `setTimeout(…, LEAVE_MS)` with a **160** that had to be kept in
-step with the `sherpa-toast-out` keyframes by hand — two copies of ONE number,
-and a race if either moved. `animationend` is the platform's own answer: the
+A `setTimeout` with a number kept in step with the `sherpa-toast-out` keyframes
+by hand is two copies of ONE number, and a race if either moves. `animationend` is the platform's own answer: the
 animation says when it is done. The listener is `once`.
 
 `LEAVE_FALLBACK_MS = 1000` is a **SAFETY NET, not a duration.** It covers only
@@ -886,9 +885,9 @@ one that acts.
 The `toast-dismiss` event fires IMMEDIATELY, before the animation, so app code
 is not kept waiting on it.
 
-The auto-dismiss delay goes through `num()`, not `Number()`: an EMPTY
-`data-duration` used to read as 0, which the `> 0` test then treated as "no
-auto-dismiss" — a toast that never left. The default is 5000.
+The auto-dismiss delay goes through `num()`, not `Number()`: through `Number()` an
+EMPTY `data-duration` reads as 0, which the `> 0` test treats as "no
+auto-dismiss" — a toast that never leaves. The default is 5000.
 
 - Site: `src/components/sherpa-toast/sherpa-toast.ts`
 
@@ -1051,9 +1050,9 @@ when nothing differs.
 Row ONE's `Equals` select opened EMPTY while row two, added afterwards, was
 full.
 
-`#syncConditions` stamps row one before the menu's own value rows arrive, and
-`#valueOptions()` reads those rows. `#refillPicks()` on `slotchange` re-sends
-the options to every row, keeping each row's own `data-want`.
+The condition editor stamps row one before the menu's own value rows arrive, and
+`#valueOptions()` reads those rows. `refill()` on `slotchange` re-sends the
+options to every row, keeping each row's own `data-want`.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
@@ -1719,13 +1718,12 @@ last, and one tip is open at a time.
 **A condition row the reader has not answered yet is their work in progress,
 and a redraw keeps it.** TODO 101, 2026-09-29. Every report goes to the source,
 and the source draws the field's answer back onto EVERY bar over its scope —
-the one that reported too — with its ANSWERED rows only (`rowAnswered`, an
-empty row is none). The menu's `conditions` setter rebuilt its rows whenever
-they differed from what it was given, so a new blank row vanished: at once in
-a chip's menu (Add condition did nothing), and in the panel once the row's
-condition changed.
+the one that reported too — with its ANSWERED parts only (`answeredCondition`:
+an empty row is none). Rebuilding the rows whenever they differ from what it is
+given loses a new blank row: at once in a chip's menu (Add condition does
+nothing), and later once the row's condition changes.
 
-The setter now compares ANSWERED rows only: an answer that matches the rows
+So `ConditionEditor.draw` compares ANSWERED parts only: an answer that matches the rows
 the reader has answered keeps every row, blank ones too, and row one's
 `data-op` follows the row shown. An answer that differs — a View, a saved
 filter, a Clear from outside — still rebuilds.
@@ -1807,8 +1805,8 @@ merely present ones, because a menu in Advanced mode always holds one row.
 **The grid held a CLAUSE op, and handed it to the data layer as a READING op.**
 
 A column filter keeps the op its clause has: several ticks under `eq` are
-`in`, under `ne` are `notin`, and two ends are `between`. `#columnReading()`
-passed that op to `readingClause()` unchanged. But a reading's op is what the
+`in`, under `ne` are `notin`, and two ends are `between`. Passed to
+`readingClause()` unchanged, that op is wrong: a reading's op is what the
 reader picked in the dropdown — `eq` or `ne` — and `picksClause()` makes
 `notin` only from `ne`. Given `notin`, several picks became `in`.
 
@@ -1820,7 +1818,8 @@ It hid behind the menu. The menu draws a clause op the same way — `in` as `eq`
 rows, `notin` as `ne` ones (`spread`) — so the menu read right; only the clause
 the HOST got was wrong.
 
-`readingOp()` is that mapping, once, for both. It also makes the column's
+`treeReading()` is that mapping, once, for both: a clause comes back as the
+reading a control holds. It also makes the column's
 `state.condition` honest: `between` is a clause op, not an Advanced one, so a
 range reads Simple, as it does on a toolbar chip.
 
