@@ -125,7 +125,7 @@
   "src/core/browser/view-markup.ts": 148,
   "src/core/browser/web-storage.ts": 124,
   "src/core/browser/worker-store.ts": 44,
-  "src/core/data/aggregate.ts": 661,
+  "src/core/data/aggregate.ts": 662,
   "src/core/data/allow.ts": 125,
   "src/core/data/app-definition.ts": 114,
   "src/core/data/base-store.ts": 227,

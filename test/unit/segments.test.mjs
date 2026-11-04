@@ -85,3 +85,16 @@ test('last N counts today once: last 7 days is 7 days, last 6 months is 6', () =
   const [f12, t12] = rangeOf({ last: 12, unit: 'month' }, today);
   assert.equal(segmentStarts(f12, t12, segmentUnit(f12, t12)).length, 12);
 });
+
+test('last 14 days is one segment a day, for the range\'s days only — not every day the field holds (TODO 705)', () => {
+  // The field holds days far outside the range: no point of the axis.
+  const domain = (f) => (f === 'at' ? ['2026-01-02', '2026-10-21', '2026-10-25', '2026-11-04'] : []);
+  const rows = [{ at: '2026-10-21' }, { at: '2026-10-25' }, { at: '2026-10-25' }, { at: '2026-11-04' }];
+  const out = summarise(rows, { shape: 'aggregate', over: 'at', bucket: 'day', range: ['2026-10-22', '2026-11-04'] }, domain);
+  assert.equal(out.values.length, 14);
+  // 21 Oct, the far end `last 14 days` keeps and does not count, joins the first.
+  assert.deepEqual([out.values[0], out.values[3], out.values.at(-1)], [1, 2, 1]);
+  assert.equal(out.values.reduce((a, b) => a + b), out.value);
+  assert.match(out.labels[0], /Thu/);
+  assert.match(out.labels.at(-1), /Wed/);
+});

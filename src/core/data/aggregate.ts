@@ -446,10 +446,10 @@ export function summarise(
   const at = spec.bucket ? '\u0000bucket' : spec.over;
   // `auto` reaches here only unresolved — no range to fit — and cuts by the day.
   const bucket = spec.bucket === 'auto' ? 'day' : spec.bucket;
-  /* A range cut into weeks, months, quarters or years is counted from ITS start: 6 months is 6 segments.
+  /* A range cut into days or longer is counted from ITS start: 6 months is 6 segments, and 14 days 14.
      TRAP T-a-range-is-counted-from-its-own-start
-     A row is in the last segment that starts on or before it. TODO 540 */
-  const starts = bucket && spec.range && bucket !== 'day' && bucket !== 'hour2' ? segmentStarts(...spec.range, bucket) : undefined;
+     A row is in the last segment that starts on or before it. TODOs 540, 705 */
+  const starts = bucket && spec.range && bucket !== 'hour2' ? segmentStarts(...spec.range, bucket) : undefined;
   const startOf = (value: unknown): string => {
     const day = cut(value, 'day');
     return starts!.findLast((s) => s <= day) ?? starts![0]!;
@@ -460,9 +460,10 @@ export function summarise(
   if (spec.shape === 'aggregate') {
     const values = seriesBy(keyed, at, points, '', opts).values;
     const delta = deltaPercent(values);
-    // Each point's time span, for its tooltip. TODO 540
+    // Each point's time span, for its tooltip: a day its own. TODO 540
     const spans = starts
-      ? { labels: starts.map((from, i) => spanLabel(from, i + 1 < starts.length ? dayBefore(starts[i + 1]!) : spec.range![1])) }
+      ? { labels: starts.map((from, i) => bucket === 'day' ? segmentLabel(from, bucket)
+        : spanLabel(from, i + 1 < starts.length ? dayBefore(starts[i + 1]!) : spec.range![1])) }
       : bucket ? { labels: points.map((p) => segmentLabel(String(p), bucket)) } : {};
     return delta == null ? { value, values, ...spans } : { value, values, ...spans, deltaPercent: delta };
   }
