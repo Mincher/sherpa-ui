@@ -7261,8 +7261,22 @@ Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
   is a fault.
 - **A preset is read only** (`preset: true`): `editDefinition` returns the library given;
   `copyToMine` makes a custom copy.
+- **The editor OPENS it** (M10): `bindWorkflow`'s `open(use)` shows `innerOf(use).workflow` under
+  a `sherpa-breadcrumbs` trail, and an edit there is an `editDefinition` of the library DRAFT
+  (kept for the tab beside the workflow's, handed over by the same Save through `onSaveNode`,
+  put back by `discard()`). A use whose recorded version is old says "Update available", shows
+  `definitionDiff` and a split button: "Update instance", and in its menu the two bulk updates,
+  each behind a critical `sherpa-dialog`. A preset's inside is locked, with "Copy to my nodes".
+- **"Save as Custom Node" is `groupNodes`, "Ungroup" is `ungroupUse`** (M11): each route over
+  the edge is one socket per outside OUTPUT that feeds in (a Group Input row) and per inside
+  output that feeds out, typed by what it carries. The definition keeps the nodes WHERE THEY
+  SIT, so Ungroup gives the same nodes, routes and places. A loop out and back, a socket of two
+  types and a result with a new fault are refused in words.
 
 - Site: `src/core/browser/node-files.ts`
 - Site: `src/core/data/node-library.ts`
+- Site: `src/core/data/node-group.ts`
+- Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/a-custom-node-is-an-instance.test.mjs`
+- Site: `test/unit/a-custom-node-is-saved-from-nodes.test.mjs`
 - Site: `src/data.ts`

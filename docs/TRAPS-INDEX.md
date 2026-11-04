@@ -30,7 +30,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-conditioned-chip-answers-with-its-clause](traps/data-layer.md#t-a-conditioned-chip-answers-with-its-clause) — source-view
 - [T-a-container-shows-its-datas-state](traps/data-layer.md#t-a-container-shows-its-datas-state) — field-catalogue, source-reads
 - [T-a-context-holds-the-only-query](traps/data-layer.md#t-a-context-holds-the-only-query) — query-context
-- [T-a-custom-node-is-an-instance](traps/data-layer.md#t-a-custom-node-is-an-instance) — data, node-library
+- [T-a-custom-node-is-an-instance](traps/data-layer.md#t-a-custom-node-is-an-instance) — data, node-group, node-library
 - [T-a-data-request-is-the-store-interface](traps/data-layer.md#t-a-data-request-is-the-store-interface) — data-handler, request-store
 - [T-a-date-chip-names-its-field](traps/data-layer.md#t-a-date-chip-names-its-field) — field-catalogue
 - [T-a-date-picks-days-unless-it-says-range](traps/data-layer.md#t-a-date-picks-days-unless-it-says-range) — data-source-types, filter-state
@@ -843,7 +843,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (127)
+## SherpaElement and the shared sheets (128)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -855,6 +855,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-component-imports-anywhere](traps/element-and-sheets.md#t-a-component-imports-anywhere) — sherpa-element
 - [T-a-component-with-data-icon-draws-its-own](traps/element-and-sheets.md#t-a-component-with-data-icon-draws-its-own) — render-icon
 - [T-a-condition-marks-every-match](traps/data-layer.md#t-a-condition-marks-every-match) — mark-text
+- [T-a-custom-node-is-an-instance](traps/data-layer.md#t-a-custom-node-is-an-instance) — node-graph
 - [T-a-document-class-cannot-reach-a-shadow-root](traps/element-and-sheets.md#t-a-document-class-cannot-reach-a-shadow-root) — sherpa-element, sherpa-group-positions, sherpa-typography
 - [T-a-family-shares-markup](traps/filters.md#t-a-family-shares-markup) — description-tips, sherpa-element, templater
 - [T-a-filter-is-dragged-into-its-place](traps/filters.md#t-a-filter-is-dragged-into-its-place) — drag-order

@@ -2,19 +2,22 @@
  * node-graph.ts — a graph of nodes drawn on a sherpa-layout-canvas, and the two editors kept
  * drawn there: a page's Query, which each edit ASKS, and a workflow, whose draft each edit
  * writes. Places last the tab; Save hands the app a checked definition. Each node lights as
- * its step runs, from the one trace stream. Will, TODOs 555, 551, 671.
+ * its step runs, from the one trace stream. A workflow's Custom Node opens, is edited as its
+ * definition, updates its uses, and is made from picked nodes. Will, TODOs 555, 551, 671, 719.
  * TRAP T-the-node-editor-asks-the-query · TRAP T-a-step-names-its-node
  *
  * Map:
  * - DrawOptions — What a drawing tells its host: each edit, each node a reader picks or moves, and each new route.
  * - drawGraph — Draw a graph on a canvas: each node by id, at its place when that moved; then its routes.
  * - markNode — Mark one node as the one picked, or none.
+ * - markNodes — Mark several nodes as the ones picked.
  * - WatchOptions — What a graph's watch is told: which traces are its, and which node each span lights.
  * - watchSteps — Light a canvas's nodes from the one trace stream as their steps run; its stop lets it go.
  * - InspectOptions — What an inspector shows beside a node's rows, and whom it tells of an edit.
  * - inspectNode — Fill an overlay panel with one node: its rows again, their routes, and a visual.
  * - Inspector — The overlay panel a picked node opens in.
  * - GraphEditor — What an editor's binding gives back: Save, and the undo.
+ * - WorkflowEditor — A workflow's editor: Save and stop, and the Custom Nodes it opens, discards and holds.
  * - QueryEditorOptions — What drawing a page's Query needs beyond its source: its definition, an inspector, a session.
  * - bindQueryEditor — Keep a page's Query drawn on a canvas as it changes, and ask it for each edit.
  * - WorkflowEditorOptions — What editing a workflow needs beyond it: its facts, an inspector, a node panel, a session, the kinds.
@@ -27,6 +30,7 @@ import '../../components/sherpa-node/sherpa-node.js';
 import '../../components/sherpa-node-row/sherpa-node-row.js';
 import '../../components/sherpa-menu/sherpa-menu.js';
 import '../../components/sherpa-quick-filter/sherpa-quick-filter.js';
+import '../../components/sherpa-group/sherpa-group.js';
 import '../../components/sherpa-stack/sherpa-stack.js';
 import '../../components/sherpa-switch/sherpa-switch.js';
 import type { AddContext, SherpaNodePanel } from '../../components/sherpa-node-panel/sherpa-node-panel.js';
@@ -40,13 +44,19 @@ import { onTrace, type Span, type StepState, type TraceHost } from '../data/trac
 import { VIEW } from '../data/query.js';
 import { OP_LABELS, valueKey, type FilterOp } from '../data/store.js';
 import { report } from '../data/report.js';
+import {
+  checkNodeLibrary, copyToMine, definitionDiff, editDefinition, innerOf, kindsOf, staleUses, updateAll, updateInstance, useOf, workflowFaultsDeep,
+  type Inner, type NodeDefinition, type NodeLibrary,
+} from '../data/node-library.js';
+import { groupNodes, ungroupUse } from '../data/node-group.js';
+import { instancePane, groupPane, updatePane } from './node-group-panel.js';
 import { typedValue, type FieldType } from '../data/filter-state.js';
 import {
   FALSE_SOCKET, NODE_KINDS, fitOf, paletteOf, placed, rowChoices, socketOf, socketType,
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeRoute, type SocketType,
 } from '../data/node-kinds.js';
 import {
-  addCustomValue, checkWorkflow, editWorkflow, readWorkflow, workflowFaults, workflowGraph,
+  addCustomValue, checkWorkflow, editWorkflow, readWorkflow, workflowGraph,
   type WorkflowDefinition, type WorkflowDefinitionV1, type WorkflowFacts, type WorkflowNode,
 } from '../data/workflow.js';
 
@@ -74,6 +84,10 @@ export interface DrawOptions {
   onCustom?: (to: string, at: { x: number; y: number }) => void;
   /** A line let go on the bare canvas from a socket of any type: "Add a node" opens there (D16). Where unset, the line goes nowhere. */
   onAdd?: (context: AddContext) => void;
+  /** A line over a node, by its id, while no run lights it: "Update available" on an out-of-date instance. */
+  notes?: ReadonlyMap<string, string>;
+  /** A node whose place the host owns: a drag reports and moves nothing (the Group Input, a preset's inside). */
+  locked?: (node: GraphNode) => boolean;
 }
 
 /** A field a row draws: a text field or a select, a menu of ticks (a quick-filter chip), or a switch. */
@@ -513,6 +527,9 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: DrawnGraph, options
     el.setAttribute('data-heading', node.heading);
     put(el, 'data-icon', node.icon);
     put(el, 'data-description', node.description);
+    el.toggleAttribute('data-locked', !!options.locked?.(node));
+    // A run's caption wins; else the host's note.
+    if (!el.hasAttribute('data-step')) put(el, 'data-caption', options.notes?.get(node.id));
     // Its data in, of any type; out, its True where it forks.
     put(el, 'data-input-socket', socketType(node, undefined, 'input'));
     put(el, 'data-output-socket', socketType(node, undefined, 'output'));
@@ -530,6 +547,19 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: DrawnGraph, options
 /** Mark one node as the one picked, or none. */
 export function markNode(canvas: SherpaLayoutCanvas, id: string | null): void {
   for (const [key, el] of drawnOn.get(canvas)?.nodes ?? []) el.toggleAttribute('data-current', key === id);
+}
+
+/** Mark several nodes as the ones picked. */
+export function markNodes(canvas: SherpaLayoutCanvas, ids: ReadonlySet<string>): void {
+  for (const [key, el] of drawnOn.get(canvas)?.nodes ?? []) el.toggleAttribute('data-current', ids.has(key));
+}
+
+/** Put the keyboard on one drawn node's header, once it is drawn. */
+function focusNode(canvas: SherpaLayoutCanvas, id: string): void {
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const el = drawnOn.get(canvas)?.nodes.get(id);
+    (el?.shadowRoot?.querySelector('.header') as HTMLElement | null | undefined)?.focus();
+  }));
 }
 
 /** One span that lit a node: where it ran, how it stands, its time and its rows. */
@@ -640,6 +670,8 @@ export interface InspectOptions {
   onCut?: (route: NodeRoute) => void;
   /** A reader removes this node. */
   onRemove?: () => void;
+  /** What a Custom Node adds above the rows: its update, its Open and Ungroup. */
+  extra?: readonly HTMLElement[];
 }
 
 /** What an inspector holds: its node, the fields by their element, and whom it tells. */
@@ -701,7 +733,7 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   const stack = document.createElement('sherpa-stack');
   stack.setAttribute('data-gap', 'lg');
   const remove = options.onRemove ? [button('Remove node', options.onRemove)] : [];
-  stack.append(...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...remove);
+  stack.append(...(options.extra ?? []), ...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...remove);
   panel.replaceChildren(stack);
   if (whole.length) (header as HTMLElement & { populate(items: unknown): void }).populate(whole);
   panel.setAttribute('data-heading', node.heading);
@@ -709,7 +741,6 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   inspecting.set(panel, { node, fields, options });
 }
 
-/** The overlay panel a picked node opens in. */
 /** The type a drawn socket carries, on one side; none, it has no such socket. */
 function typeAt(drawn: Drawn, address: string, side: 'input' | 'output'): SocketType | undefined {
   const { node, row } = socketOf(address);
@@ -717,6 +748,7 @@ function typeAt(drawn: Drawn, address: string, side: 'input' | 'output'): Socket
   return at ? socketType(at, row, side) : undefined;
 }
 
+/** The overlay panel a picked node opens in. */
 export type Inspector = HTMLElement & { show(): void; hide(): void; open: boolean };
 
 /** What an editor's binding gives back: Save, and the undo. */
@@ -726,6 +758,20 @@ export interface GraphEditor {
   save(): boolean;
   /** Stop drawing and asking, and shut the inspector. */
   stop(): void;
+}
+
+/** A workflow's editor: Save and stop, and the Custom Nodes it opens, discards and holds. */
+export interface WorkflowEditor extends GraphEditor {
+  /** Put the workflow and every definition back as they were last handed over. */
+  discard(): void;
+  /** Open a Custom Node's inside by its use's id, as ⛶ or Enter does. */
+  open(use: string): void;
+  /** Go back to a depth (0 is the workflow), as a breadcrumb or Escape does: one up when none is given. */
+  back(depth?: number): void;
+  /** The library as the draft holds it: its edited definitions too. */
+  library(): NodeLibrary;
+  /** The Custom Nodes opened now, outermost first: their use ids. */
+  path(): readonly string[];
 }
 
 /** Tell the app a definition to keep. */
@@ -932,6 +978,16 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
    *  reload, and the session's end forgets it — unless Save handed it over. */
   session?: SessionStore;
   kinds?: Readonly<Record<string, NodeKind>>;
+  /** The app's Custom Nodes (D13). The editor keeps its edits to them as a draft beside the workflow's. */
+  library?: NodeLibrary;
+  /** Save hands each edited or new definition to the app, to keep: its id and the definition. */
+  onSaveNode?: (id: string, definition: NodeDefinition) => void;
+  /** A `sherpa-breadcrumbs` that shows the trail of the Custom Nodes opened; hidden at the workflow. */
+  breadcrumbs?: HTMLElement;
+  /** A `sherpa-dialog` (status critical) that confirms the two bulk updates. Without it they are not offered. */
+  confirm?: HTMLElement & { confirm(ask: { heading?: string; words?: string; action?: string; critical?: boolean }): Promise<boolean> };
+  /** "Update all instances" was confirmed: the app's other workflows are its own to update. */
+  onUpdateAll?: (kind: string) => void;
 }
 
 /** A node's own name, line and place, as its inspector's first rows edit them. */
@@ -939,65 +995,126 @@ const OWN: Readonly<Record<string, keyof Pick<WorkflowNode, 'heading' | 'descrip
   '#heading': 'heading', '#description': 'description', '#x': 'x', '#y': 'y',
 };
 
+/** One Custom Node opened: its definition's id, the use that opened it, and its name. */
+interface Opened {
+  kind: string;
+  use: string;
+  label: string;
+}
+
+/** Whether a value is a library's edits: definitions by id. */
+const isEdits = (v: unknown): v is Record<string, NodeDefinition> => !!v && typeof v === 'object' && !Array.isArray(v);
+
 /** Keep a workflow's draft drawn on a canvas, and write each edit to it as a pure edit:
  *  a value, a move, a route, a node's own name. A route that would break the workflow is
  *  refused, and says why. A v1 — given, or a tab's draft — is read once as v2, and Save
- *  hands over the v2. N4 runs the draft. TRAP T-a-workflow-is-its-definition */
+ *  hands over the v2. N4 runs the draft. A Custom Node OPENS: the canvas shows its inside
+ *  under a trail, and an edit there is an edit to the DEFINITION, drafted beside the workflow
+ *  and handed over by the same Save (`onSaveNode`); a use whose definition moved on says so, and
+ *  an update keeps the draft's changes until Save or `discard`. TRAP T-a-workflow-is-its-definition
+ *  · TRAP T-a-custom-node-is-an-instance */
 export function bindWorkflow(
   canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition | WorkflowDefinitionV1,
-  { inspector, panel, session, kinds = NODE_KINDS, ...facts }: WorkflowEditorOptions = {},
-): GraphEditor {
+  { inspector, panel, session, kinds = NODE_KINDS, library, onSaveNode, breadcrumbs, confirm, onUpdateAll, ...facts }: WorkflowEditorOptions = {},
+): WorkflowEditor {
   const pointer = `/workflows/${workflow.id}`;
   const isDraft = (v: unknown): v is WorkflowDefinition | WorkflowDefinitionV1 => {
     const d = v as { v?: unknown; id?: unknown; nodes?: unknown } | null;
     return !!d && typeof d === 'object' && (d.v === 2 || d.v === 1) && d.id === workflow.id && Array.isArray(d.nodes);
   };
   session?.persist(pointer, { shared: false, guard: isDraft });
+  // The definitions this tab edited: kept beside the draft, over the app's library.
+  const editsAt = `/node-edits/${workflow.id}`;
+  session?.persist(editsAt, { shared: false, guard: isEdits });
+  const edited = session?.get(editsAt) as Record<string, NodeDefinition> | undefined ?? {};
+  const given = library ?? { v: 1, nodes: {} };
+  let lib: NodeLibrary = { ...given, nodes: { ...given.nodes, ...edited } };
+  let handed: NodeLibrary = given;
+  const dirty = new Set(Object.keys(edited));
+  const topKinds = (): Readonly<Record<string, NodeKind>> => ({ ...kinds, ...kindsOf(lib) });
   // This tab's draft wins: a reload loses nothing. What a v1's read cannot map is said once.
   const kept = session?.get(pointer) as WorkflowDefinition | WorkflowDefinitionV1 | undefined;
-  const read = readWorkflow(kept ?? structuredClone(workflow), kinds);
+  const read = readWorkflow(kept ?? structuredClone(workflow), topKinds());
   for (const fault of read.faults) report({ code: 'workflow-definition', message: `bindWorkflow: ${fault}.`, at: { workflow: workflow.id } });
   let draft: WorkflowDefinition = read.workflow ?? { v: 2, id: workflow.id, nodes: [] };
+  let original: WorkflowDefinition = readWorkflow(structuredClone(workflow), topKinds()).workflow ?? draft;
   let graph: DrawnGraph = { nodes: [], routes: [] };
+  // The Custom Nodes opened, outermost first. What is shown is the innermost one's body.
+  let path: Opened[] = [];
+  const innerNow = (): Inner | undefined => {
+    let at: WorkflowDefinition = draft;
+    let inner: Inner | undefined;
+    for (const step of path) {
+      const use = at.nodes.find((n) => n.id === step.use);
+      inner = use && innerOf(use, lib, topKinds());
+      if (!inner) return undefined;
+      at = inner.workflow;
+    }
+    return inner;
+  };
+  const shown = (): WorkflowDefinition => (path.length ? innerNow()?.workflow ?? draft : draft);
+  const K = (): Readonly<Record<string, NodeKind>> => (path.length ? innerNow()?.kinds ?? topKinds() : topKinds());
+  /** A preset's inside is read only (D15), at any depth. */
+  const readOnly = (): boolean => path.some((s) => lib.nodes[s.kind]?.preset);
+  const refreshPanel = (): void => { void panel?.populate(paletteOf(topKinds())); };
+  /** The library after a change to these definitions: drafted, and kept for the tab. */
+  const setLib = (next: NodeLibrary, ids: readonly string[]): void => {
+    lib = next;
+    for (const id of ids) dirty.add(id);
+    session?.set(editsAt, Object.fromEntries([...dirty].flatMap((id) => (lib.nodes[id] ? [[id, lib.nodes[id]]] : []))));
+    refreshPanel();
+  };
   const write = (next: WorkflowDefinition): void => {
-    draft = next;
-    session?.set(pointer, next);
+    if (!path.length) {
+      draft = next;
+      session?.set(pointer, next);
+    } else if (readOnly()) {
+      report({ code: 'node-readonly', message: 'bindWorkflow: this Custom Node is a preset, read only. Copy to my nodes, and change the copy.', at: { workflow: workflow.id } });
+    } else {
+      const id = path.at(-1)!.kind;
+      setLib(editDefinition(lib, id, { nodes: next.nodes.filter((n) => !n.id.startsWith('#')), routes: next.routes ?? [] }), [id]);
+    }
     draw();
   };
   const onEdit = ({ node, row, value }: GraphEdit): void => {
     const own = OWN[row.name];
-    if (!own) return write(editWorkflow(draft, { node: node.id, row: row.name, value }, kinds, facts));
+    if (!own) return write(editWorkflow(shown(), { node: node.id, row: row.name, value }, K(), facts));
     const said = own === 'x' || own === 'y' ? typedValue('number', String(value ?? '')) : String(value ?? '');
     if ((own === 'x' || own === 'y') && typeof said !== 'number') return;
-    write(editWorkflow(draft, { node: node.id, set: { [own]: said } }, kinds));
+    write(editWorkflow(shown(), { node: node.id, set: { [own]: said } }, K()));
   };
-  const onMove = (node: GraphNode, x: number, y: number): void => write(editWorkflow(draft, { node: node.id, set: { x, y } }, kinds));
+  const onMove = (node: GraphNode, x: number, y: number): void => {
+    if (node.id.startsWith('#')) return;
+    write(editWorkflow(shown(), { node: node.id, set: { x, y } }, K()));
+  };
   // A route that would break the workflow is refused, and says why; else the draft takes it.
   const take = (next: WorkflowDefinition): void => {
-    const was = new Set(workflowFaults(draft, kinds, facts));
-    const added = workflowFaults(next, kinds, facts).filter((f) => !was.has(f));
-    if (added.length) report({ code: 'workflow-route', message: `bindWorkflow: ${added.join('; ')}.`, at: { workflow: draft.id } });
+    const was = new Set(workflowFaultsDeep(shown(), lib, K(), facts));
+    const added = workflowFaultsDeep(next, lib, K(), facts).filter((f) => !was.has(f));
+    if (added.length) report({ code: 'workflow-route', message: `bindWorkflow: ${added.join('; ')}.`, at: { workflow: shown().id } });
     else write(next);
   };
-  const onConnect = (route: NodeRoute): void => take(editWorkflow(draft, { route }, kinds));
+  const onConnect = (route: NodeRoute): void => take(editWorkflow(shown(), { route }, K()));
   // A moved end is one edit: the route cut, then made, checked as one.
-  const onReroute = (was: NodeRoute, now: NodeRoute): void => take(editWorkflow(editWorkflow(draft, { cut: was }, kinds), { route: now }, kinds));
-  const onBreak = (route: NodeRoute): void => write(editWorkflow(draft, { cut: route }, kinds));
+  const onReroute = (was: NodeRoute, now: NodeRoute): void => take(editWorkflow(editWorkflow(shown(), { cut: was }, K()), { route: now }, K()));
+  const onBreak = (route: NodeRoute): void => write(editWorkflow(shown(), { cut: route }, K()));
   // A Value node for a picklist row: the row keeps its own pick, and mirrors the node.
-  const customAt = (to: string, at: { x: number; y: number }): void => take(addCustomValue(draft, to, at, kinds));
+  const customAt = (to: string, at: { x: number; y: number }): void => take(addCustomValue(shown(), to, at, K()));
   const onCustom = (to: string, at: { x: number; y: number }): void => customAt(to, { x: Math.round(at.x), y: Math.round(at.y) });
   // A node the reader asked for, from the panel or "Add a node": through the one door, `{ add }`; picked, so its inspector opens.
   const place = (kind: string, at: { x: number; y: number }, context?: AddContext): void => {
-    if (!kinds[kind]) return;
-    const free = (n: number): string => (draft.nodes.some((x) => x.id === `${kind}-${n}`) ? free(n + 1) : `${kind}-${n}`);
+    if (!K()[kind] || readOnly()) return;
+    const free = (n: number): string => (shown().nodes.some((x) => x.id === `${kind}-${n}`) ? free(n + 1) : `${kind}-${n}`);
     const id = free(1);
-    const fit = context && fitOf(kinds[kind]!, context.type, context.side);
+    const fit = context && fitOf(K()[kind]!, context.type, context.side);
     // A node let go by its output sits left of the point, so its output meets the line.
     const x = Math.round(at.x - (context?.side === 'in' ? 280 : 0));
-    write(editWorkflow(draft, { add: { id, kind, x, y: Math.round(at.y) } }, kinds));
+    const added = { id, kind, x, y: Math.round(at.y) };
+    // A use of a Custom Node records the definition it is placed from (D11).
+    write(editWorkflow(shown(), { add: K()[kind]!.model === 'graph' && lib.nodes[kind] ? useOf(lib, kind, added) : added }, K()));
     if (context && fit) {
       const own = fit.row ? `${id}/${fit.row}` : id;
-      take(editWorkflow(draft, { route: context.side === 'out' ? { from: context.socket, to: own } : { from: own, to: context.socket } }, kinds));
+      take(editWorkflow(shown(), { route: context.side === 'out' ? { from: context.socket, to: own } : { from: own, to: context.socket } }, K()));
     }
     const node = graph.nodes.find((n) => n.id === id);
     if (!node) return;
@@ -1019,53 +1136,303 @@ export function bindWorkflow(
     place(kind, planeAt(point.x, point.y));
   };
   panel?.addEventListener('node-add', onAdded);
-  void panel?.populate(paletteOf(kinds));
+  refreshPanel();
   const onRemove = (id: string): void => {
     picks.deselect();
-    write(editWorkflow(draft, { remove: id }, kinds));
+    write(editWorkflow(shown(), { remove: id }, K()));
   };
+
+  // — Custom Nodes: open, the trail, update, save as, ungroup —
+  const multi = new Set<string>();
+  const use = (id: string): WorkflowNode | undefined => {
+    const at = shown().nodes.find((n) => n.id === id);
+    return at && K()[at.kind]?.model === 'graph' && lib.nodes[at.kind] ? at : undefined;
+  };
+  const trail = (): void => {
+    if (!breadcrumbs) return;
+    breadcrumbs.toggleAttribute('hidden', !path.length);
+    (breadcrumbs as HTMLElement & { populate?(items: unknown): void }).populate?.([{ label: draft.label ?? 'Workflow' }, ...path.map((s) => ({ label: s.label }))]);
+  };
+  /** The canvas shows another graph: nothing is picked, and the view fits it. */
+  const enter = (focus: string | null): void => {
+    multi.clear();
+    markNode(canvas, null);
+    picks.deselect();
+    draw();
+    requestAnimationFrame(() => requestAnimationFrame(() => canvas.fit()));
+    if (focus) focusNode(canvas, focus);
+    else canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
+  };
+  const open = (id: string): void => {
+    const at = use(id);
+    if (!at) return;
+    path = [...path, { kind: at.kind, use: id, label: at.heading ?? lib.nodes[at.kind]!.label }];
+    enter(null);
+    // A preset says it is read only, and where its copy is: the panel opens beside it.
+    if (readOnly() && inspector) showScope();
+  };
+  const back = (depth = path.length - 1): void => {
+    if (depth < 0 || depth >= path.length) return;
+    const from = path[depth]!.use;
+    path = path.slice(0, depth);
+    enter(from);
+  };
+  breadcrumbs?.addEventListener('breadcrumb-select', (event) => back((event as CustomEvent<{ index: number }>).detail.index));
+  /** "Copy to my nodes": an editable copy of the preset opened, which takes the use that opened it. */
+  const copy = (): void => {
+    const step = path.at(-1);
+    if (!step) return;
+    const made = copyToMine(lib, step.kind);
+    if (!made.id) return;
+    setLib(made.library, [made.id]);
+    const parent = path.slice(0, -1);
+    path = parent;
+    const at = shown().nodes.find((n) => n.id === step.use);
+    if (at && !readOnly()) {
+      const { version: _v, was: _w, ...own } = at;
+      write({ ...shown(), nodes: shown().nodes.map((n) => (n.id === at.id ? { ...own, ...useOf(lib, made.id!, { id: at.id, x: at.x, y: at.y }) } : n)) });
+    }
+    path = [...parent, { kind: made.id, use: step.use, label: lib.nodes[made.id]!.label }];
+    enter(null);
+    inspector?.hide();
+  };
+  const scopeNote = (): HTMLElement[] => {
+    if (!path.length || !readOnly()) return [];
+    const note = document.createElement('sherpa-stack');
+    note.setAttribute('data-gap', 'md');
+    const words = document.createElement('p');
+    words.style.margin = '0';
+    words.textContent = 'This Custom Node is a preset: its inside is read only. Copy it to your nodes to change it.';
+    const button = document.createElement('sherpa-button');
+    button.setAttribute('data-label', 'Copy to my nodes');
+    button.setAttribute('data-size', 'sm');
+    button.setAttribute('data-look', 'saturated');
+    button.addEventListener('button-click', copy);
+    note.append(words, button);
+    return [note];
+  };
+  const showScope = (): void => {
+    if (!inspector) return;
+    const stack = document.createElement('sherpa-stack');
+    stack.append(...scopeNote());
+    inspector.replaceChildren(stack);
+    inspector.setAttribute('data-heading', path.at(-1)?.label ?? '');
+    inspector.setAttribute('data-icon', 'folder');
+    inspector.show();
+  };
+  const ask = async (heading: string, words: string): Promise<boolean> => !!confirm && await confirm.confirm({ heading, words, action: 'Update', critical: true });
+  const updateOne = (id: string): void => write(updateInstance(shown(), id, lib, K()));
+  const updateGraph = async (kind: string): Promise<void> => {
+    const name = lib.nodes[kind]?.label ?? kind;
+    if (await ask('Update all instances on graph?', `Every “${name}” on this graph takes its current definition. Their own values stay; a route to a socket it lost stays, and is reported.`)) write(updateAll(shown(), kind, lib, K()));
+  };
+  const updateEverywhere = async (kind: string): Promise<void> => {
+    const name = lib.nodes[kind]?.label ?? kind;
+    if (!await ask('Update all instances?', `Every “${name}” takes its current definition: on this graph, inside every other Custom Node, and on every workflow of the app. Their own values stay.`)) return;
+    let next = lib;
+    const ids: string[] = [];
+    for (const [id, definition] of Object.entries(lib.nodes)) {
+      if (definition.preset || !definition.nodes.some((n) => n.kind === kind)) continue;
+      const body = updateAll({ v: 2, id, nodes: definition.nodes, routes: definition.routes ?? [] }, kind, lib, topKinds());
+      next = editDefinition(next, id, { nodes: body.nodes, routes: body.routes ?? [] });
+      ids.push(id);
+    }
+    if (ids.length) setLib(next, ids);
+    draft = updateAll(draft, kind, lib, topKinds());
+    session?.set(pointer, draft);
+    onUpdateAll?.(kind);
+    draw();
+  };
+  /** What a Custom Node's inspector adds above its rows. */
+  const extraFor = (node: GraphNode): HTMLElement[] => {
+    const at = use(node.id);
+    const diff = at && definitionDiff(at, lib);
+    return [
+      ...scopeNote(),
+      ...(at && diff?.stale && !readOnly() ? [updatePane(diff, {
+        onUpdate: () => updateOne(at.id),
+        ...(confirm ? { onGraph: () => void updateGraph(at.kind), onAll: () => void updateEverywhere(at.kind) } : {}),
+      })] : []),
+      ...(at ? [instancePane({ onOpen: () => open(at.id), onUngroup: () => ungroup(at.id) })] : []),
+    ];
+  };
+  const ungroup = (id: string): void => {
+    if (readOnly()) return;
+    const done = ungroupUse(shown(), id, lib, K());
+    if ('fault' in done) return report({ code: 'node-group', message: `bindWorkflow: ${done.fault}.`, at: { workflow: shown().id } });
+    picks.deselect();
+    write(done.workflow);
+  };
+  /** "Save as Custom Node": the picked nodes, one definition and one use; a fault in words, or none. */
+  const group = (label: string, category: string): string | undefined => {
+    if (readOnly()) return 'this Custom Node is a preset, read only';
+    const made = groupNodes(shown(), [...multi], lib, { label, category }, K(), facts);
+    if ('fault' in made) {
+      report({ code: 'node-group', message: `bindWorkflow: ${made.fault}.`, at: { workflow: shown().id } });
+      return made.fault;
+    }
+    setLib(made.library, [made.id]);
+    multi.clear();
+    write(made.workflow);
+    const node = graph.nodes.find((n) => n.id === made.use);
+    if (node) {
+      markNode(canvas, node.id);
+      picks.select(node, graph);
+    }
+    return undefined;
+  };
+  const showMulti = (): void => {
+    if (!inspector) return;
+    markNodes(canvas, multi);
+    inspector.replaceChildren(groupPane(multi.size, { onSave: group }));
+    inspector.setAttribute('data-heading', `${multi.size} nodes picked`);
+    inspector.setAttribute('data-icon', 'folder');
+    inspector.show();
+  };
+  let current: string | null = null;
+  /** Add a node to the picked, or take it off (Shift-click, Space); with one left, it is simply picked. */
+  const toggle = (id: string): void => {
+    // The panel shut: what it held is no longer picked.
+    if (inspector && !inspector.open) {
+      multi.clear();
+      current = null;
+    }
+    if (!multi.size && current && current !== id) multi.add(current);
+    if (multi.has(id)) multi.delete(id);
+    else multi.add(id);
+    const [only] = [...multi];
+    const node = multi.size === 1 ? graph.nodes.find((n) => n.id === only) : undefined;
+    if (node) {
+      multi.clear();
+      markNode(canvas, node.id);
+      current = node.id;
+      picks.select(node, graph);
+    } else if (multi.size) showMulti();
+    else picks.deselect();
+  };
+  const idOf = (event: Event): { id: string; header: boolean; field: boolean } | undefined => {
+    const hits = event.composedPath();
+    const el = hits.find((n): n is HTMLElement => n instanceof HTMLElement && n.localName === 'sherpa-node');
+    const id = el ? drawnOn.get(canvas)?.nodes && [...drawnOn.get(canvas)!.nodes].find(([, e]) => e === el)?.[0] : undefined;
+    const first = hits[0];
+    return id ? {
+      id, header: hits.some((n) => n instanceof Element && n.classList.contains('header')),
+      field: first instanceof Element && first.matches('input, select, textarea, [contenteditable], button, a'),
+    } : undefined;
+  };
+  const onKey = (event: KeyboardEvent): void => {
+    const hit = idOf(event);
+    const first = event.composedPath()[0];
+    if (first instanceof Element && first.matches('input, select, textarea, [contenteditable]')) return;
+    if (event.key === 'Escape') {
+      if (multi.size) {
+        multi.clear();
+        markNode(canvas, null);
+        picks.deselect();
+      } else if (path.length) back();
+      else return;
+    } else if (hit?.header && event.key === ' ') toggle(hit.id);
+    else if (hit?.header && event.key === 'Enter' && use(hit.id)) open(hit.id);
+    else return;
+    event.preventDefault();
+    event.stopPropagation();
+  };
+  const onClick = (event: MouseEvent): void => {
+    const hit = idOf(event);
+    if (!hit || hit.field || !event.shiftKey) return;
+    event.preventDefault();
+    event.stopPropagation();
+    toggle(hit.id);
+  };
+  const onDouble = (event: MouseEvent): void => {
+    const hit = idOf(event);
+    if (hit?.header && !hit.field && use(hit.id)) open(hit.id);
+  };
+  canvas.addEventListener('keydown', onKey, { capture: true });
+  canvas.addEventListener('click', onClick, { capture: true });
+  canvas.addEventListener('dblclick', onDouble);
+
   // The inspector leads with the node's own name, line and place.
   const withOwn = (node: GraphNode): GraphNode => {
-    const at = draft.nodes.find((n) => n.id === node.id);
+    if (node.id.startsWith('#')) return node;
+    const at = shown().nodes.find((n) => n.id === node.id);
+    const editable = !readOnly();
     const own: GraphRow[] = [
-      { name: '#heading', label: 'Name', control: 'text', value: node.heading, editable: true },
-      { name: '#description', label: 'Description', control: 'text', value: node.description ?? '', editable: true },
-      { name: '#x', label: 'X', control: 'number', value: at?.x, editable: true },
-      { name: '#y', label: 'Y', control: 'number', value: at?.y, editable: true },
+      { name: '#heading', label: 'Name', control: 'text', value: node.heading, editable },
+      { name: '#description', label: 'Description', control: 'text', value: node.description ?? '', editable },
+      { name: '#x', label: 'X', control: 'number', value: at?.x, editable },
+      { name: '#y', label: 'Y', control: 'number', value: at?.y, editable },
     ];
     return { ...node, rows: [...own, ...node.rows] };
   };
-  const picks = pickedIn(canvas, inspector, (node, now) => inspectNode(inspector!, withOwn(node), now, {
-    onEdit, onCut: onBreak,
-    // With no pointer: beside the node it feeds, one column left, on the row's own line.
-    onCustom: (row) => {
-      const at = draft.nodes.find((n) => n.id === node.id);
-      customAt(`${node.id}/${row.name}`, { x: (at?.x ?? 0) - 360, y: (at?.y ?? 0) + 72 + node.rows.indexOf(row) * 64 });
-    },
-    onRemove: () => onRemove(node.id),
-  }));
-  const draw = (): void => {
-    graph = workflowGraph(draft, facts, kinds);
-    drawGraph(canvas, graph, {
-      onEdit, onMove, onConnect, onReroute, onBreak, onCustom, onDeselect: picks.deselect, onSelect: (node) => picks.select(node, graph),
-      ...(panel ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
+  const picks = pickedIn(canvas, inspector, (node, now) => {
+    current = node.id;
+    inspectNode(inspector!, withOwn(node), now, {
+      onEdit, extra: extraFor(node), ...(readOnly() ? {} : { onCut: onBreak }),
+      // With no pointer: beside the node it feeds, one column left, on the row's own line.
+      onCustom: (row) => {
+        const at = shown().nodes.find((n) => n.id === node.id);
+        customAt(`${node.id}/${row.name}`, { x: (at?.x ?? 0) - 360, y: (at?.y ?? 0) + 72 + node.rows.indexOf(row) * 64 });
+      },
+      ...(readOnly() || node.id.startsWith('#') ? {} : { onRemove: () => onRemove(node.id) }),
     });
-    picks.follow(graph);
-  };
+  }, () => { multi.clear(); current = null; });
+  function draw(): void {
+    if (path.length && !innerNow()) path = [];
+    const ro = readOnly();
+    const body = workflowGraph(shown(), facts, K());
+    graph = ro ? { ...body, nodes: body.nodes.map((n) => ({ ...n, rows: n.rows.map((r) => ({ ...r, editable: false })) })) } : body;
+    drawGraph(canvas, graph, {
+      onEdit, onMove, onConnect, onReroute, onBreak, onCustom, onDeselect: picks.deselect,
+      onSelect: (node) => {
+        multi.clear();
+        picks.select(node, graph);
+      },
+      notes: new Map(staleUses(shown(), lib).map((id) => [id, 'Update available'])),
+      locked: (node) => ro || node.id.startsWith('#'),
+      ...(panel && !ro ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
+    });
+    trail();
+    if (multi.size > 1) showMulti();
+    else picks.follow(graph);
+  }
   draw();
   // A run lights its nodes: each step names its node, and the run its workflow. N4 reports.
   const unwatch = watchSteps(canvas, { claims: (span) => span.detail?.['graph'] === workflow.id });
   return {
     save(): boolean {
-      if (!checkWorkflow(draft, kinds, facts)) return false;
+      if (!checkWorkflow(draft, topKinds(), facts)) return false;
+      if (dirty.size && !checkNodeLibrary(lib, kinds, facts)) return false;
       handOver(canvas, draft);
-      // The definition holds it now: the draft goes.
+      for (const id of dirty) if (lib.nodes[id]) onSaveNode?.(id, structuredClone(lib.nodes[id]!));
+      // The definitions hold them now: the drafts go.
+      dirty.clear();
+      handed = lib;
+      original = draft;
+      session?.set(editsAt, undefined);
       session?.set(pointer, undefined);
       return true;
     },
+    discard(): void {
+      draft = original;
+      lib = handed;
+      dirty.clear();
+      path = [];
+      session?.set(editsAt, undefined);
+      session?.set(pointer, undefined);
+      refreshPanel();
+      enter(null);
+    },
+    open,
+    back,
+    library: () => lib,
+    path: () => path.map((s) => s.use),
     stop(): void {
       unwatch();
       panel?.removeEventListener('node-add', onAdded);
+      canvas.removeEventListener('keydown', onKey, { capture: true });
+      canvas.removeEventListener('click', onClick, { capture: true });
+      canvas.removeEventListener('dblclick', onDouble);
       picks.stop();
     },
   };
