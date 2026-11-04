@@ -825,12 +825,12 @@ export class DataSource extends EventTarget {
     };
   }
 
-  /** A field the STORE answers: its answer as the keys it matched — asked once per
-   *  answer, so its toggle and a Switch stay client updates. Until they come, its
-   *  clause as it reads. 345 phase 6 · TRAP T-a-server-field-is-asked-once-per-answer */
+  /** A field the STORE answers, over a set held HERE: its answer as the keys it matched, asked once per answer,
+   *  so its toggle and a Switch stay client updates; until they come, its clause as it reads. A store read straight
+   *  answers the clause in its load: no keys (TODO 707). 345 phase 6 · TRAP T-a-server-field-is-asked-once-per-answer */
   #fetched = (field: string, reading: FieldReading): Filter | undefined => {
     const key = this.store.key;
-    if (this.#catalogue.get(field)?.fetch !== 'server' || !key) return undefined;
+    if (this.#catalogue.get(field)?.fetch !== 'server' || !key || !this.#reads.held) return undefined;
     const { suspended: _off, ...on } = answerOf(reading);
     // Every value ticked asks nothing: it is no filter. TODO 489
     if (!readingClause({ field, ...this.#catalogue.facts(field) }, on)) return undefined;

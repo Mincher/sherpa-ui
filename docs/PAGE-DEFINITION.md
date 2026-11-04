@@ -110,7 +110,8 @@ library `app.v1`, `views.v1` and `workflow.v1` use too.
   Left out, a date's menus pick days — in the View scope too (TODO 397).
 - **A field's `fetch: "server"`** says its filter is ASKED of the store, never
   worked out from the rows held: each Apply asks once for the keys it matches,
-  and its toggle stays a client update. A filtering component's
+  and its toggle stays a client update. A store read straight, with no set
+  held, answers it in its loads, and is asked for no keys (TODO 707). A filtering component's
   `data-fetch-fields`, or a grid column's `fetch`, can turn it on too (345).
 - **A FETCHING list opens on its first value** — a list the View holds, or any
   on a remote source — so a page never asks for every row as it opens; a View,

@@ -2,7 +2,8 @@
  * A SERVER FIELD IS ASKED ONCE PER ANSWER — 345 phase 6. A field marked
  * `fetch: 'server'` is answered by the store: its Apply asks once for the keys
  * it matches, and the source filters what it holds by them. Off and on again
- * ask nothing; a new answer asks again.
+ * ask nothing; a new answer asks again. Only a set held HERE needs the keys: a
+ * store read straight answers the clause in its load (TODO 707).
  * TRAP T-a-server-field-is-asked-once-per-answer
  *
  *   node --test test/unit/a-server-field-is-asked-once.test.mjs
@@ -65,4 +66,36 @@ test('a bound grid hears the server FIELD filters, not the key its answer matche
   await source.load();
   assert.deepEqual(source.rows.map((r) => r.id), [6, 7, 8, 9, 10]);
   assert.equal(attrs['data-filter-fields'], 'plan');
+});
+
+test('read straight, a server field asks for no keys: one load per Apply, the same rows, and a new row shows (TODO 707)', async () => {
+  const pages = {
+    'a local store': (inner) => ({ store: inner }),
+    'a remote store it holds none of': (inner) => ({ store: fakeRemote(inner, { delay: 0 }), holdRows: 0 }),
+  };
+  for (const [name, made] of Object.entries(pages)) {
+    const inner = new ArrayStore(ROWS, { key: 'id' });
+    const asked = [];
+    const load = inner.load.bind(inner);
+    inner.load = (o) => { asked.push(o ?? {}); return load(o); };
+    const options = made(inner);
+    const source = new DataSource(options);
+    source.declareField('seats', { type: 'number', fetch: 'server' });
+    await source.load();
+    source.query.ask({ scope: 'data', hold: ['seats'] });
+    await settle();
+    let loads = 0;
+    source.addEventListener('loading', (e) => { if (e.detail.loading) loads++; });
+    asked.length = 0;
+    source.query.ask([{ scope: 'data', field: 'seats', reading: { mode: 'advanced', tree: { op: 'gt', value: '70' } } }, { field: 'seats', commit: true }]);
+    await settle();
+    assert.deepEqual(source.rows.map((r) => r.id), [8, 9, 10], `${name}: the rows`);
+    assert.deepEqual(asked.map((o) => o.filter), [['seats', 'gt', 70]], `${name}: one read, its own clause — no keys asked`);
+    assert.equal(loads, 1, `${name}: one load`);
+    // No keys kept: a row its answer matches shows when it lands.
+    await options.store.insert({ id: 11, seats: 110 });
+    await settle();
+    await source.load();
+    assert.deepEqual(source.rows.map((r) => r.id), [8, 9, 10, 11], `${name}: a new row shows`);
+  }
 });

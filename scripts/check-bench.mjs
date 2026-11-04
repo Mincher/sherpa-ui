@@ -199,14 +199,15 @@ function control(tag, id, holds = []) {
 }
 
 /** The page, opened and bound as the provider binds it. A tiered page's Customer has Sites:
- *  six, from the row's id, so the other pages' rows stay as they are. */
+ *  six, from the row's id, so the other pages' rows stay as they are; the store answers
+ *  it, as Demos' Records says, and a store read straight is asked for no keys. TODO 707 */
 async function open(L, { page: path = PAGE, remote, announcesAll, holdRows, tiered, fetch, plain }) {
   const whole = JSON.parse(readFileSync(path, 'utf8'));
   const def = whole.source;
   if (holdRows != null) def.holdRows = holdRows;
   // A field the store answers, as its page definition says. 345 phase 6
   for (const f of fetch ?? []) def.fields[f] = { ...def.fields[f], fetch: 'server' };
-  if (tiered) Object.assign(def.fields, { customer: { ...def.fields.customer, child: 'site' }, site: { label: 'Site' } });
+  if (tiered) Object.assign(def.fields, { customer: { ...def.fields.customer, child: 'site', fetch: 'server' }, site: { label: 'Site' } });
   const rows = tiered ? ROWS.map((r) => ({ ...r, site: `Site ${1 + (r.id % 6)}` })) : ROWS.map((r) => ({ ...r }));
   const store = counted(new L.ArrayStore(rows, { key: 'id', time: 'created' }));
   // While on, a change is MISSED: another client's write. 345 phase 9

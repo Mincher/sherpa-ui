@@ -3303,6 +3303,15 @@ keys]`, which the held set runs like any other. The answer is the cache key:
 off and on again reuse it, a new answer asks again. Until the keys come, the
 clause as it reads. Its menus have Apply, so a tick is not a request.
 
+**Only a set held HERE asks** — the source's own HeldStore, which runs every
+clause on the client. A source that reads its store straight (a local store, a
+remote one it holds none of, one that holds its set elsewhere) asks for no keys:
+its load sends the clause to the very store the keys would come from, so they
+are the same rows. Asked anyway, each Apply compiled twice and loaded twice —
+the clause, then `email in [...]` — and a row added under the answer never
+showed, the keys being kept (TODO 707). Held, the two compiles are the design:
+the held set answers at once, the server's keys after.
+
 It is turned ON from three places, and none can turn it off: the page
 definition, a filtering component's `data-fetch-fields`, and a grid column's
 `fetch` — the provider tells the source. A store that projects is asked for

@@ -341,6 +341,8 @@ component's `data-fetch-fields`, or a grid column's `fetch` — is answered by
 the store, not by the rows held: each Apply asks `load({ filter })` once for
 the keys its answer matches, and the source filters what it holds by them.
 Off and on again ask nothing; a new answer asks again. Its menus have Apply.
+A source that holds no set of its own — a local store, or one it reads
+straight — asks for no keys: its loads are the store's answer already.
 
 ### A fetching list never asks for every row
 
