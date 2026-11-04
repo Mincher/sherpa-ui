@@ -586,6 +586,25 @@ test('a chart card\'s title follows what the reader set: Primary by Secondary, g
   });
 });
 
+test('a chart that splits by two fields titles itself "Primary by Secondary" on load (Will, TODO 711)', async ({ page }) => {
+  const heading = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-container data-scope="by-plan">
+        <sherpa-data-viz-header slot="header" data-heading="By plan" data-presentation="default"></sherpa-data-viz-header>
+        <sherpa-barchart data-segment-field="day" data-stack-field="plan"></sherpa-barchart>
+      </sherpa-container>\`;
+    const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }) });
+    source.declareValues('plan', PLANS);
+    source.declareValues('day', ['Mon', 'Tue', 'Wed']);
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    return provider.querySelector('sherpa-data-viz-header').dataset.heading;
+  })()`);
+  expect(heading).toBe('day by plan');
+});
+
 test('the app may turn Show as off: no card offers it, and a kept pick is set aside, not lost (Will, TODO 582)', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}

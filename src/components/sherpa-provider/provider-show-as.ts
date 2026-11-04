@@ -124,7 +124,8 @@ export class ProviderShowAs {
 
   /** A chart card's title follows what the reader set: "Primary by Secondary,
    *  grouped by Group", each part only where it is set. Set nothing, its page's
-   *  own. Will, TODO 567 */
+   *  own — unless the chart itself splits by two fields, which is all the title
+   *  there is. Will, TODOs 567, 711 */
   retitle(el: Element, slot: string, source: DataSource): void {
     const shown = source.query.presented(slot, 'chart');
     const own = source.query.presented(slot, 'chart', false);
@@ -132,6 +133,7 @@ export class ProviderShowAs {
     const name = (field: string | null | undefined): string => (field ? source.fieldFacts(field).label ?? field : '');
     const stacks = declared(el).asks?.stacks;
     const secondary = shown.secondary ?? el.getAttribute('data-stack-field');
+    const named = !!stacks && !!secondary;
     const by = stacks && secondary ? ` ${this.#host.word('by')} ${name(secondary)}` : '';
     const grouped = shown.group ? `, ${this.#host.word('grouped-by')} ${name(shown.group)}` : '';
     const title = `${name(shown.primary ?? el.getAttribute('data-segment-field'))}${by}${grouped}`;
@@ -143,7 +145,7 @@ export class ProviderShowAs {
       const was = this.#titled.get(host);
       // A heading its page changed since is its page's own now.
       const page = was?.wrote === now ? was.page : now;
-      const next = set ? title : page;
+      const next = set || named ? title : page;
       this.#titled.set(host, { page, wrote: next });
       if (next !== now) host.setAttribute('data-heading', next);
     }
