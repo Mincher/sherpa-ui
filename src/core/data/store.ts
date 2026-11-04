@@ -15,7 +15,7 @@
  * - OP_TAKES — WHAT a reader gives an operator: a value they PICK, or one they TYPE.
  * - DEFAULT_OP — The condition a filter menu opens on.
  * - Duration — A span of time from today, for `last` and `next`.
- * - durationSpan — The days a `last` or `next` clause spans, from today, as ISO days.
+ * - durationSpan — The days a `last` or `next` clause spans, today among them, as ISO days.
  * - END_OF_DAY — The end of a day, so a value with a time still falls inside it.
  * - absoluteDates — A filter with every `last` and `next` turned into the `between` it means today.
  * - FilterClause — [field, op, value] — one condition
@@ -164,19 +164,19 @@ export interface Duration {
   unit: 'day' | 'week' | 'month' | 'year';
 }
 
-/** The days a `last` or `next` clause spans, from today, as ISO days — in UTC,
- *  as a date reads (`T-a-date-reads-one-way`). TRAP T-a-relative-date-stays-relative */
+/** The days a `last` or `next` clause spans, as ISO days: N units, today one of them, so the far
+ *  end is a day nearer (TODO 716). In UTC, as a date reads. TRAP T-a-relative-date-stays-relative */
 export function durationSpan(op: 'last' | 'next', { n, unit }: Duration, today = new Date()): [string, string] {
   const day = (d: Date): string => d.toISOString().slice(0, 10);
-  const from = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+  const from = new Date(day(today));
   const to = new Date(from);
   const step = op === 'last' ? -n : n;
   if (unit === 'month' || unit === 'year') {
-    // A year is twelve months, from the same day (TODO 688) — or its month's last, as Temporal clamps. TODO 694
+    // A year is twelve months (TODO 688); a 31st clamps to its month's last, as Temporal does. TODO 694
     const month = from.getUTCMonth() + step * (unit === 'year' ? 12 : 1);
     const last = new Date(Date.UTC(from.getUTCFullYear(), month + 1, 0)).getUTCDate();
-    to.setUTCFullYear(from.getUTCFullYear(), month, Math.min(from.getUTCDate(), last));
-  } else to.setUTCDate(to.getUTCDate() + step * (unit === 'week' ? 7 : 1));
+    to.setUTCFullYear(from.getUTCFullYear(), month, Math.min(from.getUTCDate(), last) - Math.sign(step));
+  } else to.setUTCDate(to.getUTCDate() + step * (unit === 'week' ? 7 : 1) - Math.sign(step));
   return op === 'last' ? [day(to), day(from)] : [day(from), day(to)];
 }
 

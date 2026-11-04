@@ -96,7 +96,8 @@ The operators, in full:
 **A server never gets `last` or `next`.** They stay relative in a saved View,
 so "the last 7 days" does not freeze on the day it was saved; a `RestStore`
 sends each as the `between` it means today, in whole UTC days
-(`absoluteDates`). `T-a-relative-date-stays-relative`
+(`absoluteDates`). N units, today one of them: the last 7 days are today and
+the six before it. `T-a-relative-date-stays-relative`
 
 They are DevExtreme's names, deliberately: a vocabulary a backend author has
 probably met beats one Sherpa invented.

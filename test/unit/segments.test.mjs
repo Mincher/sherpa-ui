@@ -42,7 +42,8 @@ test('a segment says its time span', () => {
 });
 
 const { segmentStarts, rangeOf } = await import(new URL('../../dist/core/data/segments.js', import.meta.url));
-const { summarise } = await import(new URL('../../dist/core/data/aggregate.js', import.meta.url));
+const { durationSpan } = await import(new URL('../../dist/core/data/store.js', import.meta.url));
+const { summarise, segmented } = await import(new URL('../../dist/core/data/aggregate.js', import.meta.url));
 
 test('a series by week is counted from its range start, padded, and each point says its span', () => {
   const rows = [
@@ -80,19 +81,44 @@ test('segment counts: the number of units, rounded up (Will, TODO 540)', () => {
 test('last N counts today once: last 7 days is 7 days, last 6 months is 6', () => {
   const today = new Date('2026-11-04T10:00:00Z');
   assert.deepEqual(rangeOf({ last: 7, unit: 'day' }, today), ['2026-10-29', '2026-11-04']);
+  // The axis is the filter's own span: the two keep the same days. TODO 716
+  assert.deepEqual(rangeOf({ next: 14, unit: 'day' }, today), durationSpan('next', { n: 14, unit: 'day' }, today));
   const [from, to] = rangeOf({ last: 6, unit: 'month' }, today);
   assert.equal(segmentStarts(from, to, segmentUnit(from, to)).length, 6);
   const [f12, t12] = rangeOf({ last: 12, unit: 'month' }, today);
   assert.equal(segmentStarts(f12, t12, segmentUnit(f12, t12)).length, 12);
 });
 
+test('the filter and the axis keep the same days, in every unit, last and next (Will, A, TODO 716)', async () => {
+  const { absoluteDates, filterRows } = await import(new URL('../../dist/core/data/store.js', import.meta.url));
+  const today = new Date('2026-11-04T10:00:00Z');
+  const days = Array.from({ length: 1600 }, (_, i) => ({ at: new Date(Date.parse('2026-11-04T12:00:00Z') + (i - 800) * 86_400_000).toISOString().slice(0, 10) }));
+  // Will's rule: the units picked, until they pass one of the next unit up.
+  const CASES = [[7, 'day', 7], [14, 'day', 14], [2, 'week', 14], [3, 'week', 3], [6, 'month', 6], [12, 'month', 12],
+    [13, 'month', 5], [24, 'month', 2], [1, 'year', 12], [2, 'year', 2]];
+  for (const op of ['last', 'next']) {
+    for (const [n, unit, segments] of CASES) {
+      const kept = filterRows(days, absoluteDates(['at', op, { n, unit }], today)).map((r) => r.at).sort();
+      const [from, to] = rangeOf({ [op]: n, unit }, today);
+      assert.deepEqual([kept[0], kept.at(-1)], [from, to], `${op} ${n} ${unit}`);
+      assert.equal(segmentStarts(from, to, segmentUnit(from, to)).length, segments, `${op} ${n} ${unit}`);
+    }
+  }
+  // 14 days kept, one a point: the first holds its own day alone.
+  const kept = filterRows(days, absoluteDates(['at', 'last', { n: 14, unit: 'day' }], today));
+  const out = summarise(kept, segmented({ shape: 'aggregate', over: 'at', bucket: 'auto' }, { last: 14, unit: 'day' }, kept));
+  assert.deepEqual([kept.length, out.values.length, out.values[0], out.value], [14, 14, 1, 14]);
+});
+
 test('last 14 days is one segment a day, for the range\'s days only — not every day the field holds (TODO 705)', () => {
   // The field holds days far outside the range: no point of the axis.
-  const domain = (f) => (f === 'at' ? ['2026-01-02', '2026-10-21', '2026-10-25', '2026-11-04'] : []);
-  const rows = [{ at: '2026-10-21' }, { at: '2026-10-25' }, { at: '2026-10-25' }, { at: '2026-11-04' }];
-  const out = summarise(rows, { shape: 'aggregate', over: 'at', bucket: 'day', range: ['2026-10-22', '2026-11-04'] }, domain);
+  const domain = (f) => (f === 'at' ? ['2026-01-02', '2026-10-22', '2026-10-25', '2026-11-04'] : []);
+  const rows = [{ at: '2026-10-22' }, { at: '2026-10-25' }, { at: '2026-10-25' }, { at: '2026-11-04' }];
+  const range = rangeOf({ last: 14, unit: 'day' }, new Date('2026-11-04T10:00:00Z'));
+  assert.deepEqual(range, ['2026-10-22', '2026-11-04']);
+  const out = summarise(rows, { shape: 'aggregate', over: 'at', bucket: 'day', range }, domain);
   assert.equal(out.values.length, 14);
-  // 21 Oct, the far end `last 14 days` keeps and does not count, joins the first.
+  // The first point is its own day: the filter keeps 14 days, not 15. TODO 716
   assert.deepEqual([out.values[0], out.values[3], out.values.at(-1)], [1, 2, 1]);
   assert.equal(out.values.reduce((a, b) => a + b), out.value);
   assert.match(out.labels[0], /Thu/);
@@ -109,8 +135,6 @@ test('a single day is 12 two-hour segments, and a date with no time is at its mi
   assert.match(out.labels[4], /08:00.10:00/);
 });
 
-const { segmented } = await import(new URL('../../dist/core/data/aggregate.js', import.meta.url));
-
 test('a fixed bucket, or none, over a date condition follows its range too (Will, A1, TODO 705)', () => {
   const half = { between: ['2026-05-05', '2026-11-04'] };
   const rows = [{ at: '2026-05-05' }, { at: '2026-07-31' }, { at: '2026-11-04' }];
@@ -124,7 +148,7 @@ test('a fixed bucket, or none, over a date condition follows its range too (Will
   // No bucket: the field's own values, those in the range.
   const none = summarise(rows, segmented({ shape: 'series', over: 'at' }, half, rows), domain);
   assert.deepEqual(none.labels, ['2026-05-05', '2026-07-31', '2026-11-04']);
-  // A row the filter keeps outside the range (the far end of last N) is still a point.
+  // A row outside the range is still a point: a value its rows hold.
   const far = [...rows, { at: '2026-05-04' }];
   assert.equal(summarise(far, segmented({ shape: 'series', over: 'at' }, half, far), domain).labels[0], '2026-05-04');
 });

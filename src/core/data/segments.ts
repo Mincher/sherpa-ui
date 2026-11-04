@@ -88,11 +88,8 @@ export function rangeOf(condition: WhereCondition | undefined, today = new Date(
   const { between, last, next, eq, unit = 'day' } = condition;
   if (Array.isArray(between) && between.length === 2) return [day(between[0]), day(between[1])];
   for (const [op, n] of [['last', last], ['next', next]] as const) {
-    if (n == null) continue;
-    // `last 7 days` is 7 days with today in them, not 8: the far end is not counted.
-    const [a, b] = durationSpan(op, { n: Number(n), unit }, today);
-    const edge = (d: string, by: number): string => new Date(Date.parse(`${d}T00:00:00Z`) + by * DAY).toISOString().slice(0, 10);
-    return op === 'last' ? [a < b ? edge(a, 1) : a, b] : [a, a < b ? edge(b, -1) : b];
+    // The filter's own days: the axis and the rows it keeps agree. TODO 716
+    if (n != null) return durationSpan(op, { n: Number(n), unit }, today);
   }
   return eq != null ? [day(eq), day(eq)] : undefined;
 }

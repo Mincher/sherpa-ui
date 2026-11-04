@@ -20,37 +20,43 @@ const TODAY = new Date(Date.UTC(2026, 9, 13, 15, 0));
 const ago = (days) => new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
 const advanced = (tree) => ({ tree, mode: 'advanced' });
 
-test('a span from today is whole days, in UTC', () => {
-  assert.deepEqual(durationSpan('last', { n: 7, unit: 'day' }, TODAY), ['2026-10-06', '2026-10-13']);
-  assert.deepEqual(durationSpan('next', { n: 2, unit: 'week' }, TODAY), ['2026-10-13', '2026-10-27']);
-  assert.deepEqual(durationSpan('last', { n: 1, unit: 'month' }, TODAY), ['2026-09-13', '2026-10-13']);
-  // A year is twelve months from the same day. Will, TODO 688
-  assert.deepEqual(durationSpan('last', { n: 1, unit: 'year' }, TODAY), ['2025-10-13', '2026-10-13']);
-  assert.deepEqual(durationSpan('next', { n: 2, unit: 'year' }, TODAY), ['2026-10-13', '2028-10-13']);
+test('a span from today is whole days, in UTC: N units, today among them (TODO 716)', () => {
+  assert.deepEqual(durationSpan('last', { n: 7, unit: 'day' }, TODAY), ['2026-10-07', '2026-10-13']);
+  assert.deepEqual(durationSpan('next', { n: 2, unit: 'week' }, TODAY), ['2026-10-13', '2026-10-26']);
+  assert.deepEqual(durationSpan('last', { n: 1, unit: 'month' }, TODAY), ['2026-09-14', '2026-10-13']);
+  // A year is twelve months. Will, TODO 688
+  assert.deepEqual(durationSpan('last', { n: 1, unit: 'year' }, TODAY), ['2025-10-14', '2026-10-13']);
+  assert.deepEqual(durationSpan('next', { n: 2, unit: 'year' }, TODAY), ['2026-10-13', '2028-10-12']);
+  // None is today alone.
+  assert.deepEqual(durationSpan('last', { n: 0, unit: 'day' }, TODAY), ['2026-10-13', '2026-10-13']);
 });
 
 test('a month or a year from a day its month does not have lands on that month\'s last day (TODO 694)', () => {
   const on = (iso) => new Date(`${iso}T12:00:00Z`);
-  // As Temporal clamps: 31 March less a month is 28 February, never 3 March.
-  assert.deepEqual(durationSpan('last', { n: 1, unit: 'month' }, on('2027-03-31')), ['2027-02-28', '2027-03-31']);
-  assert.deepEqual(durationSpan('next', { n: 1, unit: 'month' }, on('2027-01-31')), ['2027-01-31', '2027-02-28']);
-  assert.deepEqual(durationSpan('next', { n: 1, unit: 'month' }, on('2028-01-31')), ['2028-01-31', '2028-02-29']);
-  assert.deepEqual(durationSpan('last', { n: 1, unit: 'year' }, on('2028-02-29')), ['2027-02-28', '2028-02-29']);
-  assert.deepEqual(durationSpan('next', { n: 4, unit: 'year' }, on('2028-02-29')), ['2028-02-29', '2032-02-29']);
+  // As Temporal clamps: 31 March less a month is 28 February, never 3 March — so the month is 1 to 31 March.
+  assert.deepEqual(durationSpan('last', { n: 1, unit: 'month' }, on('2027-03-31')), ['2027-03-01', '2027-03-31']);
+  // 31 January and a month is 28 February: the month runs to the day before.
+  assert.deepEqual(durationSpan('next', { n: 1, unit: 'month' }, on('2027-01-31')), ['2027-01-31', '2027-02-27']);
+  assert.deepEqual(durationSpan('next', { n: 1, unit: 'month' }, on('2028-01-31')), ['2028-01-31', '2028-02-28']);
+  assert.deepEqual(durationSpan('last', { n: 1, unit: 'year' }, on('2028-02-29')), ['2027-03-01', '2028-02-29']);
+  assert.deepEqual(durationSpan('next', { n: 4, unit: 'year' }, on('2028-02-29')), ['2028-02-29', '2032-02-28']);
   // Across a year's end, and a day every month has.
-  assert.deepEqual(durationSpan('last', { n: 2, unit: 'month' }, on('2027-01-31')), ['2026-11-30', '2027-01-31']);
-  assert.deepEqual(durationSpan('next', { n: 13, unit: 'month' }, on('2026-12-15')), ['2026-12-15', '2028-01-15']);
-  assert.deepEqual(durationSpan('last', { n: 1, unit: 'month' }, on('2027-05-31')), ['2027-04-30', '2027-05-31']);
+  assert.deepEqual(durationSpan('last', { n: 2, unit: 'month' }, on('2027-01-31')), ['2026-12-01', '2027-01-31']);
+  assert.deepEqual(durationSpan('next', { n: 13, unit: 'month' }, on('2026-12-15')), ['2026-12-15', '2028-01-14']);
+  assert.deepEqual(durationSpan('last', { n: 1, unit: 'month' }, on('2027-05-31')), ['2027-05-01', '2027-05-31']);
 });
 
 test('a relative clause is the between it means today, for a store that cannot work one out', () => {
   const filter = ['and', ['created', 'last', { n: 7, unit: 'day' }], ['plan', 'eq', 'Pro']];
   assert.deepEqual(absoluteDates(filter, TODAY),
-    ['and', ['created', 'between', ['2026-10-06', '2026-10-13T23:59:59.999']], ['plan', 'eq', 'Pro']]);
+    ['and', ['created', 'between', ['2026-10-07', '2026-10-13T23:59:59.999']], ['plan', 'eq', 'Pro']]);
   // Matched here, it is worked out at once — a time on its last day still counts.
   assert.equal(matchesFilter({ created: ago(3) }, ['created', 'last', { n: 7, unit: 'day' }]), true);
   assert.equal(matchesFilter({ created: `${ago(0)}T10:00` }, ['created', 'last', { n: 7, unit: 'day' }]), true);
   assert.equal(matchesFilter({ created: ago(10) }, ['created', 'last', { n: 7, unit: 'day' }]), false);
+  // Seven days, today among them: the sixth day back is in, the seventh is not. TODO 716
+  assert.equal(matchesFilter({ created: ago(6) }, ['created', 'last', { n: 7, unit: 'day' }]), true);
+  assert.equal(matchesFilter({ created: ago(7) }, ['created', 'last', { n: 7, unit: 'day' }]), false);
 });
 
 test('each date leaf is the clause it says; one with no count says nothing', () => {

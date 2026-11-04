@@ -38,7 +38,8 @@ test('a store sends the dates of the clock it is given', async () => {
   try {
     await new RestStore({ url: 'https://example.test/rows' }).load({ filter: LAST_WEEK, now: JUNE });
   } finally { globalThis.fetch = real; }
-  assert.match(asked[0], /2026-06-08/);
+  // Seven days, today among them: from the 9th, not the 8th. TODO 716
+  assert.match(asked[0], /2026-06-09/);
   assert.match(asked[0], /2026-06-15/);
 });
 

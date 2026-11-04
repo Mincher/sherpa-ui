@@ -612,6 +612,13 @@ once per pass over the rows, never per row (TODO 291) — in whole UTC days as a
 reads, with the last day's end so a value with a time still falls inside.
 A `RestStore` sends the `between`, so a server never meets `last` or `next`.
 
+**N units, today among them** (Will, A, TODO 716). `last 7 days` is today and
+the six before it; `last 1 month` from 4 Nov is 5 Oct to 4 Nov; `next 2 weeks`
+ends the day before the same weekday two weeks on. It kept N+1 days once — the
+far end counted as well as today — while the time axis drew N segments, so the
+first point held two days. A chart's range is `durationSpan`'s own (`rangeOf`),
+so the filter and the axis cannot part again.
+
 A field that holds TIMES (`time: true`) takes a day alone as all of it:
 On is that day's span, After is after its end — and a MINUTE as all of that
 minute, and the end of Between as the end of its last day or minute (TODO
@@ -7137,9 +7144,8 @@ rows with no condition.
 The unit is drawn once per unit in the range, until that passes one of the next
 unit up: 12 months is 12 segments, 13 is 5 quarters, 20 is 7, and 24 is 2
 years. A week or more left over makes one more, partial, segment; less joins the
-last. `rangeOf` counts today once, so "last 7 days" is 7 days and not 8. The
-filter still keeps the far end, the 8th day: its rows join the first segment, so
-the series adds up to the tile. A day is a segment like any other, so "last 14
+last. "Last 7 days" is 7 days and not 8, the filter's and the axis's alike:
+`rangeOf` is `durationSpan` (TODO 716). A day is a segment like any other, so "last 14
 days" is the range's 14 days, never every day the field holds (TODO 705). A day
 alone is 12 of two hours, and a date with no time is at its midnight: cut as
 text, it was keyed `2026-11-0400` and matched no segment.
