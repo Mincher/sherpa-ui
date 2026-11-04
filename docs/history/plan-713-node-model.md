@@ -339,6 +339,18 @@ flowchart LR
   M6 --> N4
 ```
 
+**M1 ✅ (`8b30a9f4`, 2026-11-04).** In node-kinds.ts: `SocketType` (value · object · boolean
+· any; it replaced `SocketCarries`), `accepts(from, to)` (each type joins its own; `any` takes
+all; no output sends `any`), `RowKind.multiple` (a list, its sockets objects — D17),
+`RowKind.many`/`NodeKind.many` (D4), `NodeKind.branches` (True on the header, False at
+`node/#false`, `FALSE_SOCKET`), `socketType()`, `takesMany()`, `truthy()` (D2: none, false, 0,
+NaN, blank text and an empty list, set or record are False; the text "false" is true) and
+`rowChoices(row, facts)` for every picklist. `workflowFaults` refuses a type that does not
+join, an output that sends `any`, a second route into a one-route socket, routes of two types
+into one, and a list where none is taken. No shipped kind takes `branches`, `many`, `multiple`,
+`boolean` or `any` yet: M2 and M3 draw and route them. The header's input is the data input
+(D1), so a Rows row only SENDS the rows on (M3).
+
 **What waits on N4:** everything that RUNS — live values in the rows, Matches as a
 number, each branch lit with the data rows that took it, When that gates a run,
 cancel, a dry run, batch writes (§6). M1–M6 only draw, check and edit.
