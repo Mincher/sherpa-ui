@@ -411,6 +411,19 @@ the checker called directly; Demos is sound (5 Contexts, 5 Settings pages), a fa
 gives 14 problems. `check:mcp-pack`: 14 tools. The Starter's `AGENTS.md` still says
 `validate_page` checks app.json: it is `validate_app` (the Starter's own fix).
 
+**G4 ✅ (`fca0f53e`).** Sherpa's three patterns in `patterns/` (packed): `records-list`
+(rank 20 — metrics, a toolbar with Add, the data bar, a grid with Edit/Delete, a pager, a
+form dialog and a delete confirm), `settings-form` (sections, a footer only for Save) and
+`filter-scopes` (a View bar over the data bar, a donut per status field); each passes
+`checkPattern`. `pick_pattern` ranks the patterns that fit, with each `when` part and
+whether it held; `generate_page` gives template, definition, first View and the `app.json`
+entry, refused on any `validate_page` problem; `sherpa://patterns`, `sherpa://pattern/{id}`;
+the `build_page` prompt is `skills/build-page/SKILL.md` (Q8). An app's own patterns are
+`patterns/*.json` beside its `app.json`; one with Sherpa's id replaces it. `describe_data`
+fills `statusFields` and `childFields`. 10 stdio tests, a planted fault per check;
+`check:mcp-pack`: 16 tools, 356 resources. A slot check knows what a component IS from its
+tag's last word, a `name` prop, its category and 6 exceptions (TODO 728 asks Will).
+
 | # | Question | A (my pick) | B |
 |---|---|---|---|
 | Q1 | Where the new MCP lives | `mcp-server/`, rewritten in place; package `sherpa-ui-mcp` (the Starter's `.mcp.json` names it); gated in this repo | A sibling project, like the Starter |
