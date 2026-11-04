@@ -1514,7 +1514,7 @@ calendar's projected stepper, TODO 344).
 ### T-row-one-is-data-op
 
 **A filter menu's FIRST condition row is `data-op` and `data-value`.**
-`#syncConditions` rebuilds row one from those two on every sync — any
+`ConditionEditor.sync` rebuilds row one from those two on every sync — any
 attribute the menu observes — which is how a re-stamp keeps what was typed.
 
 So rows set from outside, with the two left behind, lasted only until anything
