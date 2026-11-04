@@ -496,24 +496,27 @@ sherpa-accordion.scope::part(actions) {
   gap: var(--sherpa-display-mode-space-2xs, 4px);
   align-items: flex-end;
 }
-:host([data-orientation="portrait"]) .chips > :not(.chip[data-preset]) { flex: 1 0 100%; }
-:host([data-orientation="portrait"]) .chips > :not(.chip[data-preset], :first-child) {
+:host([data-orientation="portrait"]) .chips > * { flex: 1 0 100%; }
+.preset-zone { display: none; }
+:host([data-orientation="portrait"]) .preset-zone:not(:empty) { display: flex; flex-flow: row wrap; align-items: center; gap: var(--sherpa-display-mode-space-2xs, 4px); }
+:host([data-orientation="portrait"]) .chips > :not(.preset-zone, :nth-child(1 of :not(.preset-zone:empty))) {
   margin-block-start: calc(var(--sherpa-display-mode-space-base, 16px) - var(--sherpa-display-mode-space-2xs, 4px));
 }
-:host([data-orientation="portrait"]) .chips > .chip[data-preset] { flex: 0 0 auto; }
+:host([data-orientation="portrait"]) .preset-zone > .chip { flex: 0 0 auto; }
 /* Headings in a column: the run sits in the VALUE column, every line of it, and
    its heading beside the first. The rest reach back across the label column. */
 :host([data-orientation="portrait"][data-label-column]) .chips {
   padding-inline-start: calc(var(--sherpa-quick-filter-label-size, 96px) + var(--sherpa-display-mode-space-xs, 8px));
 }
-:host([data-orientation="portrait"][data-label-column]) .chips > :not(.chip[data-preset]) {
+:host([data-orientation="portrait"][data-label-column]) .chips > * {
   flex-basis: calc(100% + var(--sherpa-quick-filter-label-size, 96px) + var(--sherpa-display-mode-space-xs, 8px));
   margin-inline-start: calc(-1 * (var(--sherpa-quick-filter-label-size, 96px) + var(--sherpa-display-mode-space-xs, 8px)));
 }
-:host([data-orientation="portrait"][data-label-column]) .chips > .chip[data-preset][data-section-start] { position: relative; }
-:host([data-orientation="portrait"][data-label-column]:not([data-no-sections])) .chips > .chip[data-preset][data-section-start]::before {
+:host([data-orientation="portrait"][data-label-column]) .preset-zone:not(:empty) { position: relative; padding-inline-start: calc(var(--sherpa-quick-filter-label-size, 96px) + var(--sherpa-display-mode-space-xs, 8px)); }
+:host([data-orientation="portrait"][data-label-column]:not([data-no-sections])) .preset-zone::before {
   position: absolute;
-  inset-inline-start: calc(-1 * (var(--sherpa-quick-filter-label-size, 96px) + var(--sherpa-display-mode-space-xs, 8px)));
+  inset-block-start: 0;
+  inset-inline-start: 0;
   inline-size: var(--sherpa-quick-filter-label-size, 96px);
 }
 /* A SECTION's name over the first chip of its run — a named section's, or a
@@ -528,6 +531,7 @@ sherpa-accordion.scope::part(actions) {
 }
 :host([data-orientation="portrait"]:state(has-organise)) .organise-zone { flex-wrap: wrap; }
 :host([data-orientation="portrait"]:not([data-no-sections])) .chips > .chip[data-section-start]::before,
+:host([data-orientation="portrait"]:not([data-no-sections])) .preset-zone::before,
 :host([data-orientation="portrait"]:state(has-organise):not([data-no-sections])) .organise-zone::before {
   color: var(--sherpa-style-content-secondary, #35353d);
   font-size: var(--sherpa-display-mode-fonts-scale-sm, 12px);
@@ -536,6 +540,7 @@ sherpa-accordion.scope::part(actions) {
   text-transform: uppercase;
 }
 :host([data-orientation="portrait"]:not([data-no-sections])) .chips > .chip[data-section-start]::before { content: attr(data-section-start); }
+:host([data-orientation="portrait"]:not([data-no-sections])) .preset-zone::before { content: attr(data-section); flex-basis: 100%; }
 :host([data-orientation="portrait"]:state(has-organise):not([data-no-sections])) .organise-zone::before {
   content: attr(data-section);
   flex-basis: 100%;
@@ -547,6 +552,7 @@ sherpa-accordion.scope::part(actions) {
   column-gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 :host([data-orientation="portrait"][data-label-column]:not([data-no-sections])) .chips > .chip[data-section-start]::before,
+:host([data-orientation="portrait"][data-label-column]:not([data-no-sections])) .preset-zone::before,
 :host([data-orientation="portrait"][data-label-column]:state(has-organise):not([data-no-sections])) .organise-zone::before {
   flex: 0 0 var(--sherpa-quick-filter-label-size, 96px);
   min-inline-size: 0;
@@ -637,7 +643,7 @@ sherpa-accordion.scope::part(actions) {
 .sections:has(.local-scopes:empty) :is(.scope-rule, .local-heading) { display: none; }
 
 /* A panel's filter section wears the shared hover fill, as a grid row does. Will, TODO 531 */
-.chips > .chip[data-layout="section"]:hover, :host([data-orientation="portrait"]:state(has-organise)) .organise-zone:hover { background: var(--_bar-hover); }
+.chips > .chip[data-layout="section"]:hover, :host([data-orientation="portrait"]:state(has-organise)) .organise-zone:hover, .preset-zone:hover { background: var(--_bar-hover); }
 
 /* SOLO, where the app allows it: the row that applies, in a chip's menu and a
    section's ⋮. Will, TODO 690 */

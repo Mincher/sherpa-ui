@@ -300,7 +300,14 @@
                 {
                   "el": "div",
                   "class": "chips",
-                  "part": "chips"
+                  "part": "chips",
+                  "children": [
+                    {
+                      "el": "div",
+                      "class": "preset-zone",
+                      "part": "presets"
+                    }
+                  ]
                 }
               ]
             }
@@ -392,7 +399,14 @@
             {
               "el": "div",
               "class": "chips",
-              "part": "chips"
+              "part": "chips",
+              "children": [
+                {
+                  "el": "div",
+                  "class": "preset-zone",
+                  "part": "presets"
+                }
+              ]
             }
           ]
         }

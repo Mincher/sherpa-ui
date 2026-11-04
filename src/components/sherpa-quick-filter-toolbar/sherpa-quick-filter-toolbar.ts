@@ -53,7 +53,7 @@ import type { SherpaSwitch } from '../sherpa-switch/sherpa-switch.js';
 const ORDER_BY = 'value';
 
 /** A filter chip, in the run or in a set. TRAP T-a-filter-set-groups-or-chains */
-const CHIP = '.chips > .chip';
+const CHIP = ':is(.chips, .preset-zone) > .chip';
 
 /** The columns the leading Group / Sort chips offer. */
 export interface OrganiseDef {
@@ -553,11 +553,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #markSections(): void {
     const portrait = this.dataset['orientation'] === 'portrait';
     let run = '';
+    // The presets are ONE section, each chip a value in it. Will, TODOs 493, 722
+    const zone = this.$('.preset-zone');
+    zone?.setAttribute('data-section', this.word('presets'));
     for (const chip of this.#chips()) {
       const def = this.#defOf(chip);
-      const own = chip.hasAttribute('data-layout') || chip.hasAttribute('data-selector') ? '' : def?.label ?? '';
-      // The presets are ONE section, each chip a value in it. Will, TODO 493
-      const section = def?.preset ? this.word('presets') : def?.section;
+      const own = chip.hasAttribute('data-layout') || chip.hasAttribute('data-selector') || (zone && def?.preset) ? '' : def?.label ?? '';
+      const section = def?.preset ? (zone ? undefined : this.word('presets')) : def?.section;
       const name = section ?? own;
       const key = section ? `section:${section}` : `chip:${chip.dataset['id']}`;
       if (portrait && name && key !== run) chip.setAttribute('data-section-start', name);
@@ -1252,7 +1254,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        a changed def names the pick. Will, TODO 599 */
     const was = new Map(this.#chips().filter((c) => !reset || c.hasAttribute('data-selector')).map((c) => [c.dataset['id'] ?? '', c] as const));
     const moved = new Set<string>();
-    list.replaceChildren();
+    // A portrait bar's presets are a section of their own: a box in the run. Will, TODO 722
+    const presets = list.querySelector('.preset-zone');
+    list.replaceChildren(...presets ? [presets] : []);
+    presets?.replaceChildren();
     // A chip that stays shows what it was drawn; a new one has been drawn nothing.
     this.#filter.forget(undefined, new Set([...was.keys()].map((id) => this.#fieldOf(id))));
     /* The allow-list applies to the chips already ON the bar, not only to what
@@ -1262,7 +1267,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const key = this.#chipKey(f);
       const old = was.get(f.id);
       if (old && this.#built.get(old) === key) {
-        list.appendChild(old);
+        (f.preset && presets || list).appendChild(old);
         this.#nameSection(old);
         // A preset's on is its source's: drawn each time. TODO 493
         if (f.preset) old.toggleAttribute('data-current', !!f.active);
@@ -1311,7 +1316,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         chip.setAttribute('disabled', '');
         chip.setAttribute('data-unused', '');
       } else if (kind !== 'boolean' || advancedOf(f)) this.#addMenu(chip, f, prior?.picked);
-      list.appendChild(chip);
+      (f.preset && presets || list).appendChild(chip);
       if (kind === 'date') {
         chip.setAttribute('data-full-value', '');
         /* The chip says its own days. TRAP T-a-chip-says-its-own-answer — not
