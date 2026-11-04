@@ -175,6 +175,9 @@ export const { store: customerStore, ready: customersReady } = localRecords({
   `keepCache(store, { name: 'customers:' + tenant })`: a reload shows them at
   once, offline too, and checks them behind. Call `clearKept()` at sign-out.
   `T-a-kept-set-is-checked-each-session`
+- **Ask the device to keep that data** with `keepData()`, when your app chooses —
+  after a sign-in, say. Sherpa never asks on its own: Firefox shows the reader a
+  prompt. `T-one-browser-database`
 
 ## 5. A page definition
 

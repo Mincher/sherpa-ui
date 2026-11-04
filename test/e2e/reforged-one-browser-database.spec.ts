@@ -112,7 +112,7 @@ test('every part keeps its data in ONE database, with one fixed schema', async (
   expect(r.counts).toEqual({ notices: 1, outbox: 1, rows: 2, seeds: 1, sets: 1, views: 1 });
 });
 
-test('the page asks the device, once, to keep what Sherpa keeps', async ({ page }) => {
+test('Sherpa never asks the device to keep its data; the app does, with keepData (Will, H3: B)', async ({ page }) => {
   await page.addInitScript(() => {
     const said = { persisted: 0, persist: 0 };
     (globalThis as { __asked?: typeof said }).__asked = said;
@@ -121,12 +121,15 @@ test('the page asks the device, once, to keep what Sherpa keeps', async ({ page 
     StorageManager.prototype.persist = () => { said.persist += 1; return Promise.resolve(true); };
   });
   await page.reload();
-  const asked = await page.evaluate(async () => {
-    const { IdbStore, localRecords } = await import('/dist/index.js');
+  const r = await page.evaluate(async () => {
+    const { IdbStore, keepData, localRecords } = await import('/dist/index.js');
     await new IdbStore({ name: 'one', key: 'id' }).insert({ id: 1 });
-    await new IdbStore({ name: 'two', key: 'id' }).insert({ id: 1 });
     await localRecords({ name: 'three', key: 'id', seed: [{ id: 1 }] }).ready;
-    return (globalThis as { __asked?: unknown }).__asked;
+    const opened = { ...(globalThis as { __asked?: object }).__asked };
+    const kept = await keepData();
+    return { opened, kept, asked: (globalThis as { __asked?: unknown }).__asked };
   });
-  expect(asked).toEqual({ persisted: 1, persist: 1 });
+  expect(r.opened).toEqual({ persisted: 0, persist: 0 });
+  expect(r.kept).toBe(true);
+  expect(r.asked).toEqual({ persisted: 1, persist: 1 });
 });

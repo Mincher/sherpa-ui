@@ -30,8 +30,8 @@ too (Host C, `nodeHandler`): ONE protocol, three hosts (`T-a-node-host-is-the-sa
 (`src/core/browser/database.ts`, plan 695 H3), which the page and the worker open
 alike: one fixed schema, made in one upgrade — an `IdbStore`'s rows and seed mark,
 the kept sets, the outbox, the kept notices and the saved Views' durable tier. The
-page asks `navigator.storage.persist()` the first time it opens it
-(`T-one-browser-database`). Web Storage holds what must be read at once: each
+app asks `navigator.storage.persist()` through `keepData()` when it chooses;
+Sherpa never asks on its own (`T-one-browser-database`). Web Storage holds what must be read at once: each
 page's `PageState` (its tab's parts in session storage; its named `views` and
 `filters` in local storage, the only parts that cross tabs) and the session.
 

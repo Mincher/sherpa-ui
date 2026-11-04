@@ -240,8 +240,8 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   fixed (two stores share the database); bug 3 fixed (the seed mark lives in `seeds`, one
   transaction with the rows, so a worker re-seeds). `cache-keep`, `outbox-keep`,
   `notice-keep` and `view-sync` use it; `clearOutboxes` gone; sign-out clears sets, outbox
-  and notices in one transaction. `persist()` once per page, at the first open (❓ Will:
-  A this, or B an app call). Lane pick taken: old databases are not migrated (D4: no
+  and notices in one transaction. `persist()` once per page, at the first open — **then Will, 2026-11-04: B**,
+  so Sherpa never asks on its own and the app calls `keepData()` when it chooses. Lane pick taken: old databases are not migrated (D4: no
   stored-data shims) — left on the device, unread: writes still waiting in
   `sherpa-outbox`, rows an app kept in `sherpa`/`sherpa-examples`, and Views kept only in
   IndexedDB; saved filters and current Views are in localStorage, untouched. Demos'

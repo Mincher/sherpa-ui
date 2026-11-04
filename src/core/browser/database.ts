@@ -14,6 +14,7 @@
  * - Records — Each object store, and the record it holds.
  * - hasDatabase — Whether this context has IndexedDB at all.
  * - openDatabase — The open database, shared by every part; REJECTS where there is none.
+ * - keepData — Ask the device to keep Sherpa's data; the app calls it, Sherpa never asks on its own.
  * - transact — One transaction over the named object stores; settles once it commits.
  * - readAll — Every record of an object store, or those a key range holds.
  * - readOne — One record, by its key.
@@ -145,7 +146,6 @@ export function openDatabase(): Promise<IDBDatabase> {
       };
       // The browser closed it (site data cleared): open again next time.
       db.onclose = () => { opening = null; };
-      askToKeep();
       resolve(db);
     };
     request.onerror = () => reject(request.error ?? new Error('Sherpa: the database could not be opened'));
@@ -156,16 +156,16 @@ export function openDatabase(): Promise<IDBDatabase> {
   return opening;
 }
 
-let asked = false;
-
-/** Ask the device, once, to keep what Sherpa keeps: only a page can (`persist()`
- *  is the window's), and its answer covers the worker's data too. */
-function askToKeep(): void {
-  if (asked) return;
-  asked = true;
+/** Ask the device to keep Sherpa's data; the app calls it, Sherpa never asks on its own
+ *  (Firefox asks the reader). Only a page can; it covers the worker's data. TRAP T-one-browser-database */
+export async function keepData(): Promise<boolean> {
   const storage = (globalThis as { navigator?: { storage?: Partial<StorageManager> } }).navigator?.storage;
-  if (typeof storage?.persist !== 'function' || typeof storage.persisted !== 'function') return;
-  void storage.persisted().then((kept) => kept || storage.persist!()).catch(() => undefined);
+  if (typeof storage?.persist !== 'function' || typeof storage.persisted !== 'function') return false;
+  try {
+    return (await storage.persisted()) || (await storage.persist());
+  } catch {
+    return false;
+  }
 }
 
 /** What a transaction's work hands back: a request whose result it settles with,

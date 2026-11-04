@@ -347,6 +347,7 @@ export { fakeRemote, type FakeRemoteOptions } from './core/data/fake-remote.js';
 export { StoreHistory, changedFields } from './core/data/store-history.js';
 export { failureOf, unreached, type Failure, type FailureKind } from './core/data/failure.js';
 export { keepCache, clearKept, type KeepOptions } from './core/browser/cache-keep.js';
+export { keepData } from './core/browser/database.js';
 export { keepOutbox } from './core/browser/outbox-keep.js';
 // One live feed for every tab. Plan 652 S8
 export { shareFeed } from './core/browser/share-feed.js';

@@ -535,11 +535,12 @@ Before, each part opened its own database (`sherpa`, `sherpa-cache`,
   which a worker cannot read. Now it lives in `seeds`, beside the rows
   (`T-local-records-seed-themselves`).
 
-**`navigator.storage.persist()` is asked once per page**, the first time the
-page opens the database: every part that keeps data passes through that one
-open. Only a page can ask (`persist()` is the window's); the grant is the
-origin's, so it covers what the worker keeps. A page already persisted is not
-asked again (`persisted()` first). Firefox asks the reader.
+**`navigator.storage.persist()` is the APP's to ask** (Will, 2026-11-04, 695
+H3: B): `keepData()` asks it when the app chooses — after a sign-in, or at a
+reader's pick — and Sherpa never asks on its own, because Firefox shows the
+reader a prompt. Only a page can ask (`persist()` is the window's); the grant is
+the origin's, so it covers what the worker keeps. A page already persisted is
+not asked again (`persisted()` first).
 
 **The old databases are not read, moved or deleted** (no stored-data shims,
 CODE-REVIEW-PLAN D4): what they held stays on the device, unread.

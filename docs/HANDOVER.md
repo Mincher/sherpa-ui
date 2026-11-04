@@ -45,8 +45,7 @@ ones in TODO 702).
 - **Waiting on Will:**
   - N4, `runWorkflow` (TODO 616): HELD by Will on 2026-10-30, "I want to plan it out".
     N1 and N2 left its seams.
-  - `persist()` (H3): A, at the first open of the database (Firefox prompts the reader);
-    or B, an app call. My pick B.
+  - `persist()` (H3): DECIDED B (Will, 2026-11-04) — the app calls `keepData()`.
   - Looks to check in the demo: the menu's nested groups (P3's picks) and a node lit by
     its step (N2's picks).
   - 170 itself: its plan is `docs/ARCHITECTURE.md` §8.
