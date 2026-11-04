@@ -18,6 +18,8 @@
  * - ScopePreset — One preset of a scope, as declared: its id, its name and the readings it writes.
  * - QueryGraphFacts — What drawing a Query needs that the Query does not say.
  * - editedCondition — A condition node's rows, edited, as the condition they say: the other half of drawing one.
+ * - statusTallies — Each status field's rows per value, over the whole store: how many each Condition of its chain took.
+ * - queryGraphFaults — What is wrong with a Query graph's chains, in words: a status value whose `when` is no condition, and a route…
  * - queryGraph — A page's Query as nodes and routes, laid out in columns by depth.
  * - graphRequest — The command a node's edit asks, as a chip's would; none for a row nothing takes.
  * - RouteAnswer — What a new route asks: a command, or why it is refused; null, nothing to do.
@@ -25,13 +27,13 @@
  */
 import { SAVED_PRESET, type PageDefinition } from './page-definition.js';
 import { PRESENTATION_KINDS, VIEW, arrangementOf, arranging, isSavedFilter, type Presentation, type Query, type QueryRequest } from './query.js';
-import { OP_LABELS, OPS_FOR_TYPE, groupOf, type Condition, type ConditionLeaf, type Duration, type FilterOp } from './store.js';
+import { OP_LABELS, OPS_FOR_TYPE, groupOf, type Condition, type ConditionLeaf, type Duration, type FilterOp, type Store } from './store.js';
 import { answerTree, typedTree, typedValue, type FieldReading, type FieldType } from './filter-state.js';
 import { readingsOf, treeReading } from './where.js';
 import { presetHeld } from './query-edits.js';
 import type { FieldDomain } from './validate.js';
 import {
-  NODE_KINDS, ROWS, conditionRows, kindNode, partName, partOf, rowChoices, socketOf,
+  FALSE_SOCKET, NODE_KINDS, ROWS, conditionRows, kindNode, partName, partOf, rowChoices, socketOf,
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeRoute, type PartKind,
 } from './node-kinds.js';
 import { traceStep, type Span, type TraceContext } from './trace.js';
@@ -42,9 +44,14 @@ import type { Walk } from './walk.js';
 export const QUERY_NODE = {
   store: 'store',
   source: 'source',
+  status: (field: string): string => `status-${field}`,
+  statusWhen: (field: string, value: string): string => `status-${field}.${value}`,
   scope: (scope: string): string => `scope-${scope}`,
   condition: (scope: string, field: string): string => `when-${scope}-${field}`,
   preset: (scope: string, preset: string): string => `preset-${scope}-${preset}`,
+  presetWhen: (scope: string, preset: string, field: string): string => `when-preset-${scope}-${preset}-${field}`,
+  saved: (id: string): string => `saved-${id}`,
+  savedWhen: (id: string, field: string): string => `when-saved-${id}-${field}`,
   arrange: (scope: string): string => `arrange-${scope}`,
   component: (id: string): string => `component-${id}`,
 } as const;
@@ -83,6 +90,8 @@ export function walkedNodes(scope: string, results: Readonly<Record<string, numb
 export interface LoadSteps {
   walk: Pick<Walk, 'results'> & Partial<Pick<Walk, 'ends'>>;
   total?: number;
+  /** Each status field's rows per value, over the whole store: `statusTallies`. */
+  statuses?: Readonly<Record<string, Readonly<Record<string, number>>>>;
 }
 
 /**
@@ -91,7 +100,12 @@ export interface LoadSteps {
  * and the scope it arranged. Off, or in a scope whose filters are off, a step is
  * skipped: it narrows nothing. TRAP T-a-step-names-its-node
  */
-export function traceQuerySteps(applied: Query, { walk, total }: LoadSteps, parent: TraceContext): void {
+export function traceQuerySteps(applied: Query, { walk, total, statuses }: LoadSteps, parent: TraceContext): void {
+  // A status field's step: each value's Condition lit with the rows that took it, the field with them all.
+  for (const [field, tally] of Object.entries(statuses ?? {})) {
+    traceStep(QUERY_NODE.status(field), { parent, state: 'done', rows: Object.values(tally).reduce((a, b) => a + b, 0) });
+    for (const [value, rows] of Object.entries(tally)) traceStep(QUERY_NODE.statusWhen(field, value), { parent, state: 'done', rows });
+  }
   for (const [scope, results] of Object.entries(walk.results)) {
     const q = applied.scopes[scope];
     const rows = walk.ends?.[scope];
@@ -169,20 +183,6 @@ const SUPERSEDED = 'The View holds this field: kept, not in force. It comes back
 const MANY = new Set(['in', 'notin']);
 const ONE = new Set(['eq', 'ne']);
 
-/** A condition in words — `Status is one of active, trial` — for a row that only shows it. */
-function said(tree: Condition, name?: (field: string) => string): string {
-  const parts = groupOf(tree);
-  if (parts) {
-    const each = parts[1].filter((p) => !p.off).map((p) => (groupOf(p) ? `(${said(p, name)})` : said(p, name)));
-    return each.join(parts[0] === 'and' ? ' and ' : ' or ');
-  }
-  const { field, op, value } = tree as ConditionLeaf;
-  const span = value as Duration;
-  const what = op === 'last' || op === 'next' ? `${span.n} ${span.unit}${span.n === 1 ? '' : 's'}`
-    : Array.isArray(value) ? value.join(', ') : String(value);
-  return [field && name ? name(field) : undefined, (OP_LABELS[op] ?? op).toLowerCase(), what].filter(Boolean).join(' ');
-}
-
 /** What one comparison reads as: its operator, the value its row shows, and whether the operator is a plain one. */
 function leafReading(leaf: ConditionLeaf): { op: FilterOp; raw: unknown; shown: unknown; plain: boolean } {
   const { op } = leaf;
@@ -204,19 +204,18 @@ const treeNodeId = (root: string, path: readonly number[]): string => (path.leng
 /** What drawing a tree's nodes needs: the field it reads, its type, the fields a reader may pick, and the field's values. */
 interface TreeFacts {
   field: string;
-  type: string | undefined;
+  type: (field: string) => string | undefined;
   fields: readonly { value: string; label: string }[];
-  values: readonly string[] | undefined;
+  values: (field: string) => readonly string[] | undefined;
   label: (field: string) => string;
 }
 
 /** One group of a condition tree as the rows of a Condition node: its Join from two parts on, then each
  *  part — a comparison's Field, Operator and Value, each editable as a chip's are; a value the field's own
  *  values can say is PICKED, not typed — or a Group row for a nested group. An off part says so. */
-function groupRows(tree: Condition, { field, type, fields, values }: TreeFacts): GraphRow[] {
+function groupRows(tree: Condition, { field, type: typeOf, fields, values: valuesOf }: TreeFacts): GraphRow[] {
   const [join, parts] = groupOf(tree) ?? ['and', [tree]];
   const kinds = parts.map((p): PartKind => (groupOf(p) ? 'group' : 'leaf'));
-  const picks = values?.length ? values.map((v) => ({ value: v, label: v })) : undefined;
   return conditionRows(NODE_KINDS['condition']!, kinds, { rows: false }).map(({ input, output: _out, many: _many, ...kindRow }): GraphRow => {
     // The Query types a Value, or ticks it where the field's values are known.
     const bare = kindRow.control === 'values' ? { ...kindRow, control: 'text' as const } : kindRow;
@@ -226,6 +225,9 @@ function groupRows(tree: Condition, { field, type, fields, values }: TreeFacts):
     const off = one.off ? { hint: 'Off: kept, not applied.' } : {};
     if (base === 'group') return { ...bare, input: input!, value: groupWords(one), ...off };
     const leaf = one as ConditionLeaf;
+    const type = typeOf(leaf.field ?? field);
+    const values = valuesOf(leaf.field ?? field);
+    const picks = values?.length ? values.map((v) => ({ value: v, label: v })) : undefined;
     const { op, raw, shown, plain } = leafReading(leaf);
     const row: GraphRow = { ...bare, ...off };
     if (!plain) return { ...row, value: base === 'field' ? leaf.field ?? field : base === 'op' ? op : shown ?? '' };
@@ -285,6 +287,48 @@ function rowsOf(kind: string, values: Readonly<Record<string, unknown>>): GraphR
   return NODE_KINDS[kind]!.rows.map((row) => ({ ...row, value: values[row.name] }));
 }
 
+/** Whether a status value's `when` is a condition: a group of conditions, or one comparison. */
+function isCondition(when: unknown): when is Condition {
+  if (!when || typeof when !== 'object') return false;
+  const t = when as Record<string, unknown>;
+  const parts = t['and'] ?? t['or'];
+  return parts !== undefined ? Array.isArray(parts) && parts.length > 0 && parts.every(isCondition) : typeof t['op'] === 'string' && 'value' in t;
+}
+
+/** Each status field's rows per value, over the whole store: how many each Condition of its chain took.
+ *  A value with no `when` has no Condition, so none is counted. */
+export async function statusTallies(
+  store: Pick<Store, 'totalCount'>, domains: Readonly<Record<string, FieldDomain>>,
+): Promise<Record<string, Record<string, number>>> {
+  const done: Record<string, Record<string, number>> = {};
+  for (const [field, domain] of Object.entries(domains)) {
+    const named = Object.keys(domain.when ?? {});
+    if (!named.length) continue;
+    done[field] = Object.fromEntries(await Promise.all(named.map(async (value) => [value, await store.totalCount({ filter: [field, 'eq', value] })] as const)));
+  }
+  return done;
+}
+
+/** What is wrong with a Query graph's chains, in words: a status value whose `when` is no condition, and a
+ *  route that ends where no node, row or False is — a False needs a node that forks. */
+export function queryGraphFaults(graph: DrawnGraph, domains: Readonly<Record<string, FieldDomain>> = {}): string[] {
+  const faults: string[] = [];
+  for (const [field, domain] of Object.entries(domains)) {
+    for (const [value, when] of Object.entries(domain.when ?? {})) {
+      if (!isCondition(when)) faults.push(`Status "${field}": the \`when\` of "${value}" is not a condition.`);
+    }
+  }
+  const node = (id: string): GraphNode | undefined => graph.nodes.find((n) => n.id === id);
+  for (const { from, to } of graph.routes) {
+    const [a, b] = [socketOf(from), socketOf(to)];
+    const [start, end] = [node(a.node), node(b.node)];
+    if (!start || !end) faults.push(`A route from "${from}" to "${to}" ends at a node that is not drawn.`);
+    else if (a.row === FALSE_SOCKET && !start.branches) faults.push(`"${start.heading}" has no False to route from "${from}".`);
+    else if (b.row !== undefined && !end.rows.some((r) => r.name === b.row)) faults.push(`A route into "${to}" ends at a row "${end.heading}" does not have.`);
+  }
+  return faults;
+}
+
 /** A page's Query as nodes and routes, laid out in columns by depth. */
 export function queryGraph(query: Query, definition: PageDefinition, facts: QueryGraphFacts = {}): DrawnGraph {
   const label = (field: string): string => facts.label?.(field) ?? definition.source?.fields?.[field]?.label ?? field;
@@ -300,20 +344,23 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   const scopeOf = (c: GraphComponent): string => c.scope ?? (c.id in query.scopes ? c.id : VIEW);
   const nodes: (Omit<GraphNode, 'x' | 'y'> & { column: number })[] = [];
   const routes: NodeRoute[] = [];
-  const add = (column: number, id: string, kind: string, rows: GraphRow[], own: Partial<GraphNode> = {}): string => {
+  const add = (column: number, id: string, kind: string, rows: GraphRow[], own: Partial<GraphNode> = {}, chained = false): string => {
     const made = kindNode(NODE_KINDS, kind, id, rows, own);
-    // The Query's Condition takes no rows in: its scope gives them.
-    if (kind === 'condition') { delete made.input; delete made.many; }
+    // The Query's Condition takes no rows in: its scope gives them. A status chain's takes a False.
+    if (kind === 'condition' && !chained) { delete made.input; delete made.many; }
     nodes.push({ ...made, column });
     return id;
   };
   // A field's whole tree: one Condition node a group, a nested group's True into its parent's Group row.
-  const treeNodes = (column: number, root: string, tree: Condition, ctx: TreeFacts, own: Partial<GraphNode>, ref: Record<string, string>, apply: (row: GraphRow) => GraphRow = (r) => r): string => {
+  const treeNodes = (
+    column: number, root: string, tree: Condition, ctx: TreeFacts, own: Partial<GraphNode>, ref: Record<string, string>,
+    apply: (row: GraphRow) => GraphRow = (r) => r, { back = 0.25, chained = false }: { back?: number; chained?: boolean } = {},
+  ): string => {
     const whole = JSON.stringify(tree);
     const walk = (group: Condition, path: readonly number[]): string => {
       const id = treeNodeId(root, path);
       const nested = path.length ? { heading: `${ctx.label(ctx.field)}: group ${path.join('.')}`, description: groupWords(group) } : own;
-      add(column - path.length * 0.25, id, 'condition', groupRows(group, ctx).map(apply), { ...nested, ref: { ...ref, path: path.join('.'), tree: whole } });
+      add(column - path.length * back, id, 'condition', groupRows(group, ctx).map(apply), { ...nested, ref: { ...ref, path: path.join('.'), tree: whole } }, chained);
       (groupOf(group)?.[1] ?? []).forEach((part, i) => {
         if (groupOf(part)) routes.push({ from: walk(part, [...path, i + 1]), to: `${id}/${partName('group', i + 1)}` });
       });
@@ -330,12 +377,35 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   add(0, QUERY_NODE.store, 'store', rowsOf('store', { store: source?.store }).map((row) => (row.name === ROWS.name ? row
     : owned(row, rowChoices({ ...row, value: source?.store }, { stores: facts.stores ?? [] })))), { heading: source?.store ?? 'Store' });
   const statuses = Object.entries(facts.domains ?? {}).filter(([, d]) => d.when || d.statuses);
+  const everyField = known.map((f) => ({ value: f, label: label(f) }));
+  const readOnly = (hint: string) => (row: GraphRow): GraphRow => ({ ...row, editable: false, hint });
+  const ctxOf = (field: string, fields: TreeFacts['fields']): TreeFacts => ({ field, type: typeOf, fields, values: (f) => facts.values?.(f), label });
   for (const [field, domain] of statuses) {
-    const rows = (domain.values ?? []).map(String).map((value): GraphRow => {
-      const when = domain.when?.[value];
-      return { name: value, label: value, value: when ? said(when, label) : 'every row the values before it left', hint: FROM_STORE };
+    const node = QUERY_NODE.status(field);
+    const values = (domain.values ?? []).map(String);
+    const whens = values.map((v) => domain.when?.[v]);
+    const rows = values.map((value, i): GraphRow => ({
+      name: value, label: value, input: 'boolean', value: domain.statuses?.[value] ?? '',
+      hint: whens[i] === undefined ? 'Every row the values before it left. ' + FROM_STORE : !isCondition(whens[i]) ? `Its \`when\` is not a condition. ${FROM_STORE}` : FROM_STORE,
+    }));
+    routes.push({ from: sent(QUERY_NODE.store), to: add(1, node, 'status', [...rowsOf('status', {}), ...rows], { heading: label(field), ref: { field } }) });
+    // Each value's `when` is a Condition; False hands the rows it left to the next value's.
+    let before: string | null = null;
+    let at = 0;
+    values.forEach((value, i) => {
+      const when = whens[i];
+      if (!isCondition(when)) {
+        if (before && when === undefined) routes.push({ from: `${before}/${FALSE_SOCKET}`, to: `${node}/${value}` });
+        before = null;
+        return;
+      }
+      const id = treeNodes(0.5 + at++ * 0.01, QUERY_NODE.statusWhen(field, value), when, ctxOf(field, everyField), {
+        heading: value, description: groupWords(when),
+      }, { status: field, value }, readOnly(FROM_STORE), { back: 0.001, chained: true });
+      routes.push({ from: id, to: `${node}/${value}` });
+      if (before) routes.push({ from: `${before}/${FALSE_SOCKET}`, to: id });
+      before = id;
     });
-    routes.push({ from: sent(QUERY_NODE.store), to: add(1, `status-${field}`, 'status', [...rowsOf('status', {}), ...rows], { heading: label(field), ref: { field } }) });
   }
   // Its page size changes live; the rest is the definition's, until Save.
   add(2, QUERY_NODE.source, 'source', rowsOf('source', {
@@ -387,18 +457,24 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     for (const p of presets) {
       const saved = p.id.startsWith(SAVED_PRESET);
       if (saved) onBars.add(p.id.slice(SAVED_PRESET.length));
-      const writes = Object.entries(p.readings).flatMap(([f, reading]): GraphRow[] => {
+      const wrote = Object.entries(p.readings).flatMap(([f, reading]) => {
         const tree = answerTree(reading, typed(f));
-        return tree ? [{ name: f, label: label(f), value: said(tree), hint: saved ? SAVED_WORDS : FROM_DEFINITION }] : [];
+        return tree ? [[f, tree] as const] : [];
       });
       const on = presetHeld(query, id, p.id, p.readings);
       const from = add(into, QUERY_NODE.preset(id, p.id), saved ? 'saved' : 'preset', [
-        ...rowsOf(saved ? 'saved' : 'preset', { on }).map((row) => ({ ...row, editable: true })), ...writes,
+        ...rowsOf(saved ? 'saved' : 'preset', { on }).map((row) => ({ ...row, editable: true })),
+        ...wrote.map(([f]): GraphRow => ({ name: f, label: label(f), input: 'boolean' })),
       ], { heading: p.label, ref: { scope: id, preset: p.id } });
       routes.push({ from, to: `${node}/@${p.id}` });
+      // What it writes: each field a Condition, the definition's to change.
+      for (const [f, tree] of wrote) {
+        const hint = saved ? SAVED_WORDS : FROM_DEFINITION;
+        routes.push({ from: treeNodes(into - 0.5, QUERY_NODE.presetWhen(id, p.id, f), tree, ctxOf(f, everyField), { heading: label(f), description: hint }, { preset: p.id, field: f }, readOnly(hint)), to: `${from}/${f}` });
+      }
     }
     const held = fields.map((f) => ({ value: f, label: label(f) }));
-    const factsOf = (field: string): TreeFacts => ({ field, type: typeOf(field), fields: held, values: facts.values?.(field), label });
+    const factsOf = (field: string): TreeFacts => ctxOf(field, held);
     for (const [field, condition, off] of where) {
       const when = treeNodes(into, QUERY_NODE.condition(id, field), condition, factsOf(field), {
         heading: label(field),
@@ -445,13 +521,18 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   // The page's own saved filters on no bar: what each would add, and no route.
   for (const [id, set] of Object.entries(definition.savedFilters ?? {})) {
     if (!isSavedFilter(set) || onBars.has(id)) continue;
-    const writes = Object.entries(set.query.scopes).flatMap(([scope, s]) => Object.entries(readingsOf(s.where ?? {}, typed)).flatMap(([f, reading]): GraphRow[] => {
+    const wrote = Object.entries(set.query.scopes).flatMap(([scope, s]) => Object.entries(readingsOf(s.where ?? {}, typed)).flatMap(([f, reading]) => {
       const tree = answerTree(reading, typed(f));
-      return tree ? [{ name: `${scope}:${f}`, label: scope === VIEW ? label(f) : `${label(f)} (${scope})`, value: said(tree), hint: SAVED_WORDS }] : [];
+      return tree ? [{ name: `${scope}:${f}`, field: f, scope, tree }] : [];
     }));
-    add(3, `saved-${id}`, 'saved', [...rowsOf('saved', { on: false }).map((row) => ({ ...row, hint: NOT_ADDED })), ...writes], {
-      heading: set.label, ref: { saved: id },
-    });
+    const from = add(3, QUERY_NODE.saved(id), 'saved', [
+      ...rowsOf('saved', { on: false }).map((row) => ({ ...row, hint: NOT_ADDED })),
+      ...wrote.map(({ name, field, scope }): GraphRow => ({ name, label: scope === VIEW ? label(field) : `${label(field)} (${scope})`, input: 'boolean' })),
+    ], { heading: set.label, ref: { saved: id } });
+    // What it would add: each field a Condition the saved filter owns, and no route out.
+    for (const { name, field, tree } of wrote) {
+      routes.push({ from: treeNodes(2.5, QUERY_NODE.savedWhen(id, name), tree, ctxOf(field, everyField), { heading: label(field), description: SAVED_WORDS }, { saved: id, field }, readOnly(SAVED_WORDS)), to: `${from}/${name}` });
+    }
   }
 
   // Columns with nothing in them close up; each column stacks its nodes.

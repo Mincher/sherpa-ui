@@ -33,7 +33,7 @@ import type { SocketSide } from '../../components/sherpa-node/node-sockets.js';
 import type { SessionStore } from '../browser/session.js';
 import type { DataSource } from '../data/data-source.js';
 import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-definition.js';
-import { graphRequest, queryGraph, queryStepNode, routeRequest, traceQuerySteps, type QueryGraphFacts } from '../data/query-graph.js';
+import { graphRequest, queryGraph, queryStepNode, routeRequest, statusTallies, traceQuerySteps, type QueryGraphFacts } from '../data/query-graph.js';
 import { onTrace, type Span, type StepState, type TraceHost } from '../data/trace.js';
 import { VIEW } from '../data/query.js';
 import { OP_LABELS, valueKey, type FilterOp } from '../data/store.js';
@@ -843,7 +843,7 @@ export function bindQueryEditor(
  */
 function watchQuery(
   canvas: SherpaLayoutCanvas,
-  source: Pick<DataSource, 'query'> & Partial<Pick<DataSource, 'results' | 'addEventListener' | 'removeEventListener'>>,
+  source: Pick<DataSource, 'query'> & Partial<Pick<DataSource, 'results' | 'store' | 'addEventListener' | 'removeEventListener'>>,
   definition: PageDefinition,
 ): () => void {
   const store = definition.source?.store;
@@ -861,7 +861,9 @@ function watchQuery(
     const applied = source.query.applied;
     const counted = await Promise.all(Object.keys(applied.scopes).map(async (scope) => [scope, await results.call(source, scope)] as const));
     const total = load.detail?.['total'];
-    traceQuerySteps(applied, { walk: { results: Object.fromEntries(counted) }, ...(typeof total === 'number' ? { total } : {}) }, load);
+    // A status field's Conditions: the rows each took, counted over the whole store.
+    const statuses = source.store ? await statusTallies(source.store, source.store.domains ?? {}) : {};
+    traceQuerySteps(applied, { walk: { results: Object.fromEntries(counted) }, ...(typeof total === 'number' ? { total } : {}), statuses }, load);
   };
   source.addEventListener?.('loading', loading);
   const stop = watchSteps(canvas, {

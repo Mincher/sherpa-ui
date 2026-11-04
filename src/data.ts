@@ -195,7 +195,7 @@ export {
 } from './core/data/trace.js';
 /* A page's QUERY, drawn as nodes for the Node Editor. TODO 555 · TRAP T-the-node-editor-asks-the-query */
 export {
-  QUERY_NODE, graphRequest, queryGraph, queryStepNode, routeRequest, traceQuerySteps,
+  QUERY_NODE, graphRequest, queryGraph, queryGraphFaults, queryStepNode, routeRequest, statusTallies, traceQuerySteps,
   type GraphComponent, type LoadSteps, type QueryGraphFacts, type RouteAnswer, type ScopePreset,
 } from './core/data/query-graph.js';
 /* A pure edit: the Query after a Sort, Group, Search, presentation, order or move. TRAP T-one-command-one-door */

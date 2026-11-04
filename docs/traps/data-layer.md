@@ -6604,13 +6604,20 @@ workflow's `filter` is gone, and a saved one reads as `condition`, once.
   `workflowFaults` refuses a pick's, a False, or a node that is no condition.
 - **A comparison is checked by its field's type** where the facts give it: an
   operator its type does not take, a value that is no number for a number.
+- **A status, a preset and a saved filter draw their conditions as Condition
+  nodes, read only** (M5): the definition or the store owns them, so no `ref.scope`
+  and no edit asks the Query. A status field is one row per value (its look), and a
+  Condition per `when`, chained by False in the order the status takes the first
+  match; the last value, with no `when`, takes the last False. A load lights each with
+  the rows that took it (`statusTallies`, `traceQuerySteps`). `queryGraphFaults`
+  names a `when` that is no condition and a route that ends in nothing.
 - **Left for later**: "+ Condition" in the footer, a nested group made in the
-  editor, From/To and Unit for Between and In the last, and a status value's chain
-  (M5).
+  editor, From/To and Unit for Between and In the last.
 
 - Site: `src/core/data/query-graph.ts`
 - Site: `src/core/data/workflow.ts`
 - Site: `test/unit/a-condition-is-a-tree-of-nodes.test.mjs`
+- Site: `test/unit/a-status-is-a-chain-of-conditions.test.mjs`
 
 ### T-an-app-is-its-definition
 

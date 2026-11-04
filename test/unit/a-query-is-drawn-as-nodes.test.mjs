@@ -227,7 +227,10 @@ test('a PRESET is a node into its scope\'s row: its on, from the Query, and what
   const { source, facts, draw } = await opened();
   const off = draw();
   assert.deepEqual(nodeIn(off, 'scope-data').rows.map((r) => r.name), ['rows', '#filters', '@big', 'plan', 'seats']);
-  assert.deepEqual(valuesIn(off, 'preset-data-big'), { on: false, seats: 'greater than 100' });
+  assert.deepEqual(valuesIn(off, 'preset-data-big'), { on: false, seats: undefined }, 'what it writes is a Condition node now, not a line of words');
+  const wrote = nodeIn(off, 'when-preset-data-big-seats');
+  assert.deepEqual([wrote.kind, wrote.rows.filter((r) => r.name !== ROWS.name).every((r) => !r.editable), wrote.ref.scope], ['condition', true, undefined], 'read only: the definition owns it');
+  assert.ok(off.routes.some((r) => r.from === 'when-preset-data-big-seats' && r.to === 'preset-data-big/seats'));
   assert.deepEqual(nodeIn(off, 'preset-data-big').ref, { scope: 'data', preset: 'big' });
   // Its True into its row: a boolean into a boolean.
   assert.ok(off.routes.some((r) => r.from === 'preset-data-big' && r.to === 'scope-data/@big'));
@@ -247,8 +250,11 @@ test('a SAVED FILTER is a node: on no bar it says what it would add, and no rout
   const g = draw();
   const saved = nodeIn(g, 'saved-trials');
   assert.equal(saved.kind, 'saved');
-  assert.deepEqual(saved.rows.map((r) => [r.name, r.value, !!r.editable]), [['on', false, false], ['view:status', 'equals trial', false]]);
-  assert.ok(!g.routes.some((r) => r.from === 'saved-trials' || r.to === 'saved-trials'));
+  assert.deepEqual(saved.rows.map((r) => [r.name, r.value, !!r.editable]), [['on', false, false], ['view:status', undefined, false]]);
+  assert.ok(!g.routes.some((r) => r.from.startsWith('saved-trials') || r.to === 'saved-trials'), 'no route out, none into the node itself');
+  const wrote = nodeIn(g, 'when-saved-trials-view:status');
+  assert.ok(wrote.kind === 'condition' && wrote.rows.every((r) => !r.editable), 'its condition is a Condition node, read only');
+  assert.ok(g.routes.some((r) => r.from === wrote.id && r.to === 'saved-trials/view:status'));
   // Added to a bar, it is a preset `saved:<id>`: drawn as the saved kind, routed into its scope.
   const onBar = draw({ presets: (s) => (s === 'view' ? [{ id: 'saved:trials', label: 'Trials', readings: readingsOf({ status: { in: ['trial'] } }) }] : []) });
   assert.equal(nodeIn(onBar, 'saved-trials'), undefined);
@@ -262,9 +268,9 @@ test('a STATUS FIELD is a node between the store and the source: each value, and
   });
   const g = queryGraph({ v: 1, scopes: {} }, page, { domains: store.domains });
   assert.deepEqual(nodeIn(g, 'status-health').rows.map((r) => [r.label, r.value, !!r.editable]), [
-    ['Rows', undefined, false], ['at risk', 'Seats less than 10', false], ['healthy', 'every row the values before it left', false],
+    ['Rows', undefined, false], ['at risk', 'critical', false], ['healthy', 'success', false],
   ]);
-  assert.deepEqual(g.routes.slice(0, 2), [{ from: 'store/rows', to: 'status-health' }, { from: 'status-health/rows', to: 'source' }]);
+  assert.ok(g.routes.some((r) => r.from === 'store/rows' && r.to === 'status-health') && g.routes.some((r) => r.from === 'status-health/rows' && r.to === 'source'));
   assert.ok(nodeIn(g, 'store').x < nodeIn(g, 'status-health').x && nodeIn(g, 'status-health').x < nodeIn(g, 'source').x);
 });
 
