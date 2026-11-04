@@ -1,4 +1,4 @@
-# Handover — 2026-11-03
+# Handover — 2026-11-04
 
 For the next Claude session on sherpa-ui, now on ANOTHER Claude account. Read
 `CLAUDE.md` and `docs/PRINCIPLES.md` first, as always; this says where the work
@@ -17,41 +17,34 @@ The repo holds the rules, the TODO and the traps. These live OUTSIDE it:
 | claude.ai connectors (Figma, Claude Docs) | the claude.ai account | **No.** Connect them again in the new account |
 | figma-console MCP | `.mcp.json` (not tracked) | Yes. Never read, edit or stage it: it holds a plaintext token |
 
-## Where the work stands (2026-11-03, night)
+## Where the work stands (2026-11-04)
 
-**The architecture refactor, plan 695** ([plan-695](history/plan-695-architecture.md),
-[the review](ARCHITECTURE-REVIEW.md)), is 22 of 26 workstreams done: T1; Wave 1 (S1,
-H1 + S3, P1 in part, D2, T2); Wave 2 (U1, S2, S4, H3, D1); Wave 3 (S5, U2, U3, P2, P3,
-H2); and N1, N2, H5, U4 early. Each lane's record, and what it carried on, is in the
-plan's "as each lane lands" notes. The full runs after Waves 1, 2 and 3 found no new
-break (Wave 3: sherpa-ui 3762 passed, none failed; Demos' only failures the old WebKit
-ones in TODO 702).
+**The architecture refactor, plan 695, is done but N4.** ([plan-695](history/plan-695-architecture.md)
+has each lane's record and what it carried on; [the review](ARCHITECTURE-REVIEW.md) marks
+each finding done.) T1; Wave 1 (S1, H1 + S3, P1, D2, T2); Wave 2 (U1, S2, S4, H3, D1);
+Wave 3 (S5, U2, U3, P2, P3, H2); and U4, P4, P5, N1, N2, H5, P6 (a + b) and P7. Also
+done: 694 (month ends), 692 (nested conditions), 548 (the presents registry), 703 (View
+Context chips that stay), `persist()` (Will: B — the app calls `keepData()`).
 
-- **Code:** `sherpa-data-layer` and Demos `main` hold every merged lane; nothing pushed.
-  Will's :4200 server keeps the old `server/index.mjs` until he restarts it (H5 changed
-  it). `check:mcp-pack` passes.
-- **Paused for the usage window, to resume after midnight** — each lane in its own
-  worktree pair under the session scratchpad, its agent resumed by a message:
-  - **P4** (the grid's column facts), branch `lane/grid-p4`, `scratchpad/wt-browser`:
-    4 commits (the facts ask, one body draw, the split, the heading buttons); it was
-    finishing the buttons and its last tests.
-  - **P7** (style queries), branch `lane/css-p7`, `scratchpad/wt-css`: 41 files changed,
-    NOT committed yet. A scratchpad that is cleared loses them, so a copy is kept:
-    `~/.claude/projects/-Users-williammincher-Documents-My-synced-vault-Projects-sherpa-ui/lane-backups/p7-tracked-2026-11-03.patch`
-    (`git apply` it on `p7-base.txt`'s commit, `55eee021`).
-- **Then:** P5 (the chip split) after P4; P6 (the base class) after P4 and P7; a last
-  full run; then the deferred rows (700 the MCP rebuild, 701, T3 the trap trim, 223, 170,
-  77).
+- **Code:** `sherpa-data-layer` and Demos `main` hold it all; nothing pushed. Will's
+  :4200 server keeps its old `server/index.mjs` until he restarts it (H5 changed it).
 - **Waiting on Will:**
-  - N4, `runWorkflow` (TODO 616): HELD by Will on 2026-10-30, "I want to plan it out".
-    N1 and N2 left its seams.
-  - `persist()` (H3): DECIDED B (Will, 2026-11-04) — the app calls `keepData()`.
-  - Looks to check in the demo: the menu's nested groups (P3's picks) and a node lit by
-    its step (N2's picks).
-  - 170 itself: its plan is `docs/ARCHITECTURE.md` §8.
-- **How the lanes run:** the memory note `sherpa-orchestrate-agents-in-parallel` — 3 or 4
-  lanes at once (5 or 6 used the 5-hour usage window in about 5 hours); after a usage stop
-  nothing wakes the integrator; the sync uses `git diff --name-only --no-renames`.
+  - N4, `runWorkflow` (TODO 616): HELD 2026-10-30. N1 and N2 left its seams.
+  - P7's recalc: A keep style queries (harness mount 33 → 52 ms at 4x; Demos within the
+    spread), or B put host pins back as per-component blocks. My pick A.
+  - The badge (472 on Records, 1 shows a count): A stamp one only when a count shows, or
+    B a light `sherpa-badge`. My pick A.
+  - 170: its plan is `docs/ARCHITECTURE.md` §8.
+  - Looks to check in the demo: the menu's nested groups (P3), a node lit by its step
+    (N2), the grid heading's Sort and Group buttons (P4: the button's own look).
+- **Next, in order:** the deferred rows — 700 (rebuild the MCP on the new spine), 701,
+  T3 (the trap trim, with the wording pass the lanes left: trap prose that names deleted
+  members), 223, 77 — and the bugs the lanes found: 702 (old WebKit and load flakes), 704
+  (a section chip's race).
+- **How the lanes ran:** the memory note `sherpa-orchestrate-agents-in-parallel` — 3 or 4
+  lanes at once; after a usage stop nothing wakes the integrator; the sync uses
+  `git diff --name-only --no-renames`. The lane worktrees under the session scratchpad
+  are spent and can go.
 
 ## Where the code stands (2026-10-26)
 
