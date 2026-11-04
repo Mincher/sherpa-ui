@@ -2621,14 +2621,25 @@
       "description": "one row of a sherpa-node: an input socket, a field and an output socket. Any of the three may be absent. Will, TODO 78.",
       "attributes": [
         {
+          "name": "data-input-routed",
+          "description": "a route joins the input: its socket is filled, else hollow",
+          "valueSet": "v"
+        },
+        {
           "name": "data-input-socket",
-          "description": "an input socket on the start edge: value (a circle) | object (a diamond)",
+          "description": "an input socket on the start edge: value (a circle) | object (a diamond) | boolean (a triangle) | any (a square)",
           "values": [
             {
               "name": "value"
             },
             {
               "name": "object"
+            },
+            {
+              "name": "boolean"
+            },
+            {
+              "name": "any"
             }
           ]
         },
@@ -2637,14 +2648,22 @@
           "description": "the row's name, when it has no field: a field names itself"
         },
         {
+          "name": "data-output-routed",
+          "description": "a route leaves the output: its socket is filled, else hollow",
+          "valueSet": "v"
+        },
+        {
           "name": "data-output-socket",
-          "description": "an output socket on the end edge: value (a circle) | object (a diamond)",
+          "description": "an output socket on the end edge: value (a circle) | object (a diamond) | boolean (a triangle)",
           "values": [
             {
               "name": "value"
             },
             {
               "name": "object"
+            },
+            {
+              "name": "boolean"
             }
           ]
         }
@@ -2654,6 +2673,11 @@
       "name": "sherpa-node",
       "description": "one node of a node editor: a card on a sherpa-layout-canvas, at its data-x and data-y. Its HEADER names it, drags it and may carry the whole node's sockets; its content holds its rows. Will, TODO 78. TRAP T-a-node-moves-itself-and-reports",
       "attributes": [
+        {
+          "name": "data-branches",
+          "description": "a fork: the header's output is True, and a footer shows with False",
+          "valueSet": "v"
+        },
         {
           "name": "data-caption",
           "description": "a line over the node: what its step did, its time and rows. Its host writes it"
@@ -2668,6 +2692,11 @@
           "description": "a line under the name"
         },
         {
+          "name": "data-false-routed",
+          "description": "a route leaves False: its socket is filled, else hollow",
+          "valueSet": "v"
+        },
+        {
           "name": "data-heading",
           "description": "the node's name, in its header"
         },
@@ -2676,14 +2705,25 @@
           "description": "a glyph before the name"
         },
         {
+          "name": "data-input-routed",
+          "description": "a route joins the header's input: its socket is filled, else hollow",
+          "valueSet": "v"
+        },
+        {
           "name": "data-input-socket",
-          "description": "the whole node's input socket, on its header: value (a circle) | object (a diamond)",
+          "description": "the whole node's input socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle) | any (a square)",
           "values": [
             {
               "name": "value"
             },
             {
               "name": "object"
+            },
+            {
+              "name": "boolean"
+            },
+            {
+              "name": "any"
             }
           ]
         },
@@ -2693,14 +2733,22 @@
           "valueSet": "v"
         },
         {
+          "name": "data-output-routed",
+          "description": "a route leaves the header's output: its socket is filled, else hollow",
+          "valueSet": "v"
+        },
+        {
           "name": "data-output-socket",
-          "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond)",
+          "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle)",
           "values": [
             {
               "name": "value"
             },
             {
               "name": "object"
+            },
+            {
+              "name": "boolean"
             }
           ]
         },

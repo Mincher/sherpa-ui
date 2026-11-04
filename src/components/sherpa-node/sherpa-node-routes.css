@@ -1,0 +1,15 @@
+/**
+ * sherpa-node-routes.css — a route line takes the ink of its FROM socket's type,
+ * as the socket pins it. The lines are the canvas's light DOM, so this sheet is the
+ * page's. TRAP T-a-socket-is-drawn-by-its-type
+ */
+@layer components {
+  svg.graph-routes path[data-type="value"] { stroke: var(--sherpa-style-info-indicator-accent, #3b4ccd); }
+  svg.graph-routes path[data-type="object"] { stroke: var(--sherpa-style-active-indicator-accent, #3b4ccd); }
+  svg.graph-routes path[data-type="boolean"] { stroke: var(--sherpa-style-success-indicator-accent, #3b4ccd); }
+  svg.graph-routes path[data-type="false"] { stroke: var(--sherpa-style-critical-indicator-accent, #3b4ccd); }
+
+  @media (forced-colors: active) {
+    svg.graph-routes path { stroke: CanvasText; }
+  }
+}

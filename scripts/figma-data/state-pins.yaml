@@ -171,6 +171,27 @@ sherpa-node:
   '&[data-step="running"]': info
   '&[data-step="failed"]': critical
   '&[data-step="skipped"]': inactive
+  # A SOCKET pins its own type's mode, whatever its node does (a picked or running
+  # node changes nothing): value info, object active, boolean success, any default.
+  # The True socket is a boolean; False is critical, last so it wins. Will, 713 D5, D6
+  '&[data-input-socket="value"] .socket-in': info
+  '&[data-input-socket="object"] .socket-in': active
+  '&[data-input-socket="boolean"] .socket-in': success
+  '&[data-input-socket="any"] .socket-in': default
+  '&[data-output-socket="value"] .socket-out': info
+  '&[data-output-socket="object"] .socket-out': active
+  '&[data-output-socket="boolean"] .socket-out': success
+  '&[data-branches] .header .socket-out': success
+  '&[data-branches] .socket-false': critical
+
+sherpa-node-row:
+  '&[data-input-socket="value"] .socket-in': info
+  '&[data-input-socket="object"] .socket-in': active
+  '&[data-input-socket="boolean"] .socket-in': success
+  '&[data-input-socket="any"] .socket-in': default
+  '&[data-output-socket="value"] .socket-out': info
+  '&[data-output-socket="object"] .socket-out': active
+  '&[data-output-socket="boolean"] .socket-out': success
 
 sherpa-notifications:
   # No Figma component. The unread pip wears the active mode's border.

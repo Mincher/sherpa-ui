@@ -6,10 +6,12 @@
  * each move (`node-move`), unless `data-locked` says the host owns the place.
  * A press only REPORTS (`node-select`): the host writes `data-current`, as only
  * it sees every node. TRAP T-a-node-moves-itself-and-reports
+ * Its sockets are drawn by type; a fork adds a footer. TRAP T-a-socket-is-drawn-by-its-type
  */
 import { DATA_PROPS, SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 // Defined before the template stamps it.
 import '../sherpa-container-header/sherpa-container-header.js';
+import '../sherpa-container-footer/sherpa-container-footer.js';
 import { SOCKETS, socketRect, type SocketSide } from './node-sockets.js';
 
 /** One arrow key's move, in plane px; Shift moves four times as far. */
@@ -24,6 +26,7 @@ export class SherpaNode extends SherpaElement {
     new URL('./sherpa-node.css', import.meta.url),
   ];
   static override html = new URL('./sherpa-node.html', import.meta.url);
+  static override pageCss = new URL('./sherpa-node-routes.css', import.meta.url);
 
   static override props = {
     'data-heading': { type: 'string', kind: 'content' },
@@ -31,6 +34,10 @@ export class SherpaNode extends SherpaElement {
     'data-description': { type: 'string', kind: 'content' },
     'data-input-socket': SHARED_PROPS['data-input-socket'],
     'data-output-socket': SHARED_PROPS['data-output-socket'],
+    'data-input-routed': SHARED_PROPS['data-input-routed'],
+    'data-output-routed': SHARED_PROPS['data-output-routed'],
+    'data-branches': { type: 'boolean', kind: 'style' },
+    'data-false-routed': { type: 'boolean', kind: 'style' },
     'data-x': { type: 'number', kind: 'behaviour' },
     'data-y': { type: 'number', kind: 'behaviour' },
     'data-current': { type: 'boolean', kind: 'style' },
@@ -63,9 +70,9 @@ export class SherpaNode extends SherpaElement {
     else if (name === 'data-current') this.#sync();
   }
 
-  /** A header socket's box on the screen, for a connector to join; null when it has none. */
+  /** A socket's box on the screen, for a connector to join: the header's, or the footer's False; null when it has none. */
   socketRect(side: SocketSide): DOMRect | null {
-    return socketRect(this.$<HTMLElement>(`.header ${SOCKETS[side]}`));
+    return socketRect(this.$<HTMLElement>(side === 'false' ? `.footer ${SOCKETS[side]}` : `.header ${SOCKETS[side]}`));
   }
 
   /** Where the canvas puts it. */

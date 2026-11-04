@@ -15,16 +15,18 @@ For one row of a `sherpa-node`: an input socket, a field and an output socket, e
 ## Example
 
 ```html
-<sherpa-node data-heading="Filter" data-icon="filter" data-input-socket="object"><sherpa-node-row><sherpa-input-text data-label="Key" name="key" data-type="select"></sherpa-input-text></sherpa-node-row><sherpa-node-row data-input-socket="value"><sherpa-input-text data-label="Value" name="value" value="active"></sherpa-input-text></sherpa-node-row><sherpa-node-row data-label="Matches" data-output-socket="value"></sherpa-node-row></sherpa-node>
+<sherpa-node data-heading="Filter" data-icon="filter" data-input-socket="object"><sherpa-node-row><sherpa-input-text data-label="Key" name="key" data-type="select"></sherpa-input-text></sherpa-node-row><sherpa-node-row data-input-socket="value" data-input-routed><sherpa-input-text data-label="Value" name="value" value="active"></sherpa-input-text></sherpa-node-row><sherpa-node-row data-label="Matches" data-output-socket="boolean"></sherpa-node-row></sherpa-node>
 ```
 
 ## Attributes
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
-| `data-input-socket` | `value` `object` |  | an input socket on the start edge: value (a circle) \| object (a diamond) |
+| `data-input-routed` | boolean |  | a route joins the input: its socket is filled, else hollow |
+| `data-input-socket` | `value` `object` `boolean` `any` |  | an input socket on the start edge: value (a circle) \| object (a diamond) \| boolean (a triangle) \| any (a square) |
 | `data-label` | text |  | the row's name, when it has no field: a field names itself |
-| `data-output-socket` | `value` `object` |  | an output socket on the end edge: value (a circle) \| object (a diamond) |
+| `data-output-routed` | boolean |  | a route leaves the output: its socket is filled, else hollow |
+| `data-output-socket` | `value` `object` `boolean` |  | an output socket on the end edge: value (a circle) \| object (a diamond) \| boolean (a triangle) |
 
 ## Methods
 
@@ -42,7 +44,7 @@ For one row of a `sherpa-node`: an input socket, a field and an output socket, e
 
 Style these from outside with `::part()`:
 
-`label`, `row`, `socket-in`, `socket-out`
+`label`, `row`, `socket-in`, `socket-out`, `tip`
 
 ## CSS custom properties it reads
 
@@ -59,6 +61,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ inputSocket?, label?, outputSocket? }`
+`{ inputRouted?, inputSocket?, label?, outputRouted?, outputSocket? }`
 
 Its declared props by name: `label` sets data-label.

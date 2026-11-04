@@ -4,8 +4,10 @@
 
   Public API:
     data-label          the row's name, when it has no field: a field names itself
-    data-input-socket   an input socket on the start edge: value (a circle) | object (a diamond)
-    data-output-socket  an output socket on the end edge: value (a circle) | object (a diamond)
+    data-input-socket   an input socket on the start edge: value (a circle) | object (a diamond) | boolean (a triangle) | any (a square)
+    data-output-socket  an output socket on the end edge: value (a circle) | object (a diamond) | boolean (a triangle)
+    data-input-routed   a route joins the input: its socket is filled, else hollow
+    data-output-routed  a route leaves the output: its socket is filled, else hollow
 
   Slots:
     (default)   the field: a sherpa-input-text — a text field, a select or a number
@@ -16,7 +18,9 @@
   <div class="row" part="row">
     <span class="label" part="label" data-text="data-label"></span>
     <slot data-accepts="input"></slot>
-    <span class="socket socket-in" part="socket-in" aria-hidden="true"></span>
-    <span class="socket socket-out" part="socket-out" aria-hidden="true"></span>
+    <span class="socket socket-in sherpa-anchor" part="socket-in" aria-hidden="true"></span>
+    <span class="tip tip-in sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="name">Input:</span><span class="word w-value">a value</span><span class="word w-object">an object</span><span class="word w-boolean">a boolean</span><span class="word w-any">any type</span></span>
+    <span class="socket socket-out sherpa-anchor" part="socket-out" aria-hidden="true"></span>
+    <span class="tip tip-out sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="name">Output:</span><span class="word w-value">a value</span><span class="word w-object">an object</span><span class="word w-boolean">a boolean</span></span>
   </div>
 </template>

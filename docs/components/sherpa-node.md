@@ -10,26 +10,30 @@ One node of a node editor: a card on a [sherpa-layout-canvas](sherpa-layout-canv
 
 ## When to use it
 
-For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by its header, which reports each move and asks to be selected. Its header names it and may carry the whole node's sockets; its rows are `sherpa-node-row`. The host writes `data-current` on the one it selects. For a card in the page flow, use `sherpa-container`.
+For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by its header, which reports each move and asks to be selected. Its header names it and may carry the whole node's sockets, each its type's shape (a circle, a diamond, a triangle, a square) and hollow until a route joins it; a fork (`data-branches`) sends True from the header and False from a footer; its rows are `sherpa-node-row`. The host writes `data-current` on the one it selects. For a card in the page flow, use `sherpa-container`.
 
 ## Example
 
 ```html
-<sherpa-layout-canvas style="inline-size: 720px; block-size: 360px"><sherpa-node data-heading="Start" data-icon="play" data-x="40" data-y="40" data-output-socket="object"></sherpa-node><sherpa-node data-heading="Filter" data-icon="filter" data-x="360" data-y="40" data-input-socket="object" data-output-socket="object" data-current><sherpa-node-row data-input-socket="value"><sherpa-input-text data-label="Value" name="value" value="active"></sherpa-input-text></sherpa-node-row><sherpa-node-row data-label="Matches" data-output-socket="value"></sherpa-node-row></sherpa-node></sherpa-layout-canvas>
+<sherpa-layout-canvas style="inline-size: 720px; block-size: 360px"><sherpa-node data-heading="Start" data-icon="play" data-x="40" data-y="40" data-output-socket="object" data-output-routed></sherpa-node><sherpa-node data-heading="Condition" data-icon="function" data-x="360" data-y="40" data-input-socket="any" data-input-routed data-branches data-current><sherpa-node-row data-input-socket="object" data-input-routed data-label="Rows"></sherpa-node-row><sherpa-node-row data-input-socket="value"><sherpa-input-text data-label="Value" name="value" value="active"></sherpa-input-text></sherpa-node-row><sherpa-node-row data-input-socket="boolean" data-label="Group"></sherpa-node-row><sherpa-node-row data-label="Matches" data-output-socket="value"></sherpa-node-row></sherpa-node></sherpa-layout-canvas>
 ```
 
 ## Attributes
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
+| `data-branches` | boolean |  | a fork: the header's output is True, and a footer shows with False |
 | `data-caption` | text |  | a line over the node: what its step did, its time and rows. Its host writes it |
 | `data-current` | boolean |  | the selected node; the HOST writes it, one node of many |
 | `data-description` | text |  | a line under the name |
+| `data-false-routed` | boolean |  | a route leaves False: its socket is filled, else hollow |
 | `data-heading` | text | `Node` | the node's name, in its header |
 | `data-icon` | text |  | a glyph before the name |
-| `data-input-socket` | `value` `object` |  | the whole node's input socket, on its header: value (a circle) \| object (a diamond) |
+| `data-input-routed` | boolean |  | a route joins the header's input: its socket is filled, else hollow |
+| `data-input-socket` | `value` `object` `boolean` `any` |  | the whole node's input socket, on its header: value (a circle) \| object (a diamond) \| boolean (a triangle) \| any (a square) |
 | `data-locked` | boolean |  | the host owns the place: a drag or a key reports, and moves nothing |
-| `data-output-socket` | `value` `object` |  | the whole node's output socket, on its header: value (a circle) \| object (a diamond) |
+| `data-output-routed` | boolean |  | a route leaves the header's output: its socket is filled, else hollow |
+| `data-output-socket` | `value` `object` `boolean` |  | the whole node's output socket, on its header: value (a circle) \| object (a diamond) \| boolean (a triangle) |
 | `data-step` | `running` `done` `failed` `skipped` |  | how its step stands as a run lights it: running \| done \| failed \| skipped. Its host writes it |
 | `data-x` | number | `0` | where it sits across the canvas, in plane px |
 | `data-y` | number | `0` | where it sits down the canvas, in plane px |
@@ -38,7 +42,7 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 
 | Method | What it does |
 |---|---|
-| `socketRect(side: SocketSide)` | A header socket's box on the screen, for a connector to join; null when it has none. |
+| `socketRect(side: SocketSide)` | A socket's box on the screen, for a connector to join: the header's, or the footer's False; null when it has none. |
 
 ## Events
 
@@ -59,7 +63,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `caption`, `header`, `heading`, `root`, `socket-in`, `socket-out`
+`body`, `caption`, `foot`, `footer`, `header`, `heading`, `root`, `socket-false`, `socket-in`, `socket-out`, `tip`
 
 ## CSS custom properties it reads
 
@@ -75,11 +79,14 @@ What each class's base rule reads:
 | `--sherpa-font-family-body` | `.caption` | `font-family` |
 | `--sherpa-font-size-body-small` | `.caption` | `font-size` |
 | `--sherpa-theme-content-line-height-small` | `.caption` | `line-height` |
+| `--sherpa-font-size-body-small` | `.false-label` | `font-size` |
+| `--sherpa-theme-content-line-height-small` | `.false-label` | `line-height` |
+| `--sherpa-style-content-secondary` | `.false-label` | `color` |
 | `--sherpa-theme-gap-md` | `.body` | `gap` |
 | `--sherpa-theme-gap-md` | `.body` | `padding-block` |
 
 ## populate()
 
-`{ caption?, current?, description?, heading?, icon?, inputSocket?, locked?, outputSocket?, step?, x?, y? }`
+`{ branches?, caption?, current?, description?, falseRouted?, heading?, icon?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, step?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.

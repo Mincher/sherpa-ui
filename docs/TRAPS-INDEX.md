@@ -840,7 +840,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (126)
+## SherpaElement and the shared sheets (127)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -876,6 +876,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-shared-edge-is-halved-on-both-sides](traps/element-and-sheets.md#t-a-shared-edge-is-halved-on-both-sides) — sherpa-grouping
 - [T-a-shared-enum-is-not-every-enum](traps/element-and-sheets.md#t-a-shared-enum-is-not-every-enum) — sherpa-element
 - [T-a-sideways-scroll-shadow-is-its-frames](traps/data-grid.md#t-a-sideways-scroll-shadow-is-its-frames) — sherpa-base
+- [T-a-socket-is-drawn-by-its-type](traps/element-and-sheets.md#t-a-socket-is-drawn-by-its-type) — sherpa-node-sockets
 - [T-a-state-colour-binds-the-style-mode](traps/filters.md#t-a-state-colour-binds-the-style-mode) — sherpa-button-look
 - [T-a-step-names-its-node](traps/data-layer.md#t-a-step-names-its-node) — node-graph
 - [T-a-sub-pixel-border-reads-back-as-1px](traps/element-and-sheets.md#t-a-sub-pixel-border-reads-back-as-1px) — sherpa-grouping
@@ -969,7 +970,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (113)
+## Other components (114)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1013,6 +1014,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-shadow-reach-is-a-missing-door](traps/other-components.md#t-a-shadow-reach-is-a-missing-door) — app-header, nav
 - [T-a-shared-edge-is-halved-on-both-sides](traps/element-and-sheets.md#t-a-shared-edge-is-halved-on-both-sides) — group, metric-group
 - [T-a-shared-enum-is-not-every-enum](traps/element-and-sheets.md#t-a-shared-enum-is-not-every-enum) — button
+- [T-a-socket-is-drawn-by-its-type](traps/element-and-sheets.md#t-a-socket-is-drawn-by-its-type) — node
 - [T-a-state-colour-binds-the-style-mode](traps/filters.md#t-a-state-colour-binds-the-style-mode) — badge, calendar-cell, chip, list-item, nav-item, tabs
 - [T-a-toggle-shows-its-state-by-a-shape](traps/filters.md#t-a-toggle-shows-its-state-by-a-shape) — switch
 - [T-a-toolbar-moves-by-arrow-and-keeps-its-tabs](traps/filters.md#t-a-toolbar-moves-by-arrow-and-keeps-its-tabs) — layout-canvas, toolbar

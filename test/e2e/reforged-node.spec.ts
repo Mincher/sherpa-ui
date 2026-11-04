@@ -1,4 +1,4 @@
-import { test, expect } from './harness';
+import { test, expect, type Page } from './harness';
 
 /**
  * sherpa-node — Will, TODO 78: a node on the canvas. A drag on its header moves
@@ -127,7 +127,7 @@ test('a drag is no press: the click it ends with selects nothing, and the next c
   expect(r).toEqual({ afterDrag: 0, after: 1 });
 });
 
-test('the header and each row draw their sockets on the card\'s edges, a value a circle and an object a diamond', async ({ page }) => {
+test('the header and each row draw their sockets on the card\'s edges', async ({ page }) => {
   const r = await page.evaluate(async (sel) => {
     const el = eval(sel) as Canvas;
     el.insertAdjacentHTML('beforeend', '<sherpa-node id="c" data-heading="Filter" data-x="40" data-y="240" data-input-socket="object" data-output-socket="value">'
@@ -141,10 +141,6 @@ test('the header and each row draw their sockets on the card\'s edges, a value a
     await window.__settled();
     const box = c.getBoundingClientRect();
     const mid = (rect: DOMRect | null) => rect && [Math.round(rect.left + rect.width / 2), Math.round(rect.top + rect.height / 2)];
-    const shape = (host: Element, cls: string) => {
-      const s = getComputedStyle(host.shadowRoot!.querySelector(cls)!);
-      return s.rotate === '45deg' ? 'diamond' : s.borderRadius === '50%' ? 'circle' : s.borderRadius;
-    };
     const control = (row: Element) => {
       const r = row.querySelector('sherpa-input-text')!.shadowRoot!.querySelector('.control-row, .control')!.getBoundingClientRect();
       return Math.round(r.top + r.height / 2);
@@ -158,12 +154,10 @@ test('the header and each row draw their sockets on the card\'s edges, a value a
       onEdges: [header[0]! - box.left, value[0]! - box.left, matches[0]! - box.right].map((d) => Math.abs(d) <= 1),
       headerFirst: header[1]! < value[1]!,
       onControl: Math.abs(value[1]! - control(rows[1]!)) <= 1,
-      shapes: [shape(c, '.socket-in'), shape(c, '.socket-out'), shape(rows[1]!, '.socket-in'), shape(rows[2]!, '.socket-out')],
     };
   }, canvas);
   expect(r).toEqual({
     none: [null, null, null], onEdges: [true, true, true], headerFirst: true, onControl: true,
-    shapes: ['diamond', 'circle', 'circle', 'diamond'],
   });
 });
 
@@ -185,4 +179,162 @@ test('a node being dragged is lifted — a shadow, a stronger edge, over the oth
     return { before, during, after: getComputedStyle(card).boxShadow };
   }, canvas);
   expect(r).toEqual({ before: 'none', during: [true, true, '1'], after: 'none' });
+});
+
+/* ── Sockets drawn by type: PIXELS, never computed style. Will, TODO 713 M2
+   TRAP T-a-socket-is-drawn-by-its-type ── */
+type Sock = HTMLElement & { rendered: Promise<void>; socketRect(side: string): DOMRect | null };
+type Rgb = [number, number, number];
+
+/** The pixels at points (fractions of a box) in a screenshot of it: the colour a reader sees. */
+async function paint(page: Page, rect: { x: number; y: number; w: number; h: number }, at: [number, number][]): Promise<Rgb[]> {
+  const shot = await page.screenshot({ clip: { x: rect.x, y: rect.y, width: rect.w, height: rect.h } });
+  return page.evaluate(async ([b64, pts]) => {
+    const img = new Image();
+    img.src = `data:image/png;base64,${b64}`;
+    await img.decode();
+    const c = Object.assign(document.createElement('canvas'), { width: img.width, height: img.height }).getContext('2d')!;
+    c.drawImage(img, 0, 0);
+    const [w, h] = [img.width, img.height];
+    return (pts as [number, number][]).map(([fx, fy]) => [...c.getImageData(Math.min(w - 1, Math.floor(fx * w)), Math.min(h - 1, Math.floor(fy * h)), 1, 1).data].slice(0, 3) as Rgb);
+  }, [shot.toString('base64'), at] as const);
+}
+
+/** A colour a token resolves to, as the page paints it. */
+const inkOf = (page: Page, token: string): Promise<Rgb> => page.evaluate((t) => {
+  const el = Object.assign(document.createElement('div'), { style: `background: var(${t}); inline-size: 1px; block-size: 1px` });
+  document.body.append(el);
+  const [r, g, b] = getComputedStyle(el).backgroundColor.match(/[\d.]+/g)!.map(Number);
+  el.remove();
+  return [r, g, b] as Rgb;
+}, token);
+
+const near = (a: Rgb, b: Rgb, within = 40): boolean => Math.max(...a.map((v, i) => Math.abs(v - b[i]!))) <= within;
+
+/** Where, as fractions of the box, each shape is or is not ink: the centre, the four corners, the top middle, and (.2, .2). */
+const PROBES: [number, number][] = [[.5, .5], [.1, .1], [.9, .1], [.1, .9], [.9, .9], [.5, .08], [.2, .2]];
+const SHAPES: Record<string, number[]> = {
+  value: [1, 0, 0, 0, 0, 1, 1],
+  object: [1, 0, 0, 0, 0, 1, 0],
+  boolean: [1, 1, 0, 1, 0, 0, 1],
+  any: [1, 1, 1, 1, 1, 1, 1],
+};
+
+/** A node of one input socket, big, routed or not, on the canvas at a place of its own. */
+async function socketNode(page: Page, id: string, attrs: string): Promise<{ x: number; y: number; w: number; h: number }> {
+  return page.evaluate(async ([nodeId, a]) => {
+    const el = document.querySelector('#root sherpa-layout-canvas')!;
+    el.querySelector(`#${nodeId}`)?.remove();
+    el.insertAdjacentHTML('beforeend', `<sherpa-node id="${nodeId}" data-heading="N" data-x="200" data-y="200" style="--_socket: 40px" ${a}></sherpa-node>`);
+    const n = el.querySelector<Sock>(`#${nodeId}`)!;
+    await n.rendered;
+    await window.__settled();
+    return n.getBoundingClientRect().toJSON();
+  }, [id, attrs]).then(async (box) => {
+    const r = await page.evaluate((nodeId) => {
+      const n = document.querySelector<Sock>(`#${nodeId}`)!;
+      n.scrollIntoView({ block: 'center' });
+      return { in: n.socketRect('input')?.toJSON() ?? null, out: n.socketRect('output')?.toJSON() ?? null, fls: n.socketRect('false')?.toJSON() ?? null };
+    }, id);
+    return { ...box, ...r } as never;
+  });
+}
+
+const boxOf = (r: { x: number; y: number; width: number; height: number }) => ({ x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) });
+
+/** A socket's rect on the screen NOW, after any scroll. */
+const rectOf = (page: Page, id: string, side: string) => page.evaluate(([nodeId, s]) => {
+  document.querySelector(`#${nodeId}`)!.scrollIntoView({ block: 'center' });
+  return document.querySelector<Sock>(`#${nodeId}`)!.socketRect(s!)?.toJSON() ?? null;
+}, [id, side] as const);
+
+for (const type of Object.keys(SHAPES)) {
+  test(`an input socket of type ${type} draws its shape, filled when routed and hollow when not`, async ({ page }) => {
+    const ink = type === 'any' ? await inkOf(page, '--sherpa-style-default-content-secondary')
+      : await inkOf(page, { value: '--sherpa-style-info-indicator-accent', object: '--sherpa-style-active-indicator-accent', boolean: '--sherpa-style-success-indicator-accent' }[type]!);
+    await socketNode(page, 'sock', `data-input-socket="${type}" data-input-routed`);
+    const filled = boxOf((await rectOf(page, 'sock', 'input'))!);
+    const mask = (await paint(page, filled, PROBES)).map((p) => (near(p, ink) ? 1 : 0));
+    expect(mask, `${type} filled`).toEqual(SHAPES[type]);
+
+    await socketNode(page, 'sock', `data-input-socket="${type}"`);
+    const hollow = boxOf((await rectOf(page, 'sock', 'input'))!);
+    const [centre] = await paint(page, hollow, [[.5, .5]]);
+    expect(near(centre!, ink), `${type} hollow centre is the face, not the ink`).toBe(false);
+    // The ring is still there: a point on the edge of the shape.
+    const edge = await paint(page, hollow, [type === 'boolean' || type === 'any' ? [.03, .5] : [.5, .03]]);
+    expect(near(edge[0]!, ink), `${type} ring`).toBe(true);
+  });
+}
+
+test('an output socket pins its own type: a value info, an object active, a boolean success, whatever its node is', async ({ page }) => {
+  const seen: Record<string, boolean> = {};
+  for (const [type, token] of [['value', 'info'], ['object', 'active'], ['boolean', 'success']] as const) {
+    const ink = await inkOf(page, `--sherpa-style-${token}-indicator-accent`);
+    // A picked node does not change a socket's own type.
+    await socketNode(page, 'sock', `data-output-socket="${type}" data-output-routed data-current`);
+    const [centre] = await paint(page, boxOf((await rectOf(page, 'sock', 'output'))!), [[.5, .5]]);
+    seen[type] = near(centre!, ink);
+  }
+  expect(seen).toEqual({ value: true, object: true, boolean: true });
+});
+
+test('a fork shows its footer with False in red, and True on the header in green; a node with no fork has neither footer nor False', async ({ page }) => {
+  const critical = await inkOf(page, '--sherpa-style-critical-indicator-accent');
+  const success = await inkOf(page, '--sherpa-style-success-indicator-accent');
+  await socketNode(page, 'plain', 'data-output-socket="object"');
+  expect(await rectOf(page, 'plain', 'false')).toBeNull();
+  expect(await page.evaluate(() => getComputedStyle(document.querySelector('#plain')!.shadowRoot!.querySelector('.footer')!).display)).toBe('none');
+
+  await socketNode(page, 'fork', 'data-branches data-output-routed data-false-routed');
+  const [yes] = await paint(page, boxOf((await rectOf(page, 'fork', 'output'))!), [[.5, .5]]);
+  const [no] = await paint(page, boxOf((await rectOf(page, 'fork', 'false'))!), [[.5, .5]]);
+  expect(near(yes!, success), 'True is green').toBe(true);
+  expect(near(no!, critical), 'False is red').toBe(true);
+  const triangle = await paint(page, boxOf((await rectOf(page, 'fork', 'false'))!), PROBES);
+  expect(triangle.map((p) => (near(p, critical) ? 1 : 0))).toEqual(SHAPES['boolean']);
+  // Unrouted, False is hollow.
+  await socketNode(page, 'fork', 'data-branches');
+  const [open] = await paint(page, boxOf((await rectOf(page, 'fork', 'false'))!), [[.5, .5]]);
+  expect(near(open!, critical)).toBe(false);
+});
+
+test('a socket\'s tip says its type in words', async ({ page }) => {
+  await socketNode(page, 'tip', 'data-input-socket="any" data-output-socket="boolean" data-branches');
+  const words: string[] = [];
+  for (const side of ['input', 'output', 'false']) {
+    const r = (await rectOf(page, 'tip', side))!;
+    await page.mouse.move(r.x + r.width / 2, r.y + r.height / 2);
+    const text = await page.waitForFunction((cls) => {
+      const tip = document.querySelector('#tip')!.shadowRoot!.querySelector<HTMLElement>(cls);
+      return tip?.matches(':popover-open') ? tip.innerText.replace(/\s+/g, ' ').trim() : false;
+    }, side === 'input' ? '.tip-in' : side === 'output' ? '.tip-out' : '.tip-false');
+    words.push(await text.jsonValue() as string);
+    await page.mouse.move(-1, -1);
+  }
+  expect(words).toEqual(['Input: any type', 'True: a boolean', 'False: a boolean']);
+});
+
+test('a route takes the ink of its FROM socket\'s type', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const canvas = document.querySelector('#root sherpa-layout-canvas')!;
+    canvas.insertAdjacentHTML('beforeend', '<sherpa-node id="r" data-heading="R" data-x="0" data-y="0"></sherpa-node>'
+      + '<svg class="graph-routes" style="stroke: rgb(1, 2, 3)">'
+      + ['value', 'object', 'boolean', 'false', ''].map((t) => `<path data-type="${t}" d="M0 0L1 1"/>`).join('') + '</svg>');
+    await (canvas.querySelector('#r') as Sock).rendered;
+    return [...canvas.querySelectorAll('svg.graph-routes path')].map((p) => getComputedStyle(p).stroke);
+  });
+  const inks = await Promise.all(['info', 'active', 'success', 'critical'].map((m) => inkOf(page, `--sherpa-style-${m}-indicator-accent`)));
+  expect(r.slice(0, 4).map((c) => (c.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number))).toEqual(inks);
+  expect(r[4]).toBe('rgb(1, 2, 3)');
+});
+
+test('in forced colours the shapes stay and the colours go', async ({ page, browserName }) => {
+  test.skip(browserName === 'webkit', 'WebKit cannot emulate forced colours');
+  await page.emulateMedia({ forcedColors: 'active' });
+  await socketNode(page, 'fc', 'data-output-socket="object" data-output-routed');
+  const box = boxOf((await rectOf(page, 'fc', 'output'))!);
+  const around = await paint(page, { x: box.x - 30, y: box.y, w: 20, h: 20 }, [[.5, .5]]);
+  const mask = (await paint(page, box, PROBES)).map((p) => (near(p, around[0]!, 60) ? 0 : 1));
+  expect(mask).toEqual(SHAPES['object']);
 });

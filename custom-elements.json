@@ -6735,10 +6735,17 @@
           "description": "one row of a sherpa-node: an input socket, a field and an output socket. Any of the three may be absent. Will, TODO 78.",
           "attributes": [
             {
-              "name": "data-input-socket",
-              "description": "an input socket on the start edge: value (a circle) | object (a diamond)",
+              "name": "data-input-routed",
+              "description": "a route joins the input: its socket is filled, else hollow",
               "type": {
-                "text": "'value' | 'object'"
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-input-socket",
+              "description": "an input socket on the start edge: value (a circle) | object (a diamond) | boolean (a triangle) | any (a square)",
+              "type": {
+                "text": "'value' | 'object' | 'boolean' | 'any'"
               }
             },
             {
@@ -6749,10 +6756,17 @@
               }
             },
             {
-              "name": "data-output-socket",
-              "description": "an output socket on the end edge: value (a circle) | object (a diamond)",
+              "name": "data-output-routed",
+              "description": "a route leaves the output: its socket is filled, else hollow",
               "type": {
-                "text": "'value' | 'object'"
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-output-socket",
+              "description": "an output socket on the end edge: value (a circle) | object (a diamond) | boolean (a triangle)",
+              "type": {
+                "text": "'value' | 'object' | 'boolean'"
               }
             }
           ],
@@ -6789,6 +6803,9 @@
             },
             {
               "name": "socket-out"
+            },
+            {
+              "name": "tip"
             }
           ]
         }
@@ -6824,6 +6841,13 @@
           "description": "one node of a node editor: a card on a sherpa-layout-canvas, at its data-x and data-y. Its HEADER names it, drags it and may carry the whole node's sockets; its content holds its rows. Will, TODO 78. TRAP T-a-node-moves-itself-and-reports",
           "attributes": [
             {
+              "name": "data-branches",
+              "description": "a fork: the header's output is True, and a footer shows with False",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-caption",
               "description": "a line over the node: what its step did, its time and rows. Its host writes it",
               "type": {
@@ -6845,6 +6869,13 @@
               }
             },
             {
+              "name": "data-false-routed",
+              "description": "a route leaves False: its socket is filled, else hollow",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-heading",
               "description": "the node's name, in its header",
               "type": {
@@ -6860,10 +6891,17 @@
               }
             },
             {
-              "name": "data-input-socket",
-              "description": "the whole node's input socket, on its header: value (a circle) | object (a diamond)",
+              "name": "data-input-routed",
+              "description": "a route joins the header's input: its socket is filled, else hollow",
               "type": {
-                "text": "'value' | 'object'"
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-input-socket",
+              "description": "the whole node's input socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle) | any (a square)",
+              "type": {
+                "text": "'value' | 'object' | 'boolean' | 'any'"
               }
             },
             {
@@ -6874,10 +6912,17 @@
               }
             },
             {
-              "name": "data-output-socket",
-              "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond)",
+              "name": "data-output-routed",
+              "description": "a route leaves the header's output: its socket is filled, else hollow",
               "type": {
-                "text": "'value' | 'object'"
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-output-socket",
+              "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle)",
+              "type": {
+                "text": "'value' | 'object' | 'boolean'"
               }
             },
             {
@@ -6916,7 +6961,7 @@
                   }
                 }
               ],
-              "description": "A header socket's box on the screen, for a connector to join; null when it has none."
+              "description": "A socket's box on the screen, for a connector to join: the header's, or the footer's False; null when it has none."
             }
           ],
           "events": [
@@ -6949,6 +6994,12 @@
               "name": "caption"
             },
             {
+              "name": "foot"
+            },
+            {
+              "name": "footer"
+            },
+            {
               "name": "header"
             },
             {
@@ -6958,10 +7009,16 @@
               "name": "root"
             },
             {
+              "name": "socket-false"
+            },
+            {
               "name": "socket-in"
             },
             {
               "name": "socket-out"
+            },
+            {
+              "name": "tip"
             }
           ]
         }

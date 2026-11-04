@@ -144,6 +144,7 @@ function driven(graph: DrawnGraph): Set<string> {
 /** One node's rows, made again when their shape changed and given their values. */
 function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
   const routed = driven(drawn.graph);
+  const sent = new Set(drawn.graph.routes.map((r) => r.from));
   const locked = (row: GraphRow): boolean => !row.editable || routed.has(`${node.id}/${row.name}`);
   const shape = JSON.stringify(node.rows.map((r) => [r.name, r.control, r.input, r.output, locked(r), r.choices]));
   if (drawn.shapes.get(node.id) !== shape) {
@@ -161,6 +162,8 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
     const line = drawn.rows.get(`${node.id}/${row.name}`)!;
     put(line, 'data-input-socket', row.input);
     put(line, 'data-output-socket', row.output);
+    line.toggleAttribute('data-input-routed', routed.has(`${node.id}/${row.name}`));
+    line.toggleAttribute('data-output-routed', sent.has(`${node.id}/${row.name}`));
     const field = line.firstElementChild as Field | null;
     if (field) fill(field, row);
     else line.setAttribute('data-label', row.control === undefined && row.value !== undefined ? `${row.label}: ${shown(row)}` : row.label);
@@ -180,6 +183,15 @@ function curve([x1, y1]: [number, number], [x2, y2]: [number, number]): string {
   return `M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`;
 }
 
+/** The type a route carries, from its output socket: a row's, the header's (True, on a fork) or False. */
+function outputType(graph: DrawnGraph, from: string): string {
+  const { node: id, row } = socketOf(from);
+  const node = graph.nodes.find((n) => n.id === id);
+  if (row === FALSE_SOCKET) return 'false';
+  if (row !== undefined) return node?.rows.find((r) => r.name === row)?.output ?? '';
+  return node?.branches ? 'boolean' : node?.output ?? '';
+}
+
 /** A curve for each route, from its output socket to its input socket. */
 function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
   const end = (address: string, side: SocketSide): DOMRect | null => {
@@ -195,6 +207,7 @@ function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
     if (!a || !b) return [];
     const path = document.createElementNS(SVG, 'path');
     path.setAttribute('d', curve(onPlane(canvas, a), onPlane(canvas, b)));
+    path.dataset['type'] = outputType(drawn.graph, from);
     path.dataset['from'] = from;
     path.dataset['to'] = to;
     return [path];
@@ -352,6 +365,10 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: DrawnGraph, options
     // Its data in, of any type; out, its True where it forks.
     put(el, 'data-input-socket', socketType(node, undefined, 'input'));
     put(el, 'data-output-socket', socketType(node, undefined, 'output'));
+    el.toggleAttribute('data-branches', !!node.branches);
+    el.toggleAttribute('data-input-routed', graph.routes.some((r) => r.to === node.id));
+    el.toggleAttribute('data-output-routed', graph.routes.some((r) => r.from === node.id));
+    el.toggleAttribute('data-false-routed', graph.routes.some((r) => r.from === `${node.id}/${FALSE_SOCKET}`));
     drawRows(drawn, el, node);
   }
   drawn.routes = graph.routes;

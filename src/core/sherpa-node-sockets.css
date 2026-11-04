@@ -2,37 +2,79 @@
  * sherpa-node-sockets.css — a node's sockets: its header's, and each row's.
  * Adopted before their own sheet by sherpa-node and sherpa-node-row. It draws
  * them on the host's start and end edges; each host places them down its box.
+ * A socket is its type's SHAPE (a clip-path) in its type's pinned ink; hollow
+ * until a route joins it. TRAP T-a-socket-is-drawn-by-its-type
  */
 
 :host {
   --_socket: var(--sherpa-display-mode-size-xs, 12px);
+  --_ring: var(--sherpa-display-mode-border-width-lg, 2px);
+  --_circle: circle(50%);
+  --_diamond: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  --_triangle: polygon(0 0, 100% 50%, 0 100%);
+  --_square: polygon(0 0, 100% 0, 100% 100%, 0 100%);
 }
 
-/* Half outside the card: its middle is on the edge. */
+/* Half outside the card: its middle is on the edge. The ink is the pinned
+   mode's accent: each type pins its own (state-pins.yaml). */
 .socket {
   display: none;
   position: absolute;
   inline-size: var(--_socket);
   block-size: var(--_socket);
   margin-inline-start: calc(var(--_socket) / -2);
-  border: var(--sherpa-display-mode-border-width-lg, 2px) solid var(--sherpa-style-content-secondary, #35353d);
-  border-radius: 50%;
-  background: var(--sherpa-style-surface-base, #ffffff);
-  pointer-events: none;
+  background: var(--_ink, var(--sherpa-style-indicator-accent, #3b4ccd));
+  clip-path: var(--_shape, var(--_circle));
 }
+/* HOLLOW: the card's own face inside the ring. A routed socket is filled. */
+.socket::after {
+  content: "";
+  position: absolute;
+  inset: var(--_ring);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  clip-path: var(--_shape, var(--_circle));
+}
+:host([data-input-routed]) .socket-in::after,
+:host([data-output-routed]) .socket-out:not(.socket-false)::after { display: none; }
+
 .socket-in { inset-inline-start: 0; }
 /* An OUTPUT takes the pointer: a drag from it draws a new route. Will, TODO 555 */
 .socket-out {
   inset-inline-start: 100%;
-  pointer-events: auto;
   cursor: crosshair;
 }
 :host([data-input-socket]) .socket-in,
 :host([data-output-socket]) .socket-out { display: block; }
 
-/* An OBJECT is a diamond; a value stays a circle. */
+/* The SHAPES: a value a circle, an object a diamond, a boolean a triangle
+   pointing the way the data goes, any a square (an input only). Will, TODO 713 */
 :host([data-input-socket="object"]) .socket-in,
-:host([data-output-socket="object"]) .socket-out {
-  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
-  rotate: 45deg;
+:host([data-output-socket="object"]) .socket-out { --_shape: var(--_diamond); }
+:host([data-input-socket="boolean"]) .socket-in,
+:host([data-output-socket="boolean"]) .socket-out { --_shape: var(--_triangle); }
+:host([data-input-socket="any"]) .socket-in {
+  --_shape: var(--_square);
+  --_ink: var(--sherpa-style-content-secondary, #35353d);
+}
+
+/* Each socket's tip says its type in words: one word shows. */
+.tip .word { display: none; }
+:host([data-input-socket="value"]) .tip-in .w-value,
+:host([data-input-socket="object"]) .tip-in .w-object,
+:host([data-input-socket="boolean"]) .tip-in .w-boolean,
+:host([data-input-socket="any"]) .tip-in .w-any,
+:host([data-output-socket="value"]) .tip-out .w-value,
+:host([data-output-socket="object"]) .tip-out .w-object,
+:host([data-output-socket="boolean"]) .tip-out .w-boolean { display: inline; }
+
+/* Colours go and the shapes stay. */
+@media (forced-colors: active) {
+  .socket {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+  .socket::after {
+    forced-color-adjust: none;
+    background: Canvas;
+  }
 }

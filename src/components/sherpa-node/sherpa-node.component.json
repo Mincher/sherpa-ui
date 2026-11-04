@@ -49,7 +49,7 @@
             },
             {
               "el": "span",
-              "class": "socket socket-in",
+              "class": "socket socket-in sherpa-anchor",
               "part": "socket-in",
               "attrs": {
                 "aria-hidden": "true"
@@ -57,11 +57,73 @@
             },
             {
               "el": "span",
-              "class": "socket socket-out",
+              "class": "tip tip-in sherpa-tip",
+              "part": "tip",
+              "attrs": {
+                "popover": "manual",
+                "aria-hidden": "true"
+              },
+              "children": [
+                {
+                  "el": "span",
+                  "class": "name"
+                },
+                {
+                  "el": "span",
+                  "class": "word w-value"
+                },
+                {
+                  "el": "span",
+                  "class": "word w-object"
+                },
+                {
+                  "el": "span",
+                  "class": "word w-boolean"
+                },
+                {
+                  "el": "span",
+                  "class": "word w-any"
+                }
+              ]
+            },
+            {
+              "el": "span",
+              "class": "socket socket-out sherpa-anchor",
               "part": "socket-out",
               "attrs": {
                 "aria-hidden": "true"
               }
+            },
+            {
+              "el": "span",
+              "class": "tip tip-out sherpa-tip",
+              "part": "tip",
+              "attrs": {
+                "popover": "manual",
+                "aria-hidden": "true"
+              },
+              "children": [
+                {
+                  "el": "span",
+                  "class": "name name-out"
+                },
+                {
+                  "el": "span",
+                  "class": "name name-true"
+                },
+                {
+                  "el": "span",
+                  "class": "word w-value"
+                },
+                {
+                  "el": "span",
+                  "class": "word w-object"
+                },
+                {
+                  "el": "span",
+                  "class": "word w-boolean"
+                }
+              ]
             }
           ]
         },
@@ -77,11 +139,65 @@
               }
             }
           ]
+        },
+        {
+          "el": "div",
+          "class": "footer",
+          "part": "footer",
+          "children": [
+            {
+              "el": "sherpa-container-footer",
+              "class": "foot",
+              "part": "foot",
+              "children": [
+                {
+                  "el": "span",
+                  "class": "false-label"
+                }
+              ]
+            },
+            {
+              "el": "span",
+              "class": "socket socket-out socket-false sherpa-anchor",
+              "part": "socket-false",
+              "attrs": {
+                "aria-hidden": "true"
+              }
+            },
+            {
+              "el": "span",
+              "class": "tip tip-false sherpa-tip",
+              "part": "tip",
+              "attrs": {
+                "popover": "manual",
+                "aria-hidden": "true"
+              },
+              "children": [
+                {
+                  "el": "span",
+                  "class": "name"
+                },
+                {
+                  "el": "span",
+                  "class": "word"
+                }
+              ]
+            }
+          ]
         }
       ]
     }
   },
   "props": [
+    {
+      "$type": "prop",
+      "name": "data-branches",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "a fork: the header's output is True, and a footer shows with False"
+    },
     {
       "$type": "prop",
       "name": "data-caption",
@@ -111,6 +227,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-false-routed",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "a route leaves False: its socket is filled, else hollow"
+    },
+    {
+      "$type": "prop",
       "name": "data-heading",
       "type": "string",
       "observed": true,
@@ -130,6 +255,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-input-routed",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "a route joins the header's input: its socket is filled, else hollow"
+    },
+    {
+      "$type": "prop",
       "name": "data-input-socket",
       "type": "enum",
       "observed": false,
@@ -137,9 +271,11 @@
       "kind": "style",
       "values": [
         "value",
-        "object"
+        "object",
+        "boolean",
+        "any"
       ],
-      "description": "the whole node's input socket, on its header: value (a circle) | object (a diamond)"
+      "description": "the whole node's input socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle) | any (a square)"
     },
     {
       "$type": "prop",
@@ -152,6 +288,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-output-routed",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "a route leaves the header's output: its socket is filled, else hollow"
+    },
+    {
+      "$type": "prop",
       "name": "data-output-socket",
       "type": "enum",
       "observed": false,
@@ -159,9 +304,10 @@
       "kind": "style",
       "values": [
         "value",
-        "object"
+        "object",
+        "boolean"
       ],
-      "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond)"
+      "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle)"
     },
     {
       "$type": "prop",
@@ -210,7 +356,7 @@
     }
   ],
   "populate": {
-    "shape": "{ caption?, current?, description?, heading?, icon?, inputSocket?, locked?, outputSocket?, step?, x?, y? }",
+    "shape": "{ branches?, caption?, current?, description?, falseRouted?, heading?, icon?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, step?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -218,6 +364,16 @@
       "$type": "state",
       "name": "caption",
       "selector": ":host([data-caption])"
+    },
+    {
+      "$type": "state",
+      "name": "branches",
+      "selector": ":host([data-branches])"
+    },
+    {
+      "$type": "state",
+      "name": "false-routed",
+      "selector": ":host([data-false-routed])"
     },
     {
       "$type": "state",
@@ -261,6 +417,9 @@
     "caption.font-family": "{sherpa.font-family-body}",
     "caption.font-size": "{sherpa.font-size-body-small}",
     "caption.line-height": "{sherpa.theme-content-line-height-small}",
+    "false-label.font-size": "{sherpa.font-size-body-small}",
+    "false-label.line-height": "{sherpa.theme-content-line-height-small}",
+    "false-label.color": "{sherpa.style-content-secondary}",
     "body.gap": "{sherpa.theme-gap-md}",
     "body.padding-block": "{sherpa.theme-gap-md}"
   },
@@ -271,7 +430,7 @@
           "$type": "method",
           "name": "socketRect",
           "args": "side: SocketSide",
-          "description": "A header socket's box on the screen, for a connector to join; null when it has none."
+          "description": "A socket's box on the screen, for a connector to join: the header's, or the footer's False; null when it has none."
         }
       ]
     }

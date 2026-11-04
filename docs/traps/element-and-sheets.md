@@ -1953,3 +1953,32 @@ read both `define(` and `customElements.define(`.
 
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/unit/import-anywhere.test.mjs`
+
+### T-a-socket-is-drawn-by-its-type
+
+**A socket is its type's SHAPE, in its type's ink, hollow until a route joins
+it** (Will, TODO 713; plan-713 §2, M2). The shape is a `clip-path` on the socket
+and its inner face — never an image — so one box draws all four: a value a
+circle, an object a diamond, a boolean a triangle pointing the way the data goes,
+and `any` (an input only) a square.
+
+- **The ink is a PIN, not a colour rule.** Each type pins its own Style mode on
+  the socket part (`state-pins.yaml`): value `info`, object `active`, boolean
+  `success`, any `default`; False is `critical` (Will, D5, D6). A picked or
+  running node changes none of them. Only the mode's `indicator-accent` is read:
+  `info`, `success` and `critical` resolve their SURFACE to plain white.
+- **Hollow is the face inside the ring**; `data-input-routed` and
+  `data-output-routed` (the host writes them) hide it, so a joined socket is
+  filled. False has its own, `data-false-routed`.
+- **A fork** (`data-branches`) is the header's True, a triangle pinned
+  `success`, and a footer — the container footer, composed — with False. A node
+  with no fork draws no footer.
+- **Never colour alone.** Each socket has a tip that says its type in words
+  ("True: a boolean"), and in forced colours the ink goes to `CanvasText` while
+  the shape stays. A route line takes the ink of its FROM socket's type, from
+  `data-type` on its path, in the page sheet `sherpa-node-routes.css`.
+
+- Site: `src/core/sherpa-node-sockets.css`
+- Site: `src/components/sherpa-node/sherpa-node-routes.css`
+- Site: `src/components/sherpa-node/sherpa-node.ts`
+- Site: `test/e2e/reforged-node.spec.ts`
