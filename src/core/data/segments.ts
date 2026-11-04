@@ -4,7 +4,7 @@
  * DOM-free. A range is drawn once per unit in it, until that passes one of the
  * next unit up (12 months is 12 segments, 13 is 5 quarters). A day alone is
  * cut in two-hour steps.
- * Will, TODO 540.
+ * Will, TODO 540. TRAP T-a-range-is-counted-from-its-own-start
  *
  * Map:
  * - SegmentUnit — The step a range is cut into.

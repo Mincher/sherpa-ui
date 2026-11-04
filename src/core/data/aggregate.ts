@@ -447,6 +447,7 @@ export function summarise(
   // `auto` reaches here only unresolved — no range to fit — and cuts by the day.
   const bucket = spec.bucket === 'auto' ? 'day' : spec.bucket;
   /* A range cut into weeks, months, quarters or years is counted from ITS start: 6 months is 6 segments.
+     TRAP T-a-range-is-counted-from-its-own-start
      A row is in the last segment that starts on or before it. TODO 540 */
   const starts = bucket && spec.range && bucket !== 'day' && bucket !== 'hour2' ? segmentStarts(...spec.range, bucket) : undefined;
   const startOf = (value: unknown): string => {

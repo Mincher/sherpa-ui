@@ -7094,3 +7094,18 @@ while a chip follows — the preset divider's rule, with a second selector.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/a-fixed-field-stays-held.test.mjs`
 - Site: `test/e2e/reforged-a-fixed-field-stays-held.spec.ts`
+
+### T-a-range-is-counted-from-its-own-start
+
+A sparkline's segments are the date range cut into equal steps from ITS start,
+not from the calendar. "Last 6 months" is 6 segments, though it touches 7
+calendar months. Cutting by calendar month gave 7, and then 12 for a range of
+rows with no condition.
+
+The unit is drawn once per unit in the range, until that passes one of the next
+unit up: 12 months is 12 segments, 13 is 5 quarters, 20 is 7, and 24 is 2
+years. A week or more left over makes one more, partial, segment; less joins the
+last. `rangeOf` counts today once, so "last 7 days" is 7 days and not 8.
+
+- Site: `src/core/data/segments.ts`
+- Site: `src/core/data/aggregate.ts`
