@@ -13,7 +13,7 @@
  */
 import { NODE_KINDS, FALSE_SOCKET, SOCKET_WORDS, rowOf, socketOf, socketType, type NodeKind, type NodeRoute, type SocketType } from './node-kinds.js';
 import { kindsOf, useOf, workflowFaultsDeep, type NodeDefinition, type NodeLibrary, type NodeOutput, type NodeSocket } from './node-library.js';
-import type { WorkflowDefinition, WorkflowFacts, WorkflowNode } from './workflow.js';
+import { tiesAmong, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
 
 type Kinds = Readonly<Record<string, NodeKind>>;
 
@@ -147,9 +147,12 @@ export function groupNodes(
     for (const r of outs.filter((x) => x.from === from)) outer.push({ from: `${use}/${name}`, to: r.to });
   }
   const nodes = workflow.nodes.filter((n) => ids.has(n.id));
+  // A tie of inner routes only goes inside; a tie of outer ones stays.
+  const tied = (workflow.ties ?? []).filter((t) => t.routes.every((r) => inner.some((x) => x.from === r.from && x.to === r.to)));
   const definition: NodeDefinition = {
     v: 1, label, ...(ask.category?.trim() ? { category: ask.category.trim() } : {}),
     inputs, outputs, nodes: structuredClone(nodes), routes: inner,
+    ...(tied.length ? { ties: structuredClone(tied) } : {}),
   };
   const made: NodeLibrary = { ...library, nodes: { ...library.nodes, [id]: definition } };
   const x = Math.round(nodes.reduce((s, n) => s + n.x, 0) / nodes.length);
@@ -157,7 +160,9 @@ export function groupNodes(
   const at = workflow.nodes.findIndex((n) => ids.has(n.id));
   const placed = workflow.nodes.filter((n) => !ids.has(n.id));
   const after: WorkflowNode[] = [...placed.slice(0, at), useOf(made, id, { id: use, x, y }), ...placed.slice(at)];
-  const next: WorkflowDefinition = { ...workflow, nodes: after, routes: outer };
+  const { ties: _ties, ...flat } = workflow;
+  const stay = tiesAmong(workflow.ties, outer);
+  const next: WorkflowDefinition = { ...flat, nodes: after, routes: outer, ...(stay.length ? { ties: stay } : {}) };
   const was = new Set(workflowFaultsDeep(workflow, library, kinds, facts));
   const added = workflowFaultsDeep(next, made, kinds, facts).filter((f) => !was.has(f));
   if (added.length) return { fault: `the Custom Node would not pass the checks: ${added.join('; ')}` };
@@ -215,5 +220,7 @@ export function ungroupUse(
   const rest = workflow.nodes.filter((n) => n.id !== useId);
   const seen = new Set<string>();
   const all = [...routes.filter((r) => !touching(r)), ...body, ...joined].filter((r) => !seen.has(key(r)) && !!seen.add(key(r)));
-  return { workflow: { ...workflow, nodes: [...rest.slice(0, at), ...nodes, ...rest.slice(at)], routes: all } };
+  const kept = tiesAmong(workflow.ties, all);
+  const { ties: _ties, ...flat } = workflow;
+  return { workflow: { ...flat, nodes: [...rest.slice(0, at), ...nodes, ...rest.slice(at)], routes: all, ...(kept.length ? { ties: kept } : {}) } };
 }

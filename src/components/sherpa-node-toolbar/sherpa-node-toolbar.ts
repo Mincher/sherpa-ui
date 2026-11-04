@@ -1,9 +1,10 @@
 /**
- * sherpa-node-toolbar — a graph editor's tools: Save, Undo and Redo, as icon buttons in one group.
+ * sherpa-node-toolbar — a graph editor's tools: Save, Undo, Redo and the Zip tie tool, as icon buttons in one group.
  *
  * It does nothing itself. A press is `toolbar-select`; the editor that owns the history hears Undo
  * and Redo and says, in `data-can-undo` and `data-can-redo`, when each can be pressed. Save is a
- * placeholder, off until a host sets `data-can-save`. TRAP T-an-edit-is-a-step
+ * placeholder, off until a host sets `data-can-save`. Tie is a TOOL: a press is the same event, and the editor says
+ * in `data-tie` whether it is on (the button reads `aria-pressed`). TODO 562. TRAP T-an-edit-is-a-step
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { toolbarKeys } from '../../core/ui/roving-focus.js';
@@ -17,6 +18,8 @@ export class SherpaNodeToolbar extends SherpaElement {
     'data-can-save': { type: 'boolean', kind: 'behaviour' },
     'data-can-undo': { type: 'boolean', kind: 'behaviour' },
     'data-can-redo': { type: 'boolean', kind: 'behaviour' },
+    'data-can-tie': { type: 'boolean', kind: 'behaviour' },
+    'data-tie': { type: 'boolean', kind: 'behaviour' },
   } as const;
 
   override onRender(): void {
@@ -31,9 +34,10 @@ export class SherpaNodeToolbar extends SherpaElement {
 
   /** Each tool can be pressed when its flag is set. */
   #sync(): void {
-    for (const action of ['save', 'undo', 'redo']) {
+    for (const action of ['save', 'undo', 'redo', 'tie']) {
       this.$(`.${action}`)?.toggleAttribute('disabled', !this.hasAttribute(`data-can-${action}`));
     }
+    this.$('.tie')?.setAttribute('aria-pressed', String(this.hasAttribute('data-tie')));
   }
 
   /** A tool was pressed: say which, if it can be. */

@@ -6933,7 +6933,7 @@
           "name": "SherpaNodeToolbar",
           "tagName": "sherpa-node-toolbar",
           "customElement": true,
-          "description": "a graph editor's tools, one object of icon buttons: Save, then Undo and Redo. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step",
+          "description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step",
           "attributes": [
             {
               "name": "data-can-redo",
@@ -6950,8 +6950,22 @@
               }
             },
             {
+              "name": "data-can-tie",
+              "description": "The Zip tie tool can be pressed; written by the editor",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-can-undo",
               "description": "Undo can be pressed; written by the editor that owns the history",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-tie",
+              "description": "The Zip tie tool is on; written by the editor, shown as pressed",
               "type": {
                 "text": "boolean"
               }

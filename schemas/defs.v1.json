@@ -353,6 +353,26 @@
         "to": { "$ref": "#/$defs/socket" }
       }
     },
+    "tie": {
+      "description": "A zip tie: a place on the plane, and the routes it funnels through it in order, top to bottom, a small gap between each. It changes no data: a runner ignores it. Its x stays between the nodes its shortest tied route joins.",
+      "type": "object", "additionalProperties": false, "required": ["id", "x", "y", "routes"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "routes": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/route" } }
+      }
+    },
+    "innerTie": {
+      "description": "A zip tie inside a Custom Node's body: its routes are the body's.",
+      "type": "object", "additionalProperties": false, "required": ["id", "x", "y", "routes"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "routes": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/innerRoute" } }
+      }
+    },
     "socket": {
       "description": "A node's header socket, \"node\" (its input is its data; its output is True, where the node forks); a row's, \"node/row\" (\"node/rows\" sends its data rows); or its footer's False, \"node/#false\".",
       "type": "string", "pattern": "^[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|#false))?$"
@@ -398,7 +418,8 @@
         "inputs": { "type": "array", "items": { "$ref": "#/$defs/nodeInput" } },
         "outputs": { "type": "array", "items": { "$ref": "#/$defs/nodeOutput" } },
         "nodes": { "type": "array", "items": { "$ref": "#/$defs/node" } },
-        "routes": { "type": "array", "items": { "$ref": "#/$defs/innerRoute" } }
+        "routes": { "type": "array", "items": { "$ref": "#/$defs/innerRoute" } },
+        "ties": { "type": "array", "items": { "$ref": "#/$defs/innerTie" } }
       }
     }
   }

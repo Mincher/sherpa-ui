@@ -32,12 +32,13 @@
  * - socketType — The type one socket of a kind carries; none, it has no such socket.
  * - takesMany — Whether an input of a kind takes several routes.
  * - NodeRoute — One route: an output socket to an input socket.
+ * - NodeTie — One zip tie: a place, and the routes it funnels, in order. It changes no data.
  * - RowChoice — One pick in a row's list: the value it keeps, and its words.
  * - RowFacts — What a row's list is read from that the registry does not say.
  * - rowChoices — The list a picklist row reads; none, it is no picklist.
  * - fixedChoices — A fixed list, the same on every page; none, the list is open or the control is no picklist.
- * - drivenSwitch — What a switch row shows while a boolean route drives it: True if any came in True, marked Custom.
  * - mirrored — What a picklist row shows while routes drive it: what comes in, read only, each pick marked Custom.
+ * - drivenSwitch — What a switch row shows while a boolean route drives it: True if any came in True, marked Custom.
  * - GraphRow — One row as drawn: its kind's parts, the value it shows, and whether a reader may change it.
  * - GraphNode — One node as drawn: its header, its sockets, its rows and its place.
  * - DrawnGraph — Nodes and routes, ready to draw: a workflow's, or a page's Query.
@@ -361,6 +362,14 @@ export interface NodeRoute {
   to: string;
 }
 
+/** One zip tie: where it stands, and the routes it funnels, top to bottom. It changes no data. TODO 562 */
+export interface NodeTie {
+  id: string;
+  x: number;
+  y: number;
+  routes: readonly NodeRoute[];
+}
+
 /** One pick in a row's list: the value it keeps, and its words. */
 export interface RowChoice {
   value: string;
@@ -473,6 +482,7 @@ export interface GraphNode {
 export interface DrawnGraph {
   nodes: readonly GraphNode[];
   routes: readonly NodeRoute[];
+  ties?: readonly NodeTie[];
 }
 
 /** One row a reader changed: its node, its row and the new value. */

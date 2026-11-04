@@ -3,11 +3,12 @@
  * drawn there: a page's Query, which each edit ASKS, and a workflow, whose draft each edit
  * writes. Places last the tab; Save hands the app a checked definition. Each node lights as
  * its step runs, from the one trace stream. A workflow's Custom Node opens, is edited as its
- * definition, updates its uses, and is made from picked nodes. Will, TODOs 555, 551, 671, 719.
+ * definition, updates its uses, and is made from picked nodes. A zip tie funnels routes through one place (plan 562). Will, TODOs 555, 551, 671, 719, 562.
  * TRAP T-the-node-editor-asks-the-query · TRAP T-a-step-names-its-node
  *
  * Map:
  * - DrawOptions — What a drawing tells its host: each edit, each node a reader picks or moves, and each new route.
+ * - tieSpot — Where routes would be tied with no pointer: the middle of the way each takes, on the plane.
  * - drawGraph — Draw a graph on a canvas: each node by id, at its place when that moved; then its routes.
  * - markNode — Mark one node as the one picked, or none.
  * - markNodes — Mark several nodes as the ones picked.
@@ -54,10 +55,10 @@ import { instancePane, groupPane, updatePane } from './node-group-panel.js';
 import { typedValue, type FieldType } from '../data/filter-state.js';
 import {
   FALSE_SOCKET, NODE_KINDS, fitOf, paletteOf, placed, rowChoices, socketOf, socketType,
-  type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeRoute, type SocketType,
+  type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeRoute, type NodeTie, type SocketType,
 } from '../data/node-kinds.js';
 import {
-  addCustomValue, checkWorkflow, editWorkflow, readWorkflow, workflowGraph,
+  TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, readWorkflow, tieLimit, workflowGraph,
   type WorkflowDefinition, type WorkflowDefinitionV1, type WorkflowFacts, type WorkflowNode,
 } from '../data/workflow.js';
 
@@ -79,6 +80,14 @@ export interface DrawOptions {
   onReroute?: (was: NodeRoute, now: NodeRoute) => void;
   /** A route let go over the bare canvas, or a clicked one deleted (TODO 558). */
   onBreak?: (route: NodeRoute) => void;
+  /** The zip tie tool is on. */
+  tying?: boolean;
+  /** A line dragged across routes: they are tied, at a place on the plane. */
+  onTie?: (routes: NodeRoute[], at: { x: number; y: number }) => void;
+  /** A tie dragged or moved by a key, to a place. */
+  onTieMove?: (id: string, x: number, y: number) => void;
+  /** A picked tie deleted. */
+  onUntie?: (id: string) => void;
   /** A click on blank canvas: no node is picked, the panel shuts (TODO 559). */
   onDeselect?: () => void;
   /** A line dragged out of an unrouted picklist's input socket and let go on the bare canvas, at a place on the plane. */
@@ -110,6 +119,13 @@ interface Drawn {
   placedAt: Map<string, string>;
   lines: SVGSVGElement;
   routes: readonly NodeRoute[];
+  /** The zip ties, and the one a click picked: Delete removes it, the arrow keys move it. */
+  ties: readonly NodeTie[];
+  selectedTie: string | null;
+  /** Each drawn route's points on the plane, for a tie's line to cross. */
+  lanes: { route: NodeRoute; dots: [number, number][] }[];
+  /** The tie tool is on: a drag on the blank canvas ties what it crosses. */
+  tying: boolean;
   /** The line a reader is drawing, kept over each redraw of the routes. */
   draft: SVGPathElement | null;
   /** The route whose end the reader holds: not drawn while it is. */
@@ -228,22 +244,38 @@ function onPlane(canvas: SherpaLayoutCanvas, rect: DOMRect): [number, number] {
   return [(rect.left + rect.width / 2 - box.left - x) / zoom, (rect.top + rect.height / 2 - box.top - y) / zoom];
 }
 
-/** A route's curve on the plane: out of one socket, into the next. */
-function curve([x1, y1]: [number, number], [x2, y2]: [number, number]): string {
+/** One cubic piece, out of one point and into the next, flat at both. */
+function piece([x1, y1]: [number, number], [x2, y2]: [number, number]): string {
   const bend = Math.max(40, Math.abs(x2 - x1) / 2);
-  return `M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`;
+  return `C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`;
 }
 
-/** Points along the same curve, for the line a click can land on: a wide, unseen stroke. */
-function along([x1, y1]: [number, number], [x2, y2]: [number, number]): string {
+/** A route's curve on the plane: out of one socket, into the next. */
+function curve(from: [number, number], to: [number, number]): string {
+  return `M ${from[0]} ${from[1]} ${piece(from, to)}`;
+}
+
+/** Points along the same piece, for the line a click can land on: a wide, unseen stroke. */
+function along([x1, y1]: [number, number], [x2, y2]: [number, number]): [number, number][] {
   const bend = Math.max(40, Math.abs(x2 - x1) / 2);
   const [c1, c2] = [x1 + bend, x2 - bend];
   return Array.from({ length: 17 }, (_, i) => {
     const t = i / 16;
     const u = 1 - t;
     const at = (a: number, b: number, c: number, d: number): number => u * u * u * a + 3 * u * u * t * b + 3 * u * t * t * c + t * t * t * d;
-    return `${at(x1, c1, c2, x2)},${at(y1, y1, y2, y2)}`;
-  }).join(' ');
+    return [at(x1, c1, c2, x2), at(y1, y1, y2, y2)];
+  });
+}
+
+/** A tie's place as drawn: its x kept within the limit of its routes' nodes. Drawing never writes. */
+function tieX(drawn: Drawn, tie: NodeTie): number {
+  const limit = tieLimit(drawn.graph, tie);
+  return limit ? Math.min(limit.max, Math.max(limit.min, tie.x)) : tie.x;
+}
+
+/** The place a tie funnels its nth route through. */
+function slotOf(drawn: Drawn, tie: NodeTie, n: number): [number, number] {
+  return [tieX(drawn, tie), tie.y + (n - (tie.routes.length - 1) / 2) * TIE_GAP];
 }
 
 /** The type a route carries, from its output socket: a row's, the header's (True, on a fork) or False. */
@@ -258,27 +290,48 @@ function outputType(graph: DrawnGraph, from: string): string {
 /** A curve for each route, from its output socket to its input socket. */
 function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
   const same = (a: NodeRoute | null, b: NodeRoute): boolean => !!a && a.from === b.from && a.to === b.to;
+  const lanes: Drawn['lanes'] = [];
   const paths = drawn.routes.flatMap((route) => {
     const a = socketAt(drawn, route.from, 'output');
     const b = socketAt(drawn, route.to, 'input');
     if (!a || !b || same(drawn.lifted, route)) return [];
     const [from, to] = [onPlane(canvas, a), onPlane(canvas, b)];
+    // The ties it passes, left to right: a flat piece into each slot, and out of it.
+    const stops = drawn.ties.flatMap((tie) => {
+      const n = tie.routes.findIndex((r) => same(r, route));
+      return n < 0 ? [] : [slotOf(drawn, tie, n)];
+    }).sort((p, q) => p[0] - q[0]);
+    const points = [from, ...stops, to];
+    const pieces = points.slice(1).map((p, i) => ({ a: points[i]!, b: p }));
     const path = document.createElementNS(SVG, 'path');
-    path.setAttribute('d', curve(from, to));
+    path.setAttribute('d', `M ${from[0]} ${from[1]} ${pieces.map((q) => piece(q.a, q.b)).join(' ')}`);
     path.dataset['type'] = outputType(drawn.graph, route.from);
     path.dataset['from'] = route.from;
     path.dataset['to'] = route.to;
     if (same(drawn.selected, route)) path.setAttribute('data-selected', '');
     // The line a click lands on: wide, unseen, and the only part of the lines that takes the pointer.
     const hit = document.createElementNS(SVG, 'polyline');
-    hit.setAttribute('points', along(from, to));
+    const dots = pieces.flatMap((q) => along(q.a, q.b));
+    lanes.push({ route, dots });
+    hit.setAttribute('points', dots.map(([x, y]) => `${x},${y}`).join(' '));
     hit.setAttribute('class', 'graph-hit');
     hit.setAttribute('style', 'stroke: transparent; stroke-width: 14px; pointer-events: stroke; cursor: pointer');
     hit.dataset['from'] = route.from;
     hit.dataset['to'] = route.to;
     return [path, hit];
   });
-  drawn.lines.replaceChildren(...paths, ...(drawn.draft ? [drawn.draft] : []));
+  drawn.lanes = lanes;
+  const bars = drawn.ties.map((tie) => {
+    const [x, y] = slotOf(drawn, tie, 0);
+    const high = (tie.routes.length - 1) * TIE_GAP + 16;
+    const bar = document.createElementNS(SVG, 'rect');
+    for (const [k, v] of Object.entries({ x: x - 2, y: y - 8, width: 4, height: high, rx: 2, class: 'graph-tie' })) bar.setAttribute(k, String(v));
+    bar.setAttribute('style', 'fill: var(--sherpa-style-border-base, #b3b3c3); stroke: none; pointer-events: all; cursor: grab');
+    bar.dataset['tie'] = tie.id;
+    if (drawn.selectedTie === tie.id) bar.setAttribute('data-selected', '');
+    return bar;
+  });
+  drawn.lines.replaceChildren(...paths, ...bars, ...(drawn.draft ? [drawn.draft] : []));
 }
 
 /** A socket's box on the screen: a node's or a row's, on one side; a False is its footer's. */
@@ -399,11 +452,100 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
   window.addEventListener('pointercancel', stop);
 }
 
+/** A point on the canvas's plane, from one on the screen. */
+function planeOf(canvas: SherpaLayoutCanvas, e: { clientX: number; clientY: number }): [number, number] {
+  const box = canvas.getBoundingClientRect();
+  const { x, y, zoom } = canvas.view;
+  return [(e.clientX - box.left - x) / zoom, (e.clientY - box.top - y) / zoom];
+}
+
+/** Where two segments cross; none, they do not. */
+function crossing([ax, ay]: [number, number], [bx, by]: [number, number], [cx, cy]: [number, number], [dx, dy]: [number, number]): [number, number] | undefined {
+  const d = (bx - ax) * (dy - cy) - (by - ay) * (dx - cx);
+  if (!d) return undefined;
+  const t = ((cx - ax) * (dy - cy) - (cy - ay) * (dx - cx)) / d;
+  const u = ((cx - ax) * (by - ay) - (cy - ay) * (bx - ax)) / d;
+  return t >= 0 && t <= 1 && u >= 0 && u <= 1 ? [ax + t * (bx - ax), ay + t * (by - ay)] : undefined;
+}
+
+/** A tie dragged: it follows the pointer, and its host moves it within its limit. */
+function dragTie(canvas: SherpaLayoutCanvas, drawn: Drawn, id: string, down: PointerEvent): void {
+  const tie = drawn.ties.find((t) => t.id === id);
+  if (!tie) return;
+  down.preventDefault();
+  down.stopPropagation();
+  drawn.selectedTie = id;
+  drawn.selected = null;
+  drawRoutes(canvas, drawn);
+  canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
+  const [px, py] = planeOf(canvas, down);
+  const [x0, y0] = [tieX(drawn, tie), tie.y];
+  const follow = (e: PointerEvent): void => {
+    const [x, y] = planeOf(canvas, e);
+    drawn.options.onTieMove?.(id, Math.round(x0 + x - px), Math.round(y0 + y - py));
+  };
+  const stop = (): void => {
+    window.removeEventListener('pointermove', follow);
+    window.removeEventListener('pointerup', stop);
+    window.removeEventListener('pointercancel', stop);
+  };
+  window.addEventListener('pointermove', follow);
+  window.addEventListener('pointerup', stop);
+  window.addEventListener('pointercancel', stop);
+}
+
+/** With the tie tool on, a line dragged on the blank canvas: each route it crosses is tied, top to bottom. */
+function lineTie(canvas: SherpaLayoutCanvas, drawn: Drawn, down: PointerEvent): void {
+  down.preventDefault();
+  down.stopPropagation();
+  const begin = planeOf(canvas, down);
+  const draft = document.createElementNS(SVG, 'path');
+  draft.setAttribute('class', 'graph-draft');
+  draft.setAttribute('stroke-dasharray', '6 4');
+  drawn.draft = draft;
+  drawn.lines.append(draft);
+  const follow = (e: PointerEvent): void => {
+    const [x, y] = planeOf(canvas, e);
+    draft.setAttribute('d', `M ${begin[0]} ${begin[1]} L ${x} ${y}`);
+  };
+  const stop = (e: PointerEvent): void => {
+    window.removeEventListener('pointermove', follow);
+    window.removeEventListener('pointerup', stop);
+    window.removeEventListener('pointercancel', stop);
+    draft.remove();
+    drawn.draft = null;
+    if (e.type !== 'pointerup') return;
+    const end = planeOf(canvas, e);
+    const hits = drawn.lanes.flatMap(({ route, dots }) => {
+      for (let i = 1; i < dots.length; i++) {
+        const at = crossing(begin, end, dots[i - 1]!, dots[i]!);
+        if (at) return [{ route, at }];
+      }
+      return [];
+    }).sort((a, b) => a.at[1] - b.at[1]);
+    if (!hits.length) return;
+    const mean = (n: 0 | 1): number => Math.round(hits.reduce((sum, h) => sum + h.at[n], 0) / hits.length);
+    drawn.options.onTie?.(hits.map((h) => h.route), { x: mean(0), y: mean(1) });
+  };
+  window.addEventListener('pointermove', follow);
+  window.addEventListener('pointerup', stop);
+  window.addEventListener('pointercancel', stop);
+}
+
+/** Where routes would be tied with no pointer: the middle of the way each takes, on the plane. */
+export function tieSpot(canvas: SherpaLayoutCanvas, routes: readonly NodeRoute[]): { x: number; y: number } {
+  const lanes = (drawnOn.get(canvas)?.lanes ?? []).filter((l) => routes.some((r) => r.from === l.route.from && r.to === l.route.to));
+  const ends = lanes.map((l) => [l.dots[0]!, l.dots.at(-1)!] as const);
+  const mean = (n: 0 | 1): number => (ends.length ? Math.round(ends.reduce((sum, [a, b]) => sum + (a[n] + b[n]) / 2, 0) / ends.length) : 0);
+  return { x: mean(0), y: mean(1) };
+}
+
 /** Clear what is picked: every node, and the route a click picked. */
 function deselect(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
   markNode(canvas, null);
-  if (drawn.selected) {
+  if (drawn.selected || drawn.selectedTie) {
     drawn.selected = null;
+    drawn.selectedTie = null;
     drawRoutes(canvas, drawn);
   }
   drawn.options.onDeselect?.();
@@ -431,7 +573,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
   const made: Drawn = {
     graph: { nodes: [], routes: [] }, options: {},
     nodes: new Map(), rows: new Map(), addresses: new WeakMap(), shapes: new Map(), placedAt: new Map(),
-    lines, routes: [], draft: null, lifted: null, selected: null, fitted: false,
+    lines, routes: [], ties: [], selectedTie: null, lanes: [], tying: false, draft: null, lifted: null, selected: null, fitted: false,
     // A node's height lands when its parts render: the lines follow, and the first fits the view.
     sizes: new ResizeObserver(() => {
       drawRoutes(canvas, made);
@@ -446,6 +588,14 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
   });
   // Before the node and the view hear it: a drag from an output socket is a new route.
   canvas.addEventListener('pointerdown', (event) => connectFrom(canvas, made, event), { capture: true });
+  // A tie is dragged; with the tool on, a line on the blank canvas ties the routes it crosses. TODO 562
+  canvas.addEventListener('pointerdown', (down) => {
+    const first = down.composedPath()[0];
+    if (down.button !== 0 || !(first instanceof Element)) return;
+    const id = first instanceof SVGElement && first.classList.contains('graph-tie') ? first.dataset['tie'] : undefined;
+    if (id) dragTie(canvas, made, id, down);
+    else if (made.tying && (first.classList.contains('viewport') || first.classList.contains('plane'))) lineTie(canvas, made, down);
+  }, { capture: true });
   // A click — a press and a release, the pointer still — on the blank canvas deselects. TODO 559
   canvas.addEventListener('pointerdown', (down) => {
     const first = down.composedPath()[0];
@@ -463,9 +613,22 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     const hit = event.target instanceof SVGElement && event.target.classList.contains('graph-hit') ? event.target : null;
     if (!hit) return;
     made.selected = { from: hit.dataset['from']!, to: hit.dataset['to']! };
+    made.selectedTie = null;
     drawRoutes(canvas, made);
     // The canvas's own keys hear the break.
     canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
+  });
+  // A picked tie: Delete removes it; the arrow keys move it, 8px, or 32 with Shift.
+  canvas.addEventListener('keydown', (event) => {
+    const tie = made.ties.find((t) => t.id === made.selectedTie);
+    if (event.target !== canvas || !tie) return;
+    const step = event.shiftKey ? 32 : 8;
+    const by: Record<string, [number, number]> = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
+    if (event.key === 'Delete' || event.key === 'Backspace') made.options.onUntie?.(tie.id);
+    else if (by[event.key]) made.options.onTieMove?.(tie.id, Math.round(tieX(made, tie) + by[event.key]![0]), tie.y + by[event.key]![1]);
+    else return;
+    event.preventDefault();
+    event.stopPropagation();
   });
   canvas.addEventListener('keydown', (event) => {
     if (event.target !== canvas || !made.selected || (event.key !== 'Delete' && event.key !== 'Backspace')) return;
@@ -541,6 +704,9 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: DrawnGraph, options
     drawRows(drawn, el, node);
   }
   drawn.routes = graph.routes;
+  drawn.ties = graph.ties ?? [];
+  drawn.tying = !!options.tying;
+  if (drawn.selectedTie && !drawn.ties.some((t) => t.id === drawn.selectedTie)) drawn.selectedTie = null;
   if (drawn.selected && !graph.routes.some((r) => r.from === drawn.selected!.from && r.to === drawn.selected!.to)) drawn.selected = null;
   requestAnimationFrame(() => drawRoutes(canvas, drawn));
 }
@@ -1146,7 +1312,7 @@ export function bindWorkflow(
       report({ code: 'node-readonly', message: 'bindWorkflow: this Custom Node is a preset, read only. Copy to my nodes, and change the copy.', at: { workflow: workflow.id } });
     } else {
       const id = path.at(-1)!.kind;
-      setLib(editDefinition(lib, id, { nodes: next.nodes.filter((n) => !n.id.startsWith('#')), routes: next.routes ?? [] }), [id]);
+      setLib(editDefinition(lib, id, { nodes: next.nodes.filter((n) => !n.id.startsWith('#')), routes: next.routes ?? [], ties: next.ties ?? [] }), [id]);
     }
     draw();
   }, tag);
@@ -1172,6 +1338,26 @@ export function bindWorkflow(
   // A moved end is one edit: the route cut, then made, checked as one.
   const onReroute = (was: NodeRoute, now: NodeRoute): void => take(editWorkflow(editWorkflow(shown(), { cut: was }, K()), { route: now }, K()));
   const onBreak = (route: NodeRoute): void => write(editWorkflow(shown(), { cut: route }, K()));
+  // — Zip ties (562): a tie is a part of the draft, so each is one edit, and one step.
+  let tying = false;
+  const setTying = (on: boolean): void => {
+    tying = on;
+    toolbar?.toggleAttribute('data-tie', on);
+    draw();
+  };
+  const onTie = (routes: NodeRoute[], at: { x: number; y: number }): void => take(editWorkflow(shown(), { tie: { routes, ...at } }, K()));
+  const onTieMove = (id: string, x: number, y: number): void => write(editWorkflow(shown(), { moveTie: { id, x, y } }, K()), `tie:${id}`);
+  const onUntie = (id: string): void => write(editWorkflow(shown(), { untie: id }, K()));
+  /** With no pointer: tie the routes between picked nodes, or into one; where all are tied together already, untie them. */
+  const tieNodes = (ids: readonly string[]): void => {
+    if (readOnly()) return;
+    const routes = (shown().routes ?? []).filter((r) => (ids.length > 1 ? ids.includes(socketOf(r.from).node) && ids.includes(socketOf(r.to).node) : socketOf(r.to).node === ids[0]));
+    if (!routes.length) return;
+    const same = (a: NodeRoute, b: NodeRoute): boolean => a.from === b.from && a.to === b.to;
+    const held = (shown().ties ?? []).find((t) => t.routes.length === routes.length && routes.every((r) => t.routes.some((q) => same(q, r))));
+    if (held) onUntie(held.id);
+    else onTie(routes, tieSpot(canvas, routes));
+  };
   // A Value node for a picklist row: the row keeps its own pick, and mirrors the node.
   const customAt = (to: string, at: { x: number; y: number }): void => take(addCustomValue(shown(), to, at, K()));
   const onCustom = (to: string, at: { x: number; y: number }): void => customAt(to, { x: Math.round(at.x), y: Math.round(at.y) });
@@ -1409,12 +1595,15 @@ export function bindWorkflow(
       if (event.key.toLowerCase() === 'y' || event.shiftKey) redo();
       else undo();
     } else if (event.key === 'Escape') {
-      if (multi.size) {
+      if (tying) setTying(false);
+      else if (multi.size) {
         multi.clear();
         markNode(canvas, null);
         picks.deselect();
       } else if (path.length) back();
       else return;
+    } else if (event.key.toLowerCase() === 't' && !mod && !event.shiftKey && (multi.size > 1 || (hit && !hit.field))) {
+      tieNodes(multi.size > 1 ? [...multi] : [hit!.id]);
     } else if (hit?.header && event.key === ' ') toggle(hit.id);
     else if (hit?.header && event.key === 'Enter' && use(hit.id)) open(hit.id);
     else return;
@@ -1446,8 +1635,10 @@ export function bindWorkflow(
     const action = (event as CustomEvent<{ action?: string }>).detail?.action;
     if (action === 'undo') undo();
     else if (action === 'redo') redo();
+    else if (action === 'tie') setTying(!tying);
   };
   toolbar?.addEventListener('toolbar-select', onTool);
+  toolbar?.setAttribute('data-can-tie', '');
   tell();
   canvas.addEventListener('keydown', onKey, { capture: true });
   canvas.addEventListener('click', onClick, { capture: true });
@@ -1485,6 +1676,7 @@ export function bindWorkflow(
     graph = ro ? { ...body, nodes: body.nodes.map((n) => ({ ...n, rows: n.rows.map((r) => ({ ...r, editable: false })) })) } : body;
     drawGraph(canvas, graph, {
       onEdit, onMove, onConnect, onReroute, onBreak, onCustom, onDeselect: picks.deselect,
+      ...(ro ? {} : { tying, onTie, onTieMove, onUntie }),
       onSelect: (node) => {
         multi.clear();
         picks.select(node, graph);
@@ -1546,6 +1738,7 @@ export function bindWorkflow(
       unwatch();
       panel?.removeEventListener('node-add', onAdded);
       toolbar?.removeEventListener('toolbar-select', onTool);
+      toolbar?.removeAttribute('data-tie');
       canvas.removeEventListener('keydown', onKey, { capture: true });
       canvas.removeEventListener('click', onClick, { capture: true });
       canvas.removeEventListener('dblclick', onDouble);

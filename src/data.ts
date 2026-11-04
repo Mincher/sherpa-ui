@@ -141,6 +141,7 @@ export {
   type NodeKind,
   type NodePlaces,
   type NodeRoute,
+  type NodeTie,
   type PaletteGroup,
   type PaletteItem,
   type RowChoice,
@@ -152,9 +153,13 @@ export {
 } from './core/data/node-kinds.js';
 /* A WORKFLOW, set up from one JSON document. TRAP T-a-workflow-is-its-definition */
 export {
+  NODE_WIDTH,
+  TIE_GAP,
   checkWorkflow,
   editWorkflow,
   readWorkflow,
+  tieLimit,
+  tiesAmong,
   workflowFaults,
   workflowGraph,
   type WorkflowDefinition,

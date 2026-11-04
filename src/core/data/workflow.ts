@@ -14,6 +14,10 @@
  * - checkWorkflow — Check every node, kind and route; each fault reports. True when none is.
  * - WorkflowFacts — What drawing a workflow needs that it does not say: the fields a row picks, the stores.
  * - workflowGraph — A workflow as nodes and routes: each node its kind's, at its own place, with its values.
+ * - NODE_WIDTH — A node's width on the plane, in px: where its output socket is from its x.
+ * - TIE_GAP — The gap between two routes in a zip tie, in px.
+ * - tieLimit — The range a zip tie's x may take: between the nodes its shortest tied route joins.
+ * - tiesAmong — The ties left when only some routes remain: a tie keeps its routes still there, and none, it goes.
  * - WorkflowEdit — One edit to a workflow: a row, a node's own part, a route made or cut, a node added or removed.
  * - editWorkflow — The workflow after one edit; the one given untouched.
  * - addCustomValue — A Value node made for a picklist row and routed into it: the row mirrors it, and keeps its own pick.
@@ -23,7 +27,7 @@ import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS } from './store.js';
 import {
   NODE_KINDS, ROWS, SOCKET_WORDS, FALSE_SOCKET, accepts, conditionRows, drivenSwitch, fixedChoices, truthy, kindNode, mirrored, partName, partOf, rowChoices, rowOf, socketOf, socketType, takesMany,
-  type DrawnGraph, type GraphRow, type NodeKind, type NodeRoute, type PartKind, type SocketType,
+  type DrawnGraph, type GraphRow, type NodeKind, type NodeRoute, type NodeTie, type PartKind, type SocketType,
 } from './node-kinds.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
@@ -55,6 +59,8 @@ export interface WorkflowDefinition {
   label?: string;
   nodes: readonly WorkflowNode[];
   routes?: readonly NodeRoute[];
+  /** Zip ties: a place and the routes each funnels, in order. A tie changes no data; a runner ignores them. TODO 562 */
+  ties?: readonly NodeTie[];
 }
 
 /** A workflow as v1 saved it: the same, but its data rows left from a node's header. */
@@ -203,6 +209,15 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
     return found;
   };
   if ([...next.keys()].some(loops)) problems.push('its routes run in a loop');
+  const tied = new Set<string>();
+  for (const tie of workflow.ties ?? []) {
+    if (tied.has(tie.id)) problems.push(`two ties are "${tie.id}"`);
+    tied.add(tie.id);
+    if (!tie.routes?.length) problems.push(`the tie "${tie.id}" ties no route`);
+    for (const r of tie.routes ?? []) {
+      if (!(workflow.routes ?? []).some((x) => x.from === r.from && x.to === r.to)) problems.push(`the tie "${tie.id}" ties the route "${r.from}" → "${r.to}", which is not there`);
+    }
+  }
   return problems;
 }
 
@@ -295,7 +310,38 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
     const heads = { ...(node.heading ? { heading: node.heading } : {}), ...(node.description ? { description: node.description } : {}) };
     return { ...kindNode(kinds, node.kind, node.id, rows, heads), x: node.x, y: node.y };
   });
-  return { nodes, routes: [...routes] };
+  return { nodes, routes: [...routes], ...(workflow.ties?.length ? { ties: workflow.ties } : {}) };
+}
+
+/** A node's width on the plane, in px: its output socket is at its x plus this. */
+export const NODE_WIDTH = 240;
+/** The gap between two routes in a zip tie, in px. */
+export const TIE_GAP = 12;
+
+/**
+ * The range a tie's x may take. Each tied route spans from its source's right edge
+ * (`x + NODE_WIDTH`) to its target's `x`; the SHORTEST one's span is the range. A span
+ * with the target left of its source is the one point halfway. None, no tied route is there.
+ */
+export function tieLimit(workflow: { nodes: readonly { id: string; x: number }[] }, tie: Pick<NodeTie, 'routes'>): { min: number; max: number } | undefined {
+  const x = new Map(workflow.nodes.map((n) => [n.id, n.x]));
+  const spans = tie.routes.flatMap((r) => {
+    const [a, b] = [x.get(socketOf(r.from).node), x.get(socketOf(r.to).node)];
+    return a === undefined || b === undefined ? [] : [{ min: a + NODE_WIDTH, max: b }];
+  });
+  if (!spans.length) return undefined;
+  const short = spans.reduce((best, s) => (s.max - s.min < best.max - best.min ? s : best));
+  if (short.max >= short.min) return short;
+  const mid = (short.min + short.max) / 2;
+  return { min: mid, max: mid };
+}
+
+/** The ties left when only these routes remain: a tie keeps its routes still there; with none, it goes. */
+export function tiesAmong(ties: readonly NodeTie[] | undefined, routes: readonly NodeRoute[]): NodeTie[] {
+  return (ties ?? []).flatMap((t) => {
+    const kept = t.routes.filter((r) => routes.some((x) => x.from === r.from && x.to === r.to));
+    return kept.length ? [kept.length === t.routes.length ? t : { ...t, routes: kept }] : [];
+  });
 }
 
 /** One edit to a workflow: a row's value, a node's own name, line or place, a route made
@@ -308,7 +354,10 @@ export type WorkflowEdit =
   | { route: NodeRoute }
   | { cut: string | NodeRoute }
   | { add: WorkflowNode }
-  | { remove: string };
+  | { remove: string }
+  | { tie: { id?: string; x: number; y: number; routes: readonly NodeRoute[] } }
+  | { untie: string }
+  | { moveTie: { id: string; x?: number; y?: number } };
 
 /** The workflow after one edit, a v2 — a v1 read as one first; the one given untouched. A
  *  value is typed as its row takes it. */
@@ -318,23 +367,49 @@ export function editWorkflow(
   const workflow = readWorkflow(given, kinds).workflow;
   if (!workflow) return given as WorkflowDefinition;
   const same = (a: NodeRoute, b: NodeRoute): boolean => a.from === b.from && a.to === b.to;
+  // A route that is gone leaves its ties, and a tie with none goes.
+  const untied = (w: WorkflowDefinition): WorkflowDefinition => {
+    if (!w.ties) return w;
+    const { ties: _was, ...bare } = w;
+    const ties = tiesAmong(w.ties, w.routes ?? []);
+    return ties.length ? { ...bare, ties } : bare;
+  };
   if ('route' in edit) {
     const routes = workflow.routes ?? [];
     if (routes.some((r) => same(r, edit.route))) return workflow;
     const { node, row } = socketOf(edit.route.to);
     const kind = kinds[workflow.nodes.find((n) => n.id === node)?.kind ?? ''];
     const many = !!kind && takesMany(kind, row);
-    return { ...workflow, routes: [...routes.filter((r) => many || r.to !== edit.route.to), { ...edit.route }] };
+    return untied({ ...workflow, routes: [...routes.filter((r) => many || r.to !== edit.route.to), { ...edit.route }] });
+  }
+  if ('tie' in edit) {
+    const free = (n: number): string => ((workflow.ties ?? []).some((t) => t.id === `tie-${n}`) ? free(n + 1) : `tie-${n}`);
+    const id = edit.tie.id ?? free(1);
+    if ((workflow.ties ?? []).some((t) => t.id === id)) return workflow;
+    const routes = edit.tie.routes.filter((r, i, all) => all.findIndex((q) => same(q, r)) === i).map(({ from, to }) => ({ from, to }));
+    const limit = tieLimit(workflow, { routes });
+    const x = limit ? Math.min(limit.max, Math.max(limit.min, edit.tie.x)) : edit.tie.x;
+    return { ...workflow, ties: [...(workflow.ties ?? []), { id, x, y: edit.tie.y, routes }] };
+  }
+  if ('untie' in edit) return untied({ ...workflow, ties: (workflow.ties ?? []).filter((t) => t.id !== edit.untie) });
+  if ('moveTie' in edit) {
+    const { id, x, y } = edit.moveTie;
+    return { ...workflow, ties: (workflow.ties ?? []).map((t) => {
+      if (t.id !== id) return t;
+      const limit = tieLimit(workflow, t);
+      const to = x === undefined ? t.x : limit ? Math.min(limit.max, Math.max(limit.min, x)) : x;
+      return { ...t, x: to, y: y ?? t.y };
+    }) };
   }
   if ('add' in edit) return workflow.nodes.some((n) => n.id === edit.add.id) ? workflow : { ...workflow, nodes: [...workflow.nodes, { ...edit.add }] };
   if ('remove' in edit) {
     const gone = (address: string): boolean => socketOf(address).node === edit.remove;
     const routes = (workflow.routes ?? []).filter((r) => !gone(r.from) && !gone(r.to));
-    return { ...workflow, nodes: workflow.nodes.filter((n) => n.id !== edit.remove), ...(workflow.routes ? { routes } : {}) };
+    return untied({ ...workflow, nodes: workflow.nodes.filter((n) => n.id !== edit.remove), ...(workflow.routes ? { routes } : {}) });
   }
   if ('cut' in edit) {
     const { cut } = edit;
-    return { ...workflow, routes: (workflow.routes ?? []).filter((r) => (typeof cut === 'string' ? r.to !== cut : !same(r, cut))) };
+    return untied({ ...workflow, routes: (workflow.routes ?? []).filter((r) => (typeof cut === 'string' ? r.to !== cut : !same(r, cut))) });
   }
   const nodes = workflow.nodes.map((node) => {
     if (node.id !== edit.node) return node;

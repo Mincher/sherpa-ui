@@ -225,4 +225,5 @@ export const ICON_NAMES: ReadonlySet<string> = new Set([
   'wifi-signal',
   'wireless-router',
   'workstation',
+  'zip-tie',
 ]);

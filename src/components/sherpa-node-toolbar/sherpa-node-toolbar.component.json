@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-node-toolbar",
-  "$description": "a graph editor's tools, one object of icon buttons: Save, then Undo and Redo. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step",
+  "$description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step",
   "element": {
     "$type": "element",
     "tag": "span",
@@ -61,6 +61,19 @@
             "data-tip": "Redo (Shift+Ctrl+Z)",
             "disabled": ""
           }
+        },
+        {
+          "el": "sherpa-button",
+          "class": "tie",
+          "attrs": {
+            "data-type": "icon",
+            "data-icon-start": "zip-tie",
+            "data-action": "tie",
+            "aria-label": "Zip tie",
+            "data-tip": "Zip tie: drag across connectors (T on picked nodes)",
+            "aria-pressed": "false",
+            "disabled": ""
+          }
         }
       ]
     }
@@ -86,16 +99,34 @@
     },
     {
       "$type": "prop",
+      "name": "data-can-tie",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "The Zip tie tool can be pressed; written by the editor"
+    },
+    {
+      "$type": "prop",
       "name": "data-can-undo",
       "type": "boolean",
       "observed": true,
       "declared": true,
       "kind": "behaviour",
       "description": "Undo can be pressed; written by the editor that owns the history"
+    },
+    {
+      "$type": "prop",
+      "name": "data-tie",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "The Zip tie tool is on; written by the editor, shown as pressed"
     }
   ],
   "populate": {
-    "shape": "{ canRedo?, canSave?, canUndo? }",
+    "shape": "{ canRedo?, canSave?, canTie?, canUndo?, tie? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "events": [

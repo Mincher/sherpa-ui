@@ -117,7 +117,7 @@ test('Save is a placeholder, off; Undo and Redo are off until there is a step, a
   await bind(page);
   expect(await can(page)).toEqual({ undo: false, redo: false, buttons: [true, true, true] });
   const tips = await page.locator('sherpa-node-toolbar sherpa-button').evaluateAll((els) => els.map((e) => e.getAttribute('data-tip')));
-  expect(tips).toEqual(['Save', 'Undo (Ctrl+Z)', 'Redo (Shift+Ctrl+Z)']);
+  expect(tips.slice(0, 3)).toEqual(['Save', 'Undo (Ctrl+Z)', 'Redo (Shift+Ctrl+Z)']);
   await item(page, 'count').click();
   await settle(page);
   expect(await can(page)).toEqual({ undo: true, redo: false, buttons: [true, false, true] });

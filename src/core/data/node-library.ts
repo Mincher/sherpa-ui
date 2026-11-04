@@ -32,7 +32,7 @@
  * - copyToMine — A custom, editable copy of a definition (a preset's, as "Copy to my nodes").
  */
 import { report } from './report.js';
-import { NODE_KINDS, rowOf, type NodeKind, type NodeRoute, type RowKind, type RowControl } from './node-kinds.js';
+import { NODE_KINDS, rowOf, type NodeKind, type NodeRoute, type NodeTie, type RowKind, type RowControl } from './node-kinds.js';
 import { editWorkflow, workflowFaults, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
 
 type Kinds = Readonly<Record<string, NodeKind>>;
@@ -78,6 +78,8 @@ export interface NodeDefinition extends NodeSnapshot {
   description?: string;
   /** From a file, read only: "Copy to my nodes" makes a custom one (D15). */
   preset?: true;
+  /** Zip ties in the body: they change no data, so are no part of its version or its diff. */
+  ties?: readonly NodeTie[];
 }
 
 /** Every Custom Node of an app, by id (D13). */
@@ -202,6 +204,7 @@ function inside(id: string, definition: NodeDefinition, base: Kinds, values: Rea
         { id: '#out', kind: GROUP_OUTPUT, x: Math.max(0, ...xs) + 360, y: 0 },
       ],
       routes: definition.routes ?? [],
+      ...(definition.ties?.length ? { ties: definition.ties } : {}),
     },
   };
 }
@@ -404,7 +407,7 @@ export function updateAll(workflow: WorkflowDefinition, kind: string, library: N
 /** The library after one change to a definition. A preset's is refused, and so is one that is not
  *  there: the library given, untouched. */
 export function editDefinition(
-  library: NodeLibrary, id: string, change: Partial<Pick<NodeDefinition, 'label' | 'category' | 'icon' | 'description' | 'inputs' | 'outputs' | 'nodes' | 'routes'>>,
+  library: NodeLibrary, id: string, change: Partial<Pick<NodeDefinition, 'label' | 'category' | 'icon' | 'description' | 'inputs' | 'outputs' | 'nodes' | 'routes' | 'ties'>>,
 ): NodeLibrary {
   const was = library.nodes[id];
   if (!was || was.preset) return library;

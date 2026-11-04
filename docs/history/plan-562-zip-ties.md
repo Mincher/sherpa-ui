@@ -56,8 +56,8 @@ to its target node. Source node's place = `x + NODE_WIDTH` (its right edge, 240)
 place = its `x` (its left edge). The SHORTEST tied route is the one with the least
 `to.x − (from.x + 240)`. The tie's x stays in `[from.x + 240, to.x]` of that route.
 Where that span is negative (a target left of its source) the range is the one point
-halfway between them. Planted: nodes at x=0 and x=600, 300 and 500 → spans 360 and −40 →
-the shortest is the second: range is the point 410 → a tie at 520 clamps to 410.
+halfway between them. Planted: nodes (0 → 400) and (100 → 700) → spans 160 and 360 → the shortest is the first:
+the range is [240, 400], so a tie at 520 clamps to 400.
 
 Drawn, a tie whose node moved past its limit is DRAWN at the clamp; the saved x is
 corrected the next time it is edited. (Drawing never writes.)
