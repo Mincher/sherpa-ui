@@ -385,6 +385,19 @@ what it registers and writes the README; `check:mcp-pack` passed in the main tre
 `validate_page`, which are not served: `scaffold_app` comes back IN G2, beside
 `validate_app`, which checks what it writes (the lane's pick A).
 
+**G3 ✅ (`50660526`).** `tools/query.js`: `query_source` (a page + rows, or a LOCALHOST data
+path through `openRequestStore` — any other host refused before a request; `checkPage` →
+`openSource` → `ask()` per command → the page of rows, total, groups, filter, each field's
+state, the Query, and the data layer's reports, each under the command that raised it;
+`changed: false` when a command moved nothing), `query_graph`, `edit_query_graph`
+(`graphRequest`/`routeRequest` → `ask()` → the Query and `pageWithQuery`, checked),
+`workflow_graph` (`checkWorkflow` + `workflowGraph`) and `edit_workflow`; `sherpa://node-kinds`
+is `NODE_KINDS` as the registry holds it, so 713's sockets need no change here.
+`lib/sherpa.js` gained `IMPORTS`/`imported()`, the door for the built entries. 13 stdio tests,
+one over Demos' Records page against the same `ask()` made directly. `check:mcp-pack`: 8
+tools, 352 resources. Found: a command that is no `QueryRequest` acts as an Apply, unreported
+(TODO 718).
+
 | # | Question | A (my pick) | B |
 |---|---|---|---|
 | Q1 | Where the new MCP lives | `mcp-server/`, rewritten in place; package `sherpa-ui-mcp` (the Starter's `.mcp.json` names it); gated in this repo | A sibling project, like the Starter |
