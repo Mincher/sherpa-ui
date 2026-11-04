@@ -88,8 +88,8 @@ column's clause and has no idea what else is filtering the view, so combining
 the clauses belongs to whoever owns the query — a DataSource, or the page.
 
 The grid instead lights the column (see `T-grid-active-flag-is-not-a-tint`) and
-says what was asked for. `#columnFilters` holds one `ColumnFilter` per field for
-the same reason it is held rather than applied: keeping it is what lets a
+says what was asked for. Its `FilterHostController` (`GridFilters.filter`) keeps
+each column's reading, held rather than applied: keeping it is what lets a
 re-opened menu show the pair already set, and what a heading cell made again
 (a changed type or filter shape) draws from.
 
@@ -138,10 +138,10 @@ drag — so a caller's `width: 4` cannot produce a column too thin to read.
 
 ### T-grid-header-needs-capture
 
-`.head-row`'s click listener is CAPTURE-phase. The sort control is a chip, and a
-chip's caret handler calls `stopPropagation()` — it is guarding its own menu
-from the body's toggle. **A bubbling listener here would never see the click that
-IS the sort.**
+`.head-row`'s click listener is CAPTURE-phase. It was needed while the sort
+control was a chip: a chip's caret handler calls `stopPropagation()`, guarding its
+own menu from the body's toggle, so **a bubbling listener never saw the click that
+was the sort.** The Sort and Group are `sherpa-button`s now, which stop nothing.
 
 Registration order then decides order within capture, which is what
 `T-swallow-flag-not-listener` depends on. The same platform fact as
@@ -158,8 +158,8 @@ TOOLBAR's vocabulary: **a DataSource bound to this grid hears
 `quick-filter-change` and sets the whole filter from it, wiping everything else
 the view had folded in.**
 
-So they are swallowed at the header row (`#stopChipEvent`, matching both
-`.head-filter` and `.head-sort`). The grid speaks `column-filter-change`, which
+So they are swallowed at the header row (`GridFilters.stop`, for a
+`.head-filter`). The grid speaks `column-filter-change`, which
 says which COLUMN and carries a ready clause. Anything else leaking out would be
 a second, rival dialect for the same gesture.
 
@@ -171,13 +171,8 @@ The chip is reused for its MENU — its cross-shadow placement
 
 ### T-grid-populate-keeps-column-filters
 
-`renderData` treats its two filter maps differently, and must.
-
-The header-row `#filters` are CLEARED outright: fresh data may name columns that
-no longer exist, and silently hiding rows against an invisible filter would look
-like data loss.
-
-**`#columnFilters` drop only where the COLUMN has gone.** They cannot be cleared
+**`renderData` drops a column's filter only where the COLUMN has gone**
+(`filter.forget(undefined, fields)`). It cannot clear them
 outright, because a column filter is what CAUSES a re-populate: the grid reports
 the clause, the host queries, and the rows come back through here. Wiping the map
 on arrival threw away the filter that had just been applied, so the heading went
@@ -188,7 +183,7 @@ longer has.
 
 The SELECTION is then re-resolved by KEY. New records are new objects, so nothing
 selected by OBJECT identity can still be present, but a selection asked for by
-key can. That is what lets a saved view restore a selection at all — a snapshot
+key can. That is what lets a saved view restore a selection at all — a View
 applies before the source has populated, so `select()` had nothing to match and
 silently selected nothing (`T-restore-before-first-load` is the source's half of
 that race). It also means a filter that hides a selected row and shows it again
@@ -200,11 +195,10 @@ does not lose the tick.
 
 The select-all box is DERIVED from what is selected, never reset.
 
-Clearing it on render — as `#render` and `#applyFilter` both used to — **threw
-the user's selection away on every sort, every filter keystroke and every
-quick-filter toggle.** A filter changes which records are VISIBLE, not which are
-chosen. The focused row survives the same way, because it is held as a record
-rather than a position.
+Clearing it on render **throws the user's selection away on every sort, every
+filter keystroke and every quick-filter toggle.** A filter changes which records
+are VISIBLE, not which are chosen. The current row survives the same way: it is
+held by key, not by position.
 
 `indeterminate` is a property, never an attribute, and a box that is
 indeterminate reports `checked === false` — see `T-indeterminate-reports-false`
@@ -214,8 +208,8 @@ for what trusting that box costs.
 
 ### T-grid-pin-offset-is-measured
 
-`#syncPinned` settles the frozen leading columns, and both of its jobs need the
-DOM:
+The frozen leading columns are settled in two places — the grid flags each pinned
+cell, and `GridWidths.measure()` writes the offset — and both jobs need the DOM:
 
 1. SELECTION cells join the frozen block, but only while `data-selectable`
    reveals them — a `display: none` cell must not claim the start offset. That is
@@ -312,7 +306,7 @@ round trip IS the parity rule.
 that routes the event into its query filter twice. Nothing to filter by is not a
 filter, so a restored empty clause behaves like a cleared one.
 
-One path writes a menu, `#drawColumnFilter`, from `#columnFilters` — for a
+One path writes a menu, `GridFilters.draw`, from what its controller holds — for a
 heading cell just made and a kept one alike (`T-a-heading-cell-is-kept`).
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
@@ -368,16 +362,15 @@ descending       →  SUSPENDED (column kept, nothing ordered)
 suspended        →  ascending again
 ```
 
-**SUSPENDED, not deleted** — corrected 2026-09-21. It used to delete the column,
-which broke `T-a-chip-body-cycles-its-states` ("off is a state, not a delete")
-and made this control and the toolbar's Sort chip disagree about what their
-shared third state keeps. See `T-a-suspended-sort-is-one-owners-job` for the
+**SUSPENDED, not deleted.** Deleting the column breaks
+`T-a-chip-body-cycles-its-states` ("off is a state, not a delete") and makes
+this control and the toolbar's Sort chip disagree about what their shared third
+state keeps. See `T-a-suspended-sort-is-one-owners-job` for the
 wire format and why the memory lives on the source.
 
-The third step is what the toolbar had and this did not: it cycled asc → desc →
-asc, so **once a column was sorted there was no way back to unsorted** without
-picking a different one. Two controls for one value must agree about how many
-states that value has.
+Without the third step — asc → desc → asc — **once a column is sorted there is
+no way back to unsorted** without picking a different one. Two controls for one
+value must agree about how many states that value has.
 
 `sort-change` therefore carries `field: null, direction: 'asc'` on the third
 click — the Sort chip's shape (TODO 523 S10).
@@ -417,8 +410,8 @@ second; the colgroup is the only thing a width changes.
 
 ### T-grid-select-remembers-wanted-keys
 
-`select(keys)` REMEMBERS the keys in `#wantedKeys`, it does not merely resolve
-them. **A saved view can arrive BEFORE the rows** — a source populates
+`select(keys)` REMEMBERS the keys (`GridSelection.#wanted`), it does not merely
+resolve them. **A saved view can arrive BEFORE the rows** — a source populates
 asynchronously, and a restore that ran first matched against an empty list and
 silently selected nothing (`T-restore-before-first-load` is the source's half).
 Holding the keys lets `renderData` re-resolve them the moment the rows land, and
@@ -651,7 +644,7 @@ all** — an affordance that opens nothing is worse than none, so a column the g
 cannot build a control for shows no control rather than a dead chip.
 
 The type is in a heading cell's key, so a column whose type changes is made
-again (`T-a-heading-cell-is-kept`). `#drawColumnFilter` is the one path that
+again (`T-a-heading-cell-is-kept`). `GridFilters.draw` is the one path that
 writes a menu, for a cell just made and a kept one alike
 (`T-grid-read-without-write-is-half-an-api`).
 
@@ -659,8 +652,8 @@ writes a menu, for a cell just made and a kept one alike
 
 ### T-grid-empty-clause-is-null
 
-`#readColumnFilter` returns NULL for an EMPTY value as much as for a cleared
-menu.
+`GridFilters` reads NULL from a menu for an EMPTY value as much as for a cleared
+one.
 
 "Contains nothing" matches every row, so applying it would light the column and
 change the view not at all — **which reads as the filter being broken**, not as a
@@ -731,8 +724,8 @@ and not a static number. There is nothing to fall back to: an absent
 that without also being a legal value.
 
 `num()` is also what makes it safe. It treats an **EMPTY** attribute as absent,
-where `Number('')` is `0` — which used to pin a line chart's floor to 0 the
-moment a template emitted `data-min=""`. The same mistake in
+where `Number('')` is `0` — which pins a line chart's floor to 0 the moment a
+template emits `data-min=""`. The same mistake in
 `sherpa-pagination` made `data-page-size="0"` read back as 0 and hand the caller
 a divide-by-zero, which is why that one passes `min: 1` as well.
 
@@ -784,11 +777,11 @@ was already using it.
 
 The swap is drop-in because the component exposes `checked` and `indeterminate`
 as properties and re-emits `change` from the HOST, which is the shape the grid's
-handlers already read. What is NOT drop-in: SINGLE select mode used to write
-`box.type = 'radio'` on the input. A custom element has no such property, and
-mutating a control's type is a structural change either way. Both controls now
-sit in the row template and CSS reveals one —
-`T-every-element-in-the-template`.
+handlers already read. What is NOT drop-in: SINGLE select mode cannot write
+`box.type = 'radio'`. A custom element has no such property, and mutating a
+control's type is a structural change either way. Both controls sit in the row
+template — `T-every-element-in-the-template` — and a row keeps the one its mode
+shows (`T-a-row-holds-two-selection-boxes`).
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
@@ -825,16 +818,15 @@ The grid holds its selection two ways, and only one of them survives:
 | | what it holds | survives a sort / group | survives a PAGE change |
 |---|---|---|---|
 | `#selected` | record OBJECTS | yes — same objects, reordered | **no** — the store hands back new ones |
-| `#wantedKeys` | key STRINGS | yes | yes |
+| `#wanted` | key STRINGS | yes | yes |
 
-`#resolveSelection()` already rebuilt `#selected` from `#wantedKeys` on every
-populate. The hole was that **nothing wrote `#wantedKeys` except the `select()`
-API** — a user's own tick only ever touched `#selected`, so the next populate
-cleared it and refilled from keys that had never heard of it.
+`resolve()` rebuilds `#selected` from `#wanted` on every populate (both in
+`GridSelection`). So **a user's own tick must write `#wanted` too**, not only
+`#selected`, or the next populate clears it and refills from keys that never heard
+of it.
 
-`#rememberSelection()` closes it at the one choke point every interactive path
-already ran through, `#emitSelection()`. Two things about it are easy to get
-wrong:
+`#changed()` does that at the one choke point every interactive path runs
+through, before the event. Two things about it are easy to get wrong:
 
 1. **It MERGES.** The grid holds one page, so a record chosen on page 1 is
    simply absent from `#rows` while page 2 is up. Replacing the keys with
@@ -843,12 +835,11 @@ wrong:
 2. **A CLEAR therefore has to say so explicitly.** "Clear selection", and
    unticking the header box, both mean *everything* — but they only empty
    `#selected`, and the merge would hand every off-page key straight back. Both
-   null `#wantedKeys` as well. `select()` replaces outright for the same
+   null `#wanted` as well. `select()` replaces outright for the same
    reason, and that is the difference between it and a user's tick.
 
-**Without a `key` in `populate()` none of this can work** — there is no durable
-name for a record — so `#rememberSelection()` returns early and selection stays
-page-local. That is a data contract, not a bug, and
+**All of it rests on a durable name for a record**: the `key` a populate names,
+else the data layer's own (`keyOf`). Never a position —
 `T-grid-key-or-position-lies` is the other half of it.
 
 - Site: `src/components/sherpa-data-grid/grid-selection.ts`
@@ -904,25 +895,25 @@ cells; it was an extra one on the pinned cells.
 ### T-a-row-holds-two-selection-boxes
 
 The row template holds BOTH a `sherpa-select-checkbox` and a
-`sherpa-select-radio`. Until 2026-10-20 every body row stamped both and CSS
-revealed one — so `.row-select` matched **two elements per row**, and a
-hidden box still upgraded and stamped: 50 controls (and 25 inner buttons) on
-every page of 25 rows. Now a row keeps only the box its mode shows, and none
+`sherpa-select-radio`. Stamping both on every row, CSS revealing one, makes
+`.row-select` match **two elements per row**, and a hidden box still upgrades
+and stamps: 50 controls (and 25 inner buttons) on every page of 25 rows. So a
+row keeps only the box its mode shows, and none
 when the grid is not selectable; changing `data-select` or `data-selectable`
 draws the rows again (TODO 368).
 
-Ask for the box through `#rowBox()` / `#rowBoxes()` (`.row-multi` or
-`.row-one`) all the same: it reads which one the mode wants.
+Ask for the box through `GridSelection.#box()` (`.row-multi` or `.row-one`) all
+the same: it reads which one the mode wants.
 
-Four callers had it wrong, and each failed differently — which is what made it
+Counting both boxes fails four ways, each differently — which is what made it
 hard to see as one bug:
 
-| caller | what went wrong |
+| counting both | what goes wrong |
 |---|---|
-| `#syncGroupSelects` | counted 44 ticks against 22 rows, so a group box never read as full |
-| `#syncSelectAll` | saw 50 boxes for 25 rows, so the header box was never "all" |
-| `#emitSelection` | reported every selected row **twice** |
-| `#selectGroup` | wrote to the hidden control in single mode |
+| a group's box | 44 ticks against 22 rows, so a group box never reads as full |
+| the header's box | 50 boxes for 25 rows, so it is never "all" |
+| the report | every selected row **twice** |
+| a group's tick | writes to the hidden control in single mode |
 
 The tests had the same fault: `.row-select` in a spec counts double too.
 
@@ -995,42 +986,24 @@ after picking `At risk`: `grid.columnClause('status')` held
 `['status','ne','churned']`, the heading showed its `!=` badge, and the toolbar
 carried no `col:` chip at all.
 
-**A `FIELD_CHIPS` field is NOT automatically covered by its own chip.** That
-chip draws a SELECTION, which is all `source.select` can hold, so it reports a
-pick list and nothing else. `ne churned` is not a pick list — so a field with
-its own chip still needs a `col:` chip for a condition the chip cannot express.
-That is the same split the live `column-filter-change` handler already makes,
-and the restore path has to make it too.
-
-**The label had no public reader.** `columnClause(field)` was public and the
-wording was not, so a host could see the clause and had nothing to put on a
-chip. `columnLabel(field)` closes that — `T-grid-read-without-write-is-half-an-api`
-is the same shape of gap.
+**The label needs a public reader**, as the clause has one: `columnClause(field)`
+gives a host the clause, and `columnLabel(field)` the words to put on a chip —
+`T-grid-read-without-write-is-half-an-api` is the same shape of gap.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-an-external-chip-caret-must-open-its-condition
 
-`addExternalFilter()` put a chip on the bar carrying a finished phrase —
-"Contains: ana" — and set `data-menu` so the caret would draw and read it. It
-never gave the chip a menu. Its own comment said so: *"no `options`, so no
-menu — just a caret reading this."*
-
 A caret that opens nothing is drawn exactly like every caret that does. Will:
 *"When a conditional filter is applied, I can't open the filter chip menu in
-the filter toolbar for that conditional filter."* Measured on the running page:
-`col:name  menu=false  data-current data-menu data-full-value`.
+the filter toolbar for that conditional filter."* So a chip that shows a
+condition opens a real filter menu on it (`data-advanced`, `data-op`,
+`data-value`), never a caret that only reads a phrase.
 
-`data-menu` cannot simply come off — the caret is where `valueLabel` writes the
-phrase, so hiding it hides the filter. The caller names the CONDITION instead
-(`op`, `text`), and the chip gets a real filter menu that opens on it. The
-machinery was already there: `data-advanced`, `data-op`, `data-value`.
-
-**And the colour half.** `sherpa-data-grid.#lightFilterChip` gave a
-condition-answered column the `fx` glyph and left it in the plain active
-purple, because nothing wrote the chip's condition. The glyph and the chip's
-`data-condition` now come from the same `state.condition`. (The colour went
-again in TODO 156: an Advanced chip is active, as a Simple one.)
+**And the glyph half.** `GridFilters.light` gives a condition-answered column
+the `fx` glyph, and the chip's `data-condition` comes from the same
+`state.condition`, so the two cannot disagree. (An Advanced chip is active, as a
+Simple one: TODO 156.)
 TRAP T-a-conditioned-chip-reads-as-active
 
 - Site: `src/components/sherpa-data-grid/grid-filters.ts`
@@ -1073,21 +1046,18 @@ menu ever lit it. A filter arriving through the QUERY — the app header
 narrowing every view to one region — left the column looking completely
 untouched.
 
-`#isFiltered` already knew the whole answer: this column's own clause, the
-header-row filters, and `data-filter-fields`, which `DataSource` writes on every
-bound element from the composed filter. It was computed and then spent on the
-`<th>` alone.
-
-Two places light it now, both from that one answer:
+`GridFilters.#isFiltered` knows the whole answer: this column's own reading, a
+tiered parent held above, and `data-filter-fields`, which `DataSource` writes on
+every bound element from the composed filter. The `<th>` and the chip are lit
+from it together (`lightHeading`, then `light`), in two places:
 
 | where | why |
 |---|---|
-| `#syncColumnFilterStatus` | a clause changed without a re-render |
-| `#renderHead` | each cell is drawn — made new, or kept (`T-a-heading-cell-is-kept`) |
+| `GridFilters.syncStatus` | a reading changed without a re-render |
+| `#drawHeadCell` | each cell is drawn — made new, or kept (`T-a-heading-cell-is-kept`) |
 
-The second is the one that hid the bug. `#renderHead` never called
-`#syncColumnFilterStatus` — it set the `<th>` flag inline — so on any re-render
-the flag survived on the heading and the chip beside it came back empty.
+A draw that sets the `<th>` flag alone leaves the chip beside it empty on every
+re-render, which is the bug this hid.
 
 The chip is `data-locked`: the GRID owns its on-state. Writing it here is the
 host doing its job, not the chip deriving something it does not own.
@@ -1237,19 +1207,18 @@ alone would otherwise lose the shared widths, and a body the frozen column.
 
 ### T-a-heading-cell-is-kept
 
-TODO 355 C5. `#renderHead()` removed every heading cell and cloned it again on
-each render — per column a filter chip, its `sherpa-menu` from `menuFor()` with
-its own inputs, a sort chip and a button: 280–560 components per build on
-Records, the largest single cost of a filter click (`#bootstrap → #stamp`, 260
-of about 500 ms busy at 4x). It also shut an open heading menu, lost its search
-and focus, and dropped a grip's pointer capture.
+Making every heading cell again on each render costs, per column, a filter chip,
+its `sherpa-menu` from `menuFor()` with its own inputs, and its buttons: 280–560
+components per build on Records, the largest single cost of a filter click
+(TODO 355 C5: 260 of about 500 ms busy at 4x). It also shuts an open heading
+menu, loses its search and focus, and drops a grip's pointer capture.
 
-Now the heading is RECONCILED by field. A cell is made again only when its KEY
+So the heading is RECONCILED by field. A cell is made again only when its KEY
 moves — the column's type, whether it filters, and its filter menu's SHAPE (its
 def without `options`, `min`, `max` and `availableDates`; `range` as
 `menuFor` reads it), the bounds and apply-on. Else it is KEPT and drawn in place
 by ONE function for new and kept cells alike (`#drawHeadCell`,
-`#drawColumnFilter`), so every state is set AND taken away: `data-type`, the pin,
+`GridFilters.draw`), so every state is set AND taken away: `data-type`, the pin,
 `data-status`, the sort, `data-superseded` and `data-applied-at`,
 `data-advanced`, `data-unavailable`.
 
