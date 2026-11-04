@@ -203,6 +203,11 @@
       <sherpa-button class="act discard-all" data-act="discard" data-size="sm"
                      data-icon-start="trash" disabled>Discard</sherpa-button>
       <slot name="actions" data-accepts="control"></slot>
+      <!-- This scope's own FILTERS, where it holds more than one field. Will, TODO 721 -->
+      <sherpa-button class="act add-btn" data-act="add" data-size="sm"
+                     data-icon-start="pencil" data-icon-end="triangle-down"
+                     data-description="Add filters to this scope, or remove them."
+                     aria-haspopup="dialog">Filters</sherpa-button>
     </span>
     <div class="bar" part="bar" role="toolbar" aria-label="Quick filters">
       <div class="switch-zone" part="switch">

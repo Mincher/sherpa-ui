@@ -261,6 +261,18 @@
                   "attrs": {
                     "data-accepts": "control"
                   }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "act add-btn",
+                  "attrs": {
+                    "data-act": "add",
+                    "data-size": "sm",
+                    "data-icon-start": "pencil",
+                    "data-icon-end": "triangle-down",
+                    "data-description": "Add filters to this scope, or remove them.",
+                    "aria-haspopup": "dialog"
+                  }
                 }
               ]
             },

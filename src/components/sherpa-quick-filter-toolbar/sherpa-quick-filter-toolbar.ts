@@ -467,6 +467,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       }
     }
     this.#markSections();
+    // One field's values are all open already: its scope needs no Filters button. Will, TODO 721
+    this.toggleState('many-fields', this.#chips().filter((c) => !c.hasAttribute('data-preset') && !c.hasAttribute('data-selector')).length > 1);
   }
 
   /** The chip hovered. TODO 449 */
