@@ -424,6 +424,23 @@ fills `statusFields` and `childFields`. 10 stdio tests, a planted fault per chec
 `check:mcp-pack`: 16 tools, 356 resources. A slot check knows what a component IS from its
 tag's last word, a `name` prop, its category and 6 exceptions (TODO 728 asks Will).
 
+**G5 ✅ (`355bd85b`).** `tools/see.js`: `preview_page` (a Context's three files, as text or by
+`path` + `context`, served by `nodeHandler` over `createDataHandler` with the sample rows
+plus `dist/`, on 127.0.0.1 at an OS-picked port, never 4000 or 4200; it waits for `settled`
+and returns a screenshot, the reports, `check_usage` problems, page errors and unanswered
+requests; a CSP stops inline script, other hosts are refused), `call_component` (only the
+methods the spec lists, JSON arguments), `read_component` (attributes, the spec's states that
+are on, readable properties, parts), `watch_trace` (the last act's spans by node, the MCP's
+and the preview's) and `preview_close` (a client that disconnects closes it too). The browser
+is `playwright-core`, a required peer, imported only when a preview opens. Every prompt is a
+skill: `skills/{build-page,review-page,explain-page}/SKILL.md`, read by `lib/skills.js`. 10
+stdio tests; MCP tests 53/53; `check:mcp-pack`: 21 tools, 356 resources, 3 prompts. CI's Node
+job has no browser, so 9 see tests skip there (TODO 729 asks Will).
+
+**Where plan 700 stands (2026-11-04):** G0–G5 ✅. G6 (runs) waits on N4 (TODO 616, held;
+its node model is plan-713). G7 (delivery, 223) waits on Will's word, B or C, and on a window
+with no component lane in flight.
+
 | # | Question | A (my pick) | B |
 |---|---|---|---|
 | Q1 | Where the new MCP lives | `mcp-server/`, rewritten in place; package `sherpa-ui-mcp` (the Starter's `.mcp.json` names it); gated in this repo | A sibling project, like the Starter |
