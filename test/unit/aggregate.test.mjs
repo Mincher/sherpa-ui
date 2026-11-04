@@ -175,7 +175,7 @@ test('summarise: an aggregate is ONE number; over a field it is a tile — value
   // February has no rows and is still a point: a quiet month is zero, never missing.
   assert.deepEqual(
     summarise(SALES, { shape: 'aggregate', aggregate: 'sum', field: 'spend', over: 'created', bucket: 'month' }),
-    { value: 40, values: [10, 0, 30], deltaPercent: 200 },
+    { value: 40, values: [10, 0, 30], labels: ['January 2024', 'February 2024', 'March 2024'], deltaPercent: 200 },
   );
 });
 
