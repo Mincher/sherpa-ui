@@ -692,13 +692,12 @@ rather than restore the wrong rows. The grid selects by key always now, and
 **A reading keeps BOTH answers, and `mode` says which one filters.** Will,
 2026-09-29 (TODO 102): *"Both simple and advanced mode conditions need to be
 tracked and stored to allow switching at any point."* The picks — and a typed
-`op` / `text` from a number body — are Simple's answer; the `conditions` rows
-are Advanced's. `fieldState()` compiles only the one in force, so a switch
+`op` / `text` from a number body — are Simple's answer; the `tree` is
+Advanced's. `fieldState()` compiles only the one in force, so a switch
 changes what filters and loses nothing.
 
-A reading with no `mode` was written before both were kept, and keeps the old
-rule: rows win where there are any. A saved View or filter from before still
-means what it meant.
+A reading with no `mode` is read by `modeOf`: the tree wins where it answers. A
+saved View or filter from before both were kept still means what it meant.
 
 `mirror` says the rows are still a copy of the picks: the first switch carries
 X and Y over as `Equals X` OR `Equals Y`, and a change to the picks redraws
@@ -5824,13 +5823,12 @@ tick differs from it; one chip is its whole field.
 **An Advanced answer reads as its conditions — on the chip's face, in its tip
 and on a grid heading:** each condition's word, its value in brackets, the join
 between, `!` before a negative one: `equals(John) AND contains(Smith)`,
-`!equals(John) OR !contains(Smith)`. Will, 2026-10-22 (TODO 409). Before, the
-face showed the values alone and the tip counted the rows (`2 conditions
-applied`, Will, 2026-09-26). A date's `eq`, `lt` and `gt` read `on`, `before`,
-`after`; a typed count reads `last(7 days)`.
+`!equals(John) OR !contains(Smith)`. Will, 2026-10-22 (TODO 409). A date's `eq`,
+`lt` and `gt` read `on`, `before`, `after`; a typed count reads `last(7 days)`.
 
-It spells `state.rows` — the ANSWERED rows only. A half-built row narrows
-nothing, so saying it would promise a filter that is not there.
+`spellConditions()` spells the answer's tree — its ANSWERED parts only. A
+half-built row narrows nothing, so saying it would promise a filter that is not
+there.
 
 - Site: `src/core/data/filter-face.ts`
 - Site: `test/unit/filter-state.test.mjs`
