@@ -398,6 +398,19 @@ one over Demos' Records page against the same `ask()` made directly. `check:mcp-
 tools, 352 resources. Found: a command that is no `QueryRequest` acts as an Apply, unreported
 (TODO 718).
 
+**G2 ✅ (`df7054aa`).** `tools/check.js`: `validate_page` (page.v1 + `checkPage`, views.v1 and
+each View's template, `check_usage` on all markup, each `ui` id and key against its spec),
+`validate_app` (app.v1 + `checkApp`, each named file, each Context as `validate_page`, the
+Settings markup; the app's `own` hooks from `sherpa-usage.json`), `check_usage`
+(`markupProblems`' own lines), `describe_data` (rows or a JSON Schema/OpenAPI document → rules
+with evidence, a page's `fields`, the need — `statusFields` and `childFields` left to G4),
+`validate_rows` (`rules()` + `validate()`, then an ArrayStore's drop count) and `scaffold_app`
+(the Starter's own `init` in a temp folder). One Ajv, in `lib/check.js`; `check-usage.mjs` is
+loaded by path (`load`), beside `imported`. 9 stdio tests, each problem word for word against
+the checker called directly; Demos is sound (5 Contexts, 5 Settings pages), a faulted copy
+gives 14 problems. `check:mcp-pack`: 14 tools. The Starter's `AGENTS.md` still says
+`validate_page` checks app.json: it is `validate_app` (the Starter's own fix).
+
 | # | Question | A (my pick) | B |
 |---|---|---|---|
 | Q1 | Where the new MCP lives | `mcp-server/`, rewritten in place; package `sherpa-ui-mcp` (the Starter's `.mcp.json` names it); gated in this repo | A sibling project, like the Starter |
