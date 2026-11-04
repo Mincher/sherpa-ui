@@ -223,7 +223,7 @@ test('a row a route drives MIRRORS what comes in, read only; one with no route s
     const row = { label: 'Value', control: 'text' as const, input: 'value' as const, editable: true };
     drawGraph(canvas, { routes: [{ from: 'a', to: 'b/fed' }], nodes: [
       { id: 'a', kind: 'value', heading: 'A', icon: 'function', output: 'value', x: 0, y: 0, rows: [] },
-      { id: 'b', kind: 'filter', heading: 'B', icon: 'filter', x: 360, y: 0, rows: [{ ...row, name: 'fed', value: '1' }, { ...row, name: 'free', value: '2' }] },
+      { id: 'b', kind: 'condition', heading: 'B', icon: 'filter', x: 360, y: 0, rows: [{ ...row, name: 'fed', value: '1' }, { ...row, name: 'free', value: '2' }] },
     ] });
     await window.__settled();
     const ro = (name: string) => document.querySelector(`#root sherpa-input-text[name="${name}"]`)!.hasAttribute('readonly');
@@ -277,7 +277,7 @@ test('a drag from an OUTPUT socket draws a new route: let go on an input socket,
     (window as unknown as { asked: unknown[] }).asked = asked;
     drawGraph(canvas, { routes: [], nodes: [
       { id: 'a', kind: 'value', heading: 'A', icon: 'function', output: 'value', x: 0, y: 0, rows: [] },
-      { id: 'b', kind: 'filter', heading: 'B', icon: 'filter', x: 360, y: 0, rows: [{ name: 'x', label: 'X', control: 'text', input: 'value', editable: true }] },
+      { id: 'b', kind: 'condition', heading: 'B', icon: 'filter', x: 360, y: 0, rows: [{ name: 'x', label: 'X', control: 'text', input: 'value', editable: true }] },
     ] }, { onConnect: (route) => asked.push(route) });
     await window.__settled();
   });
@@ -315,8 +315,8 @@ test('a drag from the footer\'s False socket starts at it and asks for `node/#fa
     const asked: unknown[] = [];
     (window as unknown as { asked: unknown[] }).asked = asked;
     drawGraph(canvas, { routes: [], nodes: [
-      { id: 'a', kind: 'filter', heading: 'A', icon: 'filter', output: 'object', branches: true, x: 0, y: 0, rows: [] },
-      { id: 'b', kind: 'filter', heading: 'B', icon: 'filter', x: 360, y: 0, rows: [{ name: 'x', label: 'X', control: 'text', input: 'value', editable: true }] },
+      { id: 'a', kind: 'condition', heading: 'A', icon: 'filter', output: 'object', branches: true, x: 0, y: 0, rows: [] },
+      { id: 'b', kind: 'condition', heading: 'B', icon: 'filter', x: 360, y: 0, rows: [{ name: 'x', label: 'X', control: 'text', input: 'value', editable: true }] },
     ] }, { onConnect: (route) => asked.push(route) });
     await window.__settled();
   });
@@ -457,7 +457,7 @@ const BIND_FLOW = `async () => {
   const canvas = document.querySelector('#root sherpa-layout-canvas');
   const flow = { v: 2, id: 'active-customers', nodes: [
     { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
-    { id: 'filter', kind: 'filter', x: 360, y: 0, values: { field: 'status', op: 'eq' } },
+    { id: 'filter', kind: 'condition', x: 360, y: 0, values: { field: 'status', op: 'eq' } },
     { id: 'end', kind: 'output', x: 720, y: 0 },
   ], routes: [{ from: 'start/rows', to: 'filter' }, { from: 'filter/rows', to: 'end' }] };
   window.editor = bindWorkflow(canvas, flow, { session: new SessionStore(), fields: { status: { label: 'Status' } }, stores: ['customers'] });
@@ -468,20 +468,20 @@ test('bindWorkflow draws a workflow by its kinds, keeps each edit in the tab\'s 
   await page.evaluate(`(${BIND_FLOW})()`);
   const drawn = {
     nodes: await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('#root sherpa-node')].map((n) => n.dataset['heading'])),
-    ops: await page.locator('#root sherpa-node[data-heading="Filter"] sherpa-input-text[name="op"] option').allTextContents(),
+    ops: await page.locator('#root sherpa-node[data-heading="Condition"] sherpa-input-text[name="op"] option').allTextContents(),
   };
-  await page.locator('#root sherpa-node[data-heading="Filter"] sherpa-input-text[name="op"] select').selectOption('ne');
+  await page.locator('#root sherpa-node[data-heading="Condition"] sherpa-input-text[name="op"] select').selectOption('ne');
   await page.reload();
   await freshCanvas(page);
   await page.evaluate(`(${BIND_FLOW})()`);
   const r = await page.evaluate(() => {
     const heard: { nodes: { id: string; values?: unknown }[] }[] = [];
     document.addEventListener('definition-save', (e) => heard.push((e as CustomEvent).detail.definition));
-    const op = document.querySelector<HTMLElement & { value: string }>('#root sherpa-node[data-heading="Filter"] sherpa-input-text[name="op"]')!.value;
+    const op = document.querySelector<HTMLElement & { value: string }>('#root sherpa-node[data-heading="Condition"] sherpa-input-text[name="op"]')!.value;
     const ok = (window as unknown as { editor: { save(): boolean } }).editor.save();
     return { op, ok, saved: heard.map((d) => d.nodes.find((n) => n.id === 'filter')?.values), draft: sessionStorage.getItem('sherpa:session:/workflows/active-customers') };
   });
-  expect(drawn.nodes).toEqual(['Store', 'Filter', 'Output']);
+  expect(drawn.nodes).toEqual(['Store', 'Condition', 'Output']);
   expect(drawn.ops.slice(0, 2)).toEqual(['Equals', 'Does not equal']);
   expect(r).toEqual({ op: 'ne', ok: true, saved: [{ field: 'status', op: 'ne' }], draft: null });
 });

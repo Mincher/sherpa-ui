@@ -924,7 +924,7 @@ export function bindWorkflow(
   };
   const onEdit = ({ node, row, value }: GraphEdit): void => {
     const own = OWN[row.name];
-    if (!own) return write(editWorkflow(draft, { node: node.id, row: row.name, value }, kinds));
+    if (!own) return write(editWorkflow(draft, { node: node.id, row: row.name, value }, kinds, facts));
     const said = own === 'x' || own === 'y' ? typedValue('number', String(value ?? '')) : String(value ?? '');
     if ((own === 'x' || own === 'y') && typeof said !== 'number') return;
     write(editWorkflow(draft, { node: node.id, set: { [own]: said } }, kinds));
@@ -932,8 +932,8 @@ export function bindWorkflow(
   const onMove = (node: GraphNode, x: number, y: number): void => write(editWorkflow(draft, { node: node.id, set: { x, y } }, kinds));
   // A route that would break the workflow is refused, and says why; else the draft takes it.
   const take = (next: WorkflowDefinition): void => {
-    const was = new Set(workflowFaults(draft, kinds));
-    const added = workflowFaults(next, kinds).filter((f) => !was.has(f));
+    const was = new Set(workflowFaults(draft, kinds, facts));
+    const added = workflowFaults(next, kinds, facts).filter((f) => !was.has(f));
     if (added.length) report({ code: 'workflow-route', message: `bindWorkflow: ${added.join('; ')}.`, at: { workflow: draft.id } });
     else write(next);
   };
@@ -978,7 +978,7 @@ export function bindWorkflow(
   const unwatch = watchSteps(canvas, { claims: (span) => span.detail?.['graph'] === workflow.id });
   return {
     save(): boolean {
-      if (!checkWorkflow(draft, kinds)) return false;
+      if (!checkWorkflow(draft, kinds, facts)) return false;
       handOver(canvas, draft);
       // The definition holds it now: the draft goes.
       session?.set(pointer, undefined);

@@ -24,7 +24,7 @@ const flow = (values = {}, extra = {}) => ({
   nodes: [
     { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'status', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
-    { id: 'filter', kind: 'filter', x: 360, y: 0, values: { field: 'status', op: 'eq', ...values } },
+    { id: 'filter', kind: 'condition', x: 360, y: 0, values: { field: 'status', op: 'eq', ...values } },
     { id: 'end', kind: 'output', x: 720, y: 0 },
   ],
   routes: [{ from: 'start/rows', to: 'filter' }, { from: 'filter/rows', to: 'end' }],
@@ -54,7 +54,7 @@ test('rowChoices gives each picklist its one list; a row that is no picklist has
 
 test('every workflow picklist row takes a value in; the Value node has its Type', () => {
   for (const [id, row] of [['store', 'store'], ['pick', 'field'], ['filter', 'field'], ['filter', 'op'], ['filter', 'value'], ['sort', 'field'], ['sort', 'direction'], ['group', 'field']]) {
-    assert.equal(socketType(NODE_KINDS[id], row, 'input'), 'value', `${id} › ${row}`);
+    assert.equal(socketType(NODE_KINDS[id === 'filter' ? 'condition' : id], row, 'input'), 'value', `${id} › ${row}`);
   }
   assert.deepEqual(NODE_KINDS.value.rows.map((r) => [r.name, r.control]), [['value', 'text'], ['type', 'type']]);
   assert.equal(NODE_KINDS.value.rows[1].input, undefined, 'the Type is picked, never fed');

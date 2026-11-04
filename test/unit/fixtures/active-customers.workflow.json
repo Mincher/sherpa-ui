@@ -6,7 +6,7 @@
   "nodes": [
     { "id": "start", "kind": "store", "x": 0, "y": 0, "values": { "store": "customers" } },
     { "id": "status", "kind": "value", "x": 0, "y": 160, "values": { "value": "active" } },
-    { "id": "filter", "kind": "filter", "x": 360, "y": 0, "values": { "field": "status", "op": "eq" } },
+    { "id": "filter", "kind": "condition", "x": 360, "y": 0, "values": { "field": "status", "op": "eq" } },
     { "id": "end", "kind": "output", "x": 720, "y": 0 }
   ],
   "routes": [

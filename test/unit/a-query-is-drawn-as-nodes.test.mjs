@@ -100,7 +100,7 @@ test('each node shows what the Query and the definition say', () => {
   assert.deepEqual(values('when-view-region'), { field: 'region', op: 'in', value: 'EMEA, APAC' });
   assert.deepEqual([node('when-view-region').heading, node('when-data-status').description], ['Region', 'Off: kept, not applied.']);
   assert.deepEqual(values('arrange-data'), { sort: 'name', direction: 'desc', group: 'plan', search: '' });
-  assert.deepEqual([node('when-view-region').ref, node('arrange-data').ref, node('scope-data').ref], [{ scope: 'view', field: 'region' }, { scope: 'data' }, { scope: 'data' }]);
+  assert.deepEqual([node('when-view-region').ref, node('arrange-data').ref, node('scope-data').ref], [{ scope: 'view', field: 'region', path: '', tree: JSON.stringify({ op: 'in', value: ['EMEA', 'APAC'] }) }, { scope: 'data' }, { scope: 'data' }]);
   // Its own slot: every row a key a select holds; '' is the definition's.
   assert.deepEqual(values('show-r-bar'), { kind: 'donut', primary: '', secondary: 'status', group: '', sort: '' });
   assert.equal(node('component-grid').heading, 'Customer records');

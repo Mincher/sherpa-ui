@@ -18,6 +18,11 @@
  * - Socket — A socket address, read: its node, and its row or none for the header's.
  * - socketOf — Read a socket address: `node`, the header's, or `node/row`.
  * - FALSE_SOCKET — The footer's False, as an address names it after its node.
+ * - rowOf — The row of a kind a name says: its own, or one a group's part repeats.
+ * - partName — A repeated row's name for a part of a group: the first part's is the row's own.
+ * - partOf — A row's name as a part of a group: its base and its number, from 1.
+ * - PartKind — One part of a condition group: a comparison, or a nested group.
+ * - conditionRows — The rows a Condition node draws for its parts, in order: Join from two parts on.
  * - socketType — The type one socket of a kind carries; none, it has no such socket.
  * - takesMany — Whether an input of a kind takes several routes.
  * - NodeRoute — One route: an output socket to an input socket.
@@ -81,6 +86,11 @@ export interface RowKind {
   /** Its input takes several routes, each joined as the row says (D4); else a new one replaces it. */
   many?: true;
   output?: SocketType;
+  /** One per PART of a group: a node draws it for each, named by `partName`. A Condition's field,
+   *  operator, value and nested group. */
+  repeat?: true;
+  /** Its input takes only the True of a node of one of these kinds. */
+  from?: readonly string[];
 }
 
 /** Where a kind is drawn: a page's Query, or a workflow. */
@@ -138,15 +148,20 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     heading: 'Scope', icon: 'filter', input: 'any',
     rows: [ROWS, { name: '#filters', label: 'Filters', control: 'switch' }], model: 'ScopeQuery', graphs: ['query'],
   },
-  // Its True goes into its scope's row for the field.
+  // ONE group of the condition tree (D3): its join, then each part — a comparison's field, operator
+  // and value, or a nested group's True into a Group row. True takes the rows that hold, False the rest.
   condition: {
-    heading: 'Condition', icon: 'function', branches: true,
+    heading: 'Condition', icon: 'function', description: 'The rows that hold for a group of conditions.', input: 'any', branches: true,
     rows: [
-      { name: 'field', label: 'Field', control: 'field' },
-      { name: 'op', label: 'Condition', control: 'op' },
-      { name: 'value', label: 'Value', control: 'text' },
+      ROWS,
+      { name: 'join', label: 'Join', control: 'join' },
+      { name: 'field', label: 'Field', control: 'field', repeat: true, input: 'value', output: 'value' },
+      { name: 'op', label: 'Operator', control: 'op', repeat: true, input: 'value' },
+      { name: 'value', label: 'Value', control: 'values', repeat: true, input: 'value' },
+      { name: 'group', label: 'Group', repeat: true, input: 'boolean', from: ['condition'] },
+      { name: 'matches', label: 'Matches', output: 'value' },
     ],
-    model: 'FieldReading', graphs: ['query'],
+    model: 'Condition', graphs: ['query', 'workflow'],
   },
   // Its on, then each field it writes.
   preset: {
@@ -190,19 +205,6 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     heading: 'Pick', icon: 'price-tag', description: 'One field of the input.', input: 'any', branches: true,
     rows: [{ name: 'field', label: 'Field', control: 'field', input: 'value', output: 'value' }], model: 'readField', graphs: ['workflow'],
   },
-  // Its rows are one condition, `{ field, op, value }`: the condition tree's leaf. Its Rows, the
-  // rows that match: True takes them, False the rest.
-  filter: {
-    heading: 'Filter', icon: 'filter', description: 'The rows that match.', input: 'any', branches: true,
-    rows: [
-      ROWS,
-      { name: 'field', label: 'Field', control: 'field', input: 'value' },
-      { name: 'op', label: 'Condition', control: 'op', input: 'value' },
-      { name: 'value', label: 'Value', control: 'values', input: 'value' },
-      { name: 'matches', label: 'Matches', output: 'value' },
-    ],
-    model: 'filterRows', graphs: ['workflow'],
-  },
   sort: {
     heading: 'Sort', icon: 'sort-ascending', description: 'The rows in order.', input: 'any', branches: true,
     rows: [
@@ -243,17 +245,57 @@ export const FALSE_SOCKET = '#false';
 /** The sockets a kind says, or a node drawn of it. */
 type Sockets = Pick<NodeKind, 'input' | 'output' | 'many' | 'branches'> & { rows: readonly RowKind[] };
 
+/** The row of a kind a name says: its own, or the one a group's part repeats — `field-2` is the
+ *  second part's `field`. */
+export function rowOf<R extends Pick<RowKind, 'name' | 'repeat'>>(rows: readonly R[], name: string): R | undefined {
+  const own = rows.find((r) => r.name === name);
+  if (own) return own;
+  const { base, part } = partOf(name);
+  return part > 1 ? rows.find((r) => r.repeat && r.name === base) : undefined;
+}
+
+/** A repeated row's name for a part of a group, from 1: the first part's is the row's own. */
+export function partName(base: string, part: number): string {
+  return part > 1 ? `${base}-${part}` : base;
+}
+
+/** A row's name as a part of a group: its base and its number, from 1. */
+export function partOf(name: string): { base: string; part: number } {
+  const found = /^(.+)-(\d+)$/.exec(name);
+  return found && Number(found[2]) > 1 ? { base: found[1]!, part: Number(found[2]) } : { base: name, part: 1 };
+}
+
+/** One part of a condition group: a comparison, or a nested group. */
+export type PartKind = 'leaf' | 'group';
+
+/** The rows a Condition node draws for its parts, in order: its Rows, its Join from two parts on,
+ *  each part's — a comparison's Field, Operator and Value, or a Group — then Matches. `rows: false`
+ *  leaves out what only a run gives: Rows and Matches. */
+export function conditionRows(kind: Pick<NodeKind, 'rows'>, parts: readonly PartKind[], { rows = true }: { rows?: boolean } = {}): RowKind[] {
+  const of = (name: string): RowKind => kind.rows.find((r) => r.name === name)!;
+  const part = (names: readonly string[], n: number): RowKind[] => names.map((name) => {
+    const { repeat: _repeat, from: _from, ...row } = of(name);
+    return { ...row, name: partName(name, n) };
+  });
+  return [
+    ...(rows ? [of(ROWS.name)] : []),
+    ...(parts.length >= 2 ? [of('join')] : []),
+    ...parts.flatMap((p, i) => part(p === 'leaf' ? ['field', 'op', 'value'] : ['group'], i + 1)),
+    ...(rows ? [of('matches')] : []),
+  ];
+}
+
 /** The type one socket of a kind, or of a node drawn of it, carries — its header's (no row), a
  *  row's, or its footer's False — on one side; none, it has no such socket. */
 export function socketType(kind: Sockets, row: string | undefined, side: 'input' | 'output'): SocketType | undefined {
   const fork = side === 'output' && kind.branches ? 'boolean' : undefined;
   if (row === FALSE_SOCKET) return fork;
-  return row === undefined ? fork ?? kind[side] : kind.rows.find((r) => r.name === row)?.[side];
+  return row === undefined ? fork ?? kind[side] : rowOf(kind.rows, row)?.[side];
 }
 
 /** Whether an input of a kind, or of a node drawn of it, takes several routes: its header's (no row), or a row's. */
 export function takesMany(kind: Sockets, row?: string): boolean {
-  return !!(row === undefined ? kind.many : kind.rows.find((r) => r.name === row)?.many);
+  return !!(row === undefined ? kind.many : rowOf(kind.rows, row)?.many);
 }
 
 /** One route: an output socket to an input socket, each `node`, `node/row` or `node/#false`. */

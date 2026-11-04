@@ -6582,6 +6582,36 @@ sockets only, never types.
 - Site: `src/core/data/workflow.ts`
 - Site: `test/unit/a-socket-says-its-type.test.mjs`
 
+### T-a-condition-is-a-tree-of-nodes
+
+**One Condition node is ONE group of the condition tree** (Will, D3; plan-713
+§4, M4): its Join, then each part — a comparison's Field, Operator and Value, or
+a Group row for a nested group. `A or (B and C)` is two nodes: the inner one's
+True goes into a Group row of the outer. One kind serves both graphs; the
+workflow's `filter` is gone, and a saved one reads as `condition`, once.
+
+- **A part repeats its rows**: `field`, `op`, `value`, `group` (`RowKind.repeat`)
+  once for each part, named `partName` — the first part's is the row's own,
+  the next `field-2`, `op-2`. `rowOf` finds the kind's row for a name. A Group
+  row sits WHERE its group stands, not after the comparisons: the tree's order
+  is kept, so an edit reads back the same tree.
+- **The Query draws a reading's whole tree.** Each node's `ref` keeps the
+  whole tree (`tree`) and its own `path`; an edit changes the tree at that path and
+  asks it as one reading through `graphRequest`, the door a chip asks. The `off`
+  and `id` of every part go through untouched. A field edit MOVES the whole tree.
+  A nested True has no route a reader may make: the Query holds one tree.
+- **A Group row takes only the True of a condition** (`RowKind.from`):
+  `workflowFaults` refuses a pick's, a False, or a node that is no condition.
+- **A comparison is checked by its field's type** where the facts give it: an
+  operator its type does not take, a value that is no number for a number.
+- **Left for later**: "+ Condition" in the footer, a nested group made in the
+  editor, From/To and Unit for Between and In the last, and a status value's chain
+  (M5).
+
+- Site: `src/core/data/query-graph.ts`
+- Site: `src/core/data/workflow.ts`
+- Site: `test/unit/a-condition-is-a-tree-of-nodes.test.mjs`
+
 ### T-an-app-is-its-definition
 
 **An app names its Contexts ONCE, in `app.json`** (TODO 190; Will, 183 choice

@@ -22,14 +22,14 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-/** A workflow bound on the harness canvas: a Value feeds the Filter's Value; a Sort waits. */
+/** A workflow bound on the harness canvas: a Value feeds the Condition's Value; a Sort waits. */
 const BIND = `async (routes) => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const canvas = document.querySelector('#root sherpa-layout-canvas');
   const flow = { v: 2, id: 'g', nodes: [
     { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'status', kind: 'value', x: 0, y: 260, values: { value: 'active' } },
-    { id: 'filter', kind: 'filter', x: 360, y: 0, values: { field: 'status', op: 'eq', value: 'trial' } },
+    { id: 'filter', kind: 'condition', x: 360, y: 0, values: { field: 'status', op: 'eq', value: 'trial' } },
     { id: 'sort', kind: 'sort', x: 720, y: 0, values: { field: 'status', direction: 'asc' } },
   ], routes: routes ?? [{ from: 'start/rows', to: 'filter' }, { from: 'status/value', to: 'filter/value' }] };
   window.editor = bindWorkflow(canvas, flow, {
@@ -82,7 +82,7 @@ async function drag(page: Page, [x1, y1]: [number, number], [x2, y2]: [number, n
   await settle(page);
 }
 
-const filterValue = `${row('Filter', 'value')} sherpa-input-text`;
+const filterValue = `${row('Condition', 'value')} sherpa-input-text`;
 
 test('a picklist row edits through the draft\'s one door: the Filter\'s Value is the field\'s values, the Value node\'s Type is a list', async ({ page }) => {
   await bind(page, [{ from: 'start/rows', to: 'filter' }]);
@@ -122,16 +122,16 @@ test('a Value node routed into a picklist OVERRIDES it: "active Custom", read on
 
 test('557 a route\'s input end dragged to another input REROUTES it: the first row has its own pick back', async ({ page }) => {
   await bind(page);
-  const from = await at(page, row('Filter', 'value'), 'input');
+  const from = await at(page, row('Condition', 'value'), 'input');
   const to = await at(page, row('Sort', 'field'), 'input');
   await drag(page, from, to);
   expect(await page.evaluate(LINES)).toEqual(['start/rows → filter', 'status/value → sort/field']);
   const r = await page.evaluate(() => ({
-    filter: document.querySelector<HTMLElement & { value: string }>('#root sherpa-node[data-heading="Filter"] sherpa-input-text[name="value"]')!.value,
+    filter: document.querySelector<HTMLElement & { value: string }>('#root sherpa-node[data-heading="Condition"] sherpa-input-text[name="value"]')!.value,
     sort: document.querySelector<HTMLElement & { value: string }>('#root sherpa-node[data-heading="Sort"] sherpa-input-text[name="field"]')!.value,
     sortLocked: document.querySelector('#root sherpa-node[data-heading="Sort"] sherpa-input-text[name="field"]')!.hasAttribute('disabled'),
   }));
-  // The Sort's Field now mirrors "active"; the Filter's Value is its own again.
+  // The Sort's Field now mirrors "active"; the Condition's Value is its own again.
   expect(r).toEqual({ filter: 'trial', sort: 'active', sortLocked: true });
   // Dropped where it began: nothing changes.
   const home = await at(page, row('Sort', 'field'), 'input');
@@ -141,7 +141,7 @@ test('557 a route\'s input end dragged to another input REROUTES it: the first r
 
 test('558 a route\'s end let go over the bare canvas BREAKS it; a click on a connector, then Backspace, does too', async ({ page }) => {
   await bind(page);
-  await drag(page, await at(page, row('Filter', 'value'), 'input'), await blank(page));
+  await drag(page, await at(page, row('Condition', 'value'), 'input'), await blank(page));
   const first = await page.evaluate(LINES);
   const kept = await draft(page);
   expect(first).toEqual(['start/rows → filter']);
@@ -175,7 +175,7 @@ test('a line dragged out of an unrouted picklist\'s input onto the bare canvas m
 
 test('with no pointer: the inspector\'s "Custom value" makes the Value node; its "Cut route" cuts it; "Remove node" removes the node and its routes', async ({ page }) => {
   await bind(page, [{ from: 'start/rows', to: 'filter' }]);
-  await page.locator('#root sherpa-node[data-heading="Filter"]').click({ position: { x: 40, y: 12 } });
+  await page.locator('#root sherpa-node[data-heading="Condition"]').click({ position: { x: 40, y: 12 } });
   const panel = page.locator('#inspector');
   await panel.getByRole('button', { name: 'Custom value' }).first().click();
   await settle(page);

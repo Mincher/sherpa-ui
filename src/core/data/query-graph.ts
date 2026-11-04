@@ -5,7 +5,7 @@
  * answers, its arrangement, presentation and components — and which node each step of a load
  * lights. Kinds are the one registry's. DOM-free.
  * Will, TODO 555 · docs/history/plan-78-query-editor.md · TRAP T-the-node-editor-asks-the-query
- * TRAP T-a-step-names-its-node
+ * TRAP T-a-step-names-its-node · TRAP T-a-condition-is-a-tree-of-nodes
  *
  * Map:
  * - QUERY_NODE — Each Query node's id, as a step names it: the one scheme the graph is drawn by.
@@ -26,11 +26,14 @@
 import { SAVED_PRESET, type PageDefinition } from './page-definition.js';
 import { PRESENTATION_KINDS, VIEW, arrangementOf, arranging, isSavedFilter, type Presentation, type Query, type QueryRequest } from './query.js';
 import { OP_LABELS, OPS_FOR_TYPE, groupOf, type Condition, type ConditionLeaf, type Duration, type FilterOp } from './store.js';
-import { answerTree, typedValue, type FieldReading, type FieldType } from './filter-state.js';
+import { answerTree, typedTree, typedValue, type FieldReading, type FieldType } from './filter-state.js';
 import { readingsOf, treeReading } from './where.js';
 import { presetHeld } from './query-edits.js';
 import type { FieldDomain } from './validate.js';
-import { NODE_KINDS, ROWS, kindNode, rowChoices, socketOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeRoute } from './node-kinds.js';
+import {
+  NODE_KINDS, ROWS, conditionRows, kindNode, partName, partOf, rowChoices, socketOf,
+  type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeRoute, type PartKind,
+} from './node-kinds.js';
 import { traceStep, type Span, type TraceContext } from './trace.js';
 import type { Walk } from './walk.js';
 
@@ -180,39 +183,63 @@ function said(tree: Condition, name?: (field: string) => string): string {
   return [field && name ? name(field) : undefined, (OP_LABELS[op] ?? op).toLowerCase(), what].filter(Boolean).join(' ');
 }
 
-/** One condition's field, operator and value, as its rows show them — each editable, as
- *  a chip's are; a value the field's own values can say is PICKED, not typed. A group
- *  is read only. */
-function conditionRows(
-  field: string, condition: Condition, type: string | undefined,
-  fields: readonly { value: string; label: string }[], values: readonly string[] | undefined,
-): GraphRow[] {
-  const list = groupOf(condition);
-  const leaf = condition as ConditionLeaf;
-  const op = list ? list[0] : leaf.op;
-  const raw = list ? `${list[1].length} conditions`
-    : op === 'last' || op === 'next' ? `${String((leaf.value as Duration).n)} ${(leaf.value as Duration).unit}`
-    : leaf.value;
-  const value = Array.isArray(raw) ? raw.join(', ') : raw !== null && typeof raw === 'object' ? JSON.stringify(raw) : raw;
-  const plain = op in OP_LABELS;
-  const ops = [...new Set([...(OPS_FOR_TYPE[type ?? ''] ?? PICK_OPS), ...(plain ? [op as FilterOp] : [])])];
+/** What one comparison reads as: its operator, the value its row shows, and whether the operator is a plain one. */
+function leafReading(leaf: ConditionLeaf): { op: FilterOp; raw: unknown; shown: unknown; plain: boolean } {
+  const { op } = leaf;
+  const span = leaf.value as Duration;
+  const raw = op === 'last' || op === 'next' ? `${String(span.n)} ${span.unit}` : leaf.value;
+  const shown = Array.isArray(raw) ? raw.join(', ') : raw !== null && typeof raw === 'object' ? JSON.stringify(raw) : raw;
+  return { op, raw, shown, plain: op in OP_LABELS };
+}
+
+/** How a group is said, on the row that stands for it. */
+const groupWords = (tree: Condition): string => {
+  const [join, parts] = groupOf(tree) ?? ['and', [tree]];
+  return `${join === 'and' ? 'All' : 'Any'} of ${parts.length} condition${parts.length === 1 ? '' : 's'}`;
+};
+
+/** The ids of a condition tree's nodes: its root's, and a nested group's by the numbers of its parts. */
+const treeNodeId = (root: string, path: readonly number[]): string => (path.length ? `${root}.${path.join('.')}` : root);
+
+/** What drawing a tree's nodes needs: the field it reads, its type, the fields a reader may pick, and the field's values. */
+interface TreeFacts {
+  field: string;
+  type: string | undefined;
+  fields: readonly { value: string; label: string }[];
+  values: readonly string[] | undefined;
+  label: (field: string) => string;
+}
+
+/** One group of a condition tree as the rows of a Condition node: its Join from two parts on, then each
+ *  part — a comparison's Field, Operator and Value, each editable as a chip's are; a value the field's own
+ *  values can say is PICKED, not typed — or a Group row for a nested group. An off part says so. */
+function groupRows(tree: Condition, { field, type, fields, values }: TreeFacts): GraphRow[] {
+  const [join, parts] = groupOf(tree) ?? ['and', [tree]];
+  const kinds = parts.map((p): PartKind => (groupOf(p) ? 'group' : 'leaf'));
   const picks = values?.length ? values.map((v) => ({ value: v, label: v })) : undefined;
-  /* A field whose values are known is PICKED, as its chip picks: ticks, Is one of or
-     Is not one of. Equals is Is one of with one tick — the Query writes it so — and
-     reads back as that. */
-  if (picks && (ONE.has(op) || MANY.has(op))) {
-    const many = op === 'ne' || op === 'notin' ? 'notin' : 'in';
+  return conditionRows(NODE_KINDS['condition']!, kinds, { rows: false }).map(({ input, output: _out, many: _many, ...kindRow }): GraphRow => {
+    // The Query types a Value, or ticks it where the field's values are known.
+    const bare = kindRow.control === 'values' ? { ...kindRow, control: 'text' as const } : kindRow;
+    if (bare.name === 'join') return { ...bare, value: join, editable: true, choices: rowChoices(bare)! };
+    const { base, part } = partOf(bare.name);
+    const one = parts[part - 1]!;
+    const off = one.off ? { hint: 'Off: kept, not applied.' } : {};
+    if (base === 'group') return { ...bare, input: input!, value: groupWords(one), ...off };
+    const leaf = one as ConditionLeaf;
+    const { op, raw, shown, plain } = leafReading(leaf);
+    const row: GraphRow = { ...bare, ...off };
+    if (!plain) return { ...row, value: base === 'field' ? leaf.field ?? field : base === 'op' ? op : shown ?? '' };
+    // A field whose values are known is PICKED, as its chip picks: ticks, Is one of or Is not one of.
+    // Equals is Is one of with one tick — the Query writes it so — and reads back as that.
+    const ticks = !!picks && (ONE.has(op) || MANY.has(op));
+    if (base === 'field') return { ...row, value: leaf.field ?? field, editable: true, choices: fields };
+    if (base === 'op') {
+      const ops = ticks ? [...MANY] as FilterOp[] : [...new Set([...(OPS_FOR_TYPE[type ?? ''] ?? PICK_OPS), op])];
+      return { ...row, value: ticks ? (op === 'ne' || op === 'notin' ? 'notin' : 'in') : op, editable: true, choices: ops.map((o) => ({ value: o, label: OP_LABELS[o] })) };
+    }
+    if (!ticks) return { ...row, value: shown ?? '', editable: true };
     const ticked = (Array.isArray(raw) ? raw : raw === undefined || raw === '' ? [] : [raw]).map(String);
-    return rowsOf('condition', { field, op: many, value: ticked }).map((row): GraphRow => (row.name === 'field'
-      ? { ...row, editable: true, choices: fields }
-      : row.name === 'op' ? { ...row, editable: true, choices: [...MANY].map((o) => ({ value: o, label: OP_LABELS[o as FilterOp] })) }
-      : { ...row, control: 'values', multiple: true, editable: true, choices: picks }));
-  }
-  return rowsOf('condition', { field, op, value: value ?? '' }).map((row): GraphRow => {
-    if (!plain) return row;
-    if (row.name === 'field') return { ...row, editable: true, choices: fields };
-    if (row.name === 'op') return { ...row, editable: true, choices: ops.map((o) => ({ value: o, label: OP_LABELS[o] })) };
-    return { ...row, editable: true };
+    return { ...row, control: 'values', multiple: true, value: ticked, editable: true, choices: picks! };
   });
 }
 
@@ -274,8 +301,25 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   const nodes: (Omit<GraphNode, 'x' | 'y'> & { column: number })[] = [];
   const routes: NodeRoute[] = [];
   const add = (column: number, id: string, kind: string, rows: GraphRow[], own: Partial<GraphNode> = {}): string => {
-    nodes.push({ ...kindNode(NODE_KINDS, kind, id, rows, own), column });
+    const made = kindNode(NODE_KINDS, kind, id, rows, own);
+    // The Query's Condition takes no rows in: its scope gives them.
+    if (kind === 'condition') { delete made.input; delete made.many; }
+    nodes.push({ ...made, column });
     return id;
+  };
+  // A field's whole tree: one Condition node a group, a nested group's True into its parent's Group row.
+  const treeNodes = (column: number, root: string, tree: Condition, ctx: TreeFacts, own: Partial<GraphNode>, ref: Record<string, string>, apply: (row: GraphRow) => GraphRow = (r) => r): string => {
+    const whole = JSON.stringify(tree);
+    const walk = (group: Condition, path: readonly number[]): string => {
+      const id = treeNodeId(root, path);
+      const nested = path.length ? { heading: `${ctx.label(ctx.field)}: group ${path.join('.')}`, description: groupWords(group) } : own;
+      add(column - path.length * 0.25, id, 'condition', groupRows(group, ctx).map(apply), { ...nested, ref: { ...ref, path: path.join('.'), tree: whole } });
+      (groupOf(group)?.[1] ?? []).forEach((part, i) => {
+        if (groupOf(part)) routes.push({ from: walk(part, [...path, i + 1]), to: `${id}/${partName('group', i + 1)}` });
+      });
+      return id;
+    };
+    return walk(tree, []);
   };
   // A scope's presets: as declared now, else as its definition says them.
   const presetsOf = (scope: string): readonly ScopePreset[] => facts.presets?.(scope)
@@ -354,20 +398,19 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       routes.push({ from, to: `${node}/@${p.id}` });
     }
     const held = fields.map((f) => ({ value: f, label: label(f) }));
+    const factsOf = (field: string): TreeFacts => ({ field, type: typeOf(field), fields: held, values: facts.values?.(field), label });
     for (const [field, condition, off] of where) {
-      const when = add(into, QUERY_NODE.condition(id, field), 'condition', conditionRows(field, condition, typeOf(field), held, facts.values?.(field)), {
+      const when = treeNodes(into, QUERY_NODE.condition(id, field), condition, factsOf(field), {
         heading: label(field),
         description: off ? 'Off: kept, not applied.' : 'Applied.',
-        ref: { scope: id, field },
-      });
+      }, { scope: id, field });
       routes.push({ from: when, to: `${node}/${field}` });
     }
     // Its own answers the View holds over it: kept, not in force.
     for (const [field, condition] of kept) {
-      const rows = conditionRows(field, condition, typeOf(field), held, facts.values?.(field)).map((row) => ({ ...row, editable: false, hint: SUPERSEDED }));
-      const from = add(into, `kept-${id}-${field}`, 'condition', rows, {
-        heading: label(field), description: 'Superseded: kept, not in force.', ref: { scope: id, field, superseded: 'true' },
-      });
+      const from = treeNodes(into, `kept-${id}-${field}`, condition, factsOf(field), {
+        heading: label(field), description: 'Superseded: kept, not in force.',
+      }, { scope: id, field, superseded: 'true' }, (row) => ({ ...row, editable: false, hint: SUPERSEDED }));
       routes.push({ from, to: `${node}/${field}` });
     }
     // The scope's rows on their way out: arranged, presented, then shown.
@@ -423,6 +466,28 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   return { nodes: laid, routes };
 }
 
+/** The whole tree a Condition node is a group of: its ref keeps it. */
+function treeOf(node: Pick<GraphNode, 'ref'>): Condition | undefined {
+  try {
+    return JSON.parse(node.ref?.['tree'] ?? '') as Condition;
+  } catch {
+    return undefined;
+  }
+}
+
+/** A group without its join: what is left to give it another. */
+function withoutJoin(group: Condition): Record<string, unknown> {
+  const { and: _and, or: _or, ...rest } = group as Record<string, unknown>;
+  return rest;
+}
+
+/** A tree with the group at a path of part numbers made again by `edit`; the rest as it was. */
+function inGroup(tree: Condition, path: readonly number[], edit: (group: Condition) => Condition): Condition {
+  const parts = groupOf(tree);
+  if (!path.length || !parts) return edit(tree);
+  return { ...tree, [parts[0]]: parts[1].map((p, i) => (i === path[0]! - 1 ? inGroup(p, path.slice(1), edit) : p)) } as Condition;
+}
+
 /**
  * The command a node's edit asks — the one a chip, a Switch or a menu asks for the same
  * act; none for a row nothing takes. A value is typed by its field. Plan 695 N1
@@ -443,15 +508,31 @@ export function graphRequest({ node, row, value }: GraphEdit, facts: Pick<QueryG
   }
   if (node.kind === 'condition') {
     const field = node.ref?.['field'] ?? '';
-    const to = String(row.name === 'field' ? value : field);
-    const op = String(row.name === 'op' ? value : was['op']);
-    let given = row.name === 'value' ? value : was['value'];
-    // One value where one is asked; a list where several are.
-    if (ONE.has(op) && Array.isArray(given)) given = given[0] ?? '';
-    const type = facts.type?.(to);
-    const reading = treeReading(editedCondition(op, given as string | string[] ?? '', type), type as FieldType | undefined);
-    // Another field: the condition MOVES there, as one change.
-    return to === field ? { scope, field, reading } : [{ scope, field, reading: null }, { scope, field: to, reading }];
+    const tree = treeOf(node);
+    if (!tree) return undefined;
+    const { base, part } = row.name === 'join' ? { base: 'join', part: 1 } : partOf(row.name);
+    // Another field: the whole condition MOVES there, as one change.
+    if (base === 'field') {
+      const to = String(value);
+      const type = facts.type?.(to);
+      const reading = treeReading(typedTree(tree, type as FieldType | undefined), type as FieldType | undefined);
+      return to === field ? { scope, field, reading } : [{ scope, field, reading: null }, { scope, field: to, reading }];
+    }
+    const type = facts.type?.(field);
+    const path = (node.ref?.['path'] ?? '').split('.').filter(Boolean).map(Number);
+    const next = inGroup(tree, path, (group) => {
+      const parts = groupOf(group);
+      if (base === 'join') return parts ? { ...withoutJoin(group), [value === 'or' ? 'or' : 'and']: parts[1] } as Condition : group;
+      const old = (parts ? parts[1][part - 1] : group) as ConditionLeaf | undefined;
+      if (!old || groupOf(old)) return group;
+      const op = String(base === 'op' ? value : was[partName('op', part)]);
+      let given = base === 'value' ? value : was[partName('value', part)];
+      // One value where one is asked; a list where several are.
+      if (ONE.has(op) && Array.isArray(given)) given = given[0] ?? '';
+      const leaf: Condition = { ...old, ...editedCondition(op, given as string | string[] ?? '', type) };
+      return parts ? { ...group, [parts[0]]: parts[1].map((p, i) => (i === part - 1 ? leaf : p)) } as Condition : leaf;
+    });
+    return { scope, field, reading: treeReading(next, type as FieldType | undefined) };
   }
   if (node.kind === 'arrange') {
     const pick = (name: string): string => String(row.name === name ? value : was[name] ?? '');
@@ -479,16 +560,26 @@ export function routeRequest(graph: DrawnGraph, { from, to }: NodeRoute, facts: 
   const old = was?.ref?.['field'];
   const there = target?.ref?.['scope'];
   // A condition's True: its header. Its False says nothing a scope's field takes.
-  if (was?.kind !== 'condition' || socketOf(from).row !== undefined || was.ref?.['superseded'] || target?.kind !== 'scope' || !field || field.startsWith('@') || !scope || !old || !there) {
+  if (was?.kind !== 'condition' || socketOf(from).row !== undefined || was.ref?.['superseded'] || was.ref?.['path'] || target?.kind !== 'scope' || !field || field.startsWith('@') || !scope || !old || !there) {
     return { refused: `The Query has no route from "${was?.heading ?? from}" to "${target?.heading ?? to}": a condition's True goes into a field of a scope.` };
   }
   if (scope === there && old === field) return null;
-  const rows = Object.fromEntries(was.rows.map((r) => [r.name, r.value]));
-  let given = rows['value'] as string | string[];
-  const known = facts.values?.(field);
-  if (field !== old && known && Array.isArray(given)) given = given.filter((v) => known.includes(v));
+  const whole = treeOf(was);
+  if (!whole) return { refused: `"${was.heading}" holds no condition to move.` };
   const type = facts.type?.(field);
-  const reading = treeReading(editedCondition(String(rows['op']), given ?? '', type), type as FieldType | undefined);
+  const known = facts.values?.(field);
+  // Another field takes only the values it has.
+  const kept = (t: Condition): Condition => {
+    const parts = groupOf(t);
+    if (parts) return { ...t, [parts[0]]: parts[1].map(kept) } as Condition;
+    const leaf = t as ConditionLeaf;
+    if (field === old || !known || !(ONE.has(leaf.op) || MANY.has(leaf.op))) return leaf;
+    const have = [leaf.value].flat().filter((v) => known.includes(String(v)));
+    // Nothing it picks is there: a pick of none, which says nothing.
+    if (!have.length) return { ...leaf, op: leaf.op === 'ne' || leaf.op === 'notin' ? 'notin' : 'in', value: [] };
+    return { ...leaf, value: ONE.has(leaf.op) ? have[0] : have };
+  };
+  const reading = treeReading(typedTree(kept(whole), type as FieldType | undefined), type as FieldType | undefined);
   // It must still SAY something there: an empty pick filters nothing, so nothing moves.
   if (!answerTree(reading)) return { refused: `Nothing "${was.heading}" picks is a value of "${field}": tick its values there.` };
   return { request: [{ scope, field: old, reading: null }, { scope: there, field, reading }] };

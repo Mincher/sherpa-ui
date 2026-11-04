@@ -69,7 +69,8 @@ test('a v1 is read ONCE as v2: each route that sent rows from a header leaves it
   assert.deepEqual(faults, []);
   // The converted fixture IS the read: no v1 file is left, and the same graph by id.
   assert.deepEqual(workflow, good);
-  assert.deepEqual(byId(good), byId(SAVED_AS_V1));
+  // Its Filter node is the Condition it became: the same graph by id.
+  assert.deepEqual(byId(good), byId({ ...SAVED_AS_V1, nodes: SAVED_AS_V1.nodes.map((n) => (n.kind === 'filter' ? { ...n, kind: 'condition' } : n)) }));
   assert.deepEqual(good.routes.map((r) => r.from), ['start/rows', 'status/value', 'filter/rows']);
   // A v2 is read as itself; a v1 checks, draws and edits as the v2 it reads as.
   assert.equal(readWorkflow(good).workflow, good);
@@ -109,12 +110,12 @@ test('ONE registry: every kind once, with a header, its own row names, what it s
     assert.equal(new Set(names).size, names.length, name);
   }
   const drawnIn = (graph) => Object.keys(NODE_KINDS).filter((k) => NODE_KINDS[k].graphs.includes(graph));
-  assert.deepEqual(drawnIn('workflow'), ['store', 'value', 'pick', 'filter', 'sort', 'group', 'count', 'output']);
+  assert.deepEqual(drawnIn('workflow'), ['store', 'condition', 'value', 'pick', 'sort', 'group', 'count', 'output']);
   assert.deepEqual(drawnIn('query'), ['store', 'status', 'source', 'scope', 'condition', 'preset', 'saved', 'arrange', 'presentation', 'component']);
-  // One meaning per word: a Store is where rows come from, in both; a Filter's rows are one condition leaf.
+  // One meaning per word: a Store is where rows come from, in both; a Condition is one group of the condition tree, in both.
   assert.equal(NODE_KINDS.source.model, 'SourceDefinition');
-  assert.deepEqual(NODE_KINDS.filter.rows.map((r) => r.name), ['rows', 'field', 'op', 'value', 'matches']);
-  assert.deepEqual(NODE_KINDS.condition.rows.map((r) => r.name), ['field', 'op', 'value']);
+  assert.equal(NODE_KINDS.filter, undefined, 'the Filter kind is gone: a Condition is the one');
+  assert.deepEqual(NODE_KINDS.condition.rows.map((r) => r.name), ['rows', 'join', 'field', 'op', 'value', 'group', 'matches']);
 });
 
 test('each fault is reported by name, and the check says no', () => {
@@ -124,7 +125,7 @@ test('each fault is reported by name, and the check says no', () => {
     [{ nodes: [...nodes, { id: 'odd', kind: 'teleport', x: 0, y: 0 }] }, 'the node "odd" is of the kind "teleport", which is not one'],
     [{ nodes: [...nodes, { id: 'odd', kind: 'scope', x: 0, y: 0 }] }, 'the node "odd" is of the kind "scope", which a workflow does not run'],
     [{ nodes: [...nodes, { id: 'more', kind: 'value', x: 0, y: 0, values: { colour: 'red' } }] }, 'the node "more" holds a value for "colour", a row its kind has not'],
-    [{ nodes: [...nodes, { id: 'more', kind: 'filter', x: 0, y: 0, values: { op: 'equals' } }] }, 'the node "more" holds "equals" as its Condition, which is no operator'],
+    [{ nodes: [...nodes, { id: 'more', kind: 'condition', x: 0, y: 0, values: { op: 'equals' } }] }, 'the node "more" holds "equals" as its Operator, which is no operator'],
     [{ routes: [{ from: 'gone', to: 'filter' }] }, 'a route leaves "gone", which is no output socket'],
     [{ routes: [{ from: 'start/rows', to: 'filter/matches' }] }, 'a route enters "filter/matches", which is no input socket'],
     // A Rows row only sends: the rows come in on the header.
@@ -132,7 +133,7 @@ test('each fault is reported by name, and the check says no', () => {
     [{ routes: [{ from: 'start/rows', to: 'filter/value' }] }, 'the route "start/rows" → "filter/value" joins an object to a value'],
     [{ nodes: [...nodes, { id: 'more', kind: 'store', x: 0, y: 0 }], routes: [{ from: 'start/rows', to: 'filter' }, { from: 'more/rows', to: 'filter' }] }, 'two routes enter "filter", which takes one'],
     [{ routes: [{ from: 'start/rows', to: 'filter' }, { from: 'start/rows', to: 'filter' }] }, 'the route "start/rows" → "filter" is there twice'],
-    [{ nodes: [...nodes, { id: 'again', kind: 'filter', x: 0, y: 0 }], routes: [{ from: 'filter/rows', to: 'again' }, { from: 'again', to: 'filter' }] }, 'its routes run in a loop'],
+    [{ nodes: [...nodes, { id: 'again', kind: 'condition', x: 0, y: 0 }], routes: [{ from: 'filter/rows', to: 'again' }, { from: 'again', to: 'filter' }] }, 'its routes run in a loop'],
   ];
   for (const [change, said] of cases) {
     const { ok, heard } = check(with_(change));
@@ -161,7 +162,7 @@ const row = (id, name, g = graph) => g.nodes.find((n) => n.id === id).rows.find(
 
 test('a workflow DRAWS as its kinds say: each node at its place, its rows with its values, and its routes', () => {
   assert.deepEqual(graph.nodes.map((n) => [n.id, n.kind, n.heading, n.x, n.y]), [
-    ['start', 'store', 'Store', 0, 0], ['status', 'value', 'Value', 0, 160], ['filter', 'filter', 'Filter', 360, 0], ['end', 'output', 'Output', 720, 0],
+    ['start', 'store', 'Store', 0, 0], ['status', 'value', 'Value', 0, 160], ['filter', 'condition', 'Condition', 360, 0], ['end', 'output', 'Output', 720, 0],
   ]);
   assert.deepEqual(graph.routes, good.routes);
   // Its Rows first: the rows that match, sent on. They come in on its header, of any type; its True and False on its header and footer.

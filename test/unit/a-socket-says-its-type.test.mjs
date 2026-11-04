@@ -63,7 +63,7 @@ test('the registry says each socket: a row\'s, the header\'s — True where it f
   assert.equal(socketType(kinds.fork, 'rows', 'input'), 'object');
   assert.equal(socketType(NODE_KINDS.output, '#false', 'output'), undefined, 'no fork, no False');
   assert.equal(socketType(NODE_KINDS.output, undefined, 'output'), undefined, 'the end sends nothing');
-  assert.equal(socketType(NODE_KINDS.filter, undefined, 'output'), 'boolean', 'a Filter\'s True');
+  assert.equal(socketType(NODE_KINDS.condition, undefined, 'output'), 'boolean', 'a Condition\'s True');
   assert.equal(takesMany(kinds.gate), true);
   assert.equal(takesMany(kinds.gate, 'tags'), false);
   assert.equal(takesMany(NODE_KINDS.output), false);
@@ -71,7 +71,7 @@ test('the registry says each socket: a row\'s, the header\'s — True where it f
   const drawn = kindNode(kinds, 'gate', 'g', []);
   assert.deepEqual([drawn.many, kindNode(kinds, 'fork', 'f', []).branches, kindNode(NODE_KINDS, 'output', 'x', []).branches], [true, true, undefined]);
   // A drawn node says its sockets as its kind does.
-  assert.equal(socketType(kindNode(NODE_KINDS, 'filter', 'x', NODE_KINDS.filter.rows), 'rows', 'output'), 'object');
+  assert.equal(socketType(kindNode(NODE_KINDS, 'condition', 'x', NODE_KINDS.condition.rows), 'rows', 'output'), 'object');
 });
 
 test('the rows come in on the header, of ANY type (D1), and leave a Rows row that only sends; each kind a workflow runs forks, and the Query\'s own steps do not', () => {
@@ -85,9 +85,9 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row tha
     if (at >= 0) assert.deepEqual([at, kind.rows[at]], [0, ROWS], `${name}: its Rows row, first`);
   }
   const named = (test) => all.filter(([, k]) => test(k)).map(([n]) => n);
-  assert.deepEqual(named((k) => k.rows.includes(ROWS)), ['store', 'status', 'source', 'scope', 'arrange', 'presentation', 'filter', 'sort', 'group']);
+  assert.deepEqual(named((k) => k.rows.includes(ROWS)), ['store', 'status', 'source', 'scope', 'condition', 'arrange', 'presentation', 'sort', 'group']);
   // True and False: every kind a workflow runs but its end, and the Query's Condition, Preset and Saved filter, whose True goes into a scope's row.
-  assert.deepEqual(named((k) => k.branches), ['store', 'condition', 'preset', 'saved', 'value', 'pick', 'filter', 'sort', 'group', 'count']);
+  assert.deepEqual(named((k) => k.branches), ['store', 'condition', 'preset', 'saved', 'value', 'pick', 'sort', 'group', 'count']);
   assert.deepEqual(named((k) => k.graphs.includes('workflow') && !k.branches), ['output']);
 });
 
