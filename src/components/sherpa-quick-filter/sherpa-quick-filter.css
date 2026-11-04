@@ -420,8 +420,8 @@
   max-inline-size: none;
 }
 
-/* A chip with no VALUE to name — a column heading's filter and sort chips,
-   whose column says what they act on. */
+/* A chip with no VALUE to name — a grid heading's and a cell's, whose column
+   says what they act on. */
 :host([data-no-value]) .caret-label { display: none; }
 
 .caret-label:empty {
@@ -455,8 +455,8 @@
 
 /* An icon-only chip is a FUNNEL, not a caret. Both drawings are stamped, so
    the choice is CSS and the component never rebuilds. `data-icon-start`
-   overrides both with the JS-written `.caret-icon` — a sort control needs
-   three glyphs, which is data. */
+   overrides both with the JS-written `.caret-icon` — a cell's cross, a
+   heading's fx: data. */
 .caret-funnel { display: none; }
 :host([data-icon-only]) .caret-glyph { display: none; }
 :host([data-icon-only]:not([data-icon-start])) .caret-funnel { display: inline-flex; }

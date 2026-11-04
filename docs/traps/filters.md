@@ -972,7 +972,7 @@ that is ON keeps its full accent face.
 **`data-icon-only`** — the chip reduced to its menu button: body, count,
 indicator and value label all hidden, the caret squared off and its glyph
 swapped for a funnel. For a filter affordance whose FIELD is named by something
-else — the data grid's column header is the case it exists for.
+else — the data grid's heading and its cell chip are the cases it exists for.
 
 **`data-persistent`** — a SELECTOR, not a toggle: always on, never empty. Set
 by the toolbar (`T-persistent-chip-is-a-selector`).
@@ -1064,8 +1064,9 @@ overwritten in `data-label`.
 BODY, and `.caret-icon` sits in the CARET for a `data-icon-only` chip, whose
 body is hidden. CSS picks which is visible.
 
-It cannot be the hardcoded funnel: a SORT control needs three different glyphs,
-so it writes `data-icon-start` like anything else.
+It cannot be the hardcoded funnel: a grid cell's chip wears a cross while its
+value is on, and a heading's an `fx` for a condition, so it writes
+`data-icon-start` like anything else.
 
 It goes through the base class's `writeIcon`, not a fourth copy of the same
 if/else. That also STRIPS previously-applied `fa-*` classes, which the

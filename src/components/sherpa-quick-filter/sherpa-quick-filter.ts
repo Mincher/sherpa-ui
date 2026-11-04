@@ -50,7 +50,7 @@ export class SherpaQuickFilter extends SherpaElement {
     /* A KEY, not a control: no toggle, no button semantics.
        TRAP T-readonly-legend-is-a-key-not-a-filter */
     'data-readonly': { type: 'boolean', kind: 'style' },
-    /* Its right button DISMISSES, not a menu — the Saved chip. Will, TODO 105 */
+    // No chrome on its caret at rest: a grid heading's filter. TRAP T-icon-only-is-purely-css
     'data-plain': { type: 'boolean', kind: 'style' },
     'data-no-value': { type: 'boolean', kind: 'style' },
     'data-full-value': { type: 'boolean', kind: 'style' },
@@ -1043,8 +1043,8 @@ export class SherpaQuickFilter extends SherpaElement {
     // A failed fetch says so first, then changed-not-applied. Will, TODO 406 and 411
     const lead = [this.hasAttribute('data-failed') ? UNFETCHED : '', this.#unapplied() ? UNAPPLIED : ''];
     const said = [...lead, this.#tipText(this.#said), matches].filter(Boolean).join(' - ');
-    /* A chip with NO WORDS on it — a grid heading's sort button — says its
-       name in the tip, as an icon button does: "Sorted by Name, descending". */
+    /* A chip with NO WORDS on it — a grid cell's or heading's — says its name
+       in the tip, as an icon button does: "Filter Team: Blue". */
     const name = this.hasAttribute('data-icon-only') ? this.getAttribute('aria-label') ?? '' : '';
     const tip = this.$('.tip');
     /* IN LINES, where the page shows them: its field's name, what the field is,
