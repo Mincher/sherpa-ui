@@ -279,7 +279,7 @@ The contract for a subclass:
 ```ts
 static css      = new URL('./sherpa-foo.css',  import.meta.url);
 static html     = new URL('./sherpa-foo.html', import.meta.url);
-static props    = { 'data-heading': { type: 'string', kind: 'content', to: '.title' } };
+static props    = { 'data-heading': { type: 'string', kind: 'content' } };  // the .html writes it: data-text="data-heading"
 static observed = ['disabled'];             // native attrs + own-handling ones
 onRender()                 // shadow ready — cache refs, wire host listeners (once)
 onChange(name, old, val)   // an observed attribute changed (after first render)
@@ -494,8 +494,8 @@ stamp items from a prototype:
 One of the twelve has rows. The other eleven had to read past a name that
 described a table.
 
-So the base class says `renderItems`, `cloneItem`, `ItemTemplate` — and its
-internals say `#fillItem`, `ITEM_TEXT`, `ITEM_ATTR`. **An ITEM is whatever the
+So the base class says `renderItems` and `cloneItem`, and the directives module
+`fillItem`. **An ITEM is whatever the
 component repeats.** The method's own signature already used that word
 (`items`, `item`, `index`); only the name disagreed.
 
@@ -786,13 +786,11 @@ tree of tiered values (TODO 369) asks the same question of the same flat shape.
 
 ### T-shared-values-two-components-must-agree-on
 
-`icons.ts` holds values that MORE THAN ONE component must agree on. Mostly Font
-Awesome glyphs, which is what the filename says and what it started as.
-`NON_VALUE_ROWS` joined them at the bottom: it is a SELECTOR, not a glyph, but it is
-here for exactly the same reason — two components had each written their own copy and
-the copies had drifted. The file is named for its first inhabitant; the RULE is "a
-value two components must not disagree about". Rename it if the non-glyph half ever
-outgrows the glyphs.
+`core/ui/shared-constants.ts` holds values that MORE THAN ONE component must agree
+on: glyph names (`ORGANISE_ICONS`), a selector (`NON_VALUE_ROWS`), words, a chart's
+geometry. Each is here for the same reason — two components had each written their
+own copy and the copies had drifted. The RULE is "a value two components must not
+disagree about".
 
 A glyph belongs here when TWO OR MORE components draw the same concept. The sort
 arrows are the case it exists for: a column header and a toolbar chip are two views
@@ -824,10 +822,10 @@ row with a caret (`T-a-row-opens-its-child-menu`).
 
 ### T-write-icon-is-protected-not-private
 
-`writeIcon` is PROTECTED rather than private, and that is deliberate: `as: 'icon'`
-cannot cover a RUNTIME target choice (`sherpa-nav`, `sherpa-nav-item`), one glyph
-written into TWO slots (`sherpa-quick-filter`) or `sherpa-app-header`'s own
-`#sync`. Those four reach for this method.
+`writeIcon` is PROTECTED rather than private, and that is deliberate: a template's
+`data-attr-data-icon` cannot cover a RUNTIME target choice (`sherpa-nav`,
+`sherpa-nav-item`), one glyph written into TWO slots, or an icon a module of a
+component draws (the grid's status cells). Those reach for this method.
 
 So: **reach for THIS; never build an `<i>`.** Four components had built a child
 `<i>` with `createElement`, which CLAUDE.md forbids outright — classes go on the
@@ -949,13 +947,14 @@ light mode, which is where it gets reviewed.
 ### T-a-template-is-parsed-once
 
 **Each template body is parsed ONCE, into a `<template>`; each element stamps a
-deep clone of it.** TODO 350 (the lean-code audit, E1). Every element used to
-set its shadow root's `innerHTML` from the body's string, so the HTML parser ran
-again for every button, chip and cell on the page. A clone of parsed nodes costs
-far less. The same pass notes whether the body holds a `data-swap-on` or a
-`data-icon` at all, so a tree with neither is not searched for them on each
-stamp. A clone, not `importNode`: a nested custom element upgrades when it is
-inserted, as it did from `innerHTML`. A live reload clears the parsed bodies.
+deep copy of it.** TODO 350 (the lean-code audit, E1). Setting each shadow root's
+`innerHTML` from the body's string runs the HTML parser again for every button,
+chip and cell on the page; a copy of parsed nodes costs far less. The same pass
+notes whether the body holds a directive, a `data-icon` or a tip's anchor at all,
+so a tree with none is not searched for them on each stamp (`stampable`).
+IMPORTED (`importNode`), not cloned: the page's document upgrades each custom
+element at once, as it did from `innerHTML`. A live reload clears the parsed
+bodies.
 
 - Site: `src/core/ui/templater.ts`
 
@@ -1315,10 +1314,10 @@ being spelled once per component. Measured across the 58: `data-heading` in 9,
 `data-type` in 8, `data-size` in 3.
 
 Two of those groups are fine as they are. A `kind: 'content'` entry differs
-only in its `to:` selector — `.title` vs `.heading-text` vs `.heading` — and
-that selector IS the component's own DOM, so nine copies of
-`type: 'string', kind: 'content'` are repetition, not duplication. Moving them
-would mean the base class guessing at a class name.
+only in WHERE its template writes it — `data-text="data-heading"` on `.title` vs
+`.heading-text` vs `.heading` — and that is the component's own DOM, so nine
+copies of `type: 'string', kind: 'content'` are repetition, not duplication.
+Moving them would mean the base class guessing at a class name.
 
 The `kind: 'style'` ones are not fine, because a copy can be WRONG and nothing
 says so. `sherpa-grid-cell` declared `data-sort-direction` with values
@@ -1368,7 +1367,7 @@ the rendering was.
 The base class now has a default: a payload's keys are written onto the
 attributes the component DECLARES, and the existing prop sync does the rest.
 `{ heading: '40 records' }` becomes `data-heading`, which `sherpa-section-header`
-already declares as `kind: 'content'` with `to: '.title'`.
+declares as `kind: 'content'` and its template writes into `.title` (`data-text`).
 
 Three constraints make it safe:
 
