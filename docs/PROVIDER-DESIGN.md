@@ -121,8 +121,8 @@ in `src/components/sherpa-provider/`, given what it needs by its provider:
 | `provider-declared.ts` | what a component declares, read in one place |
 | `provider-look.ts` | the look settings on the page's root |
 
-A pivot and a grid made from a chart are rows in, a table out: `pivotTable()`
-and `madeTable()` in `core/data/aggregate.ts`, DOM-free.
+A pivot and a grid made from a chart are rows in, a table out: one
+`crossTable()`, over `crossSpec()`, in `core/data/aggregate.ts`, DOM-free.
 
 **A component DECLARES; the provider never probes.** `static asks` says the
 shape of its data (§4). `static takes` lists what else its provider gives it,

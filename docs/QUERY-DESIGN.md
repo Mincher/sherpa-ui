@@ -269,8 +269,8 @@ interface SavedView {
 - **21b (which header chips survive a View change)** becomes one flag per
   field in the view scope: `survives: true` keeps its reading across a change.
 - **Element state that is not data** — a column width, a grid's selected rows
-  — stays in a small `ui` block, applied through the element's public API as
-  `ViewSnapshot.elements` is today.
+  — stays in a small `ui` block, applied through the element's public API (a
+  View's `ui`, `applyView`).
 
 **One disagreement to settle, said once.** On 2026-09-18 Will chose markup as
 the ONE format for what is on screen, and the JSON view definition
@@ -299,10 +299,10 @@ el.drawScope(description, live) / el.drawReading(field, reading, scope)
 
 A draw never becomes a request, and the Context drops a request whose answer
 is already in force — so an echo dies in one round. Bound (`data-locked`), a
-control's doors (`setChipValues`, `setFieldReading`, …) ask as its reader
+control's doors (`setChipValues`, `setChipReading`, …) ask as its reader
 would. So:
 
-| control | today | with the Query |
+| control | before (366) | with the Query |
 |---|---|---|
 | toolbar | holds chips' answers; `readings`, `answers`, `restoreAnswers` | draws `holds` + `readings`; its events are requests |
 | filter panel | its own draft, `#applied`, `readings`, refill from the bars | draws every scope; Apply/Discard call the source |
@@ -398,7 +398,8 @@ a bar must be drawn FROM the Query before a restore can draw it.
   the open panel and the header (`drawReading`, `drawScope`). (Saved filters
   were presets in the Query until 366; now a saved filter is a query definition
   that loads into the field chips, and the Query names none.)
-- 3: the session keeps the Query, and `setQuery` restores it.
+- 3: the page keeps the Query (its `PageState` since 695 U3), and `setQuery`
+  restores it.
 - 5a: a legend is a scope that `narrows` its chart (`ownParts` gone).
 - 5b: a heading is a view of its field's reading, and wears the field's
   NORMAL chip (Will, 2026-09-27 — the `col:` chips and the toolbar's external
@@ -410,7 +411,7 @@ a bar must be drawn FROM the Query before a restore can draw it.
   The hidden `view` part is gone.
 - 7b (Dashboard): its views are JSON too; its header answers the View scope
   (a Region pick by hand now filters); its own axes sit in a `page` scope no
-  bar answers. `saveViewAs` saves JSON. A view's LAYOUT as JSON waits for the
+  bar answers. A saved View is JSON. A view's LAYOUT as JSON waits for the
   Templater (68) — `content` markup until then.
 - 6: a remote store (`fakeRemote`, `?remote`) gives the source a DRAFT;
   `commit` / `discard` take a field, a scope or all; `pending` and `dirty`
@@ -420,10 +421,11 @@ a bar must be drawn FROM the Query before a restore can draw it.
   Discard. A pending chip wears the active edge and no fill; the footer owns
   "nothing to save".
 
-Left for later steps: the panel still refills its LIST of fields from the
-bars; the bars still own which chips they hold, and Records reports it
-(`syncScopes`); the grid keeps its own `ColumnFilter` shape internally, as a
-drawn copy of the reading. Next: step 8 (segment and aggregate).
+Left then for later steps, since done: the panel's LIST of fields from the bars
+(the panel went in 476), the bars owning which chips they hold (they ask for
+their scope, provider P3b), and the grid's own `ColumnFilter` shape (its
+readings are its `FilterHostController`'s, 695 P2). Next: step 8 (segment and
+aggregate).
 
 ---
 
