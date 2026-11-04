@@ -130,7 +130,8 @@ test('a workflow graph lights from the steps a run says: each node by its id, it
   const r = await page.evaluate(async (lit) => {
     const { traceStep } = await import('/dist/data.js');
     const read = () => eval(lit) as Record<string, [string | null, string | null]>;
-    const border = (heading: string) => getComputedStyle(document.querySelector(`#root sherpa-node[data-heading="${heading}"]`)!).borderTopColor;
+    // A node paints on its .root part (695 P7: a style query re-maps a part, not :host).
+    const border = (heading: string) => getComputedStyle(document.querySelector(`#root sherpa-node[data-heading="${heading}"]`)!.shadowRoot!.querySelector('.root')!).borderTopColor;
     const idle = border('Filter');
     // As N4's runner will: one run, each step under it, naming its node.
     const run = traceStep('start', { graph: 'active-customers', rows: 3 })!;
