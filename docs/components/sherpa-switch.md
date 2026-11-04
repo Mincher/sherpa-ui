@@ -73,6 +73,8 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-style-surface-base-2` | `.track` | `--_fill` |
+| `--sherpa-style-border-base` | `.track` | `--_border` |
 | `--sherpa-switch-size-width` | `.track` | `inline-size` |
 | `--sherpa-switch-size-width` | `.track` | `min-inline-size` |
 | `--sherpa-switch-size-height` | `.track` | `min-block-size` |

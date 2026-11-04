@@ -59,6 +59,19 @@
 }
 
 /* State pins, from scripts/figma-data/state-pins.yaml. Unlayered, as the shared pins are. */
+:host(sherpa-button:is([data-look="transparent"], [data-look="saturated"]):is([data-status="info"], [data-status="critical"], [data-status="warning"], [data-status="urgent"], [data-status="success"], [data-status="active"], [data-status="inactive"])) { --_mode: initial; }
+:host(sherpa-button[data-look="transparent"]) { --_mode: transparent-default; }
+:host(sherpa-button[data-look="saturated"]) { --_mode: saturated-default; }
+:host(sherpa-button[aria-pressed="true"]) { --_mode: active; --_mode-viz: active; }
+:host(sherpa-button[aria-pressed="true"][data-look="transparent"]) { --_mode: transparent-active; }
+:host(sherpa-button[aria-pressed="true"][data-look="saturated"]) { --_mode: saturated-active; }
+:host(sherpa-button[data-open]) { --_mode: active; --_mode-viz: active; }
+:host(sherpa-button[data-open][data-look="transparent"]) { --_mode: transparent-active; }
+:host(sherpa-button[data-open][data-look="saturated"]) { --_mode: saturated-active; }
+:host(sherpa-button[disabled]) { --_mode: inactive; --_mode-viz: inactive; }
+:host(sherpa-button[disabled][data-look="transparent"]) { --_mode: transparent-inactive; }
+:host(sherpa-button[disabled][data-look="saturated"]) { --_mode: saturated-inactive; }
+
 :host(sherpa-button) .badge-value {
   --sherpa-style-border-base: var(--sherpa-style-default-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
@@ -74,17 +87,10 @@
   --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
   --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
   --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
-  --_status-surface: initial;
-  --_status-surface-subtle: initial;
   --_status-surface-strong: initial;
-  --_status-shadow: initial;
-  --_status-border: initial;
-  --_status-border-strong: initial;
-  --_status-data-viz: initial;
   --_status-data-viz-border: initial;
-  --_status-text: initial;
-  --_status-text-on-color: initial;
-  --_status-icon: initial;
+  --_mode: default;
+  --_mode-viz: default;
 }
 /* == end sherpa:tokens == */
 

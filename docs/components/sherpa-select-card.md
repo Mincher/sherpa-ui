@@ -79,6 +79,11 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-style-surface-base` | `.card` | `--_surface` |
+| `--sherpa-theme-border-default-2` | `.card` | `--_border` |
+| `--sherpa-style-content-base` | `.card` | `--_content` |
+| `--sherpa-style-border-width` | `.card` | `--_divider-rule` |
+| `--sherpa-style-indicator-accent` | `.card` | `--_accent` |
 | `--sherpa-display-mode-border-width-base` | `.card` | `border-width` |
 | `--sherpa-theme-content-body-1` | `.body` | `color` |
 | `--sherpa-font-size-body-base` | `.body` | `font-size` |

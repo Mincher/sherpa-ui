@@ -122,6 +122,9 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-style-border-base` | `.field` | `--_border` |
+| `--sherpa-theme-border-accent-2` | `.field` | `--_border-focus` |
+| `--sherpa-style-indicator-accent` | `.field` | `--_border-error` |
 | `--sherpa-theme-gap-sm` | `.field` | `gap` |
 | `--sherpa-font-size-body-small` | `.label` | `font-size` |
 | `--sherpa-font-weight-medium` | `.label` | `font-weight` |

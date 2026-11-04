@@ -40,18 +40,14 @@
   --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
   --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
   --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
-  --_status-surface: initial;
-  --_status-surface-subtle: initial;
   --_status-surface-strong: initial;
-  --_status-shadow: initial;
-  --_status-border: initial;
-  --_status-border-strong: initial;
-  --_status-data-viz: initial;
   --_status-data-viz-border: initial;
-  --_status-text: initial;
-  --_status-text-on-color: initial;
-  --_status-icon: initial;
 }
+
+:host(sherpa-switch:is([data-look="transparent"], [data-look="saturated"]):is([data-status="info"], [data-status="critical"], [data-status="warning"], [data-status="urgent"], [data-status="success"], [data-status="active"], [data-status="inactive"])) { --_mode: initial; }
+:host(sherpa-switch[checked]) { --_mode: saturated-success; }
+:host(sherpa-switch[disabled]) { --_mode: inactive; --_mode-viz: inactive; }
+:host(sherpa-switch[checked][disabled]) { --_mode: saturated-inactive; }
 /* == end sherpa:tokens == */
 
 /**
@@ -64,17 +60,14 @@
 :host {
   display: inline-flex;
   vertical-align: middle;
-
-  /* The Style names Figma binds; ON and disabled are PINS. Through a property,
-     so an early getComputedStyle read still sees the state. */
-  --_fill: var(--sherpa-style-surface-base-2, #b3b3c3);
-  --_border: var(--sherpa-style-border-base, #b3b3c3);
 }
-/* Value=on binds one step lighter: its ghost style-surface/dark is +1 there. */
-:host([checked]) { --_fill: var(--sherpa-style-surface-base-1, #00ad62); }
 
 /* ── Track: the <label> the whole control lives in ─────────────────────── */
+/* The Style names Figma binds; ON and disabled are PINS, which re-map only what
+   the host holds. TRAP T-a-host-state-pin-lives-where-the-host-is */
 .track {
+  --_fill: var(--sherpa-style-surface-base-2, #b3b3c3);
+  --_border: var(--sherpa-style-border-base, #b3b3c3);
   display: inline-flex;
   align-items: center;
   flex-direction: row; /* OFF: knob at the start */
@@ -110,6 +103,8 @@
 
   &:has(.input:disabled) { cursor: not-allowed; }
 }
+/* Value=on binds one step lighter: its ghost style-surface/dark is +1 there. */
+:host([checked]) .track { --_fill: var(--sherpa-style-surface-base-1, #00ad62); }
 
 /* Input: real and focusable, with a zero footprint so the knob and label lay
    the track out. Keyboard Space toggles it natively. */

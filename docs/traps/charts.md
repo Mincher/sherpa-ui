@@ -365,8 +365,8 @@ already says, and the two could then disagree.
     flat  → default   (nothing to report)
     none  → default   (a raw data point with no relevant trend)
 
-"Default" means **NO `data-status` at all**, not `data-status="default"`. The
-`--_status-*` cascade only emits for a NAMED status, so REMOVING the attribute is
+"Default" means **NO `data-status` at all**, not `data-status="default"`. A
+status pin only colours for a NAMED status, so REMOVING the attribute is
 what returns the tile to its neutral surface and ink — the same reason
 `T-empty-write-lets-css-collapse` exists.
 

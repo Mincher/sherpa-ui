@@ -273,6 +273,11 @@
     }
   ],
   "tokens": {
+    "card.--_surface": "{sherpa.style-surface-base}",
+    "card.--_border": "{sherpa.theme-border-default-2}",
+    "card.--_content": "{sherpa.style-content-base}",
+    "card.--_divider-rule": "{sherpa.style-border-width}",
+    "card.--_accent": "{sherpa.style-indicator-accent}",
     "card.border-width": "{sherpa.display-mode-border-width-base}",
     "body.color": "{sherpa.theme-content-body-1}",
     "body.font-size": "{sherpa.font-size-body-base}",

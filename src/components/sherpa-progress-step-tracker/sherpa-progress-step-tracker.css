@@ -13,15 +13,7 @@
   --sherpa-style-surface-base-1: var(--sherpa-style-saturated-surface-base-1);
   --sherpa-style-surface-base-2: var(--sherpa-style-saturated-surface-base-2);
   --sherpa-style-surface-shadow: var(--sherpa-style-saturated-surface-shadow);
-  --_status-surface: var(--sherpa-style-saturated-surface-base);
-  --_status-surface-subtle: var(--sherpa-style-saturated-surface-base-1);
   --_status-surface-strong: var(--sherpa-style-saturated-surface-base-2);
-  --_status-shadow: var(--sherpa-style-saturated-surface-shadow);
-  --_status-border: var(--sherpa-style-saturated-border-base);
-  --_status-border-strong: var(--sherpa-style-saturated-border-base-1);
-  --_status-text: var(--sherpa-style-saturated-content-base);
-  --_status-text-on-color: var(--sherpa-style-saturated-content-inverse);
-  --_status-icon: var(--sherpa-style-saturated-indicator-accent);
 }
 /* == end sherpa:tokens == */
 

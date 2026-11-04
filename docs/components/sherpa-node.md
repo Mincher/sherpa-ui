@@ -67,6 +67,9 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-style-border-width` | `.root` | `border-width` |
+| `--sherpa-display-mode-border-rounding-base` | `.root` | `border-radius` |
+| `--sherpa-style-content-base` | `.root` | `color` |
 | `--sherpa-theme-gap-sm` | `.caption` | `padding-block-end` |
 | `--sherpa-style-content-secondary` | `.caption` | `color` |
 | `--sherpa-font-family-body` | `.caption` | `font-family` |

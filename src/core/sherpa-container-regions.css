@@ -4,14 +4,17 @@
  * overlay panel: its header and footer ARE the composed components.
  */
 
-:host {
-  /* The Style names Figma binds; each root pins Style=default (state-pins.yaml). */
+/* The Style names Figma binds; each root pins Style=default (state-pins.yaml).
+   On a `.root` too, where a card whose host pins a state draws itself: a pin
+   re-maps only what the host holds. TRAP T-a-host-state-pin-lives-where-the-host-is */
+:host,
+.root {
   --_surface: var(--sherpa-style-surface-base, #ffffff);
   --_border: var(--sherpa-style-border-base-1, #b3b3c3);
   /* The header and footer strokes. */
   --_divider: var(--sherpa-style-border-base-1, #b3b3c3);
-  --_pad: var(--sherpa-card-pad);
 }
+:host { --_pad: var(--sherpa-card-pad); }
 
 /* Bare wrappers: a composed header or footer brings its own chrome. They show
    only when their slot has content. */

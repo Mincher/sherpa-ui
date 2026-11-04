@@ -172,9 +172,6 @@ What each class's base rule reads:
 | `--sherpa-style-content-secondary` | `.description` | `color` |
 | `--sherpa-theme-content-size-small` | `.description` | `font-size` |
 | `--sherpa-theme-content-line-height-small` | `.description` | `line-height` |
-| `--sherpa-theme-content-critical-1` | `.remove` | `--_status-text` |
-| `--sherpa-theme-border-critical-2` | `.remove` | `--_status-border` |
-| `--sherpa-theme-content-critical-1` | `.remove` | `--_status-icon` |
 | `--sherpa-display-mode-space-2xs` | `.rows` | `gap` |
 | `--sherpa-display-mode-space-2xs` | `.rows` | `--_scroll-shadow-gap` |
 | `--sherpa-theme-content-body-1` | `.body-range-label` | `color` |

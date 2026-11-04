@@ -37,26 +37,14 @@
   --sherpa-focus-ring: 2px solid var(--sherpa-theme-border-accent-2, #3b4ccd);
   --sherpa-focus-offset: -3px;
 
-  /* The HOVER fill — the +1 step at 20% over the base — that a grid row, a panel's
-     filter section and a chip all wear, in whatever mode is pinned. Will, TODO 531 */
+  /* The HOVER fill — the +1 step at this amount over the base — that a grid row,
+     a panel's filter section and a chip all wear, in whatever mode is pinned. The
+     fill, and the scroll shadow's ink, are derived in sherpa-style-modes.css,
+     where each mode block derives them again. Will, TODO 531 */
   --sherpa-hover-amount: 20%;
-  --sherpa-hover-fill: color-mix(in srgb, var(--sherpa-style-surface-base-1, #e8e8f6) var(--sherpa-hover-amount),
-    var(--sherpa-style-surface-base, #ffffff));
 
-  /* A CARD's four values — the box that holds other things. Six components had
-     these four lines verbatim: accordion, container, dialog, overlay-panel,
-     panel, select-card.
-
-     Properties, not a class: five of the six declare them on `:host`, and a
-     `:host` cannot wear a class from its own sheet.
-
-     A component that means something ELSE by its surface simply keeps its own
-     declaration — callout is deliberately status-blind, toast uses the subtle
-     tier, checkbox and radio use a different token. Its own `:host` rule wins
-     over this one, being the later sheet. */
-  --sherpa-card-surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --sherpa-card-border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
-  /* One step lighter than the outer border, so an inner rule reads as quieter. */
+  /* A CARD's divider and inset. One step lighter than the outer border, so an
+     inner rule reads as quieter. */
   --sherpa-card-divider: var(--sherpa-theme-border-default-1, #e8e8f6);
   --sherpa-card-pad: var(--sherpa-theme-padding-lg, 16px);
 
@@ -64,7 +52,6 @@
      as soft as a small drop shadow, and as short: half the shadow ink, 8px.
      Will, TODO 504 */
   --sherpa-scroll-shadow-size: var(--sherpa-display-mode-space-xs, 8px);
-  --sherpa-scroll-shadow-ink: color-mix(in srgb, var(--sherpa-style-surface-shadow, #35353d4c) 50%, transparent);
 }
 
 :host([hidden]) {
@@ -94,6 +81,16 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* A host's box drawn on a part behind its content, as a pin re-maps only what
+   the host holds. Its host is positioned and isolated. TRAP T-a-host-state-pin-lives-where-the-host-is */
+.sherpa-surface {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
 }
 
 /* A trailing × (callout, chip, tag, toast): never squeezed, one step off its neighbour. */

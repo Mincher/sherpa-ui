@@ -50,6 +50,8 @@ What each class's base rule reads:
 | `--sherpa-font-size-body-base` | `.label` | `font-size` |
 | `--sherpa-theme-content-line-height-base` | `.label` | `line-height` |
 | `--sherpa-theme-content-body-base` | `.label` | `color` |
+| `--sherpa-style-indicator-accent` | `.bar` | `--_fill` |
+| `--sherpa-style-surface-base` | `.bar` | `--_track` |
 | `--sherpa-display-mode-space-2xs` | `.bar` | `block-size` |
 | `--sherpa-display-mode-border-rounding-full` | `.bar` | `border-radius` |
 

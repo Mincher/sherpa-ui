@@ -481,16 +481,16 @@ test('a favourited star takes the ACTIVE Style mode, face ring and ink', async (
     // what the first version of this test did, and it looked like the fix had
     // not worked at all.
     //
-    // The star's OWN --_status-* values are the exact chain its trigger paints
-    // from, so the comparison is like-for-like. Not a hand-converted hex (the
-    // browser rounds #F2DFFF to 224, not the arithmetic 223) and not a probe
-    // elsewhere in the tree (a light-DOM one resolves through tokens.css's
-    // [data-status] block, a different chain).
-    const sc = getComputedStyle(star);
+    // The trigger's OWN Style names are the exact chain it paints from, so the
+    // comparison is like-for-like. Not a hand-converted hex (the browser rounds
+    // #F2DFFF to 224, not the arithmetic 223) and not a probe elsewhere in the
+    // tree (a light-DOM one resolves through tokens.css's [data-status] block,
+    // a different chain).
+    const sc = getComputedStyle(star.shadowRoot.querySelector('.trigger')!);
     const expected = {
-      surface: sc.getPropertyValue('--_status-surface').trim(),
-      border: sc.getPropertyValue('--_status-border').trim(),
-      text: sc.getPropertyValue('--_status-text').trim(),
+      surface: sc.getPropertyValue('--sherpa-style-surface-base').trim(),
+      border: sc.getPropertyValue('--sherpa-style-border-base').trim(),
+      text: sc.getPropertyValue('--sherpa-style-content-base').trim(),
     };
 
     (star.shadowRoot.querySelector('button') as HTMLElement).click();

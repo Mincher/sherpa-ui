@@ -88,20 +88,19 @@ the chip moved. Measured then: 49% of component colours read Theme directly.
   (`--sherpa-style-active-surface-base`, `--sherpa-style-transparent-active-…`,
   `--sherpa-style-default-…`). `[data-status]` and `[data-look]` are pins.
 - **A component state is a pin, as data** — `scripts/figma-data/state-pins.yaml`.
-  No state colour is written in a component. A HOST pin is a plain
-  `tag[state]` rule in both sheets, never `:host(…)`: a rule from outside the
-  component beats every `:host()` rule, so the page's `[data-look="saturated"]`
-  hid a button's open state. As plain rules they meet the look and status pins
-  in one tree, and specificity decides — look + state beats look alone. A pin on
-  a PART is `:host(tag) .part`, in its component's own sheet
-  (`T-a-host-state-pin-lives-where-the-host-is`).
+  No state colour is written in a component. A HOST pin is one line in its own
+  sheet, `--_mode`, and its mode's shared block re-maps what the host holds by a
+  style query, so the page's `[data-look="saturated"]` on the host cannot hide
+  its open state. A pin on a PART is `:host(tag) .part`, a whole block, in its
+  component's own sheet (`T-a-host-state-pin-lives-where-the-host-is`).
 - **A FLAG is not a pin.** The data grid marks an acting column with
   `data-status="active"` but paints nothing, so its YAML pins that heading
   back to `default`; without it the tint leaked into the chips and the menu.
 
-`--_status-*` is still set by every pin, for components not yet moved — and
-unset (`initial`) by a default pin, because "default" is not "no status" to a
-fallback chain.
+Of the old `--_status-*` door, two names are left, set by every pin and unset
+(`initial`) by a default one, because "default" is not "no status" to a
+fallback chain: `--_status-surface-strong` (the gauge's fill, the tag's dot) and
+`--_status-data-viz-border` (the sparkline's line). They go after 695 U4.
 
 `lint:css`: `theme-active` fails a Theme "active" read outright; `theme-colour`
 counts every Theme colour read per component against

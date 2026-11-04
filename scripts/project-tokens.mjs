@@ -413,7 +413,10 @@ const propertyRegistrations = `/* Registered HERE because a shadow root cannot.
 @property --sherpa-group-col { syntax: "<number>"; inherits: false; initial-value: 0; }
 @property --sherpa-group-row { syntax: "<number>"; inherits: false; initial-value: 0; }
 @property --sherpa-group-last-col { syntax: "<number>"; inherits: false; initial-value: 0; }
-@property --sherpa-group-last-row { syntax: "<number>"; inherits: false; initial-value: 0; }`;
+@property --sherpa-group-last-row { syntax: "<number>"; inherits: false; initial-value: 0; }
+/* A pin's mode, for the element's own children only. TRAP T-a-host-state-pin-lives-where-the-host-is */
+@property --_mode { syntax: "*"; inherits: false; }
+@property --_mode-viz { syntax: "*"; inherits: false; }`;
 
 // ════════════════════════════════════════════════════════════════════════════
 // Collect leaves per collection and route them. Each layer bucket holds `root`
@@ -822,27 +825,14 @@ for (const slug of ['data-viz-status', 'data-viz-set-2']) {
 //   --sherpa-style-<mode>-<role>            --sherpa-style-active-surface-base
 //   --sherpa-style-<look>[-<mode>]-<role>   --sherpa-style-transparent-active-content-base
 // A component STATE binds one of these, as a Figma instance binds a Style
-// variable and pins a mode. The [data-status] / [data-look] pins below re-point
-// the --_status-* cascade at the same names, so each value is declared once.
-// TRAP T-a-state-colour-binds-the-style-mode
+// variable and pins a mode. TRAP T-a-state-colour-binds-the-style-mode
 // ════════════════════════════════════════════════════════════════════════════
 const STATUS_MODES = ['info', 'critical', 'warning', 'urgent', 'success', 'active', 'inactive'];
+// The old `--_status-*` door, kept only for its last two readers: the gauge's
+// fill and the sparkline's line. They move to the Style names after U4.
 const STATUS_ROLE_MAP = {
-  'style-surface/base': '_status-surface',
-  'style-surface/base +1': '_status-surface-subtle',
   'style-surface/base +2': '_status-surface-strong',
-  'style-surface/shadow': '_status-shadow',
-  'style-border/base': '_status-border',
-  // A status-tinted rule/stroke (chart lines, dividers) — the neutral
-  // `_status-border` cannot express these.
-  'style-border/base +1': '_status-border-strong',
-  // A DATA MARK under a status pin: fill is the ramp mid at 50%, border the same
-  // solid. Not `_status-border-strong`, which is a CARD's border step.
-  'style-surface/data-viz': '_status-data-viz',
   'style-border/data-viz': '_status-data-viz-border',
-  'style-content/base': '_status-text',
-  'style-content/inverse': '_status-text-on-color',
-  'style-indicator/accent': '_status-icon',
 };
 const styleByKey = {};
 for (const l of walkLeaves(doc.style ?? {}, ['style'])) {
@@ -913,13 +903,17 @@ for (const look of LOOKS) {
   }
 }
 
+/** A mode's token for a Style key, through its HOOK when it has one: a page
+    re-points the pin by names of its own, `--sherpa-<hook>-<name>`.
+    TRAP T-a-pin-a-page-can-re-point */
+const viaHook = (key, name, hook) =>
+  hook ? `var(--sherpa-${hook}-${styleByKey[key].name.slice(STYLE_VAR.length)}, var(${name}))` : `var(${name})`;
+
 /** A pin: every public Style name re-pointed at the mode's own token — plus the
-    --_status-* names, until no component reads them. A HOOK lets a page re-point
-    the pin by names of its own, `--sherpa-<hook>-<name>`, inherited into every
-    shadow root. TRAP T-a-pin-a-page-can-re-point */
-function pinBody(mode, look, hook) {
-  const keys = Object.keys(styleByKey).filter((k) => !look || LOOK_KEYS.includes(k));
-  const via = (key, name) => (hook ? `var(--sherpa-${hook}-${styleByKey[key].name.slice(STYLE_VAR.length)}, var(${name}))` : `var(${name})`);
+    two --_status-* names still read. */
+function pinBody(mode, look, hook, only = () => true) {
+  const keys = Object.keys(styleByKey).filter((k) => (!look || LOOK_KEYS.includes(k)) && only(k));
+  const via = (key, name) => viaHook(key, name, hook);
   const lines = [];
   for (const key of keys) {
     const name = styleModeVar(key, mode, look);
@@ -934,10 +928,24 @@ function pinBody(mode, look, hook) {
   }
   return lines;
 }
-function pinBlock(selector, mode, look, hook) {
+function pinBlock(selector, mode, look, hook, extra = []) {
   const lines = pinBody(mode, look, hook);
-  return lines.length ? `  ${selector} {\n${lines.join('\n')}\n  }` : null;
+  return lines.length ? `  ${selector} {\n${[...lines, ...extra].join('\n')}\n  }` : null;
 }
+
+/** What every root derives from the Style names on its :host. A mode block
+    derives them again for what it re-maps, from the mode's own tokens, as the
+    host keeps its own. */
+const derivedLines = (ref) => [
+  `    --sherpa-hover-fill: color-mix(in srgb, ${ref('style-surface/base +1', '#e8e8f6')} var(--sherpa-hover-amount),`,
+  `      ${ref('style-surface/base', '#ffffff')});`,
+  `    --sherpa-scroll-shadow-ink: color-mix(in srgb, ${ref('style-surface/shadow', '#35353d4c')} 50%, transparent);`,
+];
+const derivedHostBlock = `  :host {\n${derivedLines((key, fallback) => `var(${styleByKey[key].name}, ${fallback})`).join('\n')}\n  }`;
+
+/** The value a pin names in `--_mode`: `warning`, `transparent-default`, `active-filter-on`.
+    A look always says its mode: the minifier writes a bare `transparent` as `#0000`. */
+const modeKey = (mode, look, hook) => [look, mode, hook].filter(Boolean).join('-');
 
 // The status pins — an ancestor [data-status] re-points Style for its subtree.
 const statusBlocks = ['default', ...STATUS_MODES]
@@ -962,27 +970,66 @@ for (const look of LOOKS) {
 // ════════════════════════════════════════════════════════════════════════════
 // Component STATE pins — which Style mode a state takes, as Figma pins it on the
 // instance. Data in scripts/figma-data/state-pins.yaml; `&` is the host.
-// A host STATE pin is a plain `tag[state]` rule in BOTH sheets, so it meets the
-// look and status pins in the host's own tree and specificity decides.
-// A PART's pin and a bare `&` (it beats only inheritance) are the component's
-// own: in its token region. TRAP T-a-host-state-pin-lives-where-the-host-is
+// - A HOST state pin is ONE line in its component's own region,
+//   `:host(tag[state]) { --_mode: warning; }`. The mode's ONE shared block
+//   re-maps what the host holds, by a style query; it never reaches the host
+//   itself, so a pinned host paints its look on an inner part.
+// - A PART's pin re-points the part, which a query cannot, and names its mode
+//   for what it holds: a composed component's own pins lose to it, as before.
+// - A bare `&` re-points the host itself, and beats only inheritance.
+// - A CLASS key, a native wearing a component's look, re-points itself, shared.
+// TRAP T-a-host-state-pin-lives-where-the-host-is
 // ════════════════════════════════════════════════════════════════════════════
 const STATE_PINS = join(ROOT, 'scripts/figma-data/state-pins.yaml');
-const statePinBlocks = [];
-const statePinHostBlocks = [];
+/** The class keys' blocks, in both sheets: `{ block, keys }`. */
+const classPinBlocks = [];
+/** A bare `&` as the page sees it, in tokens.css. */
+const bareHostBlocks = [];
 /** tag → the pin blocks its own sheet carries. */
 const ownPinBlocks = new Map();
+/** Each `--_mode` a pin names → its mode, look and hook: one shared block each. */
+const modeUse = new Map();
+/** …and each `--_mode-viz`: a plain mode's data-viz names, which a look has none of. */
+const vizUse = new Map();
+/** A pin's lines for what it holds. A look pin names no data-viz, so a lower plain
+    pin still supplies them, as the old per-property cascade did. */
+const modeLines = (key, mode, look, hook) => {
+  modeUse.set(key, { mode, look, hook });
+  if (look) return `--_mode: ${key};`;
+  vizUse.set(key, { mode, hook });
+  return `--_mode: ${key}; --_mode-viz: ${key};`;
+};
+/** A part that is itself a component, whose own pins must lose to its composer's. */
+const templates = new Map();
+function partIsComponent(tag, part) {
+  const last = part.trim().split(/\s+|>/).pop();
+  if (/^sherpa-/.test(last)) return true;
+  const cls = /\.([\w-]+)/.exec(last)?.[1];
+  if (!templates.has(tag)) {
+    const dir = join(COMPONENTS, tag);
+    templates.set(tag, ['html', 'ts'].map((x) => join(dir, `${tag}.${x}`)).filter(existsSync).map((f) => readFileSync(f, 'utf8')).join('\n'));
+  }
+  const el = cls && new RegExp(`<([a-z][\\w-]*)\\b[^>]*\\bclass="(?:[^"]*\\s)?${cls}(?:\\s[^"]*)?"`).exec(templates.get(tag));
+  if (!el) warn(`state-pins: ${tag} "${part}": no element of class "${cls}" in its template`);
+  return !!el && el[1].startsWith('sherpa-');
+}
+/** The class-level weight of a compound: attributes, classes, pseudo-classes; a :not() by its argument. */
+const weight = (sel) =>
+  (sel.replace(/"[^"]*"/g, '""').replace(/:(not|is)\(/g, '(').match(/\[[^\]]*\]|\.[\w-]+|:[\w-]+/g) ?? []).length;
+/* A look with a status, [data-look][data-status] (0,2,0), beat a host state of
+   one attribute (0,1,1) on the host, and lost to one of two. Inside the root it
+   is the same: this guard, at (0,3,1), drops the one-attribute pins. */
+const LOOK_STATUS = `:is(${LOOKS.map((l) => `[data-look="${l}"]`).join(', ')}):is(${STATUS_MODES.map((s) => `[data-status="${s}"]`).join(', ')})`;
 if (existsSync(STATE_PINS)) {
   const pins = yaml.load(readFileSync(STATE_PINS, 'utf8')) ?? {};
-  /* A CLASS key — a native wearing a component's look — goes on the selector
-     list of its TWIN, the component's host pin with the same look and mode, so it
-     costs no new block. TRAP T-a-native-wears-the-button-class */
-  const twins = new Map();
   // At the END of the list: a block joined twice has a list, not one line. TODO 490
   const addSelector = (block, sel) => block.replace(/ \{\n/, `,\n  ${sel} {\n`);
+  const own = (tag, block) => ownPinBlocks.set(tag, [...(ownPinBlocks.get(tag) ?? []), block]);
   for (const [tag, rules] of Object.entries(pins)) {
     const isClass = tag.startsWith('.');
     if (!isClass && !existsSync(join(COMPONENTS, tag))) warn(`state-pins: no component "${tag}"`);
+    let guard = false;
+    let first;
     for (const [selector, spec] of Object.entries(rules ?? {})) {
       const m = /^&(\S*)(.*)$/.exec(selector);
       // `mode @hook`: a page may re-point this pin. TRAP T-a-pin-a-page-can-re-point
@@ -999,7 +1046,7 @@ if (existsSync(STATE_PINS)) {
         continue;
       }
       const onPart = m[2].trim() !== '';
-      const body = `${look ?? ''}/${mode}${hook ? `@${hook}` : ''}`;
+      const key = modeKey(mode, look, hook);
       if (isClass) {
         if (onPart) {
           warn(`state-pins: ${tag} "${selector}": a class key pins the element, not a part`);
@@ -1007,35 +1054,52 @@ if (existsSync(STATE_PINS)) {
         }
         // Never the component's own control, which takes its host's state.
         const sel = `:where(${tag}:not([part~="trigger"]))${m[1]}`;
-        // Its own component's block first, so the two read side by side.
-        const twin = twins.get(`${tag.slice(1)}|${body}`) ?? twins.get(body);
-        if (twin) {
-          statePinBlocks[twin.all] = addSelector(statePinBlocks[twin.all], sel);
-          statePinHostBlocks[twin.host] = addSelector(statePinHostBlocks[twin.host], sel);
+        /* Joins the last block of its mode unless a later one holds a pin of the
+           same class, which it must still beat by order. TRAP T-a-native-wears-the-button-class */
+        const at = classPinBlocks.findLastIndex((b) => b.key === key);
+        if (at !== -1 && !classPinBlocks.slice(at + 1).some((b) => b.keys.has(tag))) {
+          classPinBlocks[at].block = addSelector(classPinBlocks[at].block, sel);
+          classPinBlocks[at].keys.add(tag);
           continue;
         }
-        const own = pinBlock(sel, mode, look);
-        if (!own) continue;
-        statePinBlocks.push(own);
-        statePinHostBlocks.push(own);
+        const block = pinBlock(sel, mode, look, hook);
+        if (block) classPinBlocks.push({ block, key, keys: new Set([tag]) });
         continue;
       }
-      const block = pinBlock(onPart ? `:host(${tag}${m[1]})${m[2]}` : `${tag}${m[1]}`, mode, look, hook);
-      if (!block) continue;
-      if (onPart || !m[1]) {
-        if (!onPart) statePinHostBlocks.push(block);
-        const own = onPart ? block : pinBlock(`:host(${tag})`, mode, look, hook);
-        ownPinBlocks.set(tag, [...(ownPinBlocks.get(tag) ?? []), own]);
+      if (onPart) {
+        const extra = partIsComponent(tag, m[2]) ? [`    ${modeLines(key, mode, look, hook).replace('; ', ';\n    ')}`] : [];
+        const block = pinBlock(`:host(${tag}${m[1]})${m[2]}`, mode, look, hook, extra);
+        if (block) own(tag, block);
         continue;
       }
-      statePinBlocks.push(block);
-      statePinHostBlocks.push(block);
-      const at = { all: statePinBlocks.length - 1, host: statePinHostBlocks.length - 1 };
-      if (!twins.has(body)) twins.set(body, at);
-      if (!twins.has(`${tag}|${body}`)) twins.set(`${tag}|${body}`, at);
+      if (!m[1]) {
+        const block = pinBlock(`:host(${tag})`, mode, look, hook);
+        if (block) own(tag, block);
+        bareHostBlocks.push(pinBlock(tag, mode, look, hook));
+        continue;
+      }
+      guard ||= weight(m[1]) < 2;
+      first ??= ownPinBlocks.get(tag)?.length ?? 0;
+      own(tag, `  :host(${tag}${m[1]}) { ${modeLines(key, mode, look, hook)} }`);
     }
+    // Before every host pin: a two-attribute pin ties it, and wins by order.
+    if (guard) ownPinBlocks.get(tag).splice(first, 0, `  :host(${tag}${LOOK_STATUS}) { --_mode: initial; }`);
   }
 }
+
+/* One block per mode a pin names. A style query matches the children of the
+   element that sets `--_mode` (registered, not inherited, in tokens.css), so it
+   re-maps a pinned host's whole tree from inside its root. */
+const isViz = (k) => !LOOK_KEYS.includes(k);
+const queryBlock = (prop, key, lines) =>
+  `  @container style(${prop}: ${key}) {\n    * {\n${lines.map((l) => `  ${l}`).join('\n')}\n    }\n  }`;
+const modeBlocks = [
+  ...[...modeUse].map(([key, { mode, look, hook }]) => queryBlock('--_mode', key, [
+    ...pinBody(mode, look, hook, (k) => !isViz(k)),
+    ...derivedLines((k) => viaHook(k, styleModeVar(k, mode, look), hook)),
+  ])),
+  ...[...vizUse].map(([key, { mode, hook }]) => queryBlock('--_mode-viz', key, pinBody(mode, undefined, hook, isViz))),
+];
 
 // ════════════════════════════════════════════════════════════════════════════
 // Grouping — per-position borders ([data-group]) from the extension cache. Position
@@ -1797,14 +1861,14 @@ const styleLayer = `@layer style {
 ${styleVars.join('\n')}
   }
 
-  /* Status cascade — an ancestor [data-status] emits --_status-* to shadow roots. */
+  /* Status pins — an ancestor [data-status] re-points Style for its subtree. */
 ${joinBlocks(statusBlocks)}
 
-  /* Look tiers — [data-look] re-points the status cascade per status mode. */
+  /* Look tiers — [data-look] re-points Style per status mode. */
 ${joinBlocks(lookBlocks)}
 
-  /* Component state pins — scripts/figma-data/state-pins.yaml. */
-${joinBlocks(statePinHostBlocks)}
+  /* Natives' and bare component pins — scripts/figma-data/state-pins.yaml. */
+${joinBlocks([...classPinBlocks.map((b) => b.block), ...bareHostBlocks])}
 
   /* Status palette — [data-palette] re-points the data-viz series onto the
      status ramps, so any chart can colour its marks by status with one attr. */
@@ -1909,14 +1973,13 @@ writeFileSync(
   `/**
  * sherpa-style-modes.css — GENERATED by scripts/project-tokens.mjs. Do not edit.
  *
- * The Style mode pins — [data-status], [data-look][data-status], and each host
- * STATE pin from scripts/figma-data/state-pins.yaml — adopted into every shadow
- * root, because the same blocks in tokens.css reach the page only. A part's pin
- * is in its component's own sheet. A bare [data-look] is left out: it would
- * reset a status set above it.
+ * The Style pins every shadow root adopts, as tokens.css reaches the page only:
+ * [data-status], [data-look][data-status] and the natives' class pins; then ONE
+ * block per mode a component's pin names in --_mode, by a style query. A bare
+ * [data-look] is left out: it would reset a status set above it.
  * TRAP T-tokens-css-never-reaches-shadow · TRAP T-a-host-state-pin-lives-where-the-host-is
  */
-${[...statusBlocks, ...lookPinBlocks, ...statePinBlocks].join('\n\n').replace(/^ {2}/gm, '')}
+${[derivedHostBlock, ...statusBlocks, ...lookPinBlocks, ...classPinBlocks.map((b) => b.block), ...modeBlocks].join('\n\n').replace(/^ {2}/gm, '')}
 `,
 );
 
@@ -1947,7 +2010,11 @@ for (const comp of regionComps) {
   const start = existing.indexOf(TOKENS_MARK_START);
   const kept = start === -1 ? '' : inner(existing.slice(start, existing.indexOf(TOKENS_MARK_END) + TOKENS_MARK_END.length));
   const head = partialOf.has(comp) ? inner(partialOf.get(comp)) : kept.split(PINS_MARK)[0].trim();
-  const pins = (ownPinBlocks.get(comp) ?? []).join('\n\n').replace(/^ {2}/gm, '');
+  // One-line pins sit together; a block keeps a blank line either side.
+  const pins = (ownPinBlocks.get(comp) ?? [])
+    .map((b, i, all) => (i && (b.includes('\n') || all[i - 1].includes('\n')) ? `\n${b}` : b))
+    .join('\n')
+    .replace(/^ {2}/gm, '');
   const body = [head, pins && `${PINS_MARK}\n${pins}`].filter(Boolean).join('\n\n');
   if (!body && start === -1) continue;
   const next = body

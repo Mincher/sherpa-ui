@@ -70,6 +70,8 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-style-surface-base` | `.form` | `--_surface` |
+| `--sherpa-theme-border-default-2` | `.form` | `--_border` |
 | `--sherpa-display-mode-space-xs` | `.form` | `gap` |
 | `--sherpa-display-mode-space-sm` | `.form` | `padding` |
 | `--sherpa-display-mode-border-width-base` | `.form` | `border-width` |

@@ -131,8 +131,11 @@ Visibility is a host attribute that CSS selects (PRINCIPLES 16):
 - **Colour** binds the Style name Figma binds: `var(--sherpa-style-surface-base)`.
   `base`, `+1` and `+2` are default, hover and down. A state (on, current, open)
   is a pin in `state-pins.yaml`, never a colour rule. A pin works at any depth.
-  The `--_status-*` names are the old door (PRINCIPLES 8). A pin may carry a
-  hook (`active @filter-on`) that a page re-points once, by
+  A host's pin re-maps what the host holds, never the host itself, so a pinned
+  host paints its look on a part — `.sherpa-surface` is a box behind its content
+  (`T-a-host-state-pin-lives-where-the-host-is`). Two `--_status-*` names are
+  left of the old door, for the gauge, the sparkline and the tag (PRINCIPLES 8).
+  A pin may carry a hook (`active @filter-on`) that a page re-points once, by
   `--sherpa-filter-on-*` (`T-a-pin-a-page-can-re-point`).
 - **Tokens** read `var(--sherpa-x, <its value>)` (PRINCIPLES 20). Never a
   `--core-*` primitive in component CSS. The cascade

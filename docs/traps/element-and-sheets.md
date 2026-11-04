@@ -7,8 +7,8 @@ first `Site:` is in this area (`npm run check:traps` holds it so). 71 entries.
 
 A bare `[data-status]` rule in `tokens.css` is loaded into the **document**. It
 reaches a light-DOM element and **never** one inside a shadow root. The
-`--_status-*` values inherit across the boundary; the SELECTOR that sets them
-does not.
+Style names it re-points inherit across the boundary; the SELECTOR that sets
+them does not.
 
 So the projector writes the same pins a second time, into
 `src/core/sherpa-style-modes.css`, which every shadow root adopts: each
@@ -28,29 +28,50 @@ page, `tokens.css` still does exactly that — a known gap, not a model.
 
 ### T-a-host-state-pin-lives-where-the-host-is
 
-A host STATE pin (`sherpa-button[disabled]`) is matched in the tree the host
-sits in: the page, or a composer's shadow root. It is never `:host(…)` in the
-host's own sheet. Across a shadow boundary the OUTER rule wins whatever its
-specificity, so the host's own `data-status` or look would hide its state.
+A host STATE pin is ONE line in the host's own sheet:
+`:host(sherpa-button[disabled]) { --_mode: inactive; }`. The mode's ONE block in
+`sherpa-style-modes.css`, `@container style(--_mode: inactive) { * { … } }`,
+re-maps the Style names of what the host holds. Measured 2026-11-04 (695 P7),
+in Chromium, Firefox and WebKit:
 
-Measured 2026-11-03 (695 P1), in Chromium, Firefox and WebKit: with the host
-state pins moved inside, 162 of 993 probe readings changed. Every one was a host
-with its own `data-status` or `data-look` in a shadow root. The toolbar's ⋮
-(`data-status="default"`) no longer read active while its menu was open.
-
-So `sherpa-style-modes.css`, which every root adopts, keeps the status and look
-pins, the 48 host state pins and their class twins. A component's own pins go in
-its sheet's generated region, unlayered, as the shared sheet is:
-
-- a pin on a PART, `:host(tag) .part`, which only its own root can match;
-- a bare `&`, its default, as `:host(tag)`. It beats only inheritance, so no
-  outer rule it lost to before changes.
-
-P7 can move the host state pins: there a mode is one property that the host's
-own state sets, and the paint moves to an inner part.
+- **A style query never reaches the element that sets the property.** Its
+  container is the element's parent, so a host's own Style names are not its
+  pin's. A pinned host paints on a part: `.root` (node), a `.sherpa-surface`
+  behind its content (metric, nav-item), or the part that reads the value
+  (`.bar`, `.field`, `.track`, `.form`, `.card`, `.slider-row`). For the same
+  reason a PART's pin and a bare `&` stay whole blocks that re-point the element
+  itself. A part that is a component also names its mode, so its own pins lose
+  to it, as before.
+- **`--_mode` is registered and not inherited** (in `tokens.css`): a block
+  re-maps the pinned element's children once, and they pass it down. Inherited,
+  it matched every descendant again, and undid a part's own pin below it.
+- **Across a shadow boundary the outer rule wins**, so a host's own
+  `data-status` beat every `:host()` rule on the host (P1 measured 162 of 993
+  readings change). A query sidesteps it: the status re-points the host, the
+  pin re-maps inside. But the old order was specificity: a look with a status
+  (0,2,0) beat a state of one attribute (0,1,1), and lost to one of two. One
+  guard heads each region, `:host(tag:is(looks):is(statuses)) { --_mode: initial; }`
+  at (0,3,1).
+- **The old cascade worked per property.** A look's mode has no data-viz names,
+  so a lower plain pin supplied them. A plain pin also sets `--_mode-viz`, whose
+  blocks re-map only those.
+- **The minifier wrote `--_mode: transparent` as `#0000`**, a colour, so the
+  query never matched. A look's key always says its mode: `transparent-default`.
+- What every root derives on its `:host` (the hover fill, the scroll shadow's
+  ink) each mode block derives again, from the mode's own tokens.
 
 - Site: `src/core/sherpa-style-modes.css`
 - Site: `scripts/project-tokens.mjs`
+- Site: `src/core/sherpa-base.css`
+- Site: `src/core/sherpa-container-regions.css`
+- Site: `src/components/sherpa-input-text/sherpa-input-text.css`
+- Site: `src/components/sherpa-nav-item/sherpa-nav-item.css`
+- Site: `src/components/sherpa-node/sherpa-node.css`
+- Site: `src/components/sherpa-progress-bar/sherpa-progress-bar.css`
+- Site: `src/components/sherpa-prompt-composer/sherpa-prompt-composer.css`
+- Site: `src/components/sherpa-select-card/sherpa-select-card.css`
+- Site: `src/components/sherpa-slider/sherpa-slider.css`
+- Site: `src/components/sherpa-switch/sherpa-switch.css`
 
 ### T-a-button-commands-by-markup
 
@@ -175,9 +196,11 @@ layer order, so a page's own rules win and the link order does not matter).
 - **A native takes the Button's names:** `data-size`, `data-look`,
   `data-type="icon"`, `data-status`, `aria-pressed`, and `:disabled` — so a
   disabled fieldset counts. Its sizes are projected onto the class too.
-- **Its pins are the Button's, on the same blocks** — a class key in
-  `state-pins.yaml` joins its twin's selector list, so no block is written
-  again (one block is ~1.8 KB, in every import).
+- **Its pins are shared blocks that re-point the native itself** — a class key
+  in `state-pins.yaml`; a style query cannot reach the element that sets it
+  (`T-a-host-state-pin-lives-where-the-host-is`). A key joins the last block of
+  its mode unless a later block holds a pin of the same class, which it must
+  still beat by order.
 - **The Button's own control is left out** (`:not([part~="trigger"])`): it
   takes its host's look, size and state, which the host's pins re-point.
 - The spec generator reads the look for a node that wears it, renamed to the

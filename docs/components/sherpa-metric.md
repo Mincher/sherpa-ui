@@ -70,6 +70,9 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-style-surface-base` | `.surface` | `background` |
+| `--sherpa-style-border-base` | `.surface` | `--_edge` |
+| `--sherpa-border-top` | `.surface` | `box-shadow` |
 | `--sherpa-structure-space-gap` | `.row` | `gap` |
 | `--sherpa-display-mode-border-rounding-lg` | `.row` | `border-radius` |
 | `--sherpa-elevation-offset-x` | `.row` | `box-shadow` |

@@ -23,6 +23,11 @@
 }
 
 /* State pins, from scripts/figma-data/state-pins.yaml. Unlayered, as the shared pins are. */
+:host(sherpa-nav-item:is([data-look="transparent"], [data-look="saturated"]):is([data-status="info"], [data-status="critical"], [data-status="warning"], [data-status="urgent"], [data-status="success"], [data-status="active"], [data-status="inactive"])) { --_mode: initial; }
+:host(sherpa-nav-item:not([data-type="promo"])) { --_mode: transparent-default; }
+:host(sherpa-nav-item[data-current]) { --_mode: active; --_mode-viz: active; }
+:host(sherpa-nav-item[disabled]) { --_mode: transparent-inactive; }
+
 :host(sherpa-nav-item) .badge {
   --sherpa-style-border-base: var(--sherpa-style-saturated-success-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-saturated-success-border-base-1);
@@ -36,15 +41,7 @@
   --sherpa-style-surface-base-1: var(--sherpa-style-saturated-success-surface-base-1);
   --sherpa-style-surface-base-2: var(--sherpa-style-saturated-success-surface-base-2);
   --sherpa-style-surface-shadow: var(--sherpa-style-saturated-success-surface-shadow);
-  --_status-surface: var(--sherpa-style-saturated-success-surface-base);
-  --_status-surface-subtle: var(--sherpa-style-saturated-success-surface-base-1);
   --_status-surface-strong: var(--sherpa-style-saturated-success-surface-base-2);
-  --_status-shadow: var(--sherpa-style-saturated-success-surface-shadow);
-  --_status-border: var(--sherpa-style-saturated-success-border-base);
-  --_status-border-strong: var(--sherpa-style-saturated-success-border-base-1);
-  --_status-text: var(--sherpa-style-saturated-success-content-base);
-  --_status-text-on-color: var(--sherpa-style-saturated-success-content-inverse);
-  --_status-icon: var(--sherpa-style-saturated-success-indicator-accent);
 }
 
 :host(sherpa-nav-item[disabled]) .badge {
@@ -60,15 +57,7 @@
   --sherpa-style-surface-base-1: var(--sherpa-style-saturated-inactive-surface-base-1);
   --sherpa-style-surface-base-2: var(--sherpa-style-saturated-inactive-surface-base-2);
   --sherpa-style-surface-shadow: var(--sherpa-style-saturated-inactive-surface-shadow);
-  --_status-surface: var(--sherpa-style-saturated-inactive-surface-base);
-  --_status-surface-subtle: var(--sherpa-style-saturated-inactive-surface-base-1);
   --_status-surface-strong: var(--sherpa-style-saturated-inactive-surface-base-2);
-  --_status-shadow: var(--sherpa-style-saturated-inactive-surface-shadow);
-  --_status-border: var(--sherpa-style-saturated-inactive-border-base);
-  --_status-border-strong: var(--sherpa-style-saturated-inactive-border-base-1);
-  --_status-text: var(--sherpa-style-saturated-inactive-content-base);
-  --_status-text-on-color: var(--sherpa-style-saturated-inactive-content-inverse);
-  --_status-icon: var(--sherpa-style-saturated-inactive-indicator-accent);
 }
 
 :host(sherpa-nav-item) .dot {
@@ -86,17 +75,8 @@
   --sherpa-style-surface-base-2: var(--sherpa-style-active-surface-base-2);
   --sherpa-style-surface-shadow: var(--sherpa-style-active-surface-shadow);
   --sherpa-style-surface-data-viz: var(--sherpa-style-active-surface-data-viz);
-  --_status-surface: var(--sherpa-style-active-surface-base);
-  --_status-surface-subtle: var(--sherpa-style-active-surface-base-1);
   --_status-surface-strong: var(--sherpa-style-active-surface-base-2);
-  --_status-shadow: var(--sherpa-style-active-surface-shadow);
-  --_status-border: var(--sherpa-style-active-border-base);
-  --_status-border-strong: var(--sherpa-style-active-border-base-1);
-  --_status-data-viz: var(--sherpa-style-active-surface-data-viz);
   --_status-data-viz-border: var(--sherpa-style-active-border-data-viz);
-  --_status-text: var(--sherpa-style-active-content-base);
-  --_status-text-on-color: var(--sherpa-style-active-content-inverse);
-  --_status-icon: var(--sherpa-style-active-indicator-accent);
 }
 
 :host(sherpa-nav-item) .promo-icon {
@@ -114,17 +94,8 @@
   --sherpa-style-surface-base-2: var(--sherpa-style-active-surface-base-2);
   --sherpa-style-surface-shadow: var(--sherpa-style-active-surface-shadow);
   --sherpa-style-surface-data-viz: var(--sherpa-style-active-surface-data-viz);
-  --_status-surface: var(--sherpa-style-active-surface-base);
-  --_status-surface-subtle: var(--sherpa-style-active-surface-base-1);
   --_status-surface-strong: var(--sherpa-style-active-surface-base-2);
-  --_status-shadow: var(--sherpa-style-active-surface-shadow);
-  --_status-border: var(--sherpa-style-active-border-base);
-  --_status-border-strong: var(--sherpa-style-active-border-base-1);
-  --_status-data-viz: var(--sherpa-style-active-surface-data-viz);
   --_status-data-viz-border: var(--sherpa-style-active-border-data-viz);
-  --_status-text: var(--sherpa-style-active-content-base);
-  --_status-text-on-color: var(--sherpa-style-active-content-inverse);
-  --_status-icon: var(--sherpa-style-active-indicator-accent);
 }
 /* == end sherpa:tokens == */
 
@@ -139,6 +110,8 @@
 
 /* The row box. Never wraps — a tag or chevron on a second line is a visible bug. */
 :host {
+  position: relative;
+  isolation: isolate;
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
@@ -151,20 +124,23 @@
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
-  /* The Style names Figma binds; the look and every state are PINS in
-     scripts/figma-data/state-pins.yaml. TRAP T-a-state-colour-binds-the-style-mode */
-  background: var(--sherpa-style-surface-base, transparent);
-  /* Its edge, inside: none in the Transparent look; the selected row's pin shows
-     it. Will, TODO 498 · TRAP T-a-selected-nav-row-wears-its-edge */
-  box-shadow: inset 0 0 0 var(--sherpa-display-mode-border-width-base, 1px) var(--sherpa-style-border-base, transparent);
-  color: var(--sherpa-style-content-base, #35353d);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   /* On the box, so the label, the tag and both controls inherit it. */
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-light, 300);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
   box-sizing: border-box;
-  transition: background-color 100ms ease, color 100ms ease;
+}
+
+/* The row's paint, on its parts: the look and every state are PINS in
+   scripts/figma-data/state-pins.yaml, which re-map only what the host holds.
+   TRAP T-a-state-colour-binds-the-style-mode · TRAP T-a-host-state-pin-lives-where-the-host-is */
+.surface {
+  background: var(--sherpa-style-surface-base, transparent);
+  /* Its edge, inside: none in the Transparent look; the selected row's pin shows
+     it. Will, TODO 498 · TRAP T-a-selected-nav-row-wears-its-edge */
+  box-shadow: inset 0 0 0 var(--sherpa-display-mode-border-width-base, 1px) var(--sherpa-style-border-base, transparent);
+  transition: background-color 100ms ease;
 }
 
 /* Nesting depth → the Figma nav-item tiers (8 / 32 / 48). */
@@ -184,7 +160,8 @@
   padding: 0;
   border: 0;
   background: none;
-  color: inherit;
+  color: var(--sherpa-style-content-base, #35353d);
+  transition: color 100ms ease;
   font: inherit;
   text-align: start;
   text-decoration: none;
@@ -267,7 +244,8 @@
   padding: var(--sherpa-display-mode-space-none, 0px);
   border: 0;
   background: none;
-  color: inherit;
+  color: var(--sherpa-style-content-base, #35353d);
+  transition: color 100ms ease;
   font-size: var(--sherpa-theme-size-icon-2xs, 10px);
   line-height: 1;
   cursor: pointer;
@@ -313,8 +291,8 @@
 
 /* ── Hover / focus — on the BOX, so the whole row lights up ────────────── */
 /* Style base / +1 / +2 are default / hover / down, in whatever mode is pinned. */
-:host(:hover) { background: var(--sherpa-style-surface-base-1, #e8e8f64d); }
-:host(:active) { background: var(--sherpa-style-surface-base-2, #b3b3c34d); }
+:host(:hover) .surface { background: var(--sherpa-style-surface-base-1, #e8e8f64d); }
+:host(:active) .surface { background: var(--sherpa-style-surface-base-2, #b3b3c34d); }
 /* The controls are transparent, so the ring goes on the box; :focus-within so
    either control lights the same row. */
 :host(:focus-within) {
@@ -339,7 +317,6 @@
   block-size: auto;
   padding-inline: 0;
   border-radius: 0;
-  background: none;
 }
 .promo {
   flex: 1 1 auto;
@@ -366,8 +343,7 @@
 :host([data-type="promo"]:hover) .promo {
   border-color: var(--sherpa-style-indicator-accent, #3b4ccd);
 }
-/* The card takes the hover step; the row behind it stays flat. */
-:host([data-type="promo"]:hover) { background: none; }
+/* The card takes the hover step. */
 :host([data-type="promo"]:hover) .promo { background: var(--sherpa-style-surface-base-1, #e8e8f6); }
 
 .promo-icon {

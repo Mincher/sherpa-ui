@@ -61,7 +61,7 @@ export class SherpaMetric extends SherpaElement {
 
   /* DECLARED, not hand-synced. Both are written by the component itself from
      the data, and both are read only by CSS — `data-trend` by a `:host()` rule
-     and `data-status` by the `--_status-*` cascade, which has no selector to
+     and `data-status` by the shared `[data-status]` pins, which have no selector to
      grep for. Undeclared, the second looked like a half-finished rename.
      TRAP T-metric-status-follows-the-trend */
   static override asks: DataAsk = { shape: 'aggregate' };

@@ -1,5 +1,8 @@
 /* == sherpa:tokens (generated — do not edit) == */
 /* State pins, from scripts/figma-data/state-pins.yaml. Unlayered, as the shared pins are. */
+:host(sherpa-slider:is([data-look="transparent"], [data-look="saturated"]):is([data-status="info"], [data-status="critical"], [data-status="warning"], [data-status="urgent"], [data-status="success"], [data-status="active"], [data-status="inactive"])) { --_mode: initial; }
+:host(sherpa-slider[disabled]) { --_mode: inactive; --_mode-viz: inactive; }
+
 :host(sherpa-slider) .value-input {
   --sherpa-style-border-base: var(--sherpa-style-default-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
@@ -15,17 +18,10 @@
   --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
   --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
   --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
-  --_status-surface: initial;
-  --_status-surface-subtle: initial;
   --_status-surface-strong: initial;
-  --_status-shadow: initial;
-  --_status-border: initial;
-  --_status-border-strong: initial;
-  --_status-data-viz: initial;
   --_status-data-viz-border: initial;
-  --_status-text: initial;
-  --_status-text-on-color: initial;
-  --_status-icon: initial;
+  --_mode: default;
+  --_mode-viz: default;
 }
 
 :host(sherpa-slider[disabled]) .value-input {
@@ -43,17 +39,10 @@
   --sherpa-style-surface-base-2: var(--sherpa-style-inactive-surface-base-2);
   --sherpa-style-surface-shadow: var(--sherpa-style-inactive-surface-shadow);
   --sherpa-style-surface-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-  --_status-surface: var(--sherpa-style-inactive-surface-base);
-  --_status-surface-subtle: var(--sherpa-style-inactive-surface-base-1);
   --_status-surface-strong: var(--sherpa-style-inactive-surface-base-2);
-  --_status-shadow: var(--sherpa-style-inactive-surface-shadow);
-  --_status-border: var(--sherpa-style-inactive-border-base);
-  --_status-border-strong: var(--sherpa-style-inactive-border-base-1);
-  --_status-data-viz: var(--sherpa-style-inactive-surface-data-viz);
   --_status-data-viz-border: var(--sherpa-style-inactive-border-data-viz);
-  --_status-text: var(--sherpa-style-inactive-content-base);
-  --_status-text-on-color: var(--sherpa-style-inactive-content-inverse);
-  --_status-icon: var(--sherpa-style-inactive-indicator-accent);
+  --_mode: inactive;
+  --_mode-viz: inactive;
 }
 /* == end sherpa:tokens == */
 
@@ -74,8 +63,6 @@
   inline-size: 100%;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 
-  /* The Style names Figma binds; disabled is a PIN. */
-  --_accent: var(--sherpa-style-indicator-accent, #3b4ccd);
   --_thumb: var(--sherpa-display-mode-size-sm, 16px);
   --_rail: var(--sherpa-display-mode-space-2xs, 4px);
   --_pct: 0%;
@@ -101,7 +88,10 @@
 /* ── Slider row: the track, and the value fields UNDER it ────────────
    Two equal columns, so a range's two fields share ONE row at any width and
    never stack. Will, 2026-09-30. A lone field takes the second column. */
+/* The Style names Figma binds, on the row: disabled is a PIN, which re-maps
+   only what the host holds. TRAP T-a-host-state-pin-lives-where-the-host-is */
 .slider-row {
+  --_accent: var(--sherpa-style-indicator-accent, #3b4ccd);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
@@ -203,7 +193,7 @@
 
 /* ── Disabled — a PIN (inactive), never opacity ────────────────────── */
 /* The inactive accent is the rail's own grey, so fill and thumb take the ink. */
-:host([disabled]) { --_accent: var(--sherpa-style-content-base, #35353d); }
+:host([disabled]) .slider-row { --_accent: var(--sherpa-style-content-base, #35353d); }
 :host([disabled]) .range { cursor: not-allowed; pointer-events: none; }
 
 /* ── Range mode: two stacked inputs, one per end ─────────────────────

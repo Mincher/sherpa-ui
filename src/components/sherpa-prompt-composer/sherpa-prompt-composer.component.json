@@ -207,6 +207,8 @@
     }
   ],
   "tokens": {
+    "form.--_surface": "{sherpa.style-surface-base}",
+    "form.--_border": "{sherpa.theme-border-default-2}",
     "form.gap": "{sherpa.display-mode-space-xs}",
     "form.padding": "{sherpa.display-mode-space-sm}",
     "form.border-width": "{sherpa.display-mode-border-width-base}",

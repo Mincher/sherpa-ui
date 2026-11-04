@@ -1,3 +1,9 @@
+/* == sherpa:tokens (generated — do not edit) == */
+/* State pins, from scripts/figma-data/state-pins.yaml. Unlayered, as the shared pins are. */
+:host(sherpa-progress-bar:is([data-look="transparent"], [data-look="saturated"]):is([data-status="info"], [data-status="critical"], [data-status="warning"], [data-status="urgent"], [data-status="success"], [data-status="active"], [data-status="inactive"])) { --_mode: initial; }
+:host(sherpa-progress-bar[disabled]) { --_mode: inactive; --_mode-viz: inactive; }
+/* == end sherpa:tokens == */
+
 /**
  * sherpa-progress-bar.css — native <progress>, styled.
  */
@@ -8,10 +14,6 @@
   gap: var(--sherpa-display-mode-space-2xs, 4px);
   inline-size: 100%;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-
-  /* A status or a pin re-points both. */
-  --_fill: var(--sherpa-style-indicator-accent, #3b4ccd);
-  --_track: var(--sherpa-style-surface-base, #ffffff);
 }
 
 /* ── Label ────────────────────────────────────────────────────────────── */
@@ -24,7 +26,11 @@
 :host([data-label]) .label { display: block; }
 
 /* ── The native <progress> ────────────────────────────────────────────── */
+/* On the bar, not the host: a pin re-maps only what the host holds.
+   TRAP T-a-host-state-pin-lives-where-the-host-is */
 .bar {
+  --_fill: var(--sherpa-style-indicator-accent, #3b4ccd);
+  --_track: var(--sherpa-style-surface-base, #ffffff);
   appearance: none;
   -webkit-appearance: none;
   inline-size: 100%;

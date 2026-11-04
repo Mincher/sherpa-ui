@@ -81,7 +81,10 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-style-surface-base` | `.surface` | `background` |
+| `--sherpa-display-mode-border-width-base` | `.surface` | `box-shadow` |
 | `--sherpa-theme-gap-md` | `.nav` | `gap` |
+| `--sherpa-style-content-base` | `.nav` | `color` |
 | `--sherpa-theme-size-icon-xs` | `.icon` | `--_icon-size` |
 | `--sherpa-theme-gap-md` | `.content` | `gap` |
 | `--sherpa-theme-padding-xs` | `.badge` | `padding` |
@@ -95,6 +98,7 @@ What each class's base rule reads:
 | `--sherpa-theme-size-icon-xs` | `.expand` | `inline-size` |
 | `--sherpa-theme-size-icon-xs` | `.expand` | `block-size` |
 | `--sherpa-display-mode-space-none` | `.expand` | `padding` |
+| `--sherpa-style-content-base` | `.expand` | `color` |
 | `--sherpa-theme-size-icon-2xs` | `.expand` | `font-size` |
 | `--sherpa-display-mode-size-2xs` | `.dot` | `inline-size` |
 | `--sherpa-display-mode-size-2xs` | `.dot` | `block-size` |

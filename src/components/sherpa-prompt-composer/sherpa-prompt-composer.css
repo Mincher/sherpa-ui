@@ -1,3 +1,9 @@
+/* == sherpa:tokens (generated — do not edit) == */
+/* State pins, from scripts/figma-data/state-pins.yaml. Unlayered, as the shared pins are. */
+:host(sherpa-prompt-composer:is([data-look="transparent"], [data-look="saturated"]):is([data-status="info"], [data-status="critical"], [data-status="warning"], [data-status="urgent"], [data-status="success"], [data-status="active"], [data-status="inactive"])) { --_mode: initial; }
+:host(sherpa-prompt-composer[disabled]) { --_mode: inactive; --_mode-viz: inactive; }
+/* == end sherpa:tokens == */
+
 /**
  * sherpa-prompt-composer.css — an AI prompt input: auto-growing textarea
  * (JS sets the height; the cap and scroll are here) plus a send button.
@@ -5,12 +11,13 @@
 
 :host {
   display: block;
-  --_surface: var(--sherpa-style-surface-base, #ffffff);
-  --_border: var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
 }
 
-/* Figma Prompt Composer 228:6617. */
+/* Figma Prompt Composer 228:6617. Its look is on the form, not the host: a pin
+   re-maps only what the host holds. TRAP T-a-host-state-pin-lives-where-the-host-is */
 .form {
+  --_surface: var(--sherpa-style-surface-base, #ffffff);
+  --_border: var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
   display: flex;
   flex-direction: column;
   align-items: stretch;

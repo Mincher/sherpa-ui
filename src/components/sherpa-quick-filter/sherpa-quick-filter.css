@@ -1,5 +1,8 @@
 /* == sherpa:tokens (generated — do not edit) == */
 /* State pins, from scripts/figma-data/state-pins.yaml. Unlayered, as the shared pins are. */
+:host(sherpa-quick-filter:is([data-look="transparent"], [data-look="saturated"]):is([data-status="info"], [data-status="critical"], [data-status="warning"], [data-status="urgent"], [data-status="success"], [data-status="active"], [data-status="inactive"])) { --_mode: initial; }
+:host(sherpa-quick-filter[data-current]:not([data-persistent])) { --_mode: active-filter-on; --_mode-viz: active-filter-on; }
+
 :host(sherpa-quick-filter[data-current][data-persistent]:not([disabled])) :is(.body, .caret) {
   --sherpa-style-border-base: var(--sherpa-filter-on-border-base, var(--sherpa-style-active-border-base));
   --sherpa-style-border-base-1: var(--sherpa-filter-on-border-base-1, var(--sherpa-style-active-border-base-1));
@@ -15,18 +18,25 @@
   --sherpa-style-surface-base-2: var(--sherpa-filter-on-surface-base-2, var(--sherpa-style-active-surface-base-2));
   --sherpa-style-surface-shadow: var(--sherpa-filter-on-surface-shadow, var(--sherpa-style-active-surface-shadow));
   --sherpa-style-surface-data-viz: var(--sherpa-filter-on-surface-data-viz, var(--sherpa-style-active-surface-data-viz));
-  --_status-surface: var(--sherpa-filter-on-surface-base, var(--sherpa-style-active-surface-base));
-  --_status-surface-subtle: var(--sherpa-filter-on-surface-base-1, var(--sherpa-style-active-surface-base-1));
   --_status-surface-strong: var(--sherpa-filter-on-surface-base-2, var(--sherpa-style-active-surface-base-2));
-  --_status-shadow: var(--sherpa-filter-on-surface-shadow, var(--sherpa-style-active-surface-shadow));
-  --_status-border: var(--sherpa-filter-on-border-base, var(--sherpa-style-active-border-base));
-  --_status-border-strong: var(--sherpa-filter-on-border-base-1, var(--sherpa-style-active-border-base-1));
-  --_status-data-viz: var(--sherpa-filter-on-surface-data-viz, var(--sherpa-style-active-surface-data-viz));
   --_status-data-viz-border: var(--sherpa-filter-on-border-data-viz, var(--sherpa-style-active-border-data-viz));
-  --_status-text: var(--sherpa-filter-on-content-base, var(--sherpa-style-active-content-base));
-  --_status-text-on-color: var(--sherpa-filter-on-content-inverse, var(--sherpa-style-active-content-inverse));
-  --_status-icon: var(--sherpa-filter-on-indicator-accent, var(--sherpa-style-active-indicator-accent));
 }
+
+:host(sherpa-quick-filter[data-current][data-filters-nothing]) { --_mode: warning; --_mode-viz: warning; }
+:host(sherpa-quick-filter[data-by-preset]) { --_mode: info; --_mode-viz: info; }
+:host(sherpa-quick-filter[data-current][data-by-preset]) { --_mode: info; --_mode-viz: info; }
+:host(sherpa-quick-filter[data-solo]) { --_mode: info; --_mode-viz: info; }
+:host(sherpa-quick-filter[data-current][data-solo]) { --_mode: info; --_mode-viz: info; }
+:host(sherpa-quick-filter[data-held-out]) { --_mode: inactive; --_mode-viz: inactive; }
+:host(sherpa-quick-filter[data-current][data-held-out]) { --_mode: inactive; --_mode-viz: inactive; }
+:host(sherpa-quick-filter[data-pending]) { --_mode: warning; --_mode-viz: warning; }
+:host(sherpa-quick-filter[data-current][data-pending]) { --_mode: warning; --_mode-viz: warning; }
+:host(sherpa-quick-filter:state(drafting)) { --_mode: warning; --_mode-viz: warning; }
+:host(sherpa-quick-filter[data-failed]) { --_mode: critical; --_mode-viz: critical; }
+:host(sherpa-quick-filter[data-current][data-failed]) { --_mode: critical; --_mode-viz: critical; }
+:host(sherpa-quick-filter[data-superseded]:not([data-by-preset])) { --_mode: inactive; --_mode-viz: inactive; }
+:host(sherpa-quick-filter[disabled]) { --_mode: inactive; --_mode-viz: inactive; }
+:host(sherpa-quick-filter[data-unavailable]) { --_mode: inactive; --_mode-viz: inactive; }
 
 :host(sherpa-quick-filter) .count {
   --sherpa-style-border-base: var(--sherpa-style-default-border-base);
@@ -43,17 +53,8 @@
   --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
   --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
   --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
-  --_status-surface: initial;
-  --_status-surface-subtle: initial;
   --_status-surface-strong: initial;
-  --_status-shadow: initial;
-  --_status-border: initial;
-  --_status-border-strong: initial;
-  --_status-data-viz: initial;
   --_status-data-viz-border: initial;
-  --_status-text: initial;
-  --_status-text-on-color: initial;
-  --_status-icon: initial;
 }
 
 :host(sherpa-quick-filter[data-layout="section"]) .caret {
@@ -71,17 +72,8 @@
   --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
   --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
   --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
-  --_status-surface: initial;
-  --_status-surface-subtle: initial;
   --_status-surface-strong: initial;
-  --_status-shadow: initial;
-  --_status-border: initial;
-  --_status-border-strong: initial;
-  --_status-data-viz: initial;
   --_status-data-viz-border: initial;
-  --_status-text: initial;
-  --_status-text-on-color: initial;
-  --_status-icon: initial;
 }
 /* == end sherpa:tokens == */
 

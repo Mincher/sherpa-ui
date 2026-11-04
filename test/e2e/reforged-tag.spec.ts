@@ -46,11 +46,11 @@ test('an ancestor [data-status] colours the pill via the cascade', async ({ page
     return { neutral: await mk(), critical: await mk('critical') };
   });
   // Subtle-status model: the plain pill SURFACE (and border) stay neutral under a
-  // status — the status hue is carried by --_status-text (and, on the dot,
+  // status — the status hue is carried by style-content/base (and, on the dot,
   // --_status-surface-strong), not the base surface.
   expect(r.neutral.bg).toBe('rgb(255, 255, 255)'); // no status = neutral white
   expect(r.critical.bg).toBe('rgb(255, 255, 255)'); // status: surface stays neutral white
-  expect(r.critical.text).not.toBe(r.neutral.text); // the text carries the status hue (--_status-text)
+  expect(r.critical.text).not.toBe(r.neutral.text); // the text carries the status hue (style-content/base)
 });
 
 test('data-dismissible shows a close button that fires tag-dismiss', async ({ page }) => {

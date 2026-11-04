@@ -853,7 +853,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-grid-group-computes-its-own-position](traps/element-and-sheets.md#t-a-grid-group-computes-its-own-position) — sherpa-grouping
 - [T-a-host-attribute-is-declared-once](traps/element-and-sheets.md#t-a-host-attribute-is-declared-once) — sherpa-element
 - [T-a-host-label-must-reach-its-control](traps/charts.md#t-a-host-label-must-reach-its-control) — sherpa-element
-- [T-a-host-state-pin-lives-where-the-host-is](traps/element-and-sheets.md#t-a-host-state-pin-lives-where-the-host-is) — sherpa-style-modes
+- [T-a-host-state-pin-lives-where-the-host-is](traps/element-and-sheets.md#t-a-host-state-pin-lives-where-the-host-is) — sherpa-base, sherpa-container-regions, sherpa-style-modes
 - [T-a-kind-is-registered-never-a-tag](traps/join-and-app.md#t-a-kind-is-registered-never-a-tag) — components
 - [T-a-layout-read-belongs-in-a-frame](traps/menus-tips-overlays.md#t-a-layout-read-belongs-in-a-frame) — sherpa-element
 - [T-a-list-takes-its-children-as-data](traps/element-and-sheets.md#t-a-list-takes-its-children-as-data) — sherpa-element
@@ -962,7 +962,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (112)
+## Other components (113)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -990,6 +990,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-handle-is-never-restamped-mid-drag](traps/other-components.md#t-a-handle-is-never-restamped-mid-drag) — layout-grid
 - [T-a-host-cannot-hold-aria-expanded](traps/other-components.md#t-a-host-cannot-hold-aria-expanded) — button
 - [T-a-host-label-must-reach-its-control](traps/charts.md#t-a-host-label-must-reach-its-control) — button, input-text, select-checkbox, select-radio, switch
+- [T-a-host-state-pin-lives-where-the-host-is](traps/element-and-sheets.md#t-a-host-state-pin-lives-where-the-host-is) — input-text, nav-item, node, progress-bar, prompt-composer, select-card, slider, switch
 - [T-a-metric-group-knows-it-is-stuck](traps/charts.md#t-a-metric-group-knows-it-is-stuck) — metric-group
 - [T-a-native-name-where-a-native-element-does-the-job](traps/other-components.md#t-a-native-name-where-a-native-element-does-the-job) — slider
 - [T-a-native-wears-the-button-class](traps/element-and-sheets.md#t-a-native-wears-the-button-class) — button

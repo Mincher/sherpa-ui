@@ -105,6 +105,8 @@
     "label.font-size": "{sherpa.font-size-body-base}",
     "label.line-height": "{sherpa.theme-content-line-height-base}",
     "label.color": "{sherpa.theme-content-body-base}",
+    "bar.--_fill": "{sherpa.style-indicator-accent}",
+    "bar.--_track": "{sherpa.style-surface-base}",
     "bar.block-size": "{sherpa.display-mode-space-2xs}",
     "bar.border-radius": "{sherpa.display-mode-border-rounding-full}"
   },

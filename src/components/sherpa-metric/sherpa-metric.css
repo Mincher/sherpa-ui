@@ -1,11 +1,20 @@
+/* == sherpa:tokens (generated — do not edit) == */
+/* State pins, from scripts/figma-data/state-pins.yaml. Unlayered, as the shared pins are. */
+:host(sherpa-metric:is([data-look="transparent"], [data-look="saturated"]):is([data-status="info"], [data-status="critical"], [data-status="warning"], [data-status="urgent"], [data-status="success"], [data-status="active"], [data-status="inactive"])) { --_mode: initial; }
+:host(sherpa-metric[data-trend="up"]) { --_mode: success; --_mode-viz: success; }
+:host(sherpa-metric[data-trend="down"]) { --_mode: critical; --_mode-viz: critical; }
+/* == end sherpa:tokens == */
+
 /**
  * sherpa-metric.css — KPI tile: label, value, delta + arrow, optional sparkline.
  * JS only writes text and toggles data-*; display and colour live here.
  */
 
-/* The HOST carries the surface — style-surface/base, white in every status mode
-   bar active/inactive — so the tile is not tinted by its own trend. */
+/* The tile — style-surface/base, white in every status mode bar active/inactive,
+   so not tinted by its own trend. Drawn by `.surface`, as its trend is a pin. */
 :host {
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   /* 4, not Figma's 8: its header is 20 tall where the label was 16. */
@@ -16,24 +25,27 @@
   min-inline-size: 0;
   padding-block: var(--sherpa-display-mode-space-2xs, 4px);
   padding-inline: var(--sherpa-display-mode-space-xs, 8px);
-  background: var(--sherpa-style-surface-base, #ffffff);
-  /* Figma binds BOTH a fill and a stroke: `style-surface/base` over
-     `style-border/base`, 0.5px INSIDE, with per-corner rounding. INSIDE takes
-     no room, so it is drawn as four inset shadows, not a border: Chromium draws
-     a 0.5px border 1px wide, and the tile came out a pixel taller than its row.
-     Per edge, so a grouped run can zero one side. TRAP T-a-metric-stroke-takes-no-room */
-  --_edge: var(--sherpa-style-border-base, #b3b3c3);
-  box-shadow:
-    inset 0 var(--sherpa-border-top, 0.5px) 0 0 var(--_edge),
-    inset 0 calc(-1 * var(--sherpa-border-bottom, 0.5px)) 0 0 var(--_edge),
-    inset var(--sherpa-border-left, 0.5px) 0 0 0 var(--_edge),
-    inset calc(-1 * var(--sherpa-border-right, 0.5px)) 0 0 0 var(--_edge);
   border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   container: sherpa-metric / inline-size;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
+}
+
+/* Figma binds BOTH a fill and a stroke: `style-surface/base` over
+   `style-border/base`, 0.5px INSIDE, with per-corner rounding. INSIDE takes
+   no room, so it is drawn as four inset shadows, not a border: Chromium draws
+   a 0.5px border 1px wide, and the tile came out a pixel taller than its row.
+   Per edge, so a grouped run can zero one side. TRAP T-a-metric-stroke-takes-no-room */
+.surface {
+  background: var(--sherpa-style-surface-base, #ffffff);
+  --_edge: var(--sherpa-style-border-base, #b3b3c3);
+  box-shadow:
+    inset 0 var(--sherpa-border-top, 0.5px) 0 0 var(--_edge),
+    inset 0 calc(-1 * var(--sherpa-border-bottom, 0.5px)) 0 0 var(--_edge),
+    inset var(--sherpa-border-left, 0.5px) 0 0 0 var(--_edge),
+    inset calc(-1 * var(--sherpa-border-right, 0.5px)) 0 0 0 var(--_edge);
 }
 
 /* ── Header — the Data Viz Header, composed: its title is the small light

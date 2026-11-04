@@ -28,6 +28,9 @@
 @property --sherpa-group-row { syntax: "<number>"; inherits: false; initial-value: 0; }
 @property --sherpa-group-last-col { syntax: "<number>"; inherits: false; initial-value: 0; }
 @property --sherpa-group-last-row { syntax: "<number>"; inherits: false; initial-value: 0; }
+/* A pin's mode, for the element's own children only. TRAP T-a-host-state-pin-lives-where-the-host-is */
+@property --_mode { syntax: "*"; inherits: false; }
+@property --_mode-viz { syntax: "*"; inherits: false; }
 
 @layer core {
 
@@ -1822,7 +1825,7 @@
   --sherpa-data-viz-series-border: #8364c8;
   }
 
-  /* Status cascade — an ancestor [data-status] emits --_status-* to shadow roots. */
+  /* Status pins — an ancestor [data-status] re-points Style for its subtree. */
   [data-status="default"] {
     --sherpa-style-border-base: var(--sherpa-style-default-border-base);
     --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
@@ -1838,17 +1841,8 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
-    --_status-surface: initial;
-    --_status-surface-subtle: initial;
     --_status-surface-strong: initial;
-    --_status-shadow: initial;
-    --_status-border: initial;
-    --_status-border-strong: initial;
-    --_status-data-viz: initial;
     --_status-data-viz-border: initial;
-    --_status-text: initial;
-    --_status-text-on-color: initial;
-    --_status-icon: initial;
   }
 
   [data-status="info"] {
@@ -1866,17 +1860,8 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-info-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-info-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-info-surface-data-viz);
-    --_status-surface: var(--sherpa-style-info-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-info-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-info-surface-base-2);
-    --_status-shadow: var(--sherpa-style-info-surface-shadow);
-    --_status-border: var(--sherpa-style-info-border-base);
-    --_status-border-strong: var(--sherpa-style-info-border-base-1);
-    --_status-data-viz: var(--sherpa-style-info-surface-data-viz);
     --_status-data-viz-border: var(--sherpa-style-info-border-data-viz);
-    --_status-text: var(--sherpa-style-info-content-base);
-    --_status-text-on-color: var(--sherpa-style-info-content-inverse);
-    --_status-icon: var(--sherpa-style-info-indicator-accent);
   }
 
   [data-status="critical"] {
@@ -1894,17 +1879,8 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-critical-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-critical-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-critical-surface-data-viz);
-    --_status-surface: var(--sherpa-style-critical-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-critical-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-critical-surface-base-2);
-    --_status-shadow: var(--sherpa-style-critical-surface-shadow);
-    --_status-border: var(--sherpa-style-critical-border-base);
-    --_status-border-strong: var(--sherpa-style-critical-border-base-1);
-    --_status-data-viz: var(--sherpa-style-critical-surface-data-viz);
     --_status-data-viz-border: var(--sherpa-style-critical-border-data-viz);
-    --_status-text: var(--sherpa-style-critical-content-base);
-    --_status-text-on-color: var(--sherpa-style-critical-content-inverse);
-    --_status-icon: var(--sherpa-style-critical-indicator-accent);
   }
 
   [data-status="warning"] {
@@ -1922,17 +1898,8 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-warning-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-warning-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-warning-surface-data-viz);
-    --_status-surface: var(--sherpa-style-warning-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-warning-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-warning-surface-base-2);
-    --_status-shadow: var(--sherpa-style-warning-surface-shadow);
-    --_status-border: var(--sherpa-style-warning-border-base);
-    --_status-border-strong: var(--sherpa-style-warning-border-base-1);
-    --_status-data-viz: var(--sherpa-style-warning-surface-data-viz);
     --_status-data-viz-border: var(--sherpa-style-warning-border-data-viz);
-    --_status-text: var(--sherpa-style-warning-content-base);
-    --_status-text-on-color: var(--sherpa-style-warning-content-inverse);
-    --_status-icon: var(--sherpa-style-warning-indicator-accent);
   }
 
   [data-status="urgent"] {
@@ -1950,17 +1917,8 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-urgent-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-urgent-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-urgent-surface-data-viz);
-    --_status-surface: var(--sherpa-style-urgent-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-urgent-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-urgent-surface-base-2);
-    --_status-shadow: var(--sherpa-style-urgent-surface-shadow);
-    --_status-border: var(--sherpa-style-urgent-border-base);
-    --_status-border-strong: var(--sherpa-style-urgent-border-base-1);
-    --_status-data-viz: var(--sherpa-style-urgent-surface-data-viz);
     --_status-data-viz-border: var(--sherpa-style-urgent-border-data-viz);
-    --_status-text: var(--sherpa-style-urgent-content-base);
-    --_status-text-on-color: var(--sherpa-style-urgent-content-inverse);
-    --_status-icon: var(--sherpa-style-urgent-indicator-accent);
   }
 
   [data-status="success"] {
@@ -1978,17 +1936,8 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-success-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-success-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-success-surface-data-viz);
-    --_status-surface: var(--sherpa-style-success-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-success-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-success-surface-base-2);
-    --_status-shadow: var(--sherpa-style-success-surface-shadow);
-    --_status-border: var(--sherpa-style-success-border-base);
-    --_status-border-strong: var(--sherpa-style-success-border-base-1);
-    --_status-data-viz: var(--sherpa-style-success-surface-data-viz);
     --_status-data-viz-border: var(--sherpa-style-success-border-data-viz);
-    --_status-text: var(--sherpa-style-success-content-base);
-    --_status-text-on-color: var(--sherpa-style-success-content-inverse);
-    --_status-icon: var(--sherpa-style-success-indicator-accent);
   }
 
   [data-status="active"] {
@@ -2006,17 +1955,8 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-active-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-active-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-active-surface-data-viz);
-    --_status-surface: var(--sherpa-style-active-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-active-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-active-surface-base-2);
-    --_status-shadow: var(--sherpa-style-active-surface-shadow);
-    --_status-border: var(--sherpa-style-active-border-base);
-    --_status-border-strong: var(--sherpa-style-active-border-base-1);
-    --_status-data-viz: var(--sherpa-style-active-surface-data-viz);
     --_status-data-viz-border: var(--sherpa-style-active-border-data-viz);
-    --_status-text: var(--sherpa-style-active-content-base);
-    --_status-text-on-color: var(--sherpa-style-active-content-inverse);
-    --_status-icon: var(--sherpa-style-active-indicator-accent);
   }
 
   [data-status="inactive"] {
@@ -2034,20 +1974,11 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-inactive-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-inactive-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-surface: var(--sherpa-style-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-inactive-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-inactive-border-base-1);
-    --_status-data-viz: var(--sherpa-style-inactive-surface-data-viz);
     --_status-data-viz-border: var(--sherpa-style-inactive-border-data-viz);
-    --_status-text: var(--sherpa-style-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-inactive-indicator-accent);
   }
 
-  /* Look tiers — [data-look] re-points the status cascade per status mode. */
+  /* Look tiers — [data-look] re-points Style per status mode. */
   [data-look="transparent"] {
     --sherpa-style-border-base: var(--sherpa-style-transparent-border-base);
     --sherpa-style-border-base-1: var(--sherpa-style-transparent-border-base-1);
@@ -2061,15 +1992,7 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-transparent-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-transparent-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-transparent-surface-shadow);
-    --_status-surface: var(--sherpa-style-transparent-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-transparent-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-transparent-surface-base-2);
-    --_status-shadow: var(--sherpa-style-transparent-surface-shadow);
-    --_status-border: var(--sherpa-style-transparent-border-base);
-    --_status-border-strong: var(--sherpa-style-transparent-border-base-1);
-    --_status-text: var(--sherpa-style-transparent-content-base);
-    --_status-text-on-color: var(--sherpa-style-transparent-content-inverse);
-    --_status-icon: var(--sherpa-style-transparent-indicator-accent);
   }
 
   [data-look="transparent"][data-status="info"] {
@@ -2085,15 +2008,7 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-transparent-info-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-transparent-info-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-transparent-info-surface-shadow);
-    --_status-surface: var(--sherpa-style-transparent-info-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-transparent-info-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-transparent-info-surface-base-2);
-    --_status-shadow: var(--sherpa-style-transparent-info-surface-shadow);
-    --_status-border: var(--sherpa-style-transparent-info-border-base);
-    --_status-border-strong: var(--sherpa-style-transparent-info-border-base-1);
-    --_status-text: var(--sherpa-style-transparent-info-content-base);
-    --_status-text-on-color: var(--sherpa-style-transparent-info-content-inverse);
-    --_status-icon: var(--sherpa-style-transparent-info-indicator-accent);
   }
 
   [data-look="transparent"][data-status="critical"] {
@@ -2109,15 +2024,7 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-transparent-critical-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-transparent-critical-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-transparent-critical-surface-shadow);
-    --_status-surface: var(--sherpa-style-transparent-critical-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-transparent-critical-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-transparent-critical-surface-base-2);
-    --_status-shadow: var(--sherpa-style-transparent-critical-surface-shadow);
-    --_status-border: var(--sherpa-style-transparent-critical-border-base);
-    --_status-border-strong: var(--sherpa-style-transparent-critical-border-base-1);
-    --_status-text: var(--sherpa-style-transparent-critical-content-base);
-    --_status-text-on-color: var(--sherpa-style-transparent-critical-content-inverse);
-    --_status-icon: var(--sherpa-style-transparent-critical-indicator-accent);
   }
 
   [data-look="transparent"][data-status="warning"] {
@@ -2133,15 +2040,7 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-transparent-warning-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-transparent-warning-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-transparent-warning-surface-shadow);
-    --_status-surface: var(--sherpa-style-transparent-warning-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-transparent-warning-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-transparent-warning-surface-base-2);
-    --_status-shadow: var(--sherpa-style-transparent-warning-surface-shadow);
-    --_status-border: var(--sherpa-style-transparent-warning-border-base);
-    --_status-border-strong: var(--sherpa-style-transparent-warning-border-base-1);
-    --_status-text: var(--sherpa-style-transparent-warning-content-base);
-    --_status-text-on-color: var(--sherpa-style-transparent-warning-content-inverse);
-    --_status-icon: var(--sherpa-style-transparent-warning-indicator-accent);
   }
 
   [data-look="transparent"][data-status="urgent"] {
@@ -2157,15 +2056,7 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-transparent-urgent-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-transparent-urgent-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-transparent-urgent-surface-shadow);
-    --_status-surface: var(--sherpa-style-transparent-urgent-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-transparent-urgent-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-transparent-urgent-surface-base-2);
-    --_status-shadow: var(--sherpa-style-transparent-urgent-surface-shadow);
-    --_status-border: var(--sherpa-style-transparent-urgent-border-base);
-    --_status-border-strong: var(--sherpa-style-transparent-urgent-border-base-1);
-    --_status-text: var(--sherpa-style-transparent-urgent-content-base);
-    --_status-text-on-color: var(--sherpa-style-transparent-urgent-content-inverse);
-    --_status-icon: var(--sherpa-style-transparent-urgent-indicator-accent);
   }
 
   [data-look="transparent"][data-status="success"] {
@@ -2181,15 +2072,7 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-transparent-success-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-transparent-success-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-transparent-success-surface-shadow);
-    --_status-surface: var(--sherpa-style-transparent-success-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-transparent-success-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-transparent-success-surface-base-2);
-    --_status-shadow: var(--sherpa-style-transparent-success-surface-shadow);
-    --_status-border: var(--sherpa-style-transparent-success-border-base);
-    --_status-border-strong: var(--sherpa-style-transparent-success-border-base-1);
-    --_status-text: var(--sherpa-style-transparent-success-content-base);
-    --_status-text-on-color: var(--sherpa-style-transparent-success-content-inverse);
-    --_status-icon: var(--sherpa-style-transparent-success-indicator-accent);
   }
 
   [data-look="transparent"][data-status="active"] {
@@ -2205,15 +2088,7 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-transparent-active-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-transparent-active-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-transparent-active-surface-shadow);
-    --_status-surface: var(--sherpa-style-transparent-active-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-transparent-active-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-transparent-active-surface-base-2);
-    --_status-shadow: var(--sherpa-style-transparent-active-surface-shadow);
-    --_status-border: var(--sherpa-style-transparent-active-border-base);
-    --_status-border-strong: var(--sherpa-style-transparent-active-border-base-1);
-    --_status-text: var(--sherpa-style-transparent-active-content-base);
-    --_status-text-on-color: var(--sherpa-style-transparent-active-content-inverse);
-    --_status-icon: var(--sherpa-style-transparent-active-indicator-accent);
   }
 
   [data-look="transparent"][data-status="inactive"] {
@@ -2229,15 +2104,7 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-transparent-inactive-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-transparent-inactive-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-transparent-inactive-surface-shadow);
-    --_status-surface: var(--sherpa-style-transparent-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-transparent-inactive-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-transparent-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-transparent-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-transparent-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-transparent-inactive-border-base-1);
-    --_status-text: var(--sherpa-style-transparent-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-transparent-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-transparent-inactive-indicator-accent);
   }
 
   [data-look="saturated"] {
@@ -2253,15 +2120,7 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-saturated-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-saturated-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-saturated-surface-shadow);
-    --_status-surface: var(--sherpa-style-saturated-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-saturated-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-saturated-surface-base-2);
-    --_status-shadow: var(--sherpa-style-saturated-surface-shadow);
-    --_status-border: var(--sherpa-style-saturated-border-base);
-    --_status-border-strong: var(--sherpa-style-saturated-border-base-1);
-    --_status-text: var(--sherpa-style-saturated-content-base);
-    --_status-text-on-color: var(--sherpa-style-saturated-content-inverse);
-    --_status-icon: var(--sherpa-style-saturated-indicator-accent);
   }
 
   [data-look="saturated"][data-status="info"] {
@@ -2277,15 +2136,7 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-saturated-info-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-saturated-info-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-saturated-info-surface-shadow);
-    --_status-surface: var(--sherpa-style-saturated-info-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-saturated-info-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-saturated-info-surface-base-2);
-    --_status-shadow: var(--sherpa-style-saturated-info-surface-shadow);
-    --_status-border: var(--sherpa-style-saturated-info-border-base);
-    --_status-border-strong: var(--sherpa-style-saturated-info-border-base-1);
-    --_status-text: var(--sherpa-style-saturated-info-content-base);
-    --_status-text-on-color: var(--sherpa-style-saturated-info-content-inverse);
-    --_status-icon: var(--sherpa-style-saturated-info-indicator-accent);
   }
 
   [data-look="saturated"][data-status="critical"] {
@@ -2301,15 +2152,7 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-saturated-critical-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-saturated-critical-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-saturated-critical-surface-shadow);
-    --_status-surface: var(--sherpa-style-saturated-critical-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-saturated-critical-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-saturated-critical-surface-base-2);
-    --_status-shadow: var(--sherpa-style-saturated-critical-surface-shadow);
-    --_status-border: var(--sherpa-style-saturated-critical-border-base);
-    --_status-border-strong: var(--sherpa-style-saturated-critical-border-base-1);
-    --_status-text: var(--sherpa-style-saturated-critical-content-base);
-    --_status-text-on-color: var(--sherpa-style-saturated-critical-content-inverse);
-    --_status-icon: var(--sherpa-style-saturated-critical-indicator-accent);
   }
 
   [data-look="saturated"][data-status="warning"] {
@@ -2325,15 +2168,7 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-saturated-warning-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-saturated-warning-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-saturated-warning-surface-shadow);
-    --_status-surface: var(--sherpa-style-saturated-warning-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-saturated-warning-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-saturated-warning-surface-base-2);
-    --_status-shadow: var(--sherpa-style-saturated-warning-surface-shadow);
-    --_status-border: var(--sherpa-style-saturated-warning-border-base);
-    --_status-border-strong: var(--sherpa-style-saturated-warning-border-base-1);
-    --_status-text: var(--sherpa-style-saturated-warning-content-base);
-    --_status-text-on-color: var(--sherpa-style-saturated-warning-content-inverse);
-    --_status-icon: var(--sherpa-style-saturated-warning-indicator-accent);
   }
 
   [data-look="saturated"][data-status="urgent"] {
@@ -2349,15 +2184,7 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-saturated-urgent-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-saturated-urgent-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-saturated-urgent-surface-shadow);
-    --_status-surface: var(--sherpa-style-saturated-urgent-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-saturated-urgent-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-saturated-urgent-surface-base-2);
-    --_status-shadow: var(--sherpa-style-saturated-urgent-surface-shadow);
-    --_status-border: var(--sherpa-style-saturated-urgent-border-base);
-    --_status-border-strong: var(--sherpa-style-saturated-urgent-border-base-1);
-    --_status-text: var(--sherpa-style-saturated-urgent-content-base);
-    --_status-text-on-color: var(--sherpa-style-saturated-urgent-content-inverse);
-    --_status-icon: var(--sherpa-style-saturated-urgent-indicator-accent);
   }
 
   [data-look="saturated"][data-status="success"] {
@@ -2373,15 +2200,7 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-saturated-success-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-saturated-success-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-saturated-success-surface-shadow);
-    --_status-surface: var(--sherpa-style-saturated-success-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-saturated-success-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-saturated-success-surface-base-2);
-    --_status-shadow: var(--sherpa-style-saturated-success-surface-shadow);
-    --_status-border: var(--sherpa-style-saturated-success-border-base);
-    --_status-border-strong: var(--sherpa-style-saturated-success-border-base-1);
-    --_status-text: var(--sherpa-style-saturated-success-content-base);
-    --_status-text-on-color: var(--sherpa-style-saturated-success-content-inverse);
-    --_status-icon: var(--sherpa-style-saturated-success-indicator-accent);
   }
 
   [data-look="saturated"][data-status="active"] {
@@ -2397,15 +2216,7 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-saturated-active-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-saturated-active-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-saturated-active-surface-shadow);
-    --_status-surface: var(--sherpa-style-saturated-active-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-saturated-active-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-saturated-active-surface-base-2);
-    --_status-shadow: var(--sherpa-style-saturated-active-surface-shadow);
-    --_status-border: var(--sherpa-style-saturated-active-border-base);
-    --_status-border-strong: var(--sherpa-style-saturated-active-border-base-1);
-    --_status-text: var(--sherpa-style-saturated-active-content-base);
-    --_status-text-on-color: var(--sherpa-style-saturated-active-content-inverse);
-    --_status-icon: var(--sherpa-style-saturated-active-indicator-accent);
   }
 
   [data-look="saturated"][data-status="inactive"] {
@@ -2421,19 +2232,10 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-saturated-inactive-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-saturated-inactive-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-saturated-inactive-surface-shadow);
-    --_status-surface: var(--sherpa-style-saturated-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-saturated-inactive-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-saturated-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-saturated-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-saturated-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-saturated-inactive-border-base-1);
-    --_status-text: var(--sherpa-style-saturated-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-saturated-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-saturated-inactive-indicator-accent);
   }
 
-  /* Component state pins — scripts/figma-data/state-pins.yaml. */
-  sherpa-quick-filter[data-current]:not([data-persistent]),
+  /* Natives' and bare component pins — scripts/figma-data/state-pins.yaml. */
   :where(.cell-tag:not([part~="trigger"]))[data-current] {
     --sherpa-style-border-base: var(--sherpa-filter-on-border-base, var(--sherpa-style-active-border-base));
     --sherpa-style-border-base-1: var(--sherpa-filter-on-border-base-1, var(--sherpa-style-active-border-base-1));
@@ -2449,161 +2251,10 @@
     --sherpa-style-surface-base-2: var(--sherpa-filter-on-surface-base-2, var(--sherpa-style-active-surface-base-2));
     --sherpa-style-surface-shadow: var(--sherpa-filter-on-surface-shadow, var(--sherpa-style-active-surface-shadow));
     --sherpa-style-surface-data-viz: var(--sherpa-filter-on-surface-data-viz, var(--sherpa-style-active-surface-data-viz));
-    --_status-surface: var(--sherpa-filter-on-surface-base, var(--sherpa-style-active-surface-base));
-    --_status-surface-subtle: var(--sherpa-filter-on-surface-base-1, var(--sherpa-style-active-surface-base-1));
     --_status-surface-strong: var(--sherpa-filter-on-surface-base-2, var(--sherpa-style-active-surface-base-2));
-    --_status-shadow: var(--sherpa-filter-on-surface-shadow, var(--sherpa-style-active-surface-shadow));
-    --_status-border: var(--sherpa-filter-on-border-base, var(--sherpa-style-active-border-base));
-    --_status-border-strong: var(--sherpa-filter-on-border-base-1, var(--sherpa-style-active-border-base-1));
-    --_status-data-viz: var(--sherpa-filter-on-surface-data-viz, var(--sherpa-style-active-surface-data-viz));
     --_status-data-viz-border: var(--sherpa-filter-on-border-data-viz, var(--sherpa-style-active-border-data-viz));
-    --_status-text: var(--sherpa-filter-on-content-base, var(--sherpa-style-active-content-base));
-    --_status-text-on-color: var(--sherpa-filter-on-content-inverse, var(--sherpa-style-active-content-inverse));
-    --_status-icon: var(--sherpa-filter-on-indicator-accent, var(--sherpa-style-active-indicator-accent));
   }
 
-  sherpa-quick-filter[data-current][data-filters-nothing] {
-    --sherpa-style-border-base: var(--sherpa-style-warning-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-warning-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-warning-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-warning-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-warning-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-warning-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-warning-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-warning-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-warning-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-warning-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-warning-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-warning-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-warning-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-warning-surface-data-viz);
-    --_status-surface: var(--sherpa-style-warning-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-warning-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-warning-surface-base-2);
-    --_status-shadow: var(--sherpa-style-warning-surface-shadow);
-    --_status-border: var(--sherpa-style-warning-border-base);
-    --_status-border-strong: var(--sherpa-style-warning-border-base-1);
-    --_status-data-viz: var(--sherpa-style-warning-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-warning-border-data-viz);
-    --_status-text: var(--sherpa-style-warning-content-base);
-    --_status-text-on-color: var(--sherpa-style-warning-content-inverse);
-    --_status-icon: var(--sherpa-style-warning-indicator-accent);
-  }
-
-  sherpa-quick-filter[data-by-preset],
-  :where(.menu-row:not([part~="trigger"]))[data-by-preset] {
-    --sherpa-style-border-base: var(--sherpa-style-info-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-info-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-info-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-info-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-info-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-info-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-info-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-info-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-info-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-info-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-info-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-info-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-info-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-info-surface-data-viz);
-    --_status-surface: var(--sherpa-style-info-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-info-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-info-surface-base-2);
-    --_status-shadow: var(--sherpa-style-info-surface-shadow);
-    --_status-border: var(--sherpa-style-info-border-base);
-    --_status-border-strong: var(--sherpa-style-info-border-base-1);
-    --_status-data-viz: var(--sherpa-style-info-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-info-border-data-viz);
-    --_status-text: var(--sherpa-style-info-content-base);
-    --_status-text-on-color: var(--sherpa-style-info-content-inverse);
-    --_status-icon: var(--sherpa-style-info-indicator-accent);
-  }
-
-  sherpa-quick-filter[data-current][data-by-preset] {
-    --sherpa-style-border-base: var(--sherpa-style-info-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-info-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-info-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-info-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-info-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-info-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-info-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-info-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-info-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-info-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-info-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-info-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-info-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-info-surface-data-viz);
-    --_status-surface: var(--sherpa-style-info-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-info-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-info-surface-base-2);
-    --_status-shadow: var(--sherpa-style-info-surface-shadow);
-    --_status-border: var(--sherpa-style-info-border-base);
-    --_status-border-strong: var(--sherpa-style-info-border-base-1);
-    --_status-data-viz: var(--sherpa-style-info-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-info-border-data-viz);
-    --_status-text: var(--sherpa-style-info-content-base);
-    --_status-text-on-color: var(--sherpa-style-info-content-inverse);
-    --_status-icon: var(--sherpa-style-info-indicator-accent);
-  }
-
-  sherpa-quick-filter[data-solo] {
-    --sherpa-style-border-base: var(--sherpa-style-info-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-info-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-info-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-info-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-info-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-info-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-info-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-info-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-info-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-info-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-info-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-info-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-info-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-info-surface-data-viz);
-    --_status-surface: var(--sherpa-style-info-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-info-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-info-surface-base-2);
-    --_status-shadow: var(--sherpa-style-info-surface-shadow);
-    --_status-border: var(--sherpa-style-info-border-base);
-    --_status-border-strong: var(--sherpa-style-info-border-base-1);
-    --_status-data-viz: var(--sherpa-style-info-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-info-border-data-viz);
-    --_status-text: var(--sherpa-style-info-content-base);
-    --_status-text-on-color: var(--sherpa-style-info-content-inverse);
-    --_status-icon: var(--sherpa-style-info-indicator-accent);
-  }
-
-  sherpa-quick-filter[data-current][data-solo] {
-    --sherpa-style-border-base: var(--sherpa-style-info-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-info-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-info-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-info-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-info-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-info-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-info-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-info-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-info-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-info-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-info-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-info-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-info-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-info-surface-data-viz);
-    --_status-surface: var(--sherpa-style-info-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-info-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-info-surface-base-2);
-    --_status-shadow: var(--sherpa-style-info-surface-shadow);
-    --_status-border: var(--sherpa-style-info-border-base);
-    --_status-border-strong: var(--sherpa-style-info-border-base-1);
-    --_status-data-viz: var(--sherpa-style-info-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-info-border-data-viz);
-    --_status-text: var(--sherpa-style-info-content-base);
-    --_status-text-on-color: var(--sherpa-style-info-content-inverse);
-    --_status-icon: var(--sherpa-style-info-indicator-accent);
-  }
-
-  sherpa-quick-filter[data-held-out],
   :where(.cell-tag:not([part~="trigger"]))[data-superseded],
   :where(.cell-tag:not([part~="trigger"]))[data-held-out],
   :where(.menu-row:not([part~="trigger"]))[data-unavailable] {
@@ -2621,297 +2272,27 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-inactive-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-inactive-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-surface: var(--sherpa-style-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-inactive-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-inactive-border-base-1);
-    --_status-data-viz: var(--sherpa-style-inactive-surface-data-viz);
     --_status-data-viz-border: var(--sherpa-style-inactive-border-data-viz);
-    --_status-text: var(--sherpa-style-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-inactive-indicator-accent);
   }
 
-  sherpa-quick-filter[data-current][data-held-out] {
-    --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-inactive-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-inactive-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-inactive-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-inactive-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-inactive-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-inactive-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-inactive-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-inactive-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-inactive-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-inactive-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-surface: var(--sherpa-style-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-inactive-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-inactive-border-base-1);
-    --_status-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-inactive-border-data-viz);
-    --_status-text: var(--sherpa-style-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-inactive-indicator-accent);
-  }
-
-  sherpa-quick-filter[data-pending] {
-    --sherpa-style-border-base: var(--sherpa-style-warning-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-warning-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-warning-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-warning-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-warning-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-warning-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-warning-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-warning-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-warning-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-warning-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-warning-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-warning-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-warning-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-warning-surface-data-viz);
-    --_status-surface: var(--sherpa-style-warning-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-warning-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-warning-surface-base-2);
-    --_status-shadow: var(--sherpa-style-warning-surface-shadow);
-    --_status-border: var(--sherpa-style-warning-border-base);
-    --_status-border-strong: var(--sherpa-style-warning-border-base-1);
-    --_status-data-viz: var(--sherpa-style-warning-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-warning-border-data-viz);
-    --_status-text: var(--sherpa-style-warning-content-base);
-    --_status-text-on-color: var(--sherpa-style-warning-content-inverse);
-    --_status-icon: var(--sherpa-style-warning-indicator-accent);
-  }
-
-  sherpa-quick-filter[data-current][data-pending] {
-    --sherpa-style-border-base: var(--sherpa-style-warning-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-warning-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-warning-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-warning-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-warning-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-warning-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-warning-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-warning-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-warning-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-warning-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-warning-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-warning-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-warning-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-warning-surface-data-viz);
-    --_status-surface: var(--sherpa-style-warning-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-warning-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-warning-surface-base-2);
-    --_status-shadow: var(--sherpa-style-warning-surface-shadow);
-    --_status-border: var(--sherpa-style-warning-border-base);
-    --_status-border-strong: var(--sherpa-style-warning-border-base-1);
-    --_status-data-viz: var(--sherpa-style-warning-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-warning-border-data-viz);
-    --_status-text: var(--sherpa-style-warning-content-base);
-    --_status-text-on-color: var(--sherpa-style-warning-content-inverse);
-    --_status-icon: var(--sherpa-style-warning-indicator-accent);
-  }
-
-  sherpa-quick-filter:state(drafting) {
-    --sherpa-style-border-base: var(--sherpa-style-warning-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-warning-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-warning-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-warning-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-warning-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-warning-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-warning-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-warning-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-warning-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-warning-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-warning-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-warning-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-warning-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-warning-surface-data-viz);
-    --_status-surface: var(--sherpa-style-warning-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-warning-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-warning-surface-base-2);
-    --_status-shadow: var(--sherpa-style-warning-surface-shadow);
-    --_status-border: var(--sherpa-style-warning-border-base);
-    --_status-border-strong: var(--sherpa-style-warning-border-base-1);
-    --_status-data-viz: var(--sherpa-style-warning-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-warning-border-data-viz);
-    --_status-text: var(--sherpa-style-warning-content-base);
-    --_status-text-on-color: var(--sherpa-style-warning-content-inverse);
-    --_status-icon: var(--sherpa-style-warning-indicator-accent);
-  }
-
-  sherpa-quick-filter[data-failed] {
-    --sherpa-style-border-base: var(--sherpa-style-critical-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-critical-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-critical-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-critical-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-critical-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-critical-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-critical-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-critical-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-critical-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-critical-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-critical-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-critical-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-critical-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-critical-surface-data-viz);
-    --_status-surface: var(--sherpa-style-critical-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-critical-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-critical-surface-base-2);
-    --_status-shadow: var(--sherpa-style-critical-surface-shadow);
-    --_status-border: var(--sherpa-style-critical-border-base);
-    --_status-border-strong: var(--sherpa-style-critical-border-base-1);
-    --_status-data-viz: var(--sherpa-style-critical-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-critical-border-data-viz);
-    --_status-text: var(--sherpa-style-critical-content-base);
-    --_status-text-on-color: var(--sherpa-style-critical-content-inverse);
-    --_status-icon: var(--sherpa-style-critical-indicator-accent);
-  }
-
-  sherpa-quick-filter[data-current][data-failed] {
-    --sherpa-style-border-base: var(--sherpa-style-critical-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-critical-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-critical-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-critical-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-critical-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-critical-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-critical-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-critical-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-critical-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-critical-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-critical-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-critical-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-critical-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-critical-surface-data-viz);
-    --_status-surface: var(--sherpa-style-critical-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-critical-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-critical-surface-base-2);
-    --_status-shadow: var(--sherpa-style-critical-surface-shadow);
-    --_status-border: var(--sherpa-style-critical-border-base);
-    --_status-border-strong: var(--sherpa-style-critical-border-base-1);
-    --_status-data-viz: var(--sherpa-style-critical-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-critical-border-data-viz);
-    --_status-text: var(--sherpa-style-critical-content-base);
-    --_status-text-on-color: var(--sherpa-style-critical-content-inverse);
-    --_status-icon: var(--sherpa-style-critical-indicator-accent);
-  }
-
-  sherpa-quick-filter[data-superseded]:not([data-by-preset]) {
-    --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-inactive-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-inactive-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-inactive-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-inactive-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-inactive-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-inactive-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-inactive-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-inactive-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-inactive-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-inactive-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-surface: var(--sherpa-style-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-inactive-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-inactive-border-base-1);
-    --_status-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-inactive-border-data-viz);
-    --_status-text: var(--sherpa-style-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-inactive-indicator-accent);
-  }
-
-  sherpa-quick-filter[disabled] {
-    --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-inactive-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-inactive-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-inactive-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-inactive-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-inactive-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-inactive-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-inactive-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-inactive-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-inactive-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-inactive-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-surface: var(--sherpa-style-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-inactive-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-inactive-border-base-1);
-    --_status-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-inactive-border-data-viz);
-    --_status-text: var(--sherpa-style-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-inactive-indicator-accent);
-  }
-
-  sherpa-quick-filter[data-unavailable] {
-    --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-inactive-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-inactive-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-inactive-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-inactive-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-inactive-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-inactive-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-inactive-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-inactive-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-inactive-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-inactive-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-surface: var(--sherpa-style-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-inactive-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-inactive-border-base-1);
-    --_status-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-inactive-border-data-viz);
-    --_status-text: var(--sherpa-style-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-inactive-indicator-accent);
-  }
-
-  sherpa-menu {
-    --sherpa-style-border-base: var(--sherpa-style-default-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-default-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-default-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-default-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-default-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-default-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-default-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-default-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-default-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-default-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
-    --_status-surface: initial;
-    --_status-surface-subtle: initial;
-    --_status-surface-strong: initial;
-    --_status-shadow: initial;
-    --_status-border: initial;
-    --_status-border-strong: initial;
-    --_status-data-viz: initial;
-    --_status-data-viz-border: initial;
-    --_status-text: initial;
-    --_status-text-on-color: initial;
-    --_status-icon: initial;
+  :where(.menu-row:not([part~="trigger"]))[data-by-preset] {
+    --sherpa-style-border-base: var(--sherpa-style-info-border-base);
+    --sherpa-style-border-base-1: var(--sherpa-style-info-border-base-1);
+    --sherpa-style-border-width: var(--sherpa-style-info-border-width);
+    --sherpa-style-border-data-viz: var(--sherpa-style-info-border-data-viz);
+    --sherpa-style-content-base: var(--sherpa-style-info-content-base);
+    --sherpa-style-content-inverse: var(--sherpa-style-info-content-inverse);
+    --sherpa-style-content-secondary: var(--sherpa-style-info-content-secondary);
+    --sherpa-style-content-tertiary: var(--sherpa-style-info-content-tertiary);
+    --sherpa-style-indicator-accent: var(--sherpa-style-info-indicator-accent);
+    --sherpa-style-surface-base: var(--sherpa-style-info-surface-base);
+    --sherpa-style-surface-base-1: var(--sherpa-style-info-surface-base-1);
+    --sherpa-style-surface-base-2: var(--sherpa-style-info-surface-base-2);
+    --sherpa-style-surface-shadow: var(--sherpa-style-info-surface-shadow);
+    --sherpa-style-surface-data-viz: var(--sherpa-style-info-surface-data-viz);
+    --_status-surface-strong: var(--sherpa-style-info-surface-base-2);
+    --_status-data-viz-border: var(--sherpa-style-info-border-data-viz);
   }
 
   :where(.menu-row:not([part~="trigger"]))[aria-current] {
@@ -2929,20 +2310,10 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-active-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-active-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-active-surface-data-viz);
-    --_status-surface: var(--sherpa-style-active-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-active-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-active-surface-base-2);
-    --_status-shadow: var(--sherpa-style-active-surface-shadow);
-    --_status-border: var(--sherpa-style-active-border-base);
-    --_status-border-strong: var(--sherpa-style-active-border-base-1);
-    --_status-data-viz: var(--sherpa-style-active-surface-data-viz);
     --_status-data-viz-border: var(--sherpa-style-active-border-data-viz);
-    --_status-text: var(--sherpa-style-active-content-base);
-    --_status-text-on-color: var(--sherpa-style-active-content-inverse);
-    --_status-icon: var(--sherpa-style-active-indicator-accent);
   }
 
-  sherpa-button[data-look="transparent"],
   :where(.sherpa-button:not([part~="trigger"]))[data-look="transparent"] {
     --sherpa-style-border-base: var(--sherpa-style-transparent-border-base);
     --sherpa-style-border-base-1: var(--sherpa-style-transparent-border-base-1);
@@ -2956,18 +2327,9 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-transparent-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-transparent-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-transparent-surface-shadow);
-    --_status-surface: var(--sherpa-style-transparent-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-transparent-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-transparent-surface-base-2);
-    --_status-shadow: var(--sherpa-style-transparent-surface-shadow);
-    --_status-border: var(--sherpa-style-transparent-border-base);
-    --_status-border-strong: var(--sherpa-style-transparent-border-base-1);
-    --_status-text: var(--sherpa-style-transparent-content-base);
-    --_status-text-on-color: var(--sherpa-style-transparent-content-inverse);
-    --_status-icon: var(--sherpa-style-transparent-indicator-accent);
   }
 
-  sherpa-button[data-look="saturated"],
   :where(.sherpa-button:not([part~="trigger"]))[data-look="saturated"] {
     --sherpa-style-border-base: var(--sherpa-style-saturated-border-base);
     --sherpa-style-border-base-1: var(--sherpa-style-saturated-border-base-1);
@@ -2981,18 +2343,9 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-saturated-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-saturated-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-saturated-surface-shadow);
-    --_status-surface: var(--sherpa-style-saturated-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-saturated-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-saturated-surface-base-2);
-    --_status-shadow: var(--sherpa-style-saturated-surface-shadow);
-    --_status-border: var(--sherpa-style-saturated-border-base);
-    --_status-border-strong: var(--sherpa-style-saturated-border-base-1);
-    --_status-text: var(--sherpa-style-saturated-content-base);
-    --_status-text-on-color: var(--sherpa-style-saturated-content-inverse);
-    --_status-icon: var(--sherpa-style-saturated-indicator-accent);
   }
 
-  sherpa-button[aria-pressed="true"],
   :where(.sherpa-button:not([part~="trigger"]))[aria-pressed="true"] {
     --sherpa-style-border-base: var(--sherpa-style-active-border-base);
     --sherpa-style-border-base-1: var(--sherpa-style-active-border-base-1);
@@ -3008,20 +2361,10 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-active-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-active-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-active-surface-data-viz);
-    --_status-surface: var(--sherpa-style-active-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-active-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-active-surface-base-2);
-    --_status-shadow: var(--sherpa-style-active-surface-shadow);
-    --_status-border: var(--sherpa-style-active-border-base);
-    --_status-border-strong: var(--sherpa-style-active-border-base-1);
-    --_status-data-viz: var(--sherpa-style-active-surface-data-viz);
     --_status-data-viz-border: var(--sherpa-style-active-border-data-viz);
-    --_status-text: var(--sherpa-style-active-content-base);
-    --_status-text-on-color: var(--sherpa-style-active-content-inverse);
-    --_status-icon: var(--sherpa-style-active-indicator-accent);
   }
 
-  sherpa-button[aria-pressed="true"][data-look="transparent"],
   :where(.sherpa-button:not([part~="trigger"]))[aria-pressed="true"][data-look="transparent"] {
     --sherpa-style-border-base: var(--sherpa-style-transparent-active-border-base);
     --sherpa-style-border-base-1: var(--sherpa-style-transparent-active-border-base-1);
@@ -3035,18 +2378,9 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-transparent-active-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-transparent-active-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-transparent-active-surface-shadow);
-    --_status-surface: var(--sherpa-style-transparent-active-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-transparent-active-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-transparent-active-surface-base-2);
-    --_status-shadow: var(--sherpa-style-transparent-active-surface-shadow);
-    --_status-border: var(--sherpa-style-transparent-active-border-base);
-    --_status-border-strong: var(--sherpa-style-transparent-active-border-base-1);
-    --_status-text: var(--sherpa-style-transparent-active-content-base);
-    --_status-text-on-color: var(--sherpa-style-transparent-active-content-inverse);
-    --_status-icon: var(--sherpa-style-transparent-active-indicator-accent);
   }
 
-  sherpa-button[aria-pressed="true"][data-look="saturated"],
   :where(.sherpa-button:not([part~="trigger"]))[aria-pressed="true"][data-look="saturated"] {
     --sherpa-style-border-base: var(--sherpa-style-saturated-active-border-base);
     --sherpa-style-border-base-1: var(--sherpa-style-saturated-active-border-base-1);
@@ -3060,94 +2394,9 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-saturated-active-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-saturated-active-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-saturated-active-surface-shadow);
-    --_status-surface: var(--sherpa-style-saturated-active-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-saturated-active-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-saturated-active-surface-base-2);
-    --_status-shadow: var(--sherpa-style-saturated-active-surface-shadow);
-    --_status-border: var(--sherpa-style-saturated-active-border-base);
-    --_status-border-strong: var(--sherpa-style-saturated-active-border-base-1);
-    --_status-text: var(--sherpa-style-saturated-active-content-base);
-    --_status-text-on-color: var(--sherpa-style-saturated-active-content-inverse);
-    --_status-icon: var(--sherpa-style-saturated-active-indicator-accent);
   }
 
-  sherpa-button[data-open] {
-    --sherpa-style-border-base: var(--sherpa-style-active-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-active-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-active-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-active-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-active-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-active-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-active-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-active-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-active-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-active-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-active-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-active-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-active-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-active-surface-data-viz);
-    --_status-surface: var(--sherpa-style-active-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-active-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-active-surface-base-2);
-    --_status-shadow: var(--sherpa-style-active-surface-shadow);
-    --_status-border: var(--sherpa-style-active-border-base);
-    --_status-border-strong: var(--sherpa-style-active-border-base-1);
-    --_status-data-viz: var(--sherpa-style-active-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-active-border-data-viz);
-    --_status-text: var(--sherpa-style-active-content-base);
-    --_status-text-on-color: var(--sherpa-style-active-content-inverse);
-    --_status-icon: var(--sherpa-style-active-indicator-accent);
-  }
-
-  sherpa-button[data-open][data-look="transparent"] {
-    --sherpa-style-border-base: var(--sherpa-style-transparent-active-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-transparent-active-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-transparent-active-border-width);
-    --sherpa-style-content-base: var(--sherpa-style-transparent-active-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-transparent-active-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-transparent-active-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-transparent-active-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-transparent-active-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-transparent-active-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-transparent-active-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-transparent-active-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-transparent-active-surface-shadow);
-    --_status-surface: var(--sherpa-style-transparent-active-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-transparent-active-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-transparent-active-surface-base-2);
-    --_status-shadow: var(--sherpa-style-transparent-active-surface-shadow);
-    --_status-border: var(--sherpa-style-transparent-active-border-base);
-    --_status-border-strong: var(--sherpa-style-transparent-active-border-base-1);
-    --_status-text: var(--sherpa-style-transparent-active-content-base);
-    --_status-text-on-color: var(--sherpa-style-transparent-active-content-inverse);
-    --_status-icon: var(--sherpa-style-transparent-active-indicator-accent);
-  }
-
-  sherpa-button[data-open][data-look="saturated"] {
-    --sherpa-style-border-base: var(--sherpa-style-saturated-active-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-saturated-active-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-saturated-active-border-width);
-    --sherpa-style-content-base: var(--sherpa-style-saturated-active-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-saturated-active-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-saturated-active-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-saturated-active-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-saturated-active-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-saturated-active-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-saturated-active-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-saturated-active-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-saturated-active-surface-shadow);
-    --_status-surface: var(--sherpa-style-saturated-active-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-saturated-active-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-saturated-active-surface-base-2);
-    --_status-shadow: var(--sherpa-style-saturated-active-surface-shadow);
-    --_status-border: var(--sherpa-style-saturated-active-border-base);
-    --_status-border-strong: var(--sherpa-style-saturated-active-border-base-1);
-    --_status-text: var(--sherpa-style-saturated-active-content-base);
-    --_status-text-on-color: var(--sherpa-style-saturated-active-content-inverse);
-    --_status-icon: var(--sherpa-style-saturated-active-indicator-accent);
-  }
-
-  sherpa-button[disabled],
   :where(.sherpa-button:not([part~="trigger"])):disabled {
     --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
     --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
@@ -3163,20 +2412,10 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-inactive-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-inactive-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-surface: var(--sherpa-style-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-inactive-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-inactive-border-base-1);
-    --_status-data-viz: var(--sherpa-style-inactive-surface-data-viz);
     --_status-data-viz-border: var(--sherpa-style-inactive-border-data-viz);
-    --_status-text: var(--sherpa-style-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-inactive-indicator-accent);
   }
 
-  sherpa-button[disabled][data-look="transparent"],
   :where(.sherpa-button:not([part~="trigger"])):disabled[data-look="transparent"] {
     --sherpa-style-border-base: var(--sherpa-style-transparent-inactive-border-base);
     --sherpa-style-border-base-1: var(--sherpa-style-transparent-inactive-border-base-1);
@@ -3190,18 +2429,9 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-transparent-inactive-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-transparent-inactive-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-transparent-inactive-surface-shadow);
-    --_status-surface: var(--sherpa-style-transparent-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-transparent-inactive-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-transparent-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-transparent-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-transparent-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-transparent-inactive-border-base-1);
-    --_status-text: var(--sherpa-style-transparent-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-transparent-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-transparent-inactive-indicator-accent);
   }
 
-  sherpa-button[disabled][data-look="saturated"],
   :where(.sherpa-button:not([part~="trigger"])):disabled[data-look="saturated"] {
     --sherpa-style-border-base: var(--sherpa-style-saturated-inactive-border-base);
     --sherpa-style-border-base-1: var(--sherpa-style-saturated-inactive-border-base-1);
@@ -3215,91 +2445,26 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-saturated-inactive-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-saturated-inactive-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-saturated-inactive-surface-shadow);
-    --_status-surface: var(--sherpa-style-saturated-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-saturated-inactive-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-saturated-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-saturated-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-saturated-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-saturated-inactive-border-base-1);
-    --_status-text: var(--sherpa-style-saturated-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-saturated-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-saturated-inactive-indicator-accent);
   }
 
-  sherpa-nav-item:not([data-type="promo"]) {
-    --sherpa-style-border-base: var(--sherpa-style-transparent-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-transparent-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-transparent-border-width);
-    --sherpa-style-content-base: var(--sherpa-style-transparent-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-transparent-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-transparent-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-transparent-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-transparent-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-transparent-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-transparent-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-transparent-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-transparent-surface-shadow);
-    --_status-surface: var(--sherpa-style-transparent-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-transparent-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-transparent-surface-base-2);
-    --_status-shadow: var(--sherpa-style-transparent-surface-shadow);
-    --_status-border: var(--sherpa-style-transparent-border-base);
-    --_status-border-strong: var(--sherpa-style-transparent-border-base-1);
-    --_status-text: var(--sherpa-style-transparent-content-base);
-    --_status-text-on-color: var(--sherpa-style-transparent-content-inverse);
-    --_status-icon: var(--sherpa-style-transparent-indicator-accent);
-  }
-
-  sherpa-nav-item[data-current] {
-    --sherpa-style-border-base: var(--sherpa-style-active-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-active-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-active-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-active-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-active-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-active-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-active-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-active-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-active-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-active-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-active-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-active-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-active-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-active-surface-data-viz);
-    --_status-surface: var(--sherpa-style-active-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-active-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-active-surface-base-2);
-    --_status-shadow: var(--sherpa-style-active-surface-shadow);
-    --_status-border: var(--sherpa-style-active-border-base);
-    --_status-border-strong: var(--sherpa-style-active-border-base-1);
-    --_status-data-viz: var(--sherpa-style-active-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-active-border-data-viz);
-    --_status-text: var(--sherpa-style-active-content-base);
-    --_status-text-on-color: var(--sherpa-style-active-content-inverse);
-    --_status-icon: var(--sherpa-style-active-indicator-accent);
-  }
-
-  sherpa-nav-item[disabled] {
-    --sherpa-style-border-base: var(--sherpa-style-transparent-inactive-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-transparent-inactive-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-transparent-inactive-border-width);
-    --sherpa-style-content-base: var(--sherpa-style-transparent-inactive-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-transparent-inactive-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-transparent-inactive-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-transparent-inactive-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-transparent-inactive-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-transparent-inactive-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-transparent-inactive-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-transparent-inactive-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-transparent-inactive-surface-shadow);
-    --_status-surface: var(--sherpa-style-transparent-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-transparent-inactive-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-transparent-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-transparent-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-transparent-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-transparent-inactive-border-base-1);
-    --_status-text: var(--sherpa-style-transparent-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-transparent-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-transparent-inactive-indicator-accent);
+  sherpa-menu {
+    --sherpa-style-border-base: var(--sherpa-style-default-border-base);
+    --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
+    --sherpa-style-border-width: var(--sherpa-style-default-border-width);
+    --sherpa-style-border-data-viz: var(--sherpa-style-default-border-data-viz);
+    --sherpa-style-content-base: var(--sherpa-style-default-content-base);
+    --sherpa-style-content-inverse: var(--sherpa-style-default-content-inverse);
+    --sherpa-style-content-secondary: var(--sherpa-style-default-content-secondary);
+    --sherpa-style-content-tertiary: var(--sherpa-style-default-content-tertiary);
+    --sherpa-style-indicator-accent: var(--sherpa-style-default-indicator-accent);
+    --sherpa-style-surface-base: var(--sherpa-style-default-surface-base);
+    --sherpa-style-surface-base-1: var(--sherpa-style-default-surface-base-1);
+    --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
+    --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
+    --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
+    --_status-surface-strong: initial;
+    --_status-data-viz-border: initial;
   }
 
   sherpa-list-item {
@@ -3315,15 +2480,7 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-transparent-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-transparent-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-transparent-surface-shadow);
-    --_status-surface: var(--sherpa-style-transparent-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-transparent-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-transparent-surface-base-2);
-    --_status-shadow: var(--sherpa-style-transparent-surface-shadow);
-    --_status-border: var(--sherpa-style-transparent-border-base);
-    --_status-border-strong: var(--sherpa-style-transparent-border-base-1);
-    --_status-text: var(--sherpa-style-transparent-content-base);
-    --_status-text-on-color: var(--sherpa-style-transparent-content-inverse);
-    --_status-icon: var(--sherpa-style-transparent-indicator-accent);
   }
 
   sherpa-calendar-cell {
@@ -3339,127 +2496,7 @@
     --sherpa-style-surface-base-1: var(--sherpa-style-transparent-surface-base-1);
     --sherpa-style-surface-base-2: var(--sherpa-style-transparent-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-transparent-surface-shadow);
-    --_status-surface: var(--sherpa-style-transparent-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-transparent-surface-base-1);
     --_status-surface-strong: var(--sherpa-style-transparent-surface-base-2);
-    --_status-shadow: var(--sherpa-style-transparent-surface-shadow);
-    --_status-border: var(--sherpa-style-transparent-border-base);
-    --_status-border-strong: var(--sherpa-style-transparent-border-base-1);
-    --_status-text: var(--sherpa-style-transparent-content-base);
-    --_status-text-on-color: var(--sherpa-style-transparent-content-inverse);
-    --_status-icon: var(--sherpa-style-transparent-indicator-accent);
-  }
-
-  sherpa-calendar-cell[data-state="selected"] {
-    --sherpa-style-border-base: var(--sherpa-style-active-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-active-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-active-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-active-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-active-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-active-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-active-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-active-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-active-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-active-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-active-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-active-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-active-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-active-surface-data-viz);
-    --_status-surface: var(--sherpa-style-active-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-active-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-active-surface-base-2);
-    --_status-shadow: var(--sherpa-style-active-surface-shadow);
-    --_status-border: var(--sherpa-style-active-border-base);
-    --_status-border-strong: var(--sherpa-style-active-border-base-1);
-    --_status-data-viz: var(--sherpa-style-active-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-active-border-data-viz);
-    --_status-text: var(--sherpa-style-active-content-base);
-    --_status-text-on-color: var(--sherpa-style-active-content-inverse);
-    --_status-icon: var(--sherpa-style-active-indicator-accent);
-  }
-
-  sherpa-calendar-cell[data-state="range-start"] {
-    --sherpa-style-border-base: var(--sherpa-style-active-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-active-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-active-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-active-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-active-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-active-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-active-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-active-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-active-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-active-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-active-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-active-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-active-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-active-surface-data-viz);
-    --_status-surface: var(--sherpa-style-active-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-active-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-active-surface-base-2);
-    --_status-shadow: var(--sherpa-style-active-surface-shadow);
-    --_status-border: var(--sherpa-style-active-border-base);
-    --_status-border-strong: var(--sherpa-style-active-border-base-1);
-    --_status-data-viz: var(--sherpa-style-active-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-active-border-data-viz);
-    --_status-text: var(--sherpa-style-active-content-base);
-    --_status-text-on-color: var(--sherpa-style-active-content-inverse);
-    --_status-icon: var(--sherpa-style-active-indicator-accent);
-  }
-
-  sherpa-calendar-cell[data-state="range-mid"] {
-    --sherpa-style-border-base: var(--sherpa-style-active-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-active-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-active-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-active-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-active-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-active-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-active-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-active-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-active-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-active-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-active-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-active-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-active-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-active-surface-data-viz);
-    --_status-surface: var(--sherpa-style-active-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-active-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-active-surface-base-2);
-    --_status-shadow: var(--sherpa-style-active-surface-shadow);
-    --_status-border: var(--sherpa-style-active-border-base);
-    --_status-border-strong: var(--sherpa-style-active-border-base-1);
-    --_status-data-viz: var(--sherpa-style-active-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-active-border-data-viz);
-    --_status-text: var(--sherpa-style-active-content-base);
-    --_status-text-on-color: var(--sherpa-style-active-content-inverse);
-    --_status-icon: var(--sherpa-style-active-indicator-accent);
-  }
-
-  sherpa-calendar-cell[data-state="range-end"] {
-    --sherpa-style-border-base: var(--sherpa-style-active-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-active-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-active-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-active-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-active-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-active-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-active-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-active-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-active-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-active-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-active-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-active-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-active-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-active-surface-data-viz);
-    --_status-surface: var(--sherpa-style-active-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-active-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-active-surface-base-2);
-    --_status-shadow: var(--sherpa-style-active-surface-shadow);
-    --_status-border: var(--sherpa-style-active-border-base);
-    --_status-border-strong: var(--sherpa-style-active-border-base-1);
-    --_status-data-viz: var(--sherpa-style-active-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-active-border-data-viz);
-    --_status-text: var(--sherpa-style-active-content-base);
-    --_status-text-on-color: var(--sherpa-style-active-content-inverse);
-    --_status-icon: var(--sherpa-style-active-indicator-accent);
   }
 
   sherpa-node {
@@ -3477,129 +2514,8 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
-    --_status-surface: initial;
-    --_status-surface-subtle: initial;
     --_status-surface-strong: initial;
-    --_status-shadow: initial;
-    --_status-border: initial;
-    --_status-border-strong: initial;
-    --_status-data-viz: initial;
     --_status-data-viz-border: initial;
-    --_status-text: initial;
-    --_status-text-on-color: initial;
-    --_status-icon: initial;
-  }
-
-  sherpa-node[data-current] {
-    --sherpa-style-border-base: var(--sherpa-style-active-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-active-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-active-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-active-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-active-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-active-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-active-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-active-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-active-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-active-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-active-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-active-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-active-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-active-surface-data-viz);
-    --_status-surface: var(--sherpa-style-active-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-active-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-active-surface-base-2);
-    --_status-shadow: var(--sherpa-style-active-surface-shadow);
-    --_status-border: var(--sherpa-style-active-border-base);
-    --_status-border-strong: var(--sherpa-style-active-border-base-1);
-    --_status-data-viz: var(--sherpa-style-active-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-active-border-data-viz);
-    --_status-text: var(--sherpa-style-active-content-base);
-    --_status-text-on-color: var(--sherpa-style-active-content-inverse);
-    --_status-icon: var(--sherpa-style-active-indicator-accent);
-  }
-
-  sherpa-node[data-step="running"] {
-    --sherpa-style-border-base: var(--sherpa-style-info-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-info-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-info-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-info-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-info-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-info-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-info-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-info-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-info-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-info-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-info-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-info-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-info-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-info-surface-data-viz);
-    --_status-surface: var(--sherpa-style-info-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-info-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-info-surface-base-2);
-    --_status-shadow: var(--sherpa-style-info-surface-shadow);
-    --_status-border: var(--sherpa-style-info-border-base);
-    --_status-border-strong: var(--sherpa-style-info-border-base-1);
-    --_status-data-viz: var(--sherpa-style-info-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-info-border-data-viz);
-    --_status-text: var(--sherpa-style-info-content-base);
-    --_status-text-on-color: var(--sherpa-style-info-content-inverse);
-    --_status-icon: var(--sherpa-style-info-indicator-accent);
-  }
-
-  sherpa-node[data-step="failed"] {
-    --sherpa-style-border-base: var(--sherpa-style-critical-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-critical-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-critical-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-critical-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-critical-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-critical-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-critical-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-critical-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-critical-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-critical-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-critical-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-critical-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-critical-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-critical-surface-data-viz);
-    --_status-surface: var(--sherpa-style-critical-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-critical-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-critical-surface-base-2);
-    --_status-shadow: var(--sherpa-style-critical-surface-shadow);
-    --_status-border: var(--sherpa-style-critical-border-base);
-    --_status-border-strong: var(--sherpa-style-critical-border-base-1);
-    --_status-data-viz: var(--sherpa-style-critical-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-critical-border-data-viz);
-    --_status-text: var(--sherpa-style-critical-content-base);
-    --_status-text-on-color: var(--sherpa-style-critical-content-inverse);
-    --_status-icon: var(--sherpa-style-critical-indicator-accent);
-  }
-
-  sherpa-node[data-step="skipped"] {
-    --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-inactive-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-inactive-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-inactive-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-inactive-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-inactive-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-inactive-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-inactive-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-inactive-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-inactive-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-inactive-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-surface: var(--sherpa-style-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-inactive-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-inactive-border-base-1);
-    --_status-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-inactive-border-data-viz);
-    --_status-text: var(--sherpa-style-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-inactive-indicator-accent);
   }
 
   sherpa-accordion {
@@ -3617,45 +2533,8 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
-    --_status-surface: initial;
-    --_status-surface-subtle: initial;
     --_status-surface-strong: initial;
-    --_status-shadow: initial;
-    --_status-border: initial;
-    --_status-border-strong: initial;
-    --_status-data-viz: initial;
     --_status-data-viz-border: initial;
-    --_status-text: initial;
-    --_status-text-on-color: initial;
-    --_status-icon: initial;
-  }
-
-  sherpa-chip[disabled] {
-    --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-inactive-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-inactive-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-inactive-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-inactive-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-inactive-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-inactive-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-inactive-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-inactive-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-inactive-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-inactive-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-surface: var(--sherpa-style-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-inactive-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-inactive-border-base-1);
-    --_status-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-inactive-border-data-viz);
-    --_status-text: var(--sherpa-style-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-inactive-indicator-accent);
   }
 
   sherpa-container {
@@ -3673,17 +2552,8 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
-    --_status-surface: initial;
-    --_status-surface-subtle: initial;
     --_status-surface-strong: initial;
-    --_status-shadow: initial;
-    --_status-border: initial;
-    --_status-border-strong: initial;
-    --_status-data-viz: initial;
     --_status-data-viz-border: initial;
-    --_status-text: initial;
-    --_status-text-on-color: initial;
-    --_status-icon: initial;
   }
 
   sherpa-dialog {
@@ -3701,17 +2571,8 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
-    --_status-surface: initial;
-    --_status-surface-subtle: initial;
     --_status-surface-strong: initial;
-    --_status-shadow: initial;
-    --_status-border: initial;
-    --_status-border-strong: initial;
-    --_status-data-viz: initial;
     --_status-data-viz-border: initial;
-    --_status-text: initial;
-    --_status-text-on-color: initial;
-    --_status-icon: initial;
   }
 
   sherpa-input-text {
@@ -3729,129 +2590,8 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
-    --_status-surface: initial;
-    --_status-surface-subtle: initial;
     --_status-surface-strong: initial;
-    --_status-shadow: initial;
-    --_status-border: initial;
-    --_status-border-strong: initial;
-    --_status-data-viz: initial;
     --_status-data-viz-border: initial;
-    --_status-text: initial;
-    --_status-text-on-color: initial;
-    --_status-icon: initial;
-  }
-
-  sherpa-input-text[data-error] {
-    --sherpa-style-border-base: var(--sherpa-style-critical-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-critical-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-critical-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-critical-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-critical-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-critical-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-critical-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-critical-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-critical-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-critical-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-critical-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-critical-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-critical-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-critical-surface-data-viz);
-    --_status-surface: var(--sherpa-style-critical-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-critical-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-critical-surface-base-2);
-    --_status-shadow: var(--sherpa-style-critical-surface-shadow);
-    --_status-border: var(--sherpa-style-critical-border-base);
-    --_status-border-strong: var(--sherpa-style-critical-border-base-1);
-    --_status-data-viz: var(--sherpa-style-critical-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-critical-border-data-viz);
-    --_status-text: var(--sherpa-style-critical-content-base);
-    --_status-text-on-color: var(--sherpa-style-critical-content-inverse);
-    --_status-icon: var(--sherpa-style-critical-indicator-accent);
-  }
-
-  sherpa-input-text[disabled] {
-    --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-inactive-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-inactive-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-inactive-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-inactive-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-inactive-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-inactive-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-inactive-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-inactive-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-inactive-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-inactive-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-surface: var(--sherpa-style-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-inactive-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-inactive-border-base-1);
-    --_status-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-inactive-border-data-viz);
-    --_status-text: var(--sherpa-style-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-inactive-indicator-accent);
-  }
-
-  sherpa-metric[data-trend="up"] {
-    --sherpa-style-border-base: var(--sherpa-style-success-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-success-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-success-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-success-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-success-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-success-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-success-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-success-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-success-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-success-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-success-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-success-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-success-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-success-surface-data-viz);
-    --_status-surface: var(--sherpa-style-success-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-success-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-success-surface-base-2);
-    --_status-shadow: var(--sherpa-style-success-surface-shadow);
-    --_status-border: var(--sherpa-style-success-border-base);
-    --_status-border-strong: var(--sherpa-style-success-border-base-1);
-    --_status-data-viz: var(--sherpa-style-success-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-success-border-data-viz);
-    --_status-text: var(--sherpa-style-success-content-base);
-    --_status-text-on-color: var(--sherpa-style-success-content-inverse);
-    --_status-icon: var(--sherpa-style-success-indicator-accent);
-  }
-
-  sherpa-metric[data-trend="down"] {
-    --sherpa-style-border-base: var(--sherpa-style-critical-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-critical-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-critical-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-critical-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-critical-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-critical-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-critical-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-critical-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-critical-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-critical-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-critical-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-critical-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-critical-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-critical-surface-data-viz);
-    --_status-surface: var(--sherpa-style-critical-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-critical-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-critical-surface-base-2);
-    --_status-shadow: var(--sherpa-style-critical-surface-shadow);
-    --_status-border: var(--sherpa-style-critical-border-base);
-    --_status-border-strong: var(--sherpa-style-critical-border-base-1);
-    --_status-data-viz: var(--sherpa-style-critical-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-critical-border-data-viz);
-    --_status-text: var(--sherpa-style-critical-content-base);
-    --_status-text-on-color: var(--sherpa-style-critical-content-inverse);
-    --_status-icon: var(--sherpa-style-critical-indicator-accent);
   }
 
   sherpa-overlay-panel {
@@ -3869,17 +2609,8 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
-    --_status-surface: initial;
-    --_status-surface-subtle: initial;
     --_status-surface-strong: initial;
-    --_status-shadow: initial;
-    --_status-border: initial;
-    --_status-border-strong: initial;
-    --_status-data-viz: initial;
     --_status-data-viz-border: initial;
-    --_status-text: initial;
-    --_status-text-on-color: initial;
-    --_status-icon: initial;
   }
 
   sherpa-panel {
@@ -3897,129 +2628,8 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
-    --_status-surface: initial;
-    --_status-surface-subtle: initial;
     --_status-surface-strong: initial;
-    --_status-shadow: initial;
-    --_status-border: initial;
-    --_status-border-strong: initial;
-    --_status-data-viz: initial;
     --_status-data-viz-border: initial;
-    --_status-text: initial;
-    --_status-text-on-color: initial;
-    --_status-icon: initial;
-  }
-
-  sherpa-progress-bar[disabled] {
-    --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-inactive-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-inactive-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-inactive-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-inactive-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-inactive-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-inactive-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-inactive-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-inactive-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-inactive-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-inactive-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-surface: var(--sherpa-style-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-inactive-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-inactive-border-base-1);
-    --_status-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-inactive-border-data-viz);
-    --_status-text: var(--sherpa-style-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-inactive-indicator-accent);
-  }
-
-  sherpa-prompt-composer[disabled] {
-    --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-inactive-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-inactive-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-inactive-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-inactive-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-inactive-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-inactive-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-inactive-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-inactive-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-inactive-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-inactive-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-surface: var(--sherpa-style-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-inactive-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-inactive-border-base-1);
-    --_status-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-inactive-border-data-viz);
-    --_status-text: var(--sherpa-style-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-inactive-indicator-accent);
-  }
-
-  sherpa-select-card[disabled] {
-    --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-inactive-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-inactive-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-inactive-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-inactive-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-inactive-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-inactive-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-inactive-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-inactive-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-inactive-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-inactive-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-surface: var(--sherpa-style-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-inactive-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-inactive-border-base-1);
-    --_status-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-inactive-border-data-viz);
-    --_status-text: var(--sherpa-style-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-inactive-indicator-accent);
-  }
-
-  sherpa-slider[disabled] {
-    --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-inactive-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-inactive-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-inactive-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-inactive-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-inactive-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-inactive-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-inactive-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-inactive-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-inactive-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-inactive-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-surface: var(--sherpa-style-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-inactive-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-inactive-border-base-1);
-    --_status-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-inactive-border-data-viz);
-    --_status-text: var(--sherpa-style-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-inactive-indicator-accent);
   }
 
   sherpa-switch {
@@ -4037,121 +2647,8 @@
     --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
     --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
     --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
-    --_status-surface: initial;
-    --_status-surface-subtle: initial;
     --_status-surface-strong: initial;
-    --_status-shadow: initial;
-    --_status-border: initial;
-    --_status-border-strong: initial;
-    --_status-data-viz: initial;
     --_status-data-viz-border: initial;
-    --_status-text: initial;
-    --_status-text-on-color: initial;
-    --_status-icon: initial;
-  }
-
-  sherpa-switch[checked] {
-    --sherpa-style-border-base: var(--sherpa-style-saturated-success-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-saturated-success-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-saturated-success-border-width);
-    --sherpa-style-content-base: var(--sherpa-style-saturated-success-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-saturated-success-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-saturated-success-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-saturated-success-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-saturated-success-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-saturated-success-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-saturated-success-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-saturated-success-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-saturated-success-surface-shadow);
-    --_status-surface: var(--sherpa-style-saturated-success-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-saturated-success-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-saturated-success-surface-base-2);
-    --_status-shadow: var(--sherpa-style-saturated-success-surface-shadow);
-    --_status-border: var(--sherpa-style-saturated-success-border-base);
-    --_status-border-strong: var(--sherpa-style-saturated-success-border-base-1);
-    --_status-text: var(--sherpa-style-saturated-success-content-base);
-    --_status-text-on-color: var(--sherpa-style-saturated-success-content-inverse);
-    --_status-icon: var(--sherpa-style-saturated-success-indicator-accent);
-  }
-
-  sherpa-switch[disabled] {
-    --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-inactive-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-inactive-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-inactive-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-inactive-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-inactive-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-inactive-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-inactive-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-inactive-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-inactive-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-inactive-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-surface: var(--sherpa-style-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-inactive-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-inactive-border-base-1);
-    --_status-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-inactive-border-data-viz);
-    --_status-text: var(--sherpa-style-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-inactive-indicator-accent);
-  }
-
-  sherpa-switch[checked][disabled] {
-    --sherpa-style-border-base: var(--sherpa-style-saturated-inactive-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-saturated-inactive-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-saturated-inactive-border-width);
-    --sherpa-style-content-base: var(--sherpa-style-saturated-inactive-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-saturated-inactive-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-saturated-inactive-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-saturated-inactive-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-saturated-inactive-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-saturated-inactive-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-saturated-inactive-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-saturated-inactive-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-saturated-inactive-surface-shadow);
-    --_status-surface: var(--sherpa-style-saturated-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-saturated-inactive-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-saturated-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-saturated-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-saturated-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-saturated-inactive-border-base-1);
-    --_status-text: var(--sherpa-style-saturated-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-saturated-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-saturated-inactive-indicator-accent);
-  }
-
-  sherpa-transfer-list[disabled] {
-    --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-inactive-border-width);
-    --sherpa-style-border-data-viz: var(--sherpa-style-inactive-border-data-viz);
-    --sherpa-style-content-base: var(--sherpa-style-inactive-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-inactive-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-inactive-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-inactive-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-inactive-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-inactive-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-inactive-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-inactive-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-surface: var(--sherpa-style-inactive-surface-base);
-    --_status-surface-subtle: var(--sherpa-style-inactive-surface-base-1);
-    --_status-surface-strong: var(--sherpa-style-inactive-surface-base-2);
-    --_status-shadow: var(--sherpa-style-inactive-surface-shadow);
-    --_status-border: var(--sherpa-style-inactive-border-base);
-    --_status-border-strong: var(--sherpa-style-inactive-border-base-1);
-    --_status-data-viz: var(--sherpa-style-inactive-surface-data-viz);
-    --_status-data-viz-border: var(--sherpa-style-inactive-border-data-viz);
-    --_status-text: var(--sherpa-style-inactive-content-base);
-    --_status-text-on-color: var(--sherpa-style-inactive-content-inverse);
-    --_status-icon: var(--sherpa-style-inactive-indicator-accent);
   }
 
   /* Status palette — [data-palette] re-points the data-viz series onto the

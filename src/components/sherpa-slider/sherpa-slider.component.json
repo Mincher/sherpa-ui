@@ -280,6 +280,7 @@
     "label.color": "{sherpa.style-content-base}",
     "label.font-weight": "{sherpa.font-weight-medium}",
     "label.line-height": "{sherpa.theme-content-line-height-base}",
+    "slider-row.--_accent": "{sherpa.style-indicator-accent}",
     "slider-row.gap": "{sherpa.display-mode-space-xs}",
     "track.background": "{sherpa.theme-surface-default-2}",
     "track.border-radius": "{sherpa.display-mode-border-rounding-full}"

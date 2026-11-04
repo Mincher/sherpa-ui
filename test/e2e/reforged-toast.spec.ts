@@ -41,7 +41,7 @@ test('the card fills the PALE status tint; the icon glyph carries the strong hue
     return { card: card.backgroundColor, badge: badge.color, heading: heading.color };
   });
   // Figma Toast 27:750: fill = style-surface/base +1 (critical → #ffdad1) via the
-  // --_status-surface-subtle cascade; heading = style-content/secondary (#35353d,
+  // status pin; heading = style-content/secondary (#35353d,
   // status-independent); the 14px glyph carries the strong status hue.
   expect(r.card).toBe('rgb(255, 218, 209)');
   expect(r.heading).toBe('rgb(53, 53, 61)');

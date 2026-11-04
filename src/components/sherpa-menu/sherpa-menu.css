@@ -15,17 +15,8 @@
   --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
   --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
   --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
-  --_status-surface: initial;
-  --_status-surface-subtle: initial;
   --_status-surface-strong: initial;
-  --_status-shadow: initial;
-  --_status-border: initial;
-  --_status-border-strong: initial;
-  --_status-data-viz: initial;
   --_status-data-viz-border: initial;
-  --_status-text: initial;
-  --_status-text-on-color: initial;
-  --_status-icon: initial;
 }
 
 :host(sherpa-menu) .use-advanced[aria-pressed="true"] {
@@ -43,17 +34,10 @@
   --sherpa-style-surface-base-2: var(--sherpa-filter-on-surface-base-2, var(--sherpa-style-active-surface-base-2));
   --sherpa-style-surface-shadow: var(--sherpa-filter-on-surface-shadow, var(--sherpa-style-active-surface-shadow));
   --sherpa-style-surface-data-viz: var(--sherpa-filter-on-surface-data-viz, var(--sherpa-style-active-surface-data-viz));
-  --_status-surface: var(--sherpa-filter-on-surface-base, var(--sherpa-style-active-surface-base));
-  --_status-surface-subtle: var(--sherpa-filter-on-surface-base-1, var(--sherpa-style-active-surface-base-1));
   --_status-surface-strong: var(--sherpa-filter-on-surface-base-2, var(--sherpa-style-active-surface-base-2));
-  --_status-shadow: var(--sherpa-filter-on-surface-shadow, var(--sherpa-style-active-surface-shadow));
-  --_status-border: var(--sherpa-filter-on-border-base, var(--sherpa-style-active-border-base));
-  --_status-border-strong: var(--sherpa-filter-on-border-base-1, var(--sherpa-style-active-border-base-1));
-  --_status-data-viz: var(--sherpa-filter-on-surface-data-viz, var(--sherpa-style-active-surface-data-viz));
   --_status-data-viz-border: var(--sherpa-filter-on-border-data-viz, var(--sherpa-style-active-border-data-viz));
-  --_status-text: var(--sherpa-filter-on-content-base, var(--sherpa-style-active-content-base));
-  --_status-text-on-color: var(--sherpa-filter-on-content-inverse, var(--sherpa-style-active-content-inverse));
-  --_status-icon: var(--sherpa-filter-on-indicator-accent, var(--sherpa-style-active-indicator-accent));
+  --_mode: active-filter-on;
+  --_mode-viz: active-filter-on;
 }
 /* == end sherpa:tokens == */
 
@@ -631,16 +615,6 @@
 /* Separate attributes: only a removable chip has anything to remove; a NUMBER resets. */
 :host([data-clearable][data-body="number"]) .reset { display: inline-flex; }
 :host([data-removable]) .remove { display: inline-flex; }
-
-/* CRITICAL ink set here, not left to the status cascade: `[data-status]` in
-   tokens.css is a bare document-sheet rule and never applies inside a shadow
-   root, so the button read the default near-black. Ink and border only —
-   removing a filter is destructive but it is not an alarm. */
-.remove {
-  --_status-text: var(--sherpa-theme-content-critical-1, #b72200);
-  --_status-border: var(--sherpa-theme-border-critical-2, #dd2c01);
-  --_status-icon: var(--sherpa-theme-content-critical-1, #b72200);
-}
 
 /* A calendar keeps Today in the footer's left slot, as the node has it. */
 :host(:is([data-type="calendar"], [data-body="date"])) .today { display: inline-flex; }

@@ -13,9 +13,9 @@ test('semantic tokens resolve through the display-mode + style layers in the lig
     const probe = document.createElement('div');
     document.body.appendChild(probe);
     // resolve a semantic colour by painting it — computed value follows the alias chain
-    // Strong action colour resolves through the Saturated look tier (--_status-surface).
+    // Strong action colour resolves through the Saturated look tier.
     probe.setAttribute('data-look', 'saturated');
-    probe.style.background = 'var(--_status-surface)';
+    probe.style.background = 'var(--sherpa-style-surface-base)';
     const accent = getComputedStyle(probe).backgroundColor;
     const space = getComputedStyle(document.documentElement).getPropertyValue('--sherpa-display-mode-space-base').trim();
     probe.remove();

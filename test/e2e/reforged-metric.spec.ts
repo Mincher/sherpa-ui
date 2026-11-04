@@ -167,7 +167,7 @@ test('status is derived from the trend, and the card stays white with no border'
 
   // Will's rule: status IS the trend. Success if positive, critical if negative,
   // and NO status for a flat trend or a raw data point with no trend at all —
-  // "default" means the attribute is absent, since the --_status-* cascade only
+  // "default" means the attribute is absent, since a status pin only
   // emits for a named status.
   expect(r.up['trend']).toBe('up');
   expect(r.up['status']).toBe('success');
@@ -218,7 +218,7 @@ test('a [data-status] ancestor does NOT recolour the label or the value', async 
   // the value binds content/body/BASE — plain Theme tokens with no status in them.
   // Only the DELTA binds style-content/base, which follows the status cascade.
   //
-  // Reading --_status-text first turned the whole reading green or red, which said
+  // Reading the tile's ink first turned the whole reading green or red, which said
   // "this number is a success" when the status belongs to the CHANGE: 1,284
   // endpoints is neither good nor bad, and +3.1% is the part carrying a verdict.
   expect(r.none.value).toBe('rgb(12, 11, 17)');

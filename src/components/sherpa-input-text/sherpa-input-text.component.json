@@ -1046,6 +1046,9 @@
     }
   ],
   "tokens": {
+    "field.--_border": "{sherpa.style-border-base}",
+    "field.--_border-focus": "{sherpa.theme-border-accent-2}",
+    "field.--_border-error": "{sherpa.style-indicator-accent}",
     "field.gap": "{sherpa.theme-gap-sm}",
     "label.font-size": "{sherpa.font-size-body-small}",
     "label.font-weight": "{sherpa.font-weight-medium}",

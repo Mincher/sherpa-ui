@@ -201,6 +201,8 @@
     }
   ],
   "tokens": {
+    "track.--_fill": "{sherpa.style-surface-base-2}",
+    "track.--_border": "{sherpa.style-border-base}",
     "track.inline-size": "{switch.switch-size.width}",
     "track.min-inline-size": "{switch.switch-size.width}",
     "track.min-block-size": "{switch.switch-size.height}",

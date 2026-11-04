@@ -77,6 +77,13 @@
             ]
           }
         ]
+      },
+      {
+        "el": "span",
+        "class": "surface sherpa-surface",
+        "attrs": {
+          "aria-hidden": "true"
+        }
       }
     ]
   },
@@ -269,6 +276,9 @@
     }
   ],
   "tokens": {
+    "surface.background": "{sherpa.style-surface-base}",
+    "surface.--_edge": "{sherpa.style-border-base}",
+    "surface.box-shadow": "{sherpa.border-top}",
     "row.gap": "{sherpa.structure-space-gap}",
     "row.border-radius": "{sherpa.display-mode-border-rounding-lg}",
     "row.box-shadow": "{sherpa.elevation-offset-x}",

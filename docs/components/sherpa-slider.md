@@ -78,6 +78,7 @@ What each class's base rule reads:
 | `--sherpa-style-content-base` | `.label` | `color` |
 | `--sherpa-font-weight-medium` | `.label` | `font-weight` |
 | `--sherpa-theme-content-line-height-base` | `.label` | `line-height` |
+| `--sherpa-style-indicator-accent` | `.slider-row` | `--_accent` |
 | `--sherpa-display-mode-space-xs` | `.slider-row` | `gap` |
 | `--sherpa-theme-surface-default-2` | `.track` | `background` |
 | `--sherpa-display-mode-border-rounding-full` | `.track` | `border-radius` |

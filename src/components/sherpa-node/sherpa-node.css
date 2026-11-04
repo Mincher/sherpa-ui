@@ -15,18 +15,15 @@
   --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
   --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
   --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
-  --_status-surface: initial;
-  --_status-surface-subtle: initial;
   --_status-surface-strong: initial;
-  --_status-shadow: initial;
-  --_status-border: initial;
-  --_status-border-strong: initial;
-  --_status-data-viz: initial;
   --_status-data-viz-border: initial;
-  --_status-text: initial;
-  --_status-text-on-color: initial;
-  --_status-icon: initial;
 }
+
+:host(sherpa-node:is([data-look="transparent"], [data-look="saturated"]):is([data-status="info"], [data-status="critical"], [data-status="warning"], [data-status="urgent"], [data-status="success"], [data-status="active"], [data-status="inactive"])) { --_mode: initial; }
+:host(sherpa-node[data-current]) { --_mode: active; --_mode-viz: active; }
+:host(sherpa-node[data-step="running"]) { --_mode: info; --_mode-viz: info; }
+:host(sherpa-node[data-step="failed"]) { --_mode: critical; --_mode-viz: critical; }
+:host(sherpa-node[data-step="skipped"]) { --_mode: inactive; --_mode-viz: inactive; }
 /* == end sherpa:tokens == */
 
 /**
@@ -40,6 +37,12 @@
   inline-size: 15rem;
   /* A composed header's inset. TRAP T-a-composed-chrome-row-takes-its-inline-padding-from-its-container */
   --_pad-inline: var(--sherpa-card-pad);
+}
+
+/* The CARD is the root, not the host: its state is a pin, which re-maps only
+   what the host holds. TRAP T-a-host-state-pin-lives-where-the-host-is */
+.root {
+  position: relative;
   background: var(--_surface);
   border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
@@ -57,11 +60,11 @@
   border-start-end-radius: inherit;
 }
 :host(:state(dragging)) .header { cursor: grabbing; }
-/* DRAGGED: lifted, as Elevation=md draws it, and its edge one ring stronger —
-   a ring, not a wider border, so nothing inside moves. Will, TODO 552 */
-:host(:state(dragging)) {
-  /* Over the nodes it passes. */
-  z-index: 1;
+/* DRAGGED: over the nodes it passes, lifted as Elevation=md draws it, and its
+   edge one ring stronger — a ring, not a wider border, so nothing inside moves.
+   Will, TODO 552 */
+:host(:state(dragging)) { z-index: 1; }
+:host(:state(dragging)) .root {
   box-shadow:
     0 0 0 var(--sherpa-display-mode-border-width-base, 1px) var(--_border),
     var(--sherpa-display-mode-size-2xs, 8px) var(--sherpa-display-mode-size-2xs, 8px)
@@ -73,7 +76,6 @@
 }
 
 /* ── What its step did: a line over the card, so the rows and routes stay put ── */
-.root { position: relative; }
 .caption {
   display: none;
   position: absolute;

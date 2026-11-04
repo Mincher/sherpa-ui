@@ -1,3 +1,9 @@
+/* == sherpa:tokens (generated — do not edit) == */
+/* State pins, from scripts/figma-data/state-pins.yaml. Unlayered, as the shared pins are. */
+:host(sherpa-select-card:is([data-look="transparent"], [data-look="saturated"]):is([data-status="info"], [data-status="critical"], [data-status="warning"], [data-status="urgent"], [data-status="success"], [data-status="active"], [data-status="inactive"])) { --_mode: initial; }
+:host(sherpa-select-card[disabled]) { --_mode: inactive; --_mode-viz: inactive; }
+/* == end sherpa:tokens == */
+
 /**
  * sherpa-select-card — presentation.
  * Figma binds the surface to Style, the stroke and body text to Theme.
@@ -7,20 +13,21 @@
   display: block;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 
-  --_surface: var(--sherpa-style-surface-base, #ffffff);
-  --_border: var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
-  --_content: var(--sherpa-style-content-base, #0c0b11);
   /* Dividers are a lighter neutral than the outer border, per the container family. */
   --_divider: var(--sherpa-card-divider);
-  /* The whole stroke — three rules draw the same one on different edges. */
-  --_divider-rule: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
-  --_accent: var(--sherpa-style-indicator-accent, #3b4ccd);
   --_pad: var(--sherpa-card-pad);
   --_radius: var(--sherpa-border-rounding-top-left, 4px);
 }
 
-/* ── The card box ─────────────────────────────────────────────────── */
+/* ── The card box — its look, not the host's: a pin re-maps only what the
+   host holds. TRAP T-a-host-state-pin-lives-where-the-host-is ─────────── */
 .card {
+  --_surface: var(--sherpa-style-surface-base, #ffffff);
+  --_border: var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
+  --_content: var(--sherpa-style-content-base, #0c0b11);
+  /* The whole stroke — three rules draw the same one on different edges. */
+  --_divider-rule: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
+  --_accent: var(--sherpa-style-indicator-accent, #3b4ccd);
   display: flex;
   flex-direction: column;
   min-inline-size: 0;

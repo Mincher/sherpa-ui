@@ -147,6 +147,13 @@
           }
         },
         {
+          "el": "span",
+          "class": "surface sherpa-surface",
+          "attrs": {
+            "aria-hidden": "true"
+          }
+        },
+        {
           "el": "template",
           "class": "words",
           "children": [
@@ -475,7 +482,10 @@
     }
   ],
   "tokens": {
+    "surface.background": "{sherpa.style-surface-base}",
+    "surface.box-shadow": "{sherpa.display-mode-border-width-base}",
     "nav.gap": "{sherpa.theme-gap-md}",
+    "nav.color": "{sherpa.style-content-base}",
     "icon.--_icon-size": "{sherpa.theme-size-icon-xs}",
     "content.gap": "{sherpa.theme-gap-md}",
     "badge.padding": "{sherpa.theme-padding-xs}",
@@ -489,6 +499,7 @@
     "expand.inline-size": "{sherpa.theme-size-icon-xs}",
     "expand.block-size": "{sherpa.theme-size-icon-xs}",
     "expand.padding": "{sherpa.display-mode-space-none}",
+    "expand.color": "{sherpa.style-content-base}",
     "expand.font-size": "{sherpa.theme-size-icon-2xs}",
     "dot.inline-size": "{sherpa.display-mode-size-2xs}",
     "dot.block-size": "{sherpa.display-mode-size-2xs}",
