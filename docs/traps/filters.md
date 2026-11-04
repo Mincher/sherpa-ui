@@ -100,7 +100,7 @@ the chip moved. Measured then: 49% of component colours read Theme directly.
 Of the old `--_status-*` door, two names are left, set by every pin and unset
 (`initial`) by a default one, because "default" is not "no status" to a
 fallback chain: `--_status-surface-strong` (the gauge's fill, the tag's dot) and
-`--_status-data-viz-border` (the sparkline's line). They go after 695 U4.
+`--_status-data-viz-border` (the sparkline's line). They stay (plan 695 P7).
 
 `lint:css`: `theme-active` fails a Theme "active" read outright; `theme-colour`
 counts every Theme colour read per component against
@@ -167,10 +167,8 @@ matches — is none of that.
   `collapse-1` AND `collapse-2`, so each CSS rule names one state, as the steps
   add up.
 - **`check:props` closes the door.** A `:host([data-x])` rule must be DECLARED
-  in `static props`. It used to pass when any quoted `'data-x'` sat anywhere in
-  the TS, so 15 private flags looked declared (2026-10-14): 13 became states,
-  and 2 were public and are declared (the provider sets a container's
-  `data-loading`; a host may set the nav's `data-searchable`).
+  in `static props`. A quoted `'data-x'` anywhere in the TS is not a
+  declaration: passing on that let 15 private flags look declared (2026-10-14).
 - **`data-has-*` moved last (TODO 275, 2026-10-15).** The base sets a
   `has-<slot>` state for every slot (`has-content-slot` for the default one),
   and 27 stylesheets select `:host(:state(has-icon))`. Nine more private flags
@@ -691,16 +689,16 @@ suspended, so the bar shows at a glance whether the sort is doing anything.
 
 Three things that each broke it:
 
-- **The chip cycles before anything flips**: `#arrange` → `nextSort` →
-  `#applySort`. Once the chip flipped its own `data-current` first, the cycle
-  fought it, and the chip never left ascending.
+- **The chip cycles before anything flips**: `ChipArrange.press` → `nextSort`
+  → the new sort. A chip that flips its own `data-current` first fights the
+  cycle, and never leaves ascending.
 - **The direction must rewind to `asc` on the way into suspended.** Leaving
   `desc` in place meant click 4 read desc→suspend and click 5 read
   suspend→on-at-desc, so the chip ping-ponged between descending and off and
   never returned to ascending. The COLUMN still survives — that is what makes
   "off" temporary rather than a reset — only the direction rewinds.
-- **OFF gets its OWN glyph.** It used to wear the ascending arrow, so a
-  suspended sort looked identical to an active ascending one; the whole point of
+- **OFF gets its OWN glyph.** Wearing the ascending arrow, a suspended sort
+  looks identical to an active ascending one; the whole point of
   a tri-state icon is that the three states look different.
 
 `sortField` returns null while suspended even though the chip still remembers
@@ -1126,9 +1124,8 @@ This is the `data-locked` half of the state-ownership rule: `data-<thing>` in,
 
 **A PERSISTENT chip is a locked chip.** "Always on, and its body does not flip
 it" — the toolbar's own words at its `data-persistent` site — is exactly what
-`data-locked` means. Until 2026-09-23 the toolbar set only `data-persistent`,
-so the chip flipped itself off and the toolbar wrote it back on the next line:
-*"A persistent chip has ALREADY flipped itself off by now, so put it back."*
+`data-locked` means. With `data-persistent` alone the chip flips itself off and
+the toolbar writes it back on the next line.
 
 Measured with a real mouse click on a persistent chip with no menu: **two
 `data-current` writes for one click**. With `data-locked` set alongside:
@@ -1306,9 +1303,9 @@ is a filter nobody can undo.**
 
 EVERY chip menu gets CLEAR, as the icon button in the menu's HEADER.
 
-It used to be a self-relabelling "Select all / Clear all" ROW, which **MOVED
-under the reader** depending on what was ticked, and which left single-select
-menus with no clear at all. One action, one place. `T-select-all-is-not-a-value`
+A self-relabelling "Select all / Clear all" ROW **MOVES under the reader**
+depending on what is ticked, and leaves single-select menus with no clear at
+all. One action, one place. `T-select-all-is-not-a-value`
 is the row that remains, and why its label never moves either.
 
 A PERSISTENT chip gets none: it holds exactly one value, so there is nothing a
@@ -1386,10 +1383,11 @@ identical to a live one.
 The sort names are `wide-short` / `short-wide`, NOT `a-z` / `z-a`: a Sort chip can
 order a NUMBER column, where an A-Z badge reads as wrong.
 
-Group and the three sort states come from `core/icons.ts`, **not from a copy kept
-here.** They WERE copied here, with a comment to keep the two in step and a spec
-to guard the pair — the long way round to having one copy. A sort chip and a
-column header are two views of ONE sort, so they read one map.
+Group and the three sort states come from `ORGANISE_ICONS` in
+`core/ui/shared-constants.ts`, **not from a copy kept here** — a copy with a
+comment to keep the two in step, and a spec to guard the pair, is the long way
+round to one copy. A sort chip and a column header are two views of ONE sort, so
+they read one map.
 
 The VIEW selector's icon is the exception and stays HERE, because only this
 component draws it. It is FIXED, like Group's and Sort's: it says "you are looking
@@ -1557,8 +1555,7 @@ different answer — added or not — from what the child menu holds.
 
 **A ONE-value filter has no child menu** — an on/off chip, a preset. Its row
 IS its value, so its box is its on/off, with no caret (Will, TODO 54: "a tick
-on a value means that value is ON — in every filter"). It drilled into a menu
-built for it, one row called "On", until 2026-10-12.
+on a value means that value is ON — in every filter").
 
 **`::slotted` reaches the row, never its children**, so the row is a GRID —
 box, label, count, caret — and needs no rule on any child. An empty
@@ -1625,9 +1622,7 @@ A filter menu asks ONE question two ways, and they are not two menus.
 f(x) control, named **Advanced**, at the end of the header moves between
 them; it is ON in Advanced. In the menu it is an icon button (`aria-pressed`).
 In a panel field it is the "Advanced" tick row of the field's ⋮ menu (Will,
-2026-10-22, TODO 420; it was an icon-only filter chip in the header, TODO 372).
-It was a button first, then a switch (2026-09-26), and the button again — Will,
-2026-09-30, TODO 141.
+2026-10-22, TODO 420).
 
 Both stay STAMPED. Flipping a mode is a change of VIEW, not a reset: the ticks
 survive a trip through Advanced mode, and the typed rows survive a trip back.
@@ -1668,9 +1663,9 @@ Four things that are not obvious:
   own button or a panel's f(x), so it happens in the `mode` setter: one value
   under its op, or a range as At least AND At most. Back in Simple the body is
   as it was: both answers are kept (`T-both-answers-are-kept`).
-- **A reading's rows are only its own `conditions`.** `readingRows()` turns a
-  Simple `> 2` into a row, and with no mode named its rows decide — which
-  flipped every typed number into Advanced.
+- **A reading's tree is only its own `tree`.** A Simple `> 2` turned into a row
+  flips every typed number into Advanced, because with no mode named the tree
+  decides (`modeOf`).
 
 Dates are not done: their questions wait on TODO 21d.
 
@@ -2090,8 +2085,8 @@ chips randomly"*, then *"I loaded the page, removed a data grid filter from the
 panel, and the sort chip got a yellow border applied."*
 
 The trigger is that `data-current` has **26 writers outside the chip** — 16 in
-the toolbar, 10 in the panel — and only `#toggleGroup` checked the menu first.
-`#cycleSort` did not: with no column, `nextSort('', '', 'asc')` answers `desc`,
+the toolbar, 10 in the panel — and only Group's toggle checked the menu first.
+Sort's cycle did not: with no column, `nextSort('', '', 'asc')` answers `desc`,
 so the chip lit up sorting by nothing. Any of the other 24 can do the same.
 
 Chasing the writers is the wrong fix; there is a 27th tomorrow. The chip is
@@ -2178,7 +2173,7 @@ So the panel builds a `sherpa-menu` like everyone else and flags it inline.
 `show()` and `hide()` become no-ops: there is nothing to open, and nothing to
 place.
 
-The attribute is in the TEMPLATE, so `#syncInline` REMOVES it rather than never
+The attribute is in the TEMPLATE, so `MenuShell.syncInline` REMOVES it rather than never
 writing it — and putting it back restores the floating card, which is how one
 element serves a chip and a panel.
 
@@ -2288,8 +2283,7 @@ use at all, because the panel draws value chips rather than the menu.
 A chip answering with CONDITIONS wears the ACTIVE mode, as a chip answering
 with ticks does. It takes NO colour of its own — Will, 2026-09-30, TODO 156:
 "use the default active styling for advanced filters instead of diverging to
-use the info styling." It was info, then success (2026-09-26), then info
-again (138), each for a day.
+use the info styling."
 
 So there is no state pin and no CSS for `data-condition`. The attribute stays,
 because three things still read it:
@@ -2320,10 +2314,9 @@ matched — green too, where a page re-points the chips (TODO 468).
 
 A chip added from the Add menu arrives OFF.
 
-It used to arrive `active: true`, "so the reason you added it is visible
-immediately". But a chip on with no values is exactly the state
-`data-filters-nothing` paints AMBER — so the reader pressed Add, got what they asked
-for, and was shown a warning about it.
+A chip on with no values is exactly the state `data-filters-nothing` paints
+AMBER: arriving on, the reader presses Add, gets what they asked for, and is
+shown a warning about it.
 
 They add the chip, then answer it. The chip lights when it has an answer.
 
@@ -2338,9 +2331,8 @@ They add the chip, then answer it. The chip lights when it has an answer.
 tick — on a bar full of ticked rows.
 
 `items()` on a freshly cloned `<sherpa-menu>` stamps NOTHING. The element has
-no shadow template until it upgrades, so `#stampItems` returns early, keeps the
-list, and stamps at `onRender`. `#flushItems()` runs inside `#render`, but the
-stamping it triggers has not happened when `#render` returns.
+no shadow template until it upgrades, so `items()` keeps the list and stamps the
+rest at `onRender` — which has not happened when `#render` returns.
 
 So `#removeFilter` emitted `quick-filter-change` with `values: {}` and
 `picked: {}`. The host answered it the only way it could — `select(field, [])`
@@ -2829,8 +2821,8 @@ Checkbox's own look, lifted into `sherpa-checkbox-look.css` as `.sherpa-checkbox
 span. Not the component itself: each one stamps a label and its own caret
 button, and a grid page draws 300 tags. A shape is ticked by the control it sits
 in — `[aria-pressed="true"] > .sherpa-checkbox` (a chip's body, a tag) — or by
-`data-checked`, which the Switch's template swaps in from `checked`
-(`data-swap-on`). Its size is `--_checkbox-size`, set by the toggle.
+`data-checked`, which the Switch's template sets from `checked`
+(`data-when-data-checked="checked"`). Its size is `--_checkbox-size`, set by the toggle.
 
 Who wears one: a filter chip that toggles — a bar's, a panel's value chip, a
 legend's item — but not a picker (always on), a section's heading (its values
