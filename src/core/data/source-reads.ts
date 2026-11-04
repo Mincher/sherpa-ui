@@ -551,6 +551,8 @@ export class SourceReads {
 
   /** The load in flight, for a caller that asks the same question again. */
   #asking: Promise<LoadResult> | null = null;
+  /** What an ask that stops resolves with: the ask that overtook it, else the answer in hand. */
+  #newest = (ticket: symbol): LoadResult | Promise<LoadResult> => (!this.#inFlight.is(ticket) && this.#asking) || this.#result;
   /** What stops the ask in flight, once a newer one supersedes it. */
   #abort: AbortController | null = null;
 
@@ -558,8 +560,7 @@ export class SourceReads {
   async #ask(asked: string): Promise<LoadResult> {
     let key = asked;
     const ticket = this.#inFlight.next();
-    this.#inFlightKey = key;
-    this.#inFlightAsked = key;
+    this.#inFlightKey = this.#inFlightAsked = key;
     // The ask it supersedes stops: its reads abort their fetch. TRAP T-a-superseded-read-stops
     this.#abort?.abort();
     const { signal } = (this.#abort = new AbortController());
@@ -585,20 +586,20 @@ export class SourceReads {
         });
       }
       // Overtaken while it waited: the newer ask answers, and this one asks no one.
-      if (!this.#inFlight.is(ticket)) return await (this.#asking ?? Promise.resolve(this.#result));
+      if (!this.#inFlight.is(ticket)) return await this.#newest(ticket);
       /* What the filters before each pick rule out is set aside BEFORE the load,
          where the walk asks no store: ONE load, right first time.
          TRAP T-one-walk-counts-and-limits-in-order */
       const before = await this.#host.beforeLoad(() => this.#inFlight.is(ticket));
-      if (before === 'overtaken') return await (this.#asking ?? Promise.resolve(this.#result));
+      if (before === 'overtaken') return await this.#newest(ticket);
       if (before === 'walked') {
         // Whoever set them aside — this ask, or a walk beside it — the load asks what stands now.
         key = this.#stateKey();
         this.#inFlightKey = key;
       }
       const result = await this.reader.load({ ...this.#loadOptions(), signal, ...traced });
-      // Not the latest → DISCARDED, and the key recorded only by the winner.
-      if (!this.#inFlight.is(ticket)) return this.#result;
+      // Not the latest → DISCARDED, and the key recorded only by the winner. TRAP T-an-asked-load-is-awaited
+      if (!this.#inFlight.is(ticket)) return await this.#newest(ticket);
       this.#result = result;
       this.#lastLoadKey = key;
       this.#loaded = true;
@@ -630,7 +631,7 @@ export class SourceReads {
         const allKey = JSON.stringify([this.#age, this.#allAge, asked]);
         if (allKey !== this.#allFor) {
           const all = await this.reader.load({ ...asked, signal, ...traced });
-          if (!this.#inFlight.is(ticket)) return this.#result;
+          if (!this.#inFlight.is(ticket)) return await this.#newest(ticket);
           this.#allRows = all.rows;
           this.#allFor = allKey;
         }
@@ -646,7 +647,7 @@ export class SourceReads {
         const freeKey = JSON.stringify([this.#age, this.#allAge, asked]);
         if (this.#freeRows.get(fields.join('\n'))?.key === freeKey) continue;
         const free = await this.reader.load({ ...asked, signal, ...traced });
-        if (!this.#inFlight.is(ticket)) return this.#result;
+        if (!this.#inFlight.is(ticket)) return await this.#newest(ticket);
         this.#freeRows.set(fields.join('\n'), { key: freeKey, rows: free.rows });
       }
 
@@ -675,7 +676,7 @@ export class SourceReads {
       return result;
     } catch (error) {
       // TRAP T-error-is-a-state-not-a-throw — a stale failure raises nothing; nor does a closed source.
-      if (!this.#inFlight.is(ticket) || this.#closed) return this.#result;
+      if (!this.#inFlight.is(ticket) || this.#closed) return await this.#newest(ticket);
       // …and says what KIND it was. TRAP T-a-failure-has-a-kind
       const failure = failureOf(error);
       this.#down = unreached(failure) ? failure : null;
@@ -684,8 +685,7 @@ export class SourceReads {
     } finally {
       span?.end({ rows: this.#result.rows.length, total: this.#result.total });
       if (this.#inFlight.end(ticket)) {
-        this.#inFlightKey = null;
-        this.#inFlightAsked = null;
+        this.#inFlightKey = this.#inFlightAsked = null;
         this.#asking = null;
         this.#host.emit(new CustomEvent('loading', { detail: { loading: false } }));
       }

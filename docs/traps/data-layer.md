@@ -1105,7 +1105,14 @@ always won the race. The store's check moving ahead of its page cut
 bind, then `await load()`, read an empty page. The race was always there; a
 store over a network loses it every time.
 
+A load OVERTAKEN by a newer ask waits for that ask, and resolves with its
+answer: the rows the source then shows, whichever store read lands first. Its
+own rows are thrown away unpublished, so they are not handed back either. It
+returned the result in hand when its read landed first — the rows from BEFORE
+both loads; once in WebKit, all 22 sites under a filter (TODO 706).
+
 - Site: `src/core/data/source-reads.ts`
+- Site: `test/unit/an-overtaken-load-answers-with-the-newest.test.mjs`
 
 ### T-a-refused-row-never-shortens-a-page
 
