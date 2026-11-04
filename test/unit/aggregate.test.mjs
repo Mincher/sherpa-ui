@@ -15,6 +15,7 @@ import assert from 'node:assert/strict';
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { aggregateBy, countBy, bandBy, seriesBy, reduceRows, summarise, summariseMarked, crossSpec, crossTable } =
   await import(new URL('aggregate.js', core));
+const { segmentLabel } = await import(new URL('segments.js', core));
 
 const ROWS = [
   { region: 'EMEA', sev: 'critical', spend: 100, storage: 10, day: 1 },
@@ -209,7 +210,8 @@ test('summarise: a declared date domain is cut to its bucket; a year steps acros
   // Only the declared months — the domain is the axis, not the rows.
   assert.deepEqual(out.values, [0, 0]);
   const span = summarise([{ d: '2023-12-30' }, { d: '2024-01-02' }], { shape: 'series', over: 'd', bucket: 'day' });
-  assert.deepEqual(span.labels, ['2023-12-30', '2023-12-31', '2024-01-01', '2024-01-02']);
+  // Each point says its day, as a tip does. TODO 705
+  assert.deepEqual(span.labels, ['2023-12-30', '2023-12-31', '2024-01-01', '2024-01-02'].map((d) => segmentLabel(d, 'day')));
 });
 
 

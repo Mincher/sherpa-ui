@@ -468,17 +468,17 @@ export function summarise(
   const keyed = starts ? rows.map((r) => ({ ...r, [at]: startOf(readField(r, spec.over!)) }))
     : bucket ? rows.map((r) => ({ ...r, [at]: cut(readField(r, spec.over!), bucket) })) : rows;
   const points = (starts ?? pointsOf(rows, spec.over, bucket, domain(spec.over), spec.range)) as (string | number)[];
+  // Each point's time span, a tip's and an axis's alike: a day, or two hours, its own. Will, TODOs 540, 705
+  const spans = starts
+    ? starts.map((from, i) => own ? segmentLabel(from, bucket) : spanLabel(from, i + 1 < starts.length ? dayBefore(starts[i + 1]!) : spec.range![1]))
+    : bucket ? points.map((p) => segmentLabel(String(p), bucket)) : undefined;
   if (spec.shape === 'aggregate') {
     const values = seriesBy(keyed, at, points, '', opts).values;
     const delta = deltaPercent(values);
-    // Each point's time span, for its tooltip: a day, or two hours, its own. TODO 540
-    const spans = starts
-      ? { labels: starts.map((from, i) => own ? segmentLabel(from, bucket)
-        : spanLabel(from, i + 1 < starts.length ? dayBefore(starts[i + 1]!) : spec.range![1])) }
-      : bucket ? { labels: points.map((p) => segmentLabel(String(p), bucket)) } : {};
-    return delta == null ? { value, values, ...spans } : { value, values, ...spans, deltaPercent: delta };
+    const tips = spans ? { labels: spans } : {};
+    return delta == null ? { value, values, ...tips } : { value, values, ...tips, deltaPercent: delta };
   }
-  const labels = points.map(String);
+  const labels = spans ?? points.map(String);
   if (!spec.segment) return { labels, series: [seriesBy(keyed, at, points, spec.field ?? kind, opts)] };
   const groups = new Map(groupRows(keyed, spec.segment).map((g) => [g.key, g.rows]));
   const declared = domain(spec.segment).map(valueKey);

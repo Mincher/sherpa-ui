@@ -136,3 +136,11 @@ test('a condition on a field that is no date cuts no axis; auto with no conditio
     { shape: 'aggregate', over: 'at', bucket: 'day', range: ['2026-03-01', '2026-03-10'] });
   assert.equal(segmented({ shape: 'aggregate', over: 'at', bucket: 'month' }, undefined, rows).range, undefined);
 });
+
+test('a line over a range says each point\'s time span, as a sparkline tip does (Will, A2, TODO 705)', () => {
+  const rows = [{ at: '2026-05-05' }, { at: '2026-11-04' }];
+  const spec = { over: 'at', bucket: 'month', range: ['2026-05-05', '2026-11-04'] };
+  const line = summarise(rows, { shape: 'series', ...spec });
+  assert.deepEqual(line.labels, summarise(rows, { shape: 'aggregate', ...spec }).labels);
+  assert.match(line.labels[0], /May.+5.+Jun.+4|5.+May.+4.+Jun/);
+});
