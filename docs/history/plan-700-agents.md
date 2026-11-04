@@ -360,6 +360,9 @@ Node, so it is the first test bed for 170's source handler
 
 ## 6. Decisions for Will
 
+**Will, 2026-11-04: A for all nine** (Q1–Q9, the picks below). G0 starts first, alone in
+the spec generator.
+
 | # | Question | A (my pick) | B |
 |---|---|---|---|
 | Q1 | Where the new MCP lives | `mcp-server/`, rewritten in place; package `sherpa-ui-mcp` (the Starter's `.mcp.json` names it); gated in this repo | A sibling project, like the Starter |
