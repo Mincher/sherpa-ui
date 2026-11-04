@@ -353,6 +353,8 @@ into one, and a list where none is taken. No shipped kind takes `branches`, `man
 
 **M3 ✅ (`b85610e1`, 2026-11-04).** `ROWS` (a Rows row that only SENDS, an object) leads every data kind; every header input is `any` (D1). `branches` (True on the header, False at `node/#false`): every workflow kind but `output`, plus the Query's condition, preset and saved filter. Workflow v2 (`schemas/workflow.v2.json`, `readWorkflow`): a v1 is read once into v2 (its header routes move to `node/rows`; one it cannot map is dropped and reported); a route INTO a Rows row is a fault. The two repo workflows are v2. `sherpa-node`'s socket enum still lists only value and object: M2 adds boolean and any, and the footer; until then they draw as circles and a False draws no line.
 
+**M2 ✅ (`6bde3d34`, `abb32249`).** Shapes by `clip-path` on `.socket` and its `::after` face: value a circle, object a diamond, boolean a triangle pointing right, any a square (inputs only); hollow until routed (`data-*-routed`). Part pins: value `info`, object `active`, boolean and True `success`, False `critical`, any `default` with the body ink. `data-branches` shows the composed container footer with a False label and the red triangle; each socket's tip says its type; forced colours keep only the shapes; a route takes the ink of its FROM socket (`sherpa-node-routes.css`). A drag from the False socket starts there and asks for `node/#false`. Trap `T-a-socket-is-drawn-by-its-type`.
+
 **What waits on N4:** everything that RUNS — live values in the rows, Matches as a
 number, each branch lit with the data rows that took it, When that gates a run,
 cancel, a dry run, batch writes (§6). M1–M6 only draw, check and edit.
