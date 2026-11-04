@@ -30,7 +30,7 @@ page, `tokens.css` still does exactly that — a known gap, not a model.
 
 A host STATE pin is ONE line in the host's own sheet:
 `:host(sherpa-button[disabled]) { --_mode: inactive; }`. The mode's ONE block in
-`sherpa-style-modes.css`, `@container style(--_mode: inactive) { * { … } }`,
+`sherpa-style-modes.css`, `@container style(--_mode: inactive) { :host > * { … } }`,
 re-maps the Style names of what the host holds. Measured 2026-11-04 (695 P7),
 in Chromium, Firefox and WebKit:
 
@@ -42,6 +42,11 @@ in Chromium, Firefox and WebKit:
   reason a PART's pin and a bare `&` stay whole blocks that re-point the element
   itself. A part that is a component also names its mode, so its own pins lose
   to it, as before.
+- **Only a root's top-level children are matched, `:host > *`.** Only a host
+  sets `--_mode`. With `*`, 26 blocks were tested on every element of every root:
+  style recalc doubled (harness toggle 1,167 → 2,006 ms, Demos sort 1,860 →
+  3,662 ms, Chromium at 4x). At (0,1,0) the blocks come first in the sheet, so a
+  child's own `[data-status]` or class pin still wins.
 - **`--_mode` is registered and not inherited** (in `tokens.css`): a block
   re-maps the pinned element's children once, and they pass it down. Inherited,
   it matched every descendant again, and undid a part's own pin below it.
