@@ -1008,6 +1008,9 @@ toolbar's own `options: [{ selected: true }]` — and **no menu event ever fires
 for those**. Without replaying them at connect the caret label stayed blank
 until the user opened the menu.
 
+A SECTION reads its layout and its menu's rows at `onRender`: a menu that drew
+first told no chip (TODO 704).
+
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/menu-list.ts`

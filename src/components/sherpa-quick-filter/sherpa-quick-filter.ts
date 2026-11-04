@@ -198,6 +198,10 @@ export class SherpaQuickFilter extends SherpaElement {
     this.addEventListener('menu-close', this.#press.menuToggled);
     this.addEventListener('menu-select', this.#press.jumped);
     this.addEventListener('menu-change', this.#onSelectorPick);
+    /* A layout and rows that came BEFORE this render were said to no one: read
+       now, whenever they came. TODO 704 · TRAP T-chip-empty-check-waits-for-onconnect */
+    this.#section.inline();
+    this.#section.sync();
   }
 
   /** A selector's menu shuts on its pick, as a native select's does: a pick that

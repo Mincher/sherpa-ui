@@ -841,6 +841,66 @@ test('a section whose every value is hidden says why, in their place', async ({ 
   expect(r.after).toEqual({ text: '', shown: false });
 });
 
+/* TODO 704: a SECTION reads its layout and its menu's rows when it renders,
+   whenever they came. A chip built once first, as a bar's second chip is: its
+   files are kept, so its menu can draw before it does. */
+const sectionValues = async (page: import('@playwright/test').Page, order: 'first' | 'together' | 'late') => page.evaluate(async (when) => {
+  type Menu = HTMLElement & { rendered: Promise<void>; items(i: { value: string; label: string; selected?: boolean }[]): void };
+  const root = document.getElementById('root')!;
+  await window.__mount('sherpa-quick-filter', undefined, { 'data-menu': true });
+  root.firstElementChild!.append(Object.assign(document.createElement('sherpa-menu'), { slot: 'menu' }));
+  await window.__settled();
+  const menu = document.createElement('sherpa-menu') as Menu;
+  menu.setAttribute('slot', 'menu');
+  menu.setAttribute('data-type', 'filter');
+  menu.setAttribute('data-select', 'multiple');
+  const rows = [{ value: 'pro', label: 'Pro', selected: true }, { value: 'free', label: 'Free' }];
+  const el = document.createElement('sherpa-quick-filter') as HTMLElement & { rendered: Promise<void> };
+  el.setAttribute('data-label', 'Plan');
+  el.setAttribute('data-menu', '');
+  let stamped = -1;
+  if (when === 'first') {
+    // The menu draws and says its rows while no chip hears; then it moves in.
+    menu.items(rows);
+    root.replaceChildren(menu);
+    await menu.rendered;
+    await window.__settled();
+    stamped = menu.querySelectorAll('.menu-row').length;
+  }
+  if (when !== 'late') {
+    if (when === 'together') menu.items(rows);
+    el.setAttribute('data-layout', 'section');
+  }
+  el.append(menu);
+  root.replaceChildren(el);
+  await el.rendered;
+  await window.__settled();
+  if (when === 'late') {
+    el.setAttribute('data-layout', 'section');
+    menu.items(rows);
+    await window.__settled();
+  }
+  const values = [...el.querySelectorAll<HTMLElement>(':scope > .value')];
+  return {
+    stamped,
+    values: values.map((v) => `${v.dataset['value']}${v.hasAttribute('data-current') ? ' on' : ''}`),
+    swatches: menu.hasAttribute('data-swatches'),
+  };
+}, order);
+
+test('a section given its layout and rows BEFORE its first render draws its value chips (TODO 704)', async ({ page }) => {
+  // Its menu drew Select all and the two rows first.
+  expect(await sectionValues(page, 'first')).toEqual({ stamped: 3, values: ['pro on', 'free'], swatches: true });
+});
+
+test('a section built with its layout and rows, then put in the page, draws its value chips (TODO 704)', async ({ page }) => {
+  expect(await sectionValues(page, 'together')).toEqual({ stamped: -1, values: ['pro on', 'free'], swatches: true });
+});
+
+test('a section given its layout and rows AFTER its first render draws its value chips (TODO 704)', async ({ page }) => {
+  expect(await sectionValues(page, 'late')).toEqual({ stamped: -1, values: ['pro on', 'free'], swatches: true });
+});
+
 test('a chip with two picks shows its results on its badge, never a count of its picks', async ({ page }) => {
   // TODO 518: onConnect wrote the pick count over the results. TODO 60, 123
   const r = await page.evaluate(async () => {
