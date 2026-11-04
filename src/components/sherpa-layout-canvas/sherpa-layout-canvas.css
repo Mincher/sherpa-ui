@@ -106,6 +106,8 @@
     inset-inline-start: calc(var(--_float) * 2 + min(18rem, 60%));
     translate: 0 0;
   }
+  /* …and the controls and minimap rise one toolbar row, so the row stays clear. */
+  :host(:state(has-panel)) .controls { inset-block-end: calc(var(--_inset) + 56px); }
 }
 
 /* The Pan tool: a drag anywhere moves the view, and the content does not hear it. */
@@ -147,6 +149,9 @@
   inset-inline-start: auto;
   inset-inline-end: var(--_inset);
   inset-block-end: calc(var(--_inset) + 56px);
+}
+@container (inline-size < 44rem) {
+  :host(:state(has-panel)) .minimap { inset-block-end: calc(var(--_inset) + 112px); }
 }
 .minimap-items { position: absolute; inset: 0; pointer-events: none; }
 .minimap-item,
