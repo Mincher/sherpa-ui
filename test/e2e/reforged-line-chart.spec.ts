@@ -192,3 +192,75 @@ test('a series\' matched values draw a second line, and none without them', asyn
   expect(r.plain.on).toBe(false);
   expect(r.plain.shown).toBe('none');
 });
+
+/** Each x label under its own point, read in PIXELS: the drawn vertex against
+ *  the label's text. The ends sit flush with the plot, inside it; a lone point's
+ *  label centres. TODO 717. TRAP T-a-line-label-sits-under-its-point */
+test('each x label sits under its own point; the ends are flush with the plot', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const out: Record<number, { centres: number[]; first: number; last: number; inside: boolean; apart: boolean }> = {};
+    for (const n of [1, 2, 5, 12]) {
+      const el = document.createElement('sherpa-line-chart') as HTMLElement & { rendered?: Promise<void>; populate(d: unknown): void };
+      el.style.inlineSize = '600px';
+      el.style.blockSize = '240px';
+      document.getElementById('root')!.replaceChildren(el);
+      await el.rendered;
+      el.populate({ labels: Array.from({ length: n }, (_, i) => `P${i + 1}`), series: [Array.from({ length: n }, (_, i) => (i * 7) % 10)] });
+      await window.__settled();
+      const sr = el.shadowRoot!;
+      const svg = sr.querySelector<SVGSVGElement>('.svg')!;
+      const line = sr.querySelector<SVGPolylineElement>('polyline.line')!;
+      const ctm = svg.getScreenCTM()!;
+      // Where each vertex is DRAWN, on screen.
+      const xs = [...line.points].map((p) => new DOMPoint(p.x, p.y).matrixTransform(ctm).x);
+      const labels = [...sr.querySelectorAll<HTMLElement>('.x-label')];
+      const ink = labels.map((l) => { const g = document.createRange(); g.selectNodeContents(l); return g.getBoundingClientRect(); });
+      const boxes = labels.map((l) => l.getBoundingClientRect());
+      const plot = sr.querySelector('.plot')!.getBoundingClientRect();
+      out[n] = {
+        centres: ink.map((t, i) => Math.abs((t.left + t.right) / 2 - xs[i]!)),
+        first: Math.abs(ink[0]!.left - xs[0]!),
+        last: Math.abs(ink.at(-1)!.right - xs.at(-1)!),
+        inside: ink.every((t) => t.left >= plot.left - 0.5 && t.right <= plot.right + 0.5),
+        apart: boxes.every((b, i) => i === 0 || boxes[i - 1]!.right <= b.left + 0.5),
+      };
+    }
+    return out;
+  });
+  expect(r[1]!.centres[0]).toBeLessThan(1);
+  for (const n of [2, 5, 12]) {
+    const m = r[n]!;
+    expect(m.first, `${n} points: the first label starts at its point`).toBeLessThan(1);
+    expect(m.last, `${n} points: the last label ends at its point`).toBeLessThan(1);
+    for (const c of m.centres.slice(1, -1)) expect(c, `${n} points: a label centres on its point`).toBeLessThan(1);
+    expect(m.inside).toBe(true);
+    expect(m.apart).toBe(true);
+  }
+});
+
+/** A label too long for its room truncates there, the room still centred on
+ *  its point, and never runs into the next. Will, 716: the tip says it whole. */
+test('a long x label truncates in its own room, under its point', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-line-chart') as HTMLElement & { rendered?: Promise<void>; populate(d: unknown): void };
+    el.style.inlineSize = '600px';
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    const labels = Array.from({ length: 12 }, (_, i) => `May ${i + 1} – Jun ${i + 4}`);
+    el.populate({ labels, series: [labels.map((_, i) => i)] });
+    await window.__settled();
+    const sr = el.shadowRoot!;
+    const ctm = sr.querySelector<SVGSVGElement>('.svg')!.getScreenCTM()!;
+    const xs = [...sr.querySelector<SVGPolylineElement>('polyline.line')!.points].map((p) => new DOMPoint(p.x, p.y).matrixTransform(ctm).x);
+    const els = [...sr.querySelectorAll<HTMLElement>('.x-label')];
+    const boxes = els.map((l) => l.getBoundingClientRect());
+    return {
+      truncated: els.every((l) => l.scrollWidth > l.clientWidth && getComputedStyle(l).textOverflow === 'ellipsis'),
+      centres: boxes.slice(1, -1).map((b, i) => Math.abs((b.left + b.right) / 2 - xs[i + 1]!)),
+      apart: boxes.every((b, i) => i === 0 || boxes[i - 1]!.right <= b.left + 0.5),
+    };
+  });
+  expect(r.truncated).toBe(true);
+  for (const c of r.centres) expect(c).toBeLessThan(1);
+  expect(r.apart).toBe(true);
+});

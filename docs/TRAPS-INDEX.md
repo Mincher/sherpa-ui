@@ -767,7 +767,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-field-type-decides-the-clause](traps/data-layer.md#t-the-field-type-decides-the-clause) — data-grid
 - [T-the-last-row-draws-no-rule](traps/data-grid.md#t-the-last-row-draws-no-rule) — data-grid
 
-## Charts (68)
+## Charts (69)
 
 - [T-a-bar-hangs-from-the-zero-line](traps/charts.md#t-a-bar-hangs-from-the-zero-line) — barchart
 - [T-a-breakdown-pick-is-a-legend-pick](traps/charts.md#t-a-breakdown-pick-is-a-legend-pick) — chart-legend
@@ -790,6 +790,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-legend-row-goes-inactive-it-never-vanishes](traps/data-layer.md#t-a-legend-row-goes-inactive-it-never-vanishes) — chart-legend
 - [T-a-legend-row-is-a-key-chip](traps/filters.md#t-a-legend-row-is-a-key-chip) — chart-legend
 - [T-a-legend-toggle-is-a-filter](traps/join-and-app.md#t-a-legend-toggle-is-a-filter) — chart-legend
+- [T-a-line-label-sits-under-its-point](traps/charts.md#t-a-line-label-sits-under-its-point) — line-chart
 - [T-a-match-marks-its-own-mark](traps/charts.md#t-a-match-marks-its-own-mark) — barchart
 - [T-a-metric-condenses-by-wrapping](traps/charts.md#t-a-metric-condenses-by-wrapping) — metric
 - [T-a-metric-group-knows-it-is-stuck](traps/charts.md#t-a-metric-group-knows-it-is-stuck) — metric

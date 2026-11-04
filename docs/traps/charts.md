@@ -1,7 +1,7 @@
 # Traps — Charts
 
 One of the eleven areas of [the traps](../TRAPS.md): each entry is here because its
-first `Site:` is in this area (`npm run check:traps` holds it so). 43 entries.
+first `Site:` is in this area (`npm run check:traps` holds it so). 44 entries.
 
 ### T-gauge-status-is-named
 
@@ -1165,3 +1165,21 @@ the value at the top and the trend at the foot of it: the space between is 2 /
 
 - Site: `src/components/sherpa-metric/sherpa-metric.css`
 - Site: `test/e2e/reforged-metric.spec.ts`
+
+### T-a-line-label-sits-under-its-point
+
+**A line's x label sits under its own point**, and the points are not in equal
+cells: the first is on the plot's start edge and the last on its end, `i / (n-1)`
+of the way across. Equal cells, `(i + 0.5) / n`, put every label half a cell off
+its point but the middle one — 141px at 600 wide with two points, 23px with
+twelve (TODO 717, measured).
+
+The axis is a grid of HALF-STEP columns, made as needed (`grid-auto-flow:
+column`, so CSS needs no count): a label spans two, centred on its point, and the
+first and last span one, flush with the plot's edges, so they stay inside it.
+Each label truncates in its own room, so two never meet. The cost: an end label
+has half a step to the others' whole one, and truncates first. A lone point sits
+in the middle, and so does its label.
+
+- Site: `src/components/sherpa-line-chart/sherpa-line-chart.css`
+- Site: `test/e2e/reforged-line-chart.spec.ts`

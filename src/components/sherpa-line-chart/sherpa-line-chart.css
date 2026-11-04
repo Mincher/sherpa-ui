@@ -97,15 +97,17 @@
   color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
 
+/* Each label under its own point, in half-step columns. TRAP T-a-line-label-sits-under-its-point */
 .x-axis {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   margin-block-start: var(--sherpa-display-mode-space-2xs, 4px);
 }
-.x-label {
-  flex: 1 1 0;
-  text-align: center;
-}
+.x-label { grid-column: span 2; text-align: center; }
+.x-label:first-child { grid-column: span 1; text-align: start; }
+.x-label:last-child { grid-column: span 1; text-align: end; }
+.x-label:only-child { text-align: center; }
 
 /* ── Axes ────────────────────────────────────────────────────────────────
    Column 1 the rotated caption, column 2 the value labels, column 3 the plot.
