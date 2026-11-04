@@ -491,7 +491,28 @@ kinds, the app's, the preset and custom nodes; never a query-only kind. It re-ma
 - Save writes the tab's draft (`/nodes/<id>`, as `/workflows/<id>`) to the keeper, under one
   app-wide key: a named part crosses tabs (`T-only-a-named-part-crosses-tabs`); the panel lists it.
 
-### 9.5 Phases, N4 and decisions
+### 9.5 Multi-select picklists
+
+Will, 2026-11-04: "Some pick lists on node rows may need to be multi-select. Obviously this
+results in object output for the set of selected values."
+
+- **The row says it,** in the registry's row shape: `RowKind.multiple?: true`, HTML's own name
+  (`<select multiple>`), beside its `control`. `rowChoices()` gives the list either way. The
+  `values` control goes: ticks of the fields are `{ control: 'field', multiple: true }`.
+  (`many` stays D4's word: several routes into one input.)
+- **Its output:** a single-select row sends a **value** (●, the pick); a multi-select row sends
+  an **object** (◆, the set of picks, in the list's order). So §2's "a list" moves from value
+  to object.
+- **Drawn** as today's ticks, `sherpa-select-group multiple`; read only while a route drives it.
+- **Which rows:** Search fields; Condition › Value for Is one of and Is not one of; from Figma,
+  Notify's Recipients and Method, Schedule's On (Mon, Wed, Fri), Tag › Includes.
+- **Its override (D7):** its input is a value that takes `many` (D17). Each Value node routed in
+  is one pick; together, in route order, they ARE the set. The row mirrors them, read only:
+  their values ticked, "Custom" after each one the list lacks, and the line under it "Custom
+  values, from Value › Value". Cut a route, and its pick goes; cut the last, and the row's own
+  picks are back: the draft kept them.
+
+### 9.6 Phases, N4 and decisions
 
 | Phase | Builds | Proves | Size | After |
 |---|---|---|---|---|
@@ -502,6 +523,9 @@ kinds, the app's, the preset and custom nodes; never a query-only kind. It re-ma
 | **M11** Make a group | multi-pick (one pick today); Group, Ungroup; edge routes become sockets | node test: Group then Ungroup gives the same workflow | M | M9 |
 | **M12** Saved nodes | the keeper's `nodes`; `loadNodeLibrary()`; app.v1 `nodes`; in the panel | a saved node shows in a second tab, and after a reload | M | M8, M9 |
 
+**§9.5 grows M1 and M6:** M1 adds `RowKind.multiple` and its object output to the types and
+`accepts()`; M6 draws a multi-select row, its override by several Value nodes, and drops the
+`values` control (node test: two Value nodes into Is one of give a set of two; cut one, one).
 **Lanes:** M7 beside M2 and M3; M8 beside M9; then M10, M11, M12 at the same time. **Waits on
 N4:** running a grouped node (flat), its steps lit through the use, "Test", the triggers.
 
@@ -515,3 +539,4 @@ N4:** running a grouped node (flat), its steps lit through the use, "Test", the 
 | D14 | The panel | `sherpa-overlay-panel` on a new start side, over the canvas | A fixed panel in the shell's `panel-start`: the canvas reflows |
 | D15 | A preset's inside | Read only, with "Copy to my nodes" | Editable: the reader's edit kept over it |
 | D16 | A route dropped on the bare canvas | "Add a node": the kinds that take its type, Value first | §5 as written: a Value node at once |
+| D17 | A multi-select row's input | A value, `many`: each Value node routed in is one pick | An object: one whole set, from another multi-select row or an Object node |
