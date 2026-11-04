@@ -324,10 +324,9 @@ export class MenuList {
         row.removeAttribute('data-matches');
         continue;
       }
-      const badge = had ?? this.#host.clone<HTMLElement>('template.menu-count-tpl');
+      const badge = this.#countBadge(row);
       if (!badge) continue;
       badge.textContent = String(n);
-      if (!had) row.append(badge);
       row.setAttribute('data-matches', '');
     }
   }
@@ -338,9 +337,18 @@ export class MenuList {
     this.#items = this.#items.map((item) => (item.drill && item.value === value ? { ...item, count } : item));
     for (const row of this.#host.own<HTMLElement>('.menu-row[data-drill]')) {
       if (row.dataset['value'] !== value) continue;
-      const badge = row.querySelector('.menu-row-count');
+      const badge = count > 0 ? this.#countBadge(row) : row.querySelector(':scope > .menu-row-count');
       if (badge) badge.textContent = count > 0 ? String(count) : '';
     }
+  }
+
+  /** A row's count badge, stamped the first time it has a count: before its caret, where it has one. */
+  #countBadge(row: HTMLElement): HTMLElement | null {
+    const had = row.querySelector<HTMLElement>(':scope > .menu-row-count');
+    if (had) return had;
+    const badge = this.#host.clone<HTMLElement>('template.menu-count-tpl');
+    if (badge) row.insertBefore(badge, row.querySelector(':scope > .menu-row-drill'));
+    return badge;
   }
 
   /* ── Stamping ── */
@@ -473,16 +481,13 @@ export class MenuList {
     row.dataset['value'] = value;
     // The SEARCH reads this: the badge's number is not part of the name.
     row.dataset['label'] = label;
-    const badge = this.#host.clone('template.menu-count-tpl');
     const caret = this.#host.clone('template.menu-drill-tpl');
-    if (badge) {
-      badge.textContent = count > 0 ? String(count) : '';
-      row.append(badge);
-    }
     if (caret) {
       caret.setAttribute('aria-label', `Open ${label}`);
       row.append(caret);
     }
+    const badge = count > 0 ? this.#countBadge(row) : null;
+    if (badge) badge.textContent = String(count);
   }
 
   /** A row's LEADING mark, in its label: the icon its chip carries, or — where this

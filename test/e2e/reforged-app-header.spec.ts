@@ -44,24 +44,27 @@ test('data-notifications shows a count badge; 0/unset hides it', async ({ page }
     const el = document.createElement('sherpa-app-header') as WithRender;
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    const badge = el.shadowRoot!.querySelector('.notif-badge')!;
-    const hidden = getComputedStyle(badge).display === 'none';
+    // No count, no badge at all: it is stamped when one shows. TRAP T-an-optional-part-is-stamped-when-it-shows
+    const none = el.shadowRoot!.querySelectorAll('sherpa-badge').length;
 
     el.setAttribute('data-notifications', '5');
     await window.__settled();
+    const badge = el.shadowRoot!.querySelector('.notif-badge')!;
     const shownText = badge.textContent;
     const shown = getComputedStyle(badge).display !== 'none';
 
     el.setAttribute('data-notifications', '0');
     await window.__settled();
     const clearedAttr = el.hasAttribute('data-notifications');
+    const hidden = getComputedStyle(badge).display === 'none';
 
-    return { hidden, shownText, shown, clearedAttr };
+    return { none, hidden, shownText, shown, clearedAttr };
   });
-  expect(r.hidden).toBe(true); // unset → no badge
+  expect(r.none).toBe(0); // unset → no badge
   expect(r.shown).toBe(true);
   expect(r.shownText).toBe('5');
   expect(r.clearedAttr).toBe(false); // 0 removes the attribute → hidden again
+  expect(r.hidden).toBe(true);
 });
 
 test('every header action fires its event', async ({ page }) => {

@@ -69,8 +69,14 @@
                   },
                   "children": [
                     {
-                      "el": "sherpa-badge",
-                      "class": "badge-value"
+                      "el": "template",
+                      "class": "badge-tpl",
+                      "children": [
+                        {
+                          "el": "sherpa-badge",
+                          "class": "badge-value"
+                        }
+                      ]
                     }
                   ]
                 }

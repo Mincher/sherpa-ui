@@ -80,6 +80,9 @@ export type PropMap = Readonly<Record<string, PropDef>>;
 /** Words a component's markup lacks, said once each. */
 const MISSING_WORDS = new Set<string>();
 
+/** Each optional part, by the prototype that stamped it: a re-stamped tree's prototype starts again. */
+const STAMPED = new WeakMap<HTMLTemplateElement, Element>();
+
 /**
  * What `DataSource.#push` writes onto every component it binds, plus the guard.
  * Declaring one says this component READS it; writing one without a
@@ -564,6 +567,24 @@ export abstract class SherpaElement extends Base {
     const node = document.importNode(first, true) as unknown as T;
     // The stamp drew its root's icons, not a prototype's. TRAP T-a-cloned-prototype-needs-its-icons-upgraded
     upgradeIcons(node as unknown as ParentNode);
+    return node;
+  }
+
+  /**
+   * An OPTIONAL part: its `<template class="…">` prototype's element, stamped
+   * in the prototype's place the first time `make` is true, then kept; null
+   * until then. TRAP T-an-optional-part-is-stamped-when-it-shows
+   */
+  protected stampOnce<T extends Element = HTMLElement>(from: string, make: boolean): T | null {
+    const tpl = this.$<HTMLTemplateElement>(from);
+    if (!tpl) return null;
+    const had = STAMPED.get(tpl) as T | undefined;
+    if (had || !make) return had ?? null;
+    const node = this.clone<T>(tpl);
+    if (node) {
+      tpl.before(node);
+      STAMPED.set(tpl, node);
+    }
     return node;
   }
 

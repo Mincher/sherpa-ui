@@ -33,7 +33,7 @@
     <i class="icon sherpa-icon-box icon-start" aria-hidden="true"></i>
     <span class="label"><slot data-accepts="text,icon"></slot></span>
     <i class="icon sherpa-icon-box icon-end" aria-hidden="true"></i>
-    <span class="badge"><slot name="badge" data-accepts="badge"><sherpa-badge class="badge-value"></sherpa-badge></slot></span>
+    <span class="badge"><slot name="badge" data-accepts="badge"><template class="badge-tpl"><sherpa-badge class="badge-value"></sherpa-badge></template></slot></span>
     <!-- Named, not default: a popover in the default slot joins the label's textContent and widens the button. -->
     <span class="menu-slot"><slot name="menu" data-accepts="menu"></slot></span>
   </button>

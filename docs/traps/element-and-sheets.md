@@ -1,7 +1,7 @@
 # Traps — SherpaElement and the shared sheets
 
 One of the eleven areas of [the traps](../TRAPS.md): each entry is here because its
-first `Site:` is in this area (`npm run check:traps` holds it so). 71 entries.
+first `Site:` is in this area (`npm run check:traps` holds it so). 72 entries.
 
 ### T-tokens-css-never-reaches-shadow
 
@@ -683,6 +683,26 @@ caller that cannot proceed without the row should return early; there is
 nothing to assert.
 
 - Site: `src/core/ui/sherpa-element.ts`
+
+### T-an-optional-part-is-stamped-when-it-shows
+
+A part that most hosts never show is a `<template>` prototype in the host's
+markup, not an element. `stampOnce(prototype, make)` clones it into the
+prototype's own place the first time there is something to show, and keeps it.
+Measured 2026-11-04 on Demos Records: 473 `sherpa-badge`s, ONE showing a count
+(the bell's). Each built its shadow root and adopted its sheet, about 30 µs.
+
+Once stamped it stays. A count that goes writes no text, and the badge's own
+`:host(:empty)` hides it, as before. So a reader of a host's badge allows for
+none: `$('.applied-count')?.textContent`, never `!`.
+
+A menu row's count is a per-row prototype (`menu-count-tpl`): the row stamps
+it the first time it counts, before its caret.
+
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `test/e2e/reforged-app-header.spec.ts`
+- Site: `test/e2e/reforged-button.spec.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
 ### T-render-list-keeps-fill-in-the-caller
 

@@ -192,10 +192,11 @@ export class SherpaAppHeader extends SherpaElement {
   #sync(): void {
     this.#syncOpen();
 
-    // CSS shows/hides the badge via [data-notifications].
+    // Stamped once there is a count; CSS shows/hides it via [data-notifications].
     const count = this.dataset['notifications'];
-    const badge = this.$('.notif-badge');
-    if (badge) badge.textContent = count && count !== '0' ? count : '';
+    const shown = count && count !== '0' ? count : '';
+    const badge = this.stampOnce('template.notif-badge-tpl', !!shown);
+    if (badge) badge.textContent = shown;
     if (count === '0') this.set('data-notifications', null);
 
   }

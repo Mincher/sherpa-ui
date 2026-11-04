@@ -256,12 +256,18 @@
                           }
                         },
                         {
-                          "el": "sherpa-badge",
-                          "class": "notif-badge",
-                          "part": "notif-badge",
-                          "attrs": {
-                            "aria-hidden": "true"
-                          }
+                          "el": "template",
+                          "class": "notif-badge-tpl",
+                          "children": [
+                            {
+                              "el": "sherpa-badge",
+                              "class": "notif-badge",
+                              "part": "notif-badge",
+                              "attrs": {
+                                "aria-hidden": "true"
+                              }
+                            }
+                          ]
                         }
                       ]
                     },

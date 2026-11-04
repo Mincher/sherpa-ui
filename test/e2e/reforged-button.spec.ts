@@ -35,6 +35,30 @@ test('renders the template into a shadow root and applies default attrs', async 
   expect(r.adopted).toBe(true);
 });
 
+/* A badge only once there is a count: 461 of Records' 473 were empty buttons'.
+   TRAP T-an-optional-part-is-stamped-when-it-shows */
+test('data-badge stamps its sherpa-badge once it has text; an emptied one is hidden, not removed', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    document.getElementById('root')!.innerHTML = '<sherpa-button id="a">A</sherpa-button><sherpa-button id="b" data-badge="">B</sherpa-button>';
+    const a = document.getElementById('a')!;
+    const b = document.getElementById('b')!;
+    await window.__settled();
+    const badges = (el: Element) => el.shadowRoot!.querySelectorAll('sherpa-badge');
+    const bare = { a: badges(a).length, b: badges(b).length };
+    a.setAttribute('data-badge', '3');
+    await window.__settled();
+    const badge = badges(a)[0]!;
+    const shown = { n: badges(a).length, text: badge.textContent, width: badge.getBoundingClientRect().width > 0,
+      inSlot: badge.parentElement?.matches('slot[name="badge"]') };
+    a.setAttribute('data-badge', '');
+    await window.__settled();
+    return { bare, shown, emptied: { same: badges(a)[0] === badge, n: badges(a).length, display: getComputedStyle(badge).display } };
+  });
+  expect(r.bare).toEqual({ a: 0, b: 0 });
+  expect(r.shown).toEqual({ n: 1, text: '3', width: true, inSlot: true });
+  expect(r.emptied).toEqual({ same: true, n: 1, display: 'none' });
+});
+
 test('CSS owns the look: data-look drives the rendered background', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const mk = async (look?: string) => {

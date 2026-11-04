@@ -196,7 +196,7 @@
      Discard on the header row. TODO 425 -->
 <template id="portrait">
   <sherpa-accordion class="scope" part="scope" open data-attr-data-heading="data-heading">
-    <sherpa-tooltip slot="badge" class="scope-tip"><sherpa-badge class="scope-results" role="img"></sherpa-badge></sherpa-tooltip>
+    <sherpa-tooltip slot="badge" class="scope-tip"><template class="scope-results-tpl"><sherpa-badge class="scope-results" role="img"></sherpa-badge></template></sherpa-tooltip>
     <span slot="actions" class="actions-zone" part="actions">
       <sherpa-button class="act apply-all" data-act="apply" data-size="sm"
                      data-look="saturated" disabled>Apply</sherpa-button>
@@ -245,7 +245,7 @@
   <sherpa-container class="column" part="column" data-padding="none" data-when-data-scroll-shadow="data-scroll-shadow">
     <sherpa-container-header slot="header" class="head" part="head" data-icon="filter" data-heading="Filters">
       <!-- Its title, and the filters applied beside it, where the app counts them. Will, TODO 436 -->
-      <span slot="heading" class="column-heading" part="heading">Filters<sherpa-badge class="applied-count" role="img"></sherpa-badge></span>
+      <span slot="heading" class="column-heading" part="heading">Filters<template class="applied-count-tpl"><sherpa-badge class="applied-count" role="img"></sherpa-badge></template></span>
       <sherpa-button slot="actions" class="column-suggest suggest" part="suggest" data-size="sm" data-type="icon"
                      data-icon-start="wand-magic-sparkles" aria-label="Suggest filters"></sherpa-button>
       <!-- FILTERS, as the bar's button reads. Will, TODO 681 -->

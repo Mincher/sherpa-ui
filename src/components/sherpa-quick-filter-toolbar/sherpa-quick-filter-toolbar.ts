@@ -920,14 +920,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  one's in its tip, as a panel's shut scope says them. TODO 425 */
   #syncScopeBadge(): void {
     const tip = this.$<HTMLElement>('.scope-tip');
-    const badge = this.$<HTMLElement>('.scope-results');
-    if (!tip || !badge) return;
+    if (!tip) return;
     const answered = this.#chips().flatMap((chip) => {
       const def = this.#defOf(chip);
       const n = def ? this.#filter.results(def.field ?? def.id) ?? this.#filter.results(def.id) : undefined;
       return def && n != null && !chip.hasAttribute('data-selector') ? [{ label: def.label, n }] : [];
     });
-    drawCount(badge, this.hasAttribute('data-no-results') ? undefined : this.#filter.end, ['match', 'matches']);
+    const end = this.hasAttribute('data-no-results') ? undefined : this.#filter.end;
+    drawCount(this.stampOnce('template.scope-results-tpl', end != null), end, ['match', 'matches']);
     tip.dataset['text'] = answered.map((one) => `${one.label} - ${countSaid(one.n, ['match', 'matches']).label}`).join('\n');
   }
 
@@ -2271,8 +2271,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  none (TODO 447) */
   #drawApplied(): void {
     const n = Number(this.dataset['applied']) || 0;
-    const counting = this.hasAttribute('data-count-applied');
-    drawCount(this.$('.applied-count'), counting && n ? n : null, ['filter applied', 'filters applied']);
+    const shown = this.hasAttribute('data-count-applied') && n ? n : null;
+    drawCount(this.stampOnce('template.applied-count-tpl', shown != null), shown, ['filter applied', 'filters applied']);
   }
 
   /** A saved set ticked in the Saved menu takes it; unticked, takes it off. TODO 436 */

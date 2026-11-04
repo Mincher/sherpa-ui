@@ -115,10 +115,11 @@ export class SherpaButton extends SherpaElement {
     this.#stopTips = null;
   }
 
-  /** Writes data-badge into the composed sherpa-badge; CSS shows it. */
+  /** Writes data-badge into the composed sherpa-badge, stamped once it has text; CSS shows it. */
   #syncBadge(): void {
-    const badge = this.$('.badge-value');
-    if (badge) badge.textContent = this.dataset['badge'] ?? '';
+    const text = this.dataset['badge'] ?? '';
+    const badge = this.stampOnce('template.badge-tpl', !!text);
+    if (badge) badge.textContent = text;
   }
 
   /**

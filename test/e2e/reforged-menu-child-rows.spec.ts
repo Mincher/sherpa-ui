@@ -43,6 +43,8 @@ async function mount(page: Page) {
       caret: status.querySelector('.menu-row-drill')?.tagName ?? null,
       plainCaret: !!row('plan').querySelector('.menu-row-drill'),
       bareBox: !!row('sort').querySelector('input'),
+      // No count, no badge: one is stamped at the first pick.
+      uncounted: !!row('sort').querySelector('.menu-row-count'),
     };
 
     // THE CARET opens it, and leaves the box alone.
@@ -67,7 +69,7 @@ async function mount(page: Page) {
 test('a row opens its child menu from its caret, and never ticks its box doing it', async ({ page }) => {
   const r = await mount(page);
   expect(r.before).toEqual({
-    box: true, badge: '2', badgeShown: true, caret: 'SHERPA-BUTTON', plainCaret: false, bareBox: false,
+    box: true, badge: '2', badgeShown: true, caret: 'SHERPA-BUTTON', plainCaret: false, bareBox: false, uncounted: false,
   });
   expect(r.heard).toEqual(['status', 'sort']);
   expect(r.boxAfter).toBe(true);

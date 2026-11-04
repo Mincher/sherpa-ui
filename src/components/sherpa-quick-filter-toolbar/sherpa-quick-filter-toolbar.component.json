@@ -214,11 +214,17 @@
               },
               "children": [
                 {
-                  "el": "sherpa-badge",
-                  "class": "scope-results",
-                  "attrs": {
-                    "role": "img"
-                  }
+                  "el": "template",
+                  "class": "scope-results-tpl",
+                  "children": [
+                    {
+                      "el": "sherpa-badge",
+                      "class": "scope-results",
+                      "attrs": {
+                        "role": "img"
+                      }
+                    }
+                  ]
                 }
               ]
             },
@@ -420,11 +426,17 @@
                   },
                   "children": [
                     {
-                      "el": "sherpa-badge",
-                      "class": "applied-count",
-                      "attrs": {
-                        "role": "img"
-                      }
+                      "el": "template",
+                      "class": "applied-count-tpl",
+                      "children": [
+                        {
+                          "el": "sherpa-badge",
+                          "class": "applied-count",
+                          "attrs": {
+                            "role": "img"
+                          }
+                        }
+                      ]
                     }
                   ]
                 },
