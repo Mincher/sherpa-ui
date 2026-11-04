@@ -2691,8 +2691,6 @@ test('in portrait, a SHUT scope with a chip on wears the on fill on its header o
     (el as unknown as { setChipValues(id: string, p: string[]): void }).setChipValues('plan', ['pro']);
     await window.__settled();
     await frames();
-    // In a column a list's values are its chips: the one on wears the fill.
-    const body = getComputedStyle(sr.querySelector('.chip[data-id="plan"] > .value[data-value="pro"]')!.shadowRoot!.querySelector('.body')!).backgroundColor;
     const shutOn = header();
     const after = discard();
     el.style.setProperty('--sherpa-filter-on-surface-base', 'rgb(0, 128, 0)');
@@ -2700,6 +2698,11 @@ test('in portrait, a SHUT scope with a chip on wears the on fill on its header o
     el.style.removeProperty('--sherpa-filter-on-surface-base');
     scope.open = true;
     await frames();
+    /* In a column a list's values are its chips: the one on wears the fill. Read SHOWN:
+       shut, its style is not drawn, and Chromium reads the fill it had before. */
+    const one = sr.querySelector('.chip[data-id="plan"] > .value[data-value="pro"]')!.shadowRoot!.querySelector('.body')!;
+    await Promise.all(one.getAnimations().map((a) => a.finished));
+    const body = getComputedStyle(one).backgroundColor;
     return { shutOff, body, shutOn, repointed, open: header(), discardKept: before === after };
   });
   expect(r.shutOn).toBe(r.body);

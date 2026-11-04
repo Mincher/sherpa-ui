@@ -404,16 +404,21 @@ export class SherpaQuickFilter extends SherpaElement {
     this.#syncText();
   }
 
-  /** Write the label and the glyph into the shadow DOM. */
+  /** The label and the glyph, each written only where it differs. TRAP T-a-chip-moved-under-a-press-loses-its-click */
   #syncText(): void {
     const label = this.$('.label');
     const value = this.dataset['label'];
-    if (label && value != null) label.textContent = value;
+    if (label && value != null && (label.childElementCount || label.textContent !== value)) label.textContent = value;
     // TRAP T-icon-writes-to-both-slots — `.icon` leads the body, `.caret-icon`
     // serves an icon-only chip, and CSS picks which is visible.
-    const glyph = this.dataset['iconStart'];
-    for (const icon of this.$$('.icon, .caret-icon')) this.writeIcon(icon, glyph ?? '');
+    const glyph = this.dataset['iconStart'] ?? '';
+    for (const icon of this.$$('.icon, .caret-icon').filter((i) => this.#glyphs.get(i) !== glyph)) {
+      this.writeIcon(icon, glyph);
+      this.#glyphs.set(icon, glyph);
+    }
   }
+  /** The glyph each icon box was last given. */
+  #glyphs = new WeakMap<Element, string>();
 
   /** The column a Group or Sort chip arranges by: its menu's pick, else `data-column`. */
   get column(): string {

@@ -901,6 +901,48 @@ test('a section given its layout and rows AFTER its first render draws its value
   expect(await sectionValues(page, 'late')).toEqual({ stamped: -1, values: ['pro on', 'free'], swatches: true });
 });
 
+/* A sync moved every value chip, and WebKit drops the click of a press whose chip
+   moved between down and up. TODO 715 · TRAP T-a-chip-moved-under-a-press-loses-its-click */
+test('a press on a section\'s value lands though its counts come between down and up; a sync moves only a value out of order (TODO 715)', async ({ page }) => {
+  type Section = HTMLElement & { rendered: Promise<void>; values: string[]; valueResults: Record<string, number> | null;
+    menu: HTMLElement & { items(i: { value: string; label: string; selected?: boolean }[]): void } };
+  type Seen = { __el: Section; __moves: string[] };
+  const at = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter') as Section;
+    el.setAttribute('data-label', 'Plan');
+    el.setAttribute('data-menu', '');
+    el.setAttribute('data-layout', 'section');
+    el.innerHTML = '<sherpa-menu slot="menu" data-type="filter" data-select="multiple"></sherpa-menu>';
+    (el.querySelector('sherpa-menu') as Section['menu']).items([{ value: 'pro', label: 'Pro' }, { value: 'free', label: 'Free' }, { value: 'team', label: 'Team' }]);
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    await window.__settled();
+    // Each value chip taken out of the section, moved or gone.
+    const moves: string[] = [];
+    new MutationObserver((records) => {
+      for (const r of records) for (const n of r.removedNodes) moves.push((n as HTMLElement).dataset?.['value'] ?? n.nodeName);
+    }).observe(el, { childList: true });
+    Object.assign(window, { __el: el, __moves: moves });
+    const box = el.querySelector(':scope > .value[data-value="free"]')!.getBoundingClientRect();
+    return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  });
+  await page.mouse.move(at.x, at.y);
+  await page.mouse.down();
+  await page.evaluate(() => { (window as unknown as Seen).__el.valueResults = { pro: 3, free: 5, team: 1 }; });
+  await page.mouse.up();
+  const r = await page.evaluate(async () => {
+    const { __el: el, __moves: moves } = window as unknown as Seen;
+    await window.__settled();
+    const pressed = { values: el.values, moved: [...moves] };
+    el.menu.items([{ value: 'team', label: 'Team' }, { value: 'pro', label: 'Pro' }, { value: 'free', label: 'Free', selected: true }]);
+    await window.__settled();
+    return { pressed, order: [...el.querySelectorAll<HTMLElement>(':scope > .value')].map((v) => v.dataset['value']), moved: moves.slice(pressed.moved.length) };
+  });
+  expect(r.pressed).toEqual({ values: ['free'], moved: [] });
+  expect(r.order).toEqual(['team', 'pro', 'free']);
+  expect(r.moved).toEqual(['team']);
+});
+
 test('a chip with two picks shows its results on its badge, never a count of its picks', async ({ page }) => {
   // TODO 518: onConnect wrote the pick count over the results. TODO 60, 123
   const r = await page.evaluate(async () => {

@@ -31,7 +31,7 @@ headings below are older than the index: most entries are under the last one.
 | [The data layer](traps/data-layer.md) | 218 |
 | [Storage, saved Views and the URL](traps/storage.md) | 36 |
 | [The join and the app layer](traps/join-and-app.md) | 42 |
-| [Filters](traps/filters.md) | 103 |
+| [Filters](traps/filters.md) | 104 |
 | [Menus, tips and overlays](traps/menus-tips-overlays.md) | 78 |
 | [The data grid](traps/data-grid.md) | 57 |
 | [Charts](traps/charts.md) | 43 |

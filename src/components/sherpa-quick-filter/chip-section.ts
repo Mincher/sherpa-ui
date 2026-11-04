@@ -71,6 +71,7 @@ export class ChipSection {
     // What is APPLIED, told while the field waits: only a value its draft changed reads as pending. TODO 425
     const waiting = this.#applied != null;
     const was = new Set((this.#applied && !this.#applied.suspended ? this.#applied.picked ?? [] : []).map(valueKey));
+    let next = el.querySelector(':scope > .value');
     for (const item of tops) {
       const one = mine.get(item.value) ?? this.#host.clone('template.value-chip-tpl');
       if (!one) return;
@@ -92,8 +93,9 @@ export class ChipSection {
       one.toggleAttribute('data-pending', waiting && kids.some((k) => picked.has(k) !== was.has(k)));
       (one as SherpaQuickFilter).results = this.#valueResults?.[item.value] ?? null;
       this.#kids(one, item.value, items, picked);
-      // In the menu's order: appending one already here moves it.
-      el.append(one);
+      // In the menu's order, MOVED only out of it: a move loses a press. TRAP T-a-chip-moved-under-a-press-loses-its-click
+      if (one !== next) el.insertBefore(one, next);
+      else do next = next.nextElementSibling; while (next && !next.classList.contains('value'));
     }
     for (const gone of mine.values()) gone.remove();
     // A value of it waits: said on the section itself. TRAP T-each-field-can-apply-on-its-own

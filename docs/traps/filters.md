@@ -912,6 +912,31 @@ in the slot (366 S2).
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-quick-filter/chip-press.ts`
 
+### T-a-chip-moved-under-a-press-loses-its-click
+
+**A press whose chip is moved, or whose text is written again, between pointer
+down and up has no click** (TODO 715). A section's sync re-appended every value
+chip to keep the menu's order, and a sync comes with every count, pick and
+applied answer. Measured in Demos, WebKit, 8 workers: the press landed on the
+chart's value chip, a sync took the chip out and put it back 160 ms later, and
+the release on the same node fired no `click` (13 of 160). A count that changes
+rewrote the chip's label too: its text node replaced, the press is lost the
+same way, in Chromium as well as WebKit.
+
+So a sync moves only a value chip that is out of the menu's order, and removes
+the gone ones first, so none stands between two that stay. The chip writes its
+label, caret text and glyph only where they differ. A write that changes what a
+reader sees still replaces its node: that is a real change, and rare under a
+press.
+
+The bar's own `#render` still MOVES every chip it keeps (`list.replaceChildren()`,
+then each one appended again).
+
+- Site: `src/components/sherpa-quick-filter/chip-section.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter/chip-says.ts`
+- Site: `test/e2e/reforged-quick-filter.spec.ts`
+
 ### T-menu-composes-real-components
 
 `sherpa-menu` COMPOSES real components rather than drawing their parts, and

@@ -53,10 +53,10 @@ export class ChipSays {
     this.drawLabel();
   }
 
-  /** Draw the caret text, if there is a caret. */
+  /** Draw the caret text, if there is a caret — only where it differs. TRAP T-a-chip-moved-under-a-press-loses-its-click */
   drawLabel(): void {
     const caret = this.#host.$('.caret-label');
-    if (caret) caret.textContent = this.#caretText;
+    if (caret && caret.textContent !== this.#caretText) caret.textContent = this.#caretText;
   }
 
   /** The rows this chip's own answer matches, as its source counted them.

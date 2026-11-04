@@ -385,7 +385,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-star-reports-it-does-not-decide](traps/join-and-app.md#t-the-star-reports-it-does-not-decide) — outlet
 - [T-view-library-is-one-vocabulary](traps/storage.md#t-view-library-is-one-vocabulary) — provider
 
-## Filters (155)
+## Filters (156)
 
 - [T-a-bar-reports-its-holds](traps/join-and-app.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — quick-filter-toolbar
@@ -393,6 +393,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-chip-body-cycles-its-states](traps/data-layer.md#t-a-chip-body-cycles-its-states) — filter-host, quick-filter
 - [T-a-chip-counts-within-the-filters-before-it](traps/data-layer.md#t-a-chip-counts-within-the-filters-before-it) — quick-filter, quick-filter-toolbar
 - [T-a-chip-knows-what-kind-it-is](traps/filters.md#t-a-chip-knows-what-kind-it-is) — filter-def, filter-kind, quick-filter, quick-filter-toolbar
+- [T-a-chip-moved-under-a-press-loses-its-click](traps/filters.md#t-a-chip-moved-under-a-press-loses-its-click) — quick-filter
 - [T-a-chip-press-applies-its-menus-draft](traps/filters.md#t-a-chip-press-applies-its-menus-draft) — quick-filter
 - [T-a-chip-says-its-own-answer](traps/data-layer.md#t-a-chip-says-its-own-answer) — quick-filter, quick-filter-toolbar
 - [T-a-component-asks-its-provider](traps/join-and-app.md#t-a-component-asks-its-provider) — quick-filter-toolbar
