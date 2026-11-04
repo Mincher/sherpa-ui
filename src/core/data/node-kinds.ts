@@ -141,7 +141,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // A page's Query: its rows read left to right, as the data flows.
   status: {
     heading: 'Status field', icon: 'status-ok', description: 'Each row given a value by conditions on its other fields.',
-    input: 'any', rows: [ROWS], model: 'StatusField', graphs: ['query'],
+    input: 'any', rows: [ROWS], model: 'StatusField', graphs: ['query'], category: 'Status',
   },
   source: {
     heading: 'Source', icon: 'server', description: 'How the page reads its store.', input: 'any',
@@ -176,11 +176,11 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // Its on, then each field it writes.
   preset: {
     heading: 'Preset', icon: 'star', description: 'The app\'s own named conditions: a chip leading its scope.', branches: true,
-    rows: [{ name: 'on', label: 'On', control: 'switch', input: 'boolean' }], model: 'ScopeDefinition.presets', graphs: ['query'],
+    rows: [{ name: 'on', label: 'On', control: 'switch', input: 'boolean' }], model: 'ScopeDefinition.presets', graphs: ['query'], category: 'Presets',
   },
   saved: {
     heading: 'Saved filter', icon: 'floppy-disk', description: 'Filters kept under one name: a preset the reader made.', branches: true,
-    rows: [{ name: 'on', label: 'On', control: 'switch', input: 'boolean' }], model: 'SavedFilter', graphs: ['query'],
+    rows: [{ name: 'on', label: 'On', control: 'switch', input: 'boolean' }], model: 'SavedFilter', graphs: ['query'], category: 'Saved filters',
   },
   arrange: {
     heading: 'Arrange', icon: 'sort-ascending', description: 'The rows\' order, groups and search.', input: 'any',
@@ -239,7 +239,10 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
 
 /** The node panel's categories, in order, after Figma's (plan 713 §9.1). Each is empty until a kind
  *  names it; `Custom Nodes` (D9) stays empty until saved nodes come (M9, M12). */
-export const NODE_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Utils', 'Collections', 'Output'];
+export const NODE_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Utils', 'Collections', 'Output', 'Presets', 'Saved filters', 'Status'];
+
+/** The categories a Query's panel lists: the kinds a Query takes placed. */
+const QUERY_CATEGORIES: readonly string[] = ['Logic', 'Presets', 'Saved filters', 'Status'];
 
 /** One node of the panel: the kind's id and the kind. */
 export interface PaletteItem {
@@ -253,19 +256,21 @@ export interface PaletteGroup {
   items: PaletteItem[];
 }
 
-/** The node panel's list: each category with a workflow kind in it, in `NODE_CATEGORIES`' order and
- *  then an app's own, in the order met; `Custom Nodes` always, empty or not. A Query-only kind is never in it. */
-export function paletteOf(kinds: Readonly<Record<string, NodeKind>>): PaletteGroup[] {
+/** The node panel's list: each category with a kind of the graph in it, in `NODE_CATEGORIES`' order and
+ *  then an app's own, in the order met. A workflow's has `Custom Nodes` always, empty or not, and never a
+ *  Query-only kind; a Query's lists only the kinds a Query takes placed (`QUERY_CATEGORIES`). */
+export function paletteOf(kinds: Readonly<Record<string, NodeKind>>, graph: NodeGraph = 'workflow'): PaletteGroup[] {
   const groups = new Map<string, PaletteItem[]>(NODE_CATEGORIES.map((c) => [c, []]));
   for (const [id, kind] of Object.entries(kinds)) {
-    if (!kind.graphs.includes('workflow')) continue;
+    if (!kind.graphs.includes(graph)) continue;
     const category = kind.category ?? 'Other';
+    if (graph === 'query' && !QUERY_CATEGORIES.includes(category)) continue;
     const items = groups.get(category) ?? [];
     items.push({ id, kind });
     groups.set(category, items);
   }
   const known = new Set(NODE_CATEGORIES);
-  return [...groups].filter(([c, items]) => items.length || c === 'Custom Nodes').sort(([a], [b]) => Number(!known.has(a)) - Number(!known.has(b))).map(([category, items]) => ({ category, items }));
+  return [...groups].filter(([c, items]) => items.length || (graph === 'workflow' && c === 'Custom Nodes')).sort(([a], [b]) => Number(!known.has(a)) - Number(!known.has(b))).map(([category, items]) => ({ category, items }));
 }
 
 /** Where a new node of a kind joins a socket of a type: on the dragged OUTPUT's side, its header

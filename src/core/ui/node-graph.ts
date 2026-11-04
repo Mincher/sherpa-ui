@@ -43,7 +43,7 @@ import type { DataSource } from '../data/data-source.js';
 import { Journal } from '../data/journal.js';
 import type { Query } from '../data/query.js';
 import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-definition.js';
-import { graphRequest, queryGraph, queryStepNode, routeRequest, statusTallies, traceQuerySteps, type QueryGraphFacts } from '../data/query-graph.js';
+import { graphRequest, placeRequest, queryGraph, queryStepNode, routeRequest, statusTallies, traceQuerySteps, type QueryGraphFacts } from '../data/query-graph.js';
 import { onTrace, type Span, type StepState, type TraceHost } from '../data/trace.js';
 import { VIEW } from '../data/query.js';
 import { OP_LABELS, valueKey, type FilterOp } from '../data/store.js';
@@ -1021,6 +1021,8 @@ export interface QueryEditorOptions extends QueryGraphFacts {
   session?: SessionStore;
   /** A `sherpa-node-toolbar`: its Undo and Redo step the Query's draft, and it says when they can be pressed. */
   toolbar?: HTMLElement;
+  /** The node panel floating on the canvas: it lists the kinds a Query takes placed, and each one asked for is a request. */
+  panel?: SherpaNodePanel;
 }
 
 /** Keep a page's Query drawn on a canvas as it changes, and ask it for each edit.
@@ -1030,7 +1032,7 @@ export interface QueryEditorOptions extends QueryGraphFacts {
 export function bindQueryEditor(
   canvas: SherpaLayoutCanvas,
   source: Pick<DataSource, 'query'> & Partial<Pick<DataSource, 'valuesFor' | 'store' | 'state' | 'results' | 'addEventListener' | 'removeEventListener'>>,
-  { definition, inspector, session, toolbar, ...facts }: QueryEditorOptions,
+  { definition, inspector, session, toolbar, panel, ...facts }: QueryEditorOptions,
 ): GraphEditor & Undoable {
   const query = source.query;
   const typeOf = (field: string): string | undefined => facts.type?.(field) ?? definition.source?.fields?.[field]?.type;
@@ -1055,6 +1057,23 @@ export function bindQueryEditor(
     if (answer && 'refused' in answer) report({ code: 'query-route', message: answer.refused });
     else if (answer) query.ask(answer.request);
   };
+  // A node the reader asked for, from the panel or "Add a node": a request through the one door, or a fault in words.
+  // The graph is derived, so a placed node appears where the Query draws it. TRAP T-one-command-one-door
+  const place = (kind: string, context?: AddContext): void => {
+    const from = context && graph.nodes.find((n) => n.id === socketOf(context.socket).node);
+    const answer = placeRequest(kind, from?.ref?.['scope'] ?? VIEW, {
+      holds: (scope) => query.scope(scope), fields: (scope) => query.fields(scope),
+      presets: (scope) => query.presets(scope), on: (scope, id) => query.presetOn(scope, id),
+    });
+    if ('refused' in answer) report({ code: 'query-place', message: answer.refused });
+    else query.ask(answer.request);
+  };
+  const onAdded = (event: Event): void => {
+    const { kind, context } = (event as CustomEvent<{ kind: string; context?: AddContext }>).detail;
+    place(kind, context);
+  };
+  panel?.addEventListener('node-add', onAdded);
+  void panel?.populate(paletteOf(NODE_KINDS, 'query'));
   // The node in the inspector, and its live visual: kept while the same component is shown.
   let visual: { id: string; el: HTMLElement } | null = null;
   const visualOf = (node: GraphNode): HTMLElement | null => {
@@ -1082,6 +1101,7 @@ export function bindQueryEditor(
       onEdit, onMove, onConnect, onSelect: (node) => picks.select(node, graph), onDeselect: picks.deselect,
       // Its routes are readings, which another field or scope takes: a moved end is a new route.
       onReroute: (_was, now) => onConnect(now),
+      ...(panel ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
       onBreak: () => report({ code: 'query-route', message: 'The Query\'s routes are its readings: turn a condition off, or clear it, to take it from its scope.' }),
     });
     picks.follow(graph);
@@ -1152,6 +1172,7 @@ export function bindQueryEditor(
     stop(): void {
       query.removeEventListener('query-change', onChange);
       toolbar?.removeEventListener('toolbar-select', onTool);
+      panel?.removeEventListener('node-add', onAdded);
       canvas.removeEventListener('keydown', onKey, { capture: true });
       toolbar?.removeAttribute('data-can-undo');
       toolbar?.removeAttribute('data-can-redo');

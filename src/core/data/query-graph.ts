@@ -22,6 +22,8 @@
  * - queryGraphFaults — What is wrong with a Query graph's chains, in words: a status value whose `when` is no condition, and a route…
  * - queryGraph — A page's Query as nodes and routes, laid out in columns by depth.
  * - graphRequest — The command a node's edit asks, as a chip's would; none for a row nothing takes.
+ * - PlaceFacts — What placing a node needs of the Query: its holds, fields, presets and which are on.
+ * - placeRequest — The command placing a node asks in a scope, or why it cannot.
  * - RouteAnswer — What a new route asks: a command, or why it is refused; null, nothing to do.
  * - routeRequest — The command a new route asks: a condition into a field of a scope, moved or retargeted.
  */
@@ -623,6 +625,36 @@ export function graphRequest({ node, row, value }: GraphEdit, facts: Pick<QueryG
   }
   if (node.kind === 'presentation') return { scope, presentation: { [row.name]: value ? String(value) : undefined } };
   return undefined;
+}
+
+/** What placing a node needs to know of the Query: what a scope holds and may hold, its presets, and which are on. */
+export interface PlaceFacts {
+  holds: (scope: string) => readonly string[];
+  fields: (scope: string) => readonly string[];
+  presets: (scope: string) => readonly ScopePreset[];
+  on: (scope: string, preset: string) => boolean;
+}
+
+/**
+ * The command placing a node of a kind in a scope asks, or why it cannot: a Condition holds
+ * the scope's next field (its chip appears); a Preset or a Saved filter switches on the next
+ * one the scope's bar has. A Status field is the app's own, so it is refused. TRAP T-one-command-one-door
+ */
+export function placeRequest(kind: string, scope: string, facts: PlaceFacts): NonNullable<RouteAnswer> {
+  const name = NODE_KINDS[kind]?.heading ?? kind;
+  if (kind === 'condition') {
+    const held = facts.holds(scope);
+    const next = facts.fields(scope).find((f) => !held.includes(f));
+    return next ? { request: { scope, hold: [...held, next] } }
+      : { refused: `Scope "${scope}" holds every field it may, so it takes no new ${name}: take one from another scope, or free a field first.` };
+  }
+  if (kind === 'preset' || kind === 'saved') {
+    const next = facts.presets(scope).find((p) => p.id.startsWith(SAVED_PRESET) === (kind === 'saved') && !facts.on(scope, p.id));
+    return next ? { request: { scope, preset: next.id, on: true } }
+      : { refused: `Scope "${scope}" has no ${name.toLowerCase()} left to switch on${kind === 'saved' ? ': a saved filter joins from the bar\'s Saved menu' : ''}.` };
+  }
+  if (kind === 'status') return { refused: `A ${name.toLowerCase()} is the app's own: the store's statusFields() works it out, and a Query cannot add one.` };
+  return { refused: `The Query has no "${name}" to place.` };
 }
 
 /** What a new route asks: a command, or why it is refused; null, nothing to do. */

@@ -7089,6 +7089,7 @@ request's scope — with none named, or none drawing there, every source's.
 - Site: `test/unit/an-answer-is-a-pure-edit.test.mjs`
 - Site: `mcp-server/tools/query.js`
 - Site: `test/unit/the-mcp-query-tier.test.mjs`
+- Site: `test/e2e/reforged-query-panel.spec.ts`
 
 ### T-a-setting-is-declared-once
 
