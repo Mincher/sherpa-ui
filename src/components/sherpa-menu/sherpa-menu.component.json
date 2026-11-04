@@ -1262,7 +1262,7 @@
       "$type": "prop",
       "name": "data-align",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [
@@ -1502,7 +1502,7 @@
       "$type": "prop",
       "name": "data-placement",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [

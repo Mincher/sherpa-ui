@@ -43,6 +43,9 @@ export class SherpaSlider extends SherpaElement {
     'value',
     'disabled',
     'name',
+    'data-type',
+    'data-value-start',
+    'data-value-end',
   ];
 
   /** It submits its value — or a range's two ends — in a form. TODO 214 */

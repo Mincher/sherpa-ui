@@ -19,6 +19,7 @@ export class SherpaGroup extends SherpaElement {
     'data-direction': { type: 'enum', kind: 'style', values: ['row', 'column', 'grid'] },
     'data-col-count': { type: 'enum', kind: 'style', values: [...COL_COUNTS] },
   } as const;
+  static override observed = ['data-col-count'];
 
   override onRender(): void {
     this.#syncCols();

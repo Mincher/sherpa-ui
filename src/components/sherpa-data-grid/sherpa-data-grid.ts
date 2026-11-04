@@ -163,6 +163,11 @@ export class SherpaDataGrid extends SherpaElement {
     'data-limit-options': { type: 'enum', kind: 'behaviour', values: ['on', 'off'] },
     'data-hide-unmatched': { type: 'enum', kind: 'behaviour', values: ['on', 'off'] },
   } as const;
+  static override observed = [
+    'data-bounds', 'data-primary-field', 'data-apply-on', 'data-sort-field',
+    'data-sort-direction', 'data-group-field', 'data-filter-fields', 'data-pending', 'data-failed',
+    'data-page', 'data-page-size', 'data-needles', 'data-select', 'data-limit-options', 'data-hide-unmatched',
+  ];
 
   /* A PAGE of rows, with its groups. TRAP T-a-component-asks-its-provider */
   static override asks: DataAsk = {
@@ -406,7 +411,7 @@ export class SherpaDataGrid extends SherpaElement {
         this.#render();
         return;
       // Read when asked, or drawn by CSS.
-      case 'data-total-pages': case 'data-locked': case 'data-column-filters':
+      case 'data-locked': case 'data-column-filters':
         return;
       case 'data-needles':
         this.#find.read(this.dataset['needles']);

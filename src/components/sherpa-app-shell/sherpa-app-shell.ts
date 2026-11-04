@@ -28,6 +28,7 @@ export class SherpaAppShell extends SherpaElement {
     'data-panel-start-width': { type: 'string', kind: 'behaviour' },
     'data-panel-end-width': { type: 'string', kind: 'behaviour' },
   } as const;
+  static override observed = ['data-panel-start-width', 'data-panel-end-width'];
 
   override onRender(): void {
     // The event is composed, so one listener covers the default rail and a slotted one.

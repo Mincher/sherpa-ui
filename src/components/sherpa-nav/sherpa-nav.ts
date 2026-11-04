@@ -90,6 +90,7 @@ export class SherpaNav extends SherpaElement {
     'data-searchable': { type: 'boolean', kind: 'visibility' },
     'data-nav-state': { type: 'enum', kind: 'style', values: ['collapsed', 'hover', 'default', 'pinned', 'settings'] },
   } as const;
+  static override observed = ['data-current-id', 'data-nav-state'];
 
   /** The nav as data, normalised. */
   #config: NavConfig = {};

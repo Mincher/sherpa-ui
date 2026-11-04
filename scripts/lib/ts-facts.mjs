@@ -8,6 +8,7 @@
  * - parseObserved — The `static override observed` list, as names.
  * - expandArrayConst — Read a module-level `const NAME = ['a', 'b'] as const;` back into its strings.
  * - parsePropDecls — Each prop `static override props` declares: its kind, type, values and accessor.
+ * - baseObserves — Does the base class observe this declared prop by itself?
  * - parseClassApi — The component class's public methods and properties, read by TypeScript's own parser.
  * - parsePopulate — What `populate()` takes, from the `populate(…) — …` line over its `renderData`; null with no override.
  * - parseEmits — Each `this.emit()` event, named and typed by the checker; which are cancelable; and what it cannot name.
@@ -183,6 +184,19 @@ function declOf(node, file) {
   }
   return out;
 }
+
+/**
+ * Does the base class observe this declared prop by itself — content its markup
+ * or JS writes, a template's pick, a boolean (`"false"` is off), what a chart asks
+ * by? The rest are observed only where the component lists them in `observed`.
+ * TRAP T-observe-what-does-work
+ */
+export function baseObserves(name, decl) {
+  asked ??= new Set([...['SUMMARY_PROPS', 'STACK_PROPS'].flatMap((n) => Object.keys(entriesOf(listNamed(n, sharedFile()).node, sharedFile()))),
+    'data-source', 'data-scope']);
+  return decl.kind === 'content' || decl.kind === 'template' || decl.type === 'boolean' || asked.has(name);
+}
+let asked;
 
 /** The class `define()` registers, else the first. */
 function registeredClass(sf, src) {

@@ -190,7 +190,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   static override variantAttrs = ['data-orientation', 'data-scope', 'data-flat', 'data-column'];
 
-  static override observed = ['open'];
+  static override observed = [
+    'open', 'data-bounds', 'data-applied', 'data-limit-options', 'data-hide-unmatched', 'data-type',
+    'data-sort-field', 'data-sort-direction', 'data-group-field', 'data-apply-on', 'data-pending',
+    'data-failed',
+  ];
 
   /** Portrait over one scope, an accordion — or flat; over several, the column. TODO 425, 435 */
   protected override get templateId(): string {

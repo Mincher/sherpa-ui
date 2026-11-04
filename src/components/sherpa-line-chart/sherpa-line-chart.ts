@@ -64,6 +64,7 @@ export class SherpaLineChart extends SherpaElement {
     'data-max': { type: 'number', kind: 'behaviour' },
     'data-ticks': { type: 'number', kind: 'behaviour' },
   } as const;
+  static override observed = ['data-type', 'data-min', 'data-max', 'data-ticks'];
 
   /** The x-axis labels, one per point. */
   #labels: string[] = [];

@@ -23,6 +23,7 @@ export class SherpaDataVizHeader extends SherpaElement {
     // What Default draws: the menu's first row names it. Its provider writes this. Will, TODO 620
     'data-presentation-default': { type: 'string', kind: 'behaviour' },
   } as const;
+  static override observed = ['data-presentation', 'data-presentation-default'];
 
   override onRender(): void {
     this.#showAs();

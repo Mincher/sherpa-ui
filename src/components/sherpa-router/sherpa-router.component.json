@@ -20,7 +20,7 @@
       "$type": "prop",
       "name": "data-overlay",
       "type": "string",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "description": "owned parameters that open OVER the page. A link that names only these keeps the rest of the route as it is"
@@ -29,7 +29,7 @@
       "$type": "prop",
       "name": "data-params",
       "type": "string",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "description": "the URL search parameters it owns, space separated: `name`, or `name=default` for the value a URL that leaves it out means"

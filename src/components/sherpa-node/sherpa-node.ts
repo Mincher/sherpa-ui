@@ -38,6 +38,7 @@ export class SherpaNode extends SherpaElement {
     'data-caption': { type: 'string', kind: 'content' },
     'data-locked': DATA_PROPS['data-locked'],
   } as const;
+  static override observed = ['data-x', 'data-y'];
 
   /** The drag in progress: the pointer, where it took hold, the place then, and the canvas's zoom. */
   #drag: { id: number; x: number; y: number; from: [number, number]; zoom: number } | null = null;

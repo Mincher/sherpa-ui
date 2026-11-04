@@ -132,6 +132,9 @@ export const STACK_PROPS = {
   'data-count-axis': { type: 'enum', kind: 'style', values: ['primary', 'secondary'] },
 } as const satisfies PropMap;
 
+/** What a component that asks re-asks by when it changes. */
+const ASKED = new Set<string>([...Object.keys(SUMMARY_PROPS), ...Object.keys(STACK_PROPS), 'data-source', 'data-scope']);
+
 /** A chart in the shared frame: bar, line, gauge and radial. */
 export const FRAME_PROPS = {
   /** Its legend is drawn elsewhere — its card's filter toolbar: no room kept for it. Will, TODO 670 */
@@ -243,7 +246,7 @@ export abstract class SherpaElement extends Base {
    *  TRAP T-a-page-sheet-is-for-what-a-component-puts-in-the-page */
   static pageCss?: URL;
 
-  /** Attribute names to observe. Subclasses override (merge with super if extending). */
+  /** What this component's own JS reacts to, beyond what the base class observes. TRAP T-observe-what-does-work */
   static observed: string[] = [];
 
   /**
@@ -300,8 +303,9 @@ export abstract class SherpaElement extends Base {
   }
 
   /**
-   * Declared attributes — the public surface as data. Every key is observed.
-   * TRAP T-declared-only-means-css-owns-it — `style`/`visibility` do no work.
+   * Declared attributes — the public surface as data. The base class observes
+   * what it does work for; a component lists the rest it reacts to in `observed`.
+   * TRAP T-observe-what-does-work
    */
   static props: PropMap = {};
 
@@ -375,11 +379,15 @@ export abstract class SherpaElement extends Base {
     }
   }
 
-  /** Declared props + `variantAttrs` + `observed`, deduped. */
+  /** What the base class does work for — a prop its markup or JS writes, a
+   *  template's pick, a boolean (`"false"` is off), what it asks by — and `observed`.
+   *  TRAP T-observe-what-does-work */
   static get observedAttributes(): string[] {
+    const works = Object.entries(this.props).filter(([name, def]) =>
+      def.kind === 'content' || def.kind === 'template' || def.type === 'boolean' || ASKED.has(name));
     return [
       ...new Set([
-        ...Object.keys(this.props),
+        ...works.map(([name]) => name),
         ...this.variantAttrs,
         ...this.observed,
         ...(this.labelTarget ? ['aria-label', 'aria-pressed'] : []),
@@ -570,7 +578,7 @@ export abstract class SherpaElement extends Base {
     // Its markup's directives first; onChange still fires afterwards.
     applyDirectives(this.#directives, (attr) => this.getAttribute(attr), this.#glyph, name);
     if (name === 'aria-label' || name === 'aria-pressed') this.#syncLabel();
-    if (Ctor.asks && (name in SUMMARY_PROPS || name in STACK_PROPS || name === 'data-source' || name === 'data-scope')) this.#reask();
+    if (Ctor.asks && ASKED.has(name)) this.#reask();
     this.onChange(name, oldVal, newVal);
     // TRAP T-restamp-runs-after-on-change
     this.#restampIfVariantChanged();

@@ -23,6 +23,7 @@ export class SherpaTabs extends SherpaElement {
   static override props = {
     'data-current-id': { type: 'string', kind: 'behaviour' },
   } as const;
+  static override observed = ['data-current-id'];
 
   /** The tabs, as populated. */
   #tabs: TabDef[] = [];

@@ -38,7 +38,7 @@
       "$type": "prop",
       "name": "data-orientation",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [
@@ -62,7 +62,7 @@
       "$type": "prop",
       "name": "data-size",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [

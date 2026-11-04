@@ -279,7 +279,7 @@
       "type": "boolean",
       "observed": true,
       "declared": true,
-      "kind": "style",
+      "kind": "behaviour",
       "description": "a KEY, not a filter: each row a light key, its swatch and its name, with nothing to press. TRAP T-readonly-legend-is-a-key-not-a-filter"
     },
     {

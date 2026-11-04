@@ -55,6 +55,9 @@ export class SherpaCalendar extends SherpaElement {
     'data-type': { type: 'enum', kind: 'behaviour', values: ['single', 'range'] },
     'data-has-time': { type: 'boolean', kind: 'style' },
   } as const;
+  static override observed = [
+    'value', 'data-value-start', 'data-value-end', 'min', 'max', 'data-available', 'data-view', 'data-type',
+  ];
 
   /** The month on view — its year is the month and year views' too. */
   #shown = today().toPlainYearMonth();

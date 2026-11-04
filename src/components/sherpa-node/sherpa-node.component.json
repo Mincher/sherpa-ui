@@ -132,7 +132,7 @@
       "$type": "prop",
       "name": "data-input-socket",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [
@@ -154,7 +154,7 @@
       "$type": "prop",
       "name": "data-output-socket",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [
@@ -167,7 +167,7 @@
       "$type": "prop",
       "name": "data-step",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [

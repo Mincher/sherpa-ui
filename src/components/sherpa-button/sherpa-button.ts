@@ -39,6 +39,7 @@ export class SherpaButton extends SherpaElement {
   static override labelTarget = '.trigger';
   static override observed = [
     'disabled',
+    'data-description',
   ];
 
   /** `data-type` picks the tree, so a change to it must re-stamp. */

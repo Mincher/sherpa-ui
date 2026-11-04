@@ -155,7 +155,7 @@
       "$type": "prop",
       "name": "data-format",
       "type": "string",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "description": "the value's Intl.NumberFormatOptions, as JSON"
@@ -207,7 +207,7 @@
       "$type": "prop",
       "name": "data-status",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [
@@ -219,7 +219,7 @@
       "$type": "prop",
       "name": "data-trend",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [

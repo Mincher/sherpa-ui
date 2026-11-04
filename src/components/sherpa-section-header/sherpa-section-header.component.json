@@ -82,7 +82,7 @@
       "$type": "prop",
       "name": "data-divider",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [
@@ -103,7 +103,7 @@
       "$type": "prop",
       "name": "data-size",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [

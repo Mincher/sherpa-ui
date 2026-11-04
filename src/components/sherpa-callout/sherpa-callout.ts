@@ -25,6 +25,7 @@ export class SherpaCallout extends SherpaElement {
     // Shown again, its timer starts again: a banner hidden until a notice waits.
     'hidden': { type: 'boolean', kind: 'behaviour' },
   } as const;
+  static override observed = ['data-duration'];
 
   static override aria = { role: 'status' };
 

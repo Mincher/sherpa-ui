@@ -56,6 +56,7 @@ export class SherpaRadialChart extends SherpaElement {
     'data-sweep': { type: 'number', kind: 'behaviour' },
     'data-inner': { type: 'string', kind: 'behaviour' },
   } as const;
+  static override observed = ['data-type', 'data-sweep-start', 'data-sweep', 'data-inner'];
 
   /** The slices, as populated. */
   #slices: RadialSlice[] = [];

@@ -351,19 +351,43 @@ the code and the contract agree:
 
 | kind | meaning |
 |---|---|
-| `content` | JS writes it into the shadow DOM — the base class does it |
+| `content` | written into the shadow DOM — by its template's directive, or the component's JS |
 | `style` | CSS selects on it; JS never reads it. DECLARED ONLY |
 | `visibility` | presence toggles a CSS rule. Declared only, like style |
 | `behaviour` | only the component's own JS reads it |
 | `template` | it picks the template; `variantAttrs` re-stamps on a change |
 
-Only `content` generates any work. `style` and `visibility` exist so the
-attribute is TYPED and observable — a JS→CSS write path (`this.set()`), and a
-place to hang non-CSS use later — **without** tempting anyone to add a JS
-branch for something CSS already handles correctly. Declaring `data-status` is
-not licence to add a JS status branch.
+`style` and `visibility` exist so the attribute is TYPED — a JS→CSS write path
+(`this.set()`), and a place to hang non-CSS use later — **without** tempting
+anyone to add a JS branch for something CSS already handles correctly. Declaring
+`data-status` is not licence to add a JS status branch. Which props are OBSERVED
+is `T-observe-what-does-work`.
 
 - Site: `src/core/ui/sherpa-element.ts`
+
+### T-observe-what-does-work
+
+**The base class observes only what it does work for** (plan 695 P6): a
+`content` prop (its directive or the component's JS writes it), a `template`
+prop and `variantAttrs` (a re-stamp), every declared boolean (`"false"` is off,
+`T-false-is-off`), the props a chart asks by (`SUMMARY_PROPS`, `STACK_PROPS`,
+`data-source`, `data-scope`: a change re-asks) and the label pair. A component
+lists the rest its own JS reacts to in `static observed`. A `style`, `visibility`
+or `behaviour` prop it does not list is CSS's, or read when it is needed, and its
+change runs no callback.
+
+Measured 2026-11-04 over 68 classes: 574 observed attributes before, 523 after.
+The 186 declared booleans stay observed for `"false"`. A prop a directive
+follows must be observed, or it is never written again: `check:props` holds
+that. The spec's `observed` is the same rule (`baseObserves`); the vendored
+`compile-def.mjs` keeps a copy of the asked props, and `observed-rule.test.mjs`
+holds the class, the spec and the copy together.
+
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `scripts/lib/ts-facts.mjs`
+- Site: `scripts/lib/generation/compile-def.mjs`
+- Site: `scripts/check-props.mjs`
+- Site: `test/unit/observed-rule.test.mjs`
 
 ### T-icon-box-is-not-the-glyph
 

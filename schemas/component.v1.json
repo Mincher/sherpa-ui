@@ -229,7 +229,7 @@
           "type": "boolean"
         },
         "declared": {
-          "description": "true = declared in the class's `static props`: observed by the base class, typed, and set by `populate({ key })` — `label` sets data-label.",
+          "description": "true = declared in the class's `static props`: typed, and set by `populate({ key })` — `label` sets data-label. Whether it is observed is `observed`.",
           "type": "boolean"
         },
         "native": {

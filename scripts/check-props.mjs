@@ -23,7 +23,7 @@
 import { readFileSync, globSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
-import { parseObserved, parsePropDecls } from './lib/ts-facts.mjs';
+import { baseObserves, parseObserved, parsePropDecls } from './lib/ts-facts.mjs';
 import { parseTemplates } from './lib/html-structure.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -113,7 +113,10 @@ for (const file of globSync('src/components/*/*.html', { cwd: ROOT })) {
   const tsPath = join(ROOT, file.replace(/\.html$/, '.ts'));
   let ts;
   try { ts = readFileSync(tsPath, 'utf8'); } catch { continue; }
-  const heard = new Set([...declaredIn(ts, tsPath), ...parseObserved(ts, tsPath)]);
+  // What it observes: what the base class does work for, and its own list. TRAP T-observe-what-does-work
+  const decls = parsePropDecls(ts, tsPath);
+  const variants = /static override variantAttrs = \[([\s\S]*?)\]/.exec(ts)?.[1].match(/'[^']+'/g)?.map((q) => q.slice(1, -1)) ?? [];
+  const heard = new Set([...Object.keys(decls).filter((a) => baseObserves(a, decls[a])), ...variants, ...parseObserved(ts, tsPath)]);
   const templates = parseTemplates(readFileSync(join(ROOT, file), 'utf8'));
   const walk = (nodes) => {
     for (const n of nodes) {

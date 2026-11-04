@@ -43,6 +43,7 @@ export class SherpaNavItem extends SherpaElement {
     'data-expandable': { type: 'boolean', kind: 'style' },
     'data-expanded': { type: 'boolean', kind: 'style', accessor: 'expanded' },
   } as const;
+  static override observed = ['data-href'];
 
   /** Installed by `define()` from the props' `accessor`. */
   declare current: boolean;

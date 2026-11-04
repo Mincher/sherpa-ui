@@ -73,6 +73,7 @@ export class SherpaAppHeader extends SherpaElement {
     // Delete view only on the reader's own View. TRAP T-a-saved-view-is-the-readers-own
     'data-custom-view': { type: 'boolean', kind: 'visibility' },
   } as const;
+  static override observed = ['data-theme-mode'];
 
   override onRender(): void {
     this.#sync();

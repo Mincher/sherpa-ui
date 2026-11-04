@@ -279,7 +279,7 @@
       "$type": "prop",
       "name": "data-padding",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [
@@ -295,7 +295,7 @@
       "$type": "prop",
       "name": "data-padding-inline",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [
@@ -310,7 +310,7 @@
       "$type": "prop",
       "name": "data-row-span",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [
@@ -343,7 +343,7 @@
       "$type": "prop",
       "name": "data-state",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "visibility",
       "values": [

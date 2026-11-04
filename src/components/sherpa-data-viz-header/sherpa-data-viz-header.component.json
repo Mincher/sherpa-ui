@@ -117,7 +117,7 @@
       "$type": "prop",
       "name": "data-divider",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [

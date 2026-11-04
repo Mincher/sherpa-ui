@@ -39,7 +39,7 @@
       "$type": "prop",
       "name": "data-direction",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [

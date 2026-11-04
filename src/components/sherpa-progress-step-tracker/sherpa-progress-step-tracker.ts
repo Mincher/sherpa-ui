@@ -19,6 +19,7 @@ export class SherpaProgressStepTracker extends SherpaElement {
   static override props = {
     'data-current-step': { type: 'number', kind: 'behaviour' },
   } as const;
+  static override observed = ['data-current-step'];
 
   /** The steps, as populated. */
   #steps: Step[] = [];

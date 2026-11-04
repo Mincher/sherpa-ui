@@ -85,6 +85,7 @@ export class SherpaInputText extends SherpaElement {
   static override labelTarget = '.control';
   static override observed = [
     ...MIRRORED,
+    'data-matches',
   ];
 
   #control: Control | null = null;

@@ -35,6 +35,8 @@ export class SherpaSelectCard extends SherpaElement {
     'name',
     'value',
     'disabled',
+    'data-orientation',
+    'data-select-mode',
   ];
 
   /** Checked, it submits its value in a form: its footer controls are parts and

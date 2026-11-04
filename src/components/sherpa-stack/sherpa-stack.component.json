@@ -32,7 +32,7 @@
       "$type": "prop",
       "name": "data-align",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [
@@ -49,7 +49,7 @@
       "$type": "prop",
       "name": "data-direction",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [
@@ -72,7 +72,7 @@
       "$type": "prop",
       "name": "data-gap",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [
@@ -107,7 +107,7 @@
       "$type": "prop",
       "name": "data-min-item",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [

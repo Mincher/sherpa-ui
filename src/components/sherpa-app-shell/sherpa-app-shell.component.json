@@ -188,7 +188,7 @@
       "$type": "prop",
       "name": "data-nav-state",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [

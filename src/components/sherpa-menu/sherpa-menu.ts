@@ -165,7 +165,10 @@ export class SherpaMenu extends SherpaElement {
     'data-value': { type: 'string', kind: 'behaviour' },
   } as const;
 
-  static override observed = ['open'];
+  static override observed = [
+    'open', 'data-bounds', 'data-select', 'data-conditions', 'data-takes', 'data-mode', 'data-body',
+    'data-apply-on', 'data-min', 'data-max', 'data-step', 'data-available', 'data-op', 'data-value',
+  ];
 
   /* `data-type` picks the TEMPLATE, so a change must re-stamp the shadow DOM.
      Without this the attribute is read once, at birth, and a menu that becomes

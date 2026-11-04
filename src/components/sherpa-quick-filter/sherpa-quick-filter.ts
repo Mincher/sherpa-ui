@@ -116,7 +116,11 @@ export class SherpaQuickFilter extends SherpaElement {
 
   // data-label is hand-written: an absent attribute must leave the template's
   // own default label alone.
-  static override observed = ['aria-label', 'disabled'];
+  static override observed = [
+    'aria-label', 'disabled', 'data-swatch', 'data-type', 'data-description', 'data-by-preset',
+    'data-held-out', 'data-condition', 'data-applied-at', 'data-layout', 'data-id', 'data-kind',
+    'data-column', 'data-direction',
+  ];
 
 
   /** Its own doors, as its modules call them. */

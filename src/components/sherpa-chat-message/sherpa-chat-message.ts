@@ -17,6 +17,7 @@ export class SherpaChatMessage extends SherpaElement {
     'data-timestamp': { type: 'string', kind: 'content' },
     'data-message': { type: 'string', kind: 'content' },
   } as const;
+  static override observed = ['data-type'];
 
   override onRender(): void {
     this.#sync();

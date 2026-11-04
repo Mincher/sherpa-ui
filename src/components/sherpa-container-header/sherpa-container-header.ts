@@ -33,6 +33,7 @@ export class SherpaContainerHeader extends SherpaElement {
     // the panel shows it, so the button is inactive. Will, TODOs 629, 672
     'data-filter-toolbar': { type: 'enum', kind: 'behaviour', values: ['shown', 'shut', 'panel', 'off'] },
   } as const;
+  static override observed = ['data-presentation', 'data-presentation-default', 'data-filter-toolbar'];
 
   override onChange(name: string): void {
     if (name === 'data-presentation' || name === 'data-presentation-default') this.#showAs();

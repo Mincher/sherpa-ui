@@ -18,6 +18,7 @@ export class SherpaContainerFooter extends SherpaElement {
     /* The HOST reports whether anything changed. Absent, the pair is left alone. */
     'data-dirty': { type: 'enum', kind: 'style', values: ['true', 'false'] },
   } as const;
+  static override observed = ['data-dirty'];
 
   override onRender(): void {
     this.$('slot')?.addEventListener('slotchange', () => this.#syncPair());

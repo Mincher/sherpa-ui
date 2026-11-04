@@ -27,7 +27,7 @@ export class SherpaSwitch extends SherpaElement {
   static override labelTarget = '.input';
   /** A form cannot see an <input> through a shadow root. TRAP T-shadow-input-needs-element-internals */
   static readonly formAssociated = true;
-  static override observed = ['checked', ...MIRRORED];
+  static override observed = ['checked', ...MIRRORED, 'data-type'];
 
   /** The native checkbox the switch wraps. */
   #input(): HTMLInputElement | null {

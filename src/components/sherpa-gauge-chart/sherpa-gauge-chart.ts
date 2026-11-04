@@ -65,6 +65,7 @@ export class SherpaGaugeChart extends SherpaElement {
     'data-caption': { type: 'string', kind: 'content' },
     'data-unit': { type: 'string', kind: 'content' },
   } as const;
+  static override observed = ['value', 'data-zones'];
 
   /** One tab stop for the named bands; the arrows move between them. TRAP T-one-tab-stop-per-set */
   #roving: Roving | null = null;

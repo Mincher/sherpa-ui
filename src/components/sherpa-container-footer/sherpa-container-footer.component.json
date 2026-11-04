@@ -32,7 +32,7 @@
       "$type": "prop",
       "name": "data-align",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [

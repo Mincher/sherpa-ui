@@ -37,6 +37,7 @@ export class SherpaLayoutCanvas extends SherpaElement {
     'data-min-zoom': { type: 'number', kind: 'behaviour' },
     'data-max-zoom': { type: 'number', kind: 'behaviour' },
   } as const;
+  static override observed = ['data-zoom'];
 
   /** The zoom, and its bounds — read by the code, so observed, not CSS props. */
 

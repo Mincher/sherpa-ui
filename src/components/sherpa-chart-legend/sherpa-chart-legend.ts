@@ -48,8 +48,8 @@ export class SherpaChartLegend extends SherpaElement {
 
   static override props = {
     ...SUMMARY_PROPS,
-    /* Report clicks, never toggle a series — the host owns the selection. */
-    'data-readonly': { type: 'boolean', kind: 'style' },
+    /* A key, not a filter: rows report nothing. Its JS draws and guards by it. */
+    'data-readonly': { type: 'boolean', kind: 'behaviour' },
     // A rest on a row says so, for its provider's highlight. Will, TODO 495
     'data-highlight-hover': { type: 'boolean', kind: 'behaviour' },
     // Each row a value chip. Will, TODO 586
@@ -57,7 +57,7 @@ export class SherpaChartLegend extends SherpaElement {
   } as const;
 
   override onChange(name: string): void {
-    if (name === 'data-chips' && this.#items.length) this.#render();
+    if ((name === 'data-chips' || name === 'data-readonly') && this.#items.length) this.#render();
   }
 
   /** The legend rows, as populated. */

@@ -31,6 +31,7 @@ export class SherpaSparkline extends SherpaElement {
     'data-type': { type: 'enum', kind: 'style', values: ['bar'] },
     'data-values': { type: 'string', kind: 'behaviour' },
   } as const;
+  static override observed = ['data-type', 'data-values'];
 
   override onRender(): void {
     this.#apply();

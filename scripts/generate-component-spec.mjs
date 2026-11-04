@@ -33,7 +33,7 @@ import { compileDef } from './lib/generation/compile-def.mjs';
 import { authoredCss, extractBindings, parseStates } from './lib/css-reader.mjs';
 import { parseTemplates, htmlDiff, boundTo } from './lib/html-structure.mjs';
 import { schemaCheck } from './lib/schema-check.mjs';
-import { parseClassApi, parseEmits, parseObserved, parsePopulate, parsePropDecls } from './lib/ts-facts.mjs';
+import { baseObserves, parseClassApi, parseEmits, parseObserved, parsePopulate, parsePropDecls } from './lib/ts-facts.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const C = join(ROOT, 'src', 'components');
@@ -714,7 +714,7 @@ function generateSpec(name) {
     // `kind` says HOW a prop is realised; `observed` says WHETHER the component
     // watches it. They are independent — a CSS-only attribute is routinely
     // observed. TRAP T-kind-says-how-not-whether
-    if (ts) p.observed = tsObserved.includes(nm) || nm in tsDecls;
+    if (ts) p.observed = tsObserved.includes(nm) || (nm in tsDecls && baseObserves(nm, decl));
     if (nm in tsDecls) p.declared = true;
     if (native) p.native = true;
     // The TS declaration wins. A prior spec's kind was inferred from the

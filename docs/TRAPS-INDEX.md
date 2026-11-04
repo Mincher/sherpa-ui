@@ -833,7 +833,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (126)
+## SherpaElement and the shared sheets (127)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -925,6 +925,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-motion-is-owned-here](traps/element-and-sheets.md#t-motion-is-owned-here) — sherpa-motion
 - [T-non-value-rows-is-one-selector](traps/element-and-sheets.md#t-non-value-rows-is-one-selector) — shared-constants
 - [T-number-coercion](traps/element-and-sheets.md#t-number-coercion) — sherpa-element
+- [T-observe-what-does-work](traps/element-and-sheets.md#t-observe-what-does-work) — sherpa-element
 - [T-one-command-one-door](traps/data-layer.md#t-one-command-one-door) — node-graph
 - [T-one-field-one-status](traps/data-layer.md#t-one-field-one-status) — filter-host-controller
 - [T-one-query-one-owner](traps/data-layer.md#t-one-query-one-owner) — filter-host-controller
@@ -1078,7 +1079,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](traps/other-components.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (72)
+## Build, tools and the MCP (73)
 
 - [T-a-bare-name-must-be-used-not-mentioned](traps/build-tools-mcp.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — ts-facts
@@ -1137,6 +1138,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-motion-is-owned-here](traps/element-and-sheets.md#t-motion-is-owned-here) — lint-css
 - [T-no-attribute-is-the-default-variant](traps/other-components.md#t-no-attribute-is-the-default-variant) — project-tokens
 - [T-nothing-downloads-to-serve](traps/build-tools-mcp.md#t-nothing-downloads-to-serve) — playwright.config, sherpa-ui
+- [T-observe-what-does-work](traps/element-and-sheets.md#t-observe-what-does-work) — check-props, compile-def, ts-facts
 - [T-one-field-one-status](traps/data-layer.md#t-one-field-one-status) — check-ownership
 - [T-one-walk-counts-and-limits-in-order](traps/data-layer.md#t-one-walk-counts-and-limits-in-order) — check-bench
 - [T-private-state-is-a-custom-state](traps/filters.md#t-private-state-is-a-custom-state) — check-props

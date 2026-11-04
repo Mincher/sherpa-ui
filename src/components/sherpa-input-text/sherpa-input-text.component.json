@@ -833,7 +833,7 @@
       "$type": "prop",
       "name": "data-rules",
       "type": "string",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "behaviour",
       "description": "names a validation rule the platform has no idea about (e.g. \"email\") — see the TS for the rule set"
@@ -842,7 +842,7 @@
       "$type": "prop",
       "name": "data-state",
       "type": "enum",
-      "observed": true,
+      "observed": false,
       "declared": true,
       "kind": "style",
       "values": [

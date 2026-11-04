@@ -36,13 +36,14 @@ export class SherpaFoo extends SherpaElement {
   static override css = new URL('./sherpa-foo.css', import.meta.url);
   static override html = new URL('./sherpa-foo.html', import.meta.url);
 
-  // The public attribute surface, DECLARED. Every key is observed.
+  // The public attribute surface, DECLARED.
   static override props = {
     'data-heading': { type: 'string', kind: 'content' },
     'data-status': { type: 'enum', kind: 'style', values: ['info', 'success', 'warning', 'critical', 'urgent'] },
   } as const;
 
-  // Native attributes, and attributes the component handles itself.
+  // What its own JS reacts to, beyond the content, template and boolean props
+  // the base class observes (T-observe-what-does-work).
   static override observed = ['disabled'];
 
   override onRender() { /* the shadow DOM is ready — after each stamp */ }

@@ -10,6 +10,7 @@
  * caller is responsible for that check.
  *
  * Map:
+ * - ASKED — What a chart asks by: SUMMARY_PROPS and STACK_PROPS in sherpa-element.ts.
  * - compileDef — Pure `def → code`.
  */
 
@@ -144,14 +145,24 @@ function compileCss(def) {
   return L.join('\n');
 }
 
+/** What a chart asks by: SUMMARY_PROPS and STACK_PROPS in sherpa-element.ts.
+ *  This file is vendored and imports nothing; a unit test holds the two in step. */
+export const ASKED = ['data-aggregate', 'data-field', 'data-segment-field', 'data-over-field', 'data-bucket', 'data-bands',
+  'data-where', 'data-stack-field', 'data-count-axis', 'data-source', 'data-scope'];
+
+/** Does the base class observe this declared prop by itself? ts-facts.mjs's `baseObserves`. TRAP T-observe-what-does-work */
+function baseObserves(p) {
+  return p.kind === 'content' || p.kind === 'template' || p.type === 'boolean' || ASKED.includes(p.name);
+}
+
 // ── TS: class, observed, templateId, nested-event reemit ───────────────
 function compileTs(def, name, cls) {
   // `observed` is its own field. A spec written before it existed carries the
-  // old signal, where any kind but 'style' implied observation. A DECLARED prop
-  // is observed by the base class, so it is not in the class's own list.
+  // old signal, where any kind but 'style' implied observation. A declared prop
+  // the base class observes by itself is not in the class's own list.
   // TRAP T-kind-says-how-not-whether
   const observed = (def.props ?? [])
-    .filter((p) => !p.declared && (typeof p.observed === 'boolean' ? p.observed : p.kind !== 'style'))
+    .filter((p) => (typeof p.observed === 'boolean' ? p.observed : p.kind !== 'style') && !(p.declared && baseObserves(p)))
     .map((p) => p.name);
   const tmplProp = (def.props ?? []).find((p) => p.kind === 'template');
   // find reemit wiring from anatomy children

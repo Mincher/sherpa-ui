@@ -24,6 +24,7 @@ export class SherpaPagination extends SherpaElement {
     'data-page-size': DATA_PROPS['data-page-size'],
     'data-rows-options': { type: 'string', kind: 'behaviour' },
   } as const;
+  static override observed = ['data-page', 'data-total-pages', 'data-page-size', 'data-rows-options'];
 
   /* No rows — the view state only, as attributes. TRAP T-a-component-asks-its-provider */
   static override asks: DataAsk = { shape: 'state' };
