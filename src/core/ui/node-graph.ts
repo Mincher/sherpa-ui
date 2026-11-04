@@ -18,6 +18,7 @@
  * - inspectNode — Fill an overlay panel with one node: its rows again, their routes, and a visual.
  * - Inspector — The overlay panel a picked node opens in.
  * - GraphEditor — What an editor's binding gives back: Save, and the undo.
+ * - Undoable — An editor whose edits are steps.
  * - WorkflowEditor — A workflow's editor: Save and stop, and the Custom Nodes it opens, discards and holds.
  * - QueryEditorOptions — What drawing a page's Query needs beyond its source: its definition, an inspector, a session.
  * - bindQueryEditor — Keep a page's Query drawn on a canvas as it changes, and ask it for each edit.
@@ -40,6 +41,7 @@ import type { SocketSide } from '../../components/sherpa-node/node-sockets.js';
 import type { SessionStore } from '../browser/session.js';
 import type { DataSource } from '../data/data-source.js';
 import { Journal } from '../data/journal.js';
+import type { Query } from '../data/query.js';
 import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-definition.js';
 import { graphRequest, queryGraph, queryStepNode, routeRequest, statusTallies, traceQuerySteps, type QueryGraphFacts } from '../data/query-graph.js';
 import { onTrace, type Span, type StepState, type TraceHost } from '../data/trace.js';
@@ -927,8 +929,18 @@ export interface GraphEditor {
   stop(): void;
 }
 
+/** An editor whose edits are steps. */
+export interface Undoable {
+  /** Step the last edit back; false when there is none. */
+  undo(): boolean;
+  /** Put back the edit the last undo took away; false when there is none. */
+  redo(): boolean;
+  /** Is there an edit to undo, or to redo? */
+  can(): { undo: boolean; redo: boolean };
+}
+
 /** A workflow's editor: Save and stop, and the Custom Nodes it opens, discards and holds. */
-export interface WorkflowEditor extends GraphEditor {
+export interface WorkflowEditor extends GraphEditor, Undoable {
   /** Put the workflow and every definition back as they were last handed over. */
   discard(): void;
   /** Open a Custom Node's inside by its use's id, as ⛶ or Enter does. */
@@ -943,12 +955,6 @@ export interface WorkflowEditor extends GraphEditor {
   path(): readonly string[];
   /** The workflow as the draft holds it now, unsaved. */
   workflow(): WorkflowDefinition;
-  /** Step the last edit back, in whatever level it was made; false when there is none. */
-  undo(): boolean;
-  /** Put back the edit the last undo took away; false when there is none. */
-  redo(): boolean;
-  /** Is there an edit to undo, or to redo? */
-  can(): { undo: boolean; redo: boolean };
 }
 
 /** Tell the app a definition to keep. */
@@ -1013,6 +1019,8 @@ export interface QueryEditorOptions extends QueryGraphFacts {
   inspector?: Inspector;
   /** Where a moved node's place is kept for the tab (TODO 551): it survives a reload, and the session's end forgets it. */
   session?: SessionStore;
+  /** A `sherpa-node-toolbar`: its Undo and Redo step the Query's draft, and it says when they can be pressed. */
+  toolbar?: HTMLElement;
 }
 
 /** Keep a page's Query drawn on a canvas as it changes, and ask it for each edit.
@@ -1022,8 +1030,8 @@ export interface QueryEditorOptions extends QueryGraphFacts {
 export function bindQueryEditor(
   canvas: SherpaLayoutCanvas,
   source: Pick<DataSource, 'query'> & Partial<Pick<DataSource, 'valuesFor' | 'store' | 'state' | 'results' | 'addEventListener' | 'removeEventListener'>>,
-  { definition, inspector, session, ...facts }: QueryEditorOptions,
-): GraphEditor {
+  { definition, inspector, session, toolbar, ...facts }: QueryEditorOptions,
+): GraphEditor & Undoable {
   const query = source.query;
   const typeOf = (field: string): string | undefined => facts.type?.(field) ?? definition.source?.fields?.[field]?.type;
   const values = facts.values ?? ((field: string) => source.valuesFor?.(field)?.map((v) => valueKey(v)));
@@ -1079,9 +1087,62 @@ export function bindQueryEditor(
     picks.follow(graph);
   };
   draw();
-  query.addEventListener('query-change', draw);
+  // — Undo and Redo: the Query's draft, as copies, before and after each change anyone made (a chip's too).
+  //   A step is put back through the Query's own whole restore, so every reader redraws as for any edit.
+  //   A Query that waits for Apply holds no steps: an undo there would apply what the reader has not. TRAP T-an-edit-is-a-step
+  const journal = new Journal<Query>(HISTORY);
+  let last = query.draft;
+  let restoring = false;
+  const tell = (): void => {
+    toolbar?.toggleAttribute('data-can-undo', journal.canBack);
+    toolbar?.toggleAttribute('data-can-redo', journal.canForward);
+    canvas.dispatchEvent(new CustomEvent('history-change', { detail: { undo: journal.canBack, redo: journal.canForward }, bubbles: true, composed: true }));
+  };
+  const onChange = (): void => {
+    draw();
+    if (restoring) return;
+    const now = query.draft;
+    if (query.waiting()) journal.clear();
+    else if (JSON.stringify(now) !== JSON.stringify(last)) journal.push({ before: last, after: now });
+    last = now;
+    tell();
+  };
+  const step = (to: Query | undefined): boolean => {
+    if (!to || query.waiting()) return false;
+    restoring = true;
+    void query.setQuery(to, { by: 'undo' }).finally(() => {
+      restoring = false;
+      last = query.draft;
+      tell();
+    });
+    return true;
+  };
+  const undo = (): boolean => !restoring && journal.canBack && step(journal.back()?.before);
+  const redo = (): boolean => !restoring && journal.canForward && step(journal.forward()?.after);
+  const onTool = (event: Event): void => {
+    const action = (event as CustomEvent<{ action?: string }>).detail?.action;
+    if (action === 'undo') undo();
+    else if (action === 'redo') redo();
+  };
+  const onKey = (event: KeyboardEvent): void => {
+    const first = event.composedPath()[0];
+    if (first instanceof Element && first.matches('input, select, textarea, [contenteditable]')) return;
+    const key = event.key.toLowerCase();
+    if (!(event.ctrlKey || event.metaKey) || event.altKey || (key !== 'z' && key !== 'y')) return;
+    if (key === 'y' || event.shiftKey) redo();
+    else undo();
+    event.preventDefault();
+    event.stopPropagation();
+  };
+  query.addEventListener('query-change', onChange);
+  toolbar?.addEventListener('toolbar-select', onTool);
+  canvas.addEventListener('keydown', onKey, { capture: true });
+  tell();
   const unwatch = watchQuery(canvas, source, definition);
   return {
+    undo,
+    redo,
+    can: () => ({ undo: journal.canBack, redo: journal.canForward }),
     save(): boolean {
       const page = pageWithQuery(definition, query.draft, { pageSize: source.state?.pageSize ?? null, type: (f) => typeOf(f) as FieldType | undefined });
       if (!checkPage(page)) return false;
@@ -1089,7 +1150,11 @@ export function bindQueryEditor(
       return true;
     },
     stop(): void {
-      query.removeEventListener('query-change', draw);
+      query.removeEventListener('query-change', onChange);
+      toolbar?.removeEventListener('toolbar-select', onTool);
+      canvas.removeEventListener('keydown', onKey, { capture: true });
+      toolbar?.removeAttribute('data-can-undo');
+      toolbar?.removeAttribute('data-can-redo');
       unwatch();
       picks.stop();
     },

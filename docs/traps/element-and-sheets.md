@@ -2006,11 +2006,18 @@ to the same class with `journal: N` (`T-a-store-keeps-its-history`).
   `toolbar-select { action }`; the editor sets `data-can-undo` and `data-can-redo`
   from the journal. Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z (and Ctrl/Cmd+Y) are the keys,
   except in a text field, which keeps its own undo.
-- **The toolbar and the card share the corner**: the toolbar sits at the controls'
-  inset (16px) in the canvas's `toolbar` slot, and with one there the `panel` box
-  starts one inset under it. Both are in CSS, in the canvas's own units.
+- **The toolbar floats at the bottom centre** (Will, 734), 32px up as the card floats
+  32px in, so the card keeps 32px from the top. Under 44rem beside a card the
+  toolbar yields to the card's right, in the canvas's own container units.
+- **The Query editor steps its draft the same way.** It keeps a `Journal` of the
+  Query's draft COPIES, whoever changed them (the graph, or a chip outside it), and a
+  step is the Query's own whole restore (`setQuery`), so every reader redraws and a
+  held value stays. A Query that waits for Apply holds no steps: an undo there would
+  apply what the reader has not.
 
 - Site: `src/core/ui/node-graph.ts`
 - Site: `src/components/sherpa-node-toolbar/sherpa-node-toolbar.html`
 - Site: `src/components/sherpa-node-toolbar/sherpa-node-toolbar.ts`
 - Site: `test/e2e/reforged-node-undo.spec.ts`
+- Site: `test/e2e/reforged-query-undo.spec.ts`
+- Site: `test/unit/a-query-draft-is-restored-whole.test.mjs`
