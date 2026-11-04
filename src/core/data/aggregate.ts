@@ -24,6 +24,7 @@
  * - Summary — What `summarise` hands a component, by the shape it asked for.
  * - chartAxes — A chart's two axes as a summary reads them: one shown as counts splits nothing.
  * - summarise — Rows into the shape a component declared — one door for every chart and tile.
+ * - segmented — A series over a date, cut to its date condition's range: `auto` to the unit that fits.
  * - ZoneFacts — A field's zones, as a summary reads them: a status field's ranges of it.
  * - Zoned — A summary with its value field's zones beside it: a gauge.
  * - summariseZoned — Rows into the declared shape, with its value field's zones beside it: a gauge.
@@ -37,7 +38,8 @@
 import { compareValues, readField, groupRows, groupSummaries, valueKey, type GroupSummary, type Row, type SortDirection } from './store.js';
 import type { ChartDatum } from './chart-datum.js';
 import type { Threshold } from './threshold.js';
-import { segmentLabel, segmentStarts, spanLabel, type SegmentUnit } from './segments.js';
+import { rangeOf, segmentLabel, segmentStarts, segmentUnit, spanLabel, type SegmentUnit } from './segments.js';
+import type { WhereCondition } from './where.js';
 
 /* ── Reducers ──────────────────────────────────────────────────────────── */
 
@@ -335,12 +337,16 @@ function step(key: string, bucket: Bucket): string {
  * bucket from the first to the last — a quiet month is zero, never missing.
  * TRAP T-a-series-has-a-value-at-every-point
  */
-function pointsOf(rows: readonly Row[], over: string, bucket: Bucket | undefined, declared: readonly unknown[]): unknown[] {
+function pointsOf(rows: readonly Row[], over: string, bucket: Bucket | undefined, declared: readonly unknown[],
+  range?: readonly [string, string]): unknown[] {
   const keyOf = (v: unknown): unknown => (bucket ? cut(v, bucket) : v);
+  const held = (): unknown[] => [...new Set(rows.map((r) => readField(r, over)).filter((v) => v != null && v !== '').map(keyOf))];
+  // Over a range, a declared value outside it is no point; a value its rows hold still is. TODO 705
+  const inside = (v: unknown): boolean => !range || (cut(v, 'day') >= range[0] && cut(v, 'day') <= range[1]);
   // In the library's one order. TRAP T-one-collator-for-the-library
+  if (range && !bucket) return [...new Set([...declared.filter(inside), ...held()])].sort(compareValues);
   if (declared.length) return bucket ? [...new Set(declared.map(keyOf))].sort(compareValues) : [...declared];
-  const seen = [...new Set(rows.map((r) => readField(r, over)).filter((v) => v != null && v !== '').map(keyOf))]
-    .sort(compareValues);
+  const seen = held().sort(compareValues);
   const [first, last] = [seen[0], seen[seen.length - 1]] as (string | undefined)[];
   if (!bucket || first === undefined || last === undefined || seen.length < 2) return seen;
   const out: string[] = [];
@@ -461,7 +467,7 @@ export function summarise(
   };
   const keyed = starts ? rows.map((r) => ({ ...r, [at]: startOf(readField(r, spec.over!)) }))
     : bucket ? rows.map((r) => ({ ...r, [at]: cut(readField(r, spec.over!), bucket) })) : rows;
-  const points = (starts ?? pointsOf(rows, spec.over, bucket, domain(spec.over))) as (string | number)[];
+  const points = (starts ?? pointsOf(rows, spec.over, bucket, domain(spec.over), spec.range)) as (string | number)[];
   if (spec.shape === 'aggregate') {
     const values = seriesBy(keyed, at, points, '', opts).values;
     const delta = deltaPercent(values);
@@ -483,6 +489,21 @@ export function summarise(
     series: order.filter((name) => spec.keepEmpty || groups.has(name)).map((name) =>
       seriesBy(groups.get(name) ?? [], at, points, name, { ...opts, colorIndex: order.indexOf(name) + 1 })),
   };
+}
+
+const ISO_DAY = /^\d{4}-\d\d-\d\d$/;
+
+/** A series over a date, cut to its date condition's range: `auto` to the unit
+ *  that range fits — with none, the rows' own first and last day — and a fixed
+ *  bucket, or none, to the range itself. Will, TODOs 540, 705 */
+export function segmented(spec: SummarySpec, condition: WhereCondition | undefined, rows: readonly Row[]): SummarySpec {
+  if (!spec.over) return spec;
+  // Only a date's: a condition on any other field cuts no axis.
+  const range = [rangeOf(condition)].find((r) => r?.every((d) => ISO_DAY.test(d)));
+  if (spec.bucket !== 'auto') return range ? { ...spec, range } : spec;
+  const days = range ? [] : rows.map((r) => String(readField(r, spec.over!) ?? '').slice(0, 10)).filter((d) => ISO_DAY.test(d)).sort();
+  const span = range ?? (days.length ? [days[0]!, days[days.length - 1]!] as const : undefined);
+  return span ? { ...spec, bucket: segmentUnit(...span), range: span } : { ...spec, bucket: 'day' };
 }
 
 /** A field's zones, as a summary reads them: a status field's ranges of it (`zonesOf`). */

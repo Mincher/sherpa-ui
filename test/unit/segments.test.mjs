@@ -108,3 +108,31 @@ test('a single day is 12 two-hour segments, and a date with no time is at its mi
   assert.equal(out.values.reduce((a, b) => a + b), out.value);
   assert.match(out.labels[4], /08:00.10:00/);
 });
+
+const { segmented } = await import(new URL('../../dist/core/data/aggregate.js', import.meta.url));
+
+test('a fixed bucket, or none, over a date condition follows its range too (Will, A1, TODO 705)', () => {
+  const half = { between: ['2026-05-05', '2026-11-04'] };
+  const rows = [{ at: '2026-05-05' }, { at: '2026-07-31' }, { at: '2026-11-04' }];
+  // Every day the field holds, back to January: the axis is the range's, not these.
+  const domain = (f) => (f === 'at' ? ['2026-01-02', '2026-02-03', '2026-05-05', '2026-07-31', '2026-11-04'] : []);
+  const month = segmented({ shape: 'series', over: 'at', bucket: 'month' }, half, rows);
+  assert.deepEqual([month.bucket, month.range], ['month', ['2026-05-05', '2026-11-04']]);
+  const byMonth = summarise(rows, month, domain);
+  assert.equal(byMonth.labels.length, 6);
+  assert.deepEqual(byMonth.series[0].values, [1, 0, 1, 0, 0, 1]);
+  // No bucket: the field's own values, those in the range.
+  const none = summarise(rows, segmented({ shape: 'series', over: 'at' }, half, rows), domain);
+  assert.deepEqual(none.labels, ['2026-05-05', '2026-07-31', '2026-11-04']);
+  // A row the filter keeps outside the range (the far end of last N) is still a point.
+  const far = [...rows, { at: '2026-05-04' }];
+  assert.equal(summarise(far, segmented({ shape: 'series', over: 'at' }, half, far), domain).labels[0], '2026-05-04');
+});
+
+test('a condition on a field that is no date cuts no axis; auto with no condition takes the rows\' own days', () => {
+  const rows = [{ sev: 'critical', at: '2026-03-01' }, { sev: 'critical', at: '2026-03-10' }];
+  assert.equal(segmented({ shape: 'series', over: 'sev' }, { eq: 'critical' }, rows).range, undefined);
+  assert.deepEqual(segmented({ shape: 'aggregate', over: 'at', bucket: 'auto' }, undefined, rows),
+    { shape: 'aggregate', over: 'at', bucket: 'day', range: ['2026-03-01', '2026-03-10'] });
+  assert.equal(segmented({ shape: 'aggregate', over: 'at', bucket: 'month' }, undefined, rows).range, undefined);
+});
