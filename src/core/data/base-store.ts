@@ -10,6 +10,7 @@
 import { applyOptions, matchesOnly, orderKey, pageOf, projectRow, readField, withoutPage, type LoadOptions, type LoadResult, type Row, type Store, type StoreCapabilities, type StoreChangeDetail, type WriteOptions } from './store.js';
 import { carryKey, keyRow } from './row-key.js';
 import { StoreHistory } from './store-history.js';
+import { Journal } from './journal.js';
 import {
   domainsOf, rulesOf, validate, validateField, ValidationError, type FieldDomain, type Issue, type RuleMap, type StandardSchema,
 } from './validate.js';
@@ -27,6 +28,10 @@ export interface StoreOptions {
   maxRows?: number;
   /** On a READ, check only the first N rows; writes check in full. TRAP T-schema-sample-cost */
   sample?: number;
+  /** Keep the last N UPDATES, each as the row before and after, so `undo()` and `redo()` step
+   *  through them. Off unless given. An insert, a remove or a whole reload forgets them.
+   *  TRAP T-a-store-keeps-its-history */
+  journal?: number;
 }
 
 /** Shared plumbing. EventTarget so `change` is a real event a DataSource can subscribe to. */
@@ -50,8 +55,12 @@ export abstract class BaseStore extends EventTarget implements Store {
   /** What it can do: its own say, over what its schema allows. TRAP T-a-store-says-what-it-can-do-once */
   readonly capabilities: StoreCapabilities;
 
+  /** The updates it can step back and forward; undefined unless `journal` was given. TRAP T-a-store-keeps-its-history */
+  protected readonly journal: Journal<Row> | undefined;
+
   constructor(options: StoreOptions = {}, can: StoreCapabilities = {}, history = true) {
     super();
+    this.journal = options.journal && options.journal > 0 ? new Journal<Row>(options.journal) : undefined;
     this.history = history ? new StoreHistory() : undefined;
     this.key = options.key ?? 'id';
     this.time = options.time;
@@ -216,8 +225,62 @@ export abstract class BaseStore extends EventTarget implements Store {
     return row;
   }
 
+  /** Note an update in the journal, BEFORE it is announced: the row it was, and the row it is. */
+  protected journaled(before: Row, after: Row): void {
+    if (!this.journal) return;
+    if (!this.#stepping) this.journal.push({ before: { ...before }, after: { ...after } });
+    this.#noted = true;
+  }
+  /** An undo or redo is in flight: its own update is not a new change. */
+  #stepping = false;
+  /** The update being announced was noted. */
+  #noted = false;
+
+  /** Is there an update to undo? */
+  get canUndo(): boolean {
+    return !!this.journal?.canBack;
+  }
+
+  /** Is there an update to redo? */
+  get canRedo(): boolean {
+    return !!this.journal?.canForward;
+  }
+
+  /** Put the last update's row back, as an ordinary update; false when there is none. */
+  async undo(): Promise<boolean> {
+    const step = this.journal?.peekBack();
+    if (!step) return false;
+    await this.#step(step.after, step.before);
+    this.journal!.back();
+    return true;
+  }
+
+  /** Put back the update the last undo took away; false when there is none. */
+  async redo(): Promise<boolean> {
+    const step = this.journal?.peekForward();
+    if (!step) return false;
+    await this.#step(step.before, step.after);
+    this.journal!.forward();
+    return true;
+  }
+
+  /** Make the row `from` the row `to`: a field `to` lacks is unset. */
+  async #step(from: Row, to: Row): Promise<void> {
+    const values: Row = { ...to };
+    for (const f of Object.keys(from)) if (!(f in to)) values[f] = undefined;
+    this.#stepping = true;
+    try {
+      await this.update(readField(from, this.key), values);
+    } finally {
+      this.#stepping = false;
+    }
+  }
+
   /** Tell every listener the records changed — noted in the History first. */
   protected announce(detail: StoreChangeDetail): void {
+    // The journal vouches only for updates it saw: any other change, or an update it missed, ends it.
+    if (this.journal && (detail.type !== 'update' || detail.key === undefined || !this.#noted)) this.journal.clear();
+    this.#noted = false;
     this.#age++;
     this.history?.record(detail, this.key);
     this.dispatchEvent(new CustomEvent('change', { detail }));

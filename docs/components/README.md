@@ -2,7 +2,7 @@
 
 # Components
 
-69 components. Each page is written from the component's spec and its example. 69 of 69 say when to use them.
+70 components. Each page is written from the component's spec and its example. 70 of 70 say when to use them.
 
 ## Chart
 
@@ -114,6 +114,7 @@
 | [sherpa-node](sherpa-node.md) | One node of a node editor: a card on a [sherpa-layout-canvas](sherpa-layout-canvas.md), at its data-x and data-y. |
 | [sherpa-node-panel](sherpa-node-panel.md) | The nodes a graph editor may place, by category: a search, then each category an accordion of items. |
 | [sherpa-node-row](sherpa-node-row.md) | One row of a [sherpa-node](sherpa-node.md): an input socket, a field and an output socket. |
+| [sherpa-node-toolbar](sherpa-node-toolbar.md) | A graph editor's tools, one object of icon buttons: Save, then Undo and Redo. |
 | [sherpa-outlet](sherpa-outlet.md) | Where the route's Context is drawn. |
 | [sherpa-provider](sherpa-provider.md) | The data layer, over a SUBTREE of the page. |
 | [sherpa-router](sherpa-router.md) | The ONE owner of the URL, on the Navigation API. |

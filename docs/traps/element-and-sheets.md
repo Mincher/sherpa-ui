@@ -1982,3 +1982,35 @@ and `any` (an input only) a square.
 - Site: `src/components/sherpa-node/sherpa-node-routes.css`
 - Site: `src/components/sherpa-node/sherpa-node.ts`
 - Site: `test/e2e/reforged-node.spec.ts`
+
+### T-an-edit-is-a-step
+
+**An editor's Undo steps back what the reader did, not each write** (TODOs 560 and
+561, Will, 2026-10-29). The draft is a plain object and each edit a pure function
+on it, so a step is the draft and the edited definitions BEFORE and AFTER, held in
+the data layer's `Journal` (capped, 100): they share structure, so a step is cheap.
+The editor's draft is not a store, so it keeps the Journal itself; a store opts in
+to the same class with `journal: N` (`T-a-store-keeps-its-history`).
+
+- **One edit, one step, however many writes.** A placement that is routed, a Custom
+  Node made (its definition and its use), a reroute: each is `edit()`, and the
+  step is recorded when the outermost one ends. The same tag within a second (a
+  drag, a typed word) folds into one.
+- **Across a Custom Node**: one journal for the workflow and every definition the
+  tab edited, so an undo works in whatever level it was made, and leaving a level
+  keeps it. A step puts the edited definitions back over the app's LAST handed-over
+  library, so a refresh of the library is not undone.
+- **Save clears nothing; Discard resets it.** Save hands the draft over, and a step
+  taken after it is still a step.
+- **The toolbar reports, the editor owns.** `sherpa-node-toolbar` fires
+  `toolbar-select { action }`; the editor sets `data-can-undo` and `data-can-redo`
+  from the journal. Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z (and Ctrl/Cmd+Y) are the keys,
+  except in a text field, which keeps its own undo.
+- **The toolbar and the card share the corner**: the toolbar sits at the controls'
+  inset (16px) in the canvas's `toolbar` slot, and with one there the `panel` box
+  starts one inset under it. Both are in CSS, in the canvas's own units.
+
+- Site: `src/core/ui/node-graph.ts`
+- Site: `src/components/sherpa-node-toolbar/sherpa-node-toolbar.html`
+- Site: `src/components/sherpa-node-toolbar/sherpa-node-toolbar.ts`
+- Site: `test/e2e/reforged-node-undo.spec.ts`

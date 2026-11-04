@@ -85,6 +85,22 @@
   block-size: 100%;
 }
 
+/* ── The toolbar ──────────────────────────────────────────────────────── */
+/* Tools at the top left: the controls' offset, mirrored. A card below it starts under it, one gap down. */
+.toolbar {
+  position: absolute;
+  inset-block-start: var(--_inset);
+  inset-inline-start: var(--_inset);
+  pointer-events: none;
+}
+::slotted([slot="toolbar"]) {
+  position: static;
+  pointer-events: auto;
+}
+:host(:state(has-toolbar)) .floating {
+  inset-block-start: calc(var(--_inset) * 2 + var(--_bar, 32px));
+}
+
 /* The Pan tool: a drag anywhere moves the view, and the content does not hear it. */
 :host(:state(panning)) .viewport { cursor: grab; }
 :host(:state(panning)) .plane { pointer-events: none; }

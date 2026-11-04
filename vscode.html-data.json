@@ -2675,6 +2675,27 @@
       ]
     },
     {
+      "name": "sherpa-node-toolbar",
+      "description": "a graph editor's tools, one object of icon buttons: Save, then Undo and Redo. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step",
+      "attributes": [
+        {
+          "name": "data-can-redo",
+          "description": "Redo can be pressed",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-can-save",
+          "description": "Save can be pressed (default off: Save is a placeholder until a host wants it)",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-can-undo",
+          "description": "Undo can be pressed; written by the editor that owns the history",
+          "valueSet": "v"
+        }
+      ]
+    },
+    {
       "name": "sherpa-node",
       "description": "one node of a node editor: a card on a sherpa-layout-canvas, at its data-x and data-y. Its HEADER names it, drags it and may carry the whole node's sockets; its content holds its rows. Will, TODO 78. TRAP T-a-node-moves-itself-and-reports",
       "attributes": [

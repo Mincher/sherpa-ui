@@ -1427,16 +1427,25 @@ can ask "did any field I read move since change N?".
   `fakeRemote` the store's, and a held set passes the store's change on as
   `change` in its own `change` detail.
 
+**It cannot step back by itself, so a store may also keep a JOURNAL** (561): an
+opt-in `journal: N`, the last N updates as the row before and after, each noted in
+`BaseStore.journaled` just before it is announced. `undo()` and `redo()` are
+ordinary updates the readers hear, so the History moves as for any edit. Off, a
+store holds nothing. An insert, a remove, a whole reload or an update the journal
+did not see ends it: it cannot vouch past them. `canUndo` and `canRedo` say when.
+
 A History is the TAB's: a write from another tab to IndexedDB or localStorage
 is not in it (TODO 345, D2).
 
 - Site: `src/core/data/store-history.ts`
+- Site: `src/core/data/journal.ts`
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/base-store.ts`
 - Site: `src/core/data/live-stores.ts`
 - Site: `src/core/data/fake-remote.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/a-store-keeps-its-history.test.mjs`
+- Site: `test/unit/a-store-journal-steps-back-and-forward.test.mjs`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 - Site: `src/core/data/data-handler.ts`
 - Site: `src/core/data/request-store.ts`

@@ -1,0 +1,317 @@
+import { test, expect, type Page } from './harness';
+
+/**
+ * The node editor's toolbar, Undo and Redo — Will, TODOs 560 and 561. A toolbar floats at the
+ * canvas's top left in the offset of its controls, and the node panel moves down under it. Save is
+ * a placeholder, off; Undo and Redo are on only when there is a step, and Ctrl/Cmd+Z and Shift+Ctrl/
+ * Cmd+Z do the same. Each edit — a placement, a move, a pick, a route, a cut, a remove, a Custom
+ * Node's inside, make and ungroup — steps back to the SAME workflow and forward again. Real pointer and key.
+ * TRAP T-an-edit-is-a-step
+ */
+const ORG = {
+  v: 1, label: 'Org permissions', category: 'Logic',
+  inputs: [{ name: 'users', label: 'Users', type: 'object' }, { name: 'role', label: 'Role', type: 'value', control: 'text', default: 'admin' }],
+  outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
+  nodes: [{ id: 'has-role', kind: 'condition', x: 0, y: 0, values: { field: 'role', op: 'eq' } }],
+  routes: [{ from: '#in/users', to: 'has-role' }, { from: '#in/role', to: 'has-role/value' }, { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' }],
+};
+
+test.beforeEach(async ({ page }) => {
+  await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.insertAdjacentHTML('beforeend', `
+      <sherpa-breadcrumbs id="trail" hidden></sherpa-breadcrumbs>
+      <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px">
+        <sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar>
+        <sherpa-node-panel slot="panel"></sherpa-node-panel>
+      </sherpa-layout-canvas>
+      <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>`);
+    await customElements.whenDefined('sherpa-node-panel');
+    await customElements.whenDefined('sherpa-node-toolbar');
+    await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
+  });
+});
+
+const BIND = `async (org) => {
+  const { bindWorkflow, SessionStore } = await import('/dist/app.js');
+  const { useOf } = await import('/dist/data.js');
+  const library = { v: 1, nodes: { 'org-permissions': structuredClone(org) } };
+  const flow = { v: 2, id: 'g', nodes: [
+    { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'users' } },
+    useOf(library, 'org-permissions', { id: 'perm', x: 330, y: 0 }),
+    useOf(library, 'org-permissions', { id: 'perm2', x: 330, y: 260 }),
+    { id: 'sort', kind: 'sort', x: 0, y: 260, values: { field: 'status', direction: 'asc' } },
+    { id: 'end', kind: 'output', x: 700, y: 0 },
+  ], routes: [{ from: 'start/rows', to: 'perm/users' }, { from: 'perm', to: 'end' }] };
+  const canvas = document.getElementById('cv');
+  window.ed = bindWorkflow(canvas, flow, {
+    session: new SessionStore(), inspector: document.getElementById('inspector'), panel: canvas.querySelector('sherpa-node-panel'),
+    toolbar: canvas.querySelector('sherpa-node-toolbar'), breadcrumbs: document.getElementById('trail'), library,
+    fields: { status: { label: 'Status' }, role: { label: 'Role' } }, stores: ['users'], values: { status: ['active', 'trial'] },
+  });
+  await window.__settled();
+  // The nodes sit right of the card, so a real pointer reaches them.
+  canvas.zoomTo(0.6);
+  canvas.panTo(340, 40);
+  await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+}`;
+const bind = (page: Page) => page.evaluate(`(${BIND})(${JSON.stringify(ORG)})`);
+const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
+/** The workflow and the library as the draft holds them now: what an undo must put back. */
+const state = (page: Page) => page.evaluate(() => JSON.stringify([(window as never as { ed: { workflow(): unknown } }).ed.workflow(), (window as never as { ed: { library(): unknown } }).ed.library()]));
+const tool = (page: Page, name: string) => page.locator(`sherpa-node-toolbar sherpa-button.${name}`);
+const press = async (page: Page, name: string) => {
+  await tool(page, name).evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await settle(page);
+};
+const mod = process.platform === 'darwin' ? 'Meta' : 'Control';
+const can = (page: Page) => page.evaluate(() => ({
+  undo: !!document.querySelector('sherpa-node-toolbar')!.hasAttribute('data-can-undo'),
+  redo: !!document.querySelector('sherpa-node-toolbar')!.hasAttribute('data-can-redo'),
+  buttons: ['save', 'undo', 'redo'].map((n) => document.querySelector('sherpa-node-toolbar')!.shadowRoot!.querySelector(`sherpa-button.${n}`)!.hasAttribute('disabled')),
+}));
+const header = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"] >> .header[role="button"]`);
+const item = (page: Page, kind: string) => page.locator(`sherpa-node-panel sherpa-list-item[data-kind="${kind}"]`);
+const STORE_ROWS = '#cv > sherpa-node[data-heading="Store"] sherpa-node-row';
+const SORT = '#cv > sherpa-node[data-heading="Sort"]';
+const SORT_ROWS = `${SORT} sherpa-node-row`;
+const SOCKET = `(el, side) => { const r = el.socketRect(side); return [r.left + r.width / 2, r.top + r.height / 2]; }`;
+const at = (page: Page, selector: string, side: string) =>
+  page.evaluate(([sel, s, socket]) => eval(socket!)(document.querySelector(sel!), s), [selector, side, SOCKET]) as Promise<[number, number]>;
+async function drag(page: Page, [x1, y1]: [number, number], [x2, y2]: [number, number]): Promise<void> {
+  await page.mouse.move(x1, y1);
+  await page.mouse.down();
+  await page.mouse.move((x1 + x2) / 2, (y1 + y2) / 2, { steps: 4 });
+  await page.mouse.move(x2, y2, { steps: 4 });
+  await page.mouse.up();
+  await settle(page);
+}
+
+test('the toolbar floats at the top left in the controls\' offset, and the panel sits one gap under it', async ({ page }) => {
+  await bind(page);
+  const r = await page.evaluate(() => {
+    const box = (e: Element) => { const b = e.getBoundingClientRect(); return { left: b.left, top: b.top, right: b.right, bottom: b.bottom }; };
+    const cv = document.getElementById('cv')!;
+    return {
+      canvas: box(cv), bar: box(document.querySelector('sherpa-node-toolbar')!), panel: box(document.querySelector('sherpa-node-panel')!),
+      controls: box(cv.shadowRoot!.querySelector('.controls')!),
+    };
+  });
+  // The controls sit 16px in from the bottom right; the toolbar 16px in from the top left.
+  const inset = r.canvas.bottom - r.controls.bottom;
+  expect(Math.abs(r.bar.left - r.canvas.left - inset)).toBeLessThanOrEqual(1);
+  expect(Math.abs(r.bar.top - r.canvas.top - inset)).toBeLessThanOrEqual(1);
+  expect(Math.abs((r.bar.bottom - r.bar.top) - (r.controls.bottom - r.controls.top))).toBeLessThanOrEqual(1);
+  // The panel: one inset under the toolbar, still 32px from the bottom and the left.
+  expect(Math.abs(r.panel.top - r.bar.bottom - inset)).toBeLessThanOrEqual(1);
+  expect(Math.abs(r.canvas.bottom - r.panel.bottom - 32)).toBeLessThanOrEqual(1);
+  expect(Math.abs(r.panel.left - r.canvas.left - 32)).toBeLessThanOrEqual(1);
+  expect(r.bar.bottom).toBeLessThanOrEqual(r.panel.top);
+  // It keeps its place as the view pans.
+  await page.evaluate(() => (document.getElementById('cv') as HTMLElement & { panTo(x: number, y: number): void }).panTo(300, 200));
+  const left = await page.evaluate(() => document.querySelector('sherpa-node-toolbar')!.getBoundingClientRect().left);
+  expect(left).toBe(r.bar.left);
+});
+
+test('Save is a placeholder, off; Undo and Redo are off until there is a step, and say their keys', async ({ page }) => {
+  await bind(page);
+  expect(await can(page)).toEqual({ undo: false, redo: false, buttons: [true, true, true] });
+  const tips = await page.locator('sherpa-node-toolbar sherpa-button').evaluateAll((els) => els.map((e) => e.getAttribute('data-tip')));
+  expect(tips).toEqual(['Save', 'Undo (Ctrl+Z)', 'Redo (Shift+Ctrl+Z)']);
+  await item(page, 'count').click();
+  await settle(page);
+  expect(await can(page)).toEqual({ undo: true, redo: false, buttons: [true, false, true] });
+});
+
+test('a click places a node; Undo takes it away, Redo puts it back; a new edit after an undo ends Redo', async ({ page }) => {
+  await bind(page);
+  const ids = () => page.evaluate(() => (window as never as { ed: { workflow(): { nodes: { id: string }[] } } }).ed.workflow().nodes.map((n) => n.id));
+  await item(page, 'count').click();
+  await settle(page);
+  expect(await ids()).toContain('count-1');
+  await press(page, 'undo');
+  expect(await ids()).not.toContain('count-1');
+  expect(await can(page)).toEqual({ undo: false, redo: true, buttons: [true, true, false] });
+  await press(page, 'redo');
+  expect(await ids()).toContain('count-1');
+  await press(page, 'undo');
+  await item(page, 'value').click();
+  await settle(page);
+  expect(await can(page)).toMatchObject({ undo: true, redo: false });
+  expect(await ids()).toContain('value-1');
+  expect(await ids()).not.toContain('count-1');
+});
+
+test('Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z do the same, with the canvas focused; a text field keeps its own', async ({ page }) => {
+  await bind(page);
+  const before = await state(page);
+  await item(page, 'count').click();
+  await settle(page);
+  const after = await state(page);
+  await page.locator('#cv').evaluate((el) => (el.shadowRoot!.querySelector('.viewport') as HTMLElement).focus());
+  await page.keyboard.press(`${mod}+z`);
+  await settle(page);
+  expect(await state(page)).toBe(before);
+  await page.keyboard.press(`Shift+${mod}+z`);
+  await settle(page);
+  expect(await state(page)).toBe(after);
+});
+
+test('a route and a row pick: each is one step, back and forward, to the same workflow', async ({ page }) => {
+  await bind(page);
+  const s0 = await state(page);
+  // A row pick.
+  await page.locator('#cv > sherpa-node[data-heading="Sort"] sherpa-input-text[name="direction"] select').selectOption('desc');
+  await settle(page);
+  const s1 = await state(page);
+  expect(s1).not.toBe(s0);
+  // A route: the Store's rows to the Sort.
+  await drag(page, await at(page, STORE_ROWS, 'output'), await at(page, SORT, 'input'));
+  const s2 = await state(page);
+  expect(s2).not.toBe(s1);
+  await press(page, 'undo');
+  expect(await state(page)).toBe(s1);
+  await press(page, 'undo');
+  expect(await state(page)).toBe(s0);
+  await press(page, 'redo');
+  expect(await state(page)).toBe(s1);
+  await press(page, 'redo');
+  expect(await state(page)).toBe(s2);
+});
+
+/** Each edit kind: what it does, from the editor as it is bound. */
+const EDITS: [string, (page: Page) => Promise<void>][] = [
+  ['place', async (page) => { await item(page, 'count').click(); }],
+  ['move', async (page) => {
+    const b = (await header(page, 'Sort').boundingBox())!;
+    await drag(page, [b.x + 10, b.y + 10], [b.x + 70, b.y + 60]);
+  }],
+  ['row pick', async (page) => { await page.locator('#cv > sherpa-node[data-heading="Sort"] sherpa-input-text[name="direction"] select').selectOption('desc'); }],
+  ['route', async (page) => {
+    await drag(page, await at(page, STORE_ROWS, 'output'), await at(page, SORT, 'input'));
+  }],
+  ['cut a route', async (page) => {
+    const [mx, my] = await page.evaluate(() => {
+      const hit = document.querySelector<SVGPolylineElement>('#cv svg.graph-routes polyline[data-to="end"]')!;
+      const p = hit.points.getItem(8);
+      const m = hit.getScreenCTM()!;
+      return [m.a * p.x + m.e, m.d * p.y + m.f];
+    });
+    await page.mouse.click(mx!, my!);
+    await page.keyboard.press('Delete');
+  }],
+  ['an override', async (page) => {
+    const spot = await page.evaluate(() => {
+      const cv = document.getElementById('cv')!;
+      const b = cv.getBoundingClientRect();
+      for (let y = b.bottom - 120; y > b.top + 20; y -= 20) {
+        for (let x = b.right - 40; x > b.left + 340; x -= 20) {
+          const free = document.elementsFromPoint(x, y).every((e) => e.localName !== 'sherpa-node' && e.localName !== 'sherpa-node-panel')
+            && cv.shadowRoot!.elementsFromPoint(x, y).every((e) => !e.closest('.minimap, .controls'));
+          if (free) return [x, y] as [number, number];
+        }
+      }
+      throw new Error('no blank spot');
+    });
+    await drag(page, await at(page, `${SORT_ROWS}:has([name="direction"])`, 'input'), spot);
+  }],
+  ['remove a node', async (page) => {
+    await page.locator(SORT).click({ position: { x: 40, y: 12 } });
+    await settle(page);
+    await page.locator('#inspector').getByRole('button', { name: 'Remove node' }).click();
+  }],
+  ['an edit inside a Custom Node', async (page) => {
+    await page.evaluate("window.ed.open('perm')");
+    await settle(page);
+    await page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-input-text[name="op"] select').selectOption('ne');
+  }],
+  ['make a Custom Node', async (page) => {
+    await header(page, 'Store').focus();
+    await page.keyboard.press('Space');
+    await header(page, 'Sort').focus();
+    await page.keyboard.press('Space');
+    await settle(page);
+    await page.locator('#inspector sherpa-input-text[name="label"] input').fill('Pair');
+    await page.locator('#inspector sherpa-input-text[name="category"] input').fill('Logic');
+    await page.locator('#inspector sherpa-button[data-label="Save as Custom Node"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  }],
+];
+for (const [name, edit] of EDITS) {
+  test(`${name}: Undo puts the same workflow back, Redo makes it again`, async ({ page }) => {
+    await bind(page);
+    const before = await state(page);
+    await edit(page);
+    await settle(page);
+    const after = await state(page);
+    expect(after).not.toBe(before);
+    await press(page, 'undo');
+    expect(await state(page)).toBe(before);
+    await press(page, 'redo');
+    expect(await state(page)).toBe(after);
+  });
+}
+
+test('Ungroup is a step too: Undo makes the Custom Node again, a second Undo puts the pair back', async ({ page }) => {
+  await bind(page);
+  const s0 = await state(page);
+  await header(page, 'Store').focus();
+  await page.keyboard.press('Space');
+  await header(page, 'Sort').focus();
+  await page.keyboard.press('Space');
+  await settle(page);
+  await page.locator('#inspector sherpa-input-text[name="label"] input').fill('Pair');
+  await page.locator('#inspector sherpa-input-text[name="category"] input').fill('Logic');
+  await page.locator('#inspector sherpa-button[data-label="Save as Custom Node"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await settle(page);
+  const made = await state(page);
+  await header(page, 'Pair').click();
+  await settle(page);
+  await page.locator('#inspector sherpa-button[data-label="Ungroup"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await settle(page);
+  const ungrouped = await state(page);
+  await press(page, 'undo');
+  expect(await state(page)).toBe(made);
+  await press(page, 'undo');
+  expect(await state(page)).toBe(s0);
+  await press(page, 'redo');
+  await press(page, 'redo');
+  expect(await state(page)).toBe(ungrouped);
+});
+
+test('undo works inside an opened Custom Node, and leaving it keeps the history', async ({ page }) => {
+  await bind(page);
+  const s0 = await state(page);
+  await item(page, 'count').click();
+  await settle(page);
+  await page.evaluate("window.ed.open('perm')");
+  await settle(page);
+  await page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-input-text[name="op"] select').selectOption('ne');
+  await settle(page);
+  const inner = await state(page);
+  // Undo inside its own level: the edit goes, and the trail stays.
+  await press(page, 'undo');
+  expect(await page.evaluate('window.ed.path()')).toEqual(['perm']);
+  expect(await page.evaluate("window.ed.library().nodes['org-permissions'].nodes[0].values.op")).toBe('eq');
+  await press(page, 'redo');
+  expect(await state(page)).toBe(inner);
+  // Leave it: the history is kept; two undos reach where it began, and the placement is gone.
+  await page.evaluate('window.ed.back()');
+  await settle(page);
+  expect(await can(page)).toMatchObject({ undo: true });
+  await press(page, 'undo');
+  await press(page, 'undo');
+  expect(await state(page)).toBe(s0);
+});
+
+test('Save clears nothing; Discard resets the history', async ({ page }) => {
+  await bind(page);
+  await item(page, 'count').click();
+  await settle(page);
+  expect(await page.evaluate('window.ed.save()')).toBe(true);
+  expect(await can(page)).toMatchObject({ undo: true });
+  await press(page, 'undo');
+  expect(await can(page)).toMatchObject({ undo: false, redo: true });
+  await page.evaluate('window.ed.discard()');
+  await settle(page);
+  expect(await can(page)).toMatchObject({ undo: false, redo: false });
+});

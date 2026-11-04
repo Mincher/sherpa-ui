@@ -1,0 +1,19 @@
+/**
+ * sherpa-node-toolbar.css — icon buttons as ONE object, in the look of a canvas's controls.
+ */
+
+:host {
+  display: inline-block;
+  pointer-events: auto;
+}
+
+.tools {
+  display: inline-flex;
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  box-shadow:
+    var(--sherpa-elevation-offset-x, 0)
+    var(--sherpa-elevation-offset-y, 1px)
+    var(--sherpa-elevation-blur, 2px)
+    var(--sherpa-elevation-spread, 0)
+    var(--sherpa-style-surface-shadow, #35353d4c);
+}

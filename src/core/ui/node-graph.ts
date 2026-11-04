@@ -38,6 +38,7 @@ import type { SherpaLayoutCanvas } from '../../components/sherpa-layout-canvas/s
 import type { SocketSide } from '../../components/sherpa-node/node-sockets.js';
 import type { SessionStore } from '../browser/session.js';
 import type { DataSource } from '../data/data-source.js';
+import { Journal } from '../data/journal.js';
 import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-definition.js';
 import { graphRequest, queryGraph, queryStepNode, routeRequest, statusTallies, traceQuerySteps, type QueryGraphFacts } from '../data/query-graph.js';
 import { onTrace, type Span, type StepState, type TraceHost } from '../data/trace.js';
@@ -774,6 +775,14 @@ export interface WorkflowEditor extends GraphEditor {
   library(): NodeLibrary;
   /** The Custom Nodes opened now, outermost first: their use ids. */
   path(): readonly string[];
+  /** The workflow as the draft holds it now, unsaved. */
+  workflow(): WorkflowDefinition;
+  /** Step the last edit back, in whatever level it was made; false when there is none. */
+  undo(): boolean;
+  /** Put back the edit the last undo took away; false when there is none. */
+  redo(): boolean;
+  /** Is there an edit to undo, or to redo? */
+  can(): { undo: boolean; redo: boolean };
 }
 
 /** Tell the app a definition to keep. */
@@ -990,12 +999,23 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
   confirm?: HTMLElement & { confirm(ask: { heading?: string; words?: string; action?: string; critical?: boolean }): Promise<boolean> };
   /** "Update all instances" was confirmed: the app's other workflows are its own to update. */
   onUpdateAll?: (kind: string) => void;
+  /** A `sherpa-node-toolbar`: its Undo and Redo are this editor's, and it says when they can be pressed. */
+  toolbar?: HTMLElement;
 }
 
 /** A node's own name, line and place, as its inspector's first rows edit them. */
 const OWN: Readonly<Record<string, keyof Pick<WorkflowNode, 'heading' | 'description' | 'x' | 'y'>>> = {
   '#heading': 'heading', '#description': 'description', '#x': 'x', '#y': 'y',
 };
+
+/** The most steps Undo goes back. */
+const HISTORY = 100;
+
+/** The draft and the edited definitions at one moment: what a step puts back. */
+interface Snap {
+  draft: WorkflowDefinition;
+  edits: Record<string, NodeDefinition>;
+}
 
 /** One Custom Node opened: its definition's id, the use that opened it, and its name. */
 interface Opened {
@@ -1017,7 +1037,7 @@ const isEdits = (v: unknown): v is Record<string, NodeDefinition> => !!v && type
  *  · TRAP T-a-custom-node-is-an-instance */
 export function bindWorkflow(
   canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition | WorkflowDefinitionV1,
-  { inspector, panel, session, kinds = NODE_KINDS, library, onSaveNode, breadcrumbs, confirm, onUpdateAll, ...facts }: WorkflowEditorOptions = {},
+  { inspector, panel, session, kinds = NODE_KINDS, library, onSaveNode, breadcrumbs, confirm, onUpdateAll, toolbar, ...facts }: WorkflowEditorOptions = {},
 ): WorkflowEditor {
   const pointer = `/workflows/${workflow.id}`;
   const isDraft = (v: unknown): v is WorkflowDefinition | WorkflowDefinitionV1 => {
@@ -1059,14 +1079,66 @@ export function bindWorkflow(
   /** A preset's inside is read only (D15), at any depth. */
   const readOnly = (): boolean => path.some((s) => lib.nodes[s.kind]?.preset);
   const refreshPanel = (): void => { void panel?.populate(paletteOf(topKinds())); };
+  // — Undo and Redo: each edit is a pure function on the draft, so a step is a snapshot of
+  //   the draft and the edited definitions, before and after. They share structure: a step is cheap.
+  //   TRAP T-an-edit-is-a-step
+  const journal = new Journal<Snap>(HISTORY);
+  const snap = (): Snap => ({ draft, edits: Object.fromEntries([...dirty].flatMap((id) => (lib.nodes[id] ? [[id, lib.nodes[id]]] : []))) });
+  const sameSnap = (a: Snap, b: Snap): boolean => {
+    const ka = Object.keys(a.edits);
+    return a.draft === b.draft && ka.length === Object.keys(b.edits).length && ka.every((k) => a.edits[k] === b.edits[k]);
+  };
+  const tell = (): void => {
+    toolbar?.toggleAttribute('data-can-undo', journal.canBack);
+    toolbar?.toggleAttribute('data-can-redo', journal.canForward);
+    canvas.dispatchEvent(new CustomEvent('history-change', { detail: { undo: journal.canBack, redo: journal.canForward }, bubbles: true, composed: true }));
+  };
+  let depth = 0;
+  let begun: Snap | undefined;
+  let lastTag = '';
+  let lastAt = 0;
+  /** One edit, however many writes it makes: ONE step. The same `tag` within a second (a drag, a typed word) is one too. */
+  const edit = (fn: () => void, tag = ''): void => {
+    if (depth++ === 0) begun = snap();
+    try {
+      fn();
+    } finally {
+      if (--depth === 0) {
+        const after = snap();
+        if (!sameSnap(begun!, after)) {
+          const now = performance.now();
+          const merge = tag && tag === lastTag && now - lastAt < 1000;
+          journal.push({ before: begun!, after }, merge ? (last, next) => ({ before: last.before, after: next.after }) : undefined);
+          lastTag = tag;
+          lastAt = now;
+          tell();
+        }
+      }
+    }
+  };
+  /** Put the draft and the edited definitions back as a step left them. */
+  const restore = (to: Snap): void => {
+    draft = to.draft;
+    lib = { ...handed, nodes: { ...handed.nodes, ...to.edits } };
+    dirty.clear();
+    for (const id of Object.keys(to.edits)) dirty.add(id);
+    session?.set(pointer, draft);
+    session?.set(editsAt, to.edits);
+    lastTag = '';
+    refreshPanel();
+    draw();
+    tell();
+  };
   /** The library after a change to these definitions: drafted, and kept for the tab. */
   const setLib = (next: NodeLibrary, ids: readonly string[]): void => {
-    lib = next;
-    for (const id of ids) dirty.add(id);
-    session?.set(editsAt, Object.fromEntries([...dirty].flatMap((id) => (lib.nodes[id] ? [[id, lib.nodes[id]]] : []))));
-    refreshPanel();
+    edit(() => {
+      lib = next;
+      for (const id of ids) dirty.add(id);
+      session?.set(editsAt, Object.fromEntries([...dirty].flatMap((id) => (lib.nodes[id] ? [[id, lib.nodes[id]]] : []))));
+      refreshPanel();
+    });
   };
-  const write = (next: WorkflowDefinition): void => {
+  const write = (next: WorkflowDefinition, tag?: string): void => edit(() => {
     if (!path.length) {
       draft = next;
       session?.set(pointer, next);
@@ -1077,17 +1149,17 @@ export function bindWorkflow(
       setLib(editDefinition(lib, id, { nodes: next.nodes.filter((n) => !n.id.startsWith('#')), routes: next.routes ?? [] }), [id]);
     }
     draw();
-  };
+  }, tag);
   const onEdit = ({ node, row, value }: GraphEdit): void => {
     const own = OWN[row.name];
-    if (!own) return write(editWorkflow(shown(), { node: node.id, row: row.name, value }, K(), facts));
+    if (!own) return write(editWorkflow(shown(), { node: node.id, row: row.name, value }, K(), facts), `row:${node.id}/${row.name}`);
     const said = own === 'x' || own === 'y' ? typedValue('number', String(value ?? '')) : String(value ?? '');
     if ((own === 'x' || own === 'y') && typeof said !== 'number') return;
-    write(editWorkflow(shown(), { node: node.id, set: { [own]: said } }, K()));
+    write(editWorkflow(shown(), { node: node.id, set: { [own]: said } }, K()), `own:${node.id}/${own}`);
   };
   const onMove = (node: GraphNode, x: number, y: number): void => {
     if (node.id.startsWith('#')) return;
-    write(editWorkflow(shown(), { node: node.id, set: { x, y } }, K()));
+    write(editWorkflow(shown(), { node: node.id, set: { x, y } }, K()), `move:${node.id}`);
   };
   // A route that would break the workflow is refused, and says why; else the draft takes it.
   const take = (next: WorkflowDefinition): void => {
@@ -1108,16 +1180,18 @@ export function bindWorkflow(
     if (!K()[kind] || readOnly()) return;
     const free = (n: number): string => (shown().nodes.some((x) => x.id === `${kind}-${n}`) ? free(n + 1) : `${kind}-${n}`);
     const id = free(1);
-    const fit = context && fitOf(K()[kind]!, context.type, context.side);
-    // A node let go by its output sits left of the point, so its output meets the line.
-    const x = Math.round(at.x - (context?.side === 'in' ? 280 : 0));
-    const added = { id, kind, x, y: Math.round(at.y) };
-    // A use of a Custom Node records the definition it is placed from (D11).
-    write(editWorkflow(shown(), { add: K()[kind]!.model === 'graph' && lib.nodes[kind] ? useOf(lib, kind, added) : added }, K()));
-    if (context && fit) {
-      const own = fit.row ? `${id}/${fit.row}` : id;
-      take(editWorkflow(shown(), { route: context.side === 'out' ? { from: context.socket, to: own } : { from: own, to: context.socket } }, K()));
-    }
+    edit(() => {
+      const fit = context && fitOf(K()[kind]!, context.type, context.side);
+      // A node let go by its output sits left of the point, so its output meets the line.
+      const x = Math.round(at.x - (context?.side === 'in' ? 280 : 0));
+      const added = { id, kind, x, y: Math.round(at.y) };
+      // A use of a Custom Node records the definition it is placed from (D11).
+      write(editWorkflow(shown(), { add: K()[kind]!.model === 'graph' && lib.nodes[kind] ? useOf(lib, kind, added) : added }, K()));
+      if (context && fit) {
+        const own = fit.row ? `${id}/${fit.row}` : id;
+        take(editWorkflow(shown(), { route: context.side === 'out' ? { from: context.socket, to: own } : { from: own, to: context.socket } }, K()));
+      }
+    });
     const node = graph.nodes.find((n) => n.id === id);
     if (!node) return;
     markNode(canvas, id);
@@ -1181,7 +1255,7 @@ export function bindWorkflow(
   };
   breadcrumbs?.addEventListener('breadcrumb-select', (event) => back((event as CustomEvent<{ index: number }>).detail.index));
   /** "Copy to my nodes": an editable copy of the preset opened, which takes the use that opened it. */
-  const copy = (): void => {
+  const copy = (): void => edit(() => {
     const step = path.at(-1);
     if (!step) return;
     const made = copyToMine(lib, step.kind);
@@ -1197,7 +1271,7 @@ export function bindWorkflow(
     path = [...parent, { kind: made.id, use: step.use, label: lib.nodes[made.id]!.label }];
     enter(null);
     inspector?.hide();
-  };
+  });
   const scopeNote = (): HTMLElement[] => {
     if (!path.length || !readOnly()) return [];
     const note = document.createElement('sherpa-stack');
@@ -1239,9 +1313,11 @@ export function bindWorkflow(
       next = editDefinition(next, id, { nodes: body.nodes, routes: body.routes ?? [] });
       ids.push(id);
     }
-    if (ids.length) setLib(next, ids);
-    draft = updateAll(draft, kind, lib, topKinds());
-    session?.set(pointer, draft);
+    edit(() => {
+      if (ids.length) setLib(next, ids);
+      draft = updateAll(draft, kind, lib, topKinds());
+      session?.set(pointer, draft);
+    });
     onUpdateAll?.(kind);
     draw();
   };
@@ -1273,9 +1349,11 @@ export function bindWorkflow(
       report({ code: 'node-group', message: `bindWorkflow: ${made.fault}.`, at: { workflow: shown().id } });
       return made.fault;
     }
-    setLib(made.library, [made.id]);
+    edit(() => {
+      setLib(made.library, [made.id]);
+      write(made.workflow);
+    });
     multi.clear();
-    write(made.workflow);
     const node = graph.nodes.find((n) => n.id === made.use);
     if (node) {
       markNode(canvas, node.id);
@@ -1326,7 +1404,11 @@ export function bindWorkflow(
     const hit = idOf(event);
     const first = event.composedPath()[0];
     if (first instanceof Element && first.matches('input, select, textarea, [contenteditable]')) return;
-    if (event.key === 'Escape') {
+    const mod = (event.ctrlKey || event.metaKey) && !event.altKey;
+    if (mod && (event.key.toLowerCase() === 'z' || event.key.toLowerCase() === 'y')) {
+      if (event.key.toLowerCase() === 'y' || event.shiftKey) redo();
+      else undo();
+    } else if (event.key === 'Escape') {
       if (multi.size) {
         multi.clear();
         markNode(canvas, null);
@@ -1350,6 +1432,23 @@ export function bindWorkflow(
     const hit = idOf(event);
     if (hit?.header && !hit.field && use(hit.id)) open(hit.id);
   };
+  const undo = (): boolean => {
+    const step = journal.back();
+    if (step) restore(step.before);
+    return !!step;
+  };
+  const redo = (): boolean => {
+    const step = journal.forward();
+    if (step) restore(step.after);
+    return !!step;
+  };
+  const onTool = (event: Event): void => {
+    const action = (event as CustomEvent<{ action?: string }>).detail?.action;
+    if (action === 'undo') undo();
+    else if (action === 'redo') redo();
+  };
+  toolbar?.addEventListener('toolbar-select', onTool);
+  tell();
   canvas.addEventListener('keydown', onKey, { capture: true });
   canvas.addEventListener('click', onClick, { capture: true });
   canvas.addEventListener('dblclick', onDouble);
@@ -1419,6 +1518,9 @@ export function bindWorkflow(
       draft = original;
       lib = handed;
       dirty.clear();
+      journal.clear();
+      lastTag = '';
+      tell();
       path = [];
       session?.set(editsAt, undefined);
       session?.set(pointer, undefined);
@@ -1436,9 +1538,14 @@ export function bindWorkflow(
     },
     library: () => lib,
     path: () => path.map((s) => s.use),
+    workflow: () => draft,
+    undo,
+    redo,
+    can: () => ({ undo: journal.canBack, redo: journal.canForward }),
     stop(): void {
       unwatch();
       panel?.removeEventListener('node-add', onAdded);
+      toolbar?.removeEventListener('toolbar-select', onTool);
       canvas.removeEventListener('keydown', onKey, { capture: true });
       canvas.removeEventListener('click', onClick, { capture: true });
       canvas.removeEventListener('dblclick', onDouble);

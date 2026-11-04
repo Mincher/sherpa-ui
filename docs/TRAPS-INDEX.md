@@ -101,7 +101,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-status-is-worked-out-by-the-data](traps/data-layer.md#t-a-status-is-worked-out-by-the-data) — aggregate, field-catalogue, status-field, threshold
 - [T-a-step-names-its-node](traps/data-layer.md#t-a-step-names-its-node) — query-graph, trace
 - [T-a-store-has-one-cache](traps/data-layer.md#t-a-store-has-one-cache) — held-reads, source-reads, store, store-cache
-- [T-a-store-keeps-its-history](traps/data-layer.md#t-a-store-keeps-its-history) — base-store, data, data-handler, fake-remote, live-stores, request-store, store, store-history
+- [T-a-store-keeps-its-history](traps/data-layer.md#t-a-store-keeps-its-history) — base-store, data, data-handler, fake-remote, journal, live-stores, request-store, store, store-history
 - [T-a-store-says-what-it-can-do-once](traps/data-layer.md#t-a-store-says-what-it-can-do-once) — base-store, data, held-store, request-store, source-reads, store, wrap-store
 - [T-a-summary-binds-to-all-the-rows](traps/data-layer.md#t-a-summary-binds-to-all-the-rows) — data-source, data-source-types, source-binding, source-reads
 - [T-a-superseded-chip-suspends-it-is-never-removed](traps/data-layer.md#t-a-superseded-chip-suspends-it-is-never-removed) — data-source-types, query, query-edits, source-binding
@@ -843,7 +843,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (128)
+## SherpaElement and the shared sheets (129)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -900,6 +900,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-wrapping-span-hides-its-own-row](traps/element-and-sheets.md#t-a-wrapping-span-hides-its-own-row) — components
 - [T-abort-controller-per-connect](traps/menus-tips-overlays.md#t-abort-controller-per-connect) — sherpa-element
 - [T-an-edge-resizes-its-box](traps/menus-tips-overlays.md#t-an-edge-resizes-its-box) — edge-resize
+- [T-an-edit-is-a-step](traps/element-and-sheets.md#t-an-edit-is-a-step) — node-graph
 - [T-an-icon-loads-when-first-drawn](traps/element-and-sheets.md#t-an-icon-loads-when-first-drawn) — icon-names, render-icon, settled, sherpa-element
 - [T-an-inactive-chip-says-where-its-filter-went](traps/data-layer.md#t-an-inactive-chip-says-where-its-filter-went) — shared-constants
 - [T-an-inner-event-stops-at-its-host](traps/data-grid.md#t-an-inner-event-stops-at-its-host) — sherpa-element
@@ -974,7 +975,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (115)
+## Other components (116)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1034,6 +1035,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-accordion-chevron-rides-the-heading-row](traps/other-components.md#t-an-accordion-chevron-rides-the-heading-row) — accordion
 - [T-an-action-says-what-it-does](traps/filters.md#t-an-action-says-what-it-does) — button
 - [T-an-edge-resizes-its-box](traps/menus-tips-overlays.md#t-an-edge-resizes-its-box) — app-shell
+- [T-an-edit-is-a-step](traps/element-and-sheets.md#t-an-edit-is-a-step) — node-toolbar
 - [T-an-expandable-row-is-not-a-destination](traps/other-components.md#t-an-expandable-row-is-not-a-destination) — nav-item
 - [T-an-icon-button-still-slots-its-menu](traps/other-components.md#t-an-icon-button-still-slots-its-menu) — button
 - [T-an-icon-is-known-by-the-set-not-its-spelling](traps/other-components.md#t-an-icon-is-known-by-the-set-not-its-spelling) — nav

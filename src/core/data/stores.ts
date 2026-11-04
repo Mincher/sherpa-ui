@@ -149,6 +149,7 @@ export class ArrayStore extends BaseStore {
     }
     this.#rows[i] = row;
     if (!sameKey(now, readField(old, this.key))) this.#places = null;
+    this.journaled(old, row);
     this.announce({ type: 'update', key, row: this.keyed({ ...row }, row), fields: changedFields(old, row, values) });
     return this.keyed({ ...row }, row);
   }
@@ -585,6 +586,7 @@ export class LocalStore extends BaseStore {
       throw new Error(`LocalStore: another row already has ${this.key} ${String(now)}`);
     }
     const fields = changedFields(rows[i]!, row, values);
+    this.journaled(rows[i]!, row);
     rows[i] = row;
     this.#write(rows);
     this.announce({ type: 'update', key, row: { ...row }, fields });

@@ -394,6 +394,8 @@ export { type Threshold } from './core/data/threshold.js';
 export { fakeRemote, type FakeRemoteOptions } from './core/data/fake-remote.js';
 /* What a store changed this session, by field. TRAP T-a-store-keeps-its-history */
 export { StoreHistory, changedFields } from './core/data/store-history.js';
+/* The last changes, each before and after, to step back and forward. */
+export { Journal, type Change } from './core/data/journal.js';
 export { failureOf, unreached, type Failure, type FailureKind } from './core/data/failure.js';
 export { keepCache, clearKept, type KeepOptions } from './core/browser/cache-keep.js';
 export { keepData } from './core/browser/database.js';

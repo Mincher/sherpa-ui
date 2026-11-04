@@ -17,6 +17,7 @@ export const ICON_NAMES: ReadonlySet<string> = new Set([
   'arrow-left',
   'arrow-right',
   'arrow-rotate-left',
+  'arrow-rotate-right',
   'arrow-up-from-bracket',
   'arrow-up-right-from-square',
   'arrow-up',

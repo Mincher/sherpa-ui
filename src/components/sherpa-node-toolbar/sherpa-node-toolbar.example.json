@@ -1,0 +1,4 @@
+{
+  "html": "<sherpa-node-toolbar data-can-undo></sherpa-node-toolbar>",
+  "use": "For a graph editor's tools: Save, Undo and Redo as one object of icon buttons. It floats in a canvas's `toolbar` slot. The editor sets `data-can-undo` and `data-can-redo` from its history; a host sets `data-can-save` when Save does something. It fires `toolbar-select` with the tool's name."
+}

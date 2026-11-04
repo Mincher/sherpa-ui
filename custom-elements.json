@@ -4576,7 +4576,11 @@
             },
             {
               "name": "panel",
-              "description": "a card FLOATING on the canvas, 32px from its top, bottom and left edges: it does not pan or zoom (a node panel) (accepts: panel)"
+              "description": "a card FLOATING on the canvas, 32px from its top, bottom and left edges (below the toolbar, when there is one): it does not pan or zoom (a node panel) (accepts: panel)"
+            },
+            {
+              "name": "toolbar",
+              "description": "tools FLOATING at the top left, as the controls float at the bottom right: it does not pan or zoom (a node toolbar) (accepts: toolbar)"
             }
           ],
           "cssParts": [
@@ -4591,6 +4595,9 @@
             },
             {
               "name": "plane"
+            },
+            {
+              "name": "toolbar"
             },
             {
               "name": "viewport"
@@ -6913,6 +6920,74 @@
           "declaration": {
             "name": "SherpaNodeRow",
             "module": "dist/components/sherpa-node-row/sherpa-node-row.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "dist/components/sherpa-node-toolbar/sherpa-node-toolbar.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "SherpaNodeToolbar",
+          "tagName": "sherpa-node-toolbar",
+          "customElement": true,
+          "description": "a graph editor's tools, one object of icon buttons: Save, then Undo and Redo. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step",
+          "attributes": [
+            {
+              "name": "data-can-redo",
+              "description": "Redo can be pressed",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-can-save",
+              "description": "Save can be pressed (default off: Save is a placeholder until a host wants it)",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-can-undo",
+              "description": "Undo can be pressed; written by the editor that owns the history",
+              "type": {
+                "text": "boolean"
+              }
+            }
+          ],
+          "events": [
+            {
+              "name": "toolbar-select",
+              "description": "A tool was pressed.",
+              "type": {
+                "text": "CustomEvent<{ action: string }>"
+              }
+            }
+          ],
+          "cssParts": [
+            {
+              "name": "tools"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "SherpaNodeToolbar",
+          "declaration": {
+            "name": "SherpaNodeToolbar",
+            "module": "dist/components/sherpa-node-toolbar/sherpa-node-toolbar.js"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "sherpa-node-toolbar",
+          "declaration": {
+            "name": "SherpaNodeToolbar",
+            "module": "dist/components/sherpa-node-toolbar/sherpa-node-toolbar.js"
           }
         }
       ]

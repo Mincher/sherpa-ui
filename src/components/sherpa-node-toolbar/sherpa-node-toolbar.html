@@ -1,0 +1,26 @@
+<!--
+  sherpa-node-toolbar — a graph editor's tools, one object of icon buttons: Save, then Undo and
+  Redo. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls.
+  Will, TODO 560. TRAP T-an-edit-is-a-step
+
+  Public API:
+    data-can-save   Save can be pressed (default off: Save is a placeholder until a host wants it)
+    data-can-undo   Undo can be pressed; written by the editor that owns the history
+    data-can-redo   Redo can be pressed
+
+  Slots:
+    (none)
+
+  Fires:
+    toolbar-select — a tool was pressed. detail: { action: 'save' | 'undo' | 'redo' }
+-->
+<template id="default">
+  <span class="tools sherpa-group" part="tools" role="toolbar" aria-label="Editor">
+    <sherpa-button class="save" data-type="icon" data-icon-start="floppy-disk" data-action="save"
+                   aria-label="Save" data-tip="Save" disabled></sherpa-button>
+    <sherpa-button class="undo" data-type="icon" data-icon-start="arrow-rotate-left" data-action="undo"
+                   aria-label="Undo" data-tip="Undo (Ctrl+Z)" disabled></sherpa-button>
+    <sherpa-button class="redo" data-type="icon" data-icon-start="arrow-rotate-right" data-action="redo"
+                   aria-label="Redo" data-tip="Redo (Shift+Ctrl+Z)" disabled></sherpa-button>
+  </span>
+</template>

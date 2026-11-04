@@ -123,6 +123,7 @@ export type { GridLayout } from './components/sherpa-layout-grid/grid-resize.js'
 export { SherpaLayoutCanvas } from './components/sherpa-layout-canvas/sherpa-layout-canvas.js';
 export { SherpaNode } from './components/sherpa-node/sherpa-node.js';
 export { SherpaNodeRow } from './components/sherpa-node-row/sherpa-node-row.js';
+export { SherpaNodeToolbar } from './components/sherpa-node-toolbar/sherpa-node-toolbar.js';
 export { SherpaNodePanel, type AddContext } from './components/sherpa-node-panel/sherpa-node-panel.js';
 export type { SocketSide } from './components/sherpa-node/node-sockets.js';
 export { SherpaGroup } from './components/sherpa-group/sherpa-group.js';

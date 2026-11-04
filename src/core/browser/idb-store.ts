@@ -153,6 +153,7 @@ export class IdbStore extends BaseStore {
       rows.delete([this.#name, was as IDBValidKey]);
       return rows.add(this.#record(row));
     });
+    this.journaled(existing, row);
     this.announce({ type: 'update', key, row: { ...row }, fields: changedFields(existing, row, values) });
     return { ...row };
   }
