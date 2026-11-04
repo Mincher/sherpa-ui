@@ -556,8 +556,8 @@ N4:** running a grouped node (flat), its steps lit through the use, "Test", the 
   it. Each EXISTING instance shows an update indicator, and its overlay panel shows the change
   as a diff, with a split button: **Update instance** (the primary action); its menu holds
   **Update all instances on graph** and **Update all instances**, each confirmed by a
-  critical dialog. Open: does an update keep the instance's changed parameters? (Our
-  reading: yes, as a Figma instance keeps its overrides; to confirm with Will.)
+  critical dialog. An updated instance KEEPS any draft changes made to it in the editor
+  until the reader saves or discards them (Will, 2026-11-04).
 - **D13: A.** Custom nodes are app-wide for now; per USER later, once there are accounts.
 - **D14: a card container, as a Panel, floating ON the canvas** about 32px from the canvas's
   top, bottom and left edges (not an overlay panel, not the shell's panel area).
