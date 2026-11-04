@@ -540,3 +540,20 @@ N4:** running a grouped node (flat), its steps lit through the use, "Test", the 
 | D15 | A preset's inside | Read only, with "Copy to my nodes" | Editable: the reader's edit kept over it |
 | D16 | A route dropped on the bare canvas | "Add a node": the kinds that take its type, Value first | §5 as written: a Value node at once |
 | D17 | A multi-select row's input | A value, `many`: each Value node routed in is one pick | An object: one whole set, from another multi-select row or an Object node |
+
+**Will, 2026-11-04:**
+
+- **D9: "Custom Node".** A graph saved as one node is a Custom Node; the action is
+  **"Save as Custom Node"**. (The rows' `group` kind keeps its name.)
+- **D10: A.** Group Input and Group Output nodes inside, as Figma draws them.
+- **D11: B, as INSTANCES.** Each use is an instance of the same definition: it is fed its
+  own input, and its parameters can be changed in the editor, per instance. Node LOCKING,
+  to stop edits, may come later.
+- **D12: open — leaning B (nested).** Will asked for more on this one.
+- **D13: A.** Custom nodes are app-wide for now; per USER later, once there are accounts.
+- **D14: a card container, as a Panel, floating ON the canvas** about 32px from the canvas's
+  top, bottom and left edges (not an overlay panel, not the shell's panel area).
+- **D15: A.** A preset's inside is read only, with "Copy to my nodes".
+- **D16: A.** A route dropped on bare canvas opens "Add a node".
+- **D17: an object.** An ARRAY is an object type, to keep graph logic simple: a multi-select
+  row's input takes one object (the set), and its output is one.
