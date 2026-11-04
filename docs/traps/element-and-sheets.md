@@ -78,6 +78,8 @@ in Chromium, Firefox and WebKit:
 - Site: `src/components/sherpa-select-card/sherpa-select-card.css`
 - Site: `src/components/sherpa-slider/sherpa-slider.css`
 - Site: `src/components/sherpa-switch/sherpa-switch.css`
+- Site: `test/e2e/reforged-metric.spec.ts`
+- Site: `test/e2e/reforged-nav-item.spec.ts`
 
 ### T-a-button-commands-by-markup
 

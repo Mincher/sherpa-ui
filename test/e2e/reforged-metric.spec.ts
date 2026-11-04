@@ -151,8 +151,8 @@ test('status is derived from the trend, and the card stays white with no border'
       return {
         trend: el.getAttribute('data-trend'),
         status: el.getAttribute('data-status'),
-        // The HOST carries the surface; the card is fill-none over it.
-        bg: getComputedStyle(el).backgroundColor,
+        // The tile's `.surface` carries the fill; the card is fill-none over it.
+        bg: getComputedStyle(el.shadowRoot!.querySelector('.surface')!).backgroundColor,
         borderWidth: rs.borderTopWidth,
         deltaColour: getComputedStyle(el.shadowRoot!.querySelector('.delta')!).color,
       };
@@ -380,7 +380,9 @@ test('the tile draws its Figma fill AND its edge, inside', async ({ page }) => {
     await el.rendered;
     await window.__settled();
 
-    const cs = getComputedStyle(el);
+    // The tile's box, drawn behind its content: its trend is a pin, which never
+    // reaches the host. TRAP T-a-host-state-pin-lives-where-the-host-is
+    const cs = getComputedStyle(el.shadowRoot!.querySelector('.surface')!);
     // Each inset shadow: its colour, then its x and y offsets.
     const edges = [...cs.boxShadow.matchAll(/(rgba?\([^)]*\))\s+(-?[\d.]+)px\s+(-?[\d.]+)px[^,]*inset/g)]
       .map(([, colour, x, y]) => ({ colour, x: Number(x), y: Number(y) }));
@@ -531,7 +533,8 @@ test('a metric is exactly one layout row tall at every density, and its trend fi
       const trend = el.shadowRoot!.querySelector('.trend')!.getBoundingClientRect();
       const value = el.shadowRoot!.querySelector('.value')!.getBoundingClientRect();
       out[density] = { height: tile.height, fits: trend.bottom <= tile.bottom - parseFloat(cs.paddingBlockEnd),
-        apart: trend.top >= value.bottom, border: cs.borderTopWidth, inset: cs.boxShadow.includes('inset') };
+        apart: trend.top >= value.bottom, border: cs.borderTopWidth,
+        inset: getComputedStyle(el.shadowRoot!.querySelector('.surface')!).boxShadow.includes('inset') };
     }
     document.documentElement.removeAttribute('data-density');
     return out;

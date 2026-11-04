@@ -96,12 +96,14 @@ test('the arrows move it; Enter and a click ask to select it; the host\'s data-c
     a.addEventListener('node-select', () => { selects += 1; });
     key('Enter');
     a.click();
-    const plain = getComputedStyle(a).backgroundColor;
+    // The card is its `.root`: a state pin never reaches the host.
+    const card = a.shadowRoot!.querySelector('.root')!;
+    const plain = getComputedStyle(card).backgroundColor;
     const current = { attr: a.hasAttribute('data-current'), aria: header.getAttribute('aria-current') };
     a.toggleAttribute('data-current', true);
     return {
       at: [a.dataset['x'], a.dataset['y']], panned: JSON.stringify(el.view) !== JSON.stringify(view),
-      selects, current, aria: header.getAttribute('aria-current'), tinted: getComputedStyle(a).backgroundColor !== plain,
+      selects, current, aria: header.getAttribute('aria-current'), tinted: getComputedStyle(card).backgroundColor !== plain,
     };
   }, canvas);
   expect(r).toEqual({
@@ -172,14 +174,15 @@ test('a node being dragged is lifted — a shadow, a stronger edge, over the oth
     const header = a.shadowRoot!.querySelector<HTMLElement>('.header')!;
     const at = (type: string, x: number, y: number) => header.dispatchEvent(new PointerEvent(type,
       { pointerId: 4, button: 0, buttons: 1, clientX: x, clientY: y, bubbles: true, composed: true }));
-    // The ring outside its border, and the lift.
-    const look = () => { const s = getComputedStyle(a); return [s.boxShadow.includes('0px 0px 0px 1px'), s.boxShadow.includes('8px 8px 16px -4px'), s.zIndex]; };
-    const before = getComputedStyle(a).boxShadow;
+    // The ring outside its border, and the lift, on the card; the host rises.
+    const card = a.shadowRoot!.querySelector('.root')!;
+    const look = () => { const s = getComputedStyle(card); return [s.boxShadow.includes('0px 0px 0px 1px'), s.boxShadow.includes('8px 8px 16px -4px'), getComputedStyle(a).zIndex]; };
+    const before = getComputedStyle(card).boxShadow;
     at('pointerdown', 100, 100);
     at('pointermove', 140, 120);
     const during = look();
     at('pointerup', 140, 120);
-    return { before, during, after: getComputedStyle(a).boxShadow };
+    return { before, during, after: getComputedStyle(card).boxShadow };
   }, canvas);
   expect(r).toEqual({ before: 'none', during: [true, true, '1'], after: 'none' });
 });

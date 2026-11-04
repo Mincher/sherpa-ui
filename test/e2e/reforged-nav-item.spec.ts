@@ -79,14 +79,19 @@ test('current setter reflects to data-current and styles the row', async ({ page
     el.setAttribute('data-label', 'Reports');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    // The pin is under test, not the fade: a timed wait read mid-flight under load.
-    el.style.transition = 'none';
     el.current = true;
     const on = el.hasAttribute('data-current');
-    // The HOST is the row box now (Figma's Navigation Item contains the tag and
-    // the chevron), so the active fill and ink live there, not on the inner control.
-    const cs = getComputedStyle(el);
-    const styled = { bg: cs.backgroundColor, color: cs.color, weight: cs.fontWeight, edge: cs.boxShadow };
+    // The HOST is the row box (Figma's Navigation Item contains the tag and the
+    // chevron), but its state is a pin, which never reaches the host: the fill and
+    // edge are drawn by `.surface` behind the row, the ink by the control.
+    // TRAP T-a-host-state-pin-lives-where-the-host-is
+    const surface = el.shadowRoot!.querySelector('.surface')!;
+    const control = el.shadowRoot!.querySelector('.nav-button')!;
+    // The pin is under test, not the fade.
+    for (const part of [surface, control]) for (const a of part.getAnimations()) a.finish();
+    const cs = getComputedStyle(surface);
+    const styled = { bg: cs.backgroundColor, color: getComputedStyle(control).color,
+      weight: getComputedStyle(el).fontWeight, edge: cs.boxShadow };
     el.current = false;
     // The mode's own tokens, resolved the same way, so the check follows Figma.
     const probe = document.createElement('div');
