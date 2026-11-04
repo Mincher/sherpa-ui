@@ -434,9 +434,9 @@ a TOGGLE button rather than a plain one.
 Written as `fa-solid fa-star` and `fa-regular fa-star`, the two states swap
 NOTHING: `iconName()` strips `solid` and `regular` as weight tokens before
 resolving, so both spellings resolve to the one `star` drawing. The attribute
-changes on every click and the path never does. The icons are Figma's, and the set holds `star` AND `star-filled` as two
-separate drawings, so the fix is to NAME them — in the star's markup, as a
-directive (`T-a-template-binds-by-markup`):
+changes on every click and the path never does. The icons are Figma's, and the
+set holds `star` AND `star-filled` as two separate drawings, so the fix is to
+NAME them — in the star's markup, as a directive (`T-a-template-binds-by-markup`):
 
 ```html
 data-icon-start="star" data-when-data-icon-start="data-favourite: star-filled"
@@ -445,16 +445,6 @@ data-icon-start="star" data-when-data-icon-start="data-favourite: star-filled"
 A test that reads `data-icon-start` cannot catch this. The test reads the
 rendered `<path d>`.
 
->>>
-<<<
-The whole row toggles — not only the chevron. Clicking the body used to
-navigate, so `Favorites` and `Recent` would have opened a view if either had
-ever carried an `href`, and the two behaviours sat a few pixels apart on the
-same row.
-===
-The whole row toggles — not only the chevron. A body that navigates would open
-a view for `Favorites` or `Recent` the moment either carried an `href`, and put
-the two behaviours a few pixels apart on the same row.
 - Site: `src/components/sherpa-app-header/sherpa-app-header.html`
 - Site: `test/e2e/reforged-app-header.spec.ts`
 
@@ -462,10 +452,9 @@ the two behaviours a few pixels apart on the same row.
 
 A nav row with children GROUPS them. It is not a page.
 
-The whole row toggles — not only the chevron. Clicking the body used to
-navigate, so `Favorites` and `Recent` would have opened a view if either had
-ever carried an `href`, and the two behaviours sat a few pixels apart on the
-same row.
+The whole row toggles — not only the chevron. A body that navigates would open
+a view for `Favorites` or `Recent` the moment either carried an `href`, and put
+the two behaviours a few pixels apart on the same row.
 
 An expandable row also drops its `href` even when one is configured. A row
 rendered as `<a href>` that goes nowhere lies to a middle-click, to "open in
