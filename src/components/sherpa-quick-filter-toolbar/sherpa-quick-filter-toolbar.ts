@@ -646,12 +646,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#chipsOn?.disconnect();
     const chips = this.$('.chips');
     if (!chips) return;
-    this.#chipsOn = new MutationObserver(this.#syncChipsOn);
+    this.#chipsOn = new MutationObserver(this.#onChipsMoved);
     this.#chipsOn.observe(chips, { subtree: true, childList: true, attributeFilter: ['data-current'] });
     this.#syncChipsOn();
   }
   /** Watches its chips' on-state. */
   #chipsOn: MutationObserver | null = null;
+  /** A chip on or off, by any writer: the fill, and a shut Edit menu's rows. TODO 714 · TRAP T-the-add-menu-is-the-whole-list */
+  #onChipsMoved = (): void => { this.#syncChipsOn(); this.#syncOneRows(); };
   /** Say whether a chip is on. */
   #syncChipsOn = (): void => {
     this.toggleState('chips-on', this.#chips().some((c) => c.hasAttribute('data-current') && !c.hasAttribute('data-selector')));
@@ -832,7 +834,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #setChipActive(id: string, on: boolean): void {
     const chip = this.#chipById(id);
     if (chip) chip.current = on;
-    this.#syncOneRows();
   }
 
   /**
@@ -1883,7 +1884,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #emitChange(request?: QueryRequest): void {
     this.#keepOffChips();
     this.#ask(request);
-    this.#syncOneRows();
   }
 
   /** SEND one request, every way this bar sends one: `auto`, held for this bar's

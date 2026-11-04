@@ -143,9 +143,6 @@ test('a set unticked in the Edit menu takes its chip off, though the chip\'s own
     provider.applyFilters('pro');
     await source.load();
     await settle();
-    // Told its sets again, as any later save tells them, its menu is drawn with the chip on.
-    bar.savedSets = bar.savedSets;
-    await settle();
     const edit = bar.shadowRoot.querySelector('.add-btn');
     const menu = () => edit.querySelector('sherpa-menu');
     const before = { chip: chip(bar, 'pro'), ticked: menu().values.filter((v) => v.includes('pro')) };
@@ -159,6 +156,39 @@ test('a set unticked in the Edit menu takes its chip off, though the chip\'s own
   })()`) as Record<string, any>;
   expect(r['before']).toEqual({ chip: true, ticked: ['preset:saved:pro', 'set:pro'] });
   expect(r['after']).toEqual({ chip: null, total: 3, told: [{ id: 'pro', added: false }] });
+});
+
+/* The chip comes on after the Edit menu is drawn, and nothing draws it again: its
+   preset row said off. Pressed off, the row says off, and the set's row stays ticked:
+   the set is still on the bar. TODO 714 */
+test('a set\'s chip on, its preset row in the Edit menu is ticked; its chip pressed off, the row is unticked', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    keep({ pro: { label: 'Pro', query: { v: 1, scopes: { data: { where: { plan: { eq: 'Pro' } } } } } } });
+    const source = await open();
+    await settle();
+    const edit = bar.shadowRoot.querySelector('.add-btn');
+    const menu = () => edit.querySelector('sherpa-menu');
+    // The Edit menu as a reader opens it: its rows for the set, ticked or not.
+    const opened = async () => {
+      edit.shadowRoot.querySelector('button').click();
+      await settle();
+      const rows = [...menu().querySelectorAll('input')].filter((i) => i.value.endsWith('pro')).map((i) => i.value + (i.checked ? ' on' : ' off'));
+      menu().hide();
+      await settle();
+      return { chip: chip(bar, 'pro'), rows };
+    };
+    provider.applyFilters('pro');
+    await source.load();
+    await settle();
+    const on = await opened();
+    bar.shadowRoot.querySelector('.chips > .chip[data-id="preset:saved:pro"]').shadowRoot.querySelector('.body').click();
+    await source.load();
+    await settle();
+    return { on, off: await opened() };
+  })()`) as Record<string, any>;
+  expect(r['on']).toEqual({ chip: true, rows: ['preset:saved:pro on', 'set:pro on'] });
+  expect(r['off']).toEqual({ chip: false, rows: ['preset:saved:pro off', 'set:pro on'] });
 });
 
 test('another View takes the chips off with what they held; Rename keeps a chip on, and Delete takes it off; a reader\'s saved filter of the last shape is read once, an older one is not adopted', async ({ page }) => {

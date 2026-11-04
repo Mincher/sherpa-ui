@@ -2129,8 +2129,11 @@ is held". Two rules keep the tick honest:
 - **Apply flips only a row the reader CHANGED.** The bar and the panel keep
   what each row was told. A chip pressed elsewhere while the menu was shut
   leaves a stale tick, and comparing the tick with the chip turned it back.
-- **A press elsewhere re-ticks the shut menu's row**, so the reader sees the
-  chip as it is. An open menu is left alone: it holds the reader's draft.
+- **A chip moved elsewhere re-ticks the shut menu's row**, so the reader sees the
+  chip as it is. An open menu is left alone: it holds the reader's draft. The
+  bar's watch on its chips' `data-current` does it, whoever wrote it: about 20
+  writers in the bar, and a draw that turns a preset on after its waits had
+  left the row unticked while the chip was on (TODO 714).
 
 The TOOLBAR's chip menus keep their own Remove in the footer. A chip is the
 filter, so removing it from its own menu is where a reader looks; the panel is
