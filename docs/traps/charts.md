@@ -78,9 +78,9 @@ copy of the half-circle geometry, which is where it kept going wrong. The
 remainder is chrome, not data: CSS greys it, drops its pointer target and gives
 it no hover dot, so it never claims a tooltip.
 
-Also the reason the middle scale tick is a TICK. It used to print
-`data-label ?? the value`, which put the reading at the top centre of the arc —
-a place that means "half way". On the Figma component the needle happens to sit
+Also the reason the middle scale tick is a TICK. Printing `data-label ?? the
+value` there puts the reading at the top centre of the arc — a place that means
+"half way". On the Figma component the needle happens to sit
 at 50 too, so the two readings agreed and the bug stayed hidden. There are
 three ticks — min, the MIDPOINT, max — and `data-unit` suffixes all three
 (Figma's gauge reads 0% / 50% / 100%).
@@ -227,9 +227,9 @@ hue (`T-a-category-keeps-its-colour`).
 The gridline loop runs to `bands` **INCLUSIVE**, so the TOPMOST axis label gets a
 line, and starts at `i = 1`, so the bottom one does not.
 
-It used to stop at `bands - 1`, on the reasoning that 0% and 100% are the plot's
-own edges. Only the BOTTOM edge is actually drawn (the x-axis rule), so the
-highest value was the one label on the axis with nothing beside it. `i = 0` stays
+Stopping at `bands - 1` — 0% and 100% being the plot's own edges — leaves the
+highest value the one label on the axis with nothing beside it, as only the
+BOTTOM edge is drawn (the x-axis rule). `i = 0` stays
 excluded for the same reason from the other end: that line would sit exactly
 under the x-axis rule.
 
@@ -344,10 +344,7 @@ the spec generator reads into git-tracked YAML.
 (`data-label`) and every other populate shape in the library — `label` is the
 word in 7 of 13.
 
-It used to take `name` and write it straight into `dataset['label']`, translating
-its own vocabulary in the one line where both spellings met. `name` is still read
-(and marked `@deprecated`) so nothing breaks, with `label` winning when both are
-given.
+It takes no `name`: a rename drops the old name (`T-a-rename-drops-the-old-name`).
 
 This is the component-level half of
 `T-populate-vocabulary-is-label-value-description`.
@@ -379,9 +376,8 @@ The trend itself is derived from `deltaPercent` when it is not given explicitly
 ### T-donut-slice-is-a-closed-path
 
 Each donut slice is **ONE CLOSED `<path>`** — a ring segment with all four
-corners rounded, built by `ringSegmentPath()`. It used to be a STROKED CIRCLE
-whose dash exposed only its own span, and that could express NEITHER of the two
-things Figma asks for.
+corners rounded, built by `ringSegmentPath()`. A STROKED CIRCLE whose dash
+exposes only its own span can express NEITHER of the two things Figma asks for.
 
 A stroke is a thick LINE: it has two caps and no corners. So it could not carry a
 border round the whole slice (only along the two long edges, as a second arc
@@ -823,9 +819,8 @@ Hiding the last row leaves an empty chart beside an empty grid and no obvious
 way back — and it is not a question anyone asks. The click is REFUSED and the
 legend is put back as it was, rather than left dimmed over an unchanged filter.
 
-**THE LEGEND REFUSES IT, not the caller.** Until 2026-09-22 the floor lived in
-a `legend-filter` module in the data layer, which meant a filter rule guarded a
-VISIBILITY question. Will: *"legend filtering is just filtering. visibility &
+**THE LEGEND REFUSES IT, not the caller.** In the data layer the floor is a
+filter rule guarding a VISIBILITY question. Will: *"legend filtering is just filtering. visibility &
 state is a component concern."* It is now in `sherpa-chart-legend`, beside the
 off-set and the roll-up rows it has to count — so any caller gets it, not only
 one that used the right binding.
@@ -949,9 +944,9 @@ exactly at the ring's edges, overhang zero.
 A donut's centre reads the TOTAL of the slices it draws, unless the host named
 its own `data-label`.
 
-It used to be a plain attribute, so the dashboard carried `data-label="1,284"`
-— a string that stayed put while the ring beneath it redrew on every filter.
-The Records donut, added later, simply had none and showed nothing.
+As a plain attribute it is a string that stays put while the ring beneath it
+redraws on every filter (`data-label="1,284"`), and a donut given none shows
+nothing.
 
 Deriving it means the number and the ring can never disagree. A HIDDEN slice
 leaves the total, because the ring no longer counts it either: three slices of
