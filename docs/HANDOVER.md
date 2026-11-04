@@ -17,7 +17,36 @@ The repo holds the rules, the TODO and the traps. These live OUTSIDE it:
 | claude.ai connectors (Figma, Claude Docs) | the claude.ai account | **No.** Connect them again in the new account |
 | figma-console MCP | `.mcp.json` (not tracked) | Yes. Never read, edit or stage it: it holds a plaintext token |
 
-## Where the work stands (2026-11-04)
+## Where the work stands (2026-11-04, afternoon)
+
+**Will's order (2026-11-04):** nodes and node graphs (plan-713 M1–M6), then the node
+editor (557–562; plan-719 M7–M12: Custom Nodes, the node panel, saved nodes), THEN
+workflows (N4, `runWorkflow`, 616 — held), then the MCP (PARKED: 700's G6/G7, 728). Memory:
+`sherpa-node-work-before-mcp`. [plan-713](history/plan-713-node-model.md) holds every answer
+(D1–D17, the Custom Node update flow); none is open.
+
+- **Merged today:** plan 700 G0–G5 (the MCP: 21 tools, 3 skills), 702, 704–709, 714–718,
+  724, 726, 727 (A), 729 (CI installs Chromium), 713 M1 (`8b30a9f4`, the node types).
+  Each is in the archive or in plan-700 / plan-713.
+- **Two lanes were in flight at the IDE restart** (their work stays in their worktrees;
+  `git worktree list` shows them; a new session's scratchpad path differs, so use these):
+  - **M2, sockets drawn** — `…/a3deae6e-5ea5-4e47-ac76-37e9d7eabcef/scratchpad/wt-e` +
+    `demos-e`, branch `lane/nodes-m2` (ports 4184 / 4374): the node components, CSS, pins.
+  - **M3, rows carry the data** — `…/scratchpad/wt-a` + `demos-a`, branch `lane/nodes-m3`
+    (ports 4180 / 4370): node-kinds, workflow (v2, converting the v1 graphs), query-graph,
+    node-graph.ts. The header input is the data input; a Rows row only sends (D1).
+  The full scratchpad path is
+  `/private/tmp/claude-502/-Users-williammincher-Documents-My-synced-vault-Projects-sherpa-ui/a3deae6e-5ea5-4e47-ac76-37e9d7eabcef/scratchpad/`.
+  To resume: read each branch's `git log sherpa-data-layer..` and `git status`; finish or
+  re-brief the lane; merge as the memory note `sherpa-orchestrate-agents-in-parallel` says.
+- **Next:** M4 (the Condition node) and M6 (picklists, plug-in values, with 557–559), then
+  M5, then M7–M12 and 560–562.
+- **Waiting on Will:** 730 (a line's end labels: A flush, as built / B between tick marks).
+- **Peers on this branch:** `sherpa-ui-f1` (TODO 723, Organise and Preset as conditional
+  fields: the toolbar, quick-filter and `core/ui/filter-*` files) and `sherpa-ui-58`. Index
+  shared: `git diff --quiet -- <file>` before a script edits a shared file.
+
+## Where the work stood (2026-11-04, morning)
 
 **The architecture refactor, plan 695, is done but N4.** ([plan-695](history/plan-695-architecture.md)
 has each lane's record and what it carried on; [the review](ARCHITECTURE-REVIEW.md) marks
