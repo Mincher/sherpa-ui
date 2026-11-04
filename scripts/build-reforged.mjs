@@ -10,12 +10,14 @@
  * path holds; a dev build stays readable. Will, TODO 199.
  * Last, dist/bundle/: each entry as a few files, for a page with no bundler of
  * its own. Will, TODO 350 D1. TRAP T-a-page-loads-the-bundle
+ * It is all made in dist.next/ and swapped in whole; --watch writes in place.
+ * TRAP T-a-build-is-swapped-in-whole
  *
  *   node scripts/build-reforged.mjs [--watch | --dev | --no-minify]
  *   (--no-minify: inlined as shipped, but with readable names — to profile)
  */
 import { execSync, spawn } from 'node:child_process';
-import { readdirSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, statSync, watch, globSync, existsSync, unlinkSync, rmSync } from 'node:fs';
+import { readdirSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, statSync, watch, globSync, existsSync, unlinkSync, rmSync, renameSync } from 'node:fs';
 import { join, dirname, relative, resolve } from 'node:path';
 import postcss from 'postcss';
 import autoprefixer from 'autoprefixer';
@@ -24,7 +26,20 @@ import { build, transform } from 'esbuild';
 
 const ROOT = process.cwd();
 const SRC = join(ROOT, 'src');
-const OUT = join(ROOT, 'dist');
+const WATCH = process.argv.includes('--watch');
+const DEV = WATCH || process.argv.includes('--dev');
+const MINIFY = !process.argv.includes('--no-minify');
+const DIST = join(ROOT, 'dist');
+/* A page never meets an empty or half-built dist/: the build is made beside it,
+   then swapped in. --watch writes in place, as tsc --watch emits into dist/.
+   TRAP T-a-build-is-swapped-in-whole */
+const OUT = WATCH ? DIST : join(ROOT, 'dist.next');
+const OLD = join(ROOT, 'dist.old');
+if (!WATCH) {
+  // A build stopped between the two renames left the last dist/ as dist.old/.
+  if (!existsSync(DIST) && existsSync(OLD)) renameSync(OLD, DIST);
+  rmSync(OUT, { recursive: true, force: true });
+}
 
 // Each output must stay ONE valid stylesheet — components adopt it into
 // adoptedStyleSheets. Nesting ships AS WRITTEN: no supported engine lacks it
@@ -38,10 +53,6 @@ const cssProcessor = postcss([
 console.log('› project-tokens');
 execSync('node scripts/project-tokens.mjs', { stdio: 'inherit' });
 
-const WATCH = process.argv.includes('--watch');
-const DEV = WATCH || process.argv.includes('--dev');
-const MINIFY = !process.argv.includes('--no-minify');
-
 // Fatal one-shot; in --watch it only reports — an error there would kill the
 // watch and stop all updates silently.
 console.log('› lint:css');
@@ -53,8 +64,9 @@ try {
 }
 
 if (!WATCH) {
-  console.log('› tsc -p tsconfig.reforged.json');
-  execSync('npx tsc -p tsconfig.reforged.json', { stdio: 'inherit' });
+  const tsc = `tsc -p tsconfig.reforged.json --outDir ${relative(ROOT, OUT)}`;
+  console.log(`› ${tsc}`);
+  execSync(`npx ${tsc}`, { stdio: 'inherit' });
 }
 
 async function copyAssets(dir) {
@@ -204,6 +216,18 @@ async function writeBundle() {
 }
 console.log('› bundle each entry into dist/bundle/');
 console.log(`✓ ${await writeBundle()}`);
+
+/** The new build in, whole: two renames, ~150 µs apart, with no dist/ between them. */
+function swapIn() {
+  rmSync(OLD, { recursive: true, force: true });
+  if (existsSync(DIST)) renameSync(DIST, OLD);
+  renameSync(OUT, DIST);
+  rmSync(OLD, { recursive: true, force: true });
+}
+if (!WATCH) {
+  swapIn();
+  console.log('✓ dist/ swapped in');
+}
 
 if (WATCH) {
   const tsc = spawn('npx', ['tsc', '-p', 'tsconfig.reforged.json', '--watch', '--preserveWatchOutput'],

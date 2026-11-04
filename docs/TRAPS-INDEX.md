@@ -1082,9 +1082,10 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](traps/other-components.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (75)
+## Build, tools and the MCP (76)
 
 - [T-a-bare-name-must-be-used-not-mentioned](traps/build-tools-mcp.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
+- [T-a-build-is-swapped-in-whole](traps/build-tools-mcp.md#t-a-build-is-swapped-in-whole) — build-reforged, sherpa-ui
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — ts-facts
 - [T-a-cli-is-run-through-a-link](traps/build-tools-mcp.md#t-a-cli-is-run-through-a-link) — check-usage, sherpa-ui
 - [T-a-component-ships-its-example](traps/build-tools-mcp.md#t-a-component-ships-its-example) — read, write-reference

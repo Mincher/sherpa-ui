@@ -6,8 +6,10 @@ node_modules/
 *.code-search
 .env
 
-# TypeScript compiled output
+# TypeScript compiled output, and the build made beside it
 dist/
+dist.next/
+dist.old/
 
 # Accessibility test reports (generated)
 test/a11y/reports/

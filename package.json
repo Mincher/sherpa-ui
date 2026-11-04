@@ -102,7 +102,7 @@
   },
   "scripts": {
     "prepare": "git config core.hooksPath .githooks",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist dist.next dist.old",
     "build": "node scripts/build-reforged.mjs",
     "build:watch": "node scripts/build-reforged.mjs --watch",
     "build:dev": "node scripts/build-reforged.mjs --dev",
@@ -134,7 +134,6 @@
     "mcp": "node mcp-server/index.js",
     "check:mcp-pack": "node scripts/check-mcp-pack.mjs",
     "preview": "node bin/sherpa-ui.mjs serve . --port 4000",
-    "prebuild": "npm run clean",
     "test": "playwright test && npm run test:node",
     "test:node": "node --test 'test/unit/**/*.test.mjs'",
     "test:a11y": "playwright test test/e2e/a11y.spec.ts --project=chromium",

@@ -1,7 +1,7 @@
 # Traps — Build, tools and the MCP
 
 One of the eleven areas of [the traps](../TRAPS.md): each entry is here because its
-first `Site:` is in this area (`npm run check:traps` holds it so). 34 entries.
+first `Site:` is in this area (`npm run check:traps` holds it so). 36 entries.
 
 ### T-a-slot-says-what-it-accepts
 
@@ -1103,3 +1103,33 @@ one copy:** map every entry to the bundle or every one to the modules; a mix
 defines each class twice.
 
 - Site: `scripts/build-reforged.mjs`
+
+### T-a-build-is-swapped-in-whole
+
+**A build is made in `dist.next/` and swapped in whole; `dist/` is never empty
+or half-built.** The build used to clear `dist/` first (`prebuild: npm run
+clean`), so every server reading it answered 404 for the whole build: Demos on
+:4200 served `dist/bundle/index.js` as a 404 and `tokens.css` as text/html (Will,
+TODO 709). A failed or stopped build left it empty too.
+
+Now `tsc --outDir dist.next` and every step after it write there, and the last
+step is two renames: `dist/` → `dist.old/`, `dist.next/` → `dist/`. A build that
+fails or is stopped never reaches them, so the last build stays. The next build
+throws away the `dist.next/` it left, and puts back a `dist.old/` that has no
+`dist/` beside it. Measured during a build, polling three files: before, 569 of
+807 answers were 404; after, 0. A poller at 8,000 requests a second still meets
+about 20 404s in the ~150 µs between the two renames. Node has no exchange
+rename, so the gap stays.
+
+A server reads by PATH, so it serves the new build from the next request on.
+One that STATS a file, then opens it by path, can meet the gap in between:
+`sherpa-ui serve` crashed on the stream's ENOENT. It now opens the file once and
+measures and reads that handle. A request that is already open finishes from
+the old build. On macOS a recursive `fs.watch` follows the path, so Demos' live
+reload still hears `dist/` after a swap.
+
+`--watch` writes IN PLACE: `tsc --watch` emits into `dist/`, file by file, and
+live reload needs those writes.
+
+- Site: `scripts/build-reforged.mjs`
+- Site: `bin/sherpa-ui.mjs`

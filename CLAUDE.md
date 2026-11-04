@@ -40,11 +40,12 @@ Will's call.
 ## Commands
 
 ```bash
-# Build (clean → compile TS → transform + copy CSS/HTML assets into dist/ →
-# put each template and sheet INTO the JS, so nothing is fetched)
+# Build (compile TS → transform + copy CSS/HTML assets → put each template and
+# sheet INTO the JS, so nothing is fetched), all in dist.next/, then swapped in
+# as dist/: a failed or stopped build leaves the last one (T-a-build-is-swapped-in-whole)
 npm run build
 npm run build:dev         # the same, but components FETCH their files — for live reload
-npm run build:watch       # build-reforged.mjs --watch — TS *and* assets, fetched (a dev build)
+npm run build:watch       # build-reforged.mjs --watch — TS *and* assets, fetched (a dev build), IN PLACE
 npm run build:watch:ts    # tsc --watch — TS only, no asset copy
 node scripts/build-reforged.mjs --no-minify  # as shipped, with readable names — to profile
 

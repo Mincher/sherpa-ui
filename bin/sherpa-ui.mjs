@@ -8,9 +8,10 @@
  * Map:
  * - serve — Serve a folder's files over HTTP on localhost; resolves with the server once it listens.
  */
-import { createReadStream, realpathSync } from 'node:fs';
-import { stat } from 'node:fs/promises';
+import { realpathSync } from 'node:fs';
+import { open, stat } from 'node:fs/promises';
 import { createServer } from 'node:http';
+import { pipeline } from 'node:stream';
 import { extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -37,16 +38,19 @@ export function serve(folder = '.', { port = 4000, host = 'localhost' } = {}) {
         // `/docs` → `/docs/`, so the page's relative URLs resolve inside it.
         if (!path.endsWith('/')) return void res.writeHead(301, { location: `${path}/` }).end();
         file = join(file, 'index.html');
-        info = await stat(file);
       }
+      // Measured and read through ONE open file: a build swapped in meanwhile is
+      // not half-read, nor a crash. TRAP T-a-build-is-swapped-in-whole
+      const handle = await open(file);
+      info = await handle.stat();
       const type = TYPES[extname(file).toLowerCase()] ?? 'application/octet-stream';
       res.writeHead(200, {
         'content-type': TEXT.test(type) ? `${type}; charset=utf-8` : type,
         'content-length': info.size,
         'cache-control': 'no-cache',
       });
-      if (req.method === 'HEAD') return void res.end();
-      createReadStream(file).pipe(res);
+      if (req.method === 'HEAD') return void handle.close().then(() => res.end());
+      pipeline(handle.createReadStream(), res, () => undefined);
     } catch {
       res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' }).end('Not found');
     }
