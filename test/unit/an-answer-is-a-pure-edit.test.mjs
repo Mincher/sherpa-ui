@@ -3,7 +3,8 @@
  * an answer, the Switch, a solo, a reset, a preset, a hold, a take, a release, a
  * let-go, an Apply and a Discard — is `(copies, command) → copies`: the copies
  * given are untouched, and what each member must hear is said as the result, in
- * order. `ask()` puts the new Query in place and tells the members once.
+ * order. `ask()` puts the new Query in place and tells the members once. A
+ * command that names no edit is reported, and moves nothing (TODO 718).
  * TRAP T-one-command-one-door
  *
  *   node --test test/unit/an-answer-is-a-pure-edit.test.mjs
@@ -11,7 +12,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource, QueryContext, VIEW, bindSource } from '../../dist/data.js';
+import { ArrayStore, DataSource, QueryContext, VIEW, bindSource, onReport } from '../../dist/data.js';
 import { editCopies } from '../../dist/core/data/query-edits.js';
 
 /** Freeze a value all the way down: an edit that writes it throws. */
@@ -120,4 +121,48 @@ test('ask() puts the new Query in place and tells each member ONCE, with every c
   assert.ok(Object.isFrozen(query.reading('data', 'plan')), 'and frozen');
   await source.load();
   assert.deepEqual(source.rows.map((r) => r.id), [1]);
+});
+
+test('a command that names no edit is reported and moves nothing; an Apply still applies (TODO 718)', async () => {
+  const heard = [];
+  const undo = onReport((r) => heard.push(r));
+  try {
+    // The data scope waits, with a pick not yet applied: an Apply would send it.
+    const waits = facts({ named: new Set(['data']) });
+    const edited = editCopies({ applied: frozen(query()), draft: frozen(query()), solo: null },
+      { scope: 'data', field: 'plan', reading: { picked: ['Free'] } }, waits);
+    for (const bad of [{ foo: 1 }, { scope: 'data', filter: 'status' }, {}, { commit: false }, null, 'commit', [{ foo: 1 }]]) {
+      heard.length = 0;
+      const done = editCopies(edited, bad, waits);
+      assert.deepEqual([done.applied, done.draft, done.said], [edited.applied, edited.draft, []], `${JSON.stringify(bad)} moves nothing`);
+      assert.deepEqual(heard.map((r) => r.code), ['unknown-request'], `${JSON.stringify(bad)} is said`);
+    }
+    heard.length = 0;
+    assert.deepEqual(editCopies(edited, { scope: 'data', commit: true }, waits).applied.scopes.data.readings.plan.picked, ['Free'], 'an Apply sends it');
+
+    // Through ask(), on a page: no query-change, nothing applied, every scope as it was.
+    const source = new DataSource({ store: new ArrayStore([{ id: 1, plan: 'Pro' }, { id: 2, plan: 'Free' }], { key: 'id' }) });
+    const grid = Object.assign(new EventTarget(), { id: 'grid', setAttribute() {}, removeAttribute() {}, populate() {} });
+    bindSource(source, grid, { scope: 'data' });
+    source.query.offer('data', ['plan']);
+    await source.load();
+    source.query.wait('data');
+    source.query.ask({ scope: 'data', field: 'plan', reading: { picked: ['Pro'] } });
+    const events = [];
+    source.query.addEventListener('query-change', (e) => events.push(e.detail));
+    const before = [source.query.applied, source.query.draft];
+    heard.length = 0;
+    source.query.ask({ foo: 1 });
+    assert.deepEqual([source.query.applied, source.query.draft], before, 'the Query stays as it was');
+    assert.deepEqual([events, heard.map((r) => r.code)], [[], ['unknown-request']]);
+    assert.match(heard[0].message, /^ask: \{ foo \} names no edit the Query knows/);
+    source.query.ask({ commit: true });
+    assert.deepEqual(source.query.applied.scopes.data.readings.plan.picked, ['Pro'], 'a known one still applies');
+    assert.equal(events.length, 1);
+    await source.load();
+    assert.deepEqual(source.rows.map((r) => r.id), [1]);
+    assert.deepEqual(heard.map((r) => r.code), ['unknown-request'], 'and says nothing more');
+  } finally {
+    undo();
+  }
 });

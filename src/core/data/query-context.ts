@@ -87,8 +87,9 @@ export interface QueryChangeDetail {
 /** The page requests in a request, in order: no edit, they go to the source that pages. */
 function pagesOf(request: QueryRequest): Array<{ scope?: string } & ({ page: number } | { pageSize: number })> {
   if (Array.isArray(request)) return (request as readonly QueryRequest[]).flatMap(pagesOf);
-  const one = request as Exclude<QueryRequest, readonly QueryRequest[]>;
-  return 'page' in one || 'pageSize' in one ? [one] : [];
+  const one = request as Exclude<QueryRequest, readonly QueryRequest[]> | null;
+  // No object is no page: the edit reports it. TODO 718
+  return one && typeof one === 'object' && ('page' in one || 'pageSize' in one) ? [one] : [];
 }
 
 /** Every reading in a copy, frozen: what a control is handed cannot change it.

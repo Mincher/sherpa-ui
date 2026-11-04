@@ -117,10 +117,12 @@ test('a bad command is the data layer\'s report, under the command that raised i
   assert.deepEqual(json.asked[0].reports.map((r) => r.code), ['field-fixed']);
   assert.match(text, /- `field-fixed` .*"customer" stays held/);
   assert.ok(json.query.scopes.view.holds.includes('customer'));
-  // A command the Query has no word for moves nothing, and the answer says so.
+  // A command the Query has no word for moves nothing, and the data layer says so. TODO 718
   const none = await call('query_source', { definition: records, rows, key: 'id', commands: [{ scope: 'data', filter: 'status' }] });
   assert.equal(none.json.asked[0].changed, false);
+  assert.deepEqual(none.json.asked[0].reports.map((r) => r.code), ['unknown-request']);
   assert.match(none.text, /did not move at #1/);
+  assert.match(none.text, /- `unknown-request` ask: \{ scope, filter \} names no edit/);
 });
 
 test('query_source reads the app\'s data path on this machine, and refuses any other host', async (t) => {

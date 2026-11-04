@@ -1242,6 +1242,13 @@ function move(w: Work, given: Extract<PureEdit, { move: unknown }>, facts: EditF
   w.say({ kind: 'move', scopes, moved: moved.length > 0 });
 }
 
+/** A request that names no edit — `{ foo: 1 }`, or no object at all — is said, and changes nothing. TODO 718 */
+function unknownRequest(given: unknown): void {
+  const keys = given !== null && typeof given === 'object' ? Object.keys(given) : [];
+  const said = keys.length ? `{ ${keys.join(', ')} }` : JSON.stringify(given) ?? String(given);
+  report({ code: 'unknown-request', message: `ask: ${said} names no edit the Query knows, so nothing changed.`, at: { keys: keys.join(',') } });
+}
+
 /** One request, at work: a list is ONE change — one batch, one Apply. A page and a
  *  hover are no edit. */
 function run(w: Work, request: QueryRequest): void {
@@ -1249,6 +1256,8 @@ function run(w: Work, request: QueryRequest): void {
     w.batch(() => { for (const one of request as readonly QueryRequest[]) run(w, one); });
     return;
   }
+  // A command read from JSON may be no object at all.
+  if (!request || typeof request !== 'object') return unknownRequest(request);
   const one = request as Exclude<QueryRequest, readonly QueryRequest[]>;
   const at = one.scope ?? VIEW;
   if ('preview' in one || 'page' in one || 'pageSize' in one) return;
@@ -1265,10 +1274,10 @@ function run(w: Work, request: QueryRequest): void {
   else if ('discard' in one) discard(w, applyAt(one));
   else if ('suspended' in one) suspend(w, at, 'field' in one ? one.field : null, one.suspended);
   // Alone, `commit` is an Apply: one field, one scope, or every scope.
-  else {
+  else if ('commit' in one && one.commit) {
     w.commit(applyAt(one));
     return;
-  }
+  } else return unknownRequest(one);
   // A preset's own commit applies the fields it moved, and no more.
   if ('commit' in one && one.commit && !('preset' in one)) w.commit('field' in one ? { field: one.field } : { scope: at });
 }

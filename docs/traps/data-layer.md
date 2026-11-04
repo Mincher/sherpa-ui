@@ -6969,6 +6969,10 @@ request's scope — with none named, or none drawing there, every source's.
 - **`scope` left out** is the View; for a Sort, Group or Search, the scope that
   arranges now; for an Apply or a Discard, every scope. A preset's own `commit`
   applies only the fields it moved.
+- **A command that names no edit is reported, `unknown-request`, and changes
+  nothing** — `{ foo: 1 }`, `{}`, or no object at all, from an agent's JSON. Only
+  `commit` is an Apply: before TODO 718 anything unmatched fell through to one,
+  on every scope, and said nothing.
 
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/query-edits.ts`
