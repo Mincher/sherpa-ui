@@ -7108,7 +7108,9 @@ years. A week or more left over makes one more, partial, segment; less joins the
 last. `rangeOf` counts today once, so "last 7 days" is 7 days and not 8. The
 filter still keeps the far end, the 8th day: its rows join the first segment, so
 the series adds up to the tile. A day is a segment like any other, so "last 14
-days" is the range's 14 days, never every day the field holds (TODO 705).
+days" is the range's 14 days, never every day the field holds (TODO 705). A day
+alone is 12 of two hours, and a date with no time is at its midnight: cut as
+text, it was keyed `2026-11-0400` and matched no segment.
 
 - Site: `src/core/data/segments.ts`
 - Site: `src/core/data/aggregate.ts`

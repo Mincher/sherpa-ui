@@ -309,7 +309,8 @@ function cut(value: unknown, bucket: Bucket): string {
     return Number.isNaN(at) ? text.slice(0, 10) : new Date(at - ((new Date(at).getUTCDay() + 6) % 7) * DAY).toISOString().slice(0, 10);
   }
   if (bucket === 'quarter') return `${text.slice(0, 4)}-Q${Math.floor((Number(text.slice(5, 7)) - 1) / 3) + 1}`;
-  if (bucket === 'hour2') return `${text.slice(0, 11)}${String(Math.floor(Number(text.slice(11, 13)) / 2) * 2).padStart(2, '0')}`;
+  // A date with no time is at its midnight.
+  if (bucket === 'hour2') return `${text.slice(0, 10)}T${String(Math.floor((Number(text.slice(11, 13)) || 0) / 2) * 2).padStart(2, '0')}`;
   return text.slice(0, CUT[bucket]);
 }
 
@@ -334,21 +335,24 @@ function step(key: string, bucket: Bucket): string {
  * bucket from the first to the last — a quiet month is zero, never missing.
  * TRAP T-a-series-has-a-value-at-every-point
  */
-function pointsOf(rows: readonly Row[], over: string, bucket: Bucket | undefined, declared: readonly unknown[],
-  range?: readonly [string, string]): unknown[] {
+function pointsOf(rows: readonly Row[], over: string, bucket: Bucket | undefined, declared: readonly unknown[]): unknown[] {
   const keyOf = (v: unknown): unknown => (bucket ? cut(v, bucket) : v);
   // In the library's one order. TRAP T-one-collator-for-the-library
   if (declared.length) return bucket ? [...new Set(declared.map(keyOf))].sort(compareValues) : [...declared];
   const seen = [...new Set(rows.map((r) => readField(r, over)).filter((v) => v != null && v !== '').map(keyOf))]
     .sort(compareValues);
-  const ends = range && bucket ? [cut(`${range[0]}T00:00`, bucket), cut(`${range[1]}T23:59`, bucket)] : [];
-  const first = (ends[0] ?? seen[0]) as string | undefined;
-  const last = (ends[1] ?? seen[seen.length - 1]) as string | undefined;
-  if (!bucket || first === undefined || last === undefined || (!ends.length && seen.length < 2)) return seen;
+  const [first, last] = [seen[0], seen[seen.length - 1]] as (string | undefined)[];
+  if (!bucket || first === undefined || last === undefined || seen.length < 2) return seen;
   const out: string[] = [];
   // Capped: a key the step cannot parse would otherwise never reach `last`.
   for (let k = first; k <= last && out.length < 10_000; k = step(k, bucket)) out.push(k);
   return out;
+}
+
+/** The start of each segment of a range: from its first day, or a day's every two hours. TODOs 540, 705 */
+function startsOf([from, to]: readonly [string, string], bucket: Bucket): string[] {
+  if (bucket !== 'hour2') return segmentStarts(from, to, bucket);
+  return segmentStarts(from, to, 'day').flatMap((day) => Array.from({ length: 12 }, (_, i) => `${day}T${String(i * 2).padStart(2, '0')}`));
 }
 
 /** Each segment's rows again, by the group field: its parts, in the group's ONE
@@ -446,23 +450,24 @@ export function summarise(
   const at = spec.bucket ? '\u0000bucket' : spec.over;
   // `auto` reaches here only unresolved — no range to fit — and cuts by the day.
   const bucket = spec.bucket === 'auto' ? 'day' : spec.bucket;
-  /* A range cut into days or longer is counted from ITS start: 6 months is 6 segments, and 14 days 14.
+  /* A range is counted from ITS start: 6 months is 6 segments, 14 days 14, and a day 12 of two hours.
      TRAP T-a-range-is-counted-from-its-own-start
      A row is in the last segment that starts on or before it. TODOs 540, 705 */
-  const starts = bucket && spec.range && bucket !== 'hour2' ? segmentStarts(...spec.range, bucket) : undefined;
+  const starts = bucket && spec.range ? startsOf(spec.range, bucket) : undefined;
+  const own = bucket === 'day' || bucket === 'hour2';
   const startOf = (value: unknown): string => {
-    const day = cut(value, 'day');
-    return starts!.findLast((s) => s <= day) ?? starts![0]!;
+    const key = cut(value, bucket === 'hour2' ? 'hour2' : 'day');
+    return starts!.findLast((s) => s <= key) ?? starts![0]!;
   };
   const keyed = starts ? rows.map((r) => ({ ...r, [at]: startOf(readField(r, spec.over!)) }))
     : bucket ? rows.map((r) => ({ ...r, [at]: cut(readField(r, spec.over!), bucket) })) : rows;
-  const points = (starts ?? pointsOf(rows, spec.over, bucket, domain(spec.over), spec.range)) as (string | number)[];
+  const points = (starts ?? pointsOf(rows, spec.over, bucket, domain(spec.over))) as (string | number)[];
   if (spec.shape === 'aggregate') {
     const values = seriesBy(keyed, at, points, '', opts).values;
     const delta = deltaPercent(values);
-    // Each point's time span, for its tooltip: a day its own. TODO 540
+    // Each point's time span, for its tooltip: a day, or two hours, its own. TODO 540
     const spans = starts
-      ? { labels: starts.map((from, i) => bucket === 'day' ? segmentLabel(from, bucket)
+      ? { labels: starts.map((from, i) => own ? segmentLabel(from, bucket)
         : spanLabel(from, i + 1 < starts.length ? dayBefore(starts[i + 1]!) : spec.range![1])) }
       : bucket ? { labels: points.map((p) => segmentLabel(String(p), bucket)) } : {};
     return delta == null ? { value, values, ...spans } : { value, values, ...spans, deltaPercent: delta };

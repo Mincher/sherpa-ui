@@ -98,3 +98,13 @@ test('last 14 days is one segment a day, for the range\'s days only — not ever
   assert.match(out.labels[0], /Thu/);
   assert.match(out.labels.at(-1), /Wed/);
 });
+
+test('a single day is 12 two-hour segments, and a date with no time is at its midnight (TODO 705)', () => {
+  const domain = (f) => (f === 'at' ? ['2026-10-01', '2026-11-04'] : []);
+  const rows = [{ at: '2026-11-04' }, { at: '2026-11-04T09:30:00Z' }, { at: '2026-11-04T23:10:00Z' }];
+  const out = summarise(rows, { shape: 'aggregate', over: 'at', bucket: 'hour2', range: ['2026-11-04', '2026-11-04'] }, domain);
+  assert.equal(out.values.length, 12);
+  assert.deepEqual([out.values[0], out.values[4], out.values[11]], [1, 1, 1]);
+  assert.equal(out.values.reduce((a, b) => a + b), out.value);
+  assert.match(out.labels[4], /08:00.10:00/);
+});
