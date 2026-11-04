@@ -9,7 +9,7 @@
   "components.js": {
     "files": 139,
     "brotli": {
-      "js": 246667,
+      "js": 246662,
       "fetched": 8559
     }
   },
@@ -359,7 +359,7 @@
   "components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js": {
     "files": 64,
     "brotli": {
-      "js": 116469,
+      "js": 116464,
       "fetched": 0
     }
   },
@@ -499,7 +499,7 @@
   "index.js": {
     "files": 219,
     "brotli": {
-      "js": 354454,
+      "js": 354449,
       "fetched": 8559
     }
   }

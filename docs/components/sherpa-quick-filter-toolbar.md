@@ -163,7 +163,7 @@ Each one bubbles.
 | `sort-change` | `{ clear: true; direction: SortDirection; field: null \| string }` |  |
 | `filter-remove` | `{ filter: object; holds: string[]; id: string; scope: string }` | A chip was removed. |
 | `filter-add` | `{ filters: FilterDef[]; from: string; holds: string[]; ids: string[]; scope: string }` | Chips were added. |
-| `view-reset` |  | Reset all on view: put back the View's own filters, in every scope. |
+| `view-reset` |  | Reset to view defaults: put back the View's own filters, in every scope. |
 | `filter-apply` |  | Apply, where the scope waits: send every change held in it. |
 | `filter-discard` | `{ field: string }` | Discard, where the scope waits: put back the applied answer — a menu's, its field's; the bar's, every field's. |
 | `filters-apply` |  | A saved set's row was ticked: add it to this bar as a preset, on. |

@@ -281,7 +281,7 @@ test('the action cluster is built in, Refresh left of the ⋮; the View\'s ★ a
     expect(t.add).toBe(true);
     expect(t.ai).toBe(false);
     expect(t.clear).toBe(false);
-    // "Reset all on view" only over the View. Will, TODO 524
+    // "Reset to view defaults" only over the View. Will, TODO 524
     expect(t.actions).toEqual(t === r.view ? ['reset', 'reset-default'] : ['reset']);
     expect(t.configure).toBe(false);
     expect(t.refresh).toBe(true);
@@ -434,7 +434,7 @@ test('the bar\'s icon actions are named for what they do', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Suggest filters', exact: true })).toHaveCount(0);
   // Reset leads the Filters menu, named once it opens. Will, TODOs 454, 681
   await page.getByRole('button', { name: 'Filters', exact: true }).click();
-  for (const name of ['Reset filters', 'Reset all on view']) {
+  for (const name of ['Reset filters', 'Reset to view defaults']) {
     await expect(page.getByRole('button', { name, exact: true })).toHaveCount(1);
   }
 });

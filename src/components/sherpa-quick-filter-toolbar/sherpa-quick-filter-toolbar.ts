@@ -2426,7 +2426,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         this.emit('node-editor-open', {});
         break;
       default:
-        // Reset all on view, and the save rows: the header's, as its column's. TODO 415
+        // Reset to view defaults, and the save rows: the header's, as its column's. TODO 415
         this.#header.act(act);
     }
   }

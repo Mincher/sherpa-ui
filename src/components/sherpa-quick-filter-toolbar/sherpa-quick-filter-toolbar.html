@@ -92,7 +92,7 @@
     sort-change          — detail: { field, direction }
     filter-remove        — a chip was removed. Bound, a REQUEST its source draws back: detail: { scope, id, filter }; unbound, detail: { id, filter, holds }
     filter-add           — chips were added. Bound, a REQUEST its source draws back: detail: { scope, ids, filters } — or, to move a field to another scope, { scope, ids, from }; unbound, detail: { ids, filters, holds }
-    view-reset           — Reset all on view: put back the View's own filters, in every scope. Cancelable
+    view-reset           — Reset to view defaults: put back the View's own filters, in every scope. Cancelable
     filter-apply         — Apply, where the scope waits: send every change held in it. detail: { }
     filter-discard       — Discard, where the scope waits: put back the applied answer — a menu's, its field's; the bar's, every field's. detail: { field? }
     filters-apply        — a saved set's row was ticked: add it to this bar as a preset, on. detail: { id }

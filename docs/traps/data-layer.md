@@ -545,7 +545,7 @@ answers no field stay first; a field added lands at the end.
 **Reset puts every filter back to ITS own default; Reset to default puts the
 page back as the View on screen DEFINES it** — Will, TODO 109. Only the
 provider knows that: the View's bar and the panel send `view-reset` (an intent)
-from their "Reset all on view" row — a local bar has none (`resetRows`, Will,
+from their "Reset to view defaults" row — a local bar has none (`resetRows`, Will,
 TODO 524) — and `provider.resetView()` answers
 — the page's first Query (kept at `open()`, before any kept one), then the
 View's Query as a pick puts it on. So a filter the reader ADDED since goes, as
@@ -554,7 +554,7 @@ Save filters, are the filter TOOLBAR's ⋮ rows, first (Will, TODO 430), so its
 ⋮ always shows; the legacy panel still leads its Filters menu with them
 (`drawFilterActions`, TODO 383). The Reset group is gone.
 
-**The row reads "Reset all on view", and the ask is CANCELABLE** — Will,
+**The row reads "Reset to view defaults", and the ask is CANCELABLE** — Will,
 TODO 129: it *"should throw a confirmation sherpa dialog informing the user
 that it will reset all filters across all scopes to the view default"*, with
 a switch to *"Save filters before reset"* and a name. A dialog is the APP's,
@@ -5186,7 +5186,7 @@ its own (`savedFilters`), which are never saved over or deleted.
   (`filters-dismiss`) takes the chip off and what it held. The chip's own press turns it
   off and leaves it there. The chips added are kept in the tab (the document's
   `added`), and declared BEFORE the Query is restored, which
-  holds their rows. Another View or Reset all on view takes them off: they are one
+  holds their rows. Another View or Reset to view defaults takes them off: they are one
   View's chips, as its other chips are.
 - **Saving**: `filters-save` and `filters-save-as` ask the HOST for a name, which
   confirms an overwrite by name and calls `saveFilters(label)`. The new chip joins the

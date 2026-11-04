@@ -1233,7 +1233,7 @@
     {
       "$type": "event",
       "name": "view-reset",
-      "description": "Reset all on view: put back the View's own filters, in every scope.",
+      "description": "Reset to view defaults: put back the View's own filters, in every scope.",
       "bubbles": true,
       "composed": true
     },

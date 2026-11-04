@@ -2,12 +2,12 @@ import { test, expect, type Bar } from './harness';
 
 /**
  * RESET, AND RESET ALL TO DEFAULT — TODO 109, 129, 383 and 454. Both lead the
- * Edit menu, Reset filters first; "Reset all on view" asks for the
+ * Edit menu, Reset filters first; "Reset to view defaults" asks for the
  * View's OWN filters, which only the provider knows. The ask is CANCELABLE, so
  * an app can ask the reader first — and keep what is on screen under a name.
  * TRAP T-reset-to-default-is-the-views-own
  */
-test('the bar\'s and the column\'s Edit menus lead with Reset, and Reset all on view asks for the View\'s own filters', async ({ page }) => {
+test('the bar\'s and the column\'s Edit menus lead with Reset, and Reset to view defaults asks for the View\'s own filters', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const heard: string[] = [];
     const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [], { 'data-type': 'view' });
@@ -36,7 +36,7 @@ test('the bar\'s and the column\'s Edit menus lead with Reset, and Reset all on 
     const onColumn = await pick(column);
     return { heard, onBar, onColumn };
   });
-  const lead = [['reset', 'Reset filters'], ['reset-default', 'Reset all on view']];
+  const lead = [['reset', 'Reset filters'], ['reset-default', 'Reset to view defaults']];
   // A row picked shuts the menu.
   expect(r.onBar).toEqual({ lead, old: 0, open: false });
   expect(r.onColumn).toEqual({ lead, old: 0, open: false });

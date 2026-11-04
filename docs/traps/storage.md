@@ -173,7 +173,7 @@ Four things that are not obvious:
 - **It is read INSIDE the pick** (`onViewPicked`'s `left` hook), in place of
   the View's Query, so the View's own filters never flash. It is a RESTORE, so
   it is exact: a carry-over field does not follow into it.
-- **Reset all on view, Save and Delete forget it**: the View's own filters
+- **Reset to view defaults, Save and Delete forget it**: the View's own filters
   are on, or the filters have a home.
 
 - Site: `src/components/sherpa-provider/provider-page.ts`

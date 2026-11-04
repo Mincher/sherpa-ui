@@ -1,7 +1,7 @@
 import { test, expect } from './harness';
 
 /**
- * "Reset all on view" is not offered while the filters already ARE the
+ * "Reset to view defaults" is not offered while the filters already ARE the
  * View's default, nor Reset while nothing is left to clear — the host says so
  * with `data-at-default` and `data-nothing-to-reset` (TODO 231). Both are rows
  * leading the Edit menu (TODOs 383, 454), on the bar and on its column.
@@ -10,7 +10,7 @@ import { test, expect } from './harness';
 const mount = (kind: string, attr: string): string => `
   const el = document.createElement('sherpa-quick-filter-toolbar');
   el.setAttribute('${attr}', '');
-  // "Reset all on view" is the View's bar's, or a column's. TODO 524
+  // "Reset to view defaults" is the View's bar's, or a column's. TODO 524
   if ('${kind}' === 'bar') el.setAttribute('data-type', 'view');
   if ('${kind}' === 'column') {
     el.setAttribute('data-orientation', 'portrait');
@@ -25,7 +25,7 @@ const mount = (kind: string, attr: string): string => `
 `;
 
 for (const kind of ['bar', 'column']) {
-  test(`${kind}: data-at-default makes Reset all on view inactive, before and after it draws`, async ({ page }) => {
+  test(`${kind}: data-at-default makes Reset to view defaults inactive, before and after it draws`, async ({ page }) => {
     const r = await page.evaluate(`(async () => {
       ${mount(kind, 'data-at-default')}
       const row = () => window.__editRow(el, 'reset-default');

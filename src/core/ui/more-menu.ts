@@ -6,14 +6,14 @@
  * Map:
  * - MoreRow — One ⋮ row: the value of its prototype in a `template.more-rows-tpl`, whether it is off.
  * - folded — Is this element folded away at this width?
- * - resetRows — Reset filters, then Reset all on view — off where they would change nothing.
+ * - resetRows — Reset filters, then Reset to view defaults — off where they would change nothing.
  * - hidesUnmatched — Limit is on, and hides what it rules out.
  * - saveRows — Save filters; none unless the host saves.
  * - extraRows — The page's own buttons in the `actions` slot that have folded away.
  * - offersMore — Would the ⋮ menu hold anything: these rows, or the host's own switches?
  * - openMore — Draw the ⋮ menu from groups of rows, and show it at the trigger.
  * - FILTER_ACTIONS — The rows the Filters menu ends with: its filter actions.
- * - drawFilterActions — Lead a Filters menu with Reset and Reset all on view.
+ * - drawFilterActions — Lead a Filters menu with Reset and Reset to view defaults.
  * - drawSaveActions — End a Saved menu with its save rows, then Manage Saved Filters.
  * - syncHide — Hide invalid filters is inactive while Limit is off.
  * - pickMore — A row was chosen: the menu hides; a page button's row presses it, any other hands back its value.
@@ -41,7 +41,7 @@ function atView(host: HTMLElement): boolean {
     || (host.dataset['scope'] ?? '').split(/\s+/).includes(VIEW);
 }
 
-/** Reset filters, then Reset all on view — off where they would change nothing (TODO 231),
+/** Reset filters, then Reset to view defaults — off where they would change nothing (TODO 231),
  *  and the second only over the View. Will, TODO 524 */
 export function resetRows(host: HTMLElement): MoreRow[] {
   return [['reset', host.hasAttribute('data-nothing-to-reset')], ...(atView(host) ? [['reset-default', host.hasAttribute('data-at-default')] as MoreRow] : [])];
@@ -104,7 +104,7 @@ function drawRows(host: HTMLElement, root: ParentNode, rows: readonly MoreRow[])
 /** The rows the Filters menu ends with: its filter actions. Will, TODO 383 */
 export const FILTER_ACTIONS = new Set(['reset', 'reset-default', 'filters-save', 'filters-save-as']);
 
-/** Lead a Filters menu with Reset and Reset all on view, in place of the ones it
+/** Lead a Filters menu with Reset and Reset to view defaults, in place of the ones it
  *  had; its save rows are the ⋮'s, or the Saved menu's. Will, TODOs 383, 454 */
 export function drawFilterActions(host: HTMLElement, root: ParentNode, menu: Element | null | undefined): void {
   if (!menu) return;

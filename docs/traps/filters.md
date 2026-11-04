@@ -573,7 +573,7 @@ then Favorite, Save view, Save view as, Refresh view.
 — the container queries and `data-collapse` both fold, and one test covers
 both. The menu is built on each open, like the grid's actions menu.
 
-**Reset is not a ⋮ row.** TODO 430 put Reset filters and Reset all on view at
+**Reset is not a ⋮ row.** TODO 430 put Reset filters and Reset to view defaults at
 the head of a TOOLBAR's ⋮; TODO 454 moved them back to the head of its Edit
 menu (`drawFilterActions(…, false)`: no save rows), drawn again as it opens so
 each says whether there is anything to reset. The ⋮ keeps the save rows.
@@ -584,7 +584,7 @@ the group NEVER folded. Its block sits before the steps now, and the width
 rule names the view type too.
 
 **The filter PANEL has one too** — Will, TODO 178: after the host's own
-toggle, holding Reset and Reset all on view once the panel is narrow
+toggle, holding Reset and Reset to view defaults once the panel is narrow
 (≤ 380px), and the host's own buttons when they fold. **Both ⋮ menus end in
 the host's own option**, "Limit to matching filters", a check row, shown while
 the host says it offers one (`data-limit-options="on|off"`, written by the

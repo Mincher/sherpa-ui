@@ -249,13 +249,13 @@ export class ToolbarColumn {
     this.#act(value);
   };
 
-  /** A filter action: Reset and Reset all on view, from the Edit menu (TODO 454); the save rows, from the ⋮ (TODO 430). */
+  /** A filter action: Reset and Reset to view defaults, from the Edit menu (TODO 454); the save rows, from the ⋮ (TODO 430). */
   #act(act: string): void {
     if (act === 'reset') {
       const request = this.#scopes.map((s) => ({ scope: s.scope, reset: { organise: true } }));
       this.#host.emit('quick-filter-change', { scope: 'column', request, active: [], values: {} });
     }
-    // Reset all on view, and the save rows: the header's, as the bar's. TODO 415
+    // Reset to view defaults, and the save rows: the header's, as the bar's. TODO 415
     else this.#header.act(act);
   }
 
