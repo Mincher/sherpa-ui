@@ -32,7 +32,7 @@ For one value on a scale (0–100 by default), read by a needle, with optional t
 |---|---|---|---|
 | `data-aggregate` | `count` `sum` `mean` `min` `max` `distinct` |  | ASKED of its provider: count \| sum \| mean \| min \| max \| distinct |
 | `data-bands` | text |  |  |
-| `data-bucket` | `day` `month` `year` |  |  |
+| `data-bucket` | `auto` `hour2` `day` `week` `month` `quarter` `year` |  |  |
 | `data-caption` | text |  | caption text shown below the arc (e.g. "30GB of 60GB used") |
 | `data-field` | text |  | the number that aggregate reads |
 | `data-invert` | boolean |  | it reads its value from the TOP — max − value, as risk is 100 − score — and turns its field's zones round. |

@@ -9,7 +9,11 @@
  * - SegmentUnit — The step a range is cut into.
  * - segmentUnit — The unit for a range of ISO days, both ends inclusive.
  * - segmentLabel — A segment's time span in words, for its tooltip.
+ * - rangeOf — The days a date condition spans, as ISO days, or none.
  */
+
+import { durationSpan } from './store.js';
+import type { WhereCondition } from './where.js';
 
 export type SegmentUnit = 'hour2' | 'day' | 'week' | 'month' | 'quarter' | 'year';
 
@@ -52,4 +56,16 @@ export function segmentLabel(key: string, unit: SegmentUnit): string {
   if (unit === 'day') return DAY_FORMAT.format(from);
   if (unit === 'week') return SPAN_FORMAT.formatRange(from, new Date(from.getTime() + 6 * DAY));
   return `${HOUR_FORMAT.format(from)}–${CLOCK_FORMAT.format(new Date(from.getTime() + 2 * 3_600_000))}`;
+}
+
+/** The days a date condition spans, as ISO days: `between`, `last`, `next` or a single day (`eq`). Anything else spans none. */
+export function rangeOf(condition: WhereCondition | undefined, today = new Date()): [string, string] | undefined {
+  if (!condition || condition.off) return undefined;
+  const day = (v: unknown): string => String(v).slice(0, 10);
+  const { between, last, next, eq, unit = 'day' } = condition;
+  if (Array.isArray(between) && between.length === 2) return [day(between[0]), day(between[1])];
+  for (const [op, n] of [['last', last], ['next', next]] as const) {
+    if (n != null) return durationSpan(op, { n: Number(n), unit }, today);
+  }
+  return eq != null ? [day(eq), day(eq)] : undefined;
 }

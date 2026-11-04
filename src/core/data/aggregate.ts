@@ -37,6 +37,7 @@
 import { compareValues, readField, groupRows, groupSummaries, valueKey, type GroupSummary, type Row, type SortDirection } from './store.js';
 import type { ChartDatum } from './chart-datum.js';
 import type { Threshold } from './threshold.js';
+import { segmentLabel, type SegmentUnit } from './segments.js';
 
 /* ── Reducers ──────────────────────────────────────────────────────────── */
 
@@ -236,7 +237,7 @@ export function seriesBy(
 /* ── Summaries ─────────────────────────────────────────────────────────── */
 
 /** A date cut to one step — its ISO prefix, so the keys sort as they read. */
-export type Bucket = 'day' | 'month' | 'year';
+export type Bucket = SegmentUnit;
 
 /** What a component asks to see of its rows: its attributes, as JSON. */
 export interface SummarySpec {
@@ -253,7 +254,9 @@ export interface SummarySpec {
   bands?: number[];
   /** A series runs over this field's values. */
   over?: string;
-  bucket?: Bucket;
+  bucket?: Bucket | 'auto';
+  /** The days a series covers, ISO, ends inclusive: a quiet segment at either end is zero, not missing. TODO 540 */
+  range?: readonly [from: string, to: string];
   /** Keep every declared category, at zero — a legend.
    *  TRAP T-a-legend-row-goes-inactive-it-never-vanishes */
   keepEmpty?: boolean;
@@ -273,7 +276,7 @@ export interface SummarySpec {
 export type Summary =
   | number
   | ChartDatum[]
-  | { value: number; values: number[]; deltaPercent?: number }
+  | { value: number; values: number[]; labels?: string[]; deltaPercent?: number }
   | { labels: string[]; series: Series[] };
 
 /** A chart's two axes as a summary reads them. The axis shown as COUNTS splits
@@ -291,21 +294,36 @@ export function chartAxes(
   return { ...(primary ? { segment: primary } : {}), ...(secondary ? { stack: secondary } : {}) };
 }
 
-const CUT: Record<Bucket, number> = { year: 4, month: 7, day: 10 };
+const CUT: Record<Bucket, number> = { year: 4, quarter: 7, month: 7, week: 10, day: 10, hour2: 13 };
+const HOUR = 3_600_000;
+const DAY = 86_400_000;
 
+/** A date cut to its bucket's key: the ISO prefix; a week by its Monday, a quarter as `2026-Q1`, two hours by the even hour. */
 function cut(value: unknown, bucket: Bucket): string {
-  return (value instanceof Date ? value.toISOString() : String(value ?? '')).slice(0, CUT[bucket]);
+  const text = value instanceof Date ? value.toISOString() : String(value ?? '');
+  if (bucket === 'week') {
+    const at = Date.parse(`${text.slice(0, 10)}T00:00:00Z`);
+    return Number.isNaN(at) ? text.slice(0, 10) : new Date(at - ((new Date(at).getUTCDay() + 6) % 7) * DAY).toISOString().slice(0, 10);
+  }
+  if (bucket === 'quarter') return `${text.slice(0, 4)}-Q${Math.floor((Number(text.slice(5, 7)) - 1) / 3) + 1}`;
+  if (bucket === 'hour2') return `${text.slice(0, 11)}${String(Math.floor(Number(text.slice(11, 13)) / 2) * 2).padStart(2, '0')}`;
+  return text.slice(0, CUT[bucket]);
 }
 
 /** The bucket after `key`. UTC, so no clock change moves a day. */
 function step(key: string, bucket: Bucket): string {
   if (bucket === 'year') return String(Number(key) + 1);
+  if (bucket === 'quarter') {
+    const [y = NaN, q = NaN] = key.split('-Q').map(Number);
+    return q === 4 ? `${y + 1}-Q1` : `${y}-Q${q + 1}`;
+  }
   if (bucket === 'month') {
     const [y = NaN, m = NaN] = key.split('-').map(Number);
     const next = y * 12 + m;
     return `${Math.floor(next / 12)}-${String((next % 12) + 1).padStart(2, '0')}`;
   }
-  return new Date(Date.parse(`${key}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
+  if (bucket === 'hour2') return new Date(Date.parse(`${key}:00:00Z`) + 2 * HOUR).toISOString().slice(0, 13);
+  return new Date(Date.parse(`${key}T00:00:00Z`) + (bucket === 'week' ? 7 : 1) * DAY).toISOString().slice(0, 10);
 }
 
 /**
@@ -313,17 +331,20 @@ function step(key: string, bucket: Bucket): string {
  * bucket from the first to the last — a quiet month is zero, never missing.
  * TRAP T-a-series-has-a-value-at-every-point
  */
-function pointsOf(rows: readonly Row[], over: string, bucket: Bucket | undefined, declared: readonly unknown[]): unknown[] {
+function pointsOf(rows: readonly Row[], over: string, bucket: Bucket | undefined, declared: readonly unknown[],
+  range?: readonly [string, string]): unknown[] {
   const keyOf = (v: unknown): unknown => (bucket ? cut(v, bucket) : v);
   // In the library's one order. TRAP T-one-collator-for-the-library
   if (declared.length) return bucket ? [...new Set(declared.map(keyOf))].sort(compareValues) : [...declared];
   const seen = [...new Set(rows.map((r) => readField(r, over)).filter((v) => v != null && v !== '').map(keyOf))]
     .sort(compareValues);
-  if (!bucket || seen.length < 2) return seen;
+  const ends = range && bucket ? [cut(`${range[0]}T00:00`, bucket), cut(`${range[1]}T23:59`, bucket)] : [];
+  const first = (ends[0] ?? seen[0]) as string | undefined;
+  const last = (ends[1] ?? seen[seen.length - 1]) as string | undefined;
+  if (!bucket || first === undefined || last === undefined || (!ends.length && seen.length < 2)) return seen;
   const out: string[] = [];
-  const last = seen[seen.length - 1] as string;
   // Capped: a key the step cannot parse would otherwise never reach `last`.
-  for (let k = seen[0] as string; k <= last && out.length < 10_000; k = step(k, bucket)) out.push(k);
+  for (let k = first; k <= last && out.length < 10_000; k = step(k, bucket)) out.push(k);
   return out;
 }
 
@@ -420,13 +441,16 @@ export function summarise(
   if (!spec.over) return spec.shape === 'aggregate' ? value : { labels: [], series: [] };
   // A bucketed field is grouped by its cut key, under a name no row carries.
   const at = spec.bucket ? '\u0000bucket' : spec.over;
-  const bucket = spec.bucket;
+  // `auto` reaches here only unresolved — no range to fit — and cuts by the day.
+  const bucket = spec.bucket === 'auto' ? 'day' : spec.bucket;
   const keyed = bucket ? rows.map((r) => ({ ...r, [at]: cut(readField(r, spec.over!), bucket) })) : rows;
-  const points = pointsOf(rows, spec.over, bucket, domain(spec.over)) as (string | number)[];
+  const points = pointsOf(rows, spec.over, bucket, domain(spec.over), spec.range) as (string | number)[];
   if (spec.shape === 'aggregate') {
     const values = seriesBy(keyed, at, points, '', opts).values;
     const delta = deltaPercent(values);
-    return delta == null ? { value, values } : { value, values, deltaPercent: delta };
+    // Each point's time span, for its tooltip. TODO 540
+    const spans = bucket ? { labels: points.map((p) => segmentLabel(String(p), bucket)) } : {};
+    return delta == null ? { value, values, ...spans } : { value, values, ...spans, deltaPercent: delta };
   }
   const labels = points.map(String);
   if (!spec.segment) return { labels, series: [seriesBy(keyed, at, points, spec.field ?? kind, opts)] };

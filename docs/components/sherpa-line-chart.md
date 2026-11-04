@@ -60,7 +60,7 @@ For one or more series of numbers along an x axis, as lines or, with `data-type=
 | `data-aggregate` | `count` `sum` `mean` `min` `max` `distinct` | `count` | count \| sum \| mean \| min \| max \| distinct, per point |
 | `data-axis-label` | text |  | y-axis caption (shown when set) |
 | `data-bands` | text |  |  |
-| `data-bucket` | `day` `month` `year` |  | a date over-field, cut to day \| month \| year |
+| `data-bucket` | `auto` `hour2` `day` `week` `month` `quarter` `year` |  | a date over-field, cut to day \| month \| year |
 | `data-field` | text |  | the number that aggregate reads |
 | `data-max` | number |  | y-scale bounds (else derived) |
 | `data-min` | number |  | y-scale bounds (else derived) |

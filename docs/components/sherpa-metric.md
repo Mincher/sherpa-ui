@@ -37,7 +37,7 @@ For a KPI tile: a headline number, its change and its trend, with an optional sp
 |---|---|---|---|
 | `data-aggregate` | `count` `sum` `mean` `min` `max` `distinct` |  | ASKED of its provider: count \| sum \| mean \| min \| max \| distinct |
 | `data-bands` | text |  |  |
-| `data-bucket` | `day` `month` `year` |  | a date over-field, cut to day \| month \| year |
+| `data-bucket` | `auto` `hour2` `day` `week` `month` `quarter` `year` |  | a date over-field, cut to day \| month \| year |
 | `data-delta` | text |  | the change text (e.g. "+12.5%") |
 | `data-field` | text |  | the number that aggregate reads |
 | `data-format` | text |  | the value's Intl.NumberFormatOptions, as JSON |

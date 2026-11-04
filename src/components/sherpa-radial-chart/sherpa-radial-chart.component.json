@@ -231,8 +231,12 @@
       "declared": true,
       "kind": "style",
       "values": [
+        "auto",
+        "hour2",
         "day",
+        "week",
         "month",
+        "quarter",
         "year"
       ]
     },

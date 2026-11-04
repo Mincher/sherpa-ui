@@ -21,6 +21,7 @@ import {
 import { Settings, type SettingKey, type SettingValue } from '../../core/data/settings.js';
 import { report } from '../../core/data/report.js';
 import { chartAxes, summariseMarked, type SummarySpec } from '../../core/data/aggregate.js';
+import { rangeOf, segmentUnit } from '../../core/data/segments.js';
 import type { Row, Store } from '../../core/data/store.js';
 import type { ViewLibrary } from '../../core/browser/persist-view.js';
 import { PageKeeper, type PageState } from '../../core/browser/page-state.js';
@@ -30,7 +31,7 @@ import { QueryContext } from '../../core/data/query-context.js';
 import { VIEW } from '../../core/data/query.js';
 import type { Failure } from '../../core/data/failure.js';
 import type { DataSource } from '../../core/data/data-source.js';
-import type { Where } from '../../core/data/where.js';
+import { whereOf, type Where } from '../../core/data/where.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
 import { bindId, bindSource } from '../../core/ui/bind-source.js';
 import { ProviderMode, isColumn } from './provider-mode.js';
@@ -858,7 +859,7 @@ export class SherpaProvider extends SherpaElement {
       last = rows;
       const test = this.#highlight.test(el, scope, src);
       // A number's zones, from a status field. Plan 683 S3
-      const summary = summariseMarked(rows, spec, (f) => src.valuesFor(f), (f) => src.zonesOf(f)?.zones, test);
+      const summary = summariseMarked(rows, this.#segmented(spec, src), (f) => src.valuesFor(f), (f) => src.zonesOf(f)?.zones, test);
       return zoned && summary && typeof summary === 'object' && 'zones' in summary
         ? { ...summary, picked: src.pickedFor(bindId(el), zoned) } : summary;
     } : undefined;
@@ -1033,6 +1034,18 @@ export class SherpaProvider extends SherpaElement {
     if (shown.group) spec['group'] = shown.group;
     if (shown.sort) spec['sort'] = shown.sort;
     return spec as unknown as SummarySpec;
+  }
+
+  /** A series over a date, `auto`: cut to the unit its date condition's range fits, and padded to that range. TODO 540 */
+  #segmented(given: SummarySpec, source: DataSource): SummarySpec {
+    // A number field sums; any other counts its rows. Said, it is as said.
+    const spec = given.shape === 'aggregate' && !given.aggregate && given.field && source.fieldFacts(given.field).type === 'number'
+      ? { ...given, aggregate: 'sum' as const } : given;
+    if (spec.bucket !== 'auto' || !spec.over) return spec;
+    const scope = source.query.scopeOf(spec.over);
+    const reading = scope ? source.query.reading(scope, spec.over) : undefined;
+    const range = reading ? rangeOf(whereOf({ [spec.over]: reading })[spec.over]) : undefined;
+    return range ? { ...spec, bucket: segmentUnit(...range), range } : { ...spec, bucket: 'day' };
   }
 
   /** The fields the open page declares: a row opened in a grid made from a chart shows them. */

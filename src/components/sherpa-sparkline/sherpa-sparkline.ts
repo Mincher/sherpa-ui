@@ -8,8 +8,8 @@ import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { chartScale, formatValue } from '../../core/data/format-tick.js';
 import { pairAnchor } from '../../core/ui/chart-parts.js';
 
-/** The last SLOTS values are drawn: a trend, not a history. */
-const SLOTS = 8;
+/** The last SLOTS values are drawn — two weeks by day: a trend, not a history. */
+const SLOTS = 14;
 /** TRAP T-sparkline-headroom-is-a-share-of-the-box — share of the BOX, not of the data. */
 const LINE_SHARE = 0.62;
 

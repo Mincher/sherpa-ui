@@ -30,9 +30,24 @@ for (const [from, to, unit, why] of CASES) {
 }
 
 test('a segment says its time span', () => {
-  assert.match(segmentLabel('2026-03-02', 'week'), /2.+8.+Mar/);
+  assert.match(segmentLabel('2026-03-02', 'week'), /Mar.+2.+8|2.+8.+Mar/);
   assert.match(segmentLabel('2026-03-04', 'day'), /Wed/);
   assert.match(segmentLabel('2026-03', 'month'), /March 2026/);
   assert.equal(segmentLabel('2026-Q1', 'quarter'), 'Q1 2026');
   assert.match(segmentLabel('2026-03-04T08', 'hour2'), /08:00.10:00/);
+});
+
+const { summarise } = await import(new URL('../../dist/core/data/aggregate.js', import.meta.url));
+
+test('a series by week is padded to its range, and each point says its span', () => {
+  const rows = [
+    { at: '2026-03-03', n: 5 }, { at: '2026-03-04', n: 7 }, { at: '2026-03-17', n: 1 },
+  ];
+  const out = summarise(rows, {
+    shape: 'aggregate', aggregate: 'sum', field: 'n', over: 'at', bucket: 'week', range: ['2026-03-01', '2026-03-28'],
+  });
+  // Mondays 23 Feb (holds Sun 1 Mar), 2, 9, 16, 23 Mar: a quiet week is 0.
+  assert.deepEqual(out.values, [0, 12, 0, 1, 0]);
+  assert.equal(out.value, 13);
+  assert.equal(out.labels.length, 5);
 });

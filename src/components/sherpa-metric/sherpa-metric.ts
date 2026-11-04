@@ -23,6 +23,8 @@ interface MetricData {
   trend?: 'up' | 'down' | 'flat';
   /** When present, the embedded sparkline is shown and fed. */
   values?: number[];
+  /** One time span per value, for each point's tooltip. */
+  labels?: string[];
   /**
    * Which number the tile SHOWS when `value` is not given.
    *
@@ -128,7 +130,7 @@ export class SherpaMetric extends SherpaElement {
     this.#applyStatus(trend);
 
     if (Array.isArray(data.values) && data.values.length > 0) {
-      this.#fillSparkline(data.values);
+      this.#fillSparkline(data.values, data.labels);
     }
   }
 
@@ -190,9 +192,10 @@ export class SherpaMetric extends SherpaElement {
   }
 
   /** Feed the embedded sparkline and reveal it (data-has-values → CSS shows it). */
-  #fillSparkline(values: number[]): void {
+  #fillSparkline(values: number[], labels?: string[]): void {
     const spark = this.$<Sparkline>('sherpa-sparkline');
     if (!spark) return;
+    spark.setAttribute('data-labels', JSON.stringify(labels ?? []));
     this.#series = [...values];
     this.set('data-has-values', '');
     spark.populate?.(values);

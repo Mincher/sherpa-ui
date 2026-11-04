@@ -115,8 +115,8 @@ export const SUMMARY_PROPS = {
   'data-segment-field': { type: 'string', kind: 'style' },
   /** A series runs over this field. */
   'data-over-field': { type: 'string', kind: 'style' },
-  /** A date `data-over-field`, cut to this step. */
-  'data-bucket': { type: 'enum', kind: 'style', values: ['day', 'month', 'year'] },
+  /** A date `data-over-field`, cut to this step; `auto` takes the one its View scope's date range fits. TODO 540 */
+  'data-bucket': { type: 'enum', kind: 'style', values: ['auto', 'hour2', 'day', 'week', 'month', 'quarter', 'year'] },
   /** A number segment field cut at these edges, "0,20,40" — a histogram. */
   'data-bands': { type: 'string', kind: 'style' },
   /** Its OWN default filter — a condition by field, as JSON — narrowing it alone. */

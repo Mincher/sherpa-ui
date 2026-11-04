@@ -77,6 +77,19 @@ test('only what the data needs is stamped: 3 values, 2 shapes, 3 dots', async ({
   expect(r.dataLen).toBe(false); // gone: nothing selects on a count now
 });
 
+test('a point\'s tooltip says its time span (TODO 540)', async ({ page }) => {
+  const tips = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-sparkline') as SparkEl;
+    el.setAttribute('data-values', '5,9,7');
+    el.setAttribute('data-labels', JSON.stringify(['Mon 2 Mar', 'Tue 3 Mar', 'Wed 4 Mar']));
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    await window.__settled();
+    return [...el.shadowRoot!.querySelectorAll('.sherpa-tip-value')].map((t) => t.textContent);
+  });
+  expect(tips).toEqual(['Mon 2 Mar: 5', 'Tue 3 Mar: 9', 'Wed 4 Mar: 7']);
+});
+
 test('data-type="bar" renders and normalises the same value bridge', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-sparkline') as SparkEl;

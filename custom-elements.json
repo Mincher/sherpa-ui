@@ -773,7 +773,7 @@
             {
               "name": "data-bucket",
               "type": {
-                "text": "'day' | 'month' | 'year'"
+                "text": "'auto' | 'hour2' | 'day' | 'week' | 'month' | 'quarter' | 'year'"
               }
             },
             {
@@ -1634,7 +1634,7 @@
             {
               "name": "data-bucket",
               "type": {
-                "text": "'day' | 'month' | 'year'"
+                "text": "'auto' | 'hour2' | 'day' | 'week' | 'month' | 'quarter' | 'year'"
               }
             },
             {
@@ -3782,7 +3782,7 @@
             {
               "name": "data-bucket",
               "type": {
-                "text": "'day' | 'month' | 'year'"
+                "text": "'auto' | 'hour2' | 'day' | 'week' | 'month' | 'quarter' | 'year'"
               }
             },
             {
@@ -4787,7 +4787,7 @@
               "name": "data-bucket",
               "description": "a date over-field, cut to day | month | year",
               "type": {
-                "text": "'day' | 'month' | 'year'"
+                "text": "'auto' | 'hour2' | 'day' | 'week' | 'month' | 'quarter' | 'year'"
               }
             },
             {
@@ -6069,7 +6069,7 @@
               "name": "data-bucket",
               "description": "a date over-field, cut to day | month | year",
               "type": {
-                "text": "'day' | 'month' | 'year'"
+                "text": "'auto' | 'hour2' | 'day' | 'week' | 'month' | 'quarter' | 'year'"
               }
             },
             {
@@ -10020,7 +10020,7 @@
             {
               "name": "data-bucket",
               "type": {
-                "text": "'day' | 'month' | 'year'"
+                "text": "'auto' | 'hour2' | 'day' | 'week' | 'month' | 'quarter' | 'year'"
               }
             },
             {

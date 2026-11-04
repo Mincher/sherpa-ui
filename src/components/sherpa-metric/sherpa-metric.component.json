@@ -127,8 +127,12 @@
       "declared": true,
       "kind": "style",
       "values": [
+        "auto",
+        "hour2",
         "day",
+        "week",
         "month",
+        "quarter",
         "year"
       ],
       "description": "a date over-field, cut to day | month | year"

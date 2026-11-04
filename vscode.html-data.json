@@ -239,10 +239,22 @@
           "name": "data-bucket",
           "values": [
             {
+              "name": "auto"
+            },
+            {
+              "name": "hour2"
+            },
+            {
               "name": "day"
             },
             {
+              "name": "week"
+            },
+            {
               "name": "month"
+            },
+            {
+              "name": "quarter"
             },
             {
               "name": "year"
@@ -626,10 +638,22 @@
           "name": "data-bucket",
           "values": [
             {
+              "name": "auto"
+            },
+            {
+              "name": "hour2"
+            },
+            {
               "name": "day"
             },
             {
+              "name": "week"
+            },
+            {
               "name": "month"
+            },
+            {
+              "name": "quarter"
             },
             {
               "name": "year"
@@ -1383,10 +1407,22 @@
           "name": "data-bucket",
           "values": [
             {
+              "name": "auto"
+            },
+            {
+              "name": "hour2"
+            },
+            {
               "name": "day"
             },
             {
+              "name": "week"
+            },
+            {
               "name": "month"
+            },
+            {
+              "name": "quarter"
             },
             {
               "name": "year"
@@ -1871,10 +1907,22 @@
           "description": "a date over-field, cut to day | month | year",
           "values": [
             {
+              "name": "auto"
+            },
+            {
+              "name": "hour2"
+            },
+            {
               "name": "day"
             },
             {
+              "name": "week"
+            },
+            {
               "name": "month"
+            },
+            {
+              "name": "quarter"
             },
             {
               "name": "year"
@@ -2346,10 +2394,22 @@
           "description": "a date over-field, cut to day | month | year",
           "values": [
             {
+              "name": "auto"
+            },
+            {
+              "name": "hour2"
+            },
+            {
               "name": "day"
             },
             {
+              "name": "week"
+            },
+            {
               "name": "month"
+            },
+            {
+              "name": "quarter"
             },
             {
               "name": "year"
@@ -3408,10 +3468,22 @@
           "name": "data-bucket",
           "values": [
             {
+              "name": "auto"
+            },
+            {
+              "name": "hour2"
+            },
+            {
               "name": "day"
             },
             {
+              "name": "week"
+            },
+            {
               "name": "month"
+            },
+            {
+              "name": "quarter"
             },
             {
               "name": "year"

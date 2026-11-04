@@ -48,7 +48,7 @@ For the colour key of a chart, in the chart's `legend` slot. Its rows are toggle
 |---|---|---|---|
 | `data-aggregate` | `count` `sum` `mean` `min` `max` `distinct` |  |  |
 | `data-bands` | text |  |  |
-| `data-bucket` | `day` `month` `year` |  |  |
+| `data-bucket` | `auto` `hour2` `day` `week` `month` `quarter` `year` |  |  |
 | `data-chips` | boolean |  | each row a value chip, as a filter panel draws it: its swatch, its label, its count. Set by its provider. Will, TODO 586 |
 | `data-field` | text |  |  |
 | `data-highlight-hover` | boolean |  | a rest on a row says legend-hover. Set by its provider. TODO 495 |

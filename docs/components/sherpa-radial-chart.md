@@ -48,7 +48,7 @@ For parts of a whole, as a donut (the default) or a pie. For one value on a scal
 |---|---|---|---|
 | `data-aggregate` | `count` `sum` `mean` `min` `max` `distinct` | `count` | count \| sum \| mean \| min \| max \| distinct, per value |
 | `data-bands` | text |  |  |
-| `data-bucket` | `day` `month` `year` |  |  |
+| `data-bucket` | `auto` `hour2` `day` `week` `month` `quarter` `year` |  |  |
 | `data-count-axis` | `primary` `secondary` |  |  |
 | `data-field` | text |  | the number that aggregate reads |
 | `data-inner` | text |  | hole size, a FRACTION of the outer radius (0–1). A pie ignores it — a pie has no hole by definition. |
