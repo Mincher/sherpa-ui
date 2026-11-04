@@ -276,3 +276,35 @@ test('Shift-click and Space pick several; Escape clears; "Save as Custom Node" m
   expect((await headings(page)).sort()).toEqual(['Org permissions', 'Org permissions', 'Output', 'Owner check', 'Store']);
   expect(await page.locator('#cv svg.graph-routes path[data-to]').count()).toBe(3);
 });
+
+test('a saved edit reaches a saved edit reaches a second tab: its uses show the update indicator once the save arrives (refresh)', async ({ page }) => {
+  await bind(page);
+  await ed(page, "ed.open('perm')");
+  await settle(page);
+  await page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-input-text[name="op"] select').selectOption('ne');
+  await ed(page, 'ed.back()');
+  await ed(page, 'ed.save()');
+  // The second tab: the saved workflow (uses at the old version), the saved library.
+  await page.evaluate(async () => {
+    const { bindWorkflow, SessionStore } = await import('/dist/app.js');
+    const w = window as unknown as { saved: { id: string }[]; savedNodes: [string, unknown][]; ed: { library(): { nodes: Record<string, unknown> } } };
+    const two = document.createElement('sherpa-layout-canvas');
+    two.id = 'cv2';
+    two.setAttribute('style', 'inline-size: 900px; block-size: 600px');
+    document.getElementById('root')!.appendChild(two);
+    await (two as HTMLElement & { rendered: Promise<void> }).rendered;
+    const library = { v: 1, nodes: { ...w.ed.library().nodes } };
+    const flow = structuredClone(w.saved.at(-1)) as never;
+    // The library the second tab opens on is the app's: the OLD definition until the save arrives.
+    (window as unknown as { ed2: unknown }).ed2 = bindWorkflow(two as never, flow, { session: new SessionStore(), library: { v: 1, nodes: { ...library.nodes, 'org-permissions': (window as unknown as { ORG: unknown }).ORG } } as never, fields: { role: { label: 'Role' } }, stores: ['users'] });
+    await window.__settled();
+  });
+  const caps = () => page.locator('#cv2 > sherpa-node[data-heading="Org permissions"]').evaluateAll((els) => els.map((e) => e.getAttribute('data-caption')));
+  expect(await caps()).toEqual([null, null]);
+  await page.evaluate(() => {
+    const w = window as unknown as { ed2: { refresh(l: unknown): void }; savedNodes: [string, unknown][] };
+    w.ed2.refresh({ v: 1, nodes: Object.fromEntries(w.savedNodes) });
+  });
+  await settle(page);
+  expect(await caps()).toEqual(['Update available', 'Update available']);
+});

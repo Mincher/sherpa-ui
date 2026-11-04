@@ -768,6 +768,8 @@ export interface WorkflowEditor extends GraphEditor {
   open(use: string): void;
   /** Go back to a depth (0 is the workflow), as a breadcrumb or Escape does: one up when none is given. */
   back(depth?: number): void;
+  /** The app's library changed (a save in this tab or another): the draft's own edits stay over it. */
+  refresh(library: NodeLibrary): void;
   /** The library as the draft holds it: its edited definitions too. */
   library(): NodeLibrary;
   /** The Custom Nodes opened now, outermost first: their use ids. */
@@ -1027,7 +1029,7 @@ export function bindWorkflow(
   const editsAt = `/node-edits/${workflow.id}`;
   session?.persist(editsAt, { shared: false, guard: isEdits });
   const edited = session?.get(editsAt) as Record<string, NodeDefinition> | undefined ?? {};
-  const given = library ?? { v: 1, nodes: {} };
+  let given = library ?? { v: 1, nodes: {} };
   let lib: NodeLibrary = { ...given, nodes: { ...given.nodes, ...edited } };
   let handed: NodeLibrary = given;
   const dirty = new Set(Object.keys(edited));
@@ -1425,6 +1427,13 @@ export function bindWorkflow(
     },
     open,
     back,
+    refresh(next: NodeLibrary): void {
+      given = next;
+      handed = next;
+      lib = { ...next, nodes: { ...next.nodes, ...Object.fromEntries([...dirty].flatMap((id) => (lib.nodes[id] ? [[id, lib.nodes[id]]] : []))) } };
+      refreshPanel();
+      draw();
+    },
     library: () => lib,
     path: () => path.map((s) => s.use),
     stop(): void {
