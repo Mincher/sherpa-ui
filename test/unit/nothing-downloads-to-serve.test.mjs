@@ -9,6 +9,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, symlinkSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import { connect } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -46,6 +47,21 @@ test('nothing outside the folder, nothing missing, and only reads', async (t) =>
   assert.equal((await fetch(`${at}/`, { method: 'POST' })).status, 405);
   const head = await fetch(`${at}/app/page.js`, { method: 'HEAD' });
   assert.deepEqual([head.status, head.headers.get('content-length')], [200, '19']);
+});
+
+test('a reader that leaves mid-request is no crash: the next request is answered', async (t) => {
+  const server = await serve(folder, { port: 0 });
+  t.after(() => server.close());
+  const { port } = server.address();
+  // As Firefox drops a request it no longer needs: asked, then gone before the reply.
+  await Promise.all(Array.from({ length: 50 }, () => new Promise((done) => {
+    const socket = connect(port, 'localhost', () => {
+      socket.end('GET /app/page.js HTTP/1.1\r\nHost: localhost\r\n\r\n');
+      socket.destroy();
+    });
+    socket.on('close', done).on('error', done);
+  })));
+  assert.equal((await fetch(`http://localhost:${port}/app/page.js`)).status, 200);
 });
 
 test('the CLI runs through a link, as npx and node_modules/.bin run it', () => {

@@ -32,6 +32,7 @@ export function serve(folder = '.', { port = 4000, host = 'localhost' } = {}) {
     const path = decodeURIComponent(new URL(req.url ?? '/', 'http://localhost').pathname);
     let file = resolve(root, `.${path}`);
     if (file !== root && !file.startsWith(root + sep)) return void res.writeHead(403).end();
+    let handle;
     try {
       let info = await stat(file);
       if (info.isDirectory()) {
@@ -41,7 +42,7 @@ export function serve(folder = '.', { port = 4000, host = 'localhost' } = {}) {
       }
       // Measured and read through ONE open file: a build swapped in meanwhile is
       // not half-read, nor a crash. TRAP T-a-build-is-swapped-in-whole
-      const handle = await open(file);
+      handle = await open(file);
       info = await handle.stat();
       const type = TYPES[extname(file).toLowerCase()] ?? 'application/octet-stream';
       res.writeHead(200, {
@@ -52,6 +53,10 @@ export function serve(folder = '.', { port = 4000, host = 'localhost' } = {}) {
       if (req.method === 'HEAD') return void handle.close().then(() => res.end());
       pipeline(handle.createReadStream(), res, () => undefined);
     } catch {
+      void handle?.close().catch(() => undefined);
+      // The reader left after the 200 went out (Firefox drops a request it no longer
+      // needs), so `pipeline` threw: end the reply. A 404 now throws and kills the server.
+      if (res.headersSent) return void res.destroy();
       res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' }).end('Not found');
     }
   });
