@@ -424,6 +424,11 @@ turned on takes 224 ms (248) — still over 200, as the grid draws its body twic
 - Icons: 217 per-icon JS modules (884 KB). An SVG sprite or `mask-image` needs no JS per
   icon.
 
+*Done, 695 P6 (2026-11-04):* one binding language (the directives; `swap.ts` gone);
+observed attributes 574 → 523; `config` in the grid; one tip family file and tip
+listeners only where there is an anchor; one icon sprite, cloned on draw (no JS module per
+icon; the bundle 411 → 250 KB brotli). The badge waits on Will (plan-695, P6a).
+
 ### 6.4 Components no app uses yet
 
 `sherpa-chip`, `sherpa-tag`, `sherpa-nav-section`, `sherpa-panel`, `sherpa-tabs`,

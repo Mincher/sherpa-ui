@@ -527,6 +527,28 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   tag, no shadow root, one family sheet; 3–7 µs each).
   **Carried:** chart tips keep their own markup (another shape, in prototypes); a boolean
   observed only for `"false"` still runs `onChange`; the quick-filter race → TODO 704.
+- **P6b ✅ (`3cf03025`; Demos `d5b510c`).** No JS module per icon: one sprite,
+  `src/core/ui/icons.svg`, a `<symbol>` per icon; `renderIcon` fetches and parses it once
+  and clones a symbol's shapes into the icon's `<svg>`. Measured in three engines: CSS
+  `mask-image` differed on all 207 one-colour icons and cannot draw the 10 coloured ones;
+  `<use>` was pixel-exact but WebKit fetched the sprite again per `<use>` (228 fetches over
+  four Context switches), its hit-test named the wrong host (4 click specs failed), and it
+  drew slowest (1,700 icons 117–426 ms); cloning is pixel-exact, one fetch, 52 ms. The 217
+  `icons/*.ts` modules deleted; `generate-icons.mjs` writes the sprite; the bundle carries
+  no icons. dist 1,130 → 479 files (1,167 → 945 KB brotli); `dist/bundle` 235 → 17 files
+  (411 → 250 KB brotli); Records at 4x FCP 260 → 228 ms, LCP 1,204 → 1,220, requests 37 → 32.
+  The 217-icon sheet 0 px different in all 24 shots. Demos' worker keeps the sprite at
+  install. Lane pick taken: clone in JS (pixel-exact and fastest) over `<use>`. Note: the
+  sprite comes by `fetch()`, so a page's CSP `connect-src` must allow its own origin.
+
+### Plan 695 is done, but N4 (2026-11-04)
+
+Every workstream but N4 has landed: T1; Waves 1–3; and U4, P4, P5, N1, N2, H5, P6
+(a + b) and P7. N4 (`runWorkflow`, TODO 616) waits on Will, who held it on 2026-10-30.
+The deferred rows follow: 700 (the MCP rebuild), 701 (platform features), T3 (the trap
+trim, with the wording pass the lanes carried), 223 (delivering templates and
+definitions), 170 (its plan is `docs/ARCHITECTURE.md` §8; Will's word), 77 (with 700),
+and the bugs the lanes found (702, 704).
 
 ### The waves
 
