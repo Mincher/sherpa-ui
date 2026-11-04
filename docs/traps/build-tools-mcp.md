@@ -147,9 +147,8 @@ words — with the data each part is given through `populate()` (`fill`), and
 the part to open (`show`) when it draws only while open. Markup may be an array
 of strings, joined with no separator, so a long one reads in a diff.
 
-It was `test/a11y/fixtures.mjs` until 2026-10-15: in `test/`, so not shipped,
-and read by the a11y gate alone. It is component documentation, not an app
-(D4), so it ships in the package, and ONE source feeds four readers: the
+It is component documentation, not an app (D4), so it ships in the package —
+not in `test/`, read by the a11y gate alone — and ONE source feeds four readers: the
 accessibility gate, the MCP's `get_component`, a gallery's first story for each
 component, and the component reference (`npm run reference`). Its `use` says
 when to reach for it; the reference and `get_component` show it.
@@ -809,16 +808,13 @@ attribute only the component's own JS reads.
 
 ### T-a-generated-region-still-declares-api
 
-`check-props` used to slice a component's CSS at
-`/* == end sherpa:tokens == */` and scan only what lay below, borrowing the rule
-from `lint:css`.
-
-That rule is right for LINTING — everything above the marker is Figma's, and
+`lint:css` slices a component's CSS at `/* == end sherpa:tokens == */` and scans
+only what lies below. That rule is right for LINTING — everything above the marker is Figma's, and
 hand-editing it is undone by the next projection. It is wrong for a CONTRACT. A
 `:host([data-size])` rule is public API wherever it sits, and the projection
-puts several there: `data-size` on `sherpa-button` (the five-value enum, at line
-15 of a file whose marker is at line 60) and `data-state` on
-`sherpa-input-text` were both invisible to the gate for that reason.
+puts several there: sliced, `data-size` on `sherpa-button` (the five-value enum,
+at line 15 of a file whose marker is at line 60) and `data-state` on
+`sherpa-input-text` were both invisible to the gate.
 
 Scan the whole file. Edit the region in Figma.
 
@@ -1020,9 +1016,9 @@ subclass, not public API, so it is left out.
 ### T-the-mcp-reads-sherpa-ui-through-one-door
 
 **The MCP is its own package, `sherpa-ui-mcp`, and it reads the `sherpa-ui`
-installed beside it** (TODO 192; Will, A). It used to import
-`../../scripts/…` and read `../../docs`, `../../src`, which exist only in a
-checkout, so the published `sherpa-mcp` died at load.
+installed beside it** (TODO 192; Will, A). Importing `../../scripts/…` or
+reading `../../docs` and `../../src`, which exist only in a checkout, makes the
+published package die at load.
 
 `mcp-server/lib/sherpa.js` is the one door: `SHERPA_ROOT` is the installed
 `sherpa-ui` (resolved from `sherpa-ui/package.json`), or the checkout the MCP
@@ -1062,9 +1058,9 @@ with no build and no server of its own — `index.html` (the shell and
 Views, its store with seed rows, an optional module, `package.json`,
 `.mcp.json` and an `AGENTS.md` that says where each kind of file goes.
 
-**It is not in sherpa-ui.** It was `starter/` until 2026-10-14: an app
-template, with app content, inside an app-agnostic library (Will, D4 and Q1).
-It is the package `create-sherpa-ui` now, in the sibling project
+**It is not in sherpa-ui.** An app template holds app content, which an
+app-agnostic library does not (Will, D4 and Q1). It is the package
+`create-sherpa-ui`, in the sibling project
 `../Sherpa Starter`. Two doors, one source: `npm create sherpa-ui <folder>`,
 and the MCP's `scaffold_app`, which reads the installed package's
 `template/` — or, in a checkout, the sibling's. `check:mcp-pack` packs all
