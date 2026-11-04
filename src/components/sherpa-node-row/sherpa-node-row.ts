@@ -13,7 +13,7 @@ export class SherpaNodeRow extends SherpaElement {
   static override html = new URL('./sherpa-node-row.html', import.meta.url);
 
   static override props = {
-    'data-label': { type: 'string', kind: 'content', to: '.label' },
+    'data-label': { type: 'string', kind: 'content' },
     'data-input-socket': SHARED_PROPS['data-input-socket'],
     'data-output-socket': SHARED_PROPS['data-output-socket'],
   } as const;

@@ -99,7 +99,10 @@
                   {
                     "el": "span",
                     "class": "axis-label axis-label-value",
-                    "part": "axis-label"
+                    "part": "axis-label",
+                    "attrs": {
+                      "data-text": "data-axis-label"
+                    }
                   }
                 ]
               },

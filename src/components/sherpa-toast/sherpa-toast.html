@@ -26,9 +26,9 @@
     <span class="icon sherpa-icon-box" data-icon="status-critical" data-icon-status="critical" part="icon" aria-hidden="true"></span>
     <span class="icon sherpa-icon-box" data-icon="status-urgent" data-icon-status="urgent" part="icon" aria-hidden="true"></span>
     <span class="content" part="content">
-      <span class="heading" part="heading"><span class="heading-text"></span><slot data-accepts="text"></slot></span>
-      <span class="value" part="value"></span>
-      <button class="action" part="action" type="button"></button>
+      <span class="heading" part="heading"><span class="heading-text" data-text="data-heading"></span><slot data-accepts="text"></slot></span>
+      <span class="value" part="value" data-text="data-value"></span>
+      <button class="action" part="action" type="button" data-text="data-action"></button>
     </span>
     <sherpa-button class="close sherpa-dismiss" part="close" data-type="icon" data-size="xs"
                    data-look="transparent" data-icon-start="cross"

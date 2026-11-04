@@ -99,9 +99,8 @@
                     "data-size": "sm",
                     "data-icon-start": "sidebar-flip",
                     "aria-label": "Pop in",
-                    "data-swap-on": "data-fixed",
-                    "data-swap-data-icon-start": "monitor-w-floating-window",
-                    "data-swap-aria-label": "Pop out"
+                    "data-when-data-icon-start": "data-fixed: monitor-w-floating-window",
+                    "data-when-aria-label": "data-fixed: Pop out"
                   }
                 },
                 {
@@ -118,9 +117,8 @@
                         "data-size": "sm",
                         "data-icon-start": "fullscreen",
                         "aria-label": "Maximise",
-                        "data-swap-on": "data-maximised",
-                        "data-swap-data-icon-start": "fullscreen-exit",
-                        "data-swap-aria-label": "Minimise"
+                        "data-when-data-icon-start": "data-maximised: fullscreen-exit",
+                        "data-when-aria-label": "data-maximised: Minimise"
                       }
                     },
                     {

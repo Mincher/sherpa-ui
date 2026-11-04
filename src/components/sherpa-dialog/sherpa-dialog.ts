@@ -20,7 +20,7 @@ export class SherpaDialog extends SherpaElement {
   // Opened and shut from markup: `<sherpa-button commandfor="id" command="--show">`.
   static override commands = { '--show': 'show', '--hide': 'hide' };
   static override props = {
-    'data-heading': { type: 'string', kind: 'content', to: '.heading', as: 'attr' },
+    'data-heading': { type: 'string', kind: 'content' },
     'data-type': { type: 'enum', kind: 'style', values: ['modal', 'overlay'] },
     'data-scroll-shadow': SHARED_PROPS['data-scroll-shadow'],
   } as const;

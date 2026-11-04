@@ -14,7 +14,7 @@ export class SherpaSectionHeader extends SherpaElement {
   static override props = {
     'data-divider': { type: 'enum', kind: 'style', values: ['none'] },
     'data-size': SHARED_PROPS['data-size'],
-    'data-heading': { type: 'string', kind: 'content', to: '.title' },
+    'data-heading': { type: 'string', kind: 'content' },
   } as const;
 }
 

@@ -66,12 +66,18 @@
                     {
                       "el": "p",
                       "class": "heading",
-                      "part": "heading"
+                      "part": "heading",
+                      "attrs": {
+                        "data-text": "data-heading"
+                      }
                     },
                     {
                       "el": "p",
                       "class": "description",
-                      "part": "description"
+                      "part": "description",
+                      "attrs": {
+                        "data-text": "data-description"
+                      }
                     }
                   ]
                 },
@@ -533,12 +539,18 @@
                     {
                       "el": "p",
                       "class": "heading",
-                      "part": "heading"
+                      "part": "heading",
+                      "attrs": {
+                        "data-text": "data-heading"
+                      }
                     },
                     {
                       "el": "p",
                       "class": "description",
-                      "part": "description"
+                      "part": "description",
+                      "attrs": {
+                        "data-text": "data-description"
+                      }
                     }
                   ]
                 },
@@ -558,8 +570,7 @@
                     "data-icon-start": "solo",
                     "aria-label": "Solo this filter",
                     "aria-pressed": "false",
-                    "data-swap-on": "data-soloed",
-                    "data-swap-aria-pressed": "true"
+                    "data-when-aria-pressed": "data-soloed: true"
                   }
                 },
                 {
@@ -576,8 +587,7 @@
                         "data-icon-start": "function",
                         "aria-label": "Advanced",
                         "aria-pressed": "false",
-                        "data-swap-on": "data-mode=advanced",
-                        "data-swap-aria-pressed": "true"
+                        "data-when-aria-pressed": "data-mode=advanced: true"
                       }
                     }
                   ]

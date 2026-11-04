@@ -138,7 +138,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // ASKED of its provider; in portrait, several make it the COLUMN. TODO 425
     'data-scope': { type: 'string', kind: 'template' },
     // The scope's name, as its source says it: a portrait bar's heading.
-    'data-heading': { type: 'string', kind: 'content', to: '.scope', as: 'attr' },
+    'data-heading': { type: 'string', kind: 'content' },
     /* The host offers "Limit to matching filters", on or off. Will, TODO 178.
        TRAP T-the-more-menu-holds-what-folded */
     'data-limit-options': { type: 'enum', kind: 'behaviour', values: ['on', 'off'] },

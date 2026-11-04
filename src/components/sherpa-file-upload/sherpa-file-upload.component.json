@@ -22,7 +22,10 @@
           {
             "el": "span",
             "class": "label",
-            "part": "label"
+            "part": "label",
+            "attrs": {
+              "data-text": "data-label"
+            }
           },
           {
             "el": "div",
@@ -106,7 +109,10 @@
           {
             "el": "span",
             "class": "helper",
-            "part": "helper"
+            "part": "helper",
+            "attrs": {
+              "data-text": "data-description"
+            }
           }
         ]
       },

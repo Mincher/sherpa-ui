@@ -158,9 +158,8 @@
                         "data-type": "icon",
                         "data-group": "solo",
                         "data-icon-start": "filter",
-                        "data-swap-on": "data-saveable",
-                        "data-swap-data-group": "end",
-                        "data-swap-data-icon-start": "triangle-down",
+                        "data-when-data-group": "data-saveable: end",
+                        "data-when-data-icon-start": "data-saveable: triangle-down",
                         "data-description": "Use, save and manage your saved filters.",
                         "aria-label": "Saved filters",
                         "aria-haspopup": "dialog"
@@ -203,7 +202,8 @@
           "class": "scope",
           "part": "scope",
           "attrs": {
-            "open": ""
+            "open": "",
+            "data-attr-data-heading": "data-heading"
           },
           "children": [
             {
@@ -308,7 +308,8 @@
           "part": "scope",
           "attrs": {
             "data-size": "sm",
-            "data-divider": "none"
+            "data-divider": "none",
+            "data-attr-data-heading": "data-heading"
           },
           "children": [
             {
@@ -397,8 +398,7 @@
           "part": "column",
           "attrs": {
             "data-padding": "none",
-            "data-swap-on": "data-scroll-shadow",
-            "data-swap-data-scroll-shadow": ""
+            "data-when-data-scroll-shadow": "data-scroll-shadow"
           },
           "children": [
             {
@@ -479,9 +479,8 @@
                         "data-type": "icon",
                         "data-group": "solo",
                         "data-icon-start": "filter",
-                        "data-swap-on": "data-saveable",
-                        "data-swap-data-group": "end",
-                        "data-swap-data-icon-start": "triangle-down",
+                        "data-when-data-group": "data-saveable: end",
+                        "data-when-data-icon-start": "data-saveable: triangle-down",
                         "data-description": "Use, save and manage your saved filters.",
                         "aria-label": "Saved filters",
                         "aria-haspopup": "dialog"

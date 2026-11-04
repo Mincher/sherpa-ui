@@ -174,7 +174,7 @@
                        data-group="start" data-icon-start="filter">Save</sherpa-button>
         <sherpa-button class="act saved-btn" data-act="saved" data-size="sm" data-type="icon"
                        data-group="solo" data-icon-start="filter"
-                       data-swap-on="data-saveable" data-swap-data-group="end" data-swap-data-icon-start="triangle-down"
+                       data-when-data-group="data-saveable: end" data-when-data-icon-start="data-saveable: triangle-down"
                        data-description="Use, save and manage your saved filters."
                        aria-label="Saved filters" aria-haspopup="dialog"></sherpa-button>
       </span>
@@ -195,7 +195,7 @@
      its name, a badge of what its filters match while shut, and its Apply and
      Discard on the header row. TODO 425 -->
 <template id="portrait">
-  <sherpa-accordion class="scope" part="scope" open>
+  <sherpa-accordion class="scope" part="scope" open data-attr-data-heading="data-heading">
     <sherpa-tooltip slot="badge" class="scope-tip"><sherpa-badge class="scope-results" role="img"></sherpa-badge></sherpa-tooltip>
     <span slot="actions" class="actions-zone" part="actions">
       <sherpa-button class="act apply-all" data-act="apply" data-size="sm"
@@ -219,7 +219,7 @@
      column's View Context. The heading row holds Apply and Discard; its fields
      follow. Will, TODO 435 -->
 <template id="flat">
-  <sherpa-section-header class="scope" part="scope" data-size="sm" data-divider="none">
+  <sherpa-section-header class="scope" part="scope" data-size="sm" data-divider="none" data-attr-data-heading="data-heading">
     <span slot="actions" class="actions-zone" part="actions">
       <sherpa-button class="act apply-all" data-act="apply" data-size="sm"
                      data-look="saturated" disabled>Apply</sherpa-button>
@@ -242,8 +242,7 @@
      one search above every scope — over the View Context, a rule, then the
      Local Context: a portrait toolbar per component scope. TODO 425 · Will, TODO 435 -->
 <template id="column">
-  <sherpa-container class="column" part="column" data-padding="none"
-                    data-swap-on="data-scroll-shadow" data-swap-data-scroll-shadow="">
+  <sherpa-container class="column" part="column" data-padding="none" data-when-data-scroll-shadow="data-scroll-shadow">
     <sherpa-container-header slot="header" class="head" part="head" data-icon="filter" data-heading="Filters">
       <!-- Its title, and the filters applied beside it, where the app counts them. Will, TODO 436 -->
       <span slot="heading" class="column-heading" part="heading">Filters<sherpa-badge class="applied-count" role="img"></sherpa-badge></span>
@@ -259,7 +258,7 @@
                        data-group="start" data-icon-start="filter">Save</sherpa-button>
         <sherpa-button class="column-saved" part="saved" data-size="sm" data-type="icon"
                        data-group="solo" data-icon-start="filter"
-                       data-swap-on="data-saveable" data-swap-data-group="end" data-swap-data-icon-start="triangle-down"
+                       data-when-data-group="data-saveable: end" data-when-data-icon-start="data-saveable: triangle-down"
                        data-description="Use, save and manage your saved filters."
                        aria-label="Saved filters" aria-haspopup="dialog"></sherpa-button>
       </span>

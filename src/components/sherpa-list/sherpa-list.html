@@ -15,15 +15,15 @@
   <div class="body" part="body" role="list">
     <slot data-accepts="item"></slot>
   </div>
-  <div class="empty" part="empty" role="status" aria-live="polite"></div>
+  <div class="empty" part="empty" role="status" aria-live="polite" data-text="data-empty"></div>
 
   <template class="row-tpl">
     <div class="row-item" role="listitem">
       <sherpa-list-item
         data-attr-data-label="title"
         data-attr-data-description="description"
-        data-when-current="active"
-        data-when-interactive="interactive"
+        data-when-data-current="active"
+        data-when-data-interactive="interactive"
       ></sherpa-list-item>
     </div>
   </template>

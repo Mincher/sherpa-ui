@@ -22,14 +22,14 @@
 <template id="default">
   <fieldset class="group" part="group">
     <legend class="legend" part="legend">
-      <span class="label" part="label"></span>
-      <span class="description" part="description"></span>
+      <span class="label" part="label" data-text="data-label"></span>
+      <span class="description" part="description" data-text="data-description"></span>
     </legend>
     <hr class="divider" part="divider" aria-hidden="true" />
     <div class="options" part="options" role="group">
       <slot name="options" data-accepts="input"></slot>
     </div>
-    <p class="validation" part="validation" role="alert"></p>
+    <p class="validation" part="validation" role="alert" data-text="data-error"></p>
   </fieldset>
 
   <!-- One option each, cloned into the LIGHT DOM: checkboxes when `multiple`, else radios. -->

@@ -35,25 +35,25 @@
         <span aria-hidden="true">&#x2830;</span>
       </button>
       <button class="expand" part="expand" type="button" tabindex="-1" aria-expanded="false" aria-label="Expand"
-              data-swap-on="data-expanded" data-swap-aria-expanded="true">
+              data-when-aria-expanded="data-expanded: true">
         <span class="expand-glyph" aria-hidden="true">&#x25B8;</span>
       </button>
       <span class="control" part="control">
         <slot name="control" data-accepts="input"><input class="checkbox" type="checkbox" aria-label="Select row" /></slot>
       </span>
       <span class="leading" part="leading" aria-hidden="true">
-        <span class="icon" part="icon"></span>
+        <span class="icon" part="icon" data-attr-data-icon="data-icon"></span>
         <slot name="leading" data-accepts="icon"></slot>
       </span>
     </span>
 
     <button class="content content-button" part="content" type="button">
-      <span class="title" part="title"></span>
-      <span class="description" part="description"></span>
+      <span class="title" part="title" data-text="data-label"></span>
+      <span class="description" part="description" data-text="data-description"></span>
     </button>
     <span class="content content-static" part="content">
-      <span class="title" part="title"></span>
-      <span class="description" part="description"></span>
+      <span class="title" part="title" data-text="data-label"></span>
+      <span class="description" part="description" data-text="data-description"></span>
     </span>
 
     <span class="trailing" part="trailing">

@@ -48,7 +48,10 @@
             {
               "el": "h2",
               "class": "title",
-              "part": "title"
+              "part": "title",
+              "attrs": {
+                "data-text": "data-heading"
+              }
             },
             {
               "el": "div",
@@ -64,7 +67,10 @@
                     {
                       "el": "p",
                       "class": "message-text",
-                      "part": "message-text"
+                      "part": "message-text",
+                      "attrs": {
+                        "data-text": "data-description"
+                      }
                     }
                   ]
                 }
@@ -99,7 +105,10 @@
                 {
                   "el": "p",
                   "class": "small-print-text",
-                  "part": "small-print-text"
+                  "part": "small-print-text",
+                  "attrs": {
+                    "data-text": "data-small-print"
+                  }
                 }
               ]
             }

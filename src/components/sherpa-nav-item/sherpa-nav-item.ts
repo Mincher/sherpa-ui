@@ -116,7 +116,7 @@ export class SherpaNavItem extends SherpaElement {
       else el.removeAttribute('aria-current');
     }
 
-    // CSS owns the chevron rotation and a swap its aria-expanded; its name says the row.
+    // CSS owns the chevron rotation and its markup its aria-expanded; its name says the row.
     const open = this.hasAttribute('data-expanded');
     this.$('.expand')?.setAttribute('aria-label', `${this.word(open ? 'collapse' : 'expand')} ${this.dataset['label'] ?? ''}`.trim());
   }

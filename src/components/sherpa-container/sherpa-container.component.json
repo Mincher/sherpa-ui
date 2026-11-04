@@ -45,7 +45,10 @@
                 "children": [
                   {
                     "el": "span",
-                    "class": "error-message"
+                    "class": "error-message",
+                    "attrs": {
+                      "data-text": "data-error"
+                    }
                   }
                 ]
               },
@@ -191,7 +194,10 @@
                 "children": [
                   {
                     "el": "span",
-                    "class": "error-message"
+                    "class": "error-message",
+                    "attrs": {
+                      "data-text": "data-error"
+                    }
                   },
                   {
                     "el": "sherpa-button",

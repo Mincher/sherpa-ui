@@ -48,7 +48,7 @@
   <!-- KEEP THE CONTENT: a failure or no data as a banner, the body still shown. TODO 59 -->
   <div class="banner" part="banner">
     <sherpa-callout class="banner-error" data-status="critical" data-heading="The data could not load">
-      <span><span class="error-message"></span> The last data is still shown.</span>
+      <span><span class="error-message" data-text="data-error"></span> The last data is still shown.</span>
       <span class="banner-actions">
         <sherpa-button class="retry" data-size="sm" data-look="saturated">Retry</sherpa-button>
         <sherpa-button class="dismiss" data-size="sm">Dismiss</sherpa-button>
@@ -81,7 +81,7 @@
     <slot name="error" class="state-error" data-accepts="content">
       <sherpa-empty-state class="error-default" data-illustration="error" data-size="sm"
                           data-heading="The data could not load">
-        <span class="error-message"></span>
+        <span class="error-message" data-text="data-error"></span>
         <!-- RETRY resolves it, so it is the CTA; Dismiss does not. -->
         <sherpa-button slot="actions" class="retry" data-look="saturated">Retry</sherpa-button>
         <sherpa-button slot="actions" class="dismiss">Dismiss</sherpa-button>

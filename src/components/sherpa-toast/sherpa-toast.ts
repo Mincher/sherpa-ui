@@ -37,9 +37,9 @@ export class SherpaToast extends SherpaElement {
   static override props = {
     // Beside the slot, never in it: slotted words win by CSS.
     // TRAP T-slot-guards-only-when-filled
-    'data-heading': { type: 'string', kind: 'content', to: '.heading-text' },
-    'data-value': { type: 'string', kind: 'content', to: '.value' },
-    'data-action': { type: 'string', kind: 'content', to: '.action' },
+    'data-heading': { type: 'string', kind: 'content' },
+    'data-value': { type: 'string', kind: 'content' },
+    'data-action': { type: 'string', kind: 'content' },
   } as const;
 
   /** The auto-dismiss timer. */

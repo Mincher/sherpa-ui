@@ -23,7 +23,8 @@
             "class": "label",
             "part": "label",
             "attrs": {
-              "for": "slider-range"
+              "for": "slider-range",
+              "data-text": "data-label"
             }
           }
         ]

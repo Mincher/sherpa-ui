@@ -32,10 +32,10 @@
     </div>
 
     <div class="heading" part="heading">
-      <h2 class="title" part="title"></h2>
+      <h2 class="title" part="title" data-text="data-heading"></h2>
       <div class="message" part="message">
         <slot data-accepts="content">
-          <p class="message-text" part="message-text"></p>
+          <p class="message-text" part="message-text" data-text="data-description"></p>
         </slot>
       </div>
     </div>
@@ -46,7 +46,7 @@
 
     <div class="small-print" part="small-print">
       <slot name="small-print" data-accepts="text">
-        <p class="small-print-text" part="small-print-text"></p>
+        <p class="small-print-text" part="small-print-text" data-text="data-small-print"></p>
       </slot>
     </div>
   </div>

@@ -62,7 +62,7 @@ export class SherpaGaugeChart extends SherpaElement {
        field's bands round with it. Will, TODO 150 */
     'data-invert': { type: 'boolean', kind: 'behaviour' },
     // Beside the caption slot, never in it. TRAP T-slot-guards-only-when-filled
-    'data-caption': { type: 'string', kind: 'content', to: '.caption-text' },
+    'data-caption': { type: 'string', kind: 'content' },
     'data-unit': { type: 'string', kind: 'content' },
   } as const;
 

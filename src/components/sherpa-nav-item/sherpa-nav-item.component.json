@@ -115,8 +115,7 @@
             "type": "button",
             "aria-label": "Expand",
             "aria-expanded": "false",
-            "data-swap-on": "data-expanded",
-            "data-swap-aria-expanded": "true"
+            "data-when-aria-expanded": "data-expanded: true"
           },
           "children": [
             {

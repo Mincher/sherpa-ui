@@ -76,7 +76,10 @@
             {
               "el": "span",
               "class": "title",
-              "part": "title"
+              "part": "title",
+              "attrs": {
+                "data-text": "data-heading"
+              }
             },
             {
               "el": "div",

@@ -24,12 +24,12 @@
       <input class="input" type="checkbox" role="switch" />
       <!-- ON or OFF, by a shape too, where the page asks: the Checkbox's box in the
            knob, ticked while on. Will, TODOs 497, 503 -->
-      <span class="knob" aria-hidden="true"><span class="tick sherpa-checkbox" data-swap-on="checked" data-swap-data-checked=""></span></span>
+      <span class="knob" aria-hidden="true"><span class="tick sherpa-checkbox" data-when-data-checked="checked"></span></span>
       <span class="label" aria-hidden="true"></span>
     </span>
     <span class="text" part="text">
-      <span class="title" part="title"></span>
-      <span class="description" part="description"></span>
+      <span class="title" part="title" data-text="data-label"></span>
+      <span class="description" part="description" data-text="data-description"></span>
     </span>
   </label>
 </template>

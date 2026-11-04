@@ -61,13 +61,13 @@
         <!-- Pop in: a fixed panel in the shell's end area. TRAP T-a-panel-pops-into-the-end-area -->
         <sherpa-button class="pop" part="pop" data-type="icon" data-size="sm"
                        data-icon-start="sidebar-flip" aria-label="Pop in"
-                       data-swap-on="data-fixed" data-swap-data-icon-start="monitor-w-floating-window"
-                       data-swap-aria-label="Pop out"></sherpa-button>
+                       data-when-data-icon-start="data-fixed: monitor-w-floating-window"
+                       data-when-aria-label="data-fixed: Pop out"></sherpa-button>
         <sherpa-group class="view-modes" part="view-modes">
           <sherpa-button class="expand" part="expand" data-type="icon" data-size="sm"
                          data-icon-start="fullscreen" aria-label="Maximise"
-                         data-swap-on="data-maximised" data-swap-data-icon-start="fullscreen-exit"
-                         data-swap-aria-label="Minimise"></sherpa-button>
+                         data-when-data-icon-start="data-maximised: fullscreen-exit"
+                         data-when-aria-label="data-maximised: Minimise"></sherpa-button>
           <sherpa-button class="external" part="external" data-type="icon" data-size="sm"
                          data-icon-start="open-externally"
                          aria-label="Open externally"></sherpa-button>

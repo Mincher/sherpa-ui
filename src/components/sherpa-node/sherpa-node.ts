@@ -26,16 +26,16 @@ export class SherpaNode extends SherpaElement {
   static override html = new URL('./sherpa-node.html', import.meta.url);
 
   static override props = {
-    'data-heading': { type: 'string', kind: 'content', to: '.heading', as: 'attr' },
-    'data-icon': { type: 'string', kind: 'content', to: '.heading', as: 'attr' },
-    'data-description': { type: 'string', kind: 'content', to: '.heading', as: 'attr' },
+    'data-heading': { type: 'string', kind: 'content' },
+    'data-icon': { type: 'string', kind: 'content' },
+    'data-description': { type: 'string', kind: 'content' },
     'data-input-socket': SHARED_PROPS['data-input-socket'],
     'data-output-socket': SHARED_PROPS['data-output-socket'],
     'data-x': { type: 'number', kind: 'behaviour' },
     'data-y': { type: 'number', kind: 'behaviour' },
     'data-current': { type: 'boolean', kind: 'style' },
     'data-step': { type: 'enum', kind: 'style', values: ['running', 'done', 'failed', 'skipped'] },
-    'data-caption': { type: 'string', kind: 'content', to: '.caption' },
+    'data-caption': { type: 'string', kind: 'content' },
     'data-locked': DATA_PROPS['data-locked'],
   } as const;
 

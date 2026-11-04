@@ -27,7 +27,7 @@
       <span class="title"><slot name="heading" data-accepts="text"></slot></span>
     </figcaption>
     <div class="chart-body">
-      <span class="axis-label axis-label-y" part="axis-label"></span>
+      <span class="axis-label axis-label-y" part="axis-label" data-text="data-axis-label"></span>
       <div class="y-axis" part="y-axis" aria-hidden="true"></div>
 
       <div class="plot" part="plot" role="group" aria-label="Line chart">
@@ -40,7 +40,7 @@
         <div class="hotspots" part="hotspots"></div>
 
         <div class="x-axis" part="x-axis"></div>
-        <span class="axis-label axis-label-x" part="x-axis-label"></span>
+        <span class="axis-label axis-label-x" part="x-axis-label" data-text="data-x-axis-label"></span>
       </div>
     </div>
 

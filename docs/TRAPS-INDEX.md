@@ -875,7 +875,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-sub-pixel-border-reads-back-as-1px](traps/element-and-sheets.md#t-a-sub-pixel-border-reads-back-as-1px) — sherpa-grouping
 - [T-a-superseded-chip-suspends-it-is-never-removed](traps/data-layer.md#t-a-superseded-chip-suspends-it-is-never-removed) — filter-host-controller
 - [T-a-suspended-sort-is-one-owners-job](traps/data-layer.md#t-a-suspended-sort-is-one-owners-job) — sherpa-element
-- [T-a-swapped-label-is-in-the-markup](traps/element-and-sheets.md#t-a-swapped-label-is-in-the-markup) — sherpa-element, swap
+- [T-a-template-binds-by-markup](traps/element-and-sheets.md#t-a-template-binds-by-markup) — directives, sherpa-element, templater
 - [T-a-template-is-parsed-once](traps/element-and-sheets.md#t-a-template-is-parsed-once) — templater
 - [T-a-templater-owns-the-files](traps/element-and-sheets.md#t-a-templater-owns-the-files) — sherpa-element, templater
 - [T-a-tip-in-lines](traps/filters.md#t-a-tip-in-lines) — description-tips, sherpa-anchor
@@ -910,7 +910,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-configuration-is-not-data](traps/data-layer.md#t-configuration-is-not-data) — sherpa-element
 - [T-custom-element-upgrade](traps/filters.md#t-custom-element-upgrade) — sherpa-element
 - [T-declared-only-means-css-owns-it](traps/element-and-sheets.md#t-declared-only-means-css-owns-it) — sherpa-element
-- [T-empty-write-lets-css-collapse](traps/element-and-sheets.md#t-empty-write-lets-css-collapse) — sherpa-element
+- [T-empty-write-lets-css-collapse](traps/element-and-sheets.md#t-empty-write-lets-css-collapse) — directives
 - [T-every-button-says-its-action](traps/element-and-sheets.md#t-every-button-says-its-action) — sherpa-anchor
 - [T-false-is-off](traps/element-and-sheets.md#t-false-is-off) — sherpa-element
 - [T-focus-is-delegated-by-the-platform](traps/element-and-sheets.md#t-focus-is-delegated-by-the-platform) — sherpa-element
@@ -919,7 +919,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-icon-box-is-not-the-glyph](traps/element-and-sheets.md#t-icon-box-is-not-the-glyph) — icon-names, render-icon, sherpa-icon
 - [T-icon-value-takes-two-forms](traps/element-and-sheets.md#t-icon-value-takes-two-forms) — sherpa-element
 - [T-import-dies-in-an-adopted-sheet](traps/element-and-sheets.md#t-import-dies-in-an-adopted-sheet) — sherpa-base, sherpa-element
-- [T-item-template-cannot-compute](traps/element-and-sheets.md#t-item-template-cannot-compute) — sherpa-element
+- [T-item-template-cannot-compute](traps/element-and-sheets.md#t-item-template-cannot-compute) — directives, sherpa-element
 - [T-mark-match-is-one-shape](traps/element-and-sheets.md#t-mark-match-is-one-shape) — mark-text
 - [T-mirroring-skips-value](traps/element-and-sheets.md#t-mirroring-skips-value) — sherpa-element
 - [T-motion-is-owned-here](traps/element-and-sheets.md#t-motion-is-owned-here) — sherpa-motion
@@ -939,7 +939,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-restamp-does-not-abort](traps/menus-tips-overlays.md#t-restamp-does-not-abort) — sherpa-element
 - [T-restamp-runs-after-on-change](traps/element-and-sheets.md#t-restamp-runs-after-on-change) — sherpa-element
 - [T-round-is-for-dynamic-sizes-only](traps/element-and-sheets.md#t-round-is-for-dynamic-sizes-only) — sherpa-grouping
-- [T-row-fragment-cloned-whole](traps/element-and-sheets.md#t-row-fragment-cloned-whole) — sherpa-element
+- [T-row-fragment-cloned-whole](traps/element-and-sheets.md#t-row-fragment-cloned-whole) — directives, sherpa-element
 - [T-set-removes-on-falsy](traps/element-and-sheets.md#t-set-removes-on-falsy) — sherpa-element
 - [T-settled-waits-for-renders-not-transitions](traps/element-and-sheets.md#t-settled-waits-for-renders-not-transitions) — settled
 - [T-shadow-input-needs-element-internals](traps/element-and-sheets.md#t-shadow-input-needs-element-internals) — form-value, sherpa-element
@@ -955,7 +955,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-base-class-names-nothing-visual](traps/element-and-sheets.md#t-the-base-class-names-nothing-visual) — sherpa-element
 - [T-the-node-editor-asks-the-query](traps/data-layer.md#t-the-node-editor-asks-the-query) — node-graph
 - [T-the-shared-vocabulary-is-declared-once](traps/element-and-sheets.md#t-the-shared-vocabulary-is-declared-once) — sherpa-element
-- [T-the-templates-text-is-the-default](traps/element-and-sheets.md#t-the-templates-text-is-the-default) — sherpa-element
+- [T-the-templates-text-is-the-default](traps/element-and-sheets.md#t-the-templates-text-is-the-default) — directives
 - [T-the-text-is-in-the-js](traps/element-and-sheets.md#t-the-text-is-in-the-js) — templater
 - [T-the-tick-needs-the-fixed-ramp](traps/element-and-sheets.md#t-the-tick-needs-the-fixed-ramp) — sherpa-checkbox-look
 - [T-tokens-css-never-reaches-shadow](traps/element-and-sheets.md#t-tokens-css-never-reaches-shadow) — sherpa-element, sherpa-style-modes
@@ -1120,7 +1120,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-starter-is-one-folder](traps/build-tools-mcp.md#t-a-starter-is-one-folder) — check-mcp-pack, generate
 - [T-a-state-colour-binds-the-style-mode](traps/filters.md#t-a-state-colour-binds-the-style-mode) — generate, lint-css, project-tokens
 - [T-a-stranded-container-fills-its-row](traps/build-tools-mcp.md#t-a-stranded-container-fills-its-row) — project-tokens
-- [T-a-swapped-label-is-in-the-markup](traps/element-and-sheets.md#t-a-swapped-label-is-in-the-markup) — check-props, check-usage
+- [T-a-template-binds-by-markup](traps/element-and-sheets.md#t-a-template-binds-by-markup) — check-props, check-usage, generate-component-spec, html-structure
 - [T-an-elevation-pin-cannot-reach-a-shadow-root](traps/build-tools-mcp.md#t-an-elevation-pin-cannot-reach-a-shadow-root) — project-tokens
 - [T-an-event-name-is-not-always-a-literal](traps/build-tools-mcp.md#t-an-event-name-is-not-always-a-literal) — generate-component-spec, ts-facts
 - [T-an-icon-loads-when-first-drawn](traps/element-and-sheets.md#t-an-icon-loads-when-first-drawn) — generate-icons

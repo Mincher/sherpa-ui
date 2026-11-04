@@ -16,7 +16,7 @@ export class SherpaCodeBlock extends SherpaElement {
   static override css = new URL('./sherpa-code-block.css', import.meta.url);
   static override html = new URL('./sherpa-code-block.html', import.meta.url);
   static override props = {
-    'data-language': { type: 'string', kind: 'content', to: '.language' },
+    'data-language': { type: 'string', kind: 'content' },
     'data-code': { type: 'string', kind: 'content' },
     'data-line-numbers': { type: 'boolean', kind: 'style' },
   } as const;

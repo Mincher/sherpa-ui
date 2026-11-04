@@ -25,10 +25,10 @@
 <template id="default">
   <details class="root" part="root">
     <summary class="header" part="header">
-      <i class="icon sherpa-icon-box" part="icon" aria-hidden="true"></i>
+      <i class="icon sherpa-icon-box" part="icon" aria-hidden="true" data-attr-data-icon="data-icon"></i>
       <span class="titles" part="titles">
-        <span class="heading" part="heading"><span class="heading-text"></span><slot name="heading" data-accepts="text"></slot></span>
-        <span class="description" part="description"><span class="description-text"></span><slot name="description" data-accepts="text"></slot></span>
+        <span class="heading" part="heading"><span class="heading-text" data-text="data-heading"></span><slot name="heading" data-accepts="text"></slot></span>
+        <span class="description" part="description"><span class="description-text" data-text="data-description"></span><slot name="description" data-accepts="text"></slot></span>
       </span>
       <!-- A mark while SHUT — its matches, say. Will, TODO 418 -->
       <span class="badge" part="badge"><slot name="badge" data-accepts="badge"></slot></span>

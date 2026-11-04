@@ -152,8 +152,7 @@
                     "attrs": {
                       "type": "button",
                       "value": "minimap",
-                      "data-swap-on": "data-no-minimap",
-                      "data-swap-text": "Show minimap"
+                      "data-when-text": "data-no-minimap: Show minimap"
                     }
                   }
                 ]

@@ -31,7 +31,7 @@ import {
 } from './templater.js';
 import { report } from '../data/report.js';
 import { FormValue } from './form-value.js';
-import { applySwaps, readSwaps, type Swap } from './swap.js';
+import { applyDirectives, fillItem, readDirectives, type Directive } from './directives.js';
 
 /** How `num()` narrows a parsed value. */
 export interface NumOptions {
@@ -48,9 +48,10 @@ export interface NumOptions {
 
 /**
  * How a declared attribute is REALISED. Matches the generated `.component.json`.
- * `behaviour`: only the component's own JS reads it. `template`: it picks the
- * template, so it is also in `variantAttrs`.
- * TRAP T-declared-only-means-css-owns-it — only `content` does any work.
+ * `content`: its template's directive, or the component's JS, writes it into the
+ * shadow DOM. `behaviour`: only the component's own JS reads it. `template`: it
+ * picks the template, so it is also in `variantAttrs`.
+ * TRAP T-declared-only-means-css-owns-it
  */
 export type PropKind = 'content' | 'style' | 'visibility' | 'behaviour' | 'template';
 
@@ -61,19 +62,9 @@ export type PropType = 'string' | 'number' | 'boolean' | 'enum';
 export interface PropDef {
   type: PropType;
   kind: PropKind;
-  /** Selector the text is written into. `content` only; without it, no auto-write. */
-  to?: string;
-  /** Write EVERY match rather than the first. */
-  all?: boolean;
   /** A boolean's JS property, by this name: it reads and toggles the attribute.
    *  TRAP T-a-flag-brings-the-base-methods */
   accessor?: string;
-  /**
-   * How the value is RENDERED. Default is plain text; `'attr'` passes the
-   * attribute itself on, to a composed part.
-   * TRAP T-icon-value-takes-two-forms — `'icon'` or an icon name prints literally.
-   */
-  as?: 'text' | 'icon' | 'attr';
   /** Allowed values for an `enum`. Spec parity only; not enforced at runtime. */
   values?: readonly string[];
 }
@@ -85,13 +76,6 @@ export type PropMap = Readonly<Record<string, PropDef>>;
  * Attributes more than one component declares, stated once.
  * TRAP T-the-shared-vocabulary-is-declared-once
  */
-
-/* The item-template attributes, in the order they are applied. */
-const ITEM_TEXT = 'data-text';
-const ITEM_ICON = 'data-icon';
-const ITEM_INDEX = 'data-index';
-const ITEM_ATTR = 'data-attr-';
-const ITEM_WHEN = 'data-when-';
 
 /** Words a component's markup lacks, said once each. */
 const MISSING_WORDS = new Set<string>();
@@ -200,17 +184,6 @@ export function clampNum(value: number, opts?: NumOptions): number {
   if (opts?.min !== undefined) out = Math.max(opts.min, out);
   if (opts?.max !== undefined) out = Math.min(opts.max, out);
   return out;
-}
-
-/** Resolve `"header??field"` against an item: the first field that is not null. */
-function fieldValue(item: unknown, expr: string): unknown {
-  if (item == null || typeof item !== 'object') return undefined;
-  const record = item as Record<string, unknown>;
-  for (const name of expr.split('??')) {
-    const value = record[name.trim()];
-    if (value != null) return value;
-  }
-  return undefined;
 }
 
 /** The classes whose `config` names are already properties. */
@@ -594,10 +567,8 @@ export abstract class SherpaElement extends Base {
     }
     // Before the first render onRender reads the attribute state itself.
     if (oldVal === newVal || !this.#hasRendered) return;
-    // A declared prop re-syncs itself; onChange still fires afterwards.
-    const def = Ctor.props[name];
-    if (def) this.#syncProp(name, def);
-    applySwaps(this, this.#swaps, name);
+    // Its markup's directives first; onChange still fires afterwards.
+    applyDirectives(this.#directives, (attr) => this.getAttribute(attr), this.#glyph, name);
     if (name === 'aria-label' || name === 'aria-pressed') this.#syncLabel();
     if (Ctor.asks && (name in SUMMARY_PROPS || name in STACK_PROPS || name === 'data-source' || name === 'data-scope')) this.#reask();
     this.onChange(name, oldVal, newVal);
@@ -890,7 +861,7 @@ export abstract class SherpaElement extends Base {
     // it upgrades now; its icons come from `data-icon` FIELDS. TRAP T-custom-element-upgrade
     items.forEach((item, index) => {
       const frag = document.importNode(tpl.content, true);
-      for (const root of [...frag.children]) this.#fillItem(root as HTMLElement, item, index);
+      for (const root of [...frag.children]) fillItem(root, item, index, this.#glyph);
       // `after` gets the first root; a second is its nextElementSibling.
       const first = frag.firstElementChild as HTMLElement | null;
       if (first) opts?.after?.(first, item, index);
@@ -926,7 +897,7 @@ export abstract class SherpaElement extends Base {
     index = 0,
   ): T | null {
     const node = this.clone<T>(from);
-    if (node) this.#fillItem(node as unknown as HTMLElement, item, index);
+    if (node) fillItem(node, item, index, this.#glyph);
     return node;
   }
 
@@ -1049,16 +1020,14 @@ export abstract class SherpaElement extends Base {
    */
   #stamp(body: string, id: string | null): void {
     // A family's markup after its own, parsed once and cloned. TRAP T-a-family-shares-markup
-    const { fragment, swaps, icons } = stampable(body + familyBody(this.#files().family));
+    const { fragment, directives, icons } = stampable(body + familyBody(this.#files().family));
     this.root.replaceChildren(fragment);
     this.#stampedTemplate = id;
     this.#hasRendered = true;
-    this.#readOwn();
-    this.#swaps = swaps ? readSwaps(this.root) : [];
-    // Props and icons BEFORE onRender, so a component's setup reads a
+    // Directives and icons BEFORE onRender, so a component's setup reads a
     // populated tree. A template `data-icon` draws nothing until upgraded.
-    this.#syncAllProps();
-    applySwaps(this, this.#swaps);
+    this.#directives = directives ? readDirectives(this.root) : [];
+    applyDirectives(this.#directives, (attr) => this.getAttribute(attr), this.#glyph);
     this.#syncLabel();
     if (icons) upgradeIcons(this.root);
     this.onRender();
@@ -1161,51 +1130,13 @@ export abstract class SherpaElement extends Base {
     this.toggleState(slot.name ? `has-${slot.name}` : 'has-content-slot', has);
   }
 
-  /* ── Private — declared-prop sync ────────────────────────────────────── */
+  /* ── Private — directives ───────────────────────────────────────────── */
 
-  /** This stamp's swaps. TRAP T-a-swapped-label-is-in-the-markup */
-  #swaps: Swap[] = [];
+  /** This stamp's directives. TRAP T-a-template-binds-by-markup */
+  #directives: Directive[] = [];
 
-  /** Each `content` target's own value, as this stamp wrote it. TRAP T-the-templates-text-is-the-default */
-  #own = new WeakMap<Element, string | null>();
-
-  /** Read what the template put in each `content` target, before any prop writes. */
-  #readOwn(): void {
-    for (const [name, def] of Object.entries((this.constructor as typeof SherpaElement).props)) {
-      if (def.kind !== 'content' || !def.to || def.as === 'icon') continue;
-      // Trimmed: the build strips indents. Blank is none, so `:empty` still collapses.
-      for (const el of this.$$(def.to)) this.#own.set(el, def.as === 'attr' ? el.getAttribute(name) : el.textContent?.trim() || null);
-    }
-  }
-
-  /**
-   * Write one declared `content` prop into the shadow DOM.
-   * TRAP T-empty-write-lets-css-collapse — CSS owns the collapsing.
-   */
-  #syncProp(name: string, def: PropDef): void {
-    if (def.kind !== 'content' || !def.to) return;
-    const raw = this.getAttribute(name);
-    // Never a box that holds a <slot>: the text would erase it. TRAP T-slot-guards-only-when-filled
-    for (const el of def.all ? this.$$(def.to) : [this.$(def.to)]) {
-      if (!el) continue;
-      // Absent: the template's own comes back. TRAP T-the-templates-text-is-the-default
-      const value = raw ?? this.#own.get(el) ?? null;
-      if (def.as === 'attr') {
-        if (value == null) el.removeAttribute(name);
-        else el.setAttribute(name, value);
-        continue;
-      }
-      const text = raw != null && def.type === 'number' ? String(coerceNum(raw, NaN)) : (value ?? '');
-      if (def.as === 'icon') this.writeIcon(el, text);
-      else el.textContent = text === 'NaN' ? '' : text;
-    }
-  }
-
-  /** Write every declared `content` prop. Runs on each stamp. */
-  #syncAllProps(): void {
-    const Ctor = this.constructor as typeof SherpaElement;
-    for (const [name, def] of Object.entries(Ctor.props)) this.#syncProp(name, def);
-  }
+  /** How a directive draws a glyph: as `writeIcon` does. */
+  #glyph = (el: Element, value: string): void => this.writeIcon(el, value);
 
   /**
    * The DEFAULT data path: write a payload's keys onto the attributes this
@@ -1226,46 +1157,6 @@ export abstract class SherpaElement extends Base {
       if (!(attr in Ctor.props)) continue;
       this.set(attr, value as string | number | boolean | null | undefined);
     }
-  }
-
-  /* ── Private — item stamping ─────────────────────────────────────────── */
-
-  /** Apply every item-template attribute on a cloned item and its descendants. */
-  #fillItem(node: HTMLElement, item: unknown, index: number): void {
-    // The root can carry the attributes too, so it is part of its own sweep.
-    for (const el of [node, ...node.querySelectorAll<HTMLElement>('*')]) {
-      // Snapshot — the loop removes each directive and a live map would skip
-      // entries. TRAP T-row-fragment-cloned-whole
-      for (const { name, value } of [...el.attributes]) {
-        if (name === ITEM_TEXT) {
-          el.textContent = this.#itemText(item, value);
-          el.removeAttribute(name);
-        } else if (name === ITEM_ICON) {
-          this.writeIcon(el, this.#itemText(item, value));
-          el.removeAttribute(name);
-        } else if (name === ITEM_INDEX) {
-          el.removeAttribute(name);
-          el.setAttribute(value, String(index));
-        } else if (name.startsWith(ITEM_ATTR)) {
-          const target = name.slice(ITEM_ATTR.length);
-          const resolved = fieldValue(item, value);
-          el.removeAttribute(name);
-          // An absent field leaves the attribute OFF, never "undefined".
-          if (resolved != null) el.setAttribute(target, String(resolved));
-        } else if (name.startsWith(ITEM_WHEN)) {
-          const target = name.slice(ITEM_WHEN.length);
-          el.removeAttribute(name);
-          // Truthy field → the BARE attribute.
-          if (fieldValue(item, value)) el.setAttribute(`data-${target}`, '');
-        }
-      }
-    }
-  }
-
-  /** A field's value as item text: absent and null both render as empty. */
-  #itemText(item: unknown, expr: string): string {
-    const value = fieldValue(item, expr);
-    return value == null ? '' : String(value);
   }
 
   /* ── Hooks — subclasses override these ───────────────────────────────── */

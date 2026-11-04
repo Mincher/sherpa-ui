@@ -27,10 +27,10 @@
 <template id="default">
   <div class="root" part="root">
     <!-- What its step did, over the card: it moves no row, so no route moves. -->
-    <span class="caption sherpa-truncate" part="caption"></span>
+    <span class="caption sherpa-truncate" part="caption" data-text="data-caption"></span>
     <!-- The HEADER is the handle: a drag moves the node, the arrows move it, Enter selects it. -->
     <div class="header" part="header" role="button" tabindex="0" aria-roledescription="node">
-      <sherpa-container-header class="heading" part="heading" data-heading="Node"></sherpa-container-header>
+      <sherpa-container-header class="heading" part="heading" data-heading="Node" data-attr-data-heading="data-heading" data-attr-data-icon="data-icon" data-attr-data-description="data-description"></sherpa-container-header>
       <span class="socket socket-in" part="socket-in" aria-hidden="true"></span>
       <span class="socket socket-out" part="socket-out" aria-hidden="true"></span>
     </div>

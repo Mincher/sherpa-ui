@@ -38,7 +38,7 @@ export class SherpaContainer extends SherpaElement {
     'data-padding-inline': { type: 'enum', kind: 'style', values: ['none', 'sm', 'md', 'lg', 'xl'] },
     /* Its data's state — written by the provider. TRAP T-a-container-shows-its-datas-state */
     'data-state': { type: 'enum', kind: 'visibility', values: ['empty', 'no-matches', 'error'] },
-    'data-error': { type: 'string', kind: 'content', to: '.error-message', all: true },
+    'data-error': { type: 'string', kind: 'content' },
     // A state is a bar or a banner, never IN PLACE of the body. Will, TODO 59.
     'data-keep-content': { type: 'boolean', kind: 'style' },
   } as const;

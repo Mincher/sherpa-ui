@@ -14,7 +14,7 @@
  * - loadTemplates — a markup file, fetched once and split by `<template id>`.
  * - cachedTemplates — the split markup already fetched, for a re-stamp that costs no fetch.
  * - templateBody — one template's markup: the one wanted, else the first, else the whole file.
- * - stampable — a body parsed once, cloned per element, and whether it holds a swap or an icon.
+ * - stampable — a body parsed once, cloned per element, and whether it holds a directive or an icon.
  * - loadSheets — adoptable sheets, each fetched once; one that fails is left out.
  * - adoptPageSheet — adopt a sheet into the DOCUMENT, for light DOM a component puts in the page.
  * - reloadFiles — fetch files again; a sheet changes in place, and each listener hears what else changed.
@@ -38,8 +38,8 @@ export interface OwnFiles {
 const htmlCache = new Map<string, Promise<string>>();
 const templateCache = new Map<string, { html: string; map: TemplateMap }>();
 const sheetCache = new Map<string, Promise<CSSStyleSheet>>();
-/** Each body to stamp, parsed once, with whether it holds a swap or an icon. */
-const stampCache = new Map<string, { tpl: HTMLTemplateElement; swaps: boolean; icons: boolean }>();
+/** Each body to stamp, parsed once, with whether it holds a directive or an icon. */
+const stampCache = new Map<string, { tpl: HTMLTemplateElement; directives: boolean; icons: boolean }>();
 const own = new Map<string, { html?: string; css: string[] }>();
 /** Each tag's files, worked out once: the same for every element of it. */
 const filesCache = new Map<string, { html?: string; family: string[]; css: string[]; ownHtml?: string }>();
@@ -181,18 +181,18 @@ export function templateBody(map: TemplateMap, html: string, wanted: string | nu
 
 /** A body to stamp: parsed ONCE into a template, then a deep clone per element —
  *  a clone costs far less than parsing the markup again. And whether it holds a
- *  `data-swap-on` or a `data-icon`, so a tree without one is not searched.
+ *  directive or a `data-icon`, so a tree without one is not searched.
  *  TRAP T-a-template-is-parsed-once */
-export function stampable(body: string): { fragment: DocumentFragment; swaps: boolean; icons: boolean } {
+export function stampable(body: string): { fragment: DocumentFragment; directives: boolean; icons: boolean } {
   let hit = stampCache.get(body);
   if (!hit) {
     const tpl = document.createElement('template');
     tpl.innerHTML = ownHtml(body);
-    hit = { tpl, swaps: body.includes('data-swap-on'), icons: body.includes('data-icon') };
+    hit = { tpl, directives: /\sdata-(?:text|attr-|when-)/.test(body), icons: body.includes('data-icon') };
     stampCache.set(body, hit);
   }
   // IMPORTED, not cloned: the page's document upgrades each custom element at once, as innerHTML did.
-  return { fragment: document.importNode(hit.tpl.content, true), swaps: hit.swaps, icons: hit.icons };
+  return { fragment: document.importNode(hit.tpl.content, true), directives: hit.directives, icons: hit.icons };
 }
 
 /** Fetch a sheet once; every element adopting it shares one object. */
@@ -273,7 +273,7 @@ export function onReload(listener: (changed: ReadonlySet<string>) => void): () =
 
 /**
  * A consumer's markup must keep what the component's code reaches for: each
- * template id, part, slot name, class and swap of its own. What it lacks is
+ * template id, part, slot name, class and directive of its own. What it lacks is
  * REPORTED, once per file. TRAP T-a-broken-assumption-reports
  */
 export async function checkOwnTemplate(tag: string, given: string, ownUrl: string): Promise<void> {
@@ -303,7 +303,7 @@ export async function checkOwnTemplate(tag: string, given: string, ownUrl: strin
 
 const checked = new Set<string>();
 
-/** Every part, slot name and class in a template. */
+/** Every part, slot name, class and directive in a template. TRAP T-a-template-binds-by-markup */
 function anatomy(markup: string): Set<string> {
   const doc = new DOMParser().parseFromString(ownHtml(`<template>${markup}</template>`), 'text/html');
   const root = doc.querySelector('template')!.content;
@@ -312,8 +312,7 @@ function anatomy(markup: string): Set<string> {
     for (const part of (el.getAttribute('part') ?? '').split(/\s+/).filter(Boolean)) out.add(`part=${part}`);
     if (el.localName === 'slot') out.add(`slot=${el.getAttribute('name') ?? ''}`);
     for (const cls of el.classList) out.add(`.${cls}`);
-    const swap = el.getAttribute('data-swap-on');
-    if (swap) out.add(`swap=${swap}`);
+    for (const { name, value } of el.attributes) if (/^data-(?:text$|attr-|when-)/.test(name)) out.add(`${name}="${value}"`);
   }
   return out;
 }

@@ -33,7 +33,10 @@
                   {
                     "el": "h2",
                     "class": "title",
-                    "part": "title"
+                    "part": "title",
+                    "attrs": {
+                      "data-text": "data-heading"
+                    }
                   }
                 ]
               },

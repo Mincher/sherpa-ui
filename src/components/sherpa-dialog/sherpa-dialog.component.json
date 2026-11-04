@@ -40,7 +40,10 @@
             {
               "el": "sherpa-container-header",
               "class": "heading",
-              "part": "heading"
+              "part": "heading",
+              "attrs": {
+                "data-attr-data-heading": "data-heading"
+              }
             },
             {
               "slot": "header",

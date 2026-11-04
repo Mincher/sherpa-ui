@@ -437,11 +437,11 @@ For three months it swapped NOTHING. The two states were written as
 and `regular` as weight tokens before resolving — so both spellings resolved to
 the one `star` drawing. The attribute changed on every click and the path never
 did. The icons are Figma's, and the set holds `star` AND `star-filled` as two
-separate drawings, so the fix is to NAME them — in the star's markup, as a swap
-(`T-a-swapped-label-is-in-the-markup`):
+separate drawings, so the fix is to NAME them — in the star's markup, as a
+directive (`T-a-template-binds-by-markup`):
 
 ```html
-data-icon-start="star" data-swap-on="data-favourite" data-swap-data-icon-start="star-filled"
+data-icon-start="star" data-when-data-icon-start="data-favourite: star-filled"
 ```
 
 A test that reads `data-icon-start` cannot catch this. The test reads the

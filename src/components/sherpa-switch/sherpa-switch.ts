@@ -17,8 +17,8 @@ export class SherpaSwitch extends SherpaElement {
   static override delegatesFocus = true;
   /* Its words beside the track, as a checkbox's. Will, TODO 230. */
   static override props = {
-    'data-label': { type: 'string', kind: 'content', to: '.title' },
-    'data-description': { type: 'string', kind: 'content', to: '.description' },
+    'data-label': { type: 'string', kind: 'content' },
+    'data-description': { type: 'string', kind: 'content' },
     // CSS-only; declared for the typed door.
     'data-type': { type: 'enum', kind: 'style', values: ['default', 'simple'] },
   } as const;

@@ -21,7 +21,10 @@
         {
           "el": "span",
           "class": "caption sherpa-truncate",
-          "part": "caption"
+          "part": "caption",
+          "attrs": {
+            "data-text": "data-caption"
+          }
         },
         {
           "el": "div",
@@ -38,7 +41,10 @@
               "class": "heading",
               "part": "heading",
               "attrs": {
-                "data-heading": "Node"
+                "data-heading": "Node",
+                "data-attr-data-heading": "data-heading",
+                "data-attr-data-icon": "data-icon",
+                "data-attr-data-description": "data-description"
               }
             },
             {

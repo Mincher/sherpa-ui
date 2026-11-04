@@ -38,7 +38,10 @@
         "children": [
           {
             "el": "span",
-            "class": "tip-text"
+            "class": "tip-text",
+            "attrs": {
+              "data-text": "data-text"
+            }
           },
           {
             "slot": "tip",

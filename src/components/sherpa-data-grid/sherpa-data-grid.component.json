@@ -418,7 +418,7 @@
             "attrs": {
               "type": "button",
               "data-attr-value": "id",
-              "data-when-danger": "danger"
+              "data-when-data-danger": "danger"
             },
             "children": [
               {

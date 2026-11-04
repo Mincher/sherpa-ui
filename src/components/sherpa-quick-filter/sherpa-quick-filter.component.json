@@ -47,7 +47,8 @@
               "class": "count sherpa-border-edges sherpa-text-mono-base",
               "part": "count",
               "attrs": {
-                "role": "img"
+                "role": "img",
+                "data-text": "data-count"
               }
             },
             {

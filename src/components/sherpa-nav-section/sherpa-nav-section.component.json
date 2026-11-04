@@ -7,6 +7,9 @@
   "element": {
     "$type": "element",
     "tag": "span",
+    "attributes": {
+      "data-text": "data-label"
+    },
     "provides": []
   },
   "templates": [
@@ -17,7 +20,10 @@
       {
         "el": "span",
         "class": "label sherpa-truncate",
-        "part": "label"
+        "part": "label",
+        "attrs": {
+          "data-text": "data-label"
+        }
       },
       {
         "el": "span",

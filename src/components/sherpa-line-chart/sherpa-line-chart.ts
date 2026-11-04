@@ -57,8 +57,8 @@ export class SherpaLineChart extends SherpaElement {
   static override props = {
     ...SUMMARY_PROPS,
     ...FRAME_PROPS,
-    'data-axis-label': { type: 'string', kind: 'content', to: '.axis-label-y' },
-    'data-x-axis-label': { type: 'string', kind: 'content', to: '.axis-label-x' },
+    'data-axis-label': { type: 'string', kind: 'content' },
+    'data-x-axis-label': { type: 'string', kind: 'content' },
     'data-type': { type: 'enum', kind: 'style', values: ['line', 'area'] },
     'data-min': { type: 'number', kind: 'behaviour' },
     'data-max': { type: 'number', kind: 'behaviour' },

@@ -13,11 +13,11 @@ export class SherpaDataVizHeader extends SherpaElement {
   static override css = new URL('./sherpa-data-viz-header.css', import.meta.url);
   static override html = [SHOW_AS_HTML, new URL('./sherpa-data-viz-header.html', import.meta.url)];
   static override props = {
-    'data-heading': { type: 'string', kind: 'content', to: '.title' },
+    'data-heading': { type: 'string', kind: 'content' },
     'data-divider': { type: 'enum', kind: 'style', values: ['none'] },
-    'data-description': { type: 'string', kind: 'content', to: '.description' },
+    'data-description': { type: 'string', kind: 'content' },
     // A slotted icon wins over the data-icon glyph.
-    'data-icon': { type: 'string', kind: 'content', to: '.icon', as: 'icon' },
+    'data-icon': { type: 'string', kind: 'content' },
     // Show as, and what the card shows: a pick is a REQUEST, its provider writes this. Will, TODO 548
     'data-presentation': { type: 'enum', kind: 'behaviour', values: [...SHOW_AS, 'off'] },
     // What Default draws: the menu's first row names it. Its provider writes this. Will, TODO 620

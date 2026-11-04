@@ -44,7 +44,7 @@ export class SherpaBarchart extends SherpaElement {
     ...FRAME_PROPS,
     // Each bar stacked by its Secondary's values, in their colours. Will, TODOs 548, 653
     ...STACK_PROPS,
-    'data-axis-label': { type: 'string', kind: 'content', to: '.axis-label-value' },
+    'data-axis-label': { type: 'string', kind: 'content' },
     'data-max': { type: 'number', kind: 'behaviour' },
     'data-ticks': { type: 'number', kind: 'behaviour' },
   } as const;

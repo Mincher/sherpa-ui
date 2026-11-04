@@ -21,7 +21,10 @@
         {
           "el": "span",
           "class": "label",
-          "part": "label"
+          "part": "label",
+          "attrs": {
+            "data-text": "data-label"
+          }
         },
         {
           "slot": "",

@@ -24,10 +24,9 @@ export class SherpaListItem extends SherpaElement {
     'data-expandable': { type: 'boolean', kind: 'style' },
     'data-interactive': { type: 'boolean', kind: 'style' },
     'data-selectable': { type: 'boolean', kind: 'style' },
-    // `all`: title + description appear twice — in the <button> and the static span.
-    'data-label': { type: 'string', kind: 'content', to: '.title', all: true },
-    'data-description': { type: 'string', kind: 'content', to: '.description', all: true },
-    'data-icon': { type: 'string', kind: 'content', to: '.icon', as: 'icon' },
+    'data-label': { type: 'string', kind: 'content' },
+    'data-description': { type: 'string', kind: 'content' },
+    'data-icon': { type: 'string', kind: 'content' },
     /* Current-row state. Written by the row AND set by a host. */
     'data-current': { type: 'boolean', kind: 'style', accessor: 'current' },
     'data-expanded': { type: 'boolean', kind: 'style' },

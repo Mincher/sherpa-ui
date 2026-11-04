@@ -160,36 +160,52 @@ Do not "simplify" it back to `Number(x) || fallback`.
 
 - Site: `src/core/ui/sherpa-element.ts`
 
-### T-a-swapped-label-is-in-the-markup
+### T-a-template-binds-by-markup
 
-**A value that follows a host attribute is written in the markup, both ways**
-(Will, TODO 344: no fixed UI text in TS). A toggle's name, its icon, its
-`aria-pressed`:
+**One binding language, written in the template.** It replaced three: a prop's
+`to:` selector, the item directives and `data-swap-*` (plan 695 P6). A directive
+names a SOURCE. In the stamped tree that is a host attribute, and it is written
+again whenever that attribute changes. In an item prototype (`renderItems`,
+`cloneItem`) it is the item's field, written once, and the directive is dropped.
+
+| directive | writes |
+|---|---|
+| `data-text="src"` | the element's text |
+| `data-attr-NAME="src"` | its attribute NAME. On a plain element `data-attr-data-icon` draws the glyph (`writeIcon`); on a component it is the attribute |
+| `data-when-NAME="cond: value"` | NAME, while `cond` holds: `src` (present, and not `false`) or `src=value`. With no `: value`, a bare attribute. `text` is the element's text |
+| `data-index="NAME"` | an item's position (items only) |
 
 ```html
+<h3 class="title" part="title" data-text="data-heading"></h3>
 <sherpa-button aria-label="Collapse" aria-expanded="true"
-               data-swap-on="data-collapsed" data-swap-aria-label="Expand"
-               data-swap-aria-expanded="false"></sherpa-button>
+               data-when-aria-label="data-collapsed: Expand"
+               data-when-aria-expanded="data-collapsed: false"></sherpa-button>
 ```
 
-`data-swap-on="data-x"` follows the host's `data-x` being present;
-`data-swap-on="data-x=value"` follows one value. Each `data-swap-<name>` is the
-value while it matches, and the template's own comes back after. `text` is the
-element's text, so use it only on a text-only element. `swap.ts` reads the
-swaps in `#stamp`, before any prop writes, and `attributeChangedCallback`
-applies them before `onChange`; a re-stamp reads them again. There is no
-"remove": ARIA's `false` token says it (`aria-haspopup="false"`).
+While the source is absent, or the condition fails, the template's own value
+comes back (`T-the-templates-text-is-the-default`). There is no "remove": ARIA's
+`false` token says it. Only text, `title`, `value`, ARIA and `data-*` are
+written — never a script's text, a style or a URL, nor another directive. A
+`data-icon` that is not a directive is a static glyph, drawn by the icon
+upgrade.
 
-Only text, `title`, ARIA and `data-*` are written — never a script's text, a
-style or a URL, and never another `data-swap-*`. The followed attribute must be
-one the component observes, or it never swaps: `check:props` holds that. The
-TS must never also write a swapped attribute: one owner.
+`directives.ts` reads a stamp's directives in `#stamp`, before anything writes,
+and `attributeChangedCallback` applies those that follow the changed attribute
+before `onChange`. A re-stamp reads them again. The followed attribute must be
+one the component observes, or it is never written again: `check:props` holds
+that. The TS must never also write a bound attribute: one owner. A consumer's
+`useTemplate()` markup must keep each directive (`checkOwnTemplate` reports one
+it lacks). The spec reads a prop's default where its `data-text` or `data-attr-*`
+is (`boundTo`).
 
-- Site: `src/core/ui/swap.ts`
+- Site: `src/core/ui/directives.ts`
 - Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/core/ui/templater.ts`
 - Site: `scripts/check-props.mjs`
 - Site: `scripts/check-usage.mjs`
-- Site: `test/e2e/reforged-swaps.spec.ts`
+- Site: `scripts/lib/html-structure.mjs`
+- Site: `scripts/generate-component-spec.mjs`
+- Site: `test/e2e/reforged-a-template-binds-by-markup.spec.ts`
 - Site: `test/e2e/reforged-a-state-follows-its-host-attribute.spec.ts`
 
 ### T-a-native-wears-the-button-class
@@ -424,7 +440,7 @@ measure the PATH: the wrapper is its full size either way.
 
 An icon attribute's value has always been allowed to be EITHER a Font Awesome
 class list (`"fa-solid fa-tag"`) or a single raw glyph character (`"+"`), so
-`as: 'icon'` on a declared prop accepts both.
+a glyph directive (`data-attr-data-icon` on a plain element) accepts both.
 
 Without it an FA class list is printed as LITERAL TEXT — which is exactly what
 chip, tag, list-item and container-header used to do. The failure is silent:
@@ -481,30 +497,21 @@ real rollup rows, and `T-rollup-row-has-its-own-prototype` keeps its name.
 
 ### T-item-template-cannot-compute
 
-`renderItems()` fills a cloned prototype from the item's own fields, driven by
-attributes in the template rather than a `fill` callback:
-
-| attribute | effect |
-|---|---|
-| `data-text="label"` | `textContent` ← `item.label` |
-| `data-icon="glyph"` | `writeIcon()` ← `item.glyph` (FA class list or one glyph) |
-| `data-attr-value="id"` | `setAttribute('value', item.id)` |
-| `data-when-current="on"` | the bare attribute `data-current` exists if `item.on` is truthy |
-| `data-index="data-index"` | `setAttribute('data-index', String(loop position))` |
-
-A field may carry `??` fallbacks — `data-text="header??field"` is the aliasing
-six stamp sites hand-wrote.
+`renderItems()` and `cloneItem()` fill a cloned prototype from the item's own
+fields, by the template's directives (`T-a-template-binds-by-markup`), not by a
+`fill` callback. A field may carry `??` fallbacks — `data-text="header??field"`
+is the aliasing six stamp sites hand-wrote — and `data-index="data-index"`
+writes the item's position.
 
 IT DELIBERATELY CANNOT COMPUTE: no maths, no formatting, no reading component
 state. A derived row keeps its `fill` callback, because a template that could
 compute would be an expression language.
 
-**So a FIXED icon in an item prototype is erased.** `data-icon` there names a
-field, so `data-icon="chevron-right"` reads `item['chevron-right']` — nothing —
-and the attribute goes. The breadcrumb separator was blank for that reason
-(found by reading, 2026-10-15). A fixed glyph is written in `after`, or the
-prototype is cloned with `clone()`, which draws its own icons.
+**A FIXED glyph in a prototype is not a directive.** `clone()` draws it;
+`renderItems` does not, so a fixed glyph there is written in `after`. The
+breadcrumb separator was blank for want of that (found by reading, 2026-10-15).
 
+- Site: `src/core/ui/directives.ts`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-breadcrumbs/sherpa-breadcrumbs.ts`
 
@@ -604,28 +611,25 @@ is the whole failure this rule prevents.
 
 ### T-empty-write-lets-css-collapse
 
-Writing a declared `content` prop treats EMPTY and A MISSING TARGET as the same
-thing: write `''`. ABSENT writes the template's own text, and `''` where the
-template has none (`T-the-templates-text-is-the-default`).
+A directive treats EMPTY and A MISSING SOURCE as the same thing: it writes the
+template's own value, and `''` where the template has none
+(`T-the-templates-text-is-the-default`). It writes nothing when that value is
+there already.
 
 That is what lets the component's own `:empty` / `data-has-*` CSS collapse the
 node. **The base class never hides anything itself** — CSS owns visibility, so
 there is no `display: none` and no `.hidden` toggle anywhere in here.
 
-A `number` prop whose parse fails resolves to `NaN`, and `'NaN'` is written as
-`''` for the same reason: an empty node collapses, the literal string "NaN"
-does not.
-
-- Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/core/ui/directives.ts`
 
 ### T-the-templates-text-is-the-default
 
-**What a `content` prop's target holds in the `.html` is its default** (Will,
-TODO 344: default text is the template's, never a string in TS). `#stamp` reads
-each target's own text — or, with `as: 'attr'`, its own attribute — BEFORE any
-prop writes, and `#syncProp` writes it back whenever the attribute is absent or
-removed. So `PropDef.default` is gone: `<h3 class="pane-heading">Available</h3>`
-is the transfer list's default heading.
+**What a directive's element holds in the `.html` is its default** (Will, TODO
+344: default text is the template's, never a string in TS). `#stamp` reads each
+directive's own text — or its own attribute — BEFORE anything writes, and writes
+it back whenever its source is absent or removed. So `PropDef.default` is gone:
+`<h3 class="pane-heading" data-text="data-source-heading">Available</h3>` is the
+transfer list's default heading.
 
 The read is TRIMMED, and blank counts as none: the inlined build strips indents
 and a dev build does not, so an untrimmed read differed between them, and a
@@ -634,10 +638,11 @@ blank-but-indented target would stop matching `:empty`. It runs on EVERY stamp
 consumer's `useTemplate()` markup sets its own defaults the same way.
 
 The spec reads the same place: `generate-component-spec.mjs` takes a prop's
-default from its `to` target in the default template (`nodeAt`), then from the
-header's `(default …)` mark, and notes it when the two disagree.
+default from the element its `data-text` or `data-attr-*` follows it on in the
+default template (`boundTo`), then from the header's `(default …)` mark, and
+notes it when the two disagree.
 
-- Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/core/ui/directives.ts`
 - Site: `scripts/generate-component-spec.mjs`
 - Site: `test/e2e/reforged-num-coercion.spec.ts`
 
@@ -698,11 +703,12 @@ dot and its tip). It is the escape hatch for the ONE derived
 value a declarative template cannot compute (`T-item-template-cannot-compute`);
 reach for it before abandoning the row to a hand-written `fill`.
 
-`#fillRow` sweeps the row ROOT as well as its descendants, because the root can
-carry the attributes too, and it snapshots `[...el.attributes]` — the loop
+`fillItem` sweeps the row ROOT as well as its descendants, because the root can
+carry the directives too, and it snapshots `[...el.attributes]` — the loop
 removes each directive as it consumes it, and a live `NamedNodeMap` would skip
 entries when one is taken out mid-iteration.
 
+- Site: `src/core/ui/directives.ts`
 - Site: `src/core/ui/sherpa-element.ts`
 
 ### T-shadow-input-needs-element-internals

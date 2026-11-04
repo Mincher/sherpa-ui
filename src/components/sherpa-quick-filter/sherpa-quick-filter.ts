@@ -85,7 +85,7 @@ export class SherpaQuickFilter extends SherpaElement {
        The HOST names the place; the chip cannot know it.
        TRAP T-an-inactive-chip-says-where-its-filter-went */
     'data-applied-at': { type: 'string', kind: 'behaviour' },
-    'data-count': { type: 'string', kind: 'content', to: '.count' },
+    'data-count': { type: 'string', kind: 'content' },
     // A field's whole answer in the flow: its menu's rows as value chips. TODO 425
     'data-layout': { type: 'enum', kind: 'behaviour', values: ['chip', 'section', 'values'] },
     'data-label-start': { type: 'boolean', kind: 'style' },

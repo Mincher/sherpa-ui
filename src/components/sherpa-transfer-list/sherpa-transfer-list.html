@@ -14,7 +14,7 @@
 <template id="default">
   <div class="panes" part="panes">
     <div class="pane source" part="pane">
-      <h3 class="pane-heading" part="heading" id="source-heading">Available</h3>
+      <h3 class="pane-heading" part="heading" id="source-heading" data-text="data-source-heading">Available</h3>
       <!-- A plain list: each row holds a real checkbox, which an `option` may not. -->
       <ul class="pane-list sherpa-scroll-shadow" part="list" aria-labelledby="source-heading"></ul>
       <p class="pane-empty" part="empty">No items</p>
@@ -28,7 +28,7 @@
     </div>
 
     <div class="pane target" part="pane">
-      <h3 class="pane-heading" part="heading" id="target-heading">Selected</h3>
+      <h3 class="pane-heading" part="heading" id="target-heading" data-text="data-target-heading">Selected</h3>
       <ul class="pane-list sherpa-scroll-shadow" part="list" aria-labelledby="target-heading"></ul>
       <p class="pane-empty" part="empty">Nothing selected</p>
     </div>

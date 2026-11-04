@@ -14,7 +14,7 @@ export class SherpaNavSection extends SherpaElement {
   static override html = new URL('./sherpa-nav-section.html', import.meta.url);
   static override props = {
     'data-collapsed': { type: 'boolean', kind: 'style' },
-    'data-label': { type: 'string', kind: 'content', to: '.label' },
+    'data-label': { type: 'string', kind: 'content' },
   } as const;
 }
 

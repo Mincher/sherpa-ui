@@ -29,12 +29,18 @@
               {
                 "el": "span",
                 "class": "label",
-                "part": "label"
+                "part": "label",
+                "attrs": {
+                  "data-text": "data-label"
+                }
               },
               {
                 "el": "span",
                 "class": "description",
-                "part": "description"
+                "part": "description",
+                "attrs": {
+                  "data-text": "data-description"
+                }
               }
             ]
           },
@@ -67,7 +73,8 @@
             "class": "validation",
             "part": "validation",
             "attrs": {
-              "role": "alert"
+              "role": "alert",
+              "data-text": "data-error"
             }
           }
         ]

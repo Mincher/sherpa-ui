@@ -28,9 +28,9 @@ export class SherpaSelectGroup extends SherpaElement {
   static override css = new URL('./sherpa-select-group.css', import.meta.url);
   static override html = new URL('./sherpa-select-group.html', import.meta.url);
   static override props = {
-    'data-label': { type: 'string', kind: 'content', to: '.label' },
-    'data-description': { type: 'string', kind: 'content', to: '.description' },
-    'data-error': { type: 'string', kind: 'content', to: '.validation' },
+    'data-label': { type: 'string', kind: 'content' },
+    'data-description': { type: 'string', kind: 'content' },
+    'data-error': { type: 'string', kind: 'content' },
     'multiple': { type: 'boolean', kind: 'behaviour' },
   } as const;
 

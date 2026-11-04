@@ -131,7 +131,10 @@
                         "children": [
                           {
                             "el": "span",
-                            "class": "caption-text"
+                            "class": "caption-text",
+                            "attrs": {
+                              "data-text": "data-caption"
+                            }
                           },
                           {
                             "slot": "caption",

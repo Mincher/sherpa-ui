@@ -12,9 +12,9 @@ export class SherpaAccordion extends SherpaElement {
   static override css = new URL('./sherpa-accordion.css', import.meta.url);
   static override html = new URL('./sherpa-accordion.html', import.meta.url);
   static override props = {
-    'data-heading': { type: 'string', kind: 'content', to: '.heading-text' },
-    'data-description': { type: 'string', kind: 'content', to: '.description-text' },
-    'data-icon': { type: 'string', kind: 'content', to: '.icon', as: 'icon' },
+    'data-heading': { type: 'string', kind: 'content' },
+    'data-description': { type: 'string', kind: 'content' },
+    'data-icon': { type: 'string', kind: 'content' },
   } as const;
 
   static override observed = ['open'];

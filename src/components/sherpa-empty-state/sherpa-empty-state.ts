@@ -14,9 +14,9 @@ export class SherpaEmptyState extends SherpaElement {
   static override props = {
     'data-illustration': { type: 'enum', kind: 'style', values: ['data', 'empty', 'error', 'folder', 'search', 'success'] },
     'data-size': SHARED_PROPS['data-size'],
-    'data-heading': { type: 'string', kind: 'content', to: '.title' },
-    'data-description': { type: 'string', kind: 'content', to: '.message-text' },
-    'data-small-print': { type: 'string', kind: 'content', to: '.small-print-text' },
+    'data-heading': { type: 'string', kind: 'content' },
+    'data-description': { type: 'string', kind: 'content' },
+    'data-small-print': { type: 'string', kind: 'content' },
   } as const;
 }
 

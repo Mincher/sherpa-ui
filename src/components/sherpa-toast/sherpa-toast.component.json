@@ -87,7 +87,10 @@
                 "children": [
                   {
                     "el": "span",
-                    "class": "heading-text"
+                    "class": "heading-text",
+                    "attrs": {
+                      "data-text": "data-heading"
+                    }
                   },
                   {
                     "slot": "",
@@ -100,14 +103,18 @@
               {
                 "el": "span",
                 "class": "value",
-                "part": "value"
+                "part": "value",
+                "attrs": {
+                  "data-text": "data-value"
+                }
               },
               {
                 "el": "button",
                 "class": "action",
                 "part": "action",
                 "attrs": {
-                  "type": "button"
+                  "type": "button",
+                  "data-text": "data-action"
                 }
               }
             ]

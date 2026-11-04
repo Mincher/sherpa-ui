@@ -29,7 +29,8 @@
                 "class": "pane-heading",
                 "part": "heading",
                 "attrs": {
-                  "id": "source-heading"
+                  "id": "source-heading",
+                  "data-text": "data-source-heading"
                 }
               },
               {
@@ -108,7 +109,8 @@
                 "class": "pane-heading",
                 "part": "heading",
                 "attrs": {
-                  "id": "target-heading"
+                  "id": "target-heading",
+                  "data-text": "data-target-heading"
                 }
               },
               {

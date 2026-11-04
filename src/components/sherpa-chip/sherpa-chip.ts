@@ -17,7 +17,7 @@ export class SherpaChip extends SherpaElement {
    * glyph character. CSS `:host(:not([data-icon]))` gates visibility.
    */
   static override props = {
-    'data-icon': { type: 'string', kind: 'content', to: '.glyph', as: 'icon' },
+    'data-icon': { type: 'string', kind: 'content' },
     'data-dismissible': { type: 'boolean', kind: 'style' },
   } as const;
 

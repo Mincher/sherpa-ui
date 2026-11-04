@@ -63,13 +63,17 @@
                       "class": "context-icon sherpa-icon-box",
                       "part": "context-icon",
                       "attrs": {
-                        "aria-hidden": "true"
+                        "aria-hidden": "true",
+                        "data-attr-data-icon": "data-icon"
                       }
                     },
                     {
                       "el": "h1",
                       "class": "title sherpa-truncate sherpa-text-large",
-                      "part": "title"
+                      "part": "title",
+                      "attrs": {
+                        "data-text": "data-heading"
+                      }
                     },
                     {
                       "slot": "heading",
@@ -118,11 +122,10 @@
                             "data-icon-start": "star",
                             "aria-label": "Add to Favorites",
                             "aria-pressed": "false",
-                            "data-swap-on": "data-favourite",
-                            "data-swap-data-icon-start": "star-filled",
-                            "data-swap-aria-label": "Remove from Favorites",
-                            "data-swap-aria-pressed": "true",
-                            "data-swap-data-status": "active"
+                            "data-when-data-icon-start": "data-favourite: star-filled",
+                            "data-when-aria-label": "data-favourite: Remove from Favorites",
+                            "data-when-aria-pressed": "data-favourite: true",
+                            "data-when-data-status": "data-favourite: active"
                           }
                         },
                         {
@@ -188,7 +191,10 @@
                       "children": [
                         {
                           "el": "span",
-                          "class": "ai-label"
+                          "class": "ai-label",
+                          "attrs": {
+                            "data-text": "data-ai-label"
+                          }
                         }
                       ]
                     },
@@ -221,9 +227,8 @@
                         "data-look": "transparent",
                         "data-icon-start": "moon",
                         "aria-label": "Switch to dark mode",
-                        "data-swap-on": "data-theme-mode=dark",
-                        "data-swap-data-icon-start": "sun",
-                        "data-swap-aria-label": "Switch to light mode"
+                        "data-when-data-icon-start": "data-theme-mode=dark: sun",
+                        "data-when-aria-label": "data-theme-mode=dark: Switch to light mode"
                       }
                     },
                     {

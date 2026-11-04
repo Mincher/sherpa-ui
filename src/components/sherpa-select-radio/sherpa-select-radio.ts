@@ -10,8 +10,8 @@ export class SherpaSelectRadio extends SherpaElement {
   static override html = new URL('./sherpa-select-radio.html', import.meta.url);
   static override delegatesFocus = true;
   static override props = {
-    'data-label': { type: 'string', kind: 'content', to: '.label' },
-    'data-description': { type: 'string', kind: 'content', to: '.description' },
+    'data-label': { type: 'string', kind: 'content' },
+    'data-description': { type: 'string', kind: 'content' },
   } as const;
 
   // A host label names this. TRAP T-a-host-label-must-reach-its-control

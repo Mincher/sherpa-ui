@@ -70,8 +70,8 @@
 
         <!-- The Context's icon and title, on the actions' row. Will, TODO 434 -->
         <div class="title-row" part="title-row">
-          <span class="context-icon sherpa-icon-box" part="context-icon" aria-hidden="true"></span>
-          <h1 class="title sherpa-truncate sherpa-text-large" part="title"></h1>
+          <span class="context-icon sherpa-icon-box" part="context-icon" aria-hidden="true" data-attr-data-icon="data-icon"></span>
+          <h1 class="title sherpa-truncate sherpa-text-large" part="title" data-text="data-heading"></h1>
           <slot name="heading" data-accepts="text"></slot>
           <!-- Where the SHELL says its rail is gone. TRAP T-the-nav-is-a-menu-on-a-phone -->
           <sherpa-button class="nav-menu" part="nav-menu" data-type="icon" data-size="sm"
@@ -89,9 +89,9 @@
             <sherpa-button class="favourite" data-size="sm" data-type="icon"
                            data-group="start" data-icon-start="star"
                            aria-label="Add to Favorites" aria-pressed="false"
-                           data-swap-on="data-favourite" data-swap-data-icon-start="star-filled"
-                           data-swap-aria-label="Remove from Favorites" data-swap-aria-pressed="true"
-                           data-swap-data-status="active"></sherpa-button>
+                           data-when-data-icon-start="data-favourite: star-filled"
+                           data-when-aria-label="data-favourite: Remove from Favorites" data-when-aria-pressed="data-favourite: true"
+                           data-when-data-status="data-favourite: active"></sherpa-button>
             <sherpa-button class="save" data-size="sm" data-group="mid" data-icon-start="upload">Save</sherpa-button>
             <sherpa-button class="view-more" data-size="sm" data-type="icon" data-group="end"
                            data-icon-start="triangle-down" aria-label="Save view options" aria-haspopup="dialog"
@@ -107,7 +107,7 @@
                it apart from the icon run beside it. -->
           <sherpa-button class="ai" part="ai" data-size="sm"
                          data-icon-start="wand-magic-sparkles">
-            <span class="ai-label">Ask N-zo</span>
+            <span class="ai-label" data-text="data-ai-label">Ask N-zo</span>
           </sherpa-button>
 
           <!-- Order and dividers are Figma's (App Header 150:3690). -->
@@ -119,8 +119,8 @@
 
           <sherpa-button class="theme-toggle" part="theme-toggle" data-type="icon" data-size="sm"
                          data-look="transparent" data-icon-start="moon" aria-label="Switch to dark mode"
-                         data-swap-on="data-theme-mode=dark" data-swap-data-icon-start="sun"
-                         data-swap-aria-label="Switch to light mode"></sherpa-button>
+                         data-when-data-icon-start="data-theme-mode=dark: sun"
+                         data-when-aria-label="data-theme-mode=dark: Switch to light mode"></sherpa-button>
 
           <span class="divider divider-tools" aria-hidden="true"></span>
 

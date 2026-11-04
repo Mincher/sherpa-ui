@@ -68,9 +68,9 @@ export class SherpaInputText extends SherpaElement {
     'data-replace': { type: 'boolean', kind: 'style' },
     /* The VALIDATION state a host reports, styled by the token region. */
     'data-state': { type: 'enum', kind: 'style', values: ['error', 'success', 'warning'] },
-    'data-label': { type: 'string', kind: 'content', to: '.label' },
-    'data-description': { type: 'string', kind: 'content', to: '.description' },
-    'data-error': { type: 'string', kind: 'content', to: '.message' },
+    'data-label': { type: 'string', kind: 'content' },
+    'data-description': { type: 'string', kind: 'content' },
+    'data-error': { type: 'string', kind: 'content' },
     'data-icon-start': { type: 'string', kind: 'content' },
     'data-icon-end': { type: 'string', kind: 'content' },
     'data-rules': { type: 'string', kind: 'behaviour' },

@@ -35,7 +35,10 @@
                 {
                   "el": "i",
                   "class": "icon sherpa-icon-box",
-                  "part": "icon"
+                  "part": "icon",
+                  "attrs": {
+                    "data-attr-data-icon": "data-icon"
+                  }
                 }
               ]
             }
@@ -49,7 +52,10 @@
             {
               "el": "span",
               "class": "title sherpa-truncate",
-              "part": "title"
+              "part": "title",
+              "attrs": {
+                "data-text": "data-heading"
+              }
             },
             {
               "el": "div",
@@ -65,7 +71,10 @@
                     {
                       "el": "span",
                       "class": "description sherpa-truncate",
-                      "part": "description"
+                      "part": "description",
+                      "attrs": {
+                        "data-text": "data-description"
+                      }
                     }
                   ]
                 }

@@ -22,7 +22,7 @@ export class SherpaList extends SherpaElement {
   static override html = new URL('./sherpa-list.html', import.meta.url);
   static override props = {
     'data-type': { type: 'enum', kind: 'style', values: ['plain'] },
-    'data-empty': { type: 'string', kind: 'content', to: '.empty' },
+    'data-empty': { type: 'string', kind: 'content' },
   } as const;
 
 

@@ -1,8 +1,8 @@
 import { test, expect } from './harness';
 
 /**
- * AN ARIA STATE THAT FOLLOWS A HOST ATTRIBUTE IS IN THE MARKUP — a `data-swap-*`
- * on the element, not a script write. TODO 523 P6 · TRAP T-a-swapped-label-is-in-the-markup
+ * AN ARIA STATE THAT FOLLOWS A HOST ATTRIBUTE IS IN THE MARKUP — a `data-when-*`
+ * on the element, not a script write. TODO 523 P6 · TRAP T-a-template-binds-by-markup
  */
 test('an expand button and the Advanced button follow their host, through the markup', async ({ page }) => {
   const r = await page.evaluate(async () => {

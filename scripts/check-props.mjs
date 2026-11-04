@@ -24,6 +24,7 @@ import { readFileSync, globSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
 import { parseObserved, parsePropDecls } from './lib/ts-facts.mjs';
+import { parseTemplates } from './lib/html-structure.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -105,17 +106,27 @@ for (const file of globSync('src/components/*/*.ts', { cwd: ROOT })) {
   }
 }
 
-/* A swap follows a host attribute; one it does not hear never swaps.
-   TRAP T-a-swapped-label-is-in-the-markup */
+/* A directive in the stamped tree follows a host attribute; one it does not
+   hear is never written again. A prototype's follow an item's fields.
+   TRAP T-a-template-binds-by-markup */
 for (const file of globSync('src/components/*/*.html', { cwd: ROOT })) {
   const tsPath = join(ROOT, file.replace(/\.html$/, '.ts'));
   let ts;
   try { ts = readFileSync(tsPath, 'utf8'); } catch { continue; }
   const heard = new Set([...declaredIn(ts, tsPath), ...parseObserved(ts, tsPath)]);
-  const html = readFileSync(join(ROOT, file), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
-  for (const m of html.matchAll(/\sdata-swap-on="([^"=]+)/g)) {
-    if (!heard.has(m[1])) problems.push(`${file}  data-swap-on="${m[1]}" follows an attribute ${file.split('/')[2]} does not observe`);
-  }
+  const templates = parseTemplates(readFileSync(join(ROOT, file), 'utf8'));
+  const walk = (nodes) => {
+    for (const n of nodes) {
+      if (n.tag === 'template') continue;
+      for (const [name, value] of Object.entries(n.attrs ?? {})) {
+        if (!/^data-(?:text$|attr-|when-)/.test(name)) continue;
+        const from = value.split(':')[0].split('=')[0].trim();
+        if (!heard.has(from)) problems.push(`${file}  ${name}="${value}" follows ${from}, which ${file.split('/')[2]} does not observe`);
+      }
+      walk(n.children ?? []);
+    }
+  };
+  for (const nodes of Object.values(templates)) walk(nodes);
 }
 
 if (problems.length) {

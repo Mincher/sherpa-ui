@@ -73,8 +73,8 @@ export class SherpaMetric extends SherpaElement {
     // Handed to its composed header, as ITS heading and icon.
     'data-label': { type: 'string', kind: 'content' },
     'data-icon': { type: 'string', kind: 'content' },
-    'data-value': { type: 'string', kind: 'content', to: '.value' },
-    'data-delta': { type: 'string', kind: 'content', to: '.delta' },
+    'data-value': { type: 'string', kind: 'content' },
+    'data-delta': { type: 'string', kind: 'content' },
     'data-trend': { type: 'enum', kind: 'style', values: ['up', 'down', 'flat'] },
     'data-status': { type: 'enum', kind: 'style', values: ['success', 'critical'] },
     // Written BY the tile once it has a series; an app may watch it.

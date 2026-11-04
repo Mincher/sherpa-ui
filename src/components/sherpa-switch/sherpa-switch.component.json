@@ -44,8 +44,7 @@
                   "el": "span",
                   "class": "tick sherpa-checkbox",
                   "attrs": {
-                    "data-swap-on": "checked",
-                    "data-swap-data-checked": ""
+                    "data-when-data-checked": "checked"
                   }
                 }
               ]
@@ -67,12 +66,18 @@
             {
               "el": "span",
               "class": "title",
-              "part": "title"
+              "part": "title",
+              "attrs": {
+                "data-text": "data-label"
+              }
             },
             {
               "el": "span",
               "class": "description",
-              "part": "description"
+              "part": "description",
+              "attrs": {
+                "data-text": "data-description"
+              }
             }
           ]
         }

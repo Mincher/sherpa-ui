@@ -38,7 +38,7 @@ export class SherpaFoo extends SherpaElement {
 
   // The public attribute surface, DECLARED. Every key is observed.
   static override props = {
-    'data-heading': { type: 'string', kind: 'content', to: '.title' },
+    'data-heading': { type: 'string', kind: 'content' },
     'data-status': { type: 'enum', kind: 'style', values: ['info', 'success', 'warning', 'critical', 'urgent'] },
   } as const;
 
@@ -57,19 +57,17 @@ define('sherpa-foo', SherpaFoo);
   live reload. A host listener added there is a stable arrow field, so it does
   not bind twice (`T-restamp-does-not-abort`). Props are written BEFORE it, and
   `onChange` still fires after.
-- A prop's `kind` matches the spec's: `content` (the base class writes the text
-  into `to`), `style` (CSS selects on it, and it gets no JS branch),
+- A prop's `kind` matches the spec's: `content` (a directive in the template, or
+  the component's JS, writes it), `style` (CSS selects on it, and it gets no JS branch),
   `visibility` (presence toggles a CSS rule), `behaviour` (only the component's
   JS reads it), `template` (it picks the template, and is in `variantAttrs`).
-- `PropDef` options: `to`, `all` (every match), `accessor` (a boolean's JS
-  property, `T-a-flag-brings-the-base-methods`), `as` (`'text'`, `'icon'` or
-  `'attr'`, `T-icon-value-takes-two-forms`), `values`. A `content` prop's default
-  is its target's own text in the template (`T-the-templates-text-is-the-default`).
-  Add an option only with three or more uses.
+- `PropDef` options: `accessor` (a boolean's JS property,
+  `T-a-flag-brings-the-base-methods`) and `values`. Add an option only with three
+  or more uses.
 - An attribute more than one component declares is in the shared vocabulary in
   `sherpa-element.ts` (`T-the-shared-vocabulary-is-declared-once`). Spread it;
   do not declare it again.
-- A `to` target never holds a `<slot>`. Put the text in a span beside the slot,
+- A `data-text` element never holds a `<slot>`. Put the text in a span beside the slot,
   and let CSS hide it on `:state(has-<slot>)` (`T-slot-guards-only-when-filled`).
 - Keep a write by hand when it is not a plain attribute → text: a selector picked
   at run time, a text template, or a value from something other than the
@@ -97,9 +95,11 @@ define('sherpa-foo', SherpaFoo);
   `Slots:` and `Fires:`, one entry per line. A `Fires:` entry's first sentence is
   the event's meaning in the spec; the names come from the code.
 - Every slot carries `data-accepts` (PRINCIPLES 12).
-- Default text is the template's own: a `content` prop's target holds it
-  (`T-the-templates-text-is-the-default`). A label that swaps with a host
-  attribute holds both values, as `data-swap-*` (`T-a-swapped-label-is-in-the-markup`).
+- A value that follows a host attribute is a directive on its element:
+  `<h3 class="title" data-text="data-heading">`, `data-attr-*`, and
+  `data-when-*` for a value that changes with a state — one language, for a
+  repeating item's fields too (`T-a-template-binds-by-markup`). The element's own
+  text is its default (`T-the-templates-text-is-the-default`).
 - A fixed word the code hands on as data (a section title, a placeholder) is in
   a `<template class="words">` as `<span data-word="x">…</span>`, read with
   `this.word('x')` (`T-a-word-is-in-the-markup`).

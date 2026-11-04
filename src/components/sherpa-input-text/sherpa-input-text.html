@@ -43,8 +43,8 @@
 -->
 <template id="default">
   <label class="field" part="field">
-    <span class="label" part="label"></span>
-    <span class="description" part="description"></span>
+    <span class="label" part="label" data-text="data-label"></span>
+    <span class="description" part="description" data-text="data-description"></span>
     <span class="control-row sherpa-border-edges" part="control-row">
       <span class="icon sherpa-icon-box icon-start" part="icon-start" aria-hidden="true"></span>
       <input class="control" part="control" type="text" />
@@ -56,14 +56,14 @@
       </button>
       <span class="actions" part="actions"><slot name="actions" data-accepts="control"></slot></span>
     </span>
-    <span class="message" part="message"></span>
+    <span class="message" part="message" data-text="data-error"></span>
   </label>
 </template>
 
 <template id="multiline">
   <label class="field" part="field">
-    <span class="label" part="label"></span>
-    <span class="description" part="description"></span>
+    <span class="label" part="label" data-text="data-label"></span>
+    <span class="description" part="description" data-text="data-description"></span>
     <span class="control-row sherpa-border-edges" part="control-row">
       <span class="icon sherpa-icon-box icon-start" part="icon-start" aria-hidden="true"></span>
       <textarea class="control" part="control" rows="3"></textarea>
@@ -75,7 +75,7 @@
       </button>
       <span class="actions" part="actions"><slot name="actions" data-accepts="control"></slot></span>
     </span>
-    <span class="message" part="message"></span>
+    <span class="message" part="message" data-text="data-error"></span>
   </label>
 </template>
 
@@ -84,8 +84,8 @@
      fills it; a caret is drawn in CSS because the native one ignores padding. -->
 <template id="select">
   <label class="field" part="field">
-    <span class="label" part="label"></span>
-    <span class="description" part="description"></span>
+    <span class="label" part="label" data-text="data-label"></span>
+    <span class="description" part="description" data-text="data-description"></span>
     <span class="control-row sherpa-border-edges" part="control-row">
       <span class="icon sherpa-icon-box icon-start" part="icon-start" aria-hidden="true"></span>
       <select class="control" part="control"></select>
@@ -97,7 +97,7 @@
       </button>
       <span class="actions" part="actions"><slot name="actions" data-accepts="control"></slot></span>
     </span>
-    <span class="message" part="message"></span>
+    <span class="message" part="message" data-text="data-error"></span>
   </label>
   <template class="option-tpl"><option></option></template>
 </template>
@@ -107,8 +107,8 @@
      two composed buttons. TRAP T-a-number-input-wears-sherpas-steppers -->
 <template id="number">
   <label class="field" part="field">
-    <span class="label" part="label"></span>
-    <span class="description" part="description"></span>
+    <span class="label" part="label" data-text="data-label"></span>
+    <span class="description" part="description" data-text="data-description"></span>
     <span class="control-row sherpa-border-edges" part="control-row">
       <span class="icon sherpa-icon-box icon-start" part="icon-start" aria-hidden="true"></span>
       <input class="control" part="control" type="number" inputmode="decimal" />
@@ -123,7 +123,7 @@
       </span>
       <span class="actions" part="actions"><slot name="actions" data-accepts="control"></slot></span>
     </span>
-    <span class="message" part="message"></span>
+    <span class="message" part="message" data-text="data-error"></span>
   </label>
 
   <!-- What an empty number field says. Will, 2026-09-30. TRAP T-a-word-is-in-the-markup -->
@@ -137,8 +137,8 @@
      TODO 136. TRAP T-a-find-asks-its-host-to-step -->
 <template id="find">
   <label class="field" part="field">
-    <span class="label" part="label"></span>
-    <span class="description" part="description"></span>
+    <span class="label" part="label" data-text="data-label"></span>
+    <span class="description" part="description" data-text="data-description"></span>
     <span class="control-row sherpa-border-edges" part="control-row">
       <span class="icon sherpa-icon-box icon-start" part="icon-start" aria-hidden="true" data-icon="magnifying-glass"></span>
       <input class="control" part="control" type="text" enterkeyhint="search" />
@@ -160,7 +160,7 @@
                      aria-haspopup="dialog" aria-expanded="false"></sherpa-button>
       <span class="actions" part="actions"><slot name="actions" data-accepts="control"></slot></span>
     </span>
-    <span class="message" part="message"></span>
+    <span class="message" part="message" data-text="data-error"></span>
   </label>
   <!-- OUTSIDE the label: a click in a label's plain content activates its
        control, and took the focus out of the replacement field. -->
@@ -198,7 +198,7 @@
 
 <template id="minimal">
   <label class="field field-minimal" part="field">
-    <span class="label" part="label"></span>
+    <span class="label" part="label" data-text="data-label"></span>
     <input class="control" part="control" type="text" />
   </label>
 </template>

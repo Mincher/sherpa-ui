@@ -12,8 +12,8 @@ export class SherpaFileUpload extends SherpaElement {
   static override props = {
     /* An upload is in flight — the host sets it, CSS shows the bar. */
     'data-loading': { type: 'boolean', kind: 'style' },
-    'data-label': { type: 'string', kind: 'content', to: '.label' },
-    'data-description': { type: 'string', kind: 'content', to: '.helper' },
+    'data-label': { type: 'string', kind: 'content' },
+    'data-description': { type: 'string', kind: 'content' },
     'data-max-size': { type: 'string', kind: 'content' },
     'accept': { type: 'string', kind: 'content' },
     'multiple': { type: 'boolean', kind: 'behaviour' },

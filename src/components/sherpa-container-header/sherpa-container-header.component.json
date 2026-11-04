@@ -46,9 +46,8 @@
                 "data-icon-start": "chevron-up",
                 "aria-expanded": "true",
                 "aria-label": "Collapse",
-                "data-swap-on": "data-collapsed",
-                "data-swap-aria-expanded": "false",
-                "data-swap-aria-label": "Expand"
+                "data-when-aria-expanded": "data-collapsed: false",
+                "data-when-aria-label": "data-collapsed: Expand"
               }
             },
             {
@@ -61,7 +60,10 @@
               "children": [
                 {
                   "el": "span",
-                  "class": "glyph"
+                  "class": "glyph",
+                  "attrs": {
+                    "data-attr-data-icon": "data-icon"
+                  }
                 },
                 {
                   "slot": "icon",
@@ -87,7 +89,10 @@
                 {
                   "el": "span",
                   "class": "title sherpa-truncate",
-                  "part": "title"
+                  "part": "title",
+                  "attrs": {
+                    "data-text": "data-heading"
+                  }
                 }
               ]
             }
@@ -115,8 +120,7 @@
                 "data-icon-start": "filter",
                 "aria-label": "Show filter toolbar",
                 "aria-pressed": "false",
-                "data-swap-on": "data-filter-toolbar=shown",
-                "data-swap-aria-pressed": "true"
+                "data-when-aria-pressed": "data-filter-toolbar=shown: true"
               }
             },
             {
@@ -146,7 +150,10 @@
             {
               "el": "span",
               "class": "description sherpa-truncate",
-              "part": "description"
+              "part": "description",
+              "attrs": {
+                "data-text": "data-description"
+              }
             },
             {
               "slot": "metadata",

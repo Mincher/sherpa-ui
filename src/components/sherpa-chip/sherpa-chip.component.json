@@ -34,7 +34,10 @@
               "children": [
                 {
                   "el": "i",
-                  "class": "glyph"
+                  "class": "glyph",
+                  "attrs": {
+                    "data-attr-data-icon": "data-icon"
+                  }
                 }
               ]
             }

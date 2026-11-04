@@ -10,7 +10,7 @@ export class SherpaTag extends SherpaElement {
   /** data-icon: an icon name, or a single raw glyph character. */
   static override props = {
     'data-type': { type: 'enum', kind: 'style', values: ['dot'] },
-    'data-icon': { type: 'string', kind: 'content', to: '.glyph', as: 'icon' },
+    'data-icon': { type: 'string', kind: 'content' },
     'data-dismissible': { type: 'boolean', kind: 'style' },
   } as const;
 

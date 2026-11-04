@@ -22,8 +22,8 @@ export class SherpaSelectCard extends SherpaElement {
   static override props = {
     'data-footer': { type: 'enum', kind: 'style', values: ['none'] },
     'data-orientation': SHARED_PROPS['data-orientation'],
-    'data-label': { type: 'string', kind: 'content', to: '.label' },
-    'data-description': { type: 'string', kind: 'content', to: '.description' },
+    'data-label': { type: 'string', kind: 'content' },
+    'data-description': { type: 'string', kind: 'content' },
     'checked': { type: 'boolean', kind: 'style', accessor: 'checked' },
     'data-select-mode': { type: 'enum', kind: 'style', values: ['radio', 'checkbox'] },
   } as const;

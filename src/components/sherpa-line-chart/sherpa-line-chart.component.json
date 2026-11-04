@@ -49,7 +49,10 @@
                   {
                     "el": "span",
                     "class": "axis-label axis-label-y",
-                    "part": "axis-label"
+                    "part": "axis-label",
+                    "attrs": {
+                      "data-text": "data-axis-label"
+                    }
                   },
                   {
                     "el": "div",
@@ -101,7 +104,10 @@
                       {
                         "el": "span",
                         "class": "axis-label axis-label-x",
-                        "part": "x-axis-label"
+                        "part": "x-axis-label",
+                        "attrs": {
+                          "data-text": "data-x-axis-label"
+                        }
                       }
                     ]
                   }

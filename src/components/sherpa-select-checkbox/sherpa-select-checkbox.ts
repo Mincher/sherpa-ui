@@ -19,8 +19,8 @@ export class SherpaSelectCheckbox extends SherpaElement {
   static override html = new URL('./sherpa-select-checkbox.html', import.meta.url);
   static override delegatesFocus = true;
   static override props = {
-    'data-label': { type: 'string', kind: 'content', to: '.label' },
-    'data-description': { type: 'string', kind: 'content', to: '.description' },
+    'data-label': { type: 'string', kind: 'content' },
+    'data-description': { type: 'string', kind: 'content' },
     // CSS-only; declared for the typed door.
     'data-advanced': { type: 'boolean', kind: 'style' },
   } as const;

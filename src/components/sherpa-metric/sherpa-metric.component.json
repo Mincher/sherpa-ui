@@ -36,7 +36,10 @@
               {
                 "el": "p",
                 "class": "value",
-                "part": "value"
+                "part": "value",
+                "attrs": {
+                  "data-text": "data-value"
+                }
               },
               {
                 "el": "div",
@@ -60,7 +63,10 @@
                   {
                     "el": "span",
                     "class": "delta",
-                    "part": "delta"
+                    "part": "delta",
+                    "attrs": {
+                      "data-text": "data-delta"
+                    }
                   }
                 ]
               }

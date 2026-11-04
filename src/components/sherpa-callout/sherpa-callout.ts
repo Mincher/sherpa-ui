@@ -16,7 +16,7 @@ export class SherpaCallout extends SherpaElement {
   static override html = new URL('./sherpa-callout.html', import.meta.url);
   static override props = {
     'data-dismissible': { type: 'boolean', kind: 'style' },
-    'data-heading': { type: 'string', kind: 'content', to: '.title' },
+    'data-heading': { type: 'string', kind: 'content' },
     'data-type': { type: 'enum', kind: 'style', values: ['callout', 'banner'] },
     // It dismisses itself after this many ms, as `sherpa-toast` does. Off by default.
     'data-duration': { type: 'number', kind: 'behaviour' },

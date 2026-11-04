@@ -12,7 +12,7 @@
  *
  * Map:
  * - parseTemplates — `<template id="x">…</template>` blocks → `{ id: nodes[] }`.
- * - nodeAt — The first node down a `.a .b` class chain, as `querySelector` finds it.
+ * - boundTo — The first node whose directive follows a host attribute, and what it writes there.
  * - htmlDiff — Compare every `<template>` in two documents.
  */
 
@@ -110,22 +110,21 @@ function textOf(src) {
   return src.replace(/<!--[\s\S]*?-->/g, '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
 }
 
-/** The first node down a `.a .b` class chain, as `querySelector` finds it — never inside a `<template>` prototype; undefined for any other selector. */
-export function nodeAt(nodes, selector) {
-  const chain = selector.trim().split(/\s+/);
-  if (!chain.every((s) => /^\.[\w-]+$/.test(s))) return undefined;
-  const has = (n, c) => (n.attrs?.class ?? '').split(/\s+/).includes(c.slice(1));
-  const walk = (list, i) => {
-    for (const n of list) {
-      if (n.tag === 'template') continue;
-      const j = has(n, chain[i]) ? i + 1 : i;
-      if (j === chain.length) return n;
-      const hit = walk(n.children ?? [], j);
-      if (hit) return hit;
+/** The first node whose `data-text` or `data-attr-*` follows `attr` — never inside
+ *  a `<template>` prototype — and what it writes: `text`, or the attribute's name.
+ *  TRAP T-a-template-binds-by-markup */
+export function boundTo(nodes, attr) {
+  for (const n of nodes) {
+    if (n.tag === 'template') continue;
+    for (const [name, value] of Object.entries(n.attrs ?? {})) {
+      if (value !== attr) continue;
+      if (name === 'data-text') return { node: n, name: 'text' };
+      if (name.startsWith('data-attr-')) return { node: n, name: name.slice('data-attr-'.length) };
     }
-    return undefined;
-  };
-  return walk(nodes, 0);
+    const hit = boundTo(n.children ?? [], attr);
+    if (hit) return hit;
+  }
+  return undefined;
 }
 
 function parseNodes(src) {

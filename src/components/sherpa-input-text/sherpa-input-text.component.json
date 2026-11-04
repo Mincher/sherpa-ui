@@ -30,12 +30,18 @@
             {
               "el": "span",
               "class": "label",
-              "part": "label"
+              "part": "label",
+              "attrs": {
+                "data-text": "data-label"
+              }
             },
             {
               "el": "span",
               "class": "description",
-              "part": "description"
+              "part": "description",
+              "attrs": {
+                "data-text": "data-description"
+              }
             },
             {
               "el": "span",
@@ -104,7 +110,10 @@
             {
               "el": "span",
               "class": "message",
-              "part": "message"
+              "part": "message",
+              "attrs": {
+                "data-text": "data-error"
+              }
             }
           ]
         }
@@ -118,12 +127,18 @@
             {
               "el": "span",
               "class": "label",
-              "part": "label"
+              "part": "label",
+              "attrs": {
+                "data-text": "data-label"
+              }
             },
             {
               "el": "span",
               "class": "description",
-              "part": "description"
+              "part": "description",
+              "attrs": {
+                "data-text": "data-description"
+              }
             },
             {
               "el": "span",
@@ -192,7 +207,10 @@
             {
               "el": "span",
               "class": "message",
-              "part": "message"
+              "part": "message",
+              "attrs": {
+                "data-text": "data-error"
+              }
             }
           ]
         }
@@ -206,12 +224,18 @@
             {
               "el": "span",
               "class": "label",
-              "part": "label"
+              "part": "label",
+              "attrs": {
+                "data-text": "data-label"
+              }
             },
             {
               "el": "span",
               "class": "description",
-              "part": "description"
+              "part": "description",
+              "attrs": {
+                "data-text": "data-description"
+              }
             },
             {
               "el": "span",
@@ -277,7 +301,10 @@
             {
               "el": "span",
               "class": "message",
-              "part": "message"
+              "part": "message",
+              "attrs": {
+                "data-text": "data-error"
+              }
             }
           ]
         },
@@ -300,12 +327,18 @@
             {
               "el": "span",
               "class": "label",
-              "part": "label"
+              "part": "label",
+              "attrs": {
+                "data-text": "data-label"
+              }
             },
             {
               "el": "span",
               "class": "description",
-              "part": "description"
+              "part": "description",
+              "attrs": {
+                "data-text": "data-description"
+              }
             },
             {
               "el": "span",
@@ -380,7 +413,10 @@
             {
               "el": "span",
               "class": "message",
-              "part": "message"
+              "part": "message",
+              "attrs": {
+                "data-text": "data-error"
+              }
             }
           ]
         },
@@ -406,12 +442,18 @@
             {
               "el": "span",
               "class": "label",
-              "part": "label"
+              "part": "label",
+              "attrs": {
+                "data-text": "data-label"
+              }
             },
             {
               "el": "span",
               "class": "description",
-              "part": "description"
+              "part": "description",
+              "attrs": {
+                "data-text": "data-description"
+              }
             },
             {
               "el": "span",
@@ -520,7 +562,10 @@
             {
               "el": "span",
               "class": "message",
-              "part": "message"
+              "part": "message",
+              "attrs": {
+                "data-text": "data-error"
+              }
             }
           ]
         },
@@ -666,7 +711,10 @@
             {
               "el": "span",
               "class": "label",
-              "part": "label"
+              "part": "label",
+              "attrs": {
+                "data-text": "data-label"
+              }
             },
             {
               "el": "input",

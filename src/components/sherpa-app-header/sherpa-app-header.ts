@@ -56,14 +56,14 @@ export class SherpaAppHeader extends SherpaElement {
     /* The mode on screen, so the theme button offers the OTHER: a moon in
        light, a sun in dark. Not `data-mode`, which would re-tint the header. */
     'data-theme-mode': { type: 'enum', kind: 'behaviour', values: ['light', 'dark'] },
-    'data-heading': { type: 'string', kind: 'content', to: '.title' },
-    'data-ai-label': { type: 'string', kind: 'content', to: '.ai-label' },
+    'data-heading': { type: 'string', kind: 'content' },
+    'data-ai-label': { type: 'string', kind: 'content' },
     /* The notifications panel is OPEN. The header emits the intent and the
        host owns the panel, so the host says when it opened — a button that
        opens something and does not look open reads as broken.
        TRAP T-a-trigger-shows-what-it-opened */
     'data-notifications-open': { type: 'boolean', kind: 'style' },
-    'data-icon': { type: 'string', kind: 'content', to: '.context-icon', as: 'icon' },
+    'data-icon': { type: 'string', kind: 'content' },
     'data-notifications': { type: 'number', kind: 'content' },
     // The View's own actions: ★ and Save, left of Ask N-zo. Will, TODOs 425 G9 and 428
     'data-view-actions': { type: 'boolean', kind: 'visibility' },

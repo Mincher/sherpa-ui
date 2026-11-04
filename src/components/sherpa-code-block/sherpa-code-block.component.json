@@ -22,7 +22,10 @@
           {
             "el": "span",
             "class": "language",
-            "part": "language"
+            "part": "language",
+            "attrs": {
+              "data-text": "data-language"
+            }
           },
           {
             "el": "button",

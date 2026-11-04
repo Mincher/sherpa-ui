@@ -28,7 +28,7 @@ export class SherpaSlider extends SherpaElement {
   static override html = new URL('./sherpa-slider.html', import.meta.url);
   static override props = {
     'data-show-value': { type: 'boolean', kind: 'style' },
-    'data-label': { type: 'string', kind: 'content', to: '.label' },
+    'data-label': { type: 'string', kind: 'content' },
     'data-type': { type: 'enum', kind: 'style', values: ['single', 'range'] },
     'data-value-readonly': { type: 'boolean', kind: 'style' },
     // A range's two ends have no native name. TRAP T-a-native-name-where-a-native-element-does-the-job

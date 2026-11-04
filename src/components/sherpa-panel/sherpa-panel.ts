@@ -16,7 +16,7 @@ export class SherpaPanel extends SherpaElement {
   static override html = new URL('./sherpa-panel.html', import.meta.url);
   static override props = {
     'data-collapsed': { type: 'boolean', kind: 'style' },
-    'data-heading': { type: 'string', kind: 'content', to: '.heading', as: 'attr' },
+    'data-heading': { type: 'string', kind: 'content' },
   } as const;
 }
 

@@ -131,8 +131,8 @@
       <!-- The heading, and under it what the action that opened this menu does — its
            button's description, where the page shows it. Will, TODO 691 -->
       <div class="titles" part="titles">
-        <p class="heading" part="heading"></p>
-        <p class="description" part="description"></p>
+        <p class="heading" part="heading" data-text="data-heading"></p>
+        <p class="description" part="description" data-text="data-description"></p>
       </div>
       <slot name="header" data-accepts="control"></slot>
       <!--
@@ -306,8 +306,8 @@
       <!-- The heading, and under it what the action that opened this menu does — its
            button's description, where the page shows it. Will, TODO 691 -->
       <div class="titles" part="titles">
-        <p class="heading" part="heading"></p>
-        <p class="description" part="description"></p>
+        <p class="heading" part="heading" data-text="data-heading"></p>
+        <p class="description" part="description" data-text="data-description"></p>
       </div>
       <slot name="header" data-accepts="control"></slot>
       <!-- ONE OBJECT: the condition and whatever answers it are SNAPPED, with
@@ -323,11 +323,11 @@
            other filter off while this one is. Will, TODO 690 -->
       <sherpa-button class="solo-toggle" part="solo-toggle" data-type="icon" data-size="sm"
                      data-icon-start="solo" aria-label="Solo this filter"
-                     aria-pressed="false" data-swap-on="data-soloed" data-swap-aria-pressed="true"></sherpa-button>
+                     aria-pressed="false" data-when-aria-pressed="data-soloed: true"></sherpa-button>
       <div class="use-condition" part="use-condition">
         <sherpa-button class="use-advanced" data-type="icon" data-size="sm"
                        data-icon-start="function" aria-label="Advanced"
-                       aria-pressed="false" data-swap-on="data-mode=advanced" data-swap-aria-pressed="true"></sherpa-button>
+                       aria-pressed="false" data-when-aria-pressed="data-mode=advanced: true"></sherpa-button>
       </div>
 
       <!-- SELECT MODE — the search leads the ticked rows beneath it. -->

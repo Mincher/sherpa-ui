@@ -20,10 +20,10 @@ export class SherpaContainerHeader extends SherpaElement {
     'data-dismissible': { type: 'boolean', kind: 'style' },
     'data-draggable': { type: 'boolean', kind: 'style' },
     'data-type': { type: 'enum', kind: 'style', values: ['default', 'panel'] },
-    'data-heading': { type: 'string', kind: 'content', to: '.title' },
-    'data-description': { type: 'string', kind: 'content', to: '.description' },
+    'data-heading': { type: 'string', kind: 'content' },
+    'data-description': { type: 'string', kind: 'content' },
     // Beside the icon slot, never in it: a slotted icon wins by CSS. TRAP T-slot-guards-only-when-filled
-    'data-icon': { type: 'string', kind: 'content', to: '.glyph', as: 'icon' },
+    'data-icon': { type: 'string', kind: 'content' },
     'data-collapsed': { type: 'boolean', kind: 'style' },
     // Show as, and what the card shows: a pick is a REQUEST, its provider writes this. Will, TODO 548
     'data-presentation': { type: 'enum', kind: 'behaviour', values: [...SHOW_AS, 'off'] },
