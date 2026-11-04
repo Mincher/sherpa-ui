@@ -394,7 +394,7 @@ had when the cursor escaped.**
 `pointerdown` also calls `preventDefault()` to stop the text-selection drag and
 `stopPropagation()` to keep the event off the header. **Neither stops the CLICK**
 — the browser still synthesises one on pointerup and the `<th>`'s sort handler
-listens for that — which is why `#onGripUp` swallows the next click as well
+listens for that — which is why `GridWidths`' grip release swallows the next click as well
 (`T-swallow-flag-not-listener`).
 
 The drag's start width is the MEASURED `getBoundingClientRect().width`, not the
@@ -1172,15 +1172,15 @@ click's own sort (still synchronous), `openColumnFilter`, `findStep`.
 Overriding `populate()` is not a new method: `ts-facts.mjs` lists it with the
 base's lifecycle, so the grid's spec does not change.
 
-**Layout is read once, and only when it moved** (C4). `#syncPinned` and `#fill`
-each read layout on every render — two forced layouts per draw. `#measure()`
+**Layout is read once, and only when it moved** (C4). Two reads on every render
+are two forced layouts per draw, so `GridWidths.measure()`
 reads the select cell, the edge cells and the box together, then writes the
 offset and the `<col>` widths — and only when its key moved: the shown columns,
 their widths, the dragged widths, `data-selectable`, rows or none, actions or
 none. A resize (the observer watches the box and the select cell) or a drag
 forces it. A grid drawn while HIDDEN measures 0 and keeps no key, so it measures
 again when shown. The `<col>`s are stamped again only when the shown columns
-change, or the widths `#measure` shared out would be lost. Pinning the select
+change, or the widths `measure()` shared out would be lost. Pinning the select
 cells is writes only, on every draw (`#pinSelects`).
 
 **A reading and its rows draw the body once** (plan 695 P4). A bound grid is told
