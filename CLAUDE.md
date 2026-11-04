@@ -173,7 +173,7 @@ Every component is `src/components/sherpa-<name>/`: three hand-written files
 |---|---|
 | The two layers, where new code goes, the doors on `SherpaElement` | PRINCIPLES — "The two layers", "The doors" |
 | `:host` forms, disabled, focus ring, `@container`, the two grids, colour and state pins | PRINCIPLES 1–8; the recipes in the rules doc, "The CSS" |
-| `static props`, its `kind`s and options; the template; `data-swap-*`; words | The rules doc, "The class" and "The template" |
+| `static props`, its `kind`s and options; the template; its directives (`data-text`, `data-attr-*`, `data-when-*`); words | The rules doc, "The class" and "The template" |
 | `data-*` as the API; `data-label` vs `data-heading`; `data-current` vs `data-selected`; no aliases | PRINCIPLES 15 |
 | CSS owns visibility; everything in the template | PRINCIPLES 16–17 |
 | Event names, and which events leave a component | PRINCIPLES 18; the rules doc, "Events" |

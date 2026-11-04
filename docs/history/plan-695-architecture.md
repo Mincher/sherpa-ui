@@ -507,6 +507,26 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   **Carried:** part pins (46), bare default pins (11) and native class pins stay whole
   blocks (a style query never reaches the element that sets it; an `<input>` has no
   children); two `--_status-*` names stay for the gauge, the sparkline and the tag's dot.
+- **P6a ✅ (`0abd4f7c`…`02e5171a`, `c420c849`).** One binding language — the item
+  directives, now also in a component's stamped tree, live (`data-text`, `data-attr-*`,
+  `data-when-NAME="cond: value"`, `data-index`; `src/core/ui/directives.ts`): 66 `to:` props
+  (85 elements), 15 swap elements and 4 item conditions moved; `swap.ts`, `to`/`all`/`as`,
+  `#syncProp`, `#readOwn`, `#fillItem` gone; the spec reads a prop's default from its
+  directive, and `check:props` fails a directive that follows an unobserved attribute.
+  Observed attributes 574 → 523 (content, template, booleans and what a chart asks by; the
+  rest each component lists in `observed`); the legend's `data-readonly` is `behaviour`.
+  `config` moved into the grid; `checkValidity`/`reportValidity` only on form-associated
+  classes; `commands`, `aria`, `pageCss` stay (two users each). One tip family file
+  (`src/core/sherpa-tip.html`); tip listeners only on roots that hold an anchor (Records
+  10,604 → 4,788). `tagOf` is out of the data layer (`BindSink.name()`). `sherpa-element.ts`
+  1,311 → 1,139. Style probe: 0 differences on 39 components in three engines; the axe gate
+  70/70. At merge: the build's icon scan missed three icons named in `data-when` values
+  (pop-in, star-filled, sun) — fixed (`c420c849`), 80 again.
+  ❓ Will, the badge (472 on Records, 1 shows a count; ~30 µs each, ~14 ms of build): A
+  stamp a badge only once a count shows (the lane's pick), or B a light `sherpa-badge` (same
+  tag, no shadow root, one family sheet; 3–7 µs each).
+  **Carried:** chart tips keep their own markup (another shape, in prototypes); a boolean
+  observed only for `"false"` still runs `onChange`; the quick-filter race → TODO 704.
 
 ### The waves
 

@@ -179,7 +179,7 @@ each step's note is in 366's section of `docs/TODO.md`). TODO 320 closed with it
 | Mechanism | TRAP |
 |---|---|
 | A `content` prop's default is its target's own text in the template | `T-the-templates-text-is-the-default` |
-| `data-swap-on` / `data-swap-*`: a value that follows a host attribute (`src/core/ui/swap.ts`) | `T-a-swapped-label-is-in-the-markup` |
+| `data-swap-on` / `data-swap-*`: a value that follows a host attribute (`src/core/ui/swap.ts`; GONE in 695 P6 — now the `data-when-*` directives, `src/core/ui/directives.ts`) | `T-a-swapped-label-is-in-the-markup` |
 | `<template class="words">` + `this.word(key)` | `T-a-word-is-in-the-markup` |
 | No attribute is the default variant; the projector's `unset` | `T-no-attribute-is-the-default-variant` |
 | `static html` as a LIST: family markup (`src/core/sherpa-filter-menu.html`) | `T-a-family-shares-markup` |
