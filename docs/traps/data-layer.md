@@ -7236,3 +7236,32 @@ followed the range and its axis was every month the field holds, most at 0.
 
 - Site: `src/core/data/segments.ts`
 - Site: `src/core/data/aggregate.ts`
+
+### T-a-custom-node-is-an-instance
+
+**A Custom Node is a workflow body saved under one id, and each use is an INSTANCE of it.**
+Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
+
+- **The definition is JSON** (`schemas/nodes.v1.json`, `defs.v1#/$defs/nodeDefinition`): a
+  label, `inputs`, `outputs` and a body of `nodes` and `routes`. Inside, `#in`, `#in/<name>`,
+  `#out` and `#out/<name>` are the Group Input and Group Output; `innerOf` lays them out as
+  two nodes of the kinds `#group-input` and `#group-output`, so the body is checked and drawn
+  by the workflow's own functions. Its header takes any type (D1) and forks True and False.
+- **A use is a plain node** whose `kind` is the definition's id, merged into the kinds the
+  workflow functions take (`kindsOf(library)`). A shipped kind's id is refused. Its own values
+  are the instance's parameters, over each input's `default`.
+- **It runs NESTED** (D12): the runner calls `innerOf(use, library)` per use; the checks do
+  too (`workflowFaultsDeep`), naming each fault by path. A Custom Node that holds itself, at
+  any depth, is one loop fault, said once per cycle.
+- **A use records the VERSION and the definition it was made from** (`version`, `was`): a
+  hash of the label, sockets, nodes and routes, never where a node sits. `definitionDiff`
+  compares it with the library's now. `updateInstance` and `updateAll` are pure edits that keep
+  the instance's own values; the editor gives the DRAFT, so an updated instance keeps its
+  draft changes until the reader saves or discards them. A route to a lost socket is kept, and
+  is a fault.
+- **A preset is read only** (`preset: true`): `editDefinition` returns the library given;
+  `copyToMine` makes a custom copy.
+
+- Site: `src/core/data/node-library.ts`
+- Site: `test/unit/a-custom-node-is-an-instance.test.mjs`
+- Site: `src/data.ts`

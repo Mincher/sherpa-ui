@@ -26,6 +26,7 @@ import {
   type DrawnGraph, type GraphRow, type NodeKind, type NodeRoute, type PartKind, type SocketType,
 } from './node-kinds.js';
 import type { FieldType } from './filter-state.js';
+import type { NodeSnapshot } from './node-library.js';
 
 /** One node, as a definition holds it: only what the reader may change. What it IS is its kind's. */
 export interface WorkflowNode {
@@ -39,6 +40,9 @@ export interface WorkflowNode {
   description?: string;
   /** Each row's value, by the row's name. */
   values?: Readonly<Record<string, unknown>>;
+  /** A use of a Custom Node: the version of its definition it follows, and the definition it was made from. */
+  version?: string;
+  was?: NodeSnapshot;
 }
 
 /** One workflow, as JSON (v2) — its nodes and its routes. A node's data comes in on its
@@ -288,7 +292,7 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
  *  with every route that touches it. */
 export type WorkflowEdit =
   | { node: string; row: string; value: unknown }
-  | { node: string; set: Partial<Pick<WorkflowNode, 'heading' | 'description' | 'x' | 'y'>> }
+  | { node: string; set: Partial<Pick<WorkflowNode, 'heading' | 'description' | 'x' | 'y' | 'version' | 'was'>> }
   | { route: NodeRoute }
   | { cut: string | NodeRoute }
   | { add: WorkflowNode }

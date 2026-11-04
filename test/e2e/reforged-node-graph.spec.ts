@@ -485,3 +485,32 @@ test('bindWorkflow draws a workflow by its kinds, keeps each edit in the tab\'s 
   expect(drawn.ops.slice(0, 2)).toEqual(['Equals', 'Does not equal']);
   expect(r).toEqual({ op: 'ne', ok: true, saved: [{ field: 'status', op: 'ne' }], draft: null });
 });
+
+test('a use of a Custom Node draws closed: one node with a row per input and output, its own value shown', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { bindWorkflow, SessionStore } = await import('/dist/app.js');
+    const { NODE_KINDS, kindsOf } = await import('/dist/data.js');
+    const library = { v: 1 as const, nodes: { 'org-permissions': {
+      v: 1 as const, label: 'Org permissions',
+      inputs: [{ name: 'users', label: 'Users', type: 'object' as const }, { name: 'role', label: 'Role', type: 'value' as const, control: 'text' as const }],
+      outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' as const }],
+      nodes: [{ id: 'has-role', kind: 'condition', x: 0, y: 0 }], routes: [{ from: '#in/users', to: 'has-role' }, { from: 'has-role/rows', to: '#out/allowed' }],
+    } } };
+    const canvas = document.querySelector('#root sherpa-layout-canvas') as Parameters<typeof bindWorkflow>[0];
+    const flow = { v: 2 as const, id: 'flow', nodes: [
+      { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
+      { id: 'perm', kind: 'org-permissions', x: 360, y: 0, values: { role: 'owner' } },
+    ], routes: [{ from: 'start/rows', to: 'perm/users' }] };
+    bindWorkflow(canvas, flow, { session: new SessionStore(), stores: ['customers'], kinds: { ...NODE_KINDS, ...kindsOf(library) } });
+    await window.__settled();
+    const node = document.querySelector('#root sherpa-node[data-heading="Org permissions"]')!;
+    return {
+      nodes: [...document.querySelectorAll<HTMLElement>('#root sherpa-node')].map((n) => n.dataset['heading']),
+      rows: [...node.querySelectorAll('sherpa-node-row')].map((x) => x.getAttribute('name') ?? x.textContent?.trim().slice(0, 12)),
+      role: node.querySelector<HTMLElement & { value: string }>('sherpa-input-text[name="role"]')?.value,
+    };
+  });
+  expect(r.nodes).toEqual(['Store', 'Org permissions']);
+  expect(r.role).toBe('owner');
+  expect(r.rows.length).toBe(3);
+});

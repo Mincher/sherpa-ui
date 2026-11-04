@@ -164,6 +164,33 @@ export {
   type WorkflowNode,
   type WorkflowRead,
 } from './core/data/workflow.js';
+/* A CUSTOM NODE: a workflow body saved under one name, used as an instance. TRAP T-a-custom-node-is-an-instance */
+export {
+  GROUP_INPUT,
+  GROUP_OUTPUT,
+  checkNodeLibrary,
+  copyToMine,
+  definitionDiff,
+  editDefinition,
+  innerOf,
+  kindsOf,
+  nodeKindOf,
+  nodeLibraryFaults,
+  staleUses,
+  updateAll,
+  updateInstance,
+  useOf,
+  versionOf,
+  workflowFaultsDeep,
+  type CustomKind,
+  type DefinitionDiff,
+  type Inner,
+  type NodeDefinition,
+  type NodeLibrary,
+  type NodeOutput,
+  type NodeSnapshot,
+  type NodeSocket,
+} from './core/data/node-library.js';
 /* The data layer over HTTP: one handle() for the page, a Service Worker or a server. Plan 652 */
 export {
   DATA_BASE,

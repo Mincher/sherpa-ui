@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sherpa-ui.dev/schemas/defs.v1.json",
   "title": "Sherpa-UI definition shapes",
-  "description": "Every shape a definition is made of, said once: page.v1, app.v1, views.v1 and workflow.v2 (and the v1 it reads) $ref these, and define none of their own.",
+  "description": "Every shape a definition is made of, said once: page.v1, app.v1, views.v1, nodes.v1 and workflow.v2 (and the v1 it reads) $ref these, and define none of their own.",
   "$defs": {
     "id": {
       "description": "A name a URL or a store files things under.",
@@ -338,7 +338,9 @@
         "y": { "description": "Its place down the canvas, in plane px.", "type": "number" },
         "heading": { "description": "Its own name, in place of its kind's.", "type": "string" },
         "description": { "description": "Its own line, in place of its kind's.", "type": "string" },
-        "values": { "description": "Each row's value, by the row's name, typed as its row takes it: a Filter's field, op and value are one condition.", "type": "object" }
+        "values": { "description": "Each row's value, by the row's name, typed as its row takes it: a Filter's field, op and value are one condition.", "type": "object" },
+        "version": { "description": "A use of a Custom Node: the version of its definition it follows (a hash). The editor shows an update where the library's differs.", "type": "string" },
+        "was": { "description": "A use of a Custom Node: the definition it was made from, kept so a change can show as a diff.", "$ref": "#/$defs/nodeDefinition" }
       }
     },
     "route": {
@@ -354,6 +356,50 @@
     "socket": {
       "description": "A node's header socket, \"node\" (its input is its data; its output is True, where the node forks); a row's, \"node/row\" (\"node/rows\" sends its data rows); or its footer's False, \"node/#false\".",
       "type": "string", "pattern": "^[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|#false))?$"
+    },
+    "innerSocket": {
+      "description": "An address inside a Custom Node's body: a node's socket, or the Group Input's (\"#in\", \"#in/<name>\") or Group Output's (\"#out\", \"#out/<name>\").",
+      "type": "string", "pattern": "^((#in|#out)(/[a-z][a-z0-9-]*)?|[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|#false))?)$"
+    },
+    "innerRoute": {
+      "description": "A route inside a Custom Node's body: it may start at the Group Input and end at the Group Output.",
+      "type": "object", "additionalProperties": false, "required": ["from", "to"],
+      "properties": { "from": { "$ref": "#/$defs/innerSocket" }, "to": { "$ref": "#/$defs/innerSocket" } }
+    },
+    "nodeInput": {
+      "description": "One input a Custom Node exposes: a Group Input row inside, and a row on each use. A control makes it a parameter an instance sets in its own values.",
+      "type": "object", "additionalProperties": false, "required": ["name", "type"],
+      "properties": {
+        "name": { "$ref": "#/$defs/id" },
+        "label": { "type": "string" },
+        "type": { "enum": ["value", "object", "boolean"] },
+        "many": { "description": "It takes several routes (D4).", "const": true },
+        "multiple": { "description": "Its list picks several: an object (D17).", "const": true },
+        "control": { "description": "The control an instance sets it with.", "enum": ["text", "number", "switch", "field", "op", "values", "unit", "direction", "presentation", "apply", "store", "scope", "join", "type"] },
+        "default": { "description": "What an instance holds until it sets its own." }
+      }
+    },
+    "nodeOutput": {
+      "description": "One output a Custom Node exposes: a Group Output row inside, and a row on each use.",
+      "type": "object", "additionalProperties": false, "required": ["name", "type"],
+      "properties": { "name": { "$ref": "#/$defs/id" }, "label": { "type": "string" }, "type": { "enum": ["value", "object", "boolean"] } }
+    },
+    "nodeDefinition": {
+      "description": "One Custom Node: a workflow body under one name, its inputs and outputs said once. Its id is its key in nodes.v1.json. checkNodeLibrary() reads it; a use is a workflow node whose kind is its id. docs/history/plan-713-node-model.md section 9",
+      "type": "object", "additionalProperties": false, "required": ["v", "label", "inputs", "outputs", "nodes"],
+      "properties": {
+        "$schema": { "type": "string" },
+        "v": { "const": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "category": { "description": "Where the node panel lists it; \"Custom Nodes\" when none.", "type": "string" },
+        "icon": { "type": "string" },
+        "description": { "type": "string" },
+        "preset": { "description": "From a file, read only: \"Copy to my nodes\" makes a custom one.", "const": true },
+        "inputs": { "type": "array", "items": { "$ref": "#/$defs/nodeInput" } },
+        "outputs": { "type": "array", "items": { "$ref": "#/$defs/nodeOutput" } },
+        "nodes": { "type": "array", "items": { "$ref": "#/$defs/node" } },
+        "routes": { "type": "array", "items": { "$ref": "#/$defs/innerRoute" } }
+      }
     }
   }
 }
