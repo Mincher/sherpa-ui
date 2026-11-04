@@ -129,6 +129,7 @@ export const ICON_NAMES: ReadonlySet<string> = new Set([
   'lock-locked',
   'lock-unlocked',
   'log-in',
+  'login',
   'logout',
   'magnifying-glass',
   'megaphone',

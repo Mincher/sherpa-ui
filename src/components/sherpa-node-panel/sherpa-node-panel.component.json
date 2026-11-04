@@ -52,7 +52,7 @@
                     "part": "find",
                     "attrs": {
                       "data-type": "minimal",
-                      "data-icon-start": "search",
+                      "data-icon-start": "magnifying-glass",
                       "placeholder": "Search nodes",
                       "aria-label": "Search nodes",
                       "autocomplete": "off"
