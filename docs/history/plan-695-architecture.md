@@ -473,6 +473,19 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   Ungroup.
   **Carried:** trap prose in `data-layer.md` still names `#visibleRows`, `#sortRows`,
   `#toggleGroup` → the wording pass. P5 may now drop the chip's Sort and Group kinds.
+- **P5 ✅ (`457d3f9a`, `9d437e6e`, `2ef1d350`, `32143b72`).** Narrowed from the plan's row:
+  the chip KEEPS its `group` and `sort` kinds — the toolbar's Organise chips (Primary,
+  Secondary, Group, Sort) and a chart's order chip are those kinds, with field menus (Will's
+  rule: a chip knows its kind). Measured, no code was left that only the old heading used;
+  the first commit rewrote the words that named it. The chip 1,449 → 626 lines, with
+  `chip-answer`, `chip-says`, `chip-section`, `chip-arrange`, `chip-press` and `chip-host`
+  beside it. A READ-ONLY legend row (a gauge's zones) is a light key — swatch, name, value
+  in the legend's own template — and the chip's `data-readonly` is gone; a toggling legend
+  row stays a key chip (Will, TODO 149). Probe: no difference in three engines; screenshots
+  byte-identical. The axe gate: 70/70. Chip imports +2.1 KB brotli. Lane picks taken:
+  read-only rows only go light; a read-only key keeps its tip.
+  **Carried:** the legend's `data-readonly` prop is declared `kind: 'style'` but its JS
+  branches on it (older; rule 9) → P6.
 
 ### The waves
 
