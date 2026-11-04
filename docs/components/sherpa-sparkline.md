@@ -38,6 +38,7 @@ For a tiny inline trend of the last eight values, as a line or as bars (`data-ty
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
+| `data-labels` | text |  | JSON array, one time span per value; each tooltip says its span |
 | `data-type` | `bar` |  | line (default, area + stroke) \| bar (flat-topped columns) |
 | `data-values` | text |  | comma-separated or JSON array (e.g. "10,25,15,30") |
 

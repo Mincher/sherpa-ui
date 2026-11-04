@@ -30,8 +30,10 @@ export class SherpaSparkline extends SherpaElement {
   static override props = {
     'data-type': { type: 'enum', kind: 'style', values: ['bar'] },
     'data-values': { type: 'string', kind: 'behaviour' },
+    /** One time span per value, as JSON — the tooltip says it beside the value. */
+    'data-labels': { type: 'string', kind: 'behaviour' },
   } as const;
-  static override observed = ['data-type', 'data-values'];
+  static override observed = ['data-type', 'data-values', 'data-labels'];
 
   override onRender(): void {
     this.#apply();
@@ -63,9 +65,22 @@ export class SherpaSparkline extends SherpaElement {
     return parsed.map(Number).filter((n) => Number.isFinite(n));
   }
 
+  /** data-labels is a JSON array of strings, one per value. */
+  #labels(): string[] {
+    try {
+      const parsed: unknown = JSON.parse(this.dataset['labels'] ?? '[]');
+      return Array.isArray(parsed) ? parsed.map(String) : [];
+    } catch {
+      return [];
+    }
+  }
+
   /** Stamp a shape per value pair and a dot per value, each with its own numbers, and list the line's points. */
   #apply(): void {
     const values = this.#parse().slice(-SLOTS);
+    // A label belongs to its value: both lists are cut from the end.
+    const labels = this.#labels().slice(-values.length);
+    const from = values.length - labels.length;
     const count = values.length;
     // One value is no trend: nothing is drawn.
     const drawn = count > 1 ? values : [];
@@ -79,7 +94,7 @@ export class SherpaSparkline extends SherpaElement {
     });
     /* Paired by NAME, placed by CSS. TRAP T-chart-tip-is-a-sibling-of-its-dot
        The tip says the exact value. TRAP T-a-tooltip-is-not-an-axis */
-    this.renderItems('.hotspots', 'template.hotspot-tpl', drawn.map((v) => ({ text: formatValue(v) })), {
+    this.renderItems('.hotspots', 'template.hotspot-tpl', drawn.map((v, i) => ({ text: labels[i - from] ? `${labels[i - from]}: ${formatValue(v)}` : formatValue(v) })), {
       after: (dot, _item, i) => {
         dot.style.setProperty('--_i', String(i));
         dot.style.setProperty('--_v', String(drawn[i]));

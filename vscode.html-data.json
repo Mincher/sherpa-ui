@@ -3790,6 +3790,10 @@
       "description": "a compact inline trend chart (line area or bars).",
       "attributes": [
         {
+          "name": "data-labels",
+          "description": "JSON array, one time span per value; each tooltip says its span"
+        },
+        {
           "name": "data-type",
           "description": "line (default, area + stroke) | bar (flat-topped columns)",
           "values": [

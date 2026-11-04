@@ -107,6 +107,15 @@
   "props": [
     {
       "$type": "prop",
+      "name": "data-labels",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "JSON array, one time span per value; each tooltip says its span"
+    },
+    {
+      "$type": "prop",
       "name": "data-type",
       "type": "enum",
       "observed": true,
