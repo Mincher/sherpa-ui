@@ -189,9 +189,7 @@ export class DataSource extends EventTarget {
         return 'walked';
       },
       // Its rows say which fields it has: one it lacks leaves the filter. TRAP T-a-source-compiles-only-what-it-has
-      landed: (rows) => {
-        if (this.#context.members > 1 && this.#saw(rows) && this.#lacksAny()) queueMicrotask(() => this.#recompose());
-      },
+      landed: (rows) => { if (this.#context.members > 1 && this.#saw(rows) && this.#lacksAny()) queueMicrotask(() => this.#recompose()); },
       publish: () => this.#binding.publish(),
       published: () => void this.#walk.rewalk(),
       emit: (event) => this.dispatchEvent(event),
@@ -203,6 +201,7 @@ export class DataSource extends EventTarget {
         this.#fetching.clear();
         this.#compileNow();
       },
+      written: (change) => { if (change?.type !== 'remove') for (const [field, got] of this.#fetchedKeys) void this.#fetchKeys(field, got.reading, got.answer); },
     });
     this.#walk = new SourceWalk({
       keyOf: () => {
@@ -825,9 +824,9 @@ export class DataSource extends EventTarget {
     };
   }
 
-  /** A field the STORE answers, over a set held HERE: its answer as the keys it matched, asked once per answer,
-   *  so its toggle and a Switch stay client updates; until they come, its clause as it reads. A store read straight
-   *  answers the clause in its load: no keys (TODO 707). 345 phase 6 · TRAP T-a-server-field-is-asked-once-per-answer */
+  /** A field the STORE answers, over a set held HERE: its answer as the keys it matched, asked once per answer and
+   *  again after a write, so a toggle and a Switch stay client updates (TODO 726); until they come, its clause as it
+   *  reads. A store read straight answers it in its load: no keys (TODO 707). TRAP T-a-server-field-is-asked-once-per-answer */
   #fetched = (field: string, reading: FieldReading): Filter | undefined => {
     const key = this.store.key;
     if (this.#catalogue.get(field)?.fetch !== 'server' || !key || !this.#reads.held) return undefined;
@@ -837,20 +836,21 @@ export class DataSource extends EventTarget {
     const answer = JSON.stringify(on);
     const got = this.#fetchedKeys.get(field);
     if (got?.answer === answer) return got.clause;
-    if (this.#fetching.get(field) !== answer) void this.#fetchKeys(field, on, answer);
+    if (this.#fetching.get(field)?.answer !== answer) void this.#fetchKeys(field, on, answer);
     return undefined;
   };
 
   /** Ask the store which keys one field's answer matches, then compile again. */
   async #fetchKeys(field: string, reading: FieldReading, answer: string): Promise<void> {
-    this.#fetching.set(field, answer);
+    const ask = { answer };
+    this.#fetching.set(field, ask);
     const clause = readingClause({ field, ...this.#catalogue.facts(field) }, reading);
     try {
       // The KEYS alone, where the store can send just them. 345 phase 7
       const projected = this.store.capabilities.projects ? { fields: [this.store.key] } : {};
       const { rows } = await this.store.load({ ...(clause ? { filter: clause } : {}), ...projected, ...(this.#pinned ? { now: this.#now() } : {}) });
-      if (this.#fetching.get(field) !== answer || this.#reads.closed) return;
-      this.#fetchedKeys.set(field, { answer, clause: [this.store.key!, 'in', rows.map((row) => readField(row, this.store.key!))] });
+      if (this.#fetching.get(field) !== ask || this.#reads.closed) return;
+      this.#fetchedKeys.set(field, { answer, reading, clause: [this.store.key!, 'in', rows.map((row) => readField(row, this.store.key!))] });
       this.#setFailed([field], false);
     } catch (error) {
       this.#setFailed([field], true);
@@ -861,15 +861,15 @@ export class DataSource extends EventTarget {
       });
       return;
     } finally {
-      if (this.#fetching.get(field) === answer) this.#fetching.delete(field);
+      if (this.#fetching.get(field) === ask) this.#fetching.delete(field);
     }
     this.#recompose();
   }
 
-  /** Each server field's last answer, and its clause: the keys it matched. */
-  #fetchedKeys = new Map<string, { answer: string; clause: Filter }>();
-  /** Each server field's answer being asked now. */
-  #fetching = new Map<string, string>();
+  /** Each server field's last answer, its reading, and its clause: the keys it matched. */
+  #fetchedKeys = new Map<string, { answer: string; reading: FieldReading; clause: Filter }>();
+  /** Each server field's ask out now, and its answer: the LAST wins, as a write asks the same answer again. */
+  #fetching = new Map<string, { answer: string }>();
 
   /* ── Draft and applied — a REMOTE source only ─────────────────────────
    * TRAP T-apply-and-discard-wait-for-a-change */

@@ -99,3 +99,39 @@ test('read straight, a server field asks for no keys: one load per Apply, the sa
     assert.deepEqual(source.rows.map((r) => r.id), [8, 9, 10, 11], `${name}: a new row shows`);
   }
 });
+
+test('held, a write asks the kept keys again: a new row its answer matches shows, a changed one comes and goes, and a toggle still asks nothing (TODO 726)', async () => {
+  const inner = new ArrayStore(ROWS, { key: 'id' });
+  const asked = [];
+  const load = inner.load.bind(inner);
+  inner.load = (o) => { asked.push(o?.filter ?? null); return load(o); };
+  const store = fakeRemote(inner, { delay: 0 });
+  const source = new DataSource({ store });
+  source.declareField('seats', { type: 'number', fetch: 'server' });
+  await source.load();
+  source.query.ask([{ scope: 'data', hold: ['seats'] }, { scope: 'data', field: 'seats', reading: { mode: 'advanced', tree: { op: 'gt', value: '70' } } }, { field: 'seats', commit: true }]);
+  await settle();
+  assert.deepEqual(source.rows.map((r) => r.id), [8, 9, 10]);
+  const ids = async () => { await settle(); return source.rows.map((r) => r.id); };
+  const before = asked.length;
+  // Kept, the keys hid a new row until a Refresh.
+  await store.insert({ id: 11, seats: 110 });
+  assert.deepEqual(await ids(), [8, 9, 10, 11], 'a new row its answer matches shows');
+  await store.update(3, { seats: 300 });
+  assert.deepEqual(await ids(), [3, 8, 9, 10, 11], 'a row changed into its answer comes');
+  await store.update(8, { seats: 5 });
+  assert.deepEqual(await ids(), [3, 9, 10, 11], 'a row changed out of it goes');
+  assert.deepEqual(asked.slice(before), Array(3).fill(['seats', 'gt', 70]), 'one ask a write, for its own clause');
+  await store.remove(9);
+  assert.deepEqual(await ids(), [3, 10, 11]);
+  assert.equal(asked.length, before + 3, 'a remove asks nothing: a key no row has matches nothing');
+  // Off, its keys are asked again too, so on again asks nothing.
+  source.query.ask([{ scope: 'data', field: 'seats', suspended: true }, { field: 'seats', commit: true }]);
+  assert.equal((await ids()).length, 10);
+  await store.insert({ id: 12, seats: 120 });
+  await settle();
+  const asks = asked.length;
+  source.query.ask([{ scope: 'data', field: 'seats', suspended: false }, { field: 'seats', commit: true }]);
+  assert.deepEqual(await ids(), [3, 10, 11, 12], 'on again: the rows as written');
+  assert.equal(asked.length, asks, 'a toggle asks nothing');
+});

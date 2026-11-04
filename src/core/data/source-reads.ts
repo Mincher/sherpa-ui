@@ -45,7 +45,7 @@
  * - .close — Let the store go: a change no longer reloads it, and its held set is dropped.
  * - .debug — How it answers, for a bug report.
  */
-import { filterWithout, groupSummaries, type Filter, type GroupSummary, type LoadOptions, type LoadResult, type Row, type Store, type StoreCapabilities } from './store.js';
+import { filterWithout, groupSummaries, type Filter, type GroupSummary, type LoadOptions, type LoadResult, type Row, type Store, type StoreCapabilities, type StoreChangeDetail } from './store.js';
 import { sameFilter, VIEW, type Arrangement } from './query.js';
 import { coalesce, Latest } from './timing.js';
 import { report } from './report.js';
@@ -69,8 +69,7 @@ export interface ReadHost {
   freeSets(): string[][];
   /** The fields its page reads from a row, or null — every field. */
   need(): readonly string[] | null;
-  /** Before a load: what the walk sets aside, where it asks no store. `still` says
-   *  the ask is the latest. `walked`, the filter may have moved. */
+  /** Before a load: what the walk sets aside, where it asks no store. `still`: the ask is the latest; `walked`: the filter may have moved. */
   beforeLoad(still: () => boolean): Promise<'walked' | 'none' | 'overtaken'>;
   /** A load's rows landed. */
   landed(rows: readonly Row[]): void;
@@ -80,8 +79,9 @@ export interface ReadHost {
   published(): void;
   /** Say an event on the source. */
   emit(event: Event): void;
-  /** The store changed: `moved` says whether these fields did. */
+  /** The store changed: `moved` says whether these fields did; `written`, the change as its store said it — none said, any row. */
   storeMoved(moved: (fields: readonly string[]) => boolean): void;
+  written(change: StoreChangeDetail | undefined): void;
   /** A Refresh let the set go: what was asked of it is asked again. */
   refreshed(): void;
 }
@@ -393,14 +393,14 @@ export class SourceReads {
   #onStoreChange = (event: Event): void => {
     this.#rowsAge++;
     this.#allAge++;
+    this.#host.written((event as CustomEvent<StoreChangeDetail | undefined>).detail);
     const history = this.reader.history;
     const since = this.#heard;
     this.#heard = history?.seq ?? 0;
     // Not in a History it can trust: any field may have moved.
     if (!history || !this.#trusts(event, since)) {
       this.#age++;
-      /* A store that holds its set has taken the change: it is asked again, once it
-         has answered — never read again. S6 */
+      // A store that holds its set has taken the change: asked again once it has answered, never read again. S6
       if (!this.can.holds) void this.load({ force: true });
       else if (this.#loaded || this.#inFlight.busy) void this.reask();
       return;

@@ -3319,6 +3319,13 @@ the clause, then `email in [...]` — and a row added under the answer never
 showed, the keys being kept (TODO 707). Held, the two compiles are the design:
 the held set answers at once, the server's keys after.
 
+**A write asks again** (TODO 726). Over a held set, kept keys hid a row added
+under the answer until a Refresh, and kept one changed out of it. So a write the
+source hears — an add, a change, or one its store cannot say — asks each kept
+answer's keys again, an answer switched off too, the old keys serving until the
+new come; the last ask wins. A remove asks nothing: a key no row has matches
+nothing. A toggle, a Switch and a cycle still ask nothing.
+
 It is turned ON from three places, and none can turn it off: the page
 definition, a filtering component's `data-fetch-fields`, and a grid column's
 `fetch` — the provider tells the source. A store that projects is asked for
