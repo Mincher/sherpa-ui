@@ -504,7 +504,7 @@ component's elements ARE its state, keep the state as data instead —
 
 `sherpa-menu` holds three: `values` until its rows exist (their stamp draws
 them over each item's `selected`) — a date's until its calendar is stamped, its
-shape said at once — and `conditions` and `setCount` until it draws. Once drawn, its rows stay the live answer, because a drill MOVES them
+shape said at once — and `condition` and `setCount` until it draws. Once drawn, its rows stay the live answer, because a drill MOVES them
 into another menu (`T-drill-moves-not-clones`). The last write wins: items
 that name their own picks drop a held one. `sherpa-quick-filter` sets its
 picks THROUGH the menu, so they are held there too, and holds its own
@@ -2666,7 +2666,7 @@ and asked again (`T-a-rebuilt-row-reads-empty-for-a-tick`,
 `T-a-rebuilt-bar-reads-empty-until-its-menus-stamp`). The menu already kept a
 row's pick as `row.dataset.want`; it keeps `op` and `join` the same way. The
 row writes them when it is filled and when the reader answers, row one's sync
-writes them, and `conditions` reads them, falling back to the control only
+writes them, and the editor's `read()` reads them, falling back to the control only
 for a row that holds none. A waiter that was a guess at "the select has filled"
 can then read at once: the chip's start-up check and `refresh()` lost their
 frames.
@@ -2687,7 +2687,7 @@ just built.
 bar chip was `data-current` and `data-condition="advanced"` — but Owner showed no
 value and no tip, and Email's tip read only `Contains`. The chip draws its face
 when its menu fires an event, and `setChipReading` / a rebuild's
-`#keepAnswer` set `menu.conditions` from code, which fires none — on purpose,
+`#keepAnswer` set the menu's answer from code, which fires none — on purpose,
 so a steer never echoes back as a reader's intent.
 
 So the chip has `refresh()`: it redraws the face (value, tip, badge, condition)
