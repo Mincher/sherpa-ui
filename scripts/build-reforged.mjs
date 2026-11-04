@@ -181,7 +181,8 @@ function componentIcons() {
   const code = globSync('{components,core}/**/*.js', { cwd: OUT })
     .filter((f) => !f.startsWith('core/ui/icons/') && f !== 'core/ui/icon-names.js')
     .map((f) => readFileSync(join(OUT, f), 'utf8')).join('\n');
-  const quoted = (name) => new RegExp(`["'\`]${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\\\?["'\`]`);
+  // A name in quotes, or a `data-when` value's after its condition: `"cond: name"`.
+  const quoted = (name) => new RegExp(`(?:["'\`]|: )${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\\\?["'\`]`);
   return names.filter((name) => quoted(name).test(code));
 }
 async function writeBundle() {
