@@ -12,10 +12,10 @@
 
   Slots:
     (default)   the content, placed on the canvas at its `--x` and `--y` (px)
-    panel       a card FLOATING on the canvas, 32px from its top, bottom and left edges (below the
-                toolbar, when there is one): it does not pan or zoom (a node panel)
-    toolbar     tools FLOATING at the top left, as the controls float at the bottom right: it
-                does not pan or zoom (a node toolbar)
+    panel       a card FLOATING on the canvas, 32px from its top, bottom and left edges: it does not
+                pan or zoom (a node panel)
+    toolbar     tools FLOATING at the bottom centre, 32px up from the bottom edge: it does not
+                pan or zoom (a node toolbar)
 
   Fires:
     canvas-change — the view moved: panned or zoomed. detail: { x, y, zoom }
@@ -30,7 +30,7 @@
   <!-- A card floating on the view: it keeps its place as the plane pans and zooms. -->
   <div class="floating" part="floating"><slot name="panel" data-accepts="panel"></slot></div>
 
-  <!-- Tools floating at the top left, in the controls' style and offset. -->
+  <!-- Tools floating at the bottom centre, in the controls' style. -->
   <div class="toolbar" part="toolbar"><slot name="toolbar" data-accepts="toolbar"></slot></div>
 
   <!-- The WHOLE canvas small, and where the view sits on it. A drag moves the view. -->

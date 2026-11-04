@@ -4576,11 +4576,11 @@
             },
             {
               "name": "panel",
-              "description": "a card FLOATING on the canvas, 32px from its top, bottom and left edges (below the toolbar, when there is one): it does not pan or zoom (a node panel) (accepts: panel)"
+              "description": "a card FLOATING on the canvas, 32px from its top, bottom and left edges: it does not pan or zoom (a node panel) (accepts: panel)"
             },
             {
               "name": "toolbar",
-              "description": "tools FLOATING at the top left, as the controls float at the bottom right: it does not pan or zoom (a node toolbar) (accepts: toolbar)"
+              "description": "tools FLOATING at the bottom centre, 32px up from the bottom edge: it does not pan or zoom (a node toolbar) (accepts: toolbar)"
             }
           ],
           "cssParts": [

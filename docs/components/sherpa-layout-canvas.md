@@ -55,8 +55,8 @@ Each one bubbles.
 | Slot | Accepts | What it holds |
 |---|---|---|
 | (default) | content | the content, placed on the canvas at its `--x` and `--y` (px) |
-| `panel` | panel | a card FLOATING on the canvas, 32px from its top, bottom and left edges (below the toolbar, when there is one): it does not pan or zoom (a node panel) |
-| `toolbar` | toolbar | tools FLOATING at the top left, as the controls float at the bottom right: it does not pan or zoom (a node toolbar) |
+| `panel` | panel | a card FLOATING on the canvas, 32px from its top, bottom and left edges: it does not pan or zoom (a node panel) |
+| `toolbar` | toolbar | tools FLOATING at the bottom centre, 32px up from the bottom edge: it does not pan or zoom (a node toolbar) |
 
 ## Parts
 

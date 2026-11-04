@@ -2,7 +2,7 @@ import { test, expect, type Page } from './harness';
 
 /**
  * The node editor's toolbar, Undo and Redo — Will, TODOs 560 and 561. A toolbar floats at the
- * canvas's top left in the offset of its controls, and the node panel moves down under it. Save is
+ * canvas's bottom centre, 32px up, and the node panel keeps 32px from the top. Save is
  * a placeholder, off; Undo and Redo are on only when there is a step, and Ctrl/Cmd+Z and Shift+Ctrl/
  * Cmd+Z do the same. Each edit — a placement, a move, a pick, a route, a cut, a remove, a Custom
  * Node's inside, make and ungroup — steps back to the SAME workflow and forward again. Real pointer and key.
@@ -87,30 +87,37 @@ async function drag(page: Page, [x1, y1]: [number, number], [x2, y2]: [number, n
   await settle(page);
 }
 
-test('the toolbar floats at the top left in the controls\' offset, and the panel sits one gap under it', async ({ page }) => {
+test('the toolbar floats at the bottom centre, 32px up; the panel is 32px from the top; the controls and minimap keep clear at 3 widths', async ({ page }) => {
   await bind(page);
-  const r = await page.evaluate(() => {
-    const box = (e: Element) => { const b = e.getBoundingClientRect(); return { left: b.left, top: b.top, right: b.right, bottom: b.bottom }; };
-    const cv = document.getElementById('cv')!;
-    return {
-      canvas: box(cv), bar: box(document.querySelector('sherpa-node-toolbar')!), panel: box(document.querySelector('sherpa-node-panel')!),
-      controls: box(cv.shadowRoot!.querySelector('.controls')!),
-    };
-  });
-  // The controls sit 16px in from the bottom right; the toolbar 16px in from the top left.
-  const inset = r.canvas.bottom - r.controls.bottom;
-  expect(Math.abs(r.bar.left - r.canvas.left - inset)).toBeLessThanOrEqual(1);
-  expect(Math.abs(r.bar.top - r.canvas.top - inset)).toBeLessThanOrEqual(1);
-  expect(Math.abs((r.bar.bottom - r.bar.top) - (r.controls.bottom - r.controls.top))).toBeLessThanOrEqual(1);
-  // The panel: one inset under the toolbar, still 32px from the bottom and the left.
-  expect(Math.abs(r.panel.top - r.bar.bottom - inset)).toBeLessThanOrEqual(1);
-  expect(Math.abs(r.canvas.bottom - r.panel.bottom - 32)).toBeLessThanOrEqual(1);
-  expect(Math.abs(r.panel.left - r.canvas.left - 32)).toBeLessThanOrEqual(1);
-  expect(r.bar.bottom).toBeLessThanOrEqual(r.panel.top);
+  for (const width of [1500, 900, 600]) {
+    const r = await page.evaluate((w) => {
+      const cv = document.getElementById('cv')!;
+      cv.style.inlineSize = `${w}px`;
+      const box = (e: Element) => { const b = e.getBoundingClientRect(); return { left: b.left, top: b.top, right: b.right, bottom: b.bottom }; };
+      return {
+        canvas: box(cv), bar: box(document.querySelector('sherpa-node-toolbar')!), panel: box(document.querySelector('sherpa-node-panel')!),
+        controls: box(cv.shadowRoot!.querySelector('.controls')!), minimap: box(cv.shadowRoot!.querySelector('.minimap')!),
+      };
+    }, width);
+    const mid = (r.canvas.left + r.canvas.right) / 2;
+    // Narrower than 44rem, beside the card, the toolbar yields: it keeps clear of the card instead of centring.
+    if (width >= 704) expect(Math.abs((r.bar.left + r.bar.right) / 2 - mid), `${width}: centred`).toBeLessThanOrEqual(1);
+    else expect(r.bar.left, `${width}: yields`).toBeGreaterThanOrEqual(r.panel.right);
+    expect(Math.abs(r.canvas.bottom - r.bar.bottom - 32), `${width}: 32px up`).toBeLessThanOrEqual(1);
+    expect(Math.abs(r.panel.top - r.canvas.top - 32), `${width}: panel top`).toBeLessThanOrEqual(1);
+    expect(Math.abs(r.canvas.bottom - r.panel.bottom - 32)).toBeLessThanOrEqual(1);
+    expect(Math.abs(r.panel.left - r.canvas.left - 32)).toBeLessThanOrEqual(1);
+    const hit = (a: typeof r.bar, b: typeof r.bar) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+    expect(hit(r.bar, r.controls), `${width}: toolbar x controls`).toBe(false);
+    expect(hit(r.bar, r.minimap), `${width}: toolbar x minimap`).toBe(false);
+    expect(hit(r.controls, r.minimap), `${width}: controls x minimap`).toBe(false);
+    expect(hit(r.bar, r.panel), `${width}: toolbar x panel`).toBe(false);
+  }
   // It keeps its place as the view pans.
+  const before = await page.evaluate(() => document.querySelector('sherpa-node-toolbar')!.getBoundingClientRect().left);
   await page.evaluate(() => (document.getElementById('cv') as HTMLElement & { panTo(x: number, y: number): void }).panTo(300, 200));
   const left = await page.evaluate(() => document.querySelector('sherpa-node-toolbar')!.getBoundingClientRect().left);
-  expect(left).toBe(r.bar.left);
+  expect(left).toBe(before);
 });
 
 test('Save is a placeholder, off; Undo and Redo are off until there is a step, and say their keys', async ({ page }) => {
