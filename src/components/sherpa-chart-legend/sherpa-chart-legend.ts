@@ -17,13 +17,15 @@ import { datumTotal, type LegendDatum } from '../../core/data/chart-datum.js';
 import { ruleOut } from '../../core/data/filter-state.js';
 import { SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
+import { pairAnchor, paintSwatch } from '../../core/ui/chart-parts.js';
+import { watchTipLines, writeTip } from '../../core/ui/description-tips.js';
 // Each row is a key chip, and the roll-up a real button + menu; the page may not have imported them.
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
 import type { SherpaMenu } from '../sherpa-menu/sherpa-menu.js';
 import type { SherpaQuickFilter } from '../sherpa-quick-filter/sherpa-quick-filter.js';
-import { REST_WAIT } from '../../core/ui/shared-constants.js';
+import { REST_WAIT, RULED_OUT } from '../../core/ui/shared-constants.js';
 
 const MAX_ITEMS = 6;
 
@@ -114,9 +116,18 @@ export class SherpaChartLegend extends SherpaElement {
     if (this.#items.length) this.#render();
   }
 
+  override onConnect(): void {
+    this.#stopTips = watchTipLines(this.#sayKeys);
+  }
+
   override onDisconnect(): void {
     this.#rest(null);
+    this.#stopTips?.();
+    this.#stopTips = null;
   }
+
+  /** Stops hearing whether the page shows tips in lines. */
+  #stopTips: (() => void) | null = null;
 
   /** A pointer moved onto a row, or off the legend: the row it RESTS on, after a moment. */
   #onHover = (event: Event): void => {
@@ -275,7 +286,7 @@ export class SherpaChartLegend extends SherpaElement {
     ];
   }
 
-  /** Draw a row per item — a key chip and its value. TODO 149 */
+  /** Draw a row per item — a key chip, or read-only a light key, and its value. TODO 149 */
   #render(): void {
     const list = this.$('.legend');
     if (!list) return;
@@ -285,7 +296,12 @@ export class SherpaChartLegend extends SherpaElement {
     const chips = this.hasAttribute('data-chips') && !readonly;
     list.replaceChildren();
     this.#items.forEach((item, i) => {
-      const isRollup = this.#rolledUp && !readonly && i === this.#items.length - 1;
+      if (readonly) {
+        const key = this.#key(item, i);
+        if (key) list.appendChild(key);
+        return;
+      }
+      const isRollup = this.#rolledUp && i === this.#items.length - 1;
       const cell = this.clone(chips ? 'template.chip-tpl' : 'template.item-tpl');
       if (!cell) return;
       const entry = cell.querySelector<HTMLElement>('.entry')!;
@@ -297,11 +313,10 @@ export class SherpaChartLegend extends SherpaElement {
       else cell.querySelector('.label')!.textContent = item.label;
       /* Remembered across a re-populate, so a source push does not clear it.
          A roll-up row is ON while ANY of its folded categories is. */
-      const on = readonly || (isRollup
+      const on = isRollup
         ? this.#rolled.some((r) => !this.#off.has(r.item.label))
-        : !this.#off.has(item.label));
+        : !this.#off.has(item.label);
       entry.toggleAttribute('data-current', on);
-      entry.toggleAttribute('data-readonly', readonly);
       const said = item.value != null ? String(item.value) : '';
       const count = chips && said !== '' && Number.isFinite(Number(said)) ? Number(said) : null;
       if (chips) (entry as SherpaQuickFilter).results = count;
@@ -323,6 +338,39 @@ export class SherpaChartLegend extends SherpaElement {
       list.appendChild(wrapper);
     });
   }
+
+  /** A READ-ONLY row: a key and nothing to press, so no chip — its swatch, its name
+   *  and its value. TRAP T-readonly-legend-is-a-key-not-a-filter */
+  #key(item: LegendItem, i: number): HTMLElement | null {
+    const cell = this.clone('template.key-tpl');
+    if (!cell) return null;
+    cell.dataset['index'] = String(i);
+    if (item.status) cell.dataset['status'] = item.status;
+    paintSwatch(cell.querySelector<HTMLElement>('.swatch')!, item.status ?? String(item.colorIndex ?? i + 1));
+    cell.querySelector('.label')!.textContent = item.label;
+    cell.querySelector('.value')!.textContent = item.value != null ? String(item.value) : '';
+    // Emptied by a filter, or ruled out by those before it: the inactive ink. TRAP T-a-ruled-out-value-is-greyed
+    cell.toggleAttribute('data-empty', Number(item.value) === 0);
+    cell.toggleAttribute('data-unavailable', this.#out(item.label));
+    // Its tip is its own: a row's anchor is named apart. TRAP T-chart-tip-is-a-sibling-of-its-dot
+    pairAnchor(`--sherpa-legend-key-${i}`, cell.querySelector<HTMLElement>('.key')!, cell.querySelector<HTMLElement>('.tip')!);
+    this.#sayKey(cell);
+    return cell;
+  }
+
+  /** A key's tip: ruled out, it says so; in lines, its name too. TRAP T-a-tip-in-lines */
+  #sayKey(cell: Element): void {
+    const key = cell.querySelector('.key')!;
+    const out = cell.hasAttribute('data-unavailable') ? RULED_OUT : '';
+    writeTip(cell.querySelector('.tip')!, { plain: out, name: key.textContent?.trim(), value: out });
+    if (out) key.setAttribute('aria-description', out);
+    else key.removeAttribute('aria-description');
+  }
+
+  /** Each key's tip again: the page's tips went in lines, or back. */
+  #sayKeys = (): void => {
+    for (const key of this.$$('.key')) this.#sayKey(key.parentElement!);
+  };
 
   /** One checkbox row per folded category, plus its Apply: the menu's own rows, from data. */
   #buildBreakdown(wrapper: HTMLElement): void {

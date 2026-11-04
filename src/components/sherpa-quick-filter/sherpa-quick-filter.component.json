@@ -549,15 +549,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-readonly",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "description": "a KEY, not a control: no toggle, no button semantics. TRAP T-readonly-legend-is-a-key-not-a-filter"
-    },
-    {
-      "$type": "prop",
       "name": "data-solo",
       "type": "boolean",
       "observed": true,
@@ -773,11 +764,6 @@
       "$type": "state",
       "name": "key",
       "selector": ":host([data-type=\"key\"])"
-    },
-    {
-      "$type": "state",
-      "name": "readonly",
-      "selector": ":host([data-readonly])"
     },
     {
       "$type": "state",

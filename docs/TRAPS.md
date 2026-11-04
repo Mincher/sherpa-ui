@@ -31,10 +31,10 @@ headings below are older than the index: most entries are under the last one.
 | [The data layer](traps/data-layer.md) | 216 |
 | [Storage, saved Views and the URL](traps/storage.md) | 36 |
 | [The join and the app layer](traps/join-and-app.md) | 42 |
-| [Filters](traps/filters.md) | 104 |
+| [Filters](traps/filters.md) | 103 |
 | [Menus, tips and overlays](traps/menus-tips-overlays.md) | 78 |
 | [The data grid](traps/data-grid.md) | 57 |
-| [Charts](traps/charts.md) | 42 |
+| [Charts](traps/charts.md) | 43 |
 | [SherpaElement and the shared sheets](traps/element-and-sheets.md) | 71 |
 | [Other components](traps/other-components.md) | 61 |
 | [Build, tools and the MCP](traps/build-tools-mcp.md) | 34 |

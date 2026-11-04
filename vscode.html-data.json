@@ -654,7 +654,7 @@
         },
         {
           "name": "data-readonly",
-          "description": "a KEY, not a filter: its rows do not toggle",
+          "description": "a KEY, not a filter: each row a light key, its swatch and its name, with nothing to press. TRAP T-readonly-legend-is-a-key-not-a-filter",
           "valueSet": "v"
         },
         {
@@ -3316,11 +3316,6 @@
         },
         {
           "name": "data-plain",
-          "valueSet": "v"
-        },
-        {
-          "name": "data-readonly",
-          "description": "a KEY, not a control: no toggle, no button semantics. TRAP T-readonly-legend-is-a-key-not-a-filter",
           "valueSet": "v"
         },
         {

@@ -5,7 +5,8 @@
   Public API:
     data-segment-field  ASKED of its provider, or read off its chart: one row per value.
                         A click narrows its chart alone
-    data-readonly     a KEY, not a filter: its rows do not toggle
+    data-readonly     a KEY, not a filter: each row a light key, its swatch and its
+                      name, with nothing to press. TRAP T-readonly-legend-is-a-key-not-a-filter
     data-chips        each row a value chip, as a filter panel draws it: its swatch,
                       its label, its count. Set by its provider. Will, TODO 586
     data-highlight-hover  a rest on a row says legend-hover. Set by its provider. TODO 495
@@ -24,6 +25,19 @@
       <sherpa-quick-filter class="entry" data-type="key" data-locked data-current>
         <span class="label sherpa-truncate" part="label"></span>
       </sherpa-quick-filter>
+      <span class="value" part="value"></span>
+    </div>
+  </template>
+
+  <!-- A READ-ONLY row: a KEY and nothing to press, so no chip — its swatch and its
+       name, and its tip after them. TRAP T-readonly-legend-is-a-key-not-a-filter -->
+  <template class="key-tpl">
+    <div class="item">
+      <span class="key sherpa-anchor" part="key">
+        <span class="swatch sherpa-swatch" part="swatch" aria-hidden="true"></span>
+        <span class="label sherpa-truncate" part="label"></span>
+      </span>
+      <span class="tip sherpa-tip" part="tip" popover="manual" aria-hidden="true"><span class="tip-line tip-name"></span><span class="tip-line tip-description"></span><span class="tip-line tip-value"></span><span class="tip-line tip-more"></span></span>
       <span class="value" part="value"></span>
     </div>
   </template>

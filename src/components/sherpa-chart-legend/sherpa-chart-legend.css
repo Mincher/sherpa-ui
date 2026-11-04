@@ -3,7 +3,8 @@
  * so values line up down the column. Figma: Chart Legend 1098:37846.
  *
  * Each row is a KEY chip (swatch and label, one tab stop) and its value; the
- * chip draws its own on, off and ruled-out look. TRAP T-a-legend-row-is-a-key-chip
+ * chip draws its own on, off and ruled-out look. A read-only row is a light key,
+ * drawn here. TRAP T-a-legend-row-is-a-key-chip
  */
 
 :host {
@@ -42,7 +43,26 @@
   grid-template-columns: subgrid;
   align-items: center;
 }
-.entry { justify-self: start; }
+.entry,
+.key { justify-self: start; }
+
+/* A READ-ONLY row's KEY: no chip, as the key chip draws it — its swatch and its
+   name, mono 12 on 16, no border and no fill. TRAP T-readonly-legend-is-a-key-not-a-filter */
+.key {
+  display: inline-flex;
+  align-items: center;
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
+  font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
+  font-size: var(--sherpa-theme-content-size-small, 12px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-xs, 16px);
+  white-space: nowrap;
+  cursor: default;
+}
 
 /* BELOW its chart it is a strip, and its chart says so: WebKit will not let a size
    query in this sheet read a box inside the chart. Alone, a list.
@@ -130,10 +150,12 @@
    row is the legend's own state, so it reaches the chip through its parts.
    TRAP T-a-legend-row-goes-inactive-it-never-vanishes */
 .item:is([data-empty], [data-unavailable], :has(> .entry:not([data-current]))) .value,
-.item[data-empty] .entry::part(body) {
+.item[data-empty] .entry::part(body),
+.item:is([data-empty], [data-unavailable]) > .key {
   color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
 }
-.item[data-empty] .entry::part(swatch) {
+.item[data-empty] .entry::part(swatch),
+.item:is([data-empty], [data-unavailable]) > .key > .swatch {
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
   background: transparent;
 }

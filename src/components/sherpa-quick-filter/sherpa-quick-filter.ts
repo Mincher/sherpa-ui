@@ -43,9 +43,6 @@ export class SherpaQuickFilter extends SherpaElement {
     /* `key`: a chart legend's row. Its ON is SHOWN, not picked. TODO 149
        TRAP T-a-legend-row-is-a-key-chip */
     'data-type': { type: 'enum', kind: 'style', values: ['default', 'ai', 'jump', 'key'] },
-    /* A KEY, not a control: no toggle, no button semantics.
-       TRAP T-readonly-legend-is-a-key-not-a-filter */
-    'data-readonly': { type: 'boolean', kind: 'style' },
     // No chrome on its caret at rest: a grid heading's filter. TRAP T-icon-only-is-purely-css
     'data-plain': { type: 'boolean', kind: 'style' },
     'data-no-value': { type: 'boolean', kind: 'style' },
@@ -255,7 +252,7 @@ export class SherpaQuickFilter extends SherpaElement {
       this.#section.inline();
       return this.#section.sync();
     }
-    if (['data-current', 'data-readonly', 'data-type', 'data-persistent', 'aria-label'].includes(name)) this.#press.pressed();
+    if (['data-current', 'data-type', 'data-persistent', 'aria-label'].includes(name)) this.#press.pressed();
     // A greyed chip says why. Will, TODO 176.
     if (name === 'data-unavailable' || name === 'disabled' || name === 'data-superseded' || name === 'data-current' || name === 'data-held-out') this.#syncGrey();
     if (name === 'data-unavailable' || name === 'disabled' || name === 'data-unused') return this.#says.tip();

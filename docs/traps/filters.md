@@ -1,7 +1,7 @@
 # Traps — Filters
 
 One of the eleven areas of [the traps](../TRAPS.md): each entry is here because its
-first `Site:` is in this area (`npm run check:traps` holds it so). 104 entries.
+first `Site:` is in this area (`npm run check:traps` holds it so). 103 entries.
 
 ### T-anchor-cross-root
 
@@ -785,6 +785,7 @@ chip as `data-description`.
 - Site: `src/core/sherpa-anchor.css`
 - Site: `test/e2e/reforged-an-action-says-what-it-does.spec.ts`
 - Site: `src/components/sherpa-quick-filter/chip-says.ts`
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 
 ### T-an-action-says-what-it-does
 
@@ -1196,31 +1197,12 @@ row always stays on (`T-a-legend-keeps-one-row-on`). The chip says
 own state, so the legend dims it through the chip's `::part(body)` and
 `::part(swatch)`.
 
-**With `data-chips` a row is a VALUE chip**, as a filter panel draws it: `provider.legendChips`, Will, TODO 586 — where its card has no filter toolbar; with one, the chips go there (TODO 670). Its number is the chip's count; a value that is no number, a band's range, stays beside it. Beside a chart the 7:3 split's legend track floors at its min-content, so chips keep their names; a key row is contained, floors at 0, and truncates as before. A read-only legend is no filter, so it stays a key.
+**With `data-chips` a row is a VALUE chip**, as a filter panel draws it: `provider.legendChips`, Will, TODO 586 — where its card has no filter toolbar; with one, the chips go there (TODO 670). Its number is the chip's count; a value that is no number, a band's range, stays beside it. Beside a chart the 7:3 split's legend track floors at its min-content, so chips keep their names; a key row is contained, floors at 0, and truncates as before. A read-only legend is no filter, so each row is a light key, no chip (`T-readonly-legend-is-a-key-not-a-filter`).
 
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
-
-### T-readonly-legend-is-a-key-not-a-filter
-
-`data-readonly` makes a legend a pure KEY: no toggling, no button semantics.
-A gauge's rows name its field's ZONES, the values of a status field; without
-`data-readonly` they pick them (plan 683), and with it they only name them.
-
-Each row's key chip takes `data-readonly`: its BODY gets `role="presentation"`
-and `tabindex="-1"`, and no `aria-pressed` — a keyboard user must not be handed
-a control that does nothing. `disabled` would be WRONG: the row is not
-unavailable, it was never interactive.
-
-The chip's click guards on the attribute, and the legend's does too, so pointer
-and keyboard behave the same.
-
-- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
-- Site: `src/components/sherpa-quick-filter/chip-press.ts`
 
 ### T-organise-chips-lead-the-bar
 

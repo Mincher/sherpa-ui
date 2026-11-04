@@ -53,7 +53,7 @@ For the colour key of a chart, in the chart's `legend` slot. Its rows are toggle
 | `data-field` | text |  |  |
 | `data-highlight-hover` | boolean |  | a rest on a row says legend-hover. Set by its provider. TODO 495 |
 | `data-over-field` | text |  |  |
-| `data-readonly` | boolean |  | a KEY, not a filter: its rows do not toggle |
+| `data-readonly` | boolean |  | a KEY, not a filter: each row a light key, its swatch and its name, with nothing to press. TRAP T-readonly-legend-is-a-key-not-a-filter |
 | `data-segment-field` | text |  | ASKED of its provider, or read off its chart: one row per value. A click narrows its chart alone |
 | `data-where` | text |  |  |
 
@@ -78,7 +78,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`label`, `legend`, `value`
+`key`, `label`, `legend`, `swatch`, `tip`, `value`
 
 ## CSS custom properties it reads
 
@@ -89,6 +89,13 @@ What each class's base rule reads:
 | `--sherpa-display-mode-space-xs` | `.legend` | `column-gap` |
 | `--sherpa-display-mode-space-2xs` | `.legend` | `row-gap` |
 | `--sherpa-display-mode-space-xs` | `.legend` | `padding` |
+| `--sherpa-display-mode-size-sm` | `.key` | `block-size` |
+| `--sherpa-display-mode-space-xs` | `.key` | `gap` |
+| `--sherpa-theme-content-body-1` | `.key` | `color` |
+| `--sherpa-font-family-mono` | `.key` | `font-family` |
+| `--sherpa-theme-content-size-small` | `.key` | `font-size` |
+| `--sherpa-font-weight-regular` | `.key` | `font-weight` |
+| `--sherpa-theme-content-line-height-xs` | `.key` | `line-height` |
 | `--sherpa-chart-legend-columns` | `.legend` | `grid-template-columns` |
 | `--sherpa-display-mode-space-xs` | `.item` | `column-gap` |
 | `--sherpa-display-mode-space-2xs` | `.rollup` | `column-gap` |

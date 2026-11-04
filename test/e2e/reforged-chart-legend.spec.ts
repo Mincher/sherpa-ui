@@ -1018,3 +1018,43 @@ test('a row is ruled out as a filter compares, case aside (TODO 523 F13)', async
   });
   expect(out).toEqual([false, true]);
 });
+
+/* READ-ONLY, a row is a light KEY, no chip: nothing to press, no tab stop, and it
+   says what the key chip said. Plan 695 P5 · TRAP T-readonly-legend-is-a-key-not-a-filter */
+test('a read-only row is a key, not a chip: no button, no tab stop, and its tip says why it is greyed', async ({ page }) => {
+  await page.evaluate(async () => {
+    const el = await window.__mount<HTMLElement & { populate(d: unknown): void; present: string[] | null }>(
+      'sherpa-chart-legend', undefined, { 'data-readonly': '' });
+    el.populate([{ label: 'Low', value: 3, status: 'success' }, { label: 'High', value: 1, status: 'critical' }]);
+    el.present = ['Low'];
+    await window.__settled();
+    const w = window as unknown as { heard: number };
+    w.heard = 0;
+    el.addEventListener('legend-item-click', () => { w.heard++; });
+  });
+  const legend = page.locator('sherpa-chart-legend');
+  const r = await legend.evaluate((el) => [...el.shadowRoot!.querySelectorAll('.item')].map((row) => {
+    const key = row.querySelector<HTMLElement>('.key')!;
+    return {
+      chips: row.querySelectorAll('sherpa-quick-filter, button').length,
+      tag: key.localName, tabIndex: key.tabIndex, pressed: key.getAttribute('aria-pressed'),
+      label: row.querySelector('.label')!.textContent, value: row.querySelector('.value')!.textContent,
+      hue: getComputedStyle(row.querySelector('.swatch')!).getPropertyValue('--_hue').trim() !== '',
+      ink: getComputedStyle(key).color, described: key.getAttribute('aria-description'),
+    };
+  }));
+  expect(r.map(({ chips, tag, tabIndex, pressed }) => ({ chips, tag, tabIndex, pressed })))
+    .toEqual([{ chips: 0, tag: 'span', tabIndex: -1, pressed: null }, { chips: 0, tag: 'span', tabIndex: -1, pressed: null }]);
+  expect(r.map((k) => [k.label, k.value, k.hue])).toEqual([['Low', '3', true], ['High', '1', true]]);
+  // Ruled out: the inactive ink, and it says why, as the key chip did.
+  expect(r[0]!.ink).toBe('rgb(53, 53, 61)');
+  expect(r[1]!.ink).toBe('rgb(179, 179, 195)');
+  expect(r[0]!.described).toBeNull();
+  expect(r[1]!.described).toBe('Limited by the filters before it: no matches.');
+  // A press is nothing; hovered, the ruled-out key's tip says why.
+  await legend.locator('.item').nth(1).locator('.label').click();
+  expect(await page.evaluate(() => (window as unknown as { heard: number }).heard)).toBe(0);
+  const tip = legend.locator('.item').nth(1).locator('.tip');
+  await expect.poll(() => tip.evaluate((t) => t.matches(':popover-open'))).toBe(true);
+  await expect(tip).toHaveText('Limited by the filters before it: no matches.');
+});

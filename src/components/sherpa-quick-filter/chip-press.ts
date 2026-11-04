@@ -9,7 +9,7 @@
  * Map:
  * - PressHost — What the press asks of its chip.
  * - ChipPress — One chip's body and caret.
- * - .pressed — Say whether it is on: a toggle does; a jump, a selector and a key do not.
+ * - .pressed — Say whether it is on: a toggle does; a jump and a selector do not.
  * - .body — The body was pressed: toggle, or let its face do its own thing.
  * - .caret — The caret was pressed: its menu opens, and the chip stays as it was.
  * - .toggleMenu — Open the value menu, or shut it if it is open.
@@ -52,23 +52,13 @@ export class ChipPress {
     this.#host = host;
   }
 
-  /** A toggle says whether it is on. A jump, a selector and a key are no toggle.
-   *  TRAP T-readonly-legend-is-a-key-not-a-filter */
+  /** A toggle says whether it is on. A jump and a selector are no toggle. */
   pressed(): void {
     const { el } = this.#host;
     const body = this.#host.$('.body');
     if (!body) return;
-    const readonly = el.hasAttribute('data-readonly');
-    if (readonly || el.dataset['type'] === 'jump' || el.hasAttribute('data-persistent')) {
-      body.removeAttribute('aria-pressed');
-    } else body.setAttribute('aria-pressed', String(el.current));
-    if (readonly) {
-      body.setAttribute('role', 'presentation');
-      body.setAttribute('tabindex', '-1');
-    } else {
-      body.removeAttribute('role');
-      body.removeAttribute('tabindex');
-    }
+    if (el.dataset['type'] === 'jump' || el.hasAttribute('data-persistent')) body.removeAttribute('aria-pressed');
+    else body.setAttribute('aria-pressed', String(el.current));
     // An icon-only TOGGLE is its caret: the caret takes the chip's name and on-state.
     const caret = this.#host.$('.caret');
     if (!caret || !this.#togglesOnly()) return;
@@ -88,7 +78,7 @@ export class ChipPress {
   /** The body was clicked: toggle, or let Group and Sort do their own thing. */
   body = (event: Event): void => {
     const { el, answer, arrange } = this.#host;
-    if (el.hasAttribute('disabled') || el.hasAttribute('data-readonly') || this.refused()) return;
+    if (el.hasAttribute('disabled') || this.refused()) return;
 
     /* A GROUP or SORT chip owns its own gesture, because what it does is a
        property of WHAT IT IS, not of which container drew it.

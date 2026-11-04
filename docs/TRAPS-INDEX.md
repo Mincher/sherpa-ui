@@ -382,7 +382,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-star-reports-it-does-not-decide](traps/join-and-app.md#t-the-star-reports-it-does-not-decide) — outlet
 - [T-view-library-is-one-vocabulary](traps/storage.md#t-view-library-is-one-vocabulary) — provider
 
-## Filters (155)
+## Filters (154)
 
 - [T-a-bar-reports-its-holds](traps/join-and-app.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — quick-filter-toolbar
@@ -510,7 +510,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-path-not-target-finds-chip-host](traps/filters.md#t-path-not-target-finds-chip-host) — quick-filter-toolbar
 - [T-persistent-chip-is-a-selector](traps/filters.md#t-persistent-chip-is-a-selector) — filter-def, quick-filter-toolbar
 - [T-private-state-is-a-custom-state](traps/filters.md#t-private-state-is-a-custom-state) — quick-filter-toolbar
-- [T-readonly-legend-is-a-key-not-a-filter](traps/filters.md#t-readonly-legend-is-a-key-not-a-filter) — quick-filter
 - [T-reflow-resets-before-measuring](traps/filters.md#t-reflow-resets-before-measuring) — quick-filter-toolbar
 - [T-remove-is-opt-in-and-a-footer-button](traps/filters.md#t-remove-is-opt-in-and-a-footer-button) — quick-filter-toolbar
 - [T-remove-matches-the-tag-not-the-class](traps/filters.md#t-remove-matches-the-tag-not-the-class) — quick-filter-toolbar
@@ -761,7 +760,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-field-type-decides-the-clause](traps/data-layer.md#t-the-field-type-decides-the-clause) — data-grid
 - [T-the-last-row-draws-no-rule](traps/data-grid.md#t-the-last-row-draws-no-rule) — data-grid
 
-## Charts (67)
+## Charts (68)
 
 - [T-a-bar-hangs-from-the-zero-line](traps/charts.md#t-a-bar-hangs-from-the-zero-line) — barchart
 - [T-a-breakdown-pick-is-a-legend-pick](traps/charts.md#t-a-breakdown-pick-is-a-legend-pick) — chart-legend
@@ -794,6 +793,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-ruled-out-value-is-greyed](traps/data-layer.md#t-a-ruled-out-value-is-greyed) — chart-legend
 - [T-a-status-is-worked-out-by-the-data](traps/data-layer.md#t-a-status-is-worked-out-by-the-data) — gauge-chart
 - [T-a-suspended-legend-row-keeps-its-place](traps/charts.md#t-a-suspended-legend-row-keeps-its-place) — chart-legend
+- [T-a-tip-in-lines](traps/filters.md#t-a-tip-in-lines) — chart-legend
 - [T-a-tooltip-is-not-an-axis](traps/data-layer.md#t-a-tooltip-is-not-an-axis) — chart-parts, metric, radial-chart, sparkline
 - [T-a-total-says-so-in-its-label](traps/charts.md#t-a-total-says-so-in-its-label) — metric
 - [T-a-trend-line-is-one-shape](traps/charts.md#t-a-trend-line-is-one-shape) — sparkline
@@ -802,7 +802,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-word-is-in-the-markup](traps/join-and-app.md#t-a-word-is-in-the-markup) — chart-legend
 - [T-at-property-needs-the-document](traps/charts.md#t-at-property-needs-the-document) — barchart, gauge-chart, sparkline
 - [T-chart-datum-aliases-are-not-copies](traps/charts.md#t-chart-datum-aliases-are-not-copies) — barchart, chart-legend
-- [T-chart-tip-is-a-sibling-of-its-dot](traps/charts.md#t-chart-tip-is-a-sibling-of-its-dot) — chart-parts, sparkline
+- [T-chart-tip-is-a-sibling-of-its-dot](traps/charts.md#t-chart-tip-is-a-sibling-of-its-dot) — chart-legend, chart-parts, sparkline
 - [T-custom-element-upgrade](traps/filters.md#t-custom-element-upgrade) — gauge-chart
 - [T-donut-slice-is-a-closed-path](traps/charts.md#t-donut-slice-is-a-closed-path) — radial-chart
 - [T-everything-on-is-no-filter](traps/data-layer.md#t-everything-on-is-no-filter) — chart-legend
@@ -820,7 +820,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-one-tab-stop-per-set](traps/menus-tips-overlays.md#t-one-tab-stop-per-set) — barchart, gauge-chart, line-chart, radial-chart
 - [T-one-total-for-the-ring-and-the-label](traps/data-layer.md#t-one-total-for-the-ring-and-the-label) — chart-legend, radial-chart
 - [T-populate-label-not-name](traps/charts.md#t-populate-label-not-name) — metric
-- [T-readonly-legend-is-a-key-not-a-filter](traps/filters.md#t-readonly-legend-is-a-key-not-a-filter) — chart-legend
+- [T-readonly-legend-is-a-key-not-a-filter](traps/charts.md#t-readonly-legend-is-a-key-not-a-filter) — chart-legend
 - [T-rollup-row-has-its-own-prototype](traps/charts.md#t-rollup-row-has-its-own-prototype) — chart-legend
 - [T-slot-guards-only-when-filled](traps/menus-tips-overlays.md#t-slot-guards-only-when-filled) — gauge-chart
 - [T-sparkline-headroom-is-a-share-of-the-box](traps/charts.md#t-sparkline-headroom-is-a-share-of-the-box) — sparkline

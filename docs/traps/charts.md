@@ -1,7 +1,7 @@
 # Traps — Charts
 
 One of the eleven areas of [the traps](../TRAPS.md): each entry is here because its
-first `Site:` is in this area (`npm run check:traps` holds it so). 42 entries.
+first `Site:` is in this area (`npm run check:traps` holds it so). 43 entries.
 
 ### T-gauge-status-is-named
 
@@ -282,6 +282,7 @@ Per chart:
 
 - Site: `src/components/sherpa-sparkline/sherpa-sparkline.ts`
 - Site: `src/core/ui/chart-parts.ts`
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 
 ### T-y-axis-width-is-fixed-not-measured
 
@@ -846,6 +847,29 @@ write keeps the old floor — only every row off is refused — because a chip
 over the same field may pick a value no row has now, and the legend follows it.
 
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
+- Site: `test/e2e/reforged-chart-legend.spec.ts`
+
+### T-readonly-legend-is-a-key-not-a-filter
+
+`data-readonly` makes a legend a pure KEY: no toggling, no button semantics.
+A gauge's rows name its field's ZONES, the values of a status field; without
+`data-readonly` they pick them (plan 683), and with it they only name them.
+
+Each row is a LIGHT KEY, no chip (plan 695 P5): its swatch and its name in a
+`<span>`, its value beside it, drawn in the legend's own sheet as the key chip
+draws them. No button, no `aria-pressed`, no tab stop — a keyboard user must not
+be handed a control that does nothing. (The chip's old `role="presentation"` on a
+`tabindex="-1"` button was still a button: a focusable element keeps its role.)
+`disabled` would be WRONG: the row is not unavailable, it was never interactive.
+
+What the key chip said, the key says: ruled out, its tip and `aria-description`
+say so; in lines, its tip names it; its anchor is named per row, as a chart's dot
+and its tip are (`T-chart-tip-is-a-sibling-of-its-dot`). The legend's click
+handler still guards on `data-readonly`.
+
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.html`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
 
 ### T-a-chart-datum-is-reachable-without-a-pointer

@@ -54,7 +54,6 @@ One filter chip; a `sherpa-menu` of the field's values goes in its `menu` slot. 
 | `data-pending` | boolean |  | changed, not yet applied: the warning look. Written by the bar. TRAP T-a-pending-chip-reads-as-a-warning |
 | `data-persistent` | boolean |  | a SELECTOR rather than a toggle: always on, and never "empty". Set by [sherpa-quick-filter-toolbar](sherpa-quick-filter-toolbar.md) from a filter definition's `persistent` flag. The view chip is the case — you are always in SOME view, so the amber "on but filtering by nothing" state is one it cannot be in. |
 | `data-plain` | boolean |  |  |
-| `data-readonly` | boolean |  | a KEY, not a control: no toggle, no button semantics. TRAP T-readonly-legend-is-a-key-not-a-filter |
 | `data-solo` | boolean |  |  |
 | `data-spent` | boolean |  | a SECTION whose every value its host hides: it says "Limited by the filters before it: no matches." in their place. Written by the host. Will, TODO 517 |
 | `data-superseded` | boolean |  |  |

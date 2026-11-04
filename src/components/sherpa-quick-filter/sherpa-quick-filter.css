@@ -567,4 +567,3 @@
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
   background: transparent;
 }
-:host([data-readonly]) .body { cursor: default; }

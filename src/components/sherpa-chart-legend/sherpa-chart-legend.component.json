@@ -62,6 +62,70 @@
       },
       {
         "el": "template",
+        "class": "key-tpl",
+        "children": [
+          {
+            "el": "div",
+            "class": "item",
+            "children": [
+              {
+                "el": "span",
+                "class": "key sherpa-anchor",
+                "part": "key",
+                "children": [
+                  {
+                    "el": "span",
+                    "class": "swatch sherpa-swatch",
+                    "part": "swatch",
+                    "attrs": {
+                      "aria-hidden": "true"
+                    }
+                  },
+                  {
+                    "el": "span",
+                    "class": "label sherpa-truncate",
+                    "part": "label"
+                  }
+                ]
+              },
+              {
+                "el": "span",
+                "class": "tip sherpa-tip",
+                "part": "tip",
+                "attrs": {
+                  "popover": "manual",
+                  "aria-hidden": "true"
+                },
+                "children": [
+                  {
+                    "el": "span",
+                    "class": "tip-line tip-name"
+                  },
+                  {
+                    "el": "span",
+                    "class": "tip-line tip-description"
+                  },
+                  {
+                    "el": "span",
+                    "class": "tip-line tip-value"
+                  },
+                  {
+                    "el": "span",
+                    "class": "tip-line tip-more"
+                  }
+                ]
+              },
+              {
+                "el": "span",
+                "class": "value",
+                "part": "value"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
         "class": "chip-tpl",
         "children": [
           {
@@ -216,7 +280,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "a KEY, not a filter: its rows do not toggle"
+      "description": "a KEY, not a filter: each row a light key, its swatch and its name, with nothing to press. TRAP T-readonly-legend-is-a-key-not-a-filter"
     },
     {
       "$type": "prop",
@@ -287,6 +351,13 @@
     "legend.column-gap": "{sherpa.display-mode-space-xs}",
     "legend.row-gap": "{sherpa.display-mode-space-2xs}",
     "legend.padding": "{sherpa.display-mode-space-xs}",
+    "key.block-size": "{sherpa.display-mode-size-sm}",
+    "key.gap": "{sherpa.display-mode-space-xs}",
+    "key.color": "{sherpa.theme-content-body-1}",
+    "key.font-family": "{sherpa.font-family-mono}",
+    "key.font-size": "{sherpa.theme-content-size-small}",
+    "key.font-weight": "{sherpa.font-weight-regular}",
+    "key.line-height": "{sherpa.theme-content-line-height-xs}",
     "legend.grid-template-columns": "{sherpa.chart-legend-columns}",
     "item.column-gap": "{sherpa.display-mode-space-xs}",
     "rollup.column-gap": "{sherpa.display-mode-space-2xs}",
