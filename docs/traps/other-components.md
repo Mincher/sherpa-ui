@@ -109,7 +109,7 @@ capturing listener runs before every other, whoever bound it first.
 A test that pressed Apply on a menu it never OPENED only passed because of
 this: a shut committing menu's footer is off (`dirty` needs `open`). Five tests
 open their menu first now, as a reader must — and a draft set from code
-(`values`, `conditions`, `mode`, typed text) tells the footer too.
+(`values`, `condition`, `mode`, typed text) tells the footer too.
 
 - Site: `src/components/sherpa-button/sherpa-button.ts`
 - Site: `test/e2e/reforged-a-calendar-pick-wakes-the-footer.spec.ts`
@@ -384,9 +384,8 @@ with no surviving rows carries the same flag, so its label and rule hide too.
 ### T-header-actions-are-composed-buttons
 
 Every header action is a composed `sherpa-button`, exactly as Figma instances
-them. The header used to hand-roll eight plain `<button>` elements with ~50
-lines of CSS re-implementing the component — which is precisely how the two
-drifted apart.
+them. Eight hand-rolled `<button>` elements with ~50 lines of CSS
+re-implementing the component is precisely how the two drift apart.
 
 So the listeners bind **`button-click`, not the native `click`**.
 `sherpa-button` suppresses its own event when disabled, where a raw `click`
@@ -432,11 +431,10 @@ brand purple from the default ink**, so colour alone cannot carry it.
 `aria-pressed` carries the same fact to a screen reader, which is why the star is
 a TOGGLE button rather than a plain one.
 
-For three months it swapped NOTHING. The two states were written as
-`fa-solid fa-star` and `fa-regular fa-star`, and `iconName()` strips `solid`
-and `regular` as weight tokens before resolving — so both spellings resolved to
-the one `star` drawing. The attribute changed on every click and the path never
-did. The icons are Figma's, and the set holds `star` AND `star-filled` as two
+Written as `fa-solid fa-star` and `fa-regular fa-star`, the two states swap
+NOTHING: `iconName()` strips `solid` and `regular` as weight tokens before
+resolving, so both spellings resolve to the one `star` drawing. The attribute
+changes on every click and the path never does. The icons are Figma's, and the set holds `star` AND `star-filled` as two
 separate drawings, so the fix is to NAME them — in the star's markup, as a
 directive (`T-a-template-binds-by-markup`):
 
@@ -447,8 +445,16 @@ data-icon-start="star" data-when-data-icon-start="data-favourite: star-filled"
 A test that reads `data-icon-start` cannot catch this. The test reads the
 rendered `<path d>`.
 
-- Test: `test/e2e/reforged-nav-favorites-recents.spec.ts`
-
+>>>
+<<<
+The whole row toggles — not only the chevron. Clicking the body used to
+navigate, so `Favorites` and `Recent` would have opened a view if either had
+ever carried an `href`, and the two behaviours sat a few pixels apart on the
+same row.
+===
+The whole row toggles — not only the chevron. A body that navigates would open
+a view for `Favorites` or `Recent` the moment either carried an `href`, and put
+the two behaviours a few pixels apart on the same row.
 - Site: `src/components/sherpa-app-header/sherpa-app-header.html`
 - Site: `test/e2e/reforged-app-header.spec.ts`
 
