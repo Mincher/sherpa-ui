@@ -1,8 +1,8 @@
 /**
  * workflow.ts — a workflow, set up from ONE JSON document: its nodes, their values and the
  * routes between their sockets. Its check, the graph it draws, and its edits, each pure.
- * Its kinds are the one registry's. Will, TODO 78 · docs/history/plan-78-workflow-data.md
- * TRAP T-a-workflow-is-its-definition
+ * Its kinds are the one registry's. Will, TODOs 78, 713 · docs/history/plan-78-workflow-data.md
+ * TRAP T-a-workflow-is-its-definition · TRAP T-a-socket-says-its-type
  *
  * Map:
  * - WorkflowNode — One node, as a definition holds it: only what the reader may change.
@@ -16,10 +16,10 @@
  */
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
-import { DATE_OP_LABELS, OP_LABELS, OPS_FOR_TYPE, type FilterOp } from './store.js';
+import { OP_LABELS } from './store.js';
 import {
-  NODE_KINDS, kindNode, socketOf,
-  type DrawnGraph, type GraphRow, type NodeKind, type NodeRoute, type SocketCarries,
+  NODE_KINDS, SOCKET_WORDS, accepts, kindNode, rowChoices, socketOf, socketType, takesMany,
+  type DrawnGraph, type GraphRow, type NodeKind, type NodeRoute, type SocketType,
 } from './node-kinds.js';
 
 /** One node, as a definition holds it: only what the reader may change. What it IS is its kind's. */
@@ -64,25 +64,34 @@ export function workflowFaults(workflow: WorkflowDefinition, kinds: Kinds = NODE
       // A value is typed as its row's control takes it. TRAP T-a-value-is-typed-once
       else if (row?.control === 'op' && !(String(value) in OP_LABELS)) problems.push(`the node "${node.id}" holds "${String(value)}" as its ${row.label}, which is no operator`);
       else if (row?.control === 'number' && typeof value !== 'number') problems.push(`the node "${node.id}" holds "${String(value)}" as its ${row.label}, which is no number`);
+      else if (row?.multiple && !Array.isArray(value)) problems.push(`the node "${node.id}" holds "${String(value)}" as its ${row.label}, which is no list`);
     }
   }
-  // What a socket carries, and which way: undefined when it is not one.
-  const carries = (address: string, side: 'input' | 'output'): SocketCarries | undefined => {
+  // What a socket carries, which way, and whether it takes many: undefined when it is not one.
+  const at = (address: string, side: 'input' | 'output'): { type: SocketType; many: boolean } | undefined => {
     const { node, row } = socketOf(address);
     const kind = byId.get(node);
-    if (!kind) return undefined;
-    return row === undefined ? kind[side] : kind.rows.find((r) => r.name === row)?.[side];
+    const type = kind && socketType(kind, row, side);
+    return kind && type && { type, many: takesMany(kind, row) };
   };
-  const fed = new Set<string>();
+  // Each input's routes so far, by what they carry.
+  const fed = new Map<string, { from: string; type?: SocketType }[]>();
   const next = new Map<string, string[]>();
   for (const { from, to } of workflow.routes ?? []) {
-    const out = carries(from, 'output');
-    const into = carries(to, 'input');
-    if (!out) problems.push(`a route leaves "${from}", which is no output socket`);
+    const leaves = at(from, 'output');
+    const out = leaves?.type === 'any' ? undefined : leaves;
+    const into = at(to, 'input');
+    const there = fed.get(to) ?? [];
+    if (!leaves) problems.push(`a route leaves "${from}", which is no output socket`);
+    else if (!out) problems.push(`a route leaves "${from}", which sends any type: an output says the one it sends`);
     if (!into) problems.push(`a route enters "${to}", which is no input socket`);
-    if (out && into && out !== into) problems.push(`the route "${from}" → "${to}" joins ${out === 'value' ? 'a value' : 'an object'} to ${into === 'value' ? 'a value' : 'an object'}`);
-    if (fed.has(to)) problems.push(`two routes enter "${to}": an input takes one`);
-    fed.add(to);
+    if (out && into && !accepts(out.type, into.type)) problems.push(`the route "${from}" → "${to}" joins ${SOCKET_WORDS[out.type]} to ${SOCKET_WORDS[into.type]}`);
+    // An any input that takes many takes one type at a time.
+    const mixed = into?.type === 'any' && out ? there.find((r) => r.type && r.type !== out.type)?.type : undefined;
+    if (there.some((r) => r.from === from)) problems.push(`the route "${from}" → "${to}" is there twice`);
+    else if (there.length && !into?.many) problems.push(`two routes enter "${to}", which takes one`);
+    else if (mixed && out) problems.push(`routes of two types enter "${to}": ${SOCKET_WORDS[mixed]} and ${SOCKET_WORDS[out.type]}`);
+    fed.set(to, [...there, { from, ...(out ? { type: out.type } : {}) }]);
     const [a, b] = [socketOf(from).node, socketOf(to).node];
     next.set(a, [...(next.get(a) ?? []), b]);
   }
@@ -119,29 +128,14 @@ export interface WorkflowFacts {
   stores?: readonly string[];
 }
 
-const DIRECTIONS = [{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }];
-
 /** A workflow as nodes and routes: each node its kind's, at its own place, with its values.
  *  A row a route drives shows its own value, read only, until N4 runs the flow. */
 export function workflowGraph(workflow: WorkflowDefinition, facts: WorkflowFacts = {}, kinds: Kinds = NODE_KINDS): DrawnGraph {
-  const fields = Object.entries(facts.fields ?? {}).map(([value, f]) => ({ value, label: f.label ?? value }));
-  // A value the facts do not list is still offered, so a select shows it.
-  const withOwn = (list: readonly { value: string; label: string }[], own: unknown): { value: string; label: string }[] =>
-    (own == null || own === '' || list.some((c) => c.value === String(own)) ? [...list] : [...list, { value: String(own), label: String(own) }]);
   const nodes = workflow.nodes.filter((n) => kinds[n.kind]).map((node) => {
     const values = node.values ?? {};
     const type = facts.fields?.[String(values['field'] ?? '')]?.type;
-    const choices = (row: NodeKind['rows'][number]): GraphRow['choices'] => {
-      const own = values[row.name];
-      if (row.control === 'field') return withOwn(fields, own);
-      if (row.control === 'store') return withOwn((facts.stores ?? []).map((s) => ({ value: s, label: s })), own);
-      if (row.control === 'direction') return DIRECTIONS;
-      if (row.control !== 'op') return undefined;
-      const labels: Partial<Record<FilterOp, string>> = type === 'date' ? { ...OP_LABELS, ...DATE_OP_LABELS } : OP_LABELS;
-      return withOwn((OPS_FOR_TYPE[type ?? 'text'] ?? []).map((op) => ({ value: op, label: labels[op] ?? op })), own);
-    };
     const rows = kinds[node.kind]!.rows.map((row): GraphRow => {
-      const list = choices(row);
+      const list = rowChoices({ ...row, value: values[row.name] }, { ...facts, ...(type ? { type } : {}) });
       return { ...row, value: values[row.name], ...(row.control ? { editable: true } : {}), ...(list ? { choices: list } : {}) };
     });
     const own = { ...(node.heading ? { heading: node.heading } : {}), ...(node.description ? { description: node.description } : {}) };
@@ -151,19 +145,29 @@ export function workflowGraph(workflow: WorkflowDefinition, facts: WorkflowFacts
 }
 
 /** One edit to a workflow: a row's value, a node's own name, line or place, a route made
- *  (into an input, in place of the one there) or cut (by the input it enters). */
+ *  (into an input, in place of the one there, or beside it where the input takes many), or cut
+ *  (each by the input it enters, or the one route). */
 export type WorkflowEdit =
   | { node: string; row: string; value: unknown }
   | { node: string; set: Partial<Pick<WorkflowNode, 'heading' | 'description' | 'x' | 'y'>> }
   | { route: NodeRoute }
-  | { cut: string };
+  | { cut: string | NodeRoute };
 
 /** The workflow after one edit; the one given untouched. A value is typed as its row takes it. */
 export function editWorkflow(workflow: WorkflowDefinition, edit: WorkflowEdit, kinds: Kinds = NODE_KINDS): WorkflowDefinition {
+  const same = (a: NodeRoute, b: NodeRoute): boolean => a.from === b.from && a.to === b.to;
   if ('route' in edit) {
-    return { ...workflow, routes: [...(workflow.routes ?? []).filter((r) => r.to !== edit.route.to), { ...edit.route }] };
+    const routes = workflow.routes ?? [];
+    if (routes.some((r) => same(r, edit.route))) return workflow;
+    const { node, row } = socketOf(edit.route.to);
+    const kind = kinds[workflow.nodes.find((n) => n.id === node)?.kind ?? ''];
+    const many = !!kind && takesMany(kind, row);
+    return { ...workflow, routes: [...routes.filter((r) => many || r.to !== edit.route.to), { ...edit.route }] };
   }
-  if ('cut' in edit) return { ...workflow, routes: (workflow.routes ?? []).filter((r) => r.to !== edit.cut) };
+  if ('cut' in edit) {
+    const { cut } = edit;
+    return { ...workflow, routes: (workflow.routes ?? []).filter((r) => (typeof cut === 'string' ? r.to !== cut : !same(r, cut))) };
+  }
   const nodes = workflow.nodes.map((node) => {
     if (node.id !== edit.node) return node;
     if ('set' in edit) {
@@ -174,9 +178,11 @@ export function editWorkflow(workflow: WorkflowDefinition, edit: WorkflowEdit, k
       return Object.fromEntries([...kept, ...set.filter(([, v]) => v !== '')]) as unknown as WorkflowNode;
     }
     const row = kinds[node.kind]?.rows.find((r) => r.name === edit.row);
-    const value = row?.control === 'number' ? typedValue('number', String(edit.value ?? '')) : edit.value;
+    const value = row?.control === 'number' ? typedValue('number', String(edit.value ?? ''))
+      : row?.multiple ? [edit.value ?? []].flat().map(String) : edit.value;
     const { [edit.row]: _was, ...rest } = node.values ?? {};
-    const values = value === '' || value == null ? rest : { ...rest, [edit.row]: value };
+    // No value, empty text or an empty list: the row holds none.
+    const values = value === '' || value == null || (Array.isArray(value) && !value.length) ? rest : { ...rest, [edit.row]: value };
     const { values: _old, ...bare } = node;
     return Object.keys(values).length ? { ...bare, values } : bare;
   });

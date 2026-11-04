@@ -329,7 +329,7 @@ export function register(server) {
 
   server.registerTool('edit_workflow', {
     title: 'Edit a workflow',
-    description: 'A workflow after each edit (`editWorkflow`), checked by `checkWorkflow`. An edit is a row\'s value, `{ "node": "status", "row": "value", "value": "trial" }`; a node\'s own name, line or place, `{ "node": "filter", "set": { "heading": "Active only", "x": 400 } }`; a route made into an input, in place of the one there, `{ "route": { "from": "status/value", "to": "filter/value" } }`; or one cut by the input it enters, `{ "cut": "filter/value" }`. A value is typed as its row takes it. An edit to a node the workflow has not got is refused.',
+    description: 'A workflow after each edit (`editWorkflow`), checked by `checkWorkflow`. An edit is a row\'s value, `{ "node": "status", "row": "value", "value": "trial" }`; a node\'s own name, line or place, `{ "node": "filter", "set": { "heading": "Active only", "x": 400 } }`; a route made into an input, in place of the one there (beside it, where the input takes `many`), `{ "route": { "from": "status/value", "to": "filter/value" } }`; or routes cut, each by the input it enters, `{ "cut": "filter/value" }`, or one, `{ "cut": { "from", "to" } }`. A value is typed as its row takes it. An edit to a node the workflow has not got is refused.',
     inputSchema: {
       workflow: z.union([z.string(), z.record(z.unknown())]).describe('The workflow definition, as its JSON'),
       edits: z.union([z.string(), z.array(z.record(z.unknown()))]).describe('Each a WorkflowEdit, in turn'),

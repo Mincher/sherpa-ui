@@ -6418,10 +6418,10 @@ routes between their sockets — checked by `schemas/workflow.v1.json` and by
 - **A Filter node's rows are one condition**: `{ field, op, value }`, the condition
   tree's leaf, never a shape of its own. An `op` row holds an operator, a `number`
   row a number: `editWorkflow` types a value as its row takes it.
-- **A socket is `node` or `node/row`**: the header's, for the whole node, or a
-  row's. A route joins an output to an input that carries the same thing, a
-  value or an object; an input takes one route, and no route may close a loop,
-  or nothing would run first.
+- **A socket is `node`, `node/row` or `node/#false`**: the header's, for the whole
+  node, a row's, or a fork's False. A route joins an output to an input that
+  `accepts()` its type (`T-a-socket-says-its-type`); an input takes one route
+  unless it takes `many`, and no route may close a loop, or nothing would run first.
 - **`checkWorkflow` reports each fault and never throws**, as `checkApp` does: a
   definition from a store or an agent may be wrong, and the page still opens.
   `workflowFaults` says them without reporting: `bindWorkflow` refuses a new route
@@ -6546,6 +6546,36 @@ Sherpa draws: a page's Query and a workflow. Plan 695 N1: two registries had let
 - Site: `src/core/data/page-definition.ts`
 - Site: `test/unit/a-workflow-is-its-definition.test.mjs`
 - Site: `mcp-server/resources/query.js`
+
+### T-a-socket-says-its-type
+
+**Every socket says its type, once, in `NODE_KINDS`** — a value, an object, a
+boolean, or `any` (Will, TODO 713; plan-713 §2, M1). A workflow's JSON names
+sockets only, never types.
+
+- **`accepts(from, to)` is the one rule**: each type joins its own, and an `any`
+  input takes all three. An output never sends `any`: it says what it sends, so a
+  kind whose output is `any` is a fault on each route that leaves it.
+- **An ARRAY is an object** (Will, D17): a `multiple` row — a picklist of several,
+  HTML's own name — holds a list, and its sockets are objects; one set comes in.
+- **`many` is per socket** (D4): only an input that says it takes several routes.
+  `editWorkflow` puts a new route beside the ones there; anywhere else it replaces
+  the one there. The same route twice is a fault, and so is a second TYPE into an
+  `any` that takes many: it has no one way to join them.
+- **A fork is `branches`**: True is the header's output, False the footer's,
+  `node/#false` — a `#` part is no row, as the Query's `#filters` is not. With
+  `branches`, a kind says no header `output` of its own. True and False are
+  TRUTHINESS (Will, D2): `truthy()` says nothing — none, false, 0, NaN, blank
+  text, an empty list, set or record — is False, and the rest True. A value is
+  typed first: the TEXT "false" is something.
+- **One `rowChoices()` gives every picklist's list**, single or `multiple`: the
+  `control` names the list. An open list (fields, operators, values, stores,
+  scopes) also offers each own value it lacks, so a select shows it; a fixed list
+  (units, directions, presentations, Apply on, joins, value types) never does.
+
+- Site: `src/core/data/node-kinds.ts`
+- Site: `src/core/data/workflow.ts`
+- Site: `test/unit/a-socket-says-its-type.test.mjs`
 
 ### T-an-app-is-its-definition
 

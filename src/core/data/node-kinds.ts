@@ -1,18 +1,28 @@
 /**
  * node-kinds.ts — the ONE registry of node kinds, for every graph Sherpa draws: a page's
  * Query and a workflow. Each kind once: its header, sockets, rows and what it stands for.
- * DOM-free. Will, TODOs 78, 555 · plan 695 N1 · TRAP T-one-node-registry
+ * DOM-free. Will, TODOs 78, 555, 713 · plan 695 N1 · TRAP T-one-node-registry
+ * TRAP T-a-socket-says-its-type
  *
  * Map:
- * - SocketCarries — What a socket carries: one value, or an object (a record, or rows).
- * - RowControl — The control a row draws: text, a number, a select, a switch or ticks.
+ * - SocketType — What a socket carries: a value, an object, a boolean, or — an input only — any.
+ * - SOCKET_WORDS — Each socket type in words, as a fault or a tip says it.
+ * - accepts — Whether an output of one type may route into an input: its own type, or any.
+ * - truthy — The road a value takes: True, unless it is nothing. Will, D2.
+ * - RowControl — The control a row draws: text, a number, a switch, or the list a picklist reads.
  * - RowKind — One row a kind draws: its name, its label, its control and its sockets.
  * - NodeGraph — Where a kind is drawn: a page's Query, or a workflow.
  * - NodeKind — What a node IS: its header, its sockets, its rows, and what it stands for in the data layer.
  * - NODE_KINDS — Every kind the library ships, once. An app adds its own beside them.
  * - Socket — A socket address, read: its node, and its row or none for the header's.
  * - socketOf — Read a socket address: `node`, the header's, or `node/row`.
+ * - FALSE_SOCKET — The footer's False, as an address names it after its node.
+ * - socketType — The type one socket of a kind carries; none, it has no such socket.
+ * - takesMany — Whether an input of a kind takes several routes.
  * - NodeRoute — One route: an output socket to an input socket.
+ * - RowChoice — One pick in a row's list: the value it keeps, and its words.
+ * - RowFacts — What a row's list is read from that the registry does not say.
+ * - rowChoices — The list a picklist row reads; none, it is no picklist.
  * - GraphRow — One row as drawn: its kind's parts, the value it shows, and whether a reader may change it.
  * - GraphNode — One node as drawn: its header, its sockets, its rows and its place.
  * - DrawnGraph — Nodes and routes, ready to draw: a workflow's, or a page's Query.
@@ -21,13 +31,39 @@
  * - kindNode — A node of a kind, its rows given: the kind's header and sockets, under its own.
  * - placed — A graph with each node at its kept place.
  */
+import { DATE_OP_LABELS, OP_LABELS, OPS_FOR_TYPE, type Duration, type FilterOp } from './store.js';
+import { PRESENTATION_KINDS } from './query.js';
 
-/** What a socket carries: one value, or an object (a record, or rows). */
-export type SocketCarries = 'value' | 'object';
+/** What a socket carries: one value; an object — a record, rows, or a list, for an array is
+ *  an object (D17); a boolean, True or False; or, an input only, any of them (D1). */
+export type SocketType = 'value' | 'object' | 'boolean' | 'any';
 
-/** The control a row draws: text, a number, a select of fields, operators, directions,
- *  stores or kinds; a switch; ticks. */
-export type RowControl = 'text' | 'number' | 'field' | 'op' | 'direction' | 'store' | 'presentation' | 'switch' | 'values';
+/** Each socket type in words, as a fault or a tip says it. */
+export const SOCKET_WORDS: Readonly<Record<SocketType, string>> = { value: 'a value', object: 'an object', boolean: 'a boolean', any: 'any type' };
+
+/** Whether an output of one type may route into an input: its own type, or `any`, which takes
+ *  all. An output never sends `any`: it says what it sends. */
+export function accepts(from: SocketType, to: SocketType): boolean {
+  return from !== 'any' && (to === 'any' || to === from);
+}
+
+/** The road a value takes: True, unless it is nothing — none, false, 0, NaN, empty text, or
+ *  an empty list, set or record. Will, D2. */
+export function truthy(value: unknown): boolean {
+  if (typeof value === 'string') return value.trim() !== '';
+  if (!value) return false;
+  if (Array.isArray(value)) return value.length > 0;
+  if (value instanceof Map || value instanceof Set) return value.size > 0;
+  const proto: unknown = typeof value === 'object' ? Object.getPrototypeOf(value) : undefined;
+  return (proto !== Object.prototype && proto !== null) || Object.keys(value).length > 0;
+}
+
+/** The control a row draws: text, a number or a switch; else the list a picklist reads — the
+ *  fields, operators, the field's values, units, directions, presentations, Apply on, stores,
+ *  scopes, joins or value types (`rowChoices`). */
+export type RowControl =
+  | 'text' | 'number' | 'switch'
+  | 'field' | 'op' | 'values' | 'unit' | 'direction' | 'presentation' | 'apply' | 'store' | 'scope' | 'join' | 'type';
 
 /** One row a kind draws: its name, its label, its control and its sockets. */
 export interface RowKind {
@@ -36,8 +72,12 @@ export interface RowKind {
   label: string;
   /** None: the row only names a socket, or shows a value. */
   control?: RowControl;
-  input?: SocketCarries;
-  output?: SocketCarries;
+  /** Its list picks several, HTML's own name: its value is a list, and its sockets an object (D17). */
+  multiple?: true;
+  input?: SocketType;
+  /** Its input takes several routes, each joined as the row says (D4); else a new one replaces it. */
+  many?: true;
+  output?: SocketType;
 }
 
 /** Where a kind is drawn: a page's Query, or a workflow. */
@@ -48,9 +88,13 @@ export interface NodeKind {
   heading: string;
   icon: string;
   description?: string;
-  /** The whole node's sockets, on its header. */
-  input?: SocketCarries;
-  output?: SocketCarries;
+  /** The whole node's sockets, on its header. With `branches`, its output is True. */
+  input?: SocketType;
+  /** Its header input takes several routes (D4). */
+  many?: true;
+  output?: SocketType;
+  /** A fork: True on the header's output, False on the footer's (`node/#false`), both booleans. */
+  branches?: true;
   /** Its fixed rows; a Query node adds its own after them (a scope's fields). */
   rows: readonly RowKind[];
   /** The data layer's name for what it stands for: a shape, or the function a workflow runs it by. */
@@ -176,17 +220,86 @@ export function socketOf(address: string): Socket {
   return at < 0 ? { node: address } : { node: address.slice(0, at), row: address.slice(at + 1) };
 }
 
-/** One route: an output socket to an input socket, each `node` or `node/row`. */
+/** The footer's False, as an address names it after its node: `node/#false`. A `#` part is no row. */
+export const FALSE_SOCKET = '#false';
+
+/** The type one socket of a kind carries — its header's (no row), a row's, or its footer's
+ *  False — on one side; none, it has no such socket. */
+export function socketType(kind: NodeKind, row: string | undefined, side: 'input' | 'output'): SocketType | undefined {
+  const fork = side === 'output' && kind.branches ? 'boolean' : undefined;
+  if (row === FALSE_SOCKET) return fork;
+  return row === undefined ? fork ?? kind[side] : kind.rows.find((r) => r.name === row)?.[side];
+}
+
+/** Whether an input of a kind takes several routes: its header's (no row), or a row's. */
+export function takesMany(kind: NodeKind, row?: string): boolean {
+  return !!(row === undefined ? kind.many : kind.rows.find((r) => r.name === row)?.many);
+}
+
+/** One route: an output socket to an input socket, each `node`, `node/row` or `node/#false`. */
 export interface NodeRoute {
   from: string;
   to: string;
+}
+
+/** One pick in a row's list: the value it keeps, and its words. */
+export interface RowChoice {
+  value: string;
+  label: string;
+}
+
+/** What a row's list is read from that the registry does not say. */
+export interface RowFacts {
+  /** Each field by name, its label and type: a page definition's `source.fields`. */
+  fields?: Readonly<Record<string, { label?: string; type?: string }>>;
+  /** The type of the field the row's node is on: it picks the operators. */
+  type?: string;
+  /** Every value that field may take. */
+  values?: readonly string[];
+  /** The stores, by the names the app registered them under. */
+  stores?: readonly string[];
+  scopes?: readonly string[];
+}
+
+const UNITS: readonly Duration['unit'][] = ['day', 'week', 'month', 'year'];
+
+/** The lists that are the same on every page. */
+const FIXED: Partial<Record<RowControl, readonly RowChoice[]>> = {
+  unit: UNITS.map((u) => ({ value: u, label: `${u}s` })),
+  direction: [{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }],
+  presentation: [{ value: '', label: 'Default' }, ...PRESENTATION_KINDS.map((k) => ({ value: k, label: k[0]!.toUpperCase() + k.slice(1) }))],
+  apply: [{ value: 'change', label: 'Change' }, { value: 'input', label: 'Input' }],
+  join: [{ value: 'and', label: 'All of' }, { value: 'or', label: 'Any of' }],
+  type: [{ value: 'text', label: 'Text' }, { value: 'number', label: 'Number' }, { value: 'date', label: 'Date' }, { value: 'boolean', label: 'True/false' }],
+};
+
+/** The list a picklist row reads, for one pick or several (`multiple`); none, it is no picklist.
+ *  An open list — fields, operators, values, stores, scopes — also offers each of the row's own
+ *  values it lacks, so a select shows it. */
+export function rowChoices(row: Pick<RowKind, 'control'> & { value?: unknown }, facts: RowFacts = {}): RowChoice[] | undefined {
+  const fixed = row.control && FIXED[row.control];
+  if (fixed) return [...fixed];
+  const named = (list: readonly string[] = []): RowChoice[] => list.map((v) => ({ value: v, label: v }));
+  const type = facts.type ?? 'text';
+  const labels: Partial<Record<FilterOp, string>> = type === 'date' ? { ...OP_LABELS, ...DATE_OP_LABELS } : OP_LABELS;
+  // Is one of and Is not one of, where the field's values are known.
+  const ops = [...new Set([...OPS_FOR_TYPE[type] ?? [], ...(facts.values?.length ? ['in', 'notin'] as const : [])])];
+  const open = row.control === 'field' ? Object.entries(facts.fields ?? {}).map(([value, f]) => ({ value, label: f.label ?? value }))
+    : row.control === 'op' ? ops.map((op) => ({ value: op, label: labels[op] ?? op }))
+    : row.control === 'values' ? named(facts.values)
+    : row.control === 'store' ? named(facts.stores)
+    : row.control === 'scope' ? named(facts.scopes)
+    : undefined;
+  if (!open) return undefined;
+  const own = [...new Set([row.value].flat().filter((v) => v != null && v !== '').map(String))];
+  return [...open, ...named(own.filter((v) => !open.some((c) => c.value === v)))];
 }
 
 /** One row as drawn: its kind's parts, the value it shows, and whether a reader may change it. */
 export interface GraphRow extends RowKind {
   value?: unknown;
   /** A select's choices, by value. */
-  choices?: readonly { value: string; label: string }[];
+  choices?: readonly RowChoice[];
   /** A reader may change it; else it is read only. */
   editable?: boolean;
   /** A line under it: what it is, or why it is read only. */
@@ -200,8 +313,10 @@ export interface GraphNode {
   heading: string;
   icon: string;
   description?: string;
-  input?: SocketCarries;
-  output?: SocketCarries;
+  input?: SocketType;
+  many?: true;
+  output?: SocketType;
+  branches?: true;
   rows: readonly GraphRow[];
   x: number;
   y: number;
@@ -234,7 +349,9 @@ export function kindNode(
     id, kind, heading: k.heading, icon: k.icon, rows,
     ...(k.description ? { description: k.description } : {}),
     ...(k.input ? { input: k.input } : {}),
+    ...(k.many ? { many: k.many } : {}),
     ...(k.output ? { output: k.output } : {}),
+    ...(k.branches ? { branches: k.branches } : {}),
     ...own,
   };
 }

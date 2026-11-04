@@ -342,7 +342,7 @@
       }
     },
     "route": {
-      "description": "Joins an output socket to an input socket of the same kind. An input takes one route.",
+      "description": "Joins an output socket to an input socket that accepts its type: a value, an object or a boolean into its own type, or into an input that takes any. NODE_KINDS says each socket's type. An input takes one route, unless it takes many.",
       "type": "object",
       "additionalProperties": false,
       "required": ["from", "to"],
@@ -352,8 +352,8 @@
       }
     },
     "socket": {
-      "description": "A node's header socket, \"node\", or a row's, \"node/row\".",
-      "type": "string", "pattern": "^[a-z][a-z0-9-]*(/[a-z][a-z0-9-]*)?$"
+      "description": "A node's header socket, \"node\" (its output is True, where the node forks); a row's, \"node/row\"; or its footer's False, \"node/#false\".",
+      "type": "string", "pattern": "^[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|#false))?$"
     }
   }
 }

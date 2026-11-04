@@ -118,9 +118,16 @@ export {
 } from './core/data/page-definition.js';
 /* The ONE registry of node kinds, for a page's Query and a workflow alike. TRAP T-one-node-registry */
 export {
+  FALSE_SOCKET,
   NODE_KINDS,
+  SOCKET_WORDS,
+  accepts,
   placed,
+  rowChoices,
   socketOf,
+  socketType,
+  takesMany,
+  truthy,
   type DrawnGraph,
   type GraphEdit,
   type GraphNode,
@@ -129,10 +136,12 @@ export {
   type NodeKind,
   type NodePlaces,
   type NodeRoute,
+  type RowChoice,
   type RowControl,
+  type RowFacts,
   type RowKind,
   type Socket,
-  type SocketCarries,
+  type SocketType,
 } from './core/data/node-kinds.js';
 /* A WORKFLOW, set up from one JSON document. TRAP T-a-workflow-is-its-definition */
 export {

@@ -74,7 +74,8 @@ test('each fault is reported by name, and the check says no', () => {
     [{ routes: [{ from: 'gone', to: 'filter' }] }, 'a route leaves "gone", which is no output socket'],
     [{ routes: [{ from: 'start', to: 'filter/matches' }] }, 'a route enters "filter/matches", which is no input socket'],
     [{ routes: [{ from: 'status/value', to: 'filter' }] }, 'the route "status/value" → "filter" joins a value to an object'],
-    [{ routes: [{ from: 'start', to: 'filter' }, { from: 'start', to: 'filter' }] }, 'two routes enter "filter": an input takes one'],
+    [{ nodes: [...nodes, { id: 'more', kind: 'store', x: 0, y: 0 }], routes: [{ from: 'start', to: 'filter' }, { from: 'more', to: 'filter' }] }, 'two routes enter "filter", which takes one'],
+    [{ routes: [{ from: 'start', to: 'filter' }, { from: 'start', to: 'filter' }] }, 'the route "start" → "filter" is there twice'],
     [{ nodes: [...nodes, { id: 'again', kind: 'filter', x: 0, y: 0 }], routes: [{ from: 'filter', to: 'again' }, { from: 'again', to: 'filter' }] }, 'its routes run in a loop'],
   ];
   for (const [change, said] of cases) {

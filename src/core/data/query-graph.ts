@@ -30,7 +30,7 @@ import { answerTree, typedValue, type FieldReading, type FieldType } from './fil
 import { readingsOf, treeReading } from './where.js';
 import { presetHeld } from './query-edits.js';
 import type { FieldDomain } from './validate.js';
-import { NODE_KINDS, kindNode, socketOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeRoute } from './node-kinds.js';
+import { NODE_KINDS, kindNode, rowChoices, socketOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeRoute } from './node-kinds.js';
 import { traceStep, type Span, type TraceContext } from './trace.js';
 import type { Walk } from './walk.js';
 
@@ -201,7 +201,7 @@ function conditionRows(
     return rowsOf('condition', { field, op: many, value: ticked }).map((row): GraphRow => (row.name === 'field'
       ? { ...row, editable: true, choices: fields }
       : row.name === 'op' ? { ...row, editable: true, choices: [...MANY].map((o) => ({ value: o, label: OP_LABELS[o as FilterOp] })) }
-      : { ...row, control: 'values', editable: true, choices: picks }));
+      : { ...row, control: 'values', multiple: true, editable: true, choices: picks }));
   }
   return rowsOf('condition', { field, op, value: value ?? '' }).map((row): GraphRow => {
     if (!plain) return row;
@@ -232,8 +232,8 @@ function presentationRows(
   presented: Presentation, kind: string | undefined,
   keys: readonly { value: string; label: string }[], slot: boolean,
 ): GraphRow[] {
-  const kinds = [{ value: '', label: kind ? `Default (${kind})` : 'Default' }, ...PRESENTATION_KINDS.map((k) => ({ value: k, label: k[0]!.toUpperCase() + k.slice(1) }))];
-  const sorts = [{ value: '', label: 'None' }, { value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }];
+  const kinds = rowChoices({ control: 'presentation' })!.map((c) => (c.value || !kind ? c : { ...c, label: `Default (${kind})` }));
+  const sorts = [{ value: '', label: 'None' }, ...rowChoices({ control: 'direction' })!];
   return rowsOf('presentation', { ...presented, kind: presented.kind ?? '' }).map((row): GraphRow => (slot
     ? { ...row, editable: true, choices: row.name === 'kind' ? kinds : row.name === 'sort' ? sorts : keys, value: String(row.value ?? '') }
     : { ...row, value: row.name === 'kind' ? kind : row.value, hint: 'It shares the View: no slot keeps its own.' }));
@@ -357,11 +357,10 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     let out = node;
     if (arranging(scope)) {
       const first = scope.sort?.[0];
-      const directions = [{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }];
       // Sort, Group and Search change as their chips do.
       out = add(7, QUERY_NODE.arrange(id), 'arrange', rowsOf('arrange', {
         sort: first?.field ?? '', direction: first?.direction ?? 'asc', group: scope.group ?? '', search: scope.search ?? '',
-      }).map((row) => (row.name === 'search' ? { ...row, editable: true } : { ...row, editable: true, choices: row.name === 'direction' ? directions : keys })), {
+      }).map((row) => (row.name === 'search' ? { ...row, editable: true } : { ...row, editable: true, choices: row.name === 'direction' ? rowChoices(row)! : keys })), {
         ref: { scope: id },
       });
       routes.push({ from: node, to: out });
