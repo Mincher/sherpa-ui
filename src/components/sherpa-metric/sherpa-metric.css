@@ -1,6 +1,5 @@
 /* == sherpa:tokens (generated — do not edit) == */
 /* State pins, from scripts/figma-data/state-pins.yaml. Unlayered, as the shared pins are. */
-:host(sherpa-metric:is([data-look="transparent"], [data-look="saturated"]):is([data-status="info"], [data-status="critical"], [data-status="warning"], [data-status="urgent"], [data-status="success"], [data-status="active"], [data-status="inactive"])) { --_mode: initial; }
 :host(sherpa-metric[data-trend="up"]) { --_mode: success; --_mode-viz: success; }
 :host(sherpa-metric[data-trend="down"]) { --_mode: critical; --_mode-viz: critical; }
 /* == end sherpa:tokens == */

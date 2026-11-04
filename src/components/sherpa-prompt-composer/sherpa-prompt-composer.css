@@ -1,6 +1,5 @@
 /* == sherpa:tokens (generated — do not edit) == */
 /* State pins, from scripts/figma-data/state-pins.yaml. Unlayered, as the shared pins are. */
-:host(sherpa-prompt-composer:is([data-look="transparent"], [data-look="saturated"]):is([data-status="info"], [data-status="critical"], [data-status="warning"], [data-status="urgent"], [data-status="success"], [data-status="active"], [data-status="inactive"])) { --_mode: initial; }
 :host(sherpa-prompt-composer[disabled]) { --_mode: inactive; --_mode-viz: inactive; }
 /* == end sherpa:tokens == */
 

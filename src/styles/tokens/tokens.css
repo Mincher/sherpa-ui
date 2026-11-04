@@ -31,6 +31,9 @@
 /* A pin's mode, for the element's own children only. TRAP T-a-host-state-pin-lives-where-the-host-is */
 @property --_mode { syntax: "*"; inherits: false; }
 @property --_mode-viz { syntax: "*"; inherits: false; }
+/* WebKit re-matches a style query after a change only for a property a DOCUMENT
+   sheet queries, so this one names both. It matches nothing. */
+@container style(--_mode: none) or style(--_mode-viz: none) { :root { --_mode-watch: none; } }
 
 @layer core {
 

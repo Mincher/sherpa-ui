@@ -50,11 +50,17 @@ in Chromium, Firefox and WebKit:
   readings change). A query sidesteps it: the status re-points the host, the
   pin re-maps inside. But the old order was specificity: a look with a status
   (0,2,0) beat a state of one attribute (0,1,1), and lost to one of two. One
-  guard heads each region, `:host(tag:is(looks):is(statuses)) { --_mode: initial; }`
-  at (0,3,1).
+  shared guard, `:host(:is(looks):is(statuses)) { --_mode: initial; }` at
+  (0,3,0), sits between `:host(tag[a])` (0,2,1) and `:host(tag[a][b])` (0,3,1).
 - **The old cascade worked per property.** A look's mode has no data-viz names,
   so a lower plain pin supplied them. A plain pin also sets `--_mode-viz`, whose
   blocks re-map only those.
+- **WebKit 26 re-matches a style query after a change only for a property that
+  a sheet of the container's own tree queries.** A state set after first paint
+  never reached the parts of a host in the page. `tokens.css` carries a query
+  that matches nothing and names `--_mode` and `--_mode-viz`; every Sherpa root
+  adopts the mode blocks, and a non-Sherpa shadow root must adopt
+  `sherpa-style-modes.css` itself.
 - **The minifier wrote `--_mode: transparent` as `#0000`**, a colour, so the
   query never matched. A look's key always says its mode: `transparent-default`.
 - What every root derives on its `:host` (the hover fill, the scroll shadow's

@@ -32,7 +32,6 @@
   --_status-data-viz-border: initial;
 }
 
-:host(sherpa-input-text:is([data-look="transparent"], [data-look="saturated"]):is([data-status="info"], [data-status="critical"], [data-status="warning"], [data-status="urgent"], [data-status="success"], [data-status="active"], [data-status="inactive"])) { --_mode: initial; }
 :host(sherpa-input-text[data-error]) { --_mode: critical; --_mode-viz: critical; }
 :host(sherpa-input-text[disabled]) { --_mode: inactive; --_mode-viz: inactive; }
 

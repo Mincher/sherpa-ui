@@ -601,6 +601,10 @@
   --_status-surface-strong: var(--sherpa-style-saturated-inactive-surface-base-2);
 }
 
+:host(:is([data-look="transparent"], [data-look="saturated"]):is([data-status="info"], [data-status="critical"], [data-status="warning"], [data-status="urgent"], [data-status="success"], [data-status="active"], [data-status="inactive"])) {
+  --_mode: initial;
+}
+
 @container style(--_mode: critical) {
   * {
     --sherpa-style-border-base: var(--sherpa-style-critical-border-base);

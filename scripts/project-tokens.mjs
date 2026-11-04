@@ -416,7 +416,10 @@ const propertyRegistrations = `/* Registered HERE because a shadow root cannot.
 @property --sherpa-group-last-row { syntax: "<number>"; inherits: false; initial-value: 0; }
 /* A pin's mode, for the element's own children only. TRAP T-a-host-state-pin-lives-where-the-host-is */
 @property --_mode { syntax: "*"; inherits: false; }
-@property --_mode-viz { syntax: "*"; inherits: false; }`;
+@property --_mode-viz { syntax: "*"; inherits: false; }
+/* WebKit re-matches a style query after a change only for a property a DOCUMENT
+   sheet queries, so this one names both. It matches nothing. */
+@container style(--_mode: none) or style(--_mode-viz: none) { :root { --_mode-watch: none; } }`;
 
 // ════════════════════════════════════════════════════════════════════════════
 // Collect leaves per collection and route them. Each layer bucket holds `root`
@@ -1018,13 +1021,11 @@ function partIsComponent(tag, part) {
   if (!el) warn(`state-pins: ${tag} "${part}": no element of class "${cls}" in its template`);
   return !!el && el[1].startsWith('sherpa-');
 }
-/** The class-level weight of a compound: attributes, classes, pseudo-classes; a :not() by its argument. */
-const weight = (sel) =>
-  (sel.replace(/"[^"]*"/g, '""').replace(/:(not|is)\(/g, '(').match(/\[[^\]]*\]|\.[\w-]+|:[\w-]+/g) ?? []).length;
 /* A look with a status, [data-look][data-status] (0,2,0), beat a host state of
-   one attribute (0,1,1) on the host, and lost to one of two. Inside the root it
-   is the same: this guard, at (0,3,1), drops the one-attribute pins. */
-const LOOK_STATUS = `:is(${LOOKS.map((l) => `[data-look="${l}"]`).join(', ')}):is(${STATUS_MODES.map((s) => `[data-status="${s}"]`).join(', ')})`;
+   one attribute (0,1,1) on the host, and lost to one of two. Inside every root it
+   is the same: this one shared guard, at (0,3,0), sits between `:host(tag[a])`
+   (0,2,1) and `:host(tag[a][b])` (0,3,1). */
+const lookStatusGuard = `  :host(:is(${LOOKS.map((l) => `[data-look="${l}"]`).join(', ')}):is(${STATUS_MODES.map((s) => `[data-status="${s}"]`).join(', ')})) {\n    --_mode: initial;\n  }`;
 if (existsSync(STATE_PINS)) {
   const pins = yaml.load(readFileSync(STATE_PINS, 'utf8')) ?? {};
   // At the END of the list: a block joined twice has a list, not one line. TODO 490
@@ -1033,8 +1034,6 @@ if (existsSync(STATE_PINS)) {
   for (const [tag, rules] of Object.entries(pins)) {
     const isClass = tag.startsWith('.');
     if (!isClass && !existsSync(join(COMPONENTS, tag))) warn(`state-pins: no component "${tag}"`);
-    let guard = false;
-    let first;
     for (const [selector, spec] of Object.entries(rules ?? {})) {
       const m = /^&(\S*)(.*)$/.exec(selector);
       // `mode @hook`: a page may re-point this pin. TRAP T-a-pin-a-page-can-re-point
@@ -1083,12 +1082,8 @@ if (existsSync(STATE_PINS)) {
         bareHostBlocks.push(pinBlock(tag, mode, look, hook));
         continue;
       }
-      guard ||= weight(m[1]) < 2;
-      first ??= ownPinBlocks.get(tag)?.length ?? 0;
       own(tag, `  :host(${tag}${m[1]}) { ${modeLines(key, mode, look, hook)} }`);
     }
-    // Before every host pin: a two-attribute pin ties it, and wins by order.
-    if (guard) ownPinBlocks.get(tag).splice(first, 0, `  :host(${tag}${LOOK_STATUS}) { --_mode: initial; }`);
   }
 }
 
@@ -1984,7 +1979,7 @@ writeFileSync(
  * [data-look] is left out: it would reset a status set above it.
  * TRAP T-tokens-css-never-reaches-shadow · TRAP T-a-host-state-pin-lives-where-the-host-is
  */
-${[derivedHostBlock, ...statusBlocks, ...lookPinBlocks, ...classPinBlocks.map((b) => b.block), ...modeBlocks].join('\n\n').replace(/^ {2}/gm, '')}
+${[derivedHostBlock, ...statusBlocks, ...lookPinBlocks, ...classPinBlocks.map((b) => b.block), lookStatusGuard, ...modeBlocks].join('\n\n').replace(/^ {2}/gm, '')}
 `,
 );
 
