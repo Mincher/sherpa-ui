@@ -363,6 +363,16 @@ Node, so it is the first test bed for 170's source handler
 **Will, 2026-11-04: A for all nine** (Q1–Q9, the picks below). G0 starts first, alone in
 the spec generator.
 
+**G0 ✅ (`d05b300e`).** Each spec carries `asks` (9 specs), `takes` (3), `presents` (5, six
+kinds) and `settings` (3), read from the class by `parseDataDecls` (ts-facts.mjs); a value
+that is not a literal stops the generator; an ask's function is written `true`.
+`component.v1.json` defines `shape`, `take` and `presents` once (a test holds them to
+`context.ts`). The reference gains a Data section and a Settings table; the manifest names
+a setting in its attribute's description. `schemas/pattern.v1.json`: `v`, `id`, `label`,
+`use`, `when` (defs `where`), `layout` (the anatomy node, split into `nodeParts` + `node`,
+adding `role`, `each`, `max`); optional `rank` (higher first), `page` (defs `scope` and
+`ui`), `states`, `agent`; `$defs/need`. Lane picks taken (A for all five).
+
 | # | Question | A (my pick) | B |
 |---|---|---|---|
 | Q1 | Where the new MCP lives | `mcp-server/`, rewritten in place; package `sherpa-ui-mcp` (the Starter's `.mcp.json` names it); gated in this repo | A sibling project, like the Starter |
