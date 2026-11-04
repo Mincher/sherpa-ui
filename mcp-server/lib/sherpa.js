@@ -16,8 +16,10 @@
  * - spec — a component's spec; null for a name that is no component
  * - example — a component's example, its markup joined; null when it has none
  * - schemas — each contract in schemas/ by name, `page` for page.v1.json, with its own title
+ * - patterns — the name of each pattern sherpa-ui ships in patterns/, in order
  * - tokens — every token tokens.css declares: its layer, first value and how often it is set
  * - appFile — a file of an app's, by its path from the app's folder; null when not there or outside it
+ * - appFiles — the files in one folder of an app's, by name, in order; none when it is not there or outside it
  * - starterFiles — a new app's files, as create-sherpa-ui writes them; null where it is not installed
  */
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
@@ -48,6 +50,7 @@ export const READS = {
   appGuide: 'docs/APP-GUIDE.md',
   dataRules: 'docs/DATA-SOURCE-RULES.md',
   tokens: 'src/styles/tokens/tokens.css',
+  pattern: 'patterns/{name}.json',
   // Code that no export names, run by path: check_usage is `npx sherpa-ui check-usage`'s own check.
   usage: 'scripts/check-usage.mjs',
 };
@@ -127,6 +130,13 @@ export function schemas() {
   });
 }
 
+/** The name of each pattern sherpa-ui ships in patterns/, in order: `records-list` for records-list.json. */
+export function patterns() {
+  const dir = path.join(SHERPA_ROOT, path.dirname(READS.pattern));
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).filter((f) => f.endsWith('.json')).sort().map((f) => f.slice(0, -'.json'.length)).filter((n) => SEGMENT.test(n));
+}
+
 /** Every token tokens.css declares: its layer, its first value and how many times it is set. */
 export function tokens() {
   const out = new Map();
@@ -150,6 +160,14 @@ export function appFile(folder, rel) {
   const file = path.resolve(root, String(rel ?? ''));
   if (!file.startsWith(root + path.sep) || !existsSync(file) || !statSync(file).isFile()) return null;
   return readFileSync(file, 'utf8');
+}
+
+/** The files in one folder of an app's, by name, in order; none when it is not there, or the path leaves the app's folder. */
+export function appFiles(folder, rel) {
+  const root = path.resolve(folder);
+  const dir = path.resolve(root, String(rel ?? ''));
+  if (!dir.startsWith(root + path.sep) || !existsSync(dir) || !statSync(dir).isDirectory()) return [];
+  return readdirSync(dir).filter((f) => statSync(path.join(dir, f)).isFile()).sort();
 }
 
 /** Every file under a folder, by its path from it with `/`, and its text, in order. */

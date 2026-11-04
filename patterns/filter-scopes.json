@@ -1,0 +1,37 @@
+{
+  "$schema": "../schemas/pattern.v1.json",
+  "v": 1,
+  "id": "filter-scopes",
+  "label": "A View bar over a data bar",
+  "use": "Many rows read in two steps: the View bar sets the context every component on the page is narrowed by — a date, a status — and the data bar narrows the records card alone, so the summary above it counts the whole View. The page draws its own View bar, so its Context takes the header's filter row away (chrome.filters false).",
+  "when": { "task": { "in": ["browse", "find", "triage", "explore", "report"] }, "rows": { "gt": 50 } },
+  "rank": 10,
+  "layout": {
+    "el": "sherpa-layout-grid",
+    "children": [
+      { "role": "view-bar", "el": "sherpa-quick-filter-toolbar", "attrs": { "data-type": "view", "data-scope": "view", "data-col-span": "full" } },
+      { "role": "count", "el": "sherpa-metric", "attrs": { "data-col-span": "xsmall", "data-label": "In this View", "data-aggregate": "count" } },
+      { "role": "by-status", "el": "sherpa-container", "each": "statusField", "max": 2, "attrs": { "data-col-span": "medium", "data-fill": true }, "children": [
+        { "el": "sherpa-container-header", "attrs": { "slot": "header", "data-heading": "{label}" } },
+        { "el": "sherpa-radial-chart", "attrs": { "data-grow": true, "data-segment-field": "{field}" } }
+      ] },
+      { "role": "records", "el": "sherpa-container",
+        "attrs": { "data-scope": "data", "data-col-span": "full", "data-padding": "none", "data-padding-inline": "md", "data-fill": true },
+        "children": [
+          { "el": "sherpa-stack", "attrs": { "data-gap": "md", "data-fill": true }, "children": [
+            { "role": "data-bar", "el": "sherpa-quick-filter-toolbar", "attrs": { "data-scope": "data" } },
+            { "role": "rows", "el": "sherpa-data-grid", "attrs": { "id": "grid", "data-scope": "data", "data-grow": true } }
+          ] },
+          { "role": "pager", "el": "sherpa-pagination", "attrs": { "slot": "footer" } }
+        ] }
+    ]
+  },
+  "page": {
+    "scopes": {
+      "view": { "label": "View", "holds": ["{dateField}", "{statusField}"] },
+      "data": { "label": "Records", "offers": "all" }
+    }
+  },
+  "states": ["loading", "empty", "no-matches", "unreached", "down"],
+  "agent": { "may": ["by-status", "count", "columns", "presets"], "keeps": ["view-bar", "data-bar", "rows", "pager"] }
+}

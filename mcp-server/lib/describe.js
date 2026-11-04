@@ -6,13 +6,20 @@
  *
  * Map:
  * - RULES — the rules that cross by name: sherpa-ui/data's own, less `custom`
- * - ruleMap — rules by name made into sherpa-ui/data's own rule functions, and each that could not be made
  * - RULE_FORM — what a rule by name is, said once for an agent
+ * - ruleMap — rules by name made into sherpa-ui/data's own rule functions, and each that could not be made
  * - ruleCode — rules by name as the code a store is given
+ * - labelOf — a field's name as a reader reads it: `openTickets` → "Open tickets"
  * - fromRows — rows → each field's rules, its page field and the evidence for both
  * - fromSchema — a JSON Schema or an OpenAPI document → the same, and what it says that nothing carries
+ * - fromFields — a page's own fields → the same: what it declares, and no rule
+ * - statusProblems — the status fields an agent gives, against what statusFields() takes: each problem, none when sound
+ * - withStatus — the fields, and each status field the data does not show, as a list a page filters by
+ * - statusRows — rows as a store that works out status fields gives them: each with its status values
+ * - fieldKinds — the fields of each kind a pattern's `each` stands for, each with its label
  * - needOf — the need a pattern is picked by: what the data says, and the task and writes as the agent says them
  */
+import { schemaCheck } from './check.js';
 
 /** The rules that cross by name, and what each takes: sherpa-ui/data's own, less `custom`, which is code. */
 export const RULES = {
@@ -81,7 +88,7 @@ const absent = (v) => v === undefined || v === null || v === '';
 /** An ISO day, with a time of day or not: what a date field holds. */
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}(?<time>[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/;
 /** A field's name as a reader reads it: `openTickets` → "Open tickets". */
-const labelOf = (field) => {
+export const labelOf = (field) => {
   const words = field.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/[_\-.]+/g, ' ').trim().toLowerCase();
   return words.charAt(0).toUpperCase() + words.slice(1);
 };
@@ -112,10 +119,12 @@ export function fromRows(dl, rows, key = 'id') {
     if (kinds.length > 1) out.why.push(`its values are of ${kinds.length} kinds: ${kinds.join(', ')}`);
     if (kinds.includes('array')) {
       out.left ??= 'a list: a filter compares one value, never one of a list\'s';
+      out.nested = true;
       return out;
     }
     if (kinds.includes('object')) {
       out.left ??= `an object: a page reaches a part of it by a dotted path, ${name}.part`;
+      out.nested = true;
       return out;
     }
     const label = labelOf(name);
@@ -141,6 +150,7 @@ export function fromRows(dl, rows, key = 'id') {
       const distinct = new Set(present.map((v) => dl.valueKey(v))).size;
       if (distinct === present.length && present.length > 1 && kinds[0] === 'string') {
         out.left ??= `every value differs: a field to search (source.search), not a list to filter by`;
+        out.search = name !== key;
       } else {
         out.why.push(`${distinct} distinct value(s) in ${present.length}: a list to filter by`);
         out.field = { label, select: 'multiple' };
@@ -213,6 +223,7 @@ export function fromSchema(doc, { path: pathHint, key = 'id' } = {}) {
       for (const kw of ['exclusiveMinimum', 'exclusiveMaximum', 'multipleOf']) if (s[kw] !== undefined) uncarried.push(`${name}: ${kw} has no rule (min and max hold their ends)`);
     } else if (type === 'object' || type === 'array') {
       out.left = type === 'array' ? 'a list: a filter compares one value, never one of a list\'s' : `an object: a page reaches a part of it by a dotted path, ${name}.part`;
+      out.nested = true;
       uncarried.push(`${name}: ${type === 'array' ? 'a rule checks one value, not each item' : 'its own properties have no rules here'}`);
     } else {
       const format = s.format;
@@ -247,12 +258,58 @@ export function fromSchema(doc, { path: pathHint, key = 'id' } = {}) {
   return { fields, via, uncarried };
 }
 
+/** A page's own fields (its definition's `source.fields`) → each field as fromRows says one: what the page declares, and no rule. */
+export function fromFields(declared) {
+  return Object.entries(declared).map(([name, field]) => ({ name, rules: [], field, why: ['the page declares it'], left: null }));
+}
+
+/** The status fields an agent gives, against what statusFields() takes (defs.v1.json statusField): each problem, none when sound. */
+export function statusProblems(status) {
+  if (!isObject(status)) return ['`status` is an object of field → its status field'];
+  return Object.entries(status).flatMap(([f, d]) => schemaCheck('defs.v1.json#/$defs/statusField')(d).map((e) => `status.${f}${e}`));
+}
+
+/** The fields, and each status field the data does not show (a schema's, a page's), as a list a page filters by: its store works its values out. */
+export function withStatus(fields, status) {
+  for (const [name, def] of Object.entries(status ?? {})) {
+    if (!fields.some((f) => f.name === name)) fields.push({ name, rules: [], field: { label: def.label ?? labelOf(name), select: 'multiple' }, why: ['a status field: its store works it out'], left: null });
+  }
+  return fields;
+}
+
+/** Rows as a store that works out these status fields gives them (statusFields, as the app wraps its store): each row with its status values. It throws, in the data layer's words, on a condition it cannot work out. */
+export async function statusRows(dl, rows, status, key = 'id') {
+  return (await dl.statusFields(new dl.ArrayStore(rows.map((r) => ({ ...r })), { key }), status).load({})).rows;
+}
+
+/**
+ * The fields of each kind a pattern's `each` stands for (pattern.v1.json), each
+ * `{ name, label }`: `field` is every field a reader may write — not the key, a
+ * list or an object, which no one input holds, nor a status, which its store
+ * works out; `statusField` each one `status` names; `childField` each field
+ * another names as its `child`.
+ */
+export function fieldKinds(fields, { key = 'id', status = [] } = {}) {
+  const one = (f) => ({ name: f.name, label: f.field?.label ?? labelOf(f.name) });
+  const typed = (t) => fields.filter((f) => f.field?.type === t).map(one);
+  const children = new Set(fields.map((f) => f.field?.child).filter(Boolean));
+  return {
+    field: fields.filter((f) => f.name !== key && !f.nested && !status.includes(f.name)).map(one),
+    dateField: typed('date'),
+    numberField: typed('number'),
+    statusField: fields.filter((f) => status.includes(f.name)).map(one),
+    childField: fields.filter((f) => children.has(f.name)).map(one),
+  };
+}
+
 /**
  * The need a pattern is picked by (pattern.v1.json `need`): what the data says,
- * and the task and writes as the agent says them. A status field is its store's
- * and a child its page's, so neither is counted here.
+ * and the task and writes as the agent says them. A status field is its
+ * store's, so it is counted only when `status` names them; a child is its
+ * page's, so only when the fields are the page's own (`declared`). A sample
+ * shows neither: left out, each is unknown, not none.
  */
-export function needOf(fields, { rows, task, writes } = {}) {
+export function needOf(fields, { rows, task, writes, status, declared = false } = {}) {
   const typed = (t) => fields.filter((f) => f.field?.type === t).length;
   return {
     ...(task ? { task } : {}),
@@ -260,6 +317,8 @@ export function needOf(fields, { rows, task, writes } = {}) {
     fields: fields.length,
     dateFields: typed('date'),
     numberFields: typed('number'),
+    ...(status ? { statusFields: status.length } : {}),
+    ...(declared ? { childFields: fieldKinds(fields).childField.length } : {}),
     ...(writes != null ? { writes } : {}),
   };
 }

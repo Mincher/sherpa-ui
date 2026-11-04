@@ -16,7 +16,7 @@
     "rank": { "description": "Its place among the patterns that fit: the highest first.", "type": "number" },
     "layout": { "$ref": "#/$defs/node" },
     "page": {
-      "description": "What it adds to the page definition (page.v1.json): its scopes, and its components' configuration.",
+      "description": "What it adds to the page definition (page.v1.json): its scopes, and its components' configuration. A pattern names no field, as its fields are the data's: in a scope's holds, fixed, alwaysOn or offers, a kind in braces, {dateField}, stands for every field of that kind.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -45,7 +45,7 @@
       "$ref": "component.v1.json#/$defs/nodeParts",
       "properties": {
         "role": { "description": "What it does in the pattern: what `agent` names.", "$ref": "defs.v1.json#/$defs/id" },
-        "each": { "description": "One of it for each of the need's fields of this kind.", "enum": ["field", "dateField", "numberField", "statusField", "childField"] },
+        "each": { "description": "One of it for each of the need's fields of this kind: field, every field a reader writes. In its attrs and below it, {field} is that field's name and {label} its label; {id}, anywhere, is the page's.", "enum": ["field", "dateField", "numberField", "statusField", "childField"] },
         "max": { "description": "At most this many of it, with `each`.", "type": "integer", "minimum": 1 },
         "slot": false,
         "showWhen": false,

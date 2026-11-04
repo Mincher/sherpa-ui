@@ -49,6 +49,9 @@ export const SAMPLES = {
   edit_query_graph: { ...PAGE, edits: [{ node: 'when-data-plan', row: 'op', value: 'notin' }] },
   workflow_graph: { workflow: WORKFLOW },
   edit_workflow: { workflow: WORKFLOW, edits: [{ node: 'out', set: { heading: 'Pro people' } }] },
+  pick_pattern: { need: { task: 'triage', rows: 120, fields: 3, dateFields: 0, numberFields: 1, writes: true } },
+  generate_page: { pattern: 'records-list', id: 'people', rows: PAGE.rows.map((r, i) => ({ ...r, name: `Person ${i}`, seats: i * 3 })), task: 'triage', writes: true },
+  build_page: { task: 'triage' },
 };
 
 /** A static import or re-export at the start of a line: `import 'x'`, or `… from 'x'`. */

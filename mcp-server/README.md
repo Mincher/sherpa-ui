@@ -7,7 +7,7 @@ beside it — its specs, schemas, docs and tokens — and runs its own checks, i
 data layer and its usage check, never a copy of them. Each tool, resource and
 prompt below is written from the code that registers it.
 
-**14 tools · 8 resources · 0 prompts.**
+**16 tools · 10 resources · 1 prompt.**
 
 ## Setup
 
@@ -75,13 +75,15 @@ Markup against the component specs, as `npx sherpa-ui check-usage` checks an app
 
 #### `describe_data` — Describe data
 
-Rows, or a JSON Schema or an OpenAPI document, said in Sherpa's terms: the store's rules, by name, with the evidence for each and as code; a page's `fields`, each a field declaration (defs.v1.json); and the need a pattern is picked by (pattern.v1.json). From rows nothing is drawn from a field's name, and nothing a sample cannot show is proposed; from a schema, what it promises may be a rule, and what no rule carries is listed. Each output is checked against its contract before it is given. validate_rows checks the rules against rows.
+Rows, a JSON Schema or an OpenAPI document, or a page's own fields, said in Sherpa's terms: the store's rules, by name, with the evidence for each and as code; a page's `fields`, each a field declaration (defs.v1.json); and the need a pattern is picked by (pattern.v1.json), which pick_pattern takes. From rows nothing is drawn from a field's name, and nothing a sample cannot show is proposed; from a schema, what it promises may be a rule, and what no rule carries is listed. A status field is the store's, so the need counts one only when `status` gives it, and a child is the page's, so only when `fields` are given. Each output is checked against its contract before it is given. validate_rows checks the rules against rows.
 
 - `rows` (optional) — The rows, as a JSON array of plain objects: a real page of a real answer
 - `schema` (optional) — Instead of rows: a JSON Schema of one row or of an array of rows, or an OpenAPI document, as JSON
+- `fields` (optional) — Instead of rows: a page's own fields, as JSON — its definition's `source.fields` — so the need counts each child a field names (`child`)
+- `status` (optional) — The status fields its store works out, as JSON, as `statusFields(store, { … })` takes them (defs.v1.json statusField): {"health":{"type":"status","values":[{"value":"At risk","status":"critical","when":[{"score":{"lt":60}}]},{"value":"Healthy"}]}}. With rows, each row is given its value by the data layer's own statusFields()
 - `path` (optional) — For an OpenAPI document: the path whose GET answers with the rows, e.g. /customers. Default: its first
 - `key` (optional) — The field each row is known by. Default: id
-- `task` (optional) — The agent's word for the work, for the need: browse, find, triage, edit…
+- `task` (optional) — The agent's word for the work, for the need: browse, find, triage, edit, settings…
 - `writes` (optional) — Whether a reader may change the rows, for the need
 
 #### `validate_rows` — Validate rows
@@ -149,6 +151,31 @@ A workflow after each edit (`editWorkflow`), checked by `checkWorkflow`. An edit
 - `workflow` — The workflow definition, as its JSON
 - `edits` — Each a WorkflowEdit, in turn
 
+### The compose tier: a need → a pattern → a page, each page checked · `tools/compose.js`
+
+#### `pick_pattern` — Pick a pattern
+
+The patterns that fit a need, as describe_data gives it: each pattern's `when` run over the need as ONE row, through the data layer's own condition (`parseWhere`, `conditionClause`, `filterRows`). Highest `rank` first; each with every part of its `when` and whether it held, and the ones that do not fit, with the part that failed. Sherpa's patterns and the app's own — a patterns/ folder beside its app.json, where one of the same id replaces Sherpa's. A pattern that fits but fails checkPattern against the need is listed with its problems, never picked. generate_page makes the page from the first.
+
+- `need` — The need, as JSON (pattern.v1.json need): `{ "task": "triage", "rows": 4200, "fields": 9, "dateFields": 1, "numberFields": 3, "statusFields": 1, "writes": true }`
+- `app` (optional) — The app's folder, or its app.json, whose patterns/ folder adds the app's own patterns; relative paths start where the MCP runs. Default: the folder the MCP runs in
+
+#### `generate_page` — Generate a page
+
+A pattern and the data → a page: its template (the layout written as HTML, each `each` once per field of its kind), its page definition (the data's fields, the pattern's scopes with each `{kind}` the fields of that kind, its `ui`, and a grid's columns and key from the data) and its first View; or, for a pattern with no data source, a Settings page's template. With the paths to write them at and the app.json entry; a page that draws its own View bar takes the header's away (`chrome.filters: false`). The pattern is checked against the need first (checkPattern), and every file by validate_page's own check before it is given: one that fails is refused, with what failed.
+
+- `pattern` — A pattern's id, as pick_pattern gives it, or a pattern as JSON (pattern.v1.json), to try one of the app's own
+- `id` — The page's id: its Context's name in app.json, and its files', e.g. customers
+- `rows` (optional) — The rows, as a JSON array: what describe_data was given
+- `fields` (optional) — Instead of rows: a page's own fields, as JSON (its definition's `source.fields`)
+- `status` (optional) — The status fields the store works out, as statusFields(store, { … }) takes them, as describe_data takes them
+- `key` (optional) — The field each row is known by. Default: id
+- `store` (optional) — The name the app registers its store under. Default: the page's id
+- `label` (optional) — Its row's name in the nav. Default: from its id
+- `task` (optional) — The agent's word for the work, for the need, as pick_pattern was given it
+- `writes` (optional) — Whether a reader may change the rows, for the need
+- `app` (optional) — The app's folder, or its app.json, whose patterns/ folder adds the app's own patterns; relative paths start where the MCP runs. Default: the folder the MCP runs in
+
 ## Resources
 
 ### The read tier's resources: sherpa-ui's own files, as they ship · `resources/read.js`
@@ -169,9 +196,18 @@ A workflow after each edit (`editWorkflow`), checked by `checkWorkflow`. An edit
 |---|---|
 | `sherpa://node-kinds` | **The node kinds.** Every node kind sherpa-ui ships, as `NODE_KINDS` in `sherpa-ui/data` says it, by name: its heading, icon and description, its header's sockets (`input`, `output`), its rows (each `name`, `label`, `control` and sockets), the data layer's `model` for it, and the `graphs` it is drawn in — a page's Query, a workflow or both |
 
+### The compose tier: a need → a pattern → a page, each page checked · `tools/compose.js`
+
+| URI | Is |
+|---|---|
+| `sherpa://patterns` | **The patterns.** Every pattern pick_pattern picks from, as JSON: Sherpa's (sherpa-ui's patterns/) and the app's own (a patterns/ folder beside the app.json in the folder the MCP runs in), where one of the same id replaces Sherpa's — each one's id, label, use, when and rank, and where it is from; and each file refused, with why. Each is pattern.v1.json (`sherpa://schemas/pattern`) |
+| `sherpa://pattern/{id}` | **A pattern.** One pattern, by id, as its file holds it: the app's where it has one of that id, else Sherpa's |
+
 ## Prompts
 
-None yet.
+### The compose tier: a need → a pattern → a page, each page checked · `tools/compose.js`
+
+- `build_page` — Build a page of a Sherpa app from its data: describe_data → pick_pattern → generate_page → validate_page → preview_page. The steps are skills/build-page/SKILL.md, the skill this package ships.
 
 ## Adding to it
 

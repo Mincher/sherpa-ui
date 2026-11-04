@@ -15,7 +15,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { mcpGraph } from '../../scripts/check-mcp-pack.mjs';
-import { IMPORTS, READS, components } from '../../mcp-server/lib/sherpa.js';
+import { IMPORTS, READS, components, patterns } from '../../mcp-server/lib/sherpa.js';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 /** The contracts plan 700 serves. */
@@ -35,6 +35,7 @@ test('sherpa-ui packs every file the MCP reads and every entry it runs, no Figma
   const want = new Set();
   for (const [key, pattern] of Object.entries(READS)) {
     if (key === 'schema') for (const name of SCHEMAS) want.add(fill(pattern, { name }));
+    else if (key === 'pattern') for (const name of patterns()) want.add(fill(pattern, { name }));
     else if (!pattern.includes('{')) want.add(pattern);
     else for (const { name } of components()) for (const kind of ['ts', 'html', 'css']) want.add(fill(pattern, { name, kind }));
   }
@@ -53,6 +54,8 @@ test('sherpa-ui-mcp packs the code it imports, nothing outside its folder, and d
     assert.ok(files.has(file.slice('mcp-server/'.length)), `sherpa-ui-mcp does not pack ${file}`);
   }
   assert.ok(![...files].some((f) => f.startsWith('vendor/')), 'the MCP copies nothing of sherpa-ui');
+  // A skill is served as its prompt, and read from the package as it ships (Q8).
+  assert.ok(files.has('skills/build-page/SKILL.md'), 'sherpa-ui-mcp does not pack its build-page skill');
   const pkg = JSON.parse(readFileSync(`${ROOT}mcp-server/package.json`, 'utf8'));
   assert.equal(pkg.name, 'sherpa-ui-mcp');
   // A new app's .mcp.json starts this file. TRAP T-a-starter-is-one-folder

@@ -1,7 +1,7 @@
 {
   "name": "sherpa-ui-mcp",
   "version": "2.1.0-beta.0",
-  "description": "An MCP server for Sherpa UI: its components, schemas, tokens and guides, and checks of an app's files and data, read from the sherpa-ui installed beside it, for an AI agent.",
+  "description": "An MCP server for Sherpa UI: its components, schemas, tokens, patterns and guides, checks of an app's files and data, and pages made from a pattern, read from the sherpa-ui installed beside it, for an AI agent.",
   "type": "module",
   "bin": {
     "sherpa-mcp": "./index.js"
@@ -12,6 +12,7 @@
     "lib/",
     "tools/",
     "resources/",
+    "skills/",
     "README.md"
   ],
   "engines": {

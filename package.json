@@ -81,6 +81,7 @@
   "files": [
     "dist/",
     "schemas/",
+    "patterns/",
     "src/**/*.ts",
     "src/**/*.html",
     "src/**/*.css",

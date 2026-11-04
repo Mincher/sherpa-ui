@@ -1,7 +1,7 @@
 # Traps — Build, tools and the MCP
 
 One of the eleven areas of [the traps](../TRAPS.md): each entry is here because its
-first `Site:` is in this area (`npm run check:traps` holds it so). 36 entries.
+first `Site:` is in this area (`npm run check:traps` holds it so). 37 entries.
 
 ### T-a-slot-says-what-it-accepts
 
@@ -1022,14 +1022,14 @@ published package die at load.
 `mcp-server/lib/sherpa.js` is the one door: `SHERPA_ROOT` is the installed
 `sherpa-ui` (resolved from `sherpa-ui/package.json`), or the checkout the MCP
 sits in. `READS` names every file it reads, by its path in the package — the
-specs, the examples, the sources, `schemas/`, `custom-elements.json`, the two
-served docs and `tokens.css`, and `scripts/check-usage.mjs`, which it runs by
+specs, the examples, the sources, `schemas/`, `patterns/`, `custom-elements.json`,
+the two served docs and `tokens.css`, and `scripts/check-usage.mjs`, which it runs by
 path as no export names it — and every tool and resource reads through it. A
 name from a caller is one path segment, so no URI reaches out of the package.
 `IMPORTS` names every built entry it RUNS (`sherpa-ui/data`), imported by the
 package's own `exports`, as an app imports it, never by a path into `dist/`.
-An app's own files are read through it too (`appFile`), never outside the
-folder its app.json is in.
+An app's own files are read through it too (`appFile`, and `appFiles` for a
+folder of them, its `patterns/`), never outside the folder its app.json is in.
 
 **It reads sherpa-ui's own files and never a copy** (plan 700 G1). The old MCP
 copied sherpa-ui's generation code into a `vendor/` as it was packed, and
@@ -1047,6 +1047,48 @@ file the cache lacks.
 - Site: `mcp-server/lib/sherpa.js`
 - Site: `scripts/check-mcp-pack.mjs`
 - Site: `test/unit/the-mcp-package.test.mjs`
+
+### T-a-pattern-is-checked-by-the-contracts-it-reuses
+
+**A pattern is held by the contracts it reuses, never by prose** (plan 700 §3,
+TODO 77). The old `patterns/` was a 606-line schema in prose, and nothing ran
+it. `schemas/pattern.v1.json` is small: `when` is a `where`, `layout` a spec's
+anatomy node, `page` a page definition's scopes and `ui`. `checkPattern` (in the
+MCP, Q5) runs what already ships over each part:
+
+- each `el` is a component with a spec or a native element; its `data-*` and
+  their values are check-usage's own check, run on that one element;
+- a child fits its parent's slot: one the parent HAS (a grid has no default
+  slot, so a child of it is never shown), and one whose `data-accepts` names
+  what the child IS (`T-a-slot-says-what-it-accepts`);
+- a node that asks its provider for data can draw ONE field of the kind its
+  `each` stands for: a donut splits rows by a list's values, so one per number
+  field is refused; with a need, a role `agent.keeps` must draw at least one;
+- `page` is page.v1 and `checkPage`, its `ui` the specs' properties and methods,
+  each `{kind}` a stand-in field so `fixed` and `holds` still agree;
+- `agent.keeps` names roles the layout has.
+
+**What a child IS is derived, so read this before adding a component.** A
+spec says what each slot accepts but not what its own component is. The MCP
+reads it: every element is `content`; a component whose spec declares `name` is
+an `input` and a `control`, as is one of category `control`; a Sherpa role is
+the LAST word of its tag (`sherpa-container-header` is a `header`,
+`sherpa-quick-filter-toolbar` a `toolbar`); a native element by its kind
+(`button` a control, `svg` an icon), and a `div` fits any slot, as a wrapper.
+Six components their name does not say are listed in `ALSO`: the breadcrumbs
+are a `nav`, a metric an `item` (a metric group holds them), a nav section and
+a node row `item`s, the pager a `footer` (it brings its own rule and padding),
+and the filter toolbar a `panel` (turned portrait, it IS the filter panel). A
+new component named by its role needs nothing; one that is not goes in `ALSO`.
+
+**The need is matched by the data layer, as one row.** `pickPattern` runs
+`parseWhere` → `conditionClause` → `filterRows([need], …)`, each need key typed
+by the need's own contract (an integer is a number). An unknown op is left out
+with a report (`unknown-op`), so a pattern refused by its schema is never
+picked: its `when` would fit more than it says.
+
+- Site: `mcp-server/lib/pattern.js`
+- Site: `test/unit/the-mcp-compose-tier.test.mjs`
 
 ### T-a-starter-is-one-folder
 

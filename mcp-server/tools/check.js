@@ -6,7 +6,7 @@
  *   validate_page  a Context's definition, Views and template, and each `ui`
  *   validate_app   an app.json, then every Context and Settings page it names
  *   check_usage    markup against the component specs
- *   describe_data  rows or a JSON Schema → store rules, a page's fields and the need
+ *   describe_data  rows, a JSON Schema or a page's fields → store rules, a page's fields and the need
  *   validate_rows  rows against store rules, as the store reads them
  *   scaffold_app   a new app's files: the Starter's, which validate_app checks
  *
@@ -16,7 +16,7 @@
 import { z } from 'zod/v3';
 import { appFile, load, starterFiles } from '../lib/sherpa.js';
 import { checkAppFolder, checkPageFiles, dataLayer, findings, schemaCheck } from '../lib/check.js';
-import { RULE_FORM, fromRows, fromSchema, needOf, ruleCode, ruleMap } from '../lib/describe.js';
+import { RULE_FORM, fromFields, fromRows, fromSchema, needOf, ruleCode, ruleMap, statusProblems, statusRows, withStatus } from '../lib/describe.js';
 import { answer, refuse } from '../lib/reply.js';
 
 /** A tool's work: what it cannot do is said as a refusal, never thrown at the client. */
@@ -107,23 +107,33 @@ export function register(server) {
 
   server.registerTool('describe_data', {
     title: 'Describe data',
-    description: 'Rows, or a JSON Schema or an OpenAPI document, said in Sherpa\'s terms: the store\'s rules, by name, with the evidence for each and as code; a page\'s `fields`, each a field declaration (defs.v1.json); and the need a pattern is picked by (pattern.v1.json). From rows nothing is drawn from a field\'s name, and nothing a sample cannot show is proposed; from a schema, what it promises may be a rule, and what no rule carries is listed. Each output is checked against its contract before it is given. validate_rows checks the rules against rows.',
+    description: 'Rows, a JSON Schema or an OpenAPI document, or a page\'s own fields, said in Sherpa\'s terms: the store\'s rules, by name, with the evidence for each and as code; a page\'s `fields`, each a field declaration (defs.v1.json); and the need a pattern is picked by (pattern.v1.json), which pick_pattern takes. From rows nothing is drawn from a field\'s name, and nothing a sample cannot show is proposed; from a schema, what it promises may be a rule, and what no rule carries is listed. A status field is the store\'s, so the need counts one only when `status` gives it, and a child is the page\'s, so only when `fields` are given. Each output is checked against its contract before it is given. validate_rows checks the rules against rows.',
     inputSchema: {
       rows: z.string().optional().describe('The rows, as a JSON array of plain objects: a real page of a real answer'),
       schema: z.string().optional().describe('Instead of rows: a JSON Schema of one row or of an array of rows, or an OpenAPI document, as JSON'),
+      fields: z.string().optional().describe('Instead of rows: a page\'s own fields, as JSON — its definition\'s `source.fields` — so the need counts each child a field names (`child`)'),
+      status: z.string().optional().describe('The status fields its store works out, as JSON, as `statusFields(store, { … })` takes them (defs.v1.json statusField): {"health":{"type":"status","values":[{"value":"At risk","status":"critical","when":[{"score":{"lt":60}}]},{"value":"Healthy"}]}}. With rows, each row is given its value by the data layer\'s own statusFields()'),
       path: z.string().optional().describe('For an OpenAPI document: the path whose GET answers with the rows, e.g. /customers. Default: its first'),
       key: z.string().optional().describe('The field each row is known by. Default: id'),
-      task: z.string().optional().describe('The agent\'s word for the work, for the need: browse, find, triage, edit…'),
+      task: z.string().optional().describe('The agent\'s word for the work, for the need: browse, find, triage, edit, settings…'),
       writes: z.boolean().optional().describe('Whether a reader may change the rows, for the need'),
     },
-  }, tool(async ({ rows, schema, path: openPath, key = 'id', task, writes }) => {
-    if ((rows == null) === (schema == null)) return refuse('Give `rows` or a `schema`, one of them.');
+  }, tool(async ({ rows, schema, fields: declared, status: given, path: openPath, key = 'id', task, writes }) => {
+    if ([rows, schema, declared].filter((v) => v != null).length !== 1) return refuse('Give `rows`, a `schema` or a page\'s `fields`, one of them.');
     const dl = await dataLayer();
+    const status = given == null ? null : json(given, 'status');
+    const wrongStatus = status == null ? [] : statusProblems(status);
+    if (wrongStatus.length) return refuse(`The status fields are not what statusFields() takes (defs.v1.json statusField):\n${wrongStatus.map((w) => `- ${w}`).join('\n')}`);
     const list = rows != null ? rowsOf(rows) : null;
-    const described = list ? { fields: fromRows(dl, list, key), via: `${list.length} row(s)`, uncarried: [] } : fromSchema(json(schema, 'schema'), { path: openPath, key });
+    // A status field's values are the data's: its store works each out, as the app's does.
+    const read = list && status ? await statusRows(dl, list, status, key) : list;
+    const described = read ? { fields: fromRows(dl, read, key), via: `${read.length} row(s)`, uncarried: [] }
+      : declared != null ? { fields: fromFields(json(declared, 'fields')), via: 'the page\'s fields', uncarried: [] }
+        : fromSchema(json(schema, 'schema'), { path: openPath, key });
+    withStatus(described.fields, status);
     const named = Object.fromEntries(described.fields.filter((f) => f.rules.length).map((f) => [f.name, f.rules]));
     const fields = Object.fromEntries(described.fields.filter((f) => f.field).map((f) => [f.name, f.field]));
-    const need = needOf(described.fields, { rows: list?.length, task, writes });
+    const need = needOf(described.fields, { rows: list?.length, task, writes, status: status ? Object.keys(status) : undefined, declared: declared != null });
     // Checked before it is given: each against the contract that takes it.
     const wrong = [
       ...ruleMap(dl, named).problems,
@@ -145,10 +155,12 @@ export function register(server) {
     if (list) out.push('', 'Not drawn from a sample, by design: `required` but for the key (present is not promised), `min` and `max` (a sample cannot bound a store), `oneOf` (nor close a set), and any rule from a field\'s name.');
     if (described.uncarried.length) out.push('', '#### What the schema says that nothing here carries', '', ...described.uncarried.map((u) => `- ${u}`));
     out.push('', '### The page\'s fields', '', 'For its definition\'s `source.fields`. No field lists its values: the data says them.', '', fenced(JSON.stringify(fields, null, 2), 'json'));
-    out.push('', '### The need', '', 'What a pattern is picked by. A status field is its store\'s and a child its page\'s, so neither is counted; add the `task`, and whether the reader `writes`, when they are known.', '', fenced(JSON.stringify(need, null, 2), 'json'));
+    const unknown = [...(status ? [] : ['`statusFields` (give `status`: a status field is its store\'s)']), ...(declared != null ? [] : ['`childFields` (give the page\'s `fields`: a child is its page\'s)'])];
+    out.push('', '### The need', '', `What pick_pattern picks a pattern by. Add the \`task\`, and whether the reader \`writes\`, when they are known.${unknown.length ? ` Left out, as a sample never shows them, so unknown, not none: ${unknown.join(', ')}.` : ''}`, '', fenced(JSON.stringify(need, null, 2), 'json'));
     out.push('', '### Next', '', '1. `validate_rows`: these rules against another page of rows. A rule that fits only the rows it was drawn from has proved nothing.',
       '2. The rules go on the STORE, never a form: a dialog, a paste and an answer reach the same rows.',
-      '3. The fields go in the page definition; `validate_page` checks it.');
+      '3. The fields go in the page definition; `validate_page` checks it.',
+      '4. The need goes to `pick_pattern`, and the pattern it picks, with these rows, to `generate_page`.');
     return answer(out.join('\n'));
   }));
 

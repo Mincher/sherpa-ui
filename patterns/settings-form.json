@@ -1,0 +1,34 @@
+{
+  "$schema": "../schemas/pattern.v1.json",
+  "v": 1,
+  "id": "settings-form",
+  "label": "Settings as a form",
+  "use": "One record of settings a reader reads and changes. It is a Settings page (app.json settings.pages): one page with no source and no Views, a section header before each set of fields, which its header's Jump to chip lists, and a footer only because typed values wait for Save. Its module fills the fields, saves them on Save and says so in a toast.",
+  "when": { "task": { "in": ["settings", "configure", "preferences", "profile"] } },
+  "rank": 10,
+  "layout": {
+    "el": "sherpa-stack",
+    "attrs": { "data-fill": true },
+    "children": [
+      { "el": "sherpa-stack", "attrs": { "data-grow": true, "data-scroll": true }, "children": [
+        { "role": "form", "el": "form", "attrs": { "id": "{id}-form", "novalidate": true }, "children": [
+          { "el": "sherpa-layout-grid", "children": [
+            { "el": "sherpa-stack", "attrs": { "data-col-span": "reading", "data-gap": "2xl" }, "children": [
+              { "role": "section", "el": "sherpa-stack", "children": [
+                { "role": "heading", "el": "sherpa-section-header", "attrs": { "id": "section-{id}", "data-heading": "Details" } },
+                { "role": "inputs", "el": "sherpa-input-text", "each": "field", "attrs": { "name": "{field}", "data-label": "{label}" } }
+              ] }
+            ] }
+          ] }
+        ] }
+      ] },
+      { "el": "sherpa-layout-grid", "children": [
+        { "role": "footer", "el": "sherpa-container-footer", "attrs": { "data-col-span": "reading", "data-align": "end" }, "children": [
+          { "el": "sherpa-button", "attrs": { "id": "cancel", "data-label": "Cancel" } },
+          { "role": "save", "el": "sherpa-button", "attrs": { "id": "save", "data-look": "saturated", "data-label": "Save changes" } }
+        ] }
+      ] }
+    ]
+  },
+  "agent": { "may": ["inputs", "heading"], "keeps": ["form", "section", "save"] }
+}
