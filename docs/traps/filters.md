@@ -25,10 +25,10 @@ when it is wider than the room beside its trigger's — without them, an inline
 overflow made every option fail, and a card at a bottom corner covered its
 trigger. A `@position-try` rule works in an adopted sheet in all three.
 
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-menu/menu-shell.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `test/e2e/reforged-menu.spec.ts`
+- Site: `src/components/sherpa-quick-filter/chip-press.ts`
 
 ### T-custom-element-upgrade
 
@@ -69,8 +69,8 @@ the type is what it WILL be, not proof that it is upgraded yet.
 - Site: `test/e2e/reforged-app-header.spec.ts`
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-data-grid/grid-filters.ts`
+- Site: `src/components/sherpa-quick-filter/chip-answer.ts`
 
 ### T-a-state-colour-binds-the-style-mode
 
@@ -451,7 +451,7 @@ rows, and left a number field as it was. One door each now — the toolbar's
 menu, which empties every body it owns.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter/chip-answer.ts`
 
 ### T-a-family-shares-markup
 
@@ -533,7 +533,6 @@ does not draw is not its to hold.
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/menu-list.ts`
 - Site: `test/e2e/reforged-menu-state-first.spec.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-quick-filter-state-first.spec.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar-state-first.spec.ts`
@@ -541,6 +540,8 @@ does not draw is not its to hold.
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `src/components/sherpa-quick-filter/chip-answer.ts`
+- Site: `src/components/sherpa-quick-filter/chip-says.ts`
 
 ### T-a-reflow-that-moves-nothing-keeps-its-menus
 
@@ -642,7 +643,6 @@ it stamps its rows (TODO 344), in both its templates. A value given before the
 calendar exists is HELD, and the shape is said at once.
 TRAP T-projected-slot-content-crosses-two-shadow-boundaries
 
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
@@ -653,6 +653,7 @@ TRAP T-projected-slot-content-crosses-two-shadow-boundaries
 - Site: `src/components/sherpa-data-grid/grid-filters.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `src/core/ui/filter-menu.ts`
+- Site: `src/components/sherpa-quick-filter/chip-answer.ts`
 
 ### T-group-chip-body-toggles-grouping
 
@@ -674,7 +675,7 @@ grouping and writes the attribute back — `T-grid-reports-never-combines`, the
 same rule the grid's own actions follow.
 
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter/chip-arrange.ts`
 
 ### T-sort-is-tri-state
 
@@ -706,7 +707,7 @@ The CHIP label says "Sort" and never moves; the COLUMN reads in the caret button
 (Figma State=menu, 150:3408). Folded together as "Sort: Region" it re-flowed the
 bar on every pick.
 
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter/chip-arrange.ts`
 
 ### T-add-menu-batches
 
@@ -782,8 +783,8 @@ chip as `data-description`.
 
 - Site: `src/core/ui/description-tips.ts`
 - Site: `src/core/sherpa-anchor.css`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-an-action-says-what-it-does.spec.ts`
+- Site: `src/components/sherpa-quick-filter/chip-says.ts`
 
 ### T-an-action-says-what-it-does
 
@@ -903,6 +904,7 @@ in the slot (366 S2).
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-notifications/sherpa-notifications.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-quick-filter/chip-press.ts`
 
 ### T-menu-composes-real-components
 
@@ -1037,7 +1039,7 @@ from the rest (`T-select-all-is-not-a-value`).
 **SILENT.** A click reports an INTENT; this is the ANSWER to one. Echoing would
 make a host routing it into its query filter twice.
 
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter/chip-answer.ts`
 
 ### T-one-pick-reads-field-and-value
 
@@ -1087,7 +1089,7 @@ chip.
 
 Placement itself is measured, not declared: `T-anchor-cross-root`.
 
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter/chip-press.ts`
 
 ### T-locked-chip-relays-and-nothing-else
 
@@ -1104,10 +1106,11 @@ first.
 This is the `data-locked` half of the state-ownership rule: `data-<thing>` in,
 `<thing>-change` out, and `data-locked` when the host owns the value.
 
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `test/e2e/reforged-quick-filter.spec.ts`
+- Site: `src/components/sherpa-quick-filter/chip-arrange.ts`
+- Site: `src/components/sherpa-quick-filter/chip-press.ts`
 
 **A PERSISTENT chip is a locked chip.** "Always on, and its body does not flip
 it" — the toolbar's own words at its `data-persistent` site — is exactly what
@@ -1172,7 +1175,7 @@ The VISIBLE text of a menu row is used, never its raw value — a chip must read
 "Region: EMEA", never "Region: emea" — falling back to the raw value when the
 row carries no text of its own.
 
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter/chip-says.ts`
 
 ### T-a-legend-row-is-a-key-chip
 
@@ -1217,6 +1220,7 @@ and keyboard behave the same.
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
+- Site: `src/components/sherpa-quick-filter/chip-press.ts`
 
 ### T-organise-chips-lead-the-bar
 
@@ -1426,8 +1430,8 @@ only the CHOICE OF PARENT stays in code. A fourth reason that is not about the
 parent would mean the declarative vocabulary is missing something.
 
 - Site: `src/core/ui/sherpa-element.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-select-group/sherpa-select-group.ts`
+- Site: `src/components/sherpa-quick-filter/chip-press.ts`
 
 ### T-the-header-chips-must-reach-the-query
 
@@ -1644,7 +1648,7 @@ each row is `[And|Or] [condition] [value]`.
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/menu-conditions.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter/chip-answer.ts`
 
 ---
 
@@ -1681,9 +1685,9 @@ Dates are not done: their questions wait on TODO 21d.
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/menu-conditions.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `test/e2e/reforged-number-advanced.spec.ts`
+- Site: `src/components/sherpa-quick-filter/chip-answer.ts`
 
 ### T-conditions-are-opt-in-per-field
 
@@ -1760,10 +1764,10 @@ filter until the next edit. The flip reports a frame after the menu has
 rendered (`#reportSoon`).
 
 - Site: `src/core/ui/filter-host.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/components/sherpa-menu/menu-conditions.ts`
+- Site: `src/components/sherpa-quick-filter/chip-arrange.ts`
 
 ---
 
@@ -1782,7 +1786,7 @@ every other off chip already behaved.
 Will, 2026-09-24: "Toggling a conditional chip should toggle whether that
 condition is applied."
 
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter/chip-press.ts`
 
 ---
 
@@ -1870,7 +1874,7 @@ the next set it to the wrong field.
 Suspended is not cleared — `ask({ sort: null })` moves the column to the source's own
 memory so one more click resumes it. TRAP T-grid-suspend-is-not-clear
 
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter/chip-arrange.ts`
 
 ### T-the-fold-measures-a-chip-that-has-not-drawn-itself
 
@@ -1942,6 +1946,8 @@ column in `data-column`; a menu, where there is one, is the answer.
 - Site: `src/core/ui/filter-kind.ts`
 - Site: `test/unit/parity-sweep.test.mjs`
 - Site: `src/core/ui/filter-def.ts`
+- Site: `src/components/sherpa-quick-filter/chip-arrange.ts`
+- Site: `src/components/sherpa-quick-filter/chip-press.ts`
 
 ### T-off-is-not-forgotten
 
@@ -1980,6 +1986,7 @@ still names the column it would resume on.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-quick-filter.spec.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
+- Site: `src/components/sherpa-quick-filter/chip-arrange.ts`
 
 ### T-a-conditions-only-menu-cannot-be-drilled
 
@@ -2100,6 +2107,7 @@ it already skips `data-persistent` and `data-locked`.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-organise-chip-never-amber.spec.ts`
+- Site: `src/components/sherpa-quick-filter/chip-arrange.ts`
 
 ### T-the-add-menu-is-the-whole-list
 
@@ -2194,10 +2202,10 @@ outside beats the menu's own `:host`. Will, TODO 525
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/menu-shell.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
+- Site: `src/components/sherpa-quick-filter/chip-section.ts`
 
 ### T-a-panel-builds-its-own-menus
 
@@ -2421,9 +2429,9 @@ A date is never empty to look at: its face reads Today while it holds nothing.
 So its press is a pick, not a flip: `quick-filter-click` carries `picked`, and
 the bar asks for the day, as the state holds none to resume.
 
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-quick-filter.spec.ts`
 - Site: `test/e2e/reforged-menu-calendar.spec.ts`
+- Site: `src/components/sherpa-quick-filter/chip-press.ts`
 
 ### T-one-field-does-not-own-the-whole-map
 
@@ -2571,8 +2579,8 @@ or rows differ from what it opened with — and `apply()` is its Apply button.
 The chip asks, and applies. With nothing drafted, a press does what it did.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-a-chip-press-applies-its-draft.spec.ts`
+- Site: `src/components/sherpa-quick-filter/chip-press.ts`
 
 ### T-a-stuck-header-casts-a-shadow
 
@@ -2705,6 +2713,7 @@ off, which stays the host's. Both silent paths call it.
 - Site: `src/core/ui/filter-host.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `src/components/sherpa-quick-filter/chip-answer.ts`
 
 ### T-a-conditioned-field-opens-on-its-rows
 
@@ -2742,8 +2751,8 @@ reads its menu's inputs the same way.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/menu-list.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-menu.spec.ts`
+- Site: `src/components/sherpa-quick-filter/chip-answer.ts`
 
 ### T-each-field-can-apply-on-its-own
 
@@ -2768,7 +2777,7 @@ chip — so the pair stayed hidden until a full restyle.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter/chip-section.ts`
 
 ### T-a-filter-is-dragged-into-its-place
 

@@ -120,6 +120,8 @@ uses the chip's.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 - Site: `test/e2e/reforged-chip-tips.spec.ts`
 - Site: `test/unit/filter-face.test.mjs`
+- Site: `src/components/sherpa-quick-filter/chip-answer.ts`
+- Site: `src/components/sherpa-quick-filter/chip-says.ts`
 
 ### T-a-suspended-answer-is-drawn-as-off
 
@@ -384,6 +386,7 @@ them once per scope that counts.
 - Site: `test/unit/a-chip-counts-within-the-filters-before-it.test.mjs`
 - Site: `src/core/ui/filter-host-controller.ts`
 - Site: `src/core/data/source-walk.ts`
+- Site: `src/components/sherpa-quick-filter/chip-says.ts`
 
 ### T-a-scope-says-what-it-shows
 
@@ -736,12 +739,12 @@ one, or a def's typed condition came back on every rebuild.
 - Site: `test/unit/both-answers-are-kept.test.mjs`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-menu-keeps-both-answers.spec.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/filter-face.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-grid-keeps-both-answers.spec.ts`
 - Site: `src/components/sherpa-data-grid/grid-filters.ts`
+- Site: `src/components/sherpa-quick-filter/chip-answer.ts`
 
 ### T-a-chip-body-cycles-its-states
 
@@ -789,9 +792,10 @@ attribute straight back, and the chip would correct itself a tick later — a
 flicker. It stays off, and the menu is where a column is chosen.
 
 - Site: `src/core/ui/filter-host.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/cycle.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-quick-filter/chip-arrange.ts`
+- Site: `src/components/sherpa-quick-filter/chip-press.ts`
 
 ### T-one-comparator-one-source
 
@@ -1270,11 +1274,12 @@ This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` an
 - Site: `test/unit/field-selection.test.mjs`
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/ui/filter-host-controller.ts`
 - Site: `src/core/data/source-view.ts`
 - Site: `src/core/data/query-edits.ts`
 - Site: `src/components/sherpa-data-grid/grid-filters.ts`
+- Site: `src/components/sherpa-quick-filter/chip-answer.ts`
+- Site: `src/components/sherpa-quick-filter/chip-arrange.ts`
 
 ### T-a-remote-source-holds-its-whole-set
 
@@ -1898,12 +1903,13 @@ which cannot be chosen right now. `stateClause()` is the only part that speaks
 filters; the rest is selection. A transfer list is one state read twice — its
 picked values on the right, its unpicked on the left.
 
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/filter-face.ts`
 - Site: `src/data.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `src/core/data/filter-state.ts`
+- Site: `src/components/sherpa-quick-filter/chip-answer.ts`
+- Site: `src/components/sherpa-quick-filter/chip-says.ts`
 
 ### T-one-field-one-filter-menu
 
@@ -2938,6 +2944,7 @@ from its source's last walk (`QueryMember.ruledOut`), so every way off agrees
 - Site: `src/core/ui/filter-host-controller.ts`
 - Site: `src/core/data/source-walk.ts`
 - Site: `src/core/data/query-edits.ts`
+- Site: `src/components/sherpa-quick-filter/chip-section.ts`
 
 ### T-unavailable-value-sorts-below-a-divider
 
@@ -3380,11 +3387,12 @@ a parent with only children picked had no count of its own, and its ON chip
 showed no badge. A parent not picked itself now counts its picked children
 together, under its own key.
 
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/source-counts.ts`
 - Site: `src/components/sherpa-data-grid/grid-cells.ts`
 - Site: `test/e2e/reforged-a-tiered-grid.spec.ts`
+- Site: `src/components/sherpa-quick-filter/chip-answer.ts`
+- Site: `src/components/sherpa-quick-filter/chip-section.ts`
 
 ### T-an-open-panel-follows-the-data-layer
 
@@ -3466,7 +3474,6 @@ body. A list's other ops are its Advanced tree.
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/filter-conditions.test.mjs`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
@@ -3474,6 +3481,7 @@ body. A list's other ops are its Advanced tree.
 - Site: `src/core/data/query.ts`
 - Site: `src/components/sherpa-data-grid/grid-filters.ts`
 - Site: `src/core/data/query-edits.ts`
+- Site: `src/components/sherpa-quick-filter/chip-answer.ts`
 
 ### T-an-inactive-chip-says-where-its-filter-went
 
@@ -3507,6 +3515,7 @@ because neither touches the VALUES and nothing else re-syncs it.
 - Site: `src/core/ui/shared-constants.ts`
 - Site: `test/unit/moved-to.test.mjs`
 - Site: `src/core/data/source-binding.ts`
+- Site: `src/components/sherpa-quick-filter/chip-says.ts`
 
 ### T-a-condition-badge-says-that-not-which
 
@@ -3526,10 +3535,10 @@ nothing, and `fx` announces as noise.
 
 - Site: `src/core/data/filter-face.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `src/components/sherpa-data-grid/grid-filters.ts`
+- Site: `src/components/sherpa-quick-filter/chip-answer.ts`
 
 ### T-a-scope-is-a-place-not-a-reach
 
@@ -4139,11 +4148,11 @@ or resuming would jump to a column the reader had moved on from.
 - Site: `test/unit/suspended-sort.test.mjs`
 - Site: `test/unit/cycle.test.mjs`
 - Site: `src/core/ui/sherpa-element.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/data-source-types.ts`
 - Site: `src/core/data/query-edits.ts`
 - Site: `src/core/data/source-view.ts`
 - Site: `src/components/sherpa-data-grid/grid-groups.ts`
+- Site: `src/components/sherpa-quick-filter/chip-arrange.ts`
 
 ### T-one-cycle-for-one-value
 
@@ -4168,8 +4177,8 @@ component that belongs to the source (`T-bind-locks-what-it-owns`).
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/cycle.test.mjs`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-data-grid/grid-groups.ts`
+- Site: `src/components/sherpa-quick-filter/chip-arrange.ts`
 
 ### T-a-summary-binds-to-all-the-rows
 
@@ -4359,9 +4368,9 @@ that follows is what makes it read as unset.
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/source-counts.ts`
 - Site: `test/unit/a-raise-narrows-at-once.test.mjs`
+- Site: `src/components/sherpa-quick-filter/chip-answer.ts`
 
 ### T-two-bars-over-one-scope
 
@@ -6746,10 +6755,10 @@ The face says "All" for the flag only: a list ticked by hand says its values.
 - Site: `src/core/data/filter-face.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/menu-list.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/a-list-can-start-with-every-value.test.mjs`
 - Site: `test/e2e/reforged-menu.spec.ts`
+- Site: `src/components/sherpa-quick-filter/chip-answer.ts`
 
 ### T-a-preset-is-its-own-part
 
