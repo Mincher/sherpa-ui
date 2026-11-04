@@ -15,6 +15,7 @@ import * as checkTools from './tools/check.js';
 import * as queryTools from './tools/query.js';
 import * as queryResources from './resources/query.js';
 import * as composeTools from './tools/compose.js';
+import * as seeTools from './tools/see.js';
 
 /** Every module that registers tools, resources or prompts, by its path in this package. */
 export const MODULES = {
@@ -24,6 +25,7 @@ export const MODULES = {
   'tools/query.js': queryTools,
   'resources/query.js': queryResources,
   'tools/compose.js': composeTools,
+  'tools/see.js': seeTools,
 };
 
 const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));

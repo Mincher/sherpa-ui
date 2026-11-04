@@ -14,6 +14,7 @@
  */
 import { z } from 'zod/v3';
 import { imported } from '../lib/sherpa.js';
+import { traced } from '../lib/trace.js';
 import { answer, refuse } from '../lib/reply.js';
 
 /** Hosts a data path may name: this machine, never another. */
@@ -110,8 +111,11 @@ const mark = (source) => JSON.stringify([source.query.applied, source.query.draf
 async function ask(source, request, heard) {
   const from = heard.length;
   const before = mark(source);
-  source.query.ask(request);
-  await source.load();
+  // Heard, for watch_trace.
+  await traced({ asked: request }, source, async () => {
+    source.query.ask(request);
+    await source.load();
+  });
   return {
     asked: request,
     ...(mark(source) === before ? { changed: false } : {}),
@@ -134,7 +138,7 @@ async function opened(dl, args, heard) {
   };
   try {
     source = await dl.openSource(definition.source, store);
-    await source.load();
+    await traced({ open: definition.id }, source, () => source.load());
     const asked = [];
     for (const request of listOf(args.commands, 'commands')) asked.push(await ask(source, request, heard));
     return { definition, store, source, asked, close };

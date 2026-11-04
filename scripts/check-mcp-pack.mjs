@@ -52,6 +52,14 @@ export const SAMPLES = {
   pick_pattern: { need: { task: 'triage', rows: 120, fields: 3, dateFields: 0, numberFields: 1, writes: true } },
   generate_page: { pattern: 'records-list', id: 'people', rows: PAGE.rows.map((r, i) => ({ ...r, name: `Person ${i}`, seats: i * 3 })), task: 'triage', writes: true },
   build_page: { task: 'triage' },
+  // In this order: the preview opens, is acted on and read, then closes.
+  preview_page: { definition: PAGE.definition, rows: PAGE.rows, key: 'id', template: '<sherpa-data-grid id="grid" data-scope="data"></sherpa-data-grid>' },
+  call_component: { selector: '#grid', method: 'clearSelection', readBack: ['selectedKeys'] },
+  read_component: { selector: '#grid' },
+  watch_trace: {},
+  preview_close: {},
+  review_page: { context: 'records' },
+  explain_page: { context: 'records', field: 'status' },
 };
 
 /** A static import or re-export at the start of a line: `import 'x'`, or `… from 'x'`. */

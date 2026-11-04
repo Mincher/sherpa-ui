@@ -1,7 +1,8 @@
 /**
  * sherpa.js — every file the MCP reads: sherpa-ui's, the installed package or
- * the checkout it sits in, each named in READS, and every built entry it runs,
- * in IMPORTS; an app's, inside its folder; and the Starter that makes one.
+ * the checkout it sits in, each named in READS, every built entry it runs, in
+ * IMPORTS, and the build it serves a preview, in SERVES; an app's, inside its
+ * folder; and the Starter that makes one.
  * TRAP T-the-mcp-reads-sherpa-ui-through-one-door
  *
  * Map:
@@ -12,6 +13,8 @@
  * - has — whether one of those files is there
  * - read — one of those files as text; null when it is not there
  * - load — one of those files that is code, as a module, run as it ships; null when it is not there
+ * - SERVES — the folder of sherpa-ui a preview's browser is served, as an app serves it: the build
+ * - served — a file of that folder, by its path in it, as bytes; null when not there or outside it
  * - components — every element the package defines, from its custom-elements.json
  * - spec — a component's spec; null for a name that is no component
  * - example — a component's example, its markup joined; null when it has none
@@ -56,7 +59,7 @@ export const READS = {
 };
 
 /** Every built entry of sherpa-ui the MCP runs, by its export. */
-export const IMPORTS = ['sherpa-ui/data'];
+export const IMPORTS = ['sherpa-ui/data', 'sherpa-ui/server'];
 
 /** One of those entries, as an app imports it: through the package's `exports`. It
  *  throws, in words to act on, when it is not built. */
@@ -92,6 +95,18 @@ export const read = (key, vars = {}) => (has(key, vars) ? readFileSync(where(key
 
 /** One of those files that is code, as a module, run as it ships; null when it is not there. A built entry is `imported`. */
 export const load = async (key) => (has(key) ? import(pathToFileURL(where(key, {})).href) : null);
+
+/** The folder of sherpa-ui a preview's browser is served, as an app serves it: the build. */
+export const SERVES = 'dist';
+
+/** A file of that folder, by its path in it, as bytes; null when it
+ *  is not there, or the path leaves the folder. */
+export function served(rel) {
+  const root = path.join(SHERPA_ROOT, SERVES);
+  const file = path.resolve(root, String(rel ?? ''));
+  if (!file.startsWith(root + path.sep) || !existsSync(file) || !statSync(file).isFile()) return null;
+  return readFileSync(file);
+}
 
 /** Every element the package defines, from its custom-elements.json: name, description and import. */
 export function components() {

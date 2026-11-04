@@ -1175,3 +1175,44 @@ live reload needs those writes.
 
 - Site: `scripts/build-reforged.mjs`
 - Site: `bin/sherpa-ui.mjs`
+
+### T-a-preview-is-this-machine-only
+
+**A preview is served and drawn on this machine, and runs only the MCP's own
+code** (plan 700 G5, rule 4). `preview_page` serves a Context's three files with
+sherpa-ui's own Node host — `nodeHandler` over the data handler, which holds the
+sample rows as the store the page names, then the files, and `dist/` through the
+door (`SERVES`) — on 127.0.0.1, on a port the system picks; one an app's own
+server uses (4000, 4200) is given back. The page is the app shell a new app has,
+and one fixed module, `preview/page.js`, which starts the outlet and is the
+Context's module too, so `init` hands it the source.
+
+- **Nothing reaches another host.** The browser context refuses every request
+  off this machine, and the answer lists it; `call_component` and
+  `read_component` refuse such a URL before anything opens.
+- **No script is sent.** A caller names an element, a method its spec lists and
+  JSON. A template is markup, and markup can carry an `onerror=`: the server
+  sends a CSP with `script-src 'self'`, so no inline script or handler runs. The
+  page needs none — it loads the bundle by path, with no import map.
+- **Settled is the source's answer, then `settled()`**, which waits for renders,
+  not a fetch. The page awaits `source.load()` — it asks nothing again once
+  answered — and the walk, then `settled(document)`, until no load began meanwhile.
+- **One at a time, and nothing left.** A second `preview_page` closes the first;
+  `preview_close` closes the browser (a child of the MCP) and every connection of
+  the server. A client that leaves ends stdin, which closes the preview: an open
+  server would keep the process alive.
+- **The browser is Playwright's**, `playwright-core`: a peer dependency, which npm
+  installs beside the MCP or shares with an app's own Playwright. Its Chromium,
+  else the machine's Chrome. Imported when a preview opens, not at start (150 ms).
+- **The MCP says what a load's walk counted**, under the load, with
+  `traceQuerySteps` (`preview/walked.js`, one function for Node and the page), as
+  the Node Editor's `watchQuery` does while bound: the data layer does not say it
+  yet (plan 695 N2, carried). `watch_trace` joins the page's spans to its Node
+  host's by trace; the MCP's own are each load of the last query tool's call, and
+  only traces begun there.
+
+- Site: `mcp-server/lib/preview.js`
+- Site: `mcp-server/preview/page.js`
+- Site: `mcp-server/tools/see.js`
+- Site: `mcp-server/lib/trace.js`
+- Site: `test/unit/the-mcp-see-tier.test.mjs`

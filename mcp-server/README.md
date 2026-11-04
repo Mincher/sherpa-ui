@@ -7,7 +7,7 @@ beside it — its specs, schemas, docs and tokens — and runs its own checks, i
 data layer and its usage check, never a copy of them. Each tool, resource and
 prompt below is written from the code that registers it.
 
-**16 tools · 10 resources · 1 prompt.**
+**21 tools · 10 resources · 3 prompts.**
 
 ## Setup
 
@@ -176,6 +176,55 @@ A pattern and the data → a page: its template (the layout written as HTML, eac
 - `writes` (optional) — Whether a reader may change the rows, for the need
 - `app` (optional) — The app's folder, or its app.json, whose patterns/ folder adds the app's own patterns; relative paths start where the MCP runs. Default: the folder the MCP runs in
 
+### The see tier's tools: a page drawn, acted on and read, and its acts traced · `tools/see.js`
+
+#### `preview_page` — Preview a page
+
+A Context drawn as a reader sees it: its page definition, template and Views served on this machine — at 127.0.0.1, on a port the system picks — by sherpa-ui's own Node host (`nodeHandler`), its data handler holding the sample rows as the store the page names, beside sherpa-ui's build; opened in a headless Chromium in the app shell a new app has, and waited for until the Context has loaded, its source answered and every component drawn (`settled`). Gives a screenshot, the data layer's own reports (`onReport` in the page), the usage problems (`check_usage` on the template and each View's markup), what the page threw and each request it was not answered, and its source's rows. The page asks nothing of another host and runs no inline script. One preview at a time: another closes it; preview_close ends it. Give an app's `path` and `context`, or the files. Its browser is Playwright's, `playwright-core`, a peer dependency npm installs beside this package: its Chromium (`npx playwright install chromium`), else the machine's Chrome.
+
+- `path` (optional) — An app.json, or the folder that holds it, whose Context `context` is previewed: its three files read from disk. Relative paths start where the MCP runs
+- `context` (optional) — With `path`: the Context, by its name in app.json. Default: its `default`
+- `definition` (optional) — In place of `path`: the page definition (page.v1), as JSON — the file a Context's `definition` names
+- `template` (optional) — In place of `path`: its markup — the file a Context's `template` names
+- `views` (optional) — In place of `path`: its Views (views.v1), as JSON — the file a Context's `views` names
+- `folder` (optional) — With the files: the folder the Views' file sits in, so each file a View names, file.html#id, is read from it and served
+- `rows` (optional) — The rows the page's store holds, as a JSON list: a real page of a real answer. Default none
+- `key` (optional) — The field each row is keyed by. Default: id
+- `view` (optional) — The View it opens on, by its id in the Views. Default: the first
+- `width` (optional) — The window's width in px. Default 1280
+- `height` (optional) — The window's height in px. Default 800
+- `mode` (optional) — The display mode the page follows. Default light
+- `own` (optional) — With the files: a project's own data-* hooks, by tag, as JSON, as its sherpa-usage.json "own" lists them. From `path`, its sherpa-usage.json is read
+
+#### `call_component` — Call a component
+
+Call a method a component's spec lists (get_component names them) on an element of the preview, or of a page on this machine, with JSON arguments; wait for the page — on the preview, until its source has answered and every component drawn — then give what it returned or threw, its attributes and any properties read back, and, on the preview, the data layer's reports during the act. watch_trace then says what the act did, by node. Only a Sherpa component's listed methods: no script crosses, and any host but this machine is refused.
+
+- `selector` — A CSS selector for the element, `#grid` or `sherpa-pagination`: found in the page, else inside a component's shadow root
+- `method` — The method to call: one its spec lists
+- `args` (optional) — Its arguments, as a JSON list: `[2]`. Default none
+- `readBack` (optional) — Properties to read after, as a JSON list of names: `["page"]`
+- `url` (optional) — A page on this machine, `http://localhost:<port>/…`, in place of the preview; any other host is refused before anything opens
+- `screenshot` (optional) — Give the page as it is after, as an image. Default false
+
+#### `read_component` — Read a component
+
+An element of the preview, or of a page on this machine, as it stands once drawn: its attributes; which states its spec names are on (each `states` selector tested on it); its properties — every one its spec says is readable, or those named; and the parts of its shadow root, each shown or not, with its text. It calls nothing. Any host but this machine is refused.
+
+- `selector` — A CSS selector for the element, `#grid` or `sherpa-pagination`: found in the page, else inside a component's shadow root
+- `props` (optional) — Properties to read, as a JSON list of names. Default: every property its spec says is readable
+- `url` (optional) — A page on this machine, `http://localhost:<port>/…`, in place of the preview; any other host is refused before anything opens
+
+#### `watch_trace` — Watch the trace
+
+The spans of the last act, by the Query graph node each lights (`queryStepNode`) — node ids as query_graph draws them: the MCP's own, each load of the last query_source, query_graph or edit_query_graph call; and the preview's, since it opened or since the last call_component — its page's and its Node host's, joined by their trace. Each step with its host, state, time and rows; what each load's walk counted is said under it (`traceQuerySteps`), each condition and preset with the rows it left.
+
+- `node` (optional) — Only this node, by its query_graph id: `when-data-status`, `source`, `store`
+
+#### `preview_close` — Close the preview
+
+End the preview: its pages, its browser and its Node host, so nothing of it listens or runs. Safe when none is open. preview_page closes the one before it too.
+
 ## Resources
 
 ### The read tier's resources: sherpa-ui's own files, as they ship · `resources/read.js`
@@ -208,6 +257,10 @@ A pattern and the data → a page: its template (the layout written as HTML, eac
 ### The compose tier: a need → a pattern → a page, each page checked · `tools/compose.js`
 
 - `build_page` — Build a page of a Sherpa app from its data: describe_data → pick_pattern → generate_page → validate_page → preview_page. The steps are skills/build-page/SKILL.md, the skill this package ships.
+### The see tier's tools: a page drawn, acted on and read, and its acts traced · `tools/see.js`
+
+- `review_page` — Review one Context: its files checked (validate_page), its markup against the specs (check_usage), then the page drawn over real rows (preview_page) — the data layer's reports, the usage problems and a screenshot — each problem fixed where it is named. The steps are skills/review-page/SKILL.md, the skill this package ships.
+- `explain_page` — Explain how one Context's Query reaches its rows: drawn as nodes (query_graph), one act a reader would make run (query_source), then the spans of that act by node (watch_trace) — each condition with the rows it left — said in the graph's terms. The steps are skills/explain-page/SKILL.md, the skill this package ships.
 
 ## Adding to it
 

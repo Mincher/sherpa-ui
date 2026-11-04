@@ -1083,7 +1083,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](traps/other-components.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (77)
+## Build, tools and the MCP (78)
 
 - [T-a-bare-name-must-be-used-not-mentioned](traps/build-tools-mcp.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-build-is-swapped-in-whole](traps/build-tools-mcp.md#t-a-build-is-swapped-in-whole) — build-reforged, sherpa-ui
@@ -1114,6 +1114,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](traps/menus-tips-overlays.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — lint-css
 - [T-a-pattern-is-checked-by-the-contracts-it-reuses](traps/build-tools-mcp.md#t-a-pattern-is-checked-by-the-contracts-it-reuses) — pattern
 - [T-a-pin-a-page-can-re-point](traps/build-tools-mcp.md#t-a-pin-a-page-can-re-point) — project-tokens
+- [T-a-preview-is-this-machine-only](traps/build-tools-mcp.md#t-a-preview-is-this-machine-only) — page, preview, see, trace
 - [T-a-read-is-planned](traps/data-layer.md#t-a-read-is-planned) — check-bench
 - [T-a-read-is-public-api-a-write-is-not](traps/build-tools-mcp.md#t-a-read-is-public-api-a-write-is-not) — check-props
 - [T-a-remote-source-holds-its-whole-set](traps/data-layer.md#t-a-remote-source-holds-its-whole-set) — check-bench

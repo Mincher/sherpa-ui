@@ -13,7 +13,6 @@
  * Map:
  * - register — register the compose tools, resources and prompt on an MCP server
  */
-import { readFileSync } from 'node:fs';
 import { z } from 'zod/v3';
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { ErrorCode } from '@modelcontextprotocol/sdk/types.js';
@@ -22,6 +21,7 @@ import { checkPageFiles, dataLayer, findings, schemaCheck } from '../lib/check.j
 import { fieldKinds, fromFields, fromRows, labelOf, needOf, statusProblems, statusRows, withStatus } from '../lib/describe.js';
 import { KINDS, checkPattern, drawsViewBar, expandScopes, patternsFor, pickPattern, writeLayout } from '../lib/pattern.js';
 import { answer, refuse } from '../lib/reply.js';
+import { prompted } from '../lib/skills.js';
 
 /** A tool's work: what it cannot do is said as a refusal, never thrown at the client. */
 const tool = (run) => async (args) => {
@@ -276,7 +276,6 @@ export function register(server) {
   });
 
   // The prompt IS the skill: one SKILL.md, served as both (Q8).
-  const skill = () => readFileSync(new URL('../skills/build-page/SKILL.md', import.meta.url), 'utf8').replace(/^---\n[\s\S]*?\n---\n+/, '');
   server.registerPrompt('build_page', {
     title: 'Build a page',
     description: 'Build a page of a Sherpa app from its data: describe_data → pick_pattern → generate_page → validate_page → preview_page. The steps are skills/build-page/SKILL.md, the skill this package ships.',
@@ -285,8 +284,5 @@ export function register(server) {
       data: z.string().optional().describe('Where the rows are: a file, a localhost data path, or the rows themselves'),
       app: z.string().optional().describe('The app\'s folder'),
     },
-  }, ({ task, data, app }) => {
-    const asked = [task && `The task: ${task}.`, data && `The data: ${data}.`, app && `The app: ${app}.`].filter(Boolean);
-    return { messages: [{ role: 'user', content: { type: 'text', text: [...asked, ...(asked.length ? [''] : []), skill()].join('\n') } }] };
-  });
+  }, ({ task, data, app }) => prompted('build-page', [task && `The task: ${task}.`, data && `The data: ${data}.`, app && `The app: ${app}.`]));
 }
