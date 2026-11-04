@@ -110,10 +110,26 @@
   :host(:state(has-panel)) .controls { inset-block-end: calc(var(--_inset) + 56px); }
 }
 
+/* A box-selecting canvas: a crosshair on blank canvas; the Pan tool or Space held says grab. */
+:host([data-select-box]) .viewport { cursor: crosshair; }
 /* The Pan tool: a drag anywhere moves the view, and the content does not hear it. */
 :host(:state(panning)) .viewport { cursor: grab; }
 :host(:state(panning)) .plane { pointer-events: none; }
+:host(:state(pan-ready)) .viewport { cursor: grab; }
 :host(:state(dragging)) .viewport { cursor: grabbing; }
+/* The marquee: drawn while a box is dragged, in screen px over the view. */
+.marquee {
+  display: none;
+  position: absolute;
+  box-sizing: border-box;
+  pointer-events: none;
+  border: var(--sherpa-display-mode-border-width-base, 1px) dashed var(--sherpa-style-active-border-base-1, #c046ff);
+  background: color-mix(in srgb, var(--sherpa-style-active-border-base-1, #c046ff) 12%, transparent);
+}
+:host(:state(boxing)) .marquee { display: block; }
+@media (forced-colors: active) {
+  .marquee { border-color: Highlight; background: transparent; }
+}
 
 /* ── The controls ─────────────────────────────────────────────────────── */
 .controls {

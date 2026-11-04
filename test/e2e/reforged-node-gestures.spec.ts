@@ -201,11 +201,14 @@ test('559 a click on the blank canvas deselects every node and shuts the panel; 
   }));
   expect(await state()).toEqual({ current: ['Sort'], open: true });
   const [x, y] = await blank(page);
-  // A pan: the pointer moves, so it is no click.
+  // A pan (Space + drag; a plain drag is a box now): the pointer moves, so it is no click.
+  await page.evaluate(() => (document.querySelector('#root sherpa-layout-canvas')!.shadowRoot!.querySelector('.viewport') as HTMLElement).focus());
+  await page.keyboard.down('Space');
   await page.mouse.move(x, y);
   await page.mouse.down();
   await page.mouse.move(x + 30, y + 10, { steps: 4 });
   await page.mouse.up();
+  await page.keyboard.up('Space');
   expect(await state()).toEqual({ current: ['Sort'], open: true });
   const [bx, by] = await blank(page);
   await page.mouse.click(bx, by);

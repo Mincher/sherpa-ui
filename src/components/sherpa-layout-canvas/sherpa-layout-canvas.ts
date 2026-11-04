@@ -21,9 +21,14 @@ const PAN_STEP = 32;
 const FIT_PADDING = 48;
 /** How much of the minimap the content takes on its longer side: the rest is room for the frame. */
 const MINIMAP_CONTENT = 0.5;
+/** How far a press may move and still be a click, in screen px: a box drag is further. */
+const BOX_SLOP = 4;
 
 /** A box on the plane, in plane px. */
 interface Box { left: number; top: number; right: number; bottom: number }
+
+/** A press in progress: a pan from where the view was, or a box (with Shift: added to the pick). */
+interface Drag { id: number; x: number; y: number; from: [number, number]; box: boolean; add: boolean }
 
 export class SherpaLayoutCanvas extends SherpaElement {
   static override css = new URL('./sherpa-layout-canvas.css', import.meta.url);
@@ -33,6 +38,7 @@ export class SherpaLayoutCanvas extends SherpaElement {
     /* Written BY the canvas: the Pan tool is on. */
     /* Written BY the canvas, while a drag pans. */
     'data-no-minimap': { type: 'boolean', kind: 'style' },
+    'data-select-box': { type: 'boolean', kind: 'style' },
     'data-zoom': { type: 'number', kind: 'behaviour' },
     'data-min-zoom': { type: 'number', kind: 'behaviour' },
     'data-max-zoom': { type: 'number', kind: 'behaviour' },
@@ -49,7 +55,10 @@ export class SherpaLayoutCanvas extends SherpaElement {
   #zoom = 1;
 
   /** The drag in progress: where it started, and the view then. */
-  #drag: { id: number; x: number; y: number; from: [number, number] } | null = null;
+  #drag: Drag | null = null;
+
+  /** Space is held: a left drag pans, for a canvas whose plain left drag draws a box. */
+  #space = false;
 
   /** A minimap drag: the pointer, and where it took the view's frame. */
   #mapDrag: { id: number; grab: [number, number] } | null = null;
@@ -90,6 +99,10 @@ export class SherpaLayoutCanvas extends SherpaElement {
   override onConnect(): void {
     this.#observer = new ResizeObserver(() => this.#drawMinimap());
     this.#observer.observe(this);
+    // Capture: a node's header takes Space for itself, and stops it.
+    this.on(window, 'keydown', (event) => this.#onSpace(event as KeyboardEvent, true), { capture: true });
+    this.on(window, 'keyup', (event) => this.#onSpace(event as KeyboardEvent, false), { capture: true });
+    this.on(window, 'blur', () => this.#onSpace(null, false));
     // A piece says where it sits in its own style; the canvas writes only its own.
     this.#moves = new MutationObserver((records) => {
       if (records.some((r) => r.target.parentElement === this)) this.#drawMinimap();
@@ -209,24 +222,27 @@ export class SherpaLayoutCanvas extends SherpaElement {
     }
   };
 
-  /** A drag pans with the Pan tool on, or with the middle button. */
+  /** A drag pans with the Pan tool on, with Space held, or with the middle button. On blank canvas a plain
+   *  left drag pans too — or, with `data-select-box`, draws a box and reports it. */
   #onPointerDown = (event: PointerEvent): void => {
-    const onContent = event.target !== event.currentTarget && !this.hasState('panning');
-    if (event.button === 1 || (event.button === 0 && !onContent)) {
-      event.preventDefault();
-      this.#drag = { id: event.pointerId, x: event.clientX, y: event.clientY, from: [this.#x, this.#y] };
-      // A synthetic pointer has nothing to capture.
-      try {
-        (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
-      } catch { /* the drag still follows the pointer's own events */ }
-      this.toggleState('dragging', true);
-    }
+    const blank = event.target === event.currentTarget;
+    const pan = event.button === 1 || (event.button === 0 && (this.hasState('panning') || (this.#space && blank) || (blank && !this.hasAttribute('data-select-box'))));
+    const box = !pan && event.button === 0 && blank;
+    if (!pan && !box) return;
+    event.preventDefault();
+    this.#drag = { id: event.pointerId, x: event.clientX, y: event.clientY, from: [this.#x, this.#y], box, add: event.shiftKey };
+    // A synthetic pointer has nothing to capture.
+    try {
+      (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    } catch { /* the drag still follows the pointer's own events */ }
+    if (!box) this.toggleState('dragging', true);
   };
 
-  /** Follow the drag, and end it. */
+  /** Follow the drag, and end it: a pan moves the view; a box is drawn, and on release reported in plane px. */
   #onPointer = (event: PointerEvent): void => {
     const drag = this.#drag;
     if (!drag || event.pointerId !== drag.id) return;
+    if (drag.box) return this.#onBox(event, drag);
     if (event.type === 'pointermove') {
       this.panTo(drag.from[0] + event.clientX - drag.x, drag.from[1] + event.clientY - drag.y);
       return;
@@ -234,6 +250,39 @@ export class SherpaLayoutCanvas extends SherpaElement {
     this.#drag = null;
     this.toggleState('dragging', false);
   };
+
+  /** A box drag: the marquee follows the pointer; a release past a click's slop reports it. */
+  #onBox(event: PointerEvent, drag: Drag): void {
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const [left, right] = [Math.min(drag.x, event.clientX) - rect.left, Math.max(drag.x, event.clientX) - rect.left];
+    const [top, bottom] = [Math.min(drag.y, event.clientY) - rect.top, Math.max(drag.y, event.clientY) - rect.top];
+    const far = Math.hypot(event.clientX - drag.x, event.clientY - drag.y) > BOX_SLOP;
+    if (event.type === 'pointermove') {
+      const marquee = this.$<HTMLElement>('.marquee');
+      if (far && marquee) {
+        this.toggleState('boxing', true);
+        Object.assign(marquee.style, { left: `${left}px`, top: `${top}px`, width: `${right - left}px`, height: `${bottom - top}px` });
+      }
+      return;
+    }
+    this.#drag = null;
+    this.toggleState('boxing', false);
+    if (event.type !== 'pointerup' || !far) return;
+    const plane = (px: number, py: number): [number, number] => [(px - this.#x) / this.#zoom, (py - this.#y) / this.#zoom];
+    const [a, b] = [plane(left, top), plane(right, bottom)];
+    this.emit('canvas-box', { left: a[0], top: a[1], right: b[0], bottom: b[1], add: drag.add });
+  }
+
+  /** Space held: a left drag pans. Not while typing or on a button. */
+  #onSpace(event: KeyboardEvent | null, down: boolean): void {
+    if (event && event.key !== ' ') return;
+    const first = event?.composedPath()[0];
+    if (down && first instanceof Element && first.matches('input, select, textarea, [contenteditable], button, a')) return;
+    // Space on the canvas itself must not scroll the page.
+    if (down && first === this.$('.viewport')) event?.preventDefault();
+    this.#space = down;
+    this.toggleState('pan-ready', down);
+  }
 
   /** The arrows pan; + and - zoom; 0 is 100%. Content keeps its own keys. */
   #onKey = (event: KeyboardEvent): void => {

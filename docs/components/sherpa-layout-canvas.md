@@ -25,6 +25,7 @@ For content that pans and zooms with no edge, each item placed at its `--x` and 
 | `data-max-zoom` | number | `4` | the largest zoom |
 | `data-min-zoom` | number | `0.25` | the smallest zoom |
 | `data-no-minimap` | boolean |  | no minimap |
+| `data-select-box` | boolean |  | a plain left drag on blank canvas draws a box and reports it (canvas-box) instead of panning; Space + drag, the middle button and the Pan tool still pan |
 | `data-zoom` | number |  | the zoom, 1 is 100%; written BY the canvas as it zooms, and read when a host sets it |
 
 ## Properties
@@ -49,6 +50,7 @@ Each one bubbles.
 | Event | Detail | What it means |
 |---|---|---|
 | `canvas-change` | `{ x: number; y: number; zoom: number }` | The view moved: panned or zoomed. |
+| `canvas-box` | `{ add: boolean; bottom: number; left: number; right: number; top: number }` | A box was dragged on blank canvas. |
 
 ## Slots
 
@@ -62,7 +64,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`controls`, `floating`, `minimap`, `plane`, `toolbar`, `viewport`
+`controls`, `floating`, `marquee`, `minimap`, `plane`, `toolbar`, `viewport`
 
 ## CSS custom properties it reads
 
@@ -70,6 +72,9 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-display-mode-border-width-base` | `.marquee` | `border-width` |
+| `--sherpa-style-active-border-base-1` | `.marquee` | `border-color` |
+| `--sherpa-style-active-border-base-1` | `.marquee` | `background` |
 | `--sherpa-display-mode-border-rounding-base` | `.controls` | `border-radius` |
 | `--sherpa-elevation-offset-x` | `.controls` | `box-shadow` |
 | `--sherpa-style-surface-base` | `.minimap` | `background` |
@@ -82,6 +87,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ maxZoom?, minZoom?, noMinimap?, zoom? }`
+`{ maxZoom?, minZoom?, noMinimap?, selectBox?, zoom? }`
 
 Its declared props by name: `label` sets data-label.

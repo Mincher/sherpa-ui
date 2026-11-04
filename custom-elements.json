@@ -4478,6 +4478,13 @@
               }
             },
             {
+              "name": "data-select-box",
+              "description": "a plain left drag on blank canvas draws a box and reports it (canvas-box) instead of panning; Space + drag, the middle button and the Pan tool still pan",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-zoom",
               "description": "the zoom, 1 is 100%; written BY the canvas as it zooms, and read when a host sets it",
               "type": {
@@ -4567,6 +4574,13 @@
               "type": {
                 "text": "CustomEvent<{ x: number; y: number; zoom: number }>"
               }
+            },
+            {
+              "name": "canvas-box",
+              "description": "A box was dragged on blank canvas.",
+              "type": {
+                "text": "CustomEvent<{ add: boolean; bottom: number; left: number; right: number; top: number }>"
+              }
             }
           ],
           "slots": [
@@ -4589,6 +4603,9 @@
             },
             {
               "name": "floating"
+            },
+            {
+              "name": "marquee"
             },
             {
               "name": "minimap"
@@ -6961,6 +6978,13 @@
               "description": "Undo can be pressed; written by the editor that owns the history",
               "type": {
                 "text": "boolean"
+              }
+            },
+            {
+              "name": "data-picked-routes",
+              "description": "How many connectors are picked; written by the editor, said in the Tie tool's tip",
+              "type": {
+                "text": "number"
               }
             },
             {

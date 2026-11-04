@@ -3,7 +3,7 @@
  * drawn there: a page's Query, which each edit ASKS, and a workflow, whose draft each edit
  * writes. Places last the tab; Save hands the app a checked definition. Each node lights as
  * its step runs, from the one trace stream. A workflow's Custom Node opens, is edited as its
- * definition, updates its uses, and is made from picked nodes. A zip tie funnels routes through one place (plan 562). Will, TODOs 555, 551, 671, 719, 562.
+ * definition, updates its uses, and is made from picked nodes. A zip tie funnels routes through one place (plan 562). Will, TODOs 555, 551, 671, 719, 562, 735.
  * TRAP T-the-node-editor-asks-the-query · TRAP T-a-step-names-its-node
  *
  * Map:
@@ -12,6 +12,8 @@
  * - drawGraph — Draw a graph on a canvas: each node by id, at its place when that moved; then its routes.
  * - markNode — Mark one node as the one picked, or none.
  * - markNodes — Mark several nodes as the ones picked.
+ * - markRoutes — Mark routes as the ones picked.
+ * - pickedRoutes — The routes picked: by a click, a box, or the keys.
  * - WatchOptions — What a graph's watch is told: which traces are its, and which node each span lights.
  * - watchSteps — Light a canvas's nodes from the one trace stream as their steps run; its stop lets it go.
  * - InspectOptions — What an inspector shows beside a node's rows, and whom it tells of an edit.
@@ -37,6 +39,7 @@ import '../../components/sherpa-stack/sherpa-stack.js';
 import '../../components/sherpa-switch/sherpa-switch.js';
 import type { AddContext, SherpaNodePanel } from '../../components/sherpa-node-panel/sherpa-node-panel.js';
 import type { SherpaLayoutCanvas } from '../../components/sherpa-layout-canvas/sherpa-layout-canvas.js';
+import { boxPick, type PickBox } from './box-pick.js';
 import type { SocketSide } from '../../components/sherpa-node/node-sockets.js';
 import type { SessionStore } from '../browser/session.js';
 import type { DataSource } from '../data/data-source.js';
@@ -92,6 +95,12 @@ export interface DrawOptions {
   onUntie?: (id: string) => void;
   /** A click on blank canvas: no node is picked, the panel shuts (TODO 559). */
   onDeselect?: () => void;
+  /** A box dragged on the blank canvas picked these nodes (TODO 735); the routes it crossed are picked and drawn. */
+  onBox?: (nodes: string[]) => void;
+  /** The picked routes changed: a click, a box, or a key. */
+  onPicked?: (routes: NodeRoute[]) => void;
+  /** Picked routes cut with Delete or Backspace, as one edit; unset, each goes to `onBreak`. */
+  onBreakAll?: (routes: NodeRoute[]) => void;
   /** A line dragged out of an unrouted picklist's input socket and let go on the bare canvas, at a place on the plane. */
   onCustom?: (to: string, at: { x: number; y: number }) => void;
   /** A line let go on the bare canvas from a socket of any type: "Add a node" opens there (D16). Where unset, the line goes nowhere. */
@@ -132,8 +141,8 @@ interface Drawn {
   draft: SVGPathElement | null;
   /** The route whose end the reader holds: not drawn while it is. */
   lifted: NodeRoute | null;
-  /** The route a click picked: Delete or Backspace breaks it. */
-  selected: NodeRoute | null;
+  /** The routes picked, by a click or a box: Delete or Backspace breaks them, T ties them. */
+  picked: NodeRoute[];
   sizes: ResizeObserver;
   fitted: boolean;
 }
@@ -310,7 +319,7 @@ function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
     path.dataset['type'] = outputType(drawn.graph, route.from);
     path.dataset['from'] = route.from;
     path.dataset['to'] = route.to;
-    if (same(drawn.selected, route)) path.setAttribute('data-selected', '');
+    if (drawn.picked.some((r) => same(r, route))) path.setAttribute('data-selected', '');
     // The line a click lands on: wide, unseen, and the only part of the lines that takes the pointer.
     const hit = document.createElementNS(SVG, 'polyline');
     const dots = pieces.flatMap((q) => along(q.a, q.b));
@@ -477,7 +486,7 @@ function dragTie(canvas: SherpaLayoutCanvas, drawn: Drawn, id: string, down: Poi
   down.preventDefault();
   down.stopPropagation();
   drawn.selectedTie = id;
-  drawn.selected = null;
+  drawn.picked = [];
   drawRoutes(canvas, drawn);
   canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
   const [px, py] = planeOf(canvas, down);
@@ -542,13 +551,14 @@ export function tieSpot(canvas: SherpaLayoutCanvas, routes: readonly NodeRoute[]
   return { x: mean(0), y: mean(1) };
 }
 
-/** Clear what is picked: every node, and the route a click picked. */
+/** Clear what is picked: every node, and every route. */
 function deselect(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
   markNode(canvas, null);
-  if (drawn.selected || drawn.selectedTie) {
-    drawn.selected = null;
+  if (drawn.picked.length || drawn.selectedTie) {
+    drawn.picked = [];
     drawn.selectedTie = null;
     drawRoutes(canvas, drawn);
+    drawn.options.onPicked?.([]);
   }
   drawn.options.onDeselect?.();
 }
@@ -575,7 +585,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
   const made: Drawn = {
     graph: { nodes: [], routes: [] }, options: {},
     nodes: new Map(), rows: new Map(), addresses: new WeakMap(), shapes: new Map(), placedAt: new Map(),
-    lines, routes: [], ties: [], selectedTie: null, lanes: [], tying: false, draft: null, lifted: null, selected: null, fitted: false,
+    lines, routes: [], ties: [], selectedTie: null, lanes: [], tying: false, draft: null, lifted: null, picked: [], fitted: false,
     // A node's height lands when its parts render: the lines follow, and the first fits the view.
     sizes: new ResizeObserver(() => {
       drawRoutes(canvas, made);
@@ -614,9 +624,13 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
   lines.addEventListener('click', (event) => {
     const hit = event.target instanceof SVGElement && event.target.classList.contains('graph-hit') ? event.target : null;
     if (!hit) return;
-    made.selected = { from: hit.dataset['from']!, to: hit.dataset['to']! };
+    const route = { from: hit.dataset['from']!, to: hit.dataset['to']! };
+    const held = made.picked.some((r) => r.from === route.from && r.to === route.to);
+    // Shift adds a route to the pick, or takes it off.
+    made.picked = event.shiftKey ? (held ? made.picked.filter((r) => r.from !== route.from || r.to !== route.to) : [...made.picked, route]) : [route];
     made.selectedTie = null;
     drawRoutes(canvas, made);
+    made.options.onPicked?.(made.picked);
     // The canvas's own keys hear the break.
     canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
   });
@@ -633,12 +647,55 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     event.stopPropagation();
   });
   canvas.addEventListener('keydown', (event) => {
-    if (event.target !== canvas || !made.selected || (event.key !== 'Delete' && event.key !== 'Backspace')) return;
+    if (event.target !== canvas || !made.picked.length) return;
+    if (event.key === 'Escape') {
+      deselect(canvas, made);
+    } else if (event.key === 'Delete' || event.key === 'Backspace') {
+      const routes = made.picked;
+      made.picked = [];
+      if (routes.length > 1 && made.options.onBreakAll) made.options.onBreakAll(routes);
+      else for (const route of routes) made.options.onBreak?.(route);
+      drawRoutes(canvas, made);
+      made.options.onPicked?.([]);
+    } else return;
     event.preventDefault();
-    const route = made.selected;
-    made.selected = null;
-    made.options.onBreak?.(route);
+  });
+  // With no pointer: C picks the routes of the picked nodes — or of the node the keys are on (TODO 735).
+  canvas.addEventListener('keydown', (event) => {
+    const first = event.composedPath()[0];
+    if (event.key.toLowerCase() !== 'c' || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
+    if (first instanceof Element && first.matches('input, select, textarea, [contenteditable]')) return;
+    const own = event.composedPath().find((n): n is HTMLElement => n instanceof HTMLElement && n.localName === 'sherpa-node');
+    const held = [...made.nodes].filter(([, el]) => el.hasAttribute('data-current') || el === own).map(([id]) => id);
+    const routes = made.routes.filter((r) => held.includes(socketOf(r.from).node) || held.includes(socketOf(r.to).node));
+    if (!routes.length) return;
+    made.picked = routes.map(({ from, to }) => ({ from, to }));
+    made.selectedTie = null;
     drawRoutes(canvas, made);
+    made.options.onPicked?.(made.picked);
+    event.preventDefault();
+    event.stopPropagation();
+  });
+  // A box dragged on the blank canvas picks the nodes it touches and the routes it crosses. Shift adds. TODO 735
+  canvas.setAttribute('data-select-box', '');
+  canvas.addEventListener('canvas-box', (event) => {
+    const { add, ...box } = (event as CustomEvent<PickBox & { add: boolean }>).detail;
+    const boxes = [...made.nodes].map(([id, el]) => [id, { left: el.offsetLeft, top: el.offsetTop, right: el.offsetLeft + el.offsetWidth, bottom: el.offsetTop + el.offsetHeight }] as const);
+    const hit = boxPick(box, boxes, made.lanes);
+    const ids = new Set(hit.nodes);
+    if (add) {
+      for (const [id, el] of made.nodes) if (el.hasAttribute('data-current')) ids.add(id);
+      for (const route of made.picked) if (!hit.routes.some((r) => r.from === route.from && r.to === route.to)) hit.routes.push(route);
+    }
+    made.picked = hit.routes.map(({ from, to }) => ({ from, to }));
+    made.selectedTie = null;
+    markNodes(canvas, ids);
+    drawRoutes(canvas, made);
+    if (ids.size || made.picked.length) made.options.onBox?.([...ids]);
+    else deselect(canvas, made);
+    made.options.onPicked?.(made.picked);
+    // The canvas's own keys hear T and Delete.
+    canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
   });
   // A field's change, as an EDIT for the host: the drawing writes nothing itself.
   for (const type of CHANGES) canvas.addEventListener(type, (event) => {
@@ -709,7 +766,11 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: DrawnGraph, options
   drawn.ties = graph.ties ?? [];
   drawn.tying = !!options.tying;
   if (drawn.selectedTie && !drawn.ties.some((t) => t.id === drawn.selectedTie)) drawn.selectedTie = null;
-  if (drawn.selected && !graph.routes.some((r) => r.from === drawn.selected!.from && r.to === drawn.selected!.to)) drawn.selected = null;
+  const left = drawn.picked.filter((p) => graph.routes.some((r) => r.from === p.from && r.to === p.to));
+  if (left.length !== drawn.picked.length) {
+    drawn.picked = left;
+    options.onPicked?.(left);
+  }
   requestAnimationFrame(() => drawRoutes(canvas, drawn));
 }
 
@@ -721,6 +782,20 @@ export function markNode(canvas: SherpaLayoutCanvas, id: string | null): void {
 /** Mark several nodes as the ones picked. */
 export function markNodes(canvas: SherpaLayoutCanvas, ids: ReadonlySet<string>): void {
   for (const [key, el] of drawnOn.get(canvas)?.nodes ?? []) el.toggleAttribute('data-current', ids.has(key));
+}
+
+/** Mark routes as the ones picked. */
+export function markRoutes(canvas: SherpaLayoutCanvas, routes: readonly NodeRoute[]): void {
+  const drawn = drawnOn.get(canvas);
+  if (!drawn) return;
+  drawn.picked = routes.map(({ from, to }) => ({ from, to }));
+  drawRoutes(canvas, drawn);
+  drawn.options.onPicked?.(drawn.picked);
+}
+
+/** The routes picked: by a click, a box, or the keys. */
+export function pickedRoutes(canvas: SherpaLayoutCanvas): NodeRoute[] {
+  return [...(drawnOn.get(canvas)?.picked ?? [])];
 }
 
 /** Put the keyboard on one drawn node's header, once it is drawn. */
@@ -1093,6 +1168,8 @@ export function bindQueryEditor(
   };
   const picks = pickedIn(canvas, inspector, (node, now) => inspectNode(inspector!, node, now, { onEdit, visual: visualOf(node) }), () => { visual = null; });
   let graph: DrawnGraph = { nodes: [], routes: [] };
+  /** A cut is reported, never applied: once, however many routes are picked. */
+  const cutRefused = (): void => report({ code: 'query-route', message: 'The Query\'s routes are its readings: turn a condition off, or clear it, to take it from its scope.' });
   const draw = (): void => {
     graph = placed(queryGraph(query.draft, definition, {
       ...facts, values, presets: (scope) => query.presets(scope), domains: source.store?.domains ?? {}, pageSize: source.state?.pageSize ?? null,
@@ -1102,7 +1179,14 @@ export function bindQueryEditor(
       // Its routes are readings, which another field or scope takes: a moved end is a new route.
       onReroute: (_was, now) => onConnect(now),
       ...(panel ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
-      onBreak: () => report({ code: 'query-route', message: 'The Query\'s routes are its readings: turn a condition off, or clear it, to take it from its scope.' }),
+      onBreak: cutRefused, onBreakAll: cutRefused,
+      // A box picks and shows: one node opens its panel, as a click does; several, or none, shut it. TODO 735
+      onBox: (ids) => {
+        const node = ids.length === 1 ? graph.nodes.find((n) => n.id === ids[0]) : undefined;
+        if (node) picks.select(node, graph);
+        else picks.deselect();
+      },
+      onPicked: (routes) => toolbar?.setAttribute('data-picked-routes', String(routes.length)),
     });
     picks.follow(graph);
   };
@@ -1423,6 +1507,8 @@ export function bindWorkflow(
   // A moved end is one edit: the route cut, then made, checked as one.
   const onReroute = (was: NodeRoute, now: NodeRoute): void => take(editWorkflow(editWorkflow(shown(), { cut: was }, K()), { route: now }, K()));
   const onBreak = (route: NodeRoute): void => write(editWorkflow(shown(), { cut: route }, K()));
+  // Picked routes cut together are ONE step.
+  const onBreakAll = (routes: NodeRoute[]): void => edit(() => { for (const route of routes) onBreak(route); });
   // — Zip ties (562): a tie is a part of the draft, so each is one edit, and one step.
   let tying = false;
   const setTying = (on: boolean): void => {
@@ -1433,15 +1519,17 @@ export function bindWorkflow(
   const onTie = (routes: NodeRoute[], at: { x: number; y: number }): void => take(editWorkflow(shown(), { tie: { routes, ...at } }, K()));
   const onTieMove = (id: string, x: number, y: number): void => write(editWorkflow(shown(), { moveTie: { id, x, y } }, K()), `tie:${id}`);
   const onUntie = (id: string): void => write(editWorkflow(shown(), { untie: id }, K()));
-  /** With no pointer: tie the routes between picked nodes, or into one; where all are tied together already, untie them. */
+  /** With no pointer: tie the routes between picked nodes, or into one. */
   const tieNodes = (ids: readonly string[]): void => {
-    if (readOnly()) return;
-    const routes = (shown().routes ?? []).filter((r) => (ids.length > 1 ? ids.includes(socketOf(r.from).node) && ids.includes(socketOf(r.to).node) : socketOf(r.to).node === ids[0]));
-    if (!routes.length) return;
+    tieRoutes((shown().routes ?? []).filter((r) => (ids.length > 1 ? ids.includes(socketOf(r.from).node) && ids.includes(socketOf(r.to).node) : socketOf(r.to).node === ids[0])));
+  };
+  /** One tie across these routes; where they are all tied together already, untie them. */
+  const tieRoutes = (routes: readonly NodeRoute[]): void => {
+    if (readOnly() || !routes.length) return;
     const same = (a: NodeRoute, b: NodeRoute): boolean => a.from === b.from && a.to === b.to;
     const held = (shown().ties ?? []).find((t) => t.routes.length === routes.length && routes.every((r) => t.routes.some((q) => same(q, r))));
     if (held) onUntie(held.id);
-    else onTie(routes, tieSpot(canvas, routes));
+    else onTie([...routes], tieSpot(canvas, routes));
   };
   // A Value node for a picklist row: the row keeps its own pick, and mirrors the node.
   const customAt = (to: string, at: { x: number; y: number }): void => take(addCustomValue(shown(), to, at, K()));
@@ -1661,6 +1749,22 @@ export function bindWorkflow(
     } else if (multi.size) showMulti();
     else picks.deselect();
   };
+  /** A box picked these nodes: one opens its panel, several are a group, none shuts it. */
+  const pickBox = (ids: string[]): void => {
+    multi.clear();
+    for (const id of ids) multi.add(id);
+    const [only] = ids;
+    const node = ids.length === 1 ? graph.nodes.find((n) => n.id === only) : undefined;
+    if (node) {
+      multi.clear();
+      current = node.id;
+      picks.select(node, graph);
+    } else if (multi.size) showMulti();
+    else picks.deselect();
+  };
+  const tellPicked = (routes: NodeRoute[]): void => {
+    toolbar?.setAttribute('data-picked-routes', String(routes.length));
+  };
   const idOf = (event: Event): { id: string; header: boolean; field: boolean } | undefined => {
     const hits = event.composedPath();
     const el = hits.find((n): n is HTMLElement => n instanceof HTMLElement && n.localName === 'sherpa-node');
@@ -1680,15 +1784,19 @@ export function bindWorkflow(
       if (event.key.toLowerCase() === 'y' || event.shiftKey) redo();
       else undo();
     } else if (event.key === 'Escape') {
+      const routes = pickedRoutes(canvas).length > 0;
+      if (routes) markRoutes(canvas, []);
       if (tying) setTying(false);
       else if (multi.size) {
         multi.clear();
         markNode(canvas, null);
         picks.deselect();
-      } else if (path.length) back();
-      else return;
-    } else if (event.key.toLowerCase() === 't' && !mod && !event.shiftKey && (multi.size > 1 || (hit && !hit.field))) {
-      tieNodes(multi.size > 1 ? [...multi] : [hit!.id]);
+      } else if (path.length && !routes) back();
+      else if (!routes) return;
+    } else if (event.key.toLowerCase() === 't' && !mod && !event.shiftKey && (pickedRoutes(canvas).length || multi.size > 1 || (hit && !hit.field))) {
+      // Picked routes first; else the routes of the picked nodes.
+      if (pickedRoutes(canvas).length) tieRoutes(pickedRoutes(canvas));
+      else tieNodes(multi.size > 1 ? [...multi] : [hit!.id]);
     } else if (hit?.header && event.key === ' ') toggle(hit.id);
     else if (hit?.header && event.key === 'Enter' && use(hit.id)) open(hit.id);
     else return;
@@ -1761,7 +1869,8 @@ export function bindWorkflow(
     graph = ro ? { ...body, nodes: body.nodes.map((n) => ({ ...n, rows: n.rows.map((r) => ({ ...r, editable: false })) })) } : body;
     drawGraph(canvas, graph, {
       onEdit, onMove, onConnect, onReroute, onBreak, onCustom, onDeselect: picks.deselect,
-      ...(ro ? {} : { tying, onTie, onTieMove, onUntie }),
+      onBox: pickBox, onPicked: tellPicked,
+      ...(ro ? {} : { tying, onTie, onTieMove, onUntie, onBreakAll }),
       onSelect: (node) => {
         multi.clear();
         picks.select(node, graph);

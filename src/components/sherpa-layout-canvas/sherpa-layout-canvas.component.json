@@ -43,6 +43,14 @@
                 }
               }
             ]
+          },
+          {
+            "el": "div",
+            "class": "marquee",
+            "part": "marquee",
+            "attrs": {
+              "aria-hidden": "true"
+            }
           }
         ]
       },
@@ -221,6 +229,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-select-box",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "a plain left drag on blank canvas draws a box and reports it (canvas-box) instead of panning; Space + drag, the middle button and the Pan tool still pan"
+    },
+    {
+      "$type": "prop",
       "name": "data-zoom",
       "type": "number",
       "observed": true,
@@ -256,10 +273,15 @@
     }
   ],
   "populate": {
-    "shape": "{ maxZoom?, minZoom?, noMinimap?, zoom? }",
+    "shape": "{ maxZoom?, minZoom?, noMinimap?, selectBox?, zoom? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
+    {
+      "$type": "state",
+      "name": "select-box",
+      "selector": ":host([data-select-box])"
+    },
     {
       "$type": "state",
       "name": "no-minimap",
@@ -295,9 +317,26 @@
         "y": "number",
         "zoom": "number"
       }
+    },
+    {
+      "$type": "event",
+      "name": "canvas-box",
+      "description": "A box was dragged on blank canvas.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "add": "boolean",
+        "bottom": "number",
+        "left": "number",
+        "right": "number",
+        "top": "number"
+      }
     }
   ],
   "tokens": {
+    "marquee.border-width": "{sherpa.display-mode-border-width-base}",
+    "marquee.border-color": "{sherpa.style-active-border-base-1}",
+    "marquee.background": "{sherpa.style-active-border-base-1}",
     "controls.border-radius": "{sherpa.display-mode-border-rounding-base}",
     "controls.box-shadow": "{sherpa.elevation-offset-x}",
     "minimap.background": "{sherpa.style-surface-base}",

@@ -9,6 +9,8 @@
     data-min-zoom    the smallest zoom (default 0.25)
     data-max-zoom    the largest zoom (default 4)
     data-no-minimap  no minimap
+    data-select-box  a plain left drag on blank canvas draws a box and reports it (canvas-box)
+                     instead of panning; Space + drag, the middle button and the Pan tool still pan
 
   Slots:
     (default)   the content, placed on the canvas at its `--x` and `--y` (px)
@@ -19,12 +21,14 @@
 
   Fires:
     canvas-change — the view moved: panned or zoomed. detail: { x, y, zoom }
+    canvas-box — a box was dragged on blank canvas. detail: { left, top, right, bottom, add } (plane px; add: Shift held)
 -->
 <template id="default">
   <!-- The VIEW: what the reader sees of the canvas. The keys pan and zoom it. -->
   <div class="viewport" part="viewport" tabindex="0" role="group"
        aria-roledescription="canvas" aria-label="Canvas">
     <div class="plane" part="plane"><slot data-accepts="content"></slot></div>
+    <div class="marquee" part="marquee" aria-hidden="true"></div>
   </div>
 
   <!-- A card floating on the view: it keeps its place as the plane pans and zooms. -->

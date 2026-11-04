@@ -26,6 +26,7 @@ For a graph editor's tools: Save, Undo and Redo as one object of icon buttons. I
 | `data-can-save` | boolean |  | Save can be pressed (default off: Save is a placeholder until a host wants it) |
 | `data-can-tie` | boolean |  | The Zip tie tool can be pressed; written by the editor |
 | `data-can-undo` | boolean |  | Undo can be pressed; written by the editor that owns the history |
+| `data-picked-routes` | number |  | How many connectors are picked; written by the editor, said in the Tie tool's tip |
 | `data-tie` | boolean |  | The Zip tie tool is on; written by the editor, shown as pressed |
 
 ## Events
@@ -53,6 +54,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ canRedo?, canSave?, canTie?, canUndo?, tie? }`
+`{ canRedo?, canSave?, canTie?, canUndo?, pickedRoutes?, tie? }`
 
 Its declared props by name: `label` sets data-label.
