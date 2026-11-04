@@ -1,7 +1,7 @@
 /**
- * sherpa.js — the sherpa-ui this MCP describes: the installed package, or the
- * checkout it sits in. Every file it reads is named in READS, by its path in
- * the package, and read here; every built entry it runs, in IMPORTS.
+ * sherpa.js — every file the MCP reads: sherpa-ui's, the installed package or
+ * the checkout it sits in, each named in READS, and every built entry it runs,
+ * in IMPORTS; an app's, inside its folder; and the Starter that makes one.
  * TRAP T-the-mcp-reads-sherpa-ui-through-one-door
  *
  * Map:
@@ -11,27 +11,32 @@
  * - imported — one of those entries, as an app imports it; it throws, in words to act on, when it is not built
  * - has — whether one of those files is there
  * - read — one of those files as text; null when it is not there
+ * - load — one of those files that is code, as a module, run as it ships; null when it is not there
  * - components — every element the package defines, from its custom-elements.json
  * - spec — a component's spec; null for a name that is no component
  * - example — a component's example, its markup joined; null when it has none
  * - schemas — each contract in schemas/ by name, `page` for page.v1.json, with its own title
  * - tokens — every token tokens.css declares: its layer, first value and how often it is set
+ * - appFile — a file of an app's, by its path from the app's folder; null when not there or outside it
+ * - starterFiles — a new app's files, as create-sherpa-ui writes them; null where it is not installed
  */
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const installed = () => {
+/** A package's folder, where this package can resolve it; null where it cannot. */
+const installed = (name) => {
   try {
-    return path.dirname(createRequire(import.meta.url).resolve('sherpa-ui/package.json'));
+    return path.dirname(createRequire(import.meta.url).resolve(`${name}/package.json`));
   } catch {
     return null;
   }
 };
 
 /** sherpa-ui's folder: the installed package, else this checkout. */
-export const SHERPA_ROOT = installed() ?? fileURLToPath(new URL('../..', import.meta.url));
+export const SHERPA_ROOT = installed('sherpa-ui') ?? fileURLToPath(new URL('../..', import.meta.url));
 
 /** Every sherpa-ui file the MCP reads, by its path in the package. */
 export const READS = {
@@ -43,6 +48,8 @@ export const READS = {
   appGuide: 'docs/APP-GUIDE.md',
   dataRules: 'docs/DATA-SOURCE-RULES.md',
   tokens: 'src/styles/tokens/tokens.css',
+  // Code that no export names, run by path: check_usage is `npx sherpa-ui check-usage`'s own check.
+  usage: 'scripts/check-usage.mjs',
 };
 
 /** Every built entry of sherpa-ui the MCP runs, by its export. */
@@ -79,6 +86,9 @@ export const has = (key, vars = {}) => existsSync(where(key, vars) ?? '');
 
 /** One of those files as text; null when it is not there. */
 export const read = (key, vars = {}) => (has(key, vars) ? readFileSync(where(key, vars), 'utf8') : null);
+
+/** One of those files that is code, as a module, run as it ships; null when it is not there. A built entry is `imported`. */
+export const load = async (key) => (has(key) ? import(pathToFileURL(where(key, {})).href) : null);
 
 /** Every element the package defines, from its custom-elements.json: name, description and import. */
 export function components() {
@@ -131,4 +141,37 @@ export function tokens() {
     }
   }
   return [...out.values()];
+}
+
+/** A file of an app's, by its path from the app's folder, as text; null when it
+ *  is not there, or the path leaves the folder: an app.json names its own files. */
+export function appFile(folder, rel) {
+  const root = path.resolve(folder);
+  const file = path.resolve(root, String(rel ?? ''));
+  if (!file.startsWith(root + path.sep) || !existsSync(file) || !statSync(file).isFile()) return null;
+  return readFileSync(file, 'utf8');
+}
+
+/** Every file under a folder, by its path from it with `/`, and its text, in order. */
+const filesUnder = (root) => readdirSync(root, { recursive: true }).map(String).sort()
+  .filter((rel) => statSync(path.join(root, rel)).isFile())
+  .map((rel) => ({ path: rel.split(path.sep).join('/'), text: readFileSync(path.join(root, rel), 'utf8') }));
+
+/**
+ * A new app's files, as create-sherpa-ui writes them, named `name`: its own
+ * `init` writes them into a temporary folder, and they are read back from it.
+ * create-sherpa-ui is installed beside this package, else the checkout's
+ * sibling Starter; null where neither is. TRAP T-a-starter-is-one-folder
+ */
+export async function starterFiles(name) {
+  const root = installed('create-sherpa-ui') ?? path.resolve(SHERPA_ROOT, '..', 'Sherpa Starter');
+  const entry = path.join(root, 'index.mjs');
+  if (!existsSync(entry)) return null;
+  const { init } = await import(pathToFileURL(entry).href);
+  const work = mkdtempSync(path.join(tmpdir(), 'sherpa-scaffold-'));
+  try {
+    return filesUnder(init(path.join(work, String(name).replace(/[^A-Za-z0-9-]+/g, '-') || 'sherpa-app')));
+  } finally {
+    rmSync(work, { recursive: true, force: true });
+  }
 }

@@ -7,11 +7,11 @@
  */
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { callEverything } from '../../scripts/check-mcp-pack.mjs';
+import { SAMPLES, callEverything } from '../../scripts/check-mcp-pack.mjs';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const disk = (path) => readFileSync(`${ROOT}${path}`, 'utf8');
@@ -29,8 +29,11 @@ const call = async (name, args) => {
 const resource = async (uri) => (await client.readResource({ uri })).contents[0].text;
 
 test('every tool answers, and every resource it lists is read', async () => {
-  const { tools, resources, failures } = await callEverything(client);
-  assert.deepEqual(failures, []);
+  // In a checkout, an app the repo holds; installed, the Starter's.
+  const { tools, resources, failures } = await callEverything(client, { ...SAMPLES, validate_app: { path: 'test/reforged/outlet' } });
+  // scaffold_app serves the Starter, a sibling project; where it is not, it says so.
+  const starter = existsSync(`${ROOT}../Sherpa Starter/index.mjs`);
+  assert.deepEqual(failures.filter((f) => starter || !f.startsWith('scaffold_app: create-sherpa-ui is not here')), []);
   assert.ok(tools >= 3);
   // Specs, examples and sources for every component, the schemas and three docs.
   assert.ok(resources > 300, `${resources} resources`);

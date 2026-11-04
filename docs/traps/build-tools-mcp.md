@@ -1023,10 +1023,13 @@ published package die at load.
 `sherpa-ui` (resolved from `sherpa-ui/package.json`), or the checkout the MCP
 sits in. `READS` names every file it reads, by its path in the package — the
 specs, the examples, the sources, `schemas/`, `custom-elements.json`, the two
-served docs and `tokens.css` — and every tool and resource reads through it. A
+served docs and `tokens.css`, and `scripts/check-usage.mjs`, which it runs by
+path as no export names it — and every tool and resource reads through it. A
 name from a caller is one path segment, so no URI reaches out of the package.
 `IMPORTS` names every built entry it RUNS (`sherpa-ui/data`), imported by the
 package's own `exports`, as an app imports it, never by a path into `dist/`.
+An app's own files are read through it too (`appFile`), never outside the
+folder its app.json is in.
 
 **It reads sherpa-ui's own files and never a copy** (plan 700 G1). The old MCP
 copied sherpa-ui's generation code into a `vendor/` as it was packed, and
@@ -1035,10 +1038,11 @@ ships no MCP code and no Figma file.
 
 Two checks hold it. A node test reads `npm pack --dry-run` for both packages:
 sherpa-ui packs every file in `READS` and no Figma file; the MCP imports nothing
-outside its folder and depends on exactly the packages it imports, and
-`sherpa-ui`. `npm run check:mcp-pack` packs both, installs them into an empty
-folder and calls every tool, resource and prompt — it uses the npm cache, and
-the network for a file the cache lacks.
+outside its folder and depends on exactly the packages it imports, and on
+`sherpa-ui` and `create-sherpa-ui`, which it reads by path. `npm run
+check:mcp-pack` packs the three, installs them into an empty folder and calls
+every tool, resource and prompt — it uses the npm cache, and the network for a
+file the cache lacks.
 
 - Site: `mcp-server/lib/sherpa.js`
 - Site: `scripts/check-mcp-pack.mjs`
@@ -1068,8 +1072,15 @@ npm drops a package's `.gitignore`, so the template keeps it, and
 server that rewrites `/app/index.html` to `/app` resolves every relative path
 against `/`. Its tests are in its own project.
 
+The MCP's `scaffold_app` gives the same files: the Starter's own `init` writes
+them into a temporary folder, and the MCP reads them back, so the dotted files
+and the name are the Starter's rules, never a copy. So `sherpa-ui-mcp` depends
+on `create-sherpa-ui`, which is not on npm: `check:mcp-pack` installs its
+tarball beside the other two.
+
 - Site: `scripts/check-mcp-pack.mjs`
 - Site: `test/unit/the-mcp-package.test.mjs`
+- Site: `mcp-server/lib/sherpa.js`
 
 ### T-a-page-loads-the-bundle
 

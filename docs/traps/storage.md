@@ -1051,11 +1051,13 @@ not hold is reported (`unknown-template`), and that view draws the page's own
 content rather than nothing.
 
 It is a BROWSER function — it parses HTML — so it ships from `sherpa-ui`, not
-`sherpa-ui/data`.
+`sherpa-ui/data`. The MCP's `validate_page` reads the same file in Node, beside
+the Views, and says the same of a template it does not hold.
 
 - Site: `src/core/browser/view-files.ts`
 - Site: `src/core/browser/persist-view.ts`
 - Site: `test/e2e/reforged-view-files.spec.ts`
+- Site: `mcp-server/lib/check.js`
 
 ### T-local-records-seed-themselves
 

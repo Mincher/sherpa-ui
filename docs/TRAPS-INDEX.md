@@ -1082,7 +1082,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](traps/other-components.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (73)
+## Build, tools and the MCP (75)
 
 - [T-a-bare-name-must-be-used-not-mentioned](traps/build-tools-mcp.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — ts-facts
@@ -1121,16 +1121,18 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-slot-says-what-it-accepts](traps/build-tools-mcp.md#t-a-slot-says-what-it-accepts) — generate-component-spec
 - [T-a-spec-on-disk-must-be-the-spec-the-source-makes](traps/build-tools-mcp.md#t-a-spec-on-disk-must-be-the-spec-the-source-makes) — generate-component-spec
 - [T-a-spec-reads-the-class-by-its-parser](traps/build-tools-mcp.md#t-a-spec-reads-the-class-by-its-parser) — ts-facts
-- [T-a-starter-is-one-folder](traps/build-tools-mcp.md#t-a-starter-is-one-folder) — check-mcp-pack
+- [T-a-starter-is-one-folder](traps/build-tools-mcp.md#t-a-starter-is-one-folder) — check-mcp-pack, sherpa
 - [T-a-state-colour-binds-the-style-mode](traps/filters.md#t-a-state-colour-binds-the-style-mode) — lint-css, project-tokens
 - [T-a-stranded-container-fills-its-row](traps/build-tools-mcp.md#t-a-stranded-container-fills-its-row) — project-tokens
 - [T-a-template-binds-by-markup](traps/element-and-sheets.md#t-a-template-binds-by-markup) — check-props, check-usage, generate-component-spec, html-structure
+- [T-a-views-markup-lives-in-a-template](traps/storage.md#t-a-views-markup-lives-in-a-template) — check
 - [T-an-elevation-pin-cannot-reach-a-shadow-root](traps/build-tools-mcp.md#t-an-elevation-pin-cannot-reach-a-shadow-root) — project-tokens
 - [T-an-event-name-is-not-always-a-literal](traps/build-tools-mcp.md#t-an-event-name-is-not-always-a-literal) — generate-component-spec, ts-facts
 - [T-an-icon-loads-when-first-drawn](traps/element-and-sheets.md#t-an-icon-loads-when-first-drawn) — build-reforged, generate-icons
 - [T-an-override-collection-is-keyed-by-its-parent](traps/build-tools-mcp.md#t-an-override-collection-is-keyed-by-its-parent) — check-extensions
 - [T-at-property-needs-the-document](traps/charts.md#t-at-property-needs-the-document) — project-tokens
 - [T-bind-locks-what-it-owns](traps/join-and-app.md#t-bind-locks-what-it-owns) — check-ownership
+- [T-configuration-is-not-data](traps/data-layer.md#t-configuration-is-not-data) — check
 - [T-fit-is-a-desktop-mode](traps/other-components.md#t-fit-is-a-desktop-mode) — project-tokens
 - [T-grouping-is-an-attribute-and-a-class](traps/menus-tips-overlays.md#t-grouping-is-an-attribute-and-a-class) — project-tokens
 - [T-harness-serves-font-awesome-locally](traps/build-tools-mcp.md#t-harness-serves-font-awesome-locally) — playwright.config

@@ -2,8 +2,9 @@
  * The MCP ships as its own package, sherpa-ui-mcp (TODO 192), and reads the
  * sherpa-ui installed beside it: sherpa-ui packs every file it reads and no
  * Figma file; the MCP packs its own code, imports nothing outside its folder
- * and depends on every package it imports. `npm run check:mcp-pack` installs
- * both and calls everything; this checks the file lists, with no network.
+ * and depends on every package it imports, and on the two it reads by path.
+ * `npm run check:mcp-pack` installs them and calls everything; this checks the
+ * file lists, with no network.
  * TRAP T-the-mcp-reads-sherpa-ui-through-one-door
  *
  *   node --test test/unit/the-mcp-package.test.mjs
@@ -56,6 +57,6 @@ test('sherpa-ui-mcp packs the code it imports, nothing outside its folder, and d
   assert.equal(pkg.name, 'sherpa-ui-mcp');
   // A new app's .mcp.json starts this file. TRAP T-a-starter-is-one-folder
   assert.equal(pkg.bin['sherpa-mcp'], './index.js');
-  // sherpa-ui is read by path through the door, not imported.
-  assert.deepEqual(Object.keys(pkg.dependencies).sort(), [...outside, 'sherpa-ui'].sort());
+  // sherpa-ui, and create-sherpa-ui for scaffold_app, are read by path through the door, not imported.
+  assert.deepEqual(Object.keys(pkg.dependencies).sort(), [...outside, 'sherpa-ui', 'create-sherpa-ui'].sort());
 });

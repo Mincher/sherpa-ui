@@ -5752,9 +5752,15 @@ provider's rows) keeps what the page set. Three setters in one moment redraw
 ONCE — each would otherwise draw the config the one before had not drawn yet,
 which is the race P1 met. The spec reads them as the grid's own accessors.
 
+The MCP's `validate_page` checks a `ui` before a page opens, against the specs:
+each id an element in the markup, each key a property or a method its spec
+lists, and none read-only. The provider says the same at run time
+(`provider-unknown-setting`, `provider-refused-setting`), once it is too late.
+
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/core/data/page-definition.ts`
+- Site: `mcp-server/lib/check.js`
 
 ### T-no-rows-is-still-an-answer
 
