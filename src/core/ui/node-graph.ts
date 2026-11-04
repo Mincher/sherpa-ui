@@ -20,6 +20,7 @@
  * - WorkflowEditorOptions — What editing a workflow needs beyond it: its facts, an inspector, a session, the kinds.
  * - bindWorkflow — Keep a workflow's draft drawn on a canvas, and write each edit to it.
  */
+import '../../components/sherpa-button/sherpa-button.js';
 import '../../components/sherpa-input-text/sherpa-input-text.js';
 import '../../components/sherpa-key-value-list/sherpa-key-value-list.js';
 import '../../components/sherpa-node/sherpa-node.js';
@@ -39,11 +40,11 @@ import { OP_LABELS, valueKey, type FilterOp } from '../data/store.js';
 import { report } from '../data/report.js';
 import { typedValue, type FieldType } from '../data/filter-state.js';
 import {
-  FALSE_SOCKET, NODE_KINDS, placed, socketOf, socketType,
+  FALSE_SOCKET, NODE_KINDS, placed, rowChoices, socketOf, socketType,
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeRoute,
 } from '../data/node-kinds.js';
 import {
-  checkWorkflow, editWorkflow, readWorkflow, workflowFaults, workflowGraph,
+  addCustomValue, checkWorkflow, editWorkflow, readWorkflow, workflowFaults, workflowGraph,
   type WorkflowDefinition, type WorkflowDefinitionV1, type WorkflowFacts, type WorkflowNode,
 } from '../data/workflow.js';
 
@@ -61,6 +62,14 @@ export interface DrawOptions {
   onMove?: (node: GraphNode, x: number, y: number) => void;
   /** A line dragged from an output socket and let go on an input socket. */
   onConnect?: (route: NodeRoute) => void;
+  /** A route's input end dragged off its socket and let go on another input socket (TODO 557). */
+  onReroute?: (was: NodeRoute, now: NodeRoute) => void;
+  /** A route let go over the bare canvas, or a clicked one deleted (TODO 558). */
+  onBreak?: (route: NodeRoute) => void;
+  /** A click on blank canvas: no node is picked, the panel shuts (TODO 559). */
+  onDeselect?: () => void;
+  /** A line dragged out of an unrouted picklist's input socket and let go on the bare canvas, at a place on the plane. */
+  onCustom?: (to: string, at: { x: number; y: number }) => void;
 }
 
 /** A field a row draws: a text field or a select, a set of ticks, or a switch. */
@@ -81,6 +90,10 @@ interface Drawn {
   routes: readonly NodeRoute[];
   /** The line a reader is drawing, kept over each redraw of the routes. */
   draft: SVGPathElement | null;
+  /** The route whose end the reader holds: not drawn while it is. */
+  lifted: NodeRoute | null;
+  /** The route a click picked: Delete or Backspace breaks it. */
+  selected: NodeRoute | null;
   sizes: ResizeObserver;
   fitted: boolean;
 }
@@ -105,11 +118,11 @@ function put(el: Element, name: string, value: string | undefined): void {
 /** A row's field: a switch, a set of ticks, a select of its choices, or a text or number field.
  *  LOCKED — read only — where a route drives it, or nothing outside takes its change. */
 function fieldFor(row: GraphRow, locked: boolean): Field {
-  if (row.control === 'switch' || row.control === 'values') {
+  if (row.control === 'switch' || row.multiple) {
     const field = document.createElement(row.control === 'switch' ? 'sherpa-switch' : 'sherpa-select-group') as Field;
-    if (row.control === 'values') field.setAttribute('multiple', '');
+    if (row.multiple) field.setAttribute('multiple', '');
     if (locked) field.setAttribute('disabled', '');
-    if (row.control === 'values') field.populate?.(row.choices ?? []);
+    if (row.multiple) field.populate?.(row.choices ?? []);
     return field;
   }
   const field = document.createElement('sherpa-input-text') as Field;
@@ -126,7 +139,7 @@ function fill(field: Field, row: GraphRow, note?: string): void {
   field.setAttribute('data-label', row.label);
   put(field, 'data-description', note ?? row.hint);
   if (row.control === 'switch') field.checked = !!row.value;
-  else if (row.control === 'values') field.value = Array.isArray(row.value) ? row.value.map(String) : [];
+  else if (row.multiple) field.value = Array.isArray(row.value) ? row.value.map(String) : [];
   // A select holds its value's KEY, and shows its label itself.
   else field.value = row.choices ? String(row.value ?? '') : shown(row);
 }
@@ -183,6 +196,18 @@ function curve([x1, y1]: [number, number], [x2, y2]: [number, number]): string {
   return `M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`;
 }
 
+/** Points along the same curve, for the line a click can land on: a wide, unseen stroke. */
+function along([x1, y1]: [number, number], [x2, y2]: [number, number]): string {
+  const bend = Math.max(40, Math.abs(x2 - x1) / 2);
+  const [c1, c2] = [x1 + bend, x2 - bend];
+  return Array.from({ length: 17 }, (_, i) => {
+    const t = i / 16;
+    const u = 1 - t;
+    const at = (a: number, b: number, c: number, d: number): number => u * u * u * a + 3 * u * u * t * b + 3 * u * t * t * c + t * t * t * d;
+    return `${at(x1, c1, c2, x2)},${at(y1, y1, y2, y2)}`;
+  }).join(' ');
+}
+
 /** The type a route carries, from its output socket: a row's, the header's (True, on a fork) or False. */
 function outputType(graph: DrawnGraph, from: string): string {
   const { node: id, row } = socketOf(from);
@@ -194,25 +219,36 @@ function outputType(graph: DrawnGraph, from: string): string {
 
 /** A curve for each route, from its output socket to its input socket. */
 function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
-  const end = (address: string, side: SocketSide): DOMRect | null => {
-    const { node, row } = socketOf(address);
-    // A False leaves the footer, which sherpa-node draws (plan 713 M2): until it does, no line.
-    if (row === FALSE_SOCKET) return null;
-    const el = (row === undefined ? drawn.nodes.get(node) : drawn.rows.get(address)) as HasSockets | undefined;
-    return el?.socketRect?.(side) ?? null;
-  };
-  const paths = drawn.routes.flatMap(({ from, to }) => {
-    const a = end(from, 'output');
-    const b = end(to, 'input');
-    if (!a || !b) return [];
+  const same = (a: NodeRoute | null, b: NodeRoute): boolean => !!a && a.from === b.from && a.to === b.to;
+  const paths = drawn.routes.flatMap((route) => {
+    const a = socketAt(drawn, route.from, 'output');
+    const b = socketAt(drawn, route.to, 'input');
+    if (!a || !b || same(drawn.lifted, route)) return [];
+    const [from, to] = [onPlane(canvas, a), onPlane(canvas, b)];
     const path = document.createElementNS(SVG, 'path');
-    path.setAttribute('d', curve(onPlane(canvas, a), onPlane(canvas, b)));
-    path.dataset['type'] = outputType(drawn.graph, from);
-    path.dataset['from'] = from;
-    path.dataset['to'] = to;
-    return [path];
+    path.setAttribute('d', curve(from, to));
+    path.dataset['type'] = outputType(drawn.graph, route.from);
+    path.dataset['from'] = route.from;
+    path.dataset['to'] = route.to;
+    if (same(drawn.selected, route)) path.setAttribute('data-selected', '');
+    // The line a click lands on: wide, unseen, and the only part of the lines that takes the pointer.
+    const hit = document.createElementNS(SVG, 'polyline');
+    hit.setAttribute('points', along(from, to));
+    hit.setAttribute('class', 'graph-hit');
+    hit.setAttribute('style', 'stroke: transparent; stroke-width: 14px; pointer-events: stroke; cursor: pointer');
+    hit.dataset['from'] = route.from;
+    hit.dataset['to'] = route.to;
+    return [path, hit];
   });
   drawn.lines.replaceChildren(...paths, ...(drawn.draft ? [drawn.draft] : []));
+}
+
+/** A socket's box on the screen: a node's or a row's, on one side; a False is its footer's. */
+function socketAt(drawn: Drawn, address: string, side: SocketSide): DOMRect | null {
+  const { node, row } = socketOf(address);
+  if (row === FALSE_SOCKET) return (drawn.nodes.get(node) as HasSockets | undefined)?.socketRect?.('false') ?? null;
+  const el = (row === undefined ? drawn.nodes.get(node) : drawn.rows.get(address)) as HasSockets | undefined;
+  return el?.socketRect?.(side) ?? null;
 }
 
 /** Where a drawn node or row is: `node`, or `node/row`. */
@@ -222,12 +258,12 @@ function addressOf(drawn: Drawn, el: HTMLElement): string | null {
   return [...drawn.nodes].find(([, node]) => node === el)?.[0] ?? null;
 }
 
-/** The input socket nearest a point on the screen, within reach, or none. */
-function inputAt(drawn: Drawn, x: number, y: number): string | null {
+/** The socket of one side nearest a point on the screen, within reach, or none. */
+function socketNear(drawn: Drawn, side: 'input' | 'output', x: number, y: number): string | null {
   const REACH = 16;
   let best: [string, number] | null = null;
   for (const [address, el] of [...drawn.nodes, ...drawn.rows]) {
-    const rect = (el as HasSockets).socketRect?.('input');
+    const rect = (el as HasSockets).socketRect?.(side);
     if (!rect) continue;
     const far = Math.hypot(rect.left + rect.width / 2 - x, rect.top + rect.height / 2 - y);
     if (far <= REACH && (!best || far < best[1])) best = [address, far];
@@ -235,29 +271,54 @@ function inputAt(drawn: Drawn, x: number, y: number): string | null {
   return best?.[0] ?? null;
 }
 
-/** A press on an OUTPUT socket draws a new route: the line follows the pointer, and let
- *  go on an input socket, the host is asked to join them. It never moves the node or the view. */
+/** Whether an input is a picklist a Value node may be routed into (D7): a row, one value in. */
+function takesCustom(drawn: Drawn, address: string): boolean {
+  const { node, row: name } = socketOf(address);
+  const row = name === undefined ? undefined : drawn.graph.nodes.find((n) => n.id === node)?.rows.find((r) => r.name === name);
+  return !!row && row.input === 'value' && !row.many && rowChoices(row) !== undefined;
+}
+
+/**
+ * A press on a socket draws a line. From an OUTPUT, a new route: let go on an input socket and
+ * the host is asked to join them. On a ROUTED input, its end comes up (TODO 557): let go on
+ * another input socket, the route moves there; on the bare canvas it breaks (558); where it
+ * began, nothing. On an UNROUTED picklist's input, the line runs the other way: let go on an
+ * output, they join; on the bare canvas, a Value node is made there. It never moves the
+ * node or the view.
+ */
 function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEvent): void {
   const path = event.composedPath();
-  if (event.button !== 0 || !(path[0] instanceof Element) || !path[0].classList.contains('socket-out')) return;
+  const hit = path[0];
+  if (event.button !== 0 || !(hit instanceof Element)) return;
+  const out = hit.classList.contains('socket-out');
+  if (!out && !hit.classList.contains('socket-in')) return;
   const owner = path.find((n): n is HTMLElement => n instanceof HTMLElement && addressOf(drawn, n) !== null);
-  const fork = path[0].classList.contains('socket-false');
   const own = owner ? addressOf(drawn, owner) : null;
-  const from = own && fork ? `${own}/${FALSE_SOCKET}` : own;
-  const start = (owner as HasSockets | undefined)?.socketRect?.(fork ? 'false' : 'output');
-  if (!from || !start) return;
+  if (!owner || !own) return;
+  const fork = hit.classList.contains('socket-false');
+  // What the line is joined to at its start: the output it leaves, or the input it runs back to.
+  const lifting = out ? undefined : drawn.routes.findLast((r) => r.to === own);
+  if (!out && !lifting && !takesCustom(drawn, own)) return;
+  const from = out ? (fork ? `${own}/${FALSE_SOCKET}` : own) : lifting?.from;
+  const start = out ? (owner as HasSockets).socketRect?.(fork ? 'false' : 'output') : lifting ? socketAt(drawn, lifting.from, 'output') : (owner as HasSockets).socketRect?.('input');
+  if (!start) return;
   event.preventDefault();
   event.stopPropagation();
   const draft = document.createElementNS(SVG, 'path');
   draft.setAttribute('class', 'graph-draft');
   draft.setAttribute('stroke-dasharray', '6 4');
   drawn.draft = draft;
+  drawn.lifted = lifting ?? null;
   drawn.lines.append(draft);
+  if (lifting) drawRoutes(canvas, drawn);
   const begin = onPlane(canvas, start);
-  const follow = (e: PointerEvent): void => {
+  const plane = (e: PointerEvent): [number, number] => {
     const box = canvas.getBoundingClientRect();
     const { x, y, zoom } = canvas.view;
-    draft.setAttribute('d', curve(begin, [(e.clientX - box.left - x) / zoom, (e.clientY - box.top - y) / zoom]));
+    return [(e.clientX - box.left - x) / zoom, (e.clientY - box.top - y) / zoom];
+  };
+  const follow = (e: PointerEvent): void => {
+    draft.setAttribute('d', out || lifting ? curve(begin, plane(e)) : curve(plane(e), begin));
   };
   const stop = (e: PointerEvent): void => {
     window.removeEventListener('pointermove', follow);
@@ -265,13 +326,41 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
     window.removeEventListener('pointercancel', stop);
     draft.remove();
     drawn.draft = null;
-    const to = e.type === 'pointerup' ? inputAt(drawn, e.clientX, e.clientY) : null;
-    // Let go on the bare canvas, or on its own node: nothing is joined.
-    if (to && socketOf(to).node !== socketOf(from).node) drawn.options.onConnect?.({ from, to });
+    drawn.lifted = null;
+    drawRoutes(canvas, drawn);
+    if (e.type !== 'pointerup') return;
+    const onNode = e.composedPath().some((n) => n instanceof HTMLElement && addressOf(drawn, n) !== null);
+    const bare = !onNode && !socketNear(drawn, 'input', e.clientX, e.clientY) && !socketNear(drawn, 'output', e.clientX, e.clientY);
+    if (out) {
+      const to = socketNear(drawn, 'input', e.clientX, e.clientY);
+      // Let go on the bare canvas, or on its own node: nothing is joined.
+      if (to && from && socketOf(to).node !== socketOf(from).node) drawn.options.onConnect?.({ from, to });
+    } else if (lifting) {
+      const to = socketNear(drawn, 'input', e.clientX, e.clientY);
+      if (to && to !== lifting.to && socketOf(to).node !== socketOf(lifting.from).node) drawn.options.onReroute?.(lifting, { from: lifting.from, to });
+      else if (bare) drawn.options.onBreak?.(lifting);
+    } else {
+      const source = socketNear(drawn, 'output', e.clientX, e.clientY);
+      if (source && socketOf(source).node !== socketOf(own).node) drawn.options.onConnect?.({ from: source, to: own });
+      else if (bare) {
+        const [x, y] = plane(e);
+        drawn.options.onCustom?.(own, { x, y });
+      }
+    }
   };
   window.addEventListener('pointermove', follow);
   window.addEventListener('pointerup', stop);
   window.addEventListener('pointercancel', stop);
+}
+
+/** Clear what is picked: every node, and the route a click picked. */
+function deselect(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
+  markNode(canvas, null);
+  if (drawn.selected) {
+    drawn.selected = null;
+    drawRoutes(canvas, drawn);
+  }
+  drawn.options.onDeselect?.();
 }
 
 /** The drawn node an event came from. */
@@ -296,7 +385,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
   const made: Drawn = {
     graph: { nodes: [], routes: [] }, options: {},
     nodes: new Map(), rows: new Map(), addresses: new WeakMap(), shapes: new Map(), placedAt: new Map(),
-    lines, routes: [], draft: null, fitted: false,
+    lines, routes: [], draft: null, lifted: null, selected: null, fitted: false,
     // A node's height lands when its parts render: the lines follow, and the first fits the view.
     sizes: new ResizeObserver(() => {
       drawRoutes(canvas, made);
@@ -311,6 +400,35 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
   });
   // Before the node and the view hear it: a drag from an output socket is a new route.
   canvas.addEventListener('pointerdown', (event) => connectFrom(canvas, made, event), { capture: true });
+  // A click — a press and a release, the pointer still — on the blank canvas deselects. TODO 559
+  canvas.addEventListener('pointerdown', (down) => {
+    const first = down.composedPath()[0];
+    if (down.button !== 0 || !(first instanceof Element) || !(first.classList.contains('viewport') || first.classList.contains('plane'))) return;
+    const up = (event: PointerEvent): void => {
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+      if (event.type === 'pointerup' && Math.hypot(event.clientX - down.clientX, event.clientY - down.clientY) <= 4) deselect(canvas, made);
+    };
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+  }, { capture: true });
+  // A click on a route picks it; Delete or Backspace breaks it. TODO 558
+  lines.addEventListener('click', (event) => {
+    const hit = event.target instanceof SVGElement && event.target.classList.contains('graph-hit') ? event.target : null;
+    if (!hit) return;
+    made.selected = { from: hit.dataset['from']!, to: hit.dataset['to']! };
+    drawRoutes(canvas, made);
+    // The canvas's own keys hear the break.
+    canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
+  });
+  canvas.addEventListener('keydown', (event) => {
+    if (event.target !== canvas || !made.selected || (event.key !== 'Delete' && event.key !== 'Backspace')) return;
+    event.preventDefault();
+    const route = made.selected;
+    made.selected = null;
+    made.options.onBreak?.(route);
+    drawRoutes(canvas, made);
+  });
   // A field's change, as an EDIT for the host: the drawing writes nothing itself.
   canvas.addEventListener('change', (event) => {
     const line = event.composedPath().find((n): n is HTMLElement => n instanceof HTMLElement && made.addresses.has(n));
@@ -374,6 +492,7 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: DrawnGraph, options
     drawRows(drawn, el, node);
   }
   drawn.routes = graph.routes;
+  if (drawn.selected && !graph.routes.some((r) => r.from === drawn.selected!.from && r.to === drawn.selected!.to)) drawn.selected = null;
   requestAnimationFrame(() => drawRoutes(canvas, drawn));
 }
 
@@ -484,6 +603,12 @@ export interface InspectOptions {
   onEdit?: (edit: GraphEdit) => void;
   /** A live visual of what the node stands for — a component's — shown above its rows. */
   visual?: HTMLElement | null;
+  /** A reader asks a Value node for an unrouted picklist row: the button that is the drag, with no pointer. */
+  onCustom?: (row: GraphRow) => void;
+  /** A reader cuts one route, by the button that is the drag's break. */
+  onCut?: (route: NodeRoute) => void;
+  /** A reader removes this node. */
+  onRemove?: () => void;
 }
 
 /** What an inspector holds: its node, the fields by their element, and whom it tells. */
@@ -514,14 +639,25 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   };
   const routed = driven(graph);
   const fields = new WeakMap<Element, GraphRow>();
-  const items = node.rows.map((row) => {
+  const button = (label: string, act: () => void): HTMLElement => {
+    const el = document.createElement('sherpa-button');
+    el.setAttribute('data-label', label);
+    el.setAttribute('data-size', 'sm');
+    el.addEventListener('button-click', act);
+    return el;
+  };
+  const items = node.rows.flatMap((row) => {
     const at = `${node.id}/${row.name}`;
-    const ins = graph.routes.filter((r) => r.to === at).map((r) => `From ${name(r.from)}`);
+    const ins = graph.routes.filter((r) => r.to === at);
     const outs = graph.routes.filter((r) => r.from === at).map((r) => `To ${name(r.to)}`);
     const field = fieldFor(row.control ? row : { ...row, control: 'text' }, !row.editable || routed.has(at) || !row.control);
-    fill(field, row, [...ins, ...outs, row.hint].filter(Boolean).join(' · ') || undefined);
+    // A custom row says where it comes from once, in its own words.
+    fill(field, row, [...(row.custom ? [] : ins.map((r) => `From ${name(r.from)}`)), ...outs, row.hint].filter(Boolean).join(' · ') || undefined);
     fields.set(field, row);
-    return field;
+    const cuts = options.onCut ? ins.map((r) => button(`Cut route from ${name(r.from)}`, () => options.onCut!(r))) : [];
+    const custom = options.onCustom && row.editable && !ins.length && row.input === 'value' && !row.many && rowChoices(row) !== undefined
+      ? [button('Custom value', () => options.onCustom!(row))] : [];
+    return [field, ...cuts, ...custom];
   });
   // The whole node's routes: in, and out — its True and False where it forks.
   const header = document.createElement('sherpa-key-value-list');
@@ -533,7 +669,8 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   ];
   const stack = document.createElement('sherpa-stack');
   stack.setAttribute('data-gap', 'lg');
-  stack.append(...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items);
+  const remove = options.onRemove ? [button('Remove node', options.onRemove)] : [];
+  stack.append(...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...remove);
   panel.replaceChildren(stack);
   if (whole.length) (header as HTMLElement & { populate(items: unknown): void }).populate(whole);
   panel.setAttribute('data-heading', node.heading);
@@ -562,6 +699,8 @@ function handOver(canvas: HTMLElement, definition: PageDefinition | WorkflowDefi
 interface Picked {
   select(node: GraphNode, graph: DrawnGraph): void;
   follow(graph: DrawnGraph): void;
+  /** A click on blank canvas: none picked, and the panel shut. */
+  deselect(): void;
   stop(): void;
 }
 
@@ -586,6 +725,11 @@ function pickedIn(
     follow(graph): void {
       const node = graph.nodes.find((n) => n.id === picked);
       if (inspector?.open && node) show(node, graph);
+    },
+    deselect(): void {
+      picked = null;
+      if (inspector?.open) inspector.hide();
+      onClose?.();
     },
     stop(): void {
       inspector?.removeEventListener('panel-close', close);
@@ -665,7 +809,12 @@ export function bindQueryEditor(
     graph = placed(queryGraph(query.draft, definition, {
       ...facts, values, presets: (scope) => query.presets(scope), domains: source.store?.domains ?? {}, pageSize: source.state?.pageSize ?? null,
     }), places);
-    drawGraph(canvas, graph, { onEdit, onMove, onConnect, onSelect: (node) => picks.select(node, graph) });
+    drawGraph(canvas, graph, {
+      onEdit, onMove, onConnect, onSelect: (node) => picks.select(node, graph), onDeselect: picks.deselect,
+      // Its routes are readings, which another field or scope takes: a moved end is a new route.
+      onReroute: (_was, now) => onConnect(now),
+      onBreak: () => report({ code: 'query-route', message: 'The Query\'s routes are its readings: turn a condition off, or clear it, to take it from its scope.' }),
+    });
     picks.follow(graph);
   };
   draw();
@@ -781,12 +930,23 @@ export function bindWorkflow(
     write(editWorkflow(draft, { node: node.id, set: { [own]: said } }, kinds));
   };
   const onMove = (node: GraphNode, x: number, y: number): void => write(editWorkflow(draft, { node: node.id, set: { x, y } }, kinds));
-  const onConnect = (route: NodeRoute): void => {
-    const next = editWorkflow(draft, { route }, kinds);
+  // A route that would break the workflow is refused, and says why; else the draft takes it.
+  const take = (next: WorkflowDefinition): void => {
     const was = new Set(workflowFaults(draft, kinds));
     const added = workflowFaults(next, kinds).filter((f) => !was.has(f));
     if (added.length) report({ code: 'workflow-route', message: `bindWorkflow: ${added.join('; ')}.`, at: { workflow: draft.id } });
     else write(next);
+  };
+  const onConnect = (route: NodeRoute): void => take(editWorkflow(draft, { route }, kinds));
+  // A moved end is one edit: the route cut, then made, checked as one.
+  const onReroute = (was: NodeRoute, now: NodeRoute): void => take(editWorkflow(editWorkflow(draft, { cut: was }, kinds), { route: now }, kinds));
+  const onBreak = (route: NodeRoute): void => write(editWorkflow(draft, { cut: route }, kinds));
+  // A Value node for a picklist row: the row keeps its own pick, and mirrors the node.
+  const customAt = (to: string, at: { x: number; y: number }): void => take(addCustomValue(draft, to, at, kinds));
+  const onCustom = (to: string, at: { x: number; y: number }): void => customAt(to, { x: Math.round(at.x), y: Math.round(at.y) });
+  const onRemove = (id: string): void => {
+    picks.deselect();
+    write(editWorkflow(draft, { remove: id }, kinds));
   };
   // The inspector leads with the node's own name, line and place.
   const withOwn = (node: GraphNode): GraphNode => {
@@ -799,10 +959,18 @@ export function bindWorkflow(
     ];
     return { ...node, rows: [...own, ...node.rows] };
   };
-  const picks = pickedIn(canvas, inspector, (node, now) => inspectNode(inspector!, withOwn(node), now, { onEdit }));
+  const picks = pickedIn(canvas, inspector, (node, now) => inspectNode(inspector!, withOwn(node), now, {
+    onEdit, onCut: onBreak,
+    // With no pointer: beside the node it feeds, one column left, on the row's own line.
+    onCustom: (row) => {
+      const at = draft.nodes.find((n) => n.id === node.id);
+      customAt(`${node.id}/${row.name}`, { x: (at?.x ?? 0) - 360, y: (at?.y ?? 0) + 72 + node.rows.indexOf(row) * 64 });
+    },
+    onRemove: () => onRemove(node.id),
+  }));
   const draw = (): void => {
     graph = workflowGraph(draft, facts, kinds);
-    drawGraph(canvas, graph, { onEdit, onMove, onConnect, onSelect: (node) => picks.select(node, graph) });
+    drawGraph(canvas, graph, { onEdit, onMove, onConnect, onReroute, onBreak, onCustom, onDeselect: picks.deselect, onSelect: (node) => picks.select(node, graph) });
     picks.follow(graph);
   };
   draw();

@@ -142,6 +142,8 @@ export interface QueryGraphFacts {
   domains?: Readonly<Record<string, FieldDomain>>;
   /** The rows per page now, where the reader changed them. */
   pageSize?: number | null;
+  /** The stores the app registered, for the Store row's list; absent, the page's own. */
+  stores?: readonly string[];
 }
 
 /** The operators a field's condition may take: its type's, and a pick list's. */
@@ -239,7 +241,16 @@ function presentationRows(
   const sorts = [{ value: '', label: 'None' }, ...rowChoices({ control: 'direction' })!];
   return rowsOf('presentation', { ...presented, kind: presented.kind ?? '' }).map((row): GraphRow => (row.name === ROWS.name ? row : slot
     ? { ...row, editable: true, choices: row.name === 'kind' ? kinds : row.name === 'sort' ? sorts : keys, value: String(row.value ?? '') }
-    : { ...row, value: row.name === 'kind' ? kind : row.value, hint: 'It shares the View: no slot keeps its own.' }));
+    : {
+      ...row, value: String((row.name === 'kind' ? kind : row.value) ?? ''), hint: 'It shares the View: no slot keeps its own.',
+      choices: row.name === 'kind' ? kinds : row.name === 'sort' ? sorts : keys,
+    }));
+}
+
+/** A row of the Query the definition owns: its list, read only, and no socket — no route reaches it. */
+function owned(row: GraphRow, list: readonly { value: string; label: string }[] | undefined): GraphRow {
+  const { input: _in, output: _out, ...rest } = row;
+  return { ...rest, hint: FROM_DEFINITION, ...(list ? { choices: list } : {}) };
 }
 
 /** A kind's fixed rows, each with its value. */
@@ -272,7 +283,8 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
 
   // Store ─▶ each status field it works out ─▶ Source: the rows go Rows row to header.
   const source = definition.source;
-  add(0, QUERY_NODE.store, 'store', rowsOf('store', { store: source?.store }).map((row) => (row.name === ROWS.name ? row : { ...row, hint: FROM_DEFINITION })), { heading: source?.store ?? 'Store' });
+  add(0, QUERY_NODE.store, 'store', rowsOf('store', { store: source?.store }).map((row) => (row.name === ROWS.name ? row
+    : owned(row, rowChoices({ ...row, value: source?.store }, { stores: facts.stores ?? [] })))), { heading: source?.store ?? 'Store' });
   const statuses = Object.entries(facts.domains ?? {}).filter(([, d]) => d.when || d.statuses);
   for (const [field, domain] of statuses) {
     const rows = (domain.values ?? []).map(String).map((value): GraphRow => {
@@ -283,8 +295,9 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   }
   // Its page size changes live; the rest is the definition's, until Save.
   add(2, QUERY_NODE.source, 'source', rowsOf('source', {
-    pageSize: facts.pageSize ?? source?.pageSize, search: source?.search?.join(', '), applyOn: source?.applyOn ?? 'change',
-  }).map((row) => (row.name === 'pageSize' ? { ...row, editable: true } : row.name === ROWS.name ? row : { ...row, hint: FROM_DEFINITION })));
+    pageSize: facts.pageSize ?? source?.pageSize, search: source?.search ?? [], applyOn: source?.applyOn ?? 'change',
+  }).map((row) => (row.name === 'pageSize' ? { ...row, editable: true } : row.name === ROWS.name ? row
+    : owned(row, row.name === 'search' ? known.map((f) => ({ value: f, label: label(f) })) : rowChoices(row)))));
   if (statuses.length) for (const [field] of statuses) routes.push({ from: sent(`status-${field}`), to: QUERY_NODE.source });
   else routes.push({ from: sent(QUERY_NODE.store), to: QUERY_NODE.source });
 

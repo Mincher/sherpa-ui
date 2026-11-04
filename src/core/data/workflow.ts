@@ -14,14 +14,15 @@
  * - checkWorkflow — Check every node, kind and route; each fault reports. True when none is.
  * - WorkflowFacts — What drawing a workflow needs that it does not say: the fields a row picks, the stores.
  * - workflowGraph — A workflow as nodes and routes: each node its kind's, at its own place, with its values.
- * - WorkflowEdit — One edit to a workflow: a row's value, a node's own name, line or place, a route made or cut.
+ * - WorkflowEdit — One edit to a workflow: a row, a node's own part, a route made or cut, a node added or removed.
  * - editWorkflow — The workflow after one edit; the one given untouched.
+ * - addCustomValue — A Value node made for a picklist row and routed into it: the row mirrors it, and keeps its own pick.
  */
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
 import { OP_LABELS } from './store.js';
 import {
-  NODE_KINDS, ROWS, SOCKET_WORDS, accepts, kindNode, rowChoices, socketOf, socketType, takesMany,
+  NODE_KINDS, ROWS, SOCKET_WORDS, accepts, fixedChoices, kindNode, mirrored, rowChoices, socketOf, socketType, takesMany,
   type DrawnGraph, type GraphRow, type NodeKind, type NodeRoute, type SocketType,
 } from './node-kinds.js';
 
@@ -111,6 +112,17 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
       else if (row?.control === 'op' && !(String(value) in OP_LABELS)) problems.push(`the node "${node.id}" holds "${String(value)}" as its ${row.label}, which is no operator`);
       else if (row?.control === 'number' && typeof value !== 'number') problems.push(`the node "${node.id}" holds "${String(value)}" as its ${row.label}, which is no number`);
       else if (row?.multiple && !Array.isArray(value)) problems.push(`the node "${node.id}" holds "${String(value)}" as its ${row.label}, which is no list`);
+      else if (row && fixedChoices(row.control) && ![value].flat().every((v) => fixedChoices(row.control)!.some((c) => c.value === String(v)))) {
+        problems.push(`the node "${node.id}" holds "${String(value)}" as its ${row.label}, which is none of its choices`);
+      }
+    }
+    const typed = node.values?.['type'];
+    if (kind?.model === 'typedValue' && typeof typed === 'string' && node.values?.['value'] !== undefined) {
+      const text = String(node.values['value']);
+      const ok = typed === 'number' ? typeof typedValue('number', text) === 'number'
+        : typed === 'boolean' ? /^(true|false)$/i.test(text.trim())
+        : typed === 'date' ? /^\d{4}-\d{2}-\d{2}/.test(text.trim()) : true;
+      if (!ok) problems.push(`the node "${node.id}" holds "${text}" as its Value, which is not ${typed === 'number' ? 'a number' : typed === 'boolean' ? 'true or false' : 'a date'}`);
     }
   }
   // What a socket carries, which way, and whether it takes many: undefined when it is not one.
@@ -174,34 +186,64 @@ export interface WorkflowFacts {
   fields?: Readonly<Record<string, { label?: string; type?: string }>>;
   /** The stores a Store row picks, by the names the app registered them under. */
   stores?: readonly string[];
+  /** Every value a field may take, by the field: a Value row picks from them. */
+  values?: Readonly<Record<string, readonly string[]>>;
 }
 
 /** A workflow as nodes and routes, a v1 read as v2: each node its kind's, at its own place,
- *  with its values. A row a route drives shows its own value, read only, until N4 runs the flow. */
+ *  with its values. A row a route drives is read only. Where the route comes from a node that
+ *  holds its value (a Value), the row MIRRORS it — a picklist shows it marked Custom (D7) —
+ *  and its own pick stays in the draft; else it shows its own until N4 runs the flow. */
 export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, facts: WorkflowFacts = {}, kinds: Kinds = NODE_KINDS): DrawnGraph {
   const { workflow } = readWorkflow(given, kinds);
   if (!workflow) return { nodes: [], routes: [] };
+  const routes = workflow.routes ?? [];
+  const held = new Map(workflow.nodes.map((n) => [n.id, n]));
+  // What a route brings: its output row's value, where its node holds one; and where from, in words.
+  const brings = (from: string): { value: unknown; said: string } | undefined => {
+    const { node: id, row } = socketOf(from);
+    const at = held.get(id);
+    const out = row === undefined ? undefined : kinds[at?.kind ?? '']?.rows.find((r) => r.name === row);
+    const value = row === undefined ? undefined : at?.values?.[row];
+    return at && out && value !== undefined ? { value, said: `${at.heading ?? kinds[at.kind]!.heading} › ${out.label}` } : undefined;
+  };
   const nodes = workflow.nodes.filter((n) => kinds[n.kind]).map((node) => {
     const values = node.values ?? {};
-    const type = facts.fields?.[String(values['field'] ?? '')]?.type;
+    const field = String(values['field'] ?? '');
+    const type = facts.fields?.[field]?.type;
+    const known = facts.values?.[field];
     const rows = kinds[node.kind]!.rows.map((row): GraphRow => {
-      const list = rowChoices({ ...row, value: values[row.name] }, { ...facts, ...(type ? { type } : {}) });
-      return { ...row, value: values[row.name], ...(row.control ? { editable: true } : {}), ...(list ? { choices: list } : {}) };
+      // A Value row with no values to pick from is typed, as it was.
+      const plain = row.control === 'values' && !known?.length ? { ...row, control: 'text' as const } : row;
+      const list = rowChoices({ ...plain, value: values[row.name] }, {
+        ...(facts.fields ? { fields: facts.fields } : {}), ...(facts.stores ? { stores: facts.stores } : {}), ...(known ? { values: known } : {}), ...(type ? { type } : {}),
+      });
+      const own: GraphRow = { ...plain, value: values[row.name], ...(plain.control ? { editable: true } : {}), ...(list ? { choices: list } : {}) };
+      const coming = routes.filter((r) => r.to === `${node.id}/${row.name}`).flatMap((r) => brings(r.from) ?? []);
+      if (!coming.length) return own;
+      const shown = mirrored(row, coming.map((c) => c.value), list);
+      const from = [...new Set(coming.map((c) => c.said))].join(', ');
+      return list
+        ? { ...own, ...shown, hint: `Custom ${row.multiple ? 'values' : 'value'}, from ${from}` }
+        : { ...own, value: shown.value };
     });
-    const own = { ...(node.heading ? { heading: node.heading } : {}), ...(node.description ? { description: node.description } : {}) };
-    return { ...kindNode(kinds, node.kind, node.id, rows, own), x: node.x, y: node.y };
+    const heads = { ...(node.heading ? { heading: node.heading } : {}), ...(node.description ? { description: node.description } : {}) };
+    return { ...kindNode(kinds, node.kind, node.id, rows, heads), x: node.x, y: node.y };
   });
-  return { nodes, routes: [...workflow.routes ?? []] };
+  return { nodes, routes: [...routes] };
 }
 
 /** One edit to a workflow: a row's value, a node's own name, line or place, a route made
  *  (into an input, in place of the one there, or beside it where the input takes many), or cut
- *  (each by the input it enters, or the one route). */
+ *  (each by the input it enters, or the one route), a node added (its id free), or removed
+ *  with every route that touches it. */
 export type WorkflowEdit =
   | { node: string; row: string; value: unknown }
   | { node: string; set: Partial<Pick<WorkflowNode, 'heading' | 'description' | 'x' | 'y'>> }
   | { route: NodeRoute }
-  | { cut: string | NodeRoute };
+  | { cut: string | NodeRoute }
+  | { add: WorkflowNode }
+  | { remove: string };
 
 /** The workflow after one edit, a v2 — a v1 read as one first; the one given untouched. A
  *  value is typed as its row takes it. */
@@ -216,6 +258,12 @@ export function editWorkflow(given: WorkflowDefinition | WorkflowDefinitionV1, e
     const kind = kinds[workflow.nodes.find((n) => n.id === node)?.kind ?? ''];
     const many = !!kind && takesMany(kind, row);
     return { ...workflow, routes: [...routes.filter((r) => many || r.to !== edit.route.to), { ...edit.route }] };
+  }
+  if ('add' in edit) return workflow.nodes.some((n) => n.id === edit.add.id) ? workflow : { ...workflow, nodes: [...workflow.nodes, { ...edit.add }] };
+  if ('remove' in edit) {
+    const gone = (address: string): boolean => socketOf(address).node === edit.remove;
+    const routes = (workflow.routes ?? []).filter((r) => !gone(r.from) && !gone(r.to));
+    return { ...workflow, nodes: workflow.nodes.filter((n) => n.id !== edit.remove), ...(workflow.routes ? { routes } : {}) };
   }
   if ('cut' in edit) {
     const { cut } = edit;
@@ -240,4 +288,24 @@ export function editWorkflow(given: WorkflowDefinition | WorkflowDefinitionV1, e
     return Object.keys(values).length ? { ...bare, values } : bare;
   });
   return { ...workflow, nodes };
+}
+
+/**
+ * A Value node made for a picklist row, and routed into it: it holds the row's own pick, at
+ * a place, and the row now mirrors it, read only. The pick stays on the row, so cutting the
+ * route gives it back. The workflow given, untouched, where the row is no picklist, takes no
+ * single value, or is not there. Plan 713 §5
+ */
+export function addCustomValue(
+  given: WorkflowDefinition | WorkflowDefinitionV1, to: string, at: { x: number; y: number }, kinds: Kinds = NODE_KINDS,
+): WorkflowDefinition {
+  const workflow = readWorkflow(given, kinds).workflow;
+  const { node: id, row: name } = socketOf(to);
+  const into = workflow?.nodes.find((n) => n.id === id);
+  const row = into && name !== undefined ? kinds[into.kind]?.rows.find((r) => r.name === name) : undefined;
+  if (!workflow || !into || !row || row.input !== 'value' || row.many || rowChoices(row) === undefined) return workflow ?? (given as WorkflowDefinition);
+  const free = (n: number): string => (workflow.nodes.some((x) => x.id === `value-${n}`) ? free(n + 1) : `value-${n}`);
+  const own = into.values?.[name!];
+  const made: WorkflowNode = { id: free(1), kind: 'value', x: at.x, y: at.y, ...(own !== undefined && own !== '' ? { values: { value: String(own) } } : {}) };
+  return editWorkflow(editWorkflow(workflow, { add: made }, kinds), { route: { from: `${made.id}/value`, to } }, kinds);
 }

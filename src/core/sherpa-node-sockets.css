@@ -37,7 +37,12 @@
 :host([data-input-routed]) .socket-in::after,
 :host([data-output-routed]) .socket-out:not(.socket-false)::after { display: none; }
 
-.socket-in { inset-inline-start: 0; }
+/* An INPUT takes the pointer too: its route's end drags to another input, or a picklist's
+   input drags out a line. Will, TODOs 557, 558 */
+.socket-in {
+  inset-inline-start: 0;
+  cursor: crosshair;
+}
 /* An OUTPUT takes the pointer: a drag from it draws a new route. Will, TODO 555 */
 .socket-out {
   inset-inline-start: 100%;

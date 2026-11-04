@@ -24,6 +24,8 @@
  * - RowChoice — One pick in a row's list: the value it keeps, and its words.
  * - RowFacts — What a row's list is read from that the registry does not say.
  * - rowChoices — The list a picklist row reads; none, it is no picklist.
+ * - fixedChoices — A fixed list, the same on every page; none, the list is open or the control is no picklist.
+ * - mirrored — What a picklist row shows while routes drive it: what comes in, read only, each pick marked Custom.
  * - GraphRow — One row as drawn: its kind's parts, the value it shows, and whether a reader may change it.
  * - GraphNode — One node as drawn: its header, its sockets, its rows and its place.
  * - DrawnGraph — Nodes and routes, ready to draw: a workflow's, or a page's Query.
@@ -114,7 +116,7 @@ export const ROWS: Readonly<RowKind> = { name: 'rows', label: 'Rows', output: 'o
 export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   store: {
     heading: 'Store', icon: 'storage', description: 'Where the rows come from.', branches: true,
-    rows: [ROWS, { name: 'store', label: 'Store', control: 'store' }], model: 'Store', graphs: ['query', 'workflow'],
+    rows: [ROWS, { name: 'store', label: 'Store', control: 'store', input: 'value' }], model: 'Store', graphs: ['query', 'workflow'],
   },
   // A page's Query: its rows read left to right, as the data flows.
   status: {
@@ -126,8 +128,8 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     rows: [
       ROWS,
       { name: 'pageSize', label: 'Page size', control: 'number' },
-      { name: 'search', label: 'Search fields', control: 'text' },
-      { name: 'applyOn', label: 'Apply on', control: 'text' },
+      { name: 'search', label: 'Search fields', control: 'field', multiple: true, input: 'object', output: 'object' },
+      { name: 'applyOn', label: 'Apply on', control: 'apply' },
     ],
     model: 'SourceDefinition', graphs: ['query'],
   },
@@ -182,11 +184,11 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   // A workflow: each kind over the data-layer function it runs by.
   value: {
     heading: 'Value', icon: 'function', description: 'One value, typed.', branches: true,
-    rows: [{ name: 'value', label: 'Value', control: 'text', output: 'value' }], model: 'typedValue', graphs: ['workflow'],
+    rows: [{ name: 'value', label: 'Value', control: 'text', output: 'value' }, { name: 'type', label: 'Type', control: 'type' }], model: 'typedValue', graphs: ['workflow'],
   },
   pick: {
     heading: 'Pick', icon: 'price-tag', description: 'One field of the input.', input: 'any', branches: true,
-    rows: [{ name: 'field', label: 'Field', control: 'field', output: 'value' }], model: 'readField', graphs: ['workflow'],
+    rows: [{ name: 'field', label: 'Field', control: 'field', input: 'value', output: 'value' }], model: 'readField', graphs: ['workflow'],
   },
   // Its rows are one condition, `{ field, op, value }`: the condition tree's leaf. Its Rows, the
   // rows that match: True takes them, False the rest.
@@ -194,9 +196,9 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     heading: 'Filter', icon: 'filter', description: 'The rows that match.', input: 'any', branches: true,
     rows: [
       ROWS,
-      { name: 'field', label: 'Field', control: 'field' },
-      { name: 'op', label: 'Condition', control: 'op' },
-      { name: 'value', label: 'Value', control: 'text', input: 'value' },
+      { name: 'field', label: 'Field', control: 'field', input: 'value' },
+      { name: 'op', label: 'Condition', control: 'op', input: 'value' },
+      { name: 'value', label: 'Value', control: 'values', input: 'value' },
       { name: 'matches', label: 'Matches', output: 'value' },
     ],
     model: 'filterRows', graphs: ['workflow'],
@@ -205,14 +207,14 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     heading: 'Sort', icon: 'sort-ascending', description: 'The rows in order.', input: 'any', branches: true,
     rows: [
       ROWS,
-      { name: 'field', label: 'Field', control: 'field' },
-      { name: 'direction', label: 'Direction', control: 'direction' },
+      { name: 'field', label: 'Field', control: 'field', input: 'value' },
+      { name: 'direction', label: 'Direction', control: 'direction', input: 'value' },
     ],
     model: 'sortRows', graphs: ['workflow'],
   },
   group: {
     heading: 'Group', icon: 'group', description: 'The rows by a field.', input: 'any', branches: true,
-    rows: [ROWS, { name: 'field', label: 'Field', control: 'field' }], model: 'groupRows', graphs: ['workflow'],
+    rows: [ROWS, { name: 'field', label: 'Field', control: 'field', input: 'value' }], model: 'groupRows', graphs: ['workflow'],
   },
   count: {
     heading: 'Count', icon: 'insights', description: 'How many rows.', input: 'any', branches: true,
@@ -313,6 +315,23 @@ export function rowChoices(row: Pick<RowKind, 'control'> & { value?: unknown }, 
   return [...open, ...named(own.filter((v) => !open.some((c) => c.value === v)))];
 }
 
+/** A fixed list, the same on every page — directions, units, Apply on, joins, presentations,
+ *  value types; none, a control whose list is open or that is no picklist. */
+export function fixedChoices(control: RowControl | undefined): readonly RowChoice[] | undefined {
+  return control ? FIXED[control] : undefined;
+}
+
+/** What a picklist row shows while routes drive it (D7): what comes in, read only, each pick
+ *  marked Custom. A single pick shows the one that came in, and only it; a `multiple` row
+ *  ticks each that came in, and marks Custom each its list lacks. The row's own pick is not
+ *  here: the draft keeps it, and cutting the routes gives it back. Plan 713 §5, §9.5 */
+export function mirrored(row: Pick<RowKind, 'multiple'>, given: readonly unknown[], list: readonly RowChoice[] = []): Pick<GraphRow, 'value' | 'choices' | 'custom'> {
+  const custom = (v: string): RowChoice => ({ value: v, label: `${v} Custom` });
+  const picks = [...new Set(given.flat().filter((v) => v != null && v !== '').map(String))];
+  if (!row.multiple) return { value: picks[0] ?? '', choices: picks.slice(0, 1).map(custom), custom: true };
+  return { value: picks, choices: [...list, ...picks.filter((v) => !list.some((c) => c.value === v)).map(custom)], custom: true };
+}
+
 /** One row as drawn: its kind's parts, the value it shows, and whether a reader may change it. */
 export interface GraphRow extends RowKind {
   value?: unknown;
@@ -322,6 +341,8 @@ export interface GraphRow extends RowKind {
   editable?: boolean;
   /** A line under it: what it is, or why it is read only. */
   hint?: string;
+  /** Routes drive its picklist: it shows what comes in, each marked Custom, and its own pick waits. */
+  custom?: true;
 }
 
 /** One node as drawn: its header, its sockets, its rows and its place. */

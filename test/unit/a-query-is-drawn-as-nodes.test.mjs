@@ -88,7 +88,7 @@ test('each data node sends its rows from its Rows row, first; its header takes t
 test('each node shows what the Query and the definition say', () => {
   assert.equal(node('store').heading, 'customers');
   assert.deepEqual(values('store'), { store: 'customers' });
-  assert.deepEqual(values('source'), { pageSize: 25, search: 'name, email', applyOn: 'change' });
+  assert.deepEqual(values('source'), { pageSize: 25, search: ['name', 'email'], applyOn: 'change' });
   // Its Rows, the filter Switch, then each held field with a socket for its condition's True.
   assert.deepEqual(node('scope-view').rows.map((r) => [r.name, r.label, r.input, r.control, r.value]), [
     ['rows', 'Rows', undefined, undefined, undefined],

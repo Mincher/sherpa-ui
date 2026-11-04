@@ -9,7 +9,11 @@
   svg.graph-routes path[data-type="boolean"] { stroke: var(--sherpa-style-success-indicator-accent, #3b4ccd); }
   svg.graph-routes path[data-type="false"] { stroke: var(--sherpa-style-critical-indicator-accent, #3b4ccd); }
 
+  /* A route a click picked: Delete or Backspace breaks it. */
+  svg.graph-routes path[data-selected] { stroke-width: 4px; stroke-dasharray: 8 4; }
+
   @media (forced-colors: active) {
     svg.graph-routes path { stroke: CanvasText; }
+    svg.graph-routes path[data-selected] { stroke: Highlight; }
   }
 }

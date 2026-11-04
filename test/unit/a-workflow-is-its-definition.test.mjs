@@ -166,7 +166,7 @@ test('a workflow DRAWS as its kinds say: each node at its place, its rows with i
   assert.deepEqual(graph.routes, good.routes);
   // Its Rows first: the rows that match, sent on. They come in on its header, of any type; its True and False on its header and footer.
   assert.deepEqual(node('filter').rows.map((r) => [r.name, r.value, !!r.editable]), [
-    ['rows', undefined, false], ['field', 'status', true], ['op', 'eq', true], ['value', undefined, true], ['matches', undefined, false],
+    ['rows', undefined, false], ['field', 'status', true], ['op', 'eq', true], ['value', 'active', true], ['matches', undefined, false],
   ]);
   assert.deepEqual([node('filter').input, node('filter').branches, row('filter', 'rows').output, row('filter', 'rows').input], ['any', true, 'object', undefined]);
   // The field from the facts; its operators its type's, by their words.
