@@ -1,62 +1,115 @@
 /**
  * sherpa.js — the sherpa-ui this MCP describes: the installed package, or the
- * repo it sits in when run from a checkout. Every file it reads comes from here.
- * TRAP T-the-mcp-reads-sherpa-ui-through-one-door
+ * checkout it sits in. Every file it reads is named in READS, by its path in
+ * the package, and read here. TRAP T-the-mcp-reads-sherpa-ui-through-one-door
  *
  * Map:
- * - SHERPA_ROOT — sherpa-ui's folder: its specs, docs, schemas, tokens and dist/
- * - at — a path inside sherpa-ui
- * - loadComponentNames — every component's name, from sherpa-ui's generation lib
- * - loadDef — a component's def, from its spec
- * - loadSpec — a component's spec, as it is on disk
- * - loadNameMap — the Figma name map
- * - loadCssTokenNames — every token name tokens.css defines
- * - compileDef — a def compiled to the component's source
- * - validateDef — a def checked against the rules
- * - tokenForValue — the token a raw value is
- * - loadExample — a component's shipped example, its markup joined; null if it has none
+ * - SHERPA_ROOT — sherpa-ui's folder: the installed package, else this checkout
+ * - READS — every sherpa-ui file the MCP reads, by its path in the package
+ * - has — whether one of those files is there
+ * - read — one of those files as text; null when it is not there
+ * - components — every element the package defines, from its custom-elements.json
+ * - spec — a component's spec; null for a name that is no component
+ * - example — a component's example, its markup joined; null when it has none
+ * - schemas — each contract in schemas/ by name, `page` for page.v1.json, with its own title
+ * - tokens — every token tokens.css declares: its layer, first value and how often it is set
  */
-import { existsSync, readFileSync } from "node:fs";
-import { createRequire } from "node:module";
-import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const here = path.dirname(fileURLToPath(import.meta.url));
 const installed = () => {
   try {
-    return path.dirname(createRequire(import.meta.url).resolve("sherpa-ui/package.json"));
+    return path.dirname(createRequire(import.meta.url).resolve('sherpa-ui/package.json'));
   } catch {
     return null;
   }
 };
 
-/** sherpa-ui's folder: its specs, docs, schemas, tokens and dist/. */
-export const SHERPA_ROOT = installed() ?? path.resolve(here, "..", "..");
+/** sherpa-ui's folder: the installed package, else this checkout. */
+export const SHERPA_ROOT = installed() ?? fileURLToPath(new URL('../..', import.meta.url));
 
-/** A path inside sherpa-ui. */
-export const at = (...parts) => path.join(SHERPA_ROOT, ...parts);
+/** Every sherpa-ui file the MCP reads, by its path in the package. */
+export const READS = {
+  manifest: 'custom-elements.json',
+  schema: 'schemas/{name}.v1.json',
+  spec: 'src/components/{name}/{name}.component.json',
+  example: 'src/components/{name}/{name}.example.json',
+  source: 'src/components/{name}/{name}.{kind}',
+  appGuide: 'docs/APP-GUIDE.md',
+  dataRules: 'docs/DATA-SOURCE-RULES.md',
+  tokens: 'src/styles/tokens/tokens.css',
+};
 
-/* The generation code: this package's own copy once packed (`vendor/`), else
-   the checkout's. It reads sherpa-ui's data from SHERPA_UI_ROOT. */
-process.env.SHERPA_UI_ROOT ??= SHERPA_ROOT;
-const VENDOR = path.resolve(here, "..", "vendor");
-const CODE_ROOT = existsSync(VENDOR) ? VENDOR : SHERPA_ROOT;
-const lib = (file) => import(pathToFileURL(path.join(CODE_ROOT, "scripts", "lib", "generation", file)).href);
-const data = await lib("data.mjs");
-export const loadComponentNames = data.loadComponentNames;
-export const loadDef = data.loadDef;
-export const loadSpec = data.loadSpec;
-export const loadNameMap = data.loadNameMap;
-export const loadCssTokenNames = data.loadCssTokenNames;
-export const compileDef = (await lib("compile-def.mjs")).compileDef;
-export const validateDef = (await lib("validate-def.mjs")).validateDef;
-export const tokenForValue = (await lib("resolve.mjs")).tokenForValue;
+/** A name from a caller is one path segment, never a way out of the package. */
+const SEGMENT = /^[a-z0-9][a-z0-9-]*$/;
 
-/** A component's shipped example, its markup joined; null if it has none.
- *  TRAP T-a-component-ships-its-example */
-export function loadExample(name) {
-  const file = at("src", "components", name, `${name}.example.json`);
-  if (!existsSync(file)) return null;
-  const example = JSON.parse(readFileSync(file, "utf8"));
-  return { ...example, html: [example.html].flat().join("") };
+/** Where one of those files is; null when a name in it is not one segment. */
+function where(key, vars) {
+  let bad = false;
+  const rel = READS[key].replace(/\{(\w+)\}/g, (_, v) => {
+    if (!SEGMENT.test(vars[v] ?? '')) bad = true;
+    return vars[v];
+  });
+  return bad ? null : path.join(SHERPA_ROOT, rel);
+}
+
+/** Whether one of those files is there. */
+export const has = (key, vars = {}) => existsSync(where(key, vars) ?? '');
+
+/** One of those files as text; null when it is not there. */
+export const read = (key, vars = {}) => (has(key, vars) ? readFileSync(where(key, vars), 'utf8') : null);
+
+/** Every element the package defines, from its custom-elements.json: name, description and import. */
+export function components() {
+  const manifest = JSON.parse(read('manifest'));
+  return manifest.modules.flatMap((m) => {
+    // `sherpa-ui/components/<short>` is the package's export for that module.
+    const short = m.path.match(/^dist\/components\/sherpa-([^/]+)\//)?.[1];
+    return m.declarations.filter((d) => d.customElement).map((d) => ({
+      name: d.tagName,
+      description: d.description ?? '',
+      import: short ? `sherpa-ui/components/${short}` : null,
+    }));
+  }).sort((a, b) => (a.name < b.name ? -1 : 1));
+}
+
+/** A component's spec; null for a name that is no component. */
+export function spec(name) {
+  const text = read('spec', { name });
+  return text && JSON.parse(text);
+}
+
+/** A component's example, its markup joined; null when it has none. */
+export function example(name) {
+  const text = read('example', { name });
+  if (!text) return null;
+  const ex = JSON.parse(text);
+  return { ...ex, html: [ex.html].flat().join('') };
+}
+
+/** Each contract in schemas/ by name, `page` for page.v1.json, with its own title. */
+export function schemas() {
+  const dir = path.join(SHERPA_ROOT, path.dirname(READS.schema));
+  return readdirSync(dir).filter((f) => f.endsWith('.v1.json')).sort().map((f) => {
+    const name = f.slice(0, -'.v1.json'.length);
+    return { name, title: JSON.parse(read('schema', { name })).title ?? name };
+  });
+}
+
+/** Every token tokens.css declares: its layer, its first value and how many times it is set. */
+export function tokens() {
+  const out = new Map();
+  let layer = '';
+  for (const line of (read('tokens') ?? '').split('\n')) {
+    const opened = line.match(/^@layer ([\w-]+) \{/);
+    if (opened) layer = opened[1];
+    for (const [, name, value] of line.matchAll(/(--sherpa-[\w-]+)\s*:\s*([^;{}]+);/g)) {
+      const seen = out.get(name);
+      if (seen) seen.count++;
+      else out.set(name, { name, layer, value: value.trim(), count: 1 });
+    }
+  }
+  return [...out.values()];
 }

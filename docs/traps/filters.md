@@ -129,7 +129,6 @@ light, 264 of 264 in dark.
 - Site: `src/components/sherpa-chip/sherpa-chip.css`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 - Site: `src/components/sherpa-badge/sherpa-badge.css`
-- Site: `mcp-server/tools/generate.js`
 
 ### T-scope-does-not-stop-inheritance
 

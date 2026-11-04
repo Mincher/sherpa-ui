@@ -26,7 +26,7 @@ FORWARDED slot (`<slot name="icon" slot="icon">`) is a slot a page fills too,
 so it says what it takes. A new word is added to both, on purpose.
 
 - Site: `scripts/generate-component-spec.mjs`
-- Site: `test/unit/component-api.test.mjs`
+- Site: `test/unit/the-mcp-read-tier.test.mjs`
 
 ### T-nothing-downloads-to-serve
 
@@ -160,8 +160,7 @@ spec does not have fails it. The move found one: the chat message's
 
 - Site: `test/a11y/examples.mjs`
 - Site: `test/unit/every-component-ships-an-example.test.mjs`
-- Site: `mcp-server/lib/sherpa.js`
-- Site: `mcp-server/tools/discover.js`
+- Site: `mcp-server/tools/read.js`
 - Site: `scripts/write-reference.mjs`
 
 ### T-a-skeleton-is-the-pages
@@ -1022,31 +1021,24 @@ published package die at load.
 
 `mcp-server/lib/sherpa.js` is the one door: `SHERPA_ROOT` is the installed
 `sherpa-ui` (resolved from `sherpa-ui/package.json`), or the checkout the MCP
-sits in. It loads sherpa-ui's generation lib by PATH — a dynamic import, so
-the specs, the def compiler and the token resolver stay sherpa-ui's own — and
-every resource, prompt and data tool reads its files through it.
+sits in. `READS` names every file it reads, by its path in the package — the
+specs, the examples, the sources, `schemas/`, `custom-elements.json`, the two
+served docs and `tokens.css` — and every tool and resource reads through it. A
+name from a caller is one path segment, so no URI reaches out of the package.
 
-So **sherpa-ui ships the DATA the MCP reads** — the component specs, the Figma
-name map, the three served docs, `schemas/` and `dist/` — **and none of its
-code** (TODO 298). The generation code keeps its one home in sherpa-ui's
-`scripts/`, where the spec gate runs it; the MCP package COPIES it into its
-own `vendor/` as it is packed (`mcp-server/scripts/vendor.mjs`, its prepack),
-and the copy finds sherpa-ui's data through `SHERPA_UI_ROOT`, which the door
-sets. Before, sherpa-ui shipped the code too, and its `contract-io.mjs`
-imported `js-yaml`, which only the MCP declares. In a checkout there is no
-`vendor/`, and the door loads the code where it is. `sherpa-ui-mcp` depends
-on the SDK, zod, ajv, js-yaml and `sherpa-ui`; Playwright is an optional peer,
-for the two tools that drive a page.
+**It reads sherpa-ui's own files and never a copy** (plan 700 G1). The old MCP
+copied sherpa-ui's generation code into a `vendor/` as it was packed, and
+served a fifth form of a spec, the def; both were deleted with it. sherpa-ui
+ships no MCP code and no Figma file.
 
 Two checks hold it. A node test reads `npm pack --dry-run` for both packages:
-sherpa-ui packs the data and not the code, the MCP packs a copy of exactly the
-code it imports, and the MCP depends on every package it imports. `npm run check:mcp-pack` packs both, installs them
-into an empty folder and calls every tool, resource and prompt — it uses the
-npm cache, and the network for a file the cache lacks.
+sherpa-ui packs every file in `READS` and no Figma file; the MCP imports nothing
+outside its folder and depends on exactly the packages it imports, and
+`sherpa-ui`. `npm run check:mcp-pack` packs both, installs them into an empty
+folder and calls every tool, resource and prompt — it uses the npm cache, and
+the network for a file the cache lacks.
 
 - Site: `mcp-server/lib/sherpa.js`
-- Site: `mcp-server/scripts/vendor.mjs`
-- Site: `scripts/lib/generation/data.mjs`
 - Site: `scripts/check-mcp-pack.mjs`
 - Site: `test/unit/the-mcp-package.test.mjs`
 
@@ -1060,20 +1052,22 @@ Views, its store with seed rows, an optional module, `package.json`,
 
 **It is not in sherpa-ui.** An app template holds app content, which an
 app-agnostic library does not (Will, D4 and Q1). It is the package
-`create-sherpa-ui`, in the sibling project
-`../Sherpa Starter`. Two doors, one source: `npm create sherpa-ui <folder>`,
-and the MCP's `scaffold_app`, which reads the installed package's
-`template/` — or, in a checkout, the sibling's. `check:mcp-pack` packs all
-three packages, so `scaffold_app` is called as a user gets it.
+`create-sherpa-ui`, in the sibling project `../Sherpa Starter`, and its door is
+`npm create sherpa-ui <folder>`.
+
+Its `.mcp.json` starts `node node_modules/sherpa-ui-mcp/index.js`, so that path
+is the MCP's contract with every app made from it: the package's `bin` names
+it, and `check:mcp-pack` starts the installed server with the command the
+template names, so it fails the day the two part.
 
 npm drops a package's `.gitignore`, so the template keeps it, and
-`.mcp.json`, WITHOUT the dot, and each door adds it. The app imports
+`.mcp.json`, WITHOUT the dot, and the door adds it. The app imports
 `sherpa-ui` from `./node_modules`, so it is served from its own folder: a
 server that rewrites `/app/index.html` to `/app` resolves every relative path
 against `/`. Its tests are in its own project.
 
-- Site: `mcp-server/tools/generate.js`
 - Site: `scripts/check-mcp-pack.mjs`
+- Site: `test/unit/the-mcp-package.test.mjs`
 
 ### T-a-page-loads-the-bundle
 

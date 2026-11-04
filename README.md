@@ -167,12 +167,11 @@ this to `.vscode/settings.json` for completion and hover docs in plain HTML:
 
 ## For an agent
 
-Sherpa has an MCP server. It gives an agent the components, the tokens, the
-data layer and these guides: `docs/APP-GUIDE.md` is `sherpa://app-guide`, and
+Sherpa has an MCP server. It gives an agent the components, the schemas, the
+tokens and these guides: `docs/APP-GUIDE.md` is `sherpa://app-guide`, and
 `docs/DATA-SOURCE-RULES.md` is `sherpa://data-rules`. It is its own package,
-`sherpa-ui-mcp`, which is not on npm yet, so run it from your clone. Run
-`npm run build` there once: its data tools read `dist/`. Then give your MCP
-client `node` and the full path to `mcp-server/index.js`. The client starts
+`sherpa-ui-mcp`, which is not on npm yet, so run it from your clone: give your
+MCP client `node` and the full path to `mcp-server/index.js`. The client starts
 the server:
 
 ```json

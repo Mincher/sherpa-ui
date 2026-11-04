@@ -5,8 +5,8 @@ today. Served to agents as `sherpa://app-guide`.
 [Sherpa Demos](https://github.com/Mincher/sherpa-demos) is one app built this
 way.
 
-**Start from the starter:** `npm create sherpa-ui my-app`, or the MCP's
-`scaffold_app`. It is every step below, in one folder with no build.
+**Start from the starter:** `npm create sherpa-ui my-app`. It is every step
+below, in one folder with no build.
 
 An app is five kinds of file:
 

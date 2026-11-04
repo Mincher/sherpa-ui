@@ -246,8 +246,7 @@ for (const [f, k] of Object.entries(corner)) node.setBoundVariable(f, V('Groupin
   by hand (TRAP `T-a-shared-edge-is-halved-on-both-sides`).
 
 **Padding / gap.** Bind the Display Mode step whose value equals the CSS value (Rule 8).
-If no step matches, skip it and report it. The MCP's `token_for` and `check_bindings`, and
-`scripts/audit-bindings.mjs`, find the step.
+If no step matches, skip it and report it. `scripts/audit-bindings.mjs` finds the step.
 ```js
 for (const p of ['paddingTop','paddingBottom','paddingLeft','paddingRight'])
   node.setBoundVariable(p, V('Display Mode','space/xs'));

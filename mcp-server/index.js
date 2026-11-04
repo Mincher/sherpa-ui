@@ -1,20 +1,15 @@
 #!/usr/bin/env node
 /**
- * Sherpa UI MCP Server — stdio entry point. Run with `npm run mcp`.
- * Capabilities are registered in server.js; tools live in tools/, resources in
- * resources/, prompts in prompts/.
+ * index.js — the MCP server on stdio: `npm run mcp` in a checkout, or
+ * `node node_modules/sherpa-ui-mcp/index.js` in an app. Stdout is the
+ * transport, so a failure is said on stderr.
  */
-
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { createServer } from "./server.js";
-import { log } from "./lib/logger.js";
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { createServer } from './server.js';
 
 try {
-  const server    = await createServer();
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  log.info("Connected on stdio — ready");
-} catch (e) {
-  log.error(`Fatal startup error: ${e.message}\n${e.stack}`);
+  await createServer().connect(new StdioServerTransport());
+} catch (error) {
+  process.stderr.write(`sherpa-ui-mcp: ${error.stack ?? error}\n`);
   process.exit(1);
 }

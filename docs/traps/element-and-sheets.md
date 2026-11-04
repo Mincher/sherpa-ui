@@ -105,7 +105,7 @@ Safari since 2025. Measured in all three engines (2026-10-14).
   declares any.
 - The spec lists them: `$extensions.sherpa.commands` (name → method) and an
   `invoker-commands` capability, read from `static commands` by its parser.
-  The MCP's `component_api` shows them.
+  The MCP's `get_component` shows them.
 
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `scripts/lib/ts-facts.mjs`

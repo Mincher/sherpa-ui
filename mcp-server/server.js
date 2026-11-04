@@ -1,58 +1,28 @@
 /**
- * Sherpa UI MCP server — the def-driven design-system surface.
- *
- * A def is the working form of a component, made from its spec (`<name>.component.json`);
- * the tools are thin wrappers over the shared generation lib (scripts/lib/generation/*),
- * the one implementation.
- *
- *   Discover  list_components · find_token · get_component
- *   Generate  scaffold_def · validate_def · compile_def · token_for · scaffold_app
- *   Verify    audit_component · check_bindings
- *   Data      run_query · import_schema · scaffold_schema · validate_schema · validate_page
- *   Drive     component_api · call_component · read_component · browser_close
- *   Resources sherpa://def/{name} · sherpa://component/{name}/{ts|html|css}
- *             · sherpa://rules · sherpa://data-rules · sherpa://app-guide
- *   Prompts   generate_component · review_component_usage · debug_component
+ * server.js — the MCP server: every module that registers, in tier order.
+ * The read tier is here; check, query, compose, see and run add their modules
+ * to MODULES (plan 700 §5), and `npm run check:mcp` writes the README from it.
  *
  * Map:
- * - createServer — build the MCP server with every tool, resource and prompt registered
+ * - MODULES — every module that registers tools, resources or prompts, by its path in this package
+ * - createServer — an MCP server with every module registered
  */
-import { readFileSync } from "node:fs";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { readFileSync } from 'node:fs';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import * as readTools from './tools/read.js';
+import * as readResources from './resources/read.js';
 
-import { log } from "./lib/logger.js";
-import { register as registerDiscoverTools } from "./tools/discover.js";
-import { register as registerGenerateTools } from "./tools/generate.js";
-import { register as registerVerifyTools }   from "./tools/verify.js";
-import { register as registerDataTools }     from "./tools/data.js";
-import { register as registerDriveTools }    from "./tools/drive.js";
-import { register as registerResources }     from "./resources/index.js";
-import { register as registerPrompts }       from "./prompts/index.js";
+/** Every module that registers tools, resources or prompts, by its path in this package. */
+export const MODULES = {
+  'tools/read.js': readTools,
+  'resources/read.js': readResources,
+};
 
-export async function createServer() {
-  const startTime = Date.now();
-  log.info("Starting Sherpa UI MCP server (def-driven)…");
+const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 
-  const server = new McpServer(
-    // The version a client sees is the package's own.
-    { name: "sherpa-ui", version: JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")).version },
-    { capabilities: { resources: {}, tools: {}, prompts: {} } }
-  );
-
-  // Tools — thin wrappers over scripts/lib/generation/*. They load their own
-  // reference data (defs, name-map) via the shared cached loaders.
-  registerDiscoverTools(server);
-  registerGenerateTools(server);
-  registerVerifyTools(server);
-  // Data-layer tools — thin wrappers over `sherpa-ui/data` (dist/data.js).
-  registerDataTools(server);
-  // Instance tier — the callable surface, and a localhost browser to reach it.
-  registerDriveTools(server);
-
-  // Resources + prompts
-  registerResources(server);
-  registerPrompts(server);
-
-  log.info(`Server ready — ${Date.now() - startTime}ms startup`);
+/** An MCP server with every module registered. */
+export function createServer() {
+  const server = new McpServer({ name: 'sherpa-ui', version });
+  for (const mod of Object.values(MODULES)) mod.register(server);
   return server;
 }

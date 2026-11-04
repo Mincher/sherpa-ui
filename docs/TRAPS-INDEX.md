@@ -1087,7 +1087,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-bare-name-must-be-used-not-mentioned](traps/build-tools-mcp.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — ts-facts
 - [T-a-cli-is-run-through-a-link](traps/build-tools-mcp.md#t-a-cli-is-run-through-a-link) — check-usage, sherpa-ui
-- [T-a-component-ships-its-example](traps/build-tools-mcp.md#t-a-component-ships-its-example) — discover, sherpa, write-reference
+- [T-a-component-ships-its-example](traps/build-tools-mcp.md#t-a-component-ships-its-example) — read, write-reference
 - [T-a-constructed-event-is-not-a-dispatched-one](traps/build-tools-mcp.md#t-a-constructed-event-is-not-a-dispatched-one) — generate-component-spec
 - [T-a-container-width-is-named-not-counted](traps/build-tools-mcp.md#t-a-container-width-is-named-not-counted) — project-tokens
 - [T-a-content-grid-has-two-row-modes](traps/build-tools-mcp.md#t-a-content-grid-has-two-row-modes) — project-tokens
@@ -1121,8 +1121,8 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-slot-says-what-it-accepts](traps/build-tools-mcp.md#t-a-slot-says-what-it-accepts) — generate-component-spec
 - [T-a-spec-on-disk-must-be-the-spec-the-source-makes](traps/build-tools-mcp.md#t-a-spec-on-disk-must-be-the-spec-the-source-makes) — generate-component-spec
 - [T-a-spec-reads-the-class-by-its-parser](traps/build-tools-mcp.md#t-a-spec-reads-the-class-by-its-parser) — ts-facts
-- [T-a-starter-is-one-folder](traps/build-tools-mcp.md#t-a-starter-is-one-folder) — check-mcp-pack, generate
-- [T-a-state-colour-binds-the-style-mode](traps/filters.md#t-a-state-colour-binds-the-style-mode) — generate, lint-css, project-tokens
+- [T-a-starter-is-one-folder](traps/build-tools-mcp.md#t-a-starter-is-one-folder) — check-mcp-pack
+- [T-a-state-colour-binds-the-style-mode](traps/filters.md#t-a-state-colour-binds-the-style-mode) — lint-css, project-tokens
 - [T-a-stranded-container-fills-its-row](traps/build-tools-mcp.md#t-a-stranded-container-fills-its-row) — project-tokens
 - [T-a-template-binds-by-markup](traps/element-and-sheets.md#t-a-template-binds-by-markup) — check-props, check-usage, generate-component-spec, html-structure
 - [T-an-elevation-pin-cannot-reach-a-shadow-root](traps/build-tools-mcp.md#t-an-elevation-pin-cannot-reach-a-shadow-root) — project-tokens
@@ -1148,7 +1148,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-bench-counts-and-never-times](traps/build-tools-mcp.md#t-the-bench-counts-and-never-times) — check-bench
 - [T-the-grid-is-two-grids](traps/build-tools-mcp.md#t-the-grid-is-two-grids) — lint-css, project-tokens
 - [T-the-manifest-is-written-from-the-specs](traps/build-tools-mcp.md#t-the-manifest-is-written-from-the-specs) — check-generated, write-manifest, write-reference
-- [T-the-mcp-reads-sherpa-ui-through-one-door](traps/build-tools-mcp.md#t-the-mcp-reads-sherpa-ui-through-one-door) — check-mcp-pack, data, sherpa, vendor
+- [T-the-mcp-reads-sherpa-ui-through-one-door](traps/build-tools-mcp.md#t-the-mcp-reads-sherpa-ui-through-one-door) — check-mcp-pack, sherpa
 - [T-the-shared-vocabulary-is-declared-once](traps/element-and-sheets.md#t-the-shared-vocabulary-is-declared-once) — check-ownership
 - [T-the-templates-text-is-the-default](traps/element-and-sheets.md#t-the-templates-text-is-the-default) — generate-component-spec
 - [T-the-text-is-in-the-js](traps/element-and-sheets.md#t-the-text-is-in-the-js) — build-reforged, check-weight

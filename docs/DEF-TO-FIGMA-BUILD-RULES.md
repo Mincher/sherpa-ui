@@ -1,7 +1,7 @@
 # Build rules: one sherpa-* component
 
-How to build one component today, in order. Served as `sherpa://rules`. The
-RULES are in `docs/PRINCIPLES.md`, by number; this doc gives the steps and the
+How to build one component today, in order, for Sherpa's own authors: it does
+not ship, and the MCP does not serve it (plan 700 Q2). The RULES are in `docs/PRINCIPLES.md`, by number; this doc gives the steps and the
 recipes, and states no rule a second time. A check named here runs in a
 sherpa-ui checkout.
 
@@ -214,8 +214,7 @@ Names as exported on 2026-09-09; confirm them in the file before a build.
 - **Rule 8 — every property binds the variable that resolves to its value.** The
   scale is Display Mode's `space/*`, `border/rounding/*` and `border/width/*`.
   Bind a stroke only where a stroke exists, skip an off-scale value, and never
-  touch an instance's internals. The MCP's `token_for` and `check_bindings`, and
-  `scripts/audit-bindings.mjs`, do it.
+  touch an instance's internals. `scripts/audit-bindings.mjs` does it.
 - An override collection is keyed by its parent's mode ids
   (`T-an-override-collection-is-keyed-by-its-parent`), so the export cannot
   read the ten overrides. They are hand-kept in
@@ -229,8 +228,3 @@ In a checkout: `npm run type-check`, `npm run lint`, `npm run lint:css`,
 `npm run check:traps`, `npm run check:map`, `npm run check:size` and
 `npm run test:a11y`. Then `npm run manifest` and `npm run reference`, which
 `npm run check:generated` proves.
-
-## With the MCP
-
-`list_components` → `scaffold_def` → `validate_def` → `compile_def` → finish
-the three files by hand → the spec generator → write `.example.json`.

@@ -256,7 +256,7 @@ template literal is OUTPUT, and a comment-stripper eats it.
 
 ## Where the docs are
 
-**The RULES are the markdown files in this table, and code reads all but this one.** The
+**The RULES are the markdown files in this table, and code reads all but this one and the build rules.** The
 rest of `docs/` is record, not rule: the designs (`QUERY-DESIGN`,
 `PROVIDER-DESIGN`, `PAGE-DEFINITION`), the code review's plan
 (`CODE-REVIEW-PLAN`), the data layer's plan (`DATA-LAYER-PLAN`), the approved names (`LEXICON`), the ledger (`TODO`, the one
@@ -271,7 +271,7 @@ written from the specs by `npm run reference`, never edited.
 | `PRINCIPLES.md` | People. This file — the rules and the doors. Open work is in `TODO.md`; done work in `history/TODO-ARCHIVE.md` |
 | `TRAPS.md`, `traps/*.md` | `check-traps` — a `TRAP T-…` citation must resolve to an entry, in the file of its first Site's area, and that entry's `Site:` list must match who cites it; `npm run traps:write` makes `TRAPS-INDEX.md`, the entries by area, from those lists |
 | `APP-GUIDE.md` | The MCP server, as `sherpa://app-guide` |
-| `DEF-TO-FIGMA-BUILD-RULES.md` | The MCP server, as `sherpa://rules` |
+| `DEF-TO-FIGMA-BUILD-RULES.md` | People: Sherpa's own authors. It does not ship, and the MCP does not serve it (plan 700 Q2) |
 | `DATA-SOURCE-RULES.md` | The MCP server, as `sherpa://data-rules` |
 
 The traps are where the depth went, and they are gated both ways. That is the

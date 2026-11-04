@@ -27,7 +27,7 @@ This file is the commands and where each thing is stated. It states no rule.
 | [docs/TRAPS.md](docs/TRAPS.md) | Any `TRAP T-…` citation you meet in the code. The reasons, gated both ways, one file per area in `docs/traps/`. By area and code: [docs/TRAPS-INDEX.md](docs/TRAPS-INDEX.md) |
 | [docs/APP-GUIDE.md](docs/APP-GUIDE.md) | Building an app on Sherpa, step by step. Served to agents as `sherpa://app-guide` |
 | [docs/DATA-SOURCE-RULES.md](docs/DATA-SOURCE-RULES.md) | Pointing Sherpa at a backend. Served to agents as `sherpa://data-rules` |
-| [docs/DEF-TO-FIGMA-BUILD-RULES.md](docs/DEF-TO-FIGMA-BUILD-RULES.md) | Building a component: the five files, the class, the template, the CSS recipes, Figma. Served as `sherpa://rules` |
+| [docs/DEF-TO-FIGMA-BUILD-RULES.md](docs/DEF-TO-FIGMA-BUILD-RULES.md) | Building a component: the five files, the class, the template, the CSS recipes, Figma. Not shipped or served |
 | [docs/components/](docs/components/README.md) | Using one component: its attributes, events, slots, parts and example. Written from its spec |
 
 Active branch is `sherpa-data-layer`. **Never push** — commit freely, pushing is
@@ -129,7 +129,8 @@ npm create sherpa-ui ../my-app
 
 # MCP server — its own package, sherpa-ui-mcp
 npm run mcp               # stdio transport — connect from Claude Desktop / Cursor
-npm run check:mcp-pack    # pack both packages, install them, call every tool, resource and prompt
+npm run check:mcp         # each module's header matches what it registers; the README is fresh (-- --write writes it)
+npm run check:mcp-pack    # pack both, install them, start as the Starter's .mcp.json does, call everything (needs ../Sherpa Starter)
 ```
 
 ---
@@ -142,8 +143,9 @@ npm run check:mcp-pack    # pack both packages, install them, call every tool, r
 - **CSS** with design tokens projected from Figma Variables
   (`scripts/project-tokens.mjs`; never edit `tokens.css` by hand).
 - **MCP server** (`mcp-server/`, its own package `sherpa-ui-mcp`) — gives AI
-  agents the component specs, tokens, the data layer and the build rules. Its
-  tools, resources and prompts: [mcp-server/README.md](mcp-server/README.md).
+  agents the component specs, schemas, tokens and the app and data guides, read
+  from sherpa-ui's own files. Its tools, resources and prompts, written from
+  their registrations: [mcp-server/README.md](mcp-server/README.md).
 
 ### Four entry points
 
