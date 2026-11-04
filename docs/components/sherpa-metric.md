@@ -88,6 +88,12 @@ What each class's base rule reads:
 | `--sherpa-style-content-base` | `.trend` | `color` |
 | `--sherpa-font-size-body-small` | `.arrow` | `font-size` |
 
+## Data
+
+|  |  |
+|---|---|
+| Asks its provider for | `aggregate` |
+
 ## populate()
 
 `number \| { value?, label?, delta?, deltaPercent?, trend?, values?, show? }`

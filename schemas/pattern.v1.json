@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sherpa-ui.dev/schemas/pattern.v1.json",
+  "title": "Sherpa-UI pattern",
+  "description": "One UI pattern: for this need, this layout and these components. An agent picks one by its `when`, run over the need, and never invents a layout. Sherpa's patterns and an app's own are each one of these. docs/history/plan-700-agents.md §3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["v", "id", "label", "use", "when", "layout"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "v": { "const": 1 },
+    "id": { "description": "Its id: an app's pattern of the same id replaces Sherpa's.", "$ref": "defs.v1.json#/$defs/id" },
+    "label": { "type": "string", "minLength": 1 },
+    "use": { "description": "What it is for, in a sentence or two.", "type": "string", "minLength": 1 },
+    "when": { "description": "When it fits: conditions on the need, all of which hold.", "$ref": "defs.v1.json#/$defs/where" },
+    "rank": { "description": "Its place among the patterns that fit: the highest first.", "type": "number" },
+    "layout": { "$ref": "#/$defs/node" },
+    "page": {
+      "description": "What it adds to the page definition (page.v1.json): its scopes, and its components' configuration.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scopes": { "type": "object", "additionalProperties": { "$ref": "defs.v1.json#/$defs/scope" } },
+        "ui": { "$ref": "defs.v1.json#/$defs/ui" }
+      }
+    },
+    "states": {
+      "description": "The states of its data it draws: loading; empty, no-matches and error, a container's data-state; unreached and down, its source's reach.",
+      "type": "array", "uniqueItems": true,
+      "items": { "enum": ["loading", "empty", "no-matches", "error", "unreached", "down"] }
+    },
+    "agent": {
+      "description": "What an agent may change, and the roles it keeps.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "may": { "description": "A role of its layout, or a part of its page: columns, presets.", "type": "array", "items": { "$ref": "defs.v1.json#/$defs/id" } },
+        "keeps": { "description": "Roles of its layout an agent never takes away.", "type": "array", "items": { "$ref": "defs.v1.json#/$defs/id" } }
+      }
+    }
+  },
+  "$defs": {
+    "node": {
+      "description": "One element of its layout: a component spec's anatomy node, as a page writes it. A child placed in a slot says so in attrs.slot; a page has no <slot> and no template, so no slot or showWhen.",
+      "$ref": "component.v1.json#/$defs/nodeParts",
+      "properties": {
+        "role": { "description": "What it does in the pattern: what `agent` names.", "$ref": "defs.v1.json#/$defs/id" },
+        "each": { "description": "One of it for each of the need's fields of this kind.", "enum": ["field", "dateField", "numberField", "statusField", "childField"] },
+        "max": { "description": "At most this many of it, with `each`.", "type": "integer", "minimum": 1 },
+        "slot": false,
+        "showWhen": false,
+        "children": { "type": "array", "items": { "$ref": "#/$defs/node" } }
+      },
+      "unevaluatedProperties": false
+    },
+    "need": {
+      "description": "What a pattern's `when` runs over: one plain row, made from the data and the agent's task word.",
+      "type": "object",
+      "properties": {
+        "task": { "description": "The agent's word for the work: browse, find, triage, edit…", "type": "string" },
+        "rows": { "type": "integer", "minimum": 0 },
+        "fields": { "type": "integer", "minimum": 0 },
+        "dateFields": { "type": "integer", "minimum": 0 },
+        "numberFields": { "type": "integer", "minimum": 0 },
+        "statusFields": { "type": "integer", "minimum": 0 },
+        "childFields": { "type": "integer", "minimum": 0 },
+        "writes": { "description": "A reader may change the rows.", "type": "boolean" }
+      }
+    }
+  }
+}

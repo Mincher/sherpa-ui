@@ -93,6 +93,13 @@ What each class's base rule reads:
 | `--sherpa-theme-content-line-height-small` | `.caption` | `line-height` |
 | `--sherpa-theme-content-body-1` | `.caption` | `color` |
 
+## Data
+
+|  |  |
+|---|---|
+| Asks its provider for | `aggregate`, with `zones` |
+| Presents `gauge` | from its own data only; fills `legend` |
+
 ## populate()
 
 `number \| { value, zones?, picked? }`

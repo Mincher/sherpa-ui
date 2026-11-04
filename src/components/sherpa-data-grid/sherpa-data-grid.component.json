@@ -901,6 +901,35 @@
     "shape": "{ columns, rows }",
     "description": "the rows, over the configuration the page set."
   },
+  "asks": {
+    "shape": "rows",
+    "filters": true,
+    "fields": true
+  },
+  "takes": [
+    "highlight"
+  ],
+  "presents": [
+    {
+      "kind": "grid",
+      "accepts": [
+        "segments",
+        "series",
+        "aggregate"
+      ],
+      "is": {
+        "data-column-filters": "",
+        "data-scroll-shadow": ""
+      }
+    }
+  ],
+  "settings": {
+    "data-limit-options": "limitOptions",
+    "data-hide-unmatched": "hideUnmatched",
+    "data-heading-group": "headingGroup",
+    "data-heading-hover": "headingHover",
+    "data-multi-field": "multiFieldColumns"
+  },
   "states": [
     {
       "$type": "state",

@@ -256,6 +256,9 @@
     "shape": "number | { value?, label?, delta?, deltaPercent?, trend?, values?, show? }",
     "description": "the tile's number"
   },
+  "asks": {
+    "shape": "aggregate"
+  },
   "states": [
     {
       "$type": "state",

@@ -1064,6 +1064,32 @@
     "shape": "[{ id, label, type?, active?, icon?, options? }]",
     "description": "."
   },
+  "asks": {
+    "shape": "scope"
+  },
+  "takes": [
+    "counts"
+  ],
+  "settings": {
+    "data-limit-options": "limitOptions",
+    "data-hide-unmatched": "hideUnmatched",
+    "data-no-results": "!results",
+    "data-count-applied": "countApplied",
+    "data-saved-menu": "savedMenu",
+    "data-switchable": "switchable",
+    "data-no-section-labels": "!sectionLabels",
+    "data-no-organise-labels": "hideOrganiseLabels",
+    "data-no-sections": "!sections",
+    "data-highlight-hover": "highlightOnHover",
+    "data-field-apply": "!singleApply",
+    "data-reorder": "reorderFilters",
+    "data-move-filters": "moveFilters",
+    "data-allow-solo": "allowSolo",
+    "data-solo-across": "soloAcrossScopes",
+    "data-solo-header": "soloInHeader",
+    "data-label-column": "labelColumn",
+    "data-every-count": "countEveryValue"
+  },
   "states": [
     {
       "$type": "state",

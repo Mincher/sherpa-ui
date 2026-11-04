@@ -287,6 +287,26 @@ What each class's base rule reads:
 | `--sherpa-style-content-base` | `.row-open` | `color` |
 | `--sherpa-style-surface-base` | `.row-open` | `background` |
 
+## Data
+
+|  |  |
+|---|---|
+| Asks its provider for | `rows`, with `filters`, `fields` |
+| Takes beside its data | `highlight` |
+| Presents `grid` | from `segments`, `series`, `aggregate` data; as `data-column-filters` `data-scroll-shadow` |
+
+## Settings it reads
+
+Each of the app's settings, onto one of its attributes:
+
+| Setting | Attribute |
+|---|---|
+| `limitOptions` | `data-limit-options` |
+| `hideUnmatched` | `data-hide-unmatched` |
+| `headingGroup` | `data-heading-group` |
+| `headingHover` | `data-heading-hover` |
+| `multiFieldColumns` | `data-multi-field` |
+
 ## populate()
 
 `{ columns, rows }`

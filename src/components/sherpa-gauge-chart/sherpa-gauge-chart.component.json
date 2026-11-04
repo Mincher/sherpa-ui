@@ -415,6 +415,19 @@
     "shape": "number | { value, zones?, picked? }",
     "description": "set the value. `zones` are its field's, from a status field, drawn where `data-zones` says none; `picked`, the zones that field's filter keeps — the rest fade, and the needle stays."
   },
+  "asks": {
+    "shape": "aggregate",
+    "zones": true
+  },
+  "presents": [
+    {
+      "kind": "gauge",
+      "accepts": [],
+      "slots": [
+        "legend"
+      ]
+    }
+  ],
   "states": [
     {
       "$type": "state",

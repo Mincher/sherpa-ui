@@ -410,6 +410,18 @@
     "shape": "{ labels, series }",
     "description": "series is number[] | {name?,values}[]."
   },
+  "asks": {
+    "shape": "series"
+  },
+  "presents": [
+    {
+      "kind": "line",
+      "accepts": [],
+      "slots": [
+        "legend"
+      ]
+    }
+  ],
   "states": [
     {
       "$type": "state",

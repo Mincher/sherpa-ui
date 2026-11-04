@@ -71,6 +71,12 @@ What each class's base rule reads:
 | `--sherpa-display-mode-space-xs` | `.banner-actions` | `gap` |
 | `--sherpa-display-mode-space-xs` | `.banner-actions` | `margin-block-start` |
 
+## Data
+
+|  |  |
+|---|---|
+| Takes beside its data | `card` |
+
 ## populate()
 
 `{ state, message }`

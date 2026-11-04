@@ -1084,17 +1084,17 @@
         },
         {
           "name": "data-heading-group",
-          "description": "a Group button in each list column's heading: it groups by that column; a group row offers Ungroup. Set by its provider. TODO 500",
+          "description": "a Group button in each list column's heading: it groups by that column; a group row offers Ungroup. Set by its provider. TODO 500. It follows the app's `headingGroup` setting.",
           "valueSet": "v"
         },
         {
           "name": "data-heading-hover",
-          "description": "a heading shows its buttons only while hovered or focused; one that is on stays. TODO 501",
+          "description": "a heading shows its buttons only while hovered or focused; one that is on stays. TODO 501. It follows the app's `headingHover` setting.",
           "valueSet": "v"
         },
         {
           "name": "data-hide-unmatched",
-          "description": "on | off — while Limit is on, a heading menu hides what it rules out. The app's setting, `hideUnmatched`. TODO 305",
+          "description": "on | off — while Limit is on, a heading menu hides what it rules out. The app's setting, `hideUnmatched`. TODO 305. It follows the app's `hideUnmatched` setting.",
           "values": [
             {
               "name": "on"
@@ -1106,7 +1106,7 @@
         },
         {
           "name": "data-limit-options",
-          "description": "on | off — the host's \"Limit to matching filters\". The app's setting, `limitOptions`.",
+          "description": "on | off — the host's \"Limit to matching filters\". The app's setting, `limitOptions`. It follows the app's `limitOptions` setting.",
           "values": [
             {
               "name": "on"
@@ -1122,7 +1122,7 @@
         },
         {
           "name": "data-multi-field",
-          "description": "a column's `tags` draw as a second row in its cells, each pressed to filter by its value, and its heading menu joins their lists. Set by its provider. TODO 490",
+          "description": "a column's `tags` draw as a second row in its cells, each pressed to filter by its value, and its heading menu joins their lists. Set by its provider. TODO 490. It follows the app's `multiFieldColumns` setting.",
           "valueSet": "v"
         },
         {
@@ -2939,6 +2939,7 @@
       "attributes": [
         {
           "name": "data-allow-solo",
+          "description": "It follows the app's `allowSolo` setting.",
           "valueSet": "v"
         },
         {
@@ -2971,6 +2972,7 @@
         },
         {
           "name": "data-count-applied",
+          "description": "It follows the app's `countApplied` setting.",
           "valueSet": "v"
         },
         {
@@ -2980,6 +2982,7 @@
         },
         {
           "name": "data-every-count",
+          "description": "It follows the app's `countEveryValue` setting.",
           "valueSet": "v"
         },
         {
@@ -2992,6 +2995,7 @@
         },
         {
           "name": "data-field-apply",
+          "description": "On while the app's `singleApply` setting is off.",
           "valueSet": "v"
         },
         {
@@ -3013,7 +3017,7 @@
         },
         {
           "name": "data-hide-unmatched",
-          "description": "on | off — the host hides what Limit rules out, when it is on",
+          "description": "on | off — the host hides what Limit rules out, when it is on. It follows the app's `hideUnmatched` setting.",
           "values": [
             {
               "name": "on"
@@ -3025,15 +3029,17 @@
         },
         {
           "name": "data-highlight-hover",
+          "description": "It follows the app's `highlightOnHover` setting.",
           "valueSet": "v"
         },
         {
           "name": "data-label-column",
+          "description": "It follows the app's `labelColumn` setting.",
           "valueSet": "v"
         },
         {
           "name": "data-limit-options",
-          "description": "on | off — the host offers \"Limit to matching filters\": the ⋮ always shows, and over the View its menu holds the switch. The app's setting, `limitOptions`. Will, TODOs 178, 553.",
+          "description": "on | off — the host offers \"Limit to matching filters\": the ⋮ always shows, and over the View its menu holds the switch. The app's setting, `limitOptions`. Will, TODOs 178, 553. It follows the app's `limitOptions` setting.",
           "values": [
             {
               "name": "on"
@@ -3050,6 +3056,7 @@
         },
         {
           "name": "data-move-filters",
+          "description": "It follows the app's `moveFilters` setting.",
           "valueSet": "v"
         },
         {
@@ -3059,11 +3066,12 @@
         },
         {
           "name": "data-no-organise-labels",
+          "description": "It follows the app's `hideOrganiseLabels` setting.",
           "valueSet": "v"
         },
         {
           "name": "data-no-results",
-          "description": "its chips say no match counts — the app's choice, written by its provider",
+          "description": "its chips say no match counts — the app's choice, written by its provider. On while the app's `results` setting is off.",
           "valueSet": "v"
         },
         {
@@ -3072,10 +3080,12 @@
         },
         {
           "name": "data-no-section-labels",
+          "description": "On while the app's `sectionLabels` setting is off.",
           "valueSet": "v"
         },
         {
           "name": "data-no-sections",
+          "description": "On while the app's `sections` setting is off.",
           "valueSet": "v"
         },
         {
@@ -3116,6 +3126,7 @@
         },
         {
           "name": "data-reorder",
+          "description": "It follows the app's `reorderFilters` setting.",
           "valueSet": "v"
         },
         {
@@ -3129,7 +3140,7 @@
         },
         {
           "name": "data-saved-menu",
-          "description": "the saved sets, the save rows and Manage are a Saved menu of their own, not the Filters menu's",
+          "description": "the saved sets, the save rows and Manage are a Saved menu of their own, not the Filters menu's. It follows the app's `savedMenu` setting.",
           "valueSet": "v"
         },
         {
@@ -3143,10 +3154,12 @@
         },
         {
           "name": "data-solo-across",
+          "description": "It follows the app's `soloAcrossScopes` setting.",
           "valueSet": "v"
         },
         {
           "name": "data-solo-header",
+          "description": "It follows the app's `soloInHeader` setting.",
           "valueSet": "v"
         },
         {
@@ -3175,7 +3188,7 @@
         },
         {
           "name": "data-switchable",
-          "description": "show Figma's leading filter Switch, on a data bar: off stops every filter in the bar and keeps its value. Hidden by default, for legacy reasons. Will, TODO 338.",
+          "description": "show Figma's leading filter Switch, on a data bar: off stops every filter in the bar and keeps its value. Hidden by default, for legacy reasons. Will, TODO 338. It follows the app's `switchable` setting.",
           "valueSet": "v"
         },
         {

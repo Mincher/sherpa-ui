@@ -116,6 +116,13 @@ What each class's base rule reads:
 | `--sherpa-theme-content-line-height-small` | `.value-axis` | `line-height` |
 | `--sherpa-theme-content-body-1` | `.value-axis` | `color` |
 
+## Data
+
+|  |  |
+|---|---|
+| Asks its provider for | `segments`, with `stacks` |
+| Presents `bar` | from `segments`, `series`, `rows` data; fills `legend` |
+
 ## populate()
 
 `[{ label, value, colorIndex? }]`

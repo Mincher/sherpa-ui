@@ -290,6 +290,14 @@
     "shape": "[{ label, value?, colorIndex }]",
     "description": ". Keeps the off-set."
   },
+  "asks": {
+    "shape": "segments",
+    "keepEmpty": true,
+    "picks": {
+      "event": "legend-item-click",
+      "narrows": "host"
+    }
+  },
   "states": [
     {
       "$type": "state",

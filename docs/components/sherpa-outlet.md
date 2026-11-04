@@ -68,3 +68,9 @@ What each class's base rule reads:
 |---|---|---|
 | `--sherpa-display-mode-space-2xs` | `.reach-actions` | `gap` |
 | `--sherpa-display-mode-space-xs` | `.reach-actions` | `margin-inline-start` |
+
+## Data
+
+|  |  |
+|---|---|
+| Settings | told the app's settings, onto none of its attributes |

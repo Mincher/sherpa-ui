@@ -105,6 +105,12 @@ What each class's base rule reads:
 | `--sherpa-theme-content-line-height-xs` | `.value` | `line-height` |
 | `--sherpa-display-mode-space-2xs` | `.rollup-menu-btn` | `margin-inline-start` |
 
+## Data
+
+|  |  |
+|---|---|
+| Asks its provider for | `segments`, with `keepEmpty`, `picks` (`legend-item-click`, `host`) |
+
 ## populate()
 
 `[{ label, value?, colorIndex }]`

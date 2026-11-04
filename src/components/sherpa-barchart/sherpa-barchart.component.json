@@ -407,6 +407,23 @@
     "shape": "[{ label, value, colorIndex? }]",
     "description": "the bars."
   },
+  "asks": {
+    "shape": "segments",
+    "stacks": true
+  },
+  "presents": [
+    {
+      "kind": "bar",
+      "accepts": [
+        "segments",
+        "series",
+        "rows"
+      ],
+      "slots": [
+        "legend"
+      ]
+    }
+  ],
   "states": [
     {
       "$type": "state",

@@ -408,6 +408,9 @@
     "shape": "{ state, message }",
     "description": "a host with no provider sets the state by hand."
   },
+  "takes": [
+    "card"
+  ],
   "states": [
     {
       "$type": "state",

@@ -87,6 +87,12 @@ What each class's base rule reads:
 | `--sherpa-theme-size-icon-xs` | `.rows` | `background-size` |
 | `--sherpa-display-mode-space-xs` | `.page-input` | `margin-inline` |
 
+## Data
+
+|  |  |
+|---|---|
+| Asks its provider for | `state` |
+
 ## populate()
 
 `{ locked?, page?, pageSize?, rowsOptions?, totalPages? }`

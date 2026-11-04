@@ -109,6 +109,14 @@ What each class's base rule reads:
 | `--sherpa-data-viz-series-1` | `.slice-part` | `fill` |
 | `--sherpa-data-viz-series-1` | `.slice-part` | `stroke` |
 
+## Data
+
+|  |  |
+|---|---|
+| Asks its provider for | `segments`, with `stacks` |
+| Presents `donut` | from `segments`, `series`, `rows` data; fills `legend`; as `data-type="donut"` |
+| Presents `pie` | from `segments`, `series`, `rows` data; fills `legend`; as `data-type="pie"` |
+
 ## populate()
 
 `[{ label, value, colorIndex? }]`

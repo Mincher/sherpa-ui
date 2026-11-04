@@ -171,6 +171,7 @@
       "description": "the Context's markup, put there by the outlet its own `slot=\"context-header\"` element goes up into the app shell's fixed region, and leaves with the Context"
     }
   ],
+  "settings": {},
   "capabilities": [
     {
       "$type": "capability",

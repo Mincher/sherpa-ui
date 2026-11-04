@@ -3,8 +3,9 @@
  * generate-component-spec.mjs — a component's `.component.json`, from its source.
  *
  * Reads its own HTML + CSS + TS + element-map and emits the mechanical surface
- * (props, anatomy, events, token bindings, element, best-effort states and
- * capabilities); richer prose is hand-finished.
+ * (props, anatomy, events, what it asks, takes, presents and the settings it
+ * reads, token bindings, element, best-effort states and capabilities); richer
+ * prose is hand-finished.
  *
  *   node scripts/generate-component-spec.mjs sherpa-switch      # write next to component
  *   node scripts/generate-component-spec.mjs --all              # write every component
@@ -33,7 +34,7 @@ import { compileDef } from './lib/generation/compile-def.mjs';
 import { authoredCss, extractBindings, parseStates } from './lib/css-reader.mjs';
 import { parseTemplates, htmlDiff, boundTo } from './lib/html-structure.mjs';
 import { schemaCheck } from './lib/schema-check.mjs';
-import { baseObserves, parseClassApi, parseEmits, parseObserved, parsePopulate, parsePropDecls } from './lib/ts-facts.mjs';
+import { baseObserves, parseClassApi, parseDataDecls, parseEmits, parseObserved, parsePopulate, parsePropDecls } from './lib/ts-facts.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const C = join(ROOT, 'src', 'components');
@@ -903,6 +904,12 @@ function generateSpec(name) {
   if (slots.length) spec.slots = slots;
   const populate = populateOf(ts, props, notes);
   if (populate) spec.populate = populate;
+  // What it asks for, takes, presents and reads of the app's settings: the class says.
+  const data = ts ? parseDataDecls(ts, join(dir, `${name}.ts`)) : {};
+  if (data.asks) spec.asks = data.asks;
+  if (data.takes) spec.takes = data.takes;
+  if (data.presents) spec.presents = [data.presents].flat();
+  if (data.settings) spec.settings = data.settings;
   if (states.length) spec.states = states;
   if (capabilities.length) spec.capabilities = capabilities;
   if (events.length) spec.events = events;

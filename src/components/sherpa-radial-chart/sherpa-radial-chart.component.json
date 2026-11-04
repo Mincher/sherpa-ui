@@ -385,6 +385,40 @@
     "shape": "[{ label, value, colorIndex? }]",
     "description": "the slices."
   },
+  "asks": {
+    "shape": "segments",
+    "stacks": true
+  },
+  "presents": [
+    {
+      "kind": "donut",
+      "is": {
+        "data-type": "donut"
+      },
+      "accepts": [
+        "segments",
+        "series",
+        "rows"
+      ],
+      "slots": [
+        "legend"
+      ]
+    },
+    {
+      "kind": "pie",
+      "is": {
+        "data-type": "pie"
+      },
+      "accepts": [
+        "segments",
+        "series",
+        "rows"
+      ],
+      "slots": [
+        "legend"
+      ]
+    }
+  ],
   "states": [
     {
       "$type": "state",

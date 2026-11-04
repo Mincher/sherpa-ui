@@ -8,6 +8,7 @@
  * - parseObserved — The `static override observed` list, as names.
  * - expandArrayConst — Read a module-level `const NAME = ['a', 'b'] as const;` back into its strings.
  * - parsePropDecls — Each prop `static override props` declares: its kind, type, values and accessor.
+ * - parseDataDecls — What the class says of its data: its `static asks`, `takes`, `presents` and `settings`, as JSON.
  * - baseObserves — Does the base class observe this declared prop by itself?
  * - parseClassApi — The component class's public methods and properties, read by TypeScript's own parser.
  * - parsePopulate — What `populate()` takes, from the `populate(…) — …` line over its `renderData`; null with no override.
@@ -101,6 +102,48 @@ export function parsePropDecls(src, path) {
   const init = unwrap(member?.initializer);
   return init && ts.isObjectLiteralExpression(init) ? entriesOf(init, { sf, src, path }) : {};
 }
+
+/**
+ * What the class says of its data: its `static asks`, `takes`, `presents` and
+ * `settings`, as JSON, each only where it declares one. A function in an ask is
+ * `true`: the element names those fields itself, at run time. A value that is
+ * not a literal throws, so a spec never leaves one out.
+ *
+ * @returns {{ asks?: object, takes?: string[], presents?: object | object[], settings?: Record<string, string> }}
+ */
+export function parseDataDecls(src, path) {
+  const sf = ts.createSourceFile('c.ts', src ?? '', ts.ScriptTarget.Latest, true);
+  const out = {};
+  for (const m of registeredClass(sf, src)?.members ?? []) {
+    const name = m.name?.getText(sf);
+    if (!ts.isPropertyDeclaration(m) || !DATA_DECLS.includes(name) || !m.initializer
+      || !(ts.getCombinedModifierFlags(m) & ts.ModifierFlags.Static)) continue;
+    out[name] = literalOf(m.initializer, sf, `${path ?? 'the class'}: static ${name}`);
+  }
+  return out;
+}
+const DATA_DECLS = ['asks', 'takes', 'presents', 'settings'];
+
+/** A literal as JSON; a function is `true`. */
+function literalOf(node, sf, at) {
+  const n = unwrap(node);
+  if (ts.isStringLiteralLike(n)) return n.text;
+  if (ts.isNumericLiteral(n)) return Number(n.text);
+  if (n.kind === ts.SyntaxKind.TrueKeyword) return true;
+  if (n.kind === ts.SyntaxKind.FalseKeyword) return false;
+  if (ts.isArrowFunction(n) || ts.isFunctionExpression(n)) return true;
+  if (ts.isArrayLiteralExpression(n)) return n.elements.map((e) => literalOf(e, sf, at));
+  if (ts.isObjectLiteralExpression(n)) {
+    return Object.fromEntries(n.properties.map((p) => {
+      if (!p.name || !(ts.isIdentifier(p.name) || ts.isStringLiteralLike(p.name))) throw unread(p, sf, at);
+      if (ts.isMethodDeclaration(p)) return [p.name.text, true];
+      if (ts.isPropertyAssignment(p)) return [p.name.text, literalOf(p.initializer, sf, `${at}.${p.name.text}`)];
+      throw unread(p, sf, at);
+    }));
+  }
+  throw unread(n, sf, at);
+}
+const unread = (node, sf, at) => new Error(`${at}: \`${node.getText(sf)}\` is not a literal, so the spec cannot say it. Write it as one.`);
 
 /** A value list by name: in this file, else in the file a relative import
  *  names — `import { X as NAME }` reads `X` there. */

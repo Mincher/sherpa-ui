@@ -41,6 +41,27 @@ function example(tag) {
   return { ...e, html: [e.html].flat().join('') };
 }
 
+/** What it asks its provider for, takes beside its data and presents: a row each. */
+function dataRows(s) {
+  const rows = [];
+  const listed = (v) => [v].flat().flatMap((x) => (x && typeof x === 'object' ? Object.values(x) : [x])).map(code).join(', ');
+  if (s.asks) {
+    const { shape, ...rest } = s.asks;
+    const more = Object.entries(rest).map(([k, v]) => (v === true ? code(k) : `${code(k)} (${listed(v)})`));
+    rows.push(['Asks its provider for', `${code(shape)}${more.length ? `, with ${more.join(', ')}` : ''}`]);
+  }
+  if (s.takes?.length) rows.push(['Takes beside its data', s.takes.map(code).join(', ')]);
+  for (const p of s.presents ?? []) {
+    rows.push([`Presents ${code(p.kind)}`, [
+      p.accepts.length ? `from ${p.accepts.map(code).join(', ')} data` : 'from its own data only',
+      p.slots?.length ? `fills ${p.slots.map(code).join(', ')}` : '',
+      Object.keys(p.is ?? {}).length ? `as ${Object.entries(p.is).map(([a, v]) => code(v ? `${a}="${v}"` : a)).join(' ')}` : '',
+    ].filter(Boolean).join('; ')]);
+  }
+  if (s.settings && !Object.keys(s.settings).length) rows.push(['Settings', "told the app's settings, onto none of its attributes"]);
+  return rows;
+}
+
 /** One component's page, from its spec and its example. */
 export function page(s, ex, tags) {
   const tag = s.$name;
@@ -123,6 +144,14 @@ export function page(s, ex, tags) {
         const dot = k.indexOf('.');
         return [code(`--sherpa-${refToToken(ref)}`), code(`.${k.slice(0, dot)}`), code(k.slice(dot + 1))];
       })), '');
+  }
+  const data = dataRows(s);
+  if (data.length) out.push('## Data', '', table(['', ''], data), '');
+  const settings = Object.entries(s.settings ?? {});
+  if (settings.length) {
+    out.push('## Settings it reads', '', "Each of the app's settings, onto one of its attributes:", '',
+      table(['Setting', 'Attribute'], settings.map(([attr, key]) => [code(key.replace(/^!/, '')),
+        `${code(attr)}${key.startsWith('!') ? ', on while it is off' : ''}`])), '');
   }
   if (s.populate) out.push('## populate()', '', code(s.populate.shape), '', say(s.populate.description), '');
   return `${out.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd()}\n`;

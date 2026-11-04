@@ -87,6 +87,42 @@
         "description": { "type": "string" }
       }
     },
+    "asks": {
+      "description": "What it asks its provider for, as its class's `static asks` says: the shape of its data, and how it takes it. None: a page populates it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shape"],
+      "properties": {
+        "shape": { "$ref": "#/$defs/shape" },
+        "own": { "description": "Events it answers itself, so its source does not act on them.", "type": "array", "items": { "type": "string" } },
+        "keepEmpty": { "description": "Every declared category comes, at zero: a legend.", "type": "boolean" },
+        "picks": {
+          "description": "It picks values of its segment field: the event it fires, and what a pick narrows, its host (a legend's chart) or itself.",
+          "type": "object", "additionalProperties": false, "required": ["event", "narrows"],
+          "properties": { "event": { "type": "string" }, "narrows": { "enum": ["host", "self"] } }
+        },
+        "filters": { "description": "It asks for the filters of the fields it names itself, at run time: a grid, by its columns.", "const": true },
+        "fields": { "description": "It reads only the fields it names itself, at run time; until it names any, every field.", "const": true },
+        "zones": { "description": "Its field's zones come with its value: a gauge.", "type": "boolean" },
+        "stacks": { "description": "It stacks each segment by a Secondary: a bar chart.", "type": "boolean" }
+      }
+    },
+    "takes": {
+      "description": "What it takes from its provider beside its data, as `static takes` lists it.",
+      "type": "array", "uniqueItems": true,
+      "items": { "$ref": "#/$defs/take" }
+    },
+    "presents": {
+      "description": "The kinds Show as offers it as, as `static presents` declares them: one entry per kind.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/presents" }
+    },
+    "settings": {
+      "description": "The app's settings it reads, as `static settings` maps them: each of its attributes → the setting it follows, or `!setting` for an attribute that is on while the setting is off. Empty: it is told the settings, onto none of its attributes.",
+      "type": "object",
+      "propertyNames": { "pattern": "^data-[a-z][a-z0-9-]*$" },
+      "additionalProperties": { "type": "string", "pattern": "^!?[A-Za-z][A-Za-z0-9]*$" }
+    },
     "states": {
       "description": "Each state = a CSS selector + the token {ref}s that selector applies. CSS-owned, JS-free.",
       "type": "array",
@@ -119,6 +155,26 @@
       "description": "A property or a method of the element: what a jsProps or methods entry names, and what a definition's ui configures (defs.v1.json componentConfig).",
       "type": "string", "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*$"
     },
+    "shape": {
+      "description": "The shape of the data a component asks for (DataAsk['shape']): rows, one page; all, every matching row; state, the view state only; scope, its data-scope's slice of the Query; aggregate, segments and series, the summaries its attributes declare.",
+      "enum": ["rows", "all", "state", "scope", "aggregate", "segments", "series"]
+    },
+    "take": {
+      "description": "One thing a component takes beside its data (Take): card, the state of the data it holds; highlight, a hover's matches; counts, its value chips' numbers from a legend.",
+      "enum": ["card", "highlight", "counts"]
+    },
+    "presents": {
+      "description": "One kind of Show as a component draws.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "accepts"],
+      "properties": {
+        "kind": { "description": "Its word: what the Query keeps, and Show as offers.", "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "accepts": { "description": "The shapes of data it can draw another kind's slot from. None: only ever its page's own.", "type": "array", "items": { "$ref": "#/$defs/shape" } },
+        "slots": { "description": "The slots it fills from the element it replaces: a chart's legend.", "type": "array", "items": { "type": "string" } },
+        "is": { "description": "Its attributes as this kind: set when Show as makes it, and what tells one class's kinds apart.", "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    },
     "typeEnum": {
       "description": "The closed set of component-spec node types.",
       "enum": [
@@ -142,9 +198,16 @@
       "type": "string"
     },
     "node": {
-      "description": "One node in the Shadow-DOM anatomy tree (matches the shape compile-def.mjs walks: el/class/part/attrs/slot/component/showWhen/children). A node with only a `slot` key (no `el`/`component`) is a first-class <slot> child node: it carries the slot name plus optional `attrs` (e.g. data-accepts) and renders at its position among siblings. A `slot` key ALONGSIDE `el` is the legacy collapsed form (a lone inline <slot> child of that element, kept for byte-stable output).",
+      "description": "One node in the Shadow-DOM anatomy tree: its parts, and its children.",
+      "$ref": "#/$defs/nodeParts",
+      "properties": {
+        "children": { "type": "array", "items": { "$ref": "#/$defs/node" } }
+      },
+      "unevaluatedProperties": false
+    },
+    "nodeParts": {
+      "description": "An anatomy node's own keys, open so a pattern's layout node (pattern.v1.json) adds its own: the shape compile-def.mjs walks, el/class/part/attrs/slot/component/showWhen. A node with only a `slot` key (no `el`/`component`) is a first-class <slot> child node: it carries the slot name plus optional `attrs` (e.g. data-accepts) and renders at its position among siblings. A `slot` key ALONGSIDE `el` is the legacy collapsed form (a lone inline <slot> child of that element, kept for byte-stable output).",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "el": {
           "description": "The native tag (button, span, div…). Omitted for an owned custom element (`component`) or a bare <slot> child node (`slot` only).",
@@ -171,10 +234,6 @@
         "showWhen": {
           "description": "Only render this node in the named template (e.g. 'removable').",
           "type": "string"
-        },
-        "children": {
-          "type": "array",
-          "items": { "$ref": "#/$defs/node" }
         }
       }
     },

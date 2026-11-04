@@ -181,6 +181,10 @@ Visibility is a host attribute that CSS selects (PRINCIPLES 16):
 - Anatomy has three forms: `root`, `roots` (two or more sibling roots) and
   `byTemplate` (templates that are different trees). A composed child is a node
   whose `el` is a `sherpa-*` tag.
+- Data: `static asks`, `takes`, `presents` and `settings` become the spec's
+  `asks`, `takes`, `presents` (always a list) and `settings`, read as literals by
+  TypeScript's parser. A function in an ask (`filters`, `fields`) is `true`: the
+  element names those itself. A value that is not a literal stops the generator.
 - `npm run spec:check` has three halves: validate (the schema, and each token
   ref resolves), round-trip and fresh.
   `node scripts/resync-figma.mjs <live-figma.json> --check` reports drift from

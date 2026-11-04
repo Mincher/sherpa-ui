@@ -103,6 +103,13 @@ What each class's base rule reads:
 | `--sherpa-display-mode-size-sm` | `.hotspot` | `inline-size` |
 | `--sherpa-display-mode-size-sm` | `.hotspot` | `block-size` |
 
+## Data
+
+|  |  |
+|---|---|
+| Asks its provider for | `series` |
+| Presents `line` | from its own data only; fills `legend` |
+
 ## populate()
 
 `{ labels, series }`

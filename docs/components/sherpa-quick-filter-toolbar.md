@@ -220,6 +220,38 @@ What each class's base rule reads:
 | `--sherpa-display-mode-border-width-base` | `.scope-rule` | `border-block-start` |
 | `--sherpa-theme-padding-lg` | `.local-heading` | `padding-inline` |
 
+## Data
+
+|  |  |
+|---|---|
+| Asks its provider for | `scope` |
+| Takes beside its data | `counts` |
+
+## Settings it reads
+
+Each of the app's settings, onto one of its attributes:
+
+| Setting | Attribute |
+|---|---|
+| `limitOptions` | `data-limit-options` |
+| `hideUnmatched` | `data-hide-unmatched` |
+| `results` | `data-no-results`, on while it is off |
+| `countApplied` | `data-count-applied` |
+| `savedMenu` | `data-saved-menu` |
+| `switchable` | `data-switchable` |
+| `sectionLabels` | `data-no-section-labels`, on while it is off |
+| `hideOrganiseLabels` | `data-no-organise-labels` |
+| `sections` | `data-no-sections`, on while it is off |
+| `highlightOnHover` | `data-highlight-hover` |
+| `singleApply` | `data-field-apply`, on while it is off |
+| `reorderFilters` | `data-reorder` |
+| `moveFilters` | `data-move-filters` |
+| `allowSolo` | `data-allow-solo` |
+| `soloAcrossScopes` | `data-solo-across` |
+| `soloInHeader` | `data-solo-header` |
+| `labelColumn` | `data-label-column` |
+| `countEveryValue` | `data-every-count` |
+
 ## populate()
 
 `[{ id, label, type?, active?, icon?, options? }]`

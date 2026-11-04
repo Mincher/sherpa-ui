@@ -192,6 +192,9 @@
     "shape": "{ locked?, page?, pageSize?, rowsOptions?, totalPages? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
+  "asks": {
+    "shape": "state"
+  },
   "states": [
     {
       "$type": "state",

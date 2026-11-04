@@ -59,6 +59,14 @@ export function partsOf(node, out = new Set()) {
 
 const described = (text) => (text ? { description: text } : {});
 
+/** An attribute's description, and the app's setting it follows, where one does. */
+function attrSays(s, p) {
+  const key = s.settings?.[p.name];
+  const follows = !key ? '' : key.startsWith('!') ? `On while the app's \`${key.slice(1)}\` setting is off.`
+    : `It follows the app's \`${key}\` setting.`;
+  return follows && p.description ? `${p.description.replace(/(?<![.!?])$/, '.')} ${follows}` : p.description || follows;
+}
+
 /** The Custom Elements Manifest (schema 2.1.0) for every component. */
 export function manifest(all = specs()) {
   return {
@@ -76,7 +84,7 @@ export function manifest(all = specs()) {
         ...described(s.$description),
         attributes: (s.props ?? []).map((p) => ({
           name: p.name,
-          ...described(p.description),
+          ...described(attrSays(s, p)),
           type: { text: typeOf(p) },
           ...(p.default != null ? { default: JSON.stringify(p.default) } : {}),
         })),
@@ -137,7 +145,7 @@ export function htmlData(all = specs()) {
       description: s.$description ?? '',
       attributes: (s.props ?? []).map((p) => ({
         name: p.name,
-        ...described(p.description),
+        ...described(attrSays(s, p)),
         ...(p.values?.length ? { values: p.values.map((v) => ({ name: String(v) })) } : {}),
         ...(p.type === 'boolean' ? { valueSet: 'v' } : {}),
       })),
