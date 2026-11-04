@@ -120,6 +120,7 @@ export {
 export {
   FALSE_SOCKET,
   NODE_KINDS,
+  ROWS,
   SOCKET_WORDS,
   accepts,
   placed,
@@ -147,12 +148,15 @@ export {
 export {
   checkWorkflow,
   editWorkflow,
+  readWorkflow,
   workflowFaults,
   workflowGraph,
   type WorkflowDefinition,
+  type WorkflowDefinitionV1,
   type WorkflowEdit,
   type WorkflowFacts,
   type WorkflowNode,
+  type WorkflowRead,
 } from './core/data/workflow.js';
 /* The data layer over HTTP: one handle() for the page, a Service Worker or a server. Plan 652 */
 export {

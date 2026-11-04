@@ -30,7 +30,7 @@ import { answerTree, typedValue, type FieldReading, type FieldType } from './fil
 import { readingsOf, treeReading } from './where.js';
 import { presetHeld } from './query-edits.js';
 import type { FieldDomain } from './validate.js';
-import { NODE_KINDS, kindNode, rowChoices, socketOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeRoute } from './node-kinds.js';
+import { NODE_KINDS, ROWS, kindNode, rowChoices, socketOf, type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeRoute } from './node-kinds.js';
 import { traceStep, type Span, type TraceContext } from './trace.js';
 import type { Walk } from './walk.js';
 
@@ -148,7 +148,10 @@ export interface QueryGraphFacts {
 const PICK_OPS: readonly FilterOp[] = ['in', 'notin', 'eq', 'ne'];
 
 /** The scope's filter Switch: the kind's own row, before its presets and fields. */
-const SWITCH = NODE_KINDS['scope']!.rows[0]!.name;
+const SWITCH = '#filters';
+
+/** Where a node sends its data rows on: its Rows row. Plan 713 §3 */
+const sent = (node: string): string => `${node}/${ROWS.name}`;
 
 /** Why a row is read only: nothing outside the editor takes its change. */
 const FROM_DEFINITION = 'The page definition sets it: Save writes the definition.';
@@ -234,7 +237,7 @@ function presentationRows(
 ): GraphRow[] {
   const kinds = rowChoices({ control: 'presentation' })!.map((c) => (c.value || !kind ? c : { ...c, label: `Default (${kind})` }));
   const sorts = [{ value: '', label: 'None' }, ...rowChoices({ control: 'direction' })!];
-  return rowsOf('presentation', { ...presented, kind: presented.kind ?? '' }).map((row): GraphRow => (slot
+  return rowsOf('presentation', { ...presented, kind: presented.kind ?? '' }).map((row): GraphRow => (row.name === ROWS.name ? row : slot
     ? { ...row, editable: true, choices: row.name === 'kind' ? kinds : row.name === 'sort' ? sorts : keys, value: String(row.value ?? '') }
     : { ...row, value: row.name === 'kind' ? kind : row.value, hint: 'It shares the View: no slot keeps its own.' }));
 }
@@ -267,23 +270,23 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   const presetsOf = (scope: string): readonly ScopePreset[] => facts.presets?.(scope)
     ?? (definition.source?.scopes?.[scope]?.presets ?? []).map((p) => ({ id: p.id, label: p.label, readings: readingsOf(p.where, typed) }));
 
-  // Store ─▶ each status field it works out ─▶ Source.
+  // Store ─▶ each status field it works out ─▶ Source: the rows go Rows row to header.
   const source = definition.source;
-  add(0, QUERY_NODE.store, 'store', rowsOf('store', { store: source?.store }).map((row) => ({ ...row, hint: FROM_DEFINITION })), { heading: source?.store ?? 'Store' });
+  add(0, QUERY_NODE.store, 'store', rowsOf('store', { store: source?.store }).map((row) => (row.name === ROWS.name ? row : { ...row, hint: FROM_DEFINITION })), { heading: source?.store ?? 'Store' });
   const statuses = Object.entries(facts.domains ?? {}).filter(([, d]) => d.when || d.statuses);
   for (const [field, domain] of statuses) {
     const rows = (domain.values ?? []).map(String).map((value): GraphRow => {
       const when = domain.when?.[value];
       return { name: value, label: value, value: when ? said(when, label) : 'every row the values before it left', hint: FROM_STORE };
     });
-    routes.push({ from: QUERY_NODE.store, to: add(1, `status-${field}`, 'status', rows, { heading: label(field), ref: { field } }) });
+    routes.push({ from: sent(QUERY_NODE.store), to: add(1, `status-${field}`, 'status', [...rowsOf('status', {}), ...rows], { heading: label(field), ref: { field } }) });
   }
   // Its page size changes live; the rest is the definition's, until Save.
   add(2, QUERY_NODE.source, 'source', rowsOf('source', {
     pageSize: facts.pageSize ?? source?.pageSize, search: source?.search?.join(', '), applyOn: source?.applyOn ?? 'change',
-  }).map((row) => (row.name === 'pageSize' ? { ...row, editable: true } : { ...row, hint: FROM_DEFINITION })));
-  if (statuses.length) for (const [field] of statuses) routes.push({ from: `status-${field}`, to: QUERY_NODE.source });
-  else routes.push({ from: QUERY_NODE.store, to: QUERY_NODE.source });
+  }).map((row) => (row.name === 'pageSize' ? { ...row, editable: true } : row.name === ROWS.name ? row : { ...row, hint: FROM_DEFINITION })));
+  if (statuses.length) for (const [field] of statuses) routes.push({ from: sent(`status-${field}`), to: QUERY_NODE.source });
+  else routes.push({ from: sent(QUERY_NODE.store), to: QUERY_NODE.source });
 
   // Each scope — and one its definition gives presets, held or not.
   const scopes = Object.entries(query.scopes);
@@ -311,17 +314,18 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
     // Its name: the definition's, else the one component that reads it.
     const named = source?.scopes?.[id]?.label
       ?? (components.find((c) => c.id === id) ?? (shows.length === 1 ? shows[0] : undefined))?.label;
+    // Each preset's and each condition's True comes into its row.
     const rows: GraphRow[] = [
-      ...rowsOf('scope', { [SWITCH]: !scope.suspended }).map((row) => ({ ...row, editable: true })),
-      ...presets.map((p): GraphRow => ({ name: `@${p.id}`, label: p.label, input: 'value' })),
-      ...fields.map((f): GraphRow => ({ name: f, label: label(f), input: 'value' })),
+      ...rowsOf('scope', { [SWITCH]: !scope.suspended }).map((row) => (row.name === SWITCH ? { ...row, editable: true } : row)),
+      ...presets.map((p): GraphRow => ({ name: `@${p.id}`, label: p.label, input: 'boolean' })),
+      ...fields.map((f): GraphRow => ({ name: f, label: label(f), input: 'boolean' })),
     ];
     const node = add(top ? 4 : 6, QUERY_NODE.scope(id), 'scope', rows, {
       heading: named ?? (top ? 'View' : id),
       description: `${scope.holds.length} held${scope.suspended ? ' · filters off' : ''}`,
       ref: { scope: id },
     });
-    routes.push({ from: top || !view ? QUERY_NODE.source : QUERY_NODE.scope(VIEW), to: node });
+    routes.push({ from: sent(top || !view ? QUERY_NODE.source : QUERY_NODE.scope(VIEW)), to: node });
     // Each preset, and each saved filter on its bar: on or off, and what it writes.
     for (const p of presets) {
       const saved = p.id.startsWith(SAVED_PRESET);
@@ -360,10 +364,10 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       // Sort, Group and Search change as their chips do.
       out = add(7, QUERY_NODE.arrange(id), 'arrange', rowsOf('arrange', {
         sort: first?.field ?? '', direction: first?.direction ?? 'asc', group: scope.group ?? '', search: scope.search ?? '',
-      }).map((row) => (row.name === 'search' ? { ...row, editable: true } : { ...row, editable: true, choices: row.name === 'direction' ? rowChoices(row)! : keys })), {
+      }).map((row) => (row.name === ROWS.name ? row : row.name === 'search' ? { ...row, editable: true } : { ...row, editable: true, choices: row.name === 'direction' ? rowChoices(row)! : keys })), {
         ref: { scope: id },
       });
-      routes.push({ from: node, to: out });
+      routes.push({ from: sent(node), to: out });
     }
     // Each component its own Presentation: its SLOT's — its card's scope, kept in the
     // Query — and changed as Show as, Group and Sort change it. On the View it has no slot.
@@ -373,13 +377,13 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       let to = out;
       if (presented || c.kind) {
         to = add(8, `show-${c.id}`, 'presentation', presentationRows(presented ?? {}, c.kind, keys, slot), slot ? { ref: { scope: id } } : {});
-        routes.push({ from: out, to });
+        routes.push({ from: sent(out), to });
       }
-      routes.push({ from: to, to: add(9, QUERY_NODE.component(c.id), 'component', [], { heading: c.label, ref: { component: c.id, scope: id } }) });
+      routes.push({ from: sent(to), to: add(9, QUERY_NODE.component(c.id), 'component', [], { heading: c.label, ref: { component: c.id, scope: id } }) });
     }
     // A slot's presentation with no component named to show it is still drawn.
     if (scope.presentation && !shows.length) {
-      routes.push({ from: out, to: add(8, `show-${id}`, 'presentation', presentationRows(scope.presentation, undefined, keys, !top), { ref: { scope: id } }) });
+      routes.push({ from: sent(out), to: add(8, `show-${id}`, 'presentation', presentationRows(scope.presentation, undefined, keys, !top), { ref: { scope: id } }) });
     }
   }
   // The page's own saved filters on no bar: what each would add, and no route.
@@ -461,8 +465,9 @@ export function routeRequest(graph: DrawnGraph, { from, to }: NodeRoute, facts: 
   const scope = was?.ref?.['scope'];
   const old = was?.ref?.['field'];
   const there = target?.ref?.['scope'];
-  if (was?.kind !== 'condition' || was.ref?.['superseded'] || target?.kind !== 'scope' || !field || field.startsWith('@') || !scope || !old || !there) {
-    return { refused: `The Query has no route from "${was?.heading ?? from}" to "${target?.heading ?? to}": a condition goes into a field of a scope.` };
+  // A condition's True: its header. Its False says nothing a scope's field takes.
+  if (was?.kind !== 'condition' || socketOf(from).row !== undefined || was.ref?.['superseded'] || target?.kind !== 'scope' || !field || field.startsWith('@') || !scope || !old || !there) {
+    return { refused: `The Query has no route from "${was?.heading ?? from}" to "${target?.heading ?? to}": a condition's True goes into a field of a scope.` };
   }
   if (scope === there && old === field) return null;
   const rows = Object.fromEntries(was.rows.map((r) => [r.name, r.value]));

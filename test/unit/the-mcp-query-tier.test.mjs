@@ -215,7 +215,7 @@ test('edit_query_graph refuses a dangling node, a row no command takes and a rou
   assert.match(readOnly.text, /No command takes "Search fields" on "Source": The page definition sets it/);
   const route = await call('edit_query_graph', { ...at, edits: [{ from: 'store', to: 'scope-view/region' }] });
   assert.equal(route.bad, true);
-  assert.match(route.text, /The Query has no route from "customers" to "View Context": a condition goes into a field of a scope\./);
+  assert.match(route.text, /The Query has no route from "customers" to "View Context": a condition's True goes into a field of a scope\./);
 });
 
 test('workflow_graph is workflowGraph with its faults and the kinds a workflow runs', { skip }, async () => {

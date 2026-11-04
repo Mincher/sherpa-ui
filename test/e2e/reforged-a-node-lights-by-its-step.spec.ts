@@ -116,11 +116,11 @@ test('a worker\'s span from another context lights the same node, joined by its 
 const FLOW = `async () => {
   const { bindWorkflow } = await import('/dist/app.js');
   const canvas = document.querySelector('#root sherpa-layout-canvas');
-  const flow = { v: 1, id: 'active-customers', nodes: [
+  const flow = { v: 2, id: 'active-customers', nodes: [
     { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'filter', kind: 'filter', x: 360, y: 0, values: { field: 'status', op: 'eq', value: 'active' } },
     { id: 'end', kind: 'output', x: 720, y: 0 },
-  ], routes: [{ from: 'start', to: 'filter' }, { from: 'filter', to: 'end' }] };
+  ], routes: [{ from: 'start/rows', to: 'filter' }, { from: 'filter/rows', to: 'end' }] };
   window.editor = bindWorkflow(canvas, flow, { fields: { status: { label: 'Status' } }, stores: ['customers'] });
   await window.__settled();
 }`;

@@ -138,15 +138,15 @@ Each edit as the Node Editor makes it: a row's new value, `{ "node": "when-view-
 
 #### `workflow_graph` — Draw a workflow as nodes
 
-A workflow definition (workflow.v1) as nodes and routes (`workflowGraph`) — each node its kind's header, sockets and rows with their values and choices, at its own place — with every fault `checkWorkflow` reports (a node, a kind, a value or a route that cannot be), and the kinds a workflow runs, from `NODE_KINDS`. Edit it with edit_workflow.
+A workflow definition (workflow.v2; a v1 is read as one, `readWorkflow`) as nodes and routes (`workflowGraph`) — each node its kind's header, sockets and rows with their values and choices, at its own place — with every fault `checkWorkflow` reports (a node, a kind, a value or a route that cannot be), and the kinds a workflow runs, from `NODE_KINDS`. Edit it with edit_workflow.
 
-- `workflow` — The workflow definition, as its JSON: `{ "v": 1, "id", "nodes", "routes" }`
+- `workflow` — The workflow definition, as its JSON: `{ "v": 2, "id", "nodes", "routes" }`
 - `fields` (optional) — The fields a Field row picks, by name: a page definition's `source.fields`
 - `stores` (optional) — The stores a Store row picks, by the names the app gives them
 
 #### `edit_workflow` — Edit a workflow
 
-A workflow after each edit (`editWorkflow`), checked by `checkWorkflow`. An edit is a row's value, `{ "node": "status", "row": "value", "value": "trial" }`; a node's own name, line or place, `{ "node": "filter", "set": { "heading": "Active only", "x": 400 } }`; a route made into an input, in place of the one there (beside it, where the input takes `many`), `{ "route": { "from": "status/value", "to": "filter/value" } }`; or routes cut, each by the input it enters, `{ "cut": "filter/value" }`, or one, `{ "cut": { "from", "to" } }`. A value is typed as its row takes it. An edit to a node the workflow has not got is refused.
+A workflow after each edit (`editWorkflow`), checked by `checkWorkflow`: a v2, a v1 read as one first. An edit is a row's value, `{ "node": "status", "row": "value", "value": "trial" }`; a node's own name, line or place, `{ "node": "filter", "set": { "heading": "Active only", "x": 400 } }`; a route made into an input, in place of the one there (beside it, where the input takes `many`), `{ "route": { "from": "status/value", "to": "filter/value" } }`; or routes cut, each by the input it enters, `{ "cut": "filter/value" }`, or one, `{ "cut": { "from", "to" } }`. A value is typed as its row takes it. An edit to a node the workflow has not got is refused.
 
 - `workflow` — The workflow definition, as its JSON
 - `edits` — Each a WorkflowEdit, in turn

@@ -31,7 +31,7 @@ One JSON document per page. The same rule as a View: **a definition is data**
 (`T-a-view-is-json`), so a service or an agent can read and write it. Its schema
 is `schemas/page.v1.json`, and every shape in it — a field, a scope, a condition,
 a saved filter, a component's config — is `schemas/defs.v1.json`'s, the one
-library `app.v1`, `views.v1` and `workflow.v1` use too.
+library `app.v1`, `views.v1` and `workflow.v2` use too.
 
 ```json
 {

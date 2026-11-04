@@ -39,12 +39,12 @@ import { OP_LABELS, valueKey, type FilterOp } from '../data/store.js';
 import { report } from '../data/report.js';
 import { typedValue, type FieldType } from '../data/filter-state.js';
 import {
-  NODE_KINDS, placed, socketOf,
+  FALSE_SOCKET, NODE_KINDS, placed, socketOf, socketType,
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeRoute,
 } from '../data/node-kinds.js';
 import {
-  checkWorkflow, editWorkflow, workflowFaults, workflowGraph,
-  type WorkflowDefinition, type WorkflowFacts, type WorkflowNode,
+  checkWorkflow, editWorkflow, readWorkflow, workflowFaults, workflowGraph,
+  type WorkflowDefinition, type WorkflowDefinitionV1, type WorkflowFacts, type WorkflowNode,
 } from '../data/workflow.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -184,6 +184,8 @@ function curve([x1, y1]: [number, number], [x2, y2]: [number, number]): string {
 function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
   const end = (address: string, side: SocketSide): DOMRect | null => {
     const { node, row } = socketOf(address);
+    // A False leaves the footer, which sherpa-node draws (plan 713 M2): until it does, no line.
+    if (row === FALSE_SOCKET) return null;
     const el = (row === undefined ? drawn.nodes.get(node) : drawn.rows.get(address)) as HasSockets | undefined;
     return el?.socketRect?.(side) ?? null;
   };
@@ -347,8 +349,9 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: DrawnGraph, options
     el.setAttribute('data-heading', node.heading);
     put(el, 'data-icon', node.icon);
     put(el, 'data-description', node.description);
-    put(el, 'data-input-socket', node.input);
-    put(el, 'data-output-socket', node.output);
+    // Its data in, of any type; out, its True where it forks.
+    put(el, 'data-input-socket', socketType(node, undefined, 'input'));
+    put(el, 'data-output-socket', socketType(node, undefined, 'output'));
     drawRows(drawn, el, node);
   }
   drawn.routes = graph.routes;
@@ -487,7 +490,7 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   const name = (address: string): string => {
     const { node: id, row } = socketOf(address);
     const from = graph.nodes.find((n) => n.id === id);
-    const part = row ? from?.rows.find((r) => r.name === row)?.label : undefined;
+    const part = row === FALSE_SOCKET ? 'False' : row ? from?.rows.find((r) => r.name === row)?.label : from?.branches && address === from.id ? 'True' : undefined;
     return [from?.heading ?? id, part].filter(Boolean).join(' › ');
   };
   const routed = driven(graph);
@@ -501,12 +504,13 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
     fields.set(field, row);
     return field;
   });
-  // The whole node's routes, in and out.
+  // The whole node's routes: in, and out — its True and False where it forks.
   const header = document.createElement('sherpa-key-value-list');
   header.setAttribute('data-orientation', 'vertical');
   const whole = [
     ...graph.routes.filter((r) => r.to === node.id).map((r) => ({ key: 'In', value: name(r.from) })),
-    ...graph.routes.filter((r) => r.from === node.id).map((r) => ({ key: 'Out', value: name(r.to) })),
+    ...graph.routes.filter((r) => r.from === node.id).map((r) => ({ key: node.branches ? 'True' : 'Out', value: name(r.to) })),
+    ...graph.routes.filter((r) => r.from === `${node.id}/${FALSE_SOCKET}`).map((r) => ({ key: 'False', value: name(r.to) })),
   ];
   const stack = document.createElement('sherpa-stack');
   stack.setAttribute('data-gap', 'lg');
@@ -727,17 +731,23 @@ const OWN: Readonly<Record<string, keyof Pick<WorkflowNode, 'heading' | 'descrip
 
 /** Keep a workflow's draft drawn on a canvas, and write each edit to it as a pure edit:
  *  a value, a move, a route, a node's own name. A route that would break the workflow is
- *  refused, and says why. N4 runs the draft. TRAP T-a-workflow-is-its-definition */
+ *  refused, and says why. A v1 — given, or a tab's draft — is read once as v2, and Save
+ *  hands over the v2. N4 runs the draft. TRAP T-a-workflow-is-its-definition */
 export function bindWorkflow(
-  canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition,
+  canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition | WorkflowDefinitionV1,
   { inspector, session, kinds = NODE_KINDS, ...facts }: WorkflowEditorOptions = {},
 ): GraphEditor {
   const pointer = `/workflows/${workflow.id}`;
-  const isDraft = (v: unknown): v is WorkflowDefinition =>
-    !!v && typeof v === 'object' && (v as WorkflowDefinition).v === 1 && (v as WorkflowDefinition).id === workflow.id && Array.isArray((v as WorkflowDefinition).nodes);
+  const isDraft = (v: unknown): v is WorkflowDefinition | WorkflowDefinitionV1 => {
+    const d = v as { v?: unknown; id?: unknown; nodes?: unknown } | null;
+    return !!d && typeof d === 'object' && (d.v === 2 || d.v === 1) && d.id === workflow.id && Array.isArray(d.nodes);
+  };
   session?.persist(pointer, { shared: false, guard: isDraft });
-  // This tab's draft wins: a reload loses nothing.
-  let draft: WorkflowDefinition = (session?.get(pointer) as WorkflowDefinition | undefined) ?? structuredClone(workflow);
+  // This tab's draft wins: a reload loses nothing. What a v1's read cannot map is said once.
+  const kept = session?.get(pointer) as WorkflowDefinition | WorkflowDefinitionV1 | undefined;
+  const read = readWorkflow(kept ?? structuredClone(workflow), kinds);
+  for (const fault of read.faults) report({ code: 'workflow-definition', message: `bindWorkflow: ${fault}.`, at: { workflow: workflow.id } });
+  let draft: WorkflowDefinition = read.workflow ?? { v: 2, id: workflow.id, nodes: [] };
   let graph: DrawnGraph = { nodes: [], routes: [] };
   const write = (next: WorkflowDefinition): void => {
     draft = next;

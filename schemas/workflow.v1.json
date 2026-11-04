@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sherpa-ui.dev/schemas/workflow.v1.json",
-  "title": "Sherpa-UI workflow definition",
-  "description": "One workflow, as JSON: its nodes, their values, and the routes between their sockets. What each node IS comes from its kind. checkWorkflow() reads it. docs/history/plan-78-workflow-data.md",
+  "title": "Sherpa-UI workflow definition, v1 (read as v2)",
+  "description": "A workflow as v1 saved it: its data rows left from a node's header. Kept for a file saved before v2: readWorkflow() reads it ONCE as a workflow.v2, each such route moved to its node's Rows row, and a v2 is what is saved. docs/history/plan-713-node-model.md (D8)",
   "type": "object",
   "additionalProperties": false,
   "required": ["v", "id", "nodes"],

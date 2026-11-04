@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sherpa-ui.dev/schemas/defs.v1.json",
   "title": "Sherpa-UI definition shapes",
-  "description": "Every shape a definition is made of, said once: page.v1, app.v1, views.v1 and workflow.v1 $ref these, and define none of their own.",
+  "description": "Every shape a definition is made of, said once: page.v1, app.v1, views.v1 and workflow.v2 (and the v1 it reads) $ref these, and define none of their own.",
   "$defs": {
     "id": {
       "description": "A name a URL or a store files things under.",
@@ -342,7 +342,7 @@
       }
     },
     "route": {
-      "description": "Joins an output socket to an input socket that accepts its type: a value, an object or a boolean into its own type, or into an input that takes any. NODE_KINDS says each socket's type. An input takes one route, unless it takes many.",
+      "description": "Joins an output socket to an input socket that accepts its type: a value, an object or a boolean into its own type, or into an input that takes any. NODE_KINDS says each socket's type. A node's data comes in on its header, which takes any, and leaves from its Rows row (\"node/rows\"), which only sends; where it forks, its header sends True and \"node/#false\" False. An input takes one route, unless it takes many.",
       "type": "object",
       "additionalProperties": false,
       "required": ["from", "to"],
@@ -352,7 +352,7 @@
       }
     },
     "socket": {
-      "description": "A node's header socket, \"node\" (its output is True, where the node forks); a row's, \"node/row\"; or its footer's False, \"node/#false\".",
+      "description": "A node's header socket, \"node\" (its input is its data; its output is True, where the node forks); a row's, \"node/row\" (\"node/rows\" sends its data rows); or its footer's False, \"node/#false\".",
       "type": "string", "pattern": "^[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|#false))?$"
     }
   }

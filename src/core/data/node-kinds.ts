@@ -13,6 +13,7 @@
  * - RowKind — One row a kind draws: its name, its label, its control and its sockets.
  * - NodeGraph — Where a kind is drawn: a page's Query, or a workflow.
  * - NodeKind — What a node IS: its header, its sockets, its rows, and what it stands for in the data layer.
+ * - ROWS — The Rows row: the data rows a node sends on. They come in on its header.
  * - NODE_KINDS — Every kind the library ships, once. An app adds its own beside them.
  * - Socket — A socket address, read: its node, and its row or none for the header's.
  * - socketOf — Read a socket address: `node`, the header's, or `node/row`.
@@ -88,7 +89,8 @@ export interface NodeKind {
   heading: string;
   icon: string;
   description?: string;
-  /** The whole node's sockets, on its header. With `branches`, its output is True. */
+  /** The whole node's sockets, on its header. Its input is its DATA, of any type (D1): its rows
+   *  and values say what it does with it. With `branches`, its output is True. */
   input?: SocketType;
   /** Its header input takes several routes (D4). */
   many?: true;
@@ -102,33 +104,41 @@ export interface NodeKind {
   graphs: readonly NodeGraph[];
 }
 
-/** Every kind the library ships, once. An app adds its own beside them: `{ ...NODE_KINDS, mine }`. */
+/** The Rows row: the data rows a node sends on, an object. They come in on its header (D1);
+ *  it is first on each kind that gives them. Plan 713 §3 */
+export const ROWS: Readonly<RowKind> = { name: 'rows', label: 'Rows', output: 'object' };
+
+/** Every kind the library ships, once. An app adds its own beside them: `{ ...NODE_KINDS, mine }`.
+ *  A kind a workflow runs forks (`branches`): its True and False say whether it gave anything
+ *  (D2). The Query's own steps do not: nothing routes a branch from them. */
 export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   store: {
-    heading: 'Store', icon: 'storage', description: 'Where the rows come from.', output: 'object',
-    rows: [{ name: 'store', label: 'Store', control: 'store' }], model: 'Store', graphs: ['query', 'workflow'],
+    heading: 'Store', icon: 'storage', description: 'Where the rows come from.', branches: true,
+    rows: [ROWS, { name: 'store', label: 'Store', control: 'store' }], model: 'Store', graphs: ['query', 'workflow'],
   },
   // A page's Query: its rows read left to right, as the data flows.
   status: {
     heading: 'Status field', icon: 'status-ok', description: 'Each row given a value by conditions on its other fields.',
-    input: 'object', output: 'object', rows: [], model: 'StatusField', graphs: ['query'],
+    input: 'any', rows: [ROWS], model: 'StatusField', graphs: ['query'],
   },
   source: {
-    heading: 'Source', icon: 'server', description: 'How the page reads its store.', input: 'object', output: 'object',
+    heading: 'Source', icon: 'server', description: 'How the page reads its store.', input: 'any',
     rows: [
+      ROWS,
       { name: 'pageSize', label: 'Page size', control: 'number' },
       { name: 'search', label: 'Search fields', control: 'text' },
       { name: 'applyOn', label: 'Apply on', control: 'text' },
     ],
     model: 'SourceDefinition', graphs: ['query'],
   },
-  // Its Switch, then a row per preset and per field it holds, each with an input.
+  // Its Switch, then a row per preset and per field it holds, each with a boolean input: a True.
   scope: {
-    heading: 'Scope', icon: 'filter', input: 'object', output: 'object',
-    rows: [{ name: '#filters', label: 'Filters', control: 'switch' }], model: 'ScopeQuery', graphs: ['query'],
+    heading: 'Scope', icon: 'filter', input: 'any',
+    rows: [ROWS, { name: '#filters', label: 'Filters', control: 'switch' }], model: 'ScopeQuery', graphs: ['query'],
   },
+  // Its True goes into its scope's row for the field.
   condition: {
-    heading: 'Condition', icon: 'function', output: 'value',
+    heading: 'Condition', icon: 'function', branches: true,
     rows: [
       { name: 'field', label: 'Field', control: 'field' },
       { name: 'op', label: 'Condition', control: 'op' },
@@ -138,16 +148,17 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   },
   // Its on, then each field it writes.
   preset: {
-    heading: 'Preset', icon: 'star', description: 'The app\'s own named conditions: a chip leading its scope.', output: 'value',
+    heading: 'Preset', icon: 'star', description: 'The app\'s own named conditions: a chip leading its scope.', branches: true,
     rows: [{ name: 'on', label: 'On', control: 'switch' }], model: 'ScopeDefinition.presets', graphs: ['query'],
   },
   saved: {
-    heading: 'Saved filter', icon: 'floppy-disk', description: 'Filters kept under one name: a preset the reader made.', output: 'value',
+    heading: 'Saved filter', icon: 'floppy-disk', description: 'Filters kept under one name: a preset the reader made.', branches: true,
     rows: [{ name: 'on', label: 'On', control: 'switch' }], model: 'SavedFilter', graphs: ['query'],
   },
   arrange: {
-    heading: 'Arrange', icon: 'sort-ascending', description: 'The rows\' order, groups and search.', input: 'object', output: 'object',
+    heading: 'Arrange', icon: 'sort-ascending', description: 'The rows\' order, groups and search.', input: 'any',
     rows: [
+      ROWS,
       { name: 'sort', label: 'Sort', control: 'field' },
       { name: 'direction', label: 'Direction', control: 'direction' },
       { name: 'group', label: 'Group', control: 'field' },
@@ -156,8 +167,9 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     model: 'Arrangement', graphs: ['query'],
   },
   presentation: {
-    heading: 'Presentation', icon: 'insights', description: 'How a slot shows its rows.', input: 'object', output: 'object',
+    heading: 'Presentation', icon: 'insights', description: 'How a slot shows its rows.', input: 'any',
     rows: [
+      ROWS,
       { name: 'kind', label: 'Show as', control: 'presentation' },
       { name: 'primary', label: 'Primary', control: 'field' },
       { name: 'secondary', label: 'Secondary', control: 'field' },
@@ -166,20 +178,22 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     ],
     model: 'Presentation', graphs: ['query'],
   },
-  component: { heading: 'Component', icon: 'table-columns', input: 'object', rows: [], model: 'bindSource', graphs: ['query'] },
+  component: { heading: 'Component', icon: 'table-columns', input: 'any', rows: [], model: 'bindSource', graphs: ['query'] },
   // A workflow: each kind over the data-layer function it runs by.
   value: {
-    heading: 'Value', icon: 'function', description: 'One value, typed.',
+    heading: 'Value', icon: 'function', description: 'One value, typed.', branches: true,
     rows: [{ name: 'value', label: 'Value', control: 'text', output: 'value' }], model: 'typedValue', graphs: ['workflow'],
   },
   pick: {
-    heading: 'Pick', icon: 'price-tag', description: 'One field of the input.', input: 'object',
+    heading: 'Pick', icon: 'price-tag', description: 'One field of the input.', input: 'any', branches: true,
     rows: [{ name: 'field', label: 'Field', control: 'field', output: 'value' }], model: 'readField', graphs: ['workflow'],
   },
-  // Its rows are one condition, `{ field, op, value }`: the condition tree's leaf.
+  // Its rows are one condition, `{ field, op, value }`: the condition tree's leaf. Its Rows, the
+  // rows that match: True takes them, False the rest.
   filter: {
-    heading: 'Filter', icon: 'filter', description: 'The rows that match.', input: 'object', output: 'object',
+    heading: 'Filter', icon: 'filter', description: 'The rows that match.', input: 'any', branches: true,
     rows: [
+      ROWS,
       { name: 'field', label: 'Field', control: 'field' },
       { name: 'op', label: 'Condition', control: 'op' },
       { name: 'value', label: 'Value', control: 'text', input: 'value' },
@@ -188,23 +202,24 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     model: 'filterRows', graphs: ['workflow'],
   },
   sort: {
-    heading: 'Sort', icon: 'sort-ascending', description: 'The rows in order.', input: 'object', output: 'object',
+    heading: 'Sort', icon: 'sort-ascending', description: 'The rows in order.', input: 'any', branches: true,
     rows: [
+      ROWS,
       { name: 'field', label: 'Field', control: 'field' },
       { name: 'direction', label: 'Direction', control: 'direction' },
     ],
     model: 'sortRows', graphs: ['workflow'],
   },
   group: {
-    heading: 'Group', icon: 'group', description: 'The rows by a field.', input: 'object', output: 'object',
-    rows: [{ name: 'field', label: 'Field', control: 'field' }], model: 'groupRows', graphs: ['workflow'],
+    heading: 'Group', icon: 'group', description: 'The rows by a field.', input: 'any', branches: true,
+    rows: [ROWS, { name: 'field', label: 'Field', control: 'field' }], model: 'groupRows', graphs: ['workflow'],
   },
   count: {
-    heading: 'Count', icon: 'insights', description: 'How many rows.', input: 'object',
+    heading: 'Count', icon: 'insights', description: 'How many rows.', input: 'any', branches: true,
     rows: [{ name: 'count', label: 'Count', output: 'value' }], model: 'reduceRows', graphs: ['workflow'],
   },
   output: {
-    heading: 'Output', icon: 'flag', description: 'Where the flow ends.', input: 'object', rows: [], model: 'LoadResult', graphs: ['workflow'],
+    heading: 'Output', icon: 'flag', description: 'Where the flow ends.', input: 'any', rows: [], model: 'LoadResult', graphs: ['workflow'],
   },
 };
 
@@ -223,16 +238,19 @@ export function socketOf(address: string): Socket {
 /** The footer's False, as an address names it after its node: `node/#false`. A `#` part is no row. */
 export const FALSE_SOCKET = '#false';
 
-/** The type one socket of a kind carries — its header's (no row), a row's, or its footer's
- *  False — on one side; none, it has no such socket. */
-export function socketType(kind: NodeKind, row: string | undefined, side: 'input' | 'output'): SocketType | undefined {
+/** The sockets a kind says, or a node drawn of it. */
+type Sockets = Pick<NodeKind, 'input' | 'output' | 'many' | 'branches'> & { rows: readonly RowKind[] };
+
+/** The type one socket of a kind, or of a node drawn of it, carries — its header's (no row), a
+ *  row's, or its footer's False — on one side; none, it has no such socket. */
+export function socketType(kind: Sockets, row: string | undefined, side: 'input' | 'output'): SocketType | undefined {
   const fork = side === 'output' && kind.branches ? 'boolean' : undefined;
   if (row === FALSE_SOCKET) return fork;
   return row === undefined ? fork ?? kind[side] : kind.rows.find((r) => r.name === row)?.[side];
 }
 
-/** Whether an input of a kind takes several routes: its header's (no row), or a row's. */
-export function takesMany(kind: NodeKind, row?: string): boolean {
+/** Whether an input of a kind, or of a node drawn of it, takes several routes: its header's (no row), or a row's. */
+export function takesMany(kind: Sockets, row?: string): boolean {
   return !!(row === undefined ? kind.many : kind.rows.find((r) => r.name === row)?.many);
 }
 

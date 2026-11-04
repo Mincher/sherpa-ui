@@ -433,11 +433,11 @@ test('Save hands the app a checked page definition, as definition-save, with the
 const BIND_FLOW = `async () => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const canvas = document.querySelector('#root sherpa-layout-canvas');
-  const flow = { v: 1, id: 'active-customers', nodes: [
+  const flow = { v: 2, id: 'active-customers', nodes: [
     { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'filter', kind: 'filter', x: 360, y: 0, values: { field: 'status', op: 'eq' } },
     { id: 'end', kind: 'output', x: 720, y: 0 },
-  ], routes: [{ from: 'start', to: 'filter' }, { from: 'filter', to: 'end' }] };
+  ], routes: [{ from: 'start/rows', to: 'filter' }, { from: 'filter/rows', to: 'end' }] };
   window.editor = bindWorkflow(canvas, flow, { session: new SessionStore(), fields: { status: { label: 'Status' } }, stores: ['customers'] });
   await window.__settled();
 }`;

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sherpa-ui.dev/schemas/workflow.v2.json",
+  "title": "Sherpa-UI workflow definition",
+  "description": "One workflow, as JSON: its nodes, their values, and the routes between their sockets. A node's data comes in on its header, of any type, and leaves from its Rows row (\"node/rows\"); where it forks, its header sends True and \"node/#false\" False. What each node IS comes from its kind. checkWorkflow() reads it; readWorkflow() reads a v1 as one. docs/history/plan-713-node-model.md",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["v", "id", "nodes"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "v": { "const": 2 },
+    "id": {
+      "description": "The workflow's id: its row in the store, and its draft, are filed under it.",
+      "$ref": "defs.v1.json#/$defs/id"
+    },
+    "label": { "description": "Its name, as a reader sees it.", "type": "string" },
+    "nodes": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/node" } },
+    "routes": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/route" } }
+  }
+}

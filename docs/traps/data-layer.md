@@ -6404,7 +6404,7 @@ allowed it.
 ### T-a-workflow-is-its-definition
 
 **A workflow is ONE JSON document** — its nodes, each node's values, and the
-routes between their sockets — checked by `schemas/workflow.v1.json` and by
+routes between their sockets — checked by `schemas/workflow.v2.json` and by
 `checkWorkflow`. Will, TODO 78; plan-78-workflow-data.md.
 
 - **A node holds only what the reader may change**: its place, its own name and
@@ -6418,6 +6418,11 @@ routes between their sockets — checked by `schemas/workflow.v1.json` and by
 - **A Filter node's rows are one condition**: `{ field, op, value }`, the condition
   tree's leaf, never a shape of its own. An `op` row holds an operator, a `number`
   row a number: `editWorkflow` types a value as its row takes it.
+- **A v2 workflow** (Will, plan 713 D8): a node's data comes IN on its header, of any
+  type (D1), and leaves from its Rows row, `node/rows`, which only sends. A v1, whose
+  rows left the header, is read ONCE as v2 (`readWorkflow`): each such route moves to
+  the Rows row; one a kind cannot send from there is dropped and reported. The saved
+  v1 files in the repo and in Demos are converted; the reader stays for any outside.
 - **A socket is `node`, `node/row` or `node/#false`**: the header's, for the whole
   node, a row's, or a fork's False. A route joins an output to an input that
   `accepts()` its type (`T-a-socket-says-its-type`); an input takes one route
