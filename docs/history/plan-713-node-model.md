@@ -351,6 +351,8 @@ into one, and a list where none is taken. No shipped kind takes `branches`, `man
 `boolean` or `any` yet: M2 and M3 draw and route them. The header's input is the data input
 (D1), so a Rows row only SENDS the rows on (M3).
 
+**M3 ✅ (`b85610e1`, 2026-11-04).** `ROWS` (a Rows row that only SENDS, an object) leads every data kind; every header input is `any` (D1). `branches` (True on the header, False at `node/#false`): every workflow kind but `output`, plus the Query's condition, preset and saved filter. Workflow v2 (`schemas/workflow.v2.json`, `readWorkflow`): a v1 is read once into v2 (its header routes move to `node/rows`; one it cannot map is dropped and reported); a route INTO a Rows row is a fault. The two repo workflows are v2. `sherpa-node`'s socket enum still lists only value and object: M2 adds boolean and any, and the footer; until then they draw as circles and a False draws no line.
+
 **What waits on N4:** everything that RUNS — live values in the rows, Matches as a
 number, each branch lit with the data rows that took it, When that gates a run,
 cancel, a dry run, batch writes (§6). M1–M6 only draw, check and edit.
