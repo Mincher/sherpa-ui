@@ -11,6 +11,8 @@ import { bindSettings } from '../../core/ui/bind-settings.js';
 import { checkApp, type AppDefinition, type ContextInit, type ContextModule } from '../../core/data/app-definition.js';
 import { report } from '../../core/data/report.js';
 import { loadViewLibrary } from '../../core/browser/view-files.js';
+import type { NodeLibrary } from '../../core/data/node-library.js';
+import type { NodeShelf } from '../../core/data/node-shelf.js';
 import type { ViewLibrary } from '../../core/browser/persist-view.js';
 import { VIEW_CHIP } from '../../core/ui/shared-constants.js';
 import type { SessionStore } from '../../core/browser/session.js';
@@ -66,6 +68,10 @@ export class SherpaOutlet extends SherpaElement {
   #views: Record<string, ViewLibrary> = {};
   /** Settles once every Context's own Views are in. */
   #viewsReady: Promise<void> = Promise.resolve();
+  /** Settles once the app's preset Custom Nodes are in the keeper. */
+  #nodesReady: Promise<void> = Promise.resolve();
+  /** The app's preset Custom Nodes, once loaded. */
+  #presets: NodeLibrary | undefined;
   /** Only the newest load may commit. */
   #token = 0;
   /** The Context on screen. */
@@ -156,6 +162,12 @@ export class SherpaOutlet extends SherpaElement {
     this.#viewsReady = Promise.all(Object.entries(options.app.contexts).map(async ([name, context]) => {
       if (context.views) this.#views[name] = await loadViewLibrary(this.#url(context.views));
     })).then(() => undefined);
+    // The presets are the keeper's, so every editor lists them with the reader's own.
+    if (options.app.nodes) {
+      const url = this.#url(options.app.nodes);
+      // Fetched only where an app ships presets: an app with none never loads it.
+      this.#nodesReady = import('../../core/browser/node-files.js').then(({ loadNodeLibrary }) => loadNodeLibrary(url)).then((library) => { this.#presets = library; });
+    }
     // The nav first, so a first click finds its rows. TRAP T-the-outlet-keeps-the-nav
     const nav = this.#shell?.querySelector(':scope > sherpa-nav');
     if (nav) {
@@ -185,6 +197,15 @@ export class SherpaOutlet extends SherpaElement {
   protected override onSettings(settings: Settings): void {
     this.#told = settings;
     this.#nav?.told(settings);
+  }
+
+  /** The app's Custom Nodes, handed to every Context: the provider's keeper holds them. */
+  get #nodes(): { nodes: NodeShelf } | Record<string, never> {
+    const keeper = this.#provider?.keeper;
+    if (!keeper) return {};
+    // Told at each hand-over: the app may give its provider another keeper after this one loads.
+    if (this.#presets) keeper.presets = this.#presets;
+    return { nodes: keeper.shelf };
   }
 
   /** The document's router: the URL has one owner. */
@@ -319,7 +340,7 @@ export class SherpaOutlet extends SherpaElement {
     if (token !== this.#settings.token) return;
     const leaving = (this.#settings.leaving = new AbortController());
     const teardown = await module.init?.(where.root, {
-      session: options.session, view: null, signal: leaving.signal, panels: options.panels ?? {}, label: page.label, id: name,
+      session: options.session, ...this.#nodes, view: null, signal: leaving.signal, panels: options.panels ?? {}, label: page.label, id: name,
       ...(where.header ? { header: where.header } : {}),
     });
     if (token !== this.#settings.token) {
@@ -387,7 +408,7 @@ export class SherpaOutlet extends SherpaElement {
     this.#context = name;
     this.emit('context-change', { context: name, view });
     this.#nav?.changed();
-    await this.#viewsReady;
+    await Promise.all([this.#viewsReady, this.#nodesReady]);
     const [markup, read] = await Promise.all([
       this.#file(context.template, 'text'),
       context.definition ? this.#file(context.definition, 'json') as Promise<PageDefinition | null> : null,
@@ -416,7 +437,7 @@ export class SherpaOutlet extends SherpaElement {
     const leaving = (this.#leaving = new AbortController());
     const header = this.#header;
     const ctx: ContextInit = {
-      session: options.session, view, signal: leaving.signal, panels: options.panels ?? {}, label: context.label, id: name,
+      session: options.session, ...this.#nodes, view, signal: leaving.signal, panels: options.panels ?? {}, label: context.label, id: name,
       ...(source ? { source, query: source.query } : {}), ...(header ? { header } : {}),
     };
     const teardown = await module?.init?.(this, ctx);

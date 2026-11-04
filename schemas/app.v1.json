@@ -21,6 +21,10 @@
       "propertyNames": { "$ref": "defs.v1.json#/$defs/id" },
       "additionalProperties": { "$ref": "defs.v1.json#/$defs/context" }
     },
+    "nodes": {
+      "description": "The app's preset Custom Nodes: a path to a nodes.v1.json. Read only in every editor's panel; the reader's own are kept apart.",
+      "type": "string"
+    },
     "sections": {
       "description": "The nav's sections, in order.",
       "type": "array",

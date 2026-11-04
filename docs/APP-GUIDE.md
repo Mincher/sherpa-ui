@@ -121,6 +121,7 @@ Plus the app's stores, and its Views as JSON.
   "v": 1,
   "product": { "name": "My product", "icon": "group" },
   "default": "dashboard",
+  "nodes": "nodes.json",
   "contexts": {
     "dashboard": {
       "label": "Home", "icon": "home",
@@ -144,6 +145,8 @@ Plus the app's stores, and its Views as JSON.
 - A Context is what a nav row opens: `?context=records`. Each path is
   relative to `app.json`. The default Context is the nav's Home.
 - `chrome.header: false` takes the app header away while it is open.
+- `nodes` is the app's preset Custom Nodes, a `nodes.v1.json`: read only, and in
+  every node editor's panel. See "Custom Nodes", below.
 - `checkApp(app)` reports every broken name. `T-an-app-is-its-definition`
 
 ## 4. Stores
@@ -387,6 +390,40 @@ provider.keeper = new PageKeeper({ eachView: () => settings.get('eachView') === 
   `ui`: `keeper.keepUi(ctx.id, { source, elements: { grid } }, { grid: () => ({ select: [grid.selectedKeys] }) }, { signal })`.
 - `provider.export()` hands the same document out, and `import(state)` takes it
   back in. `T-a-page-goes-out-as-json`
+
+### Custom Nodes
+
+A Custom Node is a workflow body saved under one name, with its inputs and
+outputs said once, as JSON (`nodes.v1`). They are app-wide, in two halves:
+
+- **The presets**, which the app ships in the file `app.json` `nodes` names.
+  They are read only; a reader copies one to edit it (`copyToMine`).
+  `loadNodeLibrary(url)` reads it: each definition goes through
+  `checkNodeLibrary`, one that fails is reported in its words and left out, and
+  the rest still load. The outlet does this for you.
+- **The reader's own**, in the page keeper: `await keeper.saveNode(id, definition)` (it answers whether it was kept; its checks load only when it is first asked),
+  `keeper.removeNode(id)`. They are NAMED, so they are every tab's, in the
+  database with `database: true`, and on the server with `remote` (the page name
+  `NODES_PAGE`; `restore(NODES_PAGE)` takes them back). A stored node of the
+  wrong shape is dropped. `T-only-a-named-part-crosses-tabs`
+
+`keeper.nodeLibrary()` is the two joined. An id a preset or a shipped kind holds
+is refused: a custom node overrides nothing. Every Context's `init` is handed
+`nodes` (the outlet's provider's), the same three calls and a `watch(handler, signal)` that hears a save
+here or in another tab:
+
+```js
+const kinds = { ...NODE_KINDS, ...kindsOf(nodes.library()) };
+nodes.watch((library) => {
+  for (const id of Object.keys(kinds)) if (kinds[id].model === 'graph') delete kinds[id];
+  Object.assign(kinds, kindsOf(library));
+  panel.populate(paletteOf(kinds));
+}, signal);
+bindWorkflow(canvas, workflow, { kinds, panel, session });
+```
+
+The panel lists them under "Custom Nodes", a preset marked read only. A Custom
+Node being edited is a draft in its tab until it is saved, as a workflow is.
 
 ## 10. Questions and saved filters
 

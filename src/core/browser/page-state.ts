@@ -5,7 +5,8 @@
  * Map:
  * - PageState — One page's state, as one JSON document.
  * - LeftView — A View as the reader left it, unsaved: its JSON, and the definition it was made over.
- * - Named — The parts a reader names: their own Views and saved filters.
+ * - Named — The parts a reader names: their own Views, saved filters and Custom Nodes.
+ * - NODES_PAGE — The page name the app-wide Custom Nodes are kept under.
  * - PageChange — Parts of a page's state to change: `undefined` forgets one.
  * - Tier — Where a part is kept: read now, written now.
  * - sessionTier — The tab's own: it dies with the tab.
@@ -18,6 +19,12 @@
  * - .eachView — Does each View keep what the reader left on it?
  * - .read — One page's state now, read from its tiers.
  * - .write — Change parts of one page's state; each goes to its tier, `undefined` forgets it.
+ * - .presets — The Custom Nodes the app ships, read only: set after loadNodeLibrary().
+ * - .nodeLibrary — The presets and the reader's own Custom Nodes, as one library.
+ * - .saveNode — Keep one of the reader's Custom Nodes, app-wide; a clash or a fault is refused and reported.
+ * - .removeNode — Forget one of the reader's Custom Nodes.
+ * - .watchNodes — Hear the library change: here at once, in another tab by its `storage` event.
+ * - .shelf — The ones above, as what an editor is handed.
  * - .appContext — The App Context's one answer, for this tab.
  * - .restore — The named parts from the database and the server, merged under this browser's.
  * - .flush — Push every page's named parts now.
@@ -26,8 +33,11 @@
 import type { Query, QueryDefaults, SavedFilter } from '../data/query.js';
 import { isSavedFilter } from '../data/query.js';
 import type { SharedView } from '../data/query-edits.js';
+import type { NodeDefinition, NodeLibrary } from '../data/node-library.js';
+import { isNodeEntry, joinLibrary, type NodeShelf } from '../data/node-shelf.js';
+import { report } from '../data/report.js';
 import { applyView, type SavedView } from './persist-view.js';
-import type { ViewRecord } from './database.js';
+import type { NodeRecord, ViewRecord } from './database.js';
 import { isPlainObject, readJson, removeKey, writeJson, type StorageKind } from './web-storage.js';
 
 /** One page's state, as one JSON document. */
@@ -52,6 +62,8 @@ export interface PageState {
   views?: Record<string, SavedView>;
   /** NAMED: the reader's saved filters, by id. */
   filters?: Record<string, SavedFilter>;
+  /** NAMED: the reader's own Custom Nodes, by id. App-wide: kept under `NODES_PAGE`. */
+  nodes?: Record<string, NodeDefinition>;
 }
 
 /** A View as the reader left it, unsaved: its JSON, and the definition it was made over. */
@@ -60,8 +72,11 @@ export interface LeftView {
   sig: string;
 }
 
-/** The parts a reader names: their own Views and saved filters. */
-export type Named = Pick<PageState, 'views' | 'filters'>;
+/** The parts a reader names: their own Views, saved filters and Custom Nodes. */
+export type Named = Pick<PageState, 'views' | 'filters' | 'nodes'>;
+
+/** The page name the app-wide Custom Nodes are kept under (D13): no page id can be it. */
+export const NODES_PAGE = '#app';
 
 type Part = Exclude<keyof PageState, 'v'>;
 
@@ -72,7 +87,7 @@ export type PageChange = { [P in Part]?: PageState[P] | undefined };
  *  toolbar, which is chrome as the nav's pin is. TRAP T-only-a-named-part-crosses-tabs */
 const TIER_OF = {
   view: 'tab', query: 'tab', draft: 'tab', ui: 'tab', left: 'tab', added: 'tab',
-  toolbars: 'local', views: 'local', filters: 'local',
+  toolbars: 'local', views: 'local', filters: 'local', nodes: 'local',
 } as const satisfies Record<Part, 'tab' | 'local'>;
 
 const PARTS = Object.keys(TIER_OF) as Part[];
@@ -93,6 +108,8 @@ const ENTRY: Partial<Record<Part, (v: unknown) => boolean>> = {
   left: (v) => isPlainObject(v) && isQuery(v['query']) && typeof v['sig'] === 'string',
   views: (v) => isPlainObject(v) && typeof v['label'] === 'string',
   filters: isSavedFilter,
+  // A preset is a file's, never the reader's.
+  nodes: (v) => isNodeEntry(v) && !(v as { preset?: unknown }).preset,
 };
 
 /** A part as stored, or undefined where it cannot be read. */
@@ -187,6 +204,8 @@ export class PageKeeper {
   readonly #eachView: () => boolean;
   /** What it was given: the database, the server and how to report. */
   readonly #options: KeeperOptions;
+  /** Who hears the library change in this tab. */
+  readonly #heard = new Set<() => void>();
   /** The pages whose named parts wait to be pushed. */
   #pending = new Set<string>();
   /** The push that waits for its interval. */
@@ -233,8 +252,9 @@ export class PageKeeper {
 
   /** `onward`: the reader's own Views go on to the database and the server. */
   #put(page: string, parts: PageChange, onward: boolean): void {
-    const named = onward && ('views' in parts || 'filters' in parts);
-    const was = named ? this.read(page).views ?? {} : {};
+    const named = onward && ('views' in parts || 'filters' in parts || 'nodes' in parts);
+    const held = (): string[] => Object.keys((page === NODES_PAGE ? this.read(page).nodes : this.read(page).views) ?? {});
+    const was = named ? held() : [];
     for (const tier of ['tab', 'local'] as const) {
       const mine = (Object.keys(parts) as Part[]).filter((part) => TIER_OF[part] === tier);
       if (!mine.length) continue;
@@ -247,7 +267,66 @@ export class PageKeeper {
       const empty = !Object.keys(next).some((key) => key !== 'v');
       this.#tierOf(tier).write(PREFIX + page, empty ? undefined : { ...next, v: 3 });
     }
-    if (named) this.#onward(page, Object.keys(was).filter((id) => !(id in (this.read(page).views ?? {}))));
+    if (named) this.#onward(page, was.filter((id) => !held().includes(id)));
+  }
+
+  /** The Custom Nodes the app ships, read only: set once `loadNodeLibrary()` has answered. */
+  presets: NodeLibrary | undefined;
+
+  /** The presets and the reader's own Custom Nodes, as one library; read through, so another
+   *  tab's saved node is seen at once. A clash is left out: a custom node overrides nothing. */
+  nodeLibrary(): NodeLibrary {
+    return joinLibrary(this.presets, this.read(NODES_PAGE).nodes);
+  }
+
+  /** Keep one of the reader's Custom Nodes, app-wide (D13): every tab, the database, the
+   *  server. Refused and reported where it holds a preset's id, a shipped kind's, or a fault.
+   *  Answers whether it was kept; the checks load when first asked, so an app that saves none never pays. */
+  async saveNode(id: string, definition: NodeDefinition): Promise<boolean> {
+    const { preset: _preset, $schema: _schema, ...node } = definition;
+    if (id in (this.presets?.nodes ?? {})) {
+      report({ code: 'node-library', message: `saveNode: "${id}" is a preset, which is read only: use "Copy to my nodes".`, at: { node: id } });
+      return false;
+    }
+    const { checkNodeLibrary } = await import('../data/node-library.js');
+    if (!checkNodeLibrary({ v: 1, nodes: { ...this.nodeLibrary().nodes, [id]: node } })) return false;
+    this.write(NODES_PAGE, { nodes: { ...this.read(NODES_PAGE).nodes, [id]: node } });
+    for (const call of this.#heard) call();
+    return true;
+  }
+
+  /** Forget one of the reader's Custom Nodes. A preset is not the reader's to remove. */
+  removeNode(id: string): boolean {
+    const { [id]: gone, ...rest } = this.read(NODES_PAGE).nodes ?? {};
+    if (!gone) {
+      if (id in (this.presets?.nodes ?? {})) report({ code: 'node-library', message: `removeNode: "${id}" is a preset, which is read only.`, at: { node: id } });
+      return false;
+    }
+    this.write(NODES_PAGE, { nodes: rest });
+    for (const call of this.#heard) call();
+    return true;
+  }
+
+  /** Hear the library change: a save or a removal here at once, one in another tab by its
+   *  `storage` event (the tab's own writes raise none). Stops on the signal. */
+  watchNodes(handler: (library: NodeLibrary) => void, signal?: AbortSignal): void {
+    const call = (): void => handler(this.nodeLibrary());
+    this.#heard.add(call);
+    signal?.addEventListener('abort', () => this.#heard.delete(call), { once: true });
+    const key = PREFIX + NODES_PAGE;
+    const scope = globalThis as unknown as Partial<EventTarget>;
+    scope.addEventListener?.('storage', (event) => {
+      const { key: changed } = event as unknown as { key: string | null };
+      if (changed === key || changed === null) call();
+    }, signal ? { signal } : {});
+  }
+
+  /** The three above, as what an editor is handed. */
+  get shelf(): NodeShelf {
+    return {
+      library: () => this.nodeLibrary(), save: (id, definition) => this.saveNode(id, definition), remove: (id) => this.removeNode(id),
+      watch: (handler, signal) => this.watchNodes(handler, signal),
+    };
   }
 
   /** The App Context's one answer — every page's View, while the app shares
@@ -275,10 +354,11 @@ export class PageKeeper {
     const here = this.read(page);
     const views = { ...cleaned('views', remote.views ?? {}) as object, ...await this.#fromDatabase(page), ...here.views };
     const filters = { ...cleaned('filters', remote.filters ?? {}) as object, ...here.filters };
+    const nodes = { ...cleaned('nodes', remote.nodes ?? {}) as object, ...await this.#nodesFromDatabase(page), ...here.nodes };
     // Kept here and in the database; nothing new to push.
-    this.#put(page, { views, filters }, false);
+    this.#put(page, { views, filters, nodes }, false);
     this.#onward(page, [], false);
-    return { views, filters };
+    return { views, filters, ...(Object.keys(nodes).length ? { nodes } : {}) };
   }
 
   /** Push every page's named parts now, rather than at the next tick. */
@@ -350,15 +430,18 @@ export class PageKeeper {
   /** The reader's own Views to the database NOW, and a push to the server soon. */
   #onward(page: string, deleted: readonly string[], push = true): void {
     if (this.#options.database) {
-      const views = this.read(page).views ?? {};
+      const { views = {}, nodes = {} } = this.read(page);
+      const app = page === NODES_PAGE;
+      const name = app ? 'nodes' : 'views';
       // Fetched only where an app asks for it: a page that keeps none never loads it.
       this.#written = this.#written.then(() => import('./database.js')).then(({ hasDatabase, transact }) => {
         if (!hasDatabase()) return;
-        return transact('views', 'readwrite', (tx) => {
+        return transact(name, 'readwrite', (tx) => {
           // One transaction: a push never sees the deletes without the writes.
-          const store = tx.objectStore('views');
-          for (const id of deleted) store.delete([page, id]);
-          for (const [id, view] of Object.entries(views)) store.put({ page, id, view } satisfies ViewRecord);
+          const store = tx.objectStore(name);
+          for (const id of deleted) store.delete(app ? id : [page, id]);
+          if (app) for (const [id, node] of Object.entries(nodes)) store.put({ id, node } satisfies NodeRecord);
+          else for (const [id, view] of Object.entries(views)) store.put({ page, id, view } satisfies ViewRecord);
         });
       }).catch((error: unknown) => this.#say(error, 'push'));
     }
@@ -375,12 +458,13 @@ export class PageKeeper {
     const remote = this.#options.remote;
     const pages = [...this.#pending];
     this.#pending.clear();
-    if (!remote) return;
+    // The database first, with a server or none: a flush answers once what was saved is kept.
     await this.#written;
+    if (!remote) return;
     for (const page of pages) {
-      const { views, filters } = this.read(page);
+      const { views, filters, nodes } = this.read(page);
       try {
-        await remote.push(page, { ...(views ? { views } : {}), ...(filters ? { filters } : {}) });
+        await remote.push(page, { ...(views ? { views } : {}), ...(filters ? { filters } : {}), ...(nodes ? { nodes } : {}) });
       } catch (error) {
         this.#say(error, 'push');
       }
@@ -399,6 +483,20 @@ export class PageKeeper {
       return views;
     } catch (error) {
       // Storage blocked, or a version clash with another tab: Web Storage still answers.
+      this.#say(error, 'pull');
+      return {};
+    }
+  }
+
+  /** The database's Custom Nodes, for the app's page only. */
+  async #nodesFromDatabase(page: string): Promise<Record<string, NodeDefinition>> {
+    if (!this.#options.database || page !== NODES_PAGE) return {};
+    try {
+      await this.#written;
+      const { hasDatabase, readAll } = await import('./database.js');
+      if (!hasDatabase()) return {};
+      return Object.fromEntries((await readAll('nodes')).map(({ id, node }) => [id, node]));
+    } catch (error) {
       this.#say(error, 'pull');
       return {};
     }

@@ -14,6 +14,7 @@
 import type { SessionStore } from '../browser/session.js';
 import type { DataSource } from './data-source.js';
 import type { QueryContext } from './query-context.js';
+import type { NodeShelf } from './node-shelf.js';
 import { report } from './report.js';
 
 /** One app, as JSON: its Contexts, the one it opens on, its nav sections and
@@ -25,6 +26,8 @@ export interface AppDefinition {
   /** The Context the app opens on — the nav's Home. */
   default: string;
   contexts: Record<string, ContextDefinition>;
+  /** The app's preset Custom Nodes, as JSON (nodes.v1): read only, in every editor's panel. */
+  nodes?: string;
   /** The nav's sections, in order: a label and the Contexts it lists. */
   sections?: readonly { label?: string; contexts: readonly string[] }[];
   /** The pages that open OVER a Context, and the one module that runs them. */
@@ -61,6 +64,8 @@ export interface SettingsPage {
 export interface ContextInit {
   /** What outlives a Context: the reader's choices. */
   session: SessionStore;
+  /** The app's Custom Nodes: its presets and the reader's, to list, save and remove. Present where the outlet has a provider. */
+  nodes?: NodeShelf;
   /** The View the URL names; null for the first. */
   view: string | null;
   /** Its page's source, when it has a definition. */

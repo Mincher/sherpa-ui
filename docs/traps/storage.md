@@ -92,6 +92,7 @@ in three shapes, where "draft" meant two things:
 | `toolbars` | each card's filter toolbar, shown or shut | every tab |
 | `views` | NAMED: the reader's own Views | every tab; the database, a server |
 | `filters` | NAMED: the reader's saved filters | every tab; a server |
+| `nodes` | NAMED: the reader's Custom Nodes, app-wide, under the page name `#app` | every tab; the database, a server |
 
 `PageKeeper` keeps it: `read(page)` reads through each tier, so another tab's
 named parts are seen at once; `write(page, parts)` sends each part to its tier,
@@ -138,7 +139,9 @@ A card's toolbar is every tab's, as chrome, like the nav's pin. A store's Histor
 is per tab too (345 D2 B), outside the keeper.
 
 - Site: `src/core/browser/page-state.ts`
+- Site: `test/e2e/reforged-a-saved-node-shows-in-the-panel.spec.ts`
 - Site: `test/e2e/reforged-only-a-named-part-crosses-tabs.spec.ts`
+- Site: `test/unit/a-saved-node-is-the-readers.test.mjs`
 
 ### T-a-view-keeps-what-the-reader-left
 
@@ -522,6 +525,7 @@ one version, its object stores made in one upgrade from one fixed schema
 | `outbox` | `[outbox, id]` | the writes that wait (`keepOutbox`) |
 | `notices` | `id` | the notices a worker keeps until seen |
 | `views` | `[page, id]` | the saved Views' durable tier (the page keeper's `database`) |
+| `nodes` | `id` | the reader's Custom Nodes, app-wide (the page keeper's `database`) |
 
 Before, each part opened its own database (`sherpa`, `sherpa-cache`,
 `sherpa-outbox`, `sherpa-notices`, and an app's own), and two failed silently:

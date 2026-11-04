@@ -191,6 +191,8 @@ export {
   type NodeSnapshot,
   type NodeSocket,
 } from './core/data/node-library.js';
+/* Where an app's Custom Nodes come together: its presets and the reader's. Plan 713 M12 */
+export { isNodeEntry, joinLibrary, type NodeShelf } from './core/data/node-shelf.js';
 /* The data layer over HTTP: one handle() for the page, a Service Worker or a server. Plan 652 */
 export {
   DATA_BASE,

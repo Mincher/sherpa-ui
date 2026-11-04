@@ -26,7 +26,7 @@ export {
 } from './core/ui/node-graph.js';
 // A page's state as ONE document, and its one keeper: each part in its tier. TRAP T-one-page-one-document
 export {
-  PageKeeper, sessionTier, localTier, memoryTier, viewSig,
+  PageKeeper, NODES_PAGE, sessionTier, localTier, memoryTier, viewSig,
   type PageState, type PageChange, type LeftView, type Named, type Tier, type PageRemote, type KeeperOptions,
 } from './core/browser/page-state.js';
 // A View applied and read back, the View chip's options, a pick applied.
@@ -38,6 +38,8 @@ export {
 } from './core/browser/persist-view.js';
 // A page's Views from JSON files, each View's markup in an HTML template.
 export { loadViewLibrary } from './core/browser/view-files.js';
+// An app's preset Custom Nodes, from a JSON file; the reader's own are in the keeper.
+export { loadNodeLibrary, readLibrary } from './core/browser/node-files.js';
 // A saved View's content is MARKUP, parsed through an allow-list on the way in.
 // TRAP T-saved-markup-is-untrusted-input
 export {

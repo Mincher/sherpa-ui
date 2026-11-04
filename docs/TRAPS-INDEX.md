@@ -230,10 +230,11 @@ files. An entry that only tests cite is under Tests only.
 - [T-up-is-open-down-is-closed](traps/data-layer.md#t-up-is-open-down-is-closed) — data, query-context, query-edits
 - [T-view-state-lives-in-one-object](traps/data-layer.md#t-view-state-lives-in-one-object) — data-source
 
-## Storage, saved Views and the URL (59)
+## Storage, saved Views and the URL (60)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — view-files
 - [T-a-changed-key-moves-the-row](traps/data-layer.md#t-a-changed-key-moves-the-row) — idb-store
+- [T-a-custom-node-is-an-instance](traps/data-layer.md#t-a-custom-node-is-an-instance) — node-files
 - [T-a-field-can-carry-over-views](traps/data-layer.md#t-a-field-can-carry-over-views) — persist-view
 - [T-a-kept-set-is-checked-each-session](traps/data-layer.md#t-a-kept-set-is-checked-each-session) — cache-keep, serve-data
 - [T-a-new-build-is-a-new-worker](traps/storage.md#t-a-new-build-is-a-new-worker) — updates, worker-script

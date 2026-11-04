@@ -7262,6 +7262,7 @@ Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
 - **A preset is read only** (`preset: true`): `editDefinition` returns the library given;
   `copyToMine` makes a custom copy.
 
+- Site: `src/core/browser/node-files.ts`
 - Site: `src/core/data/node-library.ts`
 - Site: `test/unit/a-custom-node-is-an-instance.test.mjs`
 - Site: `src/data.ts`

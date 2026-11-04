@@ -68,7 +68,12 @@ export class SherpaNodePanel extends SherpaElement {
         node.toggleAttribute('data-empty', !group.items.length);
         const list = node.querySelector('.items')!;
         for (const { id, kind } of group.items) {
-          const item = this.cloneItem('template.item-tpl', { id, heading: kind.heading, description: kind.description, icon: kind.icon });
+          // A preset is a file's: read only, and its line says so.
+          const preset = 'preset' in kind && !!kind.preset;
+          const item = this.cloneItem('template.item-tpl', {
+            id, heading: kind.heading, icon: kind.icon, description: preset ? `Preset, read only.${kind.description ? ` ${kind.description}` : ''}` : kind.description,
+          });
+          if (item && preset) item.toggleAttribute('data-preset', true);
           if (item) list.append(item);
         }
       },

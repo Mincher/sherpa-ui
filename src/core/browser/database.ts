@@ -11,6 +11,7 @@
  * - OutboxRecord — A write that waits, in the outbox it waits in.
  * - NoticeRecord — A notice the worker keeps until a page has seen it.
  * - ViewRecord — One saved View of one page.
+ * - NodeRecord — One Custom Node of the reader's, app-wide.
  * - Records — Each object store, and the record it holds.
  * - hasDatabase — Whether this context has IndexedDB at all.
  * - openDatabase — The open database, shared by every part; REJECTS where there is none.
@@ -26,12 +27,13 @@
 import type { OutboxEntry } from '../data/outbox.js';
 import type { UpdateNotice } from '../data/notices.js';
 import type { Row } from '../data/store.js';
+import type { NodeDefinition } from '../data/node-library.js';
 import type { SavedView } from './persist-view.js';
 
 /** The database's name, in a page and a worker alike. */
 export const DATABASE = 'sherpa-ui';
 /** Bump it with `SCHEMA`: a store is made only in an upgrade. */
-const VERSION = 1;
+const VERSION = 2;
 
 /** One row of an IdbStore, under its store's name and its key. `seek` holds
  *  `[store, field, value]` for each indexed field. */
@@ -77,6 +79,12 @@ export interface ViewRecord {
   view: SavedView;
 }
 
+/** One Custom Node of the reader's, app-wide (D13). */
+export interface NodeRecord {
+  id: string;
+  node: NodeDefinition;
+}
+
 /** Each object store, and the record it holds. */
 export interface Records {
   rows: RowRecord;
@@ -85,6 +93,7 @@ export interface Records {
   outbox: OutboxRecord;
   notices: NoticeRecord;
   views: ViewRecord;
+  nodes: NodeRecord;
 }
 
 type StoreName = keyof Records;
@@ -97,6 +106,7 @@ const SCHEMA: { readonly [S in StoreName]: { keyPath: string | string[]; seek?: 
   outbox: { keyPath: ['outbox', 'id'] },
   notices: { keyPath: 'id' },
   views: { keyPath: ['page', 'id'] },
+  nodes: { keyPath: 'id' },
 };
 
 /** Whether this context has IndexedDB at all. */
