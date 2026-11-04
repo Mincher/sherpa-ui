@@ -373,6 +373,18 @@ a setting in its attribute's description. `schemas/pattern.v1.json`: `v`, `id`, 
 adding `role`, `each`, `max`); optional `rank` (higher first), `page` (defs `scope` and
 `ui`), `states`, `agent`; `$defs/need`. Lane picks taken (A for all five).
 
+**G1 ✅ (`851b269c`).** `mcp-server/` from scratch: `list_components`, `get_component`
+(the spec's contract in its own keys, each explained in the schema's words; `include: "spec"`
+for the file) and `find_token`; resources `sherpa://schemas/{name}`, `spec/`, `example/`,
+`component/{name}/{ts,html,css}`, `app-guide`, `data-rules`, `tokens`. One door reads every
+file (`lib/sherpa.js`, `READS`); `MODULES` in `server.js` is where G2–G6 add. The old server
+went in the same change (18 files, −2,690 lines). `check:mcp` checks each header against
+what it registers and writes the README; `check:mcp-pack` passed in the main tree (3 tools,
+351 resources). `name-map.yaml` and the rules doc left `files`; `sherpa://rules` is gone
+(Q2). Until G2, the Starter's `README.md` names `scaffold_app` and its `AGENTS.md`
+`validate_page`, which are not served: `scaffold_app` comes back IN G2, beside
+`validate_app`, which checks what it writes (the lane's pick A).
+
 | # | Question | A (my pick) | B |
 |---|---|---|---|
 | Q1 | Where the new MCP lives | `mcp-server/`, rewritten in place; package `sherpa-ui-mcp` (the Starter's `.mcp.json` names it); gated in this repo | A sibling project, like the Starter |
