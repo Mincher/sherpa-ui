@@ -637,7 +637,7 @@ sherpa-accordion.scope::part(actions) {
 .sections:has(.local-scopes:empty) :is(.scope-rule, .local-heading) { display: none; }
 
 /* A panel's filter section wears the shared hover fill, as a grid row does. Will, TODO 531 */
-.chips > .chip[data-layout="section"]:hover { background: var(--_bar-hover); }
+.chips > .chip[data-layout="section"]:hover, :host([data-orientation="portrait"]:state(has-organise)) .organise-zone:hover { background: var(--_bar-hover); }
 
 /* SOLO, where the app allows it: the row that applies, in a chip's menu and a
    section's ⋮. Will, TODO 690 */
