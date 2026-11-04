@@ -683,9 +683,11 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     const boxes = [...made.nodes].map(([id, el]) => [id, { left: el.offsetLeft, top: el.offsetTop, right: el.offsetLeft + el.offsetWidth, bottom: el.offsetTop + el.offsetHeight }] as const);
     const hit = boxPick(box, boxes, made.lanes);
     const ids = new Set(hit.nodes);
+    // Nodes or routes, never both: a box that touches a node picks nodes; Shift keeps what was picked of its kind.
     if (add) {
-      for (const [id, el] of made.nodes) if (el.hasAttribute('data-current')) ids.add(id);
-      for (const route of made.picked) if (!hit.routes.some((r) => r.from === route.from && r.to === route.to)) hit.routes.push(route);
+      const kept = hit.nodes.length ? 'nodes' : hit.routes.length ? 'routes' : 'both';
+      if (kept !== 'routes') for (const [id, el] of made.nodes) if (el.hasAttribute('data-current')) ids.add(id);
+      if (kept !== 'nodes') for (const route of made.picked) if (!hit.routes.some((r) => r.from === route.from && r.to === route.to)) hit.routes.push(route);
     }
     made.picked = hit.routes.map(({ from, to }) => ({ from, to }));
     made.selectedTie = null;

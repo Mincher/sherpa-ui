@@ -94,6 +94,20 @@ test('a box picks the nodes it TOUCHES, not only those it encloses, and the conn
   expect(p.nodes).toEqual(['s1']);
 });
 
+test('a box that touches a node picks only nodes; one that touches none picks only the connectors it crosses, any part of them', async ({ page }) => {
+  const n = await box(page, '#cv sherpa-node[data-heading="s1"]');
+  const three = await gap(page, 1, 3);
+  // From the gap, across the connectors, into s1's corner: nodes only.
+  await drag(page, [three.to[0], three.to[1]], [n.right - 20, n.bottom - 10]);
+  const mixed = await picked(page);
+  expect(mixed.nodes.length).toBeGreaterThan(0);
+  expect(mixed.routes).toEqual([]);
+  // A thin box over the middle of one connector, touching no node: that connector, and no node.
+  const one = await gap(page, 2, 2);
+  await drag(page, one.from, one.to);
+  expect(await picked(page)).toMatchObject({ routes: ['s2/rows'], nodes: [], count: '1' });
+});
+
 test('Shift adds to the pick, a plain box replaces it, and a click on blank clears it', async ({ page }) => {
   const one = await gap(page, 1, 1);
   const three = await gap(page, 3, 3);

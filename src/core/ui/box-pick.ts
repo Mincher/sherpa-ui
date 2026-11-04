@@ -1,13 +1,14 @@
 /**
  * box-pick.ts — what a dragged box picks on a canvas's plane: every node whose box it TOUCHES
- * (as Figma's and Blender's node editors do), and every route whose sampled path it crosses.
+ * (as Figma's and Blender's node editors do); or, when it touches no node, every route whose
+ * sampled path it CROSSES (a part of a route is enough). Never both (Will, 2026-11-05).
  * Pure geometry: no DOM. Will, TODO 735.
  *
  * Map:
  * - PickBox — A box on the plane, in plane px.
  * - touches — Whether two boxes overlap, an edge's touch included.
  * - crosses — Whether a path, sampled as points, passes through a box.
- * - boxPick — The nodes a box touches and the routes it crosses.
+ * - boxPick — The nodes a box touches; else the routes it crosses.
  */
 
 /** A box on the plane, in plane px. */
@@ -41,12 +42,11 @@ export function crosses(box: PickBox, dots: readonly [number, number][]): boolea
   return dots.some((dot, i) => i > 0 && segmentIn(box, dots[i - 1]!, dot));
 }
 
-/** The nodes a box touches and the routes it crosses, each in the order given. */
+/** The nodes a box touches; with none, the routes it crosses. Each in the order given. */
 export function boxPick<R>(
   box: PickBox, nodes: Iterable<readonly [string, PickBox]>, lanes: Iterable<{ route: R; dots: readonly [number, number][] }>,
 ): { nodes: string[]; routes: R[] } {
-  return {
-    nodes: [...nodes].filter(([, b]) => touches(box, b)).map(([id]) => id),
-    routes: [...lanes].filter((l) => crosses(box, l.dots)).map((l) => l.route),
-  };
+  const hit = [...nodes].filter(([, b]) => touches(box, b)).map(([id]) => id);
+  if (hit.length) return { nodes: hit, routes: [] };
+  return { nodes: [], routes: [...lanes].filter((l) => crosses(box, l.dots)).map((l) => l.route) };
 }

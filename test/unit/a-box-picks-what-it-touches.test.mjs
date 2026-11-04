@@ -36,11 +36,14 @@ test('a box crosses each piece of a tied route: in, through the slot, out', () =
   assert.equal(crosses(box(150, 0, 190, 20), tied), false);
 });
 
-test('boxPick answers the nodes and the routes, in the order given', () => {
+test('boxPick answers the nodes it touches, else the routes it crosses — never both — in the order given', () => {
   const nodes = [['a', box(0, 0, 100, 50)], ['b', box(0, 200, 100, 250)], ['c', box(0, 400, 100, 450)]];
   const lanes = [1, 2, 3].map((n) => ({ route: `r${n}`, dots: [[100, (n - 1) * 200 + 25], [400, (n - 1) * 200 + 25]] }));
   const got = boxPick(box(200, 0, 260, 460), nodes, lanes);
   assert.deepEqual(got, { nodes: [], routes: ['r1', 'r2', 'r3'] });
-  assert.deepEqual(boxPick(box(50, 20, 150, 230), nodes, lanes), { nodes: ['a', 'b'], routes: ['r1', 'r2'] });
+  // It touches nodes a and b AND crosses routes r1 and r2: only the nodes are picked.
+  assert.deepEqual(boxPick(box(50, 20, 150, 230), nodes, lanes), { nodes: ['a', 'b'], routes: [] });
+  // Part of a route is enough: a box over the middle of one.
+  assert.deepEqual(boxPick(box(250, 190, 260, 260), nodes, lanes), { nodes: [], routes: ['r2'] });
   assert.deepEqual(boxPick(box(500, 0, 600, 100), nodes, lanes), { nodes: [], routes: [] });
 });
