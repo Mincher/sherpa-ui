@@ -74,6 +74,9 @@ jobs:
         run: npm run build
       - run: npm run check:weight
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+      # The MCP's preview tests open a page in Chromium; with no browser, they skip.
+      - run: npx playwright install --with-deps chromium
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
       - run: npm run test:node
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
 
