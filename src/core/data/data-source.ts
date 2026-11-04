@@ -70,7 +70,7 @@
 import { andFilter, DEFAULT_OP, filterRows, filterTest, readField, valueKey } from './store.js';
 import { readingClause, ruleOut } from './filter-state.js';
 import { FieldCatalogue } from './field-catalogue.js';
-import { SourceBinding, tagOf } from './source-binding.js';
+import { SourceBinding } from './source-binding.js';
 import { presentUnder, type WalkFacts } from './source-counts.js';
 import { SourceReads } from './source-reads.js';
 import { SourceWalk } from './source-walk.js';
@@ -256,7 +256,7 @@ export class DataSource extends EventTarget {
       bound: (id) => {
         const bind = this.#binding.byId(id);
         if (!bind) return undefined;
-        const tag = tagOf(bind.control);
+        const tag = bind.sink.name?.();
         return { id, rows: bind.rows, ...(bind.scope ? { scope: bind.scope } : {}), ...(tag ? { tag } : {}) };
       },
       presentsIn: (scope) => this.#binding.presentsIn(scope),

@@ -393,7 +393,9 @@ them once per scope that counts.
 **A scope names the component its filters narrow, by its TAG** —
 `describe(scope).component`, the first bind drawn rows in that scope. The
 filter panel column says it under the scope's name ("Bar Chart", "Data Grid";
-TODO 457) and wears no icon (Will, TODO 472).
+TODO 457) and wears no icon (Will, TODO 472). The TAG is the SINK's to say:
+`bindSource` gives `BindSink.name()`, read live, so a chart Show as swapped is
+named anew, and the data layer reads no element's tag (plan 695 P6).
 
 **The data layer knows no KIND of component** (Will, TODO 341, 2 A). A
 `shows: 'grid' | 'chart' | …` once went from each component's ask through
@@ -404,6 +406,7 @@ its icons went, so it was removed outright. A bind says only data shapes:
 - Site: `src/core/data/source-binding.ts`
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `src/core/data/data-source-types.ts`
+- Site: `src/core/ui/bind-source.ts`
 
 ### T-a-filter-set-groups-or-chains
 

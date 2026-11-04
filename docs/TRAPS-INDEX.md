@@ -288,7 +288,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — persist-view
 - [T-view-library-is-one-vocabulary](traps/storage.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (92)
+## The join and the app layer (93)
 
 - [T-a-bar-reports-its-holds](traps/join-and-app.md#t-a-bar-reports-its-holds) — bind-source
 - [T-a-card-toggles-its-own-toolbar](traps/join-and-app.md#t-a-card-toggles-its-own-toolbar) — provider
@@ -328,6 +328,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-ruled-out-value-is-greyed](traps/data-layer.md#t-a-ruled-out-value-is-greyed) — provider
 - [T-a-saved-view-is-the-readers-own](traps/storage.md#t-a-saved-view-is-the-readers-own) — outlet, provider
 - [T-a-scope-is-named-for-its-content](traps/join-and-app.md#t-a-scope-is-named-for-its-content) — provider
+- [T-a-scope-says-what-it-shows](traps/data-layer.md#t-a-scope-says-what-it-shows) — bind-source
 - [T-a-server-field-is-asked-once-per-answer](traps/data-layer.md#t-a-server-field-is-asked-once-per-answer) — provider
 - [T-a-setting-is-a-pointer](traps/join-and-app.md#t-a-setting-is-a-pointer) — bind-settings
 - [T-a-setting-is-declared-once](traps/data-layer.md#t-a-setting-is-declared-once) — outlet, provider

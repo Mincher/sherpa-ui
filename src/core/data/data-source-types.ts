@@ -301,6 +301,10 @@ export interface BindSink {
     applied: Readonly<Record<string, FieldReading>>): void;
   /** The source let it go. */
   off(): void;
+  /** What the component is, as a panel names it under its scope — its tag and
+   *  `data-type`, `sherpa-radial-chart:pie` — read live: Show as may swap it.
+   *  The source names no tag itself. TRAP T-a-scope-says-what-it-shows */
+  name?(): string | undefined;
 }
 
 /** What a bound control may be DRAWN: each member optional, read when the source draws. The source keys its binds by it. */

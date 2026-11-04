@@ -141,6 +141,11 @@ export function bindSource(source: DataSource, el: Populatable, options: BindOpt
       // The fields whose own read failed: a system error, not 0 matches. TODO 411
       setAttr(el, 'data-failed', failed.length ? failed.join(' ') : undefined);
     },
+    // Its tag and type: what a panel names it by. A bound stand-in may be no element. TRAP T-a-scope-says-what-it-shows
+    name: () => {
+      const type = (el as Partial<Pick<Element, 'getAttribute'>>).getAttribute?.('data-type');
+      return type ? `${el.localName}:${type}` : el.localName;
+    },
     off: () => {
       for (const [type, handler] of listeners) el.removeEventListener(type, handler);
       source.removeEventListener('loading', loading);

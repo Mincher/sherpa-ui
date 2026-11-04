@@ -36,7 +36,6 @@
  * - .supersede — Tell each control below the View the fields the View holds, each with its answer there.
  * - .syncPending — Tell each control over a scope its pending fields and whether it is dirty.
  * - .debug — Each bind, for a bug report.
- * - tagOf — A bound control's tag, where it is an element.
  */
 import { VIEW, type Presentation } from './query.js';
 import { andFilter, filterRows, filterWithout, type Filter, type Row } from './store.js';
@@ -188,9 +187,9 @@ export class SourceBinding {
     return false;
   }
 
-  /** The tag of the first component drawn rows in a scope. TRAP T-a-scope-says-what-it-shows */
+  /** What the first component drawn rows in a scope is, as its sink names it. TRAP T-a-scope-says-what-it-shows */
   componentOf(scope: string): string | undefined {
-    return tagOf([...this.#bound.values()].find((b) => b.scope === scope && !b.steerOnly)?.control);
+    return [...this.#bound.values()].find((b) => b.scope === scope && !b.steerOnly)?.sink.name?.();
   }
 
   /** Is a page of rows drawn in this scope — or a pivot of them? TODOs 341, 574 */
@@ -373,14 +372,4 @@ export class SourceBinding {
       id: e.id, rows: e.rows, readonly: e.readonly, steerOnly: e.steerOnly,
     }));
   }
-}
-
-/** A bound control's tag, where it is an element, and its `data-type` where it
- *  has one — `sherpa-radial-chart:pie`, so a panel names a swapped chart. No DOM:
- *  it is only read. Will, TODO 548 */
-export function tagOf(control: unknown): string | undefined {
-  const el = control as { localName?: unknown; getAttribute?: (name: string) => string | null } | undefined;
-  if (typeof el?.localName !== 'string') return undefined;
-  const type = el.getAttribute?.('data-type');
-  return type ? `${el.localName}:${type}` : el.localName;
 }
