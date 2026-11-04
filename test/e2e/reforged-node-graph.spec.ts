@@ -143,7 +143,7 @@ test('drawGraph tells its host each edit â€” a select picked, a switch flipped â
   });
   await page.locator('#root sherpa-node-row select').selectOption('ne');
   // On its TRACK: the switch spans the row, and its middle is bare.
-  await page.locator('#root sherpa-node-row sherpa-switch .track').click();
+  await page.locator('#root sherpa-node-row > sherpa-switch .track').click();
   const r = await page.evaluate(() => ({
     heard: (window as unknown as { heard: unknown[] }).heard,
     fixed: document.querySelector<HTMLElement & { value: string }>('#root sherpa-input-text[name="fixed"]')!.hasAttribute('readonly'),
@@ -172,7 +172,7 @@ test('bindQueryEditor ASKS the Query through its one door, as a chip does: a rea
   });
   await page.locator('#root sherpa-node-row:has(sherpa-input-text[name="op"]) select').selectOption('notin');
   await page.locator('#root sherpa-node-row:has(sherpa-input-text[name="group"]) select').selectOption('plan');
-  await page.locator('#root sherpa-node-row sherpa-switch .track').first().click();
+  await page.locator('#root sherpa-node-row > sherpa-switch .track').first().click();
   const r = await page.evaluate(async () => {
     const { whereOf } = await import('/dist/data.js');
     const asked = (window as unknown as { asked: Record<string, unknown>[] }).asked;
