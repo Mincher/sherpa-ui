@@ -36,3 +36,15 @@ test('checkbox, switch, radio group and select group: what a form sends, and whe
   expect(r.before).toEqual({ valid: false, sent: [] });
   expect(r.after).toEqual({ valid: true, sent: ['alerts=on', 'plan=pro', 'size=m', 'terms=yes'] });
 });
+
+/* Only a form control has a form's doors, as a native control does: a badge has
+   no checkValidity. Plan 695 P6 · TRAP T-a-flag-brings-the-base-methods */
+test('only a form control answers checkValidity and reportValidity', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    type Doors = HTMLElement & { checkValidity?: () => boolean; reportValidity?: () => boolean };
+    const input = await window.__mount<Doors>('sherpa-input-text', undefined, { required: '' });
+    const badge = await window.__mount<Doors>('sherpa-badge');
+    return { input: input.checkValidity?.(), reports: typeof input.reportValidity, badge: 'checkValidity' in badge || 'reportValidity' in badge };
+  });
+  expect(r).toEqual({ input: false, reports: 'function', badge: false });
+});

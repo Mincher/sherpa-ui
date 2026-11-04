@@ -189,9 +189,6 @@ export function clampNum(value: number, opts?: NumOptions): number {
   return out;
 }
 
-/** The classes whose `config` names are already properties. */
-const CONFIGURED = new WeakSet<typeof SherpaElement>();
-
 /** A server has no DOM: the class still loads there, and defines nothing.
  *  TRAP T-a-component-imports-anywhere */
 const Base = (globalThis.HTMLElement ?? Object) as typeof HTMLElement;
@@ -214,6 +211,20 @@ export function define(tag: string, cls: CustomElementConstructor): void {
       set(this: HTMLElement, on: boolean) { this.toggleAttribute(attr, !!on); },
       configurable: true,
     });
+  }
+  // A form control's own doors, as a native control has them: on its class alone. TRAP T-a-flag-brings-the-base-methods
+  if ((cls as { formAssociated?: boolean }).formAssociated) {
+    for (const name of ['checkValidity', 'reportValidity'] as const) {
+      if (Object.getOwnPropertyDescriptor(cls.prototype, name)) continue;
+      Object.defineProperty(cls.prototype, name, {
+        value(this: { syncFormValue(): void; formLink: FormValue }): boolean {
+          this.syncFormValue();
+          return this.formLink[name]();
+        },
+        configurable: true,
+        writable: true,
+      });
+    }
   }
   const registry = globalThis.customElements as CustomElementRegistry | undefined;
   const held = registry?.get(tag);
@@ -355,30 +366,6 @@ export abstract class SherpaElement extends Base {
    */
   static settings?: Readonly<Record<string, string>>;
 
-  /**
-   * CONFIGURATION a page sets once, as properties — a grid's columns, its key
-   * — each by name, with its default. Every setting made in one moment redraws
-   * ONCE, and data without them (a provider's rows) keeps them.
-   * TRAP T-configuration-is-not-data
-   */
-  static config?: Readonly<Record<string, unknown>>;
-
-  /** Put each `config` name on the class as a property, once per class. */
-  static #defineConfig(Ctor: typeof SherpaElement): void {
-    if (!Ctor.config || CONFIGURED.has(Ctor)) return;
-    CONFIGURED.add(Ctor);
-    for (const name of Object.keys(Ctor.config)) {
-      Object.defineProperty(Ctor.prototype, name, {
-        configurable: true,
-        get(this: SherpaElement): unknown { return this.#settings[name]; },
-        set(this: SherpaElement, value: unknown) {
-          this.#settings[name] = value;
-          this.#reconfigure();
-        },
-      });
-    }
-  }
-
   /** What the base class does work for — a prop its markup or JS writes, a
    *  template's pick, a boolean (`"false"` is off), what it asks by — and `observed`.
    *  TRAP T-observe-what-does-work */
@@ -434,11 +421,8 @@ export abstract class SherpaElement extends Base {
     liftTipsIn(this.root);
     if (Object.keys(own.aria).length) Object.assign(this.internals, own.aria);
     this.rendered = new Promise((res) => (this.#resolveRendered = res));
-    const Ctor = new.target as typeof SherpaElement;
-    SherpaElement.#defineConfig(Ctor);
-    this.#settings = { ...Ctor.config };
     // On the host, so it never needs removing. TRAP T-abort-controller-per-connect
-    if (Object.keys(Ctor.commands).length) this.addEventListener('command', this.#onCommand as EventListener);
+    if (Object.keys(own.commands).length) this.addEventListener('command', this.#onCommand as EventListener);
   }
 
   /** A command a button sent: call the method it names. */
@@ -447,39 +431,6 @@ export abstract class SherpaElement extends Base {
     const call = method ? (this as unknown as Record<string, unknown>)[method] : undefined;
     if (typeof call === 'function') call.call(this);
   };
-
-  /** What the page configured, by `config` name. */
-  #settings: Record<string, unknown> = {};
-  /** The last DATA populated — what a new setting redraws beside. */
-  #data: Record<string, unknown> = {};
-  /** A redraw for new settings is queued. */
-  #reconfiguring = false;
-
-  /** Redraw ONCE for every setting made in one moment — three setters in a
-   *  row would each draw the config the one before had not drawn yet. */
-  #reconfigure(): void {
-    if (this.#reconfiguring) return;
-    this.#reconfiguring = true;
-    queueMicrotask(() => {
-      this.#reconfiguring = false;
-      // Not populate(): what the caller last gave stays theirs.
-      void this.rendered.then(() => this.renderData(this.#withSettings(this.#data)));
-    });
-  }
-
-  /** Data over the configuration: a `config` name it carries is SET, and the
-   *  rest arrives beside what the page configured. */
-  #withSettings(data: unknown): unknown {
-    const config = (this.constructor as typeof SherpaElement).config;
-    if (!config || !data || typeof data !== 'object' || Array.isArray(data)) return data;
-    const rest: Record<string, unknown> = {};
-    for (const [name, value] of Object.entries(data)) {
-      if (name in config) this.#settings[name] = value;
-      else rest[name] = value;
-    }
-    this.#data = rest;
-    return { ...this.#settings, ...rest };
-  }
 
   /* ── Native lifecycle — the platform calls these ─────────────────────── */
 
@@ -613,21 +564,9 @@ export abstract class SherpaElement extends Base {
        one: every component in the copy upgrades NOW, so a host may call its
        methods before it is appended. TRAP T-custom-element-upgrade */
     const node = document.importNode(first, true) as unknown as T;
-    this.upgradeClonedIcons(node);
+    // The stamp drew its root's icons, not a prototype's. TRAP T-a-cloned-prototype-needs-its-icons-upgraded
+    upgradeIcons(node as unknown as ParentNode);
     return node;
-  }
-
-  /**
-   * Draw any `data-icon` in a freshly cloned subtree.
-   *
-   * `upgradeIcons` runs ONCE on the stamped root, so an icon that lives inside a
-   * cloning prototype is still a bare `<i>` when the clone is appended — 39 of
-   * them in sherpa-data-grid, every one blank.
-   * Idempotent: a node that already holds its SVG is skipped.
-   * TRAP T-a-cloned-prototype-needs-its-icons-upgraded
-   */
-  protected upgradeClonedIcons(node: ParentNode): void {
-    upgradeIcons(node);
   }
 
   /* ── Attributes in, attributes out ───────────────────────────────────── */
@@ -678,20 +617,10 @@ export abstract class SherpaElement extends Base {
    *  `reportValidity()` call it first. Nothing, by default. TRAP T-a-flag-brings-the-base-methods */
   protected syncFormValue(): void {}
 
-  /** Is it acceptable, as its form sees it? A native form control's own door;
-   *  an element that is not form-associated has nothing to refuse. */
-  checkValidity(): boolean {
-    if (!(this.constructor as { formAssociated?: boolean }).formAssociated) return true;
-    this.syncFormValue();
-    return this.formLink.checkValidity();
-  }
-
-  /** Check, and show the browser's message on the control. */
-  reportValidity(): boolean {
-    if (!(this.constructor as { formAssociated?: boolean }).formAssociated) return true;
-    this.syncFormValue();
-    return this.formLink.reportValidity();
-  }
+  /** Is it acceptable, as its form sees it — and, reporting, show the browser's
+   *  message. A form-associated element's alone: `define()` gives them. */
+  declare checkValidity?: () => boolean;
+  declare reportValidity?: () => boolean;
 
   /** Set or clear a CUSTOM STATE, read as `:host(:state(name))` — private state
    *  is never a public `data-*`. As `toggleAttribute`. TRAP T-private-state-is-a-custom-state */
@@ -784,7 +713,7 @@ export abstract class SherpaElement extends Base {
    */
   populate(data: unknown): Promise<void> {
     this.#given = data;
-    return this.rendered.then(() => this.renderData(this.#withSettings(data)));
+    return this.rendered.then(() => this.renderData(data));
   }
 
   /**
@@ -962,7 +891,7 @@ export abstract class SherpaElement extends Base {
       const said = JSON.stringify(data);
       if (data === undefined || said === this.#childSaid) return;
       this.#childSaid = said;
-      void this.renderData(this.#withSettings(data));
+      void this.renderData(data);
     };
     // Its own attributes are not its children.
     this.#childWatch ??= new MutationObserver((records) => {

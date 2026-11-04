@@ -224,15 +224,6 @@ function summaryOf(node, sf) {
     .trim();
 }
 
-/** A config default's type, where its literal says it; otherwise undefined. */
-function literalType(node) {
-  if (!node) return undefined;
-  if (ts.isStringLiteralLike(node)) return 'string';
-  if (ts.isNumericLiteral(node)) return 'number';
-  if (node.kind === ts.SyntaxKind.TrueKeyword || node.kind === ts.SyntaxKind.FalseKeyword) return 'boolean';
-  return undefined;
-}
-
 /** Is this member the class's own, and public? */
 function isPublic(member) {
   if (!member.name || ts.isPrivateIdentifier(member.name)) return false;
@@ -273,17 +264,6 @@ export function parseClassApi(src) {
   const written = (node) => node?.getText(sf).replace(/\s+/g, ' ').trim();
   for (const member of cls?.members ?? []) {
     const name = member.name && !ts.isPrivateIdentifier(member.name) ? member.name.getText(sf) : '';
-    // `static config` names are read-write properties the BASE class defines. TRAP T-configuration-is-not-data
-    if (ts.isPropertyDeclaration(member) && name === 'config' && member.initializer
-      && ts.isObjectLiteralExpression(member.initializer)) {
-      for (const p of member.initializer.properties) {
-        if (!p.name) continue;
-        const entry = prop(p.name.getText(sf));
-        entry.get = entry.set = true;
-        entry.type = literalType(ts.isPropertyAssignment(p) ? p.initializer : undefined) ?? entry.type;
-      }
-      continue;
-    }
     // `static commands`: what a `commandfor` button can ask of it. TRAP T-a-button-commands-by-markup
     if (ts.isPropertyDeclaration(member) && name === 'commands' && member.initializer
       && ts.isObjectLiteralExpression(member.initializer)) {

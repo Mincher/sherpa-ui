@@ -114,9 +114,9 @@ For a table of records that can be sorted, filtered, grouped and selected. It re
 
 | Property | Type | Access | What it is |
 |---|---|---|---|
-| `columns` | `unknown` | read and write |  |
-| `key` | `unknown` | read and write |  |
-| `actions` | `unknown` | read and write |  |
+| `columns` | `GridColumn[]` | read and write |  |
+| `key` | `string \| null` | read and write |  |
+| `actions` | `GridAction[]` | read and write |  |
 | `rowKey` | `string \| null` | read and write |  |
 | `groups` | `GroupSummary[]` | read only |  |
 | `currentKey` | `string \| null` | read and write |  |

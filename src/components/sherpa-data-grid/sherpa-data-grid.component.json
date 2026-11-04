@@ -1311,17 +1311,17 @@
       "jsProps": [
         {
           "name": "columns",
-          "type": "unknown",
+          "type": "GridColumn[]",
           "access": "read-write"
         },
         {
           "name": "key",
-          "type": "unknown",
+          "type": "string | null",
           "access": "read-write"
         },
         {
           "name": "actions",
-          "type": "unknown",
+          "type": "GridAction[]",
           "access": "read-write"
         },
         {

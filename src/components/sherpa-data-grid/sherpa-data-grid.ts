@@ -79,12 +79,19 @@ export interface GridAction {
   danger?: boolean;
 }
 
+/** What a page configures once, as properties. TRAP T-configuration-is-not-data */
+interface Configured {
+  columns: GridColumn[];
+  key: string | null;
+  actions: GridAction[];
+}
+
 interface GridConfig {
   columns: GridColumn[];
   rows: GridRow[];
   /** The field that names a row. Without it, the data layer's key does —
    *  never a position. TRAP T-a-made-up-key-never-leaves-the-data-layer */
-  key?: string;
+  key?: string | null;
   /** Per-row actions. Reveals the pinned trailing column. */
   actions?: GridAction[];
   /**
@@ -193,11 +200,59 @@ export class SherpaDataGrid extends SherpaElement {
 
   /* CONFIGURATION a page sets once; rows and groups arrive as data beside it.
      TRAP T-configuration-is-not-data */
-  static override config = { columns: [], key: null, actions: [] };
-  declare columns: GridColumn[];
+  #config: Configured = { columns: [], key: null, actions: [] };
+  /** The last data, less what it configured: what a new setting redraws beside. */
+  #lastData: unknown = {};
+  /** A redraw for new settings is queued. */
+  #reconfiguring = false;
+
+  get columns(): GridColumn[] {
+    return this.#config.columns;
+  }
+  set columns(columns: GridColumn[]) {
+    this.#configure({ columns });
+  }
   /** The field that names a row — selection follows it. */
-  declare key: string | null;
-  declare actions: GridAction[];
+  get key(): string | null {
+    return this.#config.key;
+  }
+  set key(key: string | null) {
+    this.#configure({ key });
+  }
+  get actions(): GridAction[] {
+    return this.#config.actions;
+  }
+  set actions(actions: GridAction[]) {
+    this.#configure({ actions });
+  }
+
+  /** Every setting made in one moment redraws ONCE — three setters in a row
+   *  would each draw the config the one before had not drawn yet. */
+  #configure(set: Partial<Configured>): void {
+    this.#config = { ...this.#config, ...set };
+    if (this.#reconfiguring) return;
+    this.#reconfiguring = true;
+    queueMicrotask(() => {
+      this.#reconfiguring = false;
+      // Not populate(): what the caller last gave stays theirs.
+      void this.rendered.then(() => this.renderData(this.#lastData));
+    });
+  }
+
+  /** Data over the configuration: a name it carries is SET, the rest arrives
+   *  beside what the page configured. Rows alone are rows. */
+  #withConfig(data: unknown): Partial<GridConfig> & { pivot?: Partial<GridConfig> } {
+    if (!data || typeof data !== 'object') return {};
+    this.#lastData = data;
+    if (Array.isArray(data)) return { ...this.#config, rows: data as GridRow[] };
+    const rest: Record<string, unknown> = {};
+    for (const [name, value] of Object.entries(data)) {
+      if (name in this.#config) this.#config = { ...this.#config, [name]: value };
+      else rest[name] = value;
+    }
+    this.#lastData = rest;
+    return { ...this.#config, ...rest };
+  }
 
   /** `key` by the name a framework can bind: React and Vue keep `key` for
    *  themselves. TODO 211 */
@@ -509,8 +564,7 @@ export class SherpaDataGrid extends SherpaElement {
   protected override renderData(data: unknown): void {
     this.#awaitingData = false;
     // Rows alone — a bind with no adapter — are rows, under the columns the page set. TODO 518
-    const given = (Array.isArray(data) ? { columns: this.columns, key: this.key, actions: this.actions, rows: data }
-      : data ?? {}) as Partial<GridConfig> & { pivot?: Partial<GridConfig> };
+    const given = this.#withConfig(data);
     /* A PIVOT draws its own rows and columns while its slot names a Secondary,
        and never keeps them: its own come back after. Will, TODO 548 */
     const cfg = given.pivot ? { ...given.pivot, actions: [] } : given;

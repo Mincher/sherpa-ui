@@ -1832,9 +1832,11 @@ attribute with no role attribute beside it is what axe flags.
 **A platform flag a component sets brings the base's methods with it, and the
 spec lists them** — and a declared boolean's `accessor` brings its property. `static formAssociated = true` brings `checkValidity()` and
 `reportValidity()`; `static delegatesFocus = true`, `focus()`. They are written
-once, in `SherpaElement` (`formLink`, and a `syncFormValue()` a control
-overrides to refresh what it submits before a check), and were written by hand
-in 5 form controls. The spec generator reads only the component's own class, so
+once: `define()` puts the two form doors on a form-associated class alone, as a
+native control has them (plan 695 P6 — every element had them before, and an
+element that was no control answered `true`), over `SherpaElement`'s `formLink`
+and a `syncFormValue()` a control overrides to refresh what it submits before a
+check. They were written by hand in 5 form controls. The spec generator reads only the component's own class, so
 `parseClassApi` adds the flag's methods — or the contract would lose the
 surface a caller reaches (`form-control-names.test.mjs` holds it). The move
 gave `checkValidity()` to the four form-associated controls that had none
@@ -1847,6 +1849,7 @@ generator lists the property (list-item, nav-item, select-card).
 - Site: `scripts/generate-component-spec.mjs`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/unit/form-control-names.test.mjs`
+- Site: `test/e2e/reforged-form-controls.spec.ts`
 
 ### T-every-button-says-its-action
 

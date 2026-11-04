@@ -833,7 +833,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (127)
+## SherpaElement and the shared sheets (126)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -907,7 +907,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-closest-stops-at-the-shadow-boundary](traps/element-and-sheets.md#t-closest-stops-at-the-shadow-boundary) — sherpa-element
 - [T-coerce-and-clamp-are-shared](traps/element-and-sheets.md#t-coerce-and-clamp-are-shared) — sherpa-element
 - [T-composed-path-not-target](traps/data-grid.md#t-composed-path-not-target) — sherpa-element
-- [T-configuration-is-not-data](traps/data-layer.md#t-configuration-is-not-data) — sherpa-element
 - [T-custom-element-upgrade](traps/filters.md#t-custom-element-upgrade) — sherpa-element
 - [T-declared-only-means-css-owns-it](traps/element-and-sheets.md#t-declared-only-means-css-owns-it) — sherpa-element
 - [T-empty-write-lets-css-collapse](traps/element-and-sheets.md#t-empty-write-lets-css-collapse) — directives
@@ -1079,7 +1078,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](traps/other-components.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (73)
+## Build, tools and the MCP (72)
 
 - [T-a-bare-name-must-be-used-not-mentioned](traps/build-tools-mcp.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — ts-facts
@@ -1128,7 +1127,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-override-collection-is-keyed-by-its-parent](traps/build-tools-mcp.md#t-an-override-collection-is-keyed-by-its-parent) — check-extensions
 - [T-at-property-needs-the-document](traps/charts.md#t-at-property-needs-the-document) — project-tokens
 - [T-bind-locks-what-it-owns](traps/join-and-app.md#t-bind-locks-what-it-owns) — check-ownership
-- [T-configuration-is-not-data](traps/data-layer.md#t-configuration-is-not-data) — ts-facts
 - [T-fit-is-a-desktop-mode](traps/other-components.md#t-fit-is-a-desktop-mode) — project-tokens
 - [T-grouping-is-an-attribute-and-a-class](traps/menus-tips-overlays.md#t-grouping-is-an-attribute-and-a-class) — project-tokens
 - [T-harness-serves-font-awesome-locally](traps/build-tools-mcp.md#t-harness-serves-font-awesome-locally) — playwright.config

@@ -1173,10 +1173,8 @@ grouped view is opened.
 `data-icon`, and is the right size. Only the drawing is missing, so a test that
 asserts the trigger exists, or that its box is 14px, passes.
 
-`upgradeClonedIcons(node)` on `SherpaElement` fixes it, and `clone()` calls it
-for you. A component that clones a `<template>`'s content directly —
-`sherpa-data-grid` does, at five sites, because it needs the `<tr>` rather than
-a wrapper — has to call it itself.
+`clone()` draws a copy's icons for you (`upgradeIcons`). A component that
+clones a `<template>`'s content itself has to call `upgradeIcons` on the copy.
 
 Idempotent: `upgradeIcons` skips an element that already holds an SVG, so a
 second call costs a `querySelectorAll` and nothing else.

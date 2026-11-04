@@ -2660,21 +2660,21 @@
               "kind": "field",
               "name": "columns",
               "type": {
-                "text": "unknown"
+                "text": "GridColumn[]"
               }
             },
             {
               "kind": "field",
               "name": "key",
               "type": {
-                "text": "unknown"
+                "text": "string | null"
               }
             },
             {
               "kind": "field",
               "name": "actions",
               "type": {
-                "text": "unknown"
+                "text": "GridAction[]"
               }
             },
             {
