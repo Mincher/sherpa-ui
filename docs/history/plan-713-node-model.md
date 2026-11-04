@@ -357,3 +357,18 @@ cancel, a dry run, batch writes (§6). M1–M6 only draw, check and edit.
 | D6 | The colour of True and False | Both the boolean green triangle: their place and their tips tell them apart | True green (`success`), False red (`critical`) |
 | D7 | A custom value | The routed row mirrors it, read only, with "Custom"; cut the route and its own pick is back | The custom value joins the picklist, and stays after the route is cut |
 | D8 | The workflows saved before this | Workflow v2: a v1 is read once into v2 (its header routes move to Rows rows) | v1 stays: a header route still means data rows (an alias) |
+
+**Will, 2026-11-04:**
+
+- **D1: B, but agnostic.** The header's input stays the data input, and it takes ANY type: a
+  value, an object or a boolean. The node's rules and parameters decide what it does with it.
+- **D2: truthy.** True is anything that is not 0, null, none, false (and the like); False is
+  the rest. A node's True and False outputs follow what it gave, by that rule.
+- **D3: A.** One node is one group. The type of condition is a picklist in a node row.
+- **D4: per socket.** Many routes go into an input only where that socket accepts many (`many`).
+- **D5: A.** A socket pins its own type's Style mode.
+- **D6: B.** True is green (`success`), False is red (`critical`).
+- **D7: A.** The routed row mirrors the custom value, read only; cut the route and its own
+  pick is back.
+- **D8: A, and convert.** Workflow v2, a v1 read once into v2; and convert the saved v1
+  graphs (in Demos and the tests) when v2 is ready, so no v1 is left.
