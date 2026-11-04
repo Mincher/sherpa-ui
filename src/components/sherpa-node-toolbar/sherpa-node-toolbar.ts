@@ -22,6 +22,7 @@ export class SherpaNodeToolbar extends SherpaElement {
     'data-tie': { type: 'boolean', kind: 'behaviour' },
     'data-picked-routes': { type: 'number', kind: 'behaviour' },
   } as const;
+  static override observed = ['data-picked-routes'];
 
   override onRender(): void {
     toolbarKeys(this.$('.tools')!);

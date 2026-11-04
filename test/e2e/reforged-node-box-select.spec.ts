@@ -79,6 +79,8 @@ test('a left drag on blank canvas draws the marquee, then picks the three connec
   expect(mid.rect!.h).toBeGreaterThan(200);
   expect(await picked(page)).toEqual({ routes: ['s1/rows', 's2/rows', 's3/rows'], nodes: [], count: '3' });
   expect(await page.evaluate(() => document.getElementById('cv')!.matches(':state(boxing)'))).toBe(false);
+  // The Tie tool says how many are picked.
+  expect(await page.evaluate(() => document.querySelector('sherpa-node-toolbar')!.shadowRoot!.querySelector('.tie')!.getAttribute('data-tip'))).toBe('Zip tie: 3 connectors picked (T ties them)');
   // Thicker as well as another colour, so it reads in forced colours.
   expect(await page.evaluate((sel) => getComputedStyle(document.querySelector(`${sel}[data-selected]`)!).strokeWidth, PATHS)).toBe('4px');
   expect(await page.evaluate(() => getComputedStyle(document.getElementById('cv')!.shadowRoot!.querySelector('.viewport')!).cursor)).toBe('crosshair');

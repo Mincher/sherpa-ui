@@ -119,7 +119,7 @@
       "$type": "prop",
       "name": "data-picked-routes",
       "type": "number",
-      "observed": false,
+      "observed": true,
       "declared": true,
       "kind": "behaviour",
       "description": "How many connectors are picked; written by the editor, said in the Tie tool's tip"
