@@ -454,6 +454,25 @@ the folder; history wording is cut; the stale and duplicate entries go. Size: M.
   (`lane/grid-p4`, 4 commits: the facts ask, one body draw, the split, the heading buttons
   — finishing the buttons and its tests) and P7 (`lane/css-p7`, 41 files changed, none
   committed). N4 waits on Will (TODO 616, held 2026-10-30).
+- **P4 ✅ (`c2e34efd`, `8485dbf0`, `c8ed7f7b`, `ce8107f6`, `982e2617`; Demos `84dd3cb`).**
+  `src/core/data/column-facts.ts` (`ColumnFacts`, DOM-free) answers the grid's row order,
+  its grouped visual page (page-size rows; an open heading free; a shut group one slot),
+  group counts, distinct values and slider ranges; the grid's `#visibleRows`, `#sortRows`,
+  `#pageStarts`, `#pageWindow`, `#groupSize`, `#presentValues` and its `reduceRows` range
+  are gone. One body draw per act: a new optional `BoundControl.drawLoading`, fed the
+  source's `loading` by `bindSource`, so the body waits for the rows that follow a
+  reading; column bounds read only on resize. The grid 2,651 → 1,104 lines, beside
+  `grid-filters`, `-selection`, `-cells`, `-widths`, `-details`, `-groups`, `-actions`,
+  `-find`, `-host`. The heading's Sort and Group are `sherpa-button`s with `aria-pressed`.
+  Measured (Demos Records, Chromium, 4x, median of 5, A/B): a value tick 216 → 80 ms, a
+  chip off 104 → 64, a chip on 216 → 72, a sort 144 → 152, a page 24 → 24 — all under 200.
+  Grid import +4.4 KB brotli (nine files compressing apart). Lane picks taken: the grid
+  calls `ColumnFacts` over the rows its source gave (a fold needs no round trip); the
+  heading buttons keep the button's own look (❓ Will may look: at rest the icon ink is the
+  button's #35353d, not the chip's #0c0b11, with a hover fill); a pressed Group asks
+  Ungroup.
+  **Carried:** trap prose in `data-layer.md` still names `#visibleRows`, `#sortRows`,
+  `#toggleGroup` → the wording pass. P5 may now drop the chip's Sort and Group kinds.
 
 ### The waves
 

@@ -392,7 +392,7 @@ nothing of parse or style time.)
 | Component | Lines | What falls out |
 |---|---|---|
 | `sherpa-quick-filter-toolbar` | 2,909 | fit-and-fold (a general utility), organise chips, actions (→ more-menu), values and readings (→ a shared controller) |
-| `sherpa-data-grid` | 2,670 | its own sorting, paging, group counts, distinct values and slider ranges (→ a "column facts" ask of the DataSource); then filters, tags, find, selection, resize, sub-grids as modules |
+| `sherpa-data-grid` | 2,670 | its own sorting, paging, group counts, distinct values and slider ranges (→ a "column facts" ask of the DataSource); then filters, tags, find, selection, resize, sub-grids as modules *Done, 695 P4: `ColumnFacts`; one body draw per act (a chip on 216 → 72 ms at 4x); 2,651 → 1,104 lines plus nine modules.* |
 | `sherpa-menu` | 2,525 | five components in one: the popover shell, the value list, the condition editor, the number body, the date body. Its JS placement (~170 lines) could go: anchor positioning by element reference works in all three engines. *Done, 695 P3: five modules beside it, 2,558 → 1,258 lines; the platform places it (JS kept only for `data-bounds` and a trigger off-screen); the condition editor nests (692).* |
 | `sherpa-quick-filter` | 1,443 | it is the bar chip, the panel section, the legend row, and three of each grid heading. Sort and group toggles → `sherpa-button` with `aria-pressed`; the legend key → a light element |
 
