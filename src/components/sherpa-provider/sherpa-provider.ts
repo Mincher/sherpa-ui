@@ -22,7 +22,7 @@ import { Settings, type SettingKey, type SettingValue } from '../../core/data/se
 import { report } from '../../core/data/report.js';
 import { chartAxes, summariseMarked, type SummarySpec } from '../../core/data/aggregate.js';
 import { rangeOf, segmentUnit } from '../../core/data/segments.js';
-import type { Row, Store } from '../../core/data/store.js';
+import { readField, type Row, type Store } from '../../core/data/store.js';
 import type { ViewLibrary } from '../../core/browser/persist-view.js';
 import { PageKeeper, type PageState } from '../../core/browser/page-state.js';
 import { Updates } from '../../core/data/updates.js';
@@ -859,7 +859,7 @@ export class SherpaProvider extends SherpaElement {
       last = rows;
       const test = this.#highlight.test(el, scope, src);
       // A number's zones, from a status field. Plan 683 S3
-      const summary = summariseMarked(rows, this.#segmented(spec, src), (f) => src.valuesFor(f), (f) => src.zonesOf(f)?.zones, test);
+      const summary = summariseMarked(rows, this.#segmented(spec, src, rows), (f) => src.valuesFor(f), (f) => src.zonesOf(f)?.zones, test);
       return zoned && summary && typeof summary === 'object' && 'zones' in summary
         ? { ...summary, picked: src.pickedFor(bindId(el), zoned) } : summary;
     } : undefined;
@@ -1037,7 +1037,7 @@ export class SherpaProvider extends SherpaElement {
   }
 
   /** A series over a date, `auto`: cut to the unit its date condition's range fits, and padded to that range. TODO 540 */
-  #segmented(given: SummarySpec, source: DataSource): SummarySpec {
+  #segmented(given: SummarySpec, source: DataSource, rows: readonly Row[]): SummarySpec {
     // A number field sums; any other counts its rows. Said, it is as said.
     const spec = given.shape === 'aggregate' && !given.aggregate && given.field && source.fieldFacts(given.field).type === 'number'
       ? { ...given, aggregate: 'sum' as const } : given;
@@ -1045,7 +1045,10 @@ export class SherpaProvider extends SherpaElement {
     const scope = source.query.scopeOf(spec.over);
     const reading = scope ? source.query.reading(scope, spec.over) : undefined;
     const range = reading ? rangeOf(whereOf({ [spec.over]: reading })[spec.over]) : undefined;
-    return range ? { ...spec, bucket: segmentUnit(...range), range } : { ...spec, bucket: 'day' };
+    // No date condition: the rows' own first and last day.
+    const days = range ? [] : rows.map((r) => String(readField(r, spec.over!) ?? '').slice(0, 10)).filter((d) => /^\d{4}-\d\d-\d\d$/.test(d)).sort();
+    const span = range ?? (days.length ? [days[0]!, days[days.length - 1]!] as [string, string] : undefined);
+    return span ? { ...spec, bucket: segmentUnit(...span), range: span } : { ...spec, bucket: 'day' };
   }
 
   /** The fields the open page declares: a row opened in a grid made from a chart shows them. */

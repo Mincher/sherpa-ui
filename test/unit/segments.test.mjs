@@ -39,15 +39,25 @@ test('a segment says its time span', () => {
 
 const { summarise } = await import(new URL('../../dist/core/data/aggregate.js', import.meta.url));
 
-test('a series by week is padded to its range, and each point says its span', () => {
+test('a series by week is counted from its range start, padded, and each point says its span', () => {
   const rows = [
     { at: '2026-03-03', n: 5 }, { at: '2026-03-04', n: 7 }, { at: '2026-03-17', n: 1 },
   ];
   const out = summarise(rows, {
     shape: 'aggregate', aggregate: 'sum', field: 'n', over: 'at', bucket: 'week', range: ['2026-03-01', '2026-03-28'],
   });
-  // Mondays 23 Feb (holds Sun 1 Mar), 2, 9, 16, 23 Mar: a quiet week is 0.
-  assert.deepEqual(out.values, [0, 12, 0, 1, 0]);
+  // 4 weeks from 1 Mar: a quiet week is 0.
+  assert.deepEqual(out.values, [12, 0, 1, 0]);
   assert.equal(out.value, 13);
-  assert.equal(out.labels.length, 5);
+  assert.match(out.labels[0], /Mar.+1.+7|1.+7.+Mar/);
+});
+
+test('last 6 months is 6 segments, whatever the calendar says (TODO 540)', () => {
+  const rows = [{ at: '2026-05-04', n: 1 }, { at: '2026-07-31', n: 2 }, { at: '2026-11-04', n: 4 }];
+  const out = summarise(rows, {
+    shape: 'aggregate', aggregate: 'sum', field: 'n', over: 'at', bucket: 'month', range: ['2026-05-04', '2026-11-04'],
+  });
+  assert.equal(out.values.length, 6);
+  // The last day, 4 Nov, is in the last segment, which starts 4 Oct.
+  assert.deepEqual(out.values, [1, 0, 2, 0, 0, 4]);
 });

@@ -10,6 +10,8 @@
  * - segmentUnit — The unit for a range of ISO days, both ends inclusive.
  * - segmentLabel — A segment's time span in words, for its tooltip.
  * - rangeOf — The days a date condition spans, as ISO days, or none.
+ * - segmentStarts — The first day of each segment of a range, counted from ITS start.
+ * - spanLabel — A run of days in words: `Mar 2 – 8`.
  */
 
 import { durationSpan } from './store.js';
@@ -21,6 +23,13 @@ export type SegmentUnit = 'hour2' | 'day' | 'week' | 'month' | 'quarter' | 'year
 const FEWEST = 3;
 const DAY = 86_400_000;
 
+/** Whole calendar months from `start` to `end` (ms): one fewer when the end falls before the start's day of the month. */
+function wholeMonths(start: number, end: number): number {
+  const a = new Date(start);
+  const b = new Date(end);
+  return (b.getUTCFullYear() - a.getUTCFullYear()) * 12 + b.getUTCMonth() - a.getUTCMonth() - (b.getUTCDate() < a.getUTCDate() ? 1 : 0);
+}
+
 /** The unit for a range of ISO days, both ends inclusive: `['2026-01-01', '2026-02-12']` is 6 weeks, so weeks. */
 export function segmentUnit(from: string, to: string): SegmentUnit {
   const start = Date.parse(`${from}T00:00:00Z`);
@@ -28,11 +37,7 @@ export function segmentUnit(from: string, to: string): SegmentUnit {
   if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return 'day';
   const days = Math.round((end - start) / DAY);
   if (days === 1) return 'hour2';
-  const a = new Date(start);
-  const b = new Date(end);
-  // Whole calendar months: one fewer when the end falls before the start's day of the month.
-  const months = (b.getUTCFullYear() - a.getUTCFullYear()) * 12 + b.getUTCMonth() - a.getUTCMonth()
-    - (b.getUTCDate() < a.getUTCDate() ? 1 : 0);
+  const months = wholeMonths(start, end);
   if (months >= 12 * FEWEST) return 'year';
   if (months >= 3 * FEWEST) return 'quarter';
   if (months >= FEWEST) return 'month';
@@ -42,6 +47,7 @@ export function segmentUnit(from: string, to: string): SegmentUnit {
 const utc = (options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat => new Intl.DateTimeFormat(undefined, { timeZone: 'UTC', ...options });
 const DAY_FORMAT = utc({ weekday: 'short', day: 'numeric', month: 'short' });
 const SPAN_FORMAT = utc({ day: 'numeric', month: 'short' });
+const YEAR_SPAN_FORMAT = utc({ day: 'numeric', month: 'short', year: 'numeric' });
 const MONTH_FORMAT = utc({ month: 'long', year: 'numeric' });
 const HOUR_FORMAT = utc({ day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false });
 const CLOCK_FORMAT = utc({ hour: '2-digit', minute: '2-digit', hour12: false });
@@ -68,4 +74,30 @@ export function rangeOf(condition: WhereCondition | undefined, today = new Date(
     if (n != null) return durationSpan(op, { n: Number(n), unit }, today);
   }
   return eq != null ? [day(eq), day(eq)] : undefined;
+}
+
+const MONTHS: Partial<Record<SegmentUnit, number>> = { month: 1, quarter: 3, year: 12 };
+
+/** The first day of each segment of a range, counted from ITS start — a range of 6 months is 6 segments, whatever the calendar says. The last takes any days left over. */
+export function segmentStarts(from: string, to: string, unit: SegmentUnit): string[] {
+  const start = Date.parse(`${from}T00:00:00Z`);
+  const end = Date.parse(`${to}T00:00:00Z`) + DAY;
+  const months = MONTHS[unit];
+  const count = months ? Math.floor(wholeMonths(start, end) / months) : Math.floor((end - start) / DAY / (unit === 'week' ? 7 : 1));
+  const at = new Date(start);
+  return Array.from({ length: Math.max(count, 1) }, (_, i) => {
+    if (!months) return new Date(start + i * (unit === 'week' ? 7 : 1) * DAY).toISOString().slice(0, 10);
+    // Counted from the start, so a 31st is clamped by its month and never carried into the next.
+    const month = at.getUTCMonth() + i * months;
+    const last = new Date(Date.UTC(at.getUTCFullYear(), month + 1, 0)).getUTCDate();
+    return new Date(Date.UTC(at.getUTCFullYear(), month, Math.min(at.getUTCDate(), last))).toISOString().slice(0, 10);
+  });
+}
+
+/** A run of days in words — `Mar 2 – 8`, or across a year's end with its years — for a tooltip. */
+export function spanLabel(from: string, to: string): string {
+  const a = new Date(`${from}T00:00:00Z`);
+  const b = new Date(`${to}T00:00:00Z`);
+  if (Number.isNaN(a.getTime()) || Number.isNaN(b.getTime())) return from;
+  return (a.getUTCFullYear() === b.getUTCFullYear() ? SPAN_FORMAT : YEAR_SPAN_FORMAT).formatRange(a, b);
 }

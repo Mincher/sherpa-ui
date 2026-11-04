@@ -37,7 +37,7 @@
 import { compareValues, readField, groupRows, groupSummaries, valueKey, type GroupSummary, type Row, type SortDirection } from './store.js';
 import type { ChartDatum } from './chart-datum.js';
 import type { Threshold } from './threshold.js';
-import { segmentLabel, type SegmentUnit } from './segments.js';
+import { segmentLabel, segmentStarts, spanLabel, type SegmentUnit } from './segments.js';
 
 /* ── Reducers ──────────────────────────────────────────────────────────── */
 
@@ -294,6 +294,9 @@ export function chartAxes(
   return { ...(primary ? { segment: primary } : {}), ...(secondary ? { stack: secondary } : {}) };
 }
 
+/** The ISO day before `day`. */
+const dayBefore = (day: string): string => new Date(Date.parse(`${day}T00:00:00Z`) - DAY).toISOString().slice(0, 10);
+
 const CUT: Record<Bucket, number> = { year: 4, quarter: 7, month: 7, week: 10, day: 10, hour2: 13 };
 const HOUR = 3_600_000;
 const DAY = 86_400_000;
@@ -443,13 +446,23 @@ export function summarise(
   const at = spec.bucket ? '\u0000bucket' : spec.over;
   // `auto` reaches here only unresolved — no range to fit — and cuts by the day.
   const bucket = spec.bucket === 'auto' ? 'day' : spec.bucket;
-  const keyed = bucket ? rows.map((r) => ({ ...r, [at]: cut(readField(r, spec.over!), bucket) })) : rows;
-  const points = pointsOf(rows, spec.over, bucket, domain(spec.over), spec.range) as (string | number)[];
+  /* A range cut into weeks, months, quarters or years is counted from ITS start: 6 months is 6 segments.
+     A row is in the last segment that starts on or before it. TODO 540 */
+  const starts = bucket && spec.range && bucket !== 'day' && bucket !== 'hour2' ? segmentStarts(...spec.range, bucket) : undefined;
+  const startOf = (value: unknown): string => {
+    const day = cut(value, 'day');
+    return starts!.findLast((s) => s <= day) ?? starts![0]!;
+  };
+  const keyed = starts ? rows.map((r) => ({ ...r, [at]: startOf(readField(r, spec.over!)) }))
+    : bucket ? rows.map((r) => ({ ...r, [at]: cut(readField(r, spec.over!), bucket) })) : rows;
+  const points = (starts ?? pointsOf(rows, spec.over, bucket, domain(spec.over), spec.range)) as (string | number)[];
   if (spec.shape === 'aggregate') {
     const values = seriesBy(keyed, at, points, '', opts).values;
     const delta = deltaPercent(values);
     // Each point's time span, for its tooltip. TODO 540
-    const spans = bucket ? { labels: points.map((p) => segmentLabel(String(p), bucket)) } : {};
+    const spans = starts
+      ? { labels: starts.map((from, i) => spanLabel(from, i + 1 < starts.length ? dayBefore(starts[i + 1]!) : spec.range![1])) }
+      : bucket ? { labels: points.map((p) => segmentLabel(String(p), bucket)) } : {};
     return delta == null ? { value, values, ...spans } : { value, values, ...spans, deltaPercent: delta };
   }
   const labels = points.map(String);
