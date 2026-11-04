@@ -346,9 +346,8 @@ before fonts   over: 2   folded: 3
 after  fonts   over: 0   folded: 4
 ```
 
-The harness used to wait for two **Font Awesome** faces — icon glyphs, which
-size nothing — and never for the body font, which is what sizes a label. It now
-waits on `document.fonts.ready`, because Inter is not declared by the page at
+Waiting for icon faces sizes nothing, and the body font is what sizes a label.
+The harness waits on `document.fonts.ready`, because Inter is not declared by the page at
 all when it comes from the OS, so there is no named face to `fonts.load()`.
 
 The ceiling stays: `fonts.ready` has no timeout of its own, and losing the race
