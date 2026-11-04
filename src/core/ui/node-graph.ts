@@ -1109,7 +1109,7 @@ export function bindQueryEditor(
   draw();
   // — Undo and Redo: the Query's draft, as copies, before and after each change anyone made (a chip's too).
   //   A step is put back through the Query's own whole restore, so every reader redraws as for any edit.
-  //   A Query that waits for Apply holds no steps: an undo there would apply what the reader has not. TRAP T-an-edit-is-a-step
+  //   Where a scope waits for Apply a step moves the DRAFT only (`restoreDraft`): an Apply is no step. TRAP T-an-edit-is-a-step
   const journal = new Journal<Query>(HISTORY);
   let last = query.draft;
   let restoring = false;
@@ -1122,15 +1122,14 @@ export function bindQueryEditor(
     draw();
     if (restoring) return;
     const now = query.draft;
-    if (query.waiting()) journal.clear();
-    else if (JSON.stringify(now) !== JSON.stringify(last)) journal.push({ before: last, after: now });
+    if (JSON.stringify(now) !== JSON.stringify(last)) journal.push({ before: last, after: now });
     last = now;
     tell();
   };
   const step = (to: Query | undefined): boolean => {
-    if (!to || query.waiting()) return false;
+    if (!to) return false;
     restoring = true;
-    void query.setQuery(to, { by: 'undo' }).finally(() => {
+    void query.restoreDraft(to, { by: 'undo' }).finally(() => {
       restoring = false;
       last = query.draft;
       tell();

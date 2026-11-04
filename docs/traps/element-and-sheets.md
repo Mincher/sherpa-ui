@@ -2011,9 +2011,9 @@ to the same class with `journal: N` (`T-a-store-keeps-its-history`).
   toolbar yields to the card's right, in the canvas's own container units.
 - **The Query editor steps its draft the same way.** It keeps a `Journal` of the
   Query's draft COPIES, whoever changed them (the graph, or a chip outside it), and a
-  step is the Query's own whole restore (`setQuery`), so every reader redraws and a
-  held value stays. A Query that waits for Apply holds no steps: an undo there would
-  apply what the reader has not.
+  step is the Query's own restore (`restoreDraft`, which is `setQuery` where nothing
+  waits), so every reader redraws and a held value stays. Where a scope waits for
+  Apply a step moves the DRAFT only and leaves what is applied: an Apply is no step.
 
 - Site: `src/core/ui/node-graph.ts`
 - Site: `src/components/sherpa-node-toolbar/sherpa-node-toolbar.html`

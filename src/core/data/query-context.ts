@@ -54,6 +54,7 @@
  * - .honour — Which picks are in force: `kind` (Show as), `axes` (Primary, Secondary). Off, kept, not shown.
  * - .honours — Is that kind of pick in force?
  * - .setQuery — Restore a whole Query — a reload, a View, a saved filter.
+ * - .restoreDraft — Put a draft back as an Undo leaves it, and leave what is applied.
  * - .startWith — The answer a field opens on where nothing answers it — a fetching list's first value.
  * - .export — The whole question as JSON — the Query as applied.
  * - .import — Take a question back in, exactly.
@@ -547,6 +548,39 @@ export class QueryContext extends EventTarget {
     this.#announce({
       fields: [...new Set([...before, ...this.#answered()])], scopes: this.scopes, ...(options.by ? { by: options.by } : {}),
     });
+  }
+
+  /**
+   * Put a DRAFT back as an Undo or Redo leaves it, and leave what is applied: where a scope waits
+   * for Apply, the pending difference moves and the rows do not. Resolves once every member has
+   * drawn it. Where nothing waits the draft is the Query, so it is `setQuery`.
+   */
+  async restoreDraft(draft: Query, options: { by?: string } = {}): Promise<void> {
+    if (!this.waiting()) return this.setQuery(draft, options);
+    if (draft?.v !== 1 || typeof draft.scopes !== 'object') {
+      report({ code: 'unknown-query', message: 'restoreDraft: not a v1 Query, so nothing was restored.' });
+      return;
+    }
+    const next = definitionOf(draft, false, this.#live.draft, {
+      defaults: this.#decl.defaults,
+      starts: this.#decl.starts,
+      readingsOf: (where) => this.#readingsOf(where),
+      carriesOver: (f) => this.#members.knows(f)?.carriesOver(f) ?? false,
+    });
+    this.#decl.keepFixed(next);
+    this.#decl.fillOpens(next);
+    rehome(next);
+    keepOff(next, (scope) => this.#decl.alwaysOn(scope));
+    frozen(next);
+    const was = this.#live.draft;
+    const fields = new Set([...this.#answered()]);
+    this.#live.draft = next;
+    for (const f of this.#answered()) fields.add(f);
+    const scopes = new Set([...Object.keys(was.scopes), ...Object.keys(next.scopes)]);
+    this.#tell([
+      { kind: 'drawn', fields: [...fields], pending: true },
+      ...[...scopes].flatMap((scope): QueryChange[] => [{ kind: 'hold', scope, moved: [...new Set([...(was.scopes[scope]?.holds ?? []), ...(next.scopes[scope]?.holds ?? [])])] }, { kind: 'bars', scope }]),
+    ]);
   }
 
   /**

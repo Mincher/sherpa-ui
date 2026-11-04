@@ -3,8 +3,8 @@ import { test, expect } from './harness';
 /**
  * The Query editor's toolbar, Undo and Redo — Will, TODO 734. The editor keeps a journal of the
  * Query's draft copies, whoever made the change (the graph, or a chip outside it); a step is put
- * back through the Query's own whole restore, so every reader redraws. A Query that waits for Apply
- * holds no steps. Real pointer and key. TRAP T-an-edit-is-a-step
+ * back through the Query's own whole restore, so every reader redraws. Where a scope waits for Apply a
+ * step moves the draft only. Real pointer and key. TRAP T-an-edit-is-a-step
  */
 test.beforeEach(async ({ page }) => {
   await page.evaluate(async () => {
@@ -83,8 +83,19 @@ test('an edit in the graph is a step too; a new edit after an Undo drops the red
   expect(steps).toBe(100);
 });
 
-test('a Query that waits for Apply holds no steps', async ({ page }) => {
+test('where a scope waits for Apply a step moves the DRAFT only: what is applied stays, and Apply is no step', async ({ page }) => {
   await page.evaluate(() => (window as unknown as { q: { wait(s: string): void } }).q.wait('view'));
+  const applied = () => page.evaluate(() => (window as unknown as { q: { applied: { scopes: Record<string, { readings: Record<string, { picked?: string[] }> }> } } }).q.applied.scopes['view']?.readings['region']?.picked);
   await ask(page, ['APAC']);
-  expect(await can(page)).toEqual({ undo: false, redo: false, buttons: [true, true] });
+  expect({ draft: await picked(page), applied: await applied(), undo: (await can(page)).undo }).toEqual({ draft: ['APAC'], applied: ['EMEA'], undo: true });
+  await page.locator('sherpa-node-toolbar sherpa-button.undo').click();
+  await expect.poll(() => picked(page)).toEqual(['EMEA']);
+  expect(await applied()).toEqual(['EMEA']);
+  await page.locator('sherpa-node-toolbar sherpa-button.redo').click();
+  await expect.poll(() => picked(page)).toEqual(['APAC']);
+  expect(await applied()).toEqual(['EMEA']);
+  // An Apply is no step: it changes what is applied and leaves the journal as it was.
+  await page.evaluate(() => (window as unknown as { q: { ask(r: unknown): void } }).q.ask({ scope: 'view', commit: true }));
+  expect(await applied()).toEqual(['APAC']);
+  expect((await can(page)).undo).toBe(true);
 });

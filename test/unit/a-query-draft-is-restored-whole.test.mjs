@@ -37,3 +37,16 @@ test('the journal of drafts: capped, oldest first out; a change after a step bac
   assert.equal(journal.canForward, false);
   assert.equal(journal.peekBack().after, 9);
 });
+
+test('where a scope waits, restoreDraft moves the draft and leaves what is applied', async () => {
+  const query = new QueryContext();
+  query.ask({ scope: VIEW, hold: ['a'] });
+  query.ask({ scope: VIEW, field: 'a', reading: { picked: ['1'] } });
+  query.wait(VIEW);
+  const before = query.draft;
+  query.ask({ scope: VIEW, field: 'a', reading: { picked: ['9'] } });
+  assert.equal(query.pending('a'), true);
+  await query.restoreDraft(before, { by: 'undo' });
+  assert.equal(query.pending('a'), false);
+  assert.deepEqual(query.applied.scopes[VIEW].readings.a.picked, ['1']);
+});
