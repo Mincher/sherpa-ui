@@ -126,14 +126,11 @@ uses the chip's.
 ### T-a-suspended-answer-is-drawn-as-off
 
 **A chip switched OFF keeps its answer and applies none of it — and the source
-DRAWS that, with `suspended: true`.** It used to skip a suspended field when
-it drew, because a bar drew every reading as ON. So the chip that was pressed
-knew, and nothing else did: the panel went on showing `Status: active` while
-no row was filtered by it. Now a bar draws the answer and then switches the
-chip off (`#drawChip`), and the panel — which has no "off" for a run of value
-chips — shows no answer, in `setFieldReading` and in `drawScopes` alike. The
-Query keeps the value, for the chip. A DATE in the panel is one chip, which
-does have an off, so it keeps its days.
+DRAWS that, with `suspended: true`.** Skipping a suspended field when drawing
+leaves only the pressed chip knowing: every other view goes on showing
+`Status: active` while no row is filtered by it. So a bar draws the answer and
+then switches the chip off (the toolbar's `paint` for its
+`FilterHostController`). The Query keeps the value, for the chip.
 
 - Site: `test/unit/query.test.mjs`
 - Site: `src/core/data/source-view.ts`
@@ -725,10 +722,9 @@ still mirror them a chip click redraws them. The panel forced a field with rows
 into Advanced on every redraw too — the same bug as the bar's — and now follows
 the reading's mode.
 
-An old reading still means what it meant: `readingRows()` turns its one typed
-condition, or its non-default op over picks ("is not A and is not B"), into
-rows — and those picks are the op's, so they are NOT also ticked as Simple's
-answer: "is not churned" ticking churned would filter for the opposite. A
+A list's other ops are conditions: `treeReading()` reads "is not churned" as
+the Advanced tree, and its value is NOT also ticked as Simple's answer —
+ticking churned would filter for the opposite. A
 number chip reads its body's reading whatever its menu's type, or "> 2"
 filtered and its face stayed blank (TODO 82). And on a rebuild the READER'S kept answer wins over the def's opening
 one, or a def's typed condition came back on every rebuild.
@@ -778,7 +774,7 @@ likewise readable and completely UNWRITABLE, so a saved view could restore a
 sort and not a grouping — the parity sweep found it.
 
 Both chips derive their column from their menu's ticked radio: `arrangeBy`
-names `data-column`, then ticks the radio, and `#drawArrangement` draws the caret.
+names `data-column`, then ticks the radio, and `ChipArrange.draw` draws the caret.
 
 **NEITHER emits an event.** The write came from outside, and echoing it back
 would bounce the value between a host wired both ways.
@@ -1990,9 +1986,8 @@ substring. `OP_TAKES` in `store.ts` is that rule, beside `OP_LABELS` and
 `OPS_FOR_TYPE`, because a second copy is a second vocabulary.
 
 `eq` LEADS `OPS_FOR_TYPE.text` and is `DEFAULT_OP`, so it is what both menus
-open on. The column heading's menu defaulted to `contains` before this, which
-made one field answer differently depending on which menu the reader reached
-for.
+open on. A heading menu that opens on `contains` makes one field answer
+differently depending on which menu the reader reaches for.
 
 **Both bodies are stamped, and CSS reveals one** off the menu's `data-takes`.
 Rebuilding on each flip would throw away whichever half was not showing, so a
@@ -2020,17 +2015,10 @@ bar reported `values` and a typed answer is not in there. Three things had to
 agree: the chip's own on-state, the bar relaying `condition-change`, and the
 view reading `clauses` in place of re-deriving them from `values`.
 
-**The BADGE marks the condition, the caret keeps the value.** A prefix ate the
-caret's width — "Does not equal: Gold" truncates where "Gold" would not — so
-the mark goes in the count badge instead. The condition menu shows the WORD
-only (`OP_LABELS` in `store.ts`); there is no per-operator sign. `eq` is the
-default, so it gets no mark: a mark on every ordinary chip is noise.
-
-A badge shows a COUNT when several values are picked — the count is the thing a
-reader cannot get elsewhere, since the caret already shows the value. And a
-sign announces as nothing, so the badge's `aria-label` carries the WORD.
-Writing it is ordered AFTER `#syncCountTip`, which owns the count's own label
-and would otherwise wipe it.
+**The caret keeps the value; no mark names the operator.** A prefix eats the
+caret's width — "Does not equal: Gold" truncates where "Gold" would not. The
+condition menu shows the WORD only (`OP_LABELS` in `store.ts`), and a chip's
+badge is its results (`T-a-condition-badge-says-that-not-which`).
 
 - Site: `src/core/data/store.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
@@ -2050,9 +2038,9 @@ A STATUS swatch reads the **same token pair the band it names does**:
 `--sherpa-status-<name>` (that sequence's border). A key that does not match the
 thing it labels is worse than no key.
 
-It used to light the `--_status-*` cascade via `data-status`, which is a
-DIFFERENT token set — so the swatch and the gauge band it named were painted
-from two unrelated sources and drifted apart.
+The `--_status-*` cascade via `data-status` is a DIFFERENT token set: a swatch
+lit from it and the gauge band it names are painted from two unrelated sources,
+and drift apart.
 
 A non-status item takes the categorical hue by 1-based index
 (`seriesVar`/`seriesBorderVar`), wrapping at the palette size. Naming, never
@@ -2776,8 +2764,8 @@ and `header.available([...])` close that, and the list is applied AFTER the
 chips so the menu is built over the bar it will add to.
 
 The two scopes must not offer the same field twice, and a field already on
-either bar is never offered again — `offerable()` in `src/core/data/filter-scope.ts`
-is the DOM-free rule; the caller supplies the two held-id lists.
+either bar is never offered again — `addable(scope)` in `src/core/data/source-view.ts`
+is the DOM-free rule, from what each scope holds.
 
 - Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
 - Site: `src/core/data/data-source.ts`
@@ -3003,8 +2991,9 @@ which of the two they are getting, and a grid that quietly merged them would
 teach the wrong thing the first time paging was switched on.
 
 **Neither is "every record in the store."** A selection the reader cannot see
-is one they cannot undo — the same rule `#onSelectAll` has always followed, and
-the reason it walks `#visibleRows()` rather than `#rows`.
+is one they cannot undo — the same rule the header's box follows
+(`GridSelection.all`), and the reason it walks the visible rows rather than every
+row held.
 
 The advanced checkbox REPORTS the scenario and the grid carries it out: the
 component knows about one checkbox, and "all rows" means nothing to it. The
@@ -3019,8 +3008,8 @@ their keys, the ones on other pages too. With no source, nobody prevents the
 ask, and the grid ticks what it holds, as before.
 
 **"Select all on page" is THIS page, and only it** (Will, 365): a row chosen on
-another page is let go — its key leaves `#wantedKeys` too, or the merge in
-`#rememberSelection` would hand it back.
+another page is let go — its key leaves `#wanted` too, or the merge in
+`GridSelection.#changed` would hand it back.
 
 - Site: `src/components/sherpa-data-grid/grid-selection.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
@@ -3065,7 +3054,7 @@ where they come apart.
 
 `skip`/`take` counts RECORDS. A grouped page counts what is ON SCREEN — a
 row, or a shut group as one — and which groups are shut is a fact that lives in
-the grid's `#collapsed`, has never been sent to a store, and should not be.
+the grid (`GridGroups.#shut`), has never been sent to a store, and should not be.
 
 So while `group` is set, `DataSource`:
 
@@ -3160,7 +3149,7 @@ holds it.
 
 Two scopes, and before this they shared one slot.
 
-| scope | reaches | writes |
+| reach | reaches | writes |
 |---|---|---|
 | **view** | every component in the View — it cascades DOWN | the FIELD's one answer, `ask({ field, reading })` at its home |
 | **component** | that component only (`only`) | its OWN scope, `ask({ scope, field, reading, only })` |
@@ -3186,11 +3175,12 @@ different, wider question, and drawing it on a component control would claim the
 reader picked something they did not. It also means a part's write is not the
 field's selection, so the binding redraws itself on write.
 
-**A component scope REFUSES a source with no `contribute()`** rather than
-falling back to `select()` — that fallback is the exact clobber this scope
-exists to prevent.
+**A component reach REFUSES a binding with no `only`** — it reports
+`component-reach-without-only` and binds nothing — rather than falling back to
+the field's one answer: that fallback is the exact clobber this scope exists to
+prevent.
 
-`scope` defaults to `view`, so every existing binding is unchanged.
+`reach` defaults to `view`, so every existing binding is unchanged.
 
 - Site: `src/core/data/bind-selection.ts`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
@@ -3399,21 +3389,15 @@ together, under its own key.
 
 ### T-an-open-panel-follows-the-data-layer
 
-**An open filter panel follows every field another control changes.** It was
-filled ONCE, when it opened. A chart legend or a column heading then changed
-a field, the data and the bar followed, and the panel still showed the old
-answer — so its next Apply, with nothing touched, put that answer back.
+**An open control over several scopes follows every field another control
+changes.** Filled ONCE, when it opens, it goes stale: a chart legend or a column
+heading changes a field, the data and the bar follow, and it still shows the old
+answer — so its next Apply, with nothing touched, puts that answer back.
 Measured on the Records page: 25 rows went back to 100.
 
-The page steers the panel from the same `query-change` it steers the bar
-from, with `setFieldReading(id, reading)`. ONE field, not a refill: a refill
-redraws every field and throws away the reader's unapplied picks. The steer
-is that field's last Apply too, so Discard keeps it.
-
-Will asked, 2026-09-25, whether the swap at the breakpoint needs a re-query.
-Measured after the Apply fixes (`T-a-chip-press-applies-its-menus-draft`):
-the swap itself keeps every answer both ways — the bar is steered on Apply,
-and the panel is refilled when it comes back. The panel open was the hole.
+That control is the toolbar's portrait column. The binding draws each of its
+scopes WHOLE, once per moment, whenever what a scope holds changes
+(`drawScopesSoon`, then `drawScopes`).
 
 - Site: `src/core/data/source-binding.ts`
 
@@ -3456,11 +3440,9 @@ already names, and a control drawing the field would have to ask twice.
 **Rows read left to right.** `A or B and C` is `(A or B) and C`: each row joins
 every row before it, as a reader reads a stack of rows. Will, TODO 594: `Equals Ravi
 OR Equals Signe AND Contains "Khan"` let rows through with no Khan, when AND bound
-tighter. A banded field's rows rely on this being in ascending order, so
-`rowsFromPicks` sorts them. The menu is FLAT: `rowsTree()` makes its rows the tree,
-left to right, and `treeRows()` draws a tree back as rows — a chain, which one group
-may lead. A tree with two groups is no rows: the menu keeps it whole, unedited,
-until it nests (TODO 692); the data layer compiles it either way.
+tighter. The editor nests (TODO 692): a group's rows share one join, a group applies
+only inside its parent, and `menu.condition` reads and writes the tree whole; the
+data layer compiles it either way.
 
 **A half-built row narrows nothing, and is dropped.** A row whose op has no
 value yet — no text typed, nothing picked — is not a filter. A field whose rows
@@ -3710,27 +3692,23 @@ replacement, all }`. The HOST moves the match: the grid's `findStep()`.
 
 ### T-the-field-type-decides-the-clause
 
-The data layer had no idea what KIND a field was. `OPS_FOR_TYPE` named three
-(`text`, `number`, `date`) and the grid passed a column's type into its own
-builder, but `DataSource` held none — so it could not know that two picks on
-`seats` mean a RANGE rather than two equalities.
+The data layer must know what KIND a field is (`text`, `number`, `date`): it
+decides how an answer compiles — a date's two picks are a RANGE, not two
+equalities, and a number's text is a number. Without it every app has to know,
+and each grows a query builder of its own — there were three.
 
-Every app then had to know it. `../Sherpa Demos/app/contexts/records.js` carried a
-`numberFields` set, a `dateFields` set, and 20 lines turning picks into
-`between` / `eq Number(x)`. That one gap grew **three** query builders:
-`stateClause`, the grid's `#columnClause`, and the app's `filterFromChips`.
+`declareField(field, { type, label })` says it, and three rules live in the data
+layer:
 
-`declareField(field, { type, label })` closes it, and three rules move into the
-data layer where they belong:
-
-- **Two picks are a range.** A number sorts NUMERICALLY — as text, `["1000","9"]`
-  puts 1000 first and the range matches nothing.
+- **A date's two picks are a range**; a number's range is an Advanced row (TODO
+  375). A number sorts NUMERICALLY — as text, `["1000","9"]` puts 1000 first and
+  a range matches nothing.
 - **A range field has no value LIST.** Its picks ARE its values, so `fieldState`
   reads them from the reading rather than a declared domain, and a number field
   no longer reads as `off` for having nothing ticked.
-- **Conditions answer a field.** `select()` deleted a reading whose only answer
-  was condition rows — no picks, no typed text — so an or-chain built in a menu
-  never applied at all. That is why conditions travelled by a separate road.
+- **Conditions answer a field.** A reading whose only answer is its tree — no
+  picks, no typed text — still answers: dropped as empty, an or-chain built in a
+  menu never applies.
 
 **A UI sends parameters; it never builds a query.** If a component needs to know
 a field's type to filter it, the type is in the wrong place.
@@ -4136,8 +4114,9 @@ column; the direction says whether it is being applied:
 | `field="n" direction=""` | suspended — show the column, order nothing |
 | neither attribute | no sort at all |
 
-Three things read it and all three must agree: `#sortRows` (does not sort),
-`#renderHead` (glyph back to `sortNone`, `data-sort` removed), and the Sort
+Three things read it and all three must agree: the grid's page (`GridGroups`
+asks `ColumnFacts` for no sort), `#drawHeadCell` (glyph back to `sortNone`,
+`data-sort` removed), and the Sort
 chip's `arrangeBy`, through `arrangeFrom` (chip off, direction rewound to `asc`
 so a resume starts ascending rather than at the stale `desc`).
 
@@ -5130,23 +5109,23 @@ use the blue info styling to represent active Custom Condition Filters.
 Bringing everything into the same condition composition system will help us
 deal with any discrepancies and bugs."*
 
-**There were three answer shapes, not two** — ticked picks, ONE typed
-condition (`op` + `text`), and a chain of rows — and `stateClause` had a
-branch for each. The bar sends all of them at once, so each reader of the state
-had to guess which counted.
+**There are three answer shapes** — ticked picks, ONE typed condition (`op` +
+`text`), and a tree of rows — and the bar sends all of them at once, so a reader
+of the state would have to guess which counted.
 
-`fieldState()` now builds **`state.rows`** — the whole answer as rows:
+`fieldState()` builds **`state.answer`** — the whole answer in force as ONE tree
+(`T-one-condition-tree`):
 
 | the reader | becomes |
 |---|---|
-| ticked one value | `{ op: 'eq', picked: [x] }` — EQUALS X |
-| ticked several in ONE field | `{ op: 'eq', picked: [x, y] }` — EQUALS X **OR** EQUALS Y, so `in` |
-| dragged a range | `{ op: 'between', picked: [lo, hi] }` |
-| typed a condition | `{ op, text }` |
-| built a chain | the rows, as they are |
+| ticked one value | an `eq` leaf — EQUALS X |
+| ticked several in ONE field | EQUALS X **OR** EQUALS Y, so one `in` leaf |
+| dragged a range | a `between` leaf |
+| typed a condition | its own leaf, its `op` and the typed text |
+| built a tree | the tree, as it is |
 
-`stateClause` compiles `rows` and nothing else, through one `rowClause`. The
-three branches are gone.
+`stateClause` compiles `answer` and nothing else — each preset's tree ANDed to
+it — through one `conditionClause`.
 
 **`state.condition`** is `'simple'`, `'advanced'` or `null`. Simple is the
 field's own body answering with the default op — ticks, a slider, a day.
@@ -5167,7 +5146,7 @@ when it holds none. It is written again when the menu STAMPS its rows
 (`menu-items`): a ticked answer cannot be read before that, so a chip ticked
 by its def said nothing at all.
 
-**And so does the grid.** `#lightFilterChip` asks `fieldState()` for its
+**And so does the grid.** `GridFilters.light` asks `fieldState()` for its
 column's condition, so a heading's `fx` and green follow the same rule as a
 toolbar chip — "Is not" is Advanced there too.
 TRAP T-a-held-clause-op-is-not-a-reading-op
@@ -5217,7 +5196,8 @@ its own (`savedFilters`), which are never saved over or deleted.
   `provider.savedMenu`, `data-saved-menu`): a split beside Edit, as the App Header's
   Save (TODO 446). "Save", a filter icon, asks `filters-save-as`; the icon-only ▾ holds
   the sets, a tick adding one AT ONCE (no Apply), then the save row, then Manage. Alone,
-  the ▾ is solo (`data-swap-on="data-saveable"`). The Edit menu and the ⋮ hold none of
+  the ▾ is solo; beside Save it joins the group (`data-when-data-group="data-saveable:
+  end"`). The Edit menu and the ⋮ hold none of
   them. It stays when the bar folds its actions, as Edit does.
 - **Managing** (Will, TODO 427): where the host saves and the reader has sets of their
   own, the Saved section leads with Manage Saved Filters — a menu ACTION row
@@ -5452,18 +5432,14 @@ arrived and the tile read `-0.6211180124223602%`. **Two decimals** (Will,
 field one scope, and a superseded chip. It is a data-layer rule, so it belongs
 with the other data-layer rules rather than in a trap.
 
-What belongs HERE is why there is no module for it.
+What belongs HERE is why there is no module for it. Up is open and down is
+closed — below the View, what the View holds is not offered — and that is one
+skip list in the source's `addable()`; a component scope's answer is ANDed under
+the View's in the one Query.
 
-`filter-scope.ts` was 121 lines and three functions written before anything
-called them, and nothing ever did: Records has one `DataSource`, so there was
-no second scope to follow. The rule needs no module — a component source takes
-the view's filter as one named part, which `DataSource.contribute()` already
-does, and the wiring is three lines.
-
-Guessing an API in advance cost more than waiting for the caller. `promotions()`
-returned `{ id, values }`, which silently dropped the op and the typed text, so
-a field promoted while holding "Starts with Go" would have arrived in the view
-saying only "Go". Nothing caught it, because nothing ran it.
+Guessing an API before its caller costs more than waiting for it: a module
+written in advance once dropped a promoted field's op and typed text — "Starts
+with Go" arrived as "Go" — and nothing caught it, because nothing ran it.
 
 See `T-a-superseded-chip-suspends-it-is-never-removed`, which IS implemented,
 on the half a component owns.
@@ -5488,8 +5464,8 @@ at once and has nothing to apply.
 
 **Step 6 of the Query moves the rule into the data layer.** Apply is only for
 a REMOTE fetch (Will, 2026-09-26), and remote is a fact about the STORE
-(`store.remote`: `RestStore` says so, and `fakeRemote()` makes any store
-act remote — before 2026-10-14 only `fakeRemote()` did). Over a remote store the
+(`capabilities.remote`: `RestStore` says so, and `fakeRemote()` makes any store
+act remote). Over a remote store the
 source keeps a DRAFT Query beside the applied one: every write lands in the
 draft, the rows wait, and `commit(scope?)` sends it; `discard(scope?)` puts
 the applied answers back and draws them. `pending(field)` and `dirty(scope?)`
@@ -5940,8 +5916,8 @@ key does (Will, TODO 598). A bar's held chip refuses both. The heading's own fil
 never set by it (`columnClause` stays null), so nothing applies twice. A field
 not named is released.
 
-The host calls it whenever the header's answers change (Records'
-`syncHeadings`). A heading that ALREADY held its own filter when the View took
+The source calls it whenever what the View holds changes
+(`SourceBinding.supersede`). A heading that ALREADY held its own filter when the View took
 the field applies none of it: the Query answers a View-held field in the View
 alone (`compile`, "one field, one scope"), and the grid marks the View's
 matches, not the heading's own. The heading keeps its answer for when the View
@@ -6077,8 +6053,8 @@ so a caller's condition rows became the Query's, and `supersede` handed
 a grid the APPLIED readings, which the grid kept: an edit on either side moved
 the other, with no event.
 
-Now `copyReading` copies what comes in, all the way down; `#freezeReadings`
-freezes every reading in both copies at each recompose (every write passes
+So `copyReading` copies what comes in, all the way down; `ask()` freezes every
+reading of the Query it puts in place (`freezeReading`, every write passes
 there); `reading()` and `defaultFor()` hand out the frozen original, with no
 clone. A caller that wants to change one spreads it and sends it back. An edit
 to a frozen reading throws a `TypeError` in a module — loud, never silent.
@@ -6147,34 +6123,25 @@ a field the View holds is answered there alone, a suspended reading applies
 nothing, and a scope that `narrows` reaches only those components. The
 compiled filter is never saved; the Query is.
 
-Step 1 of the build proves the move is invisible: a Query holding today's
-answers keeps exactly the rows today's DataSource keeps for the same answers.
+- Each reading lives in the scope that holds its field — the View first, else
+  the one component scope, else the View, which narrows everyone. A `hold` or
+  `move` carries the reading with its field, so the rows never change on a move.
+- A bind's `scope` makes the source DRAW that control each answer in it
+  (`drawReading`), so a bar and the portrait column need no mirror. A column
+  heading is a view of its field's reading too: the grid is bound to the `data`
+  scope and drawn the same way, and a field with no chip gets its NORMAL chip.
+- A scoped bar's saved filters are `presets` in its scope, on or off; their
+  readings sit in the source's library (`declarePreset`), never in the Query.
+- A restored Query (`setQuery`) draws each bound bar (`drawScope`) — see
+  `T-a-reload-replays-the-readers-answers`.
+- A legend's answer is a scope that `narrows` its chart, and survives a reload
+  with the rest.
+- A field a scope lets go of, held nowhere else, loses its answer — removing a
+  chip is a clear. The draw carries the WHOLE answer: an operator dropped reads
+  "is not churned" as "churned", and a typed text dropped reads "contains an" as
+  nothing.
 
-Step 2: the DataSource holds it (`source.query.applied`). Each reading lives
-in the scope that holds its field — the View first, else the one component
-scope, else the View, which narrows everyone. A `hold` or `move` carries the
-reading with its field, so the rows never change on a move. The named parts
-(`contribute`) are still compiled clauses, ANDed on top, until steps 4–5.
-
-Step 4a: the Records header answers the View scope (`source.answer`) — its
-compiled `global` part is gone, so its picks are readings in the Query.
-4b–4c: a bind's `scope` makes the source DRAW that control each answer in it
-(`drawReading`), so the bar and the open panel need no mirror. A scoped bar's
-saved filters are `presets` in its scope, on or off; their readings sit in
-the source's library (`declarePreset`), never in the Query.
-Step 3: the session keeps the Query; `setQuery` restores it and draws each
-bound bar (`drawScope`) — see `T-a-reload-replays-the-readers-answers`.
-5a: a legend's answer is a scope that `narrows` its chart (`source.write`);
-`ownParts` is gone, and the legend now survives a reload with the rest.
-5b: a column heading is a view of its field's reading too — the grid is
-bound to the `data` scope and drawn (`drawReading`); its commit is a
-`select`, and a field with no chip gets its NORMAL chip (Will, 2026-09-27:
-no `col:` chips). A field a scope lets go of, held nowhere else, loses its
-answer — removing a chip is a clear. The draw carries the WHOLE answer: an
-operator dropped reads "is not churned" as "churned", and a typed text
-dropped reads "contains an" as nothing.
-
-**366 step 21: a bar sends ONE REQUEST per act, never its whole answer.** The
+**A bar sends ONE REQUEST per act, never its whole answer** (366 step 21). The
 whole answer cleared every field it did not name, so a bar that reported while
 a rebuilt menu was still empty wiped answers it showed. An event with no
 `request` asks nothing; a list is one change, and its Applies go at its end.
@@ -6276,20 +6243,20 @@ less, with nothing said.
 ### T-a-value-is-typed-once
 
 **A condition's value is typed ONCE, by its field's type, where it comes in** —
-plan 695 D1. A number field's text `"70"` becomes `70` at each door: a menu's row
-(`rowLeaf`), a definition's plain form (`readingsOf`), a preset (`presetReadings`)
-and a Simple reading's answer (`fieldState`). All call `typedValue`. The compile
-(`leafClause`) casts nothing.
+plan 695 D1. A number field's text `"70"` becomes `70` at each door: a menu's
+condition row (its editor), a definition's plain form (`readingsOf`), a preset
+(`presetReadings`) and a Simple reading's answer (`fieldState`). All call
+`typedValue`. The compile (`leafClause`) casts nothing.
 
-Before, a host's `setColumnFilter('storage', ['storage', 'gt', 70])` kept `70` in
-the tree, and a reader who typed 70 in the same menu kept `"70"`: two shapes for
-one answer, so a comparison of the two said they differed, and a View saved from
-the reader's wrote `{ "gt": "70" }`. A preset from a definition held `"60"`,
-because `setPreset` reads its readings with no field facts; for the same reason a
-date preset's two ends became `in [a, b]`, two days, not a range.
+Typed anywhere later, one answer has two shapes: a host's
+`setColumnFilter('storage', ['storage', 'gt', 70])` keeps `70` in the tree, a
+reader who types 70 in the same menu keeps `"70"`, a comparison of the two says
+they differ, and a View saved from the reader's writes `{ "gt": "70" }`. A preset
+read with no field facts holds `"60"`, and a date preset's two ends become
+`in [a, b]`, two days, not a range.
 
 - Type at the door, never in a helper a lane may delete: `typedValue(type, value)`
-  is the one cast. `rowsTree` only passes its type through.
+  is the one cast.
 - A Simple number reading keeps its `text` as typed: it is the control's, and is
   typed when it becomes a tree.
 - A tree kept before this change, with a string, is typed by `fieldState` as it is
@@ -6375,9 +6342,9 @@ its domain carries that tree (`zonesOf` reads it); a View, a saved filter and a
 page definition WRITE the plain form (`T-one-way-to-write-a-condition`), parsed
 once.
 
-It had nine shapes and six converters, and nesting was blocked in two of them:
-rows could hold one group, and a nested condition in a definition was reported
-`unreadable-condition` and dropped — though the type and the schema allowed it.
+Nine shapes with six converters between them drop what they cannot carry: a
+nested condition in a definition was thrown away, though the type and the schema
+allowed it.
 
 - **One compile.** `conditionClause()` is the one place a tree becomes a filter:
   numbers cast, a day with a time reaching its last moment, a tiered field's paths.
@@ -6385,8 +6352,9 @@ rows could hold one group, and a nested condition in a definition was reported
   Advanced tree — and each preset's tree, ANDed.
 - **A leaf in one field's answer names no field**: it is that field's. A tree
   across fields (a status value's) names each.
-- **The flat menu is a boundary**, crossed twice: `rowsTree()` in, `treeRows()`
-  out (`T-many-conditions-are-one-reading`). Nothing in the data layer reads rows.
+- **The menu edits the tree itself**: `menu.condition` reads and writes a
+  `Condition`, no flat rows between (`T-many-conditions-are-one-reading`).
+  Nothing in the data layer reads rows.
 - **Off is kept on any node**; a part kept off compiles to nothing and spells nothing.
 
 - Site: `src/core/data/store.ts`
@@ -6516,9 +6484,8 @@ own; a change made in it is a `QueryRequest`, as a chip's is (`graphRequest`).
 ### T-one-node-registry
 
 **Every node kind is said ONCE, in `NODE_KINDS`** (node-kinds.ts), for every graph
-Sherpa draws: a page's Query and a workflow. Plan 695 N1. There were two
-(`NODE_KINDS` for workflows, `QUERY_KINDS` for the Query), and `source` meant a
-store's rows in one and a page's source in the other.
+Sherpa draws: a page's Query and a workflow. Plan 695 N1: two registries had let
+`source` mean a store's rows in one and a page's source in the other.
 
 - **A kind says its header, its sockets, its rows, what it stands for in the data
   layer (`model`), and where it is drawn (`graphs`)**. A Query node adds its own
@@ -6575,14 +6542,13 @@ is its Context's, named here.
 
 ### T-the-data-entry-loads-no-dom
 
-**`sherpa-ui/data` loads only modules the lint holds DOM-free** (TODO 290). It
-re-exported 32 app-layer names until then — saved Views and their sync, saved
-filters, the session — and with them `onViewPicked`, which builds DOM. They are
-`sherpa-ui/app`'s; `sherpa-ui` still has each one. `checkApp` stays in both: it
+**`sherpa-ui/data` loads only modules the lint holds DOM-free** (TODO 290). Saved
+Views, saved filters, the page's kept state and `onViewPicked`, which builds DOM,
+are `sherpa-ui/app`'s; `sherpa-ui` still has each one. `checkApp` stays in both: it
 reads JSON, and a server, a test or the MCP's `validate_page` runs it in Node.
 
-The lint checks each FILE, never what it imports: `view-sync.ts` passed it and
-still loaded `persist-view.ts`. So a test reads each export's module out of
+The lint checks each FILE, never what it imports: a module can pass it and still
+load one that touches the DOM. So a test reads each export's module out of
 `src/data.ts`, walks what `dist/data.js` loads, and fails on a file
 `eslint.config.js` does not ban `document` in.
 
@@ -6773,12 +6739,12 @@ preset's own scope, in `readings` and not `holds`, so they filter that scope alo
 and add NO chip or section (Will, TODO 590; `rehome` leaves them). `stateClause` ANDs
 them with the answer: `(A or B) and P`. The
 answer and its mode stay the reader's, so a preset never turns a field Advanced,
-and it cannot lose the reader's own picks. Until 521 ON wrote them into
-`conditions` and forced Advanced, so Enterprise trials flipped Plan and Status,
-and OFF had to work out which rows were its own.
+and it cannot lose the reader's own picks. Written into the answer instead, ON
+forces Advanced — Enterprise trials flipped Plan and Status — and OFF must work
+out which rows were its own.
 
 OFF takes them off. A reader's answer
-replaces only the answer (`#keepPresets`), so a pick never turns a preset off. A saved filter replaces
+replaces only the answer (`keepPresets` in `query-edits.ts`), so a pick never turns a preset off. A saved filter replaces
 the reading whole, so it replaces these too.
 
 **Its ON is read from the fields** (`presetOn`): its rows on every field it names,
@@ -6966,11 +6932,9 @@ a Switch, a reset, an order, a preset, a presentation, a solo, a Sort, Group or
 Search, a page or its size, what a scope holds, takes, lets go or moves, a
 let-go pick, an Apply, a Discard — one typed union, and a list is ONE change
 (one `query-change`, one Apply). The UI, the node editor and an agent say the
-same thing the same way, so each edit can be traced, undone and replayed. The
-named doors it replaced (`setReading`, `setSort`, `hold`, `commit`…) are gone,
-and so are `DataSource.setPage` and `setPageSize`: a page is the source's that
-draws a page in the request's scope — with none named, or none drawing there,
-every source's.
+same thing the same way, so each edit can be traced, undone and replayed. There
+is no other door. A page or its size goes to the source that draws a page in the
+request's scope — with none named, or none drawing there, every source's.
 
 - **One table maps the steering events** (`STEERS` in `bind-source.ts`): each
   event a bound component sends up, and the command it asks. The event names
@@ -6979,16 +6943,14 @@ every source's.
   read. A hover (`preview`) is the page's, never the Query's: `ask()` passes it
   by.
 - **A slot's Sort and Group are its chart's**, whoever asks — the rerouting
-  lives in the edit, not in one caller. The node editor's Sort and Group once
-  called `setSort` and `setGroup` straight, and arranged a chart's rows instead
-  of its presentation (bug 5).
-- **The edits that write one copy as plain data are pure**: `editQuery(query,
-  edit, facts)` gives the Query after a Sort, Group, Search, presentation, order
-  or move and leaves the one given untouched; the context swaps the result into
-  the copies it reaches. The rest — an answer, a Switch, a solo, a reset, a
-  preset, a hold — still edit in place, because a member hears each step: the
-  compile lists what a Switch turned off, and a hold's clear is told while the
-  scope still holds the field.
+  lives in the edit, not in one caller: a caller that arranges a chart's rows
+  straight arranges them instead of its presentation (bug 5, the node editor).
+- **Every edit is pure**: `editQuery(query, edit, facts)` gives the Query after a
+  Sort, Group, Search, presentation, order or move, and leaves the one given
+  untouched; `editCopies(copies, request, facts)` gives the copies after an
+  answer, a Switch, a solo, a reset, a preset or a hold, with the ordered list of
+  what members must hear — what a Switch turned off, a hold's clear with its
+  scope. `ask()` freezes the new Query, puts it in place and tells each member once.
 - **`scope` left out** is the View; for a Sort, Group or Search, the scope that
   arranges now; for an Apply or a Discard, every scope. A preset's own `commit`
   applies only the fields it moved.
@@ -7008,9 +6970,8 @@ every source's.
 **Every app setting is ONE entry in a schema** (695 U2): its key, type, default,
 scope and the session pointer it is kept at — `SETTINGS`, and an app's own beside
 it. `Settings` holds the live values over the app's session: a page's own (`lay()`,
-for its `page` or `component` settings) over the app's, kept, over the default. It
-was seven paths: a provider field, getter and setter for each, an attribute line,
-a table row in the app, `<html>` attributes and `session.overlay`.
+for its `page` or `component` settings) over the app's, kept, over the default.
+One entry replaces seven paths per setting.
 
 The provider holds the `Settings` and delivers each kind one way. A component
 reads what it takes through `static settings` — its own attribute, by key, `!key`
@@ -7034,13 +6995,14 @@ A new setting is one entry, and its use.
 
 **A SHUT group is ONE line on screen, so it costs ONE slot of the page.**
 
-A page of 25 used to fill with 25 RECORDS. Group by tier, shut Gold, and the
-reader got a panel holding one heading and twenty-four hidden rows — a page that
-looks empty, with a pager insisting there are ten more like it. The rows were
-there; CSS was hiding them; the count had already been spent.
+A page of 25 RECORDS, grouped by tier with Gold shut, gives the reader one heading
+and twenty-four hidden rows — a page that looks empty, with a pager insisting
+there are ten more like it. The rows are there; CSS hides them; the count is
+already spent.
 
 So the page is cut from the rows in hand and the groups the grid has shut —
-the data layer's `ColumnFacts.page`, asked by the grid with its `#collapsed`:
+the data layer's `ColumnFacts.page`, asked by the grid with what it shut
+(`GridGroups.#shut`):
 
 | | costs |
 |---|---|
@@ -7049,15 +7011,15 @@ the data layer's `ColumnFacts.page`, asked by the grid with its `#collapsed`:
 | a shut group | 1 — the heading, and nothing for its rows |
 
 **A page is `data-page-size` ROWS, grouped or not** — Will, TODO 152: "Data
-grid pages don't respect the row count value set in the pagination." The
-first cut counted every heading as a line, so a page of 25 held 24 or 23 rows
-and a grouped view had one page more than the same rows ungrouped. With every
-group open, the pages now match the ungrouped ones.
+grid pages don't respect the row count value set in the pagination." Counting
+every heading as a line gives a page of 25 only 24 or 23 rows, and a grouped
+view one page more than the same rows ungrouped. With every group open, the
+pages match the ungrouped ones.
 
 `ColumnFacts.page` walks the visible rows once and records the index each page
 opens at. A page is then a plain slice, and `data-index` stays an index into the FULL
 visible list (`#renderBody` adds the slice's `offset`) — so selection, row-click
-and `#syncCurrent` keep resolving against the same list they always did. Change
+and `GridSelection.syncCurrent` keep resolving against the same list. Change
 that and a click on page 2 returns a page-1 record.
 
 **A group split by a page boundary redraws its heading**, because a page that
@@ -7067,13 +7029,13 @@ drew — the heading answers "how many are in Gold", not "how many fit here".
 
 Only an OPEN group can be split. A shut one is a single line and cannot be.
 
-**Folding RE-CUTS the page**, so `#toggleGroup` calls `#renderBody()` and not
-just `#syncGroupVisibility()`. Shutting a group frees slots and the next rows
+**Folding RE-CUTS the page**, so `GridGroups.fold` draws the body again, not only
+`syncShut()`. Shutting a group frees slots and the next rows
 move up onto this page; opening one pushes the tail off. A visibility sync alone
 leaves the hole this trap exists to remove — and because the body is replaced,
 the ticks, the select-all and the focus tint all have to be re-derived after it.
 
-None of this runs ungrouped (`#paginates`): there the store's window IS the page,
+None of this runs ungrouped (`GridGroups.paginates`): there the store's window IS the page,
 and slicing it again would hide rows nobody folded.
 
 - Site: `src/components/sherpa-data-grid/grid-groups.ts`
