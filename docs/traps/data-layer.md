@@ -6501,11 +6501,15 @@ Sherpa draws: a page's Query and a workflow. Plan 695 N1: two registries had let
 - **Save hands the app a checked definition**, as `definition-save` on the canvas
   (`pageWithQuery` and `checkPage`; the draft and `checkWorkflow`): Sherpa never
   decides where an app keeps things.
+- **The MCP serves the registry as it is**, `sherpa://node-kinds`, read from
+  `NODE_KINDS` and never listed by hand: a kind, row or socket added here is served
+  with no change there (plan 700 G3).
 
 - Site: `src/core/data/node-kinds.ts`
 - Site: `src/data.ts`
 - Site: `src/core/data/page-definition.ts`
 - Site: `test/unit/a-workflow-is-its-definition.test.mjs`
+- Site: `mcp-server/resources/query.js`
 
 ### T-an-app-is-its-definition
 
@@ -6962,6 +6966,8 @@ request's scope — with none named, or none drawing there, every source's.
 - Site: `src/data.ts`
 - Site: `src/core/data/query-graph.ts`
 - Site: `test/unit/an-answer-is-a-pure-edit.test.mjs`
+- Site: `mcp-server/tools/query.js`
+- Site: `test/unit/the-mcp-query-tier.test.mjs`
 
 ### T-a-setting-is-declared-once
 

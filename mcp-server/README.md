@@ -6,7 +6,7 @@ An MCP server for Sherpa UI, for an AI agent. It reads the `sherpa-ui` installed
 beside it — its specs, schemas, docs and tokens — and never a copy of them. Each
 tool, resource and prompt below is written from the code that registers it.
 
-**3 tools · 7 resources · 0 prompts.**
+**8 tools · 8 resources · 0 prompts.**
 
 ## Setup
 
@@ -45,6 +45,57 @@ The design tokens tokens.css declares whose names hold every word of the query: 
 
 - `query` — Words of a token name, e.g. surface, border accent or space; empty for the families
 
+### The query tier's tools: a page's Query run, drawn and edited; a workflow's too · `tools/query.js`
+
+#### `query_source` — Run a page's Query
+
+Open a page as its provider does — `checkPage`, then `openSource` over the rows given, or over the app's data path on this machine — ask each command through `ask()`, and give what its components are given: the page of rows, the total before paging, the groups, each held field's state and its chip's results, the Query applied, and the data layer's own reports — every one, and each under the command that raised it; a command that moved neither the Query nor its page says `"changed": false`. A command is a `QueryRequest`, as a chip asks it: `{ "scope": "data", "field": "status", "reading": { "picked": ["active"] } }` (ticks); `{ "scope": "data", "field": "seats", "reading": { "tree": { "op": "gt", "value": 5 }, "mode": "advanced" } }` (a condition); `{ "field": "status", "reading": null }` (none); `{ "scope": "data", "sort": "seats", "direction": "desc" }`, `{ "group": "plan" }`, `{ "search": "acme" }`, `{ "page": 2 }`, `{ "scope": "data", "preset": "high-risk", "on": true }`, `{ "scope": "data", "suspended": true }` (its Switch), `{ "scope": "data", "hold": ["status"] }`, `{ "commit": true }` (Apply). Left out, `scope` is the View. The whole union is `QueryRequest` in sherpa-ui's src/core/data/query.ts.
+
+- `definition` — The page definition (page.v1), as its JSON: `{ "v": 1, "id", "source": { "store", "fields", "scopes" } }`
+- `rows` (optional) — The rows its store holds, as a JSON list. Left out with `data` left out, it has none
+- `data` (optional) — In place of rows: the app's data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page's `source.store`. Any other host is refused
+- `key` (optional) — With `rows`: the field each row is keyed by, e.g. id
+- `commands` (optional) — Each a QueryRequest, asked in turn through `ask()`; a list inside one is one change
+- `limit` (optional) — The most rows of the page to show; default 25
+
+#### `query_graph` — Draw a page's Query as nodes
+
+A page's Query as the Node Editor draws it (`queryGraph`): its store, status fields, source, each scope with its presets, saved filters and conditions, its arrangement, presentation and components — each node's id, kind, rows (a row's `editable`, `choices` and `hint`), sockets and place, and the routes between them, as JSON. Opened as query_source opens it, after each command, which it takes as query_source does. Edit it with edit_query_graph. Each kind is in `sherpa://node-kinds`.
+
+- `definition` — The page definition (page.v1), as its JSON: `{ "v": 1, "id", "source": { "store", "fields", "scopes" } }`
+- `rows` (optional) — The rows its store holds, as a JSON list. Left out with `data` left out, it has none
+- `data` (optional) — In place of rows: the app's data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page's `source.store`. Any other host is refused
+- `key` (optional) — With `rows`: the field each row is keyed by, e.g. id
+- `commands` (optional) — Each a QueryRequest, asked in turn through `ask()`; a list inside one is one change
+- `components` (optional) — The components the page binds, each `{ "id", "label", "scope"?, "kind"? }`, so each scope reaches its own
+
+#### `edit_query_graph` — Edit a page's Query by its nodes
+
+Each edit as the Node Editor makes it: a row's new value, `{ "node": "when-view-region", "row": "value", "value": ["EMEA"] }`, asks its command (`graphRequest`); a new route, `{ "from": "when-data-status", "to": "scope-view/status" }`, asks its move (`routeRequest`). Each command goes through `ask()`, the graph drawn again before the next edit. It gives each command asked, the new Query, and the page definition Save would write (`pageWithQuery`), checked by `checkPage`. A node or row the graph has not got, a row no command takes and a route the Query refuses are refused, in the data layer's words. Node ids are query_graph's.
+
+- `definition` — The page definition (page.v1), as its JSON: `{ "v": 1, "id", "source": { "store", "fields", "scopes" } }`
+- `rows` (optional) — The rows its store holds, as a JSON list. Left out with `data` left out, it has none
+- `data` (optional) — In place of rows: the app's data path on this machine, e.g. `http://localhost:4200/` (its /sherpa/data/) or `http://localhost:4200/api/data/`; the store asked is the page's `source.store`. Any other host is refused
+- `key` (optional) — With `rows`: the field each row is keyed by, e.g. id
+- `commands` (optional) — Each a QueryRequest, asked in turn through `ask()`; a list inside one is one change
+- `components` (optional) — The components the page binds, as query_graph takes them
+- `edits` — Each `{ "node", "row", "value" }` or `{ "from", "to" }`, in turn
+
+#### `workflow_graph` — Draw a workflow as nodes
+
+A workflow definition (workflow.v1) as nodes and routes (`workflowGraph`) — each node its kind's header, sockets and rows with their values and choices, at its own place — with every fault `checkWorkflow` reports (a node, a kind, a value or a route that cannot be), and the kinds a workflow runs, from `NODE_KINDS`. Edit it with edit_workflow.
+
+- `workflow` — The workflow definition, as its JSON: `{ "v": 1, "id", "nodes", "routes" }`
+- `fields` (optional) — The fields a Field row picks, by name: a page definition's `source.fields`
+- `stores` (optional) — The stores a Store row picks, by the names the app gives them
+
+#### `edit_workflow` — Edit a workflow
+
+A workflow after each edit (`editWorkflow`), checked by `checkWorkflow`. An edit is a row's value, `{ "node": "status", "row": "value", "value": "trial" }`; a node's own name, line or place, `{ "node": "filter", "set": { "heading": "Active only", "x": 400 } }`; a route made into an input, in place of the one there, `{ "route": { "from": "status/value", "to": "filter/value" } }`; or one cut by the input it enters, `{ "cut": "filter/value" }`. A value is typed as its row takes it. An edit to a node the workflow has not got is refused.
+
+- `workflow` — The workflow definition, as its JSON
+- `edits` — Each a WorkflowEdit, in turn
+
 ## Resources
 
 ### The read tier's resources: sherpa-ui's own files, as they ship · `resources/read.js`
@@ -58,6 +109,12 @@ The design tokens tokens.css declares whose names hold every word of the query: 
 | `sherpa://app-guide` | **Building an app on Sherpa.** How to build an app on Sherpa, step by step: the page, the shell, app.json, stores, a page definition, a template that asks, a Context module, Views, the session and starting the outlet (docs/APP-GUIDE.md) |
 | `sherpa://data-rules` | **What Sherpa expects of your data.** The row shape, the conditions a query is made of, the Store contract, where validation belongs, and the data layer with no browser (docs/DATA-SOURCE-RULES.md) |
 | `sherpa://tokens` | **The token sheet.** Every --sherpa-* token, by layer and mode, as the package ships it: src/styles/tokens/tokens.css, the source of `sherpa-ui/css` |
+
+### The query tier's resources: the kinds every node graph is drawn from · `resources/query.js`
+
+| URI | Is |
+|---|---|
+| `sherpa://node-kinds` | **The node kinds.** Every node kind sherpa-ui ships, as `NODE_KINDS` in `sherpa-ui/data` says it, by name: its heading, icon and description, its header's sockets (`input`, `output`), its rows (each `name`, `label`, `control` and sockets), the data layer's `model` for it, and the `graphs` it is drawn in — a page's Query, a workflow or both |
 
 ## Prompts
 

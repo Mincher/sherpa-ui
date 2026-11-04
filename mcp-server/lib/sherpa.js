@@ -1,11 +1,14 @@
 /**
  * sherpa.js — the sherpa-ui this MCP describes: the installed package, or the
  * checkout it sits in. Every file it reads is named in READS, by its path in
- * the package, and read here. TRAP T-the-mcp-reads-sherpa-ui-through-one-door
+ * the package, and read here; every built entry it runs, in IMPORTS.
+ * TRAP T-the-mcp-reads-sherpa-ui-through-one-door
  *
  * Map:
  * - SHERPA_ROOT — sherpa-ui's folder: the installed package, else this checkout
  * - READS — every sherpa-ui file the MCP reads, by its path in the package
+ * - IMPORTS — every built entry of sherpa-ui the MCP runs, by its export
+ * - imported — one of those entries, as an app imports it; it throws, in words to act on, when it is not built
  * - has — whether one of those files is there
  * - read — one of those files as text; null when it is not there
  * - components — every element the package defines, from its custom-elements.json
@@ -17,7 +20,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const installed = () => {
   try {
@@ -41,6 +44,22 @@ export const READS = {
   dataRules: 'docs/DATA-SOURCE-RULES.md',
   tokens: 'src/styles/tokens/tokens.css',
 };
+
+/** Every built entry of sherpa-ui the MCP runs, by its export. */
+export const IMPORTS = ['sherpa-ui/data'];
+
+/** One of those entries, as an app imports it: through the package's `exports`. It
+ *  throws, in words to act on, when it is not built. */
+export async function imported(name) {
+  if (!IMPORTS.includes(name)) throw new Error(`${name} is not an entry the MCP runs: ${IMPORTS.join(', ')}`);
+  let file;
+  try {
+    file = createRequire(path.join(SHERPA_ROOT, 'package.json')).resolve(name);
+  } catch {
+    throw new Error(`${name} is not built in ${SHERPA_ROOT}: run \`npm run build\` there.`);
+  }
+  return import(pathToFileURL(file).href);
+}
 
 /** A name from a caller is one path segment, never a way out of the package. */
 const SEGMENT = /^[a-z0-9][a-z0-9-]*$/;

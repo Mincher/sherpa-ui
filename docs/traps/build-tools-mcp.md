@@ -1025,6 +1025,8 @@ sits in. `READS` names every file it reads, by its path in the package — the
 specs, the examples, the sources, `schemas/`, `custom-elements.json`, the two
 served docs and `tokens.css` — and every tool and resource reads through it. A
 name from a caller is one path segment, so no URI reaches out of the package.
+`IMPORTS` names every built entry it RUNS (`sherpa-ui/data`), imported by the
+package's own `exports`, as an app imports it, never by a path into `dist/`.
 
 **It reads sherpa-ui's own files and never a copy** (plan 700 G1). The old MCP
 copied sherpa-ui's generation code into a `vendor/` as it was packed, and

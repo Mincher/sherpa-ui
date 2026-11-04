@@ -1082,7 +1082,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-validate-on-blur-then-every-keystroke](traps/other-components.md#t-validate-on-blur-then-every-keystroke) — input-text
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — input-text
 
-## Build, tools and the MCP (71)
+## Build, tools and the MCP (73)
 
 - [T-a-bare-name-must-be-used-not-mentioned](traps/build-tools-mcp.md#t-a-bare-name-must-be-used-not-mentioned) — generate-component-spec
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — ts-facts
@@ -1140,7 +1140,9 @@ files. An entry that only tests cite is under Tests only.
 - [T-no-attribute-is-the-default-variant](traps/other-components.md#t-no-attribute-is-the-default-variant) — project-tokens
 - [T-nothing-downloads-to-serve](traps/build-tools-mcp.md#t-nothing-downloads-to-serve) — playwright.config, sherpa-ui
 - [T-observe-what-does-work](traps/element-and-sheets.md#t-observe-what-does-work) — check-props, compile-def, ts-facts
+- [T-one-command-one-door](traps/data-layer.md#t-one-command-one-door) — query
 - [T-one-field-one-status](traps/data-layer.md#t-one-field-one-status) — check-ownership
+- [T-one-node-registry](traps/data-layer.md#t-one-node-registry) — query
 - [T-one-walk-counts-and-limits-in-order](traps/data-layer.md#t-one-walk-counts-and-limits-in-order) — check-bench
 - [T-private-state-is-a-custom-state](traps/filters.md#t-private-state-is-a-custom-state) — check-props
 - [T-snap-vscode-breaks-webkit](traps/build-tools-mcp.md#t-snap-vscode-breaks-webkit) — playwright.config

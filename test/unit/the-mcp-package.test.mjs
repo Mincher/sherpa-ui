@@ -14,7 +14,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { mcpGraph } from '../../scripts/check-mcp-pack.mjs';
-import { READS, components } from '../../mcp-server/lib/sherpa.js';
+import { IMPORTS, READS, components } from '../../mcp-server/lib/sherpa.js';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 /** The contracts plan 700 serves. */
@@ -23,8 +23,13 @@ const SCHEMAS = ['app', 'page', 'views', 'workflow', 'defs', 'component', 'examp
 const packed = (cwd) => new Set(JSON.parse(execFileSync('npm', ['pack', '--dry-run', '--json', '--ignore-scripts'], { cwd, encoding: 'utf8' }))[0]
   .files.map((f) => f.path));
 
-test('sherpa-ui packs every file the MCP reads, no Figma file and no MCP of its own', () => {
+test('sherpa-ui packs every file the MCP reads and every entry it runs, no Figma file and no MCP of its own', () => {
   const files = packed(ROOT);
+  const { exports } = JSON.parse(readFileSync(`${ROOT}package.json`, 'utf8'));
+  for (const name of IMPORTS) {
+    const file = exports[`.${name.slice('sherpa-ui'.length)}`]?.default?.replace(/^\.\//, '');
+    assert.ok(file && files.has(file), `sherpa-ui does not pack ${name} (${file})`);
+  }
   const fill = (pattern, vars) => pattern.replace(/\{(\w+)\}/g, (_, v) => vars[v]);
   const want = new Set();
   for (const [key, pattern] of Object.entries(READS)) {

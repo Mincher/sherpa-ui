@@ -23,11 +23,25 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const STARTER = resolve(ROOT, '..', 'Sherpa Starter');
 
+/** A page and a workflow the query tier is called over. */
+const PAGE = {
+  definition: { v: 1, id: 'people', source: { store: 'people', fields: { plan: { label: 'Plan' } }, scopes: { data: { holds: ['plan'] } } } },
+  rows: [{ id: 1, plan: 'Pro' }, { id: 2, plan: 'Free' }],
+  key: 'id',
+  commands: [{ scope: 'data', field: 'plan', reading: { picked: ['Pro'] } }],
+};
+const WORKFLOW = { v: 1, id: 'pro', nodes: [{ id: 'in', kind: 'store', x: 0, y: 0, values: { store: 'people' } }, { id: 'out', kind: 'output', x: 360, y: 0 }], routes: [{ from: 'in', to: 'out' }] };
+
 /** The arguments each tool or prompt is called with; one with none is a failure. */
 export const SAMPLES = {
   list_components: {},
   get_component: { name: 'sherpa-data-grid' },
   find_token: { query: 'surface' },
+  query_source: PAGE,
+  query_graph: PAGE,
+  edit_query_graph: { ...PAGE, edits: [{ node: 'when-data-plan', row: 'op', value: 'notin' }] },
+  workflow_graph: { workflow: WORKFLOW },
+  edit_workflow: { workflow: WORKFLOW, edits: [{ node: 'out', set: { heading: 'Pro people' } }] },
 };
 
 /** A static import or re-export at the start of a line: `import 'x'`, or `… from 'x'`. */

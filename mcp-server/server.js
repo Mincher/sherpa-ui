@@ -11,11 +11,15 @@ import { readFileSync } from 'node:fs';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as readTools from './tools/read.js';
 import * as readResources from './resources/read.js';
+import * as queryTools from './tools/query.js';
+import * as queryResources from './resources/query.js';
 
 /** Every module that registers tools, resources or prompts, by its path in this package. */
 export const MODULES = {
   'tools/read.js': readTools,
   'resources/read.js': readResources,
+  'tools/query.js': queryTools,
+  'resources/query.js': queryResources,
 };
 
 const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
