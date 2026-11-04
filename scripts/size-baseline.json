@@ -58,7 +58,7 @@
   "src/components/sherpa-nav/sherpa-nav.ts": 669,
   "src/components/sherpa-node-panel/sherpa-node-panel.ts": 179,
   "src/components/sherpa-node-row/sherpa-node-row.ts": 30,
-  "src/components/sherpa-node-toolbar/sherpa-node-toolbar.ts": 58,
+  "src/components/sherpa-node-toolbar/sherpa-node-toolbar.ts": 59,
   "src/components/sherpa-node/node-sockets.ts": 17,
   "src/components/sherpa-node/sherpa-node.ts": 157,
   "src/components/sherpa-notifications/sherpa-notifications.ts": 182,
