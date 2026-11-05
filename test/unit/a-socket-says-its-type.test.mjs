@@ -139,7 +139,6 @@ test('a route of another type joins, no fault: the input reads null, and its nod
   const cases = [
     [{ from: 'f', to: 'g/tags' }, 'Tags takes a list; it was given a boolean'],
     [{ from: 'start/rows', to: 'g/note' }, 'Note takes a value; it was given rows'],
-    [{ from: 'start', to: 'g/note' }, 'Note takes a value; it was given a boolean'],
     // A typed header needs its type: a Gate's, a boolean.
     [{ from: 'x/value', to: 'g' }, 'Gate takes a boolean; it was given "x"'],
     // A multi-select row takes one set: an object, never a value (D17).
@@ -150,6 +149,9 @@ test('a route of another type joins, no fault: the input reads null, and its nod
     assert.deepEqual(workflowFaults(w, kinds), [], `${route.from} → ${route.to} is no fault`);
     assert.deepEqual(workflowGraph(w, {}, kinds).nodes.find((n) => n.id === 'g').warnings?.map((x) => x.words), [words]);
   }
+  // A True into a value row reads as the word, true or false: COERCIONS, no warning (TODO 781).
+  const word = { ...structuredClone(sound), nodes, routes: [...sound.routes, { from: 'start', to: 'g/note' }] };
+  assert.deepEqual([workflowFaults(word, kinds), workflowGraph(word, {}, kinds).nodes.find((n) => n.id === 'g').warnings], [[], undefined]);
 });
 
 test('a socket that is not there is refused, in words; so is an output that says it sends any type', () => {

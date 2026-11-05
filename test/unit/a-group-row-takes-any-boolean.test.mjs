@@ -28,11 +28,11 @@ const read = (w) => {
   return { faults: workflowFaults(w), warnings: g.nodes.find((n) => n.id === 'out').warnings, where: nodeFlow(g, 'out').definition?.where };
 };
 
-test('a boolean says true or false: true and false, the words, 1 and 0; nothing else does', () => {
-  for (const [v, want] of [[true, true], [false, false], [1, true], [0, false], ['1', true], ['0', false], ['true', true], [' FALSE ', false], ['True', true]]) {
+test('a boolean says true or false: true and false, the words, a number — 0 False, any other True (D2, TODO 781); nothing else does', () => {
+  for (const [v, want] of [[true, true], [false, false], [1, true], [0, false], ['1', true], ['0', false], ['true', true], [' FALSE ', false], ['True', true], [2, true], [-1, true], [0.5, true], ['2', true]]) {
     assert.equal(truthOf(v), want, JSON.stringify(v));
   }
-  for (const v of [2, -1, 0.5, 'yes', 'no', '', null, undefined, [], {}, ['true']]) assert.equal(truthOf(v), undefined, JSON.stringify(v));
+  for (const v of ['yes', 'no', '', null, undefined, [], {}, ['true'], Number.NaN]) assert.equal(truthOf(v), undefined, JSON.stringify(v));
 });
 
 test('every boolean joins a Group row, no fault and no warning: a Condition\'s True, a True, a False, a value that says one, 1 or 0', () => {
@@ -42,7 +42,7 @@ test('every boolean joins a Group row, no fault and no warning: a Condition\'s T
   const cases = [
     [[inner], 'in'], [[store], 's'], [[store], 's/#false'], [[inner], 'in/#false'],
     [[value('true', 'boolean')], 'v/value'], [[value('false', 'boolean')], 'v/value'], [[value('1', 'integer')], 'v/value'], [[value('0', 'integer')], 'v/value'],
-    [[value('True')], 'v/value'], [[math], 'm/result'],
+    [[value('True')], 'v/value'], [[math], 'm/result'], [[value('2', 'integer')], 'v/value'],
   ];
   for (const [nodes, from] of cases) {
     const r = read(flow(nodes, from));
@@ -71,12 +71,12 @@ test('a boolean only a run gives is named by where it comes from; the Group row 
   const store = { id: 's', kind: 'store', x: 0, y: 0, values: { store: 'users' } };
   assert.deepEqual(read(flow([store], 's')).where, { and: [ACTIVE, { boolean: 'Store › True' }] });
   const g = workflowGraph(flow([value('1', 'integer')], 'v/value'));
-  assert.equal(g.nodes.find((n) => n.id === 'out').rows.find((r) => r.name === 'group-2').value, '1');
+  assert.equal(g.nodes.find((n) => n.id === 'out').rows.find((r) => r.name === 'group-2').value, 'true', '1 reads as its boolean');
 });
 
 test('anything else reads null and warns in words, and says nothing in the tree; no fault', () => {
   const store = { id: 's', kind: 'store', x: 0, y: 0, values: { store: 'users' } };
-  for (const [nodes, from, given] of [[[store], 's/rows', 'rows'], [[value('yes')], 'v/value', '"yes"'], [[value('2', 'integer')], 'v/value', '"2"'], [[value(['a'], 'list')], 'v/value', 'a list']]) {
+  for (const [nodes, from, given] of [[[store], 's/rows', 'rows'], [[value('yes')], 'v/value', '"yes"'], [[value(['a'], 'list')], 'v/value', 'a list']]) {
     const r = read(flow(nodes, from));
     assert.deepEqual(r, { faults: [], warnings: [{ row: 'group-2', words: `Group takes a boolean; it was given ${given}` }], where: ACTIVE }, from);
     assert.equal(workflowGraph(flow(nodes, from)).nodes.find((n) => n.id === 'out').rows.find((r) => r.name === 'group-2').value, null);

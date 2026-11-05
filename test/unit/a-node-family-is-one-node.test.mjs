@@ -69,11 +69,11 @@ test('a kind of one type shows no select; the Query\'s Condition, its Rows that 
   assert.equal(NODE_KINDS.pick.types, undefined);
 });
 
-test('accepts follows the type: a boolean out of Compare joins a value in, which reads null and warns (TODO 770)', () => {
+test('accepts follows the type: a boolean out of Compare joins a number\'s row, which reads it as 1 or 0 (TODOs 770, 781)', () => {
   const into = { v: 2, id: 'w', nodes: [{ id: 'm', kind: 'math', x: 0, y: 0, values: { type: 'compare' } }, { id: 'n', kind: 'math', x: 300, y: 0 }], routes: [{ from: 'm', to: 'n/a' }] };
   assert.equal(socketType(kindOfNode(kinds, into.nodes[0]), undefined, 'output'), 'boolean');
   assert.deepEqual(workflowFaults(into, kinds), []);
-  assert.deepEqual(workflowGraph(into, {}, kinds).nodes.find((n) => n.id === 'n').warnings, [{ row: 'a', words: 'Value A takes a number; it was given a boolean' }]);
+  assert.deepEqual(workflowGraph(into, {}, kinds).nodes.find((n) => n.id === 'n').warnings, undefined);
   const add = { ...into, nodes: [{ ...into.nodes[0], values: { type: 'add' } }, into.nodes[1]] };
   assert.deepEqual([workflowFaults(add, kinds), workflowGraph(add, {}, kinds).nodes.find((n) => n.id === 'n').warnings], [[], undefined]);
   assert.ok(accepts('value', 'value'));

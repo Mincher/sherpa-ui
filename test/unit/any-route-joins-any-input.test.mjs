@@ -47,7 +47,8 @@ test('every output type into every typed input joins, no fault: its own is read;
     for (const into of TYPES) {
       const w = flow([{ from: SENDS[out], to: `k/${into}` }]);
       assert.deepEqual(workflowFaults(w, kinds), [], `${out} → ${into}: no fault`);
-      const want = accepts(out, into) ? undefined : [[into, `Takes ${into} takes ${INPUT_WORDS[into]}; it was given ${SAID[out]}`]];
+      // A True or False into a value reads as the word (COERCIONS, TODO 781): no warning.
+      const want = accepts(out, into) || (out === 'boolean' && into === 'value') ? undefined : [[into, `Takes ${into} takes ${INPUT_WORDS[into]}; it was given ${SAID[out]}`]];
       assert.deepEqual(warnings(w), want, `${out} → ${into}`);
     }
   }

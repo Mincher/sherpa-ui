@@ -2,7 +2,7 @@ import { test, expect, type Page } from './harness';
 
 /**
  * A Condition's GROUP row takes any boolean (Will, TODO 780: "0/1 or True or False is data"): a Value's 1 is a
- * constant part, said on the row and in the Outgoing JSON's tree, no warning; the Store's True joins by a drag,
+ * constant part, read as true (TODO 781), said on the row and in the Outgoing JSON's tree, no warning; the Store's True joins by a drag,
  * no refusal; the Store's rows joins too, reads null and warns. Real pointer. TRAP T-a-condition-is-a-tree-of-nodes
  */
 test.beforeEach(async ({ page }) => {
@@ -55,8 +55,8 @@ const drag = async (page: Page, from: [number, number], to: [number, number]) =>
   await settle(page);
 };
 
-test('a Value\'s 1 in the Group row is a constant part: the row says it, no warning, and Status or 1 always holds', async ({ page }) => {
-  expect(await groupRow(page)).toEqual(['Group: 1']);
+test('a Value\'s 1 in the Group row is a constant part: the row reads it as true, no warning, and Status or 1 always holds', async ({ page }) => {
+  expect(await groupRow(page)).toEqual(['Group: true']);
   expect(await page.locator(COND).getAttribute('data-warning')).toBeNull();
   const where = await page.evaluate(async () => {
     const { nodeFlow, workflowGraph } = await import('/dist/data.js');

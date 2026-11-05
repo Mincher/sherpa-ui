@@ -207,3 +207,17 @@ test('rows dropped on Math › Value B join, drawn, and Math says so; a loop is 
   expect(await lines(page)).toEqual(before);
   await expect.poll(() => heard.some((m) => m.includes('its routes run in a loop'))).toBe(true);
 });
+
+test('a Value made True/false and "true" reads 1 in Math › Value A, and Math no longer warns (TODO 781)', async ({ page }) => {
+  expect(await warning(page, 'Math')).toBe('Value A takes a number; it was given "abc"');
+  await page.locator('#cv > sherpa-node[data-heading="Value"] sherpa-input-text[name="type"] select').selectOption('boolean');
+  await settle(page);
+  const field = page.locator('#cv > sherpa-node[data-heading="Value"] sherpa-input-text[name="value"] input');
+  await field.fill('true');
+  await field.press('Enter');
+  await field.blur();
+  await settle(page);
+  const a = await page.locator('#cv > sherpa-node[data-heading="Math"] sherpa-input-text[name="a"]').evaluate((f) => (f as HTMLElement & { value: unknown }).value);
+  expect(String(a)).toBe('1');
+  expect(await warning(page, 'Math')).toBeNull();
+});

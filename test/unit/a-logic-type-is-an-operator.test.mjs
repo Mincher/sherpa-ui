@@ -92,9 +92,9 @@ test('Compare A against B is a boolean out: no header input, its values its rows
   assert.deepEqual([is.input, is.branches, socketType(is, undefined, 'output')], [undefined, true, 'boolean']);
   // A routed Value shows in Value A, as any row mirrors one.
   assert.deepEqual(is.rows.map((r) => r.value), ['eq', 'Pro', 'Pro']);
-  // PLANTED: its True is a boolean, rows are no value: each joins (TODO 770), no fault, and the node it enters warns.
+  // PLANTED: its True joins a number's row and reads as 1 or 0 (TODO 781); rows are no value: they join (770), and warn.
   const toSum = { ...w, routes: [...w.routes, { from: 'is', to: 'sum/a' }] };
-  assert.deepEqual([workflowFaults(toSum), node(workflowGraph(toSum), 'sum').warnings], [[], [{ row: 'a', words: 'Value A takes a number; it was given a boolean' }]]);
+  assert.deepEqual([workflowFaults(toSum), node(workflowGraph(toSum), 'sum').warnings], [[], undefined]);
   const store = { id: 'start', kind: 'store', x: 0, y: 300, values: { store: 'customers' } };
   const rowsIn = { ...w, nodes: [...w.nodes, store], routes: [{ from: 'start/rows', to: 'is/a' }, { from: 'is', to: 'end' }] };
   assert.deepEqual([workflowFaults(rowsIn), node(workflowGraph(rowsIn), 'is').warnings], [[], [{ row: 'a', words: 'Value A takes a value; it was given rows' }]]);
