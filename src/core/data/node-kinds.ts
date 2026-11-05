@@ -273,7 +273,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       divide: { label: 'Divide', help: 'Divide Value A by Value B', rows: [A, B, RESULT] },
       ratio: { label: 'Ratio', help: 'Decimal ratio between 0 and 1', rows: [A, B, RESULT] },
       round: { label: 'Round', help: 'Rounds a decimal to a set number of places', rows: [numberRow('places', 'Places'), numberRow('a', 'Value'), RESULT] },
-      increment: { label: 'Increment', help: 'Rounds Value to the nearest multiple of Step', rows: [numberRow('a', 'Value'), numberRow('step', 'Step'), RESULT] },
+      increment: { label: 'Increment', help: 'Increment Value A by Value B, in its smallest unit', rows: [A, B, RESULT] },
       floor: { label: 'Floor', help: 'Lowest value from the list', rows: [LIST, RESULT] },
       ceiling: { label: 'Ceiling', help: 'Highest value from the list', rows: [LIST, RESULT] },
       average: { label: 'Average', help: 'Average value of the list', rows: [LIST, RESULT] },

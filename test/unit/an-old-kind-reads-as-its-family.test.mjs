@@ -61,7 +61,7 @@ test('each family: its types in order, the Type row first, and the rows, sockets
     value: { text: ['value'], integer: ['value'], decimal: ['value'], date: ['value'], boolean: ['value'], list: ['value'] },
     math: {
       add: ['a', 'b', 'result'], subtract: ['a', 'b', 'result'], multiply: ['a', 'b', 'result'], divide: ['a', 'b', 'result'], ratio: ['a', 'b', 'result'],
-      round: ['places', 'a', 'result'], increment: ['a', 'step', 'result'], floor: ['values', 'result'], ceiling: ['values', 'result'], average: ['values', 'result'],
+      round: ['places', 'a', 'result'], increment: ['a', 'b', 'result'], floor: ['values', 'result'], ceiling: ['values', 'result'], average: ['values', 'result'],
     },
     time: { between: ['start', 'end'], duration: ['when', 'n', 'unit'] },
     collection: { sort: ['rows', 'field', 'direction'], group: ['rows', 'field'], count: ['count'] },

@@ -69,7 +69,7 @@ with a D socket takes a value in; a tall D takes many (D4).
 | Divide | Divide Value A by Value B | A, B | **NEW** |
 | Ratio | Decimal ratio between 0 and 1 | A, B | **NEW** |
 | Round | Rounds a decimal to a set number of places | **Places**, A, B | **NEW** |
-| Increment | (Figma's line is Round's copy) | **Places**, A, B | **NEW** |
+| Increment | Increment Value A by Value B, in its smallest unit | A, B | **NEW** (Will, 2026-11-05) |
 | Floor | Lowest value from the range | A, B; header takes MANY (pill, tall) | **NEW** |
 | Ceiling | Highest value from the range | the same | **NEW** |
 | Average | Average value of the range | the same | **NEW** |
@@ -77,7 +77,13 @@ with a D socket takes a value in; a tall D takes many (D4).
 All: every row a value in; header out a value. Notes: Floor and Ceiling are worded as min and max
 of a list, not rounding: ask before naming them. Floor, Ceiling and Average read a LIST: model as
 one `Values` row (an object, `multiple`, D17), not A and B. Round shows B but needs only A.
-Increment has no definition yet.
+Increment, Will, 2026-11-05: *"Increments a numerical value by the amount in the second value
+input row using the same unit magnitude."* Read as: Value B counts in Value A's smallest unit,
+so 3.14 and 2 give 3.16, and 1200 and 2 give 1202. The runner (N4) does the sum; the node draws
+Value A, Value B and Result.
+
+Tag, Will, 2026-11-05: **A**. P4 makes the Tag node's Tags row a tag input (it is a pick list
+until then).
 
 ### Logic ("Compare": the Condition node, Will's words) and Time
 
