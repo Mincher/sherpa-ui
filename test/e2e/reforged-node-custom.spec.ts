@@ -300,6 +300,40 @@ test('Shift-click and Space pick several; Escape clears; "Save as Custom Node" m
   expect(await page.locator('#cv svg.graph-routes path[data-to]').count()).toBe(3);
 });
 
+test('a route let go on a Custom Node\'s header lands on the row it fits, and Ungroup joins it to what that row fed (759)', async ({ page }) => {
+  await bind(page);
+  const at = (selector: string, side: string) => page.locator(selector).evaluate((el, s) => {
+    const r = (el as HTMLElement & { socketRect(side: string): DOMRect }).socketRect(s);
+    return [r.left + r.width / 2, r.top + r.height / 2];
+  }, side);
+  // Store's Rows, by the pointer, onto the HEADER of Owner check: its Users row takes it.
+  const [ax, ay] = await at('#cv > sherpa-node[data-heading="Store"] sherpa-node-row[data-label="Rows"]', 'output');
+  const [bx, by] = await at('#cv > sherpa-node[data-heading="Owner check"]', 'input');
+  await page.mouse.move(ax!, ay!);
+  await page.mouse.down();
+  await page.mouse.move((ax! + bx!) / 2, (ay! + by!) / 2, { steps: 4 });
+  await page.mouse.move(bx!, by!, { steps: 4 });
+  await page.mouse.up();
+  await settle(page);
+  const routes = () => ed<{ from: string; to: string }[]>(page, 'ed.workflow().routes').then((rs) => rs.map((r) => `${r.from} → ${r.to}`).sort());
+  expect(await routes()).toContain('start/rows → own/users');
+  expect(await page.locator('#cv svg.graph-routes path[data-from="start/rows"][data-to="own/users"]').count()).toBe(1);
+  // Inside, its Group Input row, an output socket, feeds the Condition.
+  await ed(page, "ed.open('own')");
+  await settle(page);
+  expect(await page.locator('#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row').evaluateAll((els) => els.map((e) => [e.getAttribute('data-label'), e.getAttribute('data-output-socket'), e.hasAttribute('data-output-routed')]))).toEqual([['Users', 'object', true], ['Role', 'value', true]]);
+  await ed(page, 'ed.back()');
+  await settle(page);
+  // Ungroup: the rows go straight on to the Condition inside, its Role the default it held.
+  await header(page, 'Owner check').click();
+  await settle(page);
+  await page.locator('#inspector sherpa-button[data-label="Ungroup"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await settle(page);
+  expect(await routes()).toContain('start/rows → has-role');
+  expect(await routes()).not.toContain('start/rows → own/users');
+  expect(await page.locator('#cv svg.graph-routes path[data-from="start/rows"][data-to="has-role"]').count()).toBe(1);
+});
+
 test('a saved edit reaches a saved edit reaches a second tab: its uses show the update indicator once the save arrives (refresh)', async ({ page }) => {
   await bind(page);
   await ed(page, "ed.open('perm')");

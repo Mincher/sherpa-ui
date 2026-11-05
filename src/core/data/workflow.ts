@@ -9,7 +9,8 @@
  * - WorkflowDefinition — One workflow, as JSON (v2) — its nodes and its routes.
  * - WorkflowDefinitionV1 — A workflow as v1 saved it: its data rows left from a node's header.
  * - WorkflowRead — A workflow read as v2, and each fault the read met.
- * - readWorkflow — A workflow as v2: a v1's header routes moved to its Rows row; an old kind or type read as today's.
+ * - headerLanding — Where a route into a Custom Node's header lands: the input row it fits, a free one first; none, the header.
+ * - readWorkflow — A workflow as v2: a v1's header routes on Rows; old kinds, types, Custom Node header routes as today's.
  * - GROW_MIN — The least a node's size may be: its natural size, as 1.
  * - GROW_MAX — The most a node's size may be: double its natural size, as 2.
  * - keptRoutes — The routes a node keeps for another of its types: drawn nowhere, no fault, not saved.
@@ -102,12 +103,46 @@ function current(node: WorkflowNode, kinds: Kinds): WorkflowNode {
   return { ...node, kind, ...(now !== undefined ? { values: { ...node.values, type: now } } : {}) };
 }
 
+/** Where a route into a Custom Node's header lands: its first input row that takes what the route
+ *  carries, one no other route feeds first, else (not `free`) the first. None takes it: the header,
+ *  which its Group Input's header sends inside (D1). TRAP T-a-custom-node-header-lands-on-a-row */
+export function headerLanding(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes'>, route: NodeRoute, kinds: Kinds = NODE_KINDS, free = false): NodeRoute {
+  const { node: id, row } = socketOf(route.to);
+  const node = row === undefined ? workflow.nodes.find((n) => n.id === id) : undefined;
+  const kind = node && kinds[node.kind]?.model === 'graph' ? kindOfNode(kinds, node) : undefined;
+  if (!kind) return route;
+  const { node: from, row: out } = socketOf(route.from);
+  const source = kindOfNode(kinds, workflow.nodes.find((n) => n.id === from));
+  const type = source && socketType(source, out, 'output');
+  const fits = type ? kind.rows.filter((r) => r.input && accepts(type, r.input)) : [];
+  const fed = new Set((workflow.routes ?? []).filter((r) => r.from !== route.from || r.to !== route.to).map((r) => r.to));
+  const at = fits.find((r) => !fed.has(`${id}/${r.name}`)) ?? (free ? undefined : fits[0]);
+  return at ? { ...route, to: `${id}/${at.name}` } : route;
+}
+
+/** Each route a Custom Node's header holds, read once onto the free row it lands on; its ties follow. */
+function onRows(workflow: WorkflowDefinition, kinds: Kinds): WorkflowDefinition {
+  const given = workflow.routes ?? [];
+  let routes = given;
+  for (const r of given) {
+    const to = headerLanding({ nodes: workflow.nodes, routes }, r, kinds, true);
+    if (to !== r) routes = routes.map((x) => (x === r ? to : x));
+  }
+  if (routes === given) return workflow;
+  const moved = (t: NodeRoute): NodeRoute => {
+    const at = given.findIndex((r) => r.from === t.from && r.to === t.to);
+    return at < 0 ? t : { ...t, to: routes[at]!.to };
+  };
+  return { ...workflow, routes, ...(workflow.ties ? { ties: workflow.ties.map((t) => ({ ...t, routes: t.routes.map(moved) })) } : {}) };
+}
+
 /**
  * A workflow as v2: a v2 as it is, the one given; a v1 read ONCE — each route that left a
  * node's header, its data rows, now leaves its Rows row. One a v2 kind cannot send from
  * there (no Rows row, and its header sends only True) is dropped, and a fault says so: it
- * would mean another thing. A kind or type renamed reads as today's, once: a file is
- * written anew only when it is saved again. Plan 713 D8, plan 749 P3. TRAP T-a-workflow-is-its-definition
+ * would mean another thing. A kind or type renamed reads as today's, once, and a route on a
+ * Custom Node's header as the row it lands on: a file is written anew only when it is saved
+ * again. Plan 713 D8, plan 749 P3. TRAP T-a-workflow-is-its-definition
  */
 export function readWorkflow(given: WorkflowDefinition | WorkflowDefinitionV1, kinds: Kinds = NODE_KINDS): WorkflowRead {
   const v = (given as { v?: unknown } | null)?.v;
@@ -115,7 +150,7 @@ export function readWorkflow(given: WorkflowDefinition | WorkflowDefinitionV1, k
   // A Filter is a Condition, and a Sort, Group or Count a Collection of that type, with the same rows.
   const nodes = given.nodes.map((n) => current(n, kinds));
   const workflow = nodes.some((n, i) => n !== given.nodes[i]) ? { ...given, nodes } : given;
-  if (workflow.v === 2) return { workflow, faults: [] };
+  if (workflow.v === 2) return { workflow: onRows(workflow, kinds), faults: [] };
   const faults: string[] = [];
   const kindOf = new Map(workflow.nodes.map((n) => [n.id, kindOfNode(kinds, n)]));
   const routes = (workflow.routes ?? []).flatMap((route): NodeRoute[] => {
@@ -130,7 +165,7 @@ export function readWorkflow(given: WorkflowDefinition | WorkflowDefinitionV1, k
     return [];
   });
   const $schema = typeof workflow.$schema === 'string' ? { $schema: workflow.$schema.replace(/workflow\.v1\.json$/, 'workflow.v2.json') } : {};
-  return { workflow: { ...workflow, ...$schema, v: 2, ...(workflow.routes ? { routes } : {}) }, faults };
+  return { workflow: onRows({ ...workflow, ...$schema, v: 2, ...(workflow.routes ? { routes } : {}) }, kinds), faults };
 }
 
 /** A node's size runs from its natural size to double it, each way. */
@@ -480,11 +515,12 @@ export function editWorkflow(
   };
   if ('route' in edit) {
     const routes = workflow.routes ?? [];
-    if (routes.some((r) => same(r, edit.route))) return workflow;
-    const { node, row } = socketOf(edit.route.to);
+    const route = headerLanding(workflow, edit.route, kinds);
+    if (routes.some((r) => same(r, route))) return workflow;
+    const { node, row } = socketOf(route.to);
     const kind = kindOfNode(kinds, workflow.nodes.find((n) => n.id === node));
     const many = !!kind && takesMany(kind, row);
-    return untied({ ...workflow, routes: [...routes.filter((r) => many || r.to !== edit.route.to), { ...edit.route }] });
+    return untied({ ...workflow, routes: [...routes.filter((r) => many || r.to !== route.to), { ...route }] });
   }
   // A route a tie takes drops its bends: a tie is its handle. TODO 754
   const unbent = (tied: readonly NodeRoute[]): Pick<WorkflowDefinition, 'routes'> =>

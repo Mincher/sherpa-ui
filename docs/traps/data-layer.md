@@ -7293,6 +7293,32 @@ Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
 - Site: `test/unit/a-custom-node-is-saved-from-nodes.test.mjs`
 - Site: `src/data.ts`
 
+### T-a-custom-node-header-lands-on-a-row
+
+**A route into a Custom Node's header lands on the input row it fits: every input of a use is
+a row of its Group Input, so Ungroup can join it.** Will, 2026-11-05 (TODO 759).
+
+- **What broke.** A use's header takes any type (D1), and a drop on it, or "Add a node" from a
+  line, joined the route THERE. But a definition's inner routes leave its Group Input's ROWS,
+  `#in/<name>`: `groupNodes` makes one per outside source, and the presets name theirs. Nothing
+  left `#in`, the header, so Ungroup had nothing to join a header route to and dropped it.
+  Measured in Demos: Store → the header of "Is active", ungrouped, and the Store fed nothing.
+- **The rule.** `headerLanding` (workflow.ts): a route into the header of a `model: 'graph'` kind
+  goes to its first input row that takes what the route carries (`accepts`), one no other route
+  feeds first, else the first, as a drop on that row would. `editWorkflow`'s `{ route }` does it,
+  so the line draws into the row. `readWorkflow` reads one held from before onto a FREE row, once,
+  its ties with it; the file is written anew only on Save.
+- **None fits** (a boolean, and no boolean input; a node with no inputs): it stays on the header,
+  which the Group Input's header sends inside (plan 713 §9.2). Ungroup joins it through what
+  leaves `#in`; with nothing, it reached nothing inside, and goes with the use.
+- **Ungroup** (`ungroupUse`) reads the workflow first, so a header route is on its row; one still
+  on the header (its row was fed) joins through `#in`, else through the row it lands on.
+  Group then Ungroup stays the inverse: `groupNodes` never routes into a use's header.
+
+- Site: `src/core/data/workflow.ts`
+- Site: `src/core/data/node-group.ts`
+- Site: `test/unit/a-custom-node-is-saved-from-nodes.test.mjs`
+
 ### T-an-entity-is-an-envelope-and-a-type
 
 **An entity is ONE envelope for every kind of saved graph, and its TYPE says the rest.**

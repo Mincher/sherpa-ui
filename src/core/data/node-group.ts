@@ -13,7 +13,7 @@
  */
 import { NODE_KINDS, FALSE_SOCKET, SOCKET_WORDS, kindOfNode, rowOf, socketOf, socketType, type NodeKind, type NodeRoute, type SocketType } from './node-kinds.js';
 import { kindsOf, useOf, workflowFaultsDeep, type NodeDefinition, type NodeLibrary, type NodeOutput, type NodeSocket } from './node-library.js';
-import { tiesAmong, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
+import { headerLanding, readWorkflow, tiesAmong, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
 
 type Kinds = Readonly<Record<string, NodeKind>>;
 
@@ -172,13 +172,17 @@ export function groupNodes(
 
 /**
  * A use as its nodes again, in place (Ungroup): the definition's nodes where the definition put
- * them, its inner routes, and each route that met a socket joined straight through. A socket no
- * route fed gives its value to the inner row it reached, where the use held one. A node whose id
- * the graph holds takes the use's name in front. Refused, in words, when the use is none.
+ * them, its inner routes, and each route that met a socket joined straight through; one on the
+ * header, through the row it lands on. A socket no route fed gives its value to the inner row it
+ * reached, where the use held one. A node whose id the graph holds takes the use's name in front.
+ * Refused, in words, when the use is none. TRAP T-a-custom-node-header-lands-on-a-row
  */
 export function ungroupUse(
-  workflow: WorkflowDefinition, useId: string, library: NodeLibrary, kinds: Kinds = NODE_KINDS,
+  given: WorkflowDefinition, useId: string, library: NodeLibrary, kinds: Kinds = NODE_KINDS,
 ): { workflow: WorkflowDefinition } | { fault: string } {
+  const every: Kinds = { ...kindsOf(library), ...kinds };
+  // A route held on the header reads onto the row it lands on: what that row fed, it feeds.
+  const workflow = readWorkflow(given, every).workflow ?? given;
   const use = workflow.nodes.find((n) => n.id === useId);
   const definition = use && library?.nodes?.[use.kind];
   if (!use || !definition || (!!kinds[use.kind] && kinds[use.kind]!.model !== 'graph')) return { fault: 'only a Custom Node can be ungrouped' };
@@ -193,9 +197,12 @@ export function ungroupUse(
   const sockets = (side: 'in' | 'out', name: string | undefined): string => `${side === 'in' ? '#in' : '#out'}${name === undefined ? '' : `/${name}`}`;
   const joined: NodeRoute[] = [];
   const values = new Map<string, Record<string, unknown>>();
+  const fromIn = (name: string | undefined): NodeRoute[] => (definition.routes ?? []).filter((x) => x.from === sockets('in', name));
   for (const r of routes.filter((x) => socketOf(x.to).node === useId)) {
-    const name = socketOf(r.to).row;
-    for (const inner of (definition.routes ?? []).filter((x) => x.from === sockets('in', name))) joined.push({ from: r.from, to: moved(inner.to) });
+    const { row } = socketOf(r.to);
+    // Still on the header: on through the Group Input's header, else the row it lands on, fed or not.
+    const name = row === undefined && !fromIn(undefined).length ? socketOf(headerLanding(workflow, r, every).to).row : row;
+    for (const inner of fromIn(name)) joined.push({ from: r.from, to: moved(inner.to) });
   }
   for (const r of routes.filter((x) => socketOf(x.from).node === useId)) {
     const { row } = socketOf(r.from);
