@@ -1815,6 +1815,8 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
   onUpdateAll?: (kind: string) => void;
   /** A `sherpa-node-toolbar`: its Undo and Redo are this editor's, and it says when they can be pressed. */
   toolbar?: HTMLElement;
+  /** The workflow is a preset: drawn, opened, never edited, as a preset Custom Node's inside is. TRAP T-a-graph-is-a-view-of-a-type */
+  readOnly?: boolean;
 }
 
 /** A node's own name, line and place, as its inspector's first rows edit them. */
@@ -1851,7 +1853,7 @@ const isEdits = (v: unknown): v is Record<string, NodeDefinition> => !!v && type
  *  · TRAP T-a-custom-node-is-an-instance */
 export function bindWorkflow(
   canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition | WorkflowDefinitionV1,
-  { inspector, panel, session, kinds = NODE_KINDS, library, onSaveNode, header, confirm, customDialog, onUpdateAll, toolbar, ...facts }: WorkflowEditorOptions = {},
+  { inspector, panel, session, kinds = NODE_KINDS, library, onSaveNode, header, confirm, customDialog, onUpdateAll, toolbar, readOnly: preset = false, ...facts }: WorkflowEditorOptions = {},
 ): WorkflowEditor {
   const pointer = `/workflows/${workflow.id}`;
   const isDraft = (v: unknown): v is WorkflowDefinition | WorkflowDefinitionV1 => {
@@ -1890,9 +1892,11 @@ export function bindWorkflow(
   };
   const shown = (): WorkflowDefinition => (path.length ? innerNow()?.workflow ?? draft : draft);
   const K = (): Readonly<Record<string, NodeKind>> => (path.length ? innerNow()?.kinds ?? topKinds() : topKinds());
-  /** A preset's inside is read only (D15), at any depth. */
-  const readOnly = (): boolean => path.some((s) => lib.nodes[s.kind]?.preset);
-  const refreshPanel = (): void => { void panel?.populate(paletteOf(topKinds())); };
+  /** A preset's inside is read only (D15), at any depth; a preset workflow, everywhere. */
+  const insidePreset = (): boolean => path.some((s) => lib.nodes[s.kind]?.preset);
+  const readOnly = (): boolean => preset || insidePreset();
+  // A graph's own Group Input and Output are drawn, never placed.
+  const refreshPanel = (): void => { void panel?.populate(paletteOf(Object.fromEntries(Object.entries(topKinds()).filter(([id]) => !id.startsWith('#'))))); };
   // — Undo and Redo: each edit is a pure function on the draft, so a step is a snapshot of
   //   the draft and the edited definitions, before and after. They share structure: a step is cheap.
   //   TRAP T-an-edit-is-a-step
@@ -1953,7 +1957,9 @@ export function bindWorkflow(
     });
   };
   const write = (next: WorkflowDefinition, tag?: string): void => edit(() => {
-    if (!path.length) {
+    if (!path.length && preset) {
+      report({ code: 'node-readonly', message: 'bindWorkflow: this workflow is a preset, read only: change a copy of it.', at: { workflow: workflow.id } });
+    } else if (!path.length) {
       draft = next;
       session?.set(pointer, next);
     } else if (readOnly()) {
@@ -2141,7 +2147,7 @@ export function bindWorkflow(
     path = [...path, { kind: at.kind, use: id, label: at.heading ?? lib.nodes[at.kind]!.label }];
     enter(null);
     // A preset says it is read only, and where its copy is: the panel opens beside it.
-    if (readOnly() && inspector) showScope();
+    if (insidePreset() && inspector) showScope();
   };
   const back = (depth = path.length - 1): void => {
     if (depth < 0 || depth >= path.length) return;
@@ -2149,7 +2155,8 @@ export function bindWorkflow(
     path = path.slice(0, depth);
     enter(from);
   };
-  header?.addEventListener('breadcrumb-select', (event) => back((event as CustomEvent<{ index: number }>).detail.index));
+  const onCrumb = (event: Event): void => back((event as CustomEvent<{ index: number }>).detail.index);
+  header?.addEventListener('breadcrumb-select', onCrumb);
   /** "Copy to my nodes": an editable copy of the preset opened, which takes the use that opened it. */
   const copy = (): void => edit(() => {
     const step = path.at(-1);
@@ -2169,7 +2176,7 @@ export function bindWorkflow(
     inspector?.hide();
   });
   const scopeNote = (): HTMLElement[] => {
-    if (!path.length || !readOnly()) return [];
+    if (!insidePreset()) return [];
     const note = document.createElement('sherpa-stack');
     note.setAttribute('data-gap', 'md');
     const words = document.createElement('p');
@@ -2535,6 +2542,7 @@ export function bindWorkflow(
       canvas.removeEventListener('keydown', onKey, { capture: true });
       canvas.removeEventListener('click', onClick, { capture: true });
       canvas.removeEventListener('dblclick', onDouble);
+      header?.removeEventListener('breadcrumb-select', onCrumb);
       picks.stop();
     },
   };

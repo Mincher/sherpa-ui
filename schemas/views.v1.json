@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sherpa-ui.dev/schemas/views.v1.json",
   "title": "Sherpa-UI views library",
-  "description": "A page's Views, as JSON, by the id its View chip and the URL carry: the file a Context's views names in app.v1.json. The first is the Context's own. loadViewLibrary() reads it, and leaves out one that is not a View.",
+  "description": "A page's Views, as JSON, by the id its View chip and the URL carry: the file a Context's views names in app.v1.json. The first is the Context's own. A View with `graph` is a graph View: its canvas shows one entity of that type, and the graph chip picks which (?graph=). loadViewLibrary() reads it, and leaves out one that is not a View.",
   "type": "object",
   "minProperties": 1,
   "properties": { "$schema": { "type": "string" } },

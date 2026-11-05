@@ -3,6 +3,9 @@
  * loads the Context app.json names, runs it, and tears the last one down.
  * TRAP T-an-outlet-loads-the-context
  *
+ * A Context whose `chrome.filters` is `"views"` has its row drawn here: the View chip and, on a
+ * graph View, the graph chip, which picks the entity its canvas shows. TRAP T-a-graph-is-a-view-of-a-type
+ *
  * Map:
  * - OutletOptions — what an app hands its outlet: app.json, where it lives, the session and the stores
  */
@@ -16,7 +19,8 @@ import type { Entity } from '../../core/data/entity.js';
 import type { EntityShelf } from '../../core/data/entity-shelf.js';
 import type { NodeShelf } from '../../core/data/node-shelf.js';
 import type { ViewLibrary } from '../../core/browser/persist-view.js';
-import { VIEW_CHIP } from '../../core/ui/shared-constants.js';
+import { GRAPH_CHIP, VIEW_CHIP } from '../../core/ui/shared-constants.js';
+import { NEW_GRAPH, graphRows, newGraph, openOf, type OpenGraph } from '../../core/data/graph-views.js';
 import type { SessionStore } from '../../core/browser/session.js';
 import { SETTINGS, Settings } from '../../core/data/settings.js';
 import type { PageDefinition } from '../../core/data/page-definition.js';
@@ -56,7 +60,11 @@ type ViewBar = HTMLElement & {
   values?: Record<string, string[] | undefined>;
   setChipValues(id: string, values: string[]): void;
   report(): void;
+  populate(defs: unknown[]): Promise<void> | void;
 };
+
+/** The header's bar that holds the View chip. */
+const VIEW_BAR = 'sherpa-quick-filter-toolbar[data-type="view"]';
 
 export class SherpaOutlet extends SherpaElement {
   static override css = new URL('./sherpa-outlet.css', import.meta.url);
@@ -103,6 +111,23 @@ export class SherpaOutlet extends SherpaElement {
     return this.#settings.page;
   }
 
+  /** The graph View on screen — its View, its type, the entity on its canvas — or null. */
+  get graph(): OpenGraph | null {
+    return this.#graph;
+  }
+
+  /** Open an entity in the graph View on screen; none, its type's first. The graph chip shows it,
+   *  and the URL follows. */
+  async openGraph(id: string | null): Promise<void> {
+    const open = this.#graph;
+    const shelf = this.#provider?.keeper.entities;
+    if (!open || !shelf) return;
+    const first = shelf.list(open.type)[0]?.id ?? null;
+    await this.#router?.go({ [GRAPH_CHIP]: id === first ? null : id }, { replace: true });
+    // The URL stays where the first is opened again: drawn either way.
+    await this.#syncGraph();
+  }
+
   /** Settles once every Context's own Views are in. */
   get viewsReady(): Promise<void> {
     return this.#viewsReady;
@@ -141,7 +166,9 @@ export class SherpaOutlet extends SherpaElement {
     const router = this.#router;
     if (router) {
       const rest = (router.dataset['params'] ?? '').split(/\s+/).filter((p) => p && p.split('=')[0] !== 'context');
-      router.dataset['params'] = [`context=${options.app.default}`, ...rest].join(' ');
+      // A graph View's entity is the URL's too.
+      const graphs = Object.keys(options.app.contexts).some((name) => this.#drawsViews(name)) && !rest.includes(GRAPH_CHIP);
+      router.dataset['params'] = [`context=${options.app.default}`, ...rest, ...(graphs ? [GRAPH_CHIP] : [])].join(' ');
       this.on(router, 'route-change', this.#onRoute);
     }
     // The page's data out of reach: a banner over the content. TRAP T-a-reach-banner-takes-no-room
@@ -238,9 +265,9 @@ export class SherpaOutlet extends SherpaElement {
   #reachNow = 'ok';
 
   /** Another View is on screen: the header offers Delete view only on the
-   *  reader's own. TRAP T-a-saved-view-is-the-readers-own */
+   *  reader's own — on a graph View, the reader's own entity. TRAP T-a-saved-view-is-the-readers-own */
   #onViewChange = (): void => {
-    this.#header?.toggleAttribute('data-custom-view', !!this.#provider?.customView);
+    this.#header?.toggleAttribute('data-custom-view', this.#graph ? this.#graph.origin === 'mine' : !!this.#provider?.customView);
   };
 
   /** The provider says the page's reach moved. */
@@ -313,7 +340,9 @@ export class SherpaOutlet extends SherpaElement {
       return;
     }
     this.#syncHeader(context);
-    this.#pickView(route['view'] ?? this.firstView(context));
+    // A row the outlet draws is drawn from the route; another, picked through its chip.
+    if (this.#drawsViews(context)) void this.#syncGraph();
+    else this.#pickView(route['view'] ?? this.firstView(context));
     this.#nav?.syncCurrent();
     this.#nav?.syncStar();
     // A View picked here is a Recent too. TODO 399
@@ -396,16 +425,98 @@ export class SherpaOutlet extends SherpaElement {
     this.#settings.leaving = null;
   }
 
-  /** The View chip owns the View; the URL follows it. */
+  /** The View chip owns the View, and the graph chip the entity a graph View shows; the URL follows them. */
   #onViewPick = (event: Event): void => {
     const detail = (event as CustomEvent<{ scope?: string; values?: Record<string, string[]> }>).detail;
-    if (detail?.scope && detail.scope !== 'bar') return;
+    if (this.#drawing || (detail?.scope && detail.scope !== 'bar')) return;
     const context = this.#context;
     const id = detail?.values?.[VIEW_CHIP]?.[0];
     if (!context || !id || !this.viewsOf(context)[id]) return;
+    const view = id === this.firstView(context) ? null : id;
     // REPLACE: a View pick is not a step Back should undo one by one.
-    void this.#router?.go({ view: id === this.firstView(context) ? null : id }, { replace: true });
+    if (!this.#drawsViews(context)) return void this.#router?.go({ view }, { replace: true });
+    const open = this.#graph;
+    // Another View opens on its type's first.
+    if (open?.view !== id) return void this.#router?.go({ view, [GRAPH_CHIP]: null }, { replace: true });
+    const graph = detail?.values?.[GRAPH_CHIP]?.[0];
+    if (graph === NEW_GRAPH) void this.#askNew(open);
+    else if (graph && graph !== open.id) void this.openGraph(graph);
   };
+
+  /** Does the outlet draw this Context's row: the View chip alone, and the graph chip on a graph View? */
+  #drawsViews(name: string): boolean {
+    const context = this.#options?.app.contexts[name];
+    return context?.chrome?.filters === 'views' && !context.definition;
+  }
+
+  /** The graph View on screen, or null. TRAP T-a-graph-is-a-view-of-a-type */
+  #graph: OpenGraph | null = null;
+  /** Each draw of the graph chips; only the newest commits. */
+  #graphToken = 0;
+  /** The chips are being drawn: what they report is not a pick. */
+  #drawing = false;
+  /** The outlet took the bar's actions away, so it gives them back. */
+  #hidActions = false;
+
+  /** The open graph, from the route and the entity shelf: the row's chips drawn, the header told,
+   *  and the Context told by `graph-change` when it moved. On another Context, none. */
+  async #syncGraph(tell = true): Promise<void> {
+    const token = ++this.#graphToken;
+    const context = this.#context;
+    if (!context || !this.#drawsViews(context)) return this.#setGraph(null, tell);
+    const route = this.#router?.route ?? {};
+    const library = this.viewsOf(context);
+    const view = route['view'] && library[route['view']] ? route['view'] : this.firstView(context);
+    const type = view ? library[view]?.graph?.type : undefined;
+    const list = type ? this.#provider?.keeper.entities.list(type) ?? [] : [];
+    const picked = openOf(list, route[GRAPH_CHIP]);
+    const open: OpenGraph | null = view && type ? { view, type, id: picked?.id ?? null, ...(picked ? { origin: picked.origin } : {}) } : null;
+    const { entityTypes } = await import('../../core/data/entity-types.js');
+    if (token !== this.#graphToken) return;
+    const kind = type ? entityTypes()[type] : undefined;
+    if (type && !kind) report({ code: 'graph-view', message: `sherpa-outlet: the View "${view}" shows graphs of the type "${type}", which this app does not have.`, at: { context, view: view ?? '' } });
+    const chips: unknown[] = [{
+      id: VIEW_CHIP, label: this.word('view'), persistent: true, active: true, select: 'single',
+      options: Object.entries(library).map(([value, v]) => ({ value, label: v.label, ...(value === view ? { selected: true } : {}) })),
+    }];
+    if (open) {
+      const words = { presets: this.word('presets'), mine: this.word('mine'), readOnly: this.word('read-only'), new: this.word('new-graph') };
+      chips.push({
+        id: GRAPH_CHIP, label: kind?.label ?? open.type, ...(kind?.icon ? { icon: kind.icon } : {}), persistent: true, active: true, select: 'single',
+        options: graphRows(list, open.id, words),
+      });
+    }
+    const was = this.#graph;
+    // Set BEFORE the draw: what the new chips report is what is open.
+    this.#graph = open;
+    this.#drawing = true;
+    try {
+      await this.#header?.querySelector<ViewBar>(VIEW_BAR)?.populate(chips);
+    } finally {
+      this.#drawing = false;
+    }
+    if (token === this.#graphToken) this.#setGraph(open, tell, was);
+  }
+
+  /** The header follows the open graph, and the Context is told when it moved. */
+  #setGraph(open: OpenGraph | null, tell: boolean, was: OpenGraph | null = this.#graph): void {
+    this.#graph = open;
+    if (open || was) this.#onViewChange();
+    const key = (g: OpenGraph | null): string => (g ? `${g.view}/${g.type}/${g.id ?? ''}` : '');
+    if (tell && key(was) !== key(open)) this.emit('graph-change', { graph: open });
+  }
+
+  /** New graph… was picked: the chip shows the open one again, and the app may take the ask over —
+   *  to ask a name. Not taken, an empty one of the type is made and opened. */
+  async #askNew(open: OpenGraph): Promise<void> {
+    this.#header?.querySelector<ViewBar>(VIEW_BAR)?.setChipValues(GRAPH_CHIP, open.id ? [open.id] : []);
+    if (!this.emit('graph-new', { type: open.type }, { cancelable: true })) return;
+    const shelf = this.#provider?.keeper.entities;
+    const { entityTypes } = await import('../../core/data/entity-types.js');
+    const type = entityTypes()[open.type];
+    const id = shelf && type ? await newGraph(shelf, type) : undefined;
+    if (id) await this.openGraph(id);
+  }
 
   /** Load one Context: its markup, its data, its module — each step given up
    *  when a newer load starts. */
@@ -446,11 +557,16 @@ export class SherpaOutlet extends SherpaElement {
       key: name, stores: options.stores(), views: this.#views[name] ?? {}, ...(view ? { view } : {}),
     }) : undefined;
     if (token !== this.#token) return;
+    const shelves = this.#nodes;
+    // Its row, drawn from the route, before its module runs: init is handed the graph it opens on.
+    await this.#syncGraph(false);
+    if (token !== this.#token) return;
     const leaving = (this.#leaving = new AbortController());
+    if (this.#graph) this.#provider?.keeper.entities.watch(() => void this.#syncGraph(), leaving.signal);
     const header = this.#header;
     const ctx: ContextInit = {
-      session: options.session, ...this.#nodes, view, signal: leaving.signal, panels: options.panels ?? {}, label: context.label, id: name,
-      ...(source ? { source, query: source.query } : {}), ...(header ? { header } : {}),
+      session: options.session, ...shelves, view, signal: leaving.signal, panels: options.panels ?? {}, label: context.label, id: name,
+      ...(source ? { source, query: source.query } : {}), ...(header ? { header } : {}), ...(this.#graph ? { graph: { ...this.#graph } } : {}),
     };
     const teardown = await module?.init?.(this, ctx);
     // A newer load has begun: this one's own teardown runs now.
@@ -460,7 +576,7 @@ export class SherpaOutlet extends SherpaElement {
     }
     if (typeof teardown === 'function') this.#teardown = teardown;
     bindSettings(this, options.session, { signal: leaving.signal });
-    if (view) this.#pickView(view);
+    if (view && !this.#drawsViews(name)) this.#pickView(view);
     this.emit('context-load', { context: name, view });
     this.#nav?.loaded();
   }
@@ -505,6 +621,11 @@ export class SherpaOutlet extends SherpaElement {
     header.setAttribute('data-heading', context.label);
     // A page that holds its own filters takes the header's row away. TODO 425
     header.toggleAttribute('data-no-filters', context.chrome?.filters === false);
+    // Only the View chip there: the bar's own actions are a page's filters'. TRAP T-a-graph-is-a-view-of-a-type
+    const views = this.#drawsViews(name);
+    const bar = header.querySelector(VIEW_BAR);
+    if (bar && (views || this.#hidActions)) bar.toggleAttribute('data-no-actions', views);
+    this.#hidActions = views;
     // No icon on the row → none on the header: a stale glyph is worse than none.
     if (context.icon) header.setAttribute('data-icon', context.icon);
     else header.removeAttribute('data-icon');
@@ -512,7 +633,7 @@ export class SherpaOutlet extends SherpaElement {
 
   /** Pick a View through the header's chip, so the chip stays its one owner. */
   #pickView(id: string | null): void {
-    const bar = this.#header?.querySelector<ViewBar>('sherpa-quick-filter-toolbar[data-type="view"]');
+    const bar = this.#header?.querySelector<ViewBar>(VIEW_BAR);
     const context = this.#context;
     if (!bar || !context || !id || !this.viewsOf(context)[id] || bar.values?.[VIEW_CHIP]?.[0] === id) return;
     bar.setChipValues(VIEW_CHIP, [id]);

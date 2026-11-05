@@ -24,12 +24,14 @@ Put it in the content of `sherpa-app-shell`: on each route change it loads the C
 |---|---|---|---|
 | `context` | `string \| null` | read only |  |
 | `settingsPage` | `string \| null` | read only |  |
+| `graph` | `OpenGraph \| null` | read only |  |
 | `viewsReady` | `Promise<void>` | read only |  |
 
 ## Methods
 
 | Method | What it does |
 |---|---|
+| `openGraph(id: string \| null)` | Open an entity in the graph View on screen; none, its type's first. The graph chip shows it, and the URL follows. |
 | `viewsOf(context: string)` | A Context's Views: its own, then the reader's saved ones. |
 | `firstView(context: string)` | Its first View, which the URL leaves out. |
 | `reload()` | Open the Context on screen again: a setting its definition reads moved. Its Query is the tab's, so its filters come back with it. Under Settings, once Settings closes. TODO 436 |
@@ -40,13 +42,15 @@ Put it in the content of `sherpa-app-shell`: on each route change it loads the C
 
 Each one bubbles.
 
-| Event | Detail |
-|---|---|
-| `context-change` | `{ context: string; view: null \| string }` |
-| `context-markup` | `{ context: string; root: this; waitUntil: (work: Promise<unknown>) => undefined }` |
-| `context-load` | `{ context: string; view: null \| string }` |
-| `settings-open` | `{ page: string }` |
-| `settings-close` |  |
+| Event | Detail | What it means |
+|---|---|---|
+| `context-change` | `{ context: string; view: null \| string }` |  |
+| `context-markup` | `{ context: string; root: this; waitUntil: (work: Promise<unknown>) => undefined }` |  |
+| `context-load` | `{ context: string; view: null \| string }` |  |
+| `settings-open` | `{ page: string }` |  |
+| `settings-close` |  |  |
+| `graph-change` | `{ graph: OpenGraph \| null }` | The graph View's entity moved. |
+| `graph-new` | `{ type: string }` | New graph… was picked, a request: prevented, the app makes it. A host may call `preventDefault()` to take it over. |
 
 ## Slots
 

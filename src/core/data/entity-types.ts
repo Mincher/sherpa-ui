@@ -16,12 +16,13 @@
  * - asNode — An entity as the Custom Node it offers: any entity can be placed in any graph (D1).
  * - libraryOf — Entities as a node library keyed by use kind, so a use runs, diffs and updates as a Custom Node does.
  * - entityOf — A workflow's graph as an entity of a type.
+ * - graphWorkflow — An entity's graph as the workflow its canvas edits, with a Group Input and Output where it has sockets.
  * - entityFaults — Every fault in an entity, in words.
  * - checkEntity — Check an entity; each fault reports. True when none is.
  */
 import { report } from './report.js';
 import { NODE_KINDS, type NodeKind } from './node-kinds.js';
-import { kindsOf, nodeLibraryFaults, type NodeDefinition, type NodeLibrary, type NodeOutput, type NodeSocket } from './node-library.js';
+import { innerOf, kindsOf, nodeLibraryFaults, type NodeDefinition, type NodeLibrary, type NodeOutput, type NodeSocket } from './node-library.js';
 import { entityKind, isEntity, usesOf, ENTITY_SCHEMA, definitionOf, type Entity } from './entity.js';
 import { readWorkflow, type WorkflowDefinition, type WorkflowFacts } from './workflow.js';
 
@@ -44,6 +45,8 @@ export interface EntityType {
   outputs?: readonly NodeOutput[];
   /** Only DEFINED (false), or it needs the runner to be of use. */
   runs: boolean;
+  /** The settings a new entity of this type starts with. */
+  defaults?: Readonly<Record<string, unknown>>;
 }
 
 const ID = /^[a-z][a-z0-9-]*$/;
@@ -68,7 +71,7 @@ export const ENTITY_TYPES: Readonly<Record<string, EntityType>> = {
     settingsFaults: (s) => [...keysFault(s, ['source']), ...('source' in s && typeof s['source'] !== 'string' ? ['its source is not a name'] : [])],
   },
   node: {
-    id: 'node', label: 'Custom Node', icon: 'folder', schema: 'entity-node.v1.json', runs: false,
+    id: 'node', label: 'Custom Node', icon: 'folder', schema: 'entity-node.v1.json', runs: false, defaults: { inputs: [], outputs: [] },
     settingsFaults: (s) => [
       ...keysFault(s, ['inputs', 'outputs', 'category', 'icon'], ['inputs', 'outputs']),
       ...(['inputs', 'outputs'] as const).filter((k) => k in s && !Array.isArray(s[k])).map((k) => `its ${k} are not a list`),
@@ -147,6 +150,22 @@ export function entityOf(workflow: Pick<WorkflowDefinition, 'id' | 'label' | 'no
   };
 }
 
+/** An entity's graph as the workflow its canvas edits — its id the entity's, so its tab draft is its
+ *  own — with a Group Input `#in` where it has inputs and a Group Output `#out` where it has outputs,
+ *  as a Custom Node's inside is drawn; and the kinds those need. TRAP T-a-graph-is-a-view-of-a-type */
+export function graphWorkflow(entity: Entity, kinds: Kinds = NODE_KINDS, types: Readonly<Record<string, EntityType>> = entityTypes()): { workflow: WorkflowDefinition; kinds: Kinds } {
+  const { nodes, routes = [], ties } = entity.graph;
+  const inner = innerOf({ id: entity.id, kind: entityKind(entity) }, libraryOf([entity], types), kinds);
+  if (!inner) return { workflow: { v: 2, id: entity.id, label: entity.label, nodes, routes, ...(ties ? { ties } : {}) }, kinds };
+  const { inputs, outputs } = socketsOf(entity, types[entity.type]);
+  const touched = (end: string): boolean => routes.some((r) => [r.from, r.to].some((s) => s === end || s.startsWith(`${end}/`)));
+  const kept = (id: string): boolean => (id === '#in' ? !!inputs.length || touched('#in') : id === '#out' ? !!outputs.length || touched('#out') : true);
+  const drawn = inner.workflow.nodes.filter((n) => kept(n.id));
+  // Its own kind is not offered on its own canvas (a graph that holds itself is a loop); a group kind only where its node is drawn.
+  const offered = Object.entries(inner.kinds).filter(([id]) => id !== entityKind(entity) && (!id.startsWith('#') || drawn.some((n) => n.kind === id)));
+  return { workflow: { ...inner.workflow, label: entity.label, nodes: drawn }, kinds: Object.fromEntries(offered) };
+}
+
 /** The way round a loop of entities that starts at one, as labels; none when it does not come back. */
 function loopOf(start: Entity, all: readonly Entity[]): string[] | undefined {
   const by = new Map(all.map((e) => [e.id, e]));
@@ -168,7 +187,7 @@ function loopOf(start: Entity, all: readonly Entity[]): string[] | undefined {
 }
 
 /** Every fault in an entity, in words: not an entity, a type the app lacks, settings the type does not
- *  keep, a family its type does not take, an output nothing reaches, a use that is not there, a loop of
+ *  keep, a family its type does not take, an output nothing reaches (once it places a node), a use that is not there, a loop of
  *  entities, and each fault of the graph itself, named by its path. Faults come in the data layer's
  *  words; it never throws. */
 export function entityFaults(entity: Entity, facts: EntityFacts = {}): string[] {
@@ -195,7 +214,8 @@ export function entityFaults(entity: Entity, facts: EntityFacts = {}): string[] 
       problems.push(`${at} places "${node.id}", a use of "${node.kind}", which is not there`);
     }
   }
-  for (const out of type.outputs ?? []) {
+  // An EMPTY graph is a new one: its outputs are asked for once it places a node. TRAP T-a-graph-is-a-view-of-a-type
+  for (const out of entity.graph.nodes.length ? type.outputs ?? [] : []) {
     if (!(entity.graph.routes ?? []).some((r) => r.to === '#out' || r.to === `#out/${out.name}`)) problems.push(`${at} sends nothing to its output "${out.name}": route one to #out/${out.name}`);
   }
   for (const use of entity.uses ?? []) {

@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../schemas/entities.v1.json",
+  "v": 1,
+  "entities": {
+    "shipped": {
+      "v": 1, "type": "preset-filter", "id": "shipped", "label": "Shipped",
+      "graph": {
+        "nodes": [{ "id": "status", "kind": "condition", "x": 0, "y": 0, "values": { "field": "status", "op": "eq", "value": "active" } }],
+        "routes": [{ "from": "status", "to": "#out/where" }]
+      }
+    }
+  }
+}

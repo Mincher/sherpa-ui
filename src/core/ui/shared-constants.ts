@@ -16,6 +16,7 @@
  * - UNAPPLIED — What leads a pending chip's tip
  * - UNFETCHED — What leads the tip of a chip whose data could not be fetched
  * - VIEW_CHIP — The View chip's id: the chip a View is picked through.
+ * - GRAPH_CHIP — The graph chip's id, and the URL's parameter: the entity a graph View shows.
  * - REST_WAIT — How long a pointer RESTS on a chip or a legend row before it previews the highlight, in ms.
  * - ORGANISE_ICONS — The ORGANISE glyphs — grouping and the three sort states.
  * - NON_VALUE_ROWS — Rows in a filter menu that are NOT values, as a selector.
@@ -76,6 +77,9 @@ export const UNFETCHED = 'Unable to fetch data';
 
 /** The View chip's id: the chip a View is picked through. The same word as VIEW, the scope id, but not the same idea. */
 export const VIEW_CHIP = 'view';
+
+/** The graph chip's id, and the URL's parameter: the entity a graph View shows. TRAP T-a-graph-is-a-view-of-a-type */
+export const GRAPH_CHIP = 'graph';
 
 /** How long a pointer RESTS on a chip or a legend row before it previews the highlight, in ms. TODO 449 */
 export const REST_WAIT = 150;

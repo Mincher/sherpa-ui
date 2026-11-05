@@ -7332,3 +7332,38 @@ Will, 2026-11-05 (plan-746, D1-D3, D8); versions: "not too fussed while we build
 - Site: `src/core/data/entity-shelf.ts`
 - Site: `src/core/browser/entity-files.ts`
 - Site: `test/unit/an-entity-shelf-is-one-door.test.mjs`
+
+### T-a-graph-is-a-view-of-a-type
+
+**A graph is a View whose body is a canvas: no fifth word.** Will, 2026-11-05 (plan-746 D4, D9,
+D10): ONE preset View per entity TYPE, and a SECOND chip, right of the View chip, picks which entity
+of that type the canvas shows.
+
+- **The View** (`views.v1`, `defs.v1 #/view`) carries `graph: { type }` and no template or content.
+  An app ships one per type it uses.
+- **The row.** `chrome.filters: "views"`, on a Context with no definition: the outlet draws the View
+  chip alone, and on a graph View the graph chip beside it (the bar's own actions taken away). Its
+  rows are `graphRows`: the type's presets (read only), the reader's own, then New graph…. The
+  outlet watches the shelf, so a save in another tab shows at once.
+- **The URL** is `?view=<View>&graph=<entity>`; the type's first is left out, as the first View is.
+  A pick REPLACES, as a View pick does. The outlet owns `graph` on the router where a Context needs it.
+- **The Context** is handed `ctx.graph` (`{ view, type, id, origin }`) and hears `graph-change` on
+  the outlet. It binds the canvas to `graphWorkflow(entity)`, `readOnly` on a preset; the outlet's
+  `openGraph(id)` opens another. Set BEFORE the chips draw: what they report is what is open.
+- **New graph…** is a REQUEST, `graph-new`, cancelable: taken over, the app asks a name and calls
+  `newGraph`; not, the outlet makes "New <type>" and opens it. An EMPTY graph is a new one:
+  `checkEntity` asks for its outputs once it places a node.
+- **The canvas** edits the entity's own nodes, with `#in` and `#out` only where its type has
+  sockets, as a Custom Node's inside is drawn; its id is the entity's, so its tab draft is its own,
+  and its own kind is not offered there. `graphOfWorkflow` keeps the `#` nodes out of what is saved.
+
+- Site: `src/core/data/graph-views.ts`
+- Site: `src/core/data/entity-types.ts`
+- Site: `src/core/data/app-definition.ts`
+- Site: `src/core/browser/persist-view.ts`
+- Site: `src/data.ts`
+- Site: `src/core/ui/shared-constants.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `src/components/sherpa-outlet/sherpa-outlet.ts`
+- Site: `test/unit/a-graph-is-a-view-of-a-type.test.mjs`
+- Site: `test/e2e/reforged-graph-views.spec.ts`

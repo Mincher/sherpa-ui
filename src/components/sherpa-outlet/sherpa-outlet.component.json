@@ -156,6 +156,36 @@
             "attrs": {
               "data-word": "server"
             }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "view"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "presets"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "mine"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "read-only"
+            }
+          },
+          {
+            "el": "span",
+            "attrs": {
+              "data-word": "new-graph"
+            }
           }
         ]
       }
@@ -176,12 +206,12 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (context, settingsPage, viewsReady). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (context, settingsPage, graph, viewsReady). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (viewsOf, firstView, reload, refreshNav, start). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (openGraph, viewsOf, firstView, reload, refreshNav, start). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -230,6 +260,27 @@
       "name": "settings-close",
       "bubbles": true,
       "composed": true
+    },
+    {
+      "$type": "event",
+      "name": "graph-change",
+      "description": "The graph View's entity moved.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "graph": "OpenGraph | null"
+      }
+    },
+    {
+      "$type": "event",
+      "name": "graph-new",
+      "description": "New graph… was picked, a request: prevented, the app makes it.",
+      "bubbles": true,
+      "cancelable": true,
+      "composed": true,
+      "detail": {
+        "type": "string"
+      }
     }
   ],
   "tokens": {
@@ -239,6 +290,12 @@
   "$extensions": {
     "sherpa": {
       "methods": [
+        {
+          "$type": "method",
+          "name": "openGraph",
+          "args": "id: string | null",
+          "description": "Open an entity in the graph View on screen; none, its type's first. The graph chip shows it, and the URL follows."
+        },
         {
           "$type": "method",
           "name": "viewsOf",
@@ -279,6 +336,11 @@
         {
           "name": "settingsPage",
           "type": "string | null",
+          "access": "read"
+        },
+        {
+          "name": "graph",
+          "type": "OpenGraph | null",
           "access": "read"
         },
         {

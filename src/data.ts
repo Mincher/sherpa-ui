@@ -211,11 +211,16 @@ export {
   type Entity, type EntityGraph, type EntityLibrary, type EntityRef,
 } from './core/data/entity.js';
 export {
-  ENTITY_TYPES, asNode, checkEntity, entityFaults, entityOf, entityTypes, libraryOf, registerEntityType, socketsOf,
+  ENTITY_TYPES, asNode, checkEntity, entityFaults, entityOf, entityTypes, graphWorkflow, libraryOf, registerEntityType, socketsOf,
   type EntityFacts, type EntityType,
 } from './core/data/entity-types.js';
 /* Where an app's entities come together: its presets and the reader's, one door; the Custom Node shelf is a view of it. */
 export { joinEntities, makeShelf, nodesView, type EntityPort, type EntityShelf, type EntitySummary } from './core/data/entity-shelf.js';
+/* A GRAPH View: a View whose canvas shows one entity of its type, picked in the graph chip. Plan 746 E3 · TRAP T-a-graph-is-a-view-of-a-type */
+export {
+  NEW_GRAPH, graphOfWorkflow, graphRows, newGraph, openOf,
+  type GraphChoice, type GraphOf, type GraphWords, type OpenGraph,
+} from './core/data/graph-views.js';
 export { groupNodes, ungroupUse, type GroupAsk, type Grouped } from './core/data/node-group.js';
 export { nodeFlow, type NodeFlow } from './core/data/node-flow.js';
 /* The data layer over HTTP: one handle() for the page, a Service Worker or a server. Plan 652 */

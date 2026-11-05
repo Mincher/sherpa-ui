@@ -151,7 +151,10 @@ library `app.v1`, `views.v1` and `workflow.v2` use too.
   key is a property or a method its component's spec lists (`jsProps`, `methods`).
 - **Its Views** are filed under its `id`: the ones it ships, and a reader's
   saved ones. The shipped ones are a file of their own, `schemas/views.v1.json`;
-  one with no `label` is reported and left out as it loads.
+  one with no `label` is reported and left out as it loads. A View with
+  `graph: { "type": "preset-filter" }` is a GRAPH View: its body is a canvas
+  showing one entity of that type, and it has no `template`. Its Context has no
+  page definition and `chrome.filters: "views"` (`T-a-graph-is-a-view-of-a-type`).
 - **The header's chips are not listed.** They are the View scope's holds,
   each drawn from its field — one definition per field
   (`T-a-field-is-declared-once`). The View chip lists `views`.

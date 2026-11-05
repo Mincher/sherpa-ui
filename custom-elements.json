@@ -7530,11 +7530,32 @@
             },
             {
               "kind": "field",
+              "name": "graph",
+              "type": {
+                "text": "OpenGraph | null"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "field",
               "name": "viewsReady",
               "type": {
                 "text": "Promise<void>"
               },
               "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "openGraph",
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string | null"
+                  }
+                }
+              ],
+              "description": "Open an entity in the graph View on screen; none, its type's first. The graph chip shows it, and the URL follows."
             },
             {
               "kind": "method",
@@ -7617,6 +7638,20 @@
               "name": "settings-close",
               "type": {
                 "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "graph-change",
+              "description": "The graph View's entity moved.",
+              "type": {
+                "text": "CustomEvent<{ graph: OpenGraph | null }>"
+              }
+            },
+            {
+              "name": "graph-new",
+              "description": "New graph… was picked, a request: prevented, the app makes it.",
+              "type": {
+                "text": "CustomEvent<{ type: string }>"
               }
             }
           ],

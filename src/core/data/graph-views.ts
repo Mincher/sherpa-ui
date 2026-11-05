@@ -1,0 +1,107 @@
+/**
+ * graph-views.ts — a GRAPH View: a View whose body is a canvas, bound to one entity of the View's
+ * type. The graph chip's rows, a new empty entity, and what a canvas keeps as an entity's graph.
+ * Light: only types are imported, so the outlet carries it. DOM-free. Will, plan 746 E3
+ * · TRAP T-a-graph-is-a-view-of-a-type
+ *
+ * Map:
+ * - NEW_GRAPH — The graph chip's New graph… row: its value, which names no entity.
+ * - GraphOf — A View's `graph`: the type of entity its canvas shows.
+ * - OpenGraph — The graph View on screen: its View, its type, and the entity on its canvas.
+ * - GraphWords — The words the graph chip's rows are headed with, a preset's note, and the New row.
+ * - GraphChoice — One row of the graph chip: an entity, or New graph….
+ * - graphRows — The graph chip's rows: the type's presets, then the reader's own, then New graph….
+ * - openOf — The entity a graph View opens: the one named, when the list holds it; else the first.
+ * - newGraph — A new, empty entity of a type, saved through the shelf under a free id and name.
+ * - graphOfWorkflow — What a canvas's workflow keeps as an entity's graph: its own nodes, its routes and ties.
+ */
+import type { Entity, EntityGraph } from './entity.js';
+import type { EntityType } from './entity-types.js';
+import type { EntityShelf, EntitySummary } from './entity-shelf.js';
+import type { WorkflowDefinition } from './workflow.js';
+
+/** The graph chip's New graph… row: its value, which names no entity. */
+export const NEW_GRAPH = '#new';
+
+/** A View's `graph`: the type of entity its canvas shows. */
+export interface GraphOf {
+  type: string;
+}
+
+/** The graph View on screen: its View, its type, and the entity on its canvas. */
+export interface OpenGraph {
+  view: string;
+  type: string;
+  /** None while the type has no entity. */
+  id: string | null;
+  origin?: 'preset' | 'mine';
+}
+
+/** The words the graph chip's rows are headed with, a preset's note, and the New row. */
+export interface GraphWords {
+  presets: string;
+  mine: string;
+  readOnly: string;
+  new: string;
+}
+
+const WORDS: GraphWords = { presets: 'Presets', mine: 'My graphs', readOnly: 'Read only', new: 'New graph…' };
+
+/** One row of the graph chip: an entity, or New graph…. */
+export interface GraphChoice {
+  value: string;
+  label: string;
+  selected?: boolean;
+  section?: string;
+  note?: string;
+}
+
+/** The graph chip's rows, from one type's list: its presets, read only, then the reader's own, then New graph…. */
+export function graphRows(list: readonly EntitySummary[], current: string | null, words: GraphWords = WORDS): GraphChoice[] {
+  const row = (e: EntitySummary): GraphChoice => ({
+    value: e.id, label: e.label,
+    ...(e.origin === 'preset' ? { section: words.presets, note: words.readOnly } : { section: words.mine }),
+    ...(e.id === current ? { selected: true } : {}),
+  });
+  const presets = list.filter((e) => e.origin === 'preset');
+  return [...presets.map(row), ...list.filter((e) => e.origin !== 'preset').map(row), { value: NEW_GRAPH, label: words.new }];
+}
+
+/** The entity a graph View opens: the one named, when the list holds it; else the first. */
+export function openOf(list: readonly EntitySummary[], id: string | null | undefined): EntitySummary | undefined {
+  return list.find((e) => e.id === id) ?? list[0];
+}
+
+/** An id from a name: kebab-case, free among those taken. */
+function freeId(label: string, taken: readonly string[], type: string): string {
+  const slug = label.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  const base = /^[a-z]/.test(slug) ? slug : `${type}${slug ? `-${slug}` : ''}`;
+  const used = new Set(taken);
+  if (!used.has(base)) return base;
+  for (let n = 2; ; n++) if (!used.has(`${base}-${n}`)) return `${base}-${n}`;
+}
+
+/** A new, empty entity of a type: the type's own settings to start, its name or "New <type>", and a
+ *  free id from it. Saved through the shelf, so it is checked. The id it was kept under, or none. */
+export async function newGraph(shelf: EntityShelf, type: Pick<EntityType, 'id' | 'label' | 'defaults'>, named: { label?: string; description?: string } = {}): Promise<string | undefined> {
+  const taken = shelf.list();
+  const asked = named.label?.trim();
+  let label = asked || `New ${type.label}`;
+  // A name of its own is the reader's; the default is numbered, so two read apart.
+  if (!asked) for (let n = 2; taken.some((e) => e.type === type.id && e.label === label); n++) label = `New ${type.label} ${n}`;
+  const id = freeId(label, taken.map((e) => e.id), type.id);
+  const description = named.description?.trim();
+  const entity: Entity = {
+    v: 1, type: type.id, id, label, ...(description ? { description } : {}), graph: { nodes: [], routes: [] },
+    ...(type.defaults ? { settings: structuredClone(type.defaults) } : {}),
+  };
+  return await shelf.save(entity) ? id : undefined;
+}
+
+/** What a canvas's workflow keeps as an entity's graph: its own nodes (not `#in` and `#out`), its routes and ties. */
+export function graphOfWorkflow(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes' | 'ties'>): EntityGraph {
+  return {
+    nodes: workflow.nodes.filter((n) => !n.id.startsWith('#')), routes: workflow.routes ?? [],
+    ...(workflow.ties?.length ? { ties: workflow.ties } : {}),
+  };
+}

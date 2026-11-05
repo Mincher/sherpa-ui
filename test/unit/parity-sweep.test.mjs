@@ -95,6 +95,7 @@ const KNOWN = {
   // The router owns the URL; the outlet draws what it says.
   'sherpa-outlet.context': 'ok: router.go({ context }) — the route is the value',
   'sherpa-outlet.settingsPage': 'ok: router.go({ settings }) — the route is the value',
+  'sherpa-outlet.graph': 'ok: openGraph(id) / router.go({ view, graph }) — the route and the entity shelf are the value',
   'sherpa-outlet.viewsReady': 'ok: not a value — a promise that start() makes',
 };
 

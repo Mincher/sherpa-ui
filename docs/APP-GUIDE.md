@@ -145,7 +145,9 @@ Plus the app's stores, and its Views as JSON.
 
 - A Context is what a nav row opens: `?context=records`. Each path is
   relative to `app.json`. The default Context is the nav's Home.
-- `chrome.header: false` takes the app header away while it is open.
+- `chrome.header: false` takes the app header away while it is open;
+  `chrome.filters: false` its filter row, and `"views"` leaves the View chip
+  alone there, for a Context with no definition (see "Graph Views").
 - `nodes` is the app's preset Custom Nodes, a `nodes.v1.json`: read only, and in
   every node editor's panel. See "Custom Nodes", below.
 - `entities` is the app's preset entities, an `entities.v1.json`: read only,
@@ -309,6 +311,29 @@ export async function init(root, { source, query, session, view, signal, header,
 - A reader's own Views: `provider.saveView(name)`, `provider.deleteView()`.
   Each View keeps what the reader left on it, where the keeper's `eachView`
   says so: `T-a-view-keeps-what-the-reader-left`.
+
+### Graph Views
+
+A graph View is a View whose body is a canvas, showing one entity of a type
+(see "Entities"). Ship ONE per type, and set the Context's `chrome.filters` to
+`"views"`:
+
+```json
+{ "filters": { "label": "Preset Filters", "graph": { "type": "preset-filter" } },
+  "nodes": { "label": "Custom Nodes", "graph": { "type": "node" } } }
+```
+
+- The outlet draws the View chip and, to its right, the graph chip: the
+  type's presets (read only), the reader's own, then New graph…. The URL
+  carries both, `?view=filters&graph=mine`; the type's first is left out.
+- `init` is handed `ctx.graph` (`{ view, type, id, origin }`), and the outlet
+  fires `graph-change` `{ graph }` when it moves. Bind the canvas to
+  `graphWorkflow(entities.get(id))` with `bindWorkflow`, `readOnly` on a
+  preset; `graphOfWorkflow(editor.workflow())` is the graph to keep.
+  `outlet.openGraph(id)` opens another.
+- New graph… asks first, `graph-new` `{ type }`: prevent it to ask a name, then
+  `newGraph(entities, entityTypes()[type], { label })`. Left alone, the outlet
+  makes "New <type>". `T-a-graph-is-a-view-of-a-type`
 
 ## 9. The session
 

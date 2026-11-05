@@ -22,6 +22,7 @@ import { applyState } from '../ui/apply-state.js';
 import { VIEW_CHIP } from '../ui/shared-constants.js';
 import { report } from '../data/report.js';
 import { parseViewMarkup } from './view-markup.js';
+import type { GraphOf } from '../data/graph-views.js';
 
 /** What `applyView` could not do — see TRAP T-apply-degrades-never-throws. */
 export interface ApplyReport {
@@ -152,6 +153,9 @@ export interface SavedView {
   template?: string;
   /** The app's own settings it lays, by pointer: the app reads them, Sherpa does not. */
   settings?: Readonly<Record<string, unknown>>;
+  /** A GRAPH View: its body is a canvas, bound to one entity of this type, picked in the graph chip.
+   *  It has no template. TRAP T-a-graph-is-a-view-of-a-type */
+  graph?: GraphOf;
 }
 
 /** A page's saved views, keyed by the id its chip option carries. */

@@ -278,7 +278,7 @@
       "additionalProperties": { "$ref": "#/$defs/componentConfig" }
     },
     "view": {
-      "description": "One View: its name, its Query, its elements' configuration, and its own markup.",
+      "description": "One View: its name, its Query, its elements' configuration, and its own markup; or, as a graph View, the type of entity its canvas shows.",
       "type": "object",
       "additionalProperties": false,
       "required": ["label"],
@@ -288,8 +288,15 @@
         "ui": { "$ref": "#/$defs/ui" },
         "template": { "description": "Its markup: file.html#id, beside the Views' JSON.", "type": "string", "pattern": "^[^#]+#[^#]+$" },
         "content": { "description": "A reader's saved View's markup. A shipped View names a template instead.", "type": "string" },
-        "settings": { "description": "The app's own settings it lays, by pointer: the app reads them.", "type": "object", "propertyNames": { "pattern": "^/" } }
-      }
+        "settings": { "description": "The app's own settings it lays, by pointer: the app reads them.", "type": "object", "propertyNames": { "pattern": "^/" } },
+        "graph": {
+          "description": "A GRAPH View: its body is a canvas bound to one entity of this type (entity.v1), picked in the graph chip beside the View chip. It has no template or content.",
+          "type": "object", "additionalProperties": false, "required": ["type"],
+          "properties": { "type": { "description": "The entity type, as the type registry names it: preset-filter, node, or one the app registers.", "$ref": "#/$defs/id" } }
+        }
+      },
+      "if": { "required": ["graph"] },
+      "then": { "not": { "anyOf": [{ "required": ["template"] }, { "required": ["content"] }] } }
     },
 
     "context": {
@@ -308,7 +315,10 @@
           "type": "object", "additionalProperties": false,
           "properties": {
             "header": { "description": "false takes the app header away while it is open.", "type": "boolean" },
-            "filters": { "description": "false takes the header's filter row away while it is open: the page holds its own filters.", "type": "boolean" },
+            "filters": {
+              "description": "false takes the header's filter row away while it is open: the page holds its own filters. \"views\" leaves the View chip alone there, and the graph chip on a graph View: for a Context with no definition.",
+              "oneOf": [{ "type": "boolean" }, { "const": "views" }]
+            },
             "resizable": { "description": "A reader may resize its cards.", "type": "boolean" }
           }
         }

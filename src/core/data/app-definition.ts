@@ -16,6 +16,7 @@ import type { DataSource } from './data-source.js';
 import type { QueryContext } from './query-context.js';
 import type { EntityShelf } from './entity-shelf.js';
 import type { NodeShelf } from './node-shelf.js';
+import type { OpenGraph } from './graph-views.js';
 import { report } from './report.js';
 
 /** One app, as JSON: its Contexts, the one it opens on, its nav sections and
@@ -50,9 +51,10 @@ export interface ContextDefinition {
   views?: string;
   /** Its module, which exports `init(root, ctx)`. */
   module?: string;
-  /** `header: false` takes the app header away while it is open; `resizable`
-   *  lets a reader resize its cards. */
-  chrome?: { header?: boolean; filters?: boolean; resizable?: boolean };
+  /** `header: false` takes the app header away while it is open; `filters: false`
+   *  its filter row, and `"views"` leaves the View chip alone there (a Context with
+   *  no definition); `resizable` lets a reader resize its cards. */
+  chrome?: { header?: boolean; filters?: boolean | 'views'; resizable?: boolean };
 }
 
 /** One Settings page: its row's name and icon, and its markup. */
@@ -73,6 +75,8 @@ export interface ContextInit {
   entities?: EntityShelf;
   /** The View the URL names; null for the first. */
   view: string | null;
+  /** On a graph View, the entity its canvas shows; the outlet's `graph-change` says when it moves. TRAP T-a-graph-is-a-view-of-a-type */
+  graph?: OpenGraph;
   /** Its page's source, when it has a definition. */
   source?: DataSource;
   /** The Context's ONE Query, which its source and controls share. 366 step 24 */
@@ -105,6 +109,7 @@ export function checkApp(app: AppDefinition): boolean {
     for (const [name, context] of Object.entries(app.contexts)) {
       if (!context.label) problems.push(`the context "${name}" has no label`);
       if (!context.template) problems.push(`the context "${name}" has no template`);
+      if (context.chrome?.filters === 'views' && context.definition) problems.push(`the context "${name}" has a definition, so its filter row is its page's: "views" is for a Context with none`);
     }
     for (const section of app.sections ?? []) {
       for (const name of section.contexts) {

@@ -22,6 +22,7 @@ import type { Settings } from '../../core/data/settings.js';
 import type { SessionList, SessionStore } from '../../core/browser/session.js';
 import type { SherpaRouter } from '../sherpa-router/sherpa-router.js';
 import type { NavConfig, NavEntry, NavState, QuickEntry } from '../sherpa-nav/sherpa-nav.js';
+import { GRAPH_CHIP } from '../../core/ui/shared-constants.js';
 
 /** What the nav asks of its outlet: the Context, the Settings page, the Views. */
 export interface NavHost {
@@ -299,7 +300,7 @@ export class OutletNav {
 
   /** A whole route as a row's href, so a middle-click opens the same place. */
   #href(context: string, view: string | null): string {
-    return this.#router ? new URL(this.#router.href({ context, view, settings: null })).search : `?context=${context}`;
+    return this.#router ? new URL(this.#router.href({ context, view, settings: null, [GRAPH_CHIP]: null })).search : `?context=${context}`;
   }
 
   /** Do Recents and Favorites name Views (the default), or Contexts? TODO 399 */

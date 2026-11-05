@@ -16,6 +16,8 @@
     viewsOf(context)    a Context's Views: its own, then the reader's saved ones
     firstView(context)  its first View, which the URL leaves out
     viewsReady          settles once every Context's own Views are in
+    graph               the graph View on screen: { view, type, id, origin }, or null
+    openGraph(id)       open an entity in it (none: its type's first); the URL follows
 
   Slots:
     (default)   the Context's markup, put there by the outlet
@@ -31,6 +33,8 @@
     context-load — detail: { context, view }
     settings-open — detail: { page }
     settings-close — detail: { }
+    graph-change — the graph View's entity moved. detail: { graph }
+    graph-new — New graph… was picked, a request: prevented, the app makes it. detail: { type }
 -->
 <template id="default">
   <!-- UNABLE TO REACH DATA, floating over the top of the content: no height, so
@@ -60,5 +64,11 @@
     <span data-word="offline">The network could not be reached.</span>
     <span data-word="timeout">The server took too long to answer.</span>
     <span data-word="server">The server had a problem.</span>
+    <!-- The row it draws for a "views" Context: the View chip, and a graph View's chip. -->
+    <span data-word="view">View</span>
+    <span data-word="presets">Presets</span>
+    <span data-word="mine">My graphs</span>
+    <span data-word="read-only">Read only</span>
+    <span data-word="new-graph">New graph…</span>
   </template>
 </template>

@@ -1,0 +1,16 @@
+{
+  "$schema": "../../../schemas/app.v1.json",
+  "v": 1,
+  "default": "graphs",
+  "entities": "entities.json",
+  "contexts": {
+    "graphs": {
+      "label": "Graphs",
+      "template": "templates/graphs.html",
+      "views": "views.json",
+      "module": "contexts/graphs.js",
+      "chrome": { "filters": "views" }
+    },
+    "plain": { "label": "Plain", "template": "templates/plain.html" }
+  }
+}
