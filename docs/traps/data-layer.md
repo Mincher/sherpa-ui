@@ -7282,6 +7282,8 @@ Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
   output that feeds out, typed by what it carries. The definition keeps the nodes WHERE THEY
   SIT, so Ungroup gives the same nodes, routes and places. A loop out and back, a socket of two
   types and a result with a new fault are refused in words.
+  The toolbar's button (on from two picked) opens a dialog for the name and description; a
+  refusal is said in it, and the dialog stays open. The inspector holds none of it (TODO 745).
 
 - Site: `src/core/browser/node-files.ts`
 - Site: `src/core/data/node-library.ts`

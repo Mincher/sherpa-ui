@@ -22,13 +22,24 @@ test.beforeEach(async ({ page }) => {
     const root = document.getElementById('root')!;
     root.insertAdjacentHTML('beforeend', `
       <sherpa-app-header id="trail"><sherpa-breadcrumbs slot="breadcrumbs"></sherpa-breadcrumbs></sherpa-app-header>
-      <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px"><sherpa-node-panel slot="panel" style="display: none"></sherpa-node-panel></sherpa-layout-canvas>
+      <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar><sherpa-node-panel slot="panel" style="display: none"></sherpa-node-panel></sherpa-layout-canvas>
       <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>
+      <sherpa-dialog id="custom" data-heading="Save as Custom Node">
+        <sherpa-stack data-gap="md">
+          <sherpa-input-text name="label" data-label="Name" autocomplete="off" required></sherpa-input-text>
+          <sherpa-input-text name="description" data-label="Description" data-multiline autocomplete="off"></sherpa-input-text>
+        </sherpa-stack>
+        <sherpa-container-footer slot="footer">
+          <sherpa-button data-action="cancel">Cancel</sherpa-button>
+          <sherpa-button data-action="save" data-look="saturated">Save as Custom Node</sherpa-button>
+        </sherpa-container-footer>
+      </sherpa-dialog>
       <sherpa-dialog id="confirm" data-status="critical" data-heading="Update">
         <p style="margin: 0"></p>
         <sherpa-container-footer slot="footer"><sherpa-button>Cancel</sherpa-button><sherpa-button data-look="saturated">Update</sherpa-button></sherpa-container-footer>
       </sherpa-dialog>`);
     await customElements.whenDefined('sherpa-node-panel');
+    await customElements.whenDefined('sherpa-node-toolbar');
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
     (window as unknown as { ORG: unknown }).ORG = org;
   }, ORG);
@@ -63,7 +74,7 @@ const bind = (page: Page) => page.evaluate(async () => {
   const canvas = document.getElementById('cv')!;
   w['ed'] = bindWorkflow(canvas as never, flow as never, {
     session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-panel') as never,
-    header: document.getElementById('trail') as never, confirm: document.getElementById('confirm') as never, library: library as never,
+    toolbar: canvas.querySelector('sherpa-node-toolbar') as never, customDialog: document.getElementById('custom') as never, header: document.getElementById('trail') as never, confirm: document.getElementById('confirm') as never, library: library as never,
     onSaveNode: (id: string, d: unknown) => (w['savedNodes'] as unknown[]).push([id, d]),
     fields: { status: { label: 'Status' }, role: { label: 'Role' } }, stores: ['users'], values: { status: ['active', 'trial'] },
   });
@@ -74,6 +85,17 @@ const settle = (page: Page) => page.evaluate(() => window.__settled().then(() =>
 const headings = (page: Page) => page.evaluate(() => [...document.querySelectorAll<HTMLElement>('#cv > sherpa-node')].map((n) => n.dataset['heading']));
 /** A node's header, by its heading. */
 const header = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"] >> .header[role="button"]`);
+const tool = (page: Page, name: string) => page.locator(`#cv sherpa-node-toolbar sherpa-button.${name}`);
+const press = (page: Page, name: string) => tool(page, name).evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+const field = (page: Page, name: string) => page.locator(`#custom sherpa-input-text[name="${name}"]`);
+/** The toolbar's Save as Custom Node, the dialog's name and description, and its Save. */
+const saveAs = async (page: Page, name: string, description = '') => {
+  await press(page, 'group');
+  await field(page, 'label').locator('input').fill(name);
+  if (description) await field(page, 'description').locator('textarea').fill(description);
+  await page.locator('#custom sherpa-button[data-action="save"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await settle(page);
+};
 const ed = <T>(page: Page, fn: string) => page.evaluate(`(() => { const ed = window.ed; return ${fn}; })()`) as Promise<T>;
 
 test('Enter on the header opens a Custom Node: Group Input and Output drawn, a trail; Escape goes back', async ({ page }) => {
@@ -233,6 +255,7 @@ test('Shift-click and Space pick several; Escape clears; "Save as Custom Node" m
   await settle(page);
   expect(await page.locator('#cv > sherpa-node[data-current]').count()).toBe(2);
   expect(await page.locator('#inspector').getAttribute('data-heading')).toBe('2 nodes picked');
+  expect(await tool(page, 'group').evaluate((el) => el.hasAttribute('disabled'))).toBe(false);
   await page.keyboard.press('Escape');
   await settle(page);
   expect(await page.locator('#cv > sherpa-node[data-current]').count()).toBe(0);
@@ -243,11 +266,11 @@ test('Shift-click and Space pick several; Escape clears; "Save as Custom Node" m
   await page.keyboard.press('Space');
   await settle(page);
   expect(await page.locator('#cv > sherpa-node[data-current]').count()).toBe(2);
-  // A loop through outside is refused in words, under the name.
-  await page.locator('#inspector sherpa-input-text[name="label"] input').fill('Ends');
-  await page.locator('#inspector sherpa-button[data-label="Save as Custom Node"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
-  await settle(page);
-  expect(await page.locator('#inspector sherpa-input-text[name="label"]').getAttribute('data-description')).toMatch(/would hold a loop/);
+  // A loop through outside is refused in words, in the dialog, which stays open.
+  await saveAs(page, 'Ends');
+  expect(await field(page, 'label').getAttribute('data-description')).toMatch(/would hold a loop/);
+  expect(await page.locator('#custom').evaluate((el: HTMLElement & { open: boolean }) => el.open)).toBe(true);
+  await page.locator('#custom sherpa-button[data-action="cancel"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
   await header(page, 'Store').focus();
   await page.keyboard.press('Escape');
   await settle(page);
@@ -259,13 +282,11 @@ test('Shift-click and Space pick several; Escape clears; "Save as Custom Node" m
   await page.keyboard.press('Space');
   await settle(page);
   expect(await page.locator('#cv > sherpa-node[data-current]').count()).toBe(2);
-  await page.locator('#inspector sherpa-input-text[name="label"] input').fill('Users with a role');
-  await page.locator('#inspector sherpa-input-text[name="category"] input').fill('Logic');
-  await page.locator('#inspector sherpa-button[data-label="Save as Custom Node"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await saveAs(page, 'Users with a role', 'Who holds the role');
   await settle(page);
   expect((await headings(page)).sort()).toEqual(['Org permissions', 'Output', 'Owner check', 'Users with a role']);
   const made = await ed(page, "ed.library().nodes['users-with-a-role']");
-  expect((made as { category: string }).category).toBe('Logic');
+  expect((made as { description: string }).description).toBe('Who holds the role');
   expect(await page.locator('#cv svg.graph-routes path[data-to]').count()).toBe(2);
   // The panel lists it, and Save hands it over.
   await ed(page, 'ed.save()');
@@ -309,4 +330,56 @@ test('a saved edit reaches a saved edit reaches a second tab: its uses show the 
   });
   await settle(page);
   expect(await caps()).toEqual(['Update available', 'Update available']);
+});
+
+test('the toolbar\'s Save as Custom Node is off with none or one picked, on with two; an empty name is refused; Cancel and Escape change nothing', async ({ page }) => {
+  await bind(page);
+  const off = () => tool(page, 'group').evaluate((el) => el.hasAttribute('disabled'));
+  expect(await off()).toBe(true);
+  await header(page, 'Store').click();
+  await settle(page);
+  expect(await off()).toBe(true);
+  await header(page, 'Output').focus();
+  await page.keyboard.press('Space');
+  await settle(page);
+  expect(await off()).toBe(false);
+  await press(page, 'group');
+  await page.locator('#custom sherpa-button[data-action="save"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  expect(await field(page, 'label').getAttribute('data-description')).toBe('Give the Custom Node a name');
+  await page.keyboard.press('Escape');
+  await settle(page);
+  expect(await page.locator('#custom').evaluate((el: HTMLElement & { open: boolean }) => el.open)).toBe(false);
+  expect(await headings(page)).toEqual(['Store', 'Org permissions', 'Org permissions', 'Owner check', 'Output']);
+  // A name a shipped kind holds is refused too.
+  await press(page, 'group');
+  await field(page, 'label').locator('input').fill('Store');
+  await page.keyboard.press('Enter');
+  await settle(page);
+  expect(await headings(page)).toEqual(['Store', 'Org permissions', 'Org permissions', 'Owner check', 'Output']);
+  await page.locator('#custom sherpa-button[data-action="cancel"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await header(page, 'Store').click();
+  await settle(page);
+  expect(await off()).toBe(true);
+  expect(await page.locator('#inspector sherpa-button[data-label="Save as Custom Node"]').count()).toBe(0);
+});
+
+test('one picked node shows no tabs; two show a tab each, the active ringed; a tab switches the node, not the pick; the JSON sections read the definition', async ({ page }) => {
+  await bind(page);
+  await header(page, 'Store').click();
+  await settle(page);
+  expect(await page.locator('#inspector sherpa-tabs').count()).toBe(0);
+  const json = (title: string) => page.locator(`#inspector sherpa-accordion[data-heading="${title}"] sherpa-code-block`).evaluate((el) => el.getAttribute('data-code'));
+  expect(JSON.parse((await json('Outgoing JSON'))!).definition).toEqual({ store: 'users' });
+  expect(JSON.parse((await json('Incoming JSON'))!)[0].socket).toBe('Store');
+  await header(page, 'Output').focus();
+  await page.keyboard.press('Space');
+  await settle(page);
+  const labels = () => page.locator('#inspector sherpa-tabs').evaluate((el) => [...el.shadowRoot!.querySelectorAll('.tab .label')].map((t) => t.textContent));
+  expect(await labels()).toEqual(['Store', 'Output']);
+  expect(await page.locator('#cv > sherpa-node[data-active]').getAttribute('data-heading')).toBe('Store');
+  await page.locator('#inspector sherpa-tabs').evaluate((el) => (el.shadowRoot!.querySelectorAll('.tab')[1] as HTMLElement).click());
+  await settle(page);
+  expect(await page.locator('#cv > sherpa-node[data-active]').getAttribute('data-heading')).toBe('Output');
+  expect(await page.locator('#cv > sherpa-node[data-current]').count()).toBe(2);
+  expect(JSON.parse((await json('Incoming JSON'))!)[0].from).toEqual(['Org permissions › True']);
 });

@@ -221,6 +221,12 @@
   color: var(--sherpa-style-content-base, #0c0b11);
 }
 
+/* The one picked node whose panel is shown: the focus ring, inside the box. */
+:host([data-active]) .root {
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
+}
+
 /* ── The node's look, by its kind's category (the Figma's columns). Will, TODO 740.
    Radius from the Display Mode scale (medium = base 4px, x-large = xl 16px); a tinted
    fill from the Theme tier, since a Style info or success pin resolves to plain white. */

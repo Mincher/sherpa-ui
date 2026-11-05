@@ -2686,8 +2686,13 @@
     },
     {
       "name": "sherpa-node-toolbar",
-      "description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step",
+      "description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool and Save as Custom Node. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step",
       "attributes": [
+        {
+          "name": "data-can-group",
+          "description": "Save as Custom Node can be pressed: two or more nodes are picked; written by the editor",
+          "valueSet": "v"
+        },
         {
           "name": "data-can-redo",
           "description": "Redo can be pressed",
@@ -2723,6 +2728,11 @@
       "name": "sherpa-node",
       "description": "one node of a node editor: a card on a sherpa-layout-canvas, at its data-x and data-y. Its HEADER names it, drags it and may carry the whole node's sockets; its content holds its rows. Will, TODO 78. TRAP T-a-node-moves-itself-and-reports",
       "attributes": [
+        {
+          "name": "data-active",
+          "description": "the one picked node whose panel is shown, in a stronger ring; the HOST writes it",
+          "valueSet": "v"
+        },
         {
           "name": "data-branches",
           "description": "a fork: the header's output is True, and a footer shows with False",

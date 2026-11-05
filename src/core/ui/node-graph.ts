@@ -12,6 +12,7 @@
  * - drawGraph — Draw a graph on a canvas: each node by id, at its place when that moved; then its routes.
  * - markNode — Mark one node as the one picked, or none.
  * - markNodes — Mark several nodes as the ones picked.
+ * - markActive — Mark the one picked node whose panel is shown, in a stronger ring.
  * - markRoutes — Mark routes as the ones picked.
  * - pickedRoutes — The routes picked: by a click, a box, or the keys.
  * - WatchOptions — What a graph's watch is told: which traces are its, and which node each span lights.
@@ -27,7 +28,10 @@
  * - WorkflowEditorOptions — What editing a workflow needs beyond it: its facts, an inspector, a node panel, a session, the kinds.
  * - bindWorkflow — Keep a workflow's draft drawn on a canvas, and write each edit to it.
  */
+import '../../components/sherpa-accordion/sherpa-accordion.js';
 import '../../components/sherpa-button/sherpa-button.js';
+import '../../components/sherpa-code-block/sherpa-code-block.js';
+import '../../components/sherpa-tabs/sherpa-tabs.js';
 import '../../components/sherpa-input-text/sherpa-input-text.js';
 import '../../components/sherpa-key-value-list/sherpa-key-value-list.js';
 import '../../components/sherpa-node/sherpa-node.js';
@@ -57,7 +61,8 @@ import {
   type Inner, type NodeDefinition, type NodeLibrary,
 } from '../data/node-library.js';
 import { groupNodes, ungroupUse } from '../data/node-group.js';
-import { instancePane, groupPane, updatePane } from './node-group-panel.js';
+import { flowPane, instancePane, updatePane } from './node-group-panel.js';
+import { nodeFlow } from '../data/node-flow.js';
 import { typedValue, type FieldType } from '../data/filter-state.js';
 import {
   FALSE_SOCKET, NODE_KINDS, fitOf, paletteOf, placed, rowChoices, socketOf, socketType,
@@ -804,12 +809,20 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: DrawnGraph, options
 
 /** Mark one node as the one picked, or none. */
 export function markNode(canvas: SherpaLayoutCanvas, id: string | null): void {
-  for (const [key, el] of drawnOn.get(canvas)?.nodes ?? []) el.toggleAttribute('data-current', key === id);
+  for (const [key, el] of drawnOn.get(canvas)?.nodes ?? []) {
+    el.toggleAttribute('data-current', key === id);
+    el.removeAttribute('data-active');
+  }
 }
 
 /** Mark several nodes as the ones picked. */
 export function markNodes(canvas: SherpaLayoutCanvas, ids: ReadonlySet<string>): void {
   for (const [key, el] of drawnOn.get(canvas)?.nodes ?? []) el.toggleAttribute('data-current', ids.has(key));
+}
+
+/** Mark the one of the picked nodes whose panel is shown: a stronger ring than the others'. */
+export function markActive(canvas: SherpaLayoutCanvas, id: string | null): void {
+  for (const [key, el] of drawnOn.get(canvas)?.nodes ?? []) el.toggleAttribute('data-active', key === id);
 }
 
 /** Mark routes as the ones picked. */
@@ -944,6 +957,8 @@ export interface InspectOptions {
   onRemove?: () => void;
   /** What a Custom Node adds above the rows: its update, its Open and Ungroup. */
   extra?: readonly HTMLElement[];
+  /** Several nodes are picked: a tab each, the shown one current; a reader's tab is `onTab`, which changes no pick. */
+  tabs?: { nodes: readonly { id: string; label: string }[]; current: string; onTab: (id: string) => void; heading: string };
 }
 
 /** What an inspector holds: its node, the fields by their element, and whom it tells. */
@@ -1005,10 +1020,27 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   const stack = document.createElement('sherpa-stack');
   stack.setAttribute('data-gap', 'lg');
   const remove = options.onRemove ? [button('Remove node', options.onRemove)] : [];
-  stack.append(...(options.extra ?? []), ...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...remove);
-  panel.replaceChildren(stack);
+  const flow = nodeFlow(graph, node.id);
+  stack.append(...(options.extra ?? []), ...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...('fault' in flow ? [] : [flowPane(flow)]), ...remove);
+  const { tabs } = options;
+  if (tabs) {
+    const strip = document.createElement('sherpa-tabs') as HTMLElement & { populate(items: unknown): void };
+    const body = document.createElement('div');
+    body.dataset['tab'] = tabs.current;
+    body.append(stack);
+    strip.setAttribute('data-current-id', tabs.current);
+    strip.append(body);
+    strip.populate(tabs.nodes.map((t) => ({ id: t.id, label: t.label })));
+    strip.addEventListener('tab-select', (event) => {
+      event.stopPropagation();
+      tabs.onTab((event as CustomEvent<{ id: string }>).detail.id);
+      // The strip is rebuilt for the node now shown: the reader stays on their tab.
+      requestAnimationFrame(() => panel.querySelector('sherpa-tabs')?.shadowRoot?.querySelector<HTMLElement>('.tab[data-current]')?.focus());
+    });
+    panel.replaceChildren(strip);
+  } else panel.replaceChildren(stack);
   if (whole.length) (header as HTMLElement & { populate(items: unknown): void }).populate(whole);
-  panel.setAttribute('data-heading', node.heading);
+  panel.setAttribute('data-heading', tabs?.heading ?? node.heading);
   put(panel, 'data-icon', node.icon);
   inspecting.set(panel, { node, fields, options });
 }
@@ -1364,6 +1396,8 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
   onSaveNode?: (id: string, definition: NodeDefinition) => void;
   /** The page's `sherpa-app-header`: its trail shows the Custom Nodes opened, and is empty at the workflow. */
   header?: HTMLElement & { populate(data: { breadcrumb: { label: string }[] }): unknown };
+  /** A `sherpa-dialog` that asks a Custom Node's name and description: inputs `[name=label]` and `[name=description]`, buttons `[data-action=save]` and `[data-action=cancel]`. Without it Save as Custom Node is not offered. */
+  customDialog?: HTMLElement & { show(): void; hide(): void };
   /** A `sherpa-dialog` (status critical) that confirms the two bulk updates. Without it they are not offered. */
   confirm?: HTMLElement & { confirm(ask: { heading?: string; words?: string; action?: string; critical?: boolean }): Promise<boolean> };
   /** "Update all instances" was confirmed: the app's other workflows are its own to update. */
@@ -1406,7 +1440,7 @@ const isEdits = (v: unknown): v is Record<string, NodeDefinition> => !!v && type
  *  · TRAP T-a-custom-node-is-an-instance */
 export function bindWorkflow(
   canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition | WorkflowDefinitionV1,
-  { inspector, panel, session, kinds = NODE_KINDS, library, onSaveNode, header, confirm, onUpdateAll, toolbar, ...facts }: WorkflowEditorOptions = {},
+  { inspector, panel, session, kinds = NODE_KINDS, library, onSaveNode, header, confirm, customDialog, onUpdateAll, toolbar, ...facts }: WorkflowEditorOptions = {},
 ): WorkflowEditor {
   const pointer = `/workflows/${workflow.id}`;
   const isDraft = (v: unknown): v is WorkflowDefinition | WorkflowDefinitionV1 => {
@@ -1616,7 +1650,14 @@ export function bindWorkflow(
   };
 
   // — Custom Nodes: open, the trail, update, save as, ungroup —
-  const multi = new Set<string>();
+  // The picked set tells the toolbar when Save as Custom Node can be pressed: two or more.
+  const tellGroup = (): void => { toolbar?.toggleAttribute('data-can-group', multi.size > 1 && !readOnly() && !!customDialog); };
+  const multi = new (class extends Set<string> {
+    override add(id: string): this { super.add(id); tellGroup(); return this; }
+    override delete(id: string): boolean { const done = super.delete(id); tellGroup(); return done; }
+    override clear(): void { super.clear(); tellGroup(); }
+  })();
+  let active: string | null = null;
   const use = (id: string): WorkflowNode | undefined => {
     const at = shown().nodes.find((n) => n.id === id);
     return at && K()[at.kind]?.model === 'graph' && lib.nodes[at.kind] ? at : undefined;
@@ -1737,9 +1778,9 @@ export function bindWorkflow(
     write(done.workflow);
   };
   /** "Save as Custom Node": the picked nodes, one definition and one use; a fault in words, or none. */
-  const group = (label: string, category: string): string | undefined => {
+  const group = (label: string, description: string): string | undefined => {
     if (readOnly()) return 'this Custom Node is a preset, read only';
-    const made = groupNodes(shown(), [...multi], lib, { label, category }, K(), facts);
+    const made = groupNodes(shown(), [...multi], lib, { label, description }, K(), facts);
     if ('fault' in made) {
       report({ code: 'node-group', message: `bindWorkflow: ${made.fault}.`, at: { workflow: shown().id } });
       return made.fault;
@@ -1756,14 +1797,46 @@ export function bindWorkflow(
     }
     return undefined;
   };
+  /** The picked nodes in the panel: a tab each, the active one's node filling it. A tab changes the shown node, never the pick. */
   const showMulti = (): void => {
     if (!inspector) return;
     markNodes(canvas, multi);
-    inspector.replaceChildren(groupPane(multi.size, { onSave: group }));
-    inspector.setAttribute('data-heading', `${multi.size} nodes picked`);
-    inspector.setAttribute('data-icon', 'folder');
+    const nodes = graph.nodes.filter((n) => multi.has(n.id));
+    if (!nodes.length) return;
+    if (!active || !multi.has(active)) active = nodes[0]!.id;
+    markActive(canvas, active);
+    fillInspector(nodes.find((n) => n.id === active)!, graph, {
+      nodes: nodes.map((n) => ({ id: n.id, label: n.heading })), current: active, heading: `${nodes.length} nodes picked`,
+      onTab: (id) => { active = id; showMulti(); },
+    });
     inspector.show();
   };
+  // — the dialog Save as Custom Node asks in —
+  const dialogField = (name: string): (HTMLElement & { value: string }) | null => customDialog?.querySelector(`[name="${name}"]`) ?? null;
+  const saveAs = (): void => {
+    const name = dialogField('label');
+    const fault = group(String(name?.value ?? ''), String(dialogField('description')?.value ?? ''));
+    if (fault) name?.setAttribute('data-description', fault.charAt(0).toUpperCase() + fault.slice(1));
+    else customDialog?.hide();
+  };
+  const openSave = (): void => {
+    if (!customDialog || multi.size < 2 || readOnly()) return;
+    for (const field of ['label', 'description']) dialogField(field)!.value = '';
+    dialogField('label')?.removeAttribute('data-description');
+    customDialog.show();
+    dialogField('label')?.focus();
+  };
+  const onSaveKey = (event: Event): void => {
+    if ((event as KeyboardEvent).key !== 'Enter') return;
+    event.stopPropagation();
+    saveAs();
+  };
+  const dialogSave = customDialog?.querySelector('[data-action="save"]');
+  const dialogCancel = customDialog?.querySelector('[data-action="cancel"]');
+  const onCancel = (): void => customDialog?.hide();
+  dialogSave?.addEventListener('click', saveAs);
+  dialogCancel?.addEventListener('click', onCancel);
+  dialogField('label')?.addEventListener('keydown', onSaveKey);
   let current: string | null = null;
   /** Add a node to the picked, or take it off (Shift-click, Space); with one left, it is simply picked. */
   const toggle = (id: string): void => {
@@ -1833,7 +1906,8 @@ export function bindWorkflow(
       // Picked routes first; else the routes of the picked nodes.
       if (pickedRoutes(canvas).length) tieRoutes(pickedRoutes(canvas));
       else tieNodes(multi.size > 1 ? [...multi] : [hit!.id]);
-    } else if (hit?.header && event.key === ' ') toggle(hit.id);
+    } else if (mod && event.key.toLowerCase() === 'g') openSave();
+    else if (hit?.header && event.key === ' ') toggle(hit.id);
     else if (hit?.header && event.key === 'Enter' && use(hit.id)) open(hit.id);
     else return;
     event.preventDefault();
@@ -1865,6 +1939,7 @@ export function bindWorkflow(
     if (action === 'undo') undo();
     else if (action === 'redo') redo();
     else if (action === 'tie') setTying(!tying);
+    else if (action === 'group') openSave();
   };
   toolbar?.addEventListener('toolbar-select', onTool);
   toolbar?.setAttribute('data-can-tie', '');
@@ -1886,10 +1961,9 @@ export function bindWorkflow(
     ];
     return { ...node, rows: [...own, ...node.rows] };
   };
-  const picks = pickedIn(canvas, inspector, (node, now) => {
-    current = node.id;
+  const fillInspector = (node: GraphNode, now: DrawnGraph, tabs?: InspectOptions['tabs']): void => {
     inspectNode(inspector!, withOwn(node), now, {
-      onEdit, extra: extraFor(node), ...(readOnly() ? {} : { onCut: onBreak }),
+      onEdit, extra: extraFor(node), ...(readOnly() ? {} : { onCut: onBreak }), ...(tabs ? { tabs } : {}),
       // With no pointer: beside the node it feeds, one column left, on the row's own line.
       onCustom: (row) => {
         const at = shown().nodes.find((n) => n.id === node.id);
@@ -1897,7 +1971,12 @@ export function bindWorkflow(
       },
       ...(readOnly() || node.id.startsWith('#') ? {} : { onRemove: () => onRemove(node.id) }),
     });
-  }, () => { multi.clear(); current = null; });
+  };
+  const picks = pickedIn(canvas, inspector, (node, now) => {
+    current = node.id;
+    markActive(canvas, null);
+    fillInspector(node, now);
+  }, () => { multi.clear(); current = null; active = null; });
   function draw(): void {
     if (path.length && !innerNow()) path = [];
     const ro = readOnly();
@@ -1969,6 +2048,10 @@ export function bindWorkflow(
       panel?.removeEventListener('node-add', onAdded);
       toolbar?.removeEventListener('toolbar-select', onTool);
       toolbar?.removeAttribute('data-tie');
+      toolbar?.removeAttribute('data-can-group');
+      dialogSave?.removeEventListener('click', saveAs);
+      dialogCancel?.removeEventListener('click', onCancel);
+      dialogField('label')?.removeEventListener('keydown', onSaveKey);
       canvas.removeEventListener('keydown', onKey, { capture: true });
       canvas.removeEventListener('click', onClick, { capture: true });
       canvas.removeEventListener('dblclick', onDouble);

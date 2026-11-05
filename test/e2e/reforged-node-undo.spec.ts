@@ -25,7 +25,17 @@ test.beforeEach(async ({ page }) => {
         <sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar>
         <sherpa-node-panel slot="panel"></sherpa-node-panel>
       </sherpa-layout-canvas>
-      <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>`);
+      <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>
+      <sherpa-dialog id="custom" data-heading="Save as Custom Node">
+        <sherpa-stack data-gap="md">
+          <sherpa-input-text name="label" data-label="Name" autocomplete="off" required></sherpa-input-text>
+          <sherpa-input-text name="description" data-label="Description" data-multiline autocomplete="off"></sherpa-input-text>
+        </sherpa-stack>
+        <sherpa-container-footer slot="footer">
+          <sherpa-button data-action="cancel">Cancel</sherpa-button>
+          <sherpa-button data-action="save" data-look="saturated">Save as Custom Node</sherpa-button>
+        </sherpa-container-footer>
+      </sherpa-dialog>`);
     await customElements.whenDefined('sherpa-node-panel');
     await customElements.whenDefined('sherpa-node-toolbar');
     await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
@@ -46,7 +56,7 @@ const BIND = `async (org) => {
   const canvas = document.getElementById('cv');
   window.ed = bindWorkflow(canvas, flow, {
     session: new SessionStore(), inspector: document.getElementById('inspector'), panel: canvas.querySelector('sherpa-node-panel'),
-    toolbar: canvas.querySelector('sherpa-node-toolbar'), breadcrumbs: document.getElementById('trail'), library,
+    toolbar: canvas.querySelector('sherpa-node-toolbar'), customDialog: document.getElementById('custom'), breadcrumbs: document.getElementById('trail'), library,
     fields: { status: { label: 'Status' }, role: { label: 'Role' } }, stores: ['users'], values: { status: ['active', 'trial'] },
   });
   await window.__settled();
@@ -60,6 +70,13 @@ const settle = (page: Page) => page.evaluate(() => window.__settled().then(() =>
 /** The workflow and the library as the draft holds them now: what an undo must put back. */
 const state = (page: Page) => page.evaluate(() => JSON.stringify([(window as never as { ed: { workflow(): unknown } }).ed.workflow(), (window as never as { ed: { library(): unknown } }).ed.library()]));
 const tool = (page: Page, name: string) => page.locator(`sherpa-node-toolbar sherpa-button.${name}`);
+/** Save as Custom Node: the toolbar's button, then the dialog's name (and description) and its Save. */
+const saveAs = async (page: Page, name: string, description = '') => {
+  await press(page, 'group');
+  await page.locator('#custom sherpa-input-text[name="label"] input').fill(name);
+  if (description) await page.locator('#custom sherpa-input-text[name="description"] textarea').fill(description);
+  await page.locator('#custom sherpa-button[data-action="save"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+};
 const press = async (page: Page, name: string) => {
   await tool(page, name).evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
   await settle(page);
@@ -240,9 +257,7 @@ const EDITS: [string, (page: Page) => Promise<void>][] = [
     await header(page, 'Sort').focus();
     await page.keyboard.press('Space');
     await settle(page);
-    await page.locator('#inspector sherpa-input-text[name="label"] input').fill('Pair');
-    await page.locator('#inspector sherpa-input-text[name="category"] input').fill('Logic');
-    await page.locator('#inspector sherpa-button[data-label="Save as Custom Node"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+    await saveAs(page, 'Pair');
   }],
 ];
 for (const [name, edit] of EDITS) {
@@ -268,9 +283,7 @@ test('Ungroup is a step too: Undo makes the Custom Node again, a second Undo put
   await header(page, 'Sort').focus();
   await page.keyboard.press('Space');
   await settle(page);
-  await page.locator('#inspector sherpa-input-text[name="label"] input').fill('Pair');
-  await page.locator('#inspector sherpa-input-text[name="category"] input').fill('Logic');
-  await page.locator('#inspector sherpa-button[data-label="Save as Custom Node"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await saveAs(page, 'Pair');
   await settle(page);
   const made = await state(page);
   await header(page, 'Pair').click();

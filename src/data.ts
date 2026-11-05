@@ -199,6 +199,7 @@ export {
 /* Where an app's Custom Nodes come together: its presets and the reader's. Plan 713 M12 */
 export { isNodeEntry, joinLibrary, type NodeShelf } from './core/data/node-shelf.js';
 export { groupNodes, ungroupUse, type GroupAsk, type Grouped } from './core/data/node-group.js';
+export { nodeFlow, type NodeFlow } from './core/data/node-flow.js';
 /* The data layer over HTTP: one handle() for the page, a Service Worker or a server. Plan 652 */
 export {
   DATA_BASE,

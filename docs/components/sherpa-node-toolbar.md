@@ -2,7 +2,7 @@
 
 # sherpa-node-toolbar
 
-A graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step
+A graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool and Save as Custom Node. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step
 
 |  |  |
 |---|---|
@@ -22,6 +22,7 @@ For a graph editor's tools: Save, Undo and Redo as one object of icon buttons. I
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
+| `data-can-group` | boolean |  | Save as Custom Node can be pressed: two or more nodes are picked; written by the editor |
 | `data-can-redo` | boolean |  | Redo can be pressed |
 | `data-can-save` | boolean |  | Save can be pressed (default off: Save is a placeholder until a host wants it) |
 | `data-can-tie` | boolean |  | The Zip tie tool can be pressed; written by the editor |
@@ -54,6 +55,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ canRedo?, canSave?, canTie?, canUndo?, pickedRoutes?, tie? }`
+`{ canGroup?, canRedo?, canSave?, canTie?, canUndo?, pickedRoutes?, tie? }`
 
 Its declared props by name: `label` sets data-label.

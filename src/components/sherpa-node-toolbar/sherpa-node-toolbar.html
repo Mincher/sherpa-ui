@@ -1,6 +1,6 @@
 <!--
   sherpa-node-toolbar — a graph editor's tools, one object of icon buttons: Save, Undo and
-  Redo, then the Zip tie tool. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls.
+  Redo, then the Zip tie tool and Save as Custom Node. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls.
   Will, TODO 560. TRAP T-an-edit-is-a-step
 
   Public API:
@@ -8,6 +8,7 @@
     data-can-undo   Undo can be pressed; written by the editor that owns the history
     data-can-redo   Redo can be pressed
     data-can-tie    The Zip tie tool can be pressed; written by the editor
+    data-can-group  Save as Custom Node can be pressed: two or more nodes are picked; written by the editor
     data-tie        The Zip tie tool is on; written by the editor, shown as pressed
     data-picked-routes  How many connectors are picked; written by the editor, said in the Tie tool's tip
 
@@ -15,7 +16,7 @@
     (none)
 
   Fires:
-    toolbar-select — a tool was pressed. detail: { action: 'save' | 'undo' | 'redo' | 'tie' }
+    toolbar-select — a tool was pressed. detail: { action: 'save' | 'undo' | 'redo' | 'tie' | 'group' }
 -->
 <template id="default">
   <span class="tools sherpa-group" part="tools" role="toolbar" aria-label="Editor">
@@ -27,5 +28,7 @@
                    aria-label="Redo" data-tip="Redo (Shift+Ctrl+Z)" disabled></sherpa-button>
     <sherpa-button class="tie" data-type="icon" data-icon-start="zip-tie" data-action="tie"
                    aria-label="Zip tie" data-tip="Zip tie: drag across connectors (T on picked nodes)" aria-pressed="false" disabled></sherpa-button>
+    <sherpa-button class="group" data-type="icon" data-icon-start="group" data-action="group"
+                   aria-label="Save as Custom Node" data-tip="Save as Custom Node (Ctrl+G): pick two or more nodes" disabled></sherpa-button>
   </span>
 </template>

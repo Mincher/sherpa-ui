@@ -22,6 +22,7 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
+| `data-active` | boolean |  | the one picked node whose panel is shown, in a stronger ring; the HOST writes it |
 | `data-branches` | boolean |  | a fork: the header's output is True, and a footer shows with False |
 | `data-caption` | text |  | a line over the node: what its step did, its time and rows. Its host writes it |
 | `data-category` | text |  | its kind's category, in lower case: sources \| custom-nodes \| variables \| math \| logic \| time \| utils \| collections \| output \| ai; each has its look |
@@ -100,6 +101,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, scaleH?, scaleW?, step?, x?, y? }`
+`{ active?, branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, scaleH?, scaleW?, step?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.

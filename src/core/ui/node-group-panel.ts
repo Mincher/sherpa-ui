@@ -1,7 +1,7 @@
 /**
  * node-group-panel.ts — the parts of a node's inspector that belong to a Custom Node: what to do
- * with an instance (Open, Ungroup), the update's diff and its split button, and the pane for
- * several picked nodes ("Save as Custom Node"). Each is composed of Sherpa's own components and
+ * with an instance (Open, Ungroup), the update's diff and its split button, and a
+ * node's incoming and outgoing JSON. Each is composed of Sherpa's own components and
  * only ASKS: the editor acts. Will, TODO 719 · plan 713 §9.2, M10, M11, D9, D11
  *
  * Map:
@@ -10,10 +10,10 @@
  * - updatePane — The diff of an instance's definition, and the split button whose primary is "Update instance".
  * - InstanceActions — What a Custom Node's instance may ask: open it, ungroup it, copy a preset.
  * - instancePane — The buttons for one instance: Open, Ungroup.
- * - GroupActions — What the several-picked pane asks of its editor.
- * - groupPane — A name, a category and "Save as Custom Node", for the nodes picked.
+ * - flowPane — A node's Incoming and Outgoing JSON: two collapsible sections of code blocks.
  */
 import type { DefinitionDiff } from '../data/node-library.js';
+import type { NodeFlow } from '../data/node-flow.js';
 
 /** A control made of a Sherpa component, its attributes set. */
 function make(tag: string, attrs: Readonly<Record<string, string>>): HTMLElement {
@@ -106,25 +106,18 @@ export function instancePane(actions: InstanceActions): HTMLElement {
   return pane;
 }
 
-/** What the several-picked pane asks of its editor: the answer is a fault in words, or none. */
-export interface GroupActions {
-  onSave(label: string, category: string): string | undefined;
-}
-
-/** A name, a category and "Save as Custom Node", for the nodes picked. A refusal is said under the name. */
-export function groupPane(count: number, actions: GroupActions): HTMLElement {
-  const pane = make('sherpa-stack', { 'data-gap': 'md', class: 'group-pane' });
-  const note = make('p', { class: 'group-note' });
-  note.style.margin = '0';
-  note.textContent = `${count} nodes are picked. Save them as one Custom Node: each route that leaves them becomes a socket.`;
-  const name = make('sherpa-input-text', { name: 'label', 'data-label': 'Name', placeholder: 'Org permissions', autocomplete: 'off' }) as HTMLElement & { value: string };
-  const category = make('sherpa-input-text', { name: 'category', 'data-label': 'Category', placeholder: 'Custom Nodes', autocomplete: 'off' }) as HTMLElement & { value: string };
-  const save = (): void => {
-    const fault = actions.onSave(String(name.value ?? ''), String(category.value ?? ''));
-    if (fault) name.setAttribute('data-description', fault);
-    else name.removeAttribute('data-description');
+/** A node's definition view as JSON: Incoming and Outgoing, each a collapsible section holding a code block, shut when long. */
+export function flowPane(flow: NodeFlow): HTMLElement {
+  const pane = make('sherpa-stack', { 'data-gap': 'sm', class: 'flow-pane' });
+  const section = (heading: string, json: unknown): HTMLElement => {
+    const code = JSON.stringify(json, null, 2);
+    const acc = make('sherpa-accordion', { 'data-heading': heading, class: 'flow-section', ...(code.split('\n').length <= 12 ? { open: '' } : {}) });
+    const caption = make('p', { class: 'flow-caption' });
+    caption.style.margin = '0';
+    caption.textContent = 'The node\'s definition, not a run: live values come with the runner.';
+    acc.append(caption, make('sherpa-code-block', { 'data-language': 'json', 'data-code': code }));
+    return acc;
   };
-  name.addEventListener('keydown', (event) => { if ((event as KeyboardEvent).key === 'Enter') { event.stopPropagation(); save(); } });
-  pane.append(note, name, category, button('Save as Custom Node', save, { 'data-look': 'saturated' }));
+  pane.append(section('Incoming JSON', flow.incoming), section('Outgoing JSON', { outgoing: flow.outgoing, ...(flow.definition ? { definition: flow.definition } : {}) }));
   return pane;
 }

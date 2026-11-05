@@ -6,7 +6,7 @@
  * TRAP T-a-custom-node-is-an-instance
  *
  * Map:
- * - GroupAsk — What "Save as Custom Node" is asked: the name, the category, and an id if the reader gave one.
+ * - GroupAsk — What "Save as Custom Node" is asked: a name; a description, category and id if given.
  * - Grouped — The edit's answer: the workflow, the library and the use, or why it was refused.
  * - groupNodes — Several nodes as one Custom Node: a definition, and one use in their place.
  * - ungroupUse — A use as its nodes again, in place: the inverse of groupNodes.
@@ -21,6 +21,7 @@ type Kinds = Readonly<Record<string, NodeKind>>;
 export interface GroupAsk {
   label: string;
   category?: string;
+  description?: string;
   id?: string;
 }
 
@@ -150,7 +151,7 @@ export function groupNodes(
   // A tie of inner routes only goes inside; a tie of outer ones stays.
   const tied = (workflow.ties ?? []).filter((t) => t.routes.every((r) => inner.some((x) => x.from === r.from && x.to === r.to)));
   const definition: NodeDefinition = {
-    v: 1, label, ...(ask.category?.trim() ? { category: ask.category.trim() } : {}),
+    v: 1, label, ...(ask.description?.trim() ? { description: ask.description.trim() } : {}), ...(ask.category?.trim() ? { category: ask.category.trim() } : {}),
     inputs, outputs, nodes: structuredClone(nodes), routes: inner,
     ...(tied.length ? { ties: structuredClone(tied) } : {}),
   };

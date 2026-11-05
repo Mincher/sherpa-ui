@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-node-toolbar",
-  "$description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step",
+  "$description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool and Save as Custom Node. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step",
   "element": {
     "$type": "element",
     "tag": "span",
@@ -74,11 +74,32 @@
             "aria-pressed": "false",
             "disabled": ""
           }
+        },
+        {
+          "el": "sherpa-button",
+          "class": "group",
+          "attrs": {
+            "data-type": "icon",
+            "data-icon-start": "group",
+            "data-action": "group",
+            "aria-label": "Save as Custom Node",
+            "data-tip": "Save as Custom Node (Ctrl+G): pick two or more nodes",
+            "disabled": ""
+          }
         }
       ]
     }
   },
   "props": [
+    {
+      "$type": "prop",
+      "name": "data-can-group",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "Save as Custom Node can be pressed: two or more nodes are picked; written by the editor"
+    },
     {
       "$type": "prop",
       "name": "data-can-redo",
@@ -135,7 +156,7 @@
     }
   ],
   "populate": {
-    "shape": "{ canRedo?, canSave?, canTie?, canUndo?, pickedRoutes?, tie? }",
+    "shape": "{ canGroup?, canRedo?, canSave?, canTie?, canUndo?, pickedRoutes?, tie? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "events": [

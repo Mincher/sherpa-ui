@@ -209,6 +209,15 @@
   "props": [
     {
       "$type": "prop",
+      "name": "data-active",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "the one picked node whose panel is shown, in a stronger ring; the HOST writes it"
+    },
+    {
+      "$type": "prop",
       "name": "data-branches",
       "type": "boolean",
       "observed": true,
@@ -412,10 +421,15 @@
     }
   ],
   "populate": {
-    "shape": "{ branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, scaleH?, scaleW?, step?, x?, y? }",
+    "shape": "{ active?, branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, scaleH?, scaleW?, step?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
+    {
+      "$type": "state",
+      "name": "active",
+      "selector": ":host([data-active])"
+    },
     {
       "$type": "state",
       "name": "sources",
