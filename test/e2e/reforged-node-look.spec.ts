@@ -249,7 +249,7 @@ test('resizing is a setting: off, a node has no handle and Alt+Arrow does nothin
 });
 
 // — 756: every category, picked, takes the SAME active fill and border; the panel's node adds the same ring.
-const CATS = { Sources: 'store', Variables: 'value', Logic: 'condition', Collections: 'sort', Output: 'output', 'Custom Nodes': 'mine', AI: 'agent' } as const;
+const CATS = { Sources: 'store', Variables: 'value', Logic: 'condition', Collections: 'collection', Output: 'output', 'Custom Nodes': 'mine', AI: 'agent' } as const;
 async function bindCategories(page: Page): Promise<void> {
   await page.setViewportSize({ width: 1700, height: 900 });
   await page.evaluate(async (cats) => {
