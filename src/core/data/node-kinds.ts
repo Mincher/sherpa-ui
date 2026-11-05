@@ -140,6 +140,7 @@ export interface NodeType {
 export interface NodeKind {
   heading: string;
   icon: string;
+  /** Its synopsis: what it is, in a few words, on one line. The panel's line, and a node's when it has none of its own (809). */
   description?: string;
   /** The whole node's sockets, on its header. Its input is its DATA, of any type (D1): its rows
    *  and values say what it does with it. With `branches`, its output is True. */
@@ -233,7 +234,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   },
   // A page's Query: its rows read left to right, as the data flows.
   status: {
-    heading: 'Status field', icon: 'status-ok', description: 'Each row given a value by conditions on its other fields.',
+    heading: 'Status field', icon: 'status-ok', description: 'A value per row, by conditions.',
     input: 'any', rows: [ROWS], model: 'StatusField', graphs: ['query'], category: 'Status',
   },
   source: {
@@ -253,16 +254,16 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   },
   // Logic: one test per Condition, And and Or joining tests (plan 783 D4). TRAP T-a-condition-is-a-tree-of-nodes
   condition: {
-    heading: 'Condition', icon: 'function', description: 'Whether a test holds: True takes what holds, False the rest.', branches: true,
+    heading: 'Condition', icon: 'function', description: 'Whether a test holds.', branches: true,
     typeLabel: 'Operation', defaultType: 'eq', types: LOGIC, rows: [], model: 'Condition', graphs: ['query', 'workflow'], category: 'Logic',
   },
   // Its on, then each field it writes.
   preset: {
-    heading: 'Preset', icon: 'star', description: 'The app\'s own named conditions: a chip leading its scope.', branches: true,
+    heading: 'Preset', icon: 'star', description: 'The app\'s named condition.', branches: true,
     rows: [{ name: 'on', label: 'On', control: 'switch', input: 'boolean' }], model: 'ScopeDefinition.presets', graphs: ['query'], category: 'Presets',
   },
   saved: {
-    heading: 'Saved filter', icon: 'floppy-disk', description: 'Filters kept under one name: a preset the reader made.', branches: true,
+    heading: 'Saved filter', icon: 'floppy-disk', description: 'Filters the reader named.', branches: true,
     rows: [{ name: 'on', label: 'On', control: 'switch', input: 'boolean' }], model: 'SavedFilter', graphs: ['query'], category: 'Saved filters',
   },
   arrange: {
@@ -304,12 +305,12 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   },
   // Rows in, a column out, `{ rows, field }`; one record in, that field's value. Its True: the field is there. Plan 783 D1, D2
   field: {
-    heading: 'Field', icon: 'price-tag', description: 'One field of what comes in: the column of the rows, or the value of one record.', input: 'any', needs: 'object', branches: true,
+    heading: 'Field', icon: 'price-tag', description: 'One field of what comes in.', input: 'any', needs: 'object', branches: true,
     rows: [{ name: 'field', label: 'Field', control: 'field', input: 'value', output: 'object', gives: 'field' }], model: 'readField', graphs: ['query', 'workflow'], category: 'Variables',
   },
   // One number from numbers, given from its Result row. Floor, Ceiling and Average read a list (D9).
   math: {
-    heading: 'Math', icon: 'function', description: 'One number from numbers.', branches: true, typeLabel: 'Operation', defaultType: 'add',
+    heading: 'Math', icon: 'function', description: 'Numbers in, one number out.', branches: true, typeLabel: 'Operation', defaultType: 'add',
     types: {
       add: { label: 'Add', help: 'Add Value B to Value A', rows: [A, B, NUMBER] },
       subtract: { label: 'Subtract', help: 'Subtract Value B from Value A', rows: [A, B, NUMBER] },
@@ -338,7 +339,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   },
   // Sort and Group by take the Field they work on, on the header (plan 783 D5); Count takes rows or a Field.
   collection: {
-    heading: 'Collection', icon: 'list', description: 'The rows in order, grouped, or counted.', input: 'any', needs: 'rows', branches: true, typeLabel: 'Type', defaultType: 'sort',
+    heading: 'Collection', icon: 'list', description: 'Rows in order, grouped or counted.', input: 'any', needs: 'rows', branches: true, typeLabel: 'Type', defaultType: 'sort',
     types: {
       sort: { label: 'Sort', help: 'The rows in order of the Field that comes in', needs: 'field', rows: [ROWS, { name: 'direction', label: 'Direction', control: 'direction', input: 'value' }] },
       group: { label: 'Group by', help: 'The rows by the Field that comes in', needs: 'field', rows: [ROWS] },
@@ -359,14 +360,14 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   },
   // A rows check by the Field of tags that comes in: closed to its values, where they are known (plan 783 D5).
   tag: {
-    heading: 'Tag', icon: 'price-tag', description: 'The rows whose field holds the tags picked.', input: 'any', needs: 'field', branches: true,
+    heading: 'Tag', icon: 'price-tag', description: 'Rows with the tags picked.', input: 'any', needs: 'field', branches: true,
     types: { includes: { label: 'Includes', rows: [ROWS, { name: 'value', label: 'Tags', control: 'tags', multiple: true, input: 'object' }] } },
     rows: [], model: 'tagCheck', graphs: ['workflow'], category: 'Utils',
   },
   // An In and an Out joined by a name, no line between them: what reaches an In comes out of every Out of its name.
   // The Out's socket is the type of what reaches its Ins, once drawn (TODO 779). TRAP T-a-portal-hop-is-resolved-once
   portal: {
-    heading: 'Portal', icon: 'link-simple', description: 'What comes in leaves from every Out of the same name, with no line between them.',
+    heading: 'Portal', icon: 'link-simple', description: 'Joins by name, with no line.',
     typeLabel: 'Type', defaultType: 'in',
     types: {
       in: { label: 'In', help: 'What comes in leaves from every Out portal of its name', input: 'any', rows: [PORTAL_NAME] },

@@ -5,8 +5,8 @@
  * a sherpa-section-header per category that sticks while its items scroll, a sherpa-list of
  * sherpa-list-items, and a sherpa-menu for "Add a node". It places nothing either: an item
  * clicked, Enter on it, or dragged off the card is `node-add`, and the editor that hears it makes
- * the node. An item is a FAMILY: its line names its types, and the search finds it by any of
- * them, or by a tag: "round" finds Math, placed as Round. TRAP T-the-node-panel-asks-it-places
+ * the node. An item is a FAMILY: its line is its kind's synopsis, and the search finds it by any
+ * type's name, or by a tag: "round" finds Math, placed as Round. TRAP T-the-node-panel-asks-it-places
  * A Custom Node is listed under each of its tags. TRAP T-a-node-panel-lists-under-sticky-headings
  * Docked flush in its canvas's panel area, it floats there as an overlay panel floats in the window, by the
  * same code. TRAP T-a-floating-panel-is-a-state
@@ -47,11 +47,10 @@ export interface AddContext {
 /** How far a pointer travels before a press on an item becomes a drag. */
 const THRESHOLD = 4;
 
-/** An item's line: a family's types, in order; else its kind's own. A preset says it is read only. */
+/** An item's line: its kind's synopsis, never its types (809). A preset says it is read only. */
 function lineOf(kind: NodeKind): string | undefined {
   if ('preset' in kind && kind.preset) return `Preset, read only.${kind.description ? ` ${kind.description}` : ''}`;
-  const types = Object.values(kind.types ?? {});
-  return types.length > 1 ? types.map((t) => t.label).join(', ') : kind.description;
+  return kind.description;
 }
 
 /** One category as drawn: its items with no tag, then a group per tag, each with an id to jump to. */

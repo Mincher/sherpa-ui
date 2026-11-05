@@ -78,8 +78,8 @@ test('it lists each category with its families, eleven, never a Query-only one; 
   expect(heads).toEqual(['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Collections', 'Utils', 'Output']);
   const names = () => page.locator('sherpa-node-panel sherpa-list-item:visible').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
   expect(await names()).toEqual(['Store', 'Value', 'Field', 'Math', 'Condition', 'Time', 'Collection', 'Text', 'Tag', 'Portal', 'Output']);
-  // A family's line names its types.
-  expect(await item(page, 'collection').getAttribute('data-description')).toBe('Sort, Group by, Count');
+  // A family's line is its synopsis, never its types (TODO 809).
+  expect(await item(page, 'collection').getAttribute('data-description')).toBe('Rows in order, grouped or counted.');
   await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('cou');
   expect(await names()).toEqual(['Collection']);
   expect(await item(page, 'collection').getAttribute('data-description')).toBe('Count: How many rows');
@@ -88,7 +88,7 @@ test('it lists each category with its families, eleven, never a Query-only one; 
   expect(await names()).toEqual([]);
   await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('');
   expect((await names()).length).toBe(11);
-  expect(await item(page, 'collection').getAttribute('data-description')).toBe('Sort, Group by, Count');
+  expect(await item(page, 'collection').getAttribute('data-description')).toBe('Rows in order, grouped or counted.');
 });
 
 test('"round" shows Math, says Round, and a click places a Math whose type is Round; its rows follow the type', async ({ page }) => {
