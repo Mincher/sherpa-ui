@@ -3,7 +3,9 @@
  * that type, picked in the graph chip beside the View chip. The chip's rows come from the entity
  * shelf (the type's presets, then the reader's own, then New graph…); New graph makes an empty
  * entity, checked; the canvas edits the entity's graph as a workflow, with its Group Input and Output
- * where its type has sockets, and keeps its own nodes back. Will, plan 746 E3.
+ * where its type has sockets, and keeps its own nodes back. Save writes the open entity, refused on a
+ * preset; Save graph as makes a named copy; Delete is refused, in words, while another entity uses
+ * it. Will, plan 746 E3, E4.
  * TRAP T-a-graph-is-a-view-of-a-type
  *
  *   node --test test/unit/a-graph-is-a-view-of-a-type.test.mjs
@@ -14,7 +16,7 @@ import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
 const core = new URL('../../dist/core/', import.meta.url);
 const { PageKeeper, memoryTier } = await import(new URL('browser/page-state.js', core));
-const { NEW_GRAPH, graphOfWorkflow, graphRows, newGraph, openOf } = await import(new URL('data/graph-views.js', core));
+const { NEW_GRAPH, graphOfWorkflow, graphRows, newGraph, openOf, saveGraph, saveGraphAs } = await import(new URL('data/graph-views.js', core));
 const { checkEntity, entityFaults, entityTypes, graphWorkflow, registerEntityType } = await import(new URL('data/entity-types.js', core));
 const { checkApp } = await import(new URL('data/app-definition.js', core));
 const { onReport } = await import(new URL('data/report.js', core));
@@ -125,4 +127,56 @@ test('the canvas edits an entity\'s graph as a workflow — its Group Input and 
   } finally {
     off();
   }
+});
+
+test('Save writes the graph on the canvas to the reader\'s own entity, and is refused on a preset, which is read only', async () => {
+  const k = keeper();
+  k.entityPresets = [filter('shipped', 'Shipped')];
+  await k.entities.save(filter('mine', 'Mine'));
+  const edited = { ...filter('x').graph, nodes: filter('x').graph.nodes.map((n) => (n.id === 'status' ? { ...n, values: { ...n.values, value: 'trial' } } : n)) };
+  assert.deepEqual(await heard(() => saveGraph(k.entities, 'mine', edited)), { result: true, said: [] });
+  assert.equal(k.entities.get('mine').graph.nodes[1].values.value, 'trial');
+  const { result, said } = await heard(() => saveGraph(k.entities, 'shipped', edited));
+  assert.equal(result, false);
+  assert.match(said[0], /"shipped" is a preset, which is read only/);
+  assert.equal(k.entities.get('shipped').graph.nodes[1].values.value, 'active');
+  assert.equal(await saveGraph(k.entities, 'gone', edited), false);
+});
+
+test('Save graph as makes a COPY — of a preset too: the reader\'s own, named, under a free id, with the canvas\'s graph — and the graph chip lists it', async () => {
+  const k = keeper();
+  k.entityPresets = [filter('shipped', 'Shipped')];
+  const edited = { ...filter('x').graph, nodes: filter('x').graph.nodes.map((n) => ({ ...n, x: n.x + 40 })) };
+  const id = await saveGraphAs(k.entities, 'shipped', edited, { label: 'My shipped', description: ' Mine now ' });
+  assert.equal(id, 'my-shipped');
+  const copy = k.entities.get(id);
+  assert.deepEqual([copy.origin, copy.label, copy.description, copy.graph.nodes[0].x], ['mine', 'My shipped', 'Mine now', 40]);
+  assert.equal(k.entities.get('shipped').graph.nodes[0].x, 0);
+  // The same name again: a free id, the reader's name kept.
+  assert.equal(await saveGraphAs(k.entities, id, edited, { label: 'My shipped' }), 'my-shipped-2');
+  assert.equal(k.entities.get('my-shipped-2').description, undefined);
+  assert.deepEqual(graphRows(k.entities.list('preset-filter'), id).map((r) => [r.value, r.section, !!r.selected]), [
+    ['shipped', 'Presets', false], ['my-shipped', 'My graphs', true], ['my-shipped-2', 'My graphs', false], [NEW_GRAPH, undefined, false],
+  ]);
+  assert.equal(await saveGraphAs(k.entities, 'shipped', edited, { label: '  ' }), undefined);
+  // duplicate keeps a description it is not told of, and the label it is.
+  await k.entities.save({ ...filter('described', 'Described'), description: 'Kept' });
+  assert.equal(await k.entities.duplicate('described', 'described-copy'), true);
+  assert.deepEqual([k.entities.get('described-copy').label, k.entities.get('described-copy').description], ['Described copy', 'Kept']);
+});
+
+test('Delete is refused in words while another entity uses it, and on a preset; once nothing uses it, it goes', async () => {
+  const k = keeper();
+  k.entityPresets = [filter('shipped', 'Shipped')];
+  await k.entities.save(filter('inner', 'Inner'));
+  await k.entities.save({ ...filter('outer', 'Outer'), graph: { nodes: [{ id: 'use', kind: 'preset-filter:inner', x: 0, y: 0 }], routes: [{ from: 'use', to: '#out/where' }] } });
+  assert.equal(k.entities.whyKept('inner'), '"Inner" is used by "Outer", so it stays: take it out of them first.');
+  assert.equal(k.entities.whyKept('shipped'), '"shipped" is a preset, which is read only.');
+  assert.equal(k.entities.whyKept('outer'), undefined);
+  const { result, said } = await heard(() => k.entities.remove('inner'));
+  assert.deepEqual([result, said], [false, ['remove: "Inner" is used by "Outer", so it stays: take it out of them first.']]);
+  assert.equal(k.entities.remove('outer'), true);
+  assert.equal(k.entities.whyKept('inner'), undefined);
+  assert.equal(k.entities.remove('inner'), true);
+  assert.deepEqual(k.entities.list('preset-filter').map((e) => e.id), ['shipped']);
 });

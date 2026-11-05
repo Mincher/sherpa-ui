@@ -498,9 +498,12 @@ export class SherpaOutlet extends SherpaElement {
     if (token === this.#graphToken) this.#setGraph(open, tell, was);
   }
 
-  /** The header follows the open graph, and the Context is told when it moved. */
+  /** The header follows the open graph — its words, Save off on a preset — and the Context is told when it moved. */
   #setGraph(open: OpenGraph | null, tell: boolean, was: OpenGraph | null = this.#graph): void {
     this.#graph = open;
+    const header = this.#header;
+    header?.toggleAttribute('data-graph', !!open);
+    header?.toggleAttribute('data-readonly', open?.origin === 'preset');
     if (open || was) this.#onViewChange();
     const key = (g: OpenGraph | null): string => (g ? `${g.view}/${g.type}/${g.id ?? ''}` : '');
     if (tell && key(was) !== key(open)) this.emit('graph-change', { graph: open });

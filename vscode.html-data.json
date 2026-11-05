@@ -62,6 +62,11 @@
           "valueSet": "v"
         },
         {
+          "name": "data-graph",
+          "description": "the View on screen is a graph: Save graph as, Delete graph. TRAP T-a-graph-is-a-view-of-a-type",
+          "valueSet": "v"
+        },
+        {
           "name": "data-heading",
           "description": "the Context title (row 2)"
         },
@@ -106,6 +111,11 @@
         {
           "name": "data-notifications-open",
           "description": "the HOST's panel is open, so the bell wears its open ring. The header emits the intent; the host owns the panel and reports the state back. TRAP T-a-trigger-shows-what-it-opened",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-readonly",
+          "description": "the View on screen is read only, a preset graph: Save is off",
           "valueSet": "v"
         },
         {

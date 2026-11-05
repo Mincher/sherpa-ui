@@ -141,7 +141,8 @@
                           "attrs": {
                             "data-size": "sm",
                             "data-group": "mid",
-                            "data-icon-start": "upload"
+                            "data-icon-start": "upload",
+                            "data-when-data-description": "data-readonly: A preset is read only: Save graph as makes a copy of your own."
                           }
                         },
                         {
@@ -154,7 +155,9 @@
                             "data-icon-start": "triangle-down",
                             "aria-label": "Save view options",
                             "aria-haspopup": "dialog",
-                            "data-description": "Save this view with a new name, or delete it."
+                            "data-when-aria-label": "data-graph: Save graph options",
+                            "data-description": "Save this view with a new name, or delete it.",
+                            "data-when-data-description": "data-graph: Save this graph with a new name, or delete it."
                           },
                           "children": [
                             {
@@ -169,7 +172,8 @@
                                   "el": "button",
                                   "attrs": {
                                     "type": "button",
-                                    "value": "save-as"
+                                    "value": "save-as",
+                                    "data-when-text": "data-graph: Save graph as"
                                   }
                                 },
                                 {
@@ -178,7 +182,8 @@
                                   "attrs": {
                                     "type": "button",
                                     "value": "delete",
-                                    "data-status": "critical"
+                                    "data-status": "critical",
+                                    "data-when-text": "data-graph: Delete graph"
                                   }
                                 }
                               ]
@@ -422,6 +427,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-graph",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "content",
+      "description": "the View on screen is a graph: Save graph as, Delete graph. TRAP T-a-graph-is-a-view-of-a-type"
+    },
+    {
+      "$type": "prop",
       "name": "data-heading",
       "type": "string",
       "observed": true,
@@ -509,6 +523,15 @@
       "declared": true,
       "kind": "style",
       "description": "the HOST's panel is open, so the bell wears its open ring. The header emits the intent; the host owns the panel and reports the state back. TRAP T-a-trigger-shows-what-it-opened"
+    },
+    {
+      "$type": "prop",
+      "name": "data-readonly",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "the View on screen is read only, a preset graph: Save is off"
     },
     {
       "$type": "prop",
@@ -726,22 +749,25 @@
     {
       "$type": "event",
       "name": "view-save",
-      "description": "Save.",
+      "description": "Save, a request a host may take over (cancelable).",
       "bubbles": true,
+      "cancelable": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "view-save-as",
-      "description": "Save view as.",
+      "description": "Save view as (Save graph as), cancelable.",
       "bubbles": true,
+      "cancelable": true,
       "composed": true
     },
     {
       "$type": "event",
       "name": "view-delete",
-      "description": "Delete view, the reader's own View.",
+      "description": "Delete view (Delete graph), the reader's own; cancelable.",
       "bubbles": true,
+      "cancelable": true,
       "composed": true
     },
     {

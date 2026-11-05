@@ -7,7 +7,7 @@
  *
  * Map:
  * - EntitySummary — One entity as a list shows it: cheap, no graph.
- * - EntityShelf — What an editor is handed: list, get, save, remove, duplicate, export, import, watch.
+ * - EntityShelf — What an editor is handed: list, get, save, remove (and why not), duplicate, export, import, watch.
  * - EntityPort — What a shelf needs of its keeper: the presets, the reader's own, keeping them, and hearing a change.
  * - joinEntities — The presets and the reader's entities as one list; a clash with a preset or an earlier id is left out.
  * - makeShelf — The shelf over a port. Each save keeps the final graph, checked by `checkEntity`, loaded when first asked.
@@ -37,7 +37,10 @@ export interface EntityShelf {
   save(entity: Entity): Promise<boolean>;
   /** The reader's own only, and refused while another entity uses it. */
   remove(id: string): boolean;
-  duplicate(id: string, newId: string): Promise<boolean>;
+  /** Why `remove` would keep an entity, in words: a preset, or another entity uses it; none when it would go. */
+  whyKept(id: string): string | undefined;
+  /** A copy under a new id, "<label> copy" unless `change` names it; `change` may carry the graph on a canvas, and none for its description. */
+  duplicate(id: string, newId: string, change?: { label?: string; description?: string | undefined; graph?: Entity['graph'] }): Promise<boolean>;
   /** Called with the list whenever it changes here, and when another tab changes it. Stops on the signal. */
   watch(handler: (list: EntitySummary[]) => void, signal?: AbortSignal): void;
   /** The entity as JSON text, with its `$schema` and without its `origin`. */
@@ -110,21 +113,31 @@ export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'type
     },
 
     remove(id) {
-      const here = all();
-      const entity = here.find((e) => e.id === id);
+      const entity = all().find((e) => e.id === id);
       if (!entity) return false;
-      if (entity.origin === 'preset') return refuse(entity.type, `remove: "${id}" is a preset, which is read only.`, id);
-      const by = here.filter((e) => e.id !== id && [...(e.uses ?? []), ...usesOf(e.graph, [entity])].some((u) => u.id === id));
-      if (by.length) return refuse(entity.type, `remove: "${entity.label}" is used by ${named(by.map((e) => e.label))}, so it stays: take it out of them first.`, id);
+      const why = shelf.whyKept(id);
+      if (why) return refuse(entity.type, `remove: ${why}`, id);
       const { [id]: _gone, ...rest } = port.mine();
       port.keep(rest);
       return true;
     },
 
-    async duplicate(id, newId) {
+    whyKept(id) {
+      const here = all();
+      const entity = here.find((e) => e.id === id);
+      if (!entity) return undefined;
+      if (entity.origin === 'preset') return `"${id}" is a preset, which is read only.`;
+      const by = here.filter((e) => e.id !== id && [...(e.uses ?? []), ...usesOf(e.graph, [entity])].some((u) => u.id === id));
+      return by.length ? `"${entity.label}" is used by ${named(by.map((e) => e.label))}, so it stays: take it out of them first.` : undefined;
+    },
+
+    async duplicate(id, newId, change = {}) {
       const was = shelf.get(id);
       if (!was) return refuse('entity', `duplicate: "${id}" is not there.`, id);
-      return shelf.save({ ...structuredClone(was), id: newId, label: `${was.label} copy` });
+      const { description, ...rest } = structuredClone(change);
+      const { description: had, ...copy } = { ...structuredClone(was), label: `${was.label} copy`, ...rest, id: newId };
+      const said = 'description' in change ? description : had;
+      return shelf.save({ ...copy, ...(said ? { description: said } : {}) });
     },
 
     watch(handler, signal) {

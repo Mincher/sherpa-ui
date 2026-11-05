@@ -218,7 +218,7 @@ export {
 export { joinEntities, makeShelf, nodesView, type EntityPort, type EntityShelf, type EntitySummary } from './core/data/entity-shelf.js';
 /* A GRAPH View: a View whose canvas shows one entity of its type, picked in the graph chip. Plan 746 E3 · TRAP T-a-graph-is-a-view-of-a-type */
 export {
-  NEW_GRAPH, graphOfWorkflow, graphRows, newGraph, openOf,
+  NEW_GRAPH, graphOfWorkflow, graphRows, newGraph, openOf, saveGraph, saveGraphAs,
   type GraphChoice, type GraphOf, type GraphWords, type OpenGraph,
 } from './core/data/graph-views.js';
 export { groupNodes, ungroupUse, type GroupAsk, type Grouped } from './core/data/node-group.js';

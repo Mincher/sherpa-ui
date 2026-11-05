@@ -1,8 +1,8 @@
 /**
  * graph-views.ts — a GRAPH View: a View whose body is a canvas, bound to one entity of the View's
- * type. The graph chip's rows, a new empty entity, and what a canvas keeps as an entity's graph.
- * Light: only types are imported, so the outlet carries it. DOM-free. Will, plan 746 E3
- * · TRAP T-a-graph-is-a-view-of-a-type
+ * type. The graph chip's rows, a new empty entity, what a canvas keeps as an entity's graph, and
+ * its Save and Save graph as. Light: only types are imported, so the outlet carries it. DOM-free.
+ * Will, plan 746 E3, E4 · TRAP T-a-graph-is-a-view-of-a-type
  *
  * Map:
  * - NEW_GRAPH — The graph chip's New graph… row: its value, which names no entity.
@@ -14,6 +14,8 @@
  * - openOf — The entity a graph View opens: the one named, when the list holds it; else the first.
  * - newGraph — A new, empty entity of a type, saved through the shelf under a free id and name.
  * - graphOfWorkflow — What a canvas's workflow keeps as an entity's graph: its own nodes, its routes and ties.
+ * - saveGraph — Save the graph on a canvas as the open entity's: a preset is refused, as the shelf refuses it.
+ * - saveGraphAs — Save the graph on a canvas as a COPY of an entity: the reader's own, named, under a free id.
  */
 import type { Entity, EntityGraph } from './entity.js';
 import type { EntityType } from './entity-types.js';
@@ -104,4 +106,21 @@ export function graphOfWorkflow(workflow: Pick<WorkflowDefinition, 'nodes' | 'ro
     nodes: workflow.nodes.filter((n) => !n.id.startsWith('#')), routes: workflow.routes ?? [],
     ...(workflow.ties?.length ? { ties: workflow.ties } : {}),
   };
+}
+
+/** Save the graph on a canvas as the open entity's. A preset is refused, as the shelf refuses it: it is read only. */
+export async function saveGraph(shelf: EntityShelf, id: string, graph: EntityGraph): Promise<boolean> {
+  const was = shelf.get(id);
+  return !!was && shelf.save({ ...was, graph });
+}
+
+/** Save the graph on a canvas as a COPY of an entity, a preset's too: the reader's own, under the name
+ *  and description given and a free id, through the shelf's `duplicate`. The copy's id, or none. */
+export async function saveGraphAs(shelf: EntityShelf, id: string, graph: EntityGraph, named: { label: string; description?: string }): Promise<string | undefined> {
+  const was = shelf.get(id);
+  const label = named.label.trim();
+  if (!was || !label) return undefined;
+  const copy = freeId(label, shelf.list().map((e) => e.id), was.type);
+  const description = named.description?.trim();
+  return await shelf.duplicate(id, copy, { label, description: description || undefined, graph }) ? copy : undefined;
 }

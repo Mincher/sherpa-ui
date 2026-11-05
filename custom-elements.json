@@ -201,6 +201,13 @@
               }
             },
             {
+              "name": "data-graph",
+              "description": "the View on screen is a graph: Save graph as, Delete graph. TRAP T-a-graph-is-a-view-of-a-type",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-heading",
               "description": "the Context title (row 2)",
               "type": {
@@ -266,6 +273,13 @@
             {
               "name": "data-notifications-open",
               "description": "the HOST's panel is open, so the bell wears its open ring. The header emits the intent; the host owns the panel and reports the state back. TRAP T-a-trigger-shows-what-it-opened",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-readonly",
+              "description": "the View on screen is read only, a preset graph: Save is off",
               "type": {
                 "text": "boolean"
               }
@@ -380,21 +394,21 @@
             },
             {
               "name": "view-save",
-              "description": "Save.",
+              "description": "Save, a request a host may take over (cancelable).",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "view-save-as",
-              "description": "Save view as.",
+              "description": "Save view as (Save graph as), cancelable.",
               "type": {
                 "text": "CustomEvent"
               }
             },
             {
               "name": "view-delete",
-              "description": "Delete view, the reader's own View.",
+              "description": "Delete view (Delete graph), the reader's own; cancelable.",
               "type": {
                 "text": "CustomEvent"
               }

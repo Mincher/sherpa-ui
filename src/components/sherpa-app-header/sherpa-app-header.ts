@@ -35,8 +35,6 @@ const ACTIONS = [
   ['.menu', 'menu-click'],
   // A phone's nav menu — the SHELL opens it. TRAP T-the-nav-is-a-menu-on-a-phone
   ['.nav-menu', 'nav-menu-request'],
-  // The View's own. Will, TODOs 425 G9 and 428
-  ['.save', 'view-save'],
 ] as const;
 
 export class SherpaAppHeader extends SherpaElement {
@@ -72,6 +70,10 @@ export class SherpaAppHeader extends SherpaElement {
     'data-locked': DATA_PROPS['data-locked'],
     // Delete view only on the reader's own View. TRAP T-a-saved-view-is-the-readers-own
     'data-custom-view': { type: 'boolean', kind: 'visibility' },
+    // The View on screen is a graph: its words say so. TRAP T-a-graph-is-a-view-of-a-type
+    'data-graph': { type: 'boolean', kind: 'content' },
+    // …and a preset, read only: Save is off.
+    'data-readonly': { type: 'boolean', kind: 'behaviour' },
   } as const;
   static override observed = ['data-theme-mode'];
 
@@ -82,6 +84,8 @@ export class SherpaAppHeader extends SherpaElement {
       this.$(sel)?.addEventListener('button-click', () => this.emit(event));
     }
     this.$('.favourite')?.addEventListener('button-click', this.#onStar);
+    // The View's own, REQUESTS a host may take over. Will, TODOs 425 G9 and 428
+    this.$('.save')?.addEventListener('button-click', () => this.emit('view-save', undefined, { cancelable: true }));
     this.$('.view-menu')?.addEventListener('menu-select', this.#onViewMenu);
   }
 
@@ -96,11 +100,11 @@ export class SherpaAppHeader extends SherpaElement {
     this.emit('view-favorite', { favourite: on });
   };
 
-  /** Save view as, or Delete view. */
+  /** Save view as, or Delete view: requests a host may take over. */
   #onViewMenu = (event: Event): void => {
     const value = (event as CustomEvent).detail?.value;
-    if (value === 'save-as') this.emit('view-save-as');
-    else if (value === 'delete') this.emit('view-delete');
+    if (value === 'save-as') this.emit('view-save-as', undefined, { cancelable: true });
+    else if (value === 'delete') this.emit('view-delete', undefined, { cancelable: true });
   };
 
   override onChange(): void {
@@ -188,9 +192,10 @@ export class SherpaAppHeader extends SherpaElement {
     await Promise.resolve(el.populate?.(data));
   }
 
-  /** Write the badge and the open state. */
+  /** Write the badge, the open state, and Save off on a read-only View. */
   #sync(): void {
     this.#syncOpen();
+    this.$('.save')?.toggleAttribute('disabled', this.hasAttribute('data-readonly'));
 
     // Stamped once there is a count; CSS shows/hides it via [data-notifications].
     const count = this.dataset['notifications'];

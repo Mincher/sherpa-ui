@@ -4,7 +4,8 @@ import { test, expect, type Page } from './fixture';
  * A GRAPH IS A VIEW OF A TYPE: a Context whose `chrome.filters` is "views" has its row drawn by the
  * outlet — the View chip alone, and on a graph View the graph chip to its right, its rows the type's
  * presets, the reader's own, then New graph…. A pick goes to the URL (`?graph=`), the Context is told
- * (`graph-change`), and a reload or Back opens the same. Will, plan 746 E3.
+ * (`graph-change`), and a reload or Back opens the same. The header's Save and its menu say "graph",
+ * Save is off on a preset, and each is a request a Context may take over. Will, plan 746 E3, E4.
  * TRAP T-a-graph-is-a-view-of-a-type
  */
 const BAR = 'sherpa-app-header sherpa-quick-filter-toolbar[data-type="view"]';
@@ -99,10 +100,9 @@ test('New graph… makes an empty one of the type and opens it; an app that take
   // Taken over: nothing is made, and the chip shows the open one still.
   await page.evaluate(() => document.querySelector('sherpa-outlet')!.addEventListener('graph-new', (e) => e.preventDefault()));
   await pick(page, 'graph', 'New graph…');
-  await page.waitForTimeout(300);
+  await expect.poll(() => page.evaluate((bar) => (document.querySelector(bar) as unknown as { values: Record<string, string[]> }).values['graph'], BAR)).toEqual(['new-preset-filter']);
   const after = await row(page);
   expect([after.graph, after.rows.length]).toEqual([{ view: 'filters', type: 'preset-filter', id: 'new-preset-filter', origin: 'mine' }, 6]);
-  expect(await page.evaluate((bar) => (document.querySelector(bar) as unknown as { values: Record<string, string[]> }).values['graph'], BAR)).toEqual(['new-preset-filter']);
 });
 
 test('another Context gives the bar its actions back, and an outlet opening one says there is no graph', async ({ page }) => {
@@ -110,4 +110,41 @@ test('another Context gives the bar its actions back, and an outlet opening one 
   await page.evaluate(() => (document.querySelector('sherpa-router') as unknown as { go(r: object): Promise<void> }).go({ context: 'plain' }));
   await expect.poll(async () => (await row(page)).noActions).toBe(false);
   expect((await row(page)).graph).toBe(null);
+});
+
+/** The header's View actions: Save's state, the menu's words, and whether Delete shows. */
+const actions = (page: Page) => page.evaluate(() => {
+  const header = document.querySelector('sherpa-app-header')!;
+  const save = header.shadowRoot!.querySelector('.save')!;
+  const more = header.shadowRoot!.querySelector('.view-more')!;
+  const rows = [...header.shadowRoot!.querySelectorAll<HTMLElement>('.view-menu button')];
+  return {
+    save: save.hasAttribute('disabled'), tip: save.getAttribute('data-description'), more: more.getAttribute('aria-label'),
+    rows: rows.filter((b) => getComputedStyle(b).display !== 'none').map((b) => b.textContent!.trim()),
+  };
+});
+
+test('on a graph View the header says Save graph as and Delete graph; Save is off on a preset; each is a request a Context may take over', async ({ page }) => {
+  await start(page, '/test/reforged/graph-views.html?view=filters');
+  const preset = await actions(page);
+  expect(preset).toEqual({ save: true, tip: 'A preset is read only: Save graph as makes a copy of your own.', more: 'Save graph options', rows: ['Save graph as'] });
+  await pick(page, 'graph', 'Mine');
+  await expect.poll(async () => (await actions(page)).save).toBe(false);
+  expect(await actions(page)).toEqual({ save: false, tip: null, more: 'Save graph options', rows: ['Save graph as', 'Delete graph'] });
+  // A request: the Context prevents it, and the page's own handler sees it prevented.
+  const heard = await page.evaluate(async () => {
+    const header = document.querySelector('sherpa-app-header')!;
+    const seen: string[] = [];
+    header.addEventListener('view-save', (e) => e.preventDefault(), { once: true });
+    document.addEventListener('view-save', (e) => seen.push(`save:${e.defaultPrevented}`), { once: true });
+    document.addEventListener('view-save-as', (e) => seen.push(`as:${e.cancelable}`), { once: true });
+    header.shadowRoot!.querySelector('.save')!.shadowRoot!.querySelector('button')!.click();
+    (header.shadowRoot!.querySelector('.view-menu')! as HTMLElement).dispatchEvent(new CustomEvent('menu-select', { detail: { value: 'save-as' } }));
+    return seen;
+  });
+  expect(heard).toEqual(['save:true', 'as:true']);
+  // Another View that is no graph: the View's own words again.
+  await pick(page, 'view', 'Notes');
+  await expect.poll(async () => (await actions(page)).more).toBe('Save view options');
+  expect((await actions(page)).rows).toEqual(['Save view as']);
 });

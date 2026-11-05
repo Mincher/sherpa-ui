@@ -46,6 +46,7 @@ For the bar across the top of the app: the Context's title (`data-heading`), its
 | `data-back` | boolean |  | show the back button |
 | `data-custom-view` | boolean |  | the View on screen is the reader's own: Delete view shows. TRAP T-a-saved-view-is-the-readers-own |
 | `data-favourite` | boolean |  | the ★ is lit — the value, IN |
+| `data-graph` | boolean |  | the View on screen is a graph: Save graph as, Delete graph. TRAP T-a-graph-is-a-view-of-a-type |
 | `data-heading` | text |  | the Context title (row 2) |
 | `data-help` | boolean |  | show the support button |
 | `data-icon` | text |  | the Context icon — an icon name ("gauge") |
@@ -56,6 +57,7 @@ For the bar across the top of the app: the Context's title (`data-heading`), its
 | `data-no-filters` | boolean |  | no filter row: the Context's page holds its filters (a Context's `chrome.filters: false`). TODO 425 |
 | `data-notifications` | number |  | unread count — shows the bell + its badge |
 | `data-notifications-open` | boolean |  | the HOST's panel is open, so the bell wears its open ring. The header emits the intent; the host owns the panel and reports the state back. TRAP T-a-trigger-shows-what-it-opened |
+| `data-readonly` | boolean |  | the View on screen is read only, a preset graph: Save is off |
 | `data-theme-mode` | `light` `dark` |  | light \| dark — the mode on screen; the button offers the other |
 | `data-theme-toggle` | boolean |  | show the light/dark (moon) button |
 | `data-view-actions` | boolean |  | show the View's own actions on the top row, left of Ask N-zo: ★, and Save with Save view as and Delete view. They never move, so they are the header's, not a toolbar's. Will, TODOs 425 G9 and 428 |
@@ -88,9 +90,9 @@ Each one bubbles.
 | `help-click` |  |  |
 | `menu-click` |  |  |
 | `view-favorite` | `{ favourite: boolean }` | The ★ was pressed, a request. |
-| `view-save` |  | Save. |
-| `view-save-as` |  | Save view as. |
-| `view-delete` |  | Delete view, the reader's own View. |
+| `view-save` |  | Save, a request a host may take over (cancelable). A host may call `preventDefault()` to take it over. |
+| `view-save-as` |  | Save view as (Save graph as), cancelable. A host may call `preventDefault()` to take it over. |
+| `view-delete` |  | Delete view (Delete graph), the reader's own; cancelable. A host may call `preventDefault()` to take it over. |
 | `nav-menu-request` |  | The mobile nav menu, right of the title. |
 
 ## Slots

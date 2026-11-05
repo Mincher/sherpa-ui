@@ -7356,6 +7356,13 @@ of that type the canvas shows.
 - **The canvas** edits the entity's own nodes, with `#in` and `#out` only where its type has
   sockets, as a Custom Node's inside is drawn; its id is the entity's, so its tab draft is its own,
   and its own kind is not offered there. `graphOfWorkflow` keeps the `#` nodes out of what is saved.
+- **The header** (E4; Will: "repurpose the Save View button… 'Save' and 'Save Graph As'"):
+  `data-graph` says graph in its words (Save graph as, Delete graph), `data-readonly` turns Save
+  off on a preset, `data-custom-view` shows Delete on the reader's own; the outlet sets all three.
+  `view-save`, `view-save-as` and `view-delete` are REQUESTS, cancelable: the Context that holds the
+  canvas takes them over. Save is `saveGraph` (a preset refused by the shelf); Save graph as is
+  `saveGraphAs`, the shelf's `duplicate` of the canvas's graph under the reader's name and a free
+  id; Delete asks `whyKept` first, so a refusal is said in words before anything goes.
 
 - Site: `src/core/data/graph-views.ts`
 - Site: `src/core/data/entity-types.ts`
@@ -7365,5 +7372,7 @@ of that type the canvas shows.
 - Site: `src/core/ui/shared-constants.ts`
 - Site: `src/core/ui/node-graph.ts`
 - Site: `src/components/sherpa-outlet/sherpa-outlet.ts`
+- Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
+- Site: `src/components/sherpa-app-header/sherpa-app-header.html`
 - Site: `test/unit/a-graph-is-a-view-of-a-type.test.mjs`
 - Site: `test/e2e/reforged-graph-views.spec.ts`

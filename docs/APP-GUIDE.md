@@ -334,6 +334,12 @@ A graph View is a View whose body is a canvas, showing one entity of a type
 - New graph… asks first, `graph-new` `{ type }`: prevent it to ask a name, then
   `newGraph(entities, entityTypes()[type], { label })`. Left alone, the outlet
   makes "New <type>". `T-a-graph-is-a-view-of-a-type`
+- The header's Save and its menu read Save graph as and Delete graph there;
+  Save is off on a preset. Each is a request (`view-save`, `view-save-as`,
+  `view-delete`): the Context prevents it and answers. Save is
+  `saveGraph(entities, id, graph)`; Save graph as asks a name in the Save View
+  dialog, then `saveGraphAs(entities, id, graph, { label, description })` and
+  `openGraph` the copy; Delete says `entities.whyKept(id)` when it is refused.
 
 ## 9. The session
 

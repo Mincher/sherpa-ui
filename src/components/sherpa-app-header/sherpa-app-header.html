@@ -29,6 +29,9 @@
     data-locked         the host owns the ★: report the click, never light it
     data-custom-view    the View on screen is the reader's own: Delete view shows.
                         TRAP T-a-saved-view-is-the-readers-own
+    data-graph          the View on screen is a graph: Save graph as, Delete graph.
+                        TRAP T-a-graph-is-a-view-of-a-type
+    data-readonly       the View on screen is read only, a preset graph: Save is off
 
   Slots:
     breadcrumbs  the breadcrumb trail (row 1, left)
@@ -46,9 +49,9 @@
     help-click — detail: {}
     menu-click — detail: {}
     view-favorite — the ★ was pressed, a request. detail: { favourite }
-    view-save — Save. detail: {}
-    view-save-as — Save view as. detail: {}
-    view-delete — Delete view, the reader's own View. detail: {}
+    view-save — Save, a request a host may take over (cancelable). detail: {}
+    view-save-as — Save view as (Save graph as), cancelable. detail: {}
+    view-delete — Delete view (Delete graph), the reader's own; cancelable. detail: {}
     nav-menu-request — detail: {}  the mobile nav menu, right of the title.
                     Its button shows where a host sets --sherpa-app-header-nav-menu
     (breadcrumb-select comes from the slotted sherpa-breadcrumbs and already
@@ -95,13 +98,16 @@
                            data-when-data-icon-start="data-favourite: star-filled"
                            data-when-aria-label="data-favourite: Remove from Favorites" data-when-aria-pressed="data-favourite: true"
                            data-when-data-status="data-favourite: active"></sherpa-button>
-            <sherpa-button class="save" data-size="sm" data-group="mid" data-icon-start="upload">Save</sherpa-button>
+            <sherpa-button class="save" data-size="sm" data-group="mid" data-icon-start="upload"
+                           data-when-data-description="data-readonly: A preset is read only: Save graph as makes a copy of your own.">Save</sherpa-button>
             <sherpa-button class="view-more" data-size="sm" data-type="icon" data-group="end"
                            data-icon-start="triangle-down" aria-label="Save view options" aria-haspopup="dialog"
-                           data-description="Save this view with a new name, or delete it.">
+                           data-when-aria-label="data-graph: Save graph options"
+                           data-description="Save this view with a new name, or delete it."
+                           data-when-data-description="data-graph: Save this graph with a new name, or delete it.">
               <sherpa-menu slot="menu" class="view-menu" data-align="end">
-                <button type="button" value="save-as">Save view as</button>
-                <button type="button" value="delete" class="view-delete" data-status="critical">Delete view</button>
+                <button type="button" value="save-as" data-when-text="data-graph: Save graph as">Save view as</button>
+                <button type="button" value="delete" class="view-delete" data-status="critical" data-when-text="data-graph: Delete graph">Delete view</button>
               </sherpa-menu>
             </sherpa-button>
           </span>
