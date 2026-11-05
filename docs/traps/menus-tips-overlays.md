@@ -161,6 +161,48 @@ keeps (measured). TODO 650.
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
 - Site: `test/e2e/reforged-overlay-panel.spec.ts`
 
+### T-a-floating-panel-is-a-state
+
+**Floating is a STATE of an overlay or a fixed panel, not a third kind** (Will,
+TODO 769; plan `docs/history/plan-769-floating-panels.md`). `data-fixed` says where it
+DOCKS: the right edge, or the shell's end area. `data-floating` lifts it off for
+now, and is the door, as `data-fixed` is: set it and it floats, remove it and it
+docks back there. `data-floatable` shows the Float / Dock button; a press reports
+`panel-float { floating }`. Pop goes while it floats, as it says where it docks;
+Float goes while it is maximised.
+
+- **A fixed panel leaves its area to float**, by the same move as Pop out, so the
+  area gives the Context its width back through the watch it has: the shell is
+  unchanged. Docked, it pops back in. A slotted box cannot float out of a hidden
+  area: `display: none` on the area draws nothing slotted in it.
+- **Floating leaves the right edge**, as a fixed panel does
+  (`T-one-overlay-panel-at-a-time`): a panel opened there leaves it open, and it
+  is drawn over that one (z-index 102). Docked back on the edge, it takes it again.
+- **The box** is `data-x`, `data-y`, `data-width` and `data-height`, in px of the
+  window. CSS draws it through `--_float-*` and owns the clamp: never under
+  `--sherpa-panel-float-min-width` by `-min-height` (20rem by 12rem), never past
+  the window. So a smaller window re-clamps it live, and a bigger one gives its
+  place back, as the attributes are what was ASKED. At the end of a move or a
+  resize the panel writes back what the clamp DREW, so a key steps from there, and
+  reports `panel-move { x, y }` or `panel-resize { width, height }`. The box is
+  kept while docked; the first float lifts it in place, 16px in on each side.
+- **The header bar moves it**, by `dragXY` in `src/core/ui/drag-xy.ts`, beside
+  `resizeByEdge`; a press on one of its controls is that control's. A 4px slop,
+  so a click on the title moves nothing. The grip shows where to take hold and
+  is never a target; it takes the arrows (Shift: four steps). It hides by
+  OPACITY: a `visibility: hidden` box takes no focus, so the keys could never
+  reach it. The corner grows to the window's edge from where the panel is, never
+  past it, or the clamp would push its left edge instead.
+- **A release outside the window is lost in Firefox** (Playwright's, at least):
+  a move with no button held ends the drag where it got to, so the handle is
+  never left held.
+
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.html`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
+- Site: `src/core/ui/drag-xy.ts`
+- Site: `test/e2e/reforged-overlay-panel-float.spec.ts`
+
 ### T-a-tree-rule-beats-slotted
 
 **A rule in the tree a slotted element lives in beats the component's own

@@ -21,8 +21,9 @@
 /* == end sherpa:tokens == */
 
 /**
- * sherpa-overlay-panel.css — a non-modal floating panel on native <dialog>,
- * docked right. Same card look as sherpa-dialog, no ::backdrop and no scrim.
+ * sherpa-overlay-panel.css — a non-modal panel on native <dialog>, docked on the
+ * right edge, fixed in the shell's end area, or floating. Same card look as
+ * sherpa-dialog, no ::backdrop and no scrim.
  */
 
 :host {
@@ -31,6 +32,9 @@
   --_surface: var(--sherpa-style-surface-base, #ffffff);
   --_border: var(--sherpa-style-border-base-1, #b3b3c3);
   --_pad: var(--sherpa-card-pad);
+  /* Floating, never smaller than this: the panel's own floor by a third of it. */
+  --_float-min-width: var(--sherpa-panel-float-min-width, 20rem);
+  --_float-min-height: var(--sherpa-panel-float-min-height, 12rem);
 }
 
 .root {
@@ -95,6 +99,81 @@
 }
 :host(:state(in-area)) :is(.resize, .expand) { display: none; }
 
+/* Floating: anywhere in the window, by the box its header and corner ask for. The
+   clamp keeps it inside, so a smaller window re-clamps it and a bigger one gives
+   its place back. Physical, as the pointer's own axes are.
+   TRAP T-a-floating-panel-is-a-state */
+:host(:state(floating):not([data-maximised])) .root {
+  --_float-w: clamp(min(var(--_float-min-width), 100%), var(--_float-width, 40rem), 100%);
+  --_float-h: clamp(min(var(--_float-min-height), 100%), var(--_float-height, 30rem), 100%);
+  inset: auto;
+  left: clamp(0px, var(--_float-x, 0px), 100% - var(--_float-w));
+  top: clamp(0px, var(--_float-y, 0px), 100% - var(--_float-h));
+  inline-size: var(--_float-w);
+  block-size: var(--_float-h);
+  /* Over a panel on the right edge, which it has left. */
+  z-index: 102;
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
+}
+:host(:state(floating)[data-collapsed]:not([data-maximised])) .root { block-size: auto; }
+:host(:state(floating)) .resize { display: none; }
+/* The bar takes hold; its buttons are still buttons. */
+:host(:state(floating):not([data-maximised])) .header {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+:host(:state(moving)) .header { cursor: grabbing; }
+
+/* The grip shows where to take hold; it is never a target. Shown on hover, and
+   to the keys, which it takes: opacity, not visibility, keeps it a tab stop. */
+.grip {
+  display: none;
+  flex: none;
+  inline-size: var(--sherpa-display-mode-size-sm, 16px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  color: var(--sherpa-style-content-secondary, #35353d);
+  pointer-events: none;
+  opacity: 0;
+}
+:host(:state(floating):not([data-maximised])) .grip { display: inline-flex; }
+.header:hover .grip,
+.grip:focus-visible,
+:host(:state(moving)) .grip { opacity: 1; }
+.grip:focus-visible {
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
+}
+
+/* The corner: two diagonal lines, as a node's. Shown on hover, focus and while held. */
+.corner {
+  display: none;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  inline-size: var(--sherpa-display-mode-size-sm, 16px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  cursor: nwse-resize;
+  touch-action: none;
+  opacity: 0;
+  color: var(--sherpa-style-content-secondary, #35353d);
+  background: linear-gradient(135deg, transparent 0 50%, currentColor 50% calc(50% + 1px), transparent calc(50% + 1px) 70%, currentColor 70% calc(70% + 1px), transparent calc(70% + 1px));
+}
+:host(:state(floating):not([data-maximised]):not([data-collapsed])) .corner { display: block; }
+.root:hover .corner,
+.corner:focus-visible,
+:host(:state(sizing)) .corner { opacity: 1; }
+.corner:focus-visible {
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
+}
+@media (forced-colors: active) {
+  .grip { color: CanvasText; }
+  .corner { forced-color-adjust: none; color: CanvasText; }
+}
+
 /* The trail shows only while maximised, and only when one is given. */
 .trail {
   display: none;
@@ -141,7 +220,7 @@
   block-size: 100%;
 }
 
-/* Floating-panel controls in the composed header's `actions` slot. */
+/* The panel's controls, in the composed header's `actions` slot. */
 .toolbar {
   display: flex;
   align-items: center;
@@ -153,7 +232,10 @@
 :host(:state(in-area):not([data-external])) .view-modes { display: none; }
 :host(:not([data-poppable])) .pop,
 :host(:state(no-area)) .pop,
-:host([data-maximised]) .pop { display: none; }
+:host([data-maximised]) .pop,
+:host(:state(floating)) .pop { display: none; }
+:host(:not([data-floatable])) .float,
+:host([data-maximised]) .float { display: none; }
 
 /* One of the pair alone is a whole button, not half a group. */
 :host(:not([data-external])) .expand,
@@ -175,8 +257,8 @@
   block-size: var(--sherpa-theme-content-size-xs, 10px);
   background: var(--sherpa-style-border-base, #b3b3c3);
 }
-:host(:state(has-actions):is([data-expandable], [data-external], [data-poppable]:not(:state(no-area)))) .after-actions,
-:host(:is(:state(has-actions), [data-expandable], [data-external], [data-poppable]:not(:state(no-area))):is([data-dismissible], [data-collapsible])) .before-close {
+:host(:state(has-actions):is([data-expandable], [data-external], [data-poppable]:not(:state(no-area)), [data-floatable])) .after-actions,
+:host(:is(:state(has-actions), [data-expandable], [data-external], [data-poppable]:not(:state(no-area)), [data-floatable]):is([data-dismissible], [data-collapsible])) .before-close {
   display: block;
 }
 

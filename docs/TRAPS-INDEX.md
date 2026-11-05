@@ -560,7 +560,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](traps/filters.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (119)
+## Menus, tips and overlays (120)
 
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](traps/menus-tips-overlays.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
 - [T-a-chip-press-applies-its-menus-draft](traps/filters.md#t-a-chip-press-applies-its-menus-draft) — menu
@@ -575,6 +575,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-filter-answers-by-values-conditions-or-both](traps/filters.md#t-a-filter-answers-by-values-conditions-or-both) — menu
 - [T-a-filter-menu-has-two-modes](traps/filters.md#t-a-filter-menu-has-two-modes) — menu
 - [T-a-filter-set-groups-or-chains](traps/data-layer.md#t-a-filter-set-groups-or-chains) — menu
+- [T-a-floating-panel-is-a-state](traps/menus-tips-overlays.md#t-a-floating-panel-is-a-state) — overlay-panel
 - [T-a-full-range-is-still-a-range](traps/menus-tips-overlays.md#t-a-full-range-is-still-a-range) — menu
 - [T-a-gap-click-is-the-menus-own](traps/menus-tips-overlays.md#t-a-gap-click-is-the-menus-own) — menu
 - [T-a-held-clause-op-is-not-a-reading-op](traps/menus-tips-overlays.md#t-a-held-clause-op-is-not-a-reading-op) — menu
@@ -855,7 +856,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (135)
+## SherpaElement and the shared sheets (136)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -873,6 +874,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-family-shares-markup](traps/filters.md#t-a-family-shares-markup) — description-tips, sherpa-element, templater
 - [T-a-filter-is-dragged-into-its-place](traps/filters.md#t-a-filter-is-dragged-into-its-place) — drag-order
 - [T-a-flag-brings-the-base-methods](traps/element-and-sheets.md#t-a-flag-brings-the-base-methods) — sherpa-element
+- [T-a-floating-panel-is-a-state](traps/menus-tips-overlays.md#t-a-floating-panel-is-a-state) — drag-xy
 - [T-a-gauge-composes-the-ring](traps/charts.md#t-a-gauge-composes-the-ring) — shared-constants
 - [T-a-graph-is-a-view-of-a-type](traps/data-layer.md#t-a-graph-is-a-view-of-a-type) — node-graph, shared-constants
 - [T-a-grid-group-computes-its-own-position](traps/element-and-sheets.md#t-a-grid-group-computes-its-own-position) — sherpa-grouping

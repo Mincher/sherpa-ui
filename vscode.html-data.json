@@ -2920,7 +2920,7 @@
     },
     {
       "name": "sherpa-overlay-panel",
-      "description": "a NON-modal floating panel on native <dialog>. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive.",
+      "description": "a NON-modal panel on native <dialog>, docked on the window's right edge. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive.",
       "attributes": [
         {
           "name": "data-collapsed",
@@ -2949,12 +2949,26 @@
         },
         {
           "name": "data-fixed",
-          "description": "a fixed panel, in the end panel area of the page's sherpa-app-shell; it floats again where there is no room for one",
+          "description": "a fixed panel, in the end panel area of the page's sherpa-app-shell; it goes back to the right edge where there is no room for one",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-floatable",
+          "description": "show the Float / Dock button",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-floating",
+          "description": "lifted off its edge or its area: anywhere in the window, moved by its header and resized by its corner. Removed, it docks where it came from",
           "valueSet": "v"
         },
         {
           "name": "data-heading",
           "description": "header title text (rendered into .title)"
+        },
+        {
+          "name": "data-height",
+          "description": "how big it floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past the window"
         },
         {
           "name": "data-icon",
@@ -2973,6 +2987,18 @@
         {
           "name": "data-status",
           "description": "status colour cascade (critical | warning | success | info | urgent) Toolbar buttons are shown by opt-in data-* flags (CSS-gated):"
+        },
+        {
+          "name": "data-width",
+          "description": "how big it floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past the window"
+        },
+        {
+          "name": "data-x",
+          "description": "where it floats, in px from the window's top left. The panel writes them at the end of each move; kept while docked, so it floats there again"
+        },
+        {
+          "name": "data-y",
+          "description": "where it floats, in px from the window's top left. The panel writes them at the end of each move; kept while docked, so it floats there again"
         },
         {
           "name": "open",

@@ -7738,7 +7738,7 @@
           "name": "SherpaOverlayPanel",
           "tagName": "sherpa-overlay-panel",
           "customElement": true,
-          "description": "a NON-modal floating panel on native <dialog>. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive.",
+          "description": "a NON-modal panel on native <dialog>, docked on the window's right edge. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive.",
           "attributes": [
             {
               "name": "data-collapsed",
@@ -7777,7 +7777,21 @@
             },
             {
               "name": "data-fixed",
-              "description": "a fixed panel, in the end panel area of the page's sherpa-app-shell; it floats again where there is no room for one",
+              "description": "a fixed panel, in the end panel area of the page's sherpa-app-shell; it goes back to the right edge where there is no room for one",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-floatable",
+              "description": "show the Float / Dock button",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-floating",
+              "description": "lifted off its edge or its area: anywhere in the window, moved by its header and resized by its corner. Removed, it docks where it came from",
               "type": {
                 "text": "boolean"
               }
@@ -7787,6 +7801,13 @@
               "description": "header title text (rendered into .title)",
               "type": {
                 "text": "string"
+              }
+            },
+            {
+              "name": "data-height",
+              "description": "how big it floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past the window",
+              "type": {
+                "text": "number"
               }
             },
             {
@@ -7818,6 +7839,27 @@
               }
             },
             {
+              "name": "data-width",
+              "description": "how big it floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past the window",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "data-x",
+              "description": "where it floats, in px from the window's top left. The panel writes them at the end of each move; kept while docked, so it floats there again",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "data-y",
+              "description": "where it floats, in px from the window's top left. The panel writes them at the end of each move; kept while docked, so it floats there again",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
               "name": "open",
               "description": "native boolean (read reflects dialog.open; set → show()/close())",
               "type": {
@@ -7839,7 +7881,7 @@
               "kind": "method",
               "name": "show",
               "parameters": [],
-              "description": "Open as a non-modal floating panel (no backdrop, no focus trap)."
+              "description": "Open it, non-modal (no backdrop, no focus trap)."
             },
             {
               "kind": "method",
@@ -7887,10 +7929,24 @@
               }
             },
             {
-              "name": "panel-resize",
-              "description": "Its left edge was dragged, or moved by the keys",
+              "name": "panel-float",
+              "description": "The reader pressed Float or Dock",
               "type": {
-                "text": "CustomEvent<{ width: number }>"
+                "text": "CustomEvent<{ floating: boolean }>"
+              }
+            },
+            {
+              "name": "panel-move",
+              "description": "Floating, its header was dragged, or its grip moved by the keys",
+              "type": {
+                "text": "CustomEvent<{ x: number; y: number }>"
+              }
+            },
+            {
+              "name": "panel-resize",
+              "description": "Its left edge was dragged, or moved by the keys; floating, its corner",
+              "type": {
+                "text": "CustomEvent<{ height: number; width: number }>"
               }
             }
           ],
@@ -7925,13 +7981,22 @@
               "name": "body"
             },
             {
+              "name": "corner"
+            },
+            {
               "name": "expand"
             },
             {
               "name": "external"
             },
             {
+              "name": "float"
+            },
+            {
               "name": "footer"
+            },
+            {
+              "name": "grip"
             },
             {
               "name": "header"

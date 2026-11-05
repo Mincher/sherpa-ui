@@ -33,7 +33,7 @@
 | [sherpa-list](sherpa-list.md) | A vertical row container. |
 | [sherpa-list-item](sherpa-list-item.md) | A single list row. |
 | [sherpa-notifications](sherpa-notifications.md) | The bell's list. |
-| [sherpa-overlay-panel](sherpa-overlay-panel.md) | A NON-modal floating panel on native &lt;dialog>. |
+| [sherpa-overlay-panel](sherpa-overlay-panel.md) | A NON-modal panel on native &lt;dialog>, docked on the window's right edge. |
 | [sherpa-panel](sherpa-panel.md) | A persistent inline panel (a semantic &lt;section> card). |
 | [sherpa-section-header](sherpa-section-header.md) | A semantic heading row for a content section. |
 | [sherpa-stack](sherpa-stack.md) | A run of controls in one direction, with a token gap. |

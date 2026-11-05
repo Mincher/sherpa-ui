@@ -1,5 +1,5 @@
 <!--
-  sherpa-overlay-panel — a NON-modal floating panel on native <dialog>.
+  sherpa-overlay-panel — a NON-modal panel on native <dialog>, docked on the window's right edge.
   show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive.
 
   Public API:
@@ -9,7 +9,13 @@
     data-collapsed    collapsed state (body/footer hidden; the collapse toggle reflects it)
     data-maximised    full-overlay state: the panel fills the window and shows its breadcrumbs
     data-fixed        a fixed panel, in the end panel area of the page's sherpa-app-shell;
-                      it floats again where there is no room for one
+                      it goes back to the right edge where there is no room for one
+    data-floating     lifted off its edge or its area: anywhere in the window, moved by its header
+                      and resized by its corner. Removed, it docks where it came from
+    data-x / data-y   where it floats, in px from the window's top left. The panel writes them
+                      at the end of each move; kept while docked, so it floats there again
+    data-width / data-height   how big it floats, in px, written at the end of each resize. Never
+                      under 20rem by 12rem nor past the window
     data-status       status colour cascade (critical | warning | success | info | urgent)
 
   Toolbar buttons are shown by opt-in data-* flags (CSS-gated):
@@ -17,6 +23,7 @@
     data-expandable   show the maximise / minimise button
     data-external     show the external-link button
     data-poppable     show the Pop in / Pop out button (needs a sherpa-app-shell with room)
+    data-floatable    show the Float / Dock button
     data-dismissible  show the close button
 
   Slots:
@@ -35,7 +42,10 @@
     panel-external   (detail: { })
     panel-pop        (detail: { fixed })  the reader pressed Pop in or Pop out
     panel-close      (detail: { })
-    panel-resize     (detail: { width })  its left edge was dragged, or moved by the keys
+    panel-float      (detail: { floating })  the reader pressed Float or Dock
+    panel-move       (detail: { x, y })  floating, its header was dragged, or its grip moved by the keys
+    panel-resize     (detail: { width, height })  its left edge was dragged, or moved by the keys;
+                     floating, its corner
 -->
 <template id="default">
   <!-- NO scrim: a quick peek, while the page behind stays in use. -->
@@ -56,8 +66,17 @@
       <!-- Figma Container Header `Variant=Panel`: the host's controls, then the
            view-mode pair, each divided from the next. -->
       <span slot="actions" class="toolbar" part="toolbar">
+        <!-- Floating, the header bar moves it, and this shows where to take hold: on hover,
+             and for the keys. A press on it is a press on the bar. TRAP T-a-floating-panel-is-a-state -->
+        <span class="grip sherpa-icon-box" part="grip" data-icon="drag-handle-vertical" role="button"
+              tabindex="0" aria-label="Move panel" title="Drag the header to move it, or use the arrow keys"></span>
         <slot name="actions" data-accepts="control"></slot>
         <span class="divider after-actions" aria-hidden="true"></span>
+        <!-- Float: lifted off, anywhere in the window; Dock puts it back. -->
+        <sherpa-button class="float" part="float" data-type="icon" data-size="sm"
+                       data-icon-start="browser" aria-label="Float"
+                       data-when-data-icon-start="data-floating: sidebar-flip"
+                       data-when-aria-label="data-floating: Dock"></sherpa-button>
         <!-- Pop in: a fixed panel in the shell's end area. TRAP T-a-panel-pops-into-the-end-area -->
         <sherpa-button class="pop" part="pop" data-type="icon" data-size="sm"
                        data-icon-start="sidebar-flip" aria-label="Pop in"
@@ -84,5 +103,8 @@
     <sherpa-container-footer class="footer" part="footer" data-align="stretch">
       <slot name="footer" data-accepts="control,input"></slot>
     </sherpa-container-footer>
+    <!-- Floating, the bottom-right corner resizes it: drag it, or the arrow keys on it. -->
+    <div class="corner" part="corner" role="button" tabindex="0" aria-label="Resize panel"
+         title="Drag to resize, or use the arrow keys"></div>
   </dialog>
 </template>

@@ -1,8 +1,8 @@
 {
   "html": [
-    "<sherpa-overlay-panel data-heading=\"Ada Lovelace\" data-icon=\"person\" data-dismissible data-collapsible data-expandable>",
+    "<sherpa-overlay-panel data-heading=\"Ada Lovelace\" data-icon=\"person\" data-dismissible data-collapsible data-expandable data-floatable>",
     "<p>Pro plan, 12 seats.</p><sherpa-button slot=\"footer\">Edit</sherpa-button></sherpa-overlay-panel>"
   ],
-  "use": "For a quick peek while the page behind stays live: no scrim, no focus trap, and one panel at a time. `data-poppable` lets the reader pop it into a `sherpa-app-shell`'s end panel area as a fixed panel, and out again. For a fixed panel that stays beside the Context, use a panel area; for a task that blocks the page, use `sherpa-dialog`.",
+  "use": "For a quick peek while the page behind stays live: no scrim, no focus trap, and one panel at a time. `data-poppable` lets the reader pop it into a `sherpa-app-shell`'s end panel area as a fixed panel, and out again. `data-floatable` lets the reader float it anywhere in the window, move it by its header and resize it by its corner, and dock it back where it came from. For a fixed panel that stays beside the Context, use a panel area; for a task that blocks the page, use `sherpa-dialog`.",
   "show": "sherpa-overlay-panel"
 }

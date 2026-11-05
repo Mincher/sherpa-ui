@@ -520,6 +520,11 @@ provider.addEventListener('filters-save-as', saveAs);
 - A dialog or an overlay panel that only opens and shuts needs no script:
   `<sherpa-button commandfor="edit" command="--show">Edit</sherpa-button>`, and
   `command="--hide"` on a button inside it. `T-a-button-commands-by-markup`
+- An overlay panel with `data-floatable` floats: its header bar moves it, its
+  corner resizes it, and Dock puts it back on the right edge or in the shell's
+  end area it came from. It reports `panel-float`, `panel-move` and
+  `panel-resize`; keep `data-floating`, `data-x`, `data-y`, `data-width` and
+  `data-height` in the session and hand them back. `T-a-floating-panel-is-a-state`
 - From a script, call `dialog.show()`, never the native `showModal()`: the
   component owns modality and `open`. An add or edit flow is that dialog, its
   fields read on save, and a `sherpa-toast` to say it is done.

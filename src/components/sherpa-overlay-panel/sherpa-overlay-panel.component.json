@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-overlay-panel",
-  "$description": "a NON-modal floating panel on native <dialog>. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive.",
+  "$description": "a NON-modal panel on native <dialog>, docked on the window's right edge. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive.",
   "element": {
     "$type": "element",
     "tag": "dialog",
@@ -78,6 +78,18 @@
               },
               "children": [
                 {
+                  "el": "span",
+                  "class": "grip sherpa-icon-box",
+                  "part": "grip",
+                  "attrs": {
+                    "data-icon": "drag-handle-vertical",
+                    "role": "button",
+                    "tabindex": "0",
+                    "aria-label": "Move panel",
+                    "title": "Drag the header to move it, or use the arrow keys"
+                  }
+                },
+                {
                   "slot": "actions",
                   "attrs": {
                     "data-accepts": "control"
@@ -88,6 +100,19 @@
                   "class": "divider after-actions",
                   "attrs": {
                     "aria-hidden": "true"
+                  }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "float",
+                  "part": "float",
+                  "attrs": {
+                    "data-type": "icon",
+                    "data-size": "sm",
+                    "data-icon-start": "browser",
+                    "aria-label": "Float",
+                    "data-when-data-icon-start": "data-floating: sidebar-flip",
+                    "data-when-aria-label": "data-floating: Dock"
                   }
                 },
                 {
@@ -173,6 +198,17 @@
               }
             }
           ]
+        },
+        {
+          "el": "div",
+          "class": "corner",
+          "part": "corner",
+          "attrs": {
+            "role": "button",
+            "tabindex": "0",
+            "aria-label": "Resize panel",
+            "title": "Drag to resize, or use the arrow keys"
+          }
         }
       ]
     }
@@ -230,7 +266,25 @@
       "observed": true,
       "declared": true,
       "kind": "behaviour",
-      "description": "a fixed panel, in the end panel area of the page's sherpa-app-shell; it floats again where there is no room for one"
+      "description": "a fixed panel, in the end panel area of the page's sherpa-app-shell; it goes back to the right edge where there is no room for one"
+    },
+    {
+      "$type": "prop",
+      "name": "data-floatable",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "show the Float / Dock button"
+    },
+    {
+      "$type": "prop",
+      "name": "data-floating",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "lifted off its edge or its area: anywhere in the window, moved by its header and resized by its corner. Removed, it docks where it came from"
     },
     {
       "$type": "prop",
@@ -240,6 +294,15 @@
       "declared": true,
       "kind": "content",
       "description": "header title text (rendered into .title)"
+    },
+    {
+      "$type": "prop",
+      "name": "data-height",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "how big it floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past the window"
     },
     {
       "$type": "prop",
@@ -275,6 +338,33 @@
       "observed": false,
       "kind": "style",
       "description": "status colour cascade (critical | warning | success | info | urgent) Toolbar buttons are shown by opt-in data-* flags (CSS-gated):"
+    },
+    {
+      "$type": "prop",
+      "name": "data-width",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "how big it floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past the window"
+    },
+    {
+      "$type": "prop",
+      "name": "data-x",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "where it floats, in px from the window's top left. The panel writes them at the end of each move; kept while docked, so it floats there again"
+    },
+    {
+      "$type": "prop",
+      "name": "data-y",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "where it floats, in px from the window's top left. The panel writes them at the end of each move; kept while docked, so it floats there again"
     },
     {
       "$type": "prop",
@@ -338,7 +428,7 @@
     }
   ],
   "populate": {
-    "shape": "{ collapsed?, collapsible?, dismissible?, expandable?, external?, fixed?, heading?, icon?, maximised?, poppable? }",
+    "shape": "{ collapsed?, collapsible?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, icon?, maximised?, poppable?, width?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -369,8 +459,13 @@
     },
     {
       "$type": "state",
+      "name": "not-floatable",
+      "selector": ":host(:not([data-floatable]))"
+    },
+    {
+      "$type": "state",
       "name": "focus-visible",
-      "selector": ".resize:focus-visible"
+      "selector": ".grip:focus-visible"
     }
   ],
   "capabilities": [
@@ -433,11 +528,33 @@
     },
     {
       "$type": "event",
-      "name": "panel-resize",
-      "description": "Its left edge was dragged, or moved by the keys",
+      "name": "panel-float",
+      "description": "The reader pressed Float or Dock",
       "bubbles": true,
       "composed": true,
       "detail": {
+        "floating": "boolean"
+      }
+    },
+    {
+      "$type": "event",
+      "name": "panel-move",
+      "description": "Floating, its header was dragged, or its grip moved by the keys",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "x": "number",
+        "y": "number"
+      }
+    },
+    {
+      "$type": "event",
+      "name": "panel-resize",
+      "description": "Its left edge was dragged, or moved by the keys; floating, its corner",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "height": "number",
         "width": "number"
       }
     }
@@ -447,6 +564,12 @@
     "root.border-end-start-radius": "{sherpa.border-rounding-bottom-left}",
     "root.color": "{sherpa.style-content-base}",
     "root.box-shadow": "{sherpa.shadow-lg}",
+    "grip.inline-size": "{sherpa.display-mode-size-sm}",
+    "grip.block-size": "{sherpa.display-mode-size-sm}",
+    "grip.color": "{sherpa.style-content-secondary}",
+    "corner.inline-size": "{sherpa.display-mode-size-sm}",
+    "corner.block-size": "{sherpa.display-mode-size-sm}",
+    "corner.color": "{sherpa.style-content-secondary}",
     "toolbar.gap": "{sherpa.theme-gap-sm}",
     "divider.inline-size": "{sherpa.display-mode-border-width-base}",
     "divider.block-size": "{sherpa.theme-content-size-xs}",
@@ -461,7 +584,7 @@
           "$type": "method",
           "name": "show",
           "args": "",
-          "description": "Open as a non-modal floating panel (no backdrop, no focus trap)."
+          "description": "Open it, non-modal (no backdrop, no focus trap)."
         },
         {
           "$type": "method",

@@ -2,7 +2,7 @@
 
 # sherpa-overlay-panel
 
-A NON-modal floating panel on native &lt;dialog>. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive.
+A NON-modal panel on native &lt;dialog>, docked on the window's right edge. show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive.
 
 |  |  |
 |---|---|
@@ -13,12 +13,12 @@ A NON-modal floating panel on native &lt;dialog>. show(), not showModal(): no ba
 
 ## When to use it
 
-For a quick peek while the page behind stays live: no scrim, no focus trap, and one panel at a time. `data-poppable` lets the reader pop it into a `sherpa-app-shell`'s end panel area as a fixed panel, and out again. For a fixed panel that stays beside the Context, use a panel area; for a task that blocks the page, use `sherpa-dialog`.
+For a quick peek while the page behind stays live: no scrim, no focus trap, and one panel at a time. `data-poppable` lets the reader pop it into a `sherpa-app-shell`'s end panel area as a fixed panel, and out again. `data-floatable` lets the reader float it anywhere in the window, move it by its header and resize it by its corner, and dock it back where it came from. For a fixed panel that stays beside the Context, use a panel area; for a task that blocks the page, use `sherpa-dialog`.
 
 ## Example
 
 ```html
-<sherpa-overlay-panel data-heading="Ada Lovelace" data-icon="person" data-dismissible data-collapsible data-expandable><p>Pro plan, 12 seats.</p><sherpa-button slot="footer">Edit</sherpa-button></sherpa-overlay-panel>
+<sherpa-overlay-panel data-heading="Ada Lovelace" data-icon="person" data-dismissible data-collapsible data-expandable data-floatable><p>Pro plan, 12 seats.</p><sherpa-button slot="footer">Edit</sherpa-button></sherpa-overlay-panel>
 ```
 
 `sherpa-overlay-panel` is opened with `show()`.
@@ -32,12 +32,18 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 | `data-dismissible` | boolean |  | show the close button |
 | `data-expandable` | boolean |  | show the maximise / minimise button |
 | `data-external` | boolean |  | show the external-link button |
-| `data-fixed` | boolean |  | a fixed panel, in the end panel area of the page's [sherpa-app-shell](sherpa-app-shell.md); it floats again where there is no room for one |
+| `data-fixed` | boolean |  | a fixed panel, in the end panel area of the page's [sherpa-app-shell](sherpa-app-shell.md); it goes back to the right edge where there is no room for one |
+| `data-floatable` | boolean |  | show the Float / Dock button |
+| `data-floating` | boolean |  | lifted off its edge or its area: anywhere in the window, moved by its header and resized by its corner. Removed, it docks where it came from |
 | `data-heading` | text |  | header title text (rendered into .title) |
+| `data-height` | number |  | how big it floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past the window |
 | `data-icon` | text |  | a glyph before the title (shows the icon slot area) |
 | `data-maximised` | boolean |  | full-overlay state: the panel fills the window and shows its breadcrumbs |
 | `data-poppable` | boolean |  | show the Pop in / Pop out button (needs a [sherpa-app-shell](sherpa-app-shell.md) with room) |
 | `data-status` | text |  | status colour cascade (critical \| warning \| success \| info \| urgent) Toolbar buttons are shown by opt-in data-* flags (CSS-gated): |
+| `data-width` | number |  | how big it floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past the window |
+| `data-x` | number |  | where it floats, in px from the window's top left. The panel writes them at the end of each move; kept while docked, so it floats there again |
+| `data-y` | number |  | where it floats, in px from the window's top left. The panel writes them at the end of each move; kept while docked, so it floats there again |
 | `open` | boolean, native | `false` | native boolean (read reflects dialog.open; set → show()/close()) |
 
 ## Properties
@@ -50,7 +56,7 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 
 | Method | What it does |
 |---|---|
-| `show()` | Open as a non-modal floating panel (no backdrop, no focus trap). |
+| `show()` | Open it, non-modal (no backdrop, no focus trap). |
 | `hide()` | Close it. |
 | `close()` | `hide()`, in the native &lt;dialog>'s spelling. |
 
@@ -74,7 +80,9 @@ Each one bubbles.
 | `panel-external` |  |  |
 | `panel-pop` | `{ fixed: boolean }` | The reader pressed Pop in or Pop out |
 | `panel-close` |  |  |
-| `panel-resize` | `{ width: number }` | Its left edge was dragged, or moved by the keys |
+| `panel-float` | `{ floating: boolean }` | The reader pressed Float or Dock |
+| `panel-move` | `{ x: number; y: number }` | Floating, its header was dragged, or its grip moved by the keys |
+| `panel-resize` | `{ height: number; width: number }` | Its left edge was dragged, or moved by the keys; floating, its corner |
 
 ## Slots
 
@@ -91,7 +99,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `expand`, `external`, `footer`, `header`, `pop`, `resize`, `root`, `toolbar`, `trail`, `view-modes`
+`body`, `corner`, `expand`, `external`, `float`, `footer`, `grip`, `header`, `pop`, `resize`, `root`, `toolbar`, `trail`, `view-modes`
 
 ## CSS custom properties it reads
 
@@ -103,6 +111,12 @@ What each class's base rule reads:
 | `--sherpa-border-rounding-bottom-left` | `.root` | `border-end-start-radius` |
 | `--sherpa-style-content-base` | `.root` | `color` |
 | `--sherpa-shadow-lg` | `.root` | `box-shadow` |
+| `--sherpa-display-mode-size-sm` | `.grip` | `inline-size` |
+| `--sherpa-display-mode-size-sm` | `.grip` | `block-size` |
+| `--sherpa-style-content-secondary` | `.grip` | `color` |
+| `--sherpa-display-mode-size-sm` | `.corner` | `inline-size` |
+| `--sherpa-display-mode-size-sm` | `.corner` | `block-size` |
+| `--sherpa-style-content-secondary` | `.corner` | `color` |
 | `--sherpa-theme-gap-sm` | `.toolbar` | `gap` |
 | `--sherpa-display-mode-border-width-base` | `.divider` | `inline-size` |
 | `--sherpa-theme-content-size-xs` | `.divider` | `block-size` |
@@ -111,6 +125,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ collapsed?, collapsible?, dismissible?, expandable?, external?, fixed?, heading?, icon?, maximised?, poppable? }`
+`{ collapsed?, collapsible?, dismissible?, expandable?, external?, fixed?, floatable?, floating?, heading?, height?, icon?, maximised?, poppable?, width?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.
