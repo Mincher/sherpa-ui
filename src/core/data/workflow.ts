@@ -32,7 +32,7 @@ import {
   NODE_KINDS, ROWS, SOCKET_WORDS, FALSE_SOCKET, accepts, conditionRows, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, partName, partOf, rowChoices, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf,
   type DrawnGraph, type GraphRow, type NodeSize, type NodeKind, type NodeRoute, type NodeTie, type PartKind, type SocketType,
 } from './node-kinds.js';
-import { bendFault, clampBend, dropBend, placeBend, type Bend } from './route-bends.js';
+import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './route-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
 
@@ -440,6 +440,9 @@ export function editWorkflow(
     const many = !!kind && takesMany(kind, row);
     return untied({ ...workflow, routes: [...routes.filter((r) => many || r.to !== edit.route.to), { ...edit.route }] });
   }
+  // A route a tie takes drops its bends: a tie is its handle. TODO 754
+  const unbent = (tied: readonly NodeRoute[]): Pick<WorkflowDefinition, 'routes'> =>
+    (workflow.routes ? { routes: workflow.routes.map((r) => (r.via && tied.some((t) => same(t, r)) ? withoutBends(r) : r)) } : {});
   if ('tie' in edit) {
     const free = (n: number): string => ((workflow.ties ?? []).some((t) => t.id === `tie-${n}`) ? free(n + 1) : `tie-${n}`);
     const id = edit.tie.id ?? free(1);
@@ -447,7 +450,7 @@ export function editWorkflow(
     const routes = edit.tie.routes.filter((r, i, all) => all.findIndex((q) => same(q, r)) === i).map(({ from, to }) => ({ from, to }));
     const limit = tieLimit(workflow, { routes });
     const x = limit ? Math.min(limit.max, Math.max(limit.min, edit.tie.x)) : edit.tie.x;
-    return { ...workflow, ties: [...(workflow.ties ?? []), { id, x, y: edit.tie.y, routes }] };
+    return { ...workflow, ...unbent(routes), ties: [...(workflow.ties ?? []), { id, x, y: edit.tie.y, routes }] };
   }
   if ('untie' in edit) return untied({ ...workflow, ties: (workflow.ties ?? []).filter((t) => t.id !== edit.untie) });
   if ('moveTie' in edit) {
@@ -470,7 +473,7 @@ export function editWorkflow(
     // Its nodes must leave the tie where it stands: the tie moves only by the reader's hand.
     const limit = tieLimit(workflow, { routes });
     if (limit && (tie.x < limit.min || tie.x > limit.max)) return refuse(`the tie "${id}" cannot take ${name}: its nodes leave no room for the tie where it stands`), workflow;
-    return { ...workflow, ties: (workflow.ties ?? []).map((t) => (t.id === id ? { ...t, routes } : t)) };
+    return { ...workflow, ...unbent([route]), ties: (workflow.ties ?? []).map((t) => (t.id === id ? { ...t, routes } : t)) };
   }
   if ('bend' in edit || 'unbend' in edit) {
     const { route, at } = 'bend' in edit ? edit.bend : { ...edit.unbend, at: edit.unbend.index };
@@ -481,11 +484,11 @@ export function editWorkflow(
     if ('bend' in edit) {
       const { x, y, insert } = edit.bend;
       if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isInteger(at)) return refuse('a bend point needs a finite x and y, and a whole index'), workflow;
+      if ((workflow.ties ?? []).some((t) => t.routes.some((r) => same(r, route)))) return refuse(`the route ${name} is tied: its ties are its handles`), workflow;
       if (at < 0 || at > (held.via?.length ?? 0) - (insert ? 0 : 1)) return refuse(`the route ${name} has no bend point at ${at}`), workflow;
-      // Inside the end sockets, and clear of its neighbours and the ties' slots: a bend never loops the line back.
+      // Inside the end sockets, and clear of its neighbours: a bend never loops the line back.
       const [a, b] = [socketOf(route.from).node, socketOf(route.to).node].map((id) => workflow.nodes.find((n) => n.id === id));
-      const slots = (workflow.ties ?? []).filter((t) => t.routes.some((r) => same(r, route))).map((t) => t.x);
-      const placed = a && b ? clampBend({ from: a.x + NODE_WIDTH, to: b.x }, held.via, at, x, insert, slots) : x;
+      const placed = a && b ? clampBend({ from: a.x + NODE_WIDTH, to: b.x }, held.via, at, x, insert) : x;
       via = placeBend(held.via, at, placed, y, insert).via;
     } else {
       if (!held.via?.[at]) return refuse(`the route ${name} has no bend point at ${at}`), workflow;

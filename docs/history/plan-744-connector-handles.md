@@ -89,3 +89,12 @@ body keeps them and the version hash ignores them; v1 reads none; `tieAdd` and i
 Specs, three engines, real pointer: hover, drag, subdivide, pick (pixels), Delete, reset,
 Undo, tie shadow (pixels), drop on a tie, drop on blank, a refused drop; the marquee and the
 Tie tool still work. Demos: bends survive Save and reload.
+
+## 7. Changed by 754 (Will, 2026-11-05)
+
+- A zip tie is a handle. A tied connector has no mid-point dot and no bend: `tie` and `tieAdd` clear the
+  `via` of each route they take, in the same step; a `bend` on a tied route is refused in words; a tied
+  route is drawn through its tie slots alone. `B` on a tied connector picks its first tie.
+- A mid-point dot is only PROPOSED: it is drawn at the middle of its piece, never saved, never part of the
+  curve, until the reader moves it (a drag past 4px, or an arrow key after `B` picks it). A dot that moves
+  only because its neighbours moved stays proposed.

@@ -149,23 +149,73 @@ test('a click picks a handle (active styling, read as pixels); Delete removes it
   expect((await routes(page))[0]!.via).toHaveLength(1);
 });
 
-test('a click on a line still picks the route; with a route picked B puts a bend point and the arrows move it', async ({ page }) => {
+test('a click on a line still picks the route; with a route picked B picks the proposed middle dot, and the first arrow moves it in', async ({ page }) => {
+  const d0 = await dOf(page);
   await page.evaluate(() => (document.getElementById('cv') as HTMLElement).focus());
   await page.locator('#cv > svg.graph-routes polyline.graph-hit[data-from="s1/rows"]').first().dispatchEvent('click');
   await expect(page.locator(R1)).toHaveAttribute('data-selected', '');
   await page.keyboard.press('b');
   await settle(page);
+  // 754: a dot nobody moved is only proposed: picked, it is saved nowhere and the curve is the default.
+  expect((await routes(page))[0]!.via).toBeUndefined();
+  expect(await dOf(page)).toBe(d0);
+  expect((await handles(page)).find((h) => h.mid === '0')!.selected).toBe(true);
+  // The first arrow moves it in, from the middle of the plane's ends.
+  const ends = ((await page.locator(R1).getAttribute('d'))!.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
+  const middle = { x: (ends[0]! + ends.at(-2)!) / 2, y: (ends[1]! + ends.at(-1)!) / 2 };
+  await page.keyboard.press('ArrowDown');
+  await settle(page);
   const via = (await routes(page))[0]!.via!;
   expect(via).toHaveLength(1);
-  await page.keyboard.press('ArrowDown');
+  expect(Math.abs(via[0]!.x - middle.x)).toBeLessThanOrEqual(1);
+  expect(Math.abs(via[0]!.y - (middle.y + 8))).toBeLessThanOrEqual(1);
+  expect((await handles(page)).find((h) => h.bend === '0')!.selected).toBe(true);
   await page.keyboard.press('Shift+ArrowRight');
   await settle(page);
   const moved = (await routes(page))[0]!.via![0]!;
-  expect(moved.y - via[0]!.y).toBe(8);
+  expect(moved.y - via[0]!.y).toBe(0);
   expect(moved.x - via[0]!.x).toBe(32);
   await page.keyboard.press('Delete');
   await settle(page);
   expect((await routes(page))[0]!.via).toBeUndefined();
+});
+
+test('754: drag one dot and only that point is saved; drag another and the first stays, and the halves\' dots are not saved', async ({ page }) => {
+  const plane = (x: number, y: number) => page.evaluate(([x, y]) => {
+    const cv = document.getElementById('cv') as HTMLElement & { view: { x: number; y: number; zoom: number } };
+    const b = cv.getBoundingClientRect();
+    return { x: (x - b.left - cv.view.x) / cv.view.zoom, y: (y - b.top - cv.view.y) / cv.view.zoom };
+  }, [x, y] as const);
+  const to = await bendTo(page, 20, 90);
+  const first = (await routes(page))[0]!.via!;
+  expect(first).toHaveLength(1);
+  const at = await plane(to.x, to.y);
+  expect(Math.hypot(first[0]!.x - at.x, first[0]!.y - at.y)).toBeLessThan(3);
+  // Hovered, each half shows its proposed dot; neither is saved.
+  await page.mouse.move(to.x, to.y);
+  const hs = await handles(page);
+  expect(hs.filter((h) => h.mid !== undefined).map((h) => h.shown)).toEqual(['visible', 'visible']);
+  expect((await routes(page))[0]!.via).toEqual(first);
+  // The right half's dot: one more point, and the first is as the reader left it.
+  const right = hs.find((h) => h.mid === '1')!;
+  const to2 = { x: right.x + 10, y: right.y - 60 };
+  await drag(page, [right.x, right.y], [to2.x, to2.y]);
+  const after = (await routes(page))[0]!.via!;
+  expect(after).toHaveLength(2);
+  expect(after[0]).toEqual(first[0]);
+  const at2 = await plane(to2.x, to2.y);
+  expect(Math.hypot(after[1]!.x - at2.x, after[1]!.y - at2.y)).toBeLessThan(3);
+  // Three proposed dots now, at the three pieces' middles; still only the two points saved.
+  await page.mouse.move(to2.x, to2.y);
+  expect((await handles(page)).filter((h) => h.mid !== undefined)).toHaveLength(3);
+  expect((await routes(page))[0]!.via).toEqual(after);
+  // The first point dragged: its neighbour does not move.
+  const one = (await handles(page)).find((h) => h.bend === '0')!;
+  await drag(page, [one.x, one.y], [one.x + 6, one.y - 40]);
+  const last = (await routes(page))[0]!.via!;
+  expect(last).toHaveLength(2);
+  expect(last[1]).toEqual(after[1]);
+  expect(last[0]).not.toEqual(after[0]);
 });
 
 async function tie(page: Page): Promise<void> {
@@ -233,6 +283,55 @@ test('a connector line dragged onto a tie joins it; let go elsewhere, nothing mo
   const again = (await sampled(page, 's2/rows'))[10]!;
   await drag(page, [again.x, again.y], [bx, by]);
   expect((await ties(page))[0]!.routes).toHaveLength(2);
+});
+
+test('754: a tied connector shows no mid-point dot, an untied one does; a tie takes a connector\'s bends away, and B picks its tie', async ({ page }) => {
+  const tool = () => page.locator('sherpa-node-toolbar sherpa-button.tie').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  const shown = async (from: string, at: { x: number; y: number }) => {
+    await page.mouse.move(at.x - 30, at.y - 30);
+    await page.mouse.move(at.x, at.y);
+    return (await handles(page, from)).filter((h) => h.shown === 'visible').length;
+  };
+  // Both bent, by the reader.
+  await bendTo(page, 0, 40);
+  const two = await centre(page, '#cv > svg.graph-routes path[data-from="s2/rows"]');
+  await page.mouse.move(two.x, two.y);
+  await drag(page, [two.x, two.y], [two.x + 10, two.y + 60]);
+  expect((await routes(page)).map((r) => r.via?.length)).toEqual([1, 1]);
+  // A tie across the first, a quarter of the way along it: its bend goes, in the one step.
+  const q = (await sampled(page))[30]!;
+  await tool();
+  await drag(page, [q.x, q.y - 40], [q.x, q.y + 40]);
+  await tool();
+  await settle(page);
+  expect(await ties(page)).toHaveLength(1);
+  expect((await routes(page)).map((r) => r.via?.length)).toEqual([undefined, 1]);
+  // Hovered, the tied connector has no dot at all; the untied one shows its own.
+  expect(await handles(page)).toHaveLength(0);
+  expect(await shown('s1/rows', (await sampled(page))[20]!)).toBe(0);
+  expect(await shown('s2/rows', (await sampled(page, 's2/rows'))[20]!)).toBeGreaterThan(0);
+  // The second dropped on the tie: its bend goes too, and it has no dot.
+  const bar = (await page.locator('#cv > svg.graph-routes rect.graph-tie').boundingBox())!;
+  const on = (await sampled(page, 's2/rows'))[10]!;
+  await drag(page, [on.x, on.y], [bar.x + bar.width / 2, bar.y + bar.height / 2]);
+  expect((await ties(page))[0]!.routes).toHaveLength(2);
+  expect((await routes(page)).every((r) => r.via === undefined)).toBe(true);
+  expect(await handles(page, 's2/rows')).toHaveLength(0);
+  // No pointer: with a tied connector picked, B picks its tie, and the arrows move it.
+  await page.evaluate(() => (document.getElementById('cv') as HTMLElement).focus());
+  await page.locator('#cv > svg.graph-routes polyline.graph-hit[data-from="s1/rows"]').first().dispatchEvent('click');
+  await page.keyboard.press('b');
+  await settle(page);
+  await expect(page.locator('#cv > svg.graph-routes rect.graph-tie')).toHaveAttribute('data-selected', '');
+  const y0 = ((await ties(page))[0] as unknown as { y: number }).y;
+  await page.keyboard.press('ArrowDown');
+  await settle(page);
+  expect(((await ties(page))[0] as unknown as { y: number }).y).toBe(y0 + 8);
+  // Undo gives the first its bend back with the tie gone: three steps (tie, drop, move).
+  for (let i = 0; i < 3; i++) await page.evaluate(() => (window as never as { ed: Ed }).ed.undo());
+  await settle(page);
+  expect(await ties(page)).toHaveLength(0);
+  expect((await routes(page)).map((r) => r.via?.length)).toEqual([1, 1]);
 });
 
 test('a drag on blank canvas still boxes, and the Tie tool still ties', async ({ page }) => {

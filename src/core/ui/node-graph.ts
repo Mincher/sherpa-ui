@@ -173,8 +173,9 @@ interface Drawn {
   lifted: NodeRoute | null;
   /** The routes picked, by a click or a box: Delete or Backspace breaks them, T ties them. */
   picked: NodeRoute[];
-  /** The bend point picked (`index` in `via`): Delete removes it, the arrows move it. */
-  handle: { route: NodeRoute; index: number } | null;
+  /** The bend point picked (`index` in `via`): Delete removes it, the arrows move it. `proposed`: the mid-point dot
+   *  of an unbent route, in no `via` until an arrow moves it in at `index`. */
+  handle: { route: NodeRoute; index: number; proposed?: true } | null;
   /** The tie a dragged connector would join. */
   target: string | null;
   /** A drag just ended on a connector line: the click after it picks nothing. */
@@ -343,7 +344,7 @@ function outputType(graph: DrawnGraph, from: string): string {
   return node?.branches ? 'boolean' : node?.output ?? '';
 }
 
-/** The handles of one route: a dot at each bend point and at the middle of each piece. They show on hover, and when the route or the handle is picked. */
+/** The handles of one route: a dot at each bend point, and a proposed one at the middle of each piece, saved only once moved. They show on hover, and when the route or the handle is picked. */
 function handleMarks(
   way: readonly { at: Pt; bend?: number }[], mids: readonly { at: Pt; insert: number }[], pick: Drawn['handle'],
 ): SVGElement[] {
@@ -364,8 +365,8 @@ function handleMarks(
     return handle;
   };
   return [
-    ...mids.map((m, k) => mark(m.at, { mid: String(k), insert: String(m.insert) }, false)),
-    ...way.flatMap((w) => (w.bend === undefined ? [] : [mark(w.at, { bend: String(w.bend) }, pick?.index === w.bend)])),
+    ...mids.map((m, k) => mark(m.at, { mid: String(k), insert: String(m.insert) }, !!pick?.proposed && pick.index === m.insert)),
+    ...way.flatMap((w) => (w.bend === undefined ? [] : [mark(w.at, { bend: String(w.bend) }, !pick?.proposed && pick?.index === w.bend)])),
   ];
 }
 
@@ -393,16 +394,15 @@ function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
     const b = socketAt(drawn, route.to, 'input') ?? (stale ? edgeAt(drawn, route.to, 'input') : null);
     if (!a || !b || same(drawn.lifted, route)) return [];
     const [from, to] = [onPlane(canvas, a), onPlane(canvas, b)];
-    // The ties it passes and the bend points it holds, left to right: a flat piece to each.
+    // The ties it passes, or else the bend points it holds, left to right: a flat piece to each.
     const stops = drawn.ties.flatMap((tie) => {
       const n = tie.routes.findIndex((r) => same(r, route));
       return n < 0 ? [] : [slotOf(drawn, tie, n)];
     });
     // As drawn, the bends stay inside the end sockets: a node moved later never loops the line back. The saved list stays.
-    const via = route.via && clampedVia(route.via, { from: from[0], to: to[0] });
-    const way = waypointsOf(via, stops);
+    const way = waypointsOf(route.via && clampedVia(route.via, { from: from[0], to: to[0] }), stops);
     const points = [from, ...way.map((w) => w.at), to];
-    const soft = !!via?.length;
+    const soft = way.some((w) => w.bend !== undefined);
     const path = document.createElementNS(SVG, 'path');
     path.setAttribute('d', pathThrough(points, soft));
     path.dataset['type'] = outputType(drawn.graph, route.from);
@@ -616,7 +616,7 @@ function pickHandle(canvas: SherpaLayoutCanvas, drawn: Drawn, handle: Drawn['han
     drawn.options.onPicked?.([]);
   }
   drawRoutes(canvas, drawn);
-  drawn.options.onBendPicked?.(handle ? { route: handle.route, index: handle.index } : null);
+  drawn.options.onBendPicked?.(handle && !handle.proposed ? { route: handle.route, index: handle.index } : null);
   if (handle) canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
 }
 
@@ -927,7 +927,8 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     pickRoute(canvas, made, { from: hit.dataset['from']!, to: hit.dataset['to']! }, event.shiftKey);
   });
   // A picked bend point: Delete removes it, the arrows move it (8px, 32 with Shift), Escape lets go. With a
-  // connector picked, B picks its first bend point, or puts one at its middle. TODO 744
+  // connector picked, B picks its first bend point, or its proposed middle dot, which the first arrow moves in;
+  // on a tied connector, its first tie. TODO 744, 754
   canvas.addEventListener('keydown', (event) => {
     if (event.target !== canvas || event.ctrlKey || event.metaKey || event.altKey) return;
     const route = made.handle?.route ?? (event.code === 'KeyB' ? made.picked[0] : undefined);
@@ -936,23 +937,27 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     const step = event.shiftKey ? 32 : 8;
     const by: Record<string, [number, number]> = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
     const pick = made.handle;
-    const bend = pick ? held.via?.[pick.index] : undefined;
-    if (event.code === 'KeyB') {
-      if (held.via?.length) pickHandle(canvas, made, { route, index: 0 });
-      else {
-        const lane = made.lanes.find((l) => l.route.from === route.from && l.route.to === route.to);
-        const [a, b] = [lane?.dots[0], lane?.dots.at(-1)];
-        if (!a || !b) return;
-        made.options.onBend?.(route, 0, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, true, 0);
-        made.handle = { route, index: 0 };
-        pickHandle(canvas, made, made.handle);
-      }
-    } else if (event.key === 'Escape' && pick) pickHandle(canvas, made, null);
+    const bend = pick && !pick.proposed ? held.via?.[pick.index] : undefined;
+    const tie = made.ties.filter((t) => t.routes.some((r) => r.from === route.from && r.to === route.to)).sort((a, b) => tieX(made, a) - tieX(made, b))[0];
+    if (event.code === 'KeyB' && tie) {
+      made.picked = [];
+      made.selectedTie = tie.id;
+      pickHandle(canvas, made, null);
+      made.options.onPicked?.([]);
+    } else if (event.code === 'KeyB') pickHandle(canvas, made, held.via?.length ? { route, index: 0 } : { route, index: 0, proposed: true });
+    else if (event.key === 'Escape' && pick) pickHandle(canvas, made, null);
     else if ((event.key === 'Delete' || event.key === 'Backspace') && pick) {
       if (bend) made.options.onUnbend?.(route, pick.index);
       pickHandle(canvas, made, null);
     } else if (bend && by[event.key]) {
       made.options.onBend?.(route, pick!.index, bend.x + by[event.key]![0], bend.y + by[event.key]![1], false, 0);
+    } else if (pick?.proposed && by[event.key]) {
+      // Moved by the reader: the proposed dot is a bend point now, from where it was drawn.
+      const lane = made.lanes.find((l) => l.route.from === route.from && l.route.to === route.to);
+      const [a, b] = [lane?.dots[0], lane?.dots.at(-1)];
+      if (!a || !b) return;
+      made.options.onBend?.(route, pick.index, (a[0] + b[0]) / 2 + by[event.key]![0], (a[1] + b[1]) / 2 + by[event.key]![1], true, 0);
+      pickHandle(canvas, made, { route, index: pick.index });
     } else return;
     event.preventDefault();
     event.stopImmediatePropagation();
@@ -1117,7 +1122,8 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: DrawnGraph, options
   drawn.tying = !!options.tying;
   if (drawn.selectedTie && !drawn.ties.some((t) => t.id === drawn.selectedTie)) drawn.selectedTie = null;
   const held = drawn.handle && graph.routes.find((r) => r.from === drawn.handle!.route.from && r.to === drawn.handle!.route.to);
-  if (drawn.handle && !held?.via?.[drawn.handle.index]) drawn.handle = null;
+  const tied = !!held && drawn.ties.some((t) => t.routes.some((r) => r.from === held.from && r.to === held.to));
+  if (drawn.handle && (tied || !(drawn.handle.proposed ? held && !held.via?.length : held?.via?.[drawn.handle.index]))) drawn.handle = null;
   const left = drawn.picked.filter((p) => graph.routes.some((r) => r.from === p.from && r.to === p.to));
   if (left.length !== drawn.picked.length) {
     drawn.picked = left;

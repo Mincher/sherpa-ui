@@ -1,6 +1,7 @@
 /**
  * route-bends.ts — a route's BEND POINTS: the list `via` a reader's drag adds to a route, in plane px,
- * sorted by x. Pure: no DOM. Will, TODO 744 · docs/history/plan-744-connector-handles.md
+ * sorted by x. Only a point the reader moved is one; a tied route has none. Pure: no DOM.
+ * Will, TODOs 744, 754 · docs/history/plan-744-connector-handles.md
  *
  * Map:
  * - Bend — One bend point: a place on the plane.
@@ -8,7 +9,7 @@
  * - placeBend — A bend list with a point moved, or put in at an index; sorted by x, and the point's new index.
  * - dropBend — A bend list without the point at an index; none left, none.
  * - BEND_INSET — How far inside a connector's two end sockets a bend point stays, in px: the last piece is never vertical.
- * - BEND_GAP — The least gap between two bend points, or a bend point and a tie's slot, in px.
+ * - BEND_GAP — The least gap between two bend points, in px.
  * - clampBend — The x a bend point may take: between the end sockets, and between its neighbours.
  * - clampedVia — A bend list held inside its end sockets and apart, as drawn; the saved list is not rewritten.
  * - withoutBends — A route as it was before any bend: its two ends.
@@ -48,19 +49,18 @@ export function dropBend(via: readonly Bend[] | undefined, index: number): Bend[
 
 /** How far inside a connector's two end sockets a bend point stays, in px: the last piece is never vertical. */
 export const BEND_INSET = 16;
-/** The least gap between two bend points, or a bend point and a tie's slot, in px. */
+/** The least gap between two bend points, in px. */
 export const BEND_GAP = 8;
 
 const hold = (x: number, lo: number, hi: number): number => (hi < lo ? (lo + hi) / 2 : Math.min(hi, Math.max(lo, x)));
 
-/** The x a bend point may take: inside the end sockets, and between its neighbours in `via` (and tie slots `fixed`). */
-export function clampBend(ends: { from: number; to: number }, via: readonly Bend[] | undefined, index: number, x: number, insert = false, fixed: readonly number[] = []): number {
+/** The x a bend point may take: inside the end sockets, and between its neighbours in `via`. */
+export function clampBend(ends: { from: number; to: number }, via: readonly Bend[] | undefined, index: number, x: number, insert = false): number {
   const list = via ?? [];
   const before = index > 0 ? [list[index - 1]!.x] : [];
   const after = list[insert ? index : index + 1] ? [list[insert ? index : index + 1]!.x] : [];
-  const ref = !insert && list[index] ? list[index]!.x : x;
-  const lo = Math.max(ends.from + BEND_INSET, ...before.map((n) => n + BEND_GAP), ...fixed.filter((n) => n <= ref).map((n) => n + BEND_GAP));
-  const hi = Math.min(ends.to - BEND_INSET, ...after.map((n) => n - BEND_GAP), ...fixed.filter((n) => n > ref).map((n) => n - BEND_GAP));
+  const lo = Math.max(ends.from + BEND_INSET, ...before.map((n) => n + BEND_GAP));
+  const hi = Math.min(ends.to - BEND_INSET, ...after.map((n) => n - BEND_GAP));
   return Math.round(hold(x, lo, hi));
 }
 

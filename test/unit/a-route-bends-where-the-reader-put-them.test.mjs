@@ -2,6 +2,7 @@
  * A route may hold BEND POINTS: `via: [{x,y}]`, sorted by x, beside `from` and `to`. The pure edits `{ bend }` and
  * `{ unbend }` change them; the last one removed clears `via`; a rerouted or cut route drops them; a Custom Node body
  * keeps them and its version ignores them; a v1 reads none; the curve through none is the default. Will, TODO 744.
+ * TODO 754: a tied route has no handles and no bends; only a point the reader moved is in `via`.
  *
  *   node --test test/unit/a-route-bends-where-the-reader-put-them.test.mjs
  */
@@ -108,10 +109,9 @@ test('the curve through no points is the default; through points it never loops 
   assert.equal(hs.length, 3);
   assert.deepEqual(hs.map((h) => h.insert), [0, 1, 2]);
   assert.deepEqual(hs[0].at, middleOf(a, [150, 80]));
-  // None: one handle at the middle; a tie's slot makes two, and the bends beside it are not counted twice.
+  // None: one handle at the middle. A tied route has none (754): its tie is its handle.
   assert.equal(handlesOf(a, b, []).length, 1);
-  const tied = handlesOf(a, b, waypointsOf(undefined, [[200, 50]]));
-  assert.deepEqual(tied.map((h) => h.insert), [0, 0]);
+  assert.deepEqual(handlesOf(a, b, waypointsOf(undefined, [[200, 50]])), []);
 });
 
 test('a tie takes a route by an edit, and refuses in words', () => {
@@ -142,8 +142,6 @@ test('TODO 750: a bend stays inside the end sockets and clear of its neighbours;
   const via = [{ x: 300, y: 0 }, { x: 500, y: 0 }];
   assert.equal(clampBend(ends, via, 0, 600), 500 - BEND_GAP);
   assert.equal(clampBend(ends, via, 1, 100), 300 + BEND_GAP);
-  // A point right of a tie slot stays right of it.
-  assert.equal(clampBend(ends, via, 1, 400, false, [450]), 450 + BEND_GAP);
   // The edit obeys it: a bend dragged far past the target socket stops at the limit.
   const w = flow();
   const far = editWorkflow(w, { bend: { route, at: 0, x: 5000, y: 10, insert: true } });
@@ -154,4 +152,72 @@ test('TODO 750: a bend stays inside the end sockets and clear of its neighbours;
   assert.equal(held[0].x, 400 - BEND_INSET);
   assert.equal(saved[0].x, 650);
   assert.equal(clampedVia(saved, ends)[0], saved[0]);
+});
+
+// — TODO 754. (A) A zip tie is a handle: a tied route has no mid-point handle and holds no bend.
+const two = () => ({
+  v: 2, id: 'f',
+  nodes: [
+    { id: 's', kind: 'store', x: 0, y: 0 }, { id: 'e', kind: 'output', x: 700, y: 0 },
+    { id: 's2', kind: 'store', x: 0, y: 200 }, { id: 'e2', kind: 'output', x: 700, y: 200 },
+  ],
+  routes: [{ ...route, via: [{ x: 300, y: 90 }] }, { from: 's2/rows', to: 'e2', via: [{ x: 420, y: 260 }] }],
+});
+const R2 = { from: 's2/rows', to: 'e2' };
+
+test('754: a tied route has no handle points, and is drawn through its ties alone', () => {
+  const [a, b] = [[0, 0], [700, 0]];
+  const way = waypointsOf([{ x: 300, y: 90 }], [[400, 40], [550, 20]]);
+  assert.deepEqual(way, [{ at: [400, 40] }, { at: [550, 20] }]);
+  assert.deepEqual(handlesOf(a, b, way), []);
+  // Untied, its handles are proposed at the middles; none of them is a waypoint.
+  const bent = waypointsOf([{ x: 300, y: 90 }], []);
+  assert.deepEqual(bent, [{ at: [300, 90], bend: 0 }]);
+  assert.deepEqual(handlesOf(a, b, bent).map((h) => h.insert), [0, 1]);
+});
+
+test('754: a tie clears the bends of the routes it takes, in the one edit; a route it does not take keeps its own', () => {
+  const tied = editWorkflow(two(), { tie: { routes: [route], x: 400, y: 50 } });
+  assert.equal('via' in tied.routes[0], false);
+  assert.deepEqual(tied.routes[1].via, [{ x: 420, y: 260 }]);
+  assert.equal(tied.ties.length, 1);
+  assert.deepEqual(workflowFaults(tied), []);
+  // A connector dropped on the tie: its bends go too.
+  const added = editWorkflow(tied, { tieAdd: { id: 'tie-1', route: R2 } });
+  assert.equal(added.routes.some((r) => 'via' in r), false);
+  assert.equal(added.ties[0].routes.length, 2);
+});
+
+test('754: a bend on a tied route is refused in words, and the workflow is untouched', async () => {
+  const tied = editWorkflow(two(), { tie: { routes: [route], x: 400, y: 50 } });
+  const { onReport } = await import(new URL('data/report.js', core));
+  const said = [];
+  const undo = onReport((r) => said.push(r.message));
+  try {
+    assert.equal(editWorkflow(tied, { bend: { route, at: 0, x: 300, y: 90, insert: true } }), tied);
+  } finally { undo(); }
+  assert.deepEqual(said, ['editWorkflow: the route "s/rows" → "e" is tied: its ties are its handles.']);
+});
+
+// (B) A mid-point handle is PROPOSED: only a point the reader moved is in `via`.
+test('754: a bend edit writes the one point the reader moved; every other point is as it was', () => {
+  const one = bend(flow(), 0, 300, 90, true);
+  assert.deepEqual(one.routes[0].via, [{ x: 300, y: 90 }]);
+  // A second point put in the right half: the first stays where the reader left it, and the halves' middles are not saved.
+  const twice = bend(one, 1, 500, 20, true);
+  assert.deepEqual(twice.routes[0].via, [{ x: 300, y: 90 }, { x: 500, y: 20 }]);
+  // The first moved: the second, its neighbour, does not.
+  const moved = bend(twice, 0, 320, 140);
+  assert.deepEqual(moved.routes[0].via, [{ x: 320, y: 140 }, { x: 500, y: 20 }]);
+  // Drawn, the waypoints are those two alone: no proposed dot bends the curve.
+  assert.deepEqual(waypointsOf(moved.routes[0].via, []).map((w) => w.at), [[320, 140], [500, 20]]);
+});
+
+test('754: a group move shifts only the points the reader made, and Arrange clears them; neither adds one', () => {
+  const w = { ...two(), routes: [{ ...route, via: [{ x: 300, y: 90 }] }, { ...R2 }] };
+  const moved = editWorkflow(w, { place: { nodes: { s: { x: 40, y: 10 }, e: { x: 740, y: 10 }, s2: { x: 40, y: 210 }, e2: { x: 740, y: 210 } }, bends: { dx: 40, dy: 10 } } });
+  assert.deepEqual(moved.routes[0].via, [{ x: 340, y: 100 }]);
+  assert.equal('via' in moved.routes[1], false);
+  const arranged = editWorkflow(w, { place: { nodes: { s: { x: 0, y: 0 }, e: { x: 400, y: 0 } }, bends: 'reset' } });
+  assert.equal(arranged.routes.some((r) => 'via' in r), false);
 });
