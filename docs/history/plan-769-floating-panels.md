@@ -47,7 +47,7 @@ Floating is a state OF an overlay or a fixed panel: `data-fixed` says where it d
 | D11 | Dock | **Back where it came from**: the right edge at its docked width (`--_width`, untouched by floating), or the fixed area (`data-fixed` is kept, so it pops back in). The floating box is kept for next time |
 | D12 | One at a time | Floating **leaves the right edge**, as a fixed panel does: another panel opening there does not shut it. Docked back on the edge, it takes the edge again. A floating panel is drawn over the edge (z-index 102). Raise-on-press between two floating panels waits |
 | D13 | Remembered | The panel REPORTS, the host keeps (PRINCIPLES 21). Demos: SessionStore `/panels/float/<id>` = `{ floating, x, y, width, height }`, `persist(…, { shared: false })`: the tab's own |
-| D14 | Events | `panel-float { floating }` on a press; `panel-move { x, y }` on release or a key; `panel-resize { width, height }` from the corner (the edge keeps `{ width }`). Setting an attribute reports nothing, as with `data-fixed` |
+| D14 | Events | `panel-float { floating }` on a press; `panel-move { x, y }` on release or a key; `panel-resize { width, height }` from the corner, and from the edge, which now says its height too. Setting an attribute reports nothing, as with `data-fixed` |
 | D15 | Keys (parity) | The grip is a tab stop (`role="button"`, "Move panel"): the arrows move it 16px, Shift 64px. The corner is a tab stop ("Resize panel"): Right and Left widen and narrow, Down and Up grow and shrink, the same steps. Both exist only while floating. No modifier, so no `primaryKey` |
 | D16 | Forced colours, motion | The grip and the corner's lines are CanvasText; the panel keeps its border. No transition is added, so there is no motion to gate |
 | D17 | A11y | Each handle has a label and a `title` naming its keys; the focus ring is inside the box; a press on Float or Dock keeps focus on the button (the move keeps it, as Pop does) |
@@ -64,3 +64,20 @@ Floating is a state OF an overlay or a fixed panel: `data-fixed` says where it d
 4. Demos: `data-floatable` on the Assistant, the details and both inspectors; the box kept in the
    session; a spec that floats the Assistant from the area and docks it back.
 5. Spec, manifest, reference, a trap (`T-a-floating-panel-is-a-state`), the map.
+
+## What was built, and what waits
+
+Built: D1 to D18 on `sherpa-overlay-panel`, and `drag-xy.ts`. Demos: Ask N-zo, the Records
+details and both inspectors are `data-floatable`; `app/panel-float.js` keeps each box for the tab.
+
+- **769b — the filter column floats.** It is a `sherpa-quick-filter-toolbar` in the START area,
+  with no container header. The short way: let an overlay panel pop into either area
+  (`data-fixed="start"`), and wrap the column in one; it then floats by this same code.
+- **769c — the Nodes card floats on the canvas.** `sherpa-node-panel` takes `data-floatable`,
+  a Float button in its header's `actions`, and `dragXY` with the CANVAS as its bounds (its
+  clamp is `100%` of the canvas, not the window). The canvas mirrors a floating card as no
+  `has-panel`, so the banners, the toolbar and the minimap take the full width. To keep one
+  implementation, the grip, the corner and the clamp move from the overlay panel's sheet to a
+  shared one (`sherpa-float.css`), picked by class.
+- **Raise on press.** Two floating panels draw in page order; a press does not bring one to the
+  front yet.
