@@ -472,7 +472,8 @@ export function sentFrom(given: WorkflowDefinition | WorkflowDefinitionV1, from:
 /** A workflow as nodes and routes, a v1 read as v2: each node its kind's, at its own place,
  *  with its values. A row a route drives is read only. Where the route comes from a node that
  *  holds its value (a Value), the row MIRRORS it — a picklist shows it marked Custom (D7) —
- *  and its own pick stays in the draft; else it shows its own until N4 runs the flow. What
+ *  and its own pick stays in the draft; else it shows its own until N4 runs the flow, and one
+ *  that holds none shows nothing, and says where its value comes from (TODO 774). What
  *  reaches an input that it cannot use reads null, and the node says why in `warnings`.
  *  TRAP T-a-node-reads-null-from-what-it-cannot-use */
 export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, facts: WorkflowFacts = {}, kinds: Kinds = NODE_KINDS): FramedGraph {
@@ -484,13 +485,20 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
   const flows = flow.routes;
   const names = portalNames(workflow.nodes);
   const held = new Map(workflow.nodes.map((n) => [n.id, n]));
+  // Where a route comes from, in words: "Group Input › Status".
+  const whence = (from: string): string => {
+    const { node: id, row } = socketOf(from);
+    const at = held.get(id);
+    const out = row === undefined ? undefined : rowOf(kindOfNode(kinds, at)?.rows ?? [], row);
+    return [at?.heading ?? kinds[at?.kind ?? '']?.heading ?? id, out?.label].filter(Boolean).join(' › ');
+  };
   // What a route brings: its output row's value, where its node holds one; and where from, in words.
   const brings = (from: string): { value: unknown; said: string } | undefined => {
     const { node: id, row } = socketOf(from);
     const at = held.get(id);
     const out = row === undefined ? undefined : rowOf(kindOfNode(kinds, at)?.rows ?? [], row);
     const value = row === undefined ? undefined : at?.values?.[row];
-    return at && out && value !== undefined ? { value, said: `${at.heading ?? kinds[at.kind]!.heading} › ${out.label}` } : undefined;
+    return at && out && value !== undefined ? { value, said: whence(from) } : undefined;
   };
   const sent = sender(held, flows, kinds, facts);
   const nodes = workflow.nodes.filter((n) => kinds[n.kind]).map((node) => {
@@ -552,7 +560,8 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
         const read = reads.get(r);
         return brought && read && read.value !== undefined ? { ...brought, value: read.value } : brought;
       };
-      const coming = flows.filter((r) => r.to === address && !bad.includes(r)).flatMap((r) => reading(r) ?? []);
+      const ins = flows.filter((r) => r.to === address && !bad.includes(r));
+      const coming = ins.flatMap((r) => reading(r) ?? []);
       // A Field row says its field and its type; one the rows do not have warns, and sends nothing (D8).
       const picked = row.gives === 'field' ? pickedField(held, flows, facts, address) : undefined;
       if (picked?.stranger) warnings.push({ row: row.name, words: `"${picked.field.name}" is not a field of the rows that come in` });
@@ -565,7 +574,6 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
       }
       // A switch is driven by the road a boolean names: a True socket is on, a False socket off.
       if (row.control === 'switch') {
-        const ins = flows.filter((r) => r.to === address && !bad.includes(r));
         if (!ins.length) return bad.length ? { ...own, value: null } : own;
         const says = ins.map((r) => {
           const { node: id, row: out } = socketOf(r.from);
@@ -577,7 +585,14 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
         return { ...own, ...drivenSwitch(says), hint: `Custom, from ${[...new Set(ins.map(at))].join(', ')}` };
       }
       // Only what it cannot use came in: it reads null, read only.
-      if (!coming.length) return bad.length && bad.length === flows.filter((r) => r.to === address).length ? { ...own, value: null } : said({ ...own, ...told });
+      if (bad.length && !ins.length) return { ...own, value: null };
+      // Routed, nothing sent yet, nothing held: it shows nothing — never a list's first choice — and says where from.
+      const none = has == null || has === '' || (Array.isArray(has) && !has.length);
+      if (!coming.length && ins.length && row.control && none) {
+        const blank = list || row.control === 'tags' ? mirrored(row, [], list) : { custom: true as const };
+        return said({ ...own, ...blank, hint: `From ${[...new Set(ins.map((r) => whence(r.from)))].join(', ')}${told.hint ? `. ${told.hint}` : ''}` }, true);
+      }
+      if (!coming.length) return said({ ...own, ...told });
       const shown = mirrored(row, coming.map((c) => c.value), list);
       const from = [...new Set(coming.map((c) => c.said))].join(', ');
       // A list routed into tags OVERRIDES them (D7): its values show, read only; cut, the row's own are back.

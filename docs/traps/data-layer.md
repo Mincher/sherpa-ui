@@ -6454,6 +6454,11 @@ types allow is drawn; no family fences what a graph places.
   (`state-pins.yaml`: after `data-current`, so a picked one stays a warning; a run's step wins)
   and drops a category's tint, as a pick does. Its header is the tip's anchor and is described by
   it (`aria-describedby`), so a hover or keyboard focus shows the words, one line each.
+- **A routed row that holds nothing shows nothing** (TODO 774). Where its routes send nothing yet
+  (a Group Input row, a node only a run fills) and it holds no value of its own, `workflowGraph`
+  draws it empty, marked `custom`, with "From Group Input › Status". A list's choices go with it:
+  a select with no pick shows its FIRST choice, as if held. One that holds a value shows it until
+  N4 runs.
 - **Any route joins any input** (Will, TODO 770, B): a type mismatch is no fault and no refusal,
   only this warning — "Value A takes a number; it was given rows". Grouping makes one socket of
   what its source sends. What stays refused is the graph's shape: a loop, the same route twice,
