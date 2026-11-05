@@ -2049,3 +2049,47 @@ by the fetch, so `stores.ts` keeps `AbortSignal.any`.
 
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/e2e/reforged-query-panel.spec.ts`
+
+### T-an-inactive-button-keeps-its-tip
+
+**An inactive `sherpa-button` says `aria-disabled="true"` on its inner button,
+never native `disabled`** (Will, TODO 806: "Tooltips should still work on
+inactive buttons"). The tip is how a reader learns WHY a tool is off: the node
+toolbar's Save as Custom Node says "pick two or more nodes". Native `disabled`
+took the inner button out of the Tab order, and the look sheet's
+`.sherpa-button:disabled` gave it `pointer-events: none`, so a hover landed on
+the HOST. The tip system hears hover and focus in the button's OWN shadow root
+(`T-a-tip-lives-in-the-top-layer`), so neither ever reached it. Measured: no
+tip on hover or on Tab, in all three engines.
+
+What native `disabled` gave for free, and where each one is now:
+
+- **No press.** A pointer, Enter and Space all fire `click` on an
+  `aria-disabled` button. The host's capture listener refuses it before any
+  other, and its `preventDefault()` cancels the button's own activation: a
+  `commandfor` a press set while the button was on does not run
+  (`T-a-disabled-button-acts-on-nothing`).
+- **No fill step.** `:hover` and `:active` now match, so an `aria-disabled`
+  Button holds its base surface. Its pixels at rest, hovered and pressed are the
+  same, and at rest they are byte for byte what they were.
+- **Forced colours.** `:disabled` gets `GrayText` from the browser;
+  `aria-disabled` gets it from the look sheet. Emulate forced colours BEFORE the
+  mount: an adopted sheet did not hear the emulation turned on after it.
+- **Tab.** An inactive button is a Tab stop now, as the APG allows. `controlsIn`
+  passes a control only when it, or its own focus, is NATIVELY `:disabled`.
+  Before, it passed any host with `[disabled]`. The arrows still move between
+  live controls only. Focus can now sit on an off one, so `rovingFocus` steps
+  from where it sits, not from the first live control. Before, Left from Redo
+  went to Tie, past Undo.
+
+The host's own `aria-disabled` is gone. It was written EMPTY, so it said
+nothing, and the inner button is the control a screen reader reads.
+
+Playwright will not `click()` an `aria-disabled` control. A spec presses it with
+`page.mouse` at its centre, as a reader does.
+
+- Site: `src/core/sherpa-button-look.css`
+- Site: `src/core/ui/tab-stops.ts`
+- Site: `src/core/ui/roving-focus.ts`
+- Site: `src/components/sherpa-button/sherpa-button.ts`
+- Site: `test/e2e/reforged-an-inactive-button-keeps-its-tip.spec.ts`

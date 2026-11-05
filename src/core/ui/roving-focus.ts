@@ -83,12 +83,16 @@ export function rovingFocus(container: Element, options: RovingOptions): Roving 
     // A move may re-stamp: focus what holds the key now.
     focusOf(find(all(), last) ?? to)?.focus();
   };
-  const plain = (from: RovingItem, key: string, items: RovingItem[]): RovingItem | undefined => {
-    const at = items.indexOf(from);
-    if (NEXT.includes(key)) return items[at + 1] ?? items[0];
-    if (PREV.includes(key)) return at > 0 ? items[at - 1] : items.at(-1);
+  /** The next live item after `from` in `every`, or before it, round the end. */
+  const plain = (from: RovingItem, key: string, items: RovingItem[], every: RovingItem[]): RovingItem | undefined => {
     if (key === 'Home') return items[0];
     if (key === 'End') return items.at(-1);
+    const step = NEXT.includes(key) ? 1 : PREV.includes(key) ? -1 : 0;
+    const at = every.indexOf(from);
+    for (let k = 1; step && k <= every.length; k++) {
+      const to = every[(at + step * k + every.length) % every.length];
+      if (to && items.includes(to)) return to;
+    }
     return undefined;
   };
   const inPath = (event: Event, items: RovingItem[]): RovingItem | undefined =>
@@ -100,15 +104,18 @@ export function rovingFocus(container: Element, options: RovingOptions): Roving 
     if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
     if (options.inline && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) return;
     if (options.owns?.(e)) return;
-    const items = live();
-    const from = inPath(e, items) ?? stopIn(items) ?? items[0];
+    const every = all();
+    const items = live(every);
+    // Focus may sit on an OFF item — an inactive button keeps it, for its tip — so step from
+    // where it sits. TRAP T-an-inactive-button-keeps-its-tip
+    const from = inPath(e, every) ?? stopIn(items) ?? items[0];
     if (!from) return;
-    const told = options.step?.(from, e, items);
+    const told = items.includes(from) ? options.step?.(from, e, items) : undefined;
     if (told === true) {
       e.preventDefault();
       return;
     }
-    const to = told ?? plain(from, e.key, items);
+    const to = told ?? plain(from, e.key, items, every);
     if (!to) return;
     e.preventDefault();
     go(to, e);

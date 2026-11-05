@@ -121,16 +121,21 @@
 }
 
 /* Disabled is the INACTIVE mode of its look, pinned; never opacity. `:disabled`,
-   so a disabled fieldset counts. */
-.sherpa-button:disabled {
-  cursor: not-allowed;
-  pointer-events: none;
-}
+   so a disabled fieldset counts. It keeps the pointer, for its tip; a press is
+   refused, so the fill never steps. TRAP T-an-inactive-button-keeps-its-tip */
+.sherpa-button:is(:disabled, [aria-disabled="true"]) { cursor: not-allowed; }
+.sherpa-button:is(:disabled, [aria-disabled="true"]):is(:hover, :active) { background: var(--sherpa-style-surface-base, #ffffff); }
 
 /* Forced colours drop box-shadow: the ring is an outline there. */
 @media (forced-colors: active) {
   .sherpa-button:focus-visible {
     outline: 2px solid Highlight;
     outline-offset: 2px;
+  }
+
+  /* What `:disabled` is given for free. */
+  .sherpa-button[aria-disabled="true"] {
+    color: GrayText;
+    border-color: GrayText;
   }
 }

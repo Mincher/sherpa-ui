@@ -31,8 +31,10 @@ export function controlsIn(box: Element): HTMLElement[] {
     const kids = el instanceof HTMLSlotElement ? el.assignedElements({ flatten: true }) : [...el.children];
     for (const kid of kids) {
       if (kid instanceof HTMLTemplateElement) continue;
-      if (focusTarget(kid)) {
-        if (!kid.matches('[disabled], [aria-disabled="true"]') && kid.checkVisibility()) out.push(kid as HTMLElement);
+      const focus = focusTarget(kid);
+      // Only a NATIVE off is passed by Tab: an inactive button keeps its stop. TRAP T-an-inactive-button-keeps-its-tip
+      if (focus) {
+        if (!kid.matches(':disabled') && !focus.matches(':disabled') && kid.checkVisibility()) out.push(kid as HTMLElement);
       } else walk(kid);
     }
   };

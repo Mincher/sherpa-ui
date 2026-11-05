@@ -935,6 +935,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-edit-is-a-step](traps/element-and-sheets.md#t-an-edit-is-a-step) — node-graph
 - [T-an-entity-is-used-as-a-node](traps/data-layer.md#t-an-entity-is-used-as-a-node) — node-graph
 - [T-an-icon-loads-when-first-drawn](traps/element-and-sheets.md#t-an-icon-loads-when-first-drawn) — icon-names, render-icon, settled, sherpa-element
+- [T-an-inactive-button-keeps-its-tip](traps/element-and-sheets.md#t-an-inactive-button-keeps-its-tip) — roving-focus, sherpa-button-look, tab-stops
 - [T-an-inactive-chip-says-where-its-filter-went](traps/data-layer.md#t-an-inactive-chip-says-where-its-filter-went) — shared-constants
 - [T-an-inner-event-stops-at-its-host](traps/data-grid.md#t-an-inner-event-stops-at-its-host) — sherpa-element
 - [T-an-optional-part-is-stamped-when-it-shows](traps/element-and-sheets.md#t-an-optional-part-is-stamped-when-it-shows) — sherpa-element
@@ -1009,7 +1010,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (128)
+## Other components (129)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1085,6 +1086,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-expandable-row-is-not-a-destination](traps/other-components.md#t-an-expandable-row-is-not-a-destination) — nav-item
 - [T-an-icon-button-still-slots-its-menu](traps/other-components.md#t-an-icon-button-still-slots-its-menu) — button
 - [T-an-icon-is-known-by-the-set-not-its-spelling](traps/other-components.md#t-an-icon-is-known-by-the-set-not-its-spelling) — nav
+- [T-an-inactive-button-keeps-its-tip](traps/element-and-sheets.md#t-an-inactive-button-keeps-its-tip) — button
 - [T-apply-degrades-never-throws](traps/storage.md#t-apply-degrades-never-throws) — layout-grid
 - [T-at-property-needs-the-document](traps/charts.md#t-at-property-needs-the-document) — group, slider
 - [T-brand-icon-must-empty-its-host](traps/other-components.md#t-brand-icon-must-empty-its-host) — nav

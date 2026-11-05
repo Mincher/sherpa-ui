@@ -142,17 +142,17 @@ export class SherpaButton extends SherpaElement {
     else trigger?.removeAttribute('tabindex');
   }
 
-  /** Carry `disabled` to the inner button, and say it to assistive tech. */
+  /** `disabled` reaches the inner button as `aria-disabled`, never native: it keeps
+   *  its hover and focus, so its tip says why it is off. TRAP T-an-inactive-button-keeps-its-tip */
   #syncDisabled(): void {
-    const disabled = this.hasAttribute('disabled');
-    this.$<HTMLButtonElement>('.trigger')?.toggleAttribute('disabled', disabled);
-    this.toggleAttribute('aria-disabled', disabled);
+    const trigger = this.$<HTMLButtonElement>('.trigger');
+    if (trigger) trigger.ariaDisabled = this.hasAttribute('disabled') ? 'true' : null;
   }
 
   /**
-   * A DISABLED button refuses the click, as a native one does: it reaches no
-   * listener on this host and bubbles to no ancestor. It only LOOKED off —
-   * a footer's Apply still applied. TRAP T-a-disabled-button-acts-on-nothing
+   * A DISABLED button refuses the click — a pointer's, Enter's or Space's — as a
+   * native one does: it reaches no listener on this host and bubbles to no
+   * ancestor, and its command does not run. TRAP T-a-disabled-button-acts-on-nothing
    */
   #refuse = (event: Event): void => {
     if (!this.hasAttribute('disabled')) return;

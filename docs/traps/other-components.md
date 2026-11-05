@@ -104,7 +104,10 @@ calendar footer "looked inactive, yet they are still clickable and they work"
 
 A capture listener on the host stops the click while `disabled` — no host
 listener, no ancestor, no `button-click`. Capture, because at the target a
-capturing listener runs before every other, whoever bound it first.
+capturing listener runs before every other, whoever bound it first. Since TODO
+806 the inner button is `aria-disabled`, not native: its own clicks, and
+Enter's and Space's, reach this listener too, and its `preventDefault()` keeps
+a command from running (`T-an-inactive-button-keeps-its-tip`).
 
 A test that pressed Apply on a menu it never OPENED only passed because of
 this: a shut committing menu's footer is off (`dirty` needs `open`). Five tests
@@ -117,6 +120,7 @@ open their menu first now, as a reader must — and a draft set from code
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `test/e2e/reforged-grid-keeps-both-answers.spec.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
+- Site: `test/e2e/reforged-an-inactive-button-keeps-its-tip.spec.ts`
 
 ### T-calendar-anchors-where-the-data-is
 
