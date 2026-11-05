@@ -97,6 +97,8 @@ export const SETTINGS = {
   navHierarchy: off('/nav/hierarchy', 'app'),
   navViews: on('/nav/views', 'app'),
   navHover: on('/nav/hover', 'app'),
+  // A node's resize handle and Alt+Arrow. Will, TODO 748
+  resizeNodes: off('/nodes/resize', 'app'),
   // A toggle shows its state by a shape too. Will, TODO 497
   toggleShapes: { ...off('/a11y/toggleShapes', 'app'), look: { props: { true: { '--sherpa-toggle-shape': 'inline-flex' } } } },
   // An on chip's value half wears its look's border only. Will, TODO 669

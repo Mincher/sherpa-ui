@@ -52,7 +52,10 @@ export class SherpaNode extends SherpaElement {
     'data-step': { type: 'enum', kind: 'style', values: ['running', 'done', 'failed', 'skipped'] },
     'data-caption': { type: 'string', kind: 'content' },
     'data-locked': DATA_PROPS['data-locked'],
+    'data-resizable': { type: 'boolean', kind: 'style' },
   } as const;
+  // The app's setting: the handle and Alt+Arrow exist only while it is on. A saved size still draws. Will, TODO 748
+  static override settings = { 'data-resizable': 'resizeNodes' };
   static override observed = ['data-x', 'data-y', 'data-scale-w', 'data-scale-h'];
 
   /** The drag in progress: the pointer, where it took hold, the place then, and the canvas's zoom. */
@@ -221,6 +224,7 @@ export class SherpaNode extends SherpaElement {
   /** The arrows move it; Enter or Space selects it. */
   #onKey = (event: KeyboardEvent): void => {
     if (event.altKey) {
+      if (!this.hasAttribute('data-resizable')) return;
       // Alt and an arrow: a tenth of its natural size wider or taller, or less.
       const grows: Record<string, [number, number]> = { ArrowRight: [0.1, 0], ArrowLeft: [-0.1, 0], ArrowDown: [0, 0.1], ArrowUp: [0, -0.1] };
       const g = grows[event.key];

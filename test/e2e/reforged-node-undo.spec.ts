@@ -210,7 +210,7 @@ const EDITS: [string, (page: Page) => Promise<void>][] = [
   ['place', async (page) => { await item(page, 'count').click(); }],
   ['move', async (page) => {
     const b = (await header(page, 'Sort').boundingBox())!;
-    await drag(page, [b.x + 10, b.y + 10], [b.x + 70, b.y + 60]);
+    await drag(page, [b.x + 40, b.y + 10], [b.x + 100, b.y + 60]);
   }],
   ['row pick', async (page) => { await page.locator('#cv > sherpa-node[data-heading="Sort"] sherpa-input-text[name="direction"] select').selectOption('desc'); }],
   ['route', async (page) => {

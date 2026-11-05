@@ -22,6 +22,7 @@ For one row of a `sherpa-node`: an input socket, a field and an output socket, e
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
+| `data-divided` | boolean |  | a line over the row: it starts a new section of its node |
 | `data-input-many` | boolean |  | the input takes several routes: its socket is a double height D |
 | `data-input-routed` | boolean |  | a route joins the input: its socket is filled, else hollow |
 | `data-input-socket` | `value` `object` `boolean` `any` |  | an input socket on the start edge: value \| object \| boolean \| any: an input is a D, its type in its ink |
@@ -62,6 +63,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ inputMany?, inputRouted?, inputSocket?, label?, outputRouted?, outputSocket? }`
+`{ divided?, inputMany?, inputRouted?, inputSocket?, label?, outputRouted?, outputSocket? }`
 
 Its declared props by name: `label` sets data-label.

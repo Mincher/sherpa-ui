@@ -23,7 +23,7 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
 | `data-active` | boolean |  | the one picked node whose panel is shown, in a stronger ring; the HOST writes it |
-| `data-branches` | boolean |  | a fork: the header's output is True, and a footer shows with False |
+| `data-branches` | boolean |  | a fork: the header's output is True, and a footer shows with its False socket, a rounded square |
 | `data-caption` | text |  | a line over the node: what its step did, its time and rows. Its host writes it |
 | `data-category` | text |  | its kind's category, in lower case: sources \| custom-nodes \| variables \| math \| logic \| time \| utils \| collections \| output \| ai; each has its look |
 | `data-current` | boolean |  | the selected node; the HOST writes it, one node of many |
@@ -37,6 +37,7 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | `data-locked` | boolean |  | the host owns the place: a drag or a key reports, and moves nothing |
 | `data-output-routed` | boolean |  | a route leaves the header's output: its socket is filled, else hollow |
 | `data-output-socket` | `value` `object` `boolean` |  | the whole node's output socket, on its header: value (a circle) \| object (a diamond) \| boolean (a triangle) |
+| `data-resizable` | boolean |  | the resize handle and Alt and an arrow exist: the app's Allow resizing nodes setting writes it. A saved size draws either way |
 | `data-scale-h` | number | `1` | its height, in times its natural height: 1 to 2 |
 | `data-scale-w` | number | `1` | its width, in times its natural width: 1 to 2 |
 | `data-step` | `running` `done` `failed` `skipped` |  | how its step stands as a run lights it: running \| done \| failed \| skipped. Its host writes it |
@@ -93,14 +94,20 @@ What each class's base rule reads:
 | `--sherpa-font-family-body` | `.caption` | `font-family` |
 | `--sherpa-font-size-body-small` | `.caption` | `font-size` |
 | `--sherpa-theme-content-line-height-small` | `.caption` | `line-height` |
-| `--sherpa-font-size-body-small` | `.false-label` | `font-size` |
-| `--sherpa-theme-content-line-height-small` | `.false-label` | `line-height` |
-| `--sherpa-style-content-secondary` | `.false-label` | `color` |
+| `--sherpa-display-mode-size-2xl` | `.footer` | `min-block-size` |
 | `--sherpa-theme-gap-md` | `.body` | `gap` |
 | `--sherpa-theme-gap-md` | `.body` | `padding-block` |
 
+## Settings it reads
+
+Each of the app's settings, onto one of its attributes:
+
+| Setting | Attribute |
+|---|---|
+| `resizeNodes` | `data-resizable` |
+
 ## populate()
 
-`{ active?, branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, scaleH?, scaleW?, step?, x?, y? }`
+`{ active?, branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, resizable?, scaleH?, scaleW?, step?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.

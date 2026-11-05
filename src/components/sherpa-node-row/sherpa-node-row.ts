@@ -19,6 +19,7 @@ export class SherpaNodeRow extends SherpaElement {
     'data-input-routed': SHARED_PROPS['data-input-routed'],
     'data-output-routed': SHARED_PROPS['data-output-routed'],
     'data-input-many': SHARED_PROPS['data-input-many'],
+    'data-divided': { type: 'boolean', kind: 'style' },
   } as const;
 
   /** A socket's box on the screen, for a connector to join; null when the row has none. */

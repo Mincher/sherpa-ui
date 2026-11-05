@@ -228,7 +228,7 @@ test('a preset opens read only; "Copy to my nodes" makes an editable copy that t
   expect(await ed(page, 'ed.path()')).toEqual(['own']);
   // Read only: a field is locked, a node does not move, and the panel says how to change it.
   const locked = await page.locator('#cv > sherpa-node[data-heading="Condition"]').evaluate((el) => ({
-    place: el.hasAttribute('data-locked'), op: el.querySelector('sherpa-input-text[name="op"]')?.hasAttribute('disabled'),
+    place: el.hasAttribute('data-locked'), op: el.querySelector('sherpa-input-text[name="op"]')?.hasAttribute('readonly'),
   }));
   expect(locked).toEqual({ place: true, op: true });
   expect(await page.locator('#inspector').getAttribute('data-heading')).toBe('Owner check');

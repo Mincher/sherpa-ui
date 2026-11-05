@@ -102,10 +102,10 @@ test('a Value node routed into a picklist OVERRIDES it: "active Custom", read on
   const shown = () => page.evaluate((sel) => {
     const f = document.querySelector<HTMLElement & { value: string }>(sel)!;
     const select = f.shadowRoot!.querySelector('select')!;
-    return { value: f.value, text: select.selectedOptions[0]?.textContent, disabled: select.disabled || f.hasAttribute('disabled'), description: f.getAttribute('data-description') };
+    return { value: f.value, text: select.selectedOptions[0]?.textContent, readOnly: f.hasAttribute('readonly') && !f.hasAttribute('disabled') && !select.disabled, description: f.getAttribute('data-description') };
   }, filterValue);
   const over = await shown();
-  expect(over).toEqual({ value: 'active', text: 'active Custom', disabled: true, description: 'Custom value, from Value › Value' });
+  expect(over).toEqual({ value: 'active', text: 'active Custom', readOnly: true, description: 'Custom value, from Value › Value' });
   // Pick the connector, then Delete: the route is cut.
   const [mx, my] = await page.evaluate(() => {
     const hit = document.querySelector<SVGPolylineElement>('#root svg.graph-routes polyline[data-to="filter/value"]')!;
@@ -117,7 +117,7 @@ test('a Value node routed into a picklist OVERRIDES it: "active Custom", read on
   await page.keyboard.press('Delete');
   await settle(page);
   expect(await page.evaluate(LINES)).toEqual(['start/rows → filter']);
-  expect(await shown()).toEqual({ value: 'trial', text: 'trial', disabled: false, description: null });
+  expect(await shown()).toEqual({ value: 'trial', text: 'trial', readOnly: false, description: null });
 });
 
 test('557 a route\'s input end dragged to another input REROUTES it: the first row has its own pick back', async ({ page }) => {
@@ -129,7 +129,7 @@ test('557 a route\'s input end dragged to another input REROUTES it: the first r
   const r = await page.evaluate(() => ({
     filter: document.querySelector<HTMLElement & { value: string }>('#root sherpa-node[data-heading="Condition"] sherpa-input-text[name="value"]')!.value,
     sort: document.querySelector<HTMLElement & { value: string }>('#root sherpa-node[data-heading="Sort"] sherpa-input-text[name="field"]')!.value,
-    sortLocked: document.querySelector('#root sherpa-node[data-heading="Sort"] sherpa-input-text[name="field"]')!.hasAttribute('disabled'),
+    sortLocked: document.querySelector('#root sherpa-node[data-heading="Sort"] sherpa-input-text[name="field"]')!.hasAttribute('readonly'),
   }));
   // The Sort's Field now mirrors "active"; the Condition's Value is its own again.
   expect(r).toEqual({ filter: 'trial', sort: 'active', sortLocked: true });

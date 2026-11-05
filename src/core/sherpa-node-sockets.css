@@ -7,7 +7,9 @@
  */
 
 :host {
-  --_socket: var(--sherpa-display-mode-size-xs, 12px);
+  --_socket: var(--sherpa-display-mode-size-sm, 16px);
+  /* The press reaches this far past the drawn box, on every side: 28px in all. Short of the header's glyph, which still drags the node. */
+  --_hit: 6px; /* off-grid-ok */
   --_ring: var(--sherpa-display-mode-border-width-lg, 2px);
   --_circle: circle(50%);
   --_diamond: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
@@ -24,9 +26,17 @@
 .socket {
   display: none;
   position: absolute;
+  box-sizing: content-box;
   inline-size: var(--_socket);
   block-size: var(--_socket-h);
-  margin-inline-start: calc(var(--_socket) / -2);
+  /* The transparent border is the HIT area: a press on it is a press on the socket. */
+  border: var(--_hit) solid transparent;
+  margin-inline-start: calc(var(--_socket) / -2 - var(--_hit));
+}
+.socket::before {
+  content: "";
+  position: absolute;
+  inset: 0;
   background: var(--_ink, var(--sherpa-style-indicator-accent, #3b4ccd));
   clip-path: var(--_shape, var(--_circle));
 }
@@ -66,6 +76,11 @@
 .socket-false { --_shape: var(--_round-square); }
 :host([data-input-socket="any"]) .socket-in { --_ink: var(--sherpa-style-content-secondary, #35353d); }
 
+/* Each tip hangs from its own socket: a name is scoped to its shadow root, so the same one serves every node. */
+.socket-in, .tip-in { --_anchor: --sherpa-socket-in; }
+.socket-out, .tip-out { --_anchor: --sherpa-socket-out; }
+.socket-false, .tip-false { --_anchor: --sherpa-socket-false; }
+
 /* Each socket's tip says its type in words: one word shows. */
 .tip .word { display: none; }
 :host([data-input-socket="value"]) .tip-in .w-value,
@@ -78,7 +93,7 @@
 
 /* Colours go and the shapes stay. */
 @media (forced-colors: active) {
-  .socket {
+  .socket::before {
     forced-color-adjust: none;
     background: CanvasText;
   }

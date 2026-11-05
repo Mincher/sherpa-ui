@@ -122,7 +122,7 @@
             "class": "pan",
             "attrs": {
               "data-type": "icon",
-              "data-icon-start": "diverging-arrows",
+              "data-icon-start": "arrows-up-down-left-right",
               "aria-label": "Pan",
               "aria-pressed": "false"
             }

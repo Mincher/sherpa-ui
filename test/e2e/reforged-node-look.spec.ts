@@ -17,8 +17,8 @@ test.beforeEach(async ({ page }) => {
     const el = document.createElement('sherpa-layout-canvas') as Canvas;
     el.style.cssText = 'inline-size: 900px; block-size: 520px';
     const cats = ['sources', 'custom-nodes', 'logic', 'output', 'ai'];
-    el.innerHTML = cats.map((c, i) => `<sherpa-node id="${c}" data-heading="${c}" data-category="${c}" data-x="${20 + i * 170}" data-y="40" style="inline-size: 10rem"></sherpa-node>`).join('')
-      + '<sherpa-node id="big" data-heading="Resize" data-x="40" data-y="200" data-input-socket="value" data-input-many data-input-routed></sherpa-node>';
+    el.innerHTML = cats.map((c, i) => `<sherpa-node id="${c}" data-resizable data-heading="${c}" data-category="${c}" data-x="${20 + i * 170}" data-y="40" style="inline-size: 10rem"></sherpa-node>`).join('')
+      + '<sherpa-node id="big" data-resizable data-heading="Resize" data-x="40" data-y="200" data-input-socket="value" data-input-many data-input-routed></sherpa-node>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     await Promise.all([...el.querySelectorAll<Node>('sherpa-node')].map((n) => n.rendered));
@@ -80,6 +80,9 @@ test('a many input is twice the height of a single, a D: round outside, flat on 
     return { one: one.socketRect('input')!.height, many: (document.getElementById('big') as Node).socketRect('input')!.height };
   });
   expect(sizes.many).toBeCloseTo(sizes.one * 2, 0);
+  // The Figma's socket: 16px, and 32 for a many input. Will, TODO 747
+  expect(sizes.one).toBe(16);
+  expect(sizes.many).toBe(32);
 });
 
 test('the handle shows on hover at the bottom right, hides without it, and shows on focus', async ({ page }) => {
@@ -171,6 +174,8 @@ test('in the editor a resize is one step, saved as size beside x and y, with the
     return customElements.whenDefined('sherpa-node-toolbar');
   });
   await page.evaluate(`(${BIND})()`);
+  // The setting "Allow resizing nodes", as the provider hands it on.
+  await page.evaluate(() => document.querySelectorAll('#cv > sherpa-node').forEach((n) => n.setAttribute('data-resizable', '')));
   await page.evaluate(() => document.getElementById('cv')!.scrollIntoView({ block: 'start' }));
   const wf = () => page.evaluate(() => JSON.stringify((window as never as { ed: { workflow(): { nodes: unknown[] } } }).ed.workflow().nodes));
   const was = await wf();
@@ -210,4 +215,35 @@ test('in forced colours the handle keeps its shape and the shapes stay', async (
   await page.mouse.move(b.x + b.w / 2, b.y + b.h / 2);
   const r = await page.evaluate(() => getComputedStyle(document.getElementById('big')!.shadowRoot!.querySelector('.resize')!).visibility);
   expect(r).toBe('visible');
+});
+
+test('resizing is a setting: off, a node has no handle and Alt+Arrow does nothing, yet a saved size still draws; on, the handle works', async ({ page }) => {
+  await page.evaluate(async () => {
+    const el = document.querySelector('#root sherpa-layout-canvas')!;
+    el.insertAdjacentHTML('beforeend', '<sherpa-node id="plain" data-heading="Plain" data-x="400" data-y="300"></sherpa-node><sherpa-node id="kept" data-heading="Kept" data-scale-w="1.5" data-x="650" data-y="300"></sherpa-node>');
+    await (document.getElementById('plain') as Node).rendered;
+    await (document.getElementById('kept') as Node).rendered;
+    await window.__settled();
+  });
+  const b = await box(page, 'plain');
+  await page.mouse.move(b.x + b.w / 2, b.y + b.h / 2);
+  const off = await page.evaluate(() => {
+    const h = document.getElementById('plain')!.shadowRoot!.querySelector('.resize') as HTMLElement;
+    return { shown: h.checkVisibility({ checkVisibilityCSS: true }), w: document.getElementById('plain')!.offsetWidth };
+  });
+  expect(off.shown).toBe(false);
+  await page.locator('#plain').evaluate((n) => (n.shadowRoot!.querySelector('.header') as HTMLElement).focus());
+  await page.keyboard.press('Alt+ArrowRight');
+  await page.evaluate(() => window.__settled());
+  expect(await page.evaluate(() => document.getElementById('plain')!.offsetWidth)).toBe(off.w);
+  expect(await page.evaluate(() => document.getElementById('plain')!.hasAttribute('data-scale-w'))).toBe(false);
+  // A saved size is data: it draws.
+  const kept = await page.evaluate(() => [document.getElementById('kept')!.offsetWidth, document.getElementById('plain')!.offsetWidth]);
+  expect(kept[0]).toBeGreaterThan(kept[1]! * 1.4);
+  // On: Alt+Arrow grows it.
+  await page.evaluate(() => document.getElementById('plain')!.setAttribute('data-resizable', ''));
+  await page.locator('#plain').evaluate((n) => (n.shadowRoot!.querySelector('.header') as HTMLElement).focus());
+  await page.keyboard.press('Alt+ArrowRight');
+  await page.evaluate(() => window.__settled());
+  expect(await page.evaluate(() => document.getElementById('plain')!.offsetWidth)).toBeGreaterThan(off.w);
 });

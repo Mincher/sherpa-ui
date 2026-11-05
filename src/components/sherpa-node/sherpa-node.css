@@ -300,10 +300,12 @@
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   cursor: nwse-resize;
   touch-action: none;
+  display: none;
   visibility: hidden;
   color: var(--sherpa-style-content-secondary, #35353d);
   background: linear-gradient(135deg, transparent 0 50%, currentColor 50% calc(50% + 1px), transparent calc(50% + 1px) 70%, currentColor 70% calc(70% + 1px), transparent calc(70% + 1px));
 }
+:host([data-resizable]) .resize { display: block; }
 :host(:hover) .resize,
 :host(:focus-within) .resize,
 :host(:state(resizing)) .resize { visibility: visible; }
@@ -326,12 +328,14 @@
 /* The whole node's sockets, on the header's edges; False, on the footer's. */
 .socket {
   inset-block-start: 50%;
-  margin-block-start: calc(var(--_socket-h) / -2);
+  margin-block-start: calc(var(--_socket-h) / -2 - var(--_hit));
 }
 
 /* ── A fork: True is the header's output, False the footer's ─────────── */
 .footer {
   position: relative;
+  /* No word in it now; the False socket sits on its middle. */
+  min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
   border-end-start-radius: inherit;
   border-end-end-radius: inherit;
 }
@@ -344,11 +348,6 @@
 :host([data-branches]) .header .name-out { display: none; }
 :host([data-branches]) .header .name-true { display: inline; }
 :host([data-branches]) .header .tip-out .w-boolean { display: inline; }
-.false-label {
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  line-height: var(--sherpa-theme-content-line-height-small, 16px);
-  color: var(--sherpa-style-content-secondary, #35353d);
-}
 
 /* ── The rows: only when there are some. Each spans the card, so its
    sockets sit on the card's edges; it takes its inset from --_pad-inline. ── */
@@ -356,6 +355,8 @@
   flex: 1 1 auto;
   display: none;
   flex-direction: column;
+  /* A taller node shares its extra height out across the gaps between rows. Will, TODO 747 */
+  justify-content: space-between;
   gap: var(--sherpa-theme-gap-md, 8px);
   padding-block: var(--sherpa-theme-gap-md, 8px) var(--_pad);
 }

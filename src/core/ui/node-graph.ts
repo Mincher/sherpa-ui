@@ -67,7 +67,7 @@ import { flowPane, instancePane, updatePane } from './node-group-panel.js';
 import { nodeFlow } from '../data/node-flow.js';
 import { typedValue, type FieldType } from '../data/filter-state.js';
 import {
-  FALSE_SOCKET, NODE_KINDS, fitOf, paletteOf, placed, rowChoices, socketOf, socketType,
+  FALSE_SOCKET, NODE_KINDS, fitOf, paletteOf, partOf, placed, rowChoices, socketOf, socketType,
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeSize, type NodeRoute, type NodeTie, type SocketType,
 } from '../data/node-kinds.js';
 import {
@@ -119,6 +119,8 @@ export interface DrawOptions {
   onPicked?: (routes: NodeRoute[]) => void;
   /** Picked routes cut with Delete or Backspace, as one edit; unset, each goes to `onBreak`. */
   onBreakAll?: (routes: NodeRoute[]) => void;
+  /** Delete or Backspace with nodes picked: these nodes and these routes, as one edit. Unset, a node stays. */
+  onRemove?: (nodes: string[], routes: NodeRoute[]) => void;
   /** A line dragged out of an unrouted picklist's input socket and let go on the bare canvas, at a place on the plane. */
   onCustom?: (to: string, at: { x: number; y: number }) => void;
   /** A line let go on the bare canvas from a socket of any type: "Add a node" opens there (D16). Where unset, the line goes nowhere. */
@@ -195,6 +197,21 @@ function put(el: Element, name: string, value: string | undefined): void {
 
 /** A row's field: a switch, a menu of ticks, a select of its choices, or a text or number field.
  *  LOCKED — read only — where a route drives it, or nothing outside takes its change. */
+/** A row the graph feeds reads READ ONLY: the control's own look, not the inactive pin, and it takes no press or key. */
+function lock(field: Field, typed = false): void {
+  field.setAttribute('readonly', '');
+  field.setAttribute('aria-readonly', 'true');
+  // A text field's own readonly does the rest.
+  if (typed) return;
+  for (const type of ['keydown', 'keyup', 'click'] as const) {
+    field.addEventListener(type, (event) => {
+      if (type !== 'click' && (event as KeyboardEvent).key === 'Tab') return;
+      event.preventDefault();
+      if (type === 'click') event.stopImmediatePropagation();
+    }, true);
+  }
+}
+
 function fieldFor(row: GraphRow, locked: boolean): Field {
   if (row.multiple) {
     // The panel's own multi-value field: a chip that opens a menu of ticks.
@@ -206,19 +223,19 @@ function fieldFor(row: GraphRow, locked: boolean): Field {
     menu.setAttribute('data-select', 'multiple');
     menu.setAttribute('data-no-select-all', '');
     chip.append(menu);
-    if (locked) chip.setAttribute('disabled', '');
+    if (locked) lock(chip);
     return chip;
   }
   if (row.control === 'switch') {
     const field = document.createElement('sherpa-switch') as Field;
-    if (locked) field.setAttribute('disabled', '');
+    if (locked) lock(field);
     return field;
   }
   const field = document.createElement('sherpa-input-text') as Field;
   field.setAttribute('name', row.name);
   if (row.choices) field.setAttribute('data-type', 'select');
   else if (row.control === 'number') field.setAttribute('data-type', 'number');
-  if (locked) field.setAttribute(row.choices ? 'disabled' : 'readonly', '');
+  if (locked) lock(field, !row.choices);
   if (row.choices) field.populate?.(row.choices);
   return field;
 }
@@ -265,8 +282,14 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
       return line;
     }));
   }
+  // SECTIONS: the plain rows run together, and each part of a group is one. A line is drawn between two, never before the first.
+  let section: string | undefined;
   for (const row of node.rows) {
     const line = drawn.rows.get(`${node.id}/${row.name}`)!;
+    const { base, part } = partOf(row.name);
+    const now = NODE_KINDS[node.kind]?.rows.find((r) => r.name === base)?.repeat ? `part-${part}` : 'rows';
+    line.toggleAttribute('data-divided', section !== undefined && section !== now);
+    section = now;
     put(line, 'data-input-socket', row.input);
     put(line, 'data-output-socket', row.output);
     line.toggleAttribute('data-input-many', !!row.many);
@@ -426,7 +449,7 @@ function addressOf(drawn: Drawn, el: HTMLElement): string | null {
 
 /** The socket of one side nearest a point on the screen, within reach, or none. */
 function socketNear(drawn: Drawn, side: 'input' | 'output', x: number, y: number): string | null {
-  const REACH = 16;
+  const REACH = 20;
   let best: [string, number] | null = null;
   for (const [address, el] of [...drawn.nodes, ...drawn.rows]) {
     const rect = (el as HasSockets).socketRect?.(side);
@@ -871,13 +894,19 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     event.stopPropagation();
   });
   canvas.addEventListener('keydown', (event) => {
-    if (event.target !== canvas || !made.picked.length) return;
+    const first = event.composedPath()[0];
+    if (first instanceof Element && first.matches('input, select, textarea, [contenteditable]')) return;
+    const remove = event.key === 'Delete' || event.key === 'Backspace';
+    const ids = remove && made.options.onRemove ? [...made.nodes].filter(([, el]) => el.hasAttribute('data-current')).map(([id]) => id) : [];
+    if (event.target !== canvas && !ids.length) return;
+    if (!made.picked.length && !ids.length) return;
     if (event.key === 'Escape') {
       deselect(canvas, made);
-    } else if (event.key === 'Delete' || event.key === 'Backspace') {
+    } else if (remove) {
       const routes = made.picked;
       made.picked = [];
-      if (routes.length > 1 && made.options.onBreakAll) made.options.onBreakAll(routes);
+      if (ids.length) made.options.onRemove!(ids, routes);
+      else if (routes.length > 1 && made.options.onBreakAll) made.options.onBreakAll(routes);
       else for (const route of routes) made.options.onBreak?.(route);
       drawRoutes(canvas, made);
       made.options.onPicked?.([]);
@@ -1201,9 +1230,10 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   };
   const routed = driven(graph);
   const fields = new WeakMap<Element, GraphRow>();
-  const button = (label: string, act: () => void): HTMLElement => {
+  const button = (label: string, act: () => void, tip?: string): HTMLElement => {
     const el = document.createElement('sherpa-button');
     el.setAttribute('data-label', label);
+    if (tip) el.setAttribute('data-description', tip);
     el.setAttribute('data-size', 'sm');
     el.addEventListener('button-click', act);
     return el;
@@ -1231,7 +1261,7 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   ];
   const stack = document.createElement('sherpa-stack');
   stack.setAttribute('data-gap', 'lg');
-  const remove = options.onRemove ? [button('Remove node', options.onRemove)] : [];
+  const remove = options.onRemove ? [button('Remove node', options.onRemove, 'Remove this node and its routes. Keyboard: Backspace or Delete.')] : [];
   const flow = nodeFlow(graph, node.id);
   stack.append(...(options.extra ?? []), ...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...('fault' in flow ? [] : [flowPane(flow)]), ...remove);
   const { tabs } = options;
@@ -1321,6 +1351,8 @@ interface Picked {
 /** A canvas's picked node in its inspector: opened on a pick, followed on each draw, let go as it shuts. */
 function pickedIn(
   canvas: SherpaLayoutCanvas, inspector: Inspector | undefined, show: (node: GraphNode, graph: DrawnGraph) => void, onClose?: () => void,
+  /** Delete or Backspace with the keys in the inspector, and not in a text field. */
+  onDelete?: () => void,
 ): Picked {
   let picked: string | null = null;
   const close = (event: Event): void => {
@@ -1330,6 +1362,13 @@ function pickedIn(
     onClose?.();
   };
   inspector?.addEventListener('panel-close', close);
+  const keys = (event: KeyboardEvent): void => {
+    const first = event.composedPath()[0];
+    if ((event.key !== 'Delete' && event.key !== 'Backspace') || (first instanceof Element && first.matches('input, select, textarea, [contenteditable]'))) return;
+    event.preventDefault();
+    onDelete?.();
+  };
+  if (onDelete) inspector?.addEventListener('keydown', keys);
   return {
     select(node, graph): void {
       picked = node.id;
@@ -1347,6 +1386,7 @@ function pickedIn(
     },
     stop(): void {
       inspector?.removeEventListener('panel-close', close);
+      inspector?.removeEventListener('keydown', keys);
       inspector?.hide();
     },
   };
@@ -1444,7 +1484,7 @@ export function bindQueryEditor(
     visual = { id, el };
     return el;
   };
-  const picks = pickedIn(canvas, inspector, (node, now) => inspectNode(inspector!, node, now, { onEdit, visual: visualOf(node) }), () => { visual = null; });
+  const picks = pickedIn(canvas, inspector, (node, now) => inspectNode(inspector!, node, now, { onEdit, visual: visualOf(node) }), () => { visual = null; }, () => removeRefused());
   let graph: DrawnGraph = { nodes: [], routes: [] };
   /** A cut is reported, never applied: once, however many routes are picked. */
   const cutRefused = (): void => report({ code: 'query-route', message: 'The Query\'s routes are its readings: turn a condition off, or clear it, to take it from its scope.' });
@@ -1460,6 +1500,7 @@ export function bindQueryEditor(
   };
   const onBend = (route: NodeRoute, at: number, x: number, y: number, insert: boolean): void => keepBends({ ...bends, [bendKey(route)]: placeBend(bends[bendKey(route)], at, x, y, insert).via });
   const onUnbend = (route: NodeRoute, index: number): void => keepBends({ ...bends, [bendKey(route)]: dropBend(bends[bendKey(route)], index) });
+  const removeRefused = (): void => report({ code: 'query-remove', message: 'The Query\'s nodes are its readings: turn a condition off, or clear it, to take it from its scope.' });
   const draw = (): void => {
     const read = placed(queryGraph(query.draft, definition, {
       ...facts, values, presets: (scope) => query.presets(scope), domains: source.store?.domains ?? {}, pageSize: source.state?.pageSize ?? null,
@@ -1471,7 +1512,7 @@ export function bindQueryEditor(
       // Its routes are readings, which another field or scope takes: a moved end is a new route.
       onReroute: (_was, now) => onConnect(now),
       ...(panel ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
-      onBreak: cutRefused, onBreakAll: cutRefused,
+      onBreak: cutRefused, onBreakAll: cutRefused, onRemove: removeRefused,
       // A box picks and shows: one node opens its panel, as a click does; several, or none, shut it. TODO 735
       onBox: (ids) => {
         const node = ids.length === 1 ? graph.nodes.find((n) => n.id === ids[0]) : undefined;
@@ -1887,6 +1928,22 @@ export function bindWorkflow(
     picks.deselect();
     write(editWorkflow(shown(), { remove: id }, K()));
   };
+  // Delete or Backspace on picked nodes: they and the routes picked go as ONE step. A Group Input or Output stays, and says so.
+  const onRemoveNodes = (ids: string[], routes: NodeRoute[]): void => {
+    const gone = ids.filter((id) => !id.startsWith('#'));
+    if (gone.length < ids.length) report({ code: 'node-remove', message: 'The Group Input and Group Output are a Custom Node\'s doors: they cannot be removed.', at: { workflow: shown().id } });
+    if (!gone.length && !routes.length) return;
+    multi.clear();
+    picks.deselect();
+    edit(() => {
+      let next = shown();
+      for (const route of routes) next = editWorkflow(next, { cut: route }, K());
+      for (const id of gone) next = editWorkflow(next, { remove: id }, K());
+      write(next);
+    });
+    // The canvas's own keys (Undo) hear what comes next.
+    canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
+  };
 
   // — Custom Nodes: open, the trail, update, save as, ungroup —
   // The picked set tells the toolbar when Save as Custom Node can be pressed: two or more.
@@ -2215,7 +2272,10 @@ export function bindWorkflow(
     current = node.id;
     markActive(canvas, null);
     fillInspector(node, now);
-  }, () => { multi.clear(); current = null; active = null; });
+  }, () => { multi.clear(); current = null; active = null; }, () => {
+    const ids = multi.size ? [...multi] : current ? [current] : [];
+    if (ids.length && !readOnly()) onRemoveNodes(ids, []);
+  });
   function draw(): void {
     if (path.length && !innerNow()) path = [];
     const ro = readOnly();
@@ -2224,7 +2284,7 @@ export function bindWorkflow(
     drawGraph(canvas, graph, {
       onEdit, onMove, onResize, onConnect, onReroute, onBreak, onCustom, onDeselect: picks.deselect,
       onBox: pickBox, onPicked: tellPicked, onBendPicked: (pick) => toolbar?.toggleAttribute('data-picked-bend', !!pick),
-      ...(ro ? {} : { tying, onTie, onTieMove, onUntie, onBreakAll, onBend, onUnbend, onTieDrop }),
+      ...(ro ? {} : { tying, onTie, onTieMove, onUntie, onBreakAll, onBend, onUnbend, onTieDrop, onRemove: onRemoveNodes }),
       onSelect: (node) => {
         multi.clear();
         picks.select(node, graph);

@@ -6850,6 +6850,13 @@
           "description": "one row of a sherpa-node: an input socket, a field and an output socket. Any of the three may be absent. Will, TODO 78.",
           "attributes": [
             {
+              "name": "data-divided",
+              "description": "a line over the row: it starts a new section of its node",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-input-many",
               "description": "the input takes several routes: its socket is a double height D",
               "type": {
@@ -7067,7 +7074,7 @@
             },
             {
               "name": "data-branches",
-              "description": "a fork: the header's output is True, and a footer shows with False",
+              "description": "a fork: the header's output is True, and a footer shows with its False socket, a rounded square",
               "type": {
                 "text": "boolean"
               }
@@ -7162,6 +7169,13 @@
               "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle)",
               "type": {
                 "text": "'value' | 'object' | 'boolean'"
+              }
+            },
+            {
+              "name": "data-resizable",
+              "description": "the resize handle and Alt and an arrow exist: the app's Allow resizing nodes setting writes it. A saved size draws either way. It follows the app's `resizeNodes` setting.",
+              "type": {
+                "text": "boolean"
               }
             },
             {
@@ -8675,7 +8689,7 @@
               "name": "setting-change",
               "description": "A reader changed a setting here: a bar's ⋮, the panel's mode.",
               "type": {
-                "text": "CustomEvent<{ key: 'actionDescriptions' | 'allowSolo' | 'appContext' | 'applyEvery' | 'axisChips' | 'countApplied' | 'countEveryValue' | 'descriptionTips' | 'filterMode' | 'filterValueBorder' | 'headingGroup' | 'headingHover' | 'hideOrganiseLabels' | 'hideUnmatched' | 'highlightAcross' | 'highlightOnHover' | 'labelColumn' | 'legendChips' | 'limitOptions' | 'moveFilters' | 'multiFieldColumns' | 'navHierarchy' | 'navHover' | 'navViews' | 'reorderFilters' | 'results' | 'saveAnyScope' | 'savedMenu' | 'sectionLabels' | 'sections' | 'showAs' | 'singleApply' | 'soloAcrossScopes' | 'soloInHeader' | 'switchable' | 'toggleShapes'; value: SettingValue }>"
+                "text": "CustomEvent<{ key: 'actionDescriptions' | 'allowSolo' | 'appContext' | 'applyEvery' | 'axisChips' | 'countApplied' | 'countEveryValue' | 'descriptionTips' | 'filterMode' | 'filterValueBorder' | 'headingGroup' | 'headingHover' | 'hideOrganiseLabels' | 'hideUnmatched' | 'highlightAcross' | 'highlightOnHover' | 'labelColumn' | 'legendChips' | 'limitOptions' | 'moveFilters' | 'multiFieldColumns' | 'navHierarchy' | 'navHover' | 'navViews' | 'reorderFilters' | 'resizeNodes' | 'results' | 'saveAnyScope' | 'savedMenu' | 'sectionLabels' | 'sections' | 'showAs' | 'singleApply' | 'soloAcrossScopes' | 'soloInHeader' | 'switchable' | 'toggleShapes'; value: SettingValue }>"
               }
             },
             {

@@ -116,13 +116,13 @@ test('a switch row has a boolean input socket: hollow until a route joins it', a
 test('a routed socket is filled: the triangle is ink in the middle, not at its far corners', async ({ page }) => {
   await bind(page, [{ from: 'filter', to: 'gate/on' }]);
   const green = await ink(page);
-  const mask = (await socketPaint(page, [[.5, .5], [.9, .1], [.9, .9]])).map((p) => (near(p, green) ? 1 : 0));
+  const mask = (await socketPaint(page, [[.5, .5], [.96, .04], [.96, .96]])).map((p) => (near(p, green) ? 1 : 0));
   expect(mask).toEqual([1, 0, 0]);
 });
 
 const sw = (page: Page) => page.evaluate((sel) => {
   const s = document.querySelector<HTMLElement & { checked: boolean }>(`${sel} sherpa-switch`)!;
-  return { on: s.checked, locked: s.hasAttribute('disabled'), note: s.getAttribute('data-description') };
+  return { on: s.checked, locked: s.hasAttribute('readonly') && !s.hasAttribute('disabled'), note: s.getAttribute('data-description') };
 }, GATE);
 
 test('a routed True drives the switch on, read only and marked Custom; cut the route and its own state is back', async ({ page }) => {

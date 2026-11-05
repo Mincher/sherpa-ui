@@ -157,13 +157,7 @@
             {
               "el": "sherpa-container-footer",
               "class": "foot",
-              "part": "foot",
-              "children": [
-                {
-                  "el": "span",
-                  "class": "false-label"
-                }
-              ]
+              "part": "foot"
             },
             {
               "el": "span",
@@ -223,7 +217,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "a fork: the header's output is True, and a footer shows with False"
+      "description": "a fork: the header's output is True, and a footer shows with its False socket, a rounded square"
     },
     {
       "$type": "prop",
@@ -356,6 +350,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-resizable",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "the resize handle and Alt and an arrow exist: the app's Allow resizing nodes setting writes it. A saved size draws either way"
+    },
+    {
+      "$type": "prop",
       "name": "data-scale-h",
       "type": "number",
       "observed": true,
@@ -421,8 +424,11 @@
     }
   ],
   "populate": {
-    "shape": "{ active?, branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, scaleH?, scaleW?, step?, x?, y? }",
+    "shape": "{ active?, branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, resizable?, scaleH?, scaleW?, step?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
+  },
+  "settings": {
+    "data-resizable": "resizeNodes"
   },
   "states": [
     {
@@ -454,6 +460,11 @@
       "$type": "state",
       "name": "current",
       "selector": ":host([data-current])"
+    },
+    {
+      "$type": "state",
+      "name": "resizable",
+      "selector": ":host([data-resizable])"
     },
     {
       "$type": "state",
@@ -531,9 +542,7 @@
     "caption.font-family": "{sherpa.font-family-body}",
     "caption.font-size": "{sherpa.font-size-body-small}",
     "caption.line-height": "{sherpa.theme-content-line-height-small}",
-    "false-label.font-size": "{sherpa.font-size-body-small}",
-    "false-label.line-height": "{sherpa.theme-content-line-height-small}",
-    "false-label.color": "{sherpa.style-content-secondary}",
+    "footer.min-block-size": "{sherpa.display-mode-size-2xl}",
     "body.gap": "{sherpa.theme-gap-md}",
     "body.padding-block": "{sherpa.theme-gap-md}"
   },

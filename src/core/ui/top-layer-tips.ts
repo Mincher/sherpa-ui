@@ -55,6 +55,25 @@ function share(anchor: Element, tip: HTMLElement): void {
   sharedOn.set(tip, anchor);
 }
 
+/** The tip's own place, set only where CSS anchoring put it far from its anchor: Firefox anchors to the
+ *  UNTRANSFORMED box, so a tip on a scaled canvas lands on the plane's coordinates, not the screen's. */
+const PLACED = ['position-area', 'position-try-fallbacks', 'inset', 'margin'] as const;
+
+/** Is the tip next to its anchor on screen? Else sit it above, or below at the top edge, and keep it in the window. */
+function keepNear(anchor: Element, tip: HTMLElement): void {
+  const a = anchor.getBoundingClientRect();
+  const t = tip.getBoundingClientRect();
+  const away = Math.max(0, a.left - t.right, t.left - a.right, a.top - t.bottom, t.top - a.bottom);
+  if (away <= 24) return;
+  const gap = 4;
+  const above = a.top - t.height - gap;
+  const x = Math.min(Math.max(4, a.left + a.width / 2 - t.width / 2), Math.max(4, innerWidth - t.width - 4));
+  tip.style.setProperty('position-area', 'none');
+  tip.style.setProperty('position-try-fallbacks', 'none');
+  tip.style.setProperty('margin', '0');
+  tip.style.setProperty('inset', `${above >= 4 ? above : a.bottom + gap}px auto auto ${x}px`);
+}
+
 /** The focused element, however deep, when it shows keyboard focus. */
 function keyboardFocus(): Element | null {
   let at = document.activeElement;
@@ -76,13 +95,17 @@ function lift(this: ShadowRoot, event: Event): void {
   if (!found || (event.type === 'focusin' && !keyboardFocus())) return;
   const { anchor, tip } = found;
   share(anchor, tip);
-  if (!tip.matches(':popover-open')) tip.showPopover();
+  if (!tip.matches(':popover-open')) {
+    for (const name of PLACED) tip.style.removeProperty(name);
+    tip.showPopover();
+  }
   /* A FRAME LATER, when its style is worked out anyway — read now, every hover
      forced it (1 ms in WebKit): one its host's CSS hides — empty, turned off,
      under its open menu — is never held open, and shuts no other. */
   requestAnimationFrame(() => {
     if (!tip.matches(':popover-open')) return;
     if (getComputedStyle(tip).display === 'none') return tip.hidePopover();
+    keepNear(anchor, tip);
     if (shown !== tip && shown?.matches(':popover-open')) shown.hidePopover();
     shown = tip;
   });

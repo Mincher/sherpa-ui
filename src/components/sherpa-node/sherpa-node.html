@@ -12,7 +12,7 @@
     data-output-socket  the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle)
     data-input-routed   a route joins the header's input: its socket is filled, else hollow
     data-output-routed  a route leaves the header's output: its socket is filled, else hollow
-    data-branches       a fork: the header's output is True, and a footer shows with False
+    data-branches       a fork: the header's output is True, and a footer shows with its False socket, a rounded square
     data-false-routed   a route leaves False: its socket is filled, else hollow
     data-category     its kind's category, in lower case: sources | custom-nodes | variables | math | logic | time | utils | collections | output | ai; each has its look
     data-input-many   the header's input takes several routes: its socket is a double height D
@@ -25,6 +25,7 @@
     data-step         how its step stands as a run lights it: running | done | failed | skipped. Its host writes it
     data-caption      a line over the node: what its step did, its time and rows. Its host writes it
     data-locked       the host owns the place: a drag or a key reports, and moves nothing
+    data-resizable    the resize handle and Alt and an arrow exist: the app's Allow resizing nodes setting writes it. A saved size draws either way
 
   Slots:
     (default)   the node's rows: each a sherpa-node-row
@@ -49,9 +50,9 @@
       <span class="tip tip-out sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="name name-out">Output:</span><span class="name name-true">True:</span><span class="word w-value">a value</span><span class="word w-object">an object</span><span class="word w-boolean">a boolean</span></span>
     </div>
     <div class="body" part="body"><slot data-accepts="item"></slot></div>
-    <!-- The FOOTER: only a fork has one, and its False. -->
+    <!-- The FOOTER: only a fork has one, and its False socket. -->
     <div class="footer" part="footer">
-      <sherpa-container-footer class="foot" part="foot"><span class="false-label">False</span></sherpa-container-footer>
+      <sherpa-container-footer class="foot" part="foot"></sherpa-container-footer>
       <span class="socket socket-out socket-false sherpa-anchor" part="socket-false" aria-hidden="true"></span>
       <span class="tip tip-false sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="name">False:</span><span class="word">a boolean</span></span>
     </div>
