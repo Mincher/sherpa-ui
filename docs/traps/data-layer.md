@@ -6377,6 +6377,39 @@ refuses while one stands.
 - Site: `test/unit/a-node-row-says-its-own-fault.test.mjs`
 - Site: `test/e2e/reforged-node-row-controls.spec.ts`
 
+### T-a-logic-type-is-an-operator
+
+**Logic's comparisons ARE the data layer's operators: ONE list, `OP_LABELS`, names them in a filter
+menu, a Condition's Operator row and Logic's Operation select.** Plan 749 P5. `condition` is the
+Logic family (D1). Its first type, Rows that hold, is the condition tree (`T-a-condition-is-a-tree-of-nodes`).
+Then come Figma's And, Or and six comparisons, then Not and Is empty, then Sherpa's other operators.
+A comparison's type id is its `FilterOp`, and its label is `OP_LABELS[op]`. Its rows are Value A and
+what `OP_TAKES` says the operator takes: Value B, a tag list of Values (`LIST_OPS`), or Start and End.
+A copied label is a second vocabulary. Change the word in `OP_LABELS`, and every place says it:
+Figma's "Greater than or equal" reads "At least" here.
+
+- **In the last and In the next are Time › Duration's**, not Logic's: two nodes would do one check.
+- **The header's input is the type's.** Rows that hold takes rows of any type (D1). And and Or take
+  many booleans, and Not takes one. Is empty takes any value. A comparison takes nothing: its values
+  are its rows. Each one forks: True on the header, False on the footer. Nothing runs (N4): a runner
+  reads a value as `truthy` reads it (D2).
+- **What a type change orphans is the draft's** (Will, 2026-11-05). Say a route enters a socket that
+  takes it only under another type. For example, Store's rows enter a Condition switched to And.
+  `keptRoutes` keeps that route: it is drawn nowhere, it is no fault, and Rows that hold joins it
+  again. Save leaves it out (`finalGraph`), and `take()` refuses to make one. Only the node a route
+  ENTERS is asked: a List out of a Value into one value is still a fault.
+- **A Field the draft keeps names nothing.** Under Is one of, a `field` value kept from the tree does
+  not close Values to that field's values. `fieldOf` reads only a Field row the node draws now.
+- **The Query draws one type.** `kindIn(kind, 'query')` leaves Rows that hold alone, so the Query's
+  Condition has no select and reads back the same tree. Its panel item is the tree too.
+- **Tag › Includes says the same grammar.** Its `where` (`nodeFlow`) is `{ field, op: 'in', value }`:
+  a Condition's Is one of.
+
+- Site: `src/core/data/node-kinds.ts`
+- Site: `src/core/data/workflow.ts`
+- Site: `test/unit/a-logic-type-is-an-operator.test.mjs`
+- Site: `test/e2e/reforged-node-logic.spec.ts`
+
 ### T-a-changed-key-moves-the-row
 
 **An update that changes a row's KEY moves the row, in every store.** TODO 188,
@@ -6658,7 +6691,9 @@ sockets only, never types.
 §4, M4): its Join, then each part — a comparison's Field, Operator and Value, or
 a Group row for a nested group. `A or (B and C)` is two nodes: the inner one's
 True goes into a Group row of the outer. One kind serves both graphs; the
-workflow's `filter` is gone, and a saved one reads as `condition`, once.
+workflow's `filter` is gone, and a saved one reads as `condition`, once. The tree
+is Logic's first type, Rows that hold, and the Query's only one; a node with no
+type is it (`T-a-logic-type-is-an-operator`).
 
 - **A part repeats its rows**: `field`, `op`, `value`, `group` (`RowKind.repeat`)
   once for each part, named `partName` — the first part's is the row's own,

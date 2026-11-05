@@ -126,6 +126,7 @@ export {
   accepts,
   fitOf,
   paletteFor,
+  kindIn,
   kindOfNode,
   paletteMatch,
   paletteOf,

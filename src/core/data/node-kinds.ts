@@ -15,13 +15,14 @@
  * - NodeType — One type of a family kind: its words, its hint and what it adds to the kind's rows and sockets.
  * - NodeKind — What a node IS: its header, its sockets, its rows, and what it stands for in the data layer.
  * - ROWS — The Rows row: the data rows a node sends on. They come in on its header.
+ * - LIST_OPS — The operators whose value is a list: Is one of, Is not one of.
  * - NODE_KINDS — Every kind the library ships, once. An app adds its own beside them.
  * - typeOf — The type of a family kind a node's `type` names: its own, else the kind's default.
  * - typeChoices — The types of a family kind as a picklist reads them; none, it is no family.
  * - resolveKind — A family kind as an ordinary kind for one type: the type row first, then the kind's rows and the type's.
  * - resolveKind — A family kind as an ordinary kind for one type: the type row first, then the kind's rows and the type's.
  * - resolveKind — A family kind as an ordinary kind for one type: the type row first, then the kind's rows and the type's.
- * - LIST_OPS — The operators whose value is a list: Is one of, Is not one of.
+ * - kindIn — A kind as one graph draws it: a family with only the types that graph takes; none, it draws no such kind.
  * - listedRow — A comparison's Value row under an operator that takes a list: tags, an object (D17).
  * - kindOfNode — The kind a node is, for its own type and operators; none, no such kind.
  * - rowOfOtherType — A row a family kind has under another type than this one: it, and the types that hold it.
@@ -29,7 +30,7 @@
  * - PaletteItem — One node of the panel: the kind's id and the kind.
  * - PaletteGroup — One category of the panel, and its kinds in the registry's order.
  * - paletteOf — The node panel's list: each category with a workflow kind in it, in order; never a Query-only kind.
- * - paletteMatch — How a panel item answers a search: by its name, or by a type's name and that type.
+ * - paletteMatch — How a panel item answers a search: by its name, or by a type's name, a whole one first, and that type.
  * - fitOf — Where a new node of a kind joins a socket of a type: its header or a row, as a family's type.
  * - paletteFor — The palette's kinds a socket of a type could join, a Value first.
  * - Socket — A socket address, read: its node, and its row or none for the header's.
@@ -60,7 +61,7 @@
  * - kindNode — A node of a kind, its rows given: the kind's header and sockets, under its own.
  * - placed — A graph with each node at its kept place.
  */
-import { DATE_OP_LABELS, OP_LABELS, OPS_FOR_TYPE, type Duration, type FilterOp } from './store.js';
+import { DATE_OP_LABELS, OP_LABELS, OP_TAKES, OPS_FOR_TYPE, type Duration, type FilterOp } from './store.js';
 import { PRESENTATION_KINDS } from './query.js';
 import { isDateTime } from './format-date.js';
 
@@ -132,6 +133,8 @@ export interface NodeType {
   many?: true;
   output?: SocketType;
   branches?: boolean;
+  /** Where it is drawn, where not every graph of its kind: the Query takes a Condition's Rows that hold alone. */
+  graphs?: readonly NodeGraph[];
 }
 
 /** What a node IS: its header, its sockets, its rows, and what it stands for in the data layer. */
@@ -181,6 +184,36 @@ const LIST: RowKind = { name: 'values', label: 'Values', input: 'object', many: 
 const RESULT: RowKind = { name: 'result', label: 'Result', output: 'value' };
 const [A, B, SEPARATOR] = [numberRow('a', 'Value A'), numberRow('b', 'Value B'), textRow('separator', 'Separator')];
 
+/** The operators whose value is a list: Is one of, Is not one of. */
+export const LIST_OPS: readonly FilterOp[] = ['in', 'notin'];
+
+/** A Logic type that is one of the data layer's operators, over two values: its words the operator's own (`OP_LABELS`),
+ *  Value A against what the operator takes — Value B, a list of Values, or Start and End. TRAP T-a-logic-type-is-an-operator */
+function compareType(op: FilterOp): NodeType {
+  const [list, range] = [LIST_OPS.includes(op), OP_TAKES[op] === 'range'];
+  const rows: RowKind[] = list ? [{ name: 'b', label: 'Values', control: 'tags', multiple: true, input: 'object' }]
+    : range ? [textRow('start', 'Start'), textRow('end', 'End')] : [textRow('b', 'Value B')];
+  const against = list ? 'the Values' : range ? 'Start and End' : 'Value B';
+  const words = OP_LABELS[op].toLowerCase();
+  const said = /^(is|does|equals|contains|starts|ends)\b/.test(words) ? words : `is ${words}`;
+  return { label: OP_LABELS[op], help: `True when Value A ${said} ${against}`, rows: [textRow('a', 'Value A'), ...rows], graphs: ['workflow'] };
+}
+
+/** Figma's six comparisons, in its order; the operators after them are Sherpa's. A span from today is Time › Duration's. */
+const FIGMA_OPS: readonly FilterOp[] = ['gt', 'gte', 'lt', 'lte', 'eq', 'ne'];
+const SHERPA_OPS = (Object.keys(OP_LABELS) as FilterOp[]).filter((op) => !FIGMA_OPS.includes(op) && op !== 'last' && op !== 'next');
+const compareTypes = (ops: readonly FilterOp[]): Record<string, NodeType> => Object.fromEntries(ops.map((op) => [op, compareType(op)]));
+
+/** Logic's types after the tree: booleans on the header, read as `truthy` reads them (D2), then the comparisons. Plan 749 P5 */
+const LOGIC: Readonly<Record<string, NodeType>> = {
+  and: { label: 'And', help: 'True when every value that comes in is true', input: 'boolean', many: true, graphs: ['workflow'] },
+  or: { label: 'Or', help: 'True when any value that comes in is true', input: 'boolean', many: true, graphs: ['workflow'] },
+  ...compareTypes(FIGMA_OPS),
+  not: { label: 'Not', help: 'True when the value that comes in is false', input: 'boolean', graphs: ['workflow'] },
+  empty: { label: 'Is empty', help: 'True when the value that comes in is nothing: none, 0, false, or empty text or list', input: 'any', graphs: ['workflow'] },
+  ...compareTypes(SHERPA_OPS),
+};
+
 /** Every kind the library ships, once. An app adds its own beside them: `{ ...NODE_KINDS, mine }`.
  *  A kind a workflow runs forks (`branches`): its True and False say whether it gave anything
  *  (D2). The Query's own steps do not: nothing routes a branch from them. */
@@ -209,19 +242,26 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     heading: 'Scope', icon: 'filter', input: 'any',
     rows: [ROWS, { name: '#filters', label: 'Filters', control: 'switch', input: 'boolean' }], model: 'ScopeQuery', graphs: ['query'],
   },
-  // ONE group of the condition tree (D3): its join, then each part — a comparison's field, operator
-  // and value, or a nested group's True into a Group row. True takes the rows that hold, False the rest.
+  // Logic: its Rows that hold is ONE group of the condition tree (D3), the Query's only type: its join, then each
+  // part — a comparison's field, operator and value, or a nested group's True into a Group row. Then a check's types.
   condition: {
-    heading: 'Condition', icon: 'function', description: 'The rows that hold for a group of conditions.', input: 'any', branches: true,
-    rows: [
-      ROWS,
-      { name: 'join', label: 'Join', control: 'join' },
-      { name: 'field', label: 'Field', control: 'field', repeat: true, input: 'value', output: 'value' },
-      { name: 'op', label: 'Operator', control: 'op', repeat: true, input: 'value' },
-      { name: 'value', label: 'Value', control: 'values', repeat: true, input: 'value' },
-      { name: 'group', label: 'Group', repeat: true, input: 'boolean', from: ['condition'] },
-    ],
-    model: 'Condition', graphs: ['query', 'workflow'], category: 'Logic',
+    heading: 'Condition', icon: 'function', description: 'Whether a check holds: True takes what holds, False the rest.', branches: true,
+    typeLabel: 'Operation', defaultType: 'rows',
+    types: {
+      rows: {
+        label: 'Rows that hold', help: 'The rows that hold for a group of conditions', input: 'any',
+        rows: [
+          ROWS,
+          { name: 'join', label: 'Join', control: 'join' },
+          { name: 'field', label: 'Field', control: 'field', repeat: true, input: 'value', output: 'value' },
+          { name: 'op', label: 'Operator', control: 'op', repeat: true, input: 'value' },
+          { name: 'value', label: 'Value', control: 'values', repeat: true, input: 'value' },
+          { name: 'group', label: 'Group', repeat: true, input: 'boolean', from: ['condition'] },
+        ],
+      },
+      ...LOGIC,
+    },
+    rows: [], model: 'Condition', graphs: ['query', 'workflow'], category: 'Logic',
   },
   // Its on, then each field it writes.
   preset: {
@@ -355,17 +395,24 @@ export function resolveKind(kind: NodeKind | undefined, type?: unknown): NodeKin
   const at = kind && typeOf(kind, type);
   if (!kind || !at) return kind;
   const { types, typeLabel, defaultType: _default, branches: forks, ...plain } = kind;
-  const { input, many, output, branches = forks } = at.type;
+  const { input, many, output, branches = forks, graphs = kind.graphs } = at.type;
   const row: RowKind = { name: 'type', label: typeLabel ?? 'Type', control: 'type' };
   return {
     ...plain, ...(input ? { input } : {}), ...(many ? { many } : {}), ...(output ? { output } : {}),
-    ...(branches ? { branches: true as const } : {}),
+    ...(branches ? { branches: true as const } : {}), graphs,
     rows: [...(Object.keys(types!).length > 1 ? [row] : []), ...kind.rows, ...(at.type.rows ?? [])],
   };
 }
 
-/** The operators whose value is a list: Is one of, Is not one of. */
-export const LIST_OPS: readonly FilterOp[] = ['in', 'notin'];
+/** A kind as one graph draws it: a family with only the types that graph takes; none, the graph draws no such kind. */
+export function kindIn(kind: NodeKind, graph: NodeGraph): NodeKind | undefined {
+  if (!kind.graphs.includes(graph)) return undefined;
+  if (!kind.types) return kind;
+  const types = Object.fromEntries(Object.entries(kind.types).filter(([, t]) => (t.graphs ?? kind.graphs).includes(graph)));
+  if (Object.keys(types).length === Object.keys(kind.types).length) return kind;
+  const { defaultType, ...rest } = kind;
+  return Object.keys(types).length ? { ...rest, types, ...(defaultType && types[defaultType] ? { defaultType } : {}) } : undefined;
+}
 
 /** A comparison's Value row under an operator that takes a list: tags, an object (D17). Its own row, not repeated. */
 export function listedRow(row: RowKind, part: number): RowKind {
@@ -418,8 +465,10 @@ export interface PaletteGroup {
  *  Query-only kind; a Query's lists only the kinds a Query takes placed (`QUERY_CATEGORIES`). */
 export function paletteOf(kinds: Readonly<Record<string, NodeKind>>, graph: NodeGraph = 'workflow'): PaletteGroup[] {
   const groups = new Map<string, PaletteItem[]>(NODE_CATEGORIES.map((c) => [c, []]));
-  for (const [id, kind] of Object.entries(kinds)) {
-    if (!kind.graphs.includes(graph)) continue;
+  for (const [id, family] of Object.entries(kinds)) {
+    // A family lists only the types its graph takes: the Query's Condition is its Rows that hold alone.
+    const kind = kindIn(family, graph);
+    if (!kind) continue;
     const category = kind.category ?? 'Other';
     if (graph === 'query' && !QUERY_CATEGORIES.includes(category)) continue;
     const items = groups.get(category) ?? [];
@@ -430,11 +479,13 @@ export function paletteOf(kinds: Readonly<Record<string, NodeKind>>, graph: Node
   return [...groups].filter(([c, items]) => items.length || (graph === 'workflow' && c === 'Custom Nodes')).sort(([a], [b]) => Number(!known.has(a)) - Number(!known.has(b))).map(([category, items]) => ({ category, items }));
 }
 
-/** How a panel item answers a search: by its name, `{}`; by a type's name, `{ type }`; none, not at all. Nothing typed finds all. */
+/** How a panel item answers a search: by its name, `{}`; by a type's name, `{ type }`, the one it names whole first ("not" is
+ *  Not, not Does not equal); none, not at all. Nothing typed finds all. */
 export function paletteMatch(kind: Pick<NodeKind, 'heading' | 'types'>, query: string): { type?: string } | undefined {
   const q = query.trim().toLowerCase();
   if (!q || kind.heading.toLowerCase().includes(q)) return {};
-  const hit = Object.entries(kind.types ?? {}).find(([, t]) => t.label.toLowerCase().includes(q));
+  const types = Object.entries(kind.types ?? {});
+  const hit = types.find(([, t]) => t.label.toLowerCase() === q) ?? types.find(([, t]) => t.label.toLowerCase().includes(q));
   return hit ? { type: hit[0] } : undefined;
 }
 
@@ -501,9 +552,9 @@ export function partOf(name: string): { base: string; part: number } {
 /** One part of a condition group: a comparison, or a nested group. */
 export type PartKind = 'leaf' | 'group';
 
-/** The rows a Condition node draws for its parts, in order: its Rows, its Join from two parts on,
- *  each part's — a comparison's Field, Operator and Value, or a Group. `rows: false` leaves out
- *  what only a run gives: Rows. True and False are the node's own sockets, not rows. */
+/** The rows a Condition node draws for its parts, in order: its Type where it has one, its Rows, its Join
+ *  from two parts on, each part's — a comparison's Field, Operator and Value, or a Group. `rows: false`
+ *  leaves out what only a run gives: Rows. True and False are the node's own sockets, not rows. */
 export function conditionRows(kind: Pick<NodeKind, 'rows'>, parts: readonly PartKind[], { rows = true }: { rows?: boolean } = {}): RowKind[] {
   const of = (name: string): RowKind => kind.rows.find((r) => r.name === name)!;
   // A part's own row first: a Value under Is one of is a tag list (`kindOfNode`).
@@ -512,6 +563,7 @@ export function conditionRows(kind: Pick<NodeKind, 'rows'>, parts: readonly Part
     return { ...row, name: partName(name, n) };
   });
   return [
+    ...kind.rows.filter((r) => r.control === 'type'),
     ...(rows ? [of(ROWS.name)] : []),
     ...(parts.length >= 2 ? [of('join')] : []),
     ...parts.flatMap((p, i) => part(p === 'leaf' ? ['field', 'op', 'value'] : ['group'], i + 1)),

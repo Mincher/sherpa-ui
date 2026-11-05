@@ -13,7 +13,7 @@ import { FALSE_SOCKET, partName, partOf, socketOf, type DrawnGraph, type GraphNo
 export interface NodeFlow {
   incoming: readonly Record<string, unknown>[];
   outgoing: readonly Record<string, unknown>[];
-  /** What the node stands for: a Condition's `where` tree, a Store's store, else its rows' values. */
+  /** What the node stands for: a Condition's or a Tag's `where` tree, a Store's store, else its rows' values. */
   definition?: Record<string, unknown>;
 }
 
@@ -25,21 +25,30 @@ function said(graph: DrawnGraph, address: string, source: boolean): string {
   return [from?.heading ?? id, part].filter(Boolean).join(' › ');
 }
 
-/** A Condition node as the tree it says: its parts joined, a nested group read from the node routed into its Group row. */
+/** A Condition node as the tree it says: its parts joined, a nested group read from the node routed into its Group row.
+ *  None, it draws no part: a check of another type. */
 function whereOf(graph: DrawnGraph, node: GraphNode, seen: ReadonlySet<string> = new Set()): unknown {
   const row = (name: string): GraphRow | undefined => node.rows.find((r) => r.name === name);
   const parts = new Set(node.rows.map((r) => partOf(r.name)).filter(({ base }) => ['field', 'group'].includes(base)).map(({ part }) => part));
+  if (!parts.size) return undefined;
   const made = [...parts].sort((a, b) => a - b).flatMap((n): unknown[] => {
     const group = row(partName('group', n));
     if (group) {
       const via = graph.routes.find((r) => r.to === `${node.id}/${group.name}`);
       const inner = via && graph.nodes.find((x) => x.id === socketOf(via.from).node);
-      return inner && !seen.has(inner.id) ? [whereOf(graph, inner, new Set([...seen, node.id]))] : [];
+      const tree = inner && !seen.has(inner.id) ? whereOf(graph, inner, new Set([...seen, node.id])) : undefined;
+      return tree === undefined ? [] : [tree];
     }
     return [{ field: row(partName('field', n))?.value, op: row(partName('op', n))?.value, value: row(partName('value', n))?.value }];
   });
   const join = row('join')?.value === 'or' ? 'or' : 'and';
   return made.length === 1 ? made[0] : { [join]: made };
+}
+
+/** A Tag › Includes as the condition it says: its field is one of the tags, as Logic's Is one of says it. Plan 749 P5 */
+function tagWhere(node: GraphNode): unknown {
+  const at = (name: string): unknown => node.rows.find((r) => r.name === name)?.value;
+  return { field: at('field'), op: 'in', value: [at('value') ?? []].flat() };
 }
 
 /** A node's flow, from its graph. Incoming: each input socket, where its routes come from, and the value its row holds.
@@ -63,7 +72,8 @@ export function nodeFlow(graph: DrawnGraph, id: string): NodeFlow | { fault: str
     })),
   ];
   const values = Object.fromEntries(node.rows.filter((r) => r.control && r.value !== undefined && r.value !== '').map((r) => [r.name, r.value]));
-  const definition = node.kind === 'condition' ? { where: whereOf(graph, node) }
+  const where = node.kind === 'condition' ? whereOf(graph, node) : node.kind === 'tag' ? tagWhere(node) : undefined;
+  const definition = where !== undefined ? { where }
     : node.kind === 'store' ? { store: values['store'] ?? null }
       : Object.keys(values).length ? { rows: values } : undefined;
   return { incoming, outgoing, ...(definition ? { definition } : {}) };

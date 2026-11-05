@@ -74,7 +74,7 @@ import { nodeFlow } from '../data/node-flow.js';
 import { typedValue, type FieldType } from '../data/filter-state.js';
 import { formatDateTime, isDateTime, readDateTime } from '../data/format-date.js';
 import {
-  FALSE_SOCKET, NODE_KINDS, fitOf, paletteOf, partOf, placed, rowChoices, socketOf, socketType,
+  FALSE_SOCKET, NODE_KINDS, fitOf, paletteOf, partOf, placed, resolveKind, rowChoices, socketOf, socketType,
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeSize, type NodeRoute, type NodeTie, type SocketType,
 } from '../data/node-kinds.js';
 import {
@@ -348,10 +348,11 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
   }
   // SECTIONS: the plain rows run together, and each part of a group is one. A line is drawn between two, never before the first.
   let section: string | undefined;
+  const kind = resolveKind(NODE_KINDS[node.kind], node.rows.find((r) => r.control === 'type')?.value);
   for (const row of node.rows) {
     const line = drawn.rows.get(`${node.id}/${row.name}`)!;
     const { base, part } = partOf(row.name);
-    const now = NODE_KINDS[node.kind]?.rows.find((r) => r.name === base)?.repeat ? `part-${part}` : 'rows';
+    const now = kind?.rows.find((r) => r.name === base)?.repeat ? `part-${part}` : 'rows';
     line.toggleAttribute('data-divided', section !== undefined && section !== now);
     section = now;
     put(line, 'data-input-socket', row.input);
@@ -1429,6 +1430,9 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   ];
   const stack = document.createElement('sherpa-stack');
   stack.setAttribute('data-gap', 'lg');
+  // A node of many rows scrolls in the panel: a run that fits by shrinking lays its fields over its buttons. A tab's
+  // panel gives it no height to scroll in.
+  if (!options.tabs) stack.setAttribute('data-scroll', '');
   const remove = options.onRemove ? [button('Remove node', options.onRemove, 'Remove this node and its routes. Keyboard: Backspace or Delete.')] : [];
   const flow = nodeFlow(graph, node.id);
   stack.append(...(options.extra ?? []), ...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...('fault' in flow ? [] : [flowPane(flow)]), ...remove);

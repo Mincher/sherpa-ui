@@ -35,7 +35,7 @@ import { readingsOf, treeReading } from './where.js';
 import { presetHeld } from './query-edits.js';
 import type { FieldDomain } from './validate.js';
 import {
-  FALSE_SOCKET, NODE_KINDS, ROWS, conditionRows, kindNode, partName, partOf, rowChoices, rowOf, socketOf,
+  FALSE_SOCKET, NODE_KINDS, ROWS, conditionRows, kindIn, kindNode, partName, partOf, resolveKind, rowChoices, rowOf, socketOf,
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeRoute, type PartKind,
 } from './node-kinds.js';
 import { traceStep, type Span, type TraceContext } from './trace.js';
@@ -168,6 +168,9 @@ export interface QueryGraphFacts {
 /** The operators a field's condition may take: its type's, and a pick list's. */
 const PICK_OPS: readonly FilterOp[] = ['in', 'notin', 'eq', 'ne'];
 
+/** The Logic family as the Query takes it: its Rows that hold alone, so it draws no type. Plan 749 P5 */
+const KINDS = { ...NODE_KINDS, condition: resolveKind(kindIn(NODE_KINDS['condition']!, 'query')!) };
+
 /** The scope's filter Switch: the kind's own row, before its presets and fields. */
 const SWITCH = '#filters';
 
@@ -218,7 +221,7 @@ interface TreeFacts {
 function groupRows(tree: Condition, { field, type: typeOf, fields, values: valuesOf }: TreeFacts): GraphRow[] {
   const [join, parts] = groupOf(tree) ?? ['and', [tree]];
   const kinds = parts.map((p): PartKind => (groupOf(p) ? 'group' : 'leaf'));
-  return conditionRows(NODE_KINDS['condition']!, kinds, { rows: false }).map(({ input, output: _out, many: _many, ...kindRow }): GraphRow => {
+  return conditionRows(KINDS.condition, kinds, { rows: false }).map(({ input, output: _out, many: _many, ...kindRow }): GraphRow => {
     // The Query types a Value, or ticks it where the field's values are known.
     const bare = kindRow.control === 'values' ? { ...kindRow, control: 'text' as const } : kindRow;
     if (bare.name === 'join') return { ...bare, value: join, editable: true, choices: rowChoices(bare)! };
@@ -350,7 +353,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   const nodes: (Omit<GraphNode, 'x' | 'y'> & { column: number })[] = [];
   const routes: NodeRoute[] = [];
   const add = (column: number, id: string, kind: string, rows: GraphRow[], own: Partial<GraphNode> = {}, chained = false): string => {
-    const made = kindNode(NODE_KINDS, kind, id, rows, own);
+    const made = kindNode(KINDS, kind, id, rows, own);
     // The Query's Condition takes no rows in: its scope gives them. A status chain's takes a False.
     if (kind === 'condition' && !chained) { delete made.input; delete made.many; }
     nodes.push({ ...made, column });

@@ -58,6 +58,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-legend-follows-the-view-when-it-holds-the-field](traps/data-layer.md#t-a-legend-follows-the-view-when-it-holds-the-field) — bind-selection
 - [T-a-legend-row-goes-inactive-it-never-vanishes](traps/data-layer.md#t-a-legend-row-goes-inactive-it-never-vanishes) — aggregate
 - [T-a-list-has-a-limit](traps/data-layer.md#t-a-list-has-a-limit) — field-catalogue
+- [T-a-logic-type-is-an-operator](traps/data-layer.md#t-a-logic-type-is-an-operator) — node-kinds, workflow
 - [T-a-made-up-key-never-leaves-the-data-layer](traps/data-layer.md#t-a-made-up-key-never-leaves-the-data-layer) — base-store, data, held-set, row-key
 - [T-a-needle-comes-from-either-direction](traps/data-layer.md#t-a-needle-comes-from-either-direction) — data-source-types, source-view, store
 - [T-a-newer-write-wins](traps/data-layer.md#t-a-newer-write-wins) — data-handler, fake-remote, notices, request-store, store
