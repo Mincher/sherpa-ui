@@ -35,6 +35,8 @@ export const EVERYWHERE = [
   // Read by bindSettings, on any control. TRAP T-a-setting-is-a-pointer
   'data-setting',
   'data-setting-needs',
+  // Read by an editor that drives its buttons by name: the node toolbar, an app's dialog.
+  'data-action',
 ];
 
 /** Each component's props, by tag, from its spec. */

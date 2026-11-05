@@ -27,9 +27,10 @@ test('a typo, a wrong value and an unknown tag are said; the project\'s own hook
       '<sherpa-buton></sherpa-buton>',
       '<sherpa-stack data-status="critical"><sherpa-metric data-grow></sherpa-metric></sherpa-stack>',
       '<sherpa-callout data-listens="data" hidden></sherpa-callout>',
+      '<sherpa-button data-action="save">Save</sherpa-button>',
     ].join('\n'));
     const { problems, tags } = usageProblems(project);
-    assert.equal(tags, 6);
+    assert.equal(tags, 7);
     assert.deepEqual(problems, [
       'app/page.html:2  <sherpa-button data-lable> — sherpa-button has no such attribute',
       'app/page.html:3  <sherpa-slider data-type="ranged"> — it takes "single", "range"',
