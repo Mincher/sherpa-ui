@@ -255,7 +255,7 @@ async function bindCategories(page: Page): Promise<void> {
   await page.evaluate(async (cats) => {
     document.querySelector('#root sherpa-layout-canvas')!.remove();
     document.getElementById('root')!.insertAdjacentHTML('beforeend', `
-      <sherpa-layout-canvas id="cv" style="inline-size: 1200px; block-size: 640px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar></sherpa-layout-canvas>
+      <sherpa-layout-canvas id="cv" style="inline-size: 1200px; block-size: 720px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar></sherpa-layout-canvas>
       <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>`);
     await customElements.whenDefined('sherpa-node-toolbar');
     const canvas = document.getElementById('cv') as Canvas;
@@ -265,7 +265,8 @@ async function bindCategories(page: Page): Promise<void> {
     const body = { v: 1, inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], outputs: [{ name: 'out', label: 'Out', type: 'object' }], nodes: [], routes: [{ from: '#in/rows', to: '#out/out' }] };
     const library = { v: 1, nodes: { mine: { ...body, label: 'Mine' }, agent: { ...body, label: 'Agent', category: 'AI' } } };
     const nodes = Object.entries(cats).map(([heading, kind], i) => {
-      const at = { id: kind, x: (i % 4) * 290, y: i < 4 ? 0 : 380, heading };
+      // The second row below the first's tallest, a Condition with its Operation row.
+      const at = { id: kind, x: (i % 4) * 290, y: i < 4 ? 0 : 460, heading };
       return kind in library.nodes ? { ...useOf(library as never, kind, at), heading } : { kind, ...at };
     });
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, { v: 2, id: 'cats', nodes } as never, {

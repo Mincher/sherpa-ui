@@ -16,7 +16,7 @@ import { inspect } from 'node:util';
 import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { NODE_KINDS, FALSE_SOCKET, ROWS, accepts, kindNode, rowChoices, socketType, takesMany, truthy } = await import(new URL('node-kinds.js', core));
+const { NODE_KINDS, FALSE_SOCKET, ROWS, accepts, kindNode, resolveKind, rowChoices, socketType, takesMany, truthy } = await import(new URL('node-kinds.js', core));
 const { editWorkflow, workflowFaults } = await import(new URL('workflow.js', core));
 
 const TYPES = ['value', 'object', 'boolean'];
@@ -71,7 +71,7 @@ test('the registry says each socket: a row\'s, the header\'s — True where it f
   const drawn = kindNode(kinds, 'gate', 'g', []);
   assert.deepEqual([drawn.many, kindNode(kinds, 'fork', 'f', []).branches, kindNode(NODE_KINDS, 'output', 'x', []).branches], [true, true, undefined]);
   // A drawn node says its sockets as its kind does.
-  assert.equal(socketType(kindNode(NODE_KINDS, 'condition', 'x', NODE_KINDS.condition.rows), 'rows', 'output'), 'object');
+  assert.equal(socketType(kindNode(NODE_KINDS, 'condition', 'x', resolveKind(NODE_KINDS.condition).rows), 'rows', 'output'), 'object');
 });
 
 test('the rows come in on the header, of ANY type (D1), and leave a Rows row that only sends; each kind a workflow runs forks, and the Query\'s own steps do not', () => {
@@ -85,15 +85,17 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row tha
     if (at >= 0) assert.deepEqual([at, kind.rows[at]], [0, ROWS], `${name}: its Rows row, first`);
   }
   const named = (test) => all.filter(([, k]) => test(k)).map(([n]) => n);
-  assert.deepEqual(named((k) => k.rows.includes(ROWS)), ['store', 'status', 'source', 'scope', 'condition', 'arrange', 'presentation']);
-  // A family's types say their own rows: a Sort, a Group by and a Tag send theirs from a Rows row, first.
+  assert.deepEqual(named((k) => k.rows.includes(ROWS)), ['store', 'status', 'source', 'scope', 'arrange', 'presentation']);
+  // A family's types say their own rows: a Condition's tree, a Sort, a Group by and a Tag send theirs from a Rows row, first.
   const typed = all.flatMap(([n, k]) => Object.entries(k.types ?? {}).map(([t, type]) => [`${n} › ${t}`, type.rows ?? []]));
   for (const [name, rows] of typed) if (rows.includes(ROWS)) assert.equal(rows.indexOf(ROWS), 0, `${name}: its Rows row, first`);
-  assert.deepEqual(typed.filter(([, rows]) => rows.includes(ROWS)).map(([name]) => name), ['collection › sort', 'collection › group', 'tag › includes']);
+  assert.deepEqual(typed.filter(([, rows]) => rows.includes(ROWS)).map(([name]) => name), ['condition › rows', 'collection › sort', 'collection › group', 'tag › includes']);
   // True and False: every kind a workflow runs but its end, and the Query's Condition, Preset and Saved filter, whose True goes into a scope's row.
   assert.deepEqual(named((k) => k.branches), ['store', 'condition', 'preset', 'saved', 'value', 'pick', 'math', 'time', 'collection', 'text', 'tag']);
-  // A type forks as its family does, and a header sends rows from no type.
-  for (const [name, kind] of all) for (const type of Object.values(kind.types ?? {})) assert.deepEqual([type.branches, type.output, type.input], [undefined, undefined, undefined], name);
+  // A type forks as its family does, and a header sends rows from no type. Only Logic's header takes by its type: rows, booleans, none.
+  for (const [name, kind] of all) for (const type of Object.values(kind.types ?? {})) assert.deepEqual([type.branches, type.output], [undefined, undefined], name);
+  assert.deepEqual(all.filter(([, k]) => Object.values(k.types ?? {}).some((t) => t.input)).map(([n]) => n), ['condition']);
+  assert.deepEqual(['rows', 'and', 'not', 'empty', 'eq'].map((t) => [NODE_KINDS.condition.types[t].input, NODE_KINDS.condition.types[t].many]), [['any', undefined], ['boolean', true], ['boolean', undefined], ['any', undefined], [undefined, undefined]]);
   assert.deepEqual(named((k) => k.graphs.includes('workflow') && !k.branches), ['output']);
 });
 

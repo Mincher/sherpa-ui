@@ -143,8 +143,8 @@ test('a line is drawn between two sections of a node, and none before the first 
   }, [shot.toString('base64'), x, y] as const);
   const left = await page.locator('#cv > sherpa-node[data-heading="Condition"]').evaluate((n) => n.getBoundingClientRect().left);
   const plain = await read(at[k]! + 1, left + 8);
-  // The line is 1px, and engines round its place by a pixel: look at the three rows about the gap's middle.
-  const darkest = async (y: number) => Math.max(...(await Promise.all([-1, 0, 1].map((d) => read(y + d, left + 40)))).map((p) => Math.max(...p.map((v, i) => Math.abs(v - plain[i]!)))));
+  // The line is half a px, one device px at 2x, and engines round its place by a pixel: look at each device row about the gap's middle.
+  const darkest = async (y: number) => Math.max(...(await Promise.all([-1, -0.5, 0, 0.5, 1].map((d) => read(y + d, left + 40)))).map((p) => Math.max(...p.map((v, i) => Math.abs(v - plain[i]!)))));
   expect(await darkest(at[k]! - 4), 'a line of the border colour between sections').toBeGreaterThanOrEqual(12);
   expect(await darkest(at[0]! - 4), 'none before the first').toBeLessThanOrEqual(10);
 });
@@ -300,7 +300,7 @@ test('a taller node spreads its rows evenly, and its routes still end on their s
   const gap = await page.evaluate(() => {
     const path = [...document.querySelectorAll<SVGPathElement>('#cv svg.graph-routes path[data-from]')].find((p) => p.dataset['to']?.startsWith('has-role/value'))!;
     const end = path.getPointAtLength(path.getTotalLength()).matrixTransform(path.getScreenCTM()!);
-    const row = document.querySelector('#cv > sherpa-node[data-heading="Condition"] sherpa-node-row:nth-of-type(4)') as HTMLElement & { socketRect(s: string): DOMRect };
+    const row = document.querySelector('#cv > sherpa-node[data-heading="Condition"] sherpa-node-row:has([name="value"])') as HTMLElement & { socketRect(s: string): DOMRect };
     const s = row.socketRect('input');
     return Math.hypot(end.x - (s.left + s.width / 2), end.y - (s.top + s.height / 2));
   });

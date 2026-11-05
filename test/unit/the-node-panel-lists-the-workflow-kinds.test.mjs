@@ -39,7 +39,8 @@ test('a search finds a family by its name, or by a type\'s: "round" finds Math, 
   assert.deepEqual(found('round'), [['math', 'round']]);
   assert.deepEqual(found('ROUND '), [['math', 'round']], 'any case, trimmed');
   assert.deepEqual(found('cou'), [['collection', 'count']]);
-  assert.deepEqual(found('between'), [['time', 'between']]);
+  // Logic's Between takes two ends of a value; Time's, of a date.
+  assert.deepEqual(found('between'), [['condition', 'between'], ['time', 'between']]);
   assert.deepEqual(found('includes'), [['tag', 'includes']]);
   // A name that matches places the family as its default; a type's name places that type.
   assert.deepEqual(found('math'), [['math', undefined]]);

@@ -118,7 +118,7 @@ test('ONE registry: every kind once, with a header, its own row names, what it s
   assert.equal(NODE_KINDS.source.model, 'SourceDefinition');
   assert.equal(NODE_KINDS.filter, undefined, 'the Filter kind is gone: a Condition is the one');
   // No row sends a result: True is on the header, False on the footer. Will, 2026-11-05
-  assert.deepEqual(NODE_KINDS.condition.rows.map((r) => r.name), ['rows', 'join', 'field', 'op', 'value', 'group']);
+  assert.deepEqual(NODE_KINDS.condition.types.rows.rows.map((r) => r.name), ['rows', 'join', 'field', 'op', 'value', 'group']);
 });
 
 test('each fault is reported by name, and the check says no', () => {
@@ -171,7 +171,7 @@ test('a workflow DRAWS as its kinds say: each node at its place, its rows with i
   assert.deepEqual(graph.routes, good.routes);
   // Its Rows first: the rows that match, sent on. They come in on its header, of any type; its True and False on its header and footer.
   assert.deepEqual(node('filter').rows.map((r) => [r.name, r.value, !!r.editable]), [
-    ['rows', undefined, false], ['field', 'status', true], ['op', 'eq', true], ['value', 'active', true],
+    ['type', 'rows', true], ['rows', undefined, false], ['field', 'status', true], ['op', 'eq', true], ['value', 'active', true],
   ]);
   assert.deepEqual([node('filter').input, node('filter').branches, row('filter', 'rows').output, row('filter', 'rows').input], ['any', true, 'object', undefined]);
   // The field from the facts; its operators its type's, by their words.

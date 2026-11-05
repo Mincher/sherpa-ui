@@ -15,7 +15,7 @@ const { queryGraph, graphRequest, routeRequest } = await import(new URL('query-g
 const { answerTree } = await import(new URL('filter-state.js', core));
 const { ArrayStore } = await import(new URL('stores.js', core));
 const { openSource } = await import(new URL('page-definition.js', core));
-const { NODE_KINDS, accepts, partName, partOf, rowOf, socketOf, socketType } = await import(new URL('node-kinds.js', core));
+const { NODE_KINDS, accepts, partName, partOf, resolveKind, rowOf, socketOf, socketType } = await import(new URL('node-kinds.js', core));
 const { editWorkflow, readWorkflow, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 
 const page = {
@@ -149,7 +149,7 @@ test('a workflow Condition draws a part for each comparison it holds, and a Join
   const w = { v: 2, id: 'w', nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0, values: { field: 'seats', op: 'gt', value: 5, 'field-2': 'plan', 'op-2': 'eq', 'value-2': 'Pro' } }] };
   const fields = { seats: { type: 'number' }, plan: { type: 'text' } };
   const g = workflowGraph(w, { fields });
-  assert.deepEqual(g.nodes[0].rows.map((r) => r.name), ['rows', 'join', 'field', 'op', 'value', 'field-2', 'op-2', 'value-2']);
+  assert.deepEqual(g.nodes[0].rows.map((r) => r.name), ['type', 'rows', 'join', 'field', 'op', 'value', 'field-2', 'op-2', 'value-2']);
   assert.equal(row(g, 'c', 'join').value, 'and', 'the join\'s default shows');
   // Each part's operators are its own field's type's.
   assert.ok(row(g, 'c', 'op').choices.some((c) => c.label === 'Greater than'));
@@ -160,7 +160,7 @@ test('a workflow Condition draws a part for each comparison it holds, and a Join
   assert.equal(editWorkflow(w, { node: 'c', row: 'join', value: 'or' }).nodes[0].values.join, 'or');
   // One comparison draws no Join; a Group row is drawn where a route enters it.
   const one = workflowGraph({ ...w, nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0, values: { field: 'seats' } }] }, { fields });
-  assert.deepEqual(one.nodes[0].rows.map((r) => r.name), ['rows', 'field', 'op', 'value']);
+  assert.deepEqual(one.nodes[0].rows.map((r) => r.name), ['type', 'rows', 'field', 'op', 'value']);
   const grouped = workflowGraph({ ...w, nodes: [...w.nodes, { id: 'd', kind: 'condition', x: 0, y: 0 }], routes: [{ from: 'd', to: 'c/group-3' }] }, { fields });
   assert.deepEqual(grouped.nodes[0].rows.map((r) => r.name).slice(-1), ['group-3']);
 });
@@ -178,7 +178,7 @@ test('the Filter kind is gone: a saved Filter node reads as the Condition it bec
 test('a repeated row is its kind\'s: field-3 is the third part\'s field; field-1 is no row', () => {
   assert.deepEqual([partName('field', 1), partName('field', 3)], ['field', 'field-3']);
   assert.deepEqual([partOf('field-3'), partOf('field'), partOf('field-1'), partOf('join')], [{ base: 'field', part: 3 }, { base: 'field', part: 1 }, { base: 'field-1', part: 1 }, { base: 'join', part: 1 }]);
-  const rows = NODE_KINDS.condition.rows;
+  const rows = resolveKind(NODE_KINDS.condition).rows;
   assert.equal(rowOf(rows, 'op-4').name, 'op');
   assert.equal(rowOf(rows, 'join-2'), undefined, 'a Join does not repeat');
   assert.equal(rowOf(rows, 'field-1'), undefined);

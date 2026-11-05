@@ -11,7 +11,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { NODE_KINDS, accepts, fitOf, kindOfNode, resolveKind, rowChoices, socketType, typeChoices } = await import(new URL('node-kinds.js', core));
+const { NODE_KINDS, accepts, fitOf, kindIn, kindOfNode, resolveKind, rowChoices, socketType, typeChoices } = await import(new URL('node-kinds.js', core));
 const { editWorkflow, finalGraph, keptRoutes, readWorkflow, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 
 // A family of our own, so this file holds whatever the registry ships.
@@ -53,15 +53,19 @@ test('each type draws its rows: the type first, its words and hint, the sockets 
   assert.equal(node(workflowGraph(flow('compare'), {}, kinds), 'm').output, 'boolean');
   // resolveKind is an ordinary kind: no types left on it, and a plain kind is the same one.
   assert.equal(resolveKind(math, 'round').types, undefined);
-  assert.equal(resolveKind(NODE_KINDS.condition), NODE_KINDS.condition);
+  assert.equal(resolveKind(NODE_KINDS.pick), NODE_KINDS.pick);
   assert.equal(kindOfNode(kinds, { kind: 'nope' }), undefined);
 });
 
-test('a kind of one type shows no select; the Query\'s Condition is unchanged', () => {
+test('a kind of one type shows no select; the Query\'s Condition, its Rows that hold alone, is unchanged', () => {
   assert.deepEqual(resolveKind(lone).rows.map((r) => r.name), ['a']);
   assert.equal(typeChoices(lone).length, 1);
-  assert.equal(NODE_KINDS.condition.types, undefined);
-  assert.deepEqual(resolveKind(NODE_KINDS.condition).rows, NODE_KINDS.condition.rows);
+  // The Query takes one type of Logic: no select, today's tree. Plan 749 P5
+  const query = kindIn(NODE_KINDS.condition, 'query');
+  assert.deepEqual(Object.keys(query.types), ['rows']);
+  assert.deepEqual(resolveKind(query).rows.map((r) => r.name), ['rows', 'join', 'field', 'op', 'value', 'group']);
+  assert.equal(kindIn(NODE_KINDS.condition, 'workflow'), NODE_KINDS.condition, 'a workflow takes every type');
+  assert.equal(kindIn(NODE_KINDS.value, 'query'), undefined, 'a kind no Query draws');
   assert.equal(NODE_KINDS.pick.types, undefined);
 });
 

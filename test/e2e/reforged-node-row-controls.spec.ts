@@ -31,8 +31,9 @@ const BIND = `async (routes, plan = [], status = ['active'], start = '2024-01-12
     { id: 'l', kind: 'value', x: 0, y: 0, heading: 'Plans', values: { type: 'list', value: ['Team', 'Free'] } },
     { id: 'p', kind: 'condition', x: 330, y: 0, heading: 'By plan', values: { field: 'plan', op: 'in', ...(plan.length ? { value: plan } : {}) } },
     { id: 's', kind: 'condition', x: 660, y: 0, heading: 'By status', values: { field: 'status', op: 'in', value: status } },
-    { id: 't', kind: 'time', x: 0, y: 330, heading: 'When', values: { type: 'between', start } },
-    { id: 'm', kind: 'math', x: 330, y: 330, heading: 'Round', values: { type: 'round', places } },
+    // Below the Conditions, which their Operation row makes taller.
+    { id: 't', kind: 'time', x: 0, y: 440, heading: 'When', values: { type: 'between', start } },
+    { id: 'm', kind: 'math', x: 330, y: 440, heading: 'Round', values: { type: 'round', places } },
   ], routes };
   window.editor = bindWorkflow(canvas, flow, {
     session: new SessionStore(), inspector: document.getElementById('inspector'),
