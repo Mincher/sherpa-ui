@@ -65,7 +65,7 @@ import {
   checkNodeLibrary, copyToMine, definitionDiff, editDefinition, innerOf, kindsOf, staleUses, updateAll, updateInstance, useOf, workflowFaultsDeep,
   type Inner, type NodeDefinition, type NodeLibrary,
 } from '../data/node-library.js';
-import { groupNodes, ungroupUse } from '../data/node-group.js';
+import { groupNodes, headerInput, heldInputs, ungroupUse } from '../data/node-group.js';
 import { flowPane, instancePane, updatePane } from './node-group-panel.js';
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
 import { nodeFlow } from '../data/node-flow.js';
@@ -1931,6 +1931,18 @@ export function bindWorkflow(
   for (const fault of read.faults) report({ code: 'workflow-definition', message: `bindWorkflow: ${fault}.`, at: { workflow: workflow.id } });
   let draft: WorkflowDefinition = read.workflow ?? { v: 2, id: workflow.id, nodes: [] };
   let original: WorkflowDefinition = readWorkflow(structuredClone(workflow), topKinds()).workflow ?? draft;
+  const edits = (): Record<string, NodeDefinition> => Object.fromEntries([...dirty].flatMap((id) => (lib.nodes[id] ? [[id, lib.nodes[id]]] : [])));
+  /** A route a use's header holds from before reads once as its own new input, drafted; Save writes it. TRAP T-a-custom-node-header-adds-an-input */
+  const readHeld = (): void => {
+    const held = heldInputs(draft, lib, topKinds());
+    if (!held.ids.length) return;
+    draft = held.workflow;
+    lib = held.library;
+    for (const id of held.ids) dirty.add(id);
+    session?.set(pointer, draft);
+    session?.set(editsAt, edits());
+  };
+  readHeld();
   let graph: DrawnGraph = { nodes: [], routes: [] };
   // The Custom Nodes opened, outermost first. What is shown is the innermost one's body.
   let path: Opened[] = [];
@@ -1956,7 +1968,7 @@ export function bindWorkflow(
   //   the draft and the edited definitions, before and after. They share structure: a step is cheap.
   //   TRAP T-an-edit-is-a-step
   const journal = new Journal<Snap>(HISTORY);
-  const snap = (): Snap => ({ draft, edits: Object.fromEntries([...dirty].flatMap((id) => (lib.nodes[id] ? [[id, lib.nodes[id]]] : []))) });
+  const snap = (): Snap => ({ draft, edits: edits() });
   const sameSnap = (a: Snap, b: Snap): boolean => {
     const ka = Object.keys(a.edits);
     return a.draft === b.draft && ka.length === Object.keys(b.edits).length && ka.every((k) => a.edits[k] === b.edits[k]);
@@ -2007,7 +2019,7 @@ export function bindWorkflow(
     edit(() => {
       lib = next;
       for (const id of ids) dirty.add(id);
-      session?.set(editsAt, Object.fromEntries([...dirty].flatMap((id) => (lib.nodes[id] ? [[id, lib.nodes[id]]] : []))));
+      session?.set(editsAt, edits());
       refreshPanel();
     });
   };
@@ -2056,19 +2068,29 @@ export function bindWorkflow(
     if (node.id.startsWith('#')) return;
     write(editWorkflow(shown(), { resize: { node: node.id, ...size } }, K()), `size:${node.id}`);
   };
-  // A route that would break the workflow is refused, and says why; else the draft takes it.
-  const take = (next: WorkflowDefinition): void => {
+  // A route that would break the workflow is refused, and says why; else the draft takes it, with the definition it changed.
+  const take = (next: WorkflowDefinition, made?: { library: NodeLibrary; id: string }): void => {
     const was = new Set(workflowFaultsDeep(shown(), lib, K(), facts));
-    const added = workflowFaultsDeep(next, lib, K(), facts).filter((f) => !was.has(f));
+    const now = made ? { ...K(), ...kindsOf(made.library) } : K();
+    const added = workflowFaultsDeep(next, made?.library ?? lib, now, facts).filter((f) => !was.has(f));
     // A route the draft would keep unseen, for the input's other shape, is one the reader would never see: refused too. TRAP T-an-operator-shapes-its-value
     const hid = new Set(keptRoutes(shown(), K()).map((r) => `${r.from}>${r.to}`));
-    const unseen = keptRoutes(next, K()).filter((r) => !hid.has(`${r.from}>${r.to}`)).map((r) => `the route "${r.from}" → "${r.to}" fits its input only under another type or operator`);
+    const unseen = keptRoutes(next, now).filter((r) => !hid.has(`${r.from}>${r.to}`)).map((r) => `the route "${r.from}" → "${r.to}" fits its input only under another type or operator`);
     if (added.length || unseen.length) report({ code: 'workflow-route', message: `bindWorkflow: ${[...added, ...unseen].join('; ')}.`, at: { workflow: shown().id } });
-    else write(next);
+    else if (!made) write(next);
+    else edit(() => { setLib(made.library, [made.id]); write(next); });
   };
-  const onConnect = (route: NodeRoute): void => take(editWorkflow(shown(), { route }, K()));
+  // A route into a Custom Node's header takes anything, as a new input of its definition. TRAP T-a-custom-node-header-adds-an-input
+  const join = (on: WorkflowDefinition, route: NodeRoute): void => {
+    const { node, row } = socketOf(route.to);
+    if (row !== undefined || !use(node) || readOnly()) return take(editWorkflow(on, { route }, K()));
+    const made = headerInput(on, route, lib, K());
+    if ('fault' in made) report({ code: 'node-readonly', message: `bindWorkflow: ${made.fault}.`, at: { workflow: shown().id } });
+    else take(made.workflow, made);
+  };
+  const onConnect = (route: NodeRoute): void => join(shown(), route);
   // A moved end is one edit: the route cut, then made, checked as one.
-  const onReroute = (was: NodeRoute, now: NodeRoute): void => take(editWorkflow(editWorkflow(shown(), { cut: was }, K()), { route: now }, K()));
+  const onReroute = (was: NodeRoute, now: NodeRoute): void => join(editWorkflow(shown(), { cut: was }, K()), now);
   const onBreak = (route: NodeRoute): void => write(editWorkflow(shown(), { cut: route }, K()));
   // Picked routes cut together are ONE step.
   const onBreakAll = (routes: NodeRoute[]): void => edit(() => { for (const route of routes) onBreak(route); });
@@ -2125,7 +2147,7 @@ export function bindWorkflow(
       write(editWorkflow(shown(), { add: K()[kind]!.model === 'graph' && lib.nodes[kind] ? useOf(lib, kind, added) : added }, K()));
       if (context && fit) {
         const own = fit.row ? `${id}/${fit.row}` : id;
-        take(editWorkflow(shown(), { route: context.side === 'out' ? { from: context.socket, to: own } : { from: own, to: context.socket } }, K()));
+        join(shown(), context.side === 'out' ? { from: context.socket, to: own } : { from: own, to: context.socket });
       }
     });
     const node = graph.nodes.find((n) => n.id === id);
@@ -2569,6 +2591,7 @@ export function bindWorkflow(
       path = [];
       session?.set(editsAt, undefined);
       session?.set(pointer, undefined);
+      readHeld();
       refreshPanel();
       enter(null);
     },
@@ -2577,7 +2600,7 @@ export function bindWorkflow(
     refresh(next: NodeLibrary): void {
       given = next;
       handed = next;
-      lib = { ...next, nodes: { ...next.nodes, ...Object.fromEntries([...dirty].flatMap((id) => (lib.nodes[id] ? [[id, lib.nodes[id]]] : []))) } };
+      lib = { ...next, nodes: { ...next.nodes, ...edits() } };
       refreshPanel();
       draw();
     },

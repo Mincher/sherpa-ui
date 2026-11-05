@@ -10,10 +10,12 @@
  * - Grouped — The edit's answer: the workflow, the library and the use, or why it was refused.
  * - groupNodes — Several nodes as one Custom Node: a definition, and one use in their place.
  * - ungroupUse — A use as its nodes again, in place: the inverse of groupNodes.
+ * - headerInput — A route let go on a use's header: a new input of its definition, and the route into the use's new row.
+ * - heldInputs — Each route a use's header holds from before, read once as its own new input; a preset's stays.
  */
 import { NODE_KINDS, FALSE_SOCKET, SOCKET_WORDS, kindOfNode, rowOf, socketOf, socketType, type NodeKind, type NodeRoute, type SocketType } from './node-kinds.js';
-import { kindsOf, useOf, workflowFaultsDeep, type NodeDefinition, type NodeLibrary, type NodeOutput, type NodeSocket } from './node-library.js';
-import { headerLanding, readWorkflow, tiesAmong, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
+import { kindsOf, updateInstance, useOf, versionOf, workflowFaultsDeep, type NodeDefinition, type NodeLibrary, type NodeOutput, type NodeSocket } from './node-library.js';
+import { tiesAmong, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
 
 type Kinds = Readonly<Record<string, NodeKind>>;
 
@@ -172,17 +174,15 @@ export function groupNodes(
 
 /**
  * A use as its nodes again, in place (Ungroup): the definition's nodes where the definition put
- * them, its inner routes, and each route that met a socket joined straight through; one on the
- * header, through the row it lands on. A socket no route fed gives its value to the inner row it
- * reached, where the use held one. A node whose id the graph holds takes the use's name in front.
- * Refused, in words, when the use is none. TRAP T-a-custom-node-header-lands-on-a-row
+ * them, its inner routes, and each route into a row joined to every inner socket that row feeds.
+ * A row that feeds nothing inside, and the header, which is no row, have nowhere to go: their
+ * routes are dropped. A socket no route fed gives its value to the inner row it reached, where the
+ * use held one. A node whose id the graph holds takes the use's name in front. Refused, in words,
+ * when the use is none. TRAP T-a-custom-node-header-adds-an-input
  */
 export function ungroupUse(
-  given: WorkflowDefinition, useId: string, library: NodeLibrary, kinds: Kinds = NODE_KINDS,
+  workflow: WorkflowDefinition, useId: string, library: NodeLibrary, kinds: Kinds = NODE_KINDS,
 ): { workflow: WorkflowDefinition } | { fault: string } {
-  const every: Kinds = { ...kindsOf(library), ...kinds };
-  // A route held on the header reads onto the row it lands on: what that row fed, it feeds.
-  const workflow = readWorkflow(given, every).workflow ?? given;
   const use = workflow.nodes.find((n) => n.id === useId);
   const definition = use && library?.nodes?.[use.kind];
   if (!use || !definition || (!!kinds[use.kind] && kinds[use.kind]!.model !== 'graph')) return { fault: 'only a Custom Node can be ungrouped' };
@@ -197,12 +197,10 @@ export function ungroupUse(
   const sockets = (side: 'in' | 'out', name: string | undefined): string => `${side === 'in' ? '#in' : '#out'}${name === undefined ? '' : `/${name}`}`;
   const joined: NodeRoute[] = [];
   const values = new Map<string, Record<string, unknown>>();
-  const fromIn = (name: string | undefined): NodeRoute[] => (definition.routes ?? []).filter((x) => x.from === sockets('in', name));
   for (const r of routes.filter((x) => socketOf(x.to).node === useId)) {
     const { row } = socketOf(r.to);
-    // Still on the header: on through the Group Input's header, else the row it lands on, fed or not.
-    const name = row === undefined && !fromIn(undefined).length ? socketOf(headerLanding(workflow, r, every).to).row : row;
-    for (const inner of fromIn(name)) joined.push({ from: r.from, to: moved(inner.to) });
+    if (row === undefined) continue;
+    for (const inner of (definition.routes ?? []).filter((x) => x.from === sockets('in', row))) joined.push({ from: r.from, to: moved(inner.to) });
   }
   for (const r of routes.filter((x) => socketOf(x.from).node === useId)) {
     const { row } = socketOf(r.from);
@@ -231,4 +229,53 @@ export function ungroupUse(
   const kept = tiesAmong(workflow.ties, all);
   const { ties: _ties, ...flat } = workflow;
   return { workflow: { ...flat, nodes: [...rest.slice(0, at), ...nodes, ...rest.slice(at)], routes: all, ...(kept.length ? { ties: kept } : {}) } };
+}
+
+/**
+ * A route let go on a use's header (Will, 2026-11-05): the header takes ANYTHING, and matches it to
+ * no row. Its definition gains a new input — a Group Input row inside, a row on every use — named
+ * and typed by the source, as groupNodes names one; it feeds nothing inside until the reader routes
+ * it. The route enters this use's new row, and the use follows the new definition where it followed
+ * the old; every other use says Update available (D11). Refused, in words: a preset, read only, and
+ * what is no use's header. TRAP T-a-custom-node-header-adds-an-input
+ */
+export function headerInput(
+  workflow: WorkflowDefinition, route: NodeRoute, library: NodeLibrary, kinds: Kinds = NODE_KINDS,
+): { workflow: WorkflowDefinition; library: NodeLibrary; id: string } | { fault: string } {
+  const all: Kinds = { ...kindsOf(library), ...kinds };
+  const { node: useId, row } = socketOf(route.to);
+  const use = workflow.nodes.find((n) => n.id === useId);
+  const definition = use && library?.nodes?.[use.kind];
+  if (!use || !definition || row !== undefined || all[use.kind]?.model !== 'graph') return { fault: 'only a Custom Node\'s header takes a new input' };
+  if (definition.preset) return { fault: 'a preset is read only: Copy to my nodes to add an input' };
+  const taken = new Set([...definition.inputs, ...definition.outputs].map((s) => s.name));
+  const name = freeName(slug(route.from.replace('/', '-').replace('#', ''), 'in'), taken);
+  const input: NodeSocket = { name, label: wordsOf(route.from, workflow, all), type: asSocket(sentBy(route.from, workflow, all)) };
+  const made: NodeLibrary = { ...library, nodes: { ...library.nodes, [use.kind]: { ...definition, inputs: [...definition.inputs, input] } } };
+  // A route held on the header moves onto the row, its bends and ties with it; a new one is added.
+  const same = (r: NodeRoute): boolean => r.from === route.from && r.to === route.to;
+  const onRow = (r: NodeRoute): NodeRoute => (same(r) ? { ...r, to: `${useId}/${name}` } : r);
+  const routes = workflow.routes ?? [];
+  const next: WorkflowDefinition = {
+    ...workflow,
+    routes: routes.some(same) ? routes.map(onRow) : [...routes, onRow(route)],
+    ...(workflow.ties ? { ties: workflow.ties.map((t) => ({ ...t, routes: t.routes.map(onRow) })) } : {}),
+  };
+  return { workflow: use.version === versionOf(definition) ? updateInstance(next, useId, made, kinds) : next, library: made, id: use.kind };
+}
+
+/** Each route a use's header holds from a file saved before, read ONCE as its own new input, as
+ *  headerInput makes one; a preset's stays where it is. Save writes the new form. */
+export function heldInputs(
+  workflow: WorkflowDefinition, library: NodeLibrary, kinds: Kinds = NODE_KINDS,
+): { workflow: WorkflowDefinition; library: NodeLibrary; ids: string[] } {
+  let read = { workflow, library };
+  const ids = new Set<string>();
+  for (const r of workflow.routes ?? []) {
+    const made = socketOf(r.to).row === undefined ? headerInput(read.workflow, r, read.library, kinds) : undefined;
+    if (!made || 'fault' in made) continue;
+    read = made;
+    ids.add(made.id);
+  }
+  return { ...read, ids: [...ids] };
 }

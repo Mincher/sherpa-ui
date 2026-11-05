@@ -7354,30 +7354,33 @@ Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
 - Site: `test/unit/a-custom-node-is-saved-from-nodes.test.mjs`
 - Site: `src/data.ts`
 
-### T-a-custom-node-header-lands-on-a-row
+### T-a-custom-node-header-adds-an-input
 
-**A route into a Custom Node's header lands on the input row it fits: every input of a use is
-a row of its Group Input, so Ungroup can join it.** Will, 2026-11-05 (TODO 759).
+**A Custom Node's header takes ANYTHING, and each connection let go on it is a NEW input of its
+definition.** Will, 2026-11-05 (TODO 763): "A group input can take anything. What is connected to
+it becomes a row on the group input node within the group. These rows are then rerouted to any of
+the group's internal node sockets. I never said that a group input was of a certain type."
 
-- **What broke.** A use's header takes any type (D1), and a drop on it, or "Add a node" from a
-  line, joined the route THERE. But a definition's inner routes leave its Group Input's ROWS,
-  `#in/<name>`: `groupNodes` makes one per outside source, and the presets name theirs. Nothing
-  left `#in`, the header, so Ungroup had nothing to join a header route to and dropped it.
-  Measured in Demos: Store → the header of "Is active", ungrouped, and the Store fed nothing.
-- **The rule.** `headerLanding` (workflow.ts): a route into the header of a `model: 'graph'` kind
-  goes to its first input row that takes what the route carries (`accepts`), one no other route
-  feeds first, else the first, as a drop on that row would. `editWorkflow`'s `{ route }` does it,
-  so the line draws into the row. `readWorkflow` reads one held from before onto a FREE row, once,
-  its ties with it; the file is written anew only on Save.
-- **None fits** (a boolean, and no boolean input; a node with no inputs): it stays on the header,
-  which the Group Input's header sends inside (plan 713 §9.2). Ungroup joins it through what
-  leaves `#in`; with nothing, it reached nothing inside, and goes with the use.
-- **Ungroup** (`ungroupUse`) reads the workflow first, so a header route is on its row; one still
-  on the header (its row was fed) joins through `#in`, else through the row it lands on.
-  Group then Ungroup stays the inverse: `groupNodes` never routes into a use's header.
+- **What it replaced.** 759 matched a header route to the first input row of its type, and kept
+  one no row fitted on the header. Nothing about an input is a type until something is connected.
+- **The rule.** `headerInput` (node-group.ts): a route let go on a use's header adds an input to
+  the definition, named and labelled by its source as `groupNodes` names one ("Store › Rows"),
+  typed by what the source sends. It is a Group Input row inside, with an output socket, and a row
+  on every use; the route enters this use's new row. It feeds nothing inside until the reader
+  routes it on. The editor's drop, "Add a node" from a line, and a moved end all take this one
+  door (`join` in `bindWorkflow`); `editWorkflow` and `readWorkflow` know no definition, so they
+  leave a header route where it is.
+- **The definition is shared (D11).** The add is a definition edit, in the editor's draft until
+  Save (nothing about it is a fault). The use that took it follows the new version; every other use
+  says Update available. A preset is read only: the drop is refused in words, through `report`.
+- **Read once.** A route a use's header holds from a file saved before reads as its own new input
+  (`heldInputs`), as the editor opens and after Discard; the draft and the edit are kept for the
+  tab together, so a reload does not add it twice. A preset's stays on the header.
+- **Ungroup** joins each route into a row to every inner socket that row feeds. A row that feeds
+  nothing inside, and a header route, have nowhere to go, and are dropped.
 
-- Site: `src/core/data/workflow.ts`
 - Site: `src/core/data/node-group.ts`
+- Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/a-custom-node-is-saved-from-nodes.test.mjs`
 
 ### T-an-entity-is-an-envelope-and-a-type
