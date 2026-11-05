@@ -4,13 +4,16 @@
  * element. The browser owns the top layer, focus and the placement: the trigger
  * is the card's anchor BY REFERENCE, `showPopover({ source })`, which crosses a
  * shadow root where an anchor name cannot. Measured only to keep it in a box: a
- * host's `data-bounds`, or the viewport when its trigger is out of it.
+ * host's `data-bounds`, or the viewport when its trigger is out of it. The keys
+ * reach it from its trigger in every engine, and the focus comes back.
  * TRAP T-anchor-cross-root · TRAP T-a-slotted-row-is-outside-its-own-popover
+ * TRAP T-a-menu-is-reached-by-keys-from-its-trigger
  *
  * Map:
  * - ShellHost — What the shell asks of its menu.
  * - MenuShell — One menu's card: shown at its trigger, and shut.
  * - .open — Is the card open?
+ * - .connected — The menu is in the page: an arrow on its shut trigger's button opens it.
  * - .show — Show the card at its trigger; true when this opened it.
  * - .hide — Shut the card.
  * - .listen — What an open card listens to, until it shuts.
@@ -19,6 +22,7 @@
  * - .syncInline — An inline menu is not a popover.
  * - .stop — The menu left the page, or the card shut.
  */
+import { tabStops } from '../../core/ui/tab-stops.js';
 
 /** What the shell asks of its menu. */
 export interface ShellHost {
@@ -26,6 +30,8 @@ export interface ShellHost {
   readonly el: HTMLElement;
   /** The card: the popover itself. */
   card(): HTMLElement | null;
+  /** Each row's own control that can take the focus, in order. */
+  stops(): HTMLElement[];
   /** Listen on a target this menu does not own, while it is in the page or a shorter lifetime. */
   on(target: EventTarget, type: string, handler: EventListener, options: AddEventListenerOptions & { while?: AbortSignal }): void;
   /** The same, coalesced to one call per frame. */
@@ -50,6 +56,22 @@ function across(from: Node, selector: string): Element | null {
 /** How far `[lo, hi]` moves to lie inside `[min, max]`: its start wins when it cannot. */
 const shift = (lo: number, hi: number, min: number, max: number): number => (lo < min ? min - lo : hi > max ? Math.max(min - lo, max - hi) : 0);
 
+/** The row a key opens the card on. */
+type End = 'first' | 'last';
+
+/** The element that has the focus, through every shadow root. */
+function focused(): Element | null {
+  let at = document.activeElement;
+  while (at?.shadowRoot?.activeElement) at = at.shadowRoot.activeElement;
+  return at;
+}
+
+/** Is `node` inside `box`, across shadow roots? */
+function within(box: Node, node: Node | null): boolean {
+  for (let at = node; at; at = at.parentNode ?? (at instanceof ShadowRoot ? at.host : null)) if (at === box) return true;
+  return false;
+}
+
 /** One menu's card: shown at its trigger, and shut. */
 export class MenuShell {
   /** The menu it is part of. */
@@ -60,6 +82,12 @@ export class MenuShell {
   #openAc: AbortController | null = null;
   /** Watches a bounded card's box, so a body that grows is kept inside. */
   #cardResize: ResizeObserver | null = null;
+  /** The control in the trigger that last had the focus: the way in, and where the focus goes back to. */
+  #opener: HTMLElement | null = null;
+  /** The row an arrow on the shut trigger asked for, while its press opens the card. */
+  #want: End | null = null;
+  /** A Tab is moving the focus. */
+  #tabbing = false;
 
   constructor(host: ShellHost) {
     this.#host = host;
@@ -68,6 +96,38 @@ export class MenuShell {
   /** Is the card open? */
   get open(): boolean {
     return !!this.#host.card()?.matches(':popover-open');
+  }
+
+  /** The menu is in the page: an arrow on its shut trigger's own button opens it. */
+  connected(): void {
+    const parent = this.#host.el.parentElement;
+    if (parent) this.#host.on(parent, 'keydown', this.#onShutKey, {});
+  }
+
+  /** ArrowDown or ArrowUp on the button of the trigger it is slotted into, one that
+   *  says it opens a popup — a chip's caret, not its body: pressed, as a click
+   *  would, and the focus lands on that end's row. TRAP T-a-menu-is-reached-by-keys-from-its-trigger */
+  #onShutKey = (event: Event): void => {
+    const e = event as KeyboardEvent;
+    if (this.open || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')) return;
+    const trigger = this.#host.el.parentElement;
+    const button = e.composedPath()[0];
+    if (!trigger?.shadowRoot || this.#host.el.assignedSlot?.getRootNode() !== trigger.shadowRoot) return;
+    if (!(button instanceof HTMLButtonElement) || button.getRootNode() !== trigger.shadowRoot) return;
+    if (!button.hasAttribute('aria-haspopup') && !trigger.hasAttribute('aria-haspopup')) return;
+    e.preventDefault();
+    this.#want = e.key === 'ArrowUp' ? 'last' : 'first';
+    button.click();
+    this.#want = null;
+  };
+
+  /** Focus a row at `end` or, with no row, the card's first stop. */
+  #enter(end: End): boolean {
+    const rows = this.#host.stops();
+    const card = this.#host.card();
+    const to = (end === 'last' ? rows.at(-1) : rows[0]) ?? (card ? tabStops(card)[0] : undefined);
+    to?.focus();
+    return !!to;
   }
 
   /** The nearest drawn box to hang an untriggered card on: the element this
@@ -87,16 +147,29 @@ export class MenuShell {
     // No trigger — `open` was set, or a caller forgot one. TRAP T-a-menu-with-no-trigger-lands-at-the-origin
     this.#trigger ??= this.#fallbackTrigger();
     const was = this.open;
-    if (!was) this.#host.card()?.showPopover(this.#trigger ? { source: this.#trigger } : {});
+    if (!was) {
+      const at = focused();
+      this.#opener = at instanceof HTMLElement && this.#trigger && within(this.#trigger, at) && !within(this.#host.el, at) ? at : null;
+      this.#host.card()?.showPopover(this.#trigger ? { source: this.#trigger } : {});
+    }
     const opened = !was && this.open;
     if (opened) this.listen();
     this.#keepInBounds();
+    /* Opened from the keys — a button's press that shows its ring, or an arrow:
+       the focus goes in. A text field that opens a menu keeps it.
+       TRAP T-a-menu-is-reached-by-keys-from-its-trigger */
+    const end = this.#want ?? (opened && this.#opener instanceof HTMLButtonElement && this.#opener.matches(':focus-visible') ? 'first' : null);
+    if (end && this.open) this.#enter(end);
     return opened;
   }
 
-  /** Shut the card. */
+  /** Shut the card. Focus in it, or nowhere, goes back to the control that opened
+   *  it: the platform restores only into a popover's own tree, and the rows are slotted. */
   hide(): void {
+    const at = focused();
+    const back = this.open && this.#opener?.isConnected && (!at || at === document.body || within(this.#host.el, at)) ? this.#opener : null;
     this.#host.card()?.hidePopover();
+    back?.focus({ preventScroll: true });
   }
 
   /** The box the card stays in: a host's `data-bounds`, else the viewport.
@@ -144,13 +217,64 @@ export class MenuShell {
     const card = this.#host.card();
     if (card && path.includes(card)) return;
     if (this.#trigger && path.includes(this.#trigger)) return;
+    // The press takes the focus where it lands: nothing to give back.
+    this.#opener = null;
     this.#host.hide();
   };
 
-  /** Escape closes this menu, not whatever is under it. */
-  #onEscape = (event: Event): void => {
-    if ((event as KeyboardEvent).key !== 'Escape') return;
-    event.stopPropagation();
+  /** Is this event's path inside the menu: its rows or its card? */
+  #inside(path: EventTarget[]): boolean {
+    const card = this.#host.card();
+    return path.includes(this.#host.el) || (!!card && path.includes(card));
+  }
+
+  /** An open card's keys. Escape shuts this menu, not whatever is under it. From
+   *  its opener, Tab goes in to the card's first stop — Chromium's own move, so
+   *  taken once — and the arrows to a row; Shift+Tab from that stop comes back.
+   *  TRAP T-a-menu-is-reached-by-keys-from-its-trigger */
+  #onKey = (event: Event): void => {
+    const e = event as KeyboardEvent;
+    if (e.key === 'Escape') {
+      event.stopPropagation();
+      this.#host.hide();
+      return;
+    }
+    const tab = e.key === 'Tab';
+    // The focus a Tab moves lands before the next task.
+    if (tab) {
+      this.#tabbing = true;
+      setTimeout(() => { this.#tabbing = false; });
+    }
+    const card = this.#host.card();
+    if (e.defaultPrevented || e.ctrlKey || e.metaKey || !card || !this.#opener) return;
+    const path = e.composedPath();
+    if (path[0] === this.#opener) {
+      const to = tab && !e.shiftKey ? tabStops(card)[0] : undefined;
+      const end = e.shiftKey || e.altKey ? null : e.key === 'ArrowDown' ? 'first' : e.key === 'ArrowUp' ? 'last' : null;
+      if (to) to.focus();
+      else if (!end || !this.#enter(end)) return;
+      e.preventDefault();
+      return;
+    }
+    const first = tab && e.shiftKey && this.#inside(path) ? tabStops(card)[0] : undefined;
+    if (first && path.includes(first)) {
+      e.preventDefault();
+      this.#opener.focus();
+    }
+  };
+
+  /** Focus moved: to a control in its trigger, that is the way in now; TABBED out
+   *  of the card and its trigger, the card shuts. Only a Tab: WebKit's press in the
+   *  card can focus a box outside it. */
+  #onFocusIn = (event: Event): void => {
+    const path = event.composedPath();
+    if (this.#inside(path)) return;
+    if (this.#trigger && path.includes(this.#trigger)) {
+      this.#opener = path[0] instanceof HTMLElement ? path[0] : null;
+      return;
+    }
+    if (!this.#tabbing) return;
+    this.#opener = null;
     this.#host.hide();
   };
 
@@ -181,13 +305,17 @@ export class MenuShell {
     this.#host.on(document, 'pointerdown', this.#onOutsidePointer, {
       ...whileOpen, capture: true,
     });
-    this.#host.on(document, 'keydown', this.#onEscape, whileOpen);
+    // Not passive: Tab and the arrows are taken.
+    this.#host.on(document, 'keydown', this.#onKey, { ...whileOpen, passive: false });
+    // Tab out of the card and its trigger shuts it. TRAP T-a-menu-is-reached-by-keys-from-its-trigger
+    this.#host.on(document, 'focusin', this.#onFocusIn, whileOpen);
   }
 
   /** The card shut: its listeners go, and so does its trigger. */
   closed(): void {
     this.stop();
     this.#trigger = null;
+    this.#opener = null;
   }
 
   /** The window resized: close, as what is under the card may have been rebuilt. */

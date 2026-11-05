@@ -563,7 +563,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](traps/filters.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (120)
+## Menus, tips and overlays (121)
 
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](traps/menus-tips-overlays.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
 - [T-a-chip-press-applies-its-menus-draft](traps/filters.md#t-a-chip-press-applies-its-menus-draft) — menu
@@ -585,6 +585,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-hidden-sibling-still-counts-as-first-child](traps/menus-tips-overlays.md#t-a-hidden-sibling-still-counts-as-first-child) — menu
 - [T-a-layout-read-belongs-in-a-frame](traps/menus-tips-overlays.md#t-a-layout-read-belongs-in-a-frame) — menu
 - [T-a-menu-is-a-dialog-of-native-controls](traps/menus-tips-overlays.md#t-a-menu-is-a-dialog-of-native-controls) — menu
+- [T-a-menu-is-reached-by-keys-from-its-trigger](traps/menus-tips-overlays.md#t-a-menu-is-reached-by-keys-from-its-trigger) — menu
 - [T-a-menu-owns-its-own-bodies](traps/filters.md#t-a-menu-owns-its-own-bodies) — menu
 - [T-a-menu-takes-no-grouping](traps/menus-tips-overlays.md#t-a-menu-takes-no-grouping) — menu
 - [T-a-menu-with-no-trigger-lands-at-the-origin](traps/menus-tips-overlays.md#t-a-menu-with-no-trigger-lands-at-the-origin) — menu
@@ -1000,7 +1001,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (123)
+## Other components (124)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1033,6 +1034,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-host-error-is-the-hosts](traps/other-components.md#t-a-host-error-is-the-hosts) — input-text
 - [T-a-host-label-must-reach-its-control](traps/charts.md#t-a-host-label-must-reach-its-control) — button, input-text, select-checkbox, select-radio, switch
 - [T-a-host-state-pin-lives-where-the-host-is](traps/element-and-sheets.md#t-a-host-state-pin-lives-where-the-host-is) — input-text, nav-item, node, node-frame, progress-bar, prompt-composer, select-card, slider, switch
+- [T-a-menu-is-reached-by-keys-from-its-trigger](traps/menus-tips-overlays.md#t-a-menu-is-reached-by-keys-from-its-trigger) — nav
 - [T-a-metric-group-knows-it-is-stuck](traps/charts.md#t-a-metric-group-knows-it-is-stuck) — metric-group
 - [T-a-native-name-where-a-native-element-does-the-job](traps/other-components.md#t-a-native-name-where-a-native-element-does-the-job) — slider
 - [T-a-native-wears-the-button-class](traps/element-and-sheets.md#t-a-native-wears-the-button-class) — button

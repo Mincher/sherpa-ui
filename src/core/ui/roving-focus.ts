@@ -9,6 +9,7 @@
  * - rovingFocus — wire a container: one tab stop, the arrows, Home and End
  * - toolbarKeys — a toolbar's Left, Right, Home and End move between its controls; Tab is unchanged
  */
+import { controlsIn, focusTarget } from './tab-stops.js';
 
 /** An item: an HTML or SVG element in the container's own tree. */
 export type RovingItem = HTMLElement | SVGElement;
@@ -141,36 +142,6 @@ export function rovingFocus(container: Element, options: RovingOptions): Roving 
       if (to) go(to);
     },
   };
-}
-
-/** A control's own focus: itself; a host that delegates it; else the first stop in its shadow root. */
-const NATIVE = 'button, input, select, textarea, a[href], [tabindex]:not(slot)';
-function focusTarget(el: Element): HTMLElement | null {
-  if (el.matches(NATIVE)) return el.matches('[tabindex="-1"]') ? null : el as HTMLElement;
-  const root = (el as HTMLElement).shadowRoot;
-  if (!root) return null;
-  if (root.delegatesFocus) return el as HTMLElement;
-  for (const inner of root.querySelectorAll('*')) {
-    const hit = focusTarget(inner);
-    if (hit) return hit;
-  }
-  return null;
-}
-
-/** Each control in a bar, in reading order, through its slots: never inside one. */
-function controlsIn(bar: Element): HTMLElement[] {
-  const out: HTMLElement[] = [];
-  const walk = (el: Element): void => {
-    const kids = el instanceof HTMLSlotElement ? el.assignedElements({ flatten: true }) : [...el.children];
-    for (const kid of kids) {
-      if (kid instanceof HTMLTemplateElement) continue;
-      if (focusTarget(kid)) {
-        if (!kid.matches('[disabled], [aria-disabled="true"]') && kid.checkVisibility()) out.push(kid as HTMLElement);
-      } else walk(kid);
-    }
-  };
-  walk(bar);
-  return out;
 }
 
 /** Keys the focused control uses itself: a text box all of them, a select Up and

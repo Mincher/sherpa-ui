@@ -1,7 +1,7 @@
 # Traps — Menus, tips and overlays
 
 One of the eleven areas of [the traps](../TRAPS.md): each entry is here because its
-first `Site:` is in this area (`npm run check:traps` holds it so). 75 entries.
+first `Site:` is in this area (`npm run check:traps` holds it so). 80 entries.
 
 ### T-indeterminate-reports-false
 
@@ -1909,3 +1909,43 @@ and stays off.
 
 - Site: `src/components/sherpa-menu/menu-conditions.ts`
 - Site: `test/e2e/reforged-one-condition-tree.spec.ts`
+
+### T-a-menu-is-reached-by-keys-from-its-trigger
+
+**Only Chromium moves Tab from a popover's invoker into the popover** (its popover
+focus navigation). Measured 2026-11-05 on a chip's menu: Tab from the open caret
+reached Select all in Chromium 153, and went past the card to the next control in
+Firefox 155 and WebKit 26.6. Once inside, Tab and Shift+Tab work in all three. And
+Escape lost the focus everywhere: `hidePopover()` gives it back only from inside the
+popover's own tree, and the rows are SLOTTED — children of the menu, not of the card.
+
+So the menu owns its keys, in `menu-shell`, the same in every engine — the WAI-ARIA
+menu button, for a card that is a dialog of native controls
+(`T-a-menu-is-a-dialog-of-native-controls`):
+
+- **The opener** is the control in the trigger that has the focus when the card
+  opens, or that takes it while open. It is the way in, and the focus comes back to it.
+- **A keyboard open** — the opener is a button that shows its ring
+  (`:focus-visible`), as Enter or Space leaves it — puts the focus on the first row.
+  A pointer's press does not, and a text field that opens a menu keeps its focus.
+- **ArrowDown or ArrowUp on the shut trigger** presses its button, as a click would,
+  and lands on the first or last row. Only the button of the trigger the menu is
+  SLOTTED into, and only one that says `aria-haspopup` (itself or its host): a
+  chip's caret, never its body, whose press toggles the filter.
+- **From the opener**, Tab goes to the card's first stop and the arrows to a row.
+  Chromium's own move is the same one, prevented, so it is never taken twice.
+  Shift+Tab from that first stop comes back to the opener.
+- **Between rows**, ArrowDown and ArrowUp move, Home and End go to the ends; they
+  wrap. The focus only moves: a radio's own arrows would pick, and a selector
+  shuts on its pick. Space ticks, Enter presses an action row.
+- **Escape, or any shut with the focus in the card or nowhere**, puts it back on the
+  opener. A press outside does not: the press takes the focus where it lands.
+- **A Tab that takes the focus out of the card and its trigger** — past the last
+  row — shuts it. Only a Tab: in WebKit a press on a row of a tag field's menu
+  focused one of the field's tags, outside the card, and shutting on that lost the
+  tick (measured, `reforged-input-tags`).
+
+- Site: `src/components/sherpa-menu/menu-shell.ts`
+- Site: `src/components/sherpa-menu/menu-list.ts`
+- Site: `src/components/sherpa-nav/sherpa-nav.ts`
+- Site: `test/e2e/reforged-a-menu-opens-by-its-keys.spec.ts`

@@ -186,6 +186,7 @@ export class SherpaMenu extends SherpaElement {
   readonly #shell = new MenuShell({
     el: this,
     card: () => this.#card(),
+    stops: () => this.#list.stops(),
     on: (target, type, handler, options) => this.on(target, type, handler, options),
     onFrame: (target, type, handler, options) => this.onFrame(target, type, handler, options),
     hide: () => this.hide(),
@@ -1032,6 +1033,10 @@ export class SherpaMenu extends SherpaElement {
     this.emit(open ? 'menu-open' : 'menu-close');
   };
 
+  override onConnect(): void {
+    this.#shell.connected();
+  }
+
   override onDisconnect(): void {
     this.#shell.stop();
     this.#list.stop();
@@ -1072,7 +1077,8 @@ export class SherpaMenu extends SherpaElement {
     this.emit('menu-back');
   };
 
-  /** ArrowRight opens a row's child menu, and ArrowLeft goes back, as in an OS menu. */
+  /** ArrowRight opens a row's child menu, and ArrowLeft goes back, as in an OS menu;
+   *  ArrowDown and ArrowUp move between the rows. */
   #onRowKey = (event: KeyboardEvent): void => {
     // An inner set moved on this key already. TRAP T-one-tab-stop-per-set
     if (event.defaultPrevented) return;

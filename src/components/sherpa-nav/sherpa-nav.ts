@@ -98,8 +98,6 @@ export class SherpaNav extends SherpaElement {
   #beforeSettings: NavState = 'collapsed';
   /** The parent row whose children the menu lists now. */
   #flyoutRow: HTMLElement | null = null;
-  /** Focus went into the menu, so it comes back to the row. */
-  #flyoutHoldsFocus = false;
   /** The menu's next open or shut, while the pointer settles. */
   #flyoutTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -314,25 +312,24 @@ export class SherpaNav extends SherpaElement {
     else this.#flyoutLater(this.#shutFlyout, FLYOUT_SHUTS_AFTER);
   };
 
-  /** A parent row pressed: a thumb and a keyboard have no hover. A keyboard's press carries no pointer, and goes into the menu. */
+  /** A parent row pressed: a thumb and a keyboard have no hover. A keyboard's press
+   *  goes into the menu, and Escape back, as every menu's does. TRAP T-a-menu-is-reached-by-keys-from-its-trigger */
   #onParentClick = (event: Event): void => {
     const row = this.#staysShut() ? this.#parentRowOf(event) : null;
     if (!row) return;
     event.stopPropagation();
-    this.#openFlyout(row, (event as MouseEvent).detail === 0);
+    this.#openFlyout(row);
   };
 
   /** List a parent row's children in the menu beside it. */
-  #openFlyout(row: HTMLElement, focus = false): void {
+  #openFlyout(row: HTMLElement): void {
     const flyout = this.$<SherpaMenu>('.flyout');
     if (!flyout || !this.#staysShut()) return;
     clearTimeout(this.#flyoutTimer);
     this.#flyoutRow = row;
-    this.#flyoutHoldsFocus = focus;
     flyout.dataset['heading'] = row.querySelector<HTMLElement>('sherpa-nav-item')?.dataset['label'] ?? '';
     flyout.items(this.#childItems(row.dataset['id'] ?? ''));
     flyout.show(row);
-    if (focus) flyout.querySelector<HTMLElement>('.menu-row')?.focus();
   }
 
   /** The rows under a parent, as menu rows. An Area among them heads its own, as a section. */
@@ -364,10 +361,8 @@ export class SherpaNav extends SherpaElement {
       ?.querySelector<SherpaNavItem>('sherpa-nav-item')?.press();
   };
 
-  /** The menu shut: focus it took goes back to its row. */
+  /** The menu shut: it lists no row's children now. */
   #onFlyoutClose = (): void => {
-    if (this.#flyoutHoldsFocus) this.#flyoutRow?.querySelector<HTMLElement>('sherpa-nav-item')?.focus();
-    this.#flyoutHoldsFocus = false;
     this.#flyoutRow = null;
   };
 

@@ -16,6 +16,7 @@
  * - .setValues — Tick the rows these values name.
  * - .inputs — Every value row's control; Select all and None excluded.
  * - .rows — Every slotted row.
+ * - .stops — Each row's own control that can take the focus now, in order: one a row.
  * - .fieldValues — The field's own values, read from its value rows.
  * - .present — What the filters before it leave; `null` is everything.
  * - .setPresent — Take what the filters before it leave; false when it is the same.
@@ -52,6 +53,9 @@ import type { MenuItem } from './sherpa-menu.js';
 
 /** How long a pointer RESTS on a row before its child menu opens. */
 const HOVER_OPENS_AFTER = 500;
+
+/** A row's own control: its tick box, or the row itself, a button. */
+const ROW_CONTROL = 'button, input, select, textarea, a[href]';
 
 /** Each menu's own radio group number. */
 let radioGroups = 0;
@@ -201,6 +205,16 @@ export class MenuList {
   /** Every slotted row — label rows and action buttons alike. */
   rows(): HTMLElement[] {
     return [...this.#host.el.children].filter((n): n is HTMLElement => n instanceof HTMLElement);
+  }
+
+  /** Each row's own control that can take the focus now, in order: one a row. */
+  stops(): HTMLElement[] {
+    return this.rows().flatMap((row) => {
+      // A row of the default slot: never a header's, a footer's, or a nested menu.
+      if (row.slot || row.matches('sherpa-menu')) return [];
+      const at = row.matches(ROW_CONTROL) ? row : row.querySelector<HTMLElement>(ROW_CONTROL);
+      return at && !at.matches(':disabled') && at.closest('sherpa-menu') === this.#host.el && at.checkVisibility() ? [at] : [];
+    });
   }
 
   /** The field's own values, read from its value rows. */
@@ -837,15 +851,30 @@ export class MenuList {
   };
 
   /** ArrowRight opens a row's child menu, and ArrowLeft goes back, as in an OS
-   *  menu; in a tree they open and shut a parent. True when the key was theirs. */
+   *  menu; in a tree they open and shut a parent. ArrowDown and ArrowUp move
+   *  between the rows, Home and End to the ends. True when the key was theirs. */
   key(event: KeyboardEvent): boolean {
-    if (this.#treeKey(event)) return true;
+    if (this.#treeKey(event) || this.#move(event)) return true;
     const row = (event.target as Element).closest<HTMLElement>('.menu-row[data-drill]');
     if (event.key === 'ArrowRight' && row) this.#drillInto(row);
     else if (event.key === 'ArrowLeft' && this.#host.el.hasAttribute('data-drill')) this.#host.back();
     else return false;
     event.preventDefault();
     event.stopPropagation();
+    return true;
+  }
+
+  /** A row's ArrowDown and ArrowUp, Home and End: the focus moves, and nothing is
+   *  ticked — a radio's own arrows would pick. TRAP T-a-menu-is-reached-by-keys-from-its-trigger */
+  #move(event: KeyboardEvent): boolean {
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return false;
+    const stops = this.stops();
+    const at = stops.findIndex((stop) => event.composedPath().includes(stop));
+    if (at < 0) return false;
+    const to = ({ ArrowDown: stops[at + 1] ?? stops[0], ArrowUp: stops[at - 1] ?? stops.at(-1), Home: stops[0], End: stops.at(-1) } as Record<string, HTMLElement | undefined>)[event.key];
+    if (!to) return false;
+    event.preventDefault();
+    to.focus();
     return true;
   }
 
