@@ -2313,12 +2313,13 @@ export function bindWorkflow(
     else if (!made) write(next);
     else edit(() => { setLib(made.library, [made.id]); write(next); });
   };
-  // A route into a Custom Node's header takes anything, as a new input of its definition. TRAP T-a-custom-node-header-adds-an-input
+  // A route into a Custom Node's header takes anything, as a new input of its definition; a preset's refuses it as
+  // any refused drop does (TODO 803). TRAP T-a-custom-node-header-adds-an-input
   const join = (on: WorkflowDefinition, route: NodeRoute): void => {
     const { node, row } = socketOf(route.to);
     if (row !== undefined || !use(node) || readOnly()) return take(editWorkflow(on, { route }, K()));
     const made = headerInput(on, route, lib, K());
-    if ('fault' in made) report({ code: 'node-readonly', message: `bindWorkflow: ${made.fault}.`, at: { workflow: shown().id } });
+    if ('fault' in made) report({ code: 'workflow-route', message: `bindWorkflow: ${made.fault}.`, at: { workflow: shown().id } });
     else take(made.workflow, made);
   };
   const onConnect = (route: NodeRoute): void => join(shown(), route);

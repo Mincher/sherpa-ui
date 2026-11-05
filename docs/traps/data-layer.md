@@ -7513,7 +7513,8 @@ the group's internal node sockets. I never said that a group input was of a cert
   leave a header route where it is.
 - **The definition is shared (D11).** The add is a definition edit, in the editor's draft until
   Save (nothing about it is a fault). The use that took it follows the new version; every other use
-  says Update available. A preset is read only: the drop is refused in words, through `report`.
+  says Update available. A preset is read only: the drop is refused as any refused drop is, in
+  words through `report` (`workflow-route`), and nothing is kept; a moved end goes back (TODO 803).
 - **Read once.** A route a use's header holds from a file saved before reads as its own new input
   (`heldInputs`), as the editor opens and after Discard; the draft and the edit are kept for the
   tab together, so a reload does not add it twice. A preset's stays on the header.
