@@ -126,7 +126,7 @@ A page's Query as the Node Editor draws it (`queryGraph`): its store, status fie
 
 #### `edit_query_graph` — Edit a page's Query by its nodes
 
-Each edit as the Node Editor makes it: a row's new value, `{ "node": "when-view-region", "row": "value", "value": ["EMEA"] }`, asks its command (`graphRequest`); a new route, `{ "from": "when-data-status", "to": "scope-view/status" }`, asks its move (`routeRequest`). Each command goes through `ask()`, the graph drawn again before the next edit. It gives each command asked, the new Query, and the page definition Save would write (`pageWithQuery`), checked by `checkPage`. A node or row the graph has not got, a row no command takes and a route the Query refuses are refused, in the data layer's words. Node ids are query_graph's.
+Each edit as the Node Editor makes it: a row's new value, `{ "node": "when-view-region", "row": "b", "value": ["EMEA"] }`, asks its command (`graphRequest`); a new route, `{ "from": "when-data-status", "to": "scope-view/status" }`, asks its move (`routeRequest`). Each command goes through `ask()`, the graph drawn again before the next edit. It gives each command asked, the new Query, and the page definition Save would write (`pageWithQuery`), checked by `checkPage`. A node or row the graph has not got, a row no command takes and a route the Query refuses are refused, in the data layer's words. Node ids are query_graph's.
 
 - `definition` — The page definition (page.v1), as its JSON: `{ "v": 1, "id", "source": { "store", "fields", "scopes" } }`
 - `rows` (optional) — The rows its store holds, as a JSON list. Left out with `data` left out, it has none

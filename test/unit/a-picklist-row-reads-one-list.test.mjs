@@ -38,13 +38,11 @@ test('rowChoices gives each picklist its one list; a row that is no picklist has
   assert.deepEqual(labels(rowChoices({ control: 'field' }, { fields })), ['Status', 'Seats']);
   assert.deepEqual(labels(rowChoices({ control: 'direction' })), ['Ascending', 'Descending']);
   assert.deepEqual(labels(rowChoices({ control: 'apply' })), ['Change', 'Input']);
-  assert.deepEqual(labels(rowChoices({ control: 'join' })), ['All of', 'Any of']);
   assert.deepEqual(labels(rowChoices({ control: 'unit' })), ['days', 'weeks', 'months', 'years']);
   assert.deepEqual(labels(rowChoices({ control: 'span' })), ['In the last', 'In the next']);
   assert.deepEqual(labels(rowChoices({ control: 'type' }, { types: typeChoices(NODE_KINDS.value) })), ['Text', 'Integer', 'Decimal', 'Date', 'True/false', 'List']);
   assert.deepEqual(labels(rowChoices({ control: 'presentation' })).slice(0, 3), ['Default', 'Bar', 'Donut']);
   assert.deepEqual(rowChoices({ control: 'store' }, { stores: ['customers'] }), [{ value: 'customers', label: 'customers' }]);
-  assert.deepEqual(labels(rowChoices({ control: 'op' }, { type: 'number' })).slice(0, 2), ['Equals', 'Does not equal']);
   assert.deepEqual(rowChoices({ control: 'values' }, { values: ['a', 'b'] }).map((c) => c.value), ['a', 'b']);
   assert.equal(rowChoices({ control: 'text' }), undefined);
   assert.equal(rowChoices({}), undefined);

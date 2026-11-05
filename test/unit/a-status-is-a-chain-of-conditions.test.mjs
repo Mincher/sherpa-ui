@@ -1,8 +1,8 @@
 /**
- * A STATUS IS A CHAIN OF CONDITIONS — plan 713 M5. A status field draws one row per value and one
- * Condition node per `when`, chained by False in the order the status takes the first match; a
- * preset's and a saved filter's conditions are Condition nodes too, read only. The load lights
- * each Condition with the rows that took it. TRAP T-a-condition-is-a-tree-of-nodes
+ * A STATUS IS A CHAIN OF CONDITIONS — plan 713 M5, plan 783 D6. A status field draws one row per value and,
+ * per `when`, a Field per field it names, a test per rule and an Or, chained by False — into the next value's
+ * Fields — in the order the status takes the first match; a preset's and a saved filter's conditions draw the
+ * same way, read only. The load lights each root with the rows that took it. TRAP T-a-condition-is-a-tree-of-nodes
  *
  *   node --test test/unit/a-status-is-a-chain-of-conditions.test.mjs
  */
@@ -29,31 +29,38 @@ const g = queryGraph({ v: 1, scopes: {} }, page, { domains: store.domains });
 const node = (id) => g.nodes.find((n) => n.id === id);
 const into = (to) => g.routes.filter((r) => r.to === to).map((r) => r.from);
 
-test('Health is 3 value rows and 2 Conditions, chained by False: the value\'s look on its row', () => {
+test('Health is 3 value rows, and per `when` a Field per field, a test per rule and an Or, chained by False into the next value\'s Fields', () => {
   const status = node('status-health');
   assert.deepEqual(status.rows.filter((r) => r.name !== ROWS.name).map((r) => [r.name, r.input, r.value]), [
     ['At risk', 'boolean', 'critical'], ['Watch', 'boolean', 'warning'], ['Healthy', 'boolean', 'success'],
   ]);
-  const conditions = g.nodes.filter((n) => n.kind === 'condition');
-  assert.deepEqual(conditions.map((n) => [n.id, n.heading, n.branches, n.input]), [
-    ['status-health.At risk', 'At risk', true, 'any'], ['status-health.Watch', 'Watch', true, 'any'],
+  const roots = g.nodes.filter((n) => n.kind === 'condition' && !/\.\d+$/.test(n.id));
+  assert.deepEqual(roots.map((n) => [n.id, n.heading, n.branches, n.input, n.rows[0].value]), [
+    ['status-health.At risk', 'At risk', true, 'boolean', 'or'], ['status-health.Watch', 'Watch', true, 'boolean', 'or'],
   ]);
-  // Each True into its value; At risk's False into Watch; Watch's False into the value no `when` names.
-  assert.deepEqual(g.routes.filter((r) => r.from.startsWith('status-health.')), [
+  const fields = g.nodes.filter((n) => n.kind === 'field');
+  assert.deepEqual(fields.map((n) => [n.id, n.rows[0].value, n.input]), [
+    ['field-status-health.At risk-score', 'score', undefined], ['field-status-health.At risk-openTickets', 'openTickets', undefined],
+    ['field-status-health.Watch-score', 'score', 'any'], ['field-status-health.Watch-openTickets', 'openTickets', 'any'],
+  ]);
+  // Each root's True into its value; At risk's False into each of Watch's Fields; Watch's False into the value no `when` names.
+  assert.deepEqual(g.routes.filter((r) => /^status-health\.[^.]+(\/#false)?$/.test(r.from)), [
     { from: 'status-health.At risk', to: 'status-health/At risk' },
+    { from: 'status-health.At risk/#false', to: 'field-status-health.Watch-score' },
+    { from: 'status-health.At risk/#false', to: 'field-status-health.Watch-openTickets' },
     { from: 'status-health.Watch', to: 'status-health/Watch' },
-    { from: 'status-health.At risk/#false', to: 'status-health.Watch' },
     { from: 'status-health.Watch/#false', to: 'status-health/Healthy' },
   ]);
+  assert.deepEqual(into('status-health.At risk.1'), ['field-status-health.At risk-score/field']);
   assert.deepEqual(queryGraphFaults(g, store.domains), []);
 });
 
-test('each Condition holds its value\'s `when`, read only: any of its rules, the store\'s to change', () => {
-  const risk = node('status-health.At risk');
-  const rowsOf = Object.fromEntries(risk.rows.map((r) => [r.name, r]));
-  assert.deepEqual([rowsOf['join'].value, rowsOf['field'].value, rowsOf['op'].value, rowsOf['value'].value, rowsOf['field-2'].value, rowsOf['op-2'].value], ['or', 'score', 'lt', 60, 'openTickets', 'gte']);
-  assert.ok(risk.rows.filter((r) => r.name !== ROWS.name).every((r) => !r.editable && /store/.test(r.hint)));
-  assert.equal(risk.ref.scope, undefined, 'no scope: no edit asks the Query');
+test('each `when` is its value\'s, read only: any of its rules, the store\'s to change', () => {
+  const tests = ['status-health.At risk.1', 'status-health.At risk.2'].map((id) => node(id).rows.map((r) => r.value));
+  assert.deepEqual(tests, [['lt', 60], ['gte', 5]]);
+  const drawn = g.nodes.filter((n) => n.id.includes('At risk') && n.kind !== 'status');
+  assert.ok(drawn.every((n) => n.rows.every((r) => !r.editable && /store/.test(r.hint))), 'every row read only');
+  assert.ok(drawn.every((n) => n.ref.scope === undefined), 'no scope: no edit asks the Query');
   assert.equal(into('status-health/Watch').length, 1);
 });
 
@@ -84,7 +91,7 @@ test('a PRESET\'s and a SAVED FILTER\'s conditions are Condition nodes, read onl
 test('planted faults: a `when` that is no condition, a False into nothing, a False from a node that does not fork', () => {
   const bad = { ...store.domains, health: { ...store.domains.health, when: { 'At risk': 'score < 60', Watch: store.domains.health.when.Watch } } };
   const drawn = queryGraph({ v: 1, scopes: {} }, page, { domains: bad });
-  assert.deepEqual(drawn.nodes.filter((n) => n.kind === 'condition').map((n) => n.id), ['status-health.Watch'], 'a bad `when` draws no node');
+  assert.deepEqual(drawn.nodes.filter((n) => n.kind === 'condition').map((n) => n.id), ['status-health.Watch', 'status-health.Watch.1', 'status-health.Watch.2'], 'a bad `when` draws no node');
   assert.ok(queryGraphFaults(drawn, bad).some((f) => /"At risk" is not a condition/.test(f)));
   const dangling = { nodes: g.nodes, routes: [...g.routes, { from: 'status-health.Watch/#false', to: 'status-health.Ghost' }] };
   assert.ok(queryGraphFaults(dangling).some((f) => /status-health\.Ghost/.test(f)));

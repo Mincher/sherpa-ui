@@ -64,7 +64,7 @@ import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-defi
 import { graphRequest, placeRequest, queryGraph, queryStepNode, routeRequest, statusTallies, traceQuerySteps, type QueryGraphFacts } from '../data/query-graph.js';
 import { onTrace, type Span, type StepState, type TraceHost } from '../data/trace.js';
 import { VIEW } from '../data/query.js';
-import { OP_LABELS, valueKey, type FilterOp } from '../data/store.js';
+import { valueKey } from '../data/store.js';
 import { report } from '../data/report.js';
 import {
   checkNodeLibrary, copyToMine, definitionDiff, editDefinition, innerOf, kindsOf, staleUses, updateAll, updateInstance, useOf, workflowFaultsDeep,
@@ -80,7 +80,7 @@ import { nodeFlow, type ConditionFacts } from '../data/node-flow.js';
 import { typedValue, type FieldType } from '../data/filter-state.js';
 import { formatDateTime, isDateTime, readDateTime } from '../data/format-date.js';
 import {
-  FALSE_SOCKET, NODE_KINDS, fitOf, paletteOf, partOf, placed, resolveKind, rowChoices, socketOf, socketType,
+  FALSE_SOCKET, NODE_KINDS, fitOf, paletteOf, placed, rowChoices, socketOf, socketType,
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeSize, type NodeRoute, type NodeTie, type SocketType,
 } from '../data/node-kinds.js';
 import {
@@ -210,11 +210,10 @@ interface Drawn {
 const drawnOn = new WeakMap<HTMLElement, Drawn>();
 let shadows = 0;
 
-/** How a row's value reads: an operator by its words, a direction in full. */
+/** How a row's value reads: a direction in full. */
 function shown(row: GraphRow): string {
   const value = row.value;
   if (value === undefined || value === null) return '';
-  if (row.control === 'op') return OP_LABELS[value as FilterOp] ?? String(value);
   if (row.control === 'direction') return value === 'desc' ? 'Descending' : value === 'asc' ? 'Ascending' : String(value);
   return Array.isArray(value) ? value.join(', ') : String(value);
 }
@@ -359,15 +358,8 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
       return line;
     }));
   }
-  // SECTIONS: the plain rows run together, and each part of a group is one. A line is drawn between two, never before the first.
-  let section: string | undefined;
-  const kind = resolveKind(NODE_KINDS[node.kind], node.rows.find((r) => r.control === 'type')?.value);
   for (const row of node.rows) {
     const line = drawn.rows.get(`${node.id}/${row.name}`)!;
-    const { base, part } = partOf(row.name);
-    const now = kind?.rows.find((r) => r.name === base)?.repeat ? `part-${part}` : 'rows';
-    line.toggleAttribute('data-divided', section !== undefined && section !== now);
-    section = now;
     put(line, 'data-input-socket', row.input);
     put(line, 'data-output-socket', row.output);
     line.toggleAttribute('data-input-many', !!row.many);
@@ -375,7 +367,7 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
     line.toggleAttribute('data-output-routed', sent.has(`${node.id}/${row.name}`));
     const field = line.firstElementChild as Field | null;
     if (field) fill(field, row);
-    // A row with no field says what it reads — a Group's constant, "Group: true"; one that reads null, only its name.
+    // A row with no field says what it reads; one that reads null, only its name.
     else line.setAttribute('data-label', row.control === undefined && row.value != null ? `${row.label}: ${shown(row)}` : row.label);
   }
 }

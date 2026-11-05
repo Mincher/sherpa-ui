@@ -31,7 +31,7 @@ import { report } from './report.js';
 import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS, type FilterOp } from './store.js';
 import {
-  NODE_KINDS, ROWS, FALSE_SOCKET, LIST_OPS, accepts, drivenSwitch, fixedChoices, truthy, kindIn, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf,
+  NODE_KINDS, ROWS, FALSE_SOCKET, LIST_OPS, accepts, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf,
   type GraphRow, type NodeSize, type NodeKind, type NodeRoute, type NodeTie, type RowKind, type SocketType,
 } from './node-kinds.js';
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './route-bends.js';
@@ -131,8 +131,7 @@ const inGrowth = (n: unknown): boolean => typeof n === 'number' && n >= GROW_MIN
 
 /** Whether a value or a socket names a row the node holds only under ANOTHER of its types. */
 function keptRow(node: Pick<WorkflowNode, 'kind' | 'values'> | undefined, row: string | undefined, kinds: Kinds): boolean {
-  // Only a type a workflow draws keeps a row: a Query's own is none of its.
-  const kind = node && kinds[node.kind] && (kindIn(kinds[node.kind]!, 'workflow') ?? kinds[node.kind]);
+  const kind = node && kinds[node.kind];
   if (!node || !kind?.types || row === undefined || row === FALSE_SOCKET || rowOf(kindOfNode(kinds, node)!.rows, row)) return false;
   return !!rowOfOtherType(kind, node.values?.['type'], row);
 }
@@ -277,10 +276,9 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
       // A family's type is a value of its first row; the value of a row another type holds is KEPT.
       if (shipped?.types && name === 'type') {
         if (typeof value !== 'string' || !Object.hasOwn(shipped.types, value)) problems.push(`the node "${node.id}" holds "${String(value)}" as its ${shipped.typeLabel ?? 'Type'}, which is none of its choices`);
-      } else if (shipped?.types && !row && rowOfOtherType(kindIn(shipped, 'workflow') ?? shipped, node.values?.['type'], name)) continue;
+      } else if (shipped?.types && !row && rowOfOtherType(shipped, node.values?.['type'], name)) continue;
       else if (kind && !row) problems.push(`the node "${node.id}" holds a value for "${name}", a row its kind has not`);
       // A value is typed as its row's control takes it. TRAP T-a-value-is-typed-once
-      else if (row?.control === 'op' && !(String(value) in OP_LABELS)) problems.push(`the node "${node.id}" holds "${String(value)}" as its ${row.label}, which is no operator`);
       else if (row?.control === 'number' && typeof value !== 'number') problems.push(`the node "${node.id}" holds "${String(value)}" as its ${row.label}, which is no number`);
       else if (row?.multiple && !Array.isArray(value)) problems.push(`the node "${node.id}" holds "${String(value)}" as its ${row.label}, which is no list`);
       else if (row && fixedChoices(row.control) && ![value].flat().every((v) => fixedChoices(row.control)!.some((c) => c.value === String(v)))) {
@@ -488,7 +486,7 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
       // A Unit says its words for the count beside it: "1 day", "7 days".
       const count = row.control === 'unit' && typeof values['n'] === 'number' ? { count: values['n'] } : {};
       const list = rowChoices({ ...plain, value: has }, {
-        ...(facts.fields ? { fields: facts.fields } : {}), ...(facts.stores ? { stores: facts.stores } : {}), ...(family.types ? { types: typeChoices(kindIn(family, 'workflow') ?? family)! } : {}), ...(known ? { values: known } : {}), ...(type ? { type } : {}), ...count,
+        ...(facts.fields ? { fields: facts.fields } : {}), ...(facts.stores ? { stores: facts.stores } : {}), ...(family.types ? { types: typeChoices(family)! } : {}), ...(known ? { values: known } : {}), ...count,
       });
       // A Type row says the type's own value, and the line the type gives.
       const typed = row.control === 'type' ? { value: at?.id ?? '', ...(at?.type.help ? { hint: at.type.help } : {}) } : {};

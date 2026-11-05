@@ -168,13 +168,13 @@ test('the incoming JSON says it: null where the node cannot use what came, and w
 
 test('the words come from one place: the kind says what it needs, INPUT_WORDS says it; a runner reads through the same door', () => {
   // Every need and given a kind can say has its words.
-  for (const word of ['value', 'number', 'boolean', 'object', 'list', 'rows', 'date', 'numbers', 'operator', 'field', 'tested']) assert.equal(typeof INPUT_WORDS[word], 'string', word);
+  for (const word of ['value', 'number', 'boolean', 'object', 'list', 'rows', 'date', 'numbers', 'field', 'tested']) assert.equal(typeof INPUT_WORDS[word], 'string', word);
   assert.equal(INPUT_WORDS.object, data.SOCKET_WORDS.object, 'a socket type says the words a socket\'s tip says');
   // The kinds say it: what each header needs, and each row by its control, list or field.
   assert.deepEqual(['condition', 'collection', 'tag', 'field', 'time', 'output'].map((k) => resolveKind(NODE_KINDS[k]).needs), ['tested', 'field', 'field', 'object', 'date', undefined]);
-  // A family's type says its own: Logic's Rows that hold takes rows; Is empty anything; And takes booleans by its socket.
-  assert.deepEqual(['rows', 'empty', 'and'].map((t) => resolveKind(NODE_KINDS.condition, t).needs), ['rows', undefined, undefined]);
-  assert.deepEqual([needOf({ control: 'number' }), needOf({ control: 'datetime' }), needOf({ control: 'direction' }), needOf({ control: 'op' }), needOf({ control: 'text' })], ['number', 'date', 'choice', 'operator', undefined]);
+  // A family's type says its own: a comparison tests a field or a value; Is empty anything; And takes booleans by its socket.
+  assert.deepEqual(['eq', 'empty', 'and'].map((t) => resolveKind(NODE_KINDS.condition, t).needs), ['tested', undefined, undefined]);
+  assert.deepEqual([needOf({ control: 'number' }), needOf({ control: 'datetime' }), needOf({ control: 'direction' }), needOf({ control: 'text' })], ['number', 'date', 'choice', undefined]);
   assert.deepEqual([needOf({ control: 'values' }, 'number'), needOf({ control: 'tags', multiple: true, input: 'object' }, 'number'), needOf({ control: 'tags', multiple: true, input: 'object' })], ['number', 'numbers', 'list']);
   // An app's kind says its own need, and its warning says it in the same words.
   const kinds = { ...NODE_KINDS, gauge: { heading: 'Gauge', icon: 'insights', input: 'any', needs: 'number', rows: [], model: 'x', graphs: ['workflow'] } };

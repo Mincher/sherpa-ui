@@ -24,7 +24,6 @@
  */
 import { typedValue } from './filter-state.js';
 import { isDateTime } from './format-date.js';
-import { OP_LABELS } from './store.js';
 import { FALSE_SOCKET, SOCKET_WORDS, fixedChoices, kindOfNode, rowOf, socketType, type NodeKind, type RowChoice, type RowKind } from './node-kinds.js';
 
 /** What reaches an input, as finely as its source says: its socket's type, or rows, a list, a number or a Field's
@@ -33,12 +32,12 @@ export type Given = 'value' | 'number' | 'boolean' | 'object' | 'list' | 'rows' 
 
 /** What an input can use: its socket's type, or finer. `choice`: one of its fixed list; `numbers`: a list of numbers;
  *  `field`: a Field's column; `tested`: what a comparison tests, a column or one value. */
-export type Need = 'value' | 'boolean' | 'object' | 'number' | 'date' | 'rows' | 'list' | 'numbers' | 'choice' | 'operator' | 'field' | 'tested';
+export type Need = 'value' | 'boolean' | 'object' | 'number' | 'date' | 'rows' | 'list' | 'numbers' | 'choice' | 'field' | 'tested';
 
 /** Each need and each given in words: the one place a warning's words come from. */
 export const INPUT_WORDS: Readonly<Record<Exclude<Need, 'choice'> | Given, string>> = {
   value: SOCKET_WORDS.value, object: SOCKET_WORDS.object, boolean: SOCKET_WORDS.boolean,
-  number: 'a number', date: 'a date', rows: 'rows', list: 'a list', numbers: 'a list of numbers', operator: 'an operator', field: 'a field', tested: 'a field or a value',
+  number: 'a number', date: 'a date', rows: 'rows', list: 'a list', numbers: 'a list of numbers', field: 'a field', tested: 'a field or a value',
 };
 
 /** The field a column says: its name, its words and its type (none: text). */
@@ -63,13 +62,12 @@ export interface InputNeeds {
 }
 
 /** What an input needs, by its kind's own description — a row's, or a header's: its `needs`; a number or a date by
- *  its control; one of a fixed list, or an operator; a list where it picks several; a comparison's Value by its field's
+ *  its control; one of a fixed list; a list where it picks several; a comparison's Value by its field's
  *  `type`; else its socket's type (TODO 770). None: an `any` that says nothing takes anything. */
 export function needOf(input: Pick<RowKind, 'needs' | 'control' | 'multiple' | 'input'>, type?: string): Need | undefined {
   if (input.needs) return input.needs;
   if (input.control === 'number') return 'number';
   if (input.control === 'datetime') return 'date';
-  if (input.control === 'op') return 'operator';
   if (fixedChoices(input.control)) return 'choice';
   if (input.multiple && input.input === 'object') return type === 'number' ? 'numbers' : 'list';
   if (input.control === 'values' && (type === 'number' || type === 'date')) return type;
@@ -174,7 +172,6 @@ function fits(need: Need, { kind, value, field }: Reached, choices: readonly Row
     case 'numbers': return column ? field?.type === 'number' : (kind === 'object' || kind === 'list') && (!held || [value].flat().every(isNumber));
     case 'number': return (kind === 'value' || kind === 'number') && (!held || isNumber(value));
     case 'date': return column ? field?.type === 'date' : kind === 'value' && (!held || isDateTime(String(value)));
-    case 'operator': return kind === 'value' && (!held || String(value) in OP_LABELS);
     case 'choice': return kind === 'value' && (!held || choices.some((c) => c.value === String(value)));
   }
 }

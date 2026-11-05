@@ -1,8 +1,8 @@
 /**
- * A CONDITION IS A TREE OF NODES: one Condition node is ONE group of the condition tree — its join, then
- * each part, a comparison's Field, Operator and Value or a Group row for a nested group, whose own node
- * routes its True in. `A or (B and C)` is two nodes; each edit goes through the Query's one door and
- * reads back the same tree. The workflow's Filter is the Condition it became. Will, plan 713 M4, D3.
+ * A CONDITION IS A TREE OF NODES: one test per Condition, And and Or joining tests, on a Field node (Will, plan 783
+ * D4, D6): "The Graph chain would, at it's simplest, would then be Source>Field>Condition>Output." `A or (B and C)` on
+ * Seats is 6 nodes — 1 Field, 3 Conditions, 1 And, 1 Or — in the Query editor as in a workflow; each Query edit goes
+ * through the Query's one door and reads back the same tree; the root keeps `when-<scope>-<field>`.
  * TRAP T-a-condition-is-a-tree-of-nodes
  *
  *   node --test test/unit/a-condition-is-a-tree-of-nodes.test.mjs
@@ -11,12 +11,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { queryGraph, graphRequest, routeRequest } = await import(new URL('query-graph.js', core));
+const { queryGraph, graphRequest, placeRequest, routeRequest } = await import(new URL('query-graph.js', core));
 const { answerTree } = await import(new URL('filter-state.js', core));
 const { ArrayStore } = await import(new URL('stores.js', core));
 const { openSource } = await import(new URL('page-definition.js', core));
-const { NODE_KINDS, accepts, partName, partOf, resolveKind, rowOf, socketOf, socketType } = await import(new URL('node-kinds.js', core));
+const { NODE_KINDS, accepts, socketOf, socketType } = await import(new URL('node-kinds.js', core));
 const { editWorkflow, readWorkflow, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
+const { nodeFlow } = await import(new URL('node-flow.js', core));
 
 const page = {
   v: 1, id: 'records',
@@ -44,54 +45,58 @@ const row = (g, id, name) => node(g, id).rows.find((r) => r.name === name);
 /** The command an edit of a node's row asks. */
 const edit = (g, facts, id, name, value) => graphRequest({ node: node(g, id), row: row(g, id, name), value }, facts);
 
-test('A or (B and C) is TWO Condition nodes: the group\'s True goes into its parent\'s Group row', async () => {
+test('A or (B and C) is 1 Field, 3 Conditions, 1 And and 1 Or: each leaf on the Field, each True into its group, the root into its scope', async () => {
   const { source, draw } = await opened();
   const g = draw();
-  const conditions = g.nodes.filter((n) => n.kind === 'condition');
-  assert.deepEqual(conditions.map((n) => n.id), ['when-view-seats', 'when-view-seats.2']);
-  // The parent: Any of, A's Field, Operator and Value, then the Group row of part two.
-  assert.deepEqual(node(g, 'when-view-seats').rows.map((r) => [r.name, r.value]), [
-    ['join', 'or'], ['field', 'seats'], ['op', 'lt'], ['value', 5], ['group-2', 'All of 2 conditions'],
+  const tree = g.nodes.filter((n) => n.kind === 'condition' || n.kind === 'field');
+  assert.deepEqual(tree.map((n) => [n.id, n.kind, n.rows.map((r) => [r.name, r.value])]), [
+    ['field-view-seats', 'field', [['field', 'seats']]],
+    ['when-view-seats', 'condition', [['type', 'or']]],
+    ['when-view-seats.1', 'condition', [['type', 'lt'], ['b', 5]]],
+    ['when-view-seats.2', 'condition', [['type', 'and']]],
+    ['when-view-seats.2.1', 'condition', [['type', 'gt'], ['b', 5]]],
+    ['when-view-seats.2.2', 'condition', [['type', 'lt'], ['b', 100]]],
   ]);
-  // The child: All of, B's and C's, each part its own Field, Operator and Value.
-  assert.deepEqual(node(g, 'when-view-seats.2').rows.map((r) => [r.name, r.value]), [
-    ['join', 'and'], ['field', 'seats'], ['op', 'gt'], ['value', 5], ['field-2', 'seats'], ['op-2', 'lt'], ['value-2', 100],
+  assert.deepEqual(g.routes.filter((r) => /seats/.test(r.from)).map((r) => `${r.from} → ${r.to}`), [
+    'field-view-seats/field → when-view-seats.1', 'when-view-seats.1 → when-view-seats',
+    'field-view-seats/field → when-view-seats.2.1', 'when-view-seats.2.1 → when-view-seats.2',
+    'field-view-seats/field → when-view-seats.2.2', 'when-view-seats.2.2 → when-view-seats.2',
+    'when-view-seats.2 → when-view-seats', 'when-view-seats → scope-view/seats',
   ]);
-  assert.deepEqual(g.routes.filter((r) => r.from.startsWith('when-view-seats')).map((r) => `${r.from} → ${r.to}`), [
-    'when-view-seats.2 → when-view-seats/group-2', 'when-view-seats → scope-view/seats',
-  ]);
-  // Every route joins what it can, and a Group row takes one boolean.
-  assert.deepEqual([row(g, 'when-view-seats', 'group-2').input, row(g, 'when-view-seats', 'join').input], ['boolean', undefined]);
+  // An And or an Or takes many booleans; a leaf the Field's column; the Field takes nothing in a Query.
+  assert.deepEqual([node(g, 'when-view-seats').input, node(g, 'when-view-seats').many, node(g, 'when-view-seats.1').input, node(g, 'field-view-seats').input], ['boolean', true, 'any', undefined]);
   for (const { from, to } of g.routes) {
     const [a, b] = [socketOf(from), socketOf(to)];
     assert.ok(accepts(socketType(node(g, a.node), a.row, 'output'), socketType(node(g, b.node), b.row, 'input')), `${from} → ${to}`);
   }
-  // The tree filters as it draws: asked again unchanged, it keeps the rows 4 and 8, fewer than 5 or between 5 and 100.
-  await source.query.ask(edit(g, { type: (f) => page.source.fields[f]?.type }, 'when-view-seats', 'op', 'lt'));
+  // It reads the tree it was drawn from, as a Preset Filter's graph reads (one reader).
+  assert.deepEqual(nodeFlow(g, 'when-view-seats').definition.where, { or: [{ field: 'seats', op: 'lt', value: 5 }, { and: [{ field: 'seats', op: 'gt', value: 5 }, { field: 'seats', op: 'lt', value: 100 }] }] });
+  // The tree filters as it draws: asked again unchanged, it keeps the rows 4 and 8.
+  await source.query.ask(edit(g, { type: (f) => page.source.fields[f]?.type }, 'when-view-seats.1', 'type', 'lt'));
   assert.equal(source.total, 2);
 });
 
-test('a group is drawn where it stands: (B and C) or A puts the Group row first, and an edit keeps the order', async () => {
+test('a group is drawn where it stands: (B and C) or A puts the And first, and an edit keeps the order', async () => {
   const { source, facts } = await opened();
   await source.query.ask({ scope: 'view', field: 'seats', reading: { tree: { or: [{ and: [{ op: 'gt', value: 5 }, { op: 'lt', value: 100 }] }, { op: 'lt', value: 5 }] }, mode: 'advanced' } });
   const g = queryGraph(source.query.draft, page, facts);
-  assert.deepEqual(node(g, 'when-view-seats').rows.map((r) => r.name), ['join', 'group', 'field-2', 'op-2', 'value-2']);
-  await source.query.ask(edit(g, facts, 'when-view-seats', 'op-2', 'lte'));
+  assert.deepEqual(['when-view-seats.1', 'when-view-seats.2'].map((id) => row(g, id, 'type').value), ['and', 'lt']);
+  await source.query.ask(edit(g, facts, 'when-view-seats.2', 'type', 'lte'));
   assert.deepEqual(answerTree(source.query.draft.scopes.view.readings.seats), { or: [{ and: [{ op: 'gt', value: 5 }, { op: 'lt', value: 100 }] }, { op: 'lte', value: 5 }] });
 });
 
-test('a Join, a field, an operator and a value each edit through ask() and change the Query, and nothing else', async () => {
+test('an And or Or\'s Operation, a leaf\'s Operation and its Value B each edit through ask() and change the Query, and nothing else', async () => {
   const { source, facts, draw, tree } = await opened();
   const first = tree();
   const query = () => structuredClone(source.query.draft);
   const edits = [
     // The root's join, then the nested group's own.
-    ['when-view-seats', 'join', 'and', { or: undefined, and: [{ op: 'lt', value: 5 }, { and: [{ op: 'gt', value: 5 }, { op: 'lt', value: 100 }] }] }],
-    ['when-view-seats.2', 'join', 'or', { or: [{ op: 'lt', value: 5 }, { or: [{ op: 'gt', value: 5 }, { op: 'lt', value: 100 }] }] }],
+    ['when-view-seats', 'type', 'and', { or: undefined, and: [{ op: 'lt', value: 5 }, { and: [{ op: 'gt', value: 5 }, { op: 'lt', value: 100 }] }] }],
+    ['when-view-seats.2', 'type', 'or', { or: [{ op: 'lt', value: 5 }, { or: [{ op: 'gt', value: 5 }, { op: 'lt', value: 100 }] }] }],
     // An operator, and a value: typed by its field, so a number's 70 is 70.
-    ['when-view-seats', 'op', 'lte', { or: [{ op: 'lte', value: 5 }, { and: [{ op: 'gt', value: 5 }, { op: 'lt', value: 100 }] }] }],
-    ['when-view-seats', 'value', '7', { or: [{ op: 'lt', value: 7 }, { and: [{ op: 'gt', value: 5 }, { op: 'lt', value: 100 }] }] }],
-    ['when-view-seats.2', 'value-2', '70', { or: [{ op: 'lt', value: 5 }, { and: [{ op: 'gt', value: 5 }, { op: 'lt', value: 70 }] }] }],
+    ['when-view-seats.1', 'type', 'lte', { or: [{ op: 'lte', value: 5 }, { and: [{ op: 'gt', value: 5 }, { op: 'lt', value: 100 }] }] }],
+    ['when-view-seats.1', 'b', '7', { or: [{ op: 'lt', value: 7 }, { and: [{ op: 'gt', value: 5 }, { op: 'lt', value: 100 }] }] }],
+    ['when-view-seats.2.2', 'b', '70', { or: [{ op: 'lt', value: 5 }, { and: [{ op: 'gt', value: 5 }, { op: 'lt', value: 70 }] }] }],
   ];
   for (const [id, name, value, expected] of edits) {
     await source.query.ask(edit(draw(), facts, id, name, value));
@@ -105,17 +110,34 @@ test('a Join, a field, an operator and a value each edit through ask() and chang
   }
   // An edit that changes nothing reads back the same tree, and the same Query.
   const before = query();
-  await source.query.ask(edit(draw(), facts, 'when-view-seats.2', 'op', 'gt'));
+  await source.query.ask(edit(draw(), facts, 'when-view-seats.2.1', 'type', 'gt'));
   assert.deepEqual(query(), before);
+  // A range draws Start and End, and each edits its own end.
+  await source.query.ask({ scope: 'view', field: 'seats', reading: { tree: { op: 'between', value: [5, 100] }, mode: 'advanced' } });
+  assert.deepEqual(draw().nodes.find((n) => n.id === 'when-view-seats').rows.map((r) => [r.name, r.value]), [['type', 'between'], ['start', '5'], ['end', '100']]);
+  await source.query.ask(edit(draw(), facts, 'when-view-seats', 'start', '10'));
+  assert.deepEqual(tree(), { op: 'between', value: [10, 100] });
+  await source.query.ask(edit(draw(), facts, 'when-view-seats', 'end', '50'));
+  assert.deepEqual(tree(), { op: 'between', value: [10, 50] });
 });
 
-test('another field takes the whole tree, as one change; a nested group cannot be moved alone', async () => {
-  const { source, facts, draw } = await opened();
+test('the Field picks another field: the whole reading MOVES there, as one change; a part cannot be moved alone', async () => {
+  const { facts, draw } = await opened();
   const g = draw();
-  const asked = edit(g, facts, 'when-view-seats.2', 'field-2', 'plan');
+  const asked = edit(g, facts, 'field-view-seats', 'field', 'plan');
   assert.equal(asked.length, 2);
   assert.deepEqual([asked[0].field, asked[0].reading, asked[1].field], ['seats', null, 'plan']);
-  assert.equal(routeRequest(g, { from: 'when-view-seats.2', to: 'scope-view/seats' }, facts).refused !== undefined, true, 'a nested True goes into its parent, drawn: the Query holds a whole tree');
+  assert.deepEqual(edit(g, facts, 'field-view-seats', 'field', 'seats').field, 'seats', 'the same field: the reading as it is');
+  assert.equal(routeRequest(g, { from: 'when-view-seats.2', to: 'scope-view/seats' }, facts).refused !== undefined, true, 'a part\'s True goes into its group, drawn: the Query holds a whole tree');
+  assert.equal(routeRequest(g, { from: 'field-view-seats/field', to: 'scope-view/seats' }, facts).refused !== undefined, true, 'a Field is no condition');
+});
+
+test('placing a Field in a Query holds the scope\'s next field; a Condition is refused in words: it tests a Field', async () => {
+  const { source } = await opened();
+  const facts = { holds: (s) => source.query.scope(s), fields: () => ['seats', 'plan'], presets: () => [], on: () => false };
+  assert.deepEqual(placeRequest('field', 'view', facts), { request: { scope: 'view', hold: ['seats', 'plan'] } });
+  assert.match(placeRequest('condition', 'view', facts).refused, /^A Condition tests a Field: route one in\./);
+  assert.match(placeRequest('field', 'view', { ...facts, fields: () => ['seats'] }).refused, /holds every field it may, so it takes no new Field/);
 });
 
 /** A or (B and C) on Seats, in a workflow: one Field into three Conditions, an And and an Or (plan 783 D4). */
@@ -172,14 +194,4 @@ test('the Filter kind is gone, and no file reads as one (TODO 777): a node of it
   // An app that registers its own `filter` keeps it.
   const mine = { ...NODE_KINDS, filter: { heading: 'Mine', icon: 'flag', rows: [], model: 'mine', graphs: ['workflow'] } };
   assert.equal(readWorkflow({ ...saved(2), nodes: [{ id: 'f', kind: 'filter', x: 0, y: 0 }] }, mine).workflow.nodes[0].kind, 'filter');
-});
-
-test('a repeated row is its kind\'s: field-3 is the third part\'s field; field-1 is no row', () => {
-  assert.deepEqual([partName('field', 1), partName('field', 3)], ['field', 'field-3']);
-  assert.deepEqual([partOf('field-3'), partOf('field'), partOf('field-1'), partOf('join')], [{ base: 'field', part: 3 }, { base: 'field', part: 1 }, { base: 'field-1', part: 1 }, { base: 'join', part: 1 }]);
-  // Rows that hold is the Query's alone (plan 783 D4), until the Query draws its tree as Conditions too.
-  const rows = resolveKind(NODE_KINDS.condition, 'rows').rows;
-  assert.equal(rowOf(rows, 'op-4').name, 'op');
-  assert.equal(rowOf(rows, 'join-2'), undefined, 'a Join does not repeat');
-  assert.equal(rowOf(rows, 'field-1'), undefined);
 });

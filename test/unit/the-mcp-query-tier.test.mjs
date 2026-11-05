@@ -195,11 +195,11 @@ test('edit_query_graph asks a node\'s command through ask(), and gives the Query
 
 test('a condition\'s value is the command a chip asks, typed by its field', { skip }, async () => {
   const at = { definition: records, rows, key: 'id', commands: [FILTER_AND_SORT[1]] };
-  const { json } = await call('edit_query_graph', { ...at, edits: [{ node: 'when-data-seats', row: 'value', value: '100' }] });
+  const { json } = await call('edit_query_graph', { ...at, edits: [{ node: 'when-data-seats', row: 'b', value: '100' }] });
   const source = await direct(records, [FILTER_AND_SORT[1]]);
   const graph = queryGraph(source.query.draft, records);
   const node = graph.nodes.find((n) => n.id === 'when-data-seats');
-  const request = graphRequest({ node, row: node.rows.find((r) => r.name === 'value'), value: '100' }, { type: (f) => records.source.fields[f]?.type });
+  const request = graphRequest({ node, row: node.rows.find((r) => r.name === 'b'), value: '100' }, { type: (f) => records.source.fields[f]?.type });
   assert.deepEqual(json.edited[0].asked, request);
   assert.deepEqual(json.definition.source.scopes.data.where, { seats: { gt: 100 } });
   source.close();
@@ -207,7 +207,7 @@ test('a condition\'s value is the command a chip asks, typed by its field', { sk
 
 test('edit_query_graph refuses a dangling node, a row no command takes and a route the Query refuses, in the data layer\'s words', { skip }, async () => {
   const at = { definition: records, rows, key: 'id' };
-  const dangling = await call('edit_query_graph', { ...at, edits: [{ node: 'when-view-nope', row: 'value', value: 'x' }] });
+  const dangling = await call('edit_query_graph', { ...at, edits: [{ node: 'when-view-nope', row: 'b', value: 'x' }] });
   assert.equal(dangling.bad, true);
   assert.match(dangling.text, /^The Query graph has no node "when-view-nope"\. Its nodes: store, source, scope-view, /);
   const readOnly = await call('edit_query_graph', { ...at, edits: [{ node: 'source', row: 'search', value: 'name' }] });

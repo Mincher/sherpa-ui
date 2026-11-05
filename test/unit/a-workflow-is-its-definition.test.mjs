@@ -115,11 +115,11 @@ test('ONE registry: every kind once, with a header, its own row names, what it s
   // Sort, Group and Count are a Collection's types now: their names are gone, and a file read once (plan 749 P3).
   assert.deepEqual(['sort', 'group', 'count'].map((k) => NODE_KINDS[k]), [undefined, undefined, undefined]);
   assert.deepEqual(drawnIn('query'), ['store', 'status', 'source', 'scope', 'condition', 'preset', 'saved', 'arrange', 'presentation', 'component', 'field']);
-  // One meaning per word: a Store is where rows come from, in both; a Condition is one group of the condition tree, in both.
+  // One meaning per word: a Store is where rows come from, in both; a Condition is one test, in both (plan 783 D4).
   assert.equal(NODE_KINDS.source.model, 'SourceDefinition');
   assert.equal(NODE_KINDS.filter, undefined, 'the Filter kind is gone: a Condition is the one');
   // No row sends a result: True is on the header, False on the footer. Will, 2026-11-05
-  assert.deepEqual(NODE_KINDS.condition.types.rows.rows.map((r) => r.name), ['rows', 'join', 'field', 'op', 'value', 'group']);
+  assert.deepEqual(NODE_KINDS.condition.types.eq.rows.map((r) => r.name), ['rows', 'b']);
 });
 
 test('each fault is reported by name, and the check says no', () => {
@@ -132,7 +132,7 @@ test('each fault is reported by name, and the check says no', () => {
     [{ nodes: [...nodes, { id: 'more', kind: 'condition', x: 0, y: 0, values: { type: 'equals' } }] }, 'the node "more" holds "equals" as its Operation, which is none of its choices'],
     [{ routes: [{ from: 'gone', to: 'filter' }] }, 'a route leaves "gone", which is no output socket'],
     // Rows that hold is gone from a workflow (plan 783 D9): nothing converts it.
-    [{ nodes: [...nodes, { id: 'old', kind: 'condition', x: 0, y: 0, values: { type: 'rows' } }] }, 'the node "old" is of the kind "condition", which a workflow does not run'],
+    [{ nodes: [...nodes, { id: 'old', kind: 'condition', x: 0, y: 0, values: { type: 'rows' } }] }, 'the node "old" holds "rows" as its Operation, which is none of its choices'],
     [{ routes: [{ from: 'start/rows', to: 'filter/nope' }] }, 'a route enters "filter/nope", which is no input socket'],
     // A Rows row only sends: the rows come in on the header.
     [{ routes: [{ from: 'start/rows', to: 'filter/rows' }] }, 'a route enters "filter/rows", a Rows row, which only sends: a node\'s rows come in on its header'],

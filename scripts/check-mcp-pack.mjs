@@ -46,7 +46,7 @@ export const SAMPLES = {
   scaffold_app: { name: 'probe-app' },
   query_source: PAGE,
   query_graph: PAGE,
-  edit_query_graph: { ...PAGE, edits: [{ node: 'when-data-plan', row: 'op', value: 'notin' }] },
+  edit_query_graph: { ...PAGE, edits: [{ node: 'when-data-plan', row: 'type', value: 'notin' }] },
   workflow_graph: { workflow: WORKFLOW },
   edit_workflow: { workflow: WORKFLOW, edits: [{ node: 'out', set: { heading: 'Pro people' } }] },
   pick_pattern: { need: { task: 'triage', rows: 120, fields: 3, dateFields: 0, numberFields: 1, writes: true } },

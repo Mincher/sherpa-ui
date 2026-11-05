@@ -57,16 +57,14 @@ test('each type draws its rows: the type first, its words and hint, the sockets 
   assert.equal(kindOfNode(kinds, { kind: 'nope' }), undefined);
 });
 
-test('a kind of one type shows no select; the Query\'s Condition, its Rows that hold alone, is unchanged', () => {
+test('a kind of one type shows no select; the Query takes Logic\'s And, Or and comparisons, not Not or Is empty', () => {
   assert.deepEqual(resolveKind(lone).rows.map((r) => r.name), ['a']);
   assert.equal(typeChoices(lone).length, 1);
-  // The Query takes one type of Logic: no select, today's tree. Plan 749 P5
+  // One test per Condition in both graphs (plan 783 D4, D6): Not and Is empty are a workflow's alone.
   const query = kindIn(NODE_KINDS.condition, 'query');
-  assert.deepEqual(Object.keys(query.types), ['rows']);
-  assert.deepEqual(resolveKind(query).rows.map((r) => r.name), ['rows', 'join', 'field', 'op', 'value', 'group']);
-  // A workflow takes every type but Rows that hold, the Query's alone until it draws its tree as Conditions (plan 783 D4).
-  assert.deepEqual(Object.keys(kindIn(NODE_KINDS.condition, 'workflow').types), Object.keys(NODE_KINDS.condition.types).filter((t) => t !== 'rows'));
-  assert.equal(kindIn(NODE_KINDS.math, 'workflow'), NODE_KINDS.math, 'a workflow takes every type of its own');
+  assert.deepEqual(Object.keys(query.types), Object.keys(NODE_KINDS.condition.types).filter((t) => t !== 'not' && t !== 'empty'));
+  assert.equal(query.defaultType, 'eq');
+  assert.equal(kindIn(NODE_KINDS.condition, 'workflow'), NODE_KINDS.condition, 'a workflow takes every type');
   assert.equal(kindIn(NODE_KINDS.value, 'query'), undefined, 'a kind no Query draws');
   assert.equal(NODE_KINDS.field.types, undefined);
 });

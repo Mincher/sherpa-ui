@@ -4,8 +4,8 @@
  * its kind says no more; a route of another type is no fault and no refusal: the input reads null, and the
  * node warns in words, through `readInput` and `INPUT_WORDS`. What stays refused is the graph's SHAPE: a loop,
  * the same route twice, two into an input that takes one, a socket that is not there, a Rows row (it only
- * sends), an output that says it sends any type, and a row's own fault (P4). A Group row takes any boolean
- * (TODO 780).
+ * sends), an output that says it sends any type, and a row's own fault (P4). And and Or take any boolean
+ * (TODO 780, plan 783 D4).
  *
  *   node --test test/unit/any-route-joins-any-input.test.mjs
  *
@@ -70,7 +70,7 @@ test('Will\'s own example: rows into Math › Value A join, Value A reads null, 
   assert.deepEqual(finalGraph(w).routes, w.routes);
 });
 
-test('the graph\'s shape stays refused, in words: a loop, twice, two into one, no socket, a Rows row, an any output, a row\'s own fault; a Group row takes any boolean', () => {
+test('the graph\'s shape stays refused, in words: a loop, twice, two into one, no socket, a Rows row, an any output, a row\'s own fault; And takes any boolean', () => {
   const base = {
     v: 2, id: 'w',
     nodes: [
@@ -87,8 +87,9 @@ test('the graph\'s shape stays refused, in words: a loop, twice, two into one, n
   assert.deepEqual(faults([{ from: 's/rows', to: 'c' }, { from: 'v/value', to: 'c' }]), ['two routes enter "c", which takes one']);
   assert.deepEqual(faults([{ from: 's/rows', to: 'c/nowhere' }]), ['a route enters "c/nowhere", which is no input socket']);
   assert.deepEqual(faults([{ from: 's/rows', to: 'c/rows' }]), ['a route enters "c/rows", a Rows row, which only sends: a node\'s rows come in on its header']);
-  assert.deepEqual(faults([{ from: 'v', to: 'd/group' }]), [], 'a Value\'s True is a boolean: a Group row takes it (TODO 780)');
-  assert.deepEqual(faults([{ from: 'c', to: 'd/group' }]), [], 'a Condition\'s True nests its group');
+  // And takes any boolean (TODO 780, plan 783 D4): a Value's True, a Condition's.
+  const and = { id: 'a', kind: 'condition', x: 900, y: 0, values: { type: 'and' } };
+  assert.deepEqual(faults([{ from: 'v', to: 'a' }, { from: 'c', to: 'a' }], [and]), []);
   const odd = { id: 'o', kind: 'odd', x: 0, y: 600 };
   const withOdd = { ...kinds, odd: { heading: 'Odd', icon: 'flag', output: 'any', rows: [], model: 'x', graphs: ['workflow'] } };
   assert.deepEqual(workflowFaults({ ...base, nodes: [...base.nodes, odd], routes: [{ from: 'o', to: 'k' }] }, withOdd).slice(0, 1), ['a route leaves "o", which sends any type: an output says the one it sends']);

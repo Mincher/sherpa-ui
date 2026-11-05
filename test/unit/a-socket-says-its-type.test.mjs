@@ -99,7 +99,8 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row tha
   for (const [name, kind] of all) for (const type of Object.values(kind.types ?? {})) assert.deepEqual([type.branches, type.output], [undefined, undefined], name);
   assert.deepEqual(all.filter(([, k]) => Object.values(k.types ?? {}).some((t) => t.input)).map(([n]) => n), ['condition']);
   // A comparison tests what comes in on its header (plan 783 D3): a Field's column, or a value.
-  assert.deepEqual(['rows', 'and', 'not', 'empty', 'eq'].map((t) => [NODE_KINDS.condition.types[t].input, NODE_KINDS.condition.types[t].many]), [['any', undefined], ['boolean', true], ['boolean', undefined], ['any', undefined], ['any', undefined]]);
+  assert.deepEqual(['and', 'not', 'empty', 'eq'].map((t) => [NODE_KINDS.condition.types[t].input, NODE_KINDS.condition.types[t].many]), [['boolean', true], ['boolean', undefined], ['any', undefined], ['any', undefined]]);
+  assert.equal(NODE_KINDS.condition.types.rows, undefined, 'Rows that hold is gone (plan 783 D4)');
   assert.deepEqual(named((k) => k.graphs.includes('workflow') && !k.branches), ['output']);
 });
 
@@ -203,12 +204,8 @@ test('ONE rowChoices() gives every list a picklist row reads, one pick or severa
   assert.deepEqual(values('field', {}, 'region'), ['status', 'seats', 'region']);
   // Search fields: the same list, several ticked; each own pick it lacks is offered once.
   assert.deepEqual(values('field', {}, ['seats', 'owner', 'owner']), ['status', 'seats', 'owner']);
-  // Operator: the field's type's, by their words; a date's own words; Is one of, typed as tags (P4), or picked where its values are known.
-  assert.deepEqual(labels('op'), ['Equals', 'Does not equal', 'Contains', 'Does not contain', 'Starts with', 'Ends with', 'Is one of', 'Is not one of']);
-  assert.deepEqual(labels('op', { type: 'date' }), ['On', 'Before', 'After', 'Between', 'In the last', 'In the next']);
-  assert.deepEqual(labels('op', { type: 'date', values: ['2024-01-01'] }).slice(-2), ['Is one of', 'Is not one of']);
-  assert.deepEqual(values('op', { type: 'number' }).slice(-4), ['between', 'notbetween', 'in', 'notin']);
-  assert.deepEqual(values('op', { values: ['active', 'trial'] }).slice(-2), ['in', 'notin']);
+  // An operator is a Condition's type now (plan 783 D4): no row picks one.
+  assert.equal(rowChoices({ control: 'op' }, facts), undefined);
   // Value (list): the field's values.
   assert.deepEqual(values('values', { values: ['active', 'trial'] }), ['active', 'trial']);
   assert.deepEqual(values('unit'), ['day', 'week', 'month', 'year']);
@@ -217,8 +214,8 @@ test('ONE rowChoices() gives every list a picklist row reads, one pick or severa
   assert.deepEqual(values('apply'), ['change', 'input']);
   assert.deepEqual(values('store', {}, 'orders'), ['customers', 'orders']);
   assert.deepEqual(values('scope'), ['view', 'data']);
-  assert.deepEqual(labels('join'), ['All of', 'Any of']);
-  assert.deepEqual(values('join'), ['and', 'or']);
+  // A join is an And or an Or now: no row picks one.
+  assert.equal(rowChoices({ control: 'join' }), undefined);
   // A Type row reads its family's types: given, in the registry's words; with none, it has no list.
   assert.deepEqual(labels('type', { types: [{ value: 'text', label: 'Text' }, { value: 'number', label: 'Number' }] }), ['Text', 'Number']);
   assert.equal(rowChoices({ control: 'type' }, facts), undefined);

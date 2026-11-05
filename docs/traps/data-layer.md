@@ -6403,8 +6403,9 @@ place says it: Figma's "Greater than or equal" reads "At least" here.
 - **What a type change orphans is the draft's** (Will, 2026-11-05), and only a socket that is GONE
   orphans a route (TODO 770). A column into a Condition switched to And stays joined: And's header is
   there, reads null, and the node warns ("And takes a boolean; it was given the Status column"). A
-  Value B switched away from is kept for its type, and Save leaves it out (`finalGraph`). Only a type
-  a workflow draws keeps a row: the Query's own Rows that hold keeps none (plan 783, until F4).
+  Value B switched away from is kept for its type, and Save leaves it out (`finalGraph`).
+- **The Query draws its trees with it** (plan 783 D6): And, Or and the comparisons; Not and Is empty
+  are a workflow's alone (`graphs`).
 - **Tag › Includes says the same grammar.** Its `where` (`nodeFlow`) is `{ field, op: 'in', value }`:
   a Condition's Is one of.
 
@@ -6766,52 +6767,53 @@ sockets only, never types.
 
 ### T-a-condition-is-a-tree-of-nodes
 
-**One Condition node is ONE group of the condition tree** (Will, D3; plan-713
-§4, M4): its Join, then each part — a comparison's Field, Operator and Value, or
-a Group row for a nested group. `A or (B and C)` is two nodes: the inner one's
-True goes into a Group row of the outer. One kind serves both graphs; the
-workflow's `filter` is gone, and no file is read as one now (TODO 777): a node of an old kind
-is a fault. The tree
-is Logic's first type, Rows that hold, and the Query's only one; a node with no
-type is it (`T-a-logic-type-is-an-operator`).
+**One test per Condition; And and Or join tests; each test reads the Field on its header** (Will,
+plan 783 D4, D6): "The Graph chain would, at it's simplest, would then be Source>Field>Condition>
+Output." `A or (B and C)` on Seats is six nodes, in a workflow and in the Query editor alike: one
+Field, three Conditions on it, an And and an Or. A test's True goes into its group's header; the
+root's into its scope's row. Rows that hold, its Join, Field, Operator, Value and Group rows are
+gone, and no file is read as one (D9): a saved one says ""rows" as its Operation, which is none of
+its choices".
 
-- **A part repeats its rows**: `field`, `op`, `value`, `group` (`RowKind.repeat`)
-  once for each part, named `partName` — the first part's is the row's own,
-  the next `field-2`, `op-2`. `rowOf` finds the kind's row for a name. A Group
-  row sits WHERE its group stands, not after the comparisons: the tree's order
-  is kept, so an edit reads back the same tree.
-- **The Query draws a reading's whole tree.** Each node's `ref` keeps the
-  whole tree (`tree`) and its own `path`; an edit changes the tree at that path and
-  asks it as one reading through `graphRequest`, the door a chip asks. The `off`
-  and `id` of every part go through untouched. A field edit MOVES the whole tree.
-  A nested True has no route a reader may make: the Query holds one tree.
-- **A Group row takes ANY boolean** (Will, TODO 780: "0/1 or True or False is
-  data"). A nested Condition's True brings its whole tree. Any other boolean — a
-  True or False, a value that says true or false, 1 or 0 (`truthOf`) — is a
-  CONSTANT part: true always holds, false never. One the graph holds folds into its
-  group in `nodeFlow`'s `where`: true drops out of All of and ends Any of, false the
-  other way, so `where` may be `true` or `false`; one only a run gives is named by
-  where it comes from, `{ boolean: "Store › True" }`. Anything else reads null and
-  warns (`T-a-node-reads-null-from-what-it-cannot-use`). No route into it is a fault.
-  A Preset Filter's use brings its tree too, read inside: its condition joins the outer
-  one there, as a nested group (plan 776 D5, `T-a-preset-filter-is-a-preset-of-its-store`).
-- **The Query holds no constant.** A page's `where` cannot say one, and the Query
-  editor takes no route into a Group row (`routeRequest`), so it draws none: its
-  Group rows are its tree's nested groups. Folded, a constant compiles as no
-  constant: always holds is no condition (it narrows nothing); never holds has no
-  Condition form today (`conditionClause` reads an empty group as half-built), so a
-  graph that folds to `false` says no condition to a page yet (TODO 780's question).
-- **A comparison is checked by its field's type** where the facts give it: an
-  operator its type does not take, a value that is no number for a number.
-- **A status, a preset and a saved filter draw their conditions as Condition
-  nodes, read only** (M5): the definition or the store owns them, so no `ref.scope`
-  and no edit asks the Query. A status field is one row per value (its look), and a
-  Condition per `when`, chained by False in the order the status takes the first
-  match; the last value, with no `when`, takes the last False. A load lights each with
-  the rows that took it (`statusTallies`, `traceQuerySteps`). `queryGraphFaults`
-  names a `when` that is no condition and a route that ends in nothing.
-- **Left for later**: "+ Condition" in the footer, a nested group made in the
-  editor, From/To and Unit for Between and In the last.
+- **The Query draws a reading's whole tree** (`queryGraph`): a Field per field it reads
+  (`field-<scope>-<field>`), a test per leaf, an And or an Or per group. The ROOT keeps
+  `when-<scope>-<field>`, so a load's trace still lights it (`T-a-step-names-its-node`); a part is
+  `….<path>` by its part numbers. Each node's `ref` keeps the whole tree and its path; an edit
+  changes the tree there and asks it as one reading through `graphRequest`, the door a chip asks:
+  a leaf's Operation its `op`, its Value B, Values or Start and End its value (`editedCondition`,
+  typed by the field), an And or an Or's Operation its group's join. The Field's Field MOVES the
+  whole reading to the other field. The `off` and `id` of every part go through untouched; an off
+  part says "Off: kept, not applied". A leaf's select lists its field's operators; where its values
+  are known, Equals reads back as Is one of with one tick. A span from today draws as Time ›
+  Duration. A half-built range is dropped, as a chip's is.
+- **Placing in a Query**: a Field holds the scope's next field (its chip appears); a Condition is
+  refused in words, "A Condition tests a Field: route one in" — a Field's tests are its chip's. A
+  part's True, a Field and a False make no route a reader may: the Query holds one tree per field.
+- **And and Or take ANY boolean** (Will, TODO 780: "0/1 or True or False is data"). A test's True
+  brings its whole tree. Any other boolean — a True or False, a value that says true or false, 1
+  or 0 (`truthOf`) — is a CONSTANT part: true always holds, false never. One the graph holds folds
+  into its group in `nodeFlow`'s `where`: true drops out of And and ends Or, false the other way, so
+  `where` may be `true` or `false`; one only a run gives is named by where it comes from,
+  `{ boolean: "Store › True" }`. Anything else reads null and warns
+  (`T-a-node-reads-null-from-what-it-cannot-use`). No route into it is a fault. A Preset Filter's
+  use brings its tree too, read inside (plan 776 D5, `T-a-preset-filter-is-a-preset-of-its-store`).
+- **The Query holds no constant.** A page's `where` cannot say one, and the Query editor takes no
+  route into an And or an Or (`routeRequest`), so it draws none. Folded, a constant compiles as no
+  constant: always holds is no condition (it narrows nothing); never holds has no Condition form
+  today (`conditionClause` reads an empty group as half-built), so a graph that folds to `false`
+  says no condition to a page yet (TODO 780's question).
+- **A test is shaped by its Field's type** where the facts give it (`T-a-logic-type-is-an-operator`):
+  an operator its type does not take warns; a Value B that is no number for a number field is the
+  row's fault.
+- **A status, a preset and a saved filter draw the same shapes, read only** (M5): the definition or
+  the store owns them, so no `ref.scope` and no edit asks the Query. A status field is one row per
+  value (its look); each value's `when` draws a Field per field it names, chained by False: one
+  value's root False goes into the next value's Fields, in the order the status takes the first
+  match; the last value, with no `when`, takes the last False. A load lights each root with the rows
+  that took it (`statusTallies`, `traceQuerySteps`). `queryGraphFaults` names a `when` that is no
+  condition and a route that ends in nothing.
+- **Left for later**: a new leaf made in the Query editor (a route from a Field to a new
+  Condition); an Or across two fields (plan 783 D7: said in words, left off the bar).
 
 - Site: `src/core/data/query-graph.ts`
 - Site: `src/core/data/workflow.ts`

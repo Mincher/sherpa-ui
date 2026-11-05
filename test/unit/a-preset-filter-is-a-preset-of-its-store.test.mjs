@@ -114,7 +114,7 @@ test('its readings are the ones the Query editor reads back for the same conditi
   const definition = { v: 1, id: 'records', source: { store: 'customers', fields: FIELDS } };
   const graph = queryGraph(source.query.draft, definition, { values: (f) => [...new Set(ROWS.map((r) => String(r[f])))] });
   const node = graph.nodes.find((n) => n.id === 'when-data-status');
-  const row = node.rows.find((r) => r.name === 'value');
+  const row = node.rows.find((r) => r.name === 'b');
   const back = graphRequest({ node, row, value: row.value });
   assert.equal(back.field, 'status');
   assert.ok(sameAnswer(back.reading, compiled.status), JSON.stringify([back.reading, compiled.status]));

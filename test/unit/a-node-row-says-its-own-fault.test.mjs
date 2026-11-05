@@ -37,9 +37,6 @@ test('Is one of takes tags: an object in, free where the Field\'s values are not
   // Equals stays one value, picked where the values are known, typed where not.
   assert.deepEqual([row(workflowGraph(flow('status', { type: 'eq', b: 'trial' }), facts), 'c', 'b').control], ['values']);
   assert.deepEqual([row(workflowGraph(flow('plan', { type: 'eq', b: 'Pro' }), facts), 'c', 'b').control], ['text']);
-  // Is one of is offered on a text or number field with no values known: its tags are typed.
-  assert.ok(rowChoices({ control: 'op' }, { type: 'text' }).some((c) => c.value === 'in'));
-  assert.ok(!rowChoices({ control: 'op' }, { type: 'date' }).some((c) => c.value === 'in'), 'a date picks its days');
   // The operator shapes Value B: one value under Equals, a list under Is one of.
   assert.deepEqual(['eq', 'in'].map((type) => kindOfNode(NODE_KINDS, { kind: 'condition', values: { type } }).rows.find((r) => r.name === 'b').control), ['values', 'tags']);
 });
@@ -149,7 +146,7 @@ test('the Query draws Is one of with no values to pick as tags, and its Search f
   const query = { v: 1, scopes: { view: { holds: ['region'], readings: { region: { mode: 'advanced', tree: { op: 'in', value: ['EMEA', 'APAC'] } } } } } };
   const g = queryGraph(query, definition);
   const when = g.nodes.find((n) => n.kind === 'condition');
-  const value = when.rows.find((r) => r.name === 'value');
+  const value = when.rows.find((r) => r.name === 'b');
   assert.deepEqual([value.control, value.value, value.editable], ['tags', ['EMEA', 'APAC'], true]);
   const search = g.nodes.find((n) => n.id === 'source').rows.find((r) => r.name === 'search');
   assert.deepEqual([search.control, search.editable, search.value], ['tags', undefined, ['name']]);

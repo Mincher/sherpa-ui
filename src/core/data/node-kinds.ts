@@ -23,7 +23,6 @@
  * - resolveKind — A family kind as an ordinary kind for one type: the type row first, then the kind's rows and the type's.
  * - resolveKind — A family kind as an ordinary kind for one type: the type row first, then the kind's rows and the type's.
  * - kindIn — A kind as one graph draws it: a family with only the types that graph takes; none, it draws no such kind.
- * - listedRow — A comparison's Value row under an operator that takes a list: tags, an object (D17).
  * - kindOfNode — The kind a node is, for its own type and operators; none, no such kind.
  * - rowOfOtherType — A row a family kind has under another type than this one: it, and the types that hold it.
  * - NODE_CATEGORIES — The node panel's categories, in order.
@@ -36,11 +35,7 @@
  * - Socket — A socket address, read: its node, and its row or none for the header's.
  * - socketOf — Read a socket address: `node`, the header's, or `node/row`.
  * - FALSE_SOCKET — The footer's False, as an address names it after its node.
- * - rowOf — The row of a kind a name says: its own, or one a group's part repeats.
- * - partName — A repeated row's name for a part of a group: the first part's is the row's own.
- * - partOf — A row's name as a part of a group: its base and its number, from 1.
- * - PartKind — One part of a condition group: a comparison, or a nested group.
- * - conditionRows — The rows a Condition node draws for its parts, in order: Join from two parts on.
+ * - rowOf — The row of a kind a name says.
  * - socketType — The type one socket of a kind carries; none, it has no such socket.
  * - takesMany — Whether an input of a kind takes several routes.
  * - NodeRoute — One route: an output socket to an input socket.
@@ -61,7 +56,7 @@
  * - kindNode — A node of a kind, its rows given: the kind's header and sockets, under its own.
  * - placed — A graph with each node at its kept place.
  */
-import { DATE_OP_LABELS, OP_LABELS, OP_TAKES, OPS_FOR_TYPE, type Duration, type FilterOp } from './store.js';
+import { OP_LABELS, OP_TAKES, type Duration, type FilterOp } from './store.js';
 import { PRESENTATION_KINDS } from './query.js';
 import { isDateTime } from './format-date.js';
 import type { Given, Need } from './node-input.js';
@@ -91,11 +86,11 @@ export function truthy(value: unknown): boolean {
 }
 
 /** The control a row draws: text, a number, a switch, tags (a list, D17) or a date and time; else the
- *  list a picklist reads — the fields, operators, the field's values, units, a span's way (last or
- *  next), directions, presentations, Apply on, stores, scopes, joins or a family's types (`rowChoices`). */
+ *  list a picklist reads — the fields, the field's values, units, a span's way (last or next),
+ *  directions, presentations, Apply on, stores, scopes or a family's types (`rowChoices`). */
 export type RowControl =
   | 'text' | 'number' | 'switch' | 'tags' | 'datetime'
-  | 'field' | 'op' | 'values' | 'unit' | 'span' | 'direction' | 'presentation' | 'apply' | 'store' | 'scope' | 'join' | 'type';
+  | 'field' | 'values' | 'unit' | 'span' | 'direction' | 'presentation' | 'apply' | 'store' | 'scope' | 'type';
 
 /** One row a kind draws: its name, its label, its control and its sockets. */
 export interface RowKind {
@@ -110,9 +105,6 @@ export interface RowKind {
   /** Its input takes several routes, each joined as the row says (D4); else a new one replaces it. */
   many?: true;
   output?: SocketType;
-  /** One per PART of a group: a node draws it for each, named by `partName`. A Condition's field,
-   *  operator, value and nested group. */
-  repeat?: true;
   /** A number's least, and its step, HTML's own names: a step of 1 takes only whole numbers. */
   min?: number;
   step?: number;
@@ -207,7 +199,7 @@ function compareType(op: FilterOp): NodeType {
   const against = list ? 'the Values' : range ? 'Start and End' : 'Value B';
   const words = OP_LABELS[op].toLowerCase();
   const said = /^(is|does|equals|contains|starts|ends)\b/.test(words) ? words : `is ${words}`;
-  return { label: OP_LABELS[op], help: `True when what comes in ${said} ${against}`, input: 'any', needs: 'tested', rows: [ROWS, ...rows], graphs: ['workflow'] };
+  return { label: OP_LABELS[op], help: `True when what comes in ${said} ${against}`, input: 'any', needs: 'tested', rows: [ROWS, ...rows] };
 }
 
 /** Figma's six comparisons, in its order; the operators after them are Sherpa's. A span from today is Time › Duration's. */
@@ -216,10 +208,11 @@ const SHERPA_OPS = (Object.keys(OP_LABELS) as FilterOp[]).filter((op) => !FIGMA_
 const compareTypes = (ops: readonly FilterOp[]): Record<string, NodeType> => Object.fromEntries(ops.map((op) => [op, compareType(op)]));
 
 /** Logic's types, one test each (plan 783 D4): And and Or join the tests that come in, booleans on the header, read as
- *  `truthOf` reads them; then the comparisons. Each leads with Rows: the rows it lets through. Plan 749 P5 */
+ *  `truthOf` reads them; then the comparisons. Each leads with Rows: the rows it lets through. A Query draws its tree
+ *  with these: Not and Is empty are a workflow's alone. Plan 749 P5 */
 const LOGIC: Readonly<Record<string, NodeType>> = {
-  and: { label: 'And', help: 'True when every value that comes in is true', input: 'boolean', many: true, rows: [ROWS], graphs: ['workflow'] },
-  or: { label: 'Or', help: 'True when any value that comes in is true', input: 'boolean', many: true, rows: [ROWS], graphs: ['workflow'] },
+  and: { label: 'And', help: 'True when every value that comes in is true', input: 'boolean', many: true, rows: [ROWS] },
+  or: { label: 'Or', help: 'True when any value that comes in is true', input: 'boolean', many: true, rows: [ROWS] },
   ...compareTypes(FIGMA_OPS),
   not: { label: 'Not', help: 'True when the value that comes in is false', input: 'boolean', rows: [ROWS], graphs: ['workflow'] },
   empty: { label: 'Is empty', help: 'True when the value that comes in is nothing: none, 0, false, or empty text or list', input: 'any', rows: [ROWS], graphs: ['workflow'] },
@@ -254,28 +247,10 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     heading: 'Scope', icon: 'filter', input: 'any',
     rows: [ROWS, { name: '#filters', label: 'Filters', control: 'switch', input: 'boolean' }], model: 'ScopeQuery', graphs: ['query'],
   },
-  // Logic: one test per Condition, And and Or joining tests (plan 783 D4). Rows that hold is the Query's alone until it
-  // draws a tree as those (F4): its join, then each part's field, operator and value, or a nested group's Group row.
+  // Logic: one test per Condition, And and Or joining tests (plan 783 D4). TRAP T-a-condition-is-a-tree-of-nodes
   condition: {
     heading: 'Condition', icon: 'function', description: 'Whether a test holds: True takes what holds, False the rest.', branches: true,
-    typeLabel: 'Operation', defaultType: 'eq',
-    types: {
-      rows: {
-        label: 'Rows that hold', help: 'The rows that hold for a group of conditions', input: 'any', needs: 'rows', graphs: ['query'],
-        rows: [
-          ROWS,
-          { name: 'join', label: 'Join', control: 'join' },
-          { name: 'field', label: 'Field', control: 'field', repeat: true, input: 'value', output: 'value' },
-          { name: 'op', label: 'Operator', control: 'op', repeat: true, input: 'value' },
-          { name: 'value', label: 'Value', control: 'values', repeat: true, input: 'value' },
-          // A nested group: a Condition's True brings its tree; any other boolean, or 0 or 1, is a constant part. TODO 780
-          // TRAP T-a-condition-is-a-tree-of-nodes
-          { name: 'group', label: 'Group', repeat: true, input: 'boolean' },
-        ],
-      },
-      ...LOGIC,
-    },
-    rows: [], model: 'Condition', graphs: ['query', 'workflow'], category: 'Logic',
+    typeLabel: 'Operation', defaultType: 'eq', types: LOGIC, rows: [], model: 'Condition', graphs: ['query', 'workflow'], category: 'Logic',
   },
   // Its on, then each field it writes.
   preset: {
@@ -429,24 +404,10 @@ export function kindIn(kind: NodeKind, graph: NodeGraph): NodeKind | undefined {
   return Object.keys(types).length ? { ...rest, types, ...(defaultType && types[defaultType] ? { defaultType } : {}) } : undefined;
 }
 
-/** A comparison's Value row under an operator that takes a list: tags, an object (D17). Its own row, not repeated. */
-export function listedRow(row: RowKind, part: number): RowKind {
-  const { repeat: _repeat, ...plain } = row;
-  return { ...plain, name: partName(row.name, part), control: 'tags', multiple: true, input: 'object' };
-}
-
-/** The kind a node is, resolved for its own type: the registry's `kind`, or the node's `type` row. A
- *  comparison's Value under Is one of or Is not one of is a tag list, its own row before the repeated one.
- *  TRAP T-an-operator-shapes-its-value */
+/** The kind a node is, resolved for its own type: the registry's `kind`, its `type` row's. The operator, a type, shapes
+ *  its Value B. TRAP T-an-operator-shapes-its-value */
 export function kindOfNode(kinds: Readonly<Record<string, NodeKind>>, node: { kind: string; values?: Readonly<Record<string, unknown>> } | undefined): NodeKind | undefined {
-  const kind = node && resolveKind(kinds[node.kind], node.values?.['type']);
-  const value = kind?.rows.find((r) => r.repeat && r.name === 'value');
-  if (!kind || !value || !node?.values || !kind.rows.some((r) => r.repeat && r.name === 'op')) return kind;
-  const listed = Object.entries(node.values).flatMap(([name, op]) => {
-    const { base, part } = partOf(name);
-    return base === 'op' && LIST_OPS.includes(op as FilterOp) ? [listedRow(value, part)] : [];
-  });
-  return listed.length ? { ...kind, rows: [...listed, ...kind.rows] } : kind;
+  return node && resolveKind(kinds[node.kind], node.values?.['type']);
 }
 
 /** A row a family kind has under another type than this node's: the row, and the labels of the types that hold it. */
@@ -460,8 +421,9 @@ export function rowOfOtherType(kind: NodeKind, type: unknown, row: string): { ro
  *  names it; `Custom Nodes` (D9) stays empty until saved nodes come (M9, M12). */
 export const NODE_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Collections', 'Utils', 'Output', 'Presets', 'Saved filters', 'Status'];
 
-/** The categories a Query's panel lists: the kinds a Query takes placed; its Custom Nodes are its page's Preset Filters (TODO 776). */
-const QUERY_CATEGORIES: readonly string[] = ['Custom Nodes', 'Logic', 'Presets', 'Saved filters', 'Status'];
+/** The categories a Query's panel lists: the kinds a Query takes placed — a Field (plan 783 D6) — and its Custom Nodes, its
+ *  page's Preset Filters (TODO 776). */
+const QUERY_CATEGORIES: readonly string[] = ['Custom Nodes', 'Variables', 'Logic', 'Presets', 'Saved filters', 'Status'];
 
 /** One node of the panel: the kind's id and the kind. */
 export interface PaletteItem {
@@ -544,45 +506,9 @@ export const FALSE_SOCKET = '#false';
 /** The sockets a kind says, or a node drawn of it. */
 type Sockets = Pick<NodeKind, 'input' | 'output' | 'many' | 'branches'> & { rows: readonly RowKind[] };
 
-/** The row of a kind a name says: its own, or the one a group's part repeats — `field-2` is the
- *  second part's `field`. */
-export function rowOf<R extends Pick<RowKind, 'name' | 'repeat'>>(rows: readonly R[], name: string): R | undefined {
-  const own = rows.find((r) => r.name === name);
-  if (own) return own;
-  const { base, part } = partOf(name);
-  return part > 1 ? rows.find((r) => r.repeat && r.name === base) : undefined;
-}
-
-/** A repeated row's name for a part of a group, from 1: the first part's is the row's own. */
-export function partName(base: string, part: number): string {
-  return part > 1 ? `${base}-${part}` : base;
-}
-
-/** A row's name as a part of a group: its base and its number, from 1. */
-export function partOf(name: string): { base: string; part: number } {
-  const found = /^(.+)-(\d+)$/.exec(name);
-  return found && Number(found[2]) > 1 ? { base: found[1]!, part: Number(found[2]) } : { base: name, part: 1 };
-}
-
-/** One part of a condition group: a comparison, or a nested group. */
-export type PartKind = 'leaf' | 'group';
-
-/** The rows a Condition node draws for its parts, in order: its Type where it has one, its Rows, its Join
- *  from two parts on, each part's — a comparison's Field, Operator and Value, or a Group. `rows: false`
- *  leaves out what only a run gives: Rows. True and False are the node's own sockets, not rows. */
-export function conditionRows(kind: Pick<NodeKind, 'rows'>, parts: readonly PartKind[], { rows = true }: { rows?: boolean } = {}): RowKind[] {
-  const of = (name: string): RowKind => kind.rows.find((r) => r.name === name)!;
-  // A part's own row first: a Value under Is one of is a tag list (`kindOfNode`).
-  const part = (names: readonly string[], n: number): RowKind[] => names.map((name) => {
-    const { repeat: _repeat, ...row } = rowOf(kind.rows, partName(name, n)) ?? of(name);
-    return { ...row, name: partName(name, n) };
-  });
-  return [
-    ...kind.rows.filter((r) => r.control === 'type'),
-    ...(rows ? [of(ROWS.name)] : []),
-    ...(parts.length >= 2 ? [of('join')] : []),
-    ...parts.flatMap((p, i) => part(p === 'leaf' ? ['field', 'op', 'value'] : ['group'], i + 1)),
-  ];
+/** The row of a kind a name says. */
+export function rowOf<R extends Pick<RowKind, 'name'>>(rows: readonly R[], name: string): R | undefined {
+  return rows.find((r) => r.name === name);
 }
 
 /** The type one socket of a kind, or of a node drawn of it, carries — its header's (no row), a
@@ -624,8 +550,6 @@ export interface RowChoice {
 export interface RowFacts {
   /** Each field by name, its label and type: a page definition's `source.fields`. */
   fields?: Readonly<Record<string, { label?: string; type?: string }>>;
-  /** The type of the field the row's node is on: it picks the operators. */
-  type?: string;
   /** Every value that field may take. */
   values?: readonly string[];
   /** The stores, by the names the app registered them under. */
@@ -652,11 +576,10 @@ const FIXED: Partial<Record<RowControl, readonly RowChoice[]>> = {
   direction: [{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }],
   presentation: [{ value: '', label: 'Default' }, ...PRESENTATION_KINDS.map((k) => ({ value: k, label: k[0]!.toUpperCase() + k.slice(1) }))],
   apply: [{ value: 'change', label: 'Change' }, { value: 'input', label: 'Input' }],
-  join: [{ value: 'and', label: 'All of' }, { value: 'or', label: 'Any of' }],
 };
 
 /** The list a picklist row reads, for one pick or several (`multiple`); none, it is no picklist.
- *  An open list — fields, operators, values, stores, scopes — also offers each of the row's own
+ *  An open list — fields, values, stores, scopes — also offers each of the row's own
  *  values it lacks, so a select shows it. A tags row's list is the field's values, and only them:
  *  it is CLOSED to them (`rowFault`); none known, its tags are free. */
 export function rowChoices(row: Pick<RowKind, 'control'> & { value?: unknown }, facts: RowFacts = {}): RowChoice[] | undefined {
@@ -666,12 +589,7 @@ export function rowChoices(row: Pick<RowKind, 'control'> & { value?: unknown }, 
   if (row.control === 'type') return facts.types && [...facts.types];
   const named = (list: readonly string[] = []): RowChoice[] => list.map((v) => ({ value: v, label: v }));
   if (row.control === 'tags') return facts.values?.length ? named(facts.values) : undefined;
-  const type = facts.type ?? 'text';
-  const labels: Partial<Record<FilterOp, string>> = type === 'date' ? { ...OP_LABELS, ...DATE_OP_LABELS } : OP_LABELS;
-  // Is one of and Is not one of: picked where the field's values are known, else typed as tags; a date's, only picked.
-  const ops = [...new Set([...OPS_FOR_TYPE[type] ?? [], ...(facts.values?.length || type !== 'date' ? LIST_OPS : [])])];
   const open = row.control === 'field' ? Object.entries(facts.fields ?? {}).map(([value, f]) => ({ value, label: f.label ?? value }))
-    : row.control === 'op' ? ops.map((op) => ({ value: op, label: labels[op] ?? op }))
     : row.control === 'values' ? named(facts.values)
     : row.control === 'store' ? named(facts.stores)
     : row.control === 'scope' ? named(facts.scopes)
@@ -681,7 +599,7 @@ export function rowChoices(row: Pick<RowKind, 'control'> & { value?: unknown }, 
   return [...open, ...named(own.filter((v) => !open.some((c) => c.value === v)))];
 }
 
-/** A fixed list, the same on every page — directions, units, spans, Apply on, joins, presentations; none, an open list or no picklist. */
+/** A fixed list, the same on every page — directions, units, spans, Apply on, presentations; none, an open list or no picklist. */
 export function fixedChoices(control: RowControl | undefined): readonly RowChoice[] | undefined {
   return control ? FIXED[control] : undefined;
 }

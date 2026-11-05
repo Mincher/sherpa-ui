@@ -35,7 +35,7 @@ test('each node by its id, its rows read only, a line for each route; a redraw k
       nodes: [
         { id: 'a', kind: 'store', heading: 'customers', icon: 'storage', output: 'object', rows: [], x: 0, y: 0 },
         ...(withB ? [{ id: 'b', kind: 'condition', heading: 'Status', icon: 'function', input: 'object', x: 360, y: 0, rows: [
-          { name: 'op', label: 'Condition', control: 'op', value: op },
+          { name: 'type', label: 'Operation', control: 'type', value: op },
           { name: 'matches', label: 'Matches', output: 'value', value: 3 },
         ] } as Graph['nodes'][number]] : []),
       ],
@@ -134,7 +134,7 @@ test('drawGraph tells its host each edit â€” a select picked, a switch flipped â
     drawGraph(canvas, { routes: [], nodes: [{
       id: 'c', kind: 'condition', heading: 'Status', icon: 'function', x: 0, y: 0, ref: { scope: 'view', field: 'status' },
       rows: [
-        { name: 'op', label: 'Condition', control: 'op', value: 'eq', editable: true,
+        { name: 'type', label: 'Operation', control: 'type', value: 'eq', editable: true,
           choices: [{ value: 'eq', label: 'Equals' }, { value: 'ne', label: 'Does not equal' }] },
         { name: 'on', label: 'Filters', control: 'switch', value: true, editable: true },
         { name: 'fixed', label: 'Fixed', control: 'text', value: 'x' },
@@ -149,7 +149,7 @@ test('drawGraph tells its host each edit â€” a select picked, a switch flipped â
     heard: (window as unknown as { heard: unknown[] }).heard,
     fixed: document.querySelector<HTMLElement & { value: string }>('#root sherpa-input-text[name="fixed"]')!.hasAttribute('readonly'),
   }));
-  expect(r).toEqual({ heard: [['c', 'op', 'ne'], ['c', 'on', false]], fixed: true });
+  expect(r).toEqual({ heard: [['c', 'type', 'ne'], ['c', 'on', false]], fixed: true });
 });
 
 test('bindQueryEditor ASKS the Query through its one door, as a chip does: a reading, the Switch, Group', async ({ page }) => {
@@ -244,7 +244,7 @@ test('a picked node opens its inspector: its rows again, their routes, and an ed
     const graph = { routes: [{ from: 'a', to: 'b/value' }], nodes: [
       { id: 'a', kind: 'value', heading: 'A', icon: 'function', output: 'value' as const, x: 0, y: 0, rows: [] },
       { id: 'b', kind: 'condition', heading: 'Status', icon: 'function', x: 360, y: 0, rows: [
-        { name: 'op', label: 'Condition', control: 'op' as const, value: 'eq', editable: true, choices: [{ value: 'eq', label: 'Equals' }, { value: 'ne', label: 'Does not equal' }] },
+        { name: 'type', label: 'Operation', control: 'type' as const, value: 'eq', editable: true, choices: [{ value: 'eq', label: 'Equals' }, { value: 'ne', label: 'Does not equal' }] },
         { name: 'value', label: 'Value', control: 'text' as const, input: 'value' as const, value: 'x', editable: true },
       ] },
     ] };
@@ -253,7 +253,7 @@ test('a picked node opens its inspector: its rows again, their routes, and an ed
     await window.__settled();
   });
   await page.locator('#root sherpa-node[data-heading="Status"]').click({ position: { x: 40, y: 12 } });
-  await page.locator('#root sherpa-overlay-panel sherpa-input-text[name="op"] select').selectOption('ne');
+  await page.locator('#root sherpa-overlay-panel sherpa-input-text[name="type"] select').selectOption('ne');
   const r = await page.evaluate(() => {
     const panel = document.querySelector('#root sherpa-overlay-panel') as HTMLElement & { open: boolean };
     const value = panel.querySelector('sherpa-input-text[name="value"]')!;
@@ -264,7 +264,7 @@ test('a picked node opens its inspector: its rows again, their routes, and an ed
       heard: (window as unknown as { heard: unknown[] }).heard,
     };
   });
-  expect(r).toEqual({ open: true, heading: 'Status', current: ['Status'], value: [true, 'From A'], heard: [['op', 'ne']] });
+  expect(r).toEqual({ open: true, heading: 'Status', current: ['Status'], value: [true, 'From A'], heard: [['type', 'ne']] });
 });
 
 /** The middle of a drawn node's or row's socket, on the screen. */

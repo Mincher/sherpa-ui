@@ -148,7 +148,7 @@ test('a type change keeps in the draft only what loses its socket: a column into
   assert.deepEqual(workflowFaults(editWorkflow({ ...e, routes: e.routes.slice(0, 2) }, { node: 'c', row: 'b', value: ['stranger'] }), NODE_KINDS, facts), ['the node "c"\'s Values: "stranger" is not a value of Status']);
 });
 
-test('the panel: one Condition item naming its types; a search finds a type whole first; the Query\'s Condition is its tree alone', () => {
+test('the panel: one Condition item naming its types; a search finds a type whole first; the Query\'s takes its tests, not Not or Is empty', () => {
   const items = paletteOf(NODE_KINDS).flatMap((g) => g.items);
   assert.equal(items.filter((i) => i.id === 'condition').length, 1);
   const found = (q) => items.flatMap((i) => { const hit = paletteMatch(i.kind, q); return hit ? [[i.id, hit.type]] : []; });
@@ -158,14 +158,16 @@ test('the panel: one Condition item naming its types; a search finds a type whol
   assert.deepEqual(found('at least'), [['condition', 'gte']]);
   assert.deepEqual(found('and'), [['condition', 'and']]);
   assert.deepEqual(found('rows that hold'), [], 'a workflow takes no Rows that hold (plan 783 D4)');
-  // The Query panel lists the Condition with one type: no select, and its line is its own.
+  // The Query draws its trees with the same Condition (plan 783 D6): And, Or and the comparisons; Not and Is empty are a workflow's.
   const query = paletteOf(NODE_KINDS, 'query').flatMap((g) => g.items).find((i) => i.id === 'condition');
-  assert.deepEqual(Object.keys(query.kind.types), ['rows']);
-  assert.equal(paletteMatch(query.kind, 'equals'), undefined, 'the Query takes no comparison of two values');
-  assert.deepEqual(Object.keys(kindIn(logic, 'workflow').types), Object.keys(workflowLogic.types));
+  assert.deepEqual(Object.keys(query.kind.types), Object.keys(logic.types).filter((t) => t !== 'not' && t !== 'empty'));
+  assert.deepEqual(paletteMatch(query.kind, 'equals'), { type: 'eq' });
+  assert.equal(kindIn(logic, 'workflow'), logic, 'a workflow takes every type');
+  // And the Field, in Variables.
+  assert.deepEqual(paletteOf(NODE_KINDS, 'query').find((g) => g.category === 'Variables').items.map((i) => i.id), ['field']);
 });
 
-test('a Query\'s Condition reads back the same tree: no Type row, and each row asked as it stands changes nothing', async () => {
+test('a Query\'s Conditions read back the same tree: each row asked as it stands changes nothing', async () => {
   const page = {
     v: 1, id: 'records',
     source: {
@@ -179,9 +181,11 @@ test('a Query\'s Condition reads back the same tree: no Type row, and each row a
   const tree = () => answerTree(source.query.draft.scopes.view.readings.seats);
   const before = structuredClone(source.query.draft);
   const g = queryGraph(source.query.draft, page, facts);
-  const conditions = g.nodes.filter((n) => n.kind === 'condition');
-  assert.deepEqual(conditions.map((n) => n.id), ['when-view-seats', 'when-view-seats.2']);
-  for (const n of conditions) assert.ok(!n.rows.some((r) => r.name === 'type' || r.control === 'type'), `${n.id} draws no type`);
+  const conditions = g.nodes.filter((n) => n.kind === 'condition' || n.kind === 'field');
+  assert.deepEqual(conditions.map((n) => n.id), ['field-view-seats', 'when-view-seats', 'when-view-seats.1', 'when-view-seats.2', 'when-view-seats.2.1', 'when-view-seats.2.2']);
+  // An And or an Or lists And and Or; a leaf its field's operators.
+  assert.deepEqual(node(g, 'when-view-seats').rows[0].choices.map((c) => c.label), ['And', 'Or']);
+  assert.ok(node(g, 'when-view-seats.1').rows[0].choices.some((c) => c.label === 'Greater than'));
   // The graph says the tree it was drawn from.
   const leaf = (op, value) => ({ field: 'seats', op, value });
   assert.deepEqual(nodeFlow(g, 'when-view-seats').definition.where, { or: [leaf('lt', 5), { and: [leaf('gt', 5), leaf('lt', 100)] }] });
