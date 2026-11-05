@@ -94,7 +94,8 @@ test('bindQueryEditor follows the Query as it changes, and its stop lets it go',
     await change(['AMER']);
     return { drawn, before, followed, after: value() };
   }, FRAMES);
-  expect(r).toEqual({ drawn: ['customers', 'Source', 'View', 'region'], before: 'EMEA, APAC', followed: 'EMEA', after: 'EMEA' });
+  // Is one of with no values to pick from is tags: its value, the comma string (plan 749 P4).
+  expect(r).toEqual({ drawn: ['customers', 'Source', 'View', 'region'], before: 'EMEA,APAC', followed: 'EMEA', after: 'EMEA' });
 });
 
 test('a filter toolbar\'s ⋮ menu offers Node Editor (beta) only where the host does, and a pick asks the host to open it', async ({ page }) => {

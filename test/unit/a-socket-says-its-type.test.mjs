@@ -183,10 +183,11 @@ test('ONE rowChoices() gives every list a picklist row reads, one pick or severa
   assert.deepEqual(values('field', {}, 'region'), ['status', 'seats', 'region']);
   // Search fields: the same list, several ticked; each own pick it lacks is offered once.
   assert.deepEqual(values('field', {}, ['seats', 'owner', 'owner']), ['status', 'seats', 'owner']);
-  // Operator: the field's type's, by their words; a date's own words; Is one of where its values are known.
-  assert.deepEqual(labels('op'), ['Equals', 'Does not equal', 'Contains', 'Does not contain', 'Starts with', 'Ends with']);
+  // Operator: the field's type's, by their words; a date's own words; Is one of, typed as tags (P4), or picked where its values are known.
+  assert.deepEqual(labels('op'), ['Equals', 'Does not equal', 'Contains', 'Does not contain', 'Starts with', 'Ends with', 'Is one of', 'Is not one of']);
   assert.deepEqual(labels('op', { type: 'date' }), ['On', 'Before', 'After', 'Between', 'In the last', 'In the next']);
-  assert.deepEqual(values('op', { type: 'number' }).slice(-2), ['between', 'notbetween']);
+  assert.deepEqual(labels('op', { type: 'date', values: ['2024-01-01'] }).slice(-2), ['Is one of', 'Is not one of']);
+  assert.deepEqual(values('op', { type: 'number' }).slice(-4), ['between', 'notbetween', 'in', 'notin']);
   assert.deepEqual(values('op', { values: ['active', 'trial'] }).slice(-2), ['in', 'notin']);
   // Value (list): the field's values.
   assert.deepEqual(values('values', { values: ['active', 'trial'] }), ['active', 'trial']);

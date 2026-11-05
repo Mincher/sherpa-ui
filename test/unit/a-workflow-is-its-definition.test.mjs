@@ -133,7 +133,8 @@ test('each fault is reported by name, and the check says no', () => {
     [{ routes: [{ from: 'start/rows', to: 'filter/join' }] }, 'a route enters "filter/join", which is no input socket'],
     // A Rows row only sends: the rows come in on the header.
     [{ routes: [{ from: 'start/rows', to: 'filter/rows' }] }, 'a route enters "filter/rows", a Rows row, which only sends: a node\'s rows come in on its header'],
-    [{ routes: [{ from: 'start/rows', to: 'filter/value' }] }, 'the route "start/rows" → "filter/value" joins an object to a value'],
+    // An object into an Operator, which no operator makes a list: a Value is a list under Is one of (P4), so the draft keeps one there.
+    [{ routes: [{ from: 'start/rows', to: 'filter/op' }] }, 'the route "start/rows" → "filter/op" joins an object to a value'],
     [{ nodes: [...nodes, { id: 'more', kind: 'store', x: 0, y: 0 }], routes: [{ from: 'start/rows', to: 'filter' }, { from: 'more/rows', to: 'filter' }] }, 'two routes enter "filter", which takes one'],
     [{ routes: [{ from: 'start/rows', to: 'filter' }, { from: 'start/rows', to: 'filter' }] }, 'the route "start/rows" → "filter" is there twice'],
     [{ nodes: [...nodes, { id: 'again', kind: 'condition', x: 0, y: 0 }], routes: [{ from: 'filter/rows', to: 'again' }, { from: 'again', to: 'filter' }] }, 'its routes run in a loop'],
@@ -175,7 +176,7 @@ test('a workflow DRAWS as its kinds say: each node at its place, its rows with i
   assert.deepEqual([node('filter').input, node('filter').branches, row('filter', 'rows').output, row('filter', 'rows').input], ['any', true, 'object', undefined]);
   // The field from the facts; its operators its type's, by their words.
   assert.deepEqual(row('filter', 'field').choices, [{ value: 'status', label: 'Status' }, { value: 'seats', label: 'Seats' }]);
-  assert.deepEqual(row('filter', 'op').choices.map((c) => c.label), ['Equals', 'Does not equal', 'Contains', 'Does not contain', 'Starts with', 'Ends with']);
+  assert.deepEqual(row('filter', 'op').choices.map((c) => c.label), ['Equals', 'Does not equal', 'Contains', 'Does not contain', 'Starts with', 'Ends with', 'Is one of', 'Is not one of']);
   assert.deepEqual(row('start', 'store').choices, [{ value: 'customers', label: 'customers' }]);
   const numbered = workflowGraph(editWorkflow(good, { node: 'filter', row: 'field', value: 'seats' }), { fields });
   assert.ok(row('filter', 'op', numbered).choices.some((c) => c.label === 'Greater than'));

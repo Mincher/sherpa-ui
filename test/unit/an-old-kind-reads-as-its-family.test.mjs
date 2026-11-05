@@ -144,7 +144,11 @@ test('an old file with faults has the same faults; a v1 reads the same as before
   ];
   assert.deepEqual(workflowFaults(faulty, NODE_KINDS, facts), want);
   assert.deepEqual(workflowFaults(faulty, OLD, facts).filter((f) => !f.includes('"seven"')), want.filter((f) => !f.includes('"seven"')));
-  assert.deepEqual(seen(workflowGraph(faulty, facts)), seen(workflowGraph(faulty, facts, OLD)));
+  // The same drawing, but that a Decimal's row says its fault in words, as the old Number had no type to check (P4).
+  const drawn = seen(workflowGraph(faulty, facts));
+  assert.equal(node(drawn, 'seven').rows[0].fault, '"seven" is not a number');
+  delete node(drawn, 'seven').rows[0].fault;
+  assert.deepEqual(drawn, seen(workflowGraph(faulty, facts, OLD)));
   // A v1: a Sort's header routes leave its Rows row; a Count has none, so its route goes, with the same fault.
   const v1 = {
     v: 1, id: 'one',

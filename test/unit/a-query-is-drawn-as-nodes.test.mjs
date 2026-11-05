@@ -97,7 +97,8 @@ test('each node shows what the Query and the definition say', () => {
   // A scope's name is the definition's, else its one component's, else its id.
   assert.deepEqual([node('scope-view').heading, node('scope-data').heading, node('scope-r-bar').heading], ['View Context', 'Customer records', 'By status']);
   assert.equal(values('show-r-donut').kind, 'donut');
-  assert.deepEqual(values('when-view-region'), { field: 'region', op: 'in', value: 'EMEA, APAC' });
+  // Is one of with no values to pick from: its words are tags. Plan 749 P4
+  assert.deepEqual(values('when-view-region'), { field: 'region', op: 'in', value: ['EMEA', 'APAC'] });
   assert.deepEqual([node('when-view-region').heading, node('when-data-status').description], ['Region', 'Off: kept, not applied.']);
   assert.deepEqual(values('arrange-data'), { sort: 'name', direction: 'desc', group: 'plan', search: '' });
   assert.deepEqual([node('when-view-region').ref, node('arrange-data').ref, node('scope-data').ref], [{ scope: 'view', field: 'region', path: '', tree: JSON.stringify({ op: 'in', value: ['EMEA', 'APAC'] }) }, { scope: 'data' }, { scope: 'data' }]);

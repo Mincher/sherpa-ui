@@ -26,3 +26,17 @@ test('read in UTC, so no browser shows the day before; a non-day is shown as giv
   assert.equal(formatDate('2026-01-01T23:30:00Z'), '01 Jan 2026');
   assert.equal(formatDate('last week'), 'last week');
 });
+
+test('a day and its time read in words, and what a reader types reads back as ISO (plan 749 P4)', async () => {
+  const { formatDateTime, isDateTime, readDateTime } = await import('../../dist/core/data/format-date.js');
+  assert.equal(formatDateTime('2024-01-12'), '12 Jan 2024');
+  assert.equal(formatDateTime('2024-01-12T09:30'), '12 Jan 2024, 09:30');
+  assert.equal(formatDateTime('soon'), 'soon');
+  // Its own words read back, and ISO, with a T or a space; a day the calendar has not is none.
+  for (const iso of ['2024-01-12', '2024-01-12T09:30', '2024-02-29']) assert.equal(readDateTime(formatDateTime(iso)), iso);
+  assert.equal(readDateTime('12 January 2024'), '2024-01-12');
+  assert.equal(readDateTime(' 3 jan 2024 9:05 '), '2024-01-03T09:05');
+  assert.equal(readDateTime('2024-01-12 09:30'), '2024-01-12T09:30');
+  for (const no of ['2024-02-30', '2023-02-29', '2024-01-12T24:00', '31 Feb 2024', 'next Tuesday', '']) assert.equal(readDateTime(no), undefined, no);
+  assert.deepEqual(['2024-02-29', '2024-02-30', '2024-1-2'].map(isDateTime), [true, false, false]);
+});

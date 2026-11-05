@@ -5,7 +5,7 @@ import type { Page } from '@playwright/test';
  * A TAG field — plan 749 P2, Will 2026-11-05: *"Tag Inputs for comma separated text input ...
  * If there's not enough space then the final tag shows '+2'."* `sherpa-input-text
  * data-type="tags"`: `value` is the comma string, `.tags` the array. Real keys and real clicks.
- * TRAP T-a-tag-field-counts-what-css-clips
+ * TRAP T-a-tag-field-counts-what-css-clips · TRAP T-a-host-error-is-the-hosts
  */
 type Field = HTMLElement & { value: string; tags: string[] };
 
@@ -204,4 +204,68 @@ test('a plain field is unchanged: one value, its own input and change', async ({
     return { value: el.value, tags: el.shadowRoot!.querySelector('.tags'), control: el.shadowRoot!.querySelector<HTMLInputElement>('.control')!.value };
   });
   expect(r).toEqual({ value: 'a,b', tags: null, control: 'a,b' });
+});
+
+test('suggestions: the menu offers them unticked; a word typed as a label is its value; a chip says its label (plan 749 P4)', async ({ page }) => {
+  await mount(page, 480);
+  await page.evaluate(() => { (document.getElementById('t') as Field & { suggestions: unknown }).suggestions = [{ value: 'email', label: 'Email' }, { value: 'sms', label: 'SMS' }]; });
+  await page.locator('#t').locator('.control-row > .control').first().click();
+  await page.keyboard.type('EMAIL');
+  await page.keyboard.press('Enter');
+  // Open: a word that names none is a tag of its own.
+  await page.keyboard.type('Pager');
+  await page.keyboard.press('Enter');
+  expect(await tags(page)).toEqual({ value: 'email,Pager', tags: ['email', 'Pager'], chips: ['email', 'Pager'] });
+  expect(await page.locator('#t').locator('.tags > .tag').allTextContents()).toEqual(['Email', 'Pager']);
+  await page.locator('#t').locator('.tags-button').click();
+  const rows = () => page.evaluate(() => [...(document.getElementById('t') as HTMLElement).shadowRoot!.querySelectorAll<HTMLInputElement>('.tags-menu input[type="checkbox"]')].filter((i) => i.value).map((i) => [i.value, i.checked]));
+  expect(await rows()).toEqual([['email', true], ['Pager', true], ['sms', false]]);
+  await page.locator('#t').locator('.tags-menu input[value="sms"]').click();
+  expect((await tags(page)).tags).toEqual(['email', 'Pager', 'sms']);
+});
+
+test('data-closed refuses a stranger: it is no tag, stays typed, and the field says why; mended, the message goes (plan 749 P4)', async ({ page }) => {
+  await mount(page, 480, 'data-closed');
+  await page.evaluate(() => { (document.getElementById('t') as Field & { suggestions: unknown }).suggestions = [{ value: 'Email' }, { value: 'SMS' }]; });
+  const control = page.locator('#t').locator('.control-row > .control').first();
+  await control.click();
+  await page.keyboard.type('Fax');
+  await page.keyboard.press('Enter');
+  const state = () => page.evaluate(() => {
+    const el = document.getElementById('t') as Field;
+    return { tags: el.tags, typed: el.shadowRoot!.querySelector<HTMLInputElement>('.control')!.value, error: el.getAttribute('data-error'), invalid: el.shadowRoot!.querySelector('.control')!.getAttribute('aria-invalid') };
+  });
+  expect(await state()).toEqual({ tags: [], typed: 'Fax', error: '“Fax” is not one of the choices.', invalid: 'true' });
+  // A comma and a paste are refused the same way; a known word among them is taken.
+  await control.fill('');
+  await page.keyboard.type('sms,Telex,');
+  expect(await state()).toEqual({ tags: ['SMS'], typed: 'Telex', error: '“Telex” is not one of the choices.', invalid: 'true' });
+  expect((await heard(page)).filter((h) => (h as unknown[])[0] === 'tags-change')).toEqual([['tags-change', { tags: ['SMS'], added: ['SMS'], removed: [] }]]);
+  // The message is red, and goes once the word is mended.
+  await expect(page.locator('#t').locator('.message').first()).toBeVisible();
+  await page.keyboard.press('Backspace');
+  expect((await state()).error).toBeNull();
+  await control.fill('Email');
+  await page.keyboard.press('Enter');
+  expect(await state()).toEqual({ tags: ['SMS', 'Email'], typed: '', error: null, invalid: 'false' });
+});
+
+test('a message the HOST wrote is the host\'s: a focus and a blur leave it, and the field\'s own waits behind it (plan 749 P4)', async ({ page }) => {
+  await page.evaluate(async () => {
+    document.getElementById('root')!.innerHTML = '<sherpa-input-text id="h" data-label="Name" required data-error="That name is taken."></sherpa-input-text><button type="button">Next</button>';
+    await window.__settled();
+  });
+  const control = page.locator('#h').locator('.control').first();
+  const error = () => page.locator('#h').getAttribute('data-error');
+  await control.click();
+  await page.keyboard.press('Tab');
+  await expect(control).not.toBeFocused();
+  expect(await error()).toBe('That name is taken.');
+  await expect(control).toHaveAttribute('aria-invalid', 'true');
+  // The host takes it away: the field's own check speaks again, on the next blur.
+  await page.evaluate(() => document.getElementById('h')!.removeAttribute('data-error'));
+  await control.click();
+  await page.keyboard.press('Tab');
+  expect(await error()).toBeTruthy();
+  expect(await error()).not.toBe('That name is taken.');
 });
