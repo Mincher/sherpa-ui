@@ -6422,8 +6422,9 @@ style the node as a warning with tooltip message." Graphs stay open (E5): a rout
 types allow is drawn; no family fences what a graph places.
 
 - **What it needs is the kind's own description** (`needs`): a header that takes any type says
-  it (a Condition's Rows that hold, a Collection and a Tag take rows, a Field an object, Time a date;
-  Is empty anything); a row says it by its
+  it (a comparison a field or a value; a Sort, a Group by and a Tag a field, on the header, and
+  a Count rows or a field (plan 783 D5); a Field an object, Time a date; Is empty anything); a
+  row says it by its
   control (a number, a date, one of a fixed list, an operator), by picking several (a list; Math's
   a list of numbers), or, a comparison's Value, by its field's type; else by its socket's TYPE
   (TODO 770: a value, an object, a boolean). `needOf` reads it; an `any` that says nothing takes

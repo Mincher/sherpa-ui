@@ -180,7 +180,6 @@ export interface NodeKind {
 export const ROWS: Readonly<RowKind> = { name: 'rows', label: 'Rows', output: 'object', gives: 'rows' };
 
 /** A family's rows, each once: a type names the ones it draws. */
-const FIELD: RowKind = { name: 'field', label: 'Field', control: 'field', input: 'value' };
 const VALUE: RowKind = { name: 'value', label: 'Value', control: 'text', output: 'value' };
 const numberRow = (name: string, label: string): RowKind => ({ name, label, control: 'number', input: 'value' });
 const textRow = (name: string, label: string): RowKind => ({ name, label, control: 'text', input: 'value' });
@@ -358,12 +357,12 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     },
     rows: [], model: 'timeCheck', graphs: ['workflow'], category: 'Time',
   },
-  // Sort, Group and Count were three kinds; a saved one reads as its type, once.
+  // Sort and Group by take the Field they work on, on the header (plan 783 D5); Count takes rows or a Field.
   collection: {
     heading: 'Collection', icon: 'list', description: 'The rows in order, grouped, or counted.', input: 'any', needs: 'rows', branches: true, typeLabel: 'Type', defaultType: 'sort',
     types: {
-      sort: { label: 'Sort', help: 'The rows in order', rows: [ROWS, FIELD, { name: 'direction', label: 'Direction', control: 'direction', input: 'value' }] },
-      group: { label: 'Group by', help: 'The rows by a field', rows: [ROWS, FIELD] },
+      sort: { label: 'Sort', help: 'The rows in order of the Field that comes in', needs: 'field', rows: [ROWS, { name: 'direction', label: 'Direction', control: 'direction', input: 'value' }] },
+      group: { label: 'Group by', help: 'The rows by the Field that comes in', needs: 'field', rows: [ROWS] },
       count: { label: 'Count', help: 'How many rows', rows: [{ name: 'count', label: 'Count', output: 'value', gives: 'number' }] },
     },
     rows: [], model: 'collectRows', graphs: ['workflow'], category: 'Collections',
@@ -379,10 +378,10 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     },
     rows: [], model: 'modifyText', graphs: ['workflow'], category: 'Utils',
   },
-  // A rows check by a field of tags: closed to the field's values, where they are known.
+  // A rows check by the Field of tags that comes in: closed to its values, where they are known (plan 783 D5).
   tag: {
-    heading: 'Tag', icon: 'price-tag', description: 'The rows whose field holds the tags picked.', input: 'any', needs: 'rows', branches: true,
-    types: { includes: { label: 'Includes', rows: [ROWS, FIELD, { name: 'value', label: 'Tags', control: 'tags', multiple: true, input: 'object' }] } },
+    heading: 'Tag', icon: 'price-tag', description: 'The rows whose field holds the tags picked.', input: 'any', needs: 'field', branches: true,
+    types: { includes: { label: 'Includes', rows: [ROWS, { name: 'value', label: 'Tags', control: 'tags', multiple: true, input: 'object' }] } },
     rows: [], model: 'tagCheck', graphs: ['workflow'], category: 'Utils',
   },
   output: {

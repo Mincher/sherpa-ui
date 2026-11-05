@@ -32,7 +32,7 @@ const row = (g, id, name) => at(g, id).rows.find((r) => r.name === name);
 /** Each node's warnings in words, by its id: none, where it has none. */
 const said = (g) => Object.fromEntries(g.nodes.filter((n) => n.warnings).map((n) => [n.id, n.warnings.map((w) => [w.row ?? '', w.words])]));
 
-test('an ANY header reads what its kind needs: a comparison a field or a value, a Collection and a Tag rows, a Field an object, a Time a date', () => {
+test('an ANY header reads what its kind needs: a comparison a field or a value, a Sort and a Tag a field, a Count rows, a Field an object, a Time a date', () => {
   const nodes = [
     value('v', 'active'), store, { id: 'fld', kind: 'field', x: 150, y: 0, values: { field: 'status' } },
     { id: 'c', kind: 'condition', x: 300, y: 0 }, { id: 'col', kind: 'collection', x: 300, y: 200, values: { type: 'count' } },
@@ -46,15 +46,16 @@ test('an ANY header reads what its kind needs: a comparison a field or a value, 
   assert.deepEqual(said(drawn(wrong)), {
     c: [['', 'Equals takes a field or a value; it was given rows: route a Field in']],
     col: [['', 'Count takes rows; it was given a boolean']],
-    tag: [['', 'Tag takes rows; it was given a boolean']],
+    tag: [['', 'Tag takes a field; it was given a boolean']],
     p: [['', 'Field takes an object; it was given a boolean']],
     t: [['', 'Between takes a date; it was given rows']],
   }, 'the Output takes anything');
-  // A comparison tests a Field's column, or a value; its Rows row sends the rows that came in, so a Tag takes them.
+  // A comparison and a Tag test a Field's column; a Count counts rows or a column. Rows with no Field into a Tag warn.
   const right = flow([...nodes, value('d', '2024-01-31', 'date')], [
-    { from: 's/rows', to: 'fld' }, { from: 'fld/field', to: 'c' }, { from: 's/rows', to: 'col' }, { from: 'c/rows', to: 'tag' }, { from: 's/rows', to: 'p' }, { from: 'd/value', to: 't' }, { from: 's', to: 'end' },
+    { from: 's/rows', to: 'fld' }, { from: 'fld/field', to: 'c' }, { from: 'c/rows', to: 'col' }, { from: 'fld/field', to: 'tag' }, { from: 's/rows', to: 'p' }, { from: 'd/value', to: 't' }, { from: 's', to: 'end' },
   ]);
   assert.deepEqual(said(drawn(right)), {});
+  assert.deepEqual(said(drawn(flow(nodes, [{ from: 's/rows', to: 'tag' }]))), { tag: [['', 'Tag takes a field; it was given rows: route a Field in']] });
   assert.deepEqual(said(drawn(flow(nodes, [{ from: 'v/value', to: 'c' }]))), {}, 'a value is tested too');
   // A node's own name is the one a warning names.
   const named = flow([store, { id: 'c', kind: 'condition', x: 300, y: 0, heading: 'Has role' }], [{ from: 's/rows', to: 'c' }]);
@@ -153,7 +154,7 @@ test('an entity\'s output and a Custom Node\'s: a Preset Filter\'s Where into a 
   const kinds = { ...NODE_KINDS, ...kindsOf(library) };
   const w = flow([useOf(library, 'preset-filter:active', { id: 'use', x: 0, y: 0 }), { id: 'col', kind: 'collection', x: 300, y: 0 }, value('v', 'x')],
     [{ from: 'use/where', to: 'col' }, { from: 'v/value', to: 'use' }]);
-  assert.deepEqual(said(drawn(w, facts, kinds)), { col: [['', 'Sort takes rows; it was given a boolean']] });
+  assert.deepEqual(said(drawn(w, facts, kinds)), { col: [['', 'Sort takes a field; it was given a boolean']] });
 });
 
 test('the incoming JSON says it: null where the node cannot use what came, and why', () => {
@@ -170,7 +171,7 @@ test('the words come from one place: the kind says what it needs, INPUT_WORDS sa
   for (const word of ['value', 'number', 'boolean', 'object', 'list', 'rows', 'date', 'numbers', 'operator', 'field', 'tested']) assert.equal(typeof INPUT_WORDS[word], 'string', word);
   assert.equal(INPUT_WORDS.object, data.SOCKET_WORDS.object, 'a socket type says the words a socket\'s tip says');
   // The kinds say it: what each header needs, and each row by its control, list or field.
-  assert.deepEqual(['condition', 'collection', 'tag', 'field', 'time', 'output'].map((k) => resolveKind(NODE_KINDS[k]).needs), ['tested', 'rows', 'rows', 'object', 'date', undefined]);
+  assert.deepEqual(['condition', 'collection', 'tag', 'field', 'time', 'output'].map((k) => resolveKind(NODE_KINDS[k]).needs), ['tested', 'field', 'field', 'object', 'date', undefined]);
   // A family's type says its own: Logic's Rows that hold takes rows; Is empty anything; And takes booleans by its socket.
   assert.deepEqual(['rows', 'empty', 'and'].map((t) => resolveKind(NODE_KINDS.condition, t).needs), ['rows', undefined, undefined]);
   assert.deepEqual([needOf({ control: 'number' }), needOf({ control: 'datetime' }), needOf({ control: 'direction' }), needOf({ control: 'op' }), needOf({ control: 'text' })], ['number', 'date', 'choice', 'operator', undefined]);

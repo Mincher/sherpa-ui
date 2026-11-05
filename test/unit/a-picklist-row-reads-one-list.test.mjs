@@ -56,7 +56,7 @@ test('rowChoices gives each picklist its one list; a row that is no picklist has
 
 test('every workflow picklist row takes a value in; the Value node has its Type', () => {
   const kind = (id) => (id === 'filter' ? resolveKind(NODE_KINDS.condition) : ['sort', 'group'].includes(id) ? resolveKind(NODE_KINDS.collection, id) : NODE_KINDS[id]);
-  for (const [id, row] of [['store', 'store'], ['field', 'field'], ['filter', 'b'], ['sort', 'field'], ['sort', 'direction'], ['group', 'field']]) {
+  for (const [id, row] of [['store', 'store'], ['field', 'field'], ['filter', 'b'], ['sort', 'direction']]) {
     assert.equal(socketType(kind(id), row, 'input'), 'value', `${id} › ${row}`);
   }
   const value = resolveKind(NODE_KINDS.value);
@@ -142,15 +142,15 @@ test('a multi-select row holds, takes and sends ONE object: each routed pick is 
 test('PLANTED FAULTS: a pick not in a fixed list; a typed Value that is not its type; a route of another type into a picklist warns', () => {
   const sorted = (direction) => ({
     v: 2, id: 's', nodes: [
-      { id: 's', kind: 'collection', x: 0, y: 0, values: { type: 'sort', field: 'status', direction } },
+      { id: 's', kind: 'collection', x: 0, y: 0, values: { type: 'sort', direction } },
     ],
   });
   assert.deepEqual(workflowFaults(sorted('asc')), []);
   assert.deepEqual(workflowFaults(sorted('sideways')), ['the node "s" holds "sideways" as its Direction, which is none of its choices']);
   // The rows an object carries cannot be a field's name: the route joins (TODO 770), Field reads null and warns.
-  const wrong = { ...flow(), nodes: [...flow().nodes, { id: 'sort', kind: 'collection', x: 0, y: 0 }], routes: [...flow().routes, { from: 'filter/rows', to: 'sort/field' }] };
+  const wrong = { ...flow(), routes: [...flow().routes, { from: 'start/rows', to: 'pick/field' }] };
   assert.deepEqual(workflowFaults(wrong), []);
-  assert.deepEqual(workflowGraph(wrong).nodes.find((n) => n.id === 'sort').warnings, [{ row: 'field', words: 'Field takes a value; it was given rows' }]);
+  assert.deepEqual(workflowGraph(wrong).nodes.find((n) => n.id === 'pick').warnings, [{ row: 'field', words: 'Field takes a value; it was given rows' }]);
   // A Value node is typed: its text must be what its Type says.
   const typed = (type, value) => ({ v: 2, id: 't', nodes: [{ id: 'n', kind: 'value', x: 0, y: 0, values: { value, type } }] });
   assert.deepEqual(workflowFaults(typed('decimal', '12.5')), []);

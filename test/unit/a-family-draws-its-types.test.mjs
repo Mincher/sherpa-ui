@@ -25,9 +25,10 @@ test('each family: its types in order, the Type row first, and the rows, sockets
       round: ['places', 'a', 'result'], increment: ['a', 'b', 'result'], floor: ['values', 'result'], ceiling: ['values', 'result'], average: ['values', 'result'],
     },
     time: { between: ['start', 'end'], duration: ['when', 'n', 'unit'] },
-    collection: { sort: ['rows', 'field', 'direction'], group: ['rows', 'field'], count: ['count'] },
+    // Sort and Group by take the Field they work on, on their header (plan 783 D5): no Field row.
+    collection: { sort: ['rows', 'direction'], group: ['rows'], count: ['count'] },
     text: { append: ['a', 'b', 'result'], prepend: ['a', 'b', 'result'], split: ['a', 'separator', 'result'], join: ['values', 'separator', 'result'] },
-    tag: { includes: ['rows', 'field', 'value'] },
+    tag: { includes: ['rows', 'value'] },
   };
   for (const [id, types] of Object.entries(rows)) {
     assert.deepEqual(Object.keys(NODE_KINDS[id].types), Object.keys(types), id);

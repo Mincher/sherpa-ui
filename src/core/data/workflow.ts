@@ -193,26 +193,21 @@ export function finalGraph<W extends Pick<WorkflowDefinition, 'nodes'> & Partial
 }
 
 /** The field a node's rows read, its type, the values it may take and its words: what a typed Value B and a closed
- *  list read. `column`: it came on a Field's column. */
+ *  list read. */
 interface ReadField {
   field: string;
   type?: string;
   known?: readonly string[];
   of: string;
-  column?: true;
 }
 
-/** The field a node's rows read: the Field whose column reaches its header (plan 783 D5); else a Field row of its own
- *  the node draws now (Sort, Group by, Tag) — one another type kept in the draft names nothing. */
-function fieldAt(
-  node: WorkflowNode, rows: readonly RowKind[], routes: readonly NodeRoute[], sends: (from: string) => Reached | undefined, facts: Pick<WorkflowFacts, 'fields' | 'values'>,
-): ReadField | undefined {
+/** The field a node's rows read: the Field whose column reaches its header — a Condition's, a Sort's, a Group by's, a
+ *  Tag's (plan 783 D5). None: no Field comes in. */
+function fieldAt(node: WorkflowNode, routes: readonly NodeRoute[], sends: (from: string) => Reached | undefined, facts: Pick<WorkflowFacts, 'values'> = {}): ReadField | undefined {
   const column = routes.filter((r) => r.to === node.id).map((r) => sends(r.from)).find((g) => g?.kind === 'field')?.field;
-  const field = column?.name ?? (rowOf(rows, 'field') && node.kind !== 'field' ? node.values?.['field'] : undefined);
-  if (typeof field !== 'string' || !field) return undefined;
-  const type = column ? column.type : facts.fields?.[field]?.type;
-  const known = facts.values?.[field];
-  return { field, ...(type ? { type } : {}), ...(known ? { known } : {}), of: column?.label ?? facts.fields?.[field]?.label ?? field, ...(column ? { column: true as const } : {}) };
+  if (!column) return undefined;
+  const known = facts.values?.[column.name];
+  return { field: column.name, ...(column.type ? { type: column.type } : {}), ...(known ? { known } : {}), of: column.label ?? column.name };
 }
 
 /** A row a node's field types: a value picked or typed, tags, a Start or an End. TRAP T-a-value-is-typed-once */
@@ -221,7 +216,7 @@ const typedRow = (row: Pick<RowKind, 'control'> | undefined): boolean => ['value
 /** A comparison's operator its field's type does not take, in words — "Contains takes a text field; it was given the
  *  Seats column"; none, it takes it. A warning, never a fault (plan 783 F2). */
 function opWarning(op: unknown, read: ReadField | undefined): string | undefined {
-  if (!read?.column || typeof op !== 'string' || !(op in OP_LABELS) || LIST_OPS.includes(op as FilterOp)) return undefined;
+  if (!read || typeof op !== 'string' || !(op in OP_LABELS) || LIST_OPS.includes(op as FilterOp)) return undefined;
   if (OPS_FOR_TYPE[read.type ?? 'text']?.includes(op as FilterOp)) return undefined;
   const types = Object.keys(OPS_FOR_TYPE).filter((t) => OPS_FOR_TYPE[t]!.includes(op as FilterOp));
   const said = new Intl.ListFormat('en', { type: 'disjunction' }).format(types);
@@ -275,7 +270,7 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
     else if (!kind.graphs.includes('workflow')) problems.push(`the node "${node.id}" is of the kind "${node.kind}", which a workflow does not run`);
     else byId.set(node.id, kind);
     if (node.size && !(inGrowth(node.size.w) && inGrowth(node.size.h))) problems.push(`the node "${node.id}" is sized ${node.size.w} by ${node.size.h} times its natural size, and a size runs from ${GROW_MIN} to ${GROW_MAX}`);
-    const read = kind && fieldAt(node, kind.rows, live, sends, facts);
+    const read = kind && fieldAt(node, live, sends, facts);
     reads.set(node.id, read);
     for (const [name, value] of Object.entries(node.values ?? {})) {
       const row = kind && rowOf(kind.rows, name);
@@ -482,7 +477,7 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
     const headed = node.heading ?? (Object.keys(family.types ?? {}).length > 1 ? at?.type.label : undefined) ?? kind.heading;
     if (head) readsAt(node.id, { label: headed, needs: head });
     // The field its rows read: the Field reaching its header. Its operator warns where the field's type does not take it.
-    const read = fieldAt(node, kind.rows, routes, sent, facts);
+    const read = fieldAt(node, routes, sent, facts);
     const { type, known, of } = read ?? {};
     const op = kind.model === 'Condition' ? opWarning(at?.id, read) : undefined;
     if (op) warnings.push({ words: op });
@@ -787,7 +782,7 @@ export function editWorkflow(
     // A comparison's value, or a field's tags, is typed by the field that reaches it. TRAP T-a-value-is-typed-once
     const live = (workflow.routes ?? []).filter((r) => !keptRoutes(workflow, kinds).includes(r));
     const held = new Map(workflow.nodes.map((n) => [n.id, n]));
-    const field = kind && fieldAt(node, kind.rows, live, sender(held, live, kinds, facts), facts)?.type as FieldType | undefined;
+    const field = kind && fieldAt(node, live, sender(held, live, kinds, facts))?.type as FieldType | undefined;
     const type = typedRow(row) ? field : undefined;
     const list = row?.multiple ? [edit.value ?? []].flat().map(String) : undefined;
     const value = row?.control === 'number' ? typedValue('number', String(edit.value ?? ''))
