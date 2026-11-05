@@ -1,17 +1,17 @@
 /**
- * sherpa-layout-canvas.css — the view, the crosshair grid, the minimap and the
- * floating banners, card, toolbar and controls. The pan and the zoom are `--_x`,
+ * sherpa-layout-canvas.css — the view, the crosshair grid, the minimap, the card's panel
+ * area and the floating banners, toolbar and controls. The pan and the zoom are `--_x`,
  * `--_y` and `--_zoom`, written by the canvas; everything that moves reads them.
  * TRAP T-a-canvas-owns-its-view
  */
 
+/* NO stacking context of its own: a floating card's z-index meets the panels beside the
+   canvas, so a press can bring it in front of them. It clips all it holds.
+   TRAP T-a-pressed-panel-comes-to-the-front */
 :host {
   display: block;
   position: relative;
   overflow: hidden;
-  container-type: inline-size;
-  /* Its own layers: what floats on it never rises over what floats on the page. */
-  isolation: isolate;
   block-size: 100%;
   min-block-size: 20rem;
   --_x: 0px;
@@ -21,38 +21,52 @@
   --_step: var(--sherpa-display-mode-size-xl, 24px);
   --_inset: var(--sherpa-display-mode-space-base, 16px);
   --_float: 32px;
-  /* Where what yields to a card starts: past the card, and 32px clear of it. */
-  --_beside: calc(var(--_float) * 2 + min(18rem, 60%));
   background: var(--sherpa-style-surface-base, #ffffff);
 }
 
-/* ── The banners ──────────────────────────────────────────────────────── */
-/* Across the top, 32px in, as the card floats; beside a card, never over it. A hidden
-   one takes no room. Above the view, which follows it in the template. */
-.banner {
+/* ── The panel areas ──────────────────────────────────────────────────── */
+/* The whole canvas: the card's area at the start, and one cell beside it, where the
+   banners and the stage stack. The card's own width, floor and ceiling. TRAP T-a-panel-area-is-a-layout */
+.panels {
   position: absolute;
+  inset: 0;
+  --sherpa-panel-area-width: 18rem;
+  --sherpa-panel-area-min-width: 16rem;
+  --sherpa-panel-area-max-width: 60%;
+}
+
+/* ── The banners ──────────────────────────────────────────────────────── */
+/* Across the top of the cell beside the card, 32px in. A hidden one takes no room.
+   Over the view, which follows it in the template. */
+.banner {
+  grid-area: 1 / 1;
+  align-self: start;
+  margin: var(--_float);
+  position: relative;
   z-index: 1;
-  inset-block-start: var(--_float);
-  inset-inline: var(--_float);
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-xs, 8px);
   pointer-events: none;
 }
-:host(:state(has-panel)) .banner { inset-inline-start: var(--_beside); }
 ::slotted([slot="banner"]) {
   position: static;
   pointer-events: auto;
 }
 
 /* ── The view ─────────────────────────────────────────────────────────── */
+/* The WHOLE canvas, under the card's area: the layout is its box, as nothing between
+   is positioned. Its content's layers stay inside it. */
 .viewport {
   position: absolute;
   inset: 0;
   overflow: hidden;
+  isolation: isolate;
   touch-action: none;
 }
-.viewport:focus-visible {
+/* Its ring is drawn on what it SHOWS, the stage, over it: the card covers the view's start. */
+.viewport:focus-visible { outline: none; }
+.viewport:focus-visible ~ .stage {
   outline: var(--sherpa-focus-ring);
   outline-offset: var(--sherpa-focus-offset);
 }
@@ -85,62 +99,40 @@
   transform-origin: 0 0;
 }
 
-/* Content sits where it says: `--x` and `--y` on the plane. */
-::slotted(*) {
+/* Content sits where it says: `--x` and `--y` on the plane. Only the plane's: the card
+   is slotted too. */
+.plane ::slotted(*) {
   position: absolute;
   left: var(--x, 0px);
   top: var(--y, 0px);
 }
 
-/* ── The floating card ────────────────────────────────────────────────── */
-/* Always 32px from the top, bottom and left, Will's D14, whatever the density. A size container, so a card reads the canvas's own units. */
-.floating {
-  position: absolute;
-  inset-block: var(--_float);
-  inset-inline-start: var(--_float);
-  inline-size: 18rem;
-  max-inline-size: 60%;
-  container-type: size;
+/* ── The stage ────────────────────────────────────────────────────────── */
+/* The cell beside the card, over the view: what the view SHOWS, so Fit, a zoom and the
+   minimap's frame read it. Its clicks pass to the view but on what floats in it. */
+.stage {
+  grid-area: 1 / 1;
+  position: relative;
+  container: sherpa-canvas-stage / inline-size;
   pointer-events: none;
 }
-::slotted([slot="panel"]) {
-  position: static;
-  pointer-events: auto;
-  block-size: 100%;
-}
-/* A FLOATING card is given the whole canvas to move in, over everything floating on it;
-   its clicks pass through to the view but on the card itself. What yielded to it takes its
-   room back. TRAP T-a-floating-panel-is-a-state */
-:host(:state(panel-floating)) .floating {
-  inset: 0;
-  inline-size: auto;
-  max-inline-size: none;
-  z-index: 2;
-}
-:host(:state(panel-floating)) ::slotted([slot="panel"]) { pointer-events: none; }
 
 /* ── The toolbar ──────────────────────────────────────────────────────── */
-/* Tools floating off the bottom edge, centred: 32px up, as a card floats 32px in. */
+/* Tools floating off the bottom edge, 32px up: centred on the CANVAS, so they stay clear of
+   a panel over its end, and never over the card. The row starts past what the view shows
+   begins, as the canvas measured it; one too wide for it starts there. */
 .toolbar {
   position: absolute;
+  inset-inline: 0;
   inset-block-end: var(--_float, 32px);
-  inset-inline-start: 50%;
-  translate: -50% 0;
+  display: flex;
+  justify-content: safe center;
+  padding-inline: calc(var(--_seen-start, 0px) + var(--_float));
   pointer-events: none;
 }
 ::slotted([slot="toolbar"]) {
   position: static;
   pointer-events: auto;
-}
-
-/* Narrow, beside a card: the toolbar yields, centred in what the card leaves, never over it. */
-@container (inline-size < 44rem) {
-  :host(:state(has-panel)) .toolbar {
-    inset-inline-start: var(--_beside);
-    translate: 0 0;
-  }
-  /* …and the controls and minimap rise one toolbar row, so the row stays clear. */
-  :host(:state(has-panel)) .controls { inset-block-end: calc(var(--_inset) + 56px); }
 }
 
 /* A box-selecting canvas: a crosshair on blank canvas; the Pan tool or Space held says grab. */
@@ -172,6 +164,7 @@
 /* ── The controls ─────────────────────────────────────────────────────── */
 .controls {
   position: absolute;
+  pointer-events: auto;
   inset-block-end: var(--_inset);
   inset-inline-end: var(--_inset);
   display: inline-flex;
@@ -196,16 +189,19 @@
   border-color: var(--sherpa-style-border-base, #b3b3c3);
   cursor: pointer;
   touch-action: none;
+  pointer-events: auto;
 }
 :host([data-no-minimap]) .minimap { display: none; }
-/* With a card floating at the bottom left, the minimap sits at the bottom right, above the controls. */
-:host(:state(has-panel)) .minimap {
+/* Beside a card, the minimap sits at the end, over the controls, out of the toolbar's way;
+   narrow, both rise one toolbar row, so the row stays clear. After their own rules. */
+:host(:state(beside)) .minimap {
   inset-inline-start: auto;
   inset-inline-end: var(--_inset);
   inset-block-end: calc(var(--_inset) + 56px);
 }
-@container (inline-size < 44rem) {
-  :host(:state(has-panel)) .minimap { inset-block-end: calc(var(--_inset) + 112px); }
+@container sherpa-canvas-stage (inline-size < 44rem) {
+  :host(:state(beside)) .controls { inset-block-end: calc(var(--_inset) + 56px); }
+  :host(:state(beside)) .minimap { inset-block-end: calc(var(--_inset) + 112px); }
 }
 .minimap-items { position: absolute; inset: 0; pointer-events: none; }
 .minimap-item,

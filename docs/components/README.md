@@ -2,7 +2,7 @@
 
 # Components
 
-71 components. Each page is written from the component's spec and its example. 71 of 71 say when to use them.
+72 components. Each page is written from the component's spec and its example. 72 of 72 say when to use them.
 
 ## Chart
 
@@ -110,6 +110,7 @@
 | [sherpa-badge](sherpa-badge.md) | A small count: Figma "Indicator (atom)/Type=count". |
 | [sherpa-data-viz-header](sherpa-data-viz-header.md) | The header strip of a metric or a chart's card. |
 | [sherpa-layout-canvas](sherpa-layout-canvas.md) | An infinite canvas content area: it pans and zooms with no edge, on a crosshair grid. |
+| [sherpa-layout-panels](sherpa-layout-panels.md) | A panel AREA each side of the content. |
 | [sherpa-metric-group](sherpa-metric-group.md) | One row of 1 to 4 metrics, across every column of the layout grid. |
 | [sherpa-node](sherpa-node.md) | One node of a node editor: a card on a [sherpa-layout-canvas](sherpa-layout-canvas.md), at its data-x and data-y. |
 | [sherpa-node-frame](sherpa-node-frame.md) | A FRAME on a [sherpa-layout-canvas](sherpa-layout-canvas.md): nodes under one header, with a title, a line and Release. |

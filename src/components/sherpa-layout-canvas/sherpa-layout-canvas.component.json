@@ -6,203 +6,209 @@
   "$description": "an infinite canvas content area: it pans and zooms with no edge, on a crosshair grid. Will, TODO 25. TRAP T-a-canvas-owns-its-view",
   "element": {
     "$type": "element",
-    "tag": "div",
+    "tag": "sherpa-layout-panels",
     "provides": []
   },
   "templates": [
     "default"
   ],
   "anatomy": {
-    "roots": [
-      {
-        "el": "div",
-        "class": "banner",
-        "part": "banner",
-        "children": [
-          {
-            "slot": "banner",
-            "attrs": {
-              "data-accepts": "content"
-            }
+    "root": {
+      "el": "sherpa-layout-panels",
+      "class": "panels",
+      "part": "panels",
+      "children": [
+        {
+          "slot": "panel",
+          "attrs": {
+            "slot": "panel-start",
+            "data-accepts": "panel"
           }
-        ]
-      },
-      {
-        "el": "div",
-        "class": "viewport",
-        "part": "viewport",
-        "attrs": {
-          "tabindex": "0",
-          "role": "group",
-          "aria-roledescription": "canvas",
-          "aria-label": "Canvas"
         },
-        "children": [
-          {
-            "el": "div",
-            "class": "plane",
-            "part": "plane",
-            "children": [
-              {
-                "slot": "",
-                "attrs": {
-                  "data-accepts": "content"
-                }
+        {
+          "el": "div",
+          "class": "banner",
+          "part": "banner",
+          "children": [
+            {
+              "slot": "banner",
+              "attrs": {
+                "data-accepts": "content"
               }
-            ]
-          },
-          {
-            "el": "div",
-            "class": "marquee",
-            "part": "marquee",
-            "attrs": {
-              "aria-hidden": "true"
             }
-          }
-        ]
-      },
-      {
-        "el": "div",
-        "class": "floating",
-        "part": "floating",
-        "children": [
-          {
-            "slot": "panel",
-            "attrs": {
-              "data-accepts": "panel"
-            }
-          }
-        ]
-      },
-      {
-        "el": "div",
-        "class": "toolbar",
-        "part": "toolbar",
-        "children": [
-          {
-            "slot": "toolbar",
-            "attrs": {
-              "data-accepts": "toolbar"
-            }
-          }
-        ]
-      },
-      {
-        "el": "div",
-        "class": "minimap sherpa-border-edges sherpa-border-corners",
-        "part": "minimap",
-        "attrs": {
-          "aria-hidden": "true"
+          ]
         },
-        "children": [
-          {
-            "el": "div",
-            "class": "minimap-items"
+        {
+          "el": "div",
+          "class": "viewport",
+          "part": "viewport",
+          "attrs": {
+            "tabindex": "0",
+            "role": "group",
+            "aria-roledescription": "canvas",
+            "aria-label": "Canvas"
           },
-          {
-            "el": "span",
-            "class": "minimap-view"
-          },
-          {
-            "el": "template",
-            "class": "minimap-item-tpl",
-            "children": [
-              {
-                "el": "span",
-                "class": "minimap-item"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "el": "span",
-        "class": "controls sherpa-group",
-        "part": "controls",
-        "attrs": {
-          "role": "toolbar",
-          "aria-label": "Canvas"
-        },
-        "children": [
-          {
-            "el": "sherpa-button",
-            "class": "pan",
-            "attrs": {
-              "data-type": "icon",
-              "data-icon-start": "arrows-up-down-left-right",
-              "aria-label": "Pan",
-              "aria-pressed": "false"
-            }
-          },
-          {
-            "el": "sherpa-button",
-            "class": "zoom-in",
-            "attrs": {
-              "data-type": "icon",
-              "data-icon-start": "plus",
-              "aria-label": "Zoom in"
-            }
-          },
-          {
-            "el": "sherpa-button",
-            "class": "zoom-out",
-            "attrs": {
-              "data-type": "icon",
-              "data-icon-start": "minus",
-              "aria-label": "Zoom out"
-            }
-          },
-          {
-            "el": "sherpa-button",
-            "class": "options",
-            "attrs": {
-              "data-type": "icon",
-              "data-icon-start": "ellipsis-horizontal",
-              "aria-label": "Canvas options",
-              "aria-haspopup": "dialog",
-              "data-description": "Fit, zoom, and show or hide the minimap."
-            },
-            "children": [
-              {
-                "el": "sherpa-menu",
-                "attrs": {
-                  "slot": "menu",
-                  "data-align": "end"
-                },
-                "children": [
-                  {
-                    "el": "button",
-                    "attrs": {
-                      "type": "button",
-                      "value": "fit"
-                    }
-                  },
-                  {
-                    "el": "button",
-                    "attrs": {
-                      "type": "button",
-                      "value": "actual"
-                    }
-                  },
-                  {
-                    "el": "hr"
-                  },
-                  {
-                    "el": "button",
-                    "class": "minimap-toggle",
-                    "attrs": {
-                      "type": "button",
-                      "value": "minimap",
-                      "data-when-text": "data-no-minimap: Show minimap"
-                    }
+          "children": [
+            {
+              "el": "div",
+              "class": "plane",
+              "part": "plane",
+              "children": [
+                {
+                  "slot": "",
+                  "attrs": {
+                    "data-accepts": "content"
                   }
-                ]
+                }
+              ]
+            },
+            {
+              "el": "div",
+              "class": "marquee",
+              "part": "marquee",
+              "attrs": {
+                "aria-hidden": "true"
               }
-            ]
-          }
-        ]
-      }
-    ]
+            }
+          ]
+        },
+        {
+          "el": "div",
+          "class": "toolbar",
+          "part": "toolbar",
+          "children": [
+            {
+              "slot": "toolbar",
+              "attrs": {
+                "data-accepts": "toolbar"
+              }
+            }
+          ]
+        },
+        {
+          "el": "div",
+          "class": "stage",
+          "part": "stage",
+          "children": [
+            {
+              "el": "div",
+              "class": "minimap sherpa-border-edges sherpa-border-corners",
+              "part": "minimap",
+              "attrs": {
+                "aria-hidden": "true"
+              },
+              "children": [
+                {
+                  "el": "div",
+                  "class": "minimap-items"
+                },
+                {
+                  "el": "span",
+                  "class": "minimap-view"
+                },
+                {
+                  "el": "template",
+                  "class": "minimap-item-tpl",
+                  "children": [
+                    {
+                      "el": "span",
+                      "class": "minimap-item"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "el": "span",
+              "class": "controls sherpa-group",
+              "part": "controls",
+              "attrs": {
+                "role": "toolbar",
+                "aria-label": "Canvas"
+              },
+              "children": [
+                {
+                  "el": "sherpa-button",
+                  "class": "pan",
+                  "attrs": {
+                    "data-type": "icon",
+                    "data-icon-start": "arrows-up-down-left-right",
+                    "aria-label": "Pan",
+                    "aria-pressed": "false"
+                  }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "zoom-in",
+                  "attrs": {
+                    "data-type": "icon",
+                    "data-icon-start": "plus",
+                    "aria-label": "Zoom in"
+                  }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "zoom-out",
+                  "attrs": {
+                    "data-type": "icon",
+                    "data-icon-start": "minus",
+                    "aria-label": "Zoom out"
+                  }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "options",
+                  "attrs": {
+                    "data-type": "icon",
+                    "data-icon-start": "ellipsis-horizontal",
+                    "aria-label": "Canvas options",
+                    "aria-haspopup": "dialog",
+                    "data-description": "Fit, zoom, and show or hide the minimap."
+                  },
+                  "children": [
+                    {
+                      "el": "sherpa-menu",
+                      "attrs": {
+                        "slot": "menu",
+                        "data-align": "end"
+                      },
+                      "children": [
+                        {
+                          "el": "button",
+                          "attrs": {
+                            "type": "button",
+                            "value": "fit"
+                          }
+                        },
+                        {
+                          "el": "button",
+                          "attrs": {
+                            "type": "button",
+                            "value": "actual"
+                          }
+                        },
+                        {
+                          "el": "hr"
+                        },
+                        {
+                          "el": "button",
+                          "class": "minimap-toggle",
+                          "attrs": {
+                            "type": "button",
+                            "value": "minimap",
+                            "data-when-text": "data-no-minimap: Show minimap"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
   },
   "props": [
     {
@@ -236,6 +242,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-panel-width",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "the card's area's width, in px: what a reader dragged its edge to, handed back by the host. Never under 16rem nor over 60% of the canvas"
+    },
+    {
+      "$type": "prop",
       "name": "data-select-box",
       "type": "boolean",
       "observed": true,
@@ -256,11 +271,19 @@
   "slots": [
     {
       "$type": "slot",
+      "name": "panel",
+      "accepts": [
+        "panel"
+      ],
+      "description": "a card DOCKED flush in the canvas's start panel area: top, left and bottom, no shadow, 18rem wide; its edge resizes it."
+    },
+    {
+      "$type": "slot",
       "name": "banner",
       "accepts": [
         "content"
       ],
-      "description": "notices FLOATING across the top, 32px in and beside a panel: they do not pan or zoom; two shown stack, and a hidden one takes no room (a reload banner)"
+      "description": "notices FLOATING across the top, 32px in, beside the panel: they do not pan or zoom; two shown stack, and a hidden one takes no room (a reload banner)"
     },
     {
       "$type": "slot",
@@ -272,23 +295,15 @@
     },
     {
       "$type": "slot",
-      "name": "panel",
-      "accepts": [
-        "panel"
-      ],
-      "description": "a card FLOATING on the canvas, 32px from its top, bottom and left edges: it does not pan or zoom (a node panel)."
-    },
-    {
-      "$type": "slot",
       "name": "toolbar",
       "accepts": [
         "toolbar"
       ],
-      "description": "tools FLOATING at the bottom centre, 32px up from the bottom edge: it does not pan or zoom (a node toolbar)"
+      "description": "tools FLOATING at the bottom centre, 32px up, beside the panel: they do not pan or zoom (a node toolbar)"
     }
   ],
   "populate": {
-    "shape": "{ maxZoom?, minZoom?, noMinimap?, selectBox?, zoom? }",
+    "shape": "{ maxZoom?, minZoom?, noMinimap?, panelWidth?, selectBox?, zoom? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -331,6 +346,17 @@
         "x": "number",
         "y": "number",
         "zoom": "number"
+      }
+    },
+    {
+      "$type": "event",
+      "name": "panel-area-resize",
+      "description": "The panel's area was resized by its edge, dragged or by the keys.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "side": "'end' | 'start'",
+        "width": "number"
       }
     },
     {
@@ -382,13 +408,13 @@
           "$type": "method",
           "name": "zoomBy",
           "args": "factor: number",
-          "description": "Zoom by a factor, about the view's middle."
+          "description": "Zoom by a factor, about the middle of what the view shows."
         },
         {
           "$type": "method",
           "name": "fit",
           "args": "",
-          "description": "Fit every piece of content in the view, no nearer than 100%."
+          "description": "Fit every piece of content in what the view shows, beside the card; no nearer than 100%."
         }
       ],
       "jsProps": [

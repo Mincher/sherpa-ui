@@ -94,100 +94,20 @@
   --_content-inset: var(--_nav-open);
 }
 
-/* NO PADDING HERE — `.sherpa-grid` already applies --sherpa-layout-grid-padding,
-   and adding it here insets the content twice. A COLUMN, because a percentage
-   height resolves against the PARENT's, so one `auto` in the chain collapses
-   everything below it to content height. */
-/* THE BODY ROW — panel, Context, panel. The Context grows; each panel is its
-   own width, and an empty one takes NO room at all, so a Context that slots
-   neither is exactly as it was. TRAP T-the-shell-owns-the-panel-areas */
+/* THE BODY ROW — panel, Context, panel: sherpa-layout-panels, whose areas a
+   docked panel fills flush. An empty or shut area takes NO room, so a Context
+   that slots neither is exactly as it was. NO PADDING and NO GAP: `.sherpa-grid`
+   already applies the layout grid's own inset, and one here insets it twice.
+   TRAP T-the-shell-owns-the-panel-areas */
 .body {
-  display: flex;
   flex: 1 1 auto;
   min-block-size: 0;
   min-inline-size: 0;
-  /* NO PADDING and NO GAP: `.sherpa-grid` already applies the layout grid's
-     own inset, and adding one here insets the Context twice. Each PANEL
-     carries its own instead, so its edges meet the cards beside it. */
 }
 
-.panel-start,
-.panel-end {
-  display: none;
-  /* The AREA owns the width — a panel inside it fills it, so a Context does
-     not size the app's own chrome. THREE columns of the layout grid the body
-     row would hold, plus two gutters and the area's own inset — so the panel
-     card is exactly a 3-column card. Will, 2026-09-26.
-     TRAP T-the-shell-owns-the-panel-areas */
-  --_cols: var(--sherpa-layout-grid-columns, 12);
-  --_gap: var(--sherpa-layout-grid-gap-horizontal, 16px);
-  --_pad: var(--sherpa-layout-grid-padding, 16px);
-  --_col: calc((100% - var(--_pad) - (var(--_cols) - 1) * var(--_gap)) / var(--_cols));
-  flex: 0 0 var(--_asked, var(--sherpa-panel-area-width, calc(3 * var(--_col) + 2 * var(--_gap) + var(--_pad))));
-  /* …never narrower than this: 150% of the 310px it is at 1280, where a panel
-     first shows (Will, TODO 163) — and, dragged, never over 33% of the row
-     (TODO 146). The min wins where the two cross. */
-  min-inline-size: var(--sherpa-panel-area-min-width, 464px);
-  max-inline-size: 33%;
-  position: relative;
-  min-block-size: 0;
-  /* The layout grid's own inset, which the panel does not otherwise carry —
-     without it a panel's top and bottom overshoot the cards beside it by 16
-     at each end, and its own edges are cut by the frame.
-     TRAP T-the-shell-owns-the-panel-areas */
-  padding-block: var(--sherpa-layout-grid-padding, 16px);
-  /* HALF on the sides, the same as a layout grid's own inline padding — the
-     panel and the Context each bring half, so the gap between them is one
-     gutter rather than two. */
-  padding-inline: calc(var(--sherpa-layout-grid-padding, 16px) / 2);
-}
-/* A SLOTTED BUT CLOSED panel takes no room either. the `has-panel-*` states say
-   something is slotted, which stays true while the panel is SHUT — so the area
-   kept its 360px and the Context never got it back. The area follows the
-   panel's own `open`, read through `:has()` on the slotted element.
-   `::slotted()` cannot go inside `:has()`; a plain child selector reaches a
-   slotted element from the shadow side here because the slot is the child.
-   TRAP T-the-shell-owns-the-panel-areas */
-.panel-start,
-.panel-end { display: none; }
-/* …and none where the body has no room for one. TRAP T-the-panel-is-desktop-only */
-:host(:state(has-panel-start)[data-panel-start-open]:not([data-no-room])) .panel-start,
-:host(:state(has-panel-end)[data-panel-end-open]:not([data-no-room])) .panel-end { display: block; }
-
-.panel-start { --_asked: var(--_asked-start); }
-.panel-end { --_asked: var(--_asked-end); }
-
-/* The INNER edge's handle: a strip in the area's own inset — the AREA's edge,
-   not the panel's — drawn while it is pointed at, focused or held.
-   TRAP T-an-edge-resizes-its-box */
-.edge {
-  position: absolute;
-  inset-block: 0;
-  z-index: 1;
-  inline-size: var(--sherpa-display-mode-space-xs, 8px);
-  cursor: ew-resize;
-  touch-action: none;
-}
-.edge-start { inset-inline-end: 0; }
-.edge-end { inset-inline-start: 0; }
-.edge:focus-visible { outline: none; }
-.edge-start:is(:hover, :focus-visible, [data-dragging]) {
-  box-shadow: inset -2px 0 0 var(--sherpa-style-indicator-accent, #3b4ccd);
-}
-.edge-end:is(:hover, :focus-visible, [data-dragging]) {
-  box-shadow: inset 2px 0 0 var(--sherpa-style-indicator-accent, #3b4ccd);
-}
-
-.panel-start ::slotted(*),
-.panel-end ::slotted(*) {
-  block-size: 100%;
-  inline-size: 100%;
-}
-
-/* Its frame takes the scroller's place between the panel areas. TODO 478 */
+/* Its frame takes the scroller's place between the panel areas: the layout's one cell. TODO 478 */
 .context-edges {
   min-inline-size: 0;
-  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   min-block-size: 0;

@@ -83,25 +83,24 @@
 }
 :host([data-maximised]) .resize { display: none; }
 
-/* Fixed: a card in the flow of the shell's end area, which owns its width and
-   its edge. TRAP T-a-panel-pops-into-the-end-area */
+/* Fixed: docked in a panel area of the shell, which owns its width, its edge and
+   its divider. Flush and flat: no edge, no rounding, no shadow of its own.
+   TRAP T-a-panel-pops-into-the-end-area */
 :host(:state(in-area)) { display: block; }
 :host(:state(in-area)) .root {
   position: static;
   inline-size: 100%;
   block-size: 100%;
   box-shadow: none;
-  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
-  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
+  border-width: 0;
+  border-radius: 0;
 }
 :host(:state(in-area)) :is(.resize, .expand) { display: none; }
 
 /* Floating: anywhere in the window, by the box its header and corner ask for.
-   sherpa-float.css draws the box, the grip and the corner; here, what a panel adds.
-   TRAP T-a-floating-panel-is-a-state */
+   sherpa-float.css draws the box, the grip and the corner, and stacks it over a
+   panel on the right edge; here, what a panel adds. TRAP T-a-floating-panel-is-a-state */
 :host(:state(floating):not([data-maximised])) .root {
-  /* Over a panel on the right edge, which it has left. */
-  z-index: 102;
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
 }

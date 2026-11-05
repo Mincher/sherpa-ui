@@ -1,0 +1,38 @@
+<!--
+  sherpa-layout-panels — a panel AREA each side of the content. A docked panel fills its area
+  flush, top, side and bottom; the area takes its width and draws the divider, and the
+  content reflows beside it. The area's inner edge resizes it. A panel that floats stays in
+  its area, which gives its width back and becomes the panel's room: the whole layout.
+  The app shell's body and the canvas compose it. Will, TODO 796. TRAP T-a-panel-area-is-a-layout
+
+  Public API:
+    data-panel-start-width / data-panel-end-width   an area's width, in px: what a reader
+                     dragged it to, handed back by the host. Never under the area's min nor
+                     over its max
+    data-no-room     both areas hide: the host's rule leaves the content no room for one (boolean)
+
+  Fires:
+    panel-area-resize — an area's inner edge was dragged, or moved by the keys. detail: { side: start | end, width }
+
+  Slots:
+    (default)    the content, between the areas; one cell, so what is slotted stacks in it
+    panel-start  the panel docked before the content: shut, gone or with no room it takes
+                 none; floating, its area is its room
+    panel-end    the panel docked after the content, the same
+    Set `--sherpa-panel-area-width` (three layout-grid columns), `--sherpa-panel-area-min-width`
+    (464px) and `--sherpa-panel-area-max-width` (33% of the row). The AREA owns them.
+-->
+<template id="default">
+  <aside class="area area-start" part="panel-start">
+    <slot name="panel-start" data-accepts="panel"></slot>
+    <!-- The INNER edge resizes it: drag it, or the arrow keys, Home and End. TRAP T-an-edge-resizes-its-box -->
+    <div class="edge edge-start" part="panel-start-edge" role="separator"
+         aria-orientation="vertical" aria-label="Resize the start panel area" tabindex="0"></div>
+  </aside>
+  <div class="content" part="content"><slot data-accepts="content"></slot></div>
+  <aside class="area area-end" part="panel-end">
+    <div class="edge edge-end" part="panel-end-edge" role="separator"
+         aria-orientation="vertical" aria-label="Resize the end panel area" tabindex="0"></div>
+    <slot name="panel-end" data-accepts="panel"></slot>
+  </aside>
+</template>

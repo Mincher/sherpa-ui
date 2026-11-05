@@ -262,11 +262,11 @@
     {
       "$type": "prop",
       "name": "data-fixed",
-      "type": "boolean",
+      "type": "string",
       "observed": true,
       "declared": true,
       "kind": "behaviour",
-      "description": "a fixed panel, in the end panel area of the page's sherpa-app-shell; it goes back to the right edge where there is no room for one"
+      "description": "a fixed panel, docked flush in a panel area of the page's sherpa-app-shell: `start`, or bare or `end` for the end area. It goes back to the right edge where there is no room for one"
     },
     {
       "$type": "prop",
@@ -284,7 +284,7 @@
       "observed": true,
       "declared": true,
       "kind": "behaviour",
-      "description": "lifted off its edge or its area: anywhere in the window, moved by its header and resized by its corner. Removed, it docks where it came from"
+      "description": "lifted off its edge or its area: anywhere in the window, moved by its header and resized by its corner; a press brings it to the front. Removed, it docks where it came from"
     },
     {
       "$type": "prop",
@@ -329,7 +329,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "show the Pop in / Pop out button (needs a sherpa-app-shell with room)"
+      "description": "show the Pop in / Pop out button (needs a sherpa-app-shell with room). Pop in goes back to the area it last left"
     },
     {
       "$type": "prop",
@@ -513,11 +513,12 @@
     {
       "$type": "event",
       "name": "panel-pop",
-      "description": "The reader pressed Pop in or Pop out",
+      "description": "The reader pressed Pop in or Pop out; side: start | end",
       "bubbles": true,
       "composed": true,
       "detail": {
-        "fixed": "boolean"
+        "fixed": "boolean",
+        "side": "'end' | 'start'"
       }
     },
     {

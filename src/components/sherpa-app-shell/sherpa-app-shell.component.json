@@ -64,33 +64,19 @@
                   ]
                 },
                 {
-                  "el": "div",
+                  "el": "sherpa-layout-panels",
                   "class": "body",
                   "part": "body",
+                  "attrs": {
+                    "exportparts": "panel-start, panel-end, panel-start-edge, panel-end-edge"
+                  },
                   "children": [
                     {
-                      "el": "aside",
-                      "class": "panel-start",
-                      "part": "panel-start",
-                      "children": [
-                        {
-                          "slot": "panel-start",
-                          "attrs": {
-                            "data-accepts": "panel"
-                          }
-                        },
-                        {
-                          "el": "div",
-                          "class": "edge edge-start",
-                          "part": "panel-start-edge",
-                          "attrs": {
-                            "role": "separator",
-                            "aria-orientation": "vertical",
-                            "aria-label": "Resize the start panel area",
-                            "tabindex": "0"
-                          }
-                        }
-                      ]
+                      "slot": "panel-start",
+                      "attrs": {
+                        "slot": "panel-start",
+                        "data-accepts": "panel"
+                      }
                     },
                     {
                       "el": "div",
@@ -138,28 +124,11 @@
                       ]
                     },
                     {
-                      "el": "aside",
-                      "class": "panel-end",
-                      "part": "panel-end",
-                      "children": [
-                        {
-                          "el": "div",
-                          "class": "edge edge-end",
-                          "part": "panel-end-edge",
-                          "attrs": {
-                            "role": "separator",
-                            "aria-orientation": "vertical",
-                            "aria-label": "Resize the end panel area",
-                            "tabindex": "0"
-                          }
-                        },
-                        {
-                          "slot": "panel-end",
-                          "attrs": {
-                            "data-accepts": "panel"
-                          }
-                        }
-                      ]
+                      "slot": "panel-end",
+                      "attrs": {
+                        "slot": "panel-end",
+                        "data-accepts": "panel"
+                      }
                     }
                   ]
                 }
@@ -231,28 +200,12 @@
     },
     {
       "$type": "prop",
-      "name": "data-panel-end-open",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "visibility"
-    },
-    {
-      "$type": "prop",
       "name": "data-panel-end-width",
       "type": "string",
       "observed": true,
       "declared": true,
       "kind": "behaviour",
-      "description": "a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row."
-    },
-    {
-      "$type": "prop",
-      "name": "data-panel-start-open",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "visibility"
+      "description": "a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row. The areas are sherpa-layout-panels': a docked panel fills its area flush, and the area draws the divider."
     },
     {
       "$type": "prop",
@@ -261,7 +214,7 @@
       "observed": true,
       "declared": true,
       "kind": "behaviour",
-      "description": "a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row."
+      "description": "a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row. The areas are sherpa-layout-panels': a docked panel fills its area flush, and the area draws the divider."
     },
     {
       "$type": "prop",
@@ -334,7 +287,7 @@
     }
   ],
   "populate": {
-    "shape": "{ navState?, noHeader?, noNav?, noRoom?, panelEndOpen?, panelEndWidth?, panelStartOpen?, panelStartWidth?, scrollShadow? }",
+    "shape": "{ navState?, noHeader?, noNav?, noRoom?, panelEndWidth?, panelStartWidth?, scrollShadow? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
@@ -357,11 +310,6 @@
       "$type": "state",
       "name": "no-header",
       "selector": ":host([data-no-header])"
-    },
-    {
-      "$type": "state",
-      "name": "focus-visible",
-      "selector": ".edge:focus-visible"
     }
   ],
   "events": [
@@ -388,22 +336,7 @@
     }
   ],
   "tokens": {
-    "header.background": "{sherpa.style-surface-base}",
-    "panel-start.--_cols": "{sherpa.layout-grid-columns}",
-    "panel-start.--_gap": "{sherpa.layout-grid-gap-horizontal}",
-    "panel-start.--_pad": "{sherpa.layout-grid-padding}",
-    "panel-start.flex": "{sherpa.panel-area-width}",
-    "panel-start.min-inline-size": "{sherpa.panel-area-min-width}",
-    "panel-start.padding-block": "{sherpa.layout-grid-padding}",
-    "panel-start.padding-inline": "{sherpa.layout-grid-padding}",
-    "panel-end.--_cols": "{sherpa.layout-grid-columns}",
-    "panel-end.--_gap": "{sherpa.layout-grid-gap-horizontal}",
-    "panel-end.--_pad": "{sherpa.layout-grid-padding}",
-    "panel-end.flex": "{sherpa.panel-area-width}",
-    "panel-end.min-inline-size": "{sherpa.panel-area-min-width}",
-    "panel-end.padding-block": "{sherpa.layout-grid-padding}",
-    "panel-end.padding-inline": "{sherpa.layout-grid-padding}",
-    "edge.inline-size": "{sherpa.display-mode-space-xs}"
+    "header.background": "{sherpa.style-surface-base}"
   },
   "$extensions": {
     "sherpa": {

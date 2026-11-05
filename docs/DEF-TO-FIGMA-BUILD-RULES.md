@@ -160,7 +160,11 @@ Visibility is a host attribute that CSS selects (PRINCIPLES 16):
   `sherpa-container-regions.css`;
   `sherpa-checkbox-look.css`, the Checkbox's box as `.sherpa-checkbox`; and
   `sherpa-float.css`, a floating box as `.sherpa-float` (its bar, grip and corner
-  too), with `float-box.ts` for its JS: the overlay panel and the node panel.
+  too), with `float-box.ts` for its JS: the overlay panel, the node panel and the
+  filter column.
+- **A panel area** is `sherpa-layout-panels`, composed, as the app shell and the
+  canvas do: a docked panel fills its area flush and drops its own edge, rounding
+  and shadow; the area draws the divider.
 
 ## Events
 

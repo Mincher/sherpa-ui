@@ -121,6 +121,7 @@ export { SherpaAppShell } from './components/sherpa-app-shell/sherpa-app-shell.j
 export { SherpaLayoutGrid } from './components/sherpa-layout-grid/sherpa-layout-grid.js';
 export type { GridLayout } from './components/sherpa-layout-grid/grid-resize.js';
 export { SherpaLayoutCanvas } from './components/sherpa-layout-canvas/sherpa-layout-canvas.js';
+export { SherpaLayoutPanels, type PanelSide } from './components/sherpa-layout-panels/sherpa-layout-panels.js';
 export { SherpaNode } from './components/sherpa-node/sherpa-node.js';
 export { SherpaNodeRow } from './components/sherpa-node-row/sherpa-node-row.js';
 export { SherpaNodeFrame } from './components/sherpa-node-frame/sherpa-node-frame.js';

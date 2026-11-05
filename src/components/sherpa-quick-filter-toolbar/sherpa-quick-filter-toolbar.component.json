@@ -425,174 +425,220 @@
       ],
       "column": [
         {
-          "el": "sherpa-container",
-          "class": "column",
-          "part": "column",
-          "attrs": {
-            "data-padding": "none",
-            "data-when-data-scroll-shadow": "data-scroll-shadow"
-          },
+          "el": "div",
+          "class": "box sherpa-float",
+          "part": "box",
           "children": [
             {
-              "el": "sherpa-container-header",
-              "class": "head",
-              "part": "head",
+              "el": "sherpa-container",
+              "class": "column",
+              "part": "column",
               "attrs": {
-                "slot": "header",
-                "data-icon": "filter",
-                "data-heading": "Filters"
+                "data-padding": "none",
+                "data-when-data-scroll-shadow": "data-scroll-shadow",
+                "data-when-data-elevation": "data-floating: lg"
               },
               "children": [
                 {
-                  "el": "span",
-                  "class": "column-heading",
-                  "part": "heading",
+                  "el": "sherpa-container-header",
+                  "class": "head sherpa-float-bar",
+                  "part": "head",
                   "attrs": {
-                    "slot": "heading"
+                    "slot": "header",
+                    "data-icon": "filter",
+                    "data-heading": "Filters"
                   },
                   "children": [
                     {
-                      "el": "template",
-                      "class": "applied-count-tpl",
+                      "el": "span",
+                      "class": "grip sherpa-float-grip sherpa-icon-box",
+                      "part": "grip",
+                      "attrs": {
+                        "slot": "actions",
+                        "data-icon": "drag-handle-vertical",
+                        "role": "button",
+                        "tabindex": "0",
+                        "aria-label": "Move panel",
+                        "title": "Drag the header to move it, or use the arrow keys"
+                      }
+                    },
+                    {
+                      "el": "span",
+                      "class": "column-heading",
+                      "part": "heading",
+                      "attrs": {
+                        "slot": "heading"
+                      },
                       "children": [
                         {
-                          "el": "sherpa-badge",
-                          "class": "applied-count",
-                          "attrs": {
-                            "role": "img"
-                          }
+                          "el": "template",
+                          "class": "applied-count-tpl",
+                          "children": [
+                            {
+                              "el": "sherpa-badge",
+                              "class": "applied-count",
+                              "attrs": {
+                                "role": "img"
+                              }
+                            }
+                          ]
                         }
                       ]
-                    }
-                  ]
-                },
-                {
-                  "el": "sherpa-button",
-                  "class": "column-suggest suggest",
-                  "part": "suggest",
-                  "attrs": {
-                    "slot": "actions",
-                    "data-size": "sm",
-                    "data-type": "icon",
-                    "data-icon-start": "wand-magic-sparkles",
-                    "aria-label": "Suggest filters"
-                  }
-                },
-                {
-                  "el": "sherpa-button",
-                  "class": "column-filters",
-                  "part": "filters",
-                  "attrs": {
-                    "slot": "actions",
-                    "data-size": "sm",
-                    "data-icon-start": "pencil",
-                    "data-icon-end": "triangle-down",
-                    "data-description": "Add filters to this page, or remove them.",
-                    "aria-haspopup": "dialog"
-                  }
-                },
-                {
-                  "el": "span",
-                  "class": "saved-group",
-                  "part": "saved-group",
-                  "attrs": {
-                    "slot": "actions"
-                  },
-                  "children": [
+                    },
                     {
                       "el": "sherpa-button",
-                      "class": "column-save-as",
+                      "class": "column-suggest suggest",
+                      "part": "suggest",
                       "attrs": {
+                        "slot": "actions",
                         "data-size": "sm",
-                        "data-group": "start",
-                        "data-icon-start": "filter"
+                        "data-type": "icon",
+                        "data-icon-start": "wand-magic-sparkles",
+                        "aria-label": "Suggest filters"
                       }
                     },
                     {
                       "el": "sherpa-button",
-                      "class": "column-saved",
-                      "part": "saved",
+                      "class": "column-filters",
+                      "part": "filters",
                       "attrs": {
+                        "slot": "actions",
                         "data-size": "sm",
-                        "data-type": "icon",
-                        "data-group": "solo",
-                        "data-icon-start": "filter",
-                        "data-when-data-group": "data-saveable: end",
-                        "data-when-data-icon-start": "data-saveable: triangle-down",
-                        "data-description": "Use, save and manage your saved filters.",
-                        "aria-label": "Saved filters",
+                        "data-icon-start": "pencil",
+                        "data-icon-end": "triangle-down",
+                        "data-description": "Add filters to this page, or remove them.",
                         "aria-haspopup": "dialog"
+                      }
+                    },
+                    {
+                      "el": "span",
+                      "class": "saved-group",
+                      "part": "saved-group",
+                      "attrs": {
+                        "slot": "actions"
+                      },
+                      "children": [
+                        {
+                          "el": "sherpa-button",
+                          "class": "column-save-as",
+                          "attrs": {
+                            "data-size": "sm",
+                            "data-group": "start",
+                            "data-icon-start": "filter"
+                          }
+                        },
+                        {
+                          "el": "sherpa-button",
+                          "class": "column-saved",
+                          "part": "saved",
+                          "attrs": {
+                            "data-size": "sm",
+                            "data-type": "icon",
+                            "data-group": "solo",
+                            "data-icon-start": "filter",
+                            "data-when-data-group": "data-saveable: end",
+                            "data-when-data-icon-start": "data-saveable: triangle-down",
+                            "data-description": "Use, save and manage your saved filters.",
+                            "aria-label": "Saved filters",
+                            "aria-haspopup": "dialog"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "slot": "actions",
+                      "attrs": {
+                        "slot": "actions",
+                        "data-accepts": "control"
+                      }
+                    },
+                    {
+                      "el": "sherpa-button",
+                      "class": "column-more",
+                      "part": "more",
+                      "attrs": {
+                        "slot": "actions",
+                        "data-type": "icon",
+                        "data-size": "sm",
+                        "data-icon-start": "ellipses-vertical",
+                        "data-description": "Reset, save and refresh these filters.",
+                        "aria-label": "More actions",
+                        "aria-haspopup": "dialog"
+                      }
+                    },
+                    {
+                      "el": "sherpa-button",
+                      "class": "column-float",
+                      "part": "float",
+                      "attrs": {
+                        "slot": "actions",
+                        "data-type": "icon",
+                        "data-size": "sm",
+                        "data-icon-start": "browser",
+                        "aria-label": "Float",
+                        "data-when-data-icon-start": "data-floating: sidebar-flip",
+                        "data-when-aria-label": "data-floating: Dock"
+                      }
+                    },
+                    {
+                      "el": "sherpa-input-text",
+                      "class": "find",
+                      "part": "find",
+                      "attrs": {
+                        "slot": "metadata",
+                        "data-icon-start": "magnifying-glass",
+                        "data-clearable": "",
+                        "placeholder": "Search filters",
+                        "autocomplete": "off",
+                        "aria-label": "Search every filter"
                       }
                     }
                   ]
                 },
                 {
-                  "slot": "actions",
-                  "attrs": {
-                    "slot": "actions",
-                    "data-accepts": "control"
-                  }
-                },
-                {
-                  "el": "sherpa-button",
-                  "class": "column-more",
-                  "part": "more",
-                  "attrs": {
-                    "slot": "actions",
-                    "data-type": "icon",
-                    "data-size": "sm",
-                    "data-icon-start": "ellipses-vertical",
-                    "data-description": "Reset, save and refresh these filters.",
-                    "aria-label": "More actions",
-                    "aria-haspopup": "dialog"
-                  }
-                },
-                {
-                  "el": "sherpa-input-text",
-                  "class": "find",
-                  "part": "find",
-                  "attrs": {
-                    "slot": "metadata",
-                    "data-icon-start": "magnifying-glass",
-                    "data-clearable": "",
-                    "placeholder": "Search filters",
-                    "autocomplete": "off",
-                    "aria-label": "Search every filter"
-                  }
+                  "el": "div",
+                  "class": "sections",
+                  "part": "sections",
+                  "children": [
+                    {
+                      "el": "div",
+                      "class": "view-scope",
+                      "part": "view-scope"
+                    },
+                    {
+                      "el": "hr",
+                      "class": "scope-rule",
+                      "part": "scope-rule"
+                    },
+                    {
+                      "el": "sherpa-section-header",
+                      "class": "local-heading",
+                      "part": "local-heading",
+                      "attrs": {
+                        "data-heading": "Local Context",
+                        "data-size": "sm",
+                        "data-divider": "none"
+                      }
+                    },
+                    {
+                      "el": "div",
+                      "class": "local-scopes",
+                      "part": "local-scopes"
+                    }
+                  ]
                 }
               ]
             },
             {
               "el": "div",
-              "class": "sections",
-              "part": "sections",
-              "children": [
-                {
-                  "el": "div",
-                  "class": "view-scope",
-                  "part": "view-scope"
-                },
-                {
-                  "el": "hr",
-                  "class": "scope-rule",
-                  "part": "scope-rule"
-                },
-                {
-                  "el": "sherpa-section-header",
-                  "class": "local-heading",
-                  "part": "local-heading",
-                  "attrs": {
-                    "data-heading": "Local Context",
-                    "data-size": "sm",
-                    "data-divider": "none"
-                  }
-                },
-                {
-                  "el": "div",
-                  "class": "local-scopes",
-                  "part": "local-scopes"
-                }
-              ]
+              "class": "corner sherpa-float-corner",
+              "part": "corner",
+              "attrs": {
+                "role": "button",
+                "tabindex": "0",
+                "aria-label": "Resize panel",
+                "title": "Drag to resize, or use the arrow keys"
+              }
             }
           ]
         },
@@ -739,6 +785,25 @@
     },
     {
       "$type": "prop",
+      "name": "data-floatable",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "default": false,
+      "description": "a column shows the Float / Dock button in its header"
+    },
+    {
+      "$type": "prop",
+      "name": "data-floating",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "a column lifted out of its panel area: anywhere in the layout the area is in, moved by its header and resized by its corner; a press brings it to the front. Removed, it docks back. TRAP T-a-filter-column-floats"
+    },
+    {
+      "$type": "prop",
       "name": "data-group-field",
       "type": "string",
       "observed": true,
@@ -754,6 +819,15 @@
       "declared": true,
       "kind": "content",
       "description": "its scope's name, written by its source: a portrait bar's heading."
+    },
+    {
+      "$type": "prop",
+      "name": "data-height",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "how big a column floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past its layout"
     },
     {
       "$type": "prop",
@@ -1061,6 +1135,33 @@
     },
     {
       "$type": "prop",
+      "name": "data-width",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "how big a column floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past its layout"
+    },
+    {
+      "$type": "prop",
+      "name": "data-x",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "where a column floats, in px from its layout's top left, written at the end of each move; kept while docked"
+    },
+    {
+      "$type": "prop",
+      "name": "data-y",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "where a column floats, in px from its layout's top left, written at the end of each move; kept while docked"
+    },
+    {
+      "$type": "prop",
       "name": "open",
       "type": "string",
       "observed": true,
@@ -1171,6 +1272,11 @@
       "$type": "state",
       "name": "not-saveable",
       "selector": ":host(:not([data-saveable]))"
+    },
+    {
+      "$type": "state",
+      "name": "not-floatable",
+      "selector": ":host(:not([data-floatable]))"
     },
     {
       "$type": "state",
@@ -1343,6 +1449,38 @@
       "composed": true,
       "detail": {
         "reason": "'page' | 'reader' | 'width'"
+      }
+    },
+    {
+      "$type": "event",
+      "name": "panel-float",
+      "description": "A column's Float or Dock was pressed.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "floating": "boolean"
+      }
+    },
+    {
+      "$type": "event",
+      "name": "panel-move",
+      "description": "A floating column's header was dragged, or its grip moved by the keys.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "x": "number",
+        "y": "number"
+      }
+    },
+    {
+      "$type": "event",
+      "name": "panel-resize",
+      "description": "A floating column's corner was dragged, or moved by the keys.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "height": "number",
+        "width": "number"
       }
     },
     {

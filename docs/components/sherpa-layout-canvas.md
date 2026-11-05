@@ -6,6 +6,7 @@ An infinite canvas content area: it pans and zooms with no edge, on a crosshair 
 
 |  |  |
 |---|---|
+| Wraps | [sherpa-layout-panels](sherpa-layout-panels.md) |
 | Source | [.ts](../../src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts) · [.html](../../src/components/sherpa-layout-canvas/sherpa-layout-canvas.html) · [.css](../../src/components/sherpa-layout-canvas/sherpa-layout-canvas.css) · [.component.json](../../src/components/sherpa-layout-canvas/sherpa-layout-canvas.component.json) · [.example.json](../../src/components/sherpa-layout-canvas/sherpa-layout-canvas.example.json) |
 
 ## When to use it
@@ -25,6 +26,7 @@ For content that pans and zooms with no edge, each item placed at its `--x` and 
 | `data-max-zoom` | number | `4` | the largest zoom |
 | `data-min-zoom` | number | `0.25` | the smallest zoom |
 | `data-no-minimap` | boolean |  | no minimap |
+| `data-panel-width` | number |  | the card's area's width, in px: what a reader dragged its edge to, handed back by the host. Never under 16rem nor over 60% of the canvas |
 | `data-select-box` | boolean |  | a plain left drag on blank canvas draws a box and reports it (canvas-box) instead of panning; Space + drag, the middle button and the Pan tool still pan |
 | `data-zoom` | number |  | the zoom, 1 is 100%; written BY the canvas as it zooms, and read when a host sets it |
 
@@ -40,8 +42,8 @@ For content that pans and zooms with no edge, each item placed at its `--x` and 
 |---|---|
 | `panTo(x: number, y: number)` | Move the plane origin to (x, y) in the view, in screen px. |
 | `zoomTo(zoom: number, cx?: number, cy?: number)` | Zoom to `zoom`, keeping the point at (cx, cy) in the view where it is — the view's middle unless given. |
-| `zoomBy(factor: number)` | Zoom by a factor, about the view's middle. |
-| `fit()` | Fit every piece of content in the view, no nearer than 100%. |
+| `zoomBy(factor: number)` | Zoom by a factor, about the middle of what the view shows. |
+| `fit()` | Fit every piece of content in what the view shows, beside the card; no nearer than 100%. |
 
 ## Events
 
@@ -50,22 +52,23 @@ Each one bubbles.
 | Event | Detail | What it means |
 |---|---|---|
 | `canvas-change` | `{ x: number; y: number; zoom: number }` | The view moved: panned or zoomed. |
+| `panel-area-resize` | `{ side: 'end' \| 'start'; width: number }` | The panel's area was resized by its edge, dragged or by the keys. |
 | `canvas-box` | `{ bottom: number; left: number; mode: BoxMode; right: number; top: number }` | A box was dragged on blank canvas. |
 
 ## Slots
 
 | Slot | Accepts | What it holds |
 |---|---|---|
-| `banner` | content | notices FLOATING across the top, 32px in and beside a panel: they do not pan or zoom; two shown stack, and a hidden one takes no room (a reload banner) |
+| `panel` | panel | a card DOCKED flush in the canvas's start panel area: top, left and bottom, no shadow, 18rem wide; its edge resizes it. |
+| `banner` | content | notices FLOATING across the top, 32px in, beside the panel: they do not pan or zoom; two shown stack, and a hidden one takes no room (a reload banner) |
 | (default) | content | the content, placed on the canvas at its `--x` and `--y` (px) |
-| `panel` | panel | a card FLOATING on the canvas, 32px from its top, bottom and left edges: it does not pan or zoom (a node panel). |
-| `toolbar` | toolbar | tools FLOATING at the bottom centre, 32px up from the bottom edge: it does not pan or zoom (a node toolbar) |
+| `toolbar` | toolbar | tools FLOATING at the bottom centre, 32px up, beside the panel: they do not pan or zoom (a node toolbar) |
 
 ## Parts
 
 Style these from outside with `::part()`:
 
-`banner`, `controls`, `floating`, `marquee`, `minimap`, `plane`, `toolbar`, `viewport`
+`banner`, `controls`, `marquee`, `minimap`, `panels`, `plane`, `stage`, `toolbar`, `viewport`
 
 ## CSS custom properties it reads
 
@@ -89,6 +92,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ maxZoom?, minZoom?, noMinimap?, selectBox?, zoom? }`
+`{ maxZoom?, minZoom?, noMinimap?, panelWidth?, selectBox?, zoom? }`
 
 Its declared props by name: `label` sets data-label.

@@ -36,6 +36,7 @@ import type { DataAsk, Take } from '../../core/ui/context.js';
 import type { Settings } from '../../core/data/settings.js';
 import { toolbarKeys } from '../../core/ui/roving-focus.js';
 import { dragToOrder } from '../../core/ui/drag-order.js';
+import { FLOAT_ATTRS, FloatBox, roomOf } from '../../core/ui/float-box.js';
 import { ToolbarHeader } from './toolbar-header.js';
 import { ToolbarColumn } from './toolbar-column.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
@@ -73,7 +74,8 @@ export type { OrganiseColumn } from '../../core/data/data-source.js';
 export type { SortDirection } from '../../core/data/store.js';
 
 export class SherpaQuickFilterToolbar extends SherpaElement {
-  static override css = new URL('./sherpa-quick-filter-toolbar.css', import.meta.url);
+  // The floating box's sheet: a column floats as the node panel does. TRAP T-a-filter-column-floats
+  static override css = [new URL('../../core/sherpa-float.css', import.meta.url), new URL('./sherpa-quick-filter-toolbar.css', import.meta.url)];
   static override html = [
     FILTER_MENU_HTML, new URL('./toolbar-rows.html', import.meta.url),
     new URL('./sherpa-quick-filter-toolbar.html', import.meta.url),
@@ -106,6 +108,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-flat': { type: 'boolean', kind: 'template' },
     // Portrait: a COLUMN, header and all, even over ONE scope and its parts. Will, TODO 436
     'data-column': { type: 'boolean', kind: 'template' },
+    // A column floats out of its panel area, by its header. Will, TODO 787b. TRAP T-a-filter-column-floats
+    'data-floatable': { type: 'boolean', kind: 'style' },
+    'data-floating': { type: 'boolean', kind: 'behaviour' },
+    'data-x': { type: 'number', kind: 'behaviour' },
+    'data-y': { type: 'number', kind: 'behaviour' },
+    'data-width': { type: 'number', kind: 'behaviour' },
+    'data-height': { type: 'number', kind: 'behaviour' },
     // Its chips say no match counts: the app's choice, its provider's to write. Will, TODO 436
     'data-no-results': { type: 'boolean', kind: 'behaviour' },
     // How many filters are APPLIED in what it answers, as its provider counts them. TODO 436
@@ -196,7 +205,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   static override observed = [
     'open', 'data-bounds', 'data-applied', 'data-limit-options', 'data-hide-unmatched', 'data-type',
     'data-sort-field', 'data-sort-direction', 'data-group-field', 'data-apply-on', 'data-pending',
-    'data-failed',
+    'data-failed', 'data-x', 'data-y', 'data-width', 'data-height',
   ];
 
   /** Portrait over one scope, an accordion — or flat; over several, the column. TODO 425, 435 */
@@ -216,6 +225,44 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   });
   /** Stamped as a column. */
   #columned = false;
+
+  /** A column, floating in its area's layout: moved by its header, resized by its corner. 787b */
+  readonly #floatBox: FloatBox = new FloatBox({
+    el: this,
+    box: () => this.$<HTMLElement>('.box'),
+    room: () => roomOf(this),
+    free: () => this.#columned && this.hasAttribute('data-floating'),
+    set: (attr, value) => this.set(attr, value),
+    num: (attr) => this.num(attr, NaN),
+    toggleState: (name, on) => this.toggleState(name, on),
+    moved: (at) => this.emit('panel-move', at),
+    sized: (size) => this.emit('panel-resize', size),
+  });
+
+  /** A column's Float: its box wired, drawn, and in the stack while it floats. */
+  #wireFloat(): void {
+    this.$('.column-float')?.addEventListener('button-click', () => {
+      const floating = !this.hasAttribute('data-floating');
+      this.set('data-floating', floating);
+      this.emit('panel-float', { floating });
+    });
+    this.#floatBox.wire(this.$('.head'), this.$('.grip'), this.$('.corner'));
+    this.#floatBox.draw();
+    this.toggleState('floating', this.hasAttribute('data-floating'));
+    this.#floatBox.floated(this.hasAttribute('data-floating'));
+  }
+
+  /** Float, lifted 16px in from where it docks the first time; or dock back. To the front as it floats. */
+  #float(): void {
+    const floating = this.hasAttribute('data-floating');
+    const box = this.$<HTMLElement>('.box');
+    if (floating && box && !this.hasState('floating')) {
+      const inset = parseFloat(getComputedStyle(this).getPropertyValue('--sherpa-layout-grid-padding')) || 16;
+      this.#floatBox.lift(box.getBoundingClientRect(), inset);
+    }
+    this.toggleState('floating', floating);
+    this.#floatBox.floated(floating);
+  }
 
   /** drawScopes(scopes) — a column's scopes, from its source: a portrait
    *  toolbar per scope, under the one header. TODO 425 */
@@ -596,7 +643,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        whose events stop at this host. TODO 425 */
     this.#columned = this.templateId === 'column';
     this.toggleState('column', this.#columned);
-    if (this.#columned) return this.#column.wire();
+    if (this.#columned) {
+      this.#wireFloat();
+      return this.#column.wire();
+    }
     // Left and Right move between the bar's controls. TRAP T-a-toolbar-moves-by-arrow-and-keeps-its-tabs
     const bar = this.$('.bar');
     if (bar) toolbarKeys(bar);
@@ -1884,6 +1934,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
     // A column draws once it opens. TRAP T-a-shut-column-draws-nothing
     if (name === 'open' && this.#columned && this.hasAttribute('open')) this.#column.opened();
+    if (name === 'data-floating' && this.#columned) this.#float();
+    else if (name && FLOAT_ATTRS.includes(name) && this.#columned) this.#floatBox.draw();
     if (name === 'data-label-column') this.#syncLayout();
     if (name === 'data-fixed-primary') this.$('.organise-chip[data-id="primary"]')?.toggleAttribute('disabled', this.hasAttribute(name));
     if (name === 'data-move-filters' || name === 'data-allow-solo' || name === 'data-solo-header') this.#redoMoves();

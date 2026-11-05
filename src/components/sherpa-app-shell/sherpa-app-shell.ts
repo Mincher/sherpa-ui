@@ -1,12 +1,14 @@
 /**
  * sherpa-app-shell — the boilerplate frame for an app and its Contexts.
  *
- * CSS owns the inset past the overlaying nav rail; this file only mirrors the
- * rail's state onto the host.
+ * CSS owns the inset past the overlaying nav rail; this file mirrors the rail's
+ * state onto the host, and hands its body, the panel-area layout, the widths and the room.
  */
 import { SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
-import { resizeByEdge } from '../../core/ui/edge-resize.js';
 import type { SherpaNav } from '../sherpa-nav/sherpa-nav.js';
+// Defined before the template stamps it: the body's panel areas.
+import type { SherpaLayoutPanels } from '../sherpa-layout-panels/sherpa-layout-panels.js';
+import '../sherpa-layout-panels/sherpa-layout-panels.js';
 
 /** The narrowest Context a panel area may leave: the layout grid's tablet breakpoint. */
 const TABLET = 768;
@@ -15,10 +17,7 @@ export class SherpaAppShell extends SherpaElement {
   static override css = new URL('./sherpa-app-shell.css', import.meta.url);
   static override html = new URL('./sherpa-app-shell.html', import.meta.url);
 
-  /** The shell writes these itself, mirroring each panel's own `open`. */
   static override props = {
-    'data-panel-start-open': { type: 'boolean', kind: 'visibility' },
-    'data-panel-end-open': { type: 'boolean', kind: 'visibility' },
     // The body has no room for a panel area. TRAP T-the-panel-is-desktop-only
     'data-no-room': { type: 'boolean', kind: 'visibility' },
     'data-nav-state': { type: 'enum', kind: 'style', values: ['collapsed', 'hover', 'default', 'pinned', 'settings'] },
@@ -30,6 +29,9 @@ export class SherpaAppShell extends SherpaElement {
   } as const;
   static override observed = ['data-panel-start-width', 'data-panel-end-width'];
 
+  /** What its body's layout hears from the host. */
+  static #handed = ['data-no-room', 'data-panel-start-width', 'data-panel-end-width'] as const;
+
   override onRender(): void {
     // The event is composed, so one listener covers the default rail and a slotted one.
     this.addEventListener('nav-state-change', this.#onNavState as EventListener);
@@ -40,16 +42,12 @@ export class SherpaAppShell extends SherpaElement {
     // Deferred, so a state the page writes in this turn is read; none is collapsed.
     queueMicrotask(() => this.#adoptRailState());
 
-    /* A panel area follows its panel's own `open`: slotted but SHUT, it
-       must take no room, or the Context never gets the width back.
-       `::slotted()` cannot go inside `:has()`, so the shell mirrors the flag.
-       TRAP T-the-shell-owns-the-panel-areas */
-    for (const side of ['start', 'end'] as const) {
-      this.$(`slot[name="panel-${side}"]`)
-        ?.addEventListener('slotchange', () => this.#watchPanel(side));
-      this.#watchPanel(side);
-      this.#resizable(side);
-      this.#askWidth(side);
+    /* The panel areas are the layout's: the shell hands it the widths and the room, and
+       reports an area's resize as its own. TRAP T-the-shell-owns-the-panel-areas */
+    const layout = this.#layout();
+    if (layout) {
+      this.mirrorAttrs(layout, SherpaAppShell.#handed);
+      layout.addEventListener('panel-area-resize', this.#onAreaResize);
     }
     this.#watchRoom();
   }
@@ -66,7 +64,7 @@ export class SherpaAppShell extends SherpaElement {
     this.#roomWatch = new ResizeObserver(() => {
       // Settings covers the Context, so the room under it does not change.
       if (this.dataset['navState'] === 'settings') return;
-      const min = parseFloat(getComputedStyle(this.$('.panel-start') ?? this).minInlineSize) || 0;
+      const min = this.#layout()?.areaMin() ?? 0;
       const room = body.getBoundingClientRect().width >= min + TABLET;
       if (room !== this.hasAttribute('data-no-room')) return;
       this.set('data-no-room', !room);
@@ -78,68 +76,23 @@ export class SherpaAppShell extends SherpaElement {
   /** Watches the body's width for room. */
   #roomWatch?: ResizeObserver;
 
-  /**
-   * An area's INNER edge resizes it: drag it, or the arrow keys, Home and End.
-   * The shell draws the width live and REPORTS it on release — the host keeps
-   * it, and hands it back in `data-panel-<side>-width`. Its CSS owns the clamp:
-   * never under its min, never over 33% of the row. Will, TODO 146.
-   * TRAP T-an-edge-resizes-its-box
-   */
-  #resizable(side: 'start' | 'end'): void {
-    const edge = this.$<HTMLElement>(`.edge-${side}`);
-    const area = (): HTMLElement | null => this.$<HTMLElement>(`.panel-${side}`);
-    if (!edge) return;
-    const drawn = (): number => area()?.getBoundingClientRect().width ?? 0;
-    resizeByEdge(edge, {
-      grows: side === 'start' ? 1 : -1,
-      measure: drawn,
-      min: () => parseFloat(getComputedStyle(area() ?? this).minInlineSize) || 0,
-      // 33% of the row, as the CSS has it. Will's number.
-      max: () => (this.$<HTMLElement>('.body')?.getBoundingClientRect().width ?? 0) * 0.33,
-      apply: (px, done) => {
-        this.style.setProperty(`--_asked-${side}`, `${Math.round(px)}px`);
-        // What the clamp DREW is the width: a key moves from there.
-        const width = Math.round(drawn());
-        this.style.setProperty(`--_asked-${side}`, `${width}px`);
-        if (done) this.emit('panel-area-resize', { side, width });
-      },
-    });
+  /** The body: the panel-area layout. */
+  #layout(): SherpaLayoutPanels | null {
+    return this.$<SherpaLayoutPanels>('.body');
   }
 
   override onChange(name: string): void {
-    if (name === 'data-panel-start-width') this.#askWidth('start');
-    else if (name === 'data-panel-end-width') this.#askWidth('end');
+    const layout = this.#layout();
+    if (layout && (SherpaAppShell.#handed as readonly string[]).includes(name)) this.mirrorAttrs(layout, [name]);
   }
 
-  /** The host's width for an area, in: none is the area's own. */
-  #askWidth(side: 'start' | 'end'): void {
-    const px = this.num(`data-panel-${side}-width`, 0);
-    if (px > 0) this.style.setProperty(`--_asked-${side}`, `${px}px`);
-    else this.style.removeProperty(`--_asked-${side}`);
-  }
-
-  /** Mirror one panel's `open` onto the host, and follow it. */
-  #watchPanel(side: 'start' | 'end'): void {
-    const slot = this.$<HTMLSlotElement>(`slot[name="panel-${side}"]`);
-    const panel = slot?.assignedElements()[0];
-    const flag = `data-panel-${side}-open`;
-    const sync = (): void => {
-      this.toggleAttribute(flag, !!panel?.hasAttribute('open'));
-    };
-    this.#panelWatch[side]?.disconnect();
-    if (!panel) { this.removeAttribute(flag); return; }
-    const observer = new MutationObserver(sync);
-    observer.observe(panel, { attributes: true, attributeFilter: ['open'] });
-    this.#panelWatch[side] = observer;
-    sync();
-  }
-
-  /** Watches each side panel slot, to say whether it holds anything. */
-  #panelWatch: { start?: MutationObserver; end?: MutationObserver } = {};
+  /** An area's edge was let go: the shell's own report, and the layout's goes no further. */
+  #onAreaResize = (event: Event): void => {
+    event.stopPropagation();
+    this.emit('panel-area-resize', (event as CustomEvent<{ side: 'start' | 'end'; width: number }>).detail);
+  };
 
   override onDisconnect(): void {
-    this.#panelWatch.start?.disconnect();
-    this.#panelWatch.end?.disconnect();
     this.#roomWatch?.disconnect();
   }
 

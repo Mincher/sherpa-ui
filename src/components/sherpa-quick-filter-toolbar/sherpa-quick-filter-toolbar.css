@@ -582,9 +582,22 @@ sherpa-accordion.scope::part(actions) {
   min-block-size: 0;
 }
 :host(:state(column)[open]) { display: block; }
+/* The box that floats. Docked, it fills its panel area; floating, it is placed in the
+   area's layout, which lets the clicks through but on the box. TRAP T-a-filter-column-floats */
+.box {
+  position: relative;
+  block-size: 100%;
+  pointer-events: auto;
+}
+:host(:state(floating)) .box { position: absolute; }
+:host(:not([data-floatable])) .column-float { display: none; }
 .column {
   block-size: 100%;
-  box-shadow: none;
+}
+/* Docked, FLUSH and FLAT: no edge, no rounding, no shadow; its area draws the divider. */
+:host(:not(:state(floating))) .column {
+  border-width: 0;
+  border-radius: 0;
 }
 .column::part(body) {
   overflow: auto;

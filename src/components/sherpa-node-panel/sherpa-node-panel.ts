@@ -1,5 +1,5 @@
 /**
- * sherpa-node-panel — the nodes a graph editor may place, by category, in a card on a canvas.
+ * sherpa-node-panel — the nodes a graph editor may place, by category, in a card docked on a canvas.
  *
  * It re-makes nothing: a sherpa-container, a Jump to chip and a sherpa-input-text for the search,
  * a sherpa-section-header per category that sticks while its items scroll, a sherpa-list of
@@ -8,13 +8,14 @@
  * the node. An item is a FAMILY: its line names its types, and the search finds it by any of
  * them, or by a tag: "round" finds Math, placed as Round. TRAP T-the-node-panel-asks-it-places
  * A Custom Node is listed under each of its tags. TRAP T-a-node-panel-lists-under-sticky-headings
- * It floats in its canvas as an overlay panel floats in the window, by the same code. TRAP T-a-floating-panel-is-a-state
+ * Docked flush in its canvas's panel area, it floats there as an overlay panel floats in the window, by the
+ * same code. TRAP T-a-floating-panel-is-a-state
  *
  * Map:
  * - AddContext — Where "Add a node" opens, and what it is for: a socket of a type, dragged to a point.
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
-import { FLOAT_ATTRS, FloatBox } from '../../core/ui/float-box.js';
+import { FLOAT_ATTRS, FloatBox, roomOf } from '../../core/ui/float-box.js';
 import { fitOf, paletteFor, paletteMatch, type NodeKind, type PaletteGroup, type PaletteItem, type SocketType } from '../../core/data/node-kinds.js';
 import { takesGiven, type Given } from '../../core/data/node-input.js';
 // Defined before the template stamps them.
@@ -103,11 +104,11 @@ export class SherpaNodePanel extends SherpaElement {
   /** The heading a Jump to pick scrolled to: it takes the focus once the menu has shut. */
   #jumped: HTMLElement | null = null;
 
-  /** Floating, in its canvas: the parent it sits in is its room, which the canvas makes the whole canvas. */
+  /** Floating, in its canvas: its area's layout is its room, the whole canvas. TRAP T-a-panel-area-is-a-layout */
   readonly #floatBox: FloatBox = new FloatBox({
     el: this,
     box: () => this.$<HTMLElement>('.box'),
-    room: () => (this.parentElement ?? this).getBoundingClientRect(),
+    room: () => roomOf(this),
     free: () => this.hasAttribute('data-floating'),
     set: (attr, value) => this.set(attr, value),
     num: (attr) => this.num(attr, NaN),
@@ -128,6 +129,7 @@ export class SherpaNodePanel extends SherpaElement {
     this.#floatBox.wire(this.$('.heading'), this.$('.grip'), this.$('.corner'));
     this.#floatBox.draw();
     this.toggleState('floating', this.hasAttribute('data-floating'));
+    this.#floatBox.floated(this.hasAttribute('data-floating'));
     this.#draw();
   }
 
@@ -237,13 +239,17 @@ export class SherpaNodePanel extends SherpaElement {
 
   /* ── Floating ─────────────────────────────────────────────────────────── */
 
-  /** Float, and lift where it is docked the first time; or dock back in its place. */
+  /** Float, and lift where it is docked the first time, 16px in on each side, so it visibly lifts; or dock back
+   *  in its area. To the front as it floats. TRAP T-a-pressed-panel-comes-to-the-front */
   #float(): void {
     const floating = this.hasAttribute('data-floating');
     const box = this.$<HTMLElement>('.box');
-    // In place, and its shadow steps up: it is already a card floating 32px in.
-    if (floating && box && !this.hasState('floating')) this.#floatBox.lift(box.getBoundingClientRect());
+    if (floating && box && !this.hasState('floating')) {
+      const inset = parseFloat(getComputedStyle(this).getPropertyValue('--sherpa-layout-grid-padding')) || 16;
+      this.#floatBox.lift(box.getBoundingClientRect(), inset);
+    }
     this.toggleState('floating', floating);
+    this.#floatBox.floated(floating);
   }
 
   /** Float, or dock, and report it. */

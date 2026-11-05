@@ -11,63 +11,75 @@
     data-no-minimap  no minimap
     data-select-box  a plain left drag on blank canvas draws a box and reports it (canvas-box)
                      instead of panning; Space + drag, the middle button and the Pan tool still pan
+    data-panel-width  the card's area's width, in px: what a reader dragged its edge to, handed
+                     back by the host. Never under 16rem nor over 60% of the canvas
 
   Slots:
     (default)   the content, placed on the canvas at its `--x` and `--y` (px)
-    banner      notices FLOATING across the top, 32px in and beside a panel: they do not pan or zoom;
+    banner      notices FLOATING across the top, 32px in, beside the panel: they do not pan or zoom;
                 two shown stack, and a hidden one takes no room (a reload banner)
-    panel       a card FLOATING on the canvas, 32px from its top, bottom and left edges: it does not
-                pan or zoom (a node panel). One with `data-floating` is given the whole canvas to move
-                in, and the banners, the toolbar and the minimap take its room back
-    toolbar     tools FLOATING at the bottom centre, 32px up from the bottom edge: it does not
+    panel       a card DOCKED flush in the canvas's start panel area: top, left and bottom, no
+                shadow, 18rem wide; its edge resizes it. It does not pan or zoom (a node panel). One
+                with `data-floating` gives its width back and floats anywhere in the canvas
+    toolbar     tools FLOATING at the bottom centre, 32px up, beside the panel: they do not
                 pan or zoom (a node toolbar)
 
   Fires:
     canvas-change — the view moved: panned or zoomed. detail: { x, y, zoom }
+    panel-area-resize — the panel's area was resized by its edge, dragged or by the keys. detail: { side: start, width }
     canvas-box — a box was dragged on blank canvas. detail: { left, top, right, bottom, mode } (plane px; mode: replace | add (Shift) | remove (Ctrl, Cmd on a Mac))
 -->
 <template id="default">
-  <!-- Notices floating over the view, first so they are read and reached first. -->
-  <div class="banner" part="banner"><slot name="banner" data-accepts="content"></slot></div>
+  <!-- The PANEL AREAS: the card docks flush in the start area, and the banners, the tools, the
+       minimap and the controls sit in the content beside it. The VIEW is the whole canvas, under
+       them all, so the plane never moves as the card docks, floats or is resized.
+       TRAP T-a-panel-area-is-a-layout -->
+  <sherpa-layout-panels class="panels" part="panels">
+    <!-- A card docked on the view: it keeps its place as the plane pans and zooms. -->
+    <slot name="panel" slot="panel-start" data-accepts="panel"></slot>
 
-  <!-- The VIEW: what the reader sees of the canvas. The keys pan and zoom it. -->
-  <div class="viewport" part="viewport" tabindex="0" role="group"
-       aria-roledescription="canvas" aria-label="Canvas">
-    <div class="plane" part="plane"><slot data-accepts="content"></slot></div>
-    <div class="marquee" part="marquee" aria-hidden="true"></div>
-  </div>
+    <!-- Notices floating over the view, before it, so they are read and reached first. -->
+    <div class="banner" part="banner"><slot name="banner" data-accepts="content"></slot></div>
 
-  <!-- A card floating on the view: it keeps its place as the plane pans and zooms. -->
-  <div class="floating" part="floating"><slot name="panel" data-accepts="panel"></slot></div>
+    <!-- The VIEW: what the reader sees of the canvas. The keys pan and zoom it. -->
+    <div class="viewport" part="viewport" tabindex="0" role="group"
+         aria-roledescription="canvas" aria-label="Canvas">
+      <div class="plane" part="plane"><slot data-accepts="content"></slot></div>
+      <div class="marquee" part="marquee" aria-hidden="true"></div>
+    </div>
 
-  <!-- Tools floating at the bottom centre, in the controls' style. -->
-  <div class="toolbar" part="toolbar"><slot name="toolbar" data-accepts="toolbar"></slot></div>
+    <!-- Tools floating at the bottom centre of the canvas, never over the card, in the controls' style. -->
+    <div class="toolbar" part="toolbar"><slot name="toolbar" data-accepts="toolbar"></slot></div>
 
-  <!-- The WHOLE canvas small, and where the view sits on it. A drag moves the view. -->
-  <div class="minimap sherpa-border-edges sherpa-border-corners" part="minimap" aria-hidden="true">
-    <div class="minimap-items"></div>
-    <span class="minimap-view"></span>
-    <template class="minimap-item-tpl"><span class="minimap-item"></span></template>
-  </div>
+    <!-- What floats beside the card: what the view shows is this box. -->
+    <div class="stage" part="stage">
+      <!-- The WHOLE canvas small, and where the view sits on it. A drag moves the view. -->
+      <div class="minimap sherpa-border-edges sherpa-border-corners" part="minimap" aria-hidden="true">
+        <div class="minimap-items"></div>
+        <span class="minimap-view"></span>
+        <template class="minimap-item-tpl"><span class="minimap-item"></span></template>
+      </div>
 
-  <!-- The four controls, floating at the bottom right, as ONE object. -->
-  <span class="controls sherpa-group" part="controls" role="toolbar" aria-label="Canvas">
-    <sherpa-button class="pan" data-type="icon" data-icon-start="arrows-up-down-left-right"
-                   aria-label="Pan" aria-pressed="false"></sherpa-button>
-    <sherpa-button class="zoom-in" data-type="icon" data-icon-start="plus"
-                   aria-label="Zoom in"></sherpa-button>
-    <sherpa-button class="zoom-out" data-type="icon" data-icon-start="minus"
-                   aria-label="Zoom out"></sherpa-button>
-    <sherpa-button class="options" data-type="icon" data-icon-start="ellipsis-horizontal"
-                   aria-label="Canvas options" aria-haspopup="dialog"
-                   data-description="Fit, zoom, and show or hide the minimap.">
-      <sherpa-menu slot="menu" data-align="end">
-        <button type="button" value="fit">Fit to content</button>
-        <button type="button" value="actual">Zoom to 100%</button>
-        <hr />
-        <button type="button" class="minimap-toggle" value="minimap"
-                data-when-text="data-no-minimap: Show minimap">Hide minimap</button>
-      </sherpa-menu>
-    </sherpa-button>
-  </span>
+      <!-- The four controls, floating at the bottom right, as ONE object. -->
+      <span class="controls sherpa-group" part="controls" role="toolbar" aria-label="Canvas">
+        <sherpa-button class="pan" data-type="icon" data-icon-start="arrows-up-down-left-right"
+                       aria-label="Pan" aria-pressed="false"></sherpa-button>
+        <sherpa-button class="zoom-in" data-type="icon" data-icon-start="plus"
+                       aria-label="Zoom in"></sherpa-button>
+        <sherpa-button class="zoom-out" data-type="icon" data-icon-start="minus"
+                       aria-label="Zoom out"></sherpa-button>
+        <sherpa-button class="options" data-type="icon" data-icon-start="ellipsis-horizontal"
+                       aria-label="Canvas options" aria-haspopup="dialog"
+                       data-description="Fit, zoom, and show or hide the minimap.">
+          <sherpa-menu slot="menu" data-align="end">
+            <button type="button" value="fit">Fit to content</button>
+            <button type="button" value="actual">Zoom to 100%</button>
+            <hr />
+            <button type="button" class="minimap-toggle" value="minimap"
+                    data-when-text="data-no-minimap: Show minimap">Hide minimap</button>
+          </sherpa-menu>
+        </sherpa-button>
+      </span>
+    </div>
+  </sherpa-layout-panels>
 </template>

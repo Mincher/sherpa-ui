@@ -182,20 +182,12 @@
           "valueSet": "v"
         },
         {
-          "name": "data-panel-end-open",
-          "valueSet": "v"
-        },
-        {
           "name": "data-panel-end-width",
-          "description": "a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row."
-        },
-        {
-          "name": "data-panel-start-open",
-          "valueSet": "v"
+          "description": "a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row. The areas are sherpa-layout-panels': a docked panel fills its area flush, and the area draws the divider."
         },
         {
           "name": "data-panel-start-width",
-          "description": "a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row."
+          "description": "a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row. The areas are sherpa-layout-panels': a docked panel fills its area flush, and the area draws the divider."
         },
         {
           "name": "data-scroll-shadow",
@@ -1763,6 +1755,10 @@
           "valueSet": "v"
         },
         {
+          "name": "data-panel-width",
+          "description": "the card's area's width, in px: what a reader dragged its edge to, handed back by the host. Never under 16rem nor over 60% of the canvas"
+        },
+        {
           "name": "data-select-box",
           "description": "a plain left drag on blank canvas draws a box and reports it (canvas-box) instead of panning; Space + drag, the middle button and the Pan tool still pan",
           "valueSet": "v"
@@ -1896,6 +1892,25 @@
               "name": "fixed"
             }
           ]
+        }
+      ]
+    },
+    {
+      "name": "sherpa-layout-panels",
+      "description": "a panel AREA each side of the content. A docked panel fills its area flush, top, side and bottom; the area takes its width and draws the divider, and the content reflows beside it. The area's inner edge resizes it. A panel that floats stays in its area, which gives its width back and becomes the panel's room: the whole layout. The app shell's body and the canvas compose it. Will, TODO 796. TRAP T-a-panel-area-is-a-layout",
+      "attributes": [
+        {
+          "name": "data-no-room",
+          "description": "both areas hide: the host's rule leaves the content no room for one",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-panel-end-width",
+          "description": "an area's width, in px: what a reader dragged it to, handed back by the host. Never under the area's min nor over its max"
+        },
+        {
+          "name": "data-panel-start-width",
+          "description": "an area's width, in px: what a reader dragged it to, handed back by the host. Never under the area's min nor over its max"
         }
       ]
     },
@@ -2690,7 +2705,7 @@
     },
     {
       "name": "sherpa-node-panel",
-      "description": "the nodes a graph editor may place, by category: a Jump to chip and a search, then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. A card (sherpa-container) on a canvas, docked or floating. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786. TRAP T-the-node-panel-asks-it-places",
+      "description": "the nodes a graph editor may place, by category: a Jump to chip and a search, then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. A card (sherpa-container) on a canvas: docked flush and flat in its panel area, or floating. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786. TRAP T-the-node-panel-asks-it-places",
       "attributes": [
         {
           "name": "data-floatable",
@@ -2699,7 +2714,7 @@
         },
         {
           "name": "data-floating",
-          "description": "lifted off its place: anywhere in its canvas, moved by its header and resized by its corner. Removed, it docks back. TRAP T-a-floating-panel-is-a-state",
+          "description": "lifted off its place: anywhere in its canvas, moved by its header and resized by its corner; a press brings it to the front. Removed, it docks back. TRAP T-a-floating-panel-is-a-state",
           "valueSet": "v"
         },
         {
@@ -3016,8 +3031,7 @@
         },
         {
           "name": "data-fixed",
-          "description": "a fixed panel, in the end panel area of the page's sherpa-app-shell; it goes back to the right edge where there is no room for one",
-          "valueSet": "v"
+          "description": "a fixed panel, docked flush in a panel area of the page's sherpa-app-shell: `start`, or bare or `end` for the end area. It goes back to the right edge where there is no room for one"
         },
         {
           "name": "data-floatable",
@@ -3026,7 +3040,7 @@
         },
         {
           "name": "data-floating",
-          "description": "lifted off its edge or its area: anywhere in the window, moved by its header and resized by its corner. Removed, it docks where it came from",
+          "description": "lifted off its edge or its area: anywhere in the window, moved by its header and resized by its corner; a press brings it to the front. Removed, it docks where it came from",
           "valueSet": "v"
         },
         {
@@ -3048,7 +3062,7 @@
         },
         {
           "name": "data-poppable",
-          "description": "show the Pop in / Pop out button (needs a sherpa-app-shell with room)",
+          "description": "show the Pop in / Pop out button (needs a sherpa-app-shell with room). Pop in goes back to the area it last left",
           "valueSet": "v"
         },
         {
@@ -3272,12 +3286,26 @@
           "valueSet": "v"
         },
         {
+          "name": "data-floatable",
+          "description": "a column shows the Float / Dock button in its header",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-floating",
+          "description": "a column lifted out of its panel area: anywhere in the layout the area is in, moved by its header and resized by its corner; a press brings it to the front. Removed, it docks back. TRAP T-a-filter-column-floats",
+          "valueSet": "v"
+        },
+        {
           "name": "data-group-field",
           "description": "the field the Group chip points at (the standard name)"
         },
         {
           "name": "data-heading",
           "description": "its scope's name, written by its source: a portrait bar's heading."
+        },
+        {
+          "name": "data-height",
+          "description": "how big a column floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past its layout"
         },
         {
           "name": "data-hide-unmatched",
@@ -3471,6 +3499,18 @@
           "name": "data-waits",
           "description": "its scope waits for ONE Apply, this bar's: its menus keep Discard alone. Set by a bound source. TODO 406",
           "valueSet": "v"
+        },
+        {
+          "name": "data-width",
+          "description": "how big a column floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past its layout"
+        },
+        {
+          "name": "data-x",
+          "description": "where a column floats, in px from its layout's top left, written at the end of each move; kept while docked"
+        },
+        {
+          "name": "data-y",
+          "description": "where a column floats, in px from its layout's top left, written at the end of each move; kept while docked"
         },
         {
           "name": "open",

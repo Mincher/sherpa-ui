@@ -398,7 +398,10 @@ they are for.
 to measure the WINDOW (`matchMedia`, 1280). A pinned nav takes 320px of the
 window, so at 1280 the panel still showed and left the Context 496px. Now
 `sherpa-app-shell` watches `.body` (a `ResizeObserver`), hides both areas
-under `data-no-room`, and reports `panel-room-change`. The PROVIDER owns the
+under `data-no-room`, and reports `panel-room-change`. The body is the panel-area
+layout (`T-a-panel-area-is-a-layout`): the rule stays the SHELL's, so the shell
+reads the area's min from it (`areaMin()`) and hands it `data-no-room`; the
+canvas has no such rule, and its card never hides. The PROVIDER owns the
 mode, so it shuts the panel (`hide('width')` — not a choice) and gives it back
 when there is room and the reader still wants it. A panel with no shell
 around it has no width rule: that is its host's to say.
@@ -408,8 +411,8 @@ the shell ignores the room then, or leaving Settings would shut and reopen
 the panel under it.
 
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`
-- Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
 - Site: `src/components/sherpa-provider/provider-mode.ts`
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.ts`
 
 ### T-bind-locks-what-it-owns
 

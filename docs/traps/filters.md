@@ -2284,6 +2284,30 @@ under the panel. Narrowing the GRID's own box is what makes `full` mean full.
 ---
 - Site: `src/core/ui/filter-def.ts`
 
+### T-a-filter-column-floats
+
+**The filter column floats out of its panel area, as the Nodes card floats in
+its canvas, by the same code** — Will, TODO 787b. A column (`data-column`, or
+several scopes) with `data-floatable` shows Float / Dock last in its header;
+`data-floating`, `data-x`, `data-y`, `data-width` and `data-height` are the box,
+as the overlay panel's and the node panel's, and it reports `panel-float`,
+`panel-move` and `panel-resize`. Its `.box` wraps the column's container and the
+corner, so the corner never scrolls with the body; the grip is first in the
+header. `float-box.ts` draws, lifts (16px in) and moves it, and
+`sherpa-float.css` is listed first in the toolbar's sheets
+(`T-a-floating-panel-is-a-state`).
+
+It stays slotted in the shell's start area, which takes no width while it floats
+and is its room: the shell's body (`T-a-panel-area-is-a-layout`). So the Context
+reflows to the full body, and the provider's open and shut and the room rule work
+on it unchanged. Docked, it is flush and flat: no edge, no rounding, no shadow,
+and the area draws the divider. It joins the tab's one stack
+(`T-a-pressed-panel-comes-to-the-front`), with boxes in the shell's content only.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
+
 ### T-the-view-chip-stays-on-the-header
 
 One chip is never drawn in the filter panel: `view`. It is not a filter at

@@ -129,11 +129,17 @@ it and the panel moves, so a caller needs no pointer. A press also reports
 the edge and the reflow, and its `open` shuts the area, as for any panel. No Figma
 design for the button yet.
 
-**Fixed, it is a card in the flow:** static, every corner rounded, no shadow. No
-left-edge handle, as the area's edge resizes it. No maximise, which needs the
-whole window. It leaves the panels on the right edge, so one opening beside it
-leaves it open and sits over it (`T-one-overlay-panel-at-a-time`); popped out, it
-takes the edge again.
+**Fixed, it is DOCKED, flush and flat** (Will, TODO 796): it fills its area top,
+side and bottom, with no edge, no rounding and no shadow of its own; the area
+draws the divider (`T-a-panel-area-is-a-layout`). No left-edge handle, as the
+area's edge resizes it. No maximise, which needs the whole window. It leaves the
+panels on the right edge, so one opening beside it leaves it open and sits over
+it (`T-one-overlay-panel-at-a-time`); popped out, it takes the edge again.
+
+**Either area:** `data-fixed="start"` docks it in the START area; bare, or `end`,
+the end one. Pop out remembers the area it left, so Pop in goes back there, and
+`panel-pop { fixed, side }` says which. A host's own panel in that area keeps it:
+the button goes, as for the end.
 
 **The button shows only where a press can work.** The panel finds the page's
 `sherpa-app-shell` by its tag, as an app keeps its panels outside the shell so a
@@ -177,7 +183,8 @@ Float goes while it is maximised.
   area: `display: none` on the area draws nothing slotted in it.
 - **Floating leaves the right edge**, as a fixed panel does
   (`T-one-overlay-panel-at-a-time`): a panel opened there leaves it open, and it
-  is drawn over that one (z-index 102). Docked back on the edge, it takes it again.
+  is drawn over that one (z-index 102 and up, the tab's one stack:
+  `T-a-pressed-panel-comes-to-the-front`). Docked back on the edge, it takes it again.
 - **The box** is `data-x`, `data-y`, `data-width` and `data-height`, in px of the
   window. CSS draws it through `--_float-*` and owns the clamp: never under
   `--sherpa-panel-float-min-width` by `-min-height` (20rem by 12rem), never past
@@ -203,15 +210,16 @@ Float goes while it is maximised.
   keeps its own events and says where its box sits: fixed in the window, or
   absolute in its canvas. `--_float-*` are written on the BOX, never the host, so
   a canvas watching its children's `style` hears nothing of a drag.
-- **Its room is its CANVAS.** Floating, the canvas gives its `panel` slot the whole
-  canvas, over everything floating on it, and takes the slotted host's clicks
-  away (`pointer-events: none`: the canvas's `::slotted` rule beats the card's own
-  `:host`), so a press beside the card reaches the view; the card takes its own
-  back. The canvas hears `data-floating` by its MutationObserver, as a host may
-  set it with no event, and drops `has-panel`: the banners, the toolbar and the
-  minimap take their room back. The first float lifts it in place (it is already a
-  card 32px in), its shadow up a step; its floor is 16rem by 12rem, under the 18rem
-  it docks at, so the lift never jumps.
+- **Its room is its PANEL AREA's layout** (TODO 796, `T-a-panel-area-is-a-layout`).
+  The card stays slotted: floating, its area takes no width and covers the whole
+  layout, the canvas, with `pointer-events: none`, so a press beside the card
+  reaches the view; its box takes its own back, and the host no longer sets any
+  (inherited from the area, it passes them). The layout hears `data-floating` by
+  its MutationObserver, as a host may set it with no event: the banners, the
+  toolbar and the minimap take their room back. `roomOf()` finds that layout up
+  the flat tree. Docked, the card is flush and flat; the first float lifts it 16px
+  in on each side, its shadow `lg`; its floor is 16rem by 12rem, so a card of 18rem
+  lifts to the floor and never jumps.
 
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.html`
@@ -221,10 +229,42 @@ Float goes while it is maximised.
 - Site: `src/core/sherpa-float.css`
 - Site: `src/components/sherpa-node-panel/sherpa-node-panel.ts`
 - Site: `src/components/sherpa-node-panel/sherpa-node-panel.html`
-- Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts`
-- Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.css`
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.css`
 - Site: `test/e2e/reforged-overlay-panel-float.spec.ts`
 - Site: `test/e2e/reforged-node-panel-float.spec.ts`
+
+### T-a-pressed-panel-comes-to-the-front
+
+**Every floating box in the tab is in ONE stack: a press on one, or a focus into
+it, brings it to the front** — Will, TODO 787c. `float-box.ts` keeps the stack (a
+static list, back to front) and writes each box's place as `--_float-order`;
+`sherpa-float.css` draws `z-index: calc(102 + order)`, over a panel docked on the
+right edge (101). Floating puts a box at the front; opened floating, it comes
+forward; docked, it leaves the stack. A focus raises it too, so a keyboard reader
+brings one forward with Tab. The order is the page's, for the tab: not kept over
+a reload. A box gone from the page leaves at the next raise.
+
+**It orders boxes that share a stacking context.** So nothing between a floating
+box and its neighbours may make one: the canvas lost its `isolation` and its
+`container-type` (the stage is the container now), and the panel-area layout and
+a floating area make none (`T-a-panel-area-is-a-layout`). Measured: the Nodes card
+floating in its canvas and an overlay panel floating beside it each come in front
+of the other when pressed, and so do the Query editor's card and inspector, inside
+its panel. **A box in another context cannot pass it**: one inside the shell's
+content (which isolates) never rises over one floating in the window, as the Node
+Editor's own inspector and the Assistant. And the outlet isolates each element of a
+Context (`T-a-reach-banner-takes-no-room`), so on the Node Editor page the card,
+in the canvas's box, never rises over the inspector beside it. Measured: moved
+into the canvas's box, the inspector shared the card's order but went UNDER the
+app header, which it must cover (746 E4), so it stays where it is.
+
+- Site: `src/core/ui/float-box.ts`
+- Site: `src/core/sherpa-float.css`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
+- Site: `src/components/sherpa-node-panel/sherpa-node-panel.ts`
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.css`
+- Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.css`
+- Site: `test/e2e/reforged-layout-panels.spec.ts`
 
 ### T-a-tree-rule-beats-slotted
 
@@ -1255,12 +1295,16 @@ clamp DREW, so a key moves from there.
 - Firefox THROWS on `setPointerCapture` for a pointer it did not start (a
   synthetic one), which ended the drag before it began: the capture is tried.
 
-The shell's area: `flex` takes `--_asked-<side>` (the drag, or the host's
-`data-panel-<side>-width`), `min-inline-size` its min (464px) and
-`max-inline-size: 33%` of the row. The min wins where they cross: at 1280
-33% of the row is 409px, so an area gives only from about 1446px wide. The
-handle is in the area's own inset, so it is the AREA's edge, not the
-panel's. The shell REPORTS on release (`panel-area-resize`); the example app
+A panel area's edge is `sherpa-layout-panels`', which the shell and the canvas
+compose (`T-a-panel-area-is-a-layout`): `flex` takes `--_asked-<side>` (the
+drag, or the host's `data-panel-<side>-width`), `min-inline-size` its min
+(464px) and `max-inline-size` its max (33% of the row; the canvas's card, 16rem
+and 60%). The min wins where they cross: at 1280 33% of the row is 409px, so an
+area gives only from about 1446px wide. The docked panel is flush, so the
+AREA's edge is the panel's own: the handle is a strip ASTRIDE it, half over the
+panel, half over the content, with a 2px line down its middle. The layout's
+`panel-area-resize` stops at its host, which reports its own (PRINCIPLES 18):
+the shell, or the canvas, which takes `data-panel-width` back. The example app
 keeps the width in its session and hands it back.
 
 **Either axis, in the box's own units** (TODO 177). The layout grid's gutters
@@ -1276,11 +1320,12 @@ grid's handle can be gone by then). One pointer drives a drag; a second one
 held on the same edge is ignored. A `describe` that returns null leaves the
 last values standing.
 
-- Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
-- Site: `src/components/sherpa-app-shell/sherpa-app-shell.html`
-- Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
 - Site: `src/core/ui/edge-resize.ts`
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.ts`
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.html`
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.css`
+- Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts`
 - Site: `test/e2e/reforged-app-shell.spec.ts`
 - Site: `test/e2e/reforged-edge-resize.spec.ts`
 

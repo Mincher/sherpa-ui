@@ -2,7 +2,7 @@
 
 # sherpa-node-panel
 
-The nodes a graph editor may place, by category: a Jump to chip and a search, then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. A card ([sherpa-container](sherpa-container.md)) on a canvas, docked or floating. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786. TRAP T-the-node-panel-asks-it-places
+The nodes a graph editor may place, by category: a Jump to chip and a search, then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. A card ([sherpa-container](sherpa-container.md)) on a canvas: docked flush and flat in its panel area, or floating. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786. TRAP T-the-node-panel-asks-it-places
 
 |  |  |
 |---|---|
@@ -84,7 +84,7 @@ For a graph editor's list of the nodes it may place, one per family, in one list
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
 | `data-floatable` | boolean |  | show the Float / Dock button in its header |
-| `data-floating` | boolean |  | lifted off its place: anywhere in its canvas, moved by its header and resized by its corner. Removed, it docks back. TRAP T-a-floating-panel-is-a-state |
+| `data-floating` | boolean |  | lifted off its place: anywhere in its canvas, moved by its header and resized by its corner; a press brings it to the front. Removed, it docks back. TRAP T-a-floating-panel-is-a-state |
 | `data-height` | number |  | how big it floats, in px, written at the end of each resize. Never under 16rem by 12rem nor past its canvas |
 | `data-width` | number |  | how big it floats, in px, written at the end of each resize. Never under 16rem by 12rem nor past its canvas |
 | `data-x` | number |  | where it floats, in px from its canvas's top left. The panel writes them at the end of each move; kept while docked, so it floats there again |

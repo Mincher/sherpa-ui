@@ -8,10 +8,12 @@
     open              native boolean (read reflects dialog.open; set → show()/close())
     data-collapsed    collapsed state (body/footer hidden; the collapse toggle reflects it)
     data-maximised    full-overlay state: the panel fills the window and shows its breadcrumbs
-    data-fixed        a fixed panel, in the end panel area of the page's sherpa-app-shell;
-                      it goes back to the right edge where there is no room for one
+    data-fixed        a fixed panel, docked flush in a panel area of the page's sherpa-app-shell:
+                      `start`, or bare or `end` for the end area. It goes back to the right edge
+                      where there is no room for one
     data-floating     lifted off its edge or its area: anywhere in the window, moved by its header
-                      and resized by its corner. Removed, it docks where it came from
+                      and resized by its corner; a press brings it to the front. Removed, it docks
+                      where it came from
     data-x / data-y   where it floats, in px from the window's top left. The panel writes them
                       at the end of each move; kept while docked, so it floats there again
     data-width / data-height   how big it floats, in px, written at the end of each resize. Never
@@ -22,7 +24,8 @@
     data-collapsible  show the collapse toggle
     data-expandable   show the maximise / minimise button
     data-external     show the external-link button
-    data-poppable     show the Pop in / Pop out button (needs a sherpa-app-shell with room)
+    data-poppable     show the Pop in / Pop out button (needs a sherpa-app-shell with room). Pop in
+                      goes back to the area it last left
     data-floatable    show the Float / Dock button
     data-dismissible  show the close button
 
@@ -40,7 +43,7 @@
     panel-collapse   (detail: { collapsed })
     panel-expand     (detail: { maximised })
     panel-external   (detail: { })
-    panel-pop        (detail: { fixed })  the reader pressed Pop in or Pop out
+    panel-pop        (detail: { fixed, side })  the reader pressed Pop in or Pop out; side: start | end
     panel-close      (detail: { })
     panel-float      (detail: { floating })  the reader pressed Float or Dock
     panel-move       (detail: { x, y })  floating, its header was dragged, or its grip moved by the keys
@@ -77,7 +80,7 @@
                        data-icon-start="browser" aria-label="Float"
                        data-when-data-icon-start="data-floating: sidebar-flip"
                        data-when-aria-label="data-floating: Dock"></sherpa-button>
-        <!-- Pop in: a fixed panel in the shell's end area. TRAP T-a-panel-pops-into-the-end-area -->
+        <!-- Pop in: a fixed panel in a panel area of the shell. TRAP T-a-panel-pops-into-the-end-area -->
         <sherpa-button class="pop" part="pop" data-type="icon" data-size="sm"
                        data-icon-start="sidebar-flip" aria-label="Pop in"
                        data-when-data-icon-start="data-fixed: monitor-w-floating-window"

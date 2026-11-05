@@ -1,18 +1,22 @@
 /**
  * float-box.ts — a FLOATING box: drawn from its host's `data-x`, `data-y`, `data-width` and
  * `data-height`, lifted where it docked, moved by its bar and resized by its corner, inside its
- * room (the window, or a canvas). What a floating overlay panel and the node panel share, by
- * `dragXY`; its sheet is sherpa-float.css. Each component keeps its own events: this reports
- * through the doors it is given. TRAP T-a-floating-panel-is-a-state
+ * room (the window, or a panel area's layout). What a floating overlay panel, the node panel and
+ * the filter column share, by `dragXY`; its sheet is sherpa-float.css. Each component keeps its
+ * own events: this reports through the doors it is given. Every floating box in the tab is in
+ * ONE stack: a press brings one to the front. TRAP T-a-floating-panel-is-a-state TRAP T-a-pressed-panel-comes-to-the-front
  *
  * Map:
  * - FLOAT_ATTRS — The floating box's attributes: where it floats, and how big.
  * - Room — A box in client px: what a floating box floats in, or the box itself.
+ * - roomOf — The room of a panel docked in a panel area: the layout the area is in; else its parent.
  * - FloatHost — What a floating box needs of its component: its box, its room, its doors, its reports.
- * - FloatBox — One component's floating box: drawn, lifted, moved and resized.
+ * - FloatBox — One component's floating box: drawn, lifted, moved, resized and stacked.
+ * - .floated — Floating, it joins the stack at the front, once; docked, it leaves it.
+ * - .raise — To the front of every floating box in the tab.
  * - .draw — The kept box, drawn on the box that floats; an absent one is the CSS's own.
  * - .lift — The first float: where the box is drawn, `inset` px in on each side; a kept box stands.
- * - .wire — The bar moves it and the corner resizes it, by the pointer or the arrows.
+ * - .wire — The bar moves it and the corner resizes it, by the pointer or the arrows; a press or a focus raises it.
  */
 import { dragXY, type XY } from './drag-xy.js';
 
@@ -34,6 +38,20 @@ export interface Room {
   y: number;
   width: number;
   height: number;
+}
+
+/** Up the flat tree: a slotted node's slot, a shadow root's host, else its parent. */
+function up(node: Node): Node | null {
+  if (node instanceof Element && node.assignedSlot) return node.assignedSlot;
+  return node instanceof ShadowRoot ? node.host : node.parentNode;
+}
+
+/** The room of a panel docked in a panel area: the layout the area is in; else its parent. */
+export function roomOf(el: Element): Room {
+  for (let node = up(el); node; node = up(node)) {
+    if (node instanceof Element && node.localName === 'sherpa-layout-panels') return node.getBoundingClientRect();
+  }
+  return (el.parentElement ?? el).getBoundingClientRect();
 }
 
 /** What a floating box needs of its component: its box, its room, its doors, its reports. */
@@ -64,13 +82,44 @@ function onControl(event: PointerEvent, bar: Element): boolean {
   return false;
 }
 
-/** One component's floating box: drawn, lifted, moved and resized. */
+/** One component's floating box: drawn, lifted, moved, resized and stacked. */
 export class FloatBox {
+  /** Every floating box in the tab, back to front. TRAP T-a-pressed-panel-comes-to-the-front */
+  static #stack: FloatBox[] = [];
+
   /** The component whose box this is, by its doors. */
   readonly #host: FloatHost;
 
   constructor(host: FloatHost) {
     this.#host = host;
+  }
+
+  /** Floating, it joins the stack at the front, once; docked, it leaves it. */
+  floated(on: boolean): void {
+    const at = FloatBox.#stack.indexOf(this);
+    if (on && at < 0) this.raise();
+    else if (!on && at >= 0) {
+      FloatBox.#stack.splice(at, 1);
+      this.#host.box()?.style.removeProperty('--_float-order');
+      FloatBox.#restack();
+    }
+  }
+
+  /** To the front of every floating box in the tab. */
+  raise(): void {
+    const stack = FloatBox.#stack;
+    const at = stack.indexOf(this);
+    if (at >= 0 && at === stack.length - 1) return;
+    if (at >= 0) stack.splice(at, 1);
+    stack.push(this);
+    FloatBox.#restack();
+  }
+
+  /** Each box's place, front last, where its CSS reads it; one gone from the page leaves. */
+  static #restack(): void {
+    const stack = FloatBox.#stack;
+    for (let i = stack.length - 1; i >= 0; i--) if (!stack[i]!.#host.el.isConnected) stack.splice(i, 1);
+    stack.forEach((b, i) => b.#host.box()?.style.setProperty('--_float-order', String(i)));
   }
 
   /** The kept box, drawn on the box that floats; an absent one is the CSS's own. */
@@ -105,10 +154,16 @@ export class FloatBox {
   /**
    * The bar moves it and the corner resizes it: by the pointer, or the arrows on the grip
    * and on the corner. Each writes back the box the CSS clamp DREW, so a key steps from
-   * there, and reports it.
+   * there, and reports it. A press or a focus raises it.
    */
   wire(bar: HTMLElement | null, grip: HTMLElement | null, corner: HTMLElement | null): void {
     const host = this.#host;
+    // A press anywhere on it, or a focus into it, brings it to the front: the keys too.
+    const raise = (): void => {
+      if (host.free()) this.raise();
+    };
+    host.box()?.addEventListener('pointerdown', raise, { capture: true });
+    host.box()?.addEventListener('focusin', raise);
     if (bar) {
       dragXY(bar, {
         keys: grip,

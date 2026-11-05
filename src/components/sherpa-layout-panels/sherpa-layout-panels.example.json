@@ -1,0 +1,8 @@
+{
+  "html": [
+    "<sherpa-layout-panels style=\"block-size: 320px; --sherpa-panel-area-min-width: 240px\">",
+    "<div slot=\"panel-start\" style=\"padding: 16px\">Filters</div>",
+    "<div style=\"padding: 16px\">The content, beside the panel</div></sherpa-layout-panels>"
+  ],
+  "use": "For a panel docked beside content, flush in its own area: the area takes the panel's width, draws the divider and resizes by its inner edge, and a panel with `data-floating` gives the width back and floats in the layout. A panel with an `open` shows while it is open. The app shell's body and the canvas compose it; inside an app, slot a panel into the shell's `panel-start` or `panel-end` instead."
+}

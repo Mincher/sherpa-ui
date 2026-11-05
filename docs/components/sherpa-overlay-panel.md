@@ -32,14 +32,14 @@ For a quick peek while the page behind stays live: no scrim, no focus trap, and 
 | `data-dismissible` | boolean |  | show the close button |
 | `data-expandable` | boolean |  | show the maximise / minimise button |
 | `data-external` | boolean |  | show the external-link button |
-| `data-fixed` | boolean |  | a fixed panel, in the end panel area of the page's [sherpa-app-shell](sherpa-app-shell.md); it goes back to the right edge where there is no room for one |
+| `data-fixed` | text |  | a fixed panel, docked flush in a panel area of the page's [sherpa-app-shell](sherpa-app-shell.md): `start`, or bare or `end` for the end area. It goes back to the right edge where there is no room for one |
 | `data-floatable` | boolean |  | show the Float / Dock button |
-| `data-floating` | boolean |  | lifted off its edge or its area: anywhere in the window, moved by its header and resized by its corner. Removed, it docks where it came from |
+| `data-floating` | boolean |  | lifted off its edge or its area: anywhere in the window, moved by its header and resized by its corner; a press brings it to the front. Removed, it docks where it came from |
 | `data-heading` | text |  | header title text (rendered into .title) |
 | `data-height` | number |  | how big it floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past the window |
 | `data-icon` | text |  | a glyph before the title (shows the icon slot area) |
 | `data-maximised` | boolean |  | full-overlay state: the panel fills the window and shows its breadcrumbs |
-| `data-poppable` | boolean |  | show the Pop in / Pop out button (needs a [sherpa-app-shell](sherpa-app-shell.md) with room) |
+| `data-poppable` | boolean |  | show the Pop in / Pop out button (needs a [sherpa-app-shell](sherpa-app-shell.md) with room). Pop in goes back to the area it last left |
 | `data-status` | text |  | status colour cascade (critical \| warning \| success \| info \| urgent) Toolbar buttons are shown by opt-in data-* flags (CSS-gated): |
 | `data-width` | number |  | how big it floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past the window |
 | `data-x` | number |  | where it floats, in px from the window's top left. The panel writes them at the end of each move; kept while docked, so it floats there again |
@@ -78,7 +78,7 @@ Each one bubbles.
 | `panel-collapse` | `{ collapsed: boolean }` |  |
 | `panel-expand` | `{ maximised: boolean }` |  |
 | `panel-external` |  |  |
-| `panel-pop` | `{ fixed: boolean }` | The reader pressed Pop in or Pop out |
+| `panel-pop` | `{ fixed: boolean; side: 'end' \| 'start' }` | The reader pressed Pop in or Pop out; side: start \| end |
 | `panel-close` |  |  |
 | `panel-float` | `{ floating: boolean }` | The reader pressed Float or Dock |
 | `panel-move` | `{ x: number; y: number }` | Floating, its header was dragged, or its grip moved by the keys |

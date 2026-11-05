@@ -7,10 +7,12 @@
  * scroll — and REPORTS each move (`canvas-change`). The minimap is part of it:
  * a second element would be a second owner of one value.
  * TRAP T-a-canvas-owns-its-view
+ * Its card docks in a panel area. TRAP T-a-panel-area-is-a-layout
  */
 import { SherpaElement, coerceNum, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
+import '../sherpa-layout-panels/sherpa-layout-panels.js';
 import { boxMode, type BoxMode } from '../../core/ui/box-pick.js';
 import { toolbarKeys } from '../../core/ui/roving-focus.js';
 
@@ -43,8 +45,10 @@ export class SherpaLayoutCanvas extends SherpaElement {
     'data-zoom': { type: 'number', kind: 'behaviour' },
     'data-min-zoom': { type: 'number', kind: 'behaviour' },
     'data-max-zoom': { type: 'number', kind: 'behaviour' },
+    // The card's area's width, handed back by the host. TRAP T-an-edge-resizes-its-box
+    'data-panel-width': { type: 'number', kind: 'behaviour' },
   } as const;
-  static override observed = ['data-zoom'];
+  static override observed = ['data-zoom', 'data-panel-width'];
 
   /** The zoom, and its bounds — read by the code, so observed, not CSS props. */
 
@@ -90,15 +94,23 @@ export class SherpaLayoutCanvas extends SherpaElement {
       minimap?.addEventListener(type, this.#onMinimap as EventListener);
     }
     this.$('slot:not([name])')?.addEventListener('slotchange', () => this.#drawMinimap());
-    // A card in the `panel` slot takes the bottom left: the minimap moves out from under it.
-    this.$('slot[name="panel"]')?.addEventListener('slotchange', () => this.#syncPanel());
+    // The card's area: its width in, and its resize reported as the canvas's own.
+    const panels = this.$('.panels');
+    this.mirrorAttrs(panels!, [['data-panel-width', 'data-panel-start-width']]);
+    panels?.addEventListener('panel-area-resize', this.#onAreaResize);
     this.#zoom = this.#clamp(coerceNum(this.dataset['zoom'], 1));
     this.#apply(false);
   }
 
   override onConnect(): void {
-    this.#observer = new ResizeObserver(() => this.#drawMinimap());
+    // The canvas, and what its view shows: the card docks, floats or is resized.
+    this.#observer = new ResizeObserver(() => {
+      this.#syncSeen();
+      this.#drawMinimap();
+    });
     this.#observer.observe(this);
+    const stage = this.$('.stage');
+    if (stage) this.#observer.observe(stage);
     // Capture: a node's header takes Space for itself, and stops it.
     this.on(window, 'keydown', (event) => this.#onSpace(event as KeyboardEvent, true), { capture: true });
     this.on(window, 'keyup', (event) => this.#onSpace(event as KeyboardEvent, false), { capture: true });
@@ -107,12 +119,11 @@ export class SherpaLayoutCanvas extends SherpaElement {
       if (this.#drag?.box && this.hasState('boxing')) this.$('.viewport')?.setAttribute('data-mode', this.#drag.mode = boxMode(event as KeyboardEvent));
     });
     this.on(window, 'blur', () => this.#onSpace(null, false));
-    // A piece says where it sits in its own style; the canvas writes only its own. Its card says it floats.
+    // A piece says where it sits in its own style; the canvas writes only its own.
     this.#moves = new MutationObserver((records) => {
-      if (records.some((r) => r.attributeName === 'data-floating')) this.#syncPanel();
-      if (records.some((r) => r.attributeName === 'style' && r.target.parentElement === this)) this.#drawMinimap();
+      if (records.some((r) => r.target.parentElement === this)) this.#drawMinimap();
     });
-    this.#moves.observe(this, { attributes: true, attributeFilter: ['style', 'data-floating'], subtree: true });
+    this.#moves.observe(this, { attributes: true, attributeFilter: ['style'], subtree: true });
   }
 
   override onDisconnect(): void {
@@ -128,17 +139,24 @@ export class SherpaLayoutCanvas extends SherpaElement {
       this.zoomTo(coerceNum(value, this.#zoom));
     } else if (name === 'data-no-minimap') {
       this.#drawMinimap();
+    } else if (name === 'data-panel-width') {
+      const panels = this.$('.panels');
+      if (panels) this.mirrorAttrs(panels, [['data-panel-width', 'data-panel-start-width']]);
     }
   }
 
-  /** Its card, docked, takes the left, and what yields to it moves over; floating, it is given the whole
-   *  canvas to move in, and the rest takes its room back. TRAP T-a-floating-panel-is-a-state */
-  #syncPanel(): void {
-    const card = this.$<HTMLSlotElement>('slot[name="panel"]')?.assignedElements()[0];
-    const floating = !!card?.hasAttribute('data-floating');
-    this.toggleState('has-panel', !!card && !floating);
-    this.toggleState('panel-floating', floating);
+  /** Where what the view shows begins, for the toolbar; and whether a card is docked beside it. */
+  #syncSeen(): void {
+    const start = Math.round(this.#seen().left);
+    this.style.setProperty('--_seen-start', `${start}px`);
+    this.toggleState('beside', start > 0);
   }
+
+  /** The card's area was resized: the canvas's own report; the layout's goes no further. */
+  #onAreaResize = (event: Event): void => {
+    event.stopPropagation();
+    this.emit('panel-area-resize', (event as CustomEvent<{ side: 'start' | 'end'; width: number }>).detail);
+  };
 
   /** The view now: the plane origin's place in it, and the zoom. */
   get view(): { x: number; y: number; zoom: number } {
@@ -156,9 +174,9 @@ export class SherpaLayoutCanvas extends SherpaElement {
    *  the view's middle unless given. */
   zoomTo(zoom: number, cx?: number, cy?: number): void {
     const next = this.#clamp(zoom);
-    const { width, height } = this.#size();
-    const px = cx ?? width / 2;
-    const py = cy ?? height / 2;
+    const seen = this.#seen();
+    const px = cx ?? seen.left + seen.width / 2;
+    const py = cy ?? seen.top + seen.height / 2;
     // The plane point under (px, py) stays under it.
     this.#x = px - ((px - this.#x) * next) / this.#zoom;
     this.#y = py - ((py - this.#y) * next) / this.#zoom;
@@ -166,22 +184,22 @@ export class SherpaLayoutCanvas extends SherpaElement {
     this.#apply();
   }
 
-  /** Zoom by a factor, about the view's middle. */
+  /** Zoom by a factor, about the middle of what the view shows. */
   zoomBy(factor: number): void {
     this.zoomTo(this.#zoom * factor);
   }
 
-  /** Fit every piece of content in the view, no nearer than 100%. */
+  /** Fit every piece of content in what the view shows, beside the card; no nearer than 100%. */
   fit(): void {
     const bounds = this.#contentBox();
-    if (!bounds) return this.panTo(0, 0);
-    const { width, height } = this.#size();
+    const seen = this.#seen();
+    if (!bounds) return this.panTo(seen.left, seen.top);
     const w = Math.max(1, bounds.right - bounds.left);
     const h = Math.max(1, bounds.bottom - bounds.top);
-    const zoom = this.#clamp(Math.min(1, (width - FIT_PADDING * 2) / w, (height - FIT_PADDING * 2) / h));
+    const zoom = this.#clamp(Math.min(1, (seen.width - FIT_PADDING * 2) / w, (seen.height - FIT_PADDING * 2) / h));
     this.#zoom = zoom;
-    this.#x = (width - w * zoom) / 2 - bounds.left * zoom;
-    this.#y = (height - h * zoom) / 2 - bounds.top * zoom;
+    this.#x = seen.left + (seen.width - w * zoom) / 2 - bounds.left * zoom;
+    this.#y = seen.top + (seen.height - h * zoom) / 2 - bounds.top * zoom;
     this.#apply();
   }
 
@@ -201,10 +219,12 @@ export class SherpaLayoutCanvas extends SherpaElement {
     return Math.min(max, Math.max(min, Number.isFinite(zoom) ? zoom : 1));
   }
 
-  /** The view's size. */
-  #size(): { width: number; height: number } {
-    const rect = this.$<HTMLElement>('.viewport')?.getBoundingClientRect();
-    return { width: rect?.width ?? 0, height: rect?.height ?? 0 };
+  /** What the view SHOWS: the stage beside the card, in the view's px. The view runs under the card. */
+  #seen(): { left: number; top: number; width: number; height: number } {
+    const view = this.$<HTMLElement>('.viewport')?.getBoundingClientRect();
+    const stage = this.$<HTMLElement>('.stage')?.getBoundingClientRect() ?? view;
+    if (!view || !stage) return { left: 0, top: 0, width: 0, height: 0 };
+    return { left: stage.left - view.left, top: stage.top - view.top, width: stage.width, height: stage.height };
   }
 
   /** Write the view where CSS reads it, redraw the minimap, and report. */
@@ -351,12 +371,12 @@ export class SherpaLayoutCanvas extends SherpaElement {
     }));
   }
 
-  /** The view's box on the plane. */
+  /** What the view shows, as a box on the plane. */
   #viewBox(): Box {
-    const { width, height } = this.#size();
-    const left = -this.#x / this.#zoom;
-    const top = -this.#y / this.#zoom;
-    return { left, top, right: left + width / this.#zoom, bottom: top + height / this.#zoom };
+    const seen = this.#seen();
+    const left = (seen.left - this.#x) / this.#zoom;
+    const top = (seen.top - this.#y) / this.#zoom;
+    return { left, top, right: left + seen.width / this.#zoom, bottom: top + seen.height / this.#zoom };
   }
 
   /** How the minimap maps the plane: the box it shows — all of it — and its scale. It
@@ -429,7 +449,8 @@ export class SherpaLayoutCanvas extends SherpaElement {
       Math.min(Math.max(want, Math.min(start, end - size)), Math.max(start, end - size));
     const left = keep(at[0] - drag.grab[0], box.left, box.right, view.right - view.left);
     const top = keep(at[1] - drag.grab[1], box.top, box.bottom, view.bottom - view.top);
-    this.panTo(-left * this.#zoom, -top * this.#zoom);
+    const seen = this.#seen();
+    this.panTo(seen.left - left * this.#zoom, seen.top - top * this.#zoom);
   };
 
   /** Where a pointer on the minimap is, on the plane. */

@@ -69,8 +69,11 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-field-apply` | boolean |  |  |
 | `data-fixed-primary` | boolean |  |  |
 | `data-flat` | boolean | `false` | portrait: its scope is a HEADING, not an accordion — the column's View |
+| `data-floatable` | boolean | `false` | a column shows the Float / Dock button in its header |
+| `data-floating` | boolean |  | a column lifted out of its panel area: anywhere in the layout the area is in, moved by its header and resized by its corner; a press brings it to the front. Removed, it docks back. TRAP T-a-filter-column-floats |
 | `data-group-field` | text |  | the field the Group chip points at (the standard name) |
 | `data-heading` | text |  | its scope's name, written by its source: a portrait bar's heading. |
+| `data-height` | number |  | how big a column floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past its layout |
 | `data-hide-unmatched` | `on` `off` |  | on \| off — the host hides what Limit rules out, when it is on |
 | `data-highlight-hover` | boolean |  |  |
 | `data-label-column` | boolean |  |  |
@@ -103,6 +106,9 @@ For the row of filter chips above a grid or list: it stamps one `sherpa-quick-fi
 | `data-switchable` | boolean |  | show Figma's leading filter Switch, on a data bar: off stops every filter in the bar and keeps its value. Hidden by default, for legacy reasons. Will, TODO 338. |
 | `data-type` | `view` `data` | `data` | data \| view |
 | `data-waits` | boolean |  | its scope waits for ONE Apply, this bar's: its menus keep Discard alone. Set by a bound source. TODO 406 |
+| `data-width` | number |  | how big a column floats, in px, written at the end of each resize. Never under 20rem by 12rem nor past its layout |
+| `data-x` | number |  | where a column floats, in px from its layout's top left, written at the end of each move; kept while docked |
+| `data-y` | number |  | where a column floats, in px from its layout's top left, written at the end of each move; kept while docked |
 | `open` | text, native |  | a column is showing. A host writes it; every close reports `filter-panel-close`, and says why. |
 
 ## Properties
@@ -174,6 +180,9 @@ Each one bubbles.
 | `limit-options-change` | `{ on: boolean }` | The ⋮ menu's "Limit to matching filters". |
 | `hide-unmatched-change` | `{ on: boolean }` | The ⋮ menu's "Hide invalid filters" row, while Limit is on. |
 | `filter-panel-close` | `{ reason: 'page' \| 'reader' \| 'width' }` | A column shut, and why: the reader, the width or the page. |
+| `panel-float` | `{ floating: boolean }` | A column's Float or Dock was pressed. |
+| `panel-move` | `{ x: number; y: number }` | A floating column's header was dragged, or its grip moved by the keys. |
+| `panel-resize` | `{ height: number; width: number }` | A floating column's corner was dragged, or moved by the keys. |
 | `data-refresh` |  | Refresh: load the page's data again. |
 | `ai-filter-request` |  | Suggest filters was pressed. |
 | `node-editor-open` |  | Node Editor (beta) was picked in the ⋮ menu: the host opens the page's Query as nodes. |
@@ -189,7 +198,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`actions`, `bar`, `chips`, `column`, `filters`, `find`, `head`, `heading`, `local-heading`, `local-scopes`, `more`, `organise`, `presets`, `saved`, `saved-group`, `scope`, `scope-rule`, `sections`, `suggest`, `switch`, `view-scope`, `view-zone`
+`actions`, `bar`, `box`, `chips`, `column`, `corner`, `filters`, `find`, `float`, `grip`, `head`, `heading`, `local-heading`, `local-scopes`, `more`, `organise`, `presets`, `saved`, `saved-group`, `scope`, `scope-rule`, `sections`, `suggest`, `switch`, `view-scope`, `view-zone`
 
 ## CSS custom properties it reads
 

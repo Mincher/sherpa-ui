@@ -112,6 +112,12 @@ Plus the app's stores, and its Views as JSON.
   `T-a-context-has-a-fixed-region`
 - The View chip is the header bar with `data-type="view"`: it picks the
   Context's Views, and the URL follows.
+- **A panel in `panel-start` or `panel-end` docks FLUSH** in that area of the
+  body, a `sherpa-layout-panels`: top, side and bottom, with no shadow; the area
+  draws the divider, takes the panel's width and resizes by its edge
+  (`panel-area-resize`; keep the width, hand it back in `data-panel-start-width`).
+  A shut panel takes no room. Add `data-floatable` to the filter column and it
+  floats out of the area and docks back. `T-a-panel-area-is-a-layout`
 
 ## 3. `app.json`
 
@@ -534,10 +540,12 @@ provider.addEventListener('filters-save-as', saveAs);
   `command="--hide"` on a button inside it. `T-a-button-commands-by-markup`
 - An overlay panel with `data-floatable` floats: its header bar moves it, its
   corner resizes it, and Dock puts it back on the right edge or in the shell's
-  end area it came from. It reports `panel-float`, `panel-move` and
-  `panel-resize`; keep `data-floating`, `data-x`, `data-y`, `data-width` and
-  `data-height` in the session and hand them back. A node panel with
-  `data-floatable` floats the same way, inside its canvas. `T-a-floating-panel-is-a-state`
+  panel area it came from (`data-fixed`, or `data-fixed="start"`). It reports
+  `panel-float`, `panel-move` and `panel-resize`; keep `data-floating`, `data-x`,
+  `data-y`, `data-width` and `data-height` in the session and hand them back. A
+  node panel and a filter column with `data-floatable` float the same way, inside
+  their layout. A press or a focus brings a floating panel to the front.
+  `T-a-floating-panel-is-a-state` · `T-a-pressed-panel-comes-to-the-front`
 - From a script, call `dialog.show()`, never the native `showModal()`: the
   component owns modality and `open`. An add or edit flow is that dialog, its
   fields read on save, and a `sherpa-toast` to say it is done.

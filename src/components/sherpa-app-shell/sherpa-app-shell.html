@@ -11,6 +11,8 @@
     data-panel-start-width / data-panel-end-width   a panel area's width, in px —
                      what a reader dragged it to, handed back by the host. The
                      area never goes under its min or over 33% of its row.
+                     The areas are sherpa-layout-panels': a docked panel fills its
+                     area flush, and the area draws the divider.
 
   Fires:
     panel-area-resize — an area's inner edge was dragged, or moved by the keys. detail: { side: start | end, width }
@@ -25,7 +27,8 @@
               element here, and takes it away with the Context; what scrolls passes
               under it, under the shell's scroll shadow. Empty it takes no room.
     Set `--sherpa-panel-area-width` to change how wide a panel area is
-    (default 360px), and `--sherpa-panel-area-min-width` its narrowest. The AREA owns them.
+    (three layout-grid columns), `--sherpa-panel-area-min-width` its narrowest,
+    `--sherpa-panel-area-max-width` its widest. The AREA owns them.
 
     panel-start  a panel BESIDE the Context, on the leading side — a filter
               panel. Empty it takes no room.
@@ -47,28 +50,19 @@
           <slot name="header" data-accepts="header,toolbar"><sherpa-app-header></sherpa-app-header></slot>
         </header>
         <!-- PANEL AREAS beside the Context: a filter panel on the left, and a
-             details or Ask panel on the right. Empty they take no room, so a
-             Context that slots neither is unchanged.
+             details or Ask panel on the right, in the one panel-area layout. Empty
+             they take no room, so a Context that slots neither is unchanged.
              TRAP T-the-shell-owns-the-panel-areas -->
-        <div class="body" part="body">
-          <aside class="panel-start" part="panel-start">
-            <slot name="panel-start" data-accepts="panel"></slot>
-            <!-- The area's INNER edge resizes it: drag it, or the arrow keys.
-                 TRAP T-an-edge-resizes-its-box -->
-            <div class="edge edge-start" part="panel-start-edge" role="separator"
-                 aria-orientation="vertical" aria-label="Resize the start panel area" tabindex="0"></div>
-          </aside>
+        <sherpa-layout-panels class="body" part="body"
+                              exportparts="panel-start, panel-end, panel-start-edge, panel-end-edge">
+          <slot name="panel-start" slot="panel-start" data-accepts="panel"></slot>
           <!-- Its FRAME draws the side edges of a sideways scroll. TODO 478 -->
           <div class="context-edges sherpa-scroll-frame"><span class="sherpa-scroll-edge-start" aria-hidden="true"></span><span class="sherpa-scroll-edge-end" aria-hidden="true"></span><div class="context-frame sherpa-scroll-shadow">
             <!-- A Context's fixed region, pinned over what scrolls. TRAP T-a-context-has-a-fixed-region -->
             <div class="context-header" part="context-header"><slot name="context-header" data-accepts="header"></slot></div>
             <slot data-accepts="content"></slot></div></div>
-          <aside class="panel-end" part="panel-end">
-            <div class="edge edge-end" part="panel-end-edge" role="separator"
-                 aria-orientation="vertical" aria-label="Resize the end panel area" tabindex="0"></div>
-            <slot name="panel-end" data-accepts="panel"></slot>
-          </aside>
-        </div>
+          <slot name="panel-end" slot="panel-end" data-accepts="panel"></slot>
+        </sherpa-layout-panels>
       </main>
       <div class="overlay" part="overlay"><slot name="overlay" data-accepts="dialog"></slot></div>
     </div>

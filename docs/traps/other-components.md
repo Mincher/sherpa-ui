@@ -854,15 +854,23 @@ the content is the shell's question, not each Context template's. Before this
 the filter panel lived inside `records.html`, wrapped in a `sherpa-stack` that
 every other Context would have had to copy.
 
+**The areas are `sherpa-layout-panels`'** (TODO 796, `T-a-panel-area-is-a-layout`):
+the shell's body is one, its two slots forwarded into the layout's, so the
+canvas's card docks by the same code. The shell hands it the widths and the
+room, and reports an area's resize as its own; the parts `panel-start`,
+`panel-end` and their edges are the layout's, exported.
+
 **An empty area takes NO room**, so a Context that slots neither is exactly as
 it was.
 
-**The panel carries the layout grid's own inset, the row does not.** `.sherpa-grid`
-already applies `--sherpa-layout-grid-padding`, so padding the row insets the
-Context twice — but the panel is not in that grid and has no inset of its own.
-Without it the panel's top and bottom overshoot the cards beside it by 16 at
-each end and its edges are cut by the frame, which is exactly what it looked
-like: a clipped border.
+**A docked panel is FLUSH, and the row has no inset** (Will, TODO 796: "A docked
+panel should be flush with the top, left, and bottom … There should be no shadow
+either"). `.sherpa-grid` already applies `--sherpa-layout-grid-padding`, so
+padding the row insets the Context twice. The area used to carry that inset
+(16px top and bottom, 8px each side) so the panel's card lined up with the cards
+beside it; now the panel fills its area, from the header to the window's foot,
+with no edge, rounding or shadow of its own, and the area draws the divider. The
+Context's own grid keeps its 16px from it.
 
 **An area is THREE grid columns wide.** Will, 2026-09-26. Worked out in CSS
 from the grid's own tokens — the column the body row would hold, `(100% − pad
@@ -876,14 +884,65 @@ nowhere.
 **…and never under 464px** — Will, TODO 163: *"Increase the min width of panel
 areas … to 150% of their current min width."* The area has no min of its own;
 its narrowest is the 310px it is at 1280, where a panel first shows, and 150%
-of that is 465, 464 on the 4px grid. So the card is 448 at 1280 and at 1600,
-and the three columns take over near 1900. It is a MIN, not the width: the
+of that is 465, 464 on the 4px grid. Flush, the panel is 464 at 1280 and at
+1600, and the three columns take over near 1900. It is a MIN, not the width: the
 first build multiplied the width at every size, and Will sent it back.
-`--sherpa-panel-area-min-width` overrides it.
+`--sherpa-panel-area-min-width` overrides it, and `--sherpa-panel-area-max-width`
+the 33% ceiling.
 
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.html`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`
+
+### T-a-panel-area-is-a-layout
+
+**ONE panel-area layout, `sherpa-layout-panels`, which the app shell's body and
+the canvas both compose** — Will, TODO 796: "A docked panel should be flush with
+the top, left, and bottom … no shadow either", and "a dedicated panel area system
+like the layout grid to reuse functionality". A start area, one content cell, an
+end area. Plan: `docs/history/plan-796-panel-areas.md`.
+
+- **The AREA owns the width and the divider.** A docked panel fills it flush (a
+  grid item stretches, so a host needs no `::slotted` sizing), and drops its own
+  card edge, rounding and shadow while docked: the overlay panel fixed in an area,
+  the node panel, the filter column. The divider is the area's `::after`, drawn
+  over the panel's last pixel, so the panel keeps the area's whole width. The
+  knobs: `--sherpa-panel-area-width` (three layout-grid columns), `-min-width`
+  (464) and `-max-width` (33%); the canvas sets 18rem, 16rem and 60%.
+- **Forwarded slots.** A host's slot is slotted into the layout's
+  (`<slot name="panel-start" slot="panel-start">`), so the layout reads its panel
+  with `assignedElements({ flatten: true })`, and a `::slotted` rule there matches
+  the host's SLOT, never the panel. The forwarded slot's `slotchange` reaches the
+  layout's slot: its path runs through the slot it is assigned to.
+- **Open.** An area shows while its panel is open: an element with an `open`
+  property by its attribute (an overlay panel, a filter column); any other while
+  it is neither `hidden` nor `display: none` (the Nodes card, or one a page hid by
+  its style). It hears `open`, `hidden`, `style`, `class` and `data-floating`, and
+  again once an un-upgraded panel is defined, as it has no `open` until then.
+- **Floating, the panel stays slotted**: its area takes no width and covers the
+  whole layout, the panel's ROOM, with its clicks passing through but on the
+  panel's box. A slotted box cannot float out of a hidden area. `roomOf()` in
+  `float-box.ts` finds the layout up the flat tree. The overlay panel floats as
+  before, by leaving its area for the window.
+- **No stacking context** on the host or a floating area, so a floating box's
+  z-index meets the panels beside the layout (`T-a-pressed-panel-comes-to-the-front`).
+  A DOCKED area is `z-index: 1`, so it paints over a view drawn under the layout.
+- **The room rule is the host's**: the shell's tablet rule reads `areaMin()` and
+  hands back `data-no-room` (`T-the-panel-is-desktop-only`). The canvas has none.
+- **The canvas's view runs UNDER the layout** (`T-a-canvas-owns-its-view`): the
+  plane never moves as the card docks, floats or is resized.
+- The start area is first in the tab order, as it is drawn first.
+
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.ts`
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.html`
+- Site: `src/components/sherpa-layout-panels/sherpa-layout-panels.css`
+- Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts`
+- Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.html`
+- Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.css`
+- Site: `src/components/sherpa-node-panel/sherpa-node-panel.ts`
+- Site: `src/components/sherpa-node-panel/sherpa-node-panel.css`
+- Site: `test/e2e/reforged-layout-panels.spec.ts`
+- Site: `test/e2e/reforged-app-shell.spec.ts`
 
 ---
 
@@ -1200,13 +1259,34 @@ and a change to the value it just wrote is not heard as a host's.
 - `setPointerCapture` throws on a synthetic pointer in Firefox; both drags
   catch it and follow the pointer's own events.
 - **Banners float in their own slot, `banner`** (Will, TODO 766): across the
-  top, 32px in, and past a panel card (`--_beside`, where the toolbar yields
-  too), so they never pan, zoom or cover the card. A hidden one takes no room.
-  The slot is FIRST in the template, so a notice is read and reached before
-  the content. So the content's slot is `slot:not([name])`: a bare `slot`
+  top, 32px in, beside the panel card, so they never pan, zoom or cover it. A
+  hidden one takes no room. The slot comes before the view in the template, so
+  a notice is read and reached before the content; the card, drawn first, is
+  first of all. So the content's slot is `slot:not([name])`: a bare `slot`
   query found the banners', and the minimap and Fit measured the banners. And
-  first, it would paint under the view: it is lifted (`z-index: 1`), and the
-  host isolates, so the lift stays inside the canvas.
+  before the view, it would paint under it: it is lifted (`z-index: 1`).
+- **The card's panel area** (TODO 796, `T-a-panel-area-is-a-layout`): the canvas
+  composes `sherpa-layout-panels`, its `panel` slot forwarded into the start
+  area, where the card docks flush, 18rem wide, its edge resizing it. The banners
+  and the STAGE (the minimap, the controls) stack in the layout's one cell,
+  beside the card. The VIEW is the whole canvas, UNDER the layout: nothing
+  between it and the layout is positioned, so the layout is its box. So the
+  plane never moves when the card docks, floats or is resized, and the node
+  code's client-to-plane maths (from the canvas's box) holds. Fit, a zoom's
+  centre and the minimap's frame read what the view SHOWS: the stage's box.
+- **The toolbar is centred on the CANVAS, never over the card.** Centred beside
+  the card, an inspector open on the right edge covered Save at 1600 (746 E4).
+  Its row spans the canvas with a padding each side of where the stage begins
+  plus 32px, `justify-content: safe center`: centred where it fits, past the card
+  where it does not. The canvas MEASURES that start (`--_seen-start`, by a
+  ResizeObserver on the stage) where the old `--_beside` sum guessed the card's
+  width, which a dragged edge would break. Beside a card (`:state(beside)`) the
+  minimap sits at the end over the controls; under 44rem of stage, both rise a
+  toolbar row.
+- **It makes no stacking context**: no `isolation`, no `container-type` on the
+  host (the stage is the container), so a floating card's z-index meets the
+  panels beside the canvas (`T-a-pressed-panel-comes-to-the-front`). The view
+  isolates its own content, and the host clips all it holds.
 
 - Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts`
 - Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.html`

@@ -1,14 +1,16 @@
 <!--
   sherpa-node-panel — the nodes a graph editor may place, by category: a Jump to chip and a
   search, then one list in which each category's heading sticks while its items scroll, one
-  item per family; a Custom Node under each of its tags. A card (sherpa-container) on a canvas,
-  docked or floating. Drawn from populate(paletteOf(kinds)); a category with no kind is empty.
+  item per family; a Custom Node under each of its tags. A card (sherpa-container) on a canvas:
+  docked flush and flat in its panel area, or floating. Drawn from populate(paletteOf(kinds)); a
+  category with no kind is empty.
   Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786. TRAP T-the-node-panel-asks-it-places
 
   Public API:
     data-floatable    show the Float / Dock button in its header
     data-floating     lifted off its place: anywhere in its canvas, moved by its header and
-                      resized by its corner. Removed, it docks back. TRAP T-a-floating-panel-is-a-state
+                      resized by its corner; a press brings it to the front. Removed, it docks
+                      back. TRAP T-a-floating-panel-is-a-state
     data-x / data-y   where it floats, in px from its canvas's top left. The panel writes them
                       at the end of each move; kept while docked, so it floats there again
     data-width / data-height   how big it floats, in px, written at the end of each resize. Never
@@ -32,7 +34,8 @@
 <template id="default">
   <!-- The box that floats; docked, it fills its place. TRAP T-a-floating-panel-is-a-state -->
   <div class="box sherpa-float" part="box">
-    <sherpa-container class="card" part="card" data-elevation="md" data-padding="none"
+    <!-- Docked, no shadow; floating, lifted. -->
+    <sherpa-container class="card" part="card" data-padding="none"
                       data-when-data-elevation="data-floating: lg">
       <sherpa-container-header slot="header" class="heading sherpa-float-bar" part="heading" data-heading="Nodes">
         <span slot="actions" class="toolbar" part="toolbar">

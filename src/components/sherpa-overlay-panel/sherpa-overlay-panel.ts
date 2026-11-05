@@ -1,6 +1,6 @@
 /**
- * sherpa-overlay-panel — a NON-modal panel on native <dialog>: on the right edge, fixed in the
- * shell's end area, or floating.
+ * sherpa-overlay-panel — a NON-modal panel on native <dialog>: on the right edge, fixed in a
+ * panel area of the shell, or floating.
  *
  * `dialog.show()`, never `showModal()`: no backdrop, no focus trap, no
  * ESC-to-close, and the page behind stays interactive.
@@ -49,8 +49,8 @@ export class SherpaOverlayPanel extends SherpaElement {
     'data-collapsible': { type: 'boolean', kind: 'style' },
     'data-dismissible': { type: 'boolean', kind: 'style' },
     'data-poppable': { type: 'boolean', kind: 'style' },
-    // A fixed panel, in the app shell's end area. TRAP T-a-panel-pops-into-the-end-area
-    'data-fixed': { type: 'boolean', kind: 'behaviour' },
+    // A fixed panel, in a panel area of the app shell: `start`, else the end. TRAP T-a-panel-pops-into-the-end-area
+    'data-fixed': { type: 'string', kind: 'behaviour' },
     'data-floatable': { type: 'boolean', kind: 'style' },
     // Lifted off its edge or its area, anywhere in the window. TRAP T-a-floating-panel-is-a-state
     'data-floating': { type: 'boolean', kind: 'behaviour' },
@@ -59,7 +59,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     'data-width': { type: 'number', kind: 'behaviour' },
     'data-height': { type: 'number', kind: 'behaviour' },
   } as const;
-  static override observed = ['open', 'data-x', 'data-y', 'data-width', 'data-height'];
+  static override observed = ['open', 'data-fixed', 'data-x', 'data-y', 'data-width', 'data-height'];
 
   /** The panels open now. They share the right edge, so opening one shuts the
    *  rest. TRAP T-one-overlay-panel-at-a-time */
@@ -70,6 +70,8 @@ export class SherpaOverlayPanel extends SherpaElement {
     open: (dialog) => {
       this.#place();
       if (!this.#home && !this.hasAttribute('data-floating')) this.#takeTheEdge();
+      // Opened floating, it comes to the front. TRAP T-a-pressed-panel-comes-to-the-front
+      if (this.hasAttribute('data-floating')) this.#floatBox.raise();
       dialog.show();
       // A focusable separator must state its value: the width it is drawn at.
       this.$('.resize')?.setAttribute('aria-valuenow', String(Math.round(dialog.getBoundingClientRect().width)));
@@ -162,6 +164,14 @@ export class SherpaOverlayPanel extends SherpaElement {
   /** Where the panel sat before it popped in; null while it is out of the area. */
   #home: { parent: ParentNode; before: ChildNode | null } | null = null;
 
+  /** The area it pops into: the one `data-fixed` last named, so Pop in goes back to it. */
+  #dock: 'start' | 'end' = 'end';
+
+  /** The area `data-fixed` names: `start`, else the end. */
+  #side(): 'start' | 'end' {
+    return this.getAttribute('data-fixed') === 'start' ? 'start' : 'end';
+  }
+
   /** Take the right edge: the other panels there shut. TRAP T-one-overlay-panel-at-a-time */
   #takeTheEdge(): void {
     // …but never one that HOLDS this one: a panel opened inside a panel sits over it. TODO 555
@@ -169,25 +179,29 @@ export class SherpaOverlayPanel extends SherpaElement {
     SherpaOverlayPanel.#shown.add(this);
   }
 
-  /** The shell whose end area can take a panel: none, no room, or the host's own panel there says no. */
+  /** The shell whose area can take the panel: none, no room, or the host's own panel there says no. */
   #area(): Element | null {
     const shell = document.querySelector('sherpa-app-shell');
     if (!shell || shell.hasAttribute('data-no-room')) return null;
-    const held = shell.querySelector(':scope > [slot="panel-end"]');
+    const held = shell.querySelector(`:scope > [slot="panel-${this.#dock}"]`);
     return held && !(held instanceof SherpaOverlayPanel) ? null : shell;
   }
 
   /** Put the panel where `data-fixed` and the room say. TRAP T-a-panel-pops-into-the-end-area */
   #place = (): void => {
     if (!this.isConnected) return;
+    if (this.hasAttribute('data-fixed')) this.#dock = this.#side();
     const shell = this.#area();
     const floating = this.hasAttribute('data-floating');
     this.toggleState('no-area', !shell);
+    // In the other area: out first. TRAP T-a-panel-pops-into-the-end-area
+    if (this.#home && this.slot !== `panel-${this.#dock}`) this.#popOut();
     // Floating, a fixed panel leaves its area, as Pop out does: the area gives its room back.
     if (shell && this.hasAttribute('data-fixed') && !floating) this.#popIn(shell);
     else this.#popOut();
     this.toggleState('in-area', !!this.#home);
     this.toggleState('floating', floating);
+    this.#floatBox.floated(floating);
     // …and leaves the right edge, as a fixed one does. TRAP T-one-overlay-panel-at-a-time
     if (floating) SherpaOverlayPanel.#shown.delete(this);
   };
@@ -228,15 +242,16 @@ export class SherpaOverlayPanel extends SherpaElement {
     return { x: innerWidth - width, y: 0, width, height: innerHeight };
   }
 
-  /** Into the end area, with the place it left noted. One panel to an area. */
+  /** Into its area, with the place it left noted. One panel to an area. */
   #popIn(shell: Element): void {
     const parent = this.parentNode;
     if (this.#home || !parent) return;
-    const held = shell.querySelector(':scope > [slot="panel-end"]');
+    const slot = `panel-${this.#dock}`;
+    const held = shell.querySelector(`:scope > [slot="${slot}"]`);
     if (held !== this) held?.removeAttribute('data-fixed');
     SherpaOverlayPanel.#shown.delete(this);
     this.#home = { parent, before: this.nextSibling };
-    this.slot = 'panel-end';
+    this.slot = slot;
     moveInto(shell, this, null);
   }
 
@@ -277,11 +292,12 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.emit('panel-expand', { maximised });
   };
 
-  /** Pop in or out, and report it: a press is the reader's choice, a lost room is not. */
+  /** Pop in, to the area it last left, or out; and report it: a press is the reader's choice, a lost room is not. */
   #onPop = (): void => {
     const fixed = !this.hasAttribute('data-fixed');
-    this.set('data-fixed', fixed);
-    this.emit('panel-pop', { fixed });
+    const side = this.#dock;
+    this.set('data-fixed', fixed && (side === 'start' ? 'start' : true));
+    this.emit('panel-pop', { fixed, side });
   };
 
   /** Float, or dock, and report it. TRAP T-a-floating-panel-is-a-state */

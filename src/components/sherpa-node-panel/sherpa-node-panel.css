@@ -1,7 +1,7 @@
 /**
- * sherpa-node-panel.css — a card of nodes, filling the space its canvas gives it, or floating
- * in it (sherpa-float.css draws that box). Its search, headings and items are the library's
- * own parts; this sheet lays them out. TRAP T-a-node-panel-lists-under-sticky-headings
+ * sherpa-node-panel.css — a card of nodes, docked flush in the area its canvas gives it, or
+ * floating in it (sherpa-float.css draws that box). Its search, headings and items are the
+ * library's own parts; this sheet lays them out. TRAP T-a-node-panel-lists-under-sticky-headings
  */
 
 :host {
@@ -9,8 +9,6 @@
   position: relative;
   block-size: 100%;
   min-inline-size: 0;
-  /* The canvas's floating box takes its clicks away; the card takes them back. */
-  pointer-events: auto;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   /* Floating, never smaller than this: room for Jump to, the search and a few nodes. */
   --_float-min-width: 16rem;
@@ -19,8 +17,8 @@
   --_head: 2.25rem;
 }
 
-/* Docked, the box fills its place; floating, it is placed in the canvas, which gives
-   this host all its room and takes its clicks back (sherpa-layout-canvas). */
+/* Docked, the box fills its area; floating, it is placed in the canvas: the area gives this
+   host the whole layout, and lets its clicks through but on the box. TRAP T-a-panel-area-is-a-layout */
 .box {
   position: relative;
   block-size: 100%;
@@ -32,6 +30,11 @@
   block-size: 100%;
   /* Clipped, not hidden: a jump's scroll moves only the list, never the card. */
   overflow: clip;
+}
+/* Docked, FLUSH and FLAT: no edge, no rounding, no shadow; its area draws the divider. */
+:host(:not(:state(floating))) .card {
+  border-width: 0;
+  border-radius: 0;
 }
 
 .content {

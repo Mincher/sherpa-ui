@@ -51,10 +51,8 @@ The frame for an app: the nav, the app header, the Context, and a panel area on 
 | `data-no-header` | boolean | `false` | let the content span the full height (no header row) |
 | `data-no-nav` | boolean | `false` | drop the nav rail; the content spans the full width |
 | `data-no-room` | boolean |  |  |
-| `data-panel-end-open` | boolean |  |  |
-| `data-panel-end-width` | text |  | a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row. |
-| `data-panel-start-open` | boolean |  |  |
-| `data-panel-start-width` | text |  | a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row. |
+| `data-panel-end-width` | text |  | a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row. The areas are [sherpa-layout-panels](sherpa-layout-panels.md)': a docked panel fills its area flush, and the area draws the divider. |
+| `data-panel-start-width` | text |  | a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row. The areas are [sherpa-layout-panels](sherpa-layout-panels.md)': a docked panel fills its area flush, and the area draws the divider. |
 | `data-scroll-shadow` | boolean | `false` | an inner shadow on each edge the Context is scrolled past |
 
 ## Events
@@ -82,7 +80,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `content`, `context-header`, `frame`, `header`, `nav`, `overlay`, `panel-end`, `panel-end-edge`, `panel-start`, `panel-start-edge`
+`body`, `content`, `context-header`, `frame`, `header`, `nav`, `overlay`
 
 ## CSS custom properties it reads
 
@@ -91,24 +89,9 @@ What each class's base rule reads:
 | Custom property | Class | Property |
 |---|---|---|
 | `--sherpa-style-surface-base` | `.header` | `background` |
-| `--sherpa-layout-grid-columns` | `.panel-start` | `--_cols` |
-| `--sherpa-layout-grid-gap-horizontal` | `.panel-start` | `--_gap` |
-| `--sherpa-layout-grid-padding` | `.panel-start` | `--_pad` |
-| `--sherpa-panel-area-width` | `.panel-start` | `flex` |
-| `--sherpa-panel-area-min-width` | `.panel-start` | `min-inline-size` |
-| `--sherpa-layout-grid-padding` | `.panel-start` | `padding-block` |
-| `--sherpa-layout-grid-padding` | `.panel-start` | `padding-inline` |
-| `--sherpa-layout-grid-columns` | `.panel-end` | `--_cols` |
-| `--sherpa-layout-grid-gap-horizontal` | `.panel-end` | `--_gap` |
-| `--sherpa-layout-grid-padding` | `.panel-end` | `--_pad` |
-| `--sherpa-panel-area-width` | `.panel-end` | `flex` |
-| `--sherpa-panel-area-min-width` | `.panel-end` | `min-inline-size` |
-| `--sherpa-layout-grid-padding` | `.panel-end` | `padding-block` |
-| `--sherpa-layout-grid-padding` | `.panel-end` | `padding-inline` |
-| `--sherpa-display-mode-space-xs` | `.edge` | `inline-size` |
 
 ## populate()
 
-`{ navState?, noHeader?, noNav?, noRoom?, panelEndOpen?, panelEndWidth?, panelStartOpen?, panelStartWidth?, scrollShadow? }`
+`{ navState?, noHeader?, noNav?, noRoom?, panelEndWidth?, panelStartWidth?, scrollShadow? }`
 
 Its declared props by name: `label` sets data-label.
