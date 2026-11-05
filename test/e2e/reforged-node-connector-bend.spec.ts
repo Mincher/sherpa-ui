@@ -242,3 +242,19 @@ test('a drag on blank canvas still boxes, and the Tie tool still ties', async ({
   await tie(page);
   expect(await ties(page)).toHaveLength(1);
 });
+
+test('TODO 750: a handle dragged past the target socket stops a way short of it, and the last piece is not vertical', async ({ page }) => {
+  const mid = await centre(page, R1);
+  await page.mouse.move(mid.x, mid.y);
+  await drag(page, [mid.x, mid.y], [1080, mid.y + 80]);
+  const via = (await routes(page))[0]!.via!;
+  // The target node starts at x 700 on the plane: the point stays 16px inside it.
+  expect(via[0]!.x).toBe(684);
+  const dots = await sampled(page);
+  const end = dots.at(-1)!;
+  const dot = (await handles(page)).find((h) => h.bend !== undefined)!;
+  // The dot sits on the path, left of the end socket by the inset (16 * 0.6 zoom).
+  expect(Math.abs(end.x - dot.x - 16 * 0.6)).toBeLessThan(3);
+  // The last piece runs sideways: its start is well left of its end.
+  expect(end.x - dot.x).toBeGreaterThan(6);
+});

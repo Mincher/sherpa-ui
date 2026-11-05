@@ -31,7 +31,7 @@ import {
   NODE_KINDS, ROWS, SOCKET_WORDS, FALSE_SOCKET, accepts, conditionRows, drivenSwitch, fixedChoices, truthy, kindNode, mirrored, partName, partOf, rowChoices, rowOf, socketOf, socketType, takesMany,
   type DrawnGraph, type GraphRow, type NodeSize, type NodeKind, type NodeRoute, type NodeTie, type PartKind, type SocketType,
 } from './node-kinds.js';
-import { bendFault, dropBend, placeBend, type Bend } from './route-bends.js';
+import { bendFault, clampBend, dropBend, placeBend, type Bend } from './route-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
 
@@ -447,7 +447,11 @@ export function editWorkflow(
       const { x, y, insert } = edit.bend;
       if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isInteger(at)) return refuse('a bend point needs a finite x and y, and a whole index'), workflow;
       if (at < 0 || at > (held.via?.length ?? 0) - (insert ? 0 : 1)) return refuse(`the route ${name} has no bend point at ${at}`), workflow;
-      via = placeBend(held.via, at, x, y, insert).via;
+      // Inside the end sockets, and clear of its neighbours and the ties' slots: a bend never loops the line back.
+      const [a, b] = [socketOf(route.from).node, socketOf(route.to).node].map((id) => workflow.nodes.find((n) => n.id === id));
+      const slots = (workflow.ties ?? []).filter((t) => t.routes.some((r) => same(r, route))).map((t) => t.x);
+      const placed = a && b ? clampBend({ from: a.x + NODE_WIDTH, to: b.x }, held.via, at, x, insert, slots) : x;
+      via = placeBend(held.via, at, placed, y, insert).via;
     } else {
       if (!held.via?.[at]) return refuse(`the route ${name} has no bend point at ${at}`), workflow;
       via = dropBend(held.via, at);

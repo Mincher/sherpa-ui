@@ -46,7 +46,7 @@ import type { SherpaLayoutCanvas } from '../../components/sherpa-layout-canvas/s
 import { primaryKey } from './modifier-key.js';
 import { boxCover, boxPick, type BoxMode, type PickBox } from './box-pick.js';
 import { dotsThrough, handlesOf, pathThrough, piece, waypointsOf, type Pt } from './route-path.js';
-import { bendFault, dropBend, placeBend, type Bend } from '../data/route-bends.js';
+import { bendFault, clampBend, clampedVia, dropBend, placeBend, type Bend } from '../data/route-bends.js';
 import type { SocketSide } from '../../components/sherpa-node/node-sockets.js';
 import type { SessionStore } from '../browser/session.js';
 import type { DataSource } from '../data/data-source.js';
@@ -71,7 +71,7 @@ import {
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeSize, type NodeRoute, type NodeTie, type SocketType,
 } from '../data/node-kinds.js';
 import {
-  TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, readWorkflow, tieLimit, workflowGraph,
+  NODE_WIDTH, TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, readWorkflow, tieLimit, workflowGraph,
   type WorkflowDefinition, type WorkflowDefinitionV1, type WorkflowFacts, type WorkflowNode,
 } from '../data/workflow.js';
 
@@ -386,9 +386,11 @@ function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
       const n = tie.routes.findIndex((r) => same(r, route));
       return n < 0 ? [] : [slotOf(drawn, tie, n)];
     });
-    const way = waypointsOf(route.via, stops);
+    // As drawn, the bends stay inside the end sockets: a node moved later never loops the line back. The saved list stays.
+    const via = route.via && clampedVia(route.via, { from: from[0], to: to[0] });
+    const way = waypointsOf(via, stops);
     const points = [from, ...way.map((w) => w.at), to];
-    const soft = !!route.via?.length;
+    const soft = !!via?.length;
     const path = document.createElementNS(SVG, 'path');
     path.setAttribute('d', pathThrough(points, soft));
     path.dataset['type'] = outputType(drawn.graph, route.from);
@@ -610,9 +612,8 @@ function dragHandle(canvas: SherpaLayoutCanvas, drawn: Drawn, grab: SVGElement, 
   down.preventDefault();
   down.stopPropagation();
   const mid = handle.dataset['mid'] !== undefined;
-  let via = held.via;
   // The index in `via` the dragged point has: a mid-point handle's is the one a new point would take.
-  let at = mid ? Number(handle.dataset['insert']) : Number(handle.dataset['bend']);
+  const at = mid ? Number(handle.dataset['insert']) : Number(handle.dataset['bend']);
   let moved = false;
   let insert = mid;
   const drag = ++drawn.drags;
@@ -620,12 +621,8 @@ function dragHandle(canvas: SherpaLayoutCanvas, drawn: Drawn, grab: SVGElement, 
     if (!moved && Math.hypot(e.clientX - down.clientX, e.clientY - down.clientY) < 4) return;
     moved = true;
     const [x, y] = planeOf(canvas, e);
-    const was = at;
-    const next = placeBend(via, was, x, y, insert);
-    via = next.via;
-    at = next.at;
     drawn.handle = { route, index: at };
-    drawn.options.onBend?.(route, was, x, y, insert, drag);
+    drawn.options.onBend?.(route, at, x, y, insert, drag);
     insert = false;
   };
   const stop = (e: PointerEvent): void => {
@@ -874,9 +871,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
       if (bend) made.options.onUnbend?.(route, pick.index);
       pickHandle(canvas, made, null);
     } else if (bend && by[event.key]) {
-      const next = placeBend(held.via, pick!.index, bend.x + by[event.key]![0], bend.y + by[event.key]![1]);
       made.options.onBend?.(route, pick!.index, bend.x + by[event.key]![0], bend.y + by[event.key]![1], false, 0);
-      made.handle = { route, index: next.at };
     } else return;
     event.preventDefault();
     event.stopImmediatePropagation();
@@ -1498,7 +1493,11 @@ export function bindQueryEditor(
     session?.set(bendsAt, bends);
     draw();
   };
-  const onBend = (route: NodeRoute, at: number, x: number, y: number, insert: boolean): void => keepBends({ ...bends, [bendKey(route)]: placeBend(bends[bendKey(route)], at, x, y, insert).via });
+  const onBend = (route: NodeRoute, at: number, x: number, y: number, insert: boolean): void => {
+    const [a, b] = [socketOf(route.from).node, socketOf(route.to).node].map((id) => graph.nodes.find((n) => n.id === id));
+    const placed = a && b ? clampBend({ from: a.x + NODE_WIDTH, to: b.x }, bends[bendKey(route)], at, x, insert) : x;
+    keepBends({ ...bends, [bendKey(route)]: placeBend(bends[bendKey(route)], at, placed, y, insert).via });
+  };
   const onUnbend = (route: NodeRoute, index: number): void => keepBends({ ...bends, [bendKey(route)]: dropBend(bends[bendKey(route)], index) });
   const removeRefused = (): void => report({ code: 'query-remove', message: 'The Query\'s nodes are its readings: turn a condition off, or clear it, to take it from its scope.' });
   const draw = (): void => {

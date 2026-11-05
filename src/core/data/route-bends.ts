@@ -7,6 +7,10 @@
  * - bendFault — What is wrong with a bend list, in words; none, it is a good one.
  * - placeBend — A bend list with a point moved, or put in at an index; sorted by x, and the point's new index.
  * - dropBend — A bend list without the point at an index; none left, none.
+ * - BEND_INSET — How far inside a connector's two end sockets a bend point stays, in px: the last piece is never vertical.
+ * - BEND_GAP — The least gap between two bend points, or a bend point and a tie's slot, in px.
+ * - clampBend — The x a bend point may take: between the end sockets, and between its neighbours.
+ * - clampedVia — A bend list held inside its end sockets and apart, as drawn; the saved list is not rewritten.
  * - withoutBends — A route as it was before any bend: its two ends.
  */
 import type { NodeRoute } from './node-kinds.js';
@@ -40,6 +44,33 @@ export function placeBend(via: readonly Bend[] | undefined, index: number, x: nu
 export function dropBend(via: readonly Bend[] | undefined, index: number): Bend[] | undefined {
   const left = (via ?? []).filter((_, i) => i !== index);
   return left.length ? left : undefined;
+}
+
+/** How far inside a connector's two end sockets a bend point stays, in px: the last piece is never vertical. */
+export const BEND_INSET = 16;
+/** The least gap between two bend points, or a bend point and a tie's slot, in px. */
+export const BEND_GAP = 8;
+
+const hold = (x: number, lo: number, hi: number): number => (hi < lo ? (lo + hi) / 2 : Math.min(hi, Math.max(lo, x)));
+
+/** The x a bend point may take: inside the end sockets, and between its neighbours in `via` (and tie slots `fixed`). */
+export function clampBend(ends: { from: number; to: number }, via: readonly Bend[] | undefined, index: number, x: number, insert = false, fixed: readonly number[] = []): number {
+  const list = via ?? [];
+  const before = index > 0 ? [list[index - 1]!.x] : [];
+  const after = list[insert ? index : index + 1] ? [list[insert ? index : index + 1]!.x] : [];
+  const ref = !insert && list[index] ? list[index]!.x : x;
+  const lo = Math.max(ends.from + BEND_INSET, ...before.map((n) => n + BEND_GAP), ...fixed.filter((n) => n <= ref).map((n) => n + BEND_GAP));
+  const hi = Math.min(ends.to - BEND_INSET, ...after.map((n) => n - BEND_GAP), ...fixed.filter((n) => n > ref).map((n) => n - BEND_GAP));
+  return Math.round(hold(x, lo, hi));
+}
+
+/** A bend list held inside its end sockets and apart, as drawn: a node moved later never leaves a loop-back. The saved list is not rewritten. */
+export function clampedVia(via: readonly Bend[], ends: { from: number; to: number }): Bend[] {
+  const [min, max] = [ends.from + BEND_INSET, ends.to - BEND_INSET];
+  const out = via.map((p) => ({ x: hold(p.x, min, max), y: p.y }));
+  for (let i = 1; i < out.length; i++) out[i]!.x = Math.max(out[i]!.x, out[i - 1]!.x + BEND_GAP);
+  for (let i = out.length - 2; i >= 0; i--) out[i]!.x = Math.min(out[i]!.x, out[i + 1]!.x - BEND_GAP);
+  return out.map((p, i) => (p.x === via[i]!.x ? via[i]! : p));
 }
 
 /** A route as it was before any bend: its two ends. */

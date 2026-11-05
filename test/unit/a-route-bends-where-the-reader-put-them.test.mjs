@@ -28,8 +28,9 @@ test('a bend with insert puts a point in; with none it moves one; the list stays
   assert.deepEqual(one.routes[0].via, [{ x: 300, y: 90 }]);
   const two = bend(one, 1, 500, 20, true);
   assert.deepEqual(two.routes[0].via, [{ x: 300, y: 90 }, { x: 500, y: 20 }]);
+  // A point dragged past its neighbour stops a gap short of it (750), so the list stays sorted.
   const moved = bend(two, 0, 600, 5);
-  assert.deepEqual(moved.routes[0].via.map((p) => p.x), [500, 600]);
+  assert.deepEqual(moved.routes[0].via.map((p) => p.x), [492, 500]);
   assert.deepEqual(workflowFaults(moved), []);
 });
 
@@ -131,4 +132,26 @@ test('a tie takes a route by an edit, and refuses in words', () => {
   // A route whose nodes leave the tie no room where it stands is refused.
   const tight = { ...w, nodes: w.nodes.map((n) => (n.id === 'e2' ? { ...n, x: 100 } : n)) };
   assert.equal(editWorkflow(tight, { tieAdd: { id: 'tie-1', route: { from: 's2/rows', to: 'e2' } } }), tight);
+});
+
+test('TODO 750: a bend stays inside the end sockets and clear of its neighbours; a drawn list is held, the saved one is not rewritten', async () => {
+  const { clampBend, clampedVia, BEND_INSET, BEND_GAP } = await import(new URL('data/route-bends.js', core));
+  const ends = { from: 240, to: 700 };
+  assert.equal(clampBend(ends, undefined, 0, 9000, true), 700 - BEND_INSET);
+  assert.equal(clampBend(ends, undefined, 0, -50, true), 240 + BEND_INSET);
+  const via = [{ x: 300, y: 0 }, { x: 500, y: 0 }];
+  assert.equal(clampBend(ends, via, 0, 600), 500 - BEND_GAP);
+  assert.equal(clampBend(ends, via, 1, 100), 300 + BEND_GAP);
+  // A point right of a tie slot stays right of it.
+  assert.equal(clampBend(ends, via, 1, 400, false, [450]), 450 + BEND_GAP);
+  // The edit obeys it: a bend dragged far past the target socket stops at the limit.
+  const w = flow();
+  const far = editWorkflow(w, { bend: { route, at: 0, x: 5000, y: 10, insert: true } });
+  assert.equal(far.routes[0].via[0].x, 700 - BEND_INSET);
+  // A node moved later: the saved bend is outside, the drawn one is held, and the saved one is untouched.
+  const saved = [{ x: 650, y: 5 }];
+  const held = clampedVia(saved, { from: 240, to: 400 });
+  assert.equal(held[0].x, 400 - BEND_INSET);
+  assert.equal(saved[0].x, 650);
+  assert.equal(clampedVia(saved, ends)[0], saved[0]);
 });
