@@ -15,6 +15,9 @@ sherpa-data-grid:
   '& .action-item[data-danger]': transparent/critical
   # The group count is a Badge, which pins Style=default.
   '& .group-count': default
+  # A cell's filter chip keeps the plain chip look: in a STATUS cell it took the
+  # cell's status. Not when held: this pin would beat its own inactive one. Will, TODO 805
+  '& .cell-filter:not([data-superseded])': default
   # A cell's filter chip, ON: it takes the value off, so it reads as Discard. Will, TODO 416
   '& .cell-filter[data-current]': critical
 

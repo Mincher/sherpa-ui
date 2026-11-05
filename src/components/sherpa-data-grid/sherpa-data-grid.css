@@ -86,6 +86,27 @@
   --_status-data-viz-border: initial;
 }
 
+:host(sherpa-data-grid) .cell-filter:not([data-superseded]) {
+  --sherpa-style-border-base: var(--sherpa-style-default-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-default-border-width);
+  --sherpa-style-border-data-viz: var(--sherpa-style-default-border-data-viz);
+  --sherpa-style-content-base: var(--sherpa-style-default-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-default-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-default-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-default-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-default-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-default-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-default-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
+  --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
+  --_status-surface-strong: initial;
+  --_status-data-viz-border: initial;
+  --_mode: default;
+  --_mode-viz: default;
+}
+
 :host(sherpa-data-grid) .cell-filter[data-current] {
   --sherpa-style-border-base: var(--sherpa-style-critical-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-critical-border-base-1);

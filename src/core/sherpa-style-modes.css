@@ -13,6 +13,27 @@
   --sherpa-scroll-shadow-ink: color-mix(in srgb, var(--sherpa-style-surface-shadow, #35353d4c) 50%, transparent);
 }
 
+@container style(--_mode: default) {
+  :host > * {
+    --sherpa-style-border-base: var(--sherpa-style-default-border-base);
+    --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
+    --sherpa-style-border-width: var(--sherpa-style-default-border-width);
+    --sherpa-style-content-base: var(--sherpa-style-default-content-base);
+    --sherpa-style-content-inverse: var(--sherpa-style-default-content-inverse);
+    --sherpa-style-content-secondary: var(--sherpa-style-default-content-secondary);
+    --sherpa-style-content-tertiary: var(--sherpa-style-default-content-tertiary);
+    --sherpa-style-indicator-accent: var(--sherpa-style-default-indicator-accent);
+    --sherpa-style-surface-base: var(--sherpa-style-default-surface-base);
+    --sherpa-style-surface-base-1: var(--sherpa-style-default-surface-base-1);
+    --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
+    --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
+    --_status-surface-strong: initial;
+    --sherpa-hover-fill: color-mix(in srgb, var(--sherpa-style-default-surface-base-1) var(--sherpa-hover-amount),
+      var(--sherpa-style-default-surface-base));
+    --sherpa-scroll-shadow-ink: color-mix(in srgb, var(--sherpa-style-default-surface-shadow) 50%, transparent);
+  }
+}
+
 @container style(--_mode: critical) {
   :host > * {
     --sherpa-style-border-base: var(--sherpa-style-critical-border-base);
@@ -265,27 +286,6 @@
   }
 }
 
-@container style(--_mode: default) {
-  :host > * {
-    --sherpa-style-border-base: var(--sherpa-style-default-border-base);
-    --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
-    --sherpa-style-border-width: var(--sherpa-style-default-border-width);
-    --sherpa-style-content-base: var(--sherpa-style-default-content-base);
-    --sherpa-style-content-inverse: var(--sherpa-style-default-content-inverse);
-    --sherpa-style-content-secondary: var(--sherpa-style-default-content-secondary);
-    --sherpa-style-content-tertiary: var(--sherpa-style-default-content-tertiary);
-    --sherpa-style-indicator-accent: var(--sherpa-style-default-indicator-accent);
-    --sherpa-style-surface-base: var(--sherpa-style-default-surface-base);
-    --sherpa-style-surface-base-1: var(--sherpa-style-default-surface-base-1);
-    --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
-    --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
-    --_status-surface-strong: initial;
-    --sherpa-hover-fill: color-mix(in srgb, var(--sherpa-style-default-surface-base-1) var(--sherpa-hover-amount),
-      var(--sherpa-style-default-surface-base));
-    --sherpa-scroll-shadow-ink: color-mix(in srgb, var(--sherpa-style-default-surface-shadow) 50%, transparent);
-  }
-}
-
 @container style(--_mode: success) {
   :host > * {
     --sherpa-style-border-base: var(--sherpa-style-success-border-base);
@@ -325,6 +325,14 @@
     --sherpa-hover-fill: color-mix(in srgb, var(--sherpa-style-saturated-success-surface-base-1) var(--sherpa-hover-amount),
       var(--sherpa-style-saturated-success-surface-base));
     --sherpa-scroll-shadow-ink: color-mix(in srgb, var(--sherpa-style-saturated-success-surface-shadow) 50%, transparent);
+  }
+}
+
+@container style(--_mode-viz: default) {
+  :host > * {
+    --sherpa-style-border-data-viz: var(--sherpa-style-default-border-data-viz);
+    --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
+    --_status-data-viz-border: initial;
   }
 }
 
@@ -373,14 +381,6 @@
     --sherpa-style-border-data-viz: var(--sherpa-style-active-border-data-viz);
     --sherpa-style-surface-data-viz: var(--sherpa-style-active-surface-data-viz);
     --_status-data-viz-border: var(--sherpa-style-active-border-data-viz);
-  }
-}
-
-@container style(--_mode-viz: default) {
-  :host > * {
-    --sherpa-style-border-data-viz: var(--sherpa-style-default-border-data-viz);
-    --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
-    --_status-data-viz-border: initial;
   }
 }
 
