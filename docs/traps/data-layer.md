@@ -659,6 +659,7 @@ not.
 - Site: `src/core/data/filter-face.ts`
 - Site: `test/unit/filter-face.test.mjs`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
+- Site: `src/core/data/format-value.ts`
 
 ### T-a-made-up-key-never-leaves-the-data-layer
 
@@ -7705,3 +7706,37 @@ and the editor writes the box round their drawn cards on every draw, drag and re
 - Site: `src/components/sherpa-node-frame/sherpa-node-frame.html`
 - Site: `src/components/sherpa-node-frame/sherpa-node-frame.css`
 - Site: `test/e2e/reforged-node-frame.spec.ts`
+
+### T-a-cell-draws-words-not-its-value
+
+**A cell draws its value in WORDS; all that acts on it reads the RAW value.**
+TODO 791, found by 785 (2026-11-05). A cell drew `String(record[field])`: a
+dotted field was blank, an object drew "[object Object]", a date its ISO day, a
+boolean "true" past its field's `labels`, a list "VIP,Legacy".
+
+The value is read by `readField`, the one dotted reader the stores and filters
+use, never a second. `formatFieldValue()` (`src/core/data/format-value.ts`,
+DOM-free) says it: its field's NAME for it first, by value key — the names its
+source's filter options carry, so a cell says what its chip and menu say; a
+list as a list (`Intl.ListFormat`, each item as its field reads it); a day the
+one way (`formatDate`; its time too where the field says `time`,
+`T-a-date-reads-one-way`); an object by its parts, `building: B2, floor: 3` — a
+page that wants one part shows it as a dotted column. A boolean with no
+`labels` reads `true`, as its chip lists it; a number is drawn as given. A group
+heading, and its toggle, are named in the same words.
+
+Raw stays raw: the sort (an ISO day sorts by the day; by its words, "01 Feb"
+would lead "20 Dec"), a cell chip's pick (`false`, the ISO day, `B3`), a group's
+key, a search. A filter's MARKS land on the words drawn, so a name that does not
+read like its value marks nothing.
+
+A list is words, not TAGS: a grid's tags are filter toggles, and the data layer
+has no "a list holds this value" operator (TODO 792) — `eq` and `in` compare the
+whole list, so a tag per item would filter wrong.
+
+- Site: `src/components/sherpa-data-grid/grid-cells.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/grid-groups.ts`
+- Site: `src/core/data/format-value.ts`
+- Site: `test/unit/format-value.test.mjs`
+- Site: `test/e2e/reforged-a-cell-reads-in-words.spec.ts`

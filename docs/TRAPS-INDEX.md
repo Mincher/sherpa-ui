@@ -13,6 +13,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — data, report, source-reads, source-view
 - [T-a-bug-report-should-be-a-paste](traps/data-layer.md#t-a-bug-report-should-be-a-paste) — data-source
 - [T-a-category-keeps-its-colour](traps/data-layer.md#t-a-category-keeps-its-colour) — aggregate
+- [T-a-cell-draws-words-not-its-value](traps/data-layer.md#t-a-cell-draws-words-not-its-value) — format-value
 - [T-a-change-redoes-only-what-reads-it](traps/data-layer.md#t-a-change-redoes-only-what-reads-it) — source-reads, source-walk, walk
 - [T-a-changed-key-moves-the-row](traps/data-layer.md#t-a-changed-key-moves-the-row) — stores
 - [T-a-chart-gap-is-real-space](traps/data-layer.md#t-a-chart-gap-is-real-space) — format-tick
@@ -35,7 +36,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-data-request-is-the-store-interface](traps/data-layer.md#t-a-data-request-is-the-store-interface) — data-handler, request-store
 - [T-a-date-chip-names-its-field](traps/data-layer.md#t-a-date-chip-names-its-field) — field-catalogue
 - [T-a-date-picks-days-unless-it-says-range](traps/data-layer.md#t-a-date-picks-days-unless-it-says-range) — data-source-types, filter-state
-- [T-a-date-reads-one-way](traps/data-layer.md#t-a-date-reads-one-way) — data, filter-face, format-date
+- [T-a-date-reads-one-way](traps/data-layer.md#t-a-date-reads-one-way) — data, filter-face, format-date, format-value
 - [T-a-delta-is-derived-not-declared](traps/data-layer.md#t-a-delta-is-derived-not-declared) — aggregate
 - [T-a-failed-read-keeps-the-last-set](traps/data-layer.md#t-a-failed-read-keeps-the-last-set) — data-source, source-reads, store-cache
 - [T-a-failure-has-a-kind](traps/data-layer.md#t-a-failure-has-a-kind) — failure, fake-remote, source-reads
@@ -685,9 +686,10 @@ files. An entry that only tests cite is under Tests only.
 - [T-unavailable-value-sorts-below-a-divider](traps/data-layer.md#t-unavailable-value-sorts-below-a-divider) — menu
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — menu
 
-## The data grid (98)
+## The data grid (99)
 
 - [T-a-cell-chip-is-one-and-moves](traps/data-grid.md#t-a-cell-chip-is-one-and-moves) — data-grid
+- [T-a-cell-draws-words-not-its-value](traps/data-layer.md#t-a-cell-draws-words-not-its-value) — data-grid
 - [T-a-chip-body-cycles-its-states](traps/data-layer.md#t-a-chip-body-cycles-its-states) — data-grid
 - [T-a-cloned-prototype-needs-its-icons-upgraded](traps/data-grid.md#t-a-cloned-prototype-needs-its-icons-upgraded) — data-grid
 - [T-a-component-asks-its-provider](traps/join-and-app.md#t-a-component-asks-its-provider) — data-grid, pagination

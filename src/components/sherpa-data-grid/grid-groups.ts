@@ -43,6 +43,8 @@ export class GridGroups {
   readonly #host: GroupsHost;
   /** Collapsed group values. Off the DOM, which a draw replaces. */
   #shut = new Set<string>();
+  /** Each heading row's name, as drawn. */
+  #names = new WeakMap<Element, string>();
 
   constructor(host: GroupsHost) {
     this.#host = host;
@@ -96,8 +98,8 @@ export class GridGroups {
 
   /** One group's heading row, spanning every drawn column — the selection's, which
    *  exists whether or not it shows, and the actions'. A short span leaves the
-   *  pinned cell floating over a gap. */
-  heading(key: string, size: number, columnCount: number): HTMLElement {
+   *  pinned cell floating over a gap. Named in its value's words. TRAP T-a-cell-draws-words-not-its-value */
+  heading(key: string, size: number, columnCount: number, label = key): HTMLElement {
     const tr = this.#host.clone('template.group-row-tpl');
     if (!tr) throw new Error('sherpa-data-grid: template.group-row-tpl is missing or empty');
     tr.dataset['groupKey'] = key;
@@ -105,16 +107,19 @@ export class GridGroups {
     // CSS draws the chevron rotation and hides the group's rows off this flag.
     tr.toggleAttribute('data-collapsed', collapsed);
     tr.querySelector<HTMLTableCellElement>('.group-cell')!.colSpan = columnCount + 1 + (this.#host.actions() ? 1 : 0);
-    tr.querySelector('.group-label')!.textContent = key === '' ? this.#host.word('no-group') : key;
+    // An empty list says nothing: it is no group too.
+    const name = key && label;
+    this.#names.set(tr, name);
+    tr.querySelector('.group-label')!.textContent = name || this.#host.word('no-group');
     tr.querySelector('.group-count')!.textContent = String(size);
-    this.#say(tr.querySelector('.group-toggle'), key, collapsed);
+    this.#say(tr.querySelector('.group-toggle'), name, collapsed);
     return tr;
   }
 
-  /** A group's toggle says whether it is open, and what pressing it does. */
-  #say(toggle: Element | null, key: string, collapsed: boolean): void {
+  /** A group's toggle says whether it is open, and what pressing it does: by its name, none ungrouped. */
+  #say(toggle: Element | null, name: string, collapsed: boolean): void {
     toggle?.setAttribute('aria-expanded', String(!collapsed));
-    toggle?.setAttribute('aria-label', `${this.#host.word(collapsed ? 'expand' : 'collapse')} ${key || this.#host.word('ungrouped')}`);
+    toggle?.setAttribute('aria-label', `${this.#host.word(collapsed ? 'expand' : 'collapse')} ${name || this.#host.word('ungrouped')}`);
   }
 
   /** Fold a group, or open it — kept across the next draw. WHEN THE GRID PAGES,
@@ -126,7 +131,7 @@ export class GridGroups {
     groupRow.toggleAttribute('data-collapsed', collapsed);
     if (collapsed) this.#shut.add(key);
     else this.#shut.delete(key);
-    this.#say(groupRow.querySelector('.group-toggle'), key, collapsed);
+    this.#say(groupRow.querySelector('.group-toggle'), this.#names.get(groupRow) ?? key, collapsed);
     this.syncShut();
     if (this.paginates) this.#host.redraw();
     this.#host.toggled(key, collapsed);

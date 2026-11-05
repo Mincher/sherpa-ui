@@ -1,17 +1,18 @@
 /**
- * grid-cells.ts — what a grid's cells draw beyond their text: the marks a filter
+ * grid-cells.ts — what a grid's cells draw: a value in its words, the marks a filter
  * matched, a status's icon and label, a multi-field column's tags, and the one
  * cell chip that adds or takes off the value under the pointer. A module of
- * sherpa-data-grid, not an element. Will, TODOs 373, 490 · plan 683
+ * sherpa-data-grid, not an element. Will, TODOs 373, 490, 791 · plan 683
  *
  * Map:
  * - CellsHost — What the cells ask of their grid.
- * - GridCells — The marks, tags, statuses and the cell chip a grid's cells draw.
+ * - GridCells — The words, marks, tags, statuses and the cell chip a grid's cells draw.
  * - .take — The one cell chip, from the template: a draw parks it, and a cell takes it.
  * - .park — The chip goes home before the body is drawn again: it would leave with its row.
  * - .over — The pointer came into a cell: the chip goes there.
  * - .leave — The pointer left the rows.
  * - .placeAgain — The rows were drawn again under a pointer that has not moved: the chip finds its cell.
+ * - .words — A value's words, as its column's field names it — read once per field per draw.
  * - .fill — Write one cell's text, marking what a TEXT filter matched.
  * - .status — A value's status on its field, where its field's values have looks.
  * - .drawStatus — A status cell: its status icon, then its plain label.
@@ -20,7 +21,8 @@
  */
 import { markNeedles } from '../../core/ui/mark-text.js';
 import { heldByPreset } from '../../core/ui/shared-constants.js';
-import { OP_TAKES, conditionLeaves, groupOf, joinConditions, valueKey, type Condition, type ConditionLeaf, type Row } from '../../core/data/store.js';
+import { formatFieldValue, type ValueFacts } from '../../core/data/format-value.js';
+import { OP_TAKES, conditionLeaves, groupOf, joinConditions, readField, valueKey, type Condition, type ConditionLeaf, type Row } from '../../core/data/store.js';
 import { answeredCondition, modeOf, type FieldReading } from '../../core/data/filter-state.js';
 import { readingAnswered } from '../../core/data/query.js';
 import { kindOf } from '../../core/ui/filter-kind.js';
@@ -52,7 +54,7 @@ export interface CellsHost extends GridHost {
   drawReadings(): void;
 }
 
-/** The marks, tags, statuses and the cell chip a grid's cells draw. */
+/** The words, marks, tags, statuses and the cell chip a grid's cells draw. */
 export class GridCells {
   /** Its grid. */
   readonly #host: CellsHost;
@@ -122,24 +124,24 @@ export class GridCells {
     const kind = col?.type ?? 'text';
     if (!col || !filterable(col)) return null;
     const row = this.#host.recordFor(td);
-    const raw = row?.[field];
-    if (raw == null || raw === '') return null;
+    const raw = row ? readField(row, field) : undefined;
+    if (!row || raw == null || raw === '') return null;
     /* A CHILD's cell picks its PATH on the parent field: this site of this
        customer. TODO 369 · TRAP T-a-parent-pick-is-the-parent */
     const parent = filters.parentOf(field);
     // A preset holds its values: no cell changes them. Will, TODO 601
     if (filters.shown(parent ?? field)?.byPreset) return null;
     if (parent) {
-      const value = { [parent]: row?.[parent], [field]: raw };
+      const value = { [parent]: readField(row, parent), [field]: raw };
       return { field: parent, kind, value, key: valueKey(value), header: filters.given[parent]?.label ?? parent,
-        text: td.textContent?.trim() || String(raw), held: filters.filter.holds(parent) };
+        text: td.textContent?.trim() || this.words(col, raw, new Map()), held: filters.filter.holds(parent) };
     }
     // A date is filtered by its DAY: one day is "On", two would be "Between".
     const day = kind === 'date' ? /^\d{4}-\d{2}-\d{2}/.exec(raw instanceof Date ? raw.toISOString() : String(raw))?.[0] : undefined;
     if (kind === 'date' && !day) return null;
     const value = day ?? raw;
     // A multi-field cell's text is its own: its tags are not.
-    const text = td.hasAttribute('data-tags') ? String(value) : td.textContent?.trim() || String(value);
+    const text = (td.hasAttribute('data-tags') ? '' : td.textContent?.trim()) || this.words(col, value, new Map());
     return { field, kind, value, key: valueKey(value), header: col.header ?? field, text, held: filters.filter.holds(field) };
   }
 
@@ -195,6 +197,20 @@ export class GridCells {
     this.#host.drawReadings();
   }
 
+  /** A value's words, as its column's field names it — read once per field per draw.
+   *  TRAP T-a-cell-draws-words-not-its-value */
+  words(col: GridColumn, value: unknown, known: Map<string, ValueFacts>): string {
+    let facts = known.get(col.field);
+    if (!facts) {
+      const given = this.#host.filters.given[col.field];
+      // Its values' names: its source's list, and any it names beside it.
+      const labels = { ...Object.fromEntries((given?.options ?? []).flatMap((o) => (o.label !== o.value ? [[o.value, o.label]] : []))), ...given?.labels };
+      facts = { ...(col.type ? { type: col.type } : {}), ...(Object.keys(labels).length ? { labels } : {}), ...(given?.time ? { time: true } : {}) };
+      known.set(col.field, facts);
+    }
+    return formatFieldValue(value, facts);
+  }
+
   /**
    * Write one cell's text, marking what a TEXT filter matched. TRAP
    * T-grid-mark-is-substring-only — substring ops only, and the CELL's casing wins.
@@ -247,7 +263,7 @@ export class GridCells {
     const row = this.#host.clone('template.cell-tags-tpl');
     if (!row) return;
     for (const field of fields) {
-      const raw = record[field];
+      const raw = readField(record, field);
       if (raw == null || raw === '') continue;
       const tag = this.#host.clone('template.cell-tag-tpl');
       if (!tag) return;
@@ -257,7 +273,7 @@ export class GridCells {
         looks.set(field, look);
       }
       const key = valueKey(raw);
-      const label = look.get(key) ?? String(raw);
+      const label = look.get(key) ?? formatFieldValue(raw);
       tag.dataset['field'] = field;
       tag.dataset['value'] = key;
       const text = tag.querySelector('.tag-label');
@@ -295,9 +311,9 @@ export class GridCells {
     const { filters } = this.#host;
     const field = tag.dataset['field'];
     const key = tag.dataset['value'];
-    const row = tag.closest('.row');
-    if (!field || key == null || !row || filters.filter.holds(field) || filters.shown(field)?.byPreset) return;
-    const at: CellValue = { field, kind: 'text', value: this.#host.recordFor(row)?.[field], key, header: filters.fieldLabel(field),
+    const record = this.#host.recordFor(tag);
+    if (!field || key == null || !record || filters.filter.holds(field) || filters.shown(field)?.byPreset) return;
+    const at: CellValue = { field, kind: 'text', value: readField(record, field), key, header: filters.fieldLabel(field),
       text: tag.textContent?.trim() ?? '', held: false };
     this.#toggle(at, this.#tagOn(field, key));
   }

@@ -16,7 +16,7 @@
  * - .range — A number field's ends, over its finite values; none, undefined.
  */
 import { reduceRows } from './aggregate.js';
-import { compareValues, distinctOf, sortRows, valueKey, type GroupSummary, type Row, type SortSpec } from './store.js';
+import { compareValues, distinctOf, readField, sortRows, valueKey, type GroupSummary, type Row, type SortSpec } from './store.js';
 
 /** What a grid asks of its rows: their order, and its page of them. */
 export interface PageAsk {
@@ -85,7 +85,7 @@ export class ColumnFacts {
     let slots = 0;
     let last: string | null = null;
     for (let i = 0; i < all.length; i += 1) {
-      const at = valueKey(all[i]![group]);
+      const at = valueKey(readField(all[i]!, group));
       // A shut group's rows are drawn hidden: its first pays for the heading.
       const cost = shut.has(at) ? (at !== last ? 1 : 0) : 1;
       if (cost > 0 && slots + cost > size && slots > 0) {
@@ -123,7 +123,7 @@ export class ColumnFacts {
     if (!tally) {
       tally = new Map();
       for (const row of this.rows) {
-        const at = valueKey(row[field]);
+        const at = valueKey(readField(row, field));
         tally.set(at, (tally.get(at) ?? 0) + 1);
       }
       this.#tallies.set(field, tally);
@@ -147,7 +147,7 @@ export class ColumnFacts {
   range(field: string): { min: number; max: number } | undefined {
     if (this.#ranges.has(field)) return this.#ranges.get(field);
     const finite = this.rows.some((row) => {
-      const raw = row[field];
+      const raw = readField(row, field);
       return raw != null && raw !== '' && Number.isFinite(Number(raw));
     });
     const range = finite ? { min: Math.floor(reduceRows(this.rows, 'min', field)), max: Math.ceil(reduceRows(this.rows, 'max', field)) } : undefined;

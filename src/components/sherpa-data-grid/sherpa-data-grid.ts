@@ -23,7 +23,8 @@ import { ORGANISE_ICONS, movedTo } from '../../core/ui/shared-constants.js';
 import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/data/cycle.js';
 import { ColumnFacts } from '../../core/data/column-facts.js';
 import { offerAxis, type AxisOffer } from '../../core/data/query.js';
-import { valueKey, type FilterOp, type GroupSummary } from '../../core/data/store.js';
+import { readField, valueKey, type FilterOp, type GroupSummary } from '../../core/data/store.js';
+import type { ValueFacts } from '../../core/data/format-value.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import { coalesce } from '../../core/data/timing.js';
 import type { DataAsk, Take } from '../../core/ui/context.js';
@@ -50,7 +51,7 @@ export interface GridColumn extends OffersAdvanced {
   header?: string;
   /** `server`: its filter is asked of the store; its provider tells the source. 345 phase 6 */
   fetch?: 'server';
-  /** number → right-aligned mono cells; anything else → default text. */
+  /** number → right-aligned mono cells; date → its day in words; anything else → default text. */
   type?: string;
   sortable?: boolean;
   /** false: its heading and cells offer no filter — a count, not a field. TODO 571 */
@@ -802,21 +803,24 @@ export class SherpaDataGrid extends SherpaElement {
     // selection-change name the row the user sees; grouped, one page of it.
     const { rows, offset, pages } = this.#groups.page();
     let lastGroup: string | null = null;
-    // Each tag field's value names, and each status field's looks, read once a draw.
+    // Each tag field's value names, each status field's looks, and each field's words, read once a draw.
     const looks = new Map<string, Map<string, string>>();
     const marks = new Map<string, Map<string, { status: string; label: string }>>();
+    const known = new Map<string, ValueFacts>();
+    const groupCol = group ? this.#columns.find((c) => c.field === group) ?? { field: group } : null;
     // Each row's selection cell is drawn frozen: no caller has to pin it after.
     const selectable = this.hasAttribute('data-selectable');
 
     rows.forEach((record, i) => {
-      if (group) {
+      if (group && groupCol) {
         // Keyed as the data layer keys a group, so a told count is found. TODO 523
-        const key = valueKey(record[group]);
+        const value = readField(record, group);
+        const key = valueKey(value);
         if (key !== lastGroup) {
           lastGroup = key;
           // The COUNT spans every page, so a group split by a boundary still
           // says how many rows it holds.
-          body.appendChild(this.#groups.heading(key, this.#data.count(group, key), columns.length));
+          body.appendChild(this.#groups.heading(key, this.#data.count(group, key), columns.length, cells.words(groupCol, value, known)));
         }
       }
 
@@ -845,11 +849,12 @@ export class SherpaDataGrid extends SherpaElement {
         if (col.type) td.dataset['type'] = col.type;
         td.dataset['field'] = col.field;
         if (c === 0) this.#markPinned(td, true);
-        const value = record[col.field];
+        const value = readField(record, col.field);
         // A STATUS field's value draws its icon and label. Will, plan 683 · TRAP T-a-status-is-worked-out-by-the-data
         const status = value == null ? undefined : cells.status(col.field, valueKey(value), marks);
         if (status) cells.drawStatus(td, status);
-        else cells.fill(td, value == null ? '' : String(value), col);
+        // …any other, its words; its sort and filter read the raw value. TRAP T-a-cell-draws-words-not-its-value
+        else cells.fill(td, cells.words(col, value, known), col);
         // No tag of the field it groups by: its heading says it. Will, TODO 579
         const tags = filters.tagsOf(col).filter((f) => f !== group);
         if (tags.length) cells.tags(td, record, tags, looks);
