@@ -154,6 +154,7 @@
   ],
   "tokens": {
     "strip.border-block-end": "{sherpa.border-bottom}",
+    "tabs.gap": "{sherpa.display-mode-space-base}",
     "detail.gap": "{sherpa.display-mode-space-sm}",
     "detail.padding-inline": "{sherpa.display-mode-space-sm}",
     "tab.gap": "{sherpa.display-mode-space-xs}",

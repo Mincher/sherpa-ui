@@ -61,6 +61,7 @@
 
 .tabs {
   display: flex;
+  gap: var(--sherpa-display-mode-space-base, 16px);
   overflow-x: auto;
   scrollbar-width: none;
 

@@ -81,6 +81,7 @@ What each class's base rule reads:
 | Custom property | Class | Property |
 |---|---|---|
 | `--sherpa-border-bottom` | `.strip` | `border-block-end` |
+| `--sherpa-display-mode-space-base` | `.tabs` | `gap` |
 | `--sherpa-display-mode-space-sm` | `.detail` | `gap` |
 | `--sherpa-display-mode-space-sm` | `.detail` | `padding-inline` |
 | `--sherpa-display-mode-space-xs` | `.tab` | `gap` |
