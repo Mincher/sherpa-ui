@@ -213,8 +213,10 @@ export {
 } from './core/data/entity.js';
 /* Any entity is a node in any graph: the panel offers it, a use is an instance of it. Plan 746 E5 · TRAP T-an-entity-is-used-as-a-node */
 export {
-  ENTITY_TYPES, asNode, entityOf, entityTypes, libraryOf, offeredKinds, registerEntityType, socketsOf, takes, type EntityType,
+  ENTITY_TYPES, PRESET_FILTER, asNode, entityOf, entityTypes, libraryOf, offeredKinds, registerEntityType, socketsOf, takes, type EntityType,
 } from './core/data/entity-types.js';
+/* A Preset Filter is a preset of its store's pages: its graph read as ONE condition, each field's own. TODO 776 · TRAP T-a-preset-filter-is-a-preset-of-its-store */
+export { presetOfEntity, presetsOver, sourceOf, type PagePreset, type PresetFilterFacts } from './core/data/preset-filter.js';
 export { checkEntity, entityFaults, graphWorkflow, type EntityFacts } from './core/data/entity-check.js';
 /* Where an app's entities come together: its presets and the reader's, one door; the Custom Node shelf is a view of it. */
 export { joinEntities, makeShelf, nodesView, type EntityPort, type EntityShelf, type EntitySummary } from './core/data/entity-shelf.js';
@@ -224,7 +226,7 @@ export {
   type GraphChoice, type GraphOf, type GraphWords, type OpenGraph,
 } from './core/data/graph-views.js';
 export { groupNodes, ungroupUse, type GroupAsk, type Grouped } from './core/data/node-group.js';
-export { nodeFlow, type NodeFlow } from './core/data/node-flow.js';
+export { conditionAt, nodeFlow, type ConditionFacts, type ConditionRead, type NodeFlow } from './core/data/node-flow.js';
 /* What a node reads of what reaches it: null where it cannot use it, and why. TODO 764 · TRAP T-a-node-reads-null-from-what-it-cannot-use */
 export { COERCIONS, INPUT_WORDS, coerce, givenAt, needOf, readInput, truthOf, type Coercion, type Given, type InputNeeds, type Need, type Reached } from './core/data/node-input.js';
 /* The data layer over HTTP: one handle() for the page, a Service Worker or a server. Plan 652 */
@@ -417,6 +419,7 @@ export {
   readingsOf,
   treeReading,
   whereOf,
+  whereOfTree,
   type Where,
   type WhereCondition,
 } from './core/data/where.js';

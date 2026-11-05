@@ -130,6 +130,11 @@ library `app.v1`, `views.v1` and `workflow.v2` use too.
   "Presets"; none moves scope (`T-a-preset-is-its-own-part`). Each value is typed
   once by its field as the definition is read: `lt 60` on a number holds 60
   (`T-a-value-is-typed-once`).
+- **A Preset Filter is a preset too.** Each Preset Filter entity whose source is the
+  page's `store` (its `settings.source`, else its graph's Store) is a chip after the
+  page's own presets, `preset:preset-filter:<id>`, on the bar of the scope that holds
+  its fields, else the View's. Its graph is read as one condition, each field's own,
+  the shape a `presets` entry has (TODO 776, `T-a-preset-filter-is-a-preset-of-its-store`).
 - **A status field** — Health: At risk, Watch, Healthy — is defined with the
   STORE, not here: `statusFields(store, { health: { type: 'status', values: […] } })`,
   each value named by conditions on the row's other fields — its shape is

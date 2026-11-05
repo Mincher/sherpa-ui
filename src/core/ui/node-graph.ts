@@ -66,11 +66,11 @@ import {
   type Inner, type NodeDefinition, type NodeLibrary,
 } from '../data/node-library.js';
 import { groupNodes, headerInput, heldInputs, ungroupUse } from '../data/node-group.js';
-import { entityKind, type EntityRef } from '../data/entity.js';
-import { offeredKinds } from '../data/entity-types.js';
+import { entityKind, entityRefOf, type EntityRef } from '../data/entity.js';
+import { PRESET_FILTER, offeredKinds } from '../data/entity-types.js';
 import { flowPane, instancePane, updatePane } from './node-group-panel.js';
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
-import { nodeFlow } from '../data/node-flow.js';
+import { nodeFlow, type ConditionFacts } from '../data/node-flow.js';
 import { typedValue, type FieldType } from '../data/filter-state.js';
 import { formatDateTime, isDateTime, readDateTime } from '../data/format-date.js';
 import {
@@ -1372,6 +1372,8 @@ export interface InspectOptions {
   extra?: readonly HTMLElement[];
   /** Several nodes are picked: a tab each, the shown one current; a reader's tab is `onTab`, which changes no pick. */
   tabs?: { nodes: readonly { id: string; label: string }[]; current: string; onTab: (id: string) => void; heading: string };
+  /** How the Outgoing JSON reads a use's condition: the graph inside it, drawn. TODO 776 */
+  flow?: ConditionFacts;
 }
 
 /** What an inspector holds: its node, the fields by their element, and whom it tells. */
@@ -1436,7 +1438,7 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   // A node of many rows scrolls, in the panel or in its tab: a run that fits by shrinking lays its fields over its buttons.
   stack.setAttribute('data-scroll', '');
   const remove = options.onRemove ? [button('Remove node', options.onRemove, 'Remove this node and its routes. Keyboard: Backspace or Delete.')] : [];
-  const flow = nodeFlow(graph, node.id);
+  const flow = nodeFlow(graph, node.id, options.flow);
   stack.append(...(options.extra ?? []), ...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...('fault' in flow ? [] : [flowPane(flow)]), ...remove);
   const { tabs } = options;
   if (tabs) {
@@ -1654,7 +1656,9 @@ export function bindQueryEditor(
   // The graph is derived, so a placed node appears where the Query draws it. TRAP T-one-command-one-door
   const place = (kind: string, context?: AddContext): void => {
     const from = context && graph.nodes.find((n) => n.id === socketOf(context.socket).node);
-    const answer = placeRequest(kind, from?.ref?.['scope'] ?? VIEW, {
+    // A Preset Filter is asked of the scope that declares it. TODO 776
+    const own = customs().find((c) => c.id === kind)?.scope;
+    const answer = placeRequest(kind, own ?? from?.ref?.['scope'] ?? VIEW, {
       holds: (scope) => query.scope(scope), fields: (scope) => query.fields(scope),
       presets: (scope) => query.presets(scope), on: (scope, id) => query.presetOn(scope, id),
     });
@@ -1666,7 +1670,21 @@ export function bindQueryEditor(
     place(kind, context);
   };
   panel?.addEventListener('node-add', onAdded);
-  void panel?.populate(paletteOf(NODE_KINDS, 'query'));
+  // The page's Preset Filters, as its Query declares them: Custom Nodes, each switched on where it is declared. TODO 776
+  const scopesOf = (): string[] => [...new Set([VIEW, ...Object.keys(definition.source?.scopes ?? {}), ...Object.keys(query.draft.scopes)])];
+  const customs = (): { id: string; label: string; scope: string }[] => scopesOf().flatMap((scope) => query.presets(scope)
+    .filter((p) => entityRefOf(p.id).type === PRESET_FILTER).map((p) => ({ id: p.id, label: p.label, scope })));
+  let listed = '';
+  const fillPanel = (): void => {
+    const now = customs();
+    const said = JSON.stringify(now);
+    if (said === listed) return;
+    listed = said;
+    const kinds: Record<string, NodeKind> = Object.fromEntries(now.map((c) => [c.id, {
+      heading: c.label, icon: 'filter', description: 'A Preset Filter: on, its condition joins its scope.', rows: [], model: 'ScopeDefinition.presets', graphs: ['query'], category: 'Custom Nodes',
+    }]));
+    void panel?.populate(paletteOf({ ...NODE_KINDS, ...kinds }, 'query'));
+  };
   // The node in the inspector, and its live visual: kept while the same component is shown.
   let visual: { id: string; el: HTMLElement } | null = null;
   const visualOf = (node: GraphNode): HTMLElement | null => {
@@ -1710,6 +1728,7 @@ export function bindQueryEditor(
       ...facts, values, presets: (scope) => query.presets(scope), domains: source.store?.domains ?? {}, pageSize: source.state?.pageSize ?? null,
     }), places);
     graph = { ...read, routes: read.routes.map((r) => (bends[bendKey(r)] ? { ...r, via: bends[bendKey(r)]! } : r)) };
+    fillPanel();
     drawGraph(canvas, graph, {
       onEdit, onMove, onMoveMany, onArrange, onResize, onConnect, onSelect: (node) => picks.select(node, graph), onDeselect: picks.deselect, onBend, onUnbend,
       onBendPicked: (pick) => toolbar?.toggleAttribute('data-picked-bend', !!pick),
@@ -2520,6 +2539,11 @@ export function bindWorkflow(
   canvas.addEventListener('click', onClick, { capture: true });
   canvas.addEventListener('dblclick', onDouble);
 
+  // A use's inside, drawn: its Outgoing JSON says the condition it sends, read there. TODO 776
+  const innerGraph = (node: GraphNode): DrawnGraph | undefined => {
+    const use = innerOf(node, lib, K());
+    return use && workflowGraph(use.workflow, facts, use.kinds);
+  };
   // The inspector leads with the node's own name, line and place.
   const withOwn = (node: GraphNode): GraphNode => {
     if (node.id.startsWith('#')) return node;
@@ -2535,7 +2559,7 @@ export function bindWorkflow(
   };
   const fillInspector = (node: GraphNode, now: DrawnGraph, tabs?: InspectOptions['tabs']): void => {
     inspectNode(inspector!, withOwn(node), now, {
-      onEdit, extra: extraFor(node), ...(readOnly() ? {} : { onCut: onBreak }), ...(tabs ? { tabs } : {}),
+      onEdit, extra: extraFor(node), ...(readOnly() ? {} : { onCut: onBreak }), ...(tabs ? { tabs } : {}), flow: { inner: innerGraph },
       // With no pointer: beside the node it feeds, one column left, on the row's own line.
       onCustom: (row) => {
         const at = shown().nodes.find((n) => n.id === node.id);

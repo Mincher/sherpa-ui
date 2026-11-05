@@ -456,8 +456,8 @@ export function rowOfOtherType(kind: NodeKind, type: unknown, row: string): { ro
  *  names it; `Custom Nodes` (D9) stays empty until saved nodes come (M9, M12). */
 export const NODE_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Collections', 'Utils', 'Output', 'Presets', 'Saved filters', 'Status'];
 
-/** The categories a Query's panel lists: the kinds a Query takes placed. */
-const QUERY_CATEGORIES: readonly string[] = ['Logic', 'Presets', 'Saved filters', 'Status'];
+/** The categories a Query's panel lists: the kinds a Query takes placed; its Custom Nodes are its page's Preset Filters (TODO 776). */
+const QUERY_CATEGORIES: readonly string[] = ['Custom Nodes', 'Logic', 'Presets', 'Saved filters', 'Status'];
 
 /** One node of the panel: the kind's id and the kind. */
 export interface PaletteItem {

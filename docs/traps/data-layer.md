@@ -6775,6 +6775,8 @@ type is it (`T-a-logic-type-is-an-operator`).
   other way, so `where` may be `true` or `false`; one only a run gives is named by
   where it comes from, `{ boolean: "Store › True" }`. Anything else reads null and
   warns (`T-a-node-reads-null-from-what-it-cannot-use`). No route into it is a fault.
+  A Preset Filter's use brings its tree too, read inside: its condition joins the outer
+  one there, as a nested group (plan 776 D5, `T-a-preset-filter-is-a-preset-of-its-store`).
 - **The Query holds no constant.** A page's `where` cannot say one, and the Query
   editor takes no route into a Group row (`routeRequest`), so it draws none: its
   Group rows are its tree's nested groups. Folded, a constant compiles as no
@@ -7623,3 +7625,53 @@ plan-713 D11 with its update flow).
 - Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/an-entity-is-used-as-a-node.test.mjs`
 - Site: `test/e2e/reforged-entity-use.spec.ts`
+
+### T-a-preset-filter-is-a-preset-of-its-store
+
+**A Preset Filter entity is a PRESET of every page over its store, read from its graph by ONE
+reader, and declared through the door every preset takes.** Will, 2026-11-05 (TODO 776, plan 776):
+"Preset filters will be custom nodes when we are specifically creating or working with filter type
+graphs. Let's keep them but also make sure they work in the new architecture for nodes & data."
+
+- **One reader.** `conditionAt(graph, '#out/where')` (node-flow.ts) reads what reaches the Where as
+  ONE tree: a Condition's Rows that hold, each Group row a nested tree; Logic And and Or joining what
+  comes in; a Tag's Includes; a USE of another entity read inside, at its Group Output (`inner`), so it
+  flattens. The Outgoing JSON shows what it reads, so the canvas and the data cannot disagree. A node
+  that says no condition, a False, a loop: a fault in words.
+- **One leaf reader.** Each comparison is read by `editedCondition`, the Query editor's own: text in a
+  list's row splits as an edited row does. A number or a list of numbers stays as the row holds it; the
+  page types it by its field (`presetReadings`, `T-a-value-is-typed-once`).
+- **The plain form, each field's own** (`whereOfTree`): every All, at any depth, is one list of parts;
+  each part must read ONE field. "Any" of two fields has no preset form, since a preset writes each
+  field's own condition (`byPreset`); it is said in words and left off the bar (plan 776 D6).
+- **One door.** The preset is `{ id: preset-filter:<id>, label, where }`, the shape a page's own preset
+  has. `ProviderPage.#layPresets` declares each scope's presets in one list: the page's own, then its
+  Preset Filters, then the saved sets on its bar, all through `presetReadings` and `declarePresets`.
+  The chip is `preset:preset-filter:<id>`; a press is `query.ask({ scope, preset, on })`.
+- **Which pages.** Those whose store is its source: `settings.source`, else the store its graph's Store
+  names (a new graph has no settings). The app's first, read only, then the reader's, in the shelf's
+  order. Its bar is the one scope that holds every field it names, else the View.
+- **Loaded only where needed.** The provider reads the shelf as the page opens: no Preset Filter, no
+  import. The compile (preset-filter.ts) loads on first use. The provider hears the shelf, so one
+  saved in another tab joins the bar. The outlet hands the keeper its entities BEFORE `open`: a first
+  page read none when they came after.
+- **Composing.** A Preset Filter's use, its True in a Condition's Group row, brings its tree, read
+  inside: its condition joins the outer one as a nested group. Logic And and Or join them too. A
+  constant in a Group row folds as `nodeFlow` folds it (TODO 780); a condition a constant decides,
+  always or never, has no preset form, nor has a boolean only a run gives: each is said in words.
+- **One leaf.** `leafOf` reads one comparison of a Rows that hold, its Field, Operator and Value: the
+  one place, so Field as a node of its own (plan 783) changes it there.
+- **The Query editor** offers a page's Preset Filters under Custom Nodes; a click asks
+  `{ scope, preset: <its id>, on: true }` of the scope that declares it (`placeRequest`). It draws one
+  as a Preset node with its own name; its conditions are read only: its own graph changes it.
+
+- Site: `src/core/data/preset-filter.ts`
+- Site: `src/core/data/node-flow.ts`
+- Site: `src/core/data/where.ts`
+- Site: `src/core/data/entity-types.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-provider/provider-page.ts`
+- Site: `src/data.ts`
+- Site: `test/unit/a-preset-filter-is-a-preset-of-its-store.test.mjs`
+- Site: `test/e2e/reforged-preset-filter-presets.spec.ts`
+- Site: `test/e2e/reforged-query-panel.spec.ts`

@@ -11,6 +11,7 @@
  * - treeReading — One field's tree as the reading a control holds: Simple's where a Simple control says it, else Advanced's.
  * - whereOf — Readings in the plain form: what each field filters by, nothing a control keeps for itself.
  * - readingsOf — The plain form as readings, each value typed by its field.
+ * - whereOfTree — A tree whose leaves name their fields, in the plain form: each field's own part; or why it has none.
  */
 import { fieldState, isRanged, typedTree, type FieldFacts, type FieldReading, type FieldType } from './filter-state.js';
 import { OP_TAKES, groupOf, joinConditions, type Condition, type ConditionLeaf, type Duration, type FilterOp } from './store.js';
@@ -162,4 +163,30 @@ export function readingsOf(
     readings[field] = { ...(tree ? treeReading(typedTree(tree, type), type) : {}), ...kept };
   }
   return readings;
+}
+
+/** The fields a tree's leaves name, in order. */
+const fieldsOf = (tree: Condition): string[] => {
+  const parts = groupOf(tree);
+  return [...new Set(parts ? parts[1].flatMap(fieldsOf) : [(tree as ConditionLeaf).field ?? ''])];
+};
+
+/**
+ * A tree whose leaves name their fields, in the plain form: each field's own part, its
+ * parts ANDed. A leaf with no field, or a part that reads two fields under Any, has no
+ * plain form, since each field holds its own condition: why, in words. Plan 776 D1, D6
+ * TRAP T-a-preset-filter-is-a-preset-of-its-store
+ */
+export function whereOfTree(tree: Condition): { where: Where } | { fault: string } {
+  // Every All, at any depth, is one list of parts: a nested group's own All joins its parent's.
+  const flat = (t: Condition): Condition[] => (groupOf(t)?.[0] === 'and' && !t.off ? groupOf(t)![1].flatMap(flat) : [t]);
+  const parts = flat(tree);
+  const own = new Map<string, Condition[]>();
+  for (const part of parts) {
+    const fields = fieldsOf(part);
+    if (fields.includes('')) return { fault: 'a comparison in it names no field' };
+    if (fields.length > 1) return { fault: `it says Any of ${fields.map((f) => `"${f}"`).join(' and ')}, and each field holds its own condition` };
+    own.set(fields[0]!, [...(own.get(fields[0]!) ?? []), part]);
+  }
+  return { where: Object.fromEntries([...own].map(([field, said]) => [field, sugarOf(bare(joinConditions('and', said)!))])) };
 }

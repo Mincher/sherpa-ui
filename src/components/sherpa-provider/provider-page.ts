@@ -43,6 +43,9 @@ import { conditionsOf, filtersOf } from '../../core/browser/saved-filters.js';
 import type { SavedSet } from '../../core/ui/filters-button.js';
 import type { DataSource } from '../../core/data/data-source.js';
 import { SAVED_PRESET, presetReadings } from '../../core/data/page-definition.js';
+import { entityRefOf } from '../../core/data/entity.js';
+import { PRESET_FILTER } from '../../core/data/entity-types.js';
+import type { PagePreset } from '../../core/data/preset-filter.js';
 import type { QueryChangeDetail, QueryContext } from '../../core/data/query-context.js';
 import { VIEW, emptyScope, sameReading, type Query, type QueryDefaults, type SavedFilter, type ScopeQuery, type ViewScope } from '../../core/data/query.js';
 import { layShared, sharedOf } from '../../core/data/query-edits.js';
@@ -73,6 +76,9 @@ export interface OpenedPage {
   initial: Query;
   /** The page's own saved filters, as its definition ships them. Will, 366 */
   savedFilters: Readonly<Record<string, SavedFilter>>;
+  /** Its store's Preset Filters, each a preset of its bar, and how to read them again. TODO 776 */
+  presetFilters?: readonly PagePreset[];
+  readPresetFilters?: () => Promise<readonly PagePreset[]>;
 }
 
 /** What the open page asks of its provider. */
@@ -120,7 +126,35 @@ export class ProviderPage {
     this.#sentSets = '';
     // The sets on a bar before a reload, while they are still saved: BEFORE the Query, which holds their rows.
     this.#added = new Map(Object.entries(this.#state().added ?? {}).filter(([id]) => this.#library()[id]));
-    this.#layPresets(this.#added.values());
+    // …and its store's Preset Filters, each on the bar of the scope that holds its fields. TODO 776
+    this.#presetFilters = this.#homed(page.presetFilters ?? []);
+    this.#layPresets([...this.#added.values(), ...this.#presetFilters.map((f) => f.scope)]);
+  }
+
+  /** The page's Preset Filters, each with the scope whose bar it leads. TODO 776 */
+  #presetFilters: { preset: PagePreset; scope: string }[] = [];
+
+  /** Each Preset Filter's scope: the one that holds every field it names, else the View. Plan 776 D3 */
+  #homed(presets: readonly PagePreset[]): { preset: PagePreset; scope: string }[] {
+    const query = this.#opened?.query;
+    return presets.map((preset) => {
+      const held = new Set(Object.keys(preset.where).map((field) => query?.scopeOf(field) ?? null));
+      const [one] = held;
+      return { preset, scope: held.size === 1 && one ? one : VIEW };
+    });
+  }
+
+  /** The shelf moved — here, or in another tab: the Preset Filters read again, and the bars drawn when they changed. */
+  async #refilter(): Promise<void> {
+    const opened = this.#opened;
+    const next = await opened?.readPresetFilters?.();
+    if (!opened || !next || this.#opened !== opened) return;
+    const now = this.#homed(next);
+    if (JSON.stringify(now) === JSON.stringify(this.#presetFilters)) return;
+    const was = this.#presetFilters.map((f) => f.scope);
+    this.#presetFilters = now;
+    this.#layPresets([...was, ...now.map((f) => f.scope)]);
+    await this.drawBars(this.#view);
   }
 
   /** The page has gone, with its source. */
@@ -167,6 +201,8 @@ export class ProviderPage {
         this.applyFilters(id, from ? this.#localOf(from) : null);
       }, { signal });
     }
+    // A Preset Filter saved or removed, here or in another tab. TODO 776
+    this.#host.keeper().entities.watch(() => void this.#refilter(), signal);
     // Which control asked to save, before the host names the set: off, it is that scope's. TODO 485
     for (const type of ['filters-save', 'filters-save-as']) {
       el.addEventListener(type, (event) => {
@@ -376,18 +412,21 @@ export class ProviderPage {
     return this.#state().filters ?? {};
   }
 
-  /** Each of these scopes' presets: the app's own, then the sets on its bar. Will, TODO 605 */
+  /** Each of these scopes' presets: the app's own, its Preset Filters, then the sets on its bar: one door,
+   *  `presetReadings` over the plain form. Will, TODOs 605, 776 · TRAP T-a-preset-filter-is-a-preset-of-its-store */
   #layPresets(scopes: Iterable<string>): void {
     const opened = this.#opened;
     if (!opened) return;
     const library = this.#library();
     for (const scope of new Set(scopes)) {
-      const app = opened.query.presets(scope).filter((preset) => !preset.id.startsWith(SAVED_PRESET));
+      const app = opened.query.presets(scope).filter((preset) => !preset.id.startsWith(SAVED_PRESET) && entityRefOf(preset.id).type !== PRESET_FILTER);
+      const filters = this.#presetFilters.filter((f) => f.scope === scope)
+        .map(({ preset }) => ({ id: preset.id, label: preset.label, readings: presetReadings(opened.source, preset.where) }));
       const mine = [...this.#added].filter(([, at]) => at === scope).flatMap(([id]) => {
         const set = library[id];
         return set ? [{ id: SAVED_PRESET + id, label: set.label, readings: presetReadings(opened.source, conditionsOf(set)) }] : [];
       });
-      opened.source.declarePresets(scope, [...app, ...mine]);
+      opened.source.declarePresets(scope, [...app, ...filters, ...mine]);
     }
   }
 

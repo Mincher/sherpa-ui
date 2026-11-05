@@ -33,6 +33,8 @@ import { OP_LABELS, OPS_FOR_TYPE, groupOf, type Condition, type ConditionLeaf, t
 import { answerTree, typedTree, typedValue, type FieldReading, type FieldType } from './filter-state.js';
 import { readingsOf, treeReading } from './where.js';
 import { presetHeld } from './query-edits.js';
+import { entityRefOf } from './entity.js';
+import { PRESET_FILTER } from './entity-types.js';
 import type { FieldDomain } from './validate.js';
 import {
   FALSE_SOCKET, NODE_KINDS, ROWS, conditionRows, kindIn, kindNode, partName, partOf, resolveKind, rowChoices, rowOf, socketOf,
@@ -181,6 +183,7 @@ const sent = (node: string): string => `${node}/${ROWS.name}`;
 const FROM_DEFINITION = 'The page definition sets it: Save writes the definition.';
 const FROM_STORE = 'The app\'s store works it out: statusFields().';
 const SAVED_WORDS = 'A saved filter: Manage Saved Filters changes it.';
+const FROM_ENTITY = 'A Preset Filter: its own graph changes it, in the Node Editor.';
 const NOT_ADDED = 'Not on a bar: add it from the Saved menu, and it joins as a preset.';
 const SUPERSEDED = 'The View holds this field: kept, not in force. It comes back when the View lets it go.';
 
@@ -253,9 +256,10 @@ function groupRows(tree: Condition, { field, type: typeOf, fields, values: value
   });
 }
 
-/** A condition node's rows, edited, as the condition they say: the other half of drawing one.
- *  A value is typed text, or the values picked — each whole, a comma and all; only a
- *  TYPED list is split at its commas. Each is typed by its field. TRAP T-a-value-is-typed-once */
+/** A condition node's rows, edited, as the condition they say: the other half of drawing one —
+ *  the Query editor's row and a Preset Filter's graph alike (TODO 776). A value is typed text, or the
+ *  values picked — each whole, a comma and all; only a TYPED list is split at its commas. Each is
+ *  typed by its field. TRAP T-a-value-is-typed-once */
 export function editedCondition(op: string, given: string | readonly string[], type?: string): ConditionLeaf {
   const one = (v: string): unknown => typedValue(type as FieldType | undefined, v);
   const text = Array.isArray(given) ? String(given[0] ?? '') : String(given);
@@ -470,14 +474,16 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
         return tree ? [[f, tree] as const] : [];
       });
       const on = presetHeld(query, id, p.id, p.readings);
+      // A Preset Filter is a preset too: its own graph says what it writes. TODO 776
+      const entity = entityRefOf(p.id).type === PRESET_FILTER;
       const from = add(into, QUERY_NODE.preset(id, p.id), saved ? 'saved' : 'preset', [
         ...rowsOf(saved ? 'saved' : 'preset', { on }).map((row) => ({ ...row, editable: true })),
         ...wrote.map(([f]): GraphRow => ({ name: f, label: label(f), input: 'boolean' })),
-      ], { heading: p.label, ref: { scope: id, preset: p.id } });
+      ], { heading: p.label, ref: { scope: id, preset: p.id }, ...(entity ? { icon: 'filter', description: FROM_ENTITY } : {}) });
       routes.push({ from, to: `${node}/@${p.id}` });
       // What it writes: each field a Condition, the definition's to change.
       for (const [f, tree] of wrote) {
-        const hint = saved ? SAVED_WORDS : FROM_DEFINITION;
+        const hint = saved ? SAVED_WORDS : entity ? FROM_ENTITY : FROM_DEFINITION;
         routes.push({ from: treeNodes(into - 0.5, QUERY_NODE.presetWhen(id, p.id, f), tree, ctxOf(f, everyField), { heading: label(f), description: hint }, { preset: p.id, field: f }, readOnly(hint)), to: `${from}/${f}` });
       }
     }
@@ -644,9 +650,13 @@ export interface PlaceFacts {
 /**
  * The command placing a node of a kind in a scope asks, or why it cannot: a Condition holds
  * the scope's next field (its chip appears); a Preset or a Saved filter switches on the next
- * one the scope's bar has. A Status field is the app's own, so it is refused. TRAP T-one-command-one-door
+ * one the scope's bar has; a preset named by its own id — a Preset Filter, a Custom Node of
+ * the Query's panel (TODO 776) — switches that one on. A Status field is the app's own, so it
+ * is refused. TRAP T-one-command-one-door
  */
 export function placeRequest(kind: string, scope: string, facts: PlaceFacts): NonNullable<RouteAnswer> {
+  const own = facts.presets(scope).find((p) => p.id === kind);
+  if (own) return facts.on(scope, kind) ? { refused: `"${own.label}" is on already: its chip is pressed.` } : { request: { scope, preset: kind, on: true } };
   const name = NODE_KINDS[kind]?.heading ?? kind;
   if (kind === 'condition') {
     const held = facts.holds(scope);
@@ -655,7 +665,8 @@ export function placeRequest(kind: string, scope: string, facts: PlaceFacts): No
       : { refused: `Scope "${scope}" holds every field it may, so it takes no new ${name}: take one from another scope, or free a field first.` };
   }
   if (kind === 'preset' || kind === 'saved') {
-    const next = facts.presets(scope).find((p) => p.id.startsWith(SAVED_PRESET) === (kind === 'saved') && !facts.on(scope, p.id));
+    // The app's own, or the saved; a Preset Filter is its own Custom Node.
+    const next = facts.presets(scope).find((p) => p.id.startsWith(SAVED_PRESET) === (kind === 'saved') && entityRefOf(p.id).type !== PRESET_FILTER && !facts.on(scope, p.id));
     return next ? { request: { scope, preset: next.id, on: true } }
       : { refused: `Scope "${scope}" has no ${name.toLowerCase()} left to switch on${kind === 'saved' ? ': a saved filter joins from the bar\'s Saved menu' : ''}.` };
   }

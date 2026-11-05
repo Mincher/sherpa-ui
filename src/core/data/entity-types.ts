@@ -9,6 +9,7 @@
  *
  * Map:
  * - EntityType — One type: its words, the families its graph may place, its sockets, its settings check.
+ * - PRESET_FILTER — The Preset Filter type's id: a preset of its store's pages, and the first half of its preset's id.
  * - ENTITY_TYPES — The types the library ships: `preset-filter` and `node`.
  * - entityTypes — Every type now: the shipped, and those an app registered.
  * - registerEntityType — An app adds a type; a clash with a shipped one is refused. It answers how to take it back.
@@ -56,10 +57,14 @@ function keysFault(settings: Readonly<Record<string, unknown>>, allowed: readonl
   ];
 }
 
+/** The Preset Filter type's id: a preset of its store's pages, its preset's id `preset-filter:<id>`, its
+ *  use's kind. TRAP T-a-preset-filter-is-a-preset-of-its-store */
+export const PRESET_FILTER = 'preset-filter';
+
 /** The types the library ships: `preset-filter` and `node`. */
 export const ENTITY_TYPES: Readonly<Record<string, EntityType>> = {
-  'preset-filter': {
-    id: 'preset-filter', label: 'Preset Filter', icon: 'filter', schema: 'entity-preset-filter.v1.json',
+  [PRESET_FILTER]: {
+    id: PRESET_FILTER, label: 'Preset Filter', icon: 'filter', schema: 'entity-preset-filter.v1.json',
     // A graph that decides a condition: where its rows come from, its values and sums, the logic, dates, collections, text and
     // tags; no Output (its `#out` is the end). A Sort, Group or Count saved before is a Collection's type (plan 749 P3).
     families: ['Sources', 'Variables', 'Math', 'Logic', 'Time', 'Collections', 'Utils'],

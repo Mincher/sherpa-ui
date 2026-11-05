@@ -565,12 +565,13 @@ export class SherpaOutlet extends SherpaElement {
     const module = context.module ? (await import(this.#url(context.module))) as Partial<ContextModule> : null;
     await options.ready;
     if (token !== this.#token) return;
+    // The keeper has the app's entities BEFORE the page opens: its Preset Filters are its presets. TODO 776
+    const shelves = this.#nodes;
     const source: DataSource | undefined = definition && this.#provider ? await this.#provider.open(definition, {
       // ONE key: its state is kept and read under the Context's name. TODO 321
       key: name, stores: options.stores(), views: this.#views[name] ?? {}, ...(view ? { view } : {}),
     }) : undefined;
     if (token !== this.#token) return;
-    const shelves = this.#nodes;
     // Its row, drawn from the route, before its module runs: init is handed the graph it opens on.
     await this.#syncGraph(false);
     if (token !== this.#token) return;
