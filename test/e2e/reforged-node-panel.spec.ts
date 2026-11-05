@@ -56,16 +56,16 @@ async function pressSearch(page: Page): Promise<void> {
 }
 const item = (page: Page, kind: string) => page.locator(`sherpa-node-panel sherpa-list-item[data-kind="${kind}"]`);
 
-test('it floats on the canvas, 32px from the top, bottom and left', async ({ page }) => {
+test('it docks on the canvas flush, to its top, bottom and left, with no shadow', async ({ page }) => {
   await bind(page);
   const [canvas, card] = await page.evaluate(() => {
     const c = document.querySelector('#root sherpa-layout-canvas')!.getBoundingClientRect();
     const p = document.querySelector('sherpa-node-panel')!.getBoundingClientRect();
     return [c, p].map((r) => ({ left: r.left, top: r.top, right: r.right, bottom: r.bottom }));
   });
-  expect(Math.abs(card!.top - canvas!.top - 32)).toBeLessThanOrEqual(1);
-  expect(Math.abs(canvas!.bottom - card!.bottom - 32)).toBeLessThanOrEqual(1);
-  expect(Math.abs(card!.left - canvas!.left - 32)).toBeLessThanOrEqual(1);
+  // TODO 796: flush and flat in its panel area.
+  expect([card!.top, card!.bottom, card!.left]).toEqual([canvas!.top, canvas!.bottom, canvas!.left]);
+  expect(await page.evaluate(() => getComputedStyle(document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelector('.card')!).boxShadow)).toBe('none');
   // It keeps its place as the view pans: it is not on the plane.
   await page.evaluate(() => (document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { panTo(x: number, y: number): void }).panTo(300, 200));
   const after = await page.evaluate(() => document.querySelector('sherpa-node-panel')!.getBoundingClientRect().left);

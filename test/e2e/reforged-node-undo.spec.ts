@@ -109,7 +109,7 @@ async function drag(page: Page, [x1, y1]: [number, number], [x2, y2]: [number, n
   await settle(page);
 }
 
-test('the toolbar floats at the bottom centre, 32px up; the panel is 32px from the top; the controls and minimap keep clear at 3 widths', async ({ page }) => {
+test('the toolbar floats at the bottom centre, 32px up, never over the card; the panel is flush; the controls and minimap keep clear at 3 widths', async ({ page }) => {
   await bind(page);
   for (const width of [1500, 900, 600]) {
     const r = await page.evaluate((w) => {
@@ -121,19 +121,20 @@ test('the toolbar floats at the bottom centre, 32px up; the panel is 32px from t
         controls: box(cv.shadowRoot!.querySelector('.controls')!), minimap: box(cv.shadowRoot!.querySelector('.minimap')!),
       };
     }, width);
+    // Centred on the canvas, so a panel over its end leaves it in reach; never over the card, 32px clear. TODO 796
     const mid = (r.canvas.left + r.canvas.right) / 2;
-    // Narrower than 44rem, beside the card, the toolbar yields: it keeps clear of the card instead of centring.
-    if (width >= 704) expect(Math.abs((r.bar.left + r.bar.right) / 2 - mid), `${width}: centred`).toBeLessThanOrEqual(1);
-    else expect(r.bar.left, `${width}: yields`).toBeGreaterThanOrEqual(r.panel.right);
+    const centred = Math.abs((r.bar.left + r.bar.right) / 2 - mid) <= 1;
+    expect(centred || Math.abs(r.bar.left - (r.panel.right + 32)) <= 1, `${width}: centred, or 32px past the card`).toBe(true);
+    expect(r.bar.left, `${width}: clear of the card`).toBeGreaterThanOrEqual(r.panel.right + 31);
+    if (width === 1500) expect(centred, '1500: centred').toBe(true);
     expect(Math.abs(r.canvas.bottom - r.bar.bottom - 32), `${width}: 32px up`).toBeLessThanOrEqual(1);
-    expect(Math.abs(r.panel.top - r.canvas.top - 32), `${width}: panel top`).toBeLessThanOrEqual(1);
-    expect(Math.abs(r.canvas.bottom - r.panel.bottom - 32)).toBeLessThanOrEqual(1);
-    expect(Math.abs(r.panel.left - r.canvas.left - 32)).toBeLessThanOrEqual(1);
+    expect([r.panel.top, r.panel.bottom, r.panel.left], `${width}: flush`).toEqual([r.canvas.top, r.canvas.bottom, r.canvas.left]);
     const hit = (a: typeof r.bar, b: typeof r.bar) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
     expect(hit(r.bar, r.controls), `${width}: toolbar x controls`).toBe(false);
     expect(hit(r.bar, r.minimap), `${width}: toolbar x minimap`).toBe(false);
     expect(hit(r.controls, r.minimap), `${width}: controls x minimap`).toBe(false);
     expect(hit(r.bar, r.panel), `${width}: toolbar x panel`).toBe(false);
+    expect(hit(r.minimap, r.panel), `${width}: minimap x panel`).toBe(false);
   }
   // It keeps its place as the view pans.
   const before = await page.evaluate(() => document.querySelector('sherpa-node-toolbar')!.getBoundingClientRect().left);

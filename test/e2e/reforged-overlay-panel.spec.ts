@@ -266,7 +266,7 @@ test('maximise fills the window and shows the trail; minimise brings the panel b
   expect(r.told).toEqual([{ maximised: true }, { maximised: false }]);
 });
 
-/** Pop in: a fixed panel in the shell's end area. TRAP T-a-panel-pops-into-the-end-area */
+/** Pop in: a fixed panel in a panel area of the shell, flush (TODO 796). TRAP T-a-panel-pops-into-the-end-area */
 test.describe('Pop in and Pop out', () => {
   /** A shell and a poppable panel beside it, the panel open. */
   const stage = async (page: import('@playwright/test').Page) => {
@@ -293,6 +293,7 @@ test.describe('Pop in and Pop out', () => {
     const shell = document.querySelector('sherpa-app-shell')!;
     const pop = sr.querySelector('.pop')!;
     const box = (n: Element) => { const b = n.getBoundingClientRect(); return { x: Math.round(b.x), w: Math.round(b.width) }; };
+    const areas = shell.shadowRoot!.querySelector('sherpa-layout-panels')!.shadowRoot!;
     return {
       parent: panel.parentElement!.localName,
       slot: panel.slot,
@@ -300,7 +301,8 @@ test.describe('Pop in and Pop out', () => {
       open: panel.open,
       position: getComputedStyle(sr.querySelector('.root')!).position,
       root: box(sr.querySelector('.root')!),
-      area: box(shell.shadowRoot!.querySelector('.panel-end')!),
+      area: box(areas.querySelector('.area-end')!),
+      start: box(areas.querySelector('.area-start')!),
       resize: getComputedStyle(sr.querySelector('.resize')!).display !== 'none',
       pop: getComputedStyle(pop).display !== 'none',
       label: pop.getAttribute('aria-label'),
@@ -326,14 +328,32 @@ test.describe('Pop in and Pop out', () => {
     await press(page);
     const fixed = await read(page);
     expect(fixed).toMatchObject({ parent: 'sherpa-app-shell', slot: 'panel-end', open: true, position: 'static', resize: false, pop: true, label: 'Pop out', icon: 'monitor-w-floating-window' });
-    // Inside the area, which owns its width, and its inset.
+    // FLUSH in the area, which owns its width; no inset. TODO 796
     expect(fixed.area.w).toBeGreaterThanOrEqual(464);
-    expect(fixed.root.x).toBeGreaterThan(fixed.area.x);
-    expect(fixed.root.x + fixed.root.w).toBeLessThan(fixed.area.x + fixed.area.w);
+    expect(fixed.root).toEqual(fixed.area);
 
     await press(page);
     expect(await read(page)).toEqual({ ...floating, area: { x: 0, w: 0 } });
-    expect(await page.evaluate(() => (window as unknown as { __heard: unknown[] }).__heard)).toEqual([{ fixed: true }, { fixed: false }]);
+    expect(await page.evaluate(() => (window as unknown as { __heard: unknown[] }).__heard)).toEqual([{ fixed: true, side: 'end' }, { fixed: false, side: 'end' }]);
+  });
+
+  test('data-fixed="start" docks it in the START area; Pop out, then Pop in, takes it back there', async ({ page }) => {
+    await stage(page);
+    await page.evaluate(async () => {
+      document.getElementById('pop')!.setAttribute('data-fixed', 'start');
+      await window.__settled();
+    });
+    const fixed = await read(page);
+    expect(fixed).toMatchObject({ parent: 'sherpa-app-shell', slot: 'panel-start', position: 'static', area: { x: 0, w: 0 } });
+    expect(fixed.root).toEqual(fixed.start);
+    expect(fixed.start.w).toBeGreaterThanOrEqual(464);
+    await press(page);
+    expect(await read(page)).toMatchObject({ parent: 'div', slot: '', position: 'fixed', start: { x: 0, w: 0 } });
+    await press(page);
+    const back = await read(page);
+    expect(back).toMatchObject({ parent: 'sherpa-app-shell', slot: 'panel-start' });
+    expect(back.root).toEqual(back.start);
+    expect(await page.evaluate(() => document.getElementById('pop')!.getAttribute('data-fixed'))).toBe('start');
   });
 
   test('the press keeps its focus on the button', async ({ page }) => {

@@ -37,7 +37,7 @@ test('the nav rail is a full-height overlay; the header is a row above the scrol
          the scroller, so nothing scrolls them away. TRAP T-only-the-context-scrolls */
       scrolls: ['.content', '.body', '.context-frame'].map((sel) => getComputedStyle(q(sel)).overflowY),
       headerInScroller: !!q('.context-frame .header'),
-      panelsInScroller: !!q('.context-frame .panel-start, .context-frame .panel-end'),
+      panelsInScroller: !!q('.context-frame sherpa-layout-panels'),
       headerPosition: getComputedStyle(q('.header')).position,
       // The view's inset moved off .content, so the sticky header bleeds full
       // width while the content below it stays on the layout grid.
@@ -122,12 +122,12 @@ test('only the Context scrolls: the header and a panel stay put, and the frame s
     return {
       at, scrolled, end: edges(),
       headShadow: getComputedStyle(root.querySelector('.head')!).boxShadow,
-      panelShown: getComputedStyle(shell.shadowRoot!.querySelector('.panel-start')!).display,
+      panelShown: getComputedStyle(shell.shadowRoot!.querySelector('sherpa-layout-panels')!.shadowRoot!.querySelector('.area-start')!).display,
       // Chromium and WebKit; Firefox has no scroll timeline, and shows none.
       driven: CSS.supports('animation-timeline: scroll()'),
     };
   });
-  expect(r.panelShown).toBe('block');
+  expect(r.panelShown).toBe('grid');
   // The page moved by the scroll; the header and the panel did not move at all.
   expect(r.scrolled.page).toBe(r.at.page - 200);
   expect(r.scrolled.head).toBe(r.at.head);
@@ -324,8 +324,10 @@ test('a panel area resizes by its INNER edge — dragged or by the keys — with
     await window.__settled();
     const shell = root.querySelector('sherpa-app-shell')!;
     const sr = shell.shadowRoot!;
-    const area = (side: string) => sr.querySelector<HTMLElement>(`.panel-${side}`)!;
-    const edge = (side: string) => sr.querySelector<HTMLElement>(`.edge-${side}`)!;
+    // The areas are the body's: sherpa-layout-panels. TRAP T-a-panel-area-is-a-layout
+    const lr = sr.querySelector('sherpa-layout-panels')!.shadowRoot!;
+    const area = (side: string) => lr.querySelector<HTMLElement>(`.area-${side}`)!;
+    const edge = (side: string) => lr.querySelector<HTMLElement>(`.edge-${side}`)!;
     const width = (side: string) => Math.round(area(side).getBoundingClientRect().width);
     const row = Math.round(sr.querySelector('.body')!.getBoundingClientRect().width);
     const heard: unknown[] = [];
@@ -366,7 +368,7 @@ test('a panel area resizes by its INNER edge — dragged or by the keys — with
     const least = width('start');
     await key('start', 'End');
     const end = width('start');
-    // The indicator is on the AREA's edge, not the panel's.
+    // The handle is astride the AREA's edge, which is the docked panel's own: flush.
     const e = edge('start').getBoundingClientRect();
     const a = area('start').getBoundingClientRect();
     const panel = root.querySelector('.start')!.getBoundingClientRect();
@@ -378,7 +380,7 @@ test('a panel area resizes by its INNER edge — dragged or by the keys — with
     await frames();
     return {
       row, before, wider, endWider, keyed, most, least, end, given, back: width('start'), heard, held,
-      edge: { atAreaEdge: Math.abs(e.right - a.right) <= 1, outsidePanel: e.left >= panel.right - 1 },
+      edge: { astride: Math.abs((e.left + e.right) / 2 - a.right) <= 1, flush: [panel.left, panel.right, panel.top, panel.bottom].map(Math.round).join() === [a.left, a.right, a.top, a.bottom].map(Math.round).join() },
       aria: { role: edge('start').getAttribute('role'), now: edge('start').getAttribute('aria-valuenow'),
         min: edge('start').getAttribute('aria-valuemin'), max: edge('start').getAttribute('aria-valuemax') },
     };
@@ -399,6 +401,6 @@ test('a panel area resizes by its INNER edge — dragged or by the keys — with
     { side: 'start', width: r.most }, { side: 'start', width: r.least }, { side: 'start', width: r.end },
   ]);
   expect(r.held.every(Boolean)).toBe(true);
-  expect(r.edge).toEqual({ atAreaEdge: true, outsidePanel: true });
+  expect(r.edge).toEqual({ astride: true, flush: true });
   expect(r.aria).toEqual({ role: 'separator', now: String(r.end), min: '464', max: String(Math.round(r.row * 0.33)) });
 });

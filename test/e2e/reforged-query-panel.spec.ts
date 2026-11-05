@@ -44,16 +44,15 @@ const item = (page: Page, kind: string) => page.locator(`sherpa-node-panel sherp
 const asked = (page: Page) => page.evaluate(() => (window as unknown as { asked: unknown[] }).asked);
 const said = (page: Page) => page.evaluate(() => (window as unknown as { said: string[] }).said);
 
-test('it lists the Query\'s kinds by category, 32px from the top, bottom and left', async ({ page }) => {
+test('it lists the Query\'s kinds by category, flush to the top, bottom and left', async ({ page }) => {
   const heads = await page.locator('sherpa-node-panel .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
   expect(heads).toEqual(['Custom Nodes', 'Variables', 'Logic', 'Presets', 'Saved filters', 'Status']);
   const [c, p] = await page.evaluate(() => [document.getElementById('cv')!, document.querySelector('sherpa-node-panel')!].map((e) => {
     const r = e.getBoundingClientRect();
     return { left: r.left, top: r.top, bottom: r.bottom };
   }));
-  expect(Math.abs(p!.top - c!.top - 32)).toBeLessThanOrEqual(1);
-  expect(Math.abs(c!.bottom - p!.bottom - 32)).toBeLessThanOrEqual(1);
-  expect(Math.abs(p!.left - c!.left - 32)).toBeLessThanOrEqual(1);
+  // Docked flush in the canvas's panel area. TODO 796
+  expect([p!.top, p!.bottom, p!.left]).toEqual([c!.top, c!.bottom, c!.left]);
 });
 
 test('a click on Field asks the Query to hold the next field; a Condition is refused in words; a click on Preset switches it on', async ({ page }) => {

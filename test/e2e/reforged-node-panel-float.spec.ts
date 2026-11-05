@@ -2,10 +2,11 @@ import { test, expect, type Page } from './harness';
 
 /**
  * The Nodes card floats as an overlay panel does (Will, TODO 769c), by the same code: Float lifts it
- * in place; its header moves it and its corner resizes it, inside its CANVAS, never past it; Dock
- * puts it back. While it floats the canvas's banners take the full top, and its minimap the bottom
- * left; docked, they step back. The same attributes, events, words and icons as the overlay panel's.
- * Real pointer and keys; read back by boxes and by pixels. TRAP T-a-floating-panel-is-a-state
+ * in place, 16px in; its header moves it and its corner resizes it, inside its CANVAS, never past it;
+ * Dock puts it back, flush in its panel area (TODO 796). While it floats the canvas's banners take the
+ * full top, and its minimap the bottom left; docked, they sit beside it. The same attributes, events,
+ * words and icons as the overlay panel's. Real pointer and keys; read back by boxes and by pixels.
+ * TRAP T-a-floating-panel-is-a-state
  */
 
 type Box = { x: number; y: number; w: number; h: number };
@@ -120,14 +121,17 @@ async function bannerInk(page: Page): Promise<Rgb> {
 test('Float lifts it in place, its words and icon the overlay panel\'s; the banners take the full top; Dock puts both back', async ({ page }) => {
   const cv = await canvasBox(page);
   const docked = await card(page);
-  expect(docked).toEqual({ x: cv.x + 32, y: cv.y + 32, w: 288, h: cv.h - 64 });
+  // Docked, FLUSH: top, left and bottom. TODO 796
+  expect(docked).toEqual({ x: cv.x, y: cv.y, w: 288, h: cv.h });
   expect(await float(page)).toEqual(['Float', 'browser']);
   const beside = await banner(page);
-  expect(beside.x).toBe(cv.x + 32 * 2 + 288);
+  expect(beside.x).toBe(cv.x + 288 + 32);
 
+  // Lifted in place, 16px in on each side, so it visibly lifts.
   await press(page);
-  expect(await card(page)).toEqual(docked);
-  expect(await attrs(page)).toEqual({ 'data-floating': '', 'data-x': '32', 'data-y': '32', 'data-width': '288', 'data-height': String(cv.h - 64) });
+  const lifted = { x: cv.x + 16, y: cv.y + 16, w: 256, h: cv.h - 32 };
+  expect(await card(page)).toEqual(lifted);
+  expect(await attrs(page)).toEqual({ 'data-floating': '', 'data-x': '16', 'data-y': '16', 'data-width': '256', 'data-height': String(cv.h - 32) });
   expect(await float(page)).toEqual(['Dock', 'sidebar-flip']);
   // Its shadow steps up: it is lifted.
   expect(await page.evaluate(() => document.getElementById('nodes')!.shadowRoot!.querySelector('.card')!.getAttribute('data-elevation'))).toBe('lg');
@@ -140,7 +144,7 @@ test('Float lifts it in place, its words and icon the overlay panel\'s; the bann
   // Shorter, and moved down, the banner shows where the card was, past its words: by its own ink.
   await page.evaluate(() => document.getElementById('nodes')!.setAttribute('data-height', '300'));
   await drag(page, await bar(page), [0, 200]);
-  expect(await card(page)).toEqual({ ...docked, y: docked.y + 200, h: 300 });
+  expect(await card(page)).toEqual({ ...lifted, y: lifted.y + 200, h: 300 });
   const ink = await bannerInk(page);
   const [where] = await pixels(page, docked.x + docked.w - 24, Math.round(full.y + full.h / 2));
   expect(near(where!, ink), `the banner, where the card was: ${JSON.stringify(where)} vs ${JSON.stringify(ink)}`).toBe(true);
@@ -154,12 +158,14 @@ test('Float lifts it in place, its words and icon the overlay panel\'s; the bann
   expect(await banner(page)).toEqual(beside);
   const [gap] = await pixels(page, docked.x + docked.w + 16, Math.round(beside.y + beside.h / 2));
   expect(near(gap!, ink), `the canvas between the card and the banner: ${JSON.stringify(gap)}`).toBe(false);
-  expect((await rect(page, '.minimap', 'cv')).x).toBeGreaterThan(cv.x + cv.w / 2);
+  // …and the minimap beside it: what the view shows is under 44rem, so it stacks at the end.
+  const docked2 = await rect(page, '.minimap', 'cv');
+  expect(docked2.x + docked2.w).toBe(cv.x + cv.w - 16);
   // Its box is kept, so it floats where it was moved to.
   await press(page);
-  expect((await card(page)).y).toBe(docked.y + 200);
+  expect((await card(page)).y).toBe(lifted.y + 200);
   expect(await heard(page)).toEqual([
-    { 'panel-float': { floating: true } }, { 'panel-move': { x: 32, y: 232 } }, { 'panel-float': { floating: false } }, { 'panel-float': { floating: true } },
+    { 'panel-float': { floating: true } }, { 'panel-move': { x: 16, y: 216 } }, { 'panel-float': { floating: false } }, { 'panel-float': { floating: true } },
   ]);
 });
 
@@ -282,7 +288,7 @@ test('the keys move it from the grip and resize it from the corner, by 16px, Shi
   await page.evaluate(() => document.getElementById('nodes')!.shadowRoot!.querySelector('.float')!.shadowRoot!.querySelector('button')!.focus());
   await page.keyboard.press('Enter');
   await settle(page);
-  expect(await card(page)).toEqual({ x: cv.x + 32, y: cv.y + 32, w: 288, h: cv.h - 64 });
+  expect(await card(page)).toEqual({ x: cv.x, y: cv.y, w: 288, h: cv.h });
   expect(await style(page, '.grip', 'display')).toBe('none');
   expect(await style(page, '.corner', 'display')).toBe('none');
 });

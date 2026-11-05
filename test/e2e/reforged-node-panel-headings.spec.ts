@@ -24,7 +24,7 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(async (library) => {
     const root = document.getElementById('root')!;
     root.insertAdjacentHTML('beforeend', `
-      <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar><sherpa-node-panel slot="panel"></sherpa-node-panel></sherpa-layout-canvas>
+      <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 536px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar><sherpa-node-panel slot="panel"></sherpa-node-panel></sherpa-layout-canvas>
       <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>
       <sherpa-dialog id="custom" data-heading="Save as Custom Node">
         <sherpa-stack data-gap="md">

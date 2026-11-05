@@ -281,7 +281,7 @@ test('a fixed panel floats out of the end area, which gives its room back; Dock 
   await stage(page, { shell: true });
   await press(page, 'pop');
   const area = () => page.evaluate(() => {
-    const r = document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('.panel-end')!.getBoundingClientRect();
+    const r = document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels')!.shadowRoot!.querySelector('.area-end')!.getBoundingClientRect();
     return Math.round(r.width);
   });
   const where = () => page.evaluate(() => {
