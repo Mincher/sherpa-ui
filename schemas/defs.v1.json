@@ -443,7 +443,8 @@
         "outputs": { "type": "array", "items": { "$ref": "#/$defs/nodeOutput" } },
         "nodes": { "type": "array", "items": { "$ref": "#/$defs/node" } },
         "routes": { "type": "array", "items": { "$ref": "#/$defs/innerRoute" } },
-        "ties": { "type": "array", "items": { "$ref": "#/$defs/innerTie" } }
+        "ties": { "type": "array", "items": { "$ref": "#/$defs/innerTie" } },
+        "settings": { "description": "The settings of the entity it is, where that is not a `node` (entity.v1): a copy keeps them. plan-746 E5", "type": "object" }
       }
     }
   }

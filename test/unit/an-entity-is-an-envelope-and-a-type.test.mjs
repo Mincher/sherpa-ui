@@ -14,6 +14,7 @@ import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
 const T = await import(new URL('entity-types.js', core));
+const C = await import(new URL('entity-check.js', core));
 const E = await import(new URL('entity.js', core));
 const lib = await import(new URL('node-library.js', core));
 const { editWorkflow, workflowFaults } = await import(new URL('workflow.js', core));
@@ -40,7 +41,7 @@ const placing = (id, kind, extra = {}) => make({
   graph: { nodes: [{ id: 'inner', kind, x: 0, y: 0 }], routes: [{ from: 'inner', to: '#out/where' }] },
   ...extra,
 });
-const faults = (e, facts) => T.entityFaults(e, facts);
+const faults = (e, facts) => C.entityFaults(e, facts);
 const heard = (run) => {
   const reports = [];
   const off = onReport((r) => reports.push(r));
@@ -49,7 +50,7 @@ const heard = (run) => {
 
 test('a good entity passes, in the shape the schema says; and so do the types\' settings', () => {
   assert.deepEqual(faults(make()), []);
-  assert.equal(T.checkEntity(make()), true);
+  assert.equal(C.checkEntity(make()), true);
   assert.deepEqual(schemaCheck('entity.v1.json')(make()), []);
   assert.deepEqual(schemaCheck('entity-preset-filter.v1.json')(make().settings), []);
   assert.ok(E.isEntity(make()));

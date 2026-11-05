@@ -7393,7 +7393,7 @@ Will, 2026-11-05 (plan-746, D1-D3, D8); versions: "not too fussed while we build
   and `#out` as a Custom Node has. `origin` (`preset` or `mine`) is set on READ, never written.
   A Custom Node is the type `node`, its sockets in `settings`; `nodeEntityOf` and `definitionOf`
   are the two ways round, and `nodes.v1.json` stays readable as a read-once map.
-- **The type registry** (`entity-types.ts`, the data layer): each type says its settings check
+- **The type registry** (`entity-types.ts`, the data layer, light): each type says its settings check
   (and its schema in `schemas/entity-<type>.v1.json`), the families its graph may place (a kind's
   category), the `#in` and `#out` it demands, and `runs`. Two ship: `preset-filter` and `node`.
   An app adds its own with `registerEntityType`; a clash with a shipped type is refused. The data
@@ -7404,19 +7404,22 @@ Will, 2026-11-05 (plan-746, D1-D3, D8); versions: "not too fussed while we build
   `innerOf`, `useOf`, `definitionDiff` and `updateInstance` serve entities as they serve Custom
   Nodes: a use records the version and `was`, and follows its definition (D8). `uses` is kept
   beside the graph for a quick dependency check; the nodes stay the truth.
-- **One check.** `checkEntity` says each fault in words: unknown type, a family outside the type,
+- **One check** (`entity-check.ts`, which reads kinds and workflows, so it loads only when asked).
+  `checkEntity` says each fault in words: unknown type, a family outside the type,
   settings the type does not keep, an output nothing reaches, a `uses` that is not there, a loop
   of entities (said once, from its first end), and the graph's own faults as a Custom Node's.
   Every writer calls it.
 - **One shelf** (`entity-shelf.ts`, E2): `list/get/save/remove/duplicate/export/import/watch`
   over a port, so the rules are one set. The reader's own are ONE named part of the keeper
   (`entities`, app-wide); the presets are `entities.json` (app.v1 `entities`) and the Custom Node
-  presets read as type `node`. `nodes` is a VIEW (`nodesView`): the old `nodes` part is read once
-  as entities and gone, and so is the database's `nodes` store (version 3 moves its rows).
+  presets read as type `node`. `nodes` is a VIEW (`nodesView`) of every entity, as the node it
+  offers (E5); the old `nodes` part is read once as entities and gone, and so is the database's
+  `nodes` store (version 3 moves its rows).
   A remove is refused while another entity `uses` it, naming who.
 
 - Site: `src/core/data/entity.ts`
 - Site: `src/core/data/entity-types.ts`
+- Site: `src/core/data/entity-check.ts`
 - Site: `test/unit/an-entity-is-an-envelope-and-a-type.test.mjs`
 - Site: `src/data.ts`
 - Site: `src/core/data/entity-shelf.ts`
@@ -7455,7 +7458,7 @@ of that type the canvas shows.
   id; Delete asks `whyKept` first, so a refusal is said in words before anything goes.
 
 - Site: `src/core/data/graph-views.ts`
-- Site: `src/core/data/entity-types.ts`
+- Site: `src/core/data/entity-check.ts`
 - Site: `src/core/data/app-definition.ts`
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/data.ts`
@@ -7466,3 +7469,40 @@ of that type the canvas shows.
 - Site: `src/components/sherpa-app-header/sherpa-app-header.html`
 - Site: `test/unit/a-graph-is-a-view-of-a-type.test.mjs`
 - Site: `test/e2e/reforged-graph-views.spec.ts`
+
+### T-an-entity-is-used-as-a-node
+
+**A saved entity of any type is a node the panel offers, and a use of it is an INSTANCE that
+follows it.** Will, 2026-11-05 (plan-746 E5; D1 "any graph type can have custom nodes", D8, and
+plan-713 D11 with its update flow).
+
+- **One library.** The editor's library is `nodesView` of the entity shelf: EVERY entity, as the
+  node `asNode` makes of it, keyed by its use's kind (`<type>:<id>`; a `node`'s plain id). So the
+  one Custom Node path serves them all: the panel lists them under Custom Nodes, a place is
+  `useOf` (the version and `was` recorded), Enter opens the inside (a preset read only, with
+  "Copy to my nodes"), and a save, a `refresh` from the watch, `staleUses`, the diff and the split
+  button are the Custom Node's own. No second path exists for an entity.
+- **Back to its entity.** `nodeEntityOf(kind, definition)` is the inverse of `asNode`: an edit made
+  inside a use, or a copy, is saved as an entity of the kind's type. A type's own settings ride in
+  the definition's `settings` (never part of its version), so "Copy to my nodes" of a preset
+  Preset Filter is saved as the reader's own Preset Filter, its source kept. One id names one
+  entity of ANY type: `copyToMine` frees an id among every type's.
+- **What the panel offers** is `offeredKinds`, for the graph shown (the canvas's entity, given to
+  `bindWorkflow` as `entity`; inside a use opened, that one): a kind its type `takes` (its
+  families, the rule the check holds too), and any entity's node (no family bounds one, D1) but
+  its own and any that holds it at any depth, read through the DRAFT. Without `entity`, a plain
+  workflow is offered all.
+- **The open entity's saved copy is never written.** The library holds it (another entity may
+  place it, and the checks read it), but "Update all instances" skips it: its graph is the draft,
+  and Save writes the draft. Writing the saved copy too would put the old graph back over it.
+- **Light.** The keeper builds the library, so the registry and `asNode` (`entity-types.ts`) load
+  no node kind and no workflow; the check is `entity-check.ts`, loaded by a save.
+- **Demos** saves each Custom Node the draft changed FIRST, and stops the Save on a refusal (a
+  family its type does not take), so the draft keeps the edit.
+
+- Site: `src/core/data/entity-types.ts`
+- Site: `src/core/data/entity-shelf.ts`
+- Site: `src/data.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `test/unit/an-entity-is-used-as-a-node.test.mjs`
+- Site: `test/e2e/reforged-entity-use.spec.ts`

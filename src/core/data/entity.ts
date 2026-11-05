@@ -1,7 +1,7 @@
 /**
  * entity.ts — the ENVELOPE of an entity: a graph saved under a type, an id and a name, with the
  * settings its type keeps and the entities its graph places. One shape for every type; a Custom
- * Node is the type `node`. Light, so the keeper can import it. The checks are in entity-types.
+ * Node is the type `node`. Light, so the keeper can import it. The types are in entity-types, the checks in entity-check.
  * DOM-free. Will, plan 746 E1 · TRAP T-an-entity-is-an-envelope-and-a-type
  *
  * Map:
@@ -12,8 +12,9 @@
  * - EntityLibrary — The preset entities of an app, by id (entities.v1).
  * - isEntity — Whether a value has the SHAPE of an entity; the persist guard.
  * - entityKind — The kind a use of an entity has in a graph: `<type>:<id>`, and a Custom Node's plain id.
+ * - entityRefOf — The entity a use's kind names: the inverse of `entityKind`.
  * - usesOf — The entities a graph places, from its nodes' kinds, among the entities given.
- * - nodeEntityOf — A Custom Node definition as an entity of the type `node`.
+ * - nodeEntityOf — The entity a Custom Node definition is, by its use's kind: the inverse of `asNode`.
  * - definitionOf — A `node` entity as the Custom Node definition the node panel and the editor read.
  */
 import type { NodeRoute, NodeTie } from './node-kinds.js';
@@ -73,6 +74,12 @@ export function isEntity(value: unknown): value is Entity {
 /** The kind a use of an entity has in a graph: `<type>:<id>`. A Custom Node's is its plain id. */
 export const entityKind = (entity: Pick<Entity, 'type' | 'id'>): string => (entity.type === 'node' ? entity.id : `${entity.type}:${entity.id}`);
 
+/** The entity a use's kind names: the inverse of `entityKind`. */
+export function entityRefOf(kind: string): EntityRef {
+  const at = kind.indexOf(':');
+  return at < 0 ? { type: 'node', id: kind } : { type: kind.slice(0, at), id: kind.slice(at + 1) };
+}
+
 /** The entities a graph places, read from its nodes' kinds, among the entities given. */
 export function usesOf(graph: Pick<EntityGraph, 'nodes'>, among: readonly Pick<Entity, 'type' | 'id'>[]): EntityRef[] {
   const found = new Map<string, EntityRef>();
@@ -83,13 +90,18 @@ export function usesOf(graph: Pick<EntityGraph, 'nodes'>, among: readonly Pick<E
   return [...found.values()];
 }
 
-/** A Custom Node definition as an entity of the type `node`: its sockets are its settings. */
-export function nodeEntityOf(id: string, definition: NodeDefinition): Entity {
+/** The entity a Custom Node definition is, by the kind its use has: the inverse of `asNode`. A plain id is
+ *  the type `node`, its sockets its settings; `<type>:<id>` is that type's, its own settings carried. */
+export function nodeEntityOf(kind: string, definition: NodeDefinition): Entity {
+  const { type, id } = entityRefOf(kind);
+  const settings = type === 'node'
+    ? { inputs: definition.inputs, outputs: definition.outputs, ...(definition.category ? { category: definition.category } : {}), ...(definition.icon ? { icon: definition.icon } : {}) }
+    : definition.settings;
   return {
-    v: 1, type: 'node', id, label: definition.label,
+    v: 1, type, id, label: definition.label,
     ...(definition.description ? { description: definition.description } : {}),
     graph: { nodes: definition.nodes, ...(definition.routes ? { routes: definition.routes } : {}), ...(definition.ties ? { ties: definition.ties } : {}) },
-    settings: { inputs: definition.inputs, outputs: definition.outputs, ...(definition.category ? { category: definition.category } : {}), ...(definition.icon ? { icon: definition.icon } : {}) },
+    ...(settings ? { settings } : {}),
     ...(definition.preset ? { origin: 'preset' as const } : {}),
   };
 }

@@ -329,7 +329,8 @@ A graph View is a View whose body is a canvas, showing one entity of a type
 - `init` is handed `ctx.graph` (`{ view, type, id, origin }`), and the outlet
   fires `graph-change` `{ graph }` when it moves. Bind the canvas to
   `graphWorkflow(entities.get(id))` with `bindWorkflow`, `readOnly` on a
-  preset; `graphOfWorkflow(editor.workflow())` is the graph to keep.
+  preset and `entity` the one open, `library` `nodes.library()`;
+  `graphOfWorkflow(editor.workflow())` is the graph to keep.
   `outlet.openGraph(id)` opens another.
 - New graph… asks first, `graph-new` `{ type }`: prevent it to ask a name, then
   `newGraph(entities, entityTypes()[type], { label })`. Left alone, the outlet
@@ -472,8 +473,8 @@ with `registerEntityType(type)` (a clash with a shipped type is refused).
   `list(type?)`, `get(id)`, `await save(entity)`, `remove(id)`, `await duplicate(id, newId)`,
   `export(id)`, `await import(json)` and `watch(handler, signal)`. An id names ONE
   entity. A save runs `checkEntity` and says each fault in words; a remove is refused
-  while another entity uses it, naming who. `nodes` is the same shelf seen as Custom Nodes
-  (the entities of the type `node`).
+  while another entity uses it, naming who. `nodes` is the same shelf seen as Custom Nodes:
+  every entity, as the node it offers, by its use's kind.
 - **The presets** are the file `app.json` `entities` names (`entities.v1`: `{ v, entities: { id: entity } }`),
   read by the outlet through `loadEntityLibrary(url)`; one that fails is reported and left out.
   They are read only: `duplicate` makes the reader's own.
@@ -484,6 +485,13 @@ with `registerEntityType(type)` (a clash with a shipped type is refused).
   use is a node whose `kind` is `<type>:<id>`. It follows its definition: `libraryOf(entities)`
   feeds `kindsOf`, `useOf` and `updateInstance`, as a Custom Node's library does.
   `T-an-entity-is-an-envelope-and-a-type`
+- **Used as a node** (E5): `nodes.library()` holds every entity so, and the editor's panel
+  lists them under Custom Nodes. Given `entity`, it offers what that type takes (`offeredKinds`),
+  and no node that holds the graph (a loop). A placed use records its version; when the entity
+  is saved again, each use shows "Update available", its diff and the split button, and an
+  update stays in the draft until Save. Save each Custom Node the draft changed,
+  `nodes.save(kind, definition)`, BEFORE the graph that places it, and stop on a refusal: the
+  draft keeps it. `T-an-entity-is-used-as-a-node`
 
 ## 10. Questions and saved filters
 

@@ -12,11 +12,11 @@ import type { NodeKind } from './node-kinds.js';
 import type { NodeDefinition, NodeLibrary } from './node-library.js';
 
 /** What an editor is handed: the library as it is now (presets and the reader's), save one,
- *  remove one. Save and remove answer whether it was done; the reason is reported. */
+ *  remove one, each by the kind its use has. Save and remove answer whether it was done; the reason is reported. */
 export interface NodeShelf {
   library(): NodeLibrary;
-  save(id: string, definition: NodeDefinition): Promise<boolean>;
-  remove(id: string): boolean;
+  save(kind: string, definition: NodeDefinition): Promise<boolean>;
+  remove(kind: string): boolean;
   /** Called with the library whenever it changes here, and when another tab changes it. Stops on the signal. */
   watch(handler: (library: NodeLibrary) => void, signal?: AbortSignal): void;
 }

@@ -66,6 +66,8 @@ import {
   type Inner, type NodeDefinition, type NodeLibrary,
 } from '../data/node-library.js';
 import { groupNodes, headerInput, heldInputs, ungroupUse } from '../data/node-group.js';
+import { entityKind, type EntityRef } from '../data/entity.js';
+import { offeredKinds } from '../data/entity-types.js';
 import { flowPane, instancePane, updatePane } from './node-group-panel.js';
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
 import { nodeFlow } from '../data/node-flow.js';
@@ -1872,6 +1874,9 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
   toolbar?: HTMLElement;
   /** The workflow is a preset: drawn, opened, never edited, as a preset Custom Node's inside is. TRAP T-a-graph-is-a-view-of-a-type */
   readOnly?: boolean;
+  /** The entity this graph is: the panel offers what `offeredKinds` says of it, and inside each node opened, of
+   *  that one; "Update all instances" never writes its saved copy over the draft. TRAP T-an-entity-is-used-as-a-node */
+  entity?: EntityRef;
 }
 
 /** A node's own name, line and place, as its inspector's first rows edit them. */
@@ -1908,7 +1913,7 @@ const isEdits = (v: unknown): v is Record<string, NodeDefinition> => !!v && type
  *  · TRAP T-a-custom-node-is-an-instance */
 export function bindWorkflow(
   canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition | WorkflowDefinitionV1,
-  { inspector, panel, session, kinds = NODE_KINDS, library, onSaveNode, header, confirm, customDialog, onUpdateAll, toolbar, readOnly: preset = false, ...facts }: WorkflowEditorOptions = {},
+  { inspector, panel, session, kinds = NODE_KINDS, library, onSaveNode, header, confirm, customDialog, onUpdateAll, toolbar, readOnly: preset = false, entity, ...facts }: WorkflowEditorOptions = {},
 ): WorkflowEditor {
   const pointer = `/workflows/${workflow.id}`;
   const isDraft = (v: unknown): v is WorkflowDefinition | WorkflowDefinitionV1 => {
@@ -1920,6 +1925,8 @@ export function bindWorkflow(
   const editsAt = `/node-edits/${workflow.id}`;
   session?.persist(editsAt, { shared: false, guard: isEdits });
   const edited = session?.get(editsAt) as Record<string, NodeDefinition> | undefined ?? {};
+  // The entity this graph is, by the kind its use has: the library holds its SAVED copy; the draft is its own.
+  const own = entity && entityKind(entity);
   let given = library ?? { v: 1, nodes: {} };
   let lib: NodeLibrary = { ...given, nodes: { ...given.nodes, ...edited } };
   let handed: NodeLibrary = given;
@@ -1962,8 +1969,12 @@ export function bindWorkflow(
   /** A preset's inside is read only (D15), at any depth; a preset workflow, everywhere. */
   const insidePreset = (): boolean => path.some((s) => lib.nodes[s.kind]?.preset);
   const readOnly = (): boolean => preset || insidePreset();
-  // A graph's own Group Input and Output are drawn, never placed.
-  const refreshPanel = (): void => { void panel?.populate(paletteOf(Object.fromEntries(Object.entries(topKinds()).filter(([id]) => !id.startsWith('#'))))); };
+  // A graph's own Group Input and Output are drawn, never placed; the rest are what the graph shown may place.
+  const refreshPanel = (): void => {
+    const placeable = Object.fromEntries(Object.entries(topKinds()).filter(([id]) => !id.startsWith('#')));
+    // A loop is read through the draft: what it places now, not what was saved.
+    void panel?.populate(paletteOf(offeredKinds(placeable, path.at(-1)?.kind ?? own, own ? { ...lib.nodes, [own]: { nodes: draft.nodes } } : lib.nodes)));
+  };
   // — Undo and Redo: each edit is a pure function on the draft, so a step is a snapshot of
   //   the draft and the edited definitions, before and after. They share structure: a step is cheap.
   //   TRAP T-an-edit-is-a-step
@@ -2211,11 +2222,12 @@ export function bindWorkflow(
   const trail = (): void => {
     void header?.populate({ breadcrumb: path.length ? [{ label: draft.label ?? 'Workflow' }, ...path.map((s) => ({ label: s.label }))] : [] });
   };
-  /** The canvas shows another graph: nothing is picked, and the view fits it. */
+  /** The canvas shows another graph: nothing is picked, the view fits it, and the panel lists what it may place. */
   const enter = (focus: string | null): void => {
     multi.clear();
     markNode(canvas, null);
     picks.deselect();
+    refreshPanel();
     draw();
     requestAnimationFrame(() => requestAnimationFrame(() => canvas.fit()));
     if (focus) focusNode(canvas, focus);
@@ -2291,7 +2303,7 @@ export function bindWorkflow(
     let next = lib;
     const ids: string[] = [];
     for (const [id, definition] of Object.entries(lib.nodes)) {
-      if (definition.preset || !definition.nodes.some((n) => n.kind === kind)) continue;
+      if (id === own || definition.preset || !definition.nodes.some((n) => n.kind === kind)) continue;
       const body = updateAll({ v: 2, id, nodes: definition.nodes, routes: definition.routes ?? [] }, kind, lib, topKinds());
       next = editDefinition(next, id, { nodes: body.nodes, routes: body.routes ?? [] });
       ids.push(id);

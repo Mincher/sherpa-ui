@@ -3,7 +3,8 @@
  * and the reader's own, app-wide, of every type. ONE door: list, get, save, remove (refused while
  * another entity uses it), duplicate, export, import, watch. It holds no storage: the keeper gives
  * it a port, so a test, a server and a browser share the one set of rules. The Custom Node shelf is
- * a VIEW of it (`nodesView`). DOM-free. Will, plan 746 E2 · TRAP T-an-entity-is-an-envelope-and-a-type
+ * a VIEW of it (`nodesView`): every entity, as the node it offers. DOM-free. Will, plan 746 E2, E5
+ * TRAP T-an-entity-is-an-envelope-and-a-type · TRAP T-an-entity-is-used-as-a-node
  *
  * Map:
  * - EntitySummary — One entity as a list shows it: cheap, no graph.
@@ -11,11 +12,12 @@
  * - EntityPort — What a shelf needs of its keeper: the presets, the reader's own, keeping them, and hearing a change.
  * - joinEntities — The presets and the reader's entities as one list; a clash with a preset or an earlier id is left out.
  * - makeShelf — The shelf over a port. Each save keeps the final graph, checked by `checkEntity`, loaded when first asked.
- * - nodesView — The Custom Node shelf as a view of an entity shelf: the entities of the type `node`.
+ * - nodesView — The Custom Node shelf as a view of an entity shelf: every entity, as the node it offers, by its use's kind.
  */
 import { report } from './report.js';
-import { definitionOf, isEntity, nodeEntityOf, usesOf, ENTITY_SCHEMA, type Entity } from './entity.js';
-import type { EntityFacts } from './entity-types.js';
+import { entityKind, entityRefOf, isEntity, nodeEntityOf, usesOf, ENTITY_SCHEMA, type Entity } from './entity.js';
+import { libraryOf } from './entity-types.js';
+import type { EntityFacts } from './entity-check.js';
 import type { NodeDefinition, NodeLibrary } from './node-library.js';
 import type { NodeShelf } from './node-shelf.js';
 
@@ -104,7 +106,7 @@ export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'type
       const held = here.find((e) => e.id === entity.id);
       if (held?.origin === 'preset') return refuse(entity.type, `save: "${entity.id}" is a preset, which is read only: use "Copy to my entities".`, entity.id);
       if (held && held.type !== entity.type) return refuse(entity.type, `save: "${entity.id}" is already a ${held.type}: an id names one entity.`, entity.id);
-      const [{ checkEntity }, { finalGraph }] = await Promise.all([import('./entity-types.js'), import('./workflow.js')]);
+      const [{ checkEntity }, { finalGraph }] = await Promise.all([import('./entity-check.js'), import('./workflow.js')]);
       // Its graph as Save writes it: what a node keeps for its other types stays behind.
       const next = kept({ ...entity, graph: finalGraph(entity.graph, facts().kinds) }, here);
       if (!checkEntity(next, { ...facts(), entities: here.filter((e) => e.id !== next.id) })) return false;
@@ -172,19 +174,21 @@ export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'type
   return shelf;
 }
 
-/** The Custom Node shelf as a VIEW of an entity shelf: the entities of the type `node`, as definitions. */
+/** The Custom Node shelf as a VIEW of an entity shelf: EVERY entity, as the Custom Node it offers (D1), keyed
+ *  by the kind its use has (`<type>:<id>`; a `node`'s plain id). A save goes back to the entity of that kind,
+ *  of its own type; a remove takes the entity of that kind only. TRAP T-an-entity-is-used-as-a-node */
 export function nodesView(shelf: EntityShelf): NodeShelf {
-  const library = (): NodeLibrary => ({
-    v: 1,
-    nodes: Object.fromEntries(shelf.list('node').flatMap(({ id }) => { const e = shelf.get(id); return e ? [[id, definitionOf(e)] as const] : []; })),
-  });
+  const library = (): NodeLibrary => libraryOf(shelf.list().flatMap(({ id }) => { const e = shelf.get(id); return e ? [e] : []; }));
   return {
     library,
-    save: (id, definition: NodeDefinition) => {
+    save: (kind, definition: NodeDefinition) => {
       const { preset: _preset, $schema: _schema, ...node } = definition;
-      return shelf.save(nodeEntityOf(id, node));
+      return shelf.save(nodeEntityOf(kind, node));
     },
-    remove: (id) => shelf.get(id)?.type === 'node' && shelf.remove(id),
+    remove: (kind) => {
+      const held = shelf.get(entityRefOf(kind).id);
+      return !!held && entityKind(held) === kind && shelf.remove(held.id);
+    },
     watch: (handler, signal) => shelf.watch(() => handler(library()), signal),
   };
 }

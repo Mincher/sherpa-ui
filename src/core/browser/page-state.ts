@@ -22,10 +22,10 @@
  * - .presets — The Custom Nodes the app ships, read only: set after loadNodeLibrary().
  * - .entityPresets — The entities the app ships, read only: set after loadEntityLibrary().
  * - .entities — The ONE entity shelf: the presets and the reader's own, of every type, kept app-wide.
- * - .shelf — The Custom Node shelf: a view of the entities of the type `node`.
- * - .nodeLibrary — The Custom Nodes now, as one library.
- * - .saveNode — Keep one of the reader's Custom Nodes; a clash or a fault is refused and reported.
- * - .removeNode — Forget one of the reader's Custom Nodes.
+ * - .shelf — The Custom Node shelf: a view of every entity, as the node it offers.
+ * - .nodeLibrary — Every entity now, as the Custom Node it offers, in one library.
+ * - .saveNode — Keep one of the reader's Custom Nodes, by its use's kind; a clash or a fault is refused and reported.
+ * - .removeNode — Forget one of the reader's Custom Nodes, by its use's kind.
  * - .watchNodes — Hear the Custom Nodes change: here at once, in another tab by its `storage` event.
  * - .appContext — The App Context's one answer, for this tab.
  * - .restore — The named parts from the database and the server, merged under this browser's.
@@ -303,25 +303,25 @@ export class PageKeeper {
     });
   }
 
-  /** The Custom Node shelf, as what an editor is handed: a VIEW of the entities of the type `node`. */
+  /** The Custom Node shelf, as what an editor is handed: a VIEW of every entity, as the node it offers (D1). */
   get shelf(): NodeShelf {
     return nodesView(this.entities);
   }
 
-  /** The Custom Nodes now, as one library; read through. A clash with a preset is left out. */
+  /** Every entity now, as the Custom Node it offers, keyed by its use's kind; read through. A clash with a preset is left out. */
   nodeLibrary(): NodeLibrary {
     return this.shelf.library();
   }
 
-  /** Keep one of the reader's Custom Nodes. Refused and reported where it holds a preset's id, a
-   *  shipped kind's, or a fault. Answers whether it was kept; the checks load when first asked. */
-  saveNode(id: string, definition: NodeDefinition): Promise<boolean> {
-    return this.shelf.save(id, definition);
+  /** Keep one of the reader's Custom Nodes, by its use's kind, as the entity it is. Refused and reported where it holds a
+   *  preset's id, a shipped kind's, or a fault. Answers whether it was kept; the checks load when first asked. */
+  saveNode(kind: string, definition: NodeDefinition): Promise<boolean> {
+    return this.shelf.save(kind, definition);
   }
 
-  /** Forget one of the reader's Custom Nodes. A preset is not the reader's to remove. */
-  removeNode(id: string): boolean {
-    return this.shelf.remove(id);
+  /** Forget one of the reader's Custom Nodes, by its use's kind. A preset is not the reader's to remove. */
+  removeNode(kind: string): boolean {
+    return this.shelf.remove(kind);
   }
 
   /** Hear the Custom Nodes change: a save or a removal here at once, one in another tab by its

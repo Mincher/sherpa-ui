@@ -81,6 +81,8 @@ export interface NodeDefinition extends NodeSnapshot {
   preset?: true;
   /** Zip ties in the body: they change no data, so are no part of its version or its diff. */
   ties?: readonly NodeTie[];
+  /** An entity's own settings, where it is not a `node` (plan 746 E5): no part of its version; a copy keeps them. */
+  settings?: Readonly<Record<string, unknown>>;
 }
 
 /** Every Custom Node of an app, by id (D13). */
@@ -422,7 +424,10 @@ export function editDefinition(
 export function copyToMine(library: NodeLibrary, id: string): { library: NodeLibrary; id?: string } {
   const was = library.nodes[id];
   if (!was) return { library };
-  const free = (n: number): string => { const next = n === 1 ? `${id}-copy` : `${id}-copy-${n}`; return next in library.nodes ? free(n + 1) : next; };
+  // An entity's key is `<type>:<id>`, and one id names one entity of any type (plan 746).
+  const bare = (key: string): string => key.slice(key.indexOf(':') + 1);
+  const taken = new Set(Object.keys(library.nodes).map(bare));
+  const free = (n: number): string => { const next = n === 1 ? `${id}-copy` : `${id}-copy-${n}`; return taken.has(bare(next)) ? free(n + 1) : next; };
   const copy = free(1);
   const { preset: _preset, ...mine } = structuredClone(was);
   return { library: { ...library, nodes: { ...library.nodes, [copy]: { ...mine, label: `${was.label} copy` } } }, id: copy };

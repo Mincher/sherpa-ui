@@ -17,7 +17,8 @@ import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 const core = new URL('../../dist/core/', import.meta.url);
 const { PageKeeper, memoryTier } = await import(new URL('browser/page-state.js', core));
 const { NEW_GRAPH, graphOfWorkflow, graphRows, newGraph, openOf, saveGraph, saveGraphAs } = await import(new URL('data/graph-views.js', core));
-const { checkEntity, entityFaults, entityTypes, graphWorkflow, registerEntityType } = await import(new URL('data/entity-types.js', core));
+const { entityTypes, registerEntityType } = await import(new URL('data/entity-types.js', core));
+const { checkEntity, entityFaults, graphWorkflow } = await import(new URL('data/entity-check.js', core));
 const { checkApp } = await import(new URL('data/app-definition.js', core));
 const { onReport } = await import(new URL('data/report.js', core));
 

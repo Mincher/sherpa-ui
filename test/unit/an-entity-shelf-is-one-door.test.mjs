@@ -193,10 +193,12 @@ test('the old `nodes` is read ONCE as entities of the type `node`, and the old p
   assert.deepEqual(Object.keys(k.shelf.library().nodes), ['has-role']);
   assert.equal(await k.shelf.save('another', { ...HAS_ROLE, label: 'Another' }), true);
   assert.deepEqual(ids(k.entities, 'node'), ['has-role', 'another']);
+  // Every entity is a node it offers, by its use's kind (plan 746 E5); a remove takes the kind it names only.
   await k.entities.save(filter('f'));
-  assert.deepEqual(Object.keys(k.nodeLibrary().nodes), ['has-role', 'another'], 'a filter is no Custom Node in the panel\'s library');
-  assert.equal(k.shelf.remove('f'), false, 'the node shelf removes nodes only');
+  assert.deepEqual(Object.keys(k.nodeLibrary().nodes), ['has-role', 'another', 'preset-filter:f']);
+  assert.equal(k.shelf.remove('f'), false, 'a plain id names a Custom Node, which "f" is not');
   assert.equal(k.shelf.remove('another'), true);
+  assert.equal(k.shelf.remove('preset-filter:f'), true);
   assert.deepEqual(Object.keys(k.nodeLibrary().nodes), ['has-role']);
 });
 

@@ -10,7 +10,7 @@
  */
 import { report } from '../data/report.js';
 import { isEntity, type Entity, type EntityLibrary } from '../data/entity.js';
-import { entityFaults, type EntityFacts } from '../data/entity-types.js';
+import { entityFaults, type EntityFacts } from '../data/entity-check.js';
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
