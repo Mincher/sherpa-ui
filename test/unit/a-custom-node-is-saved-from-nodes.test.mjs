@@ -210,6 +210,10 @@ test('the Group Input shows a row per connected input, each an output socket rou
   assert.deepEqual(rows.map((r) => [r.name, r.output]), [['start-rows', 'object'], ['val-value', 'value']]);
   for (const r of rows) assert.deepEqual(inner.workflow.routes.filter((x) => x.from === `#in/${r.name}`).map((x) => x.to).sort(), r.name === 'start-rows' ? ['a', 'b'] : ['a/value', 'b/value']);
   assert.deepEqual(sorted(ungroupUse(made.workflow, made.use, made.library).workflow), sorted(w));
+  // Only its rows send: no header socket (Will, 765), so a route from `#in` itself is a fault.
+  assert.equal(inner.kinds[lib.GROUP_INPUT].output, undefined);
+  const fromHeader = { ...inner.workflow, routes: [...inner.workflow.routes, { from: '#in', to: 'a' }] };
+  assert.ok(workflowFaults(fromHeader, inner.kinds, facts).some((f) => f.includes('"#in"')), 'a route from the Group Input header is a fault');
 });
 
 test('ungroup of what is no Custom Node is refused; a parameter nothing fed lands on its row', () => {

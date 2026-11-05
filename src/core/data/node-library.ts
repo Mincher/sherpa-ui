@@ -71,7 +71,7 @@ export interface NodeSnapshot {
 }
 
 /** One Custom Node as JSON: its sockets, and the workflow body inside. Inner routes name its
- *  sockets `#in`, `#in/<name>`, `#out` and `#out/<name>`. Its id is its key in the library. */
+ *  sockets `#in/<name>`, `#out` and `#out/<name>`. Its id is its key in the library. */
 export interface NodeDefinition extends NodeSnapshot {
   $schema?: string;
   category?: string;
@@ -188,7 +188,7 @@ export interface Inner {
 function inside(id: string, definition: NodeDefinition, base: Kinds, values: Readonly<Record<string, unknown>> = {}): Inner {
   const xs = definition.nodes.map((n) => n.x);
   const input: NodeKind = {
-    heading: 'Group Input', icon: 'login', description: 'What comes into the Custom Node.', output: 'object', model: 'groupInput', graphs: ['workflow'],
+    heading: 'Group Input', icon: 'login', description: 'What comes into the Custom Node.', model: 'groupInput', graphs: ['workflow'],
     rows: definition.inputs.map((i) => ({ name: i.name, label: i.label ?? i.name, output: i.type, ...(i.multiple ? { multiple: true as const } : {}) })),
   };
   const output: NodeKind = {

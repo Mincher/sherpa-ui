@@ -7378,6 +7378,8 @@ the group's internal node sockets. I never said that a group input was of a cert
   tab together, so a reload does not add it twice. A preset's stays on the header.
 - **Ungroup** joins each route into a row to every inner socket that row feeds. A row that feeds
   nothing inside, and a header route, have nowhere to go, and are dropped.
+- **The Group Input has no header socket** (Will, 765): nothing stays on a use's header, so it
+  would send nothing. Only its rows send. A definition route from `#in` itself is a fault.
 
 - Site: `src/core/data/node-group.ts`
 - Site: `src/core/ui/node-graph.ts`
