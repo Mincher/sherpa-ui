@@ -195,6 +195,7 @@ export {
   nodeKindOf,
   nodeLibraryFaults,
   staleUses,
+  tagDefinition,
   updateAll,
   updateInstance,
   useOf,

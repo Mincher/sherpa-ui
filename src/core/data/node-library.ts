@@ -29,6 +29,7 @@
  * - updateInstance — The workflow with one use brought to the library's definition; its own values kept.
  * - updateAll — The workflow with every use of one definition brought to the library's.
  * - editDefinition — The library after one change to a definition; a preset's is refused.
+ * - tagDefinition — A definition's tags set, tidied: every use shares them, no use goes stale; a preset's refused.
  * - copyToMine — A custom, editable copy of a definition (a preset's, as "Copy to my nodes").
  */
 import { withoutBends } from './route-bends.js';
@@ -429,6 +430,16 @@ export function editDefinition(
   const was = library.nodes[id];
   if (!was || was.preset) return library;
   return { ...library, nodes: { ...library.nodes, [id]: { ...was, ...change } } };
+}
+
+/** The library with a definition's tags set, tidied: every use shares them, and no use goes stale. A preset's
+ *  is refused, and so is no change: the library given, untouched. None left, it keeps no list. TODO 819 */
+export function tagDefinition(library: NodeLibrary, id: string, tags: unknown): NodeLibrary {
+  const was = library.nodes[id];
+  const next = tidyTags(tags);
+  if (!was || was.preset || JSON.stringify(next) === JSON.stringify(tidyTags(was.tags))) return library;
+  const { tags: _tags, ...rest } = was;
+  return { ...library, nodes: { ...library.nodes, [id]: { ...rest, ...(next.length ? { tags: next } : {}) } } };
 }
 
 /** A custom, editable copy of a definition — a preset's, as "Copy to my nodes" — under a free id.

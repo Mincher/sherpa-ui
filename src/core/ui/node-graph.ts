@@ -71,9 +71,10 @@ import { VIEW } from '../data/query.js';
 import { valueKey } from '../data/store.js';
 import { report } from '../data/report.js';
 import {
-  checkNodeLibrary, copyToMine, definitionDiff, editDefinition, innerOf, kindsOf, staleUses, updateAll, updateInstance, useOf, workflowFaultsDeep,
+  checkNodeLibrary, copyToMine, definitionDiff, editDefinition, innerOf, kindsOf, staleUses, tagDefinition, updateAll, updateInstance, useOf, workflowFaultsDeep,
   type Inner, type NodeDefinition, type NodeLibrary,
 } from '../data/node-library.js';
+import { tidyTags } from '../data/tags.js';
 import { groupNodes, headerInput, heldInputs, ungroupUse } from '../data/node-group.js';
 import { entityKind, entityRefOf, type EntityRef } from '../data/entity.js';
 import { PRESET_FILTER, offeredKinds } from '../data/entity-types.js';
@@ -1777,7 +1778,8 @@ function pickedIn(
   inspector?.addEventListener('panel-close', close);
   const keys = (event: KeyboardEvent): void => {
     const first = event.composedPath()[0];
-    if ((event.key !== 'Delete' && event.key !== 'Backspace') || (first instanceof Element && first.matches('input, select, textarea, [contenteditable]'))) return;
+    // A key a field took already (a tag chip's Backspace removes the tag) is never the node's. TODO 819
+    if ((event.key !== 'Delete' && event.key !== 'Backspace') || event.defaultPrevented || (first instanceof Element && first.matches('input, select, textarea, [contenteditable]'))) return;
     event.preventDefault();
     onDelete?.();
   };
@@ -2352,6 +2354,13 @@ export function bindWorkflow(
     draw();
   }, tag);
   const onEdit = ({ node, row, value }: GraphEdit): void => {
+    // A Custom Node's tags are its definition's: one step, and the panel's headings follow. TODO 819
+    if (row.name === '#tags') {
+      const id = taggedBy(node);
+      const next = id && !readOnly() ? tagDefinition(lib, id, value) : lib;
+      if (next !== lib) setLib(next, [id!]);
+      return;
+    }
     const own = OWN[row.name];
     // A portal's name, or a Rename, can join a loop: checked as a route is, and refused the same way; a refused pick draws back. TODO 779
     const portal = portalOf(node);
@@ -2748,7 +2757,7 @@ export function bindWorkflow(
     const tags = dialogField('tags');
     if (tags) {
       tags.tags = [];
-      tags.suggestions = [...new Set(Object.values(lib.nodes).flatMap((d) => d.tags ?? []))].sort().map((value) => ({ value }));
+      tags.suggestions = knownTags().map((value) => ({ value }));
     }
     dialogField('label')?.removeAttribute('data-description');
     customDialog.show();
@@ -2893,14 +2902,30 @@ export function bindWorkflow(
     const use = innerOf(node, lib, K());
     return use && workflowGraph(use.workflow, facts, use.kinds);
   };
-  // The inspector leads with the node's own name, line and place.
+  /** Every tag the app's Custom Nodes have: what a Tags field offers. */
+  const knownTags = (): string[] => [...new Set(Object.values(lib.nodes).flatMap((d) => tidyTags(d.tags)))].sort();
+  /** The definition a Tags field edits: a use's; inside an opened one, its Group Input's and Output's. */
+  const taggedBy = (node: Pick<GraphNode, 'id'>): string | undefined => (node.id.startsWith('#') ? path.at(-1)?.kind : use(node.id)?.kind);
+  /** The Tags row: the DEFINITION's tags, which every use shares; read only for a preset. TRAP T-a-custom-node-is-an-instance */
+  const tagsRow = (node: GraphNode): GraphRow[] => {
+    const id = taggedBy(node);
+    const definition = id ? lib.nodes[id] : undefined;
+    return definition ? [{
+      name: '#tags', label: 'Tags', control: 'tags', multiple: true, value: tidyTags(definition.tags), editable: !readOnly() && !definition.preset,
+      choices: knownTags().map((value) => ({ value, label: value })),
+      hint: definition.preset ? 'The Custom Node\'s own tags, read only: it is a preset' : 'The Custom Node\'s own tags: every use of it shares them',
+    }] : [];
+  };
+  // The inspector leads with the node's own name, line and place; a Custom Node's tags after its line.
   const withOwn = (node: GraphNode): GraphNode => {
-    if (node.id.startsWith('#')) return node;
+    const tags = tagsRow(node);
+    if (node.id.startsWith('#')) return tags.length ? { ...node, rows: [...tags, ...node.rows] } : node;
     const at = shown().nodes.find((n) => n.id === node.id);
     const editable = !readOnly();
     const own: GraphRow[] = [
       { name: '#heading', label: 'Name', control: 'text', value: node.heading, editable },
       { name: '#description', label: 'Description', control: 'text', value: node.description ?? '', editable },
+      ...tags,
       { name: '#x', label: 'X', control: 'number', value: at?.x, editable },
       { name: '#y', label: 'Y', control: 'number', value: at?.y, editable },
     ];

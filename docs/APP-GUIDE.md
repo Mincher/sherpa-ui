@@ -467,8 +467,11 @@ whose headings stick as it scrolls, with a Jump to chip beside its search. A Cus
 Node's `tags` (a list of words, on its entity) list it under each tag there, and the
 search finds it by one: give Save as Custom Node's dialog a tags field,
 `<sherpa-input-text name="tags" data-type="tags">`, and pass `tags` to `newGraph`
-and `saveGraphAs`. A Custom Node being edited is a draft in its tab until it is
-saved, as a workflow is. `T-a-node-panel-lists-under-sticky-headings`
+and `saveGraphAs`. A saved one is retagged in the inspector: a use's Tags field, and
+inside it the Group Input's and Output's, edit its definition's tags
+(`tagDefinition`), so every use shares them; a preset's are read only. A Custom Node
+being edited is a draft in its tab until it is saved, as a workflow is.
+`T-a-node-panel-lists-under-sticky-headings`
 
 ### Entities
 

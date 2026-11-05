@@ -7549,6 +7549,12 @@ Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
   input inside that cannot use it warns, as it did outside (TODO 770).
   The toolbar's button (on from two picked) opens a dialog for the name and description; a
   refusal is said in it, and the dialog stays open. The inspector holds none of it (TODO 745).
+- **Its tags are the DEFINITION's** (TODO 819): a use's inspector, and inside it the Group Input's
+  and Output's, has a Tags field that edits them (`tagDefinition`), so every use shows the change.
+  It is a draft edit of the library, one Undo step, handed over by Save; the panel's tag headings
+  follow at once. Tags are no part of the version: no use goes stale. A preset's field is read
+  only. A tag chip's Backspace or Delete is the field's: the inspector's Delete-the-node key hears
+  only a key no field took (`defaultPrevented`), or a chip's Backspace removed the node.
 
 - Site: `src/core/data/node-library.ts`
 - Site: `src/core/data/node-group.ts`
