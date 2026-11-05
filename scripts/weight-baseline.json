@@ -7,9 +7,9 @@
     }
   },
   "components.js": {
-    "files": 148,
+    "files": 149,
     "brotli": {
-      "js": 270815,
+      "js": 271459,
       "fetched": 8591
     }
   },
@@ -133,9 +133,9 @@
     }
   },
   "components/sherpa-data-grid/sherpa-data-grid.js": {
-    "files": 79,
+    "files": 80,
     "brotli": {
-      "js": 132006,
+      "js": 132650,
       "fetched": 0
     }
   },
@@ -518,9 +518,9 @@
     }
   },
   "index.js": {
-    "files": 246,
+    "files": 247,
     "brotli": {
-      "js": 425098,
+      "js": 425742,
       "fetched": 8591
     }
   }
