@@ -106,7 +106,8 @@ test('the filter and the axis keep the same days, in every unit, last and next (
   }
   // 14 days kept, one a point: the first holds its own day alone.
   const kept = filterRows(days, absoluteDates(['at', 'last', { n: 14, unit: 'day' }], today));
-  const out = summarise(kept, segmented({ shape: 'aggregate', over: 'at', bucket: 'auto' }, { last: 14, unit: 'day' }, kept));
+  // The axis from the SAME fixed days, as a `between`: `segmented` reads the real clock for a relative one.
+  const out = summarise(kept, segmented({ shape: 'aggregate', over: 'at', bucket: 'auto' }, { between: rangeOf({ last: 14, unit: 'day' }, today) }, kept));
   assert.deepEqual([kept.length, out.values.length, out.values[0], out.value], [14, 14, 1, 14]);
 });
 
