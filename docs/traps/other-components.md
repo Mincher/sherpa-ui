@@ -1496,3 +1496,32 @@ D14 and D16). A click on an item, Enter on it, or a drag let go off the card is
 
 - Site: `src/components/sherpa-node-panel/sherpa-node-panel.html`
 - Site: `src/components/sherpa-node-panel/sherpa-node-panel.ts`
+
+### T-a-tag-field-counts-what-css-clips
+
+`sherpa-input-text data-type="tags"` holds `sherpa-chip`s; its `value` is the comma
+string and `.tags` the array. Plan 749 P2, Will 2026-11-05.
+
+- **CSS clips; JS only counts.** The chips sit in one `flex-wrap` box one chip tall
+  with `overflow: hidden`: a chip with no room wraps below the box, whole, never cut
+  in half. CSS cannot count what wrapped, so a `ResizeObserver` counts the chips
+  whose `offsetTop` is on a later row into `data-overflow`, and marks them `inert`
+  (out of the tab order). CSS draws the `+N` off `data-overflow`.
+- **The `+N` and the chevron open the SAME menu**, a `sherpa-menu
+  data-select="multiple"` of every tag, ticked. An untick removes the tag; while the menu
+  stays open, a tick returns it to its place. The button is always there, so the way to
+  the menu does not depend on the width.
+- **The typed word is not the value.** The text box's own `input` and `change` stop at
+  the field. A tag set fires `tags-change { tags, added, removed }`, then `input` and
+  `change` with `{ value }` (the comma string), so a form listener still works.
+- **The chip's own x stays out of the tab order** (`data-no-tab`): the arrows and
+  Delete move and remove, and the text box is the one tab stop (`focus()` goes to it).
+- **`required` is read from the tags**, not the empty text box.
+- **A tag is matched as written**: `Email` and `email` are two tags; a repeat is dropped.
+  A comma ends a tag, so a tag never holds one.
+
+- Site: `src/components/sherpa-input-text/input-tags.ts`
+- Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
+- Site: `src/components/sherpa-input-text/sherpa-input-text.html`
+- Site: `src/components/sherpa-input-text/sherpa-input-text.css`
+- Site: `test/e2e/reforged-input-tags.spec.ts`

@@ -27,6 +27,7 @@ For a small selection or filter token; `data-dismissible` adds a cross that repo
 |---|---|---|---|
 | `data-dismissible` | boolean |  | show the close button (fires chip-dismiss) |
 | `data-icon` | text |  | leading icon glyph value (shown when present; or slot "icon") |
+| `data-no-tab` | boolean |  | take the close button out of the tab order (a host that handles Delete itself) |
 | `data-status` | `info` `success` `warning` `critical` `urgent` |  | info \| success \| warning \| critical \| urgent (via the cascade) |
 
 ## Events
@@ -71,6 +72,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ dismissible?, icon? }`
+`{ dismissible?, icon?, noTab? }`
 
 Its declared props by name: `label` sets data-label.

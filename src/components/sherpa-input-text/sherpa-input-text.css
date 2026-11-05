@@ -375,3 +375,49 @@ textarea.control {
   border-color: transparent;
   box-shadow: none;
 }
+
+/* ── TAGS ── a row of chips, a +N, the text, and the menu's button. CSS wraps
+   what does not fit onto a clipped second row; JS only counts it into
+   `data-overflow` and shows nothing. TRAP T-a-tag-field-counts-what-css-clips */
+:host([data-type="tags"]) .control-row {
+  /* The row's own chrome: the button sits flush against the edge. */
+  padding-inline-end: 0;
+}
+.tags,
+.more,
+.tags-button { flex: 0 0 auto; }
+.tags {
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  align-items: center;
+  gap: var(--sherpa-theme-gap-sm, 4px);
+  min-inline-size: 0;
+  /* One row of chips. A tag that wraps lies below this box, so it is clipped whole. */
+  block-size: var(--_tag-row, 28px);
+  overflow: hidden;
+}
+.tags:empty { display: none; }
+.tag:focus-visible {
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
+}
+.tag { max-inline-size: 100%; }
+.more { display: none; }
+:host([data-overflow]) .more { display: inline-flex; }
+.tags-button {
+  --sherpa-button-size-height: calc(var(--sherpa-display-mode-size-2xl, 32px) - 2px);
+}
+:host([data-type="tags"]) .control {
+  flex: 1 0 6rem;
+}
+:host(:state(has-tags)) .control::placeholder { color: transparent; }
+.live {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

@@ -19,6 +19,7 @@ export class SherpaChip extends SherpaElement {
   static override props = {
     'data-icon': { type: 'string', kind: 'content' },
     'data-dismissible': { type: 'boolean', kind: 'style' },
+    'data-no-tab': { type: 'boolean', kind: 'style' },
   } as const;
 
   override onRender(): void {

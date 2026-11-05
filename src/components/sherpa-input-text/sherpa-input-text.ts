@@ -8,11 +8,14 @@
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { renderIcon, hasIcon } from '../../core/ui/render-icon.js';
+import { InputTags, splitTags } from './input-tags.js';
 import { validateField, type FieldRules } from '../../core/data/validate.js';
 // The number type's steppers. Defined before the template stamps them.
 import '../sherpa-button/sherpa-button.js';
 // A Find's replace menu, and the question Replace all asks.
 import '../sherpa-menu/sherpa-menu.js';
+// A tags field's tags.
+import '../sherpa-chip/sherpa-chip.js';
 import '../sherpa-dialog/sherpa-dialog.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
 
@@ -62,7 +65,7 @@ export class SherpaInputText extends SherpaElement {
     /* Written BY the field: there is something to clear. */
     /* Which control the field draws. `select` is one of a known set — the
        platform's own element, not a re-implemented listbox. */
-    'data-type': { type: 'enum', kind: 'template', values: ['minimal', 'select', 'number', 'find'] },
+    'data-type': { type: 'enum', kind: 'template', values: ['minimal', 'select', 'number', 'find', 'tags'] },
     'data-multiline': { type: 'boolean', kind: 'template' },
     /* A Find offers Find & Replace. TRAP T-a-find-asks-its-host-to-step */
     'data-replace': { type: 'boolean', kind: 'style' },
@@ -76,6 +79,8 @@ export class SherpaInputText extends SherpaElement {
     'data-rules': { type: 'string', kind: 'behaviour' },
     // How many matches a Find's host found: none, and there is nothing to step to.
     'data-matches': { type: 'number', kind: 'behaviour' },
+    // Written BY a tags field: how many of its tags do not fit, and sit behind the +N.
+    'data-overflow': { type: 'number', kind: 'behaviour' },
   } as const;
 
   /** A form cannot see an <input> through a shadow root. TRAP T-shadow-input-needs-element-internals */
@@ -90,6 +95,47 @@ export class SherpaInputText extends SherpaElement {
 
   #control: Control | null = null;
 
+  /** A tags field's tags: `value` is their comma string. TRAP T-a-tag-field-counts-what-css-clips */
+  readonly #tagger = new InputTags({
+    $: (sel) => this.$(sel),
+    $$: (sel) => this.$$(sel),
+    on: (target, type, handler) => this.on(target, type, handler),
+    set: (attr, value) => this.set(attr, value),
+    toggleState: (name, on) => this.toggleState(name, on),
+    control: () => (this.#control instanceof HTMLInputElement ? this.#control : null),
+    word: (key) => this.word(key),
+    readOnly: () => this.hasAttribute('readonly'),
+    off: () => this.matches(':disabled'),
+    changed: (detail) => {
+      this.#syncHasValue();
+      this.#syncValue();
+      if (this.dataset['error']) void this.validate();
+      this.emit('tags-change', detail);
+      this.emit('input', { value: this.value });
+      this.emit('change', { value: this.value });
+    },
+  });
+
+  get #isTags(): boolean {
+    return this.dataset['type'] === 'tags';
+  }
+
+  /** The tags of a `data-type="tags"` field. A write says nothing, as `value` does not. */
+  get tags(): string[] {
+    return this.#tagger.tags;
+  }
+  set tags(tags: readonly string[]) {
+    this.#tagger.set(tags);
+    this.#syncHasValue();
+    this.#syncValue();
+  }
+
+  /** A tags field's focus is its text, never a tag. */
+  override focus(options?: FocusOptions): void {
+    if (this.#isTags && this.#control) this.#control.focus(options);
+    else super.focus(options);
+  }
+
   /** Both pick the tree, so a change to either must re-stamp. */
   static override variantAttrs = ['data-type', 'data-multiline'];
 
@@ -100,6 +146,7 @@ export class SherpaInputText extends SherpaElement {
     if (type === 'select') return 'select';
     if (type === 'number') return 'number';
     if (type === 'find') return 'find';
+    if (type === 'tags') return 'tags';
     return this.hasAttribute('data-multiline') ? 'multiline' : 'default';
   }
 
@@ -157,7 +204,8 @@ export class SherpaInputText extends SherpaElement {
 
   /** JS writes the flag; CSS owns the Clear button's reveal. */
   #syncHasValue(): void {
-    this.toggleState('has-value', (this.#control?.value ?? '') !== '');
+    const typed = (this.#control?.value ?? '') !== '';
+    this.toggleState('has-value', typed || (this.#isTags && this.#tagger.tags.length > 0));
     this.#syncSteps();
     this.#syncFind();
   }
@@ -301,11 +349,14 @@ export class SherpaInputText extends SherpaElement {
     this.#syncOptions();
     this.#syncIds();
     this.#syncIcons();
+    // The tags are read before the attributes: `value` is theirs here.
+    if (this.#isTags) this.#tagger.set(splitTags(this.getAttribute('value') ?? ''));
     this.#syncAttrs();
     this.$('.clear')?.addEventListener('click', this.#onClear);
     // `button-click`, not `click` — a disabled sherpa-button still gets raw clicks.
     this.$('.steppers')?.addEventListener('button-click', this.#onStep);
     this.#wireFind();
+    if (this.#isTags) this.#tagger.wire();
     this.#syncHasValue();
     this.#control?.addEventListener('input', this.#onInput);
     this.#control?.addEventListener('change', this.#onChange);
@@ -316,8 +367,10 @@ export class SherpaInputText extends SherpaElement {
 
   override onChange(name: string): void {
     if (name === 'data-matches') this.#syncFind();
+    if (name === 'value' && this.#isTags) this.#tagger.set(splitTags(this.getAttribute('value') ?? ''));
     if (!name.startsWith('data-')) {
       this.#syncAttrs();
+      if (this.#isTags) this.#tagger.draw();
       // `required`, `value`, a pattern: each moves what the form sees.
       this.#syncValue();
     } else if (name.startsWith('data-icon-')) this.#syncIcons();
@@ -348,17 +401,27 @@ export class SherpaInputText extends SherpaElement {
   #syncValue(): void {
     const control = this.#control;
     if (!control) return;
-    this.formLink.value(control.value);
+    this.formLink.value(this.value);
     const message = this.dataset['error'] ?? '';
     // Our message wins; without one, the control's own validity.
     if (message) this.formLink.validity({ customError: true }, message, control);
+    else if (this.#noTags) this.formLink.validity({ valueMissing: true }, this.word('required'), control);
     else this.formLink.follow(control);
+  }
+
+  /** A required tags field with no tag: its text box is empty by design, so `required` is read here. */
+  get #noTags(): boolean {
+    return this.#isTags && this.hasAttribute('required') && this.#tagger.tags.length === 0;
   }
 
   /** Check this field and show the result. True means acceptable. */
   async validate(): Promise<boolean> {
     const control = this.#control;
     if (!control) return true;
+    if (this.#noTags) {
+      this.#setError(this.word('required'));
+      return false;
+    }
 
     if (!control.validity.valid) {
       this.#setError(control.validationMessage);
@@ -409,14 +472,16 @@ export class SherpaInputText extends SherpaElement {
   }
 
   formResetCallback(): void {
-    if (this.#control) this.#control.value = this.getAttribute('value') ?? '';
+    if (this.#isTags) this.#tagger.set(splitTags(this.getAttribute('value') ?? ''));
+    if (this.#control) this.#control.value = this.#isTags ? '' : (this.getAttribute('value') ?? '');
     this.#syncHasValue();
     this.#setError('');
   }
 
   /** Back-button or session restore — what setFormValue stored. */
   formStateRestoreCallback(state: string): void {
-    if (this.#control) this.#control.value = state;
+    if (this.#isTags) this.#tagger.set(splitTags(state));
+    else if (this.#control) this.#control.value = state;
     this.#syncHasValue();
     this.#syncValue();
   }
@@ -466,15 +531,24 @@ export class SherpaInputText extends SherpaElement {
       c.setAttribute('type', 'text');
       if (!this.hasAttribute('placeholder')) c.setAttribute('placeholder', this.word('placeholder'));
     }
-    if (this.hasAttribute('value')) c.value = this.getAttribute('value') ?? '';
+    // A tags field's `value` is its tags; the text box holds only what is being typed, and `required` is read above.
+    if (this.#isTags) c.removeAttribute('required');
+    else if (this.hasAttribute('value')) c.value = this.getAttribute('value') ?? '';
     // `min`, `max`, `disabled` or the value moved: so may what a stepper can do.
     this.#syncSteps();
   }
 
   get value(): string {
+    if (this.#isTags) return this.#tagger.text;
     return this.#held ?? this.#control?.value ?? this.getAttribute('value') ?? '';
   }
   set value(v: string) {
+    if (this.#isTags) {
+      this.#tagger.set(splitTags(v));
+      this.#syncHasValue();
+      this.#syncValue();
+      return;
+    }
     // A select whose option has not arrived would drop it, and show its FIRST.
     const select = this.#control instanceof HTMLSelectElement ? this.#control : null;
     this.#held = select && v && !this.#options.some((o) => o.value === v) ? v : null;
@@ -503,6 +577,11 @@ export class SherpaInputText extends SherpaElement {
        this one: two per keystroke. The host's own is the one that goes on.
        TRAP T-a-composed-native-event-goes-out-twice */
     event.stopPropagation();
+    // A tags field's words are not its value: only its tags are reported.
+    if (this.#isTags) {
+      this.#syncHasValue();
+      return;
+    }
     // The form's copy follows every keystroke; the check only once it has erred.
     this.#syncValue();
     this.#syncHasValue();
@@ -510,7 +589,11 @@ export class SherpaInputText extends SherpaElement {
     this.emit('input', { value: this.value });
   };
 
-  #onChange = (): void => {
+  #onChange = (event: Event): void => {
+    if (this.#isTags) {
+      event.stopPropagation();
+      return;
+    }
     this.#held = null;
     this.#syncValue();
     this.emit('change', { value: this.value });

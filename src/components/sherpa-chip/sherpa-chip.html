@@ -11,6 +11,7 @@
     data-status       info | success | warning | critical | urgent (via the cascade)
     data-icon         leading icon glyph value (shown when present; or slot "icon")
     data-dismissible  show the close button (fires chip-dismiss)
+    data-no-tab       take the close button out of the tab order (a host that handles Delete itself)
 
   Slots:
     icon      — a leading glyph (overrides data-icon; shown when data-icon is set)
@@ -24,6 +25,6 @@
     <span><slot data-accepts="text"></slot></span>
     <sherpa-button class="close sherpa-dismiss" part="close" data-type="icon" data-size="xs"
                    data-look="transparent" data-icon-start="cross"
-                   aria-label="Remove"></sherpa-button>
+                   data-attr-data-no-tab="data-no-tab" aria-label="Remove"></sherpa-button>
   </span>
 </template>

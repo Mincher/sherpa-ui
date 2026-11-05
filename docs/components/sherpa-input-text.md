@@ -8,18 +8,18 @@ A labelled text field. Templates: default (label + description + control + messa
 |---|---|
 | Category | control |
 | Built on | the native `<label>`, which gives click-forwarding |
-| Templates | `default`, `multiline`, `select`, `number`, `find`, `minimal` |
+| Templates | `default`, `multiline`, `select`, `number`, `find`, `tags`, `minimal` |
 | Figma | Input Field (atom) |
 | Source | [.ts](../../src/components/sherpa-input-text/sherpa-input-text.ts) · [.html](../../src/components/sherpa-input-text/sherpa-input-text.html) · [.css](../../src/components/sherpa-input-text/sherpa-input-text.css) · [.component.json](../../src/components/sherpa-input-text/sherpa-input-text.component.json) · [.example.json](../../src/components/sherpa-input-text/sherpa-input-text.example.json) |
 
 ## When to use it
 
-For a typed value with a label, help text and an error message. Set `data-type` to `select` for one of a known set, `number` for a number, or `find` to step through the matches a host finds; set `data-multiline` for text on more than one line.
+For a typed value with a label, help text and an error message. Set `data-type` to `select` for one of a known set, `number` for a number, `find` to step through the matches a host finds, or `tags` for several words in one field (`value` is the comma string, `.tags` the array); set `data-multiline` for text on more than one line.
 
 ## Example
 
 ```html
-<sherpa-input-text data-label="Name" name="name" placeholder="Jane Doe" required></sherpa-input-text><sherpa-input-text data-label="Notes" name="notes" data-multiline data-description="Optional."></sherpa-input-text><sherpa-input-text data-label="Email" name="email" type="email" data-error="Enter an email address."></sherpa-input-text><sherpa-input-text data-label="Seats" name="seats" data-type="number" min="0" max="50"></sherpa-input-text><sherpa-input-text class="pick" data-label="Region" name="region" data-type="select"></sherpa-input-text>
+<sherpa-input-text data-label="Name" name="name" placeholder="Jane Doe" required></sherpa-input-text><sherpa-input-text data-label="Notes" name="notes" data-multiline data-description="Optional."></sherpa-input-text><sherpa-input-text data-label="Email" name="email" type="email" data-error="Enter an email address."></sherpa-input-text><sherpa-input-text data-label="Seats" name="seats" data-type="number" min="0" max="50"></sherpa-input-text><sherpa-input-text class="pick" data-label="Region" name="region" data-type="select"></sherpa-input-text><sherpa-input-text data-label="Notify by" name="methods" data-type="tags" value="Email,SMS,Push" placeholder="Add a method"></sherpa-input-text>
 ```
 
 `populate()` is given, on `.pick`:
@@ -55,10 +55,11 @@ For a typed value with a label, help text and an error message. Set `data-type` 
 | `data-matches` | number |  | how many matches a Find's host found; "0" leaves nothing to step to or replace |
 | `data-multiline` | boolean |  | auto-growing &lt;textarea> (default style only) |
 | `data-no-clear` | boolean |  | no Clear button. A typed field shows one by itself while it holds something; a number has steppers and shows none |
+| `data-overflow` | number |  | written BY a tags field: how many tags do not fit |
 | `data-replace` | boolean |  | a Find also offers Find & Replace (the pencil): Replace, Replace all (asked first), Previous and Next |
 | `data-rules` | text |  | names a validation rule the platform has no idea about (e.g. "email") — see the TS for the rule set |
 | `data-state` | `error` `success` `warning` |  |  |
-| `data-type` | `minimal` `select` `number` `find` |  | "minimal" for the bare inline field (default is the full molecule); "select" for one of a known set; "number" for a number, right-aligned, with Sherpa's own up and down steppers — Figma "Input Number" (937:39395) "find" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter |
+| `data-type` | `minimal` `select` `number` `find` `tags` |  | "minimal" for the bare inline field (default is the full molecule); "select" for one of a known set; "number" for a number, right-aligned, with Sherpa's own up and down steppers — Figma "Input Number" (937:39395) "find" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter "tags" for several words in one field: `value` is the comma string ("a,b,c"), `.tags` the array. Enter, a comma or leaving the field makes the typed word a tag; a tag the row has no room for waits behind a "+N". The menu button, and the +N, open one menu of every value, ticked |
 | `autocomplete` | text, native |  | native attributes, reflected to the inner control |
 | `disabled` | boolean, native | `false` | native attributes, reflected to the inner control |
 | `inputmode` | text, native |  | native attributes, reflected to the inner control |
@@ -78,6 +79,7 @@ For a typed value with a label, help text and an error message. Set `data-type` 
 
 | Property | Type | Access | What it is |
 |---|---|---|---|
+| `tags` | `string[]` | read and write |  |
 | `value` | `string` | read and write |  |
 | `disabled` | `boolean` | read and write |  |
 
@@ -102,6 +104,7 @@ Each one bubbles.
 | `input` | `{ value: string }` |  |
 | `change` | `{ value: string }` |  |
 | `find-step` | `{ direction: -1 \| 1; value: string }` | A Find's Previous or Next. |
+| `tags-change` | `{ added: string[]; removed: string[]; tags: string[] }` | A tags field's tags changed. |
 | `find-replace` | `{ all: boolean; replacement: string; value: string }` | A Find's Replace, or Replace all once confirmed. |
 
 ## Slots
@@ -114,7 +117,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`actions`, `clear`, `control`, `control-row`, `description`, `field`, `icon-end`, `icon-start`, `label`, `message`, `replace`, `replace-menu`, `steppers`
+`actions`, `clear`, `control`, `control-row`, `description`, `field`, `icon-end`, `icon-start`, `label`, `menu`, `message`, `more`, `replace`, `replace-menu`, `steppers`, `tag`, `tags`, `tags-button`
 
 ## CSS custom properties it reads
 
@@ -160,6 +163,8 @@ What each class's base rule reads:
 | `--sherpa-font-size-body-base` | `.message` | `font-size` |
 | `--sherpa-theme-content-line-height-base` | `.message` | `line-height` |
 | `--sherpa-display-mode-space-xs` | `.field-minimal` | `gap` |
+| `--sherpa-theme-gap-sm` | `.tags` | `gap` |
+| `--sherpa-display-mode-size-2xl` | `.tags-button` | `--sherpa-button-size-height` |
 
 ## populate()
 

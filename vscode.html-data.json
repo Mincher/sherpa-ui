@@ -737,6 +737,11 @@
           "description": "leading icon glyph value (shown when present; or slot \"icon\")"
         },
         {
+          "name": "data-no-tab",
+          "description": "take the close button out of the tab order (a host that handles Delete itself)",
+          "valueSet": "v"
+        },
+        {
           "name": "data-status",
           "description": "info | success | warning | critical | urgent (via the cascade)",
           "values": [
@@ -1599,6 +1604,10 @@
           "valueSet": "v"
         },
         {
+          "name": "data-overflow",
+          "description": "written BY a tags field: how many tags do not fit"
+        },
+        {
           "name": "data-replace",
           "description": "a Find also offers Find & Replace (the pencil): Replace, Replace all (asked first), Previous and Next",
           "valueSet": "v"
@@ -1623,7 +1632,7 @@
         },
         {
           "name": "data-type",
-          "description": "\"minimal\" for the bare inline field (default is the full molecule); \"select\" for one of a known set; \"number\" for a number, right-aligned, with Sherpa's own up and down steppers — Figma \"Input Number\" (937:39395) \"find\" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter",
+          "description": "\"minimal\" for the bare inline field (default is the full molecule); \"select\" for one of a known set; \"number\" for a number, right-aligned, with Sherpa's own up and down steppers — Figma \"Input Number\" (937:39395) \"find\" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter \"tags\" for several words in one field: `value` is the comma string (\"a,b,c\"), `.tags` the array. Enter, a comma or leaving the field makes the typed word a tag; a tag the row has no room for waits behind a \"+N\". The menu button, and the +N, open one menu of every value, ticked",
           "values": [
             {
               "name": "minimal"
@@ -1636,6 +1645,9 @@
             },
             {
               "name": "find"
+            },
+            {
+              "name": "tags"
             }
           ]
         },

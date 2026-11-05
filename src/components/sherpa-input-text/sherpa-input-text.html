@@ -9,8 +9,13 @@
                      with Sherpa's own up and down steppers — Figma "Input Number" (937:39395)
                      "find" for a search that steps through what a host found:
                      Previous and Next, and Enter / Shift+Enter
+                     "tags" for several words in one field: `value` is the comma string
+                     ("a,b,c"), `.tags` the array. Enter, a comma or leaving the field makes
+                     the typed word a tag; a tag the row has no room for waits behind a "+N".
+                     The menu button, and the +N, open one menu of every value, ticked
     data-replace      a Find also offers Find & Replace (the pencil): Replace,
                       Replace all (asked first), Previous and Next
+    data-overflow     written BY a tags field: how many tags do not fit
     data-matches      how many matches a Find's host found; "0" leaves nothing to
                       step to or replace
     data-borderless   drop the control border (minimal style)
@@ -39,6 +44,8 @@
     input
     change
     find-step — a Find's Previous or Next. detail: { direction, value } — direction is -1 or 1
+    tags-change — a tags field's tags changed. detail: { tags, added, removed }. A tags field
+      also fires input and change, { value } the comma string, after it; its typed words fire neither
     find-replace — a Find's Replace, or Replace all once confirmed. detail: { value, replacement, all }
 -->
 <template id="default">
@@ -193,6 +200,41 @@
   <!-- What an empty Find says. TRAP T-a-word-is-in-the-markup -->
   <template class="words">
     <span data-word="placeholder">Find</span>
+  </template>
+</template>
+
+<!-- TAGS: the same field holding `sherpa-chip`s. CSS clips the tags that do not
+     wrap onto the first row; the field only counts them. The menu is the one
+     the quick filter ticks values in. TRAP T-a-tag-field-counts-what-css-clips -->
+<template id="tags">
+  <div class="field" part="field" role="group">
+    <span class="label" part="label" data-text="data-label"></span>
+    <span class="description" part="description" data-text="data-description"></span>
+    <span class="control-row sherpa-border-edges" part="control-row">
+      <span class="icon sherpa-icon-box icon-start" part="icon-start" aria-hidden="true"></span>
+      <span class="tags" part="tags"></span>
+      <sherpa-button class="more" part="more" data-look="transparent" data-no-tip
+                     aria-haspopup="menu" aria-expanded="false">+0</sherpa-button>
+      <input class="control" part="control" type="text" />
+      <sherpa-button class="tags-button" part="tags-button" data-type="icon" data-look="transparent"
+                     data-icon-start="chevron-down" data-no-tip aria-haspopup="menu" aria-expanded="false"
+                     aria-label="Show all values"></sherpa-button>
+      <span class="actions" part="actions"><slot name="actions" data-accepts="control"></slot></span>
+    </span>
+    <span class="message" part="message" data-text="data-error"></span>
+    <sherpa-menu class="tags-menu" part="menu" data-select="multiple" data-no-select-all data-align="end"></sherpa-menu>
+    <span class="live" role="status" aria-live="polite"></span>
+  </div>
+  <template class="tag-tpl"><sherpa-chip class="tag" part="tag" data-dismissible data-no-tab></sherpa-chip></template>
+
+  <!-- What a tags field says. TRAP T-a-word-is-in-the-markup -->
+  <template class="words">
+    <span data-word="remove">Remove</span>
+    <span data-word="added">Added</span>
+    <span data-word="removed">Removed</span>
+    <span data-word="values">values</span>
+    <span data-word="more">more</span>
+    <span data-word="required">Add at least one value.</span>
   </template>
 </template>
 

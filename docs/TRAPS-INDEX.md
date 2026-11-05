@@ -975,7 +975,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (116)
+## Other components (117)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1021,6 +1021,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-shared-enum-is-not-every-enum](traps/element-and-sheets.md#t-a-shared-enum-is-not-every-enum) — button
 - [T-a-socket-is-drawn-by-its-type](traps/element-and-sheets.md#t-a-socket-is-drawn-by-its-type) — node
 - [T-a-state-colour-binds-the-style-mode](traps/filters.md#t-a-state-colour-binds-the-style-mode) — badge, calendar-cell, chip, list-item, nav-item, tabs
+- [T-a-tag-field-counts-what-css-clips](traps/other-components.md#t-a-tag-field-counts-what-css-clips) — input-text
 - [T-a-toggle-shows-its-state-by-a-shape](traps/filters.md#t-a-toggle-shows-its-state-by-a-shape) — switch
 - [T-a-toolbar-moves-by-arrow-and-keeps-its-tabs](traps/filters.md#t-a-toolbar-moves-by-arrow-and-keeps-its-tabs) — layout-canvas, toolbar
 - [T-a-trigger-click-follows-light-dismiss](traps/filters.md#t-a-trigger-click-follows-light-dismiss) — button

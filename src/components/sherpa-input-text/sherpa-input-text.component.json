@@ -17,6 +17,7 @@
     "select",
     "number",
     "find",
+    "tags",
     "minimal"
   ],
   "anatomy": {
@@ -702,6 +703,183 @@
           ]
         }
       ],
+      "tags": [
+        {
+          "el": "div",
+          "class": "field",
+          "part": "field",
+          "attrs": {
+            "role": "group"
+          },
+          "children": [
+            {
+              "el": "span",
+              "class": "label",
+              "part": "label",
+              "attrs": {
+                "data-text": "data-label"
+              }
+            },
+            {
+              "el": "span",
+              "class": "description",
+              "part": "description",
+              "attrs": {
+                "data-text": "data-description"
+              }
+            },
+            {
+              "el": "span",
+              "class": "control-row sherpa-border-edges",
+              "part": "control-row",
+              "children": [
+                {
+                  "el": "span",
+                  "class": "icon sherpa-icon-box icon-start",
+                  "part": "icon-start",
+                  "attrs": {
+                    "aria-hidden": "true"
+                  }
+                },
+                {
+                  "el": "span",
+                  "class": "tags",
+                  "part": "tags"
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "more",
+                  "part": "more",
+                  "attrs": {
+                    "data-look": "transparent",
+                    "data-no-tip": "",
+                    "aria-haspopup": "menu",
+                    "aria-expanded": "false"
+                  }
+                },
+                {
+                  "el": "input",
+                  "class": "control",
+                  "part": "control",
+                  "attrs": {
+                    "type": "text"
+                  }
+                },
+                {
+                  "el": "sherpa-button",
+                  "class": "tags-button",
+                  "part": "tags-button",
+                  "attrs": {
+                    "data-type": "icon",
+                    "data-look": "transparent",
+                    "data-icon-start": "chevron-down",
+                    "data-no-tip": "",
+                    "aria-haspopup": "menu",
+                    "aria-expanded": "false",
+                    "aria-label": "Show all values"
+                  }
+                },
+                {
+                  "el": "span",
+                  "class": "actions",
+                  "part": "actions",
+                  "children": [
+                    {
+                      "slot": "actions",
+                      "attrs": {
+                        "data-accepts": "control"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "el": "span",
+              "class": "message",
+              "part": "message",
+              "attrs": {
+                "data-text": "data-error"
+              }
+            },
+            {
+              "el": "sherpa-menu",
+              "class": "tags-menu",
+              "part": "menu",
+              "attrs": {
+                "data-select": "multiple",
+                "data-no-select-all": "",
+                "data-align": "end"
+              }
+            },
+            {
+              "el": "span",
+              "class": "live",
+              "attrs": {
+                "role": "status",
+                "aria-live": "polite"
+              }
+            }
+          ]
+        },
+        {
+          "el": "template",
+          "class": "tag-tpl",
+          "children": [
+            {
+              "el": "sherpa-chip",
+              "class": "tag",
+              "part": "tag",
+              "attrs": {
+                "data-dismissible": "",
+                "data-no-tab": ""
+              }
+            }
+          ]
+        },
+        {
+          "el": "template",
+          "class": "words",
+          "children": [
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "remove"
+              }
+            },
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "added"
+              }
+            },
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "removed"
+              }
+            },
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "values"
+              }
+            },
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "more"
+              }
+            },
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "required"
+              }
+            }
+          ]
+        }
+      ],
       "minimal": [
         {
           "el": "label",
@@ -822,6 +1000,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-overflow",
+      "type": "number",
+      "observed": false,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "written BY a tags field: how many tags do not fit"
+    },
+    {
+      "$type": "prop",
       "name": "data-replace",
       "type": "boolean",
       "observed": true,
@@ -862,9 +1049,10 @@
         "minimal",
         "select",
         "number",
-        "find"
+        "find",
+        "tags"
       ],
-      "description": "\"minimal\" for the bare inline field (default is the full molecule); \"select\" for one of a known set; \"number\" for a number, right-aligned, with Sherpa's own up and down steppers — Figma \"Input Number\" (937:39395) \"find\" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter"
+      "description": "\"minimal\" for the bare inline field (default is the full molecule); \"select\" for one of a known set; \"number\" for a number, right-aligned, with Sherpa's own up and down steppers — Figma \"Input Number\" (937:39395) \"find\" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter \"tags\" for several words in one field: `value` is the comma string (\"a,b,c\"), `.tags` the array. Enter, a comma or leaving the field makes the typed word a tag; a tag the row has no room for waits behind a \"+N\". The menu button, and the +N, open one menu of every value, ticked"
     },
     {
       "$type": "prop",
@@ -1034,6 +1222,16 @@
     },
     {
       "$type": "state",
+      "name": "tags",
+      "selector": ":host([data-type=\"tags\"])"
+    },
+    {
+      "$type": "state",
+      "name": "overflow",
+      "selector": ":host([data-overflow])"
+    },
+    {
+      "$type": "state",
       "name": "focus-visible",
       "selector": ".control:focus-visible"
     }
@@ -1042,7 +1240,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (value, disabled). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (tags, value, disabled). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -1078,6 +1276,18 @@
       "detail": {
         "direction": "-1 | 1",
         "value": "string"
+      }
+    },
+    {
+      "$type": "event",
+      "name": "tags-change",
+      "description": "A tags field's tags changed.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "added": "string[]",
+        "removed": "string[]",
+        "tags": "string[]"
       }
     },
     {
@@ -1131,7 +1341,9 @@
     "message.color": "{sherpa.style-content-base}",
     "message.font-size": "{sherpa.font-size-body-base}",
     "message.line-height": "{sherpa.theme-content-line-height-base}",
-    "field-minimal.gap": "{sherpa.display-mode-space-xs}"
+    "field-minimal.gap": "{sherpa.display-mode-space-xs}",
+    "tags.gap": "{sherpa.theme-gap-sm}",
+    "tags-button.--sherpa-button-size-height": "{sherpa.display-mode-size-2xl}"
   },
   "$extensions": {
     "sherpa": {
@@ -1247,6 +1459,11 @@
         }
       },
       "jsProps": [
+        {
+          "name": "tags",
+          "type": "string[]",
+          "access": "read-write"
+        },
         {
           "name": "value",
           "type": "string",

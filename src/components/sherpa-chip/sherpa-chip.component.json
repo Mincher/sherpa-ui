@@ -63,6 +63,7 @@
             "data-size": "xs",
             "data-look": "transparent",
             "data-icon-start": "cross",
+            "data-attr-data-no-tab": "data-no-tab",
             "aria-label": "Remove"
           }
         }
@@ -87,6 +88,15 @@
       "declared": true,
       "kind": "content",
       "description": "leading icon glyph value (shown when present; or slot \"icon\")"
+    },
+    {
+      "$type": "prop",
+      "name": "data-no-tab",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "take the close button out of the tab order (a host that handles Delete itself)"
     },
     {
       "$type": "prop",
@@ -123,7 +133,7 @@
     }
   ],
   "populate": {
-    "shape": "{ dismissible?, icon? }",
+    "shape": "{ dismissible?, icon?, noTab? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [

@@ -1884,6 +1884,13 @@
               }
             },
             {
+              "name": "data-no-tab",
+              "description": "take the close button out of the tab order (a host that handles Delete itself)",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-status",
               "description": "info | success | warning | critical | urgent (via the cascade)",
               "type": {
@@ -4098,6 +4105,13 @@
               }
             },
             {
+              "name": "data-overflow",
+              "description": "written BY a tags field: how many tags do not fit",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
               "name": "data-replace",
               "description": "a Find also offers Find & Replace (the pencil): Replace, Replace all (asked first), Previous and Next",
               "type": {
@@ -4119,9 +4133,9 @@
             },
             {
               "name": "data-type",
-              "description": "\"minimal\" for the bare inline field (default is the full molecule); \"select\" for one of a known set; \"number\" for a number, right-aligned, with Sherpa's own up and down steppers — Figma \"Input Number\" (937:39395) \"find\" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter",
+              "description": "\"minimal\" for the bare inline field (default is the full molecule); \"select\" for one of a known set; \"number\" for a number, right-aligned, with Sherpa's own up and down steppers — Figma \"Input Number\" (937:39395) \"find\" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter \"tags\" for several words in one field: `value` is the comma string (\"a,b,c\"), `.tags` the array. Enter, a comma or leaving the field makes the typed word a tag; a tag the row has no room for waits behind a \"+N\". The menu button, and the +N, open one menu of every value, ticked",
               "type": {
-                "text": "'minimal' | 'select' | 'number' | 'find'"
+                "text": "'minimal' | 'select' | 'number' | 'find' | 'tags'"
               }
             },
             {
@@ -4229,6 +4243,13 @@
           "members": [
             {
               "kind": "field",
+              "name": "tags",
+              "type": {
+                "text": "string[]"
+              }
+            },
+            {
+              "kind": "field",
               "name": "value",
               "type": {
                 "text": "string"
@@ -4319,6 +4340,13 @@
               }
             },
             {
+              "name": "tags-change",
+              "description": "A tags field's tags changed.",
+              "type": {
+                "text": "CustomEvent<{ added: string[]; removed: string[]; tags: string[] }>"
+              }
+            },
+            {
               "name": "find-replace",
               "description": "A Find's Replace, or Replace all once confirmed.",
               "type": {
@@ -4361,7 +4389,13 @@
               "name": "label"
             },
             {
+              "name": "menu"
+            },
+            {
               "name": "message"
+            },
+            {
+              "name": "more"
             },
             {
               "name": "replace"
@@ -4371,6 +4405,15 @@
             },
             {
               "name": "steppers"
+            },
+            {
+              "name": "tag"
+            },
+            {
+              "name": "tags"
+            },
+            {
+              "name": "tags-button"
             }
           ]
         }
