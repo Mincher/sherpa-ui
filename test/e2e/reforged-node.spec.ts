@@ -218,6 +218,8 @@ const SHAPES: Record<string, number[]> = {
   object: [1, 0, 0, 0, 0, 1, 0],
   boolean: [1, 1, 0, 1, 0, 0, 1],
   any: [1, 1, 1, 1, 1, 1, 1],
+  // An INPUT is a D, flat on the node's side and round outside, whatever its type (TODO 740); False is a rounded square.
+  input: [1, 1, 0, 1, 0, 1, 1],
 };
 
 /** A node of one input socket, big, routed or not, on the canvas at a place of its own. */
@@ -248,21 +250,21 @@ const rectOf = (page: Page, id: string, side: string) => page.evaluate(([nodeId,
   return document.querySelector<Sock>(`#${nodeId}`)!.socketRect(s!)?.toJSON() ?? null;
 }, [id, side] as const);
 
-for (const type of Object.keys(SHAPES)) {
+for (const type of ['value', 'object', 'boolean', 'any']) {
   test(`an input socket of type ${type} draws its shape, filled when routed and hollow when not`, async ({ page }) => {
     const ink = type === 'any' ? await inkOf(page, '--sherpa-style-default-content-secondary')
       : await inkOf(page, { value: '--sherpa-style-info-indicator-accent', object: '--sherpa-style-active-indicator-accent', boolean: '--sherpa-style-success-indicator-accent' }[type]!);
     await socketNode(page, 'sock', `data-input-socket="${type}" data-input-routed`);
     const filled = boxOf((await rectOf(page, 'sock', 'input'))!);
     const mask = (await paint(page, filled, PROBES)).map((p) => (near(p, ink) ? 1 : 0));
-    expect(mask, `${type} filled`).toEqual(SHAPES[type]);
+    expect(mask, `${type} filled: a D`).toEqual(SHAPES['input']);
 
     await socketNode(page, 'sock', `data-input-socket="${type}"`);
     const hollow = boxOf((await rectOf(page, 'sock', 'input'))!);
     const [centre] = await paint(page, hollow, [[.5, .5]]);
     expect(near(centre!, ink), `${type} hollow centre is the face, not the ink`).toBe(false);
     // The ring is still there: a point on the edge of the shape.
-    const edge = await paint(page, hollow, [type === 'boolean' || type === 'any' ? [.03, .5] : [.5, .03]]);
+    const edge = await paint(page, hollow, [[.03, .5]]);
     expect(near(edge[0]!, ink), `${type} ring`).toBe(true);
   });
 }
@@ -291,8 +293,12 @@ test('a fork shows its footer with False in red, and True on the header in green
   const [no] = await paint(page, boxOf((await rectOf(page, 'fork', 'false'))!), [[.5, .5]]);
   expect(near(yes!, success), 'True is green').toBe(true);
   expect(near(no!, critical), 'False is red').toBe(true);
-  const triangle = await paint(page, boxOf((await rectOf(page, 'fork', 'false'))!), PROBES);
-  expect(triangle.map((p) => (near(p, critical) ? 1 : 0))).toEqual(SHAPES['boolean']);
+  // False is a rounded square, True a triangle: two shapes (TODO 740).
+  const square = await paint(page, boxOf((await rectOf(page, 'fork', 'false'))!), PROBES);
+  expect(square.map((p) => (near(p, critical) ? 1 : 0))).toEqual(SHAPES['any']);
+  const triangle = await paint(page, boxOf((await rectOf(page, 'fork', 'output'))!), PROBES);
+  // (Its bottom corner is under the footer: read the other six.)
+  expect(triangle.map((p) => (near(p, success) ? 1 : 0)).filter((_, i) => i !== 3)).toEqual(SHAPES['boolean']!.filter((_, i) => i !== 3));
   // Unrouted, False is hollow.
   await socketNode(page, 'fork', 'data-branches');
   const [open] = await paint(page, boxOf((await rectOf(page, 'fork', 'false'))!), [[.5, .5]]);

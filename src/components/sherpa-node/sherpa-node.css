@@ -204,7 +204,7 @@
 
 :host {
   display: block;
-  inline-size: 15rem;
+  inline-size: calc(15rem * var(--_scale-w, 1));
   /* A composed header's inset. TRAP T-a-composed-chrome-row-takes-its-inline-padding-from-its-container */
   --_pad-inline: var(--sherpa-card-pad);
 }
@@ -213,10 +213,32 @@
    what the host holds. TRAP T-a-host-state-pin-lives-where-the-host-is */
 .root {
   position: relative;
+  display: flex;
+  flex-direction: column;
   background: var(--_surface);
   border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   color: var(--sherpa-style-content-base, #0c0b11);
+}
+
+/* ── The node's look, by its kind's category (the Figma's columns). Will, TODO 740.
+   Radius from the Display Mode scale (medium = base 4px, x-large = xl 16px); a tinted
+   fill from the Theme tier, since a Style info or success pin resolves to plain white. */
+:host([data-category="sources"]) .root {
+  border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-base, 4px)
+    var(--sherpa-display-mode-border-rounding-base, 4px) var(--sherpa-display-mode-border-rounding-xl, 16px);
+}
+:host([data-category="sources"]) .root,
+:host([data-category="custom-nodes"]) .root { background: var(--sherpa-theme-surface-info-base, #d4f0ff); /* theme-direct */ }
+:host([data-category="output"]) .root {
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px) var(--sherpa-display-mode-border-rounding-xl, 16px)
+    var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-base, 4px);
+  background: var(--sherpa-theme-surface-success-base, #f0fff5); /* theme-direct */
+}
+:host([data-category="ai"]) .root {
+  border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-xl, 16px)
+    var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-base, 4px);
+  background: var(--sherpa-theme-surface-active-base, #f8ebff); /* theme-direct */
 }
 
 /* ── The header: always there, as it is the handle ───────────────────── */
@@ -263,6 +285,24 @@
   outline-offset: var(--sherpa-focus-offset);
 }
 
+/* ── The resize handle: bottom right, on hover or focus. Two diagonal lines, drawn in CSS. ── */
+.resize {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  inline-size: var(--sherpa-display-mode-size-sm, 16px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  cursor: nwse-resize;
+  touch-action: none;
+  visibility: hidden;
+  color: var(--sherpa-style-content-secondary, #35353d);
+  background: linear-gradient(135deg, transparent 0 50%, currentColor 50% calc(50% + 1px), transparent calc(50% + 1px) 70%, currentColor 70% calc(70% + 1px), transparent calc(70% + 1px));
+}
+:host(:hover) .resize,
+:host(:focus-within) .resize,
+:host(:state(resizing)) .resize { visibility: visible; }
+@media (forced-colors: active) { .resize { forced-color-adjust: none; color: CanvasText; } }
+
 /* ── What its step did: a line over the card, so the rows and routes stay put ── */
 .caption {
   display: none;
@@ -280,7 +320,7 @@
 /* The whole node's sockets, on the header's edges; False, on the footer's. */
 .socket {
   inset-block-start: 50%;
-  margin-block-start: calc(var(--_socket) / -2);
+  margin-block-start: calc(var(--_socket-h) / -2);
 }
 
 /* ── A fork: True is the header's output, False the footer's ─────────── */
@@ -291,7 +331,6 @@
 }
 :host([data-branches]) .footer { display: block; }
 :host([data-branches]) .header .socket-out { display: block; --_shape: var(--_triangle); }
-.socket-false { --_shape: var(--_triangle); }
 :host([data-branches]) .socket-false { display: block; }
 :host([data-false-routed]) .socket-false::after { display: none; }
 .tip-false .word { display: inline; }
@@ -308,6 +347,7 @@
 /* ── The rows: only when there are some. Each spans the card, so its
    sockets sit on the card's edges; it takes its inset from --_pad-inline. ── */
 .body {
+  flex: 1 1 auto;
   display: none;
   flex-direction: column;
   gap: var(--sherpa-theme-gap-md, 8px);

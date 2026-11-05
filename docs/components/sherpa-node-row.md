@@ -22,8 +22,9 @@ For one row of a `sherpa-node`: an input socket, a field and an output socket, e
 
 | Attribute | Values | Default | What it does |
 |---|---|---|---|
+| `data-input-many` | boolean |  | the input takes several routes: its socket is a double height D |
 | `data-input-routed` | boolean |  | a route joins the input: its socket is filled, else hollow |
-| `data-input-socket` | `value` `object` `boolean` `any` |  | an input socket on the start edge: value (a circle) \| object (a diamond) \| boolean (a triangle) \| any (a square) |
+| `data-input-socket` | `value` `object` `boolean` `any` |  | an input socket on the start edge: value \| object \| boolean \| any: an input is a D, its type in its ink |
 | `data-label` | text |  | the row's name, when it has no field: a field names itself |
 | `data-output-routed` | boolean |  | a route leaves the output: its socket is filled, else hollow |
 | `data-output-socket` | `value` `object` `boolean` |  | an output socket on the end edge: value (a circle) \| object (a diamond) \| boolean (a triangle) |
@@ -61,6 +62,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ inputRouted?, inputSocket?, label?, outputRouted?, outputSocket? }`
+`{ inputMany?, inputRouted?, inputSocket?, label?, outputRouted?, outputSocket? }`
 
 Its declared props by name: `label` sets data-label.

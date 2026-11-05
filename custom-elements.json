@@ -6850,6 +6850,13 @@
           "description": "one row of a sherpa-node: an input socket, a field and an output socket. Any of the three may be absent. Will, TODO 78.",
           "attributes": [
             {
+              "name": "data-input-many",
+              "description": "the input takes several routes: its socket is a double height D",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-input-routed",
               "description": "a route joins the input: its socket is filled, else hollow",
               "type": {
@@ -6858,7 +6865,7 @@
             },
             {
               "name": "data-input-socket",
-              "description": "an input socket on the start edge: value (a circle) | object (a diamond) | boolean (a triangle) | any (a square)",
+              "description": "an input socket on the start edge: value | object | boolean | any: an input is a D, its type in its ink",
               "type": {
                 "text": "'value' | 'object' | 'boolean' | 'any'"
               }
@@ -7059,6 +7066,13 @@
               }
             },
             {
+              "name": "data-category",
+              "description": "its kind's category, in lower case: sources | custom-nodes | variables | math | logic | time | utils | collections | output | ai; each has its look",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
               "name": "data-current",
               "description": "the selected node; the HOST writes it, one node of many",
               "type": {
@@ -7095,6 +7109,13 @@
               }
             },
             {
+              "name": "data-input-many",
+              "description": "the header's input takes several routes: its socket is a double height D",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-input-routed",
               "description": "a route joins the header's input: its socket is filled, else hollow",
               "type": {
@@ -7103,7 +7124,7 @@
             },
             {
               "name": "data-input-socket",
-              "description": "the whole node's input socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle) | any (a square)",
+              "description": "the whole node's input socket, on its header: value | object | boolean | any: an input is a D, its type in its ink",
               "type": {
                 "text": "'value' | 'object' | 'boolean' | 'any'"
               }
@@ -7128,6 +7149,22 @@
               "type": {
                 "text": "'value' | 'object' | 'boolean'"
               }
+            },
+            {
+              "name": "data-scale-h",
+              "description": "its height, in times its natural height: 1 to 2",
+              "type": {
+                "text": "number"
+              },
+              "default": "\"1\""
+            },
+            {
+              "name": "data-scale-w",
+              "description": "its width, in times its natural width: 1 to 2",
+              "type": {
+                "text": "number"
+              },
+              "default": "\"1\""
             },
             {
               "name": "data-step",
@@ -7177,6 +7214,13 @@
               }
             },
             {
+              "name": "node-resize",
+              "description": "Its resize handle was dragged, or Alt and an arrow pressed on its header.",
+              "type": {
+                "text": "CustomEvent<{ h: number; w: number }>"
+              }
+            },
+            {
               "name": "node-select",
               "description": "It was pressed: a click on it, or Enter or Space on its header.",
               "type": {
@@ -7211,6 +7255,9 @@
             },
             {
               "name": "heading"
+            },
+            {
+              "name": "resize"
             },
             {
               "name": "root"

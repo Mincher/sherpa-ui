@@ -12,12 +12,15 @@ import { DATA_PROPS, SHARED_PROPS, SherpaElement, define } from '../../core/ui/s
 // Defined before the template stamps it.
 import '../sherpa-container-header/sherpa-container-header.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
+import { primaryKey, primaryLabel } from '../../core/ui/modifier-key.js';
 import { SOCKETS, socketRect, type SocketSide } from './node-sockets.js';
 
 /** One arrow key's move, in plane px; Shift moves four times as far. */
 const MOVE_STEP = 8;
 /** How far a pointer goes, in screen px, before a press is a drag. */
 const DRAG_SLOP = 4;
+/** The most a node grows each way: double its natural size. */
+const MAX_SCALE = 2;
 
 export class SherpaNode extends SherpaElement {
   static override css = [
@@ -38,6 +41,10 @@ export class SherpaNode extends SherpaElement {
     'data-output-routed': SHARED_PROPS['data-output-routed'],
     'data-branches': { type: 'boolean', kind: 'style' },
     'data-false-routed': { type: 'boolean', kind: 'style' },
+    'data-input-many': SHARED_PROPS['data-input-many'],
+    'data-category': { type: 'string', kind: 'style' },
+    'data-scale-w': { type: 'number', kind: 'behaviour' },
+    'data-scale-h': { type: 'number', kind: 'behaviour' },
     'data-x': { type: 'number', kind: 'behaviour' },
     'data-y': { type: 'number', kind: 'behaviour' },
     'data-current': { type: 'boolean', kind: 'style' },
@@ -45,10 +52,13 @@ export class SherpaNode extends SherpaElement {
     'data-caption': { type: 'string', kind: 'content' },
     'data-locked': DATA_PROPS['data-locked'],
   } as const;
-  static override observed = ['data-x', 'data-y'];
+  static override observed = ['data-x', 'data-y', 'data-scale-w', 'data-scale-h'];
 
   /** The drag in progress: the pointer, where it took hold, the place then, and the canvas's zoom. */
   #drag: { id: number; x: number; y: number; from: [number, number]; zoom: number } | null = null;
+
+  /** The resize in progress: the pointer, and the size then in px and in times natural. */
+  #grow: { id: number; x: number; y: number; w: number; h: number; sw: number; sh: number; zoom: number } | null = null;
 
   /** The last press was a drag: the click it ends with is no press. */
   #dragged = false;
@@ -62,13 +72,20 @@ export class SherpaNode extends SherpaElement {
       header?.addEventListener(type, this.#onPointer as EventListener);
     }
     header?.addEventListener('keydown', this.#onKey);
+    const handle = this.$<HTMLElement>('.resize');
+    handle?.setAttribute('title', `Drag to resize. Hold ${primaryLabel} to keep the shape.`);
+    handle?.addEventListener('pointerdown', this.#onGrowDown);
+    for (const type of ['pointermove', 'pointerup', 'pointercancel']) handle?.addEventListener(type, this.#onGrow as EventListener);
+    handle?.addEventListener('dragstart', (event) => event.preventDefault());
     this.addEventListener('click', this.#onClick);
     this.#place();
+    this.#fit();
     this.#sync();
   }
 
   override onChange(name: string): void {
     if (name === 'data-x' || name === 'data-y') this.#place();
+    else if (name === 'data-scale-w' || name === 'data-scale-h') this.#fit();
     else if (name === 'data-current') this.#sync();
   }
 
@@ -82,6 +99,74 @@ export class SherpaNode extends SherpaElement {
     this.style.setProperty('--x', `${this.num('data-x', 0)}px`);
     this.style.setProperty('--y', `${this.num('data-y', 0)}px`);
   }
+
+  /** Its size: the width in times 15rem, and a least height in times its natural one. */
+  #fit(): void {
+    const w = this.#scale('data-scale-w');
+    const h = this.#scale('data-scale-h');
+    this.style.setProperty('--_scale-w', String(w));
+    const root = this.$<HTMLElement>('.root');
+    if (!root) return;
+    root.style.minBlockSize = '';
+    if (h > 1) root.style.minBlockSize = `${root.offsetHeight * h}px`;
+  }
+
+  /** One of its scales, held between 1 and 2. */
+  #scale(name: string): number {
+    return Math.min(MAX_SCALE, Math.max(1, this.num(name, 1)));
+  }
+
+  /** Resize to these scales, held between 1 and 2 — unless the host owns the size — and report. */
+  #resize(w: number, h: number): void {
+    const to = { w: Math.round(Math.min(MAX_SCALE, Math.max(1, w)) * 100) / 100, h: Math.round(Math.min(MAX_SCALE, Math.max(1, h)) * 100) / 100 };
+    if (to.w === this.#scale('data-scale-w') && to.h === this.#scale('data-scale-h')) return;
+    if (!this.hasAttribute('data-locked')) {
+      this.set('data-scale-w', to.w === 1 ? null : to.w);
+      this.set('data-scale-h', to.h === 1 ? null : to.h);
+    }
+    this.emit('node-resize', to);
+  }
+
+  /** The handle takes hold. */
+  #onGrowDown = (event: PointerEvent): void => {
+    if (event.button !== 0) return;
+    event.stopPropagation();
+    event.preventDefault();
+    // Focus stays in the node, so Undo and the arrows still reach it.
+    this.$<HTMLElement>('.header')?.focus({ preventScroll: true });
+    const zoom = this.offsetWidth ? this.getBoundingClientRect().width / this.offsetWidth : 1;
+    const sw = this.#scale('data-scale-w');
+    const sh = this.#scale('data-scale-h');
+    this.#grow = {
+      id: event.pointerId, x: event.clientX, y: event.clientY, sw, sh, zoom: zoom || 1,
+      w: this.offsetWidth, h: this.$<HTMLElement>('.root')!.offsetHeight,
+    };
+    try {
+      (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    } catch { /* the drag still follows the pointer's own events */ }
+  };
+
+  /** Follow the resize, and end it. Each way is held between its natural size and double it. */
+  #onGrow = (event: PointerEvent): void => {
+    const grow = this.#grow;
+    if (!grow || event.pointerId !== grow.id) return;
+    if (event.type !== 'pointermove') {
+      this.#grow = null;
+      this.toggleState('resizing', false);
+      return;
+    }
+    this.toggleState('resizing', true);
+    const rw = (grow.w + (event.clientX - grow.x) / grow.zoom) / grow.w;
+    const rh = (grow.h + (event.clientY - grow.y) / grow.zoom) / grow.h;
+    if (primaryKey(event)) {
+      // The aspect kept: both scale by the one factor that moved more.
+      const f = Math.abs(rw - 1) >= Math.abs(rh - 1) ? rw : rh;
+      const k = Math.min(Math.max(f, Math.max(1 / grow.sw, 1 / grow.sh)), Math.min(MAX_SCALE / grow.sw, MAX_SCALE / grow.sh));
+      this.#resize(grow.sw * k, grow.sh * k);
+    } else {
+      this.#resize(grow.sw * rw, grow.sh * rh);
+    }
+  };
 
   /** The selected node says so to assistive tech. */
   #sync(): void {
@@ -134,6 +219,15 @@ export class SherpaNode extends SherpaElement {
 
   /** The arrows move it; Enter or Space selects it. */
   #onKey = (event: KeyboardEvent): void => {
+    if (event.altKey) {
+      // Alt and an arrow: a tenth of its natural size wider or taller, or less.
+      const grows: Record<string, [number, number]> = { ArrowRight: [0.1, 0], ArrowLeft: [-0.1, 0], ArrowDown: [0, 0.1], ArrowUp: [0, -0.1] };
+      const g = grows[event.key];
+      if (!g) return;
+      this.#resize(this.#scale('data-scale-w') + g[0], this.#scale('data-scale-h') + g[1]);
+      event.preventDefault();
+      return;
+    }
     const step = event.shiftKey ? MOVE_STEP * 4 : MOVE_STEP;
     const moves: Record<string, [number, number]> = {
       ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step],

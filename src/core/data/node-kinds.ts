@@ -40,6 +40,7 @@
  * - mirrored — What a picklist row shows while routes drive it: what comes in, read only, each pick marked Custom.
  * - drivenSwitch — What a switch row shows while a boolean route drives it: True if any came in True, marked Custom.
  * - GraphRow — One row as drawn: its kind's parts, the value it shows, and whether a reader may change it.
+ * - NodeSize — A node's size, in times its natural width and height, each 1 to 2.
  * - GraphNode — One node as drawn: its header, its sockets, its rows and its place.
  * - DrawnGraph — Nodes and routes, ready to draw: a workflow's, or a page's Query.
  * - GraphEdit — One row a reader changed: its node, its row and the new value.
@@ -465,6 +466,12 @@ export interface GraphRow extends RowKind {
   custom?: true;
 }
 
+/** A node's size, in times its natural width and height; each from 1 (as it is) to 2 (double). */
+export interface NodeSize {
+  w: number;
+  h: number;
+}
+
 /** One node as drawn: its header, its sockets, its rows and its place. */
 export interface GraphNode {
   id: string;
@@ -479,6 +486,10 @@ export interface GraphNode {
   rows: readonly GraphRow[];
   x: number;
   y: number;
+  /** Its kind's panel category: the node's look is styled by it. */
+  category?: string;
+  /** How far a reader grew it, each way, in times its natural size: 1 to 2. */
+  size?: NodeSize;
   /** What it stands for, for whoever takes its edits: a Query node's scope, field or preset. */
   ref?: Readonly<Record<string, string>>;
 }
@@ -498,7 +509,7 @@ export interface GraphEdit {
 }
 
 /** Each node's place by its id: where a reader moved it. */
-export type NodePlaces = Readonly<Record<string, { x: number; y: number }>>;
+export type NodePlaces = Readonly<Record<string, { x: number; y: number; size?: NodeSize }>>;
 
 /** A node of a kind, its rows given: the kind's header and sockets, under its own. */
 export function kindNode(
@@ -512,11 +523,12 @@ export function kindNode(
     ...(k.many ? { many: k.many } : {}),
     ...(k.output ? { output: k.output } : {}),
     ...(k.branches ? { branches: k.branches } : {}),
+    ...(k.category ? { category: k.category } : {}),
     ...own,
   };
 }
 
 /** A graph with each node at its kept place; one never moved stays where it was laid out. */
 export function placed(graph: DrawnGraph, places: NodePlaces): DrawnGraph {
-  return { ...graph, nodes: graph.nodes.map((n) => (places[n.id] ? { ...n, x: places[n.id]!.x, y: places[n.id]!.y } : n)) };
+  return { ...graph, nodes: graph.nodes.map((n) => (places[n.id] ? { ...n, x: places[n.id]!.x, y: places[n.id]!.y, ...(places[n.id]!.size ? { size: places[n.id]!.size } : {}) } : n)) };
 }

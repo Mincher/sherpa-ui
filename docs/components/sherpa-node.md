@@ -24,16 +24,20 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 |---|---|---|---|
 | `data-branches` | boolean |  | a fork: the header's output is True, and a footer shows with False |
 | `data-caption` | text |  | a line over the node: what its step did, its time and rows. Its host writes it |
+| `data-category` | text |  | its kind's category, in lower case: sources \| custom-nodes \| variables \| math \| logic \| time \| utils \| collections \| output \| ai; each has its look |
 | `data-current` | boolean |  | the selected node; the HOST writes it, one node of many |
 | `data-description` | text |  | a line under the name |
 | `data-false-routed` | boolean |  | a route leaves False: its socket is filled, else hollow |
 | `data-heading` | text | `Node` | the node's name, in its header |
 | `data-icon` | text |  | a glyph before the name |
+| `data-input-many` | boolean |  | the header's input takes several routes: its socket is a double height D |
 | `data-input-routed` | boolean |  | a route joins the header's input: its socket is filled, else hollow |
-| `data-input-socket` | `value` `object` `boolean` `any` |  | the whole node's input socket, on its header: value (a circle) \| object (a diamond) \| boolean (a triangle) \| any (a square) |
+| `data-input-socket` | `value` `object` `boolean` `any` |  | the whole node's input socket, on its header: value \| object \| boolean \| any: an input is a D, its type in its ink |
 | `data-locked` | boolean |  | the host owns the place: a drag or a key reports, and moves nothing |
 | `data-output-routed` | boolean |  | a route leaves the header's output: its socket is filled, else hollow |
 | `data-output-socket` | `value` `object` `boolean` |  | the whole node's output socket, on its header: value (a circle) \| object (a diamond) \| boolean (a triangle) |
+| `data-scale-h` | number | `1` | its height, in times its natural height: 1 to 2 |
+| `data-scale-w` | number | `1` | its width, in times its natural width: 1 to 2 |
 | `data-step` | `running` `done` `failed` `skipped` |  | how its step stands as a run lights it: running \| done \| failed \| skipped. Its host writes it |
 | `data-x` | number | `0` | where it sits across the canvas, in plane px |
 | `data-y` | number | `0` | where it sits down the canvas, in plane px |
@@ -51,6 +55,7 @@ Each one bubbles.
 | Event | Detail | What it means |
 |---|---|---|
 | `node-move` | `{ x: number; y: number }` | It moved, or was asked to: a drag on its header, or an arrow key there. |
+| `node-resize` | `{ h: number; w: number }` | Its resize handle was dragged, or Alt and an arrow pressed on its header. |
 | `node-select` |  | It was pressed: a click on it, or Enter or Space on its header. |
 
 ## Slots
@@ -63,7 +68,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `caption`, `foot`, `footer`, `grip`, `header`, `heading`, `root`, `socket-false`, `socket-in`, `socket-out`, `tip`
+`body`, `caption`, `foot`, `footer`, `grip`, `header`, `heading`, `resize`, `root`, `socket-false`, `socket-in`, `socket-out`, `tip`
 
 ## CSS custom properties it reads
 
@@ -79,6 +84,9 @@ What each class's base rule reads:
 | `--sherpa-display-mode-size-sm` | `.grip` | `inline-size` |
 | `--sherpa-display-mode-size-sm` | `.grip` | `block-size` |
 | `--sherpa-style-content-secondary` | `.grip` | `color` |
+| `--sherpa-display-mode-size-sm` | `.resize` | `inline-size` |
+| `--sherpa-display-mode-size-sm` | `.resize` | `block-size` |
+| `--sherpa-style-content-secondary` | `.resize` | `color` |
 | `--sherpa-theme-gap-sm` | `.caption` | `padding-block-end` |
 | `--sherpa-style-content-secondary` | `.caption` | `color` |
 | `--sherpa-font-family-body` | `.caption` | `font-family` |
@@ -92,6 +100,6 @@ What each class's base rule reads:
 
 ## populate()
 
-`{ branches?, caption?, current?, description?, falseRouted?, heading?, icon?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, step?, x?, y? }`
+`{ branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, scaleH?, scaleW?, step?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.

@@ -336,6 +336,11 @@
         "kind": { "description": "A kind a workflow runs: one the library ships (store, value, pick, filter, sort, group, count, output), or one the app adds.", "type": "string" },
         "x": { "description": "Its place across the canvas, in plane px.", "type": "number" },
         "y": { "description": "Its place down the canvas, in plane px.", "type": "number" },
+        "size": {
+          "description": "How far a reader grew it, in times its natural width and height: each from 1 (as it is) to 2 (double). Absent: its natural size.",
+          "type": "object", "additionalProperties": false, "required": ["w", "h"],
+          "properties": { "w": { "type": "number", "minimum": 1, "maximum": 2 }, "h": { "type": "number", "minimum": 1, "maximum": 2 } }
+        },
         "heading": { "description": "Its own name, in place of its kind's.", "type": "string" },
         "description": { "description": "Its own line, in place of its kind's.", "type": "string" },
         "values": { "description": "Each row's value, by the row's name, typed as its row takes it: a Filter's field, op and value are one condition.", "type": "object" },

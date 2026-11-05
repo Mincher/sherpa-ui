@@ -169,6 +169,8 @@ export const SHARED_PROPS = {
   /** A route joins the socket: it is drawn filled, else hollow. The host writes them. */
   'data-input-routed': { type: 'boolean', kind: 'style' },
   'data-output-routed': { type: 'boolean', kind: 'style' },
+  /** The input takes several routes: its socket is double height. The host writes it. */
+  'data-input-many': { type: 'boolean', kind: 'style' },
 } as const satisfies PropMap;
 
 /**

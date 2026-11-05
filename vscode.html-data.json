@@ -2631,13 +2631,18 @@
       "description": "one row of a sherpa-node: an input socket, a field and an output socket. Any of the three may be absent. Will, TODO 78.",
       "attributes": [
         {
+          "name": "data-input-many",
+          "description": "the input takes several routes: its socket is a double height D",
+          "valueSet": "v"
+        },
+        {
           "name": "data-input-routed",
           "description": "a route joins the input: its socket is filled, else hollow",
           "valueSet": "v"
         },
         {
           "name": "data-input-socket",
-          "description": "an input socket on the start edge: value (a circle) | object (a diamond) | boolean (a triangle) | any (a square)",
+          "description": "an input socket on the start edge: value | object | boolean | any: an input is a D, its type in its ink",
           "values": [
             {
               "name": "value"
@@ -2728,6 +2733,10 @@
           "description": "a line over the node: what its step did, its time and rows. Its host writes it"
         },
         {
+          "name": "data-category",
+          "description": "its kind's category, in lower case: sources | custom-nodes | variables | math | logic | time | utils | collections | output | ai; each has its look"
+        },
+        {
           "name": "data-current",
           "description": "the selected node; the HOST writes it, one node of many",
           "valueSet": "v"
@@ -2750,13 +2759,18 @@
           "description": "a glyph before the name"
         },
         {
+          "name": "data-input-many",
+          "description": "the header's input takes several routes: its socket is a double height D",
+          "valueSet": "v"
+        },
+        {
           "name": "data-input-routed",
           "description": "a route joins the header's input: its socket is filled, else hollow",
           "valueSet": "v"
         },
         {
           "name": "data-input-socket",
-          "description": "the whole node's input socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle) | any (a square)",
+          "description": "the whole node's input socket, on its header: value | object | boolean | any: an input is a D, its type in its ink",
           "values": [
             {
               "name": "value"
@@ -2796,6 +2810,14 @@
               "name": "boolean"
             }
           ]
+        },
+        {
+          "name": "data-scale-h",
+          "description": "its height, in times its natural height: 1 to 2"
+        },
+        {
+          "name": "data-scale-w",
+          "description": "its width, in times its natural width: 1 to 2"
         },
         {
           "name": "data-step",

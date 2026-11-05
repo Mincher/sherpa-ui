@@ -193,6 +193,15 @@
               ]
             }
           ]
+        },
+        {
+          "el": "span",
+          "class": "resize",
+          "part": "resize",
+          "attrs": {
+            "aria-hidden": "true",
+            "title": "Drag to resize. Hold Ctrl to keep the shape."
+          }
         }
       ]
     }
@@ -215,6 +224,15 @@
       "declared": true,
       "kind": "content",
       "description": "a line over the node: what its step did, its time and rows. Its host writes it"
+    },
+    {
+      "$type": "prop",
+      "name": "data-category",
+      "type": "string",
+      "observed": false,
+      "declared": true,
+      "kind": "style",
+      "description": "its kind's category, in lower case: sources | custom-nodes | variables | math | logic | time | utils | collections | output | ai; each has its look"
     },
     {
       "$type": "prop",
@@ -264,6 +282,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-input-many",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "the header's input takes several routes: its socket is a double height D"
+    },
+    {
+      "$type": "prop",
       "name": "data-input-routed",
       "type": "boolean",
       "observed": true,
@@ -284,7 +311,7 @@
         "boolean",
         "any"
       ],
-      "description": "the whole node's input socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle) | any (a square)"
+      "description": "the whole node's input socket, on its header: value | object | boolean | any: an input is a D, its type in its ink"
     },
     {
       "$type": "prop",
@@ -317,6 +344,26 @@
         "boolean"
       ],
       "description": "the whole node's output socket, on its header: value (a circle) | object (a diamond) | boolean (a triangle)"
+    },
+    {
+      "$type": "prop",
+      "name": "data-scale-h",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "default": "1",
+      "description": "its height, in times its natural height: 1 to 2"
+    },
+    {
+      "$type": "prop",
+      "name": "data-scale-w",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "default": "1",
+      "description": "its width, in times its natural width: 1 to 2"
     },
     {
       "$type": "prop",
@@ -365,10 +412,30 @@
     }
   ],
   "populate": {
-    "shape": "{ branches?, caption?, current?, description?, falseRouted?, heading?, icon?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, step?, x?, y? }",
+    "shape": "{ branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, scaleH?, scaleW?, step?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
+    {
+      "$type": "state",
+      "name": "sources",
+      "selector": ":host([data-category=\"sources\"])"
+    },
+    {
+      "$type": "state",
+      "name": "custom-nodes",
+      "selector": ":host([data-category=\"custom-nodes\"])"
+    },
+    {
+      "$type": "state",
+      "name": "output",
+      "selector": ":host([data-category=\"output\"])"
+    },
+    {
+      "$type": "state",
+      "name": "ai",
+      "selector": ":host([data-category=\"ai\"])"
+    },
     {
       "$type": "state",
       "name": "current",
@@ -416,6 +483,17 @@
     },
     {
       "$type": "event",
+      "name": "node-resize",
+      "description": "Its resize handle was dragged, or Alt and an arrow pressed on its header.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "h": "number",
+        "w": "number"
+      }
+    },
+    {
+      "$type": "event",
       "name": "node-select",
       "description": "It was pressed: a click on it, or Enter or Space on its header.",
       "bubbles": true,
@@ -431,6 +509,9 @@
     "grip.inline-size": "{sherpa.display-mode-size-sm}",
     "grip.block-size": "{sherpa.display-mode-size-sm}",
     "grip.color": "{sherpa.style-content-secondary}",
+    "resize.inline-size": "{sherpa.display-mode-size-sm}",
+    "resize.block-size": "{sherpa.display-mode-size-sm}",
+    "resize.color": "{sherpa.style-content-secondary}",
     "caption.padding-block-end": "{sherpa.theme-gap-sm}",
     "caption.color": "{sherpa.style-content-secondary}",
     "caption.font-family": "{sherpa.font-family-body}",

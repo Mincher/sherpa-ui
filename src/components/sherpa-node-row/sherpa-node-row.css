@@ -169,10 +169,10 @@
 /* The control is the field's last line, one control high. */
 .socket {
   inset-block-end: calc(var(--sherpa-display-mode-size-2xl, 32px) / 2);
-  margin-block-end: calc(var(--_socket) / -2);
+  margin-block-end: calc(var(--_socket-h) / -2);
 }
 /* With no field, a socket lines up with the label. */
 :host(:not(:state(has-content-slot))) .socket {
   inset-block: 50% auto;
-  margin-block: calc(var(--_socket) / -2) 0;
+  margin-block: calc(var(--_socket-h) / -2) 0;
 }

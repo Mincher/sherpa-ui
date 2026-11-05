@@ -61,7 +61,7 @@ import { instancePane, groupPane, updatePane } from './node-group-panel.js';
 import { typedValue, type FieldType } from '../data/filter-state.js';
 import {
   FALSE_SOCKET, NODE_KINDS, fitOf, paletteOf, placed, rowChoices, socketOf, socketType,
-  type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeRoute, type NodeTie, type SocketType,
+  type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeSize, type NodeRoute, type NodeTie, type SocketType,
 } from '../data/node-kinds.js';
 import {
   TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, readWorkflow, tieLimit, workflowGraph,
@@ -80,6 +80,8 @@ export interface DrawOptions {
   onSelect?: (node: GraphNode) => void;
   /** A node the reader moved, and where to. */
   onMove?: (node: GraphNode, x: number, y: number) => void;
+  /** A node the reader resized, and its new size in times its natural one (TODO 740). */
+  onResize?: (node: GraphNode, size: NodeSize) => void;
   /** A line dragged from an output socket and let go on an input socket. */
   onConnect?: (route: NodeRoute) => void;
   /** A route's input end dragged off its socket and let go on another input socket (TODO 557). */
@@ -241,6 +243,7 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
     const line = drawn.rows.get(`${node.id}/${row.name}`)!;
     put(line, 'data-input-socket', row.input);
     put(line, 'data-output-socket', row.output);
+    line.toggleAttribute('data-input-many', !!row.many);
     line.toggleAttribute('data-input-routed', routed.has(`${node.id}/${row.name}`));
     line.toggleAttribute('data-output-routed', sent.has(`${node.id}/${row.name}`));
     const field = line.firstElementChild as Field | null;
@@ -599,6 +602,11 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     const { x, y } = (event as CustomEvent<{ x: number; y: number }>).detail;
     if (node) made.options.onMove?.(node, x, y);
   });
+  canvas.addEventListener('node-resize', (event) => {
+    drawRoutes(canvas, made);
+    const node = nodeOf(made, event.target);
+    if (node) made.options.onResize?.(node, (event as CustomEvent<NodeSize>).detail);
+  });
   // Before the node and the view hear it: a drag from an output socket is a new route.
   canvas.addEventListener('pointerdown', (event) => connectFrom(canvas, made, event), { capture: true });
   // A tie is dragged; with the tool on, a line on the blank canvas ties the routes it crosses. TODO 562
@@ -772,6 +780,10 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: DrawnGraph, options
     // Its data in, of any type; out, its True where it forks.
     put(el, 'data-input-socket', socketType(node, undefined, 'input'));
     put(el, 'data-output-socket', socketType(node, undefined, 'output'));
+    el.toggleAttribute('data-input-many', !!node.many);
+    put(el, 'data-category', node.category?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
+    put(el, 'data-scale-w', node.size ? String(node.size.w) : undefined);
+    put(el, 'data-scale-h', node.size ? String(node.size.h) : undefined);
     el.toggleAttribute('data-branches', !!node.branches);
     el.toggleAttribute('data-input-routed', graph.routes.some((r) => r.to === node.id));
     el.toggleAttribute('data-output-routed', graph.routes.some((r) => r.from === node.id));
@@ -1099,7 +1111,8 @@ function pickedIn(
 /** Each node's place, as a session keeps it. */
 function isPlaces(v: unknown): v is NodePlaces {
   return !!v && typeof v === 'object' && !Array.isArray(v)
-    && Object.values(v).every((p: { x?: unknown; y?: unknown } | null) => typeof p?.x === 'number' && typeof p?.y === 'number');
+    && Object.values(v).every((p: { x?: unknown; y?: unknown; size?: { w?: unknown; h?: unknown } } | null) => typeof p?.x === 'number' && typeof p?.y === 'number'
+      && (p.size === undefined || (typeof p.size.w === 'number' && typeof p.size.h === 'number')));
 }
 
 /** What drawing a page's Query needs beyond its source: the definition, the page's
@@ -1133,7 +1146,12 @@ export function bindQueryEditor(
   session?.persist(pointer, { shared: false, guard: isPlaces });
   let places: NodePlaces = (session?.get(pointer) as NodePlaces | undefined) ?? {};
   const onMove = (node: GraphNode, x: number, y: number): void => {
-    places = { ...places, [node.id]: { x, y } };
+    places = { ...places, [node.id]: { ...places[node.id], x, y } };
+    session?.set(pointer, places);
+  };
+  // A resized node's size: the reader's for the tab, kept beside its place. TODO 740
+  const onResize = (node: GraphNode, size: NodeSize): void => {
+    places = { ...places, [node.id]: { x: node.x, y: node.y, ...places[node.id], size } };
     session?.set(pointer, places);
   };
   const onEdit = (edit: GraphEdit): void => {
@@ -1191,7 +1209,7 @@ export function bindQueryEditor(
       ...facts, values, presets: (scope) => query.presets(scope), domains: source.store?.domains ?? {}, pageSize: source.state?.pageSize ?? null,
     }), places);
     drawGraph(canvas, graph, {
-      onEdit, onMove, onConnect, onSelect: (node) => picks.select(node, graph), onDeselect: picks.deselect,
+      onEdit, onMove, onResize, onConnect, onSelect: (node) => picks.select(node, graph), onDeselect: picks.deselect,
       // Its routes are readings, which another field or scope takes: a moved end is a new route.
       onReroute: (_was, now) => onConnect(now),
       ...(panel ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
@@ -1511,6 +1529,10 @@ export function bindWorkflow(
   const onMove = (node: GraphNode, x: number, y: number): void => {
     if (node.id.startsWith('#')) return;
     write(editWorkflow(shown(), { node: node.id, set: { x, y } }, K()), `move:${node.id}`);
+  };
+  const onResize = (node: GraphNode, size: NodeSize): void => {
+    if (node.id.startsWith('#')) return;
+    write(editWorkflow(shown(), { resize: { node: node.id, ...size } }, K()), `size:${node.id}`);
   };
   // A route that would break the workflow is refused, and says why; else the draft takes it.
   const take = (next: WorkflowDefinition): void => {
@@ -1882,7 +1904,7 @@ export function bindWorkflow(
     const body = workflowGraph(shown(), facts, K());
     graph = ro ? { ...body, nodes: body.nodes.map((n) => ({ ...n, rows: n.rows.map((r) => ({ ...r, editable: false })) })) } : body;
     drawGraph(canvas, graph, {
-      onEdit, onMove, onConnect, onReroute, onBreak, onCustom, onDeselect: picks.deselect,
+      onEdit, onMove, onResize, onConnect, onReroute, onBreak, onCustom, onDeselect: picks.deselect,
       onBox: pickBox, onPicked: tellPicked,
       ...(ro ? {} : { tying, onTie, onTieMove, onUntie, onBreakAll }),
       onSelect: (node) => {

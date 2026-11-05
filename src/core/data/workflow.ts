@@ -10,6 +10,8 @@
  * - WorkflowDefinitionV1 — A workflow as v1 saved it: its data rows left from a node's header.
  * - WorkflowRead — A workflow read as v2, and each fault the read met.
  * - readWorkflow — A workflow as v2: a v1's header routes moved to its Rows row; a Filter node read as a Condition.
+ * - GROW_MIN — The least a node's size may be: its natural size, as 1.
+ * - GROW_MAX — The most a node's size may be: double its natural size, as 2.
  * - workflowFaults — Every fault in a workflow, in words: a node, a kind, a value or a route that cannot be.
  * - checkWorkflow — Check every node, kind and route; each fault reports. True when none is.
  * - WorkflowFacts — What drawing a workflow needs that it does not say: the fields a row picks, the stores.
@@ -18,7 +20,7 @@
  * - TIE_GAP — The gap between two routes in a zip tie, in px.
  * - tieLimit — The range a zip tie's x may take: between the nodes its shortest tied route joins.
  * - tiesAmong — The ties left when only some routes remain: a tie keeps its routes still there, and none, it goes.
- * - WorkflowEdit — One edit to a workflow: a row, a node's own part, a route made or cut, a node added or removed.
+ * - WorkflowEdit — One edit to a workflow: a row, a node's own part, a node's size, a route made or cut, a node added or removed.
  * - editWorkflow — The workflow after one edit; the one given untouched.
  * - addCustomValue — A Value node made for a picklist row and routed into it: the row mirrors it, and keeps its own pick.
  */
@@ -27,7 +29,7 @@ import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS } from './store.js';
 import {
   NODE_KINDS, ROWS, SOCKET_WORDS, FALSE_SOCKET, accepts, conditionRows, drivenSwitch, fixedChoices, truthy, kindNode, mirrored, partName, partOf, rowChoices, rowOf, socketOf, socketType, takesMany,
-  type DrawnGraph, type GraphRow, type NodeKind, type NodeRoute, type NodeTie, type PartKind, type SocketType,
+  type DrawnGraph, type GraphRow, type NodeSize, type NodeKind, type NodeRoute, type NodeTie, type PartKind, type SocketType,
 } from './node-kinds.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
@@ -39,6 +41,8 @@ export interface WorkflowNode {
   /** Its place on the canvas, in plane px. */
   x: number;
   y: number;
+  /** How far a reader grew it, in times its natural size, 1 to 2 each way. */
+  size?: NodeSize;
   /** Its own name and line, in place of its kind's. */
   heading?: string;
   description?: string;
@@ -109,6 +113,11 @@ export function readWorkflow(given: WorkflowDefinition | WorkflowDefinitionV1, k
   return { workflow: { ...workflow, ...$schema, v: 2, ...(workflow.routes ? { routes } : {}) }, faults };
 }
 
+/** A node's size runs from its natural size to double it, each way. */
+export const GROW_MIN = 1;
+export const GROW_MAX = 2;
+const inGrowth = (n: unknown): boolean => typeof n === 'number' && n >= GROW_MIN && n <= GROW_MAX;
+
 /** Every fault in a workflow, in words: a node, a kind, a value or a route that cannot be.
  *  A v1 is read as v2 first, and each fault of the read leads. */
 export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fields'> = {}): string[] {
@@ -126,6 +135,7 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
       byId.set(node.id, kind);
       kindOf.set(node.id, node.kind);
     }
+    if (node.size && !(inGrowth(node.size.w) && inGrowth(node.size.h))) problems.push(`the node "${node.id}" is sized ${node.size.w} by ${node.size.h} times its natural size, and a size runs from ${GROW_MIN} to ${GROW_MAX}`);
     for (const [name, value] of Object.entries(node.values ?? {})) {
       const row = kind && rowOf(kind.rows, name);
       if (kind && !row) problems.push(`the node "${node.id}" holds a value for "${name}", a row its kind has not`);
@@ -308,7 +318,7 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
         : { ...own, value: shown.value };
     });
     const heads = { ...(node.heading ? { heading: node.heading } : {}), ...(node.description ? { description: node.description } : {}) };
-    return { ...kindNode(kinds, node.kind, node.id, rows, heads), x: node.x, y: node.y };
+    return { ...kindNode(kinds, node.kind, node.id, rows, heads), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}) };
   });
   return { nodes, routes: [...routes], ...(workflow.ties?.length ? { ties: workflow.ties } : {}) };
 }
@@ -355,6 +365,7 @@ export type WorkflowEdit =
   | { cut: string | NodeRoute }
   | { add: WorkflowNode }
   | { remove: string }
+  | { resize: { node: string; w: number; h: number } }
   | { tie: { id?: string; x: number; y: number; routes: readonly NodeRoute[] } }
   | { untie: string }
   | { moveTie: { id: string; x?: number; y?: number } };
@@ -399,6 +410,16 @@ export function editWorkflow(
       const limit = tieLimit(workflow, t);
       const to = x === undefined ? t.x : limit ? Math.min(limit.max, Math.max(limit.min, x)) : x;
       return { ...t, x: to, y: y ?? t.y };
+    }) };
+  }
+  if ('resize' in edit) {
+    const { node, w, h } = edit.resize;
+    const size = { w: Math.round(w * 100) / 100, h: Math.round(h * 100) / 100 };
+    return { ...workflow, nodes: workflow.nodes.map((n) => {
+      if (n.id !== node) return n;
+      // Natural size is no size kept.
+      if (size.w === 1 && size.h === 1) { const { size: _was, ...bare } = n; return bare; }
+      return { ...n, size };
     }) };
   }
   if ('add' in edit) return workflow.nodes.some((n) => n.id === edit.add.id) ? workflow : { ...workflow, nodes: [...workflow.nodes, { ...edit.add }] };
