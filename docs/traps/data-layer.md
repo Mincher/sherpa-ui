@@ -7318,8 +7318,17 @@ Will, 2026-11-05 (plan-746, D1-D3, D8); versions: "not too fussed while we build
   settings the type does not keep, an output nothing reaches, a `uses` that is not there, a loop
   of entities (said once, from its first end), and the graph's own faults as a Custom Node's.
   Every writer calls it.
+- **One shelf** (`entity-shelf.ts`, E2): `list/get/save/remove/duplicate/export/import/watch`
+  over a port, so the rules are one set. The reader's own are ONE named part of the keeper
+  (`entities`, app-wide); the presets are `entities.json` (app.v1 `entities`) and the Custom Node
+  presets read as type `node`. `nodes` is a VIEW (`nodesView`): the old `nodes` part is read once
+  as entities and gone, and so is the database's `nodes` store (version 3 moves its rows).
+  A remove is refused while another entity `uses` it, naming who.
 
 - Site: `src/core/data/entity.ts`
 - Site: `src/core/data/entity-types.ts`
 - Site: `test/unit/an-entity-is-an-envelope-and-a-type.test.mjs`
 - Site: `src/data.ts`
+- Site: `src/core/data/entity-shelf.ts`
+- Site: `src/core/browser/entity-files.ts`
+- Site: `test/unit/an-entity-shelf-is-one-door.test.mjs`

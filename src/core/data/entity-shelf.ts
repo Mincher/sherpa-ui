@@ -1,0 +1,176 @@
+/**
+ * entity-shelf.ts — where an app's entities come together: the presets a file ships, read only,
+ * and the reader's own, app-wide, of every type. ONE door: list, get, save, remove (refused while
+ * another entity uses it), duplicate, export, import, watch. It holds no storage: the keeper gives
+ * it a port, so a test, a server and a browser share the one set of rules. The Custom Node shelf is
+ * a VIEW of it (`nodesView`). DOM-free. Will, plan 746 E2 · TRAP T-an-entity-is-an-envelope-and-a-type
+ *
+ * Map:
+ * - EntitySummary — One entity as a list shows it: cheap, no graph.
+ * - EntityShelf — What an editor is handed: list, get, save, remove, duplicate, export, import, watch.
+ * - EntityPort — What a shelf needs of its keeper: the presets, the reader's own, keeping them, and hearing a change.
+ * - joinEntities — The presets and the reader's entities as one list; a clash with a preset or an earlier id is left out.
+ * - makeShelf — The shelf over a port. Each save is checked by `checkEntity`, loaded when first asked.
+ * - nodesView — The Custom Node shelf as a view of an entity shelf: the entities of the type `node`.
+ */
+import { report } from './report.js';
+import { definitionOf, isEntity, nodeEntityOf, usesOf, ENTITY_SCHEMA, type Entity } from './entity.js';
+import type { EntityFacts } from './entity-types.js';
+import type { NodeDefinition, NodeLibrary } from './node-library.js';
+import type { NodeShelf } from './node-shelf.js';
+
+/** One entity as a list shows it: cheap, no graph. */
+export interface EntitySummary {
+  id: string;
+  type: string;
+  label: string;
+  origin: 'preset' | 'mine';
+}
+
+/** What an editor is handed. Save, remove, duplicate and import answer whether it was done; the
+ *  reason is reported. A preset is read only: `duplicate` makes a copy of the reader's own. */
+export interface EntityShelf {
+  /** Every entity, presets first, as a summary; of one type when given. */
+  list(type?: string): EntitySummary[];
+  /** The whole entity, with its `origin`. */
+  get(id: string): Entity | undefined;
+  save(entity: Entity): Promise<boolean>;
+  /** The reader's own only, and refused while another entity uses it. */
+  remove(id: string): boolean;
+  duplicate(id: string, newId: string): Promise<boolean>;
+  /** Called with the list whenever it changes here, and when another tab changes it. Stops on the signal. */
+  watch(handler: (list: EntitySummary[]) => void, signal?: AbortSignal): void;
+  /** The entity as JSON text, with its `$schema` and without its `origin`. */
+  export(id: string): string | undefined;
+  /** An entity from JSON text, checked, kept as the reader's own. A taken id gets a free one. The id it was kept under, or none. */
+  import(json: string): Promise<string | undefined>;
+}
+
+/** What a shelf needs of its keeper: the presets, the reader's own, keeping them, and hearing a change. */
+export interface EntityPort {
+  presets(): readonly Entity[];
+  mine(): Readonly<Record<string, Entity>>;
+  keep(next: Record<string, Entity>): void;
+  /** Hear the reader's entities change here or in another tab. */
+  heard(handler: () => void, signal?: AbortSignal): void;
+}
+
+/** The presets and the reader's entities as one list: presets first, marked `preset`; then the reader's,
+ *  marked `mine`. A reader's entity whose id a preset holds is left out, so it overrides nothing. */
+export function joinEntities(presets: readonly Entity[], mine: Readonly<Record<string, Entity>> = {}): Entity[] {
+  const given = new Set(presets.map((e) => e.id));
+  return [
+    ...presets.map((e) => ({ ...e, origin: 'preset' as const })),
+    ...Object.values(mine).filter((e) => !given.has(e.id)).map((e) => ({ ...e, origin: 'mine' as const })),
+  ];
+}
+
+/** A Custom Node's reports keep their own code; every other type's is `entity`. */
+const codeOf = (type: string): string => (type === 'node' ? 'node-library' : 'entity');
+
+/** The entity as it is kept: no `origin`, its `uses` read from its graph among those that exist. */
+function kept(entity: Entity, all: readonly Entity[]): Entity {
+  const { origin: _origin, $schema: _schema, ...rest } = entity;
+  const uses = usesOf(entity.graph, all.filter((e) => e.id !== entity.id));
+  const { uses: _uses, ...plain } = rest;
+  return { ...plain, ...(uses.length ? { uses } : {}) };
+}
+
+/** Names as words: "A", "A and B", "A, B and C". */
+const named = (labels: readonly string[]): string => {
+  const quoted = labels.map((l) => `"${l}"`);
+  return quoted.length < 2 ? (quoted[0] ?? '') : `${quoted.slice(0, -1).join(', ')} and ${quoted.at(-1)}`;
+};
+
+/** The shelf over a port. `facts` adds the app's types and kinds to the checks. */
+export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'types' | 'kinds' | 'fields'> = () => ({})): EntityShelf {
+  const all = (): Entity[] => joinEntities(port.presets(), port.mine());
+  const summary = ({ id, type, label, origin }: Entity): EntitySummary => ({ id, type, label, origin: origin ?? 'mine' });
+  const refuse = (type: string, message: string, id: string): false => {
+    report({ code: codeOf(type), message, at: { entity: id } });
+    return false;
+  };
+
+  const shelf: EntityShelf = {
+    list: (type) => all().filter((e) => !type || e.type === type).map(summary),
+    get: (id) => all().find((e) => e.id === id),
+
+    async save(entity) {
+      if (!isEntity(entity)) return refuse('entity', 'save: it is not an entity: a v1 with a type, an id, a name and a graph.', String((entity as { id?: unknown })?.id ?? ''));
+      const here = all();
+      const held = here.find((e) => e.id === entity.id);
+      if (held?.origin === 'preset') return refuse(entity.type, `save: "${entity.id}" is a preset, which is read only: use "Copy to my entities".`, entity.id);
+      if (held && held.type !== entity.type) return refuse(entity.type, `save: "${entity.id}" is already a ${held.type}: an id names one entity.`, entity.id);
+      const next = kept(entity, here);
+      const { checkEntity } = await import('./entity-types.js');
+      if (!checkEntity(next, { ...facts(), entities: here.filter((e) => e.id !== next.id) })) return false;
+      port.keep({ ...port.mine(), [next.id]: next });
+      return true;
+    },
+
+    remove(id) {
+      const here = all();
+      const entity = here.find((e) => e.id === id);
+      if (!entity) return false;
+      if (entity.origin === 'preset') return refuse(entity.type, `remove: "${id}" is a preset, which is read only.`, id);
+      const by = here.filter((e) => e.id !== id && [...(e.uses ?? []), ...usesOf(e.graph, [entity])].some((u) => u.id === id));
+      if (by.length) return refuse(entity.type, `remove: "${entity.label}" is used by ${named(by.map((e) => e.label))}, so it stays: take it out of them first.`, id);
+      const { [id]: _gone, ...rest } = port.mine();
+      port.keep(rest);
+      return true;
+    },
+
+    async duplicate(id, newId) {
+      const was = shelf.get(id);
+      if (!was) return refuse('entity', `duplicate: "${id}" is not there.`, id);
+      return shelf.save({ ...structuredClone(was), id: newId, label: `${was.label} copy` });
+    },
+
+    watch(handler, signal) {
+      port.heard(() => handler(shelf.list()), signal);
+    },
+
+    export(id) {
+      const entity = shelf.get(id);
+      if (!entity) return undefined;
+      const { origin: _origin, ...rest } = entity;
+      return JSON.stringify({ $schema: ENTITY_SCHEMA, ...rest }, null, 2);
+    },
+
+    async import(json) {
+      let read: unknown;
+      try {
+        read = JSON.parse(json);
+      } catch {
+        refuse('entity', 'import: it is not JSON.', '');
+        return undefined;
+      }
+      if (!isEntity(read)) {
+        refuse('entity', 'import: it is not an entity: a v1 with a type, an id, a name and a graph.', '');
+        return undefined;
+      }
+      const taken = new Set(all().map((e) => e.id));
+      const free = (n: number): string => { const next = n === 1 ? `${read.id}-copy` : `${read.id}-copy-${n}`; return taken.has(next) ? free(n + 1) : next; };
+      const id = taken.has(read.id) ? free(1) : read.id;
+      return await shelf.save({ ...read, id }) ? id : undefined;
+    },
+  };
+  return shelf;
+}
+
+/** The Custom Node shelf as a VIEW of an entity shelf: the entities of the type `node`, as definitions. */
+export function nodesView(shelf: EntityShelf): NodeShelf {
+  const library = (): NodeLibrary => ({
+    v: 1,
+    nodes: Object.fromEntries(shelf.list('node').flatMap(({ id }) => { const e = shelf.get(id); return e ? [[id, definitionOf(e)] as const] : []; })),
+  });
+  return {
+    library,
+    save: (id, definition: NodeDefinition) => {
+      const { preset: _preset, $schema: _schema, ...node } = definition;
+      return shelf.save(nodeEntityOf(id, node));
+    },
+    remove: (id) => shelf.get(id)?.type === 'node' && shelf.remove(id),
+    watch: (handler, signal) => shelf.watch(() => handler(library()), signal),
+  };
+}

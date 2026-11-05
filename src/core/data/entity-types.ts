@@ -217,6 +217,8 @@ export function entityFaults(entity: Entity, facts: EntityFacts = {}): string[] 
 /** Check an entity; each fault reports, and it never throws. True when none is. */
 export function checkEntity(entity: Entity, facts: EntityFacts = {}): boolean {
   const problems = entityFaults(entity, facts);
-  for (const problem of problems) report({ code: 'entity', message: `checkEntity: ${problem}.`, at: { entity: String((entity as { id?: unknown })?.id ?? '') } });
+  // A Custom Node's faults keep the code they always had.
+  const code = (entity as { type?: unknown })?.type === 'node' ? 'node-library' : 'entity';
+  for (const problem of problems) report({ code, message: `checkEntity: ${problem}.`, at: { entity: String((entity as { id?: unknown })?.id ?? '') } });
   return !problems.length;
 }

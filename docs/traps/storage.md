@@ -140,6 +140,7 @@ is per tab too (345 D2 B), outside the keeper.
 
 - Site: `src/core/browser/page-state.ts`
 - Site: `test/e2e/reforged-a-saved-node-shows-in-the-panel.spec.ts`
+- Site: `test/e2e/reforged-entity-shelf.spec.ts`
 - Site: `test/e2e/reforged-only-a-named-part-crosses-tabs.spec.ts`
 - Site: `test/unit/a-saved-node-is-the-readers.test.mjs`
 

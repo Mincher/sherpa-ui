@@ -212,6 +212,8 @@ export {
   ENTITY_TYPES, asNode, checkEntity, entityFaults, entityOf, entityTypes, libraryOf, registerEntityType, socketsOf,
   type EntityFacts, type EntityType,
 } from './core/data/entity-types.js';
+/* Where an app's entities come together: its presets and the reader's, one door; the Custom Node shelf is a view of it. */
+export { joinEntities, makeShelf, nodesView, type EntityPort, type EntityShelf, type EntitySummary } from './core/data/entity-shelf.js';
 export { groupNodes, ungroupUse, type GroupAsk, type Grouped } from './core/data/node-group.js';
 export { nodeFlow, type NodeFlow } from './core/data/node-flow.js';
 /* The data layer over HTTP: one handle() for the page, a Service Worker or a server. Plan 652 */

@@ -109,7 +109,7 @@ test('every part keeps its data in ONE database, with one fixed schema', async (
     return { names, DATABASE, counts };
   });
   expect(r.names).toEqual([r.DATABASE]);
-  expect(r.counts).toEqual({ nodes: 0, notices: 1, outbox: 1, rows: 2, seeds: 1, sets: 1, views: 1 });
+  expect(r.counts).toEqual({ entities: 0, notices: 1, outbox: 1, rows: 2, seeds: 1, sets: 1, views: 1 });
 });
 
 test('Sherpa never asks the device to keep its data; the app does, with keepData (Will, H3: B)', async ({ page }) => {

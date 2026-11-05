@@ -126,7 +126,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-allow-list-is-a-filter-not-an-order](traps/data-layer.md#t-an-allow-list-is-a-filter-not-an-order) — allow
 - [T-an-app-is-its-definition](traps/data-layer.md#t-an-app-is-its-definition) — app-definition, data
 - [T-an-asked-load-is-awaited](traps/data-layer.md#t-an-asked-load-is-awaited) — source-reads
-- [T-an-entity-is-an-envelope-and-a-type](traps/data-layer.md#t-an-entity-is-an-envelope-and-a-type) — data, entity, entity-types
+- [T-an-entity-is-an-envelope-and-a-type](traps/data-layer.md#t-an-entity-is-an-envelope-and-a-type) — data, entity, entity-shelf, entity-types
 - [T-an-inactive-chip-says-where-its-filter-went](traps/data-layer.md#t-an-inactive-chip-says-where-its-filter-went) — source-binding
 - [T-an-open-panel-follows-the-data-layer](traps/data-layer.md#t-an-open-panel-follows-the-data-layer) — source-binding
 - [T-an-operator-decides-pick-or-type](traps/data-layer.md#t-an-operator-decides-pick-or-type) — store
@@ -231,7 +231,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-up-is-open-down-is-closed](traps/data-layer.md#t-up-is-open-down-is-closed) — data, query-context, query-edits
 - [T-view-state-lives-in-one-object](traps/data-layer.md#t-view-state-lives-in-one-object) — data-source
 
-## Storage, saved Views and the URL (60)
+## Storage, saved Views and the URL (61)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — view-files
 - [T-a-changed-key-moves-the-row](traps/data-layer.md#t-a-changed-key-moves-the-row) — idb-store
@@ -253,6 +253,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-worker-keeps-the-apps-files](traps/storage.md#t-a-worker-keeps-the-apps-files) — app-files, worker
 - [T-a-write-made-offline-waits](traps/data-layer.md#t-a-write-made-offline-waits) — outbox-keep, serve-data
 - [T-an-act-is-a-post](traps/data-layer.md#t-an-act-is-a-post) — follow-updates
+- [T-an-entity-is-an-envelope-and-a-type](traps/data-layer.md#t-an-entity-is-an-envelope-and-a-type) — entity-files
 - [T-apply-degrades-never-throws](traps/storage.md#t-apply-degrades-never-throws) — persist-view
 - [T-attributes-are-the-state-channel](traps/storage.md#t-attributes-are-the-state-channel) — persist-view
 - [T-capture-is-the-save-button](traps/storage.md#t-capture-is-the-save-button) — persist-view

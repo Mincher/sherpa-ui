@@ -25,6 +25,10 @@
       "description": "The app's preset Custom Nodes: a path to a nodes.v1.json. Read only in every editor's panel; the reader's own are kept apart.",
       "type": "string"
     },
+    "entities": {
+      "description": "The app's preset entities: a path to an entities.v1.json. Read only; the reader's own are kept apart, app-wide.",
+      "type": "string"
+    },
     "sections": {
       "description": "The nav's sections, in order.",
       "type": "array",

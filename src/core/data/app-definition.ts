@@ -14,6 +14,7 @@
 import type { SessionStore } from '../browser/session.js';
 import type { DataSource } from './data-source.js';
 import type { QueryContext } from './query-context.js';
+import type { EntityShelf } from './entity-shelf.js';
 import type { NodeShelf } from './node-shelf.js';
 import { report } from './report.js';
 
@@ -28,6 +29,8 @@ export interface AppDefinition {
   contexts: Record<string, ContextDefinition>;
   /** The app's preset Custom Nodes, as JSON (nodes.v1): read only, in every editor's panel. */
   nodes?: string;
+  /** The app's preset entities, as JSON (entities.v1): read only, listed with the reader's own. */
+  entities?: string;
   /** The nav's sections, in order: a label and the Contexts it lists. */
   sections?: readonly { label?: string; contexts: readonly string[] }[];
   /** The pages that open OVER a Context, and the one module that runs them. */
@@ -66,6 +69,8 @@ export interface ContextInit {
   session: SessionStore;
   /** The app's Custom Nodes: its presets and the reader's, to list, save and remove. Present where the outlet has a provider. */
   nodes?: NodeShelf;
+  /** The app's entities of every type: its presets and the reader's, to list, save, remove, copy, export and import. `nodes` is its view of the type `node`. */
+  entities?: EntityShelf;
   /** The View the URL names; null for the first. */
   view: string | null;
   /** Its page's source, when it has a definition. */

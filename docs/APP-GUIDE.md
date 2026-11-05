@@ -122,6 +122,7 @@ Plus the app's stores, and its Views as JSON.
   "product": { "name": "My product", "icon": "group" },
   "default": "dashboard",
   "nodes": "nodes.json",
+  "entities": "entities.json",
   "contexts": {
     "dashboard": {
       "label": "Home", "icon": "home",
@@ -147,6 +148,8 @@ Plus the app's stores, and its Views as JSON.
 - `chrome.header: false` takes the app header away while it is open.
 - `nodes` is the app's preset Custom Nodes, a `nodes.v1.json`: read only, and in
   every node editor's panel. See "Custom Nodes", below.
+- `entities` is the app's preset entities, an `entities.v1.json`: read only,
+  listed with the reader's own. See "Entities", below.
 - `checkApp(app)` reports every broken name. `T-an-app-is-its-definition`
 
 ## 4. Stores
@@ -424,6 +427,32 @@ bindWorkflow(canvas, workflow, { kinds, panel, session });
 
 The panel lists them under "Custom Nodes", a preset marked read only. A Custom
 Node being edited is a draft in its tab until it is saved, as a workflow is.
+
+### Entities
+
+An entity is a graph saved under a TYPE, an id and a name (`entity.v1`): `{ v, type,
+id, label, graph { nodes, routes }, settings, uses }`. Its type says what its
+settings hold, which node families its graph may place, and which sockets (`#in`,
+`#out`) it must have. A Custom Node is the type `node`. `preset-filter` is the other
+type that ships: its graph sends a condition to `#out/where`. An app adds its own
+with `registerEntityType(type)` (a clash with a shipped type is refused).
+
+- **One door**, `entities` in every Context's `init` (and `keeper.entities`):
+  `list(type?)`, `get(id)`, `await save(entity)`, `remove(id)`, `await duplicate(id, newId)`,
+  `export(id)`, `await import(json)` and `watch(handler, signal)`. An id names ONE
+  entity. A save runs `checkEntity` and says each fault in words; a remove is refused
+  while another entity uses it, naming who. `nodes` is the same shelf seen as Custom Nodes
+  (the entities of the type `node`).
+- **The presets** are the file `app.json` `entities` names (`entities.v1`: `{ v, entities: { id: entity } }`),
+  read by the outlet through `loadEntityLibrary(url)`; one that fails is reported and left out.
+  They are read only: `duplicate` makes the reader's own.
+- **The reader's own** are one NAMED part of the keeper, as the nodes are: every tab,
+  the database (`database: true`), and the server (`remote`). A stored entity of the wrong
+  shape is dropped.
+- **Any entity is a node** in any graph: `asNode(entity)` is the box it offers, and a
+  use is a node whose `kind` is `<type>:<id>`. It follows its definition: `libraryOf(entities)`
+  feeds `kindsOf`, `useOf` and `updateInstance`, as a Custom Node's library does.
+  `T-an-entity-is-an-envelope-and-a-type`
 
 ## 10. Questions and saved filters
 

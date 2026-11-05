@@ -40,6 +40,8 @@ export {
 export { loadViewLibrary } from './core/browser/view-files.js';
 // An app's preset Custom Nodes, from a JSON file; the reader's own are in the keeper.
 export { loadNodeLibrary, readLibrary } from './core/browser/node-files.js';
+// An app's preset entities, from a JSON file; the reader's own are in the keeper.
+export { loadEntityLibrary, readEntities } from './core/browser/entity-files.js';
 // A saved View's content is MARKUP, parsed through an allow-list on the way in.
 // TRAP T-saved-markup-is-untrusted-input
 export {
