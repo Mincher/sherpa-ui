@@ -89,7 +89,7 @@ export class SherpaLayoutCanvas extends SherpaElement {
     for (const type of ['pointerdown', 'pointermove', 'pointerup', 'pointercancel']) {
       minimap?.addEventListener(type, this.#onMinimap as EventListener);
     }
-    this.$('slot')?.addEventListener('slotchange', () => this.#drawMinimap());
+    this.$('slot:not([name])')?.addEventListener('slotchange', () => this.#drawMinimap());
     // A card in the `panel` slot takes the bottom left: the minimap moves out from under it.
     const panel = this.$<HTMLSlotElement>('slot[name="panel"]');
     panel?.addEventListener('slotchange', () => this.toggleState('has-panel', panel.assignedElements().length > 0));
@@ -326,7 +326,8 @@ export class SherpaLayoutCanvas extends SherpaElement {
 
   /** Every piece of content's box on the plane, and the box round them all. */
   #boxes(): Box[] {
-    const slot = this.$<HTMLSlotElement>('slot');
+    // The content's own slot: the banners' comes first in the template.
+    const slot = this.$<HTMLSlotElement>('slot:not([name])');
     return (slot?.assignedElements() ?? []).filter((el): el is HTMLElement => el instanceof HTMLElement)
       .map((el) => ({ left: el.offsetLeft, top: el.offsetTop, right: el.offsetLeft + el.offsetWidth, bottom: el.offsetTop + el.offsetHeight }));
   }

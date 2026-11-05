@@ -1177,11 +1177,20 @@ and a change to the value it just wrote is not heard as a host's.
   than the map, keeps the map covered.
 - `setPointerCapture` throws on a synthetic pointer in Firefox; both drags
   catch it and follow the pointer's own events.
+- **Banners float in their own slot, `banner`** (Will, TODO 766): across the
+  top, 32px in, and past a panel card (`--_beside`, where the toolbar yields
+  too), so they never pan, zoom or cover the card. A hidden one takes no room.
+  The slot is FIRST in the template, so a notice is read and reached before
+  the content. So the content's slot is `slot:not([name])`: a bare `slot`
+  query found the banners', and the minimap and Fit measured the banners. And
+  first, it would paint under the view: it is lifted (`z-index: 1`), and the
+  host isolates, so the lift stays inside the canvas.
 
 - Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts`
 - Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.html`
 - Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.css`
 - Site: `test/e2e/reforged-layout-canvas.spec.ts`
+- Site: `test/e2e/reforged-layout-canvas-banner.spec.ts`
 
 ### T-a-node-moves-itself-and-reports
 

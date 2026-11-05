@@ -4659,6 +4659,10 @@
           ],
           "slots": [
             {
+              "name": "banner",
+              "description": "notices FLOATING across the top, 32px in and beside a panel: they do not pan or zoom; two shown stack, and a hidden one takes no room (a reload banner) (accepts: content)"
+            },
+            {
               "name": "",
               "description": "the content, placed on the canvas at its `--x` and `--y` (px) (accepts: content)"
             },
@@ -4672,6 +4676,9 @@
             }
           ],
           "cssParts": [
+            {
+              "name": "banner"
+            },
             {
               "name": "controls"
             },

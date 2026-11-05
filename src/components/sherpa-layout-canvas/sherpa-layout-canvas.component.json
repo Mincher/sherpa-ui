@@ -7,12 +7,6 @@
   "element": {
     "$type": "element",
     "tag": "div",
-    "attributes": {
-      "tabindex": "0",
-      "role": "group",
-      "aria-roledescription": "canvas",
-      "aria-label": "Canvas"
-    },
     "provides": []
   },
   "templates": [
@@ -20,6 +14,19 @@
   ],
   "anatomy": {
     "roots": [
+      {
+        "el": "div",
+        "class": "banner",
+        "part": "banner",
+        "children": [
+          {
+            "slot": "banner",
+            "attrs": {
+              "data-accepts": "content"
+            }
+          }
+        ]
+      },
       {
         "el": "div",
         "class": "viewport",
@@ -249,6 +256,14 @@
   "slots": [
     {
       "$type": "slot",
+      "name": "banner",
+      "accepts": [
+        "content"
+      ],
+      "description": "notices FLOATING across the top, 32px in and beside a panel: they do not pan or zoom; two shown stack, and a hidden one takes no room (a reload banner)"
+    },
+    {
+      "$type": "slot",
       "name": "",
       "accepts": [
         "content"
@@ -334,6 +349,7 @@
     }
   ],
   "tokens": {
+    "banner.gap": "{sherpa.display-mode-space-xs}",
     "marquee.border-width": "{sherpa.display-mode-border-width-base}",
     "marquee.border-color": "{sherpa.style-active-border-base-1}",
     "marquee.background": "{sherpa.style-active-border-base-1}",

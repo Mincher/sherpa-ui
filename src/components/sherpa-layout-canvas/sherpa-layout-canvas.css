@@ -1,7 +1,7 @@
 /**
  * sherpa-layout-canvas.css — the view, the crosshair grid, the minimap and the
- * floating controls. The pan and the zoom are `--_x`, `--_y` and `--_zoom`,
- * written by the canvas; everything that moves reads them.
+ * floating banners, card, toolbar and controls. The pan and the zoom are `--_x`,
+ * `--_y` and `--_zoom`, written by the canvas; everything that moves reads them.
  * TRAP T-a-canvas-owns-its-view
  */
 
@@ -10,6 +10,8 @@
   position: relative;
   overflow: hidden;
   container-type: inline-size;
+  /* Its own layers: what floats on it never rises over what floats on the page. */
+  isolation: isolate;
   block-size: 100%;
   min-block-size: 20rem;
   --_x: 0px;
@@ -19,7 +21,28 @@
   --_step: var(--sherpa-display-mode-size-xl, 24px);
   --_inset: var(--sherpa-display-mode-space-base, 16px);
   --_float: 32px;
+  /* Where what yields to a card starts: past the card, and 32px clear of it. */
+  --_beside: calc(var(--_float) * 2 + min(18rem, 60%));
   background: var(--sherpa-style-surface-base, #ffffff);
+}
+
+/* ── The banners ──────────────────────────────────────────────────────── */
+/* Across the top, 32px in, as the card floats; beside a card, never over it. A hidden
+   one takes no room. Above the view, which follows it in the template. */
+.banner {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: var(--_float);
+  inset-inline: var(--_float);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  pointer-events: none;
+}
+:host(:state(has-panel)) .banner { inset-inline-start: var(--_beside); }
+::slotted([slot="banner"]) {
+  position: static;
+  pointer-events: auto;
 }
 
 /* ── The view ─────────────────────────────────────────────────────────── */
@@ -103,7 +126,7 @@
 /* Narrow, beside a card: the toolbar yields, centred in what the card leaves, never over it. */
 @container (inline-size < 44rem) {
   :host(:state(has-panel)) .toolbar {
-    inset-inline-start: calc(var(--_float) * 2 + min(18rem, 60%));
+    inset-inline-start: var(--_beside);
     translate: 0 0;
   }
   /* …and the controls and minimap rise one toolbar row, so the row stays clear. */

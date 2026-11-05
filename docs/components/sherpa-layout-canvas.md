@@ -15,7 +15,7 @@ For content that pans and zooms with no edge, each item placed at its `--x` and 
 ## Example
 
 ```html
-<sherpa-layout-canvas style="inline-size: 640px; block-size: 360px"><div style="--x: 40px; --y: 40px">A card on the canvas</div></sherpa-layout-canvas>
+<sherpa-layout-canvas style="inline-size: 640px; block-size: 360px"><sherpa-callout slot="banner" data-type="banner" data-status="info" data-dismissible>A new version is ready.</sherpa-callout><div style="--x: 40px; --y: 120px">A card on the canvas</div></sherpa-layout-canvas>
 ```
 
 ## Attributes
@@ -56,6 +56,7 @@ Each one bubbles.
 
 | Slot | Accepts | What it holds |
 |---|---|---|
+| `banner` | content | notices FLOATING across the top, 32px in and beside a panel: they do not pan or zoom; two shown stack, and a hidden one takes no room (a reload banner) |
 | (default) | content | the content, placed on the canvas at its `--x` and `--y` (px) |
 | `panel` | panel | a card FLOATING on the canvas, 32px from its top, bottom and left edges: it does not pan or zoom (a node panel) |
 | `toolbar` | toolbar | tools FLOATING at the bottom centre, 32px up from the bottom edge: it does not pan or zoom (a node toolbar) |
@@ -64,7 +65,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`controls`, `floating`, `marquee`, `minimap`, `plane`, `toolbar`, `viewport`
+`banner`, `controls`, `floating`, `marquee`, `minimap`, `plane`, `toolbar`, `viewport`
 
 ## CSS custom properties it reads
 
@@ -72,6 +73,7 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-display-mode-space-xs` | `.banner` | `gap` |
 | `--sherpa-display-mode-border-width-base` | `.marquee` | `border-width` |
 | `--sherpa-style-active-border-base-1` | `.marquee` | `border-color` |
 | `--sherpa-style-active-border-base-1` | `.marquee` | `background` |
