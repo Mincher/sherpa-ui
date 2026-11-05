@@ -571,8 +571,6 @@ export interface GraphNode {
 export interface DrawnGraph {
   nodes: readonly GraphNode[];
   routes: readonly NodeRoute[];
-  /** Routes into or out of a row its node's type no longer has: kept, drawn greyed, with why. Plan 749 */
-  stale?: readonly (NodeRoute & { fault: string })[];
   ties?: readonly NodeTie[];
 }
 

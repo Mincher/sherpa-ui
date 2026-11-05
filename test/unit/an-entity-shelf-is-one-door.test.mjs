@@ -265,3 +265,24 @@ test('a shelf needs only a port: no keeper, no browser', async () => {
   shelf.remove('one');
   assert.equal(told, 1);
 });
+
+test('a save keeps the FINAL graph: what a node holds for its other types stays behind (Will, 2026-11-05)', async () => {
+  const { NODE_KINDS } = await import(new URL('data/node-kinds.js', core));
+  const row = (name) => ({ name, label: name.toUpperCase(), control: 'text', input: 'value' });
+  const pair = {
+    heading: 'Pair', icon: 'function', typeLabel: 'Operation', rows: [], model: 'x', graphs: ['workflow'], category: 'Variables', output: 'value',
+    types: { one: { label: 'One', rows: [row('a')] }, two: { label: 'Two', rows: [row('b')] } },
+  };
+  let mine = {};
+  const shelf = makeShelf({ presets: () => [], mine: () => mine, keep: (next) => { mine = next; }, heard: () => {} }, () => ({ kinds: { ...NODE_KINDS, pair } }));
+  const base = filter('kept', 'Kept');
+  const entity = { ...base, graph: {
+    nodes: [...base.graph.nodes, { id: 'p', kind: 'pair', x: 0, y: 400, values: { type: 'two', a: 'held', b: 'live' } }],
+    routes: [...base.graph.routes, { from: 'status/value', to: 'p/a' }, { from: 'status/value', to: 'p/b' }],
+  } };
+  const { result, reports } = await heard(() => shelf.save(entity));
+  assert.deepEqual([result, reports], [true, []]);
+  const kept = mine['kept'].graph;
+  assert.deepEqual(kept.nodes.find((n) => n.id === 'p').values, { type: 'two', b: 'live' });
+  assert.deepEqual(kept.routes.filter((r) => r.to.startsWith('p/')), [{ from: 'status/value', to: 'p/b' }]);
+});

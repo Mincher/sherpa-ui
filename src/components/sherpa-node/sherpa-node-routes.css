@@ -9,9 +9,6 @@
   svg.graph-routes path[data-type="boolean"] { stroke: var(--sherpa-style-success-indicator-accent, #3b4ccd); }
   svg.graph-routes path[data-type="false"] { stroke: var(--sherpa-style-critical-indicator-accent, #3b4ccd); }
 
-  /* A route to a row its node's type lacks: kept, greyed, dashed. */
-  svg.graph-routes path[data-stale] { stroke: var(--sherpa-style-border-base, #b3b3c3); stroke-dasharray: 2 6; }
-
   /* A route a click picked: Delete or Backspace breaks it. */
   svg.graph-routes path[data-selected] { stroke-width: 4px; stroke-dasharray: 8 4; }
 

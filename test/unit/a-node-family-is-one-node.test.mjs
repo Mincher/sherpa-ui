@@ -1,8 +1,9 @@
 /**
  * A NODE FAMILY IS ONE NODE: a kind with `types` has a first row that picks the type, kept as the
  * node's `type` value; `resolveKind` gives an ordinary kind for it, so nothing else learns of types.
- * A row the new type lacks keeps its VALUE and its ROUTE: the route draws greyed, with a fault in
- * words, and survives a round trip. A kind of one type shows no select. Plan 749 P1.
+ * A row the new type lacks keeps its VALUE and its ROUTE in the draft, for the type to come back to:
+ * drawn nowhere, no fault, and Save writes only the final graph (`finalGraph`). A kind of one type
+ * shows no select. Plan 749 P1; the kept route, Will 2026-11-05.
  *
  *   node --test test/unit/a-node-family-is-one-node.test.mjs
  */
@@ -11,7 +12,7 @@ import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { NODE_KINDS, accepts, fitOf, kindOfNode, resolveKind, rowChoices, socketType, typeChoices } = await import(new URL('node-kinds.js', core));
-const { editWorkflow, readWorkflow, staleRoutes, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
+const { editWorkflow, finalGraph, keptRoutes, readWorkflow, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 
 // A family of our own: P1 ships none but Value.
 const a = { name: 'a', label: 'Value A', control: 'number', input: 'value' };
@@ -85,30 +86,50 @@ test('Round then Add keeps Places: its value waits, and comes back with Round', 
   assert.equal(node(workflowGraph(w, {}, kinds), 'm').rows.find((r) => r.name === 'places').value, 2);
 });
 
-test('a route into a row that is gone is KEPT, greyed and named, and survives a round trip', () => {
-  const round = flow('round');
+test('a route into a row that is gone is KEPT in the draft: drawn nowhere, no fault, and back with its type', () => {
+  const round = flow('round', { places: 2 });
   assert.deepEqual(workflowFaults(round, kinds), []);
   const add = editWorkflow(round, { node: 'm', row: 'type', value: 'add' }, kinds);
-  assert.deepEqual(add.routes, round.routes, 'the route stays');
-  const fault = 'the node "m" is of the Add type, which has no "Places" row: the route "v/value" → "m/places" is kept, greyed';
-  assert.deepEqual(workflowFaults(add, kinds), [fault]);
+  assert.deepEqual(add.routes, round.routes, 'the draft keeps the route');
+  assert.equal(add.nodes[1].values.places, 2, 'and the value');
+  assert.deepEqual(workflowFaults(add, kinds), [], 'no fault: nothing to warn of');
+  assert.deepEqual(keptRoutes(add, kinds), round.routes);
   const graph = workflowGraph(add, {}, kinds);
-  assert.deepEqual(graph.routes, round.routes);
-  assert.deepEqual(graph.stale, [{ from: 'v/value', to: 'm/places', fault }]);
-  assert.deepEqual(staleRoutes(add, kinds).map((r) => r.fault), [fault]);
-  // Through JSON and a read: the same route, the same fault, and the same drawing.
+  assert.deepEqual(graph.routes, [], 'drawn nowhere');
+  assert.equal('stale' in graph, false);
+  // Through JSON and a read: the read is lossless, so the draft keeps it still.
   const again = readWorkflow(JSON.parse(JSON.stringify(add)), kinds).workflow;
-  assert.deepEqual(workflowFaults(again, kinds), [fault]);
-  assert.deepEqual(workflowGraph(again, {}, kinds), graph);
-  // Round again: it is live, and no fault stands.
+  assert.deepEqual(again.routes, round.routes);
+  assert.deepEqual(workflowFaults(again, kinds), []);
+  // Round again: the route joins, and Places is back.
   const back = editWorkflow(again, { node: 'm', row: 'type', value: 'round' }, kinds);
+  assert.deepEqual(workflowGraph(back, {}, kinds).routes, round.routes);
+  assert.equal(back.nodes[1].values.places, 2, 'its own value is back');
+  assert.equal(node(workflowGraph(back, {}, kinds), 'm').rows.find((r) => r.name === 'places').value, '2', 'and the row mirrors the Value routed in');
   assert.deepEqual(workflowFaults(back, kinds), []);
-  assert.equal(workflowGraph(back, {}, kinds).stale, undefined);
-  // The reader cuts it: Delete works on a greyed route.
-  assert.deepEqual(workflowFaults(editWorkflow(add, { cut: add.routes[0] }, kinds), kinds), []);
+  // The reader may still cut it: Delete works on what it cannot see, through the node.
+  assert.deepEqual(editWorkflow(add, { cut: add.routes[0] }, kinds).routes, []);
   // A route out of a vanished row is the same.
-  const out = { ...flow('round'), routes: [{ from: 'm/places', to: 'o' }] };
-  assert.equal(workflowFaults(editWorkflow(out, { node: 'm', row: 'type', value: 'add' }, kinds), kinds).length, 1);
+  const out = editWorkflow({ ...flow('round'), routes: [{ from: 'm/places', to: 'o' }] }, { node: 'm', row: 'type', value: 'add' }, kinds);
+  assert.deepEqual([workflowFaults(out, kinds), workflowGraph(out, {}, kinds).routes, keptRoutes(out, kinds).length], [[], [], 1]);
+});
+
+test('Save writes the final graph: no route to a vanished row, and no value for one', () => {
+  const tied = { ...flow('round', { places: 2 }), routes: [{ from: 'v/value', to: 'm/places' }, { from: 'v/value', to: 'm/a' }] };
+  const add = { ...editWorkflow(tied, { node: 'm', row: 'type', value: 'add' }, kinds), ties: [{ id: 't', x: 200, y: 0, routes: [{ from: 'v/value', to: 'm/places' }] }] };
+  const final = finalGraph(add, kinds);
+  assert.deepEqual(final.routes, [{ from: 'v/value', to: 'm/a' }]);
+  assert.deepEqual(final.nodes[1].values, { type: 'add' });
+  assert.equal(final.ties, undefined, 'a tie of only kept routes goes');
+  assert.deepEqual(workflowFaults(final, kinds), []);
+  // The type it was saved under keeps all of its own.
+  assert.equal(finalGraph(tied, kinds), tied, 'a graph with nothing kept is the one given');
+  assert.equal(finalGraph(editWorkflow(add, { node: 'm', row: 'type', value: 'round' }, kinds), kinds).routes.length, 2);
+  // A value or a route for a row NO type has is not the draft's to drop: it is a fault, and stays one.
+  const bad = { ...flow('add', { nope: 1 }), routes: [{ from: 'v/value', to: 'm/nope' }] };
+  assert.deepEqual(finalGraph(bad, kinds), bad);
+  // A body of the same shape, as a Custom Node or an entity holds it, the same way.
+  assert.deepEqual(finalGraph({ nodes: add.nodes, routes: add.routes }, kinds).routes, [{ from: 'v/value', to: 'm/a' }]);
 });
 
 test('planted faults: an unknown type, a type of another family, a row no type has', () => {
@@ -122,7 +143,7 @@ test('planted faults: an unknown type, a type of another family, a row no type h
   // A route into a row no type has is its own fault, not a kept one.
   const bad = { ...flow('add'), routes: [{ from: 'v/value', to: 'm/nope' }] };
   assert.deepEqual(workflowFaults(bad, kinds), ['a route enters "m/nope", which is no input socket']);
-  assert.equal(workflowGraph(bad, {}, kinds).stale, undefined);
+  assert.deepEqual(keptRoutes(bad, kinds), []);
 });
 
 test('the Value node is a family of today\'s four types: old graphs read the same', () => {

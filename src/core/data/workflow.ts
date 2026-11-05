@@ -12,7 +12,8 @@
  * - readWorkflow — A workflow as v2: a v1's header routes moved to its Rows row; a Filter node read as a Condition.
  * - GROW_MIN — The least a node's size may be: its natural size, as 1.
  * - GROW_MAX — The most a node's size may be: double its natural size, as 2.
- * - staleRoutes — The routes into or out of a row a node's type no longer has, each with its fault: kept, never cut.
+ * - keptRoutes — The routes a node keeps for another of its types: drawn nowhere, no fault, not saved.
+ * - finalGraph — A graph as Save writes it: what the draft keeps for a node's other types left out.
  * - workflowFaults — Every fault in a workflow, in words: a node, a kind, a value or a route that cannot be.
  * - checkWorkflow — Check every node, kind and route; each fault reports. True when none is.
  * - WorkflowFacts — What drawing a workflow needs that it does not say: the fields a row picks, the stores.
@@ -120,23 +121,38 @@ export const GROW_MIN = 1;
 export const GROW_MAX = 2;
 const inGrowth = (n: unknown): boolean => typeof n === 'number' && n >= GROW_MIN && n <= GROW_MAX;
 
-/** The routes into or out of a row a node's type no longer has, each with its fault in words. The row lives
- *  under another type, so the route is KEPT (off is not gone): it draws greyed, and a reader cuts it, or
- *  picks the type back. A row no type has is no such case: its route is a fault of its own. Plan 749 */
-export function staleRoutes(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes'>, kinds: Kinds = NODE_KINDS): (NodeRoute & { fault: string })[] {
-  const lost = (address: string): string | undefined => {
-    const { node: id, row } = socketOf(address);
-    const node = workflow.nodes.find((n) => n.id === id);
-    const kind = node && kinds[node.kind];
-    if (!node || !kind?.types || row === undefined || row === FALSE_SOCKET || rowOf(kindOfNode(kinds, node)!.rows, row)) return undefined;
-    const other = rowOfOtherType(kind, node.values?.['type'], row);
-    const at = typeOf(kind, node.values?.['type']);
-    return other && at ? `the node "${id}" is of the ${at.type.label} type, which has no "${other.row.label}" row` : undefined;
-  };
-  return (workflow.routes ?? []).flatMap((r) => {
-    const why = lost(r.from) ?? lost(r.to);
-    return why ? [{ ...r, fault: `${why}: the route "${r.from}" → "${r.to}" is kept, greyed` }] : [];
+/** Whether a value or a socket names a row the node holds only under ANOTHER of its types. */
+function keptRow(node: Pick<WorkflowNode, 'kind' | 'values'> | undefined, row: string | undefined, kinds: Kinds): boolean {
+  const kind = node && kinds[node.kind];
+  if (!node || !kind?.types || row === undefined || row === FALSE_SOCKET || rowOf(kindOfNode(kinds, node)!.rows, row)) return false;
+  return !!rowOfOtherType(kind, node.values?.['type'], row);
+}
+
+/** The routes a node keeps for another of its types: into or out of a row only that type has. The draft
+ *  keeps them, so picking the type back joins them again; none is drawn, none is a fault, and Save leaves
+ *  them out (`finalGraph`). A row no type has is no such case: its route is a fault. Will, 2026-11-05 */
+export function keptRoutes(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes'>, kinds: Kinds = NODE_KINDS): NodeRoute[] {
+  const byId = new Map(workflow.nodes.map((n) => [n.id, n]));
+  const kept = (address: string): boolean => keptRow(byId.get(socketOf(address).node), socketOf(address).row, kinds);
+  return (workflow.routes ?? []).filter((r) => kept(r.from) || kept(r.to));
+}
+
+/** A graph as Save writes it: each node with the values of its type's rows, and only the routes they join.
+ *  What the draft keeps for another type is left out. Its ties keep the routes still there. Will, 2026-11-05 */
+export function finalGraph<W extends Pick<WorkflowDefinition, 'nodes'> & Partial<Pick<WorkflowDefinition, 'routes' | 'ties'>>>(workflow: W, kinds: Kinds = NODE_KINDS): W {
+  const gone = keptRoutes({ nodes: workflow.nodes, routes: workflow.routes ?? [] }, kinds);
+  const nodes = workflow.nodes.map((node): WorkflowNode => {
+    const lost = Object.keys(node.values ?? {}).filter((name) => keptRow(node, name, kinds));
+    if (!lost.length) return node;
+    const values = Object.fromEntries(Object.entries(node.values!).filter(([name]) => !lost.includes(name)));
+    const { values: _was, ...bare } = node;
+    return Object.keys(values).length ? { ...bare, values } : bare;
   });
+  if (!gone.length && nodes.every((n, i) => n === workflow.nodes[i])) return workflow;
+  const routes = (workflow.routes ?? []).filter((r) => !gone.includes(r));
+  const { ties: _ties, ...rest } = workflow;
+  const ties = tiesAmong(workflow.ties, routes);
+  return { ...rest, nodes, ...(workflow.routes ? { routes } : {}), ...(ties.length ? { ties } : {}) } as unknown as W;
 }
 
 /** Every fault in a workflow, in words: a node, a kind, a value or a route that cannot be.
@@ -203,15 +219,14 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
     const type = kind && socketType(kind, row, side);
     return kind && type && { type, many: takesMany(kind, row) };
   };
-  // A route to a row another type holds is kept, and named once here, not read as a route to no socket.
-  const stale = staleRoutes(workflow, kinds);
-  problems.push(...stale.map((r) => r.fault));
+  // A route to a row another type holds is kept for that type: no fault, and Save leaves it out.
+  const kept = keptRoutes(workflow, kinds);
   // Each input's routes so far, by what they carry.
   const fed = new Map<string, { from: string; type?: SocketType }[]>();
   const next = new Map<string, string[]>();
   for (const route of workflow.routes ?? []) {
     const { from, to } = route;
-    if (stale.some((r) => r.from === from && r.to === to)) continue;
+    if (kept.includes(route)) continue;
     const bad = route.via === undefined ? undefined : bendFault(route.via);
     if (bad) problems.push(`the route "${from}" → "${to}": ${bad}`);
     const leaves = at(from, 'output');
@@ -357,8 +372,11 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
     const heads = { ...(node.heading ? { heading: node.heading } : {}), ...(node.description ? { description: node.description } : {}) };
     return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, rows, heads), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}) };
   });
-  const stale = staleRoutes(workflow, kinds);
-  return { nodes, routes: [...routes], ...(stale.length ? { stale } : {}), ...(workflow.ties?.length ? { ties: workflow.ties } : {}) };
+  // A route kept for another type is drawn nowhere, nor its place in a tie.
+  const kept = keptRoutes(workflow, kinds);
+  const live = routes.filter((r) => !kept.includes(r));
+  const ties = kept.length ? tiesAmong(workflow.ties, live) : workflow.ties ?? [];
+  return { nodes, routes: live, ...(ties.length ? { ties } : {}) };
 }
 
 /** A node's width on the plane, in px: its output socket is at its x plus this. */

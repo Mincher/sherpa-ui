@@ -10,7 +10,7 @@
  * - EntityShelf — What an editor is handed: list, get, save, remove, duplicate, export, import, watch.
  * - EntityPort — What a shelf needs of its keeper: the presets, the reader's own, keeping them, and hearing a change.
  * - joinEntities — The presets and the reader's entities as one list; a clash with a preset or an earlier id is left out.
- * - makeShelf — The shelf over a port. Each save is checked by `checkEntity`, loaded when first asked.
+ * - makeShelf — The shelf over a port. Each save keeps the final graph, checked by `checkEntity`, loaded when first asked.
  * - nodesView — The Custom Node shelf as a view of an entity shelf: the entities of the type `node`.
  */
 import { report } from './report.js';
@@ -101,8 +101,9 @@ export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'type
       const held = here.find((e) => e.id === entity.id);
       if (held?.origin === 'preset') return refuse(entity.type, `save: "${entity.id}" is a preset, which is read only: use "Copy to my entities".`, entity.id);
       if (held && held.type !== entity.type) return refuse(entity.type, `save: "${entity.id}" is already a ${held.type}: an id names one entity.`, entity.id);
-      const next = kept(entity, here);
-      const { checkEntity } = await import('./entity-types.js');
+      const [{ checkEntity }, { finalGraph }] = await Promise.all([import('./entity-types.js'), import('./workflow.js')]);
+      // Its graph as Save writes it: what a node keeps for its other types stays behind.
+      const next = kept({ ...entity, graph: finalGraph(entity.graph, facts().kinds) }, here);
       if (!checkEntity(next, { ...facts(), entities: here.filter((e) => e.id !== next.id) })) return false;
       port.keep({ ...port.mine(), [next.id]: next });
       return true;
