@@ -6967,8 +6967,15 @@
           "name": "SherpaNodeToolbar",
           "tagName": "sherpa-node-toolbar",
           "customElement": true,
-          "description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool and Save as Custom Node. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step",
+          "description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node and Arrange nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step",
           "attributes": [
+            {
+              "name": "data-can-arrange",
+              "description": "Arrange nodes can be pressed: two or more nodes are picked; written by the editor",
+              "type": {
+                "text": "boolean"
+              }
+            },
             {
               "name": "data-can-group",
               "description": "Save as Custom Node can be pressed: two or more nodes are picked; written by the editor",

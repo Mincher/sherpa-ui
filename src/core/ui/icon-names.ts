@@ -13,6 +13,7 @@ export const ICON_NAMES: ReadonlySet<string> = new Set([
   'add-user',
   'agent',
   'app-switcher',
+  'arrange',
   'arrow-down',
   'arrow-left',
   'arrow-right',

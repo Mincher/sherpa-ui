@@ -11,6 +11,9 @@
  * - tieSpot — Where routes would be tied with no pointer: the middle of the way each takes, on the plane.
  * - drawGraph — Draw a graph on a canvas: each node by id, at its place when that moved; then its routes.
  * - markNode — Mark one node as the one picked, or none.
+ * - pickedNodes — The nodes picked, by id: a click, a box, or the keys.
+ * - arrangePicked — Lay the picked nodes out on a grid and hand the host the places: one move, ties and bends with it.
+ * - watchArrange — Tell a toolbar, in `data-can-arrange`, when two or more nodes are picked; its stop lets go.
  * - markNodes — Mark several nodes as the ones picked.
  * - markActive — Mark the one picked node whose panel is shown, in a stronger ring.
  * - markRoutes — Mark routes as the ones picked.
@@ -64,6 +67,7 @@ import {
 } from '../data/node-library.js';
 import { groupNodes, ungroupUse } from '../data/node-group.js';
 import { flowPane, instancePane, updatePane } from './node-group-panel.js';
+import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
 import { nodeFlow } from '../data/node-flow.js';
 import { typedValue, type FieldType } from '../data/filter-state.js';
 import {
@@ -87,6 +91,10 @@ export interface DrawOptions {
   onSelect?: (node: GraphNode) => void;
   /** A node the reader moved, and where to. */
   onMove?: (node: GraphNode, x: number, y: number) => void;
+  /** Picked nodes moved together by one drag or key, each to its new place: the host writes ONE step (TODO 752). */
+  onMoveMany?: (moves: { id: string; x: number; y: number }[]) => void;
+  /** The picked nodes arranged on a grid: where each goes, and each tie. One step (TODO 752). */
+  onArrange?: (placed: Arranged) => void;
   /** A node the reader resized, and its new size in times its natural one (TODO 740). */
   onResize?: (node: GraphNode, size: NodeSize) => void;
   /** A line dragged from an output socket and let go on an input socket. */
@@ -148,6 +156,8 @@ interface Drawn {
   shapes: Map<string, string>;
   /** The place each node was last given by its graph: a new one moves it, the same one leaves the reader's. */
   placedAt: Map<string, string>;
+  /** Where a node was when a drag last reported it, so a group moves by the delta. Cleared when the graph places it. */
+  movedTo: Map<string, [number, number]>;
   lines: SVGSVGElement;
   routes: readonly NodeRoute[];
   /** The zip ties, and the one a click picked: Delete removes it, the arrow keys move it. */
@@ -791,6 +801,14 @@ function nodeOf(drawn: Drawn, target: EventTarget | null): GraphNode | undefined
   return drawn.graph.nodes.find((n) => n.id === id);
 }
 
+/** Where a node stands now: its last reported move, else the place its graph gave it. */
+function nowAt(drawn: Drawn, id: string): [number, number] | undefined {
+  const kept = drawn.movedTo.get(id);
+  if (kept) return kept;
+  const [x, y] = (drawn.placedAt.get(id) ?? '').split(',').map(Number);
+  return Number.isFinite(x) && Number.isFinite(y) ? [x!, y!] : undefined;
+}
+
 /** What a canvas has drawn, made the first time. */
 function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
   let drawn = drawnOn.get(canvas);
@@ -806,7 +824,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
   canvas.prepend(lines);
   const made: Drawn = {
     graph: { nodes: [], routes: [] }, options: {},
-    nodes: new Map(), rows: new Map(), addresses: new WeakMap(), shapes: new Map(), placedAt: new Map(),
+    nodes: new Map(), rows: new Map(), addresses: new WeakMap(), shapes: new Map(), placedAt: new Map(), movedTo: new Map(),
     lines, routes: [], ties: [], selectedTie: null, lanes: [], tying: false, draft: null, lifted: null, picked: [], handle: null, target: null, dragged: false, drags: 0, shadow: `graph-tie-shadow-${++shadows}`, fitted: false,
     // A node's height lands when its parts render: the lines follow, and the first fits the view.
     sizes: new ResizeObserver(() => {
@@ -815,11 +833,64 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     }),
   };
   canvas.addEventListener('node-move', (event) => {
-    drawRoutes(canvas, made);
     const node = nodeOf(made, event.target);
     const { x, y } = (event as CustomEvent<{ x: number; y: number }>).detail;
-    if (node) made.options.onMove?.(node, x, y);
+    if (!node) return drawRoutes(canvas, made);
+    const group = pickedNodes(canvas);
+    // A drag on a node outside the pick picks only it, as a click would.
+    if (group.length && !group.includes(node.id) && made.options.onSelect) {
+      markNode(canvas, node.id);
+      made.options.onSelect(node);
+    }
+    const before = nowAt(made, node.id) ?? [x, y];
+    made.movedTo.set(node.id, [x, y]);
+    if (made.options.onMoveMany && group.length > 1 && group.includes(node.id) && !made.options.locked?.(node)) {
+      const [dx, dy] = [x - before[0], y - before[1]];
+      const moves = [{ id: node.id, x, y }];
+      for (const id of group) {
+        const el = made.nodes.get(id);
+        const at = nowAt(made, id);
+        const other = made.graph.nodes.find((n) => n.id === id);
+        if (id === node.id || !el || !at || !other || made.options.locked?.(other)) continue;
+        const to: [number, number] = [at[0] + dx, at[1] + dy];
+        made.movedTo.set(id, to);
+        el.setAttribute('data-x', String(to[0]));
+        el.setAttribute('data-y', String(to[1]));
+        moves.push({ id, x: to[0], y: to[1] });
+      }
+      drawRoutes(canvas, made);
+      made.options.onMoveMany(moves);
+      return;
+    }
+    drawRoutes(canvas, made);
+    made.options.onMove?.(node, x, y);
   });
+  // With nodes picked and the canvas itself focused: Ctrl or Cmd and an arrow moves them, 8px (32 with Shift). TODO 752
+  canvas.addEventListener('keydown', (event) => {
+    const by = ({ ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] } as Record<string, [number, number]>)[event.key];
+    if (!by || !primaryKey(event) || event.altKey || event.target !== canvas) return;
+    const ids = pickedNodes(canvas).filter((id) => {
+      const node = made.graph.nodes.find((n) => n.id === id);
+      return node && !made.options.locked?.(node);
+    });
+    if (!ids.length) return;
+    const step = event.shiftKey ? 32 : 8;
+    const moves = ids.flatMap((id) => {
+      const at = nowAt(made, id);
+      return at ? [{ id, x: at[0] + by[0] * step, y: at[1] + by[1] * step }] : [];
+    });
+    for (const m of moves) {
+      made.movedTo.set(m.id, [m.x, m.y]);
+      made.nodes.get(m.id)?.setAttribute('data-x', String(m.x));
+      made.nodes.get(m.id)?.setAttribute('data-y', String(m.y));
+    }
+    drawRoutes(canvas, made);
+    const only = moves.length === 1 ? made.graph.nodes.find((n) => n.id === moves[0]!.id) : undefined;
+    if (only) made.options.onMove?.(only, moves[0]!.x, moves[0]!.y);
+    else made.options.onMoveMany?.(moves);
+    event.preventDefault();
+    event.stopPropagation();
+  }, { capture: true });
   canvas.addEventListener('node-resize', (event) => {
     drawRoutes(canvas, made);
     const node = nodeOf(made, event.target);
@@ -1005,6 +1076,7 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: DrawnGraph, options
     drawn.nodes.delete(id);
     drawn.shapes.delete(id);
     drawn.placedAt.delete(id);
+    drawn.movedTo.delete(id);
   }
   for (const node of graph.nodes) {
     let el = drawn.nodes.get(node.id);
@@ -1017,6 +1089,7 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: DrawnGraph, options
     const at = `${node.x},${node.y}`;
     if (drawn.placedAt.get(node.id) !== at) {
       drawn.placedAt.set(node.id, at);
+      drawn.movedTo.delete(node.id);
       el.setAttribute('data-x', String(node.x));
       el.setAttribute('data-y', String(node.y));
     }
@@ -1059,6 +1132,46 @@ export function markNode(canvas: SherpaLayoutCanvas, id: string | null): void {
     el.toggleAttribute('data-current', key === id);
     el.removeAttribute('data-active');
   }
+}
+
+/** The nodes picked, by id: a click, a box, or the keys. */
+export function pickedNodes(canvas: SherpaLayoutCanvas): string[] {
+  return [...(drawnOn.get(canvas)?.nodes ?? [])].filter(([, el]) => el.hasAttribute('data-current')).map(([id]) => id);
+}
+
+/** Which spacing token the gaps of an arrangement are: one, read from the canvas; the fallback mirrors its value. */
+const ARRANGE_GAP = '--sherpa-display-mode-space-5xl';
+const ARRANGE_GAP_FALLBACK = 56;
+
+/** Lay the picked nodes out on a grid, from the boxes they are drawn in, and hand the host the places. */
+export function arrangePicked(canvas: SherpaLayoutCanvas): Arranged | undefined {
+  const drawn = drawnOn.get(canvas);
+  const ids = pickedNodes(canvas).filter((id) => !id.startsWith('#'));
+  if (!drawn?.options.onArrange || ids.length < 2) return undefined;
+  const gap = parseFloat(getComputedStyle(canvas).getPropertyValue(ARRANGE_GAP)) || ARRANGE_GAP_FALLBACK;
+  const nodes = [...drawn.nodes].map(([id, el]) => ({ id, x: Number(el.getAttribute('data-x')) || 0, y: Number(el.getAttribute('data-y')) || 0 }));
+  const boxes = Object.fromEntries([...drawn.nodes].map(([id, el]) => [id, { w: el.offsetWidth, h: el.offsetHeight }]));
+  const placed = arrangeNodes({ nodes, routes: drawn.routes, ties: drawn.ties }, ids, { gapX: gap, gapY: gap, boxes });
+  if (!Object.keys(placed.nodes).length) return undefined;
+  for (const [id, at] of Object.entries(placed.nodes)) {
+    const el = drawn.nodes.get(id);
+    if (!el || el.hasAttribute('data-locked')) continue;
+    drawn.movedTo.set(id, [at.x, at.y]);
+    el.setAttribute('data-x', String(at.x));
+    el.setAttribute('data-y', String(at.y));
+  }
+  drawn.options.onArrange(placed);
+  return placed;
+}
+
+/** Say in `data-can-arrange` whether two or more nodes are picked; stop lets go. */
+export function watchArrange(canvas: SherpaLayoutCanvas, toolbar: HTMLElement | null | undefined, allowed: () => boolean = () => true): () => void {
+  if (!toolbar) return () => undefined;
+  const tell = (): void => { toolbar.toggleAttribute('data-can-arrange', pickedNodes(canvas).length > 1 && allowed()); };
+  const watch = new MutationObserver(tell);
+  watch.observe(canvas, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-current'] });
+  tell();
+  return () => { watch.disconnect(); toolbar.removeAttribute('data-can-arrange'); };
 }
 
 /** Mark several nodes as the ones picked. */
@@ -1445,6 +1558,16 @@ export function bindQueryEditor(
     places = { ...places, [node.id]: { ...places[node.id], x, y } };
     session?.set(pointer, places);
   };
+  // Picked nodes moved together, or arranged: every place in one write, and an arranged route's bends reset. TODO 752
+  const onMoveMany = (moves: { id: string; x: number; y: number }[]): void => {
+    places = { ...places, ...Object.fromEntries(moves.map((m) => [m.id, { ...places[m.id], x: m.x, y: m.y }])) };
+    session?.set(pointer, places);
+  };
+  const onArrange = (placed: Arranged): void => {
+    onMoveMany(Object.entries(placed.nodes).map(([id, p]) => ({ id, ...p })));
+    const touched = (r: NodeRoute): boolean => socketOf(r.from).node in placed.nodes || socketOf(r.to).node in placed.nodes;
+    keepBends(Object.fromEntries(Object.entries(bends).filter(([key]) => !graph.routes.some((r) => bendKey(r) === key && touched(r)))));
+  };
   // A resized node's size: the reader's for the tab, kept beside its place. TODO 740
   const onResize = (node: GraphNode, size: NodeSize): void => {
     places = { ...places, [node.id]: { x: node.x, y: node.y, ...places[node.id], size } };
@@ -1523,7 +1646,7 @@ export function bindQueryEditor(
     }), places);
     graph = { ...read, routes: read.routes.map((r) => (bends[bendKey(r)] ? { ...r, via: bends[bendKey(r)]! } : r)) };
     drawGraph(canvas, graph, {
-      onEdit, onMove, onResize, onConnect, onSelect: (node) => picks.select(node, graph), onDeselect: picks.deselect, onBend, onUnbend,
+      onEdit, onMove, onMoveMany, onArrange, onResize, onConnect, onSelect: (node) => picks.select(node, graph), onDeselect: picks.deselect, onBend, onUnbend,
       onBendPicked: (pick) => toolbar?.toggleAttribute('data-picked-bend', !!pick),
       // Its routes are readings, which another field or scope takes: a moved end is a new route.
       onReroute: (_was, now) => onConnect(now),
@@ -1575,7 +1698,9 @@ export function bindQueryEditor(
     const action = (event as CustomEvent<{ action?: string }>).detail?.action;
     if (action === 'undo') undo();
     else if (action === 'redo') redo();
+    else if (action === 'arrange') arrangePicked(canvas);
   };
+  const unarrange = watchArrange(canvas, toolbar);
   const onKey = (event: KeyboardEvent): void => {
     const first = event.composedPath()[0];
     if (first instanceof Element && first.matches('input, select, textarea, [contenteditable]')) return;
@@ -1604,6 +1729,7 @@ export function bindQueryEditor(
     stop(): void {
       query.removeEventListener('query-change', onChange);
       toolbar?.removeEventListener('toolbar-select', onTool);
+      unarrange();
       panel?.removeEventListener('node-add', onAdded);
       canvas.removeEventListener('keydown', onKey, { capture: true });
       toolbar?.removeAttribute('data-can-undo');
@@ -1846,6 +1972,22 @@ export function bindWorkflow(
   const onMove = (node: GraphNode, x: number, y: number): void => {
     if (node.id.startsWith('#')) return;
     write(editWorkflow(shown(), { node: node.id, set: { x, y } }, K()), `move:${node.id}`);
+  };
+  // Picked nodes moved by one drag: ONE step. A tie whose routes all join them goes with them, and so do the
+  // bends of a route with both ends among them; the rest stay. TODO 752
+  const onMoveMany = (moves: { id: string; x: number; y: number }[]): void => {
+    const nodes = Object.fromEntries(moves.filter((m) => !m.id.startsWith('#')).map((m) => [m.id, { x: m.x, y: m.y }]));
+    const head = shown().nodes.find((n) => n.id === moves[0]?.id);
+    if (!head || !nodes[head.id] || Object.keys(nodes).length < 2) return;
+    const [dx, dy] = [nodes[head.id]!.x - head.x, nodes[head.id]!.y - head.y];
+    const inside = (r: NodeRoute): boolean => socketOf(r.from).node in nodes && socketOf(r.to).node in nodes;
+    const ties = Object.fromEntries((shown().ties ?? []).filter((t) => t.routes.length && t.routes.every(inside)).map((t) => [t.id, { x: t.x + dx, y: t.y + dy }]));
+    write(editWorkflow(shown(), { place: { nodes, ties, bends: { dx, dy } } }, K()), `move:${Object.keys(nodes).sort().join(',')}`);
+  };
+  // Arrange: every place, tie and bend in ONE edit. TODO 752
+  const onArrange = (placed: Arranged): void => {
+    if (readOnly()) return;
+    write(editWorkflow(shown(), { place: { nodes: placed.nodes, ties: placed.ties, bends: 'reset' } }, K()));
   };
   const onResize = (node: GraphNode, size: NodeSize): void => {
     if (node.id.startsWith('#')) return;
@@ -2252,9 +2394,11 @@ export function bindWorkflow(
     else if (action === 'redo') redo();
     else if (action === 'tie') setTying(!tying);
     else if (action === 'group') openSave();
+    else if (action === 'arrange') arrangePicked(canvas);
   };
   toolbar?.addEventListener('toolbar-select', onTool);
   toolbar?.setAttribute('data-can-tie', '');
+  const unarrange = watchArrange(canvas, toolbar, () => !readOnly());
   tell();
   canvas.addEventListener('keydown', onKey, { capture: true });
   canvas.addEventListener('click', onClick, { capture: true });
@@ -2299,6 +2443,7 @@ export function bindWorkflow(
     graph = ro ? { ...body, nodes: body.nodes.map((n) => ({ ...n, rows: n.rows.map((r) => ({ ...r, editable: false })) })) } : body;
     drawGraph(canvas, graph, {
       onEdit, onMove, onResize, onConnect, onReroute, onBreak, onCustom, onDeselect: picks.deselect,
+      ...(ro ? {} : { onMoveMany, onArrange }),
       onBox: pickBox, onPicked: tellPicked, onBendPicked: (pick) => toolbar?.toggleAttribute('data-picked-bend', !!pick),
       ...(ro ? {} : { tying, onTie, onTieMove, onUntie, onBreakAll, onBend, onUnbend, onTieDrop, onRemove: onRemoveNodes }),
       onSelect: (node) => {
@@ -2360,6 +2505,7 @@ export function bindWorkflow(
     can: () => ({ undo: journal.canBack, redo: journal.canForward }),
     stop(): void {
       unwatch();
+      unarrange();
       panel?.removeEventListener('node-add', onAdded);
       toolbar?.removeEventListener('toolbar-select', onTool);
       toolbar?.removeAttribute('data-tie');

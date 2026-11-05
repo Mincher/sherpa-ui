@@ -1,0 +1,229 @@
+import { test, expect, type Page } from './harness';
+
+/**
+ * Picked nodes move TOGETHER and ARRANGE on a grid — Will, TODO 752. Dragging one of several picked
+ * nodes moves them all by the same delta (a tie whose routes all join them goes too, and the bends of
+ * a route with both ends among them); an unpicked node picks only itself. Ctrl or Cmd and an arrow moves
+ * the picked nodes. Arrange puts them in columns along the routes, a spacing token apart, on the 4px grid.
+ * Real pointer and keys; places are read from the nodes, lines from the drawn paths.
+ */
+type Flow = { nodes: { id: string; x: number; y: number }[]; ties?: { id: string; x: number; y: number }[]; routes: { from: string; to: string; via?: { x: number; y: number }[] }[] };
+type Ed = { workflow(): Flow; undo(): boolean };
+
+async function start(page: Page, nodes: [string, string, number, number][], routes: { from: string; to: string; via?: { x: number; y: number }[] }[], ties: unknown[] = []): Promise<void> {
+  await page.evaluate(async ([ns, rs, ts]) => {
+    document.getElementById('root')!.insertAdjacentHTML('beforeend', `
+      <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 700px">
+        <sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar>
+      </sherpa-layout-canvas>
+      <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>`);
+    await customElements.whenDefined('sherpa-node-toolbar');
+    await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
+    const { bindWorkflow, SessionStore } = await import('/dist/app.js');
+    const flow = { v: 2 as const, id: 'z', nodes: ns.map(([id, kind, x, y]) => ({ id, kind, x, y, heading: id })), routes: rs, ...(ts.length ? { ties: ts } : {}) };
+    const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
+    (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, flow as never, {
+      session: new SessionStore(), inspector: document.getElementById('inspector') as never, toolbar: canvas.querySelector('sherpa-node-toolbar')!, stores: ['users'],
+    });
+    await window.__settled();
+    canvas.zoomTo(0.5);
+    canvas.panTo(40, 40);
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+  }, [nodes, routes, ties] as const);
+}
+const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
+const flow = (page: Page) => page.evaluate(() => JSON.parse(JSON.stringify((window as never as { ed: Ed }).ed.workflow())) as Flow);
+const spot = (f: Flow, id: string) => f.nodes.find((n) => n.id === id)!;
+const picked = (page: Page) => page.evaluate(() => [...document.querySelectorAll('#cv > sherpa-node[data-current]')].map((n) => n.getAttribute('data-heading')).sort());
+const header = async (page: Page, id: string) => {
+  const b = (await page.locator(`#cv > sherpa-node[data-heading="${id}"]`).boundingBox())!;
+  return [b.x + b.width * 0.5, b.y + 8] as [number, number];
+};
+async function pick(page: Page, ids: string[]): Promise<void> {
+  await page.keyboard.down('Shift');
+  for (const id of ids) { const [x, y] = await header(page, id); await page.mouse.click(x, y); }
+  await page.keyboard.up('Shift');
+  await settle(page);
+}
+async function dragNode(page: Page, id: string, by: [number, number]): Promise<void> {
+  const [x, y] = await header(page, id);
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + by[0] / 2, y + by[1] / 2, { steps: 4 });
+  await page.mouse.move(x + by[0], y + by[1], { steps: 4 });
+  await page.mouse.up();
+  await settle(page);
+}
+const press = async (page: Page, name: string) => {
+  await page.locator(`sherpa-node-toolbar sherpa-button.${name}`).evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
+  await settle(page);
+};
+
+const R = (n: number) => ({ from: `s${n}/rows`, to: `e${n}` });
+
+test('dragging one of several picked nodes moves them all, relative places kept; an unpicked one stays', async ({ page }) => {
+  await start(page, [['s1', 'store', 0, 0], ['e1', 'output', 600, 0], ['s2', 'store', 0, 240], ['e2', 'output', 600, 240], ['s3', 'store', 0, 480]], [R(1), R(2)]);
+  const before = await flow(page);
+  await pick(page, ['s1', 'e1', 's2']);
+  expect(await picked(page)).toEqual(['e1', 's1', 's2']);
+  await dragNode(page, 's1', [100, 60]);
+  const after = await flow(page);
+  const d = { x: spot(after, 's1').x - spot(before, 's1').x, y: spot(after, 's1').y - spot(before, 's1').y };
+  expect(d.x).toBeGreaterThan(150);
+  for (const id of ['e1', 's2']) expect([spot(after, id).x - spot(before, id).x, spot(after, id).y - spot(before, id).y]).toEqual([d.x, d.y]);
+  for (const id of ['e2', 's3']) expect(spot(after, id)).toEqual(spot(before, id));
+  expect(await picked(page)).toEqual(['e1', 's1', 's2']);
+  // One Undo puts them all back.
+  await page.evaluate(() => (window as never as { ed: Ed }).ed.undo());
+  await settle(page);
+  expect(await flow(page)).toEqual(before);
+});
+
+test('a tie whose routes all join picked nodes goes along, bends of a route between picked ends too; others stay', async ({ page }) => {
+  await start(page, [['s1', 'store', 0, 0], ['e1', 'output', 700, 0], ['s2', 'store', 0, 240], ['e2', 'output', 700, 240], ['s3', 'store', 0, 480], ['e3', 'output', 700, 480]],
+    [{ ...R(1), via: [{ x: 400, y: 40 }] }, R(2), { ...R(3), via: [{ x: 400, y: 520 }] }],
+    [{ id: 't', x: 480, y: 130, routes: [R(1), R(2)] }, { id: 'u', x: 480, y: 330, routes: [R(2), R(3)] }]);
+  const before = await flow(page);
+  await pick(page, ['s1', 'e1', 's2', 'e2']);
+  await dragNode(page, 'e2', [80, 60]);
+  const after = await flow(page);
+  const dx = spot(after, 'e2').x - spot(before, 'e2').x;
+  const dy = spot(after, 'e2').y - spot(before, 'e2').y;
+  expect(dx).toBeGreaterThan(100);
+  const t = (f: Flow, id: string) => f.ties!.find((x) => x.id === id)!;
+  expect([t(after, 't').x - t(before, 't').x, t(after, 't').y - t(before, 't').y]).toEqual([dx, dy]);
+  expect(t(after, 'u')).toEqual(t(before, 'u'));
+  expect(after.routes[0]!.via).toEqual([{ x: 400 + dx, y: 40 + dy }]);
+  expect(after.routes[2]!.via).toEqual(before.routes[2]!.via);
+  await page.evaluate(() => (window as never as { ed: Ed }).ed.undo());
+  await settle(page);
+  expect(await flow(page)).toEqual(before);
+});
+
+test('a drag on an unpicked node picks only it and moves only it', async ({ page }) => {
+  await start(page, [['s1', 'store', 0, 0], ['e1', 'output', 600, 0], ['s3', 'store', 0, 480]], [R(1)]);
+  const before = await flow(page);
+  await pick(page, ['s1', 'e1']);
+  await dragNode(page, 's3', [60, 40]);
+  const after = await flow(page);
+  expect(await picked(page)).toEqual(['s3']);
+  expect(spot(after, 's3').x).toBeGreaterThan(spot(before, 's3').x + 60);
+  expect(spot(after, 's1')).toEqual(spot(before, 's1'));
+  expect(spot(after, 'e1')).toEqual(spot(before, 'e1'));
+});
+
+test('Ctrl and an arrow, on the canvas, moves the picked nodes 8px, 32 with Shift; one step', async ({ page }) => {
+  await start(page, [['s1', 'store', 0, 0], ['e1', 'output', 600, 0], ['s3', 'store', 0, 480]], [R(1)]);
+  const before = await flow(page);
+  await pick(page, ['s1', 'e1']);
+  await page.locator('#cv').evaluate((cv) => (cv.shadowRoot!.querySelector('.viewport') as HTMLElement).focus());
+  await page.keyboard.press('ControlOrMeta+ArrowRight');
+  await page.keyboard.press('ControlOrMeta+Shift+ArrowDown');
+  await settle(page);
+  const after = await flow(page);
+  expect([spot(after, 's1').x - spot(before, 's1').x, spot(after, 's1').y - spot(before, 's1').y]).toEqual([8, 32]);
+  expect([spot(after, 'e1').x - spot(before, 'e1').x, spot(after, 'e1').y - spot(before, 'e1').y]).toEqual([8, 32]);
+  expect(spot(after, 's3')).toEqual(spot(before, 's3'));
+});
+
+/** Each drawn route's end points on the plane, and how many pairs of them cross. */
+const crossings = (page: Page) => page.evaluate(() => {
+  const segs = [...document.querySelectorAll('#cv > svg.graph-routes path[data-from]')].map((p) => {
+    const n = (p.getAttribute('d') ?? '').match(/-?\d+(\.\d+)?/g)!.map(Number);
+    return { from: p.getAttribute('data-from')!.split('/')[0]!, to: p.getAttribute('data-to')!, a: [n[0]!, n[1]!], b: [n.at(-2)!, n.at(-1)!] };
+  });
+  const side = (p: number[], q: number[], r: number[]) => Math.sign((q[0]! - p[0]!) * (r[1]! - p[1]!) - (q[1]! - p[1]!) * (r[0]! - p[0]!));
+  let count = 0;
+  for (let i = 0; i < segs.length; i++) for (let j = i + 1; j < segs.length; j++) {
+    const [p, q] = [segs[i]!, segs[j]!];
+    if (p.from === q.from || p.to === q.to) continue;
+    if (side(p.a, p.b, q.a) * side(p.a, p.b, q.b) < 0 && side(q.a, q.b, p.a) * side(q.a, q.b, p.b) < 0) count++;
+  }
+  return count;
+});
+const rects = (page: Page) => page.evaluate(() => Object.fromEntries([...document.querySelectorAll('#cv > sherpa-node')].map((n) => [n.getAttribute('data-heading')!, { x: Number(n.getAttribute('data-x')), y: Number(n.getAttribute('data-y')), w: (n as HTMLElement).offsetWidth, h: (n as HTMLElement).offsetHeight }])));
+
+test('Arrange: columns by flow, a token apart, on the grid, anchor kept, fewer crossings, ties centred, bends cleared, one Undo', async ({ page }) => {
+  await start(page, [['s1', 'store', 500, 400], ['s2', 'store', 40, 20], ['e1', 'output', 100, 300], ['e2', 'output', 800, 60], ['s3', 'store', 300, 600]],
+    [{ ...R(1), via: [{ x: 300, y: 300 }] }, R(2), { from: 's3/rows', to: 'e1' }],
+    [{ id: 't', x: 360, y: 200, routes: [R(1), R(2)] }]);
+  const button = page.locator('sherpa-node-toolbar sherpa-button.arrange');
+  await expect(button).toHaveAttribute('disabled', '');
+  await pick(page, ['s1']);
+  await expect(button).toHaveAttribute('disabled', '');
+  await pick(page, ['s2', 'e1', 'e2']);
+  await expect(button).not.toHaveAttribute('disabled', '');
+  const before = await flow(page);
+  const was = await rects(page);
+  const crossBefore = await crossings(page);
+  const gap = await page.locator('#cv').evaluate((cv) => parseFloat(getComputedStyle(cv).getPropertyValue('--sherpa-display-mode-space-5xl')) || 56);
+  await press(page, 'arrange');
+  const after = await flow(page);
+  const now = await rects(page);
+  const four = ['s1', 's2', 'e1', 'e2'];
+  for (const id of four) { expect(spot(after, id).x % 4).toBe(0); expect(spot(after, id).y % 4).toBe(0); }
+  // sources left, outputs a column to the right, a token apart
+  expect(spot(after, 's1').x).toBe(spot(after, 's2').x);
+  expect(spot(after, 'e1').x).toBe(spot(after, 'e2').x);
+  expect(Math.abs(spot(after, 'e1').x - (spot(after, 's1').x + now['s1']!.w) - gap)).toBeLessThanOrEqual(1);
+  // rows in a column
+  const [top, low] = [spot(after, 's1'), spot(after, 's2')].sort((a, b) => a.y - b.y);
+  const topId = top === spot(after, 's1') ? 's1' : 's2';
+  expect(Math.abs(low!.y - (top!.y + now[topId]!.h) - gap)).toBeLessThanOrEqual(4);
+  // the top-left of the picked nodes stays
+  expect(Math.abs(Math.min(...four.map((id) => spot(after, id).x)) - Math.min(...four.map((id) => was[id]!.x)))).toBeLessThanOrEqual(2);
+  expect(Math.abs(Math.min(...four.map((id) => spot(after, id).y)) - Math.min(...four.map((id) => was[id]!.y)))).toBeLessThanOrEqual(2);
+  // the unpicked node and the unpicked-end route stay
+  expect(spot(after, 's3')).toEqual(spot(before, 's3'));
+  expect(await crossings(page)).toBeLessThanOrEqual(crossBefore);
+  // bends cleared; the tie sits in the gap between the columns, at its centre
+  expect(after.routes.every((r) => !r.via)).toBe(true);
+  const tie = after.ties![0]!;
+  const left = spot(after, 's1').x + now['s1']!.w;
+  expect(Math.abs(tie.x - (left + gap / 2))).toBeLessThanOrEqual(2);
+  // ONE Undo restores places, ties and bends
+  await page.evaluate(() => (window as never as { ed: Ed }).ed.undo());
+  await settle(page);
+  expect(await flow(page)).toEqual(before);
+});
+
+test('the Query editor arranges too: picked nodes in columns, their places kept for the tab', async ({ page }) => {
+  await page.evaluate(async () => {
+    document.getElementById('root')!.insertAdjacentHTML('beforeend', `
+      <sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 700px">
+        <sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar>
+      </sherpa-layout-canvas>`);
+    await customElements.whenDefined('sherpa-node-toolbar');
+    await (document.getElementById('cv') as HTMLElement & { rendered: Promise<void> }).rendered;
+    const { bindQueryEditor, SessionStore } = await import('/dist/app.js');
+    const { QueryContext, VIEW } = await import('/dist/data.js');
+    const query = new QueryContext();
+    query.ask({ scope: VIEW, hold: ['region'] });
+    query.ask({ scope: VIEW, field: 'region', reading: { picked: ['EMEA'] } });
+    const canvas = document.getElementById('cv') as HTMLElement & { zoomTo(z: number): void; fit(): void };
+    (window as never as { session: unknown }).session = new SessionStore();
+    bindQueryEditor(canvas as never, { query } as never, { definition: { v: 1, id: 'records', source: { store: 'customers' } }, toolbar: canvas.querySelector('sherpa-node-toolbar')!, session: (window as never as { session: never }).session });
+    await window.__settled();
+    canvas.fit();
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+  });
+  const names = await page.evaluate(() => [...document.querySelectorAll('#cv > sherpa-node')].map((n) => n.getAttribute('data-heading')!));
+  expect(names.length).toBeGreaterThan(2);
+  const button = page.locator('sherpa-node-toolbar sherpa-button.arrange');
+  await expect(button).toHaveAttribute('disabled', '');
+  // A box over the whole canvas picks every node (the Query editor has no Shift-click).
+  const cv = (await page.locator('#cv').boundingBox())!;
+  await page.mouse.move(cv.x + 3, cv.y + 3);
+  await page.mouse.down();
+  await page.mouse.move(cv.x + cv.width / 2, cv.y + cv.height / 2, { steps: 5 });
+  await page.mouse.move(cv.x + cv.width - 3, cv.y + cv.height - 3, { steps: 5 });
+  await page.mouse.up();
+  await settle(page);
+  await expect(button).not.toHaveAttribute('disabled', '');
+  await press(page, 'arrange');
+  const now = await rects(page);
+  for (const r of Object.values(now)) { expect(r.x % 4).toBe(0); expect(r.y % 4).toBe(0); }
+  expect(new Set(Object.values(now).map((r) => r.x)).size).toBeGreaterThan(1);
+  const kept = await page.evaluate(() => JSON.stringify(Object.values((window as never as { session: { get(k: string): unknown } }).session.get('/nodes/records') ?? {})).length);
+  expect(kept).toBeGreaterThan(10);
+});

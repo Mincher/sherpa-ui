@@ -1,5 +1,5 @@
 /**
- * sherpa-node-toolbar — a graph editor's tools: Save, Undo, Redo, the Zip tie tool and Save as Custom Node, as icon buttons in one group.
+ * sherpa-node-toolbar — a graph editor's tools: Save, Undo, Redo, the Zip tie tool, Save as Custom Node and Arrange nodes, as icon buttons in one group.
  *
  * It does nothing itself. A press is `toolbar-select`; the editor that owns the history hears Undo
  * and Redo and says, in `data-can-undo` and `data-can-redo`, when each can be pressed. Save is a
@@ -20,6 +20,7 @@ export class SherpaNodeToolbar extends SherpaElement {
     'data-can-redo': { type: 'boolean', kind: 'behaviour' },
     'data-can-tie': { type: 'boolean', kind: 'behaviour' },
     'data-can-group': { type: 'boolean', kind: 'behaviour' },
+    'data-can-arrange': { type: 'boolean', kind: 'behaviour' },
     'data-tie': { type: 'boolean', kind: 'behaviour' },
     'data-picked-routes': { type: 'number', kind: 'behaviour' },
   } as const;
@@ -37,7 +38,7 @@ export class SherpaNodeToolbar extends SherpaElement {
 
   /** Each tool can be pressed when its flag is set. */
   #sync(): void {
-    for (const action of ['save', 'undo', 'redo', 'tie', 'group']) {
+    for (const action of ['save', 'undo', 'redo', 'tie', 'group', 'arrange']) {
       this.$(`.${action}`)?.toggleAttribute('disabled', !this.hasAttribute(`data-can-${action}`));
     }
     const tie = this.$('.tie');

@@ -21,7 +21,7 @@
  * - TIE_GAP — The gap between two routes in a zip tie, in px.
  * - tieLimit — The range a zip tie's x may take: between the nodes its shortest tied route joins.
  * - tiesAmong — The ties left when only some routes remain: a tie keeps its routes still there, and none, it goes.
- * - WorkflowEdit — One edit: a row, a node's part or size, a route made, bent or cut, a tie, a node added or removed.
+ * - WorkflowEdit — One edit: a row, a node, a size, a route, a bend, a tie, nodes placed together, a node added or removed.
  * - editWorkflow — The workflow after one edit; the one given untouched.
  * - addCustomValue — A Value node made for a picklist row and routed into it: the row mirrors it, and keeps its own pick.
  */
@@ -409,7 +409,8 @@ export type WorkflowEdit =
   | { moveTie: { id: string; x?: number; y?: number } }
   | { tieAdd: { id: string; route: NodeRoute } }
   | { bend: { route: NodeRoute; at: number; x: number; y: number; insert?: boolean } }
-  | { unbend: { route: NodeRoute; index: number } };
+  | { unbend: { route: NodeRoute; index: number } }
+  | { place: { nodes: Readonly<Record<string, { x: number; y: number }>>; ties?: Readonly<Record<string, { x: number; y: number }>>; bends?: 'reset' | { dx: number; dy: number } } };
 
 /** Why an edit was refused, said once through `report`. */
 function refuse(message: string): void {
@@ -495,6 +496,41 @@ export function editWorkflow(
       const { via: _was, ...bare } = r;
       return via ? { ...bare, via } : bare;
     }) };
+  }
+  if ('place' in edit) {
+    // Several nodes, and the ties and bends that go with them, in one edit: a group drag, or an arrange.
+    const { nodes, ties, bends } = edit.place;
+    const names = Object.keys(nodes);
+    const fault = names.length < 2 ? 'placing nodes needs two or more'
+      : names.find((id) => !workflow.nodes.some((n) => n.id === id)) !== undefined ? `the node "${names.find((id) => !workflow.nodes.some((n) => n.id === id))}" is not there`
+        : Object.values({ ...nodes, ...ties }).some((p) => !Number.isFinite(p.x) || !Number.isFinite(p.y)) ? 'a place needs a finite x and y'
+          : Object.keys(ties ?? {}).find((id) => !(workflow.ties ?? []).some((t) => t.id === id)) !== undefined ? `the tie "${Object.keys(ties ?? {}).find((id) => !(workflow.ties ?? []).some((t) => t.id === id))}" is not there` : undefined;
+    if (fault) return refuse(fault), workflow;
+    const moved = { ...workflow, nodes: workflow.nodes.map((n) => (nodes[n.id] ? { ...n, x: nodes[n.id]!.x, y: nodes[n.id]!.y } : n)) };
+    const has = (r: NodeRoute, all: boolean): boolean => {
+      const ends = [socketOf(r.from).node, socketOf(r.to).node].map((id) => id in nodes);
+      return all ? ends.every(Boolean) : ends.some(Boolean);
+    };
+    const result: WorkflowDefinition = { ...moved };
+    if (workflow.routes && bends) {
+      result.routes = workflow.routes.map((r) => {
+        if (!r.via || !has(r, bends === 'reset' ? false : true)) return r;
+        const { via: _was, ...bare } = r;
+        return bends === 'reset' ? bare : { ...bare, via: r.via.map((p) => ({ x: p.x + bends.dx, y: p.y + bends.dy })) };
+      });
+    }
+    if (workflow.ties) {
+      // A tie touching a moved node stays inside the range its nodes now leave it.
+      result.ties = workflow.ties.map((t) => {
+        const to = ties?.[t.id];
+        const limit = tieLimit(moved, t);
+        const touches = t.routes.some((r) => has(r, false));
+        const x = to ? to.x : t.x;
+        const held = limit && (to || touches) ? Math.min(limit.max, Math.max(limit.min, x)) : x;
+        return to || held !== t.x ? { ...t, x: held, y: to ? to.y : t.y } : t;
+      });
+    }
+    return result;
   }
   if ('resize' in edit) {
     const { node, w, h } = edit.resize;
