@@ -7,7 +7,8 @@ import { test, expect, type Page } from './harness';
  * DEFINITION, and each use says an update is available, shows the change as a diff, and updates
  * from a split button whose bulk items ask in a critical dialog. A preset is read only, with "Copy
  * to my nodes". Several picked nodes become one by "Save as Custom Node", and Ungroup undoes it.
- * Each by real pointer and key.
+ * A connection let go on a use's header is a new input of its definition (763). Each by real
+ * pointer and key.
  */
 const ORG = {
   v: 1, label: 'Org permissions', category: 'Logic',
@@ -300,38 +301,103 @@ test('Shift-click and Space pick several; Escape clears; "Save as Custom Node" m
   expect(await page.locator('#cv svg.graph-routes path[data-to]').count()).toBe(3);
 });
 
-test('a route let go on a Custom Node\'s header lands on the row it fits, and Ungroup joins it to what that row fed (759)', async ({ page }) => {
-  await bind(page);
-  const at = (selector: string, side: string) => page.locator(selector).evaluate((el, s) => {
-    const r = (el as HTMLElement & { socketRect(side: string): DOMRect }).socketRect(s);
-    return [r.left + r.width / 2, r.top + r.height / 2];
-  }, side);
-  // Store's Rows, by the pointer, onto the HEADER of Owner check: its Users row takes it.
-  const [ax, ay] = await at('#cv > sherpa-node[data-heading="Store"] sherpa-node-row[data-label="Rows"]', 'output');
-  const [bx, by] = await at('#cv > sherpa-node[data-heading="Owner check"]', 'input');
-  await page.mouse.move(ax!, ay!);
+/** A drawn socket's middle on the screen: a node's header or one of its rows. */
+const socketAt = (page: Page, selector: string, side: string) => page.locator(selector).evaluate((el, s) => {
+  const r = (el as HTMLElement & { socketRect(side: string): DOMRect }).socketRect(s);
+  return [r.left + r.width / 2, r.top + r.height / 2] as [number, number];
+}, side);
+/** A line drawn by the pointer, from one socket to another. */
+const drawLine = async (page: Page, from: [number, number], to: [number, number]) => {
+  await page.mouse.move(...from);
   await page.mouse.down();
-  await page.mouse.move((ax! + bx!) / 2, (ay! + by!) / 2, { steps: 4 });
-  await page.mouse.move(bx!, by!, { steps: 4 });
+  await page.mouse.move((from[0] + to[0]) / 2, (from[1] + to[1]) / 2, { steps: 4 });
+  await page.mouse.move(...to, { steps: 4 });
   await page.mouse.up();
   await settle(page);
-  const routes = () => ed<{ from: string; to: string }[]>(page, 'ed.workflow().routes').then((rs) => rs.map((r) => `${r.from} → ${r.to}`).sort());
-  expect(await routes()).toContain('start/rows → own/users');
-  expect(await page.locator('#cv svg.graph-routes path[data-from="start/rows"][data-to="own/users"]').count()).toBe(1);
-  // Inside, its Group Input row, an output socket, feeds the Condition.
-  await ed(page, "ed.open('own')");
+};
+const routesOf = (page: Page, at = 'ed.workflow().routes') => ed<{ from: string; to: string }[]>(page, at).then((rs) => rs.map((r) => `${r.from} → ${r.to}`).sort());
+
+test('two sources let go on one Custom Node\'s header are two new inputs: a row each, inside too, routed on by the reader; Save writes them; Ungroup joins through them (763)', async ({ page }) => {
+  await bind(page);
+  const perm2 = '#cv > sherpa-node[data-heading="Org permissions"] >> nth=1';
+  // An object, then a boolean, onto the HEADER of the second use: never matched to Users, its free row of their type.
+  await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Store"] sherpa-node-row[data-label="Rows"]', 'output'), await socketAt(page, perm2, 'input'));
+  await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Org permissions"] >> nth=0', 'output'), await socketAt(page, perm2, 'input'));
+  expect(await routesOf(page)).toEqual(['perm → end', 'perm → perm2/perm', 'start/rows → perm/users', 'start/rows → perm2/start-rows', 'start/rows → perm2/users']);
+  expect(await page.locator('#cv svg.graph-routes path[data-from="start/rows"][data-to="perm2/start-rows"]').count()).toBe(1);
+  // A row's words are its own, or its field's where it has a control (Role).
+  expect(await page.locator(perm2).locator('sherpa-node-row').evaluateAll((els) => els.map((e) => [e.getAttribute('data-label') ?? e.firstElementChild?.getAttribute('data-label'), e.getAttribute('data-input-socket')]))).toEqual([
+    ['Users', 'object'], ['Role', 'value'], ['Store › Rows', 'object'], ['Org permissions › True', 'boolean'], ['Allowed', null],
+  ]);
+  // The inside is shared: the other use says it can update; this one follows it.
+  expect(await page.locator('#cv > sherpa-node[data-heading="Org permissions"]').evaluateAll((els) => els.map((e) => e.getAttribute('data-caption')))).toEqual(['Update available', null]);
+  // Inside, a Group Input row each, an output socket of the source's type, routed to nothing yet.
+  await ed(page, "ed.open('perm2')");
   await settle(page);
-  expect(await page.locator('#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row').evaluateAll((els) => els.map((e) => [e.getAttribute('data-label'), e.getAttribute('data-output-socket'), e.hasAttribute('data-output-routed')]))).toEqual([['Users', 'object', true], ['Role', 'value', true]]);
+  const rows = () => page.locator('#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row').evaluateAll((els) => els.map((e) => [e.getAttribute('data-label'), e.getAttribute('data-output-socket'), e.hasAttribute('data-output-routed')]));
+  expect(await rows()).toEqual([['Users', 'object', true], ['Role', 'value', true], ['Store › Rows', 'object', false], ['Org permissions › True', 'boolean', false]]);
+  // The reader routes Store › Rows on to the Condition, by the pointer: it takes the place of Users there.
+  await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row[data-label="Store › Rows"]', 'output'), await socketAt(page, '#cv > sherpa-node[data-heading="Condition"]', 'input'));
+  expect(await routesOf(page, "ed.library().nodes['org-permissions'].routes")).toContain('#in/start-rows → has-role');
+  expect(await rows()).toEqual([['Users', 'object', false], ['Role', 'value', true], ['Store › Rows', 'object', true], ['Org permissions › True', 'boolean', false]]);
   await ed(page, 'ed.back()');
   await settle(page);
-  // Ungroup: the rows go straight on to the Condition inside, its Role the default it held.
-  await header(page, 'Owner check').click();
+  // Save hands the definition over with its two new inputs.
+  expect(await ed(page, 'ed.save()')).toBe(true);
+  expect(await ed(page, "window.savedNodes.find(([id]) => id === 'org-permissions')[1].inputs.map((i) => i.name)")).toEqual(['users', 'role', 'start-rows', 'perm']);
+  // Ungroup: the Store goes on to the Condition through its row; the True and Users rows feed nothing inside, so their routes go.
+  await header(page, 'Org permissions').nth(1).click();
   await settle(page);
   await page.locator('#inspector sherpa-button[data-label="Ungroup"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
   await settle(page);
-  expect(await routes()).toContain('start/rows → has-role');
-  expect(await routes()).not.toContain('start/rows → own/users');
-  expect(await page.locator('#cv svg.graph-routes path[data-from="start/rows"][data-to="has-role"]').count()).toBe(1);
+  expect(await routesOf(page)).toEqual(['perm → end', 'start/rows → has-role', 'start/rows → perm/users']);
+});
+
+test('a preset\'s header refuses a new input, in words: its inside is read only (763)', async ({ page }) => {
+  await bind(page);
+  await page.evaluate(async () => {
+    const { onReport } = await import('/dist/data.js') as { onReport(fn: (r: { code: string; message: string }) => void): () => void };
+    const w = window as unknown as { said: string[] };
+    w.said = [];
+    onReport((r) => w.said.push(r.message));
+  });
+  await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Store"] sherpa-node-row[data-label="Rows"]', 'output'), await socketAt(page, '#cv > sherpa-node[data-heading="Owner check"]', 'input'));
+  expect(await ed(page, 'window.said')).toEqual(['bindWorkflow: a preset is read only: Copy to my nodes to add an input.']);
+  expect(await routesOf(page)).toEqual(['perm → end', 'start/rows → perm/users', 'start/rows → perm2/users']);
+  expect(await ed(page, "ed.library().nodes['owner-check'].inputs.length")).toBe(2);
+});
+
+test('a route a file kept on a use\'s header reads once as its own new input: drafted, kept for the tab, never added twice; Discard reads it again (763)', async ({ page }) => {
+  const read = await page.evaluate(async () => {
+    const { bindWorkflow, SessionStore } = await import('/dist/app.js');
+    const { useOf } = await import('/dist/data.js');
+    const org = (window as unknown as { ORG: Record<string, unknown> }).ORG;
+    const library = { v: 1, nodes: { 'org-permissions': structuredClone(org) } };
+    const flow = {
+      v: 2, id: 'held',
+      nodes: [{ id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'users' } }, useOf(library as never, 'org-permissions', { id: 'perm', x: 400, y: 0 })],
+      routes: [{ from: 'start/rows', to: 'perm' }],
+    };
+    const session = new SessionStore();
+    const canvas = document.getElementById('cv')!;
+    const open = () => bindWorkflow(canvas as never, flow as never, { session, library: library as never, stores: ['users'] });
+    const said = (ed: ReturnType<typeof open>) => ({
+      routes: (ed.workflow().routes ?? []).map((r: { from: string; to: string }) => `${r.from} → ${r.to}`),
+      inputs: ed.library().nodes['org-permissions']!.inputs.map((i: { name: string }) => i.name),
+    });
+    const first = open();
+    const was = said(first);
+    first.stop();
+    // The tab opens it again, as a reload does: the draft and the edit are kept together.
+    const again = open();
+    const kept = said(again);
+    again.discard();
+    const discarded = said(again);
+    again.stop();
+    return { was, kept, discarded };
+  });
+  const form = { routes: ['start/rows → perm/start-rows'], inputs: ['users', 'role', 'start-rows'] };
+  expect(read).toEqual({ was: form, kept: form, discarded: form });
 });
 
 test('a saved edit reaches a saved edit reaches a second tab: its uses show the update indicator once the save arrives (refresh)', async ({ page }) => {
