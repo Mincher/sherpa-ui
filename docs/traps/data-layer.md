@@ -7822,9 +7822,12 @@ is drawn as a loop. So the rings are signed by the flow: the anchor's outputs fa
   out in x only, ring by ring, past its sources and past any node placed before it in its height band, keeps both.
 - **A frame is one cell.** Its nodes keep their column; the frame's pad and header are read off a drawn frame, so
   the gap is between the frames' boxes, not their nodes'.
-- **A portal pair has no route, so it pulls nothing.** An In and an Out of one name sit by their own routes' nodes.
-- **The places a node had do not change where it goes.** Only the boxes and the routes do, and the first part's
-  anchor keeps its place, so a second Unfurl gives the same layout.
+- **A portal pair has no route, so it pulls nothing.** An In and an Out of one name sit by their own routes' nodes,
+  so a graph cut by portals is several parts. The parts keep the order they stood in, left to right: biggest first
+  put Demos' Store and its In portal to the right of the Outs it feeds.
+- **Within a part, the places a node had do not change where it goes.** Only the boxes and the routes do; the old
+  places give only the parts' order and the first part's anchor, which keeps its place. So a second Unfurl gives
+  the same layout.
 
 - Site: `src/core/data/node-unfurl.ts`
 - Site: `src/core/ui/node-graph.ts`

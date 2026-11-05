@@ -71,7 +71,7 @@ function project(want: readonly number[], weight: readonly number[], gap: readon
  * centroid in height, in its ring's order and gaps; each ring an arc round the anchor, a cell farther out as its
  * weight nears its heaviest neighbour's; then each moved out in x past its sources and anything in its height band.
  * The order whose lines cross least wins. A frame is one cell, so its nodes keep their column. Parts stand side by
- * side, lone nodes in a column after; the first part's anchor keeps its place; every place on the grid. A tie whose
+ * side in the order they stood, lone nodes in a column after; the first part's anchor keeps its place; every place on the grid. A tie whose
  * routes all join moved nodes goes to their middle, held by `tieLimit`. Fewer than two: nothing.
  */
 export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options: UnfurlOptions): Arranged {
@@ -268,9 +268,18 @@ export function unfurlNodes(graph: UnfurlGraph, ids: readonly string[], options:
     return { anchor, list, x: best!.x, y: best!.y };
   };
 
-  // Parts side by side, the biggest first, tops level; lone nodes in one column after.
-  const laid = parts.filter((l) => l.length > 1).map(unfurlPart).sort((a, b) => b.list.length - a.list.length || byKey(a.anchor, b.anchor));
-  const lone = parts.filter((l) => l.length === 1).map((l) => l[0]!).sort(byKey);
+  // Parts side by side, tops level, in the order they stood, left to right: a part that sends through a portal keeps
+  // its place before the parts it reaches. Lone nodes in one column after, top to bottom.
+  const stood = (list: readonly number[]): [number, number] => {
+    const ns = list.flatMap((c) => cells[c]!.members.map((m) => at.get(m.id)!));
+    return [Math.min(...ns.map((nd) => nd.x)), Math.min(...ns.map((nd) => nd.y))];
+  };
+  const before = (a: readonly number[], b: readonly number[], key: number): number => {
+    const [[ax, ay], [bx, by]] = [stood(a), stood(b)];
+    return ax - bx || ay - by || key;
+  };
+  const laid = parts.filter((l) => l.length > 1).map(unfurlPart).sort((a, b) => before(a.list, b.list, byKey(a.anchor, b.anchor)));
+  const lone = parts.filter((l) => l.length === 1).map((l) => l[0]!).sort((a, b) => before([a], [b], byKey(a, b)));
   const corner = new Map<number, { x: number; y: number }>();
   let [edge, top] = [0, 0];
   laid.forEach((p, k) => {

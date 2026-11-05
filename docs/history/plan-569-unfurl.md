@@ -19,8 +19,8 @@ unfurling", fast and cheap. His full words are in `docs/TODO.md`, under TODO 569
 ## The algorithm, in steps
 
 A pure function, `unfurlNodes(graph, ids, options)` in `src/core/data/node-unfurl.ts`. No DOM, no random number.
-The same graph and boxes in give the same places out. The places a node had do not change where it goes, so a
-second Unfurl gives the same layout (idempotent).
+The same graph and boxes in give the same places out. Within a part the places a node had do not change where it
+goes; they give only the parts' order and the anchor's place. So a second Unfurl gives the same layout (idempotent).
 
 1. **Cells.** One cell per node. A frame is ONE cell: its box is its nodes' box with the frame's pad and header.
 2. **Weights.** A cell's weight is its route ends: each route in and each route out, once each. Three routes on one
@@ -52,7 +52,8 @@ second Unfurl gives the same layout (idempotent).
    runs left to right.
 10. **The best candidate.** Each candidate order of step 6 is drawn by steps 7–9; the one whose connectors cross
     least wins (the `crossings` of Arrange, over the drawn boxes); a tie keeps the first.
-11. **Parts side by side.** The biggest part first, the rest to its right by Arrange's gap, tops level. Lone nodes
+11. **Parts side by side.** In the order they stood, left to right (then top to bottom), each a gap right of the one
+    before, tops level: a part that sends through a portal keeps its place before the parts it reaches. Lone nodes
     (no route) stand in one column after them. The first part's anchor keeps its place.
 12. **The grid.** Every place is snapped to the 4px grid. The gaps carry the grid's step, so the snap never takes a
     gap below Arrange's gap.
@@ -74,7 +75,7 @@ centroid pull (step 7) holding linked cells as near as their gaps allow.
 | Flow | Inputs fan left, outputs right (a flow-aware unfurl) | A connector is drawn from an output on a node's right edge to an input on a left edge. A full circle draws half the lines backwards, in loops |
 | A frame | Moves whole: ONE cell, its nodes keep their column | The reader made the column with Frame; unfurling inside would undo it |
 | Portals (779) | NOT connected: an In and an Out of one name have no route, so neither pulls the other. Each sits by the nodes its own routes join | A portal exists to put two places far apart with no line; pulling them together undoes that |
-| Parts | Each its own anchor, side by side, biggest first; lone nodes in one column after | Will's anchor is per graph; a part with no route to the anchor has no ring |
+| Parts | Each its own anchor, side by side in the order they stood; lone nodes in one column after | A part with no route to the anchor has no ring. Biggest first put Demos' Store and its In portal to the right of the Outs it feeds |
 | Gaps | Arrange's: 3 × `--sherpa-display-mode-space-5xl` (168px), both ways | One spacing in the editor |
 | Group Input, Group Output | Not moved (derived places), and their routes not counted | As Arrange |
 | The edit | ONE `{place}` edit: nodes, ties, bends reset. ONE Undo step | As Arrange (TRAP T-an-edit-is-a-step) |
