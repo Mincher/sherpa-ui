@@ -192,7 +192,9 @@ test('ONE rowChoices() gives every list a picklist row reads, one pick or severa
   assert.deepEqual(values('scope'), ['view', 'data']);
   assert.deepEqual(labels('join'), ['All of', 'Any of']);
   assert.deepEqual(values('join'), ['and', 'or']);
-  assert.deepEqual(labels('type'), ['Text', 'Number', 'Date', 'True/false']);
+  // A Type row reads its family's types: given, in the registry's words; with none, it has no list.
+  assert.deepEqual(labels('type', { types: [{ value: 'text', label: 'Text' }, { value: 'number', label: 'Number' }] }), ['Text', 'Number']);
+  assert.equal(rowChoices({ control: 'type' }, facts), undefined);
   // A fixed list offers nothing it lacks; a row with no list has none.
   assert.deepEqual(values('direction', {}, 'up'), ['asc', 'desc']);
   for (const control of ['text', 'number', 'switch', undefined]) assert.equal(rowChoices({ control }, facts), undefined, String(control));

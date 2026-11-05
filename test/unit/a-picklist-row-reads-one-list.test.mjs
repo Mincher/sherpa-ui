@@ -12,7 +12,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { NODE_KINDS, fixedChoices, mirrored, rowChoices, socketType } = await import(new URL('node-kinds.js', core));
+const { NODE_KINDS, fixedChoices, mirrored, resolveKind, rowChoices, socketType, typeChoices } = await import(new URL('node-kinds.js', core));
 const { addCustomValue, editWorkflow, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 const { queryGraph } = await import(new URL('query-graph.js', core));
 
@@ -39,7 +39,7 @@ test('rowChoices gives each picklist its one list; a row that is no picklist has
   assert.deepEqual(labels(rowChoices({ control: 'apply' })), ['Change', 'Input']);
   assert.deepEqual(labels(rowChoices({ control: 'join' })), ['All of', 'Any of']);
   assert.deepEqual(labels(rowChoices({ control: 'unit' })), ['days', 'weeks', 'months', 'years']);
-  assert.deepEqual(labels(rowChoices({ control: 'type' })), ['Text', 'Number', 'Date', 'True/false']);
+  assert.deepEqual(labels(rowChoices({ control: 'type' }, { types: typeChoices(NODE_KINDS.value) })), ['Text', 'Number', 'Date', 'True/false']);
   assert.deepEqual(labels(rowChoices({ control: 'presentation' })).slice(0, 3), ['Default', 'Bar', 'Donut']);
   assert.deepEqual(rowChoices({ control: 'store' }, { stores: ['customers'] }), [{ value: 'customers', label: 'customers' }]);
   assert.deepEqual(labels(rowChoices({ control: 'op' }, { type: 'number' })).slice(0, 2), ['Equals', 'Does not equal']);
@@ -56,8 +56,9 @@ test('every workflow picklist row takes a value in; the Value node has its Type'
   for (const [id, row] of [['store', 'store'], ['pick', 'field'], ['filter', 'field'], ['filter', 'op'], ['filter', 'value'], ['sort', 'field'], ['sort', 'direction'], ['group', 'field']]) {
     assert.equal(socketType(NODE_KINDS[id === 'filter' ? 'condition' : id], row, 'input'), 'value', `${id} › ${row}`);
   }
-  assert.deepEqual(NODE_KINDS.value.rows.map((r) => [r.name, r.control]), [['value', 'text'], ['type', 'type']]);
-  assert.equal(NODE_KINDS.value.rows[1].input, undefined, 'the Type is picked, never fed');
+  const value = resolveKind(NODE_KINDS.value);
+  assert.deepEqual(value.rows.map((r) => [r.name, r.control]), [['type', 'type'], ['value', 'text']]);
+  assert.equal(value.rows[0].input, undefined, 'the Type is picked, never fed');
   // Where the Query has no route, its rows draw no socket.
   const g = queryGraph({ v: 1, scopes: {} }, { v: 1, id: 'p', source: { store: 'customers', search: ['name'], fields: { name: {} } } });
   for (const [id, name] of [['store', 'store'], ['source', 'search'], ['source', 'applyOn']]) {

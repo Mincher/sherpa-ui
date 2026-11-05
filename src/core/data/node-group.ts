@@ -11,7 +11,7 @@
  * - groupNodes — Several nodes as one Custom Node: a definition, and one use in their place.
  * - ungroupUse — A use as its nodes again, in place: the inverse of groupNodes.
  */
-import { NODE_KINDS, FALSE_SOCKET, SOCKET_WORDS, rowOf, socketOf, socketType, type NodeKind, type NodeRoute, type SocketType } from './node-kinds.js';
+import { NODE_KINDS, FALSE_SOCKET, SOCKET_WORDS, kindOfNode, rowOf, socketOf, socketType, type NodeKind, type NodeRoute, type SocketType } from './node-kinds.js';
 import { kindsOf, useOf, workflowFaultsDeep, type NodeDefinition, type NodeLibrary, type NodeOutput, type NodeSocket } from './node-library.js';
 import { tiesAmong, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
 
@@ -43,7 +43,7 @@ const nameOf = (node: WorkflowNode | undefined, kinds: Kinds): string => node?.h
 function wordsOf(address: string, workflow: WorkflowDefinition, kinds: Kinds): string {
   const { node: id, row } = socketOf(address);
   const node = workflow.nodes.find((n) => n.id === id);
-  const kind = kinds[node?.kind ?? ''];
+  const kind = kindOfNode(kinds, node);
   const part = row === FALSE_SOCKET ? 'False' : row === undefined ? (kind?.branches ? 'True' : '') : (rowOf(kind?.rows ?? [], row)?.label ?? row);
   return [nameOf(node, kinds), part].filter(Boolean).join(' › ');
 }
@@ -51,14 +51,14 @@ function wordsOf(address: string, workflow: WorkflowDefinition, kinds: Kinds): s
 /** The type a route carries, from the output it leaves; none, it has no such output. */
 const sentBy = (address: string, workflow: WorkflowDefinition, kinds: Kinds): SocketType | undefined => {
   const { node: id, row } = socketOf(address);
-  const kind = kinds[workflow.nodes.find((n) => n.id === id)?.kind ?? ''];
+  const kind = kindOfNode(kinds, workflow.nodes.find((n) => n.id === id));
   return kind && socketType(kind, row, 'output');
 };
 
 /** The type an input takes; none, it has no such input. */
 const takenBy = (address: string, workflow: WorkflowDefinition, kinds: Kinds): SocketType | undefined => {
   const { node: id, row } = socketOf(address);
-  const kind = kinds[workflow.nodes.find((n) => n.id === id)?.kind ?? ''];
+  const kind = kindOfNode(kinds, workflow.nodes.find((n) => n.id === id));
   return kind && socketType(kind, row, 'input');
 };
 

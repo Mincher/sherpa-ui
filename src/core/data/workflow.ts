@@ -12,6 +12,7 @@
  * - readWorkflow — A workflow as v2: a v1's header routes moved to its Rows row; a Filter node read as a Condition.
  * - GROW_MIN — The least a node's size may be: its natural size, as 1.
  * - GROW_MAX — The most a node's size may be: double its natural size, as 2.
+ * - staleRoutes — The routes into or out of a row a node's type no longer has, each with its fault: kept, never cut.
  * - workflowFaults — Every fault in a workflow, in words: a node, a kind, a value or a route that cannot be.
  * - checkWorkflow — Check every node, kind and route; each fault reports. True when none is.
  * - WorkflowFacts — What drawing a workflow needs that it does not say: the fields a row picks, the stores.
@@ -28,7 +29,7 @@ import { report } from './report.js';
 import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS } from './store.js';
 import {
-  NODE_KINDS, ROWS, SOCKET_WORDS, FALSE_SOCKET, accepts, conditionRows, drivenSwitch, fixedChoices, truthy, kindNode, mirrored, partName, partOf, rowChoices, rowOf, socketOf, socketType, takesMany,
+  NODE_KINDS, ROWS, SOCKET_WORDS, FALSE_SOCKET, accepts, conditionRows, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, partName, partOf, rowChoices, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf,
   type DrawnGraph, type GraphRow, type NodeSize, type NodeKind, type NodeRoute, type NodeTie, type PartKind, type SocketType,
 } from './node-kinds.js';
 import { bendFault, clampBend, dropBend, placeBend, type Bend } from './route-bends.js';
@@ -119,6 +120,25 @@ export const GROW_MIN = 1;
 export const GROW_MAX = 2;
 const inGrowth = (n: unknown): boolean => typeof n === 'number' && n >= GROW_MIN && n <= GROW_MAX;
 
+/** The routes into or out of a row a node's type no longer has, each with its fault in words. The row lives
+ *  under another type, so the route is KEPT (off is not gone): it draws greyed, and a reader cuts it, or
+ *  picks the type back. A row no type has is no such case: its route is a fault of its own. Plan 749 */
+export function staleRoutes(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes'>, kinds: Kinds = NODE_KINDS): (NodeRoute & { fault: string })[] {
+  const lost = (address: string): string | undefined => {
+    const { node: id, row } = socketOf(address);
+    const node = workflow.nodes.find((n) => n.id === id);
+    const kind = node && kinds[node.kind];
+    if (!node || !kind?.types || row === undefined || row === FALSE_SOCKET || rowOf(kindOfNode(kinds, node)!.rows, row)) return undefined;
+    const other = rowOfOtherType(kind, node.values?.['type'], row);
+    const at = typeOf(kind, node.values?.['type']);
+    return other && at ? `the node "${id}" is of the ${at.type.label} type, which has no "${other.row.label}" row` : undefined;
+  };
+  return (workflow.routes ?? []).flatMap((r) => {
+    const why = lost(r.from) ?? lost(r.to);
+    return why ? [{ ...r, fault: `${why}: the route "${r.from}" → "${r.to}" is kept, greyed` }] : [];
+  });
+}
+
 /** Every fault in a workflow, in words: a node, a kind, a value or a route that cannot be.
  *  A v1 is read as v2 first, and each fault of the read leads. */
 export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fields'> = {}): string[] {
@@ -128,7 +148,8 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
   const byId = new Map<string, NodeKind>();
   const kindOf = new Map<string, string>();
   for (const node of workflow.nodes) {
-    const kind = kinds[node.kind];
+    const shipped = kinds[node.kind];
+    const kind = kindOfNode(kinds, node);
     if (byId.has(node.id)) problems.push(`two nodes are "${node.id}"`);
     if (!kind) problems.push(`the node "${node.id}" is of the kind "${node.kind}", which is not one`);
     else if (!kind.graphs.includes('workflow')) problems.push(`the node "${node.id}" is of the kind "${node.kind}", which a workflow does not run`);
@@ -139,7 +160,11 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
     if (node.size && !(inGrowth(node.size.w) && inGrowth(node.size.h))) problems.push(`the node "${node.id}" is sized ${node.size.w} by ${node.size.h} times its natural size, and a size runs from ${GROW_MIN} to ${GROW_MAX}`);
     for (const [name, value] of Object.entries(node.values ?? {})) {
       const row = kind && rowOf(kind.rows, name);
-      if (kind && !row) problems.push(`the node "${node.id}" holds a value for "${name}", a row its kind has not`);
+      // A family's type is a value of its first row; the value of a row another type holds is KEPT.
+      if (shipped?.types && name === 'type') {
+        if (typeof value !== 'string' || !Object.hasOwn(shipped.types, value)) problems.push(`the node "${node.id}" holds "${String(value)}" as its ${shipped.typeLabel ?? 'Type'}, which is none of its choices`);
+      } else if (shipped?.types && !row && rowOfOtherType(shipped, node.values?.['type'], name)) continue;
+      else if (kind && !row) problems.push(`the node "${node.id}" holds a value for "${name}", a row its kind has not`);
       // A value is typed as its row's control takes it. TRAP T-a-value-is-typed-once
       else if (row?.control === 'op' && !(String(value) in OP_LABELS)) problems.push(`the node "${node.id}" holds "${String(value)}" as its ${row.label}, which is no operator`);
       else if (row?.control === 'number' && typeof value !== 'number') problems.push(`the node "${node.id}" holds "${String(value)}" as its ${row.label}, which is no number`);
@@ -178,11 +203,15 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
     const type = kind && socketType(kind, row, side);
     return kind && type && { type, many: takesMany(kind, row) };
   };
+  // A route to a row another type holds is kept, and named once here, not read as a route to no socket.
+  const stale = staleRoutes(workflow, kinds);
+  problems.push(...stale.map((r) => r.fault));
   // Each input's routes so far, by what they carry.
   const fed = new Map<string, { from: string; type?: SocketType }[]>();
   const next = new Map<string, string[]>();
   for (const route of workflow.routes ?? []) {
     const { from, to } = route;
+    if (stale.some((r) => r.from === from && r.to === to)) continue;
     const bad = route.via === undefined ? undefined : bendFault(route.via);
     if (bad) problems.push(`the route "${from}" → "${to}": ${bad}`);
     const leaves = at(from, 'output');
@@ -280,13 +309,15 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
   const brings = (from: string): { value: unknown; said: string } | undefined => {
     const { node: id, row } = socketOf(from);
     const at = held.get(id);
-    const out = row === undefined ? undefined : rowOf(kinds[at?.kind ?? '']?.rows ?? [], row);
+    const out = row === undefined ? undefined : rowOf(kindOfNode(kinds, at)?.rows ?? [], row);
     const value = row === undefined ? undefined : at?.values?.[row];
     return at && out && value !== undefined ? { value, said: `${at.heading ?? kinds[at.kind]!.heading} › ${out.label}` } : undefined;
   };
   const nodes = workflow.nodes.filter((n) => kinds[n.kind]).map((node) => {
     const values = node.values ?? {};
-    const kind = kinds[node.kind]!;
+    const family = kinds[node.kind]!;
+    const kind = kindOfNode(kinds, node)!;
+    const at = typeOf(family, values['type']);
     // A Condition draws a part for each comparison its values hold and each Group row a route enters.
     const drawn = node.kind === 'condition' ? conditionRows(kind, partsOf(node, workflow.routes ?? [])) : kind.rows;
     const rows = drawn.map((row): GraphRow => {
@@ -298,9 +329,11 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
       // A Value row with no values to pick from is typed, as it was.
       const plain = row.control === 'values' && !known?.length ? { ...row, control: 'text' as const } : row;
       const list = rowChoices({ ...plain, value: has }, {
-        ...(facts.fields ? { fields: facts.fields } : {}), ...(facts.stores ? { stores: facts.stores } : {}), ...(known ? { values: known } : {}), ...(type && row.name !== 'join' ? { type } : {}),
+        ...(facts.fields ? { fields: facts.fields } : {}), ...(facts.stores ? { stores: facts.stores } : {}), ...(family.types ? { types: typeChoices(family)! } : {}), ...(known ? { values: known } : {}), ...(type && row.name !== 'join' ? { type } : {}),
       });
-      const own: GraphRow = { ...plain, value: has, ...(plain.control ? { editable: true } : {}), ...(list ? { choices: list } : {}) };
+      // A Type row says the type's own value, and the line the type gives.
+      const typed = row.control === 'type' ? { value: at?.id ?? '', ...(at?.type.help ? { hint: at.type.help } : {}) } : {};
+      const own: GraphRow = { ...plain, value: has, ...(plain.control ? { editable: true } : {}), ...(list ? { choices: list } : {}), ...typed };
       const coming = routes.filter((r) => r.to === `${node.id}/${row.name}`).flatMap((r) => brings(r.from) ?? []);
       // A switch is driven by the road a boolean names: a True socket is on, a False socket off.
       if (row.control === 'switch') {
@@ -322,9 +355,10 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
         : { ...own, value: shown.value };
     });
     const heads = { ...(node.heading ? { heading: node.heading } : {}), ...(node.description ? { description: node.description } : {}) };
-    return { ...kindNode(kinds, node.kind, node.id, rows, heads), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}) };
+    return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, rows, heads), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}) };
   });
-  return { nodes, routes: [...routes], ...(workflow.ties?.length ? { ties: workflow.ties } : {}) };
+  const stale = staleRoutes(workflow, kinds);
+  return { nodes, routes: [...routes], ...(stale.length ? { stale } : {}), ...(workflow.ties?.length ? { ties: workflow.ties } : {}) };
 }
 
 /** A node's width on the plane, in px: its output socket is at its x plus this. */
@@ -401,7 +435,7 @@ export function editWorkflow(
     const routes = workflow.routes ?? [];
     if (routes.some((r) => same(r, edit.route))) return workflow;
     const { node, row } = socketOf(edit.route.to);
-    const kind = kinds[workflow.nodes.find((n) => n.id === node)?.kind ?? ''];
+    const kind = kindOfNode(kinds, workflow.nodes.find((n) => n.id === node));
     const many = !!kind && takesMany(kind, row);
     return untied({ ...workflow, routes: [...routes.filter((r) => many || r.to !== edit.route.to), { ...edit.route }] });
   }
@@ -491,7 +525,7 @@ export function editWorkflow(
       const kept = Object.entries(node).filter(([key]) => !gone.has(key));
       return Object.fromEntries([...kept, ...set.filter(([, v]) => v !== '')]) as unknown as WorkflowNode;
     }
-    const kind = kinds[node.kind];
+    const kind = kindOfNode(kinds, node);
     const row = kind && rowOf(kind.rows, edit.row);
     // A comparison's value is typed by its field. TRAP T-a-value-is-typed-once
     const field = node.values?.[partName('field', partOf(edit.row).part)];
@@ -520,7 +554,7 @@ export function addCustomValue(
   const workflow = readWorkflow(given, kinds).workflow;
   const { node: id, row: name } = socketOf(to);
   const into = workflow?.nodes.find((n) => n.id === id);
-  const row = into && name !== undefined ? rowOf(kinds[into.kind]?.rows ?? [], name) : undefined;
+  const row = into && name !== undefined ? rowOf(kindOfNode(kinds, into)?.rows ?? [], name) : undefined;
   if (!workflow || !into || !row || row.input !== 'value' || row.many || rowChoices(row) === undefined) return workflow ?? (given as WorkflowDefinition);
   const free = (n: number): string => (workflow.nodes.some((x) => x.id === `value-${n}`) ? free(n + 1) : `value-${n}`);
   const own = into.values?.[name!];

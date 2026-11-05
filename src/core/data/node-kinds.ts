@@ -12,7 +12,13 @@
  * - RowControl — The control a row draws: text, a number, a switch, or the list a picklist reads.
  * - RowKind — One row a kind draws: its name, its label, its control and its sockets.
  * - NodeGraph — Where a kind is drawn: a page's Query, or a workflow.
+ * - NodeType — One type of a family kind: its words, its hint and what it adds to the kind's rows and sockets.
  * - NodeKind — What a node IS: its header, its sockets, its rows, and what it stands for in the data layer.
+ * - typeOf — The type of a family kind a node's `type` names: its own, else the kind's default.
+ * - typeChoices — The types of a family kind as a picklist reads them; none, it is no family.
+ * - resolveKind — A family kind as an ordinary kind for one type: the type row first, then the kind's rows and the type's.
+ * - kindOfNode — The kind a node is, resolved for its own type; none, no such kind.
+ * - rowOfOtherType — A row a family kind has under another type than this one: it, and the types that hold it.
  * - ROWS — The Rows row: the data rows a node sends on. They come in on its header.
  * - NODE_KINDS — Every kind the library ships, once. An app adds its own beside them.
  * - NODE_CATEGORIES — The node panel's categories, in order.
@@ -35,7 +41,7 @@
  * - NodeTie — One zip tie: a place, and the routes it funnels, in order. It changes no data.
  * - RowChoice — One pick in a row's list: the value it keeps, and its words.
  * - RowFacts — What a row's list is read from that the registry does not say.
- * - rowChoices — The list a picklist row reads; none, it is no picklist.
+ * - rowChoices — The list a picklist row reads, a Type row's the family's types; none, it is no picklist.
  * - fixedChoices — A fixed list, the same on every page; none, the list is open or the control is no picklist.
  * - mirrored — What a picklist row shows while routes drive it: what comes in, read only, each pick marked Custom.
  * - drivenSwitch — What a switch row shows while a boolean route drives it: True if any came in True, marked Custom.
@@ -77,7 +83,7 @@ export function truthy(value: unknown): boolean {
 
 /** The control a row draws: text, a number or a switch; else the list a picklist reads — the
  *  fields, operators, the field's values, units, directions, presentations, Apply on, stores,
- *  scopes, joins or value types (`rowChoices`). */
+ *  scopes, joins or a family's types (`rowChoices`). */
 export type RowControl =
   | 'text' | 'number' | 'switch'
   | 'field' | 'op' | 'values' | 'unit' | 'direction' | 'presentation' | 'apply' | 'store' | 'scope' | 'join' | 'type';
@@ -105,6 +111,19 @@ export interface RowKind {
 /** Where a kind is drawn: a page's Query, or a workflow. */
 export type NodeGraph = 'query' | 'workflow';
 
+/** One type of a family kind (plan 749): the hint under its select, and what it adds to the kind's own rows and sockets. */
+export interface NodeType {
+  label: string;
+  help?: string;
+  /** Its rows, after the kind's own. */
+  rows?: readonly RowKind[];
+  /** Its sockets, where they differ from the kind's. */
+  input?: SocketType;
+  many?: true;
+  output?: SocketType;
+  branches?: boolean;
+}
+
 /** What a node IS: its header, its sockets, its rows, and what it stands for in the data layer. */
 export interface NodeKind {
   heading: string;
@@ -125,6 +144,13 @@ export interface NodeKind {
   graphs: readonly NodeGraph[];
   /** The node panel's category, one of `NODE_CATEGORIES` or an app's own; a workflow kind has one. */
   category?: string;
+  /** A FAMILY: one node, and its first row picks the type, kept as the node's `type` value. Its rows and sockets
+   *  follow the type (`resolveKind`). With one type there is no row. Plan 749 */
+  types?: Readonly<Record<string, NodeType>>;
+  /** That first row's label: "Operation", "Type". */
+  typeLabel?: string;
+  /** The type a node with none shows; else the first. */
+  defaultType?: string;
 }
 
 /** The Rows row: the data rows a node sends on, an object. They come in on its header (D1);
@@ -209,8 +235,9 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   component: { heading: 'Component', icon: 'table-columns', input: 'any', rows: [], model: 'bindSource', graphs: ['query'] },
   // A workflow: each kind over the data-layer function it runs by.
   value: {
-    heading: 'Value', icon: 'function', description: 'One value, typed.', branches: true,
-    rows: [{ name: 'value', label: 'Value', control: 'text', output: 'value' }, { name: 'type', label: 'Type', control: 'type' }], model: 'typedValue', graphs: ['workflow'], category: 'Variables',
+    heading: 'Value', icon: 'function', description: 'One value, typed.', branches: true, typeLabel: 'Type', defaultType: 'text',
+    types: { text: { label: 'Text' }, number: { label: 'Number' }, date: { label: 'Date' }, boolean: { label: 'True/false' } },
+    rows: [{ name: 'value', label: 'Value', control: 'text', output: 'value' }], model: 'typedValue', graphs: ['workflow'], category: 'Variables',
   },
   pick: {
     heading: 'Pick', icon: 'price-tag', description: 'One field of the input.', input: 'any', branches: true,
@@ -237,6 +264,48 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     heading: 'Output', icon: 'flag', description: 'Where the flow ends.', input: 'any', rows: [], model: 'LoadResult', graphs: ['workflow'], category: 'Output',
   },
 };
+
+/** The type of a family kind a node's `type` value names: that one, else the kind's default or first. */
+export function typeOf(kind: Pick<NodeKind, 'types' | 'defaultType'>, type?: unknown): { id: string; type: NodeType } | undefined {
+  const types = kind.types ?? {};
+  const id = typeof type === 'string' && Object.hasOwn(types, type) ? type : kind.defaultType ?? Object.keys(types)[0];
+  return id !== undefined && types[id] ? { id, type: types[id]! } : undefined;
+}
+
+/** The types of a family kind as a picklist reads them; none, it is no family. */
+export function typeChoices(kind: Pick<NodeKind, 'types'>): RowChoice[] | undefined {
+  return kind.types && Object.entries(kind.types).map(([value, t]) => ({ value, label: t.label }));
+}
+
+/** A family kind as an ordinary kind for one type, so a reader learns nothing of types: the type
+ *  row first (none for a kind of one type), then the kind's rows and the type's; the type's sockets
+ *  over the kind's. A kind with no types is as it is. */
+export function resolveKind(kind: NodeKind, type?: unknown): NodeKind;
+export function resolveKind(kind: NodeKind | undefined, type?: unknown): NodeKind | undefined;
+export function resolveKind(kind: NodeKind | undefined, type?: unknown): NodeKind | undefined {
+  const at = kind && typeOf(kind, type);
+  if (!kind || !at) return kind;
+  const { types, typeLabel, defaultType: _default, branches: forks, ...plain } = kind;
+  const { input, many, output, branches = forks } = at.type;
+  const row: RowKind = { name: 'type', label: typeLabel ?? 'Type', control: 'type' };
+  return {
+    ...plain, ...(input ? { input } : {}), ...(many ? { many } : {}), ...(output ? { output } : {}),
+    ...(branches ? { branches: true as const } : {}),
+    rows: [...(Object.keys(types!).length > 1 ? [row] : []), ...kind.rows, ...(at.type.rows ?? [])],
+  };
+}
+
+/** The kind a node is, resolved for its own type: the registry's `kind`, or the node's `type` row. */
+export function kindOfNode(kinds: Readonly<Record<string, NodeKind>>, node: { kind: string; values?: Readonly<Record<string, unknown>> } | undefined): NodeKind | undefined {
+  return node && resolveKind(kinds[node.kind], node.values?.['type']);
+}
+
+/** A row a family kind has under another type than this node's: the row, and the labels of the types that hold it. */
+export function rowOfOtherType(kind: NodeKind, type: unknown, row: string): { row: RowKind; types: string[] } | undefined {
+  const now = typeOf(kind, type)?.id;
+  const held = Object.entries(kind.types ?? {}).flatMap(([id, t]) => (id !== now && rowOf(t.rows ?? [], row) ? [{ row: rowOf(t.rows ?? [], row)!, label: t.label }] : []));
+  return held[0] ? { row: held[0].row, types: held.map((h) => h.label) } : undefined;
+}
 
 /** The node panel's categories, in order, after Figma's (plan 713 §9.1). Each is empty until a kind
  *  names it; `Custom Nodes` (D9) stays empty until saved nodes come (M9, M12). */
@@ -274,10 +343,11 @@ export function paletteOf(kinds: Readonly<Record<string, NodeKind>>, graph: Node
   return [...groups].filter(([c, items]) => items.length || (graph === 'workflow' && c === 'Custom Nodes')).sort(([a], [b]) => Number(!known.has(a)) - Number(!known.has(b))).map(([category, items]) => ({ category, items }));
 }
 
-/** Where a new node of a kind joins a socket of a type: on the dragged OUTPUT's side, its header
+/** Where a new node of a kind (a family, as its default type) joins a socket of a type: on the dragged OUTPUT's side, its header
  *  or row INPUT that takes the type; on a dragged INPUT's, its header or row OUTPUT the input takes.
  *  `{}` the header, `{ row }` a row; none, it does not fit. */
-export function fitOf(kind: NodeKind, type: SocketType, side: 'out' | 'in'): { row?: string } | undefined {
+export function fitOf(family: NodeKind, type: SocketType, side: 'out' | 'in'): { row?: string } | undefined {
+  const kind = resolveKind(family);
   const key = side === 'out' ? 'input' : 'output';
   const fits = (t: SocketType | undefined): boolean => !!t && (side === 'out' ? accepts(type, t) : accepts(t, type));
   if (fits(kind[key])) return {};
@@ -395,6 +465,8 @@ export interface RowFacts {
   /** The stores, by the names the app registered them under. */
   stores?: readonly string[];
   scopes?: readonly string[];
+  /** The types of the row's family kind: what a Type row picks (`typeChoices`). */
+  types?: readonly RowChoice[];
 }
 
 const UNITS: readonly Duration['unit'][] = ['day', 'week', 'month', 'year'];
@@ -406,7 +478,6 @@ const FIXED: Partial<Record<RowControl, readonly RowChoice[]>> = {
   presentation: [{ value: '', label: 'Default' }, ...PRESENTATION_KINDS.map((k) => ({ value: k, label: k[0]!.toUpperCase() + k.slice(1) }))],
   apply: [{ value: 'change', label: 'Change' }, { value: 'input', label: 'Input' }],
   join: [{ value: 'and', label: 'All of' }, { value: 'or', label: 'Any of' }],
-  type: [{ value: 'text', label: 'Text' }, { value: 'number', label: 'Number' }, { value: 'date', label: 'Date' }, { value: 'boolean', label: 'True/false' }],
 };
 
 /** The list a picklist row reads, for one pick or several (`multiple`); none, it is no picklist.
@@ -415,6 +486,7 @@ const FIXED: Partial<Record<RowControl, readonly RowChoice[]>> = {
 export function rowChoices(row: Pick<RowKind, 'control'> & { value?: unknown }, facts: RowFacts = {}): RowChoice[] | undefined {
   const fixed = row.control && FIXED[row.control];
   if (fixed) return [...fixed];
+  if (row.control === 'type') return facts.types && [...facts.types];
   const named = (list: readonly string[] = []): RowChoice[] => list.map((v) => ({ value: v, label: v }));
   const type = facts.type ?? 'text';
   const labels: Partial<Record<FilterOp, string>> = type === 'date' ? { ...OP_LABELS, ...DATE_OP_LABELS } : OP_LABELS;
@@ -431,8 +503,7 @@ export function rowChoices(row: Pick<RowKind, 'control'> & { value?: unknown }, 
   return [...open, ...named(own.filter((v) => !open.some((c) => c.value === v)))];
 }
 
-/** A fixed list, the same on every page — directions, units, Apply on, joins, presentations,
- *  value types; none, a control whose list is open or that is no picklist. */
+/** A fixed list, the same on every page — directions, units, Apply on, joins, presentations; none, a control whose list is open or that is no picklist. */
 export function fixedChoices(control: RowControl | undefined): readonly RowChoice[] | undefined {
   return control ? FIXED[control] : undefined;
 }
@@ -500,6 +571,8 @@ export interface GraphNode {
 export interface DrawnGraph {
   nodes: readonly GraphNode[];
   routes: readonly NodeRoute[];
+  /** Routes into or out of a row its node's type no longer has: kept, drawn greyed, with why. Plan 749 */
+  stale?: readonly (NodeRoute & { fault: string })[];
   ties?: readonly NodeTie[];
 }
 

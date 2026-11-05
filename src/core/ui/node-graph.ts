@@ -377,8 +377,10 @@ function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
   const same = (a: NodeRoute | null, b: NodeRoute): boolean => !!a && a.from === b.from && a.to === b.to;
   const lanes: Drawn['lanes'] = [];
   const paths = drawn.routes.flatMap((route) => {
-    const a = socketAt(drawn, route.from, 'output');
-    const b = socketAt(drawn, route.to, 'input');
+    // A route to a row its node's type lacks runs to the node's edge, greyed, with its fault.
+    const stale = drawn.graph.stale?.find((r) => same(r, route));
+    const a = socketAt(drawn, route.from, 'output') ?? (stale ? edgeAt(drawn, route.from, 'output') : null);
+    const b = socketAt(drawn, route.to, 'input') ?? (stale ? edgeAt(drawn, route.to, 'input') : null);
     if (!a || !b || same(drawn.lifted, route)) return [];
     const [from, to] = [onPlane(canvas, a), onPlane(canvas, b)];
     // The ties it passes and the bend points it holds, left to right: a flat piece to each.
@@ -396,6 +398,7 @@ function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
     path.dataset['type'] = outputType(drawn.graph, route.from);
     path.dataset['from'] = route.from;
     path.dataset['to'] = route.to;
+    if (stale) path.setAttribute('data-stale', '');
     if (drawn.picked.some((r) => same(r, route))) path.setAttribute('data-selected', '');
     // The line a click lands on: wide, unseen, and the only part of the lines that takes the pointer.
     const hit = document.createElementNS(SVG, 'polyline');
@@ -413,6 +416,7 @@ function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
     const mine = drawn.handle && same(drawn.handle.route, route) ? drawn.handle : null;
     if (mine || drawn.picked.some((r) => same(r, route))) group.setAttribute('data-active', '');
     group.append(path, hit, ...handleMarks(way, handlesOf(from, to, way), mine));
+    if (stale) group.prepend(Object.assign(document.createElementNS(SVG, 'title'), { textContent: stale.fault }));
     return [group];
   });
   drawn.lanes = lanes;
@@ -432,6 +436,12 @@ function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
     return bar;
   });
   drawn.lines.replaceChildren(...paths, ...bars, ...(drawn.selectedTie ? [shadowFilter(drawn.shadow)] : []), ...(drawn.draft ? [drawn.draft] : []));
+}
+
+/** A node's edge on one side, near its header, as a point: where a route to a row it lacks ends. */
+function edgeAt(drawn: Drawn, address: string, side: SocketSide): DOMRect | null {
+  const box = drawn.nodes.get(socketOf(address).node)?.getBoundingClientRect();
+  return box ? new DOMRect(side === 'output' ? box.right : box.left, box.top + 20, 0, 0) : null;
 }
 
 /** A socket's box on the screen: a node's or a row's, on one side; a False is its footer's. */
@@ -1246,6 +1256,13 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
       ? [button('Custom value', () => options.onCustom!(row))] : [];
     return [field, ...cuts, ...custom];
   });
+  // A route kept to a row the node's type lacks: its fault, read only, and the cut.
+  const kept = (graph.stale ?? []).filter((r) => socketOf(r.from).node === node.id || socketOf(r.to).node === node.id).flatMap((r) => {
+    const row: GraphRow = { name: '#kept', label: 'Kept route', control: 'text', value: `${name(r.from)} → ${name(r.to)}`, editable: false };
+    const field = fieldFor(row, true);
+    fill(field, row, r.fault);
+    return [field, ...(options.onCut ? [button(`Cut route from ${name(r.from)}`, () => options.onCut!(r))] : [])];
+  });
   // The whole node's routes: in, and out — its True and False where it forks.
   const header = document.createElement('sherpa-key-value-list');
   header.setAttribute('data-orientation', 'vertical');
@@ -1258,7 +1275,7 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   stack.setAttribute('data-gap', 'lg');
   const remove = options.onRemove ? [button('Remove node', options.onRemove, 'Remove this node and its routes. Keyboard: Backspace or Delete.')] : [];
   const flow = nodeFlow(graph, node.id);
-  stack.append(...(options.extra ?? []), ...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...('fault' in flow ? [] : [flowPane(flow)]), ...remove);
+  stack.append(...(options.extra ?? []), ...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...kept, ...('fault' in flow ? [] : [flowPane(flow)]), ...remove);
   const { tabs } = options;
   if (tabs) {
     const strip = document.createElement('sherpa-tabs') as HTMLElement & { populate(items: unknown): void };
