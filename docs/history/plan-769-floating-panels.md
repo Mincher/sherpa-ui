@@ -73,11 +73,13 @@ details and both inspectors are `data-floatable`; `app/panel-float.js` keeps eac
 - **769b — the filter column floats.** It is a `sherpa-quick-filter-toolbar` in the START area,
   with no container header. The short way: let an overlay panel pop into either area
   (`data-fixed="start"`), and wrap the column in one; it then floats by this same code.
-- **769c — the Nodes card floats on the canvas.** `sherpa-node-panel` takes `data-floatable`,
-  a Float button in its header's `actions`, and `dragXY` with the CANVAS as its bounds (its
-  clamp is `100%` of the canvas, not the window). The canvas mirrors a floating card as no
-  `has-panel`, so the banners, the toolbar and the minimap take the full width. To keep one
-  implementation, the grip, the corner and the clamp move from the overlay panel's sheet to a
-  shared one (`sherpa-float.css`), picked by class.
+- **769c — the Nodes card floats on the canvas. Built** (2026-11-05, with 786 and 784).
+  `sherpa-node-panel` takes `data-floatable`, `data-floating` and the box, the same Float /
+  Dock button, grip and corner, and the same events. The SAME code: `src/core/ui/float-box.ts`
+  (draw, lift, and the bar and corner by `dragXY`) and `src/core/sherpa-float.css` (the clamp,
+  the grip, the corner, picked by class), which the overlay panel now uses too. Its room is its
+  canvas: floating, the canvas gives its `panel` slot the whole canvas and drops `has-panel`,
+  so the banners, the toolbar and the minimap take their room back. The first float lifts in
+  place, its shadow up a step; its floor is 16rem by 12rem.
 - **Raise on press.** Two floating panels draw in page order; a press does not bring one to the
   front yet.

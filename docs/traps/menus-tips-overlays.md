@@ -196,12 +196,35 @@ Float goes while it is maximised.
 - **A release outside the window is lost in Firefox** (Playwright's, at least):
   a move with no button held ends the drag where it got to, so the handle is
   never left held.
+- **The node panel floats by the SAME code** (769c): `float-box.ts` draws the box
+  from the four attributes, lifts it, and wires the bar and the corner by
+  `dragXY`; `sherpa-float.css` (a family sheet, picked by `.sherpa-float`, `-bar`,
+  `-grip` and `-corner`) owns the clamp, the grip and the corner. Each component
+  keeps its own events and says where its box sits: fixed in the window, or
+  absolute in its canvas. `--_float-*` are written on the BOX, never the host, so
+  a canvas watching its children's `style` hears nothing of a drag.
+- **Its room is its CANVAS.** Floating, the canvas gives its `panel` slot the whole
+  canvas, over everything floating on it, and takes the slotted host's clicks
+  away (`pointer-events: none`: the canvas's `::slotted` rule beats the card's own
+  `:host`), so a press beside the card reaches the view; the card takes its own
+  back. The canvas hears `data-floating` by its MutationObserver, as a host may
+  set it with no event, and drops `has-panel`: the banners, the toolbar and the
+  minimap take their room back. The first float lifts it in place (it is already a
+  card 32px in), its shadow up a step; its floor is 16rem by 12rem, under the 18rem
+  it docks at, so the lift never jumps.
 
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.html`
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
 - Site: `src/core/ui/drag-xy.ts`
+- Site: `src/core/ui/float-box.ts`
+- Site: `src/core/sherpa-float.css`
+- Site: `src/components/sherpa-node-panel/sherpa-node-panel.ts`
+- Site: `src/components/sherpa-node-panel/sherpa-node-panel.html`
+- Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts`
+- Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.css`
 - Site: `test/e2e/reforged-overlay-panel-float.spec.ts`
+- Site: `test/e2e/reforged-node-panel-float.spec.ts`
 
 ### T-a-tree-rule-beats-slotted
 

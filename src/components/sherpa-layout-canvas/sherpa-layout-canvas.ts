@@ -91,8 +91,7 @@ export class SherpaLayoutCanvas extends SherpaElement {
     }
     this.$('slot:not([name])')?.addEventListener('slotchange', () => this.#drawMinimap());
     // A card in the `panel` slot takes the bottom left: the minimap moves out from under it.
-    const panel = this.$<HTMLSlotElement>('slot[name="panel"]');
-    panel?.addEventListener('slotchange', () => this.toggleState('has-panel', panel.assignedElements().length > 0));
+    this.$('slot[name="panel"]')?.addEventListener('slotchange', () => this.#syncPanel());
     this.#zoom = this.#clamp(coerceNum(this.dataset['zoom'], 1));
     this.#apply(false);
   }
@@ -108,11 +107,12 @@ export class SherpaLayoutCanvas extends SherpaElement {
       if (this.#drag?.box && this.hasState('boxing')) this.$('.viewport')?.setAttribute('data-mode', this.#drag.mode = boxMode(event as KeyboardEvent));
     });
     this.on(window, 'blur', () => this.#onSpace(null, false));
-    // A piece says where it sits in its own style; the canvas writes only its own.
+    // A piece says where it sits in its own style; the canvas writes only its own. Its card says it floats.
     this.#moves = new MutationObserver((records) => {
-      if (records.some((r) => r.target.parentElement === this)) this.#drawMinimap();
+      if (records.some((r) => r.attributeName === 'data-floating')) this.#syncPanel();
+      if (records.some((r) => r.attributeName === 'style' && r.target.parentElement === this)) this.#drawMinimap();
     });
-    this.#moves.observe(this, { attributes: true, attributeFilter: ['style'], subtree: true });
+    this.#moves.observe(this, { attributes: true, attributeFilter: ['style', 'data-floating'], subtree: true });
   }
 
   override onDisconnect(): void {
@@ -129,6 +129,15 @@ export class SherpaLayoutCanvas extends SherpaElement {
     } else if (name === 'data-no-minimap') {
       this.#drawMinimap();
     }
+  }
+
+  /** Its card, docked, takes the left, and what yields to it moves over; floating, it is given the whole
+   *  canvas to move in, and the rest takes its room back. TRAP T-a-floating-panel-is-a-state */
+  #syncPanel(): void {
+    const card = this.$<HTMLSlotElement>('slot[name="panel"]')?.assignedElements()[0];
+    const floating = !!card?.hasAttribute('data-floating');
+    this.toggleState('has-panel', !!card && !floating);
+    this.toggleState('panel-floating', floating);
   }
 
   /** The view now: the plane origin's place in it, and the zoom. */

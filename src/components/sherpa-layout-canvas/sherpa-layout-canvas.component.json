@@ -276,7 +276,7 @@
       "accepts": [
         "panel"
       ],
-      "description": "a card FLOATING on the canvas, 32px from its top, bottom and left edges: it does not pan or zoom (a node panel)"
+      "description": "a card FLOATING on the canvas, 32px from its top, bottom and left edges: it does not pan or zoom (a node panel)."
     },
     {
       "$type": "slot",

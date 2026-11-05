@@ -108,6 +108,16 @@
   pointer-events: auto;
   block-size: 100%;
 }
+/* A FLOATING card is given the whole canvas to move in, over everything floating on it;
+   its clicks pass through to the view but on the card itself. What yielded to it takes its
+   room back. TRAP T-a-floating-panel-is-a-state */
+:host(:state(panel-floating)) .floating {
+  inset: 0;
+  inline-size: auto;
+  max-inline-size: none;
+  z-index: 2;
+}
+:host(:state(panel-floating)) ::slotted([slot="panel"]) { pointer-events: none; }
 
 /* ── The toolbar ──────────────────────────────────────────────────────── */
 /* Tools floating off the bottom edge, centred: 32px up, as a card floats 32px in. */

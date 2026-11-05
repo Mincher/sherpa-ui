@@ -74,7 +74,7 @@ test('it floats on the canvas, 32px from the top, bottom and left', async ({ pag
 
 test('it lists each category with its families, ten, never a Query-only one; "cou" shows only Collection, by its Count', async ({ page }) => {
   await bind(page);
-  const heads = await page.locator('sherpa-node-panel sherpa-accordion').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
+  const heads = await page.locator('sherpa-node-panel .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
   expect(heads).toEqual(['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Collections', 'Utils', 'Output']);
   const names = () => page.locator('sherpa-node-panel sherpa-list-item:visible').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
   expect(await names()).toEqual(['Store', 'Value', 'Pick', 'Math', 'Condition', 'Time', 'Collection', 'Text', 'Tag', 'Output']);
@@ -83,7 +83,7 @@ test('it lists each category with its families, ten, never a Query-only one; "co
   await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('cou');
   expect(await names()).toEqual(['Collection']);
   expect(await item(page, 'collection').getAttribute('data-description')).toBe('Count: How many rows');
-  expect(await page.locator('sherpa-node-panel sherpa-accordion:visible').count()).toBe(1);
+  expect(await page.locator('sherpa-node-panel .category-heading:visible').count()).toBe(1);
   await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('zzz');
   expect(await names()).toEqual([]);
   await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('');

@@ -111,12 +111,6 @@ What each class's base rule reads:
 | `--sherpa-border-rounding-bottom-left` | `.root` | `border-end-start-radius` |
 | `--sherpa-style-content-base` | `.root` | `color` |
 | `--sherpa-shadow-lg` | `.root` | `box-shadow` |
-| `--sherpa-display-mode-size-sm` | `.grip` | `inline-size` |
-| `--sherpa-display-mode-size-sm` | `.grip` | `block-size` |
-| `--sherpa-style-content-secondary` | `.grip` | `color` |
-| `--sherpa-display-mode-size-sm` | `.corner` | `inline-size` |
-| `--sherpa-display-mode-size-sm` | `.corner` | `block-size` |
-| `--sherpa-style-content-secondary` | `.corner` | `color` |
 | `--sherpa-theme-gap-sm` | `.toolbar` | `gap` |
 | `--sherpa-display-mode-border-width-base` | `.divider` | `inline-size` |
 | `--sherpa-theme-content-size-xs` | `.divider` | `block-size` |

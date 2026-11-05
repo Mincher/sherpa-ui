@@ -157,8 +157,10 @@ Visibility is a host attribute that CSS selects (PRINCIPLES 16):
   `.sherpa-anchor-point`) and `sherpa-motion.css`. A family sheet is listed first in a
   component's `static css`: in `src/core/`, `sherpa-chart-frame.css`, then
   `sherpa-chart-axes.css` or `sherpa-chart-segments.css`;
-  `sherpa-container-regions.css`; and
-  `sherpa-checkbox-look.css`, the Checkbox's box as `.sherpa-checkbox`.
+  `sherpa-container-regions.css`;
+  `sherpa-checkbox-look.css`, the Checkbox's box as `.sherpa-checkbox`; and
+  `sherpa-float.css`, a floating box as `.sherpa-float` (its bar, grip and corner
+  too), with `float-box.ts` for its JS: the overlay panel and the node panel.
 
 ## Events
 

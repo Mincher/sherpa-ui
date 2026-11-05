@@ -60,8 +60,8 @@ const bind = (page: Page) => page.evaluate(async () => {
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 const ed = <T>(page: Page, fn: string) => page.evaluate(`(() => { const ed = window.ed; return ${fn}; })()`) as Promise<T>;
 /** What the panel lists: each item's kind, by its category. */
-const offered = (page: Page) => page.evaluate(() => Object.fromEntries([...document.querySelector('#cv sherpa-node-panel')!.shadowRoot!.querySelectorAll('sherpa-accordion')]
-  .map((a) => [a.getAttribute('data-heading') ?? a.getAttribute('data-label'), [...a.querySelectorAll<HTMLElement>('sherpa-list-item[data-kind]')].map((i) => i.dataset['kind'])])));
+const offered = (page: Page) => page.evaluate(() => Object.fromEntries([...document.querySelector('#cv sherpa-node-panel')!.shadowRoot!.querySelectorAll('.categories > .category')]
+  .map((a) => [a.querySelector('.category-heading')?.getAttribute('data-heading'), [...a.querySelectorAll<HTMLElement>('sherpa-list-item[data-kind]')].map((i) => i.dataset['kind'])])));
 const header = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"] >> .header[role="button"]`);
 const caption = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"]`).first().getAttribute('data-caption');
 const press = (loc: import('@playwright/test').Locator) => loc.evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());

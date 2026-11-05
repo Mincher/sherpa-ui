@@ -1,6 +1,7 @@
 /**
- * sherpa-node-panel.css — a card of nodes, filling the space its canvas gives it.
- * Its search and categories are the library's own parts; this sheet lays them out.
+ * sherpa-node-panel.css — a card of nodes, filling the space its canvas gives it, or floating
+ * in it (sherpa-float.css draws that box). Its search, headings and items are the library's
+ * own parts; this sheet lays them out. TRAP T-a-node-panel-lists-under-sticky-headings
  */
 
 :host {
@@ -11,11 +12,26 @@
   /* The canvas's floating box takes its clicks away; the card takes them back. */
   pointer-events: auto;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
+  /* Floating, never smaller than this: room for Jump to, the search and a few nodes. */
+  --_float-min-width: 16rem;
+  --_float-min-height: 12rem;
+  /* A category heading's height: a tag's heading lands just under it. */
+  --_head: 2.25rem;
 }
+
+/* Docked, the box fills its place; floating, it is placed in the canvas, which gives
+   this host all its room and takes its clicks back (sherpa-layout-canvas). */
+.box {
+  position: relative;
+  block-size: 100%;
+  pointer-events: auto;
+}
+:host(:state(floating)) .box { position: absolute; }
 
 .card {
   block-size: 100%;
-  overflow: hidden;
+  /* Clipped, not hidden: a jump's scroll moves only the list, never the card. */
+  overflow: clip;
 }
 
 .content {
@@ -25,10 +41,29 @@
   block-size: 100%;
 }
 
+/* The header's own controls: the grip and Float, only where floating is offered. */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-theme-gap-sm, 4px);
+}
+:host(:not([data-floatable])) .float { display: none; }
+
+/* Jump to, then the search, on one row. */
 .search {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-theme-gap-sm, 4px);
   padding: var(--sherpa-theme-padding-md, 8px);
 }
+.jump { flex: none; }
+.find {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
 
+/* ONE scrolling list: each category's heading sticks at its top while that category's
+   items pass under it, and the next category's pushes it on. */
 .categories {
   flex: 1 1 auto;
   min-block-size: 0;
@@ -38,10 +73,32 @@
   gap: var(--sherpa-theme-padding-sm, 4px);
   padding: 0 var(--sherpa-theme-padding-md, 8px) var(--sherpa-theme-padding-md, 8px);
 }
+.category-heading {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+  padding-block-start: var(--sherpa-theme-padding-sm, 4px);
+  /* The card's own surface: what scrolls under it does not show through. */
+  background: var(--sherpa-style-surface-base, #ffffff);
+}
+/* A jump lands a tag's heading just under its category's, which sticks over it. */
+.tag { scroll-margin-block-start: var(--_head); }
+.tag-heading {
+  padding-block-start: var(--sherpa-theme-padding-sm, 4px);
+  padding-inline-start: var(--sherpa-theme-padding-md, 8px);
+}
+/* A jump moves focus to the heading it scrolled to, so the next Tab is its first item. */
+.category-heading:focus-visible,
+.tag-heading:focus-visible {
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
+}
 
-/* A search hides what it does not match. JS writes the attribute; CSS hides. */
+/* A search hides what it does not match, and a heading with nothing under it. JS
+   writes the attribute; CSS hides. */
 sherpa-list-item[data-filtered],
-sherpa-accordion[data-filtered] {
+.category[data-filtered],
+.tag[data-filtered] {
   display: none;
 }
 
@@ -58,7 +115,7 @@ sherpa-list-item {
   color: var(--sherpa-style-content-base-1, #35353d);
   font-size: var(--sherpa-font-size-body-sm, 12px);
 }
-sherpa-accordion[data-empty] .empty {
+.category[data-empty] .empty {
   display: block;
 }
 
@@ -79,7 +136,7 @@ sherpa-accordion[data-empty] .empty {
   inset-block-start: 0;
   inset-inline-start: 0;
   transform: translate(var(--_x, 0px), var(--_y, 0px));
-  z-index: 1;
+  z-index: 2;
   pointer-events: none;
   padding: var(--sherpa-theme-padding-sm, 4px) var(--sherpa-theme-padding-md, 8px);
   background: var(--sherpa-style-surface-base, #ffffff);
@@ -95,7 +152,7 @@ sherpa-accordion[data-empty] .empty {
   cursor: grabbing;
 }
 
-/* "Add a node" opens at a point. */
+/* "Add a node" opens at a point. It takes its clicks while the host gives its own away. */
 .anchor {
   position: absolute;
   inset-block-start: 0;
@@ -105,6 +162,7 @@ sherpa-accordion[data-empty] .empty {
   transform: translate(var(--_ax, 0px), var(--_ay, 0px));
   pointer-events: none;
 }
+.add { pointer-events: auto; }
 
 @media (forced-colors: active) {
   .ghost {

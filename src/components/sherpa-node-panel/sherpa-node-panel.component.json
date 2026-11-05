@@ -3,14 +3,10 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-node-panel",
-  "$description": "the nodes a graph editor may place, by category: a search, then each category an accordion of items, one per family. A card (sherpa-container) floating on a canvas. Will, plan 713 M8, plan 749 P3. TRAP T-the-node-panel-asks-it-places",
+  "$description": "the nodes a graph editor may place, by category: a Jump to chip and a search, then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. A card (sherpa-container) on a canvas, docked or floating. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786. TRAP T-the-node-panel-asks-it-places",
   "element": {
     "$type": "element",
-    "tag": "sherpa-container",
-    "attributes": {
-      "data-elevation": "md",
-      "data-padding": "none"
-    },
+    "tag": "div",
     "provides": []
   },
   "templates": [
@@ -19,63 +15,138 @@
   "anatomy": {
     "roots": [
       {
-        "el": "sherpa-container",
-        "class": "card",
-        "part": "card",
-        "attrs": {
-          "data-elevation": "md",
-          "data-padding": "none"
-        },
+        "el": "div",
+        "class": "box sherpa-float",
+        "part": "box",
         "children": [
           {
-            "el": "sherpa-container-header",
-            "class": "heading",
-            "part": "heading",
+            "el": "sherpa-container",
+            "class": "card",
+            "part": "card",
             "attrs": {
-              "slot": "header",
-              "data-heading": "Nodes"
-            }
-          },
-          {
-            "el": "div",
-            "class": "content",
-            "part": "content",
+              "data-elevation": "md",
+              "data-padding": "none",
+              "data-when-data-elevation": "data-floating: lg"
+            },
             "children": [
               {
-                "el": "div",
-                "class": "search",
-                "part": "search",
+                "el": "sherpa-container-header",
+                "class": "heading sherpa-float-bar",
+                "part": "heading",
+                "attrs": {
+                  "slot": "header",
+                  "data-heading": "Nodes"
+                },
                 "children": [
                   {
-                    "el": "sherpa-input-text",
-                    "class": "find",
-                    "part": "find",
+                    "el": "span",
+                    "class": "toolbar",
+                    "part": "toolbar",
                     "attrs": {
-                      "data-type": "minimal",
-                      "data-icon-start": "magnifying-glass",
-                      "placeholder": "Search nodes",
-                      "aria-label": "Search nodes",
-                      "autocomplete": "off"
-                    }
+                      "slot": "actions"
+                    },
+                    "children": [
+                      {
+                        "el": "span",
+                        "class": "grip sherpa-float-grip sherpa-icon-box",
+                        "part": "grip",
+                        "attrs": {
+                          "data-icon": "drag-handle-vertical",
+                          "role": "button",
+                          "tabindex": "0",
+                          "aria-label": "Move panel",
+                          "title": "Drag the header to move it, or use the arrow keys"
+                        }
+                      },
+                      {
+                        "el": "sherpa-button",
+                        "class": "float",
+                        "part": "float",
+                        "attrs": {
+                          "data-type": "icon",
+                          "data-size": "sm",
+                          "data-icon-start": "browser",
+                          "aria-label": "Float",
+                          "data-when-data-icon-start": "data-floating: sidebar-flip",
+                          "data-when-aria-label": "data-floating: Dock"
+                        }
+                      }
+                    ]
                   }
                 ]
               },
               {
                 "el": "div",
-                "class": "categories",
-                "part": "categories"
-              },
-              {
-                "el": "p",
-                "class": "none",
-                "part": "none",
-                "attrs": {
-                  "role": "status",
-                  "aria-live": "polite",
-                  "data-word": "none"
-                }
+                "class": "content",
+                "part": "content",
+                "children": [
+                  {
+                    "el": "div",
+                    "class": "search",
+                    "part": "search",
+                    "children": [
+                      {
+                        "el": "sherpa-quick-filter",
+                        "class": "jump",
+                        "part": "jump",
+                        "attrs": {
+                          "data-type": "jump",
+                          "data-label": "Jump to",
+                          "data-icon-start": "list",
+                          "data-menu": ""
+                        },
+                        "children": [
+                          {
+                            "el": "sherpa-menu",
+                            "attrs": {
+                              "slot": "menu"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "el": "sherpa-input-text",
+                        "class": "find",
+                        "part": "find",
+                        "attrs": {
+                          "data-type": "minimal",
+                          "data-icon-start": "magnifying-glass",
+                          "placeholder": "Search nodes",
+                          "aria-label": "Search nodes",
+                          "autocomplete": "off"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "el": "div",
+                    "class": "categories",
+                    "part": "categories"
+                  },
+                  {
+                    "el": "p",
+                    "class": "none",
+                    "part": "none",
+                    "attrs": {
+                      "role": "status",
+                      "aria-live": "polite",
+                      "data-word": "none"
+                    }
+                  }
+                ]
               }
             ]
+          },
+          {
+            "el": "div",
+            "class": "corner sherpa-float-corner",
+            "part": "corner",
+            "attrs": {
+              "role": "button",
+              "tabindex": "0",
+              "aria-label": "Resize panel",
+              "title": "Drag to resize, or use the arrow keys"
+            }
           }
         ]
       },
@@ -107,12 +178,18 @@
         "class": "category-tpl",
         "children": [
           {
-            "el": "sherpa-accordion",
-            "attrs": {
-              "open": "",
-              "data-attr-data-heading": "category"
-            },
+            "el": "div",
+            "class": "category",
             "children": [
+              {
+                "el": "sherpa-section-header",
+                "class": "category-heading",
+                "attrs": {
+                  "data-size": "sm",
+                  "tabindex": "-1",
+                  "data-attr-data-heading": "category"
+                }
+              },
               {
                 "el": "sherpa-list",
                 "class": "items",
@@ -125,6 +202,35 @@
                 "class": "empty",
                 "attrs": {
                   "data-word": "empty"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "el": "template",
+        "class": "tag-tpl",
+        "children": [
+          {
+            "el": "div",
+            "class": "tag",
+            "children": [
+              {
+                "el": "sherpa-section-header",
+                "class": "tag-heading",
+                "attrs": {
+                  "data-size": "sm",
+                  "data-divider": "none",
+                  "tabindex": "-1",
+                  "data-attr-data-heading": "tag"
+                }
+              },
+              {
+                "el": "sherpa-list",
+                "class": "items",
+                "attrs": {
+                  "data-type": "plain"
                 }
               }
             ]
@@ -163,10 +269,78 @@
       }
     ]
   },
+  "props": [
+    {
+      "$type": "prop",
+      "name": "data-floatable",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "show the Float / Dock button in its header"
+    },
+    {
+      "$type": "prop",
+      "name": "data-floating",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "lifted off its place: anywhere in its canvas, moved by its header and resized by its corner. Removed, it docks back. TRAP T-a-floating-panel-is-a-state"
+    },
+    {
+      "$type": "prop",
+      "name": "data-height",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "how big it floats, in px, written at the end of each resize. Never under 16rem by 12rem nor past its canvas"
+    },
+    {
+      "$type": "prop",
+      "name": "data-width",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "how big it floats, in px, written at the end of each resize. Never under 16rem by 12rem nor past its canvas"
+    },
+    {
+      "$type": "prop",
+      "name": "data-x",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "where it floats, in px from its canvas's top left. The panel writes them at the end of each move; kept while docked, so it floats there again"
+    },
+    {
+      "$type": "prop",
+      "name": "data-y",
+      "type": "number",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "where it floats, in px from its canvas's top left. The panel writes them at the end of each move; kept while docked, so it floats there again"
+    }
+  ],
   "populate": {
     "shape": "paletteOf(kinds)",
     "description": "each category and its kinds."
   },
+  "states": [
+    {
+      "$type": "state",
+      "name": "not-floatable",
+      "selector": ":host(:not([data-floatable]))"
+    },
+    {
+      "$type": "state",
+      "name": "focus-visible",
+      "selector": ".category-heading:focus-visible"
+    }
+  ],
   "capabilities": [
     {
       "$type": "capability",
@@ -187,12 +361,50 @@
         "point": "{ x: number; y: number; }",
         "type": "string"
       }
+    },
+    {
+      "$type": "event",
+      "name": "panel-float",
+      "description": "The reader pressed Float or Dock.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "floating": "boolean"
+      }
+    },
+    {
+      "$type": "event",
+      "name": "panel-move",
+      "description": "Floating, its header was dragged, or its grip moved by the keys.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "x": "number",
+        "y": "number"
+      }
+    },
+    {
+      "$type": "event",
+      "name": "panel-resize",
+      "description": "Floating, its corner was dragged, or moved by the keys.",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "height": "number",
+        "width": "number"
+      }
     }
   ],
   "tokens": {
+    "toolbar.gap": "{sherpa.theme-gap-sm}",
+    "search.gap": "{sherpa.theme-gap-sm}",
     "search.padding": "{sherpa.theme-padding-md}",
     "categories.gap": "{sherpa.theme-padding-sm}",
     "categories.padding": "{sherpa.theme-padding-md}",
+    "category-heading.padding-block-start": "{sherpa.theme-padding-sm}",
+    "category-heading.background": "{sherpa.style-surface-base}",
+    "tag-heading.padding-block-start": "{sherpa.theme-padding-sm}",
+    "tag-heading.padding-inline-start": "{sherpa.theme-padding-md}",
     "empty.padding": "{sherpa.theme-padding-md}",
     "empty.color": "{sherpa.style-content-base-1}",
     "empty.font-size": "{sherpa.font-size-body-sm}",

@@ -10,7 +10,7 @@
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { DialogSurface } from '../../core/ui/disclosure.js';
 import { resizeByEdge } from '../../core/ui/edge-resize.js';
-import { dragXY, type XY } from '../../core/ui/drag-xy.js';
+import { FLOAT_ATTRS, FloatBox } from '../../core/ui/float-box.js';
 // Defined before the template stamps them.
 import '../sherpa-container-header/sherpa-container-header.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
@@ -30,17 +30,9 @@ function moveInto(parent: Node, node: ChildNode, before: ChildNode | null): void
   if (active instanceof HTMLElement) queueMicrotask(() => (active as HTMLElement).focus());
 }
 
-/** The floating box's attributes, and the custom property each draws. TRAP T-a-floating-panel-is-a-state */
-const BOX = [
-  ['data-x', '--_float-x'], ['data-y', '--_float-y'],
-  ['data-width', '--_float-width'], ['data-height', '--_float-height'],
-] as const;
-
-/** A press on one of these, in the header, is a press on it: it moves nothing. */
-const CONTROL = 'button, a[href], input, select, textarea, [role="button"], [role="menuitem"]';
-
 export class SherpaOverlayPanel extends SherpaElement {
-  static override css = new URL('./sherpa-overlay-panel.css', import.meta.url);
+  // The floating box's sheet, shared with the node panel. TRAP T-a-floating-panel-is-a-state
+  static override css = [new URL('../../core/sherpa-float.css', import.meta.url), new URL('./sherpa-overlay-panel.css', import.meta.url)];
   static override html = new URL('./sherpa-overlay-panel.html', import.meta.url);
   // Opened and shut from markup: `<sherpa-button commandfor="id" command="--show">`.
   static override commands = { '--show': 'show', '--hide': 'hide' };
@@ -99,8 +91,8 @@ export class SherpaOverlayPanel extends SherpaElement {
     this.$('.external')?.addEventListener('button-click', this.#onExternal);
     this.$('.pop')?.addEventListener('button-click', this.#onPop);
     this.$('.float')?.addEventListener('button-click', this.#onFloat);
-    this.#floatHandles();
-    this.#box();
+    this.#floatBox.wire(this.$('.header'), this.$('.grip'), this.$('.corner'));
+    this.#floatBox.draw();
     /* The LEFT edge: dragged, it moves as far as the pointer does, and
        ArrowLeft widens. TRAP T-an-overlay-panel-resizes-from-its-left-edge
        TRAP T-an-edge-resizes-its-box */
@@ -140,7 +132,7 @@ export class SherpaOverlayPanel extends SherpaElement {
     if (name === 'open') this.#surface.follow();
     else if (name === 'data-fixed') this.#place();
     else if (name === 'data-floating') this.#float();
-    else if (name.startsWith('data-') && BOX.some(([attr]) => attr === name)) this.#box();
+    else if (FLOAT_ATTRS.includes(name)) this.#floatBox.draw();
     else if (name !== 'data-maximised') this.#syncHeader();
   }
 
@@ -208,16 +200,24 @@ export class SherpaOverlayPanel extends SherpaElement {
     if (!floating && !this.#home && this.open) this.#takeTheEdge();
   }
 
+  /** Floating, in the window: its box, moved by the header bar and resized by the corner. TRAP T-a-floating-panel-is-a-state */
+  readonly #floatBox: FloatBox = new FloatBox({
+    el: this,
+    box: () => this.$<HTMLElement>('.root'),
+    room: () => ({ x: 0, y: 0, width: document.documentElement.clientWidth, height: document.documentElement.clientHeight }),
+    free: () => this.hasAttribute('data-floating') && !this.hasAttribute('data-maximised'),
+    set: (attr, value) => this.set(attr, value),
+    num: (attr) => this.num(attr, NaN),
+    toggleState: (name, on) => this.toggleState(name, on),
+    moved: (at) => this.emit('panel-move', at),
+    sized: (size) => this.emit('panel-resize', size),
+  });
+
   /** The first float lifts it where it is drawn, 16px in on each side; a kept box stands. */
   #lift(): void {
-    if (BOX.every(([attr]) => this.hasAttribute(attr))) return;
     const drawn = this.$<HTMLElement>('.root')?.getBoundingClientRect();
-    const b = drawn?.width ? drawn : this.#edgeBox();
     const inset = parseFloat(getComputedStyle(this).getPropertyValue('--sherpa-layout-grid-padding')) || 16;
-    const box = [b.x + inset, b.y + inset, b.width - 2 * inset, b.height - 2 * inset];
-    BOX.forEach(([attr], i) => {
-      if (!this.hasAttribute(attr)) this.set(attr, Math.round(box[i]!));
-    });
+    this.#floatBox.lift(drawn?.width ? drawn : this.#edgeBox(), inset);
   }
 
   /** Shut, it has no box: where it would draw on the right edge, by the CSS's own clamp. */
@@ -226,78 +226,6 @@ export class SherpaOverlayPanel extends SherpaElement {
     const asked = parseFloat(this.style.getPropertyValue('--_width')) || 40 * rem;
     const width = Math.min(Math.max(asked, Math.min(20 * rem, 0.92 * innerWidth)), 0.92 * innerWidth);
     return { x: innerWidth - width, y: 0, width, height: innerHeight };
-  }
-
-  /** The kept box, drawn; an absent one is the CSS's own. */
-  #box(): void {
-    for (const [attr, prop] of BOX) {
-      const px = this.num(attr, NaN);
-      if (Number.isFinite(px)) this.style.setProperty(prop, `${px}px`);
-      else this.style.removeProperty(prop);
-    }
-  }
-
-  /**
-   * Floating, the header bar moves it and the corner resizes it: by the pointer, or the
-   * arrows on the grip and on the corner. Each writes back the box the CSS clamp DREW, so a
-   * key steps from there, and reports it. TRAP T-a-floating-panel-is-a-state
-   */
-  #floatHandles(): void {
-    const header = this.$<HTMLElement>('.header');
-    const corner = this.$<HTMLElement>('.corner');
-    const drawn = (): DOMRect => this.$<HTMLElement>('.root')!.getBoundingClientRect();
-    const free = (): boolean => this.hasAttribute('data-floating') && !this.hasAttribute('data-maximised');
-    if (header) {
-      dragXY(header, {
-        keys: this.$<HTMLElement>('.grip'),
-        slop: 4,
-        starts: (event) => free() && !this.#onControl(event, header),
-        measure: () => ({ x: drawn().x, y: drawn().y }),
-        apply: (to, done) => this.#drawBox(to, done, ['data-x', 'data-y'], 'panel-move'),
-        hold: (held) => this.toggleState('moving', held),
-      });
-    }
-    if (corner) {
-      // Where it is when the corner takes hold: it grows to the window's edge, never past it.
-      let at = { x: 0, y: 0 };
-      dragXY(corner, {
-        starts: free,
-        measure: () => {
-          const b = drawn();
-          at = { x: b.x, y: b.y };
-          return { x: b.width, y: b.height };
-        },
-        apply: (to, done) => {
-          const room = document.documentElement;
-          const size = { x: Math.min(to.x, room.clientWidth - at.x), y: Math.min(to.y, room.clientHeight - at.y) };
-          this.#drawBox(size, done, ['data-width', 'data-height'], 'panel-resize');
-        },
-        hold: (held) => this.toggleState('sizing', held),
-      });
-    }
-  }
-
-  /** A press on a control in the header, not on the bar. */
-  #onControl(event: PointerEvent, header: Element): boolean {
-    for (const node of event.composedPath()) {
-      if (node === header) return false;
-      if (node instanceof Element && node.matches(CONTROL)) return true;
-    }
-    return false;
-  }
-
-  /** Draw a place or a size; done, write back what the clamp drew, and report it. */
-  #drawBox(to: XY, done: boolean, attrs: readonly [string, string], event: 'panel-move' | 'panel-resize'): void {
-    const props = attrs.map((attr) => BOX.find(([a]) => a === attr)![1]);
-    this.style.setProperty(props[0]!, `${Math.round(to.x)}px`);
-    this.style.setProperty(props[1]!, `${Math.round(to.y)}px`);
-    if (!done) return;
-    const b = this.$<HTMLElement>('.root')!.getBoundingClientRect();
-    const [a, c] = event === 'panel-move' ? [b.x, b.y] : [b.width, b.height];
-    this.set(attrs[0], Math.round(a));
-    this.set(attrs[1], Math.round(c));
-    if (event === 'panel-move') this.emit('panel-move', { x: Math.round(a), y: Math.round(c) });
-    else this.emit('panel-resize', { width: Math.round(a), height: Math.round(c) });
   }
 
   /** Into the end area, with the place it left noted. One panel to an area. */

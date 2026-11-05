@@ -58,7 +58,7 @@ Each one bubbles.
 |---|---|---|
 | `banner` | content | notices FLOATING across the top, 32px in and beside a panel: they do not pan or zoom; two shown stack, and a hidden one takes no room (a reload banner) |
 | (default) | content | the content, placed on the canvas at its `--x` and `--y` (px) |
-| `panel` | panel | a card FLOATING on the canvas, 32px from its top, bottom and left edges: it does not pan or zoom (a node panel) |
+| `panel` | panel | a card FLOATING on the canvas, 32px from its top, bottom and left edges: it does not pan or zoom (a node panel). |
 | `toolbar` | toolbar | tools FLOATING at the bottom centre, 32px up from the bottom edge: it does not pan or zoom (a node toolbar) |
 
 ## Parts

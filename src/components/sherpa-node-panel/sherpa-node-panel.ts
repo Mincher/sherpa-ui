@@ -1,25 +1,31 @@
 /**
- * sherpa-node-panel — the nodes a graph editor may place, by category, in a floating card.
+ * sherpa-node-panel — the nodes a graph editor may place, by category, in a card on a canvas.
  *
- * It re-makes nothing: a sherpa-container, a sherpa-input-text for the search, a sherpa-accordion
- * per category, a sherpa-list of sherpa-list-items, and a sherpa-menu for "Add a node". It places
- * nothing either: an item clicked, Enter on it, or dragged off the card is `node-add`, and the
- * editor that hears it makes the node. An item is a FAMILY: its line names its types, and the
- * search finds it by any of them: "round" finds Math, placed as Round. TRAP T-the-node-panel-asks-it-places
+ * It re-makes nothing: a sherpa-container, a Jump to chip and a sherpa-input-text for the search,
+ * a sherpa-section-header per category that sticks while its items scroll, a sherpa-list of
+ * sherpa-list-items, and a sherpa-menu for "Add a node". It places nothing either: an item
+ * clicked, Enter on it, or dragged off the card is `node-add`, and the editor that hears it makes
+ * the node. An item is a FAMILY: its line names its types, and the search finds it by any of
+ * them, or by a tag: "round" finds Math, placed as Round. TRAP T-the-node-panel-asks-it-places
+ * A Custom Node is listed under each of its tags. TRAP T-a-node-panel-lists-under-sticky-headings
+ * It floats in its canvas as an overlay panel floats in the window, by the same code. TRAP T-a-floating-panel-is-a-state
  *
  * Map:
  * - AddContext — Where "Add a node" opens, and what it is for: a socket of a type, dragged to a point.
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
-import { fitOf, paletteFor, paletteMatch, type NodeKind, type PaletteGroup, type SocketType } from '../../core/data/node-kinds.js';
+import { FLOAT_ATTRS, FloatBox } from '../../core/ui/float-box.js';
+import { fitOf, paletteFor, paletteMatch, type NodeKind, type PaletteGroup, type PaletteItem, type SocketType } from '../../core/data/node-kinds.js';
 // Defined before the template stamps them.
-import '../sherpa-accordion/sherpa-accordion.js';
+import '../sherpa-button/sherpa-button.js';
 import '../sherpa-container/sherpa-container.js';
 import '../sherpa-container-header/sherpa-container-header.js';
 import '../sherpa-input-text/sherpa-input-text.js';
 import '../sherpa-list/sherpa-list.js';
 import '../sherpa-list-item/sherpa-list-item.js';
 import '../sherpa-menu/sherpa-menu.js';
+import '../sherpa-quick-filter/sherpa-quick-filter.js';
+import '../sherpa-section-header/sherpa-section-header.js';
 
 /** Where "Add a node" opens, and what it is for: a socket of a type, a line let go at a point.
  *  The panel hands it back on `node-add` untouched. */
@@ -44,9 +50,42 @@ function lineOf(kind: NodeKind): string | undefined {
   return types.length > 1 ? types.map((t) => t.label).join(', ') : kind.description;
 }
 
+/** One category as drawn: its items with no tag, then a group per tag, each with an id to jump to. */
+interface Drawn {
+  category: string;
+  anchor: string;
+  items: PaletteItem[];
+  tags: { tag: string; anchor: string; items: PaletteItem[] }[];
+}
+
+/** A category's items split by tag: those with none, then each tag in order of its words, an item under each of its own.
+ *  A tag is one in any case, said as it is first met. */
+function byTag(group: PaletteGroup, index: number): Drawn {
+  const said = new Map<string, string>();
+  for (const tag of group.items.flatMap((i) => i.kind.tags ?? [])) if (!said.has(tag.toLowerCase())) said.set(tag.toLowerCase(), tag);
+  const has = (item: PaletteItem, key: string): boolean => !!item.kind.tags?.some((t) => t.toLowerCase() === key);
+  return {
+    category: group.category, anchor: `category-${index}`,
+    items: group.items.filter((i) => !i.kind.tags?.length),
+    tags: [...said].sort(([a], [b]) => a.localeCompare(b)).map(([key, tag], t) => ({ tag, anchor: `category-${index}-tag-${t}`, items: group.items.filter((i) => has(i, key)) })),
+  };
+}
+
 export class SherpaNodePanel extends SherpaElement {
-  static override css = new URL('./sherpa-node-panel.css', import.meta.url);
+  // The floating box's sheet, shared with the overlay panel. TRAP T-a-floating-panel-is-a-state
+  static override css = [new URL('../../core/sherpa-float.css', import.meta.url), new URL('./sherpa-node-panel.css', import.meta.url)];
   static override html = new URL('./sherpa-node-panel.html', import.meta.url);
+
+  static override props = {
+    'data-floatable': { type: 'boolean', kind: 'style' },
+    // Lifted off its place, anywhere in its canvas. TRAP T-a-floating-panel-is-a-state
+    'data-floating': { type: 'boolean', kind: 'behaviour' },
+    'data-x': { type: 'number', kind: 'behaviour' },
+    'data-y': { type: 'number', kind: 'behaviour' },
+    'data-width': { type: 'number', kind: 'behaviour' },
+    'data-height': { type: 'number', kind: 'behaviour' },
+  } as const;
+  static override observed = ['data-x', 'data-y', 'data-width', 'data-height'];
 
   /** The categories, as populated. */
   #palette: readonly PaletteGroup[] = [];
@@ -58,13 +97,40 @@ export class SherpaNodePanel extends SherpaElement {
   #kinds = new WeakMap<Element, NodeKind>();
   /** The type a search found an item by, when its name did not match: placing it sets that type. */
   #found = new WeakMap<Element, string>();
+  /** The heading a Jump to pick scrolled to: it takes the focus once the menu has shut. */
+  #jumped: HTMLElement | null = null;
+
+  /** Floating, in its canvas: the parent it sits in is its room, which the canvas makes the whole canvas. */
+  readonly #floatBox: FloatBox = new FloatBox({
+    el: this,
+    box: () => this.$<HTMLElement>('.box'),
+    room: () => (this.parentElement ?? this).getBoundingClientRect(),
+    free: () => this.hasAttribute('data-floating'),
+    set: (attr, value) => this.set(attr, value),
+    num: (attr) => this.num(attr, NaN),
+    toggleState: (name, on) => this.toggleState(name, on),
+    moved: (at) => this.emit('panel-move', at),
+    sized: (size) => this.emit('panel-resize', size),
+  });
 
   override onRender(): void {
     this.on(this.root, 'input', this.#onSearch);
     this.on(this.root, 'click', this.#onClick);
     this.on(this.root, 'pointerdown', this.#onDown as EventListener);
     this.on(this.$('.add')!, 'menu-select', this.#onChoose);
+    this.on(this.$('.jump')!, 'jump-select', this.#onJump);
+    this.on(this.$('.jump')!, 'menu-close', this.#onJumpShut);
+    // `button-click`, not `click`: a disabled sherpa-button still gets raw clicks.
+    this.on(this.$('.float')!, 'button-click', this.#onFloat);
+    this.#floatBox.wire(this.$('.heading'), this.$('.grip'), this.$('.corner'));
+    this.#floatBox.draw();
+    this.toggleState('floating', this.hasAttribute('data-floating'));
     this.#draw();
+  }
+
+  override onChange(name: string): void {
+    if (name === 'data-floating') this.#float();
+    else if (FLOAT_ATTRS.includes(name)) this.#floatBox.draw();
   }
 
   /** populate(paletteOf(kinds)) — each category and its kinds. */
@@ -73,19 +139,31 @@ export class SherpaNodePanel extends SherpaElement {
     this.#draw();
   }
 
-  /** Stamp each category and its items, then apply the search. */
+  /** Stamp each category, its items and its tags, then apply the search. */
   #draw(): void {
-    this.renderItems('.categories', 'template.category-tpl', this.#palette, {
+    const fill = (list: Element, items: readonly PaletteItem[]): void => {
+      for (const { id, kind } of items) {
+        const item = this.cloneItem('template.item-tpl', { id, heading: kind.heading, icon: kind.icon, description: lineOf(kind) });
+        if (!item) continue;
+        // A preset is a file's: read only, and its line says so.
+        if ('preset' in kind && kind.preset) item.toggleAttribute('data-preset', true);
+        this.#kinds.set(item, kind);
+        list.append(item);
+      }
+    };
+    this.renderItems('.categories', 'template.category-tpl', this.#palette.map(byTag), {
       after: (node, group) => {
-        node.toggleAttribute('data-empty', !group.items.length);
+        // An id is no field a template writes: Jump to scrolls to it.
+        node.id = group.anchor;
+        node.toggleAttribute('data-empty', !group.items.length && !group.tags.length);
         const list = node.querySelector('.items')!;
-        for (const { id, kind } of group.items) {
-          const item = this.cloneItem('template.item-tpl', { id, heading: kind.heading, icon: kind.icon, description: lineOf(kind) });
-          if (!item) continue;
-          // A preset is a file's: read only, and its line says so.
-          if ('preset' in kind && kind.preset) item.toggleAttribute('data-preset', true);
-          this.#kinds.set(item, kind);
-          list.append(item);
+        fill(list, group.items);
+        for (const tag of group.tags) {
+          const block = this.cloneItem('template.tag-tpl', tag);
+          if (!block) continue;
+          block.id = tag.anchor;
+          fill(block.querySelector('.items')!, tag.items);
+          node.insertBefore(block, node.querySelector('.empty'));
         }
       },
     });
@@ -100,32 +178,77 @@ export class SherpaNodePanel extends SherpaElement {
     this.#search();
   };
 
-  /** Narrow the items to those whose name, or a type's, holds what is typed; a category with none is hidden, and one with
-   *  a match is open. An item found by a type, not by its name, says that type and its line, and places it. */
+  /** Narrow the items to those whose name, a tag, or a type's name holds what is typed; a heading with none under
+   *  it is hidden. An item found by a type, not by its name, says that type and its line, and places it. Jump to
+   *  lists the headings left. */
   #search(): void {
     const query = (this.$<HTMLInputElement>('.find')?.value ?? '').trim().toLowerCase();
     let shown = 0;
-    for (const category of this.$$('.categories > sherpa-accordion')) {
+    const places: { value: string; label: string }[] = [];
+    for (const category of this.$$('.categories > .category')) {
+      const name = category.querySelector('.category-heading')?.getAttribute('data-heading') ?? '';
       let own = 0;
-      for (const item of category.querySelectorAll<HTMLElement>('sherpa-list-item')) {
-        const kind = this.#kinds.get(item);
-        const hit = kind && paletteMatch(kind, query);
-        const type = hit?.type ? kind!.types![hit.type]! : undefined;
-        item.toggleAttribute('data-filtered', !hit);
-        if (hit?.type) this.#found.set(item, hit.type);
-        else this.#found.delete(item);
-        const line = type ? [type.label, type.help].filter(Boolean).join(': ') : kind && lineOf(kind);
-        if (line) item.setAttribute('data-description', line);
-        else item.removeAttribute('data-description');
-        if (hit) own++;
-      }
-      // A category with nothing in it shows only while nothing is searched.
+      for (const item of category.querySelectorAll<HTMLElement>('sherpa-list-item')) if (this.#match(item, query)) own++;
+      // A heading with nothing under it shows only while nothing is searched.
       category.toggleAttribute('data-filtered', !!query && !own);
-      if (query && own) category.setAttribute('open', '');
+      if (!query || own) places.push({ value: category.id, label: name });
+      for (const tag of category.querySelectorAll<HTMLElement>('.tag')) {
+        const any = !!tag.querySelector('sherpa-list-item:not([data-filtered])');
+        tag.toggleAttribute('data-filtered', !any);
+        if (any) places.push({ value: tag.id, label: `${name} › ${tag.querySelector('.tag-heading')?.getAttribute('data-heading') ?? ''}` });
+      }
       shown += own;
     }
     this.toggleState('none', !!query && shown === 0);
+    void this.$<SherpaElement>('.jump')?.populate(places);
   }
+
+  /** Whether an item answers the search, its line said for how; and its `data-filtered`. */
+  #match(item: HTMLElement, query: string): boolean {
+    const kind = this.#kinds.get(item);
+    const hit = kind && paletteMatch(kind, query);
+    const type = hit?.type ? kind!.types![hit.type]! : undefined;
+    item.toggleAttribute('data-filtered', !hit);
+    if (hit?.type) this.#found.set(item, hit.type);
+    else this.#found.delete(item);
+    const line = type ? [type.label, type.help].filter(Boolean).join(': ') : kind && lineOf(kind);
+    if (line) item.setAttribute('data-description', line);
+    else item.removeAttribute('data-description');
+    return !!hit;
+  }
+
+  /* ── Jump to ──────────────────────────────────────────────────────────── */
+
+  /** A Jump to pick: the chip scrolled the list to that heading; the heading takes the focus once its menu shuts. */
+  #onJump = (event: Event): void => {
+    const { value } = (event as CustomEvent<{ value: string }>).detail;
+    this.#jumped = this.root.getElementById(value)?.querySelector<HTMLElement>('.category-heading, .tag-heading') ?? null;
+  };
+
+  /** The menu shut, its focus back on the chip: a jump moves it on to the heading, so the next Tab is its first item. */
+  #onJumpShut = (): void => {
+    const heading = this.#jumped;
+    this.#jumped = null;
+    if (heading) requestAnimationFrame(() => heading.focus({ preventScroll: true }));
+  };
+
+  /* ── Floating ─────────────────────────────────────────────────────────── */
+
+  /** Float, and lift where it is docked the first time; or dock back in its place. */
+  #float(): void {
+    const floating = this.hasAttribute('data-floating');
+    const box = this.$<HTMLElement>('.box');
+    // In place, and its shadow steps up: it is already a card floating 32px in.
+    if (floating && box && !this.hasState('floating')) this.#floatBox.lift(box.getBoundingClientRect());
+    this.toggleState('floating', floating);
+  }
+
+  /** Float, or dock, and report it. */
+  #onFloat = (): void => {
+    const floating = !this.hasAttribute('data-floating');
+    this.set('data-floating', floating);
+    this.emit('panel-float', { floating });
+  };
 
   /* ── Placing ──────────────────────────────────────────────────────────── */
 

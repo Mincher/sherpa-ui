@@ -1,7 +1,7 @@
 # Traps — Other components
 
 One of the eleven areas of [the traps](../TRAPS.md): each entry is here because its
-first `Site:` is in this area (`npm run check:traps` holds it so). 61 entries.
+first `Site:` is in this area (`npm run check:traps` holds it so). 62 entries.
 
 ### T-no-attribute-is-the-default-variant
 
@@ -1505,6 +1505,40 @@ D14 and D16). A click on an item, Enter on it, or a drag let go off the card is
 
 - Site: `src/components/sherpa-node-panel/sherpa-node-panel.html`
 - Site: `src/components/sherpa-node-panel/sherpa-node-panel.ts`
+
+### T-a-node-panel-lists-under-sticky-headings
+
+**The node panel is ONE list, and each category's heading STICKS** (Will, TODOs
+786, 784): no accordions. The list is the one scroll box; a heading is
+`position: sticky` at its top, inside its category's block, so it stays while
+that category's items pass under it and the next category's pushes it on. Its
+surface is opaque: what scrolls under it never shows through.
+
+- **Jump to is the Settings chip** (`sherpa-quick-filter data-type="jump"`), left
+  of the search. Its rows are the headings shown NOW: a search that hides a
+  heading takes its row away too. A pick is scrolled by the chip, to the block's
+  `id` (set in `renderItems`' `after`: a template writes no `id`). The card is
+  `overflow: clip`, not `hidden`: a clipped box is no scroll box, so the chip's
+  `scrollIntoView` moves only the list, never the card or the page.
+- **A pick moves the focus to the heading** (`tabindex="-1"`), once the menu has
+  shut and handed it back to the chip, so the next Tab is its first item. Tab
+  reaches a popover's rows in Chromium only; Firefox and WebKit do not.
+- **A Custom Node is listed under EACH of its tags**, inside its category, after
+  the ones with none; a tag is one in any case, said as first met. A tag's heading
+  does not stick: a jump lands it just under its category's (`--_head`). The search
+  finds a node by a tag (`paletteMatch`), and a node found shows under every tag it
+  has. Tags are the entity's `tags` (entity.v1), a Custom Node definition's too
+  (nodes.v1), tidied on the way in (`tidyTags`, in its own module so the outlet
+  carries only it), never part of its version. A
+  preset's are read only, as the rest of it is.
+- **A search hides a heading with nothing under it**, a tag's too: `data-filtered`
+  on its block, which CSS hides.
+
+- Site: `src/components/sherpa-node-panel/sherpa-node-panel.ts`
+- Site: `src/components/sherpa-node-panel/sherpa-node-panel.css`
+- Site: `src/components/sherpa-node-panel/sherpa-node-panel.html`
+- Site: `test/e2e/reforged-node-panel-headings.spec.ts`
+- Site: `test/unit/a-custom-node-has-tags.test.mjs`
 
 ### T-a-tag-field-counts-what-css-clips
 

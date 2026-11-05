@@ -2,27 +2,42 @@
 
 # sherpa-node-panel
 
-The nodes a graph editor may place, by category: a search, then each category an accordion of items, one per family. A card ([sherpa-container](sherpa-container.md)) floating on a canvas. Will, plan 713 M8, plan 749 P3. TRAP T-the-node-panel-asks-it-places
+The nodes a graph editor may place, by category: a Jump to chip and a search, then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. A card ([sherpa-container](sherpa-container.md)) on a canvas, docked or floating. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786. TRAP T-the-node-panel-asks-it-places
 
 |  |  |
 |---|---|
-| Wraps | [sherpa-container](sherpa-container.md) |
 | Source | [.ts](../../src/components/sherpa-node-panel/sherpa-node-panel.ts) · [.html](../../src/components/sherpa-node-panel/sherpa-node-panel.html) · [.css](../../src/components/sherpa-node-panel/sherpa-node-panel.css) · [.component.json](../../src/components/sherpa-node-panel/sherpa-node-panel.component.json) · [.example.json](../../src/components/sherpa-node-panel/sherpa-node-panel.example.json) |
 
 ## When to use it
 
-For a graph editor's list of the nodes it may place, one per family, by category, with a search that finds a family by any of its types. It floats in a canvas's `panel` slot. Fill it with `populate(paletteOf(kinds))`; it fires `node-add` for a click, Enter or a drag, and opens "Add a node" from `askAdd()`.
+For a graph editor's list of the nodes it may place, one per family, in one list whose category headings stick while their items scroll, with a Jump to chip that scrolls to a heading and a search that finds a family by any of its types, or a Custom Node by a tag (it is listed under each of its tags). It sits in a canvas's `panel` slot; with `data-floatable` its header's Float lifts it to move and resize inside the canvas, as a floating overlay panel does. Fill it with `populate(paletteOf(kinds))`; it fires `node-add` for a click, Enter or a drag, and opens "Add a node" from `askAdd()`.
 
 ## Example
 
 ```html
-<sherpa-node-panel></sherpa-node-panel>
+<sherpa-node-panel data-floatable></sherpa-node-panel>
 ```
 
 `populate()` is given, on `sherpa-node-panel`:
 
 ```json
 [
+  {
+    "category": "Custom Nodes",
+    "items": [
+      {
+        "id": "org-permissions",
+        "kind": {
+          "heading": "Org permissions",
+          "icon": "folder",
+          "description": "Users who hold a role.",
+          "tags": [
+            "permissions"
+          ]
+        }
+      }
+    ]
+  },
   {
     "category": "Variables",
     "items": [
@@ -64,6 +79,17 @@ For a graph editor's list of the nodes it may place, one per family, by category
 ]
 ```
 
+## Attributes
+
+| Attribute | Values | Default | What it does |
+|---|---|---|---|
+| `data-floatable` | boolean |  | show the Float / Dock button in its header |
+| `data-floating` | boolean |  | lifted off its place: anywhere in its canvas, moved by its header and resized by its corner. Removed, it docks back. TRAP T-a-floating-panel-is-a-state |
+| `data-height` | number |  | how big it floats, in px, written at the end of each resize. Never under 16rem by 12rem nor past its canvas |
+| `data-width` | number |  | how big it floats, in px, written at the end of each resize. Never under 16rem by 12rem nor past its canvas |
+| `data-x` | number |  | where it floats, in px from its canvas's top left. The panel writes them at the end of each move; kept while docked, so it floats there again |
+| `data-y` | number |  | where it floats, in px from its canvas's top left. The panel writes them at the end of each move; kept while docked, so it floats there again |
+
 ## Methods
 
 | Method | What it does |
@@ -77,12 +103,15 @@ Each one bubbles.
 | Event | Detail | What it means |
 |---|---|---|
 | `node-add` | `{ context: AddContext; kind: string \| undefined; point: { x: number; y: number; }; type: string }` | An item was clicked, Enter was pressed on it, or it was dropped, or a choice of "Add a node" was picked. |
+| `panel-float` | `{ floating: boolean }` | The reader pressed Float or Dock. |
+| `panel-move` | `{ x: number; y: number }` | Floating, its header was dragged, or its grip moved by the keys. |
+| `panel-resize` | `{ height: number; width: number }` | Floating, its corner was dragged, or moved by the keys. |
 
 ## Parts
 
 Style these from outside with `::part()`:
 
-`card`, `categories`, `content`, `find`, `ghost`, `heading`, `none`, `search`
+`box`, `card`, `categories`, `content`, `corner`, `find`, `float`, `ghost`, `grip`, `heading`, `jump`, `none`, `search`, `toolbar`
 
 ## CSS custom properties it reads
 
@@ -90,9 +119,15 @@ What each class's base rule reads:
 
 | Custom property | Class | Property |
 |---|---|---|
+| `--sherpa-theme-gap-sm` | `.toolbar` | `gap` |
+| `--sherpa-theme-gap-sm` | `.search` | `gap` |
 | `--sherpa-theme-padding-md` | `.search` | `padding` |
 | `--sherpa-theme-padding-sm` | `.categories` | `gap` |
 | `--sherpa-theme-padding-md` | `.categories` | `padding` |
+| `--sherpa-theme-padding-sm` | `.category-heading` | `padding-block-start` |
+| `--sherpa-style-surface-base` | `.category-heading` | `background` |
+| `--sherpa-theme-padding-sm` | `.tag-heading` | `padding-block-start` |
+| `--sherpa-theme-padding-md` | `.tag-heading` | `padding-inline-start` |
 | `--sherpa-theme-padding-md` | `.empty` | `padding` |
 | `--sherpa-style-content-base-1` | `.empty` | `color` |
 | `--sherpa-font-size-body-sm` | `.empty` | `font-size` |

@@ -44,7 +44,7 @@ const setup = (page: Page) => page.evaluate(`(${SETUP})()`);
 const settle = (page: Page) => page.evaluate(() => window.__settled().then(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))));
 /** The Custom Nodes category: each item's kind id, and whether it is a preset. */
 const listed = (page: Page) => page.evaluate(() => {
-  const category = [...document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelectorAll('.categories > sherpa-accordion')].find((a) => a.getAttribute('data-heading') === 'Custom Nodes');
+  const category = [...document.querySelector('sherpa-node-panel')!.shadowRoot!.querySelectorAll('.categories > .category')].find((a) => a.querySelector('.category-heading')?.getAttribute('data-heading') === 'Custom Nodes');
   return [...(category?.querySelectorAll('sherpa-list-item') ?? [])].map((i) => `${(i as HTMLElement).dataset['kind']}${i.hasAttribute('data-preset') ? ' (preset)' : ''}`);
 });
 const save = (page: Page, id: string, label: string) => page.evaluate(([i, l]) => {

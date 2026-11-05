@@ -45,7 +45,7 @@ const asked = (page: Page) => page.evaluate(() => (window as unknown as { asked:
 const said = (page: Page) => page.evaluate(() => (window as unknown as { said: string[] }).said);
 
 test('it lists the Query\'s kinds by category, 32px from the top, bottom and left', async ({ page }) => {
-  const heads = await page.locator('sherpa-node-panel sherpa-accordion').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
+  const heads = await page.locator('sherpa-node-panel .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
   expect(heads).toEqual(['Custom Nodes', 'Logic', 'Presets', 'Saved filters', 'Status']);
   const [c, p] = await page.evaluate(() => [document.getElementById('cv')!, document.querySelector('sherpa-node-panel')!].map((e) => {
     const r = e.getBoundingClientRect();

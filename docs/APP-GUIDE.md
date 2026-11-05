@@ -456,8 +456,13 @@ nodes.watch((library) => {
 bindWorkflow(canvas, workflow, { kinds, panel, session });
 ```
 
-The panel lists them under "Custom Nodes", a preset marked read only. A Custom
-Node being edited is a draft in its tab until it is saved, as a workflow is.
+The panel lists them under "Custom Nodes", a preset marked read only, in one list
+whose headings stick as it scrolls, with a Jump to chip beside its search. A Custom
+Node's `tags` (a list of words, on its entity) list it under each tag there, and the
+search finds it by one: give Save as Custom Node's dialog a tags field,
+`<sherpa-input-text name="tags" data-type="tags">`, and pass `tags` to `newGraph`
+and `saveGraphAs`. A Custom Node being edited is a draft in its tab until it is
+saved, as a workflow is. `T-a-node-panel-lists-under-sticky-headings`
 
 ### Entities
 
@@ -530,7 +535,8 @@ provider.addEventListener('filters-save-as', saveAs);
   corner resizes it, and Dock puts it back on the right edge or in the shell's
   end area it came from. It reports `panel-float`, `panel-move` and
   `panel-resize`; keep `data-floating`, `data-x`, `data-y`, `data-width` and
-  `data-height` in the session and hand them back. `T-a-floating-panel-is-a-state`
+  `data-height` in the session and hand them back. A node panel with
+  `data-floatable` floats the same way, inside its canvas. `T-a-floating-panel-is-a-state`
 - From a script, call `dialog.show()`, never the native `showModal()`: the
   component owns modality and `open`. An add or edit flow is that dialog, its
   fields read on save, and a `sherpa-toast` to say it is done.

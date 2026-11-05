@@ -875,7 +875,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-family-shares-markup](traps/filters.md#t-a-family-shares-markup) — description-tips, sherpa-element, templater
 - [T-a-filter-is-dragged-into-its-place](traps/filters.md#t-a-filter-is-dragged-into-its-place) — drag-order
 - [T-a-flag-brings-the-base-methods](traps/element-and-sheets.md#t-a-flag-brings-the-base-methods) — sherpa-element
-- [T-a-floating-panel-is-a-state](traps/menus-tips-overlays.md#t-a-floating-panel-is-a-state) — drag-xy
+- [T-a-floating-panel-is-a-state](traps/menus-tips-overlays.md#t-a-floating-panel-is-a-state) — drag-xy, float-box, sherpa-float
 - [T-a-gauge-composes-the-ring](traps/charts.md#t-a-gauge-composes-the-ring) — shared-constants
 - [T-a-graph-is-a-view-of-a-type](traps/data-layer.md#t-a-graph-is-a-view-of-a-type) — node-graph, shared-constants
 - [T-a-grid-group-computes-its-own-position](traps/element-and-sheets.md#t-a-grid-group-computes-its-own-position) — sherpa-grouping
@@ -996,7 +996,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (120)
+## Other components (122)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1015,6 +1015,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-fit-grid-counts-its-resized-rows](traps/other-components.md#t-a-fit-grid-counts-its-resized-rows) — layout-grid
 - [T-a-fit-grid-needs-a-sized-parent](traps/other-components.md#t-a-fit-grid-needs-a-sized-parent) — app-shell
 - [T-a-fit-grid-needs-its-row-count](traps/other-components.md#t-a-fit-grid-needs-its-row-count) — layout-grid
+- [T-a-floating-panel-is-a-state](traps/menus-tips-overlays.md#t-a-floating-panel-is-a-state) — layout-canvas, node-panel
 - [T-a-form-control-follows-its-fieldset](traps/other-components.md#t-a-form-control-follows-its-fieldset) — calendar, file-upload, input-text, select-card, select-checkbox, select-radio, slider, switch, transfer-list
 - [T-a-form-value-follows-every-write](traps/other-components.md#t-a-form-value-follows-every-write) — input-text, select-checkbox, switch
 - [T-a-full-range-is-still-a-range](traps/menus-tips-overlays.md#t-a-full-range-is-still-a-range) — slider
@@ -1031,6 +1032,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-native-name-where-a-native-element-does-the-job](traps/other-components.md#t-a-native-name-where-a-native-element-does-the-job) — slider
 - [T-a-native-wears-the-button-class](traps/element-and-sheets.md#t-a-native-wears-the-button-class) — button
 - [T-a-node-moves-itself-and-reports](traps/other-components.md#t-a-node-moves-itself-and-reports) — node
+- [T-a-node-panel-lists-under-sticky-headings](traps/other-components.md#t-a-node-panel-lists-under-sticky-headings) — node-panel
 - [T-a-node-reads-null-from-what-it-cannot-use](traps/data-layer.md#t-a-node-reads-null-from-what-it-cannot-use) — node
 - [T-a-number-input-wears-sherpas-steppers](traps/menus-tips-overlays.md#t-a-number-input-wears-sherpas-steppers) — input-text, slider
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](traps/menus-tips-overlays.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — metric-group
