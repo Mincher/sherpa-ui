@@ -118,51 +118,50 @@ test('another field takes the whole tree, as one change; a nested group cannot b
   assert.equal(routeRequest(g, { from: 'when-view-seats.2', to: 'scope-view/seats' }, facts).refused !== undefined, true, 'a nested True goes into its parent, drawn: the Query holds a whole tree');
 });
 
-test('a planted fault in each check: an operator the field\'s type does not take, a value of the wrong type; a Group row takes any boolean (780)', () => {
-  const nodes = [
+/** A or (B and C) on Seats, in a workflow: one Field into three Conditions, an And and an Or (plan 783 D4). */
+const seatsFlow = () => ({
+  v: 2, id: 'tree',
+  nodes: [
     { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
-    { id: 'pick', kind: 'field', x: 0, y: 100, values: { field: 'seats' } },
-    { id: 'when', kind: 'condition', x: 360, y: 0, values: { join: 'or', field: 'seats', op: 'gt', value: 5, 'field-2': 'plan', 'op-2': 'eq', 'value-2': 'Pro' } },
-    { id: 'inner', kind: 'condition', x: 0, y: 200, values: { field: 'seats', op: 'lt', value: 100 } },
-    { id: 'end', kind: 'output', x: 720, y: 0 },
-  ];
-  const routes = [{ from: 'start/rows', to: 'when' }, { from: 'inner', to: 'when/group-3' }, { from: 'when/rows', to: 'end' }];
-  const fields = { seats: { type: 'number' }, plan: { type: 'text' } };
-  const sound = { v: 2, id: 'tree', nodes, routes };
-  assert.deepEqual(workflowFaults(sound, NODE_KINDS, { fields }), []);
-  const planted = (values, more = {}) => workflowFaults({ ...sound, ...more, nodes: nodes.map((n) => (n.id === 'when' ? { ...n, values: { ...n.values, ...values } } : n)) }, NODE_KINDS, { fields });
-  assert.deepEqual(planted({ 'op-2': 'gt' }), ['the node "when" holds "gt" as its Operator, which "plan", a text field does not take']);
-  assert.deepEqual(planted({ op: 'contains' }), ['the node "when" holds "contains" as its Operator, which "seats", a number field does not take']);
-  assert.deepEqual(planted({ value: 'many' }), ['the node "when" holds "many" as its Value, which is no number, as "seats", a number field takes']);
-  assert.deepEqual(planted({ 'value-2': 7 }), [], 'text takes what it is given');
-  assert.deepEqual(planted({ op: 'in', value: ['5', '6'] }), [], 'Is one of takes a list of the type');
-  // A Group row takes any boolean, no fault (TODO 780): a Condition's True, a pick's, a False; what is no boolean reads null and warns.
-  const into = (from) => planted({}, { routes: [routes[0], { from, to: 'when/group-3' }, routes[2]] });
-  for (const from of ['inner', 'pick', 'inner/#false', 'start/rows']) assert.deepEqual(into(from), [], from);
-  const rows = { ...sound, routes: [routes[0], { from: 'start/rows', to: 'when/group-3' }, routes[2]] };
-  assert.deepEqual(workflowGraph(rows, { fields }).nodes.find((n) => n.id === 'when').warnings, [{ row: 'group-3', words: 'Group takes a boolean; it was given rows' }]);
-  // A part has no row of a name the kind has not.
-  assert.deepEqual(planted({ 'colour-2': 'red' }), ['the node "when" holds a value for "colour-2", a row its kind has not']);
+    { id: 'seats', kind: 'field', x: 200, y: 0, values: { field: 'seats' } },
+    { id: 'a', kind: 'condition', x: 400, y: 0, values: { type: 'lt', b: 5 } },
+    { id: 'b', kind: 'condition', x: 400, y: 200, values: { type: 'gt', b: 5 } },
+    { id: 'c', kind: 'condition', x: 400, y: 400, values: { type: 'lt', b: 100 } },
+    { id: 'and', kind: 'condition', x: 600, y: 300, values: { type: 'and' } },
+    { id: 'or', kind: 'condition', x: 800, y: 0, values: { type: 'or' } },
+    { id: 'end', kind: 'output', x: 1000, y: 0 },
+  ],
+  routes: [
+    { from: 'start/rows', to: 'seats' }, { from: 'seats/field', to: 'a' }, { from: 'seats/field', to: 'b' }, { from: 'seats/field', to: 'c' },
+    { from: 'b', to: 'and' }, { from: 'c', to: 'and' }, { from: 'a', to: 'or' }, { from: 'and', to: 'or' }, { from: 'or/rows', to: 'end' },
+  ],
+});
+const fields = { seats: { type: 'number' }, plan: { type: 'text' } };
+
+test('in a workflow, A or (B and C) is one Field into three Conditions, an And and an Or: each test one node, and no fault', () => {
+  const w = seatsFlow();
+  assert.deepEqual(workflowFaults(w, NODE_KINDS, { fields }), []);
+  const g = workflowGraph(w, { fields });
+  for (const id of ['a', 'b', 'c']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'rows', 'b'], id);
+  for (const id of ['and', 'or']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'rows'], id);
+  assert.ok(g.nodes.every((n) => !n.warnings), 'every route reads what it needs');
+  // Each Condition's operators are the Field's type's; an edit types Value B by it.
+  assert.equal(editWorkflow(w, { node: 'a', row: 'b', value: '70' }, NODE_KINDS, { fields }).nodes.find((n) => n.id === 'a').values.b, 70);
+  assert.equal(editWorkflow(editWorkflow(w, { node: 'seats', row: 'field', value: 'plan' }), { node: 'a', row: 'b', value: '70' }, NODE_KINDS, { fields }).nodes.find((n) => n.id === 'a').values.b, '70');
 });
 
-test('a workflow Condition draws a part for each comparison it holds, and a Join from two; an edit types a value by its field', () => {
-  const w = { v: 2, id: 'w', nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0, values: { field: 'seats', op: 'gt', value: 5, 'field-2': 'plan', 'op-2': 'eq', 'value-2': 'Pro' } }] };
-  const fields = { seats: { type: 'number' }, plan: { type: 'text' } };
-  const g = workflowGraph(w, { fields });
-  assert.deepEqual(g.nodes[0].rows.map((r) => r.name), ['type', 'rows', 'join', 'field', 'op', 'value', 'field-2', 'op-2', 'value-2']);
-  assert.equal(row(g, 'c', 'join').value, 'and', 'the join\'s default shows');
-  // Each part's operators are its own field's type's.
-  assert.ok(row(g, 'c', 'op').choices.some((c) => c.label === 'Greater than'));
-  assert.ok(!row(g, 'c', 'op-2').choices.some((c) => c.label === 'Greater than'));
-  assert.deepEqual(row(g, 'c', 'join').choices, [{ value: 'and', label: 'All of' }, { value: 'or', label: 'Any of' }]);
-  assert.equal(editWorkflow(w, { node: 'c', row: 'value', value: '70' }, NODE_KINDS, { fields }).nodes[0].values.value, 70);
-  assert.equal(editWorkflow(w, { node: 'c', row: 'value-2', value: '70' }, NODE_KINDS, { fields }).nodes[0].values['value-2'], '70');
-  assert.equal(editWorkflow(w, { node: 'c', row: 'join', value: 'or' }).nodes[0].values.join, 'or');
-  // One comparison draws no Join; a Group row is drawn where a route enters it.
-  const one = workflowGraph({ ...w, nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0, values: { field: 'seats' } }] }, { fields });
-  assert.deepEqual(one.nodes[0].rows.map((r) => r.name), ['type', 'rows', 'field', 'op', 'value']);
-  const grouped = workflowGraph({ ...w, nodes: [...w.nodes, { id: 'd', kind: 'condition', x: 0, y: 0 }], routes: [{ from: 'd', to: 'c/group-3' }] }, { fields });
-  assert.deepEqual(grouped.nodes[0].rows.map((r) => r.name).slice(-1), ['group-3']);
+test('a planted fault in each check: an operator the Field\'s type does not take warns; a value of the wrong type is a fault', () => {
+  const sound = seatsFlow();
+  const planted = (id, values) => ({ ...sound, nodes: sound.nodes.map((n) => (n.id === id ? { ...n, values: { ...n.values, ...values } } : n)) });
+  const warned = (w) => Object.fromEntries(workflowGraph(w, { fields }).nodes.filter((n) => n.warnings).map((n) => [n.id, n.warnings.map((x) => x.words)]));
+  assert.deepEqual([workflowFaults(planted('a', { type: 'contains' }), NODE_KINDS, { fields }), warned(planted('a', { type: 'contains' }))], [[], { a: ['Contains takes a text field; it was given the seats column'] }]);
+  assert.deepEqual(workflowFaults(planted('b', { b: 'many' }), NODE_KINDS, { fields }), ['the node "b" holds "many" as its Value B, which is no number, as "seats", a number field takes']);
+  assert.deepEqual(workflowFaults(planted('c', { type: 'in', b: ['5', '6'] }), NODE_KINDS, { fields }), [], 'Is one of takes a list of the type');
+  // On a text Field, text takes what it is given.
+  assert.deepEqual(workflowFaults(planted('seats', { field: 'plan' }), NODE_KINDS, { fields }), [], 'text takes what it is given');
+  // A Condition has no row of a name its type has not; the Group row and the Join are gone (D4).
+  assert.deepEqual(workflowFaults(planted('a', { colour: 'red' })), ['the node "a" holds a value for "colour", a row its kind has not']);
+  assert.deepEqual(workflowFaults(planted('or', { join: 'or' })), ['the node "or" holds a value for "join", a row its kind has not']);
 });
 
 test('the Filter kind is gone, and no file reads as one (TODO 777): a node of it is a fault, in a v1 and a v2', () => {
@@ -178,7 +177,8 @@ test('the Filter kind is gone, and no file reads as one (TODO 777): a node of it
 test('a repeated row is its kind\'s: field-3 is the third part\'s field; field-1 is no row', () => {
   assert.deepEqual([partName('field', 1), partName('field', 3)], ['field', 'field-3']);
   assert.deepEqual([partOf('field-3'), partOf('field'), partOf('field-1'), partOf('join')], [{ base: 'field', part: 3 }, { base: 'field', part: 1 }, { base: 'field-1', part: 1 }, { base: 'join', part: 1 }]);
-  const rows = resolveKind(NODE_KINDS.condition).rows;
+  // Rows that hold is the Query's alone (plan 783 D4), until the Query draws its tree as Conditions too.
+  const rows = resolveKind(NODE_KINDS.condition, 'rows').rows;
   assert.equal(rowOf(rows, 'op-4').name, 'op');
   assert.equal(rowOf(rows, 'join-2'), undefined, 'a Join does not repeat');
   assert.equal(rowOf(rows, 'field-1'), undefined);

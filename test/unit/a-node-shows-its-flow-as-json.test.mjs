@@ -17,25 +17,26 @@ const graph = () => workflowGraph({
   nodes: [
     { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'users' } },
     { id: 'val', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
-    { id: 'cond', kind: 'condition', x: 360, y: 40, values: { field: 'status', op: 'eq' } },
+    { id: 'field', kind: 'field', x: 180, y: 0, values: { field: 'status' } },
+    { id: 'cond', kind: 'condition', x: 360, y: 40, values: { type: 'eq' } },
     { id: 'end', kind: 'output', x: 720, y: 0 },
     { id: 'alone', kind: 'collection', x: 0, y: 400 },
   ],
-  routes: [{ from: 'start/rows', to: 'cond' }, { from: 'val/value', to: 'cond/value' }, { from: 'cond/rows', to: 'end' }],
+  routes: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/rows', to: 'end' }],
 }, { fields: { status: { label: 'Status' } } });
 
 test('a Store gives its store and where its rows go', () => {
   const flow = nodeFlow(graph(), 'start');
   assert.deepEqual(flow.definition, { store: 'users' });
   const rows = flow.outgoing.find((o) => o.socket === 'Rows');
-  assert.deepEqual(rows.to, ['Condition']);
+  assert.deepEqual(rows.to, ['Field']);
 });
 
-test('a Condition says its where tree, and what is routed to it, a routed Value included', () => {
+test('a Condition says its where tree — the Field on its header, its Operation, its Value B — and what is routed to it', () => {
   const flow = nodeFlow(graph(), 'cond');
   assert.deepEqual(flow.definition, { where: { field: 'status', op: 'eq', value: 'active' } });
-  assert.deepEqual(flow.incoming.find((i) => i.socket === 'In').from, ['Store › Rows']);
-  assert.deepEqual(flow.incoming.find((i) => i.socket === 'Value').from, ['Value › Value']);
+  assert.deepEqual(flow.incoming.find((i) => i.socket === 'In').from, ['Field › Field']);
+  assert.deepEqual(flow.incoming.find((i) => i.socket === 'Value B').from, ['Value › Value']);
   assert.deepEqual(flow.outgoing.find((o) => o.socket === 'Rows').to, ['Output']);
 });
 

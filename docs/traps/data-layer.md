@@ -6321,18 +6321,17 @@ read with no field facts holds `"60"`, and a date preset's two ends become
 
 **A comparison's Value is ONE value under Equals, and a tag LIST under Is one of and Is not
 one of: the operator shapes the row.** Plan 749 P4; an array is an object (D17), so the list's
-socket is an `object`. `kindOfNode` gives each part whose operator takes a list its own Value
-row — `control: 'tags'`, `multiple`, an `object` input — put before the repeated one. So
-`rowOf`, `socketType`, `conditionRows`, `workflowFaults` and every reader see the shape, and
-nothing else learns of operators. Part 1 may be Equals and part 2 Is one of.
+socket is an `object`. The operator is the Condition's type (plan 783 D4), so `resolveKind` gives
+Is one of its own Value B — `control: 'tags'`, `multiple`, an `object` input — and every reader
+sees the shape; nothing else learns of operators.
 
-- **A change carries the value.** On an operator (or a type) change, `editWorkflow` moves a
+- **A change carries the value.** On a type change (an operator is one), `editWorkflow` moves a
   row's value between its shapes: one value becomes the list of its comma parts; a list
   becomes its one item, or several joined by commas. Going back gives it again. A Value's
   Text and List do the same.
 - **A route stays joined through a change of shape** (Will, TODO 770: any route joins any
-  input). A Text routed into Equals' Value, then Is one of picked: the route is drawn, the
-  Value reads null and the node warns ("Value takes a list; it was given "Pro""); Save writes
+  input). A Text routed into Equals' Value B, then Is one of picked: the route is drawn,
+  Values reads null and the node warns ("Values takes a list; it was given "Pro""); Save writes
   it, and Equals again reads it. A List into Is one of, then Equals, the same. Only a socket
   that is GONE keeps its route in the draft (`keptRoutes`).
 - **A file from before tags** is no longer read (Will, TODO 777): a tags row holding one value
@@ -6377,28 +6376,35 @@ refuses while one stands.
 ### T-a-logic-type-is-an-operator
 
 **Logic's comparisons ARE the data layer's operators: ONE list, `OP_LABELS`, names them in a filter
-menu, a Condition's Operator row and Logic's Operation select.** Plan 749 P5. `condition` is the
-Logic family (D1). Its first type, Rows that hold, is the condition tree (`T-a-condition-is-a-tree-of-nodes`).
-Then come Figma's And, Or and six comparisons, then Not and Is empty, then Sherpa's other operators.
-A comparison's type id is its `FilterOp`, and its label is `OP_LABELS[op]`. Its rows are Value A and
-what `OP_TAKES` says the operator takes: Value B, a tag list of Values (`LIST_OPS`), or Start and End.
-A copied label is a second vocabulary. Change the word in `OP_LABELS`, and every place says it:
-Figma's "Greater than or equal" reads "At least" here.
+menu and Logic's Operation select.** Plan 749 P5. `condition` is the Logic family (D1), ONE test per
+node (Will, plan 783 D4): And and Or join the tests that come in, then Figma's six comparisons, then
+Not and Is empty, then Sherpa's other operators. A comparison's type id is its `FilterOp`, its label
+`OP_LABELS[op]`. A copied label is a second vocabulary. Change the word in `OP_LABELS`, and every
+place says it: Figma's "Greater than or equal" reads "At least" here.
 
+- **A comparison tests what comes in on its HEADER** (plan 783 D3): a Field's column, or one value
+  (`needs: 'tested'`). Value A is gone. Its rows are Rows, then what `OP_TAKES` says the operator
+  takes: Value B, a tag list of Values (`LIST_OPS`), or Start and End. Rows with no Field warn:
+  "Equals takes a field or a value; it was given rows: route a Field in".
+- **The Field on its header shapes it** (`fieldAt` in workflow.ts): Value B picks from the field's
+  values where known and is typed by its type (a number field's "70" is 70), Values close to them,
+  and a Value B that is no number for a number field is the row's own fault. An operator the field's
+  type does not take is a WARNING, never a fault: "Contains takes a text field; it was given the
+  Seats column" (graphs stay open).
+- **Every type leads with Rows**: the rows it lets through, for a node that needs rows. It sends rows
+  only where rows reached its header — rows, a column, an object, or a test's True that carries them
+  (`sender`); a test of two values sends none.
 - **In the last and In the next are Time › Duration's**, not Logic's: two nodes would do one check.
-- **The header's input is the type's.** Rows that hold takes rows of any type (D1). And and Or take
-  many booleans, and Not takes one. Is empty takes any value. A comparison takes nothing: its values
-  are its rows. Each one forks: True on the header, False on the footer. Nothing runs (N4): a runner
-  reads a value as `truthy` reads it (D2).
+- **The header's input is the type's.** And and Or take many booleans, and Not takes one; Is empty
+  takes any value; a comparison any. Each one forks: True on the header, False on the footer. Nothing
+  runs (N4): a runner reads a value as `truthy` reads it (D2).
+- **A header's warning names the type** where the family has several: "Sort takes a field", "And
+  takes a boolean", not "Collection" or "Condition".
 - **What a type change orphans is the draft's** (Will, 2026-11-05), and only a socket that is GONE
-  orphans a route (TODO 770). Store's rows into a Condition switched to And stay joined: And's header
-  is there, reads null, and the node warns ("takes a boolean; it was given rows"). Switched to a
-  comparison, which takes nothing on its header, `keptRoutes` keeps the route: drawn nowhere, no
-  fault, and Rows that hold joins it again. Save leaves it out (`finalGraph`).
-- **A Field the draft keeps names nothing.** Under Is one of, a `field` value kept from the tree does
-  not close Values to that field's values. `fieldOf` reads only a Field row the node draws now.
-- **The Query draws one type.** `kindIn(kind, 'query')` leaves Rows that hold alone, so the Query's
-  Condition has no select and reads back the same tree. Its panel item is the tree too.
+  orphans a route (TODO 770). A column into a Condition switched to And stays joined: And's header is
+  there, reads null, and the node warns ("And takes a boolean; it was given the Status column"). A
+  Value B switched away from is kept for its type, and Save leaves it out (`finalGraph`). Only a type
+  a workflow draws keeps a row: the Query's own Rows that hold keeps none (plan 783, until F4).
 - **Tag › Includes says the same grammar.** Its `where` (`nodeFlow`) is `{ field, op: 'in', value }`:
   a Condition's Is one of.
 

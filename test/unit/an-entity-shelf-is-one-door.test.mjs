@@ -25,9 +25,10 @@ const filter = (id, label = id, extra = {}) => ({
     nodes: [
       { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'status', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
-      { id: 'filter', kind: 'condition', x: 360, y: 0, values: { field: 'status', op: 'eq' } },
+      { id: 'filter', kind: 'condition', x: 540, y: 0, values: { type: 'eq' } },
+      { id: 'field', kind: 'field', x: 270, y: 0, values: { field: 'status' } },
     ],
-    routes: [{ from: 'start/rows', to: 'filter' }, { from: 'status/value', to: 'filter/value' }, { from: 'filter', to: '#out/where' }],
+    routes: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }, { from: 'filter', to: '#out/where' }],
   },
   settings: { source: 'customers' }, ...extra,
 });
@@ -37,8 +38,8 @@ const HAS_ROLE = {
   v: 1, label: 'Has role', category: 'Logic',
   inputs: [{ name: 'users', label: 'Users', type: 'object' }],
   outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
-  nodes: [{ id: 'has-role', kind: 'condition', x: 0, y: 0, values: { field: 'role', op: 'eq' } }],
-  routes: [{ from: '#in/users', to: 'has-role' }, { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' }],
+  nodes: [{ id: 'has-role', kind: 'condition', x: 200, y: 0, values: { type: 'eq' } }, { id: 'role', kind: 'field', x: 0, y: 0, values: { field: 'role' } }],
+  routes: [{ from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' }],
 };
 const heard = async (run) => {
   const reports = [];

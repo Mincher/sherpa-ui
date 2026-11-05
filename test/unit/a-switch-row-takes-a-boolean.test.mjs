@@ -33,7 +33,7 @@ test('a True drives a switch on, a False off, marked Custom; cutting the route g
   const kinds = { ...NODE_KINDS, gate: { heading: 'Gate', icon: 'flag', rows: [{ name: 'on', label: 'On', control: 'switch', input: 'boolean' }], model: 'x', graphs: ['workflow'] } };
   const w = (from) => ({
     v: 2, id: 'g', nodes: [
-      { id: 'f', kind: 'condition', x: 0, y: 0, values: { field: 'status', op: 'eq', value: 'a' } },
+      { id: 'f', kind: 'condition', x: 0, y: 0, values: { type: 'eq', b: 'a' } },
       { id: 'gate', kind: 'gate', x: 360, y: 0, values: { on: false } },
     ], routes: [{ from, to: 'gate/on' }],
   });

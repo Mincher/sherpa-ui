@@ -53,7 +53,7 @@ test('each type draws its rows: the type first, its words and hint, the sockets 
   assert.equal(node(workflowGraph(flow('compare'), {}, kinds), 'm').output, 'boolean');
   // resolveKind is an ordinary kind: no types left on it, and a plain kind is the same one.
   assert.equal(resolveKind(math, 'round').types, undefined);
-  assert.equal(resolveKind(NODE_KINDS.pick), NODE_KINDS.pick);
+  assert.equal(resolveKind(NODE_KINDS.field), NODE_KINDS.field);
   assert.equal(kindOfNode(kinds, { kind: 'nope' }), undefined);
 });
 
@@ -64,9 +64,11 @@ test('a kind of one type shows no select; the Query\'s Condition, its Rows that 
   const query = kindIn(NODE_KINDS.condition, 'query');
   assert.deepEqual(Object.keys(query.types), ['rows']);
   assert.deepEqual(resolveKind(query).rows.map((r) => r.name), ['rows', 'join', 'field', 'op', 'value', 'group']);
-  assert.equal(kindIn(NODE_KINDS.condition, 'workflow'), NODE_KINDS.condition, 'a workflow takes every type');
+  // A workflow takes every type but Rows that hold, the Query's alone until it draws its tree as Conditions (plan 783 D4).
+  assert.deepEqual(Object.keys(kindIn(NODE_KINDS.condition, 'workflow').types), Object.keys(NODE_KINDS.condition.types).filter((t) => t !== 'rows'));
+  assert.equal(kindIn(NODE_KINDS.math, 'workflow'), NODE_KINDS.math, 'a workflow takes every type of its own');
   assert.equal(kindIn(NODE_KINDS.value, 'query'), undefined, 'a kind no Query draws');
-  assert.equal(NODE_KINDS.pick.types, undefined);
+  assert.equal(NODE_KINDS.field.types, undefined);
 });
 
 test('accepts follows the type: a boolean out of Compare joins a number\'s row, which reads it as 1 or 0 (TODOs 770, 781)', () => {

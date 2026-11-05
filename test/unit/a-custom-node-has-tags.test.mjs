@@ -26,8 +26,8 @@ const { NODE_KINDS, paletteMatch, paletteOf } = await import(new URL('data/node-
 const node = (id, extra = {}) => ({
   v: 1, type: 'node', id, label: 'Org permissions',
   graph: {
-    nodes: [{ id: 'active', kind: 'condition', x: 0, y: 0, values: { field: 'status', op: 'eq', value: 'active' } }],
-    routes: [{ from: '#in/rows', to: 'active' }, { from: 'active/rows', to: '#out/active' }],
+    nodes: [{ id: 'active', kind: 'condition', x: 200, y: 0, values: { type: 'eq', b: 'active' } }, { id: 'status', kind: 'field', x: 0, y: 0, values: { field: 'status' } }],
+    routes: [{ from: '#in/rows', to: 'status' }, { from: 'status/field', to: 'active' }, { from: 'active/rows', to: '#out/active' }],
   },
   settings: { inputs: [{ name: 'rows', type: 'object' }], outputs: [{ name: 'active', type: 'object' }] },
   ...extra,
@@ -91,8 +91,8 @@ test('New graph and Save graph as take tags, tidied; a copy given none keeps the
 test('Save as Custom Node tags the definition it makes', () => {
   const flow = { v: 2, id: 'g', nodes: [
     { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
-    { id: 'a', kind: 'condition', x: 300, y: 0, values: { field: 'status', op: 'eq', value: 'active' } },
-    { id: 'b', kind: 'condition', x: 600, y: 0, values: { field: 'plan', op: 'eq', value: 'pro' } },
+    { id: 'a', kind: 'condition', x: 300, y: 0, values: { type: 'eq', b: 'active' } },
+    { id: 'b', kind: 'condition', x: 600, y: 0, values: { type: 'eq', b: 'pro' } },
   ], routes: [{ from: 'start/rows', to: 'a' }, { from: 'a/rows', to: 'b' }] };
   const made = groupNodes(flow, ['a', 'b'], { v: 1, nodes: {} }, { label: 'Active pro', tags: ['plans', ' plans', ''] });
   assert.ok(!('fault' in made), made.fault);

@@ -19,13 +19,16 @@ const { editWorkflow, workflowFaults, workflowGraph } = await import(new URL('wo
 const lib = await import(new URL('node-library.js', core));
 const { onReport } = await import(new URL('report.js', core));
 
-/** Org permissions: a Condition on the rows in, the Role given as its Value; True out. */
+/** Org permissions: the rows in, their Role a Field, a Condition Equals the Role given as its Value B; True out. */
 const ORG = {
   v: 1, label: 'Org permissions', category: 'Logic',
   inputs: [{ name: 'users', label: 'Users', type: 'object' }, { name: 'role', label: 'Role', type: 'value', control: 'text', default: 'admin' }],
   outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
-  nodes: [{ id: 'has-role', kind: 'condition', x: 0, y: 0, values: { field: 'role', op: 'eq' } }],
-  routes: [{ from: '#in/users', to: 'has-role' }, { from: '#in/role', to: 'has-role/value' }, { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' }],
+  nodes: [{ id: 'role-field', kind: 'field', x: 0, y: 0, values: { field: 'role' } }, { id: 'has-role', kind: 'condition', x: 200, y: 0, values: { type: 'eq' } }],
+  routes: [
+    { from: '#in/users', to: 'role-field' }, { from: 'role-field/field', to: 'has-role' }, { from: '#in/role', to: 'has-role/b' },
+    { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' },
+  ],
 };
 const library = (nodes = {}) => ({ v: 1, nodes: { 'org-permissions': structuredClone(ORG), ...structuredClone(nodes) } });
 const flow = (use = {}) => ({
@@ -81,21 +84,21 @@ test('a use is a node of the definition\'s kind: nodeKindOf gives a row per inpu
 test('a use runs nested: innerOf gives the body with Group Input and Output, and this instance\'s parameters over the defaults', () => {
   const l = library();
   const own = lib.innerOf(flow({ values: { role: 'owner' } }).nodes[1], l);
-  assert.deepEqual(own.workflow.nodes.map((n) => n.id), ['#in', 'has-role', '#out']);
+  assert.deepEqual(own.workflow.nodes.map((n) => n.id), ['#in', 'role-field', 'has-role', '#out']);
   assert.deepEqual(own.params, { role: 'owner' });
   assert.deepEqual(lib.innerOf(flow().nodes[1], l).params, { role: 'admin' }, 'the default, until the instance sets its own');
   assert.deepEqual(workflowFaults(own.workflow, own.kinds), [], 'the body is a workflow, checked by the same function');
-  assert.deepEqual(workflowGraph(own.workflow, {}, own.kinds).nodes.map((n) => n.heading), ['Group Input', 'Condition', 'Group Output']);
+  assert.deepEqual(workflowGraph(own.workflow, {}, own.kinds).nodes.map((n) => n.heading), ['Group Input', 'Field', 'Condition', 'Group Output']);
   assert.equal(lib.innerOf({ id: 'x', kind: 'store' }, l), undefined, 'a shipped kind has no inside');
   assert.equal(lib.innerOf({ id: 'x', kind: 'nope' }, l), undefined);
 });
 
 test('a use gives the same faults inside, named by path', () => {
   const inside = library();
-  inside.nodes['org-permissions'].nodes[0].values = { field: 'role', op: 'nonsense' };
+  inside.nodes['org-permissions'].nodes[1].values = { type: 'nonsense' };
   const said = faults(flow(), inside);
   assert.equal(said.length, 1);
-  assert.match(said[0], /^Org permissions › Condition: the node "has-role" holds "nonsense" as its Operator, which is no operator$/);
+  assert.match(said[0], /^Org permissions › Condition: the node "has-role" holds "nonsense" as its Operation, which is none of its choices$/);
   // The same words as the body checked by itself.
   const body = lib.innerOf(flow().nodes[1], inside);
   assert.ok(workflowFaults(body.workflow, body.kinds).some((f) => said[0].endsWith(f)));
@@ -163,7 +166,7 @@ test('definitionDiff: each kind of change, plain data; a version ignores where a
   assert.deepEqual(change((d) => { d.inputs[0].type = 'value'; }).inputs.retyped, [{ name: 'users', from: 'object', to: 'value' }]);
   assert.deepEqual(change((d) => { d.inputs[1].default = 'owner'; }).inputs.changed, ['role']);
   assert.deepEqual(change((d) => d.outputs.push({ name: 'blocked', type: 'object' })).outputs.added, ['blocked']);
-  assert.deepEqual(change((d) => { d.nodes[0].values.op = 'ne'; }).nodes.changed, ['has-role']);
+  assert.deepEqual(change((d) => { d.nodes[1].values.type = 'ne'; }).nodes.changed, ['has-role']);
   assert.deepEqual(change((d) => d.nodes.push({ id: 'more', kind: 'collection', x: 0, y: 0, values: { type: 'count' } })).nodes.added, ['more']);
   assert.deepEqual(change((d) => d.nodes.pop()).nodes.removed, ['has-role']);
   assert.deepEqual(change((d) => d.routes.pop()).routes.removed, [{ from: 'has-role', to: '#out' }]);

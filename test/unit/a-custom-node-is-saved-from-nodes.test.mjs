@@ -23,11 +23,11 @@ const flow = () => ({
   nodes: [
     { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'users' } },
     { id: 'val', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
-    { id: 'cond', kind: 'condition', x: 360, y: 40, values: { field: 'status', op: 'eq' } },
+    { id: 'cond', kind: 'condition', x: 360, y: 40, values: { type: 'eq' } },
     { id: 'end', kind: 'output', x: 720, y: 0 },
   ],
   routes: [
-    { from: 'start/rows', to: 'cond' }, { from: 'val/value', to: 'cond/value' }, { from: 'cond/rows', to: 'end' },
+    { from: 'start/rows', to: 'cond' }, { from: 'val/value', to: 'cond/b' }, { from: 'cond/rows', to: 'end' },
   ],
 });
 const sorted = (w) => ({
@@ -67,7 +67,7 @@ test('two nodes saved together keep the route between them inside; one source fe
   assert.ok(!made.fault, made.fault);
   const d = made.library.nodes[made.id];
   assert.deepEqual(d.inputs.map((i) => i.name), ['start-rows']);
-  assert.ok(d.routes.some((r) => r.from === 'val/value' && r.to === 'cond/value'));
+  assert.ok(d.routes.some((r) => r.from === 'val/value' && r.to === 'cond/b'));
   assert.deepEqual(sorted(ungroupUse(made.workflow, made.use, made.library).workflow), sorted(w));
 });
 
@@ -89,13 +89,15 @@ test('refused in words: nothing picked, no name, a Group node, a loop through ou
   // Two types: a Store's rows (an object) into the Value row, beside the header it feeds. Any route joins any
   // input (TODO 770): ONE socket, typed by what its source sends; inside, the Value reads null and warns, as outside.
   const bad = flow();
-  bad.routes = [{ from: 'start/rows', to: 'cond' }, { from: 'start/rows', to: 'cond/value' }, { from: 'cond/rows', to: 'end' }];
-  assert.deepEqual(workflowGraph(bad).nodes.find((n) => n.id === 'cond').warnings, [{ row: 'value', words: 'Value takes a value; it was given rows' }]);
+  bad.routes = [{ from: 'start/rows', to: 'cond' }, { from: 'start/rows', to: 'cond/b' }, { from: 'cond/rows', to: 'end' }];
+  assert.deepEqual(workflowGraph(bad).nodes.find((n) => n.id === 'cond').warnings, [
+    { words: 'Equals takes a field or a value; it was given rows: route a Field in' }, { row: 'b', words: 'Value B takes a value; it was given rows' },
+  ]);
   const mixed = groupNodes(bad, ['cond'], empty(), { label: 'Mixed' });
   assert.equal(mixed.fault, undefined);
   assert.deepEqual(mixed.library.nodes[mixed.id].inputs.map((i) => [i.label, i.type]), [['Store › Rows', 'object']]);
   const inner = lib.innerOf(mixed.workflow.nodes.find((n) => n.id === mixed.use), mixed.library);
-  assert.deepEqual(workflowGraph(inner.workflow, {}, inner.kinds).nodes.find((n) => n.id === 'cond').warnings, [{ row: 'value', words: 'Value takes a value; it was given an object' }]);
+  assert.deepEqual(workflowGraph(inner.workflow, {}, inner.kinds).nodes.find((n) => n.id === 'cond').warnings, [{ row: 'b', words: 'Value B takes a value; it was given an object' }]);
 });
 
 /** Has status, as the Demos' preset: Records and a Status in, the matching rows out. */
@@ -103,8 +105,8 @@ const HAS = {
   v: 1, label: 'Has status',
   inputs: [{ name: 'records', label: 'Records', type: 'object' }, { name: 'status', label: 'Status', type: 'value' }],
   outputs: [{ name: 'matching', label: 'Matching', type: 'object' }],
-  nodes: [{ id: 'has-status', kind: 'condition', x: 0, y: 0, values: { field: 'status', op: 'eq' } }],
-  routes: [{ from: '#in/records', to: 'has-status' }, { from: '#in/status', to: 'has-status/value' }, { from: 'has-status/rows', to: '#out/matching' }, { from: 'has-status', to: '#out' }],
+  nodes: [{ id: 'has-status', kind: 'condition', x: 0, y: 0, values: { type: 'eq' } }],
+  routes: [{ from: '#in/records', to: 'has-status' }, { from: '#in/status', to: 'has-status/b' }, { from: 'has-status/rows', to: '#out/matching' }, { from: 'has-status', to: '#out' }],
 };
 const hasLib = (preset = false) => ({ v: 1, nodes: { 'has-status': { ...structuredClone(HAS), ...(preset ? { preset: true } : {}) } } });
 /** A Store, a Value and a Condition beside two uses of Has status, its Matching on to the Output. */
@@ -113,7 +115,7 @@ const beside = (library = hasLib()) => ({
   nodes: [
     { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'users' } },
     { id: 'val', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
-    { id: 'c', kind: 'condition', x: 0, y: 400, values: { field: 'status', op: 'eq' } },
+    { id: 'c', kind: 'condition', x: 0, y: 400, values: { type: 'eq' } },
     lib.useOf(library, 'has-status', { id: 'has', x: 360, y: 0 }),
     lib.useOf(library, 'has-status', { id: 'has2', x: 360, y: 400 }),
     { id: 'end', kind: 'output', x: 720, y: 0 },
@@ -157,11 +159,11 @@ test('inside, a new row routes on to any inner socket, and Ungroup joins its sou
   const two = headerInput(one.workflow, { from: 'val/value', to: 'has' }, one.library);
   // The reader routes the Store's row on to the Condition's value inside; the Value's row stays unrouted.
   const inner = lib.innerOf(two.workflow.nodes.find((n) => n.id === 'has'), two.library);
-  const routed = editWorkflow(inner.workflow, { route: { from: '#in/start-rows', to: 'has-status/value' } }, inner.kinds);
+  const routed = editWorkflow(inner.workflow, { route: { from: '#in/start-rows', to: 'has-status/b' } }, inner.kinds);
   const library = lib.editDefinition(two.library, 'has-status', { routes: routed.routes });
   const back = ungroupUse(two.workflow, 'has', library);
   assert.ok(!back.fault, back.fault);
-  assert.ok(said(back.workflow).includes('start/rows → has-status/value'));
+  assert.ok(said(back.workflow).includes('start/rows → has-status/b'));
   assert.ok(!said(back.workflow).some((r) => r.startsWith('val/value')));
 });
 
@@ -199,12 +201,12 @@ test('the Group Input shows a row per connected input, each an output socket rou
     nodes: [
       { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'users' } },
       { id: 'val', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
-      { id: 'a', kind: 'condition', x: 360, y: 0, values: { field: 'status', op: 'eq' } },
-      { id: 'b', kind: 'condition', x: 360, y: 300, values: { field: 'status', op: 'ne' } },
+      { id: 'a', kind: 'condition', x: 360, y: 0, values: { type: 'eq' } },
+      { id: 'b', kind: 'condition', x: 360, y: 300, values: { type: 'ne' } },
       { id: 'end', kind: 'output', x: 720, y: 0 },
     ],
     routes: [
-      { from: 'start/rows', to: 'a' }, { from: 'start/rows', to: 'b' }, { from: 'val/value', to: 'a/value' }, { from: 'val/value', to: 'b/value' }, { from: 'a/rows', to: 'end' },
+      { from: 'start/rows', to: 'a' }, { from: 'start/rows', to: 'b' }, { from: 'val/value', to: 'a/b' }, { from: 'val/value', to: 'b/b' }, { from: 'a/rows', to: 'end' },
     ],
   };
   const made = groupNodes(w, ['a', 'b'], empty(), { label: 'Both' }, undefined, facts);
@@ -212,7 +214,7 @@ test('the Group Input shows a row per connected input, each an output socket rou
   const inner = lib.innerOf(made.workflow.nodes.find((n) => n.id === made.use), made.library);
   const rows = inner.kinds[lib.GROUP_INPUT].rows;
   assert.deepEqual(rows.map((r) => [r.name, r.output]), [['start-rows', 'object'], ['val-value', 'value']]);
-  for (const r of rows) assert.deepEqual(inner.workflow.routes.filter((x) => x.from === `#in/${r.name}`).map((x) => x.to).sort(), r.name === 'start-rows' ? ['a', 'b'] : ['a/value', 'b/value']);
+  for (const r of rows) assert.deepEqual(inner.workflow.routes.filter((x) => x.from === `#in/${r.name}`).map((x) => x.to).sort(), r.name === 'start-rows' ? ['a', 'b'] : ['a/b', 'b/b']);
   assert.deepEqual(sorted(ungroupUse(made.workflow, made.use, made.library).workflow), sorted(w));
   // Only its rows send: no header socket (Will, 765), so a route from `#in` itself is a fault.
   assert.equal(inner.kinds[lib.GROUP_INPUT].output, undefined);
@@ -227,5 +229,5 @@ test('ungroup of what is no Custom Node is refused; a parameter nothing fed land
   const lib2 = structuredClone(made.library);
   lib2.nodes[made.id].inputs.find((i) => i.name === 'val-value').default = 'trial';
   const back = ungroupUse(loose, made.use, lib2);
-  assert.equal(back.workflow.nodes.find((n) => n.id === 'cond').values.value, 'trial');
+  assert.equal(back.workflow.nodes.find((n) => n.id === 'cond').values.b, 'trial');
 });

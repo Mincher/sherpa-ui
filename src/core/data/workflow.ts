@@ -29,10 +29,10 @@
  */
 import { report } from './report.js';
 import { typedValue } from './filter-state.js';
-import { OPS_FOR_TYPE, OP_LABELS } from './store.js';
+import { OPS_FOR_TYPE, OP_LABELS, type FilterOp } from './store.js';
 import {
-  NODE_KINDS, ROWS, FALSE_SOCKET, accepts, conditionRows, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, partName, partOf, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf,
-  type GraphRow, type NodeSize, type NodeKind, type NodeRoute, type NodeTie, type PartKind, type RowKind, type SocketType,
+  NODE_KINDS, ROWS, FALSE_SOCKET, LIST_OPS, accepts, drivenSwitch, fixedChoices, truthy, kindIn, kindNode, kindOfNode, mirrored, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf,
+  type GraphRow, type NodeSize, type NodeKind, type NodeRoute, type NodeTie, type RowKind, type SocketType,
 } from './node-kinds.js';
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './route-bends.js';
 import type { FieldType } from './filter-state.js';
@@ -131,7 +131,8 @@ const inGrowth = (n: unknown): boolean => typeof n === 'number' && n >= GROW_MIN
 
 /** Whether a value or a socket names a row the node holds only under ANOTHER of its types. */
 function keptRow(node: Pick<WorkflowNode, 'kind' | 'values'> | undefined, row: string | undefined, kinds: Kinds): boolean {
-  const kind = node && kinds[node.kind];
+  // Only a type a workflow draws keeps a row: a Query's own is none of its.
+  const kind = node && kinds[node.kind] && (kindIn(kinds[node.kind]!, 'workflow') ?? kinds[node.kind]);
   if (!node || !kind?.types || row === undefined || row === FALSE_SOCKET || rowOf(kindOfNode(kinds, node)!.rows, row)) return false;
   return !!rowOfOtherType(kind, node.values?.['type'], row);
 }
@@ -191,14 +192,40 @@ export function finalGraph<W extends Pick<WorkflowDefinition, 'nodes'> & Partial
   return { ...rest, nodes, ...(workflow.routes ? { routes } : {}), ...(ties.length ? { ties } : {}), ...(frames.length ? { frames } : {}) } as unknown as W;
 }
 
-/** The field a row's part reads, its type, the values it may take and its name: what a closed tags row lists. Only
- *  a Field row the node draws now names it: one another type kept in the draft does not. */
-function fieldOf(values: Readonly<Record<string, unknown>>, row: string, facts: Pick<WorkflowFacts, 'fields' | 'values'>, rows: readonly RowKind[]): { field: string; type?: string; known?: readonly string[]; of: string } {
-  const own = partName('field', partOf(row).part);
-  const field = String((rowOf(rows, own) ? values[own] : undefined) ?? (rowOf(rows, 'field') ? values['field'] : undefined) ?? '');
-  const type = facts.fields?.[field]?.type;
+/** The field a node's rows read, its type, the values it may take and its words: what a typed Value B and a closed
+ *  list read. `column`: it came on a Field's column. */
+interface ReadField {
+  field: string;
+  type?: string;
+  known?: readonly string[];
+  of: string;
+  column?: true;
+}
+
+/** The field a node's rows read: the Field whose column reaches its header (plan 783 D5); else a Field row of its own
+ *  the node draws now (Sort, Group by, Tag) — one another type kept in the draft names nothing. */
+function fieldAt(
+  node: WorkflowNode, rows: readonly RowKind[], routes: readonly NodeRoute[], sends: (from: string) => Reached | undefined, facts: Pick<WorkflowFacts, 'fields' | 'values'>,
+): ReadField | undefined {
+  const column = routes.filter((r) => r.to === node.id).map((r) => sends(r.from)).find((g) => g?.kind === 'field')?.field;
+  const field = column?.name ?? (rowOf(rows, 'field') && node.kind !== 'field' ? node.values?.['field'] : undefined);
+  if (typeof field !== 'string' || !field) return undefined;
+  const type = column ? column.type : facts.fields?.[field]?.type;
   const known = facts.values?.[field];
-  return { field, ...(type ? { type } : {}), ...(known ? { known } : {}), of: facts.fields?.[field]?.label ?? field };
+  return { field, ...(type ? { type } : {}), ...(known ? { known } : {}), of: column?.label ?? facts.fields?.[field]?.label ?? field, ...(column ? { column: true as const } : {}) };
+}
+
+/** A row a node's field types: a value picked or typed, tags, a Start or an End. TRAP T-a-value-is-typed-once */
+const typedRow = (row: Pick<RowKind, 'control'> | undefined): boolean => ['values', 'tags', 'text'].includes(row?.control ?? '');
+
+/** A comparison's operator its field's type does not take, in words — "Contains takes a text field; it was given the
+ *  Seats column"; none, it takes it. A warning, never a fault (plan 783 F2). */
+function opWarning(op: unknown, read: ReadField | undefined): string | undefined {
+  if (!read?.column || typeof op !== 'string' || !(op in OP_LABELS) || LIST_OPS.includes(op as FilterOp)) return undefined;
+  if (OPS_FOR_TYPE[read.type ?? 'text']?.includes(op as FilterOp)) return undefined;
+  const types = Object.keys(OPS_FOR_TYPE).filter((t) => OPS_FOR_TYPE[t]!.includes(op as FilterOp));
+  const said = new Intl.ListFormat('en', { type: 'disjunction' }).format(types);
+  return `${OP_LABELS[op as FilterOp]} takes a ${said} field; it was given the ${read.of} column`;
 }
 
 /** A row as its node's field shapes it: a tags row is CLOSED to the field's values, where they are known. */
@@ -209,9 +236,8 @@ function shapedRow<R extends RowKind>(row: R, known: readonly string[] | undefin
 
 /** The fault of a value in a node's row, in words, as the row draws it; none, it holds. A number row's text is read as its number.
  *  TRAP T-a-row-says-its-own-fault */
-function faultOf(node: Pick<WorkflowNode, 'values'>, row: RowKind, value: unknown, facts: Pick<WorkflowFacts, 'fields' | 'values'>, rows: readonly RowKind[]): string | undefined {
-  const { known, of } = fieldOf(node.values ?? {}, row.name, facts, rows);
-  return rowFault(shapedRow(row, known), row.control === 'number' ? typedValue('number', value) : value, of);
+function faultOf(row: RowKind, value: unknown, read: ReadField | undefined): string | undefined {
+  return rowFault(shapedRow(row, read?.known), row.control === 'number' ? typedValue('number', value) : value, read?.of);
 }
 
 /** What a Value of a type wants that its value is not, in words — "a whole number"; none, it holds. */
@@ -235,6 +261,12 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
   if (!workflow) return faults;
   const problems = [...faults];
   const byId = new Map<string, NodeKind>();
+  // A route to a row another type holds is kept for that type: no fault, and Save leaves it out.
+  const kept = keptRoutes(workflow, kinds);
+  const live = (workflow.routes ?? []).filter((r) => !kept.includes(r));
+  const held = new Map(workflow.nodes.map((n) => [n.id, n]));
+  const sends = sender(held, live, kinds, facts);
+  const reads = new Map<string, ReadField | undefined>();
   for (const node of workflow.nodes) {
     const shipped = kinds[node.kind];
     const kind = kindOfNode(kinds, node);
@@ -243,12 +275,14 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
     else if (!kind.graphs.includes('workflow')) problems.push(`the node "${node.id}" is of the kind "${node.kind}", which a workflow does not run`);
     else byId.set(node.id, kind);
     if (node.size && !(inGrowth(node.size.w) && inGrowth(node.size.h))) problems.push(`the node "${node.id}" is sized ${node.size.w} by ${node.size.h} times its natural size, and a size runs from ${GROW_MIN} to ${GROW_MAX}`);
+    const read = kind && fieldAt(node, kind.rows, live, sends, facts);
+    reads.set(node.id, read);
     for (const [name, value] of Object.entries(node.values ?? {})) {
       const row = kind && rowOf(kind.rows, name);
       // A family's type is a value of its first row; the value of a row another type holds is KEPT.
       if (shipped?.types && name === 'type') {
         if (typeof value !== 'string' || !Object.hasOwn(shipped.types, value)) problems.push(`the node "${node.id}" holds "${String(value)}" as its ${shipped.typeLabel ?? 'Type'}, which is none of its choices`);
-      } else if (shipped?.types && !row && rowOfOtherType(shipped, node.values?.['type'], name)) continue;
+      } else if (shipped?.types && !row && rowOfOtherType(kindIn(shipped, 'workflow') ?? shipped, node.values?.['type'], name)) continue;
       else if (kind && !row) problems.push(`the node "${node.id}" holds a value for "${name}", a row its kind has not`);
       // A value is typed as its row's control takes it. TRAP T-a-value-is-typed-once
       else if (row?.control === 'op' && !(String(value) in OP_LABELS)) problems.push(`the node "${node.id}" holds "${String(value)}" as its ${row.label}, which is no operator`);
@@ -257,26 +291,15 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
       else if (row && fixedChoices(row.control) && ![value].flat().every((v) => fixedChoices(row.control)!.some((c) => c.value === String(v)))) {
         problems.push(`the node "${node.id}" holds "${String(value)}" as its ${row.label}, which is none of its choices`);
       } else {
-        const fault = row && faultOf(node, row, value, facts, kind!.rows);
+        const fault = row && faultOf(row, value, read);
         if (fault) problems.push(`the node "${node.id}"'s ${row!.label}: ${fault}`);
+        // A comparison's value is of its field's type: a number field's is a number. Its operator only warns.
+        const bad = row && read?.type === 'number' && kind?.model === 'Condition' && typedRow(row) && ![typedValue('number', value)].flat().every((v) => typeof v === 'number');
+        if (bad) problems.push(`the node "${node.id}" holds "${String(value)}" as its ${row!.label}, which is no number, as "${read!.field}", a number field takes`);
       }
     }
     const what = kind?.model === 'typedValue' ? typedWants(node.values?.['type'], node.values?.['value']) : undefined;
     if (what) problems.push(`the node "${node.id}" holds "${String(node.values!['value'])}" as its Value, which is not ${what}`);
-    // A comparison by its field's type: an operator it takes, and a value of its type.
-    for (const [name, field] of Object.entries(node.values ?? {})) {
-      const { base, part } = partOf(name);
-      const type = base === 'field' ? facts.fields?.[String(field)]?.type : undefined;
-      if (!kind || !type || !rowOf(kind.rows, 'field')?.repeat) continue;
-      const op = node.values?.[partName('op', part)];
-      const value = node.values?.[partName('value', part)];
-      const name_ = `"${String(field)}", a ${type} field`;
-      if (op !== undefined && String(op) in OP_LABELS && !(OPS_FOR_TYPE[type]?.includes(String(op) as never) || op === 'in' || op === 'notin')) {
-        problems.push(`the node "${node.id}" holds "${String(op)}" as its ${rowOf(kind.rows, 'op')?.label}, which ${name_} does not take`);
-      }
-      const bad = type === 'number' && value !== undefined && ![typedValue(type as FieldType, value)].flat().every((v) => typeof v === 'number');
-      if (bad) problems.push(`the node "${node.id}" holds "${String(value)}" as its ${rowOf(kind.rows, 'value')?.label}, which is no number, as ${name_} takes`);
-    }
   }
   // What a socket carries, which way, and whether it takes many: undefined when it is not one.
   const at = (address: string, side: 'input' | 'output'): { type: SocketType; many: boolean } | undefined => {
@@ -285,9 +308,6 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
     const type = kind && socketType(kind, row, side);
     return kind && type && { type, many: takesMany(kind, row) };
   };
-  // A route to a row another type holds is kept for that type: no fault, and Save leaves it out.
-  const kept = keptRoutes(workflow, kinds);
-  const held = new Map(workflow.nodes.map((n) => [n.id, n]));
   // Each input's routes so far, by where they leave. Any type joins any input: what it cannot use reads null (TODO 770).
   const fed = new Map<string, string[]>();
   const next = new Map<string, string[]>();
@@ -312,7 +332,7 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
     const [source, target] = [held.get(socketOf(from).node), held.get(socketOf(to).node)];
     const brought = socketOf(from).row === undefined ? undefined : source?.values?.[socketOf(from).row!];
     const row = target && into && rowOf(byId.get(target.id)!.rows, socketOf(to).row ?? '');
-    const fault = row && out && accepts(out.type, into!.type) && brought !== undefined ? faultOf(target!, row, brought, facts, byId.get(target!.id)!.rows) : undefined;
+    const fault = row && out && accepts(out.type, into!.type) && brought !== undefined ? faultOf(row, brought, reads.get(target!.id)) : undefined;
     if (fault) problems.push(`the route "${from}" → "${to}": ${fault}`);
     const [a, b] = [socketOf(from).node, socketOf(to).node];
     next.set(a, [...(next.get(a) ?? []), b]);
@@ -362,19 +382,6 @@ export interface WorkflowFacts {
   values?: Readonly<Record<string, readonly string[]>>;
 }
 
-/** The parts of a group a Condition holds: a comparison for each part its values name, a nested group
- *  for each Group row a route enters; a part nothing names is a blank comparison. */
-function partsOf(node: WorkflowNode, routes: readonly NodeRoute[]): PartKind[] {
-  const named = new Map<number, PartKind>();
-  for (const name of Object.keys(node.values ?? {})) if (['field', 'op', 'value'].includes(partOf(name).base)) named.set(partOf(name).part, 'leaf');
-  for (const { to } of routes) {
-    const { node: at, row = '' } = socketOf(to);
-    const { base, part } = partOf(row);
-    if (at === node.id && base === 'group' && !named.has(part)) named.set(part, 'group');
-  }
-  return Array.from({ length: Math.max(1, ...named.keys()) }, (_, i) => named.get(i + 1) ?? 'leaf');
-}
-
 /** The field a Field row picks, as it shows it — a Value routed in, else its own pick — with its words and type from the
  *  facts; `stranger` where the facts know fields and not this one. None: it picks none. Plan 783 D8 */
 function pickedField(
@@ -391,24 +398,34 @@ function pickedField(
 }
 
 /** What each output socket sends, read through the routes: what its row gives (`givenAt`); a Field row, the column of what
- *  reaches its header or one record's value (`columnOf`), none where its field is a stranger or its header read null. A
- *  loop sends what its kind says. Plan 783 D2 */
+ *  reaches its header or one record's value (`columnOf`), none where its field is a stranger or its header read null; the
+ *  Rows row of a node its rows come into, rows only where its header reads rows, a column, an object, or a test's True or
+ *  False that carries them (plan 783 D4). A loop sends what its kind says. Plan 783 D2 */
 function sender(held: ReadonlyMap<string, WorkflowNode>, routes: readonly NodeRoute[], kinds: Kinds, facts: Pick<WorkflowFacts, 'fields'>): (from: string) => Reached | undefined {
   const busy = new Set<string>();
   const sends = (from: string): Reached | undefined => {
     const { node: id, row } = socketOf(from);
     const node = held.get(id);
     const kind = kindOfNode(kinds, node);
-    if (!kind || row === undefined || rowOf(kind.rows, row)?.gives !== 'field' || busy.has(id)) return givenAt(node, row, kinds);
-    const picked = pickedField(held, routes, facts, from);
-    if (!picked || picked.stranger) return undefined;
+    const out = kind && row !== undefined ? rowOf(kind.rows, row) : undefined;
+    const passes = out?.gives === 'rows' && !!kind!.input;
+    if (!kind || !out || (out.gives !== 'field' && !passes) || busy.has(id)) return givenAt(node, row, kinds);
+    const picked = passes ? undefined : pickedField(held, routes, facts, from);
+    if (!passes && (!picked || picked.stranger)) return undefined;
     busy.add(id);
     try {
       const need = needOf(kind);
-      const into = routes.find((r) => r.to === id);
-      const got = into && sends(into.from);
-      const read = got && need ? readInput({ label: kind.heading, needs: need }, got) : undefined;
-      return columnOf(picked.field, read?.warning ? null : got);
+      // What its header reads of each route: what it cannot use is null.
+      const heard = routes.filter((r) => r.to === id).map((r) => {
+        const got = sends(r.from);
+        return { from: r.from, got: got && need && readInput({ label: kind.heading, needs: need }, got).warning ? null : got };
+      });
+      if (passes) {
+        const carries = heard.some(({ from: f, got }) => !!got && (['rows', 'field', 'object'].includes(got.kind)
+          || (got.kind === 'boolean' && sends(`${socketOf(f).node}/${ROWS.name}`)?.kind === 'rows')));
+        return carries ? { kind: 'rows' } : undefined;
+      }
+      return columnOf(picked!.field, heard[0]?.got);
     } finally {
       busy.delete(id);
     }
@@ -460,19 +477,23 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
       if (read?.warning) warnings.push({ ...(to === node.id ? {} : { row: socketOf(to).row! }), words: read.warning });
       return read ? [[r, read] as const] : [];
     }));
+    // A header's words name the node, or a family's type: "Sort takes a field".
     const head = needOf(kind);
-    if (head) readsAt(node.id, { label: node.heading ?? kind.heading, needs: head });
-    // A Condition's tree draws a part for each comparison its values hold and each Group row a route enters.
-    const drawn = kind.rows.some((r) => r.repeat) ? conditionRows(kind, partsOf(node, workflow.routes ?? [])) : kind.rows;
-    const rows = drawn.map((row): GraphRow => {
-      const { type, known, of } = fieldOf(values, row.name, facts, kind.rows);
-      const has = row.name === 'join' ? values['join'] ?? 'and' : values[row.name];
+    const headed = node.heading ?? (Object.keys(family.types ?? {}).length > 1 ? at?.type.label : undefined) ?? kind.heading;
+    if (head) readsAt(node.id, { label: headed, needs: head });
+    // The field its rows read: the Field reaching its header. Its operator warns where the field's type does not take it.
+    const read = fieldAt(node, kind.rows, routes, sent, facts);
+    const { type, known, of } = read ?? {};
+    const op = kind.model === 'Condition' ? opWarning(at?.id, read) : undefined;
+    if (op) warnings.push({ words: op });
+    const rows = kind.rows.map((row): GraphRow => {
+      const has = values[row.name];
       // A Value row with no values to pick from is typed, as it was.
       const plain = row.control === 'values' && !known?.length ? { ...row, control: 'text' as const } : row;
       // A Unit says its words for the count beside it: "1 day", "7 days".
       const count = row.control === 'unit' && typeof values['n'] === 'number' ? { count: values['n'] } : {};
       const list = rowChoices({ ...plain, value: has }, {
-        ...(facts.fields ? { fields: facts.fields } : {}), ...(facts.stores ? { stores: facts.stores } : {}), ...(family.types ? { types: typeChoices(family)! } : {}), ...(known ? { values: known } : {}), ...(type && row.name !== 'join' ? { type } : {}), ...count,
+        ...(facts.fields ? { fields: facts.fields } : {}), ...(facts.stores ? { stores: facts.stores } : {}), ...(family.types ? { types: typeChoices(kindIn(family, 'workflow') ?? family)! } : {}), ...(known ? { values: known } : {}), ...(type ? { type } : {}), ...count,
       });
       // A Type row says the type's own value, and the line the type gives.
       const typed = row.control === 'type' ? { value: at?.id ?? '', ...(at?.type.help ? { hint: at.type.help } : {}) } : {};
@@ -487,7 +508,7 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
         return fault ? { ...shown, fault } : shown;
       };
       const address = `${node.id}/${row.name}`;
-      const need = row.input ? needOf(row, partOf(row.name).base === 'value' ? type : undefined) : undefined;
+      const need = row.input ? needOf(row, typedRow(row) ? type : undefined) : undefined;
       const fixed = fixedChoices(row.control);
       const reads = need ? readsAt(address, { label: row.label, needs: need, ...(fixed ? { choices: fixed } : {}) }) : new Map<NodeRoute, ReturnType<typeof readInput>>();
       const bad = [...reads].filter(([, read]) => read.warning).map(([r]) => r);
@@ -592,14 +613,13 @@ const empty = (value: unknown): boolean => value === '' || value == null || (Arr
 /** A node's values after its type or an operator changed: a row both shapes have, one value under one and a
  *  list under the other, takes its value along — split at its commas, or joined by them — so going back
  *  gives it again. Off is not gone. TRAP T-an-operator-shapes-its-value */
-function reshape(node: WorkflowNode, values: Readonly<Record<string, unknown>>, kinds: Kinds, facts: Pick<WorkflowFacts, 'fields'>): Readonly<Record<string, unknown>> {
+function reshape(node: WorkflowNode, values: Readonly<Record<string, unknown>>, kinds: Kinds, type: FieldType | undefined): Readonly<Record<string, unknown>> {
   const [before, after] = [kindOfNode(kinds, node)?.rows ?? [], kindOfNode(kinds, { ...node, values })?.rows ?? []];
   const moved = Object.entries(values).flatMap(([name, held]) => {
     const [was, now] = [rowOf(before, name), rowOf(after, name)];
     if (!was || !now || !!was.multiple === !!now.multiple) return [];
-    const type = partOf(name).base === 'value' ? fieldOf(values, name, facts, after).type as FieldType | undefined : undefined;
     const shaped = now.multiple ? asList(held) : asOne(held);
-    return [[name, type ? typedValue(type, shaped) : shaped] as const];
+    return [[name, type && typedRow(now) ? typedValue(type, shaped) : shaped] as const];
   });
   if (!moved.length) return values;
   return Object.fromEntries([...Object.entries(values).filter(([name]) => !moved.some(([m]) => m === name)), ...moved.filter(([, v]) => !empty(v))]);
@@ -764,8 +784,11 @@ export function editWorkflow(
     }
     const kind = kindOfNode(kinds, node);
     const row = kind && rowOf(kind.rows, edit.row);
-    // A comparison's value, or a field's tags, is typed by its field. TRAP T-a-value-is-typed-once
-    const type = row && partOf(row.name).base === 'value' ? fieldOf(node.values ?? {}, edit.row, facts, kind!.rows).type as FieldType | undefined : undefined;
+    // A comparison's value, or a field's tags, is typed by the field that reaches it. TRAP T-a-value-is-typed-once
+    const live = (workflow.routes ?? []).filter((r) => !keptRoutes(workflow, kinds).includes(r));
+    const held = new Map(workflow.nodes.map((n) => [n.id, n]));
+    const field = kind && fieldAt(node, kind.rows, live, sender(held, live, kinds, facts), facts)?.type as FieldType | undefined;
+    const type = typedRow(row) ? field : undefined;
     const list = row?.multiple ? [edit.value ?? []].flat().map(String) : undefined;
     const value = row?.control === 'number' ? typedValue('number', String(edit.value ?? ''))
       : type ? typedValue(type, list ?? edit.value)
@@ -773,7 +796,7 @@ export function editWorkflow(
     const { [edit.row]: _was, ...rest } = node.values ?? {};
     const set = empty(value) ? rest : { ...rest, [edit.row]: value };
     // A type or an operator may make a row it keeps hold a list, or one value: its value goes with it.
-    const values = edit.row === 'type' || partOf(edit.row).base === 'op' ? reshape(node, set, kinds, facts) : set;
+    const values = edit.row === 'type' ? reshape(node, set, kinds, field) : set;
     const { values: _old, ...bare } = node;
     return Object.keys(values).length ? { ...bare, values } : bare;
   });

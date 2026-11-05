@@ -136,7 +136,7 @@ export interface NodeType {
   many?: true;
   output?: SocketType;
   branches?: boolean;
-  /** Where it is drawn, where not every graph of its kind: the Query takes a Condition's Rows that hold alone. */
+  /** Where it is drawn, where not every graph of its kind: Not and Is empty are a workflow's alone. */
   graphs?: readonly NodeGraph[];
   /** What its header's input can use, over the kind's. */
   needs?: Need;
@@ -198,16 +198,17 @@ const [A, B, SEPARATOR] = [numberRow('a', 'Value A'), numberRow('b', 'Value B'),
 /** The operators whose value is a list: Is one of, Is not one of. */
 export const LIST_OPS: readonly FilterOp[] = ['in', 'notin'];
 
-/** A Logic type that is one of the data layer's operators, over two values: its words the operator's own (`OP_LABELS`),
- *  Value A against what the operator takes — Value B, a list of Values, or Start and End. TRAP T-a-logic-type-is-an-operator */
+/** A Logic type that is one of the data layer's operators: it tests what comes in on its header — a Field's column, or a
+ *  value — against what the operator takes: Value B, a list of Values, or Start and End. Its words the operator's own
+ *  (`OP_LABELS`). Plan 783 D3 · TRAP T-a-logic-type-is-an-operator */
 function compareType(op: FilterOp): NodeType {
   const [list, range] = [LIST_OPS.includes(op), OP_TAKES[op] === 'range'];
   const rows: RowKind[] = list ? [{ name: 'b', label: 'Values', control: 'tags', multiple: true, input: 'object' }]
-    : range ? [textRow('start', 'Start'), textRow('end', 'End')] : [textRow('b', 'Value B')];
+    : range ? [textRow('start', 'Start'), textRow('end', 'End')] : [{ name: 'b', label: 'Value B', control: 'values', input: 'value' }];
   const against = list ? 'the Values' : range ? 'Start and End' : 'Value B';
   const words = OP_LABELS[op].toLowerCase();
   const said = /^(is|does|equals|contains|starts|ends)\b/.test(words) ? words : `is ${words}`;
-  return { label: OP_LABELS[op], help: `True when Value A ${said} ${against}`, rows: [textRow('a', 'Value A'), ...rows], graphs: ['workflow'] };
+  return { label: OP_LABELS[op], help: `True when what comes in ${said} ${against}`, input: 'any', needs: 'tested', rows: [ROWS, ...rows], graphs: ['workflow'] };
 }
 
 /** Figma's six comparisons, in its order; the operators after them are Sherpa's. A span from today is Time › Duration's. */
@@ -215,13 +216,14 @@ const FIGMA_OPS: readonly FilterOp[] = ['gt', 'gte', 'lt', 'lte', 'eq', 'ne'];
 const SHERPA_OPS = (Object.keys(OP_LABELS) as FilterOp[]).filter((op) => !FIGMA_OPS.includes(op) && op !== 'last' && op !== 'next');
 const compareTypes = (ops: readonly FilterOp[]): Record<string, NodeType> => Object.fromEntries(ops.map((op) => [op, compareType(op)]));
 
-/** Logic's types after the tree: booleans on the header, read as `truthy` reads them (D2), then the comparisons. Plan 749 P5 */
+/** Logic's types, one test each (plan 783 D4): And and Or join the tests that come in, booleans on the header, read as
+ *  `truthOf` reads them; then the comparisons. Each leads with Rows: the rows it lets through. Plan 749 P5 */
 const LOGIC: Readonly<Record<string, NodeType>> = {
-  and: { label: 'And', help: 'True when every value that comes in is true', input: 'boolean', many: true, graphs: ['workflow'] },
-  or: { label: 'Or', help: 'True when any value that comes in is true', input: 'boolean', many: true, graphs: ['workflow'] },
+  and: { label: 'And', help: 'True when every value that comes in is true', input: 'boolean', many: true, rows: [ROWS], graphs: ['workflow'] },
+  or: { label: 'Or', help: 'True when any value that comes in is true', input: 'boolean', many: true, rows: [ROWS], graphs: ['workflow'] },
   ...compareTypes(FIGMA_OPS),
-  not: { label: 'Not', help: 'True when the value that comes in is false', input: 'boolean', graphs: ['workflow'] },
-  empty: { label: 'Is empty', help: 'True when the value that comes in is nothing: none, 0, false, or empty text or list', input: 'any', graphs: ['workflow'] },
+  not: { label: 'Not', help: 'True when the value that comes in is false', input: 'boolean', rows: [ROWS], graphs: ['workflow'] },
+  empty: { label: 'Is empty', help: 'True when the value that comes in is nothing: none, 0, false, or empty text or list', input: 'any', rows: [ROWS], graphs: ['workflow'] },
   ...compareTypes(SHERPA_OPS),
 };
 
@@ -253,14 +255,14 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     heading: 'Scope', icon: 'filter', input: 'any',
     rows: [ROWS, { name: '#filters', label: 'Filters', control: 'switch', input: 'boolean' }], model: 'ScopeQuery', graphs: ['query'],
   },
-  // Logic: its Rows that hold is ONE group of the condition tree (D3), the Query's only type: its join, then each
-  // part — a comparison's field, operator and value, or a nested group's True into a Group row. Then a check's types.
+  // Logic: one test per Condition, And and Or joining tests (plan 783 D4). Rows that hold is the Query's alone until it
+  // draws a tree as those (F4): its join, then each part's field, operator and value, or a nested group's Group row.
   condition: {
-    heading: 'Condition', icon: 'function', description: 'Whether a check holds: True takes what holds, False the rest.', branches: true,
-    typeLabel: 'Operation', defaultType: 'rows',
+    heading: 'Condition', icon: 'function', description: 'Whether a test holds: True takes what holds, False the rest.', branches: true,
+    typeLabel: 'Operation', defaultType: 'eq',
     types: {
       rows: {
-        label: 'Rows that hold', help: 'The rows that hold for a group of conditions', input: 'any', needs: 'rows',
+        label: 'Rows that hold', help: 'The rows that hold for a group of conditions', input: 'any', needs: 'rows', graphs: ['query'],
         rows: [
           ROWS,
           { name: 'join', label: 'Join', control: 'join' },

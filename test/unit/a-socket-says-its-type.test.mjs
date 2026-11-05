@@ -87,16 +87,19 @@ test('the rows come in on the header, of ANY type (D1), and leave a Rows row tha
   }
   const named = (test) => all.filter(([, k]) => test(k)).map(([n]) => n);
   assert.deepEqual(named((k) => k.rows.includes(ROWS)), ['store', 'status', 'source', 'scope', 'arrange', 'presentation']);
-  // A family's types say their own rows: a Condition's tree, a Sort, a Group by and a Tag send theirs from a Rows row, first.
+  // A family's types say their own rows: every Logic type, a Sort, a Group by and a Tag send theirs from a Rows row, first.
   const typed = all.flatMap(([n, k]) => Object.entries(k.types ?? {}).map(([t, type]) => [`${n} › ${t}`, type.rows ?? []]));
   for (const [name, rows] of typed) if (rows.includes(ROWS)) assert.equal(rows.indexOf(ROWS), 0, `${name}: its Rows row, first`);
-  assert.deepEqual(typed.filter(([, rows]) => rows.includes(ROWS)).map(([name]) => name), ['condition › rows', 'collection › sort', 'collection › group', 'tag › includes']);
+  assert.deepEqual(typed.filter(([, rows]) => rows.includes(ROWS)).map(([name]) => name), [
+    ...Object.keys(NODE_KINDS.condition.types).map((t) => `condition › ${t}`), 'collection › sort', 'collection › group', 'tag › includes',
+  ]);
   // True and False: every kind a workflow runs but its end, and the Query's Condition, Preset and Saved filter, whose True goes into a scope's row.
   assert.deepEqual(named((k) => k.branches), ['store', 'condition', 'preset', 'saved', 'value', 'field', 'math', 'time', 'collection', 'text', 'tag']);
   // A type forks as its family does, and a header sends rows from no type. Only Logic's header takes by its type: rows, booleans, none.
   for (const [name, kind] of all) for (const type of Object.values(kind.types ?? {})) assert.deepEqual([type.branches, type.output], [undefined, undefined], name);
   assert.deepEqual(all.filter(([, k]) => Object.values(k.types ?? {}).some((t) => t.input)).map(([n]) => n), ['condition']);
-  assert.deepEqual(['rows', 'and', 'not', 'empty', 'eq'].map((t) => [NODE_KINDS.condition.types[t].input, NODE_KINDS.condition.types[t].many]), [['any', undefined], ['boolean', true], ['boolean', undefined], ['any', undefined], [undefined, undefined]]);
+  // A comparison tests what comes in on its header (plan 783 D3): a Field's column, or a value.
+  assert.deepEqual(['rows', 'and', 'not', 'empty', 'eq'].map((t) => [NODE_KINDS.condition.types[t].input, NODE_KINDS.condition.types[t].many]), [['any', undefined], ['boolean', true], ['boolean', undefined], ['any', undefined], ['any', undefined]]);
   assert.deepEqual(named((k) => k.graphs.includes('workflow') && !k.branches), ['output']);
 });
 

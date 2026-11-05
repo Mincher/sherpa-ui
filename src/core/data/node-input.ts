@@ -32,13 +32,13 @@ import { FALSE_SOCKET, SOCKET_WORDS, fixedChoices, kindOfNode, rowOf, socketType
 export type Given = 'value' | 'number' | 'boolean' | 'object' | 'list' | 'rows' | 'field';
 
 /** What an input can use: its socket's type, or finer. `choice`: one of its fixed list; `numbers`: a list of numbers;
- *  `field`: a Field's column. */
-export type Need = 'value' | 'boolean' | 'object' | 'number' | 'date' | 'rows' | 'list' | 'numbers' | 'choice' | 'operator' | 'field';
+ *  `field`: a Field's column; `tested`: what a comparison tests, a column or one value. */
+export type Need = 'value' | 'boolean' | 'object' | 'number' | 'date' | 'rows' | 'list' | 'numbers' | 'choice' | 'operator' | 'field' | 'tested';
 
 /** Each need and each given in words: the one place a warning's words come from. */
 export const INPUT_WORDS: Readonly<Record<Exclude<Need, 'choice'> | Given, string>> = {
   value: SOCKET_WORDS.value, object: SOCKET_WORDS.object, boolean: SOCKET_WORDS.boolean,
-  number: 'a number', date: 'a date', rows: 'rows', list: 'a list', numbers: 'a list of numbers', operator: 'an operator', field: 'a field',
+  number: 'a number', date: 'a date', rows: 'rows', list: 'a list', numbers: 'a list of numbers', operator: 'an operator', field: 'a field', tested: 'a field or a value',
 };
 
 /** The field a column says: its name, its words and its type (none: text). */
@@ -170,6 +170,7 @@ function fits(need: Need, { kind, value, field }: Reached, choices: readonly Row
     case 'rows': return kind === 'object' || kind === 'rows' || column;
     case 'list': return kind === 'object' || kind === 'list' || column;
     case 'field': return kind === 'object' || column;
+    case 'tested': return kind === 'value' || kind === 'number' || kind === 'boolean' || kind === 'object' || column;
     case 'numbers': return column ? field?.type === 'number' : (kind === 'object' || kind === 'list') && (!held || [value].flat().every(isNumber));
     case 'number': return (kind === 'value' || kind === 'number') && (!held || isNumber(value));
     case 'date': return column ? field?.type === 'date' : kind === 'value' && (!held || isDateTime(String(value)));
@@ -198,6 +199,6 @@ export function readInput(input: InputNeeds, reached: Reached): { value: unknown
   const coerced = coerce(needs, reached);
   if (coerced) return coerced;
   const wants = needs === 'choice' ? or((choices ?? []).map((c) => c.label)) : INPUT_WORDS[needs];
-  const route = needs === 'field' && reached.kind === 'rows' ? ': route a Field in' : '';
+  const route = (needs === 'field' || needs === 'tested') && reached.kind === 'rows' ? ': route a Field in' : '';
   return { value: null, warning: `${label} takes ${wants}; it was given ${givenWords(needs, reached)}${route}` };
 }

@@ -27,9 +27,10 @@ const filter = (id, label = id) => ({
   graph: {
     nodes: [
       { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
-      { id: 'status', kind: 'condition', x: 360, y: 0, values: { field: 'status', op: 'eq', value: 'active' } },
+      { id: 'status', kind: 'condition', x: 540, y: 0, values: { type: 'eq', b: 'active' } },
+      { id: 'field', kind: 'field', x: 270, y: 0, values: { field: 'status' } },
     ],
-    routes: [{ from: 'start/rows', to: 'status' }, { from: 'status', to: '#out/where' }],
+    routes: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status', to: '#out/where' }],
   },
 });
 const heard = async (run) => {
@@ -111,7 +112,7 @@ test('the canvas edits an entity\'s graph as a workflow — its Group Input and 
   const off = registerEntityType({ id: 'flow', label: 'Flow', runs: true });
   try {
     const kinds = (e) => graphWorkflow(e).workflow.nodes.map((n) => n.id);
-    assert.deepEqual(kinds(filter('pf')), ['start', 'status', '#out']);
+    assert.deepEqual(kinds(filter('pf')), ['start', 'status', 'field', '#out']);
     const node = {
       v: 1, type: 'node', id: 'has-role', label: 'Has role',
       graph: { nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0 }], routes: [{ from: '#in/users', to: 'c' }, { from: 'c/rows', to: '#out/allowed' }] },
@@ -134,13 +135,13 @@ test('Save writes the graph on the canvas to the reader\'s own entity, and is re
   const k = keeper();
   k.entityPresets = [filter('shipped', 'Shipped')];
   await k.entities.save(filter('mine', 'Mine'));
-  const edited = { ...filter('x').graph, nodes: filter('x').graph.nodes.map((n) => (n.id === 'status' ? { ...n, values: { ...n.values, value: 'trial' } } : n)) };
+  const edited = { ...filter('x').graph, nodes: filter('x').graph.nodes.map((n) => (n.id === 'status' ? { ...n, values: { ...n.values, b: 'trial' } } : n)) };
   assert.deepEqual(await heard(() => saveGraph(k.entities, 'mine', edited)), { result: true, said: [] });
-  assert.equal(k.entities.get('mine').graph.nodes[1].values.value, 'trial');
+  assert.equal(k.entities.get('mine').graph.nodes[1].values.b, 'trial');
   const { result, said } = await heard(() => saveGraph(k.entities, 'shipped', edited));
   assert.equal(result, false);
   assert.match(said[0], /"shipped" is a preset, which is read only/);
-  assert.equal(k.entities.get('shipped').graph.nodes[1].values.value, 'active');
+  assert.equal(k.entities.get('shipped').graph.nodes[1].values.b, 'active');
   assert.equal(await saveGraph(k.entities, 'gone', edited), false);
 });
 

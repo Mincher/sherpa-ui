@@ -21,15 +21,16 @@ const lib = await import(new URL('data/node-library.js', core));
 const { NODE_KINDS, paletteOf } = await import(new URL('data/node-kinds.js', core));
 const { onReport } = await import(new URL('data/report.js', core));
 
-/** Records whose status is one value, sent to the Preset Filter's Where. */
+/** Records whose status is one value — Store › Field › Condition — sent to the Preset Filter's Where. */
 const filter = (id, label, value = 'active', extra = {}) => ({
   v: 1, type: 'preset-filter', id, label,
   graph: {
     nodes: [
       { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
-      { id: 'status', kind: 'condition', x: 360, y: 0, values: { field: 'status', op: 'eq', value } },
+      { id: 'status', kind: 'condition', x: 540, y: 0, values: { type: 'eq', b: value } },
+      { id: 'field', kind: 'field', x: 270, y: 0, values: { field: 'status' } },
     ],
-    routes: [{ from: 'start/rows', to: 'status' }, { from: 'status', to: '#out/where' }],
+    routes: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'status' }, { from: 'status', to: '#out/where' }],
   },
   settings: { source: 'customers' }, ...extra,
 });
@@ -97,7 +98,7 @@ test('a use flattens: placed, it records its version; inside, it is the entity\'
   assert.equal(flow.nodes[0].version, lib.versionOf(asNode(trials)));
   assert.deepEqual(lib.workflowFaultsDeep(flow, library), []);
   const inner = lib.innerOf(flow.nodes[0], library);
-  assert.deepEqual(inner.workflow.nodes.map((n) => n.id), ['#in', 'start', 'status', '#out']);
+  assert.deepEqual(inner.workflow.nodes.map((n) => n.id), ['#in', 'start', 'status', 'field', '#out']);
   assert.deepEqual(inner.kinds['#group-output'].rows.map((r) => r.name), ['where']);
   // A fault inside is the same fault a use shows, named by the path to it.
   const broken = { ...trials, graph: { ...trials.graph, routes: [...trials.graph.routes, { from: 'start/rows', to: 'status/nothing' }] } };
@@ -116,7 +117,7 @@ test('an edit inside goes back to its entity, of its own type, its settings kept
   });
   assert.equal(await k.saveNode('preset-filter:trials', edited.nodes['preset-filter:trials']), true);
   const kept = k.entities.get('trials');
-  assert.deepEqual([kept.type, kept.settings, kept.graph.nodes[1].values.value], ['preset-filter', { source: 'customers' }, 'lead']);
+  assert.deepEqual([kept.type, kept.settings, kept.graph.nodes[1].values.b], ['preset-filter', { source: 'customers' }, 'lead']);
   // An Output inside a Preset Filter: refused, and said.
   const withOutput = lib.editDefinition(k.nodeLibrary(), 'preset-filter:trials', {
     nodes: [...kept.graph.nodes, { id: 'end', kind: 'output', x: 720, y: 0 }],
@@ -124,7 +125,7 @@ test('an edit inside goes back to its entity, of its own type, its settings kept
   const { result, said } = await heard(() => k.saveNode('preset-filter:trials', withOutput.nodes['preset-filter:trials']));
   assert.equal(result, false);
   assert.match(said.join('\n'), /of the family "Output", which a Preset Filter does not take/);
-  assert.equal(k.entities.get('trials').graph.nodes.length, 2);
+  assert.equal(k.entities.get('trials').graph.nodes.length, 3);
   const preset = await heard(() => k.saveNode('preset-filter:active', k.nodeLibrary().nodes['preset-filter:active']));
   assert.equal(preset.result, false);
   assert.match(preset.said.join('\n'), /preset, which is read only/);
@@ -156,7 +157,7 @@ test('"Copy to my nodes" of a preset makes the reader\'s own of the same type, u
   k.entityPresets = [filter('active', 'Active')];
   const taken = {
     v: 1, label: 'Taken', inputs: [{ name: 'rows', type: 'object' }], outputs: [],
-    nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0, values: { field: 'status', op: 'eq', value: 'x' } }],
+    nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0, values: { type: 'eq', b: 'x' } }],
     routes: [{ from: '#in/rows', to: 'c' }, { from: 'c', to: '#out' }],
   };
   assert.equal(await k.saveNode('active-copy', taken), true);

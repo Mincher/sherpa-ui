@@ -69,7 +69,7 @@ test('a column fits what takes a field, rows, an object or a list; numbers where
   assert.deepEqual(said(workflowGraph(into('seats', 'joined'), facts)), {}, 'one Field into several nodes: each reads the column');
   assert.deepEqual(said(workflowGraph(into('status', 'status'), facts)), {
     avg: [['values', 'Values takes a list of numbers; it was given the Status column']],
-    time: [['', 'Time takes a date; it was given the Status column']],
+    time: [['', 'Between takes a date; it was given the Status column']],
   });
   assert.deepEqual(workflowFaults(into('status', 'status'), NODE_KINDS, facts), [], 'a warning, never a fault');
 });
