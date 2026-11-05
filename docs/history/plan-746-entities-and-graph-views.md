@@ -311,3 +311,24 @@ before a second type pays for it; (4) `use` (E5) then follows with the same shel
 | D8 | What a reference looks like | **A node of kind `<type>:<id>`, an instance that follows (D11), with `uses` kept** | A copy at place time, with a `uses` note |
 | D9 | The chip in the Node Editor | **`chrome.filters: "views"`: the chip only** | The full filter toolbar, with the graph's own Query bar |
 | D10 | The graph View's id | **The entity id, in `?view=`** | `?graph=<type>:<id>`, a new URL key |
+
+---
+
+**Will, 2026-11-05 — the decisions:**
+
+1. **Any graph type can have custom nodes.** A Custom Node is what ANY entity offers (`asNode`),
+   not a type of its own (the plan's D1, widened: it holds for every graph type).
+2. One envelope plus a settings schema per type: yes.
+3. The registry lives in the data layer; apps add types: yes.
+4. **Changed:** NOT a Views chip grouped by Views / Presets / My graphs. Instead there is a
+   **preset View per entity TYPE**, and a **second chip, to the right of the View chip, for
+   GRAPH DEFINITION selection**: the View chip picks the View (a graph type's preset View
+   shows its canvas); the second chip picks which graph definition of that type is open
+   (presets and the reader's own, and "New graph...").
+5. Save As reuses the Save View dialog, with a Type: yes.
+6. Per-user entities later: yes.
+7. Order of types: not fussed; "the system and architecture is the point at this stage".
+8. A reference is a node `<type>:<id>` that follows its definition: yes, "I think so".
+9. `chrome.filters: "views"` shows only the chip: "not sure, let's go with it for now".
+10. The entity id goes in `?view=`: sure. (With decision 4 the URL also carries the open
+    graph definition: the lane decides the parameter name and says so.)
