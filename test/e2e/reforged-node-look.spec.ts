@@ -85,6 +85,41 @@ test('a many input is twice the height of a single, a D: round outside, flat on 
   expect(sizes.many).toBe(32);
 });
 
+test('807: only the many INPUT is double height: the same row\'s output, and a fork\'s True and False, keep their own, in pixels', async ({ page }) => {
+  await page.evaluate(async () => {
+    const el = document.querySelector('#root sherpa-layout-canvas')!;
+    const row = (id: string, many: boolean) => `<sherpa-node-row id="${id}" data-label="${id}" data-input-socket="value"${many ? ' data-input-many' : ''} data-input-routed data-output-socket="object" data-output-routed></sherpa-node-row>`;
+    // A node each, so nothing else paints down the socket's column.
+    el.insertAdjacentHTML('beforeend', `<sherpa-node id="a" data-heading="Plain" data-x="300" data-y="200">${row('plain', false)}</sherpa-node>`
+      + `<sherpa-node id="b" data-heading="Many" data-x="300" data-y="340">${row('many', true)}</sherpa-node>`
+      + '<sherpa-node id="fork" data-heading="Fork" data-x="560" data-y="200" data-input-socket="boolean" data-input-many data-input-routed data-branches data-output-routed data-false-routed></sherpa-node>');
+    await Promise.all([...el.querySelectorAll<Node>('#a, #b, #fork, sherpa-node-row')].map((n) => n.rendered));
+    await window.__settled();
+  });
+  const rect = (id: string, side: string) => page.evaluate(([i, s]) => {
+    const r = (document.getElementById(i!) as Node).socketRect(s!)!;
+    return { x: r.x, y: r.y, w: r.width, h: r.height };
+  }, [id, side] as const);
+  const ink = await inkOf(page, '--sherpa-style-active-indicator-accent');
+  /** How many pixel rows the socket's ink paints down one column, clear of the card's edge, in a box three times its height round it. */
+  const painted = async (r: { x: number; y: number; w: number; h: number }, colour: Rgb): Promise<number> => {
+    const clip = { x: Math.round(r.x + r.w * 0.7), y: Math.round(r.y - r.h), w: 1, h: Math.round(r.h * 3) };
+    const ys = Array.from({ length: clip.h }, (_, n) => [0.5, (n + 0.5) / clip.h] as [number, number]);
+    return (await paint(page, clip, ys)).filter((p) => near(p, colour, 24)).length;
+  };
+  // Painted: the many row's diamond is as tall as the plain row's.
+  const plain = await painted(await rect('plain', 'output'), ink);
+  const many = await painted(await rect('many', 'output'), ink);
+  expect(plain, 'the diamond paints at 7/10 of its width').toBeGreaterThanOrEqual(6);
+  expect(Math.abs(many - plain), `the many row's output paints ${many}px, the plain row's ${plain}px`).toBeLessThanOrEqual(1);
+  const sizes = {
+    plainIn: (await rect('plain', 'input')).h, plainOut: (await rect('plain', 'output')).h,
+    manyIn: (await rect('many', 'input')).h, manyOut: (await rect('many', 'output')).h,
+    forkIn: (await rect('fork', 'input')).h, forkOut: (await rect('fork', 'output')).h, forkFalse: (await rect('fork', 'false')).h,
+  };
+  expect(sizes).toEqual({ plainIn: 16, plainOut: 16, manyIn: 32, manyOut: 16, forkIn: 32, forkOut: 16, forkFalse: 16 });
+});
+
 test('the handle shows on hover at the bottom right, hides without it, and shows on focus', async ({ page }) => {
   await page.mouse.move(2, 2);
   expect((await handle(page, 'big')).visible).toBe(false);
