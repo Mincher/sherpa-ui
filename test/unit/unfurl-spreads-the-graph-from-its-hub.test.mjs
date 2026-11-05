@@ -138,16 +138,18 @@ test('no two nodes closer than the gap, every place on the 4px grid, every line 
   }
 });
 
-test('parts stand side by side, the biggest first; lone nodes stand in one column after them', () => {
-  const g = graphOf([['a', 0, 0], ['b', 400, 0], ['c', 800, 0], ['x', 0, 600], ['y', 400, 600], ['lone', 300, 300], ['alone', 50, 50]],
+test('parts stand side by side in the order they stood, left to right; lone nodes stand in one column after them', () => {
+  // The small part `x › y` stood left of `a › b › c`, as a Store and its In portal stand before the Out it reaches.
+  const g = graphOf([['a', 900, 0], ['b', 1300, 0], ['c', 1700, 0], ['x', 0, 600], ['y', 400, 600], ['lone', 300, 300], ['alone', 50, 50]],
     [R('a', 'b'), R('b', 'c'), R('a', 'c/b'), R('x', 'y')]);
   const out = unfurl(g).nodes;
   const right = (ns) => Math.max(...ns.map((id) => out[id].x + 240));
   const left = (ns) => Math.min(...ns.map((id) => out[id].x));
-  assert.ok(left(['x', 'y']) >= right(['a', 'b', 'c']) + GAP, 'the second part right of the first');
-  assert.ok(left(['lone', 'alone']) >= right(['x', 'y']) + GAP, 'lone nodes after');
+  assert.ok(left(['a', 'b', 'c']) >= right(['x', 'y']) + GAP, 'the part that stood second is right of the first');
+  assert.deepEqual(out.x, { x: 0, y: 600 }, 'the first part\'s anchor keeps its place');
+  assert.ok(left(['lone', 'alone']) >= right(['a', 'b', 'c']) + GAP, 'lone nodes after');
   assert.equal(out.lone.x, out.alone.x);
-  assert.ok(Math.abs(out.lone.y - out.alone.y) >= 120 + GAP);
+  assert.ok(out.lone.y - out.alone.y >= 120 + GAP, 'top to bottom as they stood');
   assert.deepEqual(clearance(g, out), []);
 });
 
