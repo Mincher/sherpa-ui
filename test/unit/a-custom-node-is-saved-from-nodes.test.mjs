@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { groupNodes, headerInput, heldInputs, ungroupUse } = await import(new URL('node-group.js', core));
 const lib = await import(new URL('node-library.js', core));
-const { editWorkflow, readWorkflow, workflowFaults } = await import(new URL('workflow.js', core));
+const { editWorkflow, readWorkflow, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 const { NODE_KINDS } = await import(new URL('node-kinds.js', core));
 
 const empty = () => ({ v: 1, nodes: {} });
@@ -78,7 +78,7 @@ test('a name that is taken, an id a shipped kind owns: a free id', () => {
   assert.equal(b.id, 'store-3');
 });
 
-test('refused in words: nothing picked, no name, a Group node, a loop through outside, mixed types', () => {
+test('refused in words: nothing picked, no name, a Group node, a loop through outside; two types are one socket, typed by its source', () => {
   assert.match(groupNodes(flow(), [], empty(), { label: 'x' }).fault, /pick the nodes/);
   assert.match(groupNodes(flow(), ['cond'], empty(), { label: '  ' }).fault, /give the Custom Node a name/);
   assert.match(groupNodes(flow(), ['#in'], empty(), { label: 'x' }).fault, /nodes of a Custom Node|belong to a Custom Node/);
@@ -86,12 +86,16 @@ test('refused in words: nothing picked, no name, a Group node, a loop through ou
   const loop = groupNodes(flow(), ['start', 'end'], empty(), { label: 'Ends' }, undefined, facts);
   assert.match(loop.fault, /would hold a loop through it/);
   assert.match(loop.fault, /Condition/);
-  // Mixed: a Store's rows (an object) forged into a value row, beside the header it feeds.
+  // Two types: a Store's rows (an object) into the Value row, beside the header it feeds. Any route joins any
+  // input (TODO 770): ONE socket, typed by what its source sends; inside, the Value reads null and warns, as outside.
   const bad = flow();
-  bad.routes = [...bad.routes, { from: 'start/rows', to: 'cond/value' }];
+  bad.routes = [{ from: 'start/rows', to: 'cond' }, { from: 'start/rows', to: 'cond/value' }, { from: 'cond/rows', to: 'end' }];
+  assert.deepEqual(workflowGraph(bad).nodes.find((n) => n.id === 'cond').warnings, [{ row: 'value', words: 'Value takes a value; it was given rows' }]);
   const mixed = groupNodes(bad, ['cond'], empty(), { label: 'Mixed' });
-  assert.match(mixed.fault, /carries one type/);
-  assert.match(mixed.fault, /Store › Rows[\s\S]*an object and a value/);
+  assert.equal(mixed.fault, undefined);
+  assert.deepEqual(mixed.library.nodes[mixed.id].inputs.map((i) => [i.label, i.type]), [['Store › Rows', 'object']]);
+  const inner = lib.innerOf(mixed.workflow.nodes.find((n) => n.id === mixed.use), mixed.library);
+  assert.deepEqual(workflowGraph(inner.workflow, {}, inner.kinds).nodes.find((n) => n.id === 'cond').warnings, [{ row: 'value', words: 'Value takes a value; it was given an object' }]);
 });
 
 /** Has status, as the Demos' preset: Records and a Status in, the matching rows out. */

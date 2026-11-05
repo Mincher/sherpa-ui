@@ -1,9 +1,10 @@
 /**
  * A SOCKET SAYS ITS TYPE: a value, an object, a boolean, or — an input only — any.
- * One function, accepts(), says which output joins which input; the registry says
+ * One function, accepts(), says which output an input reads as its own; the registry says
  * each socket's type, whether an input takes many routes, and whether a node forks
- * into True (its header) and False (`node/#false`). workflowFaults refuses what does
- * not join, in words. One rowChoices() says every list a picklist row reads. A
+ * into True (its header) and False (`node/#false`). Any route joins any input (TODO
+ * 770): one of another type reads null, and its node warns; workflowFaults refuses
+ * only a socket that is not there. One rowChoices() says every list a picklist row reads. A
  * node's data comes in on its header, of any type, and leaves its Rows row; each
  * kind a workflow runs forks. Will, TODO 713 (D1, D2, D4, D17) · plan 713 M1, M3.
  * TRAP T-a-socket-says-its-type
@@ -17,7 +18,7 @@ import { schemaCheck } from '../../scripts/lib/schema-check.mjs';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
 const { NODE_KINDS, FALSE_SOCKET, ROWS, accepts, kindNode, resolveKind, rowChoices, socketType, takesMany, truthy } = await import(new URL('node-kinds.js', core));
-const { editWorkflow, workflowFaults } = await import(new URL('workflow.js', core));
+const { editWorkflow, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 
 const TYPES = ['value', 'object', 'boolean'];
 
@@ -133,16 +134,27 @@ test('a sound typed workflow has no fault, and its schema takes `node/#false`', 
   assert.notDeepEqual(socket('f/#false/more'), []);
 });
 
-test('each route that does not join is refused, in words', () => {
+test('a route of another type joins, no fault: the input reads null, and its node warns in words (TODO 770)', () => {
+  const nodes = [...sound.nodes, node('x', 'value', { value: 'x' })];
+  const cases = [
+    [{ from: 'f', to: 'g/tags' }, 'Tags takes a list; it was given a boolean'],
+    [{ from: 'start/rows', to: 'g/note' }, 'Note takes a value; it was given rows'],
+    [{ from: 'start', to: 'g/note' }, 'Note takes a value; it was given a boolean'],
+    // A typed header needs its type: a Gate's, a boolean.
+    [{ from: 'x/value', to: 'g' }, 'Gate takes a boolean; it was given "x"'],
+    // A multi-select row takes one set: an object, never a value (D17).
+    [{ from: 'x/value', to: 'g/tags' }, 'Tags takes a list; it was given "x"'],
+  ];
+  for (const [route, words] of cases) {
+    const w = { ...structuredClone(sound), nodes, routes: [...sound.routes, route] };
+    assert.deepEqual(workflowFaults(w, kinds), [], `${route.from} → ${route.to} is no fault`);
+    assert.deepEqual(workflowGraph(w, {}, kinds).nodes.find((n) => n.id === 'g').warnings?.map((x) => x.words), [words]);
+  }
+});
+
+test('a socket that is not there is refused, in words; so is an output that says it sends any type', () => {
   const nodes = sound.nodes;
   const cases = [
-    [[{ from: 'f', to: 'g/tags' }], 'the route "f" → "g/tags" joins a boolean to an object'],
-    [[{ from: 'start/rows', to: 'g/note' }], 'the route "start/rows" → "g/note" joins an object to a value'],
-    // A header takes any type: a True, or the rows.
-    [[{ from: 'start', to: 'g/note' }], 'the route "start" → "g/note" joins a boolean to a value'],
-    [[{ from: 'v/value', to: 'g' }], 'the route "v/value" → "g" joins a value to a boolean'],
-    // A multi-select row takes one set: an object, never a value (D17).
-    [[{ from: 'v/value', to: 'g/tags' }], 'the route "v/value" → "g/tags" joins a value to an object'],
     [[{ from: 'end/#false', to: 'g' }], 'a route leaves "end/#false", which is no output socket'],
     [[{ from: 'f', to: 'g/#false' }], 'a route enters "g/#false", which is no input socket'],
   ];
@@ -151,12 +163,13 @@ test('each route that does not join is refused, in words', () => {
   assert.ok(odd.includes('a route leaves "o", which sends any type: an output says the one it sends'), odd.join(' | '));
 });
 
-test('a second route into an input that is not `many` is a fault; into a `many` one it is not, unless it is the same route or a second type into any', () => {
+test('a second route into an input that is not `many` is a fault; into a `many` one it is not, unless it is the same route; any type joins an any', () => {
   assert.ok(planted({ routes: [...sound.routes, { from: 'start/rows', to: 'g/tags' }, { from: 'f/rows', to: 'g/tags' }] }).includes('two routes enter "g/tags", which takes one'));
   assert.ok(planted({ routes: [...sound.routes, { from: 'f', to: 'g' }] }).includes('the route "f" → "g" is there twice'));
-  // An any input that takes many: values from two nodes join; an object beside them is refused.
+  // An any input that takes many: values from two nodes join, and an object beside them too (TODO 770).
   assert.deepEqual(planted({ routes: sound.routes.filter((r) => r.to !== 'l').concat({ from: 'v/value', to: 'l' }, { from: 'c/count', to: 'l' }) }), []);
-  assert.ok(planted({ routes: [...sound.routes, { from: 'start/rows', to: 'l' }] }).includes('routes of two types enter "l": a value and an object'));
+  const mixed = { ...structuredClone(sound), routes: [...sound.routes, { from: 'start/rows', to: 'l' }] };
+  assert.deepEqual([workflowFaults(mixed, kinds), workflowGraph(mixed, {}, kinds).nodes.find((n) => n.id === 'l').warnings], [[], undefined]);
   // A multi-select row holds a list.
   assert.ok(planted({ nodes: [...sound.nodes.filter((n) => n.id !== 'g'), node('g', 'gate', { tags: 'status' })] }).includes('the node "g" holds "status" as its Tags, which is no list'));
 });

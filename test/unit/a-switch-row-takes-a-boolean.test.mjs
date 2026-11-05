@@ -47,9 +47,11 @@ test('a True drives a switch on, a False off, marked Custom; cutting the route g
   const cut = editWorkflow(w('f'), { cut: 'gate/on' }, kinds);
   const back = on(cut);
   assert.deepEqual([back.value, back.custom], [false, undefined]);
-  // A value is no boolean: it cannot drive it.
-  const fed = { ...w('f'), nodes: [...w('f').nodes, { id: 'v', kind: 'value', x: 0, y: 0 }], routes: [{ from: 'v/value', to: 'gate/on' }] };
-  assert.deepEqual(workflowFaults(fed, kinds), ['the route "v/value" → "gate/on" joins a value to a boolean']);
+  // A value is no boolean: it joins (TODO 770), but cannot drive it — the switch reads null, off, and the node warns.
+  const fed = { ...w('f'), nodes: [...w('f').nodes, { id: 'v', kind: 'value', x: 0, y: 0, values: { value: 'yes' } }], routes: [{ from: 'v/value', to: 'gate/on' }] };
+  assert.deepEqual(workflowFaults(fed, kinds), []);
+  const gate = workflowGraph(fed, {}, kinds).nodes[1];
+  assert.deepEqual([gate.rows[0].value, gate.rows[0].custom, gate.warnings], [null, undefined, [{ row: 'on', words: 'On takes a boolean; it was given "yes"' }]]);
 });
 
 test('the Query draws a boolean input on each switch row, and refuses a route into it by name', () => {

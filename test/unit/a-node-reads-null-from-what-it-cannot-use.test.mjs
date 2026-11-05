@@ -1,10 +1,10 @@
 /**
  * A NODE READS NULL FROM WHAT IT CANNOT USE — Will, 2026-11-05 (TODO 764): "Nodes will determine which data
  * they need from the input. If there's no valid input then it's null and we style the node as a warning with
- * tooltip message." Graphs stay open: a route its types allow is drawn, and a node reads what it needs of what
- * reaches it. What it cannot use reads null there, and the node says why, in words from its kind's own
- * description (`needs`, `INPUT_WORDS`). A warning is no fault: Save does not wait. A route its types refuse,
- * and a row's own fault (P4), stay as they were.
+ * tooltip message." Graphs stay open, and any route joins any input (TODO 770): a node reads what it needs of
+ * what reaches it. What it cannot use reads null there, and the node says why, in words from its kind's own
+ * description (`needs`, its socket's type, `INPUT_WORDS`). A warning is no fault: Save does not wait. A row's
+ * own fault (P4) stays as it was.
  *
  *   node --test test/unit/a-node-reads-null-from-what-it-cannot-use.test.mjs
  *
@@ -128,9 +128,9 @@ test('a warning is no fault and no Save block: the checks pass, Save writes the 
   assert.deepEqual([at(drawn(cut), 'm').warnings, row(drawn(cut), 'm', 'a').value], [undefined, undefined]);
 });
 
-test('a route its types refuse, and a row\'s own fault, stay as they were: refused and red, never a warning', () => {
-  const refused = flow([store, { id: 'm', kind: 'math', x: 300, y: 0 }], [{ from: 's/rows', to: 'm/a' }]);
-  assert.deepEqual(workflowFaults(refused), ['the route "s/rows" → "m/a" joins an object to a value']);
+test('a route of another type joins and warns (TODO 770); a row\'s own fault stays as it was: red, never a warning', () => {
+  const rows = flow([store, { id: 'm', kind: 'math', x: 300, y: 0 }], [{ from: 's/rows', to: 'm/a' }]);
+  assert.deepEqual([workflowFaults(rows), said(drawn(rows))], [[], { m: [['a', 'Value A takes a number; it was given rows']] }]);
   // P4: a number off its step, routed in, is the row's fault; and not also a warning.
   const half = flow([value('h', '1.5', 'decimal'), { id: 'm', kind: 'math', x: 300, y: 0, values: { type: 'round' } }], [{ from: 'h/value', to: 'm/places' }]);
   assert.deepEqual(workflowFaults(half), ['the route "h/value" → "m/places": 1.5 is not a whole number']);

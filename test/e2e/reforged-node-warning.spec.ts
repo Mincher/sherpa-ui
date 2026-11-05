@@ -3,8 +3,9 @@ import { test, expect, type Page } from './harness';
 /**
  * A node that cannot use what reaches it reads null there, and draws as a WARNING: the warning Style mode's
  * border, never red, and a tip on its header that says why, from its kind's own words. Hover or keyboard focus
- * shows the tip; a connection made by hand warns at once, Undo takes it back, and Save does not wait.
- * Will, 2026-11-05 (TODO 764). Real pointer and keys; the look read back by pixels.
+ * shows the tip; a connection made by hand warns at once, Undo takes it back, and Save does not wait. Any
+ * route joins any input: one of another type is drawn and warns; a loop is still refused (TODO 770).
+ * Will, 2026-11-05 (TODOs 764, 770). Real pointer and keys; the look read back by pixels.
  * TRAP T-a-node-reads-null-from-what-it-cannot-use
  */
 type Rgb = [number, number, number];
@@ -165,4 +166,44 @@ test('a connection made by hand warns at once; Undo takes the warning away, Redo
     return [w.ed.save(), w.saved.at(-1)?.routes.some((r) => r.from === 'v/value' && r.to === 'c')];
   });
   expect(handed).toEqual([true, true]);
+});
+
+/** A drawn socket's middle on the screen: a node's header's, or a row's by its field's name. */
+const socketAt = (page: Page, heading: string, row: string | null, side: string) => page.evaluate(([hd, r, sd]) => {
+  const n = document.querySelector(`#cv > sherpa-node[data-heading="${hd}"]`)!;
+  const host = (r ? [...n.querySelectorAll('sherpa-node-row')].find((x) => x.querySelector(`[name="${r}"]`) || x.getAttribute('data-label') === r) : n) as HTMLElement & { socketRect(side: string): DOMRect };
+  const b = host.socketRect(sd!);
+  return [b.left + b.width / 2, b.top + b.height / 2] as [number, number];
+}, [heading, row, side] as const);
+const drag = async (page: Page, from: [number, number], to: [number, number]) => {
+  await page.mouse.move(...from);
+  await page.mouse.down();
+  await page.mouse.move(...to, { steps: 8 });
+  await page.mouse.up();
+  await settle(page);
+};
+const lines = (page: Page) => page.evaluate(() => [...document.querySelectorAll('#cv svg.graph-routes path[data-to]')].map((p) => `${(p as SVGElement).dataset['from']}>${(p as SVGElement).dataset['to']}`).sort());
+
+test('rows dropped on Math › Value B join, drawn, and Math says so; a loop is still refused, in words (770)', async ({ page }) => {
+  const heard: string[] = [];
+  page.on('console', (m) => { if (/bindWorkflow/.test(m.text())) heard.push(m.text()); });
+  await drag(page, await socketAt(page, 'Store', 'Rows', 'output'), await socketAt(page, 'Math', 'b', 'input'));
+  expect(await lines(page)).toContain('s/rows>m/b');
+  expect(await warning(page, 'Math')).toBe('Value A takes a number; it was given "abc"\nValue B takes a number; it was given rows');
+  expect(heard, 'no refusal').toEqual([]);
+  // Its tip says both, a line each.
+  const h = await rectOf(page, 'Math', '.header');
+  await page.mouse.move(h.x + h.w / 2, h.y + h.h / 2);
+  await expect.poll(async () => (await tip(page, 'Math')).open).toBe(true);
+  const box = await tip(page, 'Math');
+  expect(box.text).toBe('Value A takes a number; it was given "abc"\nValue B takes a number; it was given rows');
+  expect(box.box.h, 'two lines').toBeGreaterThan(24);
+  await page.mouse.move(2, 2);
+  // Time's True into the Condition's header joins and warns; the Condition's rows back into Time would make a loop: refused.
+  await drag(page, await socketAt(page, 'Time', null, 'output'), await socketAt(page, 'Condition', null, 'input'));
+  expect(await warning(page, 'Condition')).toBe('Condition takes rows; it was given a boolean');
+  const before = await lines(page);
+  await drag(page, await socketAt(page, 'Condition', 'Rows', 'output'), await socketAt(page, 'Time', null, 'input'));
+  expect(await lines(page)).toEqual(before);
+  await expect.poll(() => heard.some((m) => m.includes('its routes run in a loop'))).toBe(true);
 });

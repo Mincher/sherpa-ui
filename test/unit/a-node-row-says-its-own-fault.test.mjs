@@ -26,6 +26,7 @@ const flow = (values, more = [], routes = []) => ({
 });
 const list = (value) => ({ id: 'l', kind: 'value', x: 0, y: 0, values: { type: 'list', value } });
 const row = (g, id, name) => g.nodes.find((n) => n.id === id).rows.find((r) => r.name === name);
+const at = (g, id) => g.nodes.find((n) => n.id === id);
 
 test('Is one of takes tags: an object in, free where the values are not known, CLOSED where they are', () => {
   const free = row(workflowGraph(flow({ field: 'plan', op: 'in', value: ['Pro', 'Free'] }), facts), 'c', 'value');
@@ -75,13 +76,16 @@ test('a Value > List routed into Is one of OVERRIDES its tags (D7): read only, i
   assert.deepEqual(routed.nodes[0].values.value, own, 'its own wait in the draft');
   const cut = editWorkflow(routed, { cut: 'c/value' });
   assert.deepEqual(row(workflowGraph(cut, facts), 'c', 'value').value, own);
-  // One value does not join a list: a Text into Is one of is the draft's, for Equals (Will, 2026-11-05).
+  // One value is no list: a Text into Is one of stays joined, its Value reads null and the node warns; Save keeps it,
+  // and Equals again reads it. Any route joins any input (TODO 770).
   const text = { id: 't', kind: 'value', x: 0, y: 0, values: { value: 'Pro' } };
   const eq = flow({ field: 'plan', op: 'eq' }, [text], [{ from: 't/value', to: 'c/value' }]);
   const inOp = editWorkflow(eq, { node: 'c', row: 'op', value: 'in' }, NODE_KINDS, facts);
-  assert.deepEqual([keptRoutes(inOp).length, workflowFaults(inOp, NODE_KINDS, facts), workflowGraph(inOp, facts).routes], [1, [], []]);
-  assert.deepEqual(finalGraph(inOp).routes, [], 'Save writes only the final graph');
-  assert.deepEqual(workflowGraph(editWorkflow(inOp, { node: 'c', row: 'op', value: 'eq' }), facts).routes, eq.routes, 'Equals again: it joins');
+  assert.deepEqual([keptRoutes(inOp).length, workflowFaults(inOp, NODE_KINDS, facts), workflowGraph(inOp, facts).routes], [0, [], eq.routes]);
+  assert.deepEqual([row(workflowGraph(inOp, facts), 'c', 'value').value, at(workflowGraph(inOp, facts), 'c').warnings], [null, [{ row: 'value', words: 'Value takes a list; it was given "Pro"' }]]);
+  assert.deepEqual(finalGraph(inOp).routes, eq.routes, 'Save writes the route, as drawn');
+  const again = workflowGraph(editWorkflow(inOp, { node: 'c', row: 'op', value: 'eq' }), facts);
+  assert.deepEqual([again.routes, at(again, 'c').warnings, row(again, 'c', 'value').value], [eq.routes, undefined, 'Pro'], 'Equals again: it reads it');
 });
 
 test('PLANTED: a stranger in a closed list is a fault, held or brought, and the row says it in words', () => {

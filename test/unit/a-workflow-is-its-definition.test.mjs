@@ -133,8 +133,6 @@ test('each fault is reported by name, and the check says no', () => {
     [{ routes: [{ from: 'start/rows', to: 'filter/join' }] }, 'a route enters "filter/join", which is no input socket'],
     // A Rows row only sends: the rows come in on the header.
     [{ routes: [{ from: 'start/rows', to: 'filter/rows' }] }, 'a route enters "filter/rows", a Rows row, which only sends: a node\'s rows come in on its header'],
-    // An object into an Operator, which no operator makes a list: a Value is a list under Is one of (P4), so the draft keeps one there.
-    [{ routes: [{ from: 'start/rows', to: 'filter/op' }] }, 'the route "start/rows" → "filter/op" joins an object to a value'],
     [{ nodes: [...nodes, { id: 'more', kind: 'store', x: 0, y: 0 }], routes: [{ from: 'start/rows', to: 'filter' }, { from: 'more/rows', to: 'filter' }] }, 'two routes enter "filter", which takes one'],
     [{ routes: [{ from: 'start/rows', to: 'filter' }, { from: 'start/rows', to: 'filter' }] }, 'the route "start/rows" → "filter" is there twice'],
     [{ nodes: [...nodes, { id: 'again', kind: 'condition', x: 0, y: 0 }], routes: [{ from: 'filter/rows', to: 'again' }, { from: 'again', to: 'filter' }] }, 'its routes run in a loop'],
@@ -144,6 +142,10 @@ test('each fault is reported by name, and the check says no', () => {
     assert.equal(ok, false, said);
     assert.ok(heard.includes(`${said}.`), `${said} — heard: ${heard.join(' | ')}`);
   }
+  // An object into an Operator is no fault: any route joins any input (TODO 770); the Operator reads null, and the node warns.
+  const rowsIn = with_({ routes: [{ from: 'start/rows', to: 'filter/op' }] });
+  assert.deepEqual(check(rowsIn), { ok: true, heard: [] });
+  assert.deepEqual(workflowGraph(rowsIn).nodes.find((n) => n.id === 'filter').warnings, [{ row: 'op', words: 'Operator takes an operator; it was given rows' }]);
 });
 
 test('an app adds its own kind beside the library\'s', () => {

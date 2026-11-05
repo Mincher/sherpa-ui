@@ -139,12 +139,13 @@ test('an old file with faults has the same faults; a v1 reads the same as before
   faulty.nodes[1] = { ...faulty.nodes[1], values: { field: 'status', direction: 'sideways' } };
   faulty.routes = [...faulty.routes, { from: 'start/rows', to: 'sort/field' }];
   faulty.nodes[4] = { ...faulty.nodes[4], values: { value: 'seven', type: 'number' } };
-  // The faults the old registry's checks gave, word for word: a Decimal says "a number", as a Number did.
+  // The faults the old registry's checks gave, word for word: a Decimal says "a number", as a Number did. The rows into
+  // a Field are no fault: they join (TODO 770), and the Field reads null and warns, under either registry.
   const want = [
     'the node "sort" holds "sideways" as its Direction, which is none of its choices',
     'the node "seven" holds "seven" as its Value, which is not a number',
-    'the route "start/rows" → "sort/field" joins an object to a value',
   ];
+  for (const kinds of [NODE_KINDS, OLD]) assert.deepEqual(node(workflowGraph(faulty, facts, kinds), 'sort').warnings, [{ row: 'field', words: 'Field takes a value; it was given rows' }]);
   assert.deepEqual(workflowFaults(faulty, NODE_KINDS, facts), want);
   assert.deepEqual(workflowFaults(faulty, OLD, facts).filter((f) => !f.includes('"seven"')), want.filter((f) => !f.includes('"seven"')));
   // The same drawing, but that a Decimal's row says its fault in words, as the old Number had no type to check (P4).
@@ -172,7 +173,7 @@ test('an app\'s own kind of an old name is its own; a Number its own Value keeps
   assert.equal(read, w, 'nothing to read: the kinds hold both');
 });
 
-test('PLANTED FAULTS: a route into a row no Math type has; a List into a single-value row; a Duration of no span', () => {
+test('PLANTED FAULTS: a route into a row no Math type has; a Duration of no span; a List into a single-value row warns', () => {
   const flow = (math, routes, more = []) => ({
     v: 2, id: 'p',
     nodes: [
@@ -186,14 +187,15 @@ test('PLANTED FAULTS: a route into a row no Math type has; a List into a single-
   assert.deepEqual(workflowFaults(flow({ type: 'add' }, [{ from: 'one/value', to: 'm/c' }])), ['a route enters "m/c", which is no input socket']);
   const other = flow({ type: 'floor' }, [{ from: 'one/value', to: 'm/a' }]);
   assert.deepEqual([workflowFaults(other), keptRoutes(other).length, workflowGraph(other).routes, finalGraph(other).routes], [[], 1, [], []]);
-  // A List is an object: into Add's A it is a fault; into Floor's Values it joins, several of them too (D4, D9).
-  assert.deepEqual(workflowFaults(flow({ type: 'add' }, [{ from: 'list/value', to: 'm/a' }])), ['the route "list/value" → "m/a" joins an object to a value']);
+  // A List is an object: into Add's A it joins and warns (TODO 770); into Floor's Values it is read, several of them too (D4, D9).
+  const warned = (w) => [workflowFaults(w), workflowGraph(w).nodes.find((n) => n.id !== 'list' && n.warnings)?.warnings.map((x) => x.words)];
+  assert.deepEqual(warned(flow({ type: 'add' }, [{ from: 'list/value', to: 'm/a' }])), [[], ['Value A takes a number; it was given a list']]);
   const lists = flow({ type: 'average' }, [{ from: 'list/value', to: 'm/values' }, { from: 'list2/value', to: 'm/values' }], [{ id: 'list2', kind: 'value', x: 0, y: 400, values: { type: 'list' } }]);
   assert.deepEqual(workflowFaults(lists), []);
-  assert.deepEqual(workflowFaults(flow({ type: 'floor' }, [{ from: 'one/value', to: 'm/values' }])), ['the route "one/value" → "m/values" joins a value to an object']);
-  // Picking Text for the List: its row sends a value, so the route stays, a fault in words, until it is cut or List picked again.
+  assert.deepEqual(warned(flow({ type: 'floor' }, [{ from: 'one/value', to: 'm/values' }])), [[], ['Values takes a list of numbers; it was given "4"']]);
+  // Picking Text for the List: its row sends a value, so the route stays and warns, until it is cut or List picked again.
   const retyped = editWorkflow(flow({ type: 'floor' }, [{ from: 'list/value', to: 'm/values' }]), { node: 'list', row: 'type', value: 'text' });
-  assert.deepEqual(workflowFaults(retyped), ['the route "list/value" → "m/values" joins a value to an object']);
+  assert.deepEqual(warned(retyped), [[], ['Values takes a list of numbers; it was given "1, 2, 3"']]);
   // A number row holds a number; a span or a unit is one of its list.
   assert.deepEqual(workflowFaults(flow({ type: 'round', places: 'two' }, [])), ['the node "m" holds "two" as its Places, which is no number']);
   const time = (values) => ({ v: 2, id: 't', nodes: [{ id: 't', kind: 'time', x: 0, y: 0, values: { type: 'duration', ...values } }] });
@@ -202,8 +204,8 @@ test('PLANTED FAULTS: a route into a row no Math type has; a List into a single-
     'the node "t" holds "ago" as its When, which is none of its choices',
     'the node "t" holds "fortnight" as its Unit, which is none of its choices',
   ]);
-  // Split by gives a list: it does not join a Text's Value A.
+  // Split by gives a list: a Text's Value A cannot use it, and warns.
   const split = { v: 2, id: 's', nodes: [{ id: 'cut', kind: 'text', x: 0, y: 0, values: { type: 'split' } }, { id: 'add', kind: 'text', x: 300, y: 0 }], routes: [{ from: 'cut/result', to: 'add/a' }] };
-  assert.deepEqual(workflowFaults(split), ['the route "cut/result" → "add/a" joins an object to a value']);
+  assert.deepEqual(warned(split), [[], ['Value A takes a value; it was given a list']]);
   assert.deepEqual(workflowFaults({ ...split, nodes: [split.nodes[0], { ...split.nodes[1], values: { type: 'join' } }], routes: [{ from: 'cut/result', to: 'add/values' }] }), []);
 });

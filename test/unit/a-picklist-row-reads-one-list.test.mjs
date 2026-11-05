@@ -128,17 +128,17 @@ test('a multi-select row holds, takes and sends ONE object: each routed pick is 
   const cut = editWorkflow(w, { cut: 'b/to' }, kinds);
   assert.deepEqual(workflowGraph(cut, { fields }, kinds).nodes[1].rows[0].value, ['seats']);
   assert.deepEqual(editWorkflow(cut, { node: 'b', row: 'to', value: 'status' }, kinds).nodes[1].values.to, ['status'], 'an edit is one list');
-  // A value is not an object: a Value node cannot feed it.
+  // A value is no list: a Value node's route joins (TODO 770), and To reads null and warns; no fault.
   const fed = editWorkflow(w, { route: { from: 'v/value', to: 'b/to' } }, kinds);
-  assert.deepEqual(workflowFaults({ ...fed, nodes: [...fed.nodes, { id: 'v', kind: 'value', x: 0, y: 0 }] }, kinds).filter((f) => f.includes('"v/value"')), [
-    'the route "v/value" → "b/to" joins a value to an object',
-  ]);
+  const withV = { ...fed, nodes: [...fed.nodes, { id: 'v', kind: 'value', x: 0, y: 0, values: { value: 'status' } }] };
+  assert.deepEqual(workflowFaults(withV, kinds).filter((f) => f.includes('"v/value"')), []);
+  assert.deepEqual(workflowGraph(withV, { fields }, kinds).nodes[1].warnings, [{ row: 'to', words: 'To takes a list; it was given "status"' }]);
   // The set it holds must be a list.
   assert.deepEqual(workflowFaults({ ...w, nodes: [{ ...w.nodes[0], values: { set: 'status' } }, w.nodes[1]] }, kinds), ['the node "a" holds "status" as its Set, which is no list']);
   assert.deepEqual(mirrored({ multiple: true }, [['a', 'b'], 'c'], [{ value: 'a', label: 'A' }]).value, ['a', 'b', 'c']);
 });
 
-test('PLANTED FAULTS: a pick not in a fixed list; a route of the wrong type into a picklist; a typed Value that is not its type', () => {
+test('PLANTED FAULTS: a pick not in a fixed list; a typed Value that is not its type; a route of another type into a picklist warns', () => {
   const sorted = (direction) => ({
     v: 2, id: 's', nodes: [
       { id: 's', kind: 'collection', x: 0, y: 0, values: { type: 'sort', field: 'status', direction } },
@@ -146,9 +146,10 @@ test('PLANTED FAULTS: a pick not in a fixed list; a route of the wrong type into
   });
   assert.deepEqual(workflowFaults(sorted('asc')), []);
   assert.deepEqual(workflowFaults(sorted('sideways')), ['the node "s" holds "sideways" as its Direction, which is none of its choices']);
-  // The rows an object carries cannot be a field's name.
+  // The rows an object carries cannot be a field's name: the route joins (TODO 770), Field reads null and warns.
   const wrong = { ...flow(), nodes: [...flow().nodes, { id: 'sort', kind: 'collection', x: 0, y: 0 }], routes: [...flow().routes, { from: 'filter/rows', to: 'sort/field' }] };
-  assert.deepEqual(workflowFaults(wrong), ['the route "filter/rows" → "sort/field" joins an object to a value']);
+  assert.deepEqual(workflowFaults(wrong), []);
+  assert.deepEqual(workflowGraph(wrong).nodes.find((n) => n.id === 'sort').warnings, [{ row: 'field', words: 'Field takes a value; it was given rows' }]);
   // A Value node is typed: its text must be what its Type says.
   const typed = (type, value) => ({ v: 2, id: 't', nodes: [{ id: 'n', kind: 'value', x: 0, y: 0, values: { value, type } }] });
   assert.deepEqual(workflowFaults(typed('decimal', '12.5')), []);

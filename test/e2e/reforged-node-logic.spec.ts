@@ -3,8 +3,9 @@ import { test, expect, type Page } from './harness';
 /**
  * LOGIC in the editor: a Condition's Operation select picks its type. And takes two comparisons' True on its
  * header and draws True and False; a comparison draws Value A and Value B, and no header input. Store's rows
- * into a Condition switched to And wait in the DRAFT: no line, no fault; Rows that hold joins them again, and
- * Save leaves them out. Real selects. Plan 749 P5. TRAP T-a-logic-type-is-an-operator
+ * into a Condition switched to And stay joined: And reads null and warns, no fault (TODO 770); switched to a
+ * comparison, which has no header input, they wait in the DRAFT, and Save leaves them out. Real selects.
+ * Plan 749 P5. TRAP T-a-logic-type-is-an-operator
  */
 type Canvas = HTMLElement & { rendered: Promise<void> };
 
@@ -73,24 +74,34 @@ test('the Operation select picks a Logic type: And takes two booleans and draws 
   expect(await page.locator(`${NODE('Is active')} sherpa-input-text[name="b"]`).evaluate((el) => [el.getAttribute('data-type'), el.getAttribute('data-label'), (el as HTMLElement & { tags: string[] }).tags])).toEqual(['tags', 'Values', ['active']]);
 });
 
-test('Store\'s rows into a Condition switched to And wait in the draft: no line, no fault; Rows that hold joins them again; Save leaves them out', async ({ page }) => {
+test('Store\'s rows into a Condition switched to And stay joined and warn; switched to a comparison they wait in the draft; Save keeps what is drawn (770)', async ({ page }) => {
   const reports: string[] = [];
   page.on('console', (m) => { if (/workflow|fault/i.test(m.text())) reports.push(m.text()); });
+  const warning = () => page.locator(NODE('Check')).evaluate((el) => el.getAttribute('data-warning'));
   await expect(line(page, 'start/rows', 'c')).toHaveCount(1);
   expect(await rows(page, 'Check')).toEqual(['type', '', 'field', 'op', 'value']);
+  expect(await warning()).toBeNull();
+  // And: its header takes a boolean. The rows stay joined, the line drawn; And reads null, and says why.
   await pick(page, 'Check', 'and');
   expect(await rows(page, 'Check')).toEqual(['type']);
-  await expect(line(page, 'start/rows', 'c')).toHaveCount(0);
-  expect((await draft(page)).routes).toContainEqual({ from: 'start/rows', to: 'c' });
-  // Back to the tree: the line, and its Field, Operator and Value.
+  await expect(line(page, 'start/rows', 'c')).toHaveCount(1);
+  expect(await warning()).toBe('Check takes a boolean; it was given rows');
+  // Back to the tree: no warning, and its Field, Operator and Value.
   await pick(page, 'Check', 'rows');
   await expect(line(page, 'start/rows', 'c')).toHaveCount(1);
+  expect(await warning()).toBeNull();
   expect(await rows(page, 'Check')).toEqual(['type', '', 'field', 'op', 'value']);
   expect(await page.locator(`${NODE('Check')} sherpa-input-text[name="field"]`).evaluate((el) => (el as HTMLElement & { value: string }).value)).toBe('status');
-  // And again, then Save: the final graph holds no route the type does not take, and none of the tree's values.
+  // Greater than takes nothing on its header: the route waits in the draft, drawn nowhere; the tree joins it again.
+  await pick(page, 'Check', 'gt');
+  await expect(line(page, 'start/rows', 'c')).toHaveCount(0);
+  expect((await draft(page)).routes).toContainEqual({ from: 'start/rows', to: 'c' });
+  await pick(page, 'Check', 'rows');
+  await expect(line(page, 'start/rows', 'c')).toHaveCount(1);
+  // And again, then Save: a warning is no block, and the final graph keeps the route it draws, not the tree's values.
   await pick(page, 'Check', 'and');
   const out = await saved(page);
-  expect(out.routes).not.toContainEqual({ from: 'start/rows', to: 'c' });
+  expect(out.routes).toContainEqual({ from: 'start/rows', to: 'c' });
   expect(out.nodes.find((n) => n.id === 'c')!.values).toEqual({ type: 'and' });
   expect(reports).toEqual([]);
 });

@@ -92,13 +92,15 @@ test('Compare A against B is a boolean out: no header input, its values its rows
   assert.deepEqual([is.input, is.branches, socketType(is, undefined, 'output')], [undefined, true, 'boolean']);
   // A routed Value shows in Value A, as any row mirrors one.
   assert.deepEqual(is.rows.map((r) => r.value), ['eq', 'Pro', 'Pro']);
-  // PLANTED: its True is a boolean, so it does not join a number's row; rows do not join Value A.
-  assert.deepEqual(workflowFaults({ ...w, routes: [...w.routes, { from: 'is', to: 'sum/a' }] }), ['the route "is" → "sum/a" joins a boolean to a value']);
+  // PLANTED: its True is a boolean, rows are no value: each joins (TODO 770), no fault, and the node it enters warns.
+  const toSum = { ...w, routes: [...w.routes, { from: 'is', to: 'sum/a' }] };
+  assert.deepEqual([workflowFaults(toSum), node(workflowGraph(toSum), 'sum').warnings], [[], [{ row: 'a', words: 'Value A takes a number; it was given a boolean' }]]);
   const store = { id: 'start', kind: 'store', x: 0, y: 300, values: { store: 'customers' } };
-  assert.deepEqual(workflowFaults({ ...w, nodes: [...w.nodes, store], routes: [{ from: 'start/rows', to: 'is/a' }, { from: 'is', to: 'end' }] }), ['the route "start/rows" → "is/a" joins an object to a value']);
+  const rowsIn = { ...w, nodes: [...w.nodes, store], routes: [{ from: 'start/rows', to: 'is/a' }, { from: 'is', to: 'end' }] };
+  assert.deepEqual([workflowFaults(rowsIn), node(workflowGraph(rowsIn), 'is').warnings], [[], [{ row: 'a', words: 'Value A takes a value; it was given rows' }]]);
 });
 
-test('a type change keeps what it orphans in the draft: Store\'s rows into And, a Value into Is one of\'s list, a Field', () => {
+test('a type change keeps in the draft only what loses its socket: Store\'s rows into And stay and warn, into a comparison\'s header they wait; a Field', () => {
   const facts = { fields: { status: { label: 'Status' } }, values: { status: ['active', 'trial'] } };
   let w = {
     v: 2, id: 'draft',
@@ -110,23 +112,26 @@ test('a type change keeps what it orphans in the draft: Store\'s rows into And, 
     routes: [{ from: 'start/rows', to: 'c' }],
   };
   assert.equal(node(workflowGraph(w, facts), 'c').input, 'any');
-  // And: the header takes booleans, so the rows wait unseen — no fault — and Save leaves them out.
+  // And: its header is still there, so the rows stay joined (TODO 770): no fault, the node warns, and Save keeps them.
   w = editWorkflow(w, { node: 'c', row: 'type', value: 'and' });
-  assert.deepEqual(keptRoutes(w), [{ from: 'start/rows', to: 'c' }]);
-  assert.deepEqual([workflowFaults(w, NODE_KINDS, facts), workflowGraph(w, facts).routes], [[], []]);
-  assert.deepEqual(finalGraph(w).routes, []);
+  assert.deepEqual([keptRoutes(w), workflowFaults(w, NODE_KINDS, facts), workflowGraph(w, facts).routes], [[], [], [{ from: 'start/rows', to: 'c' }]]);
+  assert.deepEqual(node(workflowGraph(w, facts), 'c').warnings, [{ words: 'Condition takes a boolean; it was given rows' }]);
+  assert.deepEqual(finalGraph(w).routes, [{ from: 'start/rows', to: 'c' }]);
   assert.deepEqual(finalGraph(w).nodes.find((n) => n.id === 'c').values, { type: 'and' });
-  // Rows that hold again joins them, its tree's values back.
+  // Rows that hold again reads them, its tree's values back.
   const back = editWorkflow(w, { node: 'c', row: 'type', value: 'rows' });
-  assert.deepEqual([keptRoutes(back), workflowGraph(back, facts).routes], [[], [{ from: 'start/rows', to: 'c' }]]);
+  assert.deepEqual([keptRoutes(back), workflowGraph(back, facts).routes, node(workflowGraph(back, facts), 'c').warnings], [[], [{ from: 'start/rows', to: 'c' }], undefined]);
   assert.deepEqual(node(workflowGraph(back, facts), 'c').rows.map((r) => r.value).slice(0, 5), ['rows', undefined, 'status', 'eq', 'active']);
-  // Equals, then Is one of: B's value becomes its list, and a Text routed into it waits for Equals.
+  // Equals takes nothing on its header: the rows wait in the draft, drawn nowhere, and Save leaves them out.
   let e = editWorkflow(editWorkflow(w, { node: 'c', row: 'type', value: 'eq' }), { node: 'c', row: 'b', value: 'trial' });
+  assert.deepEqual([keptRoutes(e), finalGraph(e).routes], [[{ from: 'start/rows', to: 'c' }], []]);
+  // A Text routed into B, then Is one of: B's value becomes its list; the Text stays joined, and Values warns.
   e = editWorkflow(e, { route: { from: 'text/value', to: 'c/b' } });
   assert.deepEqual(workflowFaults(e, NODE_KINDS, facts), []);
   e = editWorkflow(e, { node: 'c', row: 'type', value: 'in' });
   assert.deepEqual(e.nodes.find((n) => n.id === 'c').values.b, ['trial']);
-  assert.ok(keptRoutes(e).some((r) => r.from === 'text/value'));
+  assert.ok(!keptRoutes(e).some((r) => r.from === 'text/value'));
+  assert.deepEqual(node(workflowGraph(e, facts), 'c').warnings, [{ row: 'b', words: 'Values takes a list; it was given "trial"' }]);
   assert.deepEqual(workflowFaults(e, NODE_KINDS, facts), []);
   // The Field the draft keeps from the tree names nothing here: Values is free, not closed to Status's values.
   const values = node(workflowGraph(e, facts), 'c').rows.find((r) => r.name === 'b');
