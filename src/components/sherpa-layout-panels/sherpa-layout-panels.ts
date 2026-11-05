@@ -14,11 +14,12 @@ export type PanelSide = 'start' | 'end';
 
 const SIDES: readonly PanelSide[] = ['start', 'end'];
 
-/** Open: an element with an `open` (a dialog-like panel) by its attribute; any other unless hidden,
- *  by its attribute or its style. */
-function isOpen(panel: Element): boolean {
-  if ((panel as HTMLElement).hidden || getComputedStyle(panel).display === 'none') return false;
-  return 'open' in panel ? panel.hasAttribute('open') : true;
+/** Open: an element with an `open` (a dialog-like panel) by that attribute alone; any other unless
+ *  `hidden`, or `display: none` in its own style. Never its computed style: in WebKit it stays `none`
+ *  under the shut area. TRAP T-a-panel-area-is-a-layout */
+function isOpen(panel: HTMLElement): boolean {
+  if ('open' in panel) return panel.hasAttribute('open');
+  return !panel.hidden && panel.style.display !== 'none';
 }
 
 export class SherpaLayoutPanels extends SherpaElement {
@@ -85,13 +86,13 @@ export class SherpaLayoutPanels extends SherpaElement {
     const panel = this.#panel(side);
     const sync = (): void => {
       if (this.#panel(side) !== panel) return;
-      this.toggleState(`${side}-open`, !!panel && isOpen(panel));
+      this.toggleState(`${side}-open`, panel instanceof HTMLElement && isOpen(panel));
       this.toggleState(`${side}-floating`, !!panel?.hasAttribute('data-floating'));
     };
     sync();
     if (!panel) return;
     const watch = new MutationObserver(sync);
-    watch.observe(panel, { attributes: true, attributeFilter: ['open', 'hidden', 'style', 'class', 'data-floating'] });
+    watch.observe(panel, { attributes: true, attributeFilter: ['open', 'hidden', 'style', 'data-floating'] });
     this.#watch[side] = watch;
     // Not yet upgraded, it has no `open` to say it can shut.
     if (panel.localName.includes('-') && !customElements.get(panel.localName)) {

@@ -123,6 +123,32 @@ test('the content reflows beside its panels, and takes the width back when one s
   expect(await frame()).toMatchObject({ x: body.x, w: body.w });
 });
 
+test('a panel opened LATE shows its area, shut it gives it back; a card hidden by its own style takes none', async ({ page }) => {
+  await page.setViewportSize({ width: W, height: H });
+  await page.evaluate(async () => {
+    document.getElementById('root')!.innerHTML = '<sherpa-app-shell data-no-nav style="block-size: 100vh">'
+      + '<div slot="header" style="block-size: 40px">H</div>'
+      + '<sherpa-quick-filter-toolbar slot="panel-start" id="col" data-orientation="portrait" data-column data-scope="view data"></sherpa-quick-filter-toolbar>'
+      + '<div slot="panel-end" id="side" style="display: none">Side</div><div>C</div></sherpa-app-shell>';
+    await window.__settled();
+    const shut = document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector('sherpa-layout-panels')!.shadowRoot!.querySelector('.area-start')!.getBoundingClientRect().width;
+    // Opened once it is drawn shut, as a provider opens it: WebKit kept it `display: none` under the
+    // shut area, and an area that read its computed style waited for ever.
+    document.getElementById('col')!.setAttribute('open', '');
+    return shut;
+  }).then((shut) => expect(shut).toBe(0));
+  await settle(page);
+  expect(await box(page, 'col .box')).toEqual(await box(page, 'layout .area-start'));
+  expect((await box(page, 'layout .area-start')).w).toBe(464);
+  await page.evaluate(() => document.getElementById('col')!.removeAttribute('open'));
+  await settle(page);
+  expect((await box(page, 'layout .area-start')).w).toBe(0);
+  // A panel with no `open`, shown by its style: its area follows it.
+  await page.evaluate(() => document.getElementById('side')!.style.removeProperty('display'));
+  await settle(page);
+  expect((await box(page, 'layout .area-end')).w).toBe(464);
+});
+
 test('an area resizes by its edge, by a real drag and by the keys; the shell reports each, once', async ({ page }) => {
   await shell(page);
   const area = () => box(page, 'layout .area-start');

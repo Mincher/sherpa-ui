@@ -915,10 +915,13 @@ end area. Plan: `docs/history/plan-796-panel-areas.md`.
   the host's SLOT, never the panel. The forwarded slot's `slotchange` reaches the
   layout's slot: its path runs through the slot it is assigned to.
 - **Open.** An area shows while its panel is open: an element with an `open`
-  property by its attribute (an overlay panel, a filter column); any other while
-  it is neither `hidden` nor `display: none` (the Nodes card, or one a page hid by
-  its style). It hears `open`, `hidden`, `style`, `class` and `data-floating`, and
-  again once an un-upgraded panel is defined, as it has no `open` until then.
+  property by that attribute ALONE (an overlay panel, a filter column); any other
+  while it is neither `hidden` nor `display: none` in its own style (the Nodes
+  card, or one a page hid so). Never by its computed style: WebKit keeps a column
+  opened late at `display: none` under the shut area, so the area waited on it
+  for ever (measured: Chromium and Firefox recompute it). It hears `open`,
+  `hidden`, `style` and `data-floating`, and again once an un-upgraded panel is
+  defined, as it has no `open` until then.
 - **Floating, the panel stays slotted**: its area takes no width and covers the
   whole layout, the panel's ROOM, with its clicks passing through but on the
   panel's box. A slotted box cannot float out of a hidden area. `roomOf()` in
