@@ -404,7 +404,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-star-reports-it-does-not-decide](traps/join-and-app.md#t-the-star-reports-it-does-not-decide) — outlet
 - [T-view-library-is-one-vocabulary](traps/storage.md#t-view-library-is-one-vocabulary) — provider
 
-## Filters (156)
+## Filters (157)
 
 - [T-a-bar-reports-its-holds](traps/join-and-app.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — quick-filter-toolbar
@@ -447,6 +447,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-rebuild-keeps-every-answer](traps/filters.md#t-a-rebuild-keeps-every-answer) — filter-host, quick-filter-toolbar
 - [T-a-rebuilt-bar-reads-empty-until-its-menus-stamp](traps/filters.md#t-a-rebuilt-bar-reads-empty-until-its-menus-stamp) — quick-filter, quick-filter-toolbar
 - [T-a-rebuilt-row-reads-empty-for-a-tick](traps/filters.md#t-a-rebuilt-row-reads-empty-for-a-tick) — filter-host, quick-filter, quick-filter-toolbar
+- [T-a-redrawn-bar-keeps-the-focus](traps/filters.md#t-a-redrawn-bar-keeps-the-focus) — quick-filter-toolbar
 - [T-a-reflow-that-moves-nothing-keeps-its-menus](traps/filters.md#t-a-reflow-that-moves-nothing-keeps-its-menus) — quick-filter-toolbar
 - [T-a-reload-replays-the-readers-answers](traps/data-layer.md#t-a-reload-replays-the-readers-answers) — quick-filter-toolbar
 - [T-a-row-opens-its-child-menu](traps/filters.md#t-a-row-opens-its-child-menu) — quick-filter-toolbar
@@ -1001,7 +1002,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (124)
+## Other components (125)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1034,6 +1035,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-host-error-is-the-hosts](traps/other-components.md#t-a-host-error-is-the-hosts) — input-text
 - [T-a-host-label-must-reach-its-control](traps/charts.md#t-a-host-label-must-reach-its-control) — button, input-text, select-checkbox, select-radio, switch
 - [T-a-host-state-pin-lives-where-the-host-is](traps/element-and-sheets.md#t-a-host-state-pin-lives-where-the-host-is) — input-text, nav-item, node, node-frame, progress-bar, prompt-composer, select-card, slider, switch
+- [T-a-link-row-is-pressed-anywhere-in-its-box](traps/other-components.md#t-a-link-row-is-pressed-anywhere-in-its-box) — nav-item
 - [T-a-menu-is-reached-by-keys-from-its-trigger](traps/menus-tips-overlays.md#t-a-menu-is-reached-by-keys-from-its-trigger) — nav
 - [T-a-metric-group-knows-it-is-stuck](traps/charts.md#t-a-metric-group-knows-it-is-stuck) — metric-group
 - [T-a-native-name-where-a-native-element-does-the-job](traps/other-components.md#t-a-native-name-where-a-native-element-does-the-job) — slider

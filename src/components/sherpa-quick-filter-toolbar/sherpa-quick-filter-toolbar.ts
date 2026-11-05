@@ -55,6 +55,9 @@ const ORDER_BY = 'value';
 /** A filter chip, in the run or in a set. TRAP T-a-filter-set-groups-or-chains */
 const CHIP = ':is(.chips, .preset-zone) > .chip';
 
+/** The focus is nowhere: a removed node left it on <body>. */
+const focusNowhere = (): boolean => !document.activeElement || document.activeElement === document.body;
+
 /** The columns the leading Group / Sort chips offer. */
 export interface OrganiseDef {
   group?: OrganiseColumn[];
@@ -1256,6 +1259,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        a changed def names the pick. Will, TODO 599 */
     const was = new Map(this.#chips().filter((c) => !reset || c.hasAttribute('data-selector')).map((c) => [c.dataset['id'] ?? '', c] as const));
     const moved = new Set<string>();
+    // The chips leave the run, and the focus with them. TRAP T-a-redrawn-bar-keeps-the-focus
+    this.#holdFocus();
     // A portrait bar's presets are a section of their own: a box in the run. Will, TODO 722
     const presets = list.querySelector('.preset-zone');
     list.replaceChildren(...presets ? [presets] : []);
@@ -1327,6 +1332,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         (chip as Partial<SherpaQuickFilter>).refresh?.();
       }
     }
+    this.#giveFocusBack();
 
     for (const [id, reading] of Object.entries(kept)) if (!moved.has(id)) this.#keepAnswer(id, reading);
     // Then what was steered before there were chips, and the results last drawn.
@@ -1371,6 +1377,40 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     })).then(() => { if (this.isConnected) this.#reflow(); });
     // A chip that GROWS — a pick names itself — folds the bar as a narrower bar does. TODO 493
     if (this.dataset['orientation'] !== 'portrait') for (const chip of this.#chips()) this.#observer?.observe(chip);
+  }
+
+  /** The chip, and the part of it, that had the focus when the run was drawn again. */
+  #refocus: { id: string; part: string } | null = null;
+
+  /** Before a redraw: which chip holds the focus, by its id, and which of its
+   *  buttons. In its menu, the caret that opened it. TRAP T-a-redrawn-bar-keeps-the-focus */
+  #holdFocus(): void {
+    const at = this.root.activeElement;
+    const chip = at ? this.#chips().find((c) => c === at || c.contains(at)) : undefined;
+    const id = chip?.dataset['id'];
+    if (id) this.#refocus = { id, part: (chip === at && chip.shadowRoot?.activeElement?.getAttribute('part')) || 'caret' };
+    // Focus nowhere keeps what a redraw before this one still owes.
+    else if (!focusNowhere()) this.#refocus = null;
+  }
+
+  /** After it: the same part of the chip with that id, once it has drawn — unless
+   *  the focus has gone somewhere since. */
+  #giveFocusBack(): void {
+    const want = this.#refocus;
+    const chip = want ? this.#chipById(want.id) : undefined;
+    if (!want || !chip) {
+      this.#refocus = null;
+      return;
+    }
+    const give = (): void => {
+      // A later redraw owes it now, to its own chip.
+      if (this.#refocus !== want || !chip.isConnected) return;
+      this.#refocus = null;
+      if (focusNowhere()) chip.shadowRoot?.querySelector<HTMLElement>(`[part="${want.part}"]`)?.focus({ preventScroll: true });
+    };
+    // A new chip stamps a turn later.
+    if (chip.hasRendered) give();
+    else void chip.rendered.then(give);
   }
 
   /** What a chip is BUILT from: its def, less the answer it is told and where it

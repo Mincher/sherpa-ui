@@ -2863,3 +2863,23 @@ so nothing to mark.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 - Site: `src/core/sherpa-checkbox-look.css`
 - Site: `test/e2e/reforged-toggle-shapes.spec.ts`
+
+### T-a-redrawn-bar-keeps-the-focus
+
+**A bar drawn again keeps the focus on the same chip's same button** (TODO 801).
+`#render` empties the run and appends each chip again, moved or built anew, and a
+removed node takes the focus with it, to `<body>`. Measured 2026-11-05 in all three
+engines: a View picked by the keys on a page whose View bar draws its chips again
+for the new View (the outlet's graph Views, the Node Editor; Learn filtering, whose
+View changes its filters) left the focus on `<body>`, ~350 ms after the menu had put
+it back on the caret. On Records, whose bar is not drawn again, it stayed there.
+
+So `#render` reads, BEFORE it draws, which chip holds the focus — by its id — and
+which of its buttons, by `part` (`body` or `caret`; in its menu, the caret that opened
+it). After, it focuses that part of the chip with that id, as `restamp` does for a set
+(`T-one-tab-stop-per-set`). A chip built anew stamps a turn later, so that waits for its
+`rendered`, and a later draw takes the wait over. Only while the focus is still
+nowhere: a reader who moved on in the wait keeps where they went.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-a-redrawn-bar-keeps-the-focus.spec.ts`
