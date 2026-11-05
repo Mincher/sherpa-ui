@@ -1432,9 +1432,8 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   ];
   const stack = document.createElement('sherpa-stack');
   stack.setAttribute('data-gap', 'lg');
-  // A node of many rows scrolls in the panel: a run that fits by shrinking lays its fields over its buttons. A tab's
-  // panel gives it no height to scroll in.
-  if (!options.tabs) stack.setAttribute('data-scroll', '');
+  // A node of many rows scrolls, in the panel or in its tab: a run that fits by shrinking lays its fields over its buttons.
+  stack.setAttribute('data-scroll', '');
   const remove = options.onRemove ? [button('Remove node', options.onRemove, 'Remove this node and its routes. Keyboard: Backspace or Delete.')] : [];
   const flow = nodeFlow(graph, node.id);
   stack.append(...(options.extra ?? []), ...(options.visual ? [options.visual] : []), ...(whole.length ? [header] : []), ...items, ...('fault' in flow ? [] : [flowPane(flow)]), ...remove);

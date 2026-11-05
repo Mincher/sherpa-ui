@@ -112,10 +112,13 @@
 }
 
 /* ── Panels ───────────────────────────────────────────────────────────── */
+/* A column: the shown panel takes a bounded strip's height, so a child can scroll in it. */
 .panels {
+  display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
   min-block-size: 0;
   padding-block-start: var(--sherpa-display-mode-space-base, 16px);
 }
 ::slotted([data-tab]) { display: none; }
-::slotted([data-current]) { display: block; }
+::slotted([data-current]) { display: block; flex: 1 1 auto; min-block-size: 0; }
