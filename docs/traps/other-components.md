@@ -1301,6 +1301,44 @@ and a change to the value it just wrote is not heard as a host's.
 - Site: `test/e2e/reforged-layout-canvas.spec.ts`
 - Site: `test/e2e/reforged-layout-canvas-banner.spec.ts`
 
+### T-a-scaled-hairline-paints-past-its-box
+
+**Every piece on the canvas's plane wears a clear ring one screen px wide**
+(`box-shadow: 0 0 0 calc(1px / var(--_zoom)) transparent`, in the canvas's
+`.plane ::slotted(*)`), because Chromium paints a ROUNDED hairline past its box
+and repaints only the box when it moves. TODO 799, measured 2026-11-05.
+
+- **What showed**: in Chromium only, a faint empty box where a moved node was:
+  a drag, Arrange or Frame. It is one device px row or column just outside the
+  old box, top, end and bottom, in the border's ink at about 12% (246,246,248 on
+  white). The new place lacks the same line until something repaints it.
+- **Why**: a node's border is 0.5px, drawn 1px, and the plane scales it. Under 1,
+  it is thinner than a device px, and Chromium widens a thin ROUNDED stroke to
+  one device px about its middle, so a quarter of it lands outside the box. A
+  square border is drawn as rects and does not bleed. A move repaints the node's
+  box (its visual rect) and no further, so the bled pixels stay.
+- **Measured** in the harness (a 0.5 zoom, a pixel-aligned pan): 128 to 183 stale
+  pixels after a drag, Arrange or Frame, and 751 when a frame's header drags it
+  and its nodes; 0 at zoom 1 and over; 0 in Firefox and WebKit. `border-radius: 0`
+  stops the bleed; hiding the sockets, the grid, the tips or the routes does not.
+  With the ring: 0 round the moved piece, at zooms 0.25 to 1.25, the frame too.
+  Up to six pixels, by up to 23 levels, can still differ at 0.75 where a redrawn
+  route meets a socket: the ring is on the pieces, not on a route's path.
+- **The ring is clear**: the canvas reads the same with it and without it, at
+  rest, picked and mid-drag, in all three engines. It is ONE device px at any
+  zoom, which covers the most the bleed can reach (half a device px). Of the
+  clear things tried, only a box shadow grows what a move repaints: a clear 2px
+  `outline` on the node, or a clear `::before` 2px past it, left all 128 pixels.
+- **Forced colours drop every box shadow**, so the ring goes there, and the line
+  can stay in Chromium under 1 zoom.
+- A piece's own `box-shadow`, set in the page's CSS, wins over the ring.
+- **The spec measures what a move did not repaint**: a screenshot after the
+  move, against one after the canvas is hidden for a frame and shown again,
+  which repaints all of it. The two must match round the old place and the new.
+
+- Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.css`
+- Site: `test/e2e/reforged-a-moved-node-leaves-no-trace.spec.ts`
+
 ### T-a-node-moves-itself-and-reports
 
 **A node MOVES ITSELF and reports each move; a press only ASKS to select it.**

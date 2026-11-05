@@ -105,6 +105,9 @@
   position: absolute;
   left: var(--x, 0px);
   top: var(--y, 0px);
+  /* A clear screen px round each piece, so a move repaints the edge its hairline paints past its box.
+     TRAP T-a-scaled-hairline-paints-past-its-box */
+  box-shadow: 0 0 0 calc(1px / var(--_zoom, 1)) transparent;
 }
 
 /* ── The stage ────────────────────────────────────────────────────────── */

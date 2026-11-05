@@ -1012,7 +1012,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (129)
+## Other components (130)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1062,6 +1062,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-range-is-bounded-by-the-data](traps/data-layer.md#t-a-range-is-bounded-by-the-data) — calendar
 - [T-a-row-span-is-keyed-by-value](traps/other-components.md#t-a-row-span-is-keyed-by-value) — container
 - [T-a-saved-view-is-the-readers-own](traps/storage.md#t-a-saved-view-is-the-readers-own) — app-header
+- [T-a-scaled-hairline-paints-past-its-box](traps/other-components.md#t-a-scaled-hairline-paints-past-its-box) — layout-canvas
 - [T-a-second-container-type-drops-the-first](traps/other-components.md#t-a-second-container-type-drops-the-first) — app-header
 - [T-a-selected-nav-row-wears-its-edge](traps/other-components.md#t-a-selected-nav-row-wears-its-edge) — nav-item
 - [T-a-shadow-reach-is-a-missing-door](traps/other-components.md#t-a-shadow-reach-is-a-missing-door) — app-header, nav
