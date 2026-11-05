@@ -6441,8 +6441,8 @@ types allow is drawn; no family fences what a graph places.
   field's value. A column fits a need for a field, rows, an object or a list; a list of numbers
   where its field is a number; a date where it is a date. It never fits ONE value: "Value A takes
   a number; it was given the Seats column". Its row says "Seats: a number field". Its list is
-  OPEN (D8): a field the facts lack warns on the row ("is not a field of the rows that come in")
-  and sends nothing, as a Value into its header does. Rows where a field is needed say
+  OPEN (D8): a field its Source's store lacks warns on the row ("is not a field of the rows that
+  come in") and sends nothing, as a Value into its header does (`T-a-field-reads-its-sources-fields`). Rows where a field is needed say
   ": route a Field in".
 - **One door, `readInput`**: the value, or `null` and the words — `<input> takes <need>; it was
   given <what>` — all from `INPUT_WORDS` (a socket type in the words its tip says). The runner
@@ -6768,6 +6768,33 @@ app registered that the page does not read.
 - Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/a-source-is-where-rows-come-from.test.mjs`
 - Site: `test/e2e/reforged-node-sources.spec.ts`
+
+### T-a-field-reads-its-sources-fields
+
+**A Field picks from the fields of the store its ROWS come from, never from one list for the
+graph** (Will, TODO 817; 802 pick 1, found by 785: a Condition after Source › devices offered the
+Records fields). The facts are keyed by store, `WorkflowFacts.fieldsOf`, each field with its words,
+its type and the values it takes; `fields` and the graph-wide `values` are gone.
+
+- **Its store is the FIRST Source up its routes**: the routes into its header first, then into its
+  rows, depth first, past what passes rows on (a test's Rows, a Sort, a use) and through the
+  portals (`flowOf`'s routes, `T-a-portal-hop-is-resolved-once`). The Source's Store row says the
+  store: a Value routed in, else its own. Rows of two stores into one And: the first route's.
+- **What reads it**: the Field row's list and its tip words, the stranger warning, what the column
+  carries (`ColumnField.values`), so a Condition's Value B list, a Tag's closed tags, the type that
+  types Value B and warns an operator (`fieldAt`), in the drawing, the faults and an edit alike.
+- **No Source's rows**: the list is only its own pick, it warns "No store's rows come in: route a
+  Source in" (the kind's heading), unless its header warns already, and it sends nothing, so what
+  tests it reads null. A warning, never a fault (D8). Placed alone, it says so too.
+- **Two doors in**: a Custom Node's Group Input brings its use's rows, of any store, so a Field
+  inside offers every store's fields, the first store's words for a shared name. A Preset Filter
+  with no Source reads its own store (`rowsFrom`, its `settings.source`): `presetOfEntity` passes
+  it, so the provider's check of a page's presets still compiles one.
+- **No facts, or a store they do not know** (`orders`): the list is open and nothing warns, as
+  before. The Query editor draws its own Field rows from its page's fields: one store, untouched.
+
+- Site: `src/core/data/workflow.ts`
+- Site: `test/unit/a-field-reads-its-sources-fields.test.mjs`
 
 ### T-a-socket-says-its-type
 

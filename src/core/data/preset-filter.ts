@@ -8,7 +8,7 @@
  *
  * Map:
  * - PagePreset — A preset as a page declares it: its id, its name and each field's condition, in the plain form.
- * - PresetFilterFacts — What reading one needs beside it: the other entities (a use's), the types, the kinds and the fields.
+ * - PresetFilterFacts — What reading one needs beside it: the other entities (a use's), the types, the kinds, each store's fields.
  * - sourceOf — The store a Preset Filter reads: its settings', else the one its graph's Source names.
  * - presetOfEntity — A Preset Filter as a page's preset, or why it is none, in words.
  * - presetsOver — The Preset Filters over one store as its pages' presets, the app's then the reader's, and each fault.
@@ -32,12 +32,12 @@ export interface PagePreset {
 }
 
 /** What reading a Preset Filter needs beside it: the other entities, so a use of one is read inside; the
- *  types and kinds; and the page's fields, which a row picks from. */
+ *  types and kinds; and each store's fields, which a Field picks from by its Source. */
 export interface PresetFilterFacts {
   entities?: readonly Entity[];
   types?: Readonly<Record<string, EntityType>>;
   kinds?: Readonly<Record<string, NodeKind>>;
-  fields?: WorkflowFacts['fields'];
+  fieldsOf?: WorkflowFacts['fieldsOf'];
 }
 
 /** The store a Preset Filter reads: its settings' `source`, else the one its graph's Source names. Plan 776 D4 */
@@ -78,7 +78,9 @@ export function presetOfEntity(entity: Entity, facts: PresetFilterFacts = {}): {
   const types = facts.types ?? entityTypes();
   const library = libraryOf([entity, ...(facts.entities ?? []).filter((e) => e.id !== entity.id)], types);
   const kinds = { ...kindsOf(library), ...(facts.kinds ?? NODE_KINDS) };
-  const drawn = { ...(facts.fields ? { fields: facts.fields } : {}) };
+  // Its Fields read its store's rows, where no Source's reach them: a preset of its store.
+  const store = sourceOf(entity);
+  const drawn = { ...(facts.fieldsOf ? { fieldsOf: facts.fieldsOf } : {}), ...(store ? { rowsFrom: store } : {}) };
   const { workflow, kinds: own } = graphWorkflow(entity, kinds, types);
   const graph = workflowGraph(workflow, drawn, own);
   // A use: the graph inside it, drawn as its own canvas draws it.

@@ -82,7 +82,7 @@ function freeName(base: string, taken: Set<string>): string {
  * and returns, and a result with a fault the workflow did not have.
  */
 export function groupNodes(
-  workflow: WorkflowDefinition, picked: readonly string[], library: NodeLibrary, ask: GroupAsk, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fields'> = {},
+  workflow: WorkflowDefinition, picked: readonly string[], library: NodeLibrary, ask: GroupAsk, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {},
 ): Grouped {
   const all: Kinds = { ...kindsOf(library), ...kinds };
   const ids = new Set(picked.filter((id) => workflow.nodes.some((n) => n.id === id)));

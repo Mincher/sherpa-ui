@@ -16,7 +16,7 @@
  * - finalGraph — A graph as Save writes it: what the draft keeps for a node's other types left out.
  * - workflowFaults — Every fault in a workflow, in words: a node, a kind, a value or a route that cannot be.
  * - checkWorkflow — Check every node, kind and route; each fault reports. True when none is.
- * - WorkflowFacts — What drawing a workflow needs that it does not say: the fields a row picks, the stores.
+ * - WorkflowFacts — What drawing a workflow needs that it does not say: each store's fields, the stores.
  * - sentFrom — What one output socket sends, read through the routes: a Field's column by what reaches it.
  * - workflowGraph — A workflow as nodes and routes: each node its kind's, at its own place, with its values.
  * - NODE_WIDTH — A node's width on the plane, in px: where its output socket is from its x.
@@ -218,11 +218,11 @@ interface ReadField {
 }
 
 /** The field a node's rows read: the Field whose column reaches its header — a Condition's, a Sort's, a Group by's, a
- *  Tag's (plan 783 D5). None: no Field comes in. */
-function fieldAt(node: WorkflowNode, routes: readonly NodeRoute[], sends: (from: string) => Reached | undefined, facts: Pick<WorkflowFacts, 'values'> = {}): ReadField | undefined {
+ *  Tag's (plan 783 D5) — with the values its store says it takes. None: no Field comes in. */
+function fieldAt(node: WorkflowNode, routes: readonly NodeRoute[], sends: (from: string) => Reached | undefined): ReadField | undefined {
   const column = routes.filter((r) => r.to === node.id).map((r) => sends(r.from)).find((g) => g?.kind === 'field')?.field;
   if (!column) return undefined;
-  const known = facts.values?.[column.name];
+  const { values: known } = column;
   return { field: column.name, ...(column.type ? { type: column.type } : {}), ...(known ? { known } : {}), of: column.label ?? column.name };
 }
 
@@ -267,7 +267,7 @@ function typedWants(type: unknown, value: unknown): string | undefined {
 /** Every fault in a workflow, in words: a node, a kind, a value or a route that cannot be.
  *  A v1 is read as v2 first, and each fault of the read leads. A value its row cannot hold — a stranger
  *  in a closed list, no date, a number off its step — is a fault where it is held and where a route brings it. */
-export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fields' | 'values'> = {}): string[] {
+export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): string[] {
   const { workflow, faults } = readWorkflow(given, kinds);
   if (!workflow) return faults;
   const problems = [...faults];
@@ -275,7 +275,7 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
   // A route to a row another type holds is kept for that type: no fault, and Save leaves it out. What flows is read through the portals.
   const { kept, flow } = flowOf(workflow, kinds);
   const held = new Map(workflow.nodes.map((n) => [n.id, n]));
-  const sends = sender(held, flow.routes, kinds, facts);
+  const sends = sender(held, flow.routes, kinds, fieldsReach(held, flow.routes, kinds, facts));
   const reads = new Map<string, ReadField | undefined>();
   for (const node of workflow.nodes) {
     const shipped = kinds[node.kind];
@@ -285,7 +285,7 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
     else if (!kind.graphs.includes('workflow')) problems.push(`the node "${node.id}" is of the kind "${node.kind}", which a workflow does not run`);
     else byId.set(node.id, kind);
     if (node.size && !(inGrowth(node.size.w) && inGrowth(node.size.h))) problems.push(`the node "${node.id}" is sized ${node.size.w} by ${node.size.h} times its natural size, and a size runs from ${GROW_MIN} to ${GROW_MAX}`);
-    const read = kind && fieldAt(node, flow.routes, sends, facts);
+    const read = kind && fieldAt(node, flow.routes, sends);
     reads.set(node.id, read);
     for (const [name, value] of Object.entries(node.values ?? {})) {
       const row = kind && rowOf(kind.rows, name);
@@ -392,7 +392,7 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
 }
 
 /** Check every node, kind and route; each fault reports, and it never throws. True when none is. */
-export function checkWorkflow(workflow: WorkflowDefinition | WorkflowDefinitionV1, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fields' | 'values'> = {}): boolean {
+export function checkWorkflow(workflow: WorkflowDefinition | WorkflowDefinitionV1, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): boolean {
   const problems = workflowFaults(workflow, kinds, facts);
   for (const problem of problems) {
     report({ code: 'workflow-definition', message: `checkWorkflow: ${problem}.`, at: { workflow: workflow?.id } });
@@ -400,36 +400,90 @@ export function checkWorkflow(workflow: WorkflowDefinition | WorkflowDefinitionV
   return !problems.length;
 }
 
-/** What drawing a workflow needs that it does not say: the fields a row picks, the stores. */
+/** What drawing a workflow needs that it does not say: each store's fields, the stores. */
 export interface WorkflowFacts {
-  /** The fields a Field row picks, by name: a page definition's `source.fields`. */
-  fields?: Readonly<Record<string, { label?: string; type?: string }>>;
-  /** The stores a Store row picks, by the names the app registered them under. */
+  /** Each store's fields, by the store's name — a page definition's `source.fields`, each with the values it may take:
+   *  a Field picks from the fields of the Source its rows come from. TRAP T-a-field-reads-its-sources-fields */
+  fieldsOf?: Readonly<Record<string, Readonly<Record<string, { label?: string; type?: string; values?: readonly string[] }>>>>;
+  /** The store whose rows a Field reads where no Source's reach it: a Preset Filter's own, its `settings.source`. */
+  rowsFrom?: string;
+  /** The stores a Source's Store row picks, by the names the app registered them under. */
   stores?: readonly string[];
-  /** Every value a field may take, by the field: a Value row picks from them. */
-  values?: Readonly<Record<string, readonly string[]>>;
 }
 
-/** The field a Field row picks, as it shows it — a Value routed in, else its own pick — with its words and type from the
- *  facts; `stranger` where the facts know fields and not this one. None: it picks none. Plan 783 D8 */
-function pickedField(
-  held: ReadonlyMap<string, WorkflowNode>, routes: readonly NodeRoute[], facts: Pick<WorkflowFacts, 'fields'>, address: string,
-): { field: ColumnField; stranger?: true } | undefined {
+type StoreFields = NonNullable<WorkflowFacts['fieldsOf']>[string];
+
+/** The fields of the rows that reach a node, and `none` where no Source's do. */
+interface Reach {
+  fields?: StoreFields;
+  none?: true;
+}
+
+/** What a row shows: a Value routed in, else its own. */
+function shownAt(held: ReadonlyMap<string, WorkflowNode>, routes: readonly NodeRoute[], address: string): unknown {
   const { node: id, row = '' } = socketOf(address);
   const into = routes.find((r) => r.to === address && socketOf(r.from).row !== undefined);
   const brought = into ? held.get(socketOf(into.from).node)?.values?.[socketOf(into.from).row!] : undefined;
-  const name = String(brought ?? held.get(id)?.values?.[row] ?? '');
+  return brought ?? held.get(id)?.values?.[row];
+}
+
+/** The fields of the rows that reach each node: the store of the FIRST Source up its routes — its header's first, then its
+ *  rows', through the portals. A Group Input brings its use's rows, of any store: every store's fields. No Source: the
+ *  facts' `rowsFrom`, else `none`. No facts, or a store they do not know: open. TODO 817 · TRAP T-a-field-reads-its-sources-fields */
+function fieldsReach(held: ReadonlyMap<string, WorkflowNode>, routes: readonly NodeRoute[], kinds: Kinds, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'>): (id: string) => Reach {
+  const known = facts.fieldsOf;
+  if (!known) return () => ({});
+  const up = (id: string, seen: Set<string>): { store: unknown } | 'inside' | undefined => {
+    seen.add(id);
+    const into = routes.filter((r) => socketOf(r.to).node === id);
+    for (const r of [...into.filter((r) => socketOf(r.to).row === undefined), ...into.filter((r) => socketOf(r.to).row !== undefined)]) {
+      const from = socketOf(r.from).node;
+      const kind = kindOfNode(kinds, held.get(from));
+      const row = kind?.rows.find((x) => x.control === 'store');
+      if (row) return { store: shownAt(held, routes, `${from}/${row.name}`) };
+      if (kind?.model === 'groupInput') return 'inside';
+      const found = seen.has(from) ? undefined : up(from, seen);
+      if (found) return found;
+    }
+    return undefined;
+  };
+  const any = (): StoreFields => {
+    const all: Record<string, StoreFields[string]> = {};
+    for (const fields of Object.values(known)) for (const [name, field] of Object.entries(fields)) all[name] ??= field;
+    return all;
+  };
+  const of = (store: unknown): Reach => (typeof store === 'string' && Object.hasOwn(known, store) ? { fields: known[store]! } : {});
+  const memo = new Map<string, Reach>();
+  return (id) => {
+    if (memo.has(id)) return memo.get(id)!;
+    const found = up(id, new Set());
+    const reach = found === 'inside' ? { fields: any() } : found ? of(found.store) : facts.rowsFrom !== undefined ? of(facts.rowsFrom) : { fields: {}, none: true as const };
+    memo.set(id, reach);
+    return reach;
+  };
+}
+
+/** The field a Field row picks, as it shows it — a Value routed in, else its own pick — with its words, type and values
+ *  from the fields that reach it; `stranger` where they are known and it is not one. None: it picks none. Plan 783 D8 */
+function pickedField(held: ReadonlyMap<string, WorkflowNode>, routes: readonly NodeRoute[], reach: Reach, address: string): { field: ColumnField; stranger?: true } | undefined {
+  const name = String(shownAt(held, routes, address) ?? '');
   if (!name) return undefined;
-  const known = facts.fields?.[name];
-  const field: ColumnField = { name, ...(known?.label ? { label: known.label } : {}), ...(known?.type ? { type: known.type } : {}) };
-  return { field, ...(facts.fields && !known ? { stranger: true as const } : {}) };
+  const known = reach.fields?.[name];
+  const field: ColumnField = { name, ...(known?.label ? { label: known.label } : {}), ...(known?.type ? { type: known.type } : {}), ...(known?.values ? { values: known.values } : {}) };
+  return { field, ...(reach.fields && !known ? { stranger: true as const } : {}) };
+}
+
+/** A Field that no Source's rows reach, in words: "route a Source in", by the kind that names a store. */
+function storelessWords(kinds: Kinds): string {
+  const source = Object.values(kinds).find((k) => k.graphs.includes('workflow') && k.rows.some((r) => r.control === 'store'));
+  return `No store's rows come in: route a ${source?.heading ?? 'Source'} in`;
 }
 
 /** What each output socket sends, read through the routes: what its row gives (`givenAt`); a Field row, the column of what
  *  reaches its header or one record's value (`columnOf`), none where its field is a stranger or its header read null; the
  *  Rows row of a node its rows come into, rows only where its header reads rows, a column, an object, or a test's True or
  *  False that carries them (plan 783 D4). A loop sends what its kind says. Plan 783 D2 */
-function sender(held: ReadonlyMap<string, WorkflowNode>, routes: readonly NodeRoute[], kinds: Kinds, facts: Pick<WorkflowFacts, 'fields'>): (from: string) => Reached | undefined {
+function sender(held: ReadonlyMap<string, WorkflowNode>, routes: readonly NodeRoute[], kinds: Kinds, reach: (id: string) => Reach): (from: string) => Reached | undefined {
   const busy = new Set<string>();
   const sends = (from: string): Reached | undefined => {
     const { node: id, row } = socketOf(from);
@@ -438,7 +492,7 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, routes: readonly NodeRo
     const out = kind && row !== undefined ? rowOf(kind.rows, row) : undefined;
     const passes = out?.gives === 'rows' && !!kind!.input;
     if (!kind || !out || (out.gives !== 'field' && !passes) || busy.has(id)) return givenAt(node, row, kinds);
-    const picked = passes ? undefined : pickedField(held, routes, facts, from);
+    const picked = passes ? undefined : pickedField(held, routes, reach(id), from);
     if (!passes && (!picked || picked.stranger)) return undefined;
     busy.add(id);
     try {
@@ -462,11 +516,13 @@ function sender(held: ReadonlyMap<string, WorkflowNode>, routes: readonly NodeRo
 }
 
 /** What one output socket of a workflow sends, read through its routes and its portals: a Field's column, `{ rows, field }`,
- *  by what reaches its header and the facts' fields. None: it sends nothing before a run. Plan 783 D2, TODO 779 */
-export function sentFrom(given: WorkflowDefinition | WorkflowDefinitionV1, from: string, facts: Pick<WorkflowFacts, 'fields'> = {}, kinds: Kinds = NODE_KINDS): Reached | undefined {
+ *  by what reaches its header and the fields of its Source. None: it sends nothing before a run. Plan 783 D2, TODO 779 */
+export function sentFrom(given: WorkflowDefinition | WorkflowDefinitionV1, from: string, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}, kinds: Kinds = NODE_KINDS): Reached | undefined {
   const { workflow } = readWorkflow(given, kinds);
   if (!workflow) return undefined;
-  return sender(new Map(workflow.nodes.map((n) => [n.id, n])), flowOf(workflow, kinds).flow.routes, kinds, facts)(from);
+  const held = new Map(workflow.nodes.map((n) => [n.id, n]));
+  const { routes } = flowOf(workflow, kinds).flow;
+  return sender(held, routes, kinds, fieldsReach(held, routes, kinds, facts))(from);
 }
 
 /** A workflow as nodes and routes, a v1 read as v2: each node its kind's, at its own place,
@@ -500,7 +556,8 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
     const value = row === undefined ? undefined : at?.values?.[row];
     return at && out && value !== undefined ? { value, said: whence(from) } : undefined;
   };
-  const sent = sender(held, flows, kinds, facts);
+  const reach = fieldsReach(held, flows, kinds, facts);
+  const sent = sender(held, flows, kinds, reach);
   const nodes = workflow.nodes.filter((n) => kinds[n.kind]).map((node) => {
     const values = node.values ?? {};
     const family = kinds[node.kind]!;
@@ -523,7 +580,7 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
     if (nulled) warnings.push({ words: nullWords(headed, nulled) });
     for (const w of flow.warnings) if (w.node === node.id) warnings.push({ words: w.words });
     // The field its rows read: the Field reaching its header. Its operator warns where the field's type does not take it.
-    const read = fieldAt(node, flows, sent, facts);
+    const read = fieldAt(node, flows, sent);
     const { type, known, of } = read ?? {};
     const op = kind.model === 'Condition' ? opWarning(at?.id, read) : undefined;
     if (op) warnings.push({ words: op });
@@ -533,8 +590,10 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
       const plain = row.control === 'values' && !known?.length ? { ...row, control: 'text' as const } : row;
       // A Unit says its words for the count beside it: "1 day", "7 days".
       const count = row.control === 'unit' && typeof values['n'] === 'number' ? { count: values['n'] } : {};
+      // A Field row picks from the fields of the Source its rows come from (TODO 817).
+      const fields = row.control === 'field' ? reach(node.id).fields : undefined;
       const list = rowChoices({ ...plain, value: has }, {
-        ...(facts.fields ? { fields: facts.fields } : {}), ...(facts.stores ? { stores: facts.stores } : {}), ...(family.types ? { types: typeChoices(family)! } : {}), ...(known ? { values: known } : {}), ...count,
+        ...(fields ? { fields } : {}), ...(facts.stores ? { stores: facts.stores } : {}), ...(family.types ? { types: typeChoices(family)! } : {}), ...(known ? { values: known } : {}), ...count,
         ...(row.control === 'portal' ? { portals: names } : {}),
       });
       // A Type row says the type's own value, and the line the type gives.
@@ -562,9 +621,12 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
       };
       const ins = flows.filter((r) => r.to === address && !bad.includes(r));
       const coming = ins.flatMap((r) => reading(r) ?? []);
-      // A Field row says its field and its type; one the rows do not have warns, and sends nothing (D8).
-      const picked = row.gives === 'field' ? pickedField(held, flows, facts, address) : undefined;
-      if (picked?.stranger) warnings.push({ row: row.name, words: `"${picked.field.name}" is not a field of the rows that come in` });
+      // A Field row says its field and its type; one the rows do not have warns, and sends nothing (D8). No Source, it says
+      // so, where its header says nothing worse.
+      const picked = row.gives === 'field' ? pickedField(held, flows, reach(node.id), address) : undefined;
+      if (row.gives === 'field' && reach(node.id).none) {
+        if (!warnings.some((w) => w.row === undefined)) warnings.push({ row: row.name, words: storelessWords(kinds) });
+      } else if (picked?.stranger) warnings.push({ row: row.name, words: `"${picked.field.name}" is not a field of the rows that come in` });
       // A portal's Name says how many portals of its name it is joined to.
       const told = picked && !picked.stranger ? { hint: fieldWords(picked.field) } : row.control === 'portal' ? { hint: portalHint(workflow.nodes, node.id) } : {};
       const why = flow.nulls.get(address);
@@ -700,7 +762,7 @@ function refuse(message: string): void {
 /** The workflow after one edit, a v2 — a v1 read as one first; the one given untouched. A
  *  value is typed as its row takes it. */
 export function editWorkflow(
-  given: WorkflowDefinition | WorkflowDefinitionV1, edit: WorkflowEdit, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fields'> = {},
+  given: WorkflowDefinition | WorkflowDefinitionV1, edit: WorkflowEdit, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {},
 ): WorkflowDefinition {
   const workflow = readWorkflow(given, kinds).workflow;
   if (!workflow) return given as WorkflowDefinition;
@@ -861,7 +923,7 @@ export function editWorkflow(
     // A comparison's value, or a field's tags, is typed by the field that reaches it. TRAP T-a-value-is-typed-once
     const flows = flowOf(workflow, kinds).flow.routes;
     const held = new Map(workflow.nodes.map((n) => [n.id, n]));
-    const field = kind && fieldAt(node, flows, sender(held, flows, kinds, facts))?.type as FieldType | undefined;
+    const field = kind && fieldAt(node, flows, sender(held, flows, kinds, fieldsReach(held, flows, kinds, facts)))?.type as FieldType | undefined;
     const type = typedRow(row) ? field : undefined;
     const list = row?.multiple ? [edit.value ?? []].flat().map(String) : undefined;
     const value = row?.control === 'number' ? typedValue('number', String(edit.value ?? ''))

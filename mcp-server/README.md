@@ -141,8 +141,8 @@ Each edit as the Node Editor makes it: a row's new value, `{ "node": "when-view-
 A workflow definition (workflow.v2; a v1 is read as one, `readWorkflow`) as nodes and routes (`workflowGraph`) — each node its kind's header, sockets and rows with their values and choices, at its own place — with every fault `checkWorkflow` reports (a node, a kind, a value or a route that cannot be), and the kinds a workflow runs, from `NODE_KINDS`. Edit it with edit_workflow.
 
 - `workflow` — The workflow definition, as its JSON: `{ "v": 2, "id", "nodes", "routes" }`
-- `fields` (optional) — The fields a Field row picks, by name: a page definition's `source.fields`
-- `stores` (optional) — The stores a Store row picks, by the names the app gives them
+- `fieldsOf` (optional) — Each store's fields, by the store's name — a page definition's `source.fields`, each with the `values` it may take: a Field row picks from those of the Source its rows come from
+- `stores` (optional) — The stores a Source's Store row picks, by the names the app gives them
 
 #### `edit_workflow` — Edit a workflow
 

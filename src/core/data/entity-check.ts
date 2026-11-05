@@ -4,7 +4,7 @@
  * it. DOM-free. Will, plan 746 E1, E5 · TRAP T-an-entity-is-an-envelope-and-a-type
  *
  * Map:
- * - EntityFacts — What a check reads beside the entity: the types, the other entities, the kinds, the fields.
+ * - EntityFacts — What a check reads beside the entity: the types, the other entities, the kinds, each store's fields.
  * - graphWorkflow — An entity's graph as the workflow its canvas edits, with a Group Input and Output where it has sockets.
  * - entityFaults — Every fault in an entity, in words.
  * - checkEntity — Check an entity; each fault reports. True when none is.
@@ -26,7 +26,8 @@ export interface EntityFacts {
   entities?: readonly Entity[];
   /** The node kinds its graph may use; the shipped, when none given. */
   kinds?: Kinds;
-  fields?: WorkflowFacts['fields'];
+  /** Each store's fields: a Field checks against its Source's. */
+  fieldsOf?: WorkflowFacts['fieldsOf'];
 }
 
 /** An entity's graph as the workflow its canvas edits — its id the entity's, so its tab draft is its
@@ -104,7 +105,7 @@ export function entityFaults(entity: Entity, facts: EntityFacts = {}): string[] 
 
   // The graph and its sockets: a Custom Node's own checks, with the entities around it as kinds.
   const kind = entityKind(entity);
-  const found = nodeLibraryFaults({ v: 1, nodes: { [kind]: asNode(entity, types) } }, kinds, facts.fields ? { fields: facts.fields } : {});
+  const found = nodeLibraryFaults({ v: 1, nodes: { [kind]: asNode(entity, types) } }, kinds, facts.fieldsOf ? { fieldsOf: facts.fieldsOf } : {});
   const own = `the Custom Node "${kind}"`;
   for (const fault of found) {
     if (/holds itself/.test(fault)) continue;

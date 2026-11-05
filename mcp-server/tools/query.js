@@ -294,11 +294,11 @@ export function register(server) {
   })));
 
   const FACTS = {
-    fields: z.union([z.string(), z.record(z.unknown())]).optional().describe('The fields a Field row picks, by name: a page definition\'s `source.fields`'),
-    stores: z.union([z.string(), z.array(z.string())]).optional().describe('The stores a Store row picks, by the names the app gives them'),
+    fieldsOf: z.union([z.string(), z.record(z.unknown())]).optional().describe('Each store\'s fields, by the store\'s name — a page definition\'s `source.fields`, each with the `values` it may take: a Field row picks from those of the Source its rows come from'),
+    stores: z.union([z.string(), z.array(z.string())]).optional().describe('The stores a Source\'s Store row picks, by the names the app gives them'),
   };
   const factsOf = (args) => ({
-    ...(args.fields ? { fields: given(args.fields, 'fields') } : {}), ...(args.stores ? { stores: listOf(args.stores, 'stores') } : {}),
+    ...(args.fieldsOf ? { fieldsOf: given(args.fieldsOf, 'fieldsOf') } : {}), ...(args.stores ? { stores: listOf(args.stores, 'stores') } : {}),
   });
   /** A workflow, given: a v2, or a v1 the data layer reads as one; anything else is refused, in checkWorkflow's words. */
   const workflowOf = (dl, value) => {

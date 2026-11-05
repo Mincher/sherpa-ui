@@ -88,7 +88,7 @@ const named = (labels: readonly string[]): string => {
 };
 
 /** The shelf over a port. `facts` adds the app's types and kinds to the checks. */
-export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'types' | 'kinds' | 'fields'> = () => ({})): EntityShelf {
+export function makeShelf(port: EntityPort, facts: () => Pick<EntityFacts, 'types' | 'kinds' | 'fieldsOf'> = () => ({})): EntityShelf {
   const all = (): Entity[] => joinEntities(port.presets(), port.mine());
   const summary = ({ id, type, label, origin }: Entity): EntitySummary => ({ id, type, label, origin: origin ?? 'mine' });
   const refuse = (type: string, message: string, id: string): false => {

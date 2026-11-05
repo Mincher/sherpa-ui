@@ -504,7 +504,7 @@ export class SherpaProvider extends SherpaElement {
     if (!shelf.list(PRESET_FILTER).length) return [];
     const { presetsOver } = await import('../../core/data/preset-filter.js');
     const entities = shelf.list().flatMap(({ id }) => shelf.get(id) ?? []);
-    const { presets, faults } = presetsOver(store, entities, fields ? { fields } : {});
+    const { presets, faults } = presetsOver(store, entities, fields ? { fieldsOf: { [store]: fields } } : {});
     for (const fault of faults) report({ code: 'preset-filter', message: `sherpa-provider: ${fault}, so it is no preset of this page.`, at: { store } });
     return presets;
   }

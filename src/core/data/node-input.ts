@@ -9,7 +9,7 @@
  * - Given — What reaches an input, as finely as its source says: a value, a number, an object, rows, a column.
  * - Need — What an input can use: its socket's type, a number, a date, rows, a list, one of its choices, a field.
  * - INPUT_WORDS — Each need and each given in words: the one place a warning's words come from.
- * - ColumnField — The field a column says: its name, its words and its type.
+ * - ColumnField — The field a column says: its name, its words, its type and the values it takes.
  * - Reached — One thing that reaches an input: its kind, the value its source holds, and a column's field.
  * - InputNeeds — An input as a warning names it: its label, what it needs, and its choices.
  * - needOf — What an input needs, by its kind's own description: its `needs`, its control, its field, else its type.
@@ -41,11 +41,12 @@ export const INPUT_WORDS: Readonly<Record<Exclude<Need, 'choice'> | Given, strin
   number: 'a number', date: 'a date', rows: 'rows', list: 'a list', numbers: 'a list of numbers', field: 'a field', tested: 'a field or a value',
 };
 
-/** The field a column says: its name, its words and its type (none: text). */
+/** The field a column says: its name, its words, its type (none: text) and the values its store says it takes. */
 export interface ColumnField {
   name: string;
   label?: string;
   type?: string;
+  values?: readonly string[];
 }
 
 /** One thing that reaches an input: its kind, the value its source holds, where it holds one, and a column's field. */

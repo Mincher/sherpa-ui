@@ -256,7 +256,7 @@ function cycleOf(ids: readonly string[], library: NodeLibrary): string {
 
 /** A workflow's faults, then the faults inside each use, in the one's own words. */
 function nested(
-  workflow: WorkflowDefinition, kinds: Kinds, base: Kinds, library: NodeLibrary, facts: Pick<WorkflowFacts, 'fields'>, path: readonly string[], stack: readonly string[],
+  workflow: WorkflowDefinition, kinds: Kinds, base: Kinds, library: NodeLibrary, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'>, path: readonly string[], stack: readonly string[],
 ): string[] {
   const problems = workflowFaults(workflow, kinds, facts).map((f) => named(path, f, workflow, kinds));
   for (const node of workflow.nodes) {
@@ -276,7 +276,7 @@ function nested(
 /** Every fault in a library, in words: a library that is none, an id a shipped kind owns, a
  *  socket that is not one, a body that fails the workflow's own checks (named by its path), and a
  *  Custom Node that holds itself, at any depth. A kind the app adds is given in `kinds`. */
-export function nodeLibraryFaults(library: NodeLibrary, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fields'> = {}): string[] {
+export function nodeLibraryFaults(library: NodeLibrary, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): string[] {
   const given = library as { v?: unknown; nodes?: unknown } | null;
   if (given?.v !== 1 || !given.nodes || typeof given.nodes !== 'object' || Array.isArray(given.nodes)) return ['it is not a Custom Node library: a v1 with its nodes by id'];
   const problems: string[] = [];
@@ -313,7 +313,7 @@ export function nodeLibraryFaults(library: NodeLibrary, kinds: Kinds = NODE_KIND
 }
 
 /** Check a library; each fault reports, and it never throws. True when none is. */
-export function checkNodeLibrary(library: NodeLibrary, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fields'> = {}): boolean {
+export function checkNodeLibrary(library: NodeLibrary, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): boolean {
   const problems = nodeLibraryFaults(library, kinds, facts);
   for (const problem of problems) report({ code: 'node-library', message: `checkNodeLibrary: ${problem}.`, at: {} });
   return !problems.length;
@@ -321,7 +321,7 @@ export function checkNodeLibrary(library: NodeLibrary, kinds: Kinds = NODE_KINDS
 
 /** A workflow's faults, and the faults inside each use, named by path ("Org permissions ›
  *  Condition: …"). The same checks run in a use as at the top, so the same faults come. */
-export function workflowFaultsDeep(workflow: WorkflowDefinition, library: NodeLibrary, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fields'> = {}): string[] {
+export function workflowFaultsDeep(workflow: WorkflowDefinition, library: NodeLibrary, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fieldsOf' | 'rowsFrom'> = {}): string[] {
   const base: Kinds = { ...kindsOf(library), ...kinds };
   return [...new Set(nested(workflow, base, base, library, facts, [], []))];
 }
