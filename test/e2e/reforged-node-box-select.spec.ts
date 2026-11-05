@@ -128,7 +128,7 @@ test('Shift adds to the pick, a plain box replaces it, and a click on blank clea
   expect(await picked(page)).toEqual({ routes: [], nodes: [], count: '0' });
 });
 
-const primary = (page: Page) => page.evaluate(() => /mac|iphone|ipad/i.test((navigator as never as { userAgentData?: { platform?: string } }).userAgentData?.platform ?? navigator.platform) ? 'Meta' : 'Control');
+const primary = (page: Page) => page.evaluate(() => /mac|iphone|ipad/i.test(navigator.platform) ? 'Meta' : 'Control');
 const mode = (page: Page) => page.evaluate(() => document.getElementById('cv')!.shadowRoot!.querySelector('.viewport')!.getAttribute('data-mode'));
 async function around(page: Page, id: string): Promise<{ from: [number, number]; to: [number, number] }> {
   const n = await box(page, `#cv sherpa-node[data-heading="${id}"]`);

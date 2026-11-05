@@ -65,7 +65,7 @@ const press = async (page: Page, name: string) => {
   await settle(page);
 };
 /** The page's primary modifier: Cmd on an Apple platform, else Ctrl (the browser's own platform, not the runner's). */
-const primary = (page: Page) => page.evaluate(() => /mac|iphone|ipad/i.test((navigator as never as { userAgentData?: { platform?: string } }).userAgentData?.platform ?? navigator.platform) ? 'Meta' : 'Control');
+const primary = (page: Page) => page.evaluate(() => /mac|iphone|ipad/i.test(navigator.platform) ? 'Meta' : 'Control');
 const can = (page: Page) => page.evaluate(() => ({
   undo: !!document.querySelector('sherpa-node-toolbar')!.hasAttribute('data-can-undo'),
   redo: !!document.querySelector('sherpa-node-toolbar')!.hasAttribute('data-can-redo'),

@@ -10,7 +10,8 @@
 
 const platform = (globalThis as { navigator?: { userAgentData?: { platform?: string }; platform?: string } }).navigator;
 /** Whether the platform is Apple's, read once. */
-export const isApple = /mac|iphone|ipad|ipod/i.test(platform?.userAgentData?.platform ?? platform?.platform ?? '');
+// `navigator.platform` first: it says MacIntel on every Mac; a test browser's `userAgentData` may claim another system.
+export const isApple = /mac|iphone|ipad|ipod/i.test(platform?.platform || platform?.userAgentData?.platform || '');
 
 /** Whether an event holds the primary modifier: Cmd on Apple platforms, Ctrl elsewhere. */
 export function primaryKey(event: { ctrlKey: boolean; metaKey: boolean }, apple: boolean = isApple): boolean {

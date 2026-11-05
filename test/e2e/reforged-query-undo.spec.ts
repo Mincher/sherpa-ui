@@ -52,7 +52,7 @@ test('nothing to step: both off; a change made OUTSIDE the editor (a chip) is a 
   await expect.poll(() => picked(page)).toEqual(['EMEA', 'APAC']);
 });
 
-const primary = (page: import('@playwright/test').Page) => page.evaluate(() => /mac|iphone|ipad/i.test((navigator as never as { userAgentData?: { platform?: string } }).userAgentData?.platform ?? navigator.platform) ? 'Meta' : 'Control');
+const primary = (page: import('@playwright/test').Page) => page.evaluate(() => /mac|iphone|ipad/i.test(navigator.platform) ? 'Meta' : 'Control');
 
 test('the primary key (Cmd on a Mac) + Z undo, Shift+Z redoes; the graph redraws with the restored Query', async ({ page }) => {
   await ask(page, ['AMER']);
