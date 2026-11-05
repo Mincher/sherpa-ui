@@ -15,6 +15,7 @@ const core = new URL('../../dist/core/data/', import.meta.url);
 const { NODE_KINDS, fixedChoices, mirrored, resolveKind, rowChoices, socketType, typeChoices } = await import(new URL('node-kinds.js', core));
 const { addCustomValue, editWorkflow, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 const { queryGraph } = await import(new URL('query-graph.js', core));
+const { innerOf } = await import(new URL('node-library.js', core));
 
 const fields = { status: { label: 'Status' }, seats: { label: 'Seats', type: 'number' } };
 const labels = (list) => list?.map((c) => c.label);
@@ -105,6 +106,45 @@ test('a Value node routed into a picklist OVERRIDES it: the row mirrors it, read
   assert.equal(rowOf(waiting, 'filter', 'b').value, 'trial', 'a Result holds no value yet: its own shows');
   // The Type, and the node it routes: the flow is checked as it was.
   assert.deepEqual(workflowFaults(over), []);
+});
+
+test('a row a route drives that sends nothing yet, and that holds nothing, shows NOTHING and says where from: never its list\'s first choice (TODO 774)', () => {
+  // Inside a Custom Node: the Group Input holds no value before a run.
+  const definition = {
+    v: 1, label: 'Has status',
+    inputs: [{ name: 'status', label: 'Status', type: 'value' }, { name: 'way', label: 'Way', type: 'value' }],
+    outputs: [{ name: 'matching', label: 'Matching', type: 'object' }],
+    nodes: [
+      { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
+      { id: 'pick', kind: 'field', x: 180, y: 0, values: { field: 'status' } },
+      { id: 'match', kind: 'condition', x: 360, y: 0, values: { type: 'eq' } },
+      { id: 'order', kind: 'collection', x: 720, y: 0, values: { type: 'sort' } },
+    ],
+    routes: [
+      { from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'match' }, { from: '#in/status', to: 'match/b' },
+      { from: '#in/way', to: 'order/direction' }, { from: 'match/rows', to: '#out/matching' },
+    ],
+  };
+  const inside = (d = definition, facts = { fields, values: { status: ['active', 'trial'] } }) => {
+    const inner = innerOf({ id: 'use', kind: 'has-status' }, { v: 1, nodes: { 'has-status': d } });
+    return (id, name) => workflowGraph(inner.workflow, facts, inner.kinds).nodes.find((n) => n.id === id).rows.find((r) => r.name === name);
+  };
+  // An open list (the field's values) and a fixed one (Ascending, Descending): empty, none of their choices, and where from.
+  for (const [id, name, from] of [['match', 'b', 'Status'], ['order', 'direction', 'Way']]) {
+    const row = inside()(id, name);
+    assert.deepEqual([row.value, row.choices, row.custom, row.hint], ['', [], true, `From Group Input › ${from}`], `${id} › ${name}`);
+  }
+  // A typed row (no values known) is empty too, and says it.
+  const typed = inside(definition, { fields })('match', 'b');
+  assert.deepEqual([typed.value, typed.choices, typed.hint], [undefined, undefined, 'From Group Input › Status']);
+  // A row that holds its own pick still shows it, until N4 runs the flow.
+  const held = { ...definition, nodes: definition.nodes.map((n) => (n.id === 'match' ? { ...n, values: { ...n.values, b: 'trial' } } : n)) };
+  const own = inside(held)('match', 'b');
+  assert.deepEqual([own.value, own.custom, own.hint, labels(own.choices)], ['trial', undefined, undefined, ['active', 'trial']]);
+  // At the top too: a Result only a run fills.
+  const sum = { ...flow(), nodes: [...flow().nodes, { id: 'sum', kind: 'math', x: 0, y: 400 }] };
+  const waiting = rowOf(editWorkflow(sum, { route: { from: 'sum/result', to: 'filter/b' } }), 'filter', 'b');
+  assert.deepEqual([waiting.value, waiting.choices, waiting.hint], ['', [], 'From Math › Result']);
 });
 
 test('a multi-select row holds, takes and sends ONE object: each routed pick is ticked, and Custom where its list lacks it', () => {

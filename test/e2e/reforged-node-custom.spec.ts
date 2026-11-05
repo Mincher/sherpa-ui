@@ -357,18 +357,77 @@ test('two sources let go on one Custom Node\'s header are two new inputs: a row 
   expect(await routesOf(page)).toEqual(['perm → end', 'role/field → has-role', 'start/rows → perm/users', 'start/rows → role']);
 });
 
-test('a preset\'s header refuses a new input, in words: its inside is read only (763)', async ({ page }) => {
+test('a preset\'s header refuses a new input as any refused drop does: in words, the line not kept, a moved end back on its row (763, 803)', async ({ page }) => {
   await bind(page);
   await page.evaluate(async () => {
     const { onReport } = await import('/dist/data.js') as { onReport(fn: (r: { code: string; message: string }) => void): () => void };
     const w = window as unknown as { said: string[] };
     w.said = [];
-    onReport((r) => w.said.push(r.message));
+    onReport((r) => w.said.push(`${r.code}: ${r.message}`));
   });
-  await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Store"] sherpa-node-row[data-label="Rows"]', 'output'), await socketAt(page, '#cv > sherpa-node[data-heading="Owner check"]', 'input'));
-  expect(await ed(page, 'window.said')).toEqual(['bindWorkflow: a preset is read only: Copy to my nodes to add an input.']);
+  const refused = 'workflow-route: bindWorkflow: a preset is read only: Copy to my nodes to add an input.';
+  const rows = '#cv > sherpa-node[data-heading="Store"] sherpa-node-row[data-label="Rows"]';
+  const own = '#cv > sherpa-node[data-heading="Owner check"]';
+  const lines = () => page.locator('#cv svg.graph-routes path[data-from]').evaluateAll((els) => els.map((p) => `${p.getAttribute('data-from')} → ${p.getAttribute('data-to')}`).sort());
+  await drawLine(page, await socketAt(page, rows, 'output'), await socketAt(page, own, 'input'));
+  expect(await ed(page, 'window.said')).toEqual([refused]);
   expect(await routesOf(page)).toEqual(['perm → end', 'start/rows → perm/users', 'start/rows → perm2/users']);
+  expect(await lines()).toEqual(['perm → end', 'start/rows → perm/users', 'start/rows → perm2/users']);
+  expect(await page.locator('#cv svg.graph-routes path.graph-draft').count(), 'no line is left where it was let go').toBe(0);
   expect(await ed(page, "ed.library().nodes['owner-check'].inputs.length")).toBe(2);
+  // A route into its Users row is the workflow's own; its end lifted and let go on the header is refused, and goes back.
+  await drawLine(page, await socketAt(page, rows, 'output'), await socketAt(page, `${own} sherpa-node-row[data-label="Users"]`, 'input'));
+  expect(await routesOf(page)).toContain('start/rows → own/users');
+  await drawLine(page, await socketAt(page, `${own} sherpa-node-row[data-label="Users"]`, 'input'), await socketAt(page, own, 'input'));
+  expect(await ed(page, 'window.said')).toEqual([refused, refused]);
+  expect(await routesOf(page)).toEqual(['perm → end', 'start/rows → own/users', 'start/rows → perm/users', 'start/rows → perm2/users']);
+  expect(await lines()).toContain('start/rows → own/users');
+  expect(await page.locator('#cv svg.graph-routes path.graph-draft').count()).toBe(0);
+});
+
+test('inside, a picklist row routed from the Group Input, which sends nothing yet, shows nothing and says where from: never its first choice (774)', async ({ page }) => {
+  await page.evaluate(async () => {
+    const { bindWorkflow, SessionStore } = await import('/dist/app.js');
+    const { useOf } = await import('/dist/data.js');
+    // The Store's Status, Equals Value B; Value B not yet routed.
+    const library = {
+      v: 1, nodes: {
+        'has-status': {
+          v: 1, label: 'Has status', inputs: [{ name: 'status', label: 'Status', type: 'value' }], outputs: [{ name: 'matching', label: 'Matching', type: 'object' }],
+          nodes: [
+            { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'users' } }, { id: 'pick', kind: 'field', x: 360, y: 0, values: { field: 'status' } },
+            { id: 'match', kind: 'condition', x: 720, y: 0, values: { type: 'eq' } },
+          ],
+          routes: [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'match' }, { from: 'match/rows', to: '#out/matching' }],
+        },
+      },
+    };
+    const flow = { v: 2, id: 'g774', nodes: [useOf(library as never, 'has-status', { id: 'has', x: 200, y: 100 })], routes: [] };
+    (window as unknown as Record<string, unknown>)['ed'] = bindWorkflow(document.getElementById('cv') as never, flow as never, {
+      session: new SessionStore(), inspector: document.getElementById('inspector') as never, header: document.getElementById('trail') as never, library: library as never,
+      fields: { status: { label: 'Status' } }, stores: ['users'], values: { status: ['active', 'trial'] },
+    });
+    await window.__settled();
+  });
+  await header(page, 'Has status').dblclick();
+  await settle(page);
+  await page.locator('#inspector').evaluate((el: HTMLElement & { hide(): void }) => el.hide());
+  await page.locator('#cv').evaluate((c: HTMLElement & { fit(): void }) => c.fit());
+  await settle(page);
+  const b = '#cv > sherpa-node[data-heading="Condition"] sherpa-node-row:has(> sherpa-input-text[data-label="Value B"])';
+  const shows = () => page.locator(`${b} > sherpa-input-text`).evaluate((f: HTMLElement & { value: string }) => {
+    const select = f.shadowRoot!.querySelector('select')!;
+    return { value: f.value, shows: select.selectedIndex < 0 ? '' : select.options[select.selectedIndex]!.textContent, note: f.getAttribute('data-description'), readonly: f.hasAttribute('readonly') };
+  });
+  // By the pointer: the Group Input's Status on to Value B.
+  await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row[data-label="Status"]', 'output'), await socketAt(page, b, 'input'));
+  expect(await routesOf(page, "ed.library().nodes['has-status'].routes")).toContain('#in/status → match/b');
+  expect(await shows()).toEqual({ value: '', shows: '', note: 'From Group Input › Status', readonly: true });
+  expect(await ed(page, "ed.library().nodes['has-status'].nodes.find((n) => n.id === 'match').values.b ?? null")).toBe(null);
+  // Its inspector says the same, once.
+  await header(page, 'Condition').click();
+  await settle(page);
+  expect(await page.locator('#inspector sherpa-input-text[data-label="Value B"]').evaluate((f: HTMLElement & { value: string }) => [f.value, f.getAttribute('data-description')])).toEqual(['', 'From Group Input › Status']);
 });
 
 test('a route a file kept on a use\'s header reads once as its own new input: drafted, kept for the tab, never added twice; Discard reads it again (763)', async ({ page }) => {

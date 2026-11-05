@@ -173,6 +173,13 @@ test('a preset is read only: a connection on its header is refused in words, and
   const done = headerInput(w, { from: 'start/rows', to: 'has' }, library);
   assert.match(done.fault, /a preset is read only: Copy to my nodes to add an input/);
   assert.equal(library.nodes['has-status'].inputs.length, 2);
+  // A refused drop (TODO 803): no workflow and no library to keep, so the line is not kept.
+  assert.deepEqual(Object.keys(done), ['fault']);
+  // A moved end let go there is the same refusal: the editor writes nothing, and the route is back on its row.
+  const fed = editWorkflow(w, { route: { from: 'start/rows', to: 'has/records' } });
+  const moved = headerInput(editWorkflow(fed, { cut: { from: 'start/rows', to: 'has/records' } }), { from: 'start/rows', to: 'has' }, library);
+  assert.deepEqual(Object.keys(moved), ['fault']);
+  assert.ok(said(fed).includes('start/rows → has/records'));
 });
 
 test('a route held on a use\'s header from before reads once as its own new input row; a preset\'s stays; editWorkflow and readWorkflow alone never match one by type', () => {
