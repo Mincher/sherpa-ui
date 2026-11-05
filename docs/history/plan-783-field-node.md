@@ -328,3 +328,12 @@ Per change: type-check, the gates, and the one spec in Chromium; the full suites
 - A Sort on several fields.
 - The Query's own field rows: Arrange and Presentation.
 - The MCP (parked).
+
+## Will's decisions (2026-11-05)
+
+"Sounds good": **A for D1–D9.** Pick becomes Field; a Field sends `{ rows, field }`; a Condition reads
+it on its header; one test per Condition, joined by And and Or ("Rows that hold", Join and the Group
+row go); Sort, Group by and Tag › Includes take a Field on their header; the Query editor draws the
+same shapes; an Or across two fields is said in words and left off the bar; the Field's list is open
+and a missing field warns; Demos' graphs are rebuilt, nothing is converted. Build F1–F6 after 776,
+780 and 777 merge.
