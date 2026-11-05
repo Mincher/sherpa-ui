@@ -70,12 +70,13 @@ import { flowPane, instancePane, updatePane } from './node-group-panel.js';
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
 import { nodeFlow } from '../data/node-flow.js';
 import { typedValue, type FieldType } from '../data/filter-state.js';
+import { formatDateTime, isDateTime, readDateTime } from '../data/format-date.js';
 import {
   FALSE_SOCKET, NODE_KINDS, fitOf, paletteOf, partOf, placed, rowChoices, socketOf, socketType,
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeSize, type NodeRoute, type NodeTie, type SocketType,
 } from '../data/node-kinds.js';
 import {
-  NODE_WIDTH, TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, readWorkflow, tieLimit, workflowGraph,
+  NODE_WIDTH, TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, keptRoutes, readWorkflow, tieLimit, workflowGraph,
   type WorkflowDefinition, type WorkflowDefinitionV1, type WorkflowFacts, type WorkflowNode,
 } from '../data/workflow.js';
 
@@ -139,8 +140,11 @@ export interface DrawOptions {
   locked?: (node: GraphNode) => boolean;
 }
 
-/** A field a row draws: a text field or a select, a menu of ticks (a quick-filter chip), or a switch. */
-type Field = HTMLElement & { value: unknown; values?: string[]; menu?: HTMLElement & { populate(items: unknown): void }; checked?: boolean; populate?(items: unknown): void };
+/** A field a row draws: a text field, a select or tags, a menu of ticks (a quick-filter chip), or a switch. */
+type Field = HTMLElement & {
+  value: unknown; values?: string[]; tags?: readonly string[]; suggestions?: readonly { value: string; label?: string }[];
+  menu?: HTMLElement & { populate(items: unknown): void }; checked?: boolean; populate?(items: unknown): void;
+};
 
 /** The events a field says its change by: its own `change`, or a chip's pick. */
 const CHANGES = ['change', 'quick-filter-change'] as const;
@@ -223,7 +227,37 @@ function lock(field: Field, typed = false): void {
   }
 }
 
+/** A date row's calendar: a button in its field's actions, opening a menu of one calendar with its time. A pick is the field's
+ *  change. The calendar is fetched with the first date row: no other row needs it. Its value is an ATTRIBUTE, safe before it upgrades. */
+function datePicker(field: Field): HTMLElement {
+  void import('../../components/sherpa-calendar/sherpa-calendar.js');
+  const button = document.createElement('sherpa-button');
+  for (const [k, v] of Object.entries({ slot: 'actions', 'data-type': 'icon', 'data-look': 'transparent', 'data-icon-start': 'calendar', 'aria-label': 'Pick a date and time' })) button.setAttribute(k, v);
+  const menu = document.createElement('sherpa-menu');
+  for (const [k, v] of Object.entries({ slot: 'menu', 'data-type': 'calendar', 'data-align': 'end' })) menu.setAttribute(k, v);
+  const calendar = document.createElement('sherpa-calendar');
+  calendar.setAttribute('data-embedded', '');
+  calendar.setAttribute('data-has-time', '');
+  calendar.addEventListener('datetime-change', (event) => {
+    event.stopPropagation();
+    field.value = formatDateTime((event as CustomEvent<{ value: string }>).detail.value);
+    field.dispatchEvent(new CustomEvent('change', { bubbles: true, composed: true, detail: { value: field.value } }));
+  });
+  menu.append(calendar);
+  button.append(menu);
+  return button;
+}
+
 function fieldFor(row: GraphRow, locked: boolean): Field {
+  if (row.control === 'tags') {
+    // Each word a tag; a closed list takes only its choices.
+    const field = document.createElement('sherpa-input-text') as Field;
+    field.setAttribute('name', row.name);
+    field.setAttribute('data-type', 'tags');
+    field.toggleAttribute('data-closed', !!row.closed);
+    if (locked) lock(field, true);
+    return field;
+  }
   if (row.multiple) {
     // The panel's own multi-value field: a chip that opens a menu of ticks.
     const chip = document.createElement('sherpa-quick-filter') as Field;
@@ -246,16 +280,31 @@ function fieldFor(row: GraphRow, locked: boolean): Field {
   field.setAttribute('name', row.name);
   if (row.choices) field.setAttribute('data-type', 'select');
   else if (row.control === 'number') field.setAttribute('data-type', 'number');
+  // A count's bounds are the platform's own: its steppers stop there. With no step, any number: the platform's is 1.
+  if (row.control === 'number') {
+    if (row.min !== undefined) field.setAttribute('min', String(row.min));
+    field.setAttribute('step', row.step === undefined ? 'any' : String(row.step));
+  }
+  if (row.control === 'datetime' && !locked) field.append(datePicker(field));
   if (locked) lock(field, !row.choices);
   if (row.choices) field.populate?.(row.choices);
   return field;
 }
 
-/** Give a field its row's value, and its words. */
+/** Give a field its row's value, and its words: its fault, red, in the field's own message. TRAP T-a-row-says-its-own-fault */
 function fill(field: Field, row: GraphRow, note?: string): void {
   field.setAttribute('data-label', row.label);
   put(field, 'data-description', note ?? row.hint);
-  if (row.control === 'switch') field.checked = !!row.value;
+  put(field, 'data-error', row.fault);
+  if (row.control === 'tags') {
+    field.suggestions = row.choices ?? [];
+    field.tags = [row.value ?? []].flat().map(String);
+  } else if (row.control === 'datetime') {
+    // A day reads in words; the calendar holds it as ISO.
+    field.value = formatDateTime(String(row.value ?? ''));
+    const calendar = field.querySelector('sherpa-calendar');
+    if (calendar) put(calendar, 'value', isDateTime(String(row.value ?? '')) ? String(row.value) : undefined);
+  } else if (row.control === 'switch') field.checked = !!row.value;
   else if (row.multiple) {
     const picks = Array.isArray(row.value) ? row.value.map(String) : [];
     const menu = field.menu ?? field.querySelector<NonNullable<Field['menu']>>('sherpa-menu');
@@ -266,8 +315,10 @@ function fill(field: Field, row: GraphRow, note?: string): void {
   else field.value = row.choices ? String(row.value ?? '') : shown(row);
 }
 
-/** What a field says now, as its row's value. */
+/** What a field says now, as its row's value: a date typed in words is read as ISO, and one that is no date as typed. */
 function read(field: Field, row: GraphRow): unknown {
+  if (row.control === 'tags') return [...(field.tags ?? [])];
+  if (row.control === 'datetime') return readDateTime(String(field.value ?? '')) ?? String(field.value ?? '').trim();
   return row.control === 'switch' ? !!field.checked : row.multiple ? [...(field.values ?? [])] : field.value;
 }
 
@@ -1493,7 +1544,11 @@ function pickedIn(
     select(node, graph): void {
       picked = node.id;
       if (inspector) show(node, graph);
+      // A press in a node's own field keeps the focus there: the panel's show would take it, and the reader is typing.
+      let typing = canvas.contains(document.activeElement) ? document.activeElement : null;
+      while (typing?.shadowRoot?.activeElement) typing = typing.shadowRoot.activeElement;
       inspector?.show();
+      if (typing instanceof HTMLElement && typing.matches('input, textarea')) typing.focus();
     },
     peek(node, graph): void {
       picked = node.id;
@@ -2005,7 +2060,10 @@ export function bindWorkflow(
   const take = (next: WorkflowDefinition): void => {
     const was = new Set(workflowFaultsDeep(shown(), lib, K(), facts));
     const added = workflowFaultsDeep(next, lib, K(), facts).filter((f) => !was.has(f));
-    if (added.length) report({ code: 'workflow-route', message: `bindWorkflow: ${added.join('; ')}.`, at: { workflow: shown().id } });
+    // A route the draft would keep unseen, for the input's other shape, is one the reader would never see: refused too. TRAP T-an-operator-shapes-its-value
+    const hid = new Set(keptRoutes(shown(), K()).map((r) => `${r.from}>${r.to}`));
+    const unseen = keptRoutes(next, K()).filter((r) => !hid.has(`${r.from}>${r.to}`)).map((r) => `the route "${r.from}" → "${r.to}" fits its input only under another type or operator`);
+    if (added.length || unseen.length) report({ code: 'workflow-route', message: `bindWorkflow: ${[...added, ...unseen].join('; ')}.`, at: { workflow: shown().id } });
     else write(next);
   };
   const onConnect = (route: NodeRoute): void => take(editWorkflow(shown(), { route }, K()));

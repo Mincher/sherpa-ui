@@ -4063,6 +4063,13 @@
               }
             },
             {
+              "name": "data-closed",
+              "description": "a tags field takes only its `.suggestions` (`{ value, label }[]`, which its menu offers too): a word that names none is refused, and stays typed .suggestions      a tags field's menu offers them beside its tags; a typed word that names one, by its value or its label, becomes its value",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
               "name": "data-description",
               "description": "helper text under the label (default style)",
               "type": {
@@ -4260,6 +4267,13 @@
               "name": "tags",
               "type": {
                 "text": "string[]"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "suggestions",
+              "type": {
+                "text": "{ value: string; label?: string }[]"
               }
             },
             {

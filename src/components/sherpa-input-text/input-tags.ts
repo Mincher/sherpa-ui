@@ -10,8 +10,10 @@
  * - InputTags — One tag field's tags, keys, overflow count and menu.
  * - .tags — The tags, as an array.
  * - .text — The tags, as the comma string a form holds.
+ * - .refused — The word a closed field last refused, while it is still typed; null, none.
+ * - .suggest — The values the menu offers beside the tags; a closed field takes only these.
  * - .set — Take new tags silently: a host's write says nothing.
- * - .add — Commit words as tags; duplicates are ignored. Reports what was added.
+ * - .add — Commit words as tags; duplicates are ignored, a closed field's strangers refused. Reports what was added.
  * - .remove — Remove one tag and say so.
  * - .draw — Stamp the tags, and write what CSS shows from them.
  * - .wire — Listen to the field's own parts.
@@ -42,6 +44,10 @@ export interface TagsHost {
   toggleState(name: string, on?: boolean): boolean;
   /** The typed word. */
   control(): HTMLInputElement | null;
+  /** It takes only its suggestions (`data-closed`). */
+  closed(): boolean;
+  /** A word was refused, or the refusal is over: the field checks itself again. */
+  refusal(): void;
   /** The field's words, from its markup. */
   word(key: string): string;
   /** Something changed: the form, the Clear flag and the events follow. */
@@ -59,6 +65,10 @@ export class InputTags {
   #listed: string[] = [];
   /** Which of the two buttons opened the menu. */
   #opener: HTMLElement | null = null;
+  /** What the menu offers beside the tags, each with its words. */
+  #suggestions: { value: string; label?: string }[] = [];
+  /** The word a closed field last refused, kept in the text for the reader to mend. */
+  #refused: string | null = null;
 
   constructor(host: TagsHost) {
     this.#host = host;
@@ -72,6 +82,26 @@ export class InputTags {
     return this.#tags.join(',');
   }
 
+  get refused(): string | null {
+    return this.#refused;
+  }
+
+  suggest(list: readonly { value: string; label?: string }[]): void {
+    this.#suggestions = list.map((s) => ({ value: String(s.value), ...(s.label ? { label: s.label } : {}) }));
+    this.draw();
+  }
+
+  /** A typed word as a suggestion's value, by its value or its words, in any case; none, it names none. */
+  #choice(word: string): string | undefined {
+    const typed = word.trim().toLowerCase();
+    return this.#suggestions.find((s) => s.value.toLowerCase() === typed || s.label?.toLowerCase() === typed)?.value;
+  }
+
+  /** A tag's words: its suggestion's, else itself. */
+  #label(tag: string): string {
+    return this.#suggestions.find((s) => s.value === tag)?.label ?? tag;
+  }
+
   /** Take new tags silently. A repeat is dropped. */
   set(tags: readonly string[]): void {
     this.#tags = [...new Set(tags.map((tag) => tag.replace(/,/g, '').trim()).filter(Boolean))];
@@ -79,7 +109,13 @@ export class InputTags {
   }
 
   add(words: readonly string[]): string[] {
-    const added = [...new Set(words.map((w) => w.trim()))].filter((w) => w && !this.#tags.includes(w));
+    // A suggestion is taken as its own value; a closed field refuses any other word, and keeps it typed.
+    const typed = words.map((w) => w.trim()).filter(Boolean);
+    const strangers = this.#host.closed() ? typed.filter((w) => this.#choice(w) === undefined) : [];
+    const control = this.#host.control();
+    if (strangers.length && control) control.value = strangers.join(', ');
+    this.#refuse(strangers.length ? strangers.join(', ') : null);
+    const added = [...new Set(typed.map((w) => this.#choice(w) ?? w))].filter((w) => !strangers.includes(w) && !this.#tags.includes(w));
     if (!added.length) return [];
     this.#tags.push(...added);
     this.draw();
@@ -94,6 +130,13 @@ export class InputTags {
     this.draw();
     this.#host.changed({ tags: this.tags, added: [], removed: [tag] });
     this.#say('removed', tag);
+  }
+
+  /** A refusal begun or over: the field says so in its message. */
+  #refuse(word: string | null): void {
+    if (word === this.#refused) return;
+    this.#refused = word;
+    this.#host.refusal();
   }
 
   /** Polite words for a screen reader: "Added Email. 3 values". */
@@ -115,10 +158,10 @@ export class InputTags {
       if (!chip) {
         chip = document.importNode(tpl.content.firstElementChild, true) as HTMLElement;
         chip.dataset['tag'] = tag;
-        chip.textContent = tag;
-        chip.setAttribute('aria-label', `${host.word('remove')} ${tag}`);
         chip.setAttribute('tabindex', '-1');
       }
+      chip.textContent = this.#label(tag);
+      chip.setAttribute('aria-label', `${host.word('remove')} ${this.#label(tag)}`);
       kept.delete(tag);
       box.append(chip);
     }
@@ -139,6 +182,8 @@ export class InputTags {
     const box = host.$('.tags');
     if (!control || !box) return;
     host.on(control, 'input', () => {
+      // The refused word is being mended.
+      if (this.#refused !== null && control.value !== this.#refused) this.#refuse(null);
       // A comma ends a word, typed or pasted.
       if (!control.value.includes(',')) return;
       const words = control.value.split(',');
@@ -259,8 +304,9 @@ export class InputTags {
       menu.hide();
       return;
     }
-    this.#listed = [...this.#tags];
-    menu.items(this.#listed.map((value) => ({ value, selected: true })));
+    // The tags, then each suggestion not yet one: a tick adds it.
+    this.#listed = [...new Set([...this.#tags, ...this.#suggestions.map((s) => s.value)])];
+    menu.items(this.#listed.map((value) => ({ value, label: this.#label(value), selected: this.#tags.includes(value) })));
     // Read only: the menu SHOWS the values and takes no tick.
     menu.toggleAttribute('data-readonly', this.#host.readOnly());
     this.#opener = trigger;

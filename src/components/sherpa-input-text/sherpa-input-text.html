@@ -16,6 +16,10 @@
     data-replace      a Find also offers Find & Replace (the pencil): Replace,
                       Replace all (asked first), Previous and Next
     data-overflow     written BY a tags field: how many tags do not fit
+    data-closed       a tags field takes only its `.suggestions` (`{ value, label }[]`, which its
+                      menu offers too): a word that names none is refused, and stays typed
+    .suggestions      a tags field's menu offers them beside its tags; a typed word that names
+                      one, by its value or its label, becomes its value
     data-matches      how many matches a Find's host found; "0" leaves nothing to
                       step to or replace
     data-borderless   drop the control border (minimal style)
@@ -235,6 +239,7 @@
     <span data-word="values">values</span>
     <span data-word="more">more</span>
     <span data-word="required">Add at least one value.</span>
+    <span data-word="stranger">is not one of the choices.</span>
   </template>
 </template>
 

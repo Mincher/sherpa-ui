@@ -1518,10 +1518,32 @@ string and `.tags` the array. Plan 749 P2, Will 2026-11-05.
   Delete move and remove, and the text box is the one tab stop (`focus()` goes to it).
 - **`required` is read from the tags**, not the empty text box.
 - **A tag is matched as written**: `Email` and `email` are two tags; a repeat is dropped.
-  A comma ends a tag, so a tag never holds one.
+  A comma ends a tag, so a tag never holds one. A word that names a `.suggestions` entry, by
+  its value or its label in any case, is taken as that value, and its chip shows the label.
+- **`.suggestions` are offered in the menu, unticked** after the tags; a tick adds one. With
+  `data-closed` they are the ONLY values: a stranger is refused, kept in the text for the
+  reader to mend, and the field's message says so; a change of the word ends the refusal.
+  A host's `.tags` write is silent and is not checked: a host that holds a stranger says so
+  itself (the node editor does, `T-a-row-says-its-own-fault`).
+- **The typed word gives way to the tags** (`flex: 1 1 6rem`, down to `3rem`): in a narrow
+  field, a node's row, the box did not shrink and cut the first chip in half.
 
 - Site: `src/components/sherpa-input-text/input-tags.ts`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.html`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.css`
 - Site: `test/e2e/reforged-input-tags.spec.ts`
+
+### T-a-host-error-is-the-hosts
+
+**A message a HOST wrote in `data-error` is the host's to take away.** Plan 749 P4. A node row
+draws its own fault in its field's `data-error`; `validate()` runs on every blur and, the
+value being valid to the field, cleared it, so a click in and out wiped the host's words
+until the next draw. The field now remembers the message it wrote itself: a pass clears only
+that one, and while a host's shows, the field's own (a native check, a rule, a refused tag)
+waits behind it, with `aria-invalid` still true. The host removes its own, as the reset
+prompt does on input, and the field's own check speaks again on the next blur.
+
+- Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
+- Site: `test/e2e/reforged-input-tags.spec.ts`
+- Site: `test/e2e/reforged-node-row-controls.spec.ts`

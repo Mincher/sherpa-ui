@@ -410,7 +410,9 @@ textarea.control {
   --sherpa-button-size-height: calc(var(--sherpa-display-mode-size-2xl, 32px) - 2px);
 }
 :host([data-type="tags"]) .control {
-  flex: 1 0 6rem;
+  /* It gives way to the tags in a narrow field, down to room for a short word: a node's row is one. */
+  flex: 1 1 6rem;
+  min-inline-size: 3rem;
 }
 :host(:state(has-tags)) .control::placeholder { color: transparent; }
 .live {

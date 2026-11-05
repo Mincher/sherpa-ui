@@ -21,7 +21,9 @@
  * - resolveKind — A family kind as an ordinary kind for one type: the type row first, then the kind's rows and the type's.
  * - resolveKind — A family kind as an ordinary kind for one type: the type row first, then the kind's rows and the type's.
  * - resolveKind — A family kind as an ordinary kind for one type: the type row first, then the kind's rows and the type's.
- * - kindOfNode — The kind a node is, resolved for its own type; none, no such kind.
+ * - LIST_OPS — The operators whose value is a list: Is one of, Is not one of.
+ * - listedRow — A comparison's Value row under an operator that takes a list: tags, an object (D17).
+ * - kindOfNode — The kind a node is, for its own type and operators; none, no such kind.
  * - rowOfOtherType — A row a family kind has under another type than this one: it, and the types that hold it.
  * - NODE_CATEGORIES — The node panel's categories, in order.
  * - PaletteItem — One node of the panel: the kind's id and the kind.
@@ -48,6 +50,7 @@
  * - fixedChoices — A fixed list, the same on every page; none, the list is open or the control is no picklist.
  * - mirrored — What a picklist row shows while routes drive it: what comes in, read only, each pick marked Custom.
  * - drivenSwitch — What a switch row shows while a boolean route drives it: True if any came in True, marked Custom.
+ * - rowFault — A value's fault a row cannot say, in words: a closed list's stranger, no date, a number off its step.
  * - GraphRow — One row as drawn: its kind's parts, the value it shows, and whether a reader may change it.
  * - NodeSize — A node's size, in times its natural width and height, each 1 to 2.
  * - GraphNode — One node as drawn: its header, its sockets, its rows and its place.
@@ -59,6 +62,7 @@
  */
 import { DATE_OP_LABELS, OP_LABELS, OPS_FOR_TYPE, type Duration, type FilterOp } from './store.js';
 import { PRESENTATION_KINDS } from './query.js';
+import { isDateTime } from './format-date.js';
 
 /** What a socket carries: one value; an object — a record, rows, or a list, for an array is
  *  an object (D17); a boolean, True or False; or, an input only, any of them (D1). */
@@ -84,11 +88,11 @@ export function truthy(value: unknown): boolean {
   return (proto !== Object.prototype && proto !== null) || Object.keys(value).length > 0;
 }
 
-/** The control a row draws: text, a number or a switch; else the list a picklist reads — the
- *  fields, operators, the field's values, units, a span's way (last or next), directions,
- *  presentations, Apply on, stores, scopes, joins or a family's types (`rowChoices`). */
+/** The control a row draws: text, a number, a switch, tags (a list, D17) or a date and time; else the
+ *  list a picklist reads — the fields, operators, the field's values, units, a span's way (last or
+ *  next), directions, presentations, Apply on, stores, scopes, joins or a family's types (`rowChoices`). */
 export type RowControl =
-  | 'text' | 'number' | 'switch'
+  | 'text' | 'number' | 'switch' | 'tags' | 'datetime'
   | 'field' | 'op' | 'values' | 'unit' | 'span' | 'direction' | 'presentation' | 'apply' | 'store' | 'scope' | 'join' | 'type';
 
 /** One row a kind draws: its name, its label, its control and its sockets. */
@@ -109,6 +113,9 @@ export interface RowKind {
   repeat?: true;
   /** Its input takes only the True of a node of one of these kinds. */
   from?: readonly string[];
+  /** A number's least, and its step, HTML's own names: a step of 1 takes only whole numbers. */
+  min?: number;
+  step?: number;
 }
 
 /** Where a kind is drawn: a page's Query, or a workflow. */
@@ -165,6 +172,9 @@ const FIELD: RowKind = { name: 'field', label: 'Field', control: 'field', input:
 const VALUE: RowKind = { name: 'value', label: 'Value', control: 'text', output: 'value' };
 const numberRow = (name: string, label: string): RowKind => ({ name, label, control: 'number', input: 'value' });
 const textRow = (name: string, label: string): RowKind => ({ name, label, control: 'text', input: 'value' });
+const dateRow = (name: string, label: string): RowKind => ({ name, label, control: 'datetime', input: 'value' });
+/** A count: a whole number, from `min`. */
+const countRow = (name: string, label: string, min: number): RowKind => ({ ...numberRow(name, label), min, step: 1 });
 /** A list in, an object (D17): what Floor, Ceiling, Average and Join read. It takes several. Will, D9 */
 const LIST: RowKind = { name: 'values', label: 'Values', input: 'object', many: true };
 /** What a Math or Text node gives, as a Value gives its own: from a row, its header forking (D2). */
@@ -189,7 +199,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     rows: [
       ROWS,
       { name: 'pageSize', label: 'Page size', control: 'number' },
-      { name: 'search', label: 'Search fields', control: 'field', multiple: true, input: 'object', output: 'object' },
+      { name: 'search', label: 'Search fields', control: 'tags', multiple: true, input: 'object', output: 'object' },
       { name: 'applyOn', label: 'Apply on', control: 'apply' },
     ],
     model: 'SourceDefinition', graphs: ['query'],
@@ -255,7 +265,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       decimal: { label: 'Decimal', help: 'A number with places, as 4.25', rows: [VALUE] },
       date: { label: 'Date', help: 'A day, written year-month-day: 2024-01-31', rows: [VALUE] },
       boolean: { label: 'True/false', help: 'True or false', rows: [VALUE] },
-      list: { label: 'List', help: 'Values split by commas, sent as a list', rows: [{ ...VALUE, output: 'object' }] },
+      list: { label: 'List', help: 'Values, each a tag, sent as a list', rows: [{ ...VALUE, control: 'tags', multiple: true, output: 'object' }] },
     },
     rows: [], model: 'typedValue', graphs: ['workflow'], category: 'Variables',
   },
@@ -272,7 +282,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       multiply: { label: 'Multiply', help: 'Multiply 2 values together', rows: [A, B, RESULT] },
       divide: { label: 'Divide', help: 'Divide Value A by Value B', rows: [A, B, RESULT] },
       ratio: { label: 'Ratio', help: 'Decimal ratio between 0 and 1', rows: [A, B, RESULT] },
-      round: { label: 'Round', help: 'Rounds a decimal to a set number of places', rows: [numberRow('places', 'Places'), numberRow('a', 'Value'), RESULT] },
+      round: { label: 'Round', help: 'Rounds a decimal to a set number of places', rows: [countRow('places', 'Places', 0), numberRow('a', 'Value'), RESULT] },
       increment: { label: 'Increment', help: 'Increment Value A by Value B, in its smallest unit', rows: [A, B, RESULT] },
       floor: { label: 'Floor', help: 'Lowest value from the list', rows: [LIST, RESULT] },
       ceiling: { label: 'Ceiling', help: 'Highest value from the list', rows: [LIST, RESULT] },
@@ -284,10 +294,10 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   time: {
     heading: 'Time', icon: 'time', description: 'Whether a date holds.', input: 'any', branches: true, typeLabel: 'Operation', defaultType: 'between',
     types: {
-      between: { label: 'Between', help: 'True when the date is from Start to End', rows: [textRow('start', 'Start'), textRow('end', 'End')] },
+      between: { label: 'Between', help: 'True when the date is from Start to End', rows: [dateRow('start', 'Start'), dateRow('end', 'End')] },
       duration: {
         label: 'Duration', help: 'True when the date is within a span of today',
-        rows: [{ name: 'when', label: 'When', control: 'span', input: 'value' }, numberRow('n', 'Value'), { name: 'unit', label: 'Unit', control: 'unit', input: 'value' }],
+        rows: [{ name: 'when', label: 'When', control: 'span', input: 'value' }, countRow('n', 'Value', 1), { name: 'unit', label: 'Unit', control: 'unit', input: 'value' }],
       },
     },
     rows: [], model: 'timeCheck', graphs: ['workflow'], category: 'Time',
@@ -313,10 +323,10 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     },
     rows: [], model: 'modifyText', graphs: ['workflow'], category: 'Utils',
   },
-  // A rows check by a field of tags. Its tag input is P4's.
+  // A rows check by a field of tags: closed to the field's values, where they are known.
   tag: {
     heading: 'Tag', icon: 'price-tag', description: 'The rows whose field holds the tags picked.', input: 'any', branches: true,
-    types: { includes: { label: 'Includes', rows: [ROWS, FIELD, { name: 'value', label: 'Tags', control: 'values', multiple: true, input: 'object' }] } },
+    types: { includes: { label: 'Includes', rows: [ROWS, FIELD, { name: 'value', label: 'Tags', control: 'tags', multiple: true, input: 'object' }] } },
     rows: [], model: 'tagCheck', graphs: ['workflow'], category: 'Utils',
   },
   output: {
@@ -354,9 +364,27 @@ export function resolveKind(kind: NodeKind | undefined, type?: unknown): NodeKin
   };
 }
 
-/** The kind a node is, resolved for its own type: the registry's `kind`, or the node's `type` row. */
+/** The operators whose value is a list: Is one of, Is not one of. */
+export const LIST_OPS: readonly FilterOp[] = ['in', 'notin'];
+
+/** A comparison's Value row under an operator that takes a list: tags, an object (D17). Its own row, not repeated. */
+export function listedRow(row: RowKind, part: number): RowKind {
+  const { repeat: _repeat, from: _from, ...plain } = row;
+  return { ...plain, name: partName(row.name, part), control: 'tags', multiple: true, input: 'object' };
+}
+
+/** The kind a node is, resolved for its own type: the registry's `kind`, or the node's `type` row. A
+ *  comparison's Value under Is one of or Is not one of is a tag list, its own row before the repeated one.
+ *  TRAP T-an-operator-shapes-its-value */
 export function kindOfNode(kinds: Readonly<Record<string, NodeKind>>, node: { kind: string; values?: Readonly<Record<string, unknown>> } | undefined): NodeKind | undefined {
-  return node && resolveKind(kinds[node.kind], node.values?.['type']);
+  const kind = node && resolveKind(kinds[node.kind], node.values?.['type']);
+  const value = kind?.rows.find((r) => r.repeat && r.name === 'value');
+  if (!kind || !value || !node?.values || !kind.rows.some((r) => r.repeat && r.name === 'op')) return kind;
+  const listed = Object.entries(node.values).flatMap(([name, op]) => {
+    const { base, part } = partOf(name);
+    return base === 'op' && LIST_OPS.includes(op as FilterOp) ? [listedRow(value, part)] : [];
+  });
+  return listed.length ? { ...kind, rows: [...listed, ...kind.rows] } : kind;
 }
 
 /** A row a family kind has under another type than this node's: the row, and the labels of the types that hold it. */
@@ -478,8 +506,9 @@ export type PartKind = 'leaf' | 'group';
  *  what only a run gives: Rows. True and False are the node's own sockets, not rows. */
 export function conditionRows(kind: Pick<NodeKind, 'rows'>, parts: readonly PartKind[], { rows = true }: { rows?: boolean } = {}): RowKind[] {
   const of = (name: string): RowKind => kind.rows.find((r) => r.name === name)!;
+  // A part's own row first: a Value under Is one of is a tag list (`kindOfNode`).
   const part = (names: readonly string[], n: number): RowKind[] => names.map((name) => {
-    const { repeat: _repeat, from: _from, ...row } = of(name);
+    const { repeat: _repeat, from: _from, ...row } = rowOf(kind.rows, partName(name, n)) ?? of(name);
     return { ...row, name: partName(name, n) };
   });
   return [
@@ -537,14 +566,21 @@ export interface RowFacts {
   scopes?: readonly string[];
   /** The types of the row's family kind: what a Type row picks (`typeChoices`). */
   types?: readonly RowChoice[];
+  /** The count a Unit row's words follow: its node's Value, so 1 reads "day". */
+  count?: number;
 }
 
 const UNITS: readonly Duration['unit'][] = ['day', 'week', 'month', 'year'];
 const SPANS: readonly ('last' | 'next')[] = ['last', 'next'];
 
+/** The units in words for a count, as the platform says them: "day" for 1, "days" else. */
+const unitWords = (count = 2): RowChoice[] => UNITS.map((u) => ({
+  value: u, label: new Intl.NumberFormat(undefined, { style: 'unit', unit: u, unitDisplay: 'long' }).formatToParts(count).filter((p) => p.type === 'unit').map((p) => p.value).join('').trim(),
+}));
+
 /** The lists that are the same on every page. */
 const FIXED: Partial<Record<RowControl, readonly RowChoice[]>> = {
-  unit: UNITS.map((u) => ({ value: u, label: `${u}s` })),
+  unit: unitWords(),
   span: SPANS.map((op) => ({ value: op, label: OP_LABELS[op] })),
   direction: [{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }],
   presentation: [{ value: '', label: 'Default' }, ...PRESENTATION_KINDS.map((k) => ({ value: k, label: k[0]!.toUpperCase() + k.slice(1) }))],
@@ -554,16 +590,19 @@ const FIXED: Partial<Record<RowControl, readonly RowChoice[]>> = {
 
 /** The list a picklist row reads, for one pick or several (`multiple`); none, it is no picklist.
  *  An open list — fields, operators, values, stores, scopes — also offers each of the row's own
- *  values it lacks, so a select shows it. */
+ *  values it lacks, so a select shows it. A tags row's list is the field's values, and only them:
+ *  it is CLOSED to them (`rowFault`); none known, its tags are free. */
 export function rowChoices(row: Pick<RowKind, 'control'> & { value?: unknown }, facts: RowFacts = {}): RowChoice[] | undefined {
+  if (row.control === 'unit' && facts.count !== undefined) return unitWords(facts.count);
   const fixed = row.control && FIXED[row.control];
   if (fixed) return [...fixed];
   if (row.control === 'type') return facts.types && [...facts.types];
   const named = (list: readonly string[] = []): RowChoice[] => list.map((v) => ({ value: v, label: v }));
+  if (row.control === 'tags') return facts.values?.length ? named(facts.values) : undefined;
   const type = facts.type ?? 'text';
   const labels: Partial<Record<FilterOp, string>> = type === 'date' ? { ...OP_LABELS, ...DATE_OP_LABELS } : OP_LABELS;
-  // Is one of and Is not one of, where the field's values are known.
-  const ops = [...new Set([...OPS_FOR_TYPE[type] ?? [], ...(facts.values?.length ? ['in', 'notin'] as const : [])])];
+  // Is one of and Is not one of: picked where the field's values are known, else typed as tags; a date's, only picked.
+  const ops = [...new Set([...OPS_FOR_TYPE[type] ?? [], ...(facts.values?.length || type !== 'date' ? LIST_OPS : [])])];
   const open = row.control === 'field' ? Object.entries(facts.fields ?? {}).map(([value, f]) => ({ value, label: f.label ?? value }))
     : row.control === 'op' ? ops.map((op) => ({ value: op, label: labels[op] ?? op }))
     : row.control === 'values' ? named(facts.values)
@@ -584,10 +623,12 @@ export function fixedChoices(control: RowControl | undefined): readonly RowChoic
  *  marked Custom. A single pick shows the one that came in, and only it; a `multiple` row
  *  ticks each that came in, and marks Custom each its list lacks. The row's own pick is not
  *  here: the draft keeps it, and cutting the routes gives it back. Plan 713 §5, §9.5 */
-export function mirrored(row: Pick<RowKind, 'multiple'>, given: readonly unknown[], list: readonly RowChoice[] = []): Pick<GraphRow, 'value' | 'choices' | 'custom'> {
+export function mirrored(row: Pick<RowKind, 'multiple' | 'control'>, given: readonly unknown[], list: readonly RowChoice[] = []): Pick<GraphRow, 'value' | 'choices' | 'custom'> {
   const custom = (v: string): RowChoice => ({ value: v, label: `${v} Custom` });
   const picks = [...new Set(given.flat().filter((v) => v != null && v !== '').map(String))];
   if (!row.multiple) return { value: picks[0] ?? '', choices: picks.slice(0, 1).map(custom), custom: true };
+  // Tags say each value as itself: the hint says they are Custom, and a closed list's stranger is a fault.
+  if (row.control === 'tags') return { value: picks, choices: list, custom: true };
   return { value: picks, choices: [...list, ...picks.filter((v) => !list.some((c) => c.value === v)).map(custom)], custom: true };
 }
 
@@ -596,6 +637,22 @@ export function mirrored(row: Pick<RowKind, 'multiple'>, given: readonly unknown
  *  cutting the route gives it back. Plan 731, 732 */
 export function drivenSwitch(given: readonly boolean[]): Pick<GraphRow, 'value' | 'custom'> {
   return { value: given.some(Boolean), custom: true };
+}
+
+/** What is wrong with a value its row's control cannot say, in words, as the row draws them: a stranger
+ *  in a closed list (`of` names whose values it lists), no date, a number off its step or under its least.
+ *  None, it holds. A value of the wrong kind (text in a number row) is `workflowFaults`' own. TRAP T-a-row-says-its-own-fault */
+export function rowFault(row: Pick<GraphRow, 'control' | 'closed' | 'choices' | 'min' | 'step'>, value: unknown, of = 'its list'): string | undefined {
+  if (value == null || value === '') return undefined;
+  if (row.control === 'tags' && row.closed) {
+    const strangers = [...new Set([value].flat().map(String))].filter((v) => !row.choices?.some((c) => c.value === v));
+    const said = new Intl.ListFormat('en', { type: 'conjunction' }).format(strangers.map((v) => `"${v}"`));
+    return strangers.length ? `${said} ${strangers.length > 1 ? 'are not values' : 'is not a value'} of ${of}` : undefined;
+  }
+  if (row.control === 'datetime' && !isDateTime(String(value))) return `"${String(value)}" is not a date: pick one, or write it as 31 Jan 2024`;
+  if (row.control !== 'number' || typeof value !== 'number') return undefined;
+  if (row.step === 1 && !Number.isInteger(value)) return `${value} is not a whole number`;
+  return row.min !== undefined && value < row.min ? `${value} is less than ${row.min}` : undefined;
 }
 
 /** One row as drawn: its kind's parts, the value it shows, and whether a reader may change it. */
@@ -607,6 +664,10 @@ export interface GraphRow extends RowKind {
   editable?: boolean;
   /** A line under it: what it is, or why it is read only. */
   hint?: string;
+  /** Its tags take only its choices: a stranger is refused, and one held is its fault. */
+  closed?: true;
+  /** What is wrong with the value it shows, in words, drawn in the row: never a vanished row's (the draft keeps those). */
+  fault?: string;
   /** Routes drive its picklist: it shows what comes in, each marked Custom, and its own pick waits. */
   custom?: true;
 }

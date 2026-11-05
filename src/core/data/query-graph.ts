@@ -241,6 +241,9 @@ function groupRows(tree: Condition, { field, type: typeOf, fields, values: value
       const ops = ticks ? [...MANY] as FilterOp[] : [...new Set([...(OPS_FOR_TYPE[type ?? ''] ?? PICK_OPS), op])];
       return { ...row, value: ticks ? (op === 'ne' || op === 'notin' ? 'notin' : 'in') : op, editable: true, choices: ops.map((o) => ({ value: o, label: OP_LABELS[o] })) };
     }
+    // Is one of with no values to pick from: each typed word a tag. Plan 749 P4
+    const words = (Array.isArray(raw) ? raw : [raw]).filter((v) => v != null && v !== '').map(String);
+    if (!ticks && MANY.has(op)) return { ...row, control: 'tags', multiple: true, value: words, editable: true };
     if (!ticks) return { ...row, value: shown ?? '', editable: true };
     const ticked = (Array.isArray(raw) ? raw : raw === undefined || raw === '' ? [] : [raw]).map(String);
     return { ...row, control: 'values', multiple: true, value: ticked, editable: true, choices: picks! };

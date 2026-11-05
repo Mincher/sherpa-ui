@@ -6316,6 +6316,67 @@ read with no field facts holds `"60"`, and a date preset's two ends become
 - Site: `src/core/data/query-graph.ts`
 - Site: `src/core/data/workflow.ts`
 
+### T-an-operator-shapes-its-value
+
+**A comparison's Value is ONE value under Equals, and a tag LIST under Is one of and Is not
+one of: the operator shapes the row.** Plan 749 P4; an array is an object (D17), so the list's
+socket is an `object`. `kindOfNode` gives each part whose operator takes a list its own Value
+row — `control: 'tags'`, `multiple`, an `object` input — put before the repeated one. So
+`rowOf`, `socketType`, `conditionRows`, `workflowFaults` and every reader see the shape, and
+nothing else learns of operators. Part 1 may be Equals and part 2 Is one of.
+
+- **A change carries the value.** On an operator (or a type) change, `editWorkflow` moves a
+  row's value between its shapes: one value becomes the list of its comma parts; a list
+  becomes its one item, or several joined by commas. Going back gives it again. A Value's
+  Text and List do the same.
+- **A route the other shape takes is the draft's** (Will, 2026-11-05: what a change orphans
+  stays in the draft). A Text routed into Equals' Value, then Is one of picked: `keptRoutes`
+  keeps it — drawn nowhere, no fault, driving no row — and Save leaves it out (`finalGraph`).
+  Equals again joins it. A List into Is one of, then Equals, the same.
+- **A reader never MAKES one.** A route dragged into a shape that refuses it would be kept
+  unseen and look like nothing happened, so `bindWorkflow`'s `take()` refuses any route the
+  draft would newly keep, and says why.
+- **A file from before tags** — a Value's List held as text, an Is one of as one pick — reads
+  once as its list (`readWorkflow`). Only a `tags` row is read so: a list row of another
+  control holding one value is still a fault ("which is no list").
+
+- Site: `src/core/data/node-kinds.ts`
+- Site: `src/core/data/workflow.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `test/unit/a-node-row-says-its-own-fault.test.mjs`
+
+### T-a-row-says-its-own-fault
+
+**A value its row cannot hold is a fault of the ROW, said in words in the row, red.** Plan 749
+P4. `rowFault` is the one statement of what a control cannot say: a stranger in a CLOSED tags
+list (a field whose values are known), a Start or End that is no date, a number off its
+`step` (Places, a span's Value: whole) or under its `min`. `workflowFaults` names it (`the
+node "c"'s Value: …`) where a value is held and where a route BRINGS it from a node that
+holds it (`the route "l/value" → "c/value": …`), and `workflowGraph` puts the same words on
+the row as `fault`, for its own value or the one mirrored in. So the drawing and the check
+never disagree, a connection that would bring a stranger is refused (`take()`), and Save
+refuses while one stands.
+
+- **It is never an orphan.** A row a type change hid, or a route the other operator takes,
+  is the draft's (`T-an-operator-shapes-its-value`): no fault, no warning.
+- **Drawn in the field's own message**, `data-error`, which `sherpa-input-text` leaves to its
+  host (`T-a-host-error-is-the-hosts`): a click in and out does not wipe it.
+- **A number row with no `step` takes any number** (`step="any"`): the platform's own step
+  is 1, and called 3.14 invalid on a blur. A count's `min` and `step` are mirrored, so its
+  steppers stop at the bound.
+- **A date is ISO in the data and words for the reader.** The field shows `formatDateTime`
+  (`12 Jan 2024, 09:30`, the one day format, `T-a-date-reads-one-way`); a typed date, in those
+  words or ISO, is read back by `readDateTime`, and one it cannot read is kept as typed, so
+  its fault can say it. The calendar is fetched with the first date row.
+- **A Unit's words follow the count beside it**, from the platform (`Intl.NumberFormat`,
+  unit style): "1 day", "7 days".
+
+- Site: `src/core/data/node-kinds.ts`
+- Site: `src/core/data/workflow.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `test/unit/a-node-row-says-its-own-fault.test.mjs`
+- Site: `test/e2e/reforged-node-row-controls.spec.ts`
+
 ### T-a-changed-key-moves-the-row
 
 **An update that changes a row's KEY moves the row, in every store.** TODO 188,

@@ -876,6 +876,12 @@
               "attrs": {
                 "data-word": "required"
               }
+            },
+            {
+              "el": "span",
+              "attrs": {
+                "data-word": "stranger"
+              }
             }
           ]
         }
@@ -925,6 +931,15 @@
       "declared": true,
       "kind": "style",
       "description": "a text area or a select shows Clear too (they do not by themselves)"
+    },
+    {
+      "$type": "prop",
+      "name": "data-closed",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "a tags field takes only its `.suggestions` (`{ value, label }[]`, which its menu offers too): a word that names none is refused, and stays typed .suggestions      a tags field's menu offers them beside its tags; a typed word that names one, by its value or its label, becomes its value"
     },
     {
       "$type": "prop",
@@ -1240,7 +1255,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (tags, value, disabled). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (tags, suggestions, value, disabled). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -1462,6 +1477,11 @@
         {
           "name": "tags",
           "type": "string[]",
+          "access": "read-write"
+        },
+        {
+          "name": "suggestions",
+          "type": "{ value: string; label?: string }[]",
           "access": "read-write"
         },
         {

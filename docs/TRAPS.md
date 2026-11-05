@@ -28,7 +28,7 @@ headings below are older than the index: most entries are under the last one.
 
 | Area | Entries |
 |---|---:|
-| [The data layer](traps/data-layer.md) | 224 |
+| [The data layer](traps/data-layer.md) | 226 |
 | [Storage, saved Views and the URL](traps/storage.md) | 36 |
 | [The join and the app layer](traps/join-and-app.md) | 42 |
 | [Filters](traps/filters.md) | 104 |
@@ -36,7 +36,7 @@ headings below are older than the index: most entries are under the last one.
 | [The data grid](traps/data-grid.md) | 57 |
 | [Charts](traps/charts.md) | 44 |
 | [SherpaElement and the shared sheets](traps/element-and-sheets.md) | 75 |
-| [Other components](traps/other-components.md) | 63 |
+| [Other components](traps/other-components.md) | 64 |
 | [Build, tools and the MCP](traps/build-tools-mcp.md) | 38 |
 | [Tests only](traps/tests-only.md) | 13 |
-| **All** | **774** |
+| **All** | **777** |

@@ -81,6 +81,8 @@ export class SherpaInputText extends SherpaElement {
     'data-matches': { type: 'number', kind: 'behaviour' },
     // Written BY a tags field: how many of its tags do not fit, and sit behind the +N.
     'data-overflow': { type: 'number', kind: 'behaviour' },
+    // A tags field takes only its `.suggestions`: a stranger is refused, and stays typed.
+    'data-closed': { type: 'boolean', kind: 'behaviour' },
   } as const;
 
   /** A form cannot see an <input> through a shadow root. TRAP T-shadow-input-needs-element-internals */
@@ -103,6 +105,8 @@ export class SherpaInputText extends SherpaElement {
     set: (attr, value) => this.set(attr, value),
     toggleState: (name, on) => this.toggleState(name, on),
     control: () => (this.#control instanceof HTMLInputElement ? this.#control : null),
+    closed: () => this.hasAttribute('data-closed'),
+    refusal: () => void this.validate(),
     word: (key) => this.word(key),
     readOnly: () => this.hasAttribute('readonly'),
     off: () => this.matches(':disabled'),
@@ -129,6 +133,17 @@ export class SherpaInputText extends SherpaElement {
     this.#syncHasValue();
     this.#syncValue();
   }
+
+  /** What a tags field's menu offers beside its tags, `{ value, label }`; with `data-closed`, the only values it takes. */
+  get suggestions(): { value: string; label?: string }[] {
+    return this.#suggested;
+  }
+  set suggestions(list: readonly { value: string; label?: string }[]) {
+    this.#suggested = [...list];
+    this.#tagger.suggest(this.#suggested);
+  }
+  /** What `.suggestions` was given, as given. */
+  #suggested: { value: string; label?: string }[] = [];
 
   /** A tags field's focus is its text, never a tag. */
   override focus(options?: FocusOptions): void {
@@ -349,8 +364,8 @@ export class SherpaInputText extends SherpaElement {
     this.#syncOptions();
     this.#syncIds();
     this.#syncIcons();
-    // The tags are read before the attributes: `value` is theirs here.
-    if (this.#isTags) this.#tagger.set(splitTags(this.getAttribute('value') ?? ''));
+    // The tags are read before the attributes: `value` is theirs here. Without one, tags a host set before this render stay.
+    if (this.#isTags) this.#tagger.set(this.hasAttribute('value') ? splitTags(this.getAttribute('value') ?? '') : this.#tagger.tags);
     this.#syncAttrs();
     this.$('.clear')?.addEventListener('click', this.#onClear);
     // `button-click`, not `click` — a disabled sherpa-button still gets raw clicks.
@@ -422,6 +437,11 @@ export class SherpaInputText extends SherpaElement {
       this.#setError(this.word('required'));
       return false;
     }
+    const refused = this.#isTags ? this.#tagger.refused : null;
+    if (refused !== null) {
+      this.#setError(`“${refused}” ${this.word('stranger')}`);
+      return false;
+    }
 
     if (!control.validity.valid) {
       this.#setError(control.validationMessage);
@@ -452,13 +472,21 @@ export class SherpaInputText extends SherpaElement {
     return validateField(ruleSet, value);
   }
 
-  /** Write the message; CSS paints the state. */
+  /** Write the message; CSS paints the state. A message a HOST wrote is the host's: a pass here leaves it.
+   *  TRAP T-a-host-error-is-the-hosts */
   #setError(message: string): void {
-    if (message) this.set('data-error', message);
-    else this.set('data-error', null);
-    this.#control?.setAttribute('aria-invalid', message ? 'true' : 'false');
+    // While the host's shows, this field's own waits behind it.
+    const hosts = this.dataset['error'] !== undefined && this.dataset['error'] !== this.#wrote;
+    if (!hosts) {
+      this.set('data-error', message || null);
+      this.#wrote = message || null;
+    }
+    this.#control?.setAttribute('aria-invalid', message || this.dataset['error'] ? 'true' : 'false');
     this.#syncValue();
   }
+
+  /** The message this field last wrote itself. */
+  #wrote: string | null = null;
 
   #onBlur = (): void => {
     void this.validate();

@@ -47,6 +47,7 @@ For a typed value with a label, help text and an error message. Set `data-type` 
 |---|---|---|---|
 | `data-borderless` | boolean |  | drop the control border (minimal style) |
 | `data-clearable` | boolean |  | a text area or a select shows Clear too (they do not by themselves) |
+| `data-closed` | boolean |  | a tags field takes only its `.suggestions` (`{ value, label }[]`, which its menu offers too): a word that names none is refused, and stays typed .suggestions a tags field's menu offers them beside its tags; a typed word that names one, by its value or its label, becomes its value |
 | `data-description` | text |  | helper text under the label (default style) |
 | `data-error` | text |  | validation message — shown as a filled critical bar (default style) |
 | `data-icon-end` | text |  | trailing icon glyph inside the control row (CSS-gated) |
@@ -80,6 +81,7 @@ For a typed value with a label, help text and an error message. Set `data-type` 
 | Property | Type | Access | What it is |
 |---|---|---|---|
 | `tags` | `string[]` | read and write |  |
+| `suggestions` | `{ value: string; label?: string }[]` | read and write |  |
 | `value` | `string` | read and write |  |
 | `disabled` | `boolean` | read and write |  |
 
