@@ -6449,6 +6449,8 @@ types allow is drawn; no family fences what a graph places.
 - Site: `src/components/sherpa-node/sherpa-node.ts`
 - Site: `src/components/sherpa-node/sherpa-node.html`
 - Site: `src/data.ts`
+- Site: `test/unit/a-node-reads-null-from-what-it-cannot-use.test.mjs`
+- Site: `test/e2e/reforged-node-warning.spec.ts`
 
 ### T-a-changed-key-moves-the-row
 
