@@ -6,7 +6,7 @@ import { test, expect, type Page } from './harness';
  * edges. A search narrows it by name or by a type's ("round" shows Math, placed as Round). An item
  * is placed by a click (the middle of the view),
  * by Enter, or by a drag onto the canvas (where it is let go): each through the draft's one
- * door, picked, its inspector open. A line let go on the bare canvas opens "Add a node": the
+ * door, picked, its inspector shut (756). A line let go on the bare canvas opens "Add a node": the
  * kinds that take its type, a Value first. Each by real pointer and key.
  */
 test.beforeEach(async ({ page }) => {
@@ -111,14 +111,20 @@ test('"round" shows Math, says Round, and a click places a Math whose type is Ro
   expect(labels).toEqual(['Operation', 'Value A', 'Value B']);
 });
 
-test('a click places the node at the middle of the view, picked, its inspector open', async ({ page }) => {
+/** The nodes picked, and whether the inspector is open. */
+const pick = (page: Page) => page.evaluate(() => ({
+  current: [...document.querySelectorAll('#root sherpa-node[data-current]')].map((n) => (n as HTMLElement).dataset['heading']),
+  open: (document.getElementById('inspector') as HTMLElement & { open: boolean }).open,
+}));
+
+test('a click places the node at the middle of the view, picked, its inspector shut (756)', async ({ page }) => {
   await bind(page);
   await item(page, 'value').click();
   await settle(page);
   const r = await draft(page);
   expect(r.nodes.map((n) => n.id)).toEqual(['start', 'value-1']);
-  const open = await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { open: boolean }).open);
-  expect(open).toBe(true);
+  // 756: added, it is picked, and its panel does not open.
+  expect(await pick(page)).toEqual({ current: ['Value'], open: false });
   // Its corner is the middle of the 900 x 600 view, less half a node, on the plane.
   const view = await page.evaluate(() => (document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { view: { x: number; y: number } }).view);
   expect(Math.abs(r.nodes[1]!.x - (330 - view.x))).toBeLessThanOrEqual(2);
@@ -142,6 +148,7 @@ test('Enter on an item places it', async ({ page }) => {
   await page.keyboard.press('Enter');
   await settle(page);
   expect((await draft(page)).nodes.map((n) => n.kind)).toEqual(['store', 'collection']);
+  expect(await pick(page)).toEqual({ current: ['Collection'], open: false });
 });
 
 test('a drag places the node where it is let go', async ({ page }) => {
@@ -168,6 +175,11 @@ test('a drag places the node where it is let go', async ({ page }) => {
   });
   expect(Math.abs(corner[0]! - drop[0])).toBeLessThanOrEqual(2);
   expect(Math.abs(corner[1]! - drop[1])).toBeLessThanOrEqual(2);
+  expect(await pick(page)).toEqual({ current: ['Value'], open: false });
+  // A click on it opens its panel, as on any node.
+  await page.mouse.click(corner[0]! + 60, corner[1]! + 8);
+  await settle(page);
+  expect(await pick(page)).toEqual({ current: ['Value'], open: true });
 });
 
 test('a drag let go on the card, or off the canvas, places nothing', async ({ page }) => {
@@ -208,6 +220,7 @@ test('a route let go on the bare canvas opens "Add a node": the kinds that take 
   const r = await draft(page);
   expect(r.nodes.map((n) => n.kind)).toEqual(['store', 'collection']);
   expect(r.routes).toEqual(['start → collection-1']);
+  expect(await pick(page)).toEqual({ current: ['Collection'], open: false });
 });
 
 test('"Add a node" for a list says the type a family takes it as: Math › Floor, Text › Join', async ({ page }) => {

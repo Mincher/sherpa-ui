@@ -4,7 +4,7 @@ import { test, expect, type Page } from './harness';
  * Picked nodes move TOGETHER and ARRANGE on a grid — Will, TODO 752. Dragging one of several picked
  * nodes moves them all by the same delta (a tie whose routes all join them goes too, and the bends of
  * a route with both ends among them); an unpicked node picks only itself. Ctrl or Cmd and an arrow moves
- * the picked nodes. Arrange puts them in columns along the routes, a spacing token apart, on the 4px grid.
+ * the picked nodes. Arrange puts them in columns along the routes, three spacing tokens apart (756), on the 4px grid.
  * Real pointer and keys; places are read from the nodes, lines from the drawn paths.
  */
 type Flow = { nodes: { id: string; x: number; y: number }[]; ties?: { id: string; x: number; y: number }[]; routes: { from: string; to: string; via?: { x: number; y: number }[] }[] };
@@ -143,7 +143,7 @@ const crossings = (page: Page) => page.evaluate(() => {
 });
 const rects = (page: Page) => page.evaluate(() => Object.fromEntries([...document.querySelectorAll('#cv > sherpa-node')].map((n) => [n.getAttribute('data-heading')!, { x: Number(n.getAttribute('data-x')), y: Number(n.getAttribute('data-y')), w: (n as HTMLElement).offsetWidth, h: (n as HTMLElement).offsetHeight }])));
 
-test('Arrange: columns by flow, a token apart, on the grid, anchor kept, fewer crossings, ties centred, bends cleared, one Undo', async ({ page }) => {
+test('Arrange: columns by flow, three tokens apart, on the grid, anchor kept, fewer crossings, ties centred, bends cleared, one Undo', async ({ page }) => {
   await start(page, [['s1', 'store', 500, 400], ['s2', 'store', 40, 20], ['e1', 'output', 100, 300], ['e2', 'output', 800, 60], ['s3', 'store', 300, 600]],
     [{ ...R(1), via: [{ x: 300, y: 300 }] }, R(2), { from: 's3/rows', to: 'e1' }],
     [{ id: 't', x: 360, y: 200, routes: [R(1), R(2)] }]);
@@ -156,13 +156,15 @@ test('Arrange: columns by flow, a token apart, on the grid, anchor kept, fewer c
   const before = await flow(page);
   const was = await rects(page);
   const crossBefore = await crossings(page);
-  const gap = await page.locator('#cv').evaluate((cv) => parseFloat(getComputedStyle(cv).getPropertyValue('--sherpa-display-mode-space-5xl')) || 56);
+  // Three of the spacing token (756): 3 × 56px.
+  const gap = 3 * await page.locator('#cv').evaluate((cv) => parseFloat(getComputedStyle(cv).getPropertyValue('--sherpa-display-mode-space-5xl')) || 56);
+  expect(gap).toBe(168);
   await press(page, 'arrange');
   const after = await flow(page);
   const now = await rects(page);
   const four = ['s1', 's2', 'e1', 'e2'];
   for (const id of four) { expect(spot(after, id).x % 4).toBe(0); expect(spot(after, id).y % 4).toBe(0); }
-  // sources left, outputs a column to the right, a token apart
+  // sources left, outputs a column to the right, 168px apart
   expect(spot(after, 's1').x).toBe(spot(after, 's2').x);
   expect(spot(after, 'e1').x).toBe(spot(after, 'e2').x);
   expect(Math.abs(spot(after, 'e1').x - (spot(after, 's1').x + now['s1']!.w) - gap)).toBeLessThanOrEqual(1);
@@ -170,6 +172,9 @@ test('Arrange: columns by flow, a token apart, on the grid, anchor kept, fewer c
   const [top, low] = [spot(after, 's1'), spot(after, 's2')].sort((a, b) => a.y - b.y);
   const topId = top === spot(after, 's1') ? 's1' : 's2';
   expect(Math.abs(low!.y - (top!.y + now[topId]!.h) - gap)).toBeLessThanOrEqual(4);
+  // 756: a grid, so the top edges of a row are one y in every column
+  const tops = (ids: string[]) => ids.map((id) => spot(after, id).y).sort((a, b) => a - b);
+  expect(tops(['s1', 's2'])).toEqual(tops(['e1', 'e2']));
   // the top-left of the picked nodes stays
   expect(Math.abs(Math.min(...four.map((id) => spot(after, id).x)) - Math.min(...four.map((id) => was[id]!.x)))).toBeLessThanOrEqual(2);
   expect(Math.abs(Math.min(...four.map((id) => spot(after, id).y)) - Math.min(...four.map((id) => was[id]!.y)))).toBeLessThanOrEqual(2);

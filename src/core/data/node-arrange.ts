@@ -1,13 +1,13 @@
 /**
  * node-arrange.ts — lay picked nodes out on a grid: columns by flow, rows by fewest crossings. Pure: no DOM.
- * Will, TODO 752 · docs/history/plan-752-arrange.md
+ * Will, TODOs 752, 756 · docs/history/plan-752-arrange.md
  *
  * Map:
  * - ArrangeGraph — What a layout reads: the nodes' places, the routes, the ties.
  * - ArrangeOptions — The gaps, the grid, and each node's drawn box.
  * - Arranged — Where each picked node and each tie goes.
  * - crossings — How many pairs of straight lines, centre to centre, cross in a layout.
- * - arrangeNodes — The picked nodes in columns along their routes, rows ordered to cross least, ties centred in the gaps.
+ * - arrangeNodes — The picked nodes on a grid: columns along their routes, rows ordered to cross least, ties in the gaps.
  */
 import { socketOf, type NodeRoute, type NodeTie } from './node-kinds.js';
 import { tieLimit } from './workflow.js';
@@ -57,8 +57,9 @@ export function crossings(places: Readonly<Record<string, Spot>>, boxes: Readonl
 /**
  * Lay the picked nodes out: a node's column is its depth along the routes among them, so sources
  * stand left; rows in a column are ordered by a barycentre sweep and the order that crosses least
- * (by the lines drawn) wins, the current order a candidate. Columns are `gapX` apart and rows `gapY`,
- * every place on the grid, the block's top-left where the picked nodes' was. A tie whose routes all
+ * (by the lines drawn) wins, the current order a candidate. They stand on a grid: each column as wide as
+ * its widest node and each row as tall as its tallest, `gapX` and `gapY` between, every node at its cell's
+ * top left (756), every place on the 4px grid, the block's top-left where the picked nodes' was. A tie whose routes all
  * join picked nodes stands in the gap before its shortest route's target, equally spaced with its
  * neighbours there, at the mean height of its routes, held inside `tieLimit`. A cycle: its closing
  * route is left out of the depth, so the walk ends. Fewer than two picked: nothing.
@@ -129,20 +130,17 @@ export function arrangeNodes(graph: ArrangeGraph, picked: readonly string[], opt
     candidates.push(cur);
   }
   const anchor = { x: near(Math.min(...ids.map((id) => at.get(id)!.x))), y: near(Math.min(...ids.map((id) => at.get(id)!.y))) };
+  // A grid: a column as wide as its widest node, a row as tall as its tallest; each node at its cell's top left. TODO 756
   const place = (lay: readonly (readonly string[])[]): { nodes: Record<string, Spot>; gaps: { left: number; right: number }[] } => {
     const real = lay.map((l) => l.filter((id) => set.has(id)));
     const widths = real.map((l) => Math.max(...l.map((id) => box(id).w)));
-    const heights = real.map((l) => l.reduce((s, id, i) => s + (i ? up(options.gapY) : 0) + up(box(id).h), 0));
-    const tall = Math.max(...heights);
+    const rows = Array.from({ length: Math.max(...real.map((l) => l.length)) }, (_, i) => Math.max(...real.map((l) => (l[i] ? up(box(l[i]!).h) : 0))));
+    const tops = rows.map((_, i) => anchor.y + rows.slice(0, i).reduce((s, h) => s + h + up(options.gapY), 0));
     const nodes: Record<string, Spot> = {};
     const gaps: { left: number; right: number }[] = [];
     let x = anchor.x;
     real.forEach((l, k) => {
-      let y = anchor.y + near((tall - heights[k]!) / 2);
-      for (const id of l) {
-        nodes[id] = { x, y };
-        y += up(box(id).h) + up(options.gapY);
-      }
+      l.forEach((id, i) => { nodes[id] = { x, y: tops[i]! }; });
       const right = up(x + widths[k]! + options.gapX);
       gaps.push({ left: x + widths[k]!, right });
       x = right;

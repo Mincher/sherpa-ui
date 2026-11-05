@@ -123,3 +123,27 @@ test('place: faults in words, and the workflow comes back untouched', () => {
   assert.equal(editWorkflow(w, { place: { nodes: { a: { x: 1, y: 1 }, z: { x: 1, y: 1 } } } }), w);
   assert.equal(editWorkflow(w, { place: { nodes: { a: { x: NaN, y: 1 }, b: { x: 1, y: 1 } } } }), w);
 });
+
+test('756: nodes of different sizes stand on a grid: the top edges of a row and the left edges of a column line up', () => {
+  const ids = ['a', 'b', 'c', 'd', 'e'];
+  const g = graphOf([['a', 0, 0], ['b', 0, 300], ['c', 500, 0], ['d', 500, 300], ['e', 500, 600]], [R('a', 'c'), R('b', 'd'), R('b', 'e')]);
+  const boxes = { a: { w: 240, h: 100 }, b: { w: 200, h: 180 }, c: { w: 300, h: 60 }, d: { w: 240, h: 132 }, e: { w: 260, h: 90 } };
+  const out = arrangeNodes(g, ids, { gapX: 168, gapY: 168, boxes });
+  const p = out.nodes;
+  // Two columns, by flow: the left edges of each are one x.
+  assert.equal(p.a.x, p.b.x);
+  assert.ok(p.c.x === p.d.x && p.d.x === p.e.x);
+  // The second column stands the widest of the first, and the gap, to the right.
+  assert.equal(p.c.x - p.a.x, 240 + 168);
+  // Rows: each node of a row has one top, whatever its height; a row is as tall as its tallest, and the gap.
+  const rows = [...new Set(Object.values(p).map((q) => q.y))].sort((m, n) => m - n);
+  assert.equal(rows.length, 3);
+  const inRow = (y) => ids.filter((id) => p[id].y === y);
+  for (const [i, y] of rows.entries()) {
+    if (i === 0) continue;
+    const above = Math.max(...inRow(rows[i - 1]).map((id) => Math.ceil(boxes[id].h / 4) * 4));
+    assert.equal(y - rows[i - 1], above + 168, `row ${i}`);
+  }
+  assert.deepEqual(inRow(rows[0]).length, 2);
+  for (const q of Object.values(p)) assert.ok(q.x % 4 === 0 && q.y % 4 === 0);
+});

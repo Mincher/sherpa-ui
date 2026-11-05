@@ -34,10 +34,12 @@ equal gaps from a spacing token, ties spread evenly in the gaps, bends reset.
    y (tie: id); sweep down then up by barycentre, 4 rounds. Keep the order with the fewest
    crossings of the straight lines drawn between node centres; the input's own order is a
    candidate, so the result is never worse than the input's ORDER.
-4. Place: column x = previous x + widest node + `gapX`; rows stack by drawn height + `gapY`.
-   Each column is centred on the tallest. All snapped UP to the 4px grid. The block's
+4. Place on a grid (Will, 756): column x = previous x + widest node in it + `gapX`; row y =
+   previous y + tallest node in it + `gapY`; each node at its cell's top left, so the top edges
+   of a row and the left edges of a column line up. All snapped UP to the 4px grid. The block's
    top-left (min x, min y, snapped) is where the picked nodes' was.
-5. Gaps: ONE token, `--sherpa-display-mode-space-5xl`, read from the canvas (getComputedStyle,
+5. Gaps: ONE token, `--sherpa-display-mode-space-5xl`, three times (`ARRANGE_GAP_STEPS = 3`, Will 756:
+   168px), read from the canvas (getComputedStyle,
    one fallback constant in node-graph.ts). The data function takes numbers.
 6. Ties: a tie whose routes all join picked nodes goes into the gap before its shortest
    route's target column; several in one gap are spaced equally along x; y = mean of its

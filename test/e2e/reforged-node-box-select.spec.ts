@@ -352,3 +352,78 @@ test('the Query editor selects and highlights what the box encloses or crosses; 
   // The routes are still drawn.
   expect(await page.evaluate((s) => document.querySelectorAll(s).length, sel)).toBe(b.length);
 });
+
+// — 756: a box picks, and opens no panel; a click on one node still opens it.
+const panel = (page: Page) => page.evaluate(() => {
+  const p = document.getElementById('inspector') as HTMLElement & { open: boolean };
+  return { open: p.open, heading: p.getAttribute('data-heading') };
+});
+const header = async (page: Page, id: string): Promise<[number, number]> => {
+  const n = await box(page, `#cv sherpa-node[data-heading="${id}"]`);
+  return [(n.left + n.right) / 2, n.top + 8];
+};
+
+test('756: a box picks one node or several with the panel shut, and the toolbar acts on them; a click opens it; open, a box shows what it picked', async ({ page }) => {
+  const [a, b] = [await box(page, '#cv sherpa-node[data-heading="s1"]'), await box(page, '#cv sherpa-node[data-heading="s2"]')];
+  await drag(page, [a.left - 14, a.top - 14], [a.right + 14, a.bottom + 14]);
+  expect((await picked(page)).nodes).toEqual(['s1']);
+  expect((await panel(page)).open).toBe(false);
+  // Two: picked, no panel, and Arrange may be pressed.
+  await drag(page, [a.left - 14, a.top - 14], [b.right + 14, b.bottom + 14]);
+  expect((await picked(page)).nodes).toEqual(['s1', 's2']);
+  expect((await panel(page)).open).toBe(false);
+  await expect(page.locator('sherpa-node-toolbar')).toHaveAttribute('data-can-arrange', '');
+  // A redraw (the two moved by the keys) still opens nothing.
+  await key(page, 'ControlOrMeta+ArrowRight');
+  expect((await flow(page)).nodes.find((n) => n.id === 's1')!.x).toBe(8);
+  expect((await panel(page)).open).toBe(false);
+  // Shift and a click adds a third to the box's two: a click, so the panel opens with a tab each.
+  const [sx, sy] = await header(page, 's3');
+  await page.keyboard.down('Shift');
+  await page.mouse.click(sx, sy);
+  await page.keyboard.up('Shift');
+  await settle(page);
+  expect((await picked(page)).nodes).toEqual(['s1', 's2', 's3']);
+  expect(await panel(page)).toEqual({ open: true, heading: '3 nodes picked' });
+  // A click on blank shuts it; a click on one node opens it on that node.
+  await page.mouse.click(a.right + 60, a.top - 20);
+  await settle(page);
+  expect((await panel(page)).open).toBe(false);
+  const [hx, hy] = await header(page, 'e1');
+  await page.mouse.click(hx, hy);
+  await settle(page);
+  expect(await panel(page)).toEqual({ open: true, heading: 'e1' });
+  // Open, a box over one node shows that node; over two, a tab each.
+  await drag(page, [b.left - 14, b.top - 14], [b.right + 14, b.bottom + 14]);
+  expect(await panel(page)).toEqual({ open: true, heading: 's2' });
+  await drag(page, [a.left - 14, a.top - 14], [b.right + 14, b.bottom + 14]);
+  expect(await panel(page)).toEqual({ open: true, heading: '2 nodes picked' });
+  expect((await picked(page)).nodes).toEqual(['s1', 's2']);
+});
+
+test('756: in the Query editor a box picks with the panel shut; a click on a node opens it', async ({ page }) => {
+  await page.evaluate(async () => {
+    document.getElementById('cv')!.remove();
+    document.getElementById('root')!.insertAdjacentHTML('beforeend', '<sherpa-layout-canvas id="cv" style="inline-size: 1100px; block-size: 700px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar></sherpa-layout-canvas>');
+    const q = document.getElementById('cv') as HTMLElement & { rendered: Promise<void>; zoomTo(z: number): void; panTo(x: number, y: number): void };
+    await q.rendered;
+    const { bindQueryEditor } = await import('/dist/app.js');
+    const { QueryContext, VIEW } = await import('/dist/data.js');
+    const query = new QueryContext();
+    query.ask({ scope: VIEW, hold: ['region'] });
+    query.ask({ scope: VIEW, field: 'region', reading: { picked: ['EMEA'] } });
+    bindQueryEditor(q as never, { query } as never, { definition: { v: 1 as const, id: 'records', source: { store: 'customers' } }, inspector: document.getElementById('inspector') as never, toolbar: q.querySelector('sherpa-node-toolbar') as never });
+    await window.__settled();
+    q.zoomTo(0.6);
+    q.panTo(40, 40);
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+  });
+  const first = await page.evaluate(() => document.querySelector('#cv > sherpa-node')!.getAttribute('data-heading')!);
+  const n = await box(page, `#cv sherpa-node[data-heading="${first}"]`);
+  await drag(page, [n.left - 14, n.top - 14], [n.right + 14, n.bottom + 14]);
+  expect((await picked(page)).nodes).toEqual([first]);
+  expect((await panel(page)).open).toBe(false);
+  await page.mouse.click((n.left + n.right) / 2, n.top + 8);
+  await settle(page);
+  expect(await panel(page)).toEqual({ open: true, heading: first });
+});

@@ -1135,8 +1135,9 @@ export function pickedNodes(canvas: SherpaLayoutCanvas): string[] {
   return [...(drawnOn.get(canvas)?.nodes ?? [])].filter(([, el]) => el.hasAttribute('data-current')).map(([id]) => id);
 }
 
-/** Which spacing token the gaps of an arrangement are: one, read from the canvas; the fallback mirrors its value. */
+/** The gaps of an arrangement: one spacing token, read from the canvas, three times over (Will, TODO 756). The fallback mirrors the token's value. */
 const ARRANGE_GAP = '--sherpa-display-mode-space-5xl';
+const ARRANGE_GAP_STEPS = 3;
 const ARRANGE_GAP_FALLBACK = 56;
 
 /** Lay the picked nodes out on a grid, from the boxes they are drawn in, and hand the host the places. */
@@ -1144,7 +1145,7 @@ export function arrangePicked(canvas: SherpaLayoutCanvas): Arranged | undefined 
   const drawn = drawnOn.get(canvas);
   const ids = pickedNodes(canvas).filter((id) => !id.startsWith('#'));
   if (!drawn?.options.onArrange || ids.length < 2) return undefined;
-  const gap = parseFloat(getComputedStyle(canvas).getPropertyValue(ARRANGE_GAP)) || ARRANGE_GAP_FALLBACK;
+  const gap = ARRANGE_GAP_STEPS * (parseFloat(getComputedStyle(canvas).getPropertyValue(ARRANGE_GAP)) || ARRANGE_GAP_FALLBACK);
   const nodes = [...drawn.nodes].map(([id, el]) => ({ id, x: Number(el.getAttribute('data-x')) || 0, y: Number(el.getAttribute('data-y')) || 0 }));
   const boxes = Object.fromEntries([...drawn.nodes].map(([id, el]) => [id, { w: el.offsetWidth, h: el.offsetHeight }]));
   const placed = arrangeNodes({ nodes, routes: drawn.routes, ties: drawn.ties }, ids, { gapX: gap, gapY: gap, boxes });
@@ -1456,6 +1457,8 @@ function handOver(canvas: HTMLElement, definition: PageDefinition | WorkflowDefi
 /** The node a canvas's inspector shows: picked, followed on each draw, and let go. */
 interface Picked {
   select(node: GraphNode, graph: DrawnGraph): void;
+  /** Picked by a box, or added: the panel opens for none; open, it shows this one. TODO 756 */
+  peek(node: GraphNode, graph: DrawnGraph): void;
   follow(graph: DrawnGraph): void;
   /** A click on blank canvas: none picked, and the panel shut. */
   deselect(): void;
@@ -1469,8 +1472,11 @@ function pickedIn(
   onDelete?: () => void,
 ): Picked {
   let picked: string | null = null;
+  // The panel shut by the editor, not the reader: what the canvas has picked stays picked.
+  let quiet = false;
   const close = (event: Event): void => {
     if (event.target !== inspector) return;
+    if (quiet) return void (quiet = false);
     picked = null;
     markNode(canvas, null);
     onClose?.();
@@ -1489,13 +1495,20 @@ function pickedIn(
       if (inspector) show(node, graph);
       inspector?.show();
     },
+    peek(node, graph): void {
+      picked = node.id;
+      if (inspector?.open) show(node, graph);
+    },
     follow(graph): void {
       const node = graph.nodes.find((n) => n.id === picked);
       if (inspector?.open && node) show(node, graph);
     },
     deselect(): void {
       picked = null;
-      if (inspector?.open) inspector.hide();
+      if (inspector?.open) {
+        quiet = true;
+        inspector.hide();
+      }
       onClose?.();
     },
     stop(): void {
@@ -1641,10 +1654,10 @@ export function bindQueryEditor(
       onReroute: (_was, now) => onConnect(now),
       ...(panel ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
       onBreak: cutRefused, onBreakAll: cutRefused, onRemove: removeRefused,
-      // A box picks and shows: one node opens its panel, as a click does; several, or none, shut it. TODO 735
+      // A box picks, and opens no panel (756); an open one shows the one node, and shuts for several or none. TODO 735
       onBox: (ids) => {
         const node = ids.length === 1 ? graph.nodes.find((n) => n.id === ids[0]) : undefined;
-        if (node) picks.select(node, graph);
+        if (node) picks.peek(node, graph);
         else picks.deselect();
       },
       onPicked: (routes) => toolbar?.setAttribute('data-picked-routes', String(routes.length)),
@@ -2033,7 +2046,7 @@ export function bindWorkflow(
   // A Value node for a picklist row: the row keeps its own pick, and mirrors the node.
   const customAt = (to: string, at: { x: number; y: number }): void => take(addCustomValue(shown(), to, at, K()));
   const onCustom = (to: string, at: { x: number; y: number }): void => customAt(to, { x: Math.round(at.x), y: Math.round(at.y) });
-  // A node the reader asked for, from the panel or "Add a node": through the one door, `{ add }`; picked, so its inspector opens.
+  // A node the reader asked for, from the panel or "Add a node": through the one door, `{ add }`; picked, its panel shut. TODO 756
   const place = (kind: string, at: { x: number; y: number }, context?: AddContext, type?: string): void => {
     if (!K()[kind] || readOnly()) return;
     const free = (n: number): string => (shown().nodes.some((x) => x.id === `${kind}-${n}`) ? free(n + 1) : `${kind}-${n}`);
@@ -2053,8 +2066,11 @@ export function bindWorkflow(
     });
     const node = graph.nodes.find((n) => n.id === id);
     if (!node) return;
+    multi.clear();
     markNode(canvas, id);
-    picks.select(node, graph);
+    current = id;
+    shut = !inspector?.open;
+    picks.peek(node, graph);
   };
   const planeAt = (clientX: number, clientY: number): { x: number; y: number } => {
     const box = canvas.getBoundingClientRect();
@@ -2237,7 +2253,9 @@ export function bindWorkflow(
     const node = graph.nodes.find((n) => n.id === made.use);
     if (node) {
       markNode(canvas, node.id);
-      picks.select(node, graph);
+      current = node.id;
+      shut = !inspector?.open;
+      picks.peek(node, graph);
     }
     return undefined;
   };
@@ -2248,6 +2266,7 @@ export function bindWorkflow(
     const nodes = graph.nodes.filter((n) => multi.has(n.id));
     if (!nodes.length) return;
     if (!active || !multi.has(active)) active = nodes[0]!.id;
+    shut = false;
     markActive(canvas, active);
     fillInspector(nodes.find((n) => n.id === active)!, graph, {
       nodes: nodes.map((n) => ({ id: n.id, label: n.heading })), current: active, heading: `${nodes.length} nodes picked`,
@@ -2282,10 +2301,12 @@ export function bindWorkflow(
   dialogCancel?.addEventListener('click', onCancel);
   dialogField('label')?.addEventListener('keydown', onSaveKey);
   let current: string | null = null;
+  /** The pick was made with the panel shut, by a box or an add: it holds without it. TODO 756 */
+  let shut = false;
   /** Add a node to the picked, or take it off (Shift-click, Space); with one left, it is simply picked. */
   const toggle = (id: string): void => {
-    // The panel shut: what it held is no longer picked.
-    if (inspector && !inspector.open) {
+    // The panel shut by the reader: what it held is no longer picked. A box or an add picks with it shut (756).
+    if (inspector && !inspector.open && !shut) {
       multi.clear();
       current = null;
     }
@@ -2302,18 +2323,20 @@ export function bindWorkflow(
     } else if (multi.size) showMulti();
     else picks.deselect();
   };
-  /** A box picked these nodes: one opens its panel, several are a group, none shuts it. */
+  /** A box picked these nodes: one, or several as a group; none shuts the panel. The panel opens for none; open, it shows the pick. TODO 756 */
   const pickBox = (ids: string[]): void => {
     multi.clear();
     for (const id of ids) multi.add(id);
     const [only] = ids;
     const node = ids.length === 1 ? graph.nodes.find((n) => n.id === only) : undefined;
+    shut = !inspector?.open;
     if (node) {
       multi.clear();
       current = node.id;
-      picks.select(node, graph);
-    } else if (multi.size) showMulti();
-    else picks.deselect();
+      picks.peek(node, graph);
+    } else if (multi.size) {
+      if (inspector?.open) showMulti();
+    } else picks.deselect();
   };
   const tellPicked = (routes: NodeRoute[]): void => {
     toolbar?.setAttribute('data-picked-routes', String(routes.length));
@@ -2420,9 +2443,10 @@ export function bindWorkflow(
   };
   const picks = pickedIn(canvas, inspector, (node, now) => {
     current = node.id;
+    shut = false;
     markActive(canvas, null);
     fillInspector(node, now);
-  }, () => { multi.clear(); current = null; active = null; }, () => {
+  }, () => { multi.clear(); current = null; active = null; shut = false; }, () => {
     const ids = multi.size ? [...multi] : current ? [current] : [];
     if (ids.length && !readOnly()) onRemoveNodes(ids, []);
   });
@@ -2445,7 +2469,7 @@ export function bindWorkflow(
       ...(panel && !ro ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
     });
     trail();
-    if (multi.size > 1) showMulti();
+    if (multi.size > 1 && inspector?.open) showMulti();
     else picks.follow(graph);
   }
   draw();

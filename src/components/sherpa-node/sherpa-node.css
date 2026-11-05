@@ -215,7 +215,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  background: var(--_surface);
+  background: var(--_category-fill, var(--_surface));
   border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   color: var(--sherpa-style-content-base, #0c0b11);
@@ -235,17 +235,20 @@
     var(--sherpa-display-mode-border-rounding-base, 4px) var(--sherpa-display-mode-border-rounding-xl, 16px);
 }
 :host([data-category="sources"]) .root,
-:host([data-category="custom-nodes"]) .root { background: var(--sherpa-theme-surface-info-base, #d4f0ff); /* theme-direct */ }
+:host([data-category="custom-nodes"]) .root { --_category-fill: var(--sherpa-theme-surface-info-base, #d4f0ff); /* theme-direct */ }
 :host([data-category="output"]) .root {
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px) var(--sherpa-display-mode-border-rounding-xl, 16px)
     var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-base, 4px);
-  background: var(--sherpa-theme-surface-success-base, #f0fff5); /* theme-direct */
+  --_category-fill: var(--sherpa-theme-surface-success-base, #f0fff5); /* theme-direct */
 }
 :host([data-category="ai"]) .root {
   border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-xl, 16px)
     var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-base, 4px);
-  background: var(--sherpa-theme-surface-active-base, #f8ebff); /* theme-direct */
+  --_category-fill: var(--sherpa-theme-surface-active-base, #f8ebff); /* theme-direct */
 }
+/* Picked, every node takes the active pin's fill and border: a category's tint is its resting look. TODO 756 */
+:host([data-current]) .root { --_category-fill: initial; }
+@media (forced-colors: active) { :host([data-current]) .root { border-color: Highlight; } }
 
 /* ── The header: always there, as it is the handle ───────────────────── */
 .header {

@@ -247,3 +247,127 @@ test('resizing is a setting: off, a node has no handle and Alt+Arrow does nothin
   await page.evaluate(() => window.__settled());
   expect(await page.evaluate(() => document.getElementById('plain')!.offsetWidth)).toBeGreaterThan(off.w);
 });
+
+// — 756: every category, picked, takes the SAME active fill and border; the panel's node adds the same ring.
+const CATS = { Sources: 'store', Variables: 'value', Logic: 'condition', Collections: 'sort', Output: 'output', 'Custom Nodes': 'mine', AI: 'agent' } as const;
+async function bindCategories(page: Page): Promise<void> {
+  await page.setViewportSize({ width: 1700, height: 900 });
+  await page.evaluate(async (cats) => {
+    document.querySelector('#root sherpa-layout-canvas')!.remove();
+    document.getElementById('root')!.insertAdjacentHTML('beforeend', `
+      <sherpa-layout-canvas id="cv" style="inline-size: 1200px; block-size: 640px"><sherpa-node-toolbar slot="toolbar"></sherpa-node-toolbar></sherpa-layout-canvas>
+      <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>`);
+    await customElements.whenDefined('sherpa-node-toolbar');
+    const canvas = document.getElementById('cv') as Canvas;
+    await canvas.rendered;
+    const { bindWorkflow, SessionStore } = await import('/dist/app.js');
+    const { useOf } = await import('/dist/data.js');
+    const body = { v: 1, inputs: [{ name: 'rows', label: 'Rows', type: 'object' }], outputs: [{ name: 'out', label: 'Out', type: 'object' }], nodes: [], routes: [{ from: '#in/rows', to: '#out/out' }] };
+    const library = { v: 1, nodes: { mine: { ...body, label: 'Mine' }, agent: { ...body, label: 'Agent', category: 'AI' } } };
+    const nodes = Object.entries(cats).map(([heading, kind], i) => {
+      const at = { id: kind, x: (i % 4) * 290, y: i < 4 ? 0 : 380, heading };
+      return kind in library.nodes ? { ...useOf(library as never, kind, at), heading } : { kind, ...at };
+    });
+    (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, { v: 2, id: 'cats', nodes } as never, {
+      session: new SessionStore(), inspector: document.getElementById('inspector') as never, library: library as never, stores: ['users'],
+    });
+    await window.__settled();
+    // At zoom 1 a border is one whole pixel, so its ink reads true.
+    canvas.zoomTo(1);
+    canvas.panTo(20, 20);
+    canvas.scrollIntoView({ block: 'start' });
+    await new Promise((d) => requestAnimationFrame(() => requestAnimationFrame(d)));
+  }, CATS);
+}
+/** A card's fill, inside its bottom padding; its top edge's middle, the pixel there least like the fill (no socket
+ *  and no corner is there); and just inside that edge, where a ring is. */
+async function look(page: Page, heading: string): Promise<{ fill: Rgb; edge: Rgb; ring: Rgb }> {
+  const b = await page.locator(`#cv > sherpa-node[data-heading="${heading}"]`).evaluate((n) => {
+    const r = n.shadowRoot!.querySelector('.root')!.getBoundingClientRect();
+    return { x: r.x, y: r.y, width: r.width, height: r.height };
+  });
+  const shot = await page.screenshot({ clip: { x: b.x - 3, y: b.y - 3, width: b.width + 6, height: b.height + 6 } });
+  return page.evaluate(async ([b64, w, h]) => {
+    const img = new Image();
+    img.src = `data:image/png;base64,${b64}`;
+    await img.decode();
+    const c = Object.assign(document.createElement('canvas'), { width: img.width, height: img.height }).getContext('2d')!;
+    c.drawImage(img, 0, 0);
+    const k = img.width / (w + 6);
+    const at = (x: number, y: number): [number, number, number] => [...c.getImageData(Math.round((x + 3) * k), Math.round((y + 3) * k), 1, 1).data].slice(0, 3) as [number, number, number];
+    const fill = at(w / 2, h - 7);
+    const far = (p: number[]): number => Math.max(...p.map((v, i) => Math.abs(v - fill[i]!)));
+    const strip = Array.from({ length: Math.round(5 * k) }, (_, i) => at(w / 2, -2 + i / k));
+    const edge = strip.reduce((best, p) => (far(p) > far(best) ? p : best));
+    return { fill, edge, ring: at(w / 2, 1) };
+  }, [shot.toString('base64'), b.width, b.height] as const);
+}
+
+test('756: picked by the pointer, every category takes the same active fill and border; at rest, its own; the panel\'s node, the same ring', async ({ page }) => {
+  await bindCategories(page);
+  const names = Object.keys(CATS);
+  await page.mouse.move(2, 2);
+  const rest = Object.fromEntries(await Promise.all(names.map(async (n) => [n, await look(page, n)] as const)));
+  // Each picked with Shift, by its header: all of them picked, the first in the panel.
+  await page.keyboard.down('Shift');
+  for (const n of names) {
+    const b = (await page.locator(`#cv > sherpa-node[data-heading="${n}"]`).boundingBox())!;
+    await page.mouse.click(b.x + b.width / 2, b.y + 6);
+  }
+  await page.keyboard.up('Shift');
+  await page.mouse.move(2, 2);
+  await page.evaluate(() => window.__settled());
+  await expect(page.locator('#cv > sherpa-node[data-current]')).toHaveCount(names.length);
+  const active = await inkOf(page, '--sherpa-style-active-surface-base');
+  const shown = await page.locator('#cv > sherpa-node[data-active]').getAttribute('data-heading');
+  const picked = Object.fromEntries(await Promise.all(names.map(async (n) => [n, await look(page, n)] as const)));
+  for (const n of names) {
+    // The ringed one's fill is read inside its ring, so every node's is the active pin's fill.
+    expect(near(picked[n]!.fill, active), `${n}: fill ${picked[n]!.fill} is the active ${active}`).toBe(true);
+    if (n === shown) continue;
+    expect(near(picked[n]!.edge, picked['Logic']!.edge, 12), `${n}: edge ${picked[n]!.edge} as a Logic node's ${picked['Logic']!.edge}`).toBe(true);
+    expect(near(picked[n]!.edge, rest[n]!.edge, 30), `${n}: picked edge differs from its rest ${rest[n]!.edge}`).toBe(false);
+  }
+  // At rest each keeps its own: Sources and Output are not the active fill.
+  for (const n of ['Sources', 'Custom Nodes', 'Output', 'Logic']) expect(near(rest[n]!.fill, active), `${n} at rest`).toBe(false);
+  // The panel's node, by its tab: the same accent ring, whichever category.
+  const ring = await inkOf(page, '--sherpa-theme-border-accent-2');
+  for (const [i, n] of names.entries()) {
+    const tab = await page.locator('#inspector sherpa-tabs').evaluate((el, k) => { const r = el.shadowRoot!.querySelectorAll('.tab')[k]!.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; }, i);
+    await page.mouse.click(tab.x, tab.y);
+    await page.mouse.move(2, 2);
+    await page.evaluate(() => window.__settled());
+    await expect(page.locator('#cv > sherpa-node[data-active]')).toHaveAttribute('data-heading', n);
+    const got = await look(page, n);
+    expect(near(got.ring, ring, 24), `${n}: ringed ${got.ring}, the accent ${ring}`).toBe(true);
+  }
+  // The first, out of the panel now, has the same edge as the rest.
+  const first = await look(page, shown!);
+  expect(near(first.edge, picked['Logic']!.edge, 12), `${shown}: edge ${first.edge} as a Logic node's ${picked['Logic']!.edge}`).toBe(true);
+});
+
+test('756: in forced colours a picked node of every category is edged in Highlight', async ({ page, browserName }) => {
+  test.skip(browserName === 'webkit', 'WebKit cannot emulate forced colours');
+  await page.emulateMedia({ forcedColors: 'active' });
+  await bindCategories(page);
+  // Highlight as the page paints it: a square of it, read as pixels.
+  await page.evaluate(() => document.body.insertAdjacentHTML('beforeend', '<div id="hl" style="position: fixed; inset: 0 auto auto 0; inline-size: 8px; block-size: 8px; background: Highlight"></div>'));
+  const [highlight] = await paint(page, { x: 0, y: 0, w: 8, h: 8 }, [[.5, .5]]);
+  await page.mouse.move(2, 2);
+  const rest = await look(page, 'Sources');
+  expect(near(rest.edge, highlight!, 60)).toBe(false);
+  await page.keyboard.down('Shift');
+  for (const n of Object.keys(CATS)) {
+    const b = (await page.locator(`#cv > sherpa-node[data-heading="${n}"]`).boundingBox())!;
+    await page.mouse.click(b.x + b.width / 2, b.y + 6);
+  }
+  await page.keyboard.up('Shift');
+  await page.mouse.move(2, 2);
+  await page.evaluate(() => window.__settled());
+  const shown = await page.locator('#cv > sherpa-node[data-active]').getAttribute('data-heading');
+  for (const n of Object.keys(CATS)) {
+    const { edge } = await look(page, n);
+    // The panel's node is ringed in its forced colour instead.
+    if (n !== shown) expect(near(edge, highlight!, 60), `${n} edged ${edge} in Highlight ${highlight}`).toBe(true);
+  }
+});
