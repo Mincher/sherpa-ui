@@ -288,7 +288,7 @@ test('a fork shows its footer with False in red, and True on the header in green
   expect(await rectOf(page, 'plain', 'false')).toBeNull();
   expect(await page.evaluate(() => getComputedStyle(document.querySelector('#plain')!.shadowRoot!.querySelector('.footer')!).display)).toBe('none');
 
-  await socketNode(page, 'fork', 'data-branches data-output-routed data-false-routed');
+  await socketNode(page, 'fork', 'data-branches data-output-socket="boolean" data-output-routed data-false-routed');
   const [yes] = await paint(page, boxOf((await rectOf(page, 'fork', 'output'))!), [[.5, .5]]);
   const [no] = await paint(page, boxOf((await rectOf(page, 'fork', 'false'))!), [[.5, .5]]);
   expect(near(yes!, success), 'True is green').toBe(true);
