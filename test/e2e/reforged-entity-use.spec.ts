@@ -52,7 +52,7 @@ const bind = (page: Page) => page.evaluate(async () => {
     session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-panel') as never,
     header: document.getElementById('trail') as never, confirm: document.getElementById('confirm') as never, kinds, library, entity: outer,
     onSaveNode: (id: string, d: unknown) => (w['savedNodes'] as unknown[]).push([id, d]),
-    fields: { status: { label: 'Status' } }, stores: ['customers'], values: { status: ['active', 'trial', 'lead'] },
+    fieldsOf: { customers: { status: { label: 'Status', values: ['active', 'trial', 'lead'] } } }, stores: ['customers'],
   });
   await window.__settled();
   await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));

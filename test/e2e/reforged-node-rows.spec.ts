@@ -37,7 +37,8 @@ const BIND = `async (routes, OWN = false) => {
   ], routes: [{ from: 'start/rows', to: 'status' }, { from: 'status/field', to: 'filter' }, ...routes] };
   window.editor = bindWorkflow(canvas, flow, {
     session: new SessionStore(), inspector: document.getElementById('inspector'), kinds,
-    fields: { status: { label: 'Status' }, plan: { label: 'Plan' }, name: { label: 'Name' } }, stores: ['customers'],
+    // The Tags kind takes no rows in: its field list is the customers' (rowsFrom), as no Source reaches it (TODO 817).
+    fieldsOf: { customers: { status: { label: 'Status' }, plan: { label: 'Plan' }, name: { label: 'Name' } } }, stores: ['customers'], rowsFrom: 'customers',
   });
   window.saved = [];
   document.addEventListener('definition-save', (e) => window.saved.push(e.detail.definition));

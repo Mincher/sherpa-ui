@@ -46,7 +46,7 @@ async function bind(page: Page, flow: object): Promise<void> {
     const canvas = document.querySelector('#root sherpa-layout-canvas') as HTMLElement & { zoomTo(z: number): void; panTo(x: number, y: number): void };
     (window as never as { ed: unknown }).ed = bindWorkflow(canvas as never, given as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-panel') as never,
-      fields: { status: { label: 'Status' } }, stores: ['customers'],
+      fieldsOf: { customers: { status: { label: 'Status' } } }, stores: ['customers'],
     });
     (window as never as { saved: unknown[] }).saved = [];
     document.addEventListener('definition-save', (e) => (window as never as { saved: unknown[] }).saved.push((e as CustomEvent<{ definition: unknown }>).detail.definition));

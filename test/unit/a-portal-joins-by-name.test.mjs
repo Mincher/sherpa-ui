@@ -21,7 +21,7 @@ const { conditionAt, nodeFlow } = await import(new URL('node-flow.js', core));
 const { presetOfEntity } = await import(new URL('preset-filter.js', core));
 const { groupNodes, ungroupUse } = await import(new URL('node-group.js', core));
 
-const facts = { fields: { status: { label: 'Status' }, plan: { label: 'Plan' }, seats: { label: 'Seats', type: 'number' } } };
+const facts = { fieldsOf: { customers: { status: { label: 'Status' }, plan: { label: 'Plan' }, seats: { label: 'Seats', type: 'number' } } } };
 const store = (id = 's', name = 'customers', y = 0) => ({ id, kind: 'source', x: 0, y, values: { store: name } });
 const portal = (id, type, name, x = 300, y = 0) => ({ id, kind: 'portal', x, y, values: { type, ...(name ? { name } : {}) } });
 const field = (id, name, x = 600, y = 0) => ({ id, kind: 'field', x, y, values: { field: name } });
@@ -109,7 +109,7 @@ test('many-to-1: into an input that takes several, each is one part; into one th
   const rows = flow([store('s1'), store('s2', 'devices', 300), portal('i1', 'in', 'rows'), portal('i2', 'in', 'rows', 300, 300), portal('o', 'out', 'rows', 600), field('f', 'status', 900)],
     [{ from: 's1/rows', to: 'i1' }, { from: 's2/rows', to: 'i2' }, { from: 'o', to: 'f' }]);
   assert.deepEqual(said(workflowGraph(rows, facts)), { f: [['', 'Field takes one route; 2 reach it through the portal "rows"']] });
-  assert.equal(sentFrom(rows, 'f/field', facts).kind, 'field');
+  assert.equal(sentFrom(rows, 'f/field', facts), undefined, 'no rows read: it sends nothing (TODO 817)');
   assert.deepEqual(workflowFaults(rows, undefined, facts), []);
 });
 
@@ -177,7 +177,7 @@ const straightFilter = {
 };
 
 test('a Preset Filter through a portal compiles to the same preset as the one routed straight', () => {
-  const [a, b] = [presetOfEntity(throughPortal, { fields: facts.fields }), presetOfEntity(straightFilter, { fields: facts.fields })];
+  const [a, b] = [presetOfEntity(throughPortal, facts), presetOfEntity(straightFilter, facts)];
   assert.ok('preset' in a, JSON.stringify(a));
   assert.deepEqual(a.preset.where, b.preset.where);
   assert.deepEqual(a.preset.where, { status: { eq: 'active' } });
@@ -186,7 +186,7 @@ test('a Preset Filter through a portal compiles to the same preset as the one ro
     nodes: [...straightFilter.graph.nodes, portal('wi', 'in', 'where', 1500), portal('wo', 'out', 'where', 1800)],
     routes: [...straightFilter.graph.routes.filter((r) => r.to !== '#out/where'), { from: 'status', to: 'wi' }, { from: 'wo', to: '#out/where' }],
   } };
-  assert.deepEqual(presetOfEntity(where, { fields: facts.fields }).preset.where, b.preset.where);
+  assert.deepEqual(presetOfEntity(where, facts).preset.where, b.preset.where);
 });
 
 test('Save writes the portals and their routes, and they read back the same', () => {

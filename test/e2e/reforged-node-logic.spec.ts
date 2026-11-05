@@ -37,7 +37,7 @@ test.beforeEach(async ({ page }) => {
     ] };
     const w = window as unknown as { editor: unknown; saved: unknown[]; __settled(): Promise<void> };
     w.editor = bindWorkflow(document.querySelector('#root sherpa-layout-canvas') as never, flow as never, {
-      session: new SessionStore(), inspector: document.getElementById('inspector') as never, fields: { status: { label: 'Status' } }, stores: ['customers'],
+      session: new SessionStore(), inspector: document.getElementById('inspector') as never, fieldsOf: { customers: { status: { label: 'Status' } } }, stores: ['customers'],
     } as never);
     w.saved = [];
     document.addEventListener('definition-save', (e) => w.saved.push((e as CustomEvent<{ definition: unknown }>).detail.definition));

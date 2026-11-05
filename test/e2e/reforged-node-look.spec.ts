@@ -195,7 +195,7 @@ const BIND = `async () => {
   ], routes: [{ from: 'start/rows', to: 'sort' }] };
   const canvas = document.getElementById('cv');
   window.ed = bindWorkflow(canvas, flow, { session: new SessionStore(), toolbar: canvas.querySelector('sherpa-node-toolbar'),
-    fields: { status: { label: 'Status' } }, stores: ['users'], values: { status: ['active'] } });
+    fieldsOf: { users: { status: { label: 'Status', values: ['active'] } } }, stores: ['users'] });
   await window.__settled();
   canvas.zoomTo(0.8);
   canvas.panTo(40, 60);

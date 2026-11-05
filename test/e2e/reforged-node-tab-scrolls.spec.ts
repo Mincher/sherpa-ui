@@ -26,7 +26,7 @@ test.beforeEach(async ({ page }) => {
       { id: 'c', kind: 'condition', x: 640, y: 0, heading: 'Check', values: { type: 'eq' } },
     ], routes: [{ from: 'start/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'value/value', to: 'c/b' }] };
     bindWorkflow(el as never, flow as never, {
-      session: new SessionStore(), inspector: panel as never, fields: { status: { label: 'Status' } }, stores: ['customers'],
+      session: new SessionStore(), inspector: panel as never, fieldsOf: { customers: { status: { label: 'Status' } } }, stores: ['customers'],
     } as never);
     await window.__settled();
   });

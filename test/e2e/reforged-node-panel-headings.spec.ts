@@ -55,7 +55,7 @@ test.beforeEach(async ({ page }) => {
     (window as unknown as { ed: unknown }).ed = bindWorkflow(canvas as never, flow as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-panel') as never,
       toolbar: canvas.querySelector('sherpa-node-toolbar') as never, customDialog: document.getElementById('custom') as never, library: structuredClone(library) as never,
-      fields: { status: { label: 'Status' } }, stores: ['customers'], values: { status: ['active', 'trial'] },
+      fieldsOf: { customers: { status: { label: 'Status', values: ['active', 'trial'] } } }, stores: ['customers'],
     });
     await window.__settled();
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));

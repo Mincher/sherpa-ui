@@ -81,7 +81,7 @@ const bind = (page: Page) => page.evaluate(async () => {
     session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-panel') as never,
     toolbar: canvas.querySelector('sherpa-node-toolbar') as never, customDialog: document.getElementById('custom') as never, header: document.getElementById('trail') as never, confirm: document.getElementById('confirm') as never, library: library as never,
     onSaveNode: (id: string, d: unknown) => (w['savedNodes'] as unknown[]).push([id, d]),
-    fields: { status: { label: 'Status' }, role: { label: 'Role' } }, stores: ['users'], values: { status: ['active', 'trial'] },
+    fieldsOf: { users: { status: { label: 'Status', values: ['active', 'trial'] }, role: { label: 'Role' } } }, stores: ['users'],
   });
   await window.__settled();
   await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
@@ -405,7 +405,7 @@ test('inside, a picklist row routed from the Group Input, which sends nothing ye
     const flow = { v: 2, id: 'g774', nodes: [useOf(library as never, 'has-status', { id: 'has', x: 200, y: 100 })], routes: [] };
     (window as unknown as Record<string, unknown>)['ed'] = bindWorkflow(document.getElementById('cv') as never, flow as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, header: document.getElementById('trail') as never, library: library as never,
-      fields: { status: { label: 'Status' } }, stores: ['users'], values: { status: ['active', 'trial'] },
+      fieldsOf: { users: { status: { label: 'Status', values: ['active', 'trial'] } } }, stores: ['users'],
     });
     await window.__settled();
   });
@@ -482,7 +482,7 @@ test('a saved edit reaches a saved edit reaches a second tab: its uses show the 
     const library = { v: 1, nodes: { ...w.ed.library().nodes } };
     const flow = structuredClone(w.saved.at(-1)) as never;
     // The library the second tab opens on is the app's: the OLD definition until the save arrives.
-    (window as unknown as { ed2: unknown }).ed2 = bindWorkflow(two as never, flow, { session: new SessionStore(), library: { v: 1, nodes: { ...library.nodes, 'org-permissions': (window as unknown as { ORG: unknown }).ORG } } as never, fields: { role: { label: 'Role' } }, stores: ['users'] });
+    (window as unknown as { ed2: unknown }).ed2 = bindWorkflow(two as never, flow, { session: new SessionStore(), library: { v: 1, nodes: { ...library.nodes, 'org-permissions': (window as unknown as { ORG: unknown }).ORG } } as never, fieldsOf: { users: { role: { label: 'Role' } } }, stores: ['users'] });
     await window.__settled();
   });
   const caps = () => page.locator('#cv2 > sherpa-node[data-heading="Org permissions"]').evaluateAll((els) => els.map((e) => e.getAttribute('data-caption')));

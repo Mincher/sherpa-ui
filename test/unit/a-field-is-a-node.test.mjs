@@ -17,7 +17,9 @@ const { NODE_KINDS, kindIn, paletteOf } = await import(new URL('node-kinds.js', 
 const { columnOf, fieldWords, readInput } = await import(new URL('node-input.js', core));
 const { sentFrom, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 
-const facts = { fields: { status: { label: 'Status' }, seats: { label: 'Seats', type: 'number' }, joined: { label: 'Joined', type: 'date' } } };
+const fields = { status: { label: 'Status' }, seats: { label: 'Seats', type: 'number' }, joined: { label: 'Joined', type: 'date' } };
+// Each store's fields: a Field reads those of the Source its rows come from (TODO 817).
+const facts = { fieldsOf: { customers: fields } };
 const store = { id: 's', kind: 'source', x: 0, y: 0, values: { store: 'customers' } };
 const field = (id, name) => ({ id, kind: 'field', x: 300, y: 0, ...(name ? { values: { field: name } } : {}) });
 const flow = (nodes, routes) => ({ v: 2, id: 'w', nodes, routes });
@@ -45,9 +47,9 @@ test('Store → Field sends a column, { rows, field }: the field\'s name, words 
   assert.deepEqual(said(g), {});
   // Its list is OPEN: the source's fields, and its own pick where they lack it.
   assert.deepEqual(at(g, 'f').rows[0].choices.map((c) => c.value), ['status', 'seats', 'joined']);
-  // None typed is a text field; with nothing in, it still says its column.
+  // None typed is a text field; with no Source's rows in, it sends nothing (TODO 817).
   assert.equal(fieldWords({ name: 'status', label: 'Status' }), 'Status: a text field');
-  assert.deepEqual(sentFrom(flow([field('f', 'status')], []), 'f/field', facts), { kind: 'field', field: { name: 'status', label: 'Status' } });
+  assert.equal(sentFrom(flow([field('f', 'status')], []), 'f/field', facts), undefined);
   // A Value routed into its Field row drives the pick, marked Custom (D7 of plan 713).
   const driven = flow([store, field('f', 'status'), { id: 'v', kind: 'value', x: 0, y: 200, values: { value: 'joined' } }], [{ from: 's/rows', to: 'f' }, { from: 'v/value', to: 'f/field' }]);
   assert.equal(sentFrom(driven, 'f/field', facts).field.name, 'joined');
@@ -79,8 +81,8 @@ test('a column is no ONE value: Add\'s Value A warns, unless one record came in,
   const w = flow([store, field('f', 'seats'), add], [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'add/a' }]);
   assert.deepEqual(said(workflowGraph(w, facts)), { add: [['a', 'Value A takes a number; it was given the Seats column']] });
   // One record: an object that is not rows. Its Field sends the value, a number for a number field.
-  const kinds = { ...NODE_KINDS, record: { heading: 'Record', icon: 'flag', rows: [{ name: 'out', label: 'Record', output: 'object' }], model: 'record', graphs: ['workflow'] } };
-  const one = flow([{ id: 'r', kind: 'record', x: 0, y: 0 }, field('f', 'seats'), add], [{ from: 'r/out', to: 'f' }, { from: 'f/field', to: 'add/a' }]);
+  const kinds = { ...NODE_KINDS, record: { heading: 'Record', icon: 'flag', input: 'any', rows: [{ name: 'out', label: 'Record', output: 'object' }], model: 'record', graphs: ['workflow'] } };
+  const one = flow([store, { id: 'r', kind: 'record', x: 0, y: 0 }, field('f', 'seats'), add], [{ from: 's/rows', to: 'r' }, { from: 'r/out', to: 'f' }, { from: 'f/field', to: 'add/a' }]);
   assert.deepEqual(sentFrom(one, 'f/field', facts, kinds), { kind: 'number' });
   assert.deepEqual(said(workflowGraph(one, facts, kinds)), {});
   assert.deepEqual(columnOf({ name: 'status' }, { kind: 'object' }), { kind: 'value' });
@@ -91,7 +93,7 @@ test('what it cannot use warns and sends nothing: a Value into its header, a fie
   const avg = { id: 'avg', kind: 'math', x: 600, y: 0, values: { type: 'average' } };
   const value = { id: 'v', kind: 'value', x: 0, y: 0, values: { value: 'active' } };
   const header = flow([value, field('f', 'seats'), avg], [{ from: 'v/value', to: 'f' }, { from: 'f/field', to: 'avg/values' }]);
-  assert.deepEqual(said(workflowGraph(header, facts)), { f: [['', 'Field takes an object; it was given "active"']] }, 'nothing reaches the Average');
+  assert.deepEqual(said(workflowGraph(header, facts)), { f: [['', 'Field takes an object; it was given "active"']] }, 'nothing reaches the Average; its header\'s is the one warning');
   assert.equal(sentFrom(header, 'f/field', facts), undefined);
   const stranger = flow([store, field('f', 'nope'), avg], [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'avg/values' }]);
   const g = workflowGraph(stranger, facts);
@@ -109,9 +111,10 @@ test('Sort, Group by and Tag › Includes take a Field on their header, and have
   for (const n of nodes.slice(2)) assert.ok(!workflowGraph(flow([n], [])).nodes[0].rows.some((r) => r.name === 'field'), `${n.id} has no Field row`);
   const fed = flow(nodes, [{ from: 's/rows', to: 'f' }, ...['sort', 'group', 'count', 'tag'].map((to) => ({ from: 'f/field', to }))]);
   assert.deepEqual(said(workflowGraph(fed, facts)), {}, 'each takes the Field');
-  // Rows with no Field: Sort, Group by and Tag warn, and say what to route; Count counts them.
+  // Rows with no Field: Sort, Group by and Tag warn, and say what to route; Count counts them. The Field, no Source in, says so.
   const bare = flow(nodes, ['sort', 'group', 'count', 'tag'].map((to) => ({ from: 's/rows', to })));
   assert.deepEqual(said(workflowGraph(bare, facts)), {
+    f: [['field', 'No store\'s rows come in: route a Source in']],
     sort: [['', 'Sort takes a field; it was given rows: route a Field in']],
     group: [['', 'Group by takes a field; it was given rows: route a Field in']],
     tag: [['', 'Tag takes a field; it was given rows: route a Field in']],
@@ -119,7 +122,7 @@ test('Sort, Group by and Tag › Includes take a Field on their header, and have
   // Each passes the rows on from its Rows row, as the Field carries them.
   for (const id of ['sort', 'group', 'tag']) assert.deepEqual(sentFrom(fed, `${id}/rows`, facts), { kind: 'rows' }, id);
   // A Tag's closed list is the Field's values: free with none known, closed where they are.
-  const values = { ...facts, values: { status: ['active', 'trial'] } };
+  const values = { fieldsOf: { customers: { ...fields, status: { label: 'Status', values: ['active', 'trial'] } } } };
   const tags = (f) => workflowGraph(fed, f).nodes.find((n) => n.id === 'tag').rows.find((r) => r.name === 'value');
   assert.deepEqual([tags(facts).closed, tags(values).closed, tags(values).choices.map((c) => c.value)], [undefined, true, ['active', 'trial']]);
   const stranger = { ...fed, nodes: fed.nodes.map((n) => (n.id === 'tag' ? { ...n, values: { value: ['gold'] } } : n)) };

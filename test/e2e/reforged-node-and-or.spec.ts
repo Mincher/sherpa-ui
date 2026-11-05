@@ -29,7 +29,7 @@ test.beforeEach(async ({ page }) => {
       routes: [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'c', to: 'or' }, { from: 'one/value', to: 'or' }],
     };
     const w = window as unknown as Record<string, unknown>;
-    w['ed'] = bindWorkflow(el as never, flow as never, { session: new SessionStore(), inspector: panel as never, stores: ['users'], fields: { status: { label: 'Status' } } });
+    w['ed'] = bindWorkflow(el as never, flow as never, { session: new SessionStore(), inspector: panel as never, stores: ['users'], fieldsOf: { users: { status: { label: 'Status' } } } });
     (el as unknown as { zoomTo(z: number): void; panTo(x: number, y: number): void }).zoomTo(1);
     (el as unknown as { panTo(x: number, y: number): void }).panTo(0, 0);
     await window.__settled();
@@ -54,7 +54,7 @@ const drag = async (page: Page, from: [number, number], to: [number, number]) =>
 const where = (page: Page) => page.evaluate(async () => {
   const { nodeFlow, workflowGraph } = await import('/dist/data.js');
   const ed = (window as unknown as { ed: { workflow(): unknown } }).ed;
-  return (nodeFlow(workflowGraph(ed.workflow() as never, { fields: { status: { label: 'Status' } } }), 'or') as { definition?: { where?: unknown } }).definition?.where;
+  return (nodeFlow(workflowGraph(ed.workflow() as never, { fieldsOf: { users: { status: { label: 'Status' } } } }), 'or') as { definition?: { where?: unknown } }).definition?.where;
 });
 
 test('a Value\'s 1 into Or is a constant part: no warning, and Status or 1 always holds; switched to And, it drops out', async ({ page }) => {

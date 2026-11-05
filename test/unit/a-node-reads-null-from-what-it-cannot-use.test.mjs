@@ -22,9 +22,11 @@ const { kindsOf, useOf } = await import(new URL('node-library.js', core));
 const { libraryOf } = await import(new URL('entity-types.js', core));
 const data = await import(new URL('../../data.js', core));
 
-const facts = { fields: { status: { label: 'Status' }, seats: { label: 'Seats', type: 'number' }, joined: { label: 'Joined', type: 'date' } } };
+const facts = { fieldsOf: { users: { status: { label: 'Status' }, seats: { label: 'Seats', type: 'number' }, joined: { label: 'Joined', type: 'date' } } } };
 const value = (id, v, type) => ({ id, kind: 'value', x: 0, y: 0, values: { ...(type ? { type } : {}), ...(v === undefined ? {} : { value: v }) } });
 const store = { id: 's', kind: 'source', x: 0, y: 200, values: { store: 'users' } };
+/** A Field no Source's rows reach: it offers nothing, and says so (TODO 817). */
+const lone = ['field', 'No store\'s rows come in: route a Source in'];
 const flow = (nodes, routes) => ({ v: 2, id: 'w', nodes, routes });
 const drawn = (w, f = facts, kinds) => workflowGraph(w, f, kinds);
 const at = (g, id) => g.nodes.find((n) => n.id === id);
@@ -44,6 +46,7 @@ test('an ANY header reads what its kind needs: a comparison a field or a value, 
     { from: 's/rows', to: 'c' }, { from: 's', to: 'col' }, { from: 'v', to: 'tag' }, { from: 's/#false', to: 'p' }, { from: 's/rows', to: 't' }, { from: 'v/value', to: 'end' },
   ]);
   assert.deepEqual(said(drawn(wrong)), {
+    fld: [lone],
     c: [['', 'Equals takes a field or a value; it was given rows: route a Field in']],
     col: [['', 'Count takes rows; it was given a boolean']],
     tag: [['', 'Tag takes a field; it was given a boolean']],
@@ -55,8 +58,8 @@ test('an ANY header reads what its kind needs: a comparison a field or a value, 
     { from: 's/rows', to: 'fld' }, { from: 'fld/field', to: 'c' }, { from: 'c/rows', to: 'col' }, { from: 'fld/field', to: 'tag' }, { from: 's/rows', to: 'p' }, { from: 'd/value', to: 't' }, { from: 's', to: 'end' },
   ]);
   assert.deepEqual(said(drawn(right)), {});
-  assert.deepEqual(said(drawn(flow(nodes, [{ from: 's/rows', to: 'tag' }]))), { tag: [['', 'Tag takes a field; it was given rows: route a Field in']] });
-  assert.deepEqual(said(drawn(flow(nodes, [{ from: 'v/value', to: 'c' }]))), {}, 'a value is tested too');
+  assert.deepEqual(said(drawn(flow(nodes, [{ from: 's/rows', to: 'tag' }]))), { fld: [lone], tag: [['', 'Tag takes a field; it was given rows: route a Field in']], p: [lone] });
+  assert.deepEqual(said(drawn(flow(nodes, [{ from: 'v/value', to: 'c' }]))), { fld: [lone], p: [lone] }, 'a value is tested too');
   // A node's own name is the one a warning names.
   const named = flow([store, { id: 'c', kind: 'condition', x: 300, y: 0, heading: 'Has role' }], [{ from: 's/rows', to: 'c' }]);
   assert.deepEqual(said(drawn(named)), { c: [['', 'Has role takes a field or a value; it was given rows: route a Field in']] });
@@ -105,8 +108,8 @@ test('a comparison\'s Value B reads by the Field on its header: a number field t
   [...fed, { from: 'abc/value', to: 'c1/b' }, { from: 'abc/value', to: 'c2/b' }, { from: 'n/value', to: 'c3/b' }, { from: 'abc/value', to: 'c4/b' }]);
   assert.deepEqual(said(drawn(w)), { c1: [['b', 'Value B takes a number; it was given "abc"']], c2: [['b', 'Value B takes a date; it was given "abc"']] });
   assert.deepEqual(said(drawn(flow(w.nodes, [...fed, { from: 'day/value', to: 'c2/b' }]))), {});
-  // With no Field on its header, Value B takes any value.
-  assert.deepEqual(said(drawn(flow(w.nodes, [{ from: 'abc/value', to: 'c1/b' }]))), {});
+  // With no Field on its header, Value B takes any value; the Fields, no Source in, say so.
+  assert.deepEqual(said(drawn(flow(w.nodes, [{ from: 'abc/value', to: 'c1/b' }]))), { seats: [lone], joined: [lone], status: [lone] });
 });
 
 test('an unconnected row with no value is not invalid input: no warning; nor is a route from a source that holds nothing', () => {
@@ -117,8 +120,8 @@ test('an unconnected row with no value is not invalid input: no warning; nor is 
   const empty = flow([value('v', undefined, 'text'), { id: 'm', kind: 'math', x: 300, y: 0, values: { a: 3 } }], [{ from: 'v/value', to: 'm/a' }]);
   assert.deepEqual([said(drawn(empty)), row(drawn(empty), 'm', 'a').value], [{}, 3]);
   // What a node works out is known only when it runs: a Text's Result in Value A may read as a number.
-  const later = flow([{ id: 'x', kind: 'text', x: 0, y: 0 }, { id: 'p', kind: 'field', x: 0, y: 200 }, { id: 'm', kind: 'math', x: 300, y: 0 }, { id: 't', kind: 'time', x: 300, y: 200 }],
-    [{ from: 'x/result', to: 'm/a' }, { from: 'p/field', to: 't' }]);
+  const later = flow([store, { id: 'x', kind: 'text', x: 0, y: 0 }, { id: 'p', kind: 'field', x: 0, y: 200 }, { id: 'm', kind: 'math', x: 300, y: 0 }, { id: 't', kind: 'time', x: 300, y: 200 }],
+    [{ from: 's/rows', to: 'p' }, { from: 'x/result', to: 'm/a' }, { from: 'p/field', to: 't' }]);
   assert.deepEqual(said(drawn(later)), {});
 });
 

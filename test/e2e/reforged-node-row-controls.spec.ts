@@ -39,7 +39,7 @@ const BIND = `async (routes, plan = [], status = ['active'], start = '2024-01-12
   ], routes: [{ from: 'fp/field', to: 'p' }, { from: 'fs/field', to: 's' }, ...routes] };
   window.editor = bindWorkflow(canvas, flow, {
     session: new SessionStore(), inspector: document.getElementById('inspector'),
-    fields: { status: { label: 'Status' }, plan: { label: 'Plan' } }, values: { status: ['active', 'trial'] },
+    fieldsOf: { customers: { status: { label: 'Status', values: ['active', 'trial'] }, plan: { label: 'Plan' } } }, rowsFrom: 'customers',
   });
   window.saved = [];
   document.addEventListener('definition-save', (e) => window.saved.push(e.detail.definition));

@@ -31,7 +31,7 @@ const BIND = `async () => {
   const flow = { v: 2, id: 'g', nodes: [{ id: 'start', kind: 'source', x: 420, y: 40, values: { store: 'customers' } }], routes: [] };
   window.editor = bindWorkflow(canvas, flow, {
     session: new SessionStore(), inspector: document.getElementById('inspector'), panel: canvas.querySelector('sherpa-node-panel'),
-    fields: { status: { label: 'Status' } }, stores: ['customers'], values: { status: ['active', 'trial'] },
+    fieldsOf: { customers: { status: { label: 'Status', values: ['active', 'trial'] } } }, stores: ['customers'],
   });
   window.saved = [];
   document.addEventListener('definition-save', (e) => window.saved.push(e.detail.definition));

@@ -35,8 +35,7 @@ const BIND = `async (routes) => {
   ], routes: routes ?? [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }] };
   window.editor = bindWorkflow(canvas, flow, {
     session: new SessionStore(), inspector: document.getElementById('inspector'),
-    fields: { status: { label: 'Status' }, plan: { label: 'Plan' } }, stores: ['customers'],
-    values: { status: ['active', 'trial', 'churned'] },
+    fieldsOf: { customers: { status: { label: 'Status', values: ['active', 'trial', 'churned'] }, plan: { label: 'Plan' } } }, stores: ['customers'],
   });
   window.saved = [];
   document.addEventListener('definition-save', (e) => window.saved.push(e.detail.definition));

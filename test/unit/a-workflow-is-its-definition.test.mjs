@@ -167,7 +167,9 @@ test('an app adds its own kind beside the library\'s', () => {
 });
 
 const fields = { status: { label: 'Status' }, seats: { label: 'Seats', type: 'number' } };
-const graph = workflowGraph(good, { fields, stores: ['customers'] });
+// The fields of each store: the Field reads those of its Source's, customers (TODO 817).
+const fieldsOf = { customers: fields };
+const graph = workflowGraph(good, { fieldsOf, stores: ['customers'] });
 const node = (id) => graph.nodes.find((n) => n.id === id);
 const row = (id, name, g = graph) => g.nodes.find((n) => n.id === id).rows.find((r) => r.name === name);
 
@@ -179,15 +181,15 @@ test('a workflow DRAWS as its kinds say: each node at its place, its rows with i
   // Source › Field › Condition › Output (plan 783): the Condition tests the Field on its header, Value B the Value routed in.
   assert.deepEqual(node('filter').rows.map((r) => [r.name, r.value, !!r.editable]), [['type', 'eq', true], ['rows', undefined, false], ['b', 'active', true]]);
   assert.deepEqual([node('filter').input, node('filter').branches, row('filter', 'rows').output, row('filter', 'rows').input], ['any', true, 'object', undefined]);
-  // The Field's list is the facts' fields; its row says its field and type.
+  // The Field's list is its Source's store's fields; its row says its field and type.
   assert.deepEqual([row('field', 'field').choices, row('field', 'field').hint], [[{ value: 'status', label: 'Status' }, { value: 'seats', label: 'Seats' }], 'Status: a text field']);
   assert.deepEqual(row('filter', 'type').choices.slice(0, 3).map((c) => c.label), ['And', 'Or', 'Greater than']);
   assert.deepEqual(row('start', 'store').choices, [{ value: 'customers', label: 'customers' }]);
   // An operator the field's type does not take warns; the Field on Seats takes it.
   const greater = editWorkflow(good, { node: 'filter', row: 'type', value: 'gt' });
-  assert.deepEqual(workflowGraph(greater, { fields }).nodes.find((n) => n.id === 'filter').warnings, [{ words: 'Greater than takes a number or date field; it was given the Status column' }]);
+  assert.deepEqual(workflowGraph(greater, { fieldsOf }).nodes.find((n) => n.id === 'filter').warnings, [{ words: 'Greater than takes a number or date field; it was given the Status column' }]);
   // On Seats it takes Greater than, and Value B takes a number: the Value's "active" warns.
-  const numbered = workflowGraph(editWorkflow(greater, { node: 'field', row: 'field', value: 'seats' }), { fields });
+  const numbered = workflowGraph(editWorkflow(greater, { node: 'field', row: 'field', value: 'seats' }), { fieldsOf });
   assert.deepEqual(numbered.nodes.find((n) => n.id === 'filter').warnings, [{ row: 'b', words: 'Value B takes a number; it was given "active"' }]);
 });
 
@@ -212,14 +214,14 @@ test('each edit is a pure function: a value typed as its row takes it, a place, 
 
 test('SAVE round-trips: definition → graph → edit → definition, checked, and the edit is in it', () => {
   // The reader picks "Does not equal" as the drawn Condition's Operation.
-  const drawn = workflowGraph(good, { fields });
+  const drawn = workflowGraph(good, { fieldsOf });
   const filter = drawn.nodes.find((n) => n.id === 'filter');
   const op = filter.rows.find((r) => r.name === 'type');
   const saved = editWorkflow(good, { node: filter.id, row: op.name, value: 'ne' });
   assert.deepEqual(schemaCheck('workflow.v2.json')(saved), []);
   assert.deepEqual(check(saved), { ok: true, heard: [] });
   assert.equal(saved.nodes.find((n) => n.id === 'filter').values.type, 'ne');
-  assert.equal(row('filter', 'type', workflowGraph(saved, { fields })).value, 'ne');
+  assert.equal(row('filter', 'type', workflowGraph(saved, { fieldsOf })).value, 'ne');
   // A v1 edited is saved as v2.
   assert.equal(editWorkflow(SAVED_AS_V1, { node: 'filter', row: 'type', value: 'ne' }).v, 2);
 });

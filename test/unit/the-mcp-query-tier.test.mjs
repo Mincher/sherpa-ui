@@ -219,7 +219,7 @@ test('edit_query_graph refuses a dangling node, a row no command takes and a rou
 });
 
 test('workflow_graph is workflowGraph with its faults and the kinds a workflow runs', { skip }, async () => {
-  const facts = { fields: records.source.fields, stores: ['customers'] };
+  const facts = { fieldsOf: { customers: records.source.fields }, stores: ['customers'] };
   const { bad, json } = await call('workflow_graph', { workflow, ...facts });
   assert.equal(bad, false);
   assert.deepEqual({ nodes: json.nodes, routes: json.routes }, JSON.parse(JSON.stringify(workflowGraph(workflow, facts))));

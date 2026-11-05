@@ -61,7 +61,7 @@ const BIND = `async (org) => {
   window.ed = bindWorkflow(canvas, flow, {
     session: new SessionStore(), inspector: document.getElementById('inspector'), panel: canvas.querySelector('sherpa-node-panel'),
     toolbar: canvas.querySelector('sherpa-node-toolbar'), customDialog: document.getElementById('custom'), breadcrumbs: document.getElementById('trail'), library,
-    fields: { status: { label: 'Status' }, role: { label: 'Role' } }, stores: ['users'], values: { status: ['active', 'trial'] },
+    fieldsOf: { users: { status: { label: 'Status', values: ['active', 'trial'] }, role: { label: 'Role' } } }, stores: ['users'],
   });
   await window.__settled();
   // The nodes sit right of the card, so a real pointer reaches them.

@@ -161,9 +161,9 @@ test('what has no preset form is said in words: Or across two fields, an empty v
   // A comparison of values, with no Field on its header, says no condition (776 D11).
   const values = filter('values', [{ id: 'v', kind: 'value', x: 0, y: 0, values: { value: '1' } }, test_('m', 'gt', '2')], [{ from: 'v/value', to: 'm' }, { from: 'm', to: '#out/where' }]);
   assert.deepEqual(presetOfEntity(values), { fault: 'the Preset Filter "values": "Condition" tests no Field: route one in' });
-  // A Field that sends nothing says why: a field the facts lack.
+  // A Field that sends nothing says why: a field its store lacks. With no Source, its rows are its settings' store's.
   const stranger = filter('stranger', [fieldNode('f', 'nope'), test_('c', 'eq', 'x')], [{ from: 'f/field', to: 'c' }, { from: 'c', to: '#out/where' }]);
-  assert.match(presetOfEntity(stranger, { fields: FIELDS }).fault, /"Condition" tests "Field", which sends nothing: "nope" is not a field of the rows that come in/);
+  assert.match(presetOfEntity(stranger, { fieldsOf: { customers: FIELDS } }).fault, /"Condition" tests "Field", which sends nothing: "nope" is not a field of the rows that come in/);
   const not = filter('not', [fieldNode('f', 'plan'), test_('c', 'not')], [{ from: 'f/field', to: 'c' }, { from: 'c', to: '#out/where' }]);
   assert.match(presetOfEntity(not).fault, /"Condition" is Not, which a condition cannot say yet/);
   const falsy = filter('falsy', [fieldNode('f', 'plan'), test_('c', 'eq', 'Pro')], [{ from: 'f/field', to: 'c' }, { from: 'c/#false', to: '#out/where' }]);

@@ -159,28 +159,30 @@ const seatsFlow = () => ({
   ],
 });
 const fields = { seats: { type: 'number' }, plan: { type: 'text' } };
+// The fields of the store the Source names: the Field reads them (TODO 817).
+const fieldsOf = { customers: fields };
 
 test('in a workflow, A or (B and C) is one Field into three Conditions, an And and an Or: each test one node, and no fault', () => {
   const w = seatsFlow();
-  assert.deepEqual(workflowFaults(w, NODE_KINDS, { fields }), []);
-  const g = workflowGraph(w, { fields });
+  assert.deepEqual(workflowFaults(w, NODE_KINDS, { fieldsOf }), []);
+  const g = workflowGraph(w, { fieldsOf });
   for (const id of ['a', 'b', 'c']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'rows', 'b'], id);
   for (const id of ['and', 'or']) assert.deepEqual(node(g, id).rows.map((r) => r.name), ['type', 'rows'], id);
   assert.ok(g.nodes.every((n) => !n.warnings), 'every route reads what it needs');
   // Each Condition's operators are the Field's type's; an edit types Value B by it.
-  assert.equal(editWorkflow(w, { node: 'a', row: 'b', value: '70' }, NODE_KINDS, { fields }).nodes.find((n) => n.id === 'a').values.b, 70);
-  assert.equal(editWorkflow(editWorkflow(w, { node: 'seats', row: 'field', value: 'plan' }), { node: 'a', row: 'b', value: '70' }, NODE_KINDS, { fields }).nodes.find((n) => n.id === 'a').values.b, '70');
+  assert.equal(editWorkflow(w, { node: 'a', row: 'b', value: '70' }, NODE_KINDS, { fieldsOf }).nodes.find((n) => n.id === 'a').values.b, 70);
+  assert.equal(editWorkflow(editWorkflow(w, { node: 'seats', row: 'field', value: 'plan' }), { node: 'a', row: 'b', value: '70' }, NODE_KINDS, { fieldsOf }).nodes.find((n) => n.id === 'a').values.b, '70');
 });
 
 test('a planted fault in each check: an operator the Field\'s type does not take warns; a value of the wrong type is a fault', () => {
   const sound = seatsFlow();
   const planted = (id, values) => ({ ...sound, nodes: sound.nodes.map((n) => (n.id === id ? { ...n, values: { ...n.values, ...values } } : n)) });
-  const warned = (w) => Object.fromEntries(workflowGraph(w, { fields }).nodes.filter((n) => n.warnings).map((n) => [n.id, n.warnings.map((x) => x.words)]));
-  assert.deepEqual([workflowFaults(planted('a', { type: 'contains' }), NODE_KINDS, { fields }), warned(planted('a', { type: 'contains' }))], [[], { a: ['Contains takes a text field; it was given the seats column'] }]);
-  assert.deepEqual(workflowFaults(planted('b', { b: 'many' }), NODE_KINDS, { fields }), ['the node "b" holds "many" as its Value B, which is no number, as "seats", a number field takes']);
-  assert.deepEqual(workflowFaults(planted('c', { type: 'in', b: ['5', '6'] }), NODE_KINDS, { fields }), [], 'Is one of takes a list of the type');
+  const warned = (w) => Object.fromEntries(workflowGraph(w, { fieldsOf }).nodes.filter((n) => n.warnings).map((n) => [n.id, n.warnings.map((x) => x.words)]));
+  assert.deepEqual([workflowFaults(planted('a', { type: 'contains' }), NODE_KINDS, { fieldsOf }), warned(planted('a', { type: 'contains' }))], [[], { a: ['Contains takes a text field; it was given the seats column'] }]);
+  assert.deepEqual(workflowFaults(planted('b', { b: 'many' }), NODE_KINDS, { fieldsOf }), ['the node "b" holds "many" as its Value B, which is no number, as "seats", a number field takes']);
+  assert.deepEqual(workflowFaults(planted('c', { type: 'in', b: ['5', '6'] }), NODE_KINDS, { fieldsOf }), [], 'Is one of takes a list of the type');
   // On a text Field, text takes what it is given.
-  assert.deepEqual(workflowFaults(planted('seats', { field: 'plan' }), NODE_KINDS, { fields }), [], 'text takes what it is given');
+  assert.deepEqual(workflowFaults(planted('seats', { field: 'plan' }), NODE_KINDS, { fieldsOf }), [], 'text takes what it is given');
   // A Condition has no row of a name its type has not; the Group row and the Join are gone (D4).
   assert.deepEqual(workflowFaults(planted('a', { colour: 'red' })), ['the node "a" holds a value for "colour", a row its kind has not']);
   assert.deepEqual(workflowFaults(planted('or', { join: 'or' })), ['the node "or" holds a value for "join", a row its kind has not']);

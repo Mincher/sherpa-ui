@@ -18,12 +18,13 @@ const { NODE_KINDS, kindOfNode, rowChoices, rowFault } = await import(new URL('n
 const { editWorkflow, finalGraph, keptRoutes, readWorkflow, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 const { queryGraph } = await import(new URL('query-graph.js', core));
 
-const facts = { fields: { status: { label: 'Status' }, plan: { label: 'Plan' }, seats: { label: 'Seats', type: 'number' } }, values: { status: ['active', 'trial'] } };
-/** A Condition `c` testing the Field `f` on `field`, with its values; more nodes and routes. */
+// The store's fields, Status with the values it takes: a Field reads its Source's (TODO 817).
+const facts = { fieldsOf: { customers: { status: { label: 'Status', values: ['active', 'trial'] }, plan: { label: 'Plan' }, seats: { label: 'Seats', type: 'number' } } } };
+/** A Condition `c` testing the Field `f` on `field`, its rows the Source `s`'s, with its values; more nodes and routes. */
 const flow = (field, values, more = [], routes = []) => ({
   v: 2, id: 'w',
-  nodes: [{ id: 'c', kind: 'condition', x: 300, y: 0, values }, { id: 'f', kind: 'field', x: 0, y: 0, values: { field } }, ...more],
-  routes: [{ from: 'f/field', to: 'c' }, ...routes],
+  nodes: [{ id: 'c', kind: 'condition', x: 300, y: 0, values }, { id: 'f', kind: 'field', x: 0, y: 0, values: { field } }, { id: 's', kind: 'source', x: -300, y: 0, values: { store: 'customers' } }, ...more],
+  routes: [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'c' }, ...routes],
 });
 const list = (value) => ({ id: 'l', kind: 'value', x: 0, y: 0, values: { type: 'list', value } });
 const row = (g, id, name) => g.nodes.find((n) => n.id === id).rows.find((r) => r.name === name);
@@ -100,7 +101,10 @@ test('PLANTED: a stranger in a closed list is a fault, held or brought, and the 
   // A number field's Value B is a number: the row's own fault.
   assert.deepEqual(workflowFaults(flow('seats', { type: 'gt', b: 'many' }), NODE_KINDS, facts), ['the node "c" holds "many" as its Value B, which is no number, as "seats", a number field takes']);
   // A Tag's Tags are the same: closed to the values of the Field on its header (plan 783 D5).
-  const tag = { v: 2, id: 'w', nodes: [{ id: 'g', kind: 'tag', x: 0, y: 0, values: { value: ['trial', 'x'] } }, { id: 'f', kind: 'field', x: 0, y: 0, values: { field: 'status' } }], routes: [{ from: 'f/field', to: 'g' }] };
+  const tag = {
+    v: 2, id: 'w', nodes: [{ id: 'g', kind: 'tag', x: 0, y: 0, values: { value: ['trial', 'x'] } }, { id: 'f', kind: 'field', x: 0, y: 0, values: { field: 'status' } }, { id: 's', kind: 'source', x: -300, y: 0, values: { store: 'customers' } }],
+    routes: [{ from: 's/rows', to: 'f' }, { from: 'f/field', to: 'g' }],
+  };
   assert.deepEqual(workflowFaults(tag, NODE_KINDS, facts), ['the node "g"\'s Tags: "x" is not a value of Status']);
   assert.deepEqual([row(workflowGraph(tag, facts), 'g', 'value').control, row(workflowGraph(tag, facts), 'g', 'value').closed], ['tags', true]);
   assert.equal(rowFault({ control: 'tags', closed: true, choices: [{ value: 'a', label: 'a' }] }, ['a']), undefined);

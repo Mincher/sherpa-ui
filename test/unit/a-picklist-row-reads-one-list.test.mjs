@@ -18,6 +18,9 @@ const { queryGraph } = await import(new URL('query-graph.js', core));
 const { innerOf } = await import(new URL('node-library.js', core));
 
 const fields = { status: { label: 'Status' }, seats: { label: 'Seats', type: 'number' } };
+// A store's fields, and the same with the values Status takes: a Field reads its Source's (TODO 817).
+const facts = { fieldsOf: { customers: fields } };
+const valued = { fieldsOf: { customers: { ...fields, status: { ...fields.status, values: ['active', 'trial'] } } } };
 const labels = (list) => list?.map((c) => c.label);
 
 const flow = (values = {}, extra = {}) => ({
@@ -33,7 +36,7 @@ const flow = (values = {}, extra = {}) => ({
   ...extra,
 });
 const routed = (values) => editWorkflow(flow(values), { route: { from: 'status/value', to: 'filter/b' } });
-const rowOf = (w, id, name, facts = { fields, values: { status: ['active', 'trial'] } }) => workflowGraph(w, facts).nodes.find((n) => n.id === id).rows.find((r) => r.name === name);
+const rowOf = (w, id, name, facts = valued) => workflowGraph(w, facts).nodes.find((n) => n.id === id).rows.find((r) => r.name === name);
 
 test('rowChoices gives each picklist its one list; a row that is no picklist has none', () => {
   assert.deepEqual(labels(rowChoices({ control: 'field' }, { fields })), ['Status', 'Seats']);
@@ -100,7 +103,7 @@ test('a Value node routed into a picklist OVERRIDES it: the row mirrors it, read
   const back = rowOf(cut, 'filter', 'b');
   assert.deepEqual([back.value, back.custom, back.hint], ['trial', undefined, undefined]);
   // A value that is not in the list is Custom the same way; one no node holds waits for N4.
-  assert.equal(rowOf(routed(), 'filter', 'b', { fields }).value, 'active', 'with no list it still mirrors');
+  assert.equal(rowOf(routed(), 'filter', 'b', facts).value, 'active', 'with no list it still mirrors');
   const sum = { ...over, nodes: [...over.nodes, { id: 'sum', kind: 'math', x: 0, y: 400 }] };
   const waiting = editWorkflow(sum, { route: { from: 'sum/result', to: 'filter/b' } });
   assert.equal(rowOf(waiting, 'filter', 'b').value, 'trial', 'a Result holds no value yet: its own shows');
@@ -125,7 +128,7 @@ test('a row a route drives that sends nothing yet, and that holds nothing, shows
       { from: '#in/way', to: 'order/direction' }, { from: 'match/rows', to: '#out/matching' },
     ],
   };
-  const inside = (d = definition, facts = { fields, values: { status: ['active', 'trial'] } }) => {
+  const inside = (d = definition, facts = valued) => {
     const inner = innerOf({ id: 'use', kind: 'has-status' }, { v: 1, nodes: { 'has-status': d } });
     return (id, name) => workflowGraph(inner.workflow, facts, inner.kinds).nodes.find((n) => n.id === id).rows.find((r) => r.name === name);
   };
@@ -135,7 +138,7 @@ test('a row a route drives that sends nothing yet, and that holds nothing, shows
     assert.deepEqual([row.value, row.choices, row.custom, row.hint], ['', [], true, `From Group Input › ${from}`], `${id} › ${name}`);
   }
   // A typed row (no values known) is empty too, and says it.
-  const typed = inside(definition, { fields })('match', 'b');
+  const typed = inside(definition, facts)('match', 'b');
   assert.deepEqual([typed.value, typed.choices, typed.hint], [undefined, undefined, 'From Group Input › Status']);
   // A row that holds its own pick still shows it, until N4 runs the flow.
   const held = { ...definition, nodes: definition.nodes.map((n) => (n.id === 'match' ? { ...n, values: { ...n.values, b: 'trial' } } : n)) };
@@ -150,30 +153,32 @@ test('a row a route drives that sends nothing yet, and that holds nothing, shows
 test('a multi-select row holds, takes and sends ONE object: each routed pick is ticked, and Custom where its list lacks it', () => {
   const kinds = {
     ...NODE_KINDS,
-    tags: { heading: 'Tags', icon: 'flag', rows: [{ name: 'set', label: 'Set', control: 'field', multiple: true, output: 'object' }], model: 'x', graphs: ['workflow'] },
-    notify: { heading: 'Notify', icon: 'flag', rows: [{ name: 'to', label: 'To', control: 'field', multiple: true, input: 'object', output: 'object' }], model: 'x', graphs: ['workflow'] },
+    tags: { heading: 'Tags', icon: 'flag', input: 'any', rows: [{ name: 'set', label: 'Set', control: 'field', multiple: true, output: 'object' }], model: 'x', graphs: ['workflow'] },
+    notify: { heading: 'Notify', icon: 'flag', input: 'any', rows: [{ name: 'to', label: 'To', control: 'field', multiple: true, input: 'object', output: 'object' }], model: 'x', graphs: ['workflow'] },
   };
+  // A field row lists the fields of the Source its rows come from.
   const w = {
     v: 2, id: 'm', nodes: [
       { id: 'a', kind: 'tags', x: 0, y: 0, values: { set: ['status', 'ghost'] } },
       { id: 'b', kind: 'notify', x: 360, y: 0, values: { to: ['seats'] } },
-    ], routes: [{ from: 'a/set', to: 'b/to' }],
+      { id: 's', kind: 'source', x: -360, y: 0, values: { store: 'customers' } },
+    ], routes: [{ from: 'a/set', to: 'b/to' }, { from: 's/rows', to: 'a' }, { from: 's/rows', to: 'b' }],
   };
   assert.deepEqual(workflowFaults(w, kinds), []);
-  const row = workflowGraph(w, { fields }, kinds).nodes[1].rows[0];
+  const row = workflowGraph(w, facts, kinds).nodes[1].rows[0];
   assert.deepEqual([row.value, row.custom, row.hint], [['status', 'ghost'], true, 'Custom values, from Tags › Set']);
   assert.deepEqual(row.choices.map((c) => [c.value, c.label]), [['status', 'Status'], ['seats', 'Seats'], ['ghost', 'ghost Custom']]);
   // Its own pick stays; cut the route and it is back, as ONE list.
   const cut = editWorkflow(w, { cut: 'b/to' }, kinds);
-  assert.deepEqual(workflowGraph(cut, { fields }, kinds).nodes[1].rows[0].value, ['seats']);
+  assert.deepEqual(workflowGraph(cut, facts, kinds).nodes[1].rows[0].value, ['seats']);
   assert.deepEqual(editWorkflow(cut, { node: 'b', row: 'to', value: 'status' }, kinds).nodes[1].values.to, ['status'], 'an edit is one list');
   // A value is no list: a Value node's route joins (TODO 770), and To reads null and warns; no fault.
   const fed = editWorkflow(w, { route: { from: 'v/value', to: 'b/to' } }, kinds);
   const withV = { ...fed, nodes: [...fed.nodes, { id: 'v', kind: 'value', x: 0, y: 0, values: { value: 'status' } }] };
   assert.deepEqual(workflowFaults(withV, kinds).filter((f) => f.includes('"v/value"')), []);
-  assert.deepEqual(workflowGraph(withV, { fields }, kinds).nodes[1].warnings, [{ row: 'to', words: 'To takes a list; it was given "status"' }]);
+  assert.deepEqual(workflowGraph(withV, facts, kinds).nodes[1].warnings, [{ row: 'to', words: 'To takes a list; it was given "status"' }]);
   // The set it holds must be a list.
-  assert.deepEqual(workflowFaults({ ...w, nodes: [{ ...w.nodes[0], values: { set: 'status' } }, w.nodes[1]] }, kinds), ['the node "a" holds "status" as its Set, which is no list']);
+  assert.deepEqual(workflowFaults({ ...w, nodes: [{ ...w.nodes[0], values: { set: 'status' } }, ...w.nodes.slice(1)] }, kinds), ['the node "a" holds "status" as its Set, which is no list']);
   assert.deepEqual(mirrored({ multiple: true }, [['a', 'b'], 'c'], [{ value: 'a', label: 'A' }]).value, ['a', 'b', 'c']);
 });
 
