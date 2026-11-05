@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sherpa-ui.dev/schemas/entity-node.v1.json",
+  "title": "Sherpa-UI Custom Node settings",
+  "description": "The settings of a node entity: today's Custom Node. Its sockets, and where the node panel lists it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["inputs", "outputs"],
+  "properties": {
+    "inputs": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/nodeInput" } },
+    "outputs": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/nodeOutput" } },
+    "category": { "type": "string" },
+    "icon": { "type": "string" }
+  }
+}

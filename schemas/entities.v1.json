@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sherpa-ui.dev/schemas/entities.v1.json",
+  "title": "Sherpa-UI entity library",
+  "description": "The preset entities of an app, by id: each an entity.v1 envelope, read only. App.v1 `entities` names the file. docs/history/plan-746-entities-and-graph-views.md",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["v", "entities"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "v": { "const": 1 },
+    "entities": {
+      "type": "object",
+      "propertyNames": { "$ref": "defs.v1.json#/$defs/id" },
+      "additionalProperties": { "$ref": "entity.v1.json" }
+    }
+  }
+}

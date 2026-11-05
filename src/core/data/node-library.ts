@@ -102,6 +102,8 @@ export const GROUP_INPUT = '#group-input';
 export const GROUP_OUTPUT = '#group-output';
 
 const ID = /^[a-z][a-z0-9-]*$/;
+/** A definition's key: its id, or `<type>:<id>` where an entity offers it (plan 746). */
+const KEY = /^[a-z][a-z0-9-]*(:[a-z][a-z0-9-]*)?$/;
 const TYPES: readonly string[] = ['value', 'object', 'boolean'];
 
 /** A value as text, its keys in order, so the same content is the same text. */
@@ -270,7 +272,7 @@ export function nodeLibraryFaults(library: NodeLibrary, kinds: Kinds = NODE_KIND
   const base: Kinds = { ...kindsOf(library), ...kinds };
   for (const [id, definition] of Object.entries(library.nodes)) {
     const at = `the Custom Node "${id}"`;
-    if (!ID.test(id)) problems.push(`${at} has an id that is not a name: lowercase letters, digits and hyphens`);
+    if (!KEY.test(id)) problems.push(`${at} has an id that is not a name: lowercase letters, digits and hyphens`);
     if (shipped(kinds, id)) problems.push(`${at} has the id of a kind that is shipped, which a use could not tell apart`);
     if (!definition || typeof definition.label !== 'string' || !definition.label.trim()) problems.push(`${at} has no name`);
     if (!Array.isArray(definition?.inputs) || !Array.isArray(definition.outputs) || !Array.isArray(definition.nodes)) {

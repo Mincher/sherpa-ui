@@ -7292,3 +7292,34 @@ Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
 - Site: `test/unit/a-custom-node-is-an-instance.test.mjs`
 - Site: `test/unit/a-custom-node-is-saved-from-nodes.test.mjs`
 - Site: `src/data.ts`
+
+### T-an-entity-is-an-envelope-and-a-type
+
+**An entity is ONE envelope for every kind of saved graph, and its TYPE says the rest.**
+Will, 2026-11-05 (plan-746, D1-D3, D8); versions: "not too fussed while we build the core".
+
+- **The envelope** (`schemas/entity.v1.json`, `entity.ts`): `{ v, type, id, label, description?,
+  graph { nodes, routes, ties }, settings, uses, origin }`. The graph is a workflow's, with `#in`
+  and `#out` as a Custom Node has. `origin` (`preset` or `mine`) is set on READ, never written.
+  A Custom Node is the type `node`, its sockets in `settings`; `nodeEntityOf` and `definitionOf`
+  are the two ways round, and `nodes.v1.json` stays readable as a read-once map.
+- **The type registry** (`entity-types.ts`, the data layer): each type says its settings check
+  (and its schema in `schemas/entity-<type>.v1.json`), the families its graph may place (a kind's
+  category), the `#in` and `#out` it demands, and `runs`. Two ship: `preset-filter` and `node`.
+  An app adds its own with `registerEntityType`; a clash with a shipped type is refused. The data
+  layer has no schema validator, so the checks are hand-written (as `checkNodeLibrary`'s are) and
+  a test holds the schema and the check to the same answers.
+- **Any entity is a node in any graph** (D1): `asNode` is the box it offers, its kind is
+  `<type>:<id>` (a `node`'s is its plain id, as today). `libraryOf` keys the boxes by kind, so
+  `innerOf`, `useOf`, `definitionDiff` and `updateInstance` serve entities as they serve Custom
+  Nodes: a use records the version and `was`, and follows its definition (D8). `uses` is kept
+  beside the graph for a quick dependency check; the nodes stay the truth.
+- **One check.** `checkEntity` says each fault in words: unknown type, a family outside the type,
+  settings the type does not keep, an output nothing reaches, a `uses` that is not there, a loop
+  of entities (said once, from its first end), and the graph's own faults as a Custom Node's.
+  Every writer calls it.
+
+- Site: `src/core/data/entity.ts`
+- Site: `src/core/data/entity-types.ts`
+- Site: `test/unit/an-entity-is-an-envelope-and-a-type.test.mjs`
+- Site: `src/data.ts`

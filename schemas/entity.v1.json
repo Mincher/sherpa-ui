@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sherpa-ui.dev/schemas/entity.v1.json",
+  "title": "Sherpa-UI entity",
+  "description": "One entity: a graph saved under a type, an id and a name. The envelope is the same for every type; the type's own schema (entity-<type>.v1.json) says what its settings hold. Its use inside another graph is a node whose kind is \"<type>:<id>\". checkEntity() reads it. docs/history/plan-746-entities-and-graph-views.md",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["v", "type", "id", "label", "graph"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "v": { "const": 1 },
+    "type": { "description": "A type the app has: the data layer's registry, and any the app registered.", "$ref": "defs.v1.json#/$defs/id" },
+    "id": { "$ref": "defs.v1.json#/$defs/id" },
+    "label": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "graph": {
+      "description": "A workflow's nodes and routes. Inside, #in and #out are the entity's own sockets, as a Custom Node's.",
+      "type": "object", "additionalProperties": false, "required": ["nodes"],
+      "properties": {
+        "nodes": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/node" } },
+        "routes": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/innerRoute" } },
+        "ties": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/innerTie" } }
+      }
+    },
+    "settings": { "description": "What the type keeps beside its graph; the type's own schema checks it.", "type": "object" },
+    "uses": {
+      "description": "The entities its graph places, kept for a quick dependency check. The nodes are the truth.",
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["type", "id"],
+        "properties": { "type": { "$ref": "defs.v1.json#/$defs/id" }, "id": { "$ref": "defs.v1.json#/$defs/id" } }
+      }
+    },
+    "origin": { "description": "Set on read, never written: a preset is a file's and read only; the reader's own are mine.", "enum": ["preset", "mine"] }
+  }
+}
