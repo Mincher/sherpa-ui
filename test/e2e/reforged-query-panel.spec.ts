@@ -70,9 +70,12 @@ test('a drag of Condition onto the canvas asks the same; a kind the Query cannot
   await page.mouse.move(from.x + 80, from.y + 40, { steps: 4 });
   await page.mouse.move(640, 360, { steps: 6 });
   await page.mouse.up();
-  expect(await asked(page)).toEqual([{ scope: 'view', hold: ['region', 'plan'] }]);
+  // A loaded WebKit can answer the drop a frame after the release: wait for it.
+  await expect.poll(() => asked(page)).toEqual([{ scope: 'view', hold: ['region', 'plan'] }]);
+  // The drag's window listeners are gone, so these clicks place. TRAP T-abort-signal-any-is-collected
   await item(page, 'status').click();
   await item(page, 'saved').click();
+  await expect.poll(async () => (await said(page)).length).toBeGreaterThanOrEqual(2);
   expect(await asked(page)).toHaveLength(1);
   const words = await said(page);
   expect(words[0]).toContain('statusFields()');

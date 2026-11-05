@@ -2021,3 +2021,26 @@ to the same class with `journal: N` (`T-a-store-keeps-its-history`).
 - Site: `test/e2e/reforged-node-undo.spec.ts`
 - Site: `test/e2e/reforged-query-undo.spec.ts`
 - Site: `test/unit/a-query-draft-is-restored-whole.test.mjs`
+
+### T-abort-signal-any-is-collected
+
+**`AbortSignal.any()` loses its listeners in WebKit.** `on(target, type, handler,
+{ while })` once passed `AbortSignal.any([this.signal, shorter])` to
+`addEventListener`. Nothing held that joined signal but the listener, and WebKit
+can collect it. When `shorter` then aborts, nothing reaches the listener, so it
+stays on the window for good.
+
+Measured (TODO 757, 2026-11-05): the node panel's drag puts `pointermove` and
+`pointerup` on the window `while` the drag lasts. In WebKit, 5 of 10 runs kept
+the drag's `pointerup`. The next click's release ran the old drag's end: it set
+"a drag just ended", so the panel dropped that click, and no `node-add` went out.
+Chromium and Firefox never did this. iOS is WebKit, so this is a real bug, not
+a test flake.
+
+The fix: `#either(shorter)` makes its own `AbortController` and aborts it from
+both signals. The two listeners on the source signals hold it, so it lives as
+long as they do. The run then passed 20 of 20. A signal given to `fetch` is held
+by the fetch, so `stores.ts` keeps `AbortSignal.any`.
+
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `test/e2e/reforged-query-panel.spec.ts`

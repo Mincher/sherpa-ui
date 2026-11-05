@@ -692,10 +692,18 @@ export abstract class SherpaElement extends Base {
     options: AddEventListenerOptions & { while?: AbortSignal } = {},
   ): void {
     const { while: shorter, ...rest } = options;
-    const signal = shorter
-      ? AbortSignal.any([this.signal, shorter])
-      : this.signal;
-    target.addEventListener(type as string, handler, { ...rest, signal });
+    target.addEventListener(type as string, handler, { ...rest, signal: shorter ? this.#either(shorter) : this.signal });
+  }
+
+  /** Aborts when the element disconnects or `shorter` aborts. Not `AbortSignal.any`: WebKit
+   *  collects its signal, and the listener then outlives `shorter`. TRAP T-abort-signal-any-is-collected */
+  #either(shorter: AbortSignal): AbortSignal {
+    const both = new AbortController();
+    const end = (): void => both.abort();
+    if (this.signal.aborted || shorter.aborted) end();
+    this.signal.addEventListener('abort', end, { once: true, signal: both.signal });
+    shorter.addEventListener('abort', end, { once: true, signal: both.signal });
+    return both.signal;
   }
 
   /**

@@ -849,7 +849,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (130)
+## SherpaElement and the shared sheets (131)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -906,6 +906,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-workflow-is-its-definition](traps/data-layer.md#t-a-workflow-is-its-definition) — node-graph
 - [T-a-wrapping-span-hides-its-own-row](traps/element-and-sheets.md#t-a-wrapping-span-hides-its-own-row) — components
 - [T-abort-controller-per-connect](traps/menus-tips-overlays.md#t-abort-controller-per-connect) — sherpa-element
+- [T-abort-signal-any-is-collected](traps/element-and-sheets.md#t-abort-signal-any-is-collected) — sherpa-element
 - [T-an-edge-resizes-its-box](traps/menus-tips-overlays.md#t-an-edge-resizes-its-box) — edge-resize
 - [T-an-edit-is-a-step](traps/element-and-sheets.md#t-an-edit-is-a-step) — node-graph
 - [T-an-icon-loads-when-first-drawn](traps/element-and-sheets.md#t-an-icon-loads-when-first-drawn) — icon-names, render-icon, settled, sherpa-element
