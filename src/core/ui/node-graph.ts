@@ -1330,8 +1330,8 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
   library?: NodeLibrary;
   /** Save hands each edited or new definition to the app, to keep: its id and the definition. */
   onSaveNode?: (id: string, definition: NodeDefinition) => void;
-  /** A `sherpa-breadcrumbs` that shows the trail of the Custom Nodes opened; hidden at the workflow. */
-  breadcrumbs?: HTMLElement;
+  /** The page's `sherpa-app-header`: its trail shows the Custom Nodes opened, and is empty at the workflow. */
+  header?: HTMLElement & { populate(data: { breadcrumb: { label: string }[] }): unknown };
   /** A `sherpa-dialog` (status critical) that confirms the two bulk updates. Without it they are not offered. */
   confirm?: HTMLElement & { confirm(ask: { heading?: string; words?: string; action?: string; critical?: boolean }): Promise<boolean> };
   /** "Update all instances" was confirmed: the app's other workflows are its own to update. */
@@ -1374,7 +1374,7 @@ const isEdits = (v: unknown): v is Record<string, NodeDefinition> => !!v && type
  *  · TRAP T-a-custom-node-is-an-instance */
 export function bindWorkflow(
   canvas: SherpaLayoutCanvas, workflow: WorkflowDefinition | WorkflowDefinitionV1,
-  { inspector, panel, session, kinds = NODE_KINDS, library, onSaveNode, breadcrumbs, confirm, onUpdateAll, toolbar, ...facts }: WorkflowEditorOptions = {},
+  { inspector, panel, session, kinds = NODE_KINDS, library, onSaveNode, header, confirm, onUpdateAll, toolbar, ...facts }: WorkflowEditorOptions = {},
 ): WorkflowEditor {
   const pointer = `/workflows/${workflow.id}`;
   const isDraft = (v: unknown): v is WorkflowDefinition | WorkflowDefinitionV1 => {
@@ -1586,9 +1586,7 @@ export function bindWorkflow(
     return at && K()[at.kind]?.model === 'graph' && lib.nodes[at.kind] ? at : undefined;
   };
   const trail = (): void => {
-    if (!breadcrumbs) return;
-    breadcrumbs.toggleAttribute('hidden', !path.length);
-    (breadcrumbs as HTMLElement & { populate?(items: unknown): void }).populate?.([{ label: draft.label ?? 'Workflow' }, ...path.map((s) => ({ label: s.label }))]);
+    void header?.populate({ breadcrumb: path.length ? [{ label: draft.label ?? 'Workflow' }, ...path.map((s) => ({ label: s.label }))] : [] });
   };
   /** The canvas shows another graph: nothing is picked, and the view fits it. */
   const enter = (focus: string | null): void => {
@@ -1614,7 +1612,7 @@ export function bindWorkflow(
     path = path.slice(0, depth);
     enter(from);
   };
-  breadcrumbs?.addEventListener('breadcrumb-select', (event) => back((event as CustomEvent<{ index: number }>).detail.index));
+  header?.addEventListener('breadcrumb-select', (event) => back((event as CustomEvent<{ index: number }>).detail.index));
   /** "Copy to my nodes": an editable copy of the preset opened, which takes the use that opened it. */
   const copy = (): void => edit(() => {
     const step = path.at(-1);

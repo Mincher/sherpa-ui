@@ -106,7 +106,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`account`, `actions`, `ai`, `back`, `bar`, `content`, `context-icon`, `filters`, `help`, `history`, `labs`, `loading-bar`, `menu`, `nav-menu`, `notif-badge`, `notif-btn`, `notifications`, `row-context`, `row-history`, `theme-toggle`, `title`, `title-row`, `view-actions`
+`account`, `actions`, `ai`, `back`, `bar`, `content`, `context-icon`, `filters`, `help`, `history`, `labs`, `lead`, `loading-bar`, `menu`, `nav-menu`, `notif-badge`, `notif-btn`, `notifications`, `row-context`, `row-history`, `theme-toggle`, `title`, `title-row`, `view-actions`
 
 ## CSS custom properties it reads
 
@@ -118,7 +118,6 @@ What each class's base rule reads:
 | `--sherpa-theme-gap-md` | `.content` | `padding` |
 | `--sherpa-display-mode-space-xs` | `.row-history` | `gap` |
 | `--sherpa-display-mode-size-lg` | `.row-history` | `min-block-size` |
-| `--sherpa-display-mode-space-2xs` | `.history` | `gap` |
 | `--sherpa-display-mode-space-xs` | `.actions` | `gap` |
 | `--sherpa-display-mode-size-xs` | `.divider` | `block-size` |
 | `--sherpa-display-mode-border-width-sm` | `.divider` | `border-inline-start` |

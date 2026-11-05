@@ -21,7 +21,7 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(async (org) => {
     const root = document.getElementById('root')!;
     root.insertAdjacentHTML('beforeend', `
-      <sherpa-breadcrumbs id="trail" hidden></sherpa-breadcrumbs>
+      <sherpa-app-header id="trail"><sherpa-breadcrumbs slot="breadcrumbs"></sherpa-breadcrumbs></sherpa-app-header>
       <sherpa-layout-canvas id="cv" style="inline-size: 900px; block-size: 600px"><sherpa-node-panel slot="panel" style="display: none"></sherpa-node-panel></sherpa-layout-canvas>
       <sherpa-overlay-panel id="inspector"></sherpa-overlay-panel>
       <sherpa-dialog id="confirm" data-status="critical" data-heading="Update">
@@ -63,7 +63,7 @@ const bind = (page: Page) => page.evaluate(async () => {
   const canvas = document.getElementById('cv')!;
   w['ed'] = bindWorkflow(canvas as never, flow as never, {
     session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-panel') as never,
-    breadcrumbs: document.getElementById('trail')!, confirm: document.getElementById('confirm') as never, library: library as never,
+    header: document.getElementById('trail') as never, confirm: document.getElementById('confirm') as never, library: library as never,
     onSaveNode: (id: string, d: unknown) => (w['savedNodes'] as unknown[]).push([id, d]),
     fields: { status: { label: 'Status' }, role: { label: 'Role' } }, stores: ['users'], values: { status: ['active', 'trial'] },
   });
@@ -83,7 +83,8 @@ test('Enter on the header opens a Custom Node: Group Input and Output drawn, a t
   await settle(page);
   expect(await headings(page)).toEqual(['Group Input', 'Condition', 'Group Output']);
   expect(await ed(page, 'ed.path()')).toEqual(['perm']);
-  const crumbs = await page.locator('#trail').evaluate((el) => [...el.shadowRoot!.querySelectorAll('.crumb .link')].map((a) => a.textContent));
+  await page.locator('#trail > sherpa-breadcrumbs .crumb .link').first().waitFor();
+  const crumbs = await page.locator('#trail > sherpa-breadcrumbs').evaluate((el) => [...el.shadowRoot!.querySelectorAll('.crumb .link')].map((a) => a.textContent));
   expect(crumbs).toEqual(['Workflow', 'Org permissions']);
   // Its inputs and outputs are drawn from the definition: a row each, by its words.
   const rows = await page.locator('#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
@@ -92,7 +93,7 @@ test('Enter on the header opens a Custom Node: Group Input and Output drawn, a t
   await settle(page);
   expect(await ed(page, 'ed.path()')).toEqual([]);
   expect(await headings(page)).toEqual(['Store', 'Org permissions', 'Org permissions', 'Owner check', 'Output']);
-  expect(await page.locator('#trail').evaluate((el) => el.hasAttribute('hidden'))).toBe(true);
+  expect(await page.locator('#trail > sherpa-breadcrumbs').evaluate((el) => el.shadowRoot!.querySelectorAll('.crumb').length)).toBe(0);
   // The keyboard is back on the use it opened.
   const on = await page.evaluate(() => {
     let el: Element | null = document.activeElement;
@@ -107,7 +108,8 @@ test('a double click, and the inspector\'s Open, open it; a crumb goes back', as
   await header(page, 'Org permissions').first().dblclick();
   await settle(page);
   expect(await ed(page, 'ed.path()')).toEqual(['perm']);
-  await page.locator('#trail').evaluate((el) => (el.shadowRoot!.querySelector('.crumb .link') as HTMLElement).click());
+  await page.locator('#trail > sherpa-breadcrumbs .crumb .link').first().waitFor();
+  await page.locator('#trail > sherpa-breadcrumbs').evaluate((el) => (el.shadowRoot!.querySelector('.crumb .link') as HTMLElement).click());
   await settle(page);
   expect(await ed(page, 'ed.path()')).toEqual([]);
   await header(page, 'Org permissions').nth(1).click();

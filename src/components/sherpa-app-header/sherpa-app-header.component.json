@@ -29,70 +29,77 @@
               "part": "row-history",
               "children": [
                 {
-                  "el": "div",
-                  "class": "history",
-                  "part": "history",
-                  "children": [
-                    {
-                      "el": "sherpa-button",
-                      "class": "back",
-                      "part": "back",
-                      "attrs": {
-                        "data-type": "icon",
-                        "data-size": "xs",
-                        "data-look": "transparent",
-                        "data-icon-start": "arrow-left",
-                        "aria-label": "Back"
-                      }
-                    },
-                    {
-                      "slot": "breadcrumbs",
-                      "attrs": {
-                        "data-accepts": "nav"
-                      }
-                    }
-                  ]
+                  "el": "sherpa-button",
+                  "class": "back",
+                  "part": "back",
+                  "attrs": {
+                    "data-type": "icon",
+                    "data-size": "xs",
+                    "data-look": "transparent",
+                    "data-icon-start": "arrow-left",
+                    "aria-label": "Back"
+                  }
                 },
                 {
                   "el": "div",
-                  "class": "title-row",
-                  "part": "title-row",
+                  "class": "lead",
+                  "part": "lead",
                   "children": [
                     {
-                      "el": "span",
-                      "class": "context-icon sherpa-icon-box",
-                      "part": "context-icon",
-                      "attrs": {
-                        "aria-hidden": "true",
-                        "data-attr-data-icon": "data-icon"
-                      }
+                      "el": "div",
+                      "class": "history",
+                      "part": "history",
+                      "children": [
+                        {
+                          "slot": "breadcrumbs",
+                          "attrs": {
+                            "data-accepts": "nav"
+                          }
+                        }
+                      ]
                     },
                     {
-                      "el": "h1",
-                      "class": "title sherpa-truncate sherpa-text-large",
-                      "part": "title",
-                      "attrs": {
-                        "data-text": "data-heading"
-                      }
-                    },
-                    {
-                      "slot": "heading",
-                      "attrs": {
-                        "data-accepts": "text"
-                      }
-                    },
-                    {
-                      "el": "sherpa-button",
-                      "class": "nav-menu",
-                      "part": "nav-menu",
-                      "attrs": {
-                        "data-type": "icon",
-                        "data-size": "sm",
-                        "data-look": "transparent",
-                        "data-icon-start": "menu",
-                        "aria-label": "Menu",
-                        "aria-haspopup": "dialog"
-                      }
+                      "el": "div",
+                      "class": "title-row",
+                      "part": "title-row",
+                      "children": [
+                        {
+                          "el": "span",
+                          "class": "context-icon sherpa-icon-box",
+                          "part": "context-icon",
+                          "attrs": {
+                            "aria-hidden": "true",
+                            "data-attr-data-icon": "data-icon"
+                          }
+                        },
+                        {
+                          "el": "h1",
+                          "class": "title sherpa-truncate sherpa-text-large",
+                          "part": "title",
+                          "attrs": {
+                            "data-text": "data-heading"
+                          }
+                        },
+                        {
+                          "slot": "heading",
+                          "attrs": {
+                            "data-accepts": "text"
+                          }
+                        },
+                        {
+                          "el": "sherpa-button",
+                          "class": "nav-menu",
+                          "part": "nav-menu",
+                          "attrs": {
+                            "data-type": "icon",
+                            "data-size": "sm",
+                            "data-look": "transparent",
+                            "data-icon-start": "menu",
+                            "aria-label": "Menu",
+                            "aria-haspopup": "dialog"
+                          }
+                        }
+                      ]
                     }
                   ]
                 },
@@ -750,7 +757,6 @@
     "content.padding": "{sherpa.theme-gap-md}",
     "row-history.gap": "{sherpa.display-mode-space-xs}",
     "row-history.min-block-size": "{sherpa.display-mode-size-lg}",
-    "history.gap": "{sherpa.display-mode-space-2xs}",
     "actions.gap": "{sherpa.display-mode-space-xs}",
     "divider.block-size": "{sherpa.display-mode-size-xs}",
     "divider.border-inline-start": "{sherpa.display-mode-border-width-sm}",
