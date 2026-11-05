@@ -362,3 +362,10 @@ fussed about versioning while we build out the core system"); "Collections" labe
 and "Field" stays the data layer's word; value types, Math, Logic and the Collection fold
 first; the menu button always shows; Floor, Ceiling and Average take a LIST in ("numerical,
 mathematical operations").
+
+**Will, 2026-11-05, D3 changed after P1:** "Keep the previous connections for the previous
+selection in the node's data until Save or exiting without saving. Only write the actual final
+graph data on save. No need to block or warn." A type change keeps the routes into rows the new
+type lacks, and those rows' values, in the editor's DRAFT only (switching back reconnects them);
+they are no fault and no warning, and nothing is drawn for them; Save writes only the final graph
+(`finalGraph`); leaving without saving drops the draft. Built in P3's lane.
