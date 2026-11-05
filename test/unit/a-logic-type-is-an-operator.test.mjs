@@ -200,13 +200,13 @@ test('a Query\'s Condition reads back the same tree: no Type row, and each row a
   assert.deepEqual(Object.keys(settled.scopes), Object.keys(before.scopes));
 });
 
-test('Tag › Includes says its condition as Logic\'s Is one of: its field, `in`, its tags', () => {
-  const w = { v: 2, id: 't', nodes: [{ id: 'g', kind: 'tag', x: 0, y: 0, values: { field: 'status', value: ['trial', 'active'] } }] };
-  const g = workflowGraph(w, { fields: { status: { label: 'Status' } }, values: { status: ['active', 'trial'] } });
+test('Tag › Includes says its condition as Logic\'s Is one of: the Field on its header, `in`, its tags', () => {
+  const w = { v: 2, id: 't', nodes: [{ id: 'g', kind: 'tag', x: 0, y: 0, values: { value: ['trial', 'active'] } }, field('f', 'status')], routes: [{ from: 'f/field', to: 'g' }] };
+  const g = workflowGraph(w, facts);
   assert.deepEqual(nodeFlow(g, 'g').definition, { where: { field: 'status', op: 'in', value: ['trial', 'active'] } });
   assert.equal(logic.types.in.label, OP_LABELS.in);
   // None picked: a list of none, as Is one of with no tags.
-  assert.deepEqual(nodeFlow(workflowGraph({ ...w, nodes: [{ ...w.nodes[0], values: { field: 'status' } }] }), 'g').definition, { where: { field: 'status', op: 'in', value: [] } });
+  assert.deepEqual(nodeFlow(workflowGraph({ ...w, nodes: [{ ...w.nodes[0], values: {} }, w.nodes[1]] }), 'g').definition, { where: { field: 'status', op: 'in', value: [] } });
   // A comparison with no Field says no tree: its rows' values.
   const eq = workflowGraph({ v: 2, id: 'e', nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0, values: { type: 'eq', b: '2' } }] });
   assert.deepEqual(nodeFlow(eq, 'c').definition, { rows: { type: 'eq', b: '2' } });

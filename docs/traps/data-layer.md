@@ -6480,7 +6480,7 @@ types allow is drawn; no family fences what a graph places.
 - Site: `src/data.ts`
 - Site: `test/unit/a-node-reads-null-from-what-it-cannot-use.test.mjs`
 - Site: `test/unit/any-route-joins-any-input.test.mjs`
-- Site: `test/unit/a-group-row-takes-any-boolean.test.mjs`
+- Site: `test/unit/and-or-take-any-boolean.test.mjs`
 - Site: `test/unit/a-boolean-reads-as-its-need.test.mjs`
 - Site: `test/unit/a-field-is-a-node.test.mjs`
 - Site: `test/e2e/reforged-node-warning.spec.ts`
@@ -6819,7 +6819,7 @@ type is it (`T-a-logic-type-is-an-operator`).
 - Site: `src/core/data/node-kinds.ts`
 - Site: `test/unit/a-condition-is-a-tree-of-nodes.test.mjs`
 - Site: `test/unit/a-status-is-a-chain-of-conditions.test.mjs`
-- Site: `test/unit/a-group-row-takes-any-boolean.test.mjs`
+- Site: `test/unit/and-or-take-any-boolean.test.mjs`
 - Site: `test/e2e/reforged-node-group-row.spec.ts`
 
 ### T-an-app-is-its-definition
@@ -7652,10 +7652,12 @@ reader, and declared through the door every preset takes.** Will, 2026-11-05 (TO
 graphs. Let's keep them but also make sure they work in the new architecture for nodes & data."
 
 - **One reader.** `conditionAt(graph, '#out/where')` (node-flow.ts) reads what reaches the Where as
-  ONE tree: a Condition's Rows that hold, each Group row a nested tree; Logic And and Or joining what
-  comes in; a Tag's Includes; a USE of another entity read inside, at its Group Output (`inner`), so it
-  flattens. The Outgoing JSON shows what it reads, so the canvas and the data cannot disagree. A node
-  that says no condition, a False, a loop: a fault in words.
+  ONE tree (plan 783 D7): Logic And and Or joining what comes in; a TEST — a Condition's comparison,
+  Time's Between or Duration, a Tag's Includes — a leaf on the Field on its header, ANDed with what
+  the rows into that Field carry (Store › Field › A › Rows › Field › B is A and B); a USE of another
+  entity read inside, at its Group Output (`inner`), so it flattens. The Outgoing JSON shows what it
+  reads, so the canvas and the data cannot disagree. A test with no Field, a Field that sends
+  nothing, Not and Is empty, a False, a loop: a fault in words.
 - **One leaf reader.** Each comparison is read by `editedCondition`, the Query editor's own: text in a
   list's row splits as an edited row does. A number or a list of numbers stays as the row holds it; the
   page types it by its field (`presetReadings`, `T-a-value-is-typed-once`).
@@ -7673,12 +7675,13 @@ graphs. Let's keep them but also make sure they work in the new architecture for
   import. The compile (preset-filter.ts) loads on first use. The provider hears the shelf, so one
   saved in another tab joins the bar. The outlet hands the keeper its entities BEFORE `open`: a first
   page read none when they came after.
-- **Composing.** A Preset Filter's use, its True in a Condition's Group row, brings its tree, read
-  inside: its condition joins the outer one as a nested group. Logic And and Or join them too. A
-  constant in a Group row folds as `nodeFlow` folds it (TODO 780); a condition a constant decides,
-  always or never, has no preset form, nor has a boolean only a run gives: each is said in words.
-- **One leaf.** `leafOf` reads one comparison of a Rows that hold, its Field, Operator and Value: the
-  one place, so Field as a node of its own (plan 783) changes it there.
+- **Composing.** A Preset Filter's use, its True into And or Or, brings its tree, read inside: its
+  condition joins the outer one. A constant into And or Or folds (TODO 780); a condition a constant
+  decides, always or never, has no preset form, nor has a boolean only a run gives: each is said in
+  words. An Or across two fields is said in words and left off the bar (plan 783 D7, 776 D6); an And
+  across them is two readings.
+- **One leaf.** `leafOf` reads one test: the field its Field picks, the operator its Operation, the
+  value its Value B, Values, or Start and End. The one place a leaf is read.
 - **The Query editor** offers a page's Preset Filters under Custom Nodes; a click asks
   `{ scope, preset: <its id>, on: true }` of the scope that declares it (`placeRequest`). It draws one
   as a Preset node with its own name; its conditions are read only: its own graph changes it.
