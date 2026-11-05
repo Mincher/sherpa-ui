@@ -13,7 +13,7 @@
  * - headerInput — A route let go on a use's header: a new input of its definition, and the route into the use's new row.
  * - heldInputs — Each route a use's header holds from before, read once as its own new input; a preset's stays.
  */
-import { NODE_KINDS, FALSE_SOCKET, SOCKET_WORDS, kindOfNode, rowOf, socketOf, socketType, type NodeKind, type NodeRoute, type SocketType } from './node-kinds.js';
+import { NODE_KINDS, FALSE_SOCKET, kindOfNode, rowOf, socketOf, socketType, type NodeKind, type NodeRoute, type SocketType } from './node-kinds.js';
 import { kindsOf, updateInstance, useOf, versionOf, workflowFaultsDeep, type NodeDefinition, type NodeLibrary, type NodeOutput, type NodeSocket } from './node-library.js';
 import { tiesAmong, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
 
@@ -57,13 +57,6 @@ const sentBy = (address: string, workflow: WorkflowDefinition, kinds: Kinds): So
   return kind && socketType(kind, row, 'output');
 };
 
-/** The type an input takes; none, it has no such input. */
-const takenBy = (address: string, workflow: WorkflowDefinition, kinds: Kinds): SocketType | undefined => {
-  const { node: id, row } = socketOf(address);
-  const kind = kindOfNode(kinds, workflow.nodes.find((n) => n.id === id));
-  return kind && socketType(kind, row, 'input');
-};
-
 const asSocket = (type: SocketType | undefined): NodeSocket['type'] => (type === 'value' || type === 'boolean' ? type : 'object');
 
 /** A name no socket holds yet: the address, as a name, then numbered. */
@@ -77,10 +70,10 @@ function freeName(base: string, taken: Set<string>): string {
 /**
  * Several nodes as one Custom Node (D9). The definition holds the nodes as they sit and the routes
  * between them; each route over the edge is a socket — one per outside output that feeds in (a
- * Group Input row), one per inside output that feeds out (a Group Output row) — typed by what it
- * carries; ONE use takes their place, joined as they were. Refused, in words: nothing picked, no
- * name, a node of a Group, a loop that leaves the picked nodes and returns, a socket that would
- * carry two types, and a result with a fault the workflow did not have.
+ * Group Input row), one per inside output that feeds out (a Group Output row) — typed by what its
+ * source sends, as what it feeds reads it (TODO 770); ONE use takes their place, joined as they were.
+ * Refused, in words: nothing picked, no name, a node of a Group, a loop that leaves the picked nodes
+ * and returns, and a result with a fault the workflow did not have.
  */
 export function groupNodes(
   workflow: WorkflowDefinition, picked: readonly string[], library: NodeLibrary, ask: GroupAsk, kinds: Kinds = NODE_KINDS, facts: Pick<WorkflowFacts, 'fields'> = {},
@@ -131,14 +124,8 @@ export function groupNodes(
   // A socket per outside output that feeds in: every inside input it reaches hangs off its row.
   for (const from of [...new Set(ins.map((r) => r.from))]) {
     const reached = ins.filter((r) => r.from === from);
-    const type = sentBy(from, workflow, all);
-    const taking = [...new Set(reached.flatMap((r) => takenBy(r.to, workflow, all) ?? []).filter((t) => t !== 'any'))];
-    if (taking.length > 1 || (type && taking[0] && type !== taking[0])) {
-      const said = [type, ...taking].filter((t): t is SocketType => !!t);
-      return { fault: `the route from ${wordsOf(from, workflow, all)} meets ${[...new Set(said)].map((t) => SOCKET_WORDS[t]).join(' and ')}: a Custom Node's socket carries one type, so fix the route or pick fewer nodes` };
-    }
     const name = freeName(slug(from.replace('/', '-').replace('#', ''), 'in'), taken);
-    inputs.push({ name, label: wordsOf(from, workflow, all), type: asSocket(type ?? taking[0]) });
+    inputs.push({ name, label: wordsOf(from, workflow, all), type: asSocket(sentBy(from, workflow, all)) });
     for (const r of reached) inner.push({ from: `#in/${name}`, to: r.to });
     outer.push({ from, to: `${use}/${name}` });
   }

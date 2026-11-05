@@ -7,7 +7,7 @@
  * Map:
  * - SocketType — What a socket carries: a value, an object, a boolean, or — an input only — any.
  * - SOCKET_WORDS — Each socket type in words, as a fault or a tip says it.
- * - accepts — Whether an output of one type may route into an input: its own type, or any.
+ * - accepts — Whether an input reads what an output of a type sends: its own type, or any; else it reads null.
  * - truthy — The road a value takes: True, unless it is nothing. Will, D2.
  * - RowControl — The control a row draws: text, a number, a switch, or the list a picklist reads.
  * - RowKind — One row a kind draws: its name, its label, its control and its sockets.
@@ -73,8 +73,8 @@ export type SocketType = 'value' | 'object' | 'boolean' | 'any';
 /** Each socket type in words, as a fault or a tip says it. */
 export const SOCKET_WORDS: Readonly<Record<SocketType, string>> = { value: 'a value', object: 'an object', boolean: 'a boolean', any: 'any type' };
 
-/** Whether an output of one type may route into an input: its own type, or `any`, which takes
- *  all. An output never sends `any`: it says what it sends. */
+/** Whether an input reads what an output of a type sends: its own type, or `any`, which takes all. Any route
+ *  joins any input; where this is false, the input reads null (TODO 770). An output never sends `any`. */
 export function accepts(from: SocketType, to: SocketType): boolean {
   return from !== 'any' && (to === 'any' || to === from);
 }

@@ -854,7 +854,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (136)
+## SherpaElement and the shared sheets (135)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -921,7 +921,6 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-icon-loads-when-first-drawn](traps/element-and-sheets.md#t-an-icon-loads-when-first-drawn) — icon-names, render-icon, settled, sherpa-element
 - [T-an-inactive-chip-says-where-its-filter-went](traps/data-layer.md#t-an-inactive-chip-says-where-its-filter-went) — shared-constants
 - [T-an-inner-event-stops-at-its-host](traps/data-grid.md#t-an-inner-event-stops-at-its-host) — sherpa-element
-- [T-an-operator-shapes-its-value](traps/data-layer.md#t-an-operator-shapes-its-value) — node-graph
 - [T-an-optional-part-is-stamped-when-it-shows](traps/element-and-sheets.md#t-an-optional-part-is-stamped-when-it-shows) — sherpa-element
 - [T-an-svg-with-a-focus-listener-is-a-tab-stop](traps/element-and-sheets.md#t-an-svg-with-a-focus-listener-is-a-tab-stop) — roving-focus
 - [T-anchoring-is-generic](traps/element-and-sheets.md#t-anchoring-is-generic) — sherpa-anchor

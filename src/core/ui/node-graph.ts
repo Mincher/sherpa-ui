@@ -78,7 +78,7 @@ import {
   type DrawnGraph, type GraphEdit, type GraphNode, type GraphRow, type NodeKind, type NodePlaces, type NodeSize, type NodeRoute, type NodeTie, type SocketType,
 } from '../data/node-kinds.js';
 import {
-  NODE_WIDTH, TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, keptRoutes, readWorkflow, tieLimit, workflowGraph,
+  NODE_WIDTH, TIE_GAP, addCustomValue, checkWorkflow, editWorkflow, finalGraph, readWorkflow, tieLimit, workflowGraph,
   type WorkflowDefinition, type WorkflowDefinitionV1, type WorkflowFacts, type WorkflowNode,
 } from '../data/workflow.js';
 
@@ -2084,15 +2084,13 @@ export function bindWorkflow(
     if (node.id.startsWith('#')) return;
     write(editWorkflow(shown(), { resize: { node: node.id, ...size } }, K()), `size:${node.id}`);
   };
-  // A route that would break the workflow is refused, and says why; else the draft takes it, with the definition it changed.
+  // A route that would break the workflow is refused, and says why — a loop, one into a Rows row, a row's own fault; one
+  // of another type joins, and the node it enters warns (TODO 770). Else the draft takes it, with the definition it changed.
   const take = (next: WorkflowDefinition, made?: { library: NodeLibrary; id: string }): void => {
     const was = new Set(workflowFaultsDeep(shown(), lib, K(), facts));
     const now = made ? { ...K(), ...kindsOf(made.library) } : K();
     const added = workflowFaultsDeep(next, made?.library ?? lib, now, facts).filter((f) => !was.has(f));
-    // A route the draft would keep unseen, for the input's other shape, is one the reader would never see: refused too. TRAP T-an-operator-shapes-its-value
-    const hid = new Set(keptRoutes(shown(), K()).map((r) => `${r.from}>${r.to}`));
-    const unseen = keptRoutes(next, now).filter((r) => !hid.has(`${r.from}>${r.to}`)).map((r) => `the route "${r.from}" → "${r.to}" fits its input only under another type or operator`);
-    if (added.length || unseen.length) report({ code: 'workflow-route', message: `bindWorkflow: ${[...added, ...unseen].join('; ')}.`, at: { workflow: shown().id } });
+    if (added.length) report({ code: 'workflow-route', message: `bindWorkflow: ${added.join('; ')}.`, at: { workflow: shown().id } });
     else if (!made) write(next);
     else edit(() => { setLib(made.library, [made.id]); write(next); });
   };

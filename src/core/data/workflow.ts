@@ -30,7 +30,7 @@ import { report } from './report.js';
 import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS } from './store.js';
 import {
-  NODE_KINDS, ROWS, SOCKET_WORDS, FALSE_SOCKET, accepts, conditionRows, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, listedRow, mirrored, partName, partOf, resolveKind, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf,
+  NODE_KINDS, ROWS, FALSE_SOCKET, accepts, conditionRows, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, partName, partOf, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf,
   type DrawnGraph, type GraphRow, type NodeSize, type NodeKind, type NodeRoute, type NodeTie, type PartKind, type RowKind, type SocketType,
 } from './node-kinds.js';
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './route-bends.js';
@@ -156,48 +156,30 @@ function keptRow(node: Pick<WorkflowNode, 'kind' | 'values'> | undefined, row: s
   return !!rowOfOtherType(kind, node.values?.['type'], row);
 }
 
-/** Whether a route into a comparison's Value was made under its other operator: one value into what takes
- *  a list now (Is one of), or a list into what takes one. Either joins again when the operator goes back.
- *  TRAP T-an-operator-shapes-its-value */
-function reshaped(route: NodeRoute, byId: ReadonlyMap<string, WorkflowNode>, kinds: Kinds): boolean {
-  const { node: id, row } = socketOf(route.to);
-  const node = byId.get(id);
-  const kind = kindOfNode(kinds, node);
-  const now = row === undefined || !kind?.rows.some((r) => r.repeat && r.name === 'op') ? undefined : rowOf(kind.rows, row);
-  const base = now && partOf(row!).base === 'value' ? rowOf(resolveKind(kinds[node!.kind])?.rows ?? [], row!) : undefined;
-  const from = socketOf(route.from);
-  const out = base && socketType(kindOfNode(kinds, byId.get(from.node)) ?? { rows: [] }, from.row, 'output');
-  if (!out || !now?.input || accepts(out, now.input)) return false;
-  const other = now.multiple ? base! : listedRow(base!, partOf(row!).part);
-  return !!other.input && accepts(out, other.input);
-}
-
-/** Whether a route into a family node takes only under another of its types: as its type is now, the socket is not
- *  there or takes no such route — a Condition's header under And takes a boolean, not rows — and under another
- *  type it does. The node a route LEAVES is not asked: a List into one value is a fault. TRAP T-a-logic-type-is-an-operator */
+/** Whether a route enters a family node's socket that is not there under its type now, and is under another: a
+ *  Condition's header under a comparison, which takes nothing there. A socket that is there takes any route (TODO 770).
+ *  TRAP T-a-logic-type-is-an-operator */
 function retyped(route: NodeRoute, byId: ReadonlyMap<string, WorkflowNode>, kinds: Kinds): boolean {
-  const [out, into] = [socketOf(route.from), socketOf(route.to)];
+  const into = socketOf(route.to);
   const to = byId.get(into.node);
   const family = to && kinds[to.kind];
-  const sends = socketType(kindOfNode(kinds, byId.get(out.node)) ?? { rows: [] }, out.row, 'output');
-  if (!to || !family?.types || !sends) return false;
-  const takes = (type?: string): boolean => {
+  if (!to || !family?.types) return false;
+  const has = (type?: string): boolean => {
     const kind = kindOfNode(kinds, type === undefined ? to : { ...to, values: { ...to.values, type } });
-    const at = kind && socketType(kind, into.row, 'input');
-    return !!at && accepts(sends, at);
+    return !!kind && !!socketType(kind, into.row, 'input');
   };
   const now = typeOf(family, to.values?.['type'])?.id;
-  return !takes() && Object.keys(family.types).some((t) => t !== now && takes(t));
+  return !has() && Object.keys(family.types).some((t) => t !== now && has(t));
 }
 
-/** The routes a node keeps for another of its types or operators: into or out of a row only that type has, into a
- *  socket that takes it only under another type, or into a Value its operator shaped otherwise. The draft keeps them,
- *  so picking it back joins them again; none is drawn, none is a fault, and Save leaves them out (`finalGraph`).
- *  A route no type joins is no such case: it is a fault. Will, 2026-11-05 */
+/** The routes a node keeps for another of its types: into or out of a row only that type has, or into a socket only
+ *  another type has. The draft keeps them, so picking it back joins them again; none is drawn, none is a fault, and
+ *  Save leaves them out (`finalGraph`). A route into a socket that is there is live, whatever it carries (TODO 770).
+ *  Will, 2026-11-05 */
 export function keptRoutes(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes'>, kinds: Kinds = NODE_KINDS): NodeRoute[] {
   const byId = new Map(workflow.nodes.map((n) => [n.id, n]));
   const kept = (address: string): boolean => keptRow(byId.get(socketOf(address).node), socketOf(address).row, kinds);
-  return (workflow.routes ?? []).filter((r) => kept(r.from) || kept(r.to) || reshaped(r, byId, kinds) || retyped(r, byId, kinds));
+  return (workflow.routes ?? []).filter((r) => kept(r.from) || kept(r.to) || retyped(r, byId, kinds));
 }
 
 /** A graph as Save writes it: each node with the values of its type's rows, and only the routes they join.
@@ -327,8 +309,8 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
   // A route to a row another type holds is kept for that type: no fault, and Save leaves it out.
   const kept = keptRoutes(workflow, kinds);
   const held = new Map(workflow.nodes.map((n) => [n.id, n]));
-  // Each input's routes so far, by what they carry.
-  const fed = new Map<string, { from: string; type?: SocketType }[]>();
+  // Each input's routes so far, by where they leave. Any type joins any input: what it cannot use reads null (TODO 770).
+  const fed = new Map<string, string[]>();
   const next = new Map<string, string[]>();
   for (const route of workflow.routes ?? []) {
     const { from, to } = route;
@@ -350,14 +332,10 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
     }
     if (!into && socketOf(to).row === ROWS.name && byId.has(socketOf(to).node)) problems.push(`a route enters "${to}", a Rows row, which only sends: a node's rows come in on its header`);
     else if (!into) problems.push(`a route enters "${to}", which is no input socket`);
-    if (out && into && !accepts(out.type, into.type)) problems.push(`the route "${from}" → "${to}" joins ${SOCKET_WORDS[out.type]} to ${SOCKET_WORDS[into.type]}`);
-    // An any input that takes many takes one type at a time.
-    const mixed = into?.type === 'any' && out ? there.find((r) => r.type && r.type !== out.type)?.type : undefined;
-    if (there.some((r) => r.from === from)) problems.push(`the route "${from}" → "${to}" is there twice`);
+    if (there.includes(from)) problems.push(`the route "${from}" → "${to}" is there twice`);
     else if (there.length && !into?.many) problems.push(`two routes enter "${to}", which takes one`);
-    else if (mixed && out) problems.push(`routes of two types enter "${to}": ${SOCKET_WORDS[mixed]} and ${SOCKET_WORDS[out.type]}`);
-    fed.set(to, [...there, { from, ...(out ? { type: out.type } : {}) }]);
-    // What a route brings from a node that holds it, its row must hold too.
+    fed.set(to, [...there, from]);
+    // What a route brings from a node that holds it, its row must hold too; one of another type it reads as null.
     const [source, target] = [held.get(socketOf(from).node), held.get(socketOf(to).node)];
     const brought = socketOf(from).row === undefined ? undefined : source?.values?.[socketOf(from).row!];
     const row = target && into && rowOf(byId.get(target.id)!.rows, socketOf(to).row ?? '');
@@ -458,7 +436,8 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
       if (warning) warnings.push({ ...(to === node.id ? {} : { row: socketOf(to).row! }), words: warning });
       return !!warning;
     });
-    if (kind.needs) unusable(node.id, { label: node.heading ?? kind.heading, needs: kind.needs });
+    const head = needOf(kind);
+    if (head) unusable(node.id, { label: node.heading ?? kind.heading, needs: head });
     // A Condition's tree draws a part for each comparison its values hold and each Group row a route enters.
     const drawn = kind.rows.some((r) => r.repeat) ? conditionRows(kind, partsOf(node, workflow.routes ?? [])) : kind.rows;
     const rows = drawn.map((row): GraphRow => {
@@ -490,8 +469,8 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
       const coming = routes.filter((r) => r.to === address && !bad.includes(r)).flatMap((r) => brings(r.from) ?? []);
       // A switch is driven by the road a boolean names: a True socket is on, a False socket off.
       if (row.control === 'switch') {
-        const ins = routes.filter((r) => r.to === `${node.id}/${row.name}`);
-        if (!ins.length) return own;
+        const ins = routes.filter((r) => r.to === address && !bad.includes(r));
+        if (!ins.length) return bad.length ? { ...own, value: null } : own;
         const says = ins.map((r) => {
           const { node: id, row: out } = socketOf(r.from);
           if (out === FALSE_SOCKET) return false;
@@ -572,7 +551,7 @@ const empty = (value: unknown): boolean => value === '' || value == null || (Arr
 
 /** A node's values after its type or an operator changed: a row both shapes have, one value under one and a
  *  list under the other, takes its value along — split at its commas, or joined by them — so going back
- *  gives it again. Off is not gone. */
+ *  gives it again. Off is not gone. TRAP T-an-operator-shapes-its-value */
 function reshape(node: WorkflowNode, values: Readonly<Record<string, unknown>>, kinds: Kinds, facts: Pick<WorkflowFacts, 'fields'>): Readonly<Record<string, unknown>> {
   const [before, after] = [kindOfNode(kinds, node)?.rows ?? [], kindOfNode(kinds, { ...node, values })?.rows ?? []];
   const moved = Object.entries(values).flatMap(([name, held]) => {

@@ -6329,20 +6329,17 @@ nothing else learns of operators. Part 1 may be Equals and part 2 Is one of.
   row's value between its shapes: one value becomes the list of its comma parts; a list
   becomes its one item, or several joined by commas. Going back gives it again. A Value's
   Text and List do the same.
-- **A route the other shape takes is the draft's** (Will, 2026-11-05: what a change orphans
-  stays in the draft). A Text routed into Equals' Value, then Is one of picked: `keptRoutes`
-  keeps it — drawn nowhere, no fault, driving no row — and Save leaves it out (`finalGraph`).
-  Equals again joins it. A List into Is one of, then Equals, the same.
-- **A reader never MAKES one.** A route dragged into a shape that refuses it would be kept
-  unseen and look like nothing happened, so `bindWorkflow`'s `take()` refuses any route the
-  draft would newly keep, and says why.
+- **A route stays joined through a change of shape** (Will, TODO 770: any route joins any
+  input). A Text routed into Equals' Value, then Is one of picked: the route is drawn, the
+  Value reads null and the node warns ("Value takes a list; it was given "Pro""); Save writes
+  it, and Equals again reads it. A List into Is one of, then Equals, the same. Only a socket
+  that is GONE keeps its route in the draft (`keptRoutes`).
 - **A file from before tags** — a Value's List held as text, an Is one of as one pick — reads
   once as its list (`readWorkflow`). Only a `tags` row is read so: a list row of another
   control holding one value is still a fault ("which is no list").
 
 - Site: `src/core/data/node-kinds.ts`
 - Site: `src/core/data/workflow.ts`
-- Site: `src/core/ui/node-graph.ts`
 - Site: `test/unit/a-node-row-says-its-own-fault.test.mjs`
 
 ### T-a-row-says-its-own-fault
@@ -6393,11 +6390,11 @@ Figma's "Greater than or equal" reads "At least" here.
   many booleans, and Not takes one. Is empty takes any value. A comparison takes nothing: its values
   are its rows. Each one forks: True on the header, False on the footer. Nothing runs (N4): a runner
   reads a value as `truthy` reads it (D2).
-- **What a type change orphans is the draft's** (Will, 2026-11-05). Say a route enters a socket that
-  takes it only under another type. For example, Store's rows enter a Condition switched to And.
-  `keptRoutes` keeps that route: it is drawn nowhere, it is no fault, and Rows that hold joins it
-  again. Save leaves it out (`finalGraph`), and `take()` refuses to make one. Only the node a route
-  ENTERS is asked: a List out of a Value into one value is still a fault.
+- **What a type change orphans is the draft's** (Will, 2026-11-05), and only a socket that is GONE
+  orphans a route (TODO 770). Store's rows into a Condition switched to And stay joined: And's header
+  is there, reads null, and the node warns ("takes a boolean; it was given rows"). Switched to a
+  comparison, which takes nothing on its header, `keptRoutes` keeps the route: drawn nowhere, no
+  fault, and Rows that hold joins it again. Save leaves it out (`finalGraph`).
 - **A Field the draft keeps names nothing.** Under Is one of, a `field` value kept from the tree does
   not close Values to that field's values. `fieldOf` reads only a Field row the node draws now.
 - **The Query draws one type.** `kindIn(kind, 'query')` leaves Rows that hold alone, so the Query's
@@ -6422,8 +6419,9 @@ types allow is drawn; no family fences what a graph places.
   it (a Condition's Rows that hold, a Collection and a Tag take rows, Pick an object, Time a date;
   Is empty anything); a row says it by its
   control (a number, a date, one of a fixed list, an operator), by picking several (a list; Math's
-  a list of numbers), or, a comparison's Value, by its field's type. `needOf` reads it; an input
-  that says nothing takes anything (the Output, a Custom Node's header, a text row).
+  a list of numbers), or, a comparison's Value, by its field's type; else by its socket's TYPE
+  (TODO 770: a value, an object, a boolean). `needOf` reads it; an `any` that says nothing takes
+  anything (the Output, a Custom Node's header, Is empty).
 - **What reaches is what the graph says before a run** (`givenAt`): the type its source sends,
   finer where its row says (`gives`: rows from a Rows row, a list from a List or Split by, a
   number from a Math Result or a Count), and the value a row with a control holds. A Value that
@@ -6439,9 +6437,14 @@ types allow is drawn; no family fences what a graph places.
   (`state-pins.yaml`: after `data-current`, so a picked one stays a warning; a run's step wins)
   and drops a category's tint, as a pick does. Its header is the tip's anchor and is described by
   it (`aria-describedby`), so a hover or keyboard focus shows the words, one line each.
-- **No fault, no Save block, never red.** `workflowFaults` is untouched: a route its types
-  refuse ("joins an object to a value") is still refused, and a row's own fault
-  (`T-a-row-says-its-own-fault`) is still red and holds Save.
+- **Any route joins any input** (Will, TODO 770, B): a type mismatch is no fault and no refusal,
+  only this warning — "Value A takes a number; it was given rows". Grouping makes one socket of
+  what its source sends. What stays refused is the graph's shape: a loop, the same route twice,
+  two into an input that takes one, a socket that is not there, a Rows row (it only sends), a
+  Group row from anything but a Condition's True (it nests a tree, `T-a-condition-is-a-tree-of-nodes`),
+  an output that says it sends any type, and a preset's header (read only).
+- **No fault, no Save block, never red.** A row's own fault (`T-a-row-says-its-own-fault`) is
+  still red and holds Save; a route the input cannot read brings no such fault.
 
 - Site: `src/core/data/node-input.ts`
 - Site: `src/core/data/workflow.ts`
@@ -6450,6 +6453,7 @@ types allow is drawn; no family fences what a graph places.
 - Site: `src/components/sherpa-node/sherpa-node.html`
 - Site: `src/data.ts`
 - Site: `test/unit/a-node-reads-null-from-what-it-cannot-use.test.mjs`
+- Site: `test/unit/any-route-joins-any-input.test.mjs`
 - Site: `test/e2e/reforged-node-warning.spec.ts`
 
 ### T-a-changed-key-moves-the-row
@@ -6569,8 +6573,8 @@ routes between their sockets — checked by `schemas/workflow.v2.json` and by
   the Rows row; one a kind cannot send from there is dropped and reported. The saved
   v1 files in the repo and in Demos are converted; the reader stays for any outside.
 - **A socket is `node`, `node/row` or `node/#false`**: the header's, for the whole
-  node, a row's, or a fork's False. A route joins an output to an input that
-  `accepts()` its type (`T-a-socket-says-its-type`); an input takes one route
+  node, a row's, or a fork's False. A route joins an output to any input (TODO 770;
+  one of another type reads null, `T-a-socket-says-its-type`); an input takes one route
   unless it takes `many`, and no route may close a loop, or nothing would run first.
 - **`checkWorkflow` reports each fault and never throws**, as `checkApp` does: a
   definition from a store or an agent may be wrong, and the page still opens.
@@ -6703,15 +6707,18 @@ Sherpa draws: a page's Query and a workflow. Plan 695 N1: two registries had let
 boolean, or `any` (Will, TODO 713; plan-713 §2, M1). A workflow's JSON names
 sockets only, never types.
 
-- **`accepts(from, to)` is the one rule**: each type joins its own, and an `any`
-  input takes all three. An output never sends `any`: it says what it sends, so a
-  kind whose output is `any` is a fault on each route that leaves it.
+- **`accepts(from, to)` says what an input reads as its own**: each type its own,
+  and an `any` input all three. Any route JOINS any input (Will, TODO 770, B): one
+  of another type is no fault and no refusal; the input reads null and its node
+  warns (`T-a-node-reads-null-from-what-it-cannot-use`). The shapes are hints. An
+  output never sends `any`: it says what it sends, so a kind whose output is `any`
+  is a fault on each route that leaves it.
 - **An ARRAY is an object** (Will, D17): a `multiple` row — a picklist of several,
   HTML's own name — holds a list, and its sockets are objects; one set comes in.
 - **`many` is per socket** (D4): only an input that says it takes several routes.
   `editWorkflow` puts a new route beside the ones there; anywhere else it replaces
-  the one there. The same route twice is a fault, and so is a second TYPE into an
-  `any` that takes many: it has no one way to join them.
+  the one there. The same route twice is a fault. Two TYPES into an `any` that takes
+  many are not (770): each is read by what the input needs.
 - **A fork is `branches`**: True is the header's output, False the footer's,
   `node/#false` — a `#` part is no row, as the Query's `#filters` is not. With
   `branches`, a kind says no header `output` of its own. True and False are
@@ -6726,6 +6733,7 @@ sockets only, never types.
 - Site: `src/core/data/node-kinds.ts`
 - Site: `src/core/data/workflow.ts`
 - Site: `test/unit/a-socket-says-its-type.test.mjs`
+- Site: `test/unit/any-route-joins-any-input.test.mjs`
 
 ### T-a-condition-is-a-tree-of-nodes
 
@@ -6748,7 +6756,8 @@ type is it (`T-a-logic-type-is-an-operator`).
   and `id` of every part go through untouched. A field edit MOVES the whole tree.
   A nested True has no route a reader may make: the Query holds one tree.
 - **A Group row takes only the True of a condition** (`RowKind.from`):
-  `workflowFaults` refuses a pick's, a False, or a node that is no condition.
+  `workflowFaults` refuses a pick's, a False, or a node that is no condition. It
+  nests the tree, so it is the graph's shape, not a type: still refused under 770.
 - **A comparison is checked by its field's type** where the facts give it: an
   operator its type does not take, a value that is no number for a number.
 - **A status, a preset and a saved filter draw their conditions as Condition
@@ -7417,9 +7426,10 @@ Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
   each behind a critical `sherpa-dialog`. A preset's inside is locked, with "Copy to my nodes".
 - **"Save as Custom Node" is `groupNodes`, "Ungroup" is `ungroupUse`** (M11): each route over
   the edge is one socket per outside OUTPUT that feeds in (a Group Input row) and per inside
-  output that feeds out, typed by what it carries. The definition keeps the nodes WHERE THEY
-  SIT, so Ungroup gives the same nodes, routes and places. A loop out and back, a socket of two
-  types and a result with a new fault are refused in words.
+  output that feeds out, typed by what its source sends. The definition keeps the nodes WHERE THEY
+  SIT, so Ungroup gives the same nodes, routes and places. A loop out and back and a result with
+  a new fault are refused in words; one source into inputs of two types is one socket, and an
+  input inside that cannot use it warns, as it did outside (TODO 770).
   The toolbar's button (on from two picked) opens a dialog for the name and description; a
   refusal is said in it, and the dialog stays open. The inspector holds none of it (TODO 745).
 

@@ -359,7 +359,7 @@
       }
     },
     "route": {
-      "description": "Joins an output socket to an input socket that accepts its type: a value, an object or a boolean into its own type, or into an input that takes any. NODE_KINDS says each socket's type. A node's data comes in on its header, which takes any, and leaves from its Rows row (\"node/rows\"), which only sends; where it forks, its header sends True and \"node/#false\" False. An input takes one route, unless it takes many.",
+      "description": "Joins an output socket to any input socket. NODE_KINDS says each socket's type: an input reads what it needs of what comes, and one of another type reads null, and its node warns (TODO 770). A node's data comes in on its header, which takes any, and leaves from its Rows row (\"node/rows\"), which only sends; where it forks, its header sends True and \"node/#false\" False. An input takes one route, unless it takes many.",
       "type": "object",
       "additionalProperties": false,
       "required": ["from", "to"],
