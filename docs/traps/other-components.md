@@ -466,6 +466,28 @@ be written wrong: a row GAINS children at runtime (Favorites does, on the first
 
 - Site: `src/components/sherpa-nav-item/sherpa-nav-item.ts`
 
+### T-a-link-row-is-pressed-anywhere-in-its-box
+
+**A nav row that is a link is pressed anywhere in its box, and goes where its link
+goes** (TODO 800). The HOST is the row's box: its indent (32 px on a View row), its end
+padding and its dot are the host's, not the `<a>`'s. The host hears every click and
+reports `item-select`, so a press there lit the row (the nav sets `data-current-id`)
+and named the header after it (the outlet), and navigated nowhere: the View chip and
+the URL kept the old View. Measured 2026-11-05: a real press 10 px into the "My
+accounts" row on Records lit it and headed the page "My accounts", the chip still on
+All customers. The Demos flake (`reforged-nav-view-hierarchy.spec.ts:83`, up to 2 in 8
+under load) left that same mark: both kept failures show the header named after the
+pressed row, which only `nav-select` writes and any route after it rewrites. Not
+caught live; a press while the opening rail (160 ms) is still narrow lands in the indent.
+
+So the link's `::before` covers the box, behind the content (`z-index: -1` in the
+host's isolated stack), and the dot takes no pointer. The label, the icon and a
+trailing control keep their own presses; an Area, which has no destination, keeps
+its toggle (`T-an-expandable-row-is-not-a-destination`).
+
+- Site: `src/components/sherpa-nav-item/sherpa-nav-item.css`
+- Site: `test/e2e/reforged-nav-item.spec.ts`
+
 ### T-advanced-checkbox-is-a-snapped-pair
 
 `Checkbox - Advanced` is **two bordered boxes touching**, not one box with a

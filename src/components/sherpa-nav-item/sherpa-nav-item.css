@@ -170,6 +170,14 @@
 .nav-link { display: none; }
 :host([data-href]) .nav-button { display: none; }
 :host([data-href]) .nav-link { display: flex; }
+/* The link's hit area is the whole box, its indent too, behind the content.
+   TRAP T-a-link-row-is-pressed-anywhere-in-its-box */
+:host([data-href]:not([data-expandable])) .nav-link::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
 
 /* Outside `content`, so it survives the collapsed rail — there, the icon IS the row. */
 .icon {
@@ -267,6 +275,8 @@
   background: var(--sherpa-style-surface-base, #f2dfff);
   border: var(--sherpa-border-top, 0.5px) solid
     var(--sherpa-style-border-base, #c046ff);
+  /* A press on it is the row's. TRAP T-a-link-row-is-pressed-anywhere-in-its-box */
+  pointer-events: none;
 }
 /* No isVisible flag: the dot is meant to survive the collapsed rail. Absolute, not
    a flex child — a 40px rail has no room for it in flow (8+16+8+8+8 = 48), so it

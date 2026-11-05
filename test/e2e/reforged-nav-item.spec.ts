@@ -148,6 +148,36 @@ test('disabled item does not fire on click', async ({ page }) => {
   expect(r.fired).toBe(false);
 });
 
+/* A press on a link row's indent, its end or its dot lit the row and went
+   nowhere (TODO 800): the row's own box, outside its <a>. TRAP T-a-link-row-is-pressed-anywhere-in-its-box */
+test('a press anywhere in a link row\'s box goes where its link goes: its indent, its end, its dot', async ({ page }) => {
+  await page.evaluate(async () => {
+    const el = document.createElement('sherpa-nav-item') as unknown as NavItemEl;
+    el.id = 'child';
+    el.setAttribute('data-label', 'At risk');
+    el.setAttribute('data-tier', '2');
+    el.toggleAttribute('data-status-dot', true);
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    (window as unknown as { selects: number }).selects = 0;
+    el.addEventListener('item-select', () => (window as unknown as { selects: number }).selects++);
+  });
+  const row = page.locator('#child');
+  const box = (await row.boundingBox())!;
+  const link = await row.evaluate((el) => el.shadowRoot!.querySelector('.nav-link')!.getBoundingClientRect().toJSON() as DOMRect);
+  const dot = await row.evaluate((el) => el.shadowRoot!.querySelector('.dot')!.getBoundingClientRect().toJSON() as DOMRect);
+  const y = box.y + box.height / 2;
+  // Each point is in the row and outside its link.
+  const points = { indent: box.x + 10, end: box.x + box.width - 3, dot: dot.x + dot.width / 2 };
+  for (const [name, x] of Object.entries(points)) {
+    expect(x < link.x || x > link.x + link.width, name).toBe(true);
+    await row.evaluate((el, to) => el.setAttribute('data-href', to), `#${name}`);
+    await page.mouse.click(x, y);
+    await expect.poll(() => page.evaluate(() => location.hash), name).toBe(`#${name}`);
+  }
+  expect(await page.evaluate(() => (window as unknown as { selects: number }).selects)).toBe(3);
+});
+
 test('promo variant renders heading + description', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-nav-item') as unknown as NavItemEl;
