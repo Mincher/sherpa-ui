@@ -9,7 +9,7 @@
  * - WorkflowDefinition — One workflow, as JSON (v2) — its nodes and its routes.
  * - WorkflowDefinitionV1 — A workflow as v1 saved it: its data rows left from a node's header.
  * - WorkflowRead — A workflow read as v2, and each fault the read met.
- * - readWorkflow — A workflow as v2: a v1's header routes moved to its Rows row; an old kind or type read as today's.
+ * - readWorkflow — A workflow as v2: a v1's header routes moved to its Rows row, once.
  * - GROW_MIN — The least a node's size may be: its natural size, as 1.
  * - GROW_MAX — The most a node's size may be: double its natural size, as 2.
  * - keptRoutes — The routes a node keeps for another of its types: drawn nowhere, no fault, not saved.
@@ -84,28 +84,6 @@ export interface WorkflowRead {
   faults: string[];
 }
 
-/** A kind the registry renamed, or folded into a family as one of its types: what a workflow saved
- *  before reads as, once. Plan 713 M4, plan 749 P3 */
-const FOLDED: Readonly<Record<string, { kind: string; type?: string }>> = {
-  filter: { kind: 'condition' }, sort: { kind: 'collection', type: 'sort' }, group: { kind: 'collection', type: 'group' }, count: { kind: 'collection', type: 'count' },
-};
-/** A type a family renamed: a Value's Number reads as a Decimal, which takes every number it took. */
-const RETYPED: Readonly<Record<string, Readonly<Record<string, string>>>> = { value: { number: 'decimal' } };
-
-/** A node as the kinds hold it now: an old kind or type read as today's, where the kinds lack it; else the one given. */
-function current(node: WorkflowNode, kinds: Kinds): WorkflowNode {
-  const fold = kinds[node.kind] ? undefined : FOLDED[node.kind];
-  const kind = fold && kinds[fold.kind] ? fold.kind : node.kind;
-  const was = kind !== node.kind ? fold?.type ?? node.values?.['type'] : node.values?.['type'];
-  const types = kinds[kind]?.types ?? {};
-  const now = typeof was === 'string' && !Object.hasOwn(types, was) && Object.hasOwn(types, RETYPED[kind]?.[was] ?? '') ? RETYPED[kind]![was]! : was;
-  const read = kind === node.kind && now === node.values?.['type'] ? node : { ...node, kind, ...(now !== undefined ? { values: { ...node.values, type: now } } : {}) };
-  // A tags row holding one value — a Value's List as text, an Is one of as one pick — reads as its list.
-  const rows = kindOfNode(kinds, read)?.rows ?? [];
-  const lists = Object.entries(read.values ?? {}).filter(([name, v]) => rowOf(rows, name)?.control === 'tags' && ['string', 'number', 'boolean'].includes(typeof v));
-  return lists.length ? { ...read, values: { ...read.values, ...Object.fromEntries(lists.map(([name, v]) => [name, asList(v)])) } } : read;
-}
-
 /** One value as a list: text split at its commas, anything else alone. */
 const asList = (value: unknown): unknown[] => (Array.isArray(value) ? value
   : typeof value === 'string' ? value.split(/[,\r\n]+/).map((v) => v.trim()).filter(Boolean) : value == null || value === '' ? [] : [value]);
@@ -117,15 +95,13 @@ const asOne = (value: unknown): unknown => (!Array.isArray(value) ? value : valu
  * A workflow as v2: a v2 as it is, the one given; a v1 read ONCE — each route that left a
  * node's header, its data rows, now leaves its Rows row. One a v2 kind cannot send from
  * there (no Rows row, and its header sends only True) is dropped, and a fault says so: it
- * would mean another thing. A kind or type renamed reads as today's, once: a file is
- * written anew only when it is saved again. Plan 713 D8, plan 749 P3. TRAP T-a-workflow-is-its-definition
+ * would mean another thing. A kind or a type is read as it is named: an old one is none
+ * (TODO 777). Plan 713 D8. TRAP T-a-workflow-is-its-definition
  */
 export function readWorkflow(given: WorkflowDefinition | WorkflowDefinitionV1, kinds: Kinds = NODE_KINDS): WorkflowRead {
   const v = (given as { v?: unknown } | null)?.v;
   if ((v !== 1 && v !== 2) || !Array.isArray(given.nodes)) return { faults: ['it is not a workflow definition: a v2, or a v1 to read as one'] };
-  // A Filter is a Condition, and a Sort, Group or Count a Collection of that type, with the same rows.
-  const nodes = given.nodes.map((n) => current(n, kinds));
-  const workflow = nodes.some((n, i) => n !== given.nodes[i]) ? { ...given, nodes } : given;
+  const workflow = given;
   if (workflow.v === 2) return { workflow, faults: [] };
   const faults: string[] = [];
   const kindOf = new Map(workflow.nodes.map((n) => [n.id, kindOfNode(kinds, n)]));

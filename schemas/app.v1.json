@@ -21,12 +21,8 @@
       "propertyNames": { "$ref": "defs.v1.json#/$defs/id" },
       "additionalProperties": { "$ref": "defs.v1.json#/$defs/context" }
     },
-    "nodes": {
-      "description": "The app's preset Custom Nodes: a path to a nodes.v1.json. Read only in every editor's panel; the reader's own are kept apart.",
-      "type": "string"
-    },
     "entities": {
-      "description": "The app's preset entities: a path to an entities.v1.json. Read only; the reader's own are kept apart, app-wide.",
+      "description": "The app's preset entities, its Custom Nodes among them (the type node): a path to an entities.v1.json. Read only; the reader's own are kept apart, app-wide.",
       "type": "string"
     },
     "sections": {

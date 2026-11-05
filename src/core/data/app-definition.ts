@@ -28,8 +28,6 @@ export interface AppDefinition {
   /** The Context the app opens on — the nav's Home. */
   default: string;
   contexts: Record<string, ContextDefinition>;
-  /** The app's preset Custom Nodes, as JSON (nodes.v1): read only, in every editor's panel. */
-  nodes?: string;
   /** The app's preset entities, as JSON (entities.v1): read only, listed with the reader's own. */
   entities?: string;
   /** The nav's sections, in order: a label and the Contexts it lists. */

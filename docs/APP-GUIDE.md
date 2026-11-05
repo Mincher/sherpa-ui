@@ -148,10 +148,9 @@ Plus the app's stores, and its Views as JSON.
 - `chrome.header: false` takes the app header away while it is open;
   `chrome.filters: false` its filter row, and `"views"` leaves the View chip
   alone there, for a Context with no definition (see "Graph Views").
-- `nodes` is the app's preset Custom Nodes, a `nodes.v1.json`: read only, and in
-  every node editor's panel. See "Custom Nodes", below.
 - `entities` is the app's preset entities, an `entities.v1.json`: read only,
-  listed with the reader's own. See "Entities", below.
+  listed with the reader's own; its Custom Nodes are its entities of the type
+  `node`. See "Entities", below.
 - `checkApp(app)` reports every broken name. `T-an-app-is-its-definition`
 
 ## 4. Stores
@@ -429,13 +428,13 @@ provider.keeper = new PageKeeper({ eachView: () => settings.get('eachView') === 
 ### Custom Nodes
 
 A Custom Node is a workflow body saved under one name, with its inputs and
-outputs said once, as JSON (`nodes.v1`). They are app-wide, in two halves:
+outputs said once: an entity of the type `node`. They are app-wide, in two halves:
 
-- **The presets**, which the app ships in the file `app.json` `nodes` names.
-  They are read only; a reader copies one to edit it (`copyToMine`).
-  `loadNodeLibrary(url)` reads it: each definition goes through
-  `checkNodeLibrary`, one that fails is reported in its words and left out, and
-  the rest still load. The outlet does this for you.
+- **The presets**, which the app ships as entities of the type `node` in the
+  file `app.json` `entities` names. They are read only; a reader copies one to
+  edit it (`copyToMine`). `loadEntityLibrary(url)` reads the file: each entity
+  goes through `checkEntity`, one that fails is reported in its words and left
+  out, and the rest still load. The outlet does this for you.
 - **The reader's own**, in the page keeper: `await keeper.saveNode(id, definition)` (it answers whether it was kept; its checks load only when it is first asked),
   `keeper.removeNode(id)`. They are NAMED, so they are every tab's, in the
   database with `database: true`, and on the server with `remote` (the page name

@@ -19,7 +19,6 @@
  * - .eachView — Does each View keep what the reader left on it?
  * - .read — One page's state now, read from its tiers.
  * - .write — Change parts of one page's state; each goes to its tier, `undefined` forgets it.
- * - .presets — The Custom Nodes the app ships, read only: set after loadNodeLibrary().
  * - .entityPresets — The entities the app ships, read only: set after loadEntityLibrary().
  * - .entities — The ONE entity shelf: the presets and the reader's own, of every type, kept app-wide.
  * - .shelf — The Custom Node shelf: a view of every entity, as the node it offers.
@@ -282,18 +281,14 @@ export class PageKeeper {
     if (named) this.#onward(page, was.filter((id) => !held().includes(id)));
   }
 
-  /** The Custom Nodes the app ships, read only: set once `loadNodeLibrary()` has answered. */
-  presets: NodeLibrary | undefined;
-
   /** The entities the app ships, read only: set once `loadEntityLibrary()` has answered. */
   entityPresets: readonly Entity[] = [];
 
-  /** The ONE entity shelf: the presets (the app's file, and its Custom Node presets read as type
-   *  `node`) and the reader's own, of every type. The reader's are a NAMED part, app-wide: every tab,
-   *  the database, the server. Read through, so another tab's entity is seen at once. */
+  /** The ONE entity shelf: the presets (the app's file) and the reader's own, of every type. The reader's are a NAMED
+   *  part, app-wide: every tab, the database, the server. Read through, so another tab's entity is seen at once. */
   get entities(): EntityShelf {
     return this.#shelf ??= makeShelf({
-      presets: () => [...this.entityPresets, ...Object.entries(this.presets?.nodes ?? {}).map(([id, definition]) => nodeEntityOf(id, { ...definition, preset: true }))],
+      presets: () => this.entityPresets,
       mine: () => this.read(NODES_PAGE).entities ?? {},
       keep: (next) => {
         this.write(NODES_PAGE, { entities: next });

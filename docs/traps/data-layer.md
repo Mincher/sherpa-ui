@@ -6334,9 +6334,8 @@ nothing else learns of operators. Part 1 may be Equals and part 2 Is one of.
   Value reads null and the node warns ("Value takes a list; it was given "Pro""); Save writes
   it, and Equals again reads it. A List into Is one of, then Equals, the same. Only a socket
   that is GONE keeps its route in the draft (`keptRoutes`).
-- **A file from before tags** — a Value's List held as text, an Is one of as one pick — reads
-  once as its list (`readWorkflow`). Only a `tags` row is read so: a list row of another
-  control holding one value is still a fault ("which is no list").
+- **A file from before tags** is no longer read (Will, TODO 777): a tags row holding one value
+  is a fault ("which is no list"), as any list row's is.
 
 - Site: `src/core/data/node-kinds.ts`
 - Site: `src/core/data/workflow.ts`
@@ -6753,7 +6752,8 @@ sockets only, never types.
 §4, M4): its Join, then each part — a comparison's Field, Operator and Value, or
 a Group row for a nested group. `A or (B and C)` is two nodes: the inner one's
 True goes into a Group row of the outer. One kind serves both graphs; the
-workflow's `filter` is gone, and a saved one reads as `condition`, once. The tree
+workflow's `filter` is gone, and no file is read as one now (TODO 777): a node of an old kind
+is a fault. The tree
 is Logic's first type, Rows that hold, and the Query's only one; a node with no
 type is it (`T-a-logic-type-is-an-operator`).
 
@@ -7426,7 +7426,8 @@ followed the range and its axis was every month the field holds, most at 0.
 **A Custom Node is a workflow body saved under one id, and each use is an INSTANCE of it.**
 Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
 
-- **The definition is JSON** (`schemas/nodes.v1.json`, `defs.v1#/$defs/nodeDefinition`): a
+- **The definition is JSON** (`defs.v1#/$defs/nodeDefinition`), an app's shipped as entities of
+  the type `node` (`entities.v1.json`; app.v1 `nodes` is gone, TODO 777): a
   label, `inputs`, `outputs` and a body of `nodes` and `routes`. Inside, `#in`, `#in/<name>`,
   `#out` and `#out/<name>` are the Group Input and Group Output; `innerOf` lays them out as
   two nodes of the kinds `#group-input` and `#group-output`, so the body is checked and drawn
@@ -7460,7 +7461,6 @@ Will, 2026-11-04 (D9-D13, D15); plan-713-node-model.md section 9.
   The toolbar's button (on from two picked) opens a dialog for the name and description; a
   refusal is said in it, and the dialog stays open. The inspector holds none of it (TODO 745).
 
-- Site: `src/core/browser/node-files.ts`
 - Site: `src/core/data/node-library.ts`
 - Site: `src/core/data/node-group.ts`
 - Site: `src/core/ui/node-graph.ts`
@@ -7508,7 +7508,8 @@ Will, 2026-11-05 (plan-746, D1-D3, D8); versions: "not too fussed while we build
   graph { nodes, routes, ties }, settings, uses, origin }`. The graph is a workflow's, with `#in`
   and `#out` as a Custom Node has. `origin` (`preset` or `mine`) is set on READ, never written.
   A Custom Node is the type `node`, its sockets in `settings`; `nodeEntityOf` and `definitionOf`
-  are the two ways round, and `nodes.v1.json` stays readable as a read-once map.
+  are the two ways round. An app ships its Custom Nodes as entities (app.v1 `nodes` and its
+  `loadNodeLibrary` are gone, TODO 777); the reader's `nodes` kept before entities still read once.
 - **The type registry** (`entity-types.ts`, the data layer, light): each type says its settings check
   (and its schema in `schemas/entity-<type>.v1.json`), the families its graph may place (a kind's
   category), the `#in` and `#out` it demands, and `runs`. Two ship: `preset-filter` and `node`.

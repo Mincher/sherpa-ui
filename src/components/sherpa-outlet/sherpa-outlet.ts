@@ -14,7 +14,6 @@ import { bindSettings } from '../../core/ui/bind-settings.js';
 import { checkApp, type AppDefinition, type ContextInit, type ContextModule } from '../../core/data/app-definition.js';
 import { report } from '../../core/data/report.js';
 import { loadViewLibrary } from '../../core/browser/view-files.js';
-import type { NodeLibrary } from '../../core/data/node-library.js';
 import type { Entity } from '../../core/data/entity.js';
 import type { EntityShelf } from '../../core/data/entity-shelf.js';
 import type { NodeShelf } from '../../core/data/node-shelf.js';
@@ -78,10 +77,8 @@ export class SherpaOutlet extends SherpaElement {
   #views: Record<string, ViewLibrary> = {};
   /** Settles once every Context's own Views are in. */
   #viewsReady: Promise<void> = Promise.resolve();
-  /** Settles once the app's preset Custom Nodes are in the keeper. */
+  /** Settles once the app's preset entities are in the keeper. */
   #nodesReady: Promise<void> = Promise.resolve();
-  /** The app's preset Custom Nodes, once loaded. */
-  #presets: NodeLibrary | undefined;
   /** The app's preset entities, once loaded. */
   #entityPresets: readonly Entity[] = [];
   /** Only the newest load may commit. */
@@ -195,17 +192,13 @@ export class SherpaOutlet extends SherpaElement {
     this.#viewsReady = Promise.all(Object.entries(options.app.contexts).map(async ([name, context]) => {
       if (context.views) this.#views[name] = await loadViewLibrary(this.#url(context.views));
     })).then(() => undefined);
-    // The presets are the keeper's, so every editor lists them with the reader's own.
-    if (options.app.nodes || options.app.entities) {
-      const { nodes, entities } = options.app;
-      // Fetched only where an app ships presets: an app with none never loads them. The entities after the nodes: a graph may place one.
+    // The presets are the keeper's, so every editor lists them with the reader's own. Its Custom Nodes are its entities of the type `node`.
+    if (options.app.entities) {
+      const { entities } = options.app;
+      // Fetched only where an app ships presets: an app with none never loads them.
       this.#nodesReady = (async () => {
-        const [{ loadNodeLibrary }, files, { nodeEntityOf }] = await Promise.all([import('../../core/browser/node-files.js'), import('../../core/browser/entity-files.js'), import('../../core/data/entity.js')]);
-        if (nodes) this.#presets = await loadNodeLibrary(this.#url(nodes));
-        if (entities) {
-          const around = Object.entries(this.#presets?.nodes ?? {}).map(([id, definition]) => nodeEntityOf(id, definition));
-          this.#entityPresets = Object.values((await files.loadEntityLibrary(this.#url(entities), { entities: around })).entities);
-        }
+        const files = await import('../../core/browser/entity-files.js');
+        this.#entityPresets = Object.values((await files.loadEntityLibrary(this.#url(entities))).entities);
       })();
     }
     // The nav first, so a first click finds its rows. TRAP T-the-outlet-keeps-the-nav
@@ -260,7 +253,6 @@ export class SherpaOutlet extends SherpaElement {
     const keeper = this.#provider?.keeper;
     if (!keeper) return {};
     // Told at each hand-over: the app may give its provider another keeper after this one loads.
-    if (this.#presets) keeper.presets = this.#presets;
     keeper.entityPresets = this.#entityPresets;
     return { nodes: keeper.shelf, entities: keeper.entities };
   }
