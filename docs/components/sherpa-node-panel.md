@@ -2,7 +2,7 @@
 
 # sherpa-node-panel
 
-The nodes a graph editor may place, by category: a search, then each category an accordion of items. A card ([sherpa-container](sherpa-container.md)) floating on a canvas. Will, plan 713 M8. TRAP T-the-node-panel-asks-it-places
+The nodes a graph editor may place, by category: a search, then each category an accordion of items, one per family. A card ([sherpa-container](sherpa-container.md)) floating on a canvas. Will, plan 713 M8, plan 749 P3. TRAP T-the-node-panel-asks-it-places
 
 |  |  |
 |---|---|
@@ -11,7 +11,7 @@ The nodes a graph editor may place, by category: a search, then each category an
 
 ## When to use it
 
-For a graph editor's list of the nodes it may place, by category, with a search. It floats in a canvas's `panel` slot. Fill it with `populate(paletteOf(kinds))`; it fires `node-add` for a click, Enter or a drag, and opens "Add a node" from `askAdd()`.
+For a graph editor's list of the nodes it may place, one per family, by category, with a search that finds a family by any of its types. It floats in a canvas's `panel` slot. Fill it with `populate(paletteOf(kinds))`; it fires `node-add` for a click, Enter or a drag, and opens "Add a node" from `askAdd()`.
 
 ## Example
 
@@ -40,11 +40,23 @@ For a graph editor's list of the nodes it may place, by category, with a search.
     "category": "Collections",
     "items": [
       {
-        "id": "count",
+        "id": "collection",
         "kind": {
-          "heading": "Count",
-          "icon": "insights",
-          "description": "How many rows."
+          "heading": "Collection",
+          "icon": "list",
+          "description": "The rows in order, grouped, or counted.",
+          "types": {
+            "sort": {
+              "label": "Sort"
+            },
+            "group": {
+              "label": "Group by"
+            },
+            "count": {
+              "label": "Count",
+              "help": "How many rows"
+            }
+          }
         }
       }
     ]
@@ -64,7 +76,7 @@ Each one bubbles.
 
 | Event | Detail | What it means |
 |---|---|---|
-| `node-add` | `{ context: AddContext; kind: string \| undefined; point: { x: number; y: number; } }` | An item was clicked, Enter was pressed on it, or it was dropped, or a choice of "Add a node" was picked. |
+| `node-add` | `{ context: AddContext; kind: string \| undefined; point: { x: number; y: number; }; type: string }` | An item was clicked, Enter was pressed on it, or it was dropped, or a choice of "Add a node" was picked. |
 
 ## Parts
 

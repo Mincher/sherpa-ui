@@ -2034,15 +2034,16 @@ export function bindWorkflow(
   const customAt = (to: string, at: { x: number; y: number }): void => take(addCustomValue(shown(), to, at, K()));
   const onCustom = (to: string, at: { x: number; y: number }): void => customAt(to, { x: Math.round(at.x), y: Math.round(at.y) });
   // A node the reader asked for, from the panel or "Add a node": through the one door, `{ add }`; picked, so its inspector opens.
-  const place = (kind: string, at: { x: number; y: number }, context?: AddContext): void => {
+  const place = (kind: string, at: { x: number; y: number }, context?: AddContext, type?: string): void => {
     if (!K()[kind] || readOnly()) return;
     const free = (n: number): string => (shown().nodes.some((x) => x.id === `${kind}-${n}`) ? free(n + 1) : `${kind}-${n}`);
     const id = free(1);
     edit(() => {
       const fit = context && fitOf(K()[kind]!, context.type, context.side);
-      // A node let go by its output sits left of the point, so its output meets the line.
+      // A node let go by its output sits left of the point, so its output meets the line. A family takes the type it fits, or was found by.
       const x = Math.round(at.x - (context?.side === 'in' ? 280 : 0));
-      const added = { id, kind, x, y: Math.round(at.y) };
+      const typed = type ?? fit?.type;
+      const added = { id, kind, x, y: Math.round(at.y), ...(typed ? { values: { type: typed } } : {}) };
       // A use of a Custom Node records the definition it is placed from (D11).
       write(editWorkflow(shown(), { add: K()[kind]!.model === 'graph' && lib.nodes[kind] ? useOf(lib, kind, added) : added }, K()));
       if (context && fit) {
@@ -2061,13 +2062,13 @@ export function bindWorkflow(
     return { x: (clientX - box.left - x) / zoom, y: (clientY - box.top - y) / zoom };
   };
   const onAdded = (event: Event): void => {
-    const { kind, point, context } = (event as CustomEvent<{ kind: string; point?: { x: number; y: number }; context?: AddContext }>).detail;
+    const { kind, type, point, context } = (event as CustomEvent<{ kind: string; type?: string; point?: { x: number; y: number }; context?: AddContext }>).detail;
     if (context) return place(kind, context.at, context);
     const box = canvas.getBoundingClientRect();
-    if (!point) return place(kind, planeAt(box.left + box.width / 2 - 120, box.top + box.height / 2 - 40));
+    if (!point) return place(kind, planeAt(box.left + box.width / 2 - 120, box.top + box.height / 2 - 40), undefined, type);
     // Let go off the canvas: nothing is placed.
     if (point.x < box.left || point.x > box.right || point.y < box.top || point.y > box.bottom) return;
-    place(kind, planeAt(point.x, point.y));
+    place(kind, planeAt(point.x, point.y), undefined, type);
   };
   panel?.addEventListener('node-add', onAdded);
   refreshPanel();

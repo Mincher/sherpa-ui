@@ -127,6 +127,7 @@ export {
   fitOf,
   paletteFor,
   kindOfNode,
+  paletteMatch,
   paletteOf,
   placed,
   resolveKind,

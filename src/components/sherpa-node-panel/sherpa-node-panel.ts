@@ -4,13 +4,14 @@
  * It re-makes nothing: a sherpa-container, a sherpa-input-text for the search, a sherpa-accordion
  * per category, a sherpa-list of sherpa-list-items, and a sherpa-menu for "Add a node". It places
  * nothing either: an item clicked, Enter on it, or dragged off the card is `node-add`, and the
- * editor that hears it makes the node. TRAP T-the-node-panel-asks-it-places
+ * editor that hears it makes the node. An item is a FAMILY: its line names its types, and the
+ * search finds it by any of them: "round" finds Math, placed as Round. TRAP T-the-node-panel-asks-it-places
  *
  * Map:
  * - AddContext — Where "Add a node" opens, and what it is for: a socket of a type, dragged to a point.
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
-import { paletteFor, type PaletteGroup, type SocketType } from '../../core/data/node-kinds.js';
+import { fitOf, paletteFor, paletteMatch, type NodeKind, type PaletteGroup, type SocketType } from '../../core/data/node-kinds.js';
 // Defined before the template stamps them.
 import '../sherpa-accordion/sherpa-accordion.js';
 import '../sherpa-container/sherpa-container.js';
@@ -36,6 +37,13 @@ export interface AddContext {
 /** How far a pointer travels before a press on an item becomes a drag. */
 const THRESHOLD = 4;
 
+/** An item's line: a family's types, in order; else its kind's own. A preset says it is read only. */
+function lineOf(kind: NodeKind): string | undefined {
+  if ('preset' in kind && kind.preset) return `Preset, read only.${kind.description ? ` ${kind.description}` : ''}`;
+  const types = Object.values(kind.types ?? {});
+  return types.length > 1 ? types.map((t) => t.label).join(', ') : kind.description;
+}
+
 export class SherpaNodePanel extends SherpaElement {
   static override css = new URL('./sherpa-node-panel.css', import.meta.url);
   static override html = new URL('./sherpa-node-panel.html', import.meta.url);
@@ -46,6 +54,10 @@ export class SherpaNodePanel extends SherpaElement {
   #context: AddContext | null = null;
   /** A drag just ended: the click it makes is not a place. */
   #dragged = false;
+  /** Each item's kind. */
+  #kinds = new WeakMap<Element, NodeKind>();
+  /** The type a search found an item by, when its name did not match: placing it sets that type. */
+  #found = new WeakMap<Element, string>();
 
   override onRender(): void {
     this.on(this.root, 'input', this.#onSearch);
@@ -68,13 +80,12 @@ export class SherpaNodePanel extends SherpaElement {
         node.toggleAttribute('data-empty', !group.items.length);
         const list = node.querySelector('.items')!;
         for (const { id, kind } of group.items) {
+          const item = this.cloneItem('template.item-tpl', { id, heading: kind.heading, icon: kind.icon, description: lineOf(kind) });
+          if (!item) continue;
           // A preset is a file's: read only, and its line says so.
-          const preset = 'preset' in kind && !!kind.preset;
-          const item = this.cloneItem('template.item-tpl', {
-            id, heading: kind.heading, icon: kind.icon, description: preset ? `Preset, read only.${kind.description ? ` ${kind.description}` : ''}` : kind.description,
-          });
-          if (item && preset) item.toggleAttribute('data-preset', true);
-          if (item) list.append(item);
+          if ('preset' in kind && kind.preset) item.toggleAttribute('data-preset', true);
+          this.#kinds.set(item, kind);
+          list.append(item);
         }
       },
     });
@@ -89,15 +100,23 @@ export class SherpaNodePanel extends SherpaElement {
     this.#search();
   };
 
-  /** Narrow the items to those whose name holds what is typed; a category with none is hidden, and one with a match is open. */
+  /** Narrow the items to those whose name, or a type's, holds what is typed; a category with none is hidden, and one with
+   *  a match is open. An item found by a type, not by its name, says that type and its line, and places it. */
   #search(): void {
     const query = (this.$<HTMLInputElement>('.find')?.value ?? '').trim().toLowerCase();
     let shown = 0;
     for (const category of this.$$('.categories > sherpa-accordion')) {
       let own = 0;
       for (const item of category.querySelectorAll<HTMLElement>('sherpa-list-item')) {
-        const hit = !query || (item.dataset['label'] ?? '').toLowerCase().includes(query);
+        const kind = this.#kinds.get(item);
+        const hit = kind && paletteMatch(kind, query);
+        const type = hit?.type ? kind!.types![hit.type]! : undefined;
         item.toggleAttribute('data-filtered', !hit);
+        if (hit?.type) this.#found.set(item, hit.type);
+        else this.#found.delete(item);
+        const line = type ? [type.label, type.help].filter(Boolean).join(': ') : kind && lineOf(kind);
+        if (line) item.setAttribute('data-description', line);
+        else item.removeAttribute('data-description');
         if (hit) own++;
       }
       // A category with nothing in it shows only while nothing is searched.
@@ -114,8 +133,14 @@ export class SherpaNodePanel extends SherpaElement {
   #onClick = (event: Event): void => {
     if (this.#dragged) return;
     const item = this.pathFind(event, 'sherpa-list-item[data-kind]');
-    if (item) this.emit('node-add', { kind: item.dataset['kind'] });
+    if (item) this.emit('node-add', this.#asked(item));
   };
+
+  /** What placing an item asks for: its kind, and the type a search found it by. */
+  #asked(item: HTMLElement): { kind: string | undefined; type?: string } {
+    const type = this.#found.get(item);
+    return { kind: item.dataset['kind'], ...(type ? { type } : {}) };
+  }
 
   /** A press on an item, moved a few pixels: a drag. Let go off the card, it asks for the node there. */
   #onDown = (event: PointerEvent): void => {
@@ -144,7 +169,7 @@ export class SherpaNodePanel extends SherpaElement {
       setTimeout(() => { this.#dragged = false; });
       const card = this.$('.card')!.getBoundingClientRect();
       const over = e.clientX >= card.left && e.clientX <= card.right && e.clientY >= card.top && e.clientY <= card.bottom;
-      if (e.type === 'pointerup' && !over) this.emit('node-add', { kind: item.dataset['kind'], point: { x: e.clientX, y: e.clientY } });
+      if (e.type === 'pointerup' && !over) this.emit('node-add', { ...this.#asked(item), point: { x: e.clientX, y: e.clientY } });
     };
     this.on(window, 'pointermove', follow as EventListener, { while: shorter.signal });
     this.on(window, 'pointerup', stop as EventListener, { while: shorter.signal });
@@ -155,7 +180,11 @@ export class SherpaNodePanel extends SherpaElement {
 
   /** Open "Add a node" where a line was let go: the kinds a socket of its type could join, a Value first. */
   askAdd(context: AddContext): void {
-    const choices = paletteFor(this.#palette, context.type, context.side).map(({ id, kind }) => ({ id, heading: kind.heading }));
+    // A family that fits only as another type says which: "Collection › Count".
+    const choices = paletteFor(this.#palette, context.type, context.side).map(({ id, kind }) => {
+      const type = fitOf(kind, context.type, context.side)?.type;
+      return { id, heading: type ? `${kind.heading} › ${kind.types![type]!.label}` : kind.heading };
+    });
     if (!choices.length) return;
     this.#context = context;
     this.renderItems('.add', 'template.choice-tpl', choices);

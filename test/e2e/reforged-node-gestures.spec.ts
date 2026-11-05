@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-/** A workflow bound on the harness canvas: a Value feeds the Condition's Value; a Sort waits. */
+/** A workflow bound on the harness canvas: a Value feeds the Condition's Value; a Collection, a Sort, waits. */
 const BIND = `async (routes) => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const canvas = document.querySelector('#root sherpa-layout-canvas');
@@ -30,7 +30,7 @@ const BIND = `async (routes) => {
     { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'status', kind: 'value', x: 0, y: 260, values: { value: 'active' } },
     { id: 'filter', kind: 'condition', x: 360, y: 0, values: { field: 'status', op: 'eq', value: 'trial' } },
-    { id: 'sort', kind: 'sort', x: 720, y: 0, values: { field: 'status', direction: 'asc' } },
+    { id: 'sort', kind: 'collection', x: 720, y: 0, values: { type: 'sort', field: 'status', direction: 'asc' } },
   ], routes: routes ?? [{ from: 'start/rows', to: 'filter' }, { from: 'status/value', to: 'filter/value' }] };
   window.editor = bindWorkflow(canvas, flow, {
     session: new SessionStore(), inspector: document.getElementById('inspector'),
@@ -90,10 +90,10 @@ test('a picklist row edits through the draft\'s one door: the Filter\'s Value is
   await page.locator(`${filterValue} select`).selectOption('churned');
   await page.locator(`${row('Value', 'type')} select`).selectOption('text');
   const types = await page.locator(`${row('Value', 'type')} option`).allTextContents();
-  await page.locator(`${row('Sort', 'direction')} select`).selectOption('desc');
+  await page.locator(`${row('Collection', 'direction')} select`).selectOption('desc');
   const r = await draft(page);
   expect(options).toEqual(['active', 'trial', 'churned']);
-  expect(types).toEqual(['Text', 'Number', 'Date', 'True/false']);
+  expect(types).toEqual(['Text', 'Integer', 'Decimal', 'Date', 'True/false', 'List']);
   expect(r.nodes).toMatchObject({ filter: { value: 'churned' }, status: { value: 'active', type: 'text' }, sort: { direction: 'desc' } });
 });
 
@@ -123,18 +123,18 @@ test('a Value node routed into a picklist OVERRIDES it: "active Custom", read on
 test('557 a route\'s input end dragged to another input REROUTES it: the first row has its own pick back', async ({ page }) => {
   await bind(page);
   const from = await at(page, row('Condition', 'value'), 'input');
-  const to = await at(page, row('Sort', 'field'), 'input');
+  const to = await at(page, row('Collection', 'field'), 'input');
   await drag(page, from, to);
   expect(await page.evaluate(LINES)).toEqual(['start/rows → filter', 'status/value → sort/field']);
   const r = await page.evaluate(() => ({
     filter: document.querySelector<HTMLElement & { value: string }>('#root sherpa-node[data-heading="Condition"] sherpa-input-text[name="value"]')!.value,
-    sort: document.querySelector<HTMLElement & { value: string }>('#root sherpa-node[data-heading="Sort"] sherpa-input-text[name="field"]')!.value,
-    sortLocked: document.querySelector('#root sherpa-node[data-heading="Sort"] sherpa-input-text[name="field"]')!.hasAttribute('readonly'),
+    sort: document.querySelector<HTMLElement & { value: string }>('#root sherpa-node[data-heading="Collection"] sherpa-input-text[name="field"]')!.value,
+    sortLocked: document.querySelector('#root sherpa-node[data-heading="Collection"] sherpa-input-text[name="field"]')!.hasAttribute('readonly'),
   }));
-  // The Sort's Field now mirrors "active"; the Condition's Value is its own again.
+  // The Collection's Field now mirrors "active"; the Condition's Value is its own again.
   expect(r).toEqual({ filter: 'trial', sort: 'active', sortLocked: true });
   // Dropped where it began: nothing changes.
-  const home = await at(page, row('Sort', 'field'), 'input');
+  const home = await at(page, row('Collection', 'field'), 'input');
   await drag(page, home, home);
   expect(await page.evaluate(LINES)).toEqual(['start/rows → filter', 'status/value → sort/field']);
 });
@@ -163,14 +163,14 @@ test('558 a route\'s end let go over the bare canvas BREAKS it; a click on a con
 test('a line dragged out of an unrouted picklist\'s input onto the bare canvas makes a Value node there, holding the row\'s pick, routed in', async ({ page }) => {
   await bind(page, [{ from: 'start/rows', to: 'filter' }]);
   const spot = await blank(page);
-  await drag(page, await at(page, row('Sort', 'direction'), 'input'), spot);
+  await drag(page, await at(page, row('Collection', 'direction'), 'input'), spot);
   const r = await draft(page);
   expect(r.routes).toEqual(['start/rows → filter', 'value-1/value → sort/direction']);
   expect(r.nodes['value-1']).toEqual({ value: 'asc' });
   // The row mirrors it, and marks it Custom; its own pick is kept.
-  const text = await page.evaluate(() => document.querySelector('#root sherpa-node[data-heading="Sort"] sherpa-input-text[name="direction"]')!.shadowRoot!.querySelector('select')!.selectedOptions[0]!.textContent);
+  const text = await page.evaluate(() => document.querySelector('#root sherpa-node[data-heading="Collection"] sherpa-input-text[name="direction"]')!.shadowRoot!.querySelector('select')!.selectedOptions[0]!.textContent);
   expect(text).toBe('asc Custom');
-  expect(r.nodes['sort']).toEqual({ field: 'status', direction: 'asc' });
+  expect(r.nodes['sort']).toEqual({ type: 'sort', field: 'status', direction: 'asc' });
 });
 
 test('with no pointer: the inspector\'s "Custom value" makes the Value node; its "Cut route" cuts it; "Remove node" removes the node and its routes', async ({ page }) => {
@@ -194,12 +194,12 @@ test('with no pointer: the inspector\'s "Custom value" makes the Value node; its
 
 test('559 a click on the blank canvas deselects every node and shuts the panel; a drag across it does not', async ({ page }) => {
   await bind(page);
-  await page.locator('#root sherpa-node[data-heading="Sort"]').click({ position: { x: 40, y: 12 } });
+  await page.locator('#root sherpa-node[data-heading="Collection"]').click({ position: { x: 40, y: 12 } });
   const state = () => page.evaluate(() => ({
     current: [...document.querySelectorAll('#root sherpa-node[data-current]')].map((n) => (n as HTMLElement).dataset['heading']),
     open: (document.getElementById('inspector') as HTMLElement & { open: boolean }).open,
   }));
-  expect(await state()).toEqual({ current: ['Sort'], open: true });
+  expect(await state()).toEqual({ current: ['Collection'], open: true });
   const [x, y] = await blank(page);
   // A pan (Space + drag; a plain drag is a box now): the pointer moves, so it is no click.
   await page.evaluate(() => (document.querySelector('#root sherpa-layout-canvas')!.shadowRoot!.querySelector('.viewport') as HTMLElement).focus());
@@ -209,7 +209,7 @@ test('559 a click on the blank canvas deselects every node and shuts the panel; 
   await page.mouse.move(x + 30, y + 10, { steps: 4 });
   await page.mouse.up();
   await page.keyboard.up('Space');
-  expect(await state()).toEqual({ current: ['Sort'], open: true });
+  expect(await state()).toEqual({ current: ['Collection'], open: true });
   const [bx, by] = await blank(page);
   await page.mouse.click(bx, by);
   await settle(page);

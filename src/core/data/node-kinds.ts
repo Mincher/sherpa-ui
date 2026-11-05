@@ -25,7 +25,8 @@
  * - PaletteItem — One node of the panel: the kind's id and the kind.
  * - PaletteGroup — One category of the panel, and its kinds in the registry's order.
  * - paletteOf — The node panel's list: each category with a workflow kind in it, in order; never a Query-only kind.
- * - fitOf — Where a new node of a kind joins a socket of a type: its header or a row; none, it does not fit.
+ * - paletteMatch — How a panel item answers a search: by its name, or by a type's name and that type.
+ * - fitOf — Where a new node of a kind joins a socket of a type: its header or a row, as a family's type.
  * - paletteFor — The palette's kinds a socket of a type could join, a Value first.
  * - Socket — A socket address, read: its node, and its row or none for the header's.
  * - socketOf — Read a socket address: `node`, the header's, or `node/row`.
@@ -82,11 +83,11 @@ export function truthy(value: unknown): boolean {
 }
 
 /** The control a row draws: text, a number or a switch; else the list a picklist reads — the
- *  fields, operators, the field's values, units, directions, presentations, Apply on, stores,
- *  scopes, joins or a family's types (`rowChoices`). */
+ *  fields, operators, the field's values, units, a span's way (last or next), directions,
+ *  presentations, Apply on, stores, scopes, joins or a family's types (`rowChoices`). */
 export type RowControl =
   | 'text' | 'number' | 'switch'
-  | 'field' | 'op' | 'values' | 'unit' | 'direction' | 'presentation' | 'apply' | 'store' | 'scope' | 'join' | 'type';
+  | 'field' | 'op' | 'values' | 'unit' | 'span' | 'direction' | 'presentation' | 'apply' | 'store' | 'scope' | 'join' | 'type';
 
 /** One row a kind draws: its name, its label, its control and its sockets. */
 export interface RowKind {
@@ -156,6 +157,17 @@ export interface NodeKind {
 /** The Rows row: the data rows a node sends on, an object. They come in on its header (D1);
  *  it is first on each kind that gives them. Plan 713 §3 */
 export const ROWS: Readonly<RowKind> = { name: 'rows', label: 'Rows', output: 'object' };
+
+/** A family's rows, each once: a type names the ones it draws. */
+const FIELD: RowKind = { name: 'field', label: 'Field', control: 'field', input: 'value' };
+const VALUE: RowKind = { name: 'value', label: 'Value', control: 'text', output: 'value' };
+const numberRow = (name: string, label: string): RowKind => ({ name, label, control: 'number', input: 'value' });
+const textRow = (name: string, label: string): RowKind => ({ name, label, control: 'text', input: 'value' });
+/** A list in, an object (D17): what Floor, Ceiling, Average and Join read. It takes several. Will, D9 */
+const LIST: RowKind = { name: 'values', label: 'Values', input: 'object', many: true };
+/** What a Math or Text node gives, as a Value gives its own: from a row, its header forking (D2). */
+const RESULT: RowKind = { name: 'result', label: 'Result', output: 'value' };
+const [A, B, SEPARATOR] = [numberRow('a', 'Value A'), numberRow('b', 'Value B'), textRow('separator', 'Separator')];
 
 /** Every kind the library ships, once. An app adds its own beside them: `{ ...NODE_KINDS, mine }`.
  *  A kind a workflow runs forks (`branches`): its True and False say whether it gave anything
@@ -233,32 +245,78 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     model: 'Presentation', graphs: ['query'],
   },
   component: { heading: 'Component', icon: 'table-columns', input: 'any', rows: [], model: 'bindSource', graphs: ['query'] },
-  // A workflow: each kind over the data-layer function it runs by.
+  // A workflow: each kind over the data-layer function it runs by; a family's Type row picks what it does (plan 749).
   value: {
     heading: 'Value', icon: 'function', description: 'One value, typed.', branches: true, typeLabel: 'Type', defaultType: 'text',
-    types: { text: { label: 'Text' }, number: { label: 'Number' }, date: { label: 'Date' }, boolean: { label: 'True/false' } },
-    rows: [{ name: 'value', label: 'Value', control: 'text', output: 'value' }], model: 'typedValue', graphs: ['workflow'], category: 'Variables',
+    types: {
+      text: { label: 'Text', rows: [VALUE] },
+      integer: { label: 'Integer', help: 'A whole number, as 42', rows: [VALUE] },
+      decimal: { label: 'Decimal', help: 'A number with places, as 4.25', rows: [VALUE] },
+      date: { label: 'Date', help: 'A day, written year-month-day: 2024-01-31', rows: [VALUE] },
+      boolean: { label: 'True/false', help: 'True or false', rows: [VALUE] },
+      list: { label: 'List', help: 'Values split by commas, sent as a list', rows: [{ ...VALUE, output: 'object' }] },
+    },
+    rows: [], model: 'typedValue', graphs: ['workflow'], category: 'Variables',
   },
   pick: {
     heading: 'Pick', icon: 'price-tag', description: 'One field of the input.', input: 'any', branches: true,
     rows: [{ name: 'field', label: 'Field', control: 'field', input: 'value', output: 'value' }], model: 'readField', graphs: ['workflow'], category: 'Variables',
   },
-  sort: {
-    heading: 'Sort', icon: 'sort-ascending', description: 'The rows in order.', input: 'any', branches: true,
-    rows: [
-      ROWS,
-      { name: 'field', label: 'Field', control: 'field', input: 'value' },
-      { name: 'direction', label: 'Direction', control: 'direction', input: 'value' },
-    ],
-    model: 'sortRows', graphs: ['workflow'], category: 'Collections',
+  // One number from numbers, given from its Result row. Floor, Ceiling and Average read a list (D9).
+  math: {
+    heading: 'Math', icon: 'function', description: 'One number from numbers.', branches: true, typeLabel: 'Operation', defaultType: 'add',
+    types: {
+      add: { label: 'Add', help: 'Add Value B to Value A', rows: [A, B, RESULT] },
+      subtract: { label: 'Subtract', help: 'Subtract Value B from Value A', rows: [A, B, RESULT] },
+      multiply: { label: 'Multiply', help: 'Multiply 2 values together', rows: [A, B, RESULT] },
+      divide: { label: 'Divide', help: 'Divide Value A by Value B', rows: [A, B, RESULT] },
+      ratio: { label: 'Ratio', help: 'Decimal ratio between 0 and 1', rows: [A, B, RESULT] },
+      round: { label: 'Round', help: 'Rounds a decimal to a set number of places', rows: [numberRow('places', 'Places'), numberRow('a', 'Value'), RESULT] },
+      increment: { label: 'Increment', help: 'Rounds Value to the nearest multiple of Step', rows: [numberRow('a', 'Value'), numberRow('step', 'Step'), RESULT] },
+      floor: { label: 'Floor', help: 'Lowest value from the list', rows: [LIST, RESULT] },
+      ceiling: { label: 'Ceiling', help: 'Highest value from the list', rows: [LIST, RESULT] },
+      average: { label: 'Average', help: 'Average value of the list', rows: [LIST, RESULT] },
+    },
+    rows: [], model: 'math', graphs: ['workflow'], category: 'Math',
   },
-  group: {
-    heading: 'Group', icon: 'group', description: 'The rows by a field.', input: 'any', branches: true,
-    rows: [ROWS, { name: 'field', label: 'Field', control: 'field', input: 'value' }], model: 'groupRows', graphs: ['workflow'], category: 'Collections',
+  // Whether the date that comes in, of any type (D1), holds: True takes it, False the rest.
+  time: {
+    heading: 'Time', icon: 'time', description: 'Whether a date holds.', input: 'any', branches: true, typeLabel: 'Operation', defaultType: 'between',
+    types: {
+      between: { label: 'Between', help: 'True when the date is from Start to End', rows: [textRow('start', 'Start'), textRow('end', 'End')] },
+      duration: {
+        label: 'Duration', help: 'True when the date is within a span of today',
+        rows: [{ name: 'when', label: 'When', control: 'span', input: 'value' }, numberRow('n', 'Value'), { name: 'unit', label: 'Unit', control: 'unit', input: 'value' }],
+      },
+    },
+    rows: [], model: 'timeCheck', graphs: ['workflow'], category: 'Time',
   },
-  count: {
-    heading: 'Count', icon: 'insights', description: 'How many rows.', input: 'any', branches: true,
-    rows: [{ name: 'count', label: 'Count', output: 'value' }], model: 'reduceRows', graphs: ['workflow'], category: 'Collections',
+  // Sort, Group and Count were three kinds; a saved one reads as its type, once.
+  collection: {
+    heading: 'Collection', icon: 'list', description: 'The rows in order, grouped, or counted.', input: 'any', branches: true, typeLabel: 'Type', defaultType: 'sort',
+    types: {
+      sort: { label: 'Sort', help: 'The rows in order', rows: [ROWS, FIELD, { name: 'direction', label: 'Direction', control: 'direction', input: 'value' }] },
+      group: { label: 'Group by', help: 'The rows by a field', rows: [ROWS, FIELD] },
+      count: { label: 'Count', help: 'How many rows', rows: [{ name: 'count', label: 'Count', output: 'value' }] },
+    },
+    rows: [], model: 'collectRows', graphs: ['workflow'], category: 'Collections',
+  },
+  // Text from text, given from its Result row: a list, where Split by makes one.
+  text: {
+    heading: 'Text', icon: 'pencil', description: 'Text made from text.', branches: true, typeLabel: 'Operation', defaultType: 'append',
+    types: {
+      append: { label: 'Append', help: 'Add Value B to the end of Value A', rows: [textRow('a', 'Value A'), textRow('b', 'Value B'), RESULT] },
+      prepend: { label: 'Prepend', help: 'Add Value B to the start of Value A', rows: [textRow('a', 'Value A'), textRow('b', 'Value B'), RESULT] },
+      split: { label: 'Split by', help: 'Value as a list, split at each Separator', rows: [textRow('a', 'Value'), SEPARATOR, { ...RESULT, output: 'object' }] },
+      join: { label: 'Join', help: 'The list as one text, Separator between each', rows: [LIST, SEPARATOR, RESULT] },
+    },
+    rows: [], model: 'modifyText', graphs: ['workflow'], category: 'Utils',
+  },
+  // A rows check by a field of tags. Its tag input is P4's.
+  tag: {
+    heading: 'Tag', icon: 'price-tag', description: 'The rows whose field holds the tags picked.', input: 'any', branches: true,
+    types: { includes: { label: 'Includes', rows: [ROWS, FIELD, { name: 'value', label: 'Tags', control: 'values', multiple: true, input: 'object' }] } },
+    rows: [], model: 'tagCheck', graphs: ['workflow'], category: 'Utils',
   },
   output: {
     heading: 'Output', icon: 'flag', description: 'Where the flow ends.', input: 'any', rows: [], model: 'LoadResult', graphs: ['workflow'], category: 'Output',
@@ -309,7 +367,7 @@ export function rowOfOtherType(kind: NodeKind, type: unknown, row: string): { ro
 
 /** The node panel's categories, in order, after Figma's (plan 713 §9.1). Each is empty until a kind
  *  names it; `Custom Nodes` (D9) stays empty until saved nodes come (M9, M12). */
-export const NODE_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Utils', 'Collections', 'Output', 'Presets', 'Saved filters', 'Status'];
+export const NODE_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Collections', 'Utils', 'Output', 'Presets', 'Saved filters', 'Status'];
 
 /** The categories a Query's panel lists: the kinds a Query takes placed. */
 const QUERY_CATEGORIES: readonly string[] = ['Logic', 'Presets', 'Saved filters', 'Status'];
@@ -343,16 +401,28 @@ export function paletteOf(kinds: Readonly<Record<string, NodeKind>>, graph: Node
   return [...groups].filter(([c, items]) => items.length || (graph === 'workflow' && c === 'Custom Nodes')).sort(([a], [b]) => Number(!known.has(a)) - Number(!known.has(b))).map(([category, items]) => ({ category, items }));
 }
 
-/** Where a new node of a kind (a family, as its default type) joins a socket of a type: on the dragged OUTPUT's side, its header
+/** How a panel item answers a search: by its name, `{}`; by a type's name, `{ type }`; none, not at all. Nothing typed finds all. */
+export function paletteMatch(kind: Pick<NodeKind, 'heading' | 'types'>, query: string): { type?: string } | undefined {
+  const q = query.trim().toLowerCase();
+  if (!q || kind.heading.toLowerCase().includes(q)) return {};
+  const hit = Object.entries(kind.types ?? {}).find(([, t]) => t.label.toLowerCase().includes(q));
+  return hit ? { type: hit[0] } : undefined;
+}
+
+/** Where a new node of a kind joins a socket of a type: on the dragged OUTPUT's side, its header
  *  or row INPUT that takes the type; on a dragged INPUT's, its header or row OUTPUT the input takes.
- *  `{}` the header, `{ row }` a row; none, it does not fit. */
-export function fitOf(family: NodeKind, type: SocketType, side: 'out' | 'in'): { row?: string } | undefined {
-  const kind = resolveKind(family);
+ *  A family tries its default type first, then the rest in order; `type` names one other than the
+ *  default. `{}` the header, `{ row }` a row; none, no type of it fits. */
+export function fitOf(family: NodeKind, type: SocketType, side: 'out' | 'in'): { row?: string; type?: string } | undefined {
   const key = side === 'out' ? 'input' : 'output';
   const fits = (t: SocketType | undefined): boolean => !!t && (side === 'out' ? accepts(type, t) : accepts(t, type));
-  if (fits(kind[key])) return {};
-  const row = kind.rows.find((r) => fits(r[key]));
-  return row ? { row: row.name } : undefined;
+  const first = typeOf(family)?.id;
+  for (const id of [first, ...Object.keys(family.types ?? {}).filter((t) => t !== first)]) {
+    const kind = resolveKind(family, id);
+    const row = fits(kind[key]) ? undefined : kind.rows.find((r) => fits(r[key]));
+    if (fits(kind[key]) || row) return { ...(row ? { row: row.name } : {}), ...(id !== first ? { type: id! } : {}) };
+  }
+  return undefined;
 }
 
 /** The palette's kinds a socket of a type could join, a Value first (D16), then the palette's order. */
@@ -470,10 +540,12 @@ export interface RowFacts {
 }
 
 const UNITS: readonly Duration['unit'][] = ['day', 'week', 'month', 'year'];
+const SPANS: readonly ('last' | 'next')[] = ['last', 'next'];
 
 /** The lists that are the same on every page. */
 const FIXED: Partial<Record<RowControl, readonly RowChoice[]>> = {
   unit: UNITS.map((u) => ({ value: u, label: `${u}s` })),
+  span: SPANS.map((op) => ({ value: op, label: OP_LABELS[op] })),
   direction: [{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }],
   presentation: [{ value: '', label: 'Default' }, ...PRESENTATION_KINDS.map((k) => ({ value: k, label: k[0]!.toUpperCase() + k.slice(1) }))],
   apply: [{ value: 'change', label: 'Change' }, { value: 'input', label: 'Input' }],
@@ -503,7 +575,7 @@ export function rowChoices(row: Pick<RowKind, 'control'> & { value?: unknown }, 
   return [...open, ...named(own.filter((v) => !open.some((c) => c.value === v)))];
 }
 
-/** A fixed list, the same on every page — directions, units, Apply on, joins, presentations; none, a control whose list is open or that is no picklist. */
+/** A fixed list, the same on every page — directions, units, spans, Apply on, joins, presentations; none, an open list or no picklist. */
 export function fixedChoices(control: RowControl | undefined): readonly RowChoice[] | undefined {
   return control ? FIXED[control] : undefined;
 }

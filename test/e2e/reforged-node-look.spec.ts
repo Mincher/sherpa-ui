@@ -155,7 +155,7 @@ const BIND = `async () => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const flow = { v: 2, id: 'g', nodes: [
     { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'users' } },
-    { id: 'sort', kind: 'sort', x: 360, y: 0, values: { field: 'status', direction: 'asc' } },
+    { id: 'sort', kind: 'collection', x: 360, y: 0, values: { type: 'sort', field: 'status', direction: 'asc' } },
     { id: 'end', kind: 'output', x: 700, y: 0 },
   ], routes: [{ from: 'start/rows', to: 'sort' }] };
   const canvas = document.getElementById('cv');

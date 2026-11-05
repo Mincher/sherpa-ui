@@ -23,7 +23,7 @@ import { report } from './report.js';
 import { NODE_KINDS, type NodeKind } from './node-kinds.js';
 import { kindsOf, nodeLibraryFaults, type NodeDefinition, type NodeLibrary, type NodeOutput, type NodeSocket } from './node-library.js';
 import { entityKind, isEntity, usesOf, ENTITY_SCHEMA, definitionOf, type Entity } from './entity.js';
-import type { WorkflowDefinition, WorkflowFacts } from './workflow.js';
+import { readWorkflow, type WorkflowDefinition, type WorkflowFacts } from './workflow.js';
 
 type Kinds = Readonly<Record<string, NodeKind>>;
 
@@ -60,8 +60,9 @@ function keysFault(settings: Readonly<Record<string, unknown>>, allowed: readonl
 export const ENTITY_TYPES: Readonly<Record<string, EntityType>> = {
   'preset-filter': {
     id: 'preset-filter', label: 'Preset Filter', icon: 'filter', schema: 'entity-preset-filter.v1.json',
-    // A graph that decides a condition: where its rows come from, the values, the logic, the collections; no Output (its `#out` is the end).
-    families: ['Sources', 'Variables', 'Logic', 'Collections'],
+    // A graph that decides a condition: where its rows come from, its values and sums, the logic, dates, collections, text and
+    // tags; no Output (its `#out` is the end). A Sort, Group or Count saved before is a Collection's type (plan 749 P3).
+    families: ['Sources', 'Variables', 'Math', 'Logic', 'Time', 'Collections', 'Utils'],
     outputs: [{ name: 'where', label: 'Where', type: 'boolean' }],
     runs: false,
     settingsFaults: (s) => [...keysFault(s, ['source']), ...('source' in s && typeof s['source'] !== 'string' ? ['its source is not a name'] : [])],
@@ -182,8 +183,8 @@ export function entityFaults(entity: Entity, facts: EntityFacts = {}): string[] 
   for (const fault of type.settingsFaults?.(entity.settings ?? {}) ?? []) problems.push(`${at}: ${fault}`);
 
   const kinds: Kinds = { ...kindsOf(libraryOf(others, types)), ...(facts.kinds ?? NODE_KINDS) };
-  // A use of an entity is a node whose kind is its kind; it is the one place a family does not bound.
-  for (const node of entity.graph.nodes) {
+  // A use of an entity is a node whose kind is its kind; it is the one place a family does not bound. An old kind reads as today's.
+  for (const node of readWorkflow({ v: 2, id: entity.id, nodes: entity.graph.nodes }, kinds).workflow?.nodes ?? []) {
     const kind = kinds[node.kind];
     if (!kind || kind.model === 'graph' || !type.families) continue;
     const family = kind.category ?? 'Other';

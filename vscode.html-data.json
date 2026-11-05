@@ -2635,7 +2635,7 @@
     },
     {
       "name": "sherpa-node-panel",
-      "description": "the nodes a graph editor may place, by category: a search, then each category an accordion of items. A card (sherpa-container) floating on a canvas. Will, plan 713 M8. TRAP T-the-node-panel-asks-it-places",
+      "description": "the nodes a graph editor may place, by category: a search, then each category an accordion of items, one per family. A card (sherpa-container) floating on a canvas. Will, plan 713 M8, plan 749 P3. TRAP T-the-node-panel-asks-it-places",
       "attributes": []
     },
     {

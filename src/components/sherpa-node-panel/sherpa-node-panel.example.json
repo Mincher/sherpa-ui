@@ -1,12 +1,12 @@
 {
   "html": "<sherpa-node-panel></sherpa-node-panel>",
-  "use": "For a graph editor's list of the nodes it may place, by category, with a search. It floats in a canvas's `panel` slot. Fill it with `populate(paletteOf(kinds))`; it fires `node-add` for a click, Enter or a drag, and opens \"Add a node\" from `askAdd()`.",
+  "use": "For a graph editor's list of the nodes it may place, one per family, by category, with a search that finds a family by any of its types. It floats in a canvas's `panel` slot. Fill it with `populate(paletteOf(kinds))`; it fires `node-add` for a click, Enter or a drag, and opens \"Add a node\" from `askAdd()`.",
   "fill": [
     {
       "at": "sherpa-node-panel",
       "data": [
         { "category": "Variables", "items": [ { "id": "value", "kind": { "heading": "Value", "icon": "function", "description": "One value, typed." } } ] },
-        { "category": "Collections", "items": [ { "id": "count", "kind": { "heading": "Count", "icon": "insights", "description": "How many rows." } } ] }
+        { "category": "Collections", "items": [ { "id": "collection", "kind": { "heading": "Collection", "icon": "list", "description": "The rows in order, grouped, or counted.", "types": { "sort": { "label": "Sort" }, "group": { "label": "Group by" }, "count": { "label": "Count", "help": "How many rows" } } } } ] }
       ]
     }
   ]

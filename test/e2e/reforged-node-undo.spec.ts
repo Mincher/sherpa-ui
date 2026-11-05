@@ -50,7 +50,7 @@ const BIND = `async (org) => {
     { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'users' } },
     useOf(library, 'org-permissions', { id: 'perm', x: 330, y: 0 }),
     useOf(library, 'org-permissions', { id: 'perm2', x: 330, y: 260 }),
-    { id: 'sort', kind: 'sort', x: 0, y: 260, values: { field: 'status', direction: 'asc' } },
+    { id: 'sort', kind: 'collection', x: 0, y: 260, values: { type: 'sort', field: 'status', direction: 'asc' } },
     { id: 'end', kind: 'output', x: 700, y: 0 },
   ], routes: [{ from: 'start/rows', to: 'perm/users' }, { from: 'perm', to: 'end' }] };
   const canvas = document.getElementById('cv');
@@ -91,7 +91,7 @@ const can = (page: Page) => page.evaluate(() => ({
 const header = (page: Page, heading: string) => page.locator(`#cv > sherpa-node[data-heading="${heading}"] >> .header[role="button"]`);
 const item = (page: Page, kind: string) => page.locator(`sherpa-node-panel sherpa-list-item[data-kind="${kind}"]`);
 const STORE_ROWS = '#cv > sherpa-node[data-heading="Store"] sherpa-node-row';
-const SORT = '#cv > sherpa-node[data-heading="Sort"]';
+const SORT = '#cv > sherpa-node[data-heading="Collection"]';
 const SORT_ROWS = `${SORT} sherpa-node-row`;
 const SOCKET = `(el, side) => { const r = el.socketRect(side); return [r.left + r.width / 2, r.top + r.height / 2]; }`;
 const at = (page: Page, selector: string, side: string) =>
@@ -143,7 +143,7 @@ test('Save is a placeholder, off; Undo and Redo are off until there is a step, a
   expect(await can(page)).toEqual({ undo: false, redo: false, buttons: [true, true, true] });
   const tips = await page.locator('sherpa-node-toolbar sherpa-button').evaluateAll((els) => els.map((e) => e.getAttribute('data-tip')));
   expect(tips.slice(0, 3)).toEqual(['Save', 'Undo (Ctrl+Z)', 'Redo (Shift+Ctrl+Z)']);
-  await item(page, 'count').click();
+  await item(page, 'math').click();
   await settle(page);
   expect(await can(page)).toEqual({ undo: true, redo: false, buttons: [true, false, true] });
 });
@@ -151,26 +151,26 @@ test('Save is a placeholder, off; Undo and Redo are off until there is a step, a
 test('a click places a node; Undo takes it away, Redo puts it back; a new edit after an undo ends Redo', async ({ page }) => {
   await bind(page);
   const ids = () => page.evaluate(() => (window as never as { ed: { workflow(): { nodes: { id: string }[] } } }).ed.workflow().nodes.map((n) => n.id));
-  await item(page, 'count').click();
+  await item(page, 'math').click();
   await settle(page);
-  expect(await ids()).toContain('count-1');
+  expect(await ids()).toContain('math-1');
   await press(page, 'undo');
-  expect(await ids()).not.toContain('count-1');
+  expect(await ids()).not.toContain('math-1');
   expect(await can(page)).toEqual({ undo: false, redo: true, buttons: [true, true, false] });
   await press(page, 'redo');
-  expect(await ids()).toContain('count-1');
+  expect(await ids()).toContain('math-1');
   await press(page, 'undo');
   await item(page, 'value').click();
   await settle(page);
   expect(await can(page)).toMatchObject({ undo: true, redo: false });
   expect(await ids()).toContain('value-1');
-  expect(await ids()).not.toContain('count-1');
+  expect(await ids()).not.toContain('math-1');
 });
 
 test('Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z do the same, with the canvas focused; a text field keeps its own', async ({ page }) => {
   await bind(page);
   const before = await state(page);
-  await item(page, 'count').click();
+  await item(page, 'math').click();
   await settle(page);
   const after = await state(page);
   await page.locator('#cv').evaluate((el) => (el.shadowRoot!.querySelector('.viewport') as HTMLElement).focus());
@@ -187,7 +187,7 @@ test('a route and a row pick: each is one step, back and forward, to the same wo
   await bind(page);
   const s0 = await state(page);
   // A row pick.
-  await page.locator('#cv > sherpa-node[data-heading="Sort"] sherpa-input-text[name="direction"] select').selectOption('desc');
+  await page.locator('#cv > sherpa-node[data-heading="Collection"] sherpa-input-text[name="direction"] select').selectOption('desc');
   await settle(page);
   const s1 = await state(page);
   expect(s1).not.toBe(s0);
@@ -207,12 +207,12 @@ test('a route and a row pick: each is one step, back and forward, to the same wo
 
 /** Each edit kind: what it does, from the editor as it is bound. */
 const EDITS: [string, (page: Page) => Promise<void>][] = [
-  ['place', async (page) => { await item(page, 'count').click(); }],
+  ['place', async (page) => { await item(page, 'math').click(); }],
   ['move', async (page) => {
-    const b = (await header(page, 'Sort').boundingBox())!;
+    const b = (await header(page, 'Collection').boundingBox())!;
     await drag(page, [b.x + 40, b.y + 10], [b.x + 100, b.y + 60]);
   }],
-  ['row pick', async (page) => { await page.locator('#cv > sherpa-node[data-heading="Sort"] sherpa-input-text[name="direction"] select').selectOption('desc'); }],
+  ['row pick', async (page) => { await page.locator('#cv > sherpa-node[data-heading="Collection"] sherpa-input-text[name="direction"] select').selectOption('desc'); }],
   ['route', async (page) => {
     await drag(page, await at(page, STORE_ROWS, 'output'), await at(page, SORT, 'input'));
   }],
@@ -254,7 +254,7 @@ const EDITS: [string, (page: Page) => Promise<void>][] = [
   ['make a Custom Node', async (page) => {
     await header(page, 'Store').focus();
     await page.keyboard.press('Space');
-    await header(page, 'Sort').focus();
+    await header(page, 'Collection').focus();
     await page.keyboard.press('Space');
     await settle(page);
     await saveAs(page, 'Pair');
@@ -280,7 +280,7 @@ test('Ungroup is a step too: Undo makes the Custom Node again, a second Undo put
   const s0 = await state(page);
   await header(page, 'Store').focus();
   await page.keyboard.press('Space');
-  await header(page, 'Sort').focus();
+  await header(page, 'Collection').focus();
   await page.keyboard.press('Space');
   await settle(page);
   await saveAs(page, 'Pair');
@@ -303,7 +303,7 @@ test('Ungroup is a step too: Undo makes the Custom Node again, a second Undo put
 test('undo works inside an opened Custom Node, and leaving it keeps the history', async ({ page }) => {
   await bind(page);
   const s0 = await state(page);
-  await item(page, 'count').click();
+  await item(page, 'math').click();
   await settle(page);
   await page.evaluate("window.ed.open('perm')");
   await settle(page);
@@ -327,7 +327,7 @@ test('undo works inside an opened Custom Node, and leaving it keeps the history'
 
 test('Save clears nothing; Discard resets the history', async ({ page }) => {
   await bind(page);
-  await item(page, 'count').click();
+  await item(page, 'math').click();
   await settle(page);
   expect(await page.evaluate('window.ed.save()')).toBe(true);
   expect(await can(page)).toMatchObject({ undo: true });

@@ -9,7 +9,7 @@
  * - WorkflowDefinition — One workflow, as JSON (v2) — its nodes and its routes.
  * - WorkflowDefinitionV1 — A workflow as v1 saved it: its data rows left from a node's header.
  * - WorkflowRead — A workflow read as v2, and each fault the read met.
- * - readWorkflow — A workflow as v2: a v1's header routes moved to its Rows row; a Filter node read as a Condition.
+ * - readWorkflow — A workflow as v2: a v1's header routes moved to its Rows row; an old kind or type read as today's.
  * - GROW_MIN — The least a node's size may be: its natural size, as 1.
  * - GROW_MAX — The most a node's size may be: double its natural size, as 2.
  * - keptRoutes — The routes a node keeps for another of its types: drawn nowhere, no fault, not saved.
@@ -83,24 +83,41 @@ export interface WorkflowRead {
   faults: string[];
 }
 
-/** A kind the registry renamed: what a workflow saved before reads as, once. Plan 713 M4 */
-const RENAMED: Readonly<Record<string, string>> = { filter: 'condition' };
+/** A kind the registry renamed, or folded into a family as one of its types: what a workflow saved
+ *  before reads as, once. Plan 713 M4, plan 749 P3 */
+const FOLDED: Readonly<Record<string, { kind: string; type?: string }>> = {
+  filter: { kind: 'condition' }, sort: { kind: 'collection', type: 'sort' }, group: { kind: 'collection', type: 'group' }, count: { kind: 'collection', type: 'count' },
+};
+/** A type a family renamed: a Value's Number reads as a Decimal, which takes every number it took. */
+const RETYPED: Readonly<Record<string, Readonly<Record<string, string>>>> = { value: { number: 'decimal' } };
+
+/** A node as the kinds hold it now: an old kind or type read as today's, where the kinds lack it; else the one given. */
+function current(node: WorkflowNode, kinds: Kinds): WorkflowNode {
+  const fold = kinds[node.kind] ? undefined : FOLDED[node.kind];
+  const kind = fold && kinds[fold.kind] ? fold.kind : node.kind;
+  const was = kind !== node.kind ? fold?.type ?? node.values?.['type'] : node.values?.['type'];
+  const types = kinds[kind]?.types ?? {};
+  const now = typeof was === 'string' && !Object.hasOwn(types, was) && Object.hasOwn(types, RETYPED[kind]?.[was] ?? '') ? RETYPED[kind]![was]! : was;
+  if (kind === node.kind && now === node.values?.['type']) return node;
+  return { ...node, kind, ...(now !== undefined ? { values: { ...node.values, type: now } } : {}) };
+}
 
 /**
  * A workflow as v2: a v2 as it is, the one given; a v1 read ONCE — each route that left a
  * node's header, its data rows, now leaves its Rows row. One a v2 kind cannot send from
  * there (no Rows row, and its header sends only True) is dropped, and a fault says so: it
- * would mean another thing. Plan 713 D8. TRAP T-a-workflow-is-its-definition
+ * would mean another thing. A kind or type renamed reads as today's, once: a file is
+ * written anew only when it is saved again. Plan 713 D8, plan 749 P3. TRAP T-a-workflow-is-its-definition
  */
 export function readWorkflow(given: WorkflowDefinition | WorkflowDefinitionV1, kinds: Kinds = NODE_KINDS): WorkflowRead {
   const v = (given as { v?: unknown } | null)?.v;
   if ((v !== 1 && v !== 2) || !Array.isArray(given.nodes)) return { faults: ['it is not a workflow definition: a v2, or a v1 to read as one'] };
-  // A Filter node is a Condition now, with the same rows.
-  const moved = (n: WorkflowNode): boolean => n.kind in RENAMED && !kinds[n.kind];
-  const workflow = given.nodes.some(moved) ? { ...given, nodes: given.nodes.map((n) => (moved(n) ? { ...n, kind: RENAMED[n.kind]! } : n)) } : given;
+  // A Filter is a Condition, and a Sort, Group or Count a Collection of that type, with the same rows.
+  const nodes = given.nodes.map((n) => current(n, kinds));
+  const workflow = nodes.some((n, i) => n !== given.nodes[i]) ? { ...given, nodes } : given;
   if (workflow.v === 2) return { workflow, faults: [] };
   const faults: string[] = [];
-  const kindOf = new Map(workflow.nodes.map((n) => [n.id, kinds[n.kind]]));
+  const kindOf = new Map(workflow.nodes.map((n) => [n.id, kindOfNode(kinds, n)]));
   const routes = (workflow.routes ?? []).flatMap((route): NodeRoute[] => {
     const { node, row } = socketOf(route.from);
     const kind = kindOf.get(node);
@@ -138,7 +155,8 @@ export function keptRoutes(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes'
 }
 
 /** A graph as Save writes it: each node with the values of its type's rows, and only the routes they join.
- *  What the draft keeps for another type is left out. Its ties keep the routes still there. Will, 2026-11-05 */
+ *  What the draft keeps for another type is left out; so are the bends of a tied route, which the draft keeps
+ *  unseen for its untying. Its ties keep the routes still there. Will, 2026-11-05 */
 export function finalGraph<W extends Pick<WorkflowDefinition, 'nodes'> & Partial<Pick<WorkflowDefinition, 'routes' | 'ties'>>>(workflow: W, kinds: Kinds = NODE_KINDS): W {
   const gone = keptRoutes({ nodes: workflow.nodes, routes: workflow.routes ?? [] }, kinds);
   const nodes = workflow.nodes.map((node): WorkflowNode => {
@@ -148,10 +166,17 @@ export function finalGraph<W extends Pick<WorkflowDefinition, 'nodes'> & Partial
     const { values: _was, ...bare } = node;
     return Object.keys(values).length ? { ...bare, values } : bare;
   });
-  if (!gone.length && nodes.every((n, i) => n === workflow.nodes[i])) return workflow;
-  const routes = (workflow.routes ?? []).filter((r) => !gone.includes(r));
+  const live = (workflow.routes ?? []).filter((r) => !gone.includes(r));
+  const ties = tiesAmong(workflow.ties, live);
+  const tied = (r: NodeRoute): boolean => ties.some((t) => t.routes.some((x) => x.from === r.from && x.to === r.to));
+  const bent = live.some((r) => r.via && tied(r));
+  if (!gone.length && !bent && nodes.every((n, i) => n === workflow.nodes[i])) return workflow;
+  const routes = live.map((r) => {
+    if (!r.via || !tied(r)) return r;
+    const { via: _via, ...bare } = r;
+    return bare;
+  });
   const { ties: _ties, ...rest } = workflow;
-  const ties = tiesAmong(workflow.ties, routes);
   return { ...rest, nodes, ...(workflow.routes ? { routes } : {}), ...(ties.length ? { ties } : {}) } as unknown as W;
 }
 
@@ -192,10 +217,13 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
     const typed = node.values?.['type'];
     if (kind?.model === 'typedValue' && typeof typed === 'string' && node.values?.['value'] !== undefined) {
       const text = String(node.values['value']);
-      const ok = typed === 'number' ? typeof typedValue('number', text) === 'number'
-        : typed === 'boolean' ? /^(true|false)$/i.test(text.trim())
-        : typed === 'date' ? /^\d{4}-\d{2}-\d{2}/.test(text.trim()) : true;
-      if (!ok) problems.push(`the node "${node.id}" holds "${text}" as its Value, which is not ${typed === 'number' ? 'a number' : typed === 'boolean' ? 'true or false' : 'a date'}`);
+      const n = typedValue('number', text);
+      const wants: Readonly<Record<string, readonly [boolean, string]>> = {
+        integer: [Number.isInteger(n), 'a whole number'], decimal: [typeof n === 'number', 'a number'],
+        boolean: [/^(true|false)$/i.test(text.trim()), 'true or false'], date: [/^\d{4}-\d{2}-\d{2}/.test(text.trim()), 'a date'],
+      };
+      const [ok, what] = wants[typed] ?? [true, ''];
+      if (!ok) problems.push(`the node "${node.id}" holds "${text}" as its Value, which is not ${what}`);
     }
     // A comparison by its field's type: an operator it takes, and a value of its type.
     for (const [name, field] of Object.entries(node.values ?? {})) {

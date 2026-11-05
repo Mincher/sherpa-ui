@@ -14,7 +14,7 @@ const core = new URL('../../dist/core/data/', import.meta.url);
 const { NODE_KINDS, accepts, fitOf, kindOfNode, resolveKind, rowChoices, socketType, typeChoices } = await import(new URL('node-kinds.js', core));
 const { editWorkflow, finalGraph, keptRoutes, readWorkflow, workflowFaults, workflowGraph } = await import(new URL('workflow.js', core));
 
-// A family of our own: P1 ships none but Value.
+// A family of our own, so this file holds whatever the registry ships.
 const a = { name: 'a', label: 'Value A', control: 'number', input: 'value' };
 const b = { name: 'b', label: 'Value B', control: 'number', input: 'value' };
 const places = { name: 'places', label: 'Places', control: 'number', input: 'value' };
@@ -128,6 +128,13 @@ test('Save writes the final graph: no route to a vanished row, and no value for 
   // A value or a route for a row NO type has is not the draft's to drop: it is a fault, and stays one.
   const bad = { ...flow('add', { nope: 1 }), routes: [{ from: 'v/value', to: 'm/nope' }] };
   assert.deepEqual(finalGraph(bad, kinds), bad);
+  // A tied route draws through its tie only: bends it holds (a hand-made or an old file) wait unseen in the draft, and Save drops them.
+  const via = [{ x: 150, y: 40 }];
+  const bent = { ...flow('add'), routes: [{ from: 'v/value', to: 'm/a', via }, { from: 'v/value', to: 'm/b', via }], ties: [{ id: 't', x: 200, y: 0, routes: [{ from: 'v/value', to: 'm/a' }] }] };
+  assert.deepEqual(workflowFaults(bent, kinds), []);
+  assert.deepEqual(finalGraph(bent, kinds).routes, [{ from: 'v/value', to: 'm/a' }, { from: 'v/value', to: 'm/b', via }], 'an untied route keeps its bends');
+  assert.deepEqual(finalGraph(bent, kinds).ties, bent.ties);
+  assert.deepEqual(bent.routes[0].via, via, 'the draft keeps them');
   // A body of the same shape, as a Custom Node or an entity holds it, the same way.
   assert.deepEqual(finalGraph({ nodes: add.nodes, routes: add.routes }, kinds).routes, [{ from: 'v/value', to: 'm/a' }]);
 });
@@ -146,12 +153,12 @@ test('planted faults: an unknown type, a type of another family, a row no type h
   assert.deepEqual(keptRoutes(bad, kinds), []);
 });
 
-test('the Value node is a family of today\'s four types: old graphs read the same', () => {
-  assert.deepEqual(typeChoices(NODE_KINDS.value).map((c) => c.value), ['text', 'number', 'date', 'boolean']);
+test('the Value node is a family of six types; a Number saved before reads as a Decimal', () => {
+  assert.deepEqual(typeChoices(NODE_KINDS.value).map((c) => c.value), ['text', 'integer', 'decimal', 'date', 'boolean', 'list']);
   const old = { v: 2, id: 'w', nodes: [{ id: 'v', kind: 'value', x: 0, y: 0, values: { value: '7', type: 'number' } }, { id: 'u', kind: 'value', x: 0, y: 90, values: { value: 'hi' } }] };
   assert.deepEqual(workflowFaults(old), []);
   const g = workflowGraph(old);
-  assert.deepEqual([node(g, 'v').rows.map((r) => [r.name, r.value]), node(g, 'u').rows.map((r) => [r.name, r.value])], [[['type', 'number'], ['value', '7']], [['type', 'text'], ['value', 'hi']]]);
-  assert.deepEqual(rowChoices(node(g, 'v').rows[0], { types: typeChoices(NODE_KINDS.value) }).map((c) => c.label), ['Text', 'Number', 'Date', 'True/false']);
+  assert.deepEqual([node(g, 'v').rows.map((r) => [r.name, r.value]), node(g, 'u').rows.map((r) => [r.name, r.value])], [[['type', 'decimal'], ['value', '7']], [['type', 'text'], ['value', 'hi']]]);
+  assert.deepEqual(rowChoices(node(g, 'v').rows[0], { types: typeChoices(NODE_KINDS.value) }).map((c) => c.label), ['Text', 'Integer', 'Decimal', 'Date', 'True/false', 'List']);
   assert.deepEqual(workflowFaults({ ...old, nodes: [{ ...old.nodes[0], values: { value: 'x', type: 'number' } }] }), ['the node "v" holds "x" as its Value, which is not a number']);
 });

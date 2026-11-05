@@ -6809,7 +6809,7 @@
           "name": "SherpaNodePanel",
           "tagName": "sherpa-node-panel",
           "customElement": true,
-          "description": "the nodes a graph editor may place, by category: a search, then each category an accordion of items. A card (sherpa-container) floating on a canvas. Will, plan 713 M8. TRAP T-the-node-panel-asks-it-places",
+          "description": "the nodes a graph editor may place, by category: a search, then each category an accordion of items, one per family. A card (sherpa-container) floating on a canvas. Will, plan 713 M8, plan 749 P3. TRAP T-the-node-panel-asks-it-places",
           "members": [
             {
               "kind": "method",
@@ -6830,7 +6830,7 @@
               "name": "node-add",
               "description": "An item was clicked, Enter was pressed on it, or it was dropped, or a choice of \"Add a node\" was picked.",
               "type": {
-                "text": "CustomEvent<{ context: AddContext; kind: string | undefined; point: { x: number; y: number; } }>"
+                "text": "CustomEvent<{ context: AddContext; kind: string | undefined; point: { x: number; y: number; }; type: string }>"
               }
             }
           ],

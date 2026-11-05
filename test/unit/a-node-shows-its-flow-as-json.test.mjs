@@ -19,7 +19,7 @@ const graph = () => workflowGraph({
     { id: 'val', kind: 'value', x: 0, y: 200, values: { value: 'active' } },
     { id: 'cond', kind: 'condition', x: 360, y: 40, values: { field: 'status', op: 'eq' } },
     { id: 'end', kind: 'output', x: 720, y: 0 },
-    { id: 'alone', kind: 'sort', x: 0, y: 400 },
+    { id: 'alone', kind: 'collection', x: 0, y: 400 },
   ],
   routes: [{ from: 'start/rows', to: 'cond' }, { from: 'val/value', to: 'cond/value' }, { from: 'cond/rows', to: 'end' }],
 }, { fields: { status: { label: 'Status' } } });

@@ -110,7 +110,9 @@ test('ONE registry: every kind once, with a header, its own row names, what it s
     assert.equal(new Set(names).size, names.length, name);
   }
   const drawnIn = (graph) => Object.keys(NODE_KINDS).filter((k) => NODE_KINDS[k].graphs.includes(graph));
-  assert.deepEqual(drawnIn('workflow'), ['store', 'condition', 'value', 'pick', 'sort', 'group', 'count', 'output']);
+  assert.deepEqual(drawnIn('workflow'), ['store', 'condition', 'value', 'pick', 'math', 'time', 'collection', 'text', 'tag', 'output']);
+  // Sort, Group and Count are a Collection's types now: their names are gone, and a file read once (plan 749 P3).
+  assert.deepEqual(['sort', 'group', 'count'].map((k) => NODE_KINDS[k]), [undefined, undefined, undefined]);
   assert.deepEqual(drawnIn('query'), ['store', 'status', 'source', 'scope', 'condition', 'preset', 'saved', 'arrange', 'presentation', 'component']);
   // One meaning per word: a Store is where rows come from, in both; a Condition is one group of the condition tree, in both.
   assert.equal(NODE_KINDS.source.model, 'SourceDefinition');

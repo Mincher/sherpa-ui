@@ -79,7 +79,12 @@ test('each fault is named, in words', () => {
 
 test('a family outside the type is a fault; a use of an entity is not bounded by it', () => {
   const sent = make({ graph: { nodes: [...ACTIVE.graph.nodes, { id: 'end', kind: 'output', x: 720, y: 0 }], routes: ACTIVE.graph.routes } });
-  assert.match(faults(sent).join('\n'), /places "end", of the family "Output", which a Preset Filter does not take: Sources, Variables, Logic, Collections/);
+  assert.match(faults(sent).join('\n'), /places "end", of the family "Output", which a Preset Filter does not take: Sources, Variables, Math, Logic, Time, Collections, Utils/);
+  // A Sort saved before reads as a Collection: a family a Preset Filter takes. Plan 749 P3
+  const sorted = make({ graph: { nodes: [...ACTIVE.graph.nodes, { id: 'order', kind: 'sort', x: 720, y: 200, values: { field: 'status' } }], routes: ACTIVE.graph.routes } });
+  assert.deepEqual(faults(sorted), []);
+  const sources = { id: 'sources-only', label: 'Sources only', runs: false, families: ['Sources'] };
+  assert.match(faults({ ...sorted, type: 'sources-only' }, { types: { 'sources-only': sources } }).join('\n'), /places "order", of the family "Collections"/);
   // A type with no families takes any; a `node` is one.
   assert.deepEqual(faults({ ...sent, type: 'node', settings: { inputs: [], outputs: [{ name: 'where', type: 'boolean' }] } }), []);
   const recent = make({ id: 'recent', label: 'Recent' });
