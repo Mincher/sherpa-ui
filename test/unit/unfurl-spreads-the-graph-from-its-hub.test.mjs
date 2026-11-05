@@ -42,7 +42,7 @@ function clearance(g, places) {
 /** Every route whose target's left edge is not a gap past its source's right edge. */
 const backwards = (g, places) => g.routes.filter((r) => places[node(r.to)].x < places[node(r.from)].x + (g.boxes ?? boxesOf(g))[node(r.from)].w + GAP);
 
-// Demos' shipped workflow, tidy: a Store, a Field, a Value and a Condition, an Output.
+// Demos' shipped workflow, tidy: a Source, a Field, a Value and a Condition, an Output.
 const demos = graphOf([['start', 0, 0], ['field', 360, 0], ['status', 360, 240], ['filter', 720, 0], ['end', 1080, 0]],
   [R('start/rows', 'field'), R('field/field', 'filter'), R('status/value', 'filter/b'), R('filter/rows', 'end')]);
 // A store, four fields, four conditions each with a value, an And, an Output; laid out in columns, crossed.
@@ -139,7 +139,7 @@ test('no two nodes closer than the gap, every place on the 4px grid, every line 
 });
 
 test('parts stand side by side in the order they stood, left to right; lone nodes stand in one column after them', () => {
-  // The small part `x › y` stood left of `a › b › c`, as a Store and its In portal stand before the Out it reaches.
+  // The small part `x › y` stood left of `a › b › c`, as a Source and its In portal stand before the Out it reaches.
   const g = graphOf([['a', 900, 0], ['b', 1300, 0], ['c', 1700, 0], ['x', 0, 600], ['y', 400, 600], ['lone', 300, 300], ['alone', 50, 50]],
     [R('a', 'b'), R('b', 'c'), R('a', 'c/b'), R('x', 'y')]);
   const out = unfurl(g).nodes;

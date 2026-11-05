@@ -7859,7 +7859,7 @@ is drawn as a loop. So the rings are signed by the flow: the anchor's outputs fa
   the gap is between the frames' boxes, not their nodes'.
 - **A portal pair has no route, so it pulls nothing.** An In and an Out of one name sit by their own routes' nodes,
   so a graph cut by portals is several parts. The parts keep the order they stood in, left to right: biggest first
-  put Demos' Store and its In portal to the right of the Outs it feeds.
+  put Demos' Source and its In portal to the right of the Outs it feeds.
 - **Within a part, the places a node had do not change where it goes.** Only the boxes and the routes do; the old
   places give only the parts' order and the first part's anchor, which keeps its place. So a second Unfurl gives
   the same layout.

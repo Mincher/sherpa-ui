@@ -63,7 +63,7 @@ const button = (page: Page) => page.locator('sherpa-node-toolbar sherpa-button.u
 
 // A store feeding four conditions, each with a value, two outputs: placed crossed on purpose, outputs on the left.
 const TANGLE: [string, string, number, number, Record<string, unknown>?][] = [
-  ['store', 'store', 1400, 500], ['e1', 'output', 0, 600], ['e2', 'output', 100, 0],
+  ['store', 'source', 1400, 500], ['e1', 'output', 0, 600], ['e2', 'output', 100, 0],
   ['c1', 'condition', 700, 900, { type: 'eq' }], ['c2', 'condition', 300, 300, { type: 'eq' }], ['c3', 'condition', 1000, 0, { type: 'eq' }], ['c4', 'condition', 500, 1200, { type: 'eq' }],
   ['v1', 'value', 1500, 1300, { type: 'text', value: 'a' }], ['v2', 'value', 0, 1300, { type: 'text', value: 'b' }], ['v3', 'value', 1300, 0, { type: 'text', value: 'c' }],
 ];
@@ -126,7 +126,7 @@ test('off read only, and with one node: a press does nothing', async ({ page }) 
   await settle(page);
   expect(await flow(page)).toEqual(before);
   await page.evaluate(() => document.getElementById('root')!.replaceChildren());
-  await start(page, [['alone', 'store', 40, 40]], []);
+  await start(page, [['alone', 'source', 40, 40]], []);
   await expect(button(page)).toHaveAttribute('disabled', '');
 });
 
