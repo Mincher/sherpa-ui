@@ -685,8 +685,10 @@ sherpa-quick-filter:not([data-solo]) .more-item[value="unsolo"],
 
 /* Found by the column's search: what holds no match goes. So does a value the
    chain does not offer, or, hiding unmatched, one it rules out. TODO 448 */
-.chips > .chip[data-no-matches],
+:is(.chips, .preset-zone) > .chip[data-no-matches],
 .chips > .chip > .value:is([data-filtered-out], [data-removed]) { display: none; }
+/* …and the Presets box, heading and all, with every preset. No :host() first: Firefox never re-reads it. TODO 722 */
+.chips > .preset-zone:not(:has(> .chip:not([data-no-matches]))) { display: none; }
 
 /* PANEL MODE. A filter PANEL is answering for this bar, so the controls it
    also carries are hidden here: Filters, with its actions. Two of each
