@@ -1,8 +1,8 @@
 import { test, expect, type Page } from './harness';
 
 /**
- * A left drag on the blank canvas is a BOX SELECTION — Will, TODO 735. It picks every node the box
- * TOUCHES and every connector it crosses; Shift adds, a plain box replaces, a click clears. A picked
+ * A left drag on the blank canvas is a BOX SELECTION — Will, TODO 735. It picks every node it
+ * ENCLOSES whole, or, with none, every connector it crosses (any part of one counts); Shift adds, a plain box replaces, a click clears. A picked
  * connector is drawn thick and dashed (`data-selected`); T ties the picked connectors in one step,
  * Delete cuts them in one. Panning moves to Space + drag, the middle button, the wheel and the Pan
  * tool. The Query editor selects and highlights, and refuses a cut in words. Real pointer and keys.
@@ -86,23 +86,27 @@ test('a left drag on blank canvas draws the marquee, then picks the three connec
   expect(await page.evaluate(() => getComputedStyle(document.getElementById('cv')!.shadowRoot!.querySelector('.viewport')!).cursor)).toBe('crosshair');
 });
 
-test('a box picks the nodes it TOUCHES, not only those it encloses, and the connectors that leave them', async ({ page }) => {
+test('a box picks a node only when the WHOLE node is inside it; a box that only touches a corner picks no node', async ({ page }) => {
   const n = await box(page, '#cv sherpa-node[data-heading="s1"]');
-  // From blank canvas into the node's lower right corner: it touches s1, and encloses none of it.
+  // From blank canvas into the node's lower right corner: it touches s1 and encloses none of it.
   await drag(page, [n.right + 30, n.bottom + 8], [n.right - 20, n.bottom - 10]);
-  const p = await picked(page);
-  expect(p.nodes).toEqual(['s1']);
+  expect((await picked(page)).nodes).toEqual([]);
+  // Around the whole node, from blank canvas to blank canvas: it is picked, and no connector with it.
+  await drag(page, [n.left - 14, n.top - 14], [n.right + 14, n.bottom + 14]);
+  const whole = await picked(page);
+  expect(whole.nodes).toEqual(['s1']);
+  expect(whole.routes).toEqual([]);
 });
 
-test('a box that touches a node picks only nodes; one that touches none picks only the connectors it crosses, any part of them', async ({ page }) => {
+test('a box that encloses a node picks only nodes; one that encloses none picks only the connectors it crosses, any part of them', async ({ page }) => {
   const n = await box(page, '#cv sherpa-node[data-heading="s1"]');
+  // Over s1 whole and across the connector that leaves it: the node only.
   const three = await gap(page, 1, 3);
-  // From the gap, across the connectors, into s1's corner: nodes only.
-  await drag(page, [three.to[0], three.to[1]], [n.right - 20, n.bottom - 10]);
+  await drag(page, [n.left - 14, n.top - 14], [Math.max(three.to[0], n.right + 14), n.bottom + 14]);
   const mixed = await picked(page);
-  expect(mixed.nodes.length).toBeGreaterThan(0);
+  expect(mixed.nodes).toEqual(['s1']);
   expect(mixed.routes).toEqual([]);
-  // A thin box over the middle of one connector, touching no node: that connector, and no node.
+  // A thin box over the middle of one connector, enclosing no node: that connector, and no node.
   const one = await gap(page, 2, 2);
   await drag(page, one.from, one.to);
   expect(await picked(page)).toMatchObject({ routes: ['s2/rows'], nodes: [], count: '1' });
@@ -213,7 +217,7 @@ test('Shift-click on a connector adds it to the pick, and takes it off', async (
   expect((await picked(page)).routes).toEqual(['s2/rows']);
 });
 
-test('the Query editor selects and highlights what the box touches; a cut is refused in words, once', async ({ page }) => {
+test('the Query editor selects and highlights what the box encloses or crosses; a cut is refused in words, once', async ({ page }) => {
   await page.evaluate(async () => {
     document.getElementById('cv')!.remove();
     document.getElementById('root')!.insertAdjacentHTML('beforeend', '<sherpa-layout-canvas id="q" style="inline-size: 1100px; block-size: 700px"></sherpa-layout-canvas>');

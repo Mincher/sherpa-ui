@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { touches, crosses, boxPick } = await import(new URL('../../dist/core/ui/box-pick.js', import.meta.url));
+const { touches, encloses, crosses, boxPick } = await import(new URL('../../dist/core/ui/box-pick.js', import.meta.url));
 
 const box = (left, top, right, bottom) => ({ left, top, right, bottom });
 
@@ -36,13 +36,23 @@ test('a box crosses each piece of a tied route: in, through the slot, out', () =
   assert.equal(crosses(box(150, 0, 190, 20), tied), false);
 });
 
-test('boxPick answers the nodes it touches, else the routes it crosses — never both — in the order given', () => {
+test('a box encloses a node only when the whole node is inside it, an edge included', () => {
+  const node = box(100, 100, 200, 150);
+  assert.equal(encloses(box(100, 100, 200, 150), node), true);
+  assert.equal(encloses(box(0, 0, 300, 300), node), true);
+  assert.equal(encloses(box(0, 0, 199, 300), node), false);
+  assert.equal(encloses(box(150, 0, 300, 300), node), false);
+});
+
+test('boxPick answers the nodes it ENCLOSES whole, else the routes it crosses — never both — in the order given', () => {
   const nodes = [['a', box(0, 0, 100, 50)], ['b', box(0, 200, 100, 250)], ['c', box(0, 400, 100, 450)]];
   const lanes = [1, 2, 3].map((n) => ({ route: `r${n}`, dots: [[100, (n - 1) * 200 + 25], [400, (n - 1) * 200 + 25]] }));
-  const got = boxPick(box(200, 0, 260, 460), nodes, lanes);
-  assert.deepEqual(got, { nodes: [], routes: ['r1', 'r2', 'r3'] });
-  // It touches nodes a and b AND crosses routes r1 and r2: only the nodes are picked.
-  assert.deepEqual(boxPick(box(50, 20, 150, 230), nodes, lanes), { nodes: ['a', 'b'], routes: [] });
+  // Beside the nodes, across all three routes: routes only.
+  assert.deepEqual(boxPick(box(200, 0, 260, 460), nodes, lanes), { nodes: [], routes: ['r1', 'r2', 'r3'] });
+  // Holds a and b whole, and crosses r1 and r2: only the nodes.
+  assert.deepEqual(boxPick(box(-10, -10, 150, 260), nodes, lanes), { nodes: ['a', 'b'], routes: [] });
+  // A corner of a and b, whole of neither: no node, so the routes it crosses.
+  assert.deepEqual(boxPick(box(50, 20, 150, 230), nodes, lanes), { nodes: [], routes: ['r1', 'r2'] });
   // Part of a route is enough: a box over the middle of one.
   assert.deepEqual(boxPick(box(250, 190, 260, 260), nodes, lanes), { nodes: [], routes: ['r2'] });
   assert.deepEqual(boxPick(box(500, 0, 600, 100), nodes, lanes), { nodes: [], routes: [] });

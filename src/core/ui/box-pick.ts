@@ -1,14 +1,15 @@
 /**
- * box-pick.ts — what a dragged box picks on a canvas's plane: every node whose box it TOUCHES
- * (as Figma's and Blender's node editors do); or, when it touches no node, every route whose
- * sampled path it CROSSES (a part of a route is enough). Never both (Will, 2026-11-05).
+ * box-pick.ts — what a dragged box picks on a canvas's plane: every node it ENCLOSES whole; or,
+ * when it encloses no node, every route whose sampled path it CROSSES (a part of a route is
+ * enough). Never both (Will, 2026-11-05).
  * Pure geometry: no DOM. Will, TODO 735.
  *
  * Map:
  * - PickBox — A box on the plane, in plane px.
  * - touches — Whether two boxes overlap, an edge's touch included.
+ * - encloses — Whether a box holds another whole.
  * - crosses — Whether a path, sampled as points, passes through a box.
- * - boxPick — The nodes a box touches; else the routes it crosses.
+ * - boxPick — The nodes a box encloses; else the routes it crosses.
  */
 
 /** A box on the plane, in plane px. */
@@ -17,6 +18,11 @@ export interface PickBox { left: number; top: number; right: number; bottom: num
 /** Whether two boxes overlap, an edge's touch included. */
 export function touches(a: PickBox, b: PickBox): boolean {
   return a.left <= b.right && b.left <= a.right && a.top <= b.bottom && b.top <= a.bottom;
+}
+
+/** Whether the first box holds the second whole, an edge included. */
+export function encloses(a: PickBox, b: PickBox): boolean {
+  return a.left <= b.left && a.top <= b.top && b.right <= a.right && b.bottom <= a.bottom;
 }
 
 /** Whether a segment passes through a box: Liang-Barsky, the segment clipped to the box's four sides. */
@@ -42,11 +48,11 @@ export function crosses(box: PickBox, dots: readonly [number, number][]): boolea
   return dots.some((dot, i) => i > 0 && segmentIn(box, dots[i - 1]!, dot));
 }
 
-/** The nodes a box touches; with none, the routes it crosses. Each in the order given. */
+/** The nodes a box encloses whole; with none, the routes it crosses. Each in the order given. */
 export function boxPick<R>(
   box: PickBox, nodes: Iterable<readonly [string, PickBox]>, lanes: Iterable<{ route: R; dots: readonly [number, number][] }>,
 ): { nodes: string[]; routes: R[] } {
-  const hit = [...nodes].filter(([, b]) => touches(box, b)).map(([id]) => id);
+  const hit = [...nodes].filter(([, b]) => encloses(box, b)).map(([id]) => id);
   if (hit.length) return { nodes: hit, routes: [] };
   return { nodes: [], routes: [...lanes].filter((l) => crosses(box, l.dots)).map((l) => l.route) };
 }
