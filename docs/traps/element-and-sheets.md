@@ -78,6 +78,7 @@ in Chromium, Firefox and WebKit:
 - Site: `src/components/sherpa-input-text/sherpa-input-text.css`
 - Site: `src/components/sherpa-nav-item/sherpa-nav-item.css`
 - Site: `src/components/sherpa-node/sherpa-node.css`
+- Site: `src/components/sherpa-node-frame/sherpa-node-frame.css`
 - Site: `src/components/sherpa-progress-bar/sherpa-progress-bar.css`
 - Site: `src/components/sherpa-prompt-composer/sherpa-prompt-composer.css`
 - Site: `src/components/sherpa-select-card/sherpa-select-card.css`

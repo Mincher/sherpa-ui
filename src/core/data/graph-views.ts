@@ -13,7 +13,7 @@
  * - graphRows — The graph chip's rows: the type's presets, then the reader's own, then New graph….
  * - openOf — The entity a graph View opens: the one named, when the list holds it; else the first.
  * - newGraph — A new, empty entity of a type, saved through the shelf under a free id, name and tags.
- * - graphOfWorkflow — What a canvas's workflow keeps as an entity's graph: its own nodes, its routes and ties.
+ * - graphOfWorkflow — What a canvas's workflow keeps as an entity's graph: its own nodes, its routes, ties and frames.
  * - saveGraph — Save the graph on a canvas as the open entity's: a preset is refused, as the shelf refuses it.
  * - saveGraphAs — Save the graph on a canvas as a COPY of an entity: the reader's own, named and tagged, under a free id.
  */
@@ -102,11 +102,12 @@ export async function newGraph(shelf: EntityShelf, type: Pick<EntityType, 'id' |
   return await shelf.save(entity) ? id : undefined;
 }
 
-/** What a canvas's workflow keeps as an entity's graph: its own nodes (not `#in` and `#out`), its routes and ties. */
-export function graphOfWorkflow(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes' | 'ties'>): EntityGraph {
+/** What a canvas's workflow keeps as an entity's graph: its own nodes (not `#in` and `#out`), its routes, ties and frames. */
+export function graphOfWorkflow(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes' | 'ties' | 'frames'>): EntityGraph {
   return {
     nodes: workflow.nodes.filter((n) => !n.id.startsWith('#')), routes: workflow.routes ?? [],
     ...(workflow.ties?.length ? { ties: workflow.ties } : {}),
+    ...(workflow.frames?.length ? { frames: workflow.frames } : {}),
   };
 }
 

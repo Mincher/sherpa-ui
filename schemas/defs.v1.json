@@ -397,6 +397,16 @@
         "routes": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/innerRoute" } }
       }
     },
+    "frame": {
+      "description": "A frame: nodes under one header, a title and a line. Only which nodes is kept: its box is drawn round them, and a node is in one frame at most. It changes no data: a runner ignores it. TODO 778",
+      "type": "object", "additionalProperties": false, "required": ["id", "nodes"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "description": "Its title; none, the header says Frame.", "type": "string" },
+        "description": { "description": "Its line, under the title.", "type": "string" },
+        "nodes": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/id" } }
+      }
+    },
     "socket": {
       "description": "A node's header socket, \"node\" (its input is its data; its output is True, where the node forks); a row's, \"node/row\" (\"node/rows\" sends its data rows); or its footer's False, \"node/#false\".",
       "type": "string", "pattern": "^[a-z][a-z0-9-]*(/([a-z][a-z0-9-]*|#false))?$"
@@ -445,6 +455,7 @@
         "nodes": { "type": "array", "items": { "$ref": "#/$defs/node" } },
         "routes": { "type": "array", "items": { "$ref": "#/$defs/innerRoute" } },
         "ties": { "type": "array", "items": { "$ref": "#/$defs/innerTie" } },
+        "frames": { "type": "array", "items": { "$ref": "#/$defs/frame" } },
         "settings": { "description": "The settings of the entity it is, where that is not a `node` (entity.v1): a copy keeps them. plan-746 E5", "type": "object" }
       }
     }

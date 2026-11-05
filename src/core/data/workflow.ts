@@ -31,12 +31,13 @@ import { typedValue } from './filter-state.js';
 import { OPS_FOR_TYPE, OP_LABELS } from './store.js';
 import {
   NODE_KINDS, ROWS, FALSE_SOCKET, accepts, conditionRows, drivenSwitch, fixedChoices, truthy, kindNode, kindOfNode, mirrored, partName, partOf, rowChoices, rowFault, rowOf, rowOfOtherType, socketOf, socketType, takesMany, typeChoices, typeOf,
-  type DrawnGraph, type GraphRow, type NodeSize, type NodeKind, type NodeRoute, type NodeTie, type PartKind, type RowKind, type SocketType,
+  type GraphRow, type NodeSize, type NodeKind, type NodeRoute, type NodeTie, type PartKind, type RowKind, type SocketType,
 } from './node-kinds.js';
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './route-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
 import { givenAt, needOf, readInput, truthOf, type InputNeeds } from './node-input.js';
+import { frameFaults, framed, framesAmong, type FramedGraph, type NodeFrame } from './node-frames.js';
 
 /** One node, as a definition holds it: only what the reader may change. What it IS is its kind's. */
 export interface WorkflowNode {
@@ -69,6 +70,8 @@ export interface WorkflowDefinition {
   routes?: readonly NodeRoute[];
   /** Zip ties: a place and the routes each funnels, in order. A tie changes no data; a runner ignores them. TODO 562 */
   ties?: readonly NodeTie[];
+  /** Frames: nodes under one header. A frame changes no data; its box is drawn round its nodes. TODO 778 */
+  frames?: readonly NodeFrame[];
 }
 
 /** A workflow as v1 saved it: the same, but its data rows left from a node's header. */
@@ -161,7 +164,7 @@ export function keptRoutes(workflow: Pick<WorkflowDefinition, 'nodes' | 'routes'
 /** A graph as Save writes it: each node with the values of its type's rows, and only the routes they join.
  *  What the draft keeps for another type is left out; so are the bends of a tied route, which the draft keeps
  *  unseen for its untying. Its ties keep the routes still there. Will, 2026-11-05 */
-export function finalGraph<W extends Pick<WorkflowDefinition, 'nodes'> & Partial<Pick<WorkflowDefinition, 'routes' | 'ties'>>>(workflow: W, kinds: Kinds = NODE_KINDS): W {
+export function finalGraph<W extends Pick<WorkflowDefinition, 'nodes'> & Partial<Pick<WorkflowDefinition, 'routes' | 'ties' | 'frames'>>>(workflow: W, kinds: Kinds = NODE_KINDS): W {
   const gone = keptRoutes({ nodes: workflow.nodes, routes: workflow.routes ?? [] }, kinds);
   const nodes = workflow.nodes.map((node): WorkflowNode => {
     const lost = Object.keys(node.values ?? {}).filter((name) => keptRow(node, name, kinds));
@@ -174,14 +177,17 @@ export function finalGraph<W extends Pick<WorkflowDefinition, 'nodes'> & Partial
   const ties = tiesAmong(workflow.ties, live);
   const tied = (r: NodeRoute): boolean => ties.some((t) => t.routes.some((x) => x.from === r.from && x.to === r.to));
   const bent = live.some((r) => r.via && tied(r));
-  if (!gone.length && !bent && nodes.every((n, i) => n === workflow.nodes[i])) return workflow;
+  // A frame keeps the nodes still there; with none, it goes.
+  const frames = framesAmong(workflow.frames, nodes.map((n) => n.id));
+  const reframed = frames.length !== (workflow.frames?.length ?? 0) || frames.some((f, i) => f !== workflow.frames![i]);
+  if (!gone.length && !bent && !reframed && nodes.every((n, i) => n === workflow.nodes[i])) return workflow;
   const routes = live.map((r) => {
     if (!r.via || !tied(r)) return r;
     const { via: _via, ...bare } = r;
     return bare;
   });
-  const { ties: _ties, ...rest } = workflow;
-  return { ...rest, nodes, ...(workflow.routes ? { routes } : {}), ...(ties.length ? { ties } : {}) } as unknown as W;
+  const { ties: _ties, frames: _frames, ...rest } = workflow;
+  return { ...rest, nodes, ...(workflow.routes ? { routes } : {}), ...(ties.length ? { ties } : {}), ...(frames.length ? { frames } : {}) } as unknown as W;
 }
 
 /** The field a row's part reads, its type, the values it may take and its name: what a closed tags row lists. Only
@@ -332,6 +338,7 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
       if (!(workflow.routes ?? []).some((x) => x.from === r.from && x.to === r.to)) problems.push(`the tie "${tie.id}" ties the route "${r.from}" → "${r.to}", which is not there`);
     }
   }
+  problems.push(...frameFaults(workflow.frames, workflow.nodes.map((n) => n.id)));
   return problems;
 }
 
@@ -373,7 +380,7 @@ function partsOf(node: WorkflowNode, routes: readonly NodeRoute[]): PartKind[] {
  *  and its own pick stays in the draft; else it shows its own until N4 runs the flow. What
  *  reaches an input that it cannot use reads null, and the node says why in `warnings`.
  *  TRAP T-a-node-reads-null-from-what-it-cannot-use */
-export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, facts: WorkflowFacts = {}, kinds: Kinds = NODE_KINDS): DrawnGraph {
+export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, facts: WorkflowFacts = {}, kinds: Kinds = NODE_KINDS): FramedGraph {
   const { workflow } = readWorkflow(given, kinds);
   if (!workflow) return { nodes: [], routes: [] };
   // A route kept for another type or operator is drawn nowhere, drives no row, nor holds its place in a tie.
@@ -466,7 +473,8 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
     return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, rows, heads), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}), ...(warnings.length ? { warnings } : {}) };
   });
   const ties = kept.length ? tiesAmong(workflow.ties, routes) : workflow.ties ?? [];
-  return { nodes, routes, ...(ties.length ? { ties } : {}) };
+  const frames = framesAmong(workflow.frames, nodes.map((n) => n.id));
+  return { nodes, routes, ...(ties.length ? { ties } : {}), ...(frames.length ? { frames } : {}) };
 }
 
 /** A node's width on the plane, in px: its output socket is at its x plus this. */
@@ -518,7 +526,10 @@ export type WorkflowEdit =
   | { tieAdd: { id: string; route: NodeRoute } }
   | { bend: { route: NodeRoute; at: number; x: number; y: number; insert?: boolean } }
   | { unbend: { route: NodeRoute; index: number } }
-  | { place: { nodes: Readonly<Record<string, { x: number; y: number }>>; ties?: Readonly<Record<string, { x: number; y: number }>>; bends?: 'reset' | { dx: number; dy: number } } };
+  | { place: { nodes: Readonly<Record<string, { x: number; y: number }>>; ties?: Readonly<Record<string, { x: number; y: number }>>; bends?: 'reset' | { dx: number; dy: number } } }
+  | { frame: { nodes: readonly string[]; id?: string; label?: string; description?: string } }
+  | { unframe: string }
+  | { setFrame: { id: string; label?: string; description?: string } };
 
 /** No value, empty text or an empty list: a row holding it holds none. */
 const empty = (value: unknown): boolean => value === '' || value == null || (Array.isArray(value) && !value.length);
@@ -672,11 +683,16 @@ export function editWorkflow(
       return { ...n, size };
     }) };
   }
+  if ('frame' in edit || 'unframe' in edit || 'setFrame' in edit) return frameEdit(workflow, edit);
   if ('add' in edit) return workflow.nodes.some((n) => n.id === edit.add.id) ? workflow : { ...workflow, nodes: [...workflow.nodes, { ...edit.add }] };
   if ('remove' in edit) {
     const gone = (address: string): boolean => socketOf(address).node === edit.remove;
     const routes = (workflow.routes ?? []).filter((r) => !gone(r.from) && !gone(r.to));
-    return untied({ ...workflow, nodes: workflow.nodes.filter((n) => n.id !== edit.remove), ...(workflow.routes ? { routes } : {}) });
+    const nodes = workflow.nodes.filter((n) => n.id !== edit.remove);
+    // It leaves its frame; a frame left with none goes.
+    const { frames: _was, ...bare } = workflow;
+    const frames = framesAmong(workflow.frames, nodes.map((n) => n.id));
+    return untied({ ...bare, nodes, ...(workflow.routes ? { routes } : {}), ...(frames.length ? { frames } : {}) });
   }
   if ('cut' in edit) {
     const { cut } = edit;
@@ -707,6 +723,36 @@ export function editWorkflow(
     return Object.keys(values).length ? { ...bare, values } : bare;
   });
   return { ...workflow, nodes };
+}
+
+/** A frame's edits: frame two or more nodes, release one (its nodes stay), or set its title and line. A refusal reports and
+ *  writes nothing. TRAP T-a-frame-is-drawn-round-its-nodes */
+function frameEdit(workflow: WorkflowDefinition, edit: Extract<WorkflowEdit, { frame: unknown } | { unframe: unknown } | { setFrame: unknown }>): WorkflowDefinition {
+  const { frames: _was, ...bare } = workflow;
+  const withFrames = (frames: readonly NodeFrame[]): WorkflowDefinition => (frames.length ? { ...bare, frames } : bare);
+  if ('unframe' in edit) {
+    if (!(workflow.frames ?? []).some((f) => f.id === edit.unframe)) return refuse(`the frame "${edit.unframe}" is not there`), workflow;
+    return withFrames((workflow.frames ?? []).filter((f) => f.id !== edit.unframe));
+  }
+  if ('setFrame' in edit) {
+    const { id, ...set } = edit.setFrame;
+    if (!(workflow.frames ?? []).some((f) => f.id === id)) return refuse(`the frame "${id}" is not there`), workflow;
+    // An empty title or line is none: the header says "Frame".
+    return withFrames((workflow.frames ?? []).map((f) => {
+      if (f.id !== id) return f;
+      const said = Object.entries(set).filter(([, v]) => v !== undefined).map(([key, v]) => [key, v!.trim()] as const);
+      const kept = Object.entries(f).filter(([key]) => !said.some(([k]) => k === key));
+      return Object.fromEntries([...kept, ...said.filter(([, v]) => v)]) as unknown as NodeFrame;
+    }));
+  }
+  const ids = [...new Set(edit.frame.nodes)];
+  const missing = ids.find((id) => !workflow.nodes.some((n) => n.id === id));
+  const fault = ids.length < 2 ? 'framing nodes needs two or more'
+    : ids.some((id) => id.startsWith('#')) ? 'the Group Input and Output stand where their Custom Node puts them: they cannot be framed'
+      : missing !== undefined ? `the node "${missing}" is not there`
+        : edit.frame.id !== undefined && (workflow.frames ?? []).some((f) => f.id === edit.frame.id) ? `two frames would be "${edit.frame.id}"` : undefined;
+  if (fault) return refuse(fault), workflow;
+  return withFrames(framed(workflow.frames, ids, edit.frame));
 }
 
 /**

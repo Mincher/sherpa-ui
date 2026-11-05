@@ -186,6 +186,11 @@ sherpa-node:
   '&[data-branches] .header .socket-out': success
   '&[data-branches] .socket-false': critical
 
+sherpa-node-frame:
+  # No Figma component yet (TODO 778). The frame pins Style=default; picked, active, as a picked node is.
+  '&': default
+  '&[data-current]': active
+
 sherpa-node-row:
   '&[data-input-socket="value"] .socket-in': info
   '&[data-input-socket="object"] .socket-in': active

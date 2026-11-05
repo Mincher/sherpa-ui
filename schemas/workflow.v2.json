@@ -16,6 +16,7 @@
     "label": { "description": "Its name, as a reader sees it.", "type": "string" },
     "nodes": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/node" } },
     "routes": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/route" } },
-    "ties": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/tie" } }
+    "ties": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/tie" } },
+    "frames": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/frame" } }
   }
 }

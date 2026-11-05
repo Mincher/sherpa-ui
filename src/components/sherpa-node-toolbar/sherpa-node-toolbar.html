@@ -1,6 +1,6 @@
 <!--
   sherpa-node-toolbar — a graph editor's tools, one object of icon buttons: Save, Undo and
-  Redo, then the Zip tie tool, Save as Custom Node and Arrange nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls.
+  Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls.
   Will, TODO 560. TRAP T-an-edit-is-a-step
 
   Public API:
@@ -10,6 +10,7 @@
     data-can-tie    The Zip tie tool can be pressed; written by the editor
     data-can-group  Save as Custom Node can be pressed: two or more nodes are picked; written by the editor
     data-can-arrange  Arrange nodes can be pressed: two or more nodes are picked; written by the editor
+    data-can-frame  Frame nodes can be pressed: two or more nodes are picked; written by the editor
     data-tie        The Zip tie tool is on; written by the editor, shown as pressed
     data-picked-routes  How many connectors are picked; written by the editor, said in the Tie tool's tip
 
@@ -17,7 +18,7 @@
     (none)
 
   Fires:
-    toolbar-select — a tool was pressed. detail: { action: 'save' | 'undo' | 'redo' | 'tie' | 'group' | 'arrange' }
+    toolbar-select — a tool was pressed. detail: { action: 'save' | 'undo' | 'redo' | 'tie' | 'group' | 'arrange' | 'frame' }
 -->
 <template id="default">
   <span class="tools sherpa-group" part="tools" role="toolbar" aria-label="Editor">
@@ -33,5 +34,7 @@
                    aria-label="Save as Custom Node" data-tip="Save as Custom Node (Ctrl+G): pick two or more nodes" disabled></sherpa-button>
     <sherpa-button class="arrange" data-type="icon" data-icon-start="arrange" data-action="arrange"
                    aria-label="Arrange nodes" data-tip="Arrange nodes on a grid: pick two or more" disabled></sherpa-button>
+    <sherpa-button class="frame" data-type="icon" data-icon-start="frame" data-action="frame"
+                   aria-label="Frame nodes" data-tip="Frame nodes (F): one column, in a frame; pick two or more" disabled></sherpa-button>
   </span>
 </template>

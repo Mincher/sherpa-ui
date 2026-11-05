@@ -6837,6 +6837,137 @@
     },
     {
       "kind": "javascript-module",
+      "path": "dist/components/sherpa-node-frame/sherpa-node-frame.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "SherpaNodeFrame",
+          "tagName": "sherpa-node-frame",
+          "customElement": true,
+          "description": "a FRAME on a sherpa-layout-canvas: nodes under one header, with a title, a line and Release. Its host draws it ROUND its nodes: data-x, data-y, data-w and data-h are their box, and the frame stands clear of it, its header above. It sits behind every line and node, and only its header takes the pointer. Will, TODO 778. TRAP T-a-frame-is-drawn-round-its-nodes",
+          "attributes": [
+            {
+              "name": "data-current",
+              "description": "the frame picked, in the look of a picked node; the HOST writes it",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-description",
+              "description": "its line, under the title",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "data-h",
+              "description": "that box's height, in plane px",
+              "type": {
+                "text": "number"
+              },
+              "default": "\"0\""
+            },
+            {
+              "name": "data-heading",
+              "description": "its title, in its header (default Frame)",
+              "type": {
+                "text": "string"
+              },
+              "default": "\"Frame\""
+            },
+            {
+              "name": "data-locked",
+              "description": "the host is read only: no Release button, no grab cursor. A drag or a key still reports",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-w",
+              "description": "that box's width, in plane px",
+              "type": {
+                "text": "number"
+              },
+              "default": "\"0\""
+            },
+            {
+              "name": "data-x",
+              "description": "the left of the box round its nodes, in plane px",
+              "type": {
+                "text": "number"
+              },
+              "default": "\"0\""
+            },
+            {
+              "name": "data-y",
+              "description": "the top of that box, in plane px",
+              "type": {
+                "text": "number"
+              },
+              "default": "\"0\""
+            }
+          ],
+          "events": [
+            {
+              "name": "frame-move",
+              "description": "Its header was dragged, or an arrow key pressed there: its host moves every node in it.",
+              "type": {
+                "text": "CustomEvent<{ dx: number; dy: number }>"
+              }
+            },
+            {
+              "name": "frame-select",
+              "description": "It was pressed: a click on its header, or Enter or Space there.",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "frame-release",
+              "description": "Release was pressed, or Delete or Backspace on its header: its host takes the frame away, and its nodes stay.",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "cssParts": [
+            {
+              "name": "frame"
+            },
+            {
+              "name": "header"
+            },
+            {
+              "name": "heading"
+            },
+            {
+              "name": "release"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "SherpaNodeFrame",
+          "declaration": {
+            "name": "SherpaNodeFrame",
+            "module": "dist/components/sherpa-node-frame/sherpa-node-frame.js"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "sherpa-node-frame",
+          "declaration": {
+            "name": "SherpaNodeFrame",
+            "module": "dist/components/sherpa-node-frame/sherpa-node-frame.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "dist/components/sherpa-node-panel/sherpa-node-panel.js",
       "declarations": [
         {
@@ -7128,11 +7259,18 @@
           "name": "SherpaNodeToolbar",
           "tagName": "sherpa-node-toolbar",
           "customElement": true,
-          "description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node and Arrange nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step",
+          "description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step",
           "attributes": [
             {
               "name": "data-can-arrange",
               "description": "Arrange nodes can be pressed: two or more nodes are picked; written by the editor",
+              "type": {
+                "text": "boolean"
+              }
+            },
+            {
+              "name": "data-can-frame",
+              "description": "Frame nodes can be pressed: two or more nodes are picked; written by the editor",
               "type": {
                 "text": "boolean"
               }

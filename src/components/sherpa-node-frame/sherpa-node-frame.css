@@ -1,0 +1,91 @@
+/* == sherpa:tokens (generated — do not edit) == */
+/* State pins, from scripts/figma-data/state-pins.yaml. Unlayered, as the shared pins are. */
+:host(sherpa-node-frame) {
+  --sherpa-style-border-base: var(--sherpa-style-default-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-default-border-width);
+  --sherpa-style-border-data-viz: var(--sherpa-style-default-border-data-viz);
+  --sherpa-style-content-base: var(--sherpa-style-default-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-default-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-default-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-default-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-default-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-default-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-default-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
+  --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
+  --_status-surface-strong: initial;
+  --_status-data-viz-border: initial;
+}
+
+:host(sherpa-node-frame[data-current]) { --_mode: active; --_mode-viz: active; }
+/* == end sherpa:tokens == */
+
+/**
+ * sherpa-node-frame.css — a frame's box round its nodes, and its header above them. Its host writes the
+ * nodes' box, which the frame reads as `--_x`, `--_y`, `--_w` and `--_h`; the canvas places it by `--x` and `--y`.
+ * TRAP T-a-frame-is-drawn-round-its-nodes
+ */
+
+:host {
+  display: block;
+  /* Clear of its nodes all round. */
+  --_pad: var(--sherpa-display-mode-space-xl, 24px);
+  /* The header's own height with a line under its title: its padding, a small button's row, the gap and the line. */
+  --_head: calc(2 * var(--sherpa-theme-padding-md, 8px) + var(--sherpa-display-mode-space-xl, 24px)
+    + var(--sherpa-theme-gap-sm, 4px) + var(--sherpa-theme-content-line-height-small, 16px));
+  --x: calc(var(--_x, 0px) - var(--_pad));
+  --y: calc(var(--_y, 0px) - var(--_pad) - var(--_head));
+  inline-size: calc(var(--_w, 0px) + 2 * var(--_pad));
+  block-size: calc(var(--_h, 0px) + 2 * var(--_pad) + var(--_head));
+  /* Only its header takes the pointer: a box or a pan starts on its body. */
+  pointer-events: none;
+}
+
+/* The BOX is the root, not the host: picked, its pin re-maps only what the host holds. TRAP T-a-host-state-pin-lives-where-the-host-is */
+.frame {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-style-border-base-1, #b3b3c3);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  /* A tint the canvas's grid shows through: its nodes stay the cards. */
+  background: color-mix(in srgb, var(--sherpa-style-surface-base-1, #e8e8f6) 40%, transparent);
+  color: var(--sherpa-style-content-base, #0c0b11);
+}
+
+/* ── The header: the handle ────────────────────────────────────────── */
+.header {
+  flex: none;
+  block-size: var(--_head);
+  pointer-events: auto;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-drag: none;
+  touch-action: none;
+  background: var(--sherpa-style-surface-base, #ffffff);
+  border-start-start-radius: inherit;
+  border-start-end-radius: inherit;
+}
+.header:focus-visible {
+  outline: var(--sherpa-focus-ring);
+  outline-offset: var(--sherpa-focus-offset);
+}
+:host(:state(dragging)) .header { cursor: grabbing; }
+:host([data-locked]) .header { cursor: default; }
+
+/* Its title and line, one line each, centred in the header's height. */
+.heading { block-size: 100%; }
+.heading::part(header) {
+  block-size: 100%;
+  align-content: center;
+}
+
+/* Read only: nothing to release. */
+:host([data-locked]) .release { display: none; }
+
+@media (forced-colors: active) {
+  .frame { border-color: CanvasText; }
+  :host([data-current]) .frame { border-color: Highlight; }
+}

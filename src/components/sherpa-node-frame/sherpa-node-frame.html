@@ -1,0 +1,38 @@
+<!--
+  sherpa-node-frame — a FRAME on a sherpa-layout-canvas: nodes under one header, with a title, a line
+  and Release. Its host draws it ROUND its nodes: data-x, data-y, data-w and data-h are their box, and
+  the frame stands clear of it, its header above. It sits behind every line and node, and only its
+  header takes the pointer. Will, TODO 778. TRAP T-a-frame-is-drawn-round-its-nodes
+
+  Public API:
+    data-heading      its title, in its header (default Frame)
+    data-description  its line, under the title
+    data-x            the left of the box round its nodes, in plane px (default 0)
+    data-y            the top of that box, in plane px (default 0)
+    data-w            that box's width, in plane px (default 0)
+    data-h            that box's height, in plane px (default 0)
+    data-current      the frame picked, in the look of a picked node; the HOST writes it
+    data-locked       the host is read only: no Release button, no grab cursor. A drag or a key still reports
+
+  Slots:
+    (none)
+
+  Fires:
+    frame-move — its header was dragged, or an arrow key pressed there: its host moves every node in it. detail: { dx, dy }, this move's step in plane px
+    frame-select — it was pressed: a click on its header, or Enter or Space there. The click a drag ends with is no press.
+    frame-release — Release was pressed, or Delete or Backspace on its header: its host takes the frame away, and its nodes stay.
+-->
+<template id="default">
+  <div class="frame" part="frame">
+    <!-- The HEADER is the handle: a drag moves every node in the frame, the arrows too, Enter picks it. -->
+    <div class="header" part="header" role="group" tabindex="0" aria-roledescription="frame"
+         aria-label="Frame" data-attr-aria-label="data-heading"
+         aria-current="false" data-when-aria-current="data-current: true">
+      <sherpa-container-header class="heading" part="heading" data-heading="Frame"
+                               data-attr-data-heading="data-heading" data-attr-data-description="data-description">
+        <sherpa-button slot="actions" class="release" part="release" data-size="sm" data-look="transparent"
+                       data-label="Release" data-tip="Release: the frame goes, its nodes stay (Delete)"></sherpa-button>
+      </sherpa-container-header>
+    </div>
+  </div>
+</template>

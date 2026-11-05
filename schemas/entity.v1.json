@@ -23,7 +23,8 @@
       "properties": {
         "nodes": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/node" } },
         "routes": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/innerRoute" } },
-        "ties": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/innerTie" } }
+        "ties": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/innerTie" } },
+        "frames": { "type": "array", "items": { "$ref": "defs.v1.json#/$defs/frame" } }
       }
     },
     "settings": { "description": "What the type keeps beside its graph; the type's own schema checks it.", "type": "object" },

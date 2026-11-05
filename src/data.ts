@@ -177,6 +177,8 @@ export {
   type WorkflowNode,
   type WorkflowRead,
 } from './core/data/workflow.js';
+/* A FRAME: nodes under one header; only which nodes is kept. TRAP T-a-frame-is-drawn-round-its-nodes */
+export { frameFaults, framed, framesAmong, type FramedGraph, type NodeFrame } from './core/data/node-frames.js';
 /* A CUSTOM NODE: a workflow body saved under one name, used as an instance. TRAP T-a-custom-node-is-an-instance */
 export {
   GROUP_INPUT,

@@ -7675,3 +7675,33 @@ graphs. Let's keep them but also make sure they work in the new architecture for
 - Site: `test/unit/a-preset-filter-is-a-preset-of-its-store.test.mjs`
 - Site: `test/e2e/reforged-preset-filter-presets.spec.ts`
 - Site: `test/e2e/reforged-query-panel.spec.ts`
+
+### T-a-frame-is-drawn-round-its-nodes
+
+**A frame keeps only WHICH nodes; its box is drawn round them.** Will, TODO 778 ·
+`docs/history/plan-778-frames.md`. The workflow's `frames` hold an id, a title, a line and the
+node ids. No x, y, width or height is saved: the nodes own their places (one owner per value),
+and the editor writes the box round their drawn cards on every draw, drag and resize, as
+`data-x`, `data-y`, `data-w` and `data-h` on its `sherpa-node-frame`.
+
+- **A node dragged out stays in.** The frame grows round it. It leaves by Release or Delete.
+- **A node is in ONE frame.** Framing takes it from the frame it was in; a frame left with no
+  node goes, in the edit and in `finalGraph`, as a tie with no route does.
+- **The frame owns no place, so it reports a STEP.** A drag on its header, or an arrow there,
+  fires `frame-move { dx, dy }` in plane px; the editor moves every node in it as one `{place}`
+  edit, one step. A frame never moves itself, and never writes a node.
+- **Only its header takes the pointer.** The host is `pointer-events: none`, so a box or a pan
+  starts on its body; it is drawn before the lines and the nodes, so it is behind them.
+- **The header's height is a token sum**, its padding, a small button's row, the gap and the
+  line, so CSS alone sets its top: `--y` is the nodes' top less the pad and the header.
+- **Release is ONE act**: the frame goes and its nodes stay. Will's "remove the frame and
+  release the contained nodes" name the same result; deleting the nodes is Delete.
+
+- Site: `src/core/data/node-frames.ts`
+- Site: `src/core/data/workflow.ts`
+- Site: `src/data.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `src/components/sherpa-node-frame/sherpa-node-frame.ts`
+- Site: `src/components/sherpa-node-frame/sherpa-node-frame.html`
+- Site: `src/components/sherpa-node-frame/sherpa-node-frame.css`
+- Site: `test/e2e/reforged-node-frame.spec.ts`

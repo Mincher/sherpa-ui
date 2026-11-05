@@ -20,6 +20,7 @@
 import type { NodeRoute, NodeTie } from './node-kinds.js';
 import type { NodeDefinition, NodeOutput, NodeSocket } from './node-library.js';
 import type { WorkflowNode } from './workflow.js';
+import type { NodeFrame } from './node-frames.js';
 
 /** The id of the envelope's schema, for the `$schema` of a file. */
 export const ENTITY_SCHEMA = 'https://sherpa-ui.dev/schemas/entity.v1.json';
@@ -37,6 +38,7 @@ export interface EntityGraph {
   nodes: readonly WorkflowNode[];
   routes?: readonly NodeRoute[];
   ties?: readonly NodeTie[];
+  frames?: readonly NodeFrame[];
 }
 
 /** One entity, as JSON. `origin` is set when it is read and never written. */
@@ -103,7 +105,7 @@ export function nodeEntityOf(kind: string, definition: NodeDefinition): Entity {
     v: 1, type, id, label: definition.label,
     ...(definition.description ? { description: definition.description } : {}),
     ...(definition.tags?.length ? { tags: definition.tags } : {}),
-    graph: { nodes: definition.nodes, ...(definition.routes ? { routes: definition.routes } : {}), ...(definition.ties ? { ties: definition.ties } : {}) },
+    graph: { nodes: definition.nodes, ...(definition.routes ? { routes: definition.routes } : {}), ...(definition.ties ? { ties: definition.ties } : {}), ...(definition.frames ? { frames: definition.frames } : {}) },
     ...(settings ? { settings } : {}),
     ...(definition.preset ? { origin: 'preset' as const } : {}),
   };
@@ -116,6 +118,7 @@ export function definitionOf(entity: Entity): NodeDefinition {
     v: 1, label: entity.label,
     inputs: Array.isArray(s['inputs']) ? s['inputs'] as NodeSocket[] : [], outputs: Array.isArray(s['outputs']) ? s['outputs'] as NodeOutput[] : [],
     nodes: entity.graph.nodes, ...(entity.graph.routes ? { routes: entity.graph.routes } : {}), ...(entity.graph.ties ? { ties: entity.graph.ties } : {}),
+    ...(entity.graph.frames ? { frames: entity.graph.frames } : {}),
     ...(entity.description ? { description: entity.description } : {}),
     ...(entity.tags?.length ? { tags: entity.tags } : {}),
     ...(typeof s['category'] === 'string' ? { category: s['category'] } : {}), ...(typeof s['icon'] === 'string' ? { icon: s['icon'] } : {}),

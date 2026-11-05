@@ -3,17 +3,21 @@
  * drawn there: a page's Query, which each edit ASKS, and a workflow, whose draft each edit
  * writes. Places last the tab; Save hands the app a checked definition. Each node lights as
  * its step runs, from the one trace stream. A workflow's Custom Node opens, is edited as its
- * definition, updates its uses, and is made from picked nodes. A zip tie funnels routes through one place (plan 562). Will, TODOs 555, 551, 671, 719, 562, 735.
- * TRAP T-the-node-editor-asks-the-query · TRAP T-a-step-names-its-node
+ * definition, updates its uses, and is made from picked nodes. A zip tie funnels routes through one place (plan 562); a frame
+ * holds picked nodes in a column under one header (plan 778). Will, TODOs 555, 551, 671, 719, 562, 735, 778.
+ * TRAP T-the-node-editor-asks-the-query · TRAP T-a-step-names-its-node · TRAP T-a-frame-is-drawn-round-its-nodes
  *
  * Map:
  * - DrawOptions — What a drawing tells its host: each edit, each node a reader picks or moves, and each new route.
  * - tieSpot — Where routes would be tied with no pointer: the middle of the way each takes, on the plane.
  * - drawGraph — Draw a graph on a canvas: each node by id, at its place when that moved; then its routes.
  * - markNode — Mark one node as the one picked, or none.
+ * - markFrame — Mark one frame as the one picked, or none: no node is picked with it.
+ * - pickedFrame — The frame picked, by id, or none.
  * - pickedNodes — The nodes picked, by id: a click, a box, or the keys.
+ * - arrangement — Where these nodes go, from the boxes they are drawn in: a grid, or one column.
  * - arrangePicked — Lay the picked nodes out on a grid and hand the host the places: one move, ties and bends with it.
- * - watchArrange — Tell a toolbar, in `data-can-arrange`, when two or more nodes are picked; its stop lets go.
+ * - watchArrange — Tell a toolbar, in `data-can-arrange` and any flag given, when two or more nodes are picked.
  * - markNodes — Mark several nodes as the ones picked.
  * - markActive — Mark the one picked node whose panel is shown, in a stronger ring.
  * - markRoutes — Mark routes as the ones picked.
@@ -39,6 +43,7 @@ import '../../components/sherpa-input-text/sherpa-input-text.js';
 import '../../components/sherpa-key-value-list/sherpa-key-value-list.js';
 import '../../components/sherpa-node/sherpa-node.js';
 import '../../components/sherpa-node-row/sherpa-node-row.js';
+import '../../components/sherpa-node-frame/sherpa-node-frame.js';
 import '../../components/sherpa-menu/sherpa-menu.js';
 import '../../components/sherpa-quick-filter/sherpa-quick-filter.js';
 import '../../components/sherpa-group/sherpa-group.js';
@@ -70,6 +75,7 @@ import { entityKind, entityRefOf, type EntityRef } from '../data/entity.js';
 import { PRESET_FILTER, offeredKinds } from '../data/entity-types.js';
 import { flowPane, instancePane, updatePane } from './node-group-panel.js';
 import { arrangeNodes, type Arranged } from '../data/node-arrange.js';
+import type { FramedGraph, NodeFrame } from '../data/node-frames.js';
 import { nodeFlow, type ConditionFacts } from '../data/node-flow.js';
 import { typedValue, type FieldType } from '../data/filter-state.js';
 import { formatDateTime, isDateTime, readDateTime } from '../data/format-date.js';
@@ -140,6 +146,10 @@ export interface DrawOptions {
   notes?: ReadonlyMap<string, string>;
   /** A node whose place the host owns: a drag reports and moves nothing (the Group Input, a preset's inside). */
   locked?: (node: GraphNode) => boolean;
+  /** A frame's header pressed, or Enter or Space there: the drawing marks it picked (TODO 778). */
+  onFrameSelect?: (frame: NodeFrame) => void;
+  /** A frame's Release, or Delete on its header: the frame goes, its nodes stay. Unset, the frames are read only. */
+  onRelease?: (id: string) => void;
 }
 
 /** A field a row draws: a text field, a select or tags, a menu of ticks (a quick-filter chip), or a switch. */
@@ -153,7 +163,7 @@ const CHANGES = ['change', 'quick-filter-change'] as const;
 
 /** What a canvas has drawn: each node and row by its address, the lines, and the routes they draw. */
 interface Drawn {
-  graph: DrawnGraph;
+  graph: FramedGraph;
   options: DrawOptions;
   nodes: Map<string, HTMLElement>;
   rows: Map<string, HTMLElement>;
@@ -192,6 +202,9 @@ interface Drawn {
   shadow: string;
   sizes: ResizeObserver;
   fitted: boolean;
+  /** Each frame drawn, by id, and the one picked. TODO 778 */
+  frames: Map<string, HTMLElement>;
+  selectedFrame: string | null;
 }
 
 const drawnOn = new WeakMap<HTMLElement, Drawn>();
@@ -438,8 +451,26 @@ function shadowFilter(id: string): SVGElement {
   return defs;
 }
 
-/** A curve for each route, from its output socket to its input socket. */
+/** Each frame round its nodes as drawn: the box of their cards, which it stands clear of. None drawn, it is hidden.
+ *  TRAP T-a-frame-is-drawn-round-its-nodes */
+function placeFrames(drawn: Drawn): void {
+  const boxes = [...drawn.frames].map(([id, el]) => {
+    const cards = (drawn.graph.frames?.find((f) => f.id === id)?.nodes ?? []).flatMap((n) => drawn.nodes.get(n) ?? []);
+    if (!cards.length) return [el, null] as const;
+    const [left, top] = [Math.min(...cards.map((c) => c.offsetLeft)), Math.min(...cards.map((c) => c.offsetTop))];
+    const [right, bottom] = [Math.max(...cards.map((c) => c.offsetLeft + c.offsetWidth)), Math.max(...cards.map((c) => c.offsetTop + c.offsetHeight))];
+    return [el, { x: left, y: top, w: right - left, h: bottom - top }] as const;
+  });
+  // Every read first, then every write: one layout.
+  for (const [el, box] of boxes) {
+    el.toggleAttribute('hidden', !box);
+    for (const [k, v] of Object.entries(box ?? {})) if (el.getAttribute(`data-${k}`) !== String(Math.round(v))) el.setAttribute(`data-${k}`, String(Math.round(v)));
+  }
+}
+
+/** A curve for each route, from its output socket to its input socket; the frames round their nodes first. */
 function drawRoutes(canvas: SherpaLayoutCanvas, drawn: Drawn): void {
+  placeFrames(drawn);
   const same = (a: NodeRoute | null, b: NodeRoute): boolean => !!a && a.from === b.from && a.to === b.to;
   const lanes: Drawn['lanes'] = [];
   const paths = drawn.routes.flatMap((route) => {
@@ -640,6 +671,7 @@ function pickRoute(canvas: SherpaLayoutCanvas, drawn: Drawn, route: NodeRoute, s
   drawn.handle = null;
   drawn.picked = shift ? (held ? drawn.picked.filter((r) => r.from !== route.from || r.to !== route.to) : [...drawn.picked, route]) : [route];
   drawn.selectedTie = null;
+  unpickFrame(drawn);
   drawRoutes(canvas, drawn);
   drawn.options.onPicked?.(drawn.picked);
   // The canvas's own keys hear the break.
@@ -762,6 +794,7 @@ function dragTie(canvas: SherpaLayoutCanvas, drawn: Drawn, id: string, down: Poi
   down.stopPropagation();
   drawn.selectedTie = id;
   drawn.picked = [];
+  unpickFrame(drawn);
   drawRoutes(canvas, drawn);
   canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
   const [px, py] = planeOf(canvas, down);
@@ -871,6 +904,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     graph: { nodes: [], routes: [] }, options: {},
     nodes: new Map(), rows: new Map(), addresses: new WeakMap(), shapes: new Map(), placedAt: new Map(), movedTo: new Map(),
     lines, routes: [], ties: [], selectedTie: null, lanes: [], tying: false, draft: null, lifted: null, picked: [], handle: null, target: null, dragged: false, drags: 0, shadow: `graph-tie-shadow-${++shadows}`, fitted: false,
+    frames: new Map(), selectedFrame: null,
     // A node's height lands when its parts render: the lines follow, and the first fits the view.
     sizes: new ResizeObserver(() => {
       drawRoutes(canvas, made);
@@ -1100,6 +1134,40 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     if (!node || !row?.editable) return;
     made.options.onEdit?.({ node, row, value: read(line!.firstElementChild as Field, row) });
   });
+  // A FRAME: its header picks it; a drag or an arrow there moves every node in it as one move; Release lets them go. TODO 778
+  const frameOf = (target: EventTarget | null): NodeFrame | undefined => {
+    const id = [...made.frames].find(([, el]) => el === target)?.[0];
+    return made.graph.frames?.find((f) => f.id === id);
+  };
+  canvas.addEventListener('frame-select', (event) => {
+    const frame = frameOf(event.target);
+    if (!frame) return;
+    markFrame(canvas, frame.id);
+    made.options.onFrameSelect?.(frame);
+  });
+  canvas.addEventListener('frame-move', (event) => {
+    const frame = frameOf(event.target);
+    const { dx, dy } = (event as CustomEvent<{ dx: number; dy: number }>).detail;
+    if (!frame || !made.options.onRelease) return;
+    const moves = frame.nodes.flatMap((id) => {
+      const el = made.nodes.get(id);
+      const node = made.graph.nodes.find((n) => n.id === id);
+      const at = nowAt(made, id);
+      return el && node && at && !made.options.locked?.(node) ? [{ id, x: at[0] + dx, y: at[1] + dy, el, node }] : [];
+    });
+    for (const m of moves) {
+      made.movedTo.set(m.id, [m.x, m.y]);
+      m.el.setAttribute('data-x', String(m.x));
+      m.el.setAttribute('data-y', String(m.y));
+    }
+    drawRoutes(canvas, made);
+    if (moves.length === 1) made.options.onMove?.(moves[0]!.node, moves[0]!.x, moves[0]!.y);
+    else if (moves.length) made.options.onMoveMany?.(moves.map(({ id, x, y }) => ({ id, x, y })));
+  });
+  canvas.addEventListener('frame-release', (event) => {
+    const frame = frameOf(event.target);
+    if (frame) made.options.onRelease?.(frame.id);
+  });
   // A node ASKS to be picked: the drawing marks it, one of many, and tells its host.
   canvas.addEventListener('node-select', (event) => {
     const node = nodeOf(made, event.target);
@@ -1114,7 +1182,7 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
 
 /** Draw a graph on a canvas: each node by id, at its place when the graph's place for it
  *  moved — else where the reader left it; then its routes. */
-export function drawGraph(canvas: SherpaLayoutCanvas, graph: DrawnGraph, options: DrawOptions = {}): void {
+export function drawGraph(canvas: SherpaLayoutCanvas, graph: FramedGraph, options: DrawOptions = {}): void {
   const drawn = drawnFor(canvas);
   drawn.graph = graph;
   drawn.options = options;
@@ -1164,6 +1232,27 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: DrawnGraph, options
     el.toggleAttribute('data-false-routed', graph.routes.some((r) => r.from === `${node.id}/${FALSE_SOCKET}`));
     drawRows(drawn, el, node);
   }
+  // Frames: behind the lines and the nodes, each round its nodes. TODO 778
+  const frames = graph.frames ?? [];
+  for (const [id, el] of drawn.frames) {
+    if (frames.some((f) => f.id === id)) continue;
+    el.remove();
+    drawn.frames.delete(id);
+  }
+  if (drawn.selectedFrame && !drawn.frames.has(drawn.selectedFrame)) drawn.selectedFrame = null;
+  for (const frame of frames) {
+    let el = drawn.frames.get(frame.id);
+    if (!el) {
+      el = document.createElement('sherpa-node-frame');
+      drawn.frames.set(frame.id, el);
+      canvas.insertBefore(el, drawn.lines);
+    }
+    put(el, 'data-heading', frame.label);
+    put(el, 'data-description', frame.description);
+    el.toggleAttribute('data-current', drawn.selectedFrame === frame.id);
+    el.toggleAttribute('data-locked', !options.onRelease);
+  }
+  placeFrames(drawn);
   drawn.routes = graph.routes;
   drawn.ties = graph.ties ?? [];
   drawn.tying = !!options.tying;
@@ -1185,6 +1274,38 @@ export function markNode(canvas: SherpaLayoutCanvas, id: string | null): void {
     el.toggleAttribute('data-current', key === id);
     el.removeAttribute('data-active');
   }
+  unpickFrame(drawnOn.get(canvas));
+}
+
+/** No frame is picked. */
+function unpickFrame(drawn: Drawn | undefined): void {
+  if (!drawn?.selectedFrame) return;
+  drawn.selectedFrame = null;
+  for (const el of drawn.frames.values()) el.removeAttribute('data-current');
+}
+
+/** Mark one frame as the one picked, or none: no node, route or tie is picked with it. TODO 778 */
+export function markFrame(canvas: SherpaLayoutCanvas, id: string | null): void {
+  const drawn = drawnOn.get(canvas);
+  if (!drawn) return;
+  if (id) {
+    markNode(canvas, null);
+    if (drawn.picked.length || drawn.selectedTie || drawn.handle) {
+      drawn.picked = [];
+      drawn.selectedTie = null;
+      if (drawn.handle) drawn.options.onBendPicked?.(null);
+      drawn.handle = null;
+      drawRoutes(canvas, drawn);
+      drawn.options.onPicked?.([]);
+    }
+  }
+  drawn.selectedFrame = id && drawn.frames.has(id) ? id : null;
+  for (const [key, el] of drawn.frames) el.toggleAttribute('data-current', key === drawn.selectedFrame);
+}
+
+/** The frame picked, by id, or none. */
+export function pickedFrame(canvas: SherpaLayoutCanvas): string | null {
+  return drawnOn.get(canvas)?.selectedFrame ?? null;
 }
 
 /** The nodes picked, by id: a click, a box, or the keys. */
@@ -1197,16 +1318,23 @@ const ARRANGE_GAP = '--sherpa-display-mode-space-5xl';
 const ARRANGE_GAP_STEPS = 3;
 const ARRANGE_GAP_FALLBACK = 56;
 
-/** Lay the picked nodes out on a grid, from the boxes they are drawn in, and hand the host the places. */
-export function arrangePicked(canvas: SherpaLayoutCanvas): Arranged | undefined {
+/** Where these nodes go, from the boxes they are drawn in: on a grid, or in ONE column (TODO 778). None, fewer than two. */
+export function arrangement(canvas: SherpaLayoutCanvas, picked: readonly string[], column = false): Arranged | undefined {
   const drawn = drawnOn.get(canvas);
-  const ids = pickedNodes(canvas).filter((id) => !id.startsWith('#'));
-  if (!drawn?.options.onArrange || ids.length < 2) return undefined;
+  const ids = picked.filter((id) => !id.startsWith('#'));
+  if (!drawn || ids.length < 2) return undefined;
   const gap = ARRANGE_GAP_STEPS * (parseFloat(getComputedStyle(canvas).getPropertyValue(ARRANGE_GAP)) || ARRANGE_GAP_FALLBACK);
   const nodes = [...drawn.nodes].map(([id, el]) => ({ id, x: Number(el.getAttribute('data-x')) || 0, y: Number(el.getAttribute('data-y')) || 0 }));
   const boxes = Object.fromEntries([...drawn.nodes].map(([id, el]) => [id, { w: el.offsetWidth, h: el.offsetHeight }]));
-  const placed = arrangeNodes({ nodes, routes: drawn.routes, ties: drawn.ties }, ids, { gapX: gap, gapY: gap, boxes });
-  if (!Object.keys(placed.nodes).length) return undefined;
+  const placed = arrangeNodes({ nodes, routes: drawn.routes, ties: drawn.ties }, ids, { gapX: gap, gapY: gap, boxes, column });
+  return Object.keys(placed.nodes).length ? placed : undefined;
+}
+
+/** Lay the picked nodes out on a grid, from the boxes they are drawn in, and hand the host the places. */
+export function arrangePicked(canvas: SherpaLayoutCanvas): Arranged | undefined {
+  const drawn = drawnOn.get(canvas);
+  const placed = drawn?.options.onArrange ? arrangement(canvas, pickedNodes(canvas)) : undefined;
+  if (!drawn?.options.onArrange || !placed) return undefined;
   for (const [id, at] of Object.entries(placed.nodes)) {
     const el = drawn.nodes.get(id);
     if (!el || el.hasAttribute('data-locked')) continue;
@@ -1218,19 +1346,25 @@ export function arrangePicked(canvas: SherpaLayoutCanvas): Arranged | undefined 
   return placed;
 }
 
-/** Say in `data-can-arrange` whether two or more nodes are picked; stop lets go. */
-export function watchArrange(canvas: SherpaLayoutCanvas, toolbar: HTMLElement | null | undefined, allowed: () => boolean = () => true): () => void {
+/** Say in `data-can-arrange`, and each flag given, whether two or more nodes are picked; stop lets go. */
+export function watchArrange(
+  canvas: SherpaLayoutCanvas, toolbar: HTMLElement | null | undefined, allowed: () => boolean = () => true, flags: readonly string[] = ['data-can-arrange'],
+): () => void {
   if (!toolbar) return () => undefined;
-  const tell = (): void => { toolbar.toggleAttribute('data-can-arrange', pickedNodes(canvas).length > 1 && allowed()); };
+  const tell = (): void => {
+    const can = pickedNodes(canvas).filter((id) => !id.startsWith('#')).length > 1 && allowed();
+    for (const flag of flags) toolbar.toggleAttribute(flag, can);
+  };
   const watch = new MutationObserver(tell);
   watch.observe(canvas, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-current'] });
   tell();
-  return () => { watch.disconnect(); toolbar.removeAttribute('data-can-arrange'); };
+  return () => { watch.disconnect(); for (const flag of flags) toolbar.removeAttribute(flag); };
 }
 
 /** Mark several nodes as the ones picked. */
 export function markNodes(canvas: SherpaLayoutCanvas, ids: ReadonlySet<string>): void {
   for (const [key, el] of drawnOn.get(canvas)?.nodes ?? []) el.toggleAttribute('data-current', ids.has(key));
+  if (ids.size) unpickFrame(drawnOn.get(canvas));
 }
 
 /** Mark the one of the picked nodes whose panel is shown: a stronger ring than the others'. */
@@ -1252,10 +1386,10 @@ export function pickedRoutes(canvas: SherpaLayoutCanvas): NodeRoute[] {
   return [...(drawnOn.get(canvas)?.picked ?? [])];
 }
 
-/** Put the keyboard on one drawn node's header, once it is drawn. */
-function focusNode(canvas: SherpaLayoutCanvas, id: string): void {
+/** Put the keyboard on one drawn node's header, or a frame's, once it is drawn. */
+function focusNode(canvas: SherpaLayoutCanvas, id: string, frame = false): void {
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    const el = drawnOn.get(canvas)?.nodes.get(id);
+    const el = drawnOn.get(canvas)?.[frame ? 'frames' : 'nodes'].get(id);
     (el?.shadowRoot?.querySelector('.header') as HTMLElement | null | undefined)?.focus();
   }));
 }
@@ -1463,6 +1597,52 @@ export function inspectNode(panel: HTMLElement, node: GraphNode, graph: DrawnGra
   inspecting.set(panel, { node, fields, options });
 }
 
+/** What a frame's inspector edits, and whom it tells: none, it is read only. */
+interface FrameInspect {
+  onEdit?: (set: { label?: string; description?: string }) => void;
+  onRelease?: () => void;
+}
+
+/** Fill an overlay panel with one frame: its name and line, the nodes it holds, and Release. Shown already, its
+ *  fields take the new values in place, so a reader moving between them keeps the keyboard. TODO 778 */
+function inspectFrame(panel: HTMLElement, frame: NodeFrame, graph: DrawnGraph, { onEdit, onRelease }: FrameInspect = {}): void {
+  const names = frame.nodes.map((id) => graph.nodes.find((n) => n.id === id)?.heading ?? id).join(', ');
+  const held = [...panel.children].find((el): el is HTMLElement => el instanceof HTMLElement && el.dataset['frame'] === frame.id);
+  const stack = held ?? document.createElement('sherpa-stack');
+  if (!held) {
+    stack.dataset['frame'] = frame.id;
+    stack.setAttribute('data-gap', 'lg');
+    const field = (name: 'label' | 'description', label: string): Field => {
+      const el = document.createElement('sherpa-input-text') as Field;
+      el.setAttribute('name', name);
+      el.setAttribute('data-label', label);
+      if (!onEdit) lock(el, true);
+      el.addEventListener('change', () => onEdit?.({ [name]: String(el.value ?? '') }));
+      return el;
+    };
+    const list = document.createElement('sherpa-key-value-list');
+    list.setAttribute('data-orientation', 'vertical');
+    const release = document.createElement('sherpa-button');
+    release.setAttribute('data-label', 'Release frame');
+    release.setAttribute('data-description', 'The frame goes; its nodes stay where they are. Keyboard: Delete or Backspace on its header.');
+    release.setAttribute('data-size', 'sm');
+    release.addEventListener('button-click', () => onRelease?.());
+    stack.append(field('label', 'Name'), field('description', 'Description'), list, ...(onRelease ? [release] : []));
+    panel.replaceChildren(stack);
+  }
+  let typing: Element | null = document.activeElement;
+  while (typing?.shadowRoot?.activeElement) typing = typing.shadowRoot.activeElement;
+  for (const el of stack.querySelectorAll<Field>('sherpa-input-text')) {
+    const value = frame[el.getAttribute('name') as 'label' | 'description'] ?? '';
+    if (el.value !== value && !el.contains(typing) && !el.shadowRoot?.contains(typing)) el.value = value;
+  }
+  void customElements.whenDefined('sherpa-key-value-list').then(() => {
+    (stack.querySelector('sherpa-key-value-list') as (HTMLElement & { populate(items: unknown): void }) | null)?.populate([{ key: 'Nodes', value: names }]);
+  });
+  panel.setAttribute('data-heading', frame.label ?? 'Frame');
+  panel.setAttribute('data-icon', 'frame');
+}
+
 /** The type a drawn socket carries, on one side; none, it has no such socket. */
 function typeAt(drawn: Drawn, address: string, side: 'input' | 'output'): SocketType | undefined {
   const { node, row } = socketOf(address);
@@ -1523,6 +1703,8 @@ interface Picked {
   follow(graph: DrawnGraph): void;
   /** A click on blank canvas: none picked, and the panel shut. */
   deselect(): void;
+  /** None picked, and the panel left as it is: something else fills it (a frame). */
+  clear(): void;
   stop(): void;
 }
 
@@ -1575,6 +1757,9 @@ function pickedIn(
         inspector.hide();
       }
       onClose?.();
+    },
+    clear(): void {
+      picked = null;
     },
     stop(): void {
       inspector?.removeEventListener('panel-close', close);
@@ -1975,7 +2160,7 @@ export function bindWorkflow(
     session?.set(editsAt, edits());
   };
   readHeld();
-  let graph: DrawnGraph = { nodes: [], routes: [] };
+  let graph: FramedGraph = { nodes: [], routes: [] };
   // The Custom Nodes opened, outermost first. What is shown is the innermost one's body.
   let path: Opened[] = [];
   const innerNow = (): Inner | undefined => {
@@ -2069,7 +2254,7 @@ export function bindWorkflow(
       report({ code: 'node-readonly', message: 'bindWorkflow: this Custom Node is a preset, read only. Copy to my nodes, and change the copy.', at: { workflow: workflow.id } });
     } else {
       const id = path.at(-1)!.kind;
-      setLib(editDefinition(lib, id, { nodes: next.nodes.filter((n) => !n.id.startsWith('#')), routes: next.routes ?? [], ties: next.ties ?? [] }), [id]);
+      setLib(editDefinition(lib, id, { nodes: next.nodes.filter((n) => !n.id.startsWith('#')), routes: next.routes ?? [], ties: next.ties ?? [], frames: next.frames ?? [] }), [id]);
     }
     draw();
   }, tag);
@@ -2162,6 +2347,56 @@ export function bindWorkflow(
     const held = (shown().ties ?? []).find((t) => t.routes.length === routes.length && routes.every((r) => t.routes.some((q) => same(q, r))));
     if (held) onUntie(held.id);
     else onTie([...routes], tieSpot(canvas, routes));
+  };
+  // — Frames (778): Frame, Release, a frame's name and line; each one edit, and one step. TRAP T-a-frame-is-drawn-round-its-nodes
+  /** The frame the inspector shows, or none. */
+  let framePanel: string | null = null;
+  const showFrame = (id: string): void => {
+    const frame = (shown().frames ?? []).find((f) => f.id === id);
+    if (!inspector || !frame) return;
+    framePanel = id;
+    markActive(canvas, null);
+    inspectFrame(inspector, frame, graph, readOnly() ? {} : {
+      onEdit: (set) => write(editWorkflow(shown(), { setFrame: { id, ...set } }, K()), `frame:${id}/${Object.keys(set).join()}`),
+      onRelease: () => release(id),
+    });
+    inspector.show();
+  };
+  const onFrameSelect = (frame: NodeFrame): void => {
+    multi.clear();
+    current = null;
+    active = null;
+    shut = false;
+    picks.clear();
+    showFrame(frame.id);
+  };
+  /** Release: the frame goes, its nodes stay where they are. */
+  const release = (id: string): void => {
+    if (readOnly()) return;
+    const was = framePanel === id;
+    write(editWorkflow(shown(), { unframe: id }, K()));
+    if (was) picks.deselect();
+    canvas.shadowRoot?.querySelector<HTMLElement>('.viewport')?.focus();
+  };
+  /** Frame the picked nodes: ONE column, with Arrange's gap, and a frame round it, as ONE step. The frame is picked. */
+  const framePicked = (focus = false): void => {
+    const ids = pickedNodes(canvas).filter((id) => !id.startsWith('#'));
+    const placed = readOnly() ? undefined : arrangement(canvas, ids, true);
+    if (!placed) return;
+    const had = new Set((shown().frames ?? []).map((f) => f.id));
+    edit(() => {
+      const column = editWorkflow(shown(), { place: { nodes: placed.nodes, ties: placed.ties, bends: 'reset' } }, K());
+      write(editWorkflow(column, { frame: { nodes: ids } }, K()));
+    });
+    const made = (shown().frames ?? []).find((f) => !had.has(f.id));
+    if (!made) return;
+    const open = !!inspector?.open;
+    multi.clear();
+    current = null;
+    picks.clear();
+    markFrame(canvas, made.id);
+    if (open) showFrame(made.id);
+    if (focus) focusNode(canvas, made.id, true);
   };
   // A Value node for a picklist row: the row keeps its own pick, and mirrors the node.
   const customAt = (to: string, at: { x: number; y: number }): void => take(addCustomValue(shown(), to, at, K()));
@@ -2384,6 +2619,7 @@ export function bindWorkflow(
   /** The picked nodes in the panel: a tab each, the active one's node filling it. A tab changes the shown node, never the pick. */
   const showMulti = (): void => {
     if (!inspector) return;
+    framePanel = null;
     markNodes(canvas, multi);
     const nodes = graph.nodes.filter((n) => multi.has(n.id));
     if (!nodes.length) return;
@@ -2496,6 +2732,9 @@ export function bindWorkflow(
         multi.clear();
         markNode(canvas, null);
         picks.deselect();
+      } else if (pickedFrame(canvas)) {
+        markFrame(canvas, null);
+        if (framePanel) picks.deselect();
       } else if (path.length && !routes) back();
       else if (!routes) return;
     } else if (event.key.toLowerCase() === 't' && !mod && !event.shiftKey && (pickedRoutes(canvas).length || multi.size > 1 || (hit && !hit.field))) {
@@ -2503,6 +2742,7 @@ export function bindWorkflow(
       if (pickedRoutes(canvas).length) tieRoutes(pickedRoutes(canvas));
       else tieNodes(multi.size > 1 ? [...multi] : [hit!.id]);
     } else if (mod && event.key.toLowerCase() === 'g') openSave();
+    else if (event.key.toLowerCase() === 'f' && !mod && !event.altKey && !event.shiftKey && pickedNodes(canvas).filter((id) => !id.startsWith('#')).length > 1) framePicked(true);
     else if (hit?.header && event.key === ' ') toggle(hit.id);
     else if (hit?.header && event.key === 'Enter' && use(hit.id)) open(hit.id);
     else return;
@@ -2537,10 +2777,11 @@ export function bindWorkflow(
     else if (action === 'tie') setTying(!tying);
     else if (action === 'group') openSave();
     else if (action === 'arrange') arrangePicked(canvas);
+    else if (action === 'frame') framePicked();
   };
   toolbar?.addEventListener('toolbar-select', onTool);
   toolbar?.setAttribute('data-can-tie', '');
-  const unarrange = watchArrange(canvas, toolbar, () => !readOnly());
+  const unarrange = watchArrange(canvas, toolbar, () => !readOnly(), ['data-can-arrange', 'data-can-frame']);
   tell();
   canvas.addEventListener('keydown', onKey, { capture: true });
   canvas.addEventListener('click', onClick, { capture: true });
@@ -2578,9 +2819,16 @@ export function bindWorkflow(
   const picks = pickedIn(canvas, inspector, (node, now) => {
     current = node.id;
     shut = false;
+    framePanel = null;
     markActive(canvas, null);
     fillInspector(node, now);
-  }, () => { multi.clear(); current = null; active = null; shut = false; }, () => {
+  }, () => {
+    multi.clear(); current = null; active = null; shut = false;
+    // The panel shut on a frame: the frame is let go too.
+    if (framePanel) markFrame(canvas, null);
+    framePanel = null;
+  }, () => {
+    if (framePanel) return release(framePanel);
     const ids = multi.size ? [...multi] : current ? [current] : [];
     if (ids.length && !readOnly()) onRemoveNodes(ids, []);
   });
@@ -2593,7 +2841,8 @@ export function bindWorkflow(
       onEdit, onMove, onResize, onConnect, onReroute, onBreak, onCustom, onDeselect: picks.deselect,
       ...(ro ? {} : { onMoveMany, onArrange }),
       onBox: pickBox, onPicked: tellPicked, onBendPicked: (pick) => toolbar?.toggleAttribute('data-picked-bend', !!pick),
-      ...(ro ? {} : { tying, onTie, onTieMove, onUntie, onBreakAll, onBend, onUnbend, onTieDrop, onRemove: onRemoveNodes }),
+      ...(ro ? {} : { tying, onTie, onTieMove, onUntie, onBreakAll, onBend, onUnbend, onTieDrop, onRemove: onRemoveNodes, onRelease: release }),
+      onFrameSelect,
       onSelect: (node) => {
         multi.clear();
         picks.select(node, graph);
@@ -2604,6 +2853,8 @@ export function bindWorkflow(
     });
     trail();
     if (multi.size > 1 && inspector?.open) showMulti();
+    else if (framePanel && !(shown().frames ?? []).some((f) => f.id === framePanel)) picks.deselect();
+    else if (framePanel && inspector?.open) showFrame(framePanel);
     else picks.follow(graph);
   }
   draw();

@@ -107,6 +107,7 @@ export const ICON_NAMES: ReadonlySet<string> = new Set([
   'folder-w-plus-badge',
   'folder-w-up-badge',
   'folder',
+  'frame',
   'fullscreen-exit',
   'fullscreen',
   'function',

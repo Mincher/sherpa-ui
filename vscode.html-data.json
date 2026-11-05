@@ -2649,6 +2649,46 @@
       ]
     },
     {
+      "name": "sherpa-node-frame",
+      "description": "a FRAME on a sherpa-layout-canvas: nodes under one header, with a title, a line and Release. Its host draws it ROUND its nodes: data-x, data-y, data-w and data-h are their box, and the frame stands clear of it, its header above. It sits behind every line and node, and only its header takes the pointer. Will, TODO 778. TRAP T-a-frame-is-drawn-round-its-nodes",
+      "attributes": [
+        {
+          "name": "data-current",
+          "description": "the frame picked, in the look of a picked node; the HOST writes it",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-description",
+          "description": "its line, under the title"
+        },
+        {
+          "name": "data-h",
+          "description": "that box's height, in plane px"
+        },
+        {
+          "name": "data-heading",
+          "description": "its title, in its header (default Frame)"
+        },
+        {
+          "name": "data-locked",
+          "description": "the host is read only: no Release button, no grab cursor. A drag or a key still reports",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-w",
+          "description": "that box's width, in plane px"
+        },
+        {
+          "name": "data-x",
+          "description": "the left of the box round its nodes, in plane px"
+        },
+        {
+          "name": "data-y",
+          "description": "the top of that box, in plane px"
+        }
+      ]
+    },
+    {
       "name": "sherpa-node-panel",
       "description": "the nodes a graph editor may place, by category: a Jump to chip and a search, then one list in which each category's heading sticks while its items scroll, one item per family; a Custom Node under each of its tags. A card (sherpa-container) on a canvas, docked or floating. Drawn from populate(paletteOf(kinds)); a category with no kind is empty. Will, plan 713 M8, plan 749 P3, TODOs 769, 784, 786. TRAP T-the-node-panel-asks-it-places",
       "attributes": [
@@ -2745,11 +2785,16 @@
     },
     {
       "name": "sherpa-node-toolbar",
-      "description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node and Arrange nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step",
+      "description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step",
       "attributes": [
         {
           "name": "data-can-arrange",
           "description": "Arrange nodes can be pressed: two or more nodes are picked; written by the editor",
+          "valueSet": "v"
+        },
+        {
+          "name": "data-can-frame",
+          "description": "Frame nodes can be pressed: two or more nodes are picked; written by the editor",
           "valueSet": "v"
         },
         {

@@ -36,6 +36,7 @@ import { tidyTags } from './tags.js';
 import { report } from './report.js';
 import { NODE_KINDS, rowOf, type NodeKind, type NodeRoute, type NodeTie, type RowKind, type RowControl } from './node-kinds.js';
 import { editWorkflow, workflowFaults, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
+import type { NodeFrame } from './node-frames.js';
 
 type Kinds = Readonly<Record<string, NodeKind>>;
 
@@ -84,6 +85,8 @@ export interface NodeDefinition extends NodeSnapshot {
   preset?: true;
   /** Zip ties in the body: they change no data, so are no part of its version or its diff. */
   ties?: readonly NodeTie[];
+  /** Frames in the body: no part of its version or its diff, as a tie is. TODO 778 */
+  frames?: readonly NodeFrame[];
   /** An entity's own settings, where it is not a `node` (plan 746 E5): no part of its version; a copy keeps them. */
   settings?: Readonly<Record<string, unknown>>;
 }
@@ -215,6 +218,7 @@ function inside(id: string, definition: NodeDefinition, base: Kinds, values: Rea
       ],
       routes: definition.routes ?? [],
       ...(definition.ties?.length ? { ties: definition.ties } : {}),
+      ...(definition.frames?.length ? { frames: definition.frames } : {}),
     },
   };
 }
@@ -420,7 +424,7 @@ export function updateAll(workflow: WorkflowDefinition, kind: string, library: N
 /** The library after one change to a definition. A preset's is refused, and so is one that is not
  *  there: the library given, untouched. */
 export function editDefinition(
-  library: NodeLibrary, id: string, change: Partial<Pick<NodeDefinition, 'label' | 'category' | 'icon' | 'description' | 'tags' | 'inputs' | 'outputs' | 'nodes' | 'routes' | 'ties'>>,
+  library: NodeLibrary, id: string, change: Partial<Pick<NodeDefinition, 'label' | 'category' | 'icon' | 'description' | 'tags' | 'inputs' | 'outputs' | 'nodes' | 'routes' | 'ties' | 'frames'>>,
 ): NodeLibrary {
   const was = library.nodes[id];
   if (!was || was.preset) return library;

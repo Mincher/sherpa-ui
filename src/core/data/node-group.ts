@@ -17,6 +17,7 @@ import { NODE_KINDS, FALSE_SOCKET, kindOfNode, rowOf, socketOf, socketType, type
 import { kindsOf, updateInstance, useOf, versionOf, workflowFaultsDeep, type NodeDefinition, type NodeLibrary, type NodeOutput, type NodeSocket } from './node-library.js';
 import { tidyTags } from './tags.js';
 import { tiesAmong, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
+import { framesAmong, type NodeFrame } from './node-frames.js';
 
 type Kinds = Readonly<Record<string, NodeKind>>;
 
@@ -142,11 +143,14 @@ export function groupNodes(
   const nodes = workflow.nodes.filter((n) => ids.has(n.id));
   // A tie of inner routes only goes inside; a tie of outer ones stays.
   const tied = (workflow.ties ?? []).filter((t) => t.routes.every((r) => inner.some((x) => x.from === r.from && x.to === r.to)));
+  // A frame of picked nodes only goes inside; one partly picked keeps the rest. TODO 778
+  const framed = (workflow.frames ?? []).filter((f) => f.nodes.every((n) => ids.has(n)));
   const definition: NodeDefinition = {
     v: 1, label, ...(ask.description?.trim() ? { description: ask.description.trim() } : {}), ...(ask.category?.trim() ? { category: ask.category.trim() } : {}),
     ...(tidyTags(ask.tags).length ? { tags: tidyTags(ask.tags) } : {}),
     inputs, outputs, nodes: structuredClone(nodes), routes: inner,
     ...(tied.length ? { ties: structuredClone(tied) } : {}),
+    ...(framed.length ? { frames: structuredClone(framed) } : {}),
   };
   const made: NodeLibrary = { ...library, nodes: { ...library.nodes, [id]: definition } };
   const x = Math.round(nodes.reduce((s, n) => s + n.x, 0) / nodes.length);
@@ -154,9 +158,10 @@ export function groupNodes(
   const at = workflow.nodes.findIndex((n) => ids.has(n.id));
   const placed = workflow.nodes.filter((n) => !ids.has(n.id));
   const after: WorkflowNode[] = [...placed.slice(0, at), useOf(made, id, { id: use, x, y }), ...placed.slice(at)];
-  const { ties: _ties, ...flat } = workflow;
+  const { ties: _ties, frames: _frames, ...flat } = workflow;
   const stay = tiesAmong(workflow.ties, outer);
-  const next: WorkflowDefinition = { ...flat, nodes: after, routes: outer, ...(stay.length ? { ties: stay } : {}) };
+  const frames = framesAmong((workflow.frames ?? []).filter((f) => !framed.includes(f)), placed.map((n) => n.id));
+  const next: WorkflowDefinition = { ...flat, nodes: after, routes: outer, ...(stay.length ? { ties: stay } : {}), ...(frames.length ? { frames } : {}) };
   const was = new Set(workflowFaultsDeep(workflow, library, kinds, facts));
   const added = workflowFaultsDeep(next, made, kinds, facts).filter((f) => !was.has(f));
   if (added.length) return { fault: `the Custom Node would not pass the checks: ${added.join('; ')}` };
@@ -218,8 +223,14 @@ export function ungroupUse(
   const seen = new Set<string>();
   const all = [...routes.filter((r) => !touching(r)), ...body, ...joined].filter((r) => !seen.has(key(r)) && !!seen.add(key(r)));
   const kept = tiesAmong(workflow.ties, all);
-  const { ties: _ties, ...flat } = workflow;
-  return { workflow: { ...flat, nodes: [...rest.slice(0, at), ...nodes, ...rest.slice(at)], routes: all, ...(kept.length ? { ties: kept } : {}) } };
+  // The definition's frames come out, by the nodes' new ids; one whose id the graph holds takes the use's name in front.
+  const outer = framesAmong(workflow.frames, rest.map((n) => n.id));
+  const out: NodeFrame[] = (definition.frames ?? []).map((f) => ({
+    ...structuredClone(f), id: outer.some((o) => o.id === f.id) ? `${useId}-${f.id}` : f.id, nodes: f.nodes.map((id) => rename.get(id) ?? id),
+  }));
+  const frames = framesAmong([...outer, ...out], [...rest, ...nodes].map((n) => n.id));
+  const { ties: _ties, frames: _frames, ...flat } = workflow;
+  return { workflow: { ...flat, nodes: [...rest.slice(0, at), ...nodes, ...rest.slice(at)], routes: all, ...(kept.length ? { ties: kept } : {}), ...(frames.length ? { frames } : {}) } };
 }
 
 /**

@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-node-toolbar",
-  "$description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node and Arrange nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step",
+  "$description": "a graph editor's tools, one object of icon buttons: Save, Undo and Redo, then the Zip tie tool, Save as Custom Node, Arrange nodes and Frame nodes. It floats in a canvas's `toolbar` slot, in the look of the canvas's own controls. Will, TODO 560. TRAP T-an-edit-is-a-step",
   "element": {
     "$type": "element",
     "tag": "span",
@@ -98,6 +98,18 @@
             "data-tip": "Arrange nodes on a grid: pick two or more",
             "disabled": ""
           }
+        },
+        {
+          "el": "sherpa-button",
+          "class": "frame",
+          "attrs": {
+            "data-type": "icon",
+            "data-icon-start": "frame",
+            "data-action": "frame",
+            "aria-label": "Frame nodes",
+            "data-tip": "Frame nodes (F): one column, in a frame; pick two or more",
+            "disabled": ""
+          }
         }
       ]
     }
@@ -111,6 +123,15 @@
       "declared": true,
       "kind": "behaviour",
       "description": "Arrange nodes can be pressed: two or more nodes are picked; written by the editor"
+    },
+    {
+      "$type": "prop",
+      "name": "data-can-frame",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "Frame nodes can be pressed: two or more nodes are picked; written by the editor"
     },
     {
       "$type": "prop",
@@ -177,7 +198,7 @@
     }
   ],
   "populate": {
-    "shape": "{ canArrange?, canGroup?, canRedo?, canSave?, canTie?, canUndo?, pickedRoutes?, tie? }",
+    "shape": "{ canArrange?, canFrame?, canGroup?, canRedo?, canSave?, canTie?, canUndo?, pickedRoutes?, tie? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "events": [

@@ -33,9 +33,9 @@ export interface EntityFacts {
  *  own — with a Group Input `#in` where it has inputs and a Group Output `#out` where it has outputs,
  *  as a Custom Node's inside is drawn; and the kinds those need. TRAP T-a-graph-is-a-view-of-a-type */
 export function graphWorkflow(entity: Entity, kinds: Kinds = NODE_KINDS, types: Readonly<Record<string, EntityType>> = entityTypes()): { workflow: WorkflowDefinition; kinds: Kinds } {
-  const { nodes, routes = [], ties } = entity.graph;
+  const { nodes, routes = [], ties, frames } = entity.graph;
   const inner = innerOf({ id: entity.id, kind: entityKind(entity) }, libraryOf([entity], types), kinds);
-  if (!inner) return { workflow: { v: 2, id: entity.id, label: entity.label, nodes, routes, ...(ties ? { ties } : {}) }, kinds };
+  if (!inner) return { workflow: { v: 2, id: entity.id, label: entity.label, nodes, routes, ...(ties ? { ties } : {}), ...(frames ? { frames } : {}) }, kinds };
   const { inputs, outputs } = socketsOf(entity, types[entity.type]);
   const touched = (end: string): boolean => routes.some((r) => [r.from, r.to].some((s) => s === end || s.startsWith(`${end}/`)));
   const kept = (id: string): boolean => (id === '#in' ? !!inputs.length || touched('#in') : id === '#out' ? !!outputs.length || touched('#out') : true);
