@@ -57,3 +57,19 @@ test('boxPick answers the nodes it ENCLOSES whole, else the routes it crosses â€
   assert.deepEqual(boxPick(box(250, 190, 260, 260), nodes, lanes), { nodes: [], routes: ['r2'] });
   assert.deepEqual(boxPick(box(500, 0, 600, 100), nodes, lanes), { nodes: [], routes: [] });
 });
+
+test('boxCover answers BOTH kinds; boxMode: Shift adds, the primary key removes and wins over Shift', async () => {
+  const { boxCover, boxMode } = await import(new URL('../../dist/core/ui/box-pick.js', import.meta.url));
+  const nodes = [['a', box(0, 0, 100, 50)], ['b', box(0, 200, 100, 250)]];
+  const lanes = [1, 2].map((n) => ({ route: `r${n}`, dots: [[100, (n - 1) * 200 + 25], [400, (n - 1) * 200 + 25]] }));
+  assert.deepEqual(boxCover(box(-10, -10, 150, 100), nodes, lanes), { nodes: ['a'], routes: ['r1'] });
+  assert.deepEqual(boxCover(box(500, 0, 600, 100), nodes, lanes), { nodes: [], routes: [] });
+  const k = (shiftKey, ctrlKey, metaKey) => ({ shiftKey, ctrlKey, metaKey });
+  // Ctrl is the primary key off a Mac, Cmd on one.
+  assert.equal(boxMode(k(false, false, false), false), 'replace');
+  assert.equal(boxMode(k(true, false, false), false), 'add');
+  assert.equal(boxMode(k(false, true, false), false), 'remove');
+  assert.equal(boxMode(k(true, true, false), false), 'remove');
+  assert.equal(boxMode(k(false, false, true), true), 'remove');
+  assert.equal(boxMode(k(true, true, false), true), 'add');
+});

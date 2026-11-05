@@ -11,6 +11,7 @@
 import { SherpaElement, coerceNum, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
+import { boxMode, type BoxMode } from '../../core/ui/box-pick.js';
 import { toolbarKeys } from '../../core/ui/roving-focus.js';
 
 /** One press of Zoom in or Zoom out. */
@@ -27,8 +28,8 @@ const BOX_SLOP = 4;
 /** A box on the plane, in plane px. */
 interface Box { left: number; top: number; right: number; bottom: number }
 
-/** A press in progress: a pan from where the view was, or a box (with Shift: added to the pick). */
-interface Drag { id: number; x: number; y: number; from: [number, number]; box: boolean; add: boolean }
+/** A press in progress: a pan from where the view was, or a box (its mode from the keys held). */
+interface Drag { id: number; x: number; y: number; from: [number, number]; box: boolean; mode: BoxMode }
 
 export class SherpaLayoutCanvas extends SherpaElement {
   static override css = new URL('./sherpa-layout-canvas.css', import.meta.url);
@@ -102,6 +103,10 @@ export class SherpaLayoutCanvas extends SherpaElement {
     // Capture: a node's header takes Space for itself, and stops it.
     this.on(window, 'keydown', (event) => this.#onSpace(event as KeyboardEvent, true), { capture: true });
     this.on(window, 'keyup', (event) => this.#onSpace(event as KeyboardEvent, false), { capture: true });
+    // A key pressed or let go mid-drag changes the marquee's mode at once.
+    for (const type of ['keydown', 'keyup']) this.on(window, type, (event) => {
+      if (this.#drag?.box && this.hasState('boxing')) this.$('.viewport')?.setAttribute('data-mode', this.#drag.mode = boxMode(event as KeyboardEvent));
+    });
     this.on(window, 'blur', () => this.#onSpace(null, false));
     // A piece says where it sits in its own style; the canvas writes only its own.
     this.#moves = new MutationObserver((records) => {
@@ -230,7 +235,7 @@ export class SherpaLayoutCanvas extends SherpaElement {
     const box = !pan && event.button === 0 && blank;
     if (!pan && !box) return;
     event.preventDefault();
-    this.#drag = { id: event.pointerId, x: event.clientX, y: event.clientY, from: [this.#x, this.#y], box, add: event.shiftKey };
+    this.#drag = { id: event.pointerId, x: event.clientX, y: event.clientY, from: [this.#x, this.#y], box, mode: boxMode(event) };
     // A synthetic pointer has nothing to capture.
     try {
       (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
@@ -261,16 +266,18 @@ export class SherpaLayoutCanvas extends SherpaElement {
       const marquee = this.$<HTMLElement>('.marquee');
       if (far && marquee) {
         this.toggleState('boxing', true);
+        this.$('.viewport')?.setAttribute('data-mode', drag.mode = boxMode(event));
         Object.assign(marquee.style, { left: `${left}px`, top: `${top}px`, width: `${right - left}px`, height: `${bottom - top}px` });
       }
       return;
     }
     this.#drag = null;
     this.toggleState('boxing', false);
+    this.$('.viewport')?.removeAttribute('data-mode');
     if (event.type !== 'pointerup' || !far) return;
     const plane = (px: number, py: number): [number, number] => [(px - this.#x) / this.#zoom, (py - this.#y) / this.#zoom];
     const [a, b] = [plane(left, top), plane(right, bottom)];
-    this.emit('canvas-box', { left: a[0], top: a[1], right: b[0], bottom: b[1], add: drag.add });
+    this.emit('canvas-box', { left: a[0], top: a[1], right: b[0], bottom: b[1], mode: boxMode(event) });
   }
 
   /** Space held: a left drag pans. Not while typing or on a button. */

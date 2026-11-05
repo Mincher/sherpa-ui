@@ -325,9 +325,9 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "add": "boolean",
         "bottom": "number",
         "left": "number",
+        "mode": "BoxMode",
         "right": "number",
         "top": "number"
       }

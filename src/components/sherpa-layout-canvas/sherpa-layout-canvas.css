@@ -126,7 +126,12 @@
   border: var(--sherpa-display-mode-border-width-base, 1px) dashed var(--sherpa-style-active-border-base-1, #c046ff);
   background: color-mix(in srgb, var(--sherpa-style-active-border-base-1, #c046ff) 12%, transparent);
 }
+/* Shift adds: a solid line and a plus cursor; Ctrl or Cmd removes: a dotted, faded line. */
+.viewport[data-mode="add"] .marquee { border-style: solid; }
+.viewport[data-mode="remove"] .marquee { border-style: dotted; background: transparent; }
 :host(:state(boxing)) .marquee { display: block; }
+:host(:state(boxing)) .viewport[data-mode="add"] { cursor: copy; }
+:host(:state(boxing)) .viewport[data-mode="remove"] { cursor: not-allowed; }
 @media (forced-colors: active) {
   .marquee { border-color: Highlight; background: transparent; }
 }

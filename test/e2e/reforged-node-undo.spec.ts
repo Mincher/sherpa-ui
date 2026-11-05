@@ -64,7 +64,8 @@ const press = async (page: Page, name: string) => {
   await tool(page, name).evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
   await settle(page);
 };
-const mod = process.platform === 'darwin' ? 'Meta' : 'Control';
+/** The page's primary modifier: Cmd on an Apple platform, else Ctrl (the browser's own platform, not the runner's). */
+const primary = (page: Page) => page.evaluate(() => /mac|iphone|ipad/i.test((navigator as never as { userAgentData?: { platform?: string } }).userAgentData?.platform ?? navigator.platform) ? 'Meta' : 'Control');
 const can = (page: Page) => page.evaluate(() => ({
   undo: !!document.querySelector('sherpa-node-toolbar')!.hasAttribute('data-can-undo'),
   redo: !!document.querySelector('sherpa-node-toolbar')!.hasAttribute('data-can-redo'),
@@ -156,6 +157,7 @@ test('Ctrl/Cmd+Z and Shift+Ctrl/Cmd+Z do the same, with the canvas focused; a te
   await settle(page);
   const after = await state(page);
   await page.locator('#cv').evaluate((el) => (el.shadowRoot!.querySelector('.viewport') as HTMLElement).focus());
+  const mod = await primary(page);
   await page.keyboard.press(`${mod}+z`);
   await settle(page);
   expect(await state(page)).toBe(before);

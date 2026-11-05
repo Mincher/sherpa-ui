@@ -52,13 +52,15 @@ test('nothing to step: both off; a change made OUTSIDE the editor (a chip) is a 
   await expect.poll(() => picked(page)).toEqual(['EMEA', 'APAC']);
 });
 
-test('Ctrl and Cmd+Z undo, Shift+Z redoes; the graph redraws with the restored Query', async ({ page }) => {
+const primary = (page: import('@playwright/test').Page) => page.evaluate(() => /mac|iphone|ipad/i.test((navigator as never as { userAgentData?: { platform?: string } }).userAgentData?.platform ?? navigator.platform) ? 'Meta' : 'Control');
+
+test('the primary key (Cmd on a Mac) + Z undo, Shift+Z redoes; the graph redraws with the restored Query', async ({ page }) => {
   await ask(page, ['AMER']);
   await page.locator('sherpa-layout-canvas .viewport').focus();
-  await page.keyboard.press('ControlOrMeta+z');
+  await page.keyboard.press(`${await primary(page)}+z`);
   await expect.poll(() => picked(page)).toEqual(['EMEA']);
   await expect.poll(() => page.locator('sherpa-layout-canvas sherpa-node-row sherpa-input-text[name="value"]').first().evaluate((e) => (e as HTMLElement & { value: string }).value)).toBe('EMEA');
-  await page.keyboard.press('ControlOrMeta+Shift+z');
+  await page.keyboard.press(`${await primary(page)}+Shift+z`);
   await expect.poll(() => picked(page)).toEqual(['AMER']);
 });
 

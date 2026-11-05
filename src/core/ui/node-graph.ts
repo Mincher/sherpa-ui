@@ -39,7 +39,8 @@ import '../../components/sherpa-stack/sherpa-stack.js';
 import '../../components/sherpa-switch/sherpa-switch.js';
 import type { AddContext, SherpaNodePanel } from '../../components/sherpa-node-panel/sherpa-node-panel.js';
 import type { SherpaLayoutCanvas } from '../../components/sherpa-layout-canvas/sherpa-layout-canvas.js';
-import { boxPick, type PickBox } from './box-pick.js';
+import { primaryKey } from './modifier-key.js';
+import { boxCover, boxPick, type BoxMode, type PickBox } from './box-pick.js';
 import type { SocketSide } from '../../components/sherpa-node/node-sockets.js';
 import type { SessionStore } from '../browser/session.js';
 import type { DataSource } from '../data/data-source.js';
@@ -660,34 +661,47 @@ function drawnFor(canvas: SherpaLayoutCanvas): Drawn {
     } else return;
     event.preventDefault();
   });
-  // With no pointer: C picks the routes of the picked nodes — or of the node the keys are on (TODO 735).
+  // With no pointer: C picks the routes of the picked nodes — or of the node the keys are on; Shift+C adds
+  // them to the pick, Alt+C takes them off it (TODO 735, 739).
   canvas.addEventListener('keydown', (event) => {
     const first = event.composedPath()[0];
-    if (event.key.toLowerCase() !== 'c' || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
+    if (event.code !== 'KeyC' || event.ctrlKey || event.metaKey || (event.altKey && event.shiftKey)) return;
     if (first instanceof Element && first.matches('input, select, textarea, [contenteditable]')) return;
     const own = event.composedPath().find((n): n is HTMLElement => n instanceof HTMLElement && n.localName === 'sherpa-node');
     const held = [...made.nodes].filter(([, el]) => el.hasAttribute('data-current') || el === own).map(([id]) => id);
     const routes = made.routes.filter((r) => held.includes(socketOf(r.from).node) || held.includes(socketOf(r.to).node));
     if (!routes.length) return;
-    made.picked = routes.map(({ from, to }) => ({ from, to }));
+    const has = (r: NodeRoute): boolean => routes.some((x) => x.from === r.from && x.to === r.to);
+    const mine = routes.map(({ from, to }) => ({ from, to }));
+    made.picked = event.altKey ? made.picked.filter((r) => !has(r)) : event.shiftKey ? [...made.picked.filter((r) => !has(r)), ...mine] : mine;
     made.selectedTie = null;
     drawRoutes(canvas, made);
     made.options.onPicked?.(made.picked);
     event.preventDefault();
     event.stopPropagation();
   });
-  // A box dragged on the blank canvas picks the nodes it touches and the routes it crosses. Shift adds. TODO 735
+  // A box dragged on the blank canvas: plain, the nodes it encloses or else the routes it crosses; Shift adds
+  // both kinds; Ctrl takes both kinds off the pick. TODO 735, 739
   canvas.setAttribute('data-select-box', '');
   canvas.addEventListener('canvas-box', (event) => {
-    const { add, ...box } = (event as CustomEvent<PickBox & { add: boolean }>).detail;
+    const { mode, ...box } = (event as CustomEvent<PickBox & { mode: BoxMode }>).detail;
     const boxes = [...made.nodes].map(([id, el]) => [id, { left: el.offsetLeft, top: el.offsetTop, right: el.offsetLeft + el.offsetWidth, bottom: el.offsetTop + el.offsetHeight }] as const);
-    const hit = boxPick(box, boxes, made.lanes);
-    const ids = new Set(hit.nodes);
-    // Nodes or routes, never both: a box that touches a node picks nodes; Shift keeps what was picked of its kind.
-    if (add) {
-      const kept = hit.nodes.length ? 'nodes' : hit.routes.length ? 'routes' : 'both';
-      if (kept !== 'routes') for (const [id, el] of made.nodes) if (el.hasAttribute('data-current')) ids.add(id);
-      if (kept !== 'nodes') for (const route of made.picked) if (!hit.routes.some((r) => r.from === route.from && r.to === route.to)) hit.routes.push(route);
+    const same = (a: NodeRoute, b: NodeRoute): boolean => a.from === b.from && a.to === b.to;
+    let ids: Set<string>;
+    let hit: { nodes: string[]; routes: NodeRoute[] };
+    if (mode === 'replace') {
+      hit = boxPick(box, boxes, made.lanes);
+      ids = new Set(hit.nodes);
+    } else {
+      const cover = boxCover(box, boxes, made.lanes);
+      const held = new Set([...made.nodes].filter(([, el]) => el.hasAttribute('data-current')).map(([id]) => id));
+      if (mode === 'add') {
+        ids = new Set([...held, ...cover.nodes]);
+        hit = { nodes: [...ids], routes: [...made.picked, ...cover.routes.filter((r) => !made.picked.some((p) => same(p, r)))] };
+      } else {
+        ids = new Set([...held].filter((id) => !cover.nodes.includes(id)));
+        hit = { nodes: [...ids], routes: made.picked.filter((p) => !cover.routes.some((r) => same(p, r))) };
+      }
     }
     made.picked = hit.routes.map(({ from, to }) => ({ from, to }));
     made.selectedTie = null;
@@ -1233,7 +1247,7 @@ export function bindQueryEditor(
     const first = event.composedPath()[0];
     if (first instanceof Element && first.matches('input, select, textarea, [contenteditable]')) return;
     const key = event.key.toLowerCase();
-    if (!(event.ctrlKey || event.metaKey) || event.altKey || (key !== 'z' && key !== 'y')) return;
+    if (!primaryKey(event) || event.altKey || (key !== 'z' && key !== 'y')) return;
     if (key === 'y' || event.shiftKey) redo();
     else undo();
     event.preventDefault();
@@ -1779,7 +1793,7 @@ export function bindWorkflow(
     const hit = idOf(event);
     const first = event.composedPath()[0];
     if (first instanceof Element && first.matches('input, select, textarea, [contenteditable]')) return;
-    const mod = (event.ctrlKey || event.metaKey) && !event.altKey;
+    const mod = primaryKey(event) && !event.altKey;
     if (mod && (event.key.toLowerCase() === 'z' || event.key.toLowerCase() === 'y')) {
       if (event.key.toLowerCase() === 'y' || event.shiftKey) redo();
       else undo();

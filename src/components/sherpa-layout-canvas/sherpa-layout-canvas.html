@@ -21,7 +21,7 @@
 
   Fires:
     canvas-change — the view moved: panned or zoomed. detail: { x, y, zoom }
-    canvas-box — a box was dragged on blank canvas. detail: { left, top, right, bottom, add } (plane px; add: Shift held)
+    canvas-box — a box was dragged on blank canvas. detail: { left, top, right, bottom, mode } (plane px; mode: replace | add (Shift) | remove (Ctrl, Cmd on a Mac))
 -->
 <template id="default">
   <!-- The VIEW: what the reader sees of the canvas. The keys pan and zoom it. -->

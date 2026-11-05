@@ -4582,7 +4582,7 @@
               "name": "canvas-box",
               "description": "A box was dragged on blank canvas.",
               "type": {
-                "text": "CustomEvent<{ add: boolean; bottom: number; left: number; right: number; top: number }>"
+                "text": "CustomEvent<{ bottom: number; left: number; mode: BoxMode; right: number; top: number }>"
               }
             }
           ],

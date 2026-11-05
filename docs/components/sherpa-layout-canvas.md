@@ -50,7 +50,7 @@ Each one bubbles.
 | Event | Detail | What it means |
 |---|---|---|
 | `canvas-change` | `{ x: number; y: number; zoom: number }` | The view moved: panned or zoomed. |
-| `canvas-box` | `{ add: boolean; bottom: number; left: number; right: number; top: number }` | A box was dragged on blank canvas. |
+| `canvas-box` | `{ bottom: number; left: number; mode: BoxMode; right: number; top: number }` | A box was dragged on blank canvas. |
 
 ## Slots
 

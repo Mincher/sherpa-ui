@@ -2,7 +2,7 @@ import { test, expect, type Page } from './harness';
 
 /**
  * A left drag on the blank canvas is a BOX SELECTION — Will, TODO 735. It picks every node it
- * ENCLOSES whole, or, with none, every connector it crosses (any part of one counts); Shift adds, a plain box replaces, a click clears. A picked
+ * ENCLOSES whole, or, with none, every connector it crosses (any part of one counts); a plain box replaces, Shift adds nodes AND connectors, Ctrl (Cmd on a Mac) removes both, a click clears (739). A picked
  * connector is drawn thick and dashed (`data-selected`); T ties the picked connectors in one step,
  * Delete cuts them in one. Panning moves to Space + drag, the middle button, the wheel and the Pan
  * tool. The Query editor selects and highlights, and refuses a cut in words. Real pointer and keys.
@@ -128,6 +128,104 @@ test('Shift adds to the pick, a plain box replaces it, and a click on blank clea
   expect(await picked(page)).toEqual({ routes: [], nodes: [], count: '0' });
 });
 
+const primary = (page: Page) => page.evaluate(() => /mac|iphone|ipad/i.test((navigator as never as { userAgentData?: { platform?: string } }).userAgentData?.platform ?? navigator.platform) ? 'Meta' : 'Control');
+const mode = (page: Page) => page.evaluate(() => document.getElementById('cv')!.shadowRoot!.querySelector('.viewport')!.getAttribute('data-mode'));
+async function around(page: Page, id: string): Promise<{ from: [number, number]; to: [number, number] }> {
+  const n = await box(page, `#cv sherpa-node[data-heading="${id}"]`);
+  return { from: [n.left - 14, n.top - 14], to: [n.right + 40, n.bottom + 14] };
+}
+
+test('Shift: a box that encloses a node and crosses connectors picks BOTH, added to the pick', async ({ page }) => {
+  const two = await gap(page, 2, 2);
+  await drag(page, two.from, two.to);
+  expect((await picked(page)).routes).toEqual(['s2/rows']);
+  const s1 = await around(page, 's1');
+  await page.keyboard.down('Shift');
+  await drag(page, s1.from, s1.to);
+  await page.keyboard.up('Shift');
+  const now = await picked(page);
+  expect(now.nodes).toEqual(['s1']);
+  expect([...now.routes].sort()).toEqual(['s1/rows', 's2/rows']);
+  expect(now.count).toBe('2');
+  // A plain box over the same place: the node only, and the pick is replaced.
+  await drag(page, s1.from, s1.to);
+  expect(await picked(page)).toMatchObject({ nodes: ['s1'], routes: [] });
+});
+
+test('Ctrl (Cmd on a Mac): a box removes the picked connectors and nodes it covers, and leaves the rest', async ({ page }) => {
+  const key = await primary(page);
+  await drag(page, ...Object.values(await gap(page, 1, 3)) as [[number, number], [number, number]]);
+  const s1 = await around(page, 's1');
+  await page.keyboard.down('Shift');
+  await drag(page, s1.from, s1.to);
+  await page.keyboard.up('Shift');
+  expect(await picked(page)).toMatchObject({ nodes: ['s1'], count: '3' });
+  // Over s2's connector alone: just that one goes.
+  const two = await gap(page, 2, 2);
+  await page.keyboard.down(key);
+  await drag(page, two.from, two.to);
+  await page.keyboard.up(key);
+  const after = await picked(page);
+  expect(after.nodes).toEqual(['s1']);
+  expect([...after.routes].sort()).toEqual(['s1/rows', 's3/rows']);
+  // Over s1 and its connector: both go; s3's stays.
+  await page.keyboard.down(key);
+  await drag(page, s1.from, s1.to);
+  await page.keyboard.up(key);
+  expect(await picked(page)).toMatchObject({ nodes: [], routes: ['s3/rows'], count: '1' });
+  // Over things that are not picked: nothing changes.
+  await page.keyboard.down(key);
+  await drag(page, two.from, two.to);
+  await page.keyboard.up(key);
+  expect(await picked(page)).toMatchObject({ nodes: [], routes: ['s3/rows'], count: '1' });
+  // Shift and Ctrl together remove too.
+  const three = await gap(page, 3, 3);
+  await page.keyboard.down('Shift');
+  await page.keyboard.down(key);
+  await drag(page, three.from, three.to);
+  await page.keyboard.up(key);
+  await page.keyboard.up('Shift');
+  expect((await picked(page)).routes).toEqual([]);
+});
+
+test('the marquee shows its mode while dragging, and a key pressed mid-drag changes it', async ({ page }) => {
+  const key = await primary(page);
+  const g = await gap(page, 1, 1);
+  const seen: Record<string, unknown> = {};
+  await drag(page, g.from, g.to, async () => { seen.plain = await mode(page); });
+  expect(seen.plain).toBe('replace');
+  await page.keyboard.down('Shift');
+  await drag(page, g.from, g.to, async () => {
+    seen.add = await mode(page);
+    seen.addCursor = await page.evaluate(() => getComputedStyle(document.getElementById('cv')!.shadowRoot!.querySelector('.viewport')!).cursor);
+    seen.addStyle = await page.evaluate(() => getComputedStyle(document.getElementById('cv')!.shadowRoot!.querySelector('.marquee')!).borderTopStyle);
+  });
+  await page.keyboard.up('Shift');
+  expect(seen.add).toBe('add');
+  expect(seen.addCursor).toBe('copy');
+  expect(seen.addStyle).toBe('solid');
+  await drag(page, g.from, g.to, async () => {
+    await page.keyboard.down(key);
+    seen.live = await mode(page);
+    seen.liveCursor = await page.evaluate(() => getComputedStyle(document.getElementById('cv')!.shadowRoot!.querySelector('.viewport')!).cursor);
+    await page.keyboard.up(key);
+    seen.back = await mode(page);
+  });
+  expect(seen.live).toBe('remove');
+  expect(seen.liveCursor).toBe('not-allowed');
+  expect(seen.back).toBe('replace');
+});
+
+test('Shift+C adds the connectors of the picked nodes to the pick; Alt+C takes them off', async ({ page }) => {
+  const three = await gap(page, 3, 3);
+  await drag(page, three.from, three.to);
+  await page.locator('#cv > sherpa-node[data-heading="s2"] >> .header[role="button"]').focus();
+  await key(page, 'Shift+C');
+  expect((await picked(page)).routes.sort()).toEqual(['s2/rows', 's3/rows']);
+  await key(page, 'Alt+c');
+  expect((await picked(page)).routes).toEqual(['s3/rows']);
+});
+
 test('a drag ON a node still moves it; and a drag that starts on blank does not', async ({ page }) => {
   const n = await box(page, '#cv sherpa-node[data-heading="s1"] >> nth=0').catch(() => null) ?? await box(page, '#cv sherpa-node[data-heading="s1"]');
   const before = (await flow(page)).nodes.find((x) => x.id === 's1')!.x;
@@ -182,7 +280,7 @@ test('a box over three connectors, then T: ONE tie across all three, and Undo ta
   const w = await flow(page);
   expect(w.ties).toHaveLength(1);
   expect(w.ties![0]!.routes).toHaveLength(3);
-  await page.keyboard.press('Control+z');
+  await page.keyboard.press(`${await primary(page)}+z`);
   await settle(page);
   expect((await flow(page)).ties ?? []).toHaveLength(0);
 });
@@ -193,7 +291,7 @@ test('a box over three connectors, then Delete: all three are cut as ONE step, a
   await key(page, 'Delete');
   expect((await flow(page)).routes ?? []).toHaveLength(0);
   expect((await picked(page)).count).toBe('0');
-  await page.keyboard.press('Control+z');
+  await page.keyboard.press(`${await primary(page)}+z`);
   await settle(page);
   expect((await flow(page)).routes).toHaveLength(3);
 });
