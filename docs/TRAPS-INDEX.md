@@ -404,7 +404,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-star-reports-it-does-not-decide](traps/join-and-app.md#t-the-star-reports-it-does-not-decide) — outlet
 - [T-view-library-is-one-vocabulary](traps/storage.md#t-view-library-is-one-vocabulary) — provider
 
-## Filters (157)
+## Filters (158)
 
 - [T-a-bar-reports-its-holds](traps/join-and-app.md#t-a-bar-reports-its-holds) — quick-filter-toolbar
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — quick-filter-toolbar
@@ -428,6 +428,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-field-can-carry-over-views](traps/data-layer.md#t-a-field-can-carry-over-views) — filter-def, quick-filter-toolbar
 - [T-a-field-reads-its-values-when-needed](traps/data-layer.md#t-a-field-reads-its-values-when-needed) — quick-filter-toolbar
 - [T-a-filter-answers-by-values-conditions-or-both](traps/filters.md#t-a-filter-answers-by-values-conditions-or-both) — filter-kind, filter-menu
+- [T-a-filter-column-floats](traps/filters.md#t-a-filter-column-floats) — quick-filter-toolbar
 - [T-a-filter-is-dragged-into-its-place](traps/filters.md#t-a-filter-is-dragged-into-its-place) — quick-filter-toolbar
 - [T-a-filter-menu-has-two-modes](traps/filters.md#t-a-filter-menu-has-two-modes) — quick-filter
 - [T-a-filter-set-groups-or-chains](traps/data-layer.md#t-a-filter-set-groups-or-chains) — quick-filter-toolbar
@@ -564,7 +565,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — quick-filter-toolbar
 - [T-values-reports-on-chips-in-one-shape](traps/filters.md#t-values-reports-on-chips-in-one-shape) — quick-filter-toolbar
 
-## Menus, tips and overlays (121)
+## Menus, tips and overlays (122)
 
 - [T-a-borrowed-menu-leaves-its-toolbars-listeners-behind](traps/menus-tips-overlays.md#t-a-borrowed-menu-leaves-its-toolbars-listeners-behind) — menu
 - [T-a-chip-press-applies-its-menus-draft](traps/filters.md#t-a-chip-press-applies-its-menus-draft) — menu
@@ -598,6 +599,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](traps/menus-tips-overlays.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — toast
 - [T-a-panel-chrome-row-never-shrinks](traps/menus-tips-overlays.md#t-a-panel-chrome-row-never-shrinks) — panel
 - [T-a-panel-pops-into-the-end-area](traps/menus-tips-overlays.md#t-a-panel-pops-into-the-end-area) — overlay-panel
+- [T-a-pressed-panel-comes-to-the-front](traps/menus-tips-overlays.md#t-a-pressed-panel-comes-to-the-front) — overlay-panel
 - [T-a-rebuilt-bar-reads-empty-until-its-menus-stamp](traps/filters.md#t-a-rebuilt-bar-reads-empty-until-its-menus-stamp) — menu
 - [T-a-rebuilt-row-reads-empty-for-a-tick](traps/filters.md#t-a-rebuilt-row-reads-empty-for-a-tick) — menu
 - [T-a-reopened-dialog-hears-a-late-close](traps/menus-tips-overlays.md#t-a-reopened-dialog-hears-a-late-close) — disclosure
@@ -862,7 +864,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-y-axis-width-is-fixed-not-measured](traps/charts.md#t-y-axis-width-is-fixed-not-measured) — chart-parts
 - [T-zones-paint-in-full](traps/charts.md#t-zones-paint-in-full) — gauge-chart
 
-## SherpaElement and the shared sheets (137)
+## SherpaElement and the shared sheets (138)
 
 - [T-a-broken-assumption-reports](traps/data-layer.md#t-a-broken-assumption-reports) — templater
 - [T-a-bundler-can-turn-a-file-into-a-module](traps/element-and-sheets.md#t-a-bundler-can-turn-a-file-into-a-module) — templater
@@ -896,6 +898,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-node-reads-null-from-what-it-cannot-use](traps/data-layer.md#t-a-node-reads-null-from-what-it-cannot-use) — node-graph
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](traps/menus-tips-overlays.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — sherpa-element, templater
 - [T-a-pending-chip-reads-as-a-warning](traps/data-layer.md#t-a-pending-chip-reads-as-a-warning) — filter-host-controller, shared-constants
+- [T-a-pressed-panel-comes-to-the-front](traps/menus-tips-overlays.md#t-a-pressed-panel-comes-to-the-front) — float-box, sherpa-float
 - [T-a-property-set-before-upgrade-shadows-its-accessor](traps/element-and-sheets.md#t-a-property-set-before-upgrade-shadows-its-accessor) — sherpa-element
 - [T-a-rebuilt-bar-reads-empty-until-its-menus-stamp](traps/filters.md#t-a-rebuilt-bar-reads-empty-until-its-menus-stamp) — filter-host-controller
 - [T-a-row-says-its-own-fault](traps/data-layer.md#t-a-row-says-its-own-fault) — node-graph
@@ -1002,7 +1005,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-variant-attrs-or-one-way-door](traps/menus-tips-overlays.md#t-variant-attrs-or-one-way-door) — sherpa-element
 - [T-write-icon-is-protected-not-private](traps/element-and-sheets.md#t-write-icon-is-protected-not-private) — sherpa-element
 
-## Other components (125)
+## Other components (127)
 
 - [T-a-bar-offers-only-what-its-scope-holds](traps/data-layer.md#t-a-bar-offers-only-what-its-scope-holds) — app-header
 - [T-a-button-commands-by-markup](traps/element-and-sheets.md#t-a-button-commands-by-markup) — button
@@ -1021,7 +1024,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-fit-grid-counts-its-resized-rows](traps/other-components.md#t-a-fit-grid-counts-its-resized-rows) — layout-grid
 - [T-a-fit-grid-needs-a-sized-parent](traps/other-components.md#t-a-fit-grid-needs-a-sized-parent) — app-shell
 - [T-a-fit-grid-needs-its-row-count](traps/other-components.md#t-a-fit-grid-needs-its-row-count) — layout-grid
-- [T-a-floating-panel-is-a-state](traps/menus-tips-overlays.md#t-a-floating-panel-is-a-state) — layout-canvas, node-panel
+- [T-a-floating-panel-is-a-state](traps/menus-tips-overlays.md#t-a-floating-panel-is-a-state) — layout-panels, node-panel
 - [T-a-form-control-follows-its-fieldset](traps/other-components.md#t-a-form-control-follows-its-fieldset) — calendar, file-upload, input-text, select-card, select-checkbox, select-radio, slider, switch, transfer-list
 - [T-a-form-value-follows-every-write](traps/other-components.md#t-a-form-value-follows-every-write) — input-text, select-checkbox, switch
 - [T-a-frame-is-drawn-round-its-nodes](traps/data-layer.md#t-a-frame-is-drawn-round-its-nodes) — node-frame
@@ -1045,6 +1048,8 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-node-reads-null-from-what-it-cannot-use](traps/data-layer.md#t-a-node-reads-null-from-what-it-cannot-use) — node
 - [T-a-number-input-wears-sherpas-steppers](traps/menus-tips-overlays.md#t-a-number-input-wears-sherpas-steppers) — input-text, slider
 - [T-a-page-sheet-is-for-what-a-component-puts-in-the-page](traps/menus-tips-overlays.md#t-a-page-sheet-is-for-what-a-component-puts-in-the-page) — metric-group
+- [T-a-panel-area-is-a-layout](traps/other-components.md#t-a-panel-area-is-a-layout) — layout-canvas, layout-panels, node-panel
+- [T-a-pressed-panel-comes-to-the-front](traps/menus-tips-overlays.md#t-a-pressed-panel-comes-to-the-front) — layout-canvas, layout-panels, node-panel
 - [T-a-rail-may-stay-shut](traps/join-and-app.md#t-a-rail-may-stay-shut) — nav, nav-item
 - [T-a-range-is-bounded-by-the-data](traps/data-layer.md#t-a-range-is-bounded-by-the-data) — calendar
 - [T-a-row-span-is-keyed-by-value](traps/other-components.md#t-a-row-span-is-keyed-by-value) — container
@@ -1070,7 +1075,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-an-accordion-action-is-not-a-toggle](traps/other-components.md#t-an-accordion-action-is-not-a-toggle) — accordion
 - [T-an-accordion-chevron-rides-the-heading-row](traps/other-components.md#t-an-accordion-chevron-rides-the-heading-row) — accordion
 - [T-an-action-says-what-it-does](traps/filters.md#t-an-action-says-what-it-does) — button
-- [T-an-edge-resizes-its-box](traps/menus-tips-overlays.md#t-an-edge-resizes-its-box) — app-shell
+- [T-an-edge-resizes-its-box](traps/menus-tips-overlays.md#t-an-edge-resizes-its-box) — layout-canvas, layout-panels
 - [T-an-edit-is-a-step](traps/element-and-sheets.md#t-an-edit-is-a-step) — node-toolbar
 - [T-an-expandable-row-is-not-a-destination](traps/other-components.md#t-an-expandable-row-is-not-a-destination) — nav-item
 - [T-an-icon-button-still-slots-its-menu](traps/other-components.md#t-an-icon-button-still-slots-its-menu) — button
@@ -1123,7 +1128,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-the-footer-owns-nothing-to-save](traps/menus-tips-overlays.md#t-the-footer-owns-nothing-to-save) — container-footer
 - [T-the-nav-is-a-menu-on-a-phone](traps/other-components.md#t-the-nav-is-a-menu-on-a-phone) — app-header, app-shell, nav
 - [T-the-node-panel-asks-it-places](traps/other-components.md#t-the-node-panel-asks-it-places) — node-panel
-- [T-the-panel-is-desktop-only](traps/join-and-app.md#t-the-panel-is-desktop-only) — app-shell
+- [T-the-panel-is-desktop-only](traps/join-and-app.md#t-the-panel-is-desktop-only) — app-shell, layout-panels
 - [T-the-shell-owns-the-panel-areas](traps/other-components.md#t-the-shell-owns-the-panel-areas) — app-shell
 - [T-the-star-reports-it-does-not-decide](traps/join-and-app.md#t-the-star-reports-it-does-not-decide) — app-header
 - [T-two-months-share-one-grid](traps/other-components.md#t-two-months-share-one-grid) — calendar
