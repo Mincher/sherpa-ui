@@ -36,7 +36,7 @@ test('the outlet loads the route\'s Context, hands it one ctx, and tears it down
   })()`) as Record<string, unknown>;
   expect(r['alpha']).toEqual({
     text: 'Alpha', heading: 'Alpha', icon: 'home', pin: true, params: 'context=alpha view',
-    ctx: { root: 'context-root', keys: ['header', 'id', 'label', 'panels', 'session', 'signal', 'view'], label: 'Alpha', id: 'alpha', header: true, gone: false },
+    ctx: { root: 'context-root', keys: ['entities', 'header', 'id', 'label', 'nodes', 'panels', 'session', 'signal', 'view'], label: 'Alpha', id: 'alpha', header: true, gone: false },
   });
   expect(r['beta']).toEqual({
     text: 'Beta', alphaGone: true, heading: 'Beta', icon: null, noHeader: true, teardown: true, aborted: true,
