@@ -118,7 +118,7 @@ test('another field takes the whole tree, as one change; a nested group cannot b
   assert.equal(routeRequest(g, { from: 'when-view-seats.2', to: 'scope-view/seats' }, facts).refused !== undefined, true, 'a nested True goes into its parent, drawn: the Query holds a whole tree');
 });
 
-test('a planted fault in each check: an operator the field\'s type does not take, a value of the wrong type, a Group row fed by what is no condition', () => {
+test('a planted fault in each check: an operator the field\'s type does not take, a value of the wrong type; a Group row takes any boolean (780)', () => {
   const nodes = [
     { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'pick', kind: 'pick', x: 0, y: 100, values: { field: 'seats' } },
@@ -136,11 +136,11 @@ test('a planted fault in each check: an operator the field\'s type does not take
   assert.deepEqual(planted({ value: 'many' }), ['the node "when" holds "many" as its Value, which is no number, as "seats", a number field takes']);
   assert.deepEqual(planted({ 'value-2': 7 }), [], 'text takes what it is given');
   assert.deepEqual(planted({ op: 'in', value: ['5', '6'] }), [], 'Is one of takes a list of the type');
-  // A Group row takes the True of a condition and nothing else: not a pick's, not a condition's False, not its rows.
+  // A Group row takes any boolean, no fault (TODO 780): a Condition's True, a pick's, a False; what is no boolean reads null and warns.
   const into = (from) => planted({}, { routes: [routes[0], { from, to: 'when/group-3' }, routes[2]] });
-  assert.deepEqual(into('pick'), ['the route "pick" → "when/group-3" enters a Group row, which takes only the True of a condition']);
-  assert.deepEqual(into('inner/#false'), ['the route "inner/#false" → "when/group-3" enters a Group row, which takes only the True of a condition']);
-  assert.deepEqual(into('inner'), []);
+  for (const from of ['inner', 'pick', 'inner/#false', 'start/rows']) assert.deepEqual(into(from), [], from);
+  const rows = { ...sound, routes: [routes[0], { from: 'start/rows', to: 'when/group-3' }, routes[2]] };
+  assert.deepEqual(workflowGraph(rows, { fields }).nodes.find((n) => n.id === 'when').warnings, [{ row: 'group-3', words: 'Group takes a boolean; it was given rows' }]);
   // A part has no row of a name the kind has not.
   assert.deepEqual(planted({ 'colour-2': 'red' }), ['the node "when" holds a value for "colour-2", a row its kind has not']);
 });
