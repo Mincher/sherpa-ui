@@ -366,6 +366,8 @@ export function takesMany(kind: Sockets, row?: string): boolean {
 export interface NodeRoute {
   from: string;
   to: string;
+  /** Bend points a reader gave it, in plane px, sorted by x. None, the default curve. TODO 744 */
+  via?: readonly { x: number; y: number }[];
 }
 
 /** One zip tie: where it stands, and the routes it funnels, top to bottom. It changes no data. TODO 562 */

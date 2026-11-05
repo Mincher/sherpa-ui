@@ -31,6 +31,7 @@
  * - editDefinition — The library after one change to a definition; a preset's is refused.
  * - copyToMine — A custom, editable copy of a definition (a preset's, as "Copy to my nodes").
  */
+import { withoutBends } from './route-bends.js';
 import { report } from './report.js';
 import { NODE_KINDS, rowOf, type NodeKind, type NodeRoute, type NodeTie, type RowKind, type RowControl } from './node-kinds.js';
 import { editWorkflow, workflowFaults, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
@@ -140,7 +141,7 @@ export function versionOf(definition: NodeSnapshot): string {
 
 /** What a use records of a definition. */
 function snapshotOf(d: NodeSnapshot): NodeSnapshot {
-  return { v: 1, label: d.label, inputs: d.inputs, outputs: d.outputs, nodes: d.nodes, ...(d.routes ? { routes: d.routes } : {}) };
+  return { v: 1, label: d.label, inputs: d.inputs, outputs: d.outputs, nodes: d.nodes, ...(d.routes ? { routes: d.routes.map(withoutBends) } : {}) };
 }
 
 /** A definition as a NodeKind: a row per input and output, `model: 'graph'`, its header taking

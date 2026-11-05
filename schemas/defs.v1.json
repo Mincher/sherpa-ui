@@ -355,7 +355,16 @@
       "required": ["from", "to"],
       "properties": {
         "from": { "$ref": "#/$defs/socket" },
-        "to": { "$ref": "#/$defs/socket" }
+        "to": { "$ref": "#/$defs/socket" },
+        "via": { "$ref": "#/$defs/bends" }
+      }
+    },
+    "bends": {
+      "description": "The bend points a reader gave a route, in plane px, sorted by x. None, the route draws as the default curve. A bend changes no data: a runner ignores it.",
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["x", "y"],
+        "properties": { "x": { "type": "number" }, "y": { "type": "number" } }
       }
     },
     "tie": {
@@ -389,7 +398,7 @@
     "innerRoute": {
       "description": "A route inside a Custom Node's body: it may start at the Group Input and end at the Group Output.",
       "type": "object", "additionalProperties": false, "required": ["from", "to"],
-      "properties": { "from": { "$ref": "#/$defs/innerSocket" }, "to": { "$ref": "#/$defs/innerSocket" } }
+      "properties": { "from": { "$ref": "#/$defs/innerSocket" }, "to": { "$ref": "#/$defs/innerSocket" }, "via": { "$ref": "#/$defs/bends" } }
     },
     "nodeInput": {
       "description": "One input a Custom Node exposes: a Group Input row inside, and a row on each use. A control makes it a parameter an instance sets in its own values.",

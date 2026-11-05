@@ -20,7 +20,7 @@
  * - TIE_GAP — The gap between two routes in a zip tie, in px.
  * - tieLimit — The range a zip tie's x may take: between the nodes its shortest tied route joins.
  * - tiesAmong — The ties left when only some routes remain: a tie keeps its routes still there, and none, it goes.
- * - WorkflowEdit — One edit to a workflow: a row, a node's own part, a node's size, a route made or cut, a node added or removed.
+ * - WorkflowEdit — One edit: a row, a node's part or size, a route made, bent or cut, a tie, a node added or removed.
  * - editWorkflow — The workflow after one edit; the one given untouched.
  * - addCustomValue — A Value node made for a picklist row and routed into it: the row mirrors it, and keeps its own pick.
  */
@@ -31,6 +31,7 @@ import {
   NODE_KINDS, ROWS, SOCKET_WORDS, FALSE_SOCKET, accepts, conditionRows, drivenSwitch, fixedChoices, truthy, kindNode, mirrored, partName, partOf, rowChoices, rowOf, socketOf, socketType, takesMany,
   type DrawnGraph, type GraphRow, type NodeSize, type NodeKind, type NodeRoute, type NodeTie, type PartKind, type SocketType,
 } from './node-kinds.js';
+import { bendFault, dropBend, placeBend, type Bend } from './route-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
 
@@ -180,7 +181,10 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
   // Each input's routes so far, by what they carry.
   const fed = new Map<string, { from: string; type?: SocketType }[]>();
   const next = new Map<string, string[]>();
-  for (const { from, to } of workflow.routes ?? []) {
+  for (const route of workflow.routes ?? []) {
+    const { from, to } = route;
+    const bad = route.via === undefined ? undefined : bendFault(route.via);
+    if (bad) problems.push(`the route "${from}" → "${to}": ${bad}`);
     const leaves = at(from, 'output');
     const out = leaves?.type === 'any' ? undefined : leaves;
     const into = at(to, 'input');
@@ -368,7 +372,15 @@ export type WorkflowEdit =
   | { resize: { node: string; w: number; h: number } }
   | { tie: { id?: string; x: number; y: number; routes: readonly NodeRoute[] } }
   | { untie: string }
-  | { moveTie: { id: string; x?: number; y?: number } };
+  | { moveTie: { id: string; x?: number; y?: number } }
+  | { tieAdd: { id: string; route: NodeRoute } }
+  | { bend: { route: NodeRoute; at: number; x: number; y: number; insert?: boolean } }
+  | { unbend: { route: NodeRoute; index: number } };
+
+/** Why an edit was refused, said once through `report`. */
+function refuse(message: string): void {
+  report({ code: 'workflow-edit', message: `editWorkflow: ${message}.` });
+}
 
 /** The workflow after one edit, a v2 — a v1 read as one first; the one given untouched. A
  *  value is typed as its row takes it. */
@@ -410,6 +422,40 @@ export function editWorkflow(
       const limit = tieLimit(workflow, t);
       const to = x === undefined ? t.x : limit ? Math.min(limit.max, Math.max(limit.min, x)) : x;
       return { ...t, x: to, y: y ?? t.y };
+    }) };
+  }
+  if ('tieAdd' in edit) {
+    const { id, route } = edit.tieAdd;
+    const tie = (workflow.ties ?? []).find((t) => t.id === id);
+    const name = `"${route.from}" → "${route.to}"`;
+    if (!tie) return refuse(`the tie "${id}" is not there`), workflow;
+    if (!(workflow.routes ?? []).some((r) => same(r, route))) return refuse(`the route ${name} is not there`), workflow;
+    if (tie.routes.some((r) => same(r, route))) return refuse(`the route ${name} is in the tie "${id}" already`), workflow;
+    const routes = [...tie.routes, { from: route.from, to: route.to }];
+    // Its nodes must leave the tie where it stands: the tie moves only by the reader's hand.
+    const limit = tieLimit(workflow, { routes });
+    if (limit && (tie.x < limit.min || tie.x > limit.max)) return refuse(`the tie "${id}" cannot take ${name}: its nodes leave no room for the tie where it stands`), workflow;
+    return { ...workflow, ties: (workflow.ties ?? []).map((t) => (t.id === id ? { ...t, routes } : t)) };
+  }
+  if ('bend' in edit || 'unbend' in edit) {
+    const { route, at } = 'bend' in edit ? edit.bend : { ...edit.unbend, at: edit.unbend.index };
+    const held = (workflow.routes ?? []).find((r) => same(r, route));
+    const name = `"${route.from}" → "${route.to}"`;
+    if (!held) return refuse(`the route ${name} is not there`), workflow;
+    let via: readonly Bend[] | undefined;
+    if ('bend' in edit) {
+      const { x, y, insert } = edit.bend;
+      if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isInteger(at)) return refuse('a bend point needs a finite x and y, and a whole index'), workflow;
+      if (at < 0 || at > (held.via?.length ?? 0) - (insert ? 0 : 1)) return refuse(`the route ${name} has no bend point at ${at}`), workflow;
+      via = placeBend(held.via, at, x, y, insert).via;
+    } else {
+      if (!held.via?.[at]) return refuse(`the route ${name} has no bend point at ${at}`), workflow;
+      via = dropBend(held.via, at);
+    }
+    return { ...workflow, routes: (workflow.routes ?? []).map((r) => {
+      if (r !== held) return r;
+      const { via: _was, ...bare } = r;
+      return via ? { ...bare, via } : bare;
     }) };
   }
   if ('resize' in edit) {

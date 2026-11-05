@@ -12,7 +12,32 @@
   /* A route a click picked: Delete or Backspace breaks it. */
   svg.graph-routes path[data-selected] { stroke-width: 4px; stroke-dasharray: 8 4; }
 
+  /* A route's handles: a dot at each bend point and at the middle of each piece. Shown on hover, on a picked route, and on the one picked. */
+  svg.graph-routes .graph-handle { visibility: hidden; }
+  svg.graph-routes g.graph-route:hover .graph-handle,
+  svg.graph-routes g.graph-route[data-active] .graph-handle,
+  svg.graph-routes .graph-handle[data-selected] { visibility: visible; }
+  svg.graph-routes .graph-handle-dot {
+    fill: var(--sherpa-style-surface-base, #fff);
+    stroke: var(--sherpa-style-border-base, #b3b3c3);
+    stroke-width: 2px;
+  }
+  svg.graph-routes .graph-handle[data-bend] .graph-handle-dot { stroke: var(--sherpa-style-active-indicator-accent, #3b4ccd); }
+  svg.graph-routes .graph-handle[data-selected] .graph-handle-dot {
+    fill: var(--sherpa-style-active-indicator-accent, #3b4ccd);
+    stroke: var(--sherpa-style-surface-base, #fff);
+    stroke-width: 3px;
+    paint-order: stroke;
+  }
+
+  /* A tie a connector is dragged over: it would join it. */
+  svg.graph-routes rect.graph-tie[data-target] { stroke: var(--sherpa-style-active-indicator-accent, #3b4ccd); stroke-width: 4px; }
+
   @media (forced-colors: active) {
+    svg.graph-routes .graph-handle-dot { fill: Canvas; stroke: CanvasText; }
+    svg.graph-routes .graph-handle[data-selected] .graph-handle-dot { fill: Highlight; stroke: Highlight; }
+    svg.graph-routes rect.graph-tie[data-selected] { fill: Highlight !important; stroke: Highlight !important; filter: none !important; outline: 2px solid Highlight; }
+    svg.graph-routes rect.graph-tie[data-target] { stroke: Highlight; }
     svg.graph-routes path { stroke: CanvasText; }
     svg.graph-routes path[data-selected] { stroke: Highlight; }
   }
