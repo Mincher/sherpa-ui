@@ -6444,6 +6444,15 @@ types allow is drawn; no family fences what a graph places.
   output that says it sends any type, and a preset's header (read only). A Group row takes any
   boolean (TODO 780, `T-a-condition-is-a-tree-of-nodes`): a boolean input reads true or false, 1 or
   0, and the words, by `truthOf`.
+- **A boolean reads as what its input needs** (Will, TODO 781: "Where booleans need to be a number
+  then nodes should convert True/False to 1/0. Where they need to be a String (or part of a larger
+  JSON object) then the inverse should be handled."). ONE table, `COERCIONS`, beside `INPUT_WORDS`,
+  and `readInput` reads it after what fits and before it warns: a number reads True and False as 1 and
+  0; a value (text) as the words true and false, never 1 or 0; JSON (`nodeFlow`'s Outgoing) as `true`
+  and `false`; a boolean reads a number by D2 (0 False, any other True) and the words true and false,
+  while other text says no boolean, reads null and warns. A value is typed first: a Value of type
+  True/false gives a boolean (`gives`), a Text "true" is text. A coerced value is used, and no warning;
+  one only a run gives reads then. No node coerces by itself.
 - **No fault, no Save block, never red.** A row's own fault (`T-a-row-says-its-own-fault`) is
   still red and holds Save; a route the input cannot read brings no such fault.
 
@@ -6456,6 +6465,7 @@ types allow is drawn; no family fences what a graph places.
 - Site: `test/unit/a-node-reads-null-from-what-it-cannot-use.test.mjs`
 - Site: `test/unit/any-route-joins-any-input.test.mjs`
 - Site: `test/unit/a-group-row-takes-any-boolean.test.mjs`
+- Site: `test/unit/a-boolean-reads-as-its-need.test.mjs`
 - Site: `test/e2e/reforged-node-warning.spec.ts`
 
 ### T-a-changed-key-moves-the-row

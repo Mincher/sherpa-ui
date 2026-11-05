@@ -418,16 +418,16 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
     const family = kinds[node.kind]!;
     const kind = kindOfNode(kinds, node)!;
     const at = typeOf(family, values['type']);
-    // Each route into an input that brings what it cannot use: the node says why, and the input reads null.
+    // What each route into an input reads: what it brings, coerced (TODO 781); what it cannot use, null, and the node says why.
     const warnings: { row?: string; words: string }[] = [];
-    const unusable = (to: string, input: InputNeeds): NodeRoute[] => routes.filter((r) => {
+    const readsAt = (to: string, input: InputNeeds): Map<NodeRoute, ReturnType<typeof readInput>> => new Map(routes.flatMap((r) => {
       const got = r.to === to ? sent(r.from) : undefined;
-      const warning = got && readInput(input, got).warning;
-      if (warning) warnings.push({ ...(to === node.id ? {} : { row: socketOf(to).row! }), words: warning });
-      return !!warning;
-    });
+      const read = got && readInput(input, got);
+      if (read?.warning) warnings.push({ ...(to === node.id ? {} : { row: socketOf(to).row! }), words: read.warning });
+      return read ? [[r, read] as const] : [];
+    }));
     const head = needOf(kind);
-    if (head) unusable(node.id, { label: node.heading ?? kind.heading, needs: head });
+    if (head) readsAt(node.id, { label: node.heading ?? kind.heading, needs: head });
     // A Condition's tree draws a part for each comparison its values hold and each Group row a route enters.
     const drawn = kind.rows.some((r) => r.repeat) ? conditionRows(kind, partsOf(node, workflow.routes ?? [])) : kind.rows;
     const rows = drawn.map((row): GraphRow => {
@@ -455,8 +455,15 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
       const address = `${node.id}/${row.name}`;
       const need = row.input ? needOf(row, partOf(row.name).base === 'value' ? type : undefined) : undefined;
       const fixed = fixedChoices(row.control);
-      const bad = need ? unusable(address, { label: row.label, needs: need, ...(fixed ? { choices: fixed } : {}) }) : [];
-      const coming = routes.filter((r) => r.to === address && !bad.includes(r)).flatMap((r) => brings(r.from) ?? []);
+      const reads = need ? readsAt(address, { label: row.label, needs: need, ...(fixed ? { choices: fixed } : {}) }) : new Map<NodeRoute, ReturnType<typeof readInput>>();
+      const bad = [...reads].filter(([, read]) => read.warning).map(([r]) => r);
+      // What a route brings, as the row reads it: coerced, where COERCIONS reads it.
+      const reading = (r: NodeRoute): { value: unknown; said: string } | undefined => {
+        const brought = brings(r.from);
+        const read = reads.get(r);
+        return brought && read && read.value !== undefined ? { ...brought, value: read.value } : brought;
+      };
+      const coming = routes.filter((r) => r.to === address && !bad.includes(r)).flatMap((r) => reading(r) ?? []);
       // A switch is driven by the road a boolean names: a True socket is on, a False socket off.
       if (row.control === 'switch') {
         const ins = routes.filter((r) => r.to === address && !bad.includes(r));
@@ -464,7 +471,7 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
         const says = ins.map((r) => {
           const { node: id, row: out } = socketOf(r.from);
           if (out === FALSE_SOCKET) return false;
-          const value = brings(r.from)?.value;
+          const value = reading(r)?.value;
           return out === undefined ? !!kinds[held.get(id)?.kind ?? '']?.branches : truthOf(value) ?? truthy(value);
         });
         const at = (r: NodeRoute): string => { const n = held.get(socketOf(r.from).node); return n?.heading ?? kinds[n?.kind ?? '']?.heading ?? r.from; };

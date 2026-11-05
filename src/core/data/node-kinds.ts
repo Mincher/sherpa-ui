@@ -315,7 +315,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       integer: { label: 'Integer', help: 'A whole number, as 42', rows: [VALUE] },
       decimal: { label: 'Decimal', help: 'A number with places, as 4.25', rows: [VALUE] },
       date: { label: 'Date', help: 'A day, written year-month-day: 2024-01-31', rows: [VALUE] },
-      boolean: { label: 'True/false', help: 'True or false', rows: [VALUE] },
+      boolean: { label: 'True/false', help: 'True or false', rows: [{ ...VALUE, gives: 'boolean' }] },
       list: { label: 'List', help: 'Values, each a tag, sent as a list', rows: [{ ...VALUE, control: 'tags', multiple: true, output: 'object', gives: 'list' }] },
     },
     rows: [], model: 'typedValue', graphs: ['workflow'], category: 'Variables',

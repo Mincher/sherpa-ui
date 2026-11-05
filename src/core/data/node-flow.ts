@@ -8,7 +8,10 @@
  * - nodeFlow — A node's flow, read from its graph; a fault in words for a node it does not hold.
  */
 import { FALSE_SOCKET, partName, partOf, socketOf, type DrawnGraph, type GraphNode, type GraphRow } from './node-kinds.js';
-import { truthOf } from './node-input.js';
+import { coerce, truthOf } from './node-input.js';
+
+/** A row's value as JSON writes it: a boolean as true or false, never 1 or 0, nor the words (COERCIONS, TODO 781). */
+const inJson = (row: GraphRow): unknown => (row.gives ? coerce('json', { kind: row.gives, value: row.value })?.value ?? row.value : row.value);
 
 /** A node's incoming and outgoing JSON: each socket, and what is routed to it or from it. */
 export interface NodeFlow {
@@ -81,7 +84,7 @@ export function nodeFlow(graph: DrawnGraph, id: string): NodeFlow | { fault: str
     ...(node.output || node.branches ? [{ socket: node.branches ? 'True' : 'Out', type: node.output ?? 'boolean', to: onward(node.id) }] : []),
     ...(node.branches ? [{ socket: 'False', type: 'boolean', to: onward(`${node.id}/${FALSE_SOCKET}`) }] : []),
     ...node.rows.filter((r) => r.output).map((r) => ({
-      socket: r.label, type: r.output, to: onward(`${node.id}/${r.name}`), ...(r.control && r.value !== undefined ? { carries: r.value } : {}),
+      socket: r.label, type: r.output, to: onward(`${node.id}/${r.name}`), ...(r.control && r.value !== undefined ? { carries: inJson(r) } : {}),
     })),
   ];
   const values = Object.fromEntries(node.rows.filter((r) => r.control && r.value !== undefined && r.value !== '').map((r) => [r.name, r.value]));

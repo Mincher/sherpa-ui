@@ -226,7 +226,7 @@ export {
 export { groupNodes, ungroupUse, type GroupAsk, type Grouped } from './core/data/node-group.js';
 export { nodeFlow, type NodeFlow } from './core/data/node-flow.js';
 /* What a node reads of what reaches it: null where it cannot use it, and why. TODO 764 · TRAP T-a-node-reads-null-from-what-it-cannot-use */
-export { INPUT_WORDS, givenAt, needOf, readInput, type Given, type InputNeeds, type Need, type Reached } from './core/data/node-input.js';
+export { COERCIONS, INPUT_WORDS, coerce, givenAt, needOf, readInput, truthOf, type Coercion, type Given, type InputNeeds, type Need, type Reached } from './core/data/node-input.js';
 /* The data layer over HTTP: one handle() for the page, a Service Worker or a server. Plan 652 */
 export {
   DATA_BASE,

@@ -13,8 +13,11 @@
  * - InputNeeds — An input as a warning names it: its label, what it needs, and its choices.
  * - needOf — What an input needs, by its kind's own description: its `needs`, its control, its field, else its type.
  * - givenAt — What one output socket sends; none, where its source holds no value to send, or it is no output.
- * - truthOf — A value as the boolean it says: true or false, 1 or 0, in words or not; none, it says no boolean.
- * - readInput — What an input reads of what reaches it: the value, or null and why, in words.
+ * - truthOf — A value as the boolean it says: true or false, the words, a number; none, it says no boolean.
+ * - Coercion — One cell of the coercions: what an input needs, what it is given, what it reads, in words.
+ * - COERCIONS — Every coercion an input reads, in one place: a boolean as 1 or 0, a word, JSON; a number or word as a boolean.
+ * - coerce — What an input that needs one thing reads of another, by COERCIONS; none, it reads no such thing.
+ * - readInput — What an input reads of what reaches it: the value, coerced, or null and why, in words.
  */
 import { typedValue } from './filter-state.js';
 import { isDateTime } from './format-date.js';
@@ -78,12 +81,55 @@ export function givenAt(node: { kind: string; values?: Readonly<Record<string, u
 
 const isNumber = (value: unknown): boolean => typeof typedValue('number', value) === 'number';
 
-/** A value as the boolean it says: `true` or `false`, the words true and false, or 1 and 0 (Will, TODO 780: "0/1 or
- *  True or False is data"). None, it says no boolean; `truthy` is the road a value takes (D2), not this. */
+/** A value as the boolean it says: `true` or `false`; the words true and false, in any case; a number, or one written
+ *  as text, 0 False and any other True (D2). Will, TODOs 780, 781: "0/1 or True or False is data". None: other text,
+ *  a list, an object. `truthy` is the road a value takes (D2), not this. */
 export function truthOf(value: unknown): boolean | undefined {
   if (typeof value === 'boolean') return value;
-  const said = typeof value === 'number' ? String(value) : typeof value === 'string' ? value.trim().toLowerCase() : undefined;
-  return said === 'true' || said === '1' ? true : said === 'false' || said === '0' ? false : undefined;
+  const said = typeof value === 'string' ? value.trim().toLowerCase() : undefined;
+  if (said === 'true' || said === 'false') return said === 'true';
+  const n = typedValue('number', value);
+  return typeof n === 'number' && Number.isFinite(n) ? n !== 0 : undefined;
+}
+
+/** One cell of the coercions: what an input needs (`json`: what a value is written as in JSON), what it is given, what
+ *  it reads — none, it reads no such thing — and the rule in words. */
+export interface Coercion {
+  needs: Need | 'json';
+  given: Given;
+  said: string;
+  reads(value: unknown): unknown;
+}
+
+const bool = (value: unknown): boolean | undefined => truthOf(value);
+
+/** Every coercion an input reads, in one place, never a node's own (Will, TODO 781: "Where booleans need to be a number
+ *  then nodes should convert True/False to 1/0. Where they need to be a String (or part of a larger JSON object) then the
+ *  inverse should be handled."). A value coerced is used, and no warning. */
+export const COERCIONS: readonly Coercion[] = [
+  { needs: 'number', given: 'boolean', said: 'True reads as 1, False as 0', reads: (v) => (bool(v) === undefined ? undefined : bool(v) ? 1 : 0) },
+  { needs: 'value', given: 'boolean', said: 'True reads as the word true, False as false: never 1 or 0', reads: (v) => (bool(v) === undefined ? undefined : String(bool(v))) },
+  { needs: 'json', given: 'boolean', said: 'In JSON, True is true and False false: never 1 or 0', reads: bool },
+  { needs: 'boolean', given: 'number', said: '0 reads as False, any other number True (D2)', reads: bool },
+  { needs: 'boolean', given: 'value', said: 'The words true and false read as their boolean, and a number written as text as that number; other text says no boolean', reads: bool },
+];
+
+/** What is given, as a cell of COERCIONS names it: a boolean (its kind, or a value held as one), a number, a value. */
+function givenOf({ kind, value }: Reached): Given {
+  if (kind === 'boolean' || typeof value === 'boolean') return 'boolean';
+  if (kind === 'number' || (value !== undefined && typeof typedValue('number', value) === 'number')) return 'number';
+  return kind;
+}
+
+/** What an input that needs one thing reads of another, by COERCIONS: the value — none yet, where only a run gives it
+ *  — or no answer, where no cell reads it. */
+export function coerce(needs: Need | 'json', reached: Reached): { value: unknown } | undefined {
+  const given = givenOf(reached);
+  const cell = COERCIONS.find((c) => c.needs === needs && c.given === given);
+  if (!cell) return undefined;
+  if (reached.value === undefined) return { value: undefined };
+  const value = cell.reads(reached.value);
+  return value === undefined ? undefined : { value };
 }
 
 /** Whether a need takes what reaches it: by its kind, and by the value where one is held. */
@@ -91,7 +137,7 @@ function fits(need: Need, { kind, value }: Reached, choices: readonly RowChoice[
   const held = value !== undefined;
   switch (need) {
     case 'value': return kind === 'value' || kind === 'number';
-    case 'boolean': return kind === 'boolean' || ((kind === 'value' || kind === 'number') && (!held || truthOf(value) !== undefined));
+    case 'boolean': return kind === 'boolean' && (!held || truthOf(value) !== undefined);
     case 'object': return kind === 'object' || kind === 'list' || kind === 'rows';
     case 'rows': return kind === 'object' || kind === 'rows';
     case 'list': return kind === 'object' || kind === 'list';
@@ -113,11 +159,14 @@ function givenWords(need: Need, { kind, value }: Reached): string {
   return need === 'numbers' ? `a list with ${and(value.filter((v) => !isNumber(v)).map((v) => `"${String(v)}"`))}` : INPUT_WORDS.list;
 }
 
-/** What an input reads of what reaches it: the value where it can use it; else `null`, and why, in words —
- *  "Value A takes a number; it was given "abc"". An input that needs nothing takes all. TRAP T-a-node-reads-null-from-what-it-cannot-use */
+/** What an input reads of what reaches it: the value where it can use it; else the value COERCIONS reads of it, with no
+ *  warning (TODO 781); else `null`, and why, in words — "Value A takes a number; it was given "abc"". An input that needs
+ *  nothing takes all. TRAP T-a-node-reads-null-from-what-it-cannot-use */
 export function readInput(input: InputNeeds, reached: Reached): { value: unknown; warning?: string } {
   const { label, needs, choices } = input;
   if (!needs || fits(needs, reached, choices)) return { value: reached.value };
+  const coerced = coerce(needs, reached);
+  if (coerced) return coerced;
   const wants = needs === 'choice' ? or((choices ?? []).map((c) => c.label)) : INPUT_WORDS[needs];
   return { value: null, warning: `${label} takes ${wants}; it was given ${givenWords(needs, reached)}` };
 }
