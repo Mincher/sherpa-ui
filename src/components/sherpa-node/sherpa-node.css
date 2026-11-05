@@ -20,6 +20,7 @@
 }
 
 :host(sherpa-node[data-current]) { --_mode: active; --_mode-viz: active; }
+:host(sherpa-node[data-warning]) { --_mode: warning; --_mode-viz: warning; }
 :host(sherpa-node[data-step="running"]) { --_mode: info; --_mode-viz: info; }
 :host(sherpa-node[data-step="failed"]) { --_mode: critical; --_mode-viz: critical; }
 :host(sherpa-node[data-step="skipped"]) { --_mode: inactive; --_mode-viz: inactive; }
@@ -246,8 +247,10 @@
     var(--sherpa-display-mode-border-rounding-xl, 16px) var(--sherpa-display-mode-border-rounding-base, 4px);
   --_category-fill: var(--sherpa-theme-surface-active-base, #f8ebff); /* theme-direct */
 }
-/* Picked, every node takes the active pin's fill and border: a category's tint is its resting look. TODO 756 */
-:host([data-current]) .root { --_category-fill: initial; }
+/* Picked, every node takes the active pin's fill and border: a category's tint is its resting look. TODO 756
+   A warning, the same: its pin's look. TODO 764 */
+:host([data-current]) .root,
+:host([data-warning]) .root { --_category-fill: initial; }
 @media (forced-colors: active) { :host([data-current]) .root { border-color: Highlight; } }
 
 /* ── The header: always there, as it is the handle ───────────────────── */
@@ -327,6 +330,11 @@
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
 :host([data-caption]) .caption { display: block; }
+
+/* ── The warning's tip hangs from the header: a line for each input it cannot use. TODO 764 ── */
+.header, .tip-warning { --_anchor: --sherpa-node-warning; }
+.tip-warning { white-space: pre-line; }
+:host(:not([data-warning])) .tip-warning { display: none; }
 
 /* The whole node's sockets, on the header's edges; False, on the footer's. */
 .socket {

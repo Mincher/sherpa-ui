@@ -64,6 +64,7 @@
 import { DATE_OP_LABELS, OP_LABELS, OP_TAKES, OPS_FOR_TYPE, type Duration, type FilterOp } from './store.js';
 import { PRESENTATION_KINDS } from './query.js';
 import { isDateTime } from './format-date.js';
+import type { Given, Need } from './node-input.js';
 
 /** What a socket carries: one value; an object — a record, rows, or a list, for an array is
  *  an object (D17); a boolean, True or False; or, an input only, any of them (D1). */
@@ -117,6 +118,10 @@ export interface RowKind {
   /** A number's least, and its step, HTML's own names: a step of 1 takes only whole numbers. */
   min?: number;
   step?: number;
+  /** What its input can use, where its control does not say it (`needOf`): what it cannot use reads null. TODO 764 */
+  needs?: Need;
+  /** What its output sends, finer than its type: rows, a list, a number. */
+  gives?: Given;
 }
 
 /** Where a kind is drawn: a page's Query, or a workflow. */
@@ -135,6 +140,8 @@ export interface NodeType {
   branches?: boolean;
   /** Where it is drawn, where not every graph of its kind: the Query takes a Condition's Rows that hold alone. */
   graphs?: readonly NodeGraph[];
+  /** What its header's input can use, over the kind's. */
+  needs?: Need;
 }
 
 /** What a node IS: its header, its sockets, its rows, and what it stands for in the data layer. */
@@ -145,6 +152,8 @@ export interface NodeKind {
   /** The whole node's sockets, on its header. Its input is its DATA, of any type (D1): its rows
    *  and values say what it does with it. With `branches`, its output is True. */
   input?: SocketType;
+  /** What its header's input can use; what it cannot is null, and the node a warning (TODO 764). None: anything. */
+  needs?: Need;
   /** Its header input takes several routes (D4). */
   many?: true;
   output?: SocketType;
@@ -168,7 +177,7 @@ export interface NodeKind {
 
 /** The Rows row: the data rows a node sends on, an object. They come in on its header (D1);
  *  it is first on each kind that gives them. Plan 713 §3 */
-export const ROWS: Readonly<RowKind> = { name: 'rows', label: 'Rows', output: 'object' };
+export const ROWS: Readonly<RowKind> = { name: 'rows', label: 'Rows', output: 'object', gives: 'rows' };
 
 /** A family's rows, each once: a type names the ones it draws. */
 const FIELD: RowKind = { name: 'field', label: 'Field', control: 'field', input: 'value' };
@@ -179,9 +188,11 @@ const dateRow = (name: string, label: string): RowKind => ({ name, label, contro
 /** A count: a whole number, from `min`. */
 const countRow = (name: string, label: string, min: number): RowKind => ({ ...numberRow(name, label), min, step: 1 });
 /** A list in, an object (D17): what Floor, Ceiling, Average and Join read. It takes several. Will, D9 */
-const LIST: RowKind = { name: 'values', label: 'Values', input: 'object', many: true };
+const LIST: RowKind = { name: 'values', label: 'Values', input: 'object', many: true, needs: 'list' };
+const NUMBERS: RowKind = { ...LIST, needs: 'numbers' };
 /** What a Math or Text node gives, as a Value gives its own: from a row, its header forking (D2). */
 const RESULT: RowKind = { name: 'result', label: 'Result', output: 'value' };
+const NUMBER: RowKind = { ...RESULT, gives: 'number' };
 const [A, B, SEPARATOR] = [numberRow('a', 'Value A'), numberRow('b', 'Value B'), textRow('separator', 'Separator')];
 
 /** The operators whose value is a list: Is one of, Is not one of. */
@@ -249,7 +260,7 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     typeLabel: 'Operation', defaultType: 'rows',
     types: {
       rows: {
-        label: 'Rows that hold', help: 'The rows that hold for a group of conditions', input: 'any',
+        label: 'Rows that hold', help: 'The rows that hold for a group of conditions', input: 'any', needs: 'rows',
         rows: [
           ROWS,
           { name: 'join', label: 'Join', control: 'join' },
@@ -305,34 +316,34 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       decimal: { label: 'Decimal', help: 'A number with places, as 4.25', rows: [VALUE] },
       date: { label: 'Date', help: 'A day, written year-month-day: 2024-01-31', rows: [VALUE] },
       boolean: { label: 'True/false', help: 'True or false', rows: [VALUE] },
-      list: { label: 'List', help: 'Values, each a tag, sent as a list', rows: [{ ...VALUE, control: 'tags', multiple: true, output: 'object' }] },
+      list: { label: 'List', help: 'Values, each a tag, sent as a list', rows: [{ ...VALUE, control: 'tags', multiple: true, output: 'object', gives: 'list' }] },
     },
     rows: [], model: 'typedValue', graphs: ['workflow'], category: 'Variables',
   },
   pick: {
-    heading: 'Pick', icon: 'price-tag', description: 'One field of the input.', input: 'any', branches: true,
+    heading: 'Pick', icon: 'price-tag', description: 'One field of the input.', input: 'any', needs: 'object', branches: true,
     rows: [{ name: 'field', label: 'Field', control: 'field', input: 'value', output: 'value' }], model: 'readField', graphs: ['workflow'], category: 'Variables',
   },
   // One number from numbers, given from its Result row. Floor, Ceiling and Average read a list (D9).
   math: {
     heading: 'Math', icon: 'function', description: 'One number from numbers.', branches: true, typeLabel: 'Operation', defaultType: 'add',
     types: {
-      add: { label: 'Add', help: 'Add Value B to Value A', rows: [A, B, RESULT] },
-      subtract: { label: 'Subtract', help: 'Subtract Value B from Value A', rows: [A, B, RESULT] },
-      multiply: { label: 'Multiply', help: 'Multiply 2 values together', rows: [A, B, RESULT] },
-      divide: { label: 'Divide', help: 'Divide Value A by Value B', rows: [A, B, RESULT] },
-      ratio: { label: 'Ratio', help: 'Decimal ratio between 0 and 1', rows: [A, B, RESULT] },
-      round: { label: 'Round', help: 'Rounds a decimal to a set number of places', rows: [countRow('places', 'Places', 0), numberRow('a', 'Value'), RESULT] },
-      increment: { label: 'Increment', help: 'Increment Value A by Value B, in its smallest unit', rows: [A, B, RESULT] },
-      floor: { label: 'Floor', help: 'Lowest value from the list', rows: [LIST, RESULT] },
-      ceiling: { label: 'Ceiling', help: 'Highest value from the list', rows: [LIST, RESULT] },
-      average: { label: 'Average', help: 'Average value of the list', rows: [LIST, RESULT] },
+      add: { label: 'Add', help: 'Add Value B to Value A', rows: [A, B, NUMBER] },
+      subtract: { label: 'Subtract', help: 'Subtract Value B from Value A', rows: [A, B, NUMBER] },
+      multiply: { label: 'Multiply', help: 'Multiply 2 values together', rows: [A, B, NUMBER] },
+      divide: { label: 'Divide', help: 'Divide Value A by Value B', rows: [A, B, NUMBER] },
+      ratio: { label: 'Ratio', help: 'Decimal ratio between 0 and 1', rows: [A, B, NUMBER] },
+      round: { label: 'Round', help: 'Rounds a decimal to a set number of places', rows: [countRow('places', 'Places', 0), numberRow('a', 'Value'), NUMBER] },
+      increment: { label: 'Increment', help: 'Increment Value A by Value B, in its smallest unit', rows: [A, B, NUMBER] },
+      floor: { label: 'Floor', help: 'Lowest value from the list', rows: [NUMBERS, NUMBER] },
+      ceiling: { label: 'Ceiling', help: 'Highest value from the list', rows: [NUMBERS, NUMBER] },
+      average: { label: 'Average', help: 'Average value of the list', rows: [NUMBERS, NUMBER] },
     },
     rows: [], model: 'math', graphs: ['workflow'], category: 'Math',
   },
   // Whether the date that comes in, of any type (D1), holds: True takes it, False the rest.
   time: {
-    heading: 'Time', icon: 'time', description: 'Whether a date holds.', input: 'any', branches: true, typeLabel: 'Operation', defaultType: 'between',
+    heading: 'Time', icon: 'time', description: 'Whether a date holds.', input: 'any', needs: 'date', branches: true, typeLabel: 'Operation', defaultType: 'between',
     types: {
       between: { label: 'Between', help: 'True when the date is from Start to End', rows: [dateRow('start', 'Start'), dateRow('end', 'End')] },
       duration: {
@@ -344,11 +355,11 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
   },
   // Sort, Group and Count were three kinds; a saved one reads as its type, once.
   collection: {
-    heading: 'Collection', icon: 'list', description: 'The rows in order, grouped, or counted.', input: 'any', branches: true, typeLabel: 'Type', defaultType: 'sort',
+    heading: 'Collection', icon: 'list', description: 'The rows in order, grouped, or counted.', input: 'any', needs: 'rows', branches: true, typeLabel: 'Type', defaultType: 'sort',
     types: {
       sort: { label: 'Sort', help: 'The rows in order', rows: [ROWS, FIELD, { name: 'direction', label: 'Direction', control: 'direction', input: 'value' }] },
       group: { label: 'Group by', help: 'The rows by a field', rows: [ROWS, FIELD] },
-      count: { label: 'Count', help: 'How many rows', rows: [{ name: 'count', label: 'Count', output: 'value' }] },
+      count: { label: 'Count', help: 'How many rows', rows: [{ name: 'count', label: 'Count', output: 'value', gives: 'number' }] },
     },
     rows: [], model: 'collectRows', graphs: ['workflow'], category: 'Collections',
   },
@@ -358,14 +369,14 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
     types: {
       append: { label: 'Append', help: 'Add Value B to the end of Value A', rows: [textRow('a', 'Value A'), textRow('b', 'Value B'), RESULT] },
       prepend: { label: 'Prepend', help: 'Add Value B to the start of Value A', rows: [textRow('a', 'Value A'), textRow('b', 'Value B'), RESULT] },
-      split: { label: 'Split by', help: 'Value as a list, split at each Separator', rows: [textRow('a', 'Value'), SEPARATOR, { ...RESULT, output: 'object' }] },
+      split: { label: 'Split by', help: 'Value as a list, split at each Separator', rows: [textRow('a', 'Value'), SEPARATOR, { ...RESULT, output: 'object', gives: 'list' }] },
       join: { label: 'Join', help: 'The list as one text, Separator between each', rows: [LIST, SEPARATOR, RESULT] },
     },
     rows: [], model: 'modifyText', graphs: ['workflow'], category: 'Utils',
   },
   // A rows check by a field of tags: closed to the field's values, where they are known.
   tag: {
-    heading: 'Tag', icon: 'price-tag', description: 'The rows whose field holds the tags picked.', input: 'any', branches: true,
+    heading: 'Tag', icon: 'price-tag', description: 'The rows whose field holds the tags picked.', input: 'any', needs: 'rows', branches: true,
     types: { includes: { label: 'Includes', rows: [ROWS, FIELD, { name: 'value', label: 'Tags', control: 'tags', multiple: true, input: 'object' }] } },
     rows: [], model: 'tagCheck', graphs: ['workflow'], category: 'Utils',
   },
@@ -395,10 +406,10 @@ export function resolveKind(kind: NodeKind | undefined, type?: unknown): NodeKin
   const at = kind && typeOf(kind, type);
   if (!kind || !at) return kind;
   const { types, typeLabel, defaultType: _default, branches: forks, ...plain } = kind;
-  const { input, many, output, branches = forks, graphs = kind.graphs } = at.type;
+  const { input, many, output, branches = forks, graphs = kind.graphs, needs } = at.type;
   const row: RowKind = { name: 'type', label: typeLabel ?? 'Type', control: 'type' };
   return {
-    ...plain, ...(input ? { input } : {}), ...(many ? { many } : {}), ...(output ? { output } : {}),
+    ...plain, ...(input ? { input } : {}), ...(many ? { many } : {}), ...(output ? { output } : {}), ...(needs ? { needs } : {}),
     ...(branches ? { branches: true as const } : {}), graphs,
     rows: [...(Object.keys(types!).length > 1 ? [row] : []), ...kind.rows, ...(at.type.rows ?? [])],
   };
@@ -750,6 +761,8 @@ export interface GraphNode {
   size?: NodeSize;
   /** What it stands for, for whoever takes its edits: a Query node's scope, field or preset. */
   ref?: Readonly<Record<string, string>>;
+  /** What reached it that it cannot use, each by its row (none: its header), in words: it reads null there (TODO 764). */
+  warnings?: readonly { row?: string; words: string }[];
 }
 
 /** Nodes and routes, ready to draw: a workflow's, or a page's Query. */

@@ -51,17 +51,22 @@ function tagWhere(node: GraphNode): unknown {
   return { field: at('field'), op: 'in', value: [at('value') ?? []].flat() };
 }
 
-/** A node's flow, from its graph. Incoming: each input socket, where its routes come from, and the value its row holds.
- *  Outgoing: each output socket and where it goes. A fault, in words, for an id the graph does not hold. */
+/** A node's flow, from its graph. Incoming: each input socket, where its routes come from, and the value its row holds;
+ *  what it cannot use is null, with its warning (TODO 764). Outgoing: each output socket and where it goes. A fault, in
+ *  words, for an id the graph does not hold. */
 export function nodeFlow(graph: DrawnGraph, id: string): NodeFlow | { fault: string } {
   const node = graph.nodes.find((n) => n.id === id);
   if (!node) return { fault: `the graph holds no node "${id}"` };
   const into = (address: string): string[] => graph.routes.filter((r) => r.to === address).map((r) => said(graph, r.from, true));
   const onward = (address: string): string[] => graph.routes.filter((r) => r.from === address).map((r) => said(graph, r.to, false));
+  const warned = (row?: string): { warning: string } | Record<string, never> => {
+    const words = (node.warnings ?? []).filter((w) => w.row === row).map((w) => w.words);
+    return words.length ? { warning: words.join('\n') } : {};
+  };
   const incoming: Record<string, unknown>[] = [
-    ...(node.input ? [{ socket: 'In', type: node.input, from: into(node.id) }] : []),
+    ...(node.input ? [{ socket: 'In', type: node.input, from: into(node.id), ...('warning' in warned() ? { value: null } : {}), ...warned() }] : []),
     ...node.rows.filter((r) => r.input).map((r) => ({
-      socket: r.label, type: r.input, from: into(`${node.id}/${r.name}`), ...(r.value !== undefined && r.value !== '' ? { value: r.value } : {}),
+      socket: r.label, type: r.input, from: into(`${node.id}/${r.name}`), ...(r.value !== undefined && r.value !== '' ? { value: r.value } : {}), ...warned(r.name),
     })),
   ];
   const outgoing: Record<string, unknown>[] = [

@@ -2,7 +2,7 @@
 
 # sherpa-node
 
-One node of a node editor: a card on a [sherpa-layout-canvas](sherpa-layout-canvas.md), at its data-x and data-y. Its HEADER names it, drags it and may carry the whole node's sockets; its content holds its rows. Will, TODO 78. TRAP T-a-node-moves-itself-and-reports
+One node of a node editor: a card on a [sherpa-layout-canvas](sherpa-layout-canvas.md), at its data-x and data-y. Its HEADER names it, drags it and may carry the whole node's sockets; its content holds its rows. Will, TODO 78. TRAP T-a-node-moves-itself-and-reports · TRAP T-a-node-reads-null-from-what-it-cannot-use
 
 |  |  |
 |---|---|
@@ -10,12 +10,12 @@ One node of a node editor: a card on a [sherpa-layout-canvas](sherpa-layout-canv
 
 ## When to use it
 
-For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by its header, which reports each move and asks to be selected. Its header names it and may carry the whole node's sockets, each its type's shape (a circle, a diamond, a triangle, a square) and hollow until a route joins it; a fork (`data-branches`) sends True from the header and False from a footer; its rows are `sherpa-node-row`. The host writes `data-current` on the one it selects. For a card in the page flow, use `sherpa-container`.
+For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by its header, which reports each move and asks to be selected. Its header names it and may carry the whole node's sockets, each its type's shape (a circle, a diamond, a triangle, a square) and hollow until a route joins it; a fork (`data-branches`) sends True from the header and False from a footer; its rows are `sherpa-node-row`. The host writes `data-current` on the one it selects, and `data-warning` on one given what it cannot use: the warning look, and its words in the header's tip. For a card in the page flow, use `sherpa-container`.
 
 ## Example
 
 ```html
-<sherpa-layout-canvas style="inline-size: 720px; block-size: 360px"><sherpa-node data-heading="Start" data-icon="play" data-x="40" data-y="40" data-output-socket="object" data-output-routed></sherpa-node><sherpa-node data-heading="Condition" data-icon="function" data-x="360" data-y="40" data-input-socket="any" data-input-routed data-branches data-current><sherpa-node-row data-input-socket="object" data-input-routed data-label="Rows"></sherpa-node-row><sherpa-node-row data-input-socket="value"><sherpa-input-text data-label="Value" name="value" value="active"></sherpa-input-text></sherpa-node-row><sherpa-node-row data-input-socket="boolean" data-label="Group"></sherpa-node-row></sherpa-node></sherpa-layout-canvas>
+<sherpa-layout-canvas style="inline-size: 720px; block-size: 360px"><sherpa-node data-heading="Start" data-icon="play" data-x="40" data-y="40" data-output-socket="object" data-output-routed></sherpa-node><sherpa-node data-heading="Pick" data-icon="price-tag" data-x="40" data-y="200" data-input-socket="any" data-input-routed data-warning="Pick takes an object; it was given a boolean"></sherpa-node><sherpa-node data-heading="Condition" data-icon="function" data-x="360" data-y="40" data-input-socket="any" data-input-routed data-branches data-current><sherpa-node-row data-input-socket="object" data-input-routed data-label="Rows"></sherpa-node-row><sherpa-node-row data-input-socket="value"><sherpa-input-text data-label="Value" name="value" value="active"></sherpa-input-text></sherpa-node-row><sherpa-node-row data-input-socket="boolean" data-label="Group"></sherpa-node-row></sherpa-node></sherpa-layout-canvas>
 ```
 
 ## Attributes
@@ -41,6 +41,7 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 | `data-scale-h` | number | `1` | its height, in times its natural height: 1 to 2 |
 | `data-scale-w` | number | `1` | its width, in times its natural width: 1 to 2 |
 | `data-step` | `running` `done` `failed` `skipped` |  | how its step stands as a run lights it: running \| done \| failed \| skipped. Its host writes it |
+| `data-warning` | text |  | what reached it that it cannot use, in words, a line each: it draws as a warning, and a hover or focus on its header shows the words. Its host writes it |
 | `data-x` | number | `0` | where it sits across the canvas, in plane px |
 | `data-y` | number | `0` | where it sits down the canvas, in plane px |
 
@@ -108,6 +109,6 @@ Each of the app's settings, onto one of its attributes:
 
 ## populate()
 
-`{ active?, branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, resizable?, scaleH?, scaleW?, step?, x?, y? }`
+`{ active?, branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, resizable?, scaleH?, scaleW?, step?, warning?, x?, y? }`
 
 Its declared props by name: `label` sets data-label.

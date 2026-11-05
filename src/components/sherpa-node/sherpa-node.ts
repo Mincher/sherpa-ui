@@ -7,6 +7,7 @@
  * A press only REPORTS (`node-select`): the host writes `data-current`, as only
  * it sees every node. TRAP T-a-node-moves-itself-and-reports
  * Its sockets are drawn by type; a fork adds a footer. TRAP T-a-socket-is-drawn-by-its-type
+ * A warning is its host's words: the warning look, and the header's tip. TRAP T-a-node-reads-null-from-what-it-cannot-use
  */
 import { DATA_PROPS, SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 // Defined before the template stamps it.
@@ -51,6 +52,7 @@ export class SherpaNode extends SherpaElement {
     'data-active': { type: 'boolean', kind: 'style' },
     'data-step': { type: 'enum', kind: 'style', values: ['running', 'done', 'failed', 'skipped'] },
     'data-caption': { type: 'string', kind: 'content' },
+    'data-warning': { type: 'string', kind: 'content' },
     'data-locked': DATA_PROPS['data-locked'],
     'data-resizable': { type: 'boolean', kind: 'style' },
   } as const;

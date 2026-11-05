@@ -6410,6 +6410,46 @@ Figma's "Greater than or equal" reads "At least" here.
 - Site: `test/unit/a-logic-type-is-an-operator.test.mjs`
 - Site: `test/e2e/reforged-node-logic.spec.ts`
 
+### T-a-node-reads-null-from-what-it-cannot-use
+
+**A node reads what it NEEDS of what reaches an input; what it cannot use is `null` there, and the
+node draws as a WARNING with a tip that says why.** Will, 2026-11-05 (TODO 764): "Nodes will
+determine which data they need from the input. If there's no valid input then it's null and we
+style the node as a warning with tooltip message." Graphs stay open (E5): a route its socket
+types allow is drawn; no family fences what a graph places.
+
+- **What it needs is the kind's own description** (`needs`): a header that takes any type says
+  it (a Condition's Rows that hold, a Collection and a Tag take rows, Pick an object, Time a date;
+  Is empty anything); a row says it by its
+  control (a number, a date, one of a fixed list, an operator), by picking several (a list; Math's
+  a list of numbers), or, a comparison's Value, by its field's type. `needOf` reads it; an input
+  that says nothing takes anything (the Output, a Custom Node's header, a text row).
+- **What reaches is what the graph says before a run** (`givenAt`): the type its source sends,
+  finer where its row says (`gives`: rows from a Rows row, a list from a List or Split by, a
+  number from a Math Result or a Count), and the value a row with a control holds. A Value that
+  holds nothing sends nothing (D2): no warning. What a node works out (a Text's Result, a Pick's
+  Field) is known only when it runs: no warning until N4. An unconnected row is no such case.
+- **One door, `readInput`**: the value, or `null` and the words — `<input> takes <need>; it was
+  given <what>` — all from `INPUT_WORDS` (a socket type in the words its tip says). The runner
+  (N4) reads through the same door. Text that reads as a number is a number, as the row reads it
+  (`T-a-value-is-typed-once`).
+- **Drawn**: `workflowGraph` puts each on the node as `warnings` (by row; none, the header), the
+  row reads `null` (read only, not "X Custom"), and `nodeFlow`'s incoming says `value: null`
+  with the warning. `drawGraph` writes `data-warning`; `sherpa-node` pins the warning Style mode
+  (`state-pins.yaml`: after `data-current`, so a picked one stays a warning; a run's step wins)
+  and drops a category's tint, as a pick does. Its header is the tip's anchor and is described by
+  it (`aria-describedby`), so a hover or keyboard focus shows the words, one line each.
+- **No fault, no Save block, never red.** `workflowFaults` is untouched: a route its types
+  refuse ("joins an object to a value") is still refused, and a row's own fault
+  (`T-a-row-says-its-own-fault`) is still red and holds Save.
+
+- Site: `src/core/data/node-input.ts`
+- Site: `src/core/data/workflow.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `src/components/sherpa-node/sherpa-node.ts`
+- Site: `src/components/sherpa-node/sherpa-node.html`
+- Site: `src/data.ts`
+
 ### T-a-changed-key-moves-the-row
 
 **An update that changes a row's KEY moves the row, in every store.** TODO 188,

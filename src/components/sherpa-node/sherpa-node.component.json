@@ -3,7 +3,7 @@
   "$schema": "../../../schemas/component.v1.json",
   "$type": "component",
   "$name": "sherpa-node",
-  "$description": "one node of a node editor: a card on a sherpa-layout-canvas, at its data-x and data-y. Its HEADER names it, drags it and may carry the whole node's sockets; its content holds its rows. Will, TODO 78. TRAP T-a-node-moves-itself-and-reports",
+  "$description": "one node of a node editor: a card on a sherpa-layout-canvas, at its data-x and data-y. Its HEADER names it, drags it and may carry the whole node's sockets; its content holds its rows. Will, TODO 78. TRAP T-a-node-moves-itself-and-reports · TRAP T-a-node-reads-null-from-what-it-cannot-use",
   "element": {
     "$type": "element",
     "tag": "div",
@@ -28,12 +28,13 @@
         },
         {
           "el": "div",
-          "class": "header",
+          "class": "header sherpa-anchor",
           "part": "header",
           "attrs": {
             "role": "button",
             "tabindex": "0",
-            "aria-roledescription": "node"
+            "aria-roledescription": "node",
+            "aria-describedby": "warning"
           },
           "children": [
             {
@@ -135,6 +136,17 @@
               ]
             }
           ]
+        },
+        {
+          "el": "span",
+          "class": "tip tip-warning sherpa-tip",
+          "part": "tip",
+          "attrs": {
+            "id": "warning",
+            "popover": "manual",
+            "role": "tooltip",
+            "data-text": "data-warning"
+          }
         },
         {
           "el": "div",
@@ -394,6 +406,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-warning",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "content",
+      "description": "what reached it that it cannot use, in words, a line each: it draws as a warning, and a hover or focus on its header shows the words. Its host writes it"
+    },
+    {
+      "$type": "prop",
       "name": "data-x",
       "type": "number",
       "observed": true,
@@ -424,7 +445,7 @@
     }
   ],
   "populate": {
-    "shape": "{ active?, branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, resizable?, scaleH?, scaleW?, step?, x?, y? }",
+    "shape": "{ active?, branches?, caption?, category?, current?, description?, falseRouted?, heading?, icon?, inputMany?, inputRouted?, inputSocket?, locked?, outputRouted?, outputSocket?, resizable?, scaleH?, scaleW?, step?, warning?, x?, y? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "settings": {
@@ -463,6 +484,11 @@
     },
     {
       "$type": "state",
+      "name": "warning",
+      "selector": ":host([data-warning])"
+    },
+    {
+      "$type": "state",
       "name": "resizable",
       "selector": ":host([data-resizable])"
     },
@@ -480,6 +506,11 @@
       "$type": "state",
       "name": "false-routed",
       "selector": ":host([data-false-routed])"
+    },
+    {
+      "$type": "state",
+      "name": "not-warning",
+      "selector": ":host(:not([data-warning]))"
     },
     {
       "$type": "state",

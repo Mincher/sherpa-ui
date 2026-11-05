@@ -2763,7 +2763,7 @@
     },
     {
       "name": "sherpa-node",
-      "description": "one node of a node editor: a card on a sherpa-layout-canvas, at its data-x and data-y. Its HEADER names it, drags it and may carry the whole node's sockets; its content holds its rows. Will, TODO 78. TRAP T-a-node-moves-itself-and-reports",
+      "description": "one node of a node editor: a card on a sherpa-layout-canvas, at its data-x and data-y. Its HEADER names it, drags it and may carry the whole node's sockets; its content holds its rows. Will, TODO 78. TRAP T-a-node-moves-itself-and-reports · TRAP T-a-node-reads-null-from-what-it-cannot-use",
       "attributes": [
         {
           "name": "data-active",
@@ -2888,6 +2888,10 @@
               "name": "skipped"
             }
           ]
+        },
+        {
+          "name": "data-warning",
+          "description": "what reached it that it cannot use, in words, a line each: it draws as a warning, and a hover or focus on its header shows the words. Its host writes it"
         },
         {
           "name": "data-x",

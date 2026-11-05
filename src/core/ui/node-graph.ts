@@ -1148,6 +1148,8 @@ export function drawGraph(canvas: SherpaLayoutCanvas, graph: DrawnGraph, options
     el.toggleAttribute('data-locked', !!options.locked?.(node));
     // A run's caption wins; else the host's note.
     if (!el.hasAttribute('data-step')) put(el, 'data-caption', options.notes?.get(node.id));
+    // What reached it that it cannot use: the warning look, and its words in the header's tip. TRAP T-a-node-reads-null-from-what-it-cannot-use
+    put(el, 'data-warning', node.warnings?.map((w) => w.words).join('\n'));
     // Its data in, of any type; out, its True where it forks.
     put(el, 'data-input-socket', socketType(node, undefined, 'input'));
     put(el, 'data-output-socket', socketType(node, undefined, 'output'));

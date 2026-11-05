@@ -49,10 +49,13 @@ const old = () => ({
   ],
   ties: [{ id: 'tie-1', x: 1000, y: 20, routes: [{ from: 'group/rows', to: 'filter' }, { from: 'group/rows', to: 'count' }] }],
 });
-/** A drawing as a reader sees it, the family's own words aside: each node's place, sockets and rows after the type. */
+/** A drawing as a reader sees it, the family's own words aside: each node's place, sockets and rows after the type.
+ *  What a row needs and gives is new with 764, and draws nothing. */
 const seen = (g) => ({
   routes: g.routes, ties: g.ties,
-  nodes: g.nodes.map(({ id, x, y, size, input, output, many, branches, category, rows }) => ({ id, x, y, size, input, output, many, branches, category, rows: rows.filter((r) => r.name !== 'type') })),
+  nodes: g.nodes.map(({ id, x, y, size, input, output, many, branches, category, rows }) => ({
+    id, x, y, size, input, output, many, branches, category, rows: rows.filter((r) => r.name !== 'type').map(({ needs: _needs, gives: _gives, ...r }) => r),
+  })),
 });
 const node = (g, id) => g.nodes.find((n) => n.id === id);
 

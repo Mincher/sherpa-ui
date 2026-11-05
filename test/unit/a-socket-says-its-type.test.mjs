@@ -75,7 +75,7 @@ test('the registry says each socket: a row\'s, the header\'s — True where it f
 });
 
 test('the rows come in on the header, of ANY type (D1), and leave a Rows row that only sends; each kind a workflow runs forks, and the Query\'s own steps do not', () => {
-  assert.deepEqual(ROWS, { name: 'rows', label: 'Rows', output: 'object' });
+  assert.deepEqual(ROWS, { name: 'rows', label: 'Rows', output: 'object', gives: 'rows' });
   const all = Object.entries(NODE_KINDS);
   // A header input takes any; no header sends rows: a Rows row does, first.
   for (const [name, kind] of all) {

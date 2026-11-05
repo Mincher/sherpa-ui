@@ -36,6 +36,7 @@ import {
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './route-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
+import { givenAt, needOf, readInput, type InputNeeds } from './node-input.js';
 
 /** One node, as a definition holds it: only what the reader may change. What it IS is its kind's. */
 export interface WorkflowNode {
@@ -425,7 +426,9 @@ function partsOf(node: WorkflowNode, routes: readonly NodeRoute[]): PartKind[] {
 /** A workflow as nodes and routes, a v1 read as v2: each node its kind's, at its own place,
  *  with its values. A row a route drives is read only. Where the route comes from a node that
  *  holds its value (a Value), the row MIRRORS it — a picklist shows it marked Custom (D7) —
- *  and its own pick stays in the draft; else it shows its own until N4 runs the flow. */
+ *  and its own pick stays in the draft; else it shows its own until N4 runs the flow. What
+ *  reaches an input that it cannot use reads null, and the node says why in `warnings`.
+ *  TRAP T-a-node-reads-null-from-what-it-cannot-use */
 export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, facts: WorkflowFacts = {}, kinds: Kinds = NODE_KINDS): DrawnGraph {
   const { workflow } = readWorkflow(given, kinds);
   if (!workflow) return { nodes: [], routes: [] };
@@ -441,11 +444,21 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
     const value = row === undefined ? undefined : at?.values?.[row];
     return at && out && value !== undefined ? { value, said: `${at.heading ?? kinds[at.kind]!.heading} › ${out.label}` } : undefined;
   };
+  const sent = (from: string): ReturnType<typeof givenAt> => givenAt(held.get(socketOf(from).node), socketOf(from).row, kinds);
   const nodes = workflow.nodes.filter((n) => kinds[n.kind]).map((node) => {
     const values = node.values ?? {};
     const family = kinds[node.kind]!;
     const kind = kindOfNode(kinds, node)!;
     const at = typeOf(family, values['type']);
+    // Each route into an input that brings what it cannot use: the node says why, and the input reads null.
+    const warnings: { row?: string; words: string }[] = [];
+    const unusable = (to: string, input: InputNeeds): NodeRoute[] => routes.filter((r) => {
+      const got = r.to === to ? sent(r.from) : undefined;
+      const warning = got && readInput(input, got).warning;
+      if (warning) warnings.push({ ...(to === node.id ? {} : { row: socketOf(to).row! }), words: warning });
+      return !!warning;
+    });
+    if (kind.needs) unusable(node.id, { label: node.heading ?? kind.heading, needs: kind.needs });
     // A Condition's tree draws a part for each comparison its values hold and each Group row a route enters.
     const drawn = kind.rows.some((r) => r.repeat) ? conditionRows(kind, partsOf(node, workflow.routes ?? [])) : kind.rows;
     const rows = drawn.map((row): GraphRow => {
@@ -470,7 +483,11 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
         const fault = wants ? `"${String(value)}" is not ${wants}` : text ? `"${String(value)}" is not a number` : rowFault(shown, value, of);
         return fault ? { ...shown, fault } : shown;
       };
-      const coming = routes.filter((r) => r.to === `${node.id}/${row.name}`).flatMap((r) => brings(r.from) ?? []);
+      const address = `${node.id}/${row.name}`;
+      const need = row.input ? needOf(row, partOf(row.name).base === 'value' ? type : undefined) : undefined;
+      const fixed = fixedChoices(row.control);
+      const bad = need ? unusable(address, { label: row.label, needs: need, ...(fixed ? { choices: fixed } : {}) }) : [];
+      const coming = routes.filter((r) => r.to === address && !bad.includes(r)).flatMap((r) => brings(r.from) ?? []);
       // A switch is driven by the road a boolean names: a True socket is on, a False socket off.
       if (row.control === 'switch') {
         const ins = routes.filter((r) => r.to === `${node.id}/${row.name}`);
@@ -483,7 +500,8 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
         const at = (r: NodeRoute): string => { const n = held.get(socketOf(r.from).node); return n?.heading ?? kinds[n?.kind ?? '']?.heading ?? r.from; };
         return { ...own, ...drivenSwitch(says), hint: `Custom, from ${[...new Set(ins.map(at))].join(', ')}` };
       }
-      if (!coming.length) return said(own);
+      // Only what it cannot use came in: it reads null, read only.
+      if (!coming.length) return bad.length && bad.length === routes.filter((r) => r.to === address).length ? { ...own, value: null } : said(own);
       const shown = mirrored(row, coming.map((c) => c.value), list);
       const from = [...new Set(coming.map((c) => c.said))].join(', ');
       // A list routed into tags OVERRIDES them (D7): its values show, read only; cut, the row's own are back.
@@ -492,7 +510,7 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
         : { ...own, value: shown.value }, true);
     });
     const heads = { ...(node.heading ? { heading: node.heading } : {}), ...(node.description ? { description: node.description } : {}) };
-    return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, rows, heads), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}) };
+    return { ...kindNode({ ...kinds, [node.kind]: kind }, node.kind, node.id, rows, heads), x: node.x, y: node.y, ...(node.size ? { size: node.size } : {}), ...(warnings.length ? { warnings } : {}) };
   });
   const ties = kept.length ? tiesAmong(workflow.ties, routes) : workflow.ties ?? [];
   return { nodes, routes, ...(ties.length ? { ties } : {}) };

@@ -166,6 +166,8 @@ sherpa-node:
   # No Figma component yet (TODO 78). The card pins Style=default; the selected node, active.
   '&': default
   '&[data-current]': active
+  # What reached it that it cannot use: the warning mode, picked or not; a run's step wins. TODO 764
+  '&[data-warning]': warning
   # LIT by its step as a run goes (plan 695 N2): running info, failed critical,
   # skipped inactive; done keeps the default. Will may restyle them.
   '&[data-step="running"]': info
