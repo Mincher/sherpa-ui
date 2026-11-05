@@ -47,6 +47,8 @@ export interface Entity {
   id: string;
   label: string;
   description?: string;
+  /** Words a reader gives it, to organise and find it: the node panel lists it under each. */
+  tags?: readonly string[];
   graph: EntityGraph;
   settings?: Readonly<Record<string, unknown>>;
   uses?: readonly EntityRef[];
@@ -100,6 +102,7 @@ export function nodeEntityOf(kind: string, definition: NodeDefinition): Entity {
   return {
     v: 1, type, id, label: definition.label,
     ...(definition.description ? { description: definition.description } : {}),
+    ...(definition.tags?.length ? { tags: definition.tags } : {}),
     graph: { nodes: definition.nodes, ...(definition.routes ? { routes: definition.routes } : {}), ...(definition.ties ? { ties: definition.ties } : {}) },
     ...(settings ? { settings } : {}),
     ...(definition.preset ? { origin: 'preset' as const } : {}),
@@ -114,6 +117,7 @@ export function definitionOf(entity: Entity): NodeDefinition {
     inputs: Array.isArray(s['inputs']) ? s['inputs'] as NodeSocket[] : [], outputs: Array.isArray(s['outputs']) ? s['outputs'] as NodeOutput[] : [],
     nodes: entity.graph.nodes, ...(entity.graph.routes ? { routes: entity.graph.routes } : {}), ...(entity.graph.ties ? { ties: entity.graph.ties } : {}),
     ...(entity.description ? { description: entity.description } : {}),
+    ...(entity.tags?.length ? { tags: entity.tags } : {}),
     ...(typeof s['category'] === 'string' ? { category: s['category'] } : {}), ...(typeof s['icon'] === 'string' ? { icon: s['icon'] } : {}),
     ...(entity.origin === 'preset' ? { preset: true as const } : {}),
   };

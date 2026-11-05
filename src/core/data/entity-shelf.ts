@@ -41,8 +41,8 @@ export interface EntityShelf {
   remove(id: string): boolean;
   /** Why `remove` would keep an entity, in words: a preset, or another entity uses it; none when it would go. */
   whyKept(id: string): string | undefined;
-  /** A copy under a new id, "<label> copy" unless `change` names it; `change` may carry the graph on a canvas, and none for its description. */
-  duplicate(id: string, newId: string, change?: { label?: string; description?: string | undefined; graph?: Entity['graph'] }): Promise<boolean>;
+  /** A copy under a new id, "<label> copy" unless `change` names it; `change` may carry the graph on a canvas, its tags, and none for its description. */
+  duplicate(id: string, newId: string, change?: { label?: string; description?: string | undefined; tags?: readonly string[]; graph?: Entity['graph'] }): Promise<boolean>;
   /** Called with the list whenever it changes here, and when another tab changes it. Stops on the signal. */
   watch(handler: (list: EntitySummary[]) => void, signal?: AbortSignal): void;
   /** The entity as JSON text, with its `$schema` and without its `origin`. */
@@ -73,12 +73,12 @@ export function joinEntities(presets: readonly Entity[], mine: Readonly<Record<s
 /** A Custom Node's reports keep their own code; every other type's is `entity`. */
 const codeOf = (type: string): string => (type === 'node' ? 'node-library' : 'entity');
 
-/** The entity as it is kept: no `origin`, its `uses` read from its graph among those that exist. */
+/** The entity as it is kept: no `origin`, no empty tags, its `uses` read from its graph among those that exist. */
 function kept(entity: Entity, all: readonly Entity[]): Entity {
   const { origin: _origin, $schema: _schema, ...rest } = entity;
   const uses = usesOf(entity.graph, all.filter((e) => e.id !== entity.id));
-  const { uses: _uses, ...plain } = rest;
-  return { ...plain, ...(uses.length ? { uses } : {}) };
+  const { uses: _uses, tags, ...plain } = rest;
+  return { ...plain, ...(tags === undefined || (Array.isArray(tags) && !tags.length) ? {} : { tags }), ...(uses.length ? { uses } : {}) };
 }
 
 /** Names as words: "A", "A and B", "A, B and C". */

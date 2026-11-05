@@ -438,6 +438,7 @@
         "category": { "description": "Where the node panel lists it; \"Custom Nodes\" when none.", "type": "string" },
         "icon": { "type": "string" },
         "description": { "type": "string" },
+        "tags": { "description": "Words to organise and find it by: the node panel lists it under each, and its search finds it by one.", "type": "array", "items": { "type": "string", "minLength": 1, "pattern": "\\S" }, "uniqueItems": true },
         "preset": { "description": "From a file, read only: \"Copy to my nodes\" makes a custom one.", "const": true },
         "inputs": { "type": "array", "items": { "$ref": "#/$defs/nodeInput" } },
         "outputs": { "type": "array", "items": { "$ref": "#/$defs/nodeOutput" } },

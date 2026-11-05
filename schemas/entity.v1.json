@@ -13,6 +13,10 @@
     "id": { "$ref": "defs.v1.json#/$defs/id" },
     "label": { "type": "string", "minLength": 1 },
     "description": { "type": "string" },
+    "tags": {
+      "description": "Words a reader gives it, to organise and find it: the node panel lists its node under each tag, inside its category, and its search finds it by one. A preset's are read only, as the rest of it is.",
+      "type": "array", "items": { "type": "string", "minLength": 1, "pattern": "\\S" }, "uniqueItems": true
+    },
     "graph": {
       "description": "A workflow's nodes and routes. Inside, #in and #out are the entity's own sockets, as a Custom Node's.",
       "type": "object", "additionalProperties": false, "required": ["nodes"],

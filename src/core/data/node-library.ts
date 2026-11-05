@@ -32,6 +32,7 @@
  * - copyToMine — A custom, editable copy of a definition (a preset's, as "Copy to my nodes").
  */
 import { withoutBends } from './route-bends.js';
+import { tidyTags } from './tags.js';
 import { report } from './report.js';
 import { NODE_KINDS, rowOf, type NodeKind, type NodeRoute, type NodeTie, type RowKind, type RowControl } from './node-kinds.js';
 import { editWorkflow, workflowFaults, type WorkflowDefinition, type WorkflowFacts, type WorkflowNode } from './workflow.js';
@@ -77,6 +78,8 @@ export interface NodeDefinition extends NodeSnapshot {
   category?: string;
   icon?: string;
   description?: string;
+  /** Words to organise and find it by: the node panel lists it under each, and its search finds it by one. */
+  tags?: readonly string[];
   /** From a file, read only: "Copy to my nodes" makes a custom one (D15). */
   preset?: true;
   /** Zip ties in the body: they change no data, so are no part of its version or its diff. */
@@ -161,6 +164,8 @@ export function nodeKindOf(definition: NodeDefinition): CustomKind {
   return {
     heading: definition.label, icon: definition.icon ?? 'folder', input: 'any', branches: true, rows, model: 'graph', graphs: ['workflow'],
     ...(definition.description ? { description: definition.description } : {}),
+    // Tidied, so a bad file never breaks the panel; the check names its fault.
+    ...(tidyTags(definition.tags).length ? { tags: tidyTags(definition.tags) } : {}),
     category: definition.category ?? 'Custom Nodes',
     ...(definition.preset ? { preset: true as const } : {}),
   };
@@ -277,6 +282,9 @@ export function nodeLibraryFaults(library: NodeLibrary, kinds: Kinds = NODE_KIND
     if (!KEY.test(id)) problems.push(`${at} has an id that is not a name: lowercase letters, digits and hyphens`);
     if (shipped(kinds, id)) problems.push(`${at} has the id of a kind that is shipped, which a use could not tell apart`);
     if (!definition || typeof definition.label !== 'string' || !definition.label.trim()) problems.push(`${at} has no name`);
+    const tags: unknown = definition?.tags;
+    if (tags !== undefined && (!Array.isArray(tags) || tags.some((t) => typeof t !== 'string' || !t.trim()))) problems.push(`${at} has tags that are not a list of words`);
+    else if (Array.isArray(tags) && new Set(tags.map((t: string) => t.toLowerCase())).size < tags.length) problems.push(`${at} has a tag twice`);
     if (!Array.isArray(definition?.inputs) || !Array.isArray(definition.outputs) || !Array.isArray(definition.nodes)) {
       problems.push(`${at} is not a definition: it needs its inputs, outputs and nodes`);
       continue;
@@ -412,7 +420,7 @@ export function updateAll(workflow: WorkflowDefinition, kind: string, library: N
 /** The library after one change to a definition. A preset's is refused, and so is one that is not
  *  there: the library given, untouched. */
 export function editDefinition(
-  library: NodeLibrary, id: string, change: Partial<Pick<NodeDefinition, 'label' | 'category' | 'icon' | 'description' | 'inputs' | 'outputs' | 'nodes' | 'routes' | 'ties'>>,
+  library: NodeLibrary, id: string, change: Partial<Pick<NodeDefinition, 'label' | 'category' | 'icon' | 'description' | 'tags' | 'inputs' | 'outputs' | 'nodes' | 'routes' | 'ties'>>,
 ): NodeLibrary {
   const was = library.nodes[id];
   if (!was || was.preset) return library;

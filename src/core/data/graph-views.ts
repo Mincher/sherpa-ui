@@ -1,7 +1,7 @@
 /**
  * graph-views.ts — a GRAPH View: a View whose body is a canvas, bound to one entity of the View's
  * type. The graph chip's rows, a new empty entity, what a canvas keeps as an entity's graph, and
- * its Save and Save graph as. Light: only types are imported, so the outlet carries it. DOM-free.
+ * its Save and Save graph as. Light: only types and the tags' tidy are imported, so the outlet carries it. DOM-free.
  * Will, plan 746 E3, E4 · TRAP T-a-graph-is-a-view-of-a-type
  *
  * Map:
@@ -12,12 +12,13 @@
  * - GraphChoice — One row of the graph chip: an entity, or New graph….
  * - graphRows — The graph chip's rows: the type's presets, then the reader's own, then New graph….
  * - openOf — The entity a graph View opens: the one named, when the list holds it; else the first.
- * - newGraph — A new, empty entity of a type, saved through the shelf under a free id and name.
+ * - newGraph — A new, empty entity of a type, saved through the shelf under a free id, name and tags.
  * - graphOfWorkflow — What a canvas's workflow keeps as an entity's graph: its own nodes, its routes and ties.
  * - saveGraph — Save the graph on a canvas as the open entity's: a preset is refused, as the shelf refuses it.
- * - saveGraphAs — Save the graph on a canvas as a COPY of an entity: the reader's own, named, under a free id.
+ * - saveGraphAs — Save the graph on a canvas as a COPY of an entity: the reader's own, named and tagged, under a free id.
  */
 import type { Entity, EntityGraph } from './entity.js';
+import { tidyTags } from './tags.js';
 import type { EntityType } from './entity-types.js';
 import type { EntityShelf, EntitySummary } from './entity-shelf.js';
 import type { WorkflowDefinition } from './workflow.js';
@@ -85,7 +86,7 @@ function freeId(label: string, taken: readonly string[], type: string): string {
 
 /** A new, empty entity of a type: the type's own settings to start, its name or "New <type>", and a
  *  free id from it. Saved through the shelf, so it is checked. The id it was kept under, or none. */
-export async function newGraph(shelf: EntityShelf, type: Pick<EntityType, 'id' | 'label' | 'defaults'>, named: { label?: string; description?: string } = {}): Promise<string | undefined> {
+export async function newGraph(shelf: EntityShelf, type: Pick<EntityType, 'id' | 'label' | 'defaults'>, named: { label?: string; description?: string; tags?: readonly string[] } = {}): Promise<string | undefined> {
   const taken = shelf.list();
   const asked = named.label?.trim();
   let label = asked || `New ${type.label}`;
@@ -94,7 +95,8 @@ export async function newGraph(shelf: EntityShelf, type: Pick<EntityType, 'id' |
   const id = freeId(label, taken.map((e) => e.id), type.id);
   const description = named.description?.trim();
   const entity: Entity = {
-    v: 1, type: type.id, id, label, ...(description ? { description } : {}), graph: { nodes: [], routes: [] },
+    v: 1, type: type.id, id, label, ...(description ? { description } : {}), ...(tidyTags(named.tags).length ? { tags: tidyTags(named.tags) } : {}),
+    graph: { nodes: [], routes: [] },
     ...(type.defaults ? { settings: structuredClone(type.defaults) } : {}),
   };
   return await shelf.save(entity) ? id : undefined;
@@ -116,11 +118,13 @@ export async function saveGraph(shelf: EntityShelf, id: string, graph: EntityGra
 
 /** Save the graph on a canvas as a COPY of an entity, a preset's too: the reader's own, under the name
  *  and description given and a free id, through the shelf's `duplicate`. The copy's id, or none. */
-export async function saveGraphAs(shelf: EntityShelf, id: string, graph: EntityGraph, named: { label: string; description?: string }): Promise<string | undefined> {
+export async function saveGraphAs(shelf: EntityShelf, id: string, graph: EntityGraph, named: { label: string; description?: string; tags?: readonly string[] }): Promise<string | undefined> {
   const was = shelf.get(id);
   const label = named.label.trim();
   if (!was || !label) return undefined;
   const copy = freeId(label, shelf.list().map((e) => e.id), was.type);
   const description = named.description?.trim();
-  return await shelf.duplicate(id, copy, { label, description: description || undefined, graph }) ? copy : undefined;
+  // Tags given are the copy's; none given, it keeps the ones it was copied from.
+  const tags = named.tags && tidyTags(named.tags);
+  return await shelf.duplicate(id, copy, { label, description: description || undefined, ...(tags ? { tags } : {}), graph }) ? copy : undefined;
 }

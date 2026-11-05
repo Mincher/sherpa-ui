@@ -1889,7 +1889,7 @@ export interface WorkflowEditorOptions extends WorkflowFacts {
   onSaveNode?: (id: string, definition: NodeDefinition) => void;
   /** The page's `sherpa-app-header`: its trail shows the Custom Nodes opened, and is empty at the workflow. */
   header?: HTMLElement & { populate(data: { breadcrumb: { label: string }[] }): unknown };
-  /** A `sherpa-dialog` that asks a Custom Node's name and description: inputs `[name=label]` and `[name=description]`, buttons `[data-action=save]` and `[data-action=cancel]`. Without it Save as Custom Node is not offered. */
+  /** A `sherpa-dialog` that asks a Custom Node's name and description: inputs `[name=label]` and `[name=description]`, buttons `[data-action=save]` and `[data-action=cancel]`; a tags input `[name=tags]` if it is to be tagged. Without it Save as Custom Node is not offered. */
   customDialog?: HTMLElement & { show(): void; hide(): void };
   /** A `sherpa-dialog` (status critical) that confirms the two bulk updates. Without it they are not offered. */
   confirm?: HTMLElement & { confirm(ask: { heading?: string; words?: string; action?: string; critical?: boolean }): Promise<boolean> };
@@ -2360,9 +2360,9 @@ export function bindWorkflow(
     write(done.workflow);
   };
   /** "Save as Custom Node": the picked nodes, one definition and one use; a fault in words, or none. */
-  const group = (label: string, description: string): string | undefined => {
+  const group = (label: string, description: string, tags: readonly string[]): string | undefined => {
     if (readOnly()) return 'this Custom Node is a preset, read only';
-    const made = groupNodes(shown(), [...multi], lib, { label, description }, K(), facts);
+    const made = groupNodes(shown(), [...multi], lib, { label, description, tags }, K(), facts);
     if ('fault' in made) {
       report({ code: 'node-group', message: `bindWorkflow: ${made.fault}.`, at: { workflow: shown().id } });
       return made.fault;
@@ -2397,16 +2397,23 @@ export function bindWorkflow(
     inspector.show();
   };
   // — the dialog Save as Custom Node asks in —
-  const dialogField = (name: string): (HTMLElement & { value: string }) | null => customDialog?.querySelector(`[name="${name}"]`) ?? null;
+  type Field = HTMLElement & { value: string; tags?: string[]; suggestions?: { value: string }[] };
+  const dialogField = (name: string): Field | null => customDialog?.querySelector(`[name="${name}"]`) ?? null;
   const saveAs = (): void => {
     const name = dialogField('label');
-    const fault = group(String(name?.value ?? ''), String(dialogField('description')?.value ?? ''));
+    const fault = group(String(name?.value ?? ''), String(dialogField('description')?.value ?? ''), dialogField('tags')?.tags ?? []);
     if (fault) name?.setAttribute('data-description', fault.charAt(0).toUpperCase() + fault.slice(1));
     else customDialog?.hide();
   };
   const openSave = (): void => {
     if (!customDialog || multi.size < 2 || readOnly()) return;
     for (const field of ['label', 'description']) dialogField(field)!.value = '';
+    // An optional Tags field (`[name=tags]`, a tags input) offers the tags the app's Custom Nodes have already.
+    const tags = dialogField('tags');
+    if (tags) {
+      tags.tags = [];
+      tags.suggestions = [...new Set(Object.values(lib.nodes).flatMap((d) => d.tags ?? []))].sort().map((value) => ({ value }));
+    }
     dialogField('label')?.removeAttribute('data-description');
     customDialog.show();
     dialogField('label')?.focus();

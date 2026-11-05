@@ -30,7 +30,7 @@
  * - PaletteItem — One node of the panel: the kind's id and the kind.
  * - PaletteGroup — One category of the panel, and its kinds in the registry's order.
  * - paletteOf — The node panel's list: each category with a workflow kind in it, in order; never a Query-only kind.
- * - paletteMatch — How a panel item answers a search: by its name, or by a type's name, a whole one first, and that type.
+ * - paletteMatch — How a panel item answers a search: by its name or a tag, or by a type's name, whole first.
  * - fitOf — Where a new node of a kind joins a socket of a type: its header or a row, as a family's type.
  * - paletteFor — The palette's kinds a socket of a type could join, a Value first.
  * - Socket — A socket address, read: its node, and its row or none for the header's.
@@ -164,6 +164,8 @@ export interface NodeKind {
   graphs: readonly NodeGraph[];
   /** The node panel's category, one of `NODE_CATEGORIES` or an app's own; a workflow kind has one. */
   category?: string;
+  /** A reader's words for a Custom Node: the panel lists it under each, inside its category, and its search finds it by one. */
+  tags?: readonly string[];
   /** A FAMILY: one node, and its first row picks the type, kept as the node's `type` value. Its rows and sockets
    *  follow the type (`resolveKind`). With one type there is no row. Plan 749 */
   types?: Readonly<Record<string, NodeType>>;
@@ -490,11 +492,11 @@ export function paletteOf(kinds: Readonly<Record<string, NodeKind>>, graph: Node
   return [...groups].filter(([c, items]) => items.length || (graph === 'workflow' && c === 'Custom Nodes')).sort(([a], [b]) => Number(!known.has(a)) - Number(!known.has(b))).map(([category, items]) => ({ category, items }));
 }
 
-/** How a panel item answers a search: by its name, `{}`; by a type's name, `{ type }`, the one it names whole first ("not" is
- *  Not, not Does not equal); none, not at all. Nothing typed finds all. */
-export function paletteMatch(kind: Pick<NodeKind, 'heading' | 'types'>, query: string): { type?: string } | undefined {
+/** How a panel item answers a search: by its name or a tag, `{}`; by a type's name, `{ type }`, the one it names whole first
+ *  ("not" is Not, not Does not equal); none, not at all. Nothing typed finds all. */
+export function paletteMatch(kind: Pick<NodeKind, 'heading' | 'types' | 'tags'>, query: string): { type?: string } | undefined {
   const q = query.trim().toLowerCase();
-  if (!q || kind.heading.toLowerCase().includes(q)) return {};
+  if (!q || kind.heading.toLowerCase().includes(q) || kind.tags?.some((t) => t.toLowerCase().includes(q))) return {};
   const types = Object.entries(kind.types ?? {});
   const hit = types.find(([, t]) => t.label.toLowerCase() === q) ?? types.find(([, t]) => t.label.toLowerCase().includes(q));
   return hit ? { type: hit[0] } : undefined;
