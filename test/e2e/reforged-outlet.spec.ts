@@ -162,3 +162,38 @@ test('the nav is drawn from app.json, Recents follow each load, and the star kee
   expect(r['current']).toBe('context-beta');
   expect(r['ids']).toEqual(expect.arrayContaining(['recent:beta', 'favorites:beta']));
 });
+
+/* A PIN PRESSED BEFORE start() IS THE READER'S. An app starts its outlet after
+   its own awaits, and its rail is drawn before: the first load put the stored
+   pin over the reader's, and the session never heard it (TODO 775). A pointer
+   passing a rail that was never pinned un-pins nothing. TRAP T-a-pin-before-start-is-the-readers */
+test('a pin pressed before the outlet starts is kept; its unpin too; a pointer passing the rail is neither', async ({ page }) => {
+  const before = async (act: string, stored: boolean): Promise<Record<string, unknown>> => {
+    await page.goto('/test/reforged/outlet.html');
+    await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true
+      && !!document.querySelector('sherpa-nav')?.shadowRoot?.querySelector('.pin'));
+    return await page.evaluate(`(async () => {
+      const { SessionStore } = await import('/dist/index.js');
+      const outlet = document.querySelector('sherpa-outlet');
+      const nav = document.querySelector('sherpa-nav');
+      const router = document.querySelector('sherpa-router');
+      const pin = () => nav.shadowRoot.querySelector('.pin').click();
+      const pass = () => {
+        nav.dispatchEvent(new PointerEvent('pointerenter', { pointerType: 'mouse' }));
+        nav.dispatchEvent(new PointerEvent('pointerleave', { pointerType: 'mouse' }));
+      };
+      ${act}
+      const early = nav.state;
+      const base = new URL('/test/reforged/outlet/app.json', location.href);
+      const app = await (await fetch(base)).json();
+      const session = new SessionStore({ nav: { pinned: ${stored}, favorites: [], recent: [] } });
+      await outlet.start({ app, base, session, stores: () => ({}) });
+      const loaded = { state: nav.state, stored: session.get('/nav/pinned') };
+      await router.go({ context: 'beta' });
+      return { early, loaded, moved: nav.state };
+    })()`) as Record<string, unknown>;
+  };
+  expect(await before('pin();', false)).toEqual({ early: 'pinned', loaded: { state: 'pinned', stored: true }, moved: 'pinned' });
+  expect(await before('pin(); pin();', true)).toEqual({ early: 'collapsed', loaded: { state: 'collapsed', stored: false }, moved: 'collapsed' });
+  expect(await before('pass();', true)).toEqual({ early: 'collapsed', loaded: { state: 'pinned', stored: true }, moved: 'pinned' });
+});

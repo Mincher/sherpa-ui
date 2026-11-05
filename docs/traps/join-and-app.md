@@ -1118,6 +1118,7 @@ load, not the first paint, so a test reads the rail after `context-load`.
 
 - Site: `src/components/sherpa-outlet/sherpa-outlet.ts`
 - Site: `src/components/sherpa-outlet/outlet-nav.ts`
+- Site: `test/e2e/reforged-outlet.spec.ts`
 
 ### T-a-rail-may-stay-shut
 
