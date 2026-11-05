@@ -168,12 +168,12 @@ test('Jump to sits left of the search; a pick scrolls to a category\'s heading, 
   // Nothing past the panel moved: the page did not scroll.
   expect(await page.evaluate(() => [window.scrollX, window.scrollY])).toEqual([0, 0]);
 
-  // By the keys: Enter on the chip opens its menu; the tag's row, Enter. Tab reaches a popover's rows
-  // in Chromium only, so the row is focused as a caller with no pointer would.
+  // By the keys: Enter on the chip opens its menu on its first place; down to the tag's row, Enter.
   await page.locator('sherpa-node-panel .jump').evaluate((el) => (el.shadowRoot!.querySelector('.body') as HTMLElement).focus());
   await page.keyboard.press('Enter');
   await expect(page.locator('sherpa-node-panel .jump sherpa-menu')).toHaveAttribute('open', '');
-  await page.locator('sherpa-node-panel .jump sherpa-menu button.jump-item', { hasText: 'Custom Nodes › permissions' }).evaluate((b: HTMLElement) => b.focus());
+  for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowDown');
+  await expect(page.locator('sherpa-node-panel .jump sherpa-menu button.jump-item', { hasText: 'Custom Nodes › permissions' })).toBeFocused();
   await page.keyboard.press('Enter');
   await settle(page);
   await expect.poll(() => focused(page)).toMatchObject({ heading: 'permissions' });
