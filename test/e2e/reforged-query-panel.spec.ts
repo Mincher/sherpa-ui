@@ -2,10 +2,11 @@ import { test, expect, type Page } from './harness';
 
 /**
  * The Query editor's node panel — Will, TODO 734: "the query editor is a node editor". The panel
- * lists the kinds a Query takes placed (Logic, Presets, Saved filters, Status), and placing one,
- * by a click or a drag, is a request through the Query's one door: a Condition holds the scope's
- * next field, a Preset switches on. A kind the Query cannot take is refused in words, and asks
- * nothing. Real pointer. TRAP T-one-command-one-door
+ * lists the kinds a Query takes placed (Logic, Presets, Saved filters, Status), and the page's
+ * Preset Filters as its Custom Nodes (TODO 776); placing one, by a click or a drag, is a request
+ * through the Query's one door: a Condition holds the scope's next field, a Preset switches on, a
+ * Preset Filter switches itself on. A kind the Query cannot take is refused in words, and asks
+ * nothing. Real pointer. TRAP T-one-command-one-door · TRAP T-a-preset-filter-is-a-preset-of-its-store
  */
 test.beforeEach(async ({ page }) => {
   await page.evaluate(async () => {
@@ -24,7 +25,7 @@ test.beforeEach(async ({ page }) => {
     const query = Object.assign(new EventTarget(), {
       draft: { v: 1, scopes: { view: { holds: ['region'], readings: {} } } },
       ask: (request: unknown) => w.asked.push(request),
-      presets: () => [{ id: 'big', label: 'Big', readings: {} }],
+      presets: () => [{ id: 'big', label: 'Big', readings: {} }, { id: 'preset-filter:active', label: 'Active', readings: {} }],
       presetOn: () => false,
       scope: () => ['region'],
       fields: () => ['region', 'plan'],
@@ -45,7 +46,7 @@ const said = (page: Page) => page.evaluate(() => (window as unknown as { said: s
 
 test('it lists the Query\'s kinds by category, 32px from the top, bottom and left', async ({ page }) => {
   const heads = await page.locator('sherpa-node-panel sherpa-accordion').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
-  expect(heads).toEqual(['Logic', 'Presets', 'Saved filters', 'Status']);
+  expect(heads).toEqual(['Custom Nodes', 'Logic', 'Presets', 'Saved filters', 'Status']);
   const [c, p] = await page.evaluate(() => [document.getElementById('cv')!, document.querySelector('sherpa-node-panel')!].map((e) => {
     const r = e.getBoundingClientRect();
     return { left: r.left, top: r.top, bottom: r.bottom };
@@ -58,6 +59,16 @@ test('it lists the Query\'s kinds by category, 32px from the top, bottom and lef
 test('a click on Condition asks the Query to hold the next field; a click on Preset switches it on', async ({ page }) => {
   await item(page, 'condition').click();
   expect(await asked(page)).toEqual([{ scope: 'view', hold: ['region', 'plan'] }]);
+  await item(page, 'preset').click();
+  expect((await asked(page)).at(-1)).toEqual({ scope: 'view', preset: 'big', on: true });
+  expect(await said(page)).toEqual([]);
+});
+
+test('a Preset Filter is a Custom Node: listed by its name, and a click switches it on where it is declared', async ({ page }) => {
+  await expect(item(page, 'preset-filter:active')).toHaveAttribute('data-label', 'Active');
+  await item(page, 'preset-filter:active').click();
+  expect(await asked(page)).toEqual([{ scope: 'view', preset: 'preset-filter:active', on: true }]);
+  // Preset is the page's own: it never switches a Preset Filter on.
   await item(page, 'preset').click();
   expect((await asked(page)).at(-1)).toEqual({ scope: 'view', preset: 'big', on: true });
   expect(await said(page)).toEqual([]);
