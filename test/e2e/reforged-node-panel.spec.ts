@@ -72,12 +72,12 @@ test('it docks on the canvas flush, to its top, bottom and left, with no shadow'
   expect(after).toBe(card!.left);
 });
 
-test('it lists each category with its families, ten, never a Query-only one; "cou" shows only Collection, by its Count', async ({ page }) => {
+test('it lists each category with its families, eleven, never a Query-only one; "cou" shows only Collection, by its Count', async ({ page }) => {
   await bind(page);
   const heads = await page.locator('sherpa-node-panel .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
   expect(heads).toEqual(['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Collections', 'Utils', 'Output']);
   const names = () => page.locator('sherpa-node-panel sherpa-list-item:visible').evaluateAll((els) => els.map((e) => e.getAttribute('data-label')));
-  expect(await names()).toEqual(['Store', 'Value', 'Field', 'Math', 'Condition', 'Time', 'Collection', 'Text', 'Tag', 'Output']);
+  expect(await names()).toEqual(['Store', 'Value', 'Field', 'Math', 'Condition', 'Time', 'Collection', 'Text', 'Tag', 'Portal', 'Output']);
   // A family's line names its types.
   expect(await item(page, 'collection').getAttribute('data-description')).toBe('Sort, Group by, Count');
   await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('cou');
@@ -87,7 +87,7 @@ test('it lists each category with its families, ten, never a Query-only one; "co
   await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('zzz');
   expect(await names()).toEqual([]);
   await page.locator('sherpa-node-panel sherpa-input-text.find input').fill('');
-  expect((await names()).length).toBe(10);
+  expect((await names()).length).toBe(11);
   expect(await item(page, 'collection').getAttribute('data-description')).toBe('Sort, Group by, Count');
 });
 
@@ -209,7 +209,8 @@ test('a route let go on the bare canvas opens "Add a node": the kinds that take 
   await expect(menu).toHaveAttribute('open', '');
   const choices = await page.locator('sherpa-node-panel sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => (e as HTMLButtonElement).value));
   // The header sends True: the families whose header takes any type.
-  expect(choices).toEqual(['field', 'condition', 'time', 'collection', 'tag', 'output']);
+  // A portal's In takes anything (TODO 779).
+  expect(choices).toEqual(['field', 'condition', 'time', 'collection', 'tag', 'portal', 'output']);
   const count = page.locator('sherpa-node-panel sherpa-menu.add button[value="collection"]');
   // WebKit's hit test puts a menu's card over its rows for a pointer; the key reaches them.
   if (test.info().project.name === 'webkit') {
@@ -230,7 +231,7 @@ test('"Add a node" for a list says the type a family takes it as: Math › Floor
   const menu = page.locator('sherpa-node-panel sherpa-menu.add');
   await expect(menu).toHaveAttribute('open', '');
   const said = await page.locator('sherpa-node-panel sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => e.textContent));
-  expect(said).toEqual(['Field', 'Math › Floor', 'Condition', 'Time', 'Collection', 'Text › Join', 'Tag', 'Output']);
+  expect(said).toEqual(['Field', 'Math › Floor', 'Condition', 'Time', 'Collection', 'Text › Join', 'Tag', 'Portal', 'Output']);
   // What it gives narrows it (plan 783 F6): rows to the kinds that can use rows; a Field's column to those that take one.
   const offered = async (gives: string) => {
     await page.keyboard.press('Escape');
@@ -239,7 +240,7 @@ test('"Add a node" for a list says the type a family takes it as: Math › Floor
     await expect(menu).toHaveAttribute('open', '');
     return page.locator('sherpa-node-panel sherpa-menu.add button[value]').evaluateAll((els) => els.map((e) => e.textContent));
   };
-  expect(await offered('rows')).toEqual(['Field', 'Condition', 'Collection', 'Output']);
+  expect(await offered('rows')).toEqual(['Field', 'Condition', 'Collection', 'Portal', 'Output']);
   expect(await offered('field')).toEqual(said);
 });
 

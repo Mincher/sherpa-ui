@@ -16,9 +16,9 @@ const ids = (palette) => palette.flatMap((g) => g.items.map((i) => i.id));
 test('the list is each category with a kind, in order, and Custom Nodes empty', () => {
   const palette = paletteOf(NODE_KINDS);
   assert.deepEqual(palette.map((g) => g.category), ['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Collections', 'Utils', 'Output']);
-  assert.deepEqual(palette.map((g) => g.items.map((i) => i.id)), [['store'], [], ['value', 'field'], ['math'], ['condition'], ['time'], ['collection'], ['text', 'tag'], ['output']]);
-  // Ten items, in the plan's order.
-  assert.deepEqual(palette.flatMap((g) => g.items.map((i) => i.kind.heading)), ['Store', 'Value', 'Field', 'Math', 'Condition', 'Time', 'Collection', 'Text', 'Tag', 'Output']);
+  assert.deepEqual(palette.map((g) => g.items.map((i) => i.id)), [['store'], [], ['value', 'field'], ['math'], ['condition'], ['time'], ['collection'], ['text', 'tag', 'portal'], ['output']]);
+  // Eleven items, in the plan's order: the Portal is a Utils (TODO 779).
+  assert.deepEqual(palette.flatMap((g) => g.items.map((i) => i.kind.heading)), ['Store', 'Value', 'Field', 'Math', 'Condition', 'Time', 'Collection', 'Text', 'Tag', 'Portal', 'Output']);
   // The order is the list's: each category is where NODE_CATEGORIES puts it.
   const at = palette.map((g) => NODE_CATEGORIES.indexOf(g.category));
   assert.deepEqual(at, [...at].sort((a, b) => a - b));
@@ -46,7 +46,7 @@ test('a search finds a family by its name, or by a type\'s: "round" finds Math, 
   assert.deepEqual(found('math'), [['math', undefined]]);
   assert.deepEqual(found('text'), [['value', 'text'], ['text', undefined]]);
   assert.deepEqual(found('zzz'), []);
-  assert.equal(found('').length, 10, 'nothing typed finds all');
+  assert.equal(found('').length, 11, 'nothing typed finds all');
 });
 
 test("an app's own kind goes after the known categories; one with none is Other", () => {
@@ -83,8 +83,9 @@ test('"Add a node" from what an output gives lists only the kinds that can use i
   const palette = paletteOf(NODE_KINDS);
   const offered = (given) => paletteFor(palette, 'object', 'out').filter((i) => takesGiven(i.kind, given)).map((i) => i.id);
   // A column fits what takes a field, rows, an object or a list; a number's a Math's list, a date's a Time.
-  assert.deepEqual(offered('field'), ['field', 'math', 'condition', 'time', 'collection', 'text', 'tag', 'output']);
+  // A portal's In takes anything (TODO 779).
+  assert.deepEqual(offered('field'), ['field', 'math', 'condition', 'time', 'collection', 'text', 'tag', 'portal', 'output']);
   // Rows fit no Tag (it takes a Field), no Math and no Time: their inputs never read rows.
-  assert.deepEqual(offered('rows'), ['field', 'condition', 'collection', 'output']);
+  assert.deepEqual(offered('rows'), ['field', 'condition', 'collection', 'portal', 'output']);
   assert.deepEqual([takesGiven(NODE_KINDS.math, 'rows'), takesGiven(NODE_KINDS.math, 'field'), takesGiven(NODE_KINDS.value, 'field')], [false, true, false]);
 });

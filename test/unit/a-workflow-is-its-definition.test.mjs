@@ -111,7 +111,7 @@ test('ONE registry: every kind once, with a header, its own row names, what it s
     assert.equal(new Set(names).size, names.length, name);
   }
   const drawnIn = (graph) => Object.keys(NODE_KINDS).filter((k) => NODE_KINDS[k].graphs.includes(graph));
-  assert.deepEqual(drawnIn('workflow'), ['store', 'condition', 'value', 'field', 'math', 'time', 'collection', 'text', 'tag', 'output']);
+  assert.deepEqual(drawnIn('workflow'), ['store', 'condition', 'value', 'field', 'math', 'time', 'collection', 'text', 'tag', 'portal', 'output']);
   // Sort, Group and Count are a Collection's types now: their names are gone, and a file read once (plan 749 P3).
   assert.deepEqual(['sort', 'group', 'count'].map((k) => NODE_KINDS[k]), [undefined, undefined, undefined]);
   assert.deepEqual(drawnIn('query'), ['store', 'status', 'source', 'scope', 'condition', 'preset', 'saved', 'arrange', 'presentation', 'component', 'field']);
