@@ -1,7 +1,7 @@
 # Traps — Other components
 
 One of the eleven areas of [the traps](../TRAPS.md): each entry is here because its
-first `Site:` is in this area (`npm run check:traps` holds it so). 62 entries.
+first `Site:` is in this area (`npm run check:traps` holds it so). 65 entries.
 
 ### T-no-attribute-is-the-default-variant
 
