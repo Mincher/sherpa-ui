@@ -35,7 +35,7 @@ test('each node by its id, its rows read only, a line for each route; a redraw k
       nodes: [
         { id: 'a', kind: 'store', heading: 'customers', icon: 'storage', output: 'object', rows: [], x: 0, y: 0 },
         ...(withB ? [{ id: 'b', kind: 'condition', heading: 'Status', icon: 'function', input: 'object', x: 360, y: 0, rows: [
-          { name: 'type', label: 'Operation', control: 'type', value: op },
+          { name: 'type', label: 'Operation', control: 'type', value: op, choices: [{ value: 'eq', label: 'Equals' }, { value: 'in', label: 'Is one of' }] },
           { name: 'matches', label: 'Matches', output: 'value', value: 3 },
         ] } as Graph['nodes'][number]] : []),
       ],
@@ -64,8 +64,8 @@ test('each node by its id, its rows read only, a line for each route; a redraw k
     await settle();
     return { first, again, gone: read() };
   }, FRAMES);
-  expect(r.first).toEqual({ nodes: [['customers', '0'], ['Status', '360']], field: ['Equals', true], label: 'Matches: 3', lines: [true] });
-  expect(r.again).toEqual({ nodes: [['customers', '100'], ['Status', '360']], field: ['Is one of', true], label: 'Matches: 3', lines: [true] });
+  expect(r.first).toEqual({ nodes: [['customers', '0'], ['Status', '360']], field: ['eq', true], label: 'Matches: 3', lines: [true] });
+  expect(r.again).toEqual({ nodes: [['customers', '100'], ['Status', '360']], field: ['in', true], label: 'Matches: 3', lines: [true] });
   expect(r.gone).toEqual({ nodes: [['customers', '100']], field: null, label: null, lines: [] });
 });
 
@@ -77,7 +77,7 @@ test('bindQueryEditor follows the Query as it changes, and its stop lets it go',
     const draft = (picks: string[]) => ({ v: 1, scopes: { view: { holds: ['region'], readings: readingsOf({ region: { in: picks } }) } } });
     const query = Object.assign(new EventTarget(), { draft: draft(['EMEA', 'APAC']), presets: () => [] });
     const definition = { v: 1 as const, id: 'records', source: { store: 'customers' } };
-    const value = () => canvas.querySelector<HTMLElement & { value: string }>('sherpa-node-row sherpa-input-text[name="value"]')?.value;
+    const value = () => canvas.querySelector<HTMLElement & { value: string }>('sherpa-node-row sherpa-input-text[name="b"]')?.value;
     const change = async (picks: string[]): Promise<void> => {
       query.draft = draft(picks);
       query.dispatchEvent(new CustomEvent('query-change'));
@@ -94,8 +94,8 @@ test('bindQueryEditor follows the Query as it changes, and its stop lets it go',
     await change(['AMER']);
     return { drawn, before, followed, after: value() };
   }, FRAMES);
-  // Is one of with no values to pick from is tags: its value, the comma string (plan 749 P4).
-  expect(r).toEqual({ drawn: ['customers', 'Source', 'View', 'region'], before: 'EMEA,APAC', followed: 'EMEA', after: 'EMEA' });
+  // Is one of with no values to pick from is tags: its value, the comma string (plan 749 P4). The Field, then its test (plan 783 D6).
+  expect(r).toEqual({ drawn: ['customers', 'Source', 'View', 'region', 'region'], before: 'EMEA,APAC', followed: 'EMEA', after: 'EMEA' });
 });
 
 test('a filter toolbar\'s ⋮ menu offers Node Editor (beta) only where the host does, and a pick asks the host to open it', async ({ page }) => {
@@ -171,7 +171,7 @@ test('bindQueryEditor ASKS the Query through its one door, as a chip does: a rea
     bindQueryEditor(canvas, { query } as never, { definition });
     await window.__settled();
   });
-  await page.locator('#root sherpa-node-row:has(sherpa-input-text[name="op"]) select').selectOption('notin');
+  await page.locator('#root sherpa-node-row:has(sherpa-input-text[name="type"]) select').selectOption('notin');
   await page.locator('#root sherpa-node-row:has(sherpa-input-text[name="group"]) select').selectOption('plan');
   await page.locator('#root sherpa-node-row > sherpa-switch .track').first().click();
   const r = await page.evaluate(async () => {
@@ -438,7 +438,7 @@ test('a moved node keeps its place across a reload, for the tab — and a new ta
 
 test('Save hands the app a checked page definition, as definition-save, with the reader\'s edit in it', async ({ page }) => {
   await page.evaluate(`(${BIND_QUERY})()`);
-  await page.locator('#root sherpa-node[data-heading="Region"] sherpa-node-row:has(sherpa-input-text[name="op"]) select').selectOption('notin');
+  await page.locator('#root sherpa-node[data-heading="Region"] sherpa-node-row:has(sherpa-input-text[name="type"]) select').selectOption('notin');
   const r = await page.evaluate(async () => {
     await window.__settled();
     const heard: unknown[] = [];
@@ -458,9 +458,10 @@ const BIND_FLOW = `async () => {
   const canvas = document.querySelector('#root sherpa-layout-canvas');
   const flow = { v: 2, id: 'active-customers', nodes: [
     { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
-    { id: 'filter', kind: 'condition', x: 360, y: 0, values: { field: 'status', op: 'eq' } },
-    { id: 'end', kind: 'output', x: 720, y: 0 },
-  ], routes: [{ from: 'start/rows', to: 'filter' }, { from: 'filter/rows', to: 'end' }] };
+    { id: 'field', kind: 'field', x: 300, y: 0, values: { field: 'status' } },
+    { id: 'filter', kind: 'condition', x: 600, y: 0, values: { type: 'eq' } },
+    { id: 'end', kind: 'output', x: 900, y: 0 },
+  ], routes: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'filter/rows', to: 'end' }] };
   window.editor = bindWorkflow(canvas, flow, { session: new SessionStore(), fields: { status: { label: 'Status' } }, stores: ['customers'] });
   await window.__settled();
 }`;
@@ -469,22 +470,23 @@ test('bindWorkflow draws a workflow by its kinds, keeps each edit in the tab\'s 
   await page.evaluate(`(${BIND_FLOW})()`);
   const drawn = {
     nodes: await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('#root sherpa-node')].map((n) => n.dataset['heading'])),
-    ops: await page.locator('#root sherpa-node[data-heading="Condition"] sherpa-input-text[name="op"] option').allTextContents(),
+    ops: await page.locator('#root sherpa-node[data-heading="Condition"] sherpa-input-text[name="type"] option').allTextContents(),
   };
-  await page.locator('#root sherpa-node[data-heading="Condition"] sherpa-input-text[name="op"] select').selectOption('ne');
+  await page.locator('#root sherpa-node[data-heading="Condition"] sherpa-input-text[name="type"] select').selectOption('ne');
   await page.reload();
   await freshCanvas(page);
   await page.evaluate(`(${BIND_FLOW})()`);
   const r = await page.evaluate(() => {
     const heard: { nodes: { id: string; values?: unknown }[] }[] = [];
     document.addEventListener('definition-save', (e) => heard.push((e as CustomEvent).detail.definition));
-    const op = document.querySelector<HTMLElement & { value: string }>('#root sherpa-node[data-heading="Condition"] sherpa-input-text[name="op"]')!.value;
+    const op = document.querySelector<HTMLElement & { value: string }>('#root sherpa-node[data-heading="Condition"] sherpa-input-text[name="type"]')!.value;
     const ok = (window as unknown as { editor: { save(): boolean } }).editor.save();
     return { op, ok, saved: heard.map((d) => d.nodes.find((n) => n.id === 'filter')?.values), draft: sessionStorage.getItem('sherpa:session:/workflows/active-customers') };
   });
-  expect(drawn.nodes).toEqual(['Store', 'Condition', 'Output']);
-  expect(drawn.ops.slice(0, 2)).toEqual(['Equals', 'Does not equal']);
-  expect(r).toEqual({ op: 'ne', ok: true, saved: [{ field: 'status', op: 'ne' }], draft: null });
+  // Store › Field › Condition › Output (plan 783): the Operation lists Logic's types, And and Or first.
+  expect(drawn.nodes).toEqual(['Store', 'Field', 'Condition', 'Output']);
+  expect(drawn.ops.slice(0, 3)).toEqual(['And', 'Or', 'Greater than']);
+  expect(r).toEqual({ op: 'ne', ok: true, saved: [{ type: 'ne' }], draft: null });
 });
 
 test('a use of a Custom Node draws closed: one node with a row per input and output, its own value shown', async ({ page }) => {

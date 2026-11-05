@@ -21,10 +21,11 @@
  * - COERCIONS — Every coercion an input reads, in one place: a boolean as 1 or 0, a word, JSON; a number or word as a boolean.
  * - coerce — What an input that needs one thing reads of another, by COERCIONS; none, it reads no such thing.
  * - readInput — What an input reads of what reaches it: the value, coerced, or null and why, in words.
+ * - takesGiven — Whether a kind, under any of its types, has an input that can use what an output gives: a column.
  */
 import { typedValue } from './filter-state.js';
 import { isDateTime } from './format-date.js';
-import { FALSE_SOCKET, SOCKET_WORDS, fixedChoices, kindOfNode, rowOf, socketType, type NodeKind, type RowChoice, type RowKind } from './node-kinds.js';
+import { FALSE_SOCKET, SOCKET_WORDS, fixedChoices, kindOfNode, resolveKind, rowOf, socketType, type NodeKind, type RowChoice, type RowKind } from './node-kinds.js';
 
 /** What reaches an input, as finely as its source says: its socket's type, or rows, a list, a number or a Field's
  *  column, `{ rows, field }` (an object, plan 783 D2). */
@@ -198,4 +199,18 @@ export function readInput(input: InputNeeds, reached: Reached): { value: unknown
   const wants = needs === 'choice' ? or((choices ?? []).map((c) => c.label)) : INPUT_WORDS[needs];
   const route = (needs === 'field' || needs === 'tested') && reached.kind === 'rows' ? ': route a Field in' : '';
   return { value: null, warning: `${label} takes ${wants}; it was given ${givenWords(needs, reached)}${route}` };
+}
+
+/** Whether a new node of a kind, under any of its types, has an input — its header or a row — that can use what an
+ *  output gives: what "Add a node" offers a Field's column (plan 783 F6). A column of a number or a date field fits a
+ *  list of numbers or a date too. */
+export function takesGiven(family: NodeKind, given: Given): boolean {
+  const reached: Reached[] = given === 'field' ? [undefined, 'number', 'date'].map((type) => ({ kind: 'field', field: { name: '', ...(type ? { type } : {}) } })) : [{ kind: given }];
+  return [undefined, ...Object.keys(family.types ?? {})].some((type) => {
+    const kind = resolveKind(family, type);
+    return [kind, ...kind.rows].filter((x) => x.input).some((x) => {
+      const needs = needOf(x);
+      return !needs || reached.some((r) => !readInput({ label: '', needs }, r).warning);
+    });
+  });
 }

@@ -2725,11 +2725,6 @@
       "description": "one row of a sherpa-node: an input socket, a field and an output socket. Any of the three may be absent. Will, TODO 78.",
       "attributes": [
         {
-          "name": "data-divided",
-          "description": "a line over the row: it starts a new section of its node",
-          "valueSet": "v"
-        },
-        {
           "name": "data-input-many",
           "description": "the input takes several routes: its socket is a double height D",
           "valueSet": "v"

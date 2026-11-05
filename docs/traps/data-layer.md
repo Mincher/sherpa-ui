@@ -6458,7 +6458,7 @@ types allow is drawn; no family fences what a graph places.
   only this warning — "Value A takes a number; it was given rows". Grouping makes one socket of
   what its source sends. What stays refused is the graph's shape: a loop, the same route twice,
   two into an input that takes one, a socket that is not there, a Rows row (it only sends), an
-  output that says it sends any type, and a preset's header (read only). A Group row takes any
+  output that says it sends any type, and a preset's header (read only). And and Or take any
   boolean (TODO 780, `T-a-condition-is-a-tree-of-nodes`): a boolean input reads true or false, 1 or
   0, and the words, by `truthOf`.
 - **A boolean reads as what its input needs** (Will, TODO 781: "Where booleans need to be a number
@@ -6822,7 +6822,7 @@ its choices".
 - Site: `test/unit/a-condition-is-a-tree-of-nodes.test.mjs`
 - Site: `test/unit/a-status-is-a-chain-of-conditions.test.mjs`
 - Site: `test/unit/and-or-take-any-boolean.test.mjs`
-- Site: `test/e2e/reforged-node-group-row.spec.ts`
+- Site: `test/e2e/reforged-node-and-or.spec.ts`
 
 ### T-an-app-is-its-definition
 

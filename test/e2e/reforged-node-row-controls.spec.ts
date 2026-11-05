@@ -1,7 +1,7 @@
 import { test, expect, type Page } from './harness';
 
 /**
- * A node's P4 rows (plan 749): Is one of takes TAGS, typed by real keys; where its field's values are known
+ * A node's P4 rows (plan 749): Is one of takes TAGS, typed by real keys; where its Field's values are known
  * the tags are CLOSED, and a stranger is refused and said; a Value › List routed in OVERRIDES them, read
  * only, and cut gives its own back (D7). A Start is a date and time that reads in words, picked from a
  * calendar or typed; a row's own fault is drawn in it, red, in words, and a focus and a blur leave it.
@@ -29,12 +29,14 @@ const BIND = `async (routes, plan = [], status = ['active'], start = '2024-01-12
   const canvas = document.querySelector('#root sherpa-layout-canvas');
   const flow = { v: 2, id: 'g', nodes: [
     { id: 'l', kind: 'value', x: 0, y: 0, heading: 'Plans', values: { type: 'list', value: ['Team', 'Free'] } },
-    { id: 'p', kind: 'condition', x: 330, y: 0, heading: 'By plan', values: { field: 'plan', op: 'in', ...(plan.length ? { value: plan } : {}) } },
-    { id: 's', kind: 'condition', x: 660, y: 0, heading: 'By status', values: { field: 'status', op: 'in', value: status } },
-    // Below the Conditions, which their Operation row makes taller.
+    { id: 'p', kind: 'condition', x: 330, y: 0, heading: 'By plan', values: { type: 'in', ...(plan.length ? { b: plan } : {}) } },
+    { id: 's', kind: 'condition', x: 660, y: 0, heading: 'By status', values: { type: 'in', b: status } },
+    // Below the Conditions, which their Operation row makes taller; each Condition tests a Field (plan 783).
     { id: 't', kind: 'time', x: 0, y: 440, heading: 'When', values: { type: 'between', start } },
     { id: 'm', kind: 'math', x: 330, y: 440, heading: 'Round', values: { type: 'round', places } },
-  ], routes };
+    { id: 'fp', kind: 'field', x: 660, y: 440, heading: 'Plan', values: { field: 'plan' } },
+    { id: 'fs', kind: 'field', x: 880, y: 440, heading: 'Status', values: { field: 'status' } },
+  ], routes: [{ from: 'fp/field', to: 'p' }, { from: 'fs/field', to: 's' }, ...routes] };
   window.editor = bindWorkflow(canvas, flow, {
     session: new SessionStore(), inspector: document.getElementById('inspector'),
     fields: { status: { label: 'Status' }, plan: { label: 'Plan' } }, values: { status: ['active', 'trial'] },
@@ -65,59 +67,59 @@ const typeInto = async (page: Page, heading: string, name: string, words: string
 
 test('Is one of takes tags by real keys: Enter and a comma each make one, and the draft holds the list', async ({ page }) => {
   await bind(page);
-  await page.locator(`${field('By plan', 'value')} .control-row > .control`).first().click();
+  await page.locator(`${field('By plan', 'b')} .control-row > .control`).first().click();
   await page.keyboard.type('Pro');
   await page.keyboard.press('Enter');
   await page.keyboard.type('Enterprise,');
   await settle(page);
-  expect((await shown(page, 'By plan', 'value')).tags).toEqual(['Pro', 'Enterprise']);
-  expect((await values(page))['p']).toEqual({ field: 'plan', op: 'in', value: ['Pro', 'Enterprise'] });
+  expect((await shown(page, 'By plan', 'b')).tags).toEqual(['Pro', 'Enterprise']);
+  expect((await values(page))['p']).toEqual({ type: 'in', b: ['Pro', 'Enterprise'] });
   // Backspace on the empty text takes the last away: one edit, the draft follows.
   await page.keyboard.press('Backspace');
   await settle(page);
-  expect((await values(page))['p']!['value']).toEqual(['Pro']);
-  // The Value row's socket takes an object (D17).
-  expect(await page.locator('#root sherpa-node[data-heading="By plan"] sherpa-node-row:has([name="value"])').getAttribute('data-input-socket')).toBe('object');
+  expect((await values(page))['p']!['b']).toEqual(['Pro']);
+  // The Values row's socket takes an object (D17).
+  expect(await page.locator('#root sherpa-node[data-heading="By plan"] sherpa-node-row:has([name="b"])').getAttribute('data-input-socket')).toBe('object');
 });
 
 test('a CLOSED list refuses a stranger and says so; a known value, typed in any case, is taken; its menu ticks the values', async ({ page }) => {
   await bind(page);
-  await typeInto(page, 'By status', 'value', ['gold']);
-  expect(await shown(page, 'By status', 'value')).toEqual({ tags: ['active'], value: 'active', typed: 'gold', error: '“gold” is not one of the choices.', readonly: false });
-  expect((await values(page))['s']!['value']).toEqual(['active']);
+  await typeInto(page, 'By status', 'b', ['gold']);
+  expect(await shown(page, 'By status', 'b')).toEqual({ tags: ['active'], value: 'active', typed: 'gold', error: '“gold” is not one of the choices.', readonly: false });
+  expect((await values(page))['s']!['b']).toEqual(['active']);
   // Mended: the message goes as the word changes; TRIAL is the value trial.
   await page.keyboard.press('ControlOrMeta+A');
   await page.keyboard.type('TRIAL');
   await page.keyboard.press('Enter');
   await settle(page);
-  expect(await shown(page, 'By status', 'value')).toEqual({ tags: ['active', 'trial'], value: 'active,trial', typed: '', error: null, readonly: false });
-  expect((await values(page))['s']!['value']).toEqual(['active', 'trial']);
+  expect(await shown(page, 'By status', 'b')).toEqual({ tags: ['active', 'trial'], value: 'active,trial', typed: '', error: null, readonly: false });
+  expect((await values(page))['s']!['b']).toEqual(['active', 'trial']);
   // The menu lists the field's values, ticked as the tags are; an untick removes one.
-  await page.locator(`${field('By status', 'value')} .tags-button`).first().click();
-  const menu = page.locator(`${field('By status', 'value')} .tags-menu`).first();
+  await page.locator(`${field('By status', 'b')} .tags-button`).first().click();
+  const menu = page.locator(`${field('By status', 'b')} .tags-menu`).first();
   await expect(menu).toHaveAttribute('open', '');
-  const rows = () => page.evaluate((sel) => [...document.querySelector(sel)!.shadowRoot!.querySelectorAll<HTMLInputElement>('.tags-menu input[type="checkbox"]')].filter((i) => i.value).map((i) => [i.value, i.checked]), field('By status', 'value'));
+  const rows = () => page.evaluate((sel) => [...document.querySelector(sel)!.shadowRoot!.querySelectorAll<HTMLInputElement>('.tags-menu input[type="checkbox"]')].filter((i) => i.value).map((i) => [i.value, i.checked]), field('By status', 'b'));
   expect(await rows()).toEqual([['active', true], ['trial', true]]);
   await menu.locator('input[value="active"]').click();
   await page.keyboard.press('Escape');
   await settle(page);
-  expect((await values(page))['s']!['value']).toEqual(['trial']);
+  expect((await values(page))['s']!['b']).toEqual(['trial']);
   // Opened again, a value not a tag is offered unticked.
-  await page.locator(`${field('By status', 'value')} .tags-button`).first().click();
+  await page.locator(`${field('By status', 'b')} .tags-button`).first().click();
   await expect(menu).toHaveAttribute('open', '');
   expect(await rows()).toEqual([['trial', true], ['active', false]]);
 });
 
 test('a Value › List routed into Is one of OVERRIDES its tags (D7): read only, its own kept; cut, they are back', async ({ page }) => {
-  await bind(page, [{ from: 'l/value', to: 'p/value' }], ['Pro']);
-  expect(await shown(page, 'By plan', 'value')).toMatchObject({ tags: ['Team', 'Free'], readonly: true });
-  expect(await page.locator(field('By plan', 'value')).getAttribute('data-description')).toBe('Custom values, from Plans › Value');
+  await bind(page, [{ from: 'l/value', to: 'p/b' }], ['Pro']);
+  expect(await shown(page, 'By plan', 'b')).toMatchObject({ tags: ['Team', 'Free'], readonly: true });
+  expect(await page.locator(field('By plan', 'b')).getAttribute('data-description')).toBe('Custom values, from Plans › Value');
   // Read only: no tag can be taken off, and the draft keeps the row's own.
-  expect(await page.evaluate((sel) => [...document.querySelector(sel)!.shadowRoot!.querySelectorAll('.tags > .tag')].map((c) => c.hasAttribute('data-dismissible')), field('By plan', 'value'))).toEqual([false, false]);
-  expect((await values(page))['p']!['value']).toEqual(['Pro']);
+  expect(await page.evaluate((sel) => [...document.querySelector(sel)!.shadowRoot!.querySelectorAll('.tags > .tag')].map((c) => c.hasAttribute('data-dismissible')), field('By plan', 'b'))).toEqual([false, false]);
+  expect((await values(page))['p']!['b']).toEqual(['Pro']);
   // The connector picked and deleted: its own tags are back, and editable.
   const [mx, my] = await page.evaluate(() => {
-    const hit = document.querySelector<SVGPolylineElement>('#root svg.graph-routes polyline[data-to="p/value"]')!;
+    const hit = document.querySelector<SVGPolylineElement>('#root svg.graph-routes polyline[data-to="p/b"]')!;
     const p = hit.points.getItem(Math.floor(hit.points.numberOfItems / 2));
     const m = hit.getScreenCTM()!;
     return [m.a * p.x + m.e, m.d * p.y + m.f];
@@ -125,7 +127,7 @@ test('a Value › List routed into Is one of OVERRIDES its tags (D7): read only,
   await page.mouse.click(mx!, my!);
   await page.keyboard.press('Delete');
   await settle(page);
-  expect(await shown(page, 'By plan', 'value')).toMatchObject({ tags: ['Pro'], readonly: false });
+  expect(await shown(page, 'By plan', 'b')).toMatchObject({ tags: ['Pro'], readonly: false });
 });
 
 /** The colour most of a box is painted, as a reader sees it. */
@@ -147,10 +149,10 @@ async function paint(page: Page, where: ReturnType<Page['locator']>): Promise<Rg
 
 test('a row\'s own fault is drawn in it, red, in words — a stranger held, a day the calendar has not, a part of a place — and a blur leaves it', async ({ page }) => {
   await bind(page, [], [], ['active', 'gold'], '2024-02-30', 2.5);
-  expect((await shown(page, 'By status', 'value')).error).toBe('"gold" is not a value of Status');
+  expect((await shown(page, 'By status', 'b')).error).toBe('"gold" is not a value of Status');
   expect((await shown(page, 'When', 'start')).error).toBe('"2024-02-30" is not a date: pick one, or write it as 31 Jan 2024');
   expect((await shown(page, 'Round', 'places')).error).toBe('2.5 is not a whole number');
-  const message = page.locator(`${field('By status', 'value')} .message`).first();
+  const message = page.locator(`${field('By status', 'b')} .message`).first();
   await expect(message).toBeVisible();
   const [r, g, b] = await paint(page, message);
   expect(r, `a red bar, ${[r, g, b]}`).toBeGreaterThan(150);

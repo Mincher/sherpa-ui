@@ -112,15 +112,6 @@
   "props": [
     {
       "$type": "prop",
-      "name": "data-divided",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "description": "a line over the row: it starts a new section of its node"
-    },
-    {
-      "$type": "prop",
       "name": "data-input-many",
       "type": "boolean",
       "observed": true,
@@ -196,15 +187,10 @@
     }
   ],
   "populate": {
-    "shape": "{ divided?, inputMany?, inputRouted?, inputSocket?, label?, outputRouted?, outputSocket? }",
+    "shape": "{ inputMany?, inputRouted?, inputSocket?, label?, outputRouted?, outputSocket? }",
     "description": "Its declared props by name: `label` sets data-label."
   },
   "states": [
-    {
-      "$type": "state",
-      "name": "divided",
-      "selector": ":host([data-divided])"
-    },
     {
       "$type": "state",
       "name": "label",

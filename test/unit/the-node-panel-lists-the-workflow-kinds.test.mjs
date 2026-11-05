@@ -77,3 +77,14 @@ test('a socket is offered the kinds that could join it, a Value first', () => {
   assert.deepEqual(fitOf(NODE_KINDS['output'], 'object', 'out'), {});
   assert.equal(fitOf(NODE_KINDS['value'], 'value', 'out'), undefined);
 });
+
+test('"Add a node" from what an output gives lists only the kinds that can use it: a Field\'s column, a Store\'s rows (plan 783 F6)', async () => {
+  const { takesGiven } = await import(new URL('../../dist/core/data/node-input.js', import.meta.url));
+  const palette = paletteOf(NODE_KINDS);
+  const offered = (given) => paletteFor(palette, 'object', 'out').filter((i) => takesGiven(i.kind, given)).map((i) => i.id);
+  // A column fits what takes a field, rows, an object or a list; a number's a Math's list, a date's a Time.
+  assert.deepEqual(offered('field'), ['field', 'math', 'condition', 'time', 'collection', 'text', 'tag', 'output']);
+  // Rows fit no Tag (it takes a Field), no Math and no Time: their inputs never read rows.
+  assert.deepEqual(offered('rows'), ['field', 'condition', 'collection', 'output']);
+  assert.deepEqual([takesGiven(NODE_KINDS.math, 'rows'), takesGiven(NODE_KINDS.math, 'field'), takesGiven(NODE_KINDS.value, 'field')], [false, true, false]);
+});

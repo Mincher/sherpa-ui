@@ -242,7 +242,7 @@ test('edit_workflow is editWorkflow, checked; an edit to a node it has not got i
   assert.deepEqual(json.reports, []);
   const dangling = await call('edit_workflow', { workflow, edits: [{ node: 'ghost', row: 'value', value: 1 }] });
   assert.equal(dangling.bad, true);
-  assert.match(dangling.text, /The workflow has no node "ghost", so no edit was made\. Its nodes: start, status, filter, end\./);
+  assert.match(dangling.text, /The workflow has no node "ghost", so no edit was made\. Its nodes: start, field, status, filter, end\./);
   // A route made into a node it has not got is made, and checkWorkflow says so.
   const routed = await call('edit_workflow', { workflow, edits: [{ route: { from: 'status/value', to: 'ghost/value' } }] });
   assert.equal(routed.bad, false);

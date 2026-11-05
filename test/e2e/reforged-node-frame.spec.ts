@@ -11,7 +11,7 @@ type Flow = { nodes: { id: string; x: number; y: number }[]; routes: { from: str
 type Ed = { workflow(): Flow; undo(): boolean; redo(): boolean; save(): boolean };
 type Box = { x: number; y: number; width: number; height: number };
 
-const NODES: [string, string, number, number][] = [['s1', 'store', 0, 0], ['p1', 'pick', 420, 260], ['e1', 'output', 840, 40], ['s2', 'store', 840, 560]];
+const NODES: [string, string, number, number][] = [['s1', 'store', 0, 0], ['p1', 'field', 420, 260], ['e1', 'output', 840, 40], ['s2', 'store', 840, 560]];
 const ROUTES = [{ from: 's1/rows', to: 'p1' }, { from: 'p1/field', to: 'e1' }];
 
 async function start(page: Page, flow?: unknown, readOnly = false): Promise<void> {

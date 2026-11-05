@@ -12,8 +12,12 @@ const ORG = {
   v: 1, label: 'Org permissions', category: 'Logic',
   inputs: [{ name: 'users', label: 'Users', type: 'object' }, { name: 'role', label: 'Role', type: 'value', control: 'text', default: 'admin' }],
   outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
-  nodes: [{ id: 'has-role', kind: 'condition', x: 0, y: 0, values: { field: 'role', op: 'eq' } }],
-  routes: [{ from: '#in/users', to: 'has-role' }, { from: '#in/role', to: 'has-role/value' }, { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' }],
+  // The users' Role, a Field, Equals the Role given (plan 783).
+  nodes: [{ id: 'has-role', kind: 'condition', x: 330, y: 0, values: { type: 'eq' } }, { id: 'role-field', kind: 'field', x: 0, y: 0, values: { field: 'role' } }],
+  routes: [
+    { from: '#in/users', to: 'role-field' }, { from: 'role-field/field', to: 'has-role' }, { from: '#in/role', to: 'has-role/b' },
+    { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' },
+  ],
 };
 
 test.beforeEach(async ({ page }) => {
@@ -50,7 +54,7 @@ const BIND = `async (org) => {
     { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'users' } },
     useOf(library, 'org-permissions', { id: 'perm', x: 330, y: 0 }),
     useOf(library, 'org-permissions', { id: 'perm2', x: 330, y: 260 }),
-    { id: 'sort', kind: 'collection', x: 0, y: 260, values: { type: 'sort', field: 'status', direction: 'asc' } },
+    { id: 'sort', kind: 'collection', x: 0, y: 260, values: { type: 'sort', direction: 'asc' } },
     { id: 'end', kind: 'output', x: 700, y: 0 },
   ], routes: [{ from: 'start/rows', to: 'perm/users' }, { from: 'perm', to: 'end' }] };
   const canvas = document.getElementById('cv');
@@ -249,7 +253,7 @@ const EDITS: [string, (page: Page) => Promise<void>][] = [
   ['an edit inside a Custom Node', async (page) => {
     await page.evaluate("window.ed.open('perm')");
     await settle(page);
-    await page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-input-text[name="op"] select').selectOption('ne');
+    await page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-input-text[name="type"] select').selectOption('ne');
   }],
   ['make a Custom Node', async (page) => {
     await header(page, 'Store').focus();
@@ -307,13 +311,13 @@ test('undo works inside an opened Custom Node, and leaving it keeps the history'
   await settle(page);
   await page.evaluate("window.ed.open('perm')");
   await settle(page);
-  await page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-input-text[name="op"] select').selectOption('ne');
+  await page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-input-text[name="type"] select').selectOption('ne');
   await settle(page);
   const inner = await state(page);
   // Undo inside its own level: the edit goes, and the trail stays.
   await press(page, 'undo');
   expect(await page.evaluate('window.ed.path()')).toEqual(['perm']);
-  expect(await page.evaluate("window.ed.library().nodes['org-permissions'].nodes[0].values.op")).toBe('eq');
+  expect(await page.evaluate("window.ed.library().nodes['org-permissions'].nodes[0].values.type")).toBe('eq');
   await press(page, 'redo');
   expect(await state(page)).toBe(inner);
   // Leave it: the history is kept; two undos reach where it began, and the placement is gone.

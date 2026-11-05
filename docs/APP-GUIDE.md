@@ -500,8 +500,9 @@ with `registerEntityType(type)` (a clash with a shipped type is refused).
   reads the shelf as the page opens, and each one's chip follows the page's own presets,
   the app's then the reader's. A press is `query.ask({ scope, preset: 'preset-filter:<id>', on })`.
   Its graph is read by the one reader the Outgoing JSON shows (`conditionAt`), each field's
-  own (`presetOfEntity`); a use's True in a Condition's Group row, or into And or Or, joins
-  the outer condition. "Any" of two fields is said in words and left off. The Query
+  own (`presetOfEntity`): Store › Field › Condition, a test per Condition on the Field on its
+  header, And and Or joining tests (plan 783); a use's True into And or Or joins the outer
+  condition. An Or across two fields is said in words and left off. The Query
   editor's panel lists them under Custom Nodes. `T-a-preset-filter-is-a-preset-of-its-store`
 
 ## 10. Questions and saved filters

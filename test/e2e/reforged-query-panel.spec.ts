@@ -46,7 +46,7 @@ const said = (page: Page) => page.evaluate(() => (window as unknown as { said: s
 
 test('it lists the Query\'s kinds by category, 32px from the top, bottom and left', async ({ page }) => {
   const heads = await page.locator('sherpa-node-panel .category-heading').evaluateAll((els) => els.map((e) => e.getAttribute('data-heading')));
-  expect(heads).toEqual(['Custom Nodes', 'Logic', 'Presets', 'Saved filters', 'Status']);
+  expect(heads).toEqual(['Custom Nodes', 'Variables', 'Logic', 'Presets', 'Saved filters', 'Status']);
   const [c, p] = await page.evaluate(() => [document.getElementById('cv')!, document.querySelector('sherpa-node-panel')!].map((e) => {
     const r = e.getBoundingClientRect();
     return { left: r.left, top: r.top, bottom: r.bottom };
@@ -56,12 +56,15 @@ test('it lists the Query\'s kinds by category, 32px from the top, bottom and lef
   expect(Math.abs(p!.left - c!.left - 32)).toBeLessThanOrEqual(1);
 });
 
-test('a click on Condition asks the Query to hold the next field; a click on Preset switches it on', async ({ page }) => {
-  await item(page, 'condition').click();
+test('a click on Field asks the Query to hold the next field; a Condition is refused in words; a click on Preset switches it on', async ({ page }) => {
+  await item(page, 'field').click();
   expect(await asked(page)).toEqual([{ scope: 'view', hold: ['region', 'plan'] }]);
+  // A Condition tests a Field (plan 783 D6): a Field's tests are its chip's.
+  await item(page, 'condition').click();
+  await expect.poll(() => said(page)).toEqual([expect.stringMatching(/^A Condition tests a Field: route one in\./)]);
   await item(page, 'preset').click();
   expect((await asked(page)).at(-1)).toEqual({ scope: 'view', preset: 'big', on: true });
-  expect(await said(page)).toEqual([]);
+  expect(await asked(page)).toHaveLength(2);
 });
 
 test('a Preset Filter is a Custom Node: listed by its name, and a click switches it on where it is declared', async ({ page }) => {
@@ -74,8 +77,8 @@ test('a Preset Filter is a Custom Node: listed by its name, and a click switches
   expect(await said(page)).toEqual([]);
 });
 
-test('a drag of Condition onto the canvas asks the same; a kind the Query cannot take is refused in words', async ({ page }) => {
-  const from = (await item(page, 'condition').boundingBox())!;
+test('a drag of Field onto the canvas asks the same; a kind the Query cannot take is refused in words', async ({ page }) => {
+  const from = (await item(page, 'field').boundingBox())!;
   await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
   await page.mouse.down();
   await page.mouse.move(from.x + 80, from.y + 40, { steps: 4 });

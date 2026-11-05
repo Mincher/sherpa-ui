@@ -22,16 +22,17 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-/** A workflow bound on the harness canvas: a Value feeds the Condition's Value; a Collection, a Sort, waits. */
+/** A workflow bound on the harness canvas: Store › Field (Status) › Condition, a Value into its Value B; a Sort waits. */
 const BIND = `async (routes) => {
   const { bindWorkflow, SessionStore } = await import('/dist/app.js');
   const canvas = document.querySelector('#root sherpa-layout-canvas');
   const flow = { v: 2, id: 'g', nodes: [
     { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
     { id: 'status', kind: 'value', x: 0, y: 260, values: { value: 'active' } },
-    { id: 'filter', kind: 'condition', x: 360, y: 0, values: { field: 'status', op: 'eq', value: 'trial' } },
-    { id: 'sort', kind: 'collection', x: 720, y: 0, values: { type: 'sort', field: 'status', direction: 'asc' } },
-  ], routes: routes ?? [{ from: 'start/rows', to: 'filter' }, { from: 'status/value', to: 'filter/value' }] };
+    { id: 'filter', kind: 'condition', x: 360, y: 0, values: { type: 'eq', b: 'trial' } },
+    { id: 'sort', kind: 'collection', x: 720, y: 0, values: { type: 'sort', direction: 'asc' } },
+    { id: 'pick', kind: 'field', x: 0, y: 460, values: { field: 'status' } },
+  ], routes: routes ?? [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'filter' }, { from: 'status/value', to: 'filter/b' }] };
   window.editor = bindWorkflow(canvas, flow, {
     session: new SessionStore(), inspector: document.getElementById('inspector'),
     fields: { status: { label: 'Status' }, plan: { label: 'Plan' } }, stores: ['customers'],
@@ -82,10 +83,12 @@ async function drag(page: Page, [x1, y1]: [number, number], [x2, y2]: [number, n
   await settle(page);
 }
 
-const filterValue = `${row('Condition', 'value')} sherpa-input-text`;
+const filterValue = `${row('Condition', 'b')} sherpa-input-text`;
+/** The Field into the Condition, with no Value into its Value B. */
+const FED = [{ from: 'start/rows', to: 'pick' }, { from: 'pick/field', to: 'filter' }];
 
-test('a picklist row edits through the draft\'s one door: the Filter\'s Value is the field\'s values, the Value node\'s Type is a list', async ({ page }) => {
-  await bind(page, [{ from: 'start/rows', to: 'filter' }]);
+test('a picklist row edits through the draft\'s one door: the Condition\'s Value B is its Field\'s values, the Value node\'s Type is a list', async ({ page }) => {
+  await bind(page, FED);
   const options = await page.locator(`${filterValue} option`).allTextContents();
   await page.locator(`${filterValue} select`).selectOption('churned');
   await page.locator(`${row('Value', 'type')} select`).selectOption('text');
@@ -94,7 +97,7 @@ test('a picklist row edits through the draft\'s one door: the Filter\'s Value is
   const r = await draft(page);
   expect(options).toEqual(['active', 'trial', 'churned']);
   expect(types).toEqual(['Text', 'Integer', 'Decimal', 'Date', 'True/false', 'List']);
-  expect(r.nodes).toMatchObject({ filter: { value: 'churned' }, status: { value: 'active', type: 'text' }, sort: { direction: 'desc' } });
+  expect(r.nodes).toMatchObject({ filter: { type: 'eq', b: 'churned' }, status: { value: 'active', type: 'text' }, sort: { direction: 'desc' } });
 });
 
 test('a Value node routed into a picklist OVERRIDES it: "active Custom", read only; cut the route and its own pick is back', async ({ page }) => {
@@ -108,7 +111,7 @@ test('a Value node routed into a picklist OVERRIDES it: "active Custom", read on
   expect(over).toEqual({ value: 'active', text: 'active Custom', readOnly: true, description: 'Custom value, from Value › Value' });
   // Pick the connector, then Delete: the route is cut.
   const [mx, my] = await page.evaluate(() => {
-    const hit = document.querySelector<SVGPolylineElement>('#root svg.graph-routes polyline[data-to="filter/value"]')!;
+    const hit = document.querySelector<SVGPolylineElement>('#root svg.graph-routes polyline[data-to="filter/b"]')!;
     const p = hit.points.getItem(8);
     const m = hit.getScreenCTM()!;
     return [m.a * p.x + m.e, m.d * p.y + m.f];
@@ -116,36 +119,37 @@ test('a Value node routed into a picklist OVERRIDES it: "active Custom", read on
   await page.mouse.click(mx, my);
   await page.keyboard.press('Delete');
   await settle(page);
-  expect(await page.evaluate(LINES)).toEqual(['start/rows → filter']);
+  expect(await page.evaluate(LINES)).toEqual(['start/rows → pick', 'pick/field → filter']);
   expect(await shown()).toEqual({ value: 'trial', text: 'trial', readOnly: false, description: null });
 });
 
 test('557 a route\'s input end dragged to another input REROUTES it: the first row has its own pick back', async ({ page }) => {
   await bind(page);
-  const from = await at(page, row('Condition', 'value'), 'input');
-  const to = await at(page, row('Collection', 'field'), 'input');
+  // A Sort has no Field row now (plan 783 D5): the other picklist is the Field node's own.
+  const from = await at(page, row('Condition', 'b'), 'input');
+  const to = await at(page, row('Field', 'field'), 'input');
   await drag(page, from, to);
-  expect(await page.evaluate(LINES)).toEqual(['start/rows → filter', 'status/value → sort/field']);
+  expect(await page.evaluate(LINES)).toEqual(['start/rows → pick', 'pick/field → filter', 'status/value → pick/field']);
   const r = await page.evaluate(() => ({
-    filter: document.querySelector<HTMLElement & { value: string }>('#root sherpa-node[data-heading="Condition"] sherpa-input-text[name="value"]')!.value,
-    sort: document.querySelector<HTMLElement & { value: string }>('#root sherpa-node[data-heading="Collection"] sherpa-input-text[name="field"]')!.value,
-    sortLocked: document.querySelector('#root sherpa-node[data-heading="Collection"] sherpa-input-text[name="field"]')!.hasAttribute('readonly'),
+    filter: document.querySelector<HTMLElement & { value: string }>('#root sherpa-node[data-heading="Condition"] sherpa-input-text[name="b"]')!.value,
+    field: document.querySelector<HTMLElement & { value: string }>('#root sherpa-node[data-heading="Field"] sherpa-input-text[name="field"]')!.value,
+    fieldLocked: document.querySelector('#root sherpa-node[data-heading="Field"] sherpa-input-text[name="field"]')!.hasAttribute('readonly'),
   }));
-  // The Collection's Field now mirrors "active"; the Condition's Value is its own again.
-  expect(r).toEqual({ filter: 'trial', sort: 'active', sortLocked: true });
+  // The Field now mirrors "active"; the Condition's Value B is its own again.
+  expect(r).toEqual({ filter: 'trial', field: 'active', fieldLocked: true });
   // Dropped where it began: nothing changes.
-  const home = await at(page, row('Collection', 'field'), 'input');
+  const home = await at(page, row('Field', 'field'), 'input');
   await drag(page, home, home);
-  expect(await page.evaluate(LINES)).toEqual(['start/rows → filter', 'status/value → sort/field']);
+  expect(await page.evaluate(LINES)).toEqual(['start/rows → pick', 'pick/field → filter', 'status/value → pick/field']);
 });
 
 test('558 a route\'s end let go over the bare canvas BREAKS it; a click on a connector, then Backspace, does too', async ({ page }) => {
   await bind(page);
-  await drag(page, await at(page, row('Condition', 'value'), 'input'), await blank(page));
+  await drag(page, await at(page, row('Condition', 'b'), 'input'), await blank(page));
   const first = await page.evaluate(LINES);
   const kept = await draft(page);
-  expect(first).toEqual(['start/rows → filter']);
-  expect(kept.nodes['filter']).toEqual({ field: 'status', op: 'eq', value: 'trial' });
+  expect(first).toEqual(['start/rows → pick', 'pick/field → filter']);
+  expect(kept.nodes['filter']).toEqual({ type: 'eq', b: 'trial' });
   // The route into the header, by a click and Backspace.
   const [mx, my] = await page.evaluate(() => {
     const hit = document.querySelector<SVGPolylineElement>('#root svg.graph-routes polyline[data-to="filter"]')!;
@@ -157,38 +161,38 @@ test('558 a route\'s end let go over the bare canvas BREAKS it; a click on a con
   expect(await page.evaluate(() => document.querySelectorAll('#root svg.graph-routes path[data-selected]').length)).toBe(1);
   await page.keyboard.press('Backspace');
   await settle(page);
-  expect(await page.evaluate(LINES)).toEqual([]);
+  expect(await page.evaluate(LINES)).toEqual(['start/rows → pick']);
 });
 
 test('a line dragged out of an unrouted picklist\'s input onto the bare canvas makes a Value node there, holding the row\'s pick, routed in', async ({ page }) => {
-  await bind(page, [{ from: 'start/rows', to: 'filter' }]);
+  await bind(page, FED);
   const spot = await blank(page);
   await drag(page, await at(page, row('Collection', 'direction'), 'input'), spot);
   const r = await draft(page);
-  expect(r.routes).toEqual(['start/rows → filter', 'value-1/value → sort/direction']);
+  expect(r.routes).toEqual(['start/rows → pick', 'pick/field → filter', 'value-1/value → sort/direction']);
   expect(r.nodes['value-1']).toEqual({ value: 'asc' });
   // The row mirrors it, and marks it Custom; its own pick is kept.
   const text = await page.evaluate(() => document.querySelector('#root sherpa-node[data-heading="Collection"] sherpa-input-text[name="direction"]')!.shadowRoot!.querySelector('select')!.selectedOptions[0]!.textContent);
   expect(text).toBe('asc Custom');
-  expect(r.nodes['sort']).toEqual({ type: 'sort', field: 'status', direction: 'asc' });
+  expect(r.nodes['sort']).toEqual({ type: 'sort', direction: 'asc' });
 });
 
 test('with no pointer: the inspector\'s "Custom value" makes the Value node; its "Cut route" cuts it; "Remove node" removes the node and its routes', async ({ page }) => {
-  await bind(page, [{ from: 'start/rows', to: 'filter' }]);
+  await bind(page, FED);
   await page.locator('#root sherpa-node[data-heading="Condition"]').click({ position: { x: 40, y: 12 } });
   const panel = page.locator('#inspector');
   await panel.getByRole('button', { name: 'Custom value' }).first().click();
   await settle(page);
-  expect((await draft(page)).routes.length).toBe(2);
+  expect((await draft(page)).routes.length).toBe(3);
   // The node is still the one picked: its row says where the custom value comes from.
   await panel.getByRole('button', { name: /Cut route from Value/ }).click();
   await settle(page);
-  expect((await draft(page)).routes).toEqual(['start/rows → filter']);
+  expect((await draft(page)).routes).toEqual(['start/rows → pick', 'pick/field → filter']);
   await panel.getByRole('button', { name: 'Remove node' }).click();
   await settle(page);
   const r = await draft(page);
-  expect(Object.keys(r.nodes)).toEqual(['start', 'status', 'sort', 'value-1']);
-  expect(r.routes).toEqual([]);
+  expect(Object.keys(r.nodes)).toEqual(['start', 'status', 'sort', 'pick', 'value-1']);
+  expect(r.routes).toEqual(['start/rows → pick']);
   expect(await page.evaluate(() => (document.getElementById('inspector') as HTMLElement & { open: boolean }).open)).toBe(false);
 });
 

@@ -53,7 +53,7 @@ const LOAD = `async () => {
   await window.source.query.ask({ commit: true });
 }`;
 /** The walk lit: the last node a load lights. */
-const WALKED = () => document.querySelector<HTMLElement>('#root sherpa-node[data-heading="Region"]')?.dataset['step'] === 'done';
+const WALKED = () => document.querySelector<HTMLElement>('#root sherpa-node[data-heading="Region"][data-category="logic"]')?.dataset['step'] === 'done';
 
 test('the Query graph lights as its source loads: the Store by the reads, in the page and the worker, the Source by the load, each condition by the walk', async ({ page }) => {
   await page.evaluate(`(${BIND})()`);
@@ -118,9 +118,10 @@ const FLOW = `async () => {
   const canvas = document.querySelector('#root sherpa-layout-canvas');
   const flow = { v: 2, id: 'active-customers', nodes: [
     { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
-    { id: 'filter', kind: 'condition', x: 360, y: 0, values: { field: 'status', op: 'eq', value: 'active' } },
-    { id: 'end', kind: 'output', x: 720, y: 0 },
-  ], routes: [{ from: 'start/rows', to: 'filter' }, { from: 'filter/rows', to: 'end' }] };
+    { id: 'field', kind: 'field', x: 300, y: 0, values: { field: 'status' } },
+    { id: 'filter', kind: 'condition', x: 600, y: 0, values: { type: 'eq', b: 'active' } },
+    { id: 'end', kind: 'output', x: 900, y: 0 },
+  ], routes: [{ from: 'start/rows', to: 'field' }, { from: 'field/field', to: 'filter' }, { from: 'filter/rows', to: 'end' }] };
   window.editor = bindWorkflow(canvas, flow, { fields: { status: { label: 'Status' } }, stores: ['customers'] });
   await window.__settled();
 }`;
@@ -152,11 +153,11 @@ test('a workflow graph lights from the steps a run says: each node by its id, it
     (window as unknown as { editor: { stop(): void } }).editor.stop();
     return { during, after, again, looks: new Set([idle, running, failed]).size };
   }, LIT);
-  expect(r.during).toEqual({ Store: ['running', 'Running · 3 rows'], Condition: ['running', 'Running'], Output: [null, null] });
+  expect(r.during).toEqual({ Store: ['running', 'Running · 3 rows'], Field: [null, null], Condition: ['running', 'Running'], Output: [null, null] });
   expect(r.after['Store']![0]).toBe('done');
   expect(r.after['Condition']![0]).toBe('done');
   expect(r.after['Condition']![1]).toMatch(/2 rows$/);
   expect(r.after['Output']).toEqual(['skipped', 'Skipped']);
-  expect(r.again).toEqual({ Store: [null, null], Condition: ['failed', expect.stringMatching(/^Failed/)], Output: [null, null] });
+  expect(r.again).toEqual({ Store: [null, null], Field: [null, null], Condition: ['failed', expect.stringMatching(/^Failed/)], Output: [null, null] });
   expect(r.looks, 'idle, running and failed each look their own').toBe(3);
 });

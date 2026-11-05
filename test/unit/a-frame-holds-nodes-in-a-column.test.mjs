@@ -27,7 +27,7 @@ const { onReport } = await import(new URL('report.js', core));
 const flow = () => ({
   v: 2, id: 'f',
   nodes: [
-    { id: 's1', kind: 'store', x: 0, y: 0 }, { id: 'p1', kind: 'pick', x: 420, y: 260 },
+    { id: 's1', kind: 'store', x: 0, y: 0 }, { id: 'p1', kind: 'field', x: 420, y: 260 },
     { id: 'e1', kind: 'output', x: 840, y: 40 }, { id: 's2', kind: 'store', x: 840, y: 560 },
   ],
   routes: [{ from: 's1/rows', to: 'p1' }, { from: 'p1/field', to: 'e1' }],

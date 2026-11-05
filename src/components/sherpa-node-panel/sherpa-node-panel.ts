@@ -16,6 +16,7 @@
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { FLOAT_ATTRS, FloatBox } from '../../core/ui/float-box.js';
 import { fitOf, paletteFor, paletteMatch, type NodeKind, type PaletteGroup, type PaletteItem, type SocketType } from '../../core/data/node-kinds.js';
+import { takesGiven, type Given } from '../../core/data/node-input.js';
 // Defined before the template stamps them.
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-container/sherpa-container.js';
@@ -35,6 +36,8 @@ export interface AddContext {
   /** Its type, and which side it is: an OUTPUT sends into the new node, an INPUT takes from it. */
   type: SocketType;
   side: 'out' | 'in';
+  /** What an output sends, finer than its type: a Field's column offers only the kinds that can use one. */
+  gives?: Given;
   /** Where it was let go: on the screen, to open the menu; on the plane, to place the node. */
   client: { x: number; y: number };
   at: { x: number; y: number };
@@ -304,7 +307,7 @@ export class SherpaNodePanel extends SherpaElement {
   /** Open "Add a node" where a line was let go: the kinds a socket of its type could join, a Value first. */
   askAdd(context: AddContext): void {
     // A family that fits only as another type says which: "Collection › Count".
-    const choices = paletteFor(this.#palette, context.type, context.side).map(({ id, kind }) => {
+    const choices = paletteFor(this.#palette, context.type, context.side).filter(({ kind }) => !context.gives || takesGiven(kind, context.gives)).map(({ id, kind }) => {
       const type = fitOf(kind, context.type, context.side)?.type;
       return { id, heading: type ? `${kind.heading} › ${kind.types![type]!.label}` : kind.heading };
     });

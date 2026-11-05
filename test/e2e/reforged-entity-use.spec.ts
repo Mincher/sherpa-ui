@@ -11,8 +11,8 @@ import { test, expect, type Page } from './harness';
 const filter = (id: string, label: string, value: string) => ({
   v: 1, type: 'preset-filter', id, label, settings: { source: 'customers' },
   graph: {
-    nodes: [{ id: 'status', kind: 'condition', x: 0, y: 0, values: { field: 'status', op: 'eq', value } }],
-    routes: [{ from: 'status', to: '#out/where' }],
+    nodes: [{ id: 'status', kind: 'condition', x: 300, y: 0, values: { type: 'eq', b: value } }, { id: 'field', kind: 'field', x: 0, y: 0, values: { field: 'status' } }],
+    routes: [{ from: 'field/field', to: 'status' }, { from: 'status', to: '#out/where' }],
   },
 });
 
@@ -86,7 +86,7 @@ test('a use opens as a Custom Node does; inside, the panel offers what that one 
   await page.keyboard.press('Enter');
   await settle(page);
   expect(await ed(page, 'ed.path()')).toEqual(['trials-1']);
-  expect(await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('#cv > sherpa-node')].map((n) => n.dataset['heading']).sort())).toEqual(['Condition', 'Group Input', 'Group Output']);
+  expect(await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('#cv > sherpa-node')].map((n) => n.dataset['heading']).sort())).toEqual(['Condition', 'Field', 'Group Input', 'Group Output']);
   // Outer holds Trials, and Top holds Outer: neither is offered inside it, nor Trials itself.
   expect((await offered(page))['Custom Nodes']).toEqual(['preset-filter:active']);
   await page.keyboard.press('Escape');
@@ -108,7 +108,7 @@ test('a use opens as a Custom Node does; inside, the panel offers what that one 
 test('saved again elsewhere: the use says "Update available" with its diff; Update instance stays in the draft until Save, and discard gives it back', async ({ page }) => {
   await bind(page);
   expect(await caption(page, 'Trials')).toBeNull();
-  await ed(page, "ed.refresh(window.all([{ ...window.ENTITIES.trials, graph: { ...window.ENTITIES.trials.graph, nodes: [{ ...window.ENTITIES.trials.graph.nodes[0], values: { field: 'status', op: 'eq', value: 'lead' } }] } }]))");
+  await ed(page, "ed.refresh(window.all([{ ...window.ENTITIES.trials, graph: { ...window.ENTITIES.trials.graph, nodes: [{ ...window.ENTITIES.trials.graph.nodes[0], values: { type: 'eq', b: 'lead' } }, window.ENTITIES.trials.graph.nodes[1]] } }]))");
   await settle(page);
   expect(await caption(page, 'Trials')).toBe('Update available');
   await header(page, 'Trials').click();
@@ -128,7 +128,7 @@ test('"Update all instances" updates every other graph that uses it, and never t
   await bind(page);
   // Top holds Outer only; a second graph, Other, uses Trials too.
   const other = { v: 1, type: 'preset-filter', id: 'other', label: 'Other', origin: 'mine', graph: { nodes: [{ id: 't', kind: 'preset-filter:trials', x: 0, y: 0, version: 'old' }], routes: [{ from: 't', to: '#out/where' }] } };
-  const lead = "{ ...window.ENTITIES.trials, graph: { ...window.ENTITIES.trials.graph, nodes: [{ ...window.ENTITIES.trials.graph.nodes[0], values: { field: 'status', op: 'eq', value: 'lead' } }] } }";
+  const lead = "{ ...window.ENTITIES.trials, graph: { ...window.ENTITIES.trials.graph, nodes: [{ ...window.ENTITIES.trials.graph.nodes[0], values: { type: 'eq', b: 'lead' } }, window.ENTITIES.trials.graph.nodes[1]] } }";
   await ed(page, `ed.refresh(window.all([${JSON.stringify(other)}, ${lead}]))`);
   await settle(page);
   await header(page, 'Trials').click();

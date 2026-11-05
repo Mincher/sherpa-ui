@@ -46,10 +46,11 @@ test.beforeEach(async ({ page }) => {
       v: 2, id: 'g',
       nodes: [
         { id: 'start', kind: 'store', x: 420, y: 40, values: { store: 'customers' } },
-        { id: 'active', kind: 'condition', x: 420, y: 260, values: { field: 'status', op: 'eq', value: 'active' } },
-        { id: 'trial', kind: 'condition', x: 700, y: 260, values: { field: 'status', op: 'eq', value: 'trial' } },
+        { id: 'status', kind: 'field', x: 140, y: 260, values: { field: 'status' } },
+        { id: 'active', kind: 'condition', x: 420, y: 260, values: { type: 'eq', b: 'active' } },
+        { id: 'trial', kind: 'condition', x: 700, y: 260, values: { type: 'eq', b: 'trial' } },
       ],
-      routes: [{ from: 'start/rows', to: 'active' }, { from: 'active/rows', to: 'trial' }],
+      routes: [{ from: 'start/rows', to: 'status' }, { from: 'status/field', to: 'active' }, { from: 'status/field', to: 'trial' }],
     };
     (window as unknown as { ed: unknown }).ed = bindWorkflow(canvas as never, flow as never, {
       session: new SessionStore(), inspector: document.getElementById('inspector') as never, panel: canvas.querySelector('sherpa-node-panel') as never,

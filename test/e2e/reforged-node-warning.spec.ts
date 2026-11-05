@@ -88,7 +88,7 @@ async function edge(page: Page, heading: string): Promise<Rgb[]> {
 
 test('a node given what it cannot use draws the warning border, never red; a node that can use it keeps its own', async ({ page }) => {
   expect(await warning(page, 'Math')).toBe('Value A takes a number; it was given "abc"');
-  expect(await warning(page, 'Time')).toBe('Time takes a date; it was given rows');
+  expect(await warning(page, 'Time')).toBe('Between takes a date; it was given rows');
   expect(await warning(page, 'Output')).toBeNull();
   expect(await warning(page, 'Condition')).toBeNull();
   // Value A reads null: its field is empty, read only.
@@ -129,29 +129,24 @@ test('a hover on the header shows the words in a tip beside it; off the header i
 test('keyboard focus on the header shows the tip, and the header is described by it', async ({ page }) => {
   await header(page, 'Time').focus();
   await expect.poll(async () => (await tip(page, 'Time')).open).toBe(true);
-  expect((await tip(page, 'Time')).text).toBe('Time takes a date; it was given rows');
+  expect((await tip(page, 'Time')).text).toBe('Between takes a date; it was given rows');
   const described = await node(page, 'Time').evaluate((n) => {
     const head = n.shadowRoot!.querySelector('.header')!;
     return n.shadowRoot!.getElementById(head.getAttribute('aria-describedby')!)?.textContent;
   });
-  expect(described).toBe('Time takes a date; it was given rows');
+  expect(described).toBe('Between takes a date; it was given rows');
 });
 
 test('a connection made by hand warns at once; Undo takes the warning away, Redo gives it back, and Save does not wait', async ({ page }) => {
-  const socket = (heading: string, row: string | null, side: string) => page.evaluate(([hd, r, s]) => {
-    const n = document.querySelector(`#cv > sherpa-node[data-heading="${hd}"]`)!;
-    const host = (r ? [...n.querySelectorAll('sherpa-node-row')].find((x) => x.querySelector(`[name="${r}"]`)) : n) as HTMLElement & { socketRect(side: string): DOMRect };
-    const b = host.socketRect(s!);
-    return [b.left + b.width / 2, b.top + b.height / 2] as [number, number];
-  }, [heading, row, side] as const);
-  const from = await socket('Value', 'value', 'output');
-  const to = await socket('Condition', null, 'input');
+  // Rows with no Field into a comparison (plan 783 D3): it tests a field or a value.
+  const from = await socketAt(page, 'Store', 'Rows', 'output');
+  const to = await socketAt(page, 'Condition', null, 'input');
   await page.mouse.move(...from);
   await page.mouse.down();
   await page.mouse.move(...to, { steps: 8 });
   await page.mouse.up();
   await settle(page);
-  expect(await warning(page, 'Condition')).toBe('Condition takes rows; it was given "abc"');
+  expect(await warning(page, 'Condition')).toBe('Equals takes a field or a value; it was given rows: route a Field in');
   const mod = await page.evaluate(() => (/mac|iphone|ipad/i.test(navigator.platform) ? 'Meta' : 'Control'));
   await page.locator('#cv').evaluate((el) => (el.shadowRoot!.querySelector('.viewport') as HTMLElement).focus());
   await page.keyboard.press(`${mod}+z`);
@@ -159,11 +154,11 @@ test('a connection made by hand warns at once; Undo takes the warning away, Redo
   expect(await warning(page, 'Condition')).toBeNull();
   await page.keyboard.press(`Shift+${mod}+z`);
   await settle(page);
-  expect(await warning(page, 'Condition')).toBe('Condition takes rows; it was given "abc"');
+  expect(await warning(page, 'Condition')).toBe('Equals takes a field or a value; it was given rows: route a Field in');
   // No fault, no block: Save hands the graph over, its route in it.
   const handed = await page.evaluate(() => {
     const w = window as unknown as { ed: { save(): boolean }; saved: { routes: { from: string; to: string }[] }[] };
-    return [w.ed.save(), w.saved.at(-1)?.routes.some((r) => r.from === 'v/value' && r.to === 'c')];
+    return [w.ed.save(), w.saved.at(-1)?.routes.some((r) => r.from === 's/rows' && r.to === 'c')];
   });
   expect(handed).toEqual([true, true]);
 });
@@ -199,9 +194,11 @@ test('rows dropped on Math › Value B join, drawn, and Math says so; a loop is 
   expect(box.text).toBe('Value A takes a number; it was given "abc"\nValue B takes a number; it was given rows');
   expect(box.box.h, 'two lines').toBeGreaterThan(24);
   await page.mouse.move(2, 2);
-  // Time's True into the Condition's header joins and warns; the Condition's rows back into Time would make a loop: refused.
+  // Time's True into the Condition's header joins: a comparison tests a boolean as a value. Its rows back into Time
+  // would make a loop: refused.
   await drag(page, await socketAt(page, 'Time', null, 'output'), await socketAt(page, 'Condition', null, 'input'));
-  expect(await warning(page, 'Condition')).toBe('Condition takes rows; it was given a boolean');
+  expect(await lines(page)).toContain('t>c');
+  expect(await warning(page, 'Condition')).toBeNull();
   const before = await lines(page);
   await drag(page, await socketAt(page, 'Condition', 'Rows', 'output'), await socketAt(page, 'Time', null, 'input'));
   expect(await lines(page)).toEqual(before);

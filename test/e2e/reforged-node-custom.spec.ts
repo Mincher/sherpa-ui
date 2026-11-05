@@ -14,8 +14,12 @@ const ORG = {
   v: 1, label: 'Org permissions', category: 'Logic',
   inputs: [{ name: 'users', label: 'Users', type: 'object' }, { name: 'role', label: 'Role', type: 'value', control: 'text', default: 'admin' }],
   outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
-  nodes: [{ id: 'has-role', kind: 'condition', x: 0, y: 0, values: { field: 'role', op: 'eq' } }],
-  routes: [{ from: '#in/users', to: 'has-role' }, { from: '#in/role', to: 'has-role/value' }, { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' }],
+  // The users' Role, a Field; Equals the Role given, as Value B (plan 783).
+  nodes: [{ id: 'has-role', kind: 'condition', x: 360, y: 0, values: { type: 'eq' } }, { id: 'role', kind: 'field', x: 0, y: 0, values: { field: 'role' } }],
+  routes: [
+    { from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: '#in/role', to: 'has-role/b' },
+    { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' },
+  ],
 };
 
 test.beforeEach(async ({ page }) => {
@@ -104,7 +108,7 @@ test('Enter on the header opens a Custom Node: Group Input and Output drawn, a t
   await header(page, 'Org permissions').first().focus();
   await page.keyboard.press('Enter');
   await settle(page);
-  expect(await headings(page)).toEqual(['Group Input', 'Condition', 'Group Output']);
+  expect(await headings(page)).toEqual(['Group Input', 'Condition', 'Field', 'Group Output']);
   expect(await ed(page, 'ed.path()')).toEqual(['perm']);
   await page.locator('#trail > sherpa-breadcrumbs .crumb .link').first().waitFor();
   const crumbs = await page.locator('#trail > sherpa-breadcrumbs').evaluate((el) => [...el.shadowRoot!.querySelectorAll('.crumb .link')].map((a) => a.textContent));
@@ -147,9 +151,9 @@ test('an edit inside is an edit to the definition: each use says an update is av
   expect(await page.locator('#cv > sherpa-node[data-caption]').count()).toBe(0);
   await ed(page, "ed.open('perm')");
   await settle(page);
-  await page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-input-text[name="op"] select').selectOption('ne');
+  await page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-input-text[name="type"] select').selectOption('ne');
   await settle(page);
-  expect(await ed(page, "ed.library().nodes['org-permissions'].nodes[0].values.op")).toBe('ne');
+  expect(await ed(page, "ed.library().nodes['org-permissions'].nodes[0].values.type")).toBe('ne');
   await ed(page, 'ed.back()');
   await settle(page);
   const captions = await page.locator('#cv > sherpa-node[data-heading="Org permissions"]').evaluateAll((els) => els.map((e) => e.getAttribute('data-caption')));
@@ -167,7 +171,7 @@ async function stale(page: Page): Promise<void> {
   await bind(page);
   await ed(page, "ed.open('perm')");
   await settle(page);
-  await page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-input-text[name="op"] select').selectOption('ne');
+  await page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-input-text[name="type"] select').selectOption('ne');
   await ed(page, 'ed.back()');
   await settle(page);
   await header(page, 'Org permissions').first().click();
@@ -185,7 +189,7 @@ test('the split button: "Update instance" updates one; the draft keeps it until 
   // The pane is gone with the update, and the draft holds it: Save hands it over, with the changed definition.
   expect(await page.locator('#inspector .update-pane').count()).toBe(0);
   await ed(page, 'ed.save()');
-  expect(await page.evaluate(() => (window as unknown as { savedNodes: [string, { nodes: { values: { op: string } }[] }][] }).savedNodes.map(([id, d]) => [id, d.nodes[0]!.values.op]))).toEqual([['org-permissions', 'ne']]);
+  expect(await page.evaluate(() => (window as unknown as { savedNodes: [string, { nodes: { values: { type: string } }[] }][] }).savedNodes.map(([id, d]) => [id, d.nodes[0]!.values.type]))).toEqual([['org-permissions', 'ne']]);
   const saved = await page.evaluate(() => (window as unknown as { saved: { nodes: { id: string; version?: string }[] }[] }).saved.at(-1)!.nodes.filter((n) => n.id.startsWith('perm')).map((n) => n.version));
   expect(saved[0]).not.toBe(saved[1]);
 });
@@ -219,7 +223,7 @@ test('the split button\'s menu: both bulk items ask in a critical dialog; cancel
   await ed(page, 'ed.discard()');
   await settle(page);
   expect([await captionOf(page, 0), await captionOf(page, 1)]).toEqual([null, null]);
-  expect(await ed(page, "ed.library().nodes['org-permissions'].nodes[0].values.op")).toBe('eq');
+  expect(await ed(page, "ed.library().nodes['org-permissions'].nodes[0].values.type")).toBe('eq');
 });
 
 test('a preset opens read only; "Copy to my nodes" makes an editable copy that takes its place', async ({ page }) => {
@@ -229,7 +233,7 @@ test('a preset opens read only; "Copy to my nodes" makes an editable copy that t
   expect(await ed(page, 'ed.path()')).toEqual(['own']);
   // Read only: a field is locked, a node does not move, and the panel says how to change it.
   const locked = await page.locator('#cv > sherpa-node[data-heading="Condition"]').evaluate((el) => ({
-    place: el.hasAttribute('data-locked'), op: el.querySelector('sherpa-input-text[name="op"]')?.hasAttribute('readonly'),
+    place: el.hasAttribute('data-locked'), op: el.querySelector('sherpa-input-text[name="type"]')?.hasAttribute('readonly'),
   }));
   expect(locked).toEqual({ place: true, op: true });
   expect(await page.locator('#inspector').getAttribute('data-heading')).toBe('Owner check');
@@ -238,12 +242,12 @@ test('a preset opens read only; "Copy to my nodes" makes an editable copy that t
   await settle(page);
   expect(await ed(page, "Object.keys(ed.library().nodes).sort()")).toEqual(['org-permissions', 'owner-check', 'owner-check-copy']);
   expect(await ed(page, "ed.library().nodes['owner-check-copy'].preset")).toBeUndefined();
-  const op = page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-input-text[name="op"]');
+  const op = page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-input-text[name="type"]');
   expect(await op.evaluate((el) => el.hasAttribute('disabled'))).toBe(false);
   await op.locator('select').selectOption('ne');
   await settle(page);
-  expect(await ed(page, "ed.library().nodes['owner-check-copy'].nodes[0].values.op")).toBe('ne');
-  expect(await ed(page, "ed.library().nodes['owner-check'].nodes[0].values.op")).toBe('eq');
+  expect(await ed(page, "ed.library().nodes['owner-check-copy'].nodes[0].values.type")).toBe('ne');
+  expect(await ed(page, "ed.library().nodes['owner-check'].nodes[0].values.type")).toBe('eq');
   await ed(page, 'ed.back()');
   await settle(page);
   expect(await page.locator('#cv > sherpa-node[data-heading="Owner check copy"]').count()).toBe(1);
@@ -336,21 +340,21 @@ test('two sources let go on one Custom Node\'s header are two new inputs: a row 
   await settle(page);
   const rows = () => page.locator('#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row').evaluateAll((els) => els.map((e) => [e.getAttribute('data-label'), e.getAttribute('data-output-socket'), e.hasAttribute('data-output-routed')]));
   expect(await rows()).toEqual([['Users', 'object', true], ['Role', 'value', true], ['Store › Rows', 'object', false], ['Org permissions › True', 'boolean', false]]);
-  // The reader routes Store › Rows on to the Condition, by the pointer: it takes the place of Users there.
-  await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row[data-label="Store › Rows"]', 'output'), await socketAt(page, '#cv > sherpa-node[data-heading="Condition"]', 'input'));
-  expect(await routesOf(page, "ed.library().nodes['org-permissions'].routes")).toContain('#in/start-rows → has-role');
+  // The reader routes Store › Rows on to the Field, by the pointer: it takes the place of Users there.
+  await drawLine(page, await socketAt(page, '#cv > sherpa-node[data-heading="Group Input"] sherpa-node-row[data-label="Store › Rows"]', 'output'), await socketAt(page, '#cv > sherpa-node[data-heading="Field"]', 'input'));
+  expect(await routesOf(page, "ed.library().nodes['org-permissions'].routes")).toContain('#in/start-rows → role');
   expect(await rows()).toEqual([['Users', 'object', false], ['Role', 'value', true], ['Store › Rows', 'object', true], ['Org permissions › True', 'boolean', false]]);
   await ed(page, 'ed.back()');
   await settle(page);
   // Save hands the definition over with its two new inputs.
   expect(await ed(page, 'ed.save()')).toBe(true);
   expect(await ed(page, "window.savedNodes.find(([id]) => id === 'org-permissions')[1].inputs.map((i) => i.name)")).toEqual(['users', 'role', 'start-rows', 'perm']);
-  // Ungroup: the Store goes on to the Condition through its row; the True and Users rows feed nothing inside, so their routes go.
+  // Ungroup: the Store goes on to the Field through its row; the True and Users rows feed nothing inside, so their routes go.
   await header(page, 'Org permissions').nth(1).click();
   await settle(page);
   await page.locator('#inspector sherpa-button[data-label="Ungroup"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
   await settle(page);
-  expect(await routesOf(page)).toEqual(['perm → end', 'start/rows → has-role', 'start/rows → perm/users']);
+  expect(await routesOf(page)).toEqual(['perm → end', 'role/field → has-role', 'start/rows → perm/users', 'start/rows → role']);
 });
 
 test('a preset\'s header refuses a new input, in words: its inside is read only (763)', async ({ page }) => {
@@ -404,7 +408,7 @@ test('a saved edit reaches a saved edit reaches a second tab: its uses show the 
   await bind(page);
   await ed(page, "ed.open('perm')");
   await settle(page);
-  await page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-input-text[name="op"] select').selectOption('ne');
+  await page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-input-text[name="type"] select').selectOption('ne');
   await ed(page, 'ed.back()');
   await ed(page, 'ed.save()');
   // The second tab: the saved workflow (uses at the old version), the saved library.

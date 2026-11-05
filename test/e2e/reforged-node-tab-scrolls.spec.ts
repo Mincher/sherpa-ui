@@ -22,8 +22,9 @@ test.beforeEach(async ({ page }) => {
     const flow = { v: 2, id: 'tabs', nodes: [
       { id: 'start', kind: 'store', x: 0, y: 0, values: { store: 'customers' } },
       { id: 'value', kind: 'value', x: 0, y: 240, values: { value: 'active' } },
-      { id: 'c', kind: 'condition', x: 320, y: 0, heading: 'Check', values: { field: 'status', op: 'eq' } },
-    ], routes: [{ from: 'start/rows', to: 'c' }, { from: 'value/value', to: 'c/value' }] };
+      { id: 'f', kind: 'field', x: 320, y: 0, values: { field: 'status' } },
+      { id: 'c', kind: 'condition', x: 640, y: 0, heading: 'Check', values: { type: 'eq' } },
+    ], routes: [{ from: 'start/rows', to: 'f' }, { from: 'f/field', to: 'c' }, { from: 'value/value', to: 'c/b' }] };
     bindWorkflow(el as never, flow as never, {
       session: new SessionStore(), inspector: panel as never, fields: { status: { label: 'Status' } }, stores: ['customers'],
     } as never);
@@ -79,5 +80,5 @@ test('two picked: the tall node\'s tab scrolls in the panel, and every button in
   // A button reached by the scroll does its work: the cut route is gone.
   await page.locator('#inspector sherpa-tabs [data-current] sherpa-button[data-label^="Cut route"]').evaluate((el) => (el.shadowRoot!.querySelector('button') as HTMLElement).click());
   await settle(page);
-  await expect(page.locator('#cv svg.graph-routes path[data-to="c/value"]')).toHaveCount(0);
+  await expect(page.locator('#cv svg.graph-routes path[data-to="c/b"]')).toHaveCount(0);
 });

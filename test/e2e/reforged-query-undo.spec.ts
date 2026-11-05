@@ -59,13 +59,13 @@ test('the primary key (Cmd on a Mac) + Z undo, Shift+Z redoes; the graph redraws
   await page.locator('sherpa-layout-canvas .viewport').focus();
   await page.keyboard.press(`${await primary(page)}+z`);
   await expect.poll(() => picked(page)).toEqual(['EMEA']);
-  await expect.poll(() => page.locator('sherpa-layout-canvas sherpa-node-row sherpa-input-text[name="value"]').first().evaluate((e) => (e as HTMLElement & { value: string }).value)).toBe('EMEA');
+  await expect.poll(() => page.locator('sherpa-layout-canvas sherpa-node-row sherpa-input-text[name="b"]').first().evaluate((e) => (e as HTMLElement & { value: string }).value)).toBe('EMEA');
   await page.keyboard.press(`${await primary(page)}+Shift+z`);
   await expect.poll(() => picked(page)).toEqual(['AMER']);
 });
 
 test('an edit in the graph is a step too; a new edit after an Undo drops the redo tail; the journal is capped', async ({ page }) => {
-  await page.locator('#cv sherpa-node-row:has(sherpa-input-text[name="op"]) select').selectOption('notin');
+  await page.locator('#cv sherpa-node-row:has(sherpa-input-text[name="type"]) select').selectOption('notin');
   await page.evaluate(() => window.__settled());
   expect((await can(page)).undo).toBe(true);
   await page.locator('sherpa-node-toolbar sherpa-button.undo').click();

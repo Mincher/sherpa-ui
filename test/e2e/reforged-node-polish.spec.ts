@@ -2,15 +2,18 @@ import { test, expect, type Page } from './harness';
 
 /**
  * Node polish — Will, TODO 743. A fork's footer keeps its False SOCKET and loses the word; a socket's tip hangs
- * beside its socket, panned and zoomed; a line is drawn between a node's sections; Backspace and Delete remove
+ * beside its socket, panned and zoomed; Backspace and Delete remove
  * the picked nodes and their routes as ONE step; the Pan tool's icon is four arrows. Real pointer and key; pixels.
  */
 const ORG = {
   v: 1, label: 'Org permissions', category: 'Logic',
   inputs: [{ name: 'users', label: 'Users', type: 'object' }, { name: 'role', label: 'Role', type: 'value', control: 'text', default: 'admin' }],
   outputs: [{ name: 'allowed', label: 'Allowed', type: 'object' }],
-  nodes: [{ id: 'has-role', kind: 'condition', x: 0, y: 0, values: { field: 'role', op: 'eq' } }],
-  routes: [{ from: '#in/users', to: 'has-role' }, { from: '#in/role', to: 'has-role/value' }, { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' }],
+  nodes: [{ id: 'role', kind: 'field', x: 0, y: 0, values: { field: 'role' } }, { id: 'has-role', kind: 'condition', x: 360, y: 0, values: { type: 'eq' } }],
+  routes: [
+    { from: '#in/users', to: 'role' }, { from: 'role/field', to: 'has-role' }, { from: '#in/role', to: 'has-role/b' },
+    { from: 'has-role/rows', to: '#out/allowed' }, { from: 'has-role', to: '#out' },
+  ],
 };
 
 test.beforeEach(async ({ page }) => {
@@ -118,35 +121,6 @@ test('a socket tip sits beside its socket on hover, after a pan and a zoom, neve
     }
     expect(tested, `zoom ${zoom}`).toBeGreaterThan(0);
   }
-});
-
-test('a line is drawn between two sections of a node, and none before the first or after the last', async ({ page }) => {
-  await bind(page);
-  await page.evaluate(() => (window as never as { ed: { open(id: string): void } }).ed.open('perm'));
-  await settle(page);
-  const marks = await page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-node-row').evaluateAll((rows) => rows.map((r) => r.hasAttribute('data-divided')));
-  expect(marks.length).toBeGreaterThan(2);
-  expect(marks[0]).toBe(false);
-  expect(marks.some(Boolean)).toBe(true);
-  const at = await page.locator('#cv > sherpa-node[data-heading="Condition"] sherpa-node-row').evaluateAll((rows) => rows.map((r) => r.getBoundingClientRect().top));
-  const k = marks.indexOf(true);
-  const shot = await page.screenshot({ clip: { x: 0, y: 0, width: 1280, height: 720 } });
-  const read = (y: number, x: number) => page.evaluate(async ([b64, px, py]) => {
-    const img = new Image();
-    img.src = `data:image/png;base64,${b64}`;
-    await img.decode();
-    const c = Object.assign(document.createElement('canvas'), { width: img.width, height: img.height }).getContext('2d')!;
-    c.drawImage(img, 0, 0);
-    // The shot may be at 2x: scale the point to it.
-    const k = img.width / 1280;
-    return [...c.getImageData(Math.round((px! as number) * k), Math.round((py! as number) * k), 1, 1).data].slice(0, 3);
-  }, [shot.toString('base64'), x, y] as const);
-  const left = await page.locator('#cv > sherpa-node[data-heading="Condition"]').evaluate((n) => n.getBoundingClientRect().left);
-  const plain = await read(at[k]! + 1, left + 8);
-  // The line is half a px, one device px at 2x, and engines round its place by a pixel: look at each device row about the gap's middle.
-  const darkest = async (y: number) => Math.max(...(await Promise.all([-1, -0.5, 0, 0.5, 1].map((d) => read(y + d, left + 40)))).map((p) => Math.max(...p.map((v, i) => Math.abs(v - plain[i]!)))));
-  expect(await darkest(at[k]! - 4), 'a line of the border colour between sections').toBeGreaterThanOrEqual(12);
-  expect(await darkest(at[0]! - 4), 'none before the first').toBeLessThanOrEqual(10);
 });
 
 test('Delete and Backspace remove the picked nodes and their routes as ONE step; Undo restores; not in a text field', async ({ page }) => {
@@ -298,9 +272,9 @@ test('a taller node spreads its rows evenly, and its routes still end on their s
   moved.forEach((m, i) => expect(Math.abs(m - i * step), `row ${i}`).toBeLessThanOrEqual(1));
   // A route's end is on its socket.
   const gap = await page.evaluate(() => {
-    const path = [...document.querySelectorAll<SVGPathElement>('#cv svg.graph-routes path[data-from]')].find((p) => p.dataset['to']?.startsWith('has-role/value'))!;
+    const path = [...document.querySelectorAll<SVGPathElement>('#cv svg.graph-routes path[data-from]')].find((p) => p.dataset['to']?.startsWith('has-role/b'))!;
     const end = path.getPointAtLength(path.getTotalLength()).matrixTransform(path.getScreenCTM()!);
-    const row = document.querySelector('#cv > sherpa-node[data-heading="Condition"] sherpa-node-row:has([name="value"])') as HTMLElement & { socketRect(s: string): DOMRect };
+    const row = document.querySelector('#cv > sherpa-node[data-heading="Condition"] sherpa-node-row:has([name="b"])') as HTMLElement & { socketRect(s: string): DOMRect };
     const s = row.socketRect('input');
     return Math.hypot(end.x - (s.left + s.width / 2), end.y - (s.top + s.height / 2));
   });

@@ -599,11 +599,13 @@ function connectFrom(canvas: SherpaLayoutCanvas, drawn: Drawn, event: PointerEve
   const follow = (e: PointerEvent): void => {
     draft.setAttribute('d', out || lifting ? curve(begin, plane(e)) : curve(plane(e), begin));
   };
-  // "Add a node" for a line let go on the bare canvas: the socket's type, and where.
+  // "Add a node" for a line let go on the bare canvas: the socket's type, what an output gives (a Field's column), and where.
   const addFrom = (socket: string, side: 'out' | 'in', e: PointerEvent): void => {
     const type = typeAt(drawn, socket, side === 'out' ? 'output' : 'input');
     const [x, y] = plane(e);
-    if (type) drawn.options.onAdd?.({ socket, type, side, client: { x: e.clientX, y: e.clientY }, at: { x: Math.round(x), y: Math.round(y) } });
+    const { node, row } = socketOf(socket);
+    const gives = side === 'out' ? drawn.graph.nodes.find((n) => n.id === node)?.rows.find((r) => r.name === row)?.gives : undefined;
+    if (type) drawn.options.onAdd?.({ socket, type, side, ...(gives ? { gives } : {}), client: { x: e.clientX, y: e.clientY }, at: { x: Math.round(x), y: Math.round(y) } });
   };
   const stop = (e: PointerEvent): void => {
     window.removeEventListener('pointermove', follow);

@@ -31,9 +31,10 @@ const BIND = `async (routes, OWN = false) => {
   const flow = { v: 2, id: 'g', nodes: [
     { id: 'start', kind: 'store', x: 0, y: 300, values: { store: 'customers' } },
     { id: 'tags', kind: 'tags', x: 0, y: 0, values: { set: ['status'] } },
-    { id: 'filter', kind: 'condition', x: 360, y: 0, values: { field: 'status', op: 'eq', value: 'trial' } },
+    { id: 'filter', kind: 'condition', x: 360, y: 0, values: { type: 'eq', b: 'trial' } },
     { id: 'gate', kind: 'gate', x: 720, y: 0, values: { on: OWN } },
-  ], routes: [{ from: 'start/rows', to: 'filter' }, ...routes] };
+    { id: 'status', kind: 'field', x: 0, y: 520, values: { field: 'status' } },
+  ], routes: [{ from: 'start/rows', to: 'status' }, { from: 'status/field', to: 'filter' }, ...routes] };
   window.editor = bindWorkflow(canvas, flow, {
     session: new SessionStore(), inspector: document.getElementById('inspector'), kinds,
     fields: { status: { label: 'Status' }, plan: { label: 'Plan' }, name: { label: 'Name' } }, stores: ['customers'],
