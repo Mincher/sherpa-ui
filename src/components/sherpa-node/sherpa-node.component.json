@@ -49,6 +49,15 @@
             },
             {
               "el": "span",
+              "class": "grip sherpa-icon-box",
+              "part": "grip",
+              "attrs": {
+                "aria-hidden": "true",
+                "data-icon": "drag-handle-vertical"
+              }
+            },
+            {
+              "el": "span",
               "class": "socket socket-in sherpa-anchor",
               "part": "socket-in",
               "attrs": {
@@ -362,6 +371,11 @@
   "states": [
     {
       "$type": "state",
+      "name": "current",
+      "selector": ":host([data-current])"
+    },
+    {
+      "$type": "state",
       "name": "caption",
       "selector": ":host([data-caption])"
     },
@@ -412,6 +426,11 @@
     "root.border-width": "{sherpa.style-border-width}",
     "root.border-radius": "{sherpa.display-mode-border-rounding-base}",
     "root.color": "{sherpa.style-content-base}",
+    "grip.inset-block-start": "{sherpa.theme-padding-md}",
+    "grip.inset-inline-end": "{sherpa.theme-gap-md}",
+    "grip.inline-size": "{sherpa.display-mode-size-sm}",
+    "grip.block-size": "{sherpa.display-mode-size-sm}",
+    "grip.color": "{sherpa.style-content-secondary}",
     "caption.padding-block-end": "{sherpa.theme-gap-sm}",
     "caption.color": "{sherpa.style-content-secondary}",
     "caption.font-family": "{sherpa.font-family-body}",

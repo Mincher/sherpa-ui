@@ -225,6 +225,7 @@
   position: relative;
   cursor: grab;
   user-select: none;
+  -webkit-user-drag: none;
   touch-action: none;
   border-start-start-radius: inherit;
   border-start-end-radius: inherit;
@@ -240,6 +241,23 @@
     var(--sherpa-display-mode-size-2xs, 8px) var(--sherpa-display-mode-size-2xs, 8px)
     var(--sherpa-display-mode-size-sm, 16px) -4px var(--sherpa-style-surface-shadow, #35353d4c);
 }
+/* The GRIP, in the header's end padding, so nothing moves when it shows. It is
+   never a target: a press on it is a press on the header. */
+.grip {
+  position: absolute;
+  inset-block-start: calc(var(--sherpa-theme-padding-md, 8px) + 2px);
+  inset-inline-end: var(--sherpa-theme-gap-md, 8px);
+  inline-size: var(--sherpa-display-mode-size-sm, 16px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  color: var(--sherpa-style-content-secondary, #35353d);
+  pointer-events: none;
+  visibility: hidden;
+}
+.header:hover .grip,
+.header:focus-visible .grip,
+:host(:state(dragging)) .grip,
+:host([data-current]) .grip { visibility: visible; }
+@media (forced-colors: active) { .grip { color: CanvasText; } }
 .header:focus-visible {
   outline: var(--sherpa-focus-ring);
   outline-offset: var(--sherpa-focus-offset);

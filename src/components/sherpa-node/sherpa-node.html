@@ -35,6 +35,8 @@
     <!-- The HEADER is the handle: a drag moves the node, the arrows move it, Enter selects it. -->
     <div class="header" part="header" role="button" tabindex="0" aria-roledescription="node">
       <sherpa-container-header class="heading" part="heading" data-heading="Node" data-attr-data-heading="data-heading" data-attr-data-icon="data-icon" data-attr-data-description="data-description"></sherpa-container-header>
+      <!-- The grip: where to take hold. Shown on hover and focus; it moves nothing itself. -->
+      <span class="grip sherpa-icon-box" part="grip" aria-hidden="true" data-icon="drag-handle-vertical"></span>
       <span class="socket socket-in sherpa-anchor" part="socket-in" aria-hidden="true"></span>
       <span class="tip tip-in sherpa-tip" popover="manual" part="tip" aria-hidden="true"><span class="name">Input:</span><span class="word w-value">a value</span><span class="word w-object">an object</span><span class="word w-boolean">a boolean</span><span class="word w-any">any type</span></span>
       <span class="socket socket-out sherpa-anchor" part="socket-out" aria-hidden="true"></span>

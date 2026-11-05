@@ -56,6 +56,8 @@ export class SherpaNode extends SherpaElement {
   override onRender(): void {
     const header = this.$<HTMLElement>('.header');
     header?.addEventListener('pointerdown', this.#onPointerDown);
+    // Text or an icon already selected on the page would otherwise start a native drag, not a move.
+    header?.addEventListener('dragstart', (event) => event.preventDefault());
     for (const type of ['pointermove', 'pointerup', 'pointercancel']) {
       header?.addEventListener(type, this.#onPointer as EventListener);
     }

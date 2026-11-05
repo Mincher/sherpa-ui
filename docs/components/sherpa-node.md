@@ -63,7 +63,7 @@ Each one bubbles.
 
 Style these from outside with `::part()`:
 
-`body`, `caption`, `foot`, `footer`, `header`, `heading`, `root`, `socket-false`, `socket-in`, `socket-out`, `tip`
+`body`, `caption`, `foot`, `footer`, `grip`, `header`, `heading`, `root`, `socket-false`, `socket-in`, `socket-out`, `tip`
 
 ## CSS custom properties it reads
 
@@ -74,6 +74,11 @@ What each class's base rule reads:
 | `--sherpa-style-border-width` | `.root` | `border-width` |
 | `--sherpa-display-mode-border-rounding-base` | `.root` | `border-radius` |
 | `--sherpa-style-content-base` | `.root` | `color` |
+| `--sherpa-theme-padding-md` | `.grip` | `inset-block-start` |
+| `--sherpa-theme-gap-md` | `.grip` | `inset-inline-end` |
+| `--sherpa-display-mode-size-sm` | `.grip` | `inline-size` |
+| `--sherpa-display-mode-size-sm` | `.grip` | `block-size` |
+| `--sherpa-style-content-secondary` | `.grip` | `color` |
 | `--sherpa-theme-gap-sm` | `.caption` | `padding-block-end` |
 | `--sherpa-style-content-secondary` | `.caption` | `color` |
 | `--sherpa-font-family-body` | `.caption` | `font-family` |
