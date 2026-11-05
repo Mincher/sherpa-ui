@@ -149,7 +149,7 @@ test('a workflow Condition draws a part for each comparison it holds, and a Join
   const w = { v: 2, id: 'w', nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0, values: { field: 'seats', op: 'gt', value: 5, 'field-2': 'plan', 'op-2': 'eq', 'value-2': 'Pro' } }] };
   const fields = { seats: { type: 'number' }, plan: { type: 'text' } };
   const g = workflowGraph(w, { fields });
-  assert.deepEqual(g.nodes[0].rows.map((r) => r.name), ['rows', 'join', 'field', 'op', 'value', 'field-2', 'op-2', 'value-2', 'matches']);
+  assert.deepEqual(g.nodes[0].rows.map((r) => r.name), ['rows', 'join', 'field', 'op', 'value', 'field-2', 'op-2', 'value-2']);
   assert.equal(row(g, 'c', 'join').value, 'and', 'the join\'s default shows');
   // Each part's operators are its own field's type's.
   assert.ok(row(g, 'c', 'op').choices.some((c) => c.label === 'Greater than'));
@@ -160,9 +160,9 @@ test('a workflow Condition draws a part for each comparison it holds, and a Join
   assert.equal(editWorkflow(w, { node: 'c', row: 'join', value: 'or' }).nodes[0].values.join, 'or');
   // One comparison draws no Join; a Group row is drawn where a route enters it.
   const one = workflowGraph({ ...w, nodes: [{ id: 'c', kind: 'condition', x: 0, y: 0, values: { field: 'seats' } }] }, { fields });
-  assert.deepEqual(one.nodes[0].rows.map((r) => r.name), ['rows', 'field', 'op', 'value', 'matches']);
+  assert.deepEqual(one.nodes[0].rows.map((r) => r.name), ['rows', 'field', 'op', 'value']);
   const grouped = workflowGraph({ ...w, nodes: [...w.nodes, { id: 'd', kind: 'condition', x: 0, y: 0 }], routes: [{ from: 'd', to: 'c/group-3' }] }, { fields });
-  assert.deepEqual(grouped.nodes[0].rows.map((r) => r.name).slice(-2), ['group-3', 'matches']);
+  assert.deepEqual(grouped.nodes[0].rows.map((r) => r.name).slice(-1), ['group-3']);
 });
 
 test('the Filter kind is gone: a saved Filter node reads as the Condition it became, once, in a v1 and a v2', () => {

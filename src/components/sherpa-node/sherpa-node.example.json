@@ -6,7 +6,6 @@
     "<sherpa-node-row data-input-socket=\"object\" data-input-routed data-label=\"Rows\"></sherpa-node-row>",
     "<sherpa-node-row data-input-socket=\"value\"><sherpa-input-text data-label=\"Value\" name=\"value\" value=\"active\"></sherpa-input-text></sherpa-node-row>",
     "<sherpa-node-row data-input-socket=\"boolean\" data-label=\"Group\"></sherpa-node-row>",
-    "<sherpa-node-row data-label=\"Matches\" data-output-socket=\"value\"></sherpa-node-row>",
     "</sherpa-node>",
     "</sherpa-layout-canvas>"
   ],

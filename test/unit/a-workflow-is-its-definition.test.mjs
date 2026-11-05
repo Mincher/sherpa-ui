@@ -117,7 +117,8 @@ test('ONE registry: every kind once, with a header, its own row names, what it s
   // One meaning per word: a Store is where rows come from, in both; a Condition is one group of the condition tree, in both.
   assert.equal(NODE_KINDS.source.model, 'SourceDefinition');
   assert.equal(NODE_KINDS.filter, undefined, 'the Filter kind is gone: a Condition is the one');
-  assert.deepEqual(NODE_KINDS.condition.rows.map((r) => r.name), ['rows', 'join', 'field', 'op', 'value', 'group', 'matches']);
+  // No row sends a result: True is on the header, False on the footer. Will, 2026-11-05
+  assert.deepEqual(NODE_KINDS.condition.rows.map((r) => r.name), ['rows', 'join', 'field', 'op', 'value', 'group']);
 });
 
 test('each fault is reported by name, and the check says no', () => {
@@ -129,7 +130,7 @@ test('each fault is reported by name, and the check says no', () => {
     [{ nodes: [...nodes, { id: 'more', kind: 'value', x: 0, y: 0, values: { colour: 'red' } }] }, 'the node "more" holds a value for "colour", a row its kind has not'],
     [{ nodes: [...nodes, { id: 'more', kind: 'condition', x: 0, y: 0, values: { op: 'equals' } }] }, 'the node "more" holds "equals" as its Operator, which is no operator'],
     [{ routes: [{ from: 'gone', to: 'filter' }] }, 'a route leaves "gone", which is no output socket'],
-    [{ routes: [{ from: 'start/rows', to: 'filter/matches' }] }, 'a route enters "filter/matches", which is no input socket'],
+    [{ routes: [{ from: 'start/rows', to: 'filter/join' }] }, 'a route enters "filter/join", which is no input socket'],
     // A Rows row only sends: the rows come in on the header.
     [{ routes: [{ from: 'start/rows', to: 'filter/rows' }] }, 'a route enters "filter/rows", a Rows row, which only sends: a node\'s rows come in on its header'],
     [{ routes: [{ from: 'start/rows', to: 'filter/value' }] }, 'the route "start/rows" → "filter/value" joins an object to a value'],
@@ -169,7 +170,7 @@ test('a workflow DRAWS as its kinds say: each node at its place, its rows with i
   assert.deepEqual(graph.routes, good.routes);
   // Its Rows first: the rows that match, sent on. They come in on its header, of any type; its True and False on its header and footer.
   assert.deepEqual(node('filter').rows.map((r) => [r.name, r.value, !!r.editable]), [
-    ['rows', undefined, false], ['field', 'status', true], ['op', 'eq', true], ['value', 'active', true], ['matches', undefined, false],
+    ['rows', undefined, false], ['field', 'status', true], ['op', 'eq', true], ['value', 'active', true],
   ]);
   assert.deepEqual([node('filter').input, node('filter').branches, row('filter', 'rows').output, row('filter', 'rows').input], ['any', true, 'object', undefined]);
   // The field from the facts; its operators its type's, by their words.

@@ -14,13 +14,15 @@
  * - NodeGraph — Where a kind is drawn: a page's Query, or a workflow.
  * - NodeType — One type of a family kind: its words, its hint and what it adds to the kind's rows and sockets.
  * - NodeKind — What a node IS: its header, its sockets, its rows, and what it stands for in the data layer.
+ * - ROWS — The Rows row: the data rows a node sends on. They come in on its header.
+ * - NODE_KINDS — Every kind the library ships, once. An app adds its own beside them.
  * - typeOf — The type of a family kind a node's `type` names: its own, else the kind's default.
  * - typeChoices — The types of a family kind as a picklist reads them; none, it is no family.
  * - resolveKind — A family kind as an ordinary kind for one type: the type row first, then the kind's rows and the type's.
+ * - resolveKind — A family kind as an ordinary kind for one type: the type row first, then the kind's rows and the type's.
+ * - resolveKind — A family kind as an ordinary kind for one type: the type row first, then the kind's rows and the type's.
  * - kindOfNode — The kind a node is, resolved for its own type; none, no such kind.
  * - rowOfOtherType — A row a family kind has under another type than this one: it, and the types that hold it.
- * - ROWS — The Rows row: the data rows a node sends on. They come in on its header.
- * - NODE_KINDS — Every kind the library ships, once. An app adds its own beside them.
  * - NODE_CATEGORIES — The node panel's categories, in order.
  * - PaletteItem — One node of the panel: the kind's id and the kind.
  * - PaletteGroup — One category of the panel, and its kinds in the registry's order.
@@ -208,7 +210,6 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
       { name: 'op', label: 'Operator', control: 'op', repeat: true, input: 'value' },
       { name: 'value', label: 'Value', control: 'values', repeat: true, input: 'value' },
       { name: 'group', label: 'Group', repeat: true, input: 'boolean', from: ['condition'] },
-      { name: 'matches', label: 'Matches', output: 'value' },
     ],
     model: 'Condition', graphs: ['query', 'workflow'], category: 'Logic',
   },
@@ -473,8 +474,8 @@ export function partOf(name: string): { base: string; part: number } {
 export type PartKind = 'leaf' | 'group';
 
 /** The rows a Condition node draws for its parts, in order: its Rows, its Join from two parts on,
- *  each part's — a comparison's Field, Operator and Value, or a Group — then Matches. `rows: false`
- *  leaves out what only a run gives: Rows and Matches. */
+ *  each part's — a comparison's Field, Operator and Value, or a Group. `rows: false` leaves out
+ *  what only a run gives: Rows. True and False are the node's own sockets, not rows. */
 export function conditionRows(kind: Pick<NodeKind, 'rows'>, parts: readonly PartKind[], { rows = true }: { rows?: boolean } = {}): RowKind[] {
   const of = (name: string): RowKind => kind.rows.find((r) => r.name === name)!;
   const part = (names: readonly string[], n: number): RowKind[] => names.map((name) => {
@@ -485,7 +486,6 @@ export function conditionRows(kind: Pick<NodeKind, 'rows'>, parts: readonly Part
     ...(rows ? [of(ROWS.name)] : []),
     ...(parts.length >= 2 ? [of('join')] : []),
     ...parts.flatMap((p, i) => part(p === 'leaf' ? ['field', 'op', 'value'] : ['group'], i + 1)),
-    ...(rows ? [of('matches')] : []),
   ];
 }
 

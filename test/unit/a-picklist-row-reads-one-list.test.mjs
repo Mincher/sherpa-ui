@@ -101,8 +101,9 @@ test('a Value node routed into a picklist OVERRIDES it: the row mirrors it, read
   assert.deepEqual([back.value, back.custom, back.hint], ['trial', undefined, undefined]);
   // A value that is not in the list is Custom the same way; one no node holds waits for N4.
   assert.equal(rowOf(routed(), 'filter', 'value', { fields }).value, 'active', 'with no list it still mirrors');
-  const waiting = editWorkflow(over, { route: { from: 'filter/matches', to: 'filter/value' } });
-  assert.equal(rowOf(waiting, 'filter', 'value').value, 'trial', 'a Matches holds no value yet: its own shows');
+  const sum = { ...over, nodes: [...over.nodes, { id: 'sum', kind: 'math', x: 0, y: 400 }] };
+  const waiting = editWorkflow(sum, { route: { from: 'sum/result', to: 'filter/value' } });
+  assert.equal(rowOf(waiting, 'filter', 'value').value, 'trial', 'a Result holds no value yet: its own shows');
   // The Type, and the node it routes: the flow is checked as it was.
   assert.deepEqual(workflowFaults(over), []);
 });
@@ -179,7 +180,7 @@ test('a Value node is ADDED for a picklist row, holding its own pick, and routed
   assert.deepEqual(again.nodes.filter((n) => n.kind === 'value').map((n) => n.id), ['status', 'value-1', 'value-2']);
   assert.deepEqual(again.routes.filter((r) => r.to === 'filter/value'), [{ from: 'value-2/value', to: 'filter/value' }]);
   // A row with no pick makes an empty node; a row that is no picklist, a header, or no row makes none.
-  assert.deepEqual(addCustomValue(flow(), 'filter/matches', { x: 0, y: 0 }), flow());
+  assert.deepEqual(addCustomValue(flow(), 'filter/rows', { x: 0, y: 0 }), flow());
   assert.deepEqual(addCustomValue(flow(), 'filter', { x: 0, y: 0 }), flow());
   assert.deepEqual(addCustomValue(flow(), 'nope/value', { x: 0, y: 0 }), flow());
   const bare = addCustomValue(flow(), 'filter/field', { x: 0, y: 0 });

@@ -15,7 +15,7 @@ For one step of a flow on a `sherpa-layout-canvas`: a card the reader drags by i
 ## Example
 
 ```html
-<sherpa-layout-canvas style="inline-size: 720px; block-size: 360px"><sherpa-node data-heading="Start" data-icon="play" data-x="40" data-y="40" data-output-socket="object" data-output-routed></sherpa-node><sherpa-node data-heading="Condition" data-icon="function" data-x="360" data-y="40" data-input-socket="any" data-input-routed data-branches data-current><sherpa-node-row data-input-socket="object" data-input-routed data-label="Rows"></sherpa-node-row><sherpa-node-row data-input-socket="value"><sherpa-input-text data-label="Value" name="value" value="active"></sherpa-input-text></sherpa-node-row><sherpa-node-row data-input-socket="boolean" data-label="Group"></sherpa-node-row><sherpa-node-row data-label="Matches" data-output-socket="value"></sherpa-node-row></sherpa-node></sherpa-layout-canvas>
+<sherpa-layout-canvas style="inline-size: 720px; block-size: 360px"><sherpa-node data-heading="Start" data-icon="play" data-x="40" data-y="40" data-output-socket="object" data-output-routed></sherpa-node><sherpa-node data-heading="Condition" data-icon="function" data-x="360" data-y="40" data-input-socket="any" data-input-routed data-branches data-current><sherpa-node-row data-input-socket="object" data-input-routed data-label="Rows"></sherpa-node-row><sherpa-node-row data-input-socket="value"><sherpa-input-text data-label="Value" name="value" value="active"></sherpa-input-text></sherpa-node-row><sherpa-node-row data-input-socket="boolean" data-label="Group"></sherpa-node-row></sherpa-node></sherpa-layout-canvas>
 ```
 
 ## Attributes
