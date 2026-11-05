@@ -54,3 +54,36 @@ Fixed panels (in a panel area) and overlay panels (over the content) stay apart 
 5. Specs by real pointer and keys, three engines; the shell, overlay-panel, canvas, node-panel and
    node specs; Demos: Records, the Node Editor and the Query editor.
 6. Traps, guide, generated files, the map.
+
+## What was built, and what waits
+
+Built: D1 to D14. `sherpa-layout-panels` (new); the shell's body and the canvas compose it; the
+overlay panel fixed in an area, the Nodes card and the filter column dock flush and flat; the
+area's edge resizes it and the host reports it (the canvas takes `data-panel-width` back);
+`data-fixed="start"`; the column floats (787b); the tab's one stack (787c). Demos: the filter
+column is `data-floatable` and its box kept for the tab; the card's width kept for the tab; the
+Learn page teaches Float and Dock.
+
+Measured on the way:
+
+- A `::slotted(*)` rule in the canvas placed the CARD on the plane too, once the card was slotted
+  into the layout: the plane's rule is `.plane ::slotted(*)` now.
+- A page that hid its Nodes card with `style="display: none"` left an empty area with a divider:
+  the layout counts a panel drawn `display: none` as shut.
+- The canvas's 44rem rule must follow the minimap's own rules, which it re-places: at the same
+  specificity, the later one won, and the minimap sat under the toolbar's row.
+
+What waits:
+
+- **Raise across stacking contexts.** The stack orders boxes that share one. A panel inside the
+  shell's content (which isolates: the Node Editor's inspector, the filter column) never rises over
+  one floating in the window (the Assistant, the details panel). And the outlet isolates each element
+  of a Context, so on the Node Editor PAGE the floating Nodes card never rises over the inspector
+  (the Query editor's pair does). A decision for Will.
+- **The toolbar is centred on the CANVAS**, not beside the card: centred beside it, an inspector open
+  on the right edge covered Save at 1600 (746 E4: Save stays in reach while an inspector covers the
+  header). It starts past the card where the canvas is narrow; the canvas measures where what the
+  view shows begins, as the old sum guessed it.
+- **An end area on the canvas** (the inspector docked beside the plane): the layout has one; the
+  canvas forwards only its `panel` slot.
+- **The order over a reload**: not kept; the panels float back in the order they are drawn.
