@@ -352,3 +352,13 @@ integrate, own TODO, traps and baselines.
 | D7 | Families first | **Value types, Math, Logic (Compare, And, Or), Collection fold**: P1 to P5 | Time and Text first; Math later |
 | D8 | The overflow behaviour | **Menu button always there; "+N" only on overflow** | The button only when "+N" shows |
 | D9 | Floor, Ceiling, Average | **Take a LIST in** (one `Values` row), A and B go | Keep A and B as Figma draws them |
+
+---
+
+**Will, 2026-11-05: A for D1–D9** (the plan's picks, all): one family node; the tag input is a
+mode of `sherpa-input-text` (`data-type="tags"`); a vanished row keeps its value and a routed
+line stays greyed with a named fault; one panel item per family; stay on workflow v2 ("not too
+fussed about versioning while we build out the core system"); "Collections" labels the family
+and "Field" stays the data layer's word; value types, Math, Logic and the Collection fold
+first; the menu button always shows; Floor, Ceiling and Average take a LIST in ("numerical,
+mathematical operations").
