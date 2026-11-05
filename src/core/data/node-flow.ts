@@ -8,6 +8,7 @@
  * - nodeFlow — A node's flow, read from its graph; a fault in words for a node it does not hold.
  */
 import { FALSE_SOCKET, partName, partOf, socketOf, type DrawnGraph, type GraphNode, type GraphRow } from './node-kinds.js';
+import { truthOf } from './node-input.js';
 
 /** A node's incoming and outgoing JSON: each socket, and what is routed to it or from it. */
 export interface NodeFlow {
@@ -25,24 +26,31 @@ function said(graph: DrawnGraph, address: string, source: boolean): string {
   return [from?.heading ?? id, part].filter(Boolean).join(' › ');
 }
 
-/** A Condition node as the tree it says: its parts joined, a nested group read from the node routed into its Group row.
- *  None, it draws no part: a check of another type. */
+/** A Condition node as the tree it says: its parts joined. A Group row brings a nested Condition's tree, or a constant
+ *  — a boolean or 0/1 it holds: true always holds, false never — folded into its group; a boolean only a run gives is
+ *  named by where it comes from. What the row cannot use says nothing. None, it draws no part: a check of another type.
+ *  TODO 780 · TRAP T-a-condition-is-a-tree-of-nodes */
 function whereOf(graph: DrawnGraph, node: GraphNode, seen: ReadonlySet<string> = new Set()): unknown {
   const row = (name: string): GraphRow | undefined => node.rows.find((r) => r.name === name);
   const parts = new Set(node.rows.map((r) => partOf(r.name)).filter(({ base }) => ['field', 'group'].includes(base)).map(({ part }) => part));
   if (!parts.size) return undefined;
   const made = [...parts].sort((a, b) => a - b).flatMap((n): unknown[] => {
     const group = row(partName('group', n));
-    if (group) {
-      const via = graph.routes.find((r) => r.to === `${node.id}/${group.name}`);
-      const inner = via && graph.nodes.find((x) => x.id === socketOf(via.from).node);
-      const tree = inner && !seen.has(inner.id) ? whereOf(graph, inner, new Set([...seen, node.id])) : undefined;
-      return tree === undefined ? [] : [tree];
-    }
-    return [{ field: row(partName('field', n))?.value, op: row(partName('op', n))?.value, value: row(partName('value', n))?.value }];
+    if (!group) return [{ field: row(partName('field', n))?.value, op: row(partName('op', n))?.value, value: row(partName('value', n))?.value }];
+    const via = graph.routes.find((r) => r.to === `${node.id}/${group.name}`);
+    const inner = via && graph.nodes.find((x) => x.id === socketOf(via.from).node);
+    const tree = via && inner?.kind === 'condition' && socketOf(via.from).row === undefined && !seen.has(inner.id) ? whereOf(graph, inner, new Set([...seen, node.id])) : undefined;
+    if (tree !== undefined) return [tree];
+    if (!via || group.value === null) return [];
+    return [truthOf(group.value) ?? { boolean: said(graph, via.from, true) }];
   });
   const join = row('join')?.value === 'or' ? 'or' : 'and';
-  return made.length === 1 ? made[0] : { [join]: made };
+  // A constant folds: false ends All of, true ends Any of; the other drops out.
+  const ends = join === 'or';
+  if (made.includes(ends)) return ends;
+  const rest = made.filter((p) => typeof p !== 'boolean');
+  if (!rest.length && made.length) return !ends;
+  return rest.length === 1 ? rest[0] : { [join]: rest };
 }
 
 /** A Tag › Includes as the condition it says: its field is one of the tags, as Logic's Is one of says it. Plan 749 P5 */

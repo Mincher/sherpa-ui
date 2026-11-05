@@ -13,6 +13,7 @@
  * - InputNeeds — An input as a warning names it: its label, what it needs, and its choices.
  * - needOf — What an input needs, by its kind's own description: its `needs`, its control, its field, else its type.
  * - givenAt — What one output socket sends; none, where its source holds no value to send, or it is no output.
+ * - truthOf — A value as the boolean it says: true or false, 1 or 0, in words or not; none, it says no boolean.
  * - readInput — What an input reads of what reaches it: the value, or null and why, in words.
  */
 import { typedValue } from './filter-state.js';
@@ -77,12 +78,20 @@ export function givenAt(node: { kind: string; values?: Readonly<Record<string, u
 
 const isNumber = (value: unknown): boolean => typeof typedValue('number', value) === 'number';
 
+/** A value as the boolean it says: `true` or `false`, the words true and false, or 1 and 0 (Will, TODO 780: "0/1 or
+ *  True or False is data"). None, it says no boolean; `truthy` is the road a value takes (D2), not this. */
+export function truthOf(value: unknown): boolean | undefined {
+  if (typeof value === 'boolean') return value;
+  const said = typeof value === 'number' ? String(value) : typeof value === 'string' ? value.trim().toLowerCase() : undefined;
+  return said === 'true' || said === '1' ? true : said === 'false' || said === '0' ? false : undefined;
+}
+
 /** Whether a need takes what reaches it: by its kind, and by the value where one is held. */
 function fits(need: Need, { kind, value }: Reached, choices: readonly RowChoice[] = []): boolean {
   const held = value !== undefined;
   switch (need) {
     case 'value': return kind === 'value' || kind === 'number';
-    case 'boolean': return kind === 'boolean';
+    case 'boolean': return kind === 'boolean' || ((kind === 'value' || kind === 'number') && (!held || truthOf(value) !== undefined));
     case 'object': return kind === 'object' || kind === 'list' || kind === 'rows';
     case 'rows': return kind === 'object' || kind === 'rows';
     case 'list': return kind === 'object' || kind === 'list';

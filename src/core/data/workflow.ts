@@ -36,7 +36,7 @@ import {
 import { bendFault, clampBend, dropBend, placeBend, withoutBends, type Bend } from './route-bends.js';
 import type { FieldType } from './filter-state.js';
 import type { NodeSnapshot } from './node-library.js';
-import { givenAt, needOf, readInput, type InputNeeds } from './node-input.js';
+import { givenAt, needOf, readInput, truthOf, type InputNeeds } from './node-input.js';
 
 /** One node, as a definition holds it: only what the reader may change. What it IS is its kind's. */
 export interface WorkflowNode {
@@ -252,17 +252,13 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
   if (!workflow) return faults;
   const problems = [...faults];
   const byId = new Map<string, NodeKind>();
-  const kindOf = new Map<string, string>();
   for (const node of workflow.nodes) {
     const shipped = kinds[node.kind];
     const kind = kindOfNode(kinds, node);
     if (byId.has(node.id)) problems.push(`two nodes are "${node.id}"`);
     if (!kind) problems.push(`the node "${node.id}" is of the kind "${node.kind}", which is not one`);
     else if (!kind.graphs.includes('workflow')) problems.push(`the node "${node.id}" is of the kind "${node.kind}", which a workflow does not run`);
-    else {
-      byId.set(node.id, kind);
-      kindOf.set(node.id, node.kind);
-    }
+    else byId.set(node.id, kind);
     if (node.size && !(inGrowth(node.size.w) && inGrowth(node.size.h))) problems.push(`the node "${node.id}" is sized ${node.size.w} by ${node.size.h} times its natural size, and a size runs from ${GROW_MIN} to ${GROW_MAX}`);
     for (const [name, value] of Object.entries(node.values ?? {})) {
       const row = kind && rowOf(kind.rows, name);
@@ -324,12 +320,6 @@ export function workflowFaults(given: WorkflowDefinition | WorkflowDefinitionV1,
     if (!leaves) problems.push(`a route leaves "${from}", which is no output socket`);
     else if (!out) problems.push(`a route leaves "${from}", which sends any type: an output says the one it sends`);
     // A Rows row only sends: a v1 habit, the rows in, says so.
-    // A Group row takes only the True of a node of its kinds: a nested group.
-    const group = into && rowOf(byId.get(socketOf(to).node)?.rows ?? [], socketOf(to).row ?? '')?.from;
-    const feeds = kindOf.get(socketOf(from).node);
-    if (group && (socketOf(from).row !== undefined || !feeds || !group.includes(feeds))) {
-      problems.push(`the route "${from}" → "${to}" enters a Group row, which takes only the True of a ${group.join(' or ')}`);
-    }
     if (!into && socketOf(to).row === ROWS.name && byId.has(socketOf(to).node)) problems.push(`a route enters "${to}", a Rows row, which only sends: a node's rows come in on its header`);
     else if (!into) problems.push(`a route enters "${to}", which is no input socket`);
     if (there.includes(from)) problems.push(`the route "${from}" → "${to}" is there twice`);
@@ -474,7 +464,8 @@ export function workflowGraph(given: WorkflowDefinition | WorkflowDefinitionV1, 
         const says = ins.map((r) => {
           const { node: id, row: out } = socketOf(r.from);
           if (out === FALSE_SOCKET) return false;
-          return out === undefined ? !!kinds[held.get(id)?.kind ?? '']?.branches : truthy(brings(r.from)?.value);
+          const value = brings(r.from)?.value;
+          return out === undefined ? !!kinds[held.get(id)?.kind ?? '']?.branches : truthOf(value) ?? truthy(value);
         });
         const at = (r: NodeRoute): string => { const n = held.get(socketOf(r.from).node); return n?.heading ?? kinds[n?.kind ?? '']?.heading ?? r.from; };
         return { ...own, ...drivenSwitch(says), hint: `Custom, from ${[...new Set(ins.map(at))].join(', ')}` };

@@ -113,8 +113,6 @@ export interface RowKind {
   /** One per PART of a group: a node draws it for each, named by `partName`. A Condition's field,
    *  operator, value and nested group. */
   repeat?: true;
-  /** Its input takes only the True of a node of one of these kinds. */
-  from?: readonly string[];
   /** A number's least, and its step, HTML's own names: a step of 1 takes only whole numbers. */
   min?: number;
   step?: number;
@@ -267,7 +265,9 @@ export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
           { name: 'field', label: 'Field', control: 'field', repeat: true, input: 'value', output: 'value' },
           { name: 'op', label: 'Operator', control: 'op', repeat: true, input: 'value' },
           { name: 'value', label: 'Value', control: 'values', repeat: true, input: 'value' },
-          { name: 'group', label: 'Group', repeat: true, input: 'boolean', from: ['condition'] },
+          // A nested group: a Condition's True brings its tree; any other boolean, or 0 or 1, is a constant part. TODO 780
+          // TRAP T-a-condition-is-a-tree-of-nodes
+          { name: 'group', label: 'Group', repeat: true, input: 'boolean' },
         ],
       },
       ...LOGIC,
@@ -427,7 +427,7 @@ export function kindIn(kind: NodeKind, graph: NodeGraph): NodeKind | undefined {
 
 /** A comparison's Value row under an operator that takes a list: tags, an object (D17). Its own row, not repeated. */
 export function listedRow(row: RowKind, part: number): RowKind {
-  const { repeat: _repeat, from: _from, ...plain } = row;
+  const { repeat: _repeat, ...plain } = row;
   return { ...plain, name: partName(row.name, part), control: 'tags', multiple: true, input: 'object' };
 }
 
@@ -570,7 +570,7 @@ export function conditionRows(kind: Pick<NodeKind, 'rows'>, parts: readonly Part
   const of = (name: string): RowKind => kind.rows.find((r) => r.name === name)!;
   // A part's own row first: a Value under Is one of is a tag list (`kindOfNode`).
   const part = (names: readonly string[], n: number): RowKind[] => names.map((name) => {
-    const { repeat: _repeat, from: _from, ...row } = rowOf(kind.rows, partName(name, n)) ?? of(name);
+    const { repeat: _repeat, ...row } = rowOf(kind.rows, partName(name, n)) ?? of(name);
     return { ...row, name: partName(name, n) };
   });
   return [

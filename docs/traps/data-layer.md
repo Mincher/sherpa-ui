@@ -6440,9 +6440,10 @@ types allow is drawn; no family fences what a graph places.
 - **Any route joins any input** (Will, TODO 770, B): a type mismatch is no fault and no refusal,
   only this warning — "Value A takes a number; it was given rows". Grouping makes one socket of
   what its source sends. What stays refused is the graph's shape: a loop, the same route twice,
-  two into an input that takes one, a socket that is not there, a Rows row (it only sends), a
-  Group row from anything but a Condition's True (it nests a tree, `T-a-condition-is-a-tree-of-nodes`),
-  an output that says it sends any type, and a preset's header (read only).
+  two into an input that takes one, a socket that is not there, a Rows row (it only sends), an
+  output that says it sends any type, and a preset's header (read only). A Group row takes any
+  boolean (TODO 780, `T-a-condition-is-a-tree-of-nodes`): a boolean input reads true or false, 1 or
+  0, and the words, by `truthOf`.
 - **No fault, no Save block, never red.** A row's own fault (`T-a-row-says-its-own-fault`) is
   still red and holds Save; a route the input cannot read brings no such fault.
 
@@ -6454,6 +6455,7 @@ types allow is drawn; no family fences what a graph places.
 - Site: `src/data.ts`
 - Site: `test/unit/a-node-reads-null-from-what-it-cannot-use.test.mjs`
 - Site: `test/unit/any-route-joins-any-input.test.mjs`
+- Site: `test/unit/a-group-row-takes-any-boolean.test.mjs`
 - Site: `test/e2e/reforged-node-warning.spec.ts`
 
 ### T-a-changed-key-moves-the-row
@@ -6755,9 +6757,20 @@ type is it (`T-a-logic-type-is-an-operator`).
   asks it as one reading through `graphRequest`, the door a chip asks. The `off`
   and `id` of every part go through untouched. A field edit MOVES the whole tree.
   A nested True has no route a reader may make: the Query holds one tree.
-- **A Group row takes only the True of a condition** (`RowKind.from`):
-  `workflowFaults` refuses a pick's, a False, or a node that is no condition. It
-  nests the tree, so it is the graph's shape, not a type: still refused under 770.
+- **A Group row takes ANY boolean** (Will, TODO 780: "0/1 or True or False is
+  data"). A nested Condition's True brings its whole tree. Any other boolean — a
+  True or False, a value that says true or false, 1 or 0 (`truthOf`) — is a
+  CONSTANT part: true always holds, false never. One the graph holds folds into its
+  group in `nodeFlow`'s `where`: true drops out of All of and ends Any of, false the
+  other way, so `where` may be `true` or `false`; one only a run gives is named by
+  where it comes from, `{ boolean: "Store › True" }`. Anything else reads null and
+  warns (`T-a-node-reads-null-from-what-it-cannot-use`). No route into it is a fault.
+- **The Query holds no constant.** A page's `where` cannot say one, and the Query
+  editor takes no route into a Group row (`routeRequest`), so it draws none: its
+  Group rows are its tree's nested groups. Folded, a constant compiles as no
+  constant: always holds is no condition (it narrows nothing); never holds has no
+  Condition form today (`conditionClause` reads an empty group as half-built), so a
+  graph that folds to `false` says no condition to a page yet (TODO 780's question).
 - **A comparison is checked by its field's type** where the facts give it: an
   operator its type does not take, a value that is no number for a number.
 - **A status, a preset and a saved filter draw their conditions as Condition
@@ -6772,8 +6785,12 @@ type is it (`T-a-logic-type-is-an-operator`).
 
 - Site: `src/core/data/query-graph.ts`
 - Site: `src/core/data/workflow.ts`
+- Site: `src/core/data/node-flow.ts`
+- Site: `src/core/data/node-kinds.ts`
 - Site: `test/unit/a-condition-is-a-tree-of-nodes.test.mjs`
 - Site: `test/unit/a-status-is-a-chain-of-conditions.test.mjs`
+- Site: `test/unit/a-group-row-takes-any-boolean.test.mjs`
+- Site: `test/e2e/reforged-node-group-row.spec.ts`
 
 ### T-an-app-is-its-definition
 

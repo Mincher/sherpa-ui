@@ -362,7 +362,8 @@ function drawRows(drawn: Drawn, el: HTMLElement, node: GraphNode): void {
     line.toggleAttribute('data-output-routed', sent.has(`${node.id}/${row.name}`));
     const field = line.firstElementChild as Field | null;
     if (field) fill(field, row);
-    else line.setAttribute('data-label', row.control === undefined && row.value !== undefined ? `${row.label}: ${shown(row)}` : row.label);
+    // A row with no field says what it reads — a Group's constant, "Group: true"; one that reads null, only its name.
+    else line.setAttribute('data-label', row.control === undefined && row.value != null ? `${row.label}: ${shown(row)}` : row.label);
   }
 }
 

@@ -25,7 +25,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-component-default-outlives-a-view](traps/data-layer.md#t-a-component-default-outlives-a-view) — query, query-context, query-declarations, query-edits
 - [T-a-component-part-narrows-one-component](traps/data-layer.md#t-a-component-part-narrows-one-component) — bind-selection, query, query-edits, source-binding
 - [T-a-condition-badge-says-that-not-which](traps/data-layer.md#t-a-condition-badge-says-that-not-which) — data, filter-face
-- [T-a-condition-is-a-tree-of-nodes](traps/data-layer.md#t-a-condition-is-a-tree-of-nodes) — query-graph, workflow
+- [T-a-condition-is-a-tree-of-nodes](traps/data-layer.md#t-a-condition-is-a-tree-of-nodes) — node-flow, node-kinds, query-graph, workflow
 - [T-a-condition-marks-every-match](traps/data-layer.md#t-a-condition-marks-every-match) — store
 - [T-a-conditioned-chip-answers-with-its-clause](traps/data-layer.md#t-a-conditioned-chip-answers-with-its-clause) — source-view
 - [T-a-container-shows-its-datas-state](traps/data-layer.md#t-a-container-shows-its-datas-state) — field-catalogue, source-reads
