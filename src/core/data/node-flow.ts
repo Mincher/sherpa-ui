@@ -27,7 +27,7 @@ const inJson = (row: GraphRow): unknown => (row.gives ? coerce('json', { kind: r
 export interface NodeFlow {
   incoming: readonly Record<string, unknown>[];
   outgoing: readonly Record<string, unknown>[];
-  /** What the node stands for: a Condition's, a Tag's or a use's `where` tree, a Store's store, else its rows' values. */
+  /** What the node stands for: a Condition's, a Tag's or a use's `where` tree, a Source's store, else its rows' values. */
   definition?: Record<string, unknown>;
 }
 
@@ -37,7 +37,7 @@ export interface ConditionFacts {
   inner?: (node: GraphNode) => DrawnGraph | undefined;
 }
 
-/** A part only a run gives: a boolean, named by where it comes from — "Store › True". TODO 780 */
+/** A part only a run gives: a boolean, named by where it comes from — "Source › True". TODO 780 */
 export interface RunBoolean {
   boolean: string;
 }
@@ -52,7 +52,7 @@ export interface ConditionRead {
   faults: string[];
 }
 
-/** A socket address in words: "Store › Rows"; a source's header is its True where the node forks. */
+/** A socket address in words: "Source › Rows"; a source's header is its True where the node forks. */
 function said(graph: DrawnGraph, address: string, source: boolean): string {
   const { node: id, row } = socketOf(address);
   const from = graph.nodes.find((n) => n.id === id);
@@ -153,7 +153,7 @@ export function leafOf(drawn: DrawnGraph, node: GraphNode): { leaf: ConditionLea
 }
 
 /** What the rows into a Field carry, as a condition: a test's Rows row, the rows that hold it; a node that passes rows
- *  on (a Sort, a Field), what its own rows carry; a Store, nothing. */
+ *  on (a Sort, a Field), what its own rows carry; a Source, nothing. */
 function carried(graph: Flowing, node: GraphNode, facts: ConditionFacts, walk: Walk): ConditionRead {
   return joined('and', graph.routes.filter((r) => r.to === node.id).map((r): ConditionRead => {
     const { node: id, row } = socketOf(r.from);
@@ -200,7 +200,7 @@ function readNode(graph: Flowing, node: GraphNode, row: string | undefined, fact
   if (node.kind === 'condition' && (type === 'and' || type === 'or')) return joined(type, graph.routes.filter((r) => r.to === node.id).map((r) => partFrom(graph, r, facts, walk)));
   const read = leafOf(graph, node);
   if ('fault' in read) return none(read.fault);
-  // The rows into its Field carry the tests before it: Store › Field › A › Rows › Field › B is A and B.
+  // The rows into its Field carry the tests before it: Source › Field › A › Rows › Field › B is A and B.
   return joined('and', [carried(graph, read.field, facts, walk), { tree: read.leaf, faults: [] }]);
 }
 
@@ -233,7 +233,7 @@ export function nodeFlow(graph: DrawnGraph, id: string, facts: ConditionFacts = 
   // What its True says, where it says a condition: a Condition, a Tag, a use read inside.
   const where = readNode(flowing(graph), node, undefined, facts, { seen: new Set([node.id]), path: [] }).tree;
   const definition = where !== undefined ? { where }
-    : node.kind === 'store' ? { store: values['store'] ?? null }
+    : node.kind === 'source' ? { store: values['store'] ?? null }
       : Object.keys(values).length ? { rows: values } : undefined;
   return { incoming, outgoing, ...(definition ? { definition } : {}) };
 }

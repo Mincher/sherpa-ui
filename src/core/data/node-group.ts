@@ -47,7 +47,7 @@ const slug = (text: string, fallback: string): string => {
 /** A node's name as a reader sees it. */
 const nameOf = (node: WorkflowNode | undefined, kinds: Kinds): string => node?.heading ?? kinds[node?.kind ?? '']?.heading ?? node?.kind ?? '?';
 
-/** A socket address in words: "Store › Rows". */
+/** A socket address in words: "Source › Rows". */
 function wordsOf(address: string, workflow: WorkflowDefinition, kinds: Kinds): string {
   const { node: id, row } = socketOf(address);
   const node = workflow.nodes.find((n) => n.id === id);

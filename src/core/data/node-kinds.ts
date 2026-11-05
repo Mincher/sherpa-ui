@@ -228,24 +228,15 @@ const LOGIC: Readonly<Record<string, NodeType>> = {
  *  A kind a workflow runs forks (`branches`): its True and False say whether it gave anything
  *  (D2). The Query's own steps do not: nothing routes a branch from them. */
 export const NODE_KINDS: Readonly<Record<string, NodeKind>> = {
-  store: {
-    heading: 'Store', icon: 'storage', description: 'Where the rows come from.', branches: true,
-    rows: [ROWS, { name: 'store', label: 'Store', control: 'store', input: 'value' }], model: 'Store', graphs: ['query', 'workflow'], category: 'Sources',
+  // Where the rows come from, in every graph: the store it names. A Query adds how its page reads it. TODO 808
+  source: {
+    heading: 'Source', icon: 'storage', description: 'Rows from a store.', branches: true,
+    rows: [ROWS, { name: 'store', label: 'Store', control: 'store', input: 'value' }], model: 'SourceDefinition', graphs: ['query', 'workflow'], category: 'Sources',
   },
   // A page's Query: its rows read left to right, as the data flows.
   status: {
     heading: 'Status field', icon: 'status-ok', description: 'A value per row, by conditions.',
     input: 'any', rows: [ROWS], model: 'StatusField', graphs: ['query'], category: 'Status',
-  },
-  source: {
-    heading: 'Source', icon: 'server', description: 'How the page reads its store.', input: 'any',
-    rows: [
-      ROWS,
-      { name: 'pageSize', label: 'Page size', control: 'number' },
-      { name: 'search', label: 'Search fields', control: 'tags', multiple: true, input: 'object', output: 'object' },
-      { name: 'applyOn', label: 'Apply on', control: 'apply' },
-    ],
-    model: 'SourceDefinition', graphs: ['query'],
   },
   // Its Switch, then a row per preset and per field it holds, each with a boolean input: a True.
   scope: {
@@ -437,9 +428,9 @@ export function rowOfOtherType(kind: NodeKind, type: unknown, row: string): { ro
  *  names it; `Custom Nodes` (D9) stays empty until saved nodes come (M9, M12). */
 export const NODE_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Math', 'Logic', 'Time', 'Collections', 'Utils', 'Output', 'Presets', 'Saved filters', 'Status'];
 
-/** The categories a Query's panel lists: the kinds a Query takes placed — a Field (plan 783 D6) — and its Custom Nodes, its
- *  page's Preset Filters (TODO 776). */
-const QUERY_CATEGORIES: readonly string[] = ['Custom Nodes', 'Variables', 'Logic', 'Presets', 'Saved filters', 'Status'];
+/** The categories a Query's panel lists: the kinds a Query takes placed — a Source (TODO 808), a Field (plan 783 D6) — and
+ *  its Custom Nodes, its page's Preset Filters (TODO 776). */
+const QUERY_CATEGORIES: readonly string[] = ['Sources', 'Custom Nodes', 'Variables', 'Logic', 'Presets', 'Saved filters', 'Status'];
 
 /** One node of the panel: the kind's id and the kind. */
 export interface PaletteItem {

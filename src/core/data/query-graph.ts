@@ -1,9 +1,9 @@
 /**
  * query-graph.ts — a page's Query drawn as nodes, for the Node Editor, and each edit made in
- * them as the command it asks. DERIVED each time the Query changes: the store and its status
- * fields, the source, each scope with its presets, saved filters, conditions and superseded
- * answers, its arrangement, presentation and components — and which node each step of a load
- * lights. Kinds are the one registry's. DOM-free.
+ * them as the command it asks. DERIVED each time the Query changes: the Source and its store's
+ * status fields, each scope with its presets, saved filters, conditions and superseded answers,
+ * its arrangement, presentation and components — and which node each step of a load lights; and
+ * each Source a reader placed that the page does not read. Kinds are the one registry's. DOM-free.
  * Will, TODO 555 · docs/history/plan-78-query-editor.md · TRAP T-the-node-editor-asks-the-query
  * TRAP T-a-step-names-its-node · TRAP T-a-condition-is-a-tree-of-nodes
  *
@@ -16,14 +16,17 @@
  * - traceQuerySteps — Say what a load did after its read, each a step of its node, under the load.
  * - GraphComponent — One component a scope's rows reach: its id, its label and how it shows them.
  * - ScopePreset — One preset of a scope, as declared: its id, its name and the readings it writes.
- * - QueryGraphFacts — What drawing a Query needs that the Query does not say.
+ * - QueryGraphFacts — What drawing a Query needs that the Query does not say, and the Sources a reader keeps.
  * - editedCondition — A condition node's rows, edited, as the condition they say: the other half of drawing one.
  * - statusTallies — Each status field's rows per value, over the whole store: how many each Condition of its chain took.
  * - queryGraphFaults — What is wrong with a Query graph's chains, in words: a status value whose `when` is no condition, and a route…
  * - queryGraph — A page's Query as nodes and routes, laid out in columns by depth.
  * - graphRequest — The command a node's edit asks, as a chip's would; none for a row nothing takes.
  * - PlaceFacts — What placing a node needs of the Query: its holds, fields, presets and which are on.
- * - placeRequest — The command placing a node asks in a scope, or why it cannot.
+ * - KeptSource — A Source a reader placed that the page does not read: kept in the editor's draft, saved nowhere.
+ * - PlaceAnswer — What placing a node asks: a command, a Source to keep, or why it cannot.
+ * - placeRequest — The command placing a node asks in a scope, a Source to keep, or why it cannot.
+ * - keptEdit — The kept Sources after an edit of one's Store row; none, the edit is no kept Source's.
  * - RouteAnswer — What a new route asks: a command, or why it is refused; null, nothing to do.
  * - routeRequest — The command a new route asks: a condition into a field of a scope, moved or retargeted.
  */
@@ -46,7 +49,6 @@ import type { Walk } from './walk.js';
 /** Each Query node's id, as a step names it: the one scheme the graph is drawn by.
  *  TRAP T-a-step-names-its-node */
 export const QUERY_NODE = {
-  store: 'store',
   source: 'source',
   status: (field: string): string => `status-${field}`,
   statusWhen: (field: string, value: string): string => `status-${field}.${value}`,
@@ -61,11 +63,8 @@ export const QUERY_NODE = {
   component: (id: string): string => `component-${id}`,
 } as const;
 
-/** The node an S3 span lights, by its step: a load is the Source's, the rest the Store's. */
-const STEP_NODES: Readonly<Record<string, string>> = {
-  load: QUERY_NODE.source, request: QUERY_NODE.store, answer: QUERY_NODE.store,
-  hold: QUERY_NODE.store, recheck: QUERY_NODE.store, send: QUERY_NODE.store,
-};
+/** The node an S3 span lights, by its step: the Source, by its load and by its store's reads. */
+const STEP_NODES: Readonly<Record<string, string>> = Object.fromEntries(['load', 'request', 'answer', 'hold', 'recheck', 'send'].map((step) => [step, QUERY_NODE.source]));
 
 /** The node a span lights in a page's Query graph: the one it names, else its step's. */
 export function queryStepNode(span: Pick<Span, 'step' | 'detail'>): string | undefined {
@@ -164,8 +163,10 @@ export interface QueryGraphFacts {
   domains?: Readonly<Record<string, FieldDomain>>;
   /** The rows per page now, where the reader changed them. */
   pageSize?: number | null;
-  /** The stores the app registered, for the Store row's list; absent, the page's own. */
+  /** The stores the app registered, for a Store row's list; absent, the page's own. */
   stores?: readonly string[];
+  /** The Sources a reader placed that the page does not read, kept in the editor's draft (TODO 808). */
+  kept?: readonly KeptSource[];
 }
 
 /** The operators a field's condition may take: its type's, and a pick list's. */
@@ -176,6 +177,16 @@ const SWITCH = '#filters';
 
 /** Where a node sends its data rows on: its Rows row. Plan 713 §3 */
 const sent = (node: string): string => `${node}/${ROWS.name}`;
+
+/** How the page reads its store: the Query's own rows on its Source, after the kind's. */
+const PAGE_ROWS: readonly GraphRow[] = [
+  { name: 'pageSize', label: 'Page size', control: 'number' },
+  { name: 'search', label: 'Search fields', control: 'tags', multiple: true },
+  { name: 'applyOn', label: 'Apply on', control: 'apply' },
+];
+
+/** What a kept Source says: the page reads its own store, and the Query nothing from this one. */
+const notThePage = (store: string | undefined): string => `The page reads ${store ?? 'its own store'}. This Source is not the page's: the Query reads nothing from it.`;
 
 /** Why a row is read only: nothing outside the editor takes its change. */
 const FROM_DEFINITION = 'The page definition sets it: Save writes the definition.';
@@ -396,10 +407,24 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
   const presetsOf = (scope: string): readonly ScopePreset[] => facts.presets?.(scope)
     ?? (definition.source?.scopes?.[scope]?.presets ?? []).map((p) => ({ id: p.id, label: p.label, readings: readingsOf(p.where, typed) }));
 
-  // Store ─▶ each status field it works out ─▶ Source: the rows go Rows row to header.
+  // The Source ─▶ each status field its store works out ─▶ the View: the rows go Rows row to header. Its store and how
+  // the page reads it are the definition's, until Save; its page size changes live. It forks nowhere in a Query.
   const source = definition.source;
-  add(0, QUERY_NODE.store, 'store', rowsOf('store', { store: source?.store }).map((row) => (row.name === ROWS.name ? row
-    : owned(row, rowChoices({ ...row, value: source?.store }, { stores: facts.stores ?? [] })))), { heading: source?.store ?? 'Store' });
+  const stores = (value: unknown): RowChoice[] => rowChoices({ control: 'store', value }, { stores: facts.stores ?? [] })!;
+  add(0, QUERY_NODE.source, 'source', [
+    ...rowsOf('source', { store: source?.store }).map((row) => (row.name === ROWS.name ? row : owned(row, stores(source?.store)))),
+    ...PAGE_ROWS.map((row): GraphRow => {
+      const value = row.name === 'pageSize' ? facts.pageSize ?? source?.pageSize : row.name === 'search' ? source?.search ?? [] : source?.applyOn ?? 'change';
+      return row.name === 'pageSize' ? { ...row, value, editable: true } : owned({ ...row, value }, row.name === 'search' ? known.map((f) => ({ value: f, label: label(f) })) : rowChoices(row));
+    }),
+  ]);
+  delete nodes.at(-1)!.branches;
+  // Each Source the reader placed, under it: its Store theirs to pick, and nothing the Query reads. TODO 808
+  for (const kept of facts.kept ?? []) {
+    add(0, kept.id, 'source', rowsOf('source', { store: kept.store }).map((row) => (row.name === ROWS.name ? row
+      : { ...owned(row, stores(kept.store)), editable: true, hint: 'Yours to pick: the page reads its own.' })), { ref: { kept: kept.id }, warnings: [{ words: notThePage(source?.store) }] });
+    delete nodes.at(-1)!.branches;
+  }
   const statuses = Object.entries(facts.domains ?? {}).filter(([, d]) => d.when || d.statuses);
   const everyField = known.map((f) => ({ value: f, label: label(f) }));
   const readOnly = (hint: string) => (row: GraphRow): GraphRow => ({ ...row, editable: false, hint });
@@ -412,7 +437,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       name: value, label: value, input: 'boolean', value: domain.statuses?.[value] ?? '',
       hint: whens[i] === undefined ? 'Every row the values before it left. ' + FROM_STORE : !isCondition(whens[i]) ? `Its \`when\` is not a condition. ${FROM_STORE}` : FROM_STORE,
     }));
-    routes.push({ from: sent(QUERY_NODE.store), to: add(1, node, 'status', [...rowsOf('status', {}), ...rows], { heading: label(field), ref: { field } }) });
+    routes.push({ from: sent(QUERY_NODE.source), to: add(1, node, 'status', [...rowsOf('status', {}), ...rows], { heading: label(field), ref: { field } }) });
     // Each value's `when` is a tree of tests on a Field per field it names; False hands the rows it left to the next value's Fields.
     let before: string | null = null;
     let at = 0;
@@ -430,13 +455,8 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       before = id;
     });
   }
-  // Its page size changes live; the rest is the definition's, until Save.
-  add(2, QUERY_NODE.source, 'source', rowsOf('source', {
-    pageSize: facts.pageSize ?? source?.pageSize, search: source?.search ?? [], applyOn: source?.applyOn ?? 'change',
-  }).map((row) => (row.name === 'pageSize' ? { ...row, editable: true } : row.name === ROWS.name ? row
-    : owned(row, row.name === 'search' ? known.map((f) => ({ value: f, label: label(f) })) : rowChoices(row)))));
-  if (statuses.length) for (const [field] of statuses) routes.push({ from: sent(`status-${field}`), to: QUERY_NODE.source });
-  else routes.push({ from: sent(QUERY_NODE.store), to: QUERY_NODE.source });
+  // What the View's rows come from: each status field's, else the Source's.
+  const fed = statuses.length ? statuses.map(([field]) => sent(QUERY_NODE.status(field))) : [sent(QUERY_NODE.source)];
 
   // Each scope — and one its definition gives presets, held or not.
   const scopes = Object.entries(query.scopes);
@@ -475,7 +495,7 @@ export function queryGraph(query: Query, definition: PageDefinition, facts: Quer
       description: `${scope.holds.length} held${scope.suspended ? ' · filters off' : ''}`,
       ref: { scope: id },
     });
-    routes.push({ from: sent(top || !view ? QUERY_NODE.source : QUERY_NODE.scope(VIEW)), to: node });
+    for (const from of top || !view ? fed : [sent(QUERY_NODE.scope(VIEW))]) routes.push({ from, to: node });
     // Each preset, and each saved filter on its bar: on or off, and what it writes.
     for (const p of presets) {
       const saved = p.id.startsWith(SAVED_PRESET);
@@ -661,22 +681,38 @@ export function graphRequest({ node, row, value }: GraphEdit, facts: Pick<QueryG
   return undefined;
 }
 
-/** What placing a node needs to know of the Query: what a scope holds and may hold, its presets, and which are on. */
+/** What placing a node needs to know of the Query: what a scope holds and may hold, its presets, and which are on; the
+ *  page's store, the app's, and the Sources kept. */
 export interface PlaceFacts {
   holds: (scope: string) => readonly string[];
   fields: (scope: string) => readonly string[];
   presets: (scope: string) => readonly ScopePreset[];
   on: (scope: string, preset: string) => boolean;
+  store?: string;
+  stores?: readonly string[];
+  kept?: readonly KeptSource[];
 }
+
+/** A Source a reader placed that the page does not read: its id and the store it names. Kept in the editor's draft for
+ *  the tab, as a place is; Save writes the page's own definition, so it is saved nowhere (TODO 808). */
+export interface KeptSource {
+  id: string;
+  store: string;
+}
+
+/** What placing a node asks: a command through the Query's door, a Source the editor keeps, or why it cannot. */
+export type PlaceAnswer = { request: QueryRequest } | { refused: string } | { keep: KeptSource };
 
 /**
  * The command placing a node of a kind in a scope asks, or why it cannot: a Field holds the
  * scope's next field (its chip appears); a Condition tests a Field, so it is refused in words;
  * a Preset or a Saved filter switches on the next one the scope's bar has; a preset named by
  * its own id — a Preset Filter, a Custom Node of the Query's panel (TODO 776) — switches that
- * one on. A Status field is the app's own, so it is refused. Plan 783 D6 · TRAP T-one-command-one-door
+ * one on. A Status field is the app's own, so it is refused. A Source is KEPT: the page reads
+ * one store, so it asks the Query nothing, and names the first store the page does not read
+ * (TODO 808). Plan 783 D6 · TRAP T-one-command-one-door · TRAP T-a-second-source-is-kept
  */
-export function placeRequest(kind: string, scope: string, facts: PlaceFacts): NonNullable<RouteAnswer> {
+export function placeRequest(kind: string, scope: string, facts: PlaceFacts): PlaceAnswer {
   const own = facts.presets(scope).find((p) => p.id === kind);
   if (own) return facts.on(scope, kind) ? { refused: `"${own.label}" is on already: its chip is pressed.` } : { request: { scope, preset: kind, on: true } };
   const name = NODE_KINDS[kind]?.heading ?? kind;
@@ -694,7 +730,19 @@ export function placeRequest(kind: string, scope: string, facts: PlaceFacts): No
       : { refused: `Scope "${scope}" has no ${name.toLowerCase()} left to switch on${kind === 'saved' ? ': a saved filter joins from the bar\'s Saved menu' : ''}.` };
   }
   if (kind === 'status') return { refused: `A ${name.toLowerCase()} is the app's own: the store's statusFields() works it out, and a Query cannot add one.` };
+  if (kind === 'source') {
+    const ids = new Set((facts.kept ?? []).map((k) => k.id));
+    const free = (n: number): string => (ids.has(`source-${n}`) ? free(n + 1) : `source-${n}`);
+    return { keep: { id: free(2), store: facts.stores?.find((s) => s !== facts.store) ?? facts.store ?? '' } };
+  }
   return { refused: `The Query has no "${name}" to place.` };
+}
+
+/** The kept Sources after an edit of one's Store row; none, the edit is no kept Source's. */
+export function keptEdit(kept: readonly KeptSource[], { node, row, value }: GraphEdit): KeptSource[] | undefined {
+  const id = node.ref?.['kept'];
+  if (!id || row.name !== 'store' || !kept.some((k) => k.id === id)) return undefined;
+  return kept.map((k) => (k.id === id ? { ...k, store: String(value ?? '') } : k));
 }
 
 /** What a new route asks: a command, or why it is refused; null, nothing to do. */
@@ -712,6 +760,8 @@ export function routeRequest(graph: DrawnGraph, { from, to }: NodeRoute, facts: 
   const scope = was?.ref?.['scope'];
   const old = was?.ref?.['field'];
   const there = target?.ref?.['scope'];
+  // A kept Source is no part of the Query: nothing it sends reaches one.
+  if (was?.ref?.['kept']) return { refused: `"${was.heading}" is not the page's Source: the Query reads nothing from it.` };
   // A switch takes no route here: nothing in a page's Query says "driven by a node".
   if (rowOf(target?.rows ?? [], field)?.control === 'switch') {
     return { refused: `The Query takes no route into "${target?.heading ?? into} › ${rowOf(target?.rows ?? [], field)?.label}": its Switch is the reader's, and a page's Query has no way to say a node drives it.` };

@@ -65,7 +65,7 @@ import type { DataSource } from '../data/data-source.js';
 import { Journal } from '../data/journal.js';
 import type { Query } from '../data/query.js';
 import { checkPage, pageWithQuery, type PageDefinition } from '../data/page-definition.js';
-import { graphRequest, placeRequest, queryGraph, queryStepNode, routeRequest, statusTallies, traceQuerySteps, type QueryGraphFacts } from '../data/query-graph.js';
+import { graphRequest, keptEdit, placeRequest, queryGraph, queryStepNode, routeRequest, statusTallies, traceQuerySteps, type KeptSource, type QueryGraphFacts } from '../data/query-graph.js';
 import { onTrace, type Span, type StepState, type TraceHost } from '../data/trace.js';
 import { VIEW } from '../data/query.js';
 import { valueKey } from '../data/store.js';
@@ -1473,14 +1473,15 @@ function stateOf(span: Span): StepState {
   return span.detail && 'failed' in span.detail ? 'failed' : 'done';
 }
 
-/** A node's step, from every span that lit it this run: running while one is open, else
- *  failed, skipped or done; the longest time, the latest rows, and where it ran. */
+/** A node's step, from every span that lit it this run, in the order each last spoke: running while one is open, else
+ *  failed, skipped or done; the time and rows the latest said, and where each ran. The Source's load ends after its
+ *  store's reads, so it says the page's rows (TODO 808). */
 function light(el: HTMLElement, spans: ReadonlyMap<string, Lit>): void {
   const all = [...spans.values()];
   const state = all.some((s) => s.state === 'start') ? 'running'
     : all.some((s) => s.state === 'failed') ? 'failed'
     : all.every((s) => s.state === 'skipped') ? 'skipped' : 'done';
-  const ms = Math.max(0, ...all.flatMap((s) => (s.ms === undefined ? [] : [s.ms])));
+  const ms = all.findLast((s) => s.ms !== undefined)?.ms ?? 0;
   const rows = all.findLast((s) => s.rows !== undefined)?.rows;
   const away = [...new Set(all.map((s) => s.host).filter((h) => h !== 'page'))];
   const words = [
@@ -1532,6 +1533,8 @@ export function watchSteps(canvas: SherpaLayoutCanvas, { claims, nodeOf = (span)
     let spans = lit.get(node);
     if (!spans) lit.set(node, (spans = new Map()));
     const total = span.detail?.['total'] ?? span.detail?.['rows'];
+    // Last to speak, last in the list: a span that ends moves after those that ended before it.
+    spans.delete(span.id);
     spans.set(span.id, { host: span.host, state: stateOf(span), ...(span.ms !== undefined ? { ms: span.ms } : {}), ...(typeof total === 'number' ? { rows: total } : {}) });
     light(el, spans);
     onLit?.(span, node);
@@ -1816,6 +1819,11 @@ function pickedIn(
   };
 }
 
+/** The Sources a reader keeps in a Query, as a session keeps them. */
+function isKept(v: unknown): v is KeptSource[] {
+  return Array.isArray(v) && v.every((k: Partial<KeptSource> | null) => typeof k?.id === 'string' && typeof k.store === 'string');
+}
+
 /** Each node's place, as a session keeps it. */
 function isPlaces(v: unknown): v is NodePlaces {
   return !!v && typeof v === 'object' && !Array.isArray(v)
@@ -1872,7 +1880,20 @@ export function bindQueryEditor(
     places = { ...places, [node.id]: { x: node.x, y: node.y, ...places[node.id], size } };
     session?.set(pointer, places);
   };
+  // A Source the page does not read is the editor's, kept for the tab beside the places: placed, its Store picked, deleted,
+  // each an Undo step. Save writes the page's definition, so it is never saved. TRAP T-a-second-source-is-kept
+  const keptAt = `/node-sources/${definition.id}`;
+  session?.persist(keptAt, { shared: false, guard: isKept });
+  let kept: readonly KeptSource[] = (session?.get(keptAt) as KeptSource[] | undefined) ?? [];
+  const keep = (next: readonly KeptSource[]): void => {
+    kept = next;
+    session?.set(keptAt, kept);
+    draw();
+    note();
+  };
   const onEdit = (edit: GraphEdit): void => {
+    const edited = keptEdit(kept, edit);
+    if (edited) return keep(edited);
     const request = graphRequest(edit, { type: typeOf });
     if (!request) return;
     query.ask(request);
@@ -1893,8 +1914,10 @@ export function bindQueryEditor(
     const answer = placeRequest(kind, own ?? from?.ref?.['scope'] ?? VIEW, {
       holds: (scope) => query.scope(scope), fields: (scope) => query.fields(scope),
       presets: (scope) => query.presets(scope), on: (scope, id) => query.presetOn(scope, id),
+      kept, ...(definition.source?.store ? { store: definition.source.store } : {}), ...(facts.stores ? { stores: facts.stores } : {}),
     });
     if ('refused' in answer) report({ code: 'query-place', message: answer.refused });
+    else if ('keep' in answer) keep([...kept, answer.keep]);
     else query.ask(answer.request);
   };
   const onAdded = (event: Event): void => {
@@ -1913,7 +1936,7 @@ export function bindQueryEditor(
     if (said === listed) return;
     listed = said;
     const kinds: Record<string, NodeKind> = Object.fromEntries(now.map((c) => [c.id, {
-      heading: c.label, icon: 'filter', description: 'A Preset Filter: on, its condition joins its scope.', rows: [], model: 'ScopeDefinition.presets', graphs: ['query'], category: 'Custom Nodes',
+      heading: c.label, icon: 'filter', description: 'This page\'s Preset Filter.', rows: [], model: 'ScopeDefinition.presets', graphs: ['query'], category: 'Custom Nodes',
     }]));
     void panel?.populate(paletteOf({ ...NODE_KINDS, ...kinds }, 'query'));
   };
@@ -1934,7 +1957,11 @@ export function bindQueryEditor(
     visual = { id, el };
     return el;
   };
-  const picks = pickedIn(canvas, inspector, (node, now) => inspectNode(inspector!, node, now, { onEdit, visual: visualOf(node) }), () => { visual = null; }, () => removeRefused());
+  let inspected: string | null = null;
+  const picks = pickedIn(canvas, inspector, (node, now) => {
+    inspected = node.id;
+    inspectNode(inspector!, node, now, { onEdit, visual: visualOf(node), ...(node.ref?.['kept'] ? { onRemove: () => removeNodes([node.id]) } : {}) });
+  }, () => { visual = null; inspected = null; }, () => removeNodes(inspected ? [inspected] : []));
   let graph: DrawnGraph = { nodes: [], routes: [] };
   /** A cut is reported, never applied: once, however many routes are picked. */
   const cutRefused = (): void => report({ code: 'query-route', message: 'The Query\'s routes are its readings: turn a condition off, or clear it, to take it from its scope.' });
@@ -1955,9 +1982,18 @@ export function bindQueryEditor(
   };
   const onUnbend = (route: NodeRoute, index: number): void => keepBends({ ...bends, [bendKey(route)]: dropBend(bends[bendKey(route)], index) });
   const removeRefused = (): void => report({ code: 'query-remove', message: 'The Query\'s nodes are its readings: turn a condition off, or clear it, to take it from its scope.' });
+  // A kept Source goes; any other node is a reading, and stays.
+  const removeNodes = (ids: readonly string[]): void => {
+    const gone = kept.filter((k) => ids.includes(k.id));
+    if (gone.length) {
+      if (gone.some((k) => k.id === inspected)) picks.deselect();
+      keep(kept.filter((k) => !gone.includes(k)));
+    }
+    if (gone.length < ids.length) removeRefused();
+  };
   const draw = (): void => {
     const read = placed(queryGraph(query.draft, definition, {
-      ...facts, values, presets: (scope) => query.presets(scope), domains: source.store?.domains ?? {}, pageSize: source.state?.pageSize ?? null,
+      ...facts, values, presets: (scope) => query.presets(scope), domains: source.store?.domains ?? {}, pageSize: source.state?.pageSize ?? null, kept,
     }), places);
     graph = { ...read, routes: read.routes.map((r) => (bends[bendKey(r)] ? { ...r, via: bends[bendKey(r)]! } : r)) };
     fillPanel();
@@ -1967,7 +2003,7 @@ export function bindQueryEditor(
       // Its routes are readings, which another field or scope takes: a moved end is a new route.
       onReroute: (_was, now) => onConnect(now),
       ...(panel ? { onAdd: (context: AddContext) => panel.askAdd(context) } : {}),
-      onBreak: cutRefused, onBreakAll: cutRefused, onRemove: removeRefused,
+      onBreak: cutRefused, onBreakAll: cutRefused, onRemove: removeNodes,
       // A box picks, and opens no panel (756); an open one shows the one node, and shuts for several or none. TODO 735
       onBox: (ids) => {
         const node = ids.length === 1 ? graph.nodes.find((n) => n.id === ids[0]) : undefined;
@@ -1980,31 +2016,38 @@ export function bindQueryEditor(
     picks.follow(graph);
   };
   draw();
-  // — Undo and Redo: the Query's draft, as copies, before and after each change anyone made (a chip's too).
+  // — Undo and Redo: the Query's draft, as copies, before and after each change anyone made (a chip's too), and the kept Sources.
   //   A step is put back through the Query's own whole restore, so every reader redraws as for any edit.
   //   Where a scope waits for Apply a step moves the DRAFT only (`restoreDraft`): an Apply is no step. TRAP T-an-edit-is-a-step
-  const journal = new Journal<Query>(HISTORY);
-  let last = query.draft;
+  const journal = new Journal<{ query: Query; kept: readonly KeptSource[] }>(HISTORY);
+  let last = { query: query.draft, kept };
   let restoring = false;
   const tell = (): void => {
     toolbar?.toggleAttribute('data-can-undo', journal.canBack);
     toolbar?.toggleAttribute('data-can-redo', journal.canForward);
     canvas.dispatchEvent(new CustomEvent('history-change', { detail: { undo: journal.canBack, redo: journal.canForward }, bubbles: true, composed: true }));
   };
-  const onChange = (): void => {
-    draw();
+  const note = (): void => {
     if (restoring) return;
-    const now = query.draft;
+    const now = { query: query.draft, kept };
     if (JSON.stringify(now) !== JSON.stringify(last)) journal.push({ before: last, after: now });
     last = now;
     tell();
   };
-  const step = (to: Query | undefined): boolean => {
+  const onChange = (): void => {
+    draw();
+    note();
+  };
+  const step = (to: { query: Query; kept: readonly KeptSource[] } | undefined): boolean => {
     if (!to) return false;
     restoring = true;
-    void query.restoreDraft(to, { by: 'undo' }).finally(() => {
+    kept = to.kept;
+    session?.set(keptAt, kept);
+    draw();
+    const asked = JSON.stringify(to.query) === JSON.stringify(query.draft) ? Promise.resolve() : query.restoreDraft(to.query, { by: 'undo' });
+    void asked.finally(() => {
       restoring = false;
-      last = query.draft;
+      last = { query: query.draft, kept };
       tell();
     });
     return true;
@@ -2060,8 +2103,8 @@ export function bindQueryEditor(
 }
 
 /**
- * Light a page's Query graph as its source loads: the Source by the load, the Store
- * by its reads — the page's and its worker's, by the store's name or the load's
+ * Light a page's Query graph as its source loads: the Source by the load and by its
+ * store's reads — the page's and its worker's, by the store's name or the load's
  * trace — then what the walk counted. A load is the source's when it begins as the
  * source says `loading`. TRAP T-a-step-names-its-node
  */

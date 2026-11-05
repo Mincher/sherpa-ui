@@ -15,7 +15,7 @@ For nodes on a `sherpa-layout-canvas` that belong together: a frame round them, 
 ## Example
 
 ```html
-<sherpa-layout-canvas style="inline-size: 720px; block-size: 420px"><sherpa-node-frame data-heading="Active customers" data-description="Who signed in this month" data-x="80" data-y="104" data-w="240" data-h="232" data-current></sherpa-node-frame><sherpa-node data-heading="Store" data-icon="store" data-x="80" data-y="104" data-output-socket="object" data-output-routed></sherpa-node><sherpa-node data-heading="Condition" data-icon="function" data-x="80" data-y="260" data-input-socket="any" data-input-routed data-branches></sherpa-node></sherpa-layout-canvas>
+<sherpa-layout-canvas style="inline-size: 720px; block-size: 420px"><sherpa-node-frame data-heading="Active customers" data-description="Who signed in this month" data-x="80" data-y="104" data-w="240" data-h="232" data-current></sherpa-node-frame><sherpa-node data-heading="Source" data-icon="storage" data-x="80" data-y="104" data-output-socket="object" data-output-routed></sherpa-node><sherpa-node data-heading="Condition" data-icon="function" data-x="80" data-y="260" data-input-socket="any" data-input-routed data-branches></sherpa-node></sherpa-layout-canvas>
 ```
 
 ## Attributes

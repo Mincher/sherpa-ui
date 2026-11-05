@@ -6632,14 +6632,15 @@ routes between their sockets — checked by `schemas/workflow.v2.json` and by
 
 **The Node Editor is one more VIEW of a page's Query, and it ASKS.** Will, TODO
 555; plan-78-query-editor.md. `queryGraph(query, definition, facts)` draws the
-Store and each status field it works out, the Source, each scope with its held
+Source and each status field its store works out, each scope with its held
 fields as rows, a Condition into each answered field, each preset and saved
 filter, each superseded answer, the scope's Arrange, its Presentation and its
 components — from the LIVE Query, each time it changes. It keeps no Query of its
 own; a change made in it is a `QueryRequest`, as a chip's is (`graphRequest`).
 
 - **Derived, not stored.** The same Query draws the same graph. Only the nodes'
-  places are the editor's (kept per tab). A second view that kept its own copy
+  places, their bends and the Sources a reader keeps are the editor's (kept per
+  tab, `T-a-second-source-is-kept`). A second view that kept its own copy
   of what the first answered caused six filter bugs (the old panel).
 - **A field is a ROW of the scope that holds it**, not a node: moving a field
   between scopes is moving its row, as Send to View is. A field the View
@@ -6651,8 +6652,8 @@ own; a change made in it is a `QueryRequest`, as a chip's is (`graphRequest`).
 - **A preset is a node into its scope's row** (`@<id>`): its On, read from the
   Query (`presetHeld`), and what it writes, read only. A saved filter on a bar is a
   preset `saved:<id>` (`SAVED_PRESET`), drawn as the saved kind; one on no bar says
-  what it would add, with no route. A status field sits between the Store and the
-  Source, a row per value and when a row has it, from the store's `domains`. A
+  what it would add, with no route. A status field sits between the Source and the
+  View, a row per value and when a row has it, from the store's `domains`. A
   component scope's own answer the View holds over it (`superseded`) is a read-only
   condition into its row: it moves nowhere.
 - **Laid out by depth**, in columns: conditions left of their scope, the View's
@@ -6713,10 +6714,16 @@ Sherpa draws: a page's Query and a workflow. Plan 695 N1: two registries had let
 - **A kind says its header, its sockets, its rows, what it stands for in the data
   layer (`model`), and where it is drawn (`graphs`)**. A Query node adds its own
   rows after the kind's (a scope's presets and fields).
-- **One meaning per word**: a Store is where rows come from, in both graphs; the
-  Source is a page's `SourceDefinition`; a row's `field` is a field of the rows,
-  never its key; a row's `control` is what it draws; `op` is an operator, and a
-  condition is the tree.
+- **One meaning per word**: a Source is where rows come from, in every graph: the
+  store it names, a `SourceDefinition`; a Query adds how its page reads it (Page
+  size, Search fields, Apply on). The Store kind went (TODO 808): a Store then a
+  Source were two nodes for one thing, and Will's chain starts at Source. A row's
+  `field` is a field of the rows, never its key; a row's `control` is what it
+  draws; `op` is an operator, and a condition is the tree.
+- **A kind's `description` is its synopsis** (Will, TODO 809): a few words on one
+  line, said once here. It is the node panel's line, and a node's own where it has
+  none. A family's types are never listed in it: search finds a type by its name,
+  and an item found so says that type's help.
 - **The graph is DERIVED, never stored**: from the definition and the live Query
   (`queryGraph`), or from the workflow definition (`workflowGraph`). Only places are
   the editor's, kept for the tab, and laid over (`placed`).
@@ -6735,6 +6742,32 @@ Sherpa draws: a page's Query and a workflow. Plan 695 N1: two registries had let
 - Site: `src/core/data/page-definition.ts`
 - Site: `test/unit/a-workflow-is-its-definition.test.mjs`
 - Site: `mcp-server/resources/query.js`
+- Site: `test/unit/a-source-is-where-rows-come-from.test.mjs`
+
+### T-a-second-source-is-kept
+
+**A page reads ONE store, so a second Source in its Query is the EDITOR's, not the
+Query's** (Will, TODO 808: "Multiple Sources are allowed"). The Query editor's panel
+offers Source as every graph's does; `placeRequest('source', …)` answers `{ keep }`,
+never a `QueryRequest`: a new id (`source-2`, the next free) and the first store the
+app registered that the page does not read.
+
+- **It is placed and warns**: "The page reads customers. This Source is not the
+  page's: the Query reads nothing from it." Its Store row is the reader's to pick
+  (`keptEdit`); a route from it is refused in those words (`routeRequest`).
+- **Kept as a place is**, for the tab (`/node-sources/<page>`, `shared: false`),
+  and drawn from `facts.kept` under the page's Source. Undo and Redo step it with
+  the Query's draft, one journal; Delete takes it, where any other Query node is
+  refused. Save writes `pageWithQuery`, the page's own definition, so it is never
+  saved (draft keeps, Save writes final).
+- **Never a second door into the Query.** Nothing it does asks the Query. A Source
+  that reads another store for a Field's values is a join the Query cannot hold:
+  that waits for Will.
+
+- Site: `src/core/data/query-graph.ts`
+- Site: `src/core/ui/node-graph.ts`
+- Site: `test/unit/a-source-is-where-rows-come-from.test.mjs`
+- Site: `test/e2e/reforged-node-sources.spec.ts`
 
 ### T-a-socket-says-its-type
 
@@ -6799,7 +6832,7 @@ its choices".
   or 0 (`truthOf`) — is a CONSTANT part: true always holds, false never. One the graph holds folds
   into its group in `nodeFlow`'s `where`: true drops out of And and ends Or, false the other way, so
   `where` may be `true` or `false`; one only a run gives is named by where it comes from,
-  `{ boolean: "Store › True" }`. Anything else reads null and warns
+  `{ boolean: "Source › True" }`. Anything else reads null and warns
   (`T-a-node-reads-null-from-what-it-cannot-use`). No route into it is a fault. A Preset Filter's
   use brings its tree too, read inside (plan 776 D5, `T-a-preset-filter-is-a-preset-of-its-store`).
 - **The Query holds no constant.** A page's `where` cannot say one, and the Query editor takes no
@@ -7220,14 +7253,16 @@ is made and it returns null.
   `within`); `detail.graph` names the workflow, and claims the trace for its graph.
   `watchSteps` keeps a run's lights until the next run begins; a late span of a run
   gone by lights nothing. N4's runner only reports.
-- **A Query graph maps S3's spans** (`queryStepNode`): a `load` lights the Source;
-  `request`, `answer`, `hold`, `recheck` and `send` the Store. A trace is the
+- **A Query graph maps S3's spans** (`queryStepNode`): a `load`, and its store's
+  `request`, `answer`, `hold`, `recheck` and `send`, light the Source. A trace is the
   graph's where a span names its store (`definition.source.store`) — so the
   worker's answer and hold join by the trace of the request they answer — or where
   it is the source's own load. A load is the source's when its span begins as the
   source says `loading`: the DataSource dispatches `loading` and begins its `load`
   span in one synchronous step. Reorder the two and the Source never lights: the
-  e2e test fails.
+  e2e test fails. A node lit by several spans says the time and rows of the one
+  that spoke LAST, and every host that ran one: the load ends after its store's
+  reads, so the Source says the page's rows (TODO 808).
 - **The rows are the walk's own** (`planWalk`'s step ids: a field, `preset:<id>`).
   When the source's load ends, `traceQuerySteps` says each scope, condition and
   preset the walk counted, and the scope it arranged, under the load; an off one,
@@ -7505,7 +7540,7 @@ the group's internal node sockets. I never said that a group input was of a cert
 - **What it replaced.** 759 matched a header route to the first input row of its type, and kept
   one no row fitted on the header. Nothing about an input is a type until something is connected.
 - **The rule.** `headerInput` (node-group.ts): a route let go on a use's header adds an input to
-  the definition, named and labelled by its source as `groupNodes` names one ("Store › Rows"),
+  the definition, named and labelled by its source as `groupNodes` names one ("Source › Rows"),
   typed by what the source sends. It is a Group Input row inside, with an output socket, and a row
   on every use; the route enters this use's new row. It feeds nothing inside until the reader
   routes it on. The editor's drop, "Add a node" from a line, and a moved end all take this one
@@ -7662,7 +7697,7 @@ graphs. Let's keep them but also make sure they work in the new architecture for
 - **One reader.** `conditionAt(graph, '#out/where')` (node-flow.ts) reads what reaches the Where as
   ONE tree (plan 783 D7): Logic And and Or joining what comes in; a TEST — a Condition's comparison,
   Time's Between or Duration, a Tag's Includes — a leaf on the Field on its header, ANDed with what
-  the rows into that Field carry (Store › Field › A › Rows › Field › B is A and B); a USE of another
+  the rows into that Field carry (Source › Field › A › Rows › Field › B is A and B); a USE of another
   entity read inside, at its Group Output (`inner`), so it flattens. The Outgoing JSON shows what it
   reads, so the canvas and the data cannot disagree. A test with no Field, a Field that sends
   nothing, Not and Is empty, a False, a loop: a fault in words.
@@ -7676,7 +7711,7 @@ graphs. Let's keep them but also make sure they work in the new architecture for
   has. `ProviderPage.#layPresets` declares each scope's presets in one list: the page's own, then its
   Preset Filters, then the saved sets on its bar, all through `presetReadings` and `declarePresets`.
   The chip is `preset:preset-filter:<id>`; a press is `query.ask({ scope, preset, on })`.
-- **Which pages.** Those whose store is its source: `settings.source`, else the store its graph's Store
+- **Which pages.** Those whose store is its source: `settings.source`, else the store its graph's Source
   names (a new graph has no settings). The app's first, read only, then the reader's, in the shelf's
   order. Its bar is the one scope that holds every field it names, else the View.
 - **Loaded only where needed.** The provider reads the shelf as the page opens: no Preset Filter, no

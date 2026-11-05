@@ -9,7 +9,7 @@
  * Map:
  * - PagePreset — A preset as a page declares it: its id, its name and each field's condition, in the plain form.
  * - PresetFilterFacts — What reading one needs beside it: the other entities (a use's), the types, the kinds and the fields.
- * - sourceOf — The store a Preset Filter reads: its settings', else the one its graph's Store names.
+ * - sourceOf — The store a Preset Filter reads: its settings', else the one its graph's Source names.
  * - presetOfEntity — A Preset Filter as a page's preset, or why it is none, in words.
  * - presetsOver — The Preset Filters over one store as its pages' presets, the app's then the reader's, and each fault.
  */
@@ -40,11 +40,11 @@ export interface PresetFilterFacts {
   fields?: WorkflowFacts['fields'];
 }
 
-/** The store a Preset Filter reads: its settings' `source`, else the one its graph's Store names. Plan 776 D4 */
+/** The store a Preset Filter reads: its settings' `source`, else the one its graph's Source names. Plan 776 D4 */
 export function sourceOf(entity: Pick<Entity, 'settings' | 'graph'>): string | undefined {
   const named = entity.settings?.['source'];
   if (typeof named === 'string' && named) return named;
-  const store = entity.graph.nodes.find((n) => n.kind === 'store')?.values?.['store'];
+  const store = entity.graph.nodes.find((n) => n.kind === 'source')?.values?.['store'];
   return typeof store === 'string' && store ? store : undefined;
 }
 
