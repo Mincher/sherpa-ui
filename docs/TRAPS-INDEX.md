@@ -303,7 +303,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-values-carries-two-shapes](traps/storage.md#t-values-carries-two-shapes) — persist-view
 - [T-view-library-is-one-vocabulary](traps/storage.md#t-view-library-is-one-vocabulary) — persist-view
 
-## The join and the app layer (94)
+## The join and the app layer (95)
 
 - [T-a-bar-reports-its-holds](traps/join-and-app.md#t-a-bar-reports-its-holds) — bind-source
 - [T-a-card-toggles-its-own-toolbar](traps/join-and-app.md#t-a-card-toggles-its-own-toolbar) — provider
@@ -336,6 +336,7 @@ files. An entry that only tests cite is under Tests only.
 - [T-a-page-is-its-definition](traps/data-layer.md#t-a-page-is-its-definition) — provider
 - [T-a-panel-asks-for-its-scopes](traps/data-layer.md#t-a-panel-asks-for-its-scopes) — bind-source
 - [T-a-persistent-chip-reports-on-every-change](traps/storage.md#t-a-persistent-chip-reports-on-every-change) — provider
+- [T-a-pin-before-start-is-the-readers](traps/join-and-app.md#t-a-pin-before-start-is-the-readers) — outlet
 - [T-a-provider-keeps-the-views](traps/join-and-app.md#t-a-provider-keeps-the-views) — provider
 - [T-a-rail-may-stay-shut](traps/join-and-app.md#t-a-rail-may-stay-shut) — outlet
 - [T-a-reach-banner-takes-no-room](traps/join-and-app.md#t-a-reach-banner-takes-no-room) — outlet

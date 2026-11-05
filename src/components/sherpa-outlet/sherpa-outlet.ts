@@ -96,6 +96,8 @@ export class SherpaOutlet extends SherpaElement {
   #lifted: Element[] = [];
   /** The nav it keeps, when its shell has one. */
   #nav: OutletNav | null = null;
+  /** The pin as the rail reported it before start(), or null: the reader's. TRAP T-a-pin-before-start-is-the-readers */
+  #pinnedEarly: boolean | null = null;
   /** The Settings page open over it, its token, its signal and its teardown. */
   #settings: { page: string | null; token: number; leaving: AbortController | null; teardown: (() => void) | null } = {
     page: null, token: 0, leaving: null, teardown: null,
@@ -213,7 +215,7 @@ export class SherpaOutlet extends SherpaElement {
       // The app's settings as the provider tells them; else over the session alone.
       const settings = this.#told ?? new Settings(SETTINGS, options.session);
       this.#nav = new OutletNav(nav as ConstructorParameters<typeof OutletNav>[0], {
-        app: options.app, session: options.session, settings, router, header, host: this, signal: this.signal,
+        app: options.app, session: options.session, settings, router, header, host: this, signal: this.signal, pinned: this.#pinnedEarly,
       });
       await this.#nav.refresh();
       void this.#viewsReady.then(() => this.#nav?.refresh());
@@ -221,6 +223,22 @@ export class SherpaOutlet extends SherpaElement {
     await this.#load(this.#contextOf(router?.route ?? {}));
     this.#syncSettings(router?.route ?? {});
   }
+
+  /** Its rail is heard from CONNECT, not from start(): an app starts its outlet
+   *  late, and a pin pressed meanwhile is the reader's. TRAP T-a-pin-before-start-is-the-readers */
+  override connectedCallback(): void {
+    super.connectedCallback();
+    const nav = this.#shell?.querySelector(':scope > sherpa-nav');
+    if (nav) this.on(nav, 'nav-state-change', this.#onEarlyPin);
+  }
+
+  /** A pin pressed before start(), and its unpin. A pointer passing a rail never pinned is neither. */
+  #onEarlyPin = (event: Event): void => {
+    if (this.#nav) return;
+    const state = (event as CustomEvent<{ state?: string }>).detail?.state;
+    if (state === 'pinned') this.#pinnedEarly = true;
+    else if (state === 'collapsed' && this.#pinnedEarly) this.#pinnedEarly = false;
+  };
 
   override onDisconnect(): void {
     this.#leave();

@@ -1090,6 +1090,35 @@ defaults, and calls `outlet.refreshNav()` after it saves or deletes a View.
 - Site: `src/components/sherpa-outlet/sherpa-outlet.ts`
 - Site: `test/e2e/reforged-outlet.spec.ts`
 
+### T-a-pin-before-start-is-the-readers
+
+**An app starts its outlet late, and its rail is drawn before** (TODO 775). Demos
+calls `outlet.start()` after its own awaits — its first workflow saved, its stores
+opened — and the rail has its Pin 25 ms to 200 ms before that, more under load. A
+pin pressed in that gap reached no one: the outlet heard `nav-state-change` only
+from `start()`. Then the first load drew the session's pin, `false`, over the
+reader's, and the session never heard it. Measured in Chromium, a pin at 80 ms,
+the outlet's first load at 106 ms writing `collapsed` and storing `false`. The
+Context change and the reload after it read the session, so the pin was lost; two
+clicks read `pinned`, as the load landed between them.
+
+**So the outlet hears its rail from CONNECT**, as the router hears the URL
+(`T-the-router-owns-the-url`). An outlet is in the page's markup, so it connects
+when it is defined, before any rail can draw its Pin. Before `start()` it keeps
+one thing, the pin: `pinned` sets it, and `collapsed` clears it only once it was
+set. A pointer passing a rail never pinned reports `hover`, then `collapsed`; that
+is not an unpin, and must not clear a stored pin. `start()` hands it to the nav,
+which writes `/nav/pinned` before the first load reads it. After `start()`, the
+nav hears the rail itself.
+
+**What it does not cover.** A rail added after its outlet connects is heard from
+`start()` only. A pin pressed and a page reloaded BEFORE `start()` is lost: the
+outlet has no session to write to yet. And the stored pin is drawn at the first
+load, not the first paint, so a test reads the rail after `context-load`.
+
+- Site: `src/components/sherpa-outlet/sherpa-outlet.ts`
+- Site: `src/components/sherpa-outlet/outlet-nav.ts`
+
 ### T-a-rail-may-stay-shut
 
 **With "Expand navigation on hover" off, the rail opens only to its Pin** (Will,

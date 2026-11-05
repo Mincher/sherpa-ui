@@ -70,6 +70,8 @@ export class OutletNav {
   constructor(nav: Nav, at: {
     app: AppDefinition; session: SessionStore; settings: Settings; router: SherpaRouter | null; header: HTMLElement | null;
     host: NavHost; signal: AbortSignal;
+    /** The pin the reader pressed before the outlet started: it outranks the stored one. */
+    pinned?: boolean | null;
   }) {
     this.#nav = nav;
     this.#app = at.app;
@@ -79,6 +81,8 @@ export class OutletNav {
     this.#header = at.header;
     this.#host = at.host;
     this.#lastSettings = Object.keys(at.app.settings?.pages ?? {})[0] ?? null;
+    // Before the first load reads it. TRAP T-a-pin-before-start-is-the-readers
+    if (typeof at.pinned === 'boolean') at.session.set('/nav/pinned', at.pinned);
     /* STORED ROWS, not Contexts: a shape this release cannot read is dropped.
        A favourite is a VIEW, keyed `context:view`. */
     at.session.persist('/nav/favorites', { guard: isKeptList });
