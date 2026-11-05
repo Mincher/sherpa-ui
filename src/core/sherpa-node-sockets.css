@@ -54,13 +54,13 @@
 /* An INPUT takes the pointer too: its route's end drags to another input, or a picklist's
    input drags out a line. Will, TODOs 557, 558.
    An INPUT is a D (the Figma's), whatever its type: the type reads in its ink and its tip.
-   One that takes many is double height. Will, TODO 740 */
+   One that takes many is double height; the outputs keep their own. Will, TODOs 740, 807 */
 .socket-in {
   inset-inline-start: 0;
   cursor: crosshair;
   --_shape: var(--_d);
 }
-:host([data-input-many]) { --_socket-h: calc(var(--_socket) * 2); }
+:host([data-input-many]) .socket-in { --_socket-h: calc(var(--_socket) * 2); }
 /* An OUTPUT takes the pointer: a drag from it draws a new route. Will, TODO 555 */
 .socket-out {
   inset-inline-start: 100%;

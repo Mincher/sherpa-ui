@@ -1974,6 +1974,10 @@ and `any` (an input only) a square.
 - **A fork** (`data-branches`) is the header's True, a triangle pinned
   `success`, and a footer — the container footer, composed — with False. A node
   with no fork draws no footer.
+- **Only a many INPUT is double height** (`data-input-many`, TODO 740). Its
+  `--_socket-h` is set on `.socket-in`, never on the host: every socket reads it,
+  so set there it drew the row's output, and a fork's True and False, 32px too
+  (TODO 807).
 - **Never colour alone.** Each socket has a tip that says its type in words
   ("True: a boolean"), and in forced colours the ink goes to `CanvasText` while
   the shape stays. A route line takes the ink of its FROM socket's type, from
